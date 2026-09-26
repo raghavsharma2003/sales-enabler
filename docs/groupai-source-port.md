@@ -1,0 +1,24 @@
+# GroupAI room turns: source adaptation and boundaries
+
+This is a selective adaptation of the existing GroupAI mechanism, not a second group product. The local `group_world`, `group_room`, `group_memory`, and `getGroupContext` contracts remain the source of room membership, audience epoch, approved evidence, and snapshot identity. The new internal room turn uses an existing tenant agent draft and the user's configured Azure text deployment. It stores the turn in the tenant database; it does not send a message to a participant or external channel.
+
+## Source lineage
+
+- `Vyakti-GroupAI`, `codex/relational-core` at `4bae159631ca3f18da0ede48596f593a55b6728c`, `packages/relational-core/src/{privacy,memory,context-assembler}.ts`: recipient-scoped disclosure, evidence provenance, and pre-model authorization. The local capsule in `lib/platform/groups.ts` retains the relevant audience filtering and whole-evidence budget. It is a simpler operator-attested scope, not a transplant of source-issued authorization objects.
+- Same source and revision, `packages/context-capsule/src/{authorization,compiler}.ts`: a model context is compiled from already authorized evidence, tied to a particular recipient set and snapshot. The local turn accepts only a fresh server-issued `snapshotId`; it never accepts caller-authored evidence text.
+- Same source and revision, `packages/postgres-runtime/src/runtime.ts`: stable model request identity, durable turn state, and one result for replayed input. The local `requestId` is scoped to organization, operator and room, reserving one `group_turn` row before generation. It makes no provider retry for a pending or failed request and has no delivery outbox.
+- Same source and revision, `packages/intervention-policy/src/policy.ts`: silence is a first-class outcome. The current local policy is intentionally narrower: a room in `silent` mode or with inactive audience yields a stored silent turn without a model call; an explicit operator question in a valid `reply` room may generate a response. Autonomous intervention, reactions, DM movement, permissions prompts and external actions are outside this path.
+
+The parent audit is in `docs/reuse-provenance.md` and the source branch ledger in `research/branch-inventory.json`. The source repositories remain read-only.
+
+## Local operation
+
+`POST /api/group-turns` requires an authenticated session and same-origin request. The body is `{roomId, agentId, memberId, text, requestId, snapshotId}`. The operator chooses a currently active member of the room as a **simulated speaker**; this does not verify that person's channel identity. The agent must be a draft `agent_definition` belonging to the same tenant. The turn uses its name, role, primary language, response style and AI disclosure, while excluding its arbitrary prompt and company knowledge sources because those have no room-specific audience grant. The AI is identified in both the model instruction and room UI.
+
+`GET /api/group-turns?roomId=…` returns only completed turns for the current room snapshot and audience epoch. Prior replies may contain evidence later corrected or revoked, so they are hidden when the snapshot changes. The operator can inspect the current authorized capsule again. A generated reply is saved only after re-reading the room capsule and checking the original room, world and evidence rows in the same database transaction as the commit. Audience or evidence changes leave an `invalidated` turn, never a visible reply. Provider failures leave a `failed` turn; repeating the same request key cannot trigger another model call.
+
+For follow-up questions, the model receives up to eight complete recent reply turns from the same room and exact current snapshot, including each simulated speaker, the AI reply and the evidence IDs offered for that reply. The history is capped at 8,000 serialized characters, and the full current-turn input at 11,500 characters. An entry is either included whole or omitted; old, revoked, invalidated or other-room content cannot enter this history.
+
+Stored records include the exact agent revision, operator-simulated speaker, request identity, audience epoch, snapshot, eligible evidence IDs and final outcome. The eligible IDs describe context offered to the model; they do not claim that every sentence is a verified citation. The internal message has no send/delivery state. Real participant identity verification, transport delivery, autonomous group intervention and cross-room business action authorization still need separate contracts before those capabilities can be claimed.
+
+Offline tests in `tests/group-turns.test.ts` cover tenant and room isolation, private evidence exclusion, same-room follow-up history, silent mode, exact-snapshot replay, duplicate and failed request keys, and audience/evidence changes during generation. Live Azure response quality remains a separate browser check.

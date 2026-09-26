@@ -1,0 +1,33 @@
+export type LearningType = 'feedback_theme' | 'practical_concern' | 'explicit_preference' | 'correction' | 'commitment_request';
+export type LearningDestination = 'feedback_evidence' | 'customer_memory_review' | 'manual_action_review';
+export type LearningCandidate = {
+  id: string;
+  type: LearningType;
+  title: string;
+  content: string;
+  why: string;
+  quote: string;
+  sourceRef: { turnIndex: number; start: number; end: number };
+  destination: LearningDestination;
+  originalDestination?: LearningDestination;
+  routingPolicy?: 'anonymous_feedback_only';
+  status: 'pending' | 'applied';
+  appliedEntityId?: string;
+  reviewedType?: LearningType;
+  reviewedDestination?: LearningDestination;
+  reviewedBy?: string;
+  reviewedAt?: string;
+};
+export type LearningReview = { candidateId: string; reviewedType?: LearningType; destination?: LearningDestination };
+export type ConversationAnalysisData = {
+  sessionId: string;
+  sessionDigest: string;
+  requestId: string;
+  contactId?: string;
+  contextCitations: { kind: 'knowledge' | 'memory'; id: string }[];
+  candidates: LearningCandidate[];
+  notes: string[];
+  createdBy: string;
+  feedbackOnly?: boolean;
+};
+export type ConversationAnalysis = { id: string; status: string; revision: number; createdAt: string; updatedAt: string; data: ConversationAnalysisData };

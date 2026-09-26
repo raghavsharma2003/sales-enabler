@@ -1,0 +1,24 @@
+# Voice runtime v5: in-call tools and diagnostics
+
+The browser transports provider function calls to the fixed same-origin `/api/voice/tools` endpoint. The server owns authorization, bound customer/company scope, argument validation, idempotency, and durable action receipts. Model arguments never choose a URL, tenant, customer, or recipient. An absent or empty enabled list advertises no provider tools; the default Azure paid path remains unchanged. Maya Gemini is available only through its separately selected profile and configured key pool.
+
+The session instructions receive the same validated enabled list as the provider declarations. Empty-tool sessions retain the no-action wording; enabled sessions identify only their installed functions and preserve the review and transfer limits.
+
+## Provider round trip
+
+- Azure/OpenAI Realtime session provisioning includes only the server-validated enabled function declarations. The browser collects `response.function_call_arguments.done` by response ID, waits for a completed `response.done`, sends one `conversation.item.create` item of type `function_call_output` for each call ID, then sends one `response.create` to continue. Cancelled/incomplete responses do not execute their collected calls. Duplicate call IDs and duplicate response completion events do not cause duplicate server execution.
+- Gemini Live's one-use token embeds only the enabled `functionDeclarations`. Their input contracts use Google's documented `parametersJsonSchema` field because the provider-neutral contracts contain JSON Schema constraints such as `minLength` and `additionalProperties`; Gemini's separate `parameters` field uses its restricted OpenAPI Schema representation. The browser accepts multiple `toolCall.functionCalls`, sends a `toolResponse.functionResponses` batch with matching IDs, and aborts calls named by `toolCallCancellation.ids`. It never enables Google Search, URL context, code execution, or arbitrary provider tools.
+- Each browser POST uses a stable `voice-${providerCallId}` request ID and one server-issued `connectionId` or `previewId`. The endpoint is fixed; no model-provided destination is used. Closing a call aborts pending requests and sends a best-effort `action: "end"` to revoke the remaining tool authority. Server expiry and idempotency remain authoritative if the browser closes abruptly.
+- `search_company_knowledge` and `recall_customer_context` return bounded, scoped information. `request_follow_up` creates a proposal awaiting operator review. No function call itself sends a message, books an appointment, or transfers the live conversation.
+
+Provider protocol references: [OpenAI Realtime server events](https://platform.openai.com/docs/api-reference/realtime-server-events/response/function_call_arguments/done), [Microsoft Foundry Realtime audio events](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/realtime-audio-reference), and [Gemini Live tool use](https://ai.google.dev/gemini-api/docs/live-api/tools). The Google documentation explicitly describes multiple function calls and sending responses with matching IDs. These sources document protocol shapes; this implementation has only offline mock verification so far.
+
+## Diagnostics
+
+The optional `onDiagnostics` callback reports a bounded snapshot containing connection status, `clientObservedConnectMs`, up to 20 `clientObservedTurnMs` samples, and tool requested/result counts. Connect duration starts at browser `connect()` and ends at provider ready/data-channel open. Turn duration starts when the browser accepts typed input or receives a user transcription and ends at the first generated audio/transcript event. These are **client-observed event intervals**; they are not actual acoustic latency, end-to-end user-perceived latency, or provider latency. A missing sample means no measurement. The runtime does not invent zero values or percentiles.
+
+The pure `normalizeVoiceDiagnostics` helper validates and bounds snapshots before persistence. It accepts no transcripts, customer identifiers, raw provider events, keys, or URLs. Tool status events display a short public result summary during the call; durable receipts come from the server.
+
+## Verification limits
+
+`tests/voice-runtime-v5.test.ts` covers explicit declaration gating, provider-specific schema serialization, fixed endpoint and dedupe, multiple Azure function outputs before one continuation, Gemini call/cancellation parsing, and diagnostic bounds. `tests/provider-voice.test.ts` retains the empty-tool default. A single Maya free-path auth-token provisioning probe accepted all three declarations through `parametersJsonSchema`; it did not open a Live WebSocket or run inference. No live function call, human listening, microphone device timing, or production transfer was verified in this pass.

@@ -1,0 +1,68 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { authenticate } from '../lib/server/auth';
+import { assertSameOrigin, HttpError } from '../lib/server/http';
+import { createRecord } from '../lib/platform/records';
+import { parseAgentConfig } from '../lib/platform/agents';
+import { createContact, createMemory, createSession, transition } from '../lib/server/store';
+import { compileRelationshipContext } from '../lib/voice/relationship';
+process.env.SQLITE_PATH = ':memory:';
+delete process.env.DATABASE_URL;
+delete process.env.APP_URL;
+const request = () => new Request('http://localhost:3000/api/test', {headers:{origin:'http://localhost:3000'}});
+const status = (n:number) => (e:unknown) => e instanceof HttpError && e.status === n;
+test('browser session metadata is tenant-scoped, internally consistent and survives a stopped release', async()=>{
+ const a=(await authenticate({mode:'register',email:'binding-a@example.test',password:'correct password'},request())).user;
+ const b=(await authenticate({mode:'register',email:'binding-b@example.test',password:'correct password'},request())).user;
+ const v=await createRecord(a,'agent_version',{agentId:'agent-a'},'immutable');
+ const r=await createRecord(a,'release',{agentId:'agent-a',versionId:v.id,channel:'browser'},'stopped');
+ const input={agentId:'agent-a',agentVersionId:v.id,releaseId:r.id,source:'browser_voice',provider:'test',transcript:[{role:'user',text:'Fictional browser transcript'}]};
+ const saved=await createSession(a,input);
+ assert.equal(saved.agentVersionId,v.id); assert.equal(saved.releaseId,r.id);
+ assert.match(String(saved.transcriptSource),/Browser-submitted/);
+ await assert.rejects(createSession(b,input),status(404));
+ await assert.rejects(createSession(a,{...input,agentId:'wrong'}),status(400));
+ await assert.rejects(createSession(a,{...input,releaseId:undefined}),status(400));
+});
+test('released call saves the issued relationship snapshot and rejects another owner or call binding', async () => {
+ const owner = (await authenticate({mode:'register',email:'issued-owner@example.test',password:'correct password'},request())).user;
+ const otherTenant = (await authenticate({mode:'register',email:'issued-foreign@example.test',password:'correct password'},request())).user;
+ const sameTenantOtherUser = {...owner, id:'another-user-in-the-same-tenant'};
+ const contact = await createContact(owner, {name:'Selected caller'});
+ const otherContact = await createContact(owner, {name:'Different caller'});
+ const memory = await createMemory(owner, {contactId:contact.id, content:'Prefers Hindi.', source:'Caller preference'});
+ await transition(owner, 'memory', memory.id, 'approved');
+ const settings = parseAgentConfig({name:'Maya', role:'AI representative', objective:'Help the caller understand the service and its next steps.', disclosure:'I am the company AI assistant.', primaryLanguage:'English', allowedLanguages:['English','Hindi'], responseStyle:'Warm and concise.', memoryScope:'approved_contact', escalation:'Offer a human colleague when the caller requests one.', knowledgeIds:[]});
+ const relationship = compileRelationshipContext({contactId:contact.id, allowedLanguages:settings.allowedLanguages, memories:[{id:memory.id, contactId:contact.id, status:'approved', content:'Prefers Hindi.', createdAt:memory.createdAt}], commitments:[]});
+ const version = await createRecord(owner, 'agent_version', {agentId:'issued-agent', config:settings}, 'immutable');
+ const release = await createRecord(owner, 'release', {agentId:'issued-agent', versionId:version.id, channel:'browser'}, 'stopped');
+ const connection = await createRecord(owner, 'voice_connection', {agentId:'issued-agent', versionId:version.id, releaseId:release.id, contactId:contact.id, config:settings, relationship, contextDigest:'issued-digest', provider:'gemini', inputMode:'text', requestedBy:owner.id}, 'connection_issued');
+ // Revoking the live record after issuance must not silently rewrite the context used by the call.
+ await transition(owner, 'memory', memory.id, 'revoked');
+ const body = {source:'browser_voice', agentId:'issued-agent', agentVersionId:version.id, releaseId:release.id, connectionId:connection.id, contactId:contact.id, provider:'forged-provider', inputMode:'microphone', runtimeEvidence:{sourceIds:['forged'], instructions:'FORGED'}, relationship:{sourceIds:['forged']}, transcript:[{role:'user', text:'Please explain the next step.'}]};
+ const saved = await createSession(owner, body);
+ assert.equal(saved.runtimeContextBasis, 'issued_connection');
+ assert.equal(saved.connectionId, connection.id);
+ assert.equal(saved.provider, 'gemini');
+ assert.equal(saved.inputMode, 'text');
+ assert.equal(saved.contextDigest, 'issued-digest');
+ const runtime = saved.runtimeEvidence as {state:{language:string}; sourceIds:string[]; instructions:string};
+ assert.equal(runtime.state.language, 'Hindi');
+ assert.deepEqual(runtime.sourceIds, [memory.id]);
+ assert.equal(runtime.instructions.includes('FORGED'), false);
+ await assert.rejects(createSession(otherTenant, body), status(404));
+ await assert.rejects(createSession(sameTenantOtherUser, body), status(403));
+ await assert.rejects(createSession(owner, {...body, contactId:otherContact.id}), status(400));
+ await assert.rejects(createSession(owner, {...body, agentId:'another-agent'}), status(400));
+ await assert.rejects(createSession(owner, {...body, releaseId:(await createRecord(owner, 'release', {agentId:'issued-agent', versionId:version.id, channel:'browser'}, 'stopped')).id}), status(400));
+ const withoutConnection = await createSession(owner, {...body, connectionId:undefined});
+ assert.equal(withoutConnection.runtimeContextBasis, 'version_only');
+ assert.deepEqual((withoutConnection.runtimeEvidence as {sourceIds:string[]}).sourceIds, []);
+ assert.equal(JSON.stringify(withoutConnection).includes('FORGED'), false);
+});
+test('CSRF uses the request Host in local development and canonical APP_URL when configured',()=>{
+ assert.doesNotThrow(()=>assertSameOrigin(new Request('http://localhost:3000/api/auth',{headers:{host:'127.0.0.1:3000',origin:'http://127.0.0.1:3000'}})));
+ assert.throws(()=>assertSameOrigin(new Request('http://localhost:3000/api/auth',{headers:{host:'127.0.0.1:3000',origin:'https://evil.example'}})),status(403));
+ process.env.APP_URL='https://relay.example';
+ try { assert.throws(()=>assertSameOrigin(request()),status(403)); } finally { delete process.env.APP_URL; }
+});

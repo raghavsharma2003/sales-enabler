@@ -1,0 +1,43 @@
+# Opt-in local PostgreSQL: use with -f compose.yaml -f compose.postgres.yaml.
+# Supply DATABASE_URL=postgresql://workspace:<URL-encoded-password>@postgres:5432/workspace
+# separately. PostgreSQL is not exposed on the host network.
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: workspace
+      POSTGRES_USER: workspace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a private local PostgreSQL password}
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workspace -d workspace"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    stop_grace_period: 60s
+  app:
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set the local PostgreSQL connection URL}
+      ALLOW_SQLITE_PRODUCTION: "0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  learning-worker:
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set the local PostgreSQL connection URL}
+      ALLOW_SQLITE_PRODUCTION: "0"
+  channel-worker:
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set the local PostgreSQL connection URL}
+      ALLOW_SQLITE_PRODUCTION: "0"
+  voice-gateway:
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set the local PostgreSQL connection URL}
+      ALLOW_SQLITE_PRODUCTION: "0"
+  worker:
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set the local PostgreSQL connection URL}
+      ALLOW_SQLITE_PRODUCTION: "0"
+volumes:
+  postgres-data:

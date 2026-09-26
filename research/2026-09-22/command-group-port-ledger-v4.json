@@ -1,0 +1,114 @@
+{
+  "date": "2026-09-22",
+  "method": "read-only source audit; remote heads refreshed; source tests not run",
+  "sourceHeads": {
+    "command_centre/main": "c8fd321407d7b628b7e79d105887b6a182760100",
+    "command_centre/hardening": "d288e75c14dce50150f9787149a79e5fe4bd271c",
+    "Vyakti-GroupAI/relational-core": "4bae159631ca3f18da0ede48596f593a55b6728c",
+    "Vyakti-GroupAI/claude": "451de5a6a7017dc76eaac69fe551203dc94753d2"
+  },
+  "ports": [
+    {
+      "id": "ingestion-resolution",
+      "rank": 1,
+      "mode": "pattern-rewrite",
+      "status": "unported",
+      "source": "command_centre",
+      "branch": "origin/main",
+      "commit": "c8fd321407d7b628b7e79d105887b6a182760100",
+      "files": [
+        { "path": "lib/import-reconciliation.ts", "blob": "111cd1fa2432cc7e5bcb6880047c1975dba9f6b2" },
+        { "path": "components/import/import-wizard.tsx", "blob": "dacc1f9aff94566fd616008006c86172fc747ab9" },
+        { "path": "docs/data-hunt/SPEC.md", "blob": "9b3cd63ceb103e8a3b18bee575ef44d3790c19eb" }
+      ],
+      "tests": ["lib/import-reconciliation.test.ts"],
+      "target": "tenant-scoped artifact and row ledger, AI proposals with cited spans, company/person resolution, ambiguity review, approved writes",
+      "caution": "source matcher uses fixed fuzzy thresholds, last-ten-digit phones and a flat lead model"
+    },
+    {
+      "id": "cited-context-memory",
+      "rank": 2,
+      "mode": "actual-package-port-with-new-authority-adapter",
+      "status": "partial-room-subset-ported",
+      "source": "Vyakti-GroupAI",
+      "branch": "origin/claude/vyakti-cloning-platform-aq05n4",
+      "commit": "451de5a6a7017dc76eaac69fe551203dc94753d2",
+      "files": [
+        { "path": "packages/context-capsule/src/authorization.ts", "blob": "395dabda286626b447d89821e52f0324bea27479" },
+        { "path": "packages/context-capsule/src/compiler.ts", "blob": "047bd763e8c221af3d2513767f306aa60fbc3252" },
+        { "path": "packages/relational-core/src/context-assembler.ts", "blob": "4c8f2c80da4ce435ecc6342e4c1909b3c3f6b7aa" }
+      ],
+      "tests": ["packages/context-capsule/src/compiler.test.ts", "packages/relational-core/src/privacy-matrix.test.ts"],
+      "target": "approved source/passage retrieval with current audience, lifecycle, consent, source citations and verified context manifest",
+      "caution": "compiler does not perform search or lifecycle/source-authority checks; private evidence must not be promoted across audiences"
+    },
+    {
+      "id": "durable-channel-actions",
+      "rank": 3,
+      "mode": "actual-runtime-contract-new-persistence-and-transports",
+      "status": "unported",
+      "source": "Vyakti-GroupAI",
+      "branch": "origin/claude/vyakti-cloning-platform-aq05n4",
+      "commit": "451de5a6a7017dc76eaac69fe551203dc94753d2",
+      "files": [
+        { "path": "packages/delivery-runtime/src/runtime.ts", "blob": "c9aa0ae96d305fe269ce23ea5c5f5cfdbc3abd4f" },
+        { "path": "packages/delivery-runtime/src/types.ts", "blob": "e48c0afad5a112da54a8ab136b511204844ff2f7" },
+        { "path": "packages/postgres-runtime/src/delivery-repository.ts", "blob": "d28e5e8b5caa3d2897eb4c8a54edc2e43c1c0cd4" }
+      ],
+      "tests": ["packages/delivery-runtime/src/runtime.test.ts", "packages/postgres-runtime/src/delivery-repository.test.ts"],
+      "target": "approved intents, lease/fence, dispatch-time authority, idempotency, ambiguous-send reconciliation, provider receipts",
+      "caution": "SMTP acceptance may be ambiguous; do not copy Command Centre immediate retry or treat manual outcomes as provider receipts"
+    },
+    {
+      "id": "inbound-feedback",
+      "rank": 4,
+      "mode": "adapter-pattern-and-classifier-rewrite",
+      "status": "unported",
+      "source": "command_centre",
+      "branch": "origin/main",
+      "commit": "c8fd321407d7b628b7e79d105887b6a182760100",
+      "files": [
+        { "path": "lib/cold-email/imap-poller.ts", "blob": "785ea70bf6e5c8d5f21a4c46c0caca762108d3d2" },
+        { "path": "lib/cold-email/reply-matcher.ts", "blob": "a21d2bbcf5679977b99e9e7cc9bdcbb6fd4c5993" },
+        { "path": "lib/cold-email/reply-classifier.ts", "blob": "daee858a9b03257ece7aee50a339d660515efd4b" },
+        { "path": "lib/outreach-workflow.ts", "blob": "bfb27071fca320d338308828e880e65e98db68be" }
+      ],
+      "tests": ["lib/cold-email/reply-classifier.test.ts", "lib/outreach-lead-sync.test.ts"],
+      "target": "deduplicated inbound events, intent correlation, cited feedback proposals, reviewed CRM/action writes and outcome evidence",
+      "caution": "sender-only fallback can misattribute a reply; CBAM classifier prompt and paid-provider fallbacks are not portable"
+    },
+    {
+      "id": "group-source-consumption",
+      "rank": 5,
+      "mode": "small-code-port-domain-rewrite",
+      "status": "unported",
+      "source": "Vyakti-GroupAI",
+      "branch": "origin/claude/vyakti-cloning-platform-aq05n4",
+      "commit": "451de5a6a7017dc76eaac69fe551203dc94753d2",
+      "files": [
+        { "path": "packages/follow-through-core/src/source-consumption.ts", "blob": "b647128cb6958084e1ee748bc78df744311b17b5" },
+        { "path": "packages/postgres-runtime/src/follow-through-source-ports.ts", "blob": "a153bc3945e65106f45c4d1feb37a2ad0f5e5557" },
+        { "path": "db/migrations/019_shadow_preprovider_provenance.sql", "blob": "4a2adec6b7d952086df6a40a33b632a8341ed877" }
+      ],
+      "tests": ["packages/postgres-runtime/src/follow-through-source-ports.test.ts", "db/verify/019_shadow_preprovider_provenance.sql"],
+      "target": "exact source-event consumption for one reviewed claim/commitment and append-only pre-egress provenance",
+      "caution": "migration 019 is shadow-only and not a business action authorization or drop-in app migration"
+    },
+    {
+      "id": "webhook-guard",
+      "rank": 6,
+      "mode": "small-snippet-port-integration-rewrite",
+      "status": "unported",
+      "source": "command_centre",
+      "branch": "origin/claude/context-project-review-0x0i6g",
+      "commit": "d288e75c14dce50150f9787149a79e5fe4bd271c",
+      "files": [
+        { "path": "lib/secure-compare.ts", "blob": "400a54426eb1dde2fe8a9f96fca1b8f4235bd463" },
+        { "path": "app/api/integrations/webhooks/[provider]/route.ts", "blob": "421fbaa5e168d140c6384044fddd62a6769860e0" }
+      ],
+      "tests": [],
+      "target": "fail-closed provider webhook authentication and event replay guard",
+      "caution": "branch WhatsApp signature verifier still permits missing app secret; hardening head is behind main"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+# Source-backed campaign answers — v7
+
+Saved released browser calls with an exact campaign run, customer association and reviewed offering can now populate their run snapshot’s `explicitIntentV1.reviewColumns`. Conversations presents an explicit **Extract answers with AI** action and a progressive per-field review table. Offering results shows current reviewed typed rows, caller quotes, conversation links, and a read-only CSV export. These answers do not establish campaign success, verified identity, consent, or completed work.
+
+## Contract
+
+- `GET /api/campaign-results?sessionId=...` returns `{result, canReview, columns}`. Members can read; viewers cannot extract or review.
+- `POST /api/campaign-results` accepts `{sessionId}` and returns `{result}`. The server chooses the stable extraction ID from tenant, saved session digest, run/customer/offering binding, schema, reviewed campaign basis, exact release and version. UI refreshes and repeated requests reuse it.
+- The same endpoint accepts `{action:"revalidate",id,revision}` to recheck the retained model reply locally. **Recheck saved reply · no AI call** runs the current validator with source/membership/revision fences, preserves the exact original reply and receipt, and leaves every operator-reviewed field unchanged. It never invokes an inference provider.
+- `PATCH /api/campaign-results` accepts `{id, revision, reviews:[{key,status,value?,quote?,turnIndex?}]}`. Status is `accepted`, `unknown` or `rejected`. Accepted values must use the planned JSON type and exact caller support; the server locates offsets and copies receipt timestamps. Unknown/rejected fields cannot retain an accepted value.
+- `GET /api/campaign-results?offeringId=...&format=csv` exports current reviewed answers across all dates. The UI explicitly labels this scope. CSV is quoted, escaped and formula-safe, and preserves boolean `false`.
+
+`CampaignResult` in `lib/campaign-results/contracts.ts` stores every planned field, original model text, source anchors, receipt and independent operator review. `campaign:result` records never replace the original payload. A single `campaign:answer_row` is maintained per tenant/session/run/contact/offering. Field review and row materialization occur in one database transaction with a revision compare-and-set and audit event.
+
+## Guardrails
+
+The existing `runAiTask` extraction role uses Azure and its durable metering/idempotency ledger. No provider fallback or automatic expensive retry is added. The complete serialized transcript plus schema must fit the existing 12,000-character input cap; oversized conversations are rejected before inference rather than dropping potentially contrary turns. The existing 1,600 output-token extraction budget applies.
+
+Extraction and review bind the exact saved caller source, campaign/run audience, offering, current approved company sources, optional applied plan, release and agent version. Session, run, campaign, contact, offering/source/plan, release/version and membership fences commit atomically. A changed or revoked basis blocks application. Current offering insights and exports omit stale rows. Failed or stale extractions retain any returned raw reply and receipt without publishing reviewed answers.
+
+Only saved `user` turns are source evidence. Exact excerpts cannot strip preceding negation, trailing uncertainty or retractions. Text values may be complete verbatim clauses within a longer exact supporting quote; they cannot be paraphrases, noun fragments that omit the predicate, or clauses cropped to remove qualifications. A literal suggestion such as “a timeline would improve it” remains a suggestion, not proof of an improvement already delivered. Unrelated sentences do not poison text fields, but relevant later negation and retractions still block cropped answers. The full original supporting quote and model payload are retained. Scalar fields retain their complete-turn certainty checks: numbers must be explicit unscaled numbers; enums must match a single allowed option; dates require a literal valid ISO calendar date with no invented timezone.
+
+Boolean predicates require first-person, clause-local evidence; unrelated negation cannot flip the answer. Scalars require a bounded literal relationship to the complete field name, such as “My budget is 2500” or “Preferred channel: Email”. An isolated number, date or enum is insufficient. A bare typed answer or yes/no can be bound only to the immediately preceding single, affirmative question naming that field and addressing the caller. The assistant question supplies field context, never a customer fact. Other people's values, hypothetical statements, negative boolean labels and ambiguous meanings remain unknown. These conservative literal rules do not perform general semantic understanding or synonym resolution.
+
+Supported caller answers for booleans, numbers, dates and enums are cross-checked across all turns and scalar clauses even if the model omits contrary evidence. The same contradiction checks protect review and export of previously stored rows. Conflicting answers cannot be accepted; an operator marks them unknown or rejected and clarifies with the caller. Consent and verified identity columns remain unknown and use dedicated workflows.
+
+Operators may correct unsupported model proposals using an exact caller excerpt and valid typed value; an existing supported contrary value cannot be overwritten. The original proposal and source remain visible. Review status, source quote, original model payload and browser receipt timestamps are distinct. Selected contact context remains a workspace association, not verified caller identity.
+
+## Worker seam and boundaries
+
+`CampaignResultEnqueuer` defines an optional `{organizationId,sessionId,requestedBy}` job interface. This slice does not mutate session-save code or enable background inference. A future authorized worker can call the same stable extractor after retaining caller authorization. Manual extraction and review are the implemented path.
+
+Verification uses fictional fixtures and injected provider results only. The campaign-results tests cover typed values and missing fields, false booleans, contradictions, assistant and clipped-negation evidence, unsafe dates/enums/numeric scaling, malformed and adversarial model JSON, HTTP authentication/origin, viewer isolation, revoked membership during inference, source and schema changes, source changes during inference, bounded inputs, atomic typed rows and CSV formula escaping. No live paid inference, whole-platform build, browser visual check, physical device or deployment result is claimed by this slice.

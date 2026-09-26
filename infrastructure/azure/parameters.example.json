@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentId": { "value": "REPLACE_WITH_EXISTING_CONTAINER_APPS_ENVIRONMENT_ID" },
+    "identityId": { "value": "REPLACE_WITH_EXISTING_USER_ASSIGNED_IDENTITY_ID" },
+    "appName": { "value": "REPLACE_WITH_APPLICATION_NAME" },
+    "webImage": { "value": "REPLACE_WITH_REGISTRY/WEB_IMAGE@sha256:DIGEST" },
+    "registryServer": { "value": "REPLACE_WITH_EXISTING_REGISTRY.azurecr.io" },
+    "appUrl": { "value": "https://REPLACE_WITH_FINAL_ORIGIN" },
+    "databaseSecretUri": { "value": "https://REPLACE_WITH_EXISTING_VAULT.vault.azure.net/secrets/database-url" },
+    "connectorKeySecretUri": { "value": "https://REPLACE_WITH_EXISTING_VAULT.vault.azure.net/secrets/connector-key" },
+    "authLifecycleKeySecretUri": { "value": "https://REPLACE_WITH_EXISTING_VAULT.vault.azure.net/secrets/auth-lifecycle-key" },
+    "requireEmailVerification": { "value": true },
+    "accountEmailEnabled": { "value": false },
+    "azureEnabled": { "value": false },
+    "enableWorker": { "value": false },
+    "enableChannelWorker": { "value": false },
+    "enableLearningWorker": { "value": false },
+    "enableVoiceGateway": { "value": false }
+  }
+}

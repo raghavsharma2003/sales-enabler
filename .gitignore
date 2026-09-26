@@ -1,0 +1,17 @@
+node_modules/
+.next/
+.env*
+!.env.example
+*.tsbuildinfo
+.data/
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+coverage/
+test-results/
+.impeccable/review/
+backups/
+dist/
+infrastructure/azure/*.local.*
+infrastructure/azure/*.parameters.json

@@ -1,0 +1,65 @@
+export type SourceKind = 'upload' | 'paste' | 'webhook';
+export type SourceFormat = 'txt' | 'md' | 'csv' | 'json' | 'html' | 'eml' | 'pdf' | 'docx';
+export type CandidateType = 'offer' | 'company_fact' | 'faq' | 'contact' | 'feedback' | 'action';
+export type CandidateStatus = 'pending' | 'applied' | 'rejected' | 'review_only' | 'linked_customer';
+
+export type SourceBlock = { id: string; start: number; end: number; text: string };
+export type IngestionSource = {
+  id: string;
+  title: string;
+  kind: SourceKind;
+  format: SourceFormat;
+  filename?: string;
+  digest: string;
+  rawText: string;
+  rawBase64?: string;
+  text: string;
+  blocks: SourceBlock[];
+  truncated: boolean;
+  omittedChars: number;
+  createdBy: string;
+  createdAt: string;
+  status: 'ready';
+};
+export type SourceRef = { blockId: string; start: number; end: number };
+export type IngestionCandidate = {
+  id: string;
+  type: CandidateType;
+  title: string;
+  content: string;
+  quote: string;
+  sourceRef: SourceRef;
+  confidence: 'high' | 'medium' | 'low';
+  uncertainty: string;
+  issues: string[];
+  status: CandidateStatus;
+  appliedKnowledgeId?: string;
+  linkedContactId?: string;
+  modelType?: CandidateType;
+  modelQuote?: string;
+  typeReviews?: Array<{ from: CandidateType; to: CandidateType; reason: string; reviewedBy: string; reviewedAt: string }>;
+};
+export type IngestionJob = {
+  id: string;
+  sourceId: string;
+  requestId: string;
+  status: 'running' | 'completed' | 'failed';
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+export type IngestionProposal = {
+  id: string;
+  sourceId: string;
+  sourceDigest: string;
+  jobId: string;
+  revision: number;
+  status: 'pending' | 'partially_applied' | 'completed' | 'rejected';
+  candidates: IngestionCandidate[];
+  analyzedChunks: number;
+  totalChunks: number;
+  omittedChars: number;
+  notes: string[];
+  createdAt: string;
+  updatedAt: string;
+};

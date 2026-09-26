@@ -1,0 +1,1574 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-27",
+  "nodes": [
+    {
+      "id": "product.general",
+      "type": "requirement",
+      "title": "General company operations platform",
+      "status": "confirmed",
+      "source": "user"
+    },
+    {
+      "id": "product.voice",
+      "type": "requirement",
+      "title": "Natural relational voice is the primary experience",
+      "status": "confirmed",
+      "source": "user"
+    },
+    {
+      "id": "customer.study-abroad",
+      "type": "evidence",
+      "title": "Accessible initial buyer: Indian study-abroad consultancy",
+      "status": "user-reported",
+      "source": "user"
+    },
+    {
+      "id": "decision.providers",
+      "type": "decision",
+      "title": "Interchangeable adapters; existing Azure grant is the selected paid route",
+      "status": "confirmed",
+      "source": "user"
+    },
+    {
+      "id": "decision.telephony",
+      "type": "decision",
+      "title": "Browser calls first, telephone integration later",
+      "status": "confirmed",
+      "source": "user"
+    },
+    {
+      "id": "evidence.repositories",
+      "type": "evidence",
+      "title": "55 source branches statically audited",
+      "status": "verified-static",
+      "path": "research/branch-inventory.json"
+    },
+    {
+      "id": "evidence.market",
+      "type": "evidence",
+      "title": "Market and positioning research",
+      "status": "researched",
+      "path": "research/market-evidence.md"
+    },
+    {
+      "id": "component.workspace",
+      "type": "component",
+      "title": "Operator workspace and CRM",
+      "status": "implemented-local"
+    },
+    {
+      "id": "component.brain",
+      "type": "component",
+      "title": "Tenant-scoped company knowledge",
+      "status": "implemented-local"
+    },
+    {
+      "id": "component.memory",
+      "type": "component",
+      "title": "Reviewed source-backed relationship memory",
+      "status": "implemented-local"
+    },
+    {
+      "id": "component.voice",
+      "type": "component",
+      "title": "Provider-neutral browser voice",
+      "status": "azure-and-maya-browser-listen-typed-bounded-quality-review-open"
+    },
+    {
+      "id": "component.actions",
+      "type": "component",
+      "title": "Human-reviewed follow-through",
+      "status": "implemented-local"
+    },
+    {
+      "id": "component.auth",
+      "type": "component",
+      "title": "Tenant-scoped authentication and persistence",
+      "status": "implemented-local"
+    },
+    {
+      "id": "risk.superiority",
+      "type": "risk",
+      "title": "Competitor superiority has not been demonstrated",
+      "status": "open"
+    },
+    {
+      "id": "open.credentials",
+      "type": "open-question",
+      "title": "Azure voice credentials configured; later production services remain open",
+      "status": "voice-resolved-production-open"
+    },
+    {
+      "id": "experiment.voice",
+      "type": "experiment",
+      "title": "Measure latency, interruptions, memory and task accuracy",
+      "status": "planned"
+    },
+    {
+      "id": "decision.prototype-first",
+      "type": "decision",
+      "title": "Align product through a sample-data prototype before resuming production",
+      "status": "superseded-by-implementation-authorization",
+      "source": "user"
+    },
+    {
+      "id": "component.prototype",
+      "type": "component",
+      "title": "Eight-surface company/campaign concept with connected sales and feedback journeys",
+      "status": "user-rejected-as-incomplete-product-design",
+      "path": "docs/product-walkthrough.md"
+    },
+    {
+      "id": "evidence.reuse-map",
+      "type": "evidence",
+      "title": "Maya/Meera identity and branch-specific reuse provenance",
+      "status": "verified-static",
+      "path": "docs/reuse-provenance.md"
+    },
+    {
+      "id": "requirement.feedback-campaigns",
+      "type": "requirement",
+      "title": "Customer service feedback is a complete campaign through interview, analysis, team improvement and follow-up",
+      "status": "confirmed",
+      "source": "user clarification 2026-09-21"
+    },
+    {
+      "id": "decision.dictation-correction",
+      "type": "decision",
+      "title": "Policies was a dictation error, not a policy-management requirement",
+      "status": "confirmed",
+      "source": "user"
+    },
+    {
+      "id": "design.company-flow-v2",
+      "type": "component",
+      "title": "Broader company-to-campaign product flow proposal",
+      "status": "proposed",
+      "path": "docs/product-flow-v2.md"
+    },
+    {
+      "id": "evidence.campaign-second-pass",
+      "type": "evidence",
+      "title": "CommandCentre main-tree product trace supplements all-branch audit",
+      "status": "static-audit",
+      "path": "research/command-centre-product-second-pass.md"
+    },
+    {
+      "id": "evidence.workflow-benchmarks",
+      "type": "evidence",
+      "title": "Primary-source competitor workflow benchmarks including feedback",
+      "status": "researched",
+      "path": "research/product-flow-benchmarks.md"
+    },
+    {
+      "id": "evidence.brand-check",
+      "type": "evidence",
+      "title": "Point-in-time domain availability and preliminary collision screen",
+      "status": "checked-not-reserved",
+      "path": "research/name-domain-shortlist.md"
+    },
+    {
+      "id": "evidence.html-runtime-trace",
+      "type": "evidence",
+      "title": "Refreshed all-31-head capability coverage and caller-to-playback trace",
+      "status": "static-audit-not-live-evaluation",
+      "path": "research/html-second-pass.md"
+    },
+    {
+      "id": "evidence.provider-reuse-map",
+      "type": "evidence",
+      "title": "Provider routing and relational voice code traced across source lineages",
+      "status": "static-audit-not-live-evaluation",
+      "path": "docs/provider-reuse-map.md"
+    },
+    {
+      "id": "constraint.azure-only-paid",
+      "type": "requirement",
+      "title": "Paid model calls use only the supplied Azure FoundersHub resource and grant",
+      "status": "confirmed",
+      "source": "user correction 2026-09-22"
+    },
+    {
+      "id": "requirement.voice-platform-reset",
+      "type": "requirement",
+      "title": "Deep competitor-led redesign as Indian-business voice platform with builder and operator workflows",
+      "status": "confirmed",
+      "source": "user 2026-09-22"
+    },
+    {
+      "id": "decision.groupai-meaning",
+      "type": "decision",
+      "title": "GroupID refers to existing GroupAI mechanism, not a new identifier or cohort model",
+      "status": "confirmed",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "evidence.voice-products-deep",
+      "type": "evidence",
+      "title": "Nine parallel product, India, source-mechanism and evaluation research tracks",
+      "status": "public-docs-and-targeted-static-source-review",
+      "path": "research/2026-09-22/README.md"
+    },
+    {
+      "id": "design.voice-platform-blueprint",
+      "type": "component",
+      "title": "Agent lifecycle, customer voice surface, GroupAI and business operations blueprint",
+      "status": "implementation-authorized-partially-built",
+      "path": "docs/voice-platform-blueprint.md"
+    },
+    {
+      "id": "decision.build-authorized",
+      "type": "decision",
+      "title": "User resumes real implementation of the full tool",
+      "status": "confirmed",
+      "source": "user"
+    },
+    {
+      "id": "component.platform-lifecycle",
+      "type": "component",
+      "title": "Persisted agent versions, checks and release authority",
+      "status": "implemented-offline-tested",
+      "path": "lib/platform/agents.ts"
+    },
+    {
+      "id": "component.platform-campaigns",
+      "type": "component",
+      "title": "Consent-checked immutable campaign runs and evidence outcomes",
+      "status": "implemented-offline-tested",
+      "path": "lib/platform/campaigns.ts"
+    },
+    {
+      "id": "component.platform-groupai",
+      "type": "component",
+      "title": "Audience-aware GroupAI worlds, rooms and revocable evidence capsules",
+      "status": "implemented-subset",
+      "path": "lib/platform/groups.ts"
+    },
+    {
+      "id": "component.platform-customer-ops",
+      "type": "component",
+      "title": "Customer consent, governed knowledge, commitments and notification evidence",
+      "status": "implemented-offline-tested",
+      "path": "lib/platform/customer-ops.ts"
+    },
+    {
+      "id": "evidence.platform-verification",
+      "type": "evidence",
+      "title": "Prior 39-test platform and browser operating-flow verification",
+      "status": "verified-local",
+      "path": "docs/implementation-status.md"
+    },
+    {
+      "id": "component.business-relational-compiler",
+      "type": "component",
+      "title": "Approved preferences and open commitments compose cited business voice context",
+      "status": "integrated-live-and-server-saved-bounded-state",
+      "path": "lib/voice/relationship.ts"
+    },
+    {
+      "id": "component.voice-workbench",
+      "type": "component",
+      "title": "Prompt, opening message and unsaved draft browser call workbench",
+      "status": "implemented-browser-verified",
+      "source": "components/platform/agents-view.tsx; components/voice-studio.tsx"
+    },
+    {
+      "id": "component.emotional-call-guidance",
+      "type": "component",
+      "title": "Caller-worded cues, bounded pacing and repair with reviewed relational provenance",
+      "status": "integrated-live-and-offline-tested",
+      "source": "lib/voice/emotional.ts; lib/voice/relationship.ts; docs/relationship-runtime-v2.md"
+    },
+    {
+      "id": "evidence.azure-speech-smoke",
+      "type": "evidence",
+      "title": "Existing Azure deployment returned one real synthetic Hinglish spoken response",
+      "status": "verified-server-websocket-only",
+      "source": ".impeccable/review/azure-voice-smoke.json"
+    },
+    {
+      "id": "component.voice-preview-authority",
+      "type": "component",
+      "title": "Server-issued preview snapshot and separate draft transcript provenance",
+      "status": "implemented-and-offline-tested",
+      "source": "lib/voice/context.ts; app/api/voice/connect/route.ts; tests/voice-preview.test.ts"
+    },
+    {
+      "id": "evidence.azure-browser-voice",
+      "type": "evidence",
+      "title": "Azure WebRTC audio with typed replies, exact greeting, Hinglish response and saved draft transcript",
+      "status": "verified-bounded-not-microphone-or-quality-benchmark",
+      "path": "docs/calling-workbench.md"
+    },
+    {
+      "id": "evidence.calling-product-update",
+      "type": "evidence",
+      "title": "Vapi, ElevenLabs, Bolna, Dialflo, Alchemic, Fish and LiveKit calling-product patterns",
+      "status": "public-primary-source-research",
+      "path": "research/2026-09-22/calling-product-update.md"
+    },
+    {
+      "id": "evidence.calling-workbench-checks",
+      "type": "evidence",
+      "title": "Previous bounded 105-test, build, server-start and responsive snapshot",
+      "status": "historical-superseded-by-platform-v6-verification",
+      "path": "docs/implementation-status.md"
+    },
+    {
+      "id": "evidence.maya-gemini-live-synthetic",
+      "type": "evidence",
+      "title": "Pinned Maya Gemini Despina Live and TTS synthetic evidence",
+      "status": "verified-server-synthetic-and-browser-listen-typed",
+      "path": "docs/maya-port.md"
+    },
+    {
+      "id": "component.relational-runtime-port",
+      "type": "component",
+      "title": "Source-derived relational runtime with repair hysteresis, language, honorific and pacing",
+      "status": "integrated-live-server-saved",
+      "path": "docs/relational-source-port.md"
+    },
+    {
+      "id": "evidence.groupai-room-browser",
+      "type": "evidence",
+      "title": "GroupAI room text turn with real Azure reply and permitted fictional memory",
+      "status": "verified-browser-internal-simulation-no-external-delivery",
+      "path": "docs/groupai-source-port.md"
+    },
+    {
+      "id": "evidence.command-group-ports-v4",
+      "type": "evidence",
+      "title": "Refreshed Command Centre and Vyakti GroupAI source-port audit",
+      "status": "verified-static-source-no-runtime-test",
+      "path": "research/2026-09-22/command-group-best-ports-v4.md"
+    },
+    {
+      "id": "component.azure-personal-voice",
+      "type": "component",
+      "title": "Azure Personal Voice consent, profile and preview API paths",
+      "status": "implemented-enrollment-unverified",
+      "path": "docs/voice-cloning-guide.md"
+    },
+    {
+      "id": "evidence.azure-personal-voice-access",
+      "type": "evidence",
+      "title": "East US 2 Personal Voice project/list access with catalog permission denial",
+      "status": "privately-verified-project-route-catalog-403",
+      "path": "docs/azure-speech-setup-status.md"
+    },
+    {
+      "id": "evidence.maya-browser-listen-typed",
+      "type": "evidence",
+      "title": "Maya Listen & type browser call with three typed Hinglish turns",
+      "status": "verified-bounded-92-second-seven-entry-fresh-quality-follow-up",
+      "path": "docs/calling-workbench.md"
+    },
+    {
+      "id": "evidence.relational-browser-state",
+      "type": "evidence",
+      "title": "Browser and saved preview confirm repair hysteresis and four recomputed state changes",
+      "status": "verified-open-repairing-repaired-hinglish",
+      "path": "docs/relational-source-port.md"
+    },
+    {
+      "id": "component.company-operating-flow",
+      "type": "component",
+      "title": "Connected company setup, brain, campaigns and learning flow",
+      "status": "browser-verified-local-bounded-visual-pass",
+      "path": "components/company-operating-flow.tsx"
+    },
+    {
+      "id": "component.source-ingestion-review",
+      "type": "component",
+      "title": "Bounded PDF/DOCX/CSV/text ingestion with exact-quote atomic review",
+      "status": "browser-verified-local-review-authority",
+      "path": "docs/ingestion-source-port.md"
+    },
+    {
+      "id": "component.brain-grounded-recall",
+      "type": "component",
+      "title": "RRF-grounded company Q&A with exact citation validation",
+      "status": "browser-verified-citations-and-cache-replay",
+      "path": "docs/brain-recall-source-port.md"
+    },
+    {
+      "id": "component.ai-campaign-planning",
+      "type": "component",
+      "title": "AI campaign plans and applied voice briefs bound to campaign calls",
+      "status": "browser-verified-plan-recovery-and-apply",
+      "path": "docs/product-operating-flow-v4.md"
+    },
+    {
+      "id": "component.learning-followthrough",
+      "type": "component",
+      "title": "Reviewed conversation learning, memories, follow-ups and commitments",
+      "status": "browser-verified-audited-operator-review",
+      "path": "docs/learning-source-port.md"
+    },
+    {
+      "id": "component.integrations-workbench",
+      "type": "component",
+      "title": "Encrypted connector vault with 18 available adapters and telephone only planned",
+      "status": "implemented-local-18-available-telephone-only-planned",
+      "path": "docs/integration-setup.md"
+    },
+    {
+      "id": "component.oauth-connector-vault",
+      "type": "component",
+      "title": "Google and Microsoft OAuth callback, refresh and scoped connection paths",
+      "status": "implemented-local-auth-version-stable-client-app-config-required",
+      "path": "docs/oauth-setup.md"
+    },
+    {
+      "id": "component.email-delivery",
+      "type": "component",
+      "title": "Explicit per-recipient email delivery with durable accepted/uncertain state",
+      "status": "implemented-local-external-send-unverified",
+      "path": "docs/campaign-delivery-port.md"
+    },
+    {
+      "id": "component.evidence-lab",
+      "type": "component",
+      "title": "Text evidence judgments, human ratings and labeled competitor imports",
+      "status": "verified-text-review-no-human-listening-or-competitor-trial",
+      "path": "docs/voice-evidence-lab.md"
+    },
+    {
+      "id": "evidence.azure-task-routing",
+      "type": "evidence",
+      "title": "Metered idempotent Azure task roles with current gpt-4.1-mini fallback",
+      "status": "verified-6576-text-tokens-no-pricing-configured",
+      "path": "docs/foundry-routing.md"
+    },
+    {
+      "id": "open.oauth-app-configuration",
+      "type": "open-question",
+      "title": "User Google/Microsoft OAuth client application IDs and secrets",
+      "status": "required-for-real-account-connections"
+    },
+    {
+      "id": "open.production-database-choice",
+      "type": "open-question",
+      "title": "Production database selection after verified local SQLite",
+      "status": "open-postgres-unexercised"
+    },
+    {
+      "id": "evidence.major-pass-verification",
+      "type": "evidence",
+      "title": "Historical v4 major implementation tests and bounded browser verification",
+      "status": "historical-196-tests-build-typecheck-bounded-visual-pass",
+      "path": "docs/implementation-status.md"
+    },
+    {
+      "id": "evidence.product-research-v4",
+      "type": "evidence",
+      "title": "v4 company brain, omnichannel and competitive workflow research",
+      "status": "public-docs-static-source-review-no-superiority-proof",
+      "path": "docs/product-operating-flow-v4.md"
+    },
+    {
+      "id": "evidence.company-flow-browser",
+      "type": "evidence",
+      "title": "Local company flow browser verification from messy notes to campaign outcome",
+      "status": "verified-fictional-workspace-bounded-visual-pass",
+      "path": "docs/implementation-status.md"
+    },
+    {
+      "id": "evidence.learning-privacy-browser",
+      "type": "evidence",
+      "title": "Audited learning correction, customer-boundary PII guard and epoch CAS checks",
+      "status": "verified-review-required-no-consent-granted",
+      "path": "docs/learning-source-port.md"
+    },
+    {
+      "id": "evidence.integration-guards-browser",
+      "type": "evidence",
+      "title": "OAuth authorization-version, durable delivery and signed webhook guards",
+      "status": "verified-local-no-external-account-or-send",
+      "path": "docs/integration-setup.md"
+    },
+    {
+      "id": "evidence.text-usage-ledger",
+      "type": "evidence",
+      "title": "Metered text ledger with seven completed requests and 6576 tokens",
+      "status": "verified-local-no-pricing-or-billing-claim",
+      "path": "docs/foundry-routing.md"
+    },
+    {
+      "id": "evidence.operating-flow-visual-review",
+      "type": "evidence",
+      "title": "Bounded desktop and 390px mobile operating-flow visual review",
+      "status": "reviewer-confirmed-bounded-pass-no-whole-product-ship",
+      "path": "docs/operating-flow-verification-v4.md"
+    },
+    {
+      "id": "requirement.company-data-to-reviewed-decisions-v6",
+      "type": "requirement",
+      "title": "Connect or manually dump company material, then structure it with explainable uncertainty and review",
+      "status": "confirmed-building",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "requirement.identity-and-column-review-v6",
+      "type": "requirement",
+      "title": "Review identity matches and the columns a campaign will collect before launch",
+      "status": "confirmed-building",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "requirement.explicit-offering-outcome-audience-v6",
+      "type": "requirement",
+      "title": "Every campaign names its product or service, outcome, audience and evidence basis explicitly",
+      "status": "confirmed-building",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "requirement.relational-personalized-voice-v6",
+      "type": "requirement",
+      "title": "Personalized relational and emotionally responsive AI voice remains central, with explicit AI identity",
+      "status": "confirmed-building",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "requirement.pause-stop-failure-control-v6",
+      "type": "requirement",
+      "title": "Pause, stop, retry and failure states preserve uncertainty and operator authority",
+      "status": "confirmed-building",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "requirement.analytics-reviewed-learning-v6",
+      "type": "requirement",
+      "title": "Product and customer analytics feed source-backed reviewed learning, agent revision, person-wise comparison and later A/B testing",
+      "status": "confirmed-building",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "constraint.no-ai-identity-deception-v6",
+      "type": "requirement",
+      "title": "Exact-human ambition is bounded by AI disclosure and evidence; no identity deception or superiority claim",
+      "status": "confirmed",
+      "source": "user clarification 2026-09-22"
+    },
+    {
+      "id": "component.business-context-v6",
+      "type": "component",
+      "title": "Reviewed offerings, business signals, founder clarifications and Brain UI",
+      "status": "implemented-verified-bounded-local",
+      "path": "docs/business-context-v6.md"
+    },
+    {
+      "id": "component.campaign-intent-v6",
+      "type": "component",
+      "title": "Offering-aware explicit campaign intent and review columns",
+      "status": "implemented-verified-bounded-local",
+      "path": "docs/product-operating-model-v6.md"
+    },
+    {
+      "id": "component.agent-revision-v6",
+      "type": "component",
+      "title": "Plain-English allowlisted agent change proposal and apply-once draft revision",
+      "status": "implemented-verified-bounded-local",
+      "path": "docs/agent-revision-v6.md"
+    },
+    {
+      "id": "component.in-call-tools-v5",
+      "type": "component",
+      "title": "Scoped in-call company recall, customer context and reviewed follow-up proposals",
+      "status": "implemented-live-listen-typed-bounded-local-evidence",
+      "path": "docs/voice-actions-v5.md"
+    },
+    {
+      "id": "component.team-access-v5",
+      "type": "component",
+      "title": "Owner, operator and viewer roles with invitation and membership controls",
+      "status": "implemented-offline-tested-local-join-revoke",
+      "path": "docs/team-access-v5.md"
+    },
+    {
+      "id": "component.whatsapp-inbox-v5",
+      "type": "component",
+      "title": "Native WhatsApp inbox, signed webhook and operator reply path",
+      "status": "implemented-offline-tested-external-delivery-unverified",
+      "path": "docs/whatsapp-inbox-v5.md"
+    },
+    {
+      "id": "component.email-worker-v5",
+      "type": "component",
+      "title": "Durable scheduled email worker with per-recipient outcome uncertainty",
+      "status": "implemented-local-heartbeat-no-enabled-schedules-hosted-unverified",
+      "path": "docs/automation-v5.md"
+    },
+    {
+      "id": "evidence.v6-research-synthesis",
+      "type": "evidence",
+      "title": "v6 company-data, campaign and signal-reuse research synthesis",
+      "status": "researched-public-first-party-static-review-no-runtime-claim",
+      "path": "research/2026-09-22/README.md"
+    },
+    {
+      "id": "evidence.v5-interim-verification",
+      "type": "evidence",
+      "title": "Historical interim v5/v6 test run before final root verification",
+      "status": "superseded-by-313-test-local-verification",
+      "path": "docs/implementation-status.md"
+    },
+    {
+      "id": "risk.auth-egress-race-v5",
+      "type": "risk",
+      "title": "Persisted membership, consent and final egress authority races require guarded-before-egress fixes",
+      "status": "resolved-in-local-adversarial-suite-production-ops-open",
+      "path": "docs/v5-execution-review.md"
+    },
+    {
+      "id": "component.campaign-brief-v6",
+      "type": "component",
+      "title": "AI campaign brief with editable fields and receipt replay",
+      "status": "verified-bounded-local-no-plan-or-external-action",
+      "path": "docs/platform-v6-verification.md"
+    },
+    {
+      "id": "component.offering-insights-v6",
+      "type": "component",
+      "title": "Offering-linked plan, campaign, run, recipient and reviewed-quote insights",
+      "status": "verified-bounded-local",
+      "path": "docs/platform-v6-verification.md"
+    },
+    {
+      "id": "component.negation-followup-guard-v6",
+      "type": "component",
+      "title": "Deterministic refusal and negation guard for follow-up proposals",
+      "status": "implemented-verified-bounded-local",
+      "path": "docs/platform-v6-verification.md"
+    },
+    {
+      "id": "component.worker-heartbeat-v5",
+      "type": "component",
+      "title": "Global worker heartbeat and empty-schedule readiness state",
+      "status": "verified-local-no-enabled-schedules",
+      "path": "docs/platform-v6-verification.md"
+    },
+    {
+      "id": "evidence.platform-v6-verification",
+      "type": "evidence",
+      "title": "Bounded v5/v6 fictional workflow, test and runtime verification",
+      "status": "verified-313-tests-build-typecheck-nine-adversarial-visual-scoped",
+      "path": "docs/platform-v6-verification.md"
+    },
+    {
+      "id": "evidence.platform-v6-visual-review",
+      "type": "evidence",
+      "title": "Scoped independent desktop and 390px mobile visual review after four fixes",
+      "status": "verified-local-no-console-errors-no-overflow",
+      "path": "docs/platform-v6-ui-review.md"
+    },
+    {
+      "id": "product.general-indian-org-layer-v7",
+      "type": "requirement",
+      "title": "Sellable general Indian-organization AI application layer",
+      "status": "confirmed",
+      "source": "user 2026-09-27"
+    },
+    {
+      "id": "requirement.company-brand-auth-v7",
+      "type": "requirement",
+      "title": "Company branding and accountable team authentication",
+      "status": "confirmed",
+      "source": "user 2026-09-27"
+    },
+    {
+      "id": "requirement.public-channel-deployment-v7",
+      "type": "requirement",
+      "title": "Bounded web, voice, Telegram and WhatsApp agent deployment",
+      "status": "confirmed",
+      "source": "user 2026-09-27"
+    },
+    {
+      "id": "requirement.ingestion-mapping-v7",
+      "type": "requirement",
+      "title": "Manual or connected data ingestion with reviewed identity and column mapping",
+      "status": "confirmed",
+      "source": "user 2026-09-27"
+    },
+    {
+      "id": "requirement.provenance-relational-learning-v7",
+      "type": "requirement",
+      "title": "Relational and emotional learning remains bounded, source-backed and reviewable",
+      "status": "confirmed",
+      "source": "user 2026-09-27"
+    },
+    {
+      "id": "requirement.thoughtful-ai-ux-v7",
+      "type": "requirement",
+      "title": "Thoughtful review-first AI UX makes uncertainty, provenance and control visible",
+      "status": "confirmed",
+      "source": "user 2026-09-27"
+    },
+    {
+      "id": "constraint.azure-grant-only-public-v7",
+      "type": "decision",
+      "title": "Existing Azure grant is the only approved paid and new public inference route",
+      "status": "confirmed",
+      "source": "user 2026-09-27"
+    },
+    {
+      "id": "component.company-settings-auth-v7",
+      "type": "component",
+      "title": "Owner-fenced company branding and account recovery/verification contracts",
+      "status": "implemented-local-integration-open",
+      "path": "docs/company-settings-v7.md"
+    },
+    {
+      "id": "component.data-intake-v7",
+      "type": "component",
+      "title": "Reviewed CSV/JSON identity and result-column intake",
+      "status": "implemented-local-integration-open",
+      "path": "docs/data-intake-v7.md"
+    },
+    {
+      "id": "component.public-deployments-v7",
+      "type": "component",
+      "title": "Immutable public deployment registry with bounded anonymous sessions",
+      "status": "implemented-local-live-host-open",
+      "path": "docs/agent-deployments-v7.md"
+    },
+    {
+      "id": "component.private-channel-agents-v7",
+      "type": "component",
+      "title": "Private Telegram and WhatsApp agent authority and worker contracts",
+      "status": "implemented-local-external-delivery-open",
+      "path": "docs/channel-agents-v7.md"
+    },
+    {
+      "id": "component.campaign-results-v7",
+      "type": "component",
+      "title": "Typed source-backed campaign result review and export",
+      "status": "implemented-local-population-open",
+      "path": "docs/campaign-results-v7.md"
+    },
+    {
+      "id": "component.deployment-packaging-v7",
+      "type": "component",
+      "title": "Docker, readiness, backup and Azure Container Apps preparation artifacts",
+      "status": "implemented-preparation-azure-unverified",
+      "path": "docs/deployment-v7.md"
+    },
+    {
+      "id": "component.autolearning-v7",
+      "type": "component",
+      "title": "Opt-in AutoLearning with feedback-only public/unverified routing and reviewed private paths",
+      "status": "implemented-local-default-off-no-backfill",
+      "path": "docs/learning-automation-v7.md"
+    },
+    {
+      "id": "evidence.feedback-research-2026-09-27",
+      "type": "evidence",
+      "title": "First-party customer-feedback workflow research and fictional Indian service-company fixture",
+      "status": "researched-static-no-runtime-claim",
+      "path": "research/2026-09-27/feedback-product-cases.md"
+    },
+    {
+      "id": "evidence.voice-frontier-2026-09-27",
+      "type": "evidence",
+      "title": "First-party voice frontier, Azure-only decision boundary and measurement gate",
+      "status": "researched-static-provider-quality-open",
+      "path": "research/2026-09-27/voice-frontier-and-adoption.md"
+    },
+    {
+      "id": "evidence.source-delta-2026-09-27",
+      "type": "evidence",
+      "title": "Read-only source refresh found 55 heads with zero new or moved branch tips",
+      "status": "verified-static-zero-delta",
+      "path": "research/2026-09-27/source-delta-and-adoption.md"
+    },
+    {
+      "id": "evidence.v7-integration-status",
+      "type": "evidence",
+      "title": "v7 implementation inventory with local proof and hosted gates open",
+      "status": "bounded-local-verified-526-scoped-visual-ship-hosted-gates-open",
+      "path": "docs/project-handoff-v7.md"
+    },
+    {
+      "id": "evidence.v7-integrated-checkpoint-472",
+      "type": "evidence",
+      "title": "First v7 integrated checkpoint",
+      "status": "historical-superseded-by-514-checkpoint",
+      "path": "docs/project-handoff-v7.md"
+    },
+    {
+      "id": "evidence.v7-verification-514",
+      "type": "evidence",
+      "title": "v7 local integrated tests, packaged build, readiness and bounded browser proof",
+      "status": "historical-superseded-by-526-checkpoint",
+      "path": "docs/platform-v7-verification.md"
+    },
+    {
+      "id": "evidence.v7-verification-526",
+      "type": "evidence",
+      "title": "v7 bounded local technical test/build/runtime and browser verification",
+      "status": "bounded-local-verified-526-scoped-visual-ship-real-voice-quality-open",
+      "path": "docs/platform-v7-verification.md"
+    },
+    {
+      "id": "evidence.v7-visual-review",
+      "type": "evidence",
+      "title": "Scoped v7 visual fix review and 18 valid recaptures",
+      "status": "ship-scoped-fixes-captures-final-review-complete",
+      "path": "docs/platform-v7-ui-review.md"
+    },
+    {
+      "id": "evidence.v7-sqlite-backup-restore",
+      "type": "evidence",
+      "title": "Local SQLite online backup and restore to new private directories",
+      "status": "verified-local-no-host-deployment",
+      "path": "docs/deployment-v7.md"
+    },
+    {
+      "id": "risk.v7-standalone-tracing-private-db-copy",
+      "type": "risk",
+      "title": "Initial standalone build tracing copied a private local database",
+      "status": "fix-in-progress-auth-guard-exclude-package-check"
+    },
+    {
+      "id": "open.v7-final-build-proof",
+      "type": "open-question",
+      "title": "Final build after tracing and package-check corrections",
+      "status": "closed-by-526-packaged-build-check"
+    },
+    {
+      "id": "risk.v7-voice-truncate-after-heard",
+      "type": "risk",
+      "title": "Browser sequencing can still send truncate after audio is fully heard",
+      "status": "closed-by-offline-adversarial-and-refreshed-browser-call"
+    },
+    {
+      "id": "evidence.v7-interruption-review",
+      "type": "evidence",
+      "title": "Independent interruption review and corrected synthetic speech smoke",
+      "status": "9-of-9-own-and-35-of-35-focused-pass-mic-device-open",
+      "path": "docs/platform-v7-verification.md"
+    },
+    {
+      "id": "open.v7-voice-protocol-review",
+      "type": "open-question",
+      "title": "Real microphone, barge-in, device and perceptual voice evaluation",
+      "status": "open-after-implementation-browser-gate"
+    },
+    {
+      "id": "open.v7-visual-verdict",
+      "type": "open-question",
+      "title": "Root visual verdict after corrected mobile captures",
+      "status": "closed-by-scoped-ship-review"
+    },
+    {
+      "id": "open.v7-management-and-hosting-gates",
+      "type": "open-question",
+      "title": "Azure management access, hosting/domain, database and external integration setup",
+      "status": "awaiting-root-inspection"
+    },
+    {
+      "id": "open.v7-dictated-product-name",
+      "type": "open-question",
+      "title": "Dall-E/Dalio feedback-product identity needs user URL or logo",
+      "status": "unconfirmed"
+    }
+  ],
+  "edges": [
+    {
+      "from": "product.general",
+      "to": "customer.study-abroad",
+      "relation": "validated-first-with"
+    },
+    {
+      "from": "product.general",
+      "to": "product.voice",
+      "relation": "prioritizes"
+    },
+    {
+      "from": "component.voice",
+      "to": "decision.providers",
+      "relation": "constrained-by"
+    },
+    {
+      "from": "component.voice",
+      "to": "decision.telephony",
+      "relation": "constrained-by"
+    },
+    {
+      "from": "component.voice",
+      "to": "component.brain",
+      "relation": "uses"
+    },
+    {
+      "from": "component.voice",
+      "to": "component.memory",
+      "relation": "uses"
+    },
+    {
+      "from": "component.voice",
+      "to": "component.actions",
+      "relation": "proposes"
+    },
+    {
+      "from": "component.workspace",
+      "to": "component.actions",
+      "relation": "reviews"
+    },
+    {
+      "from": "component.memory",
+      "to": "component.auth",
+      "relation": "depends-on"
+    },
+    {
+      "from": "component.brain",
+      "to": "component.auth",
+      "relation": "depends-on"
+    },
+    {
+      "from": "component.voice",
+      "to": "open.credentials",
+      "relation": "live-validation-blocked-by"
+    },
+    {
+      "from": "experiment.voice",
+      "to": "risk.superiority",
+      "relation": "tests"
+    },
+    {
+      "from": "product.general",
+      "to": "evidence.repositories",
+      "relation": "informed-by"
+    },
+    {
+      "from": "product.general",
+      "to": "evidence.market",
+      "relation": "informed-by"
+    },
+    {
+      "from": "component.prototype",
+      "to": "decision.prototype-first",
+      "relation": "implements"
+    },
+    {
+      "from": "component.workspace",
+      "to": "decision.prototype-first",
+      "relation": "expansion-paused-by"
+    },
+    {
+      "from": "component.prototype",
+      "to": "evidence.reuse-map",
+      "relation": "product-informed-by"
+    },
+    {
+      "from": "design.company-flow-v2",
+      "to": "requirement.feedback-campaigns",
+      "relation": "includes"
+    },
+    {
+      "from": "design.company-flow-v2",
+      "to": "evidence.campaign-second-pass",
+      "relation": "informed-by"
+    },
+    {
+      "from": "design.company-flow-v2",
+      "to": "evidence.workflow-benchmarks",
+      "relation": "informed-by"
+    },
+    {
+      "from": "design.company-flow-v2",
+      "to": "decision.prototype-first",
+      "relation": "constrained-by"
+    },
+    {
+      "from": "design.company-flow-v2",
+      "to": "evidence.html-runtime-trace",
+      "relation": "informed-by"
+    },
+    {
+      "from": "component.prototype",
+      "to": "design.company-flow-v2",
+      "relation": "demonstrates-selected-flows"
+    },
+    {
+      "from": "design.voice-platform-blueprint",
+      "to": "requirement.voice-platform-reset",
+      "relation": "responds-to"
+    },
+    {
+      "from": "design.voice-platform-blueprint",
+      "to": "decision.groupai-meaning",
+      "relation": "constrained-by"
+    },
+    {
+      "from": "design.voice-platform-blueprint",
+      "to": "evidence.voice-products-deep",
+      "relation": "informed-by"
+    },
+    {
+      "from": "design.voice-platform-blueprint",
+      "to": "decision.prototype-first",
+      "relation": "production-paused-until-alignment"
+    },
+    {
+      "from": "decision.build-authorized",
+      "to": "decision.prototype-first",
+      "relation": "supersedes"
+    },
+    {
+      "from": "decision.build-authorized",
+      "to": "design.voice-platform-blueprint",
+      "relation": "authorizes-implementation-of"
+    },
+    {
+      "from": "component.platform-lifecycle",
+      "to": "decision.build-authorized",
+      "relation": "implements"
+    },
+    {
+      "from": "component.platform-campaigns",
+      "to": "decision.build-authorized",
+      "relation": "implements"
+    },
+    {
+      "from": "component.platform-groupai",
+      "to": "decision.build-authorized",
+      "relation": "implements"
+    },
+    {
+      "from": "component.platform-customer-ops",
+      "to": "decision.build-authorized",
+      "relation": "implements"
+    },
+    {
+      "from": "evidence.platform-verification",
+      "to": "component.platform-lifecycle",
+      "relation": "tests"
+    },
+    {
+      "from": "evidence.platform-verification",
+      "to": "component.platform-campaigns",
+      "relation": "tests"
+    },
+    {
+      "from": "evidence.platform-verification",
+      "to": "component.platform-groupai",
+      "relation": "tests"
+    },
+    {
+      "from": "component.business-relational-compiler",
+      "to": "product.voice",
+      "relation": "supports"
+    },
+    {
+      "from": "evidence.provider-reuse-map",
+      "to": "decision.providers",
+      "relation": "informed-by"
+    },
+    {
+      "from": "decision.providers",
+      "to": "constraint.azure-only-paid",
+      "relation": "constrained-by"
+    },
+    {
+      "from": "component.voice-workbench",
+      "to": "product.voice",
+      "relation": "implements"
+    },
+    {
+      "from": "component.emotional-call-guidance",
+      "to": "component.voice-workbench",
+      "relation": "supports"
+    },
+    {
+      "from": "evidence.azure-speech-smoke",
+      "to": "component.voice-workbench",
+      "relation": "partially-verifies"
+    },
+    {
+      "from": "component.voice-preview-authority",
+      "to": "component.voice-workbench",
+      "relation": "constrains"
+    },
+    {
+      "from": "evidence.azure-browser-voice",
+      "to": "component.voice-workbench",
+      "relation": "partially-verifies"
+    },
+    {
+      "from": "evidence.calling-product-update",
+      "to": "component.voice-workbench",
+      "relation": "informs"
+    },
+    {
+      "from": "evidence.calling-workbench-checks",
+      "to": "component.voice-workbench",
+      "relation": "tests"
+    },
+    {
+      "from": "evidence.maya-gemini-live-synthetic",
+      "to": "component.voice-workbench",
+      "relation": "partially-verifies"
+    },
+    {
+      "from": "component.relational-runtime-port",
+      "to": "component.voice-workbench",
+      "relation": "supports"
+    },
+    {
+      "from": "evidence.groupai-room-browser",
+      "to": "component.platform-groupai",
+      "relation": "partially-verifies"
+    },
+    {
+      "from": "component.azure-personal-voice",
+      "to": "decision.providers",
+      "relation": "constrained-by"
+    },
+    {
+      "from": "evidence.azure-personal-voice-access",
+      "to": "component.azure-personal-voice",
+      "relation": "partially-verifies"
+    },
+    {
+      "from": "evidence.maya-browser-listen-typed",
+      "to": "component.voice-workbench",
+      "relation": "partially-verifies"
+    },
+    {
+      "from": "evidence.relational-browser-state",
+      "to": "component.relational-runtime-port",
+      "relation": "tests"
+    },
+    {
+      "from": "evidence.command-group-ports-v4",
+      "to": "evidence.repositories",
+      "relation": "refines"
+    },
+    {
+      "from": "component.company-operating-flow",
+      "to": "product.general",
+      "relation": "implements"
+    },
+    {
+      "from": "component.source-ingestion-review",
+      "to": "component.brain",
+      "relation": "feeds"
+    },
+    {
+      "from": "component.brain-grounded-recall",
+      "to": "component.brain",
+      "relation": "implements"
+    },
+    {
+      "from": "component.ai-campaign-planning",
+      "to": "component.platform-campaigns",
+      "relation": "supports"
+    },
+    {
+      "from": "component.learning-followthrough",
+      "to": "component.memory",
+      "relation": "extends"
+    },
+    {
+      "from": "component.integrations-workbench",
+      "to": "component.workspace",
+      "relation": "implements"
+    },
+    {
+      "from": "component.oauth-connector-vault",
+      "to": "component.integrations-workbench",
+      "relation": "supports"
+    },
+    {
+      "from": "component.email-delivery",
+      "to": "component.platform-campaigns",
+      "relation": "supports"
+    },
+    {
+      "from": "component.evidence-lab",
+      "to": "experiment.voice",
+      "relation": "measures"
+    },
+    {
+      "from": "evidence.azure-task-routing",
+      "to": "constraint.azure-only-paid",
+      "relation": "satisfies"
+    },
+    {
+      "from": "open.oauth-app-configuration",
+      "to": "component.oauth-connector-vault",
+      "relation": "blocks-real-account-use"
+    },
+    {
+      "from": "open.production-database-choice",
+      "to": "component.auth",
+      "relation": "limits-production"
+    },
+    {
+      "from": "evidence.major-pass-verification",
+      "to": "component.company-operating-flow",
+      "relation": "verifies-after-root-pass"
+    },
+    {
+      "from": "evidence.product-research-v4",
+      "to": "component.company-operating-flow",
+      "relation": "informs"
+    },
+    {
+      "from": "evidence.company-flow-browser",
+      "to": "component.company-operating-flow",
+      "relation": "verifies"
+    },
+    {
+      "from": "evidence.learning-privacy-browser",
+      "to": "component.learning-followthrough",
+      "relation": "verifies"
+    },
+    {
+      "from": "evidence.integration-guards-browser",
+      "to": "component.integrations-workbench",
+      "relation": "verifies"
+    },
+    {
+      "from": "evidence.text-usage-ledger",
+      "to": "evidence.azure-task-routing",
+      "relation": "measures"
+    },
+    {
+      "from": "evidence.operating-flow-visual-review",
+      "to": "component.company-operating-flow",
+      "relation": "verifies-bounded-ui"
+    },
+    {
+      "from": "requirement.company-data-to-reviewed-decisions-v6",
+      "to": "component.business-context-v6",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.identity-and-column-review-v6",
+      "to": "component.business-context-v6",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.explicit-offering-outcome-audience-v6",
+      "to": "component.campaign-intent-v6",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.relational-personalized-voice-v6",
+      "to": "component.voice-workbench",
+      "relation": "guides"
+    },
+    {
+      "from": "requirement.pause-stop-failure-control-v6",
+      "to": "component.email-worker-v5",
+      "relation": "constrains"
+    },
+    {
+      "from": "requirement.analytics-reviewed-learning-v6",
+      "to": "component.agent-revision-v6",
+      "relation": "requires"
+    },
+    {
+      "from": "constraint.no-ai-identity-deception-v6",
+      "to": "component.voice-workbench",
+      "relation": "constrains"
+    },
+    {
+      "from": "component.business-context-v6",
+      "to": "component.brain",
+      "relation": "extends"
+    },
+    {
+      "from": "component.campaign-intent-v6",
+      "to": "component.platform-campaigns",
+      "relation": "extends"
+    },
+    {
+      "from": "component.agent-revision-v6",
+      "to": "component.platform-lifecycle",
+      "relation": "extends"
+    },
+    {
+      "from": "component.in-call-tools-v5",
+      "to": "component.voice-workbench",
+      "relation": "supports"
+    },
+    {
+      "from": "component.team-access-v5",
+      "to": "component.auth",
+      "relation": "extends"
+    },
+    {
+      "from": "component.whatsapp-inbox-v5",
+      "to": "component.integrations-workbench",
+      "relation": "extends"
+    },
+    {
+      "from": "component.email-worker-v5",
+      "to": "component.email-delivery",
+      "relation": "extends"
+    },
+    {
+      "from": "evidence.v6-research-synthesis",
+      "to": "component.business-context-v6",
+      "relation": "informs"
+    },
+    {
+      "from": "evidence.v6-research-synthesis",
+      "to": "component.campaign-intent-v6",
+      "relation": "informs"
+    },
+    {
+      "from": "evidence.v5-interim-verification",
+      "to": "component.business-context-v6",
+      "relation": "partially-verifies"
+    },
+    {
+      "from": "risk.auth-egress-race-v5",
+      "to": "component.team-access-v5",
+      "relation": "constrains-production"
+    },
+    {
+      "from": "risk.auth-egress-race-v5",
+      "to": "component.whatsapp-inbox-v5",
+      "relation": "constrains-production"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.business-context-v6",
+      "relation": "verifies-bounded-local"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.campaign-intent-v6",
+      "relation": "verifies-bounded-local"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.agent-revision-v6",
+      "relation": "verifies-bounded-local"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.in-call-tools-v5",
+      "relation": "verifies-bounded-local"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.negation-followup-guard-v6",
+      "relation": "verifies"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.worker-heartbeat-v5",
+      "relation": "verifies"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.campaign-brief-v6",
+      "relation": "verifies"
+    },
+    {
+      "from": "evidence.platform-v6-verification",
+      "to": "component.offering-insights-v6",
+      "relation": "verifies"
+    },
+    {
+      "from": "evidence.platform-v6-visual-review",
+      "to": "component.company-operating-flow",
+      "relation": "verifies-bounded-ui"
+    },
+    {
+      "from": "risk.auth-egress-race-v5",
+      "to": "evidence.platform-v6-verification",
+      "relation": "closed-by"
+    },
+    {
+      "from": "product.general-indian-org-layer-v7",
+      "to": "product.general",
+      "relation": "extends"
+    },
+    {
+      "from": "product.general-indian-org-layer-v7",
+      "to": "component.company-settings-auth-v7",
+      "relation": "requires"
+    },
+    {
+      "from": "product.general-indian-org-layer-v7",
+      "to": "component.data-intake-v7",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.company-brand-auth-v7",
+      "to": "component.company-settings-auth-v7",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.public-channel-deployment-v7",
+      "to": "component.public-deployments-v7",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.public-channel-deployment-v7",
+      "to": "component.private-channel-agents-v7",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.ingestion-mapping-v7",
+      "to": "component.data-intake-v7",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.provenance-relational-learning-v7",
+      "to": "component.relational-runtime-port",
+      "relation": "constrains"
+    },
+    {
+      "from": "requirement.provenance-relational-learning-v7",
+      "to": "component.campaign-results-v7",
+      "relation": "requires"
+    },
+    {
+      "from": "requirement.thoughtful-ai-ux-v7",
+      "to": "component.company-settings-auth-v7",
+      "relation": "constrains"
+    },
+    {
+      "from": "requirement.thoughtful-ai-ux-v7",
+      "to": "component.public-deployments-v7",
+      "relation": "constrains"
+    },
+    {
+      "from": "constraint.azure-grant-only-public-v7",
+      "to": "component.public-deployments-v7",
+      "relation": "constrains"
+    },
+    {
+      "from": "constraint.azure-grant-only-public-v7",
+      "to": "component.voice-workbench",
+      "relation": "constrains"
+    },
+    {
+      "from": "evidence.feedback-research-2026-09-27",
+      "to": "requirement.ingestion-mapping-v7",
+      "relation": "informs"
+    },
+    {
+      "from": "evidence.feedback-research-2026-09-27",
+      "to": "requirement.provenance-relational-learning-v7",
+      "relation": "informs"
+    },
+    {
+      "from": "evidence.voice-frontier-2026-09-27",
+      "to": "constraint.azure-grant-only-public-v7",
+      "relation": "supports"
+    },
+    {
+      "from": "evidence.voice-frontier-2026-09-27",
+      "to": "experiment.voice",
+      "relation": "refines-measurement"
+    },
+    {
+      "from": "evidence.source-delta-2026-09-27",
+      "to": "evidence.reuse-map",
+      "relation": "refreshes"
+    },
+    {
+      "from": "evidence.v7-integration-status",
+      "to": "component.public-deployments-v7",
+      "relation": "documents-pending-verification"
+    },
+    {
+      "from": "evidence.v7-integration-status",
+      "to": "component.deployment-packaging-v7",
+      "relation": "documents-pending-verification"
+    },
+    {
+      "from": "open.v7-management-and-hosting-gates",
+      "to": "component.deployment-packaging-v7",
+      "relation": "blocks-production"
+    },
+    {
+      "from": "open.v7-dictated-product-name",
+      "to": "evidence.feedback-research-2026-09-27",
+      "relation": "resolved-by-user-clarification"
+    },
+    {
+      "from": "evidence.v7-integrated-checkpoint-472",
+      "to": "evidence.v7-integration-status",
+      "relation": "updates"
+    },
+    {
+      "from": "evidence.v7-integrated-checkpoint-472",
+      "to": "open.v7-final-build-proof",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "evidence.v7-verification-514",
+      "to": "evidence.v7-integrated-checkpoint-472",
+      "relation": "supersedes"
+    },
+    {
+      "from": "evidence.v7-verification-526",
+      "to": "evidence.v7-verification-514",
+      "relation": "supersedes"
+    },
+    {
+      "from": "evidence.v7-interruption-review",
+      "to": "evidence.v7-verification-526",
+      "relation": "supports"
+    },
+    {
+      "from": "evidence.v7-visual-review",
+      "to": "evidence.v7-verification-526",
+      "relation": "supports-scoped"
+    },
+    {
+      "from": "evidence.v7-interruption-review",
+      "to": "risk.v7-voice-truncate-after-heard",
+      "relation": "supports-closed-implementation-gate"
+    },
+    {
+      "from": "evidence.v7-verification-514",
+      "to": "open.v7-voice-protocol-review",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "evidence.v7-verification-526",
+      "to": "open.v7-voice-protocol-review",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "evidence.v7-verification-526",
+      "to": "open.v7-visual-verdict",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "risk.v7-voice-truncate-after-heard",
+      "to": "open.v7-voice-protocol-review",
+      "relation": "informs-residual-evaluation"
+    },
+    {
+      "from": "evidence.v7-sqlite-backup-restore",
+      "to": "component.deployment-packaging-v7",
+      "relation": "verifies-local-recovery"
+    },
+    {
+      "from": "risk.v7-standalone-tracing-private-db-copy",
+      "to": "open.v7-final-build-proof",
+      "relation": "blocks"
+    },
+    {
+      "from": "component.autolearning-v7",
+      "to": "requirement.provenance-relational-learning-v7",
+      "relation": "implements-bounded"
+    },
+    {
+      "from": "component.autolearning-v7",
+      "to": "constraint.azure-grant-only-public-v7",
+      "relation": "constrained-by"
+    }
+  ]
+}

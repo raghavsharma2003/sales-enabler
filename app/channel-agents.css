@@ -1,0 +1,25 @@
+.channel-panel { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--pc-line, #e5e7ed); }
+.channel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.channel-heading h2, .channel-heading h3, .channel-empty h3 { margin: 0 0 5px; }
+.channel-heading p { margin: 0; }
+.channel-layout { display: grid; grid-template-columns: minmax(210px, 270px) minmax(0, 1fr); border: 1px solid var(--pc-line, #e5e7ed); border-radius: 9px; overflow: hidden; }
+.channel-list { border-right: 1px solid var(--pc-line, #e5e7ed); max-height: 650px; overflow-y: auto; }
+.channel-thread { display: grid; gap: 5px; width: 100%; background: white; border: 0; border-bottom: 1px solid #e5e7ed; text-align: left; padding: 15px; cursor: pointer; color: #242634; font: inherit; }
+.channel-thread:hover { background: #f4f4fa; }
+.channel-thread.selected { background: #efedff; }
+.channel-thread time, .channel-thread span, .channel-turn time { font-size: 12px; color: #626779; }
+.channel-thread:focus-visible, .channel-panel button:focus-visible { outline: 2px solid #5148ce; outline-offset: -3px; }
+.channel-detail { min-width: 0; padding: 20px; }
+.channel-transcript { max-height: 510px; overflow-y: auto; scrollbar-color: #b6b2d2 #f4f4fa; }
+.channel-turn { padding: 12px 0 18px; border-bottom: 1px solid #e5e7ed; margin-bottom: 12px; }
+.channel-turn p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 7px 0; max-width: 75ch; }
+.channel-answer { background: #f4f4fa; padding: 12px; margin-top: 14px; border-radius: 6px; }
+.channel-turn footer { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-size: 12px; color: #626779; }
+.channel-empty { display: flex; gap: 15px; padding: 25px 0; max-width: 650px; }
+.channel-empty svg { flex-shrink: 0; margin-top: 3px; color: #626779; }
+.channel-empty p { margin: 8px 0; }
+.channel-error { color: #9b3547; background: #fff3f4; padding: 12px; border-radius: 6px; }
+.channel-notice { color: #246448; background: #e9f6ef; padding: 12px; border-radius: 6px; }
+.channel-select { padding: 20px 0; }
+.channel-panel ::selection { background: #dedaff; color: #242634; }
+@media (max-width: 700px) { .channel-layout { grid-template-columns: minmax(0, 1fr); } .channel-list { max-height: 220px; border-right: 0; border-bottom: 1px solid #e5e7ed; } .channel-heading { align-items: flex-start; flex-wrap: wrap; } .channel-detail { padding: 14px; } }

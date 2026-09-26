@@ -1,0 +1,128 @@
+{
+  "checkedAt": "2026-09-21T13:05:46.6951078Z",
+  "provider": "mcp__vercel__get_domain_availability",
+  "teamId": null,
+  "scope": "Registrar availability lookup; no team ID supplied",
+  "purchaseOrReservationPerformed": false,
+  "availabilitySemantics": "A point-in-time registrar lookup. Availability is not trademark clearance and can change at any time.",
+  "shortlist": [
+    {
+      "name": "Relomera",
+      "domain": "relomera.ai",
+      "available": true,
+      "pairedCom": { "domain": "relomera.com", "available": false },
+      "recommendation": "strongest exploratory candidate",
+      "rationale": "Invented and relationship-forward while broad enough for company operations, sales, voice, campaigns and follow-through.",
+      "clearanceScreen": "No obvious exact company/product surfaced in the quick exact-name web screen; trademark and social checks remain open.",
+      "price": {
+        "requestedYears": "1",
+        "status": "lookup_error",
+        "rawResponse": "[invalid_union on purchasePrice, renewalPrice and transferPrice because each value was null]"
+      }
+    },
+    {
+      "name": "CompanyChord",
+      "domain": "companychord.com",
+      "available": true,
+      "pairedAi": { "domain": "companychord.ai", "available": true },
+      "recommendation": "usable with moderate distinctiveness caution",
+      "rationale": "Makes the product promise legible: people, context, conversations and work in one operating rhythm.",
+      "clearanceScreen": "No exact CompanyChord company surfaced; Chord Company (audio) and Chord Event create shared-word collision risk.",
+      "price": {
+        "requestedYears": "1",
+        "status": "returned",
+        "purchasePrice": 11.25,
+        "renewalPrice": 11.25,
+        "transferPrice": 11.25,
+        "currency": "USD",
+        "rawResponse": { "result": { "years": 1, "purchasePrice": 11.25, "renewalPrice": 11.25, "transferPrice": 11.25 } }
+      }
+    },
+    {
+      "name": "Converlane",
+      "domain": "converlane.ai",
+      "available": true,
+      "pairedCom": { "domain": "converlane.com", "available": false },
+      "recommendation": "clearance required",
+      "rationale": "Suggests convergence across company functions and conversations.",
+      "clearanceScreen": "Exact term appears in a historical textile-trading archive as a telegraph/code name; no current SaaS result surfaced.",
+      "price": { "requestedYears": "1", "status": "lookup_error", "rawResponse": "[invalid_union on purchasePrice, renewalPrice and transferPrice because each value was null]" }
+    },
+    {
+      "name": "Relatide",
+      "domain": "relatide.ai",
+      "available": true,
+      "pairedCom": { "domain": "relatide.com", "available": false },
+      "recommendation": "exclude",
+      "rationale": "Relationship-led naming with direct product relevance.",
+      "clearanceScreen": "Current UQ accelerator profile identifies Relatide as an AI-agent startup with phone-first, CRM-connected outreach and lists relatide.com.",
+      "price": { "requestedYears": "1", "status": "lookup_error", "rawResponse": "[invalid_union on purchasePrice, renewalPrice and transferPrice because each value was null]" }
+    },
+    {
+      "name": "Threadstead",
+      "domain": "threadstead.ai",
+      "available": true,
+      "pairedCom": { "domain": "threadstead.com", "available": false },
+      "recommendation": "exclude",
+      "rationale": "Evokes relationship threads and continuity.",
+      "clearanceScreen": "Active social community, home-repair service and Warwick Fabrics collection already use the exact name.",
+      "price": { "requestedYears": "1", "status": "lookup_error", "rawResponse": "[invalid_union on purchasePrice, renewalPrice and transferPrice because each value was null]" }
+    },
+    {
+      "name": "Relavio",
+      "domain": "relavio.ai",
+      "available": true,
+      "pairedCom": { "domain": "relavio.com", "available": false },
+      "recommendation": "exclude",
+      "rationale": "Short invented name with relational tone.",
+      "clearanceScreen": "Live Relavio Agent product serves creators/agencies with AI Telegram/chat management.",
+      "price": { "requestedYears": "1", "status": "lookup_error", "rawResponse": "[invalid_union on purchasePrice, renewalPrice and transferPrice because each value was null]" }
+    }
+  ],
+  "additionalChecks": [
+    { "domain": "kinweave.com", "available": false },
+    { "domain": "kinweave.ai", "available": false },
+    { "domain": "operivo.ai", "available": true, "decision": "exclude: active Operivo CMMS consultancy and operivo.co.uk SaaS" },
+    { "domain": "nexrelia.ai", "available": true, "decision": "exclude: active NexRelia relationship-analysis app" },
+    { "domain": "alignory.ai", "available": true, "decision": "exclude: active Alignory operations consultancy" }
+  ],
+  "rawAvailability": [
+    { "domain": "converlane.com", "response": { "result": { "available": false } } },
+    { "domain": "converlane.ai", "response": { "result": { "available": true } } },
+    { "domain": "relomera.com", "response": { "result": { "available": false } } },
+    { "domain": "relomera.ai", "response": { "result": { "available": true } } },
+    { "domain": "relatide.com", "response": { "result": { "available": false } } },
+    { "domain": "relatide.ai", "response": { "result": { "available": true } } },
+    { "domain": "kinweave.com", "response": { "result": { "available": false } } },
+    { "domain": "kinweave.ai", "response": { "result": { "available": false } } },
+    { "domain": "companychord.com", "response": { "result": { "available": true } } },
+    { "domain": "companychord.ai", "response": { "result": { "available": true } } },
+    { "domain": "threadstead.com", "response": { "result": { "available": false } } },
+    { "domain": "threadstead.ai", "response": { "result": { "available": true } } },
+    { "domain": "operivo.com", "response": { "result": { "available": false } } },
+    { "domain": "operivo.ai", "response": { "result": { "available": true } } },
+    { "domain": "relavio.com", "response": { "result": { "available": false } } },
+    { "domain": "relavio.ai", "response": { "result": { "available": true } } },
+    { "domain": "nexrelia.com", "response": { "result": { "available": false } } },
+    { "domain": "nexrelia.ai", "response": { "result": { "available": true } } },
+    { "domain": "alignory.com", "response": { "result": { "available": false } } },
+    { "domain": "alignory.ai", "response": { "result": { "available": true } } }
+  ],
+  "webSources": {
+    "relatide": "https://cdnc.heyzine.com/files/uploaded/v3/7494e1bdd56df6ebc9261c3e6c850412692005a1.pdf#page=33",
+    "threadsteadCommunity": "https://homepageagain.com/help/guidelines",
+    "threadsteadServices": "https://www.threadsteadservices.com/",
+    "threadsteadFabrics": "https://www.warwick.co.uk/the-collections/threadstead",
+    "operivo": "https://operivo.com/",
+    "operivoSaaS": "https://operivo.co.uk/",
+    "nexrelia": "https://apps.apple.com/tr/app/nexrelia/id6763945921",
+    "alignory": "https://alignoryhq.com/",
+    "converlaneArchive": "https://archivitessili.promemoriagroup.com/backend/media/archivitessili/images/3/0/3/96506_ca_object_representations_media_30316_original.pdf",
+    "relavioAgent": "https://relavioagent.com/"
+  },
+  "notes": [
+    "No domain purchase or reservation was attempted.",
+    "The quick exact-name web screen is not a trademark, company registry, social handle or legal clearance search.",
+    "Implementation should retain provisional Relay naming until the user selects a final brand."
+  ]
+}

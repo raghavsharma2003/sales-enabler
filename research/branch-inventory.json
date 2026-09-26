@@ -1,0 +1,354 @@
+{
+  "snapshot_date": "2026-09-21",
+  "method": "Local full clones; all named origin remote-tracking refs, excluding symbolic HEAD. Tracked path counts include assets and generated files; they are not code-review coverage.",
+  "repositories": [
+    {
+      "repository": "raghavsharma2003/command_centre",
+      "branch_count": 21,
+      "branches": [
+        {
+          "branch": "claude/carbonsettle-business-strategy-tcflss",
+          "commit": "91c0f8ada1c4d0f29148da882710f90014d813e4",
+          "tracked_paths": 755,
+          "tree": "d4a22d02c35ac835df7b02a41a73b3f88c6e8a4e"
+        },
+        {
+          "branch": "claude/carbonsettle-precursor-emissions-5miavb",
+          "commit": "20f8ede64b256acba2a78cafd0eaea9a1735ec00",
+          "tracked_paths": 794,
+          "tree": "a7e696d77262433649c99be83bf292dead604134"
+        },
+        {
+          "branch": "claude/cargo-center-demo-fno48u",
+          "commit": "96be39f302eda5aef1af3faff8ddb8027f6afe2c",
+          "tracked_paths": 832,
+          "tree": "50c88b3ae0bd2f7896b4023a1ffa8743b7db362f"
+        },
+        {
+          "branch": "claude/client-acquisition-channels-120u56",
+          "commit": "707a441642ce63178ce85773cf5a984b3412fe22",
+          "tracked_paths": 864,
+          "tree": "6f3f854b335447257dc47b03e5b5f62aecf85e04"
+        },
+        {
+          "branch": "claude/client-proposal-writeup-udtw8f",
+          "commit": "a73efac505bf96dea5abb70012a7f7bc20ec49d8",
+          "tracked_paths": 835,
+          "tree": "5e86d63b0d9766b5d4290fa218fae6b0e16b29d3"
+        },
+        {
+          "branch": "claude/context-project-review-0x0i6g",
+          "commit": "d288e75c14dce50150f9787149a79e5fe4bd271c",
+          "tracked_paths": 743,
+          "tree": "ca60918d069977282fa52d8531965203c40ad593"
+        },
+        {
+          "branch": "claude/data-hunt-lane-a-kwc0g7",
+          "commit": "ea9cb66cfafbccf9de77ca3a0e3b27b931f2a141",
+          "tracked_paths": 824,
+          "tree": "a476675f965a7c2f5f1e07fc76176290f9a53ea3"
+        },
+        {
+          "branch": "claude/email-replies-smtp-2wpifv",
+          "commit": "c3e7029f5ba29c32ce61e19e95d40de99513098b",
+          "tracked_paths": 756,
+          "tree": "7d5b6a9b69e0551c9eac5192cafb276fb16c980a"
+        },
+        {
+          "branch": "claude/knl-deal-negotiation-tr6zdw",
+          "commit": "05ca8db19bfaf147a0e16e6ebd7565bafc2fec35",
+          "tracked_paths": 859,
+          "tree": "bccf8e6de3c2b7fa618b105b488553293ce50901"
+        },
+        {
+          "branch": "claude/mobile-apps-ios-android-4r54ys",
+          "commit": "f93fba25719a3e95464dda93284d46ffef0b4e52",
+          "tracked_paths": 568,
+          "tree": "9868eafbea3f1c922b69818b047bc5d701832f2c"
+        },
+        {
+          "branch": "claude/send-the-4-qro398",
+          "commit": "c31432de8435492ab0f9152c6c0bd2340fd0c6a0",
+          "tracked_paths": 756,
+          "tree": "53b3b0eec18468bd0f6411ca8bedcdcb3eba0ba4"
+        },
+        {
+          "branch": "claude/startup-context-handoff-m9ubqv",
+          "commit": "9ff588027e14cbda341b71c9887631d2aaabcfbf",
+          "tracked_paths": 833,
+          "tree": "d8c7203258361a202357b1608dd11d95c7d91fca"
+        },
+        {
+          "branch": "claude/supabase-mcp-permissions-v1px7r",
+          "commit": "c90226c593da9cbb02a44e7dd4b465dfdb8eefe6",
+          "tracked_paths": 755,
+          "tree": "72e0e737e601fd9cf264e16e02c03a6b9e248424"
+        },
+        {
+          "branch": "claude/tarasha-partners-client-overview-babi7p",
+          "commit": "0a971d1d670ffc02d7219d42722d60675287df3e",
+          "tracked_paths": 756,
+          "tree": "af3db1eeef42dacf65ba26285ce193799e81ab3b"
+        },
+        {
+          "branch": "codex/fix-import-csv-errors-20260429",
+          "commit": "26edad5e8124e0a6f16787a403b90d2ef0b68523",
+          "tracked_paths": 224,
+          "tree": "c4fb76805f558d3232199aad32a14a137c7c7d2e"
+        },
+        {
+          "branch": "data-hunt/A-2026-07-31",
+          "commit": "ea9cb66cfafbccf9de77ca3a0e3b27b931f2a141",
+          "tracked_paths": 824,
+          "tree": "a476675f965a7c2f5f1e07fc76176290f9a53ea3"
+        },
+        {
+          "branch": "data-hunt/IT-2026-07-31",
+          "commit": "860f072da6a89fb358101c501cc9a1cb0add5c43",
+          "tracked_paths": 831,
+          "tree": "81f49483584516f948f0060808554c8dd7b3d142"
+        },
+        {
+          "branch": "data-hunt/SE-2026-07-31",
+          "commit": "a23a00e57a35576b0b272d617df50c21df16a192",
+          "tracked_paths": 841,
+          "tree": "4d9b05ac3a100c7bfe47665b2bb1b1b91748c834"
+        },
+        {
+          "branch": "fix/reports-summary-test-mock",
+          "commit": "08f9a83cdbf470ae97449cbf54aabf91d63f5701",
+          "tracked_paths": 795,
+          "tree": "33b63f9125433242617060887edd8eab88732604"
+        },
+        {
+          "branch": "fix/team-chat-reaction-mobile",
+          "commit": "9d9b7a5035d80d97ff2e20326da5a22287af8a12",
+          "tracked_paths": 568,
+          "tree": "9ae299f5567db8100b792df99af8c6e93bff2634"
+        },
+        {
+          "branch": "main",
+          "commit": "c8fd321407d7b628b7e79d105887b6a182760100",
+          "tracked_paths": 853,
+          "tree": "9fb2a2352a70328872979474dbb2fd1f4719d5da"
+        }
+      ]
+    },
+    {
+      "repository": "raghavsharma2003/html-portfolio",
+      "branch_count": 31,
+      "branches": [
+        {
+          "branch": "claude/ai-companion-app-rkt1lv",
+          "commit": "f4d3fe4e4f9ffc665c116ce022b3f63c8fefbd21",
+          "tracked_paths": 1128,
+          "tree": "889ec66e481926838856ee7b1f29ed5bfb764543"
+        },
+        {
+          "branch": "claude/gurukul-platform",
+          "commit": "771feef9c124184a56abaea662bc16a079069ee1",
+          "tracked_paths": 1786,
+          "tree": "5bba35a8b5dfad13e954787020f520542a96a088"
+        },
+        {
+          "branch": "claude/vyakti-cloning-platform-aq05n4",
+          "commit": "6d7d9bcd4f9c4c793e8db34b70ac03d874fe8d4a",
+          "tracked_paths": 3295,
+          "tree": "81ea9bbe76f2a77511a7009a90f5e94dd61d1158"
+        },
+        {
+          "branch": "codex/handoff-history-20260909",
+          "commit": "7a8ad90dd63fd30ea5a1a64bde4cf8dc016b3fb4",
+          "tracked_paths": 3180,
+          "tree": "249af0ec52734fb57b45643fb719452b745d513e"
+        },
+        {
+          "branch": "codex/handoff-processing204",
+          "commit": "e913ffcb0c86711fca7ed6c449d94266c63f1312",
+          "tracked_paths": 3114,
+          "tree": "bdcd1981f008735d3cb1f063e5f6ed7591ee778c"
+        },
+        {
+          "branch": "codex/handoff-voice-comparison106",
+          "commit": "0b47b2b892f60b3f45f5d56bd647d97e2308329d",
+          "tracked_paths": 3115,
+          "tree": "a3c566bdf7c70cf1c5337050afb9a282db268aa9"
+        },
+        {
+          "branch": "codex/handoff206",
+          "commit": "20263775f06d471f7d69a09d4b4aa711955ee952",
+          "tracked_paths": 3185,
+          "tree": "bc1020574ae8567d2be961c453f5c05c31886695"
+        },
+        {
+          "branch": "codex/private-voice-requests25",
+          "commit": "f02469564fb10a082bf34a94ff8619626f683879",
+          "tracked_paths": 3300,
+          "tree": "7096e392f40af37be5d80282db3d906a938cf8d1"
+        },
+        {
+          "branch": "codex/vyakti-completion",
+          "commit": "6260611ed29669e66f5bd936ba93aaa56025f81e",
+          "tracked_paths": 2189,
+          "tree": "28d842fd26ba627923f7046daefc9a4c149fdc7e"
+        },
+        {
+          "branch": "gurukul-ws-aa",
+          "commit": "03179bc6dac8698e2344151b66fe9532820da3e0",
+          "tracked_paths": 1559,
+          "tree": "7080ba09b9937f2f7dfa06eedea21f970267cbbb"
+        },
+        {
+          "branch": "gurukul-ws-ab",
+          "commit": "1a254d3dff3585ecc68b2e8bd67f6bfa7b38cd5f",
+          "tracked_paths": 1589,
+          "tree": "4b8bceca737984ca533f801a236293e85023c7db"
+        },
+        {
+          "branch": "gurukul-ws-ac",
+          "commit": "91bc4c78b45c0f73eb7db242bb40d7c5c38ad053",
+          "tracked_paths": 1599,
+          "tree": "36a68b53c19e4624b3829900eaace11b3ffa9211"
+        },
+        {
+          "branch": "gurukul-ws-ah",
+          "commit": "da5897a8ac883f03713c99175dc069866ffb722b",
+          "tracked_paths": 1610,
+          "tree": "c5faf451ee4eb7a6d35158973d3b1003e08d501f"
+        },
+        {
+          "branch": "gurukul-ws-ai",
+          "commit": "fcc2a38e46cc3fd4f9b1a1485f2881e7f51c232d",
+          "tracked_paths": 1625,
+          "tree": "7dc0512a7a0f902078903a7bacbc2e4384047f94"
+        },
+        {
+          "branch": "gurukul-ws-aj",
+          "commit": "98efb8deb873b6f91c89d3195ad114a089dead11",
+          "tracked_paths": 1626,
+          "tree": "3bdad370fe9e2612531fb3f188ebc9698c45f08b"
+        },
+        {
+          "branch": "gurukul-ws-ak",
+          "commit": "5fdeaa4dc553faf70ffd75da1e41084cf5622fd5",
+          "tracked_paths": 1627,
+          "tree": "2ecf346220848bb07e9cb17bdcfcc45c621dc48a"
+        },
+        {
+          "branch": "gurukul-ws-al",
+          "commit": "c28f0f31249d198af5f6ab64dd505ef21adce52e",
+          "tracked_paths": 1636,
+          "tree": "fb8b06a22b48332dc03b02a446f9a3b5f1ca0ef0"
+        },
+        {
+          "branch": "gurukul-ws-am",
+          "commit": "f3fceac28bd9f3cf650c32c492e26a27d622fbcc",
+          "tracked_paths": 1640,
+          "tree": "83c7d7578a5201050281ef56971f9a4f5134dc2a"
+        },
+        {
+          "branch": "gurukul-ws-an",
+          "commit": "a9149e82df9928ca986a4b761adfafd912e27e29",
+          "tracked_paths": 1639,
+          "tree": "abd5f3bd38d81c57ba66428c93155ae01dbf9043"
+        },
+        {
+          "branch": "gurukul-ws-ao",
+          "commit": "f444d3282c43a431a415677ddf90dc1f12c9ee3d",
+          "tracked_paths": 1642,
+          "tree": "12e3183e8fbd88a7a78f1cfbe67a7876bb7b0067"
+        },
+        {
+          "branch": "gurukul-ws-ap",
+          "commit": "32815cedcc1ec7d7774c5e7d24e44216dc85e6c2",
+          "tracked_paths": 1642,
+          "tree": "360d9778fc1c4702ab448ed9196fd8f1f4f7845a"
+        },
+        {
+          "branch": "gurukul-ws-aq",
+          "commit": "65f36fece24b8636ee9267e8a91d3cd6902523f8",
+          "tracked_paths": 1646,
+          "tree": "959459a6a15bf16dd9421064f97388ea0eb5ba53"
+        },
+        {
+          "branch": "gurukul-ws-ar",
+          "commit": "235c18553e7a41e40637753679acec2cee03273b",
+          "tracked_paths": 1643,
+          "tree": "934e7c13ef2f48d23e78dcd8b29ad0963d2999be"
+        },
+        {
+          "branch": "gurukul-ws-as",
+          "commit": "298c15992ee3ec50661daca1c76bd4dc66597bad",
+          "tracked_paths": 1648,
+          "tree": "d7ab112c16299f704d80e586bd43fc47257c49ba"
+        },
+        {
+          "branch": "gurukul-ws-v",
+          "commit": "68054494cc9ff02e1cf59d3e9da4c04e415f86cd",
+          "tracked_paths": 1552,
+          "tree": "767753491c637d5575267d8c58261e2c0b88db6f"
+        },
+        {
+          "branch": "gurukul-ws-w",
+          "commit": "4328281a6be941ac8dad6691d4242dd9ef50ea3e",
+          "tracked_paths": 1559,
+          "tree": "e50ac0059d1cae8b304b0f7611847d93111b8249"
+        },
+        {
+          "branch": "gurukul-ws-x",
+          "commit": "a35327ab9c7aa4e80f371e4d0156ea7b61cc76f3",
+          "tracked_paths": 1568,
+          "tree": "1913f12651b57f793ce812306aa2b6a9b97973bb"
+        },
+        {
+          "branch": "gurukul-ws-y",
+          "commit": "b9966ca2b76efc0f7dddd8bb275e24150566a6ea",
+          "tracked_paths": 1559,
+          "tree": "4b2a8dd40048af5ad9d734047c3c2c833d89b678"
+        },
+        {
+          "branch": "gurukul-ws-z",
+          "commit": "3a80f20e69cca6122a85f658a2ac79c6e50901b0",
+          "tracked_paths": 1555,
+          "tree": "c9c8bd835cc4a2457aa35eda3676f70da458f0bc"
+        },
+        {
+          "branch": "main",
+          "commit": "3a9217981b27636745fc70ac490aacf9ef3f392d",
+          "tracked_paths": 1102,
+          "tree": "007ad3dcc0de76b42589e42f42b315896762c232"
+        },
+        {
+          "branch": "voice-cloning",
+          "commit": "a7bdcaa4879698fab941d1ac19b0ca9a9099dc4c",
+          "tracked_paths": 1403,
+          "tree": "5c478ff902406b4494da33c113aa6cd7396a9efa"
+        }
+      ]
+    },
+    {
+      "repository": "raghavsharma2003/Vyakti-GroupAI",
+      "branch_count": 3,
+      "branches": [
+        {
+          "branch": "claude/vyakti-cloning-platform-aq05n4",
+          "commit": "451de5a6a7017dc76eaac69fe551203dc94753d2",
+          "tracked_paths": 601,
+          "tree": "4e1babeecd537442eb362a0bb667816b4461d824"
+        },
+        {
+          "branch": "codex/relational-core",
+          "commit": "4bae159631ca3f18da0ede48596f593a55b6728c",
+          "tracked_paths": 591,
+          "tree": "8b586441a6d2b2b6bcec6307dca0f59d6d046993"
+        },
+        {
+          "branch": "main",
+          "commit": "d06efdcd42c2ee08b7c9c2221c5e1029ad6dd7c7",
+          "tracked_paths": 156,
+          "tree": "e33d34517ac60bd9ac65bb75790ca05460ee43be"
+        }
+      ]
+    }
+  ]
+}

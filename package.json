@@ -1,0 +1,41 @@
+{
+  "name": "sales-enabler",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "context:check": "node scripts/check-context.mjs",
+    "automation:worker": "node --env-file=.env.local --import tsx scripts/automation-worker.ts",
+    "voice:gateway": "node --env-file-if-exists=.env.local --import tsx scripts/voice-gateway.ts",
+    "channel:worker": "node --env-file-if-exists=.env.local --import tsx scripts/channel-worker.ts",
+    "learning:worker": "node --env-file-if-exists=.env.local --import tsx scripts/learning-worker.ts",
+    "readiness": "node --env-file-if-exists=.env.local --import tsx scripts/readiness.ts",
+    "db:bootstrap": "node --env-file-if-exists=.env.local --import tsx scripts/bootstrap-db.ts",
+    "db:snapshot": "node scripts/sqlite-snapshot.mjs",
+    "package:check": "node scripts/check-package.mjs",
+    "postbuild": "npm run package:check"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "mammoth": "^1.12.3",
+    "next": "16.3.5",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.16.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tsx": "^4.23.15",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.9.3"
+  }
+}

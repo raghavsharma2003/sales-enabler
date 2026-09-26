@@ -1,0 +1,111 @@
+name: company-workspace
+
+x-app-environment: &app-environment
+  NODE_ENV: production
+  APP_URL: ${APP_URL:-http://localhost:3000}
+  CONNECTOR_ENCRYPTION_KEY: ${CONNECTOR_ENCRYPTION_KEY:?Set a stable 64-character hex key in a private compose env file}
+  AUTH_LIFECYCLE_KEY: ${AUTH_LIFECYCLE_KEY:?Set a separate stable 64-character hex lifecycle key in a private compose env file}
+  AUTH_REQUIRE_EMAIL_VERIFICATION: ${AUTH_REQUIRE_EMAIL_VERIFICATION:-false} # Loopback local preview only; hosted default is true.
+  AZURE_COMMUNICATION_EMAIL_ENDPOINT: ${AZURE_COMMUNICATION_EMAIL_ENDPOINT:-}
+  AZURE_COMMUNICATION_EMAIL_ACCESS_KEY: ${AZURE_COMMUNICATION_EMAIL_ACCESS_KEY:-}
+  AZURE_COMMUNICATION_EMAIL_SENDER: ${AZURE_COMMUNICATION_EMAIL_SENDER:-}
+  DATABASE_URL: ${DATABASE_URL:-}
+  SQLITE_PATH: /app/data/workspace.sqlite
+  ALLOW_SQLITE_PRODUCTION: "1" # This base file is single-host local use only.
+  VOICE_PROVIDER: ${VOICE_PROVIDER:-none}
+  AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+  AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
+  AZURE_OPENAI_TEXT_DEPLOYMENT: ${AZURE_OPENAI_TEXT_DEPLOYMENT:-}
+  AZURE_OPENAI_REALTIME_DEPLOYMENT: ${AZURE_OPENAI_REALTIME_DEPLOYMENT:-}
+  AUTOMATION_WORKER_ENABLED: "0"
+  CHANNEL_WORKER_ENABLED: "0"
+  LEARNING_WORKER_ENABLED: ${LEARNING_WORKER_ENABLED:-0} # Shared opt-in permits enqueue; only the separate worker processes jobs.
+  PUBLIC_VOICE_GATEWAY_URL: ${PUBLIC_VOICE_GATEWAY_URL:-}
+  PUBLIC_SESSION_HASH_SECRET: ${PUBLIC_SESSION_HASH_SECRET:-}
+
+services:
+  app:
+    image: company-workspace-web:local
+    build:
+      context: .
+      target: web
+    init: true
+    ports: ["127.0.0.1:3000:3000"]
+    environment: *app-environment
+    volumes: ["workspace-data:/app/data"]
+    restart: unless-stopped
+    stop_grace_period: 45s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+  learning-worker:
+    profiles: ["learning"]
+    image: company-workspace-learning:local
+    build:
+      context: .
+      target: learning-worker
+    init: true
+    environment: *app-environment
+    volumes: ["workspace-data:/app/data"]
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: "no"
+    stop_grace_period: 90s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+  channel-worker:
+    profiles: ["channels"]
+    image: company-workspace-channels:local
+    build:
+      context: .
+      target: channel-worker
+    init: true
+    environment:
+      <<: *app-environment
+      CHANNEL_WORKER_ENABLED: ${CHANNEL_WORKER_ENABLED:-0}
+    volumes: ["workspace-data:/app/data"]
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: "no"
+    stop_grace_period: 90s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+  voice-gateway:
+    profiles: ["voice"]
+    image: company-workspace-voice:local
+    build:
+      context: .
+      target: voice-gateway
+    init: true
+    ports: ["127.0.0.1:3001:3001"]
+    environment: *app-environment
+    volumes: ["workspace-data:/app/data"]
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 45s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+  worker:
+    profiles: ["worker"]
+    image: company-workspace-worker:local
+    build:
+      context: .
+      target: worker
+    init: true
+    environment:
+      <<: *app-environment
+      AUTOMATION_WORKER_ENABLED: ${AUTOMATION_WORKER_ENABLED:-0}
+    volumes: ["workspace-data:/app/data"]
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: "no"
+    stop_grace_period: 90s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+
+volumes:
+  workspace-data:

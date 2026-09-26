@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T00:00:00.000Z",
+  "title": "Design System: Relay workspace platform",
+  "extensions": {
+    "colorMeta": {
+      "account-canvas": {"role": "neutral", "displayName": "Account cool canvas", "canonical": "#f7f8fc", "tonalRamp": ["#1f2530", "#354052", "#586277", "#778297", "#a0a9b8", "#c5ccd7", "#e2e6ed", "#f7f8fc"]},
+      "account-ink": {"role": "neutral", "displayName": "Account ink", "canonical": "#192234", "tonalRamp": ["#10151f", "#141b29", "#192234", "#334057", "#586277", "#8993a4", "#c3cad4", "#eef1f5"]},
+      "account-muted": {"role": "neutral", "displayName": "Account muted", "canonical": "#586277", "tonalRamp": ["#2b313e", "#414b5e", "#586277", "#707b8e", "#929cac", "#b2bac6", "#d0d5dd", "#f0f2f5"]},
+      "account-line": {"role": "neutral", "displayName": "Account line", "canonical": "#dfe3ed", "tonalRamp": ["#373e4c", "#596273", "#7a8494", "#a2aab8", "#c0c6d0", "#d1d6df", "#dfe3ed", "#f8f9fb"]},
+      "account-accent": {"role": "primary", "displayName": "Account indigo", "canonical": "#4e46bc", "tonalRamp": ["#211d61", "#302a8c", "#4038a3", "#4e46bc", "#6e67cc", "#9690df", "#c3c1ef", "#ededff"]},
+      "account-focus": {"role": "secondary", "displayName": "Account focus", "canonical": "#a9a7eb", "tonalRamp": ["#413e87", "#625fa8", "#817fc4", "#a9a7eb", "#bbbaf0", "#cecdf4", "#dfdef8", "#f2f1ff"]},
+      "ink": {"role": "neutral", "displayName": "Ink", "canonical": "#242634", "tonalRamp": ["#171820", "#1d1f2c", "#242634", "#3b3e4e", "#626779", "#9a9dab", "#d4d5dd", "#f3f3f6"]},
+      "muted": {"role": "neutral", "displayName": "Muted slate", "canonical": "#626779", "tonalRamp": ["#30333e", "#454957", "#626779", "#7d8191", "#9b9eab", "#b9bbc5", "#d9dae0", "#f1f1f4"]},
+      "line": {"role": "neutral", "displayName": "Cool line", "canonical": "#e5e7ed", "tonalRamp": ["#34363f", "#5a5c66", "#81838d", "#a9abb4", "#c5c7cf", "#d9dbe2", "#e5e7ed", "#f8f8fa"]},
+      "accent": {"role": "primary", "displayName": "Relay indigo", "canonical": "#5148ce", "tonalRamp": ["#211c61", "#30278e", "#3f36b0", "#5148ce", "#7169d9", "#9993e6", "#c6c3f2", "#efedff"]},
+      "hover": {"role": "secondary", "displayName": "Quiet hover", "canonical": "#f4f4fa", "tonalRamp": ["#262631", "#4b4c5b", "#727381", "#999aa7", "#bcbcc7", "#d4d4dc", "#e5e5ed", "#f4f4fa"]},
+      "canvas": {"role": "neutral", "displayName": "Cool canvas", "canonical": "#fbfbfd", "tonalRamp": ["#292a35", "#52535f", "#797a85", "#9e9fa9", "#bebfc8", "#d9d9e0", "#ededf2", "#fbfbfd"]},
+      "wash": {"role": "secondary", "displayName": "Lilac wash", "canonical": "#efedff", "tonalRamp": ["#282364", "#4037a2", "#5148ce", "#7169d9", "#9993e6", "#c6c3f2", "#dedcf9", "#efedff"]},
+      "surface": {"role": "neutral", "displayName": "Surface white", "canonical": "#ffffff", "tonalRamp": ["#27282f", "#55565e", "#808188", "#a7a8ae", "#c6c6cb", "#dedee2", "#f0f0f2", "#ffffff"]},
+      "success-surface": {"role": "semantic", "displayName": "Success surface", "canonical": "#e9f6ef", "tonalRamp": ["#193d2a", "#246448", "#347e58", "#4b976e", "#70b48b", "#9bcead", "#c6e4d0", "#e9f6ef"]},
+      "success-ink": {"role": "semantic", "displayName": "Success ink", "canonical": "#246448", "tonalRamp": ["#102e20", "#193d2a", "#246448", "#347e58", "#5b9876", "#8ab9a0", "#bddbc8", "#edf8f1"]},
+      "danger-surface": {"role": "semantic", "displayName": "Danger surface", "canonical": "#fff3f4", "tonalRamp": ["#4a1823", "#6f2333", "#9b3547", "#b94e60", "#d37584", "#e6a5af", "#f5d3d8", "#fff3f4"]},
+      "danger-ink": {"role": "semantic", "displayName": "Danger ink", "canonical": "#9b3547", "tonalRamp": ["#451520", "#6f2333", "#9b3547", "#b94e60", "#d37584", "#e6a5af", "#f5d3d8", "#fff3f4"]}
+    },
+    "typographyMeta": {
+      "body": {"displayName": "DM Sans body", "purpose": "Readable operational copy, records, and transcripts."},
+      "page-title": {"displayName": "Page title", "purpose": "Primary workspace headings at 27px and 650 weight."},
+      "operational": {"displayName": "Operational scale", "purpose": "12px labels, tabs, metadata, and supporting UI copy."}
+    },
+    "shadows": [
+      {"name": "search-popover", "value": "0 9px 30px #22243c24", "purpose": "Transient search results only."},
+      {"name": "inbox-bubble", "value": "0 2px 8px #1c234008", "purpose": "Barely perceptible separation for message bubbles."}
+    ],
+    "motion": [
+      {"name": "route-enter", "value": "180ms cubic-bezier(.16,1,.3,1)", "purpose": "Small route settle."},
+      {"name": "call-speaking", "value": "1100ms ease-out infinite", "purpose": "State ring while the agent is speaking."},
+      {"name": "call-connecting", "value": "1200ms linear infinite", "purpose": "State ring while the call connects."},
+      {"name": "reduced-motion", "value": "animation:none; transition:none", "purpose": "Remove nonessential motion when the preference is enabled."}
+    ],
+    "breakpoints": [
+      {"name": "wide-rail", "value": "1500px", "purpose": "250px sidebar and wider top padding."},
+      {"name": "rail", "value": "1100px", "purpose": "210px sidebar and tighter page frame."},
+      {"name": "drawer", "value": "820px", "purpose": "Sidebar becomes a drawer; agent controls stack."},
+      {"name": "compact", "value": "580px", "purpose": "16px side gutter, compact page type, and mobile tab grids."},
+      {"name": "company-model", "value": "900px / 650px", "purpose": "Model path compresses, then library/detail stacks."},
+      {"name": "source-intake", "value": "1180px / 820px / 620px", "purpose": "Source rail compresses, stacks, then review becomes one column."},
+      {"name": "campaign", "value": "800px / 520px", "purpose": "Campaign workspace stacks and controls fill the compact width."},
+      {"name": "inbox", "value": "850px / 540px", "purpose": "Thread list stacks with detail and message/composer padding tightens."},
+      {"name": "team", "value": "650px", "purpose": "Invitation and member actions wrap."},
+      {"name": "automations", "value": "600px", "purpose": "Recipient review, picker, and execution history stack."}
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Indigo action for save, review, start, or release tasks.",
+      "html": "<button class=\"ds-primary\">Review source</button>",
+      "css": ".ds-primary{background:var(--pc-accent);color:#fff;border:1px solid var(--pc-accent);border-radius:6px;padding:8px 12px;min-height:34px;font:600 12px/1.4 'DM Sans',sans-serif;transition:background .15s,border-color .15s}.ds-primary:hover{background:#433ab5;border-color:#433ab5}.ds-primary:focus-visible{outline:2px solid var(--pc-accent);outline-offset:3px}"
+    },
+    {
+      "name": "Company Brain Tabs",
+      "kind": "nav",
+      "description": "Keyboard-operable tabs for model, source intake, and grounded company Q&A.",
+      "html": "<nav class=\"ds-brain-tabs\" role=\"tablist\"><button role=\"tab\" aria-selected=\"true\">Business model</button><button role=\"tab\">Source intake</button><button role=\"tab\">Ask company brain</button></nav>",
+      "css": ".ds-brain-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--pc-line);padding-bottom:10px}.ds-brain-tabs button{border:0;border-radius:5px;padding:7px 11px;background:transparent;color:var(--pc-muted);font:600 11px/1.4 'DM Sans',sans-serif}.ds-brain-tabs button[aria-selected=true]{background:var(--pc-wash);color:var(--pc-accent)}.ds-brain-tabs button:focus-visible{outline:2px solid var(--pc-accent);outline-offset:3px}"
+    },
+    {
+      "name": "Company Model Record",
+      "kind": "card",
+      "description": "Offering or signal record with source quote, review status, and next action.",
+      "html": "<article class=\"ds-model-record\"><header><div><h3>Remote consultation</h3><small>Service · revision 2</small></div><span>Evidence current</span></header><dl><dt>Source evidence</dt><dd>Exact approved quote from the company source.</dd></dl><button>Open source</button></article>",
+      "css": ".ds-model-record{border:1px solid var(--pc-line);border-radius:9px;background:#fff;padding:18px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-model-record header{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--pc-line);padding-bottom:14px}.ds-model-record h3{margin:0 0 4px;font-size:17px}.ds-model-record small, .ds-model-record dt{color:var(--pc-muted);font-size:11px}.ds-model-record header span{border-radius:4px;padding:3px 7px;background:var(--pc-success-surface,#e9f6ef);color:var(--pc-success-ink,#246448);font-size:10px}.ds-model-record dl{display:grid;grid-template-columns:120px 1fr;gap:10px;margin:16px 0}.ds-model-record dd{margin:0}.ds-model-record button{border:0;background:none;color:var(--pc-accent);font:600 11px 'DM Sans',sans-serif;padding:0}"
+    },
+    {
+      "name": "Offering Results Disclosure",
+      "kind": "custom",
+      "description": "Collapsed campaign evidence that keeps company decisions ahead of detailed results.",
+      "html": "<details class=\"ds-results\"><summary>Campaign results and reviewed feedback <span>View</span></summary><p>Recorded activity, saved conversations, and reviewed caller observations.</p></details>",
+      "css": ".ds-results{border-top:1px solid var(--pc-line);padding-top:13px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-results summary{cursor:pointer;color:var(--pc-accent);font:650 11px/1.4 'DM Sans',sans-serif}.ds-results summary span{float:right;color:var(--pc-muted);font-size:9px}.ds-results p{color:var(--pc-muted);font-size:12px}.ds-results summary:focus-visible{outline:2px solid var(--pc-accent);outline-offset:3px}"
+    },
+    {
+      "name": "AI Campaign Brief",
+      "kind": "custom",
+      "description": "Ordered brief inputs and explicit AI suggestion review before plan generation.",
+      "html": "<section class=\"ds-brief\"><strong>Campaign brief</strong><label>Product or service<select><option>Approved offering</option></select></label><label>Describe the campaign<textarea></textarea></label><p class=\"ds-brief-note\">AI added suggestions to the existing brief fields. Review before generating a plan.</p><button>Draft the brief with AI</button></section>",
+      "css": ".ds-brief{display:grid;gap:12px;border:1px solid var(--pc-line);border-radius:9px;background:#fff;padding:20px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-brief strong{font-size:17px}.ds-brief label{display:grid;gap:6px;font-weight:600;font-size:12px}.ds-brief select,.ds-brief textarea{border:1px solid #dfe1e9;border-radius:6px;background:#fff;color:var(--pc-ink);padding:9px 11px;font:12px/1.5 'DM Sans',sans-serif}.ds-brief-note{margin:0;padding:10px 12px;border:1px solid var(--pc-line);border-radius:8px;background:var(--pc-wash);color:var(--pc-muted);font-size:12px}.ds-brief button{justify-self:start;border:0;border-radius:6px;background:var(--pc-accent);color:#fff;padding:8px 12px;font:600 11px 'DM Sans',sans-serif}"
+    },
+    {
+      "name": "Agent Actions",
+      "kind": "custom",
+      "description": "Opt-in in-call actions with a human-review boundary and viewer-safe controls.",
+      "html": "<fieldset class=\"ds-actions\"><legend>In-call actions</legend><label><input type=\"checkbox\" checked><span><strong>Request a follow-up</strong><small>Create an internal proposal for staff review.</small></span></label><p>Actions cannot verify who is speaking or prove a customer requested an action.</p></fieldset>",
+      "css": ".ds-actions{border:0;padding:0;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-actions legend{font-weight:650;font-size:13px}.ds-actions label{display:flex;gap:11px;align-items:flex-start;border:1px solid #a9a0e5;border-radius:7px;background:#f6f4ff;padding:11px 12px}.ds-actions input{accent-color:var(--pc-accent);margin-top:3px}.ds-actions span{display:grid;gap:3px}.ds-actions strong{font-size:12px}.ds-actions small,.ds-actions p{color:var(--pc-muted);font-size:12px}.ds-actions p{margin:8px 0 0}"
+    },
+    {
+      "name": "Agent Revision Diff",
+      "kind": "custom",
+      "description": "Natural-language proposal with before/proposed values and draft-only apply semantics.",
+      "html": "<section class=\"ds-revision\"><header><strong>Review agent revision</strong><span>Proposal</span></header><div><article><small>Before</small><p>Be concise.</p></article><article><small>Proposed</small><p>Be concise and confirm corrections.</p></article></div><button>Apply as draft</button></section>",
+      "css": ".ds-revision{border:1px solid var(--pc-line);border-radius:9px;padding:16px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-revision header{display:flex;justify-content:space-between;gap:10px}.ds-revision header span{color:var(--pc-accent);font-size:10px}.ds-revision>div{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.ds-revision article{border:1px solid var(--pc-line);border-radius:6px;padding:10px}.ds-revision small{color:var(--pc-muted)}.ds-revision p{margin:6px 0;white-space:pre-wrap}.ds-revision button{border:1px solid var(--pc-accent);border-radius:6px;background:#fff;color:var(--pc-accent);padding:8px 12px;font:600 11px 'DM Sans',sans-serif}@media(max-width:650px){.ds-revision>div{grid-template-columns:1fr}}"
+    },
+    {
+      "name": "Conversation Receipts",
+      "kind": "custom",
+      "description": "Saved action receipts and browser-only diagnostics with refusal and uncertainty boundaries.",
+      "html": "<details class=\"ds-receipts\"><summary>Actions &amp; call diagnostics · 2 server receipts</summary><p>Browser receipt timing only; it does not measure audible response or end-to-end latency.</p><ol><li><strong>Request a follow-up</strong><span>Awaiting review</span></li><li><strong>Company knowledge</strong><span>Available</span></li></ol></details>",
+      "css": ".ds-receipts{border-top:1px solid var(--pc-line);padding-top:12px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-receipts summary{cursor:pointer;font-weight:650;font-size:12px}.ds-receipts p{color:var(--pc-muted);font-size:11px}.ds-receipts ol{display:grid;gap:7px;margin:12px 0;padding:0;list-style:none}.ds-receipts li{display:flex;justify-content:space-between;gap:10px;border-radius:6px;background:#f7f7fb;padding:9px 10px;font-size:12px}.ds-receipts li span{color:var(--pc-accent);font-size:11px}"
+    },
+    {
+      "name": "Access State",
+      "kind": "custom",
+      "description": "Roles, invitation expiry, and Join workspace account mismatch in readable operator states.",
+      "html": "<section class=\"ds-access\"><strong>Team &amp; access</strong><p>Viewer · read-only</p><small>Invitation links expire after one use.</small><button>Return to workspace</button></section>",
+      "css": ".ds-access{border:1px solid var(--pc-line);border-radius:9px;background:#fff;padding:18px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-access strong{font-size:15px}.ds-access p{color:var(--pc-accent);font-weight:600;margin:9px 0 4px}.ds-access small{display:block;color:var(--pc-muted);font-size:11px}.ds-access button{margin-top:14px;border:1px solid var(--pc-line);border-radius:6px;background:#fff;color:var(--pc-ink);padding:8px 12px;font:600 11px 'DM Sans',sans-serif}"
+    },
+    {
+      "name": "WhatsApp Inbox Setup",
+      "kind": "custom",
+      "description": "Setup-aware inbox with thread scope, receipts, and service-window reply boundaries.",
+      "html": "<section class=\"ds-inbox\"><div class=\"ds-inbox-setup\"><strong>Finish WhatsApp setup</strong><p>0 checked · Account setup needed</p></div><div class=\"ds-inbox-body\"><aside>Inbox · no threads</aside><article><h3>Reply scope</h3><p>Replies require a linked customer, recorded permission, and an open service window.</p></article></div></section>",
+      "css": ".ds-inbox{border:1px solid var(--pc-line);border-radius:9px;overflow:hidden;background:#fff;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-inbox-setup{padding:14px 16px;background:#f8f8fc;border-bottom:1px solid var(--pc-line)}.ds-inbox-setup p{margin:4px 0 0;color:var(--pc-muted);font-size:11px}.ds-inbox-body{display:grid;grid-template-columns:1fr 1.4fr}.ds-inbox-body aside,.ds-inbox-body article{padding:18px}.ds-inbox-body aside{border-right:1px solid var(--pc-line);color:var(--pc-muted)}.ds-inbox-body h3{margin:0 0 6px;font-size:14px}.ds-inbox-body p{margin:0;color:var(--pc-muted);font-size:12px}@media(max-width:540px){.ds-inbox-body{grid-template-columns:1fr}.ds-inbox-body aside{border-right:0;border-bottom:1px solid var(--pc-line)}}"
+    },
+    {
+      "name": "Deployment Wizard",
+      "kind": "custom",
+      "description": "Owner-only three-step publication flow with immutable branding, explicit limits, and public start boundaries.",
+      "html": "<section class='ds-deploy'><ol><li class='active'>Agent &amp; knowledge</li><li>Public identity</li><li>Limits &amp; publish</li></ol><p>Anonymous public assistant · Listen &amp; type / voice</p><button>Share assistant</button></section>",
+      "css": ".ds-deploy{border:1px solid var(--pc-line);border-radius:9px;background:#fff;padding:18px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-deploy ol{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:0;list-style:none}.ds-deploy li{border:1px solid var(--pc-line);border-radius:6px;padding:7px 9px;color:var(--pc-muted);font-size:11px}.ds-deploy li.active{border-color:var(--pc-accent);background:var(--pc-wash);color:var(--pc-accent)}.ds-deploy p{color:var(--pc-muted);font-size:12px}.ds-deploy button{border:0;border-radius:6px;background:var(--pc-accent);color:#fff;padding:8px 12px;font:600 11px 'DM Sans',sans-serif}"
+    },
+    {
+      "name": "Automation Worker Frame",
+      "kind": "custom",
+      "description": "Shared page-gutter worker heartbeat and explicit schedule review state.",
+      "html": "<section class=\"ds-worker\"><span aria-hidden=\"true\">◷</span><div><strong>Worker recently reported</strong><p>Checks due schedules and current permissions.</p><small>Last report: Sep 22, 2026, 11:40 PM</small></div></section>",
+      "css": ".ds-worker{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--pc-line);border-radius:9px;background:var(--pc-hover);padding:16px 18px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-worker>span{color:var(--pc-accent);font-size:19px}.ds-worker p{margin:2px 0 3px}.ds-worker small{color:var(--pc-muted);font-size:12px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Operations Desk",
+    "overview": "Relay is an Operate product: a compact, record-first workspace where company material becomes reviewable context, campaign intent, browser conversations, and accountable follow-through. The visual system stays quiet so the current record, its evidence, and the next operator decision remain easy to scan. DM Sans, white and cool lilac-gray surfaces, indigo state emphasis, and Lucide icons are the incumbent identity.\n\nThe v5/v6 surfaces extend that same desk across the complete loop. Company brain has Business model, Source intake, and Ask company brain tabs. The business-model workbench keeps offerings and signals separate, shows exact source quotes, preserves approved clarification history, and counts only unanswered founder questions. Campaign briefing proceeds in a visible order: approved offering, campaign description and goal, purpose and channel, selected audience, explicit AI assistance, then operator review before a plan is generated. The plan describes planned fields; collected answers and quotes live in campaign conversations and offering results.\n\nThe agent and conversation surfaces keep control and evidence explicit. In-call Actions, natural-language revision proposals with before/after diffs, and viewer read-only states sit beside the voice workbench. Saved Conversations expose server action receipts, browser-only diagnostics, refusal and uncertainty guards, and source-linked learning. Team and invitation states, Join workspace account mismatch, WhatsApp setup and Inbox scope, and Automations' local worker heartbeat all use the same candid operational language. These are extensions of the existing world, not a new visual concept.",
+    "keyCharacteristics": ["Quiet tonal surfaces", "Readable 12–13px operational type", "Indigo for location and action", "Source-backed cues", "Visible human control", "Anonymous public identity"],
+    "rules": [
+      {"name": "The State Before Decoration Rule", "body": "Use indigo, green, rose, and small motion to explain location, action, or record state. Do not introduce color as a quality claim.", "section": "colors"},
+      {"name": "The Record Readability Rule", "body": "Keep operational copy at 12–13px with 1.5 line height; use smaller type for metadata only when its supporting label remains clear.", "section": "typography"},
+      {"name": "The Flat-By-Default Rule", "body": "Keep containers flat at rest. Use a border, wash, or one small transient shadow to establish hierarchy; never use elevation to imply confidence or model quality.", "section": "elevation"}
+    ],
+    "dos": [
+      "Do keep Company brain tabs, source quotes, offering/signal status, approved clarification history, and unanswered counts visible where the decision is made.",
+      "Do make AI assistance an explicit step and place its suggestions before the fields they populate; require review before a plan or revision is applied.",
+      "Do label plan fields as planned schema and link collected evidence to conversations or offering results.",
+      "Do show server receipts, browser-only diagnostics, refusal guards, worker heartbeat, team access state, and connection scope in plain language.",
+      "Do preserve the shared page frame, DM Sans hierarchy, indigo state language, and the 820px drawer / 580px compact behavior.",
+      "Do keep CSV mapping collapsed before row review, recheck typed campaign answers against their receipt, and link each post-call learning job to the exact conversation.",
+      "Do keep public identity anonymous, source-backed, and explicit about Start-before-transcript and session/turn limits."
+    ],
+    "donts": [
+      "Don't present an approved clarification as an unanswered founder task.",
+      "Don't place the full offering evidence table ahead of the company decision path; keep it behind the collapsed results disclosure.",
+      "Don't render `Not collected` as a live status in a planned campaign schema.",
+      "Don't treat available integrations, WhatsApp setup, worker heartbeat, provider acceptance, browser receipt time, or selected contact context as proof of connection, delivery, audible latency, identity, or customer intent.",
+      "Don't allow viewer accounts to mutate, approve, revise, test, send, or create actions; keep their records readable and their limitations explicit.",
+      "Don't claim cloud execution, channel delivery, or audio quality from a configured setting, a paused/local-only worker, or a browser receipt.",
+      "Don't turn version history, action diagnostics, prompt diffs, execution history, or Personal Voice enrollment into competing editor columns. Keep them collapsible and attributable."
+    ]
+  }
+}

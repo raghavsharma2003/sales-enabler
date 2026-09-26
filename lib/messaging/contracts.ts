@@ -1,0 +1,31 @@
+export type MessageState = 'sending' | 'accepted' | 'delivered' | 'read' | 'failed' | 'rejected' | 'uncertain';
+export type InboxThread = {
+  phone: string;
+  businessPhoneNumberId: string;
+  lastInboundAt: string;
+  lastMessageAt: string;
+  lastPreview: string;
+  customerId?: string;
+  customerLinkedAt?: string;
+  customerLinkedBy?: string;
+  handoff: 'open' | 'resolved';
+  activeSendIntentId?: string;
+  revision: number;
+};
+export type InboxMessage = {
+  id: string;
+  threadId: string;
+  direction: 'inbound' | 'outbound';
+  phone: string;
+  text: string;
+  type: string;
+  providerId?: string;
+  providerAt?: string;
+  receivedAt: string;
+  state?: MessageState;
+  requestId?: string;
+  requestedBy?: string;
+  dispatchAuthorizedAt?: string;
+  reason?: string;
+};
+export type SendResult = { state: 'accepted'; providerId: string } | { state: 'rejected' | 'uncertain'; reason: string };

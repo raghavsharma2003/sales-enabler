@@ -1,0 +1,15 @@
+# Offering insights v6
+
+The approved offering detail now has a read-only campaign and customer-evidence section. It joins only records in the authenticated organization. A campaign plan, campaign or immutable run snapshot belongs to an offering when its saved `explicitIntentV1.offering.id` equals that offering's canonical ID. Legacy and manual work without this anchor remains unscoped.
+
+The summary separates plans, campaigns, launched runs and recipient slots. A recipient slot is one entry in a launched run; the same customer can appear in more than one run. Each row shows queued, skipped, completed with a saved browser conversation and completion without a valid saved conversation. The latter stays visible as an operator mark whose source cannot be checked here. These are operational states, not proof that the campaign's desired business outcome occurred. Reviewed result columns describe intended collection only; this view does not count them as observed values.
+
+Saved browser conversations require `source: browser_voice`, exact `campaignRunId`, matching recipient contact and exact release ID from the run snapshot. Draft previews, unbound sessions and sessions from another run are excluded. Input mode is shown from saved `inputMode`: Listen & type, microphone mode recorded or unknown. A microphone label is not proof of device quality or speech recognition accuracy.
+
+Connected email counts read durable `delivery:email_intent` records for the exact run and recipient. One current intent per recipient is counted as provider accepted, rejected, uncertain or sending. Acceptance is not delivery. Manual email has no provider receipt in this view. This slice does not infer opened mail, responses, appointments, revenue, satisfaction or sentiment.
+
+Reviewed caller observations come only from applied conversation-analysis candidates tied to the current raw saved-session digest and an exact caller-turn quote span. Identical source/type quotes from repeated analyses are deduplicated. Links open the saved conversation and linked customer journey. A linked owned commitment is shown only when the reviewed action receipt points to a tenant-scoped commitment with a matching source action; its current status is displayed separately. A `commitment_request` alone is a request, not a completed or communicated commitment. Analysis candidates that are pending, stale, mismatched or backed by assistant speech do not appear.
+
+The optional UTC date bounds filter plan creation, campaign creation and run launch independently. Evidence recorded later remains attached to a selected run. A campaign launched in the range remains visible even if its plan or campaign record was created earlier; the counts therefore name different lifecycle events rather than a conversion funnel. Empty states say when no linked campaigns or reviewed quotes exist.
+
+The route is `GET /api/business-context/insights?offeringId=…&from=YYYY-MM-DD&to=YYYY-MM-DD`. It requires an authenticated member, including viewers, and resolves the offering by organization before any scoped reads. It makes no provider or AI call and performs no write.
