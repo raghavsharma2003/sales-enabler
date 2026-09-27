@@ -1,6 +1,8 @@
 <!-- Current calling workbench: see docs/calling-workbench.md for setup and verification. -->
 # Sales Enabler / Relay
 
+**Employer laptop:** no local Docker. Use the Node preview and [Azure-side deployment](docs/azure-no-local-docker-options.md). Follow [Azure access setup](docs/azure-access-setup.md) to provide a separate deployment service principal without sharing secrets in chat.
+
 ## Current v7 checkpoint — 27 September 2026
 
 The product target is a sellable general Indian-organization AI application layer: company branding and accountable authentication, reviewed CSV customer-tables intake, source-backed relational learning, and bounded web voice/chat plus Telegram and WhatsApp deployment. Company, Deployments and Account navigation is mounted. AutoLearning is present but defaults off for hosted operation; anonymous public/unverified channel calls are restricted to feedback-only proposals, while linked private customer calls retain reviewed memory/action paths. No historic backfill is authorized. Public branding is browser-verified.

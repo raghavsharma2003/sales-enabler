@@ -2,6 +2,10 @@
 
 Updated 2026-09-27. The user authorized real implementation, superseding the earlier prototype pause. Current focus is the v7 sellable general Indian-organization AI application layer and its integration/deployment proof. No additional design approval is required to continue authorized implementation.
 
+## Current access and device constraint
+
+The user prohibits Docker on the employer laptop. Do not install, launch or run Docker/Compose commands here. Use Node locally and Azure Cloud Shell/CI for remote image builds and Azure hosting. The exact startup service-principal setup is in `docs/azure-access-setup.md`; the separate ignored `.env.azure-management.local` remains unconfigured. The prepared checker performs token issuance plus ARM reads only, with no model invocation or provisioning; four offline tests pass. This does not establish live management access.
+
 ## v7 continuity update — bounded local gates verified; real voice and deployment gates open
 
 The current product target is a general company AI workspace for Indian organizations: company branding and team authentication, manual or connected data ingestion, reviewed identity/column mapping, source-backed relational learning, thoughtful review-first AI UX, and bounded public or private agents across web voice/chat, Telegram and WhatsApp. Study abroad remains the first accessible configuration, not the core schema. Public agents disclose AI identity; anonymous visitors and channel accounts are not verified humans. No impersonation or unsupported competitor-superiority claim is allowed.

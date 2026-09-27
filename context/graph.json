@@ -872,6 +872,28 @@
       "type": "open-question",
       "title": "Dall-E/Dalio feedback-product identity needs user URL or logo",
       "status": "unconfirmed"
+    },
+    {
+      "id": "constraint.no-local-docker",
+      "type": "requirement",
+      "title": "No Docker use on employer laptop; Azure-side builds only",
+      "status": "confirmed",
+      "source": "user",
+      "path": "docs/azure-access-setup.md"
+    },
+    {
+      "id": "deployment.azure-management-identity",
+      "type": "decision",
+      "title": "Separate startup deployment service principal; management access pending user setup",
+      "status": "awaiting-user-credentials",
+      "path": "docs/azure-access-setup.md"
+    },
+    {
+      "id": "verification.azure-access-helper",
+      "type": "evidence",
+      "title": "Read-only credential checker passes four offline redaction and scope tests",
+      "status": "offline-verified-live-credentials-pending",
+      "path": "tests/azure-access-check.test.ts"
     }
   ],
   "edges": [
@@ -1569,6 +1591,21 @@
       "from": "component.autolearning-v7",
       "to": "constraint.azure-grant-only-public-v7",
       "relation": "constrained-by"
+    },
+    {
+      "from": "constraint.no-local-docker",
+      "to": "product.general",
+      "relation": "constrains-deployment"
+    },
+    {
+      "from": "deployment.azure-management-identity",
+      "to": "constraint.no-local-docker",
+      "relation": "supports-azure-side-operations"
+    },
+    {
+      "from": "verification.azure-access-helper",
+      "to": "deployment.azure-management-identity",
+      "relation": "verifies-read-only-bootstrap"
     }
   ]
 }

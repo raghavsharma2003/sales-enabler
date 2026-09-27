@@ -1,5 +1,7 @@
 # Deployment preparation v7
 
+**Current device constraint:** the user has prohibited Docker use on this employer laptop. Do not run the local Docker/Compose commands below here. They remain reference material for other hosts. Use [Azure-side builds](azure-no-local-docker-options.md) and the [exact access setup](azure-access-setup.md); no local Docker or Azure CLI install is required for the prepared access check.
+
 27 September 2026. These are reviewable packaging and recovery artifacts, not a production release approval. Root reports 526/526 integrated tests passing, a clean packaged production build with postbuild package check and no private database copy, separate typecheck, all six runtime bundles compiling, packaged-server readiness HTTP 200 and automation/learning heartbeat checks. Local SQLite online backup and restore to new private directories were verified. No Azure resource, paid service, inference deployment, registry push, host deployment or external schedule was created or enabled by this work. Prices, grant applicability, subscription access and Azure resource availability remain unknown.
 
 ## Runtime shape

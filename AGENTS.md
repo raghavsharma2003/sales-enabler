@@ -1,5 +1,9 @@
 # Project continuity
 
+## Employer-laptop constraint — 27 September 2026
+
+Do not install, start, run, inspect with the CLI, or use Docker/Docker Desktop on this laptop. No local container builds or Docker development workflow. Keep Node-based local preview available; use Azure Cloud Shell/CI and Azure-side builds for hosting work. Existing Dockerfiles are for remote Azure builds, and Compose instructions are historical/other-host reference only. See `docs/azure-access-setup.md` for the dedicated deployment identity; keep management credentials in the ignored `.env.azure-management.local`, separate from app/runtime credentials. Access and authorization remain limited to the user's startup project and explicitly selected grant subscription, never the employer tenant.
+
 ## Active v7 handoff — 27 September 2026
 
 The current product target is a sellable general Indian-organization AI application layer: company branding and accountable authentication, manual or connected data ingestion with reviewed identity/result-column mapping, source-backed relational learning, thoughtful review-first AI UX, and bounded web voice/chat plus Telegram and WhatsApp deployment. Study abroad is the first accessible configuration, not the core schema. Public visitors and channel accounts are anonymous/unverified and every public or channel agent discloses AI identity. Do not claim human identity, emotional inner state, competitor superiority, external delivery or production readiness without direct evidence.
