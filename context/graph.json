@@ -922,6 +922,13 @@
       "title": "Three mocked bootstrap checks pass; Bash syntax and independent static review complete",
       "status": "offline-verified-not-live-iam",
       "path": "tests/azure-bootstrap.test.ts"
+    },
+    {
+      "id": "azure.setup-from-another-device",
+      "type": "decision",
+      "title": "Use portal-only startup identity setup on the user's other device; transfer credential privately to the working laptop",
+      "status": "user-device-constraint-guidance-prepared",
+      "path": "docs/azure-access-setup.md"
     }
   ],
   "edges": [
@@ -1654,6 +1661,11 @@
       "from": "azure.cloudshell-bootstrap-offline-evidence",
       "to": "azure.cloudshell-bootstrap",
       "relation": "verifies-offline-failure-and-secret-handling"
+    },
+    {
+      "from": "azure.setup-from-another-device",
+      "to": "deployment.azure-management-identity",
+      "relation": "provides-alternative-setup-with-same-scopes"
     }
   ]
 }
