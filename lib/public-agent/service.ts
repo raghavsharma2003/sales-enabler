@@ -4,7 +4,7 @@ import { HttpError } from '../server/http';
 import { resolvePublicSession } from '../deployments/engine';
 import type { DeploymentAuthority } from '../deployments/contracts';
 import { runAiTask } from '../ai/task-router';
-import { firstReplyWithDisclosure, publicInstructions } from './protocol';
+import { firstReplyWithDisclosure, publicChatInstructions, publicInstructions } from './protocol';
 import { compileRelationalRuntime } from '../voice/relational-runtime';
 import { enqueueLearningForServerSession } from '../learning-jobs/engine';
 
@@ -122,8 +122,11 @@ export async function publicChat(input: { token: string; nonce: string; origin: 
   try {
     authority = await resolvePublicSession(input.token, { origin: input.origin, nonce: input.nonce, consume: true, purpose: 'chat' });
     const runtime = compileRelationalRuntime({ entries: [...value.entries.map(entry => ({ id: entry.eventId, role: entry.role, text: entry.text })), { id: input.requestId, role: 'user', text: input.message.trim() }], settings: authority.config, callId: authority.sessionId });
-    const system = `${instructionsFor(authority)}\n${runtime.instructions}`;
-    if (system.length > 12000) throw new HttpError(409, 'The published configuration leaves insufficient space for conversation context. Ask the company to shorten it.');
+    const hasAssistantReply = value.entries.some(entry => entry.role === 'assistant');
+    const coreInstructions = `${instructionsFor(authority)}\n${runtime.instructions}`;
+    let system: string;
+    try { system = publicChatInstructions(coreInstructions, hasAssistantReply); }
+    catch { throw new HttpError(409, 'The published configuration leaves insufficient space for conversation context. Ask the company to shorten it.'); }
     await appendPublicTranscript(authority, 'public_web_chat', { role: 'user', text: input.message.trim(), eventId: input.requestId });
     const history = value.entries.slice(-12).map(({ role, text }) => ({ role, text }));
     const context = JSON.stringify({ conversation: history, visitorMessage: input.message.trim() });
@@ -140,7 +143,7 @@ export async function publicChat(input: { token: string; nonce: string; origin: 
     } finally { clearTimeout(timeout); clearInterval(recheck); }
     // Suppress delivery when the publishing authority or source approval changed during inference.
     await resolvePublicSession(input.token, { origin: input.origin, purpose: 'chat' });
-    const text = value.entries.length ? result.text : firstReplyWithDisclosure(result.text, authority.deployment.data.brand.name);
+    const text = hasAssistantReply ? result.text : firstReplyWithDisclosure(result.text, authority.deployment.data.brand.name);
     await appendPublicTranscript(authority, 'public_web_chat', { role: 'assistant', text, eventId: `${input.requestId}:answer` });
     const latest = await readConversation(authority, 'public_web_chat');
     await replaceConversation(authority, latest.row, { ...latest.value, pending: undefined });

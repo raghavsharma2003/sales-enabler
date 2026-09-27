@@ -5,22 +5,24 @@ import { db } from '../lib/server/db';
 import { ownerRegistrationStatements } from '../lib/team/service';
 import { createRecord, updateRecord, type PlatformRecord } from '../lib/platform/records';
 import { handleAgentAction } from '../lib/platform/agents';
-import { createDeployment, changeDeploymentStatus, issuePublicSession } from '../lib/deployments/engine';
+import { createDeployment, changeDeploymentStatus, issuePublicSession, resolvePublicSession } from '../lib/deployments/engine';
 import { PUBLICATION_ACKNOWLEDGEMENT } from '../lib/deployments/contracts';
-import { publicChat, closePublicChatHistory } from '../lib/public-agent/service';
+import { publicChat, closePublicChatHistory, instructionsFor } from '../lib/public-agent/service';
+import { compileRelationalRuntime } from '../lib/voice/relational-runtime';
+import { HttpError } from '../lib/server/http';
 import type { runAiTask } from '../lib/ai/task-router';
 
 process.env.SQLITE_PATH = ':memory:'; delete process.env.DATABASE_URL;
 process.env.PUBLIC_SESSION_HASH_SECRET = 'fictional-public-session-test-secret-only';
 process.env.AZURE_OPENAI_ENDPOINT = 'https://fictional.openai.azure.com'; process.env.AZURE_OPENAI_API_KEY = 'unused-fictional';
 const origin = 'https://public.example.test';
-async function fixture(autoLearning = false) {
+async function fixture(autoLearning = false, systemPrompt = 'Ask which service interests the visitor.') {
   const user = { id: randomUUID(), organizationId: randomUUID(), email: `${randomUUID()}@example.test` }, now = new Date().toISOString();
   await (await db()).batch([{ sql: 'INSERT INTO organizations (id,name,created_at) VALUES (?,?,?)', params: [user.organizationId, 'Example', now] }, { sql: 'INSERT INTO users (id,email,password_hash,organization_id,created_at) VALUES (?,?,?,?,?)', params: [user.id, user.email, 'unused', user.organizationId, now] }, ...ownerRegistrationStatements(user)]);
   const source = await createRecord(user, 'brain_source', { title: 'Public facts', content: 'Our office opens at 9.', sourceLabel: 'Company page', approvedAt: now }, 'approved');
   const privateSource = await createRecord(user, 'brain_source', { title: 'Private source', content: 'PRIVATE_SOURCE_SENTINEL', sourceLabel: 'Internal', approvedAt: now }, 'approved');
   await createRecord(user, 'customer_profile', { name: 'PRIVATE_CUSTOMER_SENTINEL' });
-  const agent = await handleAgentAction(user, 'agent.create', { name: 'Assistant', role: 'Company support', objective: 'Explain public company facts.', disclosure: 'I am an AI assistant.', primaryLanguage: 'English', allowedLanguages: ['English', 'Hindi'], responseStyle: 'Brief', memoryScope: 'approved_contact', escalation: 'Suggest company contact.', knowledgeIds: [source.id, privateSource.id], systemPrompt: 'Ask which service interests the visitor.', enabledTools: [] }) as PlatformRecord;
+  const agent = await handleAgentAction(user, 'agent.create', { name: 'Assistant', role: 'Company support', objective: 'Explain public company facts.', disclosure: 'I am an AI assistant.', primaryLanguage: 'English', allowedLanguages: ['English', 'Hindi'], responseStyle: 'Brief', memoryScope: 'approved_contact', escalation: 'Suggest company contact.', knowledgeIds: [source.id, privateSource.id], systemPrompt, enabledTools: [] }) as PlatformRecord;
   const version = await handleAgentAction(user, 'agent.version', { agentId: agent.id, revision: agent.revision }) as PlatformRecord;
   const check = await handleAgentAction(user, 'test.run', { versionId: version.id }) as PlatformRecord;
   const release = await handleAgentAction(user, 'release.publish', { versionId: version.id, testRunId: check.id, currentReleaseId: null }) as PlatformRecord;
@@ -51,6 +53,41 @@ test('uncertain chat is persisted and never silently replayed with a new request
   await assert.rejects(publicChat({ token: f.issued.token, nonce: f.issued.nonce, origin, requestId: randomUUID(), message: 'Hello' }, runner), /interrupted/);
   await assert.rejects(publicChat({ token: f.issued.token, nonce: f.issued.nonce, origin, requestId: randomUUID(), message: 'Hello again' }, runner), /busy or ended/); assert.equal(calls, 1);
   const [row] = await (await db()).all('SELECT data FROM entities WHERE organization_id = ? AND kind = ?', [f.user.organizationId, 'session']); assert.equal(JSON.parse(String(row.data)).outcome, 'uncertain');
+});
+
+test('chat continuation survives the original introduction leaving the bounded model history', async () => {
+  const f = await fixture(); let nonce = f.issued.nonce;
+  for (let turn = 0; turn < 8; turn++) {
+    const reply = await publicChat({ token: f.issued.token, nonce, origin, requestId: randomUUID(), message: `Question ${turn}: what are the opening hours?` }, async (_user, input) => {
+      if (turn === 0) assert.match(input.system, /FIRST WRITTEN REPLY/);
+      else {
+        assert.match(input.system, /CONTINUATION STATE/);
+        assert.doesNotMatch(input.system, /FIRST WRITTEN REPLY|first spoken or written response|Ask a question\./);
+        assert.match(input.system, /Never imply you are human/);
+      }
+      if (turn === 7) assert.doesNotMatch(input.input, /AI assistant/);
+      return result;
+    });
+    nonce = reply.nonce!;
+    if (turn === 0) assert.match(reply.text, /AI assistant/); else assert.equal(reply.text, result.text);
+  }
+});
+
+test('phase instructions exceeding the context budget remain a configuration conflict and never invoke the provider', async () => {
+  const first = await fixture();
+  const authority = await resolvePublicSession(first.issued.token, { origin, purpose: 'chat' });
+  const message = 'What are the opening hours?';
+  const runtime = compileRelationalRuntime({ entries: [{ id: 'synthetic-turn', role: 'user', text: message }], settings: authority.config, callId: authority.sessionId });
+  const promptLength = 11900 - instructionsFor(authority).length - runtime.instructions.length - 1 + authority.config.systemPrompt!.length;
+  assert.ok(promptLength > 0 && promptLength <= 12000);
+  const f = await fixture(false, 'x'.repeat(promptLength));
+  const bounded = await resolvePublicSession(f.issued.token, { origin, purpose: 'chat' });
+  const coreLength = instructionsFor(bounded).length + runtime.instructions.length + 1;
+  assert.ok(coreLength < 12000 && coreLength > 11800, 'core fits but leaves too little space for the phase wrapper');
+  let calls = 0;
+  await assert.rejects(publicChat({ token: f.issued.token, nonce: f.issued.nonce, origin, requestId: randomUUID(), message }, async () => { calls++; return result; }),
+    (error: unknown) => error instanceof HttpError && error.status === 409 && /insufficient space/.test(error.message));
+  assert.equal(calls, 0);
 });
 
 test('authority withdrawal during text inference suppresses reply delivery but saves caller history', async () => {

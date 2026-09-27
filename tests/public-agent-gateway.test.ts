@@ -34,6 +34,7 @@ test('real local WebSocket bridge forwards bounded Azure protocol, transcript pr
   const h = await harness(); try {
     await h.authenticate(); const session = h.upstreamEvents.find(event => event.type === 'session.update')!.session;
     assert.equal(session.type, 'realtime'); assert.equal(session.audio.input.turn_detection.create_response, false); assert.match(session.instructions, /AI assistant/); assert.match(session.instructions, /Ask which service/); assert.doesNotMatch(session.instructions, /PRIVATE_CUSTOMER/);
+    assert.doesNotMatch(session.instructions, /How can I help|first spoken or written response|OPENING TURN/);
     const opening = h.upstreamEvents.find(event => event.type === 'response.create')!.response.instructions;
     assert.ok(opening.startsWith(session.instructions)); assert.match(opening, /Fictional company/); assert.match(opening, /How can I help/); assert.match(opening, /published welcome message once/);
     h.client.send(JSON.stringify({ type: 'text', text: 'Please speak in Hindi.', requestId: 'request-123' }));
@@ -41,6 +42,8 @@ test('real local WebSocket bridge forwards bounded Azure protocol, transcript pr
     assert.equal(h.upstreamEvents.filter(event => event.type === 'response.create')[1].response, undefined, 'typed replies must not repeat greeting override');
     assert.ok(h.upstreamEvents.some(event => event.type === 'session.update' && /Hindi/.test(event.session.instructions) && /CURRENT-CALL RELATIONAL/.test(event.session.instructions)));
     assert.ok(h.upstreamEvents.some(event => event.type === 'session.update' && /CONTINUATION STATE/.test(event.session.instructions) && /Do not add another greeting/.test(event.session.instructions) && /answer truthfully/.test(event.session.instructions)));
+    const continuation = h.upstreamEvents.filter(event => event.type === 'session.update').at(-1)!.session.instructions;
+    assert.doesNotMatch(continuation, /How can I help|already disclosed|first spoken or written response|OPENING TURN/);
     h.emit({ type: 'response.output_item.added', item: { id: 'item-1', type: 'message' } });
     h.emit({ type: 'response.output_audio.delta', item_id: 'item-1', delta: Buffer.alloc(4800).toString('base64') });
     h.emit({ type: 'response.output_audio_transcript.done', item_id: 'item-1', transcript: 'I am an AI assistant.' });
@@ -103,6 +106,9 @@ test('interrupt before response.created keeps late cancelled audio and terminal 
     await h.authenticate();
     h.client.send(JSON.stringify({ type: 'text', text: 'First question', requestId: 'request-first' }));
     await until(() => h.upstreamEvents.filter(event => event.type === 'response.create').length === 2);
+    const afterCancelledOpening = h.upstreamEvents.filter(event => event.type === 'session.update').at(-1)!.session.instructions;
+    assert.doesNotMatch(afterCancelledOpening, /already disclosed|How can I help|OPENING TURN/);
+    assert.match(afterCancelledOpening, /Never imply you are human/);
     h.emit({ type: 'response.created', response: { id: 'cancelled-greeting' } });
     h.emit({ type: 'response.created', response: { id: 'current-answer' } });
     h.emit({ type: 'response.output_audio.delta', response_id: 'cancelled-greeting', item_id: 'old-item', delta: Buffer.alloc(4800).toString('base64') });

@@ -10,7 +10,18 @@ From the other device, the user can add the project directly in Foundry: open th
 
 To let the agent create and manage it instead, register **sales-enabler-deployer** as a single-tenant app, assign **Foundry Owner** (formerly **Azure AI Owner**) on the existing Foundry account, and create a 30-day client secret. Provide tenant ID, client ID and client-secret value through the separate ignored management file. Foundry Owner at the account scope permits child project creation and project development; subscription Contributor is not required for that bounded operation. There is no universal Azure master API key that replaces Entra/RBAC management authentication. [Foundry role permissions](https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry)
 
-The older read-only checker assumes subscription inventory access and a configured resource group. If only account-scoped Foundry Owner is granted, test the exact account/project ARM operation instead of treating failed subscription-wide inventory as invalid credentials. The prepared `AZURE_RESOURCE_GROUP` value is provisional; use the existing account's actual resource group when constructing the project request. Broader website/database deployment permissions remain a separate infrastructure requirement. No new project or management access is claimed until verified.
+The older read-only checker assumes subscription inventory access and a configured resource group. Use the new account-scoped helper for this request:
+
+```powershell
+node scripts/manage-foundry-project.mjs
+node scripts/manage-foundry-project.mjs --create
+```
+
+The first command only reads the exact configured account and project after obtaining an Entra token. The second may create the fixed **sales-enabler** child project only after a target 404 and verification that the existing AIServices account is ready for project management. Neither command creates a subscription, account, group, deployment or role assignment. An existing project is read without a PUT; uncertain writes are not retried. Ten offline tests cover the guards, provider-error redaction and uncertain outcomes. Real management access is still unverified.
+
+The ignored `.env.azure-management.local` requires `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP` and `AZURE_FOUNDRY_ACCOUNT_NAME`. Subscription and existing account name are prefilled. The proposed group value was cleared: supply the **existing account's Resource group**, visible on its Azure Portal **Overview** page. There is no group-name fallback. As of the last check, the three identity fields and actual resource-group name are missing, so no management request occurred. A separate read-only API-key probe of the desired project endpoint returned 404; it is not evidence of a completed new-project setup.
+
+Broader website/database deployment permissions remain a separate infrastructure requirement. No new project or management access is claimed until verified.
 
 The employer laptop must not run Docker, Docker Desktop, local image builds or Docker-based development. Use the existing Node preview locally. Build deployment images in Azure ACR Tasks from Cloud Shell or CI; run the services in Azure Container Apps. This still uses containers in Azure, not a Docker engine on the laptop. Native App Service is a separate option described in [hosting options](azure-no-local-docker-options.md). [Microsoft remote-build guide](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-tutorial-quick-task)
 
@@ -22,7 +33,7 @@ Create a dedicated **deployment service principal**, an application identity in 
 
 ## Using Azure from another device
 
-The user will access Azure Portal from a different device. Use the manual portal alternative below; it requires no repository access, script upload, local CLI or Docker. Register the same dedicated deployment identity and assign the same three bounded roles. Create the client secret only after role assignments are complete. Store the tenant ID, client ID and secret value in the user's own password manager, then transfer them to the already prepared `.env.azure-management.local` on the working laptop. The subscription ID and resource-group name are already filled there. Never request the secret in chat. No management access is established merely by providing this guide.
+The user will access Azure Portal from a different device. For the current project-only request, use the account-scoped Foundry Owner setup above. The manual portal alternative below is retained for broader hosting and requires no repository access, script upload, local CLI or Docker. Create the client secret only after role assignments are complete. Store the tenant ID, client ID and secret value in the user's own password manager, then transfer them to the already prepared `.env.azure-management.local` on the working laptop. Subscription ID and existing account name are prefilled; the actual existing resource-group name is still required. Never request the secret in chat. No management access is established merely by providing this guide.
 
 For the project group's region, open the existing Foundry account's **Overview** page and note **Location**. At every role assignment, choose **User, group, or service principal** and select the registered application by its name, checking the client ID when there are duplicates. If an Assignment type page appears, applications require **Active**, not Eligible. If **Add role assignment** is disabled, the signed-in startup account lacks the necessary permission; report that exact step rather than creating another identity.
 

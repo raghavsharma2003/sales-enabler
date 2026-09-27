@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { azureRealtimeConnection, firstReplyWithDisclosure, parseClientEvent, PUBLIC_VOICE_MAX_OUTPUT_TOKENS, publicContinuationInstructions, publicGreetingInstructions, publicInstructions, publicVoiceInstructions, realtimeSession, safeProviderDiagnostic, safeResponseDiagnostic } from '../lib/public-agent/protocol';
+import { azureRealtimeConnection, firstReplyWithDisclosure, parseClientEvent, PUBLIC_VOICE_MAX_OUTPUT_TOKENS, publicChatInstructions, publicContinuationInstructions, publicGreetingInstructions, publicInstructions, publicVoiceInstructions, realtimeSession, safeProviderDiagnostic, safeResponseDiagnostic } from '../lib/public-agent/protocol';
 import { instructionsFor, type PublicAuthority } from '../lib/public-agent/service';
 
 test('public protocol rejects provider passthrough, tools, prompt injection fields and invalid PCM', () => {
@@ -41,7 +41,8 @@ test('first reply preserves one direct AI introduction but quoted or reported AI
 
 test('voice opening retains the full public brand, welcome, factual bounds and journey instructions', () => {
   const base = publicInstructions({ brand: 'Example Consultancy', welcome: 'Welcome to Example Consultancy. What would you like to clarify?', context: 'Consultations explain approved services.' });
-  const opening = publicGreetingInstructions(base);
+  assert.doesNotMatch(base, /first spoken or written response|Published welcome|What would you like to clarify/);
+  const opening = publicGreetingInstructions(base, 'Welcome to Example Consultancy. What would you like to clarify?');
   assert.ok(opening.startsWith(base)); assert.match(opening, /Example Consultancy/); assert.match(opening, /Welcome to Example Consultancy/); assert.match(opening, /provisional context/); assert.match(opening, /do not restart discovery/); assert.match(opening, /Do not invent a checklist/); assert.match(opening, /published welcome message once/);
   assert.match(publicGreetingInstructions(base, 'I am an AI assistant for Example.'), /without adding another introduction/);
   assert.match(publicVoiceInstructions(base), /one or two short sentences/); assert.match(publicVoiceInstructions(base), /45 spoken words/);
@@ -56,10 +57,21 @@ test('response summaries retain only allowed statuses, reasons and bounded numer
 });
 
 test('continuation directly answers without repeated introductions or narrated adaptation and preserves identity questions', () => {
-  const instructions = publicContinuationInstructions('Published facts and current-call language choice.');
-  assert.match(instructions, /AI identity was already disclosed/); assert.match(instructions, /Do not add another greeting/);
+  const base = publicInstructions({ brand: 'Example', welcome: 'WELCOME_SCRIPT_SENTINEL', context: 'Published facts and current-call language choice.' });
+  const instructions = publicContinuationInstructions(base);
+  assert.doesNotMatch(instructions, /already disclosed|WELCOME_SCRIPT_SENTINEL|FIRST WRITTEN REPLY|OPENING TURN|first spoken or written response/); assert.match(instructions, /Do not add another greeting/);
+  assert.match(instructions, /Always be truthful about your AI identity/);
   assert.match(instructions, /asks who or what you are, answer truthfully/); assert.match(instructions, /Apply language, brevity and pacing requests silently/);
   assert.throws(() => publicContinuationInstructions('x'.repeat(11999)), /insufficient room/);
+});
+
+test('first chat reply answers the visitor while continuing chat excludes the opening script and keeps identity rules', () => {
+  const base = publicInstructions({ brand: 'Example', welcome: 'WELCOME_SCRIPT_SENTINEL', context: 'Our office opens at 9.' });
+  const opening = publicChatInstructions(base, false), ongoing = publicChatInstructions(base, true);
+  assert.match(opening, /FIRST WRITTEN REPLY/); assert.match(opening, /then address the visitor/);
+  assert.match(ongoing, /CONTINUATION STATE/); assert.doesNotMatch(ongoing, /FIRST WRITTEN REPLY|WELCOME_SCRIPT_SENTINEL/);
+  for (const prompt of [opening, ongoing]) { assert.match(prompt, /Our office opens at 9/); assert.match(prompt, /Never imply you are human/); }
+  assert.throws(() => publicChatInstructions('x'.repeat(11999), false), /too large/);
 });
 
 test('provider diagnostics contain only bounded code/type/param, never messages or raw provider content', () => {

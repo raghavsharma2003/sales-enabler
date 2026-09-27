@@ -936,6 +936,34 @@
       "title": "Create sales-enabler as a child of the existing Foundry account in the same grant subscription",
       "status": "requested-pending-management-access-or-user-creation",
       "path": "docs/azure-access-setup.md"
+    },
+    {
+      "id": "azure.scoped-project-helper",
+      "type": "component",
+      "title": "Exact existing-account project reads and explicit sales-enabler child creation",
+      "status": "ten-offline-tests-passed-management-credentials-missing",
+      "path": "scripts/manage-foundry-project.mjs"
+    },
+    {
+      "id": "voice.public-conversation-phase",
+      "type": "component",
+      "title": "Separate opening and continuation instructions with durable chat phase selection",
+      "status": "implemented-and-bounded-azure-tested",
+      "path": "lib/public-agent/protocol.ts"
+    },
+    {
+      "id": "verification.voice-conversation-phase",
+      "type": "evidence",
+      "title": "88 targeted checks, four-response Azure run and corrected browser continuation verified",
+      "status": "bounded-browser-retry-passed-brevity-quality-open",
+      "path": "docs/voice-conversation-phase-verification.md"
+    },
+    {
+      "id": "voice.public-browser-playback-bounds",
+      "type": "component",
+      "title": "One-clock audio scheduling, empty-frame handling and a true 45-second playback bound",
+      "status": "regression-tested-and-browser-retry-passed",
+      "path": "lib/public-agent/browser.ts"
     }
   ],
   "edges": [
@@ -1678,6 +1706,26 @@
       "from": "azure.new-project-existing-account",
       "to": "azure.setup-from-another-device",
       "relation": "narrows-current-setup-to-existing-account-project"
+    },
+    {
+      "from": "azure.scoped-project-helper",
+      "to": "azure.new-project-existing-account",
+      "relation": "prepares-bounded-creation-without-subscription-listing"
+    },
+    {
+      "from": "verification.voice-conversation-phase",
+      "to": "voice.public-conversation-phase",
+      "relation": "verifies-phase-logic-with-browser-limitations"
+    },
+    {
+      "from": "voice.public-conversation-phase",
+      "to": "product.general",
+      "relation": "keeps-public-conversations-on-current-customer-point"
+    },
+    {
+      "from": "verification.voice-conversation-phase",
+      "to": "voice.public-browser-playback-bounds",
+      "relation": "records-queue-failure-and-successful-corrected-retry"
     }
   ]
 }
