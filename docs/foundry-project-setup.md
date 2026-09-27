@@ -1,5 +1,7 @@
 # Existing Foundry project — verified API-key setup
 
+Current follow-up: the user now wants a separate **sales-enabler** project under the same existing subscription and Foundry account. That new project is pending. This document records the earlier agent created and tested in the original project, not a completed new-project migration. See `docs/azure-access-setup.md` for the current narrower setup.
+
 27 September 2026. The user explicitly authorized use of the supplied Azure resource key to create the project's AI setup. No new Azure subscription, Foundry account, resource group, hosted container, public website or database was created.
 
 ## What actually worked

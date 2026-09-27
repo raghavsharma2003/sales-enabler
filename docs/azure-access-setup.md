@@ -1,5 +1,17 @@
 # Azure access setup — no local Docker
 
+## Current request: new project inside the existing subscription and Foundry resource
+
+The user's latest clarification is to keep the existing grant subscription and add a separate Foundry project under the existing Foundry account. A new subscription, account or resource group is not required for this step. The Cloud Shell bootstrap and project-group Owner setup below were prepared for broader hosting work; do not run them as prerequisites for adding the Foundry project.
+
+Target project name: **sales-enabler** (pending creation). The Company Brain prompt agent already created is inside the original project; it has not been migrated to this new project.
+
+From the other device, the user can add the project directly in Foundry: open the existing project, select **Manage → Resource details → Add project**, confirm the existing account, name it **sales-enabler**, and create it. The new project's **Home** page supplies its project endpoint. Keep the existing default project. [Microsoft existing-resource project instructions](https://learn.microsoft.com/en-us/azure/foundry/how-to/create-projects#create-multiple-projects-on-the-same-resource)
+
+To let the agent create and manage it instead, register **sales-enabler-deployer** as a single-tenant app, assign **Foundry Owner** (formerly **Azure AI Owner**) on the existing Foundry account, and create a 30-day client secret. Provide tenant ID, client ID and client-secret value through the separate ignored management file. Foundry Owner at the account scope permits child project creation and project development; subscription Contributor is not required for that bounded operation. There is no universal Azure master API key that replaces Entra/RBAC management authentication. [Foundry role permissions](https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry)
+
+The older read-only checker assumes subscription inventory access and a configured resource group. If only account-scoped Foundry Owner is granted, test the exact account/project ARM operation instead of treating failed subscription-wide inventory as invalid credentials. The prepared `AZURE_RESOURCE_GROUP` value is provisional; use the existing account's actual resource group when constructing the project request. Broader website/database deployment permissions remain a separate infrastructure requirement. No new project or management access is claimed until verified.
+
 The employer laptop must not run Docker, Docker Desktop, local image builds or Docker-based development. Use the existing Node preview locally. Build deployment images in Azure ACR Tasks from Cloud Shell or CI; run the services in Azure Container Apps. This still uses containers in Azure, not a Docker engine on the laptop. Native App Service is a separate option described in [hosting options](azure-no-local-docker-options.md). [Microsoft remote-build guide](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-tutorial-quick-task)
 
 ## What credential is needed
