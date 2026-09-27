@@ -4,9 +4,27 @@ The employer laptop must not run Docker, Docker Desktop, local image builds or D
 
 ## What credential is needed
 
+**Verified correction:** the existing resource API key also supports the Foundry project's agent and deployment APIs. It has been used to list 16 deployments, create the `sales-enabler-company-brain` prompt agent, and obtain a bounded live response. That is useful project access, not Azure subscription administration. This management setup is needed for infrastructure such as hosting, new resource groups, PostgreSQL and IAM; it is not a prerequisite for continuing work inside the existing AI project. See [Foundry project setup evidence](foundry-project-setup.md).
+
 Create a dedicated **deployment service principal**, an application identity in the startup's Microsoft Entra tenant. It authenticates with a tenant ID, client ID and client secret; Azure roles determine its access. An AI resource key cannot administer the Azure subscription. This deployment credential is separate from customer sign-in, connector OAuth apps and the app's runtime identity. It must never be added to the application `.env.local`, browser code, build context or a runtime container. [Microsoft service-principal overview and setup](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal)
 
-## Exact portal steps
+## Shorter setup: Cloud Shell script
+
+Use [bootstrap-access.sh](../infrastructure/azure/bootstrap-access.sh) to automate the role setup below, with the same bounded scopes. It creates only a project resource group and a dedicated app/service principal with a 30-day credential. It does not deploy compute, run a model, use Docker locally, or alter an existing app's password.
+
+1. Sign into [Azure Portal](https://portal.azure.com/) with the startup account. Click the **Cloud Shell** (`>_`) icon in the top toolbar.
+2. Choose **Bash**. If first-run setup appears, choose **No storage account required**, select the grant subscription, and click **Apply**. If Microsoft.CloudShell is unregistered, use **Subscriptions → grant subscription → Settings → Resource providers → search cloudshell → Microsoft.CloudShell → Register**, then reopen Cloud Shell. [Microsoft Cloud Shell setup](https://learn.microsoft.com/en-us/azure/cloud-shell/get-started/ephemeral)
+3. In Cloud Shell's toolbar, click **Manage files → Upload**. In the Windows file chooser's File name box, paste the absolute path to this repository's `infrastructure\azure\bootstrap-access.sh`, then click **Open**.
+4. Paste `bash ~/bootstrap-access.sh` into the terminal and press Enter. Supply the grant subscription ID when prompted. Choose the number beside the existing Foundry resource used by this project; the script derives the group location automatically.
+5. Read the displayed subscription, resource and role plan. To grant that exact access, type **APPLY SALES ENABLER ACCESS** and press Enter. This is an Azure access change, not an inference request.
+6. When it reports completion, click **Manage files → Download**. Paste the **absolute private credential-file path printed by the script**, then click **Download**. Do this before closing an ephemeral Cloud Shell session. [File upload/download controls](https://learn.microsoft.com/en-us/azure/cloud-shell/use-the-shell-window#manage-files-menu)
+7. Tell the agent the credential file is downloaded and give its local path. Do not paste the contents into chat. The read-only checker below accepts that path as its optional argument.
+
+If the script fails, stop and share only its nonsecret error text. It preserves a recovery receipt with the new application's identifiers and refuses to overwrite an earlier output. Do not repeatedly create new identities to work around permission errors. The bootstrap's Azure execution and permission propagation remain unverified until the user runs it in the correct tenant.
+
+Local verification: Bash syntax passed, three mocked bootstrap tests passed (success with propagation retry, declined confirmation, and role-grant failure), four management-checker tests passed, and the project typecheck passed. An independent static review found no blocking issue. These checks do not establish real tenant permissions or successful Azure role propagation.
+
+## Manual portal alternative
 
 1. Open [Azure Portal](https://portal.azure.com/) in a browser profile/private window signed into the **personal/startup account holding the Founders Hub grant**. Select that directory and grant subscription. Do not use the employer directory. Subscription ownership and Entra app-registration permission are different; this setup needs permission to register an application and assign Azure roles.
 2. Open **Resource groups → Create**. Select the grant subscription, use the name **sales-enabler-prod**, and choose the region displayed on your existing Foundry resource for the group's metadata location. Create only the group now; hosting, database and other service choices follow account/quota inspection. If this project group already exists, use it.

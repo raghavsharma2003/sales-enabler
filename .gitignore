@@ -15,3 +15,4 @@ backups/
 dist/
 infrastructure/azure/*.local.*
 infrastructure/azure/*.parameters.json
+.sales-enabler-bootstrap-receipt*

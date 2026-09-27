@@ -894,6 +894,34 @@
       "title": "Read-only credential checker passes four offline redaction and scope tests",
       "status": "offline-verified-live-credentials-pending",
       "path": "tests/azure-access-check.test.ts"
+    },
+    {
+      "id": "azure.existing-project-key-capability",
+      "type": "evidence",
+      "title": "Existing resource key verified for project agent creation/listing and deployment inventory",
+      "status": "live-verified",
+      "path": "docs/foundry-project-setup.md"
+    },
+    {
+      "id": "azure.company-brain-prompt-agent",
+      "type": "component",
+      "title": "Foundry Company Brain prompt agent created and bounded response verified",
+      "status": "created-and-smoke-tested-not-web-hosting",
+      "path": "infrastructure/azure/foundry-company-brain.agent.json"
+    },
+    {
+      "id": "azure.cloudshell-bootstrap",
+      "type": "component",
+      "title": "User-run Cloud Shell identity bootstrap with exact scope confirmation",
+      "status": "prepared-not-run-in-azure",
+      "path": "infrastructure/azure/bootstrap-access.sh"
+    },
+    {
+      "id": "azure.cloudshell-bootstrap-offline-evidence",
+      "type": "evidence",
+      "title": "Three mocked bootstrap checks pass; Bash syntax and independent static review complete",
+      "status": "offline-verified-not-live-iam",
+      "path": "tests/azure-bootstrap.test.ts"
     }
   ],
   "edges": [
@@ -1606,6 +1634,26 @@
       "from": "verification.azure-access-helper",
       "to": "deployment.azure-management-identity",
       "relation": "verifies-read-only-bootstrap"
+    },
+    {
+      "from": "azure.existing-project-key-capability",
+      "to": "azure.company-brain-prompt-agent",
+      "relation": "authorizes-project-operation"
+    },
+    {
+      "from": "azure.cloudshell-bootstrap",
+      "to": "deployment.azure-management-identity",
+      "relation": "prepares-user-grant"
+    },
+    {
+      "from": "azure.company-brain-prompt-agent",
+      "to": "product.general",
+      "relation": "supports-company-brain-evaluation"
+    },
+    {
+      "from": "azure.cloudshell-bootstrap-offline-evidence",
+      "to": "azure.cloudshell-bootstrap",
+      "relation": "verifies-offline-failure-and-secret-handling"
     }
   ]
 }

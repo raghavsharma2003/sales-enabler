@@ -4,7 +4,7 @@ Updated 2026-09-27. The user authorized real implementation, superseding the ear
 
 ## Current access and device constraint
 
-The user prohibits Docker on the employer laptop. Do not install, launch or run Docker/Compose commands here. Use Node locally and Azure Cloud Shell/CI for remote image builds and Azure hosting. The exact startup service-principal setup is in `docs/azure-access-setup.md`; the separate ignored `.env.azure-management.local` remains unconfigured. The prepared checker performs token issuance plus ARM reads only, with no model invocation or provisioning; four offline tests pass. This does not establish live management access.
+The user prohibits Docker on the employer laptop. Do not install, launch or run Docker/Compose commands here. Use Node locally and Azure Cloud Shell/CI for remote image builds and Azure hosting. The exact startup service-principal setup is in `docs/azure-access-setup.md`; the separate ignored `.env.azure-management.local` remains unconfigured. The prepared checker performs token issuance plus ARM reads only, with no model invocation or provisioning; four offline tests pass. This does not establish live management access. The existing AI resource key has separately been verified for project-level agent listing/creation and deployment inventory; one prompt Company Brain agent was created and smoke-tested in the existing project. The earlier inference-only shorthand was too narrow. See `docs/foundry-project-setup.md`. No new project or SaaS host was created.
 
 ## v7 continuity update — bounded local gates verified; real voice and deployment gates open
 
