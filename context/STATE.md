@@ -1,6 +1,12 @@
 # Current project state
 
-Updated 2026-09-27. The user authorized real implementation, superseding the earlier prototype pause. Current focus is the v7 sellable general Indian-organization AI application layer and its integration/deployment proof. No additional design approval is required to continue authorized implementation.
+Updated 2026-09-30 for continuity; implementation and live-test evidence below was last verified on 27 September unless explicitly dated otherwise. The user authorized real implementation, superseding the earlier prototype pause. Current focus is the v7 sellable general Indian-organization AI application layer and its integration/deployment proof. No additional design approval is required to continue authorized implementation.
+
+## Resume checkpoint — 30 September 2026
+
+Repository: `raghavsharma2003/sales-enabler`; active branch: `codex/product-discovery`. Latest implementation checkpoint before this documentation update: `8187b0a`. The working tree was clean when this checkpoint started. The user requests ongoing context logging and frequent local commits before usage limits; persist this practice at meaningful milestones.
+
+Resume with `docs/voice-conversation-phase-verification.md` and the current-request section of `docs/azure-access-setup.md`. Last verified result: 88 targeted checks, production build/typecheck/artifact check, a four-response native Azure test, and corrected browser Listen & type continuation passed. Brevity and perceptual voice quality remain open. Check local process and credential availability afresh; old process IDs and three-day-old access checks are not current evidence. Next Azure action is the account-scoped helper for a new child project in the existing account/subscription, once the private identity fields and actual existing resource-group name are available. No new project, hosted SaaS deployment or competitor superiority is established.
 
 ## Current access and device constraint
 

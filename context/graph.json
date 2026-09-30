@@ -964,6 +964,13 @@
       "title": "One-clock audio scheduling, empty-frame handling and a true 45-second playback bound",
       "status": "regression-tested-and-browser-retry-passed",
       "path": "lib/public-agent/browser.ts"
+    },
+    {
+      "id": "continuity.frequent-local-checkpoints",
+      "type": "decision",
+      "title": "Maintain context and commit completed milestones before usage limits and handoffs",
+      "status": "user-requested-2026-09-30",
+      "path": "AGENTS.md"
     }
   ],
   "edges": [
@@ -1726,6 +1733,11 @@
       "from": "verification.voice-conversation-phase",
       "to": "voice.public-browser-playback-bounds",
       "relation": "records-queue-failure-and-successful-corrected-retry"
+    },
+    {
+      "from": "continuity.frequent-local-checkpoints",
+      "to": "product.general",
+      "relation": "preserves-implementation-and-verification-continuity"
     }
   ]
 }

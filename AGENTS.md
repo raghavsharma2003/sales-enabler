@@ -1,5 +1,9 @@
 # Project continuity
 
+## Checkpoint preference — 30 September 2026
+
+The user explicitly requests frequent context logging and local Git commits so work survives usage limits and handoffs. Update context/STATE.md, context/graph.json and the append-only context/events.jsonl at meaningful milestones, validate with npm run context:check, and commit completed work. Keep credentials, databases and raw customer material out of commits. Record verification boundaries and blockers accurately; a checkpoint does not establish deployment or production readiness.
+
 ## Employer-laptop constraint — 27 September 2026
 
 Do not install, start, run, inspect with the CLI, or use Docker/Docker Desktop on this laptop. No local container builds or Docker development workflow. Keep Node-based local preview available; use Azure Cloud Shell/CI and Azure-side builds for hosting work. Existing Dockerfiles are for remote Azure builds, and Compose instructions are historical/other-host reference only. See `docs/azure-access-setup.md` for the dedicated deployment identity; keep management credentials in the ignored `.env.azure-management.local`, separate from app/runtime credentials. Access and authorization remain limited to the user's startup project and explicitly selected grant subscription, never the employer tenant.
