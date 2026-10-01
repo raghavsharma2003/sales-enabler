@@ -141,5 +141,5 @@ around the existing Personal Voice record path; it must use v7’s organization
 and owner fences and remain disabled until provider eligibility is confirmed.
 For the new branch, wrap one review-first Company Brain or relational-voice
 effect only if a concrete race remains after the existing SQL fences are
-exercised. No provider-specific runtime, deployment default, or wholesale
-schema port is authorized.
+exercised. This audit does not port provider-specific runtimes, deployment
+defaults or entire schemas; it identifies focused candidates for implementation.

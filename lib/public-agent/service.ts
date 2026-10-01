@@ -54,15 +54,17 @@ function mergeVoiceTurn(existing: PublicVoiceResponseEvidence | undefined, incom
   if (!existing) return incoming;
   return {
     turn: existing.turn,
-    requestedAtMs: existing.requestedAtMs,
+    ...(existing.requestedAtMs !== undefined || incoming.requestedAtMs !== undefined ? { requestedAtMs: existing.requestedAtMs ?? incoming.requestedAtMs } : {}),
     ...(existing.providerCreatedAtMs !== undefined || incoming.providerCreatedAtMs !== undefined ? { providerCreatedAtMs: existing.providerCreatedAtMs ?? incoming.providerCreatedAtMs } : {}),
     ...(existing.firstServerAudioAtMs !== undefined || incoming.firstServerAudioAtMs !== undefined ? { firstServerAudioAtMs: existing.firstServerAudioAtMs ?? incoming.firstServerAudioAtMs } : {}),
     ...(existing.terminalAtMs !== undefined || incoming.terminalAtMs !== undefined ? { terminalAtMs: existing.terminalAtMs ?? incoming.terminalAtMs } : {}),
     ...(existing.requestedToFirstServerAudioMs !== undefined || incoming.requestedToFirstServerAudioMs !== undefined ? { requestedToFirstServerAudioMs: existing.requestedToFirstServerAudioMs ?? incoming.requestedToFirstServerAudioMs } : {}),
-    ...(incoming.status !== undefined || existing.status !== undefined ? { status: incoming.status ?? existing.status } : {}),
-    cancelled: existing.cancelled || incoming.cancelled,
+    ...(incoming.status !== undefined || existing.status !== undefined ? { status: existing.status ?? incoming.status } : {}),
+    cancelRequested: existing.cancelRequested || incoming.cancelRequested,
+    ...(existing.cancelRequestedAtMs !== undefined || incoming.cancelRequestedAtMs !== undefined ? { cancelRequestedAtMs: existing.cancelRequestedAtMs ?? incoming.cancelRequestedAtMs } : {}),
+    cancelled: existing.status !== undefined ? existing.cancelled : incoming.cancelled,
     audioBytes: Math.max(existing.audioBytes, incoming.audioBytes),
-    ...(incoming.tokenUsage || existing.tokenUsage ? { tokenUsage: incoming.tokenUsage || existing.tokenUsage } : {}),
+    ...(incoming.tokenUsage || existing.tokenUsage ? { tokenUsage: existing.tokenUsage || incoming.tokenUsage } : {}),
   };
 }
 

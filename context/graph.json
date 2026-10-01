@@ -885,8 +885,8 @@
       "id": "deployment.azure-management-identity",
       "type": "decision",
       "title": "Separate startup deployment service principal; management access pending user setup",
-      "status": "awaiting-user-credentials",
-      "path": "docs/azure-access-setup.md"
+      "status": "configured-account-and-project-access-verified-group-hosting-role-pending",
+      "path": "docs/azure-project-creation-2026-10-01.md"
     },
     {
       "id": "verification.azure-access-helper",
@@ -983,7 +983,7 @@
       "id": "azure.four-value-portal-guide",
       "type": "component",
       "title": "Single portal flow for four missing management values on another device",
-      "status": "official-docs-checked-2026-10-01-user-setup-pending",
+      "status": "identity-values-supplied-and-account-access-verified",
       "path": "docs/azure-access-setup.md"
     },
     {
@@ -1006,6 +1006,20 @@
       "title": "56 source heads with one new multimodal branch and one moved cloning branch inspected",
       "status": "delta-audited-not-wholesale-ported",
       "path": "research/2026-10-01/source-delta-and-adoption.md"
+    },
+    {
+      "id": "voice.public-server-response-evidence",
+      "type": "component",
+      "title": "Bounded server transport response evidence with receipt-based cancellation and nonblocking final flush",
+      "status": "implemented-full-559-tests-and-build-passed",
+      "path": "lib/public-agent/evidence.ts"
+    },
+    {
+      "id": "verification.public-server-evidence-oct01",
+      "type": "evidence",
+      "title": "Server evidence review fixes verified without acoustic or live deployment claims",
+      "status": "559-full-tests-30-focused-typecheck-build-package-passed",
+      "path": "docs/public-voice-server-evidence.md"
     }
   ],
   "edges": [
@@ -1798,6 +1812,16 @@
       "from": "research.source-delta-oct01",
       "to": "product.general",
       "relation": "identifies-selective-new-source-contracts"
+    },
+    {
+      "from": "research.voice-adoption-oct01",
+      "to": "voice.public-server-response-evidence",
+      "relation": "informs-first-measurement-adoption"
+    },
+    {
+      "from": "verification.public-server-evidence-oct01",
+      "to": "voice.public-server-response-evidence",
+      "relation": "verifies-bounded-server-observation-contract"
     }
   ]
 }

@@ -9,6 +9,8 @@ import { safeResponseDiagnostic } from '../lib/public-agent/protocol';
 import { appendPublicTranscript, claimVoiceSession, finishPublicConversation, persistPublicVoiceEvidence, type PublicAuthority } from '../lib/public-agent/service';
 import { db } from '../lib/server/db';
 import { HttpError } from '../lib/server/http';
+import { createSession } from '../lib/server/store';
+import { ownerRegistrationStatements } from '../lib/team/service';
 
 process.env.SQLITE_PATH = ':memory:';
 delete process.env.DATABASE_URL;
@@ -32,7 +34,7 @@ test('recorder stores exact server-transport lags, nonempty audio bytes and sani
   const snapshot = recorder.snapshot();
   assert.deepEqual(snapshot, {
     version: 1, serverCaptured: true, capture: 'best_effort', basis: 'server_transport', metric: 'requested_to_first_server_audio_ms',
-    turns: [{ turn: 'turn1', requestedAtMs: 10, providerCreatedAtMs: 15, firstServerAudioAtMs: 25, terminalAtMs: 40, requestedToFirstServerAudioMs: 15, status: 'completed', cancelled: false, audioBytes: 100,
+    turns: [{ turn: 'turn1', requestedAtMs: 10, providerCreatedAtMs: 15, firstServerAudioAtMs: 25, terminalAtMs: 40, requestedToFirstServerAudioMs: 15, status: 'completed', cancelRequested: false, cancelled: false, audioBytes: 100,
       tokenUsage: { inputTokens: 11, outputTokens: 7, totalTokens: 18, inputAudioTokens: 3, outputAudioTokens: 4 } }],
   });
   assert.equal(isPublicVoiceEvidence(snapshot), true);
@@ -42,7 +44,27 @@ test('recorder stores exact server-transport lags, nonempty audio bytes and sani
   assert.equal(recorder.snapshot().turns.length, 1, 'evidence is fixed to turn1..turn40');
 });
 
-async function gatewayHarness(evidenceFails = false) {
+test('invalid clock samples omit offsets instead of manufacturing zero-valued timing', () => {
+  const recorder = new PublicVoiceEvidenceRecorder(Number.NaN, () => Number.POSITIVE_INFINITY);
+  recorder.requested(1); recorder.providerCreated(1); recorder.audio(1, 40);
+  recorder.cancelRequested(1);
+  recorder.terminal(1, safeResponseDiagnostic('response.done', { status: 'cancelled', usage: { total_tokens: 9 } }, 1));
+  assert.deepEqual(recorder.snapshot().turns[0], { turn: 'turn1', cancelRequested: true, status: 'cancelled', cancelled: true, audioBytes: 40, tokenUsage: { inputTokens: undefined, outputTokens: undefined, totalTokens: 9, inputAudioTokens: undefined, outputAudioTokens: undefined } });
+  assert.doesNotMatch(JSON.stringify(recorder.snapshot()), /AtMs|requestedToFirstServerAudioMs/);
+});
+
+test('a local cancel request does not claim provider cancellation before a terminal receipt', () => {
+  let now = 500;
+  const recorder = new PublicVoiceEvidenceRecorder(now, () => now);
+  now = 510; recorder.requested(1);
+  now = 515; recorder.cancelRequested(1);
+  assert.deepEqual(recorder.snapshot().turns[0], { turn: 'turn1', requestedAtMs: 10, cancelRequested: true, cancelRequestedAtMs: 15, cancelled: false, audioBytes: 0 });
+  now = 520; recorder.terminal(1, safeResponseDiagnostic('response.done', { status: 'cancelled', usage: { total_tokens: 4 } }, 1));
+  assert.deepEqual(recorder.snapshot().turns[0], { turn: 'turn1', requestedAtMs: 10, terminalAtMs: 20, status: 'cancelled', cancelRequested: true, cancelRequestedAtMs: 15, cancelled: true, audioBytes: 0,
+    tokenUsage: { inputTokens: undefined, outputTokens: undefined, totalTokens: 4, inputAudioTokens: undefined, outputAudioTokens: undefined } });
+});
+
+async function gatewayHarness(evidenceMode: 'save' | 'reject' | 'never' = 'save') {
   const fake = new WebSocketServer({ port: 0, host: '127.0.0.1' }); await once(fake, 'listening');
   const upstreamEvents: Record<string, any>[] = [], clientEvents: Record<string, any>[] = [], saved: PublicVoiceResponseEvidence[] = [];
   let provider: WebSocket | undefined, now = 10_000, finishes = 0;
@@ -51,7 +73,11 @@ async function gatewayHarness(evidenceFails = false) {
   const dependencies: GatewayDependencies = {
     authorize: async (_token, input) => { if (input.origin !== origin || input.purpose !== 'voice') throw new HttpError(403, 'Unauthorized.'); return { ...authority, nextNonce: 'next' }; },
     claim: async () => undefined, close: async () => undefined, transcript: async () => undefined, finish: async () => { finishes++; },
-    evidence: async (_authority, turn) => { if (evidenceFails) throw new Error('telemetry unavailable'); saved.push(turn); },
+    evidence: async (_authority, turn) => {
+      if (evidenceMode === 'reject') throw new Error('telemetry unavailable');
+      if (evidenceMode === 'never') return new Promise<void>(() => undefined);
+      saved.push(turn);
+    },
     clock: () => now,
     connect: () => ({ socket: new WebSocket(`ws://127.0.0.1:${(fake.address() as { port: number }).port}`), model: 'fictional', voice: 'marin' }),
     recheckMs: 10_000,
@@ -66,7 +92,7 @@ async function gatewayHarness(evidenceFails = false) {
     cleanup: async () => { client.terminate(); gateway.shutdown(); for (const socket of fake.clients) socket.terminate(); await new Promise<void>(resolve => fake.close(() => resolve())); } };
 }
 
-test('gateway persists cancellation without accepting late cancelled events and binds audio to the current ordinal', async () => {
+test('gateway binds a late cancelled terminal to its original ordinal while excluding late audio', async () => {
   const h = await gatewayHarness();
   try {
     h.setNow(10_010); h.emit({ type: 'session.updated' });
@@ -78,26 +104,28 @@ test('gateway persists cancellation without accepting late cancelled events and 
     h.emit({ type: 'response.done', response: { id: 'cancelled-provider-id', status: 'cancelled', usage: { total_tokens: 999 } } });
     await delay(20);
     h.setNow(10_020); h.emit({ type: 'response.created', response: { id: 'current-provider-id' } });
-    await until(() => h.saved.some(turn => turn.turn === 'turn2' && turn.providerCreatedAtMs === 20));
+    await delay(20);
     h.emit({ type: 'response.output_item.added', response_id: 'current-provider-id', item: { id: 'current-item-id', type: 'message' } });
     h.setNow(10_021); h.emit({ type: 'response.output_audio.delta', response_id: 'current-provider-id', item_id: 'current-item-id', delta: '' });
     await delay(20);
     h.setNow(10_030); h.emit({ type: 'response.output_audio.delta', response_id: 'current-provider-id', item_id: 'current-item-id', delta: Buffer.alloc(80).toString('base64') });
-    await until(() => h.saved.some(turn => turn.turn === 'turn2' && turn.firstServerAudioAtMs === 30));
+    await until(() => h.clientEvents.filter(event => event.type === 'audio').length >= 2);
     h.setNow(10_035); h.emit({ type: 'response.output_audio.delta', response_id: 'current-provider-id', item_id: 'current-item-id', delta: Buffer.alloc(20).toString('base64') });
     await until(() => h.clientEvents.filter(event => event.type === 'audio').length >= 3);
     h.setNow(10_050); h.emit({ type: 'response.done', response: { id: 'current-provider-id', status: 'completed', usage: { input_tokens: 5, output_tokens: 6, total_tokens: 11 }, output: [{ secret: 'raw provider payload' }] } });
     await until(() => h.clientEvents.some(event => event.type === 'turn_done'));
+    h.client.send(JSON.stringify({ type: 'stop' }));
+    await until(() => h.finishes() === 1);
     await until(() => h.saved.some(turn => turn.turn === 'turn2' && turn.terminalAtMs === 50));
     const latest = new Map(h.saved.map(turn => [turn.turn, turn]));
-    assert.deepEqual(latest.get('turn1'), { turn: 'turn1', requestedAtMs: 10, status: 'cancelled', cancelled: true, audioBytes: 0 });
-    assert.deepEqual(latest.get('turn2'), { turn: 'turn2', requestedAtMs: 12, providerCreatedAtMs: 20, firstServerAudioAtMs: 30, terminalAtMs: 50, requestedToFirstServerAudioMs: 18, status: 'completed', cancelled: false, audioBytes: 100, tokenUsage: { inputTokens: 5, outputTokens: 6, totalTokens: 11, inputAudioTokens: undefined, outputAudioTokens: undefined } });
+    assert.deepEqual(latest.get('turn1'), { turn: 'turn1', requestedAtMs: 10, providerCreatedAtMs: 15, terminalAtMs: 15, cancelRequested: true, cancelRequestedAtMs: 12, status: 'cancelled', cancelled: true, audioBytes: 0, tokenUsage: { inputTokens: undefined, outputTokens: undefined, totalTokens: 999, inputAudioTokens: undefined, outputAudioTokens: undefined } });
+    assert.deepEqual(latest.get('turn2'), { turn: 'turn2', requestedAtMs: 12, providerCreatedAtMs: 20, firstServerAudioAtMs: 30, terminalAtMs: 50, requestedToFirstServerAudioMs: 18, status: 'completed', cancelRequested: false, cancelled: false, audioBytes: 100, tokenUsage: { inputTokens: 5, outputTokens: 6, totalTokens: 11, inputAudioTokens: undefined, outputAudioTokens: undefined } });
     assert.doesNotMatch(JSON.stringify([...latest.values()]), /provider-id|item-id|raw provider payload/i);
   } finally { await h.cleanup(); }
 });
 
-test('best-effort evidence failure does not suppress the response or canonical finish', async () => {
-  const h = await gatewayHarness(true);
+test('rejected best-effort evidence does not suppress the response or canonical finish', async () => {
+  const h = await gatewayHarness('reject');
   try {
     h.setNow(10_010); h.emit({ type: 'session.updated' });
     await until(() => h.upstreamEvents.some(event => event.type === 'response.create'));
@@ -110,6 +138,27 @@ test('best-effort evidence failure does not suppress the response or canonical f
   } finally { await h.cleanup(); }
 });
 
+test('a never-settling evidence callback cannot delay later turns or finalization', async () => {
+  const h = await gatewayHarness('never');
+  try {
+    h.setNow(10_010); h.emit({ type: 'session.updated' });
+    await until(() => h.upstreamEvents.some(event => event.type === 'response.create'));
+    h.emit({ type: 'response.created', response: { id: 'response-1' } });
+    h.emit({ type: 'response.done', response: { id: 'response-1', status: 'completed' } });
+    await until(() => h.clientEvents.some(event => event.type === 'turn_done'));
+    const turnStarted = Date.now();
+    h.client.send(JSON.stringify({ type: 'text', text: 'A second turn', requestId: 'request-second' }));
+    await until(() => h.upstreamEvents.filter(event => event.type === 'response.create').length === 2);
+    assert.ok(Date.now() - turnStarted < 500, 'telemetry cannot sit ahead of normal voice work');
+    h.emit({ type: 'response.created', response: { id: 'response-2' } });
+    h.emit({ type: 'response.done', response: { id: 'response-2', status: 'completed' } });
+    await until(() => h.clientEvents.filter(event => event.type === 'turn_done').length === 2);
+    const finishStarted = Date.now(); h.client.send(JSON.stringify({ type: 'stop' }));
+    await until(() => h.finishes() === 1);
+    assert.ok(Date.now() - finishStarted < 700, 'final evidence flush must be bounded');
+  } finally { await h.cleanup(); }
+});
+
 function authorityFixture(organizationId: string, sessionId: string): PublicAuthority {
   return { user: { id: `user-${sessionId}`, email: `${sessionId}@example.test`, organizationId }, deployment: { id: `deployment-${sessionId}`, revision: 1, data: { channel: 'web_voice', publicId: `public-${sessionId}`, agentId: 'agent', versionId: 'version', releaseId: 'release', publicKnowledgeIds: [], autoLearning: false, brand: { name: 'Example', welcomeMessage: 'Welcome.' }, limits: { maxSessionSeconds: 60, maxTurnsPerConversation: 4 } } }, config: { primaryLanguage: 'English', allowedLanguages: ['English'], responseStyle: 'Brief', objective: 'Help.' }, context: '{"companyKnowledge":[]}', fences: [], sessionId, expiresAt: new Date(Date.now() + 60_000).toISOString(), purpose: 'voice' } as unknown as PublicAuthority;
 }
@@ -119,12 +168,13 @@ test('server persistence is CAS-backed and idempotent per turn; canonical voice 
   await database.run('INSERT INTO organizations (id,name,created_at) VALUES (?,?,?)', [organizationId, 'Example', now]);
   const authority = authorityFixture(organizationId, randomUUID());
   await claimVoiceSession(authority);
-  const turn: PublicVoiceResponseEvidence = { turn: 'turn1', requestedAtMs: 8, firstServerAudioAtMs: 21, requestedToFirstServerAudioMs: 13, terminalAtMs: 35, status: 'completed', cancelled: false, audioBytes: 160, tokenUsage: { totalTokens: 12 } };
+  const turn: PublicVoiceResponseEvidence = { turn: 'turn1', requestedAtMs: 8, firstServerAudioAtMs: 21, requestedToFirstServerAudioMs: 13, terminalAtMs: 35, status: 'completed', cancelRequested: false, cancelled: false, audioBytes: 160, tokenUsage: { totalTokens: 12 } };
   await persistPublicVoiceEvidence(authority, turn);
   await persistPublicVoiceEvidence(authority, turn);
   await assert.rejects(persistPublicVoiceEvidence(authority, { ...turn, rawText: 'untrusted visitor value' } as PublicVoiceResponseEvidence), /Invalid server voice evidence/);
   await appendPublicTranscript(authority, 'public_web_voice', { role: 'assistant', text: 'Server transcript.', eventId: 'output-1' });
   await finishPublicConversation(authority, 'public_web_voice', 'visitor_stopped');
+  await assert.rejects(persistPublicVoiceEvidence(authority, { ...turn, audioBytes: 200 }), /active claimed server conversation/);
   const [conversation] = await database.all<{ data: string }>('SELECT data FROM entities WHERE organization_id=? AND kind=? AND id LIKE ?', [organizationId, 'public:conversation', 'public:conversation:%']);
   assert.equal(JSON.parse(conversation.data).voiceEvidence.turns.length, 1);
   const sessions = await database.all<{ data: string }>('SELECT data FROM entities WHERE organization_id=? AND kind=?', [organizationId, 'session']);
@@ -137,4 +187,18 @@ test('server persistence is CAS-backed and idempotent per turn; canonical voice 
   const allSessions = await database.all<{ data: string }>('SELECT data FROM entities WHERE organization_id=? AND kind=?', [organizationId, 'session']);
   const second = allSessions.map(row => JSON.parse(row.data)).find(value => value.publicSessionId === withoutEvidence.sessionId);
   assert.equal(Object.hasOwn(second, 'voiceEvidence'), false, 'missing best-effort evidence stays explicitly absent');
+});
+
+test('browser session creation drops forged server voice evidence', async () => {
+  const database = await db(), organizationId = randomUUID(), user = { id: randomUUID(), email: `${randomUUID()}@example.test`, organizationId, role: 'owner' as const }, now = new Date().toISOString();
+  await database.batch([
+    { sql: 'INSERT INTO organizations (id,name,created_at) VALUES (?,?,?)', params: [organizationId, 'Browser example', now] },
+    { sql: 'INSERT INTO users (id,email,password_hash,organization_id,created_at) VALUES (?,?,?,?,?)', params: [user.id, user.email, 'unused', organizationId, now] },
+    ...ownerRegistrationStatements(user),
+  ]);
+  const forged = { version: 1, serverCaptured: true, capture: 'best_effort', basis: 'server_transport', metric: 'requested_to_first_server_audio_ms', turns: [{ turn: 'turn1', requestedAtMs: 1, cancelRequested: false, cancelled: false, audioBytes: 2 }] };
+  const saved = await createSession(user, { transcript: [{ role: 'user', text: 'Browser supplied.' }], voiceEvidence: forged, serverCaptured: true });
+  assert.equal(Object.hasOwn(saved, 'voiceEvidence'), false);
+  assert.equal(Object.hasOwn(saved, 'serverCaptured'), false);
+  assert.match(String(saved.transcriptSource), /Browser-submitted/);
 });
