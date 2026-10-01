@@ -2,10 +2,11 @@ import { createServer, type IncomingMessage } from 'node:http';
 import WebSocket, { WebSocketServer } from 'ws';
 import { resolvePublicSession, closePublicSession } from '../deployments/engine';
 import { HttpError } from '../server/http';
-import { appendPublicTranscript, claimVoiceSession, finishPublicConversation, instructionsFor, setPublicInputMode, type PublicAuthority } from './service';
+import { appendPublicTranscript, claimVoiceSession, finishPublicConversation, instructionsFor, persistPublicVoiceEvidence, setPublicInputMode, type PublicAuthority } from './service';
 import { azureRealtimeConnection, MAX_CLIENT_MESSAGE_BYTES, parseClientEvent, publicContinuationInstructions, publicGreetingInstructions, publicVoiceInstructions, realtimeSession, safeProviderDiagnostic, safeResponseDiagnostic, type PublicProviderDiagnostic, type PublicResponseDiagnostic } from './protocol';
 import { compileRelationalRuntime } from '../voice/relational-runtime';
 import type { ConversationEntry } from '../voice/emotional';
+import { PublicVoiceEvidenceRecorder, type PublicVoiceResponseEvidence } from './evidence';
 
 export type GatewayDependencies = {
   authorize: typeof resolvePublicSession;
@@ -18,11 +19,14 @@ export type GatewayDependencies = {
   inputMode?: typeof setPublicInputMode;
   diagnostic?: (diagnostic: PublicProviderDiagnostic) => void;
   responseDiagnostic?: (diagnostic: PublicResponseDiagnostic) => void;
+  evidence?: (authority: PublicAuthority, evidence: PublicVoiceResponseEvidence) => Promise<void>;
+  clock?: () => number;
 };
 
 export const productionGatewayDependencies: GatewayDependencies = {
   authorize: resolvePublicSession, claim: claimVoiceSession, close: closePublicSession,
   transcript: appendPublicTranscript, finish: finishPublicConversation, inputMode: setPublicInputMode,
+  evidence: persistPublicVoiceEvidence,
   diagnostic: diagnostic => { console.warn('Public Azure voice provider error', diagnostic); },
   responseDiagnostic: diagnostic => { console.info('Public Azure voice response', diagnostic); },
   connect: () => { const config = azureRealtimeConnection(); return { socket: new WebSocket(config.url, { headers: { 'api-key': config.key }, handshakeTimeout: 10000, maxPayload: 1_000_000, followRedirects: false }), model: config.model, voice: config.voice }; },
@@ -33,13 +37,15 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
   let upstream: WebSocket | undefined, authority: PublicAuthority | undefined;
   let token = '', nonce = '', done = false, authenticated = false, ready = false, responding = false, ownsSession = false;
   let finalizationScheduled = false, finalOutcome = 'visitor_disconnected';
-  type ResponseSlot = { id?: string; cancelled: boolean; completed: boolean; discardUnheardItems?: boolean };
+  type ResponseSlot = { id?: string; ordinal: number; cancelled: boolean; completed: boolean; discardUnheardItems?: boolean };
   const responseSlots: ResponseSlot[] = [];
   let activeResponse: ResponseSlot | undefined;
   type AudioItem = { id: string; response: ResponseSlot; samples: number; contentIndex: number; trimmed: boolean; heardLimitMs?: number };
   const audioItems: AudioItem[] = [];
   let playbackResponse: ResponseSlot | undefined;
   const connectedAt = Date.now();
+  const evidenceClock = dependencies.clock || Date.now;
+  const evidence = new PublicVoiceEvidenceRecorder(evidenceClock(), evidenceClock);
   let totalInput = 0, totalOutput = 0, windowStart = Date.now(), frames = 0, responses = 0;
   let currentItem = '', sawMicrophoneFrame = false;
   const requestIds = new Set<string>();
@@ -65,7 +71,11 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
     finalizationScheduled = true;
     const captured = authority;
     // The claim may become owned after stop(). Persist once, behind the current operation.
-    work = work.catch(() => undefined).then(async () => { await dependencies.close(token, origin).catch(() => undefined); await dependencies.finish(captured, 'public_web_voice', finalOutcome).catch(() => undefined); });
+    work = work.catch(() => undefined).then(async () => {
+      await dependencies.close(token, origin).catch(() => undefined);
+      if (dependencies.evidence) for (const turn of evidence.snapshot().turns) await dependencies.evidence(captured, turn).catch(() => undefined);
+      await dependencies.finish(captured, 'public_web_voice', finalOutcome).catch(() => undefined);
+    });
   }
   function stop(outcome: string, message: string) {
     if (done) return; done = true; finalOutcome = outcome;
@@ -84,6 +94,11 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       stop(error instanceof HttpError && error.status === 429 ? 'limit_reached' : 'uncertain', message);
     });
   }
+  function queueEvidence(turn: PublicVoiceResponseEvidence | undefined) {
+    if (!turn || !authority || !dependencies.evidence) return;
+    const capturedAuthority = authority;
+    queue(async () => { await dependencies.evidence!(capturedAuthority, turn).catch(() => undefined); }, true);
+  }
   async function response(greeting = false, reserved = false) {
     if (responding) throw new HttpError(409, 'Wait for the current response.');
     if (!authority) throw new Error('Unauthorized.');
@@ -94,12 +109,13 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
     if (done) return;
     if (++responses > authority.deployment.data.limits.maxTurnsPerConversation) throw new HttpError(429, 'Turn limit reached.');
     responding = true;
-    activeResponse = { cancelled: false, completed: false }; responseSlots.push(activeResponse);
+    activeResponse = { ordinal: responses, cancelled: false, completed: false }; responseSlots.push(activeResponse);
     provider({ type: 'response.create', ...(greeting ? { response: { instructions: openingInstructions } } : {}) });
+    queueEvidence(evidence.requested(activeResponse.ordinal));
   }
   function cancelActiveResponse() {
     if (responding) provider({ type: 'response.cancel', ...(activeResponse?.id ? { response_id: activeResponse.id } : {}) });
-    if (activeResponse) { activeResponse.cancelled = true; activeResponse.discardUnheardItems = true; }
+    if (activeResponse) { activeResponse.cancelled = true; activeResponse.discardUnheardItems = true; queueEvidence(evidence.cancelled(activeResponse.ordinal)); }
     activeResponse = undefined; responding = false;
   }
   function interrupt() {
@@ -163,6 +179,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       if (responseSlots.some(candidate => candidate.id === event.response.id)) return;
       const slot = responseSlots.find(candidate => !candidate.id && !candidate.completed);
       if (slot) slot.id = event.response.id;
+      if (slot && !slot.cancelled) queueEvidence(evidence.providerCreated(slot.ordinal));
       dependencies.responseDiagnostic?.(safeResponseDiagnostic('response.created', event.response, slot ? responseSlots.indexOf(slot) + 1 : 0));
     } else if (type === 'error') {
       if (event.error?.code === 'response_cancel_not_active') return;
@@ -190,6 +207,8 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       item.contentIndex = contentIndex; item.samples += bytes / 2; playbackResponse = item.response;
       totalOutput += bytes;
       if (totalOutput > 24_000_000) { stop('output_limit', 'This conversation reached its audio limit.'); return; }
+      const observed = evidence.audio(item.response.ordinal, bytes);
+      if (observed.first) queueEvidence(observed.evidence);
       send({ type: 'audio', audio: event.delta, itemId: item.id, responseId: item.response.id });
     } else if (type === 'conversation.item.input_audio_transcription.completed') {
       if (typeof event.transcript !== 'string' || event.transcript.length > 12000) { stop('transcript_limit', 'This conversation reached its transcript limit.'); return; }
@@ -213,6 +232,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       dependencies.responseDiagnostic?.(summary);
       if (!slot) return;
       slot.completed = true;
+      queueEvidence(evidence.terminal(slot.ordinal, summary));
       if (slot !== activeResponse || slot.cancelled) return;
       activeResponse = undefined; responding = false;
       if (event.response?.status === 'failed') { stop('provider_error', 'The voice reply failed. No automatic retry was made.'); return; }

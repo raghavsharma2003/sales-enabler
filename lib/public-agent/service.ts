@@ -7,11 +7,12 @@ import { runAiTask } from '../ai/task-router';
 import { firstReplyWithDisclosure, publicChatInstructions, publicInstructions } from './protocol';
 import { compileRelationalRuntime } from '../voice/relational-runtime';
 import { enqueueLearningForServerSession } from '../learning-jobs/engine';
+import { isPublicVoiceEvidence, isPublicVoiceResponseEvidence, MAX_PUBLIC_VOICE_EVIDENCE_TURNS, type PublicVoiceEvidence, type PublicVoiceResponseEvidence } from './evidence';
 
 export const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 export type PublicAuthority = Awaited<ReturnType<typeof resolvePublicSession>>;
 export type PublicTranscript = { role: 'user' | 'assistant'; text: string; eventId: string; at: string };
-type Conversation = { sessionId: string; deploymentId: string; publicId: string; channel: 'public_web_voice' | 'public_web_chat'; identity: 'anonymous_unverified'; source: 'server_captured_public_channel'; entries: PublicTranscript[]; pending?: string; outcome: string; snapshot: { agentId: string; agentVersionId: string; releaseId: string; publicKnowledgeIds: string[]; config: DeploymentAuthority['config']; brand: string; issuedAt: string; deploymentRevision: number; autoLearning: boolean }; inputMode?: 'text' | 'microphone' };
+type Conversation = { sessionId: string; deploymentId: string; publicId: string; channel: 'public_web_voice' | 'public_web_chat'; identity: 'anonymous_unverified'; source: 'server_captured_public_channel'; entries: PublicTranscript[]; pending?: string; outcome: string; snapshot: { agentId: string; agentVersionId: string; releaseId: string; publicKnowledgeIds: string[]; config: DeploymentAuthority['config']; brand: string; issuedAt: string; deploymentRevision: number; autoLearning: boolean }; inputMode?: 'text' | 'microphone'; voiceEvidence?: PublicVoiceEvidence };
 type Row = { id: string; data: string; status: string } & Record<string, unknown>;
 
 /** Only explicit publication-selected facts and tested published task fields enter public inference. */
@@ -49,6 +50,39 @@ export async function appendPublicTranscript(authority: PublicAuthority, channel
   await replaceConversation(authority, row, { ...value, entries: [...value.entries, { ...entry, at: new Date().toISOString() }] });
 }
 
+function mergeVoiceTurn(existing: PublicVoiceResponseEvidence | undefined, incoming: PublicVoiceResponseEvidence): PublicVoiceResponseEvidence {
+  if (!existing) return incoming;
+  return {
+    turn: existing.turn,
+    requestedAtMs: existing.requestedAtMs,
+    ...(existing.providerCreatedAtMs !== undefined || incoming.providerCreatedAtMs !== undefined ? { providerCreatedAtMs: existing.providerCreatedAtMs ?? incoming.providerCreatedAtMs } : {}),
+    ...(existing.firstServerAudioAtMs !== undefined || incoming.firstServerAudioAtMs !== undefined ? { firstServerAudioAtMs: existing.firstServerAudioAtMs ?? incoming.firstServerAudioAtMs } : {}),
+    ...(existing.terminalAtMs !== undefined || incoming.terminalAtMs !== undefined ? { terminalAtMs: existing.terminalAtMs ?? incoming.terminalAtMs } : {}),
+    ...(existing.requestedToFirstServerAudioMs !== undefined || incoming.requestedToFirstServerAudioMs !== undefined ? { requestedToFirstServerAudioMs: existing.requestedToFirstServerAudioMs ?? incoming.requestedToFirstServerAudioMs } : {}),
+    ...(incoming.status !== undefined || existing.status !== undefined ? { status: incoming.status ?? existing.status } : {}),
+    cancelled: existing.cancelled || incoming.cancelled,
+    audioBytes: Math.max(existing.audioBytes, incoming.audioBytes),
+    ...(incoming.tokenUsage || existing.tokenUsage ? { tokenUsage: incoming.tokenUsage || existing.tokenUsage } : {}),
+  };
+}
+
+/** Accepts only the gateway's bounded DTO and updates the claimed voice conversation with a CAS write. */
+export async function persistPublicVoiceEvidence(authority: PublicAuthority, turn: PublicVoiceResponseEvidence) {
+  if (!isPublicVoiceResponseEvidence(turn)) throw new HttpError(400, 'Invalid server voice evidence.');
+  const { row, value } = await readConversation(authority, 'public_web_voice');
+  if (value.channel !== 'public_web_voice' || value.source !== 'server_captured_public_channel' || value.pending !== 'voice' || value.outcome !== 'active') throw new HttpError(409, 'Voice evidence requires the active claimed server conversation.');
+  const current: PublicVoiceEvidence = isPublicVoiceEvidence(value.voiceEvidence) ? value.voiceEvidence : { version: 1, serverCaptured: true, capture: 'best_effort', basis: 'server_transport', metric: 'requested_to_first_server_audio_ms', turns: [] };
+  const prior = current.turns.find(item => item.turn === turn.turn);
+  if (prior && prior.requestedAtMs !== turn.requestedAtMs) throw new HttpError(409, 'Voice evidence turn changed.');
+  const merged = mergeVoiceTurn(prior, turn);
+  const turns = [...current.turns.filter(item => item.turn !== turn.turn), merged]
+    .sort((a, b) => Number(a.turn.slice(4)) - Number(b.turn.slice(4))).slice(0, MAX_PUBLIC_VOICE_EVIDENCE_TURNS);
+  const evidence = { ...current, turns };
+  if (!isPublicVoiceEvidence(evidence)) throw new HttpError(409, 'Voice evidence sequence is invalid.');
+  if (JSON.stringify(evidence) === JSON.stringify(value.voiceEvidence)) return;
+  await replaceConversation(authority, row, { ...value, voiceEvidence: evidence });
+}
+
 export async function finishPublicConversation(authority: PublicAuthority, channel: Conversation['channel'], outcome: string) {
   const { row, value } = await readConversation(authority, channel);
   const finished = { ...value, outcome };
@@ -65,7 +99,8 @@ async function publishHistoricalSession(organizationId: string, conversation: Co
     agentId: s.agentId, agentVersionId: s.agentVersionId, releaseId: s.releaseId, deploymentId: conversation.deploymentId,
     publicId: conversation.publicId, publicSessionId: conversation.sessionId, callerIdentity: 'anonymous_unverified', inputMode: conversation.inputMode || 'microphone',
     transcriptSource: 'Server-captured public channel; anonymous visitor identity is unverified', configSnapshot: s.config, publicKnowledgeIds: s.publicKnowledgeIds,
-    outcome: conversation.outcome, startedAt: s.issuedAt, durationSeconds: Math.max(0, Math.round((Date.parse(conversation.entries.at(-1)!.at) - Date.parse(s.issuedAt)) / 1000)), title: `${s.brand} · public ${conversation.channel === 'public_web_voice' ? 'voice' : 'chat'}` };
+    outcome: conversation.outcome, startedAt: s.issuedAt, durationSeconds: Math.max(0, Math.round((Date.parse(conversation.entries.at(-1)!.at) - Date.parse(s.issuedAt)) / 1000)), title: `${s.brand} · public ${conversation.channel === 'public_web_voice' ? 'voice' : 'chat'}`,
+    ...(conversation.channel === 'public_web_voice' && isPublicVoiceEvidence(conversation.voiceEvidence) ? { voiceEvidence: conversation.voiceEvidence } : {}) };
   const canonicalId = `public-session:${digest(conversation.sessionId)}`;
   const inserted = await (await db()).run('INSERT INTO entities (id, organization_id, kind, status, data, created_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING', [canonicalId, organizationId, 'session', null, JSON.stringify(data), s.issuedAt]);
   if (inserted === 1) {
