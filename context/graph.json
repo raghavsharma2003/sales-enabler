@@ -934,14 +934,14 @@
       "id": "azure.new-project-existing-account",
       "type": "decision",
       "title": "Create sales-enabler as a child of the existing Foundry account in the same grant subscription",
-      "status": "requested-pending-management-access-or-user-creation",
-      "path": "docs/azure-access-setup.md"
+      "status": "created-and-readback-verified-2026-10-01",
+      "path": "docs/azure-project-creation-2026-10-01.md"
     },
     {
       "id": "azure.scoped-project-helper",
       "type": "component",
       "title": "Exact existing-account project reads and explicit sales-enabler child creation",
-      "status": "ten-offline-tests-passed-management-credentials-missing",
+      "status": "eleven-offline-tests-and-live-project-readback-passed",
       "path": "scripts/manage-foundry-project.mjs"
     },
     {
@@ -985,6 +985,27 @@
       "title": "Single portal flow for four missing management values on another device",
       "status": "official-docs-checked-2026-10-01-user-setup-pending",
       "path": "docs/azure-access-setup.md"
+    },
+    {
+      "id": "azure.group-hosting-access",
+      "type": "dependency",
+      "title": "Existing-group Contributor needed for hosting; account-scoped project access verified",
+      "status": "group-read-forbidden-user-role-setup-pending",
+      "path": "docs/azure-project-creation-2026-10-01.md"
+    },
+    {
+      "id": "research.voice-adoption-oct01",
+      "type": "evidence",
+      "title": "Fresh primary-source voice, turn-taking and memory research with bounded adoption proposals",
+      "status": "desk-research-not-performance-proof",
+      "path": "research/2026-10-01/voice-research-adoption.md"
+    },
+    {
+      "id": "research.source-delta-oct01",
+      "type": "evidence",
+      "title": "56 source heads with one new multimodal branch and one moved cloning branch inspected",
+      "status": "delta-audited-not-wholesale-ported",
+      "path": "research/2026-10-01/source-delta-and-adoption.md"
     }
   ],
   "edges": [
@@ -1762,6 +1783,21 @@
       "from": "azure.four-value-portal-guide",
       "to": "azure.scoped-project-helper",
       "relation": "supplies-existing-account-management-configuration"
+    },
+    {
+      "from": "azure.group-hosting-access",
+      "to": "azure.new-project-existing-account",
+      "relation": "separates-hosting-permissions-from-completed-project-creation"
+    },
+    {
+      "from": "research.voice-adoption-oct01",
+      "to": "product.general",
+      "relation": "informs-measured-voice-improvements"
+    },
+    {
+      "from": "research.source-delta-oct01",
+      "to": "product.general",
+      "relation": "identifies-selective-new-source-contracts"
     }
   ]
 }

@@ -102,6 +102,20 @@ test('an existing project is never overwritten and in-progress is not reported r
   assert.equal(puts, 0);
 });
 
+test('ARM qualified child names are accepted only for the expected account and project', async () => {
+  for (const name of ['sales-enabler', `${settings.AZURE_FOUNDRY_ACCOUNT_NAME}/sales-enabler`, 'unrelated-account/sales-enabler']) {
+    let puts = 0;
+    const result = await manageFoundryProject(settings, { create: true, fetcher: azureMock((url, init) => {
+      if (init.method === 'PUT') puts++;
+      if (url.pathname === accountPath) return Response.json(account());
+      return Response.json({ ...project(), name });
+    }) });
+    assert.equal(result.ok, !name.startsWith('unrelated-account/'));
+    assert.equal(puts, 0);
+    if (result.ok) assert.equal(result.project?.ready, true);
+  }
+});
+
 test('provider-controlled provisioning states are reduced to a safe allowlist', async () => {
   const sentinel = 'provider-secret-sentinel';
   const result = await manageFoundryProject(settings, { fetcher: azureMock((url) => {

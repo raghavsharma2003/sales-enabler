@@ -110,9 +110,11 @@ function resourceState(value) {
 function projectResult(response, expectedId) {
   if (!response.ok) return null;
   const value = response.value;
+  // ARM can return either the child name or its account/child qualified form.
+  const qualifiedName = `${expectedId.split('/').at(-3)}/${PROJECT_NAME}`;
   const valid = typeof value === 'object' && value !== null &&
     typeof value.id === 'string' && value.id.toLowerCase() === expectedId.toLowerCase() &&
-    value.name === PROJECT_NAME &&
+    (value.name === PROJECT_NAME || value.name === qualifiedName) &&
     value.type === 'Microsoft.CognitiveServices/accounts/projects';
   if (!valid) return null;
   const provisioningState = resourceState(value);

@@ -1,10 +1,12 @@
 # Azure access setup — no local Docker
 
+**Latest result — 1 October 2026:** the supplied identity is configured privately, authentication succeeded, and the new **sales-enabler** child project is created and readback-verified in the existing account/subscription. The four-value setup below is retained as a repeatable guide, not a current missing-credentials blocker. Group read returned403; Contributor on the existing resource group is the requested next hosting permission. New-project managed-agent creation remains unresolved after a transport timeout. See [current cloud evidence](azure-project-creation-2026-10-01.md).
+
 ## Current request: new project inside the existing subscription and Foundry resource
 
 The user's latest clarification is to keep the existing grant subscription and add a separate Foundry project under the existing Foundry account. A new subscription, account or resource group is not required for this step. The Cloud Shell bootstrap and project-group Owner setup below were prepared for broader hosting work; do not run them as prerequisites for adding the Foundry project.
 
-Target project name: **sales-enabler** (pending creation). The Company Brain prompt agent already created is inside the original project; it has not been migrated to this new project.
+Target project name: **sales-enabler** (created and readback-verified). The Company Brain prompt agent verified earlier is inside the original project; a new-project agent attempt still requires read-only reconciliation.
 
 ### Exact current flow for the four missing values — verified 1 October 2026
 
