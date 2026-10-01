@@ -1,6 +1,14 @@
 # Current project state
 
-Updated 2026-09-30 for continuity; implementation and live-test evidence below was last verified on 27 September unless explicitly dated otherwise. The user authorized real implementation, superseding the earlier prototype pause. Current focus is the v7 sellable general Indian-organization AI application layer and its integration/deployment proof. No additional design approval is required to continue authorized implementation.
+Updated 2026-10-01 for status and access checks; implementation and live-test evidence below was last verified on 27 September unless explicitly dated otherwise. The user authorized real implementation, superseding the earlier prototype pause. Current focus is the v7 sellable general Indian-organization AI application layer and its integration/deployment proof. No additional design approval is required to continue authorized implementation.
+
+## Status audit — 1 October 2026
+
+Current stage: substantial implemented local platform with bounded verification, not a hosted production SaaS or a measured competitor-beating voice product. Today's account-scoped helper stopped before any network call because `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` and the existing `AZURE_RESOURCE_GROUP` remain missing. Subscription and account name are already configured privately. Do not ask for a new subscription or another model API key. The new child project remains unverified/pending; no cloud creation was attempted today. Local readiness and demo HTTP probes were unreachable, so the previous localhost preview is currently unavailable and needs a normal Node restart before testing; this is separate from missing Azure management access.
+
+Remaining engineering gates include hosted PostgreSQL and migrations/recovery, HTTPS/WSS deployment and monitoring, live account email/auth recovery and connector validation, voice brevity/naturalness and actual microphone/device/latency testing, real approved voice enrollment plus a cloned-voice runtime, live A/B assignment/exposure/outcome tracking, broader enterprise-data mappings, and customer billing/full cost accounting. Existing transcript comparisons and typed campaign-result review do not establish live randomized experiments or business lift. These are not all credential blockers; local quality and implementation work can continue while Azure setup is pending.
+
+Immediate user input: the four missing management fields in the private file, or the actual new project endpoint if created manually. Later inputs: a pilot company's representative data and success criteria, authorized channel/OAuth accounts, domain/sending identity, and the speaker's consent/sample for cloning. Keep Azure as the paid inference route and use the same grant subscription; no local Docker. Context and source/verification documents are committed locally. GitHub push has not been performed by this agent.
 
 ## Resume checkpoint — 30 September 2026
 

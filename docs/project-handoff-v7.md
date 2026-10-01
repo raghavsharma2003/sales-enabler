@@ -1,5 +1,7 @@
 # Project handoff v7
 
+**Current override — 1 October 2026:** start with `context/STATE.md`, `docs/voice-conversation-phase-verification.md` and the current-request section of `docs/azure-access-setup.md`. This document retains the earlier v7 inventory. The later 88-check voice/playback checkpoint and Foundry agent setup supersede older unverified-provider statements below. Docker/Compose examples are historical or for another host: the employer laptop must use Node locally, with any image builds performed in Azure. The new Foundry child project stays in the existing subscription/account and does not require a new resource group.
+
 **Date:** 27 September 2026 (Asia/Kolkata)  
 **State:** v7 bounded local verification is complete at 526/526 with a clean packaged build and scoped visual ship disposition; real microphone/barge-in/device/perceptual voice evaluation, signed-in Azure inspection and live deployment remain open.
 

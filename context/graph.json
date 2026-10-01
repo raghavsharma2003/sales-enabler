@@ -971,6 +971,13 @@
       "title": "Maintain context and commit completed milestones before usage limits and handoffs",
       "status": "user-requested-2026-09-30",
       "path": "AGENTS.md"
+    },
+    {
+      "id": "status.audit-2026-10-01",
+      "type": "evidence",
+      "title": "Current access/status audit: four management fields missing, local preview unreachable, production gates open",
+      "status": "status-checked-no-new-live-voice-or-cloud-test",
+      "path": "context/STATE.md"
     }
   ],
   "edges": [
@@ -1738,6 +1745,11 @@
       "from": "continuity.frequent-local-checkpoints",
       "to": "product.general",
       "relation": "preserves-implementation-and-verification-continuity"
+    },
+    {
+      "from": "status.audit-2026-10-01",
+      "to": "continuity.frequent-local-checkpoints",
+      "relation": "records-current-blockers-and-user-inputs"
     }
   ]
 }
