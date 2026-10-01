@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { FlaskConical, CheckCircle2, XCircle } from 'lucide-react';
 import type { PlatformViewProps } from '../../lib/platform/contracts';
 
-export function TestsView({ records, act, busy, navigate }: PlatformViewProps) {
+export function TestsView({ records, act, busy, navigate, focusId }: PlatformViewProps) {
   const versions = records.filter((r) => r.kind === 'agent_version').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const runs = records.filter((r) => r.kind === 'test_run').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  const [versionId, setVersionId] = useState('');
+  const focusedVersionId = versions.find(version => version.id === focusId)?.id || runs.find(run => run.id === focusId)?.data.versionId;
+  const [versionId, setVersionId] = useState(typeof focusedVersionId === 'string' ? focusedVersionId : '');
   const selected = versions.find((v) => v.id === versionId) || versions[0];
   const selectedRuns = runs.filter((r) => r.data.versionId === selected?.id);
   const agents = records.filter((r) => r.kind === 'agent_definition');

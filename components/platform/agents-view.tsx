@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Bot, FlaskConical, Plus, Save, GitBranch, Sparkles } from 'lucide-react';
+import { FlaskConical, Plus, Save, GitBranch, ArrowLeft } from 'lucide-react';
 import type { PlatformViewProps } from '../../lib/platform/contracts';
 import type { AgentConfig } from '../../lib/platform/agents';
 import { normalizeVoiceTools, type VoiceToolName } from '../../lib/voice/tools/contracts';
@@ -9,11 +9,14 @@ import { normalizeSpeechVocabulary, MAX_SPEECH_VOCABULARY_TERMS } from '../../li
 import { VoiceStudio } from '../voice-studio';
 import { VoiceCloningPanel } from '../voice-cloning-panel';
 import { AgentRevision } from '../agent-revision';
+import { AgentReleasePanel } from '../agent-release-panel';
+import styles from './agents-workspace.module.css';
 
 const initial: AgentConfig = { name: '', role: '', objective: '', disclosure: 'I am an AI assistant for this company.', primaryLanguage: 'English', allowedLanguages: ['English'], responseStyle: 'Be clear, concise and respectful. Acknowledge uncertainty.', memoryScope: 'approved_contact', escalation: 'Offer human help when requested or when the answer is uncertain.', knowledgeIds: [], enabledTools: [], systemPrompt: '', openingMessage: '', speechVocabulary: [] };
 const values = (value: string) => value.split(',').map((part) => part.trim()).filter(Boolean);
-type Section = 'Objective' | 'Conversation' | 'Language' | 'Relationship' | 'Knowledge' | 'Actions';
-const sections: Section[] = ['Conversation', 'Objective', 'Language', 'Relationship', 'Knowledge', 'Actions'];
+type Section = 'Setup' | 'Conversation' | 'Voice & language' | 'Knowledge' | 'Behaviour & actions' | 'Publish';
+const sections: Section[] = ['Setup', 'Conversation', 'Voice & language', 'Knowledge', 'Behaviour & actions', 'Publish'];
+const tabId = (section: Section) => 'agent-tab-' + sections.indexOf(section);
 const actions: { name: VoiceToolName; title: string; description: string }[] = [
   { name: 'search_company_knowledge', title: 'Search company knowledge', description: 'Look up facts in approved company sources attached to this agent. Replies can cite the matching source.' },
   { name: 'recall_customer_context', title: 'Recall customer context', description: 'Use approved relationship notes and open commitments for the contact selected by the operator.' },
@@ -25,94 +28,223 @@ const presets = [
 ];
 export function AgentsView({ records, workspace, act, busy, navigate, focusId }: PlatformViewProps) {
   const viewer = workspace.user.role === 'viewer';
-  const agents = records.filter((r) => r.kind === 'agent_definition');
-  const versions = records.filter((r) => r.kind === 'agent_version');
-  const approvedSources = records.filter((r) => r.kind === 'brain_source' && r.status === 'approved');
-  const [selected, select] = useState<string | null>(focusId || agents[0]?.id || null);
-  const [draft, setDraft] = useState<AgentConfig>(initial);
-  const [dirty, setDirty] = useState(false);
-  const [section, setSection] = useState<Section>('Conversation');
+  const agents = records.filter(record => record.kind === 'agent_definition');
+  const versions = records.filter(record => record.kind === 'agent_version');
+  const approvedSources = records.filter(record => record.kind === 'brain_source' && record.status === 'approved');
+  const [selected, select] = useState<string | null>(focusId === 'new' ? null : focusId || agents[0]?.id || null);
+  const current = agents.find(agent => agent.id === selected);
+  const [draft, setDraft] = useState<AgentConfig>(() => ({ ...initial, ...(current?.data as AgentConfig | undefined) }));
+  const [baseline, setBaseline] = useState(() => JSON.stringify(draft));
+  const dirty = JSON.stringify(draft) !== baseline;
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
+  const [section, setSection] = useState<Section>(current ? 'Conversation' : 'Setup');
   const [validation, setValidation] = useState('');
+  const [invalidField, setInvalidField] = useState('');
   const [notice, setNotice] = useState('');
-  const [languagesText, setLanguagesText] = useState('English');
-  const [vocabularyText, setVocabularyText] = useState('');
+  const [languagesText, setLanguagesText] = useState(draft.allowedLanguages.join(', '));
+  const [vocabularyText, setVocabularyText] = useState((draft.speechVocabulary || []).join('\n'));
   const [vocabularyError, setVocabularyError] = useState('');
-  const vocabularyField = useRef<HTMLTextAreaElement>(null);
-  const pendingPreset = useRef<(typeof presets)[number] | null>(null);
-  const current = agents.find((a) => a.id === selected);
-  const resetDraft = (next: AgentConfig) => { setDraft(next); setLanguagesText(next.allowedLanguages.join(', ')); setVocabularyText((next.speechVocabulary || []).join('\n')); setVocabularyError(''); };
-  useEffect(() => { if (current) { resetDraft({ ...initial, ...(current.data as AgentConfig) }); setDirty(false); } else if (selected === null) { const preset = pendingPreset.current; pendingPreset.current = null; resetDraft(preset ? { ...initial, ...preset } : initial); setDirty(!!preset); } setValidation(''); }, [current?.id, current?.revision, selected]);
-  useEffect(() => { if (validation && vocabularyError && section === 'Language') vocabularyField.current?.focus(); }, [validation, vocabularyError, section]);
-  const set = <K extends keyof AgentConfig>(key: K, value: AgentConfig[K]) => { if (viewer) return; setDraft((d) => ({ ...d, [key]: value })); setDirty(true); setNotice(''); setValidation(''); };
-  const agentVersions = versions.filter((v) => v.data.agentId === current?.id).sort((a, b) => Number(b.data.number) - Number(a.data.number));
+  const loadedRecord = useRef({ id: current?.id, revision: current?.revision });
+  const lastFocus = useRef(focusId);
+  const resetDraft = (next: AgentConfig) => {
+    setDraft(next); setBaseline(JSON.stringify(next)); dirtyRef.current = false;
+    setLanguagesText(next.allowedLanguages.join(', ')); setVocabularyText((next.speechVocabulary || []).join('\n'));
+    setVocabularyError(''); setValidation(''); setInvalidField('');
+  };
+  // Background refreshes must not replace work in progress. Revision checks on save remain authoritative.
+  useEffect(() => {
+    if (current && (loadedRecord.current.id !== current.id || !dirtyRef.current)) {
+      resetDraft({ ...initial, ...(current.data as AgentConfig) });
+      loadedRecord.current = { id: current.id, revision: current.revision };
+    }
+  }, [current?.id, current?.revision]);
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
+  useEffect(() => {
+    const warn = (event: Event) => {
+      if (dirtyRef.current && !window.confirm('You have unsaved agent changes. Leave without saving?')) event.preventDefault();
+    };
+    window.addEventListener('relay:before-navigation', warn);
+    return () => window.removeEventListener('relay:before-navigation', warn);
+  }, []);
+  useEffect(() => {
+    if (validation && invalidField) document.getElementById(invalidField)?.focus();
+  }, [validation, invalidField, section]);
+  const canDiscard = () => !dirtyRef.current || window.confirm('Discard the unsaved changes to this agent?');
+  const changeAgent = (id: string | null, navigationApproved = false) => {
+    if (id === selected || busy || (!navigationApproved && !canDiscard())) return;
+    const next = agents.find(agent => agent.id === id);
+    select(id); resetDraft(next ? { ...initial, ...(next.data as AgentConfig) } : { ...initial });
+    loadedRecord.current = { id: next?.id, revision: next?.revision };
+    setSection(next ? 'Conversation' : 'Setup'); setNotice('');
+    if (!navigationApproved) navigate('agents', id || 'new');
+  };
+  useEffect(() => {
+    if (lastFocus.current === focusId) return;
+    lastFocus.current = focusId;
+    // The platform's cancelable navigation event already guarded this route change.
+    if (focusId === 'new') changeAgent(null, true);
+    else if (focusId && agents.some(agent => agent.id === focusId)) changeAgent(focusId, true);
+  }, [focusId]);
+  const startNew = (preset?: (typeof presets)[number]) => {
+    if (viewer || busy || !canDiscard()) return;
+    select(null); resetDraft({ ...initial }); loadedRecord.current = { id: undefined, revision: undefined };
+    navigate('agents', 'new');
+    if (preset) { setDraft({ ...initial, ...preset }); setLanguagesText('English'); }
+    setSection('Setup'); setNotice('');
+    requestAnimationFrame(() => document.getElementById('agent-name')?.focus());
+  };
+  const set = <K extends keyof AgentConfig>(key: K, value: AgentConfig[K]) => {
+    if (viewer || busy) return;
+    setDraft(previous => ({ ...previous, [key]: value })); setNotice(''); setValidation(''); setInvalidField('');
+  };
+  const agentVersions = versions.filter(version => version.data.agentId === current?.id).sort((a, b) => Number(b.data.number) - Number(a.data.number));
   const latestConfig = agentVersions[0]?.data.config as AgentConfig | undefined;
-  const sourcesChanged = !!agentVersions[0] && draft.knowledgeIds.some(id => { const source = approvedSources.find(s => s.id === id); return !source || source.updatedAt > agentVersions[0].createdAt; });
-  const changed = latestConfig ? (Object.keys(draft) as (keyof AgentConfig)[]).filter((key) => JSON.stringify(key === 'speechVocabulary' ? draft[key] || [] : draft[key]) !== JSON.stringify(key === 'speechVocabulary' ? latestConfig[key] || [] : latestConfig[key])) : [];
-  const validate = (): { section: Section; message: string } | undefined => {
-    if (!draft.name.trim() || !draft.role.trim() || draft.objective.trim().length < 20) return { section: 'Objective', message: 'Add a name, role and objective of at least 20 characters.' };
-    if (!/\b(ai|artificial intelligence|virtual assistant)\b/i.test(draft.disclosure) || !draft.responseStyle.trim()) return { section: 'Conversation', message: 'Identify the representative as AI and describe its conversation behaviour.' };
-    if ((draft.systemPrompt || '').length > 12000 || (draft.openingMessage || '').length > 1000) return { section: 'Conversation', message: 'The prompt or opening message is too long.' };
-    if (!draft.primaryLanguage.trim() || !draft.allowedLanguages.includes(draft.primaryLanguage)) return { section: 'Language', message: 'Include the primary language in the allowed languages.' };
-    try { normalizeSpeechVocabulary(draft.speechVocabulary); } catch (error) { const message = error instanceof Error ? error.message : 'Review the speech vocabulary.'; setVocabularyError(message); return { section: 'Language', message }; }
-    if (draft.escalation.trim().length < 15) return { section: 'Relationship', message: 'Add a human escalation instruction of at least 15 characters.' };
-    if (draft.knowledgeIds.some((id) => !approvedSources.some((source) => source.id === id))) return { section: 'Knowledge', message: 'Remove sources that are no longer approved.' };
+  const sourcesChanged = !!agentVersions[0] && draft.knowledgeIds.some(id => {
+    const source = approvedSources.find(item => item.id === id);
+    return !source || source.updatedAt > agentVersions[0].createdAt;
+  });
+  const changed = latestConfig ? (Object.keys(draft) as (keyof AgentConfig)[]).filter(key => JSON.stringify(key === 'speechVocabulary' ? draft[key] || [] : draft[key]) !== JSON.stringify(key === 'speechVocabulary' ? latestConfig[key] || [] : latestConfig[key])) : [];
+  const validate = (): { section: Section; field: string; message: string } | undefined => {
+    if (!draft.name.trim()) return { section: 'Setup', field: 'agent-name', message: 'Give this agent a name.' };
+    if (!draft.role.trim()) return { section: 'Setup', field: 'agent-role', message: 'Describe the role this agent will perform.' };
+    if (draft.objective.trim().length < 20) return { section: 'Setup', field: 'agent-objective', message: 'Describe the agent’s purpose in at least 20 characters.' };
+    if (!/\b(ai|artificial intelligence|virtual assistant)\b/i.test(draft.disclosure)) return { section: 'Conversation', field: 'agent-disclosure', message: 'The introduction must clearly identify the agent as AI.' };
+    if (!draft.responseStyle.trim()) return { section: 'Conversation', field: 'agent-style', message: 'Describe how the agent should respond.' };
+    if ((draft.systemPrompt || '').length > 12000) return { section: 'Conversation', field: 'agent-system-prompt', message: 'Keep the system prompt within 12,000 characters.' };
+    if ((draft.openingMessage || '').length > 1000) return { section: 'Conversation', field: 'agent-opening-message', message: 'Keep the opening message within 1,000 characters.' };
+    if (!draft.primaryLanguage.trim() || !draft.allowedLanguages.includes(draft.primaryLanguage)) return { section: 'Voice & language', field: 'agent-languages', message: 'Include the primary language in the allowed languages.' };
+    try { normalizeSpeechVocabulary(draft.speechVocabulary); } catch (error) {
+      const message = error instanceof Error ? error.message : 'Review the speech vocabulary.';
+      setVocabularyError(message); return { section: 'Voice & language', field: 'agent-speech-vocabulary', message };
+    }
+    if (draft.escalation.trim().length < 15) return { section: 'Behaviour & actions', field: 'agent-escalation', message: 'Describe when to offer human help in at least 15 characters.' };
+    if (draft.knowledgeIds.some(id => !approvedSources.some(source => source.id === id))) return { section: 'Knowledge', field: 'agent-source-review', message: 'Remove sources that are no longer approved before saving.' };
   };
   const save = async () => {
-    if (viewer) return;
+    if (viewer || busy) return;
     const invalid = validate();
-    if (invalid) { setSection(invalid.section); setValidation(invalid.message); return; }
+    if (invalid) {
+      setSection(invalid.section); setInvalidField(invalid.field); setValidation(invalid.message);
+      requestAnimationFrame(() => document.getElementById(invalid.field)?.focus());
+      return;
+    }
     try {
-      const result = await act(current ? 'agent.update' : 'agent.create', { ...draft, ...(current ? { agentId: current.id, revision: current.revision } : {}) }) as unknown;
-      const savedId = result && typeof result === 'object' && 'id' in result ? String(result.id) : current?.id;
-      if (savedId) select(savedId);
-      setDirty(false); setNotice(current ? 'Changes saved. Test this draft here, or capture a version for release checks.' : 'Agent created. Test this draft here, or capture a version for release checks.');
-    } catch { /* Global action banner presents the server error. */ }
+      const result = await act(current ? 'agent.update' : 'agent.create', { ...draft, ...(current ? { agentId: current.id, revision: loadedRecord.current.revision ?? current.revision } : {}) });
+      if (result && typeof result === 'object' && 'id' in result && 'data' in result) {
+        const saved = result as { id: string; data: AgentConfig; revision: number };
+        resetDraft({ ...initial, ...saved.data }); select(saved.id);
+        loadedRecord.current = { id: saved.id, revision: saved.revision };
+        navigate('agents', saved.id);
+      } else { setBaseline(JSON.stringify(draft)); dirtyRef.current = false; }
+      setNotice('Draft saved. Test it here, then open Publish to review the release checks.');
+    } catch { /* The platform action banner presents the server error; keep the draft. */ }
   };
-  const capture = async () => { if (!current || viewer) return; try { await act('agent.version', { agentId: current.id, revision: current.revision }); setNotice('Version captured. Open Test Lab to run configuration checks.'); } catch { /* Global action banner presents the server error. */ } };
-  const applyPreset = (preset: (typeof presets)[number]) => { if (viewer) return; setNotice(`${preset.name} starting point added.`); setSection('Conversation'); if (selected) { pendingPreset.current = preset; select(null); } else { resetDraft({ ...initial, ...preset }); setDirty(true); } };
-  return <main className="pc-page pc-agent-page wb-page">
-    <header className="pc-pagehead wb-pagehead"><div><h1>Voice agents</h1><p className="pc-muted">Write the instructions, speak with the current draft, and inspect what actually happened.</p></div><div className="wb-head-actions">{!viewer && <a className="pc-button wb-test-jump" href="#agent-test-call" onClick={event => { event.preventDefault(); const target = document.getElementById('agent-test-call'); target?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' }); target?.focus({ preventScroll: true }); }}><FlaskConical size={16}/> Test call</a>}<button className="pc-button" type="button" disabled={viewer} onClick={() => { select(null); resetDraft(initial); setDirty(false); setSection('Conversation'); }}><Plus size={16}/> New agent</button></div></header>
-    {viewer && <p className="pc-muted wb-viewer-note" role="status">Read-only access. An operator can edit agents, capture versions, and test calls.</p>}
-    <div className="wb-workbench"><aside className="pc-panel pc-agent-library wb-library"><div className="wb-section-head"><h2>Agents</h2><span className="pc-badge">{agents.length}</span></div><label className="pc-field pc-agent-picker">Select agent<select className="pc-select" value={selected || ""} onChange={e => select(e.target.value || null)}>{!viewer && <option value="">New draft</option>}{viewer && agents.length === 0 && <option value="">No agents available</option>}{agents.map(agent => <option key={agent.id} value={agent.id}>{String(agent.data.name)}</option>)}</select></label><div className="pc-list wb-agent-list">{!viewer && <button type="button" className="pc-row" aria-current={!selected ? 'true' : undefined} onClick={() => { select(null); resetDraft(initial); setDirty(false); }}><Plus size={17}/><span><strong>New draft</strong><small className="pc-muted">Start from a blank agent</small></span></button>}{agents.map((agent) => <button type="button" className="pc-row" key={agent.id} aria-current={selected === agent.id ? 'true' : undefined} onClick={() => select(agent.id)}><Bot size={17}/><span><strong>{String(agent.data.name)}</strong><small className="pc-muted">{String(agent.data.role || 'No role')}</small></span></button>)}</div>{!viewer && <div className="wb-presets"><h3>Start from a task</h3><p>These fill a draft. Edit for your company before testing.</p>{presets.map(preset => <button type="button" className="wb-preset" key={preset.name} onClick={() => applyPreset(preset)}><Sparkles size={15}/>{preset.name}</button>)}</div>}</aside>
-      <section className="pc-panel wb-editor"><div className="pc-pagehead"><div><h2>{current ? String(current.data.name) : draft.name || 'New voice agent'}</h2><p className="pc-muted">{current ? `Saved draft · revision ${current.revision}` : 'New draft'}{dirty ? ' · unsaved changes' : ''}</p></div>{current && <span className="pc-badge">{agentVersions.length} {agentVersions.length === 1 ? 'version' : 'versions'}</span>}</div>
-        <fieldset disabled={viewer} className="wb-readonly-controls"><label className="pc-field" style={{ marginBottom: 18 }}>Voice profile<select className="pc-select" value={draft.voiceProfile || 'provider-default'} onChange={e => set('voiceProfile', e.target.value as AgentConfig['voiceProfile'])}><option value="provider-default">Azure workspace voice</option><option value="maya-despina">Maya original · Gemini Despina</option></select><small className="pc-muted">{draft.voiceProfile === 'maya-despina' ? 'The Despina preset used by Maya in html-portfolio, with her source speech-delivery rules. Uses the configured free Gemini pool.' : 'Uses the configured Azure voice. Choose Maya original for the source Despina sound.'}</small></label>
-        <div className="wb-prompts"><div className="wb-prompt-group"><div className="wb-field-heading"><label htmlFor="agent-system-prompt">System prompt</label><span>{(draft.systemPrompt || '').length.toLocaleString()} / 12,000</span></div><p>Direct the agent’s approach. Approved company context and safety instructions are added when a call starts.</p><textarea id="agent-system-prompt" className="pc-textarea wb-prompt" maxLength={12000} value={draft.systemPrompt || ''} onChange={e => set('systemPrompt', e.target.value)} placeholder="Understand the person’s goal first. Ask one question at a time. If they correct you, acknowledge it and check your understanding…"/></div><div className="wb-prompt-group wb-opening"><div className="wb-field-heading"><label htmlFor="agent-opening-message">Opening message</label><span>{(draft.openingMessage || '').length.toLocaleString()} / 1,000</span></div><textarea id="agent-opening-message" className="pc-textarea" maxLength={1000} value={draft.openingMessage || ''} onChange={e => set('openingMessage', e.target.value)} placeholder="Optional first line. Introduce the agent as AI before the conversation."/></div></div></fieldset>
-        <div className="pc-tabs pc-agent-tabs" role="tablist" aria-label="Agent settings" onKeyDown={event => { const index = sections.indexOf(section); const next = event.key === 'ArrowRight' ? (index + 1) % sections.length : event.key === 'ArrowLeft' ? (index + sections.length - 1) % sections.length : event.key === 'Home' ? 0 : event.key === 'End' ? sections.length - 1 : -1; if (next < 0) return; event.preventDefault(); setSection(sections[next]); event.currentTarget.querySelector<HTMLButtonElement>(`#agent-tab-${sections[next]}`)?.focus(); }}>{sections.map((item) => <button type="button" role="tab" id={`agent-tab-${item}`} aria-controls="agent-settings-panel" tabIndex={section === item ? 0 : -1} aria-selected={section === item} className={`pc-button ${section === item ? 'primary' : 'quiet'}`} key={item} onClick={() => { setSection(item); setValidation(''); }}>{item}</button>)}</div>
-        {validation && <p role="alert" className="pc-badge">{validation}</p>}{notice && <p role="status" className="pc-muted">{notice}</p>}
-        <form className="pc-form wb-settings" id="agent-settings-panel" role="tabpanel" aria-labelledby={`agent-tab-${section}`} noValidate onSubmit={(event) => { event.preventDefault(); if (!viewer) void save(); }}><fieldset disabled={viewer} className="wb-readonly-controls">
-          {section === 'Objective' && <>
-          <label className="pc-field">Name<input className="pc-input" required maxLength={120} value={draft.name} onChange={(e) => set('name', e.target.value)}/></label>
-          <label className="pc-field">Role<input className="pc-input" required maxLength={160} value={draft.role} onChange={(e) => set('role', e.target.value)} placeholder="Customer support representative"/></label>
-          <label className="pc-field">Objective<textarea className="pc-textarea" required maxLength={3000} value={draft.objective} onChange={(e) => set('objective', e.target.value)} placeholder="What should this representative accomplish?"/></label>
+  const jumpTo = (id: string) => {
+    const panel = document.getElementById(id);
+    const target = id === 'agent-test-call'
+      ? panel?.querySelector<HTMLInputElement>('.wb-input-mode input:checked:not(:disabled)') || panel?.querySelector<HTMLButtonElement>('.wb-call-actions button:not(:disabled)') || panel
+      : panel;
+    target?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: id === 'agent-test-call' ? 'center' : 'start' });
+    target?.focus({ preventScroll: true });
+  };
+  const fieldError = (id: string) => ({ 'aria-invalid': invalidField === id || undefined, 'aria-describedby': invalidField === id ? 'agent-validation' : undefined });
+
+  return <main className={`pc-page ${styles.page}`}>
+    <header className={styles.header}>
+      <div><h1>Voice agents</h1><p>Build, test and publish an agent in one workspace.</p></div>
+      <button className="pc-button" type="button" disabled={viewer || busy} onClick={() => startNew()}><Plus size={16} aria-hidden="true"/> New agent</button>
+    </header>
+    <div className={styles.toolbar}>
+      <label className={styles.picker}>Agent<select className="pc-select" value={selected || ''} disabled={busy} onChange={event => changeAgent(event.target.value || null)}>
+        {!viewer && <option value="">New draft</option>}{viewer && !agents.length && <option value="">No agents available</option>}
+        {agents.map(agent => <option key={agent.id} value={agent.id}>{String(agent.data.name)}</option>)}
+      </select></label>
+      <div className={styles.identity}><h2>{draft.name || 'New voice agent'}</h2><p role="status">{dirty ? 'Unsaved changes' : current ? `Saved draft · revision ${current.revision}` : 'Not saved yet'}{viewer ? ' · Read only' : ''}</p></div>
+      <div className={styles.topActions}>
+        {!viewer && <button className="pc-button" type="button" onClick={() => jumpTo('agent-test-call')}><FlaskConical size={16} aria-hidden="true"/> Test agent</button>}
+        {!viewer && <button className="pc-button primary" type="button" disabled={busy || (!dirty && !!current && !sourcesChanged)} onClick={() => void save()}><Save size={16} aria-hidden="true"/> {busy ? 'Working…' : 'Save draft'}</button>}
+      </div>
+    </div>
+    {viewer && <p className={styles.notice} role="status">Read-only access. An operator can edit, test and publish agents.</p>}
+    {notice && <p className={styles.notice} role="status">{notice}</p>}
+    <div className={styles.workspace}>
+      <section className={styles.editor} id="agent-editor" tabIndex={-1} aria-label="Agent editor">
+        <div className={styles.tabs} role="tablist" aria-label="Agent settings" onKeyDown={event => {
+          const index = sections.indexOf(section);
+          const next = event.key === 'ArrowRight' ? (index + 1) % sections.length : event.key === 'ArrowLeft' ? (index + sections.length - 1) % sections.length : event.key === 'Home' ? 0 : event.key === 'End' ? sections.length - 1 : -1;
+          if (next < 0) return;
+          event.preventDefault(); setSection(sections[next]); document.getElementById(tabId(sections[next]))?.focus();
+        }}>{sections.map(item => <button type="button" role="tab" id={tabId(item)} aria-controls="agent-settings-panel" tabIndex={section === item ? 0 : -1} aria-selected={section === item} key={item} onClick={() => setSection(item)}>{item}</button>)}</div>
+        <div id="agent-settings-panel" role="tabpanel" aria-labelledby={tabId(section)} className={styles.content}>
+          {validation && <p id="agent-validation" role="alert" className={styles.error}>{validation}</p>}
+          {section !== 'Publish' && <form id="agent-form" noValidate onSubmit={event => { event.preventDefault(); void save(); }}>
+            <fieldset disabled={viewer || busy} className={styles.fields}>
+              {section === 'Setup' && <>
+                <div className={styles.sectionHead}><h3>Give your agent a clear job</h3><p>Set its name, role and purpose before testing a conversation.</p></div>
+                {!current && !viewer && <div className={styles.templates}><span>Start with a task</span>{presets.map(preset => <button type="button" className="pc-button" key={preset.name} onClick={() => startNew(preset)}>{preset.name}</button>)}</div>}
+                <label className="pc-field" htmlFor="agent-name">Agent name<input id="agent-name" className="pc-input" required maxLength={120} value={draft.name} onChange={event => set('name', event.target.value)} placeholder="Customer feedback assistant" {...fieldError('agent-name')}/></label>
+                <label className="pc-field" htmlFor="agent-role">Role<input id="agent-role" className="pc-input" required maxLength={160} value={draft.role} onChange={event => set('role', event.target.value)} placeholder="Customer feedback representative" {...fieldError('agent-role')}/></label>
+                <label className="pc-field" htmlFor="agent-objective">Purpose<textarea id="agent-objective" className="pc-textarea" required rows={4} maxLength={3000} value={draft.objective} onChange={event => set('objective', event.target.value)} placeholder="Describe what this agent should learn or help someone accomplish." {...fieldError('agent-objective')}/><small>At least 20 characters. Give the agent a specific outcome to work towards.</small></label>
+                <div className={styles.sectionFooter}><button type="button" className="pc-button" onClick={() => setSection('Conversation')}>Continue to conversation</button></div>
+              </>}
+              {section === 'Conversation' && <>
+                <div className={styles.sectionHead}><h3>Shape the conversation</h3><p>Write the agent’s instructions and the first words a customer hears.</p></div>
+                <label className="pc-field" htmlFor="agent-system-prompt"><span className={styles.fieldHeading}>System prompt <small>{(draft.systemPrompt || '').length.toLocaleString()} / 12,000</small></span><textarea id="agent-system-prompt" className={`pc-textarea ${styles.prompt}`} maxLength={12000} rows={9} value={draft.systemPrompt || ''} onChange={event => set('systemPrompt', event.target.value)} placeholder="Ask one question at a time. Use approved sources for factual answers. Acknowledge corrections and uncertainty…" {...fieldError('agent-system-prompt')}/><small>Approved company context and safety instructions are added when a call starts.</small></label>
+                <label className="pc-field" htmlFor="agent-opening-message"><span className={styles.fieldHeading}>Opening message <small>Optional · {(draft.openingMessage || '').length} / 1,000</small></span><textarea id="agent-opening-message" className="pc-textarea" rows={3} maxLength={1000} value={draft.openingMessage || ''} onChange={event => set('openingMessage', event.target.value)} placeholder="Hello, I’m an AI assistant with the team. Is now a good time to talk?" {...fieldError('agent-opening-message')}/></label>
+                <label className="pc-field" htmlFor="agent-disclosure">AI introduction<textarea id="agent-disclosure" className="pc-textarea" required rows={2} maxLength={500} value={draft.disclosure} onChange={event => set('disclosure', event.target.value)} {...fieldError('agent-disclosure')}/><small>Must clearly identify the agent as AI before a customer conversation.</small></label>
+                <label className="pc-field" htmlFor="agent-style">Conversation style<textarea id="agent-style" className="pc-textarea" required rows={3} value={draft.responseStyle} onChange={event => set('responseStyle', event.target.value)} {...fieldError('agent-style')}/></label>
+              </>}
+              {section === 'Voice & language' && <>
+                <div className={styles.sectionHead}><h3>Voice and language</h3><p>Choose how the agent speaks, then check it in a test call.</p></div>
+                <label className="pc-field" htmlFor="agent-voice">Voice profile<select id="agent-voice" className="pc-select" value={draft.voiceProfile || 'provider-default'} onChange={event => set('voiceProfile', event.target.value as AgentConfig['voiceProfile'])}><option value="provider-default">Azure workspace voice</option><option value="maya-despina">Maya original · Gemini Despina</option></select><small>{draft.voiceProfile === 'maya-despina' ? 'Uses the configured free Gemini pool and the source Despina preset.' : 'Uses the voice configured for your Azure workspace.'}</small></label>
+                <div className={styles.pair}><label className="pc-field" htmlFor="agent-language">Primary language<input id="agent-language" className="pc-input" required value={draft.primaryLanguage} onChange={event => set('primaryLanguage', event.target.value)}/></label><label className="pc-field" htmlFor="agent-languages">Allowed languages<input id="agent-languages" className="pc-input" value={languagesText} onChange={event => { setLanguagesText(event.target.value); set('allowedLanguages', values(event.target.value)); }} {...fieldError('agent-languages')}/><small>Separate languages with commas.</small></label></div>
+                <div className={styles.vocabulary}><label className={styles.fieldHeading} htmlFor="agent-speech-vocabulary">Speech vocabulary <small>{draft.speechVocabulary?.length || 0} / {MAX_SPEECH_VOCABULARY_TERMS} terms</small></label><p id="agent-speech-vocabulary-help">Optional spelling hints for company names, products and acronyms. Add one term per line.</p><textarea id="agent-speech-vocabulary" className="pc-textarea" rows={5} maxLength={4096} value={vocabularyText} aria-invalid={!!vocabularyError} aria-describedby={`agent-speech-vocabulary-help${vocabularyError ? ' agent-speech-vocabulary-error' : ''}`} placeholder={'Northstar Learning\nIELTS\nपुणे'} onChange={event => {
+                  const text = event.target.value; const terms = text.split(/\r?\n/).map(term => term.trim()).filter(Boolean);
+                  setVocabularyText(text); set('speechVocabulary', terms);
+                  if (vocabularyError) { try { normalizeSpeechVocabulary(terms); setVocabularyError(''); } catch (error) { setVocabularyError(error instanceof Error ? error.message : 'Review the speech vocabulary.'); } }
+                }}/>{vocabularyError && <p id="agent-speech-vocabulary-error" role="alert" className={styles.error}>{vocabularyError}</p>}<p>Keep customer personal data out. Hints are saved in agent versions and public voice releases. They do not add company facts or change the voice.</p>{draft.voiceProfile === 'maya-despina' && <p>The Maya profile saves these terms, but transcription hints currently apply to Azure calls.</p>}</div>
+              </>}
+              {section === 'Knowledge' && <>
+                <div className={styles.sectionHead}><h3>Attach approved company knowledge</h3><p>Choose the sources this agent can reference. Changed sources need fresh release checks.</p></div>
+                {sourcesChanged && <p className={styles.notice}>An attached source changed. Review it, save the draft and run checks in Publish.</p>}
+                <fieldset className={styles.sourceList} id="agent-source-review" tabIndex={-1}><legend>Company sources · {draft.knowledgeIds.length} selected</legend>
+                  {approvedSources.map(source => <label className={styles.checkRow} key={source.id}><input type="checkbox" checked={draft.knowledgeIds.includes(source.id)} onChange={event => set('knowledgeIds', event.target.checked ? [...draft.knowledgeIds, source.id] : draft.knowledgeIds.filter(id => id !== source.id))}/><span><strong>{String(source.data.title)}</strong><small>Approved company source</small></span></label>)}
+                  {!approvedSources.length && <p className={styles.empty}>There are no approved sources yet. Add and review company material in Company brain, then attach it here.</p>}
+                  {draft.knowledgeIds.filter(id => !approvedSources.some(source => source.id === id)).map(id => <div className={styles.missingSource} key={id}><p>A previously attached source is no longer approved.</p><button className="pc-button" type="button" onClick={() => set('knowledgeIds', draft.knowledgeIds.filter(sourceId => sourceId !== id))}>Remove source</button></div>)}
+                </fieldset>
+              </>}
+              {section === 'Behaviour & actions' && <>
+                <div className={styles.sectionHead}><h3>Set memory, handoff and actions</h3><p>Keep the agent’s authority clear and give people a route to human help.</p></div>
+                <label className="pc-field" htmlFor="agent-memory">Relationship memory<select id="agent-memory" className="pc-select" value={draft.memoryScope} onChange={event => set('memoryScope', event.target.value as AgentConfig['memoryScope'])}><option value="approved_contact">Approved memory for this customer only</option><option value="none">No relationship memory</option></select></label>
+                <label className="pc-field" htmlFor="agent-escalation">When to offer human help<textarea id="agent-escalation" className="pc-textarea" rows={3} required value={draft.escalation} onChange={event => set('escalation', event.target.value)} {...fieldError('agent-escalation')}/></label>
+                <fieldset className={styles.sourceList}><legend>In-call actions</legend><p>Enable only what this agent needs. A test call does not verify the caller’s identity.</p>{actions.map(action => <label className={styles.checkRow} key={action.name}><input type="checkbox" checked={normalizeVoiceTools(draft.enabledTools).includes(action.name)} onChange={event => { const enabled = normalizeVoiceTools(draft.enabledTools); set('enabledTools', event.target.checked ? [...enabled, action.name] : enabled.filter(name => name !== action.name)); }}/><span><strong>{action.title}</strong><small>{action.description}</small></span></label>)}<p>Follow-up requests remain pending for human review. The agent cannot book, send or transfer on your behalf.</p></fieldset>
+              </>}
+            </fieldset>
+          </form>}
+          {section === 'Publish' && <>
+            <AgentReleasePanel key={current?.id || 'new'} agent={current} records={records} dirty={dirty} busy={busy} viewer={viewer} act={act} navigate={navigate}/>
+            {current && <details className={styles.details}>
+              <summary>Version history · {agentVersions.length}</summary>
+              <p>Versions are immutable snapshots used for release checks. Test calls can use the current draft.</p>
+              {latestConfig && <p>Compared with version {String(agentVersions[0].data.number)}: {changed.length ? changed.join(', ') : 'no setting differences'}.</p>}
+              {!agentVersions.length && <p>No versions yet. Create one when you run release checks.</p>}
+              {agentVersions.map(version => <div className={styles.versionRow} key={version.id}><GitBranch size={16} aria-hidden="true"/><span><strong>Version {String(version.data.number)}</strong><small>{new Date(version.createdAt).toLocaleString()}</small></span><span className="pc-badge">{version.status}</span></div>)}
+            </details>}
           </>}
-          {section === 'Conversation' && <>
-          <label className="pc-field">AI introduction<textarea className="pc-textarea" required maxLength={500} value={draft.disclosure} onChange={(e) => set('disclosure', e.target.value)}/><small className="pc-muted">Must identify the representative as AI before a customer conversation.</small></label>
-          <label className="pc-field">Conversation behaviour<textarea className="pc-textarea" required value={draft.responseStyle} onChange={(e) => set('responseStyle', e.target.value)}/></label>
-          </>}
-          {section === 'Language' && <>
-            <div className="pc-grid"><label className="pc-field">Primary language<input className="pc-input" required value={draft.primaryLanguage} onChange={(e) => set('primaryLanguage', e.target.value)}/></label><label className="pc-field">Allowed languages, comma separated<input className="pc-input" value={languagesText} onChange={(e) => { setLanguagesText(e.target.value); set('allowedLanguages', values(e.target.value)); }}/></label></div>
-            <div className="wb-vocabulary">
-              <div className="wb-field-heading"><label htmlFor="agent-speech-vocabulary">Speech vocabulary <span className="pc-muted">· optional</span></label><span>{draft.speechVocabulary?.length || 0} / {MAX_SPEECH_VOCABULARY_TERMS} terms</span></div>
-              <p id="agent-speech-vocabulary-help" className="pc-muted">Help Azure recognize company names, products and acronyms. Add one term per line, then test it in a call.</p>
-              <textarea ref={vocabularyField} id="agent-speech-vocabulary" className="pc-textarea" rows={4} maxLength={4096} value={vocabularyText} aria-invalid={!!vocabularyError} aria-describedby={`agent-speech-vocabulary-help${vocabularyError ? ' agent-speech-vocabulary-error' : ''}`} placeholder={'Northstar Learning\nIELTS\nपुणे'} onChange={event => { const text = event.target.value; const terms = text.split(/\r?\n/).map(term => term.trim()).filter(Boolean); setVocabularyText(text); set('speechVocabulary', terms); if (vocabularyError) { try { normalizeSpeechVocabulary(terms); setVocabularyError(''); } catch (error) { setVocabularyError(error instanceof Error ? error.message : 'Review the speech vocabulary.'); } } }}/>
-              {vocabularyError && <p id="agent-speech-vocabulary-error" role="alert" className="wb-vocabulary-error">{vocabularyError}</p>}
-              <p className="pc-muted wb-vocabulary-note">Keep customer personal data out. These spelling hints are saved with the agent version and included in public voice releases. They do not add company facts or change the agent’s voice.</p>
-              {draft.voiceProfile === 'maya-despina' && <p className="pc-muted wb-vocabulary-note">The Maya profile keeps these terms in the saved configuration. Transcription hints currently apply to Azure calls.</p>}
-            </div>
-          </>}
-          {section === 'Relationship' && <>
-          <label className="pc-field">Relationship memory<select className="pc-select" value={draft.memoryScope} onChange={(e) => set('memoryScope', e.target.value as AgentConfig['memoryScope'])}><option value="approved_contact">Approved memory for this customer only</option><option value="none">No relationship memory</option></select></label>
-          <label className="pc-field">Human escalation<textarea className="pc-textarea" required value={draft.escalation} onChange={(e) => set('escalation', e.target.value)}/></label>
-          </>}
-          {section === 'Knowledge' &&
-          <fieldset className="pc-field"><legend>Company knowledge</legend><p className="pc-muted">Only approved sources can be referenced. Source changes require a new version and test.</p>{approvedSources.map((item) => <label className="pc-row" key={item.id}><input type="checkbox" checked={draft.knowledgeIds.includes(item.id)} onChange={(e) => set('knowledgeIds', e.target.checked ? [...draft.knowledgeIds, item.id] : draft.knowledgeIds.filter((id) => id !== item.id))}/><span>{String(item.data.title)}</span></label>)}{approvedSources.length === 0 && <p className="pc-empty">Approve a source in Company brain before attaching knowledge.</p>}{draft.knowledgeIds.filter((id) => !approvedSources.some((s) => s.id === id)).map((id) => <p className="pc-muted" key={id}>A referenced source is no longer approved. <button className="pc-button quiet" type="button" onClick={() => set('knowledgeIds', draft.knowledgeIds.filter(sourceId => sourceId !== id))}>Remove source</button></p>)}</fieldset>
-          }
-          {section === 'Actions' && <fieldset className="wb-action-fieldset"><legend>In-call actions</legend><p className="pc-muted">Actions start off. Enable only what this agent needs, then run a test call. A browser call is an internal operator test; selected contact context does not verify the caller’s identity.</p><div className="wb-action-options">{actions.map(action => <label className="wb-action-option" key={action.name}><input type="checkbox" checked={normalizeVoiceTools(draft.enabledTools).includes(action.name)} onChange={event => { const enabled = normalizeVoiceTools(draft.enabledTools); set('enabledTools', event.target.checked ? [...enabled, action.name] : enabled.filter(name => name !== action.name)); }}/><span><strong>{action.title}</strong><small>{action.description}</small></span></label>)}</div><p className="wb-action-footnote">Follow-up requests remain pending for human review. The agent cannot verify who is speaking or prove a customer requested an action.</p></fieldset>
-          }<div className="pc-row pc-agent-actions"><button className="pc-button primary" type="submit" disabled={busy || (!dirty && !sourcesChanged && !!current)}><Save size={16}/> {current ? 'Save changes' : 'Create agent'}</button>{current && <button className="pc-button quiet" type="button" disabled={busy || dirty || agentVersions[0]?.data.sourceRevision === current.revision} onClick={() => void capture()}><GitBranch size={16}/> Capture version</button>}{current && <button type="button" className="pc-button pc-agent-mobile-test" onClick={() => navigate('tests')}><FlaskConical size={16}/> Test Lab</button>}</div>{current && <p className="pc-muted pc-agent-savehint">{sourcesChanged ? "A knowledge source changed. Review your sources, save the draft and capture a new version." : dirty ? "Save your changes before capturing a version." : agentVersions[0]?.data.sourceRevision === current.revision ? "This draft is already captured in a version. Edit a setting to create the next version, or continue to Test Lab." : "Capture this saved draft before running checks."}</p>}
-        </fieldset></form>
-        <AgentRevision agent={current} dirty={dirty} viewer={viewer} proposals={records} onApplied={async () => { await act('workspace.refresh'); }}/>
-        {section === 'Conversation' && !viewer && <details className="wb-history"><summary>Personal Voice enrollment</summary><VoiceCloningPanel/></details>}
-        {current && <details className="wb-history"><summary>Version history · {agentVersions.length}</summary><p className="pc-muted">Versions are immutable snapshots for release checks. You can test the current draft without capturing one.</p>{latestConfig && <p className="pc-muted">Compared with v{String(agentVersions[0].data.number)}: {changed.length ? changed.join(', ') : 'no setting differences'}{current.revision !== agentVersions[0].data.sourceRevision ? ` · Saved draft revision ${current.revision} is newer.` : ''}</p>}<div className="pc-list">{agentVersions.map(version => <div className="pc-row" key={version.id}><GitBranch size={16}/><span><strong>Version {String(version.data.number)}</strong><small className="pc-muted">{new Date(version.createdAt).toLocaleString()}</small></span><span className="pc-badge">{version.status}</span></div>)}</div></details>}
-      </section><aside id="agent-test-call" tabIndex={-1} className="pc-panel wb-test-panel">{viewer ? <p className="wb-viewer-test">Operator access is required to test calls.</p> : <VoiceStudio contacts={workspace.contacts.map(contact => ({ id: contact.id, name: String(contact.name || contact.id) }))} onSaved={() => { void act('workspace.refresh'); }} preview={{ draft, agentId: current?.id }}/>}</aside></div>
+          <div hidden={section !== 'Conversation'} className={styles.revision}><AgentRevision agent={current} dirty={dirty} viewer={viewer} proposals={records} onApplied={async () => { await act('workspace.refresh'); }}/></div>
+          <div hidden={section !== 'Voice & language'}>{!viewer && <details className={styles.details}><summary>Personal Voice enrollment</summary><VoiceCloningPanel/></details>}</div>
+        </div>
+      </section>
+      <aside id="agent-test-call" tabIndex={-1} className={styles.testDock} aria-label="Test current agent draft">
+        <div className={styles.dockHeading}><span>Test current draft</span><button type="button" className="pc-button quiet" onClick={() => jumpTo('agent-editor')}><ArrowLeft size={14} aria-hidden="true"/> Back to editor</button></div>
+        {viewer ? <p className={styles.empty}>Operator access is required to test calls.</p> : <VoiceStudio contacts={workspace.contacts.map(contact => ({ id: contact.id, name: String(contact.name || contact.id) }))} onSaved={() => { void act('workspace.refresh'); }} preview={{ draft, agentId: current?.id }}/>}
+      </aside>
+    </div>
   </main>;
 }

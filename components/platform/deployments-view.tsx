@@ -142,7 +142,9 @@ export function DeploymentsView({ records, workspace, act, navigate, focusId }: 
   const [deployments, setDeployments] = useState<DeploymentRecord[]>([]);
   const [connections, setConnections] = useState<ConnectionView[]>([]);
   const [activations, setActivations] = useState<ActivationReceipt[]>([]);
-  const [selectedId, setSelectedId] = useState(focusId || '');
+  const [selectedId, setSelectedId] = useState(focusId?.startsWith('release:') ? '' : focusId || '');
+  const [loaded, setLoaded] = useState(false);
+  const appliedReleaseFocus = useRef('');
   const [creating, setCreating] = useState(false);
   const [draft, setDraft] = useState(() => emptyDraft(workspace.organization.name));
   const [pending, setPending] = useState('');
@@ -161,6 +163,7 @@ export function DeploymentsView({ records, workspace, act, navigate, focusId }: 
     if (deploymentResult.status === 'fulfilled') {
       const next = deploymentResult.value.deployments.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
       setDeployments(next);
+      setLoaded(true);
       setSelectedId(current => current && next.some(item => item.id === current) ? current : next[0]?.id || '');
     } else throw deploymentResult.reason;
     if (integrationResult.status === 'fulfilled') setConnections(integrationResult.value.connections || []);
@@ -190,6 +193,14 @@ export function DeploymentsView({ records, workspace, act, navigate, focusId }: 
     return release.data.channel === 'browser' && !!version && test?.data.passed === true && test.data.mode === 'configuration' && test.data.versionId === version.id && config?.voiceProfile !== 'maya-despina';
   }), [releases, runs, versions]);
   const chosenRelease = eligible.find(release => release.id === draft.releaseId) || eligible[0];
+  useEffect(() => {
+    if (!loaded || !owner || !focusId?.startsWith('release:') || appliedReleaseFocus.current === focusId) return;
+    const releaseId = focusId.slice('release:'.length);
+    if (!eligible.some(release => release.id === releaseId)) return;
+    appliedReleaseFocus.current = focusId;
+    setCreating(true); setSelectedId(''); setAcknowledged(false); setError(''); setNotice('');
+    setDraft(current => ({ ...emptyDraft(workspace.organization.name), releaseId, origins: current.origins || (typeof window !== 'undefined' ? window.location.origin : '') }));
+  }, [focusId, loaded, owner, eligible, workspace.organization.name]);
   const chosenVersion = versions.find(version => version.id === chosenRelease?.data.versionId);
   const chosenConfig = chosenVersion?.data.config as AgentConfig | undefined;
   const versionSources = sources.filter(source => chosenConfig?.knowledgeIds?.includes(source.id));
@@ -206,7 +217,7 @@ export function DeploymentsView({ records, workspace, act, navigate, focusId }: 
   const connectionReady = !connectionId || (draftConnection?.status === 'connected' && !!draftConnection.checkedAt && !!checkedIdentity);
 
   useEffect(() => {
-    if (!draft.releaseId && eligible[0]) setDraft(current => ({ ...current, releaseId: eligible[0].id }));
+    if (!draft.releaseId && eligible[0]) setDraft(current => current.releaseId ? current : ({ ...current, releaseId: eligible[0].id }));
   }, [draft.releaseId, eligible]);
 
   useEffect(() => {

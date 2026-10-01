@@ -21,18 +21,15 @@ import { AutomationsView } from '@/components/platform/automations-view';
 import { CompanyView } from '@/components/platform/company-view';
 import { DeploymentsView } from '@/components/platform/deployments-view';
 import { AccountSecurity } from '@/components/account-access';
+import { readWorkspaceHash, resolveSection, searchWorkspace, sectionLabels, workspaceArea, workspaceAreas, workspaceHref } from '@/lib/platform/navigation';
+import { WorkspaceHistoryGuard } from '@/lib/platform/history-guard';
+import shell from './workspace-shell.module.css';
 import './inbox.css';
 import './deployments.css';
 import './channel-agents.css';
 
-const navigation = [
-  { label: 'Operate', items: [[LayoutDashboard, 'Command centre'], [Megaphone, 'Campaigns'], [CalendarClock, 'Automations'], [Inbox, 'Inbox'], [MessagesSquare, 'Conversations'], [Users, 'Customers'], [Network, 'GroupAI']] },
-  { label: 'Build', items: [[Bot, 'Agents'], [FlaskConical, 'Test lab'], [BookOpen, 'Company brain'], [Plug, 'Integrations'], [Rocket, 'Releases'], [Globe2, 'Deployments']] },
-  { label: 'Improve', items: [[BarChart3, 'Quality'], [ListChecks, 'Commitments']] },
-  { label: 'Workspace', items: [[Building2, 'Company'], [UserRoundCog, 'Team & access'], [ShieldCheck, 'Account security']] },
-] as const;
+const areaIcons: Record<string, typeof LayoutDashboard> = { home: LayoutDashboard, company: Building2, agents: Bot, campaigns: Megaphone, activity: MessagesSquare, settings: UserRoundCog };
 const views: Record<string, React.ComponentType<PlatformViewProps>> = { 'Command centre': CommandView, Campaigns: CampaignsView, Conversations: ConversationsView, Customers: CustomersView, GroupAI: GroupsView, Agents: AgentsView, 'Test lab': TestsView, 'Company brain': BrainView, Integrations: IntegrationsView, Releases: ReleasesView, Quality: QualityView, Commitments: CommitmentsView, Inbox: InboxView, Automations: AutomationsView, Company: CompanyView, Deployments: DeploymentsView, 'Account security': () => <main className="pc-page"><AccountSecurity/></main>, 'Team & access': ({ workspace }) => <TeamView user={workspace.user}/> };
-const sectionNames = Object.keys(views);
 class RequestError extends Error { constructor(public status: number, message: string) { super(message); } }
 type AccountSession = { user: { verificationRequired?: boolean; emailVerified?: boolean } };
 function needsEmailVerification(session: AccountSession) { return session.user.verificationRequired && !session.user.emailVerified; }
@@ -42,9 +39,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (!response.ok) throw new RequestError(response.status, data.error || 'The request could not be completed.');
   return data;
 }
-function normalized(value: string) { const key = value.replace(/[-_]/g, ' ').toLowerCase(); return sectionNames.find(n => n.toLowerCase() === key) || ({ brain: 'Company brain', groups: 'GroupAI', tests: 'Test lab', command: 'Command centre' } as Record<string, string>)[key] || 'Command centre'; }
-function decoded(value: string) { try { return decodeURIComponent(value); } catch { return value; } }
-function hashState(hash: string): { section: string; focusId?: string } { const [rawSection, rawId] = hash.replace(/^#/, '').split('/'); return { section: normalized(decoded(rawSection || 'Command centre')), focusId: rawId ? decoded(rawId) : undefined }; }
 
 export default function Page() {
   const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
@@ -56,6 +50,8 @@ export default function Page() {
   const [focusId, setFocusId] = useState<string | undefined>();
   const [mobile, setMobile] = useState(false);
   const [compact, setCompact] = useState(false);
+  const [expandedArea, setExpandedArea] = useState<string>('home');
+  const historyGuard = useRef<WorkspaceHistoryGuard | null>(null);
   useEffect(() => { const media = window.matchMedia('(max-width:820px)'); const sync = () => setCompact(media.matches); sync(); media.addEventListener('change', sync); return () => media.removeEventListener('change', sync); }, []);
   useEffect(() => { if (!mobile) return; document.querySelector<HTMLAnchorElement>('.pc-sidebar a')?.focus(); const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMobile(false); }; window.addEventListener('keydown', escape); return () => { window.removeEventListener('keydown', escape); document.querySelector<HTMLButtonElement>('.pc-menu')?.focus(); }; }, [mobile]);
   const [search, setSearch] = useState('');
@@ -100,8 +96,30 @@ export default function Page() {
     try { await request('/api/auth', { method: 'DELETE' }); loadVersion.current++; setWorkspace(null); setRecords([]); setError(''); setLoading(false); }
     catch (failure) { setError(failure instanceof Error ? failure.message : 'Unable to sign out. Please try again.'); }
   }, []);
-  useEffect(() => { void load(); const sync = () => { const next = hashState(window.location.hash); setActive(next.section); setFocusId(next.focusId); }; sync(); window.addEventListener('hashchange', sync); return () => window.removeEventListener('hashchange', sync); }, [load]);
-  const navigate = useCallback((section: string, recordId?: string) => { const [rawSection, embeddedId] = section.split('/'); const id = recordId || embeddedId; const value = normalized(rawSection); setActive(value); setFocusId(id); window.location.hash = `${encodeURIComponent(value)}${id ? `/${encodeURIComponent(id)}` : ''}`; setMobile(false); setSearch(''); }, []);
+  useEffect(() => {
+    void load();
+    const guard = new WorkspaceHistoryGuard({
+      read: () => ({ route: readWorkspaceHash(window.location.hash), state: window.history.state }),
+      write: (mode, state, route) => {
+        if (mode === 'push') window.history.pushState(state, '', route ? workspaceHref(route.section, route.focusId) : undefined);
+        else window.history.replaceState(state, '', route ? workspaceHref(route.section, route.focusId) : undefined);
+      },
+      go: delta => window.history.go(delta),
+      allowLeave: () => window.dispatchEvent(new Event('relay:before-navigation', { cancelable: true })),
+      accept: next => { setActive(next.section); setFocusId(next.focusId); setExpandedArea(workspaceArea(next.section).id); setMobile(false); },
+      newScope: () => window.crypto.randomUUID(),
+    });
+    historyGuard.current = guard;
+    const sync = () => guard.sync();
+    sync(); window.addEventListener('popstate', sync); window.addEventListener('hashchange', sync);
+    return () => { window.removeEventListener('popstate', sync); window.removeEventListener('hashchange', sync); if (historyGuard.current === guard) historyGuard.current = null; };
+  }, [load]);
+  const navigate = useCallback((section: string, recordId?: string) => {
+    const [rawSection, embeddedId] = section.split('/');
+    const next = { section: resolveSection(rawSection), focusId: recordId || embeddedId };
+    if (historyGuard.current?.navigate(next)) { setMobile(false); setSearch(''); }
+  }, []);
+  useEffect(() => { if (workspace) { document.getElementById('workspace-main')?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); } }, [active, focusId, !!workspace]);
   const act = useCallback(async (action: string, body: Record<string, unknown> = {}) => {
     if (action === 'workspace.refresh') { await load(); return; }
     setBusy(true); setError('');
@@ -113,24 +131,40 @@ export default function Page() {
   if (!workspace && error) return <main className="pc-loading"><AlertCircle size={28}/><p role="alert">{error}</p><button className="pc-button primary" onClick={() => void load()}>Try again</button><a href="/account/security">Account security</a><button className="pc-button" onClick={() => void signOut()}>Sign out</button></main>;
   if (!workspace) return <Authentication onSuccess={load}/>;
   const CurrentView = views[active] || CommandView;
-  const found = search.trim() ? [
-    ...sectionNames.filter(s => s.toLowerCase().includes(search.toLowerCase())).map(label => ({ id: label, label, type: 'Workspace', target: label })),
-    ...workspace.contacts.filter(c => String(c.name).toLowerCase().includes(search.toLowerCase())).map(c => ({ id: c.id, recordId: c.id, label: String(c.name), type: 'Customer', target: `Customers/${c.id}` })),
-    ...records.filter(r => ['agent_definition', 'brain_source', 'campaign', 'group_world', 'commitment'].includes(r.kind) && String(r.data.name || r.data.title || '').toLowerCase().includes(search.toLowerCase())).map(r => ({ id: r.id, recordId: r.id, label: String(r.data.name || r.data.title), type: r.kind.replaceAll('_', ' '), target: `${({ agent_definition: 'Agents', brain_source: 'Company brain', campaign: 'Campaigns', group_world: 'GroupAI', commitment: 'Commitments' } as Record<string, string>)[r.kind]}/${r.id}` })),
-  ].slice(0, 12) : [];
-  return <div className="pc-app">
-    <a className="pc-skip" href="#workspace-main">Skip to workspace</a>
+  const found = searchWorkspace(search, workspace, records);
+  const activeArea = workspaceArea(active);
+  const follow = (event: React.MouseEvent<HTMLAnchorElement>, section: string, id?: string) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault(); navigate(section, id);
+  };
+  return <div className={`pc-app ${shell.app}`}>
+    <a className="pc-skip" href="#workspace-main" onClick={event => { event.preventDefault(); document.getElementById('workspace-main')?.focus(); }}>Skip to workspace</a>
     {mobile && <button className="pc-backdrop" aria-label="Close navigation" onClick={() => setMobile(false)}/>}
-    <aside id="workspace-navigation" className={`pc-sidebar ${mobile ? 'is-open' : ''}`} inert={compact && !mobile}><button className="pc-iconbutton pc-navclose" aria-label="Close navigation" onClick={() => setMobile(false)}><X size={18}/></button>
-      <a className="pc-brand" href="#Command%20centre"><span className="pc-brand-symbol"><AudioLines size={22}/></span> Relay <span className="pc-brand-note">workspace</span></a>
-      <div className="pc-company"><span className="pc-company-avatar">{workspace.organization.name.slice(0, 2).toUpperCase()}</span><div><strong>{workspace.organization.name}</strong><small>Company workspace</small></div><ChevronDown size={14}/></div>
-      <nav aria-label="Main navigation">{navigation.map(group => <div className="pc-navgroup" key={group.label}><p>{group.label}</p>{group.items.map(([Icon, title]) => <button key={title} className={`pc-navitem ${active === title ? 'active' : ''}`} aria-current={active === title ? 'page' : undefined} onClick={() => navigate(title)}><Icon size={17}/><span>{title}</span>{title === 'Commitments' && records.some(r => r.kind === 'commitment' && r.status === 'open') && <span className="pc-navcount">{records.filter(r => r.kind === 'commitment' && r.status === 'open').length}</span>}</button>)}</div>)}</nav>
-      <div className="pc-sidebar-bottom"><button className="pc-runtime-link" onClick={() => navigate('Integrations')}><span className="pc-status-dot"/><span>Provider setup<small>Browser voice · interchangeable</small></span><ArrowUpRight size={15}/></button><div className="pc-account"><div className="pc-avatar">{workspace.user.email.slice(0,1).toUpperCase()}</div><span><strong>{workspace.user.role === "viewer" ? "Viewer" : workspace.user.role === "operator" ? "Operator" : "Workspace owner"}</strong><small>{workspace.user.email}</small></span><button aria-label="Sign out" className="pc-iconbutton" onClick={() => void signOut()}><LogOut size={16}/></button></div></div>
+    <aside id="workspace-navigation" className={`pc-sidebar ${shell.sidebar} ${mobile ? 'is-open' : ''}`} inert={compact && !mobile} onKeyDown={event => {
+      if (!compact || !mobile || event.key !== 'Tab') return;
+      const targets = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)')).filter(target => target.getClientRects().length);
+      const first = targets[0], last = targets.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }}><button className="pc-iconbutton pc-navclose" aria-label="Close navigation" onClick={() => setMobile(false)}><X size={18}/></button>
+      <a className="pc-brand" href={workspaceHref('Command centre')} onClick={event => follow(event, 'Command centre')}><span className="pc-brand-symbol"><AudioLines size={22}/></span> Relay <span className="pc-brand-note">workspace</span></a>
+      <a className={`pc-company ${shell.company}`} href={workspaceHref('Company')} onClick={event => follow(event, 'Company')}><span className="pc-company-avatar">{workspace.organization.name.slice(0, 2).toUpperCase()}</span><div><strong>{workspace.organization.name}</strong><small>Company profile</small></div><ArrowUpRight size={14}/></a>
+      <nav aria-label="Main navigation" className={shell.navigation}>{workspaceAreas.map(area => {
+        const Icon = areaIcons[area.id]; const expanded = expandedArea === area.id; const currentArea = activeArea.id === area.id;
+        return <div key={area.id} className={`${shell.area} ${area.id === 'settings' ? shell.settings : ''}`}>
+          <div className={shell.areaHead} data-active={currentArea}>
+            <a href={workspaceHref(area.destination)} className={shell.areaLink} aria-current={area.sections.length === 1 && currentArea ? 'page' : undefined} onClick={event => follow(event, area.destination)}><Icon size={19} aria-hidden="true"/><span>{area.label}</span></a>
+            {area.sections.length > 1 && <button type="button" className={shell.expand} aria-label={`${expanded ? 'Collapse' : 'Expand'} ${area.label}`} aria-expanded={expanded} aria-controls={`nav-${area.id}`} onClick={() => setExpandedArea(expanded ? '' : area.id)}><ChevronDown size={15} aria-hidden="true"/></button>}
+          </div>
+          {area.sections.length > 1 && <div id={`nav-${area.id}`} className={shell.subnavigation} hidden={!expanded}>{area.sections.map(section => <a key={section} href={workspaceHref(section)} className={shell.subLink} aria-current={active === section ? 'page' : undefined} onClick={event => follow(event, section)}>{sectionLabels[section]}{section === 'Commitments' && records.some(record => record.kind === 'commitment' && record.status === 'open') && <span className={shell.count}>{records.filter(record => record.kind === 'commitment' && record.status === 'open').length}</span>}</a>)}</div>}
+        </div>;
+      })}</nav>
+      <div className="pc-sidebar-bottom"><div className="pc-account"><div className="pc-avatar">{workspace.user.email.slice(0,1).toUpperCase()}</div><span><strong>{workspace.user.role === "viewer" ? "Viewer" : workspace.user.role === "operator" ? "Operator" : "Workspace owner"}</strong><small>{workspace.user.email}</small></span><button aria-label="Sign out" className="pc-iconbutton" onClick={() => void signOut()}><LogOut size={16}/></button></div></div>
     </aside>
-    <div className="pc-workspace" inert={compact && mobile}><header className="pc-topbar"><button className="pc-iconbutton pc-menu" aria-label="Open navigation" aria-expanded={mobile} aria-controls="workspace-navigation" onClick={() => setMobile(true)}><PanelLeftClose size={18}/></button><div className="pc-breadcrumb">Workspace <span>/</span> <strong>{active}</strong></div><div className="pc-search"><Search size={15}/><input aria-label="Search workspace" placeholder="Search your workspace…" value={search} onChange={e => setSearch(e.target.value)}/>{search && <button aria-label="Clear search" onClick={() => setSearch('')}><X size={13}/></button>}{search && <div className="pc-search-results">{found.length ? found.map(item => <button key={item.id} onClick={() => navigate(item.target)}><span>{item.label}<small>{item.type}</small></span><ArrowUpRight size={14}/></button>) : <p>No matching records.</p>}</div>}</div><button className="pc-iconbutton" disabled={busy} aria-label="Refresh workspace" onClick={() => void load()}><RefreshCw size={16} className={busy ? 'spin' : ''}/></button></header>
+    <div className="pc-workspace" inert={compact && mobile}><header className={`pc-topbar ${shell.topbar}`}><button className="pc-iconbutton pc-menu" aria-label="Open navigation" aria-expanded={mobile} aria-controls="workspace-navigation" onClick={() => setMobile(true)}><PanelLeftClose size={18}/></button><div className={`pc-breadcrumb ${shell.breadcrumb}`}><span>{activeArea.label}</span>{activeArea.label !== sectionLabels[active] && <><span aria-hidden="true">/</span><strong>{sectionLabels[active]}</strong></>}</div><div className={`pc-search ${shell.search}`} onKeyDown={event => { if (event.key === 'Escape') { setSearch(''); event.currentTarget.querySelector('input')?.focus(); } }}><Search size={16}/><input aria-label="Search workspace" placeholder="Search agents, customers, conversations…" value={search} onChange={e => setSearch(e.target.value)}/>{search && <button aria-label="Clear search" onClick={() => setSearch('')}><X size={15}/></button>}{search && <div className={`pc-search-results ${shell.searchResults}`} aria-label="Workspace search results">{found.length ? found.map(item => <a key={item.id} href={workspaceHref(item.section, item.focusId)} onClick={event => follow(event, item.section, item.focusId)}><span>{item.label}<small>{item.detail}</small></span><ArrowUpRight size={14}/></a>) : <p>No matching saved records or pages.</p>}</div>}</div><button className="pc-iconbutton" disabled={busy} aria-label="Refresh workspace" onClick={() => void load()}><RefreshCw size={16} className={busy ? 'spin' : ''}/></button></header>
       {error && <div className="pc-error" role="alert"><AlertCircle size={17}/><span>{error}</span><button aria-label="Dismiss error" onClick={() => setError('')}><X size={16}/></button></div>}
-      <div id="workspace-main" tabIndex={-1} className="pc-main" key={`${active}:${focusId || ''}`}><CurrentView records={records} workspace={workspace} act={act} busy={busy} navigate={navigate} focusId={focusId}/></div>
-      <footer className="pc-footer"><span>Saved to your workspace</span><span>Last refreshed {updated} · Relay is a working name</span></footer>
+      <div id="workspace-main" tabIndex={-1} className="pc-main" key={active === 'Agents' ? active : `${active}:${focusId || ''}`}><CurrentView records={records} workspace={workspace} act={act} busy={busy} navigate={navigate} focusId={focusId}/></div>
+      <footer className="pc-footer"><span>Workspace refreshed {updated}</span><span>Relay · working name</span></footer>
     </div>
   </div>;
 }

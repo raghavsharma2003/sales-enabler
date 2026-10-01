@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { Rocket, RotateCcw, Square } from 'lucide-react';
 import type { PlatformViewProps } from '../../lib/platform/contracts';
 
-export function ReleasesView({ records, act, busy, navigate }: PlatformViewProps) {
+export function ReleasesView({ records, act, busy, navigate, focusId }: PlatformViewProps) {
   const agents = records.filter((r) => r.kind === 'agent_definition');
   const versions = records.filter((r) => r.kind === 'agent_version');
   const runs = records.filter((r) => r.kind === 'test_run');
   const releases = records.filter((r) => r.kind === 'release').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  const [agentId, setAgentId] = useState('');
-  const [versionId, setVersionId] = useState('');
+  const focusedRelease = releases.find(release => release.id === focusId);
+  const [agentId, setAgentId] = useState(String(focusedRelease?.data.agentId || (agents.some(agent => agent.id === focusId) ? focusId : '') || ''));
+  const [versionId, setVersionId] = useState(String(focusedRelease?.data.versionId || ''));
   const agent = agents.find((a) => a.id === agentId) || agents[0];
   const agentVersions = versions.filter((v) => v.data.agentId === agent?.id).sort((a, b) => Number(b.data.number) - Number(a.data.number));
   const version = agentVersions.find((v) => v.id === versionId) || agentVersions[0];

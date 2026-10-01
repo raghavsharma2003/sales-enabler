@@ -134,7 +134,7 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
       const next = instructions.trim().slice(0, 4_000);
       if (closed || !initialInstructions || !next || next === lastBehavior || channel?.readyState !== "open") return false;
       try {
-        channel.send(JSON.stringify({ type: "session.update", session: { instructions: `${initialInstructions}\n<live_behavior_update>\n${next}\n</live_behavior_update>` } }));
+        channel.send(JSON.stringify({ type: "session.update", session: { type: "realtime", instructions: `${initialInstructions}\n<live_behavior_update>\n${next}\n</live_behavior_update>` } }));
         lastBehavior = next;
         return true;
       } catch { return false; }
