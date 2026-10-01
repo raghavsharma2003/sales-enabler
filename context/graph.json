@@ -885,7 +885,7 @@
       "id": "deployment.azure-management-identity",
       "type": "decision",
       "title": "Separate startup deployment service principal; management access pending user setup",
-      "status": "configured-account-and-project-access-verified-group-hosting-role-pending",
+      "status": "account-project-and-group-access-verified-billing-scope-unavailable",
       "path": "docs/azure-project-creation-2026-10-01.md"
     },
     {
@@ -989,9 +989,9 @@
     {
       "id": "azure.group-hosting-access",
       "type": "requirement",
-      "title": "Existing-group Contributor needed for hosting; account-scoped project access verified",
-      "status": "group-read-forbidden-user-role-setup-pending",
-      "path": "docs/azure-project-creation-2026-10-01.md"
+      "title": "Group Contributor verified for resource management; runtime role grants are separate",
+      "status": "group-read-200-resource-write-actions-present-role-assignment-excluded",
+      "path": "docs/azure-hosting-plan-2026-10-01.md"
     },
     {
       "id": "research.voice-adoption-oct01",
@@ -1020,6 +1020,20 @@
       "title": "Server evidence review fixes verified without acoustic or live deployment claims",
       "status": "559-full-tests-30-focused-typecheck-build-package-passed",
       "path": "docs/public-voice-server-evidence.md"
+    },
+    {
+      "id": "azure.grant-coverage-check",
+      "type": "requirement",
+      "title": "Verify remaining startup credit and expiry before billable hosting",
+      "status": "spending-limit-off-billing-read-403-awaiting-user-credit-information",
+      "path": "docs/azure-hosting-plan-2026-10-01.md"
+    },
+    {
+      "id": "azure.hosting-plan-oct01",
+      "type": "decision",
+      "title": "Bounded Container Apps pilot with Azure-side builds, prerequisite roles and indicative cost",
+      "status": "prepared-not-provisioned",
+      "path": "docs/azure-hosting-plan-2026-10-01.md"
     }
   ],
   "edges": [
@@ -1822,6 +1836,16 @@
       "from": "verification.public-server-evidence-oct01",
       "to": "voice.public-server-response-evidence",
       "relation": "verifies-bounded-server-observation-contract"
+    },
+    {
+      "from": "azure.grant-coverage-check",
+      "to": "azure.hosting-plan-oct01",
+      "relation": "gates-billable-resource-creation"
+    },
+    {
+      "from": "azure.group-hosting-access",
+      "to": "azure.hosting-plan-oct01",
+      "relation": "permits-resource-management-with-bootstrap-prerequisites"
     }
   ]
 }

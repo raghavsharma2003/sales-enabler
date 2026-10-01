@@ -15,6 +15,8 @@ Sanitized readback receipts are retained under ignored `data/azure-foundry/`. Re
 
 ## Access boundary and unresolved agent setup
 
+**Later Contributor verification:** after the user added the role, the exact group and subscription reads returned 200. App and database creation actions are present at group scope; role-assignment writes are excluded. Subscription-level permissions list is empty. PostgreSQL/Web/Communication providers are not registered. The billing-property read is 403 and spendingLimit is Off, leaving grant balance and expiry unverified. See the hosting plan; no billable infrastructure was created.
+
 The identity can read/manage the existing AI account and its child project. Reading the existing resource group returned **403**. The group resource list returned a filtered inventory of accessible AI resources; this is not proof that no other resources exist. The user was asked to assign **Contributor on the existing resource group** to the deployment app for subsequent website/database provisioning. No new subscription or group was requested. Arbitrary role grants, quota, credit coverage and production hosting remain separate checks.
 
 Foundry agent-list reads succeeded, including an empty agent list in the new project. Other data-plane reads then failed intermittently with transport timeouts, using both Node and Windows' HTTPS client. One Company Brain agent creation attempt through the Windows client ended without a definitive response; its subsequent readback also failed. **That agent creation is unresolved, not verified successful or verified failed.** Do not issue another creation POST until a successful read reconciles the fixed agent name. No successful new-project inference call is claimed.

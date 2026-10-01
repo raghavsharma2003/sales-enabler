@@ -1,6 +1,6 @@
 # Azure access setup — no local Docker
 
-**Latest result — 1 October 2026:** the supplied identity is configured privately, authentication succeeded, and the new **sales-enabler** child project is created and readback-verified in the existing account/subscription. The four-value setup below is retained as a repeatable guide, not a current missing-credentials blocker. Group read returned403; Contributor on the existing resource group is the requested next hosting permission. New-project managed-agent creation remains unresolved after a transport timeout. See [current cloud evidence](azure-project-creation-2026-10-01.md).
+**Latest result — 1 October 2026:** the supplied identity is configured privately, authentication succeeded, and the new **sales-enabler** child project is created and readback-verified in the existing account/subscription. The four-value setup below is retained as a repeatable guide, not a current missing-credentials blocker. The subsequent Contributor assignment is verified: group read now returns 200, and effective permissions allow app/database resource creation. Billing-property access returns 403 and spendingLimit is Off; remaining credit/expiry must be confirmed before billable provisioning. New-project managed-agent creation remains unresolved after a transport timeout. See [current cloud evidence](azure-project-creation-2026-10-01.md).
 
 ## Current request: new project inside the existing subscription and Foundry resource
 
