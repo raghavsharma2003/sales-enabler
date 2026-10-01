@@ -81,7 +81,7 @@ function parseArgs() {
   const expectedAt = args.indexOf('--expected-keyword');
   const expectedKeyword = expectedAt >= 0 ? args[expectedAt + 1] : undefined;
   if (expectedAt >= 0 && (!expectedKeyword || !/^[A-Za-z]{2,30}$/.test(expectedKeyword))) throw new SmokeFailure('invalid_expected_keyword');
-  const positional = args.filter((value, index) => value !== '--offline-check' && value !== '--expected-keyword' && index !== expectedAt + 1);
+  const positional = args.filter((value, index) => value !== '--offline-check' && value !== '--expected-keyword' && (expectedAt < 0 || index !== expectedAt + 1));
   const publicId = positional[0];
   if (!offline && (!publicId || !/^[a-f0-9-]{36}$/.test(publicId))) throw new SmokeFailure('invalid_public_id');
   if (positional.length > (offline ? 0 : 1)) throw new SmokeFailure('unexpected_argument');

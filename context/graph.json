@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-27",
+  "updatedAt": "2026-10-01",
   "nodes": [
     {
       "id": "product.general",
@@ -96,8 +96,8 @@
     {
       "id": "open.credentials",
       "type": "open-question",
-      "title": "Azure voice credentials configured; later production services remain open",
-      "status": "voice-resolved-production-open"
+      "title": "Azure voice and management credentials configured; later production services remain open",
+      "status": "credentials-resolved-hosted-service-configuration-open"
     },
     {
       "id": "experiment.voice",
@@ -864,8 +864,8 @@
     {
       "id": "open.v7-management-and-hosting-gates",
       "type": "open-question",
-      "title": "Azure management access, hosting/domain, database and external integration setup",
-      "status": "awaiting-root-inspection"
+      "title": "Hosting/domain, production database and external integration setup",
+      "status": "management-access-verified-hosted-deployment-gates-open-local-work-unblocked"
     },
     {
       "id": "open.v7-dictated-product-name",
@@ -891,8 +891,8 @@
     {
       "id": "verification.azure-access-helper",
       "type": "evidence",
-      "title": "Read-only credential checker passes four offline redaction and scope tests",
-      "status": "offline-verified-live-credentials-pending",
+      "title": "Read-only credential checker and live scoped access verification",
+      "status": "offline-tests-and-live-account-project-group-access-verified",
       "path": "tests/azure-access-check.test.ts"
     },
     {
@@ -975,8 +975,8 @@
     {
       "id": "status.audit-2026-10-01",
       "type": "evidence",
-      "title": "Current access/status audit: four management fields missing, local preview unreachable, production gates open",
-      "status": "status-checked-no-new-live-voice-or-cloud-test",
+      "title": "Historical pre-credential access/status audit: four management fields were missing and local preview was unreachable",
+      "status": "historical-superseded-by-verified-management-access",
       "path": "context/STATE.md"
     },
     {
@@ -1024,9 +1024,43 @@
     {
       "id": "azure.grant-coverage-check",
       "type": "requirement",
-      "title": "Verify remaining startup credit and expiry before billable hosting",
-      "status": "spending-limit-off-billing-read-403-awaiting-user-credit-information",
+      "title": "Keep paid inference within the Azure grant and verify exact coverage before billable hosting",
+      "status": "user-reports-approx-usd4000-expiring-2027-exact-date-and-subscription-coverage-unverified-local-work-unblocked",
       "path": "docs/azure-hosting-plan-2026-10-01.md"
+    },
+    {
+      "id": "evidence.azure-credit-report-2026-10-01",
+      "type": "evidence",
+      "title": "User reports approximately USD 4,000 Azure credits expiring in 2027, probably limited to the current subscription",
+      "status": "user-reported-not-independently-billing-confirmed",
+      "source": "user"
+    },
+    {
+      "id": "decision.product-tech-focus-2026-10-01",
+      "type": "decision",
+      "title": "Continue product and voice implementation without repeated billing questions as a local-work prerequisite",
+      "status": "current-user-direction",
+      "source": "user"
+    },
+    {
+      "id": "voice.speech-vocabulary-and-session-ack-2026-10-01",
+      "type": "component",
+      "title": "Versioned ASR speech-vocabulary hints and Azure session-update acknowledgement gating",
+      "status": "implemented-verification-in-progress",
+      "path": "lib/voice/speech-vocabulary.ts"
+    },
+    {
+      "id": "component.conversations-server-evidence-2026-10-01",
+      "type": "component",
+      "title": "Conversations display bounded public voice server evidence",
+      "status": "implemented-verification-in-progress",
+      "path": "components/public-voice-evidence.tsx"
+    },
+    {
+      "id": "verification.voice-product-checkpoint-2026-10-01",
+      "type": "evidence",
+      "title": "Speech vocabulary, Azure acknowledgement gating and Conversations evidence verification",
+      "status": "in-progress-no-final-test-build-browser-or-quality-claim"
     },
     {
       "id": "azure.hosting-plan-oct01",
@@ -1840,7 +1874,32 @@
     {
       "from": "azure.grant-coverage-check",
       "to": "azure.hosting-plan-oct01",
-      "relation": "gates-billable-resource-creation"
+      "relation": "constrains-billable-hosting-without-blocking-local-product-work"
+    },
+    {
+      "from": "evidence.azure-credit-report-2026-10-01",
+      "to": "azure.grant-coverage-check",
+      "relation": "provides-user-reported-planning-estimate-not-billing-proof"
+    },
+    {
+      "from": "decision.product-tech-focus-2026-10-01",
+      "to": "product.general",
+      "relation": "sets-current-implementation-priority"
+    },
+    {
+      "from": "decision.product-tech-focus-2026-10-01",
+      "to": "voice.speech-vocabulary-and-session-ack-2026-10-01",
+      "relation": "prioritizes-current-voice-implementation"
+    },
+    {
+      "from": "verification.voice-product-checkpoint-2026-10-01",
+      "to": "voice.speech-vocabulary-and-session-ack-2026-10-01",
+      "relation": "verification-in-progress"
+    },
+    {
+      "from": "verification.voice-product-checkpoint-2026-10-01",
+      "to": "component.conversations-server-evidence-2026-10-01",
+      "relation": "verification-in-progress"
     },
     {
       "from": "azure.group-hosting-access",

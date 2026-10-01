@@ -4,6 +4,7 @@ import { db, WriteConflictError } from '../server/db';
 import { HttpError, field } from '../server/http';
 import { createRecord, getRecord, listRecords, updateRecord, type PlatformRecord } from './records';
 import { isVoiceToolName, normalizeVoiceTools, type VoiceToolName } from '../voice/tools/contracts';
+import { normalizeSpeechVocabulary, SpeechVocabularyValidationError } from '../voice/speech-vocabulary';
 
 export type AgentConfig = {
   name: string; role: string; objective: string; disclosure: string;
@@ -14,6 +15,7 @@ export type AgentConfig = {
   openingMessage?: string;
   voiceProfile?: 'provider-default' | 'maya-despina';
   enabledTools?: VoiceToolName[];
+  speechVocabulary?: string[];
 };
 type AgentVersion = { agentId: string; number: number; config: AgentConfig; knowledgeDigests: Record<string, string>; sourceRevision: number };
 type TestRun = { agentId: string; versionId: string; checks: { label: string; passed: boolean; detail: string }[]; passed: boolean; mode: 'configuration'; disclaimer: string };
@@ -29,6 +31,12 @@ export function parseAgentConfig(body: Record<string, unknown>): AgentConfig {
   const primaryLanguage = field(body, 'primaryLanguage', 80);
   if (body.voiceProfile !== undefined && body.voiceProfile !== 'provider-default' && body.voiceProfile !== 'maya-despina') throw new HttpError(400, 'Choose an installed voice profile.');
   const allowedLanguages = textArray(body.allowedLanguages, 'allowedLanguages');
+  let speechVocabulary: string[];
+  try { speechVocabulary = normalizeSpeechVocabulary(body.speechVocabulary); }
+  catch (error) {
+    if (error instanceof SpeechVocabularyValidationError) throw new HttpError(400, error.message);
+    throw error;
+  }
   if (body.enabledTools !== undefined && (!Array.isArray(body.enabledTools) || body.enabledTools.length > 3 || body.enabledTools.some(value => !isVoiceToolName(value)))) throw new HttpError(400, 'Choose only installed agent actions.');
   if (!allowedLanguages.includes(primaryLanguage)) throw new HttpError(400, 'Allowed languages must include the primary language.');
   return {
@@ -40,6 +48,7 @@ export function parseAgentConfig(body: Record<string, unknown>): AgentConfig {
     openingMessage: field(body, 'openingMessage', 1000, false),
     voiceProfile: body.voiceProfile === 'maya-despina' ? 'maya-despina' : 'provider-default',
     enabledTools: normalizeVoiceTools(body.enabledTools),
+    ...(speechVocabulary.length ? { speechVocabulary } : {}),
   };
 }
 const config = parseAgentConfig;

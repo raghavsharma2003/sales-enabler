@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       if (checked.contextDigest !== context.contextDigest || !('campaignDigest' in context) || checked.campaignDigest !== context.campaignDigest) throw new HttpError(409, 'Campaign call context changed. Refresh and try again.');
     }
     const toolAuthority = await buildVoiceToolAuthority(user, context, contactId);
-    const result = await adapter.connect({ sdp, instructions: context.instructions, userId: user.id, organizationId: context.organizationId, signal: request.signal, enabledTools: toolAuthority.enabledTools });
+    const result = await adapter.connect({ sdp, instructions: context.instructions, userId: user.id, organizationId: context.organizationId, signal: request.signal, enabledTools: toolAuthority.enabledTools, speechVocabulary: context.speechVocabulary });
     if (campaignRunId) {
       const checked = await compileCampaignVoiceContext(user, { campaignRunId, contactId: contactId!, releaseId: field(data, 'releaseId', 100) }, initialContext);
       if (checked.contextDigest !== context.contextDigest || !('campaignDigest' in context) || checked.campaignDigest !== context.campaignDigest) throw new HttpError(409, 'Campaign call context changed. Refresh and try again.');

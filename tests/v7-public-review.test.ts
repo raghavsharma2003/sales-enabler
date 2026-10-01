@@ -31,7 +31,7 @@ class Socket extends EventEmitter {
   readyState: number = WebSocket.OPEN;
   bufferedAmount = 0;
   sent: Record<string, any>[] = [];
-  send(raw: string) { this.sent.push(JSON.parse(raw)); }
+  send(raw: string) { const event = JSON.parse(raw); this.sent.push(event); if (event.type === 'session.update' && this.sent.filter(item => item.type === 'session.update').length > 1) queueMicrotask(() => this.receive({ type: 'session.updated', session: event.session })); }
   close() { this.readyState = WebSocket.CLOSED; this.emit('close'); }
   terminate() { this.close(); }
   receive(event: unknown) { this.emit('message', Buffer.from(JSON.stringify(event)), false); }
@@ -66,7 +66,7 @@ test('v7: a cancelled old response cannot clear the newer active response', asyn
   const h = harness();
   try {
     h.authenticate(); await until(() => h.provider.sent.some(e => e.type === 'session.update'));
-    h.provider.receive({ type: 'session.updated' }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
+    h.provider.receive({ type: 'session.updated', session: h.provider.sent.find(event => event.type === 'session.update')!.session }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
     h.provider.receive({ type: 'response.created', response: { id: 'greeting' } });
     h.client.receive({ type: 'text', text: 'First question', requestId: 'question-1' });
     await until(() => h.provider.sent.filter(e => e.type === 'response.create').length === 2);
@@ -82,7 +82,7 @@ test('v7: partially interrupted response removes a later unheard provider item a
   const h = harness();
   try {
     h.authenticate(); await until(() => h.provider.sent.some(e => e.type === 'session.update'));
-    h.provider.receive({ type: 'session.updated' }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
+    h.provider.receive({ type: 'session.updated', session: h.provider.sent.find(event => event.type === 'session.update')!.session }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
     h.provider.receive({ type: 'response.created', response: { id: 'interrupted-response' } });
     h.provider.receive({ type: 'response.output_item.added', response_id: 'interrupted-response', item: { id: 'partial-audio', type: 'message' } });
     h.provider.receive({ type: 'response.output_audio.delta', response_id: 'interrupted-response', item_id: 'partial-audio', delta: Buffer.alloc(4800).toString('base64') });
@@ -103,7 +103,7 @@ test('v7: a drained browser chunk preserves its heard prefix but removes same-it
   const h = harness(), ledger = new PublicPlaybackLedger();
   try {
     h.authenticate(); await until(() => h.provider.sent.some(e => e.type === 'session.update'));
-    h.provider.receive({ type: 'session.updated' }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
+    h.provider.receive({ type: 'session.updated', session: h.provider.sent.find(event => event.type === 'session.update')!.session }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
     h.provider.receive({ type: 'response.created', response: { id: 'streaming-response' } });
     h.provider.receive({ type: 'response.output_item.added', response_id: 'streaming-response', item: { id: 'streaming-item', type: 'message' } });
     const chunk = { type: 'response.output_audio.delta', response_id: 'streaming-response', item_id: 'streaming-item', delta: Buffer.alloc(4800).toString('base64') };
@@ -129,7 +129,7 @@ test('v7: fully heard audio at a nonzero audio-clock offset never loses history 
   const h = harness(), ledger = new PublicPlaybackLedger();
   try {
     h.authenticate(); await until(() => h.provider.sent.some(e => e.type === 'session.update'));
-    h.provider.receive({ type: 'session.updated' }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
+    h.provider.receive({ type: 'session.updated', session: h.provider.sent.find(event => event.type === 'session.update')!.session }); await until(() => h.provider.sent.some(e => e.type === 'response.create'));
     h.provider.receive({ type: 'response.created', response: { id: 'fully-heard-response' } });
     h.provider.receive({ type: 'response.output_item.added', response_id: 'fully-heard-response', item: { id: 'fully-heard-item', type: 'message' } });
     h.provider.receive({ type: 'response.output_audio.delta', response_id: 'fully-heard-response', item_id: 'fully-heard-item', delta: Buffer.alloc(4800).toString('base64') });

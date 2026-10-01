@@ -69,7 +69,7 @@ async function gatewayHarness(evidenceMode: 'save' | 'reject' | 'never' = 'save'
   const upstreamEvents: Record<string, any>[] = [], clientEvents: Record<string, any>[] = [], saved: PublicVoiceResponseEvidence[] = [];
   let provider: WebSocket | undefined, now = 10_000, finishes = 0;
   const authority = { user: { id: 'owner', email: 'owner@example.test', organizationId: 'org' }, deployment: { id: 'deployment', revision: 1, data: { channel: 'web_voice', publicId: 'public', agentId: 'agent', versionId: 'version', releaseId: 'release', publicKnowledgeIds: [], autoLearning: false, brand: { name: 'Example', welcomeMessage: 'Welcome.' }, limits: { maxSessionSeconds: 5, maxTurnsPerConversation: 4 } } }, config: { primaryLanguage: 'English', allowedLanguages: ['English'], responseStyle: 'Brief', objective: 'Help.' }, context: '{"companyKnowledge":[]}', fences: [], sessionId: 'session-1', expiresAt: new Date(Date.now() + 5000).toISOString(), purpose: 'voice' } as unknown as PublicAuthority;
-  fake.on('connection', socket => { provider = socket; socket.on('message', raw => upstreamEvents.push(JSON.parse(raw.toString()))); });
+  fake.on('connection', socket => { provider = socket; socket.on('message', raw => { const event = JSON.parse(raw.toString()); upstreamEvents.push(event); if (event.type === 'session.update' && upstreamEvents.filter(item => item.type === 'session.update').length > 1) socket.send(JSON.stringify({ type: 'session.updated', session: event.session })); }); });
   const dependencies: GatewayDependencies = {
     authorize: async (_token, input) => { if (input.origin !== origin || input.purpose !== 'voice') throw new HttpError(403, 'Unauthorized.'); return { ...authority, nextNonce: 'next' }; },
     claim: async () => undefined, close: async () => undefined, transcript: async () => undefined, finish: async () => { finishes++; },
@@ -95,7 +95,7 @@ async function gatewayHarness(evidenceMode: 'save' | 'reject' | 'never' = 'save'
 test('gateway binds a late cancelled terminal to its original ordinal while excluding late audio', async () => {
   const h = await gatewayHarness();
   try {
-    h.setNow(10_010); h.emit({ type: 'session.updated' });
+    h.setNow(10_010); h.emit({ type: 'session.updated', session: h.upstreamEvents.find(event => event.type === 'session.update')!.session });
     await until(() => h.upstreamEvents.filter(event => event.type === 'response.create').length === 1);
     h.setNow(10_012); h.client.send(JSON.stringify({ type: 'text', text: 'Please continue', requestId: 'request-next' }));
     await until(() => h.upstreamEvents.filter(event => event.type === 'response.create').length === 2);
@@ -127,7 +127,7 @@ test('gateway binds a late cancelled terminal to its original ordinal while excl
 test('rejected best-effort evidence does not suppress the response or canonical finish', async () => {
   const h = await gatewayHarness('reject');
   try {
-    h.setNow(10_010); h.emit({ type: 'session.updated' });
+    h.setNow(10_010); h.emit({ type: 'session.updated', session: h.upstreamEvents.find(event => event.type === 'session.update')!.session });
     await until(() => h.upstreamEvents.some(event => event.type === 'response.create'));
     h.emit({ type: 'response.created', response: { id: 'response-1' } });
     h.emit({ type: 'response.done', response: { id: 'response-1', status: 'completed' } });
@@ -141,7 +141,7 @@ test('rejected best-effort evidence does not suppress the response or canonical 
 test('a never-settling evidence callback cannot delay later turns or finalization', async () => {
   const h = await gatewayHarness('never');
   try {
-    h.setNow(10_010); h.emit({ type: 'session.updated' });
+    h.setNow(10_010); h.emit({ type: 'session.updated', session: h.upstreamEvents.find(event => event.type === 'session.update')!.session });
     await until(() => h.upstreamEvents.some(event => event.type === 'response.create'));
     h.emit({ type: 'response.created', response: { id: 'response-1' } });
     h.emit({ type: 'response.done', response: { id: 'response-1', status: 'completed' } });

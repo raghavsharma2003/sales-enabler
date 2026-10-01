@@ -4,6 +4,7 @@ import type { VoiceConnectResult, VoiceProfile } from "./contracts";
 import { buildVoiceInstructions } from "./prompt";
 import { MAYA_VOICE_PROFILE, mayaDeliveryInstructions } from "./maya";
 import { normalizeVoiceTools, voiceToolDefinitions, type VoiceToolName } from "./tools/contracts";
+import { compileSpeechVocabularyPrompt } from "./speech-vocabulary";
 
 export class VoiceConnectionError extends Error {}
 
@@ -13,19 +14,20 @@ export function buildProviderInstructions(context: string, profile: VoiceProfile
 }
 
 export interface VoiceServerAdapter {
-  connect(input: { sdp?: string; instructions: string; userId: string; organizationId: string; enabledTools?: VoiceToolName[]; signal?: AbortSignal }): Promise<VoiceConnectResult>;
+  connect(input: { sdp?: string; instructions: string; userId: string; organizationId: string; enabledTools?: VoiceToolName[]; speechVocabulary?: readonly string[]; signal?: AbortSignal }): Promise<VoiceConnectResult>;
 }
 
 function requestSignal(signal?: AbortSignal): AbortSignal {
   return signal ? AbortSignal.any([signal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000);
 }
 
-function voiceSession(model: string, instructions: string, voice: string, profile: VoiceProfile, enabledTools: VoiceToolName[] = []) {
+function voiceSession(model: string, instructions: string, voice: string, profile: VoiceProfile, enabledTools: VoiceToolName[] = [], speechVocabulary?: readonly string[]) {
+  const transcriptionPrompt = compileSpeechVocabularyPrompt(speechVocabulary);
   return {
     type: "realtime", model, instructions: buildProviderInstructions(instructions, profile, enabledTools), output_modalities: ["audio"],
     audio: {
       input: {
-        transcription: { model: "gpt-4o-mini-transcribe" },
+        transcription: { model: "gpt-4o-mini-transcribe", ...(transcriptionPrompt ? { prompt: transcriptionPrompt } : {}) },
         turn_detection: { type: "semantic_vad", eagerness: "low", create_response: true, interrupt_response: true },
       },
       output: { voice },
@@ -72,6 +74,7 @@ async function connectWebRtc(
     azure ? env.AZURE_OPENAI_REALTIME_VOICE || "marin" : env.OPENAI_REALTIME_VOICE || "marin",
     profile,
     input.enabledTools,
+    input.speechVocabulary,
   );
   const url = azure
     ? `${normalizeAzureRealtimeEndpoint(env.AZURE_OPENAI_ENDPOINT)!}/realtime/calls`

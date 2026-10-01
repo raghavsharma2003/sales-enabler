@@ -7,6 +7,7 @@ import { appendPublicTranscript, claimVoiceSession, finishPublicConversation, in
 import { azureRealtimeConnection, MAX_CLIENT_MESSAGE_BYTES, parseClientEvent, publicContinuationInstructions, publicGreetingInstructions, publicVoiceInstructions, realtimeSession, safeProviderDiagnostic, safeResponseDiagnostic, type PublicProviderDiagnostic, type PublicResponseDiagnostic } from './protocol';
 import { compileRelationalRuntime } from '../voice/relational-runtime';
 import type { ConversationEntry } from '../voice/emotional';
+import { compileSpeechVocabularyPrompt } from '../voice/speech-vocabulary';
 import { PublicVoiceEvidenceRecorder, type PublicVoiceResponseEvidence } from './evidence';
 
 export type GatewayDependencies = {
@@ -17,6 +18,7 @@ export type GatewayDependencies = {
   finish: typeof finishPublicConversation;
   connect: () => { socket: WebSocket; model: string; voice: string };
   recheckMs?: number;
+  sessionUpdateTimeoutMs?: number;
   inputMode?: typeof setPublicInputMode;
   diagnostic?: (diagnostic: PublicProviderDiagnostic) => void;
   responseDiagnostic?: (diagnostic: PublicResponseDiagnostic) => void;
@@ -25,6 +27,7 @@ export type GatewayDependencies = {
 };
 
 const EVIDENCE_FINAL_FLUSH_MS = 200;
+const SESSION_UPDATE_TIMEOUT_MS = 5000;
 
 export const productionGatewayDependencies: GatewayDependencies = {
   authorize: resolvePublicSession, claim: claimVoiceSession, close: closePublicSession,
@@ -54,8 +57,16 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
   let totalInput = 0, totalOutput = 0, windowStart = Date.now(), frames = 0, responses = 0;
   let currentItem = '', sawMicrophoneFrame = false;
   const requestIds = new Set<string>();
+  const inputTranscriptIds = new Set<string>();
   const entries: ConversationEntry[] = [];
   let baseInstructions = '', openingInstructions = '';
+  // Interrupts and newer caller turns invalidate replies across both configuration and authorization awaits.
+  // Configuration acknowledgement is separate from response completion/cancellation.
+  let generation = 0, acknowledgedInstructions: string | undefined;
+  const microphoneGenerations = new Map<string, number>();
+  type PendingUpdate = { instructions: string; timer: ReturnType<typeof setTimeout>; resolve: (confirmed: boolean) => void };
+  let pendingUpdate: PendingUpdate | undefined;
+  const acknowledgedUpdateIds = new Set<string>();
   const transcriptionTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const origin = typeof request.headers.origin === 'string' ? request.headers.origin : '';
   let work: Promise<void> = Promise.resolve();
@@ -89,6 +100,8 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
   }
   function stop(outcome: string, message: string) {
     if (done) return; done = true; finalOutcome = outcome;
+    generation++;
+    settleUpdate(false);
     clearTimeout(authTimer); if (watchdog) clearTimeout(watchdog); if (recheck) clearInterval(recheck);
     for (const timer of transcriptionTimers.values()) clearTimeout(timer);
     // terminate closes the provider socket immediately, including when browser close handshakes stall.
@@ -109,14 +122,34 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
     const capturedAuthority = evidenceAuthority;
     evidenceWork = evidenceWork.then(() => Promise.resolve().then(() => dependencies.evidence!(capturedAuthority, turn)).catch(() => undefined)).catch(() => undefined);
   }
-  async function response(greeting = false, reserved = false) {
+  function settleUpdate(confirmed: boolean) {
+    const pending = pendingUpdate; if (!pending) return;
+    pendingUpdate = undefined; clearTimeout(pending.timer);
+    if (confirmed) acknowledgedInstructions = pending.instructions;
+    pending.resolve(confirmed);
+  }
+  function updateInstructions(instructions: string, update: unknown = { type: 'session.update', session: { type: 'realtime', instructions } }): Promise<boolean> {
+    if (done) return Promise.resolve(false);
+    if (pendingUpdate) throw new Error('A voice configuration update is already pending.');
+    if (acknowledgedInstructions === instructions) return Promise.resolve(true);
+    // Realtime session.updated carries the resulting state, not the client event_id.
+    // Keep one update in flight and compare instructions before releasing its waiter.
+    const configuredTimeout = dependencies.sessionUpdateTimeoutMs;
+    const timeout = configuredTimeout !== undefined && Number.isFinite(configuredTimeout) ? Math.max(1, Math.min(configuredTimeout, SESSION_UPDATE_TIMEOUT_MS)) : SESSION_UPDATE_TIMEOUT_MS;
+    return new Promise<boolean>(resolve => {
+      pendingUpdate = { instructions, resolve, timer: setTimeout(() => stop('session_update_timeout', 'The voice configuration was not confirmed in time. No automatic retry was made.'), timeout) };
+      try { provider(update); } catch { stop('provider_transport', 'The voice configuration could not be sent. No automatic reconnect was made.'); }
+    });
+  }
+  async function response(greeting = false, reserved = false, expectedGeneration = generation) {
+    if (done || expectedGeneration !== generation) return;
     if (responding) throw new HttpError(409, 'Wait for the current response.');
     if (!authority) throw new Error('Unauthorized.');
     if (!greeting && !reserved) {
       const fresh = await dependencies.authorize(token, { origin, nonce, consume: true, purpose: 'voice' });
       nonce = fresh.nextNonce!; authority = fresh;
     }
-    if (done) return;
+    if (done || expectedGeneration !== generation) return;
     if (++responses > authority.deployment.data.limits.maxTurnsPerConversation) throw new HttpError(429, 'Turn limit reached.');
     responding = true;
     activeResponse = { ordinal: responses, cancelled: false, completed: false }; responseSlots.push(activeResponse);
@@ -141,13 +174,13 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       provider({ type: 'conversation.item.delete', item_id: later.id }); later.trimmed = true;
     }
   }
-  function adapt(role: 'user' | 'assistant', text: string, id: string) {
+  async function adapt(role: 'user' | 'assistant', text: string, id: string) {
     if (!entries.some(entry => entry.id === id)) entries.push({ id, role, text });
     if (role !== 'user') return;
     const runtime = compileRelationalRuntime({ entries, settings: authority!.config, callId: authority!.sessionId });
     const instructions = publicContinuationInstructions(`${baseInstructions}\n${runtime.instructions}`);
     if (instructions.length > 12000) throw new HttpError(429, 'The conversation context limit was reached.');
-    provider({ type: 'session.update', session: { type: 'realtime', instructions } });
+    await updateInstructions(instructions);
   }
   function providerEvent(raw: WebSocket.RawData) {
     let event: Record<string, any>;
@@ -186,9 +219,13 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         return;
       }
     }
-    if (type === 'session.updated' && !ready) {
-      ready = true; send({ type: 'ready', expiresAt: authority!.expiresAt, disclosure: `You are speaking with an AI assistant for ${authority!.deployment.data.brand.name}.` });
-      queue(() => response(true));
+    if (type === 'session.updated') {
+      if (!pendingUpdate || event.session?.type !== 'realtime' || event.session.instructions !== pendingUpdate.instructions) return;
+      if (typeof event.event_id === 'string') {
+        if (acknowledgedUpdateIds.has(event.event_id)) return;
+        acknowledgedUpdateIds.add(event.event_id);
+      }
+      settleUpdate(true);
     } else if (type === 'response.created' && typeof event.response?.id === 'string') {
       if (responseSlots.some(candidate => candidate.id === event.response.id)) return;
       const slot = responseSlots.find(candidate => !candidate.id && !candidate.completed);
@@ -201,9 +238,12 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       const quota = /rate_limit|quota/.test(String(event.error?.code));
       stop(quota ? 'provider_quota' : 'provider_error', quota ? 'Azure has reached its usage limit. Please try again later.' : 'The voice provider could not continue. No automatic reconnect was made.');
     } else if (type === 'input_audio_buffer.speech_started') {
+      generation++;
+      if (typeof event.item_id === 'string') microphoneGenerations.set(event.item_id, generation);
       try { interrupt(); } catch { stop('uncertain', 'The audio connection was interrupted.'); }
     } else if (type === 'input_audio_buffer.committed') {
       const id = String(event.item_id);
+      if (!microphoneGenerations.has(id)) microphoneGenerations.set(id, ++generation);
       transcriptionTimers.set(id, setTimeout(() => stop('transcription_timeout', 'Speech could not be transcribed in time. Please use Listen & type or text chat.'), 10000));
     } else if (type === 'response.output_item.added' && typeof event.item?.id === 'string' && event.item.type === 'message') {
       const owner = typeof event.response_id === 'string' ? responseSlots.find(slot => slot.id === event.response_id) : activeResponse || responseSlots.at(-1);
@@ -227,11 +267,27 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       if (typeof event.transcript !== 'string' || event.transcript.length > 12000) { stop('transcript_limit', 'This conversation reached its transcript limit.'); return; }
       const text = event.transcript.trim(); if (!text) return;
       const id = String(event.item_id); clearTimeout(transcriptionTimers.get(id)); transcriptionTimers.delete(id);
-      queue(async () => { const eventId = `input:${id.slice(0, 100)}`; if (entries.some(entry => entry.id === eventId)) return; await dependencies.transcript(authority!, 'public_web_voice', { role: 'user', text, eventId }); if (done) return; adapt('user', text, eventId); send({ type: 'transcript', role: 'user', text }); await response(); }, true);
+      const eventId = `input:${id.slice(0, 100)}`;
+      if (inputTranscriptIds.has(eventId)) return;
+      inputTranscriptIds.add(eventId);
+      // ASR completions may arrive after a newer speech start or out of order. Their arrival
+      // cannot create a new generation and revive an interrupted/older microphone turn.
+      const expectedGeneration = microphoneGenerations.get(id) ?? ++generation;
+      microphoneGenerations.delete(id);
+      queue(async () => {
+        await dependencies.transcript(authority!, 'public_web_voice', { role: 'user', text, eventId });
+        if (done) return;
+        if (expectedGeneration !== generation) { send({ type: 'transcript', role: 'user', text }); return; }
+        if (responding) interrupt();
+        await adapt('user', text, eventId);
+        if (done) return;
+        send({ type: 'transcript', role: 'user', text });
+        await response(false, false, expectedGeneration);
+      }, true);
     } else if (type === 'response.output_audio_transcript.done' || type === 'response.audio_transcript.done') {
       if (typeof event.transcript !== 'string' || event.transcript.length > 12000) { stop('transcript_limit', 'This conversation reached its transcript limit.'); return; }
       const text = event.transcript.trim(); if (!text) return;
-      queue(async () => { const eventId = `output:${String(event.item_id || event.response_id).slice(0, 100)}`; if (entries.some(entry => entry.id === eventId)) return; await dependencies.transcript(authority!, 'public_web_voice', { role: 'assistant', text, eventId }); adapt('assistant', text, eventId); send({ type: 'transcript', role: 'assistant', text }); }, true);
+      queue(async () => { const eventId = `output:${String(event.item_id || event.response_id).slice(0, 100)}`; if (entries.some(entry => entry.id === eventId)) return; await dependencies.transcript(authority!, 'public_web_voice', { role: 'assistant', text, eventId }); await adapt('assistant', text, eventId); send({ type: 'transcript', role: 'assistant', text }); }, true);
     } else if (type === 'conversation.item.input_audio_transcription.failed') {
       stop('transcription_failed', 'Speech could not be transcribed. Please use Listen & type or text chat.');
     } else if (type === 'response.done') {
@@ -273,6 +329,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         if (done) { finalizeOwnedSession(); return; }
         await dependencies.inputMode?.(authority, auth.inputMode === 'text' ? 'text' : 'microphone');
         if (done) { finalizeOwnedSession(); return; }
+        const transcriptionPrompt = compileSpeechVocabularyPrompt(authority.config.speechVocabulary);
         const instructions = publicVoiceInstructions(instructionsFor(authority)); baseInstructions = instructions; openingInstructions = publicGreetingInstructions(instructions, authority.deployment.data.brand.welcomeMessage);
         if (done) return;
         clearTimeout(authTimer);
@@ -288,7 +345,13 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         const connectionTimer = setTimeout(() => stop('connection_timeout', 'Voice could not connect. No automatic retry was made.'), 12000);
         upstream.on('open', () => {
           if (done) { upstream?.terminate(); return; }
-          provider(realtimeSession(connected.model, connected.voice, instructions));
+          void updateInstructions(instructions, realtimeSession(connected.model, connected.voice, instructions, transcriptionPrompt)).then(confirmed => {
+            if (!confirmed || done) return;
+            clearTimeout(connectionTimer);
+            ready = true; send({ type: 'ready', expiresAt: authority!.expiresAt, disclosure: `You are speaking with an AI assistant for ${authority!.deployment.data.brand.name}.` });
+            const expectedGeneration = generation;
+            queue(() => response(true, false, expectedGeneration));
+          });
         });
         upstream.on('message', raw => { if (ready) clearTimeout(connectionTimer); providerEvent(raw); });
         upstream.on('error', () => { clearTimeout(connectionTimer); stop('provider_transport', 'Voice could not connect. Try text chat or start again explicitly.'); });
@@ -307,6 +370,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       if (totalInput > authority!.deployment.data.limits.maxSessionSeconds * 48000 || totalInput > (Date.now() - connectedAt + 2000) * 48) { stop('input_limit', 'This conversation reached its audio limit.'); return; }
       try { provider({ type: 'input_audio_buffer.append', audio: event.audio }); } catch { stop('uncertain', 'The voice connection was interrupted.'); }
     } else if (event.type === 'interrupt') {
+      generation++;
       try {
         cancelActiveResponse();
         const targetId = event.itemId || event.lastHeardItemId;
@@ -320,6 +384,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         }
       } catch { stop('uncertain', 'The voice connection was interrupted.'); }
     } else {
+      const expectedGeneration = ++generation;
       queue(async () => {
         if (requestIds.has(event.requestId)) throw new HttpError(409, 'Message already submitted.');
         requestIds.add(event.requestId);
@@ -329,10 +394,11 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         if (done) return;
         await dependencies.transcript(authority, 'public_web_voice', { role: 'user', text: event.text, eventId: event.requestId });
         if (done) return;
-        adapt('user', event.text, event.requestId);
+        await adapt('user', event.text, event.requestId);
+        if (done) return;
         provider({ type: 'conversation.item.create', item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: event.text }] } });
         send({ type: 'transcript', role: 'user', text: event.text });
-        await response(false, true);
+        await response(false, true, expectedGeneration);
       });
     }
   });
