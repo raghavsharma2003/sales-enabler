@@ -47,13 +47,16 @@ Overview is a company-readiness and continuation surface, not an aggregate dashb
 
 Agents is one continuous build–test–publish workspace. A compact agent picker and persistent Save draft / Test agent toolbar sit above a wide six-section editor and a continuously mounted test dock. New agents begin in Setup with required name, role, and purpose fields plus task presets. Prompt authoring appears only in Conversation. Publish captures and checks an exact saved version, keeps publication explicit, and only then hands a prefilled approved release to Channels; channel publication remains a separate owner action.
 
-The reviewed reset evidence is deliberately scoped. The initial three Overview findings—readiness truth, unresolved-test attention, and active-campaign priority—were corrected, and the focused reviewer marked those three findings resolved with a SHIP verdict. The required desktop/mobile captures cover Overview, Agents, Publish, mobile navigation, and new-agent setup. This is not a whole-product usability or production-readiness claim, and it does not complete the deeper Campaign, intake, or transcript-to-regression redesign.
+Campaigns is one durable record across Intent, Audience, Agent & content, Review, Run, and Results. Setup can be saved while incomplete without inventing placeholder truth. AI brief suggestions are copied into local fields only when the operator chooses Use, then require an explicit save. Full content proposals apply through separate receipts bound to the exact campaign revision and reviewed sources. Review checks current authority and eligibility; launch separately freezes the run snapshot. Run owns recipient-level execution and the mounted browser call. Results is a distinct evidence surface for exact conversations, completion evidence, planned-field review, and truthful empty states.
+
+The reviewed reset evidence is deliberately scoped. The initial three Overview findings were corrected and the focused reviewer marked them resolved. The canonical Campaign reviewer also returned SHIP after the final brief, proposal, Run, and Results captures, with 690/690 tests and production build/package checks reported in its verification packet. That verdict covers this workflow only. It is not a whole-product usability or production-readiness claim, does not establish microphone, device, perceptual voice quality, hosted-channel, or competitor-superiority evidence, and does not complete the deeper intake or transcript-to-regression redesign.
 
 **Key Characteristics:**
 
 - Five task-oriented areas with preserved deep routes
 - One company-derived next action
 - Wide editor with continuous testing context
+- One durable six-phase campaign record
 - Exact-version readiness and explicit publication
 - Quiet tonal surfaces with indigo state emphasis
 - Visible roles, consent, AI identity, and artifact ownership
@@ -112,6 +115,8 @@ Overview uses a responsive `1.72fr / minmax(300px, .72fr)` layout: next action, 
 
 Agents uses a compact picker inside a sticky toolbar and a `minmax(0, 1fr) / 330–370px` editor/test grid. The test dock remains mounted while the operator changes among Setup, Conversation, Voice & language, Knowledge, Behaviour & actions, and Publish. The grid becomes one column at 1080px without unmounting the tester. At 620px, the toolbar, field pairs, and tabs stack into touch-safe layouts; the test dock follows the editor in the same reading flow.
 
+Campaigns uses a persistent record picker and a six-step bar above one work surface capped at 1120px. The steps form six columns on wide screens, three below 1000px, and two below 620px. Intent, Audience, Agent & content, and Review reuse the same revisioned setup record; Run and Results read its fixed launch snapshot. The browser call desk remains mounted while moving between Run and Results, with a sticky call-in-progress return bar. Results uses a recipient list beside evidence detail and stacks to one column below 760px; result tables become labelled blocks below 650px.
+
 ## Elevation & Depth
 
 Depth is tonal. White panels sit on a cool canvas with quiet borders, lilac selection, and semantic status surfaces. Resting work surfaces remain flat; the search result popover uses the existing small ambient shadow, and transient voice state can use the established call ring. Reduced-motion preferences remove nonessential animation.
@@ -146,6 +151,14 @@ Six keyboard-operable sections replace simultaneous editor columns. Setup owns r
 
 Publish is an ordered three-step panel. Readiness first captures the saved revision when needed, runs configuration checks against that exact immutable version, and verifies the returned agent/version relationship. The latest exact-version result determines readiness; changed knowledge or draft revisions make prior checks outdated. Publication is a separate action and rechecks knowledge. Only an active release enables Set up channels, which opens a prefilled Channel draft; it does not activate or publish the channel.
 
+### Canonical Campaign workflow
+
+Intent binds a reviewed offering, goal, measurable outcome, and required evidence. Audience selects named recipients and explains why they belong; selection never grants consent or contact permission. Agent & content chooses the channel, exact active release or mailbox, opening content, supporting approved sources, and planned result fields. Inline blockers explain what remains while allowing a partial draft to be saved. Review summarizes the fixed brief, then runs a separate current preflight before launch. A changed campaign revision, customer/evidence authority, or failed launch invalidates the prior readiness result.
+
+AI brief assistance proposes outcome, evidence, audience rationale, and typed questions beside the saved local draft. `Use these suggestions` changes only the local editable fields and does not save or launch. AI content planning compares the saved draft with a source-disclosed proposal, retains exact quotes and an Open source path, and requires explicit Apply. Apply updates the same campaign record; it does not create a parallel campaign, launch, or contact anyone. Stale proposal evidence blocks application, and a draft can be safely reopened for editing before a run exists.
+
+Run owns pause, cancel, controlled recipient selection, manual completion evidence, exact-session selection, connected-email status, and the browser call desk. Email accepted, rejected, and uncertain terminal states settle operational queue progress without proving delivery, customer response, or business success; uncertain outcomes are never resent automatically. Results stays visually and semantically separate from execution. It shows per-recipient completion, saved-conversation navigation, caller excerpts, operator-reviewed planned fields, extraction receipts, and `Recheck saved reply · no AI call`. Accepted fields do not establish the campaign outcome. When no result fields were planned, the surface says so and keeps manual evidence and saved conversations available.
+
 ### Dirty navigation and history
 
 Raw field buffers and unsaved draft values remain mounted until save, discard, or confirmed navigation. Agent changes, Create agent, sidebar navigation, search, contextual links, Back, Forward, and hash changes share the guard. Cancel restores the accepted URL/history position; confirm performs the intended navigation once without a second prompt.
@@ -165,6 +178,9 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Do** keep the agent picker compact, editor spacious, tester continuously mounted, and Save draft / Test agent available from the toolbar.
 - **Do** preserve raw editing buffers, focus the first invalid field, and guard all route and history exits when the draft is dirty.
 - **Do** run checks against an exact saved version, publish explicitly, then pass the active release into a separate Channel draft.
+- **Do** keep Intent, Audience, Agent & content, Review, Run, and Results on one durable campaign ID with partial saves and exact revision checks.
+- **Do** keep AI suggestions and proposals as attributable receipts until an operator explicitly uses or applies them, and invalidate stale readiness when authority changes.
+- **Do** keep Results separate from Run and distinguish provider acceptance, reviewed evidence, and business outcome.
 - **Do** preserve role limits, consent controls, explicit AI identity, anonymous/unverified participant labels, and human-review boundaries.
 
 ### Don't:
@@ -174,4 +190,6 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Don't** repeat prompt fields across sections, unmount the tester during section changes, or hide the artifact targeted by Save, Test, Publish, or Channel setup.
 - **Don't** let a draft test, configuration check, release, or prefilled Channel draft imply public activation, live delivery, voice quality, identity verification, or business value.
 - **Don't** bypass the dirty guard for Back, Forward, hash links, search, agent switching, or contextual navigation.
+- **Don't** turn a phase change, partial save, AI suggestion, content proposal, preflight, or provider receipt into implied approval, launch, delivery, or success.
+- **Don't** duplicate the execution workbench in Results, hide empty result-field states, or collapse recipient evidence into campaign-level claims.
 - **Don't** present the focused review verdict as a whole-product usability, production, hosted-channel, or competitor-superiority claim.

@@ -1152,36 +1152,71 @@
       "id": "implementation.campaign-durable-workflow-2026-10-02",
       "type": "component",
       "title": "One durable phased campaign from setup through immutable run and results",
-      "status": "implemented-canonical-browser-flow-through-explicit-launch-verified-final-post-fix-gates-in-progress",
+      "status": "implemented-scoped-verified-ship-canonical-workflow-only-code-2d874ec",
       "path": "docs/campaign-workflow-verification.md"
     },
     {
       "id": "implementation.private-turn-ack-gating-2026-10-02",
       "type": "component",
       "title": "Private WebRTC exact-instruction acknowledgement and ordered turn scheduler",
-      "status": "implemented-regression-tested-live-azure-and-physical-microphone-gates-open",
+      "status": "implemented-regression-and-five-entry-live-azure-listen-type-verified-physical-microphone-open",
       "path": "docs/campaign-workflow-verification.md"
     },
     {
       "id": "verification.campaign-workflow-2026-10-02",
       "type": "evidence",
       "title": "Durable campaign and private turn-control verification checkpoint",
-      "status": "671-tests-second-build-package-and-canonical-browser-flow-passed-before-latest-projection-fix-final-gates-in-progress",
+      "status": "terminal-690-tests-build-package-readiness-browser-live-responsive-results-and-scoped-finish-review-ship",
       "path": "docs/campaign-workflow-verification.md"
     },
     {
       "id": "risk.private-turn-live-quality-2026-10-02",
       "type": "risk",
       "title": "Live acknowledgement latency, physical microphone, truncation and perceived quality remain unverified",
-      "status": "open-live-greeting-succeeded-first-typed-reply-provider-error-scheduler-gate-not-passed",
+      "status": "partially-closed-five-entry-live-listen-type-passed-physical-microphone-truncation-perceptual-gates-open",
       "path": "docs/campaign-workflow-verification.md"
     },
     {
       "id": "verification.campaign-canonical-browser-flow-2026-10-02",
       "type": "evidence",
       "title": "Same-ID setup, AI review, consent correction and explicit launch in a fictional workspace",
-      "status": "verified-through-active-run-one-controlled-queued-recipient-no-send-or-call",
+      "status": "verified-through-five-entry-call-saved-conversation-evidence-review-and-one-of-one-completion-no-send-or-real-customer",
       "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "open.campaign-review-fixes-2026-10-02",
+      "type": "open-question",
+      "title": "Close email settlement semantics, stable Results call/evidence layout and stale-readiness handling",
+      "status": "closed-690-tests-build-package-readiness-browser-results-rating-recheck-zero-field-and-scoped-review-ship",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "verification.direct-relational-cue-2026-10-02",
+      "type": "evidence",
+      "title": "Direct self-report and explicit brevity cue with negation and third-party guards",
+      "status": "66-focused-checks-and-live-bounded-pacing-brief-passed-no-emotion-diagnosis-or-trust-inference",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "verification.campaign-results-e2e-2026-10-02",
+      "type": "evidence",
+      "title": "Second canonical campaign through live call, saved evidence, completion and four-field extraction",
+      "status": "browser-live-verified-four-of-four-reviewed-no-extra-inference-recheck-desktop-mobile-clean",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "risk.voice-action-capture-wording-2026-10-02",
+      "type": "risk",
+      "title": "Test agent verbally denied feedback recording despite operator-side save availability",
+      "status": "open-pilot-calibration-no-overall-perceptual-or-product-truthfulness-pass",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "verification.campaign-finish-review-2026-10-02",
+      "type": "evidence",
+      "title": "Independent finish review of canonical campaign workflow",
+      "status": "ship-scoped-canonical-workflow-only-not-customer-pilot-or-whole-product",
+      "path": "docs/campaign-workflow-finish-review.md"
     }
   ],
   "edges": [
@@ -2139,6 +2174,36 @@
       "from": "risk.private-turn-live-quality-2026-10-02",
       "to": "implementation.private-turn-ack-gating-2026-10-02",
       "relation": "limits-live-quality-claims"
+    },
+    {
+      "from": "implementation.campaign-durable-workflow-2026-10-02",
+      "to": "open.campaign-review-fixes-2026-10-02",
+      "relation": "requires-final-hardening"
+    },
+    {
+      "from": "verification.direct-relational-cue-2026-10-02",
+      "to": "component.relational-runtime-port",
+      "relation": "verifies-bounded-direct-cue-guard"
+    },
+    {
+      "from": "verification.campaign-results-e2e-2026-10-02",
+      "to": "implementation.campaign-durable-workflow-2026-10-02",
+      "relation": "verifies-second-campaign-through-reviewed-results"
+    },
+    {
+      "from": "risk.voice-action-capture-wording-2026-10-02",
+      "to": "implementation.private-turn-ack-gating-2026-10-02",
+      "relation": "limits-product-quality-claim"
+    },
+    {
+      "from": "verification.campaign-finish-review-2026-10-02",
+      "to": "implementation.campaign-durable-workflow-2026-10-02",
+      "relation": "ships-scoped-canonical-workflow"
+    },
+    {
+      "from": "verification.campaign-canonical-browser-flow-2026-10-02",
+      "to": "implementation.private-turn-ack-gating-2026-10-02",
+      "relation": "verifies-five-entry-listen-type-and-tab-continuity"
     },
     {
       "from": "implementation.campaign-durable-workflow-2026-10-02",
