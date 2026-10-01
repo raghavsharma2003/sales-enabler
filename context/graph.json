@@ -1046,21 +1046,36 @@
       "id": "voice.speech-vocabulary-and-session-ack-2026-10-01",
       "type": "component",
       "title": "Versioned ASR speech-vocabulary hints and Azure session-update acknowledgement gating",
-      "status": "implemented-verification-in-progress",
-      "path": "lib/voice/speech-vocabulary.ts"
+      "status": "implemented-scoped-verified-automated-build-health-browser-review-live-gateway-and-native-hint-ack",
+      "path": "docs/voice-vocabulary-and-turn-control.md"
     },
     {
       "id": "component.conversations-server-evidence-2026-10-01",
       "type": "component",
       "title": "Conversations display bounded public voice server evidence",
-      "status": "implemented-verification-in-progress",
-      "path": "components/public-voice-evidence.tsx"
+      "status": "implemented-component-tested-and-scoped-ui-ship-synthetic-static-render-only-no-saved-conversation-proof",
+      "path": "docs/voice-vocabulary-and-turn-control.md"
     },
     {
       "id": "verification.voice-product-checkpoint-2026-10-01",
       "type": "evidence",
       "title": "Speech vocabulary, Azure acknowledgement gating and Conversations evidence verification",
-      "status": "in-progress-no-final-test-build-browser-or-quality-claim"
+      "status": "automated-build-health-browser-ship-live-azure-two-turn-synthetic-input-persisted-evidence-and-native-hint-ack-verified",
+      "path": "docs/voice-vocabulary-and-turn-control.md"
+    },
+    {
+      "id": "verification.voice-live-recovery-2026-10-01",
+      "type": "evidence",
+      "title": "Recovered Azure public-gateway two-turn synthetic-input smoke, persisted evidence and native hint acknowledgement",
+      "status": "verified-live-network-synthetic-input-no-asr-accuracy-perceptual-device-or-competitor-claim",
+      "path": "docs/voice-vocabulary-and-turn-control.md"
+    },
+    {
+      "id": "checkpoint.voice-backend-7602798",
+      "type": "evidence",
+      "title": "Local backend checkpoint for speech vocabulary and acknowledged turn control",
+      "status": "committed-local-7602798",
+      "path": "docs/voice-vocabulary-and-turn-control.md"
     },
     {
       "id": "azure.hosting-plan-oct01",
@@ -1900,6 +1915,16 @@
       "from": "verification.voice-product-checkpoint-2026-10-01",
       "to": "component.conversations-server-evidence-2026-10-01",
       "relation": "verification-in-progress"
+    },
+    {
+      "from": "checkpoint.voice-backend-7602798",
+      "to": "voice.speech-vocabulary-and-session-ack-2026-10-01",
+      "relation": "records-local-backend-implementation-checkpoint"
+    },
+    {
+      "from": "verification.voice-live-recovery-2026-10-01",
+      "to": "voice.speech-vocabulary-and-session-ack-2026-10-01",
+      "relation": "verifies-live-gateway-persistence-and-native-configuration-acceptance"
     },
     {
       "from": "azure.group-hosting-access",

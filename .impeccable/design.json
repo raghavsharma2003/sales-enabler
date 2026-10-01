@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-27T00:00:00.000Z",
+  "generatedAt": "2026-10-01T00:00:00.000Z",
   "title": "Design System: Relay workspace platform",
   "extensions": {
     "colorMeta": {
@@ -89,6 +89,13 @@
       "css": ".ds-brief{display:grid;gap:12px;border:1px solid var(--pc-line);border-radius:9px;background:#fff;padding:20px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-brief strong{font-size:17px}.ds-brief label{display:grid;gap:6px;font-weight:600;font-size:12px}.ds-brief select,.ds-brief textarea{border:1px solid #dfe1e9;border-radius:6px;background:#fff;color:var(--pc-ink);padding:9px 11px;font:12px/1.5 'DM Sans',sans-serif}.ds-brief-note{margin:0;padding:10px 12px;border:1px solid var(--pc-line);border-radius:8px;background:var(--pc-wash);color:var(--pc-muted);font-size:12px}.ds-brief button{justify-self:start;border:0;border-radius:6px;background:var(--pc-accent);color:#fff;padding:8px 12px;font:600 11px 'DM Sans',sans-serif}"
     },
     {
+      "name": "Speech Vocabulary Editor",
+      "kind": "input",
+      "description": "Versioned recognition hints with raw editing preservation, bounded validation, and an accessible inline error.",
+      "html": "<section class=\"ds-vocabulary\"><div><label for=\"ds-speech-vocabulary\">Speech vocabulary <small>· optional</small></label><span>3 / 32 terms</span></div><p>Help Azure recognize company names, products and acronyms. Add one term per line, then test it in a call.</p><textarea id=\"ds-speech-vocabulary\" aria-describedby=\"ds-speech-vocabulary-help\">Northstar Learning\nIELTS\nपुणे</textarea><small id=\"ds-speech-vocabulary-help\">Saved with the agent version as spelling hints; these do not add facts or change the voice.</small></section>",
+      "css": ".ds-vocabulary{display:grid;gap:7px;color:var(--pc-ink);font:12px/1.5 'DM Sans',sans-serif}.ds-vocabulary>div{display:flex;justify-content:space-between;gap:12px;align-items:baseline}.ds-vocabulary label{font-weight:650}.ds-vocabulary label small,.ds-vocabulary>div>span,.ds-vocabulary p,.ds-vocabulary>small{color:var(--pc-muted);font-size:11px}.ds-vocabulary p,.ds-vocabulary>small{margin:0}.ds-vocabulary textarea{min-height:96px;border:1px solid #dfe1e9;border-radius:6px;background:#fff;color:var(--pc-ink);padding:9px 11px;font:12px/1.5 'DM Sans',sans-serif;resize:vertical}.ds-vocabulary textarea:focus-visible{outline:2px solid var(--pc-accent);outline-offset:2px}.ds-vocabulary textarea[aria-invalid=true]{border-color:var(--pc-danger-ink,#9b3547)}"
+    },
+    {
       "name": "Agent Actions",
       "kind": "custom",
       "description": "Opt-in in-call actions with a human-review boundary and viewer-safe controls.",
@@ -108,6 +115,13 @@
       "description": "Saved action receipts and browser-only diagnostics with refusal and uncertainty boundaries.",
       "html": "<details class=\"ds-receipts\"><summary>Actions &amp; call diagnostics · 2 server receipts</summary><p>Browser receipt timing only; it does not measure audible response or end-to-end latency.</p><ol><li><strong>Request a follow-up</strong><span>Awaiting review</span></li><li><strong>Company knowledge</strong><span>Available</span></li></ol></details>",
       "css": ".ds-receipts{border-top:1px solid var(--pc-line);padding-top:12px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-receipts summary{cursor:pointer;font-weight:650;font-size:12px}.ds-receipts p{color:var(--pc-muted);font-size:11px}.ds-receipts ol{display:grid;gap:7px;margin:12px 0;padding:0;list-style:none}.ds-receipts li{display:flex;justify-content:space-between;gap:10px;border-radius:6px;background:#f7f7fb;padding:9px 10px;font-size:12px}.ds-receipts li span{color:var(--pc-accent);font-size:11px}"
+    },
+    {
+      "name": "Public Voice Server Evidence",
+      "kind": "custom",
+      "description": "A public-voice-only disclosure for validated server-transport observations, with missing data kept unknown.",
+      "html": "<details class=\"ds-server-evidence\"><summary><strong>Server voice evidence</strong><span>3 recorded turns</span></summary><p><b>Metric definition:</b> Request → first server audio measures server transport only; it does not measure browser playback or what the visitor heard.</p><dl><div><dt>Timing coverage</dt><dd>2 turns of 3</dd></div><div><dt>Cancellation</dt><dd>2 requested · 1 provider-confirmed</dd></div></dl><small>Missing turns and fields remain unknown. Timestamps and provider-reported usage appear only when captured.</small></details>",
+      "css": ".ds-server-evidence{border-top:1px solid var(--pc-line);padding-top:12px;color:var(--pc-ink);font:12px/1.5 'DM Sans',sans-serif}.ds-server-evidence summary{display:flex;justify-content:space-between;gap:12px;min-height:44px;padding:10px 0;color:var(--pc-accent);cursor:pointer}.ds-server-evidence summary span{color:var(--pc-muted);font-size:10px;font-weight:500}.ds-server-evidence p,.ds-server-evidence small{display:block;max-width:75ch;color:var(--pc-muted);font-size:11px;line-height:1.6}.ds-server-evidence p b{color:var(--pc-ink)}.ds-server-evidence dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-block:1px solid var(--pc-line);margin:12px 0}.ds-server-evidence dl div{padding:10px 12px 10px 0}.ds-server-evidence dt{color:var(--pc-muted);font-size:10px}.ds-server-evidence dd{margin:4px 0 0;font-weight:600}@media(max-width:580px){.ds-server-evidence summary{align-items:flex-start;flex-direction:column;gap:2px}.ds-server-evidence dl{grid-template-columns:1fr}.ds-server-evidence dl div+div{border-top:1px solid var(--pc-line)}}"
     },
     {
       "name": "Access State",
@@ -140,7 +154,7 @@
   ],
   "narrative": {
     "northStar": "The Quiet Operations Desk",
-    "overview": "Relay is an Operate product: a compact, record-first workspace where company material becomes reviewable context, campaign intent, browser conversations, and accountable follow-through. The visual system stays quiet so the current record, its evidence, and the next operator decision remain easy to scan. DM Sans, white and cool lilac-gray surfaces, indigo state emphasis, and Lucide icons are the incumbent identity.\n\nThe v5/v6 surfaces extend that same desk across the complete loop. Company brain has Business model, Source intake, and Ask company brain tabs. The business-model workbench keeps offerings and signals separate, shows exact source quotes, preserves approved clarification history, and counts only unanswered founder questions. Campaign briefing proceeds in a visible order: approved offering, campaign description and goal, purpose and channel, selected audience, explicit AI assistance, then operator review before a plan is generated. The plan describes planned fields; collected answers and quotes live in campaign conversations and offering results.\n\nThe agent and conversation surfaces keep control and evidence explicit. In-call Actions, natural-language revision proposals with before/after diffs, and viewer read-only states sit beside the voice workbench. Saved Conversations expose server action receipts, browser-only diagnostics, refusal and uncertainty guards, and source-linked learning. Team and invitation states, Join workspace account mismatch, WhatsApp setup and Inbox scope, and Automations' local worker heartbeat all use the same candid operational language. These are extensions of the existing world, not a new visual concept.",
+    "overview": "Relay is an Operate product: a compact, record-first workspace where company material becomes reviewable context, campaign intent, browser conversations, and accountable follow-through. The visual system stays quiet so the current record, its evidence, and the next operator decision remain easy to scan. DM Sans, white and cool lilac-gray surfaces, indigo state emphasis, and Lucide icons are the incumbent identity.\n\nThe v5/v6 surfaces extend that same desk across the complete loop. Company brain has Business model, Source intake, and Ask company brain tabs. The business-model workbench keeps offerings and signals separate, shows exact source quotes, preserves approved clarification history, and counts only unanswered founder questions. Campaign briefing proceeds in a visible order: approved offering, campaign description and goal, purpose and channel, selected audience, explicit AI assistance, then operator review before a plan is generated. The plan describes planned fields; collected answers and quotes live in campaign conversations and offering results.\n\nThe agent and conversation surfaces keep control and evidence explicit. In-call Actions, natural-language revision proposals with before/after diffs, and viewer read-only states sit beside the voice workbench. Language settings include a small, versioned speech-vocabulary editor for recognition hints; its terms remain hints rather than instructions or company facts. Saved public-voice Conversations expose validated server-transport evidence in a disclosure, alongside server action receipts, browser-only diagnostics, refusal and uncertainty guards, transcript-before-learning, and source-linked learning. A completed post-call learning job points to the exact conversation and opens its review action; proposals never apply automatically. Team, invitation, recovery, and account-security states, Join workspace account mismatch, WhatsApp setup and Inbox scope, and Automations' local worker heartbeat all use the same candid operational language. These are extensions of the existing world, not a new visual concept.",
     "keyCharacteristics": ["Quiet tonal surfaces", "Readable 12–13px operational type", "Indigo for location and action", "Source-backed cues", "Visible human control", "Anonymous public identity"],
     "rules": [
       {"name": "The State Before Decoration Rule", "body": "Use indigo, green, rose, and small motion to explain location, action, or record state. Do not introduce color as a quality claim.", "section": "colors"},
@@ -152,6 +166,8 @@
       "Do make AI assistance an explicit step and place its suggestions before the fields they populate; require review before a plan or revision is applied.",
       "Do label plan fields as planned schema and link collected evidence to conversations or offering results.",
       "Do show server receipts, browser-only diagnostics, refusal guards, worker heartbeat, team access state, and connection scope in plain language.",
+      "Do keep speech vocabulary to one term per line, cap it at 32 terms, preserve raw editing buffers, and focus the field with an associated inline error on the first invalid save.",
+      "Do gate server voice evidence to validated `public_voice` records; keep missing fields unknown, cancellation request and confirmation distinct, and timestamps or token usage optional.",
       "Do preserve the shared page frame, DM Sans hierarchy, indigo state language, and the 820px drawer / 580px compact behavior.",
       "Do keep CSV mapping collapsed before row review, recheck typed campaign answers against their receipt, and link each post-call learning job to the exact conversation.",
       "Do keep public identity anonymous, source-backed, and explicit about Start-before-transcript and session/turn limits."
@@ -161,6 +177,8 @@
       "Don't place the full offering evidence table ahead of the company decision path; keep it behind the collapsed results disclosure.",
       "Don't render `Not collected` as a live status in a planned campaign schema.",
       "Don't treat available integrations, WhatsApp setup, worker heartbeat, provider acceptance, browser receipt time, or selected contact context as proof of connection, delivery, audible latency, identity, or customer intent.",
+      "Don't present speech-vocabulary terms as instructions, company facts, or evidence that recognition or audio quality improved.",
+      "Don't convert server request-to-first-audio timing into browser playback or audible-response latency, or render missing measurements as zero.",
       "Don't allow viewer accounts to mutate, approve, revise, test, send, or create actions; keep their records readable and their limitations explicit.",
       "Don't claim cloud execution, channel delivery, or audio quality from a configured setting, a paused/local-only worker, or a browser receipt.",
       "Don't turn version history, action diagnostics, prompt diffs, execution history, or Personal Voice enrollment into competing editor columns. Keep them collapsible and attributable."
