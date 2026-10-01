@@ -988,7 +988,7 @@
     },
     {
       "id": "azure.group-hosting-access",
-      "type": "dependency",
+      "type": "requirement",
       "title": "Existing-group Contributor needed for hosting; account-scoped project access verified",
       "status": "group-read-forbidden-user-role-setup-pending",
       "path": "docs/azure-project-creation-2026-10-01.md"
