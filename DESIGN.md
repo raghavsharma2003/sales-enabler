@@ -1,6 +1,6 @@
 ---
 name: Relay workspace platform
-description: A quiet, record-first company workspace for reviewing context, planning campaigns, and operating AI representatives.
+description: A quiet company operations workspace that moves reviewed context into bounded agents, campaigns, conversations, and accountable follow-through.
 colors:
   ink: "#242634"
   muted: "#626779"
@@ -23,9 +23,10 @@ colors:
 typography:
   body: {fontFamily: "DM Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif", fontSize: "13px", fontWeight: 400, lineHeight: 1.5}
   page-title: {fontFamily: "DM Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif", fontSize: "27px", fontWeight: 650, lineHeight: 1.2}
+  overview-title: {fontFamily: "DM Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif", fontSize: "clamp(30px, 3vw, 38px)", fontWeight: 680, lineHeight: 1.08, letterSpacing: "-0.035em"}
   operational: {fontFamily: "DM Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif", fontSize: "12px", fontWeight: 400, lineHeight: 1.5}
-rounded: {sm: "6px", md: "9px", pill: "20px"}
-spacing: {page: "34px 36px 40px", panel: "22px", workbench-gap: "14px"}
+rounded: {sm: "6px", md: "9px", lg: "12px", pill: "20px"}
+spacing: {page: "34px 36px 40px", panel: "22px", workbench-gap: "18px"}
 components:
   button-primary: {backgroundColor: "{colors.accent}", textColor: "{colors.surface}", rounded: "{rounded.sm}", padding: "8px 12px", height: "34px"}
   panel: {backgroundColor: "{colors.surface}", rounded: "{rounded.md}", padding: "{spacing.panel}"}
@@ -38,156 +39,139 @@ components:
 
 **Creative North Star: “The Quiet Operations Desk”**
 
-The v7 composition puts Company identity first on mobile: name, owner-authored description, and public brand copy precede the operating records. Deployment is a three-step owner flow (agent/knowledge, immutable public identity, then limits and publish). Public Share and Open assistant states expose anonymous identity, company-only scope, explicit session/turn limits, and a Start action before an empty transcript.
+Relay is an Operate product: reviewed company context becomes a bounded representative and campaign, and each customer attempt becomes an attributable conversation, commitment, or proposed improvement. The interface gives the operator one clear place and next action while preserving the records underneath. DM Sans, cool white and lilac-gray surfaces, indigo emphasis, restrained status color, and Lucide icons remain the visual identity; this reset changes workflow composition, not the brand world.
 
-Relay is an Operate product: a compact, record-first workspace where company material becomes reviewable context, campaign intent, browser conversations, and accountable follow-through. The visual system stays quiet so the current record, its evidence, and the next operator decision remain easy to scan. DM Sans, white and cool lilac-gray surfaces, indigo state emphasis, and Lucide icons are the incumbent identity.
+The primary shell has five working areas—Overview, Company, Agents, Campaigns, and Activity—with Settings kept separate. Inactive areas keep their context groups collapsed. The former 18 destinations remain reachable through route aliases, contextual links, workspace search, and record anchors, so simplification must not erase artifact ownership or deep navigation.
 
-The v7 surfaces extend that same desk across the complete loop. Company identity is first in the mobile composition: name, owner-authored description, and public brand copy establish the workspace before the rest of the workbench. Company brain has Business model, Source intake, and Ask company brain tabs. The business-model workbench keeps offerings and signals separate, shows exact source quotes, preserves approved clarification history, and counts only unanswered founder questions. Campaign briefing proceeds in a visible order: approved offering, campaign description and goal, purpose and channel, selected audience, explicit AI assistance, then typed answer review and receipt recheck before a plan is generated. The plan describes planned fields; collected answers and quotes live in campaign conversations and offering results.
+Overview is a company-readiness and continuation surface, not an aggregate dashboard. It shows the saved company state, one evidence-based next action, current unresolved attention, recent agents and conversations, and a supporting workspace journey. A later passing retest supersedes an older failed configuration run; historical failures do not remain open attention. Active or running campaign work takes priority over optional public-channel setup. Missing or failed readiness requests stay explicit rather than being interpreted as an empty workspace.
 
-Deployment is a deliberate three-step owner flow: choose the agent and approved knowledge, author the public identity and optional brand accent, then review limits and publish an immutable snapshot. Public Share and Open assistant entry points expose the selected voice or chat mode and explicit session/turn limits. The public voice and chat surfaces begin with a Start action; an empty transcript is not presented as an active call. Anonymous identity, company-only scope, and source-backed cues remain visible throughout.
+Agents is one continuous build–test–publish workspace. A compact agent picker and persistent Save draft / Test agent toolbar sit above a wide six-section editor and a continuously mounted test dock. New agents begin in Setup with required name, role, and purpose fields plus task presets. Prompt authoring appears only in Conversation. Publish captures and checks an exact saved version, keeps publication explicit, and only then hands a prefilled approved release to Channels; channel publication remains a separate owner action.
 
-The agent and conversation surfaces keep control and evidence explicit. In-call Actions, natural-language revision proposals with before/after diffs, and viewer read-only states sit beside the voice workbench. Language settings include a small, versioned speech-vocabulary editor for recognition hints; its terms remain hints rather than instructions or company facts. Saved public-voice Conversations expose validated server-transport evidence in a disclosure, alongside server action receipts, browser-only diagnostics, refusal and uncertainty guards, transcript-before-learning, and source-linked learning. A completed post-call learning job points to the exact conversation and opens its review action; proposals never apply automatically. Team, invitation, recovery, and account-security states, Join workspace account mismatch, WhatsApp setup and Inbox scope, and Automations' local worker heartbeat all use the same candid operational language. These are extensions of the existing world, not a new visual concept.
+The reviewed reset evidence is deliberately scoped. The initial three Overview findings—readiness truth, unresolved-test attention, and active-campaign priority—were corrected, and the focused reviewer marked those three findings resolved with a SHIP verdict. The required desktop/mobile captures cover Overview, Agents, Publish, mobile navigation, and new-agent setup. This is not a whole-product usability or production-readiness claim, and it does not complete the deeper Campaign, intake, or transcript-to-regression redesign.
 
 **Key Characteristics:**
 
-- Quiet tonal surfaces
-- Readable 12–13px operational type
-- Indigo for location and action
-- Source-backed status and cues
-- Visible human control
-- Anonymous public identity
+- Five task-oriented areas with preserved deep routes
+- One company-derived next action
+- Wide editor with continuous testing context
+- Exact-version readiness and explicit publication
+- Quiet tonal surfaces with indigo state emphasis
+- Visible roles, consent, AI identity, and artifact ownership
 
 ## Colors
 
-The v7 deployment and account surfaces retain the same cool-neutral and indigo world. Account recovery/security uses the account tokens in the frontmatter; public brand accents remain optional owner configuration.
-
-Neutral surfaces, borders, and muted text carry most screens. Relay indigo marks navigation, selection, focus, links, and committed actions; lilac wash groups selected or reviewable records. Green and rose surfaces communicate operational outcomes without implying success beyond the record.
+The reset keeps the incumbent cool-neutral and indigo palette. White and cool canvas carry the work; lilac indicates selection and review context; green and rose communicate recorded state without implying broader success or quality.
 
 ### Primary
 
-- **Relay indigo** (#5148ce): primary buttons, active tabs, selected rows, evidence links, focus rings, and the next actionable step.
+- **Relay indigo** (#5148ce): selected navigation, primary actions, links, focus rings, active tabs, and the current journey step.
 
 ### Neutral
 
-- **Ink** (#242634): headings, record values, transcript text, and form content.
-- **Muted slate** (#626779): descriptions, labels, timestamps, receipt notes, and secondary state explanation.
-- **Cool line** (#e5e7ed): panel edges, dividers, table rules, and tab baselines.
-- **Cool canvas** (#fbfbfd) and **surface white** (#ffffff): the page field and record containers.
-- **Lilac wash** (#efedff) and **quiet hover** (#f4f4fa): selected navigation, selected records, open review states, and hover feedback.
-- **Success surface / ink** (#e9f6ef / #246448): approved evidence, current source state, and provider-accepted records.
-- **Danger surface / ink** (#fff3f4 / #9b3547): blocked, revoked, rejected, uncertain, and needs-review states.
+- **Ink** (#242634): headings, form values, records, and transcripts.
+- **Muted slate** (#626779): explanations, labels, timestamps, and secondary state.
+- **Cool line** (#e5e7ed): dividers, panel edges, table rules, and tab baselines.
+- **Cool canvas** (#fbfbfd) and **surface white** (#ffffff): page and work surfaces.
+- **Lilac wash** (#efedff) and **quiet hover** (#f4f4fa): active navigation, selected records, review context, and hover feedback.
+- **Success surface / ink** (#e9f6ef / #246448): passed checks, approved evidence, and current records.
+- **Danger surface / ink** (#fff3f4 / #9b3547): current blockers, failed latest checks, paused work, and needs-review states.
 
 ### Named Rules
 
-**The State Before Decoration Rule.** Use indigo, green, rose, and small motion to explain location, action, or record state. Do not introduce color as a quality claim.
+**The State Before Decoration Rule.** Use accent and semantic color to explain location, action, or saved state. Color never stands in for evidence or a quality claim.
 
 ## Typography
 
 **Display Font:** DM Sans (with -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif fallbacks)
-**Body Font:** DM Sans (with the same system fallbacks)
-**Label/Mono Font:** DM Sans; compact metadata remains sans-serif rather than introducing a second visual voice.
 
-**Character:** restrained, legible, and operational. Weight and spacing create hierarchy; type never competes with evidence or controls.
+**Body Font:** DM Sans (with the same system fallbacks)
+
+**Label/Mono Font:** DM Sans; operational metadata does not introduce a second visual voice.
+
+**Character:** restrained, legible, and operational. The reset increases working-surface copy and controls to 13–14px while preserving smaller metadata where its label and context remain clear.
 
 ### Hierarchy
 
-- **Page title** (650, 27px, 1.2): primary workspace headings; 25px on compact screens.
-- **Workbench heading** (650, 17–19px, 1.3–1.4): company model, campaign, voice, and evidence sections.
-- **Section title** (650, 13–15px, 1.4): panels, subsections, and decision groups.
-- **Body** (400, 13px, 1.5): records, transcripts, and explanatory copy.
-- **Label** (550–650, 10–12px, 1.4–1.55): form labels, tabs, badges, timestamps, and operational metadata.
+- **Overview title** (680, clamp 30–38px, 1.08): the orientation point for the workspace home.
+- **Page title** (650, 27px, 1.2; 25px compact): primary working-area headings.
+- **Workbench heading** (650–660, 17–20px, 1.3–1.4): recommendation, editor, publish, and journey sections.
+- **Body** (400, 13–14px, 1.5–1.6): records, forms, guidance, and transcripts.
+- **Label** (550–650, 10–13px, 1.4–1.55): form labels, statuses, timestamps, and operational metadata.
 
 ### Named Rules
 
-**The Record Readability Rule.** Keep operational copy at 12–13px with 1.5 line height; use smaller type for metadata only when its supporting label remains clear.
+**The Record Readability Rule.** Keep working copy and controls at 13–14px. Reserve 10–12px type for supporting metadata, never for a required decision or action.
 
 ## Layout
 
-The platform uses a fixed navigation rail and a centered page frame. The sidebar is 234px by default, 250px above 1500px, and 210px below 1100px. Pages use a 1600px maximum width with `34px 36px 40px` padding; at 1100px the frame uses `28px 24px`, at 820px the rail becomes a drawer and pages use `26px 20px`, and at 580px pages use `22px 16px 30px`. Automations uses this same `.pc-page` frame, including the 16px compact gutter.
+The shell uses a fixed rail and centered page frame. The rail is 234px by default, 250px above 1500px, and 210px below 1100px. Pages use a 1600px maximum width with `34px 36px 40px` padding; at 1100px the frame tightens, at 820px the rail becomes an accessible drawer, and at 580–620px pages use a 16px side gutter and 44px minimum interactive targets. The top bar keeps a breadcrumb and workspace search whose results preserve record ownership and focus anchors.
 
-Company brain keeps three keyboard-operable tabs: Business model, Source intake, and Ask company brain. Source intake uses a 246px source rail, compresses at 1180px, stacks at 820px, and becomes a single-column review at 620px. The business-model workbench uses a 210–260px library beside the detail panel with a 14px gap; its path becomes two columns at 900px and its library/detail stack becomes one column at 650px. Offering results remain collapsed inside the offering record until the operator chooses View.
+Navigation shows Overview directly, then Company, Agents, Campaigns, Activity, and Settings. Each grouped area exposes its context destinations only when expanded; the active destination remains named in the breadcrumb. Back, Forward, native hash navigation, search results, sidebar links, and contextual links all pass through the same unsaved-work guard. A cancelled history traversal restores the accepted route and draft; a confirmed traversal loads the destination record.
 
-Campaign planning is a single review column capped at 850px for the intent and plan surfaces. The general campaign workspace stacks at 800px and its compact mode controls become a full-width row at 520px. The brief keeps offering → goal/description → purpose/channel → audience → AI suggestion → review and desired outcome/evidence before plan generation. Agent workbench controls stack at 820px; its editor tabs become a 3-column grid and inspector tabs a 2-column grid at 580px. The selected editor tab keeps its indigo-on-lilac contrast during hover. Saved Conversations use a split list/detail view and stack at 580px; server-evidence coverage, turn metrics, event offsets, and optional usage collapse to one column at the same compact breakpoint.
+Overview uses a responsive `1.72fr / minmax(300px, .72fr)` layout: next action, attention, and recents form the primary column while the journey remains a sticky supporting rail. It becomes one column at 900px. Recent agents and conversations form two columns until 1180px, then stack. The recommendation is an emphasized lilac surface; attention and recent work use flat divided rows.
 
-Inbox switches from a 270–360px thread list plus detail pane to one column at 850px and keeps its message and composer padding readable at 540px. Team invitation and member rows wrap at 650px. Automations keeps the common page gutter while its picker, recipient review, and execution history stack at 600px. Final reviewed mobile states use a 375px document inside a 390px viewport; controls and tables remain inside that frame.
+Agents uses a compact picker inside a sticky toolbar and a `minmax(0, 1fr) / 330–370px` editor/test grid. The test dock remains mounted while the operator changes among Setup, Conversation, Voice & language, Knowledge, Behaviour & actions, and Publish. The grid becomes one column at 1080px without unmounting the tester. At 620px, the toolbar, field pairs, and tabs stack into touch-safe layouts; the test dock follows the editor in the same reading flow.
 
 ## Elevation & Depth
 
-Depth is primarily tonal: white panels on a cool canvas, quiet borders, selected lilac washes, and status surfaces. Resting records are flat. The search popover uses `0 9px 30px #22243c24`; Inbox message bubbles use only a faint `0 2px 8px #1c234008`. The call-stage ring is state-driven while connecting or speaking and disappears under reduced-motion preferences. There is no decorative shadow stack.
+Depth is tonal. White panels sit on a cool canvas with quiet borders, lilac selection, and semantic status surfaces. Resting work surfaces remain flat; the search result popover uses the existing small ambient shadow, and transient voice state can use the established call ring. Reduced-motion preferences remove nonessential animation.
 
 ### Named Rules
 
-**The Flat-By-Default Rule.** Keep containers flat at rest. Use a border, wash, or one small transient shadow to establish hierarchy; never use elevation to imply confidence or model quality.
+**The Flat-By-Default Rule.** Use borders, washes, and spacing to establish hierarchy. Reserve shadow or motion for a temporary overlay or live state.
 
 ## Shapes
 
-Inputs, buttons, and action controls use gently rounded 6px corners. Panels and workbench containers use 9–10px corners; fieldsets and evidence groups use 7–8px. Badges and state pills use 4px or a 20px pill when they represent a compact status. Tables, transcript rows, and source lists rely on dividers and whitespace rather than enclosing every line. Focus-visible controls use a 2px indigo outline with a 2–3px offset.
-
-Disclosure surfaces are part of the shape language: source text, campaign results, execution details, version history, personal voice enrollment, action diagnostics, and full prompt diffs open from a quiet summary row. Mobile preserves those disclosures rather than forcing dense horizontal tabs.
+Inputs, buttons, and action controls use 5–7px corners. Editor and workbench panels use 9px corners; Overview company and action containers use 10–12px. Small state badges use 4px corners, while circular journey markers identify ordered progress. Tables, record lists, and attention rows rely on dividers and whitespace rather than boxed cards. Focus-visible controls use a 2px indigo outline with a clear offset.
 
 ## Components
 
-### v7 deployments and public assistant
+### Workspace navigation and search
 
-Owner-only deployment creation selects the agent and approved knowledge, authors immutable public identity/branding, then reviews channel, limits, origins, and learning scope before publish. Public brand accents and logos are optional user configuration. Share/Open assistant leads to public voice or chat with anonymous identity, source-backed disclosure, explicit session/turn limits, and Start-before-transcript behavior. Paused/local-only scope remains visible; configured settings never imply delivery, cloud execution, or audio quality.
+The rail presents task areas rather than implementation objects. Group headers have 44px mobile targets, lilac active state, and independently operable disclosure controls. Context destinations remain real links. Search covers pages and saved artifacts including agent versions, test runs, releases, deployments, campaigns, and conversations; selecting a result opens its owning surface and focused record.
 
-### Navigation and tabs
+### Overview recommendation and attention
 
-Operate, Build, and Improve navigation uses compact 7px rows, a lilac active wash, and indigo text. The Company brain tablist uses the same small tab treatment and supports arrow-key movement. At 820px the sidebar becomes a drawer with backdrop, close, Escape, and focus return.
+The recommendation is the strongest object after the page title: one title, reason, evidence label, primary action, and a few contextual alternatives. Company readiness is shown beside the heading. Attention rows require a saved reason and owning record. They include unresolved follow-ups, the latest still-failing readiness state, open commitments, paused campaign runs, and pending memories. Passing retests and superseded failures remain history rather than current attention. Recent agents and conversations show saved time, scoped state, and direct record navigation.
 
-### Company brain, source intake, and Q&A
+### Agent toolbar and picker
 
-The Company brain is a three-tab record surface. Source intake pairs a source rail and five-step path with import/paste, processing, candidate review, exact quotes, uncertainty, approve/reject controls, and an approved-source list. Ask company brain presents grounded answers with exact citations and a clear cached/current source state. Viewer access shows approved sources and inspected model context while keeping answer and mutation controls read-only.
+The toolbar persists agent identity, saved/dirty status, direct Test agent focus, and Save draft. The compact picker changes the selected record only after the dirty guard allows it. New agent starts Setup and focuses the name field; the Feedback interviewer and Customer support presets seed task language without bypassing required fields or AI disclosure.
 
-### Company model and evidence
+### Agent editor and test dock
 
-The model library separates Offerings and Business signals. Offering and signal detail keeps source facts, interpretations, uncertainty, and review links visibly distinct. Every proposal carries an exact supporting quote and source revision. Founder clarification history is expandable: an approved answer is labelled `Approved answer`, and the headline badge reports the unanswered count rather than treating approved history as open work. Approved offerings expose a compact `Campaign results and reviewed feedback` disclosure; detailed date filters, totals, activity tables, receipts, and caller observations appear only after View.
+Six keyboard-operable sections replace simultaneous editor columns. Setup owns required name, role, and purpose. Conversation owns system prompt, opening message, AI introduction, and style; prompts are not repeated above unrelated sections. Voice & language preserves raw comma/newline editing buffers until validation and save. Knowledge attaches approved sources. Behaviour & actions keeps memory, human handoff, and bounded in-call actions explicit. The test dock remains mounted so draft test state survives section changes; Test agent moves focus to it, and Back to editor returns focus without changing routes.
 
-### Campaign brief and planned fields
+### Publish panel
 
-The campaign brief begins with an approved Product or service and then collects the plain-English campaign description, Campaign purpose, Working channel, and selected audience. `Draft the brief with AI` is an explicit action. Its suggestions appear before the fields they populate, remain editable, identify missing context, and are followed by review of desired outcome, evidence required, audience rationale, reviewed signals, and information to collect. Planned columns are labelled with `Field format` or `Planned information to collect`; they are schema intent. Collected answers and exact quotes are linked from campaign conversations and offering results. Applying a plan opens the campaign record and never suggests that the plan itself contains live results.
+Publish is an ordered three-step panel. Readiness first captures the saved revision when needed, runs configuration checks against that exact immutable version, and verifies the returned agent/version relationship. The latest exact-version result determines readiness; changed knowledge or draft revisions make prior checks outdated. Publication is a separate action and rechecks knowledge. Only an active release enables Set up channels, which opens a prefilled Channel draft; it does not activate or publish the channel.
 
-### Agent workbench, actions, and revision
+### Dirty navigation and history
 
-The agent editor uses labelled sections for Conversation, Objective, Language, Relationship, Knowledge, and Actions, with save/capture/version history below. Language includes an optional speech-vocabulary field with one term per line and a maximum of 32 terms. The editor preserves the operator's raw line breaks and incomplete editing state; normalization happens at validation and save. The first invalid save keeps the draft intact, moves focus to the field, and associates its inline `role="alert"` message through `aria-invalid` and `aria-describedby`. Vocabulary is saved with the agent version and public voice release as transcription spelling hints only; it never adds facts, instructions, or a voice-quality claim. In-call Actions are opt-in cards with clear descriptions and a human-review footnote. Natural-language revision shows the saved instruction, explanation, full before/proposed values, and an apply action that creates a draft revision rather than a release. Viewer access leaves the editor controls and action controls read-only and replaces testing with an operator-access message.
+Raw field buffers and unsaved draft values remain mounted until save, discard, or confirmed navigation. Agent changes, Create agent, sidebar navigation, search, contextual links, Back, Forward, and hash changes share the guard. Cancel restores the accepted URL/history position; confirm performs the intended navigation once without a second prompt.
 
-### Voice tester and conversation evidence
+### Roles, consent, and AI identity
 
-The browser tester identifies provider, language, release/draft, input mode, consent, and call state. It supports Microphone or Listen & type, stop-for-human, save/download/discard, and a four-tab inspector for Transcript, EmotionalOS, RelationalOS, and Context. Saved Conversations render the server-voice disclosure only for `public_voice` sessions. A missing or invalid evidence envelope is labelled not captured, with absent measurements treated as unknown rather than zero. Valid evidence separates cancellation requested from provider-confirmed cancellation, defines request-to-first-server-audio as server transport timing rather than audible latency, and shows timestamps and provider-reported token usage only when present. Other saved conversation sections show server action receipts, browser-only diagnostics, refusal and uncertainty guards, and source-linked learning. Proposed memories and follow-ups remain pending human approval. These surfaces never imply audible latency, identity verification, completed handoff, or automatic customer truth.
-
-### Team, invitations, and Join workspace
-
-Team & access explains owner/operator/viewer roles, one-use invitation expiry, and manual invitation sharing. Member rows and role controls remain explicit. Join workspace states show the signed-in account, block mismatched accounts, and offer sign-out or return to the workspace. Viewer states preserve readable records while disabling mutation, testing, approvals, and sending.
-
-### WhatsApp Inbox and setup
-
-Inbox uses a thread list plus detail conversation, setup notice, search/filter controls, message receipts, and a composer. The setup state says when Meta/WhatsApp credentials and webhook checks are still needed; an empty inbox does not look connected. Read and reply scope stays visible: replies require a linked customer, recorded permission, and an open service window. No templates, campaigns, or outbound delivery are implied.
-
-### Automations
-
-Automations sits inside the shared page gutter and opens with a `Worker recently reported` or `No running worker reported` heartbeat card, report time, and honest local-worker explanation. The flow is review recipients → inspect blockers and message → set exact local time → acknowledge one send per eligible recipient → enable. Schedule states include waiting, paused, cancelled, provider accepted, needs review, blocked, uncertain, and interrupted; execution history and delivery receipts remain expandable. Pausing or cancelling does not recall an already-sent request, and uncertain attempts are never resent automatically.
+Viewer access keeps records readable while disabling editing, testing, publication, and sending. Agent introduction must identify the representative as AI before customer conversation. Test and public call surfaces keep consent, stop-for-human, participant scope, provider state, and source boundaries visible. A configured provider, passing check, release, or channel draft never proves delivery, identity, audible quality, or customer intent.
 
 ## Do's and Don'ts
 
-The v7 guardrails keep CSV mapping collapsed before row review, recheck typed campaign answers against their receipt, and link each post-call learning job to the exact saved conversation. Transcript review precedes learning proposals; no proposal applies automatically. Recovery/security states explain the next action with account-safe copy.
-
 ### Do:
 
-- **Do** keep Company brain tabs, source quotes, offering/signal status, approved clarification history, and unanswered counts visible where the decision is made.
-- **Do** make AI assistance an explicit step and place its suggestions before the fields they populate; require review before a plan or revision is applied.
-- **Do** label plan fields as planned schema and link collected evidence to conversations or offering results.
-- **Do** show server receipts, browser-only diagnostics, refusal guards, worker heartbeat, team access state, and connection scope in plain language.
-- **Do** keep speech vocabulary to one term per line, cap it at 32 terms, preserve raw editing buffers, and focus the field with an associated inline error on the first invalid save.
-- **Do** gate server voice evidence to validated `public_voice` records; keep missing fields unknown, cancellation request and confirmation distinct, and timestamps or token usage optional.
-- **Do** preserve the shared page frame, DM Sans hierarchy, indigo state language, and the 820px drawer / 580px compact behavior.
+- **Do** organize new destinations under Overview, Company, Agents, Campaigns, Activity, or Settings and preserve a clear owner for every saved artifact.
+- **Do** keep inactive navigation groups collapsed while retaining direct links, search, aliases, and anchors for all former destinations.
+- **Do** derive Overview from saved company readiness and current records, and present one next action with its evidence.
+- **Do** prefer active campaign work over optional channel setup and treat only the latest unresolved exact-version failure as attention.
+- **Do** keep the agent picker compact, editor spacious, tester continuously mounted, and Save draft / Test agent available from the toolbar.
+- **Do** preserve raw editing buffers, focus the first invalid field, and guard all route and history exits when the draft is dirty.
+- **Do** run checks against an exact saved version, publish explicitly, then pass the active release into a separate Channel draft.
+- **Do** preserve role limits, consent controls, explicit AI identity, anonymous/unverified participant labels, and human-review boundaries.
 
 ### Don't:
 
-- **Don't** present an approved clarification as an unanswered founder task.
-- **Don't** place the full offering evidence table ahead of the company decision path; keep it behind the collapsed results disclosure.
-- **Don't** render `Not collected` as a live status in a planned campaign schema.
-- **Don't** treat available integrations, WhatsApp setup, worker heartbeat, provider acceptance, browser receipt time, or selected contact context as proof of connection, delivery, audible latency, identity, or customer intent.
-- **Don't** present speech-vocabulary terms as instructions, company facts, or evidence that recognition or audio quality improved.
-- **Don't** convert server request-to-first-audio timing into browser playback or audible-response latency, or render missing measurements as zero.
-- **Don't** allow viewer accounts to mutate, approve, revise, test, send, or create actions; keep their records readable and their limitations explicit.
-- **Don't** turn version history, action diagnostics, prompt diffs, execution history, or Personal Voice enrollment into competing editor columns. Keep them collapsible and attributable.
+- **Don't** restore the former 18 peer destinations or a three-column agent workbench.
+- **Don't** treat all historical failed checks as open attention or let an optional deployment displace running campaign work.
+- **Don't** repeat prompt fields across sections, unmount the tester during section changes, or hide the artifact targeted by Save, Test, Publish, or Channel setup.
+- **Don't** let a draft test, configuration check, release, or prefilled Channel draft imply public activation, live delivery, voice quality, identity verification, or business value.
+- **Don't** bypass the dirty guard for Back, Forward, hash links, search, agent switching, or contextual navigation.
+- **Don't** present the focused review verdict as a whole-product usability, production, hosted-channel, or competitor-superiority claim.

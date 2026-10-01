@@ -1117,15 +1117,36 @@
       "id": "implementation.product-ux-reset-2026-10-01",
       "type": "component",
       "title": "Five-area shell, readiness next action, spacious agent workspace and exact-version publish flow",
-      "status": "in-progress-channel-kind-and-history-navigation-fixes-active-final-integrated-browser-verification-pending",
-      "path": "docs/product-ux-reset-2026-10-01.md"
+      "status": "first-structural-pass-implemented-and-scoped-verified-not-whole-product-usability-approval",
+      "path": "docs/product-ux-reset-verification.md"
     },
     {
       "id": "open.product-ux-reset-final-verification-2026-10-01",
       "type": "open-question",
-      "title": "Complete integrated tests and browser verification after channel-kind and history fixes",
-      "status": "open-typecheck-and-14-focused-baseline-tests-passed-before-latest-review",
-      "path": "context/STATE.md"
+      "title": "Complete final full suite, third build, Create-agent browser check and reviewer rerun",
+      "status": "closed-614-tests-third-build-package-readiness-typecheck-browser-and-scoped-reviewer-ship-passed",
+      "path": "docs/product-ux-reset-verification.md"
+    },
+    {
+      "id": "verification.product-ux-reset-browser-2026-10-01",
+      "type": "evidence",
+      "title": "Fictional workspace desktop/mobile journey, navigation guard and exact-release handoff evidence",
+      "status": "browser-verified-final-recaptures-clean-create-agent-rechecked-no-public-channel-publication",
+      "path": "docs/product-ux-reset-verification.md"
+    },
+    {
+      "id": "verification.private-voice-ga-session-type-2026-10-01",
+      "type": "evidence",
+      "title": "Private browser Azure GA session-type repair and typed three-turn retry",
+      "status": "live-network-typed-input-verified-no-physical-microphone-perceptual-or-competitor-claim",
+      "path": "docs/product-ux-reset-verification.md"
+    },
+    {
+      "id": "risk.private-voice-current-turn-ack-ordering-2026-10-01",
+      "type": "risk",
+      "title": "Private browser does not yet gate current-turn response creation on matching session-update acknowledgement",
+      "status": "open-public-gateway-already-gated-private-ga-type-compatibility-fix-is-insufficient",
+      "path": "docs/product-ux-reset-verification.md"
     }
   ],
   "edges": [
@@ -2013,6 +2034,31 @@
       "from": "implementation.product-ux-reset-2026-10-01",
       "to": "constraint.no-local-docker",
       "relation": "preserves"
+    },
+    {
+      "from": "verification.product-ux-reset-browser-2026-10-01",
+      "to": "implementation.product-ux-reset-2026-10-01",
+      "relation": "verifies-bounded-browser-flow"
+    },
+    {
+      "from": "verification.private-voice-ga-session-type-2026-10-01",
+      "to": "implementation.product-ux-reset-2026-10-01",
+      "relation": "verifies-bounded-private-voice-retry"
+    },
+    {
+      "from": "verification.product-ux-reset-browser-2026-10-01",
+      "to": "open.product-ux-reset-final-verification-2026-10-01",
+      "relation": "closes-scoped-final-checks"
+    },
+    {
+      "from": "verification.private-voice-ga-session-type-2026-10-01",
+      "to": "risk.private-voice-current-turn-ack-ordering-2026-10-01",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "risk.private-voice-current-turn-ack-ordering-2026-10-01",
+      "to": "voice.speech-vocabulary-and-session-ack-2026-10-01",
+      "relation": "distinguishes-private-path-from-public-gateway-gating"
     }
   ]
 }

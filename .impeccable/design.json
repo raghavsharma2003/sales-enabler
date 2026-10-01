@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-01T00:00:00.000Z",
+  "generatedAt": "2026-10-01T15:50:42.234Z",
   "title": "Design System: Relay workspace platform",
   "extensions": {
     "colorMeta": {
@@ -26,6 +26,7 @@
     "typographyMeta": {
       "body": {"displayName": "DM Sans body", "purpose": "Readable operational copy, records, and transcripts."},
       "page-title": {"displayName": "Page title", "purpose": "Primary workspace headings at 27px and 650 weight."},
+      "overview-title": {"displayName": "Overview title", "purpose": "30–38px orientation heading for the workspace home."},
       "operational": {"displayName": "Operational scale", "purpose": "12px labels, tabs, metadata, and supporting UI copy."}
     },
     "shadows": [
@@ -43,6 +44,8 @@
       {"name": "rail", "value": "1100px", "purpose": "210px sidebar and tighter page frame."},
       {"name": "drawer", "value": "820px", "purpose": "Sidebar becomes a drawer; agent controls stack."},
       {"name": "compact", "value": "580px", "purpose": "16px side gutter, compact page type, and mobile tab grids."},
+      {"name": "overview-stack", "value": "1180px / 900px", "purpose": "Recent work stacks first; the journey rail then joins the main reading flow."},
+      {"name": "agent-workspace", "value": "1080px / 620px", "purpose": "Editor and mounted tester stack, then toolbar, tabs, and field pairs become touch-safe."},
       {"name": "company-model", "value": "900px / 650px", "purpose": "Model path compresses, then library/detail stacks."},
       {"name": "source-intake", "value": "1180px / 820px / 620px", "purpose": "Source rail compresses, stacks, then review becomes one column."},
       {"name": "campaign", "value": "800px / 520px", "purpose": "Campaign workspace stacks and controls fill the compact width."},
@@ -61,32 +64,32 @@
       "css": ".ds-primary{background:var(--pc-accent);color:#fff;border:1px solid var(--pc-accent);border-radius:6px;padding:8px 12px;min-height:34px;font:600 12px/1.4 'DM Sans',sans-serif;transition:background .15s,border-color .15s}.ds-primary:hover{background:#433ab5;border-color:#433ab5}.ds-primary:focus-visible{outline:2px solid var(--pc-accent);outline-offset:3px}"
     },
     {
-      "name": "Company Brain Tabs",
+      "name": "Workspace Area Navigation",
       "kind": "nav",
-      "description": "Keyboard-operable tabs for model, source intake, and grounded company Q&A.",
-      "html": "<nav class=\"ds-brain-tabs\" role=\"tablist\"><button role=\"tab\" aria-selected=\"true\">Business model</button><button role=\"tab\">Source intake</button><button role=\"tab\">Ask company brain</button></nav>",
-      "css": ".ds-brain-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--pc-line);padding-bottom:10px}.ds-brain-tabs button{border:0;border-radius:5px;padding:7px 11px;background:transparent;color:var(--pc-muted);font:600 11px/1.4 'DM Sans',sans-serif}.ds-brain-tabs button[aria-selected=true]{background:var(--pc-wash);color:var(--pc-accent)}.ds-brain-tabs button:focus-visible{outline:2px solid var(--pc-accent);outline-offset:3px}"
+      "description": "Five task areas plus Settings, with the active area's context links expanded.",
+      "html": "<nav class=\"ds-area-nav\" aria-label=\"Main navigation\"><a aria-current=\"page\">Overview</a><details open><summary>Agents</summary><a>Agent studio</a><a>Release checks</a><a>Release history</a><a>Channels</a></details><a>Campaigns</a><a>Activity</a><a class=\"ds-settings\">Settings</a></nav>",
+      "css": ".ds-area-nav{display:grid;gap:3px;width:234px;padding:8px 12px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-area-nav a,.ds-area-nav summary{display:flex;align-items:center;min-height:44px;padding:8px 10px;border-radius:7px;color:inherit;text-decoration:none;cursor:pointer}.ds-area-nav>a[aria-current=page],.ds-area-nav details[open]>summary{background:var(--pc-wash);color:var(--pc-accent);font-weight:650}.ds-area-nav details>a{min-height:39px;margin-left:22px;padding-left:12px;border-left:1px solid var(--pc-line);border-radius:0;color:var(--pc-muted)}.ds-area-nav a:hover,.ds-area-nav summary:hover{background:var(--pc-hover)}.ds-area-nav :focus-visible{outline:2px solid var(--pc-accent);outline-offset:-2px}.ds-settings{margin-top:12px;border-top:1px solid var(--pc-line)}"
     },
     {
-      "name": "Company Model Record",
+      "name": "Overview Next Action",
       "kind": "card",
-      "description": "Offering or signal record with source quote, review status, and next action.",
-      "html": "<article class=\"ds-model-record\"><header><div><h3>Remote consultation</h3><small>Service · revision 2</small></div><span>Evidence current</span></header><dl><dt>Source evidence</dt><dd>Exact approved quote from the company source.</dd></dl><button>Open source</button></article>",
-      "css": ".ds-model-record{border:1px solid var(--pc-line);border-radius:9px;background:#fff;padding:18px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-model-record header{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--pc-line);padding-bottom:14px}.ds-model-record h3{margin:0 0 4px;font-size:17px}.ds-model-record small, .ds-model-record dt{color:var(--pc-muted);font-size:11px}.ds-model-record header span{border-radius:4px;padding:3px 7px;background:var(--pc-success-surface,#e9f6ef);color:var(--pc-success-ink,#246448);font-size:10px}.ds-model-record dl{display:grid;grid-template-columns:120px 1fr;gap:10px;margin:16px 0}.ds-model-record dd{margin:0}.ds-model-record button{border:0;background:none;color:var(--pc-accent);font:600 11px 'DM Sans',sans-serif;padding:0}"
+      "description": "One evidence-based continuation action, visually ahead of attention and recent records.",
+      "html": "<section class=\"ds-next\"><span aria-hidden=\"true\">→</span><div><h2>Review and publish Feedback interviewer</h2><p>Readiness checks passed for the current saved version. Publish it from the agent.</p><small>Publish keeps the saved version, readiness checks, and browser activation together.</small><button>Open agent →</button></div></section>",
+      "css": ".ds-next{display:grid;grid-template-columns:auto minmax(0,1fr);gap:19px;padding:26px;border:1px solid #dcd8f5;border-radius:12px;background:#f7f6ff;color:var(--pc-ink);font:14px/1.6 'DM Sans',sans-serif}.ds-next>span{display:grid;width:42px;height:42px;place-items:center;border-radius:10px;background:var(--pc-accent);color:#fff;font-size:22px}.ds-next h2{margin:0;font-size:23px;line-height:1.22;letter-spacing:-.025em}.ds-next p{margin:9px 0 0;color:var(--pc-muted)}.ds-next small{display:block;margin-top:10px;color:var(--pc-muted);font-size:12px}.ds-next button{margin-top:20px;min-height:40px;padding:9px 14px;border:1px solid var(--pc-accent);border-radius:7px;background:var(--pc-accent);color:#fff;font:650 12px 'DM Sans',sans-serif}.ds-next button:hover{background:#433ab5}.ds-next button:focus-visible{outline:2px solid var(--pc-accent);outline-offset:3px}@media(max-width:580px){.ds-next{grid-template-columns:1fr;padding:20px 17px}}"
     },
     {
-      "name": "Offering Results Disclosure",
+      "name": "Agent Workspace Toolbar",
       "kind": "custom",
-      "description": "Collapsed campaign evidence that keeps company decisions ahead of detailed results.",
-      "html": "<details class=\"ds-results\"><summary>Campaign results and reviewed feedback <span>View</span></summary><p>Recorded activity, saved conversations, and reviewed caller observations.</p></details>",
-      "css": ".ds-results{border-top:1px solid var(--pc-line);padding-top:13px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-results summary{cursor:pointer;color:var(--pc-accent);font:650 11px/1.4 'DM Sans',sans-serif}.ds-results summary span{float:right;color:var(--pc-muted);font-size:9px}.ds-results p{color:var(--pc-muted);font-size:12px}.ds-results summary:focus-visible{outline:2px solid var(--pc-accent);outline-offset:3px}"
+      "description": "Compact agent selection, artifact state, direct test focus, and persistent draft save.",
+      "html": "<header class=\"ds-agent-bar\"><label>Agent<select><option>Feedback interviewer</option></select></label><div><strong>Feedback interviewer</strong><small>Saved draft · revision 3</small></div><span><button>Test agent</button><button class=\"ds-save\">Save draft</button></span></header>",
+      "css": ".ds-agent-bar{display:flex;align-items:center;flex-wrap:wrap;gap:16px 22px;padding:18px 20px;border:1px solid var(--pc-line);border-radius:9px;background:#fff;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-agent-bar label{display:grid;gap:5px;flex:0 1 220px;color:var(--pc-muted);font-weight:550}.ds-agent-bar select,.ds-agent-bar button{min-height:40px;border:1px solid var(--pc-line);border-radius:6px;background:#fff;padding:8px 11px;font:13px 'DM Sans',sans-serif}.ds-agent-bar>div{display:grid;flex:1 1 180px}.ds-agent-bar strong{font-size:19px}.ds-agent-bar small{color:var(--pc-muted)}.ds-agent-bar>span{display:flex;gap:8px}.ds-agent-bar .ds-save{border-color:var(--pc-accent);background:var(--pc-accent);color:#fff}.ds-agent-bar :focus-visible{outline:2px solid var(--pc-accent);outline-offset:2px}@media(max-width:620px){.ds-agent-bar{display:grid;padding:14px}.ds-agent-bar>span{display:grid;grid-template-columns:1fr 1fr}.ds-agent-bar button,.ds-agent-bar select{min-height:44px}}"
     },
     {
-      "name": "AI Campaign Brief",
+      "name": "Exact-Version Publish Steps",
       "kind": "custom",
-      "description": "Ordered brief inputs and explicit AI suggestion review before plan generation.",
-      "html": "<section class=\"ds-brief\"><strong>Campaign brief</strong><label>Product or service<select><option>Approved offering</option></select></label><label>Describe the campaign<textarea></textarea></label><p class=\"ds-brief-note\">AI added suggestions to the existing brief fields. Review before generating a plan.</p><button>Draft the brief with AI</button></section>",
-      "css": ".ds-brief{display:grid;gap:12px;border:1px solid var(--pc-line);border-radius:9px;background:#fff;padding:20px;color:var(--pc-ink);font:13px/1.5 'DM Sans',sans-serif}.ds-brief strong{font-size:17px}.ds-brief label{display:grid;gap:6px;font-weight:600;font-size:12px}.ds-brief select,.ds-brief textarea{border:1px solid #dfe1e9;border-radius:6px;background:#fff;color:var(--pc-ink);padding:9px 11px;font:12px/1.5 'DM Sans',sans-serif}.ds-brief-note{margin:0;padding:10px 12px;border:1px solid var(--pc-line);border-radius:8px;background:var(--pc-wash);color:var(--pc-muted);font-size:12px}.ds-brief button{justify-self:start;border:0;border-radius:6px;background:var(--pc-accent);color:#fff;padding:8px 12px;font:600 11px 'DM Sans',sans-serif}"
+      "description": "Checks the exact saved version, publishes explicitly, then opens a separate prefilled Channel draft.",
+      "html": "<section class=\"ds-publish\"><h2>Publish your agent</h2><ol><li><b>1</b><span><strong>Run readiness checks</strong><small>Version 3 · Checks passed</small><button>Run readiness checks</button></span></li><li><b>2</b><span><strong>Publish the version</strong><small>Knowledge is checked again.</small><button class=\"ds-publish-primary\">Publish version</button></span></li><li><b>3</b><span><strong>Set up channels</strong><small>Public deployment remains separate.</small><button>Set up channels →</button></span></li></ol></section>",
+      "css": ".ds-publish{color:var(--pc-ink);font:14px/1.55 'DM Sans',sans-serif}.ds-publish h2{margin:0 0 18px;font-size:20px}.ds-publish ol{margin:0;padding:0;list-style:none}.ds-publish li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:18px 0;border-top:1px solid var(--pc-line)}.ds-publish li>b{display:grid;width:28px;height:28px;place-items:center;border:1px solid var(--pc-line);border-radius:50%;color:var(--pc-accent)}.ds-publish li>span{display:grid;justify-items:start;gap:7px}.ds-publish small{color:var(--pc-muted);font-size:13px}.ds-publish button{min-height:40px;padding:8px 12px;border:1px solid var(--pc-line);border-radius:6px;background:#fff;color:var(--pc-ink);font:600 13px 'DM Sans',sans-serif}.ds-publish .ds-publish-primary{border-color:var(--pc-accent);background:var(--pc-accent);color:#fff}.ds-publish button:focus-visible{outline:2px solid var(--pc-accent);outline-offset:2px}@media(max-width:580px){.ds-publish button{min-height:44px}}"
     },
     {
       "name": "Speech Vocabulary Editor",
@@ -154,34 +157,31 @@
   ],
   "narrative": {
     "northStar": "The Quiet Operations Desk",
-    "overview": "Relay is an Operate product: a compact, record-first workspace where company material becomes reviewable context, campaign intent, browser conversations, and accountable follow-through. The visual system stays quiet so the current record, its evidence, and the next operator decision remain easy to scan. DM Sans, white and cool lilac-gray surfaces, indigo state emphasis, and Lucide icons are the incumbent identity.\n\nThe v5/v6 surfaces extend that same desk across the complete loop. Company brain has Business model, Source intake, and Ask company brain tabs. The business-model workbench keeps offerings and signals separate, shows exact source quotes, preserves approved clarification history, and counts only unanswered founder questions. Campaign briefing proceeds in a visible order: approved offering, campaign description and goal, purpose and channel, selected audience, explicit AI assistance, then operator review before a plan is generated. The plan describes planned fields; collected answers and quotes live in campaign conversations and offering results.\n\nThe agent and conversation surfaces keep control and evidence explicit. In-call Actions, natural-language revision proposals with before/after diffs, and viewer read-only states sit beside the voice workbench. Language settings include a small, versioned speech-vocabulary editor for recognition hints; its terms remain hints rather than instructions or company facts. Saved public-voice Conversations expose validated server-transport evidence in a disclosure, alongside server action receipts, browser-only diagnostics, refusal and uncertainty guards, transcript-before-learning, and source-linked learning. A completed post-call learning job points to the exact conversation and opens its review action; proposals never apply automatically. Team, invitation, recovery, and account-security states, Join workspace account mismatch, WhatsApp setup and Inbox scope, and Automations' local worker heartbeat all use the same candid operational language. These are extensions of the existing world, not a new visual concept.",
-    "keyCharacteristics": ["Quiet tonal surfaces", "Readable 12–13px operational type", "Indigo for location and action", "Source-backed cues", "Visible human control", "Anonymous public identity"],
+    "overview": "Relay is an Operate product: reviewed company context becomes a bounded representative and campaign, and each customer attempt becomes an attributable conversation, commitment, or proposed improvement. The interface gives the operator one clear place and next action while preserving the records underneath. DM Sans, cool white and lilac-gray surfaces, indigo emphasis, restrained status color, and Lucide icons remain the visual identity; this reset changes workflow composition, not the brand world.\n\nThe shell now presents five working areas—Overview, Company, Agents, Campaigns, and Activity—with Settings separate. Inactive context groups remain collapsed, while the former 18 destinations stay reachable through aliases, contextual links, search, and record anchors. Overview uses the saved company-readiness record to choose one next action, shows only current unresolved attention, prioritizes active campaign work over optional channel setup, and keeps recent agents and conversations close.\n\nAgents is one continuous build-test-publish workspace: a compact picker and persistent Save draft / Test agent toolbar sit above a wide six-section editor and continuously mounted tester. New agents begin in Setup with required fields and task presets; prompt authoring appears only in Conversation. Raw editing buffers survive section changes and guarded navigation. Publish captures and checks an exact saved version, requires a separate publication action, and only then opens a prefilled Channel draft. Roles, consent, AI identity, participant scope, and human-review boundaries remain explicit. The focused review resolved three Overview findings and returned SHIP for that scope only; it is not a whole-product or production-readiness claim.",
+    "keyCharacteristics": ["Five task-oriented areas", "One company-derived next action", "Wide editor with continuous testing context", "Exact-version readiness and explicit publication", "Quiet tonal surfaces", "Visible roles, consent, and AI identity"],
     "rules": [
       {"name": "The State Before Decoration Rule", "body": "Use indigo, green, rose, and small motion to explain location, action, or record state. Do not introduce color as a quality claim.", "section": "colors"},
-      {"name": "The Record Readability Rule", "body": "Keep operational copy at 12–13px with 1.5 line height; use smaller type for metadata only when its supporting label remains clear.", "section": "typography"},
+      {"name": "The Record Readability Rule", "body": "Keep working copy and controls at 13–14px; reserve 10–12px type for supporting metadata, never for a required decision or action.", "section": "typography"},
       {"name": "The Flat-By-Default Rule", "body": "Keep containers flat at rest. Use a border, wash, or one small transient shadow to establish hierarchy; never use elevation to imply confidence or model quality.", "section": "elevation"}
     ],
     "dos": [
-      "Do keep Company brain tabs, source quotes, offering/signal status, approved clarification history, and unanswered counts visible where the decision is made.",
-      "Do make AI assistance an explicit step and place its suggestions before the fields they populate; require review before a plan or revision is applied.",
-      "Do label plan fields as planned schema and link collected evidence to conversations or offering results.",
-      "Do show server receipts, browser-only diagnostics, refusal guards, worker heartbeat, team access state, and connection scope in plain language.",
-      "Do keep speech vocabulary to one term per line, cap it at 32 terms, preserve raw editing buffers, and focus the field with an associated inline error on the first invalid save.",
-      "Do gate server voice evidence to validated `public_voice` records; keep missing fields unknown, cancellation request and confirmation distinct, and timestamps or token usage optional.",
-      "Do preserve the shared page frame, DM Sans hierarchy, indigo state language, and the 820px drawer / 580px compact behavior.",
-      "Do keep CSV mapping collapsed before row review, recheck typed campaign answers against their receipt, and link each post-call learning job to the exact conversation.",
-      "Do keep public identity anonymous, source-backed, and explicit about Start-before-transcript and session/turn limits."
+      "Do organize destinations under Overview, Company, Agents, Campaigns, Activity, or Settings while preserving a clear owner for each saved artifact.",
+      "Do keep inactive navigation groups collapsed and retain old routes through aliases, search, contextual links, and anchors.",
+      "Do derive Overview from saved company readiness and current records, then present one next action with its evidence.",
+      "Do prioritize active campaign work over optional channel setup and treat only the latest unresolved exact-version failure as attention.",
+      "Do keep the agent picker compact, editor spacious, tester continuously mounted, and Save draft / Test agent available from the toolbar.",
+      "Do preserve raw editing buffers, focus the first invalid field, and guard route and history exits when the draft is dirty.",
+      "Do run checks against an exact saved version, publish explicitly, then pass the active release into a separate Channel draft.",
+      "Do preserve viewer limits, consent controls, explicit AI identity, anonymous/unverified participant labels, and human-review boundaries."
     ],
     "donts": [
-      "Don't present an approved clarification as an unanswered founder task.",
-      "Don't place the full offering evidence table ahead of the company decision path; keep it behind the collapsed results disclosure.",
-      "Don't render `Not collected` as a live status in a planned campaign schema.",
-      "Don't treat available integrations, WhatsApp setup, worker heartbeat, provider acceptance, browser receipt time, or selected contact context as proof of connection, delivery, audible latency, identity, or customer intent.",
-      "Don't present speech-vocabulary terms as instructions, company facts, or evidence that recognition or audio quality improved.",
-      "Don't convert server request-to-first-audio timing into browser playback or audible-response latency, or render missing measurements as zero.",
-      "Don't allow viewer accounts to mutate, approve, revise, test, send, or create actions; keep their records readable and their limitations explicit.",
-      "Don't claim cloud execution, channel delivery, or audio quality from a configured setting, a paused/local-only worker, or a browser receipt.",
-      "Don't turn version history, action diagnostics, prompt diffs, execution history, or Personal Voice enrollment into competing editor columns. Keep them collapsible and attributable."
+      "Don't restore the former 18 peer destinations or a three-column agent workbench.",
+      "Don't treat historical failed checks as current attention or let optional deployment displace running campaign work.",
+      "Don't repeat prompt fields across sections, unmount the tester during section changes, or hide the artifact targeted by Save, Test, Publish, or Channel setup.",
+      "Don't bypass the dirty guard for Back, Forward, hash links, search, agent switching, or contextual navigation.",
+      "Don't allow viewer accounts to mutate, test, publish, send, or create actions; keep records readable and limitations explicit.",
+      "Don't let a draft test, configuration check, release, or prefilled Channel draft imply public activation, live delivery, voice quality, identity verification, or business value.",
+      "Don't present the focused three-finding review verdict as a whole-product usability, production, hosted-channel, or competitor-superiority claim."
     ]
   }
 }
