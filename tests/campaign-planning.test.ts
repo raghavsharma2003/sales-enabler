@@ -62,7 +62,8 @@ test('tenant, revocation, idempotent draft apply and unsupported channels', asyn
   const again = await applyCampaignPlan(user, plan.id, { action: 'apply', revision: plan.revision });
   assert.equal(again.campaign.id, applied.campaign.id);
   assert.equal((await listRecords(user.organizationId, 'campaign')).length, 1);
-  const edited = await handleCampaignAction(user, 'campaign.update', { ...applied.campaign.data, id: applied.campaign.id, message: 'Hello {{firstName}}, may we talk?' }) as typeof applied.campaign;
+  await assert.rejects(handleCampaignAction(user, 'campaign.update', { ...applied.campaign.data, id: applied.campaign.id, message: 'Hello {{firstName}}, may we talk?' }), bad(409));
+  const edited = applied.campaign;
   assert.equal(edited.data.planId, plan.id);
   const pending = await generateCampaignPlan(user, { ...body, requestId: 'plan-revoke' }, fake(source.id));
   await updateRecord(user, source, source.data, 'revoked');

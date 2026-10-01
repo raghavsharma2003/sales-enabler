@@ -49,7 +49,8 @@ test('scoped plan supplies specific offering, outcome and exact late-source evid
   assert.deepEqual(applied.campaign.data.explicitIntentV1, plan.data.explicitIntentV1);
   assert.equal(applied.campaign.status, 'draft');
   assert.ok((await verifyAppliedPlanSources(f.user, plan.id, applied.campaign.id)).length >= 3);
-  const edited = await handleCampaignAction(f.user, 'campaign.update', { ...applied.campaign.data, id: applied.campaign.id, message: 'An operator-reviewed question', explicitIntentV1: null }) as PlatformRecord<Campaign>;
+  await assert.rejects(handleCampaignAction(f.user, 'campaign.update', { ...applied.campaign.data, id: applied.campaign.id, message: 'An operator-reviewed question', explicitIntentV1: null }), bad(409));
+  const edited = await handleCampaignAction(f.user, 'campaign.update', { ...applied.campaign.data, id: applied.campaign.id, explicitIntentV1: null }) as PlatformRecord<Campaign>;
   assert.deepEqual(edited.data.explicitIntentV1, plan.data.explicitIntentV1);
   await assert.rejects(handleCampaignAction(f.user, 'campaign.update', { ...edited.data, id: edited.id, contactIds: [] }), bad(409));
 });

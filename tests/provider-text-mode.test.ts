@@ -20,7 +20,11 @@ test('Azure listen-and-type WebRTC receives audio without microphone permission 
     readyState: 'connecting',
     onopen: null as null | (() => void), onmessage: null as null | ((event: { data: string }) => void),
     onclose: null as null | (() => void), onerror: null as null | (() => void),
-    send: (data: string) => { sent.push(data); }, close: () => { channelClosed++; },
+    send: (data: string) => {
+      sent.push(data);
+      const event = JSON.parse(data);
+      if (event.type === 'session.update') channel.onmessage?.({ data: JSON.stringify({ type: 'session.updated', session: event.session }) });
+    }, close: () => { channelClosed++; },
   };
   class MockPeer {
     ontrack: null | ((event: { streams: MediaStream[]; track: MediaStreamTrack }) => void) = null;
@@ -54,7 +58,7 @@ test('Azure listen-and-type WebRTC receives audio without microphone permission 
     const body = JSON.parse(init.body as string);
     assert.equal(body.mode, 'preview');
     assert.match(body.sdp, /m=audio/);
-    return Response.json({ provider: 'azure', transport: 'webrtc', sdp: 'v=0\r\nm=audio\r\n', previewId: 'preview-1', openingMessage: 'Namaste, I am an AI assistant. How may I help?' });
+    return Response.json({ provider: 'azure', transport: 'webrtc', sdp: 'v=0\r\nm=audio\r\n', previewId: 'preview-1', initialInstructions: 'Approved context. Disclose AI.', openingMessage: 'Namaste, I am an AI assistant. How may I help?' });
   } });
   const session = createBrowserVoiceSession({ provider: 'azure', mode: 'preview', inputMode: 'text', onConnected: meta => connected.push(meta), onEvent: event => events.push(event), onFailure: message => assert.fail(message) });
   try {
@@ -70,14 +74,16 @@ test('Azure listen-and-type WebRTC receives audio without microphone permission 
     assert.equal(session.sendText('Please answer briefly.'), true);
     assert.equal(sent.filter(value => JSON.parse(value).type === 'conversation.item.create').length, 0);
     assert.equal(events.filter(event => event.type === 'transcript').length, 0);
-    channel.onmessage?.({ data: JSON.stringify({ type: 'response.done' }) });
+    channel.onmessage?.({ data: JSON.stringify({ type: 'response.created', response: { id: 'greeting' } }) });
+    channel.onmessage?.({ data: JSON.stringify({ type: 'response.done', response: { id: 'greeting', status: 'completed' } }) });
     assert.equal(sent.filter(value => JSON.parse(value).type === 'conversation.item.create').length, 1);
     assert.equal(sent.filter(value => JSON.parse(value).type === 'response.create').length, 2);
     const typed = events.find(event => event.type === 'transcript' && event.entry.role === 'user');
     assert.ok(typed && typed.type === 'transcript');
     assert.equal(typed.entry.text, 'Namaste, how can you help?');
     assert.ok(events.some(event => event.type === 'item' && event.id === typed.entry.id));
-    channel.onmessage?.({ data: JSON.stringify({ type: 'response.done' }) });
+    channel.onmessage?.({ data: JSON.stringify({ type: 'response.created', response: { id: 'first-reply' } }) });
+    channel.onmessage?.({ data: JSON.stringify({ type: 'response.done', response: { id: 'first-reply', status: 'completed' } }) });
     assert.equal(sent.filter(value => JSON.parse(value).type === 'conversation.item.create').length, 2);
     assert.ok(events.some(event => event.type === 'transcript' && event.entry.text === 'Please answer briefly.'));
     for (let index = 0; index < 20; index++) assert.equal(session.sendText(`Queued ${index}`), true);

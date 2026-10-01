@@ -1,0 +1,21 @@
+.assist { border-top: 1px solid var(--pc-line); padding-top: 24px; margin-top: 26px; min-width: 0; color: var(--pc-ink); }
+.assist h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 8px; font-size: 17px; font-weight: 650; }
+.assist header p, .hint { margin: 0; color: var(--pc-muted); font-size: 13px; line-height: 1.6; max-width: 70ch; }
+.assist h3 svg { color: var(--pc-accent); flex: none; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 10px; }
+.actions button { min-height: 42px; font-size: 13px; }
+.note, .error { margin: 14px 0 0; padding: 12px 14px; border-radius: 6px; font-size: 13px; line-height: 1.6; }
+.note { background: var(--pc-wash); color: var(--pc-accent); }
+.error { background: #fff3f4; color: #9b3547; }
+.note p { margin: 0; }.note ul { padding-left: 20px; margin: 6px 0 0; }
+.proposal { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--pc-line); }
+.proposalHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.proposalHead h4 { font-size: 16px; margin: 0; }.proposalHead span { display: flex; gap: 5px; align-items: center; color: #246448; font-size: 12px; }
+.comparison { margin: 16px 0; }.comparison > div { padding: 17px 0; border-bottom: 1px solid var(--pc-line); }
+.comparison dt { font-size: 14px; font-weight: 650; }.comparison dd { margin: 10px 0 0; }
+.comparison dd > span { font-size: 12px; color: var(--pc-muted); }.comparison p { font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; margin: 4px 0 14px; }.comparison p:last-child { margin-bottom: 0; }
+.assist details { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--pc-line); font-size: 13px; line-height: 1.6; }
+.assist summary { cursor: pointer; color: var(--pc-accent); min-height: 36px; font-weight: 550; }
+.assist blockquote { margin: 14px 0; padding: 14px; background: var(--pc-hover); border-radius: 6px; }.assist blockquote p { margin: 0 0 8px; overflow-wrap: anywhere; }
+.assist :is(button,select,summary):focus-visible { outline: 2px solid var(--pc-accent); outline-offset: 3px; }
+@media(max-width:620px) { .actions { align-items: stretch; flex-direction: column; }.actions button, .assist summary { min-height: 44px; }.assist { padding-top: 20px; } }

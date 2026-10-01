@@ -7,8 +7,11 @@ import { createRecord, getRecord, listRecords, updateRecord, type PlatformRecord
 import { verifyAppliedPlanSources, type SourceAnchor } from '../campaign-planning/engine';
 import { getConnection, listConnections } from '../integrations/vault';
 import type { CampaignIntent } from '../business/contracts';
+import { handleCampaignSetupAction, verifyManualCampaignAuthority } from './campaign-setup';
+import { operatorMembershipFence } from '../team/service';
+import type { CampaignSetupData } from './campaign-workflow';
 
-export type Campaign = { name: string; kind: 'sales' | 'feedback'; objective: string; channel: 'browser' | 'manual_email' | 'email'; emailConnectionId?: string; agentReleaseId: string; subject: string; message: string; contactIds: string[]; ownerId: string; planId?: string; explicitIntentV1?: CampaignIntent; offeringName?: string; offeringSummary?: string; sourceAnchors?: Omit<SourceAnchor, 'content'>[]; callBrief?: string; successCriteria?: string; journeySteps?: string[]; citations?: unknown[] };
+export type Campaign = { name: string; kind: 'sales' | 'feedback'; objective: string; channel: 'browser' | 'manual_email' | 'email'; emailConnectionId?: string; agentReleaseId: string; subject: string; message: string; contactIds: string[]; ownerId: string; planId?: string; explicitIntentV1?: CampaignIntent; offeringName?: string; offeringSummary?: string; sourceAnchors?: Omit<SourceAnchor, 'content'>[]; callBrief?: string; successCriteria?: string; journeySteps?: string[]; citations?: unknown[]; setupOrigin?: 'manual_reviewed' | 'ai_reviewed'; setupRequestDigest?: string; setupDraft?: CampaignSetupData };
 export type Recipient = { contactId: string; name: string; email: string; status: 'queued' | 'completed' | 'skipped'; evidence?: string; sessionId?: string; completedAt?: string };
 export type Run = { campaignId: string; campaignRevision: number; snapshot: Campaign; emailAuthorizationVersion?: string; recipients: Recipient[]; launchedAt: string; launchedBy: string; pausedAt?: string; cancelledAt?: string };
 const str = (value: unknown) => typeof value === 'string' ? value : '';
@@ -41,6 +44,7 @@ export async function emailConnectionFor(user: AuthUser, id: string) {
   return connection;
 }
 export async function campaignPreflight(user: AuthUser, campaign: PlatformRecord<Campaign>) {
+  if (campaign.status !== 'draft') throw new HttpError(409, 'Complete campaign setup before review and launch.');
   const contacts = await listEntities(user.organizationId, 'contact');
   const byId = new Map(contacts.map((contact) => [contact.id, contact]));
   const profiles = await listRecords<{ contactId: string; name?: string; email?: string; consent: Record<string, { granted: boolean }> }>(user.organizationId, 'customer_profile');
@@ -64,6 +68,9 @@ export async function campaignPreflight(user: AuthUser, campaign: PlatformRecord
   if (campaign.data.planId) {
     try { await verifyAppliedPlanSources(user, campaign.data.planId, campaign.id); }
     catch { blockers.push('Approved company knowledge or its plan changed. Generate a new plan before launch.'); }
+  } else if (campaign.data.explicitIntentV1 || campaign.data.setupOrigin || campaign.data.sourceAnchors?.length) {
+    try { await verifyManualCampaignAuthority(user,campaign.id,campaign.data); }
+    catch { blockers.push('Reviewed product, outcome or source evidence changed. Review a new campaign.'); }
   }
   if (!audience.length) blockers.push('Select at least one contact.');
   if (audience.some((item) => !item.eligible)) blockers.push('Resolve or remove ineligible contacts.');
@@ -87,11 +94,17 @@ export async function campaignPreflight(user: AuthUser, campaign: PlatformRecord
 }
 // Adapted from the CommandCentre campaign launch trace (research/command-centre-product-second-pass.md): explicit audience review and per-person preview. This implementation queues operator work; it has no mail dispatcher.
 export async function handleCampaignAction(user: AuthUser, action: string, body: Record<string, unknown>): Promise<unknown> {
+  if (action.startsWith('campaign.setup.')) return handleCampaignSetupAction(user,action,body);
   if (action === 'campaign.create') return createRecord(user, 'campaign', draft(body, user.id));
   if (action === 'campaign.update') {
     const current = await getRecord<Campaign>(user.organizationId, 'campaign', field(body, 'id', 100));
     if (current.status !== 'draft') throw new HttpError(409, 'Only draft campaigns can be edited.');
     const edited = draft(body, current.data.ownerId);
+    if (current.data.planId || current.data.setupOrigin) {
+      for (const key of ['name','kind','objective','channel','subject','message','contactIds'] as const) if (JSON.stringify(edited[key]) !== JSON.stringify(current.data[key])) throw new HttpError(409,'Reviewed campaign content and audience are fixed. Create a new campaign to revise them.');
+      for (const key of ['callBrief','successCriteria','journeySteps'] as const) if (body[key] !== undefined && JSON.stringify(body[key]) !== JSON.stringify(current.data[key])) throw new HttpError(409,'Reviewed campaign content is fixed.');
+      return updateRecord(user,current,{...current.data,agentReleaseId:edited.agentReleaseId,emailConnectionId:edited.emailConnectionId},'draft');
+    }
     if (current.data.explicitIntentV1 && JSON.stringify([...edited.contactIds].sort()) !== JSON.stringify([...current.data.contactIds].sort())) throw new HttpError(409, 'The audience is part of this reviewed product campaign. Generate a new plan to change it.');
     return updateRecord(user, current, { ...edited, ...(current.data.planId ? { planId: current.data.planId, sourceAnchors: current.data.sourceAnchors, callBrief: current.data.callBrief, successCriteria: current.data.successCriteria, journeySteps: current.data.journeySteps, citations: current.data.citations } : {}), ...(current.data.explicitIntentV1 ? { explicitIntentV1: current.data.explicitIntentV1, offeringName: current.data.offeringName, offeringSummary: current.data.offeringSummary, contactIds: current.data.contactIds } : {}) }, 'draft');
   }
@@ -104,7 +117,8 @@ export async function handleCampaignAction(user: AuthUser, action: string, body:
     const check = await campaignPreflight(user, campaign);
     if (action === 'campaign.preflight') return check;
     if (!check.ready) throw new HttpError(409, `Launch blocked: ${check.blockers.join(' ')}`);
-    const businessFences = campaign.data.planId ? await verifyAppliedPlanSources(user, campaign.data.planId, campaign.id) : [];
+    const businessFences = campaign.data.planId ? await verifyAppliedPlanSources(user, campaign.data.planId, campaign.id) : campaign.data.explicitIntentV1 || campaign.data.setupOrigin ? await verifyManualCampaignAuthority(user,campaign.id,campaign.data) : [];
+    const membership = await operatorMembershipFence(user);
     if (campaign.data.channel === 'email') {
       const mailboxRow = authority.find(item => item.kind === 'integration:vault' && item.id === campaign.data.emailConnectionId);
       if (!mailboxRow || JSON.parse(String(mailboxRow.data)).authorizationVersion !== check.emailAuthorizationVersion) throw new HttpError(409, 'Mailbox authorization changed before launch. Review the campaign again.');
@@ -119,6 +133,7 @@ export async function handleCampaignAction(user: AuthUser, action: string, body:
     if (!row || JSON.parse(String(row.data)).revision !== campaign.revision) throw new HttpError(409, 'Campaign changed. Review it again.');
     const id = randomUUID(), now = new Date().toISOString();
     try { await database.batch([
+      membership,
       ...businessFences,
       ...authority.filter((item) => item.kind === 'platform:release' ? item.id === campaign.data.agentReleaseId : item.kind === 'platform:campaign_plan' ? item.id === campaign.data.planId : item.kind === 'platform:brain_source' ? campaign.data.sourceAnchors?.some(anchor => anchor.id === item.id) : item.kind === 'integration:vault' ? item.id === campaign.data.emailConnectionId : campaign.data.contactIds.includes(item.kind === 'contact' ? String(item.id) : String(JSON.parse(String(item.data)).data.contactId))).map((item) => ({ sql: 'UPDATE entities SET data = data WHERE id = ? AND organization_id = ? AND kind = ? AND data = ? AND (status = ? OR (status IS NULL AND ? IS NULL))', params: [String(item.id), user.organizationId, String(item.kind), String(item.data), item.status === null ? null : String(item.status), item.status === null ? null : String(item.status)], expectedChanges: 1 })),
       { sql: 'UPDATE entities SET data = ?, status = ? WHERE id = ? AND organization_id = ? AND kind = ? AND status = ? AND data = ?', params: [JSON.stringify({ revision: campaign.revision + 1, updatedAt: now, data: campaign.data }), 'launched', campaign.id, user.organizationId, 'platform:campaign', 'draft', String(row.data)], expectedChanges: 1 },

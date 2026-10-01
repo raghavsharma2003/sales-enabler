@@ -221,6 +221,7 @@ test('manual initial intent claim rolls back on current operator demotion', asyn
 });
 
 test('scoped email dispatch consumes offering, signal and source fences in the final transaction', async () => {
+  for (const authoring of ['ai','manual'] as const) {
   for (const change of ['none', 'offering', 'signal', 'source', 'snapshot'] as const) {
     const f = await fixture(), now = new Date().toISOString(), quote = 'Guided onboarding includes a setup review subject to staff availability.';
     const source = await createRecord(f.user, 'brain_source', { title: 'Service definition', content: quote, sourceLabel: 'Fictional source', approvedAt: now, approvedBy: f.user.id }, 'approved');
@@ -230,16 +231,17 @@ test('scoped email dispatch consumes offering, signal and source fences in the f
     const proposal = await action({ action: 'signal.create', title: 'Setup feedback opportunity', observation: 'Guided setup review is available.', sourceRefs: [{ sourceId: source.id, quote }], uncertainty: ['Customer need is unconfirmed.'], offeringId: offering.id, contactId: f.contact.id });
     const signal = await action({ action: 'signal.review', id: proposal.id, revision: proposal.revision, status: 'approved' });
     const planner = (async () => ({ text: JSON.stringify({ name: 'Setup feedback', objective: 'Understand setup obstacles', subject: 'Your setup experience', message: 'Hello {{firstName}}, what was difficult in setup?', callBrief: 'Disclose AI identity and ask about a setup obstacle.', successCriteria: 'A concrete customer example.', journeySteps: ['Review permission and ask about setup'], missingInputs: [], citations: [{ field: 'callBrief', sourceId: source.id, quote }] }), runId: 'offline-plan', model: 'fixture', usage: { inputTokens: 1, outputTokens: 1 }, cached: false })) as typeof runAiTask;
-    const plan = await generateCampaignPlan(f.user, { goal: 'Understand setup obstacles', kind: 'feedback', channel: 'manual_email', contactIds: [f.contact.id], sourceIds: [], requestId: `scoped-mail-${change}`, intent: { schemaVersion: 1, offeringId: offering.id, outcome: { label: 'Understand setup obstacles', evidenceRequired: ['A concrete customer example'] }, signalIds: [signal.id], audienceRationale: 'Reviewed setup customers', reviewColumns: [{ key: 'obstacle', label: 'Setup obstacle', type: 'text' }] } }, planner);
-    const applied = await applyCampaignPlan(f.user, plan.id, { action: 'apply', revision: plan.revision });
-    await handleCampaignAction(f.user, 'campaign.update', { ...applied.campaign.data, id: applied.campaign.id, channel: 'email', emailConnectionId: f.connected.id });
+    const setup = await handleCampaignAction(f.user,'campaign.setup.create',{requestId:`scoped-mail-${change}`,fields:{name:'Setup feedback',goal:'Understand setup obstacles',kind:'feedback',channel:'email',emailConnectionId:f.connected.id,contactIds:[f.contact.id],offeringId:offering.id,outcome:{label:'Understand setup obstacles',evidenceRequired:['A concrete customer example']},signalIds:[signal.id],audienceRationale:'Reviewed setup customers',reviewColumns:[{key:'obstacle',label:'Setup obstacle',type:'text'}],objective:'Understand setup obstacles',subject:'Your setup experience',message:'What was difficult in setup?'}}) as PlatformRecord;
+    const plan = authoring === 'ai' ? await generateCampaignPlan(f.user,{campaignId:setup.id,campaignRevision:setup.revision,requestId:`scoped-mail-${change}`},planner) : undefined;
+    const applied = plan ? await applyCampaignPlan(f.user,plan.id,{action:'apply',revision:plan.revision,campaignId:setup.id,campaignRevision:setup.revision}) : {campaign:setup};
+    await handleCampaignAction(f.user,'campaign.setup.finalize',{id:setup.id,revision:applied.campaign.revision});
     const launched = await handleCampaignAction(f.user, 'campaign.launch', { id: applied.campaign.id }) as { id: string };
     const database = await db();
     let calls = 0;
     const dispatch = async () => { calls++; return { state: 'accepted' as const }; };
     const input = { ...f.input, runId: launched.id };
     if (change === 'snapshot') {
-      for (const id of [plan.id, applied.campaign.id]) {
+      for (const id of [plan?.id, applied.campaign.id].filter((id): id is string => !!id)) {
         const [row] = await database.all('SELECT data FROM entities WHERE id=?', [id]);
         const saved = JSON.parse(String(row.data));
         saved.data.explicitIntentV1.outcome.label = 'A different outcome after launch';
@@ -255,5 +257,6 @@ test('scoped email dispatch consumes offering, signal and source fences in the f
     });
     assert.equal(result.state, change === 'none' ? 'accepted' : 'rejected');
     assert.equal(calls, change === 'none' ? 1 : 0);
+  }
   }
 });

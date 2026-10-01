@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-01",
+  "updatedAt": "2026-10-02",
   "nodes": [
     {
       "id": "product.general",
@@ -1145,8 +1145,43 @@
       "id": "risk.private-voice-current-turn-ack-ordering-2026-10-01",
       "type": "risk",
       "title": "Private browser does not yet gate current-turn response creation on matching session-update acknowledgement",
-      "status": "open-public-gateway-already-gated-private-ga-type-compatibility-fix-is-insufficient",
-      "path": "docs/product-ux-reset-verification.md"
+      "status": "implementation-closed-by-exact-ack-scheduler-live-latency-and-media-verification-remain-open",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "implementation.campaign-durable-workflow-2026-10-02",
+      "type": "component",
+      "title": "One durable phased campaign from setup through immutable run and results",
+      "status": "implemented-canonical-browser-flow-through-explicit-launch-verified-final-post-fix-gates-in-progress",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "implementation.private-turn-ack-gating-2026-10-02",
+      "type": "component",
+      "title": "Private WebRTC exact-instruction acknowledgement and ordered turn scheduler",
+      "status": "implemented-regression-tested-live-azure-and-physical-microphone-gates-open",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "verification.campaign-workflow-2026-10-02",
+      "type": "evidence",
+      "title": "Durable campaign and private turn-control verification checkpoint",
+      "status": "671-tests-second-build-package-and-canonical-browser-flow-passed-before-latest-projection-fix-final-gates-in-progress",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "risk.private-turn-live-quality-2026-10-02",
+      "type": "risk",
+      "title": "Live acknowledgement latency, physical microphone, truncation and perceived quality remain unverified",
+      "status": "open-live-greeting-succeeded-first-typed-reply-provider-error-scheduler-gate-not-passed",
+      "path": "docs/campaign-workflow-verification.md"
+    },
+    {
+      "id": "verification.campaign-canonical-browser-flow-2026-10-02",
+      "type": "evidence",
+      "title": "Same-ID setup, AI review, consent correction and explicit launch in a fictional workspace",
+      "status": "verified-through-active-run-one-controlled-queued-recipient-no-send-or-call",
+      "path": "docs/campaign-workflow-verification.md"
     }
   ],
   "edges": [
@@ -2059,6 +2094,61 @@
       "from": "risk.private-voice-current-turn-ack-ordering-2026-10-01",
       "to": "voice.speech-vocabulary-and-session-ack-2026-10-01",
       "relation": "distinguishes-private-path-from-public-gateway-gating"
+    },
+    {
+      "from": "decision.product-ux-structural-reset-2026-10-01",
+      "to": "implementation.campaign-durable-workflow-2026-10-02",
+      "relation": "authorizes-next-structural-increment"
+    },
+    {
+      "from": "design.product-spine-2026-10-01",
+      "to": "implementation.campaign-durable-workflow-2026-10-02",
+      "relation": "guides-canonical-campaign-boundary"
+    },
+    {
+      "from": "implementation.campaign-durable-workflow-2026-10-02",
+      "to": "component.platform-campaigns",
+      "relation": "extends-with-phased-setup-and-same-id-finalization"
+    },
+    {
+      "from": "verification.campaign-workflow-2026-10-02",
+      "to": "implementation.campaign-durable-workflow-2026-10-02",
+      "relation": "partially-verifies-pending-final-browser-and-post-ui-build"
+    },
+    {
+      "from": "verification.campaign-workflow-2026-10-02",
+      "to": "implementation.private-turn-ack-gating-2026-10-02",
+      "relation": "verifies-regressions-without-new-live-media-proof"
+    },
+    {
+      "from": "verification.campaign-canonical-browser-flow-2026-10-02",
+      "to": "implementation.campaign-durable-workflow-2026-10-02",
+      "relation": "verifies-same-id-flow-through-explicit-launch"
+    },
+    {
+      "from": "verification.campaign-canonical-browser-flow-2026-10-02",
+      "to": "risk.private-turn-live-quality-2026-10-02",
+      "relation": "leaves-live-scheduler-proof-open-after-provider-error"
+    },
+    {
+      "from": "implementation.private-turn-ack-gating-2026-10-02",
+      "to": "risk.private-voice-current-turn-ack-ordering-2026-10-01",
+      "relation": "implements-closure-pending-live-gate"
+    },
+    {
+      "from": "risk.private-turn-live-quality-2026-10-02",
+      "to": "implementation.private-turn-ack-gating-2026-10-02",
+      "relation": "limits-live-quality-claims"
+    },
+    {
+      "from": "implementation.campaign-durable-workflow-2026-10-02",
+      "to": "constraint.azure-grant-only-public-v7",
+      "relation": "preserves"
+    },
+    {
+      "from": "implementation.campaign-durable-workflow-2026-10-02",
+      "to": "constraint.no-local-docker",
+      "relation": "preserves"
     }
   ]
 }

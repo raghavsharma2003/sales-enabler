@@ -6,6 +6,7 @@ import { createClientToolRunner } from "./client-tools";
 import { createVoiceDiagnostics, type VoiceRuntimeDiagnostics } from "./diagnostics";
 import type { VoiceToolCall } from "./contracts";
 import { isVoiceToolName } from "./tools/contracts";
+import { createPrivateTurnScheduler } from "./private-turn-scheduler";
 
 export interface BrowserVoiceSession {
   connect(): Promise<void>;
@@ -13,7 +14,8 @@ export interface BrowserVoiceSession {
   setMuted(muted: boolean): void;
   /** True when accepted for delivery to the live provider. */
   sendText(text: string): boolean;
-  /** Applies bounded in-call guidance to later model turns. */
+  /** Stages bounded guidance. WebRTC snapshots it after the user event, then
+   * waits for the provider acknowledgement before requesting that reply. */
   updateBehavior(instructions: string): boolean;
 }
 
@@ -55,18 +57,30 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
   let levelContext: AudioContext | undefined;
   let levelSource: MediaStreamAudioSourceNode | undefined;
   let levelTimer: ReturnType<typeof setInterval> | undefined;
-  let responsePending = false;
   let initialInstructions = "";
-  let lastBehavior = "";
-  const typedQueue: Array<{ id: string; text: string }> = [];
   const responseCalls = new Map<string, VoiceToolCall[]>();
   const executingResponses = new Set<string>();
   let toolRunner: ReturnType<typeof createClientToolRunner> | undefined;
   let started = false;
+  const turns = createPrivateTurnScheduler({
+    instructions: () => initialInstructions,
+    send: event => { if (!closed && channel?.readyState === "open") channel.send(JSON.stringify(event)); },
+    onUserTurn: turn => {
+      diagnostics.userTurnReceived();
+      options.onEvent({ type: "item", id: turn.id });
+      if (!closed) options.onEvent({ type: "transcript", entry: { ...turn, role: "user" } });
+    },
+    onCapturedTurn: turn => {
+      // close() has already disabled sends. Retain completed ASR before the
+      // caller's End/failure handler invalidates the visible conversation.
+      options.onEvent({ type: "item", id: turn.id });
+      options.onEvent({ type: "transcript", entry: { ...turn, role: "user" } });
+    },
+    fail,
+  });
 
-  async function finishToolResponse(responseId: string, calls: VoiceToolCall[]) {
+  async function finishToolResponse(responseId: string, calls: VoiceToolCall[], generation: number) {
     if (!toolRunner || !channel || closed) return;
-    responsePending = true;
     await Promise.all(calls.map(async call => {
       diagnostics.toolRequested();
       if (isVoiceToolName(call.name)) options.onEvent({ type: "tool", phase: "requested", id: call.id, name: call.name });
@@ -83,24 +97,8 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
     }));
     if (closed || channel?.readyState !== "open") return;
     // One continuation after the entire response's function calls have outputs.
-    channel.send(JSON.stringify({ type: "response.create" }));
     responseCalls.delete(responseId);
-  }
-
-  function sendNextTypedTurn() {
-    if (closed || responsePending || channel?.readyState !== "open" || !typedQueue.length) return;
-    const next = typedQueue[0];
-    try {
-      // Realtime permits one active response. Keep the next typed turn queued
-      // until the previous response.done, including the automatic greeting.
-      responsePending = true;
-      channel.send(JSON.stringify({ type: "conversation.item.create", item: { type: "message", role: "user", content: [{ type: "input_text", text: next.text }] } }));
-      channel.send(JSON.stringify({ type: "response.create" }));
-      typedQueue.shift();
-      diagnostics.userTurnReceived();
-      options.onEvent({ type: "item", id: next.id });
-      options.onEvent({ type: "transcript", entry: { id: next.id, role: "user", text: next.text } });
-    } catch { fail("The voice connection could not send that message. Please try again."); }
+    turns.toolsDone(generation);
   }
 
   function close() {
@@ -108,7 +106,7 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
     closed = true;
     diagnostics.end();
     toolRunner?.close();
-    typedQueue.length = 0;
+    turns.close();
     abort.abort();
     clearTimeout(timeout);
     clearTimeout(disconnectedTimeout);
@@ -131,20 +129,14 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
   return {
     close,
     updateBehavior(instructions) {
-      const next = instructions.trim().slice(0, 4_000);
-      if (closed || !initialInstructions || !next || next === lastBehavior || channel?.readyState !== "open") return false;
-      try {
-        channel.send(JSON.stringify({ type: "session.update", session: { type: "realtime", instructions: `${initialInstructions}\n<live_behavior_update>\n${next}\n</live_behavior_update>` } }));
-        lastBehavior = next;
-        return true;
-      } catch { return false; }
+      if (closed || channel?.readyState !== "open") return false;
+      return turns.updateBehavior(instructions);
     },
     sendText(text) {
       const clean = text.trim().slice(0, 4000);
-      if (!clean || closed || channel?.readyState !== "open" || typedQueue.length >= 20) return false;
-      typedQueue.push({ id: `typed-${crypto.randomUUID()}`, text: clean });
-      sendNextTypedTurn();
-      return !closed;
+      if (!clean || closed || channel?.readyState !== "open") return false;
+      try { return turns.sendText(clean); }
+      catch { fail("The voice connection could not send that message. Please try again."); return false; }
     },
     setMuted(muted) { stream?.getAudioTracks().forEach(track => { track.enabled = !muted; }); },
     async connect() {
@@ -208,17 +200,21 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
           clearTimeout(timeout);
           durationLimit = setTimeout(() => fail("The 10-minute conversation limit was reached. Save this transcript before starting another session."), 10 * 60_000);
           try { adapter.openingEvents(openingMessage).forEach(event => {
-            if (typeof event === "object" && event !== null && "type" in event && event.type === "response.create") responsePending = true;
-            channel?.send(JSON.stringify(event));
+            if (typeof event === "object" && event !== null && "type" in event && event.type === "response.create") turns.opening(event);
+            else channel?.send(JSON.stringify(event));
           }); }
           catch { fail("The voice connection could not begin. Please try again."); }
           if (!closed) options.onConnected({ previewId, ...(connectionId ? { connectionId } : {}), ...(enabledTools ? { enabledTools } : {}), ...(behaviorContext ? { behaviorContext } : {}) });
         };
         channel.onmessage = message => {
           if (closed) return;
+          let providerEvent;
+          try { providerEvent = JSON.parse(message.data); }
+          catch { return; /* Ignore malformed/non-JSON provider events. */ }
           try {
-            const providerEvent = JSON.parse(message.data);
-            if (providerEvent?.type === "response.created") responsePending = true;
+            if (!providerEvent || typeof providerEvent !== "object" || Array.isArray(providerEvent)) return;
+            if (turns.receive(providerEvent)) return;
+            if (providerEvent?.type === "response.created") turns.responseCreated(providerEvent.response?.id);
             if (providerEvent?.type === "response.function_call_arguments.done" && typeof providerEvent.call_id === "string" && typeof providerEvent.name === "string" && typeof providerEvent.response_id === "string" && !executingResponses.has(providerEvent.response_id)) {
               if (providerEvent.call_id.length > 128 || providerEvent.name.length > 100 || providerEvent.response_id.length > 128 || typeof providerEvent.arguments !== "string" || providerEvent.arguments.length > 12_000) { fail("The voice provider sent an oversized in-call action. End the conversation and try again."); return; }
               const calls = responseCalls.get(providerEvent.response_id) || [];
@@ -231,19 +227,20 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
               if (typeof responseId === "string" && executingResponses.has(responseId)) return;
               const calls = typeof responseId === "string" ? responseCalls.get(responseId) : undefined;
               if (calls?.length && providerEvent.response?.status === "completed") {
-                if (!executingResponses.has(responseId)) {
+                const generation = turns.responseDone(responseId, true, providerEvent.response?.status);
+                if (generation !== undefined && !executingResponses.has(responseId)) {
                   executingResponses.add(responseId);
-                  void finishToolResponse(responseId, calls).catch(() => fail("An in-call action could not finish. End the conversation and try again."));
+                  void finishToolResponse(responseId, calls, generation).catch(() => fail("An in-call action could not finish. End the conversation and try again."));
                 }
               }
-              else { if (typeof responseId === "string") responseCalls.delete(responseId); responsePending = false; sendNextTypedTurn(); }
+              else { if (typeof responseId === "string") responseCalls.delete(responseId); turns.responseDone(responseId, false, providerEvent.response?.status ?? null); }
             }
-            if (providerEvent?.type === "conversation.item.input_audio_transcription.completed") diagnostics.userTurnReceived();
+            if (closed) return;
             if (providerEvent?.type === "response.output_audio.delta" || providerEvent?.type === "response.output_audio_transcript.delta" || providerEvent?.type === "response.output_audio_transcript.done") diagnostics.generatedOutputReceived();
             const event = adapter.parseEvent(providerEvent);
             if (event?.type === "error") fail(event.message);
             else if (event) options.onEvent(event);
-          } catch { /* Ignore malformed/non-JSON provider events, never execute them. */ }
+          } catch { fail("The voice connection could not process the current turn. Save this conversation and start again."); }
         };
         channel.onclose = () => fail("The voice connection closed. Save your available transcript before starting again.");
         channel.onerror = () => fail("The voice data connection failed. Please try again.");

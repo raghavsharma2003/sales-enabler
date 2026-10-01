@@ -19,6 +19,7 @@ test("Azure GA WebRTC adapter exchanges SDP with server key and configured deplo
       const body = JSON.parse(init?.body as string);
       assert.equal(body.expires_after.seconds, 60);
       assert.equal(body.session.model, "my-realtime");
+      assert.deepEqual(body.session.audio.input.turn_detection, { type: "semantic_vad", eagerness: "low", create_response: false, interrupt_response: true });
       assert.deepEqual(body.session.tools, []);
       assert.match(body.session.instructions, /Identify yourself as AI/);
       return Response.json({ value: "one-use-token" });
@@ -71,6 +72,19 @@ test("first response speaks the approved opening message without a planning prea
     assert.match(opening[0].response.instructions, /speak the following approved opening message exactly/);
     assert.match(opening[0].response.instructions, /Namaste, I am an AI assistant/);
     assert.match(opening[0].response.instructions, /Do not narrate your plan/);
+  }
+});
+
+test("Realtime error diagnostics expose only finite protocol codes and field names", () => {
+  for (const provider of ["azure", "openai"]) {
+    const adapter = getVoiceClientAdapter(provider);
+    const known = adapter.parseEvent({ type: "error", error: { code: "string_above_max_length", param: "item.id", message: "PRIVATE_PROVIDER_DETAIL", event_id: "PRIVATE_EVENT_ID" } });
+    assert.ok(known?.type === "error");
+    assert.match(known.message, /code: string_above_max_length; field: item.id/);
+    assert.doesNotMatch(known.message, /PRIVATE/);
+    const unknown = adapter.parseEvent({ type: "error", error: { code: "PRIVATE_CODE", param: "PRIVATE_FIELD", message: "PRIVATE_MESSAGE", type: "PRIVATE_TYPE" } });
+    assert.ok(unknown?.type === "error");
+    assert.equal(unknown.message, "The voice provider reported an error. End the conversation and try again.");
   }
 });
 

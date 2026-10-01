@@ -10,6 +10,7 @@ import { field, HttpError } from '../server/http';
 import { getRecord, listRecords, type PlatformRecord } from '../platform/records';
 import { emailConnectionFor, personalize, type Run } from '../platform/campaigns';
 import { verifyAppliedPlanSources } from '../campaign-planning/engine';
+import { verifyManualCampaignAuthority } from '../platform/campaign-setup';
 import { getUsableCredentials } from '../integrations/oauth';
 import { sendEmailViaProvider, validRecipient, type EmailDispatch, type EmailProvider, type ProviderResult } from './providers';
 import { stableDeliveryIdempotencyKey } from './key';
@@ -140,7 +141,8 @@ async function captureEmailAuthority(user: AuthUser, input: SendInput) {
     // Capture first: a source change during semantic validation then loses CAS.
     for (const source of run.snapshot.sourceAnchors || []) anchors.push(await anchor(source.id, user.organizationId, 'platform:brain_source'));
     businessFences = await verifyAppliedPlanSources(user, run.snapshot.planId, run.campaignId);
-  } else if (run.snapshot.sourceAnchors?.length || run.snapshot.explicitIntentV1) throw new HttpError(409, 'Campaign sources or business intent have no approved plan authority.');
+  } else if (run.snapshot.setupOrigin === 'manual_reviewed') businessFences = await verifyManualCampaignAuthority(user,run.campaignId,run.snapshot);
+  else if (run.snapshot.sourceAnchors?.length || run.snapshot.explicitIntentV1) throw new HttpError(409, 'Campaign sources or business intent have no reviewed authority.');
   const subject = personalize(run.snapshot.subject, recipient), body = personalize(run.snapshot.message, recipient);
   if (!subject || /[\r\n\0]/.test(subject) || /{{[^}]+}}/.test(subject + body)) throw new HttpError(409, 'Email content contains invalid or unresolved fields.');
   const payloadDigest = digest([user.organizationId, runId, contactId, mailbox.authorizationVersion, destination, subject, body]);

@@ -109,7 +109,7 @@ test("Azure browser returns multiple function outputs before one continuation", 
   Object.defineProperty(globalThis, "RTCPeerConnection", { configurable: true, value: MockPeer });
   Object.defineProperty(globalThis, "Audio", { configurable: true, value: class { autoplay = false; srcObject = null; pause() {} } });
   Object.defineProperty(globalThis, "fetch", { configurable: true, value: async (url: string, init: RequestInit) => {
-    if (url === "/api/voice/connect") return Response.json({ provider: "azure", transport: "webrtc", sdp: "v=0\r\nm=audio", previewId: "p", enabledTools: ["search_company_knowledge", "recall_customer_context"] });
+    if (url === "/api/voice/connect") return Response.json({ provider: "azure", transport: "webrtc", sdp: "v=0\r\nm=audio", previewId: "p", initialInstructions: "Immutable approved context. Disclose AI.", enabledTools: ["search_company_knowledge", "recall_customer_context"] });
     const body = JSON.parse(init.body as string);
     if (body.action === "end") return Response.json({ ok: true });
     return Response.json({ requestId: body.requestId, name: body.name, status: "available", message: "OK", citations: [] });
@@ -119,12 +119,16 @@ test("Azure browser returns multiple function outputs before one continuation", 
     await session.connect();
     channel!.onopen?.();
     sent.length = 0;
+    channel!.onmessage?.({ data: JSON.stringify({ type: "response.created", response: { id: "r1" } }) });
     for (const [id, name, argumentsText] of [["a", "search_company_knowledge", '{"query":"hours"}'], ["b", "recall_customer_context", "{}"]]) {
       channel!.onmessage?.({ data: JSON.stringify({ type: "response.function_call_arguments.done", response_id: "r1", call_id: id, name, arguments: argumentsText }) });
     }
     channel!.onmessage?.({ data: JSON.stringify({ type: "response.done", response: { id: "r1", status: "completed" } }) });
     await new Promise(resolve => setTimeout(resolve, 10));
     assert.equal(sent.filter(event => event.type === "conversation.item.create").length, 2);
+    assert.equal(sent.filter(event => event.type === "response.create").length, 0, "tool continuation waits for the instruction snapshot acknowledgement");
+    const update = sent.find(event => event.type === "session.update")!;
+    channel!.onmessage?.({ data: JSON.stringify({ type: "session.updated", session: update.session }) });
     assert.equal(sent.filter(event => event.type === "response.create").length, 1);
   } finally {
     session.close();

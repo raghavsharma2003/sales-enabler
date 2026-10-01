@@ -8,6 +8,8 @@ import { compileRelationshipContext } from './relationship';
 import { compileRelationalRuntime } from './relational-runtime';
 import { verifyAppliedPlanSources, type CampaignPlan, type PlanCitation } from '../campaign-planning/engine';
 import { personalize, type Run } from '../platform/campaigns';
+import { verifyManualCampaignAuthority } from '../platform/campaign-setup';
+import { getBusinessIntentEvidence } from '../business/engine';
 
 const voiceContextDigest = (instructions: string, speechVocabulary?: readonly string[]) => createHash('sha256')
   // Preserve the historical digest for configurations without vocabulary.
@@ -94,7 +96,14 @@ export async function compileCampaignVoiceContext(user: AuthUser, ids: { campaig
       });
       return { sourceId: anchor.id, title: text(anchor.title, 160), excerpts: [...new Set(excerpts)] };
     }));
-  }
+  } else if (snapshot.setupOrigin === 'manual_reviewed') {
+    await verifyManualCampaignAuthority(user,run.data.campaignId,snapshot);
+    const intent = snapshot.explicitIntentV1!;
+    const evidence = await getBusinessIntentEvidence(user,intent);
+    productContext = { offeringName:evidence.offering.data.name,offering:intent.offering,outcome:intent.outcome,audienceRationale:intent.audienceRationale,questionsToCapture:intent.reviewColumns };
+    const refs = [...evidence.offering.data.sourceRefs,...evidence.signals.flatMap(signal => signal.data.sourceRefs)];
+    citedSources = evidence.sources.map(source => ({sourceId:source.id,title:source.title,excerpts:[...new Set(refs.filter(ref => ref.sourceId === source.id).map(ref => ref.quote))]}));
+  } else if (snapshot.explicitIntentV1 || snapshot.sourceAnchors?.length) throw new HttpError(409,'Campaign has no reviewed business authority.');
   const namedContact = { name: String(profile?.data && 'name' in profile.data ? profile.data.name || contact.name : contact.name), email: String(contact.email || '') };
   const campaign = { runId: run.id, campaignId: run.data.campaignId, campaignRevision: run.data.campaignRevision,
     contactId: ids.contactId, objective: text(snapshot.objective, 1000), personalizedMessage: text(personalize(snapshot.message, namedContact), 5000),

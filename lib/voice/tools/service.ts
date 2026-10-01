@@ -78,7 +78,15 @@ async function validateScope(user: AuthUser, row: ToolRow, data: Record<string, 
     const run = campaign ? rowData(campaign) : undefined;
     if (!campaign || campaign.status !== 'active' || run?.snapshot?.agentReleaseId !== data.releaseId || !run?.recipients?.some((recipient: { contactId: string; status: string }) => recipient.contactId === authority.contactId && recipient.status === 'queued')) return { unavailable: 'This campaign recipient is no longer active for the call.' };
     fences.push(fence(user, campaign));
-    if (run.snapshot.explicitIntentV1 && !run.snapshot.planId) return { unavailable: 'The reviewed campaign intent has no applied plan. Review and relaunch the campaign.' };
+    if (!run.snapshot.planId && (run.snapshot.explicitIntentV1 || run.snapshot.setupOrigin || run.snapshot.sourceAnchors?.length)) {
+      try {
+        const { verifyManualCampaignAuthority } = await import('../../platform/campaign-setup');
+        fences.push(...await verifyManualCampaignAuthority(user,run.campaignId,run.snapshot));
+      } catch (error) {
+        if (error instanceof HttpError && [400,404,409].includes(error.status)) return { unavailable:'The reviewed manual campaign or its business evidence changed. Review and relaunch the campaign.' };
+        throw error;
+      }
+    }
     if (run.snapshot.planId) {
       try {
         if (typeof run.snapshot.planId !== 'string' || typeof run.campaignId !== 'string') return { unavailable: 'The applied campaign plan is unavailable.' };

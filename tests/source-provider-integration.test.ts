@@ -77,7 +77,7 @@ test("Azure in-call guidance retains baseline safety and approved context", asyn
   const connected: Array<{ behaviorContext?: { settings: { primaryLanguage: string } } } | undefined> = [];
   const behaviorContext = { settings: { allowedLanguages: ["English", "Hindi"], primaryLanguage: "Hindi", responseStyle: "warm" },
     relationship: { preferences: [], openCommitments: [], sourceIds: [], guidance: "", omittedCount: 0 } };
-  const channel = { readyState: "connecting", onopen: null as null | (() => void), onmessage: null, onclose: null, onerror: null,
+  const channel = { readyState: "connecting", onopen: null as null | (() => void), onmessage: null as null | ((event: { data: string }) => void), onclose: null, onerror: null,
     send(data: string) { sent.push(JSON.parse(data)); }, close() {} };
   class Peer {
     ontrack = null; onconnectionstatechange = null;
@@ -100,6 +100,10 @@ test("Azure in-call guidance retains baseline safety and approved context", asyn
     assert.equal((connected[0] as { connectionId?: string })?.connectionId, "connection-1");
     assert.equal(session.updateBehavior("Acknowledge the correction briefly."), true);
     assert.equal(session.updateBehavior("Acknowledge the correction briefly."), false);
+    assert.equal(sent.some(value => (value as { type?: string }).type === "session.update"), false, "guidance is staged until its turn boundary");
+    channel.onmessage?.({ data: JSON.stringify({ type: "response.created", response: { id: "greeting" } }) });
+    channel.onmessage?.({ data: JSON.stringify({ type: "response.done", response: { id: "greeting", status: "completed" } }) });
+    session.sendText("A fictional correction");
     const update = sent.find(value => (value as { type?: string }).type === "session.update") as { session: { instructions: string } };
     assert.match(update.session.instructions, /Identify yourself as AI/);
     assert.match(update.session.instructions, /Approved company fact/);

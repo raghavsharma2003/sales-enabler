@@ -28,7 +28,9 @@ function voiceSession(model: string, instructions: string, voice: string, profil
     audio: {
       input: {
         transcription: { model: "gpt-4o-mini-transcribe", ...(transcriptionPrompt ? { prompt: transcriptionPrompt } : {}) },
-        turn_detection: { type: "semantic_vad", eagerness: "low", create_response: true, interrupt_response: true },
+        // Private WebRTC waits for committed ASR and exact runtime-guidance
+        // acknowledgement before response.create. Keep provider barge-in on.
+        turn_detection: { type: "semantic_vad", eagerness: "low", create_response: false, interrupt_response: true },
       },
       output: { voice },
     },

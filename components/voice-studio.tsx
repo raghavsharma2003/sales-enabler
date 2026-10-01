@@ -19,6 +19,8 @@ export interface VoiceStudioProps {
   contactId?: string;
   preview?: { draft: AgentConfig; agentId?: string };
   campaignRunId?: string;
+  onActiveChange?: (active: boolean) => void;
+  lockContactSelection?: boolean;
 }
 
 type ContextPreview = { omittedKnowledgeCount?: number; omittedMemoryCount?: number; instructions: string; contextDigest?: string; knowledgeSources?: { id: string; title: string }[]; relationship?: RelationshipContext; error?: string };
@@ -28,7 +30,7 @@ const clock = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(
 const toolLabels: Record<VoiceToolName, string> = { search_company_knowledge: "Company knowledge", recall_customer_context: "Customer context", request_follow_up: "Follow-up request" };
 type ToolTrace = { id: string; name: VoiceToolName; phase: "requested" | "result"; status?: "available" | "not_available" | "awaiting_review"; message?: string; actionId?: string; receivedAt: string };
 
-export function VoiceStudio({ contacts, releases = [], onSaved, contactId, preview, campaignRunId }: VoiceStudioProps) {
+export function VoiceStudio({ contacts, releases = [], onSaved, contactId, preview, campaignRunId, onActiveChange, lockContactSelection = false }: VoiceStudioProps) {
   const [config, setConfig] = useState<VoiceConfiguration | null>(null);
   const [configError, setConfigError] = useState("");
   const [selectedContact, setSelectedContact] = useState(contactId || "");
@@ -73,7 +75,13 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   const scrollRef = useRef<HTMLDivElement>(null);
   const behaviorSent = useRef("");
   const live = state === "live" || state === "connecting";
+  const activeChange = useRef(onActiveChange);
+  activeChange.current = onActiveChange;
   const unsaved = transcript.length > 0 && !saved;
+  const controlledContact = lockContactSelection && contactId && contacts.some(item => item.id === contactId) ? contactId : "";
+  const contactSelectionBusy = live || unsaved || saving;
+  const controlledContactPending = lockContactSelection && selectedContact !== controlledContact;
+  const campaignContactReady = !!selectedContact && contacts.some(item => item.id === selectedContact) && (!lockContactSelection || selectedContact === controlledContact);
   const analysis = useMemo(() => analyzeConversation(transcript), [transcript]);
   const previewIsReady = !!preview?.draft.name.trim() && !!preview.draft.role.trim() && preview.draft.objective.trim().length >= 20 && preview.draft.escalation.trim().length >= 15 && !!preview.draft.responseStyle.trim() && /\b(ai|artificial intelligence|virtual assistant)\b/i.test(preview.draft.disclosure) && preview.draft.allowedLanguages.includes(preview.draft.primaryLanguage);
   const displayedContext = callContext && state !== "idle" ? callContext : callBehaviorContext ? { instructions: "", relationship: callBehaviorContext.relationship } : compiled;
@@ -92,7 +100,12 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
       .catch(error => { if (!abort.signal.aborted) setConfigError(error instanceof Error ? error.message : "Could not load voice settings."); });
     return () => { abort.abort(); };
   }, [voiceProfile, release?.id, !!preview, live]);
-  useEffect(() => () => { startGate.current.cancel(); connection.current?.close(); connection.current = null; }, []);
+  useEffect(() => { activeChange.current?.(live); }, [live]);
+  useEffect(() => () => { startGate.current.cancel(); connection.current?.close(); connection.current = null; activeChange.current?.(false); }, []);
+  useEffect(() => {
+    if (!lockContactSelection || contactSelectionBusy) return;
+    setSelectedContact(controlledContact);
+  }, [lockContactSelection, controlledContact, contactSelectionBusy]);
 
   useEffect(() => {
     if (!preview || !previewIsReady) { setCompiled(null); setCompiledError(""); setCompiling(false); return; }
@@ -140,7 +153,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   }
 
   async function start() {
-    if (!config?.configured || !config.provider || (!preview && !release) || (preview && !previewIsReady) || (campaignRunId && (preview || !selectedContact || !contacts.some(item => item.id === selectedContact))) || !consent || live || unsaved) return;
+    if (!config?.configured || !config.provider || (!preview && !release) || (preview && !previewIsReady) || (campaignRunId && (preview || !campaignContactReady)) || !consent || live || unsaved) return;
     const attempt = startGate.current.begin();
     connection.current?.close();
     connection.current = null;
@@ -229,7 +242,9 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     {preview && <div className="wb-draft-strip"><Check size={15}/><span>Internal draft test · current editor values, including enabled actions, are used when the call starts</span></div>}
     <div className="wb-call-body"><div className="wb-provider"><span>Voice provider</span><strong>{config?.label || config?.provider || (config || configError ? "Not connected" : "Checking…")}</strong></div><div className="wb-provider"><span>Language</span><strong>{preview?.draft.primaryLanguage || callBehaviorContext?.settings.primaryLanguage || "Per release"}</strong></div></div>
     {!preview && <label className="pc-field">Released agent<select className="pc-select" value={release?.id || ""} disabled={!!campaignRunId || live || unsaved || saving} onChange={event => setSelectedRelease(event.target.value)}>{releases.length !== 1 && <option value="">Choose an active release</option>}{releases.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
-    <label className="pc-field">{campaignRunId ? 'Queued campaign recipient' : 'Conversation context'}<select className="pc-select" value={selectedContact} disabled={live || unsaved || saving} onChange={event => setSelectedContact(event.target.value)}>{!campaignRunId && <option value="">Company knowledge only</option>}{campaignRunId && <option value="">Choose a queued recipient</option>}{contacts.map(contact => <option value={contact.id} key={contact.id}>{contact.name}</option>)}</select></label>
+    <label className="pc-field">{campaignRunId ? 'Queued campaign recipient' : 'Conversation context'}<select className="pc-select" value={selectedContact} disabled={lockContactSelection || live || unsaved || saving} onChange={event => setSelectedContact(event.target.value)}>{!campaignRunId && <option value="">Company knowledge only</option>}{campaignRunId && <option value="">Choose a queued recipient</option>}{contacts.map(contact => <option value={contact.id} key={contact.id}>{contact.name}</option>)}</select></label>
+    {lockContactSelection && !controlledContactPending && !controlledContact && <p className="wb-inline-note">Select a queued recipient above to prepare the call desk.</p>}
+    {controlledContactPending && contactSelectionBusy && <p className="wb-inline-note" role="status">{live ? 'End the current call before moving the call desk to another recipient.' : saving ? 'Wait for the previous transcript to finish saving before moving the call desk.' : 'Save or discard the previous transcript before moving the call desk to another recipient.'}</p>}
     <div className="wb-call-stage" aria-label="Call state"><div className="wb-stage-symbol" data-active={state === "live"} data-activity={state === "live" ? activity : state}><Activity size={30} strokeWidth={1.5}/></div><strong>{state === "live" ? callInputMode === "microphone" && muted ? "Microphone muted" : activity === "thinking" ? "Agent is preparing a response" : activity === "speaking" ? "Agent is speaking" : callInputMode === "text" ? "Listening for the agent" : "Listening" : state === "connecting" ? callInputMode === "microphone" ? "Opening the microphone and voice connection" : "Opening the voice connection" : state === "ended" ? "Call ended" : inputMode === "text" ? "Ready to listen and type" : "Ready to speak"}</strong><span>{state === "live" || state === "ended" ? clock(elapsed) : inputMode === "text" ? "Agent audio plays through this browser" : "Use headphones for a clearer test"}</span>{audioLevel !== null && state === "live" && <div className="wb-level" role="meter" aria-label="Microphone level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(audioLevel * 100)}><span style={{ width: `${Math.round(audioLevel * 100)}%` }}/></div>}</div>
     {!config?.configured && <div className="wb-setup" role="status"><Headphones size={18}/><span>{configError || config?.reason || "Checking the workspace voice configuration…"}</span></div>}
     {preview && compiledError && !live && <p className="wb-error" role="alert">{compiledError}</p>}
@@ -238,7 +253,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     <fieldset className="wb-input-mode" disabled={live || unsaved || saving}><legend>How will you respond?</legend><label><input type="radio" name={`${inspectorId}-input-mode`} value="microphone" checked={inputMode === "microphone"} onChange={() => setInputMode("microphone")}/><Mic size={15}/><span>Microphone</span></label><label><input type="radio" name={`${inspectorId}-input-mode`} value="text" checked={inputMode === "text"} onChange={() => setInputMode("text")}/><Headphones size={15}/><span>Listen &amp; type</span></label></fieldset>
     <p className="wb-mode-description">{inputMode === "text" ? "Hear real AI audio and type your replies. Your microphone is not requested." : "Talk through your microphone and hear the agent respond in this browser."}</p>
     <label className="wb-consent"><input type="checkbox" checked={consent} disabled={live} onChange={event => setConsent(event.target.checked)}/><span>I understand this is an AI call. {inputMode === "microphone" ? "My microphone and selected context" : "My typed replies and selected context"} will be processed by the voice provider. The transcript is saved only if I choose to save it. Enabled actions may create internal review records and tool receipts during the call, even if I discard the transcript.</span></label>
-    <div className="wb-call-actions">{!live ? <button type="button" className="pc-button primary wb-start" disabled={!config?.configured || (preview ? !previewIsReady || !compiled || !!compiledError || compiling : !release) || (campaignRunId && !selectedContact) || !consent || unsaved || saving} onClick={() => void start()}>{inputMode === "microphone" ? <Mic size={17}/> : <Headphones size={17}/>} {!preview ? "Start browser call" : inputMode === "text" ? "Start voice preview" : state === "ended" ? "Try another call" : "Start test call"}<ArrowRight size={15}/></button> : <>{callInputMode === "microphone" && <button type="button" className="pc-button" disabled={state !== "live"} onClick={() => { connection.current?.setMuted(!muted); setMuted(!muted); }}>{muted ? <MicOff size={16}/> : <Mic size={16}/>} {muted ? "Unmute" : "Mute"}</button>}<button type="button" className="pc-button danger" onClick={() => end()}><Square size={15}/>End call</button><button type="button" className="pc-button" onClick={() => end(true)}><UserRound size={15}/>Stop for human</button></>}</div>
+    <div className="wb-call-actions">{!live ? <button type="button" className="pc-button primary wb-start" disabled={!config?.configured || (preview ? !previewIsReady || !compiled || !!compiledError || compiling : !release) || (campaignRunId && !campaignContactReady) || !consent || unsaved || saving} onClick={() => void start()}>{inputMode === "microphone" ? <Mic size={17}/> : <Headphones size={17}/>} {!preview ? "Start browser call" : inputMode === "text" ? "Start voice preview" : state === "ended" ? "Try another call" : "Start test call"}<ArrowRight size={15}/></button> : <>{callInputMode === "microphone" && <button type="button" className="pc-button" disabled={state !== "live"} onClick={() => { connection.current?.setMuted(!muted); setMuted(!muted); }}>{muted ? <MicOff size={16}/> : <Mic size={16}/>} {muted ? "Unmute" : "Mute"}</button>}<button type="button" className="pc-button danger" onClick={() => end()}><Square size={15}/>End call</button><button type="button" className="pc-button" onClick={() => end(true)}><UserRound size={15}/>Stop for human</button></>}</div>
     {state === "connecting" && callInputMode === "microphone" && connectingFor >= 8 && <p className="wb-inline-note" role="status">Waiting for microphone permission. Check this browser’s permission prompt. You can end the attempt and choose Listen &amp; type if microphone access is unavailable.</p>}
     {state === "live" && callInputMode === "text" && <form className="wb-text-reply" onSubmit={event => { event.preventDefault(); sendTypedMessage(); }}><label htmlFor={`${inspectorId}-reply`}>Your reply</label><div><input id={`${inspectorId}-reply`} className="pc-input" type="text" autoComplete="off" maxLength={1000} value={typedMessage} onChange={event => setTypedMessage(event.target.value)} placeholder="Type what you want to say…"/><button type="submit" className="pc-button primary" disabled={!typedMessage.trim()}><Send size={15}/>Send</button></div><p>The provider speaks its response. Your reply appears in the transcript after it is sent.</p></form>}
     {unsaved && !live && <p className="wb-inline-note">Save or discard this transcript before another call.</p>}

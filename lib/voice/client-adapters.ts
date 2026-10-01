@@ -12,6 +12,27 @@ function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
 
+// Only literal protocol categories may cross into a visible diagnostic. Never
+// echo provider messages, event IDs, values, request payloads or unknown fields.
+const realtimeErrorCodes = new Set([
+  "invalid_request_error", "invalid_value", "invalid_type", "missing_required_parameter",
+  "unknown_parameter", "string_above_max_length", "conversation_already_has_active_response",
+  "response_cancel_not_active", "rate_limit_exceeded", "insufficient_quota",
+  "invalid_api_key", "server_error", "session_expired",
+]);
+const realtimeErrorFields = new Set([
+  "item.id", "item.type", "item.role", "item.content", "session.type", "session.instructions",
+  "session.audio.input.turn_detection", "response.instructions", "response_id",
+]);
+
+function realtimeErrorMessage(value: unknown): string {
+  const error = record(value);
+  const diagnostic: string[] = [];
+  if (typeof error?.code === "string" && realtimeErrorCodes.has(error.code)) diagnostic.push(`code: ${error.code}`);
+  if (typeof error?.param === "string" && realtimeErrorFields.has(error.param)) diagnostic.push(`field: ${error.param}`);
+  return `The voice provider reported an error${diagnostic.length ? ` (${diagnostic.join("; ")})` : ""}. End the conversation and try again.`;
+}
+
 export function parseGeminiServerMessage(data: unknown, state: GeminiEventState): {
   ready: boolean; interrupted: boolean; turnComplete: boolean; audioChunks: string[]; events: VoiceEvent[]; toolCalls: VoiceToolCall[]; cancelledToolIds: string[]; tooManyToolCalls: boolean;
 } {
@@ -75,7 +96,7 @@ function parseOpenAIEvent(data: unknown): VoiceEvent | null {
   if (type === "input_audio_buffer.speech_stopped" || type === "response.created") return { type: "activity", activity: "thinking" };
   if (type === "output_audio_buffer.started") return { type: "activity", activity: "speaking" };
   if (type === "conversation.item.input_audio_transcription.failed") return { type: "error", message: "Transcription failed. The transcript may be incomplete. End the conversation and try again." };
-  if (type === "error") return { type: "error", message: "The voice provider reported an error. End the conversation and try again." };
+  if (type === "error") return { type: "error", message: realtimeErrorMessage(event.error) };
   return null;
 }
 
