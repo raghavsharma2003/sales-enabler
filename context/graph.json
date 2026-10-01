@@ -978,6 +978,13 @@
       "title": "Current access/status audit: four management fields missing, local preview unreachable, production gates open",
       "status": "status-checked-no-new-live-voice-or-cloud-test",
       "path": "context/STATE.md"
+    },
+    {
+      "id": "azure.four-value-portal-guide",
+      "type": "component",
+      "title": "Single portal flow for four missing management values on another device",
+      "status": "official-docs-checked-2026-10-01-user-setup-pending",
+      "path": "docs/azure-access-setup.md"
     }
   ],
   "edges": [
@@ -1750,6 +1757,11 @@
       "from": "status.audit-2026-10-01",
       "to": "continuity.frequent-local-checkpoints",
       "relation": "records-current-blockers-and-user-inputs"
+    },
+    {
+      "from": "azure.four-value-portal-guide",
+      "to": "azure.scoped-project-helper",
+      "relation": "supplies-existing-account-management-configuration"
     }
   ]
 }
