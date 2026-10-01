@@ -8,7 +8,10 @@ import { createRecord, updateRecord, type PlatformRecord } from '../lib/platform
 import { createCampaignIntent, handleBusinessContextAction } from '../lib/business/engine';
 import { getActiveMembership } from '../lib/team/service';
 import type { Offering, ReviewColumn } from '../lib/business/contracts';
-import type { Campaign, Run } from '../lib/platform/campaigns';
+import { handleCampaignAction, type Campaign, type Run } from '../lib/platform/campaigns';
+import { applyCampaignPlan, generateCampaignPlan } from '../lib/campaign-planning/engine';
+import type { CampaignSetupData } from '../lib/platform/campaign-workflow';
+import type { runAiTask } from '../lib/ai/task-router';
 import { campaignAnswersCsv, extractCampaignResult, getCampaignResult, listReviewedCampaignAnswers, revalidateCampaignResult, reviewCampaignResult, type ExtractionRunner } from '../lib/campaign-results/service';
 import { locateSource, supportedValue, validateAnswers } from '../lib/campaign-results/validation';
 import { GET, POST, PATCH } from '../app/api/campaign-results/route';
@@ -37,6 +40,117 @@ async function setup() {
   return { user, source, offering, campaign, run, session, contact };
 }
 const fake = (payload: unknown = answers(), hook?: () => Promise<void>): ExtractionRunner => async () => { await hook?.(); return { text: JSON.stringify(payload), runId: 'fixture-ai-run', model: 'fixture-model', usage: { inputTokens: 20, outputTokens: 40 }, cached: false }; };
+
+const clarityRating: ReviewColumn = {key:'consultation_clarity',label:'On a scale of 1 to 5, how clear was the information presented during the consultation?',type:'number'};
+test('explicit spoken clarity ratings bind to the named subject and reviewed scale',() => {
+  for (const text of ['I would rate the consultation clarity four out of five.','I rate the consultation clarity 4 out of 5.','My consultation clarity score is four out of five.']) {
+    const transcript = [{role:'user',text}];
+    const checked = validateAnswers(JSON.stringify({answers:[{key:clarityRating.key,state:'proposed',value:4,quote:text,turnIndex:0}]}),[clarityRating],transcript);
+    assert.equal(checked[0].state,'proposed',text);
+    assert.equal(checked[0].value,4);
+    assert.equal(checked[0].sources[0].quote,text);
+  }
+});
+
+test('spoken ratings reject negation, hypothetical tails, other people and unrelated scales or subjects',() => {
+  for (const text of [
+    'I would not rate the consultation clarity four out of five.',
+    'I would rate the consultation clarity four out of five if the information were clearer.',
+    'I would rate the consultation clarity four out of five, maybe.',
+    'My friend would rate the consultation clarity four out of five.',
+    'I would rate my friend consultation clarity four out of five.',
+    'I would rate the consultation clarity four out of ten.',
+    'I would rate the consultation clarity six out of five.',
+    'I would rate the consultation clarity zero out of five.',
+    'I would rate the workshop clarity four out of five.',
+    'I would rate the consultation usefulness four out of five.',
+    'I attended four out of five consultations.',
+    'I would rate the consultation clarity four out of five. Actually, ignore that.',
+  ]) {
+    const transcript = [{role:'user',text}];
+    const checked = validateAnswers(JSON.stringify({answers:[{key:clarityRating.key,state:'proposed',value:4,quote:text,turnIndex:0}]}),[clarityRating],transcript);
+    assert.equal(checked[0].state,'unknown',text);
+  }
+  const text = 'I would rate the consultation clarity four out of five.';
+  assert.equal(supportedValue(columns[1],4,locateSource([{role:'user',text}],text,0),[{role:'user',text}]),false);
+});
+
+test('contradictory spoken ratings omitted by extraction remain conflicting',() => {
+  for (const transcript of [
+    [{role:'user',text:'I would rate the consultation clarity four out of five.'},{role:'user',text:'I rate the consultation clarity three out of five.'}],
+    [{role:'user',text:'I rate the consultation clarity four out of five. I rate the consultation clarity three out of five.'}],
+  ]) {
+    const quote = 'I would rate the consultation clarity four out of five.';
+    const checked = validateAnswers(JSON.stringify({answers:[{key:clarityRating.key,state:'proposed',value:4,quote:transcript.length===2?quote:transcript[0].text,turnIndex:0}]}),[clarityRating],transcript);
+    assert.equal(checked[0].state,'conflicting');
+  }
+});
+
+async function canonicalSetup(reviewColumns: ReviewColumn[]) {
+  const f = await setup();
+  await createRecord(f.user,'customer_profile',{contactId:f.contact.id,consent:{browser_voice:{granted:true}}},'active');
+  const saved = await handleCampaignAction(f.user,'campaign.setup.create',{requestId:randomUUID(),fields:{
+    name:'Canonical feedback',kind:'feedback',goal:'Understand workshop interest',offeringId:f.offering.id,
+    outcome:{label:'Understand interest',evidenceRequired:['Caller words']},audienceRationale:'Explicit operator selection',
+    reviewColumns,contactIds:[f.contact.id],channel:'browser',agentReleaseId:f.run.data.snapshot.agentReleaseId,
+  }}) as PlatformRecord<CampaignSetupData>;
+  const planning = (async () => ({text:JSON.stringify({name:'Canonical feedback',objective:'Understand workshop interest',subject:'',message:'I am an AI assistant. What did you think of the workshop?',callBrief:'Ask about the workshop.',successCriteria:'Caller feedback',journeySteps:['Ask about interest'],missingInputs:[],citations:[{field:'callBrief',sourceId:f.source.id,quote:'We provide workshops.'}]}),runId:'fixture-planning',model:'fixture-model',usage:{inputTokens:20,outputTokens:40},cached:false})) as typeof runAiTask;
+  const plan = await generateCampaignPlan(f.user,{campaignId:saved.id,campaignRevision:saved.revision,requestId:randomUUID()},planning);
+  const applied = await applyCampaignPlan(f.user,plan.id,{action:'apply',revision:plan.revision,campaignId:saved.id,campaignRevision:saved.revision});
+  await handleCampaignAction(f.user,'campaign.setup.finalize',{id:saved.id,revision:applied.campaign.revision});
+  const run = await handleCampaignAction(f.user,'campaign.launch',{id:saved.id}) as PlatformRecord<Run>;
+  const session = await insertEntity(f.user,'session',{source:'browser_voice',campaignRunId:run.id,releaseId:run.data.snapshot.agentReleaseId,agentVersionId:f.session.agentVersionId,contactId:f.contact.id,transcript:turns});
+  await handleCampaignAction(f.user,'campaign.result',{runId:run.id,contactId:f.contact.id,outcome:'completed',sessionId:session.id,evidence:'Saved fictional conversation'});
+  return {...f,run,session};
+}
+
+test('completed canonical AI campaign without planned columns has an empty result view and never buys extraction',async () => {
+  const f = await canonicalSetup([]);
+  const view = await getCampaignResult(f.user,f.session.id);
+  assert.deepEqual(view.columns,[]);
+  assert.equal(view.result,null);
+  let calls = 0;
+  await assert.rejects(extractCampaignResult(f.user,f.session.id,fake(answers(),async () => {calls++;})),(error: unknown) => error instanceof HttpError && error.status === 409 && /no planned result fields/i.test(error.message));
+  assert.equal(calls,0);
+  assert.equal((await (await db()).all('SELECT id FROM entities WHERE organization_id=? AND kind=?',[f.user.organizationId,'campaign:result'])).length,0);
+  const outsider = await setup();
+  await assert.rejects(getCampaignResult(outsider.user,f.session.id),bad(404));
+  await updateRecord(f.user,f.source,f.source.data,'revoked');
+  await assert.rejects(getCampaignResult(f.user,f.session.id),bad(409));
+});
+
+test('completed canonical AI campaign with planned columns retains extraction and review bindings',async () => {
+  const f = await canonicalSetup(columns);
+  const view = await getCampaignResult(f.user,f.session.id);
+  assert.deepEqual(view.columns,columns);
+  const result = await extractCampaignResult(f.user,f.session.id,fake());
+  assert.equal(result.status,'ready');
+  assert.equal(result.binding.campaignId,f.run.data.campaignId);
+  assert.equal(result.binding.runId,f.run.id);
+  const reviewed = await reviewCampaignResult(f.user,result.id,result.revision,[{key:'interested',status:'accepted',value:false,quote:turns[0].text,turnIndex:0}]);
+  assert.equal(reviewed.fields[0].review?.value,false);
+});
+
+test('saved spoken-rating receipt rechecks locally and accepts the exact caller evidence',async () => {
+  const f = await canonicalSetup([clarityRating]);
+  const text = 'I would rate the consultation clarity four out of five.';
+  await (await db()).run('UPDATE entities SET data=? WHERE id=?',[JSON.stringify({...f.session,transcript:[{role:'user',text}]}),f.session.id]);
+  let calls = 0;
+  const result = await extractCampaignResult(f.user,f.session.id,fake({answers:[{key:clarityRating.key,state:'proposed',value:4,quote:text,turnIndex:0}]},async () => {calls++;}));
+  assert.equal(result.fields[0].value,4);
+  // Preserve the original receipt while simulating the former validator's
+  // unknown field, including its already-current revalidation version.
+  const previous = {...result,validationVersion:2,fields:result.fields.map(field => ({column:field.column,state:'unknown',sources:field.sources,reason:'No unambiguous, literal caller answer supports this field.'}))};
+  await (await db()).run('UPDATE entities SET data=? WHERE id=?',[JSON.stringify(previous),result.id]);
+  const rechecked = await revalidateCampaignResult(f.user,result.id,result.revision);
+  assert.equal(rechecked.fields[0].state,'proposed');
+  assert.equal(rechecked.fields[0].value,4);
+  assert.equal(rechecked.originalModelText,result.originalModelText);
+  assert.deepEqual(rechecked.receipt,result.receipt);
+  assert.equal(calls,1);
+  const reviewed = await reviewCampaignResult(f.user,result.id,rechecked.revision,[{key:clarityRating.key,status:'accepted',value:4,quote:text,turnIndex:0}]);
+  assert.equal(reviewed.fields[0].review?.value,4);
+});
 
 test('typed extraction preserves false, all missing columns, exact offsets and browser timestamps', () => {
   const result = validateAnswers(JSON.stringify(answers()), columns, turns);

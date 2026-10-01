@@ -1,4 +1,5 @@
 .stack { display: grid; gap: 20px; color: var(--pc-ink); font-size: 14px; line-height: 1.55; min-width: 0; }
+.stack [hidden] { display: none !important; }
 .panel, .deliverySection { min-width: 0; padding: 22px; border: 1px solid var(--pc-line); border-radius: 10px; background: #fff; }
 .header, .sectionHeading, .personHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .header h2, .sectionHeading h3, .personHeading h3, .empty h2 { margin: 0; color: var(--pc-ink); letter-spacing: -.018em; }
@@ -53,6 +54,10 @@
 .savedCopy { padding: 13px 0; border-top: 1px solid #eeeef3; }
 .savedCopy strong { font-size: 12px; }
 .savedCopy p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.resultsSummary { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }
+.resultsSummary h2 { margin: 0; font-size: 18px; }
+.resultsSummary p { max-width: 74ch; margin: 5px 0 0; color: var(--pc-muted); }
+.resultsActions { display: flex; flex: none; flex-wrap: wrap; gap: 8px; }
 .recipientLayout { display: grid; grid-template-columns: minmax(220px, .72fr) minmax(0, 1.45fr); gap: 24px; margin-top: 14px; border-top: 1px solid var(--pc-line); }
 .recipientList { min-width: 0; border-right: 1px solid var(--pc-line); padding: 7px 16px 0 0; }
 .recipientList button { display: flex; width: 100%; min-height: 62px; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 9px; border: 0; border-bottom: 1px solid #eeeef3; border-radius: 0; background: transparent; color: var(--pc-ink); font: inherit; text-align: left; cursor: pointer; }
@@ -103,6 +108,9 @@
 @media (max-width: 580px) {
   .panel, .deliverySection { padding: 18px 16px; }
   .header, .sectionHeading, .personHeading { flex-direction: column; gap: 11px; }
+  .resultsSummary { flex-direction: column; }
+  .resultsActions { width: 100%; }
+  .resultsActions button { flex: 1; }
   .refresh, .runActions button, .resultActions button, .primaryButton, .textButton, .iconButton, .recipientList button { min-height: 44px; }
   .header .refresh, .resultActions button { width: 100%; }
   .runMeta { display: grid; gap: 10px; }

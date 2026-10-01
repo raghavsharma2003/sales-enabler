@@ -12,8 +12,8 @@ import { operatorMembershipFence } from '../team/service';
 import type { CampaignSetupData } from './campaign-workflow';
 
 export type Campaign = { name: string; kind: 'sales' | 'feedback'; objective: string; channel: 'browser' | 'manual_email' | 'email'; emailConnectionId?: string; agentReleaseId: string; subject: string; message: string; contactIds: string[]; ownerId: string; planId?: string; explicitIntentV1?: CampaignIntent; offeringName?: string; offeringSummary?: string; sourceAnchors?: Omit<SourceAnchor, 'content'>[]; callBrief?: string; successCriteria?: string; journeySteps?: string[]; citations?: unknown[]; setupOrigin?: 'manual_reviewed' | 'ai_reviewed'; setupRequestDigest?: string; setupDraft?: CampaignSetupData };
-export type Recipient = { contactId: string; name: string; email: string; status: 'queued' | 'completed' | 'skipped'; evidence?: string; sessionId?: string; completedAt?: string };
-export type Run = { campaignId: string; campaignRevision: number; snapshot: Campaign; emailAuthorizationVersion?: string; recipients: Recipient[]; launchedAt: string; launchedBy: string; pausedAt?: string; cancelledAt?: string };
+export type Recipient = { contactId: string; name: string; email: string; status: 'queued' | 'completed' | 'skipped' | 'delivery_settled'; evidence?: string; sessionId?: string; completedAt?: string; delivery?: {receiptId:string;state:'accepted'|'rejected'|'uncertain';providerReference?:string;reason?:string;recordedAt:string} };
+export type Run = { campaignId: string; campaignRevision: number; snapshot: Campaign; emailAuthorizationVersion?: string; recipients: Recipient[]; launchedAt: string; launchedBy: string; pausedAt?: string; cancelledAt?: string; deliveryCompletedAt?:string };
 const str = (value: unknown) => typeof value === 'string' ? value : '';
 function ids(value: unknown): string[] {
   if (!Array.isArray(value) || value.length > 500 || value.some((item) => typeof item !== 'string' || item.length > 100)) throw new HttpError(400, 'Choose up to 500 valid contacts.');
@@ -150,7 +150,8 @@ export async function handleCampaignAction(user: AuthUser, action: string, body:
     }
     if (action === 'campaign.resume') {
       if (run.status !== 'paused') throw new HttpError(409, 'Only a paused run can resume.');
-      return updateRecord(user, run, { ...run.data, pausedAt: undefined }, 'active');
+      const deliveryFinished = run.data.snapshot.channel === 'email' && run.data.recipients.length > 0 && run.data.recipients.every(item => item.status === 'delivery_settled');
+      return updateRecord(user, run, { ...run.data, pausedAt: undefined }, deliveryFinished ? 'completed' : 'active');
     }
     if (action === 'campaign.cancel') {
       if (run.status !== 'active' && run.status !== 'paused') throw new HttpError(409, 'This run cannot be cancelled.');

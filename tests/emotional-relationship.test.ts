@@ -21,6 +21,51 @@ test('explicit caller cues produce bounded guidance and exact evidence, without 
   assert.deepEqual(state, analyzeConversation(entries));
 });
 
+test('reported message overwhelm and an explicit short-question request retain separate exact evidence', () => {
+  const text = 'The consultation was clear, but the long follow-up messages overwhelmed me. Please ask one short question.';
+  const state = analyzeConversation([user(text)]);
+  assert.deepEqual(state.observedCues.map(cue => cue.kind), ['overwhelmed', 'brevity-request']);
+  assert.equal(state.behavior.pace, 'brief');
+  assert.equal(state.behavior.questionLimit, 1);
+  assert.equal(state.observedCues[0].evidence.text, 'The consultation was clear, but the long follow-up messages overwhelmed me');
+  assert.equal(state.observedCues[1].evidence.text, 'Please ask one short question');
+  for (const cue of state.observedCues) assert.equal(text.slice(cue.evidence.start, cue.evidence.end), cue.evidence.text);
+  assert.equal(state.repairPending, false, 'a service concern does not invent an assistant rupture');
+  assert.equal(state.correctionCandidates.length, 0, 'a transient communication choice is not a permanent fact');
+});
+
+test('object-form overwhelm accepts direct self-reports but rejects negation, attribution and uncertain examples', () => {
+  for (const text of ['The messages overwhelmed me.', 'These details overwhelm me.', 'This information overwhelms me.', 'The repeated calls are overwhelming me.']) {
+    const state = analyzeConversation([user(text)]);
+    assert.equal(state.observedCues[0]?.kind, 'overwhelmed', text);
+    assert.equal(state.behavior.pace, 'unhurried', text);
+  }
+  for (const text of [
+    'The messages overwhelmed my colleague.', 'The messages did not really overwhelm me.',
+    'The calls have never overwhelmed me.', "The information hasn't overwhelmed me.",
+    'The messages are not overwhelming me.', 'Do not overwhelm me.', 'Overwhelm me.',
+    'The messages might have overwhelmed me.', 'Could these details have overwhelmed me?',
+    'If the messages overwhelmed me, what would you do?', 'Imagine the calls overwhelmed me.',
+    'My colleague said the messages overwhelmed me.', 'The report says the calls overwhelmed me.',
+    'My colleague told me the messages overwhelmed me.', 'She believes the details overwhelm me.',
+    'What does "the messages overwhelmed me" mean?', 'She wrote “The calls are overwhelming me.”',
+  ]) assert.deepEqual(analyzeConversation([user(text)]).observedCues, [], text);
+});
+
+test('explicit brevity requests change communication without inventing time pressure or emotional concern', () => {
+  for (const text of ['Please ask one question.', 'Please ask me just one short question.', 'Could you ask one question at a time?', 'Please give me a brief answer.', 'I prefer a short reply.', 'Please reply briefly.', 'Can you please give me one short answer?']) {
+    const state = analyzeConversation([user(text)]);
+    assert.deepEqual(state.observedCues.map(cue => cue.kind), ['brevity-request'], text);
+    assert.equal(state.behavior.pace, 'brief', text);
+    assert.equal(state.behavior.acknowledgeConcern, false, text);
+    assert.equal(state.behavior.askPermission, false, text);
+    assert.match(state.instructions, /not evidence of urgency or an emotion/);
+    const evidence = state.observedCues[0].evidence;
+    assert.equal(text.slice(evidence.start, evidence.end), evidence.text);
+  }
+  for (const text of ['Do not please ask one short question.', "Please don't ask one short question.", 'I do not want a brief reply.', 'My colleague asked: please give me a short answer.', 'She requested that you please ask one short question.', 'The email says please ask one short question.', 'If I prefer a short reply, what happens?', 'Say "Please ask one short question."']) assert.deepEqual(analyzeConversation([user(text)]).observedCues, [], text);
+});
+
 test('no turn, assistant speech, quoted examples, negations and third party speech do not create caller state', () => {
   for (const entries of [[], [assistant("I'm overwhelmed and frustrated")], [user('')],
     [user("I'm not overwhelmed. I am not confused.")],

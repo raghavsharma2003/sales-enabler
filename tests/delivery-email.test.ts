@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import type { AuthUser } from '../lib/server/auth';
 import { db } from '../lib/server/db';
 import { createContact } from '../lib/server/store';
-import { createRecord, updateRecord, type PlatformRecord } from '../lib/platform/records';
+import { createRecord, getRecord, updateRecord, type PlatformRecord } from '../lib/platform/records';
 import { applyCampaignPlan, generateCampaignPlan } from '../lib/campaign-planning/engine';
 import { handleBusinessContextAction } from '../lib/business/engine';
 import type { runAiTask } from '../lib/ai/task-router';
-import { handleCampaignAction } from '../lib/platform/campaigns';
+import { handleCampaignAction, type Run } from '../lib/platform/campaigns';
 import { configureConnection, configureOAuthConnection, getConnection, replaceOAuthCredentials, updateConnection } from '../lib/integrations/vault';
 import { check as checkConnection } from '../lib/integrations/service';
 import { listCampaignDelivery, sendCampaignEmail } from '../lib/delivery/engine';
@@ -61,15 +61,25 @@ test('one explicit send records provider acceptance once; duplicate request cann
   await assert.rejects(sendCampaignEmail(user, { ...input, requestId: '22222222-2222-4222-8222-222222222222' }, send), status(409));
   const view = await listCampaignDelivery(user, run.id);
   assert.equal(view.recipients[0].status, 'accepted');
+  assert.equal(view.runStatus,'completed');
+  const settled = await getRecord<Run>(user.organizationId,'campaign_run',run.id);
+  assert.equal(settled.data.recipients[0].status,'delivery_settled');
+  assert.equal(settled.data.recipients[0].delivery?.providerReference,'gmail-message-1');
+  assert.equal(settled.data.recipients[0].evidence,undefined);
+  assert.equal(settled.data.recipients[0].completedAt,undefined);
+  assert.ok(settled.data.deliveryCompletedAt);
 });
 
 test('timeout ambiguity is durable and never retried automatically', async () => {
-  const { user, input } = await fixture();
+  const { user, input,run } = await fixture();
   let calls = 0;
   const send = async () => { calls++; throw new Error('simulated timeout after provider acceptance'); };
   assert.equal((await sendCampaignEmail(user, input, send)).state, 'uncertain');
   assert.equal((await sendCampaignEmail(user, input, send)).state, 'uncertain');
   assert.equal(calls, 1);
+  const settled = await getRecord<Run>(user.organizationId,'campaign_run',run.id);
+  assert.equal(settled.status,'completed');
+  assert.equal(settled.data.recipients[0].delivery?.state,'uncertain');
 });
 
 test('crash after provider acceptance leaves a recoverable uncertain intent without resending', async () => {
@@ -89,8 +99,74 @@ test('crash after provider acceptance leaves a recoverable uncertain intent with
   saved.data.createdAt = new Date(Date.now() - 61_000).toISOString();
   await database.run('UPDATE entities SET data=? WHERE id=?', [JSON.stringify(saved), String(row.id)]);
   assert.equal((await listCampaignDelivery(user, run.id)).recipients[0].status, 'uncertain');
+  assert.equal((await getRecord<Run>(user.organizationId,'campaign_run',run.id)).data.recipients[0].delivery?.state,'uncertain');
+  assert.equal((await getRecord<Run>(user.organizationId,'campaign_run',run.id)).status,'completed');
   assert.equal((await sendCampaignEmail(user, input, async () => { calls++; return { state: 'accepted' as const }; })).state, 'uncertain');
   assert.equal(calls, 1);
+});
+
+test('all email recipients must settle before dispatch completes, with rejection distinct from business completion',async () => {
+  const f = await fixture();
+  const second = await createContact(f.user,{name:'Second fictional customer',email:'second@example.test'});
+  await createRecord(f.user,'customer_profile',{contactId:second.id,consent:{email:{granted:true}}},'active');
+  const campaign = await handleCampaignAction(f.user,'campaign.create',{name:'Two recipients',kind:'feedback',objective:'Learn what to improve',channel:'email',emailConnectionId:f.connected.id,agentReleaseId:'',subject:'A question',message:'What would help?',contactIds:[f.contact.id,second.id]}) as PlatformRecord;
+  const run = await handleCampaignAction(f.user,'campaign.launch',{id:campaign.id}) as PlatformRecord<Run>;
+  let calls = 0;
+  const firstInput = {...f.input,runId:run.id};
+  await sendCampaignEmail(f.user,firstInput,async () => {calls++;return {state:'accepted'};});
+  assert.equal((await getRecord(f.user.organizationId,'campaign_run',run.id)).status,'active');
+  const secondInput = {...firstInput,contactId:second.id,requestId:'22222222-2222-4222-8222-222222222222'};
+  const reject = async () => {calls++;return {state:'rejected' as const,reason:'Provider rejected the recipient.'};};
+  assert.equal((await sendCampaignEmail(f.user,secondInput,reject)).state,'rejected');
+  assert.equal((await sendCampaignEmail(f.user,secondInput,reject)).state,'rejected');
+  assert.equal(calls,2);
+  const settled = await getRecord<Run>(f.user.organizationId,'campaign_run',run.id);
+  assert.equal(settled.status,'completed');
+  assert.deepEqual(settled.data.recipients.map(item => item.delivery?.state),['accepted','rejected']);
+  assert.ok(settled.data.recipients.every(item => item.status === 'delivery_settled' && !item.evidence && !item.sessionId));
+});
+
+test('a run projection failure cannot erase provider acceptance, and replay repairs it without dispatch',async () => {
+  const f = await fixture(), database = await db(), batch = database.batch.bind(database);
+  let calls = 0;
+  const send = async () => {calls++;return {state:'accepted' as const,providerReference:'durable-acceptance'};};
+  database.batch = async statements => {
+    if (statements.some(item => item.sql.startsWith('UPDATE entities SET data=?,status=?') && item.params?.includes('platform:campaign_run'))) throw Error('Projection storage temporarily unavailable');
+    return batch(statements);
+  };
+  try {
+    const outcome = await sendCampaignEmail(f.user,f.input,send);
+    assert.equal(outcome.state,'accepted');assert.equal(outcome.runProjectionPending,true);
+    const pendingView = await listCampaignDelivery(f.user,f.run.id);
+    assert.equal(pendingView.recipients[0].status,'accepted');assert.equal(pendingView.runProjectionPending,true);
+    assert.equal(pendingView.runStatus,'active');
+  } finally {database.batch = batch;}
+  assert.equal((await getRecord(f.user.organizationId,'campaign_run',f.run.id)).status,'active');
+  const replay = await sendCampaignEmail(f.user,f.input,send);
+  assert.equal(replay.state,'accepted');assert.equal(replay.runProjectionPending,undefined);assert.equal(calls,1);
+  assert.equal((await getRecord(f.user.organizationId,'campaign_run',f.run.id)).status,'completed');
+});
+
+test('provider outcomes after pause or cancellation settle receipts without resurrecting the run',async () => {
+  for (const action of ['pause','cancel'] as const) {
+    const f = await fixture();
+    const receipt = await sendCampaignEmail(f.user,f.input,async () => {
+      await handleCampaignAction(f.user,`campaign.${action}`,{runId:f.run.id});
+      return {state:'accepted',providerReference:`accepted-after-${action}`};
+    });
+    assert.equal(receipt.state,'accepted');
+    const run = await getRecord<Run>(f.user.organizationId,'campaign_run',f.run.id);
+    assert.equal(run.status,action === 'pause' ? 'paused' : 'cancelled');
+    assert.equal(run.data.recipients[0].delivery?.state,'accepted');
+    assert.ok(run.data.deliveryCompletedAt);
+    if (action === 'pause') {
+      const resumed = await handleCampaignAction(f.user,'campaign.resume',{runId:run.id}) as PlatformRecord<Run>;
+      assert.equal(resumed.status,'completed');
+    }
+    let calls = 0;
+    assert.equal((await sendCampaignEmail(f.user,f.input,async () => {calls++;return {state:'accepted'};})).state,'accepted');
+    assert.equal(calls,0);
+  }
 });
 
 test('revoked consent, tenant mismatch and replaced mailbox authorization block egress', async () => {

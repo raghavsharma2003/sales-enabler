@@ -42,6 +42,29 @@ function explicitFieldValue(column: ReviewColumn, text: string, value: string): 
   return clauses(text).some(clause => !negative.test(clause) && fieldTerms(column).some(term => new RegExp(`^(?:my\\s+)?${escape(term)}\\s*(?:(?:is|was|equals|of|at)\\s*|[:=]\\s*)(?:[$€£₹]\\s*)?${escape(value)}(?![\\p{L}\\p{N}.])`, 'iu').test(clause)));
 }
 
+const smallNumbers = ['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
+const ratingNumber = (text: string) => /^\d+$/.test(text) ? Number(text) : smallNumbers.indexOf(text.toLowerCase());
+/** A named first-person clarity rating on an explicit reviewed scale, not general numeric coercion. */
+function explicitRatings(column: ReviewColumn, text: string): { value: number; clause: string }[] {
+  if (column.type !== 'number' || !/\bhow clear\b/i.test(column.label)) return [];
+  const scale = /\bscale of (zero|one|0|1) to (five|ten|5|10)\b/i.exec(column.label);
+  if (!scale) return [];
+  const minimum = ratingNumber(scale[1]), maximum = ratingNumber(scale[2]);
+  const fieldWords = new Set((column.label.toLowerCase().replace(/\bclear\b/g,'clarity').match(/[a-z]+/g) || []));
+  const results: { value: number; clause: string }[] = [];
+  for (const clause of clauses(text)) {
+    const matched = /^(?:I (?:would )?rate (?:the |my )?(.+?)|My (.+?) score is) (zero|one|two|three|four|five|six|seven|eight|nine|ten|\d+) out of (five|ten|5|10)$/i.exec(clause);
+    if (!matched) continue;
+    const subject = (matched[1] || matched[2]).toLowerCase().split(/\s+/);
+    // Require both the rated dimension and its subject; a different workshop,
+    // another person's score, or an unrelated numeral cannot supply this field.
+    if (subject.length < 2 || !subject.includes('clarity') || subject.some(word => !fieldWords.has(word)) || /\b(friend|colleague|partner|they|he|she|his|her|their)\b/i.test(clause)) continue;
+    const value = ratingNumber(matched[3]);
+    if (ratingNumber(matched[4]) === maximum && value >= minimum && value <= maximum) results.push({value,clause});
+  }
+  return results;
+}
+
 /** Offsets and receipt timestamps are located exclusively in saved caller text. */
 export function locateSource(turns: AnswerTurn[], quote: unknown, turnIndex: unknown, scope: 'typed' | 'literal_text' = 'typed'): AnswerSource {
   if (typeof quote !== 'string' || !quote.trim() || quote.length > 2000 || !Number.isSafeInteger(turnIndex)) throw new HttpError(400, 'Choose a bounded exact caller quote and turn.');
@@ -86,6 +109,15 @@ export function supportedValue(column: ReviewColumn, value: unknown, source: Ans
   const fullText = turns?.[source.turnIndex]?.text || quote;
   if (sensitive.test(`${column.key.replaceAll('_', ' ')} ${column.label}`)) return false;
   if (column.type === 'text') return literalTextSupported(value, source, fullText);
+  if (column.type === 'number' && typeof value === 'number') {
+    const ratings = explicitRatings(column,fullText);
+    if (ratings.some(rating => rating.value === value) && explicitRatings(column,quote).some(rating => rating.value === value)) {
+      // "I would rate ..." is a conventional explicit rating only in the exact
+      // grammar above. Other modal clauses and qualifications remain uncertain.
+      const certaintyText = ratings.reduce((text,rating) => text.replace(rating.clause,rating.clause.replace(/\bwould\s+/i,'')),fullText);
+      return !negative.test(certaintyText) && !uncertain.test(certaintyText) && !retracted.test(certaintyText);
+    }
+  }
   if (uncertain.test(fullText) || retracted.test(fullText)) return false;
   if (column.type === 'boolean') {
     if (typeof value !== 'boolean' || negative.test(column.label)) return false;
@@ -114,7 +146,7 @@ function explicitCallerValues(column: ReviewColumn, turns: AnswerTurn[]): { valu
       let source: AnswerSource;
       try { source = locateSource(turns, excerpt, turnIndex, column.type === 'text' ? 'literal_text' : 'typed'); } catch { continue; }
       const possible: AnswerValue[] = column.type === 'boolean' ? [true, false]
-        : column.type === 'number' ? (excerpt.match(/[-+]?(?:\d+(?:\.\d+)?|\.\d+)/g) || []).map(Number)
+        : column.type === 'number' ? [...(excerpt.match(/[-+]?(?:\d+(?:\.\d+)?|\.\d+)/g) || []).map(Number), ...explicitRatings(column,excerpt).map(rating => rating.value)]
           : column.type === 'date' ? excerpt.match(/\b\d{4}-\d{2}-\d{2}\b/g) || []
             : column.type === 'enum' ? column.options || []
               : questionFor(column, source, turns) ? [excerpt.trim()] : [];

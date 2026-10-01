@@ -13,7 +13,7 @@ When they correct themselves or a stored fact, use their stated correction for t
 If they ask to pause or stop, stop the pitch and leave continuation to them; do not keep asking qualification questions. Permission to continue talking never grants recording, contact, memory, or external-action authorization.
 Follow their explicit communication preferences within the agent's allowed languages. Hindi or English switching is not evidence of stress, closeness, or trust. Do not manufacture fillers, laughter, self-corrections, affection, or claims that you know how they feel.`;
 
-export type ConversationCueKind = 'overwhelmed' | 'frustrated' | 'confused' | 'time-pressure' | 'self-correction' | 'pause-request';
+export type ConversationCueKind = 'overwhelmed' | 'frustrated' | 'confused' | 'time-pressure' | 'brevity-request' | 'self-correction' | 'pause-request';
 export type ConversationEvidence = { entryId: string; entryIndex: number; start: number; end: number; text: string };
 export type ConversationCue = { kind: ConversationCueKind; evidence: ConversationEvidence };
 export type ConversationCorrectionCandidate = {
@@ -42,10 +42,11 @@ export type ConversationEntry = { id?: string; role: string; text: string };
 // Deliberately narrow authored cues, not a sentiment classifier. Missing an
 // idiom leaves the baseline instructions in charge; it never fabricates state.
 const cuePatterns: Record<ConversationCueKind, RegExp> = {
-  overwhelmed: /\b(?:i(?:['’]m| am| feel) (?:really |very |so )?overwhelmed|this is (?:all )?too much(?: for me)?|too much information|(?:please )?(?:slow down|one (?:thing|step) at a time)|mujhe (?:bahut |bohot )?overwhelm(?:ed)? (?:ho raha|lag raha)|ek ek karke)\b|(?:एक एक करके|धीरे बोलिए|धीरे बोलो)/iu,
+  overwhelmed: /\b(?:i(?:['’]m| am| feel) (?:really |very |so )?overwhelmed|overwhelm(?:ed|s|ing)? me|this is (?:all )?too much(?: for me)?|too much information|(?:please )?(?:slow down|one (?:thing|step) at a time)|mujhe (?:bahut |bohot )?overwhelm(?:ed)? (?:ho raha|lag raha)|ek ek karke)\b|(?:एक एक करके|धीरे बोलिए|धीरे बोलो)/iu,
   frustrated: /\b(?:i(?:['’]m| am| feel) (?:really |very |so )?(?:frustrated|annoyed)|this is (?:really |very |so )?frustrating|you(?:['’]re| are) not listening|you (?:missed my point|didn['’]t listen|got (?:that|it) wrong)|that(?:['’]s| is) not what i (?:said|meant|asked)|i(?:['’]ve| have) (?:already )?(?:told|explained) (?:you|this)|aap meri baat nahi (?:sun rahe|samajh rahe))\b|(?:आप मेरी बात नहीं सुन रहे|मैंने ऐसा नहीं कहा)/iu,
   confused: /\b(?:i(?:['’]m| am| feel) (?:really |very |so )?confused|i (?:don['’]t|do not) understand|(?:could|can) you (?:explain that again|rephrase that)|what do you mean(?: by that)?|mujhe samajh nahi (?:aa raha|aaya)|samajh nahi (?:aa raha|aaya))\b|(?:मुझे समझ नहीं (?:आ रहा|आया)|फिर से समझाइए)/iu,
   'time-pressure': /\b(?:i(?:['’]m| am) (?:in a (?:rush|hurry)|short on time)|i (?:only have|have only) (?:a |one |two |five |ten |\d+ )?(?:minute|minutes|second|seconds)|i (?:don['’]t|do not) have (?:much )?time|(?:please )?keep (?:it|this) (?:short|brief)|mere paas (?:zyada )?time nahi (?:hai)?|jaldi bata(?:o|iye))\b|(?:मेरे पास (?:ज़्यादा |ज्यादा )?समय नहीं|जल्दी बताइए)/iu,
+  'brevity-request': /\b(?:please (?:ask (?:me )?(?:just |only )?one (?:short )?question(?: at a time)?|(?:give me|use) (?:a |one )?(?:short|brief) (?:answer|reply)|(?:answer|reply) briefly|keep (?:your|the) (?:answer|reply) (?:short|brief))|(?:can|could|would) you (?:please )?(?:ask (?:me )?(?:just |only )?one (?:short )?question(?: at a time)?|(?:give me|use) (?:a |one )?(?:short|brief) (?:answer|reply)|(?:answer|reply) briefly)|i (?:want|need|prefer|would like) (?:a |one )?(?:short|brief) (?:answer|reply))\b/iu,
   'self-correction': /\b(?:actually[,]? i (?:meant|said|prefer)|(?:no[,]? )?i meant|no[,]? (?:that(?:['’]s| is) (?:not right|wrong)|i said)|(?:please )?(?:correct|update) (?:that|my (?:name|number|email|preference))|please (?:call me|speak (?:in )?|use (?:English|Hindi|Hinglish))|i prefer (?:English|Hindi|Hinglish|formal|informal|casual|professional)|nahi[,]? mera matlab|maine (?:yeh|aisa) nahi kaha)\b|(?:नहीं[,]? मेरा मतलब|मैंने ऐसा नहीं कहा|मुझे .{1,40} बुलाइए)/iu,
   'pause-request': /^(?:please )?(?:stop|pause)[.!\s]*$|\b(?:(?:please )?(?:stop (?:the call|talking|this|for now)|pause (?:the call|for now)|give me a (?:moment|minute)|let(?:['’]s| us) (?:stop|pause)|i need a (?:break|moment)|i (?:don['’]t|do not) want to continue)|abhi (?:ruko|ruk jaiye)|baad mein baat karte)\b|(?:अभी रुकिए|अभी रुको|बाद में बात करते)/iu,
 };
@@ -67,8 +68,16 @@ function directMatch(text: string, pattern: RegExp): RegExpExecArray | null {
   for (let match = matcher.exec(masked); match; match = matcher.exec(masked)) {
     const prefix = masked.slice(0, match.index).split(/[.!?;\n]/u).at(-1) ?? '';
     // Do not turn hypothetical or attributed examples into caller state.
-    if (/\b(?:if|suppose|imagine|example|said|says|saying|wrote|reads?|asks?|asked|means?)\b/iu.test(prefix)) continue;
+    if (/\b(?:if|suppose|imagine|example|said|says|saying|told|reported|reports|claimed|claims|thinks?|thought|believes?|believed|wrote|reads?|asks?|asked|requested|requests|means?)\b/iu.test(prefix)) continue;
     if (/\b(?:not|never|don['’]t|do not)\s+$/iu.test(prefix)) continue;
+    // Object-form self-reports need their own clause guard: "messages have
+    // not really overwhelmed me" must not become a positive observation.
+    if (/^overwhelm(?:ed|s|ing)? me$/iu.test(match[0])) {
+      if (!prefix.trim() || /\b(?:not|never|no longer|hardly|barely|may|might|could|would|whether|wonder|used to|to)\b|\b\w+n['’]t\b/iu.test(prefix) || /^\s*\?/u.test(masked.slice(match.index + match[0].length))) continue;
+    }
+    // An embedded or negated request is not a direct preference, even if a
+    // politeness word separates it from the negation.
+    if (/^(?:please|can you|could you|would you|i (?:want|need|prefer|would like))\b/iu.test(match[0]) && /\b(?:not|never|don['’]t|do not|doesn['’]t|didn['’]t)\b/iu.test(prefix)) continue;
     return match;
   }
   return null;
@@ -98,7 +107,15 @@ export function analyzeConversation(entries: readonly ConversationEntry[]): Conv
     const cues: ConversationCue[] = [];
     for (const kind of Object.keys(cuePatterns) as ConversationCueKind[]) {
       const match = directMatch(text, cuePatterns[kind]);
-      if (match) cues.push({ kind, evidence: evidenceFor(entry, index, match.index, match[0].length) });
+      if (match) {
+        let start = match.index;
+        if (kind === 'overwhelmed' && /^overwhelm(?:ed|s|ing)? me$/iu.test(match[0])) {
+          const before = text.slice(0, match.index);
+          const clause = before.split(/[.!?;\n]/u).at(-1) || '';
+          start = match.index - clause.length + (clause.length - clause.trimStart().length);
+        }
+        cues.push({ kind, evidence: evidenceFor(entry, index, start, match.index + match[0].length - start) });
+      }
     }
     if (directMatch(text, repairResolved)) repairPending = false;
     if (directMatch(text, repairRequested)) repairPending = true;
@@ -122,7 +139,7 @@ export function analyzeConversation(entries: readonly ConversationEntry[]): Conv
   const has = (kind: ConversationCueKind) => observedCues.some(cue => cue.kind === kind);
   const pauseRequested = has('pause-request');
   const behavior: ConversationBehaviorState['behavior'] = {
-    pace: has('time-pressure') ? 'brief' : has('overwhelmed') || has('confused') ? 'unhurried' : 'normal',
+    pace: has('time-pressure') || has('brevity-request') ? 'brief' : has('overwhelmed') || has('confused') ? 'unhurried' : 'normal',
     questionLimit: 1,
     acknowledgeConcern: has('overwhelmed') || has('frustrated') || has('confused'),
     repair: has('self-correction') ? 'confirm-correction' : repairPending ? 'acknowledge-and-check' : 'none',
@@ -133,6 +150,7 @@ export function analyzeConversation(entries: readonly ConversationEntry[]): Conv
   if (pauseRequested) guidance.push('The caller asked for a pause: stop the pitch, briefly acknowledge, and wait for them to resume.');
   else {
     if (has('time-pressure')) guidance.push('Give the essential answer first in one short turn; offer to stop or continue without pressure.');
+    if (has('brevity-request')) guidance.push('The caller explicitly requested a short reply or one question. Keep the reply concise and ask at most one short question, then wait. This is a communication preference, not evidence of urgency or an emotion.');
     if (has('overwhelmed')) guidance.push('Offer one manageable next step; use an unhurried pace and ask permission before more detail.');
     if (has('confused')) guidance.push('Rephrase the specific point in plain language, then check understanding with one question.');
     if (has('frustrated')) guidance.push('Acknowledge the concern in the caller\'s words and offer a practical next step; do not assume you caused it or that you know their private feelings.');

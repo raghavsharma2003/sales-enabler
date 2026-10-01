@@ -18,6 +18,8 @@ export type CampaignBriefProposal = {
   goal: string;
   contactIds: string[];
   selectedContactCount: number;
+  /** New generation guard; absent on compatible historical receipts. */
+  qualityVersion?: 1;
   sourceBasis: SourceAnchorRef[];
   suggestion?: CampaignBriefSuggestion;
   reviewColumns?: ReviewColumn[];

@@ -23,7 +23,7 @@ export type DeliveryIntent = {
   providerReference?: string; reason?: string; requestedBy: string; createdAt: string; updatedAt: string;
   transitions: { state: DeliveryState; at: string }[]; dispatchAuthorizedAt?: string;
 };
-export type DeliveryReceipt = { id: string; runId: string; contactId: string; state: DeliveryState; provider: EmailProvider; providerReference?: string; reason?: string; createdAt: string; updatedAt: string };
+export type DeliveryReceipt = { id: string; runId: string; contactId: string; state: DeliveryState; provider: EmailProvider; providerReference?: string; reason?: string; createdAt: string; updatedAt: string; runProjectionPending?:boolean };
 type Stored = { revision: number; updatedAt: string; data: DeliveryIntent };
 type Anchor = { id: string; kind: string; status: string | null; data: string };
 type Statements = Parameters<Database['batch']>[0];
@@ -51,6 +51,48 @@ async function existingIntent(user: AuthUser, id: string): Promise<PlatformRecor
   const [row] = await (await db()).all('SELECT id,status,data,created_at FROM entities WHERE id = ? AND organization_id = ? AND kind = ?', [id, user.organizationId, kind]);
   return row ? decoded(row) : undefined;
 }
+
+/** Receipt-derived operational progress, never a customer/business outcome.
+ * Persist receipts first; a conflict here must not lose a provider result or
+ * authorize another send. Exact replay and delivery reads repair the projection.
+ */
+async function reconcileEmailRun(user: AuthUser, runId: string): Promise<boolean> {
+  try {
+    const database = await db();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const runRow = await anchor(runId,user.organizationId,'platform:campaign_run');
+      const stored = JSON.parse(runRow.data) as {revision:number;updatedAt:string;data:Run}, run = stored.data;
+      if (run.snapshot.channel !== 'email') return false;
+      const rows = await database.all('SELECT id,status,data,created_at FROM entities WHERE organization_id=? AND kind=?',[user.organizationId,kind]);
+      const intents = rows.map(decoded).filter(row => row.data.runId === runId && row.id === key(user.organizationId,runId,row.data.contactId) && row.data.connectionId === run.snapshot.emailConnectionId && row.status === row.data.state && ['accepted','rejected','uncertain'].includes(row.status));
+      const byContact = new Map(intents.map(row => [row.data.contactId,row]));
+      const recipients = run.recipients.map(item => {
+        const intent = byContact.get(item.contactId); if (!intent) return item;
+        return {...item,status:'delivery_settled' as const,delivery:{receiptId:intent.id,state:intent.data.state as 'accepted'|'rejected'|'uncertain',recordedAt:intent.data.updatedAt,...(intent.data.providerReference ? {providerReference:intent.data.providerReference} : {}),...(intent.data.reason ? {reason:intent.data.reason} : {})}};
+      });
+      const allSettled = recipients.length > 0 && recipients.every(item => item.status === 'delivery_settled');
+      const deliveryCompletedAt = allSettled ? run.deliveryCompletedAt || recipients.map(item => item.delivery!.recordedAt).sort().at(-1)! : run.deliveryCompletedAt;
+      const status = allSettled && runRow.status === 'active' ? 'completed' : runRow.status;
+      const data: Run = {...run,recipients,...(deliveryCompletedAt ? {deliveryCompletedAt} : {})};
+      if (status === runRow.status && JSON.stringify(data) === JSON.stringify(run)) return true;
+      const now = new Date().toISOString();
+      const intentFences = intents.filter(row => run.recipients.some(item => item.contactId === row.data.contactId)).map(row => fence({id:row.id,kind,status:row.status,data:JSON.stringify({revision:row.revision,updatedAt:row.updatedAt,data:row.data})},user.organizationId));
+      try {
+        await database.batch([...intentFences,
+          {sql:'UPDATE entities SET data=?,status=? WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?',params:[JSON.stringify({revision:stored.revision+1,updatedAt:now,data}),status,runId,user.organizationId,'platform:campaign_run',runRow.status,runRow.data],expectedChanges:1},
+          {sql:'INSERT INTO audit_events (id,organization_id,user_id,entity_id,event,created_at) VALUES (?,?,?,?,?,?)',params:[randomUUID(),user.organizationId,run.launchedBy,runId,'campaign_run.delivery_projected',now]},
+        ]);
+        return true;
+      } catch (error) { if (!(error instanceof WriteConflictError)) return false; }
+    }
+  } catch { /* A durable receipt remains inspectable even if projection is unavailable. */ }
+  return false;
+}
+async function projectedReceipt(user: AuthUser, row: PlatformRecord<DeliveryIntent>): Promise<DeliveryReceipt> {
+  const saved = receipt(row);
+  if (row.status === 'sending') return saved;
+  return await reconcileEmailRun(user,row.data.runId) ? saved : {...saved,runProjectionPending:true};
+}
 async function finish(user: AuthUser, row: PlatformRecord<DeliveryIntent>, outcome: ProviderResult): Promise<DeliveryReceipt> {
   const now = new Date().toISOString();
   const next: DeliveryIntent = { ...row.data, state: outcome.state, updatedAt: now, transitions: [...row.data.transitions, { state: outcome.state, at: now }],
@@ -66,7 +108,7 @@ async function finish(user: AuthUser, row: PlatformRecord<DeliveryIntent>, outco
     // durable and is surfaced as uncertain after the lease window; never resend.
     throw new HttpError(503, 'Provider outcome could not be saved. Delivery is uncertain; inspect the mailbox before any new campaign.');
   }
-  return receipt({ ...row, status: outcome.state, revision: row.revision + 1, updatedAt: now, data: next });
+  return projectedReceipt(user,{ ...row, status: outcome.state, revision: row.revision + 1, updatedAt: now, data: next });
 }
 async function staleAsUncertain(user: AuthUser, row: PlatformRecord<DeliveryIntent>): Promise<PlatformRecord<DeliveryIntent>> {
   if (row.status !== 'sending' || Date.now() - Date.parse(row.data.createdAt) < 60_000) return row;
@@ -89,8 +131,10 @@ export async function listCampaignDelivery(user: AuthUser, runId: string) {
   const rows = await (await db()).all('SELECT id,status,data,created_at FROM entities WHERE organization_id=? AND kind=?', [user.organizationId, kind]);
   const intents = await Promise.all(rows.map(decoded).filter(row => row.data.runId === runId).map(row => staleAsUncertain(user, row)));
   const byContact = new Map(intents.map(row => [row.data.contactId, receipt(row)]));
-  return { runId, runStatus: run.status, connectionId: run.data.snapshot.emailConnectionId,
-    recipients: run.data.recipients.map(item => ({ contactId: item.contactId, name: item.name, email: item.email, status: byContact.get(item.contactId)?.state || 'ready', receipt: byContact.get(item.contactId) })) };
+  const projected = await reconcileEmailRun(user,runId);
+  const current = await getRecord<Run>(user.organizationId,'campaign_run',runId);
+  return { runId, runStatus: current.status, connectionId: current.data.snapshot.emailConnectionId,...(!projected ? {runProjectionPending:true} : {}),
+    recipients: current.data.recipients.map(item => ({ contactId: item.contactId, name: item.name, email: item.email, status: byContact.get(item.contactId)?.state || 'ready', receipt: byContact.get(item.contactId) })) };
 }
 
 type SendInput = { runId: string; contactId: string; connectionId: string; requestId: string };
@@ -158,7 +202,7 @@ export async function sendCampaignEmail(user: AuthUser, input: SendInput, dispat
   const prior = await existingIntent(user, intentId);
   if (prior) {
     if (prior.data.requestId !== requestId || prior.data.connectionId !== connectionId) throw new HttpError(409, 'This recipient already has a send intent. Inspect its result before taking another action.');
-    return receipt(await staleAsUncertain(user, prior));
+    return projectedReceipt(user,await staleAsUncertain(user, prior));
   }
   // Preserve tenant-scoped not-found semantics before membership migration or
   // credential access. The returned object is not used as dispatch authority.
@@ -178,7 +222,7 @@ export async function sendCampaignEmail(user: AuthUser, input: SendInput, dispat
     const duplicate = await existingIntent(user, intentId);
     if (duplicate) {
       if (duplicate.data.requestId !== requestId || duplicate.data.connectionId !== connectionId) throw new HttpError(409, 'This recipient already has a send intent.');
-      return receipt(await staleAsUncertain(user, duplicate));
+      return projectedReceipt(user,await staleAsUncertain(user, duplicate));
     }
     if (error instanceof WriteConflictError) throw new HttpError(409, 'Campaign authority changed before dispatch. Refresh and review.');
     throw error;

@@ -122,3 +122,26 @@ test('removing the cause removes carried concern; ordinary turns retain useful p
   entries.push(user('3', 'Normal pace is fine.'));
   assert.equal(compileRelationalRuntime({ entries }).state.pace, 'normal');
 });
+
+test('explicit overwhelm and short-question request drive cited runtime guidance without inferred urgency', () => {
+  const text = 'The consultation was clear, but the long follow-up messages overwhelmed me. Please ask one short question.';
+  const entries = [user('feedback', text)];
+  const runtime = compileRelationalRuntime({ entries });
+  assert.equal(runtime.state.pace, 'brief');
+  assert.equal(runtime.state.concern?.kind, 'overwhelmed');
+  assert.equal(runtime.state.concern?.evidence.entryId, 'feedback');
+  assert.equal(runtime.state.repair_state, 'none');
+  assert.match(runtime.instructions, /at most one short question/);
+  assert.match(runtime.instructions, /infer urgency from brevity alone/);
+  const pacing = runtime.events.find(event => event.dim === 'pacing')!;
+  assert.equal(pacing.citations[0].text, 'Please ask one short question');
+  for (const event of runtime.events) for (const evidence of event.citations) assert.equal(text.slice(evidence.start, evidence.end), evidence.text);
+  entries.push(user('next', 'What is the next step?'));
+  assert.equal(compileRelationalRuntime({ entries }).state.pace, 'brief');
+  assert.equal(compileRelationalRuntime({ entries: [user('preference', 'Please give me a short reply.')] }).state.concern, undefined);
+  for (const rejected of ['The messages have not overwhelmed me.', 'The report says the calls overwhelmed me.', 'My colleague asked: please ask one short question.']) {
+    const rejectedRuntime = compileRelationalRuntime({ entries: [user('rejected', rejected)] });
+    assert.equal(rejectedRuntime.state.pace, 'normal');
+    assert.equal(rejectedRuntime.state.concern, undefined);
+  }
+});

@@ -33,7 +33,9 @@ async function basis(user: AuthUser, sessionId: string) {
   const runRow = await raw(user, 'platform:campaign_run', session.campaignRunId), run = (runRow.parsed as Stored<Run>).data;
   const campaignRow = await raw(user, 'platform:campaign', run.campaignId), campaign = (campaignRow.parsed as Stored<Campaign>).data;
   const intent = run.snapshot.explicitIntentV1;
-  if (!intent || !intent.reviewColumns.length || run.snapshot.channel !== 'browser' || !run.recipients.some(item => item.contactId === session.contactId) || !run.snapshot.contactIds.includes(session.contactId) || run.snapshot.agentReleaseId !== session.releaseId || JSON.stringify(campaign.explicitIntentV1) !== JSON.stringify(intent)) throw new HttpError(409, 'Campaign offering, audience, release or planned columns no longer match this saved call.');
+  // Planned columns are optional at setup. An empty schema still has valid
+  // campaign authority and must pass every provenance check below.
+  if (!intent || run.snapshot.channel !== 'browser' || !run.recipients.some(item => item.contactId === session.contactId) || !run.snapshot.contactIds.includes(session.contactId) || run.snapshot.agentReleaseId !== session.releaseId || JSON.stringify(campaign.explicitIntentV1) !== JSON.stringify(intent)) throw new HttpError(409, 'Campaign offering, audience, release or planned columns no longer match this saved call.');
   const contactRow = await raw(user, 'contact', session.contactId);
   const releaseRow = await raw(user, 'platform:release', session.releaseId), release = releaseRow.parsed.data;
   if (release.versionId !== session.agentVersionId) throw new HttpError(409, 'Saved release and agent version do not match.');
@@ -90,6 +92,7 @@ export async function revalidateCampaignResult(user: AuthUser, id: string, revis
 /** Stable source-derived IDs prevent rerenders, reloads and workers from purchasing another extraction. */
 export async function extractCampaignResult(user: AuthUser, sessionId: string, testRunner?: ExtractionRunner): Promise<CampaignResult> {
   const actorFence = await operatorMembershipFence(user), current = await basis(user, sessionId);
+  if (!current.columns.length) throw new HttpError(409, 'This campaign has no planned result fields. Its saved conversation remains available; no AI extraction was requested.');
   const id = idFor(user, current.binding), existing = await findResult(user, id);
   if (existing) return existing;
   // Complete transcript only: silently truncating a contradictory turn would invent certainty.

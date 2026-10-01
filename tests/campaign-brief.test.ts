@@ -23,7 +23,7 @@ const goodOutput = {
   evidenceRequired: ['A reviewed answer explaining the problem the team wants to solve', 'A reviewed answer stating whether a workshop would be useful'],
   audienceRationale: 'The selected audience may be relevant to the approved workshop and the operator’s stated goal.',
   questionsToCollect: ['Problem to solve', 'Would a workshop be useful?'],
-  missingContextQuestions: ['What decision should this campaign help the operator make?'],
+  missingContextQuestions: [],
 };
 const bad = (status: number) => (error: unknown) => error instanceof HttpError && error.status === status;
 const fake = (payload: unknown, hook?: (input: Parameters<typeof runAiTask>[1]) => Promise<void> | void) => (async (_user, input) => {
@@ -98,6 +98,59 @@ test('AI campaign brief is bounded, tenant scoped, idempotent, and proposal only
     await assert.rejects(proposeCampaignBrief(user, { ...body, requestId: 'brief-foreign-contact', contactIds: [foreignContact.id] }, { ai: fake(goodOutput) }), bad(404));
     await assert.rejects(getCampaignBriefProposal(other, body.requestId), bad(404));
     assert.notEqual(foreignOffering.id, offering.id);
+  });
+
+  await t.test('new generation rejects maximum-sized survey output while historical parsing stays compatible',async () => {
+    for (const [key,count] of [['questionsToCollect',6],['evidenceRequired',5],['missingContextQuestions',4]] as const) {
+      const oversized = {...goodOutput,[key]:Array.from({length:count},(_,index) => `Distinct ${key} item ${index+1}?`)};
+      assert.doesNotThrow(() => parseCampaignBriefSuggestion(JSON.stringify(oversized)));
+      const proposal = await proposeCampaignBrief(user,{...body,requestId:`brief-focused-${key}`},{ai:fake(oversized)});
+      assert.equal(proposal.status,'invalid');
+      assert.equal(proposal.data.qualityVersion,1);
+      assert.match(proposal.data.invalidReason || '',/at most five/i);
+      assert.equal(proposal.data.suggestion,undefined);
+    }
+  });
+
+  await t.test('focused interview preserves rating, yes/no and explanatory answer types without padding missing context',async () => {
+    const focused = {...goodOutput,
+      questionsToCollect:['On a scale of 1 to 5, how clear was the explanation?','Was the next step clear?','Which follow-up would help most?'],
+      evidenceRequired:['A clarity rating from the caller','The caller’s preferred useful follow-up'],missingContextQuestions:[]};
+    const proposal = await proposeCampaignBrief(user,{...body,requestId:'brief-focused-types'},{ai:fake(focused,input => {
+      assert.match(input.system,/at most|maximum five/i);
+      assert.match(input.system,/do not broaden it/i);
+      assert.match(input.system,/missingContextQuestions: \[\]/);
+    })});
+    assert.equal(proposal.status,'ready');
+    assert.deepEqual(proposal.data.reviewColumns?.map(column => column.type),['number','boolean','text']);
+    assert.deepEqual(proposal.data.reviewColumns?.map(column => column.label),focused.questionsToCollect);
+    assert.deepEqual(proposal.data.suggestion?.missingContextQuestions,[]);
+  });
+
+  await t.test('new briefs cannot repeat the supplied goal or pad the interview with duplicate questions',async () => {
+    for (const [suffix,output] of [
+      ['goal',{...goodOutput,missingContextQuestions:['What is the primary campaign goal?']}],
+      ['duplicate',{...goodOutput,questionsToCollect:['What would help next?','What would help next?']}],
+    ] as const) {
+      const proposal = await proposeCampaignBrief(user,{...body,requestId:`brief-focused-${suffix}`},{ai:fake(output)});
+      assert.equal(proposal.status,'invalid');
+      assert.match(proposal.data.invalidReason || '',suffix === 'goal' ? /already supplied/ : /repeats/);
+    }
+  });
+
+  await t.test('saved new invalid receipts cannot bypass focused limits through recheck, while legacy receipts remain readable',async () => {
+    const oversized = {...goodOutput,questionsToCollect:Array.from({length:6},(_,index) => `Legacy question ${index+1}?`)};
+    let calls = 0;
+    const invalid = await proposeCampaignBrief(user,{...body,requestId:'brief-focused-recheck'},{ai:fake(oversized,() => {calls++;})});
+    const database = await db();
+    await database.run('INSERT INTO entities (id,organization_id,kind,status,data,created_at) VALUES (?,?,?,?,?,?)',[invalid.data.aiRunId!,user.organizationId,'ai:run','complete',JSON.stringify({text:JSON.stringify(oversized)}),new Date().toISOString()]);
+    await assert.rejects(recheckCampaignBriefProposal(user,{proposalId:invalid.id}),bad(422));
+    const {qualityVersion:_qualityVersion,...legacyData} = invalid.data;
+    const legacy = await createRecord(user,'campaign_brief_proposal',{...legacyData,requestId:'historical-brief-fixture'},'invalid');
+    const rechecked = await recheckCampaignBriefProposal(user,{proposalId:legacy.id});
+    assert.equal(rechecked.status,'ready');
+    assert.equal(rechecked.data.suggestion?.questionsToCollect.length,6);
+    assert.equal(calls,1);
   });
 
   await t.test('rejects stale offerings before inference and if they change during inference', async () => {

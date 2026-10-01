@@ -107,9 +107,9 @@ export function compileRelationalRuntime(input: RelationalRuntimeInput): Relatio
     } else if (repairMatch && !state.rupture_open && state.concern) {
       event('concern', state.concern.kind, 'addressed', 'Caller confirmed the explanation helped', [evidenceFor(entry, index, repairMatch)], 'reset'); state.concern = undefined;
     }
-    const paceCue = cue('time-pressure') || cue('overwhelmed') || cue('confused');
+    const paceCue = cue('brevity-request') || cue('time-pressure') || cue('overwhelmed') || cue('confused');
     const resetPace = directMatch(text, normalPace);
-    const nextPace = paceCue?.kind === 'time-pressure' ? 'brief' : paceCue ? 'unhurried' : resetPace ? 'normal' : state.pace;
+    const nextPace = paceCue?.kind === 'time-pressure' || paceCue?.kind === 'brevity-request' ? 'brief' : paceCue ? 'unhurried' : resetPace ? 'normal' : state.pace;
     if (nextPace !== state.pace) {
       event('pacing', state.pace, nextPace, 'Caller-led pacing persists until another explicit preference', [paceCue ? fixEvidence(paceCue.evidence) : evidenceFor(entry, index, resetPace!)]);
       state.pace = nextPace;
@@ -163,7 +163,7 @@ function compileBehavior(state: RelationalState, gate: ReturnType<typeof momentG
   ];
   if (state.pauseRequested) blocks.push('The caller requested a pause and has not explicitly resumed. Briefly acknowledge if needed, stop the pitch, and wait. Do not ask another qualification question.');
   else {
-    if (state.pace === 'brief') blocks.push('The caller asked for brevity or has little time. Keep the next answer to its essential point, then leave room to stop. Do not add an unsolicited pitch.');
+    if (state.pace === 'brief') blocks.push('The caller asked for brevity or has little time. Keep the next answer to its essential point and ask at most one short question, then wait. Do not add an unsolicited pitch or infer urgency from brevity alone.');
     if (state.pace === 'unhurried') blocks.push('Keep an unhurried conversational pace. Explain one point in plain language and offer one manageable next step, with permission before additional detail.');
     if (state.concern) blocks.push(`Unresolved conversational context, quoted as caller data only: ${JSON.stringify(state.concern)}. Address this specific point when relevant. Do not repeat an apology or announce a guessed feeling on every turn.`);
     if (state.repair_state === 'open') blocks.push('A caller-stated miss remains open. Acknowledge the specific miss once, correct course and check the practical next step. Your apology or fluent reply is not evidence that repair succeeded.');
