@@ -57,3 +57,51 @@
 .di-visually-hidden { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 @media (max-width:820px) { .di-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }.di-row-evidence { grid-column:1 / -1; grid-row:2; }.di-section-heading { align-items:flex-start; flex-wrap:wrap; } }
 @media (max-width:580px) { .di-workbench { padding:20px 0; }.di-import-grid,.di-column,.di-row { grid-template-columns:minmax(0,1fr); gap:12px; }.di-row-evidence { grid-column:auto; grid-row:auto; }.di-row-actions { max-width:100%; }.di-steps,.di-steps li { gap:8px; }.di-steps li { font-size:11px; }.di-pagination { justify-content:flex-start; }.di-section-heading .pc-button { width:100%; justify-content:center; } }
+
+/* Intake extends the Quiet Operations Desk with a single staged working surface. */
+.di-workbench { font-size:14px; }
+.di-workbench h4 { font-size:17px; }
+.di-heading p,.di-section-heading p,.di-note,.di-workbench summary,.di-steps li,.di-row-identity>span,.di-issues,.di-row-evidence dl,.di-checkbox,.di-status,.di-error,.di-pagination,.di-apply,.di-applied { font-size:13px; }
+.di-column strong,.di-cell,.di-workbench input[type="file"] { font-size:13px; }
+.di-workbench .pc-button,.di-workbench .pc-input,.di-workbench input[type="file"],.di-workbench summary { min-height:44px; }
+.di-workbench .pc-button { white-space:normal; text-align:center; }
+.di-workbench .pc-field { font-size:13px; min-width:0; }
+.di-workbench :is(button,input,select,textarea,summary):focus-visible,.di-workbench [tabindex="-1"]:focus-visible { outline:2px solid var(--pc-accent); outline-offset:3px; }
+.di-workbench :is(input,textarea) { caret-color:var(--pc-accent); }
+.di-workbench ::selection { background:var(--pc-accent-soft,#efedff); color:var(--pc-ink); }
+.di-workbench { scrollbar-color:var(--pc-muted) var(--pc-bg,#fbfbfd); }
+.di-workbench button:disabled { cursor:not-allowed; }
+.di-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding:18px 0; border-block:1px solid var(--pc-line); }
+.di-toolbar>div { min-width:0; }
+.di-toolbar strong { overflow-wrap:anywhere; }
+.di-toolbar .di-note { margin-bottom:0; }
+.di-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.di-progress { display:flex; align-items:center; flex-wrap:wrap; gap:8px 18px; margin:0; padding:16px 0; font-size:13px; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--pc-line); }
+.di-progress span { color:var(--pc-muted); }
+.di-proposal { padding:16px; margin:16px 0; background:var(--pc-accent-soft,#efedff); border-radius:9px; }
+.di-proposal p { margin:6px 0 14px; }
+.di-samples { margin-top:8px; }
+.di-cell { max-height:7.5em; overflow:auto; }
+.di-bulk { margin:16px 0; }
+.di-exclusions { padding:8px 0; border-bottom:1px solid var(--pc-line); }
+.di-exclusions .pc-field { max-width:580px; margin:12px 0; }
+.di-filter { max-width:320px; margin:22px 0 14px; }
+.di-batch-nav { display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-top:22px; padding-top:16px; border-top:1px solid var(--pc-line); }
+.di-batch-nav .pc-field { min-width:200px; margin:0; }
+.di-checkbox { align-items:center; min-height:44px; }
+.di-checkbox input { width:18px; height:18px; margin:0; }
+.di-error p { margin:7px 0 12px; }
+.di-apply { padding:20px 0; border-top:1px solid var(--pc-line); }
+.di-apply p { max-width:68ch; }
+.di-source>h4 { margin:20px 0 10px; }
+@media (max-width:620px) {
+  .di-toolbar,.di-actions,.di-batch-nav,.di-apply { align-items:stretch; }
+  .di-toolbar>div,.di-actions,.di-batch-nav .pc-field { width:100%; }
+  .di-actions .pc-button,.di-apply>.pc-button,.di-batch-nav>.pc-button { flex:1 1 100%; justify-content:center; }
+  .di-progress { gap:8px 14px; }
+  .di-progress strong { flex-basis:100%; }
+  .di-steps { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .di-steps li { font-size:13px; }
+  .di-filter { max-width:none; }
+}
+@media (prefers-reduced-motion:reduce) { .di-workbench * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }

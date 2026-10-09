@@ -13,9 +13,20 @@ export type IntakeRow = {
   previous?: { contactId: string; action: 'create' | 'link' };
 };
 export type IntakePreview = {
+  attemptId?: string;
   id: string; hash: string; sourceId: string; sourceDigest: string; actorId: string; directoryHash: string;
   mapping: ColumnMapping[]; excludedRows: number[]; cursor: number; nextCursor: number | null;
   totalRows: number; rows: IntakeRow[]; createdAt: string;
 };
 export type RowDecision = { rowNumber: number; action: 'create' | 'link' | 'skip'; contactId?: string };
 export type IntakeReceipt = { id: string; previewId: string; previewHash: string; sourceId: string; created: number; linked: number; skipped: number; rows: Array<{ rowNumber: number; action: 'create' | 'link' | 'skip'; contactId?: string }>; replayed: boolean };
+
+export type IntakeReviewPhase = 'mapping' | 'review' | 'applied';
+export type IntakeProgress = { totalRows: number; created: number; linked: number; skipped: number; pending: number; reviewed: number };
+export type IntakeReviewDraft = {
+  id: string; sourceId: string; sourceDigest: string; actorId: string; revision: number; updatedAt: string;
+  mapping: ColumnMapping[]; excludedRows: number[]; cursor: number; phase: IntakeReviewPhase;
+  previewId?: string; previewHash?: string; decisions: RowDecision[];
+};
+export type IntakeReviewSummary = Pick<IntakeReviewDraft, 'sourceId' | 'revision' | 'updatedAt' | 'phase' | 'cursor'> & { title: string; progress: IntakeProgress };
+export type IntakeReviewWorkspace = { review: IntakeReviewDraft | null; preview: IntakePreview | null; progress: IntakeProgress; previewStale: boolean };

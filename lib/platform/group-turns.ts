@@ -8,6 +8,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { AuthUser } from '../server/auth';
 import { db, WriteConflictError } from '../server/db';
 import { field, HttpError } from '../server/http';
+import { fitsUtf8Budget } from '../server/utf8';
 import { getRecord, listRecords, type PlatformRecord } from './records';
 import { getGroupContext, type GroupCapsule, type GroupRoom, type GroupWorld } from './groups';
 import type { AgentConfig } from './agents';
@@ -24,6 +25,10 @@ export type GroupTurnRecord = PlatformRecord<GroupTurn>;
 export type GroupTextGenerator = (input: { system: string; user: string }) => Promise<string>;
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 const kind = 'platform:group_turn';
+const GROUP_HISTORY_BYTES = 8_000;
+const GROUP_USER_BYTES = 11_500;
+const GROUP_SYSTEM_BYTES = 12_000;
+const GROUP_REPLY_BYTES = 3_000;
 const stored = (data: GroupTurn, revision: number, updatedAt: string) => JSON.stringify({ revision, updatedAt, data });
 
 function decode(row: Record<string, unknown>): GroupTurnRecord {
@@ -56,6 +61,10 @@ function modelInput(capsule: GroupCapsule, agent: PlatformRecord<AgentConfig>, a
     `Audience: ${JSON.stringify(capsule.participants)}`,
     capsule.text || 'Authorized relationship evidence: none.',
   ].join('\n\n');
+  // These are the exact strings passed to the provider adapter. Count UTF-8
+  // bytes after JSON escaping so multibyte text cannot pass a character-only
+  // limit and then expand on the wire. This excludes provider HTTP metadata.
+  if (!fitsUtf8Budget(system, GROUP_SYSTEM_BYTES)) throw new HttpError(400, 'GroupAI context exceeds the provider input limit. Shorten the room evidence and try again.');
   const current = { participant: actorName, message: text };
   const history: { participant: string; participantId: string; message: string; aiRepresentative: string; aiReply: string; evidenceIds: string[] }[] = [];
   // Include only complete, contiguous recent replies. A truncated message/reply
@@ -65,11 +74,12 @@ function modelInput(capsule: GroupCapsule, agent: PlatformRecord<AgentConfig>, a
       message: turn.data.inputText, aiRepresentative: turn.data.agentName,
       aiReply: turn.data.replyText || '', evidenceIds: turn.data.evidenceIds };
     const candidate = [entry, ...history];
-    if (JSON.stringify(candidate).length > 8000 || JSON.stringify({ history: candidate, current }).length > 11500) break;
+    if (!fitsUtf8Budget(JSON.stringify(candidate), GROUP_HISTORY_BYTES) ||
+        !fitsUtf8Budget(JSON.stringify({ history: candidate, current }), GROUP_USER_BYTES)) break;
     history.unshift(entry);
   }
   const user = JSON.stringify({ history, current });
-  if (user.length > 11500) throw new HttpError(400, 'This message is too long for a GroupAI turn. Shorten it and try again.');
+  if (!fitsUtf8Budget(user, GROUP_USER_BYTES)) throw new HttpError(400, 'This message is too long for a GroupAI turn. Shorten it and try again.');
   return { system, user };
 }
 
@@ -126,13 +136,16 @@ export async function createGroupTurn(user: AuthUser, body: Record<string, unkno
   const requestedSnapshot = field(body, 'snapshotId', 120);
   const { room, world } = await currentRoom(user, roomId);
   const actor = assertActor(room, world, memberId);
-  if (JSON.stringify({ history: [], current: { participant: actor.name, message: text } }).length > 11500) {
+  if (!fitsUtf8Budget(JSON.stringify({ history: [], current: { participant: actor.name, message: text } }), GROUP_USER_BYTES)) {
     throw new HttpError(400, 'This message is too long for a GroupAI turn. Shorten it and try again.');
   }
   const agent = await getRecord<AgentConfig>(user.organizationId, 'agent_definition', agentId);
   if (agent.status !== 'draft') throw new HttpError(409, 'The selected agent is not an editable draft.');
   const capsule = await getGroupContext(user, roomId);
   if (capsule.snapshotId !== requestedSnapshot) throw new HttpError(409, 'Room context changed. Inspect the current audience before asking GroupAI.');
+  // Fail deterministic provider-size errors before reserving a durable request
+  // key. History is added later and is admitted only as complete bounded turns.
+  modelInput(capsule, agent, actor.name, text, []);
   const inputHash = hash(JSON.stringify({ roomId, agentId, agentRevision: agent.revision, memberId, text, requestId, requestedSnapshot }));
   const id = `group-turn:${hash(JSON.stringify([user.organizationId, user.id, roomId, requestId]))}`;
   const database = await db();
@@ -166,7 +179,7 @@ export async function createGroupTurn(user: AuthUser, body: Record<string, unkno
   let replyText: string;
   try {
     replyText = (await generate(modelInput(capsule, agent, actor.name, text, prior))).trim();
-    if (!replyText || replyText.length > 3000) throw new Error('Invalid GroupAI model reply');
+    if (!replyText || !fitsUtf8Budget(replyText, GROUP_REPLY_BYTES)) throw new Error('Invalid GroupAI model reply');
   } catch {
     await updateTurn(user, id, reserved, { ...data, status: 'failed', reason: 'The model did not complete a valid reply.' }, 'failed');
     throw new HttpError(503, 'GroupAI could not generate a reply. The request was not retried.');

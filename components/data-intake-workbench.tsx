@@ -2,121 +2,154 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, FileSpreadsheet, Sparkles, Upload } from 'lucide-react';
-import { INTAKE_TARGETS, type ColumnMapping, type IntakeInspection, type IntakePreview, type IntakeReceipt, type IntakeTarget, type MappingSuggestion, type RowDecision } from '../lib/data-intake/contracts';
+import { INTAKE_TARGETS, type ColumnMapping, type IntakeInspection, type IntakePreview, type IntakeProgress, type IntakeReceipt, type IntakeReviewDraft, type IntakeReviewPhase, type IntakeReviewSummary, type IntakeReviewWorkspace, type IntakeTarget, type MappingSuggestion, type RowDecision } from '../lib/data-intake/contracts';
+import { filteredRows, parseExcludedRows, prepareRows, reviewFingerprint, rowBlocked, safeExistingRow, validNewRow, type RowFilter } from '../lib/data-intake/workspace-view';
 import '../app/data-intake.css';
 
 type SourceChoice = { id: string; title: string; format: string };
 const labels: Record<IntakeTarget, string> = { unknown: 'Needs your choice', skip: 'Skip column', name: 'Customer name', email: 'Customer email', phone: 'Phone with country code', stage: 'Customer stage', notes: 'Customer notes', date: 'Context date (YYYY-MM-DD)', context: 'Customer context (text)', doNotContact: 'Do not contact / opt-out' };
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { credentials: 'same-origin', cache: 'no-store', ...init });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.error || `Request failed (${response.status}). Refresh and try again.`);
-  return result as T;
+  const controller = new AbortController();
+  const callerSignal = init?.signal;
+  let timedOut = false;
+  const abortFromCaller = () => controller.abort(callerSignal?.reason);
+  if (callerSignal?.aborted) abortFromCaller();
+  else callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
+  const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 65000);
+  try {
+    const response = await fetch(url, { credentials: 'same-origin', cache: 'no-store', ...init, signal: controller.signal });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `Request failed (${response.status}). Reload the saved review and try again.`);
+    return result as T;
+  } catch (failure) {
+    if (timedOut) throw new Error('The request timed out after 65 seconds. Your local input is still here. Check saved progress before repeating a change.');
+    if (callerSignal?.aborted) throw new Error('The request was interrupted. Your local input is still here. Check saved progress before repeating a change.');
+    throw failure;
+  } finally {
+    clearTimeout(timeout);
+    callerSignal?.removeEventListener('abort', abortFromCaller);
+  }
 }
 const intake = <T,>(body: unknown) => request<T>('/api/data-intake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
-/** Extends Company brain's established Operate surface: import → map → evidence review → atomic apply. */
-export function DataIntakeWorkbench({ onApplied, sourceId, canWrite = false }: { onApplied?: () => Promise<unknown> | void; sourceId?: string; canWrite?: boolean }) {
-  const [sources, setSources] = useState<SourceChoice[]>([]), [selected, setSelected] = useState(sourceId || '');
+/** The saved review owns mapping and decisions; only Apply changes customer records. */
+export function DataIntakeWorkbench({ onApplied, onDirtyChange, onBusyChange, onOpenCustomers, sourceId, canWrite = false }: { onApplied?: () => Promise<unknown> | void; onDirtyChange?: (dirty: boolean) => void; onBusyChange?: (busy: boolean) => void; onOpenCustomers?: () => void; sourceId?: string; canWrite?: boolean }) {
+  const [sources, setSources] = useState<SourceChoice[]>([]), [reviews, setReviews] = useState<IntakeReviewSummary[]>([]), [selected, setSelected] = useState(sourceId || '');
   const [inspection, setInspection] = useState<IntakeInspection | null>(null), [mapping, setMapping] = useState<ColumnMapping[]>([]), [suggestions, setSuggestions] = useState<MappingSuggestion[]>([]);
-  const [preview, setPreview] = useState<IntakePreview | null>(null), [receipt, setReceipt] = useState<IntakeReceipt | null>(null);
-  const [mappingOpen, setMappingOpen] = useState(true);
-  const reviewHeading = useRef<HTMLHeadingElement>(null), receiptHeading = useRef<HTMLHeadingElement>(null);
-  const [decisions, setDecisions] = useState<Record<number, RowDecision>>({}), [excludedRows, setExcludedRows] = useState<number[]>([]), [page, setPage] = useState(0);
-  const [busy, setBusy] = useState(''), [error, setError] = useState(''), [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<IntakePreview | null>(null), [receipt, setReceipt] = useState<IntakeReceipt | null>(null), [review, setReview] = useState<IntakeReviewDraft | null>(null), [progress, setProgress] = useState<IntakeProgress | null>(null);
+  const [phase, setPhase] = useState<IntakeReviewPhase>('mapping'), [screen, setScreen] = useState<'import' | 'mapping' | 'review' | 'applied'>('import');
+  const [baseline, setBaseline] = useState(''), [decisions, setDecisions] = useState<Record<number, RowDecision>>({}), [excludedRows, setExcludedRows] = useState<number[]>([]), [exclusionText, setExclusionText] = useState(''), [page, setPage] = useState(0), [filter, setFilter] = useState<RowFilter>('all');
+  const [busy, setBusy] = useState(''), [error, setError] = useState(''), [notice, setNotice] = useState(''), [uncertain, setUncertain] = useState(false), [file, setFile] = useState<File | null>(null);
   const [paste, setPaste] = useState(''), [title, setTitle] = useState(''), [format, setFormat] = useState<'csv' | 'json'>('csv');
+  const heading = useRef<HTMLHeadingElement>(null), errorBox = useRef<HTMLDivElement>(null), generation = useRef(0);
+  const callbacks = useRef({ onDirtyChange, onBusyChange });
+  callbacks.current = { onDirtyChange, onBusyChange };
+  const [previewStale, setPreviewStale] = useState(false);
+  const fingerprint = reviewFingerprint(mapping, excludedRows, decisions, preview, phase);
+  const exclusionsEdited = exclusionText !== excludedRows.join(', ');
+  const dirty = !!inspection && (fingerprint !== baseline || exclusionsEdited) || !!file || !!paste || !!title;
+  useEffect(() => { callbacks.current.onDirtyChange?.(dirty || uncertain); }, [dirty, uncertain]);
+  useEffect(() => { callbacks.current.onBusyChange?.(!!busy); }, [busy]);
+  useEffect(() => () => { callbacks.current.onDirtyChange?.(false); callbacks.current.onBusyChange?.(false); }, []);
+  useEffect(() => { const guard = (event: BeforeUnloadEvent) => { if (dirty || uncertain || busy) { event.preventDefault(); event.returnValue = ''; } }; window.addEventListener('beforeunload', guard); return () => window.removeEventListener('beforeunload', guard); }, [dirty, uncertain, busy]);
+  useEffect(() => { heading.current?.focus({ preventScroll: true }); }, [screen, preview?.id]);
+  useEffect(() => { if (error) errorBox.current?.focus({ preventScroll: true }); }, [error]);
   const loadSources = useCallback(async () => {
-    const result = await request<{ sources: SourceChoice[] }>('/api/ingestion'); setSources(result.sources.filter(source => ['csv', 'json'].includes(source.format)));
+    const [result, saved] = await Promise.all([request<{ sources: SourceChoice[] }>('/api/ingestion'), intake<{ reviews: IntakeReviewSummary[] }>({ action: 'list' })]);
+    setSources(result.sources.filter(source => ['csv', 'json'].includes(source.format))); setReviews(saved.reviews);
   }, []);
-  useEffect(() => { if (canWrite) void loadSources().catch(failure => setError(failure.message)); }, [canWrite, loadSources]);
+  const adopt = useCallback((data: IntakeReviewWorkspace, inspected: IntakeInspection) => {
+    const saved = data.review, nextMapping = saved?.mapping || inspected.headers.map((_, column) => ({ column, target: 'unknown' as const }));
+    const nextDecisions = Object.fromEntries((saved?.decisions || []).map(item => [item.rowNumber, item]));
+    const nextExclusions = saved?.excludedRows || [], nextPhase = saved?.phase || 'mapping';
+    setInspection(inspected); setSelected(inspected.sourceId); setMapping(nextMapping); setReview(saved); setPreview(data.preview); setProgress(data.progress); setPhase(nextPhase); setScreen(nextPhase); setPreviewStale(!!data.previewStale);
+    setDecisions(nextDecisions); setExcludedRows(nextExclusions); setExclusionText(nextExclusions.join(', ')); setSuggestions([]); setReceipt(null); setPage(0); setFilter('all'); setUncertain(false);
+    setBaseline(reviewFingerprint(nextMapping, nextExclusions, nextDecisions, data.preview, nextPhase)); setFile(null); setPaste(''); setTitle('');
+  }, []);
   const inspect = useCallback(async (id: string) => {
-    const result = await intake<{ inspection: IntakeInspection }>({ action: 'inspect', sourceId: id });
-    setInspection(result.inspection); setSelected(id); setMapping(result.inspection.headers.map((_, column) => ({ column, target: 'unknown' }))); setSuggestions([]); setPreview(null); setReceipt(null); setDecisions({}); setExcludedRows([]); setPage(0); setMappingOpen(true);
-  }, []);
-  useEffect(() => {
-    if (sourceId && canWrite) { setBusy('Loading table'); void inspect(sourceId).catch(failure => setError(failure.message)).finally(() => setBusy('')); }
-  }, [sourceId, canWrite, inspect]);
-  useEffect(() => {
-    const heading = receipt ? receiptHeading.current : preview ? reviewHeading.current : null;
-    heading?.focus({ preventScroll: true });
-    heading?.scrollIntoView({ block: 'nearest' });
-  }, [preview?.id, receipt?.id]);
-  const work = async (label: string, operation: () => Promise<void>) => { setBusy(label); setError(''); try { await operation(); } catch (failure) { setError(failure instanceof Error ? failure.message : 'Could not complete table intake.'); } finally { setBusy(''); } };
+    const token = ++generation.current;
+    const [result, data] = await Promise.all([intake<{ inspection: IntakeInspection }>({ action: 'inspect', sourceId: id }), intake<IntakeReviewWorkspace>({ action: 'load', sourceId: id })]);
+    if (token === generation.current) adopt(data, result.inspection);
+  }, [adopt]);
+  useEffect(() => { if (canWrite) void loadSources().catch(failure => setError(failure.message)); }, [canWrite, loadSources]);
+  useEffect(() => { if (sourceId && canWrite) { setBusy('Loading saved review'); void inspect(sourceId).catch(failure => setError(failure.message)).finally(() => setBusy('')); } return () => { generation.current++; }; }, [sourceId, canWrite, inspect]);
+  const work = async (label: string, operation: () => Promise<void>) => { setBusy(label); setError(''); setNotice(''); try { await operation(); } catch (failure) { setError(failure instanceof Error ? failure.message : 'Could not complete table intake. Your local choices are still here.'); } finally { setBusy(''); } };
+  const mayDiscard = () => !dirty || window.confirm('Discard unsaved intake changes? Saved review progress will remain available.');
   const importSource = async () => {
+    if (!file && paste.length > 240000) throw new Error('This table exceeds 240,000 characters. Your full paste is preserved; split it into smaller source tables before importing.');
     let result: { source: SourceChoice };
     if (file) {
       if (file.size > 524288) throw new Error('Choose a UTF-8 table under 512 KB. Split larger exports into separate files.');
       const form = new FormData(); form.set('file', file); if (title.trim()) form.set('title', title.trim());
       result = await request('/api/ingestion', { method: 'POST', body: form });
     } else result = await request('/api/ingestion', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: title.trim() || 'Customer table', text: paste, format, kind: 'paste' }) });
-    await loadSources(); await inspect(result.source.id);
+    await inspect(result.source.id); await loadSources();
   };
-  const makePreview = async (cursor = 0, exclusions = excludedRows) => {
+  const save = async (): Promise<IntakeReviewDraft> => {
+    if (!inspection) throw new Error('Choose a table first.');
+    if (exclusionsEdited || preview && JSON.stringify(excludedRows) !== JSON.stringify(preview.excludedRows)) throw new Error('Use the source row exclusions and refresh checks before saving this review.');
+    const data = await intake<IntakeReviewWorkspace>({ action: 'save', sourceId: inspection.sourceId, expectedRevision: review?.revision || 0, mapping, excludedRows, cursor: preview?.cursor || 0, phase, previewId: preview?.id, previewHash: preview?.hash, decisions: Object.values(decisions) });
+    if (!data.review) throw new Error('The saved review was not returned. Reload saved progress to check its state.');
+    setReview(data.review); setProgress(data.progress); setBaseline(fingerprint); setNotice('Review saved. You can leave and resume this source.'); return data.review;
+  };
+  const makePreview = async (cursor = 0) => {
     if (!inspection) return;
-    const result = await intake<{ preview: IntakePreview }>({ action: 'preview', sourceId: inspection.sourceId, mapping, cursor, excludedRows: exclusions });
-    setPreview(result.preview); setReceipt(null); setPage(0); setMappingOpen(false);
-    setDecisions(Object.fromEntries(result.preview.rows.filter(row => row.excluded || row.previous).map(row => [row.rowNumber, { rowNumber: row.rowNumber, action: 'skip' }])));
+    if (exclusionsEdited) throw new Error('Use the source row exclusions before refreshing the review.');
+    const result = await intake<{ preview: IntakePreview }>({ action: 'preview', sourceId: inspection.sourceId, mapping, cursor, excludedRows, attemptId: crypto.randomUUID() });
+    setPreview(result.preview); setPreviewStale(false); setReceipt(null); setPage(0); setFilter('all'); setPhase('review'); setScreen('review');
+    setDecisions(Object.fromEntries(result.preview.rows.filter(row => row.excluded || row.previous).map(row => [row.rowNumber, { rowNumber: row.rowNumber, action: 'skip' as const }])));
+    setNotice('Fresh row checks are ready. Review and save your decisions before applying.');
   };
-  const updateMapping = (column: number, target: IntakeTarget) => { setMapping(current => current.map(item => item.column === column ? { column, target } : item)); setPreview(null); setReceipt(null); setDecisions({}); };
+  const updateMapping = (column: number, target: IntakeTarget) => { generation.current++; setMapping(current => current.map(item => item.column === column ? { column, target } : item)); setPreview(null); setReceipt(null); setDecisions({}); setPhase('mapping'); };
   const apply = async () => {
-    if (!preview) return;
-    const result = await intake<{ receipt: IntakeReceipt }>({ action: 'apply', previewId: preview.id, previewHash: preview.hash, decisions: Object.values(decisions) });
-    setReceipt(result.receipt); setMappingOpen(false);
-    if (onApplied) await onApplied();
+    if (!preview || !inspection) return;
+    const saved = dirty ? await save() : review;
+    if (!saved) throw new Error('Save this review before applying.');
+    let result: { receipt: IntakeReceipt };
+    try { result = await intake({ action: 'apply', previewId: preview.id, previewHash: preview.hash, reviewRevision: saved.revision, decisions: Object.values(decisions) }); }
+    catch (failure) { setUncertain(true); throw new Error(`${failure instanceof Error ? failure.message : 'The apply response was interrupted.'} Check saved progress before any further apply.`); }
+    setReceipt(result.receipt); setPhase('applied'); setScreen('applied'); setBaseline(reviewFingerprint(mapping, excludedRows, decisions, preview, 'applied'));
+    try { const data = await intake<IntakeReviewWorkspace>({ action: 'load', sourceId: inspection.sourceId }); setReview(data.review); setProgress(data.progress); }
+    catch { setNotice('Batch applied. Source progress could not refresh; check saved progress for the latest totals.'); }
+    try { await onApplied?.(); } catch { setNotice('Batch applied. The surrounding customer list could not refresh; reload that list to see the saved customers.'); }
   };
-  const stage = receipt ? 3 : preview ? 2 : inspection ? 1 : 0;
-  const chosen = preview ? preview.rows.filter(row => !!decisions[row.rowNumber]).length : 0;
+  const chosen = preview?.rows.filter(row => !!decisions[row.rowNumber]).length || 0;
   const excludedChanged = !!preview && JSON.stringify(excludedRows) !== JSON.stringify(preview.excludedRows);
+  const shownRows = preview ? filteredRows(preview.rows, decisions, filter) : [];
+  useEffect(() => { setPage(current => Math.min(current, Math.max(0, Math.ceil(shownRows.length / 20) - 1))); }, [shownRows.length]);
+  const stage = screen === 'import' ? 0 : screen === 'mapping' ? 1 : screen === 'review' ? 2 : 3;
+  const locked = !!busy || uncertain;
   if (!canWrite) return <section className="di-workbench"><h3>Customer table intake</h3><p className="pc-muted">An owner or operator can map and review customer tables.</p></section>;
 
   return <section className="di-workbench" aria-label="Customer table intake" aria-busy={!!busy}>
-    <header className="di-heading"><div><h3><FileSpreadsheet size={18} aria-hidden="true"/>Customer table intake</h3><p>Map a CSV or JSON export, review each customer, then apply a batch.</p></div></header>
+    <header className="di-heading"><div><h3><FileSpreadsheet size={18} aria-hidden="true"/>Customer table intake</h3><p>Import a source, map its columns, then review and apply customer changes.</p></div></header>
     <ol className="di-steps" aria-label="Intake progress">{['Import table', 'Map columns', 'Review rows', 'Applied'].map((label, index) => <li key={label} aria-current={stage === index ? 'step' : undefined} data-done={index < stage}>{label}{index < 3 && <ArrowRight size={12} aria-hidden="true"/>}</li>)}</ol>
     <p className="di-note">Customer tables stay private source material. Importing never approves company knowledge, verifies identity, or grants contact permission.</p>
-    {error && <p role="alert" className="di-error">{error}</p>}
-    {busy && <p role="status" className="di-status">{busy}…</p>}
-    {receipt && preview && <div className="di-applied" role="status"><h4 ref={receiptHeading} tabIndex={-1}>Batch applied{receipt.replayed ? ' · saved receipt' : ''}</h4><p>{receipt.created} created · {receipt.linked} linked · {receipt.skipped} skipped.</p><p className="di-note">{preview.nextCursor !== null ? `${preview.totalRows - preview.nextCursor} source rows remain in later batches.` : 'This is the last source batch.'}</p><div className="di-applied-actions">{preview.nextCursor !== null && <button type="button" className="pc-button primary" disabled={!!busy} onClick={() => void work('Preparing next batch', () => makePreview(preview.nextCursor!))}>Review next {Math.min(200, preview.totalRows - preview.nextCursor)} rows<ArrowRight size={14} aria-hidden="true"/></button>}<button type="button" className={`pc-button${preview.nextCursor === null ? ' primary' : ''}`} disabled={!!busy} onClick={() => { setInspection(null); setPreview(null); setReceipt(null); setMapping([]); setDecisions({}); setMappingOpen(true); setFile(null); setPaste(''); setTitle(''); }}>Choose another table</button></div></div>}
-    <details className="di-source" open={!inspection}>
-      <summary>{inspection ? `Source: ${inspection.title} · ${inspection.totalRows} rows` : 'Choose or import a table'}</summary>
-      <div className="di-import-grid">
-        <div><label className="pc-field">Saved table<select className="pc-input" value={selected} disabled={!!busy} onChange={event => setSelected(event.target.value)}><option value="">Choose a source</option>{sources.map(source => <option key={source.id} value={source.id}>{source.title}</option>)}</select></label><button type="button" className="pc-button" disabled={!selected || !!busy} onClick={() => void work('Reading source', () => inspect(selected))}>Open saved table</button></div>
-        <div><label className="pc-field">New table title<input className="pc-input" value={title} maxLength={200} disabled={!!busy} onChange={event => setTitle(event.target.value)}/></label><label className="pc-field">CSV or JSON file<input type="file" accept=".csv,.json,text/csv,application/json" disabled={!!busy} onChange={event => setFile(event.target.files?.[0] || null)}/></label><p className="di-note">UTF-8 · up to 512 KB, 240,000 characters, 1,000 rows and 50 columns. Review in batches of 200. Split larger exports into separate sources.</p>
-          {!file && <details><summary>Paste a table instead</summary><label className="pc-field">Table format<select className="pc-input" value={format} disabled={!!busy} onChange={event => setFormat(event.target.value as 'csv' | 'json')}><option value="csv">CSV with headers</option><option value="json">JSON array of objects</option></select></label><label className="pc-field">Table text<textarea className="pc-input" rows={5} value={paste} maxLength={240000} disabled={!!busy} onChange={event => setPaste(event.target.value)}/></label></details>}
-          <button type="button" className="pc-button primary" disabled={!!busy || !file && !paste.trim()} onClick={() => void work('Importing table', importSource)}><Upload size={14} aria-hidden="true"/>Import table</button>
-        </div>
-      </div>
-    </details>
-    {inspection && <details className="di-mapping" open={mappingOpen} onToggle={event => setMappingOpen(event.currentTarget.open)}>
-      <summary><span>{preview ? `${mapping.length} source columns reviewed · ${mapping.filter(item => item.target !== 'skip').length} mapped, ${mapping.filter(item => item.target === 'skip').length} skipped` : 'Map source columns'}</span>{preview && !receipt && !mappingOpen && <button type="button" className="pc-button" disabled={!!busy} onClick={event => { event.preventDefault(); setMappingOpen(true); }}>Edit mappings</button>}</summary>
-      <div className="di-section-heading"><div><h4>Map source columns</h4><p>Choose the known customer fields. Keep extra columns as customer context, or skip them.</p></div><button type="button" className="pc-button" disabled={!!busy || !!receipt} onClick={() => void work('Asking Azure for column suggestions', async () => {
-        const result = await intake<{ suggestions: MappingSuggestion[] }>({ action: 'suggest', sourceId: inspection.sourceId }); setSuggestions(result.suggestions); setMapping(result.suggestions.map(({ column, target }) => ({ column, target }))); setPreview(null); setDecisions({});
-      })}><Sparkles size={14} aria-hidden="true"/>Suggest mapping with AI</button></div>
-      <div className="di-columns">{inspection.headers.map((header, column) => <div className="di-column" key={column}>
-        <div><strong>{header}</strong><details><summary>Source examples</summary>{inspection.samples.map((row, index) => <p className="di-cell" key={index}>{row[column] || '(empty)'}</p>)}</details></div>
-        <label className="pc-field"><span className="di-visually-hidden">Use {header} as</span><select className="pc-input" aria-label={`Use ${header} as`} value={mapping[column]?.target || 'unknown'} disabled={!!busy || !!receipt} onChange={event => updateMapping(column, event.target.value as IntakeTarget)}>{INTAKE_TARGETS.map(target => <option key={target} value={target}>{labels[target]}</option>)}</select>{suggestions[column] && <span className="di-note">AI suggestion: {suggestions[column].reason}{suggestions[column].candidates.length ? ` Possible fields: ${suggestions[column].candidates.map(target => labels[target]).join(', ')}.` : ''}</span>}</label>
-      </div>)}</div>
-      <p className="di-note">Phones need an explicit country code. Dates need YYYY-MM-DD. Recognized true opt-out values remain a contact restriction even when their column is skipped.</p>
-      {!receipt && <button type="button" className="pc-button primary" disabled={!!busy || mapping.some(item => item.target === 'unknown')} onClick={() => void work('Building reviewed preview', () => makePreview(preview?.cursor || 0))}>{preview ? 'Refresh preview' : 'Review mapped rows'}<ArrowRight size={14} aria-hidden="true"/></button>}
-    </details>}
-    {preview && <details className="di-review" key={receipt?.id || preview.id} open={!receipt}>
-      <summary hidden={!receipt}>View reviewed rows and source evidence</summary>
-      <div className="di-section-heading"><div><h4 ref={reviewHeading} tabIndex={-1}>Review source rows {preview.cursor + 1}–{preview.cursor + preview.rows.length}</h4><p>{preview.totalRows} rows in this source. {chosen} of {preview.rows.length} decisions made in this batch.</p></div>{!receipt && <button type="button" className="pc-button" disabled={!!busy} onClick={() => setDecisions(current => ({ ...Object.fromEntries(preview.rows.map(row => [row.rowNumber, { rowNumber: row.rowNumber, action: 'skip' as const }])), ...current }))}>Skip undecided rows</button>}</div>
-      <p className="di-note">Create uses only the mapped source values. Linking attaches source evidence and contact restrictions; it preserves the existing customer profile. No fuzzy merging.</p>
-      <div className="di-rows">{preview.rows.slice(page * 20, (page + 1) * 20).map(row => {
-        const blocked = row.excluded || !!row.previous || row.issues.some(issue => !issue.startsWith('Ambiguous customer match'));
-        const choice = decisions[row.rowNumber];
-        return <article className="di-row" key={row.rowNumber}>
-          <div className="di-row-identity"><span className="di-row-number">Row {row.rowNumber}</span><strong>{row.name || 'Missing customer name'}</strong><span>{[row.email, row.phone].filter(Boolean).join(' · ') || 'No email or phone mapped'}</span><span>{row.stage}{row.doNotContact ? ' · Do not contact' : ''}</span>{row.previous && <span className="di-status">Already applied; skip this row.</span>}</div>
-          <div className="di-row-evidence">{row.issues.length > 0 && <ul className="di-issues">{row.issues.map(issue => <li key={issue}>{issue}</li>)}</ul>}{row.matches.map(match => <p className="di-note" key={match.id}>{match.reasons.join(' + ')} matches {match.name} ({match.email || match.phone || 'no contact channel'}).</p>)}<details><summary>Why these values? View source evidence</summary><dl>{row.evidence.map((item, index) => <div key={index}><dt>{item.column} → {labels[item.target]}</dt><dd>{item.value || '(empty)'}</dd></div>)}</dl><p className="di-note">Source: {inspection?.title} · data row {row.rowNumber} · digest {preview.sourceDigest.slice(0, 12)}. Extra mapped context remains customer-specific.</p></details></div>
-          <div className="di-row-actions"><label className="pc-field">Row {row.rowNumber} decision<select className="pc-input" disabled={!!busy || !!receipt} value={choice?.action === 'link' ? `link:${choice.contactId}` : choice?.action || ''} onChange={event => {
-            const value = event.target.value;
-            setDecisions(current => { const next = { ...current }; if (!value) delete next[row.rowNumber]; else next[row.rowNumber] = value.startsWith('link:') ? { rowNumber: row.rowNumber, action: 'link', contactId: value.slice(5) } : { rowNumber: row.rowNumber, action: value as 'create' | 'skip' }; return next; });
-          }}><option value="">Choose a decision</option><option value="create" disabled={blocked || row.matches.length > 0}>Create customer</option>{row.matches.map(match => <option key={match.id} value={`link:${match.id}`} disabled={blocked}>Link: {match.name} · {match.email || match.phone || match.id.slice(-8)}</option>)}<option value="skip">Skip row</option></select></label><label className="di-checkbox"><input type="checkbox" checked={excludedRows.includes(row.rowNumber)} disabled={!!busy || !!receipt} onChange={event => setExcludedRows(current => event.target.checked ? [...current, row.rowNumber].sort((a, b) => a - b) : current.filter(value => value !== row.rowNumber))}/>Exclude from mapping checks</label></div>
-        </article>;
-      })}</div>
-      {preview.rows.length > 20 && <div className="di-pagination"><button type="button" className="pc-button" disabled={page === 0} onClick={() => setPage(current => current - 1)}>Previous rows</button><span>Showing {page * 20 + 1}–{Math.min((page + 1) * 20, preview.rows.length)} of this batch</span><button type="button" className="pc-button" disabled={(page + 1) * 20 >= preview.rows.length} onClick={() => setPage(current => current + 1)}>Next rows</button></div>}
-      {excludedChanged && !receipt && <div className="di-refresh"><p className="di-status">Exclusions changed. Refresh the preview to recheck duplicate emails and review the updated batch.</p><button type="button" className="pc-button" disabled={!!busy} onClick={() => void work('Refreshing row checks', () => makePreview(preview.cursor))}>Refresh preview</button></div>}
-      {!receipt && <div className="di-apply"><p>Apply {Object.values(decisions).filter(item => item.action === 'create').length} creates and {Object.values(decisions).filter(item => item.action === 'link').length} links in one atomic batch.</p><button type="button" className="pc-button primary" disabled={!!busy || chosen !== preview.rows.length || excludedChanged} onClick={() => void work('Applying reviewed batch', apply)}>Apply reviewed batch</button></div>}
-    </details>}
+    {error && <div ref={errorBox} tabIndex={-1} role="alert" className="di-error"><strong>Intake needs attention</strong><p>{error}</p>{inspection && <button type="button" className="pc-button" disabled={!!busy} onClick={() => { if (uncertain || mayDiscard()) void work('Checking saved progress', () => inspect(inspection.sourceId)); }}>{uncertain ? 'Check saved progress' : 'Reload saved review'}</button>}</div>}
+    {busy && <p role="status" className="di-status">{busy}…</p>}{notice && <p role="status" className="di-status">{notice}</p>}
+    {inspection && <div className="di-toolbar"><div><strong>{inspection.title}</strong><p className="di-note">{dirty ? 'Unsaved changes' : review ? `Saved review · revision ${review.revision}` : 'Mapping has not been saved'}{uncertain ? ' · Apply outcome needs checking' : ''}</p></div><div className="di-actions"><button type="button" className="pc-button" disabled={locked} onClick={() => { if (mayDiscard()) { setScreen('import'); setInspection(null); setPreview(null); setReceipt(null); setReview(null); setProgress(null); setBaseline(''); } }}>Choose another table</button><button type="button" className="pc-button primary" disabled={locked || !dirty && !!review || phase === 'applied'} onClick={() => void work('Saving review', async () => { await save(); })}>Save review</button></div></div>}
+    {progress && inspection && <p className="di-progress" aria-label="Whole source progress"><strong>Whole source · {progress.totalRows} rows</strong><span>{progress.created} created</span><span>{progress.linked} linked</span><span>{progress.skipped} skipped</span><span>{progress.pending} pending</span></p>}
+    {screen === 'import' && <div className="di-source"><h4 ref={heading} tabIndex={-1}>Choose or import a table</h4><div className="di-import-grid">
+      <div><label className="pc-field">Saved table<select className="pc-input" value={selected} disabled={locked} onChange={event => setSelected(event.target.value)}><option value="">Choose a source</option>{sources.map(source => { const saved = reviews.find(item => item.sourceId === source.id); return <option key={source.id} value={source.id}>{source.title}{saved ? ` · ${saved.phase} saved` : ''}</option>; })}</select></label><button type="button" className="pc-button" disabled={!selected || locked} onClick={() => { if (mayDiscard()) void work('Loading saved review', () => inspect(selected)); }}>Open / resume table</button><p className="di-note">Saved mapping and row decisions reopen here. Changes remain local until you save.</p></div>
+      <div><label className="pc-field">New table title<input className="pc-input" value={title} maxLength={200} disabled={locked} onChange={event => setTitle(event.target.value)}/></label><label className="pc-field">CSV or JSON file<input type="file" accept=".csv,.json,text/csv,application/json" disabled={locked} onChange={event => setFile(event.target.files?.[0] || null)}/></label><p className="di-note">UTF-8 · up to 512 KB, 240,000 characters, 1,000 rows and 50 columns. Review in batches of 200.</p>{!file && <details><summary>Paste a table instead</summary><label className="pc-field">Table format<select className="pc-input" value={format} disabled={locked} onChange={event => setFormat(event.target.value as 'csv' | 'json')}><option value="csv">CSV with headers</option><option value="json">JSON array of objects</option></select></label><label className="pc-field">Table text<textarea className="pc-input" rows={5} value={paste} aria-invalid={paste.length > 240000} aria-describedby="di-paste-limit" disabled={locked} onChange={event => setPaste(event.target.value)}/></label><p id="di-paste-limit" className={paste.length > 240000 ? 'di-error' : 'di-note'} role={paste.length > 240000 ? 'alert' : undefined}>{paste.length.toLocaleString()} / 240,000 characters.{paste.length > 240000 ? ' Your full paste is preserved. Split it into smaller source tables before importing.' : ''}</p></details>}<button type="button" className="pc-button primary" disabled={locked || !file && (!paste.trim() || paste.length > 240000)} onClick={() => void work('Importing table', importSource)}><Upload size={14} aria-hidden="true"/>Import table</button></div>
+    </div></div>}
+    {inspection && screen === 'mapping' && <div className="di-mapping"><div className="di-section-heading"><div><h4 ref={heading} tabIndex={-1}>Map source columns</h4><p>Review sample values beside each field. Keep extra columns as context, or skip them.</p></div><button type="button" className="pc-button" disabled={locked} onClick={() => void work('Asking Azure for mapping suggestions', async () => { const token = generation.current; const result = await intake<{ suggestions: MappingSuggestion[] }>({ action: 'suggest', sourceId: inspection.sourceId }); if (token === generation.current) setSuggestions(result.suggestions); })}><Sparkles size={14} aria-hidden="true"/>Suggest mapping with AI</button></div>
+      {suggestions.length > 0 && <div className="di-proposal"><strong>Suggested mapping is ready for review</strong><p>Suggestions below do not change your mapping until you choose Use.</p><div className="di-actions"><button type="button" className="pc-button" disabled={locked} onClick={() => { setMapping(suggestions.map(({ column, target }) => ({ column, target }))); setPreview(null); setDecisions({}); setPhase('mapping'); setSuggestions([]); }}>Use these suggestions</button><button type="button" className="pc-button" disabled={locked} onClick={() => setSuggestions([])}>Dismiss suggestions</button></div></div>}
+      <div className="di-columns">{inspection.headers.map((header, column) => { const suggestion = suggestions.find(item => item.column === column); return <div className="di-column" key={column}><div><strong>{header}</strong><div className="di-samples" aria-label={`Sample values for ${header}`}>{inspection.samples.slice(0, 3).map((row, index) => <p className="di-cell" key={index}>{row[column] || '(empty)'}</p>)}</div></div><label className="pc-field">Use {header} as<select className="pc-input" value={mapping.find(item => item.column === column)?.target || 'unknown'} disabled={locked} onChange={event => updateMapping(column, event.target.value as IntakeTarget)}>{INTAKE_TARGETS.map(target => <option key={target} value={target}>{labels[target]}</option>)}</select>{suggestion && <span className="di-note">Proposed: {labels[suggestion.target]}. {suggestion.reason}{suggestion.candidates.length ? ` Possible fields: ${suggestion.candidates.map(target => labels[target]).join(', ')}.` : ''}</span>}</label></div>; })}</div>
+      <p className="di-note">Phones need a country code. Dates need YYYY-MM-DD. Recognized opt-outs remain contact restrictions even when their column is skipped.</p><button type="button" className="pc-button primary" disabled={locked || mapping.some(item => item.target === 'unknown')} onClick={() => { if (preview && phase === 'review') setScreen('review'); else void work('Checking mapped rows', () => makePreview(preview?.cursor || 0)); }}>{preview && phase === 'review' ? 'Return to row review' : 'Review mapped rows'}<ArrowRight size={14} aria-hidden="true"/></button>{mapping.some(item => item.target === 'unknown') && <p className="di-note">Choose a field or Skip for every column to continue. You can save an incomplete mapping.</p>}
+    </div>}
+    {inspection && preview && screen === 'applied' && <div className="di-applied"><h4 ref={heading} tabIndex={-1}>Batch applied{receipt?.replayed ? ' · saved receipt' : ''}</h4><p>{receipt ? `${receipt.created} created · ${receipt.linked} linked · ${receipt.skipped} skipped in this batch.` : 'This batch was applied in a saved review.'}</p><p>Source rows {preview.cursor + 1}–{preview.cursor + preview.rows.length}. {preview.nextCursor !== null ? 'Later source rows still need review.' : 'This is the last source batch. Check whole-source progress for skipped or pending rows.'}</p><div className="di-actions">{preview.nextCursor === null && onOpenCustomers && <button type="button" className="pc-button primary" disabled={locked} onClick={onOpenCustomers}>View customers</button>}{preview.nextCursor !== null && <button type="button" className="pc-button primary" disabled={locked} onClick={() => void work('Checking next batch', () => makePreview(preview.nextCursor!))}>Review next batch</button>}<button type="button" className="pc-button" disabled={locked} onClick={() => void work('Checking skipped rows again', () => makePreview(preview.cursor))}>Revisit skipped rows in this batch</button><button type="button" className="pc-button" disabled={locked} onClick={() => setScreen('review')}>View applied decisions</button></div></div>}
+    {inspection && preview && screen === 'review' && <div className="di-review"><div className="di-section-heading"><div><h4 ref={heading} tabIndex={-1}>Review source rows {preview.cursor + 1}–{preview.cursor + preview.rows.length}</h4><p>{chosen} of {preview.rows.length} batch decisions prepared. {phase === 'applied' ? 'These decisions have been applied.' : 'Prepared decisions do not change customers until Apply.'}</p></div><button type="button" className="pc-button" disabled={locked || phase === 'applied'} onClick={() => setScreen('mapping')}>Edit mappings</button></div>
+      <p className="di-note">Create uses mapped source values. Linking attaches evidence and contact restrictions while preserving the existing profile. Name-only or ambiguous matches need individual review.</p>
+      {phase !== 'applied' && <><div className="di-actions di-bulk"><button type="button" className="pc-button" disabled={locked || excludedChanged} onClick={() => setDecisions(current => prepareRows(preview.rows, current, 'create'))}>Prepare valid new customers ({preview.rows.filter(row => validNewRow(row) && !decisions[row.rowNumber]).length})</button><button type="button" className="pc-button" disabled={locked || excludedChanged} onClick={() => setDecisions(current => prepareRows(preview.rows, current, 'link'))}>Prepare exact existing matches ({preview.rows.filter(row => safeExistingRow(row) && !decisions[row.rowNumber]).length})</button><button type="button" className="pc-button" disabled={locked} onClick={() => setDecisions(current => prepareRows(preview.rows, current, 'skip'))}>Skip undecided rows</button></div>
+      <details className="di-exclusions"><summary>Exclude source rows, including rows in later batches</summary><p className="di-note">Use the source row numbers shown in review, excluding the header. Exclude a duplicate in a later batch here, then refresh checks. Exclusions affect the whole source.</p><label className="pc-field">Excluded source row numbers<input className="pc-input" value={exclusionText} placeholder="For example: 2, 205" disabled={locked} onChange={event => setExclusionText(event.target.value)}/></label><button type="button" className="pc-button" disabled={locked} onClick={() => { try { const rows = parseExcludedRows(exclusionText, inspection.totalRows); setExcludedRows(rows); setExclusionText(rows.join(', ')); setError(''); } catch (failure) { setError((failure as Error).message); } }}>Use source row exclusions</button></details></>}
+      {previewStale && phase !== 'applied' && <p role="status" className="di-status">Customer records changed since these checks were saved. Refresh checks before applying; your saved decisions remain visible until then.</p>}
+      <label className="pc-field di-filter">Show rows<select className="pc-input" value={filter} onChange={event => { setFilter(event.target.value as RowFilter); setPage(0); }}>{(['all', 'exceptions', 'new', 'existing', 'undecided'] as RowFilter[]).map(value => <option key={value} value={value}>{{ all: 'All rows', exceptions: 'Exceptions', new: 'Valid new customers', existing: 'Safe exact matches', undecided: 'Undecided' }[value]} ({filteredRows(preview.rows, decisions, value).length})</option>)}</select></label>
+      <div className="di-rows">{shownRows.slice(page * 20, (page + 1) * 20).map(row => { const blocked = rowBlocked(row), choice = decisions[row.rowNumber]; return <article className="di-row" key={row.rowNumber}><div className="di-row-identity"><span className="di-row-number">Row {row.rowNumber}</span><strong>{row.name || 'Missing customer name'}</strong><span>{[row.email, row.phone].filter(Boolean).join(' · ') || 'No email or phone mapped'}</span><span>{row.stage}{row.doNotContact ? ' · Do not contact' : ''}</span>{row.previous && <span>Already applied; skip this row.</span>}{row.excluded && <span>Excluded from source checks</span>}</div><div className="di-row-evidence">{row.issues.length > 0 && <ul className="di-issues">{row.issues.map(issue => <li key={issue}>{issue}</li>)}</ul>}{row.matches.map(match => <p className="di-note" key={match.id}>{match.reasons.join(' + ')} matches {match.name} ({match.email || match.phone || 'no contact channel'}).</p>)}<details><summary>View source evidence</summary><dl>{row.evidence.map((item, index) => <div key={index}><dt>{item.column} → {labels[item.target]}</dt><dd>{item.value || '(empty)'}</dd></div>)}</dl><p className="di-note">Source: {inspection.title} · row {row.rowNumber} · digest {preview.sourceDigest.slice(0, 12)}.</p></details></div><div className="di-row-actions"><label className="pc-field">Row {row.rowNumber} decision<select className="pc-input" disabled={locked || phase === 'applied' || excludedChanged} value={choice?.action === 'link' ? `link:${choice.contactId}` : choice?.action || ''} onChange={event => { const value = event.target.value; setDecisions(current => { const next = { ...current }; if (!value) delete next[row.rowNumber]; else next[row.rowNumber] = value.startsWith('link:') ? { rowNumber: row.rowNumber, action: 'link', contactId: value.slice(5) } : { rowNumber: row.rowNumber, action: value as 'create' | 'skip' }; return next; }); }}><option value="">Choose a decision</option><option value="create" disabled={blocked || row.matches.length > 0}>Create customer</option>{row.matches.map(match => <option key={match.id} value={`link:${match.id}`} disabled={blocked}>Link: {match.name} · {match.email || match.phone || match.id.slice(-8)}</option>)}<option value="skip">Skip row</option></select></label><label className="di-checkbox"><input type="checkbox" checked={excludedRows.includes(row.rowNumber)} disabled={locked || phase === 'applied'} onChange={event => { const next = event.target.checked ? [...excludedRows, row.rowNumber].sort((a, b) => a - b) : excludedRows.filter(value => value !== row.rowNumber); setExcludedRows(next); setExclusionText(next.join(', ')); }}/>Exclude from source checks</label></div></article>; })}{shownRows.length === 0 && <p className="di-note">No rows match this filter. Choose another filter to continue reviewing.</p>}</div>
+      {shownRows.length > 20 && <div className="di-pagination"><button type="button" className="pc-button" disabled={page === 0 || locked} onClick={() => setPage(current => current - 1)}>Previous rows</button><span>Showing {page * 20 + 1}–{Math.min((page + 1) * 20, shownRows.length)} of {shownRows.length} filtered rows</span><button type="button" className="pc-button" disabled={(page + 1) * 20 >= shownRows.length || locked} onClick={() => setPage(current => current + 1)}>Next rows</button></div>}
+      {(excludedChanged || exclusionsEdited) && phase !== 'applied' && <p role="status" className="di-status">Exclusions changed. Use the row numbers above, then refresh checks to resolve duplicates. Refresh clears this batch’s prepared decisions.</p>}
+      <div className="di-batch-nav"><label className="pc-field">Source batch<select className="pc-input" value={preview.cursor} disabled={locked} onChange={event => { const cursor = Number(event.target.value); if (window.confirm('Open fresh checks for this batch? Current prepared decisions will be replaced. Save the current review first if you want to resume it.')) void work('Checking source batch', () => makePreview(cursor)); }}>{Array.from({ length: Math.ceil(inspection.totalRows / inspection.batchSize) }, (_, index) => <option key={index} value={index * inspection.batchSize}>Rows {index * inspection.batchSize + 1}–{Math.min((index + 1) * inspection.batchSize, inspection.totalRows)}</option>)}</select></label>{phase !== 'applied' && <button type="button" className="pc-button" disabled={locked || exclusionsEdited} onClick={() => { if (!Object.keys(decisions).length || window.confirm('Refresh row checks and clear this batch’s prepared decisions?')) void work('Refreshing row checks', () => makePreview(preview.cursor)); }}>Refresh checks</button>}{phase === 'applied' && <button type="button" className="pc-button" onClick={() => setScreen('applied')}>Back to applied summary</button>}</div>
+      {phase !== 'applied' && <div className="di-apply"><div><strong>{Object.values(decisions).filter(item => item.action === 'create').length} creates · {Object.values(decisions).filter(item => item.action === 'link').length} links · {Object.values(decisions).filter(item => item.action === 'skip').length} skips</strong><p className="di-note">Apply saves this review, then commits this batch atomically. Contact permission remains unchanged.</p>{chosen !== preview.rows.length && <p className="di-note">Choose a decision for every row before applying.</p>}</div><button type="button" className="pc-button primary" disabled={locked || chosen !== preview.rows.length || excludedChanged || exclusionsEdited || previewStale} onClick={() => void work('Applying reviewed batch', apply)}>Apply reviewed batch</button></div>}
+    </div>}
   </section>;
 }

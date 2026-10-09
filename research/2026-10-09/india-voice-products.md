@@ -1,6 +1,6 @@
 # Indian business voice products: evidence and product choices
 
-**Research date:** 2026-10-09  
+**Research date:** 2026-10-09
 **Method:** static review of first-party public pages and documentation. No account, trial call, provider invocation, installation, or listening test was used. Vendor scale, latency, quality, and outcome figures below are vendor-published unless stated otherwise.
 
 ## What adoption is actually visible

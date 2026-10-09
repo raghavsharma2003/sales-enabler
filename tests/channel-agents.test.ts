@@ -15,6 +15,7 @@ import { POST as webhook } from '../app/api/integrations/telegram/webhook/[conne
 import { inboxOverview, linkInboxCustomer, saveInbound, sendInboxReply } from '../lib/messaging/service';
 import { createContact } from '../lib/server/store';
 import type { ChannelJob } from '../lib/channel-agents/contracts';
+import { utf8ByteLength } from '../lib/server/utf8';
 process.env.SQLITE_PATH = ':memory:'; delete process.env.DATABASE_URL;
 process.env.CONNECTOR_ENCRYPTION_KEY = '71'.repeat(32);
 process.env.AZURE_OPENAI_ENDPOINT = 'https://fictional-resource.openai.azure.com';
@@ -69,6 +70,56 @@ test('one claim, public-only grounding, AI disclosure and tenant-isolated transc
   await processChannelJob(f.user.organizationId, job.id, deps);
   assert.equal(calls, 1); assert.equal(generations, 1); assert.equal((await jobs(f))[0].state, 'accepted');
   await assert.rejects(channelOverview(other.user, job.threadId), /not found/);
+});
+test('channel provider envelopes use UTF-8 bytes and never expose rejected multibyte payloads', async () => {
+  const admitted = await fixture();
+  const admittedText = 'नमस्ते 😀 — office hours?';
+  await enqueue(admitted, admittedText, 'utf8-admitted');
+  const admittedJob = (await jobs(admitted))[0];
+  let inspected = false;
+  await processChannelJob(admitted.user.organizationId, admittedJob.id, {
+    generate: async (_actor, input) => {
+      inspected = true;
+      assert.ok(utf8ByteLength(input.system) <= 12_000);
+      assert.ok(utf8ByteLength(input.input) <= 12_000);
+      assert.equal(JSON.parse(input.input).participantMessage, admittedText);
+      return generated;
+    },
+    dispatch: async () => ({ state: 'accepted', providerId: 'utf8-admitted-receipt' }),
+  });
+  assert.equal(inspected, true);
+  assert.equal((await jobs(admitted))[0].state, 'accepted');
+
+  const inputFixture = await fixture();
+  const privateInput = 'न'.repeat(4_000);
+  await enqueue(inputFixture, privateInput, 'utf8-input');
+  const inputJob = (await jobs(inputFixture))[0];
+  let generations = 0, sends = 0;
+  await processChannelJob(inputFixture.user.organizationId, inputJob.id, {
+    generate: async () => { generations++; return generated; },
+    dispatch: async () => { sends++; return { state: 'accepted', providerId: 'must-not-send' }; },
+  });
+  const refusedInput = (await jobs(inputFixture))[0];
+  assert.equal(generations, 0);
+  assert.equal(sends, 0);
+  assert.equal(refusedInput.state, 'cancelled');
+  assert.doesNotMatch(refusedInput.reason || '', /न/u);
+
+  const outputFixture = await fixture();
+  await enqueue(outputFixture, 'Can you help?', 'utf8-output');
+  const outputJob = (await jobs(outputFixture))[0];
+  const privateOutput = '😀'.repeat(1_000);
+  assert.ok(privateOutput.length < 3_400);
+  assert.ok(utf8ByteLength(privateOutput) > 3_400);
+  sends = 0;
+  await processChannelJob(outputFixture.user.organizationId, outputJob.id, {
+    generate: async () => ({ ...generated, text: privateOutput }),
+    dispatch: async () => { sends++; return { state: 'accepted', providerId: 'must-not-send' }; },
+  });
+  const refusedOutput = (await jobs(outputFixture))[0];
+  assert.equal(sends, 0);
+  assert.equal(refusedOutput.state, 'cancelled');
+  assert.doesNotMatch(refusedOutput.reason || '', /😀/u);
 });
 test('handoff during Azure generation prevents provider egress', async () => {
   const f = await fixture(); await enqueue(f); const job = (await jobs(f))[0]; let sends = 0;

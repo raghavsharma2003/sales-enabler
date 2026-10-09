@@ -40,7 +40,7 @@ export function parseIntakeTable(raw: string, format: string): IntakeTable {
     if (!Array.isArray(value) || !value.length || value.length > MAX_TABLE_ROWS || value.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new HttpError(400, 'Use a JSON array of 1–1,000 objects with scalar fields.');
     headers = [...new Set(value.flatMap(item => Object.keys(item)))];
     rows = value.map(item => headers.map(header => {
-      const cell: unknown = item[header];
+      const cell: unknown = Object.hasOwn(item, header) ? item[header] : undefined;
       if (cell === undefined || cell === null) return '';
       if (!['string', 'number', 'boolean'].includes(typeof cell)) throw new HttpError(400, 'Nested JSON fields need a separate flat export.');
       return String(cell);
@@ -55,13 +55,14 @@ export function parseIntakeTable(raw: string, format: string): IntakeTable {
   return { headers, rows };
 }
 
-export function validateMapping(value: unknown, headers: string[]): ColumnMapping[] {
+export function validateMapping(value: unknown, headers: string[], allowUnresolved = false): ColumnMapping[] {
   if (!Array.isArray(value) || value.length !== headers.length) throw new HttpError(400, 'Review every source column, including columns to skip.');
   const mapping = value.map(item => {
-    if (!item || typeof item !== 'object' || !Number.isSafeInteger(item.column) || item.column < 0 || item.column >= headers.length || !INTAKE_TARGETS.includes(item.target) || item.target === 'unknown') throw new HttpError(400, 'Choose a known field, customer context, or skip for every column.');
+    if (!item || typeof item !== 'object' || !Object.hasOwn(item, 'column') || !Object.hasOwn(item, 'target') || !Number.isSafeInteger(item.column) || item.column < 0 || item.column >= headers.length || !INTAKE_TARGETS.includes(item.target) || !allowUnresolved && item.target === 'unknown') throw new HttpError(400, 'Choose a known field, customer context, or skip for every column.');
     return { column: item.column as number, target: item.target as ColumnMapping['target'] };
   }).sort((a, b) => a.column - b.column);
   if (new Set(mapping.map(item => item.column)).size !== headers.length) throw new HttpError(400, 'Each source column must be mapped once.');
+  if (allowUnresolved) return mapping;
   for (const target of ['name', 'email', 'phone', 'stage', 'notes']) {
     const count = mapping.filter(item => item.target === target).length;
     if (count > 1 || target === 'name' && count !== 1) throw new HttpError(400, target === 'name' ? 'Choose exactly one known customer name column.' : `Choose at most one ${target} column. Resolve competing columns explicitly.`);

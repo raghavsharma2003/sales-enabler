@@ -1,6 +1,6 @@
 # Voice-product delta: Vapi, Retell, ElevenLabs Agents, and Bolna
 
-**Research date:** 2026-10-09  
+**Research date:** 2026-10-09
 **Scope:** Changes since the 2026-10-01 Relay research, using official public docs and dated official changelogs only. No accounts, calls, purchases, uploads, or live dashboards were used. An official description proves the documented product contract, not voice quality, reliability, Indian-language accuracy, or business results.
 
 ## Top three actions for Relay

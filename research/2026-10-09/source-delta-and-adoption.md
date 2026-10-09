@@ -40,7 +40,7 @@ content coverage remains the 2026-09-21 inventory and later dated audits.
 | Candidate | Evidence in moved ref | Current v7 comparison | Decision |
 | --- | --- | --- | --- |
 | Source-preserving attributed GroupAI history | `api/_group-recall/selection.js` emits exact human text with source, episode, speaker and order IDs; it keeps the current turn exactly once, separates stable speaker identity from the current display label, rejects malformed/oversized inputs, and binds the complete admitted pool rather than only selected rows. | `lib/platform/groups.ts` already filters approved evidence by every room participant and issues a snapshot. `lib/platform/group-turns.ts` rechecks that snapshot before commit and restricts history to the same audience epoch, but its model history contains participant/reply pairs without immutable source-turn IDs. | **Adopt the behavior selectively.** Add source-turn IDs and exact attribution to the existing GroupAI DTO, keeping the current snapshot and transaction fences. Do not add a parallel authorization system or copy the private package wholesale. |
-| Whole-input byte budget | The group branch measures the serialized source packet in UTF-8 bytes, refuses required-context truncation, then checks the actual provider-relevant `core + tail + turns` envelope and provider segment caps immediately before dispatch. | Current GroupAI limits are 8,000/11,500 JavaScript characters and the capsule budget is 12,000 characters. Channel generation similarly checks character lengths. Hindi, escaped JSON and other multibyte input can therefore consume more transport bytes than the nominal limit. | **Highest-value near-term port.** Add a provider-neutral UTF-8 byte measurement around the already-authorized GroupAI and channel prompt envelopes. Preserve all safety text and refuse before provider slicing. Keep the existing smaller product limits unless measured usage justifies changing them. |
+| Whole-input byte budget | The group branch measures the serialized source packet in UTF-8 bytes, refuses required-context truncation, then checks the actual provider-relevant `core + tail + turns` envelope and provider segment caps immediately before dispatch. | The audited code used 8,000/11,500 JavaScript-character GroupAI limits and 12,000-character channel limits, allowing Hindi, escaped JSON and other multibyte input to consume more transport bytes than the nominal limit. | **Implemented as the one bounded adoption from this audit.** GroupAI and channel generation now measure the exact serialized application strings passed to their provider adapters in UTF-8 bytes, preserve the prior numeric limits, refuse before inference instead of slicing JSON, and byte-bound accepted output before storage/delivery. Details and source pin are below. |
 | Older-source lexical recall | Optional mode reads up to 160 candidates, keeps the latest 20, and adds up to 12 older lexical matches within a 32 KiB source-turn budget. | The branch's frozen comparison recovered 27/54 ordinary older targets but missed the older target in all 24 adversarial cases and selected 288 distractors. Current Company Brain already uses bounded RRF with exact citations; GroupAI uses recent same-snapshot turns. | **Do not enable or port the scorer.** Keep recency for room turns. If older GroupAI recall becomes necessary, evaluate it against correction/revocation and adversarial distractors using the current product corpus; Company Brain remains the grounded long-horizon route. |
 | Group event-time admission | `api/_group-source-event.js`, `api/tg.js`, `_room.js`, and `_surface.js` capture original sent time before awaits, reject edited/ambiguous group event kinds, require the event to be strictly later than every current recipient's known consent/link boundary, and repeat the timestamp fence in SQL. | Current `lib/channel-agents/telegram.ts` deliberately accepts only private chats. `lib/channel-agents/service.ts` preserves provider time, authorization version and idempotent event identity, but has no real group-audience contract because group Telegram is unsupported. | **Required before enabling real channel groups.** Port the admission invariant only with verified platform identity, historical audience limitations stated, dedupe, erasure, and current deployment/connection fences. It is not needed for today's private Telegram path. |
 | Confirmed external delivery receipt | The moved group branch validates all fragments before the first send and treats any missing adapter `ok:true` receipt as `unknown`, never replay-safe. | Current Telegram accepts only a matching message/chat receipt; WhatsApp/Telegram failures become `rejected` or `uncertain`; channel jobs in `sending` or `uncertain` are never automatically retried. Current sends are single-message, so fragment prevalidation is not yet relevant. | **Equivalent behavior is already present.** Retain current durable states. Reuse the fragment preflight only if multi-part channel rendering is introduced. |
@@ -92,6 +92,44 @@ authorized candidate pool and selected source IDs, keep raw human text separate
 from attribution metadata, and cancel on audience/source changes. It should not
 treat selection as a citation, consensus, current truth or permission to promote
 memory.
+
+## Implemented bounded adoption
+
+Source provenance: `raghavsharma2003/html-portfolio`, branch
+`codex/multimodal-layer-20260927`, pinned head
+`b514595f080d63cf5d252b85d2580d8e176c5d2b`. The adapted behavior comes from
+`api/_group-recall/selection.js` (measure the complete serialized source turns
+after JSON escaping) and `api/_surface.js::assertGroupContextBudget` (measure
+the provider-relevant application envelope and refuse before downstream
+truncation). No source code was copied verbatim and no source package was
+published.
+
+The local implementation is deliberately smaller:
+
+- `lib/server/utf8.ts` provides inclusive UTF-8 byte measurement.
+- `lib/platform/group-turns.ts` applies the existing 8,000-byte complete-history,
+  11,500-byte serialized user, 12,000-byte system and 3,000-byte reply limits.
+  It checks deterministic system/current-turn size before reserving a request
+  key, keeps only complete history turns, and never includes rejected content in
+  an error or saved failure reason.
+- `lib/channel-agents/service.ts` constructs the exact JSON input once, applies
+  the existing 12,000 limit to both system and serialized input in UTF-8 bytes,
+  removes the former character slice that could produce incomplete JSON, and
+  applies the existing 3,400 limit to generated text before egress. Existing
+  connection, deployment, participant, budget, claim, final authority,
+  uncertain-outcome and no-retry fences are unchanged.
+- `tests/group-turns.test.ts` and `tests/channel-agents.test.ts` cover exact
+  inclusive boundaries, one-byte/one-character ASCII compatibility, JSON
+  escaping, Hindi and emoji expansion, admitted multilingual input, refusal
+  before inference, oversized output before delivery, and content-free failure
+  receipts. The focused offline command
+  `npx tsx --test tests/group-turns.test.ts tests/channel-agents.test.ts` passed
+  30/30 on 2026-10-09. It used injected generators/dispatchers and made no
+  provider call.
+
+This counts the exact application strings supplied as the system and user
+message contents. It intentionally does not claim a limit over HTTP headers,
+SDK framing, provider-side tokenization or provider-generated usage.
 
 ## Exact inspection boundary
 
@@ -146,9 +184,9 @@ source-adoption evidence.
 
 ## Recommended order
 
-1. Add UTF-8 byte accounting for the existing GroupAI and channel provider
-   envelopes, with tests for Hindi and JSON escaping and without changing the
-   current authority model.
+1. **Completed in this audit:** UTF-8 byte accounting for the existing GroupAI
+   and channel provider application envelopes, with Hindi, emoji, JSON escaping
+   and ASCII-compatibility tests and no authority-model change.
 2. Enrich GroupAI history with immutable turn/source IDs and explicit speaker
    attribution while keeping snapshot, audience epoch and commit rechecks.
 3. Record the group event-time/consent rule as a launch gate for any future

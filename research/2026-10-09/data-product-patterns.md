@@ -1,6 +1,6 @@
 # Data-product patterns for messy enterprise data → reviewed campaigns
 
-**Research date:** 9 October 2026  
+**Research date:** 9 October 2026
 **Scope:** Current official documentation only. Recommendations target Relay’s existing CSV/JSON intake workbench and its Company Brain → Campaign flow. No logged-in product trials were performed.
 
 ## Product judgment

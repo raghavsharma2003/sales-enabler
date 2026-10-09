@@ -1,6 +1,6 @@
 # Voice OSS and research adoption review
 
-**Research date:** 2026-10-09 (Asia/Kolkata)  
+**Research date:** 2026-10-09 (Asia/Kolkata)
 **Boundary:** No provider call, credential use, dependency install, model download, cloud change, build or Docker action was performed. Azure is the only approved paid route; local Docker is forbidden on the employer laptop. Published measurements below are author-reported until reproduced on this product.
 
 ## Decision

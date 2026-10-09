@@ -8,7 +8,7 @@ import { operatorMembershipFence, requireWorkspaceOperator } from '../team/servi
 import { customerCatalogGuard } from '../ingestion/customer-catalog';
 import type { IngestionSource } from '../ingestion/contracts';
 import { runAiTask, type AiTaskInput } from '../ai/task-router';
-import { INTAKE_TARGETS, type IntakeIdentity, type IntakeInspection, type IntakePreview, type IntakeReceipt, type MappingSuggestion, type RowDecision, type IntakeRow } from './contracts';
+import { INTAKE_TARGETS, type IntakeIdentity, type IntakeInspection, type IntakePreview, type IntakeReceipt, type MappingSuggestion, type RowDecision, type IntakeRow, type IntakeReviewDraft, type IntakeReviewWorkspace, type IntakeProgress, type IntakeReviewSummary } from './contracts';
 import { INTAKE_BATCH_SIZE, normalizeIntakeRows, parseIntakeTable, validateMapping } from './table';
 
 type Statement = Parameters<Database['batch']>[0][number];
@@ -94,7 +94,7 @@ export async function suggestIntakeMapping(user: AuthUser, sourceId: string, run
   return { inspection: inspected, suggestions: sanitizeMappingSuggestions(JSON.stringify({ columns: proposed }), inspected.headers) };
 }
 
-export async function previewIntake(user: AuthUser, body: { sourceId: string; mapping: unknown; excludedRows?: unknown; cursor?: unknown }): Promise<IntakePreview> {
+export async function previewIntake(user: AuthUser, body: { sourceId: string; mapping: unknown; excludedRows?: unknown; cursor?: unknown; newAttempt?: unknown; attemptId?: unknown }): Promise<IntakePreview> {
   await requireWorkspaceOperator(user);
   const database = await db(), actor = await operatorMembershipFence(user, database), guard = await customerCatalogGuard(database, user.organizationId), anchor = await sourceAnchor(user, body.sourceId, database);
   const table = parseIntakeTable(anchor.source.rawText, anchor.source.format), mapping = validateMapping(body.mapping, table.headers);
@@ -109,28 +109,31 @@ export async function previewIntake(user: AuthUser, body: { sourceId: string; ma
     const previous = await optionalRecord<RowReceipt>(user, 'data_intake_row', rowReceiptId(user.organizationId, anchor.source.digest, row.rowNumber));
     if (previous) row.previous = { contactId: previous.contactId, action: previous.action };
   }
-  const content = { sourceId: anchor.source.id, sourceDigest: anchor.source.digest, actorId: user.id, directoryHash: directoryHash(entries), mapping, excludedRows, cursor: Number(cursor), nextCursor: Number(cursor) + INTAKE_BATCH_SIZE < table.rows.length ? Number(cursor) + INTAKE_BATCH_SIZE : null, totalRows: table.rows.length, rows };
+  if (body.newAttempt !== undefined && typeof body.newAttempt !== 'boolean') throw new HttpError(400, 'newAttempt must be a boolean.');
+  if (body.attemptId !== undefined && (typeof body.attemptId !== 'string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(body.attemptId))) throw new HttpError(400, 'Choose a valid review attempt identifier.');
+  const attemptId = body.attemptId as string | undefined ?? (body.newAttempt ? randomUUID() : undefined);
+  const content = { ...(attemptId ? { attemptId } : {}), sourceId: anchor.source.id, sourceDigest: anchor.source.digest, actorId: user.id, directoryHash: directoryHash(entries), mapping, excludedRows, cursor: Number(cursor), nextCursor: Number(cursor) + INTAKE_BATCH_SIZE < table.rows.length ? Number(cursor) + INTAKE_BATCH_SIZE : null, totalRows: table.rows.length, rows };
   const hash = sha(content), id = `intake-preview:${sha([user.organizationId, hash])}`;
   const old = await optionalRecord<IntakePreview>(user, 'data_intake_preview', id);
-  if (old) return old;
+  if (old) { await fencedBatch(database, [actor, guard, anchor.fence]); return old; }
   const now = new Date().toISOString(), preview: IntakePreview = { ...content, id, hash, createdAt: now };
   try { await database.batch([actor, guard, anchor.fence, insertRecord(user, id, 'data_intake_preview', preview, now)]); }
   catch (error) { if (error instanceof WriteConflictError || error instanceof Error && /unique|constraint/i.test(error.message)) throw failChanged(); throw error; }
   return preview;
 }
 
-function validateDecisions(value: unknown, preview: IntakePreview): RowDecision[] {
-  if (!Array.isArray(value) || value.length !== preview.rows.length) throw new HttpError(400, 'Choose create, link, or skip for every row in this batch.');
+function validateDecisions(value: unknown, preview: IntakePreview, partial = false): RowDecision[] {
+  if (!Array.isArray(value) || (partial ? value.length > preview.rows.length : value.length !== preview.rows.length)) throw new HttpError(400, 'Choose create, link, or skip for every row in this batch.');
   const decisions: RowDecision[] = value.map(item => {
-    if (!item || !Number.isSafeInteger(item.rowNumber) || !['create', 'link', 'skip'].includes(item.action) || !preview.rows.some(row => row.rowNumber === item.rowNumber)) throw new HttpError(400, 'Invalid row review decision.');
-    if (item.action === 'link' && (typeof item.contactId !== 'string' || !item.contactId || item.contactId.length > 100)) throw new HttpError(400, 'Select a listed existing customer to link.');
+    if (!item || typeof item !== 'object' || !Object.hasOwn(item, 'rowNumber') || !Object.hasOwn(item, 'action') || !Number.isSafeInteger(item.rowNumber) || !['create', 'link', 'skip'].includes(item.action) || !preview.rows.some(row => row.rowNumber === item.rowNumber)) throw new HttpError(400, 'Invalid row review decision.');
+    if (item.action === 'link' && (!Object.hasOwn(item, 'contactId') || typeof item.contactId !== 'string' || !item.contactId || item.contactId.length > 100)) throw new HttpError(400, 'Select a listed existing customer to link.');
     return { rowNumber: item.rowNumber, action: item.action, ...(item.action === 'link' ? { contactId: item.contactId } : {}) };
   }).sort((a, b) => a.rowNumber - b.rowNumber);
-  if (new Set(decisions.map(item => item.rowNumber)).size !== preview.rows.length) throw new HttpError(400, 'Review each row exactly once.');
+  if (new Set(decisions.map(item => item.rowNumber)).size !== decisions.length) throw new HttpError(400, 'Review each row exactly once.');
   return decisions;
 }
 
-export async function applyIntake(user: AuthUser, body: { previewId: string; previewHash: string; decisions: unknown }): Promise<IntakeReceipt> {
+export async function applyIntake(user: AuthUser, body: { previewId: string; previewHash: string; decisions: unknown; reviewRevision?: unknown }): Promise<IntakeReceipt> {
   await requireWorkspaceOperator(user);
   const database = await db(), actor = await operatorMembershipFence(user, database);
   const previewRecord = await getRecord<IntakePreview>(user.organizationId, 'data_intake_preview', body.previewId), preview = previewRecord.data;
@@ -141,6 +144,7 @@ export async function applyIntake(user: AuthUser, body: { previewId: string; pre
   const prior = await optionalRecord<StoredReceipt>(user, 'data_intake_batch', receiptId);
   if (prior) {
     if (prior.decisionsHash !== decisionsHash || prior.actorId !== user.id) throw new HttpError(409, 'This batch was already applied with different decisions.');
+    await fencedBatch(database, [actor, anchor.fence]);
     return { ...prior, replayed: true };
   }
   const guard = await customerCatalogGuard(database, user.organizationId), entries = await directory(database, user.organizationId);
@@ -151,6 +155,12 @@ export async function applyIntake(user: AuthUser, body: { previewId: string; pre
   const sourceRows = (rows: IntakeRow[]) => rows.map(({ previous: _previous, ...row }) => row);
   if (sha(sourceRows(currentRows)) !== sha(sourceRows(preview.rows))) throw failChanged();
   const now = new Date().toISOString(), statements: Statement[] = [actor, guard, anchor.fence];
+  const draft = await reviewAnchor(user, preview.sourceId, database);
+  if (draft || body.reviewRevision !== undefined) {
+    if (!Number.isSafeInteger(body.reviewRevision) || !draft || draft.review.revision !== body.reviewRevision || draft.review.previewId !== preview.id || draft.review.previewHash !== preview.hash || draft.review.phase !== 'review' || sha(draft.review.decisions) !== decisionsHash) throw new HttpError(409, 'Saved review changed. Save your current decisions and reload before applying.');
+    const next = { ...draft.review, revision: draft.review.revision + 1, phase: 'applied' as const, updatedAt: now };
+    statements.push(reviewUpdate(user, draft.serialized, next));
+  } else statements.push({ sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND NOT EXISTS (SELECT 1 FROM entities WHERE id=? AND organization_id=? AND kind=?)', params: [preview.sourceId, user.organizationId, 'platform:ingestion_source', reviewId(user, preview.sourceId), user.organizationId, 'platform:data_intake_review'], expectedChanges: 1 });
   statements.push({ sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND data=? AND status=?', params: [preview.id, user.organizationId, 'platform:data_intake_preview', JSON.stringify({ revision: previewRecord.revision, updatedAt: previewRecord.updatedAt, data: preview }), previewRecord.status], expectedChanges: 1 });
   const changedContacts = new Map<string, { original: DirectoryEntry; data: Record<string, unknown> }>();
   const resultRows: IntakeReceipt['rows'] = [];
@@ -199,4 +209,106 @@ export async function applyIntake(user: AuthUser, body: { previewId: string; pre
     throw error;
   }
   return receipt;
+}
+
+const reviewId = (user: AuthUser, sourceId: string) => `intake-review:${sha([user.organizationId, user.id, sourceId])}`;
+const reviewConflict = () => new HttpError(409, 'This saved review changed. Reload it before saving or applying.');
+async function fencedBatch(database: Database, statements: Statement[]) {
+  try { await database.batch(statements); }
+  catch (error) { if (error instanceof WriteConflictError || error instanceof Error && /unique|constraint/i.test(error.message)) throw failChanged(); throw error; }
+}
+async function reviewAnchor(user: AuthUser, sourceId: string, database: Database): Promise<{ review: IntakeReviewDraft; serialized: string; fence: Statement } | null> {
+  const id = reviewId(user, sourceId);
+  const [row] = await database.all('SELECT data FROM entities WHERE id=? AND organization_id=? AND kind=? AND status=?', [id, user.organizationId, 'platform:data_intake_review', 'ready']);
+  if (!row) return null;
+  const serialized = String(row.data), stored = JSON.parse(serialized), review = stored.data as IntakeReviewDraft;
+  if (review.id !== id || review.actorId !== user.id || review.sourceId !== sourceId || stored.revision !== review.revision) throw reviewConflict();
+  return { review, serialized, fence: { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND data=? AND status=?', params: [id, user.organizationId, 'platform:data_intake_review', serialized, 'ready'], expectedChanges: 1 } };
+}
+function reviewUpdate(user: AuthUser, serialized: string, review: IntakeReviewDraft): Statement {
+  return { sql: 'UPDATE entities SET data=? WHERE id=? AND organization_id=? AND kind=? AND data=? AND status=?', params: [JSON.stringify({ revision: review.revision, updatedAt: review.updatedAt, data: review }), review.id, user.organizationId, 'platform:data_intake_review', serialized, 'ready'], expectedChanges: 1 };
+}
+function previewFence(user: AuthUser, record: Awaited<ReturnType<typeof getRecord<IntakePreview>>>): Statement {
+  return { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND data=? AND status=?', params: [record.id, user.organizationId, 'platform:data_intake_preview', JSON.stringify({ revision: record.revision, updatedAt: record.updatedAt, data: record.data }), record.status], expectedChanges: 1 };
+}
+async function sourceProgress(user: AuthUser, source: IngestionSource, database: Database): Promise<IntakeProgress> {
+  const totalRows = parseIntakeTable(source.rawText, source.format).rows.length;
+  const [ledger, batches] = await Promise.all([
+    database.all('SELECT data FROM entities WHERE organization_id=? AND kind=?', [user.organizationId, 'platform:data_intake_row']),
+    database.all('SELECT data FROM entities WHERE organization_id=? AND kind=?', [user.organizationId, 'platform:data_intake_batch']),
+  ]);
+  const committed = new Map<number, 'create' | 'link'>(), skipped = new Set<number>();
+  for (const record of ledger) {
+    const row = JSON.parse(String(record.data)).data as RowReceipt;
+    if (row.sourceDigest === source.digest && row.rowNumber > 0 && row.rowNumber <= totalRows) committed.set(row.rowNumber, row.action);
+  }
+  // Receipts are immutable. Count each skipped row once, and a later commit supersedes its skips.
+  for (const record of batches) {
+    const batch = JSON.parse(String(record.data)).data as StoredReceipt;
+    if (batch.sourceId === source.id) for (const row of batch.rows) if (row.action === 'skip' && !committed.has(row.rowNumber) && row.rowNumber > 0 && row.rowNumber <= totalRows) skipped.add(row.rowNumber);
+  }
+  const created = [...committed.values()].filter(value => value === 'create').length, linked = committed.size - created;
+  return { totalRows, created, linked, skipped: skipped.size, reviewed: committed.size + skipped.size, pending: totalRows - committed.size - skipped.size };
+}
+
+export async function loadIntakeReview(user: AuthUser, sourceId: string): Promise<IntakeReviewWorkspace> {
+  await requireWorkspaceOperator(user);
+  const database = await db(), actor = await operatorMembershipFence(user, database), anchor = await sourceAnchor(user, sourceId, database), draft = await reviewAnchor(user, sourceId, database);
+  if (draft && draft.review.sourceDigest !== anchor.source.digest) throw reviewConflict();
+  const record = draft?.review.previewId ? await getRecord<IntakePreview>(user.organizationId, 'data_intake_preview', draft.review.previewId) : null;
+  if (record && (record.data.actorId !== user.id || record.data.sourceId !== sourceId || record.data.sourceDigest !== anchor.source.digest || record.data.hash !== draft!.review.previewHash)) throw reviewConflict();
+  const progress = await sourceProgress(user, anchor.source, database);
+  const previewStale = !!record && directoryHash(await directory(database, user.organizationId)) !== record.data.directoryHash;
+  await fencedBatch(database, [actor, anchor.fence, ...(draft ? [draft.fence] : []), ...(record ? [previewFence(user, record)] : [])]);
+  return { review: draft?.review ?? null, preview: record?.data ?? null, progress, previewStale };
+}
+
+export async function listIntakeReviews(user: AuthUser): Promise<IntakeReviewSummary[]> {
+  await requireWorkspaceOperator(user);
+  const database = await db(), actor = await operatorMembershipFence(user, database);
+  const records = await database.all('SELECT data FROM entities WHERE organization_id=? AND kind=? AND status=? ORDER BY created_at DESC,id DESC', [user.organizationId, 'platform:data_intake_review', 'ready']);
+  const reviews: IntakeReviewSummary[] = [];
+  for (const row of records) {
+    const draft = JSON.parse(String(row.data)).data as IntakeReviewDraft;
+    if (draft.actorId !== user.id) continue;
+    try {
+      const workspace = await loadIntakeReview(user, draft.sourceId), inspected = await inspectIntake(user, draft.sourceId);
+      if (workspace.review) { const { sourceId, revision, updatedAt, phase, cursor } = workspace.review; reviews.push({ sourceId, revision, updatedAt, phase, cursor, title: inspected.title, progress: workspace.progress }); }
+    } catch (error) { if (error instanceof HttpError && [404, 409].includes(error.status)) continue; throw error; }
+  }
+  await fencedBatch(database, [actor]);
+  return reviews.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function saveIntakeReview(user: AuthUser, body: {
+  sourceId: string; expectedRevision: unknown; mapping: unknown; excludedRows?: unknown; cursor?: unknown;
+  phase: unknown; previewId?: unknown; previewHash?: unknown; decisions?: unknown;
+}): Promise<IntakeReviewWorkspace> {
+  await requireWorkspaceOperator(user);
+  const database = await db(), actor = await operatorMembershipFence(user, database), anchor = await sourceAnchor(user, body.sourceId, database), current = await reviewAnchor(user, body.sourceId, database);
+  if (!Number.isSafeInteger(body.expectedRevision) || Number(body.expectedRevision) < 0) throw new HttpError(400, 'Provide the saved review revision, or zero for a new review.');
+  if ((current?.review.revision ?? 0) !== body.expectedRevision || current && current.review.sourceDigest !== anchor.source.digest) throw reviewConflict();
+  const table = parseIntakeTable(anchor.source.rawText, anchor.source.format), mapping = validateMapping(body.mapping, table.headers, true), cursor = body.cursor ?? 0, exclusions = body.excludedRows ?? [];
+  if (!Number.isSafeInteger(cursor) || Number(cursor) < 0 || Number(cursor) >= table.rows.length || Number(cursor) % INTAKE_BATCH_SIZE !== 0) throw new HttpError(400, 'Choose a valid 200-row batch cursor.');
+  if (!Array.isArray(exclusions) || exclusions.length > table.rows.length || exclusions.some(value => !Number.isSafeInteger(value) || value < 1 || value > table.rows.length)) throw new HttpError(400, 'Choose valid source row numbers to exclude.');
+  const excludedRows = [...new Set(exclusions as number[])].sort((a, b) => a - b);
+  if (typeof body.phase !== 'string' || !['mapping', 'review', 'applied'].includes(body.phase)) throw new HttpError(400, 'Choose a valid review phase.');
+  const phase = body.phase as IntakeReviewDraft['phase'], statements: Statement[] = [actor, anchor.fence];
+  let preview: IntakePreview | null = null, decisions: RowDecision[] = [];
+  if (body.previewId !== undefined) {
+    if (typeof body.previewId !== 'string' || body.previewId.length > 100 || typeof body.previewHash !== 'string' || body.previewHash.length !== 64) throw new HttpError(400, 'Choose a valid saved preview.');
+    const record = await getRecord<IntakePreview>(user.organizationId, 'data_intake_preview', body.previewId); preview = record.data;
+    if (record.revision !== 1 || preview.actorId !== user.id || preview.sourceId !== anchor.source.id || preview.sourceDigest !== anchor.source.digest || preview.hash !== body.previewHash || preview.cursor !== cursor || sha(preview.mapping) !== sha(mapping) || sha(preview.excludedRows) !== sha(excludedRows)) throw reviewConflict();
+    decisions = validateDecisions(body.decisions ?? [], preview, true);
+    statements.push(previewFence(user, record));
+    if (phase === 'mapping') throw new HttpError(400, 'Clear the preview when returning to column mapping.');
+    if (phase === 'applied') {
+      const receipt = await optionalRecord<StoredReceipt>(user, 'data_intake_batch', `intake-batch:${sha([user.organizationId, preview.id])}`);
+      if (!receipt || receipt.actorId !== user.id || receipt.decisionsHash !== sha(decisions)) throw new HttpError(409, 'Only an applied receipt can mark this review applied.');
+    }
+  } else if (phase !== 'mapping' || body.previewHash !== undefined || !Array.isArray(body.decisions ?? []) || (body.decisions as unknown[] | undefined)?.length) throw new HttpError(400, 'Save a mapping draft without row decisions, or bind decisions to a reviewed preview.');
+  const now = new Date().toISOString(), review: IntakeReviewDraft = { id: reviewId(user, anchor.source.id), sourceId: anchor.source.id, sourceDigest: anchor.source.digest, actorId: user.id, revision: Number(body.expectedRevision) + 1, updatedAt: now, mapping, excludedRows, cursor: Number(cursor), phase, ...(preview ? { previewId: preview.id, previewHash: preview.hash } : {}), decisions };
+  statements.push(current ? reviewUpdate(user, current.serialized, review) : insertRecord(user, review.id, 'data_intake_review', review, now));
+  await fencedBatch(database, statements);
+  return { review, preview, progress: await sourceProgress(user, anchor.source, database), previewStale: !!preview && directoryHash(await directory(database, user.organizationId)) !== preview.directoryHash };
 }
