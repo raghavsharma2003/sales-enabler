@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02",
+  "updatedAt": "2026-10-09",
   "nodes": [
     {
       "id": "product.general",
@@ -1217,6 +1217,55 @@
       "title": "Independent finish review of canonical campaign workflow",
       "status": "ship-scoped-canonical-workflow-only-not-customer-pilot-or-whole-product",
       "path": "docs/campaign-workflow-finish-review.md"
+    },
+    {
+      "id": "research.product-data-voice-2026-10-09",
+      "type": "evidence",
+      "title": "October 9 product, data, voice and owned-source research synthesis",
+      "status": "complete-public-docs-and-read-only-source-refresh-no-authenticated-trials-provider-calls-or-hosted-proof",
+      "path": "research/2026-10-09/README.md"
+    },
+    {
+      "id": "research.source-refresh-2026-10-09",
+      "type": "evidence",
+      "title": "Owned-source refresh across 56 remote heads",
+      "status": "complete-three-moved-zero-new-zero-missing-selective-adoption-only",
+      "path": "research/2026-10-09/source-delta-and-adoption.md"
+    },
+    {
+      "id": "implementation.durable-data-intake-2026-10-09",
+      "type": "component",
+      "title": "Durable intake review, CAS attempts, explicit AI mapping acceptance and exception queue",
+      "status": "in-progress-final-integrated-build-browser-and-review-gates-open",
+      "path": "docs/data-intake-oct09-audit.md"
+    },
+    {
+      "id": "implementation.transcript-regression-2026-10-09",
+      "type": "component",
+      "title": "Reviewed text regression case to exact candidate and human review",
+      "status": "in-progress-surrogate-text-rehearsal-backend-ui-no-realtime-audio-or-automatic-publish",
+      "path": "docs/transcript-regression-oct09-audit.md"
+    },
+    {
+      "id": "implementation.voice-capture-wording-2026-10-09",
+      "type": "component",
+      "title": "Bounded private-voice capture capability wording correction",
+      "status": "in-progress-35-focused-local-checks-pass-including-eight-new-no-microphone-or-acoustic-proof",
+      "path": "research/2026-10-09/README.md"
+    },
+    {
+      "id": "decision.oct09-adoption-boundary",
+      "type": "decision",
+      "title": "Adopt durable reviewed intake and exact-version text regression; gate voice candidates",
+      "status": "current-research-synthesis-no-runtime-provider-migration",
+      "path": "research/2026-10-09/README.md"
+    },
+    {
+      "id": "open.oct09-final-verification",
+      "type": "open-question",
+      "title": "Complete integrated tests, build, browser review and exact publish-gate integration",
+      "status": "open-no-hosted-microphone-acoustic-or-production-readiness-claim",
+      "path": "research/2026-10-09/README.md"
     }
   ],
   "edges": [
@@ -2213,6 +2262,66 @@
     {
       "from": "implementation.campaign-durable-workflow-2026-10-02",
       "to": "constraint.no-local-docker",
+      "relation": "preserves"
+    },
+    {
+      "from": "research.source-refresh-2026-10-09",
+      "to": "research.product-data-voice-2026-10-09",
+      "relation": "contributes-selective-adoption-evidence"
+    },
+    {
+      "from": "research.product-data-voice-2026-10-09",
+      "to": "decision.oct09-adoption-boundary",
+      "relation": "informs"
+    },
+    {
+      "from": "decision.oct09-adoption-boundary",
+      "to": "implementation.durable-data-intake-2026-10-09",
+      "relation": "guides"
+    },
+    {
+      "from": "decision.oct09-adoption-boundary",
+      "to": "implementation.transcript-regression-2026-10-09",
+      "relation": "guides"
+    },
+    {
+      "from": "implementation.durable-data-intake-2026-10-09",
+      "to": "component.data-intake-v7",
+      "relation": "extends-in-progress"
+    },
+    {
+      "from": "implementation.transcript-regression-2026-10-09",
+      "to": "implementation.product-ux-reset-2026-10-01",
+      "relation": "extends-test-and-publish-flow"
+    },
+    {
+      "from": "implementation.voice-capture-wording-2026-10-09",
+      "to": "risk.voice-action-capture-wording-2026-10-02",
+      "relation": "addresses-in-progress"
+    },
+    {
+      "from": "implementation.durable-data-intake-2026-10-09",
+      "to": "open.oct09-final-verification",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.transcript-regression-2026-10-09",
+      "to": "open.oct09-final-verification",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.voice-capture-wording-2026-10-09",
+      "to": "open.oct09-final-verification",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.durable-data-intake-2026-10-09",
+      "to": "constraint.azure-grant-only-public-v7",
+      "relation": "preserves"
+    },
+    {
+      "from": "implementation.transcript-regression-2026-10-09",
+      "to": "constraint.azure-grant-only-public-v7",
       "relation": "preserves"
     }
   ]
