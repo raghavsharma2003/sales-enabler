@@ -17,7 +17,7 @@ The surrogate text-regression path creates a reviewed case, runs one exact candi
 - The first integrated baseline passed 731/731 tests, production build and postbuild package check. Retained baseline logs are `data/oct09-tests.log` and `data/oct09-build.log`.
 - Independent regression review closed 16/16 focused checks, including eight adversarial checks, after strengthening runtime-instruction invalidation. Source is frozen for the current terminal run.
 - Reviewed code `7cbdebe` passed 746/746 tests plus production build and postbuild package check. Retained logs are `data/oct09-tests-reviewed.log` and `data/oct09-build-reviewed.log`.
-- Tightened capture guidance passed nine prompt checks and 36 voice/scheduler checks. Rehearsal UI fixes pass typecheck.
+- Tightened capture guidance passed 36 combined voice/scheduler checks, including nine capture-prompt checks. Rehearsal UI fixes pass typecheck.
 
 ## Browser evidence
 
@@ -44,8 +44,6 @@ After the runtime-policy change, the original run correctly became **Stale** whi
 Final corrected-layout and verdict-tone captures are valid at three widths. One black mobile capture was discarded and superseded by valid mobile captures showing the old failed history and current passed state; it is not evidence. A draft revision was prepared and then explicitly Discarded without creating version two, leaving zero author drafts.
 
 The independent scoped UI finish review returned **SHIP** in `docs/oct09-workflow-finish-review.md`. All five findings are resolved across author/result widths, verdict-specific tones, references and history/recovery. Its evidence appendix records the valid alternative capture and excludes the malformed unused mobile file. This verdict applies to the scoped October 9 workflow only.
-
-## Open terminal gates
 
 ## Realtime wording calibration
 
