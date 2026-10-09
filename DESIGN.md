@@ -43,13 +43,13 @@ Relay is an Operate product: reviewed company context becomes a bounded represen
 
 The primary shell has five working areas—Overview, Company, Agents, Campaigns, and Activity—with Settings kept separate. Inactive areas keep their context groups collapsed. The former 18 destinations remain reachable through route aliases, contextual links, workspace search, and record anchors, so simplification must not erase artifact ownership or deep navigation.
 
-Overview is a company-readiness and continuation surface, not an aggregate dashboard. It shows the saved company state, one evidence-based next action, current unresolved attention, recent agents and conversations, and a supporting workspace journey. A later passing retest supersedes an older failed configuration run; historical failures do not remain open attention. Active or running campaign work takes priority over optional public-channel setup. Missing or failed readiness requests stay explicit rather than being interpreted as an empty workspace.
+Overview is a company-readiness and continuation surface, not an aggregate dashboard. It shows the saved company state, one evidence-based next action, current unresolved attention, campaigns in progress, recent agents and conversations, and a supporting workspace journey. Campaigns in progress use flat rows that name the saved goal, offering, exact phase, and next action on the same durable campaign. A later passing retest supersedes an older failed configuration run; historical failures do not remain open attention. Continuing an active run or saved campaign phase takes priority over optional public-channel setup. Missing or failed readiness requests stay explicit rather than being interpreted as an empty workspace.
 
-Agents is one continuous build–test–publish workspace. A compact agent picker and persistent Save draft / Test agent toolbar sit above a wide six-section editor and a continuously mounted test dock. New agents begin in Setup with required name, role, and purpose fields plus task presets. Prompt authoring appears only in Conversation. Publish captures and checks an exact saved version, keeps publication explicit, and only then hands a prefilled approved release to Channels; channel publication remains a separate owner action.
+Agents is one continuous build–test–publish workspace. A compact agent picker and persistent Save draft / Test agent toolbar sit above a wide six-section editor and a continuously mounted test dock. New agents begin in Setup with required name, role, and purpose fields plus task presets. Prompt authoring appears only in Conversation. Publish and release history share one release-review pattern: candidate and active versions stay visible together, the server reviews the exact saved version against current configuration and required text evidence, and voice/device evidence remains neutral and explicitly unproven. Publication is a separate decision, followed by a separate channel handoff.
 
 Campaigns is one durable record across Intent, Audience, Agent & content, Review, Run, and Results. Setup can be saved while incomplete without inventing placeholder truth. AI brief suggestions are copied into local fields only when the operator chooses Use, then require an explicit save. Full content proposals apply through separate receipts bound to the exact campaign revision and reviewed sources. Review checks current authority and eligibility; launch separately freezes the run snapshot. Run owns recipient-level execution and the mounted browser call. Results is a distinct evidence surface for exact conversations, completion evidence, planned-field review, and truthful empty states.
 
-The reviewed reset evidence is deliberately scoped. The initial three Overview findings were corrected, and the canonical Campaign reviewer returned SHIP after the final brief, proposal, Run, and Results captures. The later workflow-finish reviewer also returned SHIP for durable customer intake, its customer handoff, and Text rehearsal after final captures at 1265px, 659px, and 375px; the malformed unused `oct09-rehearsal-blocked-mobile-final.png` is explicitly excluded. Its verification packet reports code `7cbdebe`, customer-intake foundation `70c35d1`, 746 passing tests, and the production build/package check. These verdicts remain bounded to the reviewed workflows. They do not establish whole-product usability or production readiness, Realtime or audio quality, microphone/device/interruption behavior, hosted channels, external delivery, or competitor superiority. Text rehearsal is a reviewed suite only and is not a publication gate. The shipped extension adds no new asset or motion obligation.
+The latest finish review in `docs/duplex-finish-review-oct09.md` returned SHIP for this scoped increment after the nine `duplex-{release,home,timing}-{desktop,mobile,user674}.png` captures covering release review, Overview continuation, and client timing evidence. Its focused suite passed 39/39; the final frozen source separately passed 804/804 root terminal tests. After one unused test-only `@ts-expect-error` annotation was removed, the corrected terminal production build completed with exit 0, including TypeScript and the postbuild package check across 1,104 entries; that correction did not change runtime or UI behavior. The release decision bar and rollback candidate were source- and test-reviewed but are not visually established by those captures. This evidence covers only the implemented interface and its recorded states; it does not establish auditory quality, end-to-end or acoustic latency, microphone/device behavior, hosted-channel outcomes, external delivery, competitor superiority, or whole-product readiness. The shipped extension adds no new asset or motion obligation.
 
 **Key Characteristics:**
 
@@ -59,7 +59,8 @@ The reviewed reset evidence is deliberately scoped. The initial three Overview f
 - One durable six-phase campaign record
 - Durable import–map–review–apply customer intake
 - Reviewed redacted text rehearsals against exact agent versions
-- Exact-version readiness and explicit publication
+- Exact-server-reviewed release decisions with visible candidate and active versions
+- Independent client timing intervals with explicit sample sufficiency
 - Quiet tonal surfaces with indigo state emphasis
 - Visible roles, consent, AI identity, and artifact ownership
 
@@ -113,7 +114,7 @@ The shell uses a fixed rail and centered page frame. The rail is 234px by defaul
 
 Navigation shows Overview directly, then Company, Agents, Campaigns, Activity, and Settings. Each grouped area exposes its context destinations only when expanded; the active destination remains named in the breadcrumb. Back, Forward, native hash navigation, search results, sidebar links, and contextual links all pass through the same unsaved-work guard. A cancelled history traversal restores the accepted route and draft; a confirmed traversal loads the destination record.
 
-Overview uses a responsive `1.72fr / minmax(300px, .72fr)` layout: next action, attention, and recents form the primary column while the journey remains a sticky supporting rail. It becomes one column at 900px. Recent agents and conversations form two columns until 1180px, then stack. The recommendation is an emphasized lilac surface; attention and recent work use flat divided rows.
+Overview uses a responsive `1.72fr / minmax(300px, .72fr)` layout: next action, campaigns in progress, attention, and recents form the primary column while the journey remains a sticky supporting rail. It becomes one column at 900px. Campaign continuation is a flat divided list rather than a card grid; each row keeps the campaign identity and goal left, exact phase and next action right, then stacks that metadata below the campaign copy on mobile. Recent agents and conversations form two columns until 1180px, then stack. The recommendation is an emphasized lilac surface; attention and recent work also use flat divided rows.
 
 Agents uses a compact picker inside a sticky toolbar and a `minmax(0, 1fr) / 330–370px` editor/test grid. The test dock remains mounted while the operator changes among Setup, Conversation, Voice & language, Knowledge, Behaviour & actions, and Publish. The grid becomes one column at 1080px without unmounting the tester. At 620px, the toolbar, field pairs, and tabs stack into touch-safe layouts; the test dock follows the editor in the same reading flow.
 
@@ -122,6 +123,8 @@ Campaigns uses a persistent record picker and a six-step bar above one work surf
 Customer table intake is a four-stage Import table → Map columns → Review rows → Applied flow within Company. Import and mapping use balanced columns on wide screens. Review rows use identity, evidence, and decision columns; evidence spans the row below 820px and all review content becomes one column below 580px. Whole-source counts, batch navigation, global source-row exclusions, exception filters, and the prepared decision summary stay visible in the reading flow. Bulk controls prepare decisions only; the separate Apply reviewed batch action remains the sole customer-write boundary.
 
 Text rehearsal uses one sequential column capped at 960px. The same reading flow moves from reviewed redacted checkpoint and criteria authoring to exact-version candidate generation, saved-attempt history, quoted judgments, operator review, and required-suite status. At 620px, paired fields, run controls, attempt history, verdict choices, and headings stack; controls reach 44px and editable type rises to 16px. The final 1265px, 659px, and 375px captures confirm readable, horizontally contained behavior across the shipped widths.
+
+Client timing evidence stays compact and display-only inside live and saved call surfaces. Each stage is an independent browser event interval with its own Samples, Latest, P50, and P95 columns; the rows must never be visually summed into an end-to-end number. Metrics collapse to one column when their container is narrower than 560px, while observations become a simple vertical list.
 
 ## Elevation & Depth
 
@@ -153,9 +156,15 @@ The toolbar persists agent identity, saved/dirty status, direct Test agent focus
 
 Six keyboard-operable sections replace simultaneous editor columns. Setup owns required name, role, and purpose. Conversation owns system prompt, opening message, AI introduction, and style; prompts are not repeated above unrelated sections. Voice & language preserves raw comma/newline editing buffers until validation and save. Knowledge attaches approved sources. Behaviour & actions keeps memory, human handoff, and bounded in-call actions explicit. The test dock remains mounted so draft test state survives section changes; Test agent moves focus to it, and Back to editor returns focus without changing routes.
 
-### Publish panel
+### Release review and history
 
-Publish is an ordered three-step panel. Readiness first captures the saved revision when needed, runs configuration checks against that exact immutable version, and verifies the returned agent/version relationship. The latest exact-version result determines readiness; changed knowledge or draft revisions make prior checks outdated. Publication is a separate action and rechecks knowledge. Only an active release enables Set up channels, which opens a prefilled Channel draft; it does not activate or publish the channel.
+Publish and release history use the same review component for a new release or rollback. The identity block keeps Purpose, Candidate, Active now, and Decision together so an older active version is never confused with the candidate. `Review current evidence` requests a fresh server packet bound to the exact agent version, operation, and configuration run; a changed selection or evidence context invalidates the packet.
+
+The proof list separates Configuration, required Conversation cases, and Voice and device. Configuration and required text cases use semantic pass, wait, and fail states with direct repair actions. Voice and device remains neutral even when the other rows pass, stating that audio, latency, interruption, and microphone behavior are unproven. Only a current publishable packet enables the explicit Publish or Roll back action. Release history remains inspectable, and an active release reveals a visually separate Channel handoff; neither publication nor handoff activates a public or messaging channel.
+
+### Client timing evidence
+
+Timing evidence reports independent browser event intervals from the persisted diagnostics allowlist. Every row shows its own sample count and Latest value. P50 appears only from 3 samples and P95 only from 20; unavailable percentiles render as an em dash with accessible minimum-sample text, while a measured zero remains `0 ms`. Each stage retains at most 20 samples. Typed calls name microphone-only rows and counters as `Not observed in this typed call` rather than displaying zero. The scope copy states that the intervals exclude audible playback and do not measure acoustic or end-to-end latency.
 
 ### Customer table intake
 
@@ -202,6 +211,8 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Do** keep the agent picker compact, editor spacious, tester continuously mounted, and Save draft / Test agent available from the toolbar.
 - **Do** preserve raw editing buffers, focus the first invalid field, and guard all route and history exits when the draft is dirty.
 - **Do** run checks against an exact saved version, publish explicitly, then pass the active release into a separate Channel draft.
+- **Do** keep candidate, active version, exact server review, configuration proof, required text proof, and unproven voice/device evidence distinct throughout release and rollback decisions.
+- **Do** show timing intervals independently with sample counts, minimums of 3 for P50 and 20 for P95, a 20-sample cap, and unknown or typed-microphone-absent states that never masquerade as zero.
 - **Do** keep Intent, Audience, Agent & content, Review, Run, and Results on one durable campaign ID with partial saves and exact revision checks.
 - **Do** keep AI suggestions and proposals as attributable receipts until an operator explicitly uses or applies them, and invalidate stale readiness when authority changes.
 - **Do** keep customer intake resumable per actor, preserve exact source evidence, reconcile whole-source counts, and separate prepared decisions from atomic Apply.
@@ -218,6 +229,7 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Don't** treat all historical failed checks as open attention or let an optional deployment displace running campaign work.
 - **Don't** repeat prompt fields across sections, unmount the tester during section changes, or hide the artifact targeted by Save, Test, Publish, or Channel setup.
 - **Don't** let a draft test, configuration check, release, or prefilled Channel draft imply public activation, live delivery, voice quality, identity verification, or business value.
+- **Don't** add independent client timing rows into a synthetic latency total or treat browser-event timing as audible, acoustic, or end-to-end evidence.
 - **Don't** bypass the dirty guard for Back, Forward, hash links, search, agent switching, or contextual navigation.
 - **Don't** turn a phase change, partial save, AI suggestion, content proposal, preflight, or provider receipt into implied approval, launch, delivery, or success.
 - **Don't** let AI mapping, bulk preparation, a saved intake review, or a source handoff silently change customers, grant contact permission, or clear an imported restriction.

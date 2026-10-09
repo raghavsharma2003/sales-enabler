@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // The production probe is plain ESM so it can run without the app toolchain.
-// @ts-expect-error No declaration file is needed for this bounded script helper.
 import { pushPcmInRealTime } from '../scripts/lib/azure-streaming-recognition-pacing.mjs';
 
 test('paced PCM starts before an SDK callback that is deferred until first audio', async () => {

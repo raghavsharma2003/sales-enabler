@@ -64,6 +64,8 @@ Start with [Product direction](PRODUCT-DIRECTION.md): a general company/customer
 | Document | Purpose |
 | --- | --- |
 | [Product direction](PRODUCT-DIRECTION.md) | Proposed features, customer journey, core/configuration boundary, value, scope and validation |
+| [October 9 research synthesis](research/2026-10-09/README.md) | Current product, launch, data and voice research with explicit adoption and evidence boundaries |
+| [Duplex and launch verification](docs/duplex-and-launch-verification-oct09.md) | Provisional release-authority and private pre-ACK verification boundary |
 | [Research method](research/research-method.md) | Founder brief, updated customer context and evidence limitations |
 | [Branch manifest](research/branch-inventory.json) | All 55 named source branches with pinned commits and tree/path metadata |
 | [Reuse provenance](docs/reuse-provenance.md) | Current selective Maya, RelationalOS, GroupAI, ingestion, learning and delivery reuse map |

@@ -1336,6 +1336,41 @@
       "title": "October 9 terminal integrated test and production package verification",
       "status": "superseded-by-reviewed-746-tests-final-build-and-postbuild-package-pass-code-7cbdebe",
       "path": "data/oct09-tests-reviewed.log"
+    },
+    {
+      "id": "decision.frontier-duplex-relational-priority-2026-10-09",
+      "type": "decision",
+      "title": "Prioritize Griffin-style continuous voice with bounded EmotionalOS and RelationalOS behavior",
+      "status": "architectural-priority-provider-and-audio-evidence-gated",
+      "path": "docs/full-duplex-architecture-oct09.md"
+    },
+    {
+      "id": "implementation.shared-release-gate-outcome-home-2026-10-09",
+      "type": "component",
+      "title": "Shared publish and rollback evidence authority with common review UI and Outcome/Home continuation",
+      "status": "implemented-scoped-terminal-804-tests-corrected-build-package-readiness-browser-ui-ship",
+      "path": "docs/duplex-and-launch-verification-oct09.md"
+    },
+    {
+      "id": "implementation.private-preack-overlap-2026-10-09",
+      "type": "component",
+      "title": "Private exact-candidate instruction acknowledgement overlap and stage diagnostics",
+      "status": "implemented-scoped-terminal-804-tests-corrected-build-typed-webRTC-and-single-paced-preack-reuse-pass-acoustic-and-full-duplex-gates-open",
+      "path": "docs/duplex-and-launch-verification-oct09.md"
+    },
+    {
+      "id": "open.duplex-launch-terminal-verification-2026-10-09",
+      "type": "open-question",
+      "title": "Complete terminal proof for release authority, Outcome/Home and private pre-ACK preparation",
+      "status": "closed-scoped-804-tests-corrected-build-package-readiness-browser-ui-ship-and-bounded-probes-pass-native-duplex-acoustic-hosted-pilot-gates-open",
+      "path": "docs/duplex-and-launch-verification-oct09.md"
+    },
+    {
+      "id": "verification.duplex-launch-terminal-2026-10-09",
+      "type": "evidence",
+      "title": "Terminal scoped release, Outcome/Home and private pre-ACK verification",
+      "status": "804-tests-corrected-build-package-readiness-browser-ui-ship-and-bounded-provider-probes-pass-no-full-duplex-or-acoustic-claim",
+      "path": "docs/duplex-and-launch-verification-oct09.md"
     }
   ],
   "edges": [
@@ -2503,6 +2538,61 @@
       "from": "verification.oct09-terminal-scoped",
       "to": "implementation.transcript-regression-2026-10-09",
       "relation": "verifies-scoped-terminal"
+    },
+    {
+      "from": "research.product-data-voice-2026-10-09",
+      "to": "decision.frontier-duplex-relational-priority-2026-10-09",
+      "relation": "informs"
+    },
+    {
+      "from": "decision.frontier-duplex-relational-priority-2026-10-09",
+      "to": "implementation.private-preack-overlap-2026-10-09",
+      "relation": "guides-first-bounded-increment"
+    },
+    {
+      "from": "implementation.private-preack-overlap-2026-10-09",
+      "to": "component.voice",
+      "relation": "extends-private-turn-preparation-without-provider-migration"
+    },
+    {
+      "from": "implementation.private-preack-overlap-2026-10-09",
+      "to": "open.duplex-launch-terminal-verification-2026-10-09",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.shared-release-gate-outcome-home-2026-10-09",
+      "to": "component.platform-lifecycle",
+      "relation": "extends-release-authority"
+    },
+    {
+      "from": "implementation.shared-release-gate-outcome-home-2026-10-09",
+      "to": "implementation.transcript-regression-2026-10-09",
+      "relation": "enforces-current-reviewed-evidence"
+    },
+    {
+      "from": "implementation.shared-release-gate-outcome-home-2026-10-09",
+      "to": "open.duplex-launch-terminal-verification-2026-10-09",
+      "relation": "requires"
+    },
+    {
+      "from": "verification.oct09-terminal-scoped",
+      "to": "open.duplex-launch-terminal-verification-2026-10-09",
+      "relation": "provides-verified-prechange-baseline"
+    },
+    {
+      "from": "verification.duplex-launch-terminal-2026-10-09",
+      "to": "implementation.shared-release-gate-outcome-home-2026-10-09",
+      "relation": "verifies-scoped-terminal"
+    },
+    {
+      "from": "verification.duplex-launch-terminal-2026-10-09",
+      "to": "implementation.private-preack-overlap-2026-10-09",
+      "relation": "verifies-scoped-terminal-without-full-duplex-claim"
+    },
+    {
+      "from": "verification.duplex-launch-terminal-2026-10-09",
+      "to": "open.duplex-launch-terminal-verification-2026-10-09",
+      "relation": "closes-scoped-gate"
     }
   ]
 }
