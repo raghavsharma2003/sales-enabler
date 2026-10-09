@@ -8,7 +8,7 @@ import { publicInstructions } from '../lib/public-agent/protocol';
 
 function captureBoundaries(instructions: string) {
   assert.match(instructions, /operator can review and save the browser transcript even when no action tools are connected/);
-  assert.match(instructions, /You can share it here; the operator can save this conversation/);
+  assert.match(instructions, /I can include that here for the team to review and save; it isn't confirmed saved yet/);
   assert.match(instructions, /Text captured in the browser is not yet confirmed saved/);
   assert.match(instructions, /Only a successful save receipt establishes a saved transcript/);
   assert.match(instructions, /saving fails or its outcome is unknown, say it is not confirmed saved/);
@@ -16,6 +16,18 @@ function captureBoundaries(instructions: string) {
   assert.match(instructions, /Do not describe transcript capture as an audio recording/);
   assert.match(instructions, /Never promise future recall, human review or external delivery without separate confirmation/);
 }
+
+test('explicit capture requests get the review-and-save path and status before proactive offers', () => {
+  for (const tools of [[], ['request_follow_up']]) {
+    const instructions = buildVoiceInstructions('{}', tools);
+    assert.match(instructions, /explicitly asks you to record, save or remember feedback/);
+    assert.match(instructions, /briefly explain the team\/operator review-and-save path and the current save status before offering a summary or asking a follow-up question/);
+    assert.match(instructions, /An acknowledgment such as "noted" alone does not explain that path/);
+    assert.match(instructions, /On unrelated turns, acknowledge the actual feedback briefly/);
+    assert.match(instructions, /do not append a generic capture disclaimer or repeat this explanation on every turn/);
+    assert.match(instructions, /only after that result/);
+  }
+});
 
 for (const tools of [undefined, [], ['save_transcript', 'approve_memory', 'send_feedback'], ['search_company_knowledge'], ['request_follow_up']] as const) {
   test(`private feedback capture stays available with tool configuration ${JSON.stringify(tools)}`, () => {
@@ -71,5 +83,5 @@ test('public and channel shared instructions do not inherit private operator cap
   assert.match(instructions, /truthful about your AI identity/);
   assert.match(instructions, /no access to customer identities, customer records, internal company conversations, private memory or tools/);
   assert.match(instructions, /claim to have performed an external action/);
-  assert.doesNotMatch(instructions, /operator can save this conversation|Human takeover button|request_follow_up|successful save receipt/);
+  assert.doesNotMatch(instructions, /team to review and save|Human takeover button|request_follow_up|successful save receipt/);
 });
