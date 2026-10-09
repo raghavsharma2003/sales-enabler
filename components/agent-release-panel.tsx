@@ -1,9 +1,10 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { ArrowRight, CheckCircle2, Circle, History, XCircle } from 'lucide-react';
+import { CheckCircle2, History, XCircle } from 'lucide-react';
 import type { PlatformRecord, PlatformViewProps } from '../lib/platform/contracts';
-import { agentPublishBody, deriveAgentReadiness, prepareAgentReadiness } from '../lib/platform/agent-readiness';
+import { deriveAgentReadiness, prepareAgentReadiness } from '../lib/platform/agent-readiness';
+import { ReleaseReview } from './release-review';
 import styles from './agent-release-panel.module.css';
 
 export type AgentReleasePanelProps = {
@@ -23,14 +24,14 @@ const statusCopy: Record<string, string> = {
   outdated: 'Knowledge changed or its freshness cannot be confirmed. Review the sources, edit and save the agent, then run checks again.',
   unchecked: 'Run readiness checks on this saved version before publishing.',
   failed: 'Resolve the failed checks below, save your changes, then run checks again.',
-  ready: 'Readiness checks passed for the current saved version.',
+  ready: 'Configuration checks passed for the current saved version. Review all current evidence before publishing.',
   released: 'This saved version is already active.',
 };
 const readable = (value: unknown, fallback = 'Not set') => typeof value === 'string' && value.trim() ? value : fallback;
 
 export function AgentReleasePanel(props: AgentReleasePanelProps) {
   const { agent, records, dirty, busy, viewer, act, navigate } = props;
-  const [pending, setPending] = useState<'checks' | 'publish' | ''>('');
+  const [pending, setPending] = useState<'checks' | ''>('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const inFlight = useRef(false);
@@ -41,19 +42,14 @@ export function AgentReleasePanel(props: AgentReleasePanelProps) {
   const language = Array.isArray(agent?.data.allowedLanguages) ? agent.data.allowedLanguages.join(', ') : readable(agent?.data.primaryLanguage);
   const sourceCount = Array.isArray(agent?.data.knowledgeIds) ? agent.data.knowledgeIds.length : 0;
 
-  const perform = async (action: 'checks' | 'publish') => {
-    if (inFlight.current || (action === 'checks' ? !state.canCheck : !state.canPublish)) return;
+  const perform = async () => {
+    if (inFlight.current || !state.canCheck) return;
     inFlight.current = true;
-    setPending(action); setError(''); setNotice('');
+    setPending('checks'); setError(''); setNotice('');
     const input = { agent, records, dirty, busy, viewer };
     try {
-      if (action === 'checks') {
-        const result = await prepareAgentReadiness(input, act, () => current.current.agent?.id === agent?.id && current.current.agent?.revision === agent?.revision && !current.current.dirty && !current.current.viewer);
-        setNotice(result.run.data.passed === true ? `Version ${String(result.version.data.number)} checks passed.` : 'Checks completed. Review the failed items below.');
-      } else {
-        await act('release.publish', agentPublishBody(input));
-        setNotice('Version published. New internal browser calls and campaigns can use this release.');
-      }
+      const result = await prepareAgentReadiness(input, act, () => current.current.agent?.id === agent?.id && current.current.agent?.revision === agent?.revision && !current.current.dirty && !current.current.viewer);
+      setNotice(result.run.data.passed === true ? `Version ${String(result.version.data.number)} configuration checks passed. Review the release evidence next.` : 'Configuration checks completed. Review the failed items below.');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'The action could not be completed. Refresh and try again.');
     } finally { inFlight.current = false; setPending(''); }
@@ -68,20 +64,27 @@ export function AgentReleasePanel(props: AgentReleasePanelProps) {
     </div>
     {viewer && <p className={styles.notice}>Read-only access. An owner or operator can run checks and publish.</p>}
     <p className={dirty || state.status === 'outdated' ? styles.attention : styles.status} role="status">{statusCopy[state.status]}</p>
-    <ol className={styles.steps}>
-      <li><div className={styles.stepHeading}><span className={styles.number} aria-hidden="true">1</span><h3>Run readiness checks</h3></div><div className={styles.stepBody}>
-        <p>Checks cover AI disclosure, instructions, language and knowledge permissions.</p>
-        <button type="button" className="pc-button" disabled={!state.canCheck} onClick={() => void perform('checks')}>{pending === 'checks' ? 'Running readiness checks…' : 'Run readiness checks'}</button>
+    <div className={styles.configuration}>
+      <div className={styles.stepHeading}><h3>Run configuration checks</h3></div><div className={styles.stepBody}>
+        <p>Check AI disclosure, instructions, language and knowledge permissions for the exact saved version.</p>
+        <button type="button" className="pc-button" disabled={!state.canCheck} onClick={() => void perform()}>{pending === 'checks' ? 'Running configuration checks…' : 'Run configuration checks'}</button>
         {state.run && <div className={styles.results}><p className={styles.resultHeading}>Version {String(state.version?.data.number)} · {state.run.data.passed === true ? 'Checks passed' : 'Needs changes'}{!state.currentVersion || state.knowledge !== 'current' ? ' · Outdated' : ''}<time dateTime={state.run.createdAt}>{new Date(state.run.createdAt).toLocaleString()}</time></p><ul>{state.checks.map((check, index) => <li key={`${check.label}-${index}`}>{check.passed ? <CheckCircle2 className={styles.passed} size={17} aria-hidden="true"/> : <XCircle className={styles.failed} size={17} aria-hidden="true"/>}<div><strong>{check.label}<span className={styles.checkLabel}> — {check.passed ? 'Passed' : 'Needs changes'}</span></strong><p>{check.detail}</p></div></li>)}</ul></div>}
-        <p className={styles.scope}>Configuration checks do not assess voice quality or conversation quality.</p>
-      </div></li>
-      <li><div className={styles.stepHeading}><span className={styles.number} aria-hidden="true">2</span><h3>Publish the version</h3>{state.alreadyActive && <span className={styles.active}>Active</span>}</div><div className={styles.stepBody}>
-        <p>Publishing updates the agent for new internal browser calls and campaigns. Knowledge is checked again when you publish.</p>
-        <button type="button" className="pc-button primary" disabled={!state.canPublish} onClick={() => void perform('publish')}>{pending === 'publish' ? 'Publishing version…' : state.alreadyActive && state.currentVersion ? 'Version already active' : 'Publish version'}</button>
-      </div></li>
-      <li><div className={styles.stepHeading}><span className={styles.number} aria-hidden="true">3</span><h3>Set up channels</h3></div><div className={styles.stepBody}><p>Choose a public web or messaging channel, then review its access and usage limits.</p><button type="button" className="pc-button quiet" disabled={!state.active || !!pending} onClick={() => state.active && navigate('deployments', `release:${state.active.id}`)}>Set up channels <ArrowRight size={15} aria-hidden="true"/></button>{!state.active && <span className={styles.waiting}><Circle size={13} aria-hidden="true"/> Available after publishing</span>}</div></li>
-    </ol>
+      </div>
+    </div>
     {error && <p className={styles.error} role="alert">{error}</p>}
     {notice && <p className={styles.notice} role="status">{notice}</p>}
+    <div className={styles.reviewWrap}><ReleaseReview
+      agent={agent}
+      version={state.currentVersion ? state.version : undefined}
+      configurationRun={state.currentVersion ? state.run : undefined}
+      activeRelease={state.active}
+      records={records}
+      operation="publish"
+      dirty={dirty || !state.currentVersion}
+      busy={busy || !!pending}
+      viewer={viewer}
+      act={act}
+      navigate={navigate}
+    /></div>
   </section>;
 }

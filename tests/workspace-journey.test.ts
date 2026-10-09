@@ -38,6 +38,10 @@ function company(identityReady = true): CompanySettingsSnapshot {
   };
 }
 
+function setupCampaign(id: string, phase: 'intent' | 'audience' | 'agent_content' | 'review', fields: Record<string, unknown>, updatedAt = time) {
+  return record(id, 'campaign', { schemaVersion: 1, phase, fields, ownerId: 'user-1', requestDigest: `request-${id}` }, 'setup', 1, updatedAt);
+}
+
 test('a new workspace uses company readiness before empty record counts', () => {
   const result = deriveWorkspaceJourney({ records: [], workspace: workspace(), company: { status: 'ready', snapshot: company(false) } });
   assert.equal(result.recommended.title, 'Describe your company');
@@ -115,13 +119,80 @@ test('active campaign work outranks optional public channel setup', () => {
     record('version-1', 'agent_version', { agentId: 'agent-1', number: 1, sourceRevision: 1, config: { knowledgeIds: [] } }),
     record('test-1', 'test_run', { agentId: 'agent-1', versionId: 'version-1', passed: true, mode: 'configuration', checks: [] }, 'passed'),
     record('release-1', 'release', { agentId: 'agent-1', versionId: 'version-1', channel: 'browser' }),
-    record('run-1', 'campaign_run', { name: 'Private browser feedback' }, 'running'),
+    record('campaign-1', 'campaign', { name: 'Private browser feedback', objective: 'Learn the next customer decision', offeringName: 'Advisory review', contactIds: [], channel: 'browser' }, 'draft'),
+    record('run-1', 'campaign_run', { campaignId: 'campaign-1', name: 'Private browser feedback' }, 'running'),
   ];
   const result = deriveWorkspaceJourney({ records, workspace: workspace(), company: { status: 'ready', snapshot: company() } });
   assert.equal(result.recommended.section, 'campaigns');
+  assert.equal(result.recommended.focusId, 'campaign-1~run');
   assert.match(result.recommended.title, /work already in progress/i);
+  assert.equal(result.campaignsInProgress[0].goal, 'Learn the next customer decision');
+  assert.equal(result.campaignsInProgress[0].offering, 'Advisory review');
+  assert.equal(result.campaignsInProgress[0].phaseLabel, 'Run');
   assert.equal(result.steps.find(step => step.id === 'channel')?.state, 'available');
   assert.equal(result.steps.find(step => step.id === 'channel')?.focusId, 'release:release-1');
+});
+
+test('saved campaign setup resumes the earliest missing prerequisite with the same campaign ID', () => {
+  const campaign = setupCampaign('campaign-1', 'audience', {
+    name: 'Counselling follow-up', kind: 'feedback', goal: 'Understand each student’s next decision', offeringId: 'offering-1',
+    outcome: { label: 'Record the next decision', evidenceRequired: [] }, audienceRationale: '', contactIds: [], channel: 'browser', objective: '', message: '',
+  });
+  const result = deriveWorkspaceJourney({
+    records: [record('source-1', 'brain_source', {}, 'approved'), record('offering-1', 'offering', { name: 'Study-abroad counselling' }, 'approved'), campaign],
+    workspace: workspace(), company: { status: 'ready', snapshot: company() },
+  });
+  assert.equal(result.recommended.section, 'campaigns');
+  assert.equal(result.recommended.focusId, 'campaign-1~intent');
+  assert.equal(result.recommended.actionLabel, 'Specify evidence required for the outcome.');
+  assert.equal(result.campaignsInProgress[0].name, 'Counselling follow-up');
+  assert.equal(result.campaignsInProgress[0].goal, 'Understand each student’s next decision');
+  assert.equal(result.campaignsInProgress[0].offering, 'Study-abroad counselling');
+  assert.equal(result.campaignsInProgress[0].phaseLabel, 'Intent');
+});
+
+test('a complete earlier phase resumes the saved campaign phase and an unlaunched draft opens review', () => {
+  const fields = {
+    name: 'Counselling follow-up', kind: 'feedback', goal: 'Understand the next decision', offeringId: 'offering-1',
+    outcome: { label: 'Record the next decision', evidenceRequired: ['A stated next step'] }, audienceRationale: '', contactIds: [], channel: 'browser', objective: '', message: '',
+  };
+  const setup = deriveWorkspaceJourney({
+    records: [record('source-1', 'brain_source', {}, 'approved'), setupCampaign('campaign-1', 'audience', fields)],
+    workspace: workspace(), company: { status: 'ready', snapshot: company() },
+  });
+  assert.equal(setup.recommended.focusId, 'campaign-1~audience');
+  assert.equal(setup.recommended.actionLabel, 'Select at least one contact.');
+
+  const draft = deriveWorkspaceJourney({
+    records: [record('source-1', 'brain_source', {}, 'approved'), record('campaign-2', 'campaign', { name: 'Reviewed follow-up', objective: 'Confirm who needs a counsellor', offeringName: 'Counselling' }, 'draft')],
+    workspace: workspace(), company: { status: 'ready', snapshot: company() },
+  });
+  assert.equal(draft.recommended.focusId, 'campaign-2~review');
+  assert.equal(draft.recommended.actionLabel, 'Check launch readiness');
+  assert.equal(draft.campaignsInProgress[0].phaseLabel, 'Review');
+});
+
+test('current agent failures still outrank saved campaign continuation', () => {
+  const agent = record('agent-1', 'agent_definition', { name: 'Maya' });
+  const version = record('version-1', 'agent_version', { agentId: agent.id, number: 1, sourceRevision: 1, config: { knowledgeIds: [] } });
+  const failure = record('test-1', 'test_run', { agentId: agent.id, versionId: version.id, passed: false, mode: 'configuration', checks: [], disclaimer: 'Disclosure missing.' }, 'failed');
+  const result = deriveWorkspaceJourney({
+    records: [record('source-1', 'brain_source', {}, 'approved'), setupCampaign('campaign-1', 'intent', { name: 'Saved outcome' }), agent, version, failure],
+    workspace: workspace(), company: { status: 'ready', snapshot: company() },
+  });
+  assert.equal(result.recommended.section, 'agents');
+  assert.equal(result.recommended.focusId, agent.id);
+  assert.match(result.recommended.reason, /readiness checks need changes/i);
+});
+
+test('completed campaign runs are not reported as work in progress and viewers are not offered creation', () => {
+  const campaignRecord = record('campaign-1', 'campaign', { name: 'Finished follow-up', objective: 'Collect feedback' }, 'draft');
+  const result = deriveWorkspaceJourney({
+    records: [campaignRecord, record('run-1', 'campaign_run', { campaignId: campaignRecord.id }, 'completed')],
+    workspace: workspace({ user: { id: 'viewer-1', email: 'viewer@example.test', role: 'viewer' } }), company: { status: 'ready', snapshot: { ...company(), role: 'viewer', editable: false } },
+  });
+  assert.equal(result.campaignsInProgress.length, 0);
+  assert.equal(result.alternatives.some(item => item.section === 'campaigns' && item.focusId === 'new'), false);
 });
 
 test('the newest exact-version check wins and changed knowledge invalidates earlier passing evidence', () => {

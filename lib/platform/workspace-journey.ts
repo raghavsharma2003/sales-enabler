@@ -1,5 +1,7 @@
 import type { CompanySettingsSnapshot } from '../company/contracts';
 import { deriveAgentReadiness } from './agent-readiness';
+import { campaignDisplayName, campaignSetupReadiness, readCampaignSetup, type CampaignPhase } from './campaign-workflow';
+import { campaignEditorFields, campaignFocus, campaignPhases, initialCampaignPhase } from './campaign-workspace-view';
 import type { PlatformRecord, WorkspaceData, WorkspaceEntity } from './contracts';
 
 type CompanyState =
@@ -53,6 +55,16 @@ export type RecentConversation = JourneyTarget & {
   identityVerified: false;
 };
 
+export type CampaignInProgress = JourneyTarget & {
+  id: string;
+  name: string;
+  goal: string;
+  offering?: string;
+  phase: CampaignPhase;
+  phaseLabel: string;
+  nextAction: string;
+};
+
 export type WorkspaceJourney = {
   company: {
     name: string;
@@ -63,6 +75,7 @@ export type WorkspaceJourney = {
   alternatives: Array<JourneyTarget & { label: string }>;
   steps: WorkspaceJourneyStep[];
   attention: AttentionItem[];
+  campaignsInProgress: CampaignInProgress[];
   recentAgents: RecentAgent[];
   recentConversations: RecentConversation[];
   returningWorkspace: boolean;
@@ -77,6 +90,55 @@ export type WorkspaceJourneyInput = {
 const value = (input: unknown, fallback: string) => typeof input === 'string' && input.trim() ? input.trim() : fallback;
 const timestamp = (input: WorkspaceEntity | PlatformRecord) => value(input.updatedAt, value(input.createdAt, ''));
 const newestFirst = <T extends WorkspaceEntity | PlatformRecord>(items: T[]) => [...items].sort((a, b) => timestamp(b).localeCompare(timestamp(a)));
+const setupPhases = ['intent', 'audience', 'agent_content'] as const;
+const phaseName = (phase: CampaignPhase) => campaignPhases.find(item => item.id === phase)?.label || phase;
+
+function exactSetupPhase(record: PlatformRecord): CampaignPhase {
+  const setup = readCampaignSetup(record);
+  if (!setup) return initialCampaignPhase(record);
+  const readiness = campaignSetupReadiness(setup.fields);
+  const savedIndex = setup.phase === 'review' ? setupPhases.length : setupPhases.indexOf(setup.phase);
+  return setupPhases.find((phase, index) => index <= savedIndex && readiness[phase].length > 0) || setup.phase;
+}
+
+function nextCampaignAction(record: PlatformRecord, phase: CampaignPhase, run?: PlatformRecord) {
+  if (run?.status === 'paused') return 'Review paused run';
+  if (run && ['active', 'running'].includes(run.status)) return 'Continue campaign run';
+  if (record.status === 'draft') return 'Check launch readiness';
+  const setup = readCampaignSetup(record);
+  const blockers = setup && setupPhases.includes(phase as typeof setupPhases[number])
+    ? campaignSetupReadiness(setup.fields)[phase as typeof setupPhases[number]]
+    : [];
+  if (blockers.length > 0) return blockers[0];
+  if (phase === 'review') return 'Review before launch';
+  return `Continue ${phaseName(phase).toLowerCase()}`;
+}
+
+function buildCampaignsInProgress(records: PlatformRecord[]): CampaignInProgress[] {
+  const runs = newestFirst(records.filter(record => record.kind === 'campaign_run'));
+  return newestFirst(records.filter(record => record.kind === 'campaign')).flatMap(record => {
+    const campaignRuns = runs.filter(candidate => candidate.data.campaignId === record.id);
+    const run = campaignRuns.find(candidate => ['active', 'running', 'paused'].includes(candidate.status));
+    if (!run && campaignRuns.length > 0) return [];
+    if (!run && !['setup', 'draft'].includes(record.status)) return [];
+    const fields = campaignEditorFields(record);
+    const phase: CampaignPhase = run ? 'run' : exactSetupPhase(record);
+    const offeringRecord = fields.offeringId ? records.find(candidate => candidate.kind === 'offering' && candidate.id === fields.offeringId) : undefined;
+    const offering = value(offeringRecord?.data.name, value(record.data.offeringName, ''));
+    const goal = value(fields.goal, value(record.data.goal, value(record.data.objective, value(fields.outcome?.label, 'Goal not recorded'))));
+    return [{
+      id: record.id,
+      name: campaignDisplayName(record),
+      goal,
+      ...(offering ? { offering } : {}),
+      phase,
+      phaseLabel: phaseName(phase),
+      nextAction: nextCampaignAction(record, phase, run),
+      section: 'campaigns',
+      focusId: campaignFocus(record.id, phase),
+    }];
+  });
+}
 
 function buildAttention(records: PlatformRecord[], workspace: WorkspaceData): AttentionItem[] {
   const contacts = new Set(workspace.contacts.map(contact => contact.id));
@@ -123,14 +185,18 @@ function buildAttention(records: PlatformRecord[], workspace: WorkspaceData): At
         focusId: record.id,
       };
     }),
-    ...pausedRuns.map(record => ({
-      id: record.id,
-      kind: 'campaign_pause' as const,
-      title: 'Campaign run paused',
-      reason: value(record.data.name, 'A campaign needs review before it resumes.'),
-      source: 'Campaigns',
-      section: 'campaigns',
-    })),
+    ...pausedRuns.map(record => {
+      const campaignId = typeof record.data.campaignId === 'string' && records.some(candidate => candidate.kind === 'campaign' && candidate.id === record.data.campaignId) ? record.data.campaignId : undefined;
+      return {
+        id: record.id,
+        kind: 'campaign_pause' as const,
+        title: 'Campaign run paused',
+        reason: value(record.data.name, 'A campaign needs review before it resumes.'),
+        source: 'Campaigns',
+        section: 'campaigns',
+        ...(campaignId ? { focusId: campaignFocus(campaignId, 'run') } : {}),
+      };
+    }),
     ...pendingMemories.map(memory => {
       const contactId = typeof memory.contactId === 'string' && contacts.has(memory.contactId) ? memory.contactId : undefined;
       return {
@@ -177,7 +243,11 @@ export function deriveWorkspaceJourney({ records, workspace, company }: Workspac
   const attention = buildAttention(records, workspace);
   const recommendedAttention = attention.find(item => item.kind !== 'test_failure');
   const activeRuns = records.filter(record => record.kind === 'campaign_run' && ['active', 'running'].includes(record.status));
-  const returningWorkspace = agents.length > 0 || workspace.sessions.length > 0 || attention.length > 0 || activeRuns.length > 0;
+  const campaignsInProgress = buildCampaignsInProgress(records);
+  const newestActiveRun = newestFirst(activeRuns)[0];
+  const activeCampaign = campaignsInProgress.find(campaign => campaign.phase === 'run' && campaign.id === newestActiveRun?.data.campaignId);
+  const savedCampaign = campaignsInProgress.find(campaign => campaign.phase !== 'run');
+  const returningWorkspace = agents.length > 0 || workspace.sessions.length > 0 || attention.length > 0 || campaignsInProgress.length > 0;
 
   const identity = company.status === 'ready' ? company.snapshot.readiness.find(item => item.id === 'identity') : undefined;
   const identityReady = identity?.state === 'ready';
@@ -192,6 +262,7 @@ export function deriveWorkspaceJourney({ records, workspace, company }: Workspac
         };
 
   const alternatives = [
+    ...(!viewer ? [{ label: 'New campaign', section: 'campaigns', focusId: 'new' }] : []),
     { label: viewer ? 'Inspect agents' : 'Create agent', section: 'agents', ...(!viewer ? { focusId: 'new' } : {}) },
     { label: viewer ? 'Inspect company knowledge' : 'Bring company knowledge', section: 'brain/intake' },
   ];
@@ -208,6 +279,21 @@ export function deriveWorkspaceJourney({ records, workspace, company }: Workspac
     recommended = { kind: 'navigate', title: first.title, reason: first.reason, actionLabel: `Open ${first.source}`, evidence: `Saved ${first.source.toLowerCase()} record`, section: first.section, ...(first.focusId ? { focusId: first.focusId } : {}) };
   } else if (!leadAgent && approvedSources.length === 0) {
     recommended = { kind: 'navigate', title: 'Bring in the first company source', reason: 'Add and review one useful source so future agents can cite company context. You can also create a voice-only agent first.', actionLabel: viewer ? 'Inspect company knowledge' : 'Bring company knowledge', evidence: 'No approved Company brain source is saved.', section: 'brain/intake' };
+  } else if (['failed', 'outdated'].includes(leadReadiness.status) && leadAgent) {
+    const agentName = value(leadAgent.data.name, 'your agent');
+    recommended = {
+      kind: 'navigate',
+      title: `Review and publish ${agentName}`,
+      reason: leadReadiness.status === 'failed' ? 'The latest readiness checks need changes. Review them in Publish.' : 'Knowledge changed; review the sources, then run checks in Publish.',
+      actionLabel: 'Open agent',
+      evidence: 'Publish keeps the saved version, readiness checks, and browser activation together.',
+      section: 'agents',
+      focusId: leadAgent.id,
+    };
+  } else if (activeCampaign) {
+    recommended = { kind: 'navigate', title: 'Review work already in progress', reason: `${activeRuns.length} campaign run${activeRuns.length === 1 ? ' is' : 's are'} recorded as active or running.`, actionLabel: activeCampaign.nextAction, evidence: 'Saved campaign run state; no live provider activity is implied.', section: activeCampaign.section, focusId: activeCampaign.focusId };
+  } else if (savedCampaign) {
+    recommended = { kind: 'navigate', title: `Continue ${savedCampaign.name}`, reason: savedCampaign.goal, actionLabel: savedCampaign.nextAction, evidence: `Saved campaign · ${savedCampaign.phaseLabel}`, section: savedCampaign.section, focusId: savedCampaign.focusId };
   } else if (!leadAgent) {
     recommended = { kind: 'navigate', title: 'Create the first agent', reason: 'Define the representative’s task, AI disclosure, language, and human handoff behavior.', actionLabel: viewer ? 'Inspect agents' : 'Create agent', evidence: `${approvedSources.length} approved Company brain source${approvedSources.length === 1 ? '' : 's'} available`, section: 'agents' };
   } else if (leadReadiness.status !== 'released') {
@@ -226,8 +312,6 @@ export function deriveWorkspaceJourney({ records, workspace, company }: Workspac
       section: 'agents',
       focusId: leadAgent.id,
     };
-  } else if (activeRuns.length > 0) {
-    recommended = { kind: 'navigate', title: 'Review work already in progress', reason: `${activeRuns.length} campaign run${activeRuns.length === 1 ? ' is' : 's are'} recorded as active or running.`, actionLabel: 'Open campaigns', evidence: 'Saved campaign run state; no live provider activity is implied.', section: 'campaigns' };
   } else if (!publishedDeployment) {
     recommended = { kind: 'navigate', title: 'Choose where the agent should be available', reason: 'A browser release is active, but no public deployment is published for this version. Private browser work can continue without one.', actionLabel: viewer ? 'Inspect channels' : 'Choose a channel', evidence: 'An active browser release is not a public deployment.', section: 'deployments', ...(!viewer && activeRelease ? { focusId: `release:${activeRelease.id}` } : {}) };
   } else if (workspace.sessions.length > 0) {
@@ -307,6 +391,7 @@ export function deriveWorkspaceJourney({ records, workspace, company }: Workspac
     alternatives: alternatives.filter(item => item.section !== recommended.section || item.focusId !== recommended.focusId),
     steps,
     attention,
+    campaignsInProgress,
     recentAgents,
     recentConversations,
     returningWorkspace,

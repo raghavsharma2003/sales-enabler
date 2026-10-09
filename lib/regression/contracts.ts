@@ -140,6 +140,33 @@ export type RegressionSuiteCheck = {
   disclaimer: string;
 };
 
+/** References only: never copy customer text, model output or review reasons into a release. */
+export type RegressionReleaseEvidence = {
+  mode: 'configuration_only' | 'reviewed_text_regression';
+  caseSetDigest: string;
+  agentConfigDigest: string;
+  knowledgeDigests: Record<string, string>;
+  cases: { caseId: string; caseVersion: number; caseDigest: string; runId: string; runtimeInstructionDigest: string; reviewIds: string[] }[];
+};
+
+export type ReleaseReviewPacket = {
+  schemaVersion: 1;
+  operation: 'publish' | 'rollback';
+  agentId: string;
+  agentVersionId: string;
+  agentVersionNumber: number;
+  latestVersionId: string | null;
+  currentReleaseId: string | null;
+  testRunId: string | null;
+  configurationPassed: boolean;
+  mode: RegressionReleaseEvidence['mode'];
+  suite: RegressionSuiteCheck;
+  blockers: string[];
+  publishable: boolean;
+  reviewPacketDigest: string;
+  disclaimer: string;
+};
+
 export type RegressionCasePreviewInput = {
   sourceSessionId: string;
   selectedCallerTurnIndex: number;

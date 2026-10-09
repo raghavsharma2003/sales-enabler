@@ -1,10 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { AuthUser } from '../server/auth';
-import { db, WriteConflictError } from '../server/db';
+import { db, WriteConflictError, type Database } from '../server/db';
 import { HttpError, field } from '../server/http';
 import { createRecord, getRecord, listRecords, updateRecord, type PlatformRecord } from './records';
 import { isVoiceToolName, normalizeVoiceTools, type VoiceToolName } from '../voice/tools/contracts';
 import { normalizeSpeechVocabulary, SpeechVocabularyValidationError } from '../voice/speech-vocabulary';
+import { prepareRegressionReleaseGate } from '../regression/service';
+import { TEXT_REHEARSAL_DISCLAIMER, type RegressionReleaseEvidence, type ReleaseReviewPacket } from '../regression/contracts';
+import { operatorMembershipFence } from '../team/service';
 
 export type AgentConfig = {
   name: string; role: string; objective: string; disclosure: string;
@@ -19,7 +22,8 @@ export type AgentConfig = {
 };
 type AgentVersion = { agentId: string; number: number; config: AgentConfig; knowledgeDigests: Record<string, string>; sourceRevision: number };
 type TestRun = { agentId: string; versionId: string; checks: { label: string; passed: boolean; detail: string }[]; passed: boolean; mode: 'configuration'; disclaimer: string };
-type Release = { agentId: string; versionId: string; testRunId: string; channel: 'browser'; supersedesId?: string; reason?: string };
+type Release = { agentId: string; versionId: string; testRunId: string; channel: 'browser'; supersedesId?: string; reason?: string; reviewPacketDigest?: string; regressionEvidence?: RegressionReleaseEvidence };
+type Statement = Parameters<Database['batch']>[0][number];
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 const textArray = (value: unknown, label: string, max = 20): string[] => {
   if (!Array.isArray(value) || value.length > max || value.some((v) => typeof v !== 'string' || !v.trim() || v.length > 120)) throw new HttpError(400, `${label} must be a list of short text values.`);
@@ -91,7 +95,28 @@ async function passingRun(user: AuthUser, versionId: string, runId: string): Pro
   if (run.data.versionId !== versionId || !run.data.passed || run.data.mode !== 'configuration') throw new HttpError(409, 'A passing check for this exact version is required.');
   return run;
 }
-async function publish(user: AuthUser, data: Release, version: PlatformRecord<AgentVersion>, active?: PlatformRecord<Release>): Promise<PlatformRecord<Release>> {
+
+async function configurationEpoch(user: AuthUser, versionId: string, database: Database) {
+  const id = `agent-test-epoch:${versionId}`;
+  await database.run('INSERT INTO entities (id,organization_id,kind,status,data,created_at) VALUES (?,?,?,?,?,?) ON CONFLICT (id) DO NOTHING', [id, user.organizationId, 'platform:test_epoch', 'current', JSON.stringify(randomUUID()), new Date().toISOString()]);
+  const [row] = await database.all<{ data: string }>('SELECT data FROM entities WHERE id=? AND organization_id=? AND kind=?', [id, user.organizationId, 'platform:test_epoch']);
+  if (!row) throw new HttpError(409, 'Configuration check authority changed. Refresh release review.');
+  return { id, data: row.data, fence: { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND data=?', params: [id, user.organizationId, 'platform:test_epoch', row.data], expectedChanges: 1 } satisfies Statement };
+}
+
+async function recordConfigurationCheck(user: AuthUser, version: PlatformRecord<AgentVersion>, result: TestRun): Promise<PlatformRecord<TestRun>> {
+  const database = await db(), epoch = await configurationEpoch(user, version.id, database);
+  const id = randomUUID(), now = new Date().toISOString(), status = result.passed ? 'passed' : 'failed';
+  try { await database.batch([
+    await operatorMembershipFence(user, database),
+    // Serialize every new check with release publication, including insertion phantoms.
+    { sql: 'UPDATE entities SET data=? WHERE id=? AND organization_id=? AND kind=?', params: [JSON.stringify(randomUUID()), epoch.id, user.organizationId, 'platform:test_epoch'], expectedChanges: 1 },
+    { sql: 'INSERT INTO entities (id,organization_id,kind,status,data,created_at) VALUES (?,?,?,?,?,?)', params: [id, user.organizationId, 'platform:test_run', status, JSON.stringify({ revision: 1, updatedAt: now, data: result }), now] },
+    { sql: 'INSERT INTO audit_events (id,organization_id,user_id,entity_id,event,created_at) VALUES (?,?,?,?,?,?)', params: [randomUUID(), user.organizationId, user.id, id, 'test_run.created', now] },
+  ]); } catch (error) { if (error instanceof WriteConflictError) throw new HttpError(409, 'Configuration check authority changed. Refresh and run the check again.'); throw error; }
+  return { id, kind: 'test_run', status, revision: 1, createdAt: now, updatedAt: now, data: result };
+}
+async function publish(user: AuthUser, data: Release, version: PlatformRecord<AgentVersion>, active: PlatformRecord<Release> | undefined, fences: Statement[]): Promise<PlatformRecord<Release>> {
   const database = await db();
   const id = randomUUID(), now = new Date().toISOString();
   const lockId = `agent-release:${data.agentId}`;
@@ -99,7 +124,7 @@ async function publish(user: AuthUser, data: Release, version: PlatformRecord<Ag
   const expected = active?.id || null;
   const currentBinding = lock ? JSON.parse(String(lock.data)) as { activeReleaseId: string | null } : undefined;
   if ((currentBinding?.activeReleaseId || null) !== expected) throw new HttpError(409, 'Active release changed. Refresh before publishing.');
-  const statements = [];
+  const statements = [...fences];
   for (const sourceId of version.data.config.knowledgeIds) {
     const [sourceRow] = await database.all('SELECT data, status FROM entities WHERE id = ? AND organization_id = ? AND kind = ?', [sourceId, user.organizationId, 'platform:brain_source']);
     if (!sourceRow || sourceRow.status !== 'approved') throw new HttpError(409, 'Agent knowledge changed. Capture and test a new version.');
@@ -121,10 +146,68 @@ async function publish(user: AuthUser, data: Release, version: PlatformRecord<Ag
   statements.push({ sql: 'INSERT INTO entities (id, organization_id, kind, status, data, created_at) VALUES (?, ?, ?, ?, ?, ?)', params: [id, user.organizationId, 'platform:release', 'active', JSON.stringify({ revision: 1, updatedAt: now, data }), now] });
   statements.push({ sql: 'INSERT INTO audit_events (id, organization_id, user_id, entity_id, event, created_at) VALUES (?, ?, ?, ?, ?, ?)', params: [randomUUID(), user.organizationId, user.id, id, 'release.created', now] });
   try { await database.batch(statements); }
-  catch (error) { if (error instanceof WriteConflictError || String(error).includes('UNIQUE constraint') || String(error).includes('duplicate key')) throw new HttpError(409, 'Active release changed. Refresh before publishing.'); throw error; }
+  catch (error) { if (error instanceof WriteConflictError || String(error).includes('UNIQUE constraint') || String(error).includes('duplicate key')) throw new HttpError(409, 'Release authority or reviewed evidence changed. Refresh release review before publishing.'); throw error; }
   return { id, kind: 'release', status: 'active', revision: 1, createdAt: now, updatedAt: now, data };
 }
+
+async function platformFence(user: AuthUser, record: PlatformRecord, database: Database): Promise<Statement> {
+  const [row] = await database.all<{ data: string; status: string }>('SELECT data,status FROM entities WHERE id=? AND organization_id=? AND kind=?', [record.id, user.organizationId, `platform:${record.kind}`]);
+  const expected = JSON.stringify({ revision: record.revision, updatedAt: record.updatedAt, data: record.data });
+  if (!row || row.data !== expected || row.status !== record.status) throw new HttpError(409, 'Release authority changed. Refresh release review.');
+  return { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND data=? AND status=?', params: [record.id, user.organizationId, `platform:${record.kind}`, row.data, row.status], expectedChanges: 1 };
+}
+
+async function prepareReleaseReview(user: AuthUser, version: PlatformRecord<AgentVersion>, testRunId?: string, rollback = false) {
+  const database = await db();
+  const membership = await operatorMembershipFence(user, database);
+  const agent = await getRecord(user.organizationId, 'agent_definition', version.data.agentId);
+  const agentFence = await platformFence(user, agent, database);
+  const latest = await latestVersion(user, agent.id);
+  const [binding] = await database.all<{ data: string; status: string }>('SELECT data,status FROM entities WHERE id=? AND organization_id=? AND kind=?', [`agent-version:${agent.id}`, user.organizationId, 'platform:version_binding']);
+  if (!binding || JSON.parse(binding.data).versionId !== latest?.id) throw new HttpError(409, 'Agent version authority changed. Refresh release review.');
+  const versionFence: Statement = { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND data=? AND status=?', params: [`agent-version:${agent.id}`, user.organizationId, 'platform:version_binding', binding.data, binding.status], expectedChanges: 1 };
+  const gate = await prepareRegressionReleaseGate(user, version.id, database);
+  const active = (await listRecords(user.organizationId, 'release') as PlatformRecord<Release>[]).filter(item => item.data.agentId === agent.id && item.status === 'active');
+  const blockers: string[] = [];
+  if (!rollback && latest?.id !== version.id) blockers.push('Only the latest agent version can be published.');
+  const fresh = await evaluate(user, version);
+  const testEpoch = await configurationEpoch(user, version.id, database);
+  const checks = (await listRecords<TestRun>(user.organizationId, 'test_run')).filter(item => item.data.versionId === version.id);
+  const latestTimestamp = checks.reduce((latest, item) => item.createdAt > latest ? item.createdAt : latest, '');
+  const latestChecks = checks.filter(item => item.createdAt === latestTimestamp);
+  const latestChecksPassed = latestChecks.length > 0 && latestChecks.every(item => item.status === 'passed' && item.data.agentId === agent.id && item.data.passed === true && item.data.mode === 'configuration');
+  let configurationPassed = false;
+  const fences = [membership, ...gate.fences, agentFence, versionFence, testEpoch.fence];
+  for (const latestCheck of latestChecks) fences.push(await platformFence(user, latestCheck, database));
+  if (testRunId) {
+    const run = await getRecord(user.organizationId, 'test_run', testRunId) as PlatformRecord<TestRun>;
+    configurationPassed = latestChecksPassed && latestChecks.some(item => item.id === run.id) && run.status === 'passed' && run.data.agentId === agent.id && run.data.versionId === version.id && run.data.passed === true && run.data.mode === 'configuration' && fresh.passed;
+    fences.push(await platformFence(user, run, database));
+  }
+  if (!configurationPassed) blockers.push('The latest configuration check for this exact version must pass. A failed or nonpassing check at the same latest timestamp also blocks release.');
+  if (active.length > 1) blockers.push('Multiple active releases need reconciliation.');
+  if (gate.suite.requiredCases && !gate.suite.passing) blockers.push('Every required text case needs a current latest attempt with Met human reviews for all blocking criteria.');
+  const facts = {
+    schemaVersion: 1 as const, operation: rollback ? 'rollback' as const : 'publish' as const, agentId: agent.id, agentVersionId: version.id, agentVersionNumber: version.data.number,
+    latestVersionId: latest?.id || null, currentReleaseId: active[0]?.id || null, testRunId: testRunId || null,
+    configurationPassed, mode: gate.evidence.mode, suite: gate.suite, blockers, publishable: blockers.length === 0,
+    disclaimer: gate.suite.requiredCases ? TEXT_REHEARSAL_DISCLAIMER : `Configuration checks only; no reviewed conversation regression evidence. ${TEXT_REHEARSAL_DISCLAIMER}`,
+  };
+  const reviewPacketDigest = hash(JSON.stringify({ facts, authority: gate.authorityDigest, agentRevision: agent.revision, operatorId: user.id, membership, versionBinding: binding.data, configurationEpoch: testEpoch.data, latestChecks }));
+  const packet: ReleaseReviewPacket = { ...facts, reviewPacketDigest };
+  return { packet, evidence: gate.evidence, fences, active: active[0] };
+}
+
+/** Shared read contract for both release UI and final publish enforcement. */
+export async function getReleaseReviewPacket(user: AuthUser, versionId: string, testRunId?: string, operation: 'publish' | 'rollback' = 'publish'): Promise<ReleaseReviewPacket> {
+  return (await prepareReleaseReview(user, await versionFor(user, versionId), testRunId, operation === 'rollback')).packet;
+}
+
 export async function handleAgentAction(user: AuthUser, action: string, body: Record<string, unknown>): Promise<unknown> {
+  if (action === 'release.review') {
+    if (body.operation !== undefined && body.operation !== 'publish' && body.operation !== 'rollback') throw new HttpError(400, 'Choose publish or rollback for release review.');
+    return getReleaseReviewPacket(user, field(body, 'versionId', 100), field(body, 'testRunId', 100, false) || undefined, body.operation === 'rollback' ? 'rollback' : 'publish');
+  }
   if (action === 'agent.create') {
     const c = config(body); await knowledgeDigests(user, c.knowledgeIds);
     return createRecord(user, 'agent_definition', c, 'draft');
@@ -166,7 +249,7 @@ export async function handleAgentAction(user: AuthUser, action: string, body: Re
   if (action === 'test.run') {
     const version = await versionFor(user, field(body, 'versionId', 100));
     const result = await evaluate(user, version);
-    return createRecord(user, 'test_run', result as unknown as Record<string, unknown>, result.passed ? 'passed' : 'failed');
+    return recordConfigurationCheck(user, version, result);
   }
   if (action === 'release.publish' || action === 'release.rollback') {
     const version = await versionFor(user, field(body, 'versionId', 100));
@@ -175,10 +258,11 @@ export async function handleAgentAction(user: AuthUser, action: string, body: Re
     await passingRun(user, version.id, field(body, 'testRunId', 100));
     const fresh = await evaluate(user, version);
     if (!fresh.passed) throw new HttpError(409, 'Version dependencies changed. Run a new check after updating the agent.');
-    const active = (await listRecords(user.organizationId, 'release') as PlatformRecord<Release>[]).filter((r) => r.data.agentId === agent.id && r.status === 'active');
-    if (body.currentReleaseId !== (active[0]?.id || null)) throw new HttpError(409, 'Active release changed. Refresh before publishing.');
-    if (active.length > 1) throw new HttpError(409, 'Multiple active releases need reconciliation.');
-    return publish(user, { agentId: agent.id, versionId: version.id, testRunId: String(body.testRunId), channel: 'browser', supersedesId: active[0]?.id, reason: action === 'release.rollback' ? 'Rollback to a tested version' : 'Publish tested version' }, version, active[0]);
+    const review = await prepareReleaseReview(user, version, String(body.testRunId), action === 'release.rollback');
+    if (body.currentReleaseId !== review.packet.currentReleaseId) throw new HttpError(409, 'Active release changed. Refresh before publishing.');
+    if (!review.packet.publishable) throw new HttpError(409, review.packet.blockers.join(' '));
+    if ((review.packet.suite.requiredCases > 0 || body.reviewPacketDigest !== undefined) && body.reviewPacketDigest !== review.packet.reviewPacketDigest) throw new HttpError(409, 'Review the current release packet before publishing; its evidence or authority changed.');
+    return publish(user, { agentId: agent.id, versionId: version.id, testRunId: String(body.testRunId), channel: 'browser', supersedesId: review.active?.id, reason: action === 'release.rollback' ? 'Rollback to a tested version' : 'Publish tested version', reviewPacketDigest: review.packet.reviewPacketDigest, regressionEvidence: review.evidence }, version, review.active, review.fences);
   }
   if (action === 'release.stop') {
     const release = await getRecord(user.organizationId, 'release', field(body, 'releaseId', 100));

@@ -113,6 +113,18 @@ export function CommandView({ records, workspace, busy, navigate }: PlatformView
           </div>
         </section>
 
+        <section className={styles.section} aria-labelledby="campaigns-heading">
+          <div className={styles.sectionHeading}>
+            <div><h2 id="campaigns-heading">Campaigns in progress</h2><p>Saved outcomes and the exact stage to continue.</p></div>
+            {workspace.user.role !== 'viewer' && <button className={styles.sectionAction} type="button" onClick={() => open('campaigns', 'new')}>New campaign<ArrowRight size={14} aria-hidden="true"/></button>}
+          </div>
+          {journey.campaignsInProgress.length > 0 ? <div className={styles.flatList}>{journey.campaignsInProgress.map(campaign => <button className={styles.campaignRow} type="button" key={campaign.id} onClick={() => open(campaign.section, campaign.focusId)}>
+            <span className={styles.campaignCopy}><strong>{campaign.name}</strong><small><b>Goal:</b> {campaign.goal}</small>{campaign.offering && <em>Offering · {campaign.offering}</em>}</span>
+            <span className={styles.campaignMeta}><span>{campaign.phaseLabel}</span><strong>{campaign.nextAction}</strong></span>
+            <ArrowRight size={15} aria-hidden="true"/>
+          </button>)}</div> : <div className={styles.smallEmpty}><CircleDashed size={17} aria-hidden="true"/><span>{workspace.user.role === 'viewer' ? 'No saved campaign is in progress.' : 'No saved campaign is in progress. Start one when there is a customer outcome to prepare.'}</span></div>}
+        </section>
+
         <section className={styles.section} aria-labelledby="attention-heading">
           <div className={styles.sectionHeading}>
             <div><h2 id="attention-heading">Needs attention</h2><p>Items with a saved reason and an owning record.</p></div>

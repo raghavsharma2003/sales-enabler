@@ -15,6 +15,7 @@ import type {
   TextRehearsalTurn,
 } from '../lib/regression/contracts';
 import { TEXT_REHEARSAL_DISCLAIMER } from '../lib/regression/contracts';
+import { parseTestLabFocus, regressionSelection } from '../lib/platform/test-lab-route';
 import styles from './regression-workbench.module.css';
 
 type CriterionDraft = { key: string; text: string; blocking: boolean };
@@ -72,7 +73,8 @@ function sessionLabel(session: WorkspaceEntity) {
 }
 
 export function RegressionWorkbench({ records, workspace, focusId }: Props) {
-  const focusedSessionId = focusId?.startsWith('session:') ? focusId.slice('session:'.length) : '';
+  const focus = parseTestLabFocus(focusId);
+  const focusedSessionId = focus.kind === 'session' ? focus.sessionId : '';
   const eligibleSessions = useMemo(() => workspace.sessions.filter(session => typeof session.agentId === 'string' && (typeof session.agentVersionId === 'string' || typeof session.previewId === 'string') && transcriptOf(session).some(turn => turn.role === 'user')), [workspace.sessions]);
   const initialSessionId = eligibleSessions.some(session => session.id === focusedSessionId) ? focusedSessionId : eligibleSessions[0]?.id || '';
   const [sourceSessionId, setSourceSessionId] = useState(initialSessionId);
@@ -89,8 +91,9 @@ export function RegressionWorkbench({ records, workspace, focusId }: Props) {
   const [revisingCaseId, setRevisingCaseId] = useState('');
   const [data, setData] = useState<RegressionListResponse>({ cases: [], runs: [], reviews: [] });
   const [selectedCaseId, setSelectedCaseId] = useState('');
-  const [candidateVersionId, setCandidateVersionId] = useState('');
+  const [candidateVersionId, setCandidateVersionId] = useState(focus.kind === 'case-version' ? focus.versionId : '');
   const [selectedRunId, setSelectedRunId] = useState('');
+  const [targetOverridden, setTargetOverridden] = useState(false);
   const [suite, setSuite] = useState<RegressionSuiteCheck | null>(null);
   const [reviewDrafts, setReviewDrafts] = useState<Record<string, ReviewDraft>>({});
   const [pending, setPending] = useState('');
@@ -104,9 +107,11 @@ export function RegressionWorkbench({ records, workspace, focusId }: Props) {
   const sourceSession = eligibleSessions.find(session => session.id === sourceSessionId);
   const sourceTranscript = transcriptOf(sourceSession);
   const callerTurns = sourceTranscript.map((turn, index) => ({ turn, index })).filter(item => item.turn.role === 'user');
-  const selectedCase = data.cases.find(item => item.id === selectedCaseId) || data.cases.find(item => item.status === 'approved');
-  const versions = useMemo(() => records.filter(record => record.kind === 'agent_version' && record.data.agentId === selectedCase?.data.agentId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [records, selectedCase?.data.agentId]);
-  const candidateVersion = versions.find(version => version.id === candidateVersionId) || versions[0];
+  const selectionLocked = !targetOverridden && (focus.kind === 'case-version' || focus.kind === 'invalid');
+  const selectedCase = data.cases.find(item => item.id === selectedCaseId) || (!selectionLocked ? data.cases.find(item => item.status === 'approved') : undefined);
+  const platformVersions = useMemo(() => records.filter(record => record.kind === 'agent_version'), [records]);
+  const versions = useMemo(() => platformVersions.filter(record => record.data.agentId === selectedCase?.data.agentId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [platformVersions, selectedCase?.data.agentId]);
+  const candidateVersion = versions.find(version => version.id === candidateVersionId) || (!selectionLocked ? versions[0] : undefined);
   const caseRuns = data.runs.filter(run => run.data.caseId === selectedCase?.id && run.data.agentVersionId === candidateVersion?.id).sort((a, b) => b.data.attemptSequence - a.data.attemptSequence || b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
   const selectedRun = caseRuns.find(run => run.id === selectedRunId) || caseRuns[0];
   const assistantReply = selectedRun ? [...selectedRun.data.transcript].reverse().find(turn => turn.role === 'assistant')?.text : '';
@@ -117,17 +122,24 @@ export function RegressionWorkbench({ records, workspace, focusId }: Props) {
     setCriteria([{ key: uid(), text: '', blocking: true }]); setRequired(true); setRedactionConfirmed(false); setRevisingCaseId(''); setDirty(false);
   }
 
-  const refresh = useCallback(async (preferred?: { caseId?: string; runId?: string }) => {
+  const refresh = useCallback(async (preferred?: { caseId?: string; versionId?: string; runId?: string }) => {
     const next = await loadRegression();
     setData(next);
-    setSelectedCaseId(current => preferred?.caseId || (next.cases.some(item => item.id === current) ? current : next.cases.find(item => item.status === 'approved')?.id || ''));
-    setSelectedRunId(current => preferred?.runId || (next.runs.some(item => item.id === current) ? current : ''));
-  }, []);
+    const selection = regressionSelection({
+      focus: parseTestLabFocus(focusId), data: next, versions: platformVersions,
+      current: { caseId: selectedCaseId, versionId: candidateVersionId, runId: selectedRunId },
+      preferred, override: targetOverridden,
+    });
+    if (preferred) setTargetOverridden(true);
+    setSelectedCaseId(selection.caseId); setCandidateVersionId(selection.versionId); setSelectedRunId(selection.runId);
+    setError(selection.error || '');
+    return selection;
+  }, [candidateVersionId, focusId, platformVersions, selectedCaseId, selectedRunId, targetOverridden]);
 
   async function refreshSaved() {
     if (pending) return;
     setPending('refresh'); setError(''); setNotice('');
-    try { await refresh(); setNotice('Saved text rehearsals refreshed.'); }
+    try { const selection = await refresh(); if (!selection.error) setNotice('Saved text rehearsals refreshed.'); }
     catch (failure) { setError(failure instanceof Error ? failure.message : 'Could not refresh saved text rehearsals.'); }
     finally { setPending(''); }
   }
@@ -138,12 +150,12 @@ export function RegressionWorkbench({ records, workspace, focusId }: Props) {
     void loadRegression().then(next => {
       if (!active) return;
       setData(next);
-      const focusedCase = next.cases.find(item => item.id === focusId) || next.cases.find(item => next.runs.find(run => run.id === focusId)?.data.caseId === item.id);
-      setSelectedCaseId(focusedCase?.id || next.cases.find(item => item.status === 'approved')?.id || '');
-      setSelectedRunId(next.runs.find(item => item.id === focusId)?.id || '');
+      const selection = regressionSelection({ focus: parseTestLabFocus(focusId), data: next, versions: platformVersions });
+      setTargetOverridden(false); setError(selection.error || '');
+      setSelectedCaseId(selection.caseId); setCandidateVersionId(selection.versionId); setSelectedRunId(selection.runId);
     }).catch(failure => { if (active) setError(failure instanceof Error ? failure.message : 'Could not load saved text rehearsals.'); }).finally(() => { if (active) setPending(''); });
     return () => { active = false; };
-  }, [focusId]);
+  }, [focusId, platformVersions]);
 
   useEffect(() => {
     if (!sourceSession) return;
@@ -155,11 +167,7 @@ export function RegressionWorkbench({ records, workspace, focusId }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceSessionId]);
 
-  useEffect(() => {
-    if (!candidateVersionId && versions[0]) setCandidateVersionId(versions[0].id);
-    if (candidateVersionId && !versions.some(version => version.id === candidateVersionId)) setCandidateVersionId(versions[0]?.id || '');
-    setSuite(null);
-  }, [candidateVersionId, selectedCaseId, versions]);
+  useEffect(() => { setSuite(null); }, [candidateVersionId, selectedCaseId]);
 
   useEffect(() => {
     const unload = (event: BeforeUnloadEvent) => { if (dirtyRef.current) { event.preventDefault(); event.returnValue = ''; } };
@@ -315,12 +323,12 @@ export function RegressionWorkbench({ records, workspace, focusId }: Props) {
       <section className={styles.run} aria-labelledby="rehearsal-run-heading">
         <div className={styles.sectionHead}><div><span>3</span><div><h3 id="rehearsal-run-heading">Generate a new candidate reply</h3><p>Select an approved case and an immutable version of the same agent.</p></div></div><button className={styles.iconButton} type="button" aria-label="Refresh saved rehearsals" disabled={!!pending} onClick={() => void refreshSaved()}>{pending === 'refresh' ? <LoaderCircle className="spin" size={16}/> : <RefreshCw size={16}/>}</button></div>
         {pending === 'load' ? <div className={styles.loading}><LoaderCircle className="spin" size={18}/> Loading saved cases…</div> : data.cases.length ? <>
-          <div className={styles.casePicker}>{data.cases.map(item => <button type="button" key={item.id} aria-current={selectedCase?.id === item.id ? 'true' : undefined} onClick={() => { if (reviewDirty && !window.confirm('Discard the unsaved operator review and open another case?')) return; setReviewDrafts({}); setSelectedCaseId(item.id); setSelectedRunId(''); setCandidateVersionId(''); setSuite(null); }}><span><strong>{item.data.rubric.name}</strong><small>v{item.data.version} · {item.data.required ? 'Required in text rehearsal suite' : 'Optional text rehearsal'} · call {callRef(item.data.source.sessionId)}</small></span><span className={styles.status} data-tone={item.status === 'approved' ? 'success' : 'quiet'}>{sentence(item.status)}</span></button>)}</div>
+          <div className={styles.casePicker}>{data.cases.map(item => <button type="button" key={item.id} aria-current={selectedCase?.id === item.id ? 'true' : undefined} onClick={() => { if (reviewDirty && !window.confirm('Discard the unsaved operator review and open another case?')) return; setTargetOverridden(true); setReviewDrafts({}); setSelectedCaseId(item.id); setSelectedRunId(''); setCandidateVersionId(''); setError(''); setSuite(null); }}><span><strong>{item.data.rubric.name}</strong><small>v{item.data.version} · {item.data.required ? 'Required in text rehearsal suite' : 'Optional text rehearsal'} · call {callRef(item.data.source.sessionId)}</small></span><span className={styles.status} data-tone={item.status === 'approved' ? 'success' : 'quiet'}>{sentence(item.status)}</span></button>)}</div>
           {selectedCase && <div className={styles.caseDetail}>
             <div className={styles.caseMeta}><span>Agent <strong>{shortId(selectedCase.data.agentId)}</strong></span><span>Case version <strong>{selectedCase.data.version}</strong></span><span>Criteria <strong>{selectedCase.data.rubric.criteria.length}</strong></span></div>
             <p>{selectedCase.data.rubric.expectedOutcome}</p>
             <button className={styles.textButton} type="button" disabled={!!pending || readOnly || selectedCase.status !== 'approved'} onClick={() => void beginRevision(selectedCase)}><RefreshCw size={14}/> Create a reviewed revision</button>
-            {versions.length ? <div className={styles.runControls}><label>Candidate version<select value={candidateVersion?.id || ''} disabled={!!pending || readOnly} onChange={event => { if (reviewDirty && !window.confirm('Discard the unsaved operator review and open another candidate version?')) return; setReviewDrafts({}); setCandidateVersionId(event.target.value); setSelectedRunId(''); setSuite(null); }}>{versions.map(version => <option key={version.id} value={version.id}>Version {String(version.data.number)} · saved {formatTime(version.createdAt)}</option>)}</select></label><button className={styles.primaryButton} type="button" disabled={!candidateVersion || !!pending || readOnly || selectedCase.status !== 'approved'} onClick={() => void startRun()}>{pending === 'run' ? <LoaderCircle className="spin" size={16}/> : <FlaskConical size={16}/>} Generate new reply with Azure</button></div> : <p className={styles.empty}>No immutable version exists for the agent bound to this case.</p>}
+            {versions.length ? <div className={styles.runControls}><label>Candidate version<select value={candidateVersion?.id || ''} disabled={!!pending || readOnly} onChange={event => { if (reviewDirty && !window.confirm('Discard the unsaved operator review and open another candidate version?')) return; setTargetOverridden(true); setReviewDrafts({}); setCandidateVersionId(event.target.value); setSelectedRunId(''); setError(''); setSuite(null); }}>{versions.map(version => <option key={version.id} value={version.id}>Version {String(version.data.number)} · saved {formatTime(version.createdAt)}</option>)}</select></label><button className={styles.primaryButton} type="button" disabled={!candidateVersion || !!pending || readOnly || selectedCase.status !== 'approved'} onClick={() => void startRun()}>{pending === 'run' ? <LoaderCircle className="spin" size={16}/> : <FlaskConical size={16}/>} Generate new reply with Azure</button></div> : <p className={styles.empty}>No immutable version exists for the agent bound to this case.</p>}
           </div>}
         </> : <p className={styles.empty}>No reviewed text rehearsal cases yet. Prepare a checkpoint and explicitly create the first case.</p>}
 

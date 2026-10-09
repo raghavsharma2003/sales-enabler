@@ -24,6 +24,7 @@ import {
   type RegressionRunRecord,
   type RegressionSuiteCaseResult,
   type RegressionSuiteCheck,
+  type RegressionReleaseEvidence,
   type TextRehearsalTurn,
 } from './contracts';
 
@@ -37,6 +38,18 @@ export type RehearsalContextCompiler = (input: { context: CompiledAgentContext; 
 const kinds = { case: 'regression:case', run: 'regression:run', review: 'regression:review' } as const;
 const LIMITS = { maxTurns: 8, maxTurnCharacters: 1200, maxTotalCharacters: 6500 } as const;
 const sha = (value: unknown) => createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
+
+// Every case/run/review mutation takes this shared write lock before touching evidence.
+// A publisher fences the same row, closing insert phantoms on PostgreSQL as well as SQLite.
+async function regressionEpoch(user: AuthUser, database: Database): Promise<Row> {
+  const id = `regression-epoch:${user.organizationId}`;
+  await database.run('INSERT INTO entities (id,organization_id,kind,status,data,created_at) VALUES (?,?,?,?,?,?) ON CONFLICT (id) DO NOTHING', [id, user.organizationId, 'regression:epoch', 'active', JSON.stringify(randomUUID()), new Date().toISOString()]);
+  return scopedRow(user, 'regression:epoch', id, database);
+}
+async function regressionMutationFence(user: AuthUser, database: Database): Promise<Statement> {
+  const epoch = await regressionEpoch(user, database);
+  return { sql: 'UPDATE entities SET data=? WHERE id=? AND organization_id=? AND kind=?', params: [JSON.stringify(randomUUID()), epoch.id, user.organizationId, 'regression:epoch'], expectedChanges: 1 };
+}
 
 function integer(value: unknown, label: string, min = 0, max = Number.MAX_SAFE_INTEGER): number {
   if (!Number.isSafeInteger(value) || Number(value) < min || Number(value) > max) throw new HttpError(400, `${label} is invalid.`);
@@ -259,6 +272,7 @@ export async function createRegressionCase(user: AuthUser, input: RegressionCase
   const membership = await operatorMembershipFence(user, store);
   const statements = [
     membership,
+    await regressionMutationFence(user, store),
     rowFence(user, 'session', selection.row),
     ...selection.authorityFences,
     ...(previous ? [{ sql: 'UPDATE entities SET status=? WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?', params: ['superseded', previous.id, user.organizationId, kinds.case, 'approved', previousRaw], expectedChanges: 1 }] : []),
@@ -355,6 +369,7 @@ export async function runTextRehearsal(user: AuthUser, input: { requestId: strin
     const membership = await operatorMembershipFence(user, store);
     await store.batch([
       membership,
+      await regressionMutationFence(user, store),
       { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?', params: [rehearsalCase.id, user.organizationId, kinds.case, 'approved', caseRow.data], expectedChanges: 1 },
       ...fences,
       attempt.statement,
@@ -379,6 +394,7 @@ export async function runTextRehearsal(user: AuthUser, input: { requestId: strin
     interim = { ...claim, transcript, responseAiRunId: response.runId, responseModel: response.model, usage: { ...response.usage } };
     await store.batch([
       await operatorMembershipFence(user, store),
+      await regressionMutationFence(user, store),
       { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?', params: [rehearsalCase.id, user.organizationId, kinds.case, 'approved', caseRow.data], expectedChanges: 1 },
       ...fences,
       { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?', params: [id, user.organizationId, kinds.run, 'pending', JSON.stringify(claim)], expectedChanges: 1 },
@@ -403,6 +419,7 @@ export async function runTextRehearsal(user: AuthUser, input: { requestId: strin
     const finished: RegressionRunRecord['data'] = interim;
     await store.batch([
       await operatorMembershipFence(user, store),
+      await regressionMutationFence(user, store),
       { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?', params: [rehearsalCase.id, user.organizationId, kinds.case, 'approved', caseRow.data], expectedChanges: 1 },
       ...fences,
       { sql: 'UPDATE entities SET data=?,status=? WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?', params: [JSON.stringify(finished), status, id, user.organizationId, kinds.run, 'pending', JSON.stringify(claim)], expectedChanges: 1 },
@@ -412,6 +429,7 @@ export async function runTextRehearsal(user: AuthUser, input: { requestId: strin
   } catch (error) {
     try {
       await store.batch([
+        await regressionMutationFence(user, store),
         { sql: 'UPDATE entities SET data=?,status=? WHERE id=? AND organization_id=? AND kind=? AND status=?', params: [JSON.stringify(interim), 'uncertain', id, user.organizationId, kinds.run, 'pending'], expectedChanges: 1 },
         { sql: 'INSERT INTO audit_events (id,organization_id,user_id,entity_id,event,created_at) VALUES (?,?,?,?,?,?)', params: [randomUUID(), user.organizationId, user.id, id, 'regression.run.uncertain', new Date().toISOString()] },
       ]);
@@ -452,6 +470,7 @@ export async function reviewTextRehearsal(user: AuthUser, input: { runId: string
   try {
     await store.batch([
       await operatorMembershipFence(user, store),
+      await regressionMutationFence(user, store),
       rowFence(user, kinds.case, caseRow),
       ...authority.fences,
       { sql: 'UPDATE entities SET data=data WHERE id=? AND organization_id=? AND kind=? AND status=? AND data=?', params: [run.id, user.organizationId, kinds.run, 'complete', JSON.stringify(run.data)], expectedChanges: 1 },
@@ -502,14 +521,14 @@ export async function checkRegressionSuite(user: AuthUser, agentVersionId: strin
     if (!run) return { caseId: rehearsalCase.id, caseVersion: rehearsalCase.data.version, caseDigest, status: 'missing', blockingCriteria: blocking.length, reviewedBlockingCriteria: 0 };
     const base = { caseId: rehearsalCase.id, caseVersion: rehearsalCase.data.version, caseDigest, runId: run.id, blockingCriteria: blocking.length };
     if (run.status === 'pending' || run.status === 'invalid' || run.status === 'uncertain') return { ...base, status: run.status, reviewedBlockingCriteria: 0 };
-    if (run.data.caseDigest !== caseDigest || run.data.caseVersion !== rehearsalCase.data.version || run.data.agentConfigDigest !== sha(version.data.config) || JSON.stringify(run.data.knowledgeDigests) !== JSON.stringify(current) || run.data.runtimeInstructionDigest !== runtimeDigests.get(rehearsalCase.id))
+    if (run.status !== 'complete' || run.data.agentId !== version.data.agentId || run.data.executionMode !== 'text_rehearsal' || run.data.evidenceScope !== 'transcript_relationship' || JSON.stringify(run.data.rubric) !== JSON.stringify(rehearsalCase.data.rubric) || run.data.caseDigest !== caseDigest || run.data.caseVersion !== rehearsalCase.data.version || run.data.agentConfigDigest !== sha(version.data.config) || JSON.stringify(run.data.knowledgeDigests) !== JSON.stringify(current) || run.data.runtimeInstructionDigest !== runtimeDigests.get(rehearsalCase.id))
       return { ...base, status: 'stale', reviewedBlockingCriteria: 0 };
     const response = run.data.transcript.at(-1);
     if (!response || response.role !== 'assistant') return { ...base, status: 'stale', reviewedBlockingCriteria: 0 };
     const responseDigest = sha(response.text);
     const latest = new Map<string, RegressionReviewRecord>();
     for (const review of data.reviews.filter(item => item.data.runId === run.id).sort(newestReview)) if (!latest.has(review.data.criterionId)) latest.set(review.data.criterionId, review);
-    const reviewed = blocking.map(criterion => latest.get(criterion.id)).filter((value): value is RegressionReviewRecord => !!value && value.data.caseDigest === caseDigest && value.data.agentVersionId === version.id && value.data.responseDigest === responseDigest);
+    const reviewed = blocking.map(criterion => latest.get(criterion.id)).filter((value): value is RegressionReviewRecord => !!value && value.data.caseId === rehearsalCase.id && value.data.caseVersion === rehearsalCase.data.version && value.data.caseDigest === caseDigest && value.data.agentVersionId === version.id && value.data.responseDigest === responseDigest);
     if (reviewed.length !== blocking.length || reviewed.some(review => review.data.verdict === 'uncertain')) return { ...base, status: 'review_needed', reviewedBlockingCriteria: reviewed.length };
     if (reviewed.some(review => review.data.verdict !== 'met')) return { ...base, status: 'failed', reviewedBlockingCriteria: reviewed.length };
     return { ...base, status: 'passed', reviewedBlockingCriteria: reviewed.length };
@@ -534,4 +553,45 @@ export async function listRegressionData(user: AuthUser, database?: Database) {
     store.all<Row>('SELECT id,data,status,created_at FROM entities WHERE organization_id=? AND kind=? ORDER BY created_at DESC,id DESC', [user.organizationId, kinds.review]),
   ]);
   return { cases: caseRows.map(decodeCase), runs: runRows.map(decodeRun), reviews: reviewRows.map(decodeReview) };
+}
+
+/** A checked snapshot and the transaction fences that make it publish authority. */
+export async function prepareRegressionReleaseGate(user: AuthUser, agentVersionId: string, database?: Database, dependencies: { compiler?: RehearsalContextCompiler } = {}) {
+  const store = database || await db();
+  const epoch = await regressionEpoch(user, store);
+  const authority = await currentVersion(user, agentVersionId, store);
+  const initial = suiteEpoch(await listRegressionData(user, store), authority.version.data.agentId, agentVersionId);
+  const suite = await checkRegressionSuite(user, agentVersionId, store, dependencies);
+  if (suite.requiredCases > 100) throw new HttpError(409, 'The release review supports at most 100 required text cases. Review the required case set.');
+  const data = await listRegressionData(user, store);
+  if (suiteEpoch(data, authority.version.data.agentId, agentVersionId) !== initial) throw new HttpError(409, 'Text rehearsal evidence changed. Refresh release review.');
+  const fences: Statement[] = [rowFence(user, 'regression:epoch', epoch), ...authority.fences];
+  const cases: RegressionReleaseEvidence['cases'] = [];
+  for (const result of suite.cases) {
+    const rehearsalCase = data.cases.find(item => item.id === result.caseId)!;
+    const caseRow = await scopedRow(user, kinds.case, result.caseId, store);
+    if (!rehearsalCase || caseRow.status !== 'approved' || sha(JSON.parse(caseRow.data)) !== result.caseDigest) throw new HttpError(409, 'The required case changed. Refresh release review.');
+    fences.push(rowFence(user, kinds.case, caseRow));
+    if (!result.runId) continue;
+    const runRow = await scopedRow(user, kinds.run, result.runId, store);
+    const run = decodeRun(runRow);
+    if (JSON.stringify(run) !== JSON.stringify(data.runs.find(item => item.id === run.id))) throw new HttpError(409, 'The candidate attempt changed. Refresh release review.');
+    fences.push(rowFence(user, kinds.run, runRow));
+    const latest = new Map<string, RegressionReviewRecord>();
+    for (const review of data.reviews.filter(item => item.data.runId === run.id).sort(newestReview)) if (!latest.has(review.data.criterionId)) latest.set(review.data.criterionId, review);
+    const reviewIds: string[] = [];
+    for (const criterion of rehearsalCase.data.rubric.criteria.filter(item => item.blocking)) {
+      const review = latest.get(criterion.id);
+      if (!review) continue;
+      const reviewRow = await scopedRow(user, kinds.review, review.id, store);
+      if (reviewRow.status !== 'recorded' || reviewRow.data !== JSON.stringify(review.data)) throw new HttpError(409, 'The blocking review changed. Refresh release review.');
+      fences.push(rowFence(user, kinds.review, reviewRow));
+      reviewIds.push(review.id);
+    }
+    cases.push({ caseId: result.caseId, caseVersion: result.caseVersion, caseDigest: result.caseDigest, runId: run.id, runtimeInstructionDigest: run.data.runtimeInstructionDigest, reviewIds });
+  }
+  const fresh = await regressionEpoch(user, store);
+  if (fresh.data !== epoch.data) throw new HttpError(409, 'Text rehearsal evidence changed. Refresh release review.');
+  const evidence: RegressionReleaseEvidence = { mode: suite.requiredCases ? 'reviewed_text_regression' : 'configuration_only', caseSetDigest: suite.caseSetDigest, agentConfigDigest: sha(authority.version.data.config), knowledgeDigests: authority.current, cases };
+  return { suite, evidence, fences, authorityDigest: sha([authority.authorityDigest, epoch.data, evidence]) };
 }

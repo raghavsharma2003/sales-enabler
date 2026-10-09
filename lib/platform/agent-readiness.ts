@@ -1,4 +1,5 @@
 import type { PlatformRecord, PlatformViewProps } from './contracts';
+import { latestConfigurationRun } from './release-review';
 
 export type ReadinessInput = {
   agent?: PlatformRecord;
@@ -33,7 +34,7 @@ export function deriveAgentReadiness({ agent, records, dirty, busy, viewer }: Re
   const version = agent ? records.filter(record => record.kind === 'agent_version' && record.data.agentId === agent.id)
     .sort((a, b) => Number(b.data.number) - Number(a.data.number) || newest(a, b))[0] : undefined;
   const currentVersion = !!agent && !!version && version.data.sourceRevision === agent.revision;
-  const run = version ? records.filter(record => record.kind === 'test_run' && record.data.agentId === agent?.id && record.data.versionId === version.id && record.data.mode === 'configuration').sort(newest)[0] : undefined;
+  const run = latestConfigurationRun(records, agent?.id, version?.id);
   const active = agent ? records.filter(record => record.kind === 'release' && record.status === 'active' && record.data.agentId === agent.id).sort(newest)[0] : undefined;
   const knowledge = version ? versionKnowledgeState(version, records) : 'unknown';
   const passing = currentVersion && knowledge === 'current' && run?.data.passed === true;

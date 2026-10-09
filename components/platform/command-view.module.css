@@ -168,7 +168,9 @@
 
 .primaryAction,
 .textAction,
+.sectionAction,
 .attentionRow > button,
+.campaignRow,
 .recentRow,
 .journey button {
   cursor: pointer;
@@ -217,6 +219,37 @@
   color: var(--pc-accent);
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.sectionAction {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border: 1px solid var(--pc-line);
+  border-radius: 7px;
+  background: #fff;
+  color: #4940ba;
+  font-size: 12px;
+  font-weight: 630;
+  white-space: nowrap;
+}
+
+.sectionAction:hover {
+  border-color: #c9c3f1;
+  background: var(--pc-hover);
+}
+
+.primaryAction:focus-visible,
+.textAction:focus-visible,
+.sectionAction:focus-visible,
+.attentionRow > button:focus-visible,
+.campaignRow:focus-visible,
+.recentRow:focus-visible,
+.journey button:focus-visible {
+  outline: 2px solid var(--pc-accent);
+  outline-offset: 2px;
 }
 
 .section {
@@ -400,6 +433,87 @@
   background: transparent;
   color: var(--pc-ink);
   text-align: left;
+}
+
+.campaignRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, auto) auto;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  min-height: 82px;
+  padding: 14px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--pc-line);
+  background: transparent;
+  color: var(--pc-ink);
+  text-align: left;
+}
+
+.campaignRow:hover {
+  background: #f8f8fb;
+}
+
+.campaignCopy,
+.campaignMeta {
+  min-width: 0;
+}
+
+.campaignCopy > strong,
+.campaignCopy > small,
+.campaignCopy > em,
+.campaignMeta > span,
+.campaignMeta > strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.campaignCopy > strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.campaignCopy > small {
+  margin-top: 4px;
+  color: var(--pc-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.campaignCopy > small > b {
+  margin-right: 6px;
+  color: var(--pc-ink);
+  font-weight: 620;
+}
+
+.campaignCopy > em {
+  margin-top: 3px;
+  color: var(--pc-muted);
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1.4;
+}
+
+.campaignMeta {
+  text-align: right;
+}
+
+.campaignMeta > span {
+  color: var(--pc-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.campaignMeta > strong {
+  margin-top: 4px;
+  color: #4940ba;
+  font-size: 12px;
+  font-weight: 630;
+  line-height: 1.4;
+}
+
+.campaignRow > svg {
+  color: #7e8293;
 }
 
 .recentRow:hover {
@@ -636,6 +750,7 @@
 
   .primaryAction,
   .textAction,
+  .sectionAction,
   .attentionRow > button,
   .journey button {
     min-height: 44px;
@@ -666,6 +781,21 @@
   }
 
   .recentRow > svg {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .campaignRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .campaignMeta {
+    grid-column: 1;
+    text-align: left;
+  }
+
+  .campaignRow > svg {
     grid-column: 2;
     grid-row: 1 / span 2;
   }
