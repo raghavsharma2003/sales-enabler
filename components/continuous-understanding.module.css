@@ -1,0 +1,24 @@
+.panel{display:grid;gap:14px;color:#4e5363}
+.state{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;background:#f8f8fb;border-radius:7px}
+.state strong{display:block;color:var(--pc-ink);font-size:13px;line-height:1.35}
+.state p{margin:3px 0 0;font-size:12px;line-height:1.5;color:var(--pc-muted)}
+.icon{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;color:#6259b5;background:#eeecff}
+.icon[data-state="ready"],.icon[data-state="tentative"],.icon[data-state="preparing"],.icon[data-state="awaiting_final"]{color:#246448;background:#e9f6ef}
+.icon[data-state="unavailable"]{color:#9b3547;background:#fff3f4}
+.icon[data-state="paused"],.icon[data-state="ended"]{color:#626779;background:#eceef3}
+.current{padding:12px;background:#f6f4ff;border-radius:7px}
+.currentHeading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.current h4,.cues h4{margin:0;color:var(--pc-ink);font-size:12px;line-height:1.4}
+.currentHeading span{font-size:11px;font-weight:650;color:var(--pc-accent)}
+.current blockquote{margin:10px 0 7px;color:var(--pc-ink);font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.current p,.boundary{margin:0;color:var(--pc-muted);font-size:12px;line-height:1.5}
+.cues{display:grid;gap:8px}
+.cues dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0;border-top:1px solid var(--pc-line);border-bottom:1px solid var(--pc-line)}
+.cues dl>div{min-width:0;padding:9px 8px}
+.cues dl>div+div{border-left:1px solid var(--pc-line)}
+.cues dt{font-size:11px;color:var(--pc-muted)}
+.cues dd{margin:3px 0 0;color:var(--pc-ink);font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.counts{display:flex;flex-wrap:wrap;gap:7px 14px;color:var(--pc-muted);font-size:11px;font-variant-numeric:tabular-nums}
+.counts strong{color:var(--pc-ink);font-weight:650}
+.boundary{padding-top:12px;border-top:1px solid var(--pc-line)}
+@media(max-width:420px){.cues dl{grid-template-columns:1fr}.cues dl>div+div{border-left:0;border-top:1px solid var(--pc-line)}.current blockquote{font-size:14px}}

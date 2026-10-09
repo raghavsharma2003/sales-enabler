@@ -17,6 +17,7 @@ export interface VoiceConfiguration {
   voice?: string;
   model?: string;
   source?: string;
+  continuousSpeech?: { configured: boolean; reason?: string };
 }
 
 export type VoiceProfile = "provider-default" | "maya-despina";

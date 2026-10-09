@@ -1,3 +1,5 @@
+import type { ContinuousSpeechReason } from "./continuous-speech-contracts";
+
 export interface PrivatePreparationDiagnostics {
   /** Empty arrays mean no observed sample; all times are client events. */
   speechStopToFinalAsrMs: number[];
@@ -29,6 +31,39 @@ function copyPreparation(value: PrivatePreparationDiagnostics): PrivatePreparati
   return { ...value, speechStopToFinalAsrMs: [...value.speechStopToFinalAsrMs], finalAsrToGuidanceAckMs: [...value.finalAsrToGuidanceAckMs], guidanceAckToFirstOutputMs: [...value.guidanceAckToFirstOutputMs], responseRequestToFirstOutputMs: [...value.responseRequestToFirstOutputMs] };
 }
 
+export interface ContinuousSpeechDiagnostics {
+  status: "connecting" | "ready" | "unavailable" | "ended";
+  reason?: ContinuousSpeechReason;
+  submittedSamples: number;
+  interimCount: number;
+  sidecarFinalCount: number;
+  discardedCount: number;
+  candidateUpdates: number;
+}
+
+const continuousSpeechStatuses = ["connecting", "ready", "unavailable", "ended"] as const;
+const continuousSpeechReasons: ContinuousSpeechReason[] = ["configuration", "authentication", "capacity", "backpressure", "provider", "expired", "protocol", "input_limit", "microphone"];
+const continuousSpeechCountKeys = ["interimCount", "sidecarFinalCount", "discardedCount", "candidateUpdates"] as const;
+const validBoundedInteger = (value: unknown, maximum: number): value is number => typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= maximum;
+
+function normalizeContinuousSpeech(value: unknown): ContinuousSpeechDiagnostics | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const raw = value as Record<string, unknown>;
+  if (!continuousSpeechStatuses.includes(raw.status as typeof continuousSpeechStatuses[number]) ||
+      !validBoundedInteger(raw.submittedSamples, 16_000 * 600) ||
+      !continuousSpeechCountKeys.every(key => validBoundedInteger(raw[key], 10_000)) ||
+      (raw.reason !== undefined && !continuousSpeechReasons.includes(raw.reason as ContinuousSpeechReason))) return undefined;
+  return {
+    status: raw.status as ContinuousSpeechDiagnostics["status"],
+    ...(raw.reason === undefined ? {} : { reason: raw.reason as ContinuousSpeechReason }),
+    submittedSamples: raw.submittedSamples,
+    interimCount: raw.interimCount as number,
+    sidecarFinalCount: raw.sidecarFinalCount as number,
+    discardedCount: raw.discardedCount as number,
+    candidateUpdates: raw.candidateUpdates as number,
+  };
+}
+
 export interface VoiceRuntimeDiagnostics {
   /** Elapsed from browser connect() entry to provider ready/data channel open. */
   clientObservedConnectMs?: number;
@@ -40,6 +75,8 @@ export interface VoiceRuntimeDiagnostics {
   measurement: "client_observed_events";
   /** Absent means this private preparation instrumentation was not observed. */
   privatePreparation?: PrivatePreparationDiagnostics;
+  /** Bounded metadata only; hypotheses and session identifiers are never retained. */
+  continuousSpeech?: ContinuousSpeechDiagnostics;
 }
 
 /** Accept only bounded client event measurements for server persistence. */
@@ -73,11 +110,17 @@ export function normalizeVoiceDiagnostics(value: unknown): VoiceRuntimeDiagnosti
       asrDeltasDuringSpeech: value.asrDeltasDuringSpeech as number,
     };
   }
+  let continuousSpeech: ContinuousSpeechDiagnostics | undefined;
+  if (raw.continuousSpeech !== undefined) {
+    continuousSpeech = normalizeContinuousSpeech(raw.continuousSpeech);
+    if (!continuousSpeech) return undefined;
+  }
   return {
     status: raw.status as VoiceRuntimeDiagnostics["status"], measurement: "client_observed_events",
     ...(raw.clientObservedConnectMs === undefined ? {} : { clientObservedConnectMs: raw.clientObservedConnectMs as number }),
     clientObservedTurnMs: [...raw.clientObservedTurnMs],
     ...(privatePreparation ? { privatePreparation } : {}),
+    ...(continuousSpeech ? { continuousSpeech } : {}),
     toolCalls: { requested: calls.requested as number, available: calls.available as number,
       awaitingReview: calls.awaitingReview as number, unavailable: calls.unavailable as number },
   };
@@ -90,7 +133,7 @@ export function createVoiceDiagnostics(report?: (snapshot: VoiceRuntimeDiagnosti
     status: "connecting", measurement: "client_observed_events", clientObservedTurnMs: [],
     toolCalls: { requested: 0, available: 0, awaitingReview: 0, unavailable: 0 },
   };
-  const copy = () => ({ ...snapshot, clientObservedTurnMs: [...snapshot.clientObservedTurnMs], toolCalls: { ...snapshot.toolCalls }, ...(snapshot.privatePreparation ? { privatePreparation: copyPreparation(snapshot.privatePreparation) } : {}) });
+  const copy = (): VoiceRuntimeDiagnostics => ({ ...snapshot, clientObservedTurnMs: [...snapshot.clientObservedTurnMs], toolCalls: { ...snapshot.toolCalls }, ...(snapshot.privatePreparation ? { privatePreparation: copyPreparation(snapshot.privatePreparation) } : {}), ...(snapshot.continuousSpeech ? { continuousSpeech: { ...snapshot.continuousSpeech } } : {}) });
   const emit = () => report?.(copy());
   emit();
   return {
@@ -119,7 +162,34 @@ export function createVoiceDiagnostics(report?: (snapshot: VoiceRuntimeDiagnosti
       }
       emit();
     },
-    end() { if (snapshot.status === "ended") return; snapshot.status = "ended"; awaitingOutputAt = undefined; emit(); },
+    continuousSpeechUpdate(value: Partial<ContinuousSpeechDiagnostics>) {
+      if (snapshot.status === "ended" || !value || typeof value !== "object" || Array.isArray(value)) return;
+      const raw = value as Record<string, unknown>;
+      if ((raw.status !== undefined && !continuousSpeechStatuses.includes(raw.status as typeof continuousSpeechStatuses[number])) ||
+          (raw.reason !== undefined && !continuousSpeechReasons.includes(raw.reason as ContinuousSpeechReason)) ||
+          (raw.submittedSamples !== undefined && !validBoundedInteger(raw.submittedSamples, 16_000 * 600)) ||
+          !continuousSpeechCountKeys.every(key => raw[key] === undefined || validBoundedInteger(raw[key], 10_000))) return;
+      const current = snapshot.continuousSpeech ?? {
+        status: "connecting", submittedSamples: 0, interimCount: 0, sidecarFinalCount: 0, discardedCount: 0, candidateUpdates: 0,
+      };
+      snapshot.continuousSpeech = {
+        ...current,
+        ...(raw.status === undefined ? {} : { status: raw.status as ContinuousSpeechDiagnostics["status"] }),
+        ...(raw.submittedSamples === undefined ? {} : { submittedSamples: raw.submittedSamples as number }),
+        ...Object.fromEntries(continuousSpeechCountKeys.filter(key => raw[key] !== undefined).map(key => [key, raw[key]])),
+      } as ContinuousSpeechDiagnostics;
+      if (Object.hasOwn(raw, "reason")) {
+        if (raw.reason === undefined) delete snapshot.continuousSpeech.reason;
+        else snapshot.continuousSpeech.reason = raw.reason as ContinuousSpeechReason;
+      }
+      emit();
+    },
+    end() {
+      if (snapshot.status === "ended") return;
+      snapshot.status = "ended";
+      if (snapshot.continuousSpeech && (snapshot.continuousSpeech.status === "connecting" || snapshot.continuousSpeech.status === "ready")) snapshot.continuousSpeech.status = "ended";
+      awaitingOutputAt = undefined; emit();
+    },
     snapshot() { return copy(); },
   };
 }

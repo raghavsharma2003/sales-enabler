@@ -7,6 +7,10 @@ import { createVoiceDiagnostics, type VoiceRuntimeDiagnostics } from "./diagnost
 import type { VoiceToolCall } from "./contracts";
 import { isVoiceToolName } from "./tools/contracts";
 import { createPrivateTurnScheduler } from "./private-turn-scheduler";
+import { createContinuousSpeechSession } from "./continuous-speech-browser";
+import { createContinuousUnderstanding, type ContinuousUnderstandingSnapshot } from "./continuous-understanding";
+import type { ContinuousSpeechGrant, ContinuousSpeechReason, ContinuousSpeechStatus } from "./continuous-speech-contracts";
+import type { ConversationEntry } from "./emotional";
 
 export interface BrowserVoiceSession {
   connect(): Promise<void>;
@@ -33,11 +37,19 @@ export interface BrowserVoiceOptions {
   onEvent: (event: VoiceEvent) => void;
   onFailure: (message: string) => void;
   onDiagnostics?: (snapshot: VoiceRuntimeDiagnostics) => void;
+  continuousSpeech?: boolean;
+  /** Ephemeral hypotheses are deliberately separate from saved transcript events. */
+  onUnderstanding?: (snapshot: ContinuousUnderstandingSnapshot) => void;
+  onContinuousSpeechStatus?: (status: { state: ContinuousSpeechStatus; reason?: ContinuousSpeechReason }) => void;
 }
 
-export function createBrowserVoiceSession(options: BrowserVoiceOptions): BrowserVoiceSession {
+/** The optional factory seam is for deterministic transport integration tests. */
+export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependencies: {
+  createContinuousSpeechSession?: typeof createContinuousSpeechSession;
+} = {}): BrowserVoiceSession {
   if (options.provider === "gemini") return createGeminiBrowserSession(options);
   const textMode = options.inputMode === "text";
+  const earlyEnabled = options.continuousSpeech === true && !textMode && options.provider === "azure";
   const adapter = getVoiceClientAdapter(options.provider);
   const abort = new AbortController();
   const diagnostics = createVoiceDiagnostics(options.onDiagnostics);
@@ -62,11 +74,27 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
   const executingResponses = new Set<string>();
   let toolRunner: ReturnType<typeof createClientToolRunner> | undefined;
   let started = false;
+  let muted = false;
+  let sidecar: ReturnType<typeof createContinuousSpeechSession> | undefined;
+  let understanding: ReturnType<typeof createContinuousUnderstanding> | undefined;
+  let sidecarRequested = false;
+  let sidecarTerminal = false;
+  let submittedSamples = 0;
+  let candidateUpdates = 0;
+  let lastPrepared = "";
+  const finalEntries: ConversationEntry[] = [];
+  function remember(entry: ConversationEntry) {
+    const found = finalEntries.findIndex(item => item.id === entry.id);
+    if (found < 0) finalEntries.push({ ...entry });
+    else finalEntries[found] = { ...entry };
+    if (finalEntries.length > 450) finalEntries.shift();
+  }
   const turns = createPrivateTurnScheduler({
     instructions: () => initialInstructions,
     onDiagnostic: event => diagnostics.privatePreparationEvent(event),
     send: event => { if (!closed && channel?.readyState === "open") channel.send(JSON.stringify(event)); },
     onUserTurn: turn => {
+      remember({ ...turn, role: "user" });
       diagnostics.userTurnReceived();
       options.onEvent({ type: "item", id: turn.id });
       if (!closed) options.onEvent({ type: "transcript", entry: { ...turn, role: "user" } });
@@ -79,6 +107,83 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
     },
     fail,
   });
+
+  if (earlyEnabled) understanding = createContinuousUnderstanding({
+    getContext: () => ({ entries: finalEntries.map(entry => ({ ...entry })), relationship: behaviorContext?.relationship, settings: behaviorContext?.settings }),
+    onUpdate: snapshot => {
+      if (closed) return;
+      diagnostics.continuousSpeechUpdate({ interimCount: snapshot.interimCount, sidecarFinalCount: snapshot.sidecarFinalCount, discardedCount: snapshot.discardedCount });
+      if (!closed) options.onUnderstanding?.(snapshot);
+    },
+    onCandidate: guidance => {
+      if (closed) return;
+      if (turns.prepareBehavior(guidance) && !closed && guidance && guidance !== lastPrepared) {
+        candidateUpdates = Math.min(10_000, candidateUpdates + 1);
+        diagnostics.continuousSpeechUpdate({ candidateUpdates });
+      }
+      lastPrepared = guidance || "";
+    },
+  });
+
+  function endSidecarGrant() {
+    if (!sidecarRequested || (!previewId && !connectionId)) return;
+    // Independent from the aborted call fetch. Server revocation is idempotent;
+    // the gateway also rechecks authority and enforces its hard duration cap.
+    void fetch('/api/voice/perception', { method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...(previewId ? { previewId } : { connectionId }) }), keepalive: true }).catch(() => {});
+  }
+  function sidecarStatus(status: { state: ContinuousSpeechStatus; reason?: ContinuousSpeechReason }) {
+    if (closed) return;
+    if (sidecarTerminal) return;
+    if (status.state === 'unavailable' || status.state === 'ended') sidecarTerminal = true;
+    if (status.state === 'unavailable' || status.state === 'ended') {
+      understanding?.close();
+      turns.prepareBehavior(undefined);
+    }
+    if (closed) return;
+    diagnostics.continuousSpeechUpdate({ status: status.state, ...(status.reason ? { reason: status.reason } : {}) });
+    if (!closed) options.onContinuousSpeechStatus?.(status);
+  }
+  async function startSidecar() {
+    if (!earlyEnabled || closed || sidecarRequested || !stream || (!previewId && !connectionId)) return;
+    sidecarRequested = true;
+    sidecarStatus({ state: 'connecting' });
+    const requestAbort = new AbortController();
+    const abortRequest = () => requestAbort.abort();
+    abort.signal.addEventListener('abort', abortRequest, { once: true });
+    const requestTimer = setTimeout(abortRequest, 8_000);
+    try {
+      if (closed) return;
+      const response = await fetch('/api/voice/perception', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: requestAbort.signal,
+        body: JSON.stringify({ ...(previewId ? { previewId } : { connectionId }), consent: true }) });
+      if (!response.ok) {
+        sidecarStatus({ state: 'unavailable', reason: response.status === 503 ? 'configuration' : 'authentication' });
+        throw new Error('Speech authorization unavailable.');
+      }
+      const grant = await response.json() as ContinuousSpeechGrant;
+      clearTimeout(requestTimer);
+      if (closed) { endSidecarGrant(); return; }
+      sidecar = (dependencies.createContinuousSpeechSession || createContinuousSpeechSession)({ grant, stream, signal: abort.signal,
+        onStatus: sidecarStatus,
+        onHypothesis: value => { if (!closed) understanding?.receive(value); },
+        onProgress: value => { if (!closed) {
+          submittedSamples = value.submittedSamples;
+          understanding?.progress(value.submittedSamples, value.receivedAt);
+          // Frame counts are bounded metadata; avoid rendering on every 20 ms frame.
+          if (value.submittedSamples % 16_000 === 0) diagnostics.continuousSpeechUpdate({ submittedSamples: value.submittedSamples });
+        } },
+      });
+      sidecar.setMuted(muted);
+      await sidecar.connect();
+    } catch {
+      if (!closed) sidecarStatus({ state: 'unavailable', reason: 'provider' });
+      sidecar?.close();
+      endSidecarGrant();
+    } finally {
+      clearTimeout(requestTimer);
+      abort.signal.removeEventListener('abort', abortRequest);
+    }
+  }
 
   async function finishToolResponse(responseId: string, calls: VoiceToolCall[], generation: number) {
     if (!toolRunner || !channel || closed) return;
@@ -105,6 +210,10 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
   function close() {
     if (closed) return;
     closed = true;
+    if (earlyEnabled) diagnostics.continuousSpeechUpdate({ submittedSamples });
+    understanding?.close();
+    sidecar?.close();
+    endSidecarGrant();
     diagnostics.end();
     toolRunner?.close();
     turns.close();
@@ -139,7 +248,12 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
       try { return turns.sendText(clean); }
       catch { fail("The voice connection could not send that message. Please try again."); return false; }
     },
-    setMuted(muted) { stream?.getAudioTracks().forEach(track => { track.enabled = !muted; }); },
+    setMuted(value) {
+      muted = value;
+      stream?.getAudioTracks().forEach(track => { track.enabled = !value; });
+      sidecar?.setMuted(value);
+      understanding?.setMuted(value);
+    },
     async connect() {
       if (closed || started) return;
       started = true;
@@ -206,6 +320,7 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
           }); }
           catch { fail("The voice connection could not begin. Please try again."); }
           if (!closed) options.onConnected({ previewId, ...(connectionId ? { connectionId } : {}), ...(enabledTools ? { enabledTools } : {}), ...(behaviorContext ? { behaviorContext } : {}) });
+          if (!closed) void startSidecar();
         };
         channel.onmessage = message => {
           if (closed) return;
@@ -214,7 +329,11 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
           catch { return; /* Ignore malformed/non-JSON provider events. */ }
           try {
             if (!providerEvent || typeof providerEvent !== "object" || Array.isArray(providerEvent)) return;
-            if (turns.receive(providerEvent)) return;
+            const owned = turns.receive(providerEvent);
+            if (providerEvent.type === 'input_audio_buffer.speech_started') understanding?.nativeSpeechStarted(providerEvent.item_id);
+            if (providerEvent.type === 'input_audio_buffer.speech_stopped') understanding?.nativeSpeechStopped(providerEvent.item_id);
+            if (providerEvent.type === 'conversation.item.input_audio_transcription.completed') understanding?.nativeFinal(providerEvent.item_id);
+            if (owned) return;
             if (providerEvent?.type === "response.created") turns.responseCreated(providerEvent.response?.id);
             if (providerEvent?.type === "response.function_call_arguments.done" && typeof providerEvent.call_id === "string" && typeof providerEvent.name === "string" && typeof providerEvent.response_id === "string" && !executingResponses.has(providerEvent.response_id)) {
               if (providerEvent.call_id.length > 128 || providerEvent.name.length > 100 || providerEvent.response_id.length > 128 || typeof providerEvent.arguments !== "string" || providerEvent.arguments.length > 12_000) { fail("The voice provider sent an oversized in-call action. End the conversation and try again."); return; }
@@ -240,7 +359,10 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
             if (providerEvent?.type === "response.output_audio.delta" || providerEvent?.type === "response.output_audio_transcript.delta" || providerEvent?.type === "response.output_audio_transcript.done") diagnostics.generatedOutputReceived();
             const event = adapter.parseEvent(providerEvent);
             if (event?.type === "error") fail(event.message);
-            else if (event) options.onEvent(event);
+            else if (event) {
+              if (event.type === 'transcript') remember(event.entry);
+              options.onEvent(event);
+            }
           } catch { fail("The voice connection could not process the current turn. Save this conversation and start again."); }
         };
         channel.onclose = () => fail("The voice connection closed. Save your available transcript before starting again.");

@@ -4,6 +4,7 @@ import { getVoiceConfiguration } from "@/lib/voice/config";
 import { HttpError } from "@/lib/server/http";
 import type { VoiceProfile } from "@/lib/voice/contracts";
 import { getRecord, listRecords } from "@/lib/platform/records";
+import { continuousSpeechConfiguration } from "@/lib/voice/continuous-speech-authority";
 
 export const runtime = "nodejs";
 export async function GET(request: Request) {
@@ -29,6 +30,8 @@ export async function GET(request: Request) {
       if (requested !== "provider-default" && requested !== "maya-despina") throw new HttpError(400, "Choose a supported voice profile.");
       profile = requested;
     }
-    return Response.json(getVoiceConfiguration(process.env, profile), { headers: { "Cache-Control": "no-store" } });
+    const configuration = getVoiceConfiguration(process.env, profile);
+    const speech = configuration.provider === 'azure' ? continuousSpeechConfiguration() : { configured: false };
+    return Response.json({ ...configuration, continuousSpeech: { configured: speech.configured, ...(speech.reason ? { reason: speech.reason } : {}) } }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) { return apiError(error); }
 }

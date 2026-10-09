@@ -9,6 +9,7 @@ import { compileRelationalRuntime } from '../voice/relational-runtime';
 import type { ConversationEntry } from '../voice/emotional';
 import { compileSpeechVocabularyPrompt } from '../voice/speech-vocabulary';
 import { PublicVoiceEvidenceRecorder, type PublicVoiceResponseEvidence } from './evidence';
+import { createContinuousSpeechGateway, CONTINUOUS_SPEECH_MAX_PAYLOAD, type ContinuousSpeechGatewayDependencies } from '../voice/continuous-speech-gateway';
 
 export type GatewayDependencies = {
   authorize: typeof resolvePublicSession;
@@ -407,12 +408,17 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
   return { stop };
 }
 
-export function createVoiceGateway(dependencies: GatewayDependencies = productionGatewayDependencies) {
-  const server = createServer((request, response) => { if (request.method === 'GET' && request.url === '/health') { response.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' }); response.end('{"status":"ok","service":"public-voice-gateway"}'); } else { response.writeHead(404); response.end(); } });
+export function createVoiceGateway(dependencies: GatewayDependencies = productionGatewayDependencies, speechDependencies?: ContinuousSpeechGatewayDependencies) {
+  const speech = createContinuousSpeechGateway(speechDependencies);
+  const server = createServer((request, response) => { if (request.method === 'GET' && request.url === '/health') { response.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' }); response.end('{"status":"ok","service":"public-voice-gateway","privateSpeech":"application-authorized"}'); } else { response.writeHead(404); response.end(); } });
   const sockets = new WebSocketServer({ noServer: true, maxPayload: MAX_CLIENT_MESSAGE_BYTES, perMessageDeflate: false });
+  const speechSockets = new WebSocketServer({ noServer: true, maxPayload: CONTINUOUS_SPEECH_MAX_PAYLOAD, perMessageDeflate: false });
   server.on('upgrade', (request, socket, head) => {
+    if (request.url === '/private-speech' && request.headers.origin && speechSockets.clients.size < 20) {
+      speechSockets.handleUpgrade(request, socket, head, client => speech.attach(client, request)); return;
+    }
     if (request.url !== '/voice' || !request.headers.origin || sockets.clients.size >= 100) { socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n'); socket.destroy(); return; }
     sockets.handleUpgrade(request, socket, head, client => attachVoiceBridge(client, request, dependencies));
   });
-  return { server, sockets, shutdown: () => { for (const socket of sockets.clients) socket.terminate(); sockets.close(); server.close(); } };
+  return { server, sockets, speechSockets, shutdown: () => { speech.shutdown(); for (const socket of speechSockets.clients) socket.terminate(); speechSockets.close(); for (const socket of sockets.clients) socket.terminate(); sockets.close(); server.close(); } };
 }

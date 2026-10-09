@@ -27,6 +27,8 @@ export function createPrivateTurnScheduler(options: {
   let responseGeneration = 0;
   let revision = 0;
   let behavior = "";
+  // Reversible preparation only. Final publication alone changes `behavior`.
+  let prospectiveBehavior: { guidance: string; generation: number; itemId: string } | undefined;
   let responseBehavior = "";
   let activeResponse: string | undefined;
   let interruptionTimer: ReturnType<typeof setTimeout> | undefined;
@@ -41,6 +43,8 @@ export function createPrivateTurnScheduler(options: {
   let outputAcknowledgedAt: number | undefined;
   let outputRequestedAt: number | undefined;
   let releasing = false;
+  let pumping = false;
+  let pumpAgain = false;
 
   function clearGate() { if (gate) clearTimeout(gate.timer); gate = undefined; }
   function fail(message: string) { if (!closed) options.fail(message); }
@@ -110,11 +114,21 @@ export function createPrivateTurnScheduler(options: {
   function prepareCandidate() {
     if (closed || busy || toolsBusy || !speakingItem || eligible) return;
     if (gate && gate.acknowledgedAt === undefined) return;
-    const candidate = snapshot();
+    const candidate = snapshot(prospectiveBehavior?.generation === generation && prospectiveBehavior.itemId === speakingItem
+      ? prospectiveBehavior.guidance : behavior);
     if (!candidate || (gate && matches(gate, candidate))) return;
     clearGate(); sendGate(candidate, true);
   }
   function pump() {
+    if (pumping) { pumpAgain = true; return; }
+    pumping = true;
+    try { pumpOnce(); }
+    finally {
+      pumping = false;
+      if (pumpAgain) { pumpAgain = false; pump(); }
+    }
+  }
+  function pumpOnce() {
     if (closed || busy || toolsBusy) return;
     if (speakingItem) { prepareCandidate(); return; }
     if (eligible) { releaseEligible(); return; }
@@ -123,13 +137,19 @@ export function createPrivateTurnScheduler(options: {
       // once every pending committed utterance is available, in speech order.
       if (audioTurns.some(turn => !turn.committed || turn.text === undefined)) return;
       const turns = audioTurns.slice();
+      const capturedGeneration = generation;
       for (const turn of turns) clearTimeout(turn.timer);
       for (const turn of turns) {
         turn.published = true;
+        // Remove only this published turn. A close inside the callback must
+        // still retain the remaining already-captured final transcripts.
+        const index = audioTurns.indexOf(turn);
+        if (index >= 0) audioTurns.splice(index, 1);
         options.onUserTurn({ id: turn.id, text: turn.text! });
         if (closed) return;
+        if (generation !== capturedGeneration || speakingItem) { pumpAgain = true; return; }
       }
-      audioTurns.splice(0, turns.length);
+      if (audioTurns.length) { pumpAgain = true; return; }
       // Only synchronous FINAL publication may compile guidance. Candidate
       // readiness never publishes partial text or bypasses this boundary.
       requestReply(behavior, Math.max(...turns.map(turn => turn.finalAsrAt!)), true);
@@ -162,7 +182,7 @@ export function createPrivateTurnScheduler(options: {
   return {
     close() {
       if (closed) return;
-      closed = true; clearGate(); eligible = undefined; outputAcknowledgedAt = undefined; typed.length = 0;
+      closed = true; clearGate(); eligible = undefined; prospectiveBehavior = undefined; outputAcknowledgedAt = undefined; typed.length = 0;
       clearTimeout(interruptionTimer);
       const captured = audioTurns.splice(0);
       for (const turn of captured) clearTimeout(turn.timer);
@@ -178,6 +198,23 @@ export function createPrivateTurnScheduler(options: {
       // Staged, never sent independently: a later update cannot replace the
       // instruction snapshot whose acknowledgement a current turn awaits.
       behavior = next; return true;
+    },
+    /** May prepare an exact candidate during native speech; never publishes a
+     * user turn or changes authoritative behavior/response eligibility. */
+    prepareBehavior(instructions: string | undefined) {
+      if (closed) return false;
+      const next = instructions?.trim().slice(0, 4_000);
+      if (!next) {
+        if (!prospectiveBehavior) return false;
+        prospectiveBehavior = undefined;
+        pump();
+        return true;
+      }
+      if (!speakingItem || eligible || !options.instructions()) return false;
+      if (prospectiveBehavior?.guidance === next && prospectiveBehavior.generation === generation && prospectiveBehavior.itemId === speakingItem) return true;
+      prospectiveBehavior = { guidance: next, generation, itemId: speakingItem };
+      pump();
+      return !closed;
     },
     sendText(text: string) {
       if (closed || typed.length >= 20) return false;
@@ -241,6 +278,7 @@ export function createPrivateTurnScheduler(options: {
         if (!turn) return false;
         speakingItem = turn.id;
         generation++;
+        prospectiveBehavior = undefined;
         options.onDiagnostic?.({ type: "speech_start" });
         eligible = undefined; outputAcknowledgedAt = undefined;
         if (gate?.acknowledgedAt !== undefined) clearGate();
