@@ -47,9 +47,13 @@ Overview is a company-readiness and continuation surface, not an aggregate dashb
 
 Agents is one continuous build–test–publish workspace. A compact agent picker and persistent Save draft / Test agent toolbar sit above a wide six-section editor and a continuously mounted test dock. New agents begin in Setup with required name, role, and purpose fields plus task presets. Prompt authoring appears only in Conversation. Publish and release history share one release-review pattern: candidate and active versions stay visible together, the server reviews the exact saved version against current configuration and required text evidence, and voice/device evidence remains neutral and explicitly unproven. Publication is a separate decision, followed by a separate channel handoff.
 
+Live understanding is an optional Azure microphone-call aid inside the existing Voice Studio. It defaults off and requires its own checkbox plus the explicit speech-processing consent before a call starts. The call freezes that choice: the mode cannot silently switch, Listen & type remains unavailable while the option is selected, and the same microphone stream feeds both paths. Its dedicated inspector shows temporary current words that replace on each revision, never transcript turns, alongside tentative communication cues for language, pace, and a possible pause request. Those cues guide response preparation; they are not emotion truth, diagnosis, confidence, or permission to reply.
+
 Campaigns is one durable record across Intent, Audience, Agent & content, Review, Run, and Results. Setup can be saved while incomplete without inventing placeholder truth. AI brief suggestions are copied into local fields only when the operator chooses Use, then require an explicit save. Full content proposals apply through separate receipts bound to the exact campaign revision and reviewed sources. Review checks current authority and eligibility; launch separately freezes the run snapshot. Run owns recipient-level execution and the mounted browser call. Results is a distinct evidence surface for exact conversations, completion evidence, planned-field review, and truthful empty states.
 
 The latest finish review in `docs/duplex-finish-review-oct09.md` returned SHIP for this scoped increment after the nine `duplex-{release,home,timing}-{desktop,mobile,user674}.png` captures covering release review, Overview continuation, and client timing evidence. Its focused suite passed 39/39; the final frozen source separately passed 804/804 root terminal tests. After one unused test-only `@ts-expect-error` annotation was removed, the corrected terminal production build completed with exit 0, including TypeScript and the postbuild package check across 1,104 entries; that correction did not change runtime or UI behavior. The release decision bar and rollback candidate were source- and test-reviewed but are not visually established by those captures. This evidence covers only the implemented interface and its recorded states; it does not establish auditory quality, end-to-end or acoustic latency, microphone/device behavior, hosted-channel outcomes, external delivery, competitor superiority, or whole-product readiness. The shipped extension adds no new asset or motion obligation.
+
+The later finish review in `docs/continuous-speech-finish-review-oct09.md` returned SHIP for the four continuous-understanding captures at the supplied desktop and mobile client areas. Filled-speech, unavailable, mute, and ended behavior is supported by source and focused tests rather than those images. The bounded record reports 39/39 focused checks, 900/900 root tests, standalone typecheck, the Next 16.4 production build and 1,113-entry package check, plus app, gateway, and worklet HTTP 200 checks. One isolated Azure SDK server probe produced four interim revisions and one sidecar final from synthetic audio; no browser microphone call was run in this pass. This evidence does not establish recognition accuracy, physical-device behavior, perceptual voice quality, acoustic or end-to-end latency, full duplex, hosted operation, competitor superiority, or whole-product readiness. No new imagery or motion is required.
 
 **Key Characteristics:**
 
@@ -61,6 +65,7 @@ The latest finish review in `docs/duplex-finish-review-oct09.md` returned SHIP f
 - Reviewed redacted text rehearsals against exact agent versions
 - Exact-server-reviewed release decisions with visible candidate and active versions
 - Independent client timing intervals with explicit sample sufficiency
+- Default-off, consented Live understanding with temporary replace-in-place speech evidence
 - Quiet tonal surfaces with indigo state emphasis
 - Visible roles, consent, AI identity, and artifact ownership
 
@@ -126,6 +131,8 @@ Text rehearsal uses one sequential column capped at 960px. The same reading flow
 
 Client timing evidence stays compact and display-only inside live and saved call surfaces. Each stage is an independent browser event interval with its own Samples, Latest, P50, and P95 columns; the rows must never be visually summed into an end-to-end number. Metrics collapse to one column when their container is narrower than 560px, while observations become a simple vertical list.
 
+Voice Studio keeps Live understanding beside input mode and consent, then exposes it as a dedicated tab in the existing Call inspector. The tab order remains keyboard-operable with roving focus, arrows, Home, and End. Status, current words, tentative cues, recognition counts, and the unsaved-data boundary descend in that order. On narrow screens the five inspector tabs form a stable two-column control set; the cue fields stack below 420px without changing their meaning.
+
 ## Elevation & Depth
 
 Depth is tonal. White panels sit on a cool canvas with quiet borders, lilac selection, and semantic status surfaces. Resting work surfaces remain flat; the search result popover uses the existing small ambient shadow, and transient voice state can use the established call ring. Reduced-motion preferences remove nonessential animation.
@@ -166,6 +173,14 @@ The proof list separates Configuration, required Conversation cases, and Voice a
 
 Timing evidence reports independent browser event intervals from the persisted diagnostics allowlist. Every row shows its own sample count and Latest value. P50 appears only from 3 samples and P95 only from 20; unavailable percentiles render as an em dash with accessible minimum-sample text, while a measured zero remains `0 ms`. Each stage retains at most 20 samples. Typed calls name microphone-only rows and counters as `Not observed in this typed call` rather than displaying zero. The scope copy states that the intervals exclude audible playback and do not measure acoustic or end-to-end latency.
 
+### Live understanding opt-in and inspector
+
+The checkbox appears only for Azure and is enabled only when continuous recognition is configured and Microphone is selected. It defaults off. Selecting it disables Listen & type and extends the adjacent consent sentence to name the Azure Speech recognition path. Starting the call copies the selection into an immutable call-scoped choice; later form state cannot silently add or remove processing from the active call.
+
+The inspector always names its operational state: ready for the next call, off for this call, connecting recognition, listening, understanding current speech, preparing tentative guidance, waiting for the final transcript, paused while muted, recognition unavailable, or recognition ended. Unavailable copy keeps the voice call and the recognition sidecar distinct. Current words replace in place on every accepted revision and never append transcript turns. A sidecar final remains a recognizer draft; only the authoritative native final can add the person’s turn and permit a response.
+
+Language, pace, and pause-request cues remain visibly tentative. They describe communication guidance only and never claim emotion, intent, identity, confidence, or understanding. Revision, recognizer-final, and discarded counts are metadata, not quality scores. Mute, end, native final, discontinuity, and unavailable/invalid input clear temporary words and cues; unmute begins from fresh speech. The boundary copy states that temporary words are unsaved.
+
 ### Customer table intake
 
 Intake is one durable Import table → Map columns → Review rows → Applied record. A review is scoped to the organization and actor, names its saved revision, preserves local unsaved state, and can be reopened from the same source. Timeout, interruption, stale-preview, concurrent-revision, and surrounding-list refresh failures retain the operator's choices or the saved apply receipt and offer an explicit reload/check path. Switching sources or batches guards unsaved work; discarding a local draft never removes saved progress.
@@ -198,7 +213,7 @@ Raw field buffers and unsaved draft values remain mounted until save, discard, o
 
 ### Roles, consent, and AI identity
 
-Viewer access keeps records readable while disabling editing, testing, publication, and sending. Agent introduction must identify the representative as AI before customer conversation. Test and public call surfaces keep consent, stop-for-human, participant scope, provider state, and source boundaries visible. A configured provider, passing check, release, or channel draft never proves delivery, identity, audible quality, or customer intent.
+Viewer access keeps records readable while disabling editing, testing, publication, and sending. Agent introduction must identify the representative as AI before customer conversation. Test and public call surfaces keep consent, stop-for-human, participant scope, provider state, and source boundaries visible. Live understanding adds explicit Azure Speech processing consent and never turns temporary recognition into transcript or response authority. A configured provider, passing check, release, channel draft, recognition state, or communication cue never proves delivery, identity, emotion, audible quality, recognition accuracy, or customer intent.
 
 ## Do's and Don'ts
 
@@ -213,6 +228,8 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Do** run checks against an exact saved version, publish explicitly, then pass the active release into a separate Channel draft.
 - **Do** keep candidate, active version, exact server review, configuration proof, required text proof, and unproven voice/device evidence distinct throughout release and rollback decisions.
 - **Do** show timing intervals independently with sample counts, minimums of 3 for P50 and 20 for P95, a 20-sample cap, and unknown or typed-microphone-absent states that never masquerade as zero.
+- **Do** keep Live understanding default off, Azure microphone-only, explicitly consented, frozen per call, and visibly separate from the transcript and native final-turn authority.
+- **Do** replace temporary current words per revision, clear words and cues on mute, end, final, or failure, and treat recognition counts as metadata only.
 - **Do** keep Intent, Audience, Agent & content, Review, Run, and Results on one durable campaign ID with partial saves and exact revision checks.
 - **Do** keep AI suggestions and proposals as attributable receipts until an operator explicitly uses or applies them, and invalidate stale readiness when authority changes.
 - **Do** keep customer intake resumable per actor, preserve exact source evidence, reconcile whole-source counts, and separate prepared decisions from atomic Apply.
@@ -230,6 +247,7 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Don't** repeat prompt fields across sections, unmount the tester during section changes, or hide the artifact targeted by Save, Test, Publish, or Channel setup.
 - **Don't** let a draft test, configuration check, release, or prefilled Channel draft imply public activation, live delivery, voice quality, identity verification, or business value.
 - **Don't** add independent client timing rows into a synthetic latency total or treat browser-event timing as audible, acoustic, or end-to-end evidence.
+- **Don't** treat tentative words or communication cues as a saved transcript, emotion truth, confidence score, recognition-quality result, or permission for the agent to reply.
 - **Don't** bypass the dirty guard for Back, Forward, hash links, search, agent switching, or contextual navigation.
 - **Don't** turn a phase change, partial save, AI suggestion, content proposal, preflight, or provider receipt into implied approval, launch, delivery, or success.
 - **Don't** let AI mapping, bulk preparation, a saved intake review, or a source handoff silently change customers, grant contact permission, or clear an imported restriction.

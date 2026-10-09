@@ -1371,6 +1371,34 @@
       "title": "Terminal scoped release, Outcome/Home and private pre-ACK verification",
       "status": "804-tests-corrected-build-package-readiness-browser-ui-ship-and-bounded-provider-probes-pass-no-full-duplex-or-acoustic-claim",
       "path": "docs/duplex-and-launch-verification-oct09.md"
+    },
+    {
+      "id": "implementation.continuous-speech-sidecar-2026-10-09",
+      "type": "component",
+      "title": "Authorized same-microphone continuous speech sidecar with ephemeral guidance preparation",
+      "status": "implemented-66e44e0-dependencies-62a715e-scoped-terminal-900-tests-build-package-readiness-gateway-single-synthetic-audio-lifecycle-probe-no-mic-browser-and-ui-ship-pass",
+      "path": "docs/continuous-speech-verification-oct09.md"
+    },
+    {
+      "id": "decision.continuous-speech-causal-authority-2026-10-09",
+      "type": "decision",
+      "title": "Tentative sidecar revisions may prepare guidance but native final transcripts retain response authority",
+      "status": "current-invariant-independent-authority-and-causality-reviews-pass",
+      "path": "docs/continuous-speech-verification-oct09.md"
+    },
+    {
+      "id": "open.continuous-speech-terminal-verification-2026-10-09",
+      "type": "open-question",
+      "title": "Complete authority reviews, typecheck, integrated build and browser proof for continuous speech",
+      "status": "closed-scoped-browser-microphone-acoustic-native-full-duplex-hosted-and-pilot-gates-remain-broader",
+      "path": "docs/continuous-speech-verification-oct09.md"
+    },
+    {
+      "id": "verification.continuous-speech-terminal-2026-10-09",
+      "type": "evidence",
+      "title": "Terminal scoped continuous-speech sidecar verification",
+      "status": "source-66e44e0-dependencies-62a715e-reviews-typecheck-900-tests-build-package-readiness-gateway-single-synthetic-audio-live-lifecycle-no-mic-browser-and-ui-ship-pass",
+      "path": "docs/continuous-speech-verification-oct09.md"
     }
   ],
   "edges": [
@@ -2592,6 +2620,46 @@
     {
       "from": "verification.duplex-launch-terminal-2026-10-09",
       "to": "open.duplex-launch-terminal-verification-2026-10-09",
+      "relation": "closes-scoped-gate"
+    },
+    {
+      "from": "verification.duplex-launch-terminal-2026-10-09",
+      "to": "implementation.continuous-speech-sidecar-2026-10-09",
+      "relation": "provides-clean-201f70a-baseline"
+    },
+    {
+      "from": "decision.frontier-duplex-relational-priority-2026-10-09",
+      "to": "decision.continuous-speech-causal-authority-2026-10-09",
+      "relation": "guides-bounded-sidecar-increment"
+    },
+    {
+      "from": "decision.continuous-speech-causal-authority-2026-10-09",
+      "to": "implementation.continuous-speech-sidecar-2026-10-09",
+      "relation": "constrains"
+    },
+    {
+      "from": "implementation.continuous-speech-sidecar-2026-10-09",
+      "to": "implementation.private-preack-overlap-2026-10-09",
+      "relation": "extends-with-ephemeral-pre-final-observation"
+    },
+    {
+      "from": "implementation.continuous-speech-sidecar-2026-10-09",
+      "to": "constraint.azure-only-paid",
+      "relation": "preserves"
+    },
+    {
+      "from": "implementation.continuous-speech-sidecar-2026-10-09",
+      "to": "open.continuous-speech-terminal-verification-2026-10-09",
+      "relation": "requires"
+    },
+    {
+      "from": "verification.continuous-speech-terminal-2026-10-09",
+      "to": "implementation.continuous-speech-sidecar-2026-10-09",
+      "relation": "verifies-scoped-terminal"
+    },
+    {
+      "from": "verification.continuous-speech-terminal-2026-10-09",
+      "to": "open.continuous-speech-terminal-verification-2026-10-09",
       "relation": "closes-scoped-gate"
     }
   ]
