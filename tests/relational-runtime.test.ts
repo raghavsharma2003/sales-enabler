@@ -123,6 +123,20 @@ test('removing the cause removes carried concern; ordinary turns retain useful p
   assert.equal(compileRelationalRuntime({ entries }).state.pace, 'normal');
 });
 
+test('explicit brief-conversation request produces a cited pacing transition without emotional state', () => {
+  const text = 'Yes. This is a fictional test. The consultation was clear, but the follow-up was too long. Please keep this conversation brief.';
+  const runtime = compileRelationalRuntime({ entries: [user('feedback', text)] });
+  assert.equal(runtime.state.pace, 'brief');
+  assert.equal(runtime.state.concern, undefined);
+  assert.equal(runtime.state.repair_state, 'none');
+  const pacing = runtime.events.find(event => event.dim === 'pacing')!;
+  assert.ok(pacing, 'the explicit brevity request must create a runtime pacing transition');
+  assert.equal(pacing.citations[0].text, 'Please keep this conversation brief');
+  assert.equal(pacing.citations[0].entryId, 'feedback');
+  for (const evidence of pacing.citations) assert.equal(text.slice(evidence.start, evidence.end), evidence.text);
+  assert.match(runtime.instructions, /infer urgency from brevity alone/);
+});
+
 test('explicit overwhelm and short-question request drive cited runtime guidance without inferred urgency', () => {
   const text = 'The consultation was clear, but the long follow-up messages overwhelmed me. Please ask one short question.';
   const entries = [user('feedback', text)];

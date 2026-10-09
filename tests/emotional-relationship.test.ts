@@ -66,6 +66,44 @@ test('explicit brevity requests change communication without inventing time pres
   for (const text of ['Do not please ask one short question.', "Please don't ask one short question.", 'I do not want a brief reply.', 'My colleague asked: please give me a short answer.', 'She requested that you please ask one short question.', 'The email says please ask one short question.', 'If I prefer a short reply, what happens?', 'Say "Please ask one short question."']) assert.deepEqual(analyzeConversation([user(text)]).observedCues, [], text);
 });
 
+test('direct requests for a brief conversation or call are communication preferences only', () => {
+  for (const text of [
+    'Please keep this conversation brief.', 'Please keep this call short.',
+    'Could you please keep our conversation short?', 'Can you keep the call brief?',
+    'Would you keep this conversation brief?', 'I prefer this conversation brief.',
+    'I want this call to be short.', 'I need our conversation to stay brief.',
+    'I would like to keep this call brief.',
+  ]) {
+    const state = analyzeConversation([user(text)]);
+    assert.deepEqual(state.observedCues.map(cue => cue.kind), ['brevity-request'], text);
+    assert.equal(state.behavior.pace, 'brief', text);
+    assert.equal(state.behavior.acknowledgeConcern, false, text);
+    assert.equal(state.behavior.askPermission, false, text);
+    assert.equal(state.repairPending, false, text);
+    assert.deepEqual(state.correctionCandidates, [], text);
+    const evidence = state.observedCues[0].evidence;
+    assert.equal(text.slice(evidence.start, evidence.end), evidence.text);
+  }
+});
+
+test('call brevity does not arise from negation, reports, hypotheticals or requests for longer calls', () => {
+  for (const text of [
+    "Please don't keep this conversation brief.", 'Do not please keep this call short.',
+    'I do not want this call to be short.', 'I never prefer this conversation brief.',
+    'My colleague asked: please keep this call short.', 'She said I want this call to be short.',
+    'The report says please keep this conversation brief.',
+    'If I want this call to be short, what would happen?', 'Imagine I prefer this conversation brief.',
+    'Say "Please keep this conversation brief."',
+    'Please keep this conversation longer.', 'I want this call to be long.',
+    'Please do not keep this call short; I want more detail.',
+    'My colleague prefers a short call.',
+  ]) {
+    const state = analyzeConversation([user(text)]);
+    assert.deepEqual(state.observedCues, [], text);
+    assert.equal(state.behavior.pace, 'normal', text);
+  }
+});
+
 test('no turn, assistant speech, quoted examples, negations and third party speech do not create caller state', () => {
   for (const entries of [[], [assistant("I'm overwhelmed and frustrated")], [user('')],
     [user("I'm not overwhelmed. I am not confused.")],

@@ -65,15 +65,21 @@ for (const provider of ['azure', 'openai']) for (const inputMode of ['text', 'mi
     }
     assert.deepEqual(failures, [], 'a typed-turn behavior update must not produce the GA missing-session-type error');
     assert.equal(channel.readyState, 'open');
-    const update = sent.find(event => event.type === 'session.update');
-    assert.deepEqual(update, { type: 'session.update', session: { type: 'realtime', instructions: `${baseline}\n<live_behavior_update>\n${guidance}\n</live_behavior_update>\n<live_turn_revision>1</live_turn_revision>` } });
+    if (inputMode === 'microphone') {
+      const candidate = sent.find(event => event.type === 'session.update')!;
+      assert.match(candidate.session.instructions, /<live_turn_revision>1<\/live_turn_revision>/);
+      channel.onmessage?.({ data: JSON.stringify({ type: 'session.updated', session: candidate.session }) });
+      assert.equal(sent.filter(event => event.type === 'response.create').length, 1, 'candidate ACK cannot release changed final guidance');
+    }
+    const update = sent.filter(event => event.type === 'session.update').at(-1);
+    assert.deepEqual(update, { type: 'session.update', session: { type: 'realtime', instructions: `${baseline}\n<live_behavior_update>\n${guidance}\n</live_behavior_update>\n<live_turn_revision>${inputMode === 'microphone' ? 2 : 1}</live_turn_revision>` } });
     assert.deepEqual(userTurns, ['Tell me about the fictional service.']);
     assert.equal(sent.filter(event => event.type === 'response.create').length, 1, 'reply waits for the exact current guidance acknowledgement');
     channel.onmessage?.({ data: JSON.stringify({ type: 'session.updated', session: update!.session }) });
     assert.equal(sent.filter(event => event.type === 'response.create').length, 2, 'one typed reply follows the acknowledgement');
     assert.equal(session.updateBehavior(guidance), false, 'duplicate guidance is still suppressed');
     assert.equal(session.updateBehavior('   '), false);
-    assert.equal(sent.filter(event => event.type === 'session.update').length, 1);
+    assert.equal(sent.filter(event => event.type === 'session.update').length, inputMode === 'microphone' ? 2 : 1);
     channel.onmessage?.({ data: JSON.stringify({ type: 'response.created', response: { id: 'reply' } }) });
     channel.onmessage?.({ data: JSON.stringify({ type: 'response.done', response: { id: 'reply', status: 'completed' } }) });
     assert.equal(session.sendText('A second turn waiting for acknowledgement'), true);

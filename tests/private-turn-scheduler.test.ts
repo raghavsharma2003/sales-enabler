@@ -78,11 +78,14 @@ test('microphone waits for both commit and ASR, then exact current guidance ackn
   const h = harness(); t.after(() => h.scheduler.close());
   h.mic('speech_started', 'mic'); h.mic('speech_stopped', 'mic');
   h.asr('mic', 'spoken correction');
-  assert.equal(h.updates().length, 0);
+  assert.equal(h.updates().length, 1, 'speech can prepare a candidate without publishing ASR');
   h.mic('committed', 'mic');
   assert.deepEqual(h.users, ['spoken correction']);
   assert.equal(h.replies().length, 0);
-  h.ack(); h.asr('mic', 'duplicate'); h.mic('committed', 'mic'); h.ack();
+  h.ack(); // Candidate ACK drains before the changed final guidance is sent.
+  assert.match(h.updates().at(-1)!.session.instructions, /Guide for spoken correction/);
+  assert.equal(h.replies().length, 0);
+  h.asr('mic', 'duplicate'); h.mic('committed', 'mic'); h.ack();
   assert.equal(h.replies().length, 1);
   assert.deepEqual(h.users, ['spoken correction']);
 });
@@ -95,7 +98,9 @@ test('out-of-order ASR is published in speech order and produces one response fo
   h.asr('old', 'old guidance');
   assert.deepEqual(h.users, ['old guidance', 'new guidance']);
   assert.equal(h.updates().length, 1);
-  assert.match(h.updates()[0].session.instructions, /Guide for new guidance/);
+  h.ack();
+  assert.equal(h.replies().length, 0);
+  assert.match(h.updates()[1].session.instructions, /Guide for new guidance/);
   h.ack(); assert.equal(h.replies().length, 1);
 });
 
@@ -108,6 +113,7 @@ test('new speech invalidates a pending older ack without reviving it on late dup
   h.mic('speech_stopped', 'new'); h.mic('committed', 'new'); h.asr('new', 'new');
   h.asr('old', 'late old'); h.ack(old);
   assert.equal(h.replies().length, 0);
+  h.ack(); assert.equal(h.replies().length, 0, 'new generation candidate still differs from final guidance');
   h.ack(); assert.equal(h.replies().length, 1);
   assert.deepEqual(h.users, ['old', 'new']);
 });
@@ -171,6 +177,7 @@ test('missing ASR fails boundedly rather than replying without current guidance'
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const h = harness(); t.after(() => h.scheduler.close());
   h.mic('speech_started', 'new'); h.mic('speech_stopped', 'new'); h.mic('committed', 'new');
+  h.ack(); // Isolate missing ASR from the earlier candidate ACK timeout.
   t.mock.timers.tick(10_000);
   assert.equal(h.failures.length, 1); assert.equal(h.replies().length, 0);
 });

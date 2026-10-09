@@ -14,8 +14,8 @@ export interface BrowserVoiceSession {
   setMuted(muted: boolean): void;
   /** True when accepted for delivery to the live provider. */
   sendText(text: string): boolean;
-  /** Stages bounded guidance. WebRTC snapshots it after the user event, then
-   * waits for the provider acknowledgement before requesting that reply. */
+  /** Stages bounded guidance. WebRTC finalizes it after the user event and
+   * requires an exact acknowledged snapshot before requesting that reply. */
   updateBehavior(instructions: string): boolean;
 }
 
@@ -64,6 +64,7 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions): Browser
   let started = false;
   const turns = createPrivateTurnScheduler({
     instructions: () => initialInstructions,
+    onDiagnostic: event => diagnostics.privatePreparationEvent(event),
     send: event => { if (!closed && channel?.readyState === "open") channel.send(JSON.stringify(event)); },
     onUserTurn: turn => {
       diagnostics.userTurnReceived();
