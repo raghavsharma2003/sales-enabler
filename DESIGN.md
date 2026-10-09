@@ -49,7 +49,7 @@ Agents is one continuous build–test–publish workspace. A compact agent picke
 
 Campaigns is one durable record across Intent, Audience, Agent & content, Review, Run, and Results. Setup can be saved while incomplete without inventing placeholder truth. AI brief suggestions are copied into local fields only when the operator chooses Use, then require an explicit save. Full content proposals apply through separate receipts bound to the exact campaign revision and reviewed sources. Review checks current authority and eligibility; launch separately freezes the run snapshot. Run owns recipient-level execution and the mounted browser call. Results is a distinct evidence surface for exact conversations, completion evidence, planned-field review, and truthful empty states.
 
-The reviewed reset evidence is deliberately scoped. The initial three Overview findings were corrected and the focused reviewer marked them resolved. The canonical Campaign reviewer also returned SHIP after the final brief, proposal, Run, and Results captures, with 690/690 tests and production build/package checks reported in its verification packet. That verdict covers this workflow only. It is not a whole-product usability or production-readiness claim, does not establish microphone, device, perceptual voice quality, hosted-channel, or competitor-superiority evidence, and does not complete the deeper intake or transcript-to-regression redesign.
+The reviewed reset evidence is deliberately scoped. The initial three Overview findings were corrected, and the canonical Campaign reviewer returned SHIP after the final brief, proposal, Run, and Results captures. The later workflow-finish reviewer also returned SHIP for durable customer intake, its customer handoff, and Text rehearsal after final captures at 1265px, 659px, and 375px; the malformed unused `oct09-rehearsal-blocked-mobile-final.png` is explicitly excluded. Its verification packet reports code `7cbdebe`, customer-intake foundation `70c35d1`, 746 passing tests, and the production build/package check. These verdicts remain bounded to the reviewed workflows. They do not establish whole-product usability or production readiness, Realtime or audio quality, microphone/device/interruption behavior, hosted channels, external delivery, or competitor superiority. Text rehearsal is a reviewed suite only and is not a publication gate. The shipped extension adds no new asset or motion obligation.
 
 **Key Characteristics:**
 
@@ -57,6 +57,8 @@ The reviewed reset evidence is deliberately scoped. The initial three Overview f
 - One company-derived next action
 - Wide editor with continuous testing context
 - One durable six-phase campaign record
+- Durable import–map–review–apply customer intake
+- Reviewed redacted text rehearsals against exact agent versions
 - Exact-version readiness and explicit publication
 - Quiet tonal surfaces with indigo state emphasis
 - Visible roles, consent, AI identity, and artifact ownership
@@ -117,6 +119,10 @@ Agents uses a compact picker inside a sticky toolbar and a `minmax(0, 1fr) / 330
 
 Campaigns uses a persistent record picker and a six-step bar above one work surface capped at 1120px. The steps form six columns on wide screens, three below 1000px, and two below 620px. Intent, Audience, Agent & content, and Review reuse the same revisioned setup record; Run and Results read its fixed launch snapshot. The browser call desk remains mounted while moving between Run and Results, with a sticky call-in-progress return bar. Results uses a recipient list beside evidence detail and stacks to one column below 760px; result tables become labelled blocks below 650px.
 
+Customer table intake is a four-stage Import table → Map columns → Review rows → Applied flow within Company. Import and mapping use balanced columns on wide screens. Review rows use identity, evidence, and decision columns; evidence spans the row below 820px and all review content becomes one column below 580px. Whole-source counts, batch navigation, global source-row exclusions, exception filters, and the prepared decision summary stay visible in the reading flow. Bulk controls prepare decisions only; the separate Apply reviewed batch action remains the sole customer-write boundary.
+
+Text rehearsal uses one sequential column capped at 960px. The same reading flow moves from reviewed redacted checkpoint and criteria authoring to exact-version candidate generation, saved-attempt history, quoted judgments, operator review, and required-suite status. At 620px, paired fields, run controls, attempt history, verdict choices, and headings stack; controls reach 44px and editable type rises to 16px. The final 1265px, 659px, and 375px captures confirm readable, horizontally contained behavior across the shipped widths.
+
 ## Elevation & Depth
 
 Depth is tonal. White panels sit on a cool canvas with quiet borders, lilac selection, and semantic status surfaces. Resting work surfaces remain flat; the search result popover uses the existing small ambient shadow, and transient voice state can use the established call ring. Reduced-motion preferences remove nonessential animation.
@@ -151,6 +157,24 @@ Six keyboard-operable sections replace simultaneous editor columns. Setup owns r
 
 Publish is an ordered three-step panel. Readiness first captures the saved revision when needed, runs configuration checks against that exact immutable version, and verifies the returned agent/version relationship. The latest exact-version result determines readiness; changed knowledge or draft revisions make prior checks outdated. Publication is a separate action and rechecks knowledge. Only an active release enables Set up channels, which opens a prefilled Channel draft; it does not activate or publish the channel.
 
+### Customer table intake
+
+Intake is one durable Import table → Map columns → Review rows → Applied record. A review is scoped to the organization and actor, names its saved revision, preserves local unsaved state, and can be reopened from the same source. Timeout, interruption, stale-preview, concurrent-revision, and surrounding-list refresh failures retain the operator's choices or the saved apply receipt and offer an explicit reload/check path. Switching sources or batches guards unsaved work; discarding a local draft never removes saved progress.
+
+AI mapping is advisory. Suggestions appear in a lilac proposal with target, reason, and alternatives; the current mapping and row decisions remain unchanged until the operator chooses `Use these suggestions`. Use still does not save, prepare rows, or apply customers. Every column must resolve to a field or Skip before preview, and a changed mapping invalidates prior apply authority.
+
+Review keeps whole-source truth beside batch detail. Created, linked, skipped, and pending counts reconcile to the source total after reload. Filters expose exceptions, valid new customers, safe exact matches, and undecided rows. Global source-row exclusions can address later batches before the current batch is applied. Bulk actions prepare eligible creates, exact-match links, or skips; they never apply. The final action summarizes creates, links, and skips, saves the review revision, and applies the batch atomically. Applied receipts keep replay, next-batch, skipped-row revisit, and prior-decision views available.
+
+The customer handoff opens canonical customer records using recognized imported fields with a saved-source fallback when needed. A source do-not-contact or opt-out flag remains a visible restriction and still blocks campaign contact; import and handoff do not grant consent, verify identity, approve company knowledge, infer an offering, launch a campaign, or contact anyone.
+
+### Text rehearsal
+
+Text rehearsal is a bounded, review-first evidence workspace. The operator selects one exact person trigger with the minimum saved context, prepares a redacted derivative, reviews every turn and detector finding, and explicitly confirms that identifiers were replaced before creating a case. Draft discard is explicit. Approved cases bind source lineage, a versioned rubric, observable text criteria, and required or optional suite membership without retaining raw selected values in the reusable checkpoint.
+
+The run step selects an immutable version of the same agent and generates a new text reply. Saved attempts remain selectable and carry stable suffix references; opening an older failed attempt changes the evidence on screen but does not replace the latest attempt used by suite status. Each judgment keeps the AI verdict, rationale, and exact quoted reply evidence separate from the operator's required Met, Not met, or Uncertain verdict and reason. Met uses green with a check; Not met uses rose with an X; uncertain and incomplete states remain neutral or blocked rather than inheriting success tone.
+
+Required-suite status checks the latest saved attempt for every required case against the current case set, runtime/configuration digest, knowledge authority, and latest blocking operator reviews. Missing, invalid, stale, uncertain, or unreviewed evidence blocks the suite, while historical failed attempts remain inspectable. Bounded request timeout, guarded refresh and selection changes, draft discard, and retry preserve a recoverable path. This suite supplies surrogate text evidence only: it does not publish an agent and does not measure Realtime audio, pronunciation, prosody, latency, interruption handling, microphone behavior, or voice quality.
+
 ### Canonical Campaign workflow
 
 Intent binds a reviewed offering, goal, measurable outcome, and required evidence. Audience selects named recipients and explains why they belong; selection never grants consent or contact permission. Agent & content chooses the channel, exact active release or mailbox, opening content, supporting approved sources, and planned result fields. Inline blockers explain what remains while allowing a partial draft to be saved. Review summarizes the fixed brief, then runs a separate current preflight before launch. A changed campaign revision, customer/evidence authority, or failed launch invalidates the prior readiness result.
@@ -180,6 +204,11 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Do** run checks against an exact saved version, publish explicitly, then pass the active release into a separate Channel draft.
 - **Do** keep Intent, Audience, Agent & content, Review, Run, and Results on one durable campaign ID with partial saves and exact revision checks.
 - **Do** keep AI suggestions and proposals as attributable receipts until an operator explicitly uses or applies them, and invalidate stale readiness when authority changes.
+- **Do** keep customer intake resumable per actor, preserve exact source evidence, reconcile whole-source counts, and separate prepared decisions from atomic Apply.
+- **Do** keep source-wide exclusions, exception filters, saved revision conflicts, timeouts, and uncertain apply outcomes visible with direct recovery actions.
+- **Do** preserve imported customer fields through the canonical handoff while keeping source do-not-contact restrictions and channel permission separate.
+- **Do** build Text rehearsal from a reviewed redacted checkpoint, generate a new reply from one exact agent version, preserve failed attempts, and require explicit operator verdicts over exact quotes.
+- **Do** bind required-suite truth to the latest attempt, current case set, runtime/configuration, knowledge authority, and blocking reviews while keeping older attempts inspectable.
 - **Do** keep Results separate from Run and distinguish provider acceptance, reviewed evidence, and business outcome.
 - **Do** preserve role limits, consent controls, explicit AI identity, anonymous/unverified participant labels, and human-review boundaries.
 
@@ -191,5 +220,8 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Don't** let a draft test, configuration check, release, or prefilled Channel draft imply public activation, live delivery, voice quality, identity verification, or business value.
 - **Don't** bypass the dirty guard for Back, Forward, hash links, search, agent switching, or contextual navigation.
 - **Don't** turn a phase change, partial save, AI suggestion, content proposal, preflight, or provider receipt into implied approval, launch, delivery, or success.
+- **Don't** let AI mapping, bulk preparation, a saved intake review, or a source handoff silently change customers, grant contact permission, or clear an imported restriction.
+- **Don't** hide skipped, excluded, blocked, pending, stale, or historically failed evidence behind a completed batch or passing latest result.
+- **Don't** treat a Text rehearsal judgment or passing required suite as a publication gate, Realtime/audio benchmark, live-channel result, or production claim.
 - **Don't** duplicate the execution workbench in Results, hide empty result-field states, or collapse recipient evidence into campaign-level claims.
 - **Don't** present the focused review verdict as a whole-product usability, production, hosted-channel, or competitor-superiority claim.

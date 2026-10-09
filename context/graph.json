@@ -1236,21 +1236,21 @@
       "id": "implementation.durable-data-intake-2026-10-09",
       "type": "component",
       "title": "Durable intake review, CAS attempts, explicit AI mapping acceptance and exception queue",
-      "status": "in-progress-final-integrated-build-browser-and-review-gates-open",
+      "status": "implemented-terminal-745-test-build-package-and-three-width-intake-customer-source-handoff-browser-proof-pass",
       "path": "docs/data-intake-oct09-audit.md"
     },
     {
       "id": "implementation.transcript-regression-2026-10-09",
       "type": "component",
       "title": "Reviewed text regression case to exact candidate and human review",
-      "status": "in-progress-surrogate-text-rehearsal-backend-ui-no-realtime-audio-or-automatic-publish",
+      "status": "live-text-proof-passed-exactly-two-candidates-first-failure-retained-stale-second-reviewed-met-met-one-required-case-two-of-two",
       "path": "docs/transcript-regression-oct09-audit.md"
     },
     {
       "id": "implementation.voice-capture-wording-2026-10-09",
       "type": "component",
       "title": "Bounded private-voice capture capability wording correction",
-      "status": "in-progress-35-focused-local-checks-pass-including-eight-new-no-microphone-or-acoustic-proof",
+      "status": "implemented-checkpoint-291fc8e-eight-new-checks-pass-within-53-combined-no-microphone-or-acoustic-proof",
       "path": "research/2026-10-09/README.md"
     },
     {
@@ -1261,11 +1261,81 @@
       "path": "research/2026-10-09/README.md"
     },
     {
+      "id": "implementation.utf8-provider-envelope-accounting-2026-10-09",
+      "type": "component",
+      "title": "Exact UTF-8 provider input and output accounting for GroupAI and channels",
+      "status": "implemented-in-worktree-30-focused-checks-and-typecheck-pass-full-integrated-build-open",
+      "path": "research/2026-10-09/source-delta-and-adoption.md"
+    },
+    {
       "id": "open.oct09-final-verification",
       "type": "open-question",
       "title": "Complete integrated tests, build, browser review and exact publish-gate integration",
-      "status": "open-no-hosted-microphone-acoustic-or-production-readiness-claim",
-      "path": "research/2026-10-09/README.md"
+      "status": "closed-scoped-terminal-verified-native-confirm-tooling-unverified-and-broader-release-hosted-channel-acoustic-gates-open",
+      "path": "docs/oct09-workflow-verification.md"
+    },
+    {
+      "id": "verification.oct09-first-integrated-baseline",
+      "type": "evidence",
+      "title": "First October 9 integrated test and production package baseline",
+      "status": "731-tests-build-and-postbuild-package-pass-not-terminal-after-six-independent-review-findings",
+      "path": "data/oct09-tests.log"
+    },
+    {
+      "id": "verification.oct09-live-intake-browser",
+      "type": "evidence",
+      "title": "Fictional six-row durable intake mapping, resume, decision and apply browser flow",
+      "status": "verified-through-apply-corrected-customer-display-exact-source-return-and-three-width-captures-native-confirm-check-unpassed",
+      "path": "docs/data-intake-oct09-audit.md"
+    },
+    {
+      "id": "verification.oct09-workflow-record",
+      "type": "evidence",
+      "title": "October 9 intake, provider-envelope, private wording and text-regression verification record",
+      "status": "terminal-scoped-746-test-build-package-live-text-suite-ui-ship-realtime-calibration-readiness-and-clean-browser-logs-pass",
+      "path": "docs/oct09-workflow-verification.md"
+    },
+    {
+      "id": "verification.oct09-live-text-regression-failure",
+      "type": "evidence",
+      "title": "Live redacted text case, Azure candidate, manual review and blocked-suite behavior",
+      "status": "verified-first-failure-retained-stale-second-only-candidate-reviewed-met-met-suite-passed-history-visible",
+      "path": "docs/oct09-workflow-verification.md"
+    },
+    {
+      "id": "verification.oct09-live-text-regression-pass",
+      "type": "evidence",
+      "title": "Final reviewed text suite pass with original failed attempt retained",
+      "status": "one-required-case-two-of-two-blocking-reviews-passed-exactly-two-azure-candidates-no-repeat-sampling-series",
+      "path": "docs/oct09-workflow-verification.md"
+    },
+    {
+      "id": "verification.oct09-scoped-ui-finish-review",
+      "type": "evidence",
+      "title": "Independent scoped October 9 workflow UI finish review",
+      "status": "ship-all-five-findings-resolved-valid-alternative-evidence-malformed-unused-mobile-excluded",
+      "path": "docs/oct09-workflow-finish-review.md"
+    },
+    {
+      "id": "verification.oct09-realtime-capture-wording",
+      "type": "evidence",
+      "title": "Single Azure Realtime Listen and type capture-wording calibration",
+      "status": "three-entry-internal-preview-saved-accurate-review-save-wording-and-bounded-pacing-no-microphone-acoustic-latency-or-device-proof",
+      "path": "docs/oct09-workflow-verification.md"
+    },
+    {
+      "id": "verification.oct09-terminal-scoped",
+      "type": "evidence",
+      "title": "Terminal scoped October 9 workflow verification",
+      "status": "746-tests-build-package-readiness-200-clean-browser-logs-live-text-ui-ship-and-typed-realtime-calibration-pass",
+      "path": "docs/oct09-workflow-verification.md"
+    },
+    {
+      "id": "verification.oct09-terminal-automation",
+      "type": "evidence",
+      "title": "October 9 terminal integrated test and production package verification",
+      "status": "superseded-by-reviewed-746-tests-final-build-and-postbuild-package-pass-code-7cbdebe",
+      "path": "data/oct09-tests-reviewed.log"
     }
   ],
   "edges": [
@@ -2315,6 +2385,21 @@
       "relation": "requires"
     },
     {
+      "from": "research.source-refresh-2026-10-09",
+      "to": "implementation.utf8-provider-envelope-accounting-2026-10-09",
+      "relation": "informs-selective-adoption"
+    },
+    {
+      "from": "implementation.utf8-provider-envelope-accounting-2026-10-09",
+      "to": "component.platform-groupai",
+      "relation": "extends-provider-boundary"
+    },
+    {
+      "from": "implementation.utf8-provider-envelope-accounting-2026-10-09",
+      "to": "open.oct09-final-verification",
+      "relation": "requires-full-integrated-build"
+    },
+    {
       "from": "implementation.durable-data-intake-2026-10-09",
       "to": "constraint.azure-grant-only-public-v7",
       "relation": "preserves"
@@ -2323,6 +2408,101 @@
       "from": "implementation.transcript-regression-2026-10-09",
       "to": "constraint.azure-grant-only-public-v7",
       "relation": "preserves"
+    },
+    {
+      "from": "verification.oct09-first-integrated-baseline",
+      "to": "implementation.durable-data-intake-2026-10-09",
+      "relation": "partially-verifies-pending-browser-and-review-fixes"
+    },
+    {
+      "from": "verification.oct09-first-integrated-baseline",
+      "to": "implementation.transcript-regression-2026-10-09",
+      "relation": "partially-verifies-before-six-review-fixes"
+    },
+    {
+      "from": "verification.oct09-first-integrated-baseline",
+      "to": "open.oct09-final-verification",
+      "relation": "leaves-terminal-verification-open"
+    },
+    {
+      "from": "verification.oct09-live-intake-browser",
+      "to": "implementation.durable-data-intake-2026-10-09",
+      "relation": "verifies-fictional-six-row-flow-through-apply"
+    },
+    {
+      "from": "verification.oct09-live-intake-browser",
+      "to": "open.oct09-final-verification",
+      "relation": "leaves-ui-fallback-and-native-confirm-check-open"
+    },
+    {
+      "from": "verification.oct09-workflow-record",
+      "to": "open.oct09-final-verification",
+      "relation": "tracks-terminal-gates"
+    },
+    {
+      "from": "verification.oct09-terminal-automation",
+      "to": "implementation.durable-data-intake-2026-10-09",
+      "relation": "verifies-integrated-and-package"
+    },
+    {
+      "from": "verification.oct09-terminal-automation",
+      "to": "implementation.transcript-regression-2026-10-09",
+      "relation": "verifies-integrated-and-package-before-live-browser"
+    },
+    {
+      "from": "verification.oct09-live-text-regression-failure",
+      "to": "implementation.transcript-regression-2026-10-09",
+      "relation": "verifies-failed-blocking-behavior"
+    },
+    {
+      "from": "verification.oct09-live-text-regression-failure",
+      "to": "open.oct09-final-verification",
+      "relation": "requires-postfix-build-and-calibrated-retry"
+    },
+    {
+      "from": "verification.oct09-live-text-regression-pass",
+      "to": "implementation.transcript-regression-2026-10-09",
+      "relation": "verifies-final-reviewed-text-suite"
+    },
+    {
+      "from": "verification.oct09-live-text-regression-pass",
+      "to": "open.oct09-final-verification",
+      "relation": "leaves-realtime-calibration-and-reviewer-verdict-open"
+    },
+    {
+      "from": "verification.oct09-scoped-ui-finish-review",
+      "to": "verification.oct09-workflow-record",
+      "relation": "supports-scoped-ship"
+    },
+    {
+      "from": "verification.oct09-scoped-ui-finish-review",
+      "to": "open.oct09-final-verification",
+      "relation": "closes-reviewer-gate-leaves-realtime-calibration"
+    },
+    {
+      "from": "verification.oct09-realtime-capture-wording",
+      "to": "implementation.voice-capture-wording-2026-10-09",
+      "relation": "verifies-single-typed-realtime-calibration"
+    },
+    {
+      "from": "verification.oct09-realtime-capture-wording",
+      "to": "open.oct09-final-verification",
+      "relation": "leaves-final-readiness-and-browser-log-check"
+    },
+    {
+      "from": "verification.oct09-terminal-scoped",
+      "to": "open.oct09-final-verification",
+      "relation": "closes-scoped-verification-with-broader-gates-explicit"
+    },
+    {
+      "from": "verification.oct09-terminal-scoped",
+      "to": "implementation.durable-data-intake-2026-10-09",
+      "relation": "verifies-scoped-terminal"
+    },
+    {
+      "from": "verification.oct09-terminal-scoped",
+      "to": "implementation.transcript-regression-2026-10-09",
+      "relation": "verifies-scoped-terminal"
     }
   ]
 }
