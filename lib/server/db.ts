@@ -16,6 +16,14 @@ export interface Database {
   batch(statements: Statement[]): Promise<void>;
 }
 
+/** Per-process application pool limit; database readiness uses its own one-connection probe. */
+export function databasePoolMax(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.DATABASE_POOL_MAX?.trim();
+  if (!raw) return 8;
+  if (!/^\d+$/.test(raw) || Number(raw) < 1 || Number(raw) > 20) throw new Error('DATABASE_POOL_MAX must be an integer from 1 to 20.');
+  return Number(raw);
+}
+
 const schema = [
   `CREATE TABLE IF NOT EXISTS organizations (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, organization_id TEXT NOT NULL REFERENCES organizations(id), created_at TEXT NOT NULL)`,
@@ -32,7 +40,7 @@ const schema = [
 
 async function openDatabase(): Promise<Database> {
   if (process.env.DATABASE_URL) {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 8 });
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: databasePoolMax() });
     const pgSql = (sql: string) => { let i = 0; return sql.replace(/\?/g, () => `$${++i}`); };
     for (const sql of schema) await pool.query(sql);
     return {

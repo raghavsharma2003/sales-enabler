@@ -6,6 +6,7 @@ import type { PlatformViewProps } from '../../lib/platform/contracts';
 import { VoiceEvidenceLab } from '../voice-evidence-lab';
 import { moveTabFocus, VoiceAudioProof } from '../voice-audio-proof';
 import { VoiceAudioComparison } from '../voice-audio-comparison';
+import styles from './quality-view.module.css';
 
 const qualityTabs = [
   { id: 'audio', label: 'Audio proof' },
@@ -32,7 +33,7 @@ export function QualityView({ records, workspace, navigate, focusId }: PlatformV
 
   return <main className="pc-page">
     <header className="pc-pagehead"><div><h1>Quality</h1><p className="pc-muted">Review captured audio, transcript evaluations and saved workspace coverage without turning one run into a benchmark.</p></div></header>
-    <div className="pc-tabs" role="tablist" aria-label="Quality evidence sections">
+    <div className={`pc-tabs ${styles.tabs}`} role="tablist" aria-label="Quality evidence sections">
       {qualityTabs.map(item => <button key={item.id} id={`quality-tab-${item.id}`} type="button" role="tab" aria-selected={tab === item.id} aria-controls={`quality-panel-${item.id}`} tabIndex={tab === item.id ? 0 : -1} onClick={() => selectTab(item.id)} onKeyDown={event => moveTabFocus(event, ids, tab, value => selectTab(value as QualityTab))}>{item.label}</button>)}
     </div>
 

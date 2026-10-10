@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -15,6 +15,7 @@ import type { AuthUser } from '../lib/server/auth';
 import { db, type Database, WriteConflictError } from '../lib/server/db';
 import { ownerRegistrationStatements } from '../lib/team/service';
 import { resolveSpeechDelivery } from '../lib/voice/speech-delivery';
+import { GET as comparisonGET } from '../app/api/evaluations/audio/comparisons/route';
 
 process.env.SQLITE_PATH = join(mkdtempSync(join(tmpdir(), 'audio-comparison-')), 'test.sqlite');
 delete process.env.DATABASE_URL;
@@ -202,4 +203,44 @@ test('expiry after earlier artifact guards but during later transaction writes r
     assert.equal((await f.database.all('SELECT id FROM entities WHERE organization_id=? AND kind=?', [f.user.organizationId, 'eval:audio_comparison_review'])).length, 0);
     assert.equal((await f.database.all('SELECT id FROM audit_events WHERE organization_id=?', [f.user.organizationId])).length, beforeAudit);
   } finally { sqlite.close(); }
+});
+
+test('masked clip transport supplies finite length and bounded ranges only after exact reviewer authorization', async () => {
+  const f = await fixture(), comparison = await createAudioComparison(f.user, { runIds: f.runs.map(run => run.id), requestId: randomUUID() });
+  const packet = await openAudioComparison(f.user, { comparisonId: comparison.id });
+  const cookieFor = async (user: AuthUser) => {
+    const token = randomBytes(32).toString('hex');
+    await f.database.run('INSERT INTO auth_sessions (token_hash,user_id,expires_at) VALUES (?,?,?)', [createHash('sha256').update(token).digest('hex'), user.id, new Date(Date.now() + 60_000).toISOString()]);
+    return `company_session=${token}`;
+  };
+  const cookie = await cookieFor(f.user), url = `http://localhost${packet.clips.A.playbackUrl}`;
+  const get = (range?: string, authentication = cookie) => comparisonGET(new Request(url, { headers: { ...(authentication ? { cookie: authentication } : {}), ...(range !== undefined ? { range } : {}) } }));
+  const bytes = await readAudioComparisonClip(f.user, comparison.id, 'A');
+  const full = await get();
+  assert.equal(full.status, 200); assert.equal(full.headers.get('content-length'), String(bytes.length));
+  assert.equal(full.headers.get('accept-ranges'), 'bytes'); assert.equal(full.headers.get('content-type'), 'audio/wav');
+  assert.equal(full.headers.get('cache-control'), 'private, no-store'); assert.equal(full.headers.get('content-disposition'), 'inline; filename="recording.wav"');
+  assert.equal(full.headers.get('etag'), null, 'artifact hashes must not link masked recordings to labeled artifacts');
+  assert.deepEqual(Buffer.from(await full.arrayBuffer()), bytes);
+  for (const [range, start, end] of [
+    ['bytes=0-43', 0, 43], ['bytes=44-', 44, bytes.length - 1], ['bytes=-16', bytes.length - 16, bytes.length - 1],
+    [`bytes=${bytes.length - 5}-${bytes.length + 20}`, bytes.length - 5, bytes.length - 1],
+  ] as const) {
+    const partial = await get(range);
+    assert.equal(partial.status, 206); assert.equal(partial.headers.get('content-length'), String(end - start + 1));
+    assert.equal(partial.headers.get('content-range'), `bytes ${start}-${end}/${bytes.length}`);
+    assert.deepEqual(Buffer.from(await partial.arrayBuffer()), bytes.subarray(start, end + 1));
+  }
+  for (const range of [`bytes=${bytes.length}-`, 'bytes=7-2', 'bytes=-0', 'bytes=0-1,3-4', 'bytes=9007199254740992-', 'nonsense']) {
+    const invalid = await get(range);
+    assert.equal(invalid.status, 416); assert.equal(invalid.headers.get('content-range'), `bytes */${bytes.length}`);
+    assert.equal(invalid.headers.get('content-length'), '0'); assert.equal((await invalid.arrayBuffer()).byteLength, 0);
+  }
+  for (const [authentication, status] of [['', 401], [await cookieFor(await member()), 404], [await cookieFor(await member(f.user.organizationId)), 404]] as const) {
+    const denied = await get('bytes=0-43', authentication);
+    assert.equal(denied.status, status); assert.equal(denied.headers.get('content-range'), null); assert.notEqual(denied.headers.get('content-type'), 'audio/wav');
+  }
+  await f.database.run('UPDATE evaluation_audio_artifacts SET expires_at=? WHERE id=?', [new Date(0).toISOString(), f.runs[0].data.outputArtifact!.id]);
+  const expired = await get('bytes=0-43');
+  assert.equal(expired.status, 410); assert.equal(expired.headers.get('content-range'), null);
 });
