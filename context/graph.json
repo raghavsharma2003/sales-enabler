@@ -1411,28 +1411,28 @@
       "id": "implementation.campaign-agent-return-2026-10-10",
       "type": "component",
       "title": "Exact campaign to agent preparation and published-release return",
-      "status": "active-uncommitted-18-focused-plus-typecheck-pass-integrated-browser-proof-open",
+      "status": "implemented-scoped-terminal-focused-typecheck-983-tests-build-readiness-and-responsive-browser-return-pass",
       "path": "docs/sellability-implementation-oct10.md"
     },
     {
       "id": "implementation.paid-inference-admission-2026-10-10",
       "type": "component",
       "title": "Hosted operator allowlist, finite AI budget and durable private voice attempt admission",
-      "status": "implemented-uncommitted-final-authority-40-route-13-browser-end-5-legacy-migration-31-and-typecheck-pass-full-suite-provider-browser-proof-open",
+      "status": "implemented-scoped-terminal-authority-route-end-migration-983-tests-build-readiness-browser-and-bounded-provider-control-pass",
       "path": "docs/sellability-implementation-oct10.md"
     },
     {
       "id": "implementation.private-call-supervisor-2026-10-10",
       "type": "component",
       "title": "Private Azure call control and durable supervisor with retained uncertainty",
-      "status": "implemented-uncommitted-connect-end-and-shared-guards-wired-full-suite-build-browser-and-live-control-proof-open",
+      "status": "implemented-scoped-terminal-first-attempt-retained-uncertain-bounded-webRTC-retry-end-stop200-durable-close-save-and-usage-truth-pass",
       "path": "docs/sellability-implementation-oct10.md"
     },
     {
       "id": "implementation.versioned-voice-proof-run-2026-10-10",
       "type": "component",
       "title": "Versioned audio proof run with captured assistant artifacts and human review",
-      "status": "implemented-uncommitted-bounded-artifact-schema-runner-api-and-review-no-passed-audio-release-gate-or-terminal-review",
+      "status": "implemented-first-failure-retained-one-explicit-same-fixture-audio-retry-and-playback-pass-no-human-review-or-passed-audio-release-gate",
       "path": "docs/sellability-implementation-oct10.md"
     },
     {
@@ -1446,7 +1446,14 @@
       "id": "open.sellability-terminal-verification-2026-10-10",
       "type": "open-question",
       "title": "Complete integrated, browser, provider-control and Voice Proof Run verification for sellability increment",
-      "status": "open-source-frozen-typecheck-981-tests-and-focused-authority-integration-runtime-pass-final-build-package-readiness-browser-live-provider-and-reviews-pending",
+      "status": "closed-scoped-local-983-tests-build-package-readiness-campaign-provider-audio-playback-and-ui-ship-pass-hosted-microphone-human-listening-channel-credit-and-pilot-gates-open",
+      "path": "docs/sellability-implementation-oct10.md"
+    },
+    {
+      "id": "verification.sellability-terminal-local-2026-10-10",
+      "type": "evidence",
+      "title": "Terminal local verification of admitted-pilot sellability software increment",
+      "status": "983-tests-build-package1179-readiness-campaign-return-bounded-provider-control-audio-playback-and-final-ui-ship-pass-not-hosted-or-whole-product-ready",
       "path": "docs/sellability-implementation-oct10.md"
     }
   ],
@@ -2770,6 +2777,26 @@
       "from": "implementation.versioned-voice-proof-run-2026-10-10",
       "to": "open.sellability-terminal-verification-2026-10-10",
       "relation": "requires"
+    },
+    {
+      "from": "verification.sellability-terminal-local-2026-10-10",
+      "to": "implementation.campaign-agent-return-2026-10-10",
+      "relation": "verifies-scoped-terminal"
+    },
+    {
+      "from": "verification.sellability-terminal-local-2026-10-10",
+      "to": "implementation.paid-inference-admission-2026-10-10",
+      "relation": "verifies-scoped-terminal"
+    },
+    {
+      "from": "verification.sellability-terminal-local-2026-10-10",
+      "to": "implementation.private-call-supervisor-2026-10-10",
+      "relation": "verifies-scoped-terminal-with-retained-uncertainty"
+    },
+    {
+      "from": "verification.sellability-terminal-local-2026-10-10",
+      "to": "open.sellability-terminal-verification-2026-10-10",
+      "relation": "closes-local-software-gate"
     }
   ]
 }

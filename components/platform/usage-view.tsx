@@ -198,7 +198,7 @@ export function UsageView({ workspace, navigate }: PlatformViewProps) {
             <div className={styles.quotaList}>
               <QuotaRow label="Connection attempts · daily UTC" value={usage.data.voice.attempts} limit={usage.data.voice.dailyAttemptLimit} detail="Reserved attempts, including failed or uncertain starts." />
               <QuotaRow label="Reserved voice seconds · daily UTC" value={usage.data.voice.reservedSeconds} limit={usage.data.voice.dailyReservedSecondsLimit} detail="Maximum admitted duration, not measured provider billing." />
-              <QuotaRow label="Workspace live connections" value={usage.data.voice.live} limit={usage.data.voice.organizationLiveLimit} detail={`Each member can hold up to ${measure(usage.data.voice.userLiveLimit)} live connections.`} />
+              <QuotaRow label="Occupied connection slots" value={usage.data.voice.live} limit={usage.data.voice.organizationLiveLimit} detail={`Includes pending and unresolved attempts. Limit: ${measure(usage.data.voice.userLiveLimit)} per member.`} />
             </div><p className={styles.boundary}>{usage.data.voice.accounting}</p>
           </section>
 

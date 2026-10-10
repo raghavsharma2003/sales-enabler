@@ -1,6 +1,6 @@
 # Sellability implementation verification — 10 October 2026
 
-Status: **terminal tests complete; build/browser/provider closeout pending**. This record separates the clean `5249801` / 900-test continuous-speech baseline from the October 10 sellability work. Source is frozen, TypeScript and 981/981 tests pass. Final build has passed TypeScript and is still running toward package validation. No live provider call, cloud mutation, hosted deployment or browser sign-off belongs to this increment yet.
+Status: **terminally verified within local software scope**. Main implementation checkpoint is `36b0d12`; frozen protocol/location corrections are `9af97a6`. Final 983-test/build/readiness proof, campaign return, explicit audio retry/playback, private WebRTC End settlement and UI finish review pass. The first audio failure and first private-control unknown attempt remain retained. Human listening is optional follow-up required only before an audio-quality/release verdict.
 
 ## Product and admission decision
 
@@ -12,7 +12,7 @@ Hosted paid inference defaults closed. Verified email and workspace membership a
 
 The campaign authoring surface now carries an exact campaign return reference into agent preparation and returns the published release to that same campaign through revisioned save. The handoff is intended to preserve the campaign goal, approved sources and editable language without turning campaign facts into global agent configuration. Current focused proof passes **18 checks plus TypeScript**.
 
-Terminal evidence must show reload, stale campaign revision, failed save, publication and explicit “use this release” recovery without losing or silently changing the original campaign. Publication must not launch the campaign, and a public deployment must not become a prerequisite for a private first workflow.
+Browser evidence now covers selected agent → Return and use → the same campaign Review phase in four responsive captures without launching or delivering. Terminal evidence must retain reload, stale campaign revision, failed save and publication recovery without losing or silently changing the original campaign. A public deployment must not become a prerequisite for a private first workflow.
 
 ## Paid inference admission and usage
 
@@ -25,25 +25,25 @@ The hosted entitlement slice adds:
 - conservative retention for provider-uncertain outcomes; and
 - a tenant-visible usage API.
 
-The admission/control implementation is now wired through private connect and End. Final independent authority review passes **40/40** with no remaining scoped P1/P2. Actual route checks pass **13/13**, browser End control passes **5/5**, and legacy guard-fixture migration passes **31/31**. Terminal review must still establish through final suite/browser/provider evidence that inactive membership, exhausted allowances, concurrent requests, cancellation, stale attempts and uncertain provider outcomes cause zero unintended provider invocations. Voice “minutes” or rupees remain unenforced claims until server-owned call control and rate configuration prove the corresponding unit and termination behavior.
+The admission/control implementation is wired through private connect and End. Final independent authority review passes **40/40** with no remaining scoped P1/P2. Actual route checks pass **13/13**, browser End control passes **5/5**, and legacy guard-fixture migration passes **31/31**. Deterministic checks cover inactive membership, exhausted allowances, concurrent requests, cancellation, stale attempts and uncertain outcomes; denied/exhausted browser states were not all exercised live. Voice “minutes” or rupees remain unenforced claims because the product has not validated billing rates or hosted settlement.
 
 ## Private Azure call control and supervision
 
-Provider location and call identifiers stay in private configuration and are bound to a configuration fingerprint. Server control exposes bounded create, list/read and hangup operations; the durable supervisor owns heartbeat, deadline, authority revalidation, terminal classification and retained uncertainty. Current focused proof passes **43 checks**, with additional outcome classifications still being completed.
+Provider location and call identifiers stay in private configuration and are bound to a configuration fingerprint. Server control exposes bounded create, list/read and hangup operations; the durable supervisor owns heartbeat, deadline, authority revalidation, terminal classification and retained uncertainty. Focused authority, route, End, migration and integration checks pass, and one bounded live control retry confirms create/bind/End/stop/close for the successful branch.
 
-The application reserves admission before create, binds the provider call to the exact reservation, and retains the attempt conservatively if create/hangup outcome is unknown. End control carries an idempotent request identifier through the current private call path. Shared guards cover public voice, the speech sidecar and cloning. This integration has not been deployed or provider-verified.
+The application reserves admission before create, binds the provider call to the exact reservation, and retains the attempt conservatively if create/hangup outcome is unknown. End control carries an idempotent request identifier through the current private call path. Shared guards cover public voice, the speech sidecar and cloning. This is locally provider-verified, not deployed or hosted.
 
 No endpoint, provider location, call ID, configuration fingerprint, credential or provider payload belongs in this document.
 
 ## Versioned Voice Proof Run
 
-The active proof slice introduces a versioned run schema, bounded audio-artifact storage, runner and API for a synthetic caller, captured assistant audio and playable human reviews. The proof runner shares the runtime session configuration so evaluation cannot silently use a different voice/model/turn policy.
+The proof slice implements a versioned run schema, bounded audio-artifact storage, runner and API for a synthetic caller, captured assistant audio and playable human reviews. The proof runner shares the runtime session configuration so evaluation cannot silently use a different voice/model/turn policy.
 
-This is work in progress. A text rehearsal, synthetic transcript, provider success response or stored audio file alone cannot pass an audio release gate. Terminal proof needs exact agent/runtime/configuration binding, artifact digests, causal trace, audible assistant capture, explicit reviewer identity/verdict, missing-evidence handling and non-green legacy states. Raw customer audio and transcripts remain excluded.
+The software path has exact agent/runtime/configuration binding, artifact digests, causal trace, assistant capture, missing-evidence handling and non-green legacy states. A text rehearsal, synthetic transcript, provider success response or stored/playable audio file alone cannot pass an audio release gate. An explicit human listening verdict is still required for that optional gate. Raw customer audio and transcripts remain excluded.
 
 ## Usage and service diagnosis
 
-Usage & services UI and worker diagnosis are mounted. The operator view combines entitlement/budget, voice-attempt state, provider uncertainty and service health with an owning recovery action. It distinguishes app readiness from gateway/worker supervision and preserves no-resend/no-recreate behavior for uncertain outcomes. Retention purge runs on the first worker tick and every 60 seconds; its runtime integration regression is being completed.
+Usage & services UI and worker diagnosis are mounted. The operator view combines entitlement/budget, voice-attempt state, provider uncertainty and service health with an owning recovery action. It distinguishes app readiness from gateway/worker supervision and preserves no-resend/no-recreate behavior for uncertain outcomes. Retention purge runs on the first worker tick and every 60 seconds; its runtime integration checks pass **17/17**.
 
 This does not replace the hosted requirements for supervised workers, PostgreSQL, recovery drills, real email/channel receipts and target-specific alerts.
 
@@ -59,16 +59,25 @@ The startup-credit request returned 401. The user-reported balance remains plann
 - final independent admission/control authority review: **40/40**, no remaining scoped P1/P2;
 - actual private voice route integration: **13/13**;
 - browser End control: **5/5**;
-- legacy guard-fixture migration: **31/31**.
+- legacy guard-fixture migration: **31/31**;
+- GA proof/config integration after correction: **35 focused checks**;
+- final TypeScript and integrated suite: **983/983**, zero skipped;
+- production build/postbuild package: **1,179 entries**, readiness HTTP 200.
 
-Both UI owners report source frozen and full TypeScript passing. The corrected terminal suite passes **981/981**, with zero failed or skipped, in 139.98 seconds; retained log is `data/oct10-final-tests.log`. Corrected public evidence checks pass **8/8**; the two End suites pass **14/14** while retaining immediate microphone/audio shutdown. Midstream audio-WebSocket shutdown and pinned-SDK Node 24 WebSocket reuse pass **10/10**. Real retention runtime behavior passes **17/17**. The final production build has passed its 59-second TypeScript phase but has not yet completed package validation. Local compiled gateway and supervisor processes start without a recorded application error. No current-source readiness, browser review or live-provider result has completed for this increment.
+Packaged browser QA confirms campaign return in four responsive captures and mounts Usage with local activation, a fresh private supervisor and unrelated stale workers. Denied/exhausted usage states are covered deterministically but were not all exercised in the browser.
 
-## Terminal gates
+The first actual Azure Realtime proof failure remains visible. The corrected single retry used the same 6.9375-second fixture and produced a 9.7-second artifact with a complete socket/session, native final ASR, compiled behavior, exact ACK, response, server-audio, done and close trace. Request-to-first-server-audio was 1,230 ms, one server/transport proxy rather than browser-to-ear latency. The authenticated native player reports duration/currentTime 9.7 seconds, readyState 4 and no error; UI playback completed. Four audio setup/output captures cover desktop/mobile with no mobile horizontal overflow. No human listening verdict exists, so this is not a reviewed audio-quality or release pass.
 
-- complete the running production build/postbuild package and packaged readiness;
-- close remaining Voice Proof Run/UI finish reviews;
-- browser-verify the exact campaign handoff/return, truthful denied/exhausted usage states, private-call attempt/control states, service diagnosis and Voice Proof Run missing/available/reviewed states at representative widths;
-- if explicitly authorized, run a single bounded provider-control proof and keep it separate from telephone delivery, microphone/acoustic quality and business-value claims; and
-- retain hosted deployment, PostgreSQL/migrations/restore, Key Vault/identity, email round-trip, worker supervision, real chosen-channel receipt and startup-credit confirmation as external gates.
+The first private-control attempt remains uncertain. Its failure was compatible with the original strict Location parser, but the raw header was not retained, so that cause is not proven retrospectively and no provider handle or close is invented. The corrected parser accepts only documented same-origin path shapes, while hangup always uses the configured Azure base.
+
+One bounded private WebRTC retry completed a 29-second Listen & type call with greeting, one fictional typed turn and one assistant reply. End stopped the browser, issued exactly one provider stop for the bound handle, received HTTP 200, closed the durable attempt and saved the internal preview. The ignored local-only two-slot override allowed this retry beside the uncertain attempt; hosted/default remains one. Daily attempt and reserved-seconds accounting remain retained. Current local evidence contains five attempts, 1,310 reserved seconds and one occupied slot including the uncertain attempt. This is not hosted billing or a rupee/minute claim.
+
+The first independent ten-capture review returned **FIX** only for the occupied-slot truth recapture and essential Usage copy rendered at 9–10 px. The label correction is applied, and CSS raises supporting copy to 11/12 px with strong values at 12 px. Because this was a copy/CSS-only change, no second integrated suite was required. The final build/typecheck/postbuild package passed across 1,179 entries. Replacement desktop 1280 × 900 and mobile 390 × 844 Usage captures plus a supplemental scrolled-slots mobile capture were reviewed alongside the other eight passing captures. The reviewer rerun returned **SHIP** for both scored fixes with no regression; see `docs/sellability-finish-review-oct10.md`.
+
+## Broader evidence and external gates
+
+- obtain a human listening verdict only before claiming an audio-quality or release-gate pass; it does not block the scoped software finish;
+- retain hosted deployment, PostgreSQL/migrations/restore, Key Vault/identity, email round-trip, worker supervision, real chosen-channel receipt and startup-credit confirmation as external gates; and
+- separately evaluate browser microphone/acoustics, telephone delivery and customer value before any corresponding claim.
 
 Azure remains the only authorized paid inference path. Do not use Docker on this laptop. Keep secrets, endpoints, resource IDs, call IDs, fingerprints, customer material, transcripts and raw audio out of continuity.

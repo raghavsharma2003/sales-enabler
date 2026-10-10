@@ -51,9 +51,17 @@ Live understanding is an optional Azure microphone-call aid inside the existing 
 
 Campaigns is one durable record across Intent, Audience, Agent & content, Review, Run, and Results. Setup can be saved while incomplete without inventing placeholder truth. AI brief suggestions are copied into local fields only when the operator chooses Use, then require an explicit save. Full content proposals apply through separate receipts bound to the exact campaign revision and reviewed sources. Review checks current authority and eligibility; launch separately freezes the run snapshot. Run owns recipient-level execution and the mounted browser call. Results is a distinct evidence surface for exact conversations, completion evidence, planned-field review, and truthful empty states.
 
+Campaign agent preparation extends that same record into Agents without creating a parallel workflow. The handoff carries the saved campaign revision and offering/goal context, can seed an editable starting draft, and returns only an exact active release. Returning binds that release to the campaign and restores the same campaign in Review so current eligibility and the complete brief remain the launch authority.
+
+Usage & services is an operational ledger inside Settings. It separates AI and voice admission allowances from background-service reports and saved queues. Counts name attempts, reserved duration, occupied connection slots, and token evidence precisely; they are not invoices, provider billing, throughput, or quality measures. Service freshness remains a bounded process report with direct links to the owning work surface.
+
+Quality adds Audio proof as an exact-run evidence surface beside text evaluation. One stored fictional caller fixture can be replayed against one immutable agent version with tools, customer memory, and business actions disabled. Input bytes, every failed or completed attempt, captured AI output, transcripts, playback state, and human reviews stay distinct. Starting or completing browser playback is never converted into a listening verdict; each criterion requires a separate reviewer attestation and remains independent from the text-release gate.
+
 The latest finish review in `docs/duplex-finish-review-oct09.md` returned SHIP for this scoped increment after the nine `duplex-{release,home,timing}-{desktop,mobile,user674}.png` captures covering release review, Overview continuation, and client timing evidence. Its focused suite passed 39/39; the final frozen source separately passed 804/804 root terminal tests. After one unused test-only `@ts-expect-error` annotation was removed, the corrected terminal production build completed with exit 0, including TypeScript and the postbuild package check across 1,104 entries; that correction did not change runtime or UI behavior. The release decision bar and rollback candidate were source- and test-reviewed but are not visually established by those captures. This evidence covers only the implemented interface and its recorded states; it does not establish auditory quality, end-to-end or acoustic latency, microphone/device behavior, hosted-channel outcomes, external delivery, competitor superiority, or whole-product readiness. The shipped extension adds no new asset or motion obligation.
 
 The later finish review in `docs/continuous-speech-finish-review-oct09.md` returned SHIP for the four continuous-understanding captures at the supplied desktop and mobile client areas. Filled-speech, unavailable, mute, and ended behavior is supported by source and focused tests rather than those images. The bounded record reports 39/39 focused checks, 900/900 root tests, standalone typecheck, the Next 16.4 production build and 1,113-entry package check, plus app, gateway, and worklet HTTP 200 checks. One isolated Azure SDK server probe produced four interim revisions and one sidecar final from synthetic audio; no browser microphone call was run in this pass. This evidence does not establish recognition accuracy, physical-device behavior, perceptual voice quality, acoustic or end-to-end latency, full duplex, hosted operation, competitor superiority, or whole-product readiness. No new imagery or motion is required.
+
+The 10 October scoped finish review returned SHIP for campaign-to-agent return, Usage & services, and Audio proof after eight original passing captures, corrected desktop/mobile Usage recaptures, and one supplemental scrolled mobile slot capture. The frozen source passed 983/983 tests and a Next 16.4 production build with TypeScript and the 1,179-entry package check. One 6.9375-second fictional fixture produced a retained failed attempt followed by a 9.7-second captured AI output from the same bytes, and browser playback completed; no human listening verdict was supplied. A separate 29-second, three-turn private Azure Listen & type call ended through the UI, confirmed provider hangup, and saved its preview. These are bounded workflow and artifact results, not physical-microphone, human-listening, perceptual-quality, full-duplex, hosted-operation, competitor, billing, or whole-product evidence. The extension adds no new image or motion requirement.
 
 **Key Characteristics:**
 
@@ -66,6 +74,9 @@ The later finish review in `docs/continuous-speech-finish-review-oct09.md` retur
 - Exact-server-reviewed release decisions with visible candidate and active versions
 - Independent client timing intervals with explicit sample sufficiency
 - Default-off, consented Live understanding with temporary replace-in-place speech evidence
+- Exact-release return from agent preparation to the same campaign Review
+- Operational allowances, occupied slots, service freshness, and saved-work status
+- Version-bound synthetic Audio proof with separate playback and human review
 - Quiet tonal surfaces with indigo state emphasis
 - Visible roles, consent, AI identity, and artifact ownership
 
@@ -123,6 +134,8 @@ Overview uses a responsive `1.72fr / minmax(300px, .72fr)` layout: next action, 
 
 Agents uses a compact picker inside a sticky toolbar and a `minmax(0, 1fr) / 330–370px` editor/test grid. The test dock remains mounted while the operator changes among Setup, Conversation, Voice & language, Knowledge, Behaviour & actions, and Publish. The grid becomes one column at 1080px without unmounting the tester. At 620px, the toolbar, field pairs, and tabs stack into touch-safe layouts; the test dock follows the editor in the same reading flow.
 
+Campaign-driven agent preparation adds one flat context panel above the existing agent toolbar. Campaign identity, offering, goal, return link, active version, and the exact-return action stay together without replacing the editor. The two horizontal rows wrap naturally on wide screens and become a single reading column on compact screens; the primary return action follows its version explanation.
+
 Campaigns uses a persistent record picker and a six-step bar above one work surface capped at 1120px. The steps form six columns on wide screens, three below 1000px, and two below 620px. Intent, Audience, Agent & content, and Review reuse the same revisioned setup record; Run and Results read its fixed launch snapshot. The browser call desk remains mounted while moving between Run and Results, with a sticky call-in-progress return bar. Results uses a recipient list beside evidence detail and stacks to one column below 760px; result tables become labelled blocks below 650px.
 
 Customer table intake is a four-stage Import table → Map columns → Review rows → Applied flow within Company. Import and mapping use balanced columns on wide screens. Review rows use identity, evidence, and decision columns; evidence spans the row below 820px and all review content becomes one column below 580px. Whole-source counts, batch navigation, global source-row exclusions, exception filters, and the prepared decision summary stay visible in the reading flow. Bulk controls prepare decisions only; the separate Apply reviewed batch action remains the sole customer-write boundary.
@@ -132,6 +145,10 @@ Text rehearsal uses one sequential column capped at 960px. The same reading flow
 Client timing evidence stays compact and display-only inside live and saved call surfaces. Each stage is an independent browser event interval with its own Samples, Latest, P50, and P95 columns; the rows must never be visually summed into an end-to-end number. Metrics collapse to one column when their container is narrower than 560px, while observations become a simple vertical list.
 
 Voice Studio keeps Live understanding beside input mode and consent, then exposes it as a dedicated tab in the existing Call inspector. The tab order remains keyboard-operable with roving focus, arrows, Home, and End. Status, current words, tentative cues, recognition counts, and the unsaved-data boundary descend in that order. On narrow screens the five inspector tabs form a stable two-column control set; the cue fields stack below 420px without changing their meaning.
+
+Usage & services uses a `minmax(0, 1.35fr) / minmax(320px, .8fr)` operational split: allowances and attempt status lead, while service freshness and saved queues form the supporting column. It becomes one column below 1040px. Below 620px the page header, status rows, quota rows, and saved-work rows stack; essential labels and explanations stay at 11–12px or above, measures use tabular numerals, and occupied slots remain named separately from completed or currently live calls.
+
+Audio proof keeps preparation in one full-width panel, then uses a `minmax(250px, .68fr) / minmax(0, 1.7fr)` evidence split for saved attempts and the selected run. At 900px the run detail follows the attempt list, which becomes two columns, and below 620px attempts, transcripts, review forms, and metadata become one column with touch-safe controls. Native audio controls stay native; copy beside them carries the playback and listening boundary.
 
 ## Elevation & Depth
 
@@ -163,6 +180,12 @@ The toolbar persists agent identity, saved/dirty status, direct Test agent focus
 
 Six keyboard-operable sections replace simultaneous editor columns. Setup owns required name, role, and purpose. Conversation owns system prompt, opening message, AI introduction, and style; prompts are not repeated above unrelated sections. Voice & language preserves raw comma/newline editing buffers until validation and save. Knowledge attaches approved sources. Behaviour & actions keeps memory, human handoff, and bounded in-call actions explicit. The test dock remains mounted so draft test state survives section changes; Test agent moves focus to it, and Back to editor returns focus without changing routes.
 
+### Campaign agent preparation and return
+
+Agent & content hands an exact saved campaign revision into the existing Agents workspace. The context panel names the campaign, offering, and goal; Return to campaign restores Agent & content without changing the draft. A new-agent template may copy the campaign objective and opening into local editable fields, but it does not save, publish, or bind anything.
+
+Returning requires a clean saved agent and an exact active release. The action rechecks the campaign revision and release authority, writes the binding to that campaign, and returns to the same campaign in Review. Stale, unavailable, unpublished, viewer-only, or dirty states remain blocked with a direct recovery path. The handoff never substitutes a different release, creates a second campaign, launches, or contacts anyone.
+
 ### Release review and history
 
 Publish and release history use the same review component for a new release or rollback. The identity block keeps Purpose, Candidate, Active now, and Decision together so an older active version is never confused with the candidate. `Review current evidence` requests a fresh server packet bound to the exact agent version, operation, and configuration run; a changed selection or evidence context invalidates the packet.
@@ -180,6 +203,18 @@ The checkbox appears only for Azure and is enabled only when continuous recognit
 The inspector always names its operational state: ready for the next call, off for this call, connecting recognition, listening, understanding current speech, preparing tentative guidance, waiting for the final transcript, paused while muted, recognition unavailable, or recognition ended. Unavailable copy keeps the voice call and the recognition sidecar distinct. Current words replace in place on every accepted revision and never append transcript turns. A sidecar final remains a recognizer draft; only the authoritative native final can add the person’s turn and permit a response.
 
 Language, pace, and pause-request cues remain visibly tentative. They describe communication guidance only and never claim emotion, intent, identity, confidence, or understanding. Revision, recognizer-final, and discarded counts are metadata, not quality scores. Mute, end, native final, discontinuity, and unavailable/invalid input clear temporary words and cues; unmute begins from fresh speech. The boundary copy states that temporary words are unsaved.
+
+### Usage & services
+
+The left column is a workspace-scoped allowance record. Activation state distinguishes local, test, and hosted modes without turning local enablement into hosted proof. Voice rows name reserved attempts, reserved seconds, and occupied connection slots; pending and unresolved attempts can occupy a slot, so this value is never relabelled as live calls. AI rows keep admission budget, pending/uncertain reservations, and provider-reported completed tokens separate. UTC windows, limits, accounting boundaries, and recent attempt states remain visible, while unknown values render as Unknown rather than zero.
+
+The right column reports recent service heartbeats and saved work. Fresh, stale, disabled, and unknown states describe process reporting only: they do not establish audio connection, provider acceptance, message delivery, or applied learning. Queue counts omit recipients and payloads and link to their owning surface. Independent requests settle separately, prior data may remain visible beside a refresh error, 12-second timeouts recover through Refresh, and polling runs only while relevant work is active and the page is visible.
+
+### Audio proof
+
+Audio proof is a frozen evidence chain: one fictional synthetic scenario, one stored input artifact, one immutable saved agent version, and one explicit run consent. Tools, customer memory, and business actions remain disabled. The selected fixture exposes its duration, format, expiry, and integrity reference; every run keeps its own status and stable reference so a failed first attempt remains visible beside a later captured output from the same bytes.
+
+The selected run separates captured audio, recognized caller text, assistant transcript, and human listening criteria. Transcript text does not establish sound. Playback started and playback completed are browser events only; the review form remains disabled until playback starts, then requires a separate `I listened to this captured output` attestation per criterion. Reviews append to the exact output hash and run record, while text rehearsal and release evidence remain separate gates. Expired or failed playback disables new attestations without erasing prior records.
 
 ### Customer table intake
 
@@ -231,12 +266,15 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Do** keep Live understanding default off, Azure microphone-only, explicitly consented, frozen per call, and visibly separate from the transcript and native final-turn authority.
 - **Do** replace temporary current words per revision, clear words and cues on mute, end, final, or failure, and treat recognition counts as metadata only.
 - **Do** keep Intent, Audience, Agent & content, Review, Run, and Results on one durable campaign ID with partial saves and exact revision checks.
+- **Do** carry campaign context into the existing agent workspace, bind only an exact active release, and return to the same campaign Review for current eligibility.
 - **Do** keep AI suggestions and proposals as attributable receipts until an operator explicitly uses or applies them, and invalidate stale readiness when authority changes.
 - **Do** keep customer intake resumable per actor, preserve exact source evidence, reconcile whole-source counts, and separate prepared decisions from atomic Apply.
 - **Do** keep source-wide exclusions, exception filters, saved revision conflicts, timeouts, and uncertain apply outcomes visible with direct recovery actions.
 - **Do** preserve imported customer fields through the canonical handoff while keeping source do-not-contact restrictions and channel permission separate.
 - **Do** build Text rehearsal from a reviewed redacted checkpoint, generate a new reply from one exact agent version, preserve failed attempts, and require explicit operator verdicts over exact quotes.
 - **Do** bind required-suite truth to the latest attempt, current case set, runtime/configuration, knowledge authority, and blocking reviews while keeping older attempts inspectable.
+- **Do** keep allowance reservations, occupied connection slots, provider-reported usage, service heartbeats, and saved queue counts as separate operational evidence.
+- **Do** bind Audio proof to one immutable version and exact fixture bytes, retain failed attempts, and keep playback events, transcripts, and human listening reviews separate.
 - **Do** keep Results separate from Run and distinguish provider acceptance, reviewed evidence, and business outcome.
 - **Do** preserve role limits, consent controls, explicit AI identity, anonymous/unverified participant labels, and human-review boundaries.
 
@@ -250,8 +288,11 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Don't** treat tentative words or communication cues as a saved transcript, emotion truth, confidence score, recognition-quality result, or permission for the agent to reply.
 - **Don't** bypass the dirty guard for Back, Forward, hash links, search, agent switching, or contextual navigation.
 - **Don't** turn a phase change, partial save, AI suggestion, content proposal, preflight, or provider receipt into implied approval, launch, delivery, or success.
+- **Don't** let campaign-to-agent navigation bind a draft, unpublished version, stale release, or different campaign, or bypass the return-to-Review check.
 - **Don't** let AI mapping, bulk preparation, a saved intake review, or a source handoff silently change customers, grant contact permission, or clear an imported restriction.
 - **Don't** hide skipped, excluded, blocked, pending, stale, or historically failed evidence behind a completed batch or passing latest result.
-- **Don't** treat a Text rehearsal judgment or passing required suite as a publication gate, Realtime/audio benchmark, live-channel result, or production claim.
+- **Don't** treat a Text rehearsal judgment or passing required suite as publication approval, a Realtime/audio benchmark, a live-channel result, or a production claim.
+- **Don't** present allowances as invoices, reserved duration as measured billing, occupied slots as completed or live calls, or a heartbeat as service success.
+- **Don't** treat synthetic fixture playback, a browser playback event, recognized text, or an unreviewed AI output as human listening, microphone, perceptual-quality, full-duplex, or competitor evidence.
 - **Don't** duplicate the execution workbench in Results, hide empty result-field states, or collapse recipient evidence into campaign-level claims.
-- **Don't** present the focused review verdict as a whole-product usability, production, hosted-channel, or competitor-superiority claim.
+- **Don't** present a focused review verdict as whole-product usability, production, hosted-channel, voice-quality, billing, or competitor-superiority evidence.
