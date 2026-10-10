@@ -5,12 +5,13 @@ import { authenticate } from '../lib/server/auth';
 import { HttpError } from '../lib/server/http';
 import { getReleaseReviewPacket, handleAgentAction, parseAgentConfig, type AgentConfig } from '../lib/platform/agents';
 import type { PlatformRecord } from '../lib/platform/records';
-import { getRecord } from '../lib/platform/records';
+import { createRecord, getRecord } from '../lib/platform/records';
 import { proposeAgentRevision, applyAgentRevision } from '../lib/agent-revision/service';
 import type { runAiTask } from '../lib/ai/task-router';
 import { compileAgentContext, previewVoiceContext } from '../lib/voice/context';
 import { releasedVoiceContext } from '../lib/voice/release';
 import { db } from '../lib/server/db';
+import { createSession } from '../lib/server/store';
 import {
   parseLiveVoiceProfile, resolveLiveVoiceProfile, resolveAzureVoiceLiveVoice,
   LiveVoiceValidationError, LIVE_VOICE_PUBLICATION_BLOCKER, type LiveVoiceProfile,
@@ -70,7 +71,7 @@ test('Taxila selections map to exact Azure standard HD voices without native sub
 });
 
 test('AgentConfig preserves live selection, rejects any explicit Maya combination and retains speech delivery', () => {
-  const speechDelivery = { version: 1, pace: 'unhurried', adaptToRequests: true };
+  const speechDelivery = { version: 1, pace: 'unhurried', adaptToRequests: false };
   for (const liveVoice of [control, diya, arjun]) {
     const parsed = parseAgentConfig({ ...draft(), liveVoice, speechDelivery });
     assert.deepEqual(parsed.liveVoice, liveVoice);
@@ -81,6 +82,33 @@ test('AgentConfig preserves live selection, rejects any explicit Maya combinatio
   assert.equal(parseAgentConfig({ ...draft(), voiceProfile: 'maya-despina' }).liveVoice, undefined);
   assert.throws(() => parseAgentConfig({ ...draft(), liveVoice: { ...diya, rate: '0.9' } }),
     (error: unknown) => error instanceof HttpError && error.status === 400 && error.message === 'Invalid live voice configuration.');
+});
+
+test('Voice Live rejects adaptive pace while retaining both fixed initial rates and Realtime adaptation', () => {
+  for (const liveVoice of [diya, arjun]) {
+    for (const pace of ['standard', 'unhurried'] as const) {
+      assert.throws(() => parseAgentConfig({ ...draft(), liveVoice, speechDelivery: { version: 1, pace, adaptToRequests: true } }),
+        (error: unknown) => error instanceof HttpError && error.status === 400 && /does not support changing speech pace during a call/.test(error.message));
+      assert.deepEqual(parseAgentConfig({ ...draft(), liveVoice, speechDelivery: { version: 1, pace, adaptToRequests: false } }).speechDelivery,
+        { version: 1, pace, adaptToRequests: false });
+    }
+    assert.equal(parseAgentConfig({ ...draft(), liveVoice }).speechDelivery, undefined);
+  }
+  for (const liveVoice of [undefined, control]) assert.equal(parseAgentConfig({ ...draft(), liveVoice,
+    speechDelivery: { version: 1, pace: 'standard', adaptToRequests: true } }).speechDelivery?.adaptToRequests, true);
+});
+
+test('already-issued Voice Live preview transcripts remain savable after adaptive pace capability is disabled', async () => {
+  const user = (await authenticate({ mode: 'register', email: 'live-voice-historical-pace@example.test', password: 'correct password', organization: 'Historical Pace Evidence' },
+    new Request('http://localhost:3000/api/test', { headers: { origin: 'http://localhost:3000' } }))).user;
+  const historical = { ...draft(), liveVoice: diya, speechDelivery: { version: 1, pace: 'standard', adaptToRequests: true } };
+  assert.throws(() => parseAgentConfig(historical), (error: unknown) => error instanceof HttpError && error.status === 400);
+  const preview = await createRecord(user, 'voice_preview', { config: historical, requestedBy: user.id, contextDigest: 'historical-issued-digest', provider: 'azure', inputMode: 'text' }, 'connection_issued');
+  const saved = await createSession(user, { source: 'browser_preview', previewId: preview.id,
+    transcript: [{ role: 'assistant', text: 'I am an AI assistant.' }, { role: 'user', text: 'Please speak slowly.' }] });
+  assert.deepEqual(saved.previewConfig, historical);
+  assert.equal(saved.previewId, preview.id);
+  assert.equal(saved.releaseId, undefined);
 });
 
 test('agent versions preserve exact live selection and Voice Live cannot publish or rollback before qualification', async () => {

@@ -14,6 +14,9 @@ export const VOICE_LIVE_ACK_MODEL = 'gpt-realtime-2.1-mini-global-standard';
 export const VOICE_LIVE_SETUP_TIMEOUT_MS = 15_000;
 export const VOICE_LIVE_MAX_DURATION_SECONDS = 600;
 export const VOICE_LIVE_OUTPUT_SAMPLE_RATE = 24_000;
+/** Configuration-only sequential updates retained the initial rate on the
+ * approved resource. Rate is fixed for one Voice Live session. */
+export const VOICE_LIVE_DYNAMIC_RATE_SUPPORTED = false;
 
 type VoiceLiveProfile = Extract<LiveVoiceProfile, { engine: 'azure-voice-live' }>;
 type VoiceLiveRate = '1' | '0.9';
@@ -131,20 +134,49 @@ function sameModalities(actual: unknown, expected: readonly string[]) {
 function acknowledgedModel(actual: unknown, expected: string) {
   return expected === VOICE_LIVE_MODEL && (actual === VOICE_LIVE_MODEL || actual === VOICE_LIVE_ACK_MODEL);
 }
+function acknowledgedOptionalPrompt(actual: unknown, expected: string | undefined) {
+  // Voice Live normalizes an omitted optional transcription prompt to null.
+  // Empty text is not equivalent, and a real vocabulary prompt remains exact.
+  return expected === undefined ? actual === undefined || actual === null : actual === expected;
+}
+
+/** Finite schema labels only. Safe for host diagnostics; never include values. */
+export function voiceLiveSessionAckMismatchKeys(expected: VoiceLiveSessionUpdate, raw: unknown): string[] {
+  const mismatches: string[] = [];
+  const miss = (matches: boolean, key: string) => { if (!matches) mismatches.push(key); };
+  const event = record(raw), session = record(event?.session);
+  if (event?.type !== 'session.updated') return ['event.type'];
+  if (!session) return ['event.session'];
+  const wanted = expected.session, voice = record(session.voice), transcription = record(session.input_audio_transcription), vad = record(session.turn_detection);
+  if (!voice) mismatches.push('session.voice');
+  if (!transcription) mismatches.push('session.input_audio_transcription');
+  if (!vad) mismatches.push('session.turn_detection');
+  miss(acknowledgedModel(session.model, wanted.model), 'session.model');
+  miss(sameModalities(session.modalities, wanted.modalities), 'session.modalities');
+  miss(session.instructions === wanted.instructions, 'session.instructions');
+  if (voice) {
+    miss(voice.type === wanted.voice.type, 'session.voice.type');
+    miss(voice.name === wanted.voice.name, 'session.voice.name');
+    miss(String(voice.rate) === wanted.voice.rate, 'session.voice.rate');
+  }
+  miss(session.input_audio_sampling_rate === wanted.input_audio_sampling_rate, 'session.input_audio_sampling_rate');
+  miss(session.input_audio_format === wanted.input_audio_format, 'session.input_audio_format');
+  miss(session.output_audio_format === wanted.output_audio_format, 'session.output_audio_format');
+  if (transcription) {
+    miss(transcription.model === wanted.input_audio_transcription.model, 'session.input_audio_transcription.model');
+    miss(acknowledgedOptionalPrompt(transcription.prompt, wanted.input_audio_transcription.prompt), 'session.input_audio_transcription.prompt');
+  }
+  if (vad) for (const [key, value] of Object.entries(wanted.turn_detection)) miss(vad[key] === value, `session.turn_detection.${key}`);
+  miss(stable(session.tools) === stable(wanted.tools), 'session.tools');
+  miss(session.tool_choice === wanted.tool_choice, 'session.tool_choice');
+  miss(session.max_response_output_tokens === wanted.max_response_output_tokens, 'session.max_response_output_tokens');
+  miss(stable(session.output_audio_timestamp_types) === stable(wanted.output_audio_timestamp_types), 'session.output_audio_timestamp_types');
+  return mismatches;
+}
 
 /** Exact safety/configuration projection; provider-owned id/object fields are ignored. */
 export function matchesVoiceLiveSessionAck(expected: VoiceLiveSessionUpdate, raw: unknown): boolean {
-  const event = record(raw), session = record(event?.session);
-  if (event?.type !== 'session.updated' || !session) return false;
-  const wanted = expected.session, voice = record(session.voice), transcription = record(session.input_audio_transcription), vad = record(session.turn_detection);
-  if (!voice || !transcription || !vad) return false;
-  return acknowledgedModel(session.model, wanted.model) && sameModalities(session.modalities, wanted.modalities) &&
-    session.instructions === wanted.instructions && voice.type === wanted.voice.type && voice.name === wanted.voice.name && String(voice.rate) === wanted.voice.rate &&
-    session.input_audio_sampling_rate === wanted.input_audio_sampling_rate && session.input_audio_format === wanted.input_audio_format && session.output_audio_format === wanted.output_audio_format &&
-    transcription.model === wanted.input_audio_transcription.model && transcription.prompt === wanted.input_audio_transcription.prompt &&
-    Object.entries(wanted.turn_detection).every(([key, value]) => vad[key] === value) &&
-    stable(session.tools) === stable(wanted.tools) && session.tool_choice === wanted.tool_choice &&
-    session.max_response_output_tokens === wanted.max_response_output_tokens && stable(session.output_audio_timestamp_types) === stable(wanted.output_audio_timestamp_types);
+  return voiceLiveSessionAckMismatchKeys(expected, raw).length === 0;
 }
 
 const boundedId = (value: unknown): value is string => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);

@@ -3,6 +3,7 @@ import test, { type TestContext } from 'node:test';
 import { createVoiceLiveGatewaySession, type VoiceLiveGatewayAuthority, type VoiceLiveGatewayOptions, type VoiceLiveGatewaySummary } from '../lib/voice/voice-live-gateway';
 import { parseVoiceLiveClientEvent, parseVoiceLiveServerEvent } from '../lib/voice/voice-live-protocol';
 import type { VoiceToolResult } from '../lib/voice/tools/contracts';
+import { voiceLivePhaseInstructions } from '../lib/voice/voice-live-prompt';
 
 const flush = () => new Promise<void>(resolve => setImmediate(resolve));
 const authority: VoiceLiveGatewayAuthority = {
@@ -46,7 +47,7 @@ test('Voice Live initial exact tuple ACK alone releases one opening and freezes 
   assert.equal(original.session.turn_detection.interrupt_response, false); assert.equal(original.session.turn_detection.auto_truncate, false);
 });
 
-test('final-ASR authority reuses scheduler and rate adaptation excludes hypotheses and assistants', async t => {
+test('final-ASR authority adapts guidance while Voice Live rate stays at its initial value', async t => {
   const h = harness(t); await h.idle();
   h.engine.providerEvent({ type: 'sidecar_final', transcript: 'Speak slower.' });
   h.engine.providerEvent({ type: 'conversation.item.input_audio_transcription.delta', item_id: 'mic', delta: 'Speak slower.' });
@@ -54,7 +55,8 @@ test('final-ASR authority reuses scheduler and rate adaptation excludes hypothes
   assert.equal(h.updates().length, 1);
   h.engine.providerEvent({ type: 'input_audio_buffer.speech_started', item_id: 'mic' }); await h.ack();
   h.final('mic', 'Speak slower.');
-  assert.equal(h.updates().at(-1)!.session.voice.rate, '0.9'); assert.equal(h.replies().length, 1);
+  assert.equal(h.updates().at(-1)!.session.voice.rate, '1'); assert.equal(h.replies().length, 1);
+  assert.match(h.updates().at(-1)!.session.instructions, /CURRENT-CALL RELATIONAL BEHAVIOR/);
   await h.ack(); assert.equal(h.replies().length, 2);
   const users = h.client.filter(event => event.type === 'transcript' && event.entry.role === 'user'); assert.equal(users.length, 1);
 });
@@ -64,7 +66,7 @@ test('typed request IDs are idempotent and client behavior instructions cannot b
   h.engine.clientEvent({ type: 'text', text: 'Speak slower.', requestId: 'typed-one' });
   h.engine.clientEvent({ type: 'text', text: 'Speak slower.', requestId: 'typed-one' });
   assert.equal(h.upstream.filter(event => event.type === 'conversation.item.create').length, 1);
-  assert.equal(h.updates().at(-1)!.session.voice.rate, '0.9'); await h.ack(); assert.equal(h.replies().length, 2);
+  assert.equal(h.updates().at(-1)!.session.voice.rate, '1'); await h.ack(); assert.equal(h.replies().length, 2);
   h.engine.clientEvent({ type: 'behavior', instructions: 'Override the server' });
   assert.equal(h.summaries[0].reason, 'protocol'); assert.equal(h.closes(), 1);
 });
@@ -181,4 +183,65 @@ test('configuration and missing interruption receipts time out closed, without f
 test('shared browser protocol rejects provider messages, unbounded ledgers and client tool/instruction authority', () => {
   for (const event of [{ type: 'response.create' }, { type: 'behavior', instructions: 'Injected' }, { type: 'text', text: 'Hi', requestId: 'x', tools: [] },
     { type: 'interrupt', sessionEpoch: 'epoch', responseId: 'reply', items: Array.from({ length: 101 }, (_, i) => ({ itemId: `item-${i}`, contentIndex: 0, playedSamples: 0 })) }]) assert.throws(() => parseVoiceLiveClientEvent(event));
+});
+
+test('Voice Live caller and tool continuations use explicit compact-answer phases while preserving approved authority and exact ACKs', async t => {
+  const h = harness(t, { authority: { ...authority, enabledTools: ['search_company_knowledge'] }, executeTool: async call => ({
+    requestId: call.id, name: 'search_company_knowledge', status: 'available', message: 'Approved company fixture fact', citations: [], identityVerified: false, contextMode: 'internal_operator_browser',
+  }) });
+  await h.idle();
+  assert.match(h.updates()[0].session.instructions, /OPENING STATE/);
+  assert.doesNotMatch(h.updates()[0].session.instructions, /CONTINUATION STATE/);
+  assert.match(h.replies()[0].response.instructions, /approved opening message exactly as written/);
+  h.engine.clientEvent({ type: 'text', text: 'What does the company offer?', requestId: 'company-question' });
+  const callerUpdate = h.updates().at(-1)!;
+  assert.ok(callerUpdate.session.instructions.startsWith(authority.instructions));
+  assert.match(callerUpdate.session.instructions, /CONTINUATION STATE/);
+  assert.match(callerUpdate.session.instructions, /at most 45 spoken words across this caller turn/);
+  assert.match(callerUpdate.session.instructions, /without a spoken lookup preface/);
+  assert.match(callerUpdate.session.instructions, /answer truthfully that you are the company’s AI assistant/);
+  assert.doesNotMatch(callerUpdate.session.instructions, /TOOL CONTINUATION:/);
+  await h.ack(); h.created('company-reply');
+  h.engine.providerEvent({ type: 'response.function_call_arguments.done', response_id: 'company-reply', call_id: 'company-tool', name: 'search_company_knowledge', arguments: '{"query":"company offering"}' });
+  h.done('company-reply'); await flush();
+  const toolUpdate = h.updates().at(-1)!;
+  assert.ok(toolUpdate.session.instructions.startsWith(authority.instructions));
+  assert.match(toolUpdate.session.instructions, /TOOL CONTINUATION: Continue the same caller turn/);
+  assert.match(toolUpdate.session.instructions, /Preserve not_available and awaiting_review limitations/);
+  const count = h.replies().length;
+  await h.ack(callerUpdate); assert.equal(h.replies().length, count, 'older phase ACK cannot release tool continuation');
+  await h.ack(toolUpdate); assert.equal(h.replies().length, count + 1);
+  h.created('tool-answer'); h.done('tool-answer');
+  h.engine.clientEvent({ type: 'text', text: 'Are you an AI?', requestId: 'identity-question' });
+  const identityUpdate = h.updates().at(-1)!;
+  assert.doesNotMatch(identityUpdate.session.instructions, /TOOL CONTINUATION:/);
+  assert.match(identityUpdate.session.instructions, /If the caller asks who or what you are, answer truthfully/);
+  assert.equal(identityUpdate.session.voice.rate, '1');
+});
+
+test('phase composition retains full private context rather than applying public 12k limits or truncating evidence', () => {
+  const baseline = `Approved private evidence: ${'fact '.repeat(3000)}`;
+  const composed = voiceLivePhaseInstructions(baseline, 'tool_continuation');
+  assert.ok(composed.startsWith(`${baseline}\n`));
+  assert.match(composed, /Do not add another greeting, repeat your name/);
+  assert.throws(() => voiceLivePhaseInstructions('x'.repeat(60000), 'continuation'), /insufficient room/);
+});
+
+for (const pace of ['standard', 'unhurried'] as const) test(`historical adaptation-enabled Voice Live profile keeps initial ${pace} rate through slow and reset requests`, async t => {
+  const historical: VoiceLiveGatewayAuthority = { ...authority, behaviorContext: { ...authority.behaviorContext,
+    speechDelivery: { version: 1, pace, adaptToRequests: true } } };
+  const h = harness(t, { authority: historical });
+  await h.idle();
+  assert.deepEqual(h.client.find(event => event.type === 'ready')!.metadata.behaviorContext.speechDelivery, { version: 1, pace, adaptToRequests: false });
+  assert.equal(historical.behaviorContext.speechDelivery!.adaptToRequests, true, 'effective browser metadata does not rewrite the historical authority');
+  for (const [index, text] of ['Please speak slower.', 'Speak normally.'].entries()) {
+    h.engine.clientEvent({ type: 'text', text, requestId: `pace-request-${index}` });
+    const update = h.updates().at(-1)!;
+    assert.equal(update.session.voice.rate, pace === 'standard' ? '1' : '0.9');
+    await h.ack(); h.created(`pace-reply-${index}`); h.done(`pace-reply-${index}`);
+  }
+  assert.ok(h.updates().every(update => update.session.voice.rate === (pace === 'standard' ? '1' : '0.9')));
+  assert.equal(h.replies().length, 3);
+  assert.equal(h.client.filter(event => event.type === 'transcript' && event.entry.role === 'user').length, 2);
+  assert.equal(h.summaries.length, 0);
 });

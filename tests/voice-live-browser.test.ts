@@ -343,6 +343,22 @@ test('a reentrant ready diagnostics observer cannot reconnect, install duration 
   assert.equal(FakeWebSocket.instances.length, 1);
 });
 
+test('a bounded pre-ready terminal event reports its truthful message without establishing a live epoch', async () => {
+  const h = createHarness('text');
+  const connecting = h.session.connect();
+  await until(() => FakeWebSocket.instances.length === 1);
+  const socket = FakeWebSocket.instances[0]; socket.open();
+  socket.receive({ type: 'ended', sessionEpoch: 'pending', reason: 'authentication', message: 'Voice Live authorization was rejected.' });
+  await connecting;
+  assert.deepEqual(h.failures, ['Voice Live authorization was rejected.']);
+  assert.equal(h.connections.length, 0);
+  assert.equal(h.events.length, 0);
+  assert.equal(h.audio.sources.length, 0);
+  assert.equal(h.audio.closed, 1);
+  assert.equal([...h.timers.values()].some(value => value.delay === 600_000), false);
+  assert.equal(socket.closes, 1);
+});
+
 test('invalid grants never open a socket and connect timeout is bounded', async () => {
   for (const invalid of [
     { url: 'ws://voice.example.test/private-voice-live' },

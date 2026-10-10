@@ -7,6 +7,7 @@ import { isVoiceToolName, normalizeVoiceTools, type VoiceToolName } from '../voi
 import { normalizeSpeechVocabulary, SpeechVocabularyValidationError } from '../voice/speech-vocabulary';
 import { parseSpeechDeliveryProfile, SpeechDeliveryValidationError, type SpeechDeliveryProfile } from '../voice/speech-delivery';
 import { parseLiveVoiceProfile, LiveVoiceValidationError, LIVE_VOICE_PUBLICATION_BLOCKER, type LiveVoiceProfile } from '../voice/live-voice';
+import { VOICE_LIVE_DYNAMIC_RATE_SUPPORTED } from '../voice/voice-live-session';
 import { prepareRegressionReleaseGate } from '../regression/service';
 import { TEXT_REHEARSAL_DISCLAIMER, type RegressionReleaseEvidence, type ReleaseReviewPacket } from '../regression/contracts';
 import { operatorMembershipFence } from '../team/service';
@@ -53,6 +54,9 @@ export function parseAgentConfig(body: Record<string, unknown>): AgentConfig {
     throw error;
   }
   if (speechDelivery && body.voiceProfile === 'maya-despina') throw new HttpError(400, 'Speech delivery settings require the Azure provider-default voice profile.');
+  if (liveVoice?.engine === 'azure-voice-live' && speechDelivery?.adaptToRequests && !VOICE_LIVE_DYNAMIC_RATE_SUPPORTED) {
+    throw new HttpError(400, 'Azure Voice Live does not support changing speech pace during a call. Turn off caller-request pace changes and choose a fixed initial pace.');
+  }
   let speechVocabulary: string[];
   try { speechVocabulary = normalizeSpeechVocabulary(body.speechVocabulary); }
   catch (error) {

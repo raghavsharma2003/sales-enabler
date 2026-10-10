@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { parseLiveVoiceProfile } from '../lib/voice/live-voice';
 import {
-  VOICE_LIVE_ACK_MODEL, VOICE_LIVE_API_VERSION, VOICE_LIVE_MODEL, VOICE_LIVE_OUTPUT_SAMPLE_RATE,
-  azureVoiceLiveConfiguration, buildVoiceLiveSession, matchesVoiceLiveSessionAck, normalizeVoiceLiveEvent, voiceLiveConnectionConfig,
+  VOICE_LIVE_ACK_MODEL, VOICE_LIVE_API_VERSION, VOICE_LIVE_DYNAMIC_RATE_SUPPORTED, VOICE_LIVE_MODEL, VOICE_LIVE_OUTPUT_SAMPLE_RATE,
+  azureVoiceLiveConfiguration, buildVoiceLiveSession, matchesVoiceLiveSessionAck, normalizeVoiceLiveEvent, voiceLiveConnectionConfig, voiceLiveSessionAckMismatchKeys,
 } from '../lib/voice/voice-live-session';
 
 function live(preset: 'taxila-diya' | 'taxila-arjun') {
@@ -51,6 +51,12 @@ test('ACK accepts only the two observed provider normalizations and exact critic
   const ack: any = { type: 'session.updated', session: clone(expected.session) };
   ack.session.model = VOICE_LIVE_ACK_MODEL; ack.session.modalities = ['audio', 'text'];
   assert.equal(matchesVoiceLiveSessionAck(expected, ack), true);
+  const nullPrompt = clone(ack); nullPrompt.session.input_audio_transcription.prompt = null;
+  assert.equal(matchesVoiceLiveSessionAck(expected, nullPrompt), true, 'provider null is equivalent only to an omitted optional prompt');
+  assert.deepEqual(voiceLiveSessionAckMismatchKeys(expected, nullPrompt), []);
+  const emptyPrompt = clone(ack); emptyPrompt.session.input_audio_transcription.prompt = '';
+  assert.equal(matchesVoiceLiveSessionAck(expected, emptyPrompt), false);
+  assert.deepEqual(voiceLiveSessionAckMismatchKeys(expected, emptyPrompt), ['session.input_audio_transcription.prompt']);
   for (const mutate of [
     (value: any) => { value.session.instructions += ' changed'; },
     (value: any) => { value.session.voice.name = 'diya'; },
@@ -59,7 +65,7 @@ test('ACK accepts only the two observed provider normalizations and exact critic
     (value: any) => { value.session.input_audio_transcription.model = 'azure-speech'; },
     (value: any) => { value.session.model = 'gpt-realtime-2.1-mini-other'; },
     (value: any) => { value.session.tools = [{ type: 'function', name: 'forged' }]; },
-  ]) { const changed = clone(ack); mutate(changed); assert.equal(matchesVoiceLiveSessionAck(expected, changed), false); }
+  ]) { const changed = clone(ack); mutate(changed); assert.equal(matchesVoiceLiveSessionAck(expected, changed), false); assert.ok(voiceLiveSessionAckMismatchKeys(expected, changed).length > 0); }
   assert.equal(matchesVoiceLiveSessionAck(expected, { ...ack, type: 'session.created' }), false);
 });
 
@@ -75,6 +81,17 @@ test('qualified ACK keeps all function schemas and the bilingual vocabulary prom
   assert.equal(matchesVoiceLiveSessionAck(expected, missingType), false);
   const changedPrompt = clone(ack); changedPrompt.session.input_audio_transcription.prompt += ' changed';
   assert.equal(matchesVoiceLiveSessionAck(expected, changedPrompt), false);
+});
+
+test('retaining the initial Voice Live rate is not equivalent to a requested between-turn rate change', () => {
+  assert.equal(VOICE_LIVE_DYNAMIC_RATE_SUPPORTED, false);
+  const expected = buildVoiceLiveSession({ model: VOICE_LIVE_MODEL, instructions: 'Second revision.', liveVoiceProfile: diya,
+    speechDelivery: { speed: 0.9, pace: 'unhurried', basis: 'caller_request', sourceTurnId: 'turn-2' }, enabledTools: ['search_company_knowledge'] });
+  const retained: any = { type: 'session.updated', session: clone(expected.session) };
+  retained.session.model = VOICE_LIVE_ACK_MODEL; retained.session.modalities = ['audio', 'text']; retained.session.input_audio_transcription.prompt = null;
+  retained.session.voice.rate = '1';
+  assert.deepEqual(voiceLiveSessionAckMismatchKeys(expected, retained), ['session.voice.rate']);
+  assert.equal(matchesVoiceLiveSessionAck(expected, retained), false);
 });
 
 test('normalizer maps bounded audio/transcript/ASR/tool and terminal events', () => {

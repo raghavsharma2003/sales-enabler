@@ -1,11 +1,13 @@
 import { createServer } from 'node:http';
 import { WebSocketServer } from 'ws';
-import { createVoiceLiveHost } from '../lib/voice/voice-live-host';
+import { createVoiceLiveHost, productionVoiceLiveHostDependencies } from '../lib/voice/voice-live-host';
 import { VOICE_LIVE_MAX_CONTROL_BYTES } from '../lib/voice/voice-live-protocol';
 
 const port = Number(process.env.VOICE_LIVE_GATEWAY_PORT || 3002);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid private Voice Live gateway port.');
-const host = createVoiceLiveHost();
+const host = createVoiceLiveHost({ ...productionVoiceLiveHostDependencies,
+  diagnostic: summary => process.stdout.write(`${JSON.stringify({ service: 'private-voice-live', ...summary })}\n`),
+});
 const sockets = new WebSocketServer({ noServer: true, maxPayload: VOICE_LIVE_MAX_CONTROL_BYTES, perMessageDeflate: false });
 const server = createServer((request, response) => {
   if (request.method === 'GET' && request.url === '/health') {

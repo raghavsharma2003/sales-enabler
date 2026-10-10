@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import WebSocket, { WebSocketServer } from 'ws';
-import { createVoiceLiveHost, VOICE_LIVE_HOST_MAX_PAYLOAD, type VoiceLiveHostDependencies } from '../lib/voice/voice-live-host';
+import { createVoiceLiveHost, VOICE_LIVE_HOST_MAX_PAYLOAD, type VoiceLiveHostDependencies, type VoiceLiveHostDiagnostic } from '../lib/voice/voice-live-host';
 import type { VoiceLiveAuthority } from '../lib/voice/voice-live-authority';
 import { VOICE_LIVE_MODEL } from '../lib/voice/voice-live-session';
 
@@ -16,6 +16,7 @@ async function harness(options: { ack?: boolean; completeResponses?: boolean; mo
   let peer: WebSocket | undefined, allocated: WebSocket | undefined, confirmed = false, claimed = false, revoked = false;
   let claims = 0, connects = 0, activated = 0, engineFinished = 0;
   const upstreamEvents: any[] = [], events: any[] = [], outcomes: string[] = [], trace: string[] = [];
+  const diagnostics: VoiceLiveHostDiagnostic[] = [];
   const relationship = { preferences: [], openCommitments: [], sourceIds: [], guidance: '', omittedCount: 0 };
   const settings = { allowedLanguages: ['English'], primaryLanguage: 'English', responseStyle: 'Brief' };
   const authority: VoiceLiveAuthority = {
@@ -41,6 +42,7 @@ async function harness(options: { ack?: boolean; completeResponses?: boolean; mo
     finish: async (_authority, result) => { engineFinished++; outcomes.push(result.outcome); trace.push(result.outcome); if (connects && result.outcome !== 'uncertain') { assert.equal(allocated?.readyState, WebSocket.CLOSED); assert.equal(confirmed, true); } },
     connect: socket,
     executeTool: async () => { throw new Error('No tools enabled in this synthetic preview.'); },
+    diagnostic: summary => diagnostics.push(summary),
     ...options.deps,
   };
   const host = createVoiceLiveHost(deps), server = createServer();
@@ -56,7 +58,7 @@ async function harness(options: { ack?: boolean; completeResponses?: boolean; mo
     for (const socket of sockets.clients) socket.terminate(); sockets.close(); await new Promise<void>(resolve => server.close(() => resolve()));
     for (const socket of fake.clients) socket.terminate(); await new Promise<void>(resolve => fake.close(() => resolve()));
   }
-  return { host, client, server, sockets, url, authority, events, upstreamEvents, outcomes, trace, sendStart, start, cleanup, socket,
+  return { host, client, server, sockets, url, authority, events, upstreamEvents, outcomes, trace, diagnostics, sendStart, start, cleanup, socket,
     emit: (event: unknown) => peer!.send(JSON.stringify(event)), peer: () => peer!, allocated: () => allocated!, revoke: () => { revoked = true; },
     counts: () => ({ claims, connects, activated, finished: engineFinished }),
   };
@@ -222,4 +224,42 @@ test('provider tool calls use the claimed preview authority and never accept bro
     h.client.send(JSON.stringify({ type: 'tool', name: 'search_company_knowledge', arguments: { query: 'untrusted' } }));
     await until(() => h.outcomes.includes('failed')); assert.equal(calls.length, 1);
   } finally { await h.cleanup(); }
+});
+
+test('pre-ready terminal diagnostics expose only finite phase, ACK and closure metadata', async () => {
+  const h = await harness({ ack: false, deps: { setupTimeoutMs: 200 } }); try {
+    h.sendStart(); await until(() => h.upstreamEvents.some(event => event.type === 'session.update'));
+    const update = h.upstreamEvents.find(event => event.type === 'session.update');
+    h.emit({ type: 'session.updated', session: { ...update.session, instructions: 'PRIVATE_TRANSCRIPT_SENTINEL' } });
+    await until(() => h.diagnostics.length === 1);
+    assert.deepEqual({ ...h.diagnostics[0], elapsedMs: 0 }, {
+      version: 1, stage: 'terminal', phase: 'awaiting_ack', reason: 'provider', outcome: 'failed',
+      claimed: true, providerAllocated: true, providerOpened: true, authorityActivated: true, ready: false,
+      closureConfirmed: true, settlementRecorded: true, providerErrorReceived: false,
+      sessionUpdates: 1, sessionAcks: 1, matchingAcks: 0, providerMessages: 2, elapsedMs: 0,
+    });
+    assert.doesNotMatch(JSON.stringify(h.diagnostics), /PRIVATE_TRANSCRIPT|Fictional|instructions|preview|sessionEpoch|api.key|call_1/);
+  } finally { await h.cleanup(); }
+});
+
+test('provider errors are counted without retaining raw error messages, codes or provider identifiers', async () => {
+  const h = await harness({ ack: false }); try {
+    h.sendStart(); await until(() => h.upstreamEvents.some(event => event.type === 'session.update'));
+    h.emit({ type: 'error', event_id: 'PRIVATE_PROVIDER_ID', error: { message: 'PRIVATE_PROVIDER_ERROR', code: 'PRIVATE_PROVIDER_CODE' } });
+    await until(() => h.diagnostics.length === 1);
+    assert.equal(h.diagnostics[0].providerErrorReceived, true); assert.equal(h.diagnostics[0].phase, 'awaiting_ack');
+    assert.equal(h.diagnostics[0].ready, false); assert.equal(h.diagnostics[0].matchingAcks, 0);
+    assert.doesNotMatch(JSON.stringify(h.diagnostics), /PRIVATE_PROVIDER|event_id|message|code/);
+  } finally { await h.cleanup(); }
+});
+
+test('diagnostic observer failures never change cleanup and persistence failure remains explicit', async () => {
+  const failedLog = await harness({ deps: { diagnostic: () => { throw new Error('Private logger failure'); } } });
+  try { await failedLog.start(); failedLog.client.send(JSON.stringify({ type: 'end' })); await until(() => failedLog.outcomes.includes('complete')); assert.equal(failedLog.counts().finished, 1); }
+  finally { await failedLog.cleanup(); }
+  const failedStore = await harness({ deps: { finish: async () => { throw new Error('Private persistence failure'); } } });
+  try {
+    await failedStore.start(); failedStore.client.send(JSON.stringify({ type: 'end' })); await until(() => failedStore.diagnostics.length === 1);
+    assert.equal(failedStore.diagnostics[0].closureConfirmed, true); assert.equal(failedStore.diagnostics[0].settlementRecorded, false);
+  } finally { await failedStore.cleanup(); }
 });

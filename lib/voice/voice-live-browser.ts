@@ -446,12 +446,27 @@ export function createVoiceLiveBrowserSession(
       if (typeof raw !== 'string' || raw.length > 200_000) throw new Error('Invalid Voice Live server frame.');
       const event = parseVoiceLiveServerEvent(JSON.parse(raw));
       if (event.type === 'ready') { receiveReady(event); return; }
+      // A claimed or rejected app socket can terminate before Voice Live returns
+      // ready. Its bounded terminal event is useful, but its epoch must never
+      // initialize the authoritative live session.
+      if (event.type === 'ended') {
+        if (sessionEpoch && event.sessionEpoch !== sessionEpoch) return;
+        fail(event.message || (event.reason === 'authentication'
+          ? 'Voice Live authorization ended before the preview became ready.'
+          : event.reason === 'provider'
+            ? 'Azure Voice Live could not become ready.'
+            : 'The voice connection ended. Your available transcript is still here to save.'));
+        return;
+      }
+      if (event.type === 'error') {
+        if (sessionEpoch && event.sessionEpoch !== sessionEpoch) return;
+        fail(event.message);
+        return;
+      }
       if (!sessionEpoch) throw new Error('Voice Live event arrived before readiness.');
       if (event.sessionEpoch !== sessionEpoch) return;
       if (event.type === 'audio') { receiveAudio(event); return; }
       if (event.type === 'interrupted') { interrupt(event.responseId); return; }
-      if (event.type === 'ended') { fail(event.message || 'The voice connection ended. Your available transcript is still here to save.'); return; }
-      if (event.type === 'error') { fail(event.message); return; }
       if (event.type === 'transcript') {
         if (event.entry.role === 'user') diagnostics.userTurnReceived();
         else if (!observeDiagnostics(() => diagnostics.generatedOutputReceived())) return;

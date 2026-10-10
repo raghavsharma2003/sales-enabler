@@ -47,7 +47,8 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
   const current = agents.find(agent => agent.id === selected);
   const [draft, setDraft] = useState<AgentConfig>(() => ({ ...initial, ...(current?.data as AgentConfig | undefined) }));
   const [baseline, setBaseline] = useState(() => JSON.stringify(draft));
-  const dirty = JSON.stringify(draft) !== baseline;
+  const needsLiveVoiceRateRepair = draft.liveVoice?.engine === 'azure-voice-live' && draft.speechDelivery?.adaptToRequests === true;
+  const dirty = JSON.stringify(draft) !== baseline || needsLiveVoiceRateRepair;
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
   const [section, setSection] = useState<Section>(current ? 'Conversation' : 'Setup');
@@ -128,9 +129,10 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
     setDraft(previous => ({ ...previous, [key]: value })); setNotice(''); setValidation(''); setInvalidField('');
   };
   const speechDeliveryChoice = draft.speechDelivery?.pace || 'workspace';
+  const voiceLiveSelected = draft.liveVoice?.engine === 'azure-voice-live';
   const chooseSpeechDelivery = (pace: 'workspace' | 'standard' | 'unhurried') => {
     if (pace === 'workspace') { set('speechDelivery', undefined); return; }
-    set('speechDelivery', { version: 1, pace, adaptToRequests: draft.speechDelivery?.adaptToRequests ?? false });
+    set('speechDelivery', { version: 1, pace, adaptToRequests: voiceLiveSelected ? false : draft.speechDelivery?.adaptToRequests ?? false });
   };
   const liveVoiceSelection: LiveVoiceSelection = draft.voiceProfile === 'maya-despina'
     ? 'maya-despina'
@@ -149,7 +151,10 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
       const liveVoice: NonNullable<AgentConfig['liveVoice']> = selection === 'azure-realtime'
         ? { version: 1, engine: 'azure-openai-realtime', preset: 'provider-default' }
         : { version: 1, engine: 'azure-voice-live', preset: selection };
-      return { ...withoutLiveVoice, voiceProfile: 'provider-default', liveVoice };
+      const speechDelivery = liveVoice.engine === 'azure-voice-live'
+        ? { ...(previous.speechDelivery || { version: 1 as const, pace: 'standard' as const }), adaptToRequests: false }
+        : previous.speechDelivery;
+      return { ...withoutLiveVoice, voiceProfile: 'provider-default', liveVoice, ...(speechDelivery ? { speechDelivery } : {}) };
     });
     setNotice(''); setValidation(''); setInvalidField('');
   };
@@ -186,13 +191,16 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
       return;
     }
     try {
-      const result = await act(current ? 'agent.update' : 'agent.create', { ...draft, ...(current ? { agentId: current.id, revision: loadedRecord.current.revision ?? current.revision } : {}) });
+      const draftForSave = needsLiveVoiceRateRepair && draft.speechDelivery
+        ? { ...draft, speechDelivery: { ...draft.speechDelivery, adaptToRequests: false } }
+        : draft;
+      const result = await act(current ? 'agent.update' : 'agent.create', { ...draftForSave, ...(current ? { agentId: current.id, revision: loadedRecord.current.revision ?? current.revision } : {}) });
       if (result && typeof result === 'object' && 'id' in result && 'data' in result) {
         const saved = result as { id: string; data: AgentConfig; revision: number };
         resetDraft({ ...initial, ...saved.data }); select(saved.id);
         loadedRecord.current = { id: saved.id, revision: saved.revision };
         navigate('agents', agentFocus(saved.id));
-      } else { setBaseline(JSON.stringify(draft)); dirtyRef.current = false; }
+      } else { setDraft(draftForSave); setBaseline(JSON.stringify(draftForSave)); dirtyRef.current = false; }
       setNotice('Draft saved. Test it here, then open Publish to review the release checks.');
     } catch { /* The platform action banner presents the server error; keep the draft. */ }
   };
@@ -296,13 +304,13 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
                 {draft.liveVoice?.engine === 'azure-voice-live' && <div className={styles.liveVoicePreview} role="status"><strong>Internal preview only</strong><p>Provider availability is checked when you explicitly start a private test call. A failed check stops that attempt; it never switches engines automatically. Saving this selection does not start a provider call or establish voice quality.</p></div>}
                 <fieldset className={styles.delivery} aria-describedby="agent-speech-delivery-help">
                   <legend>Speech delivery</legend>
-                  <p id="agent-speech-delivery-help">Choose an experimental base rate for the selected Azure live voice.</p>
+                  <p id="agent-speech-delivery-help">{voiceLiveSelected ? 'Choose the rate Voice Live requests when the call starts. It remains fixed for that call.' : 'Choose an experimental base rate for the selected Azure live voice.'}</p>
                   <div className={styles.deliveryChoices}>
                     <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'workspace'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('workspace')}/><span><strong>Workspace default</strong><small>No saved rate override</small></span></label>
                     <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'standard'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('standard')}/><span><strong>Standard</strong><small>1× rate</small></span></label>
                     <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'unhurried'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('unhurried')}/><span><strong>Unhurried</strong><small>0.9× rate</small></span></label>
                   </div>
-                  <label className={styles.deliveryAdapt}><input type="checkbox" checked={draft.speechDelivery?.adaptToRequests || false} disabled={!draft.speechDelivery || draft.voiceProfile === 'maya-despina'} onChange={event => draft.speechDelivery && set('speechDelivery', { ...draft.speechDelivery, adaptToRequests: event.target.checked })}/><span><strong>Follow explicit caller rate requests</strong><small>Recognizes direct requests to slow down or return to normal speed in English, Hindi and Hinglish. It does not infer emotion, and brief content does not make the agent speak faster.</small></span></label>
+                  <label className={styles.deliveryAdapt}><input type="checkbox" checked={!voiceLiveSelected && (draft.speechDelivery?.adaptToRequests || false)} disabled={!draft.speechDelivery || draft.voiceProfile === 'maya-despina' || voiceLiveSelected} onChange={event => draft.speechDelivery && set('speechDelivery', { ...draft.speechDelivery, adaptToRequests: event.target.checked })}/><span><strong>{voiceLiveSelected ? 'Caller rate changes unavailable in Voice Live' : 'Follow explicit caller rate requests'}</strong><small>{voiceLiveSelected ? 'Diya and Arjun keep the selected base rate from call start to end. Any older dynamic setting is turned off when this draft is saved.' : 'Recognizes direct requests to slow down or return to normal speed in English, Hindi and Hinglish. It does not infer emotion, and brief content does not make the agent speak faster.'}</small></span></label>
                   <p className={styles.deliveryFootnote}>These rates are experimental and do not guarantee perceived warmth or naturalness. <button type="button" onClick={() => navigate('Quality')}>Review saved audio in Quality</button>.</p>
                 </fieldset>
                 {draft.voiceProfile === 'maya-despina' && <div className={styles.deliveryUnsupported} role={draft.speechDelivery ? 'alert' : 'status'}>

@@ -41,7 +41,7 @@ type LiveVoiceProfile = {
 };
 ```
 
-Validation allows Taxila presets only with `azure-voice-live`. Legacy versions without the field remain Azure OpenAI Realtime. Freeze this object into agent versions, releases, call authority and proof manifests. Map the presets server-side to the two exact voice names and `type: "azure-standard"`; never accept an arbitrary voice string. Omit HD `temperature` initially. Map the existing speech-delivery decision from numeric `1 | 0.9` to Voice Live's string `voice.rate` only between responses. An exact provider ACK proves configuration acceptance, not heard rate or voice quality.
+Validation allows Taxila presets only with `azure-voice-live`. Legacy versions without the field remain Azure OpenAI Realtime. Freeze this object into agent versions, releases, call authority and proof manifests. Map the presets server-side to the two exact voice names and `type: "azure-standard"`; never accept an arbitrary voice string. Omit HD `temperature` initially. Map the configured initial speech-delivery decision from numeric `1 | 0.9` to Voice Live's string `voice.rate` at session setup. A bounded sequential configuration check on October 10 observed that a later 0.9 update retained the initial string `"1"`; therefore Voice Live does not currently support this product's between-turn acoustic-rate adaptation. Keep `adaptToRequests` unavailable for this engine rather than weakening the ACK, restarting, or claiming a content-only adjustment changed the sound. An exact provider ACK proves configuration acceptance, not heard rate or voice quality.
 
 ## Live session and transport
 

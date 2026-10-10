@@ -70,6 +70,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   const [compiling, setCompiling] = useState(false);
   const [callContext, setCallContext] = useState<ContextPreview | null>(null);
   const [callDraftSnapshot, setCallDraftSnapshot] = useState("");
+  const [callVoice, setCallVoice] = useState<Pick<VoiceConfiguration, 'provider' | 'label' | 'engine'> | null>(null);
   const connection = useRef<BrowserVoiceSession | null>(null);
   const startGate = useRef(createVoiceStartGate());
   const transcriptRef = useRef<TranscriptEntry[]>([]);
@@ -103,7 +104,10 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   const runtimeSettings = callDraftSnapshot ? JSON.parse(callDraftSnapshot) as AgentConfig : preview?.draft;
   const relationalRuntime = useMemo(() => compileRelationalRuntime({ entries: transcript, relationship: callBehaviorContext?.relationship || displayedContext?.relationship, settings: callBehaviorContext?.settings || runtimeSettings, callId: sessionKey.current || "current-call" }), [transcript, displayedContext?.relationship, callDraftSnapshot, preview?.draft, callBehaviorContext]);
   const displayedSpeechDelivery = state === "idle" ? voiceProfile === "provider-default" ? preview?.draft.speechDelivery : undefined : state === "connecting" ? undefined : callBehaviorContext?.speechDelivery || runtimeSettings?.speechDelivery;
-  const speechDeliveryDecision = useMemo(() => displayedSpeechDelivery ? resolveSpeechDelivery(displayedSpeechDelivery, transcript) : undefined, [displayedSpeechDelivery, transcript]);
+  const fixedCallPace = (callVoice || config)?.engine === 'azure-voice-live';
+  const speechDeliveryDecision = useMemo(() => displayedSpeechDelivery ? resolveSpeechDelivery(displayedSpeechDelivery, fixedCallPace ? [] : transcript) : undefined, [displayedSpeechDelivery, transcript, fixedCallPace]);
+  const displayedVoice = callVoice || config;
+  const displayedLanguage = callVoice ? callBehaviorContext?.settings.primaryLanguage || runtimeSettings?.primaryLanguage || "Per release" : preview?.draft.primaryLanguage || "Per release";
 
   useEffect(() => { if (live) return;
     const abort = new AbortController();
@@ -172,6 +176,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   async function start() {
     if (!config?.configured || !config.provider || (!preview && !release) || (preview && !previewIsReady) || (campaignRunId && (preview || !campaignContactReady)) || !consent || live || unsaved) return;
     sessionProvider.current = config.provider;
+    setCallVoice({ provider: config.provider, label: config.label, engine: config.engine });
     const attempt = startGate.current.begin();
     const useContinuousSpeech = continuousSpeech && inputMode === "microphone" && config.provider === "azure" && !!config.continuousSpeech?.configured;
     connection.current?.close();
@@ -185,6 +190,8 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     setCallBehaviorContext(null); sessionConnectionId.current = null;
     behaviorSent.current = "";
     const draftSnapshot = preview ? { ...preview.draft, allowedLanguages: [...preview.draft.allowedLanguages], knowledgeIds: [...preview.draft.knowledgeIds] } : undefined;
+    setCallDraftSnapshot(draftSnapshot ? JSON.stringify(draftSnapshot) : "");
+    setCallContext(null);
     if (draftSnapshot) {
       try {
         const response = await attempt.currentResult(fetch("/api/voice/preview", { method: "POST", headers: { "Content-Type": "application/json" }, signal: attempt.signal, body: JSON.stringify({ draft: draftSnapshot, agentId: preview?.agentId, contactId: selectedContact || undefined }) }));
@@ -192,7 +199,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
         const result = await attempt.currentResult(response.json() as Promise<ContextPreview>);
         if (!result) return;
         if (!response.ok) throw new Error(result.error || "This draft could not be prepared for a call.");
-        preparedContext = result; setCallContext(result); setCallDraftSnapshot(JSON.stringify(draftSnapshot));
+        preparedContext = result; setCallContext(result);
       } catch (cause) { if (attempt.isCurrent()) { setState("ended"); setContinuousSpeechStatus(useContinuousSpeech ? { state: "ended" } : null); setError(cause instanceof Error ? cause.message : "This draft could not be prepared for a call."); } return; }
     }
     if (!attempt.isCurrent()) return;
@@ -268,7 +275,8 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   return <section className="voice-studio wb-studio" aria-label={preview ? "Draft call tester" : "Browser voice studio"}>
     <div className="wb-call-head"><div><h2>{preview ? "Test call" : "Browser call"}</h2><p>{preview ? "Your current editor values are used when the call starts." : "Speak with an active browser release."}</p></div><span className="wb-state" data-state={state} role="status"><span className="wb-state-dot"/>{state === "live" ? muted ? "Muted" : "Live" : state === "connecting" ? "Connecting" : state === "ended" ? "Ended" : "Ready"}</span></div>
     {preview && <div className="wb-draft-strip"><Check size={15}/><span>Internal draft test · current editor values, including enabled actions, are used when the call starts</span></div>}
-    <div className="wb-call-body"><div className="wb-provider"><span>Voice provider</span><strong>{config?.label || config?.provider || (config || configError ? "Not connected" : "Checking…")}</strong></div><div className="wb-provider"><span>Language</span><strong>{preview?.draft.primaryLanguage || callBehaviorContext?.settings.primaryLanguage || "Per release"}</strong></div>{speechDeliveryDecision && <div className="wb-provider"><span>Requested speech rate</span><strong>{speechDeliveryDecision.pace === "unhurried" ? "Unhurried · 0.9×" : "Standard · 1×"}{speechDeliveryDecision.basis === "caller_request" ? " · caller request" : " · agent setting"}</strong><span>Applies between turns; this is not evidence of heard output.</span></div>}</div>
+    <div className="wb-call-body"><div className="wb-provider"><span>{callVoice ? "Call voice" : "Selected voice"}</span><strong>{displayedVoice?.label || displayedVoice?.provider || (config || configError ? "Not connected" : "Checking…")}</strong></div><div className="wb-provider"><span>Language</span><strong>{displayedLanguage}</strong></div>{speechDeliveryDecision && <div className="wb-provider"><span>{fixedCallPace ? "Initial speech rate" : "Requested speech rate"}</span><strong>{speechDeliveryDecision.pace === "unhurried" ? "Unhurried · 0.9×" : "Standard · 1×"}{speechDeliveryDecision.basis === "caller_request" ? " · caller request" : " · agent setting"}</strong><span>{fixedCallPace ? "Fixed for this call. Start another call to use a different rate." : "Applies between turns; this is not evidence of heard output."}</span></div>}</div>
+    {draftChangedAfterCall && <p className="wb-inline-note">The editor has changed. This call keeps the voice, language and context selected when it started; your changes apply to the next call.</p>}
     {!preview && <label className="pc-field">Released agent<select className="pc-select" value={release?.id || ""} disabled={!!campaignRunId || live || unsaved || saving} onChange={event => setSelectedRelease(event.target.value)}>{releases.length !== 1 && <option value="">Choose an active release</option>}{releases.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
     <label className="pc-field">{campaignRunId ? 'Queued campaign recipient' : 'Conversation context'}<select className="pc-select" value={selectedContact} disabled={lockContactSelection || live || unsaved || saving} onChange={event => setSelectedContact(event.target.value)}>{!campaignRunId && <option value="">Company knowledge only</option>}{campaignRunId && <option value="">Choose a queued recipient</option>}{contacts.map(contact => <option value={contact.id} key={contact.id}>{contact.name}</option>)}</select></label>
     {lockContactSelection && !controlledContactPending && !controlledContact && <p className="wb-inline-note">Select a queued recipient above to prepare the call desk.</p>}

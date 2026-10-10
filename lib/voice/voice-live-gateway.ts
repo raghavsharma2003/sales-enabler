@@ -10,6 +10,7 @@ import { compileRelationalRuntime } from './relational-runtime';
 import { resolveSpeechDelivery } from './speech-delivery';
 import { isVoiceToolName } from './tools/contracts';
 import type { TranscriptEntry } from './contracts';
+import { voiceLivePhaseInstructions, type VoiceLiveConversationPhase } from './voice-live-prompt';
 
 export type VoiceLiveGatewayReason = 'ended' | 'protocol' | 'provider' | 'authentication' | 'expired' | 'backpressure' | 'input_limit' | 'output_limit' | 'session_update_timeout' | 'cancellation_timeout' | 'tool_failed';
 /** Projection of a claimed, immutable private-call authority. Never browser input. */
@@ -63,7 +64,10 @@ export function createVoiceLiveGatewaySession(options: VoiceLiveGatewayOptions) 
   let deadlineTimer: ReturnType<typeof setTimeout> | undefined, recheckTimer: ReturnType<typeof setTimeout> | undefined;
   let inputBytes = 0, outputBytes = 0, responseCount = 0, toolCount = 0, controlGeneration = 0;
   let frameTokens = 25, frameRefillAt = now();
-  let delivery = resolveSpeechDelivery(authority.behaviorContext.speechDelivery, entries);
+  // This Voice Live path has not accepted mid-session rate changes. Freeze the
+  // initial selection even for historical configurations that enabled adaptation.
+  const delivery = resolveSpeechDelivery(authority.behaviorContext.speechDelivery, []);
+  let phase: VoiceLiveConversationPhase = 'continuation';
   const itemKey = (id: string, contentIndex: number) => `${id}:${contentIndex}`;
   // Provider response.done does not mean the browser finished playing its PCM.
   // Keep the existing single-response playback ledger valid across tool replies.
@@ -134,7 +138,8 @@ export function createVoiceLiveGatewaySession(options: VoiceLiveGatewayOptions) 
     if (candidate.initial) {
       ready = true;
       emit({ type: 'ready', metadata: { ...(authority.previewId ? { previewId: authority.previewId } : {}), ...(authority.connectionId ? { connectionId: authority.connectionId } : {}),
-        enabledTools: authority.enabledTools, behaviorContext: authority.behaviorContext } });
+        enabledTools: authority.enabledTools, behaviorContext: { ...authority.behaviorContext,
+          ...(authority.behaviorContext.speechDelivery ? { speechDelivery: { ...authority.behaviorContext.speechDelivery, adaptToRequests: false } } : {}) } } });
       if (!closed) adapter.openingEvents(authority.openingMessage).forEach(event => scheduler.opening(event as object));
     } else scheduler.receive({ type: 'session.updated', session: { type: 'realtime', instructions: candidate.envelope.session.instructions,
       audio: { output: { speed: Number(candidate.envelope.session.voice.rate) } } } });
@@ -179,7 +184,7 @@ export function createVoiceLiveGatewaySession(options: VoiceLiveGatewayOptions) 
     clearTimeout(pending.timer); interruption = undefined; flushUpdate(); scheduler.resume();
   }
   const scheduler = createPrivateTurnScheduler({
-    instructions: () => authority.instructions,
+    instructions: () => voiceLivePhaseInstructions(authority.instructions, phase),
     speechDelivery: () => delivery,
     canReply: () => !blocked(),
     send(raw) {
@@ -202,7 +207,7 @@ export function createVoiceLiveGatewaySession(options: VoiceLiveGatewayOptions) 
     },
     onUserTurn(turn) {
       if (closed || !remember({ ...turn, role: 'user' })) return;
-      delivery = resolveSpeechDelivery(authority.behaviorContext.speechDelivery, entries);
+      phase = 'continuation';
       scheduler.updateBehavior(compileRelationalRuntime({ entries, ...authority.behaviorContext, callId: authority.sessionEpoch }).instructions);
       emit({ type: 'item', id: turn.id }); emit({ type: 'transcript', entry: { ...turn, role: 'user' } });
     },
@@ -230,7 +235,13 @@ export function createVoiceLiveGatewaySession(options: VoiceLiveGatewayOptions) 
         emit({ type: 'tool', phase: 'result', id: call.id, name: call.name, status: result.status, message: result.message.slice(0, 2000), ...(result.actionId ? { actionId: result.actionId } : {}) });
       }
     } catch { if (!closed && !abort.signal.aborted) close('tool_failed'); }
-    finally { jobs.delete(abort); if (!closed) scheduler.toolsDone(generation); }
+    finally {
+      jobs.delete(abort);
+      if (!closed) {
+        if (!abort.signal.aborted && capturedGeneration === controlGeneration) phase = 'tool_continuation';
+        scheduler.toolsDone(generation);
+      }
+    }
   }
   function audioItem(response: ResponseState, id: string, contentIndex: number) {
     const key = itemKey(id, contentIndex);
@@ -386,7 +397,8 @@ export function createVoiceLiveGatewaySession(options: VoiceLiveGatewayOptions) 
     deadlineTimer = setTimeout(() => close('expired'), Math.min(600000, remaining));
     try { await bounded(options.assertActive(), 1000); } catch { close('authentication'); return; }
     if (closed) return;
-    beginUpdate(`${authority.instructions}\n<voice_live_initial_revision>1</voice_live_initial_revision>`, true);
+    try { beginUpdate(`${voiceLivePhaseInstructions(authority.instructions, 'opening')}\n<voice_live_initial_revision>1</voice_live_initial_revision>`, true); }
+    catch { close('protocol'); }
     if (!closed) recheckTimer = setTimeout(() => void recheck(), 1000);
   }
   return { start, providerEvent, clientEvent, pcmFrame, close };
