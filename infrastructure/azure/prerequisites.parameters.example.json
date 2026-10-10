@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "namePrefix": { "value": "sales-enabler-beta" },
+    "location": { "value": "eastus2" },
+    "registryName": { "value": "REPLACE_WITH_APPROVED_SHARED_ACR_NAME" },
+    "logAnalyticsWorkspaceName": { "value": "REPLACE_WITH_APPROVED_SHARED_LOG_WORKSPACE_NAME" },
+    "keyVaultName": { "value": "REPLACE_WITH_GLOBALLY_UNIQUE_VAULT_NAME" },
+    "postgresServerName": { "value": "REPLACE_WITH_GLOBALLY_UNIQUE_POSTGRES_NAME" },
+    "postgresAdministratorLogin": { "value": "REPLACE_WITH_PRIVATE_ADMIN_LOGIN" },
+    "postgresDatabaseName": { "value": "sales_enabler" },
+    "postgresVersion": { "value": "16" },
+    "postgresSkuName": { "value": "Standard_B1ms" },
+    "postgresStorageGiB": { "value": 32 },
+    "postgresBackupRetentionDays": { "value": 7 },
+    "virtualNetworkAddressPrefix": { "value": "10.42.0.0/16" },
+    "containerAppsSubnetPrefix": { "value": "10.42.0.0/27" },
+    "postgresSubnetPrefix": { "value": "10.42.1.0/28" },
+    "postgresPrivateDnsZoneName": { "value": "sales-enabler.postgres.database.azure.com" },
+    "monthlyBudgetUsd": { "value": 150 },
+    "budgetStartDate": { "value": "2026-10-01T00:00:00Z" },
+    "budgetContactEmails": { "value": ["REPLACE_WITH_OPERATOR_BILLING_EMAIL"] }
+  }
+}

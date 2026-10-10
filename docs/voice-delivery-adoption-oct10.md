@@ -1,44 +1,62 @@
 # Voice delivery source adoption — 10 October 2026
 
+Status: source audit plus implementation reconciliation. The source findings
+and original recommendation below informed the bounded implementation at
+`cbe5f49dc915da0b93fd3ed2083eb5d9873188db`. Where the original proposal is
+stricter than the committed contract, it is labeled as a future hardening idea
+rather than current behavior.
+
 ## Decision
 
-Adopt one small, Azure-only, versioned speech-delivery profile for **acoustic
-speaking speed**. Keep the existing relational compiler responsible for content,
-language choice, brevity and conversational repair. A prompt that says “speak
-slowly” is not acoustic control; an acknowledged provider `speed` value is. Do
-not port the broader EmotionalOS vibe model, Chatterbox style dials, companion
-identity, inferred mood or Mirror training purpose.
+The adopted increment is one small, Azure-only, versioned speech-delivery
+profile for requested acoustic speaking speed. The existing relational compiler
+remains responsible for content, language choice, brevity and conversational
+repair. A prompt that says “speak slowly” is not structured acoustic control;
+an exactly acknowledged provider `speed` value establishes only that Azure
+accepted the requested setting, not that a listener perceived the intended
+pace. The broader EmotionalOS vibe model, Chatterbox style dials, companion
+identity, inferred mood and Mirror training purpose were not ported.
 
-The smallest honest profile is:
+### Implemented contract at `cbe5f49`
+
+`lib/voice/speech-delivery.ts` implements this exact public shape:
 
 ```ts
-type SpeechDeliveryProfileV1 = {
+type SpeechDeliveryProfile = {
   version: 1;
   pace: 'standard' | 'unhurried';
-  adaptToExplicitRequests: boolean;
+  adaptToRequests: boolean;
 };
 
-type SpeechDeliveryDecisionV1 = {
-  version: 1;
-  pace: 'standard' | 'unhurried';
+type SpeechDeliveryDecision = {
   speed: 1 | 0.9;
+  pace: 'standard' | 'unhurried';
   basis: 'agent_default' | 'caller_request';
-  cue?: {
-    turnId: string;
-    textSha256: string;
-    startUtf16: number;
-    endUtf16: number;
-    ruleId: 'direct_slower_request_v1' | 'direct_standard_request_v1';
-  };
+  sourceTurnId?: string;
 };
 ```
 
-`0.9` is a conservative authored starting value, not a calibrated “human” or
-“calm” rate. Only a direct request such as “please speak more slowly”, “explain
-this slowly”, or “normal speed, please” changes it. Concern, confusion,
+`docs/speech-delivery-contract-oct10.md` is the canonical behavioral contract
+for these fields and the finite request grammar.
+
+All profile fields are required when the object is present; unknown keys,
+versions and coerced values are rejected. Absence remains absence so historical
+snapshots and hashes do not gain a new field. `0.9` is a conservative authored
+condition, not a calibrated “human” or “calm” rate. With `adaptToRequests`
+enabled, the finite anchored grammar recognizes direct slow/normal requests in
+English, Hindi and Hinglish, including the bounded “explain the next step
+slowly, one point at a time” proof form. Concern, confusion, the self-report
 “overwhelmed”, response length, language choice, a relationship cue and a model
-guess must not change acoustic speed. The decision replays over ordered,
+guess do not independently change speed. The decision replays over ordered,
 committed final user turns; replacement/deletion of a turn removes its effect.
+
+### Original proposal that was not implemented
+
+The first audit sketch called the setting `adaptToExplicitRequests` and proposed
+a versioned decision carrying cue text SHA-256, UTF-16 span and rule ID. The
+implementation instead uses `adaptToRequests` and records only `sourceTurnId`
+on a caller-request decision. Those hash/span/rule fields remain a possible
+future provenance hardening, not evidence currently stored by the runtime.
 
 For the present Azure OpenAI Realtime GA route, emit the decision as
 `session.audio.output.speed`. Microsoft documents `speed` as a numeric output
@@ -151,41 +169,52 @@ audio artifact hashes, a manifest, and a human review bound to both output hash
 and manifest digest (`lib/evaluations/audio-schema.ts:20-46,90-170` and
 `lib/evaluations/audio-service.ts:200-255`).
 
-A parallel uncommitted draft observed during this read-only audit adds
-`SpeechDeliveryProfile`, exact `audio.output.speed` matching in the scheduler,
-and delivery data to the audio-proof manifest. Treat it as a candidate until it
-is reviewed, tested and committed. Its useful choices are a strict v1 schema,
-an absent-field compatibility path, Azure-only rejection for the profile, and
-waiting for an echoed speed before `response.create`.
+Commit `cbe5f49dc915da0b93fd3ed2083eb5d9873188db` implements the bounded
+contract. `AgentConfig` accepts the strict profile only for the Azure
+`provider-default` voice; old versions without it remain unchanged. Private and
+public voice paths resolve speed from committed final caller turns. Their
+schedulers include speed in the same pending snapshot as instructions and wait
+for an exact `session.updated` echo of `session.type`, the complete instructions
+and numeric speed before releasing `response.create`. The Voice Proof Run
+records configured profile, initial/final decisions and initial/final provider
+acknowledgement booleans in its versioned manifest.
 
-## Provider acknowledgement and evidence pairing
+## Implemented provider acknowledgement and evidence pairing
 
-One exact gate should own instructions and speed together:
+The committed exact gate owns instructions and speed together:
 
-1. Resolve the profile from the immutable agent version and the delivery
+1. It resolves the profile from the immutable agent version and the delivery
    decision from committed final user turns.
-2. When no profile exists, omit `speed` so historical wire behavior and config
-   hashes stay unchanged.
-3. When it exists, send one `session.update` between responses containing
+2. When no profile exists, it omits `speed` so historical wire behavior and
+   config hashes stay unchanged.
+3. When a profile exists, it sends one `session.update` between responses containing
    `session.type === "realtime"`, the exact revision-tagged instructions and
    `audio.output.speed`.
-4. Accept only a `session.updated` whose session type, complete instruction
+4. It accepts only a `session.updated` whose session type, complete instruction
    string and numeric speed equal the pending snapshot. A stale, partial or
    mismatched acknowledgement must not release `response.create`; retain the
    existing bounded timeout and fail closed.
-5. Record a versioned decision with cue turn ID, cue text hash and exact span.
-   Record the requested session digest and the acknowledged tuple
-   `{type, instructionsDigest, speed}` rather than a bare boolean.
-6. Pair that tuple with agent-version/config digest, provider/model/voice
-   references, output artifact SHA-256 and duration, manifest digest and the
-   human pacing verdict. A provider echo proves configuration acceptance; the
-   artifact and human review are the evidence for perceived delivery.
+5. It records the implemented decision, including `sourceTurnId` when a caller
+   request owns it. The proof manifest stores `runtimeVersion`, a
+   `sessionBaseDigest`, configured profile, initial/final decisions and boolean
+   initial/final exact-ACK results.
+6. It pairs the manifest with agent-version/config digest, provider/model/voice
+   references, output artifact SHA-256 and duration. A listening review binds
+   the exact output artifact hash and manifest digest. A provider echo proves
+   configuration acceptance; the artifact and human review are the evidence
+   boundary for perceived delivery.
 
-Completion of a speed-aware audio proof should require both initial and final
-exact acknowledgements when a profile is configured. A complete audio response
-without the requested speed acknowledgement is a failed protocol run, not a
-pacing pass. Historical runner-v1 manifests remain readable and make no speed
-claim.
+The committed proof runner requires both initial and final exact
+acknowledgements when a profile is configured before it can request and finish
+the response. A run without the requested speed acknowledgement cannot become
+a pacing pass. Historical runner-v1 manifests remain readable and make no
+speed claim.
+
+The earlier recommendation to persist cue text digest/span and requested versus
+acknowledged session-tuple digests was not implemented. The committed manifest
+uses `sourceTurnId`, `sessionBaseDigest`, the existing session/manifest digests
+and exact-ACK booleans. Do not describe the stronger proposed fields as current
+evidence.
 
 ## Unsafe assumptions to close
 
@@ -193,51 +222,51 @@ claim.
   English, Hindi or Hinglish. It may be inaudible or may reduce naturalness.
 - A `session.updated` echo proves accepted configuration, not actual acoustic
   effect. Do not infer words per minute or listener perception from it.
-- The built-in proof sentence says “explain the next step slowly”; a grammar
-  limited to “speak/talk/read slowly” misses that explicit cue and can silently
-  leave speed at `1` while the rubric expects unhurried delivery.
+- The committed grammar includes one anchored allowance for the built-in
+  “explain the next step slowly” proof sentence. It is intentionally narrow and
+  must not be described as general pacing-intent understanding.
 - Existing relational “overwhelmed” and “confused” cues are appropriate for
   simpler content, but are unsafe acoustic triggers. Slowing a caller based on
   inferred state can feel patronizing and is not an explicit request.
 - The provider permits speed changes only between model turns. Speculative
   instruction ACK work must never change speed while a response is active.
-- Exact ACK matching must include `session.type`; matching only instructions
-  and speed accepts an incomplete or wrong session shape.
+- The committed exact gate checks `session.type`, complete instructions and
+  speed together. This closes the draft mismatch noted during the initial
+  audit, but still proves configuration acknowledgement rather than perception.
 - Source Chatterbox fields, Voice Live `voice.rate`, Speech SSML rate and Azure
   OpenAI Realtime `audio.output.speed` are four different adapter contracts.
 - Language selection does not prove pronunciation quality. A multilingual
   voice, real Hindi/Hinglish artifacts and listeners are still required.
-- Persisting only `sourceTurnId` loses the exact cue after transcript revision.
-  Store a digest and span, while keeping raw customer text out of generic
-  diagnostics.
+- The implemented `sourceTurnId` does not persist the proposed cue digest/span.
+  Adding those fields remains optional future hardening and would need to keep
+  raw customer text out of generic diagnostics.
 
-## Required tests before adoption
+## Implemented verification and remaining evaluation
 
-1. Profile parser: exact keys/version/enums, unknown-key refusal, `0.9`/`1`
-   mapping, `maya-despina` and non-Azure rejection, and absent-profile byte/wire
-   compatibility for old agent snapshots.
-2. Cue replay: direct slower/normal requests in English, Hindi and Hinglish;
-   “explain slowly”; last explicit request wins; same-ID revision replaces the
-   prior value; deletion removes it; assistant, interim and sidecar text cannot
-   change it.
-3. Adversarial cues: quotation, negation, hypothetical, third-party report,
-   prompt-injection text, “slow internet”, “normal price”, long input and
-   ambiguous “take your time” all leave acoustic speed unchanged.
-4. Scheduler ordering: exact type+instructions+speed ACK releases once; absent,
-   stale, reordered, defaulted or mismatched speed never releases; newer speech
-   invalidates an old ACK; active response/tool work blocks updates; timeout and
-   provider error fail closed.
-5. Initial session: configured speed is acknowledged before audio proof input;
-   unconfigured sessions omit speed; no automatic provider fallback occurs.
-6. Evidence: decision cue hash/span, requested and acknowledged session digests,
-   agent version, artifact SHA and review manifest digest all match; tampering
-   any member fails review; runner-v1 history remains readable without being
-   upgraded into speed evidence.
-7. Perceptual calibration: paired `1.0` and `0.9` artifacts using the exact same
-   text, voice and model in English, Hindi and Hinglish; blinded human pacing,
-   intelligibility and naturalness verdicts; no claim from synthetic duration
-   alone.
+Committed offline tests cover strict profile values/errors, absent-profile
+serialization/hash compatibility, Azure/Maya capability separation, both
+rates, opt-in adaptation, anchored English/Hindi/Hinglish requests, normal
+reset and persistence, contextual guards, same-ID revision/deletion, and pure
+replay from final user turns. Runtime tests cover exact
+type+instructions+speed acknowledgement, stale/mismatched ordering, active
+response guards and provider failure paths. Historical runner-v1 evidence stays
+readable without becoming speed evidence.
 
-This is enough to turn one explicit pacing preference into a provider-configured,
-reviewable acoustic setting. Language pronunciation and broader expressive
-style remain separate evaluation projects.
+The implemented paired comparison holds caller fixture/input, prompt, agent
+configuration basis, model, Azure resource, voice and known runtime constant;
+only delivery profile/speed differs. Realtime generation produced different
+assistant wording across the `1.0` and `0.9` runs. That is expected: these are
+matched caller-input generative outputs, not two syntheses of identical spoken
+output text. Duration differences therefore cannot establish pace, and an
+equal-output-text requirement is not part of the implemented gate.
+
+Remaining evaluation is human review of the concealed pair for pace fit,
+intelligibility, naturalness and critical-content preservation. Hindi and
+Hinglish need their own matched evidence before any language-quality claim. No
+profile should be selected, published or described as preferred from provider
+ACKs, durations or synthetic timing alone.
+
+The implementation turns one explicit pacing preference into a bounded,
+provider-acknowledged speed request with reviewable artifacts. It does not yet
+establish a preferred speed or perceived acoustic improvement. Language
+pronunciation and broader expressive style remain separate evaluation projects.

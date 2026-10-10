@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "registryName": { "value": "REPLACE_WITH_APPROVED_SHARED_ACR_NAME" },
+    "keyVaultName": { "value": "REPLACE_WITH_PROJECT_VAULT_NAME" },
+    "runtimeIdentityName": { "value": "REPLACE_WITH_PROJECT_RUNTIME_IDENTITY_NAME" },
+    "deployerPrincipalId": { "value": "REPLACE_WITH_DEPLOYER_OBJECT_ID" },
+    "postgresServerName": { "value": "REPLACE_WITH_PROJECT_POSTGRES_NAME" },
+    "enableDeleteLocks": { "value": true }
+  }
+}

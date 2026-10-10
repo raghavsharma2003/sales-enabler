@@ -29,6 +29,35 @@ param azureEndpoint string = ''
 param azureKeySecretUri string = ''
 param azureTextDeployment string = ''
 param azureRealtimeDeployment string = ''
+@description('Comma-separated organization IDs explicitly activated by the platform operator. Empty means hosted inference is denied.')
+param inferenceAllowedOrganizationIds string = ''
+@minValue(1000)
+@maxValue(1000000)
+param aiDailyOrgTokenBudget int = 50000
+@minValue(1)
+@maxValue(500)
+param voiceDailyOrgAttemptBudget int = 20
+@minValue(60)
+@maxValue(36000)
+param voiceDailyOrgSecondsBudget int = 3600
+@minValue(1)
+@maxValue(3)
+param voiceMaxLivePerUser int = 1
+@minValue(1)
+@maxValue(5)
+param voiceMaxLivePerOrg int = 2
+@description('Per-process PostgreSQL pool cap. Four keeps web, gateway, supervisor and one probe below the B1ms connection budget.')
+@minValue(1)
+@maxValue(4)
+param databasePoolMax int = 4
+@description('Optional verified per-million deployment pricing map used only for operator cost estimates.')
+param azureDeploymentPricesJson string = ''
+@description('Enables hosted private recognition through the same WSS gateway. Uses the existing approved Speech resource.')
+param speechEnabled bool = false
+param azureSpeechKeySecretUri string = ''
+param azureSpeechRegion string = ''
+@description('Published private recognition URL wss://YOUR-GATEWAY-HOST/private-speech.')
+param continuousSpeechGatewayUrl string = ''
 @description('Explicit approval required before setting true: the worker may execute enabled schedules.')
 param enableWorker bool = false
 param workerImage string = ''
@@ -43,12 +72,20 @@ param voiceGatewayImage string = ''
 @description('Published gateway URL wss://YOUR-GATEWAY-HOST/voice. Origins remain deployment-allowlisted in the application.')
 param publicVoiceGatewayUrl string = ''
 param publicSessionHashSecretUri string = ''
+@description('Durable private-call deadline and revocation supervisor. Must stay at one replica whenever private Azure calls are admitted.')
+param enableVoiceSupervisor bool = false
+param voiceSupervisorImage string = ''
+@allowed([0, 1])
+param webMinReplicas int = 0
+@allowed([0, 1])
+param voiceGatewayMinReplicas int = 0
 
 var secrets = concat([
   { name: 'database-url', keyVaultUrl: databaseSecretUri, identity: identityId }
   { name: 'connector-key', keyVaultUrl: connectorKeySecretUri, identity: identityId }
   { name: 'auth-lifecycle-key', keyVaultUrl: authLifecycleKeySecretUri, identity: identityId }
 ], azureEnabled ? [{ name: 'azure-api-key', keyVaultUrl: azureKeySecretUri, identity: identityId }] : [],
+speechEnabled ? [{ name: 'azure-speech-key', keyVaultUrl: azureSpeechKeySecretUri, identity: identityId }] : [],
 accountEmailEnabled ? [{ name: 'account-email-key', keyVaultUrl: accountEmailKeySecretUri, identity: identityId }] : [],
 !empty(publicSessionHashSecretUri) ? [{ name: 'public-session-key', keyVaultUrl: publicSessionHashSecretUri, identity: identityId }] : [])
 
@@ -61,13 +98,28 @@ var appEnvironment = concat([
   { name: 'AUTH_REQUIRE_EMAIL_VERIFICATION', value: string(requireEmailVerification) }
   { name: 'LEARNING_WORKER_ENABLED', value: enableLearningWorker ? '1' : '0' }
   { name: 'ALLOW_SQLITE_PRODUCTION', value: '0' }
+  { name: 'DATABASE_POOL_MAX', value: string(databasePoolMax) }
   { name: 'VOICE_PROVIDER', value: azureEnabled ? 'azure' : 'none' }
+  { name: 'VOICE_TRANSPORT', value: 'webrtc' }
   { name: 'PUBLIC_VOICE_GATEWAY_URL', value: publicVoiceGatewayUrl }
+  { name: 'CONTINUOUS_SPEECH_GATEWAY_URL', value: continuousSpeechGatewayUrl }
+  { name: 'CONTINUOUS_SPEECH_ALLOW_LOCAL_WS', value: 'false' }
+  { name: 'INFERENCE_ALLOWED_ORGANIZATION_IDS', value: inferenceAllowedOrganizationIds }
+  { name: 'INFERENCE_ALLOW_LOCAL', value: 'false' }
+  { name: 'AI_DAILY_ORG_TOKEN_BUDGET', value: string(aiDailyOrgTokenBudget) }
+  { name: 'VOICE_DAILY_ORG_ATTEMPT_BUDGET', value: string(voiceDailyOrgAttemptBudget) }
+  { name: 'VOICE_DAILY_ORG_SECONDS_BUDGET', value: string(voiceDailyOrgSecondsBudget) }
+  { name: 'VOICE_MAX_LIVE_PER_USER', value: string(voiceMaxLivePerUser) }
+  { name: 'VOICE_MAX_LIVE_PER_ORG', value: string(voiceMaxLivePerOrg) }
+  { name: 'AZURE_OPENAI_DEPLOYMENT_PRICES_JSON', value: azureDeploymentPricesJson }
 ], azureEnabled ? [
   { name: 'AZURE_OPENAI_ENDPOINT', value: azureEndpoint }
   { name: 'AZURE_OPENAI_API_KEY', secretRef: 'azure-api-key' }
   { name: 'AZURE_OPENAI_TEXT_DEPLOYMENT', value: azureTextDeployment }
   { name: 'AZURE_OPENAI_REALTIME_DEPLOYMENT', value: azureRealtimeDeployment }
+] : [], speechEnabled ? [
+  { name: 'AZURE_SPEECH_KEY', secretRef: 'azure-speech-key' }
+  { name: 'AZURE_SPEECH_REGION', value: azureSpeechRegion }
 ] : [], accountEmailEnabled ? [
   { name: 'AZURE_COMMUNICATION_EMAIL_ENDPOINT', value: accountEmailEndpoint }
   { name: 'AZURE_COMMUNICATION_EMAIL_ACCESS_KEY', secretRef: 'account-email-key' }
@@ -99,8 +151,8 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
           { type: 'Readiness', httpGet: { path: '/api/health?ready=1', port: 3000 }, periodSeconds: 15, timeoutSeconds: 10, failureThreshold: 3 }
         ]
       }]
-      // One web replica until shared auth limiting and PostgreSQL load tests pass.
-      scale: { minReplicas: 1, maxReplicas: 1 }
+      // HTTP ingress wakes the private beta; one replica is the hard scale boundary.
+      scale: { minReplicas: webMinReplicas, maxReplicas: 1 }
     }
   }
 }
@@ -130,6 +182,34 @@ resource worker 'Microsoft.App/containerApps@2025-01-01' = if (enableWorker) {
     }
   }
 }
+
+resource voiceSupervisor 'Microsoft.App/containerApps@2025-01-01' = if (enableVoiceSupervisor) {
+  name: '${appName}-voice-supervisor'
+  location: location
+  identity: { type: 'UserAssigned', userAssignedIdentities: { '${identityId}': {} } }
+  properties: {
+    managedEnvironmentId: environmentId
+    configuration: {
+      activeRevisionsMode: 'Single'
+      registries: [{ server: registryServer, identity: identityId }]
+      secrets: secrets
+      // No ingress. Private-call admission requires its fresh durable database heartbeat.
+    }
+    template: {
+      terminationGracePeriodSeconds: 90
+      containers: [{
+        name: 'voice-supervisor'
+        image: voiceSupervisorImage
+        resources: { cpu: json('0.25'), memory: '0.5Gi' }
+        env: concat(appEnvironment, [{ name: 'AUTOMATION_WORKER_ENABLED', value: '0' }, { name: 'CHANNEL_WORKER_ENABLED', value: '0' }])
+      }]
+      // Durable provider deadlines cannot depend on an HTTP request waking this process.
+      scale: { minReplicas: 1, maxReplicas: 1 }
+    }
+  }
+}
+
+output voiceSupervisorEnabled bool = enableVoiceSupervisor
 
 output applicationUrl string = 'https://${app.properties.configuration.ingress.fqdn}'
 output workerEnabled bool = enableWorker
@@ -212,7 +292,8 @@ resource voiceGateway 'Microsoft.App/containerApps@2025-01-01' = if (enableVoice
           { type: 'Readiness', httpGet: { path: '/health', port: 3001 }, periodSeconds: 15, timeoutSeconds: 3, failureThreshold: 3 }
         ]
       }]
-      scale: { minReplicas: 1, maxReplicas: 1 }
+      // Active WebSocket connections keep the gateway replica alive; cold start is explicit beta behavior.
+      scale: { minReplicas: voiceGatewayMinReplicas, maxReplicas: 1 }
     }
   }
 }
