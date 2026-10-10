@@ -103,6 +103,7 @@ async function currentVersion(user: AuthUser, versionId: string, database: Datab
   const version = await platformRecord<AgentVersion>(user, 'agent_version', versionId, database);
   if (version.status !== 'versioned' || !version.data.config || version.data.agentId === undefined || !Number.isSafeInteger(version.data.number) || !Number.isSafeInteger(version.data.sourceRevision) || !version.data.knowledgeDigests || typeof version.data.knowledgeDigests !== 'object') throw new HttpError(409, 'Choose an immutable reviewed agent version.');
   if (version.data.config.voiceProfile === 'maya-despina') throw new HttpError(409, 'This audio proof slice supports the approved Azure voice profile only.');
+  if (version.data.config.liveVoice?.engine === 'azure-voice-live') throw new HttpError(409, 'This audio proof runner supports Azure OpenAI Realtime only. Azure Voice Live requires its own exact-engine proof runner.');
   const knowledge: PlatformRecord[] = [], current: Record<string, string> = {};
   for (const id of version.data.config.knowledgeIds) {
     const source = await platformRecord<Record<string, unknown>>(user, 'brain_source', id, database);

@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Activity, ArrowRight, Check, Download, Headphones, Mic, MicOff, Send, Square, UserRound } from "lucide-react";
 import { createBrowserVoiceSession, type BrowserVoiceSession } from "@/lib/voice/browser-session";
+import { createVoiceLiveBrowserSession } from '@/lib/voice/voice-live-browser';
 import type { AgentConfig } from "@/lib/platform/agents";
 import type { RelationshipContext } from "@/lib/voice/relationship";
 import type { TranscriptEntry, VoiceConfiguration, VoiceBehaviorContext } from "@/lib/voice/contracts";
@@ -79,6 +80,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   const sessionConnectionId = useRef<string | null>(null);
   const [callBehaviorContext, setCallBehaviorContext] = useState<VoiceBehaviorContext | null>(null);
   const sessionContact = useRef("");
+  const sessionProvider = useRef<string | null>(null);
   const callStarted = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const behaviorSent = useRef("");
@@ -97,6 +99,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   const draftChangedAfterCall = !!preview && !!callDraftSnapshot && JSON.stringify(preview.draft) !== callDraftSnapshot;
 
   const voiceProfile = preview?.draft.voiceProfile || "provider-default";
+  const liveVoiceKey = preview?.draft.liveVoice ? JSON.stringify(preview.draft.liveVoice) : '';
   const runtimeSettings = callDraftSnapshot ? JSON.parse(callDraftSnapshot) as AgentConfig : preview?.draft;
   const relationalRuntime = useMemo(() => compileRelationalRuntime({ entries: transcript, relationship: callBehaviorContext?.relationship || displayedContext?.relationship, settings: callBehaviorContext?.settings || runtimeSettings, callId: sessionKey.current || "current-call" }), [transcript, displayedContext?.relationship, callDraftSnapshot, preview?.draft, callBehaviorContext]);
   const displayedSpeechDelivery = state === "idle" ? voiceProfile === "provider-default" ? preview?.draft.speechDelivery : undefined : state === "connecting" ? undefined : callBehaviorContext?.speechDelivery || runtimeSettings?.speechDelivery;
@@ -105,12 +108,12 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   useEffect(() => { if (live) return;
     const abort = new AbortController();
     setConfig(null); setConfigError("");
-    const query = preview ? `profile=${encodeURIComponent(voiceProfile)}` : release ? `releaseId=${encodeURIComponent(release.id)}` : "";
+    const query = preview ? `profile=${encodeURIComponent(voiceProfile)}${liveVoiceKey ? `&liveVoice=${encodeURIComponent(liveVoiceKey)}` : ''}` : release ? `releaseId=${encodeURIComponent(release.id)}` : "";
     fetch(`/api/voice/config?${query}`, { cache: "no-store", signal: abort.signal })
-      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Could not load voice settings."); setConfig(data); })
+      .then(async response => { const data = await response.json(); if (abort.signal.aborted) return; if (!response.ok) throw new Error(data.error || "Could not load voice settings."); setConfig(data); })
       .catch(error => { if (!abort.signal.aborted) setConfigError(error instanceof Error ? error.message : "Could not load voice settings."); });
     return () => { abort.abort(); };
-  }, [voiceProfile, release?.id, !!preview, live]);
+  }, [voiceProfile, liveVoiceKey, release?.id, !!preview, live]);
   useEffect(() => { activeChange.current?.(live); }, [live]);
   useEffect(() => () => { startGate.current.cancel(); connection.current?.close(); connection.current = null; activeChange.current?.(false); }, []);
   useEffect(() => { if (!live && config && !continuousSpeechAvailable) setContinuousSpeech(false); }, [config, continuousSpeechAvailable, live]);
@@ -168,6 +171,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
 
   async function start() {
     if (!config?.configured || !config.provider || (!preview && !release) || (preview && !previewIsReady) || (campaignRunId && (preview || !campaignContactReady)) || !consent || live || unsaved) return;
+    sessionProvider.current = config.provider;
     const attempt = startGate.current.begin();
     const useContinuousSpeech = continuousSpeech && inputMode === "microphone" && config.provider === "azure" && !!config.continuousSpeech?.configured;
     connection.current?.close();
@@ -192,7 +196,8 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
       } catch (cause) { if (attempt.isCurrent()) { setState("ended"); setContinuousSpeechStatus(useContinuousSpeech ? { state: "ended" } : null); setError(cause instanceof Error ? cause.message : "This draft could not be prepared for a call."); } return; }
     }
     if (!attempt.isCurrent()) return;
-    const session = createBrowserVoiceSession({
+    const createSession = draftSnapshot?.liveVoice?.engine === 'azure-voice-live' ? createVoiceLiveBrowserSession : createBrowserVoiceSession;
+    const session = createSession({
       mode: preview ? "preview" : "release", draft: draftSnapshot, inputMode,
       continuousSpeech: useContinuousSpeech,
       provider: config.provider, contactId: selectedContact || undefined, agentId: preview?.agentId || release?.agentId, versionId: preview ? undefined : release?.versionId, releaseId: preview ? undefined : release?.id,
@@ -245,7 +250,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     if (saving || saved || live || !transcript.length || (preview && !sessionPreviewId.current)) return;
     setSaving(true); setError("");
     try {
-      const response = await fetch("/api/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contactId: sessionContact.current || undefined, provider: config?.provider, inputMode: callInputMode, source: preview ? "browser_preview" : "browser_voice", previewId: preview ? sessionPreviewId.current : undefined, connectionId: preview ? undefined : sessionConnectionId.current || undefined, agentId: preview ? undefined : sessionRelease.current?.agentId, agentVersionId: preview ? undefined : sessionRelease.current?.versionId, releaseId: preview ? undefined : sessionRelease.current?.id, idempotencyKey: sessionKey.current, diagnostics, transcript: transcript.map(({ role, text, receivedAt }) => ({ role, text, receivedAt })) }) });
+      const response = await fetch("/api/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contactId: sessionContact.current || undefined, provider: sessionProvider.current, inputMode: callInputMode, source: preview ? "browser_preview" : "browser_voice", previewId: preview ? sessionPreviewId.current : undefined, connectionId: preview ? undefined : sessionConnectionId.current || undefined, agentId: preview ? undefined : sessionRelease.current?.agentId, agentVersionId: preview ? undefined : sessionRelease.current?.versionId, releaseId: preview ? undefined : sessionRelease.current?.id, idempotencyKey: sessionKey.current, diagnostics, transcript: transcript.map(({ role, text, receivedAt }) => ({ role, text, receivedAt })) }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not save this conversation.");
       setSaved(true); setNotice(preview ? "Transcript saved as an internal preview. Personal memories still need separate approval." : "Transcript saved to conversations. Personal memories still need separate approval."); onSaved();
@@ -275,7 +280,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     {!preview && releases.length === 0 && <p className="wb-inline-note">Publish a tested version to the browser channel before calling.</p>}
     <fieldset className="wb-input-mode" disabled={live || unsaved || saving}><legend>How will you respond?</legend><label><input type="radio" name={`${inspectorId}-input-mode`} value="microphone" checked={inputMode === "microphone"} onChange={() => setInputMode("microphone")}/><Mic size={15}/><span>Microphone</span></label><label><input type="radio" name={`${inspectorId}-input-mode`} value="text" checked={inputMode === "text"} disabled={continuousSpeech} onChange={() => setInputMode("text")}/><Headphones size={15}/><span>Listen &amp; type</span></label></fieldset>
     <p className="wb-mode-description">{continuousSpeech ? "Listen & type is unavailable while Live understanding is selected. Turn it off to change modes." : inputMode === "text" ? "Hear real AI audio and type your replies. Your microphone is not requested." : "Talk through your microphone and hear the agent respond in this browser."}</p>
-    {config?.provider === "azure" && <><label className="wb-consent"><input type="checkbox" checked={continuousSpeech} disabled={live || unsaved || saving || inputMode !== "microphone" || !continuousSpeechAvailable} onChange={event => setContinuousSpeech(event.target.checked)}/><span><strong>Live understanding</strong><br/>Use the same microphone with Azure Speech to show tentative words and response cues during this call. Intermediate words may change and are not saved.</span></label>{!continuousSpeechAvailable && <p className="wb-inline-note">Live understanding is unavailable in this workspace. An administrator can finish the Azure Speech setup.</p>}</>}
+    {config?.provider === "azure" && <><label className="wb-consent"><input type="checkbox" checked={continuousSpeech} disabled={live || unsaved || saving || inputMode !== "microphone" || !continuousSpeechAvailable} onChange={event => setContinuousSpeech(event.target.checked)}/><span><strong>Live understanding</strong><br/>Use the same microphone with Azure Speech to show tentative words and response cues during this call. Intermediate words may change and are not saved.</span></label>{!continuousSpeechAvailable && <p className="wb-inline-note">{config.continuousSpeech?.reason || "Live understanding is unavailable in this workspace. An administrator can finish the Azure Speech setup."}</p>}</>}
     <label className="wb-consent"><input type="checkbox" checked={consent} disabled={live} onChange={event => setConsent(event.target.checked)}/><span>I understand this is an AI call. {inputMode === "microphone" ? `My microphone and selected context will be processed by the voice provider${continuousSpeech ? " and the Azure Speech recognition path" : ""}` : "My typed replies and selected context will be processed by the voice provider"}. The transcript is saved only if I choose to save it. Enabled actions may create internal review records and tool receipts during the call, even if I discard the transcript.</span></label>
     <div className="wb-call-actions">{!live ? <button type="button" className="pc-button primary wb-start" disabled={!config?.configured || (preview ? !previewIsReady || !compiled || !!compiledError || compiling : !release) || (campaignRunId && !campaignContactReady) || !consent || unsaved || saving} onClick={() => void start()}>{inputMode === "microphone" ? <Mic size={17}/> : <Headphones size={17}/>} {!preview ? "Start browser call" : inputMode === "text" ? "Start voice preview" : state === "ended" ? "Try another call" : "Start test call"}<ArrowRight size={15}/></button> : <>{callInputMode === "microphone" && <button type="button" className="pc-button" disabled={state !== "live"} onClick={() => { const nextMuted = !muted; connection.current?.setMuted(nextMuted); setMuted(nextMuted); if (callContinuousSpeech) setContinuousUnderstanding(previous => previous ? { ...previous, phase: nextMuted ? "paused" : "listening", bound: false, latest: undefined, cues: undefined } : null); }}>{muted ? <MicOff size={16}/> : <Mic size={16}/>} {muted ? "Unmute" : "Mute"}</button>}<button type="button" className="pc-button danger" onClick={() => end()}><Square size={15}/>End call</button><button type="button" className="pc-button" onClick={() => end(true)}><UserRound size={15}/>Stop for human</button></>}</div>
     {state === "connecting" && callInputMode === "microphone" && connectingFor >= 8 && <p className="wb-inline-note" role="status">Waiting for microphone permission. Check this browser’s permission prompt. You can end the attempt and choose Listen &amp; type if microphone access is unavailable.</p>}

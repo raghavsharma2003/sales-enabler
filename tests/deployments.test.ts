@@ -7,6 +7,7 @@ import type { AuthUser } from '../lib/server/auth';
 import { db, WriteConflictError } from '../lib/server/db';
 import { ownerRegistrationStatements } from '../lib/team/service';
 import { PUBLICATION_ACKNOWLEDGEMENT, type Deployment } from '../lib/deployments/contracts';
+import { LIVE_VOICE_PUBLICATION_BLOCKER } from '../lib/voice/live-voice';
 import { createDeployment, changeDeploymentStatus, issuePublicSession, resolvePublicSession, getPublicDeployment, getPublicFrameOrigins, closePublicSession, normalizePublicOrigin, resolveDeployment, resolveDeploymentForConnection, deploymentTurnStatements } from '../lib/deployments/engine';
 process.env.SQLITE_PATH = ':memory:'; delete process.env.DATABASE_URL;
 process.env.PUBLIC_SESSION_HASH_SECRET = 'fictional-public-session-test-secret-only';
@@ -47,6 +48,25 @@ test('explicit publication acknowledgement, approved subset and anonymous compan
   const stored = await (await db()).all('SELECT kind,data FROM entities WHERE organization_id = ?', [f.user.organizationId]);
   assert.ok(!JSON.stringify(stored).includes(issued.token)); assert.ok(!JSON.stringify(stored).includes(issued.nonce)); assert.ok(!JSON.stringify(stored).includes('192.0.2.1'));
   assert.ok(!(await listRecords(f.user.organizationId)).some(row => row.kind.includes('session')));
+});
+
+test('historical Voice Live bindings are rejected on publication and every deployment channel resolution', async () => {
+  const f = await fixture();
+  await f.publish();
+  const database = await db();
+  const [versionRow] = await database.all<{ data: string }>('SELECT data FROM entities WHERE id=?', [f.version.id]);
+  const version = JSON.parse(versionRow.data);
+  version.data.config.liveVoice = { version: 1, engine: 'azure-voice-live', preset: 'taxila-diya' };
+  await database.run('UPDATE entities SET data=? WHERE id=?', [JSON.stringify(version), f.version.id]);
+  const [deploymentRow] = await database.all<{ data: string }>('SELECT data FROM entities WHERE id=?', [f.draft.id]);
+  for (const channel of ['web_voice', 'web_chat', 'telegram', 'whatsapp']) {
+    const deployment = JSON.parse(deploymentRow.data);
+    deployment.data.channel = channel;
+    await database.run('UPDATE entities SET data=? WHERE id=?', [JSON.stringify(deployment), f.draft.id]);
+    const isVoiceLiveBlocker = (error: unknown) => error instanceof Error && error.message === LIVE_VOICE_PUBLICATION_BLOCKER;
+    await assert.rejects(() => resolveDeployment(f.user, f.draft.id), isVoiceLiveBlocker);
+    await assert.rejects(() => changeDeploymentStatus(f.user, { deploymentId: f.draft.id, revision: deployment.revision, action: 'publish', publicationAcknowledgement: PUBLICATION_ACKNOWLEDGEMENT }), isVoiceLiveBlocker);
+  }
 });
 test('forged capabilities, origins, purpose confusion, used nonces and used request IDs fail closed', async () => {
   const f = await fixture(); await f.publish();

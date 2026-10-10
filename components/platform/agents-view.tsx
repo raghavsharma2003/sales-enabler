@@ -20,6 +20,7 @@ import styles from './agents-workspace.module.css';
 const initial: AgentConfig = { name: '', role: '', objective: '', disclosure: 'I am an AI assistant for this company.', primaryLanguage: 'English', allowedLanguages: ['English'], responseStyle: 'Be clear, concise and respectful. Acknowledge uncertainty.', memoryScope: 'approved_contact', escalation: 'Offer human help when requested or when the answer is uncertain.', knowledgeIds: [], enabledTools: [], systemPrompt: '', openingMessage: '', speechVocabulary: [] };
 const values = (value: string) => value.split(',').map((part) => part.trim()).filter(Boolean);
 type Section = 'Setup' | 'Conversation' | 'Voice & language' | 'Knowledge' | 'Behaviour & actions' | 'Publish';
+type LiveVoiceSelection = 'workspace-default' | 'azure-realtime' | 'maya-despina' | 'taxila-diya' | 'taxila-arjun';
 const sections: Section[] = ['Setup', 'Conversation', 'Voice & language', 'Knowledge', 'Behaviour & actions', 'Publish'];
 const tabId = (section: Section) => 'agent-tab-' + sections.indexOf(section);
 const actions: { name: VoiceToolName; title: string; description: string }[] = [
@@ -130,6 +131,27 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
   const chooseSpeechDelivery = (pace: 'workspace' | 'standard' | 'unhurried') => {
     if (pace === 'workspace') { set('speechDelivery', undefined); return; }
     set('speechDelivery', { version: 1, pace, adaptToRequests: draft.speechDelivery?.adaptToRequests ?? false });
+  };
+  const liveVoiceSelection: LiveVoiceSelection = draft.voiceProfile === 'maya-despina'
+    ? 'maya-despina'
+    : !draft.liveVoice
+      ? 'workspace-default'
+      : draft.liveVoice.engine === 'azure-openai-realtime'
+        ? 'azure-realtime'
+        : draft.liveVoice.preset;
+  const chooseLiveVoice = (selection: LiveVoiceSelection) => {
+    if (viewer || busy) return;
+    setDraft(previous => {
+      const withoutLiveVoice = { ...previous };
+      delete withoutLiveVoice.liveVoice;
+      if (selection === 'workspace-default') return { ...withoutLiveVoice, voiceProfile: 'provider-default' };
+      if (selection === 'maya-despina') return { ...withoutLiveVoice, voiceProfile: 'maya-despina' };
+      const liveVoice: NonNullable<AgentConfig['liveVoice']> = selection === 'azure-realtime'
+        ? { version: 1, engine: 'azure-openai-realtime', preset: 'provider-default' }
+        : { version: 1, engine: 'azure-voice-live', preset: selection };
+      return { ...withoutLiveVoice, voiceProfile: 'provider-default', liveVoice };
+    });
+    setNotice(''); setValidation(''); setInvalidField('');
   };
   const agentVersions = versions.filter(version => version.data.agentId === current?.id).sort((a, b) => Number(b.data.number) - Number(a.data.number));
   const latestConfig = agentVersions[0]?.data.config as AgentConfig | undefined;
@@ -270,10 +292,11 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
               </>}
               {section === 'Voice & language' && <>
                 <div className={styles.sectionHead}><h3>Voice and language</h3><p>Choose how the agent speaks, then check it in a test call.</p></div>
-                <label className="pc-field" htmlFor="agent-voice">Voice profile<select id="agent-voice" className="pc-select" value={draft.voiceProfile || 'provider-default'} onChange={event => set('voiceProfile', event.target.value as AgentConfig['voiceProfile'])}><option value="provider-default">Azure workspace voice</option><option value="maya-despina">Maya original · Gemini Despina</option></select><small>{draft.voiceProfile === 'maya-despina' ? 'Uses the configured free Gemini pool and the source Despina preset.' : 'Uses the voice configured for your Azure workspace.'}</small></label>
+                <label className="pc-field" htmlFor="agent-voice">Live conversation voice<select id="agent-voice" className="pc-select" value={liveVoiceSelection} onChange={event => chooseLiveVoice(event.target.value as LiveVoiceSelection)}><option value="workspace-default">Workspace default · Azure OpenAI Realtime</option><option value="azure-realtime">Azure OpenAI Realtime · workspace voice</option><option value="maya-despina">Maya original · Gemini Despina</option><option value="taxila-diya">Voice Live · Diya · internal preview</option><option value="taxila-arjun">Voice Live · Arjun · internal preview</option></select><small>{liveVoiceSelection === 'workspace-default' ? 'Uses Azure OpenAI Realtime without adding a live-voice override to this draft.' : liveVoiceSelection === 'azure-realtime' ? 'Pins Azure OpenAI Realtime and the configured workspace voice.' : liveVoiceSelection === 'maya-despina' ? 'Uses the configured free Gemini pool and the source Despina preset.' : `Requests Azure Voice Live with ${liveVoiceSelection === 'taxila-diya' ? 'Diya' : 'Arjun'} for private testing.`}</small></label>
+                {draft.liveVoice?.engine === 'azure-voice-live' && <div className={styles.liveVoicePreview} role="status"><strong>Internal preview only</strong><p>Provider availability is checked when you explicitly start a private test call. A failed check stops that attempt; it never switches engines automatically. Saving this selection does not start a provider call or establish voice quality.</p></div>}
                 <fieldset className={styles.delivery} aria-describedby="agent-speech-delivery-help">
                   <legend>Speech delivery</legend>
-                  <p id="agent-speech-delivery-help">Choose an experimental base rate for the Azure workspace voice.</p>
+                  <p id="agent-speech-delivery-help">Choose an experimental base rate for the selected Azure live voice.</p>
                   <div className={styles.deliveryChoices}>
                     <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'workspace'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('workspace')}/><span><strong>Workspace default</strong><small>No saved rate override</small></span></label>
                     <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'standard'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('standard')}/><span><strong>Standard</strong><small>1× rate</small></span></label>

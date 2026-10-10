@@ -9,6 +9,8 @@ export function createPrivateTurnScheduler(options: {
   instructions: () => string;
   /** Pure decision from authoritative final turns; absent preserves old wire behavior. */
   speechDelivery?: () => SpeechDeliveryDecision | undefined;
+  /** Optional transport barrier (e.g. browser playout/history truncation). */
+  canReply?: () => boolean;
   /** Synchronous: the owner stages current-turn guidance inside this callback. */
   onUserTurn: (turn: { id: string; text: string }) => void;
   /** Preserve already captured ASR on close without preparing another reply.
@@ -81,7 +83,7 @@ export function createPrivateTurnScheduler(options: {
     options.send({ type: "session.update", session: { type: "realtime", instructions, ...(candidate.speed !== undefined ? { audio: { output: { speed: candidate.speed } } } : {}) } });
   }
   function releaseEligible() {
-    if (!eligible || closed || busy || toolsBusy || speakingItem || releasing) return;
+    if (!eligible || closed || busy || toolsBusy || speakingItem || releasing || options.canReply?.() === false) return;
     // Keep exactly one update in flight. A stale ACK can drain that update,
     // but cannot authorize a reply or be mistaken for the replacement ACK.
     if (gate && gate.acknowledgedAt === undefined) return;
@@ -118,7 +120,7 @@ export function createPrivateTurnScheduler(options: {
     releaseEligible();
   }
   function prepareCandidate() {
-    if (closed || busy || toolsBusy || !speakingItem || eligible) return;
+    if (closed || busy || toolsBusy || !speakingItem || eligible || options.canReply?.() === false) return;
     if (gate && gate.acknowledgedAt === undefined) return;
     const candidate = snapshot(prospectiveBehavior?.generation === generation && prospectiveBehavior.itemId === speakingItem
       ? prospectiveBehavior.guidance : behavior);
@@ -186,6 +188,19 @@ export function createPrivateTurnScheduler(options: {
     turn.timer = setTimeout(() => fail("The voice transcript did not arrive in time. Save this conversation and start again."), 10_000);
   }
   return {
+    /** Resume after an external transport barrier changes; never invent a turn. */
+    resume() { if (!closed) pump(); },
+    /** Server transports may validate output before forwarding PCM or tool calls. */
+    ownsResponse(id: unknown) {
+      return !closed && typeof id === "string" && (id === activeResponse || finishedResponses.has(id));
+    },
+    /** Explicit transport interruption, without inventing an ASR/user turn. */
+    interruptResponse() {
+      if (closed) return;
+      generation++; eligible = undefined; prospectiveBehavior = undefined; outputAcknowledgedAt = undefined;
+      if (gate?.acknowledgedAt !== undefined) clearGate();
+      if (busy && !interruptionTimer) interruptionTimer = setTimeout(() => fail("The voice provider did not finish interrupting the previous reply. Save this conversation and start again."), 5_000);
+    },
     close() {
       if (closed) return;
       closed = true; clearGate(); eligible = undefined; prospectiveBehavior = undefined; outputAcknowledgedAt = undefined; typed.length = 0;

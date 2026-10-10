@@ -11,6 +11,7 @@
     "context:check": "node scripts/check-context.mjs",
     "automation:worker": "node --env-file=.env.local --import tsx scripts/automation-worker.ts",
     "voice:gateway": "node --env-file-if-exists=.env.local --import tsx scripts/voice-gateway.ts",
+    "voice:live-gateway": "node --env-file-if-exists=.env.local --import tsx scripts/voice-live-gateway.ts",
     "voice:supervisor": "node --env-file-if-exists=.env.local --import tsx scripts/private-voice-supervisor.ts",
     "channel:worker": "node --env-file-if-exists=.env.local --import tsx scripts/channel-worker.ts",
     "learning:worker": "node --env-file-if-exists=.env.local --import tsx scripts/learning-worker.ts",

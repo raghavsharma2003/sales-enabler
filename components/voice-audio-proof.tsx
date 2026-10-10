@@ -35,7 +35,7 @@ type AudioProofData = {
   permissions: { canWrite: boolean };
   evidenceBoundary: string;
 };
-type AgentVersionData = { agentId?: string; number?: number; sourceRevision?: number; config?: { name?: string } };
+type AgentVersionData = { agentId?: string; number?: number; sourceRevision?: number; config?: { name?: string; voiceProfile?: string; liveVoice?: { engine?: string } } };
 type ReviewDraft = { verdict: AudioListeningReviewData['verdict'] | ''; reason: string; heardOutput: boolean };
 type PlaybackState = 'idle' | 'started' | 'error';
 
@@ -103,6 +103,7 @@ export function VoiceAudioProof({ records, focusId }: { records: PlatformRecord[
   const versions = useMemo(() => records
     .filter((record): record is PlatformRecord<AgentVersionData> => record.kind === 'agent_version' && record.status === 'versioned')
     .sort(byNewest), [records]);
+  const proofVersions = useMemo(() => versions.filter(version => version.data.config?.liveVoice?.engine !== 'azure-voice-live' && version.data.config?.voiceProfile !== 'maya-despina'), [versions]);
   const agents = useMemo(() => new Map(records.filter(record => record.kind === 'agent_definition').map(record => [record.id, String(record.data.name || 'Saved agent')])), [records]);
   const versionLabel = useCallback((id: string) => {
     const version = versions.find(item => item.id === id);
@@ -127,7 +128,7 @@ export function VoiceAudioProof({ records, focusId }: { records: PlatformRecord[
       const next = body as AudioProofData;
       setData(next);
       setScenarioId(current => next.scenarios.some(item => item.id === current) ? current : next.scenarios[0]?.id || '');
-      setVersionId(current => versions.some(item => item.id === current) ? current : versions[0]?.id || '');
+      setVersionId(current => proofVersions.some(item => item.id === current) ? current : proofVersions[0]?.id || '');
       setSelectedRunId(current => current && next.runs.some(item => item.id === current) ? current : current ? '' : next.runs[0]?.id || '');
       setMustRefresh(false);
       if (manual) setNotice('Evidence refreshed. Choose any retry explicitly.');
@@ -144,7 +145,7 @@ export function VoiceAudioProof({ records, focusId }: { records: PlatformRecord[
         setRefreshing(false);
       }
     }
-  }, [versions]);
+  }, [versions, proofVersions]);
 
   useEffect(() => {
     void load();
@@ -281,10 +282,11 @@ export function VoiceAudioProof({ records, focusId }: { records: PlatformRecord[
       <div className={styles.sectionHeading}><div><h3>Prepare the exact input</h3><p>One fixture can support repeated attempts. Each attempt remains bound to the selected immutable version and the same audio bytes.</p></div><span>One synthetic scenario</span></div>
       <div className={styles.pickers}>
         <label className="pc-field">Scenario<select className="pc-select" value={scenarioId} disabled={!!busy} onChange={event => { setScenarioId(event.target.value); setSelectedRunId(''); setRouteError(''); }}><option value="">Choose a scenario</option>{data?.scenarios.map(item => <option value={item.id} key={item.id}>{item.name} · v{item.version}</option>)}</select></label>
-        <label className="pc-field">Saved agent version<select className="pc-select" value={versionId} disabled={!!busy} onChange={event => { setVersionId(event.target.value); setSelectedRunId(''); setRouteError(''); }}><option value="">Choose an immutable version</option>{versions.map(item => <option value={item.id} key={item.id}>{versionLabel(item.id)}</option>)}</select></label>
+        <label className="pc-field">Saved agent version<select className="pc-select" value={versionId} disabled={!!busy} onChange={event => { setVersionId(event.target.value); setSelectedRunId(''); setRouteError(''); }}><option value="">Choose an immutable version</option>{versions.map(item => <option value={item.id} key={item.id} disabled={!proofVersions.includes(item)}>{versionLabel(item.id)}{!proofVersions.includes(item) ? ' · use the private call tester' : ''}</option>)}</select></label>
       </div>
       {scenario && <div className={styles.scenario}><div><strong>Fictional caller says</strong><blockquote>“{scenario.callerText}”</blockquote></div><div><strong>What to listen for</strong><p>{scenario.expectedDelivery}</p></div></div>}
       {versions.length === 0 && <p className={styles.inlineError}>No immutable agent version is available. Save a version in Agents before running audio proof.</p>}
+      {versions.length > proofVersions.length && <p>Audio proof uses Azure OpenAI Realtime. Test Voice Live and Maya voices in the agent’s private call tester.</p>}
       {fixture?.data.artifact ? <div className={styles.fixture}>
         <AudioPlayer artifact={fixture.data.artifact} label="Exact synthetic caller input"/>
         <div className={styles.integrity}><LockKeyhole size={15}/><span><strong>Input locked to saved bytes</strong><small>{shortRef(fixture.data.artifact.sha256)} · expires {formatDate(fixture.data.artifact.expiresAt)}</small></span></div>

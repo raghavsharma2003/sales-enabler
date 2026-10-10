@@ -6,6 +6,7 @@ import { createRecord, getRecord, listRecords, updateRecord, type PlatformRecord
 import { isVoiceToolName, normalizeVoiceTools, type VoiceToolName } from '../voice/tools/contracts';
 import { normalizeSpeechVocabulary, SpeechVocabularyValidationError } from '../voice/speech-vocabulary';
 import { parseSpeechDeliveryProfile, SpeechDeliveryValidationError, type SpeechDeliveryProfile } from '../voice/speech-delivery';
+import { parseLiveVoiceProfile, LiveVoiceValidationError, LIVE_VOICE_PUBLICATION_BLOCKER, type LiveVoiceProfile } from '../voice/live-voice';
 import { prepareRegressionReleaseGate } from '../regression/service';
 import { TEXT_REHEARSAL_DISCLAIMER, type RegressionReleaseEvidence, type ReleaseReviewPacket } from '../regression/contracts';
 import { operatorMembershipFence } from '../team/service';
@@ -21,6 +22,7 @@ export type AgentConfig = {
   enabledTools?: VoiceToolName[];
   speechVocabulary?: string[];
   speechDelivery?: SpeechDeliveryProfile;
+  liveVoice?: LiveVoiceProfile;
 };
 type AgentVersion = { agentId: string; number: number; config: AgentConfig; knowledgeDigests: Record<string, string>; sourceRevision: number };
 type TestRun = { agentId: string; versionId: string; checks: { label: string; passed: boolean; detail: string }[]; passed: boolean; mode: 'configuration'; disclaimer: string };
@@ -37,6 +39,13 @@ export function parseAgentConfig(body: Record<string, unknown>): AgentConfig {
   const primaryLanguage = field(body, 'primaryLanguage', 80);
   if (body.voiceProfile !== undefined && body.voiceProfile !== 'provider-default' && body.voiceProfile !== 'maya-despina') throw new HttpError(400, 'Choose an installed voice profile.');
   const allowedLanguages = textArray(body.allowedLanguages, 'allowedLanguages');
+  let liveVoice: LiveVoiceProfile | undefined;
+  try { liveVoice = parseLiveVoiceProfile(body.liveVoice); }
+  catch (error) {
+    if (error instanceof LiveVoiceValidationError) throw new HttpError(400, error.message);
+    throw error;
+  }
+  if (liveVoice && body.voiceProfile === 'maya-despina') throw new HttpError(400, 'Live voice selection cannot be combined with the Maya voice profile.');
   let speechDelivery: SpeechDeliveryProfile | undefined;
   try { speechDelivery = parseSpeechDeliveryProfile(body.speechDelivery); }
   catch (error) {
@@ -63,6 +72,7 @@ export function parseAgentConfig(body: Record<string, unknown>): AgentConfig {
     enabledTools: normalizeVoiceTools(body.enabledTools),
     ...(speechVocabulary.length ? { speechVocabulary } : {}),
     ...(speechDelivery ? { speechDelivery } : {}),
+    ...(liveVoice ? { liveVoice } : {}),
   };
 }
 const config = parseAgentConfig;
@@ -179,6 +189,7 @@ async function prepareReleaseReview(user: AuthUser, version: PlatformRecord<Agen
   const gate = await prepareRegressionReleaseGate(user, version.id, database);
   const active = (await listRecords(user.organizationId, 'release') as PlatformRecord<Release>[]).filter(item => item.data.agentId === agent.id && item.status === 'active');
   const blockers: string[] = [];
+  if (version.data.config.liveVoice?.engine === 'azure-voice-live') blockers.push(LIVE_VOICE_PUBLICATION_BLOCKER);
   if (!rollback && latest?.id !== version.id) blockers.push('Only the latest agent version can be published.');
   const fresh = await evaluate(user, version);
   const testEpoch = await configurationEpoch(user, version.id, database);

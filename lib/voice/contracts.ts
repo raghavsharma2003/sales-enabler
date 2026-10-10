@@ -16,6 +16,7 @@ export interface VoiceConfiguration {
   label?: string;
   voice?: string;
   model?: string;
+  engine?: 'azure-openai-realtime' | 'azure-voice-live';
   source?: string;
   continuousSpeech?: { configured: boolean; reason?: string };
 }

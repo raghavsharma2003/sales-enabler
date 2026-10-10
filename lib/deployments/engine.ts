@@ -7,6 +7,7 @@ import { db, WriteConflictError } from '../server/db';
 import { HttpError, field } from '../server/http';
 import { getActiveMembership, ownerMembershipFence } from '../team/service';
 import { getVoiceConfiguration, normalizeAzureRealtimeEndpoint } from '../voice/config';
+import { LIVE_VOICE_PUBLICATION_BLOCKER } from '../voice/live-voice';
 import { accentForeground } from '../company/contracts';
 import { validateLogoDataUri } from '../company/validation';
 import { DEFAULT_DEPLOYMENT_LIMITS, PUBLICATION_ACKNOWLEDGEMENT, type Deployment, type DeploymentAuthority, type DeploymentBrand, type DeploymentChannel, type DeploymentConnection, type DeploymentLimits, type DeploymentStatement as Statement, type PublicDeploymentView } from './contracts';
@@ -116,6 +117,7 @@ async function authority(org: string, deploymentId: string, requirePublished = t
   const testRow = await rowFor(org, 'platform:test_run', release.testRunId), test = JSON.parse(testRow.data).data;
   if (test.versionId !== d.versionId || test.passed !== true || test.mode !== 'configuration') throw new HttpError(409, 'An exact passing configuration check is required.');
   if (version.config.voiceProfile === 'maya-despina') throw new HttpError(409, 'Public deployments require the Azure provider-default profile.');
+  if (version.config.liveVoice?.engine === 'azure-voice-live') throw new HttpError(409, LIVE_VOICE_PUBLICATION_BLOCKER);
   if (!normalizeAzureRealtimeEndpoint(process.env.AZURE_OPENAI_ENDPOINT) || !process.env.AZURE_OPENAI_API_KEY?.trim()) throw new HttpError(503, 'The Azure resource is not configured for public agents.');
   if (d.channel === 'web_voice') {
     const voice = getVoiceConfiguration();

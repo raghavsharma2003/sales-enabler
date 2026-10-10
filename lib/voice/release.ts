@@ -4,6 +4,7 @@ import { HttpError } from '../server/http';
 import { getRecord, listRecords } from '../platform/records';
 import type { AgentConfig } from '../platform/agents';
 import { compileAgentContext } from './context';
+import { LIVE_VOICE_PUBLICATION_BLOCKER } from './live-voice';
 
 type Version = { agentId: string; config: AgentConfig; knowledgeDigests: Record<string, string> };
 type Release = { agentId: string; versionId: string; channel: string };
@@ -20,6 +21,7 @@ export async function releasedVoiceContext(user: AuthUser, ids: { agentId: strin
   const active = (await listRecords(user.organizationId, 'release')).filter(r => r.status === 'active' && r.data.agentId === ids.agentId);
   if (active.length !== 1 || active[0].id !== release.id) throw new HttpError(409, 'Agent release state changed. Refresh before starting a call.');
   const c = versionData.config;
+  if (c.liveVoice?.engine === 'azure-voice-live') throw new HttpError(409, LIVE_VOICE_PUBLICATION_BLOCKER);
   const knowledge = await Promise.all(c.knowledgeIds.map(id => getRecord(user.organizationId, 'brain_source', id)));
   for (const item of knowledge) {
     if (item.status !== 'approved') throw new HttpError(409, 'A released knowledge source is no longer approved. Test and publish a new version before calling.');

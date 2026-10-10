@@ -3,7 +3,7 @@ import type { Database } from '../server/db';
 export type UsageDependencies = { env?: Record<string, string | undefined>; database?: Database; now?: () => Date };
 export type InferenceMode = 'hosted' | 'local' | 'test';
 export type VoiceAttemptState = 'reserved' | 'connecting' | 'active' | 'stopping' | 'closed' | 'uncertain';
-export type VoiceAttemptInput = { requestId: string; provider: 'azure'; purpose: 'private_webrtc' | 'audio_proof'; maxSeconds?: number };
+export type VoiceAttemptInput = { requestId: string; provider: 'azure'; purpose: 'private_webrtc' | 'audio_proof' | 'voice_live'; maxSeconds?: number };
 export type VoiceAttemptRef = { id: string; organizationId: string };
 export type VoiceStopOutcomeReason = 'confirmed' | 'not_allocated' | 'missing_reference' | 'owned_transport_required' | 'invalid_reference' | 'configuration_changed' | 'provider_unconfirmed' | 'transport_uncertain' | 'authority_changed' | 'unreported';
 /** Server private. Never serialize this record into an API response. */

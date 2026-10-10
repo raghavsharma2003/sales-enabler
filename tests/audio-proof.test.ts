@@ -11,6 +11,7 @@ import { createRecord } from '../lib/platform/records';
 import type { AuthUser } from '../lib/server/auth';
 import { db } from '../lib/server/db';
 import { ownerRegistrationStatements } from '../lib/team/service';
+import type { LiveVoiceProfile } from '../lib/voice/live-voice';
 
 process.env.SQLITE_PATH = join(mkdtempSync(join(tmpdir(), 'audio-proof-')), 'test.sqlite');
 delete process.env.DATABASE_URL;
@@ -29,7 +30,7 @@ const config = {
 };
 const env = { NODE_ENV: 'test', VOICE_PROVIDER: 'azure', AZURE_OPENAI_ENDPOINT: 'https://fictional.openai.azure.com', AZURE_OPENAI_API_KEY: 'fake-key', AZURE_OPENAI_REALTIME_DEPLOYMENT: 'realtime-slot', AZURE_OPENAI_REALTIME_VOICE: 'marin', AZURE_SPEECH_KEY: 'fake-speech-key', AZURE_SPEECH_REGION: 'eastus2' };
 
-async function fixture(overrides: Partial<Omit<typeof config, 'voiceProfile'>> & { voiceProfile?: 'provider-default' | 'maya-despina' } = {}) {
+async function fixture(overrides: Partial<Omit<typeof config, 'voiceProfile'>> & { voiceProfile?: 'provider-default' | 'maya-despina'; liveVoice?: LiveVoiceProfile } = {}) {
   const database = await db(), id = randomUUID(), organizationId = randomUUID(), now = new Date().toISOString();
   const user: AuthUser = { id, organizationId, email: `${id}@example.test` };
   await database.batch([
@@ -121,4 +122,19 @@ test('changed request input conflicts and unsupported profile is rejected before
   const invalidModel = mocks(), modelBegins = invalidModel.counts().begins;
   await assert.rejects(runAudioProof(f.user, { requestId: 'run-bad-model', scenarioId, fixtureId: caller.id, agentVersionId: f.version.id, consent: true }, { ...invalidModel.dependencies, env: { ...env, AZURE_OPENAI_REALTIME_DEPLOYMENT: 'bad model name' } }), /not configured/);
   assert.equal(invalidModel.counts().begins, modelBegins, 'invalid Realtime deployment must fail before admission');
+});
+
+test('Voice Live versions cannot produce misleading Realtime audio proof or allocate a Realtime attempt', async () => {
+  for (const preset of ['taxila-diya', 'taxila-arjun'] as const) {
+    const f = await fixture({ liveVoice: { version: 1, engine: 'azure-voice-live', preset } });
+    const m = mocks(), scenarioId = AUDIO_PROOF_SCENARIOS[0].id;
+    const caller = await createSyntheticAudioFixture(f.user, { requestId: `fixture-${preset}`, scenarioId, consent: true }, m.dependencies);
+    const before = m.counts();
+    await assert.rejects(runAudioProof(f.user, { requestId: `wrong-engine-${preset}`, scenarioId, fixtureId: caller.id, agentVersionId: f.version.id, consent: true }, m.dependencies), /Voice Live requires its own exact-engine proof runner/);
+    assert.deepEqual(m.counts(), before, 'no admission or provider call may follow the wrong-engine request');
+    const listed = await listAudioProofData(f.user, m.dependencies);
+    assert.equal(listed.runs[0].status, 'failed');
+    assert.equal(listed.runs[0].data.manifest, undefined);
+    assert.equal(listed.runs[0].data.outputArtifact, undefined);
+  }
 });

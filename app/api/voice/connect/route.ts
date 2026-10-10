@@ -1,7 +1,7 @@
 import { assertSameOrigin, requireUser, type AuthUser } from '@/lib/server/auth';
 import { releasedVoiceContext } from '@/lib/voice/release';
 import { previewVoiceContext, compileCampaignVoiceContext } from '@/lib/voice/context';
-import { createRecord } from '@/lib/platform/records';
+import { createRecord, getRecord, updateRecord } from '@/lib/platform/records';
 import { apiError, field, HttpError, json, readBody } from '@/lib/server/http';
 import { getVoiceConfiguration, VoiceConfigurationError } from '@/lib/voice/config';
 import { getVoiceServerAdapter, buildProviderInstructions, VoiceConnectionError, VoiceCallAllocationError, voiceAllocationNotStarted } from '@/lib/voice/server';
@@ -11,6 +11,8 @@ import { buildVoiceToolAuthority } from '@/lib/voice/tools/authority';
 import { assertInferenceAccess, assertVoiceAttemptActive, beginVoiceAttempt, markAttemptProvisioning, attachProviderCall, bindVoiceAttemptCall, failVoiceAttempt, requestVoiceStop } from '@/lib/usage/service';
 import { assertPrivateVoiceContactScope } from '@/lib/voice/private-scope';
 import { hangupAzureCall } from '@/lib/voice/call-control';
+import { azureVoiceLiveConfiguration } from '@/lib/voice/voice-live-session';
+import { issueVoiceLiveGrant } from '@/lib/voice/voice-live-authority';
 
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
@@ -41,7 +43,44 @@ export async function POST(request: Request) {
       : initialContext;
     // Profile authority is the validated draft or immutable released agent, never a caller-supplied provider field.
     const profile: VoiceProfile = context.agent.voiceProfile === 'maya-despina' ? 'maya-despina' : 'provider-default';
+    if (context.agent.liveVoice?.engine === 'azure-voice-live') {
+      if (mode !== 'preview') throw new HttpError(409, 'Voice Live is available for internal draft tests only.');
+      // Validate the selected engine before creating any call or reservation.
+      try { azureVoiceLiveConfiguration(); } catch { throw new HttpError(503, 'Azure Voice Live is not configured for this workspace.'); }
+      await assertInferenceAccess(user);
+      await assertPrivateVoiceContactScope(user, contactId);
+      const toolAuthority = await buildVoiceToolAuthority(user, context, contactId);
+      const initialInstructions = buildProviderInstructions(context.instructions, profile, toolAuthority.enabledTools);
+      const configuredOpening = context.agent.openingMessage?.trim() || context.agent.disclosure;
+      const openingMessage = /\b(ai|artificial intelligence|virtual assistant)\b/i.test(configuredOpening)
+        ? configuredOpening : `${context.agent.disclosure} ${configuredOpening}`;
+      const behaviorContext = { settings: { allowedLanguages: context.agent.allowedLanguages,
+        primaryLanguage: context.agent.primaryLanguage, responseStyle: context.agent.responseStyle }, relationship: context.relationship,
+        ...(context.agent.speechDelivery ? { speechDelivery: context.agent.speechDelivery } : {}) };
+      const preview = await createRecord(user, 'voice_preview', {
+        agentId, contactId, config: context.agent, contextDigest: context.contextDigest,
+        knowledgeSources: context.knowledgeSources, relationshipSourceIds: context.relationship.sourceIds,
+        relationship: context.relationship, provider: 'azure', voiceTransport: 'voice_live', inputMode,
+        requestedBy: user.id, mode: 'internal_draft_test', toolAuthority,
+        instructions: initialInstructions, openingMessage, behaviorContext, speechVocabulary: context.speechVocabulary,
+      }, 'connection_issued');
+      try {
+        if (request.signal.aborted) throw new HttpError(409, 'The voice preview was cancelled before connection.');
+        const grant = await issueVoiceLiveGrant(user, { previewId: preview.id, requestId: field(data, 'requestId', 160), consent: true }, request.headers.get('origin') || '');
+        if (request.signal.aborted) { await requestVoiceStop(user, grant.voiceAttemptId); throw new HttpError(409, 'The voice preview was cancelled before connection.'); }
+        return json({ provider: 'azure', transport: 'voice-live', ticket: grant.token, url: grant.url,
+          expiresAt: grant.expiresAt, voiceAttemptId: grant.voiceAttemptId, previewId: preview.id,
+          initialInstructions, openingMessage, behaviorContext, enabledTools: toolAuthority.enabledTools });
+      } catch (error) {
+        const latest = await getRecord(user.organizationId, 'voice_preview', preview.id);
+        await updateRecord(user, latest, { ...latest.data, toolEndedAt: new Date().toISOString() }, 'connection_failed').catch(() => undefined);
+        throw error;
+      }
+    }
     const configuration = getVoiceConfiguration(process.env, profile);
+    if (context.agent.liveVoice?.engine === 'azure-openai-realtime' && configuration.provider !== 'azure') {
+      throw new HttpError(503, 'This agent requires Azure OpenAI Realtime. Configure the Azure workspace voice before testing.');
+    }
     const speechDelivery = context.agent.speechDelivery ? { ...context.agent.speechDelivery } : undefined;
     if (speechDelivery && configuration.provider !== 'azure') throw new HttpError(400, 'Configured speech delivery requires Azure Realtime. Choose the Azure voice provider to use this profile.');
     await assertInferenceAccess(user);

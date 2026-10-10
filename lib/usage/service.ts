@@ -73,9 +73,9 @@ export async function assertVoiceAttemptActive(user: AuthUser, id: string, deps:
 /** Reserve once before provider allocation. A replay is status only, never a second provider execution. */
 export async function beginVoiceAttempt(user: AuthUser, input: VoiceAttemptInput, deps: UsageDependencies = {}): Promise<VoiceAttemptReceipt> {
   await assertInferenceAccess(user, deps);
-  if (input.provider !== 'azure' || !['private_webrtc', 'audio_proof'].includes(input.purpose)) throw new HttpError(400, 'Choose an approved Azure voice purpose.');
+  if (input.provider !== 'azure' || !['private_webrtc', 'audio_proof', 'voice_live'].includes(input.purpose)) throw new HttpError(400, 'Choose an approved Azure voice purpose.');
   if (typeof input.requestId !== 'string' || !input.requestId.trim() || input.requestId.length > 160 || /[\x00-\x1f]/.test(input.requestId)) throw new HttpError(400, 'A bounded voice request ID is required.');
-  const cap = input.purpose === 'private_webrtc' ? 600 : 45, maxSeconds = input.maxSeconds ?? cap;
+  const cap = input.purpose === 'audio_proof' ? 45 : 600, maxSeconds = input.maxSeconds ?? cap;
   if (!Number.isSafeInteger(maxSeconds) || maxSeconds < 1 || maxSeconds > cap) throw new HttpError(400, 'Voice duration exceeds the purpose limit.');
   const database = await store(deps), config = inferenceConfiguration(deps.env ?? process.env), now = instant(deps);
   const id = attemptId(user.organizationId, input.requestId), requestHash = sha(JSON.stringify([user.id, input.provider, input.purpose, maxSeconds]));
@@ -132,7 +132,7 @@ async function mutate(ref: VoiceAttemptRef, deps: UsageDependencies, change: (va
   }
   throw new HttpError(409, 'Voice attempt changed concurrently.');
 }
-export async function markAttemptProvisioning(user: AuthUser, id: string, deps: UsageDependencies = {}): Promise<boolean> {
+export async function markAttemptProvisioning(user: AuthUser, id: string, deps: UsageDependencies = {}, admissionFences: Statement[] = []): Promise<boolean> {
   await assertInferenceAccess(user, deps);
   const database = await store(deps); await requireHeartbeat(database, deps);
   return !!await mutate({ id, organizationId: user.organizationId }, deps, value => {
@@ -140,7 +140,15 @@ export async function markAttemptProvisioning(user: AuthUser, id: string, deps: 
     if (value.state !== 'reserved') return null;
     if (value.stopRequestedAt || value.deadlineAt <= instant(deps)) throw new HttpError(409, 'Voice reservation has expired or was cancelled.');
     return { ...value, state: 'connecting', providerProvisioningStartedAt: instant(deps) };
-  }, [await operatorMembershipFence(user, database)]);
+  }, [await operatorMembershipFence(user, database), ...admissionFences]);
+}
+/** Owned Voice Live sockets do not have a REST call handle. Activation never clears cancellation. */
+export async function activateOwnedVoiceAttempt(user: AuthUser, id: string, deps: UsageDependencies = {}, admissionFences: Statement[] = []): Promise<void> {
+  await mutate({ id, organizationId: user.organizationId }, deps, value => {
+    own(user, value);
+    if (value.purpose !== 'voice_live' || !['connecting', 'active'].includes(value.state) || value.stopRequestedAt || value.deadlineAt <= instant(deps)) throw new HttpError(409, 'The owned voice attempt is no longer active.');
+    return { ...value, state: 'active' };
+  }, admissionFences);
 }
 export async function attachProviderCall(user: AuthUser, id: string, providerCallRef: string, deps: UsageDependencies = {}, providerConfigurationDigest?: string): Promise<VoiceAttemptRecord> {
   if (!/^[\w.-]{1,240}$/.test(providerCallRef)) throw new HttpError(502, 'Provider call reference is invalid.');
@@ -219,13 +227,13 @@ export async function bindVoiceAttemptCall(user: AuthUser, id: string, callRecor
   }, [{ sql: 'UPDATE entities SET data = data WHERE id = ? AND organization_id = ? AND kind = ? AND status = ? AND data = ?', params: [callRecord.id, user.organizationId, `platform:${callRecord.kind}`, String(row.status), String(row.data)], expectedChanges: 1 }]);
 }
 /** Only a trusted server-owned audio proof runner may acknowledge its socket closure. */
-export async function closeOwnedVoiceAttempt(user: AuthUser, id: string, outcome: { outcome: 'complete' | 'failed' | 'uncertain' }, deps: UsageDependencies = {}) {
+export async function closeOwnedVoiceAttempt(user: AuthUser, id: string, outcome: { outcome: 'complete' | 'failed' | 'uncertain' }, deps: UsageDependencies = {}, admissionFences: Statement[] = []) {
   return mutate({ id, organizationId: user.organizationId }, deps, value => {
     own(user, value);
-    if (value.purpose !== 'audio_proof') throw new HttpError(409, 'This voice attempt requires provider-confirmed stop.');
+    if (value.purpose !== 'audio_proof' && value.purpose !== 'voice_live') throw new HttpError(409, 'This voice attempt requires provider-confirmed stop.');
     if (value.state === 'closed') return value;
     return outcome.outcome === 'uncertain' ? { ...value, state: 'uncertain' } : { ...value, state: 'closed', closedAt: instant(deps) };
-  });
+  }, admissionFences);
 }
 /** Internal worker API. Results contain provider references and must never leave the server. */
 export async function listDueAttempts(deps: UsageDependencies = {}): Promise<VoiceAttemptRecord[]> {
