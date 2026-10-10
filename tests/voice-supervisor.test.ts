@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { db } from '../lib/server/db';
-import { attachProviderCall, beginVoiceAttempt, bindVoiceAttemptCall, claimStop, getUsageSnapshot, listDueAttempts, markAttemptProvisioning, requestVoiceStop } from '../lib/usage/service';
+import { attachProviderCall, beginVoiceAttempt, bindVoiceAttemptCall, claimStop, getUsageSnapshot, listDueAttempts, markAttemptProvisioning, recordStop, requestVoiceStop } from '../lib/usage/service';
 import { azureCallConfigurationDigest } from '../lib/voice/call-control';
 import { privateVoiceSupervisorHeartbeat, runPrivateVoiceSupervisor, runPrivateVoiceSupervisorTick, stopPrivateVoiceAttempt } from '../lib/voice/supervisor';
 import { sourceDigest, type ToolRow } from '../lib/voice/tools/authority';
@@ -202,4 +202,45 @@ test('stop defers pending allocation without consuming claims and accepts its la
   const g = await fixture(); await markAttemptProvisioning(g.user, g.receipt.id, g.deps); await requestVoiceStop(g.user, g.receipt.id, g.deps); g.advance(55001);
   assert.deepEqual(await stopPrivateVoiceAttempt({ id: g.receipt.id, organizationId: g.user.organizationId }, { ...g.deps, transport }), { state: 'uncertain', claimed: true });
   assert.equal(calls, 1);
+});
+
+test('control observes a worker-owned hangup claim without dispatching a duplicate request', async () => {
+  const f = await fixture(); await f.provision(); await requestVoiceStop(f.user, f.receipt.id, f.deps);
+  const ref = { id: f.receipt.id, organizationId: f.user.organizationId };
+  let release!: (r: Response) => void, entered!: () => void, calls = 0;
+  const called = new Promise<void>(resolve => { entered = resolve; });
+  const transport = (async () => { calls++; entered(); return new Promise<Response>(resolve => { release = resolve; }); }) as typeof fetch;
+  const worker = stopPrivateVoiceAttempt(ref, { ...f.deps, transport }); await called;
+  let settled = false;
+  const control = stopPrivateVoiceAttempt(ref, { ...f.deps, transport, waitForClaimMs: 1000 }).then(value => { settled = true; return value; });
+  await new Promise(resolve => setImmediate(resolve)); assert.equal(settled, false); assert.equal(calls, 1);
+  release(new Response(null, { status: 200 }));
+  assert.deepEqual(await worker, { state: 'closed', claimed: true });
+  assert.deepEqual(await control, { state: 'closed', claimed: false }); assert.equal(calls, 1);
+  const [row] = await f.deps.database.all('SELECT data FROM entities WHERE id = ?', [ref.id]);
+  const saved = JSON.parse(String(row.data)); assert.equal(saved.stopOutcomeReason, 'confirmed'); assert.equal(saved.stopHttpStatus, 200);
+});
+
+test('waiting for an existing claimant has a finite timeout and preserves its lease', async () => {
+  const f = await fixture(); await f.provision(); await requestVoiceStop(f.user, f.receipt.id, f.deps);
+  const ref = { id: f.receipt.id, organizationId: f.user.organizationId }, claim = await claimStop(ref, f.deps);
+  const started = Date.now();
+  const result = await stopPrivateVoiceAttempt(ref, { ...f.deps, waitForClaimMs: 30, transport: (async () => { assert.fail('existing claim cannot be stolen'); }) as typeof fetch });
+  assert.deepEqual(result, { state: 'not_claimed', claimed: false }); assert.ok(Date.now() - started >= 20); assert.ok(Date.now() - started < 2000);
+  const [row] = await f.deps.database.all('SELECT data FROM entities WHERE id = ?', [ref.id]);
+  assert.equal(JSON.parse(String(row.data)).stopAttempts, 1); assert.equal(JSON.parse(String(row.data)).state, 'stopping');
+  await recordStop(ref, claim!.stopToken, { confirmed: true, providerCallRef: 'rtc_fixture', reason: 'confirmed', httpStatus: 200 }, f.deps);
+  assert.equal((await getUsageSnapshot(f.user, f.deps)).voice.live, 0);
+});
+
+test('failed hangup retains only finite provider status metadata and never claims 404 means closed', async () => {
+  for (const status of [401, 404, 500]) {
+    const f = await fixture(); await f.provision(); await requestVoiceStop(f.user, f.receipt.id, f.deps);
+    const result = await stopPrivateVoiceAttempt({ id: f.receipt.id, organizationId: f.user.organizationId }, { ...f.deps, transport: (async () => new Response('private-provider-error-body', { status })) as typeof fetch });
+    assert.equal(result.state, 'uncertain');
+    const [row] = await f.deps.database.all('SELECT data FROM entities WHERE id = ?', [f.receipt.id]);
+    const saved = JSON.parse(String(row.data)); assert.equal(saved.stopOutcomeReason, 'provider_unconfirmed'); assert.equal(saved.stopHttpStatus, status);
+    assert.equal(String(row.data).includes('private-provider-error-body'), false);
+    const snapshot = await getUsageSnapshot(f.user, f.deps); assert.equal(snapshot.voice.live, 1); assert.equal(JSON.stringify(snapshot).includes('stopHttpStatus'), false);
+  }
 });

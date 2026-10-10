@@ -4,7 +4,7 @@ import { normalizeAzureRealtimeEndpoint } from './config';
 type Environment = Record<string, string | undefined>;
 /** Server-private identity. Never include it in client results, logs or context. */
 export type AzureCallReference = { providerCallRef: string; providerConfigurationDigest: string };
-export type HangupOutcome = { confirmed: boolean; reason: 'confirmed' | 'invalid_reference' | 'configuration_changed' | 'provider_unconfirmed' | 'transport_uncertain' };
+export type HangupOutcome = { confirmed: boolean; reason: 'confirmed' | 'invalid_reference' | 'configuration_changed' | 'provider_unconfirmed' | 'transport_uncertain'; httpStatus?: number };
 export type AzureCallLocationClassification = 'configuration_invalid' | 'missing' | 'unsafe_syntax' | 'foreign_origin' | 'unrecognized_path' | 'azure_api_path' | 'compatible_api_path';
 
 export function azureCallConfigurationDigest(env: Environment): string | null {
@@ -57,6 +57,6 @@ export async function hangupAzureCall(reference: AzureCallReference, options: { 
     const response = await (options.transport ?? fetch)(`${normalizeAzureRealtimeEndpoint(env.AZURE_OPENAI_ENDPOINT)!}/realtime/calls/${reference.providerCallRef}/hangup`, {
       method: 'POST', headers: { 'api-key': env.AZURE_OPENAI_API_KEY! }, redirect: 'error', signal,
     });
-    return response.status === 200 ? { confirmed: true, reason: 'confirmed' } : { confirmed: false, reason: 'provider_unconfirmed' };
+    return response.status === 200 ? { confirmed: true, reason: 'confirmed', httpStatus: 200 } : { confirmed: false, reason: 'provider_unconfirmed', httpStatus: response.status };
   } catch { return { confirmed: false, reason: 'transport_uncertain' }; }
 }

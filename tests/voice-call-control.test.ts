@@ -55,6 +55,7 @@ test('Azure hangup uses fixed authenticated host, rejects redirects, and only 20
       return new Response(null, { status });
     }) as typeof fetch });
     assert.equal(outcome.confirmed, status === 200);
+    assert.equal(outcome.httpStatus, status);
   }
   assert.deepEqual(await hangupAzureCall(reference, { env, transport: (async () => { throw new Error('secret upstream'); }) as typeof fetch }), { confirmed: false, reason: 'transport_uncertain' });
 });

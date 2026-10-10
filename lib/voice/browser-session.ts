@@ -218,12 +218,14 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
   function close() {
     if (closed) return;
     closed = true;
-    let serverStop: Promise<unknown> | undefined;
+    let serverStop: Promise<{ state?: unknown } | undefined> | undefined;
+    const stopRequestAbort = new AbortController();
     if (providerRequestSent && options.provider === 'azure') {
       // Uses our request ID, never a provider call reference. The server can
       // cancel a pending allocation even before the browser receives its SDP.
       serverStop = Promise.resolve().then(() => fetch('/api/voice/control', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'end', requestId }), keepalive: true })).catch(() => {});
+        body: JSON.stringify({ action: 'end', requestId }), keepalive: true, signal: stopRequestAbort.signal }))
+        .then(async response => response.ok ? await response.json() as { state?: unknown } : undefined).catch(() => undefined);
     }
     if (earlyEnabled) diagnostics.continuousSpeechUpdate({ submittedSamples });
     understanding?.close();
@@ -254,8 +256,10 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
       try { pc?.close(); } catch { /* Already closed. */ }
     };
     if (serverStop) {
-      const teardown = setTimeout(closeTransport, 4_000);
-      void serverStop.finally(() => { clearTimeout(teardown); closeTransport(); });
+      // Provider hangup has a 10s bound; the control route can observe a worker's
+      // existing claim for 11s. Only a confirmed close permits earlier teardown.
+      const teardown = setTimeout(() => { closeTransport(); stopRequestAbort.abort(); }, 12_000);
+      void serverStop.then(result => { if (result?.state === 'closed') { clearTimeout(teardown); closeTransport(); } });
     } else closeTransport();
   }
 

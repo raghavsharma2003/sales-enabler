@@ -5,6 +5,7 @@ export type InferenceMode = 'hosted' | 'local' | 'test';
 export type VoiceAttemptState = 'reserved' | 'connecting' | 'active' | 'stopping' | 'closed' | 'uncertain';
 export type VoiceAttemptInput = { requestId: string; provider: 'azure'; purpose: 'private_webrtc' | 'audio_proof'; maxSeconds?: number };
 export type VoiceAttemptRef = { id: string; organizationId: string };
+export type VoiceStopOutcomeReason = 'confirmed' | 'not_allocated' | 'missing_reference' | 'owned_transport_required' | 'invalid_reference' | 'configuration_changed' | 'provider_unconfirmed' | 'transport_uncertain' | 'authority_changed' | 'unreported';
 /** Server private. Never serialize this record into an API response. */
 export type VoiceAttemptRecord = VoiceAttemptRef & {
   userId: string; provider: 'azure'; purpose: VoiceAttemptInput['purpose']; state: VoiceAttemptState;
@@ -13,6 +14,9 @@ export type VoiceAttemptRecord = VoiceAttemptRef & {
   cancelledBeforeReservation?: boolean;
   providerProvisioningStartedAt?: string;
   stopRequestedAt?: string;
+  stopOutcomeReason?: VoiceStopOutcomeReason;
+  stopHttpStatus?: number;
+  stopOutcomeAt?: string;
   callRecord?: { kind: 'voice_preview' | 'voice_connection'; id: string };
 };
 export type VoiceAttemptReceipt = Pick<VoiceAttemptRecord, 'id' | 'deadlineAt' | 'state'> & { replayed: boolean };

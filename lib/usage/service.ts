@@ -245,11 +245,14 @@ export async function claimStop(ref: VoiceAttemptRef, deps: UsageDependencies = 
     return { ...value, state: 'stopping', stopToken: randomUUID(), stopClaimedAt: now, stopFromState: value.stopFromState ?? value.state, stopAttempts: (value.stopAttempts ?? 0) + 1 };
   }) as (VoiceAttemptRecord & { stopToken: string }) | null;
 }
-export async function recordStop(ref: VoiceAttemptRef, stopToken: string, outcome: { confirmed: boolean; providerCallRef?: string }, deps: UsageDependencies = {}) {
+export async function recordStop(ref: VoiceAttemptRef, stopToken: string, outcome: { confirmed: boolean; providerCallRef?: string; reason?: import('./contracts').VoiceStopOutcomeReason; httpStatus?: number }, deps: UsageDependencies = {}) {
   return mutate(ref, deps, value => {
     if (value.stopToken !== stopToken || value.state !== 'stopping') return null;
     const confirmed = outcome.confirmed && (value.providerCallRef ? value.providerCallRef === outcome.providerCallRef : value.stopFromState === 'reserved');
-    return { ...value, state: confirmed ? 'closed' : 'uncertain', ...(confirmed ? { closedAt: instant(deps) } : { nextStopAt: new Date(Date.parse(instant(deps)) + 30000 * 2 ** ((value.stopAttempts ?? 1) - 1)).toISOString() }) };
+    const reasons = ['confirmed', 'not_allocated', 'missing_reference', 'owned_transport_required', 'invalid_reference', 'configuration_changed', 'provider_unconfirmed', 'transport_uncertain', 'authority_changed', 'unreported'];
+    const stopOutcomeReason = outcome.confirmed && !confirmed ? 'authority_changed' : outcome.reason && reasons.includes(outcome.reason) ? outcome.reason : confirmed ? 'confirmed' : 'unreported';
+    const stopHttpStatus = Number.isInteger(outcome.httpStatus) && outcome.httpStatus! >= 100 && outcome.httpStatus! <= 599 ? outcome.httpStatus : undefined;
+    return { ...value, state: confirmed ? 'closed' : 'uncertain', stopOutcomeReason, stopHttpStatus, stopOutcomeAt: instant(deps), ...(confirmed ? { closedAt: instant(deps) } : { nextStopAt: new Date(Date.parse(instant(deps)) + 30000 * 2 ** ((value.stopAttempts ?? 1) - 1)).toISOString() }) };
   });
 }
 

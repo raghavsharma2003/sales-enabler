@@ -70,7 +70,7 @@ function fixture(t: TestContext, options: { pendingConnect?: boolean; early?: bo
     trackStops: () => trackStops, captureCloses: () => captureCloses, rtcCloses: () => rtcCloses, channelCloses: () => channelCloses,
     pauses: () => pauses, connected: () => connected, remoteDescriptions: () => remoteDescriptions,
     playback: () => Playback.instance, trackPlayback: () => Peer.instance.ontrack?.({ streams: [stream] }),
-    resolveControl: () => resolveControl(Response.json({ requested: true, state: 'closed' })), rejectControl: () => rejectControl(new Error('Synthetic offline control')),
+    resolveControl: (state = 'closed') => resolveControl(Response.json({ requested: true, state })), rejectControl: () => rejectControl(new Error('Synthetic offline control')),
     resolveConnect: () => resolveConnect(Response.json(publicConnection)) };
 }
 
@@ -93,7 +93,7 @@ test('End stops microphone, playback and sidecar now while RTC awaits the server
   const start = f.requests.find(request => request.url === '/api/voice/connect')!, stop = f.requests.find(request => request.url === '/api/voice/control')!;
   assert.match(start.body.requestId, /^[a-f0-9-]{36}$/);
   assert.deepEqual(stop.body, { action: 'end', requestId: start.body.requestId });
-  assert.equal(stop.init.keepalive, true); assert.equal(stop.init.signal, undefined, 'End control survives the aborted connect signal');
+  assert.equal(stop.init.keepalive, true); assert.notEqual(stop.init.signal, start.init.signal, 'End control has its own bounded signal'); assert.equal(stop.init.signal?.aborted, false);
   assert.equal(f.requests.filter(request => request.url === '/api/voice/control').length, 1);
   assert.equal(f.requests.filter(request => request.url === '/api/voice/perception' && request.init.method === 'DELETE').length, 1);
   assert.equal(f.rtcCloses(), 0, 'the silent RTC remains until control settles');
@@ -101,19 +101,30 @@ test('End stops microphone, playback and sidecar now while RTC awaits the server
   assert.equal(f.rtcCloses(), 1); assert.equal(f.channelCloses(), 1); assert.deepEqual(f.failures, []);
 });
 
-test('End has an unconditional four-second RTC teardown bound and a late receipt cannot close twice', { concurrency: false }, async t => {
+test('End has a twelve-second silent RTC bound beyond server hangup and late receipts cannot close twice', { concurrency: false }, async t => {
   const f = fixture(t); await f.session.connect();
   f.session.close(); await flush();
-  t.mock.timers.tick(3999); assert.equal(f.rtcCloses(), 0); assert.equal(f.trackStops(), 1);
+  t.mock.timers.tick(11999); assert.equal(f.rtcCloses(), 0); assert.equal(f.trackStops(), 1);
   t.mock.timers.tick(1); assert.equal(f.rtcCloses(), 1); assert.equal(f.channelCloses(), 1);
   f.resolveControl(); await flush(); t.mock.timers.tick(10000);
   assert.equal(f.rtcCloses(), 1); assert.equal(f.channelCloses(), 1); assert.deepEqual(f.failures, []);
 });
 
-test('a rejected control request settles teardown without reviving observers or displaying a late failure', { concurrency: false }, async t => {
+test('a rejected control request preserves the bounded silent window without reviving observers', { concurrency: false }, async t => {
   const f = fixture(t); await f.session.connect(); f.session.close(); await flush();
   f.rejectControl(); await flush();
+  assert.equal(f.rtcCloses(), 0); assert.equal(f.trackStops(), 1);
+  t.mock.timers.tick(12000);
   assert.equal(f.rtcCloses(), 1); assert.equal(f.channelCloses(), 1); assert.deepEqual(f.failures, []);
+});
+
+for (const state of ['not_claimed', 'deferred', 'uncertain']) test(`an early ${state} response cannot preempt the worker's silent hangup window`, { concurrency: false }, async t => {
+  const f = fixture(t); await f.session.connect(); f.session.close(); await flush();
+  f.resolveControl(state); await flush();
+  assert.equal(f.rtcCloses(), 0); assert.equal(f.trackStops(), 1); assert.equal(f.channel.onmessage, null);
+  t.mock.timers.tick(11999); assert.equal(f.rtcCloses(), 0);
+  t.mock.timers.tick(1); assert.equal(f.rtcCloses(), 1); assert.equal(f.channelCloses(), 1);
+  assert.equal(f.requests.find(r => r.url === '/api/voice/control')!.init.signal?.aborted, true);
 });
 
 test('End during connect uses the original request ID and ignores a late issued answer', { concurrency: false }, async t => {

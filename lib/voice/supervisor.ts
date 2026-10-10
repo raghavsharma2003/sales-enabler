@@ -1,14 +1,14 @@
 import { db, type Database } from '../server/db';
 import { HttpError } from '../server/http';
 import { assertInferenceAccess, claimStop, listDueAttempts, recordStop, requestVoiceStop } from '../usage/service';
-import type { UsageDependencies, VoiceAttemptRecord, VoiceAttemptRef } from '../usage/contracts';
+import type { UsageDependencies, VoiceAttemptRecord, VoiceAttemptRef, VoiceStopOutcomeReason } from '../usage/contracts';
 import { hangupAzureCall } from './call-control';
 import { rowData, sourceDigest, type ToolRow } from './tools/authority';
 import { assertPrivateVoiceContactScope } from './private-scope';
 import { purgeExpiredEvaluationAudioArtifacts } from '../evaluations/audio-artifacts';
 
 export const PRIVATE_VOICE_SUPERVISOR_SERVICE = 'private-voice-supervisor';
-export type VoiceSupervisorOptions = UsageDependencies & { transport?: typeof fetch; signal?: AbortSignal; scopeAfterId?: string };
+export type VoiceSupervisorOptions = UsageDependencies & { transport?: typeof fetch; signal?: AbortSignal; scopeAfterId?: string; waitForClaimMs?: number };
 
 async function callScopeIsCurrent(attempt: VoiceAttemptRecord, database: Database, now: number): Promise<boolean> {
   const row = async (kind: string, id: string) => (await database.all('SELECT id,kind,status,data,created_at FROM entities WHERE organization_id = ? AND kind = ? AND id = ?', [attempt.organizationId, kind, id]))[0] as ToolRow | undefined;
@@ -45,6 +45,23 @@ export async function privateVoiceSupervisorHeartbeat(status: 'healthy' | 'stopp
 /** Safe to return to an already-authorized caller: no provider identity is exposed. */
 export type PrivateVoiceStopResult = { state: 'closed' | 'uncertain' | 'deferred' | 'not_claimed'; claimed: boolean };
 
+async function waitForExistingStop(ref: VoiceAttemptRef, database: Database, requestedMs: number): Promise<PrivateVoiceStopResult> {
+  const waitMs = Math.min(11_000, Math.max(0, Number.isFinite(requestedMs) ? requestedMs : 0));
+  if (!waitMs) return { state: 'not_claimed', claimed: false };
+  const deadline = Date.now() + waitMs;
+  // Poll reads only: never steal a live lease or issue a second provider request.
+  for (let polls = 0; polls <= Math.ceil(waitMs / 250); polls++) {
+    const [row] = await database.all('SELECT data FROM entities WHERE id = ? AND organization_id = ? AND kind = ?', [ref.id, ref.organizationId, 'voice:attempt']);
+    if (!row) return { state: 'not_claimed', claimed: false };
+    const attempt = JSON.parse(String(row.data)) as VoiceAttemptRecord;
+    if (attempt.state === 'closed' || attempt.state === 'uncertain') return { state: attempt.state, claimed: false };
+    const remaining = deadline - Date.now();
+    if (attempt.state !== 'stopping' || remaining <= 0) return { state: 'not_claimed', claimed: false };
+    await new Promise(resolve => setTimeout(resolve, Math.min(250, remaining)));
+  }
+  return { state: 'not_claimed', claimed: false };
+}
+
 /** Stop only this tenant-scoped attempt. Caller must first request its durable stop. */
 export async function stopPrivateVoiceAttempt(ref: VoiceAttemptRef, options: VoiceSupervisorOptions = {}): Promise<PrivateVoiceStopResult> {
   const database = options.database ?? await db(), deps = { ...options, database };
@@ -59,13 +76,13 @@ export async function stopPrivateVoiceAttempt(ref: VoiceAttemptRef, options: Voi
   // Secret exchange and SDP negotiation each have a 25s timeout; allow their full bound.
   if (!current.providerCallRef && current.state !== 'reserved' && allocationAge >= 0 && allocationAge < 55_000) return { state: 'deferred', claimed: false };
   const attempt = await claimStop(ref, deps);
-  if (!attempt) return { state: 'not_claimed', claimed: false };
+  if (!attempt) return waitForExistingStop(ref, database, options.waitForClaimMs ?? 0);
   const reference = attempt.providerCallRef && attempt.providerConfigurationDigest
     ? { providerCallRef: attempt.providerCallRef, providerConfigurationDigest: attempt.providerConfigurationDigest } : undefined;
-  const confirmed = attempt.stopFromState === 'reserved' && !attempt.providerCallRef
-    ? true : reference && attempt.purpose === 'private_webrtc'
-      ? (await hangupAzureCall(reference, options)).confirmed : false;
-  const saved = await recordStop(attempt, attempt.stopToken, { confirmed, ...(reference ? { providerCallRef: reference.providerCallRef } : {}) }, deps);
+  const outcome: { confirmed: boolean; reason: VoiceStopOutcomeReason; httpStatus?: number } = attempt.stopFromState === 'reserved' && !attempt.providerCallRef
+    ? { confirmed: true, reason: 'not_allocated' } : reference && attempt.purpose === 'private_webrtc'
+      ? await hangupAzureCall(reference, options) : { confirmed: false, reason: attempt.purpose === 'audio_proof' ? 'owned_transport_required' : 'missing_reference' };
+  const saved = await recordStop(attempt, attempt.stopToken, { ...outcome, ...(reference ? { providerCallRef: reference.providerCallRef } : {}) }, deps);
   return { state: saved?.state === 'closed' ? 'closed' : 'uncertain', claimed: true };
 }
 

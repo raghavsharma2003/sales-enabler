@@ -7,7 +7,7 @@ import { db } from '../lib/server/db';
 import { ownerRegistrationStatements } from '../lib/team/service';
 import { createContact } from '../lib/server/store';
 import { createRecord } from '../lib/platform/records';
-import { getUsageSnapshot } from '../lib/usage/service';
+import { claimStop, getUsageSnapshot, recordStop, requestVoiceStop } from '../lib/usage/service';
 import { privateVoiceSupervisorHeartbeat } from '../lib/voice/supervisor';
 import { azureCallConfigurationDigest } from '../lib/voice/call-control';
 
@@ -92,6 +92,18 @@ test('real connect route binds an issued call and never returns provider secrets
   const end = await f.end(); assert.equal(end.status, 200); assert.equal((await end.json()).state, 'closed');
   assert.equal((await getUsageSnapshot(f.user)).voice.live, 0);
   await f.end(); assert.equal(f.calls.filter(call => call.url.endsWith('/hangup')).length, 1);
+});
+
+test('control route waits for a worker-owned stop instead of returning an early unclaimed receipt', { concurrency: false }, async t => {
+  const f = await fixture(t); assert.equal((await f.start()).status, 200);
+  const [attempt] = await f.attempts(); await requestVoiceStop(f.user, attempt.id);
+  const claim = await claimStop({ id: attempt.id, organizationId: f.user.organizationId }); assert.ok(claim);
+  let resolved = false;
+  const response = f.end().then(value => { resolved = true; return value; });
+  await new Promise(resolve => setTimeout(resolve, 30)); assert.equal(resolved, false);
+  await recordStop({ id: attempt.id, organizationId: f.user.organizationId }, claim.stopToken, { confirmed: true, providerCallRef: attempt.providerCallRef, reason: 'confirmed', httpStatus: 200 });
+  const result = await response; assert.equal(result.status, 200); assert.equal((await result.json()).state, 'closed');
+  assert.equal(f.calls.filter(call => call.url.endsWith('/hangup')).length, 0, 'only the owning worker sends hangup');
 });
 
 test('released calling binds the issued connection to its admitted attempt', { concurrency: false }, async t => {
