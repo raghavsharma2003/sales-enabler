@@ -1,0 +1,206 @@
+{
+  "repository": "raghavsharma2003/Taxila",
+  "branch": "claude/blissful-mayer-icwe2j",
+  "commit": "00aab4bdcc787050e65703dd4bb428ce3d9b8679",
+  "method": "Public pinned raw GitHub source downloaded read-only; no upstream code execution",
+  "files": [
+    {
+      "path": "package.json",
+      "sha256": "a886cd1da1333a96d2e49f3e5db240654d75a430b620b9212bcef1c9cbb522d3",
+      "bytes": 910,
+      "lines": 36
+    },
+    {
+      "path": "server/conversation/compose.js",
+      "sha256": "1068b821bee9adf5c294984aca81c00c700f589bf3786e21e1364ed64c0fef0e",
+      "bytes": 10645,
+      "lines": 139
+    },
+    {
+      "path": "server/conversation/policy.js",
+      "sha256": "de7bbc4e8da38ddba9497930e0d280583767b80811bfb2191c3789a496de3f3e",
+      "bytes": 10740,
+      "lines": 171
+    },
+    {
+      "path": "server/conversation/understand.js",
+      "sha256": "7ccf8637386429a7d8414c21065417f66bd27aa988a8c55678000dbfb5b0f8f8",
+      "bytes": 10936,
+      "lines": 155
+    },
+    {
+      "path": "server/latency/ack.js",
+      "sha256": "73300aa4e6032ab9532be50e4c71440c62399a49ffef2af9491fdc1464bec2a4",
+      "bytes": 7620,
+      "lines": 112
+    },
+    {
+      "path": "server/routes/voice.js",
+      "sha256": "6a8161bb44997ecfcece41772e9d6e427468207a819b294cfdd14ba3062b5e16",
+      "bytes": 24770,
+      "lines": 413
+    },
+    {
+      "path": "server/voice/azureTts.js",
+      "sha256": "49bd20ac1876a39b92ff91d93f09fa7060a995c9f6fc62450131e3719f4c6095",
+      "bytes": 5385,
+      "lines": 102
+    },
+    {
+      "path": "server/voice/azureTtsWs.js",
+      "sha256": "791a7dd5c14810c9e4cf875a026b01d388ea485db1b0f4403871e547ab88a89a",
+      "bytes": 15899,
+      "lines": 228
+    },
+    {
+      "path": "server/voice/expressive/caps.js",
+      "sha256": "aee19184a8fa02b1e2b6f88e709ab75b0b575215cd3511b1b38ed3eea1537be3",
+      "bytes": 4195,
+      "lines": 52
+    },
+    {
+      "path": "server/voice/expressive/compile/dhd.js",
+      "sha256": "f9c82f56c82dc4a8efe2981b4e2875a364f6950357763a74679f10c33b3bef6f",
+      "bytes": 4395,
+      "lines": 65
+    },
+    {
+      "path": "server/voice/expressive/render.js",
+      "sha256": "9a852157757c4da076db5207262bee65049c9d585bfaef2b1b8e250375b3ae9b",
+      "bytes": 5926,
+      "lines": 97
+    },
+    {
+      "path": "server/voice/expressive/safety.js",
+      "sha256": "f5a42b8f0995d662d52d0615bf80abeb4f48d200b0ab40f69ab3d9c0343306e1",
+      "bytes": 2225,
+      "lines": 31
+    },
+    {
+      "path": "server/voice/features.js",
+      "sha256": "025b47e82daee6fdcb39400d94f2e08f932759d7edb7563bcc60fa817e59fab6",
+      "bytes": 21885,
+      "lines": 392
+    },
+    {
+      "path": "server/voice/prewarm.js",
+      "sha256": "1b98147d01f78d00a0e30b2000ab93c3077ea1ca8f53a161d6b7868630e012a1",
+      "bytes": 7737,
+      "lines": 132
+    },
+    {
+      "path": "server/voice/realtimeSession.js",
+      "sha256": "2113a4eac2b0a6ad9f789b24840961993572af14ab363a0f3ddf2e725fa6a8da",
+      "bytes": 8296,
+      "lines": 138
+    },
+    {
+      "path": "server/voice/speech.js",
+      "sha256": "d00a3e992058b10becd2a68b28f48198d4a3aaa456f8b6e8d16e151e52f1f333",
+      "bytes": 24245,
+      "lines": 456
+    },
+    {
+      "path": "server/voice/spoken-lexicon.js",
+      "sha256": "a6988686739360d8a545eec24555d54aa86802d25eca35365b39e0e2719b96e9",
+      "bytes": 18925,
+      "lines": 243
+    },
+    {
+      "path": "server/voice/spoken.js",
+      "sha256": "e2b9bfcda4a280fb95d7680cc91ba3f011c36b4eaf81fe71a84780dcc7c8e321",
+      "bytes": 28923,
+      "lines": 606
+    },
+    {
+      "path": "server/voice/stt.js",
+      "sha256": "8e3f22d24b8de443ed798a10e6f6801d4faef0ef9dae16645a6bc497797b0044",
+      "bytes": 4267,
+      "lines": 79
+    },
+    {
+      "path": "server/voice/translit/classify.js",
+      "sha256": "e66e16ff8b4553aacabb6909c3c9529bfdc914e1e64f1551288de97dd2677afa",
+      "bytes": 2843,
+      "lines": 44
+    },
+    {
+      "path": "server/voice/translit/index.js",
+      "sha256": "9b3527b5ee5ca021535964d570dce72c500d8e87324587a0c490c537ad4e0afc",
+      "bytes": 11131,
+      "lines": 183
+    },
+    {
+      "path": "server/voice/translit/lexicon-learned.js",
+      "sha256": "30dad925a4585e6622f9add288f298a9282bb47640f412781bbe62f8fb25a4e8",
+      "bytes": 27729,
+      "lines": 6
+    },
+    {
+      "path": "server/voice/translit/lexicon.js",
+      "sha256": "e612970b967e73611dbcd3ac07ce0a2ed2071247839f9f3f7e6373b8609ab2fa",
+      "bytes": 26789,
+      "lines": 212
+    },
+    {
+      "path": "server/voice/translit/numbers.js",
+      "sha256": "6bb9e737e68a0dfa72d63e6a02ed3a542449ebde8189612c385a00621adfb12e",
+      "bytes": 8314,
+      "lines": 146
+    },
+    {
+      "path": "server/voice/translit/rules.js",
+      "sha256": "2479c32d070f8daa5d7656b8865d3ec11fb4a2ac3b29e5f2f4a9091e905c6c27",
+      "bytes": 3864,
+      "lines": 72
+    },
+    {
+      "path": "server/voice/voice-switch.js",
+      "sha256": "6f8c8a5dbac8a4450accf1e55a16d5f990fea3b563d3eb63c89d140f7557317d",
+      "bytes": 7457,
+      "lines": 116
+    },
+    {
+      "path": "server/voice/voices.js",
+      "sha256": "937a517f43c115047c27f894978f0340e206b633a8c95680f13d223954676611",
+      "bytes": 5113,
+      "lines": 82
+    },
+    {
+      "path": "src/duplex/audio.ts",
+      "sha256": "0631dfd75931118a3794d220883dfdf603241f82207b98038dcc5c064a4cc148",
+      "bytes": 15011,
+      "lines": 312
+    },
+    {
+      "path": "src/duplex/live.ts",
+      "sha256": "4ce635407f1d3df3e67a4f1bef3abf1f7c10864d4cd033fd11ef873abda0b740",
+      "bytes": 29202,
+      "lines": 574
+    },
+    {
+      "path": "src/latency/ack.ts",
+      "sha256": "6c0b75b337a35e9161c7572f488c9822fa22cf89a6b0fd41787cc85a65e0b843",
+      "bytes": 9052,
+      "lines": 208
+    },
+    {
+      "path": "src/lesson/cascadeLink.ts",
+      "sha256": "70413790d8d974e0836acbe050b59177ea05a0bd549a886bddfb26f2adc22471",
+      "bytes": 58663,
+      "lines": 1248
+    },
+    {
+      "path": "src/lesson/ttsStream.ts",
+      "sha256": "368f647c0e321b2f120beb5a2a2c1da7d33745bc34e42d52aecee6b4d60da4d9",
+      "bytes": 27357,
+      "lines": 638
+    },
+    {
+      "path": "src/lesson/voiceLink.ts",
+      "sha256": "6939175f6e4bb8c97a400056390812c60baf9185d09bd64dc7a60d846992f1cb",
+      "bytes": 18029,
+      "lines": 430
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import { createVoiceStartGate } from "@/lib/voice/start-gate";
 import { normalizeVoiceTools, type VoiceToolName } from "@/lib/voice/tools/contracts";
 import type { VoiceRuntimeDiagnostics } from "@/lib/voice/diagnostics";
 import type { ContinuousUnderstandingSnapshot } from "@/lib/voice/continuous-understanding";
+import { resolveSpeechDelivery } from "@/lib/voice/speech-delivery";
 import { VoiceTimingEvidence } from "@/components/voice-timing-evidence";
 import { ContinuousUnderstanding, type ContinuousUnderstandingStatus } from "@/components/continuous-understanding";
 
@@ -98,6 +99,8 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   const voiceProfile = preview?.draft.voiceProfile || "provider-default";
   const runtimeSettings = callDraftSnapshot ? JSON.parse(callDraftSnapshot) as AgentConfig : preview?.draft;
   const relationalRuntime = useMemo(() => compileRelationalRuntime({ entries: transcript, relationship: callBehaviorContext?.relationship || displayedContext?.relationship, settings: callBehaviorContext?.settings || runtimeSettings, callId: sessionKey.current || "current-call" }), [transcript, displayedContext?.relationship, callDraftSnapshot, preview?.draft, callBehaviorContext]);
+  const displayedSpeechDelivery = state === "idle" ? voiceProfile === "provider-default" ? preview?.draft.speechDelivery : undefined : state === "connecting" ? undefined : callBehaviorContext?.speechDelivery || runtimeSettings?.speechDelivery;
+  const speechDeliveryDecision = useMemo(() => displayedSpeechDelivery ? resolveSpeechDelivery(displayedSpeechDelivery, transcript) : undefined, [displayedSpeechDelivery, transcript]);
 
   useEffect(() => { if (live) return;
     const abort = new AbortController();
@@ -260,7 +263,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
   return <section className="voice-studio wb-studio" aria-label={preview ? "Draft call tester" : "Browser voice studio"}>
     <div className="wb-call-head"><div><h2>{preview ? "Test call" : "Browser call"}</h2><p>{preview ? "Your current editor values are used when the call starts." : "Speak with an active browser release."}</p></div><span className="wb-state" data-state={state} role="status"><span className="wb-state-dot"/>{state === "live" ? muted ? "Muted" : "Live" : state === "connecting" ? "Connecting" : state === "ended" ? "Ended" : "Ready"}</span></div>
     {preview && <div className="wb-draft-strip"><Check size={15}/><span>Internal draft test · current editor values, including enabled actions, are used when the call starts</span></div>}
-    <div className="wb-call-body"><div className="wb-provider"><span>Voice provider</span><strong>{config?.label || config?.provider || (config || configError ? "Not connected" : "Checking…")}</strong></div><div className="wb-provider"><span>Language</span><strong>{preview?.draft.primaryLanguage || callBehaviorContext?.settings.primaryLanguage || "Per release"}</strong></div></div>
+    <div className="wb-call-body"><div className="wb-provider"><span>Voice provider</span><strong>{config?.label || config?.provider || (config || configError ? "Not connected" : "Checking…")}</strong></div><div className="wb-provider"><span>Language</span><strong>{preview?.draft.primaryLanguage || callBehaviorContext?.settings.primaryLanguage || "Per release"}</strong></div>{speechDeliveryDecision && <div className="wb-provider"><span>Requested speech rate</span><strong>{speechDeliveryDecision.pace === "unhurried" ? "Unhurried · 0.9×" : "Standard · 1×"}{speechDeliveryDecision.basis === "caller_request" ? " · caller request" : " · agent setting"}</strong><span>Applies between turns; this is not evidence of heard output.</span></div>}</div>
     {!preview && <label className="pc-field">Released agent<select className="pc-select" value={release?.id || ""} disabled={!!campaignRunId || live || unsaved || saving} onChange={event => setSelectedRelease(event.target.value)}>{releases.length !== 1 && <option value="">Choose an active release</option>}{releases.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
     <label className="pc-field">{campaignRunId ? 'Queued campaign recipient' : 'Conversation context'}<select className="pc-select" value={selectedContact} disabled={lockContactSelection || live || unsaved || saving} onChange={event => setSelectedContact(event.target.value)}>{!campaignRunId && <option value="">Company knowledge only</option>}{campaignRunId && <option value="">Choose a queued recipient</option>}{contacts.map(contact => <option value={contact.id} key={contact.id}>{contact.name}</option>)}</select></label>
     {lockContactSelection && !controlledContactPending && !controlledContact && <p className="wb-inline-note">Select a queued recipient above to prepare the call desk.</p>}

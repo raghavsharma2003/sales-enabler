@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { activeMayaGoogleKeyEntries, getVoiceConfiguration, normalizeAzureRealtimeEndpoint, VoiceConfigurationError } from "./config";
 import type { VoiceConnectResult, VoiceProfile } from "./contracts";
 import { MAYA_VOICE_PROFILE } from "./maya";
+import type { SpeechDeliveryProfile } from "./speech-delivery";
 import { voiceToolDefinitions, type VoiceToolName } from "./tools/contracts";
 import { buildProviderInstructions, buildVoiceSession } from './session-config';
 import { classifyAzureCallLocation, parseAzureCallLocation, type AzureCallLocationClassification, type AzureCallReference } from './call-control';
@@ -37,7 +38,7 @@ export class VoiceCallAllocationError extends VoiceConnectionError {
 export type VoiceServerConnectResult = VoiceConnectResult & Partial<AzureCallReference>;
 
 export interface VoiceServerAdapter {
-  connect(input: { sdp?: string; instructions: string; userId: string; organizationId: string; enabledTools?: VoiceToolName[]; speechVocabulary?: readonly string[]; signal?: AbortSignal }): Promise<VoiceServerConnectResult>;
+  connect(input: { sdp?: string; instructions: string; userId: string; organizationId: string; enabledTools?: VoiceToolName[]; speechVocabulary?: readonly string[]; speechDelivery?: SpeechDeliveryProfile; signal?: AbortSignal }): Promise<VoiceServerConnectResult>;
 }
 
 function requestSignal(signal?: AbortSignal): AbortSignal {
@@ -76,6 +77,7 @@ async function connectWebRtc(
 ): Promise<VoiceServerConnectResult> {
   if (!input.sdp?.startsWith("v=0") || !input.sdp.includes("m=audio") || input.sdp.length > 128_000) throw new VoiceAllocationNotStartedError("A browser audio offer is required.");
   const azure = provider === "azure";
+  if (input.speechDelivery && !azure) throw new VoiceAllocationNotStartedError("Configured speech delivery requires Azure Realtime. Choose the Azure voice provider to use this profile.");
   const session = buildVoiceSession(
     azure ? env.AZURE_OPENAI_REALTIME_DEPLOYMENT!.trim() : env.OPENAI_REALTIME_MODEL?.trim() || "gpt-realtime-2.1",
     input.instructions,
@@ -83,6 +85,7 @@ async function connectWebRtc(
     profile,
     input.enabledTools,
     input.speechVocabulary,
+    { speechDelivery: input.speechDelivery },
   );
   const url = azure
     ? `${normalizeAzureRealtimeEndpoint(env.AZURE_OPENAI_ENDPOINT)!}/realtime/calls`
@@ -156,6 +159,7 @@ let mayaKeyCursor = 0;
 const mayaCooldown = new Map<string, number>();
 
 async function connectGemini(env: Record<string, string | undefined>, transport: typeof fetch, input: Parameters<VoiceServerAdapter["connect"]>[0], profile: VoiceProfile): Promise<VoiceConnectResult> {
+  if (input.speechDelivery) throw new VoiceAllocationNotStartedError("Configured speech delivery requires Azure Realtime. Choose the Azure voice provider to use this profile.");
   const maya = profile === "maya-despina";
   const model = maya ? env.MAYA_GEMINI_MODEL?.trim() || MAYA_VOICE_PROFILE.liveModel : env.GEMINI_LIVE_MODEL?.trim() || "gemini-3.8-live";
   if (!/^[a-zA-Z0-9._-]{2,100}$/.test(model)) throw new VoiceConnectionError("The configured Gemini Live model is invalid.");

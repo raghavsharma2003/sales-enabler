@@ -7,6 +7,8 @@ import type { PlatformRecord } from '../platform/contracts';
 import { compileAgentContext } from '../voice/context';
 import { getVoiceConfiguration, normalizeAzureRealtimeEndpoint } from '../voice/config';
 import { buildVoiceSession } from '../voice/session-config';
+import { resolveSpeechDelivery } from '../voice/speech-delivery';
+import { RELATIONAL_SOURCE_REVISION } from '../voice/relational-runtime';
 import { getActiveMembership, operatorMembershipFence } from '../team/service';
 import { beginVoiceAttempt, closeOwnedVoiceAttempt, markAttemptProvisioning } from '../usage/service';
 import type { UsageDependencies } from '../usage/contracts';
@@ -200,28 +202,33 @@ export async function runAudioProof(user: AuthUser, body: Record<string, unknown
     const voice = (env.AZURE_OPENAI_REALTIME_VOICE || 'marin').trim();
     const context = await compileAgentContext(user, version.data.config, knowledge);
     const labInstructions = `${context.instructions}\n<audio_proof_protocol>Evaluation-only fictional synthetic caller. No contact identity, customer memory, tools, business actions, writes, or external side effects are available. Answer one caller turn.</audio_proof_protocol>`;
-    const session = buildVoiceSession(realtimeModel, labInstructions, voice, 'provider-default', [], context.speechVocabulary);
+    const profile = version.data.config.speechDelivery;
+    const session = buildVoiceSession(realtimeModel, labInstructions, voice, 'provider-default', [], context.speechVocabulary, { speechDelivery: profile });
+    const sessionBase = JSON.parse(JSON.stringify(session));
+    delete sessionBase.audio.output.speed;
     const manifest: AudioProofRunManifest = {
       schemaVersion: 1, protocol: 'azure_realtime_synthetic_audio_proof_v1', scenario, scenarioDigest: sha(scenario),
       fixture: { id: fixture.data.artifact.id, sha256: fixture.data.artifact.sha256, durationMs: fixture.data.artifact.durationMs, sampleRate: fixture.data.artifact.sampleRate, channels: fixture.data.artifact.channels },
       agent: { id: version.data.agentId, versionId: version.id, versionNumber: version.data.number, configDigest: sha(version.data.config), sourceRevision: version.data.sourceRevision },
       knowledgeDigests: current, contextDigest: context.contextDigest, promptDigest: sha(labInstructions), sessionConfigDigest: sha(session),
-      provider: 'azure', apiSurface: 'azure_openai_realtime_websocket', modelReferenceDigest: sha(realtimeModel), voice,
+      provider: 'azure', apiSurface: 'azure_openai_realtime_websocket', modelReferenceDigest: sha(realtimeModel), providerEndpointDigest: sha(normalizeAzureRealtimeEndpoint(env.AZURE_OPENAI_ENDPOINT)), voice,
       inputTranscription: 'gpt-4o-mini-transcribe', tools: 'disabled', memory: 'disabled_no_contact', businessActions: 'disabled',
-      captureConsent: { actorId: user.id, confirmedAt: now, scope: 'store_synthetic_input_and_ai_output_for_audio_proof' }, startedAt: now, runnerVersion: 1,
+      captureConsent: { actorId: user.id, confirmedAt: now, scope: 'store_synthetic_input_and_ai_output_for_audio_proof' }, startedAt: now, runnerVersion: 2,
+      runtimeVersion: `speech-delivery-v1:${RELATIONAL_SOURCE_REVISION}`, sessionBaseDigest: sha(sessionBase),
+      speechDelivery: { configuredProfile: profile || null, initialDecision: resolveSpeechDelivery(profile, []), providerAcknowledgement: { initial: false, final: false } },
       unknownProviderInternals: ['model_weights_revision', 'regional_serving_build'],
     };
     const reserved = await admission.begin(user, { requestId: `audio-proof-run:${requestId}`, provider: 'azure', purpose: 'audio_proof', maxSeconds: 45 }, usage);
     attemptId = reserved.id;
     if (reserved.replayed || !await admission.mark(user, reserved.id, usage)) return await finish(user, record, { ...pending, manifest, manifestDigest: sha(manifest), failureCode: 'transport_uncertain' }, 'uncertain', database, instant(dependencies));
     providerStarted = true;
-    const result = await (dependencies.realtime || runAzureRealtimeAudioProof)({ wave: inputArtifact.bytes, session: session as unknown as Record<string, unknown>, settings: version.data.config,
+    const result = await (dependencies.realtime || runAzureRealtimeAudioProof)({ wave: inputArtifact.bytes, session: session as unknown as Record<string, unknown>, settings: version.data.config, speechDelivery: profile,
       expectedCallerText: scenario.callerText, endpoint: env.AZURE_OPENAI_ENDPOINT!, apiKey: env.AZURE_OPENAI_API_KEY!, model: realtimeModel, deadlineMs: 45_000 });
     providerClosed = result.providerClosed;
     // Evidence may remain uncertain after a timeout or early close, while the
     // runner's confirmed socket-close receipt still releases owned capacity.
     await admission.close(user, reserved.id, { outcome: result.providerClosed ? (result.status === 'complete' ? 'complete' : 'failed') : 'uncertain' }, usage);
-    const finalManifest = { ...manifest, ...(result.runtimePolicyDigest ? { runtimePolicyDigest: result.runtimePolicyDigest } : {}) };
+    const finalManifest = { ...manifest, ...(result.runtimePolicyDigest ? { runtimePolicyDigest: result.runtimePolicyDigest } : {}), ...(result.speechDelivery ? { speechDelivery: result.speechDelivery } : {}) };
     if (!result.providerClosed) return await finish(user, record, { ...pending, manifest: finalManifest, manifestDigest: sha(finalManifest), trace: result.trace, measurements: result.measurements, failureCode: 'transport_uncertain' }, 'uncertain', database, instant(dependencies));
     if (result.status !== 'complete' || !result.outputWave || !result.outputDurationMs) {
       return await finish(user, record, { ...pending, manifest: finalManifest, manifestDigest: sha(finalManifest), trace: result.trace, measurements: result.measurements, failureCode: result.failureCode || 'transport_uncertain' }, result.status, database, instant(dependencies));

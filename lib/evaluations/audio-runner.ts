@@ -4,7 +4,8 @@ import { HttpError } from '../server/http';
 import { normalizeAzureRealtimeEndpoint } from '../voice/config';
 import { configureAzureSpeechNodeTransport } from '../voice/continuous-speech-provider';
 import { compileRelationalRuntime, RELATIONAL_SOURCE_REVISION, type RelationalSettings } from '../voice/relational-runtime';
-import type { AudioProofFailureCode, AudioProofTraceEvent } from './audio-schema';
+import { resolveSpeechDelivery, type SpeechDeliveryProfile } from '../voice/speech-delivery';
+import type { AudioProofDeliveryEvidence, AudioProofFailureCode, AudioProofTraceEvent } from './audio-schema';
 
 const sha = (value: unknown) => createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
 const MAX_FIXTURE_BYTES = 1_000_000;
@@ -91,6 +92,7 @@ export type RealtimeProofInput = {
   wave: Buffer;
   session: Record<string, unknown>;
   settings: RelationalSettings;
+  speechDelivery?: SpeechDeliveryProfile;
   expectedCallerText: string;
   endpoint: string;
   apiKey: string;
@@ -108,6 +110,7 @@ export type RealtimeProofResult = {
   outputWave?: Buffer;
   outputDurationMs?: number;
   runtimePolicyDigest?: string;
+  speechDelivery?: AudioProofDeliveryEvidence;
   trace: AudioProofTraceEvent[];
   measurements: {
     inputAudioDurationMs: number;
@@ -137,6 +140,9 @@ export async function runAzureRealtimeAudioProof(input: RealtimeProofInput, depe
   const url = `${base.replace(/^https:/, 'wss:')}/realtime?model=${encodeURIComponent(input.model)}`;
   const socket = socketFactory(url, { headers: { 'api-key': input.apiKey }, handshakeTimeout: 10_000, maxPayload: 2_000_000, perMessageDeflate: false });
   let recognizedCallerText = '', assistantText = '', runtimePolicyDigest: string | undefined;
+  const profile = input.speechDelivery ? { ...input.speechDelivery } : undefined;
+  const speechDelivery: AudioProofDeliveryEvidence = { configuredProfile: profile || null, initialDecision: resolveSpeechDelivery(profile, []), providerAcknowledgement: { initial: false, final: false } };
+  const acknowledgedSpeed = (session: Record<string, unknown>) => ((session.audio as { output?: { speed?: unknown } } | undefined)?.output?.speed);
   const audio: Buffer[] = []; let outputBytes = 0, initialSessionAck = false, behaviorAwaitingAck = false, behaviorInstructions: string | undefined, responseRequested = false, responseDone = false, responseCompleted = false;
   let status: RealtimeProofResult['status'] = 'uncertain', failureCode: AudioProofFailureCode | undefined = 'transport_uncertain';
 
@@ -151,7 +157,7 @@ export async function runAzureRealtimeAudioProof(input: RealtimeProofInput, depe
         const a = at(from), b = at(to); return a === undefined || b === undefined || b < a ? undefined : b - a;
       };
       resolve({ status, providerClosed, ...(failureCode ? { failureCode } : {}), recognizedCallerText, assistantText,
-        ...(outputPcm.length ? { outputWave: pcm24ToWave(outputPcm), outputDurationMs, runtimePolicyDigest } : {}), trace,
+        ...(outputPcm.length ? { outputWave: pcm24ToWave(outputPcm), outputDurationMs, runtimePolicyDigest } : {}), speechDelivery, trace,
         measurements: { inputAudioDurationMs: parsed.durationMs, outputAudioDurationMs: outputDurationMs,
           ...(interval('input_audio_finished', 'transcript_final') !== undefined ? { inputFinishedToTranscriptFinalMs: interval('input_audio_finished', 'transcript_final') } : {}),
           ...(interval('response_requested', 'first_server_audio') !== undefined ? { responseRequestedToFirstServerAudioMs: interval('response_requested', 'first_server_audio') } : {}),
@@ -194,11 +200,14 @@ export async function runAzureRealtimeAudioProof(input: RealtimeProofInput, depe
         const acknowledged = event.session && typeof event.session === 'object' && !Array.isArray(event.session) ? event.session as Record<string, unknown> : undefined;
         if (acknowledged?.type !== 'realtime') return;
         if (behaviorAwaitingAck) {
-          if (!behaviorInstructions || acknowledged.instructions !== behaviorInstructions) return;
+          if (!behaviorInstructions || acknowledged.instructions !== behaviorInstructions || acknowledgedSpeed(acknowledged) !== speechDelivery.finalDecision?.speed) return;
+          speechDelivery.providerAcknowledgement.final = true;
           behaviorAwaitingAck = false; mark('behavior_acknowledged'); mark('response_requested'); responseRequested = true; if (!send({ type: 'response.create' })) return; return;
         }
         if (initialSessionAck) return;
         if (typeof input.session.instructions !== 'string' || acknowledged.instructions !== input.session.instructions) return;
+        if (profile && acknowledgedSpeed(acknowledged) !== speechDelivery.initialDecision.speed) return;
+        speechDelivery.providerAcknowledgement.initial = true;
         initialSessionAck = true; mark('session_configured');
         const withSilence = Buffer.concat([parsed.pcm, Buffer.alloc(FRAME_BYTES * 10)]);
         for (let offset = 0; offset < withSilence.length; offset += FRAME_BYTES) {
@@ -215,14 +224,16 @@ export async function runAzureRealtimeAudioProof(input: RealtimeProofInput, depe
       if (type === 'input_audio_buffer.speech_stopped') mark('provider_speech_stopped');
       if (type === 'input_audio_buffer.committed') mark('input_committed');
       if (type === 'conversation.item.input_audio_transcription.completed') {
-        if (typeof event.transcript !== 'string' || !event.transcript.trim() || event.transcript.length > 4000 || responseRequested) { stop('failed', 'provider_protocol', true); return; }
+        if (!initialSessionAck || behaviorAwaitingAck || typeof event.transcript !== 'string' || !event.transcript.trim() || event.transcript.length > 4000 || responseRequested) { stop('failed', 'provider_protocol', true); return; }
         recognizedCallerText = event.transcript.trim(); mark('transcript_final');
         const runtime = compileRelationalRuntime({ entries: [{ id: 'audio-proof-caller', role: 'user', text: recognizedCallerText }], settings: input.settings, callId: 'audio-proof' });
+        speechDelivery.finalDecision = resolveSpeechDelivery(profile, [{ id: 'audio-proof-caller', role: 'user', text: recognizedCallerText }]);
         runtimePolicyDigest = sha([RELATIONAL_SOURCE_REVISION, runtime.instructions]); mark('behavior_compiled');
         const initialInstructions = typeof input.session.instructions === 'string' ? input.session.instructions : '';
         const instructions = `${initialInstructions}\n<live_behavior_update>\n${runtime.instructions}\n</live_behavior_update>\n<audio_proof_boundary>\nThis is an evaluation-only synthetic scenario. No tools, memory writes, business actions, promises, or external side effects are available. Answer the fictional caller once.\n</audio_proof_boundary>`;
-        behaviorInstructions = instructions; behaviorAwaitingAck = true; if (!send({ type: 'session.update', session: { type: 'realtime', instructions } })) return; return;
+        behaviorInstructions = instructions; behaviorAwaitingAck = true; if (!send({ type: 'session.update', session: { type: 'realtime', instructions, audio: { output: { speed: speechDelivery.finalDecision.speed } } } })) return; return;
       }
+      if ((type.startsWith('response.') && !responseRequested)) { stop('failed', 'provider_protocol', true); return; }
       if (type === 'response.created') mark('response_created');
       if ((type === 'response.output_audio.delta' || type === 'response.audio.delta') && typeof event.delta === 'string') {
         const part = Buffer.from(event.delta, 'base64');

@@ -42,6 +42,8 @@ export async function POST(request: Request) {
     // Profile authority is the validated draft or immutable released agent, never a caller-supplied provider field.
     const profile: VoiceProfile = context.agent.voiceProfile === 'maya-despina' ? 'maya-despina' : 'provider-default';
     const configuration = getVoiceConfiguration(process.env, profile);
+    const speechDelivery = context.agent.speechDelivery ? { ...context.agent.speechDelivery } : undefined;
+    if (speechDelivery && configuration.provider !== 'azure') throw new HttpError(400, 'Configured speech delivery requires Azure Realtime. Choose the Azure voice provider to use this profile.');
     await assertInferenceAccess(user);
     const adapter = getVoiceServerAdapter(process.env, fetch, profile);
     const sdp = configuration.provider === 'gemini' ? undefined : readAudioOffer(data.sdp);
@@ -62,7 +64,7 @@ export async function POST(request: Request) {
     }
     if (request.signal.aborted) throw new HttpError(409, 'The call was cancelled before connection.');
     providerStarted = true;
-    const result = await adapter.connect({ sdp, instructions: context.instructions, userId: user.id, organizationId: context.organizationId, signal: request.signal, enabledTools: toolAuthority.enabledTools, speechVocabulary: context.speechVocabulary });
+    const result = await adapter.connect({ sdp, instructions: context.instructions, userId: user.id, organizationId: context.organizationId, signal: request.signal, enabledTools: toolAuthority.enabledTools, speechVocabulary: context.speechVocabulary, ...(speechDelivery ? { speechDelivery } : {}) });
     const { providerCallRef, providerConfigurationDigest, ...publicResult } = result;
     if (providerCallRef && providerConfigurationDigest) allocated = { providerCallRef, providerConfigurationDigest };
     if (attemptId) {
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
     }
     const initialInstructions = buildProviderInstructions(context.instructions, profile, toolAuthority.enabledTools);
     const behaviorContext = { settings: { allowedLanguages: context.agent.allowedLanguages,
-      primaryLanguage: context.agent.primaryLanguage, responseStyle: context.agent.responseStyle }, relationship: context.relationship };
+      primaryLanguage: context.agent.primaryLanguage, responseStyle: context.agent.responseStyle }, relationship: context.relationship, ...(speechDelivery ? { speechDelivery } : {}) };
     const configuredOpening = context.agent.openingMessage?.trim() || context.agent.disclosure;
     const openingMessage = /\b(ai|artificial intelligence|virtual assistant)\b/i.test(configuredOpening)
       ? configuredOpening : `${context.agent.disclosure} ${configuredOpening}`;

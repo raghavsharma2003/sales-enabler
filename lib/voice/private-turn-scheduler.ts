@@ -1,4 +1,5 @@
 import type { PrivatePreparationEvent } from "./diagnostics";
+import type { SpeechDeliveryDecision } from "./speech-delivery";
 
 /** Private WebRTC turn ordering. The provider retains VAD interruption/playback
  * truncation; only response creation is client controlled. No provider payloads
@@ -6,6 +7,8 @@ import type { PrivatePreparationEvent } from "./diagnostics";
 export function createPrivateTurnScheduler(options: {
   send: (event: object) => void;
   instructions: () => string;
+  /** Pure decision from authoritative final turns; absent preserves old wire behavior. */
+  speechDelivery?: () => SpeechDeliveryDecision | undefined;
   /** Synchronous: the owner stages current-turn guidance inside this callback. */
   onUserTurn: (turn: { id: string; text: string }) => void;
   /** Preserve already captured ASR on close without preparing another reply.
@@ -17,7 +20,7 @@ export function createPrivateTurnScheduler(options: {
   now?: () => number;
 }) {
   type Turn = { id: string; text?: string; committed: boolean; published?: boolean; stoppedAt?: number; finalAsrAt?: number; timer?: ReturnType<typeof setTimeout> };
-  type Snapshot = { context: string; behavior: string; generation: number };
+  type Snapshot = { context: string; behavior: string; generation: number; speed?: SpeechDeliveryDecision['speed'] };
   const now = options.now ?? (() => performance.now());
   let closed = false;
   let busy = false;
@@ -61,10 +64,11 @@ export function createPrivateTurnScheduler(options: {
   function snapshot(guidance = behavior): Snapshot | undefined {
     const baseline = options.instructions();
     if (!baseline) { fail("The approved voice context is unavailable. Save this conversation and start again."); return; }
-    return { context: `${baseline}${guidance ? `\n<live_behavior_update>\n${guidance}\n</live_behavior_update>` : ""}`, behavior: guidance, generation };
+    const delivery = options.speechDelivery?.();
+    return { context: `${baseline}${guidance ? `\n<live_behavior_update>\n${guidance}\n</live_behavior_update>` : ""}`, behavior: guidance, generation, ...(delivery ? { speed: delivery.speed } : {}) };
   }
   function matches(a: Snapshot, b: Snapshot) {
-    return a.generation === b.generation && a.context === b.context && a.behavior === b.behavior;
+    return a.generation === b.generation && a.context === b.context && a.behavior === b.behavior && a.speed === b.speed;
   }
   function sendGate(candidate: Snapshot, speculative: boolean) {
     const instructions = `${candidate.context}\n<live_turn_revision>${++revision}</live_turn_revision>`;
@@ -72,7 +76,7 @@ export function createPrivateTurnScheduler(options: {
       clearGate();
       fail("The voice provider did not confirm the current turn guidance. Save this conversation and start again.");
     }, 5_000) };
-    options.send({ type: "session.update", session: { type: "realtime", instructions } });
+    options.send({ type: "session.update", session: { type: "realtime", instructions, ...(candidate.speed !== undefined ? { audio: { output: { speed: candidate.speed } } } : {}) } });
   }
   function releaseEligible() {
     if (!eligible || closed || busy || toolsBusy || speakingItem || releasing) return;
@@ -265,6 +269,7 @@ export function createPrivateTurnScheduler(options: {
       if (event.type === "error" && event.error?.code === "response_cancel_not_active" && cancellationEvents.delete(event.error?.event_id)) return true;
       if (event.type === "session.updated") {
         if (!gate || event.session?.instructions !== gate.instructions) return true;
+        if (gate.speed !== undefined && (event.session?.type !== "realtime" || event.session?.audio?.output?.speed !== gate.speed)) return true;
         if (gate.acknowledgedAt !== undefined) return true;
         clearTimeout(gate.timer); gate.timer = undefined;
         gate.acknowledgedAt = now();

@@ -8,6 +8,7 @@ import { normalizeVoiceTools, type VoiceToolName } from '../../lib/voice/tools/c
 import { normalizeSpeechVocabulary, MAX_SPEECH_VOCABULARY_TERMS } from '../../lib/voice/speech-vocabulary';
 import { VoiceStudio } from '../voice-studio';
 import { VoiceCloningPanel } from '../voice-cloning-panel';
+import { TaxilaVoiceAudition } from '../taxila-voice-audition';
 import { AgentRevision } from '../agent-revision';
 import { AgentReleasePanel } from '../agent-release-panel';
 import { campaignAgentBinding, campaignAgentContext, campaignAgentFocus, campaignAgentTemplate, parseCampaignAgentFocus, returnCampaignAgent } from '../../lib/platform/campaign-agent-handoff';
@@ -125,6 +126,11 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
     if (viewer || busy) return;
     setDraft(previous => ({ ...previous, [key]: value })); setNotice(''); setValidation(''); setInvalidField('');
   };
+  const speechDeliveryChoice = draft.speechDelivery?.pace || 'workspace';
+  const chooseSpeechDelivery = (pace: 'workspace' | 'standard' | 'unhurried') => {
+    if (pace === 'workspace') { set('speechDelivery', undefined); return; }
+    set('speechDelivery', { version: 1, pace, adaptToRequests: draft.speechDelivery?.adaptToRequests ?? false });
+  };
   const agentVersions = versions.filter(version => version.data.agentId === current?.id).sort((a, b) => Number(b.data.number) - Number(a.data.number));
   const latestConfig = agentVersions[0]?.data.config as AgentConfig | undefined;
   const sourcesChanged = !!agentVersions[0] && draft.knowledgeIds.some(id => {
@@ -141,6 +147,7 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
     if ((draft.systemPrompt || '').length > 12000) return { section: 'Conversation', field: 'agent-system-prompt', message: 'Keep the system prompt within 12,000 characters.' };
     if ((draft.openingMessage || '').length > 1000) return { section: 'Conversation', field: 'agent-opening-message', message: 'Keep the opening message within 1,000 characters.' };
     if (!draft.primaryLanguage.trim() || !draft.allowedLanguages.includes(draft.primaryLanguage)) return { section: 'Voice & language', field: 'agent-languages', message: 'Include the primary language in the allowed languages.' };
+    if (draft.speechDelivery && draft.voiceProfile === 'maya-despina') return { section: 'Voice & language', field: 'agent-speech-delivery-reset', message: 'Reset the Azure speech delivery setting or switch back to the Azure workspace voice.' };
     try { normalizeSpeechVocabulary(draft.speechVocabulary); } catch (error) {
       const message = error instanceof Error ? error.message : 'Review the speech vocabulary.';
       setVocabularyError(message); return { section: 'Voice & language', field: 'agent-speech-vocabulary', message };
@@ -264,6 +271,21 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
               {section === 'Voice & language' && <>
                 <div className={styles.sectionHead}><h3>Voice and language</h3><p>Choose how the agent speaks, then check it in a test call.</p></div>
                 <label className="pc-field" htmlFor="agent-voice">Voice profile<select id="agent-voice" className="pc-select" value={draft.voiceProfile || 'provider-default'} onChange={event => set('voiceProfile', event.target.value as AgentConfig['voiceProfile'])}><option value="provider-default">Azure workspace voice</option><option value="maya-despina">Maya original · Gemini Despina</option></select><small>{draft.voiceProfile === 'maya-despina' ? 'Uses the configured free Gemini pool and the source Despina preset.' : 'Uses the voice configured for your Azure workspace.'}</small></label>
+                <fieldset className={styles.delivery} aria-describedby="agent-speech-delivery-help">
+                  <legend>Speech delivery</legend>
+                  <p id="agent-speech-delivery-help">Choose an experimental base rate for the Azure workspace voice.</p>
+                  <div className={styles.deliveryChoices}>
+                    <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'workspace'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('workspace')}/><span><strong>Workspace default</strong><small>No saved rate override</small></span></label>
+                    <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'standard'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('standard')}/><span><strong>Standard</strong><small>1× rate</small></span></label>
+                    <label><input type="radio" name="agent-speech-delivery" checked={speechDeliveryChoice === 'unhurried'} disabled={draft.voiceProfile === 'maya-despina'} onChange={() => chooseSpeechDelivery('unhurried')}/><span><strong>Unhurried</strong><small>0.9× rate</small></span></label>
+                  </div>
+                  <label className={styles.deliveryAdapt}><input type="checkbox" checked={draft.speechDelivery?.adaptToRequests || false} disabled={!draft.speechDelivery || draft.voiceProfile === 'maya-despina'} onChange={event => draft.speechDelivery && set('speechDelivery', { ...draft.speechDelivery, adaptToRequests: event.target.checked })}/><span><strong>Follow explicit caller rate requests</strong><small>Recognizes direct requests to slow down or return to normal speed in English, Hindi and Hinglish. It does not infer emotion, and brief content does not make the agent speak faster.</small></span></label>
+                  <p className={styles.deliveryFootnote}>These rates are experimental and do not guarantee perceived warmth or naturalness. <button type="button" onClick={() => navigate('Quality')}>Review saved audio in Quality</button>.</p>
+                </fieldset>
+                {draft.voiceProfile === 'maya-despina' && <div className={styles.deliveryUnsupported} role={draft.speechDelivery ? 'alert' : 'status'}>
+                  <p>{draft.speechDelivery ? 'This Azure speech delivery setting remains in the draft, but Maya does not support it. Reset the setting to save with Maya, or switch back to the Azure workspace voice.' : 'Speech delivery settings currently support the Azure workspace voice. Maya uses its own provider delivery.'}</p>
+                  {draft.speechDelivery && <button id="agent-speech-delivery-reset" type="button" className="pc-button" onClick={() => set('speechDelivery', undefined)}>Reset speech delivery</button>}
+                </div>}
                 <div className={styles.pair}><label className="pc-field" htmlFor="agent-language">Primary language<input id="agent-language" className="pc-input" required value={draft.primaryLanguage} onChange={event => set('primaryLanguage', event.target.value)}/></label><label className="pc-field" htmlFor="agent-languages">Allowed languages<input id="agent-languages" className="pc-input" value={languagesText} onChange={event => { setLanguagesText(event.target.value); set('allowedLanguages', values(event.target.value)); }} {...fieldError('agent-languages')}/><small>Separate languages with commas.</small></label></div>
                 <div className={styles.vocabulary}><label className={styles.fieldHeading} htmlFor="agent-speech-vocabulary">Speech vocabulary <small>{draft.speechVocabulary?.length || 0} / {MAX_SPEECH_VOCABULARY_TERMS} terms</small></label><p id="agent-speech-vocabulary-help">Optional spelling hints for company names, products and acronyms. Add one term per line.</p><textarea id="agent-speech-vocabulary" className="pc-textarea" rows={5} maxLength={4096} value={vocabularyText} aria-invalid={!!vocabularyError} aria-describedby={`agent-speech-vocabulary-help${vocabularyError ? ' agent-speech-vocabulary-error' : ''}`} placeholder={'Northstar Learning\nIELTS\nपुणे'} onChange={event => {
                   const text = event.target.value; const terms = text.split(/\r?\n/).map(term => term.trim()).filter(Boolean);
@@ -299,7 +321,7 @@ export function AgentsView({ records, workspace, act, busy: platformBusy, naviga
             </details>}
           </>}
           <div hidden={section !== 'Conversation'} className={styles.revision}><AgentRevision agent={current} dirty={dirty} viewer={viewer} proposals={records} onApplied={async () => { await act('workspace.refresh'); }}/></div>
-          <div hidden={section !== 'Voice & language'}>{!viewer && <details className={styles.details}><summary>Personal Voice enrollment</summary><VoiceCloningPanel/></details>}</div>
+          <div hidden={section !== 'Voice & language'}><TaxilaVoiceAudition viewer={viewer}/>{!viewer && <details className={styles.details}><summary>Personal Voice enrollment</summary><VoiceCloningPanel/></details>}</div>
         </div>
       </section>
       <aside id="agent-test-call" tabIndex={-1} className={styles.testDock} aria-label="Test current agent draft">

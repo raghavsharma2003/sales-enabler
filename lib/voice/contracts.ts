@@ -54,6 +54,8 @@ export interface VoiceToolCall {
 export type VoiceProvider = "openai" | "azure" | "gemini";
 
 export interface VoiceBehaviorContext {
+  /** Validated server profile, frozen for this call. Absent keeps legacy delivery. */
+  speechDelivery?: import("./speech-delivery").SpeechDeliveryProfile;
   settings: { allowedLanguages: string[]; primaryLanguage: string; responseStyle: string };
   relationship: import("./relationship").RelationshipContext;
 }

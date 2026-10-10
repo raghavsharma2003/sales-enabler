@@ -8,6 +8,7 @@ import { azureRealtimeConnection, MAX_CLIENT_MESSAGE_BYTES, parseClientEvent, pu
 import { compileRelationalRuntime } from '../voice/relational-runtime';
 import type { ConversationEntry } from '../voice/emotional';
 import { compileSpeechVocabularyPrompt } from '../voice/speech-vocabulary';
+import { resolveSpeechDelivery } from '../voice/speech-delivery';
 import { PublicVoiceEvidenceRecorder, type PublicVoiceResponseEvidence } from './evidence';
 import { assertInferenceAccess } from '../usage/service';
 import { createContinuousSpeechGateway, CONTINUOUS_SPEECH_MAX_PAYLOAD, type ContinuousSpeechGatewayDependencies } from '../voice/continuous-speech-gateway';
@@ -64,10 +65,11 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
   let baseInstructions = '', openingInstructions = '';
   // Interrupts and newer caller turns invalidate replies across both configuration and authorization awaits.
   // Configuration acknowledgement is separate from response completion/cancellation.
-  let generation = 0, acknowledgedInstructions: string | undefined;
+  let generation = 0, acknowledgedInstructions: string | undefined, acknowledgedSpeed: 1 | 0.9 | undefined;
   const microphoneGenerations = new Map<string, number>();
-  type PendingUpdate = { instructions: string; timer: ReturnType<typeof setTimeout>; resolve: (confirmed: boolean) => void };
+  type PendingUpdate = { instructions: string; speed?: 1 | 0.9; timer: ReturnType<typeof setTimeout>; resolve: (confirmed: boolean) => void };
   let pendingUpdate: PendingUpdate | undefined;
+  let pendingCancellation: { timer: ReturnType<typeof setTimeout>; resolve: (confirmed: boolean) => void } | undefined;
   const acknowledgedUpdateIds = new Set<string>();
   const transcriptionTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const origin = typeof request.headers.origin === 'string' ? request.headers.origin : '';
@@ -104,6 +106,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
     if (done) return; done = true; finalOutcome = outcome;
     generation++;
     settleUpdate(false);
+    settleCancellation(false);
     clearTimeout(authTimer); if (watchdog) clearTimeout(watchdog); if (recheck) clearInterval(recheck);
     for (const timer of transcriptionTimers.values()) clearTimeout(timer);
     // terminate closes the provider socket immediately, including when browser close handshakes stall.
@@ -127,19 +130,38 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
   function settleUpdate(confirmed: boolean) {
     const pending = pendingUpdate; if (!pending) return;
     pendingUpdate = undefined; clearTimeout(pending.timer);
-    if (confirmed) acknowledgedInstructions = pending.instructions;
+    if (confirmed) { acknowledgedInstructions = pending.instructions; acknowledgedSpeed = pending.speed; }
     pending.resolve(confirmed);
   }
-  function updateInstructions(instructions: string, update: unknown = { type: 'session.update', session: { type: 'realtime', instructions } }): Promise<boolean> {
+  function configurationTimeout() {
+    const configured = dependencies.sessionUpdateTimeoutMs;
+    return configured !== undefined && Number.isFinite(configured) ? Math.max(1, Math.min(configured, SESSION_UPDATE_TIMEOUT_MS)) : SESSION_UPDATE_TIMEOUT_MS;
+  }
+  function settleCancellation(confirmed: boolean) {
+    const pending = pendingCancellation; if (!pending) return;
+    if (confirmed && responseSlots.some(slot => slot.cancelled && !slot.completed)) return;
+    pendingCancellation = undefined; clearTimeout(pending.timer); pending.resolve(confirmed);
+  }
+  function waitForCancellation(): Promise<boolean> {
+    if (done) return Promise.resolve(false);
+    if (!responseSlots.some(slot => slot.cancelled && !slot.completed)) return Promise.resolve(true);
+    if (pendingCancellation) throw new Error('A voice cancellation is already pending.');
+    return new Promise<boolean>(resolve => {
+      pendingCancellation = { resolve, timer: setTimeout(() => stop('response_cancel_timeout', 'The interrupted voice reply did not finish in time. No automatic retry was made.'), configurationTimeout()) };
+    });
+  }
+  async function updateInstructions(instructions: string, speed?: 1 | 0.9, update: unknown = { type: 'session.update', session: { type: 'realtime', instructions, ...(speed === undefined ? {} : { audio: { output: { speed } } }) } }): Promise<boolean> {
+    // response.cancel is only a request. Azure must finish the cancelled response
+    // before output speed can change or acknowledged configuration can be reused.
+    if (speed !== undefined && !await waitForCancellation()) return false;
     if (done) return Promise.resolve(false);
     if (pendingUpdate) throw new Error('A voice configuration update is already pending.');
-    if (acknowledgedInstructions === instructions) return Promise.resolve(true);
+    if (acknowledgedInstructions === instructions && acknowledgedSpeed === speed) return Promise.resolve(true);
     // Realtime session.updated carries the resulting state, not the client event_id.
-    // Keep one update in flight and compare instructions before releasing its waiter.
-    const configuredTimeout = dependencies.sessionUpdateTimeoutMs;
-    const timeout = configuredTimeout !== undefined && Number.isFinite(configuredTimeout) ? Math.max(1, Math.min(configuredTimeout, SESSION_UPDATE_TIMEOUT_MS)) : SESSION_UPDATE_TIMEOUT_MS;
+    // Keep one update in flight and compare instructions and configured speed before releasing its waiter.
+    const timeout = configurationTimeout();
     return new Promise<boolean>(resolve => {
-      pendingUpdate = { instructions, resolve, timer: setTimeout(() => stop('session_update_timeout', 'The voice configuration was not confirmed in time. No automatic retry was made.'), timeout) };
+      pendingUpdate = { instructions, speed, resolve, timer: setTimeout(() => stop('session_update_timeout', 'The voice configuration was not confirmed in time. No automatic retry was made.'), timeout) };
       try { provider(update); } catch { stop('provider_transport', 'The voice configuration could not be sent. No automatic reconnect was made.'); }
     });
   }
@@ -182,7 +204,9 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
     const runtime = compileRelationalRuntime({ entries, settings: authority!.config, callId: authority!.sessionId });
     const instructions = publicContinuationInstructions(`${baseInstructions}\n${runtime.instructions}`);
     if (instructions.length > 12000) throw new HttpError(429, 'The conversation context limit was reached.');
-    await updateInstructions(instructions);
+    const profile = authority!.config.speechDelivery;
+    const speed = profile === undefined ? undefined : resolveSpeechDelivery(profile, entries.filter((entry): entry is ConversationEntry & { id: string } => typeof entry.id === 'string' && entry.id.length > 0)).speed;
+    await updateInstructions(instructions, speed);
   }
   function providerEvent(raw: WebSocket.RawData) {
     let event: Record<string, any>;
@@ -209,6 +233,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         if (type === 'response.done' && slot.cancelled && !slot.completed) {
           const summary = safeResponseDiagnostic('response.done', event.response, responseSlots.indexOf(slot) + 1);
           dependencies.responseDiagnostic?.(summary); slot.completed = true; evidence.terminal(slot.ordinal, summary);
+          settleCancellation(true);
         }
         if (slot.discardUnheardItems && ['response.output_audio.delta', 'response.audio.delta'].includes(type) && typeof event.delta === 'string' && Buffer.from(event.delta, 'base64').length > 0) {
           const item = audioItems.find(candidate => candidate.id === event.item_id && candidate.response === slot);
@@ -223,6 +248,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
     }
     if (type === 'session.updated') {
       if (!pendingUpdate || event.session?.type !== 'realtime' || event.session.instructions !== pendingUpdate.instructions) return;
+      if (pendingUpdate.speed !== undefined && event.session.audio?.output?.speed !== pendingUpdate.speed) return;
       if (typeof event.event_id === 'string') {
         if (acknowledgedUpdateIds.has(event.event_id)) return;
         acknowledgedUpdateIds.add(event.event_id);
@@ -296,14 +322,18 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
       const id = typeof event.response?.id === 'string' ? event.response.id : undefined;
       let slot = id ? responseSlots.find(candidate => candidate.id === id) : responseSlots.find(candidate => !candidate.completed);
       if (!slot && id) {
-        const unidentified = responseSlots.filter(candidate => !candidate.id && !candidate.completed);
+        const unidentified = responseSlots.filter(candidate => !candidate.id && !candidate.completed && !(candidate.cancelled && authority?.config.speechDelivery !== undefined));
         if (unidentified.length === 1) { slot = unidentified[0]; slot.id = id; }
       }
       const summary = safeResponseDiagnostic('response.done', event.response, slot ? responseSlots.indexOf(slot) + 1 : 0);
       dependencies.responseDiagnostic?.(summary);
       if (!slot) return;
+      // An unbound or stale terminal event cannot confirm configured cancellation.
+      // A late response.created binds the cancelled slot before its terminal ACK.
+      if (slot.cancelled && authority?.config.speechDelivery !== undefined && (!id || slot.id !== id)) return;
       slot.completed = true;
       evidence.terminal(slot.ordinal, summary);
+      settleCancellation(true);
       if (slot !== activeResponse || slot.cancelled) return;
       activeResponse = undefined; responding = false;
       if (event.response?.status === 'failed') { stop('provider_error', 'The voice reply failed. No automatic retry was made.'); return; }
@@ -332,6 +362,8 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         await dependencies.inputMode?.(authority, auth.inputMode === 'text' ? 'text' : 'microphone');
         if (done) { finalizeOwnedSession(); return; }
         const transcriptionPrompt = compileSpeechVocabularyPrompt(authority.config.speechVocabulary);
+        const profile = authority.config.speechDelivery;
+        const speed = profile === undefined ? undefined : resolveSpeechDelivery(profile, []).speed;
         const instructions = publicVoiceInstructions(instructionsFor(authority)); baseInstructions = instructions; openingInstructions = publicGreetingInstructions(instructions, authority.deployment.data.brand.welcomeMessage);
         if (done) return;
         clearTimeout(authTimer);
@@ -347,7 +379,7 @@ export function attachVoiceBridge(client: WebSocket, request: Pick<IncomingMessa
         const connectionTimer = setTimeout(() => stop('connection_timeout', 'Voice could not connect. No automatic retry was made.'), 12000);
         upstream.on('open', () => {
           if (done) { upstream?.terminate(); return; }
-          void updateInstructions(instructions, realtimeSession(connected.model, connected.voice, instructions, transcriptionPrompt)).then(confirmed => {
+          void updateInstructions(instructions, speed, realtimeSession(connected.model, connected.voice, instructions, transcriptionPrompt, speed)).then(confirmed => {
             if (!confirmed || done) return;
             clearTimeout(connectionTimer);
             ready = true; send({ type: 'ready', expiresAt: authority!.expiresAt, disclosure: `You are speaking with an AI assistant for ${authority!.deployment.data.brand.name}.` });

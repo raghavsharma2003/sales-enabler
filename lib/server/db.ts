@@ -10,6 +10,7 @@ export class WriteConflictError extends Error {
   constructor() { super('The record changed concurrently.'); this.name = 'WriteConflictError'; }
 }
 export interface Database {
+  readonly dialect?: 'sqlite' | 'postgres';
   all<T extends Row = Row>(sql: string, params?: Value[]): Promise<T[]>;
   run(sql: string, params?: Value[]): Promise<number>;
   batch(statements: Statement[]): Promise<void>;
@@ -35,6 +36,7 @@ async function openDatabase(): Promise<Database> {
     const pgSql = (sql: string) => { let i = 0; return sql.replace(/\?/g, () => `$${++i}`); };
     for (const sql of schema) await pool.query(sql);
     return {
+      dialect: 'postgres',
       async all<T extends Row>(sql: string, params: Value[] = []) { return (await pool.query(pgSql(sql), params)).rows as T[]; },
       async run(sql, params = []) { return (await pool.query(pgSql(sql), params)).rowCount ?? 0; },
       async batch(statements) {
@@ -58,6 +60,7 @@ async function openDatabase(): Promise<Database> {
   sqlite.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
   for (const sql of schema) sqlite.exec(sql);
   return {
+    dialect: 'sqlite',
     async all<T extends Row>(sql: string, params: Value[] = []) { return sqlite.prepare(sql).all(...params) as T[]; },
     async run(sql, params = []) { return Number(sqlite.prepare(sql).run(...params).changes); },
     async batch(statements) {

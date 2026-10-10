@@ -1455,6 +1455,55 @@
       "title": "Terminal local verification of admitted-pilot sellability software increment",
       "status": "983-tests-build-package1179-readiness-campaign-return-bounded-provider-control-audio-playback-and-final-ui-ship-pass-not-hosted-or-whole-product-ready",
       "path": "docs/sellability-implementation-oct10.md"
+    },
+    {
+      "id": "research.voice-delivery-products-2026-10-10",
+      "type": "evidence",
+      "title": "October 10 voice research and product delta for measurable delivery control",
+      "status": "complete-primary-source-review-noncommercial-weights-rejected-no-provider-migration",
+      "path": "research/2026-10-10/voice-research-adoption.md"
+    },
+    {
+      "id": "implementation.speech-delivery-profile-2026-10-10",
+      "type": "component",
+      "title": "Versioned standard and unhurried Azure delivery profiles with exact ACK authority",
+      "status": "implemented-frozen-1042-tests-build1207-browser-standard-and-unhurried-config-pass-two-matched-realtime-runs-exact-initial-final-rate-ack-pass",
+      "path": "docs/speech-delivery-and-comparison-oct10.md"
+    },
+    {
+      "id": "implementation.paired-audio-comparison-2026-10-10",
+      "type": "component",
+      "title": "Matched concealed paired audio comparison with append-only ratings",
+      "status": "implemented-frozen-two-eligible-rows-one-concealed-pair-created-no-ratings-reveal-winner-or-publish",
+      "path": "docs/speech-delivery-and-comparison-oct10.md"
+    },
+    {
+      "id": "evidence.hinglish-teacher-sample-2026-10-10",
+      "type": "evidence",
+      "title": "Bounded fictional Hinglish teacher Azure Speech sample",
+      "status": "two-paid-attempts-first-invalid-wav-retained-one-shortened-retry-9-point-338-second-hi-IN-Swara-pass-not-taxila-or-realtime",
+      "path": "docs/speech-delivery-and-comparison-oct10.md"
+    },
+    {
+      "id": "evidence.taxila-branch-audit-2026-10-10",
+      "type": "evidence",
+      "title": "Taxila public source mirror and all-branch audit",
+      "status": "complete-one-current-head-00aab4bd-389-commits-24110-files-33-teacher-voice-hash-manifest-ignored-mirror-no-wholesale-port",
+      "path": "docs/speech-delivery-and-comparison-oct10.md"
+    },
+    {
+      "id": "implementation.taxila-teacher-audition-2026-10-10",
+      "type": "component",
+      "title": "Bounded deterministic teacher-text preparation and opt-in Diya/Arjun audition",
+      "status": "implemented-uncommitted-no-raw-text-fingerprint-count-history-only-audio-seven-day-14-focused-pass-retention-build-running-no-live-diya-audition",
+      "path": "research/2026-10-10/taxila-adoption.md"
+    },
+    {
+      "id": "open.speech-delivery-terminal-verification-2026-10-10",
+      "type": "open-question",
+      "title": "Complete delivery-profile, paired-comparison and Taxila audit verification",
+      "status": "open-1042-tests-build1207-taxila-audit-browser-profiles-two-realtime-runs-and-pair-creation-pass-retention-build-four-ratings-reveal-and-diya-audition-pending",
+      "path": "docs/speech-delivery-and-comparison-oct10.md"
     }
   ],
   "edges": [
@@ -2797,6 +2846,66 @@
       "from": "verification.sellability-terminal-local-2026-10-10",
       "to": "open.sellability-terminal-verification-2026-10-10",
       "relation": "closes-local-software-gate"
+    },
+    {
+      "from": "verification.sellability-terminal-local-2026-10-10",
+      "to": "implementation.speech-delivery-profile-2026-10-10",
+      "relation": "provides-clean-5983bd5-baseline"
+    },
+    {
+      "from": "research.voice-delivery-products-2026-10-10",
+      "to": "implementation.speech-delivery-profile-2026-10-10",
+      "relation": "guides-bounded-azure-only-experiment"
+    },
+    {
+      "from": "implementation.speech-delivery-profile-2026-10-10",
+      "to": "implementation.paired-audio-comparison-2026-10-10",
+      "relation": "provides-only-varied-condition"
+    },
+    {
+      "from": "implementation.speech-delivery-profile-2026-10-10",
+      "to": "constraint.azure-only-paid",
+      "relation": "preserves"
+    },
+    {
+      "from": "evidence.hinglish-teacher-sample-2026-10-10",
+      "to": "implementation.paired-audio-comparison-2026-10-10",
+      "relation": "does-not-establish-matched-pair-or-winner"
+    },
+    {
+      "from": "evidence.taxila-branch-audit-2026-10-10",
+      "to": "implementation.speech-delivery-profile-2026-10-10",
+      "relation": "separate-source-audit-no-current-port"
+    },
+    {
+      "from": "evidence.taxila-branch-audit-2026-10-10",
+      "to": "implementation.taxila-teacher-audition-2026-10-10",
+      "relation": "informs-bounded-contract-adoption"
+    },
+    {
+      "from": "implementation.taxila-teacher-audition-2026-10-10",
+      "to": "constraint.azure-only-paid",
+      "relation": "preserves"
+    },
+    {
+      "from": "implementation.taxila-teacher-audition-2026-10-10",
+      "to": "open.speech-delivery-terminal-verification-2026-10-10",
+      "relation": "requires-live-ui-audition-and-review"
+    },
+    {
+      "from": "implementation.speech-delivery-profile-2026-10-10",
+      "to": "open.speech-delivery-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.paired-audio-comparison-2026-10-10",
+      "to": "open.speech-delivery-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "evidence.taxila-branch-audit-2026-10-10",
+      "to": "open.speech-delivery-terminal-verification-2026-10-10",
+      "relation": "inventory-and-synthesis-complete"
     }
   ]
 }

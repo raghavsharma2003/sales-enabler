@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-10-10T11:25:00+05:30",
+  "repository": {
+    "name": "Taxila",
+    "url": "https://github.com/raghavsharma2003/Taxila",
+    "mirrorPath": "data/source-audits/Taxila.git",
+    "mirrorKind": "bare-read-only-audit-mirror",
+    "remote": "origin",
+    "objectStore": {
+      "packCount": 1,
+      "packedObjects": 38050,
+      "packedSize": "3.76 GiB"
+    }
+  },
+  "scope": {
+    "remoteHeadDiscovery": "git ls-remote --heads plus a forced fetch of refs/heads/*",
+    "availableRemoteHeadCount": 1,
+    "availableRemoteHeadsAccountedFor": 1,
+    "tagsAvailable": 0,
+    "deletedOrHiddenBranchTipsRecovered": false,
+    "deletedOrHiddenBranchNote": "The audit accounts for every head advertised by the remote on 2026-10-10. Git cannot inventory deleted or access-restricted branch tips that the remote does not advertise. Reachable history from the advertised head is present in the mirror.",
+    "upstreamCodeExecuted": false,
+    "dependenciesInstalled": false,
+    "secretFilesRead": false,
+    "customerDataRead": false
+  },
+  "branches": [
+    {
+      "name": "claude/blissful-mayer-icwe2j",
+      "ref": "refs/heads/claude/blissful-mayer-icwe2j",
+      "head": "00aab4bdcc787050e65703dd4bb428ce3d9b8679",
+      "tree": "93ecdb8a5cfbb0a8236a611baf452e2542e4319f",
+      "committerDate": "2026-10-10T05:13:29Z",
+      "reachableCommitCount": 389,
+      "uniqueCommitCountAgainstOtherAvailableHeads": 389,
+      "uniqueCommitCalculation": "Only one remote head is available, so all commits reachable from it are unique relative to the empty union of other available heads.",
+      "rootCommit": "8d1c452e637513e821a4caa40bcbdedaf36605b2",
+      "fileCount": 24110,
+      "meaningfulCodeVariant": "current-and-only-available-code-tree"
+    }
+  ],
+  "equivalenceClusters": [
+    {
+      "id": "tree-93ecdb8a",
+      "tree": "93ecdb8a5cfbb0a8236a611baf452e2542e4319f",
+      "members": [
+        "claude/blissful-mayer-icwe2j"
+      ],
+      "classification": "singleton",
+      "reason": "No second available remote head exists for tree or patch equivalence comparison."
+    }
+  ],
+  "diffManifest": {
+    "branchPairDiffs": [],
+    "notApplicableReason": "One available remote head produces zero branch pairs.",
+    "treeManifest": {
+      "files": 24110,
+      "topLevelFileCounts": {
+        ".github": 1,
+        "root": 12,
+        "api": 1,
+        "art": 1778,
+        "context": 258,
+        "data": 504,
+        "db": 25,
+        "docs": 12195,
+        "evals": 6076,
+        "infra": 16,
+        "models": 6,
+        "prototypes": 96,
+        "public": 758,
+        "scripts": 1069,
+        "server": 445,
+        "shared": 49,
+        "src": 513,
+        "tests": 308
+      },
+      "dominantFileTypes": {
+        ".png": 7048,
+        ".json": 4376,
+        ".wav": 1884,
+        ".pcm": 1807,
+        ".html": 1270,
+        ".mjs": 1207,
+        ".mp3": 1032,
+        ".webp": 946,
+        ".jpg": 815,
+        ".py": 687,
+        ".js": 621,
+        ".md": 377,
+        ".ts": 358,
+        ".tsx": 156
+      }
+    }
+  },
+  "runtimeVariantClusters": [
+    {
+      "id": "teacher-realtime",
+      "summary": "Azure realtime speech-to-speech teacher over WebRTC, with ephemeral client secrets and a cascade fallback on quota or reconnection failure.",
+      "evidence": [
+        "server/routes/lesson.js:314-360",
+        "server/voice/realtimeSession.js:48-95",
+        "src/lesson/voiceLink.ts:1-9",
+        "src/lesson/realtime.ts:39-55"
+      ]
+    },
+    {
+      "id": "teacher-cascade",
+      "summary": "Child microphone to Azure realtime transcription, server-side lesson turn, then framed streaming TTS with PCM, clause and viseme events.",
+      "evidence": [
+        "src/lesson/cascadeLink.ts:1-20",
+        "server/routes/voice.js:101-221",
+        "src/lesson/ttsStream.ts:222-373",
+        "server/voice/frames.js:1-41"
+      ]
+    },
+    {
+      "id": "teacher-text",
+      "summary": "The same lesson runtime and guarded server-authored turn path without microphone input; optional streamed read-aloud shares the TTS pipeline.",
+      "evidence": [
+        "server/routes/lesson.js:149-150",
+        "server/brain/turn.js:664-749",
+        "src/lesson/runtime.ts:321-341"
+      ]
+    },
+    {
+      "id": "speech-engine-switch",
+      "summary": "Configuration switch across Azure Speech DragonHD, Preview MAI voice behind an explicit gate, and Azure OpenAI gpt-4o-mini-tts; sticky failure handling prevents per-sentence oscillation.",
+      "evidence": [
+        "server/voice/voice-switch.js:1-59",
+        "server/voice/voice-switch.js:80-115",
+        "server/voice/speech.js:278-334"
+      ]
+    }
+  ],
+  "targetedFindings": {
+    "hinglishEnglish": {
+      "status": "implemented",
+      "evidence": [
+        "server/voice/stt.js:17-67",
+        "server/voice/spoken.js:23-48",
+        "server/voice/spoken.js:563-598",
+        "server/voice/translit/index.js:1-17",
+        "server/voice/translit/index.js:147-173",
+        "server/conversation/understand.js:78-107",
+        "server/relational/lexicon/index.js:1-19"
+      ],
+      "notes": "STT accepts Hindi, English and mixed speech. Spoken rendering is language- and school-medium-aware. Optional Roman-Hinglish to Devanagari conversion is deterministic and skips English lanes and safety text."
+    },
+    "synthesisSttStreaming": {
+      "status": "implemented",
+      "evidence": [
+        "server/voice/azureTts.js:1-18",
+        "server/voice/azureTts.js:41-98",
+        "server/voice/azureTtsWs.js:1-10",
+        "server/voice/azureTtsWs.js:139-216",
+        "server/voice/speech.js:428-452",
+        "src/lesson/cascadeLink.ts:939-1015",
+        "src/lesson/ttsStream.ts:355-373"
+      ]
+    },
+    "lessonOrchestration": {
+      "status": "implemented-and-deeply-coupled",
+      "evidence": [
+        "server/routes/lesson.js:128-260",
+        "server/routes/lesson.js:314-360",
+        "server/routes/lesson.js:578-589",
+        "server/brain/turn.js:1-12",
+        "server/brain/turn.js:187-210",
+        "server/brain/turn.js:397-480",
+        "server/brain/turn.js:591-755",
+        "server/brain/turn.js:829-870",
+        "src/lesson/runtime.ts:337-341",
+        "src/lesson/runtime.ts:877-930"
+      ],
+      "notes": "The HTTP route is thin; server/brain/turn.js performs perception, safety, speculative reply, deterministic planning, Studio arbitration, guarded wording, state staging and one-transaction persistence."
+    },
+    "modelRouting": {
+      "status": "azure-only-role-and-lane-routing",
+      "evidence": [
+        "server/azure.js:12-40",
+        "server/endpoints.js:1-18",
+        "server/endpoints.js:40-99",
+        "server/lanes.js:1-16",
+        "server/lanes.js:20-48",
+        "server/lanes.js:95-155",
+        "docs/research/models/MODEL-ROUTER.md:1-14"
+      ],
+      "notes": "Role names route to deployments, endpoint lanes can use different Azure accounts, and hot/background calls have separate quota treatment. This is not a multi-vendor key pool."
+    },
+    "freeGeminiKeysOrProviderPools": {
+      "status": "not-present-in-current-product-code",
+      "exactYcaMatches": 0,
+      "geminiProductCalls": 0,
+      "credentialRotationPools": 0,
+      "notes": "Gemini occurs in research/reference material and once in an AI-identity phrase detector at server/relational/lexicon/en.js:96. The model-router document marks Gemini as experiment-only and states product models are Azure-billed. Azure WebSocket connection pooling at server/voice/azureTtsWs.js:139-173 is a transport pool, not a key pool. No credential values were read or recorded.",
+      "evidence": [
+        "server/relational/lexicon/en.js:96",
+        "server/azure.js:12-40",
+        "server/endpoints.js:1-18",
+        "server/lanes.js:31-48",
+        "server/voice/azureTtsWs.js:139-173",
+        "docs/research/models/MODEL-ROUTER.md:12-14",
+        "docs/research/models/MODEL-ROUTER.md:128-129"
+      ]
+    },
+    "ycaOrSimilar": {
+      "status": "no-yca-identifier",
+      "similarConcept": "Voice AI identity/reminder behavior",
+      "evidence": [
+        "server/relational/session.js:85",
+        "server/relational/lexicon/en.js:96",
+        "docs/design/superhuman/RELATIONAL-OS.md:622"
+      ]
+    }
+  },
+  "deploymentAndLicense": {
+    "deployment": {
+      "primary": "Azure Container Apps, built through Azure Container Registry",
+      "database": "Neon Postgres is explicitly allowed",
+      "vercel": "Paused; api/[...route].js is retained as a shim",
+      "evidence": [
+        "CLAUDE.md:10-16",
+        "CLAUDE.md:32-41",
+        "Dockerfile:1-11"
+      ]
+    },
+    "license": {
+      "repositoryLicenseFileFound": false,
+      "packagePrivate": true,
+      "packageLicenseFieldFound": false,
+      "constraint": "No repository-level license grant was found. Treat reuse outside a confirmed common owner context as requiring explicit permission and provenance review. Third-party model, voice, asset and dependency terms need separate review."
+    }
+  },
+  "rankedReusableCode": [
+    {
+      "rank": 1,
+      "component": "Azure endpoint lane resolver",
+      "paths": ["server/endpoints.js"],
+      "recommendation": "adopt-pattern",
+      "reason": "Centralizes lane/account selection, prevents cross-account key fallback, and returns only matching ephemeral hosts.",
+      "coupling": "low"
+    },
+    {
+      "rank": 2,
+      "component": "Hot/background quota isolation",
+      "paths": ["server/lanes.js", "server/azure.js"],
+      "recommendation": "adapt",
+      "reason": "Protects live calls from background evaluation and content-generation load with measured sliding-window limits and 429 pauses.",
+      "coupling": "medium"
+    },
+    {
+      "rank": 3,
+      "component": "Framed streaming speech protocol",
+      "paths": ["server/voice/frames.js", "src/lesson/ttsStream.ts"],
+      "recommendation": "adapt",
+      "reason": "Carries PCM, clause timing, visemes and turn metadata over one backpressure-aware response while preserving an unframed compatibility path.",
+      "coupling": "medium"
+    },
+    {
+      "rank": 4,
+      "component": "Speech streaming, prewarm and sticky fallback",
+      "paths": ["server/voice/speech.js", "server/voice/prewarm.js", "server/voice/azureTts.js", "server/voice/azureTtsWs.js"],
+      "recommendation": "adapt-selectively",
+      "reason": "Useful cache, first-byte, socket-pool, abort and identity-stability patterns, but Taxila's child/lesson persistence must be replaced with the destination product's contracts.",
+      "coupling": "medium-high"
+    },
+    {
+      "rank": 5,
+      "component": "Hinglish speech rendering and transliteration",
+      "paths": ["server/voice/spoken.js", "server/voice/spoken-lexicon.js", "server/voice/translit/"],
+      "recommendation": "evaluate-and-port",
+      "reason": "Deterministic language-aware number, notation, helpline and Roman-Hindi rendering is directly relevant to Indian voice agents.",
+      "coupling": "medium"
+    },
+    {
+      "rank": 6,
+      "component": "Realtime-to-cascade continuity",
+      "paths": ["server/voice/realtimeSession.js", "src/lesson/realtime.ts", "src/lesson/voiceLink.ts", "src/lesson/runtime.ts"],
+      "recommendation": "port-state-machine-pattern",
+      "reason": "Explicit quota detection, one retry, lane switch, re-voice semantics and duplicate-resistant continuation are reusable reliability ideas.",
+      "coupling": "high"
+    },
+    {
+      "rank": 7,
+      "component": "Deterministic orchestration with model wording",
+      "paths": ["server/brain/turn.js", "server/routes/lesson.js", "server/director/"],
+      "recommendation": "adopt-principles-only",
+      "reason": "The separation of code-owned policy, model perception/wording, safety floor, speculative work and atomic persistence is strong, but the implementation is tightly bound to child tutoring schemas.",
+      "coupling": "very-high"
+    }
+  ]
+}

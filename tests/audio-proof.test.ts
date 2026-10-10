@@ -70,6 +70,9 @@ test('one synthetic fixture and idempotent run retain playable hash-bound eviden
   const replay = await runAudioProof(f.user, request, m.dependencies);
   assert.equal(run.status, 'complete'); assert.equal(replay.id, run.id); assert.equal(m.counts().runs, 1);
   assert.equal(run.data.manifest?.tools, 'disabled'); assert.equal(run.data.manifest?.memory, 'disabled_no_contact');
+  assert.equal(run.data.manifest?.runnerVersion, 2);
+  assert.equal(run.data.manifest?.speechDelivery?.configuredProfile, null);
+  assert.equal(run.data.manifest?.sessionBaseDigest?.length, 64);
   assert.equal(run.data.manifest?.modelReferenceDigest.length, 64); assert.equal(JSON.stringify(run).includes('realtime-slot'), false);
   assert.equal(run.data.outputArtifact?.playbackUrl, `/api/evaluations/audio/${run.data.outputArtifact?.id}`);
   assert.deepEqual(Object.keys(run.data.measurements || {}).sort(), ['inputAudioDurationMs', 'outputAudioDurationMs', 'responseRequestedToDoneMs', 'responseRequestedToFirstServerAudioMs'].sort());

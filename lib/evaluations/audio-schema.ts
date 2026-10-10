@@ -1,3 +1,12 @@
+import type { SpeechDeliveryDecision, SpeechDeliveryProfile } from '../voice/speech-delivery';
+
+export type AudioProofDeliveryEvidence = {
+  configuredProfile: SpeechDeliveryProfile | null;
+  initialDecision: SpeechDeliveryDecision;
+  finalDecision?: SpeechDeliveryDecision;
+  providerAcknowledgement: { initial: boolean; final: boolean };
+};
+
 export type AudioProofCriterion = {
   id: string;
   text: string;
@@ -101,6 +110,7 @@ export type AudioProofRunManifest = {
   provider: 'azure';
   apiSurface: 'azure_openai_realtime_websocket';
   modelReferenceDigest: string;
+  providerEndpointDigest?: string;
   voice: string;
   inputTranscription: 'gpt-4o-mini-transcribe';
   tools: 'disabled';
@@ -108,7 +118,11 @@ export type AudioProofRunManifest = {
   businessActions: 'disabled';
   captureConsent: { actorId: string; confirmedAt: string; scope: 'store_synthetic_input_and_ai_output_for_audio_proof' };
   startedAt: string;
-  runnerVersion: 1;
+  runnerVersion: 1 | 2;
+  /** New-run provenance only. Historical manifests remain byte-for-byte unchanged. */
+  runtimeVersion?: string;
+  sessionBaseDigest?: string;
+  speechDelivery?: AudioProofDeliveryEvidence;
   unknownProviderInternals: readonly ['model_weights_revision', 'regional_serving_build'];
 };
 

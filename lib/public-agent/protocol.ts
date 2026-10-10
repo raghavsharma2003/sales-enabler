@@ -92,12 +92,12 @@ export function azureRealtimeConnection(env: Record<string, string | undefined> 
   return { url: `${base.replace(/^https:/, 'wss:')}/realtime?model=${encodeURIComponent(model)}`, key, model, voice };
 }
 
-export function realtimeSession(model: string, voice: string, instructions: string, transcriptionPrompt?: string) {
+export function realtimeSession(model: string, voice: string, instructions: string, transcriptionPrompt?: string, speed?: 1 | 0.9) {
   return { type: 'session.update', session: {
     type: 'realtime', model, instructions, output_modalities: ['audio'], max_output_tokens: PUBLIC_VOICE_MAX_OUTPUT_TOKENS,
     audio: {
       input: { format: { type: 'audio/pcm', rate: 24000 }, transcription: { model: 'gpt-4o-mini-transcribe', ...(transcriptionPrompt ? { prompt: transcriptionPrompt } : {}) }, turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 650, create_response: false, interrupt_response: false } },
-      output: { format: { type: 'audio/pcm', rate: 24000 }, voice },
+      output: { format: { type: 'audio/pcm', rate: 24000 }, voice, ...(speed === undefined ? {} : { speed }) },
     }, tools: [], tool_choice: 'none',
   } };
 }

@@ -11,6 +11,7 @@ import { createContinuousSpeechSession } from "./continuous-speech-browser";
 import { createContinuousUnderstanding, type ContinuousUnderstandingSnapshot } from "./continuous-understanding";
 import type { ContinuousSpeechGrant, ContinuousSpeechReason, ContinuousSpeechStatus } from "./continuous-speech-contracts";
 import type { ConversationEntry } from "./emotional";
+import { resolveSpeechDelivery, type SpeechDeliveryDecision, type SpeechDeliveryProfile } from "./speech-delivery";
 
 export interface BrowserVoiceSession {
   connect(): Promise<void>;
@@ -66,6 +67,8 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
   let previewId: string | undefined;
   let connectionId: string | undefined;
   let behaviorContext: VoiceBehaviorContext | undefined;
+  let speechDeliveryProfile: SpeechDeliveryProfile | undefined;
+  let speechDelivery: SpeechDeliveryDecision | undefined;
   let enabledTools: import("./tools/contracts").VoiceToolName[] | undefined;
   let openingMessage: string | undefined;
   let levelContext: AudioContext | undefined;
@@ -93,10 +96,13 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
   }
   const turns = createPrivateTurnScheduler({
     instructions: () => initialInstructions,
+    speechDelivery: () => speechDelivery,
     onDiagnostic: event => diagnostics.privatePreparationEvent(event),
     send: event => { if (!closed && channel?.readyState === "open") channel.send(JSON.stringify(event)); },
     onUserTurn: turn => {
       remember({ ...turn, role: "user" });
+      if (speechDeliveryProfile) speechDelivery = resolveSpeechDelivery(speechDeliveryProfile,
+        finalEntries.filter((entry): entry is ConversationEntry & { id: string } => typeof entry.id === "string" && entry.id.trim().length > 0));
       diagnostics.userTurnReceived();
       options.onEvent({ type: "item", id: turn.id });
       if (!closed) options.onEvent({ type: "transcript", entry: { ...turn, role: "user" } });
@@ -406,6 +412,9 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
         previewId = result.previewId;
         connectionId = result.connectionId;
         behaviorContext = result.behaviorContext;
+        speechDeliveryProfile = result.behaviorContext?.speechDelivery ? Object.freeze({ ...result.behaviorContext.speechDelivery }) : undefined;
+        if (speechDeliveryProfile && result.provider !== "azure") throw new Error("Configured speech delivery requires Azure Realtime.");
+        speechDelivery = speechDeliveryProfile ? resolveSpeechDelivery(speechDeliveryProfile, []) : undefined;
         enabledTools = (result.enabledTools || []).filter((tool): tool is import("./tools/contracts").VoiceToolName => isVoiceToolName(tool));
         toolRunner = createClientToolRunner({ connectionId: result.connectionId, previewId: result.previewId, enabledTools: result.enabledTools }, abort.signal);
         openingMessage = typeof result.openingMessage === "string" ? result.openingMessage.slice(0, 2_000) : undefined;

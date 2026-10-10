@@ -5,9 +5,11 @@ import { CheckCircle2, MessageSquare, XCircle } from 'lucide-react';
 import type { PlatformViewProps } from '../../lib/platform/contracts';
 import { VoiceEvidenceLab } from '../voice-evidence-lab';
 import { moveTabFocus, VoiceAudioProof } from '../voice-audio-proof';
+import { VoiceAudioComparison } from '../voice-audio-comparison';
 
 const qualityTabs = [
   { id: 'audio', label: 'Audio proof' },
+  { id: 'comparison', label: 'Listening comparisons' },
   { id: 'transcript', label: 'Transcript evaluations' },
   { id: 'coverage', label: 'Workspace coverage' },
 ] as const;
@@ -35,6 +37,7 @@ export function QualityView({ records, workspace, navigate, focusId }: PlatformV
     </div>
 
     <div id="quality-panel-audio" role="tabpanel" aria-labelledby="quality-tab-audio" hidden={tab !== 'audio'}>{visited.has('audio') && <VoiceAudioProof records={records} focusId={focusId}/>}</div>
+    <div id="quality-panel-comparison" role="tabpanel" aria-labelledby="quality-tab-comparison" hidden={tab !== 'comparison'}>{visited.has('comparison') && <VoiceAudioComparison canWrite={workspace.user.role !== 'viewer'} agentNames={new Map(records.filter(record => record.kind === 'agent_definition').map(record => [record.id, String(record.data.name || 'Saved agent')]))} active={tab === 'comparison'} onCapture={() => selectTab('audio')}/>}</div>
     <div id="quality-panel-transcript" role="tabpanel" aria-labelledby="quality-tab-transcript" hidden={tab !== 'transcript'}>{visited.has('transcript') && <VoiceEvidenceLab records={records} workspace={workspace}/>}</div>
     <div id="quality-panel-coverage" role="tabpanel" aria-labelledby="quality-tab-coverage" hidden={tab !== 'coverage'}>
       {visited.has('coverage') && <><div className="pc-grid"><section className="pc-panel"><h2>Test lab evidence</h2><p className="pc-muted">These are configuration and authority checks against exact agent versions. They do not measure latency, audio quality, model behaviour or customer outcomes.</p><div className="pc-list"><div className="pc-row"><CheckCircle2 size={17}/><span><strong>{passed}</strong><small className="pc-muted">Passing configuration runs</small></span></div><div className="pc-row"><XCircle size={17}/><span><strong>{failed}</strong><small className="pc-muted">Failed configuration runs</small></span></div></div><button className="pc-button primary" type="button" onClick={() => navigate('tests')}>Open Test Lab</button></section>

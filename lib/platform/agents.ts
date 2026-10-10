@@ -5,6 +5,7 @@ import { HttpError, field } from '../server/http';
 import { createRecord, getRecord, listRecords, updateRecord, type PlatformRecord } from './records';
 import { isVoiceToolName, normalizeVoiceTools, type VoiceToolName } from '../voice/tools/contracts';
 import { normalizeSpeechVocabulary, SpeechVocabularyValidationError } from '../voice/speech-vocabulary';
+import { parseSpeechDeliveryProfile, SpeechDeliveryValidationError, type SpeechDeliveryProfile } from '../voice/speech-delivery';
 import { prepareRegressionReleaseGate } from '../regression/service';
 import { TEXT_REHEARSAL_DISCLAIMER, type RegressionReleaseEvidence, type ReleaseReviewPacket } from '../regression/contracts';
 import { operatorMembershipFence } from '../team/service';
@@ -19,6 +20,7 @@ export type AgentConfig = {
   voiceProfile?: 'provider-default' | 'maya-despina';
   enabledTools?: VoiceToolName[];
   speechVocabulary?: string[];
+  speechDelivery?: SpeechDeliveryProfile;
 };
 type AgentVersion = { agentId: string; number: number; config: AgentConfig; knowledgeDigests: Record<string, string>; sourceRevision: number };
 type TestRun = { agentId: string; versionId: string; checks: { label: string; passed: boolean; detail: string }[]; passed: boolean; mode: 'configuration'; disclaimer: string };
@@ -35,6 +37,13 @@ export function parseAgentConfig(body: Record<string, unknown>): AgentConfig {
   const primaryLanguage = field(body, 'primaryLanguage', 80);
   if (body.voiceProfile !== undefined && body.voiceProfile !== 'provider-default' && body.voiceProfile !== 'maya-despina') throw new HttpError(400, 'Choose an installed voice profile.');
   const allowedLanguages = textArray(body.allowedLanguages, 'allowedLanguages');
+  let speechDelivery: SpeechDeliveryProfile | undefined;
+  try { speechDelivery = parseSpeechDeliveryProfile(body.speechDelivery); }
+  catch (error) {
+    if (error instanceof SpeechDeliveryValidationError) throw new HttpError(400, error.message);
+    throw error;
+  }
+  if (speechDelivery && body.voiceProfile === 'maya-despina') throw new HttpError(400, 'Speech delivery settings require the Azure provider-default voice profile.');
   let speechVocabulary: string[];
   try { speechVocabulary = normalizeSpeechVocabulary(body.speechVocabulary); }
   catch (error) {
@@ -53,6 +62,7 @@ export function parseAgentConfig(body: Record<string, unknown>): AgentConfig {
     voiceProfile: body.voiceProfile === 'maya-despina' ? 'maya-despina' : 'provider-default',
     enabledTools: normalizeVoiceTools(body.enabledTools),
     ...(speechVocabulary.length ? { speechVocabulary } : {}),
+    ...(speechDelivery ? { speechDelivery } : {}),
   };
 }
 const config = parseAgentConfig;

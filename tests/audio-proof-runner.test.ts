@@ -9,7 +9,7 @@ class FakeSocket extends EventEmitter {
   missingTypeUpdates = 0;
   exactBehaviorAckSent = false;
   responseBeforeExactAck = false;
-  constructor() { super(); queueMicrotask(() => this.emit('open')); }
+  constructor(private readonly callerText = "I'm feeling overwhelmed. Please explain the next step slowly, one point at a time.") { super(); queueMicrotask(() => this.emit('open')); }
   send(raw: string) {
     const event = JSON.parse(raw) as Record<string, any>; this.events.push(event);
     if (event.type === 'session.update' && event.session?.type !== 'realtime') {
@@ -24,12 +24,16 @@ class FakeSocket extends EventEmitter {
       if (this.appends === 13) queueMicrotask(() => {
         for (const providerEvent of [
           { type: 'input_audio_buffer.speech_started' }, { type: 'input_audio_buffer.speech_stopped' }, { type: 'input_audio_buffer.committed' },
-          { type: 'conversation.item.input_audio_transcription.completed', transcript: "I'm feeling overwhelmed. Please explain the next step slowly, one point at a time." },
+          { type: 'conversation.item.input_audio_transcription.completed', transcript: this.callerText },
         ]) this.emit('message', Buffer.from(JSON.stringify(providerEvent)), false);
       });
     } else if (event.type === 'session.update') {
       queueMicrotask(() => {
         this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: { type: 'realtime', instructions: 'stale instructions' } })), false);
+        // Neither correct instructions without speed nor an old speed can
+        // release the response gate.
+        this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: { ...event.session, audio: { output: {} } } })), false);
+        this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: { ...event.session, audio: { output: { speed: 0.7 } } } })), false);
         this.exactBehaviorAckSent = true;
         this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: event.session })), false);
       });
@@ -93,6 +97,34 @@ test('bounded runner uses one socket, exact shared session, synthetic ASR and ca
   assert.match(updates[1].session.instructions, /No tools, memory writes, business actions/);
   assert.equal(result.trace.some(item => item.kind === 'first_server_audio'), true);
   assert.equal(result.runtimePolicyDigest?.length, 64);
+  assert.equal(updates[1].session.audio.output.speed, 1);
+  assert.deepEqual(result.speechDelivery?.providerAcknowledgement, { initial: true, final: true });
+});
+
+test('explicit immutable unhurried profile sets and acknowledges the exact final speed', async () => {
+  let fake: FakeSocket | undefined;
+  const profile = { version: 1 as const, pace: 'unhurried' as const, adaptToRequests: false };
+  const result = await runAzureRealtimeAudioProof({ wave: pcm24ToWave(Buffer.alloc(12_000, 1)), session: { type: 'realtime', instructions: 'base', audio: { output: { voice: 'marin', speed: 0.9 } } },
+    settings: { primaryLanguage: 'English' }, speechDelivery: profile, expectedCallerText: 'fixture', endpoint: 'https://fictional.openai.azure.com', apiKey: 'fake', model: 'slot' }, {
+    socket: () => fake = new FakeSocket() as never, wait: async () => undefined,
+  });
+  assert.equal(result.status, 'complete');
+  assert.equal(result.speechDelivery?.initialDecision.speed, 0.9);
+  assert.equal(result.speechDelivery?.finalDecision?.speed, 0.9);
+  assert.equal(fake?.responseBeforeExactAck, false);
+});
+
+test('final caller request adapts from frozen standard default only after exact speed acknowledgement', async () => {
+  let fake: FakeSocket | undefined;
+  const result = await runAzureRealtimeAudioProof({ wave: pcm24ToWave(Buffer.alloc(12_000, 1)), session: { type: 'realtime', instructions: 'base', audio: { output: { voice: 'marin', speed: 1 } } },
+    settings: { primaryLanguage: 'English' }, speechDelivery: { version: 1, pace: 'standard', adaptToRequests: true }, expectedCallerText: 'fixture', endpoint: 'https://fictional.openai.azure.com', apiKey: 'fake', model: 'slot' }, {
+    socket: () => fake = new FakeSocket('Please speak slower.') as never, wait: async () => undefined,
+  });
+  assert.equal(result.status, 'complete');
+  assert.equal(result.speechDelivery?.initialDecision.speed, 1);
+  assert.equal(result.speechDelivery?.finalDecision?.speed, 0.9);
+  assert.equal(result.speechDelivery?.finalDecision?.basis, 'caller_request');
+  assert.equal(fake?.responseBeforeExactAck, false);
 });
 
 test('mid-stream socket close cancels paced input and ignores late callbacks', async () => {
