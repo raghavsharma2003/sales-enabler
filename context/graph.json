@@ -1467,14 +1467,14 @@
       "id": "implementation.speech-delivery-profile-2026-10-10",
       "type": "component",
       "title": "Versioned standard and unhurried Azure delivery profiles with exact ACK authority",
-      "status": "implemented-frozen-1042-tests-build1207-browser-standard-and-unhurried-config-pass-two-matched-realtime-runs-exact-initial-final-rate-ack-pass",
+      "status": "implemented-scoped-terminal-a64b4c9-1054-tests-ownership118-independent8-build1207-readiness-pass-no-historical-duplicate-cause-claim",
       "path": "docs/speech-delivery-and-comparison-oct10.md"
     },
     {
       "id": "implementation.paired-audio-comparison-2026-10-10",
       "type": "component",
       "title": "Matched concealed paired audio comparison with append-only ratings",
-      "status": "implemented-frozen-two-eligible-rows-one-concealed-pair-created-no-ratings-reveal-winner-or-publish",
+      "status": "implemented-scoped-terminal-stable-masked-pair-zero-of-four-no-reveal-finite-preplay-range-mobile2x2-and-ui-ship-pass-no-preference-verdict",
       "path": "docs/speech-delivery-and-comparison-oct10.md"
     },
     {
@@ -1495,14 +1495,35 @@
       "id": "implementation.taxila-teacher-audition-2026-10-10",
       "type": "component",
       "title": "Bounded deterministic teacher-text preparation and opt-in Diya/Arjun audition",
-      "status": "implemented-uncommitted-no-raw-text-fingerprint-count-history-only-audio-seven-day-14-focused-pass-retention-build-running-no-live-diya-audition",
+      "status": "implemented-cbe5f49-14-focused-build1207-readiness-gateway-and-one-diyaHD-ui-audition-private-artifact-hash-playback-pass-no-raw-text-or-realtime-change",
       "path": "research/2026-10-10/taxila-adoption.md"
     },
     {
       "id": "open.speech-delivery-terminal-verification-2026-10-10",
       "type": "open-question",
       "title": "Complete delivery-profile, paired-comparison and Taxila audit verification",
-      "status": "open-1042-tests-build1207-taxila-audit-browser-profiles-two-realtime-runs-and-pair-creation-pass-retention-build-four-ratings-reveal-and-diya-audition-pending",
+      "status": "closed-scoped-local-a64b4c9-1054-tests-build1207-readiness-provider-taxila-transport-mobile-ui-ship-pass-zero-of-four-no-winner-duplicate-cause-stale-gateway-hosting-gates-open",
+      "path": "docs/speech-delivery-and-comparison-oct10.md"
+    },
+    {
+      "id": "research.taxila-live-voice-plan-2026-10-10",
+      "type": "evidence",
+      "title": "Taxila-informed Voice Live evaluation proposal",
+      "status": "research-plan-complete-not-implemented-or-provider-executed",
+      "path": "docs/taxila-live-voice-plan-oct10.md"
+    },
+    {
+      "id": "evidence.hosting-routing-readiness-2026-10-10",
+      "type": "evidence",
+      "title": "Read-only Azure hosting and routing prerequisite verification",
+      "status": "f6fc173-no-cloud-write-global-container-apps-environment-quota-and-owner-role-lock-blockers-open",
+      "path": "docs/hosted-readiness-oct10.md"
+    },
+    {
+      "id": "verification.speech-delivery-terminal-local-2026-10-10",
+      "type": "evidence",
+      "title": "Terminal local speech delivery, comparison and Taxila audition verification",
+      "status": "current-a64b4c9-1054-tests-build1207-readiness-provider-taxila-transport-mobile-ui-ship-pass-zero-of-four-no-winner-bounded-local-only",
       "path": "docs/speech-delivery-and-comparison-oct10.md"
     }
   ],
@@ -2893,6 +2914,21 @@
       "relation": "requires-live-ui-audition-and-review"
     },
     {
+      "from": "evidence.taxila-branch-audit-2026-10-10",
+      "to": "research.taxila-live-voice-plan-2026-10-10",
+      "relation": "informs"
+    },
+    {
+      "from": "research.taxila-live-voice-plan-2026-10-10",
+      "to": "open.speech-delivery-terminal-verification-2026-10-10",
+      "relation": "remains-future-evaluation-not-current-gate"
+    },
+    {
+      "from": "evidence.hosting-routing-readiness-2026-10-10",
+      "to": "open.speech-delivery-terminal-verification-2026-10-10",
+      "relation": "documents-external-hosting-blockers"
+    },
+    {
       "from": "implementation.speech-delivery-profile-2026-10-10",
       "to": "open.speech-delivery-terminal-verification-2026-10-10",
       "relation": "requires"
@@ -2906,6 +2942,26 @@
       "from": "evidence.taxila-branch-audit-2026-10-10",
       "to": "open.speech-delivery-terminal-verification-2026-10-10",
       "relation": "inventory-and-synthesis-complete"
+    },
+    {
+      "from": "verification.speech-delivery-terminal-local-2026-10-10",
+      "to": "implementation.speech-delivery-profile-2026-10-10",
+      "relation": "verifies-scoped-terminal"
+    },
+    {
+      "from": "verification.speech-delivery-terminal-local-2026-10-10",
+      "to": "implementation.paired-audio-comparison-2026-10-10",
+      "relation": "verifies-scoped-terminal-without-ratings-or-winner"
+    },
+    {
+      "from": "verification.speech-delivery-terminal-local-2026-10-10",
+      "to": "implementation.taxila-teacher-audition-2026-10-10",
+      "relation": "verifies-scoped-terminal-bounded-port-only"
+    },
+    {
+      "from": "verification.speech-delivery-terminal-local-2026-10-10",
+      "to": "open.speech-delivery-terminal-verification-2026-10-10",
+      "relation": "closes-local-software-gate"
     }
   ]
 }

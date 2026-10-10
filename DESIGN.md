@@ -57,11 +57,19 @@ Usage & services is an operational ledger inside Settings. It separates AI and v
 
 Quality adds Audio proof as an exact-run evidence surface beside text evaluation. One stored fictional caller fixture can be replayed against one immutable agent version with tools, customer memory, and business actions disabled. Input bytes, every failed or completed attempt, captured AI output, transcripts, playback state, and human reviews stay distinct. Starting or completing browser playback is never converted into a listening verdict; each criterion requires a separate reviewer attestation and remains independent from the text-release gate.
 
+Voice & language includes an optional Azure-only speech-delivery profile. Workspace default saves no override; Standard requests `1×`; Unhurried requests `0.9×`; and an additional opt-in may follow a finite set of explicit final caller requests to slow down or return to normal. These are versioned requested settings. They do not infer emotion, change answer length, or establish perceived pace, warmth, naturalness, pronunciation, or a preferred voice.
+
+Teacher voice auditions are a lazy, bounded evaluation workbench inside Agent Studio. An operator chooses the Taxila-source Diya or Arjun preset, reviews the exact Hinglish or English text, consents to one Azure Speech call, and keeps failed, uncertain, generated, expired, and unavailable-artifact outcomes in one history. Audio is private and expires after seven days; durable history keeps only a text fingerprint and counts. An audition never changes the agent draft, published version, or live Realtime voice.
+
+Listening comparisons reuse two stored Audio proof recordings only after the server verifies matched caller input and configuration, with the declared comparison type naming either a delivery difference or an identical repeat. The reviewer receives a stable masked A/B order, listens through native controls, attests to both complete recordings, and saves append-only assessments for Naturalness, Pacing, Clarity, and Professional warmth. Source labels appear only after all four assessments. The screen states that prior familiarity and different generated wording prevent it from being a controlled blind study or a correctness test.
+
 The latest finish review in `docs/duplex-finish-review-oct09.md` returned SHIP for this scoped increment after the nine `duplex-{release,home,timing}-{desktop,mobile,user674}.png` captures covering release review, Overview continuation, and client timing evidence. Its focused suite passed 39/39; the final frozen source separately passed 804/804 root terminal tests. After one unused test-only `@ts-expect-error` annotation was removed, the corrected terminal production build completed with exit 0, including TypeScript and the postbuild package check across 1,104 entries; that correction did not change runtime or UI behavior. The release decision bar and rollback candidate were source- and test-reviewed but are not visually established by those captures. This evidence covers only the implemented interface and its recorded states; it does not establish auditory quality, end-to-end or acoustic latency, microphone/device behavior, hosted-channel outcomes, external delivery, competitor superiority, or whole-product readiness. The shipped extension adds no new asset or motion obligation.
 
 The later finish review in `docs/continuous-speech-finish-review-oct09.md` returned SHIP for the four continuous-understanding captures at the supplied desktop and mobile client areas. Filled-speech, unavailable, mute, and ended behavior is supported by source and focused tests rather than those images. The bounded record reports 39/39 focused checks, 900/900 root tests, standalone typecheck, the Next 16.4 production build and 1,113-entry package check, plus app, gateway, and worklet HTTP 200 checks. One isolated Azure SDK server probe produced four interim revisions and one sidecar final from synthetic audio; no browser microphone call was run in this pass. This evidence does not establish recognition accuracy, physical-device behavior, perceptual voice quality, acoustic or end-to-end latency, full duplex, hosted operation, competitor superiority, or whole-product readiness. No new imagery or motion is required.
 
 The 10 October scoped finish review returned SHIP for campaign-to-agent return, Usage & services, and Audio proof after eight original passing captures, corrected desktop/mobile Usage recaptures, and one supplemental scrolled mobile slot capture. The frozen source passed 983/983 tests and a Next 16.4 production build with TypeScript and the 1,179-entry package check. One 6.9375-second fictional fixture produced a retained failed attempt followed by a 9.7-second captured AI output from the same bytes, and browser playback completed; no human listening verdict was supplied. A separate 29-second, three-turn private Azure Listen & type call ended through the UI, confirmed provider hangup, and saved its preview. These are bounded workflow and artifact results, not physical-microphone, human-listening, perceptual-quality, full-duplex, hosted-operation, competitor, billing, or whole-product evidence. The extension adds no new image or motion requirement.
+
+The later `docs/speech-delivery-finish-review-oct10.md` returned SHIP for speech-delivery controls, bounded Taxila auditions, and masked listening comparisons after the final 1280×900 and 390×844 capture set. The mobile Quality destinations form a verified 2×2 grid with 177×44px tabs, 12px labels, and no horizontal overflow. Frozen source passed 1,054/1,054 tests, TypeScript, the Next 16.4 production build, the 1,207-entry package check, and packaged readiness HTTP 200. Matched artifacts A and B reported finite 14.0805-second and 16.75-second durations at media ready state 4 before playback. The saved pair remains 0/4 ratings with no reveal, attestation, or human preference. A separate post-fix private call closure remains operational evidence only. None of this establishes a perceptual win, pronunciation quality, preferred speed, live Taxila migration, publication approval, provider superiority, hosted readiness, or whole-product quality. No new imagery or motion obligation follows.
 
 **Key Characteristics:**
 
@@ -77,6 +85,9 @@ The 10 October scoped finish review returned SHIP for campaign-to-agent return, 
 - Exact-release return from agent preparation to the same campaign Review
 - Operational allowances, occupied slots, service freshness, and saved-work status
 - Version-bound synthetic Audio proof with separate playback and human review
+- Versioned Azure speech-delivery choices with explicit-request adaptation
+- Private, expiring Taxila-source teacher voice auditions that never change live voice
+- Matched-input masked A/B listening with four append-only human criteria
 - Quiet tonal surfaces with indigo state emphasis
 - Visible roles, consent, AI identity, and artifact ownership
 
@@ -150,6 +161,12 @@ Usage & services uses a `minmax(0, 1.35fr) / minmax(320px, .8fr)` operational sp
 
 Audio proof keeps preparation in one full-width panel, then uses a `minmax(250px, .68fr) / minmax(0, 1.7fr)` evidence split for saved attempts and the selected run. At 900px the run detail follows the attempt list, which becomes two columns, and below 620px attempts, transcripts, review forms, and metadata become one column with touch-safe controls. Native audio controls stay native; copy beside them carries the playback and listening boundary.
 
+Speech delivery is a three-column radio group within Voice & language: Workspace default, Standard, and Unhurried. The explicit-request checkbox and evidence link follow the group in the same reading order. Below 620px the choices become one column, while an unsupported Maya selection exposes a flat recovery message and Reset speech delivery action rather than hiding the saved incompatible state.
+
+Teacher voice auditions open beneath one 44px disclosure. The workbench keeps source context, form, outcome messages, and saved attempts in one sequential column. At 620px its intro, history heading, request action, and load recovery stack; example-script buttons wrap to touch-safe widths; and each native audio player keeps duration beside the control without inventing a custom waveform.
+
+Quality uses four keyboard-operated tabs. Below 580px they form a stable 2×2 grid with 44px minimum height rather than wrapping 3+1. Matched-comparison setup uses two recording selectors until 900px, then one column. Masked A/B players follow the same breakpoint; below 620px the page header, actions, saved comparison rows, reveal rows, and rating controls become one touch-safe column.
+
 ## Elevation & Depth
 
 Depth is tonal. White panels sit on a cool canvas with quiet borders, lilac selection, and semantic status surfaces. Resting work surfaces remain flat; the search result popover uses the existing small ambient shadow, and transient voice state can use the established call ring. Reduced-motion preferences remove nonessential animation.
@@ -179,6 +196,18 @@ The toolbar persists agent identity, saved/dirty status, direct Test agent focus
 ### Agent editor and test dock
 
 Six keyboard-operable sections replace simultaneous editor columns. Setup owns required name, role, and purpose. Conversation owns system prompt, opening message, AI introduction, and style; prompts are not repeated above unrelated sections. Voice & language preserves raw comma/newline editing buffers until validation and save. Knowledge attaches approved sources. Behaviour & actions keeps memory, human handoff, and bounded in-call actions explicit. The test dock remains mounted so draft test state survives section changes; Test agent moves focus to it, and Back to editor returns focus without changing routes.
+
+### Speech delivery controls
+
+Speech delivery belongs to the versioned agent draft beside voice profile, languages, and vocabulary. Workspace default omits a stored override; Standard and Unhurried save the closed v1 profile at `1×` and `0.9×`. The adaptation checkbox is available only after an explicit rate is selected and names its narrow authority: direct final caller requests in English, Hindi, or Hinglish. It does not respond to inferred emotion, brevity, tentative recognition, or arbitrary requested rates.
+
+Maya keeps its provider-specific delivery and cannot save this Azure profile. When a draft already carries the profile and the operator selects Maya, the interface preserves the conflict, blocks save with an accessible error, and offers Reset speech delivery. The footer calls the rates experimental and sends operators to saved Quality evidence; provider acknowledgement remains configuration acceptance, not perceived delivery proof.
+
+### Teacher voice auditions
+
+Teacher voice auditions load only when their disclosure opens. Diya and Arjun remain source-labelled Azure Speech presets, separate from the configured Realtime voice. Exact text, character count, selected preset, and private-processing consent form one explicit attempt. Example Hinglish and English scripts replace only the editable audition text and reset consent. Each generated result keeps a stable reference, preset, time, character count, outcome, validated native audio when available, and expiry state.
+
+Only audio persists for up to seven days; durable history retains a fingerprint and outcome rather than raw text. Failed and uncertain attempts remain visible, timeouts never auto-retry, and a new attempt requires fresh consent. Viewer access remains playback-only. A successful source-preset artifact establishes bounded provider acceptance and storage, never teacher identity, pronunciation quality, naturalness, a preferred voice, or migration of the live agent.
 
 ### Campaign agent preparation and return
 
@@ -216,6 +245,14 @@ Audio proof is a frozen evidence chain: one fictional synthetic scenario, one st
 
 The selected run separates captured audio, recognized caller text, assistant transcript, and human listening criteria. Transcript text does not establish sound. Playback started and playback completed are browser events only; the review form remains disabled until playback starts, then requires a separate `I listened to this captured output` attestation per criterion. Reviews append to the exact output hash and run record, while text rehearsal and release evidence remain separate gates. Expired or failed playback disables new attestations without erasing prior records.
 
+### Matched-input listening comparisons
+
+Comparison setup exposes only complete retained Audio proof runs with current comparison metadata. The server, not the selector copy, verifies the same fixture audio, instructions, knowledge basis, model, Azure resource, voice, and known runtime; it permits either a declared delivery-profile difference or an intentional identical-settings repeat. A mismatch blocks creation. Preparing a comparison reuses stored artifacts and never starts another AI call.
+
+Opening a saved pair assigns a stable reviewer-specific A/B order and hides source labels. Both native players must start, then the reviewer explicitly attests to hearing both complete recordings before saving a criterion. Naturalness, Pacing, Clarity, and Professional warmth each require A, B, No preference, or Neither works plus a written reason. Saved assessments are append-only; unsaved drafts for other criteria stay in place. Reveal occurs only after all four are saved and still does not select, publish, or recommend a version.
+
+The boundary copy states that this is not a controlled blind study: the reviewer may know the clips and generated wording may differ. Duration, provider acknowledgement, transcript text, playback events, and masked preference remain separate evidence. Critical-content correctness needs its own exact-artifact regression and cannot be inferred from these four preference ratings.
+
 ### Customer table intake
 
 Intake is one durable Import table → Map columns → Review rows → Applied record. A review is scoped to the organization and actor, names its saved revision, preserves local unsaved state, and can be reopened from the same source. Timeout, interruption, stale-preview, concurrent-revision, and surrounding-list refresh failures retain the operator's choices or the saved apply receipt and offer an explicit reload/check path. Switching sources or batches guards unsaved work; discarding a local draft never removes saved progress.
@@ -248,7 +285,7 @@ Raw field buffers and unsaved draft values remain mounted until save, discard, o
 
 ### Roles, consent, and AI identity
 
-Viewer access keeps records readable while disabling editing, testing, publication, and sending. Agent introduction must identify the representative as AI before customer conversation. Test and public call surfaces keep consent, stop-for-human, participant scope, provider state, and source boundaries visible. Live understanding adds explicit Azure Speech processing consent and never turns temporary recognition into transcript or response authority. A configured provider, passing check, release, channel draft, recognition state, or communication cue never proves delivery, identity, emotion, audible quality, recognition accuracy, or customer intent.
+Viewer access keeps records readable while disabling editing, testing, publication, generation, rating, and sending. Agent introduction must identify the representative as AI before customer conversation. Test and public call surfaces keep consent, stop-for-human, participant scope, provider state, and source boundaries visible. Live understanding adds explicit Azure Speech processing consent and never turns temporary recognition into transcript or response authority. Taxila auditions require explicit text-processing consent and never change the live voice. Listening reviews require separate complete-listening attestations and never publish. A configured provider, passing check, release, channel draft, requested delivery rate, recognition state, playback event, or communication cue never proves delivery, identity, emotion, audible quality, recognition accuracy, or customer intent.
 
 ## Do's and Don'ts
 
@@ -275,6 +312,9 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Do** bind required-suite truth to the latest attempt, current case set, runtime/configuration, knowledge authority, and blocking reviews while keeping older attempts inspectable.
 - **Do** keep allowance reservations, occupied connection slots, provider-reported usage, service heartbeats, and saved queue counts as separate operational evidence.
 - **Do** bind Audio proof to one immutable version and exact fixture bytes, retain failed attempts, and keep playback events, transcripts, and human listening reviews separate.
+- **Do** keep speech-delivery choices versioned, Azure-only, finite, and separate from response length, inferred emotion, and perceptual claims.
+- **Do** keep teacher auditions consented, private, expiring, provider-separated, and visibly independent from the agent draft and live Realtime voice.
+- **Do** match comparison inputs on the server, mask A/B until four append-only ratings, and preserve No preference, Neither works, and written reasons.
 - **Do** keep Results separate from Run and distinguish provider acceptance, reviewed evidence, and business outcome.
 - **Do** preserve role limits, consent controls, explicit AI identity, anonymous/unverified participant labels, and human-review boundaries.
 
@@ -294,5 +334,8 @@ Viewer access keeps records readable while disabling editing, testing, publicati
 - **Don't** treat a Text rehearsal judgment or passing required suite as publication approval, a Realtime/audio benchmark, a live-channel result, or a production claim.
 - **Don't** present allowances as invoices, reserved duration as measured billing, occupied slots as completed or live calls, or a heartbeat as service success.
 - **Don't** treat synthetic fixture playback, a browser playback event, recognized text, or an unreviewed AI output as human listening, microphone, perceptual-quality, full-duplex, or competitor evidence.
+- **Don't** translate `0.9×`, an exact provider acknowledgement, output duration, or an explicit pace request into proof of perceived slowness, warmth, naturalness, or improvement.
+- **Don't** present a Diya/Arjun audition as teacher identity, pronunciation validation, the agent's live voice, or a full Taxila migration.
+- **Don't** reveal comparison sources before all four ratings, overwrite a saved assessment, infer correctness from preference, or let a pair auto-select or publish a version.
 - **Don't** duplicate the execution workbench in Results, hide empty result-field states, or collapse recipient evidence into campaign-level claims.
 - **Don't** present a focused review verdict as whole-product usability, production, hosted-channel, voice-quality, billing, or competitor-superiority evidence.
