@@ -14,7 +14,7 @@ process.env.SQLITE_PATH = ':memory:';
 delete process.env.DATABASE_URL;
 process.env.AUTH_REQUIRE_EMAIL_VERIFICATION = 'false';
 const origin = 'http://localhost:3000';
-const env = { CONTINUOUS_SPEECH_GATEWAY_URL: 'wss://speech.example.test/private-speech', AZURE_SPEECH_KEY: 'synthetic-key', AZURE_SPEECH_REGION: 'eastus2' };
+const env = { NODE_ENV: 'test', CONTINUOUS_SPEECH_GATEWAY_URL: 'wss://speech.example.test/private-speech', AZURE_SPEECH_KEY: 'synthetic-key', AZURE_SPEECH_REGION: 'eastus2' };
 const bad = (status: number) => (error: unknown) => error instanceof HttpError && error.status === status;
 async function fixture(options: { user?: AuthUser; release?: boolean; contact?: boolean; data?: Record<string, unknown> } = {}) {
   const auth = options.user ? undefined : await authenticate({ mode: 'register', email: `${randomUUID()}@example.test`, password: 'synthetic strong password' }, new Request(`${origin}/api/auth`));
@@ -82,7 +82,7 @@ test('exact origin and explicit-local browser transport are enforced', async () 
   await assert.rejects(claimContinuousSpeechTicket(grant.ticket, 'null', f.deps), bad(403));
   await claimContinuousSpeechTicket(grant.ticket, origin, f.deps);
   const local = await fixture();
-  const deps = { env: { ...env, NODE_ENV: 'production', CONTINUOUS_SPEECH_ALLOW_LOCAL_WS: 'true', CONTINUOUS_SPEECH_GATEWAY_URL: 'ws://localhost:9000/private-speech' } };
+  const deps = { env: { ...env, NODE_ENV: 'production', APP_URL: origin, INFERENCE_ALLOW_LOCAL: 'true', CONTINUOUS_SPEECH_ALLOW_LOCAL_WS: 'true', CONTINUOUS_SPEECH_GATEWAY_URL: 'ws://localhost:9000/private-speech' } };
   await assert.rejects(issueContinuousSpeechGrant(local.user, local.body, 'https://remote.example.test', deps), bad(403));
   assert.ok((await issueContinuousSpeechGrant(local.user, local.body, origin, deps)).ticket);
 });
@@ -190,7 +190,7 @@ test('close CAS retry never closes a replacement session epoch', async () => {
   assert.equal(record.status, 'claimed'); assert.equal(JSON.parse(String(record.data)).sessionEpoch, replacementEpoch);
 });
 test('HTTP issue and abort require authenticated same-origin requests', async () => {
-  const f = await fixture(); Object.assign(process.env, env); process.env.APP_URL = origin;
+  const f = await fixture(); Object.assign(process.env, env, { APP_URL: origin, INFERENCE_ALLOW_LOCAL: 'true' });
   const request = (method: string, cookie = '', requestOrigin = origin) => new Request(`${origin}/api/voice/perception`, { method, headers: { origin: requestOrigin, cookie, 'content-type': 'application/json' }, body: JSON.stringify(f.body) });
   assert.equal((await POST(request('POST'))).status, 401);
   assert.equal((await POST(request('POST', f.auth!.cookie, 'https://foreign.test'))).status, 403);

@@ -6,6 +6,7 @@ import { HttpError } from '../../server/http';
 import { createRecord, getRecord, listRecords, updateRecord, type PlatformRecord } from '../../platform/records';
 import { azureConfig, createAzureClient, enrollmentReadiness, previewReadiness, previewVoiceConfig, providerStatus, synthesizePreview } from './azure';
 import { MAX_REQUEST, validateWav } from './audio';
+import { assertInferenceAccess } from '../../usage/service';
 
 type CloneData = {
   ownerId: string; label: string; companyName: string; locale: string; consentId: string; voiceId: string;
@@ -56,6 +57,7 @@ export function validateEnrollmentFields(form: FormData, configuredCompanyName =
 }
 
 export async function enrollClone(user: AuthUser, form: FormData, fetcher: typeof fetch = fetch) {
+  await assertInferenceAccess(user);
   const { label, companyName, locale, consent, sample } = validateEnrollmentFields(form, process.env.AZURE_PERSONAL_VOICE_COMPANY_NAME || '');
   const config = azureConfig();
   const [consentBytes, sampleBytes] = await Promise.all([consent.arrayBuffer(), sample.arrayBuffer()]);
@@ -140,6 +142,7 @@ export async function revokeClone(user: AuthUser, id: string, fetcher: typeof fe
 }
 
 export async function previewClone(user: AuthUser, id: string, text: unknown, fetcher: typeof fetch = fetch) {
+  await assertInferenceAccess(user);
   if (typeof text !== 'string' || !text.trim() || text.length > 240) throw new HttpError(400, 'Preview text must contain 1–240 characters.');
   const record = await find(user, id);
   if (record.status !== 'ready' || !record.data.speakerProfileId) throw new HttpError(409, 'This profile is not ready for Speech preview.');

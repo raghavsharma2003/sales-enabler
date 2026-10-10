@@ -10,6 +10,10 @@ import { VoiceStudio } from '../voice-studio';
 import { VoiceCloningPanel } from '../voice-cloning-panel';
 import { AgentRevision } from '../agent-revision';
 import { AgentReleasePanel } from '../agent-release-panel';
+import { campaignAgentBinding, campaignAgentContext, campaignAgentFocus, campaignAgentTemplate, parseCampaignAgentFocus, returnCampaignAgent } from '../../lib/platform/campaign-agent-handoff';
+import { campaignDisplayName } from '../../lib/platform/campaign-workflow';
+import { campaignFocus } from '../../lib/platform/campaign-workspace-view';
+import type { PlatformRecord } from '../../lib/platform/contracts';
 import styles from './agents-workspace.module.css';
 
 const initial: AgentConfig = { name: '', role: '', objective: '', disclosure: 'I am an AI assistant for this company.', primaryLanguage: 'English', allowedLanguages: ['English'], responseStyle: 'Be clear, concise and respectful. Acknowledge uncertainty.', memoryScope: 'approved_contact', escalation: 'Offer human help when requested or when the answer is uncertain.', knowledgeIds: [], enabledTools: [], systemPrompt: '', openingMessage: '', speechVocabulary: [] };
@@ -26,12 +30,18 @@ const presets = [
   { name: 'Customer feedback', role: 'Customer feedback representative', objective: 'Learn what happened in the customer experience, identify what helped or failed, and ask permission before proposing a follow-up.', systemPrompt: 'Listen for the customer’s own account. Ask one open question at a time. Reflect specific details without assuming how they feel. If they describe a problem, clarify the impact and offer a human follow-up. Do not promise a resolution or invent company policy.', openingMessage: 'Hello, I’m an AI assistant calling to understand your experience. Is now a good time to talk for a few minutes?', responseStyle: 'Warm, patient and concise. Allow pauses, confirm corrections, and avoid leading questions.' },
   { name: 'Lead qualification', role: 'Sales qualification representative', objective: 'Understand the prospect’s needs, timing, and decision process, then offer a useful next step when appropriate.', systemPrompt: 'Learn the prospect’s goal before describing an offering. Ask one question at a time about their situation, timeline, and constraints. Use only approved company knowledge for factual claims. If the fit is unclear, say so and offer a human follow-up.', openingMessage: 'Hi, I’m an AI assistant with the team. Is this a convenient time to ask a few questions about what you’re looking for?', responseStyle: 'Direct, helpful and curious. Do not pressure for a commitment or invent pricing.' },
 ];
-export function AgentsView({ records, workspace, act, busy, navigate, focusId }: PlatformViewProps) {
+export function AgentsView({ records, workspace, act, busy: platformBusy, navigate, focusId }: PlatformViewProps) {
   const viewer = workspace.user.role === 'viewer';
+  const route = parseCampaignAgentFocus(focusId);
+  const handoff = route && route !== 'invalid' ? route : undefined;
+  const [returnPending, setReturnPending] = useState(false);
+  const [returnError, setReturnError] = useState('');
+  const returnLock = useRef(false);
+  const busy = platformBusy || returnPending;
   const agents = records.filter(record => record.kind === 'agent_definition');
   const versions = records.filter(record => record.kind === 'agent_version');
   const approvedSources = records.filter(record => record.kind === 'brain_source' && record.status === 'approved');
-  const [selected, select] = useState<string | null>(focusId === 'new' ? null : focusId || agents[0]?.id || null);
+  const [selected, select] = useState<string | null>(route ? handoff?.agentId || null : focusId === 'new' ? null : focusId || agents[0]?.id || null);
   const current = agents.find(agent => agent.id === selected);
   const [draft, setDraft] = useState<AgentConfig>(() => ({ ...initial, ...(current?.data as AgentConfig | undefined) }));
   const [baseline, setBaseline] = useState(() => JSON.stringify(draft));
@@ -47,6 +57,17 @@ export function AgentsView({ records, workspace, act, busy, navigate, focusId }:
   const [vocabularyError, setVocabularyError] = useState('');
   const loadedRecord = useRef({ id: current?.id, revision: current?.revision });
   const lastFocus = useRef(focusId);
+  const selectionRef = useRef({ selected, focusId, viewer });
+  selectionRef.current = { selected, focusId, viewer };
+  const agentFocus = (id?: string) => handoff ? campaignAgentFocus({ ...handoff, agentId: id }) : id || 'new';
+  let campaignContext: ReturnType<typeof campaignAgentContext> | undefined;
+  let handoffError = route === 'invalid' ? 'This campaign preparation link is invalid. Open a saved campaign and choose Prepare an agent again.' : '';
+  if (handoff) {
+    try {
+      campaignContext = campaignAgentContext(records, handoff);
+      if (handoff.agentId && !agents.some(agent => agent.id === handoff.agentId)) handoffError = 'This agent is unavailable in this workspace. Return to the campaign to choose or prepare another agent.';
+    } catch (cause) { handoffError = cause instanceof Error ? cause.message : 'Campaign setup is unavailable.'; }
+  }
   const resetDraft = (next: AgentConfig) => {
     setDraft(next); setBaseline(JSON.stringify(next)); dirtyRef.current = false;
     setLanguagesText(next.allowedLanguages.join(', ')); setVocabularyText((next.speechVocabulary || []).join('\n'));
@@ -60,13 +81,13 @@ export function AgentsView({ records, workspace, act, busy, navigate, focusId }:
     }
   }, [current?.id, current?.revision]);
   useEffect(() => {
-    if (!dirty) return;
-    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    const warn = (event: BeforeUnloadEvent) => { if (dirtyRef.current || returnLock.current) { event.preventDefault(); event.returnValue = ''; } };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, [dirty]);
+  }, []);
   useEffect(() => {
     const warn = (event: Event) => {
+      if (returnLock.current) { event.preventDefault(); return; }
       if (dirtyRef.current && !window.confirm('You have unsaved agent changes. Leave without saving?')) event.preventDefault();
     };
     window.addEventListener('relay:before-navigation', warn);
@@ -82,19 +103,20 @@ export function AgentsView({ records, workspace, act, busy, navigate, focusId }:
     select(id); resetDraft(next ? { ...initial, ...(next.data as AgentConfig) } : { ...initial });
     loadedRecord.current = { id: next?.id, revision: next?.revision };
     setSection(next ? 'Conversation' : 'Setup'); setNotice('');
-    if (!navigationApproved) navigate('agents', id || 'new');
+    if (!navigationApproved) navigate('agents', agentFocus(id || undefined));
   };
   useEffect(() => {
     if (lastFocus.current === focusId) return;
     lastFocus.current = focusId;
     // The platform's cancelable navigation event already guarded this route change.
-    if (focusId === 'new') changeAgent(null, true);
+    if (route && route !== 'invalid') changeAgent(route.agentId || null, true);
+    else if (focusId === 'new') changeAgent(null, true);
     else if (focusId && agents.some(agent => agent.id === focusId)) changeAgent(focusId, true);
   }, [focusId]);
   const startNew = (preset?: (typeof presets)[number]) => {
     if (viewer || busy || !canDiscard()) return;
     select(null); resetDraft({ ...initial }); loadedRecord.current = { id: undefined, revision: undefined };
-    navigate('agents', 'new');
+    navigate('agents', agentFocus());
     if (preset) { setDraft({ ...initial, ...preset }); setLanguagesText('English'); }
     setSection('Setup'); setNotice('');
     requestAnimationFrame(() => document.getElementById('agent-name')?.focus());
@@ -140,7 +162,7 @@ export function AgentsView({ records, workspace, act, busy, navigate, focusId }:
         const saved = result as { id: string; data: AgentConfig; revision: number };
         resetDraft({ ...initial, ...saved.data }); select(saved.id);
         loadedRecord.current = { id: saved.id, revision: saved.revision };
-        navigate('agents', saved.id);
+        navigate('agents', agentFocus(saved.id));
       } else { setBaseline(JSON.stringify(draft)); dirtyRef.current = false; }
       setNotice('Draft saved. Test it here, then open Publish to review the release checks.');
     } catch { /* The platform action banner presents the server error; keep the draft. */ }
@@ -154,12 +176,51 @@ export function AgentsView({ records, workspace, act, busy, navigate, focusId }:
     target?.focus({ preventScroll: true });
   };
   const fieldError = (id: string) => ({ 'aria-invalid': invalidField === id || undefined, 'aria-describedby': invalidField === id ? 'agent-validation' : undefined });
+  const activeRelease = current ? records.find(record => record.kind === 'release' && record.status === 'active' && record.data.channel === 'browser' && record.data.agentId === current.id) : undefined;
+  let returnBlocker = '';
+  if (handoff && current && activeRelease) {
+    try { campaignAgentBinding({ records, reference: handoff, agentId: current.id, releaseId: activeRelease.id, dirty, viewer }); }
+    catch (cause) { returnBlocker = cause instanceof Error ? cause.message : 'Review Publish before returning.'; }
+  }
+  const useCampaignTemplate = () => {
+    if (!handoff || viewer || busy || !canDiscard()) return;
+    try {
+      const template = campaignAgentTemplate(records, handoff);
+      resetDraft({ ...initial }); setDraft({ ...initial, ...template }); dirtyRef.current = true;
+      setSection('Setup'); setNotice('Campaign starting draft copied. Review the instructions and approved knowledge, then save and test.');
+    } catch (cause) { setReturnError(cause instanceof Error ? cause.message : 'Campaign starting draft is unavailable.'); }
+  };
+  const returnWithAgent = async () => {
+    if (!handoff || !current || !activeRelease || viewer || busy || returnLock.current || dirtyRef.current) return;
+    const expected = { selected, focusId };
+    returnLock.current = true; setReturnPending(true); setReturnError('');
+    try {
+      const saved = await returnCampaignAgent({ reference: handoff, agentId: current.id, releaseId: activeRelease.id, dirty: dirtyRef.current, viewer }, async () => {
+        const response = await fetch('/api/platform', { cache: 'no-store', signal: AbortSignal.timeout(15000) });
+        if (!response.ok) throw new Error('Current campaign and release records could not be loaded. Refresh and try again.');
+        const result = await response.json() as { records?: PlatformRecord[] };
+        if (!Array.isArray(result.records)) throw new Error('The current workspace response could not be verified.');
+        return result.records;
+      }, act, () => !dirtyRef.current && !selectionRef.current.viewer && selectionRef.current.selected === expected.selected && selectionRef.current.focusId === expected.focusId);
+      returnLock.current = false;
+      navigate('campaigns', campaignFocus(saved.id, 'review'));
+    } catch (cause) { setReturnError(cause instanceof Error ? cause.message : 'The release could not be saved to the campaign. Your agent is still here.'); }
+    finally { returnLock.current = false; setReturnPending(false); }
+  };
+
+  if (handoffError) return <main className={`pc-page ${styles.page}`}><header className={styles.header}><div><h1>Campaign preparation unavailable</h1><p role="alert">{handoffError}</p></div></header><button type="button" className="pc-button" onClick={() => navigate('campaigns', handoff ? campaignFocus(handoff.campaignId, 'agent_content') : undefined)}>Return to campaign setup</button></main>;
 
   return <main className={`pc-page ${styles.page}`}>
     <header className={styles.header}>
       <div><h1>Voice agents</h1><p>Build, test and publish an agent in one workspace.</p></div>
       <button className="pc-button" type="button" disabled={viewer || busy} onClick={() => startNew()}><Plus size={16} aria-hidden="true"/> New agent</button>
     </header>
+    {handoff && campaignContext && <section className={styles.campaignContext} aria-label="Campaign preparation">
+      <div className={styles.campaignHeading}><div><h2>Agent for {campaignDisplayName(campaignContext.campaign)}</h2><p>{String(campaignContext.offering.data.name)} · {campaignContext.fields.goal}</p></div><button type="button" className="pc-button quiet" disabled={busy} onClick={() => navigate('campaigns', campaignFocus(handoff.campaignId, 'agent_content'))}><ArrowLeft size={15} aria-hidden="true"/> Return to campaign</button></div>
+      {!current && !viewer && <details className={styles.campaignTemplate} open><summary>Review a campaign starting draft</summary><p>This task template uses the saved offering and goal. Copying it changes only the editable agent draft.</p><dl><div><dt>Purpose</dt><dd>{campaignAgentTemplate(records, handoff).objective}</dd></div><div><dt>Opening</dt><dd>{campaignAgentTemplate(records, handoff).openingMessage}</dd></div></dl><button type="button" className="pc-button" disabled={busy} onClick={useCampaignTemplate}>Use campaign starting draft</button></details>}
+      {current && <div className={styles.campaignReturn}><div><strong>{activeRelease ? `Active version ${String(versions.find(version => version.id === activeRelease.data.versionId)?.data.number || '—')}` : 'Save, test and publish this agent'}</strong><p>{returnBlocker || (activeRelease ? 'Use this exact active release in the saved campaign, then review its brief and current eligibility.' : 'Open Publish for configuration checks and current release evidence. Publication is an explicit decision.')}</p></div>{activeRelease ? <button type="button" className="pc-button primary" disabled={busy || viewer || !!returnBlocker} onClick={() => void returnWithAgent()}>{returnPending ? 'Checking and returning…' : 'Return and use this agent'}</button> : <button type="button" className="pc-button" onClick={() => setSection('Publish')}>Review Publish</button>}</div>}
+      {returnError && <p className={styles.error} role="alert">{returnError}</p>}
+    </section>}
     <div className={styles.toolbar}>
       <label className={styles.picker}>Agent<select className="pc-select" value={selected || ''} disabled={busy} onChange={event => changeAgent(event.target.value || null)}>
         {!viewer && <option value="">New draft</option>}{viewer && !agents.length && <option value="">No agents available</option>}

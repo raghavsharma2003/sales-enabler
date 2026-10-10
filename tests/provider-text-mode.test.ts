@@ -15,6 +15,8 @@ test('Azure listen-and-type WebRTC receives audio without microphone permission 
   let remoteAudioPaused = 0;
   let peerClosed = 0;
   let channelClosed = 0;
+  let requestId: string | undefined;
+  let endRequests = 0;
   const remoteStream = {} as MediaStream;
   const channel = {
     readyState: 'connecting',
@@ -54,8 +56,16 @@ test('Azure listen-and-type WebRTC receives audio without microphone permission 
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaDevices: { getUserMedia: () => { micRequested++; assert.fail('must not request microphone'); } } } });
   Object.defineProperty(globalThis, 'RTCPeerConnection', { configurable: true, value: MockPeer });
   Object.defineProperty(globalThis, 'Audio', { configurable: true, value: MockAudio });
-  Object.defineProperty(globalThis, 'fetch', { configurable: true, value: async (_url: string, init: RequestInit) => {
+  Object.defineProperty(globalThis, 'fetch', { configurable: true, value: async (url: string, init: RequestInit) => {
     const body = JSON.parse(init.body as string);
+    if (url === '/api/voice/control') {
+      endRequests++;
+      assert.deepEqual(body, { action: 'end', requestId });
+      return Response.json({ requested: true, state: 'closed' });
+    }
+    assert.equal(url, '/api/voice/connect');
+    requestId = body.requestId;
+    assert.equal(typeof requestId, 'string');
     assert.equal(body.mode, 'preview');
     assert.match(body.sdp, /m=audio/);
     return Response.json({ provider: 'azure', transport: 'webrtc', sdp: 'v=0\r\nm=audio\r\n', previewId: 'preview-1', initialInstructions: 'Approved context. Disclose AI.', openingMessage: 'Namaste, I am an AI assistant. How may I help?' });
@@ -90,10 +100,13 @@ test('Azure listen-and-type WebRTC receives audio without microphone permission 
     assert.equal(session.sendText('Queue full'), false);
   } finally {
     session.close();
-    assert.equal(peerClosed, 1);
-    assert.equal(channelClosed, 1);
     assert.equal(remoteAudioPaused, 1);
     assert.equal(micRequested, 0);
+    assert.equal(channel.onmessage, null);
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(endRequests, 1);
+    assert.equal(peerClosed, 1);
+    assert.equal(channelClosed, 1);
     for (const [name, descriptor] of originals) {
       if (descriptor) Object.defineProperty(globalThis, name, descriptor);
       else Reflect.deleteProperty(globalThis, name);

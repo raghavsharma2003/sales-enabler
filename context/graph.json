@@ -1399,6 +1399,55 @@
       "title": "Terminal scoped continuous-speech sidecar verification",
       "status": "source-66e44e0-dependencies-62a715e-reviews-typecheck-900-tests-build-package-readiness-gateway-single-synthetic-audio-live-lifecycle-no-mic-browser-and-ui-ship-pass",
       "path": "docs/continuous-speech-verification-oct09.md"
+    },
+    {
+      "id": "decision.sellability-private-pilot-2026-10-10",
+      "type": "decision",
+      "title": "Sell one admitted counselling follow-up pilot before unattended public self-service",
+      "status": "current-product-and-commercial-boundary",
+      "path": "docs/sellability-audit-oct10.md"
+    },
+    {
+      "id": "implementation.campaign-agent-return-2026-10-10",
+      "type": "component",
+      "title": "Exact campaign to agent preparation and published-release return",
+      "status": "active-uncommitted-18-focused-plus-typecheck-pass-integrated-browser-proof-open",
+      "path": "docs/sellability-implementation-oct10.md"
+    },
+    {
+      "id": "implementation.paid-inference-admission-2026-10-10",
+      "type": "component",
+      "title": "Hosted operator allowlist, finite AI budget and durable private voice attempt admission",
+      "status": "implemented-uncommitted-final-authority-40-route-13-browser-end-5-legacy-migration-31-and-typecheck-pass-full-suite-provider-browser-proof-open",
+      "path": "docs/sellability-implementation-oct10.md"
+    },
+    {
+      "id": "implementation.private-call-supervisor-2026-10-10",
+      "type": "component",
+      "title": "Private Azure call control and durable supervisor with retained uncertainty",
+      "status": "implemented-uncommitted-connect-end-and-shared-guards-wired-full-suite-build-browser-and-live-control-proof-open",
+      "path": "docs/sellability-implementation-oct10.md"
+    },
+    {
+      "id": "implementation.versioned-voice-proof-run-2026-10-10",
+      "type": "component",
+      "title": "Versioned audio proof run with captured assistant artifacts and human review",
+      "status": "implemented-uncommitted-bounded-artifact-schema-runner-api-and-review-no-passed-audio-release-gate-or-terminal-review",
+      "path": "docs/sellability-implementation-oct10.md"
+    },
+    {
+      "id": "evidence.hosted-readiness-audit-2026-10-10",
+      "type": "evidence",
+      "title": "Read-only Azure shared-foundation and project-hosting gap audit",
+      "status": "shared-acr-logs-email-found-no-target-host-postgres-keyvault-or-verified-credit-balance-no-cloud-mutation",
+      "path": "docs/hosted-readiness-oct10.md"
+    },
+    {
+      "id": "open.sellability-terminal-verification-2026-10-10",
+      "type": "open-question",
+      "title": "Complete integrated, browser, provider-control and Voice Proof Run verification for sellability increment",
+      "status": "open-source-frozen-typecheck-981-tests-and-focused-authority-integration-runtime-pass-final-build-package-readiness-browser-live-provider-and-reviews-pending",
+      "path": "docs/sellability-implementation-oct10.md"
     }
   ],
   "edges": [
@@ -2661,6 +2710,66 @@
       "from": "verification.continuous-speech-terminal-2026-10-09",
       "to": "open.continuous-speech-terminal-verification-2026-10-09",
       "relation": "closes-scoped-gate"
+    },
+    {
+      "from": "verification.continuous-speech-terminal-2026-10-09",
+      "to": "decision.sellability-private-pilot-2026-10-10",
+      "relation": "provides-clean-5249801-baseline"
+    },
+    {
+      "from": "decision.sellability-private-pilot-2026-10-10",
+      "to": "implementation.campaign-agent-return-2026-10-10",
+      "relation": "prioritizes"
+    },
+    {
+      "from": "decision.sellability-private-pilot-2026-10-10",
+      "to": "implementation.paid-inference-admission-2026-10-10",
+      "relation": "requires-before-paid-provider-contact"
+    },
+    {
+      "from": "implementation.campaign-agent-return-2026-10-10",
+      "to": "component.platform-campaigns",
+      "relation": "extends"
+    },
+    {
+      "from": "implementation.paid-inference-admission-2026-10-10",
+      "to": "constraint.azure-only-paid",
+      "relation": "preserves"
+    },
+    {
+      "from": "implementation.private-call-supervisor-2026-10-10",
+      "to": "implementation.paid-inference-admission-2026-10-10",
+      "relation": "settles-reserved-voice-attempts"
+    },
+    {
+      "from": "implementation.versioned-voice-proof-run-2026-10-10",
+      "to": "implementation.private-call-supervisor-2026-10-10",
+      "relation": "uses-bounded-controlled-call-evidence"
+    },
+    {
+      "from": "evidence.hosted-readiness-audit-2026-10-10",
+      "to": "open.sellability-terminal-verification-2026-10-10",
+      "relation": "documents-external-hosting-gates"
+    },
+    {
+      "from": "implementation.campaign-agent-return-2026-10-10",
+      "to": "open.sellability-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.paid-inference-admission-2026-10-10",
+      "to": "open.sellability-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.private-call-supervisor-2026-10-10",
+      "to": "open.sellability-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.versioned-voice-proof-run-2026-10-10",
+      "to": "open.sellability-terminal-verification-2026-10-10",
+      "relation": "requires"
     }
   ]
 }

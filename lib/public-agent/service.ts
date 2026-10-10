@@ -4,6 +4,7 @@ import { HttpError } from '../server/http';
 import { resolvePublicSession } from '../deployments/engine';
 import type { DeploymentAuthority } from '../deployments/contracts';
 import { runAiTask } from '../ai/task-router';
+import { assertInferenceAccess } from '../usage/service';
 import { firstReplyWithDisclosure, publicChatInstructions, publicInstructions } from './protocol';
 import { compileRelationalRuntime } from '../voice/relational-runtime';
 import { enqueueLearningForServerSession } from '../learning-jobs/engine';
@@ -135,6 +136,7 @@ export async function closePublicChatHistory(token: string, origin: string, publ
 
 /** One voice activation per capability, durable across replicas/reconnects. */
 export async function claimVoiceSession(authority: PublicAuthority) {
+  await assertInferenceAccess(authority.user);
   if (authority.deployment.data.channel !== 'web_voice') throw new HttpError(403, 'This assistant is available in text chat only.');
   const database = await db();
   const { row, value } = await readConversation(authority, 'public_web_voice');

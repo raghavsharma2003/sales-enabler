@@ -28,6 +28,17 @@
 .identity h2 { margin: 0 0 4px; font-size: 19px; font-weight: 650; line-height: 1.35; overflow-wrap: anywhere; }
 .identity p { margin: 0; color: var(--pc-muted); font-size: 13px; }
 .topActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.campaignContext { margin-bottom: 18px; padding: 20px; border: 1px solid var(--pc-line); border-radius: 9px; background: var(--pc-surface, #fff); }
+.campaignHeading, .campaignReturn { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 20px; }
+.campaignHeading > div, .campaignReturn > div { flex: 1 1 320px; min-width: 0; }
+.campaignContext h2 { margin: 0 0 5px; font-size: 18px; line-height: 1.4; font-weight: 650; overflow-wrap: anywhere; }
+.campaignContext p { margin: 4px 0 0; max-width: 72ch; color: var(--pc-muted); font-size: 13px; overflow-wrap: anywhere; }
+.campaignTemplate, .campaignReturn { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--pc-line); }
+.campaignTemplate summary { color: var(--pc-accent); cursor: pointer; font-weight: 550; min-height: 36px; }
+.campaignTemplate dl { display: grid; gap: 12px; margin: 16px 0; font-size: 13px; }
+.campaignTemplate dt { font-weight: 650; }
+.campaignTemplate dd { margin: 3px 0 0; max-width: 72ch; color: var(--pc-muted); overflow-wrap: anywhere; }
+.campaignContext .error { margin: 14px 0 0; color: #9b3547; }
 .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, 370px); gap: 18px; align-items: start; }
 .editor, .testDock { min-width: 0; background: var(--pc-surface, #fff); border: 1px solid var(--pc-line); border-radius: 9px; scroll-margin-top: 190px; }
 .editor:focus, .testDock:focus { outline: 2px solid var(--pc-accent); outline-offset: 3px; }

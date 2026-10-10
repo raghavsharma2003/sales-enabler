@@ -20,6 +20,7 @@ import { InboxView } from '@/components/platform/inbox-view';
 import { AutomationsView } from '@/components/platform/automations-view';
 import { CompanyView } from '@/components/platform/company-view';
 import { DeploymentsView } from '@/components/platform/deployments-view';
+import { UsageView } from '@/components/platform/usage-view';
 import { AccountSecurity } from '@/components/account-access';
 import { readWorkspaceHash, resolveSection, searchWorkspace, sectionLabels, workspaceArea, workspaceAreas, workspaceHref } from '@/lib/platform/navigation';
 import { WorkspaceHistoryGuard } from '@/lib/platform/history-guard';
@@ -29,7 +30,7 @@ import './deployments.css';
 import './channel-agents.css';
 
 const areaIcons: Record<string, typeof LayoutDashboard> = { home: LayoutDashboard, company: Building2, agents: Bot, campaigns: Megaphone, activity: MessagesSquare, settings: UserRoundCog };
-const views: Record<string, React.ComponentType<PlatformViewProps>> = { 'Command centre': CommandView, Campaigns: CampaignsView, Conversations: ConversationsView, Customers: CustomersView, GroupAI: GroupsView, Agents: AgentsView, 'Test lab': TestsView, 'Company brain': BrainView, Integrations: IntegrationsView, Releases: ReleasesView, Quality: QualityView, Commitments: CommitmentsView, Inbox: InboxView, Automations: AutomationsView, Company: CompanyView, Deployments: DeploymentsView, 'Account security': () => <main className="pc-page"><AccountSecurity/></main>, 'Team & access': ({ workspace }) => <TeamView user={workspace.user}/> };
+const views: Record<string, React.ComponentType<PlatformViewProps>> = { 'Command centre': CommandView, Campaigns: CampaignsView, Conversations: ConversationsView, Customers: CustomersView, GroupAI: GroupsView, Agents: AgentsView, 'Test lab': TestsView, 'Company brain': BrainView, Integrations: IntegrationsView, Releases: ReleasesView, Quality: QualityView, Commitments: CommitmentsView, Inbox: InboxView, Automations: AutomationsView, Company: CompanyView, Deployments: DeploymentsView, 'Usage & services': UsageView, 'Account security': () => <main className="pc-page"><AccountSecurity/></main>, 'Team & access': ({ workspace }) => <TeamView user={workspace.user}/> };
 class RequestError extends Error { constructor(public status: number, message: string) { super(message); } }
 type AccountSession = { user: { verificationRequired?: boolean; emailVerified?: boolean } };
 function needsEmailVerification(session: AccountSession) { return session.user.verificationRequired && !session.user.emailVerified; }

@@ -159,14 +159,18 @@ test('a never-settling evidence callback cannot delay later turns or finalizatio
   } finally { await h.cleanup(); }
 });
 
-function authorityFixture(organizationId: string, sessionId: string): PublicAuthority {
-  return { user: { id: `user-${sessionId}`, email: `${sessionId}@example.test`, organizationId }, deployment: { id: `deployment-${sessionId}`, revision: 1, data: { channel: 'web_voice', publicId: `public-${sessionId}`, agentId: 'agent', versionId: 'version', releaseId: 'release', publicKnowledgeIds: [], autoLearning: false, brand: { name: 'Example', welcomeMessage: 'Welcome.' }, limits: { maxSessionSeconds: 60, maxTurnsPerConversation: 4 } } }, config: { primaryLanguage: 'English', allowedLanguages: ['English'], responseStyle: 'Brief', objective: 'Help.' }, context: '{"companyKnowledge":[]}', fences: [], sessionId, expiresAt: new Date(Date.now() + 60_000).toISOString(), purpose: 'voice' } as unknown as PublicAuthority;
+function authorityFixture(user: { id: string; email: string; organizationId: string }, sessionId: string): PublicAuthority {
+  return { user, deployment: { id: `deployment-${sessionId}`, revision: 1, data: { channel: 'web_voice', publicId: `public-${sessionId}`, agentId: 'agent', versionId: 'version', releaseId: 'release', publicKnowledgeIds: [], autoLearning: false, brand: { name: 'Example', welcomeMessage: 'Welcome.' }, limits: { maxSessionSeconds: 60, maxTurnsPerConversation: 4 } } }, config: { primaryLanguage: 'English', allowedLanguages: ['English'], responseStyle: 'Brief', objective: 'Help.' }, context: '{"companyKnowledge":[]}', fences: [], sessionId, expiresAt: new Date(Date.now() + 60_000).toISOString(), purpose: 'voice' } as unknown as PublicAuthority;
 }
 
 test('server persistence is CAS-backed and idempotent per turn; canonical voice sessions include only captured evidence', async () => {
-  const database = await db(), organizationId = randomUUID(), now = new Date().toISOString();
-  await database.run('INSERT INTO organizations (id,name,created_at) VALUES (?,?,?)', [organizationId, 'Example', now]);
-  const authority = authorityFixture(organizationId, randomUUID());
+  const database = await db(), organizationId = randomUUID(), user = { id: randomUUID(), email: `${randomUUID()}@example.test`, organizationId, role: 'owner' as const }, now = new Date().toISOString();
+  await database.batch([
+    { sql: 'INSERT INTO organizations (id,name,created_at) VALUES (?,?,?)', params: [organizationId, 'Example', now] },
+    { sql: 'INSERT INTO users (id,email,password_hash,organization_id,created_at) VALUES (?,?,?,?,?)', params: [user.id, user.email, 'unused', organizationId, now] },
+    ...ownerRegistrationStatements(user),
+  ]);
+  const authority = authorityFixture(user, randomUUID());
   await claimVoiceSession(authority);
   const turn: PublicVoiceResponseEvidence = { turn: 'turn1', requestedAtMs: 8, firstServerAudioAtMs: 21, requestedToFirstServerAudioMs: 13, terminalAtMs: 35, status: 'completed', cancelRequested: false, cancelled: false, audioBytes: 160, tokenUsage: { totalTokens: 12 } };
   await persistPublicVoiceEvidence(authority, turn);
@@ -180,7 +184,7 @@ test('server persistence is CAS-backed and idempotent per turn; canonical voice 
   const sessions = await database.all<{ data: string }>('SELECT data FROM entities WHERE organization_id=? AND kind=?', [organizationId, 'session']);
   assert.deepEqual(JSON.parse(sessions[0].data).voiceEvidence.turns, [turn]);
 
-  const withoutEvidence = authorityFixture(organizationId, randomUUID());
+  const withoutEvidence = authorityFixture(user, randomUUID());
   await claimVoiceSession(withoutEvidence);
   await appendPublicTranscript(withoutEvidence, 'public_web_voice', { role: 'assistant', text: 'Another transcript.', eventId: 'output-2' });
   await finishPublicConversation(withoutEvidence, 'public_web_voice', 'visitor_stopped');

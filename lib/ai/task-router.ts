@@ -4,6 +4,8 @@ import { db, type Database, WriteConflictError } from '../server/db';
 import { HttpError } from '../server/http';
 import { normalizeAzureRealtimeEndpoint } from '../voice/config';
 import { generateAzureText, type AzureTextResult } from './azure-text';
+import { assertInferenceAccess, inferenceConfiguration } from '../usage/service';
+import { operatorMembershipFence } from '../team/service';
 
 export type AiTask = 'extraction' | 'planning' | 'feedback' | 'evaluation' | 'answer';
 export type AiTaskInput = { task: AiTask; requestId: string; system: string; input: string; maxOutputTokens?: number; responseFormat?: 'json_object' };
@@ -28,13 +30,7 @@ const sha = (value: string) => createHash('sha256').update(value).digest('hex');
 const runIdFor = (organizationId: string, requestId: string) => `airun:${sha(JSON.stringify([organizationId, requestId]))}`;
 const budgetIdFor = (organizationId: string, date: string) => `aibudget:${sha(JSON.stringify([organizationId, date]))}`;
 
-function budgetLimit(env: Record<string, string | undefined>): number | undefined {
-  const raw = env.AI_DAILY_ORG_TOKEN_BUDGET?.trim();
-  if (!raw) return undefined;
-  const value = Number(raw);
-  if (!Number.isSafeInteger(value) || value < 1) throw new HttpError(503, 'AI daily token budget is misconfigured.');
-  return value;
-}
+function budgetLimit(env: Record<string, string | undefined>): number { return inferenceConfiguration(env).aiTokenLimit; }
 
 function deployment(env: Record<string, string | undefined>, role: Role): string {
   const name = (role === 'fast' ? env.AZURE_OPENAI_FAST_DEPLOYMENT : role === 'reasoning' ? env.AZURE_OPENAI_REASONING_DEPLOYMENT : env.AZURE_OPENAI_EVALUATION_DEPLOYMENT)?.trim()
@@ -73,6 +69,7 @@ async function existingRun(database: Database, user: AuthUser, runId: string, in
 export async function runAiTask(user: AuthUser, input: AiTaskInput, dependencies: Dependencies = {}): Promise<AiTaskResult> {
   const env = dependencies.env || process.env;
   const database = dependencies.database || await db();
+  await assertInferenceAccess(user, { env, database });
   const policy = taskPolicy[input.task];
   if (!policy) throw new HttpError(400, 'Unknown AI task.');
   if (typeof input.requestId !== 'string' || !input.requestId.trim() || input.requestId.length > 160 || /[\x00-\x1f]/.test(input.requestId)) throw new HttpError(400, 'A bounded request ID is required.');
@@ -99,6 +96,7 @@ export async function runAiTask(user: AuthUser, input: AiTaskInput, dependencies
   }
   try {
     await database.batch([
+      await operatorMembershipFence(user, database),
       { sql: 'INSERT INTO entities (id, organization_id, kind, status, data, created_at) VALUES (?, ?, ?, ?, ?, ?)', params: [runId, user.organizationId, 'ai:run', 'pending', JSON.stringify(claim), now] },
       ...(limit === undefined ? [] : [{ sql: 'UPDATE entities SET data = CAST(CAST(data AS BIGINT) + ? AS TEXT) WHERE id = ? AND organization_id = ? AND kind = ? AND CAST(data AS BIGINT) + ? <= ?', params: [reservedTokens, budgetId, user.organizationId, 'ai:budget', reservedTokens, limit], expectedChanges: 1 }]),
     ]);

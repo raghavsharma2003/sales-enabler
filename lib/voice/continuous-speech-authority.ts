@@ -5,6 +5,7 @@ import { field, HttpError } from '../server/http';
 import { operatorMembershipFence } from '../team/service';
 import { rowData, type ToolRow } from './tools/authority';
 import { CONTINUOUS_SPEECH_MAX_SECONDS, CONTINUOUS_SPEECH_PCM, type ContinuousSpeechGrant } from './continuous-speech-contracts';
+import { assertInferenceAccess } from '../usage/service';
 
 type Statement = Parameters<Database['batch']>[0][number];
 type Environment = Record<string, string | undefined>;
@@ -120,6 +121,7 @@ export async function issueContinuousSpeechGrant(user: AuthUser, body: Record<st
   if (!config.configured) throw new HttpError(503, config.reason!);
   if (new URL(config.url!).protocol === 'ws:' && !['localhost', '127.0.0.1', '[::1]'].includes(new URL(origin).hostname)) throw new HttpError(403, 'Local speech transport requires a local browser origin.');
   const database = deps.database ?? await db(), now = (deps.now ?? Date.now)(), ref = reference(body);
+  await assertInferenceAccess(user, { database, env: deps.env });
   const current = await scope(database, user, ref, now);
   if (current.data.continuousSpeechAuthorityId) throw new HttpError(409, 'Continuous speech was already authorized for this call.');
   const ticket = randomBytes(32).toString('hex'), id = `voice:speech-ticket:${hash(ticket)}`;
@@ -130,10 +132,11 @@ export async function issueContinuousSpeechGrant(user: AuthUser, body: Record<st
   await commit(database, [...current.fences, { sql: 'UPDATE entities SET data = ? WHERE id = ? AND data = ?', params: [callData, current.call.id, current.call.data], expectedChanges: 1 }, insert(user.organizationId, id, ticketKind, 'issued', stored, now)]);
   return { transport: 'websocket', url: config.url!, ticket, expiresAt: stored.claimExpiresAt, maxDurationSeconds: Math.floor((current.expiresAt - now) / 1000), language: stored.language, recognitionLanguages: stored.recognitionLanguages, pcm: CONTINUOUS_SPEECH_PCM };
 }
-async function validateStored(database: Database, record: ToolRow, origin: string, now: number) {
+async function validateStored(database: Database, record: ToolRow, origin: string, now: number, env?: Environment) {
   const stored = JSON.parse(record.data) as StoredAuthority;
   if (stored.origin !== browserOrigin(origin) || stored.consent !== true || Date.parse(stored.expiresAt) <= now) throw unavailable();
   const user = { id: stored.userId, organizationId: stored.organizationId, email: '' };
+  await assertInferenceAccess(user, { database, env });
   const current = await scope(database, user, stored, now);
   if (current.data.continuousSpeechAuthorityId !== stored.id || current.language !== stored.language || JSON.stringify(current.recognitionLanguages) !== JSON.stringify(stored.recognitionLanguages) || current.expiresAt !== Date.parse(stored.expiresAt) || current.memberDigest !== stored.memberDigest || current.accountDigest !== stored.accountDigest) throw unavailable();
   return { stored, current };
@@ -143,7 +146,7 @@ export async function claimContinuousSpeechTicket(ticket: string, origin: string
   const database = deps.database ?? await db(), now = (deps.now ?? Date.now)();
   const record = (await database.all('SELECT id,kind,status,data,created_at FROM entities WHERE id = ? AND kind = ?', [`voice:speech-ticket:${hash(ticket)}`, ticketKind]))[0] as ToolRow | undefined;
   if (!record || record.status !== 'issued' || Date.parse(JSON.parse(record.data).claimExpiresAt) <= now) throw expired();
-  const { stored, current } = await validateStored(database, record, origin, now);
+  const { stored, current } = await validateStored(database, record, origin, now, deps.env);
   const lease = await row(database, stored.organizationId, leaseKind, stored.concurrencyKey);
   if (lease?.status === 'active' && Date.parse(JSON.parse(lease.data).expiresAt) > now) throw new HttpError(429, 'One continuous speech session is allowed per account.');
   const leaseData = { sessionEpoch: stored.sessionEpoch, expiresAt: stored.expiresAt };
@@ -155,7 +158,7 @@ export async function recheckContinuousSpeechAuthority(authority: ContinuousSpee
   const database = deps.database ?? await db(), now = (deps.now ?? Date.now)();
   const record = await row(database, authority.organizationId, ticketKind, authority.id);
   if (!record || record.status !== 'claimed') throw unavailable();
-  const { stored, current } = await validateStored(database, record, authority.origin, now);
+  const { stored, current } = await validateStored(database, record, authority.origin, now, deps.env);
   if (JSON.stringify(publicAuthority(stored)) !== JSON.stringify(publicAuthority(authority as StoredAuthority))) throw unavailable();
   const lease = await row(database, stored.organizationId, leaseKind, stored.concurrencyKey);
   if (!lease || lease.status !== 'active' || JSON.parse(lease.data).sessionEpoch !== stored.sessionEpoch) throw unavailable();

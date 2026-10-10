@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { Pool } from 'pg';
 
-type Value = string | number | null;
+type Value = string | number | null | Uint8Array;
 type Row = Record<string, unknown>;
 type Statement = { sql: string; params?: Value[]; expectedChanges?: number };
 export class WriteConflictError extends Error {
@@ -24,6 +24,9 @@ const schema = [
   `CREATE INDEX IF NOT EXISTS auth_session_expiry ON auth_sessions(expires_at)`,
   `CREATE TABLE IF NOT EXISTS audit_events (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL REFERENCES organizations(id), user_id TEXT NOT NULL REFERENCES users(id), entity_id TEXT NOT NULL, event TEXT NOT NULL, created_at TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS service_heartbeats (id TEXT PRIMARY KEY, service TEXT NOT NULL, status TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS evaluation_audio_artifacts (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL REFERENCES organizations(id), mime_type TEXT NOT NULL, byte_count INTEGER NOT NULL, sha256 TEXT NOT NULL, duration_ms INTEGER NOT NULL, sample_rate_hz INTEGER NOT NULL, channels INTEGER NOT NULL, bytes BYTEA NOT NULL, created_at TEXT NOT NULL, expires_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS evaluation_audio_artifacts_scope ON evaluation_audio_artifacts(organization_id, created_at)`,
+  `CREATE INDEX IF NOT EXISTS evaluation_audio_artifacts_expiry ON evaluation_audio_artifacts(expires_at, id)`,
 ];
 
 async function openDatabase(): Promise<Database> {

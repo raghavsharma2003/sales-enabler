@@ -53,6 +53,11 @@ function harness(t: TestContext, configuration: {
         initialInstructions: 'Approved company AI context.', ...(reference === 'preview' ? { previewId: 'issued-preview' } : reference === 'connection' ? { connectionId: 'issued-connection' } : {}) });
       if (url === '/api/voice/perception' && init.method === 'POST') return configuration.pendingGrant ? pendingGrant : Response.json(grant);
       if (url === '/api/voice/perception' && init.method === 'DELETE') return Response.json({ ok: true });
+      if (url === '/api/voice/control' && init.method === 'POST') {
+        const start = requests.find(request => request.url === '/api/voice/connect')!;
+        assert.deepEqual(JSON.parse(String(init.body)), { action: 'end', requestId: start.body.requestId });
+        return Response.json({ requested: true, state: 'closed' });
+      }
       throw new Error(`Unexpected request: ${url}`);
     },
   };
@@ -72,8 +77,9 @@ function harness(t: TestContext, configuration: {
     return { async connect() { options.onStatus({ state: 'ready', sessionEpoch: 'epoch' }); },
       close() { captureCloses++; }, setMuted(value) { mutes.push(value); } };
   } });
-  t.after(() => {
+  t.after(async () => {
     session.close();
+    await flush(); // Let the mocked server End receipt settle before restoring global fetch.
     for (const [name, descriptor] of originals) descriptor ? Object.defineProperty(globalThis, name, descriptor) : Reflect.deleteProperty(globalThis, name);
   });
   const emit = (event: unknown) => channel.onmessage?.({ data: JSON.stringify(event) });
@@ -158,9 +164,12 @@ test('End during a pending grant revokes authority and cannot start a late sidec
   const h = harness(t, { pendingGrant: true }); await h.connect();
   const pending = h.requests.find(request => request.url === '/api/voice/perception' && request.method === 'POST')!;
   h.session.close();
-  assert.equal(pending.signal?.aborted, true); assert.equal(h.trackStops(), 1); assert.equal(h.peersClosed(), 1);
+  assert.equal(pending.signal?.aborted, true); assert.equal(h.trackStops(), 1);
+  assert.equal(h.channel.onmessage, null); assert.equal(h.peersClosed(), 0, 'silent RTC waits for the server End receipt');
   const statusCount = h.statuses.length;
   h.grant(); await flush();
+  assert.equal(h.peersClosed(), 1);
+  assert.equal(h.requests.filter(request => request.url === '/api/voice/control').length, 1);
   assert.equal(h.factories(), 0); assert.equal(h.statuses.length, statusCount);
   assert.ok(h.requests.some(request => request.url === '/api/voice/perception' && request.method === 'DELETE'));
 });

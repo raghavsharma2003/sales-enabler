@@ -1,41 +1,45 @@
 import { createHash } from "node:crypto";
 import { activeMayaGoogleKeyEntries, getVoiceConfiguration, normalizeAzureRealtimeEndpoint, VoiceConfigurationError } from "./config";
 import type { VoiceConnectResult, VoiceProfile } from "./contracts";
-import { buildVoiceInstructions } from "./prompt";
-import { MAYA_VOICE_PROFILE, mayaDeliveryInstructions } from "./maya";
-import { normalizeVoiceTools, voiceToolDefinitions, type VoiceToolName } from "./tools/contracts";
-import { compileSpeechVocabularyPrompt } from "./speech-vocabulary";
+import { MAYA_VOICE_PROFILE } from "./maya";
+import { voiceToolDefinitions, type VoiceToolName } from "./tools/contracts";
+import { buildProviderInstructions, buildVoiceSession } from './session-config';
+import { parseAzureCallLocation, type AzureCallReference } from './call-control';
+export { buildProviderInstructions } from './session-config';
 
 export class VoiceConnectionError extends Error {}
 
-export function buildProviderInstructions(context: string, profile: VoiceProfile = "provider-default", enabledTools: VoiceToolName[] = []): string {
-  const base = buildVoiceInstructions(context, normalizeVoiceTools(enabledTools));
-  return profile === "maya-despina" ? `${base}\n${mayaDeliveryInstructions()}` : base;
+/** Explicit evidence that this adapter did not allocate a provider call. */
+export class VoiceAllocationNotStartedError extends VoiceConnectionError {
+  readonly allocationNotStarted = true;
 }
 
+export function voiceAllocationNotStarted(error: unknown): error is VoiceAllocationNotStartedError {
+  return error instanceof VoiceAllocationNotStartedError;
+}
+
+export class VoiceCallAllocationError extends VoiceConnectionError {
+  readonly allocationUncertain = true;
+  readonly providerCallRef?: string;
+  readonly providerConfigurationDigest?: string;
+  constructor(message: string, reference?: AzureCallReference) {
+    super(message);
+    Object.defineProperties(this, {
+      providerCallRef: { value: reference?.providerCallRef, enumerable: false },
+      providerConfigurationDigest: { value: reference?.providerConfigurationDigest, enumerable: false },
+    });
+  }
+}
+
+/** Server-only result: the API must remove both private fields before serialization. */
+export type VoiceServerConnectResult = VoiceConnectResult & Partial<AzureCallReference>;
+
 export interface VoiceServerAdapter {
-  connect(input: { sdp?: string; instructions: string; userId: string; organizationId: string; enabledTools?: VoiceToolName[]; speechVocabulary?: readonly string[]; signal?: AbortSignal }): Promise<VoiceConnectResult>;
+  connect(input: { sdp?: string; instructions: string; userId: string; organizationId: string; enabledTools?: VoiceToolName[]; speechVocabulary?: readonly string[]; signal?: AbortSignal }): Promise<VoiceServerConnectResult>;
 }
 
 function requestSignal(signal?: AbortSignal): AbortSignal {
   return signal ? AbortSignal.any([signal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000);
-}
-
-function voiceSession(model: string, instructions: string, voice: string, profile: VoiceProfile, enabledTools: VoiceToolName[] = [], speechVocabulary?: readonly string[]) {
-  const transcriptionPrompt = compileSpeechVocabularyPrompt(speechVocabulary);
-  return {
-    type: "realtime", model, instructions: buildProviderInstructions(instructions, profile, enabledTools), output_modalities: ["audio"],
-    audio: {
-      input: {
-        transcription: { model: "gpt-4o-mini-transcribe", ...(transcriptionPrompt ? { prompt: transcriptionPrompt } : {}) },
-        // Private WebRTC waits for committed ASR and exact runtime-guidance
-        // acknowledgement before response.create. Keep provider barge-in on.
-        turn_detection: { type: "semantic_vad", eagerness: "low", create_response: false, interrupt_response: true },
-      },
-      output: { voice },
-    },
-    tools: voiceToolDefinitions(enabledTools).map(tool => ({ type: "function", ...tool })),
-  };
 }
 
 /** Gemini's `parameters` field is its restricted OpenAPI Schema protobuf.
@@ -67,10 +71,10 @@ function providerHttpError(provider: "openai" | "azure" | "gemini", status: numb
 async function connectWebRtc(
   provider: "openai" | "azure", env: Record<string, string | undefined>, transport: typeof fetch,
   input: Parameters<VoiceServerAdapter["connect"]>[0], profile: VoiceProfile,
-): Promise<VoiceConnectResult> {
-  if (!input.sdp?.startsWith("v=0") || !input.sdp.includes("m=audio") || input.sdp.length > 128_000) throw new VoiceConnectionError("A browser audio offer is required.");
+): Promise<VoiceServerConnectResult> {
+  if (!input.sdp?.startsWith("v=0") || !input.sdp.includes("m=audio") || input.sdp.length > 128_000) throw new VoiceAllocationNotStartedError("A browser audio offer is required.");
   const azure = provider === "azure";
-  const session = voiceSession(
+  const session = buildVoiceSession(
     azure ? env.AZURE_OPENAI_REALTIME_DEPLOYMENT!.trim() : env.OPENAI_REALTIME_MODEL?.trim() || "gpt-realtime-2.1",
     input.instructions,
     azure ? env.AZURE_OPENAI_REALTIME_VOICE || "marin" : env.OPENAI_REALTIME_VOICE || "marin",
@@ -81,6 +85,8 @@ async function connectWebRtc(
   const url = azure
     ? `${normalizeAzureRealtimeEndpoint(env.AZURE_OPENAI_ENDPOINT)!}/realtime/calls`
     : "https://api.openai.com/v1/realtime/calls";
+  let allocationStarted = false;
+  let reference: AzureCallReference | undefined;
   try {
     let response: Response;
     if (azure) {
@@ -91,17 +97,29 @@ async function connectWebRtc(
         headers: { "api-key": env.AZURE_OPENAI_API_KEY!, "Content-Type": "application/json" },
         body: JSON.stringify({ expires_after: { anchor: "created_at", seconds: 60 }, session }),
         signal: requestSignal(input.signal),
+        redirect: 'error',
       });
       if (!secretResponse.ok) throw providerHttpError("azure", secretResponse.status, "provision");
       const secret = await secretResponse.json() as { value?: unknown };
       if (typeof secret.value !== "string" || !secret.value || secret.value.length > 8_000) throw new VoiceConnectionError("Azure did not issue a valid Realtime session token. Try again.");
+      if (input.signal?.aborted) throw new VoiceAllocationNotStartedError('The voice connection was cancelled before call allocation.');
+      allocationStarted = true;
       response = await transport(url, {
         method: "POST",
         headers: { Authorization: `Bearer ${secret.value}`, "Content-Type": "application/sdp" },
         body: input.sdp,
-        signal: requestSignal(input.signal),
+        // A browser disconnect must not discard a late provider allocation handle.
+        signal: requestSignal(),
+        redirect: 'error',
       });
-      if (!response.ok) throw providerHttpError("azure", response.status, "negotiate");
+      reference = parseAzureCallLocation(response.headers.get('Location'), env) ?? undefined;
+      if (!response.ok) {
+        // A call handle, timeout or non-rejection response cannot prove no allocation.
+        if (reference || response.status < 400 || response.status >= 500 || response.status === 408) throw new VoiceCallAllocationError('Azure could not confirm the call allocation.', reference);
+        allocationStarted = false;
+        throw providerHttpError("azure", response.status, "negotiate");
+      }
+      if (!reference) throw new VoiceCallAllocationError('Azure did not return a controllable call reference.');
     } else {
       const body = new FormData();
       body.set("sdp", input.sdp);
@@ -118,9 +136,15 @@ async function connectWebRtc(
       if (!response.ok) throw providerHttpError("openai", response.status);
     }
     const answer = await response.text();
-    if (!answer.startsWith("v=0") || answer.length > 128_000) throw new VoiceConnectionError("The voice provider returned an invalid connection response.");
-    return { provider, transport: "webrtc", sdp: answer };
+    if (!answer.startsWith("v=0") || answer.length > 128_000) {
+      if (azure) throw new VoiceCallAllocationError('The voice provider returned an invalid connection response.', reference);
+      throw new VoiceConnectionError("The voice provider returned an invalid connection response.");
+    }
+    return { provider, transport: "webrtc", sdp: answer, ...reference };
   } catch (error) {
+    if (error instanceof VoiceCallAllocationError) throw error;
+    if (azure && allocationStarted) throw new VoiceCallAllocationError('The voice connection allocation could not be confirmed.', reference);
+    if (azure) throw new VoiceAllocationNotStartedError(error instanceof VoiceConnectionError ? error.message : 'The voice connection could not be established. Please try again.');
     if (error instanceof VoiceConnectionError) throw error;
     throw new VoiceConnectionError("The voice connection could not be established. Please try again.");
   }
@@ -201,6 +225,8 @@ async function connectGemini(env: Record<string, string | undefined>, transport:
 }
 
 export function getVoiceServerAdapter(env: Record<string, string | undefined> = process.env, transport: typeof fetch = fetch, profile: VoiceProfile = "provider-default"): VoiceServerAdapter {
+  // Bind negotiation and its private control fingerprint to the same configuration.
+  env = { ...env };
   const configuration = getVoiceConfiguration(env, profile);
   if (!configuration.configured) throw new VoiceConfigurationError(configuration.reason);
   if (configuration.provider === "openai" || configuration.provider === "azure") return {

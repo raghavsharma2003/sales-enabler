@@ -38,6 +38,10 @@
 .sectionHead p, .empty p { margin: 0; max-width: 72ch; color: var(--pc-muted); font-size: 14px; }
 .reopen { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 15px; margin: 0 0 18px; }
 .reopen p { margin: 0; color: var(--pc-muted); font-size: 13px; }
+.agentHandoff { padding: 18px 0; border-block: 1px solid var(--pc-line); }
+.agentHandoff strong { font-size: 15px; font-weight: 650; }
+.agentHandoff p { margin: 5px 0 0; max-width: 72ch; color: var(--pc-muted); font-size: 13px; }
+.agentActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 13px; }
 .fields { display: grid; gap: 21px; border: 0; padding: 0; margin: 0; min-width: 0; }
 .pair { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
 .page .message { min-height: 180px; }

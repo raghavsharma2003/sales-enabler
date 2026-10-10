@@ -10,6 +10,7 @@ import { campaignEditorFields, campaignEditorPatch, campaignFocus, campaignNavig
 import { CampaignPlanningAssist } from '../campaign-planning-assist';
 import { CampaignBriefAssist } from '../campaign-brief-assist';
 import { CampaignRunPanel } from '../campaign-run-panel';
+import { campaignAgentContext, campaignAgentFocus } from '../../lib/platform/campaign-agent-handoff';
 import styles from './campaigns-workspace.module.css';
 
 const text = (value: unknown) => typeof value === 'string' ? value : '';
@@ -159,6 +160,14 @@ export function CampaignsView({ records, workspace, act, busy, navigate, focusId
     setReceipt(saved); setSelectedId(saved.id); reset(saved); return saved;
   };
   const save = () => transact(async () => { const saved = await saveRecord(); lock.current = false; move(saved.id, phase); setNotice('Campaign saved.'); });
+  const prepareAgent = (agentId?: string) => transact(async () => {
+    // Save the canonical partial setup before leaving; a failed save retains every local field.
+    const saved = await saveRecord('agent_content');
+    const reference = { campaignId: saved.id, revision: saved.revision, agentId };
+    campaignAgentContext([...records.filter(record => record.id !== saved.id), saved], reference);
+    lock.current = false;
+    navigate('agents', campaignAgentFocus(reference));
+  });
   const changePhase = async (next: CampaignPhase) => {
     if (waiting || lock.current || next === phase) return;
     // Clean stage navigation changes only the URL, preserving exact-revision AI proposal authority.
@@ -246,6 +255,11 @@ export function CampaignsView({ records, workspace, act, busy, navigate, focusId
           {phase === 'agent_content' && <><div className={styles.sectionHead}><h2>Prepare the conversation</h2><p>Choose how the campaign will run and what the customer will hear or read.</p></div><fieldset className={styles.fields} disabled={waiting || !editable}>
             <label className="pc-field">Channel<select className="pc-select" value={fields.channel || 'browser'} disabled={contentDisabled} onChange={event => set('channel', event.target.value as CampaignSetupFields['channel'])}><option value="browser">Browser voice</option><option value="email">Connected email</option><option value="manual_email">Manual email task</option></select></label>
             {fields.channel === 'browser' ? <label className="pc-field">Published agent release<select className="pc-select" value={fields.agentReleaseId || ''} onChange={event => set('agentReleaseId', event.target.value)}><option value="">Choose an active release</option>{releases.map(item => <option value={item.id} key={item.id}>{releaseName(item)}</option>)}{fields.agentReleaseId && !releases.some(item => item.id === fields.agentReleaseId) && <option value={fields.agentReleaseId}>Saved release · no longer active</option>}</select><small>Each browser conversation is started by an operator. This campaign does not place telephone calls.</small></label> : <label className="pc-field">Email subject<input className="pc-input" maxLength={240} value={fields.subject || ''} disabled={contentDisabled} onChange={event => set('subject', event.target.value)}/></label>}
+            {fields.channel === 'browser' && (setup || !selected) && <div className={styles.agentHandoff}>
+              <div><strong>{releases.length ? 'Prepare an agent for this campaign' : 'Your campaign needs a published agent'}</strong><p>Save this setup, review a starting draft from your offering and goal, then test and publish in Agent Studio. Return here with the exact active version.</p></div>
+              <div className={styles.agentActions}><button type="button" className="pc-button" disabled={viewer || waiting || !fields.goal?.trim() || offering?.status !== 'approved'} onClick={() => void prepareAgent()}>Save and prepare a new agent <ArrowRight size={15} aria-hidden="true"/></button>{fields.agentReleaseId && releases.some(item => item.id === fields.agentReleaseId) && <button type="button" className="pc-button quiet" disabled={viewer || waiting || !fields.goal?.trim() || offering?.status !== 'approved'} onClick={() => void prepareAgent(String(releases.find(item => item.id === fields.agentReleaseId)!.data.agentId))}>Prepare selected agent</button>}</div>
+              {(!fields.goal?.trim() || offering?.status !== 'approved') && <p>Choose an approved offering and add a goal in Intent first.</p>}
+            </div>}
             {fields.channel === 'email' && <label className="pc-field">Sending account<select className="pc-select" value={fields.emailConnectionId || ''} onChange={event => set('emailConnectionId', event.target.value)}><option value="">Choose a connected mailbox</option>{mailboxes.map(item => <option key={item.id} value={item.id}>{item.integrationId === 'gmail' ? 'Gmail' : 'Microsoft 365 Mail'} · sending enabled</option>)}{fields.emailConnectionId && !mailboxes.some(item => item.id === fields.emailConnectionId) && <option value={fields.emailConnectionId}>Saved account · check connection</option>}</select><small>{mailboxError || (!mailboxes.length ? 'Connect a mailbox in Integrations and enable sending.' : 'Launch review checks the current sending permission.')}</small></label>}
             <label className="pc-field">Conversation objective<textarea className="pc-textarea" maxLength={1000} value={fields.objective || ''} disabled={contentDisabled} onChange={event => set('objective', event.target.value)}/></label>
             <label className="pc-field">{fields.channel === 'browser' ? 'Opening message / speaking brief' : 'Message'}<textarea className={`pc-textarea ${styles.message}`} maxLength={5000} value={fields.message || ''} disabled={contentDisabled} onChange={event => set('message', event.target.value)}/><small>{'Personalization: {{firstName}}, {{name}} and {{email}}. Browser agents must disclose their AI identity.'}</small></label>

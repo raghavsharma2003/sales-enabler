@@ -28,9 +28,12 @@ test("Azure GA WebRTC adapter exchanges SDP with server key and configured deplo
     assert.equal((init?.headers as Record<string, string>).Authorization, "Bearer one-use-token");
     assert.equal((init?.headers as Record<string, string>)["Content-Type"], "application/sdp");
     assert.equal(init?.body, "v=0\r\nm=audio");
-    return new Response("v=0\r\nm=audio", { status: 201, headers: { "Content-Type": "application/sdp" } });
+    return new Response("v=0\r\nm=audio", { status: 201, headers: { "Content-Type": "application/sdp", Location: '/openai/v1/realtime/calls/rtc_fixture' } });
   }) as typeof fetch);
-  assert.deepEqual(await adapter.connect({ sdp: "v=0\r\nm=audio", instructions: "Approved context", userId: "u", organizationId: "o" }), { provider: "azure", transport: "webrtc", sdp: "v=0\r\nm=audio" });
+  const { providerCallRef, providerConfigurationDigest, ...clientResult } = await adapter.connect({ sdp: "v=0\r\nm=audio", instructions: "Approved context", userId: "u", organizationId: "o" });
+  assert.deepEqual(clientResult, { provider: "azure", transport: "webrtc", sdp: "v=0\r\nm=audio" });
+  assert.equal(providerCallRef, 'rtc_fixture');
+  assert.match(providerConfigurationDigest!, /^[a-f0-9]{64}$/);
   assert.equal(calls, 2);
 });
 

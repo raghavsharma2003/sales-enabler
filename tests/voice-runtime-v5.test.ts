@@ -15,7 +15,7 @@ test("provider setup declares only explicit bounded tools; default stays empty",
       assert.doesNotMatch(session.instructions, /No action tools are connected/);
       return Response.json({ value: "ephemeral" });
     }
-    return new Response("v=0\r\nm=audio");
+    return new Response("v=0\r\nm=audio", { status: 201, headers: { Location: '/openai/v1/realtime/calls/rtc_fixture' } });
   }) as typeof fetch);
   await azure.connect({ sdp: "v=0\r\nm=audio", instructions: "", userId: "u", organizationId: "o", enabledTools: ["search_company_knowledge"] });
   const gemini = getVoiceServerAdapter({ VOICE_PROVIDER: "gemini", GEMINI_API_KEY: "secret" }, (async (_url, init) => {

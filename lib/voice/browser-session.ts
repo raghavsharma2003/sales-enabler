@@ -52,6 +52,8 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
   const earlyEnabled = options.continuousSpeech === true && !textMode && options.provider === "azure";
   const adapter = getVoiceClientAdapter(options.provider);
   const abort = new AbortController();
+  const requestId = crypto.randomUUID();
+  let providerRequestSent = false;
   const diagnostics = createVoiceDiagnostics(options.onDiagnostics);
   let closed = false;
   let pc: RTCPeerConnection | undefined;
@@ -210,6 +212,13 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
   function close() {
     if (closed) return;
     closed = true;
+    let serverStop: Promise<unknown> | undefined;
+    if (providerRequestSent && options.provider === 'azure') {
+      // Uses our request ID, never a provider call reference. The server can
+      // cancel a pending allocation even before the browser receives its SDP.
+      serverStop = Promise.resolve().then(() => fetch('/api/voice/control', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'end', requestId }), keepalive: true })).catch(() => {});
+    }
     if (earlyEnabled) diagnostics.continuousSpeechUpdate({ submittedSamples });
     understanding?.close();
     sidecar?.close();
@@ -225,9 +234,23 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
     levelSource?.disconnect();
     if (levelContext) void levelContext.close().catch(() => {});
     stream?.getTracks().forEach(track => track.stop());
-    if (channel) { channel.onopen = null; channel.onmessage = null; channel.onclose = null; channel.onerror = null; channel.close(); }
-    if (pc) { pc.ontrack = null; pc.onconnectionstatechange = null; pc.close(); }
+    if (channel) { channel.onopen = null; channel.onmessage = null; channel.onclose = null; channel.onerror = null; }
+    if (pc) { pc.ontrack = null; pc.onconnectionstatechange = null; }
     if (audio) { audio.pause(); audio.srcObject = null; }
+    // Capture/playback and all event observers end immediately. Keep the silent
+    // transport briefly so server hangup can obtain its receipt before RTC closes.
+    // Browser unload/network failure still has an unconditional teardown bound.
+    let transportClosed = false;
+    const closeTransport = () => {
+      if (transportClosed) return;
+      transportClosed = true;
+      try { channel?.close(); } catch { /* Already closed. */ }
+      try { pc?.close(); } catch { /* Already closed. */ }
+    };
+    if (serverStop) {
+      const teardown = setTimeout(closeTransport, 4_000);
+      void serverStop.finally(() => { clearTimeout(teardown); closeTransport(); });
+    } else closeTransport();
   }
 
   function fail(message: string) {
@@ -371,9 +394,10 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
         if (closed) return;
         await pc.setLocalDescription(offer);
         if (closed) return;
+        providerRequestSent = true;
         const response = await fetch("/api/voice/connect", {
           method: "POST", headers: { "Content-Type": "application/json" }, signal: abort.signal,
-          body: JSON.stringify({ sdp: offer.sdp, mode: options.mode || "release", inputMode: options.inputMode || "microphone", draft: options.draft, contactId: options.contactId, agentId: options.agentId, versionId: options.versionId, releaseId: options.releaseId, campaignRunId: options.mode === "preview" ? undefined : options.campaignRunId, consent: true }),
+          body: JSON.stringify({ requestId, sdp: offer.sdp, mode: options.mode || "release", inputMode: options.inputMode || "microphone", draft: options.draft, contactId: options.contactId, agentId: options.agentId, versionId: options.versionId, releaseId: options.releaseId, campaignRunId: options.mode === "preview" ? undefined : options.campaignRunId, consent: true }),
         });
         const result = await response.json() as VoiceConnectResult & { error?: string };
         if (closed) return;

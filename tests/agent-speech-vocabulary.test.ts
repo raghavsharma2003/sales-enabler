@@ -90,7 +90,7 @@ test('Azure and OpenAI WebRTC add bounded hints only to gpt-4o-mini-transcribe, 
       azureSession = JSON.parse(String(init?.body)).session;
       return Response.json({ value: 'ephemeral' });
     }
-    return new Response('v=0\r\nm=audio');
+    return new Response('v=0\r\nm=audio', { status: 201, headers: { Location: '/openai/v1/realtime/calls/rtc_fixture' } });
   }) as typeof fetch);
   await azure.connect({ sdp: 'v=0\r\nm=audio', instructions: '{}', userId: 'u', organizationId: 'o', speechVocabulary: ['Acme भारत'] });
   assert.equal(azureSession?.audio.input.transcription.model, 'gpt-4o-mini-transcribe');

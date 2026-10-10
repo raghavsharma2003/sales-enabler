@@ -10,7 +10,7 @@ import { runAiTask } from '../lib/ai/task-router';
 import { getAiUsage } from '../lib/ai/usage';
 
 process.env.SQLITE_PATH = join(mkdtempSync(join(tmpdir(), 'ai-task-router-')), 'test.sqlite');
-const env = { AZURE_OPENAI_ENDPOINT: 'https://example.openai.azure.com/openai/v1', AZURE_OPENAI_API_KEY: 'server-only', AZURE_OPENAI_TEXT_DEPLOYMENT: 'existing-mini' };
+const env = { NODE_ENV: 'test', AZURE_OPENAI_ENDPOINT: 'https://example.openai.azure.com/openai/v1', AZURE_OPENAI_API_KEY: 'server-only', AZURE_OPENAI_TEXT_DEPLOYMENT: 'existing-mini' };
 const input = (requestId: string, task: 'answer' | 'planning' = 'answer') => ({ task, requestId, system: 'Context.', input: 'Reply.', maxOutputTokens: 64 });
 const reply = () => Response.json({ choices: [{ message: { content: 'Ready.' }, finish_reason: 'stop' }], usage: { prompt_tokens: 18, completion_tokens: 7 } });
 
@@ -34,7 +34,7 @@ test('task routing chooses explicit Azure roles and caches a completed request',
   }) as typeof fetch;
   const settings = { env: { ...env, AZURE_OPENAI_REASONING_DEPLOYMENT: 'reasoning-slot' }, fetch: fetcher };
   const first = await runAiTask(owner, input('route-1', 'planning'), settings);
-  const replay = await runAiTask(owner, input('route-1', 'planning'), { env: {} });
+  const replay = await runAiTask(owner, input('route-1', 'planning'), { env: { NODE_ENV: 'test' } });
   assert.equal(first.cached, false);
   assert.equal(replay.cached, true);
   assert.equal(first.runId, replay.runId);

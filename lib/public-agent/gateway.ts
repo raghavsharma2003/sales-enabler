@@ -9,6 +9,7 @@ import { compileRelationalRuntime } from '../voice/relational-runtime';
 import type { ConversationEntry } from '../voice/emotional';
 import { compileSpeechVocabularyPrompt } from '../voice/speech-vocabulary';
 import { PublicVoiceEvidenceRecorder, type PublicVoiceResponseEvidence } from './evidence';
+import { assertInferenceAccess } from '../usage/service';
 import { createContinuousSpeechGateway, CONTINUOUS_SPEECH_MAX_PAYLOAD, type ContinuousSpeechGatewayDependencies } from '../voice/continuous-speech-gateway';
 
 export type GatewayDependencies = {
@@ -31,7 +32,7 @@ const EVIDENCE_FINAL_FLUSH_MS = 200;
 const SESSION_UPDATE_TIMEOUT_MS = 5000;
 
 export const productionGatewayDependencies: GatewayDependencies = {
-  authorize: resolvePublicSession, claim: claimVoiceSession, close: closePublicSession,
+  authorize: async (...args) => { const authority = await resolvePublicSession(...args); await assertInferenceAccess(authority.user); return authority; }, claim: claimVoiceSession, close: closePublicSession,
   transcript: appendPublicTranscript, finish: finishPublicConversation, inputMode: setPublicInputMode,
   evidence: persistPublicVoiceEvidence,
   diagnostic: diagnostic => { console.warn('Public Azure voice provider error', diagnostic); },

@@ -6,17 +6,17 @@ export const workspaceAreas = [
   { id: 'agents', label: 'Agents', destination: 'Agents', sections: ['Agents', 'Test lab', 'Releases', 'Deployments'] },
   { id: 'campaigns', label: 'Campaigns', destination: 'Campaigns', sections: ['Campaigns', 'Automations'] },
   { id: 'activity', label: 'Activity', destination: 'Conversations', sections: ['Conversations', 'Inbox', 'Commitments', 'Quality', 'GroupAI'] },
-  { id: 'settings', label: 'Settings', destination: 'Team & access', sections: ['Team & access', 'Account security'] },
+  { id: 'settings', label: 'Settings', destination: 'Team & access', sections: ['Team & access', 'Usage & services', 'Account security'] },
 ] as const;
 
 export const sectionLabels: Record<string, string> = {
   'Command centre': 'Overview', Company: 'Company profile', 'Company brain': 'Company brain', Customers: 'Customers', Integrations: 'Connections',
   Agents: 'Agent studio', 'Test lab': 'Release checks', Releases: 'Release history', Deployments: 'Channels', Campaigns: 'Campaigns', Automations: 'Automations',
   Conversations: 'Conversations', Inbox: 'Inbox', Commitments: 'Follow-ups', Quality: 'Evaluation lab', GroupAI: 'GroupAI',
-  'Team & access': 'Team & access', 'Account security': 'Account security',
+  'Team & access': 'Team & access', 'Usage & services': 'Usage & services', 'Account security': 'Account security',
 };
 export type WorkspaceRoute = { section: string; focusId?: string };
-const aliases: Record<string, string> = { home: 'Command centre', overview: 'Command centre', command: 'Command centre', brain: 'Company brain', groups: 'GroupAI', tests: 'Test lab', representatives: 'Agents', activity: 'Conversations' };
+const aliases: Record<string, string> = { home: 'Command centre', overview: 'Command centre', command: 'Command centre', brain: 'Company brain', groups: 'GroupAI', tests: 'Test lab', representatives: 'Agents', activity: 'Conversations', usage: 'Usage & services', services: 'Usage & services' };
 export function resolveSection(value: string): string {
   const key = value.replace(/[-_]/g, ' ').trim().toLocaleLowerCase();
   return Object.keys(sectionLabels).find(section => section.replace(/[-_]/g, ' ').toLocaleLowerCase() === key)
