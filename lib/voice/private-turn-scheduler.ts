@@ -24,6 +24,7 @@ export function createPrivateTurnScheduler(options: {
   const now = options.now ?? (() => performance.now());
   let closed = false;
   let busy = false;
+  let openingIssued = false;
   let toolsBusy = false;
   let speakingItem: string | undefined;
   let generation = 0;
@@ -53,6 +54,7 @@ export function createPrivateTurnScheduler(options: {
   function fail(message: string) { if (!closed) options.fail(message); }
   function sendResponse(guidance: string, acknowledgedAt: number) {
     if (closed) return;
+    if (finishedResponses.size >= 450) { fail("The voice response limit was reached. Save this conversation and start again."); return; }
     busy = true;
     responseGeneration = generation;
     responseBehavior = guidance;
@@ -187,6 +189,7 @@ export function createPrivateTurnScheduler(options: {
     close() {
       if (closed) return;
       closed = true; clearGate(); eligible = undefined; prospectiveBehavior = undefined; outputAcknowledgedAt = undefined; typed.length = 0;
+      activeResponse = undefined; finishedResponses.clear();
       clearTimeout(interruptionTimer);
       const captured = audioTurns.splice(0);
       for (const turn of captured) clearTimeout(turn.timer);
@@ -225,7 +228,11 @@ export function createPrivateTurnScheduler(options: {
       typed.push({ id: `typed-${crypto.randomUUID()}`, text });
       pump(); return !closed;
     },
-    opening(event: object) { busy = true; responseGeneration = generation; options.send(event); },
+    opening(event: object) {
+      if (closed || openingIssued || busy || toolsBusy || gate || finishedResponses.size) return;
+      openingIssued = true;
+      busy = true; responseGeneration = generation; options.send(event);
+    },
     responseCreated(id: unknown) {
       if (closed || typeof id !== "string" || !id || id.length > 128 || finishedResponses.has(id)) return;
       if (id === activeResponse) return;
@@ -266,6 +273,12 @@ export function createPrivateTurnScheduler(options: {
     /** True means the scheduler owns this event (do not publish ASR twice). */
     receive(event: Record<string, any>): boolean {
       if (closed) return true;
+      // Transcript projection requires an accepted response from this session.
+      // Retain completed/cancelled ownership: finals may trail response.done,
+      // and one response can legitimately produce multiple output items.
+      if (event.type === "response.output_audio_transcript.done" &&
+          (typeof event.response_id !== "string" ||
+            (event.response_id !== activeResponse && !finishedResponses.has(event.response_id)))) return true;
       if (event.type === "error" && event.error?.code === "response_cancel_not_active" && cancellationEvents.delete(event.error?.event_id)) return true;
       if (event.type === "session.updated") {
         if (!gate || event.session?.instructions !== gate.instructions) return true;

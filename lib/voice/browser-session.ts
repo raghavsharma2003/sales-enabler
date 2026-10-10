@@ -79,6 +79,7 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
   const executingResponses = new Set<string>();
   let toolRunner: ReturnType<typeof createClientToolRunner> | undefined;
   let started = false;
+  let channelOpened = false;
   let muted = false;
   let sidecar: ReturnType<typeof createContinuousSpeechSession> | undefined;
   let understanding: ReturnType<typeof createContinuousUnderstanding> | undefined;
@@ -343,7 +344,8 @@ export function createBrowserVoiceSession(options: BrowserVoiceOptions, dependen
         };
         channel = pc.createDataChannel(adapter.dataChannelName);
         channel.onopen = () => {
-          if (closed) return;
+          if (closed || channelOpened) return;
+          channelOpened = true;
           diagnostics.ready();
           clearTimeout(timeout);
           durationLimit = setTimeout(() => fail("The 10-minute conversation limit was reached. Save this transcript before starting another session."), 10 * 60_000);
