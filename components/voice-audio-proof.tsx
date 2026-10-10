@@ -278,7 +278,7 @@ export function VoiceAudioProof({ records, focusId }: { records: PlatformRecord[
     {notice && <p className={styles.notice} role="status"><CheckCircle2 size={16}/>{notice}</p>}
 
     <div className={styles.setup}>
-      <div className={styles.sectionHeading}><div><h3>Prepare the exact input</h3><p>One fixture can support repeated attempts. Each attempt remains bound to the selected immutable version and the same audio bytes.</p></div><span>n=1 scenario · n=1 fixture</span></div>
+      <div className={styles.sectionHeading}><div><h3>Prepare the exact input</h3><p>One fixture can support repeated attempts. Each attempt remains bound to the selected immutable version and the same audio bytes.</p></div><span>One synthetic scenario</span></div>
       <div className={styles.pickers}>
         <label className="pc-field">Scenario<select className="pc-select" value={scenarioId} disabled={!!busy} onChange={event => { setScenarioId(event.target.value); setSelectedRunId(''); setRouteError(''); }}><option value="">Choose a scenario</option>{data?.scenarios.map(item => <option value={item.id} key={item.id}>{item.name} · v{item.version}</option>)}</select></label>
         <label className="pc-field">Saved agent version<select className="pc-select" value={versionId} disabled={!!busy} onChange={event => { setVersionId(event.target.value); setSelectedRunId(''); setRouteError(''); }}><option value="">Choose an immutable version</option>{versions.map(item => <option value={item.id} key={item.id}>{versionLabel(item.id)}</option>)}</select></label>
@@ -291,11 +291,11 @@ export function VoiceAudioProof({ records, focusId }: { records: PlatformRecord[
       </div> : <div className={styles.capture}>
         {scenarioFixtures.length > 0 && <p className={styles.inlineError}>No usable caller fixture is available. Earlier fixture attempts remain recorded below the technical history.</p>}
         <label className={styles.consent}><input type="checkbox" checked={fixtureConsent} disabled={!canWrite || !!busy || mustRefresh} onChange={event => setFixtureConsent(event.target.checked)}/><span><strong>Store this fictional synthetic caller audio for evaluation</strong><small>No person is recorded. The generated WAV is available for playback until the stated expiry, with an integrity hash kept in its record.</small></span></label>
-        <button className="pc-button primary" type="button" disabled={!canWrite || !scenario || !versionId || !fixtureConsent || !!busy || mustRefresh} onClick={() => void createFixture()}>{busy === 'fixture.create' ? <RefreshCw size={14} className={styles.spin}/> : <FileAudio2 size={14}/>} {scenarioFixtures.length ? 'Generate a new fixture attempt' : 'Generate caller fixture once'}</button>
+        <button className="pc-button primary" type="button" disabled={!canWrite || !scenario || !versionId || !fixtureConsent || !!busy || mustRefresh} onClick={() => void createFixture()}>{busy === 'fixture.create' ? <><RefreshCw size={14} className={styles.spin}/>Generating caller audio…</> : <><FileAudio2 size={14}/>{scenarioFixtures.length ? 'Generate a new fixture attempt' : 'Generate caller fixture once'}</>}</button>
       </div>}
       {fixture?.data.artifact && <div className={styles.runGate}>
         <label className={styles.consent}><input type="checkbox" checked={runConsent} disabled={!canWrite || !!busy || mustRefresh} onChange={event => setRunConsent(event.target.checked)}/><span><strong>Store this exact synthetic input and the captured AI output</strong><small>The run uses {versionId ? versionLabel(versionId) : 'the selected version'} with tools, customer memory, and business actions disabled.</small></span></label>
-        <button className="pc-button primary" type="button" disabled={!canWrite || !versionId || !runConsent || !!busy || mustRefresh} onClick={() => void runProof()}>{busy === 'run' ? <RefreshCw size={14} className={styles.spin}/> : relevantRuns.length ? <RotateCcw size={14}/> : <Volume2 size={14}/>} {relevantRuns.length ? 'Run another explicit attempt' : 'Run against these exact bytes'}</button>
+        <button className="pc-button primary" type="button" disabled={!canWrite || !versionId || !runConsent || !!busy || mustRefresh} onClick={() => void runProof()}>{busy === 'run' ? <><RefreshCw size={14} className={styles.spin}/>Capturing response…</> : <>{relevantRuns.length ? <RotateCcw size={14}/> : <Volume2 size={14}/>} {relevantRuns.length ? 'Run another explicit attempt' : 'Run against these exact bytes'}</>}</button>
       </div>}
     </div>
 

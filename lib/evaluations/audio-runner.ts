@@ -137,7 +137,7 @@ export async function runAzureRealtimeAudioProof(input: RealtimeProofInput, depe
   const url = `${base.replace(/^https:/, 'wss:')}/realtime?model=${encodeURIComponent(input.model)}`;
   const socket = socketFactory(url, { headers: { 'api-key': input.apiKey }, handshakeTimeout: 10_000, maxPayload: 2_000_000, perMessageDeflate: false });
   let recognizedCallerText = '', assistantText = '', runtimePolicyDigest: string | undefined;
-  const audio: Buffer[] = []; let outputBytes = 0, initialSessionAck = false, behaviorAwaitingAck = false, responseRequested = false, responseDone = false, responseCompleted = false;
+  const audio: Buffer[] = []; let outputBytes = 0, initialSessionAck = false, behaviorAwaitingAck = false, behaviorInstructions: string | undefined, responseRequested = false, responseDone = false, responseCompleted = false;
   let status: RealtimeProofResult['status'] = 'uncertain', failureCode: AudioProofFailureCode | undefined = 'transport_uncertain';
 
   const result = await new Promise<RealtimeProofResult>(resolve => {
@@ -191,10 +191,14 @@ export async function runAzureRealtimeAudioProof(input: RealtimeProofInput, depe
       const type = typeof event.type === 'string' ? event.type : '';
       if (type === 'error') { stop('failed', 'provider_rejected', true); return; }
       if (type === 'session.updated') {
+        const acknowledged = event.session && typeof event.session === 'object' && !Array.isArray(event.session) ? event.session as Record<string, unknown> : undefined;
+        if (acknowledged?.type !== 'realtime') return;
         if (behaviorAwaitingAck) {
+          if (!behaviorInstructions || acknowledged.instructions !== behaviorInstructions) return;
           behaviorAwaitingAck = false; mark('behavior_acknowledged'); mark('response_requested'); responseRequested = true; if (!send({ type: 'response.create' })) return; return;
         }
         if (initialSessionAck) return;
+        if (typeof input.session.instructions !== 'string' || acknowledged.instructions !== input.session.instructions) return;
         initialSessionAck = true; mark('session_configured');
         const withSilence = Buffer.concat([parsed.pcm, Buffer.alloc(FRAME_BYTES * 10)]);
         for (let offset = 0; offset < withSilence.length; offset += FRAME_BYTES) {
@@ -217,7 +221,7 @@ export async function runAzureRealtimeAudioProof(input: RealtimeProofInput, depe
         runtimePolicyDigest = sha([RELATIONAL_SOURCE_REVISION, runtime.instructions]); mark('behavior_compiled');
         const initialInstructions = typeof input.session.instructions === 'string' ? input.session.instructions : '';
         const instructions = `${initialInstructions}\n<live_behavior_update>\n${runtime.instructions}\n</live_behavior_update>\n<audio_proof_boundary>\nThis is an evaluation-only synthetic scenario. No tools, memory writes, business actions, promises, or external side effects are available. Answer the fictional caller once.\n</audio_proof_boundary>`;
-        behaviorAwaitingAck = true; if (!send({ type: 'session.update', session: { instructions } })) return; return;
+        behaviorInstructions = instructions; behaviorAwaitingAck = true; if (!send({ type: 'session.update', session: { type: 'realtime', instructions } })) return; return;
       }
       if (type === 'response.created') mark('response_created');
       if ((type === 'response.output_audio.delta' || type === 'response.audio.delta') && typeof event.delta === 'string') {

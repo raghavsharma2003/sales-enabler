@@ -1,14 +1,49 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { azureCallConfigurationDigest, hangupAzureCall, parseAzureCallLocation } from '../lib/voice/call-control';
+import { azureCallConfigurationDigest, classifyAzureCallLocation, hangupAzureCall, parseAzureCallLocation } from '../lib/voice/call-control';
 import { getVoiceServerAdapter, VoiceCallAllocationError, VoiceConnectionError, voiceAllocationNotStarted } from '../lib/voice/server';
 
 const env = { VOICE_PROVIDER: 'azure', AZURE_OPENAI_ENDPOINT: 'https://fixture.openai.azure.com', AZURE_OPENAI_API_KEY: 'fixture-key', AZURE_OPENAI_REALTIME_DEPLOYMENT: 'fixture' };
 const reference = { providerCallRef: 'rtc_fixture', providerConfigurationDigest: azureCallConfigurationDigest(env)! };
 
 test('Azure Location accepts only exact configured call paths and bounded plain IDs', () => {
-  for (const location of ['/openai/v1/realtime/calls/rtc_fixture', 'https://fixture.openai.azure.com/openai/v1/realtime/calls/rtc_fixture', 'rtc_fixture']) assert.deepEqual(parseAzureCallLocation(location, env), reference);
+  for (const location of ['/openai/v1/realtime/calls/rtc_fixture', '/v1/realtime/calls/rtc_fixture', 'https://fixture.openai.azure.com/openai/v1/realtime/calls/rtc_fixture', 'https://fixture.openai.azure.com/v1/realtime/calls/rtc_fixture', 'rtc_fixture']) assert.deepEqual(parseAzureCallLocation(location, env), reference);
   for (const location of [null, '', '/openai/v1/realtime/calls/', '/openai/v1/realtime/calls/rtc_fixture/hangup', 'https://other.openai.azure.com/openai/v1/realtime/calls/rtc_fixture', 'https://u:p@fixture.openai.azure.com/openai/v1/realtime/calls/rtc_fixture', '//fixture.openai.azure.com/openai/v1/realtime/calls/rtc_fixture', '/openai/v1/realtime/calls/rtc_fixture?key=secret', '/openai/v1/realtime/calls/rtc_fixture#x', '/openai/v1/realtime/calls/a/../rtc_fixture', '/openai/v1/realtime/calls/%72tc_fixture', '/openai/v1/realtime/calls/rtc_fixture\\bad', '/openai/v1/realtime/calls/rtc_fixture\r\nx:evil']) assert.equal(parseAzureCallLocation(location, env), null);
+});
+
+test('documented Azure compatible Location creates a controllable reference on the fixed Azure API base', async () => {
+  let negotiations = 0, hangups = 0;
+  const adapter = getVoiceServerAdapter(env, (async url => {
+    if (String(url).endsWith('/client_secrets')) return Response.json({ value: 'fixture-token' });
+    negotiations++;
+    return new Response('v=0\r\nm=audio', { status: 201, headers: { Location: '/v1/realtime/calls/rtc_fixture' } });
+  }) as typeof fetch);
+  const result = await adapter.connect({ sdp: 'v=0\r\nm=audio', userId: 'u', organizationId: 'o', instructions: '{}' });
+  assert.equal(result.providerCallRef, 'rtc_fixture');
+  const outcome = await hangupAzureCall({ providerCallRef: result.providerCallRef!, providerConfigurationDigest: result.providerConfigurationDigest! }, { env, transport: (async url => {
+    hangups++;
+    assert.equal(url, 'https://fixture.openai.azure.com/openai/v1/realtime/calls/rtc_fixture/hangup');
+    return new Response(null, { status: 200 });
+  }) as typeof fetch });
+  assert.equal(outcome.confirmed, true); assert.equal(negotiations, 1); assert.equal(hangups, 1);
+});
+
+test('Location diagnostics expose only finite classifications and retain all trust restrictions', () => {
+  for (const [location, classification] of [
+    [null, 'missing'], ['', 'missing'], ['/v1/realtime/calls/rtc_fixture', 'compatible_api_path'],
+    ['/openai/v1/realtime/calls/rtc_fixture', 'azure_api_path'],
+    ['https://other.openai.azure.com/v1/realtime/calls/rtc_fixture', 'foreign_origin'],
+    ['/v1/realtime/calls/rtc_fixture?secret=fixture-key', 'unsafe_syntax'],
+    ['/v1/realtime/calls/rtc_fixture#private', 'unsafe_syntax'],
+    ['/v1/realtime/calls/%72tc_fixture', 'unsafe_syntax'],
+    ['/v1/realtime/calls/a/../rtc_fixture', 'unsafe_syntax'],
+    ['https://u:p@fixture.openai.azure.com/v1/realtime/calls/rtc_fixture', 'unsafe_syntax'],
+    ['/v1/realtime/calls/rtc_fixture/hangup', 'unrecognized_path'],
+    ['/v1/realtime/calls/', 'unrecognized_path'],
+  ] as const) {
+    assert.equal(classifyAzureCallLocation(location, env), classification);
+    if (!['azure_api_path', 'compatible_api_path'].includes(classification)) assert.equal(parseAzureCallLocation(location, env), null);
+  }
 });
 
 test('Azure hangup uses fixed authenticated host, rejects redirects, and only 200 confirms', async () => {
@@ -42,6 +77,7 @@ test('missing Location, interrupted negotiation and invalid SDP retain allocatio
       assert.ok(error instanceof VoiceCallAllocationError);
       assert.equal(error.allocationUncertain, true);
       assert.equal(error.providerCallRef, mode === 'invalid-sdp' ? 'rtc_fixture' : undefined);
+      assert.equal(error.locationClassification, mode === 'missing' ? 'missing' : mode === 'foreign' ? 'foreign_origin' : undefined);
       assert.equal(error.message.includes('private upstream'), false);
       assert.equal(JSON.stringify(error).includes('rtc_fixture'), false);
       return true;

@@ -4,7 +4,7 @@ import type { VoiceConnectResult, VoiceProfile } from "./contracts";
 import { MAYA_VOICE_PROFILE } from "./maya";
 import { voiceToolDefinitions, type VoiceToolName } from "./tools/contracts";
 import { buildProviderInstructions, buildVoiceSession } from './session-config';
-import { parseAzureCallLocation, type AzureCallReference } from './call-control';
+import { classifyAzureCallLocation, parseAzureCallLocation, type AzureCallLocationClassification, type AzureCallReference } from './call-control';
 export { buildProviderInstructions } from './session-config';
 
 export class VoiceConnectionError extends Error {}
@@ -22,8 +22,10 @@ export class VoiceCallAllocationError extends VoiceConnectionError {
   readonly allocationUncertain = true;
   readonly providerCallRef?: string;
   readonly providerConfigurationDigest?: string;
-  constructor(message: string, reference?: AzureCallReference) {
+  readonly locationClassification?: AzureCallLocationClassification;
+  constructor(message: string, reference?: AzureCallReference, locationClassification?: AzureCallLocationClassification) {
     super(message);
+    this.locationClassification = locationClassification;
     Object.defineProperties(this, {
       providerCallRef: { value: reference?.providerCallRef, enumerable: false },
       providerConfigurationDigest: { value: reference?.providerConfigurationDigest, enumerable: false },
@@ -119,7 +121,7 @@ async function connectWebRtc(
         allocationStarted = false;
         throw providerHttpError("azure", response.status, "negotiate");
       }
-      if (!reference) throw new VoiceCallAllocationError('Azure did not return a controllable call reference.');
+      if (!reference) throw new VoiceCallAllocationError('Azure did not return a controllable call reference.', undefined, classifyAzureCallLocation(response.headers.get('Location'), env));
     } else {
       const body = new FormData();
       body.set("sdp", input.sdp);

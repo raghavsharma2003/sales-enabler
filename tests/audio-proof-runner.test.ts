@@ -6,11 +6,19 @@ import { pcm24ToWave, runAzureRealtimeAudioProof } from '../lib/evaluations/audi
 class FakeSocket extends EventEmitter {
   events: Record<string, unknown>[] = [];
   appends = 0;
+  missingTypeUpdates = 0;
+  exactBehaviorAckSent = false;
+  responseBeforeExactAck = false;
   constructor() { super(); queueMicrotask(() => this.emit('open')); }
   send(raw: string) {
     const event = JSON.parse(raw) as Record<string, any>; this.events.push(event);
+    if (event.type === 'session.update' && event.session?.type !== 'realtime') {
+      this.missingTypeUpdates++;
+      queueMicrotask(() => this.emit('message', Buffer.from(JSON.stringify({ type: 'error', error: { code: 'missing_session_type' } })), false));
+      return;
+    }
     if (event.type === 'session.update' && !this.events.some(item => item.type === 'input_audio_buffer.append')) {
-      queueMicrotask(() => this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated' })), false));
+      queueMicrotask(() => this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: event.session })), false));
     } else if (event.type === 'input_audio_buffer.append') {
       this.appends++;
       if (this.appends === 13) queueMicrotask(() => {
@@ -20,8 +28,13 @@ class FakeSocket extends EventEmitter {
         ]) this.emit('message', Buffer.from(JSON.stringify(providerEvent)), false);
       });
     } else if (event.type === 'session.update') {
-      queueMicrotask(() => this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated' })), false));
+      queueMicrotask(() => {
+        this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: { type: 'realtime', instructions: 'stale instructions' } })), false);
+        this.exactBehaviorAckSent = true;
+        this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: event.session })), false);
+      });
     } else if (event.type === 'response.create') {
+      if (!this.exactBehaviorAckSent) this.responseBeforeExactAck = true;
       queueMicrotask(() => {
         for (const providerEvent of [
           { type: 'response.created' },
@@ -45,7 +58,7 @@ class MidCloseSocket extends EventEmitter {
   send(raw: string) {
     if (this.closed) { this.sendsAfterClose++; throw new Error('send after close'); }
     const event = JSON.parse(raw) as Record<string, unknown>; this.events.push(event);
-    if (event.type === 'session.update') queueMicrotask(() => this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated' })), false));
+    if (event.type === 'session.update') queueMicrotask(() => this.emit('message', Buffer.from(JSON.stringify({ type: 'session.updated', session: event.session })), false));
     if (event.type === 'input_audio_buffer.append') {
       this.appends++;
       if (this.appends === 1) queueMicrotask(() => {
@@ -75,6 +88,8 @@ test('bounded runner uses one socket, exact shared session, synthetic ASR and ca
   assert.equal(fake?.events.some(event => event.type === 'input_audio_buffer.commit'), false, 'server VAD owns commit as in the live route');
   const updates = fake?.events.filter(event => event.type === 'session.update') as Array<Record<string, any>>;
   assert.deepEqual(updates[0].session.tools, []); assert.match(updates[1].session.instructions, /CURRENT-CALL RELATIONAL BEHAVIOR/);
+  assert.equal(updates[1].session.type, 'realtime'); assert.equal(fake?.missingTypeUpdates, 0);
+  assert.equal(fake?.responseBeforeExactAck, false, 'stale session.updated must not authorize response.create');
   assert.match(updates[1].session.instructions, /No tools, memory writes, business actions/);
   assert.equal(result.trace.some(item => item.kind === 'first_server_audio'), true);
   assert.equal(result.runtimePolicyDigest?.length, 64);
