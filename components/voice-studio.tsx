@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Activity, ArrowRight, Check, Download, Headphones, Mic, MicOff, Send, Square, UserRound } from "lucide-react";
+import { Activity, ArrowRight, Check, Download, Headphones, Mic, MicOff, RotateCcw, Send, Square, UserRound } from "lucide-react";
 import { createBrowserVoiceSession, type BrowserVoiceSession } from "@/lib/voice/browser-session";
 import { createVoiceLiveBrowserSession } from '@/lib/voice/voice-live-browser';
 import type { AgentConfig } from "@/lib/platform/agents";
@@ -14,6 +14,7 @@ import { normalizeVoiceTools, type VoiceToolName } from "@/lib/voice/tools/contr
 import type { VoiceRuntimeDiagnostics } from "@/lib/voice/diagnostics";
 import type { ContinuousUnderstandingSnapshot } from "@/lib/voice/continuous-understanding";
 import { resolveSpeechDelivery } from "@/lib/voice/speech-delivery";
+import { fetchJsonWithTimeout, loadVoiceConfiguration } from "@/lib/voice/config-browser";
 import { VoiceTimingEvidence } from "@/components/voice-timing-evidence";
 import { ContinuousUnderstanding, type ContinuousUnderstandingStatus } from "@/components/continuous-understanding";
 
@@ -34,10 +35,12 @@ const inspectorTabs: InspectorTab[] = ["Transcript", "Live understanding", "Emot
 const clock = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 const toolLabels: Record<VoiceToolName, string> = { search_company_knowledge: "Company knowledge", recall_customer_context: "Customer context", request_follow_up: "Follow-up request" };
 type ToolTrace = { id: string; name: VoiceToolName; phase: "requested" | "result"; status?: "available" | "not_available" | "awaiting_review"; message?: string; actionId?: string; receivedAt: string };
+const CONTEXT_PREFLIGHT_TIMEOUT_MS = 12_000;
 
 export function VoiceStudio({ contacts, releases = [], onSaved, contactId, preview, campaignRunId, onActiveChange, lockContactSelection = false }: VoiceStudioProps) {
   const [config, setConfig] = useState<VoiceConfiguration | null>(null);
   const [configError, setConfigError] = useState("");
+  const [configRevision, setConfigRevision] = useState(0);
   const [selectedContact, setSelectedContact] = useState(contactId || "");
   const [selectedRelease, setSelectedRelease] = useState("");
   const release = releases.find(item => item.id === selectedRelease) || (releases.length === 1 ? releases[0] : undefined);
@@ -113,11 +116,11 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     const abort = new AbortController();
     setConfig(null); setConfigError("");
     const query = preview ? `profile=${encodeURIComponent(voiceProfile)}${liveVoiceKey ? `&liveVoice=${encodeURIComponent(liveVoiceKey)}` : ''}` : release ? `releaseId=${encodeURIComponent(release.id)}` : "";
-    fetch(`/api/voice/config?${query}`, { cache: "no-store", signal: abort.signal })
-      .then(async response => { const data = await response.json(); if (abort.signal.aborted) return; if (!response.ok) throw new Error(data.error || "Could not load voice settings."); setConfig(data); })
+    loadVoiceConfiguration(`/api/voice/config?${query}`, { signal: abort.signal })
+      .then(data => { if (!abort.signal.aborted) setConfig(data); })
       .catch(error => { if (!abort.signal.aborted) setConfigError(error instanceof Error ? error.message : "Could not load voice settings."); });
     return () => { abort.abort(); };
-  }, [voiceProfile, liveVoiceKey, release?.id, !!preview, live]);
+  }, [voiceProfile, liveVoiceKey, release?.id, !!preview, live, configRevision]);
   useEffect(() => { activeChange.current?.(live); }, [live]);
   useEffect(() => () => { startGate.current.cancel(); connection.current?.close(); connection.current = null; activeChange.current?.(false); }, []);
   useEffect(() => { if (!live && config && !continuousSpeechAvailable) setContinuousSpeech(false); }, [config, continuousSpeechAvailable, live]);
@@ -136,8 +139,11 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     const timeout = window.setTimeout(async () => {
       setCompiling(true); setCompiledError("");
       try {
-        const response = await fetch("/api/voice/preview", { method: "POST", headers: { "Content-Type": "application/json" }, signal: abort.signal, body: JSON.stringify({ draft: preview.draft, agentId: preview.agentId, contactId: selectedContact || undefined }) });
-        const result = await response.json() as ContextPreview;
+        const { response, data: result } = await fetchJsonWithTimeout<ContextPreview>("/api/voice/preview", { method: "POST", headers: { "Content-Type": "application/json" }, signal: abort.signal, body: JSON.stringify({ draft: preview.draft, agentId: preview.agentId, contactId: selectedContact || undefined }) }, {
+          timeoutMs: CONTEXT_PREFLIGHT_TIMEOUT_MS,
+          timeoutMessage: "Draft context took too long to respond. Check your connection and try again.",
+        });
+        if (abort.signal.aborted) return;
         if (!response.ok) throw new Error(result.error || "Could not inspect this draft.");
         setCompiled(result);
       } catch (cause) { if (!abort.signal.aborted) { setCompiled(null); setCompiledError(cause instanceof Error ? cause.message : "Could not inspect this draft."); } }
@@ -194,12 +200,13 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     setCallContext(null);
     if (draftSnapshot) {
       try {
-        const response = await attempt.currentResult(fetch("/api/voice/preview", { method: "POST", headers: { "Content-Type": "application/json" }, signal: attempt.signal, body: JSON.stringify({ draft: draftSnapshot, agentId: preview?.agentId, contactId: selectedContact || undefined }) }));
-        if (!response) return;
-        const result = await attempt.currentResult(response.json() as Promise<ContextPreview>);
-        if (!result) return;
-        if (!response.ok) throw new Error(result.error || "This draft could not be prepared for a call.");
-        preparedContext = result; setCallContext(result);
+        const prepared = await attempt.currentResult(fetchJsonWithTimeout<ContextPreview>("/api/voice/preview", { method: "POST", headers: { "Content-Type": "application/json" }, signal: attempt.signal, body: JSON.stringify({ draft: draftSnapshot, agentId: preview?.agentId, contactId: selectedContact || undefined }) }, {
+          timeoutMs: CONTEXT_PREFLIGHT_TIMEOUT_MS,
+          timeoutMessage: "Draft context took too long to prepare. Check your connection and try again.",
+        }));
+        if (!prepared) return;
+        if (!prepared.response.ok) throw new Error(prepared.data.error || "This draft could not be prepared for a call.");
+        preparedContext = prepared.data; setCallContext(prepared.data);
       } catch (cause) { if (attempt.isCurrent()) { setState("ended"); setContinuousSpeechStatus(useContinuousSpeech ? { state: "ended" } : null); setError(cause instanceof Error ? cause.message : "This draft could not be prepared for a call."); } return; }
     }
     if (!attempt.isCurrent()) return;
@@ -282,7 +289,7 @@ export function VoiceStudio({ contacts, releases = [], onSaved, contactId, previ
     {lockContactSelection && !controlledContactPending && !controlledContact && <p className="wb-inline-note">Select a queued recipient above to prepare the call desk.</p>}
     {controlledContactPending && contactSelectionBusy && <p className="wb-inline-note" role="status">{live ? 'End the current call before moving the call desk to another recipient.' : saving ? 'Wait for the previous transcript to finish saving before moving the call desk.' : 'Save or discard the previous transcript before moving the call desk to another recipient.'}</p>}
     <div className="wb-call-stage" aria-label="Call state"><div className="wb-stage-symbol" data-active={state === "live"} data-activity={state === "live" ? activity : state}><Activity size={30} strokeWidth={1.5}/></div><strong>{state === "live" ? callInputMode === "microphone" && muted ? "Microphone muted" : activity === "thinking" ? "Agent is preparing a response" : activity === "speaking" ? "Agent is speaking" : callInputMode === "text" ? "Listening for the agent" : "Listening" : state === "connecting" ? callInputMode === "microphone" ? "Opening the microphone and voice connection" : "Opening the voice connection" : state === "ended" ? "Call ended" : inputMode === "text" ? "Ready to listen and type" : "Ready to speak"}</strong><span>{state === "live" || state === "ended" ? clock(elapsed) : inputMode === "text" ? "Agent audio plays through this browser" : "Use headphones for a clearer test"}</span>{audioLevel !== null && state === "live" && <div className="wb-level" role="meter" aria-label="Microphone level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(audioLevel * 100)}><span style={{ width: `${Math.round(audioLevel * 100)}%` }}/></div>}</div>
-    {!config?.configured && <div className="wb-setup" role="status"><Headphones size={18}/><span>{configError || config?.reason || "Checking the workspace voice configuration…"}</span></div>}
+    {!config?.configured && <div className="wb-setup" role={configError ? "alert" : "status"}><Headphones size={18}/><span>{configError || config?.reason || "Checking the workspace voice configuration…"}</span>{(configError || config) && !live && <button type="button" className="pc-button quiet" aria-label="Retry voice settings" style={{ marginInlineStart: "auto", flex: "none" }} onClick={() => setConfigRevision(revision => revision + 1)}><RotateCcw size={14}/>Retry</button>}</div>}
     {preview && compiledError && !live && <p className="wb-error" role="alert">{compiledError}</p>}
     {preview && !previewIsReady && <p className="wb-inline-note">Add a name, role, objective, AI introduction, response style, human escalation and language in the editor to begin.</p>}
     {!preview && releases.length === 0 && <p className="wb-inline-note">Publish a tested version to the browser channel before calling.</p>}

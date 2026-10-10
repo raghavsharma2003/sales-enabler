@@ -73,9 +73,11 @@ export function configurationIssues(env: Environment = process.env): ReadinessIs
 
 export type DatabaseProbe = (requireWorker: boolean, requireChannelWorker?: boolean, requireLearningWorker?: boolean) => Promise<boolean>;
 const schemaQuery = `SELECT o.id,u.password_hash,u.organization_id,s.token_hash,s.expires_at,
-  e.id,e.organization_id,e.kind,e.data,a.id,a.event,h.id,h.service,h.status,h.updated_at
+  e.id,e.organization_id,e.kind,e.data,a.id,a.event,h.id,h.service,h.status,h.updated_at,
+  v.id,v.organization_id,v.mime_type,v.byte_count,v.sha256,v.duration_ms,v.sample_rate_hz,v.channels,v.bytes,v.created_at,v.expires_at
   FROM organizations o CROSS JOIN users u CROSS JOIN auth_sessions s
-  CROSS JOIN entities e CROSS JOIN audit_events a CROSS JOIN service_heartbeats h LIMIT 0`;
+  CROSS JOIN entities e CROSS JOIN audit_events a CROSS JOIN service_heartbeats h
+  CROSS JOIN evaluation_audio_artifacts v LIMIT 0`;
 
 /** Read-only checks: a probe cannot initialize or migrate the application store. */
 export async function probeDatabase(requireWorker = false, requireChannelWorker = false, requireLearningWorker = false): Promise<boolean> {
