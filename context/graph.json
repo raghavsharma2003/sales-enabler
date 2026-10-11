@@ -1525,6 +1525,48 @@
       "title": "Terminal local speech delivery, comparison and Taxila audition verification",
       "status": "current-a64b4c9-1054-tests-build1207-readiness-provider-taxila-transport-mobile-ui-ship-pass-zero-of-four-no-winner-bounded-local-only",
       "path": "docs/speech-delivery-and-comparison-oct10.md"
+    },
+    {
+      "id": "decision.private-azure-voice-live-adapter-2026-10-10",
+      "type": "decision",
+      "title": "Build an opt-in private Azure Voice Live Diya/Arjun adapter under existing authority",
+      "status": "current-azure-only-no-provider-migration-or-auto-fallback",
+      "path": "docs/voice-live-verification-oct10.md"
+    },
+    {
+      "id": "implementation.voice-live-composition-authority-2026-10-10",
+      "type": "component",
+      "title": "One-use Voice Live composition ticket and paid-call admission authority",
+      "status": "implemented-8e408fa-authority10-usage19-independent-no-p1-p2-1134-tests-build1212-readiness-pass-first-preview-connecting",
+      "path": "docs/voice-live-verification-oct10.md"
+    },
+    {
+      "id": "implementation.voice-live-provider-gateway-2026-10-10",
+      "type": "component",
+      "title": "Pure Voice Live configuration, exact handshake and bounded private gateway",
+      "status": "implemented-9c90644-focused83-build1212-pass-successful-five-entry-tool-preview-predates-9c-no-post9c-live-proof-perceptual-ui-hosting-gates-open",
+      "path": "docs/voice-live-verification-oct10.md"
+    },
+    {
+      "id": "implementation.voice-live-browser-ui-2026-10-10",
+      "type": "component",
+      "title": "Private Voice Live browser lifecycle and Agent Studio opt-in UI",
+      "status": "implemented-9c90644-fixed-rate-ui-frozen-header-offline-pass-second-preview-pre9c-save-tool-close-pass-no-post9c-browser-call-ui-review-open",
+      "path": "docs/voice-live-verification-oct10.md"
+    },
+    {
+      "id": "open.voice-live-adapter-terminal-verification-2026-10-10",
+      "type": "open-question",
+      "title": "Complete private Azure Voice Live adapter verification",
+      "status": "open-9c90644-focused83-prior-build1212-continued1153-tests-pass-new-build-running-browser-unavailable-ui-listening-pg-region-hosted-readiness-pending",
+      "path": "docs/voice-live-verification-oct10.md"
+    },
+    {
+      "id": "evidence.appservice-alternative-whatif-2026-10-10",
+      "type": "evidence",
+      "title": "Azure App Service alternative validation and what-if",
+      "status": "partial-apply-cleaned-seven-owned-targets-404-budget200-shared-counts-unchanged-no-source-or-postgres-ongoing-plan-billing-ended-region-review-open",
+      "path": "docs/appservice-hosting-alternative-oct10.md"
     }
   ],
   "edges": [
@@ -2962,6 +3004,56 @@
       "from": "verification.speech-delivery-terminal-local-2026-10-10",
       "to": "open.speech-delivery-terminal-verification-2026-10-10",
       "relation": "closes-local-software-gate"
+    },
+    {
+      "from": "verification.speech-delivery-terminal-local-2026-10-10",
+      "to": "decision.private-azure-voice-live-adapter-2026-10-10",
+      "relation": "provides-clean-848e166-baseline"
+    },
+    {
+      "from": "research.taxila-live-voice-plan-2026-10-10",
+      "to": "decision.private-azure-voice-live-adapter-2026-10-10",
+      "relation": "informs-bounded-experiment"
+    },
+    {
+      "from": "decision.private-azure-voice-live-adapter-2026-10-10",
+      "to": "constraint.azure-only-paid",
+      "relation": "preserves"
+    },
+    {
+      "from": "decision.private-azure-voice-live-adapter-2026-10-10",
+      "to": "implementation.voice-live-composition-authority-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.voice-live-composition-authority-2026-10-10",
+      "to": "implementation.voice-live-provider-gateway-2026-10-10",
+      "relation": "authorizes-before-provider-contact"
+    },
+    {
+      "from": "implementation.voice-live-provider-gateway-2026-10-10",
+      "to": "implementation.voice-live-browser-ui-2026-10-10",
+      "relation": "provides-private-session"
+    },
+    {
+      "from": "implementation.voice-live-composition-authority-2026-10-10",
+      "to": "open.voice-live-adapter-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.voice-live-provider-gateway-2026-10-10",
+      "to": "open.voice-live-adapter-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "implementation.voice-live-browser-ui-2026-10-10",
+      "to": "open.voice-live-adapter-terminal-verification-2026-10-10",
+      "relation": "requires"
+    },
+    {
+      "from": "evidence.appservice-alternative-whatif-2026-10-10",
+      "to": "open.voice-live-adapter-terminal-verification-2026-10-10",
+      "relation": "documents-hosting-preparation-not-deployment"
     }
   ]
 }
