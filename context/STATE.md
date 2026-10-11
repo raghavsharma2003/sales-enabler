@@ -189,6 +189,10 @@ The v4 record remains historical at 196 tests with 0 failures. The authoritative
 
 Source coverage includes 55 named branches across the three repos and a refreshed 31-head html-portfolio lineage audit. Source repos are read-only. Static coverage does not imply exhaustive runtime validation of every branch. The v4 product research also deepens Glean, Intercom Fin, HubSpot Breeze, Salesforce Agentforce, Clay and Lindy workflow comparisons; these inform design and reuse but do not prove superiority or runtime parity. `research/2026-09-22/calling-product-update.md` adds Vapi, ElevenLabs, Bolna, Dialflo, Alchemic, Fish and LiveKit product evidence.
 
+## Latest checkpoint — 11 October 2026
+
+The continuation checkpoint is committed and pushed on `codex/product-discovery`: `1c86a0a` adds bounded voice-settings loading/retry and PostgreSQL-readiness coverage; `ad41282` adds the Azure App Service handoff, private Voice Live verification record and continuity updates. The frozen full suite passed 1,153/1,153 and the production build/package check passed with 1,212 inspected entries. The local packaged app and private Voice Live gateway each returned HTTP 200. Browser-based post-fix Voice Live and visual checks remain open because the in-app browser became unavailable. West US 3 is the reviewed replacement hosting candidate after East US 2 rejected PostgreSQL; no replacement resources, source deployment, production database, external message, or new paid voice call has been created.
+
 ## Remaining product work
 
 Automated person-wise comparison and A/B traffic assignment, typed result-column population with evidence, universal ERP/LMS mapping, caller identity/telephone/live cloned voices, real OAuth accounts/sync, real email/WhatsApp delivery, physical Android microphone/background behavior, production PostgreSQL/host, retention/recovery, billing and deployment remain open. Phone integration is deferred. `/prototype` remains rejected historical fixture code. Do not present local/manual workflows as production delivery.
