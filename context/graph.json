@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-09",
+  "updatedAt": "2026-10-15",
   "nodes": [
     {
       "id": "product.general",
@@ -1567,6 +1567,81 @@
       "title": "Azure App Service alternative validation and what-if",
       "status": "partial-apply-cleaned-seven-owned-targets-404-budget200-shared-counts-unchanged-no-source-or-postgres-ongoing-plan-billing-ended-region-review-open",
       "path": "docs/appservice-hosting-alternative-oct10.md"
+    },
+    {
+      "id": "directive.2026-10-15.vision",
+      "type": "requirement",
+      "status": "confirmed",
+      "source": "user",
+      "date": "2026-10-15",
+      "title": "Vision: AI company command centre \u2014 custom ERP + CRM + campaign launch/analyse/grow + lead generator + omnichannel data + company brain + voice/chat agents, every part AI-driven, orchestrating the whole company"
+    },
+    {
+      "id": "directive.2026-10-15.azure-only",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "user",
+      "date": "2026-10-15",
+      "title": "Azure-only for AI and compute (Azure OpenAI/Foundry direct models, Speech/Voice Live, Container Apps, ACS). Neon Postgres allowed.",
+      "reverse_if": "owner lifts the directive"
+    },
+    {
+      "id": "directive.2026-10-15.azure-scope",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "user",
+      "date": "2026-10-15",
+      "title": "Shared Azure subscription: create/modify only sales-enabler resources; Taxila (taxila-*), Vyakti (vyakti-*) and other projects are read-only. Same rule for Neon/Vercel/Supabase projects of other products.",
+      "reverse_if": "owner explicitly authorises touching a named other-project resource"
+    },
+    {
+      "id": "directive.2026-10-15.telephony-later",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "user",
+      "date": "2026-10-15",
+      "title": "Phone/telephony provider deferred: build the product first, choose PSTN provider later",
+      "reverse_if": "product core is built and owner reopens telephony"
+    },
+    {
+      "id": "directive.2026-10-15.codex-baseline-stale",
+      "type": "evidence",
+      "status": "confirmed",
+      "source": "user",
+      "date": "2026-10-15",
+      "title": "Owner judges the Codex-built baseline basic, stale and messy; it is a starting point to rebuild from, not a foundation to preserve"
+    },
+    {
+      "id": "directive.2026-10-15.sequence",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "user",
+      "date": "2026-10-15",
+      "title": "Sequence: analyse current build + harvest sibling repos (html-portfolio, Taxila, command_centre, every branch) -> visual report -> discuss -> market research -> vision & strategy -> build"
+    },
+    {
+      "id": "directive.2026-10-15.context-graph",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "user",
+      "date": "2026-10-15",
+      "title": "Always keep writing context as a graph (context/graph.json + events.jsonl + docs/harvest corpora) so no work is re-derived and product direction stays clear"
+    },
+    {
+      "id": "evidence.2026-10-15.access",
+      "type": "evidence",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-15",
+      "title": "Session access verified: GitHub push (4 repos), Neon admin (6 projects, none for sales-enabler yet), Supabase SQL, Vercel team, Azure ARM via service principal (subscription-wide), Azure OpenAI endpoint (469 models), Azure Speech centralindia; existing Foundry project raghavsharma1729-compan-resource/sales-enabler"
+    },
+    {
+      "id": "evidence.2026-10-15.baseline-tests",
+      "type": "evidence",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-15",
+      "title": "Baseline 5a0fe25: npm ci ok, tsc clean, npm test 1153/1153 pass on Node 22.22 (unit contracts only; no e2e/browser/live tests)"
     }
   ],
   "edges": [
@@ -3054,6 +3129,26 @@
       "from": "evidence.appservice-alternative-whatif-2026-10-10",
       "to": "open.voice-live-adapter-terminal-verification-2026-10-10",
       "relation": "documents-hosting-preparation-not-deployment"
+    },
+    {
+      "from": "directive.2026-10-15.vision",
+      "to": "product.general",
+      "relation": "supersedes"
+    },
+    {
+      "from": "directive.2026-10-15.azure-scope",
+      "to": "directive.2026-10-15.azure-only",
+      "relation": "constrains"
+    },
+    {
+      "from": "directive.2026-10-15.sequence",
+      "to": "directive.2026-10-15.vision",
+      "relation": "serves"
+    },
+    {
+      "from": "directive.2026-10-15.codex-baseline-stale",
+      "to": "evidence.2026-10-15.baseline-tests",
+      "relation": "contextualises"
     }
   ]
 }
