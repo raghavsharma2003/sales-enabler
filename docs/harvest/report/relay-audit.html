@@ -1,0 +1,366 @@
+<title>Relay Audit and Harvest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an inspection dossier. A narrow sticky index on the left, findings on the right; figures and tables break wider. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --ink:#151A21; --muted:#5A6472; --line:#D9DEE4;
+  --accent:#1D5C8C; --accent-soft:#E3EDF6;
+  --ok:#1F7A4D; --ok-bg:#E2F3EA; --warn:#9A6200; --warn-bg:#FBF0D9; --bad:#B23B2E; --bad-bg:#F9E3E0; --idle:#5A6472; --idle-bg:#E8EBEF;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1318; --surface:#171C23; --ink:#E6EAF0; --muted:#98A2B0; --line:#2A313B;
+  --accent:#7DB3E0; --accent-soft:#1B2B3A;
+  --ok:#5FCB8F; --ok-bg:#15301F; --warn:#E8B04A; --warn-bg:#33270F; --bad:#F08A7C; --bad-bg:#3A1B17; --idle:#A3ADBA; --idle-bg:#232A33;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --surface:#171C23; --ink:#E6EAF0; --muted:#98A2B0; --line:#2A313B;
+  --accent:#7DB3E0; --accent-soft:#1B2B3A;
+  --ok:#5FCB8F; --ok-bg:#15301F; --warn:#E8B04A; --warn-bg:#33270F; --bad:#F08A7C; --bad-bg:#3A1B17; --idle:#A3ADBA; --idle-bg:#232A33;
+  color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 80px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+nav.index{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start;font-size:13px}
+nav.index ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:s}
+nav.index a{display:block;padding:6px 10px;border-radius:6px;color:var(--muted);text-decoration:none}
+nav.index a:hover,nav.index a:focus-visible{background:var(--accent-soft);color:var(--ink);outline:none}
+nav.index .brand{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:10px}
+main{min-width:0;display:grid;gap:64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(32px,5vw,50px);font-weight:700;letter-spacing:-.02em}
+h2{font-size:28px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:18px;font-weight:600}
+p{margin:0;max-width:68ch}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+section{display:grid;gap:20px;scroll-margin-top:24px}
+.lede{font-size:17px;color:var(--muted);max-width:66ch}
+.verdict{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:22px 24px;display:grid;gap:10px}
+.verdict strong{font-family:var(--f-display);font-size:22px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stat{background:var(--surface);padding:16px 18px;display:grid;gap:2px}
+.stat b{font:500 26px var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.k{font-weight:600;white-space:nowrap}
+.chip{display:inline-block;font:500 11.5px var(--f-mono);padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+.ok{color:var(--ok);background:var(--ok-bg)} .warn{color:var(--warn);background:var(--warn-bg)} .bad{color:var(--bad);background:var(--bad-bg)} .idle{color:var(--idle);background:var(--idle-bg)}
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+figure{margin:0;display:grid;gap:8px;min-width:0}
+figure button{all:unset;cursor:zoom-in;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);display:block}
+figure button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+figure img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:top}
+figcaption{font-size:13px;color:var(--muted);line-height:1.45}
+figcaption b{color:var(--ink);font-weight:600}
+.bars{display:grid;gap:7px;font-size:13px}
+.bar{display:grid;grid-template-columns:130px minmax(0,1fr) 64px;gap:12px;align-items:center}
+.bar .track{height:14px;background:var(--idle-bg);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:3px}
+.bar.hot .fill{background:var(--bad)}
+.bar .n{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.bar .lbl{font-family:var(--f-mono);font-size:12.5px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;gap:10px;align-content:start;min-width:0}
+.card h3{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card .meta{font:12px var(--f-mono);color:var(--muted)}
+.card ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.repo-head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.repo-head .meta{font:13px var(--f-mono);color:var(--muted)}
+.clusters{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.cl{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:6px;font-size:13.5px;line-height:1.5}
+.cl b{font:600 12.5px var(--f-mono);color:var(--accent)}
+.cl .bn{font:11.5px var(--f-mono);color:var(--muted)}
+.heat td.c{font-family:var(--f-mono);text-align:center;font-variant-numeric:tabular-nums;width:110px}
+.h0{color:var(--muted)} .h1{background:color-mix(in srgb,var(--accent) 12%,transparent)} .h2{background:color-mix(in srgb,var(--accent) 26%,transparent)} .h3{background:color-mix(in srgb,var(--accent) 45%,transparent);font-weight:600}
+.laws{counter-reset:law;display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.laws li{counter-increment:law;display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;font-size:14.5px}
+.laws li::before{content:counter(law,decimal-leading-zero);font:500 13px var(--f-mono);color:var(--accent);padding-top:2px}
+.laws small{display:block;color:var(--muted);font-size:13px}
+.steps{display:grid;gap:12px;counter-reset:st;list-style:none;margin:0;padding:0}
+.steps li{counter-increment:st;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 56px;position:relative;font-size:14.5px}
+.steps li::before{content:counter(st);position:absolute;left:16px;top:13px;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font:600 13px var(--f-mono);display:grid;place-items:center}
+.q{border-left:3px solid var(--accent);padding:4px 0 4px 16px;display:grid;gap:4px}
+.q b{font-family:var(--f-display);font-size:17px}
+code{font:13px var(--f-mono);background:var(--idle-bg);padding:1px 5px;border-radius:4px;word-break:break-word}
+.foot{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px;display:grid;gap:6px}
+dialog{border:0;padding:0;background:transparent;max-width:min(1200px,96vw)}
+dialog::backdrop{background:rgb(0 0 0 / .75)}
+dialog img{display:block;max-width:100%;max-height:90vh;border-radius:8px}
+dialog button{position:absolute;top:8px;right:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 10px;font:500 13px var(--f-body);cursor:pointer}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr);gap:28px}nav.index{position:static}nav.index ol{display:flex;flex-wrap:wrap;gap:4px}nav.index a{padding:4px 8px;border:1px solid var(--line)}.bar{grid-template-columns:100px minmax(0,1fr) 54px}}
+@media (prefers-reduced-motion:no-preference){figure button img{transition:transform .25s}figure button:hover img{transform:scale(1.015)}}
+</style>
+
+<div class="wrap">
+<nav class="index" aria-label="Sections">
+  <div class="brand">Audit · 15 Oct 2026</div>
+  <ol>
+    <li><a href="#verdict">Verdict</a></li>
+    <li><a href="#flows">What actually runs</a></li>
+    <li><a href="#screens">The screens</a></li>
+    <li><a href="#code">Where the code is</a></li>
+    <li><a href="#modules">Module by module</a></li>
+    <li><a href="#voice">Voice stacks</a></li>
+    <li><a href="#harvest">Sibling harvest</a></li>
+    <li><a href="#matrix">Reuse matrix</a></li>
+    <li><a href="#laws">Laws we inherit</a></li>
+    <li><a href="#next">To discuss next</a></li>
+  </ol>
+</nav>
+
+<main>
+<section id="verdict">
+  <div class="eyebrow">sales-enabler · branch claude/serene-franklin-9w7f1v · commit 5a0fe25</div>
+  <h1>Relay works. It is the wrong product.</h1>
+  <p class="lede">Codex built a careful prototype of one workflow: company data, a reviewed brain, an AI campaign plan, a browser voice call and reviewed learning. Every flow I ran completed against real Azure. But it has no CRM objects, no ERP, no lead generation and no phone calls, and half its code is voice research. The command centre needs a new spine.</p>
+  <div class="verdict">
+    <span class="chip bad">Recommendation</span>
+    <strong>Rebuild the shell, data model and UI. Carry forward about 13 mechanisms.</strong>
+    <p>Combine three things: Taxila's platform spine (model gateway, Conductor runtime, gated deploys, sim lab), CommandCentre's go-to-market engines (sequences, inbox, ICP gates), and the html-portfolio safety layer (one compiler, one gated reply door, predicate safety, honesty gate).</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>22,008</b><span>lines in <code>lib/</code> (about 40k at normal line length)</span></div>
+    <div class="stat"><b>1,153</b><span>tests pass, all unit tests with mocked transports</span></div>
+    <div class="stat"><b>72</b><span>API routes, including a string-dispatched RPC endpoint</span></div>
+    <div class="stat"><b>1</b><span>database table holds about 100 entity kinds as JSON</span></div>
+    <div class="stat"><b>5</b><span>voice stacks side by side, plus a cloning stub</span></div>
+    <div class="stat"><b>0</b><span>deployments, phone calls, or e2e and Postgres tests</span></div>
+  </div>
+</section>
+
+<section id="flows">
+  <div class="eyebrow">Live run · local SQLite + Azure gpt-4.1-mini</div>
+  <h2>What actually runs</h2>
+  <p>I signed up a fake tenant ("Kavach Steel Exports") and drove every flow with Playwright. All Azure calls together came to 5,163 tokens across 4 text calls. No view crashed, nothing returned a 5xx, and nothing overflowed at 390px.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Flow</th><th>Result</th><th>What I saw</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Sign up and verify email</td><td><span class="chip ok">works</span></td><td>The dev outbox writes the link; verified login lands on Overview.</td></tr>
+      <tr><td class="k">Company onboarding</td><td><span class="chip ok">works</span></td><td>The website URL is stored but never crawled. "Add to brain" creates a draft that shows up nowhere.</td></tr>
+      <tr><td class="k">CSV customer import</td><td><span class="chip warn">clunky</span></td><td>A column literally named <code>Email</code> is not auto-mapped. The AI mapping (about 4.2s) was correct. The Company, Country and Product columns had nowhere to go, because a contact has no account.</td></tr>
+      <tr><td class="k">Brain extract and approve</td><td><span class="chip ok">works</span></td><td>Proposals keep exact source quotes and need human approval. But the summary step dropped the minimum order quantities, and the panel got stuck on "Starting…".</td></tr>
+      <tr><td class="k">Business-model discovery</td><td><span class="chip warn">confusing</span></td><td>This is a second, separate "offering" system. You can bypass the approval gate by clearing the questions box.</td></tr>
+      <tr><td class="k">Build and publish an agent</td><td><span class="chip ok">works</span></td><td>Six tabs. The "release checks" only inspect configuration; they are not conversation tests.</td></tr>
+      <tr><td class="k">Test call inside the studio</td><td><span class="chip bad">blocked</span></td><td>It needs a voice provider, and there is no text test inside the studio.</td></tr>
+      <tr><td class="k">Public deployment and web chat</td><td><span class="chip ok">works</span></td><td>3.2s and not streamed. It replied "I'm an AI assistant for Kavach Steel. I am Kavach Steel's AI assistant." because the disclosure is stated twice.</td></tr>
+      <tr><td class="k">Campaign to launch</td><td><span class="chip warn">stops at gate</span></td><td>"0 of 4 eligible": there is no consent import. Channels are browser voice and email only.</td></tr>
+      <tr><td class="k">Integrations</td><td><span class="chip idle">UI only</span></td><td>There are 19 adapters, and none has ever been connected to a real account.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="screens">
+  <div class="eyebrow">86 screenshots captured · 12 shown · click to enlarge</div>
+  <h2>The screens</h2>
+  <p>The design is clean and consistent but generic SaaS, with an indigo accent, cards and six grouped nav areas. It speaks to a compliance auditor more than a seller. <code>/prototype</code> is the most attractive surface, but it runs on simulated data.</p>
+  <div class="shots">
+    <figure><button data-full="img/app-command-centre-1440.jpg"><img src="img/app-command-centre-1440.jpg" alt="Overview screen" loading="lazy"></button><figcaption><b>Overview.</b> The best screen, because it gives a clear next action. It is a setup checklist, though, not a command centre: no metrics, pipeline or revenue.</figcaption></figure>
+    <figure><button data-full="img/app-company-brain-1440.jpg"><img src="img/app-company-brain-1440.jpg" alt="Company brain screen" loading="lazy"></button><figcaption><b>Company brain.</b> The strongest idea in the repo is evidence spans with human approval. But tabs are nested inside tabs, and "Ask" is keyword search only.</figcaption></figure>
+    <figure><button data-full="img/flow-brain-review-1440.jpg"><img src="img/flow-brain-review-1440.jpg" alt="Brain review" loading="lazy"></button><figcaption><b>Brain review.</b> Extracted facts arrive as proposals, each tied to its exact quote.</figcaption></figure>
+    <figure><button data-full="img/flow-csv-ai-mapping-1440.jpg"><img src="img/flow-csv-ai-mapping-1440.jpg" alt="CSV mapping" loading="lazy"></button><figcaption><b>CSV mapping.</b> The AI mapping is good, but there is no custom field or account to map company columns to.</figcaption></figure>
+    <figure><button data-full="img/app-customers-1440.jpg"><img src="img/app-customers-1440.jpg" alt="Customers" loading="lazy"></button><figcaption><b>Customers.</b> A contact card, not a CRM: no accounts, deals, timeline or bulk actions.</figcaption></figure>
+    <figure><button data-full="img/app-agents-1440.jpg"><img src="img/app-agents-1440.jpg" alt="Agent studio" loading="lazy"></button><figcaption><b>Agent studio.</b> Dense, and it exposes internal jargon ("EmotionalOS") to users. On a phone it is 3,088px tall.</figcaption></figure>
+    <figure><button data-full="img/app-campaigns-1440.jpg"><img src="img/app-campaigns-1440.jpg" alt="Campaigns" loading="lazy"></button><figcaption><b>Campaigns.</b> A six-stage linear form. No segments, sequences, A/B tests or analytics until the end.</figcaption></figure>
+    <figure><button data-full="img/flow-campaign-readiness-1440.jpg"><img src="img/flow-campaign-readiness-1440.jpg" alt="Launch readiness" loading="lazy"></button><figcaption><b>Launch gate.</b> The consent check is correct, but there is no way to get consent in.</figcaption></figure>
+    <figure><button data-full="img/app-deployments-1440.jpg"><img src="img/app-deployments-1440.jpg" alt="Deployments" loading="lazy"></button><figcaption><b>Deployments.</b> A solid safety model (frozen snapshot, allowed origins, usage caps). The wizard is long.</figcaption></figure>
+    <figure><button data-full="img/talk-chat-1440.jpg"><img src="img/talk-chat-1440.jpg" alt="Public chat" loading="lazy"></button><figcaption><b>Public chat.</b> Answers are grounded but stilted, the disclosure appears twice, and replies are not streamed.</figcaption></figure>
+    <figure><button data-full="img/app-quality-1440.jpg"><img src="img/app-quality-1440.jpg" alt="Quality lab" loading="lazy"></button><figcaption><b>Quality lab.</b> Built for an internal voice-research team and shipped to customers.</figcaption></figure>
+    <figure><button data-full="img/prototype-1440.jpg"><img src="img/prototype-1440.jpg" alt="Prototype" loading="lazy"></button><figcaption><b>/prototype.</b> The warmest look, but the code is dead. Keep it as a visual reference only.</figcaption></figure>
+  </div>
+</section>
+
+<section id="code">
+  <div class="eyebrow">wc -l over lib/, by directory</div>
+  <h2>Where the code is</h2>
+  <p>Voice is 35% of the library and about half of all tests. The pieces a command centre needs most (CRM, campaigns, brain) are each a few hundred lines.</p>
+  <div class="bars" role="img" aria-label="Lines of code per lib directory">
+    <div class="bar hot"><span class="lbl">voice</span><span class="track"><span class="fill" style="width:100%;display:block"></span></span><span class="n">7,717</span></div>
+    <div class="bar"><span class="lbl">platform</span><span class="track"><span class="fill" style="width:31.6%;display:block"></span></span><span class="n">2,442</span></div>
+    <div class="bar"><span class="lbl">evaluations</span><span class="track"><span class="fill" style="width:18%;display:block"></span></span><span class="n">1,389</span></div>
+    <div class="bar"><span class="lbl">public-agent</span><span class="track"><span class="fill" style="width:15%;display:block"></span></span><span class="n">1,160</span></div>
+    <div class="bar"><span class="lbl">integrations</span><span class="track"><span class="fill" style="width:14.8%;display:block"></span></span><span class="n">1,145</span></div>
+    <div class="bar"><span class="lbl">regression</span><span class="track"><span class="fill" style="width:10.5%;display:block"></span></span><span class="n">808</span></div>
+    <div class="bar"><span class="lbl">server (db, auth)</span><span class="track"><span class="fill" style="width:9.1%;display:block"></span></span><span class="n">704</span></div>
+    <div class="bar"><span class="lbl">ingestion</span><span class="track"><span class="fill" style="width:8.3%;display:block"></span></span><span class="n">642</span></div>
+    <div class="bar"><span class="lbl">data-intake</span><span class="track"><span class="fill" style="width:6.5%;display:block"></span></span><span class="n">499</span></div>
+    <div class="bar"><span class="lbl">campaign-*</span><span class="track"><span class="fill" style="width:12.8%;display:block"></span></span><span class="n">980</span></div>
+    <div class="bar"><span class="lbl">brain</span><span class="track"><span class="fill" style="width:3.3%;display:block"></span></span><span class="n">253</span></div>
+    <div class="bar"><span class="lbl">17 others</span><span class="track"><span class="fill" style="width:51%;display:block"></span></span><span class="n">~3,930</span></div>
+  </div>
+  <p style="color:var(--muted);font-size:13.5px">Some lines are very dense: average line length is 113 characters in <code>components/</code>, and one line in <code>company-model-workbench.tsx</code> is 10,820 characters. The repo also carries about 170 docs and research files, mostly dated status logs.</p>
+</section>
+
+<section id="modules">
+  <div class="eyebrow">Inventory against the command-centre vision</div>
+  <h2>Module by module</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Area</th><th>State today</th><th>Call</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Data layer</td><td>One <code>entities(kind, data)</code> JSON table written by raw SQL from 44+ files. No migrations, one org per user, and audio blobs stored in the database.</td><td><span class="chip bad">rewrite</span></td></tr>
+      <tr><td class="k">App shell</td><td>One client page with 19 views switched by the URL hash, 20 global CSS files, and an RPC endpoint dispatched by action string.</td><td><span class="chip bad">rewrite</span></td></tr>
+      <tr><td class="k">Overview</td><td>A readiness checklist with a resume point.</td><td><span class="chip bad">rewrite</span></td></tr>
+      <tr><td class="k">Customers / CRM</td><td>Contacts with per-channel consent. No accounts, deals, pipeline, activities or custom fields.</td><td><span class="chip bad">rewrite</span></td></tr>
+      <tr><td class="k">Company brain</td><td>PDF, DOCX and CSV intake, proposals backed by exact quotes, keyword retrieval, and two competing offering systems.</td><td><span class="chip warn">refactor</span></td></tr>
+      <tr><td class="k">Campaigns</td><td>The closest thing to end-to-end: plan, brief, consent check, launch, browser call, 4/4 results. Email has never been sent externally.</td><td><span class="chip warn">refactor heavily</span></td></tr>
+      <tr><td class="k">Agent studio + releases</td><td>Immutable versions, publish and rollback gated by evidence.</td><td><span class="chip warn">refactor</span></td></tr>
+      <tr><td class="k">Deployments + public agent</td><td>Frozen snapshot, allowed origins, mandatory usage caps.</td><td><span class="chip ok">keep</span></td></tr>
+      <tr><td class="k">Auth, team, usage</td><td>scrypt passwords, email verification and reset, owner/operator/viewer roles, token ledger.</td><td><span class="chip ok">keep</span></td></tr>
+      <tr><td class="k">Integrations</td><td>19 adapters with OAuth and an encrypted vault. None connected.</td><td><span class="chip warn">refactor</span></td></tr>
+      <tr><td class="k">Quality lab, GroupAI, /prototype</td><td>Research tooling and a holdover from the Maya companion app.</td><td><span class="chip idle">delete</span></td></tr>
+      <tr><td class="k">ERP, lead gen, telephony</td><td>Do not exist.</td><td><span class="chip idle">greenfield</span></td></tr>
+      <tr><td class="k">Hosting</td><td>Two competing Bicep setups. A partial App Service apply was rolled back on 11 Oct.</td><td><span class="chip bad">replace</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="voice">
+  <div class="eyebrow">Five stacks, one product</div>
+  <h2>Voice stacks</h2>
+  <p>The harvest settles this one: four sibling projects measured realtime speech-to-speech and rejected it for the speaking role. It ran 41 to 53 words per turn, its audio cannot be checked before it is heard, and it costs about 3× more. Taxila's measured winner is a cascade. Azure Voice Live is the ear, our model writes the words, a gate checks them, then Azure TTS speaks.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Stack</th><th>Evidence</th><th>Call</th></tr></thead>
+    <tbody>
+      <tr><td class="k">A · Azure Realtime WebRTC</td><td>The most live calls. Typed input only; never tested with a real microphone. This is the approach the sibling repos rejected.</td><td><span class="chip warn">retire as speaker</span></td></tr>
+      <tr><td class="k">B · Server relay (WebSocket)</td><td>Two-turn synthetic test. Repeats its introduction.</td><td><span class="chip ok">keep the shape</span></td></tr>
+      <tr><td class="k">C · Azure Voice Live</td><td>Two UI attempts. Startup acknowledged in 1,969 ms, then a timeout at 2:11. No live call since the fix.</td><td><span class="chip ok">becomes the ear</span></td></tr>
+      <tr><td class="k">D · Speech SDK sidecar</td><td>One synthetic probe.</td><td><span class="chip warn">keep PCM capture</span></td></tr>
+      <tr><td class="k">E · Maya / Gemini</td><td>Uses recovered free-pool Google keys, which breaks Azure-only.</td><td><span class="chip bad">delete</span></td></tr>
+      <tr><td class="k">F · Personal Voice cloning</td><td>The catalog returns 403 because Limited Access is not approved.</td><td><span class="chip idle">defer</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="harvest">
+  <div class="eyebrow">80 branches → 16 clusters · 18 agents · 76k words of reports</div>
+  <h2>Sibling harvest</h2>
+  <p>Every branch of the three sibling repos was read and grouped into 16 clusters; near-duplicate branches were compared with diffs. The harvest catalogued 272 reusable assets, 180 measured lessons and 239 recorded failures. Each cluster has a full report in <code>docs/harvest/</code>.</p>
+
+  <div class="repo-head"><h3>html-portfolio</h3><span class="meta">Meera/Maya companion → Vyakti/Gurukul expert cloning · 35 branches</span></div>
+  <div class="clusters">
+    <div class="cl"><b>hp-main</b><span class="bn">main · 2 branches</span>Meera on a reusable "RelationalOS" layer: one prompt compiler, persona modules, surface contract, predicate safety, turn trace, failure ladder.</div>
+    <div class="cl"><b>hp-maya-latest</b><span class="bn">3 branches · Oct 14</span>Hardening wave, forget-integrity fix, loop and internals fences, behavioural attack battery.</div>
+    <div class="cl"><b>hp-voice-cloning</b><span class="bn">1 branch</span>Consented self-replica: voice profile, Personal Voice, watermarking, erasure, spend ledger. Not measured live.</div>
+    <div class="cl"><b>hp-gurukul-early</b><span class="bn">10 stacked branches</span>Blind listening bench, Mirror Call (human approval as one SQL clause), Context Locker ingestion rules.</div>
+    <div class="cl"><b>hp-gurukul-late</b><span class="bn">11 stacked branches</span>8-step processing pipeline on Azure Container Apps Jobs, wake-then-sign services, honest you/us status UX.</div>
+    <div class="cl"><b>hp-vyakti-completion</b><span class="bn">1 branch</span>Rooms mainline: payment seam, receipts, orgs and seats, quiet-hours outreach, leak battery.</div>
+    <div class="cl"><b>hp-handoffs</b><span class="bn">4 branches</span>Sept-9 handover. Its key lesson is to build the real user journey before the ledgers.</div>
+    <div class="cl"><b>hp-private-voice</b><span class="bn">1 branch</span>Open-weight TTS on T4 GPUs. Rejected for live calls because of a roughly 5-minute cold start.</div>
+    <div class="cl"><b>hp-multimodal-groupai</b><span class="bn">1 branch</span>Truthful delivery outcomes, consent time fence, turn checkpoints.</div>
+    <div class="cl"><b>hp-vyakti-latest</b><span class="bn">2 branches · Oct 11</span>Feed/Meet/Deploy studio, Azure email outbox, provider budget ledger, Azure-only policy check in code.</div>
+  </div>
+
+  <div class="repo-head"><h3>Taxila</h3><span class="meta">Live AI tutor on Azure Container Apps · 23 branches</span></div>
+  <div class="clusters">
+    <div class="cl"><b>tx-core</b><span class="bn">5 branches · rel 14.2</span>Model gateway with quota lanes and region overflow, Conductor actor runtime, fact-cited reports, canary deploys.</div>
+    <div class="cl"><b>tx-voice</b><span class="bn">3 branches</span>Voice Live as the ear (0/66 echo false barge-ins), streaming agent lane, measured latency, TTS first byte about 230 ms.</div>
+    <div class="cl"><b>tx-content-ui</b><span class="bn">6 branches</span>"Model picks options, code builds", one certificate gate per output type, token-only design system.</div>
+    <div class="cl"><b>tx-qa-release</b><span class="bn">10 branches</span>Sim lab with a hidden-key persona, Playwright break-it harness, release train on the packaged build.</div>
+  </div>
+
+  <div class="repo-head"><h3>command_centre</h3><span class="meta">CarbonSettle CRM and cold outbound, about 9k real emails sent · 22 branches</span></div>
+  <div class="clusters">
+    <div class="cl"><b>cc-main</b><span class="bn">3 branches · Oct 15</span>Sequence engine, mailbox throttle, inbox with a 14-intent reply classifier, ICP gates, human-vs-machine engagement filter.</div>
+    <div class="cl"><b>cc-branches</b><span class="bn">20 side branches</span>An unmerged security and send-guardrail sweep, data-hunt lanes, a GST invoice generator, channel analysis.</div>
+  </div>
+
+  <h3 style="margin-top:8px">High-value reusable assets, by module and source</h3>
+  <div class="tbl heat"><table>
+    <thead><tr><th>Module</th><th>html-portfolio</th><th>Taxila</th><th>command_centre</th><th>sales-enabler</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Voice agent</td><td class="c h3">28</td><td class="c h3">14</td><td class="c h0">0</td><td class="c h1">5</td></tr>
+      <tr><td class="k">Orchestration</td><td class="c h3">26</td><td class="c h3">11</td><td class="c h1">1</td><td class="c h1">2</td></tr>
+      <tr><td class="k">Infra and ops</td><td class="c h3">21</td><td class="c h2">9</td><td class="c h1">1</td><td class="c h1">1</td></tr>
+      <tr><td class="k">Chat agent</td><td class="c h3">17</td><td class="c h2">9</td><td class="c h1">1</td><td class="c h1">3</td></tr>
+      <tr><td class="k">Safety</td><td class="c h3">17</td><td class="c h2">7</td><td class="c h1">3</td><td class="c h1">4</td></tr>
+      <tr><td class="k">Eval and quality</td><td class="c h3">16</td><td class="c h2">9</td><td class="c h1">3</td><td class="c h1">1</td></tr>
+      <tr><td class="k">Company brain</td><td class="c h3">14</td><td class="c h1">4</td><td class="c h1">1</td><td class="c h1">3</td></tr>
+      <tr><td class="k">Omnichannel</td><td class="c h3">13</td><td class="c h1">1</td><td class="c h1">4</td><td class="c h1">4</td></tr>
+      <tr><td class="k">Campaigns</td><td class="c h3">11</td><td class="c h2">8</td><td class="c h2">5</td><td class="c h1">1</td></tr>
+      <tr><td class="k">CRM</td><td class="c h3">10</td><td class="c h1">3</td><td class="c h1">3</td><td class="c h1">3</td></tr>
+      <tr><td class="k">Auth and tenancy</td><td class="c h2">9</td><td class="c h1">1</td><td class="c h0">0</td><td class="c h0">0</td></tr>
+      <tr><td class="k">Analytics</td><td class="c h2">7</td><td class="c h1">4</td><td class="c h1">1</td><td class="c h1">1</td></tr>
+      <tr><td class="k">Content generation</td><td class="c h0">0</td><td class="c h1">4</td><td class="c h0">0</td><td class="c h0">0</td></tr>
+      <tr><td class="k">Lead generation</td><td class="c h1">1</td><td class="c h1">1</td><td class="c h1">3</td><td class="c h1">1</td></tr>
+      <tr><td class="k">ERP</td><td class="c h1">3</td><td class="c h1">1</td><td class="c h1">1</td><td class="c h1">1</td></tr>
+    </tbody>
+  </table></div>
+  <p style="color:var(--muted);font-size:13.5px">Voice, orchestration, safety and infrastructure are well covered. ERP and lead generation are almost blank everywhere, and nobody has built a command-centre UI.</p>
+</section>
+
+<section id="matrix">
+  <div class="eyebrow">Best source per module, and the gap nobody covers</div>
+  <h2>Reuse matrix</h2>
+  <div class="cols">
+    <div class="card"><h3>CRM <span class="meta">gap: the whole object model</span></h3><ul><li>Person × agent × channel tenancy (hp-main)</li><li>Approve AI record changes with one SQL clause (hp-gurukul-early)</li><li>Audit trigger plus per-row rollback (cc-main)</li><li>AI column mapping (sales-enabler)</li></ul></div>
+    <div class="card"><h3>ERP <span class="meta">gap: almost everything</span></h3><ul><li>Payment seam, ledger and per-year receipts (hp-vyakti-completion)</li><li>GST invoice pipeline that issued real invoices (cc-branches)</li><li>Orgs, seats and billing (hp-vyakti-completion)</li></ul></div>
+    <div class="card"><h3>Campaigns <span class="meta">gap: delivery on Azure email unmeasured</span></h3><ul><li>Sequence engine and sender throttle, about 9k real sends (cc-main)</li><li>Azure email outbox with stable operation ids (hp-vyakti-latest)</li><li>Signed per-lead offer pages (cc-main)</li></ul></div>
+    <div class="card"><h3>Lead generation <span class="meta">gap: licensed Indian data source</span></h3><ul><li>ICP gates: rules, own-site crawl, LLM judgment, verdict cache (cc-main)</li><li>Data-hunt method: 0 fabricated emails, and a full census found 23% defects that sampling missed (cc-branches)</li></ul></div>
+    <div class="card"><h3>Omnichannel <span class="meta">gap: unified inbox, Indian telephony</span></h3><ul><li>Four-function channel contract behind one gated reply (hp-main)</li><li>Truthful delivery outcomes (hp-multimodal-groupai)</li><li>Inbox ingestion with a 14-intent reply classifier (cc-main)</li></ul></div>
+    <div class="card"><h3>Company brain <span class="meta">gap: reasoning over CRM rows and documents together</span></h3><ul><li>Proposals tied to evidence spans, with human approval (sales-enabler)</li><li>Context Locker ingestion rules (hp-gurukul-early)</li><li>Vector search on Neon run in parallel with keyword search: recall 74% to 96% (hp-main)</li></ul></div>
+    <div class="card"><h3>Voice agent <span class="meta">gap: phone leg, real callers</span></h3><ul><li>Voice Live as the ear (tx-voice)</li><li>Streaming agent lane that speaks first, gated per clause (tx-voice)</li><li>Azure HD streaming TTS, first byte about 230 ms (tx-voice)</li><li>Blind listening bench (hp-gurukul-early)</li></ul></div>
+    <div class="card"><h3>Orchestration <span class="meta">gap: a company-level planner</span></h3><ul><li>Conductor: event-sourced actor per entity on Postgres (tx-core)</li><li>Durable step pipeline on Container Apps Jobs (hp-gurukul-late)</li><li>Arbitration kernel deciding who wins: 23/24 correct in ≤10 ms (tx-core)</li></ul></div>
+    <div class="card"><h3>Analytics <span class="meta">gap: KPIs across modules, attribution</span></h3><ul><li>Reports where every claim cites the rows it came from (tx-core)</li><li>Human-vs-machine engagement filter: views were about 3× inflated (cc-main)</li><li>Turn trace and flight recorder (hp-main)</li></ul></div>
+    <div class="card"><h3>Infra and ops <span class="meta">gap: own Foundry account, Key Vault</span></h3><ul><li>Model gateway with quota lanes and 429 overflow to another region (tx-core)</li><li>Provider budget ledger with Azure-only checked in code (hp-vyakti-latest)</li><li>Canary deploys over Azure's management API (tx-core)</li></ul></div>
+  </div>
+</section>
+
+<section id="laws">
+  <div class="eyebrow">38 measured rules · the 12 that matter most here</div>
+  <h2>Laws we inherit</h2>
+  <p>These were each paid for in a sibling project. A change that breaks one is wrong unless it brings new measurement that supersedes the old.</p>
+  <ol class="laws">
+    <li><div>The model chooses; code enforces rules, state and grades.<small>A model running everything broke hard rules in 15 of 72 runs (Taxila). "Deal won" or "invoice paid" is earned from evidence, never asserted by a model.</small></div></li>
+    <li><div>Safety and privacy live in predicates and SQL, never in instructions.<small>Privacy enforced by prompt leaked 57–98% of the time; the SQL predicate leaked 0 in 31,122 checks (Meera).</small></div></li>
+    <li><div>Check every word before it is heard: voice is a cascade.<small>Realtime models talk before a check can run, at about 3× the cost (Taxila, Meera, Vyakti).</small></div></li>
+    <li><div>One prompt compiler and one gated reply door for every channel.<small>A hand-built realtime prompt lost two safety blocks, and Telegram skipped all gates (Meera).</small></div></li>
+    <li><div>Rules that must fire go last; sentence-shaped prompt text gets recited.<small>The same rule fired 0/8 when buried mid-prompt and 8/8 when placed last; example quotes were recited 4 times in 5.</small></div></li>
+    <li><div>Never report delivery from an attempt; every send goes through a durable outbox.<small>Measured false "sent" reports and duplicate replays; for Azure email, the 202 response does not mean delivered.</small></div></li>
+    <li><div>One send path that re-checks suppression and scope at send time.<small>Unsubscribe rejected every real address, and quarantined leads could be re-armed (CommandCentre).</small></div></li>
+    <li><div>ICP accuracy beats volume: pre-labelled lead pools lie.<small>The "EU-strong" label was right about 34% of the time; guessed domains sent about 156 emails to strangers.</small></div></li>
+    <li><div>A metric with no writer is a lie: show "not measured", never zero.<small>The complaints count was hard-coded to 0, and page views were about 3× bot-inflated (CommandCentre).</small></div></li>
+    <li><div>Any AI-triggered delete, send or spend needs the human's request verified in code.<small>44 memory rows were deleted with no recovery (Maya).</small></div></li>
+    <li><div>Metrics do not pick voices; blind listening tests with accent as its own axis do.<small>Azure TTS won every metric and was still rejected by ear as "not Indian" (Meera).</small></div></li>
+    <li><div>Build the real journey first, before the ledgers.<small>Vyakti built thousands of green checks without ever running one signed-in journey.</small></div></li>
+  </ol>
+</section>
+
+<section id="next">
+  <div class="eyebrow">For our next conversation</div>
+  <h2>To discuss next</h2>
+  <p>The synthesis proposes a build order. Treat it as a starting point for discussion, not a plan, because market research and strategy come first.</p>
+  <ol class="steps">
+    <li><b>Journey first.</b> Sign in, create an org, import leads with AI mapping, qualify them against your ICP, draft a campaign from approved brain facts, send through Azure email to a test inbox, receive and classify the reply, update the CRM, and show the result on a dashboard where every number cites its source. All on Azure.</li>
+    <li><b>Spine in parallel.</b> A Neon schema with <code>org_id</code> on every table and migrations only, an audit trigger, a model gateway, a budget ledger, one compiler and reply gate, the Conductor worker, and canary deploys.</li>
+    <li><b>Agents.</b> A chat agent with CRM tools, then browser voice on the Voice Live cascade, then the phone leg once a carrier is chosen.</li>
+    <li><b>Sim lab before tuning.</b> Simulated buyers with hidden goals, outcomes decided in code, and a noise-floor baseline.</li>
+    <li><b>ERP, starting with quotes and GST invoices.</b> CommandCentre's data says closing was the bottleneck: 1 of 7,538 leads ever reached a commercial stage.</li>
+  </ol>
+  <div class="cols">
+    <div class="q"><b>Who is the first buyer?</b><p>The old direction was study-abroad consultancies. The data we actually have is from Indian exporters (CommandCentre). The market research should settle this.</p></div>
+    <div class="q"><b>How much "AI runs it" on day one?</b><p>Every repo found that the model proposing and a human approving is what worked. How autonomous should version 1 be?</p></div>
+    <div class="q"><b>Where does customer data live?</b><p>Neon has no India region. Options are Neon in the US, Azure Postgres in India, or deciding later.</p></div>
+  </div>
+  <div class="foot">
+    <span>Sources: <code>docs/harvest/*.md</code> (19 reports), <code>docs/harvest/SYNTHESIS.md</code>, and <code>context/graph.json</code> (now 602 nodes and 1,373 edges), on branch <code>claude/serene-franklin-9w7f1v</code> (commit 99826c3).</span>
+    <span>Every number above comes from those reports. Unit tests and tsc were re-run this session; the voice and latency figures come from the sibling repos' own records and were not re-measured.</span>
+  </div>
+</section>
+</main>
+</div>
+
+<dialog id="zoom" aria-label="Enlarged screenshot"><button type="button" id="zclose">Close</button><img id="zimg" alt=""></dialog>
+<script>
+const dlg=document.getElementById('zoom'),zi=document.getElementById('zimg');
+document.querySelectorAll('figure button').forEach(b=>b.addEventListener('click',()=>{zi.src=b.dataset.full;zi.alt=b.querySelector('img').alt;dlg.showModal();}));
+document.getElementById('zclose').addEventListener('click',()=>dlg.close());
+dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close();});
+</script>

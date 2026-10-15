@@ -6770,6 +6770,15 @@
    "date": "2026-10-15",
    "title": "Correction: Azure OpenAI endpoint lists 469 models, but the only deployment that answers is gpt-4.1-mini (gpt-4o-mini, gpt-5-mini, gpt-4.1, gpt-5-chat return 404). Sales-enabler Foundry project shares the eastus2 account with Taxila live lessons: needs own deployments/quota.",
    "path": "docs/harvest/se-live.md"
+  },
+  {
+   "id": "artifact.2026-10-15.relay-audit",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-15",
+   "title": "Visual report for owner review: Relay audit + sibling harvest (https://claude.ai/artifact/2LgyKp71gmQsYqTD1FwEu8). Awaiting owner discussion before market research.",
+   "path": "docs/harvest/report/relay-audit.html"
   }
  ],
  "edges": [
@@ -13704,6 +13713,16 @@
    "from": "evidence.2026-10-15.azure-deployments",
    "to": "evidence.2026-10-15.access",
    "relation": "corrects"
+  },
+  {
+   "from": "artifact.2026-10-15.relay-audit",
+   "to": "harvest.2026-10-15",
+   "relation": "presents"
+  },
+  {
+   "from": "artifact.2026-10-15.relay-audit",
+   "to": "decision.2026-10-15.rebuild-verdict",
+   "relation": "presents"
   }
  ]
 }
