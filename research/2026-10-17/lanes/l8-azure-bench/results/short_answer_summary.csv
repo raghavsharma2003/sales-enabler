@@ -1,0 +1,8 @@
+engine,band,n,correct,empty,non_latin_non_devanagari_script
+fast,nb,32,30,0,0
+fast_llm,nb,32,20,0,3
+gpt4o,nb,32,16,0,4
+gpt4omini,nb,32,14,0,7
+mai2,nb,32,28,0,1
+mai2_loc,nb,32,32,0,0
+rt,nb,32,30,0,0

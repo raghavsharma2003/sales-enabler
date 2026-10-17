@@ -1,0 +1,26 @@
+date,event,source_ids,status
+2024-08-13,TRAI direction: promotional calls from unregistered SIP/PRI to stop; disconnection + blacklisting across telcos,S05,in force
+2025-03-14,TCCCPR Second Amendment main provisions in force (30 days after 2025-02-12): new call categories; 140/special-series-only rule; autodialer/robocall intimation,S02,in force (computed)
+2025-04-13,"TCCCPR Second Amendment reg 8/17/20/21 in force (complaint mechanism, sender verification, UCC_Detect signals)",S02,in force (computed)
+2025-11-14,DPDP Rules notified; Board provisions in force,S17;S18,in force
+2026-01-01,1600 mandatory: commercial banks (Phase-I RBI),S06,in force
+2026-02-01,"1600 mandatory: large NBFCs (>Rs 5,000 cr), payments banks, SFBs",S06,in force
+2026-02-15,1600 mandatory: all IRDAI entities; SEBI MFs/AMCs; PFRDA CRAs/PFM-PoP,S06;S07,in force
+2026-02-20,IT Rules amendment on synthetically generated information in force (audio disclosure for SGI tools),S20,in force
+2026-03-01,"1600 mandatory: remaining NBFCs, co-operative banks, RRBs",S06,in force
+2026-03-13,Draft TCCCPR Third Amendment released for consultation (no AI-disclosure clause),S04;S14,historical
+2026-03-15,1600 mandatory: SEBI qualified stockbrokers,S06,in force
+2026-06-23,Telecom authorisation rules 2026 (principal telecommunication services) in force,S26;S03,in force
+2026-06-23,Telcos start warning notifications to suspected spam senders,S11,in force
+2026-08-10,1601 series allocation begins (utilities; logistics and courier),S08,in force
+2026-10-01,WhatsApp India rate card (marketing Rs 0.8631 / utility Rs 0.115),S31,in force
+2026-10-18,TCCCPR Third Amendment main provisions in force (30 days after 2026-09-18): 7-day inquiry window; legacy explicit consents; AI-flag action (21A); complaint thresholds; CMA rules,S03,upcoming (computed)
+2026-11-01,CNAP caller-name display rollout (news),S35,upcoming (secondary)
+2026-11-02,FULLY BLOCK preferences migrated to BLOCK PROMO (within 15 days of commencement),S03,upcoming (computed)
+2026-11-08,1601 Phase-I onboarding/migration deadline (90 days from 2026-08-10),S08,upcoming (computed)
+2026-11-13,DPDP Rule 4 (consent managers) in force (some sources: 2026-11-14),S18,upcoming
+2026-11-17,TCCCPR Third Amendment 60-day provisions: A2P pre-declaration with CLI ranges on DLT; A2P termination charge up to Rs 0.05/min (designated series exempt); VNO DLT interface; header-misuse regime,S03,upcoming (computed)
+2026-12-17,TCCCPR Third Amendment 90-day provisions: consumer appeal mechanism; complaint corroboration with AI-flag data; wrong-category template proviso,S03,upcoming (computed)
+2026-12-31,WhatsApp: eligible Indian WABAs must migrate billing to INR (non-INR stop delivering from 2027-01-01),S31,upcoming
+2027-01-01,"RBI recovery-conduct amendments in force for banks, NBFCs, HFCs, co-ops, AIFIs: 08:00-19:00, call recording 6 months, agency rules",S22,upcoming (secondary)
+2027-05-13,"DPDP core obligations in force: notice, consent, children, security, rights, retention (some sources: 2027-05-14)",S17;S18,upcoming

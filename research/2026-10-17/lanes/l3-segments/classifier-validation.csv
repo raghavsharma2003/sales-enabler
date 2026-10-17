@@ -1,0 +1,121 @@
+sample,idx,job_url,pred_segment,gold_segment,segment_correct,pred_phase,gold_phase,phase_correct,classifier_version
+A,0,https://apna.co/job/noida/loan-sales-executive-620083667,lending_origination,lending_origination,True,pre_sales,,,v1 (pre-fix)
+A,1,https://apna.co/job/coimbatore/team-leader-malayalam-voice-process-262962310,lending_origination,b2b_sales,False,pre_sales,,,v1 (pre-fix)
+A,2,https://apna.co/job/chandigarh/telesales-executive-737878161,b2b_sales,study_abroad,False,pre_sales,,,v1 (pre-fix)
+A,3,https://apna.co/job/rajkot/telesales-974457483,b2b_sales,b2b_sales,True,pre_sales,,,v1 (pre-fix)
+A,4,https://apna.co/job/mumbai-bombay/sales-executive-935628529,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,5,https://apna.co/job/noida/real-estate-sales-executive-763912014,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,6,https://apna.co/job/navi-mumbai/collection-executive-officer-899011454,lending_collections,lending_collections,True,post_sales,,,v1 (pre-fix)
+A,7,https://apna.co/job/greater-noida/sales-executive-602868884,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,8,https://apna.co/job/nelamangala/sales-executive-511952283,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,9,https://apna.co/job/sikar/loan-sales-executive-field-job-300876201,lending_origination,lending_origination,True,pre_sales,,,v1 (pre-fix)
+A,10,https://apna.co/job/pune/senior-tele-caller-316830355,solar,solar,True,post_sales,,,v1 (pre-fix)
+A,11,https://apna.co/job/new-delhi/admission-counsellor-430366555,edtech_admissions,edtech_admissions,True,pre_sales,,,v1 (pre-fix)
+A,12,https://apna.co/job/ghaziabad/debt-recovery-agent-610797564,lending_collections,lending_collections,True,post_sales,,,v1 (pre-fix)
+A,13,https://apna.co/job/bengaluru-bangalore/real-estate-sales-executive-238757111,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,14,https://apna.co/job/bareilly/telecaller-104101211,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,,,v1 (pre-fix)
+A,15,https://apna.co/job/ahmedabad/sales-executive-960014307,edtech_admissions,edtech_admissions,True,post_sales,,,v1 (pre-fix)
+A,16,https://apna.co/job/chennai-region/real-estate-sales-executive-154465396,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,17,https://apna.co/job/ahmedabad/sales-executive-128087835,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,18,https://apna.co/job/virar/home-loan-sales-executive-731132354,lending_origination,lending_origination,True,pre_sales,,,v1 (pre-fix)
+A,19,https://apna.co/job/delhi-ncr/debt-recovery-agent-427591817,lending_collections,lending_collections,True,post_sales,,,v1 (pre-fix)
+A,20,https://apna.co/job/bengaluru-bangalore/real-estate-sales-executive-602443061,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,21,https://apna.co/job/delhi-ncr/telesales-executive-191258752,b2b_sales,unspecified_bpo_or_unknown,False,post_sales,,,v1 (pre-fix)
+A,22,https://apna.co/job/chennai-region/telecaller-622941046,real_estate,real_estate,True,unclear,,,v1 (pre-fix)
+A,23,https://apna.co/job/coimbatore/telecalling-manager-391746680,lending_origination,lending_collections,False,post_sales,,,v1 (pre-fix)
+A,24,https://apna.co/job/thane/senior-telecalling-executive-real-estate-bpo-20k-3-432744602,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,25,https://apna.co/job/gurgaon-gurugram/sales-executive-762470575,auto,b2b_sales,False,post_sales,,,v1 (pre-fix)
+A,26,https://apna.co/job/hyderabad/senior-sales-executive-real-estate-414265026,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,27,https://apna.co/job/delhi-ncr/collection-telecaller-361485396,lending_collections,lending_collections,True,post_sales,,,v1 (pre-fix)
+A,28,https://apna.co/job/navi-mumbai/telecaller-650740917,insurance,unspecified_bpo_or_unknown,False,post_sales,,,v1 (pre-fix)
+A,29,https://apna.co/job/bengaluru-bangalore-region/telesales-executive-582188887,fintech_saas_onboarding,fintech_saas_onboarding,True,pre_sales,,,v1 (pre-fix)
+A,30,https://apna.co/job/noida/real-estate-sales-executive-279489846,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,31,https://apna.co/job/ahmedabad-region/telesales-executive-201219851,edtech_admissions,edtech_admissions,True,pre_sales,,,v1 (pre-fix)
+A,32,https://apna.co/job/bengaluru-bangalore/real-estate-sales-executive-522552074,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,33,https://apna.co/job/noida/real-estate-sales-executive-718156086,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,34,https://apna.co/job/noida/real-estate-sales-executive-868308940,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,35,https://apna.co/job/delhi-ncr/telecalling-team-leader-592733058,insurance,unspecified_bpo_or_unknown,False,unclear,,,v1 (pre-fix)
+A,36,https://apna.co/job/bengaluru-bangalore/edtech-sales-executive-357873612,edtech_admissions,edtech_admissions,True,pre_sales,,,v1 (pre-fix)
+A,37,https://apna.co/job/bengaluru-bangalore/senior-telesales-associate-266191296,insurance,unspecified_bpo_or_unknown,False,pre_sales,,,v1 (pre-fix)
+A,38,https://apna.co/job/bengaluru-bangalore/presales-executive-210955437,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,39,https://apna.co/job/bengaluru-bangalore/inside-sales-executive-111853309,lending_origination,lending_origination,True,pre_sales,,,v1 (pre-fix)
+A,40,https://apna.co/job/gurgaon-gurugram/telesales-executive-530328711,lending_origination,lending_origination,True,pre_sales,,,v1 (pre-fix)
+A,41,https://apna.co/job/bengaluru-bangalore-region/sales-executive-924861399,insurance,real_estate,False,pre_sales,,,v1 (pre-fix)
+A,42,https://apna.co/job/delhi-ncr/inside-sales-executive-416392966,insurance,unspecified_bpo_or_unknown,False,post_sales,,,v1 (pre-fix)
+A,43,https://apna.co/job/bengaluru-bangalore/senior-tele-caller-461897938,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,44,https://apna.co/job/warangal/telecaller-454516556,lending_collections,lending_collections,True,post_sales,,,v1 (pre-fix)
+A,45,https://apna.co/job/ahmedabad/car-loan-sales-executive-215803130,lending_origination,lending_origination,True,pre_sales,,,v1 (pre-fix)
+A,46,https://apna.co/job/indore-region/urgent-hiring-stock-market-executive-freshers-expe-986780535,edtech_admissions,edtech_admissions,True,pre_sales,,,v1 (pre-fix)
+A,47,https://apna.co/job/hyderabad-region/telecalling-executive-858762057,insurance,insurance,True,unclear,,,v1 (pre-fix)
+A,48,https://apna.co/job/ahmedabad-region/business-development-executive-926534984,b2b_sales,b2b_sales,True,pre_sales,,,v1 (pre-fix)
+A,49,https://apna.co/job/bengaluru-bangalore/inside-sales-executive-410512224,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,50,https://apna.co/job/chandigarh-region/telecalling-executive-111950061,unspecified_bpo_or_unknown,study_abroad,False,unclear,,,v1 (pre-fix)
+A,51,https://apna.co/job/kolkata-calcutta-region/international-voice-process-agent-326710289,lending_origination,unspecified_bpo_or_unknown,False,unclear,,,v1 (pre-fix)
+A,52,https://apna.co/job/pune/real-estate-sales-executive-640423140,real_estate,real_estate,True,pre_sales,,,v1 (pre-fix)
+A,53,https://apna.co/job/bengaluru-bangalore/inside-sales-specialist-882281355,edtech_admissions,edtech_admissions,True,post_sales,,,v1 (pre-fix)
+A,54,https://apna.co/job/hyderabad-region/telesales-manager-990812379,fintech_saas_onboarding,b2b_sales,False,pre_sales,,,v1 (pre-fix)
+A,55,https://apna.co/job/navi-mumbai/sales-executive-453655178,b2b_sales,b2b_sales,True,pre_sales,,,v1 (pre-fix)
+A,56,https://apna.co/job/pune/inside-sales-executive-115624032,lending_origination,b2b_sales,False,pre_sales,,,v1 (pre-fix)
+A,57,https://apna.co/job/ahmedabad/sales-executive-668681194,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,pre_sales,,,v1 (pre-fix)
+A,58,https://apna.co/job/gurgaon-gurugram/telecaller-532014555,real_estate,real_estate,True,unclear,,,v1 (pre-fix)
+A,59,https://apna.co/job/bengaluru-bangalore/telesales-executive-291684839,b2b_sales,healthcare,False,pre_sales,,,v1 (pre-fix)
+B,0,https://apna.co/job/mohali/technical-sales-executive-781269784,telecom_isp,unspecified_bpo_or_unknown,False,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,1,https://apna.co/job/bengaluru-bangalore-region/client-relationship-executive-325352585,b2b_sales,b2b_sales,True,unclear,pre_sales,False,"v2 (final, out-of-sample)"
+B,2,https://apna.co/job/noida/debt-recovery-specialist-410086868,lending_collections,lending_collections,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,3,https://apna.co/job/noida/telecaller-357118097,real_estate,real_estate,True,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,4,https://apna.co/job/bengaluru-bangalore-region/telecalling-executive-352106751,lending_collections,lending_collections,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,5,https://apna.co/job/vadodara/software-support-engineer-897693594,b2b_sales,b2b_sales,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,6,https://apna.co/job/hubli-dharwad/admission-counsellor-327903675,edtech_admissions,edtech_admissions,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,7,https://apna.co/job/pune/credit-card-sales-executive-148552199,lending_origination,lending_origination,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,8,https://apna.co/job/pune/inside-sales-executive-965096961,b2b_sales,b2b_sales,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,9,https://apna.co/job/bhopal/debt-recovery-agent-150098297,lending_collections,lending_collections,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,10,https://apna.co/job/hyderabad/telecaller-520451137,real_estate,real_estate,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,11,https://apna.co/job/navi-mumbai/bpo-telecaller-751127796,insurance,insurance,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,12,https://apna.co/job/mohali/telecaller-872194809,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,unclear,True,"v2 (final, out-of-sample)"
+B,13,https://apna.co/job/mumbai-bombay/telemarketing-executive-468183497,b2b_sales,b2b_sales,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,14,https://apna.co/job/bengaluru-bangalore-region/qa-qc-analyst-214192602,edtech_admissions,d2c_ecom,False,unclear,post_sales,False,"v2 (final, out-of-sample)"
+B,15,https://apna.co/job/ahmedabad/telecaller-223547330,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,16,https://apna.co/job/hyderabad-region/telecaller-741459927,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,unclear,True,"v2 (final, out-of-sample)"
+B,17,https://apna.co/job/bengaluru-bangalore/customer-care-support-officer-83173175,healthcare,unspecified_bpo_or_unknown,False,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,18,https://apna.co/job/gurgaon-gurugram/telesales-executive-145873045,b2b_sales,b2b_sales,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,19,https://apna.co/job/mumbai-bombay/international-voice-process-agent-159885185,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,post_sales,False,"v2 (final, out-of-sample)"
+B,20,https://apna.co/job/noida/customer-service-executive-898486617,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,21,https://apna.co/job/mumbai-metropolitan-region/telecalling-executive-996662603,lending_origination,lending_origination,True,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,22,https://apna.co/job/pune/international-bpo-executive-925859212,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,post_sales,False,"v2 (final, out-of-sample)"
+B,23,https://apna.co/job/pune/sales-executive-international-travel-process-752149117,travel_hospitality,travel_hospitality,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,24,https://apna.co/job/navi-mumbai/telecaller-285237100,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,unclear,True,"v2 (final, out-of-sample)"
+B,25,https://apna.co/job/delhi-ncr/telecaller-inbound-895554414,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,26,https://apna.co/job/new-delhi/telesales-executive-742182068,travel_hospitality,travel_hospitality,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,27,https://apna.co/job/bengaluru-bangalore-region/senior-sales-executive-328746399,real_estate,real_estate,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,28,https://apna.co/job/warangal/telecaller-cum-computer-operator-272069343,b2b_sales,fintech_saas_onboarding,False,unclear,pre_sales,False,"v2 (final, out-of-sample)"
+B,29,https://apna.co/job/thane/customer-sales-executive-227663687,b2b_sales,unspecified_bpo_or_unknown,False,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,30,https://apna.co/job/faridabad/telecalling-executive-578034410,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,unclear,True,"v2 (final, out-of-sample)"
+B,31,https://apna.co/job/navi-mumbai/telesales-executive-966511622,lending_origination,lending_origination,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,32,https://apna.co/job/new-delhi/customer-support-executive-566371621,b2b_sales,unspecified_bpo_or_unknown,False,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,33,https://apna.co/job/hyderabad/telesales-executive-946696229,lending_origination,lending_origination,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,34,https://apna.co/job/hyderabad/collection-telecaller-583482152,lending_collections,lending_collections,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,35,https://apna.co/job/bengaluru-bangalore-region/telesales-executive-564697205,healthcare,healthcare,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,36,https://apna.co/job/navi-mumbai/stock-market-specialist-918453136,unspecified_bpo_or_unknown,fintech_saas_onboarding,False,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,37,https://apna.co/job/1178854746,lending_collections,lending_collections,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,38,https://apna.co/job/ghaziabad/telecalling-executive-304161270,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,unclear,unclear,True,"v2 (final, out-of-sample)"
+B,39,https://apna.co/job/hyderabad-region/telecaller-774000630,lending_origination,unspecified_bpo_or_unknown,False,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,40,https://apna.co/job/salem/telecalling-executive-660090730,travel_hospitality,travel_hospitality,True,unclear,pre_sales,False,"v2 (final, out-of-sample)"
+B,41,https://apna.co/job/delhi-ncr/telecalling-executive-863370581,diagnostics,diagnostics,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,42,https://apna.co/job/mumbai-bombay/telecaller-629557016,auto,auto,True,unclear,pre_sales,False,"v2 (final, out-of-sample)"
+B,43,https://apna.co/job/bengaluru-bangalore-region/telesales-executive-529656415,b2b_sales,fintech_saas_onboarding,False,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,44,https://apna.co/job/chandigarh-region/telecalling-executive-595148204,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,post_sales,unclear,False,"v2 (final, out-of-sample)"
+B,45,https://apna.co/job/delhi-ncr/telecaller-cum-computer-operator-625644922,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,46,https://apna.co/job/visakhapatnam-region/telesales-executive-381899129,real_estate,b2b_sales,False,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,47,https://apna.co/job/navi-mumbai/chat-support-executive-81308570,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,48,https://apna.co/job/bhilai/career-counsellor-719625712,edtech_admissions,edtech_admissions,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,49,https://apna.co/job/mumbai-bombay/customer-service-executive-590795490,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,50,https://apna.co/job/mumbai-bombay/telesales-executive-648319935,b2b_sales,unspecified_bpo_or_unknown,False,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,51,https://apna.co/job/noida/telecalling-executive-304004131,lending_origination,lending_origination,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,52,https://apna.co/job/bengaluru-bangalore/telecalling-executive-133536748,real_estate,real_estate,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,53,https://apna.co/job/navi-mumbai/telesales-executive-964543619,lending_origination,lending_origination,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,54,https://apna.co/job/ahmedabad-region/sales-support-executive-787161584,edtech_admissions,edtech_admissions,True,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,55,https://apna.co/job/chennai-region/inside-sales-executive-188802371,b2b_sales,b2b_sales,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,56,https://apna.co/job/vasai/telecaller-399677059,lending_origination,lending_origination,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"
+B,57,https://apna.co/job/mohali/telecaller-270394092,unspecified_bpo_or_unknown,unspecified_bpo_or_unknown,True,post_sales,post_sales,True,"v2 (final, out-of-sample)"
+B,58,https://apna.co/job/bengaluru-bangalore/telesales-executive-421899793,b2b_sales,b2b_sales,True,post_sales,pre_sales,False,"v2 (final, out-of-sample)"
+B,59,https://apna.co/job/berhampore/sales-executive-215000319,edtech_admissions,edtech_admissions,True,pre_sales,pre_sales,True,"v2 (final, out-of-sample)"

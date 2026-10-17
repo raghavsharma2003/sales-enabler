@@ -1,0 +1,21 @@
+text_key,voice,audio_s,words_per_min,rest_first_4KB_ms,hiIN_deva_recall,hiIN_markers_survived,hiIN_markers_lost,bhoIN_deva_recall,bhoIN_markers_survived,bhoIN_markers_lost,lid_hi_en_ta_bn,lid_hi_bho,taIN_cer_vs_source,latin_tokens_glued_to_tamil_suffix
+bhojpuri_mix,hi-IN-SwaraNeural,34.39,116.9,1793,0.902,9/13,बोलत ओही एह दोसरा,0.951,12/13,दोसरा,hi-IN|hi-IN,bho-IN|hi-IN,,
+bhojpuri_mix,hi-IN-MadhurNeural,32.5,123.7,1572,0.732,7/13,बोलत काल्हे रउआ ओही एह दोसरा,0.902,12/13,दोसरा,hi-IN|hi-IN,hi-IN|hi-IN,,
+bhojpuri_mix,hi-IN-Kavya:MAI-Voice-2.1,29.43,136.6,3061,0.829,8/13,बोलत काल्हे कईले एह दोसरा,0.902,11/13,एह दोसरा,hi-IN,hi-IN|hi-IN,,
+bhojpuri_mix,hi-IN-Diya:DragonLatestNeural,28.43,141.4,2114,0.829,11/13,एह दोसरा,0.927,11/13,एह दोसरा,hi-IN,bho-IN|hi-IN,,
+bhojpuri_mix,en-IN-Aarti:DragonHDLatestNeural,24.45,164.4,11582,0.756,8/13,बोलत काल्हे कईले एह दोसरा,0.927,11/13,काल्हे दोसरा,hi-IN,hi-IN|hi-IN,,
+bhojpuri_mix,en-IN-AartiIndicNeural,30.89,130.1,3558,0.829,9/13,बोलत रउआ एह दोसरा,0.902,11/13,काल्हे दोसरा,hi-IN|hi-IN,hi-IN|hi-IN,,
+neutral_hinglish,hi-IN-SwaraNeural,35.91,122.0,1869,1.0,,,1.0,,,hi-IN|hi-IN,hi-IN|hi-IN,,
+neutral_hinglish,hi-IN-MadhurNeural,35.54,123.3,1833,1.0,,,1.0,,,hi-IN|hi-IN,hi-IN|hi-IN,,
+neutral_hinglish,hi-IN-Kavya:MAI-Voice-2.1,28.3,154.8,3122,1.0,,,1.0,,,hi-IN,hi-IN|hi-IN,,
+neutral_hinglish,hi-IN-Diya:DragonLatestNeural,29.38,149.1,2394,1.0,,,1.0,,,hi-IN,hi-IN|hi-IN,,
+neutral_hinglish,en-IN-Aarti:DragonHDLatestNeural,22.5,194.7,10876,1.0,,,1.0,,,hi-IN,hi-IN|hi-IN,,
+neutral_hinglish,en-IN-AartiIndicNeural,32.38,135.3,2145,1.0,,,0.973,,,hi-IN|hi-IN,hi-IN|hi-IN,,
+tamil_mix_latin_english,ta-IN-PallaviNeural,34.21,100.0,2908,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN,,0.554,Motors Plus months
+tamil_mix_latin_english,ta-IN-ValluvarNeural,33.86,101.0,2770,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN,,0.541,Motors Plus months
+tamil_mix_latin_english,en-IN-Meera:DragonHDLatestNeural,29.35,116.5,12401,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN,,0.561,Motors Plus months
+tamil_mix_latin_english,en-IN-AartiIndicNeural,35.2,97.2,3887,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN,,0.581,Motors Plus months
+tamil_mix_all_tamil_script,ta-IN-PallaviNeural,35.0,97.7,2773,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN,,0.139,
+tamil_mix_all_tamil_script,ta-IN-ValluvarNeural,34.65,98.7,2888,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN,,0.087,
+tamil_mix_all_tamil_script,en-IN-Meera:DragonHDLatestNeural,31.25,109.4,14806,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN|ta-IN,,0.093,
+tamil_mix_all_tamil_script,en-IN-AartiIndicNeural,35.7,95.8,2645,,,,,,,ta-IN|ta-IN|ta-IN|ta-IN|ta-IN|ta-IN,,0.115,

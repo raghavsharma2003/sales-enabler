@@ -1,0 +1,19 @@
+board,query_or_page,count_shown,accessed_utc,method,status,caveat
+Apna,/jobs/telecalling-jobs (page heading),"8,656 verified vacancies",2026-10-17T09:08Z,curl HTML heading,ok,Vacancies not postings; slug pages share pools (telecaller = insurance-telecaller = hospital-telecaller = 1394)
+Apna,/jobs/tele-caller-jobs,"4,445",2026-10-17T09:08Z,curl HTML heading,ok,fuzzy pool
+Apna,/jobs/telecaller-jobs,"1,394",2026-10-17T09:08Z,curl HTML heading,ok,fuzzy pool
+Apna,/jobs/voice-process-jobs,"5,193",2026-10-17T09:08Z,curl HTML heading,ok,includes international voice process
+Apna,/jobs/bpo-jobs,"5,881",2026-10-17T09:08Z,curl HTML heading,ok,
+Apna,/jobs/customer-care-jobs,"4,078",2026-10-17T09:08Z,curl HTML heading,ok,
+Apna,/jobs/insurance-sales-jobs,"7,619",2026-10-17T09:08Z,curl HTML heading,ok,includes field agents
+Apna,/jobs/credit-card-sales-jobs,"3,456",2026-10-17T09:08Z,curl HTML heading,ok,
+Apna,/jobs/solar-sales-jobs,"7,890",2026-10-17T09:08Z,curl HTML heading,ok,fuzzy; our crawl found only 28 phone-role solar postings
+Apna,/jobs/recovery-executive-jobs,317,2026-10-17T09:08Z,curl HTML heading,ok,
+Apna,/jobs/admission-counsellor-jobs,147,2026-10-17T09:08Z,curl HTML heading,ok,
+Apna,/jobs/real-estate-sales-jobs,280,2026-10-17T09:08Z,curl HTML heading,ok,
+Apna,full crawl of 11 role slugs (listing pages + job detail JSON),"6,454 job URLs; 6,300 parsed; 3,855 unique phone-role postings",2026-10-17T09:21-09:49Z,measured (this lane; apna_crawl.py + classify_jobs.py),ok,"99% posted 2026-10; 'no_of_openings' = 10 on 99.3% of jobs (a default, unusable as seat count); fixed-salary mid p50 Rs 20,000 (n=3,811)"
+WorkIndia,/telecalling-jobs/,"10,000 telecalling job openings",2026-10-17T09:21Z,Playwright render,ok,Looks capped at 10,000
+LinkedIn (guest),jobs/search keywords=telecaller location=India,"8,000+ to 9,000+",2026-10-17T09:10Z,curl guest page header,partial (429 on repeats),Industry filter f_I ignored on guest page; quoted phrases not honoured (collection telecaller 5,000+ etc.) so no segment split possible
+Naukri,/telecaller-jobs and jobapi/v3/search,n/a,2026-10-17T09:05Z,curl + Playwright,BLOCKED,API returns 406 'recaptcha required'; page returns Akamai 'Access Denied' to headless Chromium
+foundit,/srp/results?query=telecaller,n/a,2026-10-17T09:06Z,Playwright,BLOCKED,Akamai 'Access Denied'
+Indeed India,in.indeed.com/jobs?q=telecaller,n/a,2026-10-17T09:04Z,curl,BLOCKED,HTTP 403

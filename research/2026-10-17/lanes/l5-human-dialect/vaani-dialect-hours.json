@@ -1,0 +1,121 @@
+{
+ "source": "https://huggingface.co/datasets/ARTPARK-IISc/Vaani (dataset card table, accessed 2026-10-17)",
+ "audio_total_hrs": 31278.4,
+ "transcribed_total_hrs": 2122.2,
+ "by_language": {
+  "Hindi": {
+   "audio_hrs": 14923.7,
+   "districts_audio": 153,
+   "transcribed_hrs": 1003.78,
+   "districts_trans": 153
+  },
+  "Bhojpuri": {
+   "audio_hrs": 489.9,
+   "districts_audio": 27,
+   "transcribed_hrs": 26.6,
+   "districts_trans": 27
+  },
+  "Maithili": {
+   "audio_hrs": 465.5,
+   "districts_audio": 29,
+   "transcribed_hrs": 20.84,
+   "districts_trans": 29
+  },
+  "Magahi": {
+   "audio_hrs": 110.9,
+   "districts_audio": 12,
+   "transcribed_hrs": 6.46,
+   "districts_trans": 12
+  },
+  "Angika": {
+   "audio_hrs": 99.8,
+   "districts_audio": 12,
+   "transcribed_hrs": 4.49,
+   "districts_trans": 12
+  },
+  "Bajjika": {
+   "audio_hrs": 83.6,
+   "districts_audio": 4,
+   "transcribed_hrs": 5.04,
+   "districts_trans": 4
+  },
+  "Awadhi": {
+   "audio_hrs": 7.9,
+   "districts_audio": 9,
+   "transcribed_hrs": 0.31,
+   "districts_trans": 9
+  },
+  "Bundeli": {
+   "audio_hrs": 9.5,
+   "districts_audio": 5,
+   "transcribed_hrs": 0.85,
+   "districts_trans": 5
+  },
+  "Haryanvi": {
+   "audio_hrs": 37.5,
+   "districts_audio": 4,
+   "transcribed_hrs": 0.25,
+   "districts_trans": 4
+  },
+  "Chhattisgarhi": {
+   "audio_hrs": 406.5,
+   "districts_audio": 19,
+   "transcribed_hrs": 17.69,
+   "districts_trans": 19
+  },
+  "Marwari": {
+   "audio_hrs": 158.3,
+   "districts_audio": 7,
+   "transcribed_hrs": 9.03,
+   "districts_trans": 7
+  },
+  "Rajasthani": {
+   "audio_hrs": 187.6,
+   "districts_audio": 7,
+   "transcribed_hrs": 12.06,
+   "districts_trans": 7
+  },
+  "Garhwali": {
+   "audio_hrs": 135.5,
+   "districts_audio": 2,
+   "transcribed_hrs": 8.77,
+   "districts_trans": 2
+  },
+  "Kumaoni": {
+   "audio_hrs": 27.2,
+   "districts_audio": 2,
+   "transcribed_hrs": 2.54,
+   "districts_trans": 2
+  },
+  "Khortha": {
+   "audio_hrs": 31.7,
+   "districts_audio": 5,
+   "transcribed_hrs": 3.67,
+   "districts_trans": 5
+  },
+  "Sadri": {
+   "audio_hrs": 26.6,
+   "districts_audio": 4,
+   "transcribed_hrs": 0.96,
+   "districts_trans": 4
+  },
+  "Tamil": {
+   "audio_hrs": 848.2,
+   "districts_audio": 11,
+   "transcribed_hrs": 24.35,
+   "districts_trans": 11
+  },
+  "Marathi": {
+   "audio_hrs": 1118.7,
+   "districts_audio": 53,
+   "transcribed_hrs": 68.09,
+   "districts_trans": 53
+  },
+  "Bengali": {
+   "audio_hrs": 2369.1,
+   "districts_audio": 67,
+   "transcribed_hrs": 162.42,
+   "districts_trans": 67
+  }
+ }
+}

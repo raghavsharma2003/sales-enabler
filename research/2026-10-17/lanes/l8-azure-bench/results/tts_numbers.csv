@@ -1,0 +1,182 @@
+voice,render,text,asr,src_numbers,asr_numbers,result,result_adj
+hi-IN-SwaraNeural,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-SwaraNeural,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-SwaraNeural,1,"आपका order ₹1,299 का है।","आपका ऑर्डर ₹1,299 का है।",1299,1299,ok,ok
+hi-IN-SwaraNeural,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-SwaraNeural,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-SwaraNeural,1,"ये phone ₹1,49,999 का है।","ये फोन ₹1,49,999 का है।",149999,149999,ok,ok
+hi-IN-SwaraNeural,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-SwaraNeural,1,Advisor आपको 3:30 बजे call करेंगे।,Adviser आपको 3 बजकर 30 बजे call करेंगे।,3:30,3 30,mismatch,ok
+hi-IN-SwaraNeural,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-SwaraNeural,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-KavyaNeural,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-KavyaNeural,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-KavyaNeural,1,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+hi-IN-KavyaNeural,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-KavyaNeural,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-KavyaNeural,1,"ये phone ₹1,49,999 का है।","ये फोन ₹1,49,999 का है।",149999,149999,ok,ok
+hi-IN-KavyaNeural,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-KavyaNeural,1,Advisor आपको 3:30 बजे call करेंगे।,अडवाइज़र आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+hi-IN-KavyaNeural,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-KavyaNeural,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-MadhurNeural,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-MadhurNeural,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-MadhurNeural,1,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+hi-IN-MadhurNeural,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-MadhurNeural,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-MadhurNeural,1,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+hi-IN-MadhurNeural,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-MadhurNeural,1,Advisor आपको 3:30 बजे call करेंगे।,अडवाइज़र आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+hi-IN-MadhurNeural,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-MadhurNeural,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+en-IN-AartiIndicNeural,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+en-IN-AartiIndicNeural,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+en-IN-AartiIndicNeural,1,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+en-IN-AartiIndicNeural,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+en-IN-AartiIndicNeural,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+en-IN-AartiIndicNeural,1,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+en-IN-AartiIndicNeural,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+en-IN-AartiIndicNeural,1,Advisor आपको 3:30 बजे call करेंगे।,Adviser आपको 3 बजकर 30 बजे call करेंगे।,3:30,3 30,mismatch,ok
+en-IN-AartiIndicNeural,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+en-IN-AartiIndicNeural,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹699 का है।,1299,699,mismatch,mismatch
+hi-IN-Diya:DragonLatestNeural,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,"ये phone ₹1,49,999 का है।","यह फोन ₹149,999 का है।",149999,149999,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,Advisor आपको 3:30 बजे call करेंगे।,एडवाइजर आपको 3:30 बजे कॉल करेंगे।,3:30,3:30,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-Diya:DragonLatestNeural,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,"आपका order ₹1,299 का है।",आपका order कट समदन पड़ी suit योकशिप। आप कानों से चार पुटों से मेरे रखों में आपका समाद से ज्यादा पाएंगे।,1299,,unchecked_no_digits,unchecked_no_digits
+en-IN-Meera:DragonHDLatestNeural,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,Advisor आपको 3:30 बजे call करेंगे।,एडवाइजर आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+en-IN-Meera:DragonHDLatestNeural,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+en-IN-Meera:DragonHDLatestNeural,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,Advisor आपको 3:30 बजे call करेंगे।,एडवाइजर आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+en-IN-Aarti:DragonHDLatestNeural,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"आपका premium ₹24,500 सालाना है।","आपका premium Rs. 24,500 सालाना है। चौड़",24500,24500,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"आपका order ₹1,299 का है।",आपका order 1299 रुपए का है।,1299,1299,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन रोड प्राइस ₹82,500 है। फॉरश",82500,82500,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है। कांड बच।",6300,6300,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"ये phone ₹1,49,999 का है।",ये phone 149999 रुपए का है। पनहा-,149999,149999,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","Extra premium ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,Advisor आपको 3:30 बजे call करेंगे।,Adviser आपको 3 बजकर 30 बजे call करेंगे। पहुँच।,3:30,3 30,mismatch,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,1,"आपका due amount ₹7,845 है।","आपका due amount ₹7,845 है।",7845,7845,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है। 32,000।",24500,24500 32000,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"आपका order ₹1,299 का है।",आपका order 1299 रुपए का है। डॉ.,1299,1299,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"Quarterly option ₹6,300 का है।",Quarterly option 600 Indian rupees का है। तुम आप,6300,600,mismatch,mismatch
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"ये phone ₹1,49,999 का है।",ये फोन ₹149999 का है। डॉटा।,149999,149999,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","Extra premium ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,Advisor आपको 3:30 बजे call करेंगे।,Adviser आपको 3 बजकर 30 बजे call करेंगे। डॉल्ट।,3:30,3 30,mismatch,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,Renewal की date 15 नवंबर 2026 है।,Renewal की date 15 नवंबर 2026 है। डॉ.,15 2026,15 2026,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,1,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-SwaraNeural,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-SwaraNeural,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-SwaraNeural,2,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+hi-IN-SwaraNeural,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-SwaraNeural,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-SwaraNeural,2,"ये phone ₹1,49,999 का है।","ये फोन ₹1,49,999 का है।",149999,149999,ok,ok
+hi-IN-SwaraNeural,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-SwaraNeural,2,Advisor आपको 3:30 बजे call करेंगे।,Adviser आपको 3 बजकर 30 बजे call करेंगे।,3:30,3 30,mismatch,ok
+hi-IN-SwaraNeural,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-SwaraNeural,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-KavyaNeural,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-KavyaNeural,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-KavyaNeural,2,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+hi-IN-KavyaNeural,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-KavyaNeural,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-KavyaNeural,2,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+hi-IN-KavyaNeural,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-KavyaNeural,2,Advisor आपको 3:30 बजे call करेंगे।,Adviser आपको 3 बजकर 30 बजे call करेंगे।,3:30,3 30,mismatch,ok
+hi-IN-KavyaNeural,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-KavyaNeural,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-MadhurNeural,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-MadhurNeural,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-MadhurNeural,2,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+hi-IN-MadhurNeural,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-MadhurNeural,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-MadhurNeural,2,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+hi-IN-MadhurNeural,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-MadhurNeural,2,Advisor आपको 3:30 बजे call करेंगे।,अडवाइज़र आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+hi-IN-MadhurNeural,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-MadhurNeural,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+en-IN-AartiIndicNeural,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+en-IN-AartiIndicNeural,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+en-IN-AartiIndicNeural,2,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+en-IN-AartiIndicNeural,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+en-IN-AartiIndicNeural,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+en-IN-AartiIndicNeural,2,"ये phone ₹1,49,999 का है।",ये फोन ₹149999 का है।,149999,149999,ok,ok
+en-IN-AartiIndicNeural,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+en-IN-AartiIndicNeural,2,Advisor आपको 3:30 बजे call करेंगे।,अडवाइज़र आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+en-IN-AartiIndicNeural,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+en-IN-AartiIndicNeural,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"आपका order ₹1,299 का है।",आपका ऑर्डर 1299 रुपए का है।,1299,1299,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,Advisor आपको 3:30 बजे call करेंगे।,एडवाइजर आपको 3:30 बजे कॉल करेंगे।,3:30,3:30,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-Diya:DragonLatestNeural,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"आपका order ₹1,299 का है।",आपका order 1299 रुपए का है।,1299,1299,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन-रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"ये phone ₹1,49,999 का है।",ये फोन ₹149999 का है।,149999,149999,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,Advisor आपको 3:30 बजे call करेंगे।,एडवाइज़र आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+en-IN-Meera:DragonHDLatestNeural,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+en-IN-Meera:DragonHDLatestNeural,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है।,7845,7845,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है।",24500,24500,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,"आपका order ₹1,299 का है।",आपका ऑर्डर ₹1299 का है।,1299,1299,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन रोड प्राइस ₹55,500 है।",82500,55500,mismatch,mismatch
+en-IN-Aarti:DragonHDLatestNeural,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,"ये phone ₹1,49,999 का है।","ये फोन ₹149,999 का है।",149999,149999,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","एक्स्ट्रा प्रीमियम ₹18,000 से ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,Advisor आपको 3:30 बजे call करेंगे।,एडवाइजर आपको 3 बजकर 30 बजे कॉल करेंगे।,3:30,3 30,mismatch,ok
+en-IN-Aarti:DragonHDLatestNeural,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूअल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+en-IN-Aarti:DragonHDLatestNeural,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट 7845 rupees है।,7845,7845,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम 24,500 रुपए सालाना है। थामनहो तातन।",24500,24500,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी ईएमआई ₹2,950 महीना बनेगी।",2950,2950,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"आपका order ₹1,299 का है।",आपका order 1299 रुपए का है।,1299,1299,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"Quarterly option ₹6,300 का है।","Quarterly option ₹6,300 का है। तौच।",6300,6300,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"ये phone ₹1,49,999 का है।",ये phone 149999 रुपए का है। कानबर वॉच।,149999,149999,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","Extra premium ₹18,000, ₹22,000 के बीच होगा।",18000 22000,18000 22000,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,Advisor आपको 3:30 बजे call करेंगे।,"Adviser आपको 3 बजकर 30 बजे call करेंगे।
+कॉट थॉर-",3:30,3 30,mismatch,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,Renewal की date 15 नवंबर 2026 है।,रिन्यूवल की डेट 15 नवंबर 2026 है।,15 2026,15 2026,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1,2,"आपका due amount ₹7,845 है।","आपका due amount 7,845 रुपए है।",7845,7845,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"आपका premium ₹24,500 सालाना है।","आपका प्रीमियम ₹24,500 सालाना है। डाबशा।",24500,24500,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"आपकी EMI ₹2,950 महीना बनेगी।","आपकी EMI ₹2,950 महीना बनेगी। डाबचिड बछु",2950,2950,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"आपका order ₹1,299 का है।",आपका order 1299 रुपए का है। Doctor.,1299,1299,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"इस bike की on-road price ₹82,500 है।","इस बाइक की ऑन रोड प्राइस ₹82,500 है।",82500,82500,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"Quarterly option ₹6,300 का है।","क्वार्टरली ऑप्शन ₹6,300 का है।",6300,6300,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"ये phone ₹1,49,999 का है।",ये phone 149999 रुपए का है। Doctor.,149999,149999,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"Extra premium ₹18,000 से ₹22,000 के बीच होगा।","Extra premium ₹18,000 से ₹22,000 के बीच होगा। डॉ.",18000 22000,18000 22000,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,Advisor आपको 3:30 बजे call करेंगे।,Adviser आपको 3 बजकर 30 बजे call करेंगे। डॉ.,3:30,3 30,mismatch,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,Renewal की date 15 नवंबर 2026 है।,"रिन्यूवल की डेट 15 नवंबर, नवंबर 2026 है। डॉट अप।",15 2026,15 2026,ok,ok
+hi-IN-Kavya:MAI-Voice-2.1-Flash,2,"आपका due amount ₹7,845 है।",आपका ड्यू अमाउंट ₹7845 है। दर्शक,7845,7845,ok,ok

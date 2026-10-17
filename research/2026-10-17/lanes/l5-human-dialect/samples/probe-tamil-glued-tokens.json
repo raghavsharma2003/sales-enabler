@@ -1,0 +1,44 @@
+[
+ {
+  "variant": "hyphen_glued",
+  "voice": "ta-IN-PallaviNeural",
+  "text": "Shree Ram Motors-ல இருந்து பேசறேன். Hero Splendor Plus-க்கு, 24 monthsக்கு EMI.",
+  "audio_s": 6.66,
+  "asr_ta": "ஸ்ரீராம் ல இருந்து பேசுறேன். ஹீரோ ஸ்ப்லெண்டர் க்கு 24க்கு எம் ஐ."
+ },
+ {
+  "variant": "hyphen_glued",
+  "voice": "en-IN-Meera:DragonHDLatestNeural",
+  "text": "Shree Ram Motors-ல இருந்து பேசறேன். Hero Splendor Plus-க்கு, 24 monthsக்கு EMI.",
+  "audio_s": 5.1,
+  "asr_ta": "ஸ்ரீராம்ல இருந்து பேசுறேன். ஹீரோ ஸ்ப்லெண்டர் க்கு 24க்கு ஈ எம் ஐ."
+ },
+ {
+  "variant": "space_separated",
+  "voice": "ta-IN-PallaviNeural",
+  "text": "Shree Ram Motors ல இருந்து பேசறேன். Hero Splendor Plus க்கு, 24 months க்கு EMI.",
+  "audio_s": 7.72,
+  "asr_ta": "ஸ்ரீ ராம் மோட்டார்ஸ் ல இருந்து பேசுறேன். ஹீரோ ஸ்ப்லெண்டர் பிளஸ் க்கு 24 மந்த்ஸ்க்கு ஈ ஐ."
+ },
+ {
+  "variant": "space_separated",
+  "voice": "en-IN-Meera:DragonHDLatestNeural",
+  "text": "Shree Ram Motors ல இருந்து பேசறேன். Hero Splendor Plus க்கு, 24 months க்கு EMI.",
+  "audio_s": 6.05,
+  "asr_ta": "ஸ்ரீராம் மோடர்ஸ், லேனவராமச்சார், ஹீரோஸ்ப்லெண்டர் 24 மன்த்ஸ் க்கு ஈமி."
+ },
+ {
+  "variant": "tamil_script",
+  "voice": "ta-IN-PallaviNeural",
+  "text": "ஸ்ரீ ராம் மோட்டார்ஸ்-ல இருந்து பேசறேன். ஹீரோ ஸ்ப்ளெண்டர் ப்ளஸ்-க்கு, 24 மந்த்ஸ்க்கு ஈஎம்ஐ.",
+  "audio_s": 7.49,
+  "asr_ta": "ஸ்ரீராம் மோட்டார்ஸ் ல இருந்து பேசுறேன். ஹீரோ ஸ்ப்ளண்டர் பிளஸ் க்கு 24 மந்த்ஸ் க்கு இமி."
+ },
+ {
+  "variant": "tamil_script",
+  "voice": "en-IN-Meera:DragonHDLatestNeural",
+  "text": "ஸ்ரீ ராம் மோட்டார்ஸ்-ல இருந்து பேசறேன். ஹீரோ ஸ்ப்ளெண்டர் ப்ளஸ்-க்கு, 24 மந்த்ஸ்க்கு ஈஎம்ஐ.",
+  "audio_s": 7.65,
+  "asr_ta": "ஸ்ரீராம் மோட்டார்ஸ்ல இருந்து பேசுறேன். ஹீரோ ஸ்ப்ளண்டர் பிளஸ் க்கு 24 மன்த்ஸ்க்கு ஈ எம் ஐ வண்டலர் எம் ஐ."
+ }
+]

@@ -1,0 +1,1906 @@
+{
+ "workload": {
+  "llm_calls_per_min": 4.8,
+  "llm_input_tokens_per_call": 3720,
+  "system_tokens": 3000,
+  "cache_hit": 0.85,
+  "llm_output_tokens_per_call": 70,
+  "asr_audio_min_per_min": 1.0,
+  "tts_chars_per_min": 440.00000000000006,
+  "realtime_tokens_per_min": [
+   300,
+   600,
+   3000,
+   3000
+  ]
+ },
+ "fx": {
+  "fetched_inr_per_usd": 95.11,
+  "fetched_source": "open.er-api.com 2026-10-17",
+  "default": 88.0
+ },
+ "series": {
+  "llm_small_tier": {
+   "points": [
+    {
+     "date": "2023-03-01",
+     "usd_per_min": 0.036384,
+     "label": "gpt-3.5-turbo"
+    },
+    {
+     "date": "2023-11-06",
+     "usd_per_min": 0.018528,
+     "label": "gpt-3.5-turbo-1106"
+    },
+    {
+     "date": "2024-01-25",
+     "usd_per_min": 0.009432,
+     "label": "gpt-3.5-turbo-0125"
+    },
+    {
+     "date": "2024-07-18",
+     "usd_per_min": 0.001962,
+     "label": "gpt-4o-mini-2024-07-18"
+    },
+    {
+     "date": "2025-04-14",
+     "usd_per_min": 0.001002,
+     "label": "gpt-4.1-nano"
+    },
+    {
+     "date": "2025-08-07",
+     "usd_per_min": 0.000476,
+     "label": "gpt-5-nano"
+    },
+    {
+     "date": "2026-03-17",
+     "usd_per_min": 0.001788,
+     "label": "gpt-5.4-nano"
+    },
+    {
+     "date": "2026-06-26",
+     "usd_per_min": 0.008856,
+     "label": "gpt-5.6-luna (launch)"
+    },
+    {
+     "date": "2026-07-30",
+     "usd_per_min": 0.001771,
+     "label": "gpt-5.6-luna (price cut)"
+    },
+    {
+     "date": "2026-09-22",
+     "usd_per_min": 0.000852,
+     "label": "gpt-6-luna (<=272k)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2023-03-01",
+     "usd_per_min": 0.036384,
+     "label": "gpt-3.5-turbo"
+    },
+    {
+     "date": "2023-11-06",
+     "usd_per_min": 0.018528,
+     "label": "gpt-3.5-turbo-1106"
+    },
+    {
+     "date": "2024-01-25",
+     "usd_per_min": 0.009432,
+     "label": "gpt-3.5-turbo-0125"
+    },
+    {
+     "date": "2024-07-18",
+     "usd_per_min": 0.001962,
+     "label": "gpt-4o-mini-2024-07-18"
+    },
+    {
+     "date": "2025-04-14",
+     "usd_per_min": 0.001002,
+     "label": "gpt-4.1-nano"
+    },
+    {
+     "date": "2025-08-07",
+     "usd_per_min": 0.000476,
+     "label": "gpt-5-nano"
+    }
+   ],
+   "first": {
+    "date": "2023-03-01",
+    "usd_per_min": 0.036384
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.0004764
+   },
+   "total_decline_factor": 76.3727959697733,
+   "last_cut_date": "2025-08-07",
+   "months_since_last_cut": 14.3,
+   "fit_full": {
+    "n_points": 7,
+    "slope_per_yr": -1.3535887205245574,
+    "annual_multiplier": 0.2583115871731881,
+    "slope_ci90": [
+     -1.9922139841016924,
+     -1.003914083891108
+    ],
+    "annual_multiplier_ci90": [
+     0.13639311872143925,
+     0.366442344470107
+    ],
+    "resid_sd_log": 0.7039999683488952,
+    "intercept": 2734.9141693428246
+   },
+   "fit_last18m": {
+    "n_points": 3,
+    "slope_per_yr": -0.3561496896454604,
+    "annual_multiplier": 0.7003677745844246,
+    "slope_ci90": [
+     -2.42465813375732,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.08850837189512357,
+     1.0
+    ],
+    "resid_sd_log": 0.4571319368381937,
+    "intercept": 714.1196594982056
+   }
+  },
+  "llm_frontier_tier": {
+   "points": [
+    {
+     "date": "2023-03-14",
+     "usd_per_min": 0.55584,
+     "label": "gpt-4 (8K)"
+    },
+    {
+     "date": "2023-11-06",
+     "usd_per_min": 0.18864,
+     "label": "gpt-4-1106-preview (GPT-4 Turbo)"
+    },
+    {
+     "date": "2024-05-13",
+     "usd_per_min": 0.09432,
+     "label": "gpt-4o-2024-05-13"
+    },
+    {
+     "date": "2024-08-06",
+     "usd_per_min": 0.0327,
+     "label": "gpt-4o-2024-08-06"
+    },
+    {
+     "date": "2025-04-14",
+     "usd_per_min": 0.02004,
+     "label": "gpt-4.1"
+    },
+    {
+     "date": "2025-08-07",
+     "usd_per_min": 0.01191,
+     "label": "gpt-5"
+    },
+    {
+     "date": "2026-03-05",
+     "usd_per_min": 0.02214,
+     "label": "gpt-5.4 (<=272k)"
+    },
+    {
+     "date": "2026-06-26",
+     "usd_per_min": 0.02214,
+     "label": "gpt-5.6-terra (launch)"
+    },
+    {
+     "date": "2026-07-30",
+     "usd_per_min": 0.017712,
+     "label": "gpt-5.6-terra (price cut)"
+    },
+    {
+     "date": "2026-09-22",
+     "usd_per_min": 0.01704,
+     "label": "gpt-6-sol (<=272k)"
+    },
+    {
+     "date": "2026-09-29",
+     "usd_per_min": 0.015816,
+     "label": "gpt-6.1-sol (<=272k)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2023-03-14",
+     "usd_per_min": 0.55584,
+     "label": "gpt-4 (8K)"
+    },
+    {
+     "date": "2023-11-06",
+     "usd_per_min": 0.18864,
+     "label": "gpt-4-1106-preview (GPT-4 Turbo)"
+    },
+    {
+     "date": "2024-05-13",
+     "usd_per_min": 0.09432,
+     "label": "gpt-4o-2024-05-13"
+    },
+    {
+     "date": "2024-08-06",
+     "usd_per_min": 0.0327,
+     "label": "gpt-4o-2024-08-06"
+    },
+    {
+     "date": "2025-04-14",
+     "usd_per_min": 0.02004,
+     "label": "gpt-4.1"
+    },
+    {
+     "date": "2025-08-07",
+     "usd_per_min": 0.01191,
+     "label": "gpt-5"
+    },
+    {
+     "date": "2026-03-05",
+     "usd_per_min": 0.02214,
+     "label": "gpt-5.4 (<=272k)"
+    },
+    {
+     "date": "2026-06-26",
+     "usd_per_min": 0.02214,
+     "label": "gpt-5.6-terra (launch)"
+    },
+    {
+     "date": "2026-07-30",
+     "usd_per_min": 0.017712,
+     "label": "gpt-5.6-terra (price cut)"
+    },
+    {
+     "date": "2026-09-22",
+     "usd_per_min": 0.01704,
+     "label": "gpt-6-sol (<=272k)"
+    },
+    {
+     "date": "2026-09-29",
+     "usd_per_min": 0.015816,
+     "label": "gpt-6.1-sol (<=272k)"
+    }
+   ],
+   "first": {
+    "date": "2023-03-14",
+    "usd_per_min": 0.55584
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.015816
+   },
+   "total_decline_factor": 35.144157814871015,
+   "last_cut_date": "2026-09-29",
+   "months_since_last_cut": 0.6,
+   "fit_full": {
+    "n_points": 12,
+    "slope_per_yr": -0.8346123165002793,
+    "annual_multiplier": 0.43404272001994726,
+    "slope_ci90": [
+     -1.0043869572322572,
+     -0.41904394728526445
+    ],
+    "annual_multiplier_ci90": [
+     0.3662691046178209,
+     0.6576752915890516
+    ],
+    "resid_sd_log": 0.586306042524648,
+    "intercept": 1687.1664466467973
+   },
+   "fit_last18m": {
+    "n_points": 8,
+    "slope_per_yr": 0.019587353025889043,
+    "annual_multiplier": 1.0197804438775435,
+    "slope_ci90": [
+     -0.5706218619191437,
+     0.30250381748187594
+    ],
+    "annual_multiplier_ci90": [
+     0.5651738692900464,
+     1.3532428423913363
+    ],
+    "resid_sd_log": 0.2226890206636429,
+    "intercept": -43.73482468803199
+   }
+  },
+  "asr_azure_streaming": {
+   "points": [
+    {
+     "date": "2018-11-01",
+     "usd_per_min": 0.016667,
+     "label": "S1 Speech to Text real-time (standard)"
+    },
+    {
+     "date": "2025-10-01",
+     "usd_per_min": 0.009,
+     "label": "Voice Live Std - standard speech audio input"
+    },
+    {
+     "date": "2025-11-01",
+     "usd_per_min": 0.0075,
+     "label": "Voice Live BYO - standard speech audio input"
+    },
+    {
+     "date": "2026-05-01",
+     "usd_per_min": 0.017,
+     "label": "gpt-realtime-whisper"
+    },
+    {
+     "date": "2026-08-01",
+     "usd_per_min": 0.017,
+     "label": "gpt-live-transcribe"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2018-11-01",
+     "usd_per_min": 0.016667,
+     "label": "S1 Speech to Text real-time (standard)"
+    },
+    {
+     "date": "2025-10-01",
+     "usd_per_min": 0.009,
+     "label": "Voice Live Std - standard speech audio input"
+    },
+    {
+     "date": "2025-11-01",
+     "usd_per_min": 0.0075,
+     "label": "Voice Live BYO - standard speech audio input"
+    }
+   ],
+   "first": {
+    "date": "2018-11-01",
+    "usd_per_min": 0.016666666666666666
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.0075
+   },
+   "total_decline_factor": 2.2222222222222223,
+   "last_cut_date": "2025-11-01",
+   "months_since_last_cut": 11.5,
+   "fit_full": {
+    "n_points": 4,
+    "slope_per_yr": -0.10119388359389349,
+    "annual_multiplier": 0.9037577920895158,
+    "slope_ci90": [
+     -2.1481596328727823,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.11669872877244962,
+     1.0
+    ],
+    "resid_sd_log": 0.08706475131631204,
+    "intercept": 200.1992167300578
+   },
+   "fit_last18m": {
+    "n_points": 4,
+    "slope_per_yr": -0.4440146605092518,
+    "annual_multiplier": 0.641456016686518,
+    "slope_ci90": [
+     -2.1481596328727823,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.11669872877244962,
+     1.0
+    ],
+    "resid_sd_log": 0.3123591209246311,
+    "intercept": 894.8884482019043
+   }
+  },
+  "asr_any_streaming": {
+   "points": [
+    {
+     "date": "2018-11-01",
+     "usd_per_min": 0.016667,
+     "label": "S1 Speech to Text real-time (standard)"
+    },
+    {
+     "date": "2023-04-01",
+     "usd_per_min": 0.0165,
+     "label": "Enhanced streaming (PAYG)"
+    },
+    {
+     "date": "2023-09-23",
+     "usd_per_min": 0.0059,
+     "label": "Nova-2 streaming (PAYG)"
+    },
+    {
+     "date": "2024-06-15",
+     "usd_per_min": 0.007833,
+     "label": "Streaming STT (Best)"
+    },
+    {
+     "date": "2025-03-27",
+     "usd_per_min": 0.0077,
+     "label": "Nova-3 streaming (PAYG)"
+    },
+    {
+     "date": "2025-06-17",
+     "usd_per_min": 0.0025,
+     "label": "Universal-Streaming"
+    },
+    {
+     "date": "2025-10-01",
+     "usd_per_min": 0.009,
+     "label": "Voice Live Std - standard speech audio input"
+    },
+    {
+     "date": "2025-11-01",
+     "usd_per_min": 0.0075,
+     "label": "Voice Live BYO - standard speech audio input"
+    },
+    {
+     "date": "2026-03-05",
+     "usd_per_min": 0.0077,
+     "label": "Flux (conversational STT with end-of-turn) PAYG"
+    },
+    {
+     "date": "2026-05-01",
+     "usd_per_min": 0.017,
+     "label": "gpt-realtime-whisper"
+    },
+    {
+     "date": "2026-06-06",
+     "usd_per_min": 0.0065,
+     "label": "Scribe v2 Realtime"
+    },
+    {
+     "date": "2026-08-01",
+     "usd_per_min": 0.017,
+     "label": "gpt-live-transcribe"
+    },
+    {
+     "date": "2026-09-07",
+     "usd_per_min": 0.009,
+     "label": "Gemini 3.5 Transcribe Live (blended)"
+    },
+    {
+     "date": "2026-10-17",
+     "usd_per_min": 0.0047,
+     "label": "Saarika/Saaras STT real-time"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2018-11-01",
+     "usd_per_min": 0.016667,
+     "label": "S1 Speech to Text real-time (standard)"
+    },
+    {
+     "date": "2023-04-01",
+     "usd_per_min": 0.0165,
+     "label": "Enhanced streaming (PAYG)"
+    },
+    {
+     "date": "2023-09-23",
+     "usd_per_min": 0.0059,
+     "label": "Nova-2 streaming (PAYG)"
+    },
+    {
+     "date": "2025-06-17",
+     "usd_per_min": 0.0025,
+     "label": "Universal-Streaming"
+    }
+   ],
+   "first": {
+    "date": "2018-11-01",
+    "usd_per_min": 0.016666666666666666
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.0025
+   },
+   "total_decline_factor": 6.666666666666666,
+   "last_cut_date": "2025-06-17",
+   "months_since_last_cut": 16.0,
+   "fit_full": {
+    "n_points": 5,
+    "slope_per_yr": -0.26444184626456474,
+    "annual_multiplier": 0.7676342883709003,
+    "slope_ci90": [
+     -0.7938957500826267,
+     -0.1392493667725459
+    ],
+    "annual_multiplier_ci90": [
+     0.45208016888713876,
+     0.8700110495582044
+    ],
+    "resid_sd_log": 0.5869264006532369,
+    "intercept": 530.0644132133766
+   },
+   "fit_last18m": {
+    "n_points": 3,
+    "slope_per_yr": -0.35272777422550394,
+    "annual_multiplier": 0.7027684790331136,
+    "slope_ci90": [
+     -5.1414123992400995,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.005849422156755475,
+     1.0
+    ],
+    "resid_sd_log": 0.5684467934306889,
+    "intercept": 708.866985523972
+   }
+  },
+  "tts_azure_neural": {
+   "points": [
+    {
+     "date": "2023-03-01",
+     "usd_per_min": 0.0066,
+     "label": "S1 Neural TTS (carried back)"
+    },
+    {
+     "date": "2024-02-01",
+     "usd_per_min": 0.0066,
+     "label": "S1 Neural TTS"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2023-03-01",
+     "usd_per_min": 0.0066,
+     "label": "S1 Neural TTS (carried back)"
+    }
+   ],
+   "first": {
+    "date": "2023-03-01",
+    "usd_per_min": 0.006600000000000001
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.006600000000000001
+   },
+   "total_decline_factor": 1.0,
+   "last_cut_date": "2023-03-01",
+   "months_since_last_cut": 43.6,
+   "fit_full": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -5.020685629949757
+   },
+   "fit_last18m": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -5.020685629949757
+   }
+  },
+  "tts_azure_quality": {
+   "points": [
+    {
+     "date": "2023-03-01",
+     "usd_per_min": 0.0066,
+     "label": "S1 Neural TTS (carried back)"
+    },
+    {
+     "date": "2024-02-01",
+     "usd_per_min": 0.0066,
+     "label": "S1 Neural TTS"
+    },
+    {
+     "date": "2025-09-10",
+     "usd_per_min": 0.0132,
+     "label": "Neural HD (DragonHD)"
+    },
+    {
+     "date": "2026-03-01",
+     "usd_per_min": 0.00968,
+     "label": "Neural HD (DragonHD)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2023-03-01",
+     "usd_per_min": 0.0066,
+     "label": "S1 Neural TTS (carried back)"
+    },
+    {
+     "date": "2024-02-01",
+     "usd_per_min": 0.0066,
+     "label": "S1 Neural TTS"
+    },
+    {
+     "date": "2025-09-10",
+     "usd_per_min": 0.0132,
+     "label": "Neural HD (DragonHD)"
+    },
+    {
+     "date": "2026-03-01",
+     "usd_per_min": 0.00968,
+     "label": "Neural HD (DragonHD)"
+    }
+   ],
+   "first": {
+    "date": "2023-03-01",
+    "usd_per_min": 0.006600000000000001
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.009680000000000001
+   },
+   "total_decline_factor": 0.6818181818181819,
+   "last_cut_date": "2026-03-01",
+   "months_since_last_cut": 7.6,
+   "fit_full": {
+    "n_points": 5,
+    "slope_per_yr": 0.14842699003175655,
+    "annual_multiplier": 1.1600081025279383,
+    "slope_ci90": [
+     -0.2542227095825538,
+     0.29068763284462024
+    ],
+    "annual_multiplier_ci90": [
+     0.7755190672846092,
+     1.337346775490596
+    ],
+    "resid_sd_log": 0.22187204681941985,
+    "intercept": -305.31990790054164
+   },
+   "fit_last18m": {
+    "n_points": 4,
+    "slope_per_yr": 0.13945618132139487,
+    "annual_multiplier": 1.1496484285393407,
+    "slope_ci90": [
+     -0.6576724967371527,
+     1.7340548472573525
+    ],
+    "annual_multiplier_ci90": [
+     0.5180557087078929,
+     5.663572332411257
+    ],
+    "resid_sd_log": 0.32956338101493193,
+    "intercept": -287.19178747825595
+   }
+  },
+  "tts_azure_hd": {
+   "points": [
+    {
+     "date": "2025-09-10",
+     "usd_per_min": 0.0132,
+     "label": "Neural HD (DragonHD)"
+    },
+    {
+     "date": "2026-03-01",
+     "usd_per_min": 0.00968,
+     "label": "Neural HD (DragonHD)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2025-09-10",
+     "usd_per_min": 0.0132,
+     "label": "Neural HD (DragonHD)"
+    },
+    {
+     "date": "2026-03-01",
+     "usd_per_min": 0.00968,
+     "label": "Neural HD (DragonHD)"
+    }
+   ],
+   "first": {
+    "date": "2025-09-10",
+    "usd_per_min": 0.013200000000000002
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.009680000000000001
+   },
+   "total_decline_factor": 1.3636363636363638,
+   "last_cut_date": "2026-03-01",
+   "months_since_last_cut": 7.6,
+   "fit_full": {
+    "n_points": 3,
+    "slope_per_yr": -0.2663188747419794,
+    "annual_multiplier": 0.7661947683840401,
+    "slope_ci90": [
+     -0.6576724967371527,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.5180557087078929,
+     1.0
+    ],
+    "resid_sd_log": 0.14430388516911055,
+    "intercept": 535.0847871355786
+   },
+   "fit_last18m": {
+    "n_points": 3,
+    "slope_per_yr": -0.2663188747419794,
+    "annual_multiplier": 0.7661947683840401,
+    "slope_ci90": [
+     -0.6576724967371527,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.5180557087078929,
+     1.0
+    ],
+    "resid_sd_log": 0.14430388516911055,
+    "intercept": 535.0847871355786
+   }
+  },
+  "tts_premium_thirdparty": {
+   "points": [
+    {
+     "date": "2024-09-15",
+     "usd_per_min": 0.016456,
+     "label": "Sonic Scale plan ($299/8M chars; overage $38/1M)"
+    },
+    {
+     "date": "2024-12-09",
+     "usd_per_min": 0.0264,
+     "label": "Turbo/Flash on Business plan ($1320/11M credits at 0.5 credit/char)"
+    },
+    {
+     "date": "2025-09-08",
+     "usd_per_min": 0.0264,
+     "label": "Flash v2.5 on Business plan (~$0.06/min)"
+    },
+    {
+     "date": "2026-06-06",
+     "usd_per_min": 0.016456,
+     "label": "Sonic-3.5 Scale plan ($239/mo annual or $299 monthly; 8M credits)"
+    },
+    {
+     "date": "2026-06-06",
+     "usd_per_min": 0.022,
+     "label": "Flash/Turbo PAYG API"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2024-09-15",
+     "usd_per_min": 0.016456,
+     "label": "Sonic Scale plan ($299/8M chars; overage $38/1M)"
+    }
+   ],
+   "first": {
+    "date": "2024-09-15",
+    "usd_per_min": 0.016456
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.016456
+   },
+   "total_decline_factor": 1.0,
+   "last_cut_date": "2024-09-15",
+   "months_since_last_cut": 25.0,
+   "fit_full": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -4.107065126631481
+   },
+   "fit_last18m": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -4.107065126631481
+   }
+  },
+  "rt_openai_flagship": {
+   "points": [
+    {
+     "date": "2024-10-01",
+     "usd_per_min": 0.2175,
+     "label": "gpt-4o-realtime-preview (audio)"
+    },
+    {
+     "date": "2024-12-17",
+     "usd_per_min": 0.075,
+     "label": "gpt-4o-realtime-preview-2024-12-17 (audio)"
+    },
+    {
+     "date": "2025-08-28",
+     "usd_per_min": 0.0504,
+     "label": "gpt-realtime GA (audio)"
+    },
+    {
+     "date": "2026-02-23",
+     "usd_per_min": 0.0504,
+     "label": "gpt-realtime-1.5 (audio)"
+    },
+    {
+     "date": "2026-05-07",
+     "usd_per_min": 0.0504,
+     "label": "gpt-realtime-2 (audio)"
+    },
+    {
+     "date": "2026-07-07",
+     "usd_per_min": 0.0504,
+     "label": "gpt-realtime-2.1 (audio)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2024-10-01",
+     "usd_per_min": 0.2175,
+     "label": "gpt-4o-realtime-preview (audio)"
+    },
+    {
+     "date": "2024-12-17",
+     "usd_per_min": 0.075,
+     "label": "gpt-4o-realtime-preview-2024-12-17 (audio)"
+    },
+    {
+     "date": "2025-08-28",
+     "usd_per_min": 0.0504,
+     "label": "gpt-realtime GA (audio)"
+    }
+   ],
+   "first": {
+    "date": "2024-10-01",
+    "usd_per_min": 0.2175
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.0504
+   },
+   "total_decline_factor": 4.315476190476191,
+   "last_cut_date": "2025-08-28",
+   "months_since_last_cut": 13.6,
+   "fit_full": {
+    "n_points": 4,
+    "slope_per_yr": -0.5451801518222629,
+    "annual_multiplier": 0.579737333194678,
+    "slope_ci90": [
+     -5.05046229462839,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.006406371130616681,
+     1.0
+    ],
+    "resid_sd_log": 0.5818735554205656,
+    "intercept": 1101.7609227166215
+   },
+   "fit_last18m": {
+    "n_points": 3,
+    "slope_per_yr": -0.20156485100434363,
+    "annual_multiplier": 0.8174505633510704,
+    "slope_ci90": [
+     -1.0916222313701032,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.3356715149238504,
+     1.0
+    ],
+    "resid_sd_log": 0.23563270351636986,
+    "intercept": 405.49737169108266
+   }
+  },
+  "rt_openai_mini": {
+   "points": [
+    {
+     "date": "2024-12-17",
+     "usd_per_min": 0.01608,
+     "label": "gpt-4o-mini-realtime-preview (audio)"
+    },
+    {
+     "date": "2025-10-06",
+     "usd_per_min": 0.01608,
+     "label": "gpt-realtime-mini (audio)"
+    },
+    {
+     "date": "2026-07-07",
+     "usd_per_min": 0.01608,
+     "label": "gpt-realtime-2.1-mini (audio)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2024-12-17",
+     "usd_per_min": 0.01608,
+     "label": "gpt-4o-mini-realtime-preview (audio)"
+    }
+   ],
+   "first": {
+    "date": "2024-12-17",
+    "usd_per_min": 0.01608
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.01608
+   },
+   "total_decline_factor": 1.0,
+   "last_cut_date": "2024-12-17",
+   "months_since_last_cut": 22.0,
+   "fit_full": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -4.130179015231317
+   },
+   "fit_last18m": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -4.130179015231317
+   }
+  },
+  "rt_live1": {
+   "points": [
+    {
+     "date": "2026-09-01",
+     "usd_per_min": 0.05,
+     "label": "GPT-Live-1 (duration billed)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2026-09-01",
+     "usd_per_min": 0.05,
+     "label": "GPT-Live-1 (duration billed)"
+    }
+   ],
+   "first": {
+    "date": "2026-09-01",
+    "usd_per_min": 0.05
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.05
+   },
+   "total_decline_factor": 1.0,
+   "last_cut_date": "2026-09-01",
+   "months_since_last_cut": 1.5,
+   "fit_full": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -2.995732273553991
+   },
+   "fit_last18m": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -2.995732273553991
+   }
+  },
+  "platform_us_platform_fee": {
+   "points": [
+    {
+     "date": "2024-06-23",
+     "usd_per_min": 0.05,
+     "label": "platform fee (models and telephony extra)"
+    },
+    {
+     "date": "2026-10-17",
+     "usd_per_min": 0.05,
+     "label": "platform fee"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2024-06-23",
+     "usd_per_min": 0.05,
+     "label": "platform fee (models and telephony extra)"
+    }
+   ],
+   "first": {
+    "date": "2024-06-23",
+    "usd_per_min": 0.05
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.05
+   },
+   "total_decline_factor": 1.0,
+   "last_cut_date": "2024-06-23",
+   "months_since_last_cut": 27.8,
+   "fit_full": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -2.995732273553991
+   },
+   "fit_last18m": {
+    "n_points": 2,
+    "slope_per_yr": 0.0,
+    "annual_multiplier": 1.0,
+    "slope_ci90": [
+     0.0,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     1.0,
+     1.0
+    ],
+    "resid_sd_log": 0.0,
+    "intercept": -2.995732273553991
+   }
+  },
+  "platform_us_engine": {
+   "points": [
+    {
+     "date": "2024-12-06",
+     "usd_per_min": 0.07,
+     "label": "voice engine incl. ElevenLabs voice (LLM/telephony extra)"
+    },
+    {
+     "date": "2024-12-11",
+     "usd_per_min": 0.13,
+     "label": "overage (all-in plan)"
+    },
+    {
+     "date": "2026-03-05",
+     "usd_per_min": 0.08,
+     "label": "Voice Agent API Standard"
+    },
+    {
+     "date": "2026-03-14",
+     "usd_per_min": 0.09,
+     "label": "voice engine (LLM + telephony extra)"
+    },
+    {
+     "date": "2026-06-06",
+     "usd_per_min": 0.06,
+     "label": "Line voice agents (call duration)"
+    },
+    {
+     "date": "2026-06-06",
+     "usd_per_min": 0.08,
+     "label": "Agents"
+    },
+    {
+     "date": "2026-06-12",
+     "usd_per_min": 0.07,
+     "label": "infra $0.055 + TTS $0.015"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2024-12-06",
+     "usd_per_min": 0.07,
+     "label": "voice engine incl. ElevenLabs voice (LLM/telephony extra)"
+    },
+    {
+     "date": "2026-06-06",
+     "usd_per_min": 0.06,
+     "label": "Line voice agents (call duration)"
+    }
+   ],
+   "first": {
+    "date": "2024-12-06",
+    "usd_per_min": 0.07
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.06
+   },
+   "total_decline_factor": 1.1666666666666667,
+   "last_cut_date": "2026-06-06",
+   "months_since_last_cut": 4.4,
+   "fit_full": {
+    "n_points": 3,
+    "slope_per_yr": -0.08871695583152614,
+    "annual_multiplier": 0.9151045519285338,
+    "slope_ci90": [
+     -0.10302568308675096,
+     1.1422964565139782e-27
+    ],
+    "annual_multiplier_ci90": [
+     0.9021038043737245,
+     1.0
+    ],
+    "resid_sd_log": 0.02324274039232644,
+    "intercept": 176.98293792832462
+   },
+   "fit_last18m": {
+    "n_points": 3,
+    "slope_per_yr": -0.11055328756356211,
+    "annual_multiplier": 0.8953386185047344,
+    "slope_ci90": [
+     -0.13558949020327904,
+     1.1422964565139782e-27
+    ],
+    "annual_multiplier_ci90": [
+     0.8732010164953916,
+     1.0
+    ],
+    "resid_sd_log": 0.029267742289304583,
+    "intercept": 221.23767428489208
+   }
+  },
+  "platform_india_all_in": {
+   "points": [
+    {
+     "date": "2024-06-25",
+     "usd_per_min": 0.2,
+     "label": "annual plans"
+    },
+    {
+     "date": "2025-09-08",
+     "usd_per_min": 0.2,
+     "label": "PAYG all-in incl. telephony"
+    },
+    {
+     "date": "2026-03-14",
+     "usd_per_min": 0.1,
+     "label": "PAYG all-in incl. telephony"
+    },
+    {
+     "date": "2026-10-17",
+     "usd_per_min": 0.068,
+     "label": "INR 6 per connected minute all-in"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2024-06-25",
+     "usd_per_min": 0.2,
+     "label": "annual plans"
+    },
+    {
+     "date": "2026-03-14",
+     "usd_per_min": 0.1,
+     "label": "PAYG all-in incl. telephony"
+    },
+    {
+     "date": "2026-10-17",
+     "usd_per_min": 0.068,
+     "label": "INR 6 per connected minute all-in"
+    }
+   ],
+   "first": {
+    "date": "2024-06-25",
+    "usd_per_min": 0.2
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.068
+   },
+   "total_decline_factor": 2.941176470588235,
+   "last_cut_date": "2026-10-17",
+   "months_since_last_cut": 0.0,
+   "fit_full": {
+    "n_points": 3,
+    "slope_per_yr": -0.4530933657831123,
+    "annual_multiplier": 0.6356587820757746,
+    "slope_ci90": [
+     -0.6491392678182102,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.5224953117983249,
+     1.0
+    ],
+    "resid_sd_log": 0.0850086966127164,
+    "intercept": 915.6870565026917
+   },
+   "fit_last18m": {
+    "n_points": 3,
+    "slope_per_yr": -0.7224857161732612,
+    "annual_multiplier": 0.48554383052849687,
+    "slope_ci90": [
+     -0.7642928534326724,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.46566310664026683,
+     1.0
+    ],
+    "resid_sd_log": 0.033508717643168706,
+    "intercept": 1461.6230599107237
+   }
+  },
+  "platform_india_bundled": {
+   "points": [
+    {
+     "date": "2025-12-08",
+     "usd_per_min": 0.1,
+     "label": "Starter bundle (models bundled; telephony extra)"
+    },
+    {
+     "date": "2026-06-10",
+     "usd_per_min": 0.06,
+     "label": "PAYG standard"
+    },
+    {
+     "date": "2026-10-17",
+     "usd_per_min": 0.0398,
+     "label": "Samvaad PAYG (telephony INR 0.40/min extra)"
+    }
+   ],
+   "envelope": [
+    {
+     "date": "2025-12-08",
+     "usd_per_min": 0.1,
+     "label": "Starter bundle (models bundled; telephony extra)"
+    },
+    {
+     "date": "2026-06-10",
+     "usd_per_min": 0.06,
+     "label": "PAYG standard"
+    },
+    {
+     "date": "2026-10-17",
+     "usd_per_min": 0.0398,
+     "label": "Samvaad PAYG (telephony INR 0.40/min extra)"
+    }
+   ],
+   "first": {
+    "date": "2025-12-08",
+    "usd_per_min": 0.1
+   },
+   "current": {
+    "date": "2026-10-17",
+    "usd_per_min": 0.0398
+   },
+   "total_decline_factor": 2.512562814070352,
+   "last_cut_date": "2026-10-17",
+   "months_since_last_cut": 0.0,
+   "fit_full": {
+    "n_points": 3,
+    "slope_per_yr": -1.0700244221223876,
+    "annual_multiplier": 0.3430001405250055,
+    "slope_ci90": [
+     -1.1622245088181098,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.31278960316775867,
+     1.0
+    ],
+    "resid_sd_log": 0.025241465737625778,
+    "intercept": 2165.5042957181086
+   },
+   "fit_last18m": {
+    "n_points": 3,
+    "slope_per_yr": -1.0700244221223876,
+    "annual_multiplier": 0.3430001405250055,
+    "slope_ci90": [
+     -1.1622245088181098,
+     0.0
+    ],
+    "annual_multiplier_ci90": [
+     0.31278960316775867,
+     1.0
+    ],
+    "resid_sd_log": 0.025241465737625778,
+    "intercept": 2165.5042957181086
+   }
+  }
+ },
+ "stacks": {
+  "A_managed_azure_quality_bar": {
+   "components": [
+    "asr_azure_streaming",
+    "llm_frontier_tier",
+    "tts_azure_quality"
+   ],
+   "now_usd_per_min": 0.032996,
+   "now_inr_per_min_fetched_fx": 3.1382495599999998,
+   "forecast": {
+    "2026-12-31": {
+     "usd_p10": 0.028258634139670308,
+     "usd_p50": 0.031195320710422733,
+     "usd_p90": 0.03335360110746278,
+     "inr_p10": 2.687678693024043,
+     "inr_p50": 2.966986952768306,
+     "inr_p90": 3.172261001330785,
+     "inr_p50_at88": 2.7451882225172004,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0
+    },
+    "2027-12-31": {
+     "usd_p10": 0.01689042426054996,
+     "usd_p50": 0.025511459688935194,
+     "usd_p90": 0.03506356752672572,
+     "inr_p10": 1.6064482514209069,
+     "inr_p50": 2.4263949310146264,
+     "inr_p90": 3.3348959074668834,
+     "inr_p50_at88": 2.2450084526262972,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.00535
+    },
+    "2028-12-31": {
+     "usd_p10": 0.012667646120302316,
+     "usd_p50": 0.021344421470923327,
+     "usd_p90": 0.03294164314051044,
+     "inr_p10": 1.2048198225019533,
+     "inr_p50": 2.030067926099518,
+     "inr_p90": 3.133079679093948,
+     "inr_p50_at88": 1.8783090894412529,
+     "prob_below_inr_0p5": 0.0021,
+     "prob_below_inr_1p0": 0.04485
+    }
+   },
+   "forecast_cut_process": {
+    "2026-12-31": {
+     "inr_p10": 2.155504793129771,
+     "inr_p50": 3.1382495599999998,
+     "inr_p90": 3.1382495599999998,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0
+    },
+    "2027-12-31": {
+     "inr_p10": 1.4086966186168681,
+     "inr_p50": 1.8947472965648857,
+     "inr_p90": 2.837397608,
+     "prob_below_inr_0p5": 0.0001,
+     "prob_below_inr_1p0": 0.00775
+    },
+    "2028-12-31": {
+     "inr_p10": 1.054323768757252,
+     "inr_p50": 1.515689333167219,
+     "inr_p90": 2.0449438622485765,
+     "prob_below_inr_0p5": 0.00075,
+     "prob_below_inr_1p0": 0.0766
+    }
+   }
+  },
+  "B_managed_azure_budget": {
+   "components": [
+    "asr_azure_streaming",
+    "llm_small_tier",
+    "tts_azure_neural"
+   ],
+   "now_usd_per_min": 0.0145764,
+   "now_inr_per_min_fetched_fx": 1.386361404,
+   "forecast": {
+    "2026-12-31": {
+     "usd_p10": 0.012445011717723161,
+     "usd_p50": 0.014197110924738687,
+     "usd_p90": 0.014565377171918583,
+     "inr_p10": 1.18364506447265,
+     "inr_p50": 1.3502872200518965,
+     "inr_p90": 1.3853130228211763,
+     "inr_p50_at88": 1.2493457613770045,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0
+    },
+    "2027-12-31": {
+     "usd_p10": 0.008029094153280939,
+     "usd_p50": 0.01283916300514225,
+     "usd_p90": 0.014499475998528287,
+     "inr_p10": 0.7636471449185501,
+     "inr_p50": 1.2211327934190794,
+     "inr_p90": 1.3790451622200255,
+     "inr_p50_at88": 1.129846344452518,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.25575
+    },
+    "2028-12-31": {
+     "usd_p10": 0.007046662759519812,
+     "usd_p50": 0.012013143151476174,
+     "usd_p90": 0.013827787388312009,
+     "inr_p10": 0.6702080950579293,
+     "inr_p50": 1.142570045136899,
+     "inr_p90": 1.315160858502355,
+     "inr_p50_at88": 1.0571565973299033,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.3695
+    }
+   },
+   "forecast_cut_process": {
+    "2026-12-31": {
+     "inr_p10": 1.2437062908838326,
+     "inr_p50": 1.386361404,
+     "inr_p90": 1.386361404,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0049
+    },
+    "2027-12-31": {
+     "inr_p10": 0.9513774850611251,
+     "inr_p50": 1.2394629424655554,
+     "inr_p90": 1.36682459292628,
+     "prob_below_inr_0p5": 0.00065,
+     "prob_below_inr_1p0": 0.1344
+    },
+    "2028-12-31": {
+     "inr_p10": 0.7565215359880212,
+     "inr_p50": 1.0613646980130949,
+     "inr_p90": 1.3451350012240932,
+     "prob_below_inr_0p5": 0.00835,
+     "prob_below_inr_1p0": 0.35595
+    }
+   }
+  },
+  "C_azure_realtime_s2s_flagship": {
+   "components": [
+    "rt_openai_flagship"
+   ],
+   "now_usd_per_min": 0.0504,
+   "now_inr_per_min_fetched_fx": 4.793544,
+   "forecast": {
+    "2026-12-31": {
+     "usd_p10": 0.03742384143101879,
+     "usd_p50": 0.04678013528116085,
+     "usd_p90": 0.05260105623314774,
+     "inr_p10": 3.5593815585041972,
+     "inr_p50": 4.449258666591208,
+     "inr_p90": 5.0028864583346815,
+     "inr_p50_at88": 4.116651904742155,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0
+    },
+    "2027-12-31": {
+     "usd_p10": 0.009352029455305232,
+     "usd_p50": 0.032137703016403896,
+     "usd_p90": 0.05968666216674748,
+     "inr_p10": 0.8894715214940806,
+     "inr_p50": 3.0566169338901745,
+     "inr_p90": 5.676798438679353,
+     "inr_p50_at88": 2.828117865443543,
+     "prob_below_inr_0p5": 0.04815,
+     "prob_below_inr_1p0": 0.12535
+    },
+    "2028-12-31": {
+     "usd_p10": 0.002943102236216798,
+     "usd_p50": 0.023483586192926374,
+     "usd_p90": 0.054886428612616334,
+     "inr_p10": 0.27991845368657964,
+     "inr_p50": 2.2335238828092274,
+     "inr_p90": 5.220248225345939,
+     "inr_p50_at88": 2.066555584977521,
+     "prob_below_inr_0p5": 0.2159,
+     "prob_below_inr_1p0": 0.32275
+    }
+   },
+   "forecast_cut_process": {
+    "2026-12-31": {
+     "inr_p10": 4.793544,
+     "inr_p50": 4.793544,
+     "inr_p90": 4.793544,
+     "prob_below_inr_0p5": 0.00015,
+     "prob_below_inr_1p0": 0.0008
+    },
+    "2027-12-31": {
+     "inr_p10": 1.6529462068965517,
+     "inr_p50": 4.793544,
+     "inr_p90": 4.793544,
+     "prob_below_inr_0p5": 0.00475,
+     "prob_below_inr_1p0": 0.02515
+    },
+    "2028-12-31": {
+     "inr_p10": 1.1107798510344828,
+     "inr_p50": 3.2212615680000005,
+     "inr_p90": 4.793544,
+     "prob_below_inr_0p5": 0.0254,
+     "prob_below_inr_1p0": 0.07855
+    }
+   }
+  },
+  "C2_azure_realtime_s2s_mini": {
+   "components": [
+    "rt_openai_mini"
+   ],
+   "now_usd_per_min": 0.01608,
+   "now_inr_per_min_fetched_fx": 1.5293688,
+   "forecast": {
+    "2026-12-31": {
+     "usd_p10": 0.01587130083818782,
+     "usd_p50": 0.01608019361027793,
+     "usd_p90": 0.01629348058256646,
+     "inr_p10": 1.5095194227200435,
+     "inr_p50": 1.5293872142735339,
+     "inr_p90": 1.549672938207896,
+     "inr_p50_at88": 1.4150570377044578,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0
+    },
+    "2027-12-31": {
+     "usd_p10": 0.015061847066869614,
+     "usd_p50": 0.016076345729606506,
+     "usd_p90": 0.01713657717359264,
+     "inr_p10": 1.432532274529969,
+     "inr_p50": 1.5290212423428748,
+     "inr_p90": 1.629859854980396,
+     "inr_p50_at88": 1.4147184242053725,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0
+    },
+    "2028-12-31": {
+     "usd_p10": 0.015077525997096348,
+     "usd_p50": 0.016071618826623463,
+     "usd_p90": 0.01714421023592111,
+     "inr_p10": 1.4340234975838337,
+     "inr_p50": 1.5285716666001576,
+     "inr_p90": 1.6305858355384566,
+     "inr_p50_at88": 1.4143024567428648,
+     "prob_below_inr_0p5": 0.0,
+     "prob_below_inr_1p0": 0.0
+    }
+   },
+   "forecast_cut_process": {
+    "2026-12-31": {
+     "inr_p10": 1.5293688,
+     "inr_p50": 1.5293688,
+     "inr_p90": 1.5293688,
+     "prob_below_inr_0p5": 0.0021,
+     "prob_below_inr_1p0": 0.0368
+    },
+    "2027-12-31": {
+     "inr_p10": 0.5273685517241379,
+     "inr_p50": 1.5293688,
+     "inr_p90": 1.5293688,
+     "prob_below_inr_0p5": 0.0551,
+     "prob_below_inr_1p0": 0.20815
+    },
+    "2028-12-31": {
+     "inr_p10": 0.35439166675862066,
+     "inr_p50": 1.0277358336000002,
+     "inr_p90": 1.5293688,
+     "prob_below_inr_0p5": 0.15055,
+     "prob_below_inr_1p0": 0.36785
+    }
+   }
+  }
+ },
+ "cut_process": {
+  "window": [
+   "2024-01-01",
+   "2026-10-17"
+  ],
+  "by_class": {
+   "llm": {
+    "components": [
+     "llm_frontier_tier",
+     "llm_small_tier"
+    ],
+    "n_cuts": 11,
+    "component_years": 5.582477754962383,
+    "rate_per_component_year": 1.9704512015693867,
+    "median_cut_pct": 48.92966360856269
+   },
+   "speech": {
+    "components": [
+     "asr_azure_streaming",
+     "tts_azure_neural",
+     "tts_azure_quality"
+    ],
+    "n_cuts": 3,
+    "component_years": 8.373716632443575,
+    "rate_per_component_year": 0.3582638548307976,
+    "median_cut_pct": 26.66666666666667
+   },
+   "realtime": {
+    "components": [
+     "rt_openai_flagship",
+     "rt_openai_mini"
+    ],
+    "n_cuts": 2,
+    "component_years": 5.582477754962383,
+    "rate_per_component_year": 0.3582638548307976,
+    "median_cut_pct": 32.8
+   }
+  },
+  "cuts": [
+   {
+    "series": "llm_frontier_tier",
+    "date": "2024-05-13",
+    "log_size": -0.6931471805599453,
+    "label": "gpt-4o-2024-05-13"
+   },
+   {
+    "series": "llm_frontier_tier",
+    "date": "2024-08-06",
+    "log_size": -1.0593181783259078,
+    "label": "gpt-4o-2024-08-06"
+   },
+   {
+    "series": "llm_frontier_tier",
+    "date": "2025-04-14",
+    "log_size": -0.4896448016865438,
+    "label": "gpt-4.1"
+   },
+   {
+    "series": "llm_frontier_tier",
+    "date": "2025-08-07",
+    "log_size": -0.5203518928494552,
+    "label": "gpt-5"
+   },
+   {
+    "series": "llm_frontier_tier",
+    "date": "2026-07-30",
+    "log_size": -0.22314355131420985,
+    "label": "gpt-5.6-terra (price cut)"
+   },
+   {
+    "series": "llm_frontier_tier",
+    "date": "2026-09-22",
+    "log_size": -0.03867885456511137,
+    "label": "gpt-6-sol (<=272k)"
+   },
+   {
+    "series": "llm_frontier_tier",
+    "date": "2026-09-29",
+    "log_size": -0.0745414355328539,
+    "label": "gpt-6.1-sol (<=272k)"
+   },
+   {
+    "series": "llm_small_tier",
+    "date": "2024-01-25",
+    "log_size": -0.6751749381555149,
+    "label": "gpt-3.5-turbo-0125"
+   },
+   {
+    "series": "llm_small_tier",
+    "date": "2024-07-18",
+    "log_size": -1.5701438020918983,
+    "label": "gpt-4o-mini-2024-07-18"
+   },
+   {
+    "series": "llm_small_tier",
+    "date": "2025-04-14",
+    "log_size": -0.6719663584804982,
+    "label": "gpt-4.1-nano"
+   },
+   {
+    "series": "llm_small_tier",
+    "date": "2025-08-07",
+    "log_size": -0.7434954441636652,
+    "label": "gpt-5-nano"
+   },
+   {
+    "series": "asr_azure_streaming",
+    "date": "2025-10-01",
+    "log_size": -0.6161861394238172,
+    "label": "Voice Live Std - standard speech audio input"
+   },
+   {
+    "series": "asr_azure_streaming",
+    "date": "2025-11-01",
+    "log_size": -0.1823215567939546,
+    "label": "Voice Live BYO - standard speech audio input"
+   },
+   {
+    "series": "tts_azure_quality",
+    "date": "2026-03-01",
+    "log_size": -0.3101549283038396,
+    "label": "Neural HD (DragonHD)"
+   },
+   {
+    "series": "rt_openai_flagship",
+    "date": "2024-12-17",
+    "log_size": -1.0647107369924285,
+    "label": "gpt-4o-realtime-preview-2024-12-17 (audio)"
+   },
+   {
+    "series": "rt_openai_flagship",
+    "date": "2025-08-28",
+    "log_size": -0.3974969384589874,
+    "label": "gpt-realtime GA (audio)"
+   }
+  ]
+ },
+ "stack_history": {
+  "A_managed_azure_quality_bar": [
+   {
+    "date": "2023-04-01",
+    "usd_per_min": 0.5791066666666667
+   },
+   {
+    "date": "2023-12-01",
+    "usd_per_min": 0.21190666666666666
+   },
+   {
+    "date": "2024-06-01",
+    "usd_per_min": 0.11758666666666667
+   },
+   {
+    "date": "2024-10-17",
+    "usd_per_min": 0.055966666666666665
+   },
+   {
+    "date": "2024-11-01",
+    "usd_per_min": 0.055966666666666665
+   },
+   {
+    "date": "2025-05-01",
+    "usd_per_min": 0.04330666666666667
+   },
+   {
+    "date": "2025-09-01",
+    "usd_per_min": 0.03517666666666667
+   },
+   {
+    "date": "2026-01-01",
+    "usd_per_min": 0.03261
+   },
+   {
+    "date": "2026-04-01",
+    "usd_per_min": 0.03932
+   },
+   {
+    "date": "2026-08-01",
+    "usd_per_min": 0.034892
+   },
+   {
+    "date": "2026-10-17",
+    "usd_per_min": 0.032996
+   }
+  ],
+  "B_managed_azure_budget": [
+   {
+    "date": "2023-04-01",
+    "usd_per_min": 0.059650666666666664
+   },
+   {
+    "date": "2023-12-01",
+    "usd_per_min": 0.04179466666666667
+   },
+   {
+    "date": "2024-06-01",
+    "usd_per_min": 0.03269866666666667
+   },
+   {
+    "date": "2024-10-17",
+    "usd_per_min": 0.025228666666666667
+   },
+   {
+    "date": "2024-11-01",
+    "usd_per_min": 0.025228666666666667
+   },
+   {
+    "date": "2025-05-01",
+    "usd_per_min": 0.024268666666666668
+   },
+   {
+    "date": "2025-09-01",
+    "usd_per_min": 0.023743066666666666
+   },
+   {
+    "date": "2026-01-01",
+    "usd_per_min": 0.0145764
+   },
+   {
+    "date": "2026-04-01",
+    "usd_per_min": 0.0145764
+   },
+   {
+    "date": "2026-08-01",
+    "usd_per_min": 0.0145764
+   },
+   {
+    "date": "2026-10-17",
+    "usd_per_min": 0.0145764
+   }
+  ],
+  "C_azure_realtime_s2s_flagship": [
+   {
+    "date": "2023-04-01",
+    "usd_per_min": null
+   },
+   {
+    "date": "2023-12-01",
+    "usd_per_min": null
+   },
+   {
+    "date": "2024-06-01",
+    "usd_per_min": null
+   },
+   {
+    "date": "2024-10-17",
+    "usd_per_min": 0.2175
+   },
+   {
+    "date": "2024-11-01",
+    "usd_per_min": 0.2175
+   },
+   {
+    "date": "2025-05-01",
+    "usd_per_min": 0.075
+   },
+   {
+    "date": "2025-09-01",
+    "usd_per_min": 0.0504
+   },
+   {
+    "date": "2026-01-01",
+    "usd_per_min": 0.0504
+   },
+   {
+    "date": "2026-04-01",
+    "usd_per_min": 0.0504
+   },
+   {
+    "date": "2026-08-01",
+    "usd_per_min": 0.0504
+   },
+   {
+    "date": "2026-10-17",
+    "usd_per_min": 0.0504
+   }
+  ]
+ },
+ "selfhost_point_2026_10": {
+  "asr_riva_conformer_hi_A100_3yrRI_50util": 0.0005459227467811159,
+  "tts_magpie_multilingual_H100_3yrRI_50util_x_talkshare": 0.0013997395833333333,
+  "llm_phonellm_class_30B_A3B_claim_corrected": 0.0025,
+  "orchestration_infra_from_l2": 0.000675,
+  "total_usd_per_min": 0.0051206623301144494,
+  "total_inr_per_min_fetched_fx": 0.4870261942171853,
+  "caveats": "vendor throughput claims (NVIDIA, Daily/Pipecat) not measured by us; 50% utilisation and 0.5 derate assumed; excludes N+1 minimum fleet (dominates below ~1M min/month), engineering and on-call; PhoneLLM is English-only and Magpie has no published Hindi quality metric, so this stack does not yet meet the quality bar"
+ }
+}

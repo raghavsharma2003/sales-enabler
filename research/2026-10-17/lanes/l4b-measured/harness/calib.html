@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibration Agent</title>
+<style>
+  :root { --bg:#fbfaf7; --fg:#1d1d1b; } @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#171716; --fg:#ecebe6; } }
+  :root[data-theme="dark"] { --bg:#171716; --fg:#ecebe6; }
+  body { background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; padding:16px; }
+</style>
+</head>
+<body>
+<h1>Calibration agent</h1>
+<p>A fake voice agent with a known reply rule, used to measure the harness's own bias. It greets, then after the
+caller stops (energy VAD: SILENCE_MS of quiet) it waits REPLY_DELAY_MS and plays a reply clip into an AudioContext.
+Expected harness latency = SILENCE_MS + REPLY_DELAY_MS (+ one 20 ms VAD frame).</p>
+<button id="go">Start call</button>
+<pre id="log"></pre>
+<script>
+const SILENCE_MS = 600, REPLY_DELAY_MS = 500;
+const q = new URLSearchParams(location.search);
+const reply = q.get('reply') || 'probe_hello';
+const L = (m) => { document.getElementById('log').textContent += m + '\n'; };
+document.getElementById('go').onclick = async () => {
+  const ctx = new AudioContext({ sampleRate: 24000 });
+  const buf = await ctx.decodeAudioData(await (await fetch('../battery/audio/' + reply + '.wav')).arrayBuffer());
+  const greet = await ctx.decodeAudioData(await (await fetch('../battery/audio/P4_t10.wav')).arrayBuffer());
+  const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const an = ctx.createAnalyser(); an.fftSize = 512; ctx.createMediaStreamSource(mic).connect(an);
+  let speaking = false, lastVoice = 0, heard = false, busy = false;
+  const play = (b) => new Promise(r => { const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.onended = r; s.start(); });
+  busy = true; await play(greet); busy = false; L('greeted');
+  setInterval(async () => {
+    const x = new Float32Array(an.fftSize); an.getFloatTimeDomainData(x);
+    let e = 0; for (const v of x) e += v * v; const db = 10 * Math.log10(e / x.length + 1e-12);
+    const t = performance.now();
+    if (db > -45) { lastVoice = t; heard = true; }
+    if (!busy && heard && t - lastVoice >= SILENCE_MS) {
+      busy = true; heard = false;
+      await new Promise(r => setTimeout(r, REPLY_DELAY_MS));
+      L('reply at ' + Math.round(performance.now()));
+      await play(buf); busy = false;
+    }
+  }, 20);
+};
+</script>
+</body>
+</html>
