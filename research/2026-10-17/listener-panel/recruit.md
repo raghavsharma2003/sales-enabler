@@ -1,216 +1,208 @@
-# Recruiting 30-60 listeners per region, cheaply and ethically
+# Recruiting the v2 panels (renewal calls; 60+ first), cheaply and ethically
 
-This is for the owner and the regional coordinators. It goes with `protocol.md`: section 2 there sets eligibility and
-quotas, and section 8 sets pay. Nothing here has been done. Every vendor and organisation type below is a suggestion,
-and no one has been contacted. Prices are estimates, not quotes.
+For the owner and the regional coordinators. It goes with `protocol.md` v2.0: section 2 there sets eligibility and
+quotas, section 8 sets pay. v1 is kept as `recruit.round1.md`.
+
+Nothing here has been done. Every organisation type below is a suggestion, and no one has been contacted. Prices are
+estimates, not quotes.
 
 ## 1. The short version
 
-| panel | target analysed | recruit (complete sessions) | where people come from | coordinator |
+| panel | analysed | recruit | where people come from | coordinator |
 |---|---|---|---|---|
-| Bihar / East UP (Bhojpuri) | 48 | 56 | Siwan, Gopalganj, Saran, Bhojpur, Buxar, Rohtas; Ballia, Deoria, Gorakhpur, Ghazipur, Varanasi; at least 20% Bhojpuri migrants (Delhi NCR, Mumbai, Surat, Ludhiana) | one person based in Chhapra/Siwan or Patna, with village networks |
-| Tamil Nadu | 48 | 56 | Madurai, Coimbatore, Tiruchirappalli, Salem, Chennai; migrants in Bengaluru | one person in Madurai or Tiruchirappalli |
-| Maharashtra | 48 | 56 | Pune, Nashik, Chhatrapati Sambhajinagar, Kolhapur; migrants in Bengaluru, Hyderabad, Gujarat | one person in Pune or Nashik |
-| Out-group Hindi | 36 | 42 | Delhi NCR, Haryana, west UP, Madhya Pradesh; must not speak or understand Bhojpuri | one person in Delhi NCR |
+| `hindi_60plus` (E links) | 48 | 56 | Hindi belt. At least 2 districts in UP or Bihar, plus Delhi NCR and one of MP or Rajasthan. At least 25% aged 70+. At least 60% from policy-holding households. Mostly kiosk sessions | one person with senior-citizen and community networks (Lucknow, Patna or Delhi NCR) |
+| `hindi_18to59` (H links) | 36 | 42 | same districts. At least 12 aged 45-59 | the same coordinator, or a second one |
+| `tamilnadu` (T) | 36 | 42 | Madurai, Coimbatore, Tiruchirappalli, Salem, Chennai. At least 30% aged 60+ | one person in Madurai or Tiruchirappalli |
+| `maharashtra` (M) | 36 | 42 | Pune, Nashik, Chhatrapati Sambhajinagar, Kolhapur. At least 30% aged 60+ | one person in Pune or Nashik |
+| optional `bihar` (B) / `outgroup` (O) | 30 / 24 | 36 / 28 | as v1 | as v1; run only after the four above |
 
-The cheapest workable model is **one paid local coordinator per panel** who recruits through their own and their
-community's networks, issues single-use links one person at a time, tracks quotas daily, and pays by UPI. A coordinator
-with good networks recruits a panel in 10-14 days. Expect about 15% of completed sessions to fail the exclusion rules,
-which is why each panel recruits 56 to analyse 48.
-
-**Cost at target size:** about ₹1.04-1.23 lakh for the four panels, including the pilot and retest (section 8). The
-minimum viable panel (36 recruited, 30 analysed per region) costs about ₹80-90k.
+- **The two Hindi strata are separate links.** E links are for people aged 60 or older; H links for people aged 18-59.
+  The page screens out anyone whose age does not fit the link. Give the person the other link instead; it costs them
+  about 2 minutes.
+- **The cheapest workable model** is still one paid local coordinator per panel who:
+  - recruits through their own and their community's networks;
+  - issues single-use links one person at a time;
+  - runs kiosk sessions for older listeners;
+  - tracks quotas daily and pays by UPI.
+- **Cost:** about ₹1.21-1.54 lakh for the main four panels, including the pilot, retest, reviewers and voice talent
+  (`protocol.md` §8).
 
 ## 2. Channels, ranked by cost and control
 
-1. **A local coordinator plus personal and community networks.** These are WhatsApp community groups, neighbourhood
-   and village contacts, and alumni or parents' groups.
-   - **Who.** A college lecturer, an NGO or self-help-group field worker, or a retired teacher: someone people trust,
-     who is not your employee or sales prospect.
-   - **Strengths.** The cheapest channel, and the best reach into village/small-town, women and 45+ cells.
-   - **Risk.** Everyone ends up from one social circle. Control it by using at least 3 different seed networks per
-     panel and capping any single group at 25% of the panel.
-   - **Lecturers.** They recruit **outside their own classes**: students may feel unable to refuse.
-2. **Community organisations,** for older listeners and women. These include self-help-group federations, senior
-   citizens' associations, residents' welfare associations and community halls. Run **kiosk sessions** (section 6)
-   where the coordinator brings phones and earphones. Ask the organisation's permission and offer nothing beyond the
-   listener's own payment, so the organisation has no reason to pressure members.
-3. **An ethical digital-work platform with an Indian-language rural workforce,** for example Karya, which pays workers
-   for Indian-language data tasks.
-   - **Before relying on it, check:** its terms for third-party studies; that it can target by district and mother
-     tongue; and that the worker's pay is at least the ₹250 in this protocol, not the platform's lower default.
-   - **What fits.** Platform workers have often done many tasks, so screen out anyone who has done voice-rating or
-     telecalling work (the page asks about it). Use the platform as a top-up, not the whole panel.
-4. **A small field market-research agency** in Patna, Madurai and Pune, as the fallback when a quota cell will not fill
-   (for example, 45+ women in villages). Ask for a per-complete quote that passes the full ₹250 to the listener. Check
-   that the agency will use your single-use links and will not coach respondents.
-5. **Online consumer panels,** only to top up urban, younger cells. They skew urban and English-speaking, and must not
-   fill the 45+, village or below-graduation quotas.
+1. **Local coordinator plus personal and community networks.**
+   - Use the same rules as v1: at least 3 seed networks per panel, at most 25% of a panel from one group, and lecturers
+     recruit outside their own classes.
+2. **Community organisations, now the main route for 60+.**
+   - Which: senior citizens' associations and day-care centres, pensioners' associations, residents' welfare
+     associations, temple, gurdwara or community halls, and self-help-group federations (often the mothers and
+     grandmothers of members).
+   - How: run **kiosk sessions** (section 6). Ask the organisation's permission, and offer nothing beyond each
+     listener's own payment, so the organisation has no reason to pressure members.
+3. **An ethical digital-work platform** with an Indian-language rural workforce (for example Karya). Use it as a
+   top-up for 18-59 only: platform workers are rarely 60+. Check its terms and that it pays at least ₹250.
+4. **A small field market-research agency**, as the fallback when a quota cell will not fill (for example 70+ women in
+   villages). Get a per-complete quote that passes the full ₹250 to the listener; no coaching.
+5. **Online consumer panels:** only to top up urban 18-44 cells. Never for 60+ or village cells.
 
 **Do not:**
+- buy phone lists, cold-call or SMS-blast;
+- recruit sales prospects, customers or their staff;
+- recruit through anyone with power over the listener;
+- post a link in a group.
 
-- buy phone lists, or cold-call or SMS-blast for recruits. Commercial calls to people who did not opt in run into
-  TCCCPR and DPDP, and it would contradict the product's own consent principles;
-- recruit your sales prospects, customers or their staff;
-- recruit through anyone with power over the listener: employers, their own teachers, landlords;
-- post one link in a group. Each person gets their own pid link by direct message.
+**New in v2:** do not recruit through an insurance agent, broker or bank, even though they know many policy-holders.
+Their customers may feel obliged, and the study must not look like a sales or renewal contact.
 
 ## 3. Step by step
 
 **Owner, before recruiting** (about 1 week, overlapping):
-
-1. Finish the stimulus and text actions in `protocol.md` section 3.5:
-   - **M1** listen-checks;
-   - **M7** UI review;
-   - **M8**: fill `CONFIG` in `app.js` with the legal name, contact and amount. The page will not start without it.
-2. Build, bundle and host the page: `protocol.md` section 10.1.
+1. Finish the protocol §3.5 actions: M1 (listen-checks), M7 (UI review) and M8 (`CONFIG` in `app.js`). The page will
+   not start without M8. If possible, also M3, M4 (human references) and M6 (competitor captures).
+2. Build, bundle and host the page (`protocol.md` §10).
 3. Sign a one-page agreement with each coordinator (section 5).
-4. Make a link sheet per panel: `python3 build_plan.py --links bihar 1 60 --base https://HOST/listener-panel/ > bihar-links.csv`.
-   The coordinator gets only their own panel's sheet.
-5. Run the pilot (3 listeners per panel, links with `&mode=pilot`), hold the feedback calls, fix, then freeze the
-   protocol.
+4. Make the link sheets per stratum, for example
+   `python3 build_plan.py --links hindi_60plus 1 70 --base https://HOST/listener-panel/ > E-links.csv`. Make a
+   separate H sheet. Each coordinator gets only their own sheets.
+5. Run the pilot: 4 per main panel, with at least 2 of the 60+ pilots in assisted kiosk mode. Hold the feedback calls,
+   fix, amend and freeze (`panel-predictions.md` §6-8).
 
 **Coordinator, during fielding** (2 weeks):
-
-1. Send the invitation (section 4) through your networks. People who are interested reply to you directly.
-2. Ask the short eligibility questions in your own words: mother tongue, home district, age 18+, no telecalling, BPO or
-   AI work. The page screens again, so this step only saves people from wasted time.
-3. Send the **next unused link** from the sheet, in order (B001, B002, ...). Order matters for counterbalancing. Mark it
-   in the quota sheet.
-4. When the answers arrive (a file or a pasted code on WhatsApp):
-   - check that the completion code the listener tells you matches the one in the file;
-   - save the file into the shared answers folder, named by pid;
+1. Send the invitation (section 4). People who are interested reply to you directly.
+2. Ask the short eligibility questions in your own words:
+   - age (to pick the E or H link);
+   - mother tongue and home district;
+   - no telecalling, BPO or AI work in the last 12 months.
+3. Send the **next unused link of the right stratum**, in order (E001, E002, ...). Order matters for counterbalancing.
+4. When the answers arrive:
+   - check the completion code;
+   - save the file named by pid;
    - pay within 72 hours;
    - mark the quota sheet.
-5. Each evening, update the quota sheet and tell the owner which cells are short (for example "45+ women: 3 of 8").
-   Steer the next day's recruiting to the short cells.
-6. Stop issuing links when the owner says the panel has 48 listeners passing the exclusion rules
-   (`analysis.py --quality-only`), or when 60 have completed.
+5. Each evening, update the quota sheet and steer the next day toward short cells. Typical short cells: "70+ women",
+   "village 60+", "no household policy".
+6. Stop when the owner says the stratum has its analysed target (`analysis.py --quality-only`), or when 1.25× the
+   target has completed.
 
-**Owner, after fielding.** Run the analysis (`protocol.md` section 10.4). Make sure the coordinators delete payment
-details and WhatsApp chats (section 7).
-
-## 4. Invitation message (adapt; do not mention dialect, accent or the hypothesis)
+## 4. Invitation message (adapt; do not mention voices, pace, AI or the hypothesis)
 
 English:
 
 > Hello! We are running a short listening study for a company that makes phone systems. You listen to short recorded
-> phone calls from businesses on your own phone, with earphones, and answer simple questions about them. It takes about
-> 25 minutes and pays ₹250 by UPI when you finish. You must be 18 or older. It is not for people who work in
-> telecalling, call centres or AI companies. Your name and number are not stored with your answers. Interested? Reply
-> to me and I will send you your own link.
+> phone calls about insurance renewals from made-up companies, on a phone with earphones, and answer simple questions.
+> It takes about 25 minutes and pays ₹250 by UPI when you finish. Nobody will ask you for money, an OTP, bank details
+> or policy numbers, and no payment link will be sent to you. You must be 18 or older. It is not for people who work in
+> telecalling, call centres or AI companies. Interested? Reply to me and I will send you your own link, or I can bring a
+> phone to you.
 
 Hindi:
 
-> नमस्ते! हम फ़ोन सिस्टम बनाने वाली एक कंपनी के लिए सुनने का एक छोटा अध्ययन कर रहे हैं। आपको अपने फ़ोन पर, ईयरफ़ोन
-> लगाकर, कंपनियों की कुछ छोटी रिकॉर्ड की हुई फ़ोन कॉल सुननी हैं और उनके बारे में आसान सवालों के जवाब देने हैं। इसमें
-> लगभग 25 मिनट लगते हैं और पूरा करने पर UPI से ₹250 मिलते हैं। उम्र 18 साल या उससे ज़्यादा होनी चाहिए। टेलीकॉलिंग,
-> कॉल सेंटर या AI कंपनियों में काम करने वाले लोग इसमें भाग नहीं ले सकते। आपका नाम और नंबर आपके जवाबों के साथ नहीं
-> रखा जाता। रुचि है? मुझे जवाब दें, मैं आपको आपका अपना लिंक भेजूँगा/भेजूँगी।
+> नमस्ते! हम फ़ोन सिस्टम बनाने वाली एक कंपनी के लिए सुनने का एक छोटा अध्ययन कर रहे हैं। आपको फ़ोन पर, ईयरफ़ोन लगाकर,
+> काल्पनिक कंपनियों की बीमा रिन्यूअल से जुड़ी कुछ छोटी रिकॉर्ड की हुई कॉल सुननी हैं और आसान सवालों के जवाब देने हैं।
+> इसमें लगभग 25 मिनट लगते हैं और पूरा करने पर UPI से ₹250 मिलते हैं। कोई आपसे पैसे, OTP, बैंक की जानकारी या पॉलिसी
+> नंबर नहीं माँगेगा, और आपको कोई पेमेंट लिंक नहीं भेजा जाएगा। उम्र 18 साल या उससे ज़्यादा होनी चाहिए। टेलीकॉलिंग,
+> कॉल सेंटर या AI कंपनियों में काम करने वाले लोग इसमें भाग नहीं ले सकते। रुचि है? मुझे जवाब दें, मैं आपका अपना लिंक भेजूँगा/भेजूँगी,
+> या फ़ोन लेकर आपके पास आ सकता/सकती हूँ।
 
-Tamil and Marathi coordinators write their own version from the English. A native speaker writing their own message
-does better than a translation.
-
-Why the message hides the purpose: if people know the study is about dialect, they answer what they think the study
-wants. The consent tells them that some voices are computer-generated, and the debrief explains the dialect question.
-That is the only blinding.
+Tamil and Marathi coordinators write their own version from the English. The message names insurance renewals but not
+what is compared (voice type, speed, the safety sentence, languages). The debrief explains those.
 
 ## 5. Coordinator agreement: what it must say (one page)
 
-1. **Scope.** Recruit eligible adults for one panel, issue single-use links in order, track quotas, collect answer
-   files, pay listeners, and run kiosk sessions if asked.
-2. **Pay.** A fixed fee per panel (suggest ₹10-15k), plus listener payments advanced or reimbursed against a payment
-   log. Do not pay coordinators per listener above the fee: per-head pay invites padding.
-3. **No coaching.** Do not explain what the study is testing. Do not comment on the voices. In assisted kiosk sessions,
-   read the on-screen text aloud word for word and nothing more.
-4. **Conflicts.** No family members of the coordinator, and no more than 25% of a panel from one group or village.
-5. **Data handling.** Keep two separate sheets:
-   - the quota sheet (pid and demographic bands, no names), shared with the owner;
-   - the payment sheet (pid, name, phone, UPI), kept by the coordinator only.
+As in v1 §5: scope, a fixed fee, no coaching, conflicts, two separate sheets (quota and payment), deletion of payment
+data and chats 30 days after the last payment, daily reporting, withdrawal by pid. v2 adds three things:
 
-   Never put names or phone numbers in the answers folder. Delete the payment sheet and the WhatsApp chats with
-   listeners 30 days after the last payment. Confirm the deletion in writing.
-6. **Reporting.** Send quota counts daily. Report any complaint or withdrawal request to the owner the same day.
-7. **Withdrawal.** If a listener asks to withdraw, send the owner their pid, and the owner deletes their file.
+- **Strata.** Issue E links only to people aged 60+ and H links only to people aged 18-59. Record the stratum in the
+  quota sheet.
+- **Scam questions.** If a listener asks whether this is a scam, say plainly:
+  - it is a research study;
+  - it will never ask for money, an OTP or bank details;
+  - they can stop at any time.
+  Never ask for policy details. Never send any link other than the study link.
+- **Kiosk hygiene.** Wipe phones and earphones between listeners. Use one phone per listener. No coordinator comments on
+  the voices.
 
-Under DPDP the owner is the data fiduciary and the coordinator processes data on the owner's behalf. This agreement is
-the minimum written basis for that.
+## 6. Reaching older (60+, 70+), rural and low-literacy listeners
 
-## 6. Reaching older, rural and low-literacy listeners
+These are the cells the wedge depends on. Self-serve online recruitment misses them.
 
-These cells (45+, village, below graduation) matter most for the wedge, because renewal-call customers skew older, and
-they are the cells that self-serve online recruitment misses.
-
-- **Kiosk sessions.** The coordinator brings 2-3 Android phones with wired earphones (about ₹300-500 each; wipe them
-  between listeners) to a community hall or an SHG meeting. Use links with `&mode=kiosk&assisted=1`. One listener per
-  phone at a time, seated apart.
-- **Assisted mode.** The coordinator may read the on-screen text aloud, word for word, for a listener who cannot read
-  comfortably. They never paraphrase, explain or react to a voice. The session records `assisted` and the analysis
-  reports how many there were.
-- **After each kiosk day.** Open `index.html?coordinator=1` on each phone, tap "Export all (JSON)", save the file to the
-  answers folder, then delete the sessions from the phone.
-- **Women listeners.** Where it is culturally expected, a woman coordinator or co-coordinator runs women's sessions.
-  Hold daytime sessions in familiar places.
-- **Pay on the spot by UPI** after the completion code shows. Some older listeners may not have UPI; then pay a family
-  member's UPI at the listener's request, or give a mobile recharge of equal value. Record which.
+- **Kiosk sessions are the default for 60+.**
+  - Bring 2-3 Android phones with **wired** earphones (₹300-500 each), or over-ear headphones for anyone who finds
+    earbuds uncomfortable.
+  - Use links with `&mode=kiosk&assisted=1`. Add `&big=1` for larger text, or let the listener tap "A+" on the first
+    screen.
+  - Seat listeners apart, in a quiet room. Hold daytime sessions.
+- **Assisted mode.**
+  - The coordinator may read on-screen text aloud word for word, and may operate the buttons on the listener's
+    instruction.
+  - The coordinator never paraphrases, explains, or reacts to a voice, and never repeats what a caller said.
+  - The session records `assisted`.
+- **Hearing.**
+  - Do not exclude people who say they have difficulty hearing on calls. They are real renewal customers, and the page
+    records it as a covariate.
+  - If someone uses a hearing aid, let them listen through their usual setup (earpiece or speaker). They pick that in
+    the "How are you listening?" question.
+  - The sound check still has to pass.
+- **Breaks.** A 60+ listener may take a short break between parts (after the sound check, or after part 2). The page
+  resumes where they left off. Comprehension cards shown again after a reload are flagged and their answers dropped.
+- **After each kiosk day:**
+  1. open `index.html?coordinator=1` on each phone;
+  2. tap "Export all (JSON)";
+  3. save to the answers folder;
+  4. delete the sessions from the phone.
+- **Pay on the spot by UPI** after the completion code. Where the listener has no UPI, pay a family member's UPI at the
+  listener's request, or give a recharge of equal value. Record which.
+- **Women listeners:** a woman coordinator or co-coordinator where expected.
 
 ## 7. Ethics checklist (all must be true before the first main-panel invitation)
 
 - [ ] `CONFIG` holds a real legal name and a working contact. The contact is monitored for the 12-month retention period.
-- [ ] Consent and questions reviewed by a native speaker in each language, and back-translated (M7).
-- [ ] The pilot is done, and nothing in it confused 2 or more listeners.
-- [ ] The coordinator agreements are signed, and each coordinator has read sections 4-6.
-- [ ] Payment within 72 hours is funded. Every completed session is paid, including those excluded later.
-- [ ] Only adults: the page ends under-18 sessions and stores nothing, and coordinators do not invite minors.
-- [ ] Nobody is recruited through someone with power over them.
-- [ ] The scripts contain no debt, health or collections stress (the six turns are sales, delivery and renewal reminders).
-- [ ] There is a date for deleting the payment sheets and chats (30 days after the last payment) and the answers
-      (12 months after the study ends).
+- [ ] Consent c3, the questions and the debrief have been reviewed and back-translated in every language (M7).
+- [ ] The pilot is done. Nothing confused 2 or more listeners. The 60+ median session is 30 minutes or less, or the
+      §9 cut has been applied.
+- [ ] Coordinator agreements are signed, including the v2 strata and scam-question clauses.
+- [ ] Payment within 72 hours is funded. Every completed session is paid.
+- [ ] Adults only. Nobody is recruited through someone with power over them, or through an insurance seller.
+- [ ] The scripts carry no threat, deadline pressure or collections content. The lapse-revival turns state facts only.
+- [ ] Human-talent consent forms (no use for training or cloning a voice) are signed before any human clip is
+      ingested.
+- [ ] Each competitor platform's terms were checked before its clips were captured.
+- [ ] Deletion dates are set: payment sheets and chats 30 days after the last payment; answers 12 months after the
+      study ends; talent recordings 12 months after the study ends.
 
 ## 8. Budget (estimates, not quotes)
 
-| item | Bihar | Tamil Nadu | Maharashtra | Out-group | total |
+| item | hindi_60plus | hindi_18to59 | Tamil Nadu | Maharashtra | total (main four) |
 |---|---|---|---|---|---|
-| listener payments (₹250 × recruits) | ₹14,000 | ₹14,000 | ₹14,000 | ₹10,500 | ₹52,500 |
-| coordinator fee | ₹10-15k | ₹10-15k | ₹10-15k | ₹8-12k | ₹38-57k |
-| kiosk earphones, recharge tokens for sound-check failures, data | ₹2,000 | ₹2,000 | ₹2,000 | ₹1,000 | ₹7,000 |
-| pilot (3 × ₹350) and retest (about 6 × ₹100) | ₹1,650 | ₹1,650 | ₹1,650 | ₹1,650 | ₹6,600 |
-| **total** | **₹28-33k** | **₹28-33k** | **₹28-33k** | **₹21-25k** | **₹1.04-1.23 lakh** |
+| listener payments (₹250 × recruits) | ₹14,000 | ₹10,500 | ₹10,500 | ₹10,500 | ₹45,500 |
+| coordinator fee | ₹15-20k (kiosk-heavy) | ₹8-12k | ₹10-15k | ₹10-15k | ₹43-62k |
+| kiosk phones and earphones, recharge tokens, data | ₹4,000 | ₹1,000 | ₹2,000 | ₹2,000 | ₹9,000 |
+| pilot (4 × ₹350) and retest (about 5 × ₹100) | ₹1,900 | ₹1,900 | ₹1,900 | ₹1,900 | ₹7,600 |
+| **subtotal** | **₹35-40k** | **₹21-25k** | **₹24-29k** | **₹24-29k** | **₹1.05-1.24 lakh** |
 
-Add about ₹20-35k for native reviewers and voice talent if M3, M4 and M7 are bought in (`protocol.md` section 8).
-**Minimum viable** (36 recruited per region panel, 30 out-group): listener payments ₹34,500, coordinators about
-₹35-45k, other costs about ₹10k, so about ₹80-90k.
+- Add ₹10-20k for native reviewers (M1, M3, M7) and ₹6-10k for two Hindi voice talents (M4). The total is about
+  ₹1.21-1.54 lakh, as in `protocol.md` §8.
+- The optional Bihar and out-group panels add about ₹30-40k.
+- **Pay level:** ₹250 for about 25 minutes (₹10/min), as in v1. The reasoning is the same: generous next to local daily
+  wages, it keeps attention up, and single-use links and screening guard against fake eligibility.
 
-**Pay level.** ₹250 for about 25 minutes is ₹10/min. That is generous next to local daily wages: check the current
-state MGNREGA rate as a floor reference. Generous pay keeps attention up and is fair for a task that needs earphones and
-quiet. It also makes faking eligibility worth trying, which is why links are single-use, the page screens and checks,
-and pids are issued one at a time.
+## 9. Fraud and quality controls
 
-## 9. Fraud and quality controls (and what is not done)
+As in v1 §9:
+- single-use pid links;
+- a screening re-check, now including the age stratum;
+- three hidden catch trials;
+- a speeding rule;
+- a duplicate-pid rule;
+- device-sharing flags (not exclusions);
+- checksum-verified completion codes.
 
-- **Built into the page and the analysis:**
-  - single-use pid links;
-  - a re-check of the screening rules;
-  - three hidden catch trials;
-  - a speeding rule;
-  - a duplicate-pid rule (the first completion counts);
-  - device-sharing flags (reviewed, not auto-excluded, because shared phones are normal);
-  - a completion-code checksum, verified by the coordinator before paying and again by `analysis.py`.
-- **Not done:**
-  - identity verification;
-  - location checks;
-  - voice recording.
-
-  These would cost listeners' privacy for little gain at this scale. The residual risk is that someone lies about their
-  mother tongue. The coordinator's knowledge of their own network, and the open-text check, are the defence.
-- **Do not withhold pay for failed catch trials.** Excluding a session from analysis is not evidence of bad faith, and
-  disputes over pay would cost more than the ₹250.
+No identity checks, location checks or voice recording. Never withhold pay for failed catch trials.
 
 ## 10. Timeline
 
 | days | step |
 |---|---|
-| 1-5 | Owner: M1, M7 and M8, hosting, coordinator agreements. Coordinators: line up seed networks and kiosk venues |
-| 6-8 | Pilot (12 listeners), feedback calls, fixes, freeze |
-| 9-22 | Fielding: about 4-6 completes per panel per day, quota steering from day 3, `--quality-only` check at about 20% |
-| 23-30 | Retest (10%), final payments, analysis; coordinators delete payment data by day 60 |
+| 1-5 | Owner: M1, M7, M8, hosting, coordinator agreements; human recordings and competitor captures in parallel. Coordinators: line up seed networks and kiosk venues (senior-citizen groups for 60+) |
+| 6-8 | Pilot (16), feedback calls, fixes, amendments, freeze |
+| 9-22 | Fielding: about 3-5 completes per panel per day (60+ kiosk days run 6-10 listeners per venue); quota steering from day 3; `--quality-only` check at about 20% |
+| 23-30 | Retest (10%), final payments, analysis. Coordinators delete payment data by day 60 |

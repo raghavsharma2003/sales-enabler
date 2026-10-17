@@ -1,7 +1,7 @@
 {
  "lane": "l8-azure-bench",
  "generated": "2026-10-17",
- "fx_inr_per_usd": 88.0,
+ "fx_inr_per_usd": 95.0,
  "method": "Measured on Azure (southeastasia GlobalStandard; francecentral DataZone EU for gpt-6-*, DeepSeek-V4-Flash, gpt-4o-*-transcribe) from a container in Columbus, Ohio via an egress proxy; prices from the Azure Retail Prices API fetched 2026-10-17. Per-minute figures exclude telephony, infra, storage and margin.",
  "assumptions": {
   "llm_turns_per_connected_min": 5.0,
@@ -23,8 +23,8 @@
     "prompt_tokens_p50": 1651,
     "cached_share": 0.918,
     "completion_tokens_p50": 42,
-    "cost_inr_per_turn": 0.0087,
-    "cost_inr_per_turn_uncached": 0.0326,
+    "cost_inr_per_turn": 0.0094,
+    "cost_inr_per_turn_uncached": 0.0352,
     "ttft_p50_ms_from_ohio": 1224,
     "server_ttft_est_p50_ms": 1106,
     "n": 33
@@ -33,8 +33,8 @@
     "prompt_tokens_p50": 1652,
     "cached_share": 0.918,
     "completion_tokens_p50": 40,
-    "cost_inr_per_turn": 0.0085,
-    "cost_inr_per_turn_uncached": 0.0479,
+    "cost_inr_per_turn": 0.0092,
+    "cost_inr_per_turn_uncached": 0.0517,
     "ttft_p50_ms_from_ohio": 2833,
     "server_ttft_est_p50_ms": 2581,
     "n": 33
@@ -43,8 +43,8 @@
     "prompt_tokens_p50": 1666,
     "cached_share": 0.0,
     "completion_tokens_p50": 27,
-    "cost_inr_per_turn": 0.1066,
-    "cost_inr_per_turn_uncached": 0.1066,
+    "cost_inr_per_turn": 0.1151,
+    "cost_inr_per_turn_uncached": 0.1151,
     "ttft_p50_ms_from_ohio": 2792,
     "server_ttft_est_p50_ms": 2539,
     "n": 33
@@ -53,8 +53,8 @@
     "prompt_tokens_p50": 1640,
     "cached_share": 0.0,
     "completion_tokens_p50": 44,
-    "cost_inr_per_turn": 0.0201,
-    "cost_inr_per_turn_uncached": 0.0201,
+    "cost_inr_per_turn": 0.0217,
+    "cost_inr_per_turn_uncached": 0.0217,
     "ttft_p50_ms_from_ohio": 3359,
     "server_ttft_est_p50_ms": 3107,
     "n": 33
@@ -63,8 +63,8 @@
     "prompt_tokens_p50": 1623,
     "cached_share": 0.876,
     "completion_tokens_p50": 38,
-    "cost_inr_per_turn": 0.0248,
-    "cost_inr_per_turn_uncached": 0.0625,
+    "cost_inr_per_turn": 0.0268,
+    "cost_inr_per_turn_uncached": 0.0675,
     "ttft_p50_ms_from_ohio": 2059,
     "server_ttft_est_p50_ms": 1807,
     "n": 33
@@ -73,8 +73,8 @@
     "prompt_tokens_p50": 1623,
     "cached_share": 0.837,
     "completion_tokens_p50": 33,
-    "cost_inr_per_turn": 0.0065,
-    "cost_inr_per_turn_uncached": 0.0155,
+    "cost_inr_per_turn": 0.007,
+    "cost_inr_per_turn_uncached": 0.0167,
     "ttft_p50_ms_from_ohio": 2157,
     "server_ttft_est_p50_ms": 1905,
     "n": 33
@@ -83,8 +83,8 @@
     "prompt_tokens_p50": 1624,
     "cached_share": 0.737,
     "completion_tokens_p50": 43,
-    "cost_inr_per_turn": 0.0537,
-    "cost_inr_per_turn_uncached": 0.1251,
+    "cost_inr_per_turn": 0.058,
+    "cost_inr_per_turn_uncached": 0.1351,
     "ttft_p50_ms_from_ohio": 1974,
     "server_ttft_est_p50_ms": 1722,
     "n": 33
@@ -93,8 +93,8 @@
     "prompt_tokens_p50": 1624,
     "cached_share": 0.812,
     "completion_tokens_p50": 45,
-    "cost_inr_per_turn": 0.0127,
-    "cost_inr_per_turn_uncached": 0.0337,
+    "cost_inr_per_turn": 0.0137,
+    "cost_inr_per_turn_uncached": 0.0364,
     "ttft_p50_ms_from_ohio": 1890,
     "server_ttft_est_p50_ms": 1638,
     "n": 33
@@ -103,8 +103,8 @@
     "prompt_tokens_p50": 1624,
     "cached_share": 0.938,
     "completion_tokens_p50": 44,
-    "cost_inr_per_turn": 0.0046,
-    "cost_inr_per_turn_uncached": 0.0179,
+    "cost_inr_per_turn": 0.005,
+    "cost_inr_per_turn_uncached": 0.0194,
     "ttft_p50_ms_from_ohio": 1475,
     "server_ttft_est_p50_ms": 1357,
     "n": 33
@@ -113,8 +113,8 @@
     "prompt_tokens_p50": 1624,
     "cached_share": 0.938,
     "completion_tokens_p50": 39,
-    "cost_inr_per_turn": 0.0866,
-    "cost_inr_per_turn_uncached": 0.3536,
+    "cost_inr_per_turn": 0.0935,
+    "cost_inr_per_turn_uncached": 0.3817,
     "ttft_p50_ms_from_ohio": 1608,
     "server_ttft_est_p50_ms": 1490,
     "n": 33
@@ -123,8 +123,8 @@
     "prompt_tokens_p50": 1688,
     "cached_share": 0.0,
     "completion_tokens_p50": 67,
-    "cost_inr_per_turn": 0.0262,
-    "cost_inr_per_turn_uncached": 0.0262,
+    "cost_inr_per_turn": 0.0283,
+    "cost_inr_per_turn_uncached": 0.0283,
     "ttft_p50_ms_from_ohio": 2578,
     "server_ttft_est_p50_ms": 2326,
     "n": 33
@@ -241,18 +241,19 @@
    "n_turns_each": 16,
    "est_inr_per_min_std_meters": {
     "gpt-4.1-mini arms": [
-     2.12,
-     2.47
+     2.29,
+     2.67
     ],
-    "azure-realtime": 3.74
+    "azure-realtime": 4.03
    },
    "source": "results/voicelive_summary.csv"
   },
   "tts_number_readback": {
    "neural_voices_mismatch": "0/80 short sentences",
    "generative_voices_mismatch": "3/99 short sentences (Diya Dragon 1/20, Aarti DragonHD 1/20, Kavya MAI-Voice-2.1-Flash 1/20)",
-   "stimulus_case": "hi-IN-Diya:DragonLatestNeural misread Rs 1,299 in 10/13 renders (2 ASR engines agree)",
-   "source": "results/tts_numbers_summary.csv, stimuli/manifest.csv"
+   "stimulus_case": "hi-IN-Diya:DragonLatestNeural misread Rs 1,299 in 10/13 renders",
+   "source": "results/tts_numbers_summary.csv, stimuli/manifest.csv",
+   "round2_note": "The round-1 note '2 ASR engines agree' is unbacked: fix_numbers.py and tts_numbers.py call only MAI-Transcribe-2 and no second-engine transcript is stored; no human listening check. 3/99 vs 0/80 is not significant (Fisher p=0.25; 4/100 vs 0/80 p=0.13 if the garbled Meera-HD render is counted). Source: l8 verify.md item 7."
   }
  },
  "prices_usd": {
@@ -265,7 +266,14 @@
    "gpt_live_transcribe": 1.02,
    "gpt_4o_transcribe_audio_per_1m_tokens": 6.0,
    "gpt_4o_mini_transcribe_audio_per_1m_tokens": 3.0,
-   "mai_transcribe_2": "not listed in Retail Prices API on 2026-10-17 (preview)"
+   "mai_transcribe_2": 0.1,
+   "mai_transcribe_2_note": "Azure pricing calculator API offer speech-services-mai-transcribe-2-speech-to-text = 0.10 in central-india and asia-pacific-southeast (re-fetched 2026-10-17); pricing page footnote: limited-time promotional offer until 2026-12-31 (per l8 verify.md). Not in the Retail Prices API on 2026-10-17. Batch/file (fast transcription) or Voice Live only: NOT a streaming SDK recogniser, so it cannot serve as the streaming ear; use for post-call re-transcription/QA.",
+   "speech_standard_commitment_tiers_usd_per_hour": {
+    "2000h_per_month": 0.8,
+    "10000h_per_month": 0.65,
+    "50000h_per_month": 0.5,
+    "source": "Azure pricing calculator API, speech-services-azure-commitment-speech-to-text-standard-*, central-india, re-fetched 2026-10-17"
+   }
   },
   "tts_per_1m_chars": {
    "neural": 15.0,
@@ -360,7 +368,12 @@
     "tts": 0.00353,
     "total_ai": 0.02161
    },
-   "inr_per_min_total_ai": 1.902
+   "inr_per_min_total_ai": 2.053,
+   "inr_per_min_by_component": {
+    "asr": 1.583,
+    "llm": 0.134,
+    "tts": 0.336
+   }
   },
   {
    "asr": "speech realtime S1",
@@ -372,7 +385,12 @@
     "tts": 0.00353,
     "total_ai": 0.02092
    },
-   "inr_per_min_total_ai": 1.841
+   "inr_per_min_total_ai": 1.988,
+   "inr_per_min_by_component": {
+    "asr": 1.583,
+    "llm": 0.069,
+    "tts": 0.336
+   }
   },
   {
    "asr": "speech realtime S1",
@@ -384,7 +402,12 @@
     "tts": 0.00353,
     "total_ai": 0.02046
    },
-   "inr_per_min_total_ai": 1.8
+   "inr_per_min_total_ai": 1.944,
+   "inr_per_min_by_component": {
+    "asr": 1.583,
+    "llm": 0.025,
+    "tts": 0.336
+   }
   },
   {
    "asr": "speech realtime S1",
@@ -396,7 +419,12 @@
     "tts": 0.00725,
     "total_ai": 0.02418
    },
-   "inr_per_min_total_ai": 2.127
+   "inr_per_min_total_ai": 2.297,
+   "inr_per_min_by_component": {
+    "asr": 1.583,
+    "llm": 0.025,
+    "tts": 0.689
+   }
   },
   {
    "asr": "speech realtime S1",
@@ -408,7 +436,12 @@
     "tts": 0.00725,
     "total_ai": 0.02884
    },
-   "inr_per_min_total_ai": 2.538
+   "inr_per_min_total_ai": 2.74,
+   "inr_per_min_by_component": {
+    "asr": 1.583,
+    "llm": 0.468,
+    "tts": 0.689
+   }
   },
   {
    "asr": "speech realtime S1",
@@ -420,18 +453,49 @@
     "tts": 0.00353,
     "total_ai": 0.02069
    },
-   "inr_per_min_total_ai": 1.821
+   "inr_per_min_total_ai": 1.965,
+   "inr_per_min_by_component": {
+    "asr": 1.583,
+    "llm": 0.047,
+    "tts": 0.336
+   }
   }
  ],
  "levers_not_measured": {
-  "vad_gated_streaming_stt": "if billing is per second of audio sent, sending only caller speech (~40-50% of a call) cuts ASR from INR 1.47 to ~0.6-0.75/min (derived)",
-  "stt_commitment_tier": "l2 lists $0.40/h at 100k h/month, i.e. INR ~0.59/min full-call (read from l2 cost-model.json)",
-  "mai_transcribe_2_price": "no Retail API meter on 2026-10-17"
+  "vad_gated_streaming_stt": "if billing is per second of audio sent, sending only caller speech (~40-50% of a call) cuts ASR from INR 1.58 to ~0.63-0.79/min (derived; round 1 said 1.47 -> 0.6-0.75 at FX 88)",
+  "stt_commitment_tier": "calculator standard STT commitment: $0.80/0.65/0.50 per hour at 2k/10k/50k h/month = INR 1.27/1.03/0.79 per full-call minute; l2 lists $0.40/h at 100k h/month (INR 0.63/min)",
+  "mai_transcribe_2_price": "now known: $0.10/h promo until 2026-12-31 (calculator), batch/Voice Live only; see prices_usd.asr_per_hour"
  },
  "india_hosted_latency_adjustment_ms": {
   "central_india_to_southeastasia_rtt_p50": 53,
   "south_india_to_southeastasia_rtt_p50": 37,
-  "central_india_to_france_central_rtt_p50": 118,
-  "source": "https://learn.microsoft.com/en-us/azure/networking/azure-network-latency (30 days to 2026-07-30)"
+  "central_india_to_france_central_rtt_p50": 135,
+  "source": "https://learn.microsoft.com/en-us/azure/networking/azure-network-latency (ms.date 2026-07-30; 30 days to 2026-07-30), re-fetched 2026-10-17. Round 1 gave 118 for Central India -> France Central; 118 is Central India -> France South.",
+  "france_central_to_central_india_rtt_p50": 134,
+  "central_india_to_france_south_rtt_p50": 118,
+  "south_india_to_france_central_rtt_p50": 147
+ },
+ "fx_source": "ECB reference USD/INR 94.96 on 2026-10-16 (94.96-96.78 from 2026-09-15 to 2026-10-16, via Frankfurter); open.er-api 95.11 on 2026-10-17; programme convention ~95 (round 1 used 88)",
+ "post_call_retranscription_mai_transcribe_2": {
+  "usd_per_call_min": 0.00167,
+  "inr_per_call_min": 0.158,
+  "note": "Whole-call re-transcription for QA/disposition at the promo price; adds to, does not replace, the streaming ear. Reverts to an unknown list price after 2026-12-31."
+ },
+ "round2_corrections": {
+  "date": "2026-10-17",
+  "package": "r2-model-corrections (critic A10)",
+  "round1_file": "cost-inputs.round1.json",
+  "changes": [
+   "fx_inr_per_usd 88 -> 95: every INR figure x95/88 (+8.0%); recomputed from stored USD inputs, round-1 values re-derived exactly at 88 first",
+   "prices_usd.asr_per_hour.mai_transcribe_2: 'not listed' -> 0.10 USD/h (calculator, promo to 2026-12-31, batch-only)",
+   "india_hosted_latency_adjustment_ms.central_india_to_france_central_rtt_p50: 118 -> 135",
+   "tts_number_readback: removed unbacked '(2 ASR engines agree)', added round2_note",
+   "added standard STT commitment tiers, MAI-2 post-call QA cost, per-component INR per stack",
+   "results/llm_summary.csv, tts_summary.csv, voicelive_summary.csv INR columns rewritten at FX 95 (round-1 copies *.round1.csv)"
+  ],
+  "unchanged_and_why": [
+   "rtt_ms_from_test_container francecentral 118 is the measured Ohio-container RTT (rtt.csv), not the Microsoft table, so it stays",
+   "latency figures are still from Ohio via a proxy; India-hosted latency is round-2 package r2-latency's job"
+  ]
  }
 }

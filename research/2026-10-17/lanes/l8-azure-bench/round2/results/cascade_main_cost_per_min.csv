@@ -1,0 +1,25 @@
+config,llm,turns_per_min,stt_inr_min,llm_inr_min,tts_inr_min,ai_total_inr_min
+A_seg500_fast,sin-std gpt-4.1-mini,3,1.583,0.158,0.547,2.288
+A_seg500_fast,sin-std gpt-4.1-mini,3.5,1.583,0.184,0.639,2.406
+A_seg500_fast,sin-std gpt-4.1-mini,5,1.583,0.263,0.912,2.758
+A_seg500_fast,sin-std gpt-4.1-mini,8,1.583,0.42,1.46,3.463
+C_seg800_spec_fast,sin-std gpt-4.1-mini,3,1.583,0.334,0.707,2.624
+C_seg800_spec_fast,sin-std gpt-4.1-mini,3.5,1.583,0.39,0.825,2.798
+C_seg800_spec_fast,sin-std gpt-4.1-mini,5,1.583,0.557,1.178,3.318
+C_seg800_spec_fast,sin-std gpt-4.1-mini,8,1.583,0.89,1.886,4.359
+E_seg500_spec_fast,sin-std gpt-4.1-mini,3,1.583,0.331,0.646,2.56
+E_seg500_spec_fast,sin-std gpt-4.1-mini,3.5,1.583,0.386,0.754,2.723
+E_seg500_spec_fast,sin-std gpt-4.1-mini,5,1.583,0.551,1.077,3.212
+E_seg500_spec_fast,sin-std gpt-4.1-mini,8,1.583,0.882,1.724,4.189
+B_seg800_fast,sin-std gpt-4.1-mini,3,1.583,0.132,0.482,2.197
+B_seg800_fast,sin-std gpt-4.1-mini,3.5,1.583,0.154,0.562,2.299
+B_seg800_fast,sin-std gpt-4.1-mini,5,1.583,0.22,0.803,2.606
+B_seg800_fast,sin-std gpt-4.1-mini,8,1.583,0.352,1.285,3.22
+D_seg800_spec_quality,frc-dzeu gpt-6-sol,3,1.583,1.319,0.442,3.344
+D_seg800_spec_quality,frc-dzeu gpt-6-sol,3.5,1.583,1.539,0.516,3.638
+D_seg800_spec_quality,frc-dzeu gpt-6-sol,5,1.583,2.198,0.737,4.518
+D_seg800_spec_quality,frc-dzeu gpt-6-sol,8,1.583,3.517,1.179,6.279
+F_seg800_spec_nano,sea-gs gpt-5.4-nano,3,1.583,0.143,0.658,2.385
+F_seg800_spec_nano,sea-gs gpt-5.4-nano,3.5,1.583,0.167,0.768,2.518
+F_seg800_spec_nano,sea-gs gpt-5.4-nano,5,1.583,0.238,1.097,2.919
+F_seg800_spec_nano,sea-gs gpt-5.4-nano,8,1.583,0.381,1.756,3.72

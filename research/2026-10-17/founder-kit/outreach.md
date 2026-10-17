@@ -1,6 +1,6 @@
 # Outreach copy for discovery interviews
 
-Date: 2026-10-17. This is for the founder to send by hand, one person at a time. Nothing here has been sent. Nobody has been contacted.
+Date: 2026-10-17 (round 2 edits: rules 9-10, insurance call length 30-40 minutes; round 1 kept as `outreach.round1.md`). This is for the founder to send by hand, one person at a time. Nothing here has been sent. Nobody has been contacted.
 
 This copy books the 25-40 discovery interviews in `plan.md`. The interviews test kill criteria 1-4 in `../SYNTHESIS.md` §1.2, plus the alternates' kill criteria in §2. Section references below (§1.1, §3.1, §6, §8, §9) are to `../SYNTHESIS.md` unless they point at this file.
 
@@ -31,6 +31,21 @@ These are short on purpose. Each one is here because breaking it costs either tr
 8. **Personalise the line in brackets** with the evidence from that company's `targets.csv` row. That line is what makes the message worth reading.
    - Good: "the telecaller roles you advertised in Secunderabad".
    - Bad: "your impressive growth".
+9. **Round 2: rows with no website, and register-random rows** (`targets.csv` `selection = random`, and the IMF and CA rows
+   marked "no website found").
+   - Use only a company channel you find yourself: the company's LinkedIn page, or a warm intro.
+   - For IMFs and small corporate agents the best warm route is usually the **insurer's channel manager** who looks after them.
+     Ask your insurer contacts for that introduction.
+   - **Never use the principal officer's phone or e-mail printed in the IRDAI register**, even when it is the only contact
+     shown.
+   - **Never guess a domain.** Round 2 found two more wrong-entity domains (`dgvdigital.com`, `planway.in`).
+   - If no company channel turns up within 3 working days, replace the row with the next one in the seeded draw
+     (`plan.md` §3.2). Log the replacement.
+   - Honest evidence line for a random row: "I'm speaking to a cross-section of [IMFs / corporate agents] on IRDAI's register,
+     not only the large names, because small firms' renewal work is the part I know least about." Never imply you were
+     referred, or that you know anything about their business that you don't.
+10. **IMFs: research only.** Make no pilot or LOI ask to an IMF until counsel has answered the IMF distance-marketing question
+    (`scoring.md` §6). The discovery call itself is fine.
 
 Placeholders: `[Name]`, `[Company]`, `[evidence line]`, `[Your name]`, `[Your title]`, `[working name]`, `[city]`, `[your number]`.
 - Use the working name only if you have settled one.
@@ -42,7 +57,7 @@ Placeholders: `[Name]`, `[Company]`, `[evidence line]`, `[Your name]`, `[Your ti
 
 ### 2a. Insurance intermediaries (renewal desks)
 
-**Subject:** Your renewal desk: 30 minutes for a research call? (not a sales pitch)
+**Subject:** Your renewal desk: 30-40 minutes for a research call? (not a sales pitch)
 
 > Hi [Name],
 >
@@ -50,7 +65,7 @@ Placeholders: `[Name]`, `[Company]`, `[evidence line]`, `[Your name]`, `[Your ti
 >
 > I came across [Company] through [evidence line, e.g. "your motor and health renewal pages" / "the telecaller roles you advertised this month"], so I think you work renewals at real volume.
 >
-> Could I have 30 minutes this week or next? I would ask how your team handled last month's renewal list: who called, how many policies, what lapsed and why, and what tools you used. I'm not selling anything. We don't have a product to sell.
+> Could I have 30-40 minutes this week or next? I would ask how your team handled last month's renewal list: who called, how many policies, what lapsed and why, and what tools you used. I'm not selling anything. We don't have a product to sell.
 >
 > In return I'll send you a short summary of what I learn from about 15 renewal teams: numbers only, no firm named.
 >
@@ -111,7 +126,7 @@ Placeholders: `[Name]`, `[Company]`, `[evidence line]`, `[Your name]`, `[Your ti
 ### 3a. Connection note (under 300 characters)
 
 - **Insurance:**
-  > Hi [Name], I'm researching how brokers and IMFs run renewal calling today, before building anything. Not selling. 30 minutes of your experience would help a lot, and I'll share an anonymised summary of what 15 renewal teams told me.
+  > Hi [Name], I'm researching how brokers, corporate agents and IMFs run renewal calling today, before building anything. Not selling. 30-40 minutes of your experience would help a lot, and I'll share an anonymised summary of what 15 renewal teams told me.
 - **Real estate:**
   > Hi [Name], I'm researching how developers and channel partners call website and portal enquiries and book site visits. Not selling, and nothing to sell yet. Could I ask 30 minutes of your experience? I'll share an anonymised summary.
 - **Lending:**

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<!-- No network calls: connect-src 'none' blocks fetch/XHR/WebSocket/beacon. Only the page's own scripts and audio load. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; media-src 'self' blob:; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>Listening Study</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --surface: #ffffff; --text: #1d1b18; --muted: #5d5850; --line: #d9d3c7;
+    --accent: #1f5f8b; --accent-text: #ffffff; --accent-soft: #dbe9f3; --on: #c46a12; --danger: #a12d2d;
+    --banner: #fff1c2; --banner-text: #4a3a00; --focus: #f0a400;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151515; --surface: #202020; --text: #ece8e1; --muted: #a9a39a; --line: #3a3733;
+      --accent: #6fb2e0; --accent-text: #0e1a22; --accent-soft: #23384a; --on: #f0a24a; --danger: #ef8a8a;
+      --banner: #3a3210; --banner-text: #f6e7a8; --focus: #f0c040;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151515; --surface: #202020; --text: #ece8e1; --muted: #a9a39a; --line: #3a3733;
+    --accent: #6fb2e0; --accent-text: #0e1a22; --accent-soft: #23384a; --on: #f0a24a; --danger: #ef8a8a;
+    --banner: #3a3210; --banner-text: #f6e7a8; --focus: #f0c040;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }   /* .btn and .choices set display; hidden must still win */
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Tamil", sans-serif;
+    overflow-x: hidden;
+  }
+  #app { max-width: 640px; margin: 0 auto; padding: 16px 16px 96px; }
+  h1 { font-size: 1.35rem; margin: 8px 0 12px; }
+  h2 { font-size: 1.25rem; margin: 16px 0 8px; }
+  h3 { font-size: 1.05rem; margin: 16px 0 6px; }
+  p { margin: 8px 0; overflow-wrap: anywhere; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: .85rem; }
+  .banner { background: var(--banner); color: var(--banner-text); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: .9rem; }
+  .banner.warn { font-weight: 600; }
+  .consent p { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .btn {
+    display: block; width: 100%; min-height: 48px; margin: 10px 0; padding: 12px 16px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .btn.danger { color: var(--danger); border-color: var(--danger); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .q { margin: 18px 0; }
+  .qtext { font-weight: 600; margin-bottom: 8px; }
+  .choices { display: flex; flex-direction: column; gap: 8px; }
+  .choices.row { flex-direction: row; flex-wrap: wrap; }
+  .choices.row .choice { flex: 1 1 0; min-width: 0; text-align: center; padding-left: 4px; padding-right: 4px; }
+  .choices.compact { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .choices.seven .choice { min-width: 0; padding: 12px 0; }
+  .choices.nine .choice { flex: 1 1 13%; }
+  .langs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
+  .langs .choice { text-align: center; padding: 8px 4px; }
+  .choice {
+    min-height: 46px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
+    color: var(--text); font: inherit; text-align: left; cursor: pointer; overflow-wrap: anywhere;
+  }
+  .choice[aria-pressed="true"] { background: var(--accent-soft); border: 2px solid var(--accent); font-weight: 700; }
+  .ends { display: flex; justify-content: space-between; gap: 12px; font-size: .8rem; color: var(--muted); margin-top: 4px; }
+  .ends span:last-child { text-align: right; }
+  .progress { color: var(--muted); font-weight: 600; margin: 4px 0 8px; }
+  .player-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; }
+  .status { color: var(--muted); min-height: 1.5em; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
+  .tile {
+    border: 2px solid var(--line); border-radius: 12px; padding: 22px 8px; text-align: center; font-weight: 700;
+    background: var(--surface); transition: border-color .15s, background .15s;
+  }
+  .tile.on { border-color: var(--on); background: color-mix(in srgb, var(--on) 14%, var(--surface)); }
+  .replays { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .replays .btn { margin: 4px 0; font-weight: 500; }
+  .pref .choice { text-align: center; }
+  .footer {
+    position: fixed; left: 0; right: 0; bottom: 0; padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--bg) 92%, transparent); border-top: 1px solid var(--line);
+  }
+  .footer .btn { max-width: 608px; margin: 0 auto; }
+  .error { color: var(--danger); font-weight: 600; min-height: 1.5em; }
+  .end { font-size: 1.1rem; margin-top: 32px; }
+  .callout { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-weight: 600; }
+  input[type="text"], textarea {
+    width: 100%; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  textarea.code { font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; word-break: break-all; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; white-space: nowrap; }
+  @media (max-width: 360px) {
+    body { font-size: 16px; }
+    .choices.seven .choice { padding: 10px 0; }
+  }
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"><p>Loading…</p></main>
+<audio id="player" preload="auto" playsinline></audio>
+<noscript><p style="padding:16px">Please turn on JavaScript to take part.</p></noscript>
+<script src="app.js"></script>
+</body>
+</html>

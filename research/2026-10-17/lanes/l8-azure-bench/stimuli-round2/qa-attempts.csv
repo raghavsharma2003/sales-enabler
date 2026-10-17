@@ -1,0 +1,246 @@
+file_code,attempt,turn,voice,pace,rate_pct,duration_s,qa_auto,detail
+R2_9d8f1e,1,R1,hi-IN-SwaraNeural,default,+0,13.0,pass,all tokens heard
+R2_9e19e2,1,R1,hi-IN-MadhurNeural,default,+0,12.1,pass,all tokens heard
+R2_404542,1,R2,hi-IN-MadhurNeural,default,+0,12.3,pass,all tokens heard
+R2_67a6cc,1,R2,hi-IN-SwaraNeural,default,+0,12.1,pass,all tokens heard
+R2_f9dd9c,1,R3,hi-IN-SwaraNeural,default,+0,12.1,pass,all tokens heard
+R2_b14e98,1,R3,hi-IN-MadhurNeural,default,+0,12.5,pass,all tokens heard
+R2_32bc79,1,R4,hi-IN-SwaraNeural,default,+0,12.1,pass,all tokens heard
+R2_e5fe84,1,R4,hi-IN-MadhurNeural,default,+0,12.8,pass,all tokens heard
+R2_84558f,1,R5,hi-IN-SwaraNeural,default,+0,12.5,pass,all tokens heard
+R2_dc94f7,1,R6,hi-IN-SwaraNeural,default,+0,10.3,pass,all tokens heard
+R2_fd7434,1,R5,hi-IN-MadhurNeural,default,+0,12.6,pass,all tokens heard
+R2_c324a3,1,R6,hi-IN-MadhurNeural,default,+0,10.2,pass,all tokens heard
+R2_e4016e,1,R7,hi-IN-SwaraNeural,default,+0,10.2,pass,all tokens heard
+R2_078b38,1,R8,hi-IN-SwaraNeural,default,+0,12.5,pass,all tokens heard
+R2_9bfb34,1,R7,hi-IN-MadhurNeural,default,+0,9.9,pass,all tokens heard
+R2_ea351b,1,R8,hi-IN-MadhurNeural,default,+0,12.1,pass,all tokens heard
+R2_03a43a,1,R1,hi-IN-SwaraNeural,slow,-15,15.2,pass,all tokens heard
+R2_dbffbd,1,R1,hi-IN-MadhurNeural,slow,-15,14.2,pass,all tokens heard (by one engine only for ai_disclosure)
+R2_e6cc89,1,R2,hi-IN-SwaraNeural,slow,-15,14.2,pass,all tokens heard
+R2_babee8,1,R2,hi-IN-MadhurNeural,slow,-15,14.4,pass,all tokens heard
+R2_8f344c,1,R3,hi-IN-MadhurNeural,slow,-15,14.7,pass,all tokens heard
+R2_5d58ab,1,R3,hi-IN-SwaraNeural,slow,-15,14.2,pass,all tokens heard
+R2_1a33f2,1,R4,hi-IN-SwaraNeural,slow,-15,14.2,pass,all tokens heard
+R2_7fb05c,1,R4,hi-IN-MadhurNeural,slow,-15,15.0,pass,all tokens heard
+R2_73df64,1,R6,hi-IN-SwaraNeural,slow,-15,12.1,pass,all tokens heard
+R2_a95498,1,R5,hi-IN-SwaraNeural,slow,-15,14.7,pass,all tokens heard
+R2_fd62c4,1,R6,hi-IN-MadhurNeural,slow,-15,12.0,pass,all tokens heard
+R2_5ffa87,1,R5,hi-IN-MadhurNeural,slow,-15,14.8,pass,all tokens heard
+R2_6338a1,1,R7,hi-IN-SwaraNeural,slow,-15,11.9,pass,all tokens heard
+R2_34cc8b,1,R7,hi-IN-MadhurNeural,slow,-15,11.7,pass,all tokens heard
+R2_81ef65,1,R8,hi-IN-MadhurNeural,slow,-15,14.2,pass,all tokens heard
+R2_9706cf,1,R8,hi-IN-SwaraNeural,slow,-15,14.6,pass,all tokens heard
+R2_c7dbe5,1,R1,en-IN-Meera:Dragon,default,-25,11.3,pass,all tokens heard
+R2_b9f27a,1,R2,en-IN-Meera:Dragon,default,-25,10.8,pass,all tokens heard
+R2_4984f2,1,R1,en-IN-Arjun:Dragon,default,-32,11.5,pass,all tokens heard
+R2_1288e5,1,R2,en-IN-Arjun:Dragon,default,-32,12.8,pass,all tokens heard
+R2_f115f8,1,R3,en-IN-Meera:Dragon,default,-25,13.6,pass,all tokens heard
+R2_c46846,1,R4,en-IN-Meera:Dragon,default,-25,11.8,fail,"both engines heard only part of premium 1538: MAI-2 ""प्रीमियम समझदार 538 रुपए"", fast ""प्रीमियम ₹538"" (reclassified from needs_listen to fail by the truncation rule)"
+R2_19f1d8,1,R3,en-IN-Arjun:Dragon,default,-32,13.8,pass,all tokens heard
+R2_44e0ae,1,R4,en-IN-Arjun:Dragon,default,-32,11.4,pass,all tokens heard
+R2_fe7ed3,1,R6,en-IN-Meera:Dragon,default,-25,10.3,pass,all tokens heard
+R2_0e179b,1,R5,en-IN-Meera:Dragon,default,-25,13.1,pass,all tokens heard
+R2_1c6724,1,R6,en-IN-Arjun:Dragon,default,-32,11.2,pass,all tokens heard
+R2_b18e0a,1,R5,en-IN-Arjun:Dragon,default,-32,12.7,pass,all tokens heard
+R2_fafc9f,1,R7,en-IN-Meera:Dragon,default,-25,9.5,pass,all tokens heard
+R2_b6fe28,1,R7,en-IN-Arjun:Dragon,default,-32,10.6,pass,all tokens heard
+R2_47ea50,1,R8,en-IN-Meera:Dragon,default,-25,13.1,pass,all tokens heard
+R2_0068de,1,R8,en-IN-Arjun:Dragon,default,-32,15.2,pass,all tokens heard
+R2_90e0e6,1,R1,en-IN-Meera:Dragon,slow,-36,13.4,pass,all tokens heard
+R2_1cc37d,1,R1,en-IN-Arjun:Dragon,slow,-42,13.0,pass,all tokens heard
+R2_e548ef,1,R2,en-IN-Meera:Dragon,slow,-36,13.4,pass,all tokens heard
+R2_b4949e,1,R2,en-IN-Arjun:Dragon,slow,-42,14.1,pass,all tokens heard
+R2_f80a66,1,R3,en-IN-Meera:Dragon,slow,-36,15.8,pass,all tokens heard (by one engine only for vehicle_digits)
+R2_e0e338,1,R4,en-IN-Meera:Dragon,slow,-36,13.5,pass,all tokens heard
+R2_b18264,1,R4,en-IN-Arjun:Dragon,slow,-42,14.1,pass,all tokens heard
+R2_bbf053,1,R3,en-IN-Arjun:Dragon,slow,-42,18.6,pass,all tokens heard
+R2_0d190e,1,R5,en-IN-Meera:Dragon,slow,-36,15.0,pass,all tokens heard
+R2_b4d478,1,R5,en-IN-Arjun:Dragon,slow,-42,14.7,pass,all tokens heard
+R2_423982,1,R6,en-IN-Meera:Dragon,slow,-36,12.6,pass,all tokens heard
+R2_6ccba9,1,R6,en-IN-Arjun:Dragon,slow,-42,12.8,pass,all tokens heard
+R2_525a9e,1,R7,en-IN-Meera:Dragon,slow,-36,12.0,pass,all tokens heard
+R2_c984f3,1,R7,en-IN-Arjun:Dragon,slow,-42,12.0,pass,all tokens heard
+R2_ebf00e,1,R8,en-IN-Meera:Dragon,slow,-36,15.5,pass,all tokens heard
+R2_671dc5,1,R8,en-IN-Arjun:Dragon,slow,-42,16.2,pass,all tokens heard
+R2_ab9ba0,1,R7,hi-IN-SwaraNeural,default,+0,12.3,pass,all tokens heard
+R2_531f50,1,R7,hi-IN-MadhurNeural,default,+0,11.8,pass,all tokens heard
+R2_76c0e6,1,C1,hi-IN-SwaraNeural,default,+0,10.9,pass,all tokens heard
+R2_79ab1e,1,C1,hi-IN-MadhurNeural,default,+0,9.9,pass,all tokens heard
+R2_842304,1,C2,hi-IN-MadhurNeural,default,+0,8.7,pass,all tokens heard
+R2_5725e4,1,C2,hi-IN-SwaraNeural,default,+0,9.5,pass,all tokens heard
+R2_efd9d5,1,C1,en-IN-Meera:Dragon,default,-25,11.0,pass,all tokens heard
+R2_603fd4,1,C1,en-IN-Arjun:Dragon,default,-32,10.4,pass,all tokens heard
+R2_c5b99b,1,C3,hi-IN-SwaraNeural,default,+0,9.4,pass,all tokens heard
+R2_1c7976,1,C3,hi-IN-MadhurNeural,default,+0,9.5,pass,all tokens heard
+R2_aea894,1,C2,en-IN-Arjun:Dragon,default,-32,7.5,pass,all tokens heard
+R2_962459,1,C2,en-IN-Meera:Dragon,default,-25,9.1,pass,all tokens heard
+R2_f23619,1,C4,hi-IN-SwaraNeural,default,+0,10.9,pass,no key tokens
+R2_b8c8ee,1,C4,hi-IN-MadhurNeural,default,+0,10.5,pass,no key tokens
+R2_edbc79,1,C3,en-IN-Meera:Dragon,default,-25,10.0,pass,all tokens heard
+R2_b1bab8,1,C3,en-IN-Arjun:Dragon,default,-32,9.5,pass,all tokens heard
+R2_063e0e,1,R1,hi-IN-SwaraNeural,default,+0,12.8,pass,all tokens heard
+R2_35d6d5,1,R1,hi-IN-MadhurNeural,default,+0,11.7,pass,all tokens heard (by one engine only for ai_disclosure)
+R2_56975c,1,C4,en-IN-Meera:Dragon,default,-25,8.3,pass,no key tokens
+R2_521f6b,1,C4,en-IN-Arjun:Dragon,default,-32,8.0,pass,no key tokens
+R2_fe8621,1,R2,hi-IN-SwaraNeural,default,+0,11.4,pass,all tokens heard
+R2_71c7b3,1,R2,hi-IN-MadhurNeural,default,+0,11.2,pass,all tokens heard
+R2_d9dc69,1,R3,hi-IN-SwaraNeural,default,+0,12.4,pass,all tokens heard
+R2_805134,1,R3,hi-IN-MadhurNeural,default,+0,11.8,pass,all tokens heard
+R2_5171d8,1,R4,hi-IN-SwaraNeural,default,+0,12.2,pass,all tokens heard
+R2_878621,1,R4,hi-IN-MadhurNeural,default,+0,12.2,pass,all tokens heard
+R2_a8dc14,1,R5,hi-IN-SwaraNeural,default,+0,13.4,pass,all tokens heard
+R2_f828b1,1,R5,hi-IN-MadhurNeural,default,+0,12.5,pass,all tokens heard
+R2_1d36e5,1,R6,hi-IN-SwaraNeural,default,+0,10.8,pass,all tokens heard
+R2_95306f,1,R7,hi-IN-SwaraNeural,default,+0,10.0,pass,all tokens heard
+R2_68655c,1,R6,hi-IN-MadhurNeural,default,+0,10.5,pass,all tokens heard
+R2_764000,1,R7,hi-IN-MadhurNeural,default,+0,9.4,pass,all tokens heard
+R2_31762d,1,R8,hi-IN-SwaraNeural,default,+0,12.6,pass,all tokens heard
+R2_119fff,1,R8,hi-IN-MadhurNeural,default,+0,12.8,pass,all tokens heard
+R2_d92e05,1,R1,en-IN-Arjun:Dragon,default,-32,13.2,needs_listen,not heard by either engine (no conflicting number): due_date
+R2_36790a,1,R1,en-IN-Meera:Dragon,default,-25,13.0,needs_listen,"not heard by either engine (no conflicting number): ai_disclosure,due_date"
+R2_5e3461,1,R2,en-IN-Meera:Dragon,default,-25,13.1,pass,all tokens heard
+R2_12a74a,1,R2,en-IN-Arjun:Dragon,default,-32,14.1,pass,"all tokens heard (by one engine only for premium,sum_insured)"
+R2_e9e0e8,1,R3,en-IN-Meera:Dragon,default,-25,16.9,fail,"not heard by either engine: vehicle_digits,expiry; unexpected numbers [2928]; [2928]"
+R2_ce6733,1,R3,en-IN-Arjun:Dragon,default,-32,17.4,fail,"not heard by either engine: vehicle_digits,expiry; unexpected numbers [21928]; [2928]"
+R2_547ca3,1,R4,en-IN-Meera:Dragon,default,-25,12.1,pass,all tokens heard (by one engine only for expired_on)
+R2_5d8db9,1,R4,en-IN-Arjun:Dragon,default,-32,13.1,pass,all tokens heard
+R2_9e8508,1,R5,en-IN-Arjun:Dragon,default,-32,15.2,pass,all tokens heard
+R2_ae4253,1,R5,en-IN-Meera:Dragon,default,-25,15.4,pass,all tokens heard
+R2_90f342,1,R6,en-IN-Meera:Dragon,default,-25,13.9,pass,all tokens heard
+R2_d637c0,1,R6,en-IN-Arjun:Dragon,default,-32,13.4,pass,all tokens heard
+R2_a4e18a,1,R7,en-IN-Arjun:Dragon,default,-32,10.8,pass,all tokens heard
+R2_bead51,1,R7,en-IN-Meera:Dragon,default,-25,11.1,pass,all tokens heard
+R2_0e2f92,1,R8,en-IN-Arjun:Dragon,default,-32,15.7,pass,all tokens heard
+R2_911126,1,R8,en-IN-Meera:Dragon,default,-25,16.7,pass,all tokens heard
+R2_dd49ae,1,R1,en-IN-Meera:Dragon,default,-25,12.1,pass,all tokens heard
+R2_67fe11,1,R1,en-IN-Arjun:Dragon,default,-32,12.8,pass,all tokens heard
+R2_72aa38,1,R2,en-IN-Meera:Dragon,default,-25,11.9,pass,all tokens heard
+R2_bc51ad,1,R2,en-IN-Arjun:Dragon,default,-32,12.5,pass,all tokens heard
+R2_505d55,1,R3,en-IN-Meera:Dragon,default,-25,13.5,pass,all tokens heard
+R2_7f2dca,1,R3,en-IN-Arjun:Dragon,default,-32,15.3,pass,all tokens heard
+R2_f533ef,1,R4,en-IN-Meera:Dragon,default,-25,11.4,pass,all tokens heard
+R2_e64e0e,1,R4,en-IN-Arjun:Dragon,default,-32,13.2,pass,all tokens heard
+R2_85f6c5,1,R5,en-IN-Meera:Dragon,default,-25,13.8,pass,all tokens heard
+R2_e5f238,1,R5,en-IN-Arjun:Dragon,default,-32,16.6,pass,all tokens heard
+R2_9a268b,1,R6,en-IN-Meera:Dragon,default,-25,11.2,pass,all tokens heard
+R2_c10cfc,1,R6,en-IN-Arjun:Dragon,default,-32,11.7,pass,all tokens heard
+R2_535684,1,R7,en-IN-Meera:Dragon,default,-25,10.5,pass,all tokens heard
+R2_b2a387,1,R7,en-IN-Arjun:Dragon,default,-32,11.0,pass,all tokens heard
+R2_883e8e,1,R8,en-IN-Meera:Dragon,default,-25,13.5,pass,all tokens heard
+R2_0ec9e6,1,R8,en-IN-Arjun:Dragon,default,-32,16.9,pass,all tokens heard
+R2_7b13f0,1,R1,ta-IN-PallaviNeura,default,+0,12.9,needs_listen,not heard by either engine (no conflicting number): due_date
+R2_ae85b8,1,R1,ta-IN-ValluvarNeur,default,+0,12.6,needs_listen,not heard by either engine (no conflicting number): due_date
+R2_c3aa9e,1,R2,ta-IN-PallaviNeura,default,+0,11.8,pass,all tokens heard
+R2_2dcb2c,1,R3,ta-IN-PallaviNeura,default,+0,12.8,fail,"not heard by either engine: vehicle_digits,expiry; unexpected numbers [2028]; [2928]"
+R2_c04f8d,1,R3,ta-IN-ValluvarNeur,default,+0,12.9,fail,"not heard by either engine: vehicle_digits,expiry; unexpected numbers [1928]; [2928]"
+R2_dd3dae,1,R4,ta-IN-PallaviNeura,default,+0,12.1,pass,all tokens heard (by one engine only for premium)
+R2_d0bb89,1,R4,ta-IN-ValluvarNeur,default,+0,12.3,pass,all tokens heard
+R2_6099d2,1,R5,ta-IN-PallaviNeura,default,+0,14.6,pass,all tokens heard
+R2_1a7266,1,R5,ta-IN-ValluvarNeur,default,+0,14.3,pass,all tokens heard
+R2_8d99f4,1,R6,ta-IN-PallaviNeura,default,+0,12.3,pass,all tokens heard
+R2_b294a5,1,R6,ta-IN-ValluvarNeur,default,+0,12.1,pass,all tokens heard
+R2_658e58,1,R7,ta-IN-PallaviNeura,default,+0,10.4,pass,all tokens heard
+R2_668fce,1,R7,ta-IN-ValluvarNeur,default,+0,10.0,pass,all tokens heard
+R2_d87d6b,1,R8,ta-IN-PallaviNeura,default,+0,12.9,pass,all tokens heard
+R2_928a4d,1,R8,ta-IN-ValluvarNeur,default,+0,12.9,pass,all tokens heard
+R2_4d8694,1,R1,en-IN-AartiIndicNe,default,+0,12.0,pass,all tokens heard
+R2_0608a5,1,R2,en-IN-AartiIndicNe,default,+0,9.9,pass,all tokens heard
+R2_53736f,1,R1,en-IN-ArjunIndicNe,default,+0,11.3,pass,all tokens heard
+R2_46540a,1,R2,en-IN-ArjunIndicNe,default,+0,9.5,pass,all tokens heard
+R2_f34e7a,1,R3,en-IN-AartiIndicNe,default,+0,10.3,pass,all tokens heard
+R2_a95196,1,R3,en-IN-ArjunIndicNe,default,+0,9.5,pass,all tokens heard
+R2_c18a06,1,R4,en-IN-AartiIndicNe,default,+0,10.6,pass,all tokens heard
+R2_445f8a,1,R4,en-IN-ArjunIndicNe,default,+0,9.9,pass,all tokens heard
+R2_a90f11,1,R5,en-IN-AartiIndicNe,default,+0,11.9,needs_listen,not heard by either engine (no conflicting number): missed_instalment
+R2_562a2b,1,R5,en-IN-ArjunIndicNe,default,+0,11.4,needs_listen,not heard by either engine (no conflicting number): missed_instalment
+R2_17ceb7,1,R6,en-IN-AartiIndicNe,default,+0,11.3,pass,all tokens heard
+R2_144cfc,1,R6,en-IN-ArjunIndicNe,default,+0,11.0,pass,all tokens heard
+R2_9efcaa,1,R7,en-IN-AartiIndicNe,default,+0,8.7,pass,all tokens heard
+R2_e56dc9,1,R7,en-IN-ArjunIndicNe,default,+0,8.3,pass,all tokens heard
+R2_298477,1,R8,en-IN-AartiIndicNe,default,+0,11.0,pass,all tokens heard
+R2_405117,1,R1,en-IN-AartiIndicNe,default,+0,11.6,pass,all tokens heard
+R2_52a240,1,R8,en-IN-ArjunIndicNe,default,+0,10.7,pass,all tokens heard
+R2_6f5d27,1,R1,en-IN-ArjunIndicNe,default,+0,11.3,pass,all tokens heard
+R2_c73d54,1,R2,en-IN-AartiIndicNe,default,+0,10.8,pass,all tokens heard
+R2_cd0e5c,1,R2,en-IN-ArjunIndicNe,default,+0,10.4,pass,all tokens heard
+R2_b756e7,1,R3,en-IN-AartiIndicNe,default,+0,10.9,pass,all tokens heard
+R2_029ada,1,R4,en-IN-AartiIndicNe,default,+0,10.4,pass,all tokens heard
+R2_1cf76f,1,R3,en-IN-ArjunIndicNe,default,+0,10.6,pass,all tokens heard
+R2_83ca64,1,R4,en-IN-ArjunIndicNe,default,+0,10.2,pass,all tokens heard
+R2_f753ab,1,R5,en-IN-AartiIndicNe,default,+0,11.2,pass,all tokens heard
+R2_075e5f,1,R5,en-IN-ArjunIndicNe,default,+0,10.6,pass,all tokens heard
+R2_997f65,1,R6,en-IN-AartiIndicNe,default,+0,9.3,pass,all tokens heard
+R2_adfeb7,1,R7,en-IN-AartiIndicNe,default,+0,9.4,pass,all tokens heard
+R2_2dd8a3,1,R6,en-IN-ArjunIndicNe,default,+0,9.4,pass,all tokens heard
+R2_b36205,1,R8,en-IN-AartiIndicNe,default,+0,11.7,pass,all tokens heard
+R2_47567c,1,R7,en-IN-ArjunIndicNe,default,+0,9.1,pass,all tokens heard
+R2_3d696b,1,R8,en-IN-ArjunIndicNe,default,+0,11.7,pass,all tokens heard (by one engine only for instalment)
+R2_362cbe,1,R1,mr-IN-ManoharNeura,default,+0,12.2,pass,all tokens heard
+R2_d1d599,1,R1,mr-IN-AarohiNeural,default,+0,12.5,pass,all tokens heard
+R2_05bf41,1,R2,mr-IN-AarohiNeural,default,+0,11.4,pass,all tokens heard
+R2_3744f4,1,R2,mr-IN-ManoharNeura,default,+0,11.2,pass,all tokens heard
+R2_c6d6be,1,R3,mr-IN-AarohiNeural,default,+0,11.4,pass,all tokens heard
+R2_b4b6bb,1,R3,mr-IN-ManoharNeura,default,+0,11.0,pass,all tokens heard
+R2_03d71d,1,R4,mr-IN-AarohiNeural,default,+0,11.8,pass,all tokens heard
+R2_377510,1,R4,mr-IN-ManoharNeura,default,+0,11.7,pass,all tokens heard
+R2_c4bdd3,1,R5,mr-IN-AarohiNeural,default,+0,13.4,pass,all tokens heard
+R2_882a47,1,R5,mr-IN-ManoharNeura,default,+0,12.9,pass,all tokens heard
+R2_13bd14,1,R6,mr-IN-AarohiNeural,default,+0,12.5,pass,all tokens heard
+R2_28797b,1,R6,mr-IN-ManoharNeura,default,+0,12.0,pass,all tokens heard
+R2_450a2d,1,R7,mr-IN-AarohiNeural,default,+0,9.5,pass,all tokens heard
+R2_f3c1e6,1,R7,mr-IN-ManoharNeura,default,+0,9.1,pass,all tokens heard
+R2_c9a796,1,R8,mr-IN-AarohiNeural,default,+0,11.9,pass,all tokens heard (by one engine only for next_due)
+R2_ea88b3,1,R8,mr-IN-ManoharNeura,default,+0,11.5,pass,all tokens heard (by one engine only for next_due)
+R2_62312d,1,R1,en-IN-Meera:Dragon,default,+0,8.2,pass,all tokens heard
+R2_166de6,1,R2,en-IN-Meera:Dragon,default,+0,8.3,pass,all tokens heard
+R2_1a468f,1,R2,en-IN-Arjun:Dragon,default,+0,8.0,pass,all tokens heard
+R2_03b728,1,R1,en-IN-Arjun:Dragon,default,+0,7.8,pass,all tokens heard (by one engine only for ai_disclosure)
+R2_a28ed0,1,R4,en-IN-Arjun:Dragon,default,+0,8.1,pass,all tokens heard
+R2_7baca8,1,R4,en-IN-Meera:Dragon,default,+0,9.1,pass,all tokens heard
+R2_0650cf,1,R3,en-IN-Meera:Dragon,default,+0,10.8,fail,"premium 11240 not heard: MAI-2 ""premium 11,340 rupees"", fast ""प्रीमियम ₹11,000 टु ₹140"""
+R2_0843cd,1,R3,en-IN-Arjun:Dragon,default,+0,9.9,pass,all tokens heard
+R2_e08e9c,1,R6,en-IN-Meera:Dragon,default,+0,7.8,pass,all tokens heard
+R2_a48c77,1,R6,en-IN-Arjun:Dragon,default,+0,7.4,pass,all tokens heard
+R2_83a514,1,R5,en-IN-Arjun:Dragon,default,+0,9.1,pass,all tokens heard
+R2_4189c2,1,R5,en-IN-Meera:Dragon,default,+0,10.1,pass,all tokens heard
+R2_4ee901,1,R7,en-IN-Arjun:Dragon,default,+0,6.6,pass,all tokens heard
+R2_140370,1,R7,en-IN-Meera:Dragon,default,+0,7.4,pass,all tokens heard
+R2_0b1f75,1,R8,en-IN-Meera:Dragon,default,+0,10.5,pass,all tokens heard (by one engine only for instalment)
+R2_8b3d4e,1,R8,en-IN-Arjun:Dragon,default,+0,10.0,pass,all tokens heard
+R2_e169b4,1,R1,en-IN-Arjun:Dragon,default,+0,9.7,pass,all tokens heard
+R2_aaddbf,1,R1,en-IN-Meera:Dragon,default,+0,11.0,pass,all tokens heard
+R2_ddab19,1,R2,en-IN-Meera:Dragon,default,+0,10.4,pass,"all tokens heard (by one engine only for premium,sum_insured)"
+R2_4564c4,1,R2,en-IN-Arjun:Dragon,default,+0,9.4,pass,all tokens heard
+R2_cc5508,1,R3,en-IN-Meera:Dragon,default,+0,11.9,pass,all tokens heard
+R2_a9e10d,1,R3,en-IN-Arjun:Dragon,default,+0,11.7,pass,all tokens heard
+R2_8837bd,1,R4,en-IN-Meera:Dragon,default,+0,9.7,pass,"all tokens heard (by one engine only for expired_on,premium)"
+R2_777928,1,R4,en-IN-Arjun:Dragon,default,+0,9.1,pass,all tokens heard
+R2_8748f2,1,R5,en-IN-Meera:Dragon,default,+0,11.2,pass,all tokens heard
+R2_8d8e37,1,R5,en-IN-Arjun:Dragon,default,+0,11.2,pass,all tokens heard
+R2_0e1331,1,R6,en-IN-Arjun:Dragon,default,+0,8.8,pass,all tokens heard
+R2_fd6f49,1,R6,en-IN-Meera:Dragon,default,+0,10.4,pass,all tokens heard
+R2_22e962,1,R7,en-IN-Arjun:Dragon,default,+0,7.4,pass,all tokens heard
+R2_31a9b1,1,R7,en-IN-Meera:Dragon,default,+0,8.8,pass,all tokens heard (by one engine only for link_hours)
+R2_711cdb,1,R8,en-IN-Arjun:Dragon,default,+0,11.1,pass,all tokens heard
+R2_beb8d9,1,R8,en-IN-Meera:Dragon,default,+0,12.9,pass,all tokens heard
+R2_082653,1,R1,en-IN-Meera:Dragon,default,+0,9.7,pass,all tokens heard
+R2_c2a1cd,1,R1,en-IN-Arjun:Dragon,default,+0,10.1,pass,all tokens heard
+R2_ae92d8,1,R2,en-IN-Meera:Dragon,default,+0,8.8,pass,all tokens heard
+R2_6b17d4,1,R2,en-IN-Arjun:Dragon,default,+0,8.7,pass,all tokens heard
+R2_854062,1,R3,en-IN-Meera:Dragon,default,+0,8.5,pass,all tokens heard
+R2_49fa49,1,R3,en-IN-Arjun:Dragon,default,+0,10.4,pass,all tokens heard
+R2_a32c3b,1,R4,en-IN-Meera:Dragon,default,+0,8.8,pass,all tokens heard
+R2_66dfcc,1,R4,en-IN-Arjun:Dragon,default,+0,9.6,pass,all tokens heard
+R2_4bc9f7,1,R5,en-IN-Meera:Dragon,default,+0,10.7,pass,all tokens heard
+R2_ece7e8,1,R5,en-IN-Arjun:Dragon,default,+0,11.7,pass,all tokens heard
+R2_12c11f,1,R6,en-IN-Meera:Dragon,default,+0,8.9,pass,all tokens heard
+R2_fed0e2,1,R6,en-IN-Arjun:Dragon,default,+0,8.3,pass,all tokens heard
+R2_254255,1,R7,en-IN-Meera:Dragon,default,+0,7.7,pass,all tokens heard
+R2_03f9eb,1,R7,en-IN-Arjun:Dragon,default,+0,7.5,pass,all tokens heard
+R2_b94222,1,R3,ta-IN-PallaviNeura,default,+0,13.1,pass,all tokens heard
+R2_dc01ac,1,R8,en-IN-Meera:Dragon,default,+0,10.2,pass,all tokens heard
+R2_c3ab58,1,R8,en-IN-Arjun:Dragon,default,+0,10.9,pass,all tokens heard
+R2_2422ce,1,R3,ta-IN-ValluvarNeur,default,+0,13.1,pass,all tokens heard (by one engine only for premium)
+R2_c46846,2,R4,en-IN-Meera:DragonHDLatestNeural,default,-25.2,11.55,pass,all tokens heard
+R2_0650cf,2,R3,en-IN-Meera:DragonHDLatestNeural,default,0.0,9.95,pass,all tokens heard

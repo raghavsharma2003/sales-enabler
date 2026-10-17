@@ -1,0 +1,185 @@
+Source: IRDAI, consultation paper 'Recalibrating Economics of Insurance Distribution', Part 1 (80 pages), linked from https://irdai.gov.in/web/guest/document-detail?documentId=9852848 (page last updated 2026-10-09). Downloaded 2026-10-17 by r2-competition-measured. pdftotext -layout excerpts, unedited. Proposal only: comments due 25 Oct 2026 (para 163).
+
+=== Commission principles (p.47-48) ===
+     3)    Mandatory and near-mandatory products should have nil or very low commission
+           limits so as to just recover the cost of documentation and information processing as
+           they do not require sale efforts, e.g., third-party motor insurance (mandatory as per
+           Law and nil effort for a new vehicle) and life or health or property insurance
+           packaged with credit14 (near mandatory in practice).
+     4)    Complex and difficult to sell products may have higher commission limits as
+           compared to lower limits for simple and easy to sell products.
+     5)    Sale of products in under-served areas (small towns with population of upto 50
+           thousand and rural areas, and smaller cities with population upto 10 lakhs) may
+           have rewards over and above the normal commission limits.
+     6)    Commission on group insurance products should be lower than that on products for
+           individuals.
+
+
+
+14 Refer Section 10 for a distinction between an acceptable package and an unacceptable compulsory bundling
+
+                                                                                             Page 47 of 80
+   7)    Renewal of policies of products with high demand and awareness of policyholders
+         should have much lower commissions than that on first time sales, e.g., health
+         insurance.
+   8)    Commission-led portability of health or motor policies should be discouraged.
+   9)    Commission structure for life insurance policies should incentivize distribution
+         persons and entities to nudge policyholders to persist with the multi-year payment
+         plans instead of incentivizing first year payment.
+   10)   Single premium products and products with tax incentives should have lower
+         commissions.
+   11)   Commercial insurance products should have lower and transparent commission
+         structure as they have cascading effect on cost of doing business in the economy.
+   12)   Commissions should be all-inclusive covering direct commission, incentives,
+         awards, reimbursement of selling expenses, brand value payments to related
+
+=== Box 4A: General insurance maximum commission limits (p.48) ===
+                                  Vehicle       Distribution         Agents and
+     Insurance Type                                                                     Garages
+                                   Type           Entities           Associates
+Third Party (TP)                                      Nil                   2.5%
+Own Damage / Personal               New                                                    NA
+                                                      5%                    10%
+Accident / Legal Liability
+TP                                                   2.5%                   5%            2.5%
+                                    Old
+OD / PA / LL                                         10%                    15%           10%
+
+ B. Health Insurance
+                                                Distribution         Agents and
+     Insurance Type              Nature                                                 Hospitals
+                                                  Entities           Associates
+                                First time           15%                    20%            5%
+Individual
+                                Renewal               5%                    10%
+                                                                                           NA
+                                 Porting              5%                    10%
+                                First time     2.5% subject to     5% subject to
+                                                                                     1% subject
+Group: Employer /                              a maximum           a maximum
+                                Renewal                                              to maximum
+Employee                                       limit of ₹100       limit of ₹100
+                                                                                     of ₹25 lakhs
+                                 Porting       lakhs               lakhs
+                                First time     2.5% subject to     5% subject to
+                                                                                     1% subject
+Group: Non-Employer /                          a maximum           a maximum
+                                Renewal                                              to maximum
+Employer                                       limit of ₹100       limit of ₹100
+                                                                                     of ₹25 lakhs
+                                 Porting       lakhs               lakhs
+
+ C. Other LoB General Insurance
+
+  Product                                                                    Proposed
+
+                                                             IDE             Agents & Associates
+
+  Marine-Cargo                                               10%                        15%
+
+  Marine-Hull                                                10%                        10%
+
+  Miscellaneous – Retail*                                    15%                     17.5%
+
+  Miscellaneous - Corporate/Group**                          10%                        15%
+
+  Government Schemes                                         As notified in the scheme
+
+
+=== Box 4B: Life insurance maximum commission limits (p.50) ===
+                                                                                        Page 50 of 80
+             Box 4B: Life Insurance - Maximum Commission Limits#
+                               (as percentage of premium)
+
+
+  A. Standalone
+
+                     Premium          Distribution Entities                 Agents
+                     Payment
+Insurance Type
+                       Term
+                                    First Year     Renewal*       First Year     Renewal*
+                      (PPT)^
+
+Individual Non-     Below 5
+                                       5%             2%            6.25%            5%
+Linked (Par or      years@
+Non-Par) and
+Linked$             5 years           10%             2%            12.5%            5%
+
+                    6 to 8 years      14%             3%            17.5%            5%
+
+                    9 years           18%             3%            22.5%            5%
+
+                    10 years &                        3%
+                                      20%                            25%             5%
+                    above
+
+* From the beginning of the 6th policy year, once every three years the renewal commission
+shall be increased by 0.5% of the premium for policies which are renewed after 6th year and
+shall be paid at each renewal beginning from 6th policy year i.e., 5.5% of renewal commission
+for 6th, 7th and 8th policy renewals and 6% for 9th, 10th and 11th policy renewals and so on
+subject to maximum renewal commission of 7%.
+
+^Policy term cannot be less than 10 years or the PPT, whichever is higher.
+
+
+=== Para 163 ===
+        Recalibrating Economics of Insurance Distribution”.
+        Note: Use only one mode - web form, Excel upload, or email for each submission to
+        avoid duplication.
+163.   The last date for submission of comments and feedback is 25th October 2026.
+
+
+
+=== Secondary cross-check: Khaitan & Co ERGO note, 29 Sep 2026 (key takeaways, burden) ===
+The Insurance Regulatory and Development Authority of India (IRDAI) has released a two-part public
+consultation paper titled ‘Recalibrating Economics of Insurance Distribution’ (Consultation Paper). Part 1
+sets out the proposed reforms. Part 2 presents IRDAI’s analysis of distribution costs and commission
+structures across the industry. Together, they propose the most significant overhaul of the Indian insurance
+regime. Comments are due by 25 October 2026.
+
+Key Takeaways
+
+WHAT IRDAI PROPOSES
+
+• One licence for entities; one framework for individuals. 8 forms of distribution licence would be
+  subsumed within a single Insurance Distribution Entity (IDE) licence, and nine forms of authorised
+  persons into four categories of Insurance Distribution Persons (IDPs). Every IDE would have the option
+  of open architecture (i.e. distribute products of multiple insurers).
+
+• Lower Expenses of Management (EoM) limits. A glide path from FY 2027-28: life insurers to 15% of
+  premium within 2 years and 12.5% within 5 years; general insurers to 25% and 20%. The EoM base changes
+  and the 2023 carve-outs are absorbed within the overall limit.
+
+• Return of commission caps. Product-level caps, which sit well below current market levels, with lower
+  caps for IDEs (eligible for open architecture) than for agents and associates engaged directly by insurers.
+
+• Conduct measures. Clawback, a persistency-linked renewal commission escalator, enforceable suitability
+  and seller-level accountability, with incidences of mis-selling placed in the public domain.
+
+• New market infrastructure. Insurer-promoted market infrastructure institutions (MIIs), with Bima Sugam
+  as the first, and an IRDAI-promoted Public Insurance Registry (PIR).
+
+OUR VIEW
+
+• IRDAI’s diagnosis is well evidenced; however, the remedy is more contestable. The suggested distribution
+  caps are a blunt instrument as they regulate the quantum paid, and not the conduct it rewards. The
+  conduct-focused measures are the most consequential proposals and, if strengthened, could deliver
+  durable change without the distortions that caps invite.
+
+• The reforms ask distributors to sell better, through documented needs analysis, suitability, verified
+  customer contact and sustained servicing, and each of these adds cost. The caps compress the very
+  remuneration that pays for that effort. Unless the framework leaves room to reward quality, for example
+  through persistency- and suitability-linked pay above the base cap, distributors may cut the advisory
+  effort the reforms rely on rather than the cost the caps target.
+
+• The burden will not be borne evenly. It falls hardest on NBFC-led credit life, Point of Sale Person (PoSP)
+  led retail broking, OEM-linked motor distribution and employee benefits broking. Sub-scale insurers face
+  the steepest adjustment, and consolidation is a likely consequence if the reforms are carried forward.
+
+                                                                                                                1
+• The caps and the EoM glide path may take effect before the PIR and MII infrastructure on which much
+  of the framework depends is operational.
+
+

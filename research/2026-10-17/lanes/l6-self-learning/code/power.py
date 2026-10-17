@@ -33,8 +33,12 @@ def n_two_prop(p0, p1, alpha=ALPHA, power=POWER, two_sided=True):
 
 
 def n_cohen_h(p0, p1, alpha=ALPHA, power=POWER):
+    """Per-arm n from Cohen's arcsine effect size h. var(2*asin(sqrt(p_hat))) ~ 1/n per arm, so the difference of two
+    arms has variance 2/n and n_per_arm = 2*((z_a + z_b)/h)^2 (Cohen 1988: h = 0.2 -> 392 per group).
+    Round-2 correction (2026-10-17, l6 verify.md claim 1 side defect): round 1 omitted the factor 2, so the
+    n_per_arm_cohen_h column was half the correct per-arm n. Round-1 code kept as code/power.round1.py."""
     h = abs(2 * math.asin(math.sqrt(p0)) - 2 * math.asin(math.sqrt(p1)))
-    return math.ceil(((Z(1 - alpha / 2) + Z(power)) / h) ** 2)
+    return math.ceil(2 * ((Z(1 - alpha / 2) + Z(power)) / h) ** 2)
 
 
 def n_exact_sim(p0, p1, n, sims=4000, rng=None):

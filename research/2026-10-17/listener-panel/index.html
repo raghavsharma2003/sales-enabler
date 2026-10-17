@@ -101,8 +101,15 @@
   .tablewrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; font-size: .85rem; }
   th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; white-space: nowrap; }
+  /* Larger text for older listeners (welcome-screen toggle or &big=1; protocol 2.4) */
+  .bigtoggle { display: inline-block; min-height: 40px; padding: 6px 14px; margin: 2px 0 6px; font-weight: 700; }
+  html.big body { font-size: 21px; line-height: 1.55; }
+  html.big .choice { min-height: 56px; }
+  html.big .btn { min-height: 56px; }
+  html.big .ends { font-size: .9rem; }
   @media (max-width: 360px) {
     body { font-size: 16px; }
+    html.big body { font-size: 19px; }
     .choices.seven .choice { padding: 10px 0; }
   }
 </style>

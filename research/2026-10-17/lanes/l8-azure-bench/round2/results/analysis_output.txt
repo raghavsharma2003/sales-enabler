@@ -1,0 +1,181 @@
+## network
+| target | host | n_cold | tcp_connect_p50_ms | tls_handshake_p50_ms | cold_request_total_p50_ms | n_warm | warm_request_p50_ms | warm_request_p90_ms |
+|---|---|---|---|---|---|---|---|---|
+| cin-stt | centralindia.stt.speech.microsoft.com | 30 | 2.6 | 21.8 | 40.6 | 30 | 3.3 | 4.0 |
+| cin-tts | centralindia.tts.speech.microsoft.com | 30 | 2.7 | 21.2 | 75.2 | 30 | 2.7 | 7.8 |
+| cin-acct (Voice Live) | vp-r2lat-cin.cognitiveservices.azure.com | 30 | 2.4 | 25.3 | 676.0 | 30 | 1.3 | 1.4 |
+| sin-aoai | vp-r2lat-sin.openai.azure.com | 30 | 26.1 | 68.8 | 140.1 | 30 | 27.0 | 27.2 |
+| sea-stt | southeastasia.stt.speech.microsoft.com | 30 | 54.2 | 71.4 | 239.0 | 30 | 57.9 | 59.2 |
+| sea-tts | southeastasia.tts.speech.microsoft.com | 30 | 54.9 | 72.5 | 280.7 | 30 | 51.6 | 54.6 |
+| sea-aoai | vp-research-ai-sea.openai.azure.com | 30 | 55.7 | 130.3 | 295.2 | 30 | 49.9 | 50.9 |
+| frc-aoai | vp-research-ai-frc.openai.azure.com | 30 | 124.2 | 265.8 | 636.2 | 30 | 126.5 | 126.6 |
+
+## LLM TTFT from Central India
+| arm | scope | served_region | n | ttft_p50_ms | ttft_p50_ci95 | ttft_p90_ms | cached_share | service_tier |
+|---|---|---|---|---|---|---|---|---|
+| sin-std gpt-4.1-mini | Regional (India geography) | South India | 33 | 304 | 298-322 | 387 | 0.91 | default |
+| sea-gs gpt-5.4-nano | Global | Southeast Asia | 33 | 577 | 571-583 | 610 | 0.85 | default |
+| sin-gs gpt-5.4-nano | Global | South India | 33 | 745 | 736-752 | 781 | 0.82 | default |
+| sea-gs gpt-5.4-mini | Global | Southeast Asia | 33 | 773 | 757-795 | 918 | 0.76 | default |
+| sea-gs gpt-4.1-mini | Global | Southeast Asia | 33 | 774 | 766-793 | 962 | 0.91 | default |
+| sea-dzapac gpt-5.4-mini | DataZone APAC | Southeast Asia | 33 | 784 | 765-803 | 885 | 0.78 | default |
+| frc-dzeu DeepSeek-V4-Flash | DataZone EU | France Central | 33 | 816 | 764-839 | 964 | 0.92 |  |
+| frc-dzeu gpt-6-luna | DataZone EU | France Central | 33 | 883 | 879-894 | 929 | 0.96 | default |
+| sea-gs gpt-5.4-mini priority | Global (priority tier) | Southeast Asia | 33 | 903 | 890-976 | 1588 | 0.78 | priority |
+| frc-dzeu gpt-6-sol | DataZone EU | France Central | 33 | 1005 | 970-1023 | 1222 | 0.96 | default |
+| sea-dzapac gpt-6.1-sol | DataZone APAC | Southeast Asia | 33 | 1814 | 1651-1937 | 2819 | 0.96 | default |
+
+## TTS first audio from Central India
+| region | voice | format | n | ttfb_p50_ms | ttfb_p50_ci95 | ttfb_p90_ms | chars_mean | errors |
+|---|---|---|---|---|---|---|---|---|
+| centralindia | en-IN-Meera:DragonHDLatestNeural | pcm16k | 30 | 188 | 186-191 | 201 | 116 | 0 |
+| centralindia | hi-IN-Kavya:MAI-Voice-2.1-Flash | pcm16k | 30 | 363 | 352-376 | 480 | 116 | 0 |
+| centralindia | hi-IN-KavyaNeural | pcm16k | 30 | 99 | 91-116 | 148 | 116 | 0 |
+| centralindia | hi-IN-SwaraNeural | pcm16k | 30 | 95 | 84-104 | 152 | 116 | 0 |
+| centralindia | hi-IN-SwaraNeural | mulaw8k | 30 | 93 | 81-102 | 123 | 116 | 0 |
+| southeastasia | hi-IN-Kavya:MAI-Voice-2.1-Flash | pcm16k | 30 | 401 | 338-446 | 474 | 116 | 0 |
+| southeastasia | en-IN-Meera:DragonHDLatestNeural | pcm16k | 30 | 293 | 290-296 | 309 | 116 | 0 |
+| southeastasia | hi-IN-KavyaNeural | pcm16k | 30 | 115 | 111-127 | 138 | 116 | 0 |
+| southeastasia | hi-IN-SwaraNeural | pcm16k | 30 | 164 | 118-173 | 183 | 116 | 0 |
+
+## STT endpointing from Central India (phone band, hi-IN)
+| region | segmentation | n_clips | final_after_speech_end_p50_ms | p50_ci95 | p90_ms | first_partial_after_speech_start_p50_ms | clips_with_final_mid_turn | elderly_P4_with_final_mid_turn | no_final_after_end |
+|---|---|---|---|---|---|---|---|---|---|
+| centralindia | 500 | 30 | 622 | 608-632 | 680 | 924 | 15/30 | 8/10 | 1 |
+| centralindia | semantic | 30 | 848 | 824-905 | 1609 | 926 | 15/30 | 8/10 | 1 |
+| southeastasia | 500 | 30 | 677 | 666-704 | 743 | 985 | 15/30 | 8/10 | 1 |
+| centralindia | 300 | 30 | 450 | 411-473 | 522 | 926 | 20/30 | 8/10 | 1 |
+| centralindia | 800 | 30 | 985 | 981-1000 | 1023 | 925 | 13/30 | 6/10 | 1 |
+
+## Cascade v1: end of caller speech -> first agent audio byte (Central India VM, no telephone leg)
+| config | llm | turns | turns_with_response | p50_ms | p50_ci95_turn | p50_ci95_session_cluster | p90_ms | clean_p50_ms | clean_p90_ms | share_le_1500ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A_seg500_fast | sin-std gpt-4.1-mini | 30 | 29 | 1028 | 1009-1057 | 1022-1081 | 1315 | 1026 | 1281 | 27/29 (93%, CI 78-98%) |
+| B_seg800_fast | sin-std gpt-4.1-mini | 30 | 29 | 1359 | 1327-1394 | 1338-1393 | 1469 | 1356 | 1451 | 26/29 (90%, CI 74-96%) |
+| C_seg800_spec_fast | sin-std gpt-4.1-mini | 7 | 7 | 1028 | 984-1403 | - | 1457 | 1023 | 1470 | 6/7 (86%, CI 49-97%) |
+
+| config | turns_with_premature_cutin | elderly_pause_clip_cutin | stt_final_rel_end_p50_ms | llm_ttft_p50_ms | tts_ttfb_p50_ms | gate_us_p50 | responses_per_turn | wasted_responses_per_turn | gate_substitutions | ai_inr_per_min_at_5_turns |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A_seg500_fast | 8/30 (27%, CI 14-44%) | 6/6 (100%, CI 61-100%) | 650 | 313 | 58 | 13.6 | 1.87 | 0.90 | 8 | 2.623 |
+| B_seg800_fast | 5/30 (17%, CI 7-34%) | 6/6 (100%, CI 61-100%) | 995 | 313 | 33 | 14.6 | 1.53 | 0.57 | 12 | 2.552 |
+| C_seg800_spec_fast | 2/7 (29%, CI 8-64%) | 0/0 (0%, CI 0-0%) | 1018 | 303 | 46 | 17.2 | 3.57 | 2.57 | 3 | 2.913 |
+
+## paired differences
+| a | b | n_pairs | median_b_minus_a_ms | ci95 |
+|---|---|---|---|---|
+| A_seg500_fast | B_seg800_fast | 29 | 310 | 282-338 |
+| A_seg500_fast | C_seg800_spec_fast | 7 | 74 | -69-350 |
+| B_seg800_fast | C_seg800_spec_fast | 7 | -373 | -409-61 |
+
+## Cascade main: end of caller speech -> first agent audio byte (Central India VM, no telephone leg)
+| config | llm | turns | turns_with_response | p50_ms | p50_ci95_turn | p50_ci95_session_cluster | p90_ms | clean_p50_ms | clean_p90_ms | share_le_1500ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A_seg500_fast | sin-std gpt-4.1-mini | 60 | 58 | 1004 | 984-1017 | 979-1030 | 1100 | 1004 | 1105 | 58/58 (100%, CI 94-100%) |
+| C_seg800_spec_fast | sin-std gpt-4.1-mini | 60 | 58 | 1011 | 1002-1031 | 1000-1018 | 1310 | 1015 | 1326 | 57/58 (98%, CI 91-100%) |
+| E_seg500_spec_fast | sin-std gpt-4.1-mini | 60 | 58 | 823 | 733-865 | 729-880 | 1029 | 826 | 1044 | 58/58 (100%, CI 94-100%) |
+| B_seg800_fast | sin-std gpt-4.1-mini | 60 | 57 | 1348 | 1333-1368 | 1333-1363 | 1454 | 1344 | 1434 | 56/57 (98%, CI 91-100%) |
+| D_seg800_spec_quality | frc-dzeu gpt-6-sol | 60 | 58 | 1546 | 1450-1617 | 1383-1606 | 1960 | 1591 | 1966 | 26/58 (45%, CI 33-58%) |
+| F_seg800_spec_nano | sea-gs gpt-5.4-nano | 60 | 59 | 1360 | 1258-1419 | 1281-1407 | 1631 | 1384 | 1644 | 41/59 (69%, CI 57-80%) |
+
+| config | turns_with_premature_cutin | elderly_pause_clip_cutin | stt_final_rel_end_p50_ms | llm_ttft_p50_ms | tts_ttfb_p50_ms | gate_us_p50 | responses_per_turn | wasted_responses_per_turn | gate_substitutions | ai_inr_per_min_at_5_turns |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A_seg500_fast | 15/60 (25%, CI 16-37%) | 12/12 (100%, CI 76-100%) | 659 | 311 | 25 | 22.7 | 1.87 | 0.90 | 3 | 2.758 |
+| C_seg800_spec_fast | 20/60 (33%, CI 23-46%) | 12/12 (100%, CI 76-100%) | 992 | 313 | 24 | 23.2 | 3.77 | 2.80 | 0 | 3.318 |
+| E_seg500_spec_fast | 30/60 (50%, CI 38-62%) | 12/12 (100%, CI 76-100%) | 648 | 309 | 19 | 22.8 | 3.65 | 2.68 | 0 | 3.212 |
+| B_seg800_fast | 9/60 (15%, CI 8-26%) | 12/12 (100%, CI 76-100%) | 999 | 316 | 28 | 24.3 | 1.50 | 0.55 | 0 | 2.606 |
+| D_seg800_spec_quality | 11/60 (18%, CI 11-30%) | 12/12 (100%, CI 76-100%) | 1001 | 987 | 16 | 20.5 | 3.82 | 2.85 | 14 | 4.518 |
+| F_seg800_spec_nano | 12/60 (20%, CI 12-32%) | 12/12 (100%, CI 76-100%) | 1004 | 659 | 28 | 22.5 | 3.80 | 2.82 | 12 | 2.919 |
+
+## paired differences
+| a | b | n_pairs | median_b_minus_a_ms | ci95 |
+|---|---|---|---|---|
+| A_seg500_fast | C_seg800_spec_fast | 58 | 37 | -4-62 |
+| A_seg500_fast | E_seg500_spec_fast | 58 | -224 | -259--150 |
+| A_seg500_fast | B_seg800_fast | 57 | 346 | 332-368 |
+| A_seg500_fast | D_seg800_spec_quality | 58 | 564 | 458-606 |
+| A_seg500_fast | F_seg800_spec_nano | 58 | 327 | 244-413 |
+| C_seg800_spec_fast | E_seg500_spec_fast | 58 | -250 | -299--179 |
+| C_seg800_spec_fast | B_seg800_fast | 57 | 329 | 313-361 |
+| C_seg800_spec_fast | D_seg800_spec_quality | 58 | 549 | 445-604 |
+| C_seg800_spec_fast | F_seg800_spec_nano | 58 | 300 | 252-348 |
+| E_seg500_spec_fast | B_seg800_fast | 57 | 558 | 501-613 |
+| E_seg500_spec_fast | D_seg800_spec_quality | 58 | 703 | 648-770 |
+| E_seg500_spec_fast | F_seg800_spec_nano | 58 | 511 | 460-561 |
+| B_seg800_fast | D_seg800_spec_quality | 57 | 167 | 48-253 |
+| B_seg800_fast | F_seg800_spec_nano | 57 | -25 | -103-52 |
+| D_seg800_spec_quality | F_seg800_spec_nano | 58 | -217 | -322--179 |
+
+## Cascade ratelimited: end of caller speech -> first agent audio byte (Central India VM, no telephone leg)
+| config | llm | turns | turns_with_response | p50_ms | p50_ci95_turn | p50_ci95_session_cluster | p90_ms | clean_p50_ms | clean_p90_ms | share_le_1500ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A_seg500_fast | sin-std gpt-4.1-mini | 30 | 20 | 1010 | 962-1046 | 979-1078 | 1088 | 1001 | 1124 | 20/20 (100%, CI 84-100%) |
+| B_seg800_fast | sin-std gpt-4.1-mini | 14 | 13 | 1348 | 1336-1408 | - | 1444 | 1345 | 1454 | 13/13 (100%, CI 77-100%) |
+| C_seg800_spec_fast | sin-std gpt-4.1-mini | 30 | 15 | 1024 | 1017-1269 | 1019-1264 | 1311 | 1047 | 1317 | 15/15 (100%, CI 80-100%) |
+| D_seg800_spec_quality | frc-dzeu gpt-6-sol | 8 | 8 | 1452 | 1325-1876 | - | 1883 | 1499 | 1885 | 5/8 (62%, CI 31-86%) |
+| E_seg500_spec_fast | sin-std gpt-4.1-mini | 30 | 14 | 827 | 705-988 | 705-1010 | 1104 | 924 | 1144 | 14/14 (100%, CI 78-100%) |
+| F_seg800_spec_nano | sea-gs gpt-5.4-nano | 6 | 6 | 1402 | 1136-1824 | - | 1824 | 1604 | 1857 | 3/6 (50%, CI 19-81%) |
+
+| config | turns_with_premature_cutin | elderly_pause_clip_cutin | stt_final_rel_end_p50_ms | llm_ttft_p50_ms | tts_ttfb_p50_ms | gate_us_p50 | responses_per_turn | wasted_responses_per_turn | gate_substitutions | ai_inr_per_min_at_5_turns |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A_seg500_fast | 9/30 (30%, CI 17-48%) | 5/6 (83%, CI 44-97%) | 648 | 293 | 35 | 25.1 | 1.87 | 1.20 | 0 | 2.546 |
+| B_seg800_fast | 0/14 (0%, CI 0-22%) | 0/0 (0%, CI 0-0%) | 1008 | 310 | 24 | 24.4 | 1.43 | 0.50 | 0 | 2.445 |
+| C_seg800_spec_fast | 6/30 (20%, CI 10-37%) | 5/6 (83%, CI 44-97%) | 993 | 285 | 29 | 32.1 | 3.77 | 3.27 | 0 | 2.785 |
+| D_seg800_spec_quality | 0/8 (0%, CI 0-32%) | 0/0 (0%, CI 0-0%) | 1012 | 978 | 23 | 18.8 | 3.88 | 2.88 | 2 | 4.31 |
+| E_seg500_spec_fast | 10/30 (33%, CI 19-51%) | 4/6 (67%, CI 30-90%) | 654 | 297 | 33 | 30.1 | 3.83 | 3.37 | 0 | 2.845 |
+| F_seg800_spec_nano | 0/6 (0%, CI 0-39%) | 0/0 (0%, CI 0-0%) | 1030 | 698 | 30 | 22.6 | 3.67 | 2.67 | 1 | 2.703 |
+
+## paired differences
+| a | b | n_pairs | median_b_minus_a_ms | ci95 |
+|---|---|---|---|---|
+| A_seg500_fast | B_seg800_fast | 10 | 336 | 240-450 |
+| A_seg500_fast | C_seg800_spec_fast | 11 | 77 | -11-254 |
+| A_seg500_fast | D_seg800_spec_quality | 8 | 517 | 345-865 |
+| A_seg500_fast | E_seg500_spec_fast | 11 | -199 | -307--63 |
+| A_seg500_fast | F_seg800_spec_nano | 6 | 419 | 165-829 |
+| B_seg800_fast | C_seg800_spec_fast | 8 | -288 | -388--49 |
+| B_seg800_fast | D_seg800_spec_quality | 7 | 116 | -26-536 |
+| B_seg800_fast | E_seg500_spec_fast | 8 | -430 | -753--352 |
+| B_seg800_fast | F_seg800_spec_nano | 5 | 264 | -321-581 |
+| C_seg800_spec_fast | D_seg800_spec_quality | 5 | 512 | 314-585 |
+| C_seg800_spec_fast | E_seg500_spec_fast | 10 | -329 | -393--253 |
+| C_seg800_spec_fast | F_seg800_spec_nano | 5 | 301 | 67-965 |
+| D_seg800_spec_quality | E_seg500_spec_fast | 5 | -765 | -928--706 |
+| D_seg800_spec_quality | F_seg800_spec_nano | 6 | -242 | -293-170 |
+| E_seg500_spec_fast | F_seg800_spec_nano | 5 | 616 | 391-1230 |
+
+## cut-ins by longest caller pause (main)
+| config | clip_longest_pause | turns | turns_with_cutin | share |
+|---|---|---|---|---|
+| A_seg500_fast | no pause >=0.5 s | 30 | 0 | 0% (CI 0-11%) |
+| A_seg500_fast | pause 0.5-0.9 s | 10 | 0 | 0% (CI 0-28%) |
+| A_seg500_fast | pause 0.9-1.3 s | 18 | 13 | 72% (CI 49-88%) |
+| A_seg500_fast | pause >=2 s | 12 | 12 | 100% (CI 76-100%) |
+| C_seg800_spec_fast | no pause >=0.5 s | 30 | 0 | 0% (CI 0-11%) |
+| C_seg800_spec_fast | pause 0.5-0.9 s | 10 | 4 | 40% (CI 17-69%) |
+| C_seg800_spec_fast | pause 0.9-1.3 s | 18 | 14 | 78% (CI 55-91%) |
+| C_seg800_spec_fast | pause >=2 s | 12 | 12 | 100% (CI 76-100%) |
+| E_seg500_spec_fast | no pause >=0.5 s | 30 | 0 | 0% (CI 0-11%) |
+| E_seg500_spec_fast | pause 0.5-0.9 s | 10 | 10 | 100% (CI 72-100%) |
+| E_seg500_spec_fast | pause 0.9-1.3 s | 18 | 18 | 100% (CI 82-100%) |
+| E_seg500_spec_fast | pause >=2 s | 12 | 12 | 100% (CI 76-100%) |
+| B_seg800_fast | no pause >=0.5 s | 30 | 0 | 0% (CI 0-11%) |
+| B_seg800_fast | pause 0.5-0.9 s | 10 | 4 | 40% (CI 17-69%) |
+| B_seg800_fast | pause 0.9-1.3 s | 18 | 3 | 17% (CI 6-39%) |
+| B_seg800_fast | pause >=2 s | 12 | 12 | 100% (CI 76-100%) |
+| D_seg800_spec_quality | no pause >=0.5 s | 30 | 0 | 0% (CI 0-11%) |
+| D_seg800_spec_quality | pause 0.5-0.9 s | 10 | 5 | 50% (CI 24-76%) |
+| D_seg800_spec_quality | pause 0.9-1.3 s | 18 | 4 | 22% (CI 9-45%) |
+| D_seg800_spec_quality | pause >=2 s | 12 | 12 | 100% (CI 76-100%) |
+| F_seg800_spec_nano | no pause >=0.5 s | 30 | 0 | 0% (CI 0-11%) |
+| F_seg800_spec_nano | pause 0.5-0.9 s | 10 | 6 | 60% (CI 31-83%) |
+| F_seg800_spec_nano | pause 0.9-1.3 s | 18 | 4 | 22% (CI 9-45%) |
+| F_seg800_spec_nano | pause >=2 s | 12 | 12 | 100% (CI 76-100%) |
+
+## Voice Live (Central India resource, from Central India VM)
+| arm | turns | turns_with_audio | first_audio_p50_ms | p50_ci95 | p90_ms | first_text_p50_ms | vad_stop_p50_ms | turns_with_audio_cutin | session_updated_p50_ms | errors |
+|---|---|---|---|---|---|---|---|---|---|---|
+| vl-gpt41mini-regional | 30 | 27 | 1377 | 1283-1414 | 1496 | 1104 | 709 | 9 | 113 |  |
+| vl-azure-realtime | 30 | 28 | 1616 | 1520-1781 | 2272 | 1525 | 708 | 8 | 806 |  |
+| vl-text-gated | 30 | 27 | 1175 | 1121-1195 | 1241 | 1102 | 708 | 0 | 139 |  |
+| vl-gptrt21-regional | 30 | 29 | 1414 | 1171-1502 | 1667 | 1246 | 725 | 7 | 414 |  |
+

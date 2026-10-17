@@ -1,0 +1,19 @@
+config,persona,persona_desc,n_turns_with_response,latency_p50_ms,latency_p90_ms
+A_seg500_fast,P1,"urban Hinglish (Neha, 29)",20,975,1026
+A_seg500_fast,P2,"Bhojpuri-Hindi (Ramesh, 46)",20,1044,1120
+A_seg500_fast,P4,"elderly slow Hindi (Shanti Devi, 68)",18,1009,1080
+B_seg800_fast,P1,"urban Hinglish (Neha, 29)",20,1371,1456
+B_seg800_fast,P2,"Bhojpuri-Hindi (Ramesh, 46)",20,1344,1420
+B_seg800_fast,P4,"elderly slow Hindi (Shanti Devi, 68)",17,1333,1468
+C_seg800_spec_fast,P1,"urban Hinglish (Neha, 29)",20,1015,1302
+C_seg800_spec_fast,P2,"Bhojpuri-Hindi (Ramesh, 46)",20,1009,1317
+C_seg800_spec_fast,P4,"elderly slow Hindi (Shanti Devi, 68)",18,1012,1271
+D_seg800_spec_quality,P1,"urban Hinglish (Neha, 29)",20,1556,1966
+D_seg800_spec_quality,P2,"Bhojpuri-Hindi (Ramesh, 46)",20,1614,2005
+D_seg800_spec_quality,P4,"elderly slow Hindi (Shanti Devi, 68)",18,1278,1848
+E_seg500_spec_fast,P1,"urban Hinglish (Neha, 29)",20,729,1012
+E_seg500_spec_fast,P2,"Bhojpuri-Hindi (Ramesh, 46)",20,949,1196
+E_seg500_spec_fast,P4,"elderly slow Hindi (Shanti Devi, 68)",18,733,903
+F_seg800_spec_nano,P1,"urban Hinglish (Neha, 29)",20,1329,1612
+F_seg800_spec_nano,P2,"Bhojpuri-Hindi (Ramesh, 46)",20,1448,1676
+F_seg800_spec_nano,P4,"elderly slow Hindi (Shanti Devi, 68)",19,1258,1533

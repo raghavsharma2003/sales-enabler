@@ -1,0 +1,5 @@
+arm,turns,turns_with_audio,first_audio_p50_ms,p50_ci95,p90_ms,first_text_p50_ms,vad_stop_p50_ms,turns_with_audio_cutin,session_updated_p50_ms,errors
+vl-gpt41mini-regional,30,27,1377,1283-1414,1496,1104,709,9,113,
+vl-azure-realtime,30,28,1616,1520-1781,2272,1525,708,8,806,
+vl-text-gated,30,27,1175,1121-1195,1241,1102,708,0,139,
+vl-gptrt21-regional,30,29,1414,1171-1502,1667,1246,725,7,414,

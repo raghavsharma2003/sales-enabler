@@ -1,0 +1,227 @@
+ts,config,session,clip,rid,kind,used,cancel_reason,created_rel_end_ms,llm_ttft_ms,played_rel_end_ms,prompt_tokens,cached_tokens,completion_tokens,tts_chars,tts_sdk_first_byte_ms,harness,audio_bytes,err,text
+2026-10-17T17:38:31Z,A_seg500_fast,P1-pass1,P1_t01,1,commit,False,barge_in_after_cutin,-2197.4,256.9,-1908.1,,,,70,,v2,14560,,"हाँ, हैलो।"
+2026-10-17T17:38:31Z,A_seg500_fast,P1-pass1,P1_t01,2,commit,True,,616.5,277.9,958.3,1715,1664,27,107,33,v2,87200,,"हाँ, हैलो। हाँ, बोलिए कौन बोल रहा है?"
+2026-10-17T17:38:34Z,A_seg500_fast,P1-pass1,P1_t02,3,commit,True,,674.4,286.4,987.7,1752,1664,35,103,20,v2,113660,,हम।
+2026-10-17T17:38:42Z,A_seg500_fast,P1-pass1,P1_t03,4,commit,False,barge_in_after_cutin,-2891.5,291.7,-2432.2,,,,44,,v2,6368,,प्रीमियम कितना आएगा इस बार?
+2026-10-17T17:38:42Z,A_seg500_fast,P1-pass1,P1_t03,5,commit,True,,716.7,272.8,1031.2,1817,1664,37,133,41,v2,126860,,"प्रीमियम कितना आएगा इस बार? लास्ट ईयर तो 25,000 के आसपास था।"
+2026-10-17T17:38:52Z,A_seg500_fast,P1-pass1,P1_t04,6,commit,True,,470.7,306.6,909.4,1900,1792,34,92,69,v2,88400,,"सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ। मुझे बस ये जानना है कि क्लेम लिमिट 1.5,00,000 है या ज्यादा?"
+2026-10-17T17:38:54Z,A_seg500_fast,P1-pass1,P1_t05,7,commit,True,,666.5,330.9,1032.3,1945,1792,17,56,31,v2,48760,,ओके?
+2026-10-17T17:39:00Z,A_seg500_fast,P1-pass1,P1_t06,8,commit,False,barge_in_after_cutin,-1040.4,312.1,-681.2,,,,112,,v2,14560,,"वेट, आप रोबॉट हो क्या?"
+2026-10-17T17:39:00Z,A_seg500_fast,P1-pass1,P1_t06,9,commit,True,,644.6,286.7,979.4,1984,1920,30,115,42,v2,100060,,"वेट, आप रोबॉट हो क्या? एआई हो?"
+2026-10-17T17:39:07Z,A_seg500_fast,P1-pass1,P1_t08,10,commit,True,,625.6,295.4,964.8,2040,1920,29,105,37,v2,110820,,"ठीक है, कल 3:30 बजे कॉल कर लेना तब फ्री हूँ।"
+2026-10-17T17:39:13Z,A_seg500_fast,P1-pass1,P1_t09,11,commit,True,,469.7,310.3,836.5,2094,1920,22,71,35,v2,64500,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना है पता है आपको?
+2026-10-17T17:39:19Z,A_seg500_fast,P1-pass1,P1_t10,12,commit,True,,667.8,368.8,1060.4,2146,2048,23,83,11,v2,83920,,"हाँ और रिन्यूअल का लिंक, व्हाट्सएप पे भेज दो इसी नंबर पे।"
+2026-10-17T17:39:33Z,A_seg500_fast,P1-pass1,P1_t11,13,commit,False,,484.0,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","ओके, थैंक यू बाई।"
+2026-10-17T17:39:51Z,A_seg500_fast,P2-pass1,P2_t01,1,commit,False,barge_in_after_cutin,-3157.3,190.9,-2932.7,,,,108,,v2,20928,,"हाँ, हैलो।"
+2026-10-17T17:39:51Z,A_seg500_fast,P2-pass1,P2_t01,2,commit,False,superseded,-1061.6,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","हाँ, हैलो। के बोलत बानी।"
+2026-10-17T17:39:51Z,A_seg500_fast,P2-pass1,P2_t01,3,commit,False,,643.1,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","हाँ, हैलो। के बोलत बानी। का बात बात।"
+2026-10-17T17:39:54Z,A_seg500_fast,P2-pass1,P2_t02,4,commit,True,,939.6,204.9,1186.4,1702,1664,34,99,37,v2,114660,,हाँ।
+2026-10-17T17:40:12Z,A_seg500_fast,P2-pass1,P2_t03,5,commit,False,barge_in_after_cutin,-2431.4,273.6,-2138.7,1760,1664,33,109,,v2,85960,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका?
+2026-10-17T17:40:12Z,A_seg500_fast,P2-pass1,P2_t03,6,commit,False,,655.5,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70 बरिस बा।
+2026-10-17T17:40:20Z,A_seg500_fast,P2-pass1,P2_t04,7,commit,True,,769.6,218.2,1005.4,1771,1664,31,88,12,v2,87260,,"रुकी रुकी पहले ही बताएं 1,50,000 ले के इलाज के खर्चा कवर हुई कि न?"
+2026-10-17T17:40:32Z,A_seg500_fast,P2-pass1,P2_t05,8,commit,False,,675.4,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",ठीक बा।
+2026-10-17T17:40:39Z,A_seg500_fast,P2-pass1,P2_t06,9,commit,True,,582.3,261.0,913.2,1831,1792,35,121,61,v2,113600,,"प्रीमियम 25,000 से ज़्यादा हुई तहमरा से न हो पाई।"
+2026-10-17T17:40:55Z,A_seg500_fast,P2-pass1,P2_t08,10,commit,False,barge_in_after_cutin,-1784.5,309.3,-1423.5,,,,117,,v2,14528,,रउआ मशीन हई की आदमी।
+2026-10-17T17:40:55Z,A_seg500_fast,P2-pass1,P2_t08,11,commit,False,,611.5,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",रउआ मशीन हई की आदमी। सच सच बताएं?
+2026-10-17T17:41:03Z,A_seg500_fast,P2-pass1,P2_t09,12,commit,True,,655.6,475.1,1170.5,1897,1664,31,112,29,v2,100660,,"परसों 3:30 बजे फ़ोन करें, वो घरी दुकान पर भीड़ कम रहेला।"
+2026-10-17T17:41:08Z,A_seg500_fast,P2-pass1,P2_t10,13,commit,True,,695.7,290.6,1078.3,1954,1664,24,100,71,v2,82800,,अच्छा कि बताएं आज सिवान में बर्खा होई का?
+2026-10-17T17:41:24Z,A_seg500_fast,P2-pass1,P2_t11,14,commit,False,barge_in_after_cutin,-1036.5,294.5,-715.7,1994,1920,17,61,,v2,47860,,ठीक बा राखक बानी।
+2026-10-17T17:41:24Z,A_seg500_fast,P2-pass1,P2_t11,15,commit,False,,644.5,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",ठीक बा राखक बानी। प्रणाम।
+2026-10-17T17:41:37Z,A_seg500_fast,P4-pass1,P4_t01,1,commit,False,caller_resumed,-7889.4,,,,,,0,,v2,0,,हाँ।
+2026-10-17T17:41:37Z,A_seg500_fast,P4-pass1,P4_t01,2,commit,False,caller_resumed,-6578.4,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हाँ। हैलो।
+2026-10-17T17:41:37Z,A_seg500_fast,P4-pass1,P4_t01,3,commit,False,barge_in_after_cutin,-5493.6,189.5,-5285.3,,,,8,,v2,6368,,हाँ। हैलो। कौन?
+2026-10-17T17:41:37Z,A_seg500_fast,P4-pass1,P4_t01,4,commit,False,caller_resumed,-4098.3,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हाँ। हैलो। कौन? ज़रा।
+2026-10-17T17:41:37Z,A_seg500_fast,P4-pass1,P4_t01,5,commit,False,caller_resumed,-1397.7,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","हाँ। हैलो। कौन? ज़रा। ज़ोर से बोलो, बेटा।"
+2026-10-17T17:41:37Z,A_seg500_fast,P4-pass1,P4_t01,6,commit,True,,704.9,180.9,922.2,1725,1664,52,171,29,v2,170000,,"हाँ। हैलो। कौन? ज़रा। ज़ोर से बोलो, बेटा। सुनाई कम देता है।"
+2026-10-17T17:41:40Z,A_seg500_fast,P4-pass1,P4_t02,7,commit,True,,647.4,310.1,1014.4,1787,1664,14,50,52,v2,46860,,हाँ।
+2026-10-17T17:41:50Z,A_seg500_fast,P4-pass1,P4_t03,8,commit,False,barge_in_after_cutin,-5947.3,354.6,-5557.9,1816,1792,43,140,32,v2,159220,,हमारी पॉलिसी।
+2026-10-17T17:41:50Z,A_seg500_fast,P4-pass1,P4_t03,9,commit,False,caller_resumed,-2059.4,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T17:41:50Z,A_seg500_fast,P4-pass1,P4_t03,10,commit,True,,647.7,314.4,1067.0,1829,1664,45,148,44,v2,134300,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है।
+2026-10-17T17:42:10Z,A_seg500_fast,P4-pass1,P4_t04,11,commit,False,caller_resumed,-5933.5,,,,,,0,,v2,0,,पिछली बार।
+2026-10-17T17:42:10Z,A_seg500_fast,P4-pass1,P4_t04,12,commit,False,caller_resumed,-4011.3,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","पिछली बार। 25,000।"
+2026-10-17T17:42:10Z,A_seg500_fast,P4-pass1,P4_t04,13,commit,False,caller_resumed,-2331.6,,,,,,0,,v2,0,,"पिछली बार। 25,000। नहीं, नहीं।"
+2026-10-17T17:42:10Z,A_seg500_fast,P4-pass1,P4_t04,14,commit,False,,584.6,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","पिछली बार। 25,000। नहीं, नहीं। 24,500 भरे थे।"
+2026-10-17T17:42:28Z,A_seg500_fast,P4-pass1,P4_t05,15,commit,False,caller_resumed,-4267.3,,,,,,0,,v2,0,,"बेटा, रुको।"
+2026-10-17T17:42:28Z,A_seg500_fast,P4-pass1,P4_t05,16,commit,False,superseded,-1359.2,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","बेटा, रुको। इतना जल्दी जल्दी मत बोलो।"
+2026-10-17T17:42:28Z,A_seg500_fast,P4-pass1,P4_t05,17,commit,False,,720.6,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","बेटा, रुको। इतना जल्दी जल्दी मत बोलो। धीरे बोलो।"
+2026-10-17T17:42:36Z,A_seg500_fast,P4-pass1,P4_t06,18,commit,False,caller_resumed,-4539.2,,,,,,0,,v2,0,,तुम।
+2026-10-17T17:42:36Z,A_seg500_fast,P4-pass1,P4_t06,19,commit,False,superseded,-2872.3,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",तुम। मशीन हो क्या?
+2026-10-17T17:42:36Z,A_seg500_fast,P4-pass1,P4_t06,20,commit,True,,636.9,226.0,887.8,1899,1792,37,131,15,v2,118160,,तुम। मशीन हो क्या? आजकल फ़ोन पे मशीन बोलती है।
+2026-10-17T17:43:07Z,A_seg500_fast,P4-pass1,P4_t09,21,commit,False,superseded,-4710.2,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",सोमवार को।
+2026-10-17T17:43:07Z,A_seg500_fast,P4-pass1,P4_t09,22,commit,False,caller_resumed,-2313.5,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",सोमवार को। 3:30 बजे।
+2026-10-17T17:43:07Z,A_seg500_fast,P4-pass1,P4_t09,23,commit,False,,602.6,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",सोमवार को। 3:30 बजे। मेरे बेटे को फ़ोन कर लेना।
+2026-10-17T17:43:13Z,A_seg500_fast,P4-pass1,P4_t10,24,commit,False,caller_resumed,-1549.3,,,,,,0,,v2,0,,अच्छा बेटा।
+2026-10-17T17:43:13Z,A_seg500_fast,P4-pass1,P4_t10,25,commit,True,,653.9,337.5,1029.4,1957,1664,25,85,31,v2,86660,,अच्छा बेटा। तुमने खाना खा लिया?
+2026-10-17T17:43:20Z,A_seg500_fast,P4-pass1,P4_t11,26,commit,False,caller_resumed,-3225.4,,,,,,0,,v2,0,,अच्छा।
+2026-10-17T17:43:20Z,A_seg500_fast,P4-pass1,P4_t11,27,commit,False,caller_resumed,-1738.4,,,,,,0,,v2,0,,अच्छा। ठीक है।
+2026-10-17T17:43:20Z,A_seg500_fast,P4-pass1,P4_t11,28,commit,True,,666.8,378.6,1070.2,2002,1920,29,105,19,v2,99260,,अच्छा। ठीक है। भगवान भला करें।
+2026-10-17T17:43:42Z,A_seg500_fast,P4pause-1,P4_t03,1,commit,False,barge_in_after_cutin,-5908.5,299.5,-5582.0,1707,1664,36,113,23,v2,118760,,हमारी पॉलिसी।
+2026-10-17T17:43:42Z,A_seg500_fast,P4pause-1,P4_t03,2,commit,False,caller_resumed,-2076.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T17:43:42Z,A_seg500_fast,P4pause-1,P4_t03,3,commit,False,,679.6,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है।
+2026-10-17T17:44:02Z,A_seg500_fast,P4pause-1,P4_t03,4,commit,False,barge_in_after_cutin,-5884.5,194.4,-5659.4,1707,1664,30,88,27,v2,108260,,हमारी पॉलिसी।
+2026-10-17T17:44:02Z,A_seg500_fast,P4pause-1,P4_t03,5,commit,False,caller_resumed,-2061.8,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T17:44:02Z,A_seg500_fast,P4pause-1,P4_t03,6,commit,False,,706.6,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है।
+2026-10-17T17:44:12Z,A_seg500_fast,P4pause-1,P4_t03,7,commit,False,barge_in_after_cutin,-5930.5,184.2,-5700.1,1707,1664,36,113,37,v2,119660,,हमारी पॉलिसी।
+2026-10-17T17:44:12Z,A_seg500_fast,P4pause-1,P4_t03,8,commit,False,caller_resumed,-2097.1,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T17:44:12Z,A_seg500_fast,P4pause-1,P4_t03,9,commit,True,,675.9,284.5,999.8,1720,1664,37,119,33,v2,111760,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है।
+2026-10-17T17:44:32Z,A_seg500_fast,P4pause-1,P4_t03,10,commit,False,barge_in_after_cutin,-5990.5,252.9,-5719.1,1707,1664,34,109,13,v2,106460,,हमारी पॉलिसी।
+2026-10-17T17:44:32Z,A_seg500_fast,P4pause-1,P4_t03,11,commit,False,caller_resumed,-2068.6,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T17:44:32Z,A_seg500_fast,P4pause-1,P4_t03,12,commit,False,,713.5,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है।
+2026-10-17T17:44:42Z,A_seg500_fast,P4pause-1,P4_t03,13,commit,False,superseded,-5952.4,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमारी पॉलिसी।
+2026-10-17T17:44:42Z,A_seg500_fast,P4pause-1,P4_t03,14,commit,False,superseded,-2059.4,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T17:44:42Z,A_seg500_fast,P4pause-1,P4_t03,15,commit,True,,647.6,270.8,981.0,1720,1664,31,116,46,v2,101500,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है।
+2026-10-17T17:44:54Z,B_seg800_fast,P1-pass1,P1_t01,1,commit,False,caller_resumed,-1892.4,,,,,,0,,v2,0,,"हाँ, हैलो।"
+2026-10-17T17:44:54Z,B_seg800_fast,P1-pass1,P1_t01,2,commit,True,,1016.6,310.0,1407.8,1715,1664,43,150,38,v2,140000,,"हाँ, हैलो। हाँ, बोलिए कौन बोल रहा है?"
+2026-10-17T17:44:58Z,B_seg800_fast,P1-pass1,P1_t02,3,commit,True,,1029.5,282.4,1340.1,1768,1664,36,125,23,v2,111360,,हम।
+2026-10-17T17:45:06Z,B_seg800_fast,P1-pass1,P1_t03,4,commit,False,caller_resumed,-2523.4,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code",प्रीमियम कितना आएगा इस बार?
+2026-10-17T17:45:06Z,B_seg800_fast,P1-pass1,P1_t03,5,commit,True,,984.6,171.3,1178.1,1834,1664,38,129,18,v2,130360,,"प्रीमियम कितना आएगा इस बार? लास्ट ईयर तो 25,000 के आसपास था।"
+2026-10-17T17:45:17Z,B_seg800_fast,P1-pass1,P1_t04,6,commit,True,,1002.6,310.7,1408.7,1918,1664,35,117,71,v2,104000,,"सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ। मुझे बस ये जानना है कि क्लेम लिमिट 1.5,00,000 है या ज्यादा?"
+2026-10-17T17:45:19Z,B_seg800_fast,P1-pass1,P1_t05,7,commit,True,,1013.6,309.9,1348.1,1964,1920,17,68,21,v2,58360,,ओके?
+2026-10-17T17:45:35Z,B_seg800_fast,P1-pass1,P1_t06,8,commit,False,caller_resumed,-691.2,,,,,,0,,v2,0,,"वेट, आप रोबॉट हो क्या?"
+2026-10-17T17:45:35Z,B_seg800_fast,P1-pass1,P1_t06,9,commit,False,,1031.8,,,,,,0,,v2,0,"429 {
+  ""error"": {
+    ""message"": ""Your requests to gpt-4.1-mini for r2-gpt-4-1-mini-std-async in southindia have exceeded token rate limit."",
+    ""type"": ""too_many_requests"",
+    ""param"": null,
+    ""code","वेट, आप रोबॉट हो क्या? एआई हो?"
+2026-10-17T17:45:41Z,B_seg800_fast,P1-pass1,P1_t08,10,commit,True,,993.8,248.7,1262.2,2007,1920,29,100,13,v2,100520,,"ठीक है, कल 3:30 बजे कॉल कर लेना तब फ्री हूँ।"
+2026-10-17T17:45:48Z,B_seg800_fast,P1-pass1,P1_t09,11,commit,True,,937.5,348.3,1342.0,2061,1920,25,77,29,v2,66900,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना है पता है आपको?
+2026-10-17T17:45:54Z,B_seg800_fast,P1-pass1,P1_t10,12,commit,True,,1033.7,338.3,1401.8,2116,2048,24,80,13,v2,85120,,"हाँ और रिन्यूअल का लिंक, व्हाट्सएप पे भेज दो इसी नंबर पे।"
+2026-10-17T17:45:59Z,B_seg800_fast,P1-pass1,P1_t11,13,commit,True,,1042.6,343.5,1469.8,2157,1920,9,22,73,v2,31960,,"ओके, थैंक यू बाई।"
+2026-10-17T17:46:08Z,B_seg800_fast,P2-pass1,P2_t01,1,commit,False,caller_resumed,-2845.4,,,,,,0,,v2,0,,"हाँ, हैलो।"
+2026-10-17T17:46:08Z,B_seg800_fast,P2-pass1,P2_t01,2,commit,False,caller_resumed,-749.6,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक बानी।"
+2026-10-17T17:46:08Z,B_seg800_fast,P2-pass1,P2_t01,3,commit,True,,955.5,465.4,1452.7,1715,1664,44,139,22,v2,141260,,"हाँ, हैलो। के बोलक बानी। का बात बात।"
+2026-10-17T17:46:11Z,B_seg800_fast,P2-pass1,P2_t02,4,commit,True,,1049.5,286.1,1350.4,1769,1664,11,28,13,v2,48120,,हाँ।
+2026-10-17T17:46:20Z,B_seg800_fast,P2-pass1,P2_t03,5,commit,False,caller_resumed,-2050.5,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका?
+2026-10-17T17:46:20Z,B_seg800_fast,P2-pass1,P2_t03,6,commit,True,,947.6,289.2,1271.7,1814,1792,35,148,30,v2,120560,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70 बरिस बा।
+2026-10-17T17:46:28Z,B_seg800_fast,P2-pass1,P2_t04,7,commit,True,,990.0,302.1,1335.8,1884,1664,33,92,33,v2,91460,,"रुकी रुकी पहले ही बताएं 1,50,000 ले के इलाज के खर्चा कवर हुई कि न?"

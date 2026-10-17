@@ -5,7 +5,26 @@
 # Every price below is either (P) a published price read on 2026-10-17 (Azure Retail Prices API, vendor price page),
 # (M) measured by this lane or by the harvest, or (E) an assumption with a stated range. See report.md for sources.
 # Ranges are (low, base, high) and feed a triangular Monte Carlo (n=20,000, seed 7) and a one-at-a-time tornado.
+#
+# ROUND-2 CORRECTIONS (2026-10-17, package r2-model-corrections, critic A10, l2 verify.md). Round-1 files are kept as
+# cost-model.round1.py / .json / .xlsx and tornado.round1.png. Changes, each switchable in FIX for attribution:
+#   nvaie   NVIDIA AI Enterprise licence ($4,500 per GPU-year = P["nvaie_per_gpu_hr"], defined but unused in round 1)
+#           is added to every self-hosted GPU-hour, because the stream counts are Riva/NIM benchmarks and NVIDIA's NIM
+#           page says production use needs NVAIE.
+#   tiers   Commitment tiers now STEP with volume: Neural TTS (PAYG $15, 80M/$960, 400M/$3,900, 2000M/$15,000,
+#           4000M/$24,000 per month with overage) and S1 STT (PAYG $1/h, 2K/$1,600, 10K/$6,500, 50K/$25,000,
+#           100K/$40,000 per month). The cheapest option for the month's usage is chosen, so an under-filled tier is
+#           paid in full. Round 1 applied the 400M TTS rate at every volume. Voice Live and HD TTS have no tiers.
+#   sol6    Scenarios B, C, D and B-HD speak with gpt-6-sol, not gpt-6.1-sol: the harvest bake-off measured 6.1-sol at
+#           3,294 / 9,461 ms (p50 / p95) to first speakable clause vs 1,475 / 2,416 ms for 6-sol (n=30 each).
+#   headline  The decision number is the Monte Carlo p50, not the all-modes base case (A's base sits below its MC p10
+#           because the triangular ranges are right-skewed). JSON "headline", the xlsx Headline sheet and tornado.png
+#           all lead with MC p50 (p10-p90).
+#   Not changed: FX was already 95 (range 88-97); LLM provisioned throughput (PTU) is still not modelled; data
+#   residency and 1600-series number costs are still unpriced; AI-human outcome parity is still assumed.
 import json, math, os, random, copy
+
+FIX = {"nvaie": True, "tiers": True, "sol6": True}   # round-2 corrections; all True = corrected model
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 M = 1e6
@@ -57,6 +76,20 @@ P = {
     "twilio_in_mobile_min": 0.0496,                                                   # twilio.com/voice/pricing/in
 }
 
+# Commitment tiers (Azure Retail Prices API, centralindia, data/azure-retail-prices-2026-10-17.csv):
+# (included units per month, monthly fee USD, overage USD per unit). The first row is pay-as-you-go.
+TTS_NEURAL_TIERS = [(0, 0, 15.0 / M), (80e6, 960, 12.0 / M), (400e6, 3900, 9.75 / M), (2000e6, 15000, 7.5 / M), (4000e6, 24000, 6.0 / M)]
+STT_TIERS = [(0, 0, 1.00), (2000, 1600, 0.80), (10000, 6500, 0.65), (50000, 25000, 0.50), (100000, 40000, 0.40)]
+
+def tiered_usd(units, tiers):
+    """Cheapest monthly bill for `units` across PAYG and every commitment tier (an under-filled tier is paid in full)."""
+    return min(fee + max(0.0, units - incl) * over for incl, fee, over in tiers)
+
+def best_tier(units, tiers):
+    """Label of the cheapest option for `units` per month."""
+    names = ["PAYG", "80M", "400M", "2000M", "4000M"] if tiers is TTS_NEURAL_TIERS else ["PAYG", "2K h", "10K h", "50K h", "100K h"]
+    return names[min(range(len(tiers)), key=lambda k: tiers[k][1] + max(0.0, units - tiers[k][0]) * tiers[k][2])]
+
 # ---------------------------------------------------------------------------------------------------------------
 # Scenario inputs: name -> (low, base, high). Same keys in every scenario so the tornado compares like with like.
 # ---------------------------------------------------------------------------------------------------------------
@@ -91,7 +124,10 @@ def scen(name, monthly_min, **over):
     s.update(over)
     return {"name": name, "monthly_min": monthly_min, "inputs": s}
 
-SCENARIOS = [
+def build_scenarios():
+  SOL = "gpt6_sol" if FIX["sol6"] else "gpt61_sol"     # round 2: speaking model at the latency bar
+  TTS_N = "neural_tiered"                              # round 2: tiers step with volume (= 400M fixed when FIX["tiers"] is off)
+  return [
     scen("A. Managed today (quality bar)", 100_000,
          telephony="plivo", asr="voicelive_std", llm="gpt6_sol", tts="hd", selfhost=None,
          asr_stream_share=(1.0, 1.0, 1.0), asr_ref_factor=(1.0, 1.0, 2.0),
@@ -103,31 +139,31 @@ SCENARIOS = [
          llm_sys_tok=(2000, 3000, 5000), llm_cache_hit=(0.60, 0.85, 0.92), tts_cache_share=(0.0, 0.0, 0.10),
          pulse_s=(30, 30, 60)),
     scen("B. Managed optimised", 1_000_000,
-         telephony="tata_unlimited", asr="voicelive_byo", llm="gpt61_sol", tts="neural_commit400m", selfhost=None,
+         telephony="tata_unlimited", asr="voicelive_byo", llm=SOL, tts=TTS_N, selfhost=None,
          asr_stream_share=(1.0, 1.0, 1.0), asr_ref_factor=(1.0, 1.0, 2.0),
          llm_sys_tok=(1500, 2000, 3000), llm_cache_hit=(0.80, 0.90, 0.95), tts_cache_share=(0.10, 0.25, 0.35),
          pulse_s=(1, 1, 1), tata_fup_use=(0.5, 0.8, 1.0)),
     scen("C. Hybrid (self-hosted ASR on T4, managed LLM+TTS)", 1_000_000,
-         telephony="tata_unlimited", asr="selfhost", llm="gpt61_sol", tts="neural_commit400m",
+         telephony="tata_unlimited", asr="selfhost", llm=SOL, tts=TTS_N,
          selfhost={"asr": ("t4_vm", 2, 50)},
          asr_stream_share=(1.0, 1.0, 1.0), asr_ref_factor=(1.0, 1.0, 1.0),
          llm_sys_tok=(1500, 2000, 3000), llm_cache_hit=(0.80, 0.90, 0.95), tts_cache_share=(0.10, 0.25, 0.35),
          pulse_s=(1, 1, 1), tata_fup_use=(0.5, 0.8, 1.0),
          gpu_util=(0.20, 0.35, 0.55), gpu_derate=(0.3, 0.5, 0.8), gpu_term=2, gpu_ops_inr_mo=(150_000, 250_000, 400_000)),
     scen("D. Self-hosted at scale (ASR+TTS on H100, managed LLM)", 5_000_000,
-         telephony="tata_unlimited", asr="selfhost", llm="gpt61_sol", tts="selfhost",
+         telephony="tata_unlimited", asr="selfhost", llm=SOL, tts="selfhost",
          selfhost={"asr": ("h100_vm", 2, 366), "tts": ("h100_vm", 2, 580)},
          asr_stream_share=(1.0, 1.0, 1.0), asr_ref_factor=(1.0, 1.0, 1.0),
          llm_sys_tok=(1500, 2000, 3000), llm_cache_hit=(0.80, 0.90, 0.95), tts_cache_share=(0.0, 0.0, 0.0),
          pulse_s=(1, 1, 1), tata_fup_use=(0.5, 0.8, 1.0),
          gpu_util=(0.20, 0.35, 0.55), gpu_derate=(0.3, 0.5, 0.8), gpu_term=2, gpu_ops_inr_mo=(300_000, 500_000, 900_000)),
     scen("B-luna. Managed optimised + 6-luna speaking model", 1_000_000,
-         telephony="tata_unlimited", asr="voicelive_byo", llm="gpt6_luna", tts="neural_commit400m", selfhost=None,
+         telephony="tata_unlimited", asr="voicelive_byo", llm="gpt6_luna", tts=TTS_N, selfhost=None,
          asr_stream_share=(1.0, 1.0, 1.0), asr_ref_factor=(1.0, 1.0, 2.0),
          llm_sys_tok=(1500, 2000, 3000), llm_cache_hit=(0.80, 0.90, 0.95), tts_cache_share=(0.10, 0.25, 0.35),
          pulse_s=(1, 1, 1), tata_fup_use=(0.5, 0.8, 1.0)),
     scen("B-HD. Managed optimised but DragonHD voice", 1_000_000,
-         telephony="tata_unlimited", asr="voicelive_byo", llm="gpt61_sol", tts="hd", selfhost=None,
+         telephony="tata_unlimited", asr="voicelive_byo", llm=SOL, tts="hd", selfhost=None,
          asr_stream_share=(1.0, 1.0, 1.0), asr_ref_factor=(1.0, 1.0, 2.0),
          llm_sys_tok=(1500, 2000, 3000), llm_cache_hit=(0.80, 0.90, 0.95), tts_cache_share=(0.10, 0.25, 0.35),
          pulse_s=(1, 1, 1), tata_fup_use=(0.5, 0.8, 1.0)),
@@ -138,10 +174,13 @@ SCENARIOS = [
          llm_sys_tok=(1500, 2000, 3000), llm_cache_hit=(0.80, 0.90, 0.95), tts_cache_share=(0.0, 0.0, 0.0),
          pulse_s=(1, 1, 1), tata_fup_use=(0.5, 0.8, 1.0),
          gpu_util=(0.20, 0.35, 0.55), gpu_derate=(0.3, 0.5, 0.8), gpu_term=2, gpu_ops_inr_mo=(300_000, 500_000, 900_000)),
-]
+  ]
+
+SCENARIOS = build_scenarios()
 
 TTS_PRICE = {"hd": "hd_tts_per_1m", "neural": "neural_tts_per_1m", "neural_commit400m": "neural_tts_commit_400m_per_1m",
-             "neural_commit80m": "neural_tts_commit_80m_per_1m"}
+             "neural_commit80m": "neural_tts_commit_80m_per_1m",
+             "neural_tiered": "neural_tts_commit_400m_per_1m"}   # only used when FIX["tiers"] is off (round-1 behaviour)
 
 def pick(v, which):
     if isinstance(v, tuple):
@@ -169,7 +208,11 @@ def compute(s, x, monthly_min):
     elif a == "voicelive_byo":
         c["asr"] = 60 * x["vl_tok_per_s"] / 1000 * P["vl_byo_speech_in_per_1k"] * stream * fx
     elif a == "s1":
-        c["asr"] = P["s1_stt_per_hr"] / 60 * stream * fx
+        if FIX["tiers"]:   # round 2: cheapest of PAYG and the 2K/10K/50K/100K-hour commitments for this month's hours
+            hours = monthly_min * stream / 60
+            c["asr"] = tiered_usd(hours, STT_TIERS) / max(monthly_min, 1) * fx
+        else:
+            c["asr"] = P["s1_stt_per_hr"] / 60 * stream * fx
     elif a == "selfhost":
         c["asr"] = 0.0  # computed in GPU block
     # 3. LLM (speaking model) + guard + post-call on 6-luna
@@ -184,12 +227,17 @@ def compute(s, x, monthly_min):
     # 4. TTS
     chars = x["agent_talk_share"] * x["tts_chars_per_agent_min"] * x["tts_waste"] * (1 - x["tts_cache_share"])
     tt = s["inputs"]["tts"]
-    c["tts"] = 0.0 if tt == "selfhost" else chars * P[TTS_PRICE[tt]] / M * fx
+    if tt == "selfhost":
+        c["tts"] = 0.0
+    elif tt == "neural_tiered" and FIX["tiers"]:   # round 2: tier chosen for this month's characters
+        c["tts"] = tiered_usd(chars * monthly_min, TTS_NEURAL_TIERS) / max(monthly_min, 1) * fx
+    else:
+        c["tts"] = chars * P[TTS_PRICE[tt]] / M * fx
     # 5. Self-hosted GPU (ASR / TTS): $/hr / (streams x derate) / 60 / utilisation, plus licence-free open weights
     gpu_fixed_inr = 0.0
     if s["inputs"].get("selfhost"):
         for role, (vm, min_gpus, streams) in s["inputs"]["selfhost"].items():
-            price = P[vm][int(x["gpu_term"])]
+            price = P[vm][int(x["gpu_term"])] + (P["nvaie_per_gpu_hr"] if FIX["nvaie"] else 0.0)   # round 2: NVAIE
             eff = streams * x["gpu_derate"]
             if role == "tts":  # TTS capacity is in concurrent CALLS (throughput-bound; see report)
                 per_min = price / 60 / eff / x["gpu_util"] * fx
@@ -257,7 +305,8 @@ def lever_swaps(s):
     """Discrete architecture choices swapped one at a time on a scenario's base inputs."""
     base = compute(s, resolve(s), s["monthly_min"])[1]; out = []
     swaps = {"llm": ["gpt6_luna", "gpt54_nano", "gpt41_nano", "gpt41_mini", "deepseek_v4_flash", "gpt56_luna", "gpt61_sol", "gpt6_sol", "gpt56_terra"],
-             "tts": ["neural_commit400m", "neural_commit80m", "neural", "hd"],
+             # round 2: fixed-rate tier options dropped when tiers step (a fixed 400M rate ignores the under-filled fee)
+             "tts": (["neural_tiered", "neural", "hd"] if FIX["tiers"] else ["neural_commit400m", "neural_commit80m", "neural", "hd"]),
              "asr": ["voicelive_byo", "voicelive_std", "s1"],
              "telephony": ["tata_unlimited", "plivo"]}
     for key, opts in swaps.items():
@@ -287,7 +336,7 @@ def selfhost_breakeven():
     for vm, streams, role in [("t4_vm", 50, "asr"), ("a10_vm", 116, "asr"), ("a100_vm", 233, "asr"), ("h100_vm", 366, "asr"),
                               ("a100_vm", 394, "tts"), ("h100_vm", 580, "tts")]:
         for term, tn in [(0, "on-demand"), (1, "1-yr RI"), (2, "3-yr RI")]:
-            per_min_full = P[vm][term] / 60 / (streams * 0.5) * fx
+            per_min_full = (P[vm][term] + (P["nvaie_per_gpu_hr"] if FIX["nvaie"] else 0.0)) / 60 / (streams * 0.5) * fx   # round 2: + NVAIE
             tgt = managed_asr if role == "asr" else managed_tts_neu
             out[f"{role}:{vm}:{tn}"] = {"inr_per_min_at_100pct": per_min_full, "managed_inr_per_min": tgt,
                                         "breakeven_util": per_min_full / tgt,
@@ -369,21 +418,64 @@ def load_salaries():
     by_city["_tiers"] = tiers
     return mids, by_city
 
+def attribution():
+    """Base and MC p50 per scenario as the round-2 fixes are switched on one at a time (cumulative)."""
+    global SCENARIOS
+    steps = [("round 1", {"nvaie": False, "tiers": False, "sol6": False}),
+             ("+ NVAIE licence", {"nvaie": True, "tiers": False, "sol6": False}),
+             ("+ stepped commitment tiers", {"nvaie": True, "tiers": True, "sol6": False}),
+             ("+ 6-sol speaking model (= round 2)", {"nvaie": True, "tiers": True, "sol6": True})]
+    saved = dict(FIX); out = []
+    for label, flags in steps:
+        FIX.update(flags); SCENARIOS = build_scenarios()
+        row = {"step": label, "flags": dict(flags), "scenarios": {}}
+        for sc in SCENARIOS:
+            mc = monte_carlo(sc)
+            row["scenarios"][sc["name"]] = {"base_cogs_inr": compute(sc, resolve(sc), sc["monthly_min"])[1],
+                                            "mc_p10": mc["cogs_p10"], "mc_p50": mc["cogs_p50"], "mc_p90": mc["cogs_p90"],
+                                            "p_cogs_le_2": mc["p_cogs_le_2"], "crossing_volume_inr2": crossing_volume(sc)}
+        out.append(row)
+    FIX.update(saved); SCENARIOS = build_scenarios()
+    return out
+
 def main():
-    res = {"generated": "2026-10-17", "prices": {k: v for k, v in P.items()}, "scenarios": [], "tornado": {}}
+    res = {"generated": "2026-10-17", "round2_corrected": "2026-10-17", "fix_flags": dict(FIX),
+           "prices": {k: v for k, v in P.items()},
+           "commitment_tiers": {"tts_neural": [{"included_chars": a, "fee_usd_mo": b, "overage_usd_per_1m": c * M} for a, b, c in TTS_NEURAL_TIERS],
+                                "stt_s1": [{"included_hours": a, "fee_usd_mo": b, "overage_usd_per_h": c} for a, b, c in STT_TIERS]},
+           "scenarios": [], "tornado": {}}
     for s in SCENARIOS:
         c, cogs, price = compute(s, resolve(s), s["monthly_min"])
         mc = monte_carlo(s)
-        res["scenarios"].append({"name": s["name"], "monthly_min": s["monthly_min"], "base_components_inr": c,
-                                 "base_cogs_inr": cogs, "base_price_inr_at_gm": price, "mc": mc,
+        xb = resolve(s)
+        chars_mo = xb["agent_talk_share"] * xb["tts_chars_per_agent_min"] * xb["tts_waste"] * (1 - xb["tts_cache_share"]) * s["monthly_min"]
+        res["scenarios"].append({"name": s["name"], "monthly_min": s["monthly_min"],
+                                 "headline_cogs_inr_mc_p50": mc["cogs_p50"], "headline_cogs_inr_mc_p10_p90": [mc["cogs_p10"], mc["cogs_p90"]],
+                                 "headline_price_inr_at_gm_mc_p50": mc["price_p50"],
+                                 "base_components_inr": c,
+                                 "base_cogs_inr": cogs, "base_cogs_note": "all inputs at their mode; NOT the headline (see headline_cogs_inr_mc_p50)",
+                                 "base_price_inr_at_gm": price, "mc": mc,
                                  "llm": s["inputs"]["llm"], "tts": s["inputs"]["tts"], "asr": s["inputs"]["asr"],
-                                 "telephony": s["inputs"]["telephony"]})
+                                 "telephony": s["inputs"]["telephony"],
+                                 "tts_tier_at_base": best_tier(chars_mo, TTS_NEURAL_TIERS) if s["inputs"]["tts"] == "neural_tiered" and FIX["tiers"] else None,
+                                 "stt_tier_at_base": best_tier(s["monthly_min"] / 60, STT_TIERS) if s["inputs"]["asr"] == "s1" and FIX["tiers"] else None})
     for idx in (0, 2, 4):
         base, rows = tornado(SCENARIOS[idx]); res["tornado"][SCENARIOS[idx]["name"]] = {"base": base, "rows": rows}
     res["levers_B"] = dict(zip(("base", "rows"), lever_swaps(SCENARIOS[2])))
     res["levers_A"] = dict(zip(("base", "rows"), lever_swaps(SCENARIOS[0])))
     res["fx88"] = {sc["name"]: compute(sc, resolve(sc, override={"fx_inr_per_usd": 88.0}), sc["monthly_min"])[1] for sc in SCENARIOS}
-    res["volume_curve_B"] = volume_curve(SCENARIOS[2], [10_000, 50_000, 100_000, 300_000, 1_000_000, 3_000_000, 10_000_000])
+    res["volume_curve_B"] = volume_curve(SCENARIOS[2], [10_000, 50_000, 100_000, 300_000, 1_000_000, 3_000_000, 10_000_000, 50_000_000])
+    # round 2: the managed floor if the ear switches to S1 STT on the stepped commitment tiers at volume
+    sB_s1 = copy.deepcopy(SCENARIOS[2]); sB_s1["name"] = "B with S1 STT ear on stepped commitment tiers"; sB_s1["inputs"]["asr"] = "s1"
+    sB_s1["inputs"]["asr_ref_factor"] = (1.0, 1.0, 1.0)   # as in A0: the echo-reference billing question is Voice Live-specific
+    res["volume_curve_B_s1_tiered_ear"] = volume_curve(sB_s1, [10_000, 100_000, 1_000_000, 3_000_000, 10_000_000, 50_000_000])
+    res["mc_B_s1_tiered_ear_at_10M"] = {k: v for k, v in monte_carlo(dict(sB_s1, monthly_min=10_000_000)).items() if k != "comp_p50"}
+    # round 2: D's 3-year reservations are a ~USD 565k commitment; show the other terms
+    res["gpu_term_sensitivity_D"] = {}
+    for term, label in ((2, "3-yr RI"), (1, "1-yr RI"), (0, "on demand")):
+        sD = copy.deepcopy(SCENARIOS[4]); sD["inputs"]["gpu_term"] = term
+        res["gpu_term_sensitivity_D"][label] = {"base_cogs_inr": compute(sD, resolve(sD), sD["monthly_min"])[1],
+                                                "crossing_volume_inr2": crossing_volume(sD)}
     res["volume_curve_D"] = volume_curve(SCENARIOS[4], [100_000, 300_000, 1_000_000, 3_000_000, 5_000_000, 10_000_000, 30_000_000])
     res["selfhost_breakeven"] = selfhost_breakeven()
     mids, by_city = load_salaries()
@@ -401,12 +493,21 @@ def main():
     res["telecaller_fixed_salary_check"] = telecaller_model(salary_samples=None)
     res["buyer_outcome_compare"] = buyer_outcome_compare(res["telecaller"])
     res["crossing_volume_inr2"] = {sc["name"]: crossing_volume(sc) for sc in SCENARIOS}
+    res["round2_attribution"] = attribution()
+    res["headline"] = {
+        "basis": "Monte Carlo p50 of COGS, INR per connected minute (n=20,000, seed 7); p10-p90 in brackets. The base case is all modes and is not the decision number.",
+        "by_scenario": {sc["name"]: {"mc_p50": round(sc["mc"]["cogs_p50"], 3), "mc_p10": round(sc["mc"]["cogs_p10"], 3),
+                                     "mc_p90": round(sc["mc"]["cogs_p90"], 3), "p_cogs_le_2": round(sc["mc"]["p_cogs_le_2"], 3),
+                                     "base_all_modes": round(sc["base_cogs_inr"], 3), "monthly_min": sc["monthly_min"]}
+                        for sc in res["scenarios"]}}
     json.dump(res, open(os.path.join(HERE, "cost-model.json"), "w"), indent=1, default=str)
     write_xlsx(res); plot_tornado(res)
     for s in res["scenarios"]:
         m = s["mc"]
-        print(f"{s['name'][:58]:58s} base COGS {s['base_cogs_inr']:.2f}  MC p10/50/90 {m['cogs_p10']:.2f}/{m['cogs_p50']:.2f}/{m['cogs_p90']:.2f}"
-              f"  P(<=2) {m['p_cogs_le_2']:.2f}  price@GM {s['base_price_inr_at_gm']:.2f}")
+        print(f"{s['name'][:58]:58s} HEADLINE MC p50 {m['cogs_p50']:.2f} (p10-p90 {m['cogs_p10']:.2f}-{m['cogs_p90']:.2f})"
+              f"  P(<=2) {m['p_cogs_le_2']:.2f}  base(all modes) {s['base_cogs_inr']:.2f}  price@GM p50 {m['price_p50']:.2f}")
+    for row in res["round2_attribution"]:
+        print(row["step"], {k[:6]: (round(v["base_cogs_inr"], 2), round(v["mc_p50"], 2)) for k, v in row["scenarios"].items()})
     print("telecaller", json.dumps(res["telecaller"]))
     print("salary", json.dumps(res["salary_sample"]))
 
@@ -416,8 +517,8 @@ def write_xlsx(res):
     from openpyxl.styles import Font, PatternFill, Alignment
     wb = Workbook(); ws = wb.active; ws.title = "Model"
     bold = Font(bold=True); inp = PatternFill("solid", fgColor="FFF4CC"); hdr = PatternFill("solid", fgColor="DDE7F5")
-    ws["A1"] = "VP l2-economics: INR per CONNECTED minute. Yellow cells are inputs (base values); everything else is a formula."; ws["A1"].font = bold
-    ws["A2"] = "Prices from Azure Retail Prices API and vendor pages read 2026-10-17; see sheet Prices and report.md."
+    ws["A1"] = "VP l2-economics: INR per CONNECTED minute at BASE inputs (all modes). Yellow cells are inputs; everything else is a formula. HEADLINE = Monte Carlo p50 (rows at the bottom and sheet Headline)."; ws["A1"].font = bold
+    ws["A2"] = "Prices from Azure Retail Prices API and vendor pages read 2026-10-17; see sheet Prices and report.md. Round-2 corrections 2026-10-17: NVAIE licence, stepped commitment tiers, 6-sol speaking model (see sheet Headline)."
     cols = ["B", "C", "D", "E", "F", "G", "H", "I"]
     names = [s["name"] for s in SCENARIOS]
     ws["A4"] = "Input / line"; ws["A4"].font = bold
@@ -443,7 +544,10 @@ def write_xlsx(res):
         ("min_per_num", "Minutes per number per month", lambda s, x: x["minutes_per_number_mo"], ""),
         ("conc_mo", "Unlimited plan INR per concurrency per month", lambda s, x: P["tata_stream_unl_conc_mo_inr"] if s["inputs"]["telephony"] == "tata_unlimited" else 0, "Tata Smartflo Voice Streaming Unlimited"),
         ("fup_min", "FUP minutes per concurrency x share used", lambda s, x: P["tata_fup_min_per_user"] * x.get("tata_fup_use", 1) if s["inputs"]["telephony"] == "tata_unlimited" else 0, ""),
-        ("asr_usd_min", "ASR USD per streamed min (S1 style)", lambda s, x: (P["s1_stt_per_hr"] / 60 if s["inputs"]["asr"] == "s1" else 0), ""),
+        ("asr_usd_min", "ASR USD per streamed min (S1 style; effective stepped-tier rate at this volume)",
+         lambda s, x: ((tiered_usd(s["monthly_min"] * x["asr_stream_share"] * x["asr_ref_factor"] / 60, STT_TIERS) / (s["monthly_min"] * x["asr_stream_share"] * x["asr_ref_factor"])
+                        if FIX["tiers"] else P["s1_stt_per_hr"] / 60) if s["inputs"]["asr"] == "s1" else 0),
+         "round 2: cheapest of PAYG $1/h and 2K/10K/50K/100K-h commitments"),
         ("vl_per_1k", "Voice Live speech-in USD per 1K tokens", lambda s, x: {"voicelive_std": P["vl_std_speech_in_per_1k"], "voicelive_byo": P["vl_byo_speech_in_per_1k"]}.get(s["inputs"]["asr"], 0), ""),
         ("vl_tps", "Voice Live audio tokens per second", lambda s, x: x["vl_tok_per_s"], "harvest measured ~9.3"),
         ("asr_ref", "ASR stream factor (stereo ref billed?)", lambda s, x: x["asr_stream_share"] * x["asr_ref_factor"], "1 = not billed"),
@@ -451,6 +555,7 @@ def write_xlsx(res):
         ("gpu_asr_streams", "Self-host ASR streams per GPU (vendor)", lambda s, x: s["inputs"]["selfhost"]["asr"][2] if s["inputs"].get("selfhost") and "asr" in s["inputs"]["selfhost"] else 0, "Riva 2.15 Hindi Conformer"),
         ("gpu_tts_usd_hr", "Self-host TTS GPU USD/hr", lambda s, x: P[s["inputs"]["selfhost"]["tts"][0]][s["inputs"]["gpu_term"]] if s["inputs"].get("selfhost") and "tts" in s["inputs"]["selfhost"] else 0, "3-yr RI"),
         ("gpu_tts_calls", "Self-host TTS calls per GPU (derived)", lambda s, x: s["inputs"]["selfhost"]["tts"][2] if s["inputs"].get("selfhost") and "tts" in s["inputs"]["selfhost"] else 0, "Magpie NIM H100 64 streams RTFX 291"),
+        ("nvaie", "NVIDIA AI Enterprise licence USD per GPU-hour", lambda s, x: (P["nvaie_per_gpu_hr"] if (s["inputs"].get("selfhost") and FIX["nvaie"]) else 0), "round 2: $4,500/GPU-year; Riva/NIM production licence"),
         ("gpu_derate", "GPU derate vs vendor benchmark", lambda s, x: x.get("gpu_derate", 0), ""),
         ("gpu_util", "GPU average utilisation", lambda s, x: x.get("gpu_util", 0), "diurnal + N+1"),
         ("gpu_min", "Minimum GPUs per role", lambda s, x: (s["inputs"]["selfhost"].get("asr", (0, 0, 0))[1] if s["inputs"].get("selfhost") else 0), "N+1"),
@@ -472,7 +577,12 @@ def write_xlsx(res):
         ("chars", "TTS chars per agent-speech minute", lambda s, x: x["tts_chars_per_agent_min"], "measured 612-1038"),
         ("waste", "TTS waste factor", lambda s, x: x["tts_waste"], ""),
         ("tcache", "TTS phrase-cache share", lambda s, x: x["tts_cache_share"], ""),
-        ("tts_1m", "TTS USD per 1M chars", lambda s, x: (0 if s["inputs"]["tts"] == "selfhost" else P[TTS_PRICE[s["inputs"]["tts"]]]), ""),
+        ("tts_1m", "TTS USD per 1M chars (effective; neural = cheapest stepped tier at this volume)",
+         lambda s, x: (0 if s["inputs"]["tts"] == "selfhost" else
+                       (tiered_usd(x["agent_talk_share"] * x["tts_chars_per_agent_min"] * x["tts_waste"] * (1 - x["tts_cache_share"]) * s["monthly_min"], TTS_NEURAL_TIERS)
+                        / (x["agent_talk_share"] * x["tts_chars_per_agent_min"] * x["tts_waste"] * (1 - x["tts_cache_share"]) * s["monthly_min"]) * M
+                        if (s["inputs"]["tts"] == "neural_tiered" and FIX["tiers"]) else P[TTS_PRICE[s["inputs"]["tts"]]])),
+         "round 2: tiers step with volume; an under-filled tier is paid in full"),
         ("vcpu", "vCPU per concurrent call", lambda s, x: x["infra_vcpu_per_call"], ""),
         ("gib", "GiB per concurrent call", lambda s, x: x["infra_gib_per_call"], ""),
         ("head", "Infra headroom", lambda s, x: x["infra_headroom"], ""),
@@ -494,9 +604,9 @@ def write_xlsx(res):
     out_rows = {}
     for label, f in [
         ("Telephony", lambda c: f"IF({ref('conc_mo',c)}>0,{ref('conc_mo',c)}/{ref('fup_min',c)}+20000/36/{ref('monthly_min',c)},{ref('tel_rate',c)}*(1+({ref('pulse',c)}/60/2)/{ref('avg_call',c)})+{ref('num_mo',c)}/{ref('min_per_num',c)})"),
-        ("ASR (ear)", lambda c: f"IF({ref('gpu_asr_usd_hr',c)}>0,MAX({ref('gpu_asr_usd_hr',c)}/60/({ref('gpu_asr_streams',c)}*{ref('gpu_derate',c)})/{ref('gpu_util',c)}*{ref('fx',c)},{ref('gpu_min',c)}*{ref('gpu_asr_usd_hr',c)}*730*{ref('fx',c)}/{ref('monthly_min',c)}),({ref('asr_usd_min',c)}+60*{ref('vl_tps',c)}/1000*{ref('vl_per_1k',c)})*{ref('asr_ref',c)}*{ref('fx',c)})"),
+        ("ASR (ear)", lambda c: f"IF({ref('gpu_asr_usd_hr',c)}>0,MAX(({ref('gpu_asr_usd_hr',c)}+{ref('nvaie',c)})/60/({ref('gpu_asr_streams',c)}*{ref('gpu_derate',c)})/{ref('gpu_util',c)}*{ref('fx',c)},{ref('gpu_min',c)}*({ref('gpu_asr_usd_hr',c)}+{ref('nvaie',c)})*730*{ref('fx',c)}/{ref('monthly_min',c)}),({ref('asr_usd_min',c)}+60*{ref('vl_tps',c)}/1000*{ref('vl_per_1k',c)})*{ref('asr_ref',c)}*{ref('fx',c)})"),
         ("LLM", lambda c: f"({ref('turns',c)}*{ref('mult',c)}*((({ref('sys',c)}+{ref('hist',c)}+{ref('ctx',c)}+20)*({ref('hit',c)}*{ref('llm_cached',c)}+(1-{ref('hit',c)})*MAX({ref('llm_in',c)},{ref('llm_write',c)}))+{ref('outtok',c)}*{ref('llm_out',c)})/1000000+({ref('guard',c)}*(0.8*0.01+0.2*0.125)+20*0.5)/1000000)+({ref('post',c)}*0.1+300*0.5)/1000000/{ref('avg_call',c)})*{ref('fx',c)}"),
-        ("TTS", lambda c: f"IF({ref('gpu_tts_usd_hr',c)}>0,MAX({ref('gpu_tts_usd_hr',c)}/60/({ref('gpu_tts_calls',c)}*{ref('gpu_derate',c)})/{ref('gpu_util',c)}*{ref('fx',c)},{ref('gpu_min',c)}*{ref('gpu_tts_usd_hr',c)}*730*{ref('fx',c)}/{ref('monthly_min',c)}),{ref('talk',c)}*{ref('chars',c)}*{ref('waste',c)}*(1-{ref('tcache',c)})*{ref('tts_1m',c)}/1000000*{ref('fx',c)})"),
+        ("TTS", lambda c: f"IF({ref('gpu_tts_usd_hr',c)}>0,MAX(({ref('gpu_tts_usd_hr',c)}+{ref('nvaie',c)})/60/({ref('gpu_tts_calls',c)}*{ref('gpu_derate',c)})/{ref('gpu_util',c)}*{ref('fx',c)},{ref('gpu_min',c)}*({ref('gpu_tts_usd_hr',c)}+{ref('nvaie',c)})*730*{ref('fx',c)}/{ref('monthly_min',c)}),{ref('talk',c)}*{ref('chars',c)}*{ref('waste',c)}*(1-{ref('tcache',c)})*{ref('tts_1m',c)}/1000000*{ref('fx',c)})"),
         ("Realtime infra", lambda c: f"({ref('vcpu',c)}*0.000024+{ref('gib',c)}*0.000003)*60*{ref('head',c)}*{ref('fx',c)}"),
         ("Recording storage", lambda c: f"{ref('recmb',c)}/1024*0.02*{ref('ret',c)}*{ref('fx',c)}"),
         ("Observability", lambda c: f"{ref('logkb',c)}/1048576*3.22*{ref('fx',c)}"),
@@ -515,13 +625,49 @@ def write_xlsx(res):
     r += 1
     ws[f"A{r}"] = "Below INR 2 COGS?"
     for col in cols: ws[f"{col}{r}"] = f'=IF({col}{cr}<=2,"yes","no")'
+    r += 2
+    ws[f"A{r}"] = "HEADLINE: Monte Carlo COGS p50, INR per connected minute (n=20,000; values from cost-model.py)"; ws[f"A{r}"].font = bold
+    for col, sc in zip(cols, res["scenarios"]): ws[f"{col}{r}"] = round(sc["mc"]["cogs_p50"], 3); ws[f"{col}{r}"].font = bold; ws[f"{col}{r}"].number_format = "0.00"
+    r += 1; ws[f"A{r}"] = "Monte Carlo COGS p10"
+    for col, sc in zip(cols, res["scenarios"]): ws[f"{col}{r}"] = round(sc["mc"]["cogs_p10"], 3); ws[f"{col}{r}"].number_format = "0.00"
+    r += 1; ws[f"A{r}"] = "Monte Carlo COGS p90"
+    for col, sc in zip(cols, res["scenarios"]): ws[f"{col}{r}"] = round(sc["mc"]["cogs_p90"], 3); ws[f"{col}{r}"].number_format = "0.00"
+    r += 1; ws[f"A{r}"] = "P(COGS <= INR 2)"
+    for col, sc in zip(cols, res["scenarios"]): ws[f"{col}{r}"] = round(sc["mc"]["p_cogs_le_2"], 3)
+    r += 1; ws[f"A{r}"] = "Note: the formula rows above are the all-modes base case. Right-skewed ranges put it below the MC p50 (in A, below the MC p10). Quote the MC p50."
     ws.column_dimensions["A"].width = 52
     for col in cols: ws.column_dimensions[col].width = 22
     ws.column_dimensions["J"].width = 40
+    # Headline sheet (round 2): first sheet in the workbook
+    hd = wb.create_sheet("Headline", 0)
+    hd["A1"] = "VP l2-economics, round-2 corrected 2026-10-17. HEADLINE = Monte Carlo p50 COGS, INR per connected minute (p10-p90)."; hd["A1"].font = bold
+    hd["A2"] = "Corrections: NVAIE licence on self-hosted GPUs; commitment tiers step with volume (TTS neural, S1 STT); speaking model gpt-6-sol (not 6.1-sol) in B, C, D, B-HD. FX 95. Round-1 file: cost-model.round1.xlsx."
+    hd.append([])
+    hd.append(["scenario", "monthly connected min", "MC p50 (HEADLINE)", "MC p10", "MC p90", "P(COGS<=2)", "base, all modes (not headline)",
+               "round-1 MC p50", "round-1 base", "price at target GM, MC p50"])
+    for c_ in hd[4]: c_.font = bold; c_.fill = hdr
+    r1 = {}
+    try:
+        r1 = {sc["name"]: sc for sc in json.load(open(os.path.join(HERE, "cost-model.round1.json")))["scenarios"]}
+    except Exception:
+        pass
+    for sc in res["scenarios"]:
+        o = r1.get(sc["name"], {})
+        hd.append([sc["name"], sc["monthly_min"], round(sc["mc"]["cogs_p50"], 2), round(sc["mc"]["cogs_p10"], 2), round(sc["mc"]["cogs_p90"], 2),
+                   round(sc["mc"]["p_cogs_le_2"], 3), round(sc["base_cogs_inr"], 2),
+                   round(o["mc"]["cogs_p50"], 2) if o else None, round(o["base_cogs_inr"], 2) if o else None, round(sc["mc"]["price_p50"], 2)])
+    hd.append([])
+    hd.append(["Attribution (cumulative): base / MC p50 per scenario as each fix is switched on"]); hd[hd.max_row][0].font = bold
+    hd.append(["step"] + [sc["name"][:40] for sc in res["scenarios"]])
+    for row in res.get("round2_attribution", []):
+        hd.append([row["step"]] + [f'{row["scenarios"][sc["name"]]["base_cogs_inr"]:.2f} / {row["scenarios"][sc["name"]]["mc_p50"]:.2f}' for sc in res["scenarios"]])
+    hd.column_dimensions["A"].width = 58
+    for col in "BCDEFGHIJ": hd.column_dimensions[col].width = 18
     # Telecaller sheet (formulas)
     t = wb.create_sheet("Telecaller")
     t["A1"] = "In-house telecaller: fully loaded INR per productive connected minute and per outcome (formulas; yellow = inputs)"; t["A1"].font = bold
-    trows = [("Gross salary INR/month", 18000, "Apna job posts 2026-10-17, median of band mid-points (see data/)"),
+    sal_p50 = (res.get("salary_sample") or {}).get("p50") or 17000
+    trows = [("Gross salary INR/month", sal_p50, "Apna job posts 2026-10-17, measured median of band mid-points (n=1,234); round 1 used 18,000"),
              ("Employer statutory loading (PF/ESI/bonus/gratuity)", 0.13, "0 for informal SMBs .. ~0.22"),
              ("Seat: rent, power, PC, headset INR/month", 5000, "assumption, Tier-2..Tier-1"),
              ("Dialer/telephony licence INR/month", 1250, "Tata Smartflo Pro unlimited (FUP 5000 min)"),
@@ -574,6 +720,9 @@ def write_xlsx(res):
     pr = wb.create_sheet("Prices")
     pr.append(["key", "value", "note"])
     for k, v in P.items(): pr.append([k, json.dumps(v) if isinstance(v, tuple) else v, "USD unless _inr; Azure Retail Prices API / vendor page, read 2026-10-17"])
+    pr.append([]); pr.append(["Commitment tiers (round 2)", "included / fee USD per month / overage", "Azure Retail Prices API centralindia 2026-10-17"])
+    for a, b, c in TTS_NEURAL_TIERS: pr.append(["tts_neural_tier", f"{a/1e6:g}M chars / {b} / {c*M:g} per 1M", ""])
+    for a, b, c in STT_TIERS: pr.append(["stt_s1_tier", f"{a:g} h / {b} / {c:g} per h", ""])
     wb.save(os.path.join(HERE, "cost-model.xlsx"))
 
 def plot_tornado(res):
@@ -597,7 +746,8 @@ def plot_tornado(res):
     ax.axvline(base, color="#52514e", linewidth=1); ax.axvline(2.0, color="#e34948", linewidth=1, linestyle="--")
     ax.text(2.0, -0.75, " INR 2 target", fontsize=8, color="#52514e", va="center")
     allc = [r["cogs"] for r in lv["rows"]]; ax.set_xlim(min(allc) - 0.75, max(allc) + 0.6); ax.set_ylim(-1.0, len(order) - 0.4)
-    ax.set_title(f"Architecture levers swapped one at a time on scenario B (base INR {base:.2f}/min)", fontsize=10.5, color="#0b0b0b", loc="left")
+    mcB = next(sc["mc"] for sc in res["scenarios"] if sc["name"] == SCENARIOS[2]["name"])
+    ax.set_title(f"Architecture levers swapped one at a time on scenario B\nheadline MC p50 INR {mcB['cogs_p50']:.2f}; bars around the all-modes base INR {base:.2f}", fontsize=10.5, color="#0b0b0b", loc="left")
     ax.set_xlabel("COGS, INR per connected minute", fontsize=9, color="#52514e")
     for sp in ("top", "right"): ax.spines[sp].set_visible(False)
     for sp in ("left", "bottom"): ax.spines[sp].set_color("#c9c8c3")
@@ -612,7 +762,9 @@ def plot_tornado(res):
         ax.set_yticks(range(len(rows)))
         ax.set_yticklabels([f"{r['input']}  ({g(r['low_val'])} .. {g(r['high_val'])})" for r in rows], fontsize=8.5, color="#0b0b0b")
         ax.axvline(base, color="#52514e", linewidth=1)
-        ax.set_title(f"{name}: COGS sensitivity, base INR {base:.2f}/connected min", fontsize=10.5, color="#0b0b0b", loc="left")
+        mcn = next(sc["mc"] for sc in res["scenarios"] if sc["name"] == name)
+        ax.set_title(f"{name}\nheadline MC p50 INR {mcn['cogs_p50']:.2f} (p10-p90 {mcn['cogs_p10']:.2f}-{mcn['cogs_p90']:.2f}); bars = one-at-a-time swings around the all-modes base INR {base:.2f}", fontsize=10, color="#0b0b0b", loc="left")
+        ax.axvline(mcn["cogs_p50"], color="#e34948", linewidth=1.2, linestyle=":")
         ax.set_xlabel("COGS, INR per connected minute", fontsize=9, color="#52514e")
         for sp in ("top", "right"): ax.spines[sp].set_visible(False)
         for sp in ("left", "bottom"): ax.spines[sp].set_color("#c9c8c3")
@@ -620,7 +772,8 @@ def plot_tornado(res):
     from matplotlib.patches import Patch
     axes[1].legend(handles=[Patch(color="#2a78d6", label="input at its low value"), Patch(color="#eb6834", label="input at its high value")],
                    loc="lower right", fontsize=8.5, frameon=False)
-    fig.tight_layout(); fig.savefig(os.path.join(HERE, "tornado.png"), dpi=130, facecolor="#fcfcfb"); plt.close(fig)
+    fig.text(0.01, 0.003, "Round-2 corrected 2026-10-17 (NVAIE, stepped tiers, 6-sol). Dotted red line = Monte Carlo p50 (the headline); solid grey = all-modes base.", fontsize=8, color="#52514e")
+    fig.tight_layout(rect=(0, 0.01, 1, 1)); fig.savefig(os.path.join(HERE, "tornado.png"), dpi=130, facecolor="#fcfcfb"); plt.close(fig)
 
 if __name__ == "__main__":
     main()

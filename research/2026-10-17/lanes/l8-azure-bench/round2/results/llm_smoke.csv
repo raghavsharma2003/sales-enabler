@@ -1,0 +1,19 @@
+ts,arm,scope,deployment,turn_idx,status,x_ms_region,service_tier,ttfb_ms,ttft_ms,total_ms,first_to_last_ms,chunks,prompt_tokens,cached_tokens,completion_tokens,reply,err,round
+2026-10-17T17:05:28Z,sin-gs gpt-5.4-nano,Global,r2-gpt-5-4-nano-async,0,200,South India,default,693.8,694.5,1140.8,398.7,35,1608,1280,38,"Aapka Suraksha Family Health ka renewal 15 November 2026 ko due hai. Is saal premium Rs 24,500 (GST included) hai.",,0
+2026-10-17T17:05:29Z,frc-dzeu gpt-6-luna,DataZone EU,r2-gpt-6-luna-dz-async,0,200,France Central,default,981.6,995.5,1533.4,460.0,52,1608,1605,55,"Aapki Suraksha Family Health policy ka renewal 15 November 2026 ko due hai, aur premium saal ka chaubees hazaar paanch sau rupaye GST ke saath hai. Abhi baat karna theek hai?",,0
+2026-10-17T17:05:30Z,sin-std gpt-4.1-mini,Regional (India geography),r2-gpt-4-1-mini-std-async,0,200,South India,default,311.3,311.4,677.0,312.4,45,1607,1536,45,"Dhanyavaad. Aapki Suraksha Family Health policy ka renewal 15 November 2026 ko hai, premium Rs 24,500 saal bhar ke liye hai. Kuch poochhna hai?",,0
+2026-10-17T17:05:32Z,sea-gs gpt-5.4-mini priority,Global (priority tier),r2-gpt-5-4-mini-async,0,200,Southeast Asia,priority,1357.6,1357.7,1656.3,248.9,36,1608,1280,39,"Thank you. Aapki Suraksha Family Health policy ki renewal due date 15 November 2026 hai, aur annual premium Rs 24,500 including GST hai.",,0
+2026-10-17T17:05:33Z,sea-gs gpt-5.4-mini,Global,r2-gpt-5-4-mini-async,0,200,Southeast Asia,default,795.1,795.2,1019.0,176.4,38,1608,1280,41,"Dhanyavaad. Aapki Suraksha Family Health policy ka renewal 15 November 2026 ko due hai, aur annual premium Rs 24,500 hai including GST.",,0
+2026-10-17T17:05:34Z,frc-dzeu gpt-6-sol,DataZone EU,r2-gpt-6-sol-dz-async,0,200,France Central,default,1056.9,1057.0,1370.9,259.5,34,1608,1605,37,"Aapki Suraksha Family Health policy ka renewal 15 November 2026 ko hai. Saalana premium GST sahit 24,500 rupaye hai.",,0
+2026-10-17T17:05:35Z,sea-gs gpt-5.4-nano,Global,r2-gpt-5-4-nano-async,0,200,Southeast Asia,default,572.1,577.6,893.9,264.8,38,1608,1280,41,"Theek hai. Aapki Suraksha Family Health ka renewal 15 November 2026 ko due hai; premium Rs 24,500 per year (GST included) hai.",,0
+2026-10-17T17:05:36Z,sea-dzapac gpt-5.4-mini,DataZone APAC,r2-gpt-5-4-mini-dzapac-async,0,200,Southeast Asia,default,812.3,814.2,1117.5,239.2,46,1608,1280,49,"Ji, aapki Suraksha Family Health policy renewal 15 November 2026 ko due hai, aur saalana premium Rs 24,500 hai GST ke saath. Kya abhi theek time hai?",,0
+2026-10-17T17:05:36Z,sea-dzapac gpt-6.1-sol,DataZone APAC,r2-gpt-6-1-sol-dzapac-async,0,400,Southeast Asia,,308.6,,308.7,,0,,,,,"{
+  ""error"": {
+    ""message"": ""Unsupported value: 'reasoning_effort' does not support 'none' with this model. Supported values are: 'low', 'medium', 'high', and 'xhigh'."",
+    ""type"": ""invalid_request_error"",
+    ""param"": ""reasoning_effort"",
+    ""code"": ""unsupported_value""
+  }
+}",0
+2026-10-17T17:05:37Z,sea-gs gpt-4.1-mini,Global,r2-gpt-4-1-mini-async,0,200,Southeast Asia,default,845.7,845.8,1170.4,266.3,42,1607,0,42,"Aapki Suraksha Family Health policy ka renewal 15 November 2026 ko hai, premium Rs 24,500 saal ka hai. Aapko quarterly payment option bhi chahiye?",,0
+2026-10-17T17:05:38Z,frc-dzeu DeepSeek-V4-Flash,DataZone EU,r2-deepseek-v4-flash-dz-async,0,200,France Central,,834.0,834.1,1050.0,167.6,19,1633,1536,49,"Shukriya. Aapki Suraksha Family Health policy ka renewal 15 November 2026 ko hai. Saalana premium Rs 24,500 hai, ya quarterly Rs 6,300 ka option bhi hai.",,0

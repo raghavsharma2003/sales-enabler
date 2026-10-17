@@ -1,33 +1,54 @@
-## bihar: first 48 pids
-Block B per-listener condition counts ['neutral_hinglish', 'bhojpuri_mix']: {(3, 3): 48}
-Block B (turn, condition) range: 24..24 over 12 cells
-Block B (condition, voice): bhojpuri_m/Diya:Dra=72, bhojpuri_m/MadhurNe=72, neutral_hi/Diya:Dra=72, neutral_hi/MadhurNe=72
-Block A x1: 576 trials, target played first in 288 (0.50)
-Block A wideband share: 144/576 = 0.25
-Block A trials per listener (incl. identical catch): {13: 48}; Block B cards: {7: 48}; Block C: {0: 48}
+## hindi_60plus: first 48 pids
+Block B cells per listener: {'hd-default': 1, 'hd-slow': 1, 'neural-default': 3, 'neural-slow': 3} x48
+Block B (turn, cell) cells: 32, uses per cell 6..18
+Block B (cell, gender): hd-default/F=24, hd-default/M=24, hd-slow/F=24, hd-slow/M=24, neural-default/F=72, neural-default/M=72, neural-slow/F=72, neural-slow/M=72
+Block A s1: 96 trials, target played first in 48 (0.50); turns used {'R7': 96}
+Block A x1: 192 trials, target played first in 96 (0.50); turns used {'R1': 24, 'R2': 24, 'R3': 24, 'R4': 24, 'R5': 24, 'R6': 24, 'R7': 24, 'R8': 24}
+Block A x2: 144 trials, target played first in 72 (0.50); turns used {'R1': 18, 'R2': 18, 'R3': 18, 'R4': 18, 'R5': 18, 'R6': 18, 'R7': 18, 'R8': 18}
+Block A wideband share: 108/432 = 0.25
+Block A trials per listener (incl. identical catch): {10: 48}; Block B cards: {9: 48}; Block C: {0: 48}
 
-## outgroup: first 48 pids
-Block B per-listener condition counts ['neutral_hinglish', 'bhojpuri_mix']: {(3, 3): 48}
-Block B (turn, condition) range: 24..24 over 12 cells
-Block B (condition, voice): bhojpuri_m/Diya:Dra=72, bhojpuri_m/MadhurNe=72, neutral_hi/Diya:Dra=72, neutral_hi/MadhurNe=72
-Block A x1: 576 trials, target played first in 288 (0.50)
-Block A wideband share: 144/576 = 0.25
-Block A trials per listener (incl. identical catch): {13: 48}; Block B cards: {7: 48}; Block C: {0: 48}
+## hindi_18to59: first 48 pids
+Block B cells per listener: {'hd-default': 1, 'hd-slow': 1, 'neural-default': 3, 'neural-slow': 3} x48
+Block B (turn, cell) cells: 32, uses per cell 6..18
+Block B (cell, gender): hd-default/F=24, hd-default/M=24, hd-slow/F=24, hd-slow/M=24, neural-default/F=72, neural-default/M=72, neural-slow/F=72, neural-slow/M=72
+Block A s1: 96 trials, target played first in 48 (0.50); turns used {'R7': 96}
+Block A x1: 192 trials, target played first in 96 (0.50); turns used {'R1': 24, 'R2': 24, 'R3': 24, 'R4': 24, 'R5': 24, 'R6': 24, 'R7': 24, 'R8': 24}
+Block A x2: 144 trials, target played first in 72 (0.50); turns used {'R1': 18, 'R2': 18, 'R3': 18, 'R4': 18, 'R5': 18, 'R6': 18, 'R7': 18, 'R8': 18}
+Block A wideband share: 108/432 = 0.25
+Block A trials per listener (incl. identical catch): {10: 48}; Block B cards: {9: 48}; Block C: {0: 48}
 
 ## tamilnadu: first 48 pids
-Block B per-listener condition counts ['tamil_english', 'neutral_hinglish', 'indian_english']: {(2, 2, 2): 48}
-Block B (turn, condition) range: 16..16 over 18 cells
-Block B (condition, voice): indian_eng/Arjun:Dr=48, indian_eng/Meera:Dr=48, neutral_hi/Arjun:Dr=48, neutral_hi/Meera:Dr=48, tamil_engl/Arjun:Dr=48, tamil_engl/Meera:Dr=48
-Block A v1: 96 trials, target played first in 48 (0.50)
-Block A x1: 288 trials, target played first in 144 (0.50)
-Block A x2: 288 trials, target played first in 144 (0.50)
-Block A wideband share: 168/672 = 0.25
-Block A trials per listener (incl. identical catch): {15: 48}; Block B cards: {7: 48}; Block C: {0: 48}
+Block B cells per listener: {'indian_english': 3, 'neutral_hinglish': 2, 'tamil_english': 3} x16; {'indian_english': 3, 'neutral_hinglish': 3, 'tamil_english': 2} x16; {'indian_english': 2, 'neutral_hinglish': 3, 'tamil_english': 3} x16
+Block B (turn, cell) cells: 24, uses per cell 16..16
+Block B (cell, gender): indian_english/F=64, indian_english/M=64, neutral_hinglish/F=64, neutral_hinglish/M=64, tamil_english/F=64, tamil_english/M=64
+Block A v1: 96 trials, target played first in 48 (0.50); turns used {'R1': 12, 'R2': 12, 'R3': 12, 'R4': 12, 'R5': 12, 'R6': 12, 'R7': 12, 'R8': 12}
+Block A x1: 240 trials, target played first in 120 (0.50); turns used {'R1': 30, 'R2': 30, 'R3': 30, 'R4': 30, 'R5': 30, 'R6': 30, 'R7': 30, 'R8': 30}
+Block A x2: 240 trials, target played first in 120 (0.50); turns used {'R1': 30, 'R2': 30, 'R3': 30, 'R4': 30, 'R5': 30, 'R6': 30, 'R7': 30, 'R8': 30}
+Block A wideband share: 144/576 = 0.25
+Block A trials per listener (incl. identical catch): {13: 48}; Block B cards: {9: 48}; Block C: {0: 48}
 
 ## maharashtra: first 48 pids
-Block B per-listener condition counts ['marathi_mix', 'neutral_hinglish']: {(3, 3): 48}
-Block B (turn, condition) range: 24..24 over 12 cells
-Block B (condition, voice): marathi_mi/Diya:Dra=88, marathi_mi/AarohiNe=28, marathi_mi/ManoharN=28, neutral_hi/Diya:Dra=88, neutral_hi/AarohiNe=28, neutral_hi/ManoharN=28
-Block A x1: 528 trials, target played first in 264 (0.50)
-Block A wideband share: 132/528 = 0.25
-Block A trials per listener (incl. identical catch): {12: 48}; Block B cards: {7: 48}; Block C: {0: 48}
+Block B cells per listener: {'marathi_mix': 4, 'neutral_hinglish': 4} x48
+Block B (turn, cell) cells: 16, uses per cell 24..24
+Block B (cell, gender): marathi_mix/F=96, marathi_mix/M=96, neutral_hinglish/F=96, neutral_hinglish/M=96
+Block A v1: 96 trials, target played first in 48 (0.50); turns used {'R1': 12, 'R2': 12, 'R3': 12, 'R4': 12, 'R5': 12, 'R6': 12, 'R7': 12, 'R8': 12}
+Block A x1: 384 trials, target played first in 192 (0.50); turns used {'R1': 48, 'R2': 48, 'R3': 48, 'R4': 48, 'R5': 48, 'R6': 48, 'R7': 48, 'R8': 48}
+Block A wideband share: 120/480 = 0.25
+Block A trials per listener (incl. identical catch): {11: 48}; Block B cards: {9: 48}; Block C: {0: 48}
+
+## bihar: first 48 pids
+Block B cells per listener: {'bhojpuri_mix': 4, 'neutral_hinglish': 4} x48
+Block B (turn, cell) cells: 16, uses per cell 24..24
+Block B (cell, gender): bhojpuri_mix/F=96, bhojpuri_mix/M=96, neutral_hinglish/F=96, neutral_hinglish/M=96
+Block A x1: 384 trials, target played first in 192 (0.50); turns used {'R1': 48, 'R2': 48, 'R3': 48, 'R4': 48, 'R5': 48, 'R6': 48, 'R7': 48, 'R8': 48}
+Block A wideband share: 96/384 = 0.25
+Block A trials per listener (incl. identical catch): {9: 48}; Block B cards: {9: 48}; Block C: {0: 48}
+
+## outgroup: first 48 pids
+Block B cells per listener: {'bhojpuri_mix': 4, 'neutral_hinglish': 4} x48
+Block B (turn, cell) cells: 16, uses per cell 24..24
+Block B (cell, gender): bhojpuri_mix/F=96, bhojpuri_mix/M=96, neutral_hinglish/F=96, neutral_hinglish/M=96
+Block A x1: 384 trials, target played first in 192 (0.50); turns used {'R1': 48, 'R2': 48, 'R3': 48, 'R4': 48, 'R5': 48, 'R6': 48, 'R7': 48, 'R8': 48}
+Block A wideband share: 96/384 = 0.25
+Block A trials per listener (incl. identical catch): {9: 48}; Block B cards: {9: 48}; Block C: {0: 48}

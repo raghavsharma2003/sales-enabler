@@ -1,0 +1,28 @@
+fetched,armRegionName,productName,meterName,retailPrice_usd,unitOfMeasure,effectiveStartDate,source
+2026-10-17,southindia,Azure OpenAI,gpt 4.1 mini Outp regnl Tokens,0.00176,1K,2025-11-01,https://prices.azure.com/api/retail/prices
+2026-10-17,southindia,Azure OpenAI,gpt 4.1 mini Inp regnl Tokens,0.00044,1K,2025-11-01,https://prices.azure.com/api/retail/prices
+2026-10-17,southindia,Azure OpenAI,gpt 4.1 mini cached Inp regnl Tokens,0.00011,1K,2025-11-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - LLM Text Output Tokens,0.00264,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 10K Unit,6175.0,1/Month,2022-12-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std- LLM Audio Cached Tokens,0.00033,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Fast Transcription Speech To Text,0.36,1 Hour,2024-11-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 100K Unit,38000.0,1/Month,2024-09-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,S1 Speech To Text,1.0,1 Hour,2018-11-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - LLM Text Input Tokens,0.00066,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - LLM Text Cached Tokens,0.00033,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 50K Speech To Text CT Overage,0.48,1 Hour,2022-12-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 10K Speech To Text CT Overage,0.62,1 Hour,2022-12-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 2K Speech To Text CT Overage,0.76,1 Hour,2022-12-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - Custom Speech Audio Cached Tokens,0.00033,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 50K Unit,23750.0,1/Month,2022-12-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - Standard Speech Audio Input Tokens,0.015,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - LLM Audio Input Tokens,0.011,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - Standard Speech Audio Cache Tokens,0.00033,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 100K Speech To Text CT Overage,0.38,1 Hour,2024-09-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - Standard Speech Audio Outpt Tokens,0.026,1K,2026-05-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - Custom Speech Audio Output Tokens,0.05,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Commitment Tier Speech to Text Connected 2K Unit,1520.0,1/Month,2022-12-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Neural HD Text to Speech Characters,22.0,1M,2026-03-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std- LLM Audio Output Tokens,0.022,1K,2025-10-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,S1 Neural Text To Speech Characters,15.0,1M,2024-02-01,https://prices.azure.com/api/retail/prices
+2026-10-17,centralindia,Azure Speech,Voice Live API Std - Custom Speech Audio Input Tokens,0.039,1K,2025-11-01,https://prices.azure.com/api/retail/prices

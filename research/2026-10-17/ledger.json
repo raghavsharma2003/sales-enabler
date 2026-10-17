@@ -1,0 +1,3771 @@
+[
+ {
+  "id": "REG-01",
+  "section": "REG",
+  "round": 1,
+  "claim": "Registered senders may lawfully make promotional (including AI) calls from 140xx numbers to subscribers without a DND preference; 224M of 1.348bn subscribers (16.6%, TRAI rounds to 16%) have one",
+  "value": "224M of 1.348bn (16.6%); ~1.12bn reachable",
+  "unit": "subscribers",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-08/PR_No111of2026.pdf",
+   "https://trai.gov.in/sites/default/files/2026-07/PR_No91of2026.pdf",
+   "https://www.trai.gov.in/sites/default/files/2026-09/Regulation_18092026.pdf"
+  ],
+  "date": "2026-08-04",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed (l1 verifier)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-02",
+  "section": "REG",
+  "round": 1,
+  "claim": "140-series calls in Q1 FY27: 13.16bn originated, 1.48bn blocked by DND scrubbing",
+  "value": "13.16bn / 1.48bn (11.25%)",
+  "unit": "calls per quarter",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-08/PR_No111of2026.pdf"
+  ],
+  "date": "2026-08-04",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed (l1 and l3 verifiers)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-03",
+  "section": "REG",
+  "round": 1,
+  "claim": "1600-series calls in Q1 FY27",
+  "value": "1.15bn",
+  "unit": "calls per quarter",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-08/PR_No111of2026.pdf"
+  ],
+  "date": "2026-08-04",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "REG-04",
+  "section": "REG",
+  "round": 1,
+  "claim": "Calls flagged as suspected spam by telco AI in Q1 FY27",
+  "value": "22.99bn of 721.79bn",
+  "unit": "calls per quarter",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-08/PR_No111of2026.pdf"
+  ],
+  "date": "2026-08-04",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "REG-05",
+  "section": "REG",
+  "round": 1,
+  "claim": "DPDP core obligations (notice, consent, children's data, rights) apply from about 2027-05-13 (18-month phase-in from the Rules notified 2025-11-14); no legitimate-interest ground; s.7(a) illustration is a real-estate broker",
+  "value": "~2027-05-13",
+  "unit": "date",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2024-09/DPDT_11082024.pdf",
+   "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc20251117695301.pdf",
+   "https://www.barandbench.com/view-point/meity-notifies-final-digital-personal-data-protection-rules-2025",
+   "https://dpdpa.dcomply.in/rules/"
+  ],
+  "date": "2025-11-17",
+  "method": "read-primary (Act) / read-secondary (dates; egazette blocked)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l1",
+  "verifier_verdict": "confirmed (dates from secondary sources)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-06",
+  "section": "REG",
+  "round": 1,
+  "claim": "No TRAI instrument requires an AI caller to disclose it is AI; the harvest claim of TRAI outbound-AI rules in force since 2026-03-10 traces to a vendor blog and is unsupported",
+  "value": "no disclosure duty in TRAI text",
+  "unit": "finding",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-09/Regulation_18092026.pdf",
+   "https://www.trai.gov.in/release-publication/consultation",
+   "https://www.trai.gov.in/release-publication/directions",
+   "https://qcall.ai/trai-updates-for-ai-calling"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "weakened (core confirmed)",
+  "supersedes": "harvest: 'TRAI outbound-AI rules since 2026-03-10'"
+ },
+ {
+  "id": "REG-07",
+  "section": "REG",
+  "round": 1,
+  "claim": "A2P (automated or artificial-voice) calls and CLI ranges must be pre-declared to the originating operator; undeclared A2P calls are UCC; termination charge up to INR 0.05/min with 140/1600/1601 exempt; commencement 60 days after Gazette publication",
+  "value": "~2026-11-17",
+  "unit": "date",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-09/Regulation_18092026.pdf"
+  ],
+  "date": "2026-09-18",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "REG-08",
+  "section": "REG",
+  "round": 1,
+  "claim": "Any promotional content mixed into a commercial call makes the whole call promotional; cross-sell, upsell and offers to existing customers cannot ride as service messages",
+  "value": "one offer line -> promotional",
+  "unit": "rule",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2025-02/Regulation_12022025.pdf"
+  ],
+  "date": "2025-02-12",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed (l1 verifier; re-confirmed by r2 verifier)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-09",
+  "section": "REG",
+  "round": 1,
+  "claim": "TRAI 'relationship' on a verifiable written/digital inquiry allows promotional contact for 7 days (30-day commencement after Gazette publication)",
+  "value": "7 days, from ~2026-10-18",
+  "unit": "window",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-09/Regulation_18092026.pdf",
+   "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2311989&lang=1&reg=3"
+  ],
+  "date": "2026-09-18",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "weakened (row-level; quoted rules confirmed)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-10",
+  "section": "REG",
+  "round": 1,
+  "claim": "BFSI service and transactional calls only from 1600xx 'even with consent': banks 2026-01-01; large NBFCs, payments banks, SFBs 2026-02-01; other NBFCs, co-ops, RRBs 2026-03-01; IRDAI entities 2026-02-15; SEBI MFs/AMCs 2026-02-15; PFRDA 2026-02-15",
+  "value": "deadlines Jan-Mar 2026",
+  "unit": "dates",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2025-11/Direction_19112025.pdf",
+   "https://www.trai.gov.in/sites/default/files/2025-12/Direction_16122025.pdf"
+  ],
+  "date": "2025-12-16",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed (deadlines); row weakened on other points",
+  "supersedes": null
+ },
+ {
+  "id": "REG-12",
+  "section": "REG",
+  "round": 1,
+  "claim": "TRAI treats a cloud-communications platform as a sender/aggregator, not an access provider; one client's misuse of an intermediary's CLIs bars all of that intermediary's resources (15-day bar, then 1-year disconnection)",
+  "value": "reseller liability",
+  "unit": "rule",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-09/Regulation_18092026.pdf"
+  ],
+  "date": "2026-09-18",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "weakened (core confirmed; correction on remedy detail)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-13",
+  "section": "REG",
+  "round": 1,
+  "claim": "RBI-regulated lenders from 2027-01-01: recovery contact only 08:00-19:00; every recovery call recorded both ways with notice, kept 6 months; a recovery agency is any entity other than the lender's own employees",
+  "value": "2027-01-01",
+  "unit": "date",
+  "source_urls": [
+   "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13672&Mode=0",
+   "https://www.corplawupdates.in/updates/rbi-amendment-directions-recovery-agents-loan-dues-2026",
+   "primary https://rbidocs.rbi.org.in/rdocs/notification/PDFs/NT230A919C5A725694DD78C1C3640B455C4E9.PDF (CAPTCHA-blocked)"
+  ],
+  "date": "2026-08-06",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1 / r2-regulation-insurance",
+  "verifier_verdict": "confirmed (upgraded to primary; re-confirmed in round 2)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-14",
+  "section": "REG",
+  "round": 1,
+  "claim": "WhatsApp India rate card effective 2026-10-01: utility template INR 0.115 vs marketing INR 0.8631; service window messages free",
+  "value": "0.115 vs 0.8631",
+  "unit": "INR per message",
+  "source_urls": [
+   "https://developers.facebook.com/docs/whatsapp/pricing/"
+  ],
+  "date": "2026-10-01",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l1",
+  "verifier_verdict": "confirmed (l3 verifier)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-15",
+  "section": "REG",
+  "round": 1,
+  "claim": "RBI e-mandate: recurring card/PPI/UPI debits without additional authentication up to INR 15,000 (INR 1 lakh for insurance premiums); NACH/e-NACH is outside this Direction",
+  "value": "15,000 (1,00,000 insurance)",
+  "unit": "INR per debit",
+  "source_urls": [
+   "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=13374"
+  ],
+  "date": "2026-04-21",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l4c",
+  "verifier_verdict": "weakened (inference about invoicing; facts exact)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-17",
+  "section": "REG",
+  "round": 1,
+  "claim": "MeitY IT Rules amendment (in force 2026-02-20) requires audio disclosure and provenance metadata from intermediaries offering synthetic-audio tools; applicability to a B2B voice SaaS unclear",
+  "value": "2026-02-20",
+  "unit": "date",
+  "source_urls": [
+   "https://www.amsshardul.com/wp-content/uploads/2026/02/Legislative-Update-IT-Rules-Amendment.pdf"
+  ],
+  "date": "2026-02-10",
+  "method": "read-secondary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l1",
+  "verifier_verdict": "not separately verified",
+  "supersedes": null
+ },
+ {
+  "id": "REG-20",
+  "section": "REG",
+  "round": 2,
+  "claim": "IRDAI circular IRDAI/PP&GR/CIR/MISC/02/01/2026 is addressed to 'All Insurers and Insurance Intermediaries' and requires 1600 numbers for all service and transactional voice calls from 2026-02-15 'irrespective of explicit or inferred customer consent'; non-compliance attracts TRAI unregistered-telemarketer action plus IRDAI action",
+  "value": "mandatory for brokers, CAs, IMFs, WAs",
+  "unit": "scope",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/365525/1600-%E0%A4%B6%E0%A5%83%E0%A4%82%E0%A4%96%E0%A4%B2%E0%A4%BE+%E0%A4%95%E0%A5%87+%E0%A4%85%E0%A4%A8%E0%A4%BF%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF+%E0%A4%85%E0%A4%82%E0%A4%97%E0%A5%80%E0%A4%95%E0%A4%B0%E0%A4%A3+%E0%A4%B8%E0%A4%82%E0%A4%AC%E0%A4%82%E0%A4%A7%E0%A5%80+%E0%A4%9F%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%88+%28%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4%E0%A5%80%E0%A4%AF+%E0%A4%A6%E0%A5%82%E0%A4%B0%E0%A4%B8%E0%A4%82%E0%A4%9A%E0%A4%BE%E0%A4%B0+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%BE%E0%A4%AE%E0%A4%95+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%A7%E0%A4%BF%E0%A4%95%E0%A4%B0%E0%A4%A3%29+%E0%A4%95%E0%A5%87+%E0%A4%A8%E0%A4%BF%E0%A4%A6%E0%A5%87%E0%A4%B6+%E0%A4%95%E0%A4%BE+%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF%E0%A4%BE%E0%A4%A8%E0%A5%8D%E0%A4%B5%E0%A4%AF%E0%A4%A8+_+Implementation+of+1600+Series+TRAI+directions.pdf/c8e0e0d1-4359-b70a-da07-63c175e8491b?version=1.0&t=1767791333736&download=true",
+   "https://www.trai.gov.in/sites/default/files/2025-12/Direction_16122025.pdf"
+  ],
+  "date": "2026-01-06",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (r2 verifier re-downloaded; paras 2(i)-(iii) verbatim)",
+  "supersedes": "SYN1-03"
+ },
+ {
+  "id": "REG-21",
+  "section": "REG",
+  "round": 2,
+  "claim": "The TRAI IRDAI direction has no annexure, phasing or carve-out, unlike the RBI/SEBI/PFRDA direction where other SEBI intermediaries are 'voluntary adoption for time being'",
+  "value": "no carve-out",
+  "unit": "finding",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2025-12/Direction_16122025.pdf",
+   "https://www.trai.gov.in/sites/default/files/2025-11/Direction_19112025.pdf",
+   "https://trai.gov.in/sites/default/files/2025-11/PR_No.135of2025.pdf"
+  ],
+  "date": "2025-12-16",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (sha256 matches round-1 copy)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-22",
+  "section": "REG",
+  "round": 2,
+  "claim": "1600 numbers are obtainable in principle: IRDAI's circular lists nodal officers at 8 access providers; Plivo provisions via Tata DLT with the regulator certificate and one NOC per number and requires the telemarketer to be registered in Mumbai or Karnataka; Vobiz lists LOI, GST, PAN, KYC and DLT IDs",
+  "value": "8 access providers; Plivo, Vobiz, Tata, Jio documented",
+  "unit": "providers",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/365525/1600-%E0%A4%B6%E0%A5%83%E0%A4%82%E0%A4%96%E0%A4%B2%E0%A4%BE+%E0%A4%95%E0%A5%87+%E0%A4%85%E0%A4%A8%E0%A4%BF%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF+%E0%A4%85%E0%A4%82%E0%A4%97%E0%A5%80%E0%A4%95%E0%A4%B0%E0%A4%A3+%E0%A4%B8%E0%A4%82%E0%A4%AC%E0%A4%82%E0%A4%A7%E0%A5%80+%E0%A4%9F%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%88+%28%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4%E0%A5%80%E0%A4%AF+%E0%A4%A6%E0%A5%82%E0%A4%B0%E0%A4%B8%E0%A4%82%E0%A4%9A%E0%A4%BE%E0%A4%B0+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%BE%E0%A4%AE%E0%A4%95+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%A7%E0%A4%BF%E0%A4%95%E0%A4%B0%E0%A4%A3%29+%E0%A4%95%E0%A5%87+%E0%A4%A8%E0%A4%BF%E0%A4%A6%E0%A5%87%E0%A4%B6+%E0%A4%95%E0%A4%BE+%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF%E0%A4%BE%E0%A4%A8%E0%A5%8D%E0%A4%B5%E0%A4%AF%E0%A4%A8+_+Implementation+of+1600+Series+TRAI+directions.pdf/c8e0e0d1-4359-b70a-da07-63c175e8491b?version=1.0&t=1767791333736&download=true",
+   "https://www.plivo.com/docs/voice/concepts/160-series-provisioning",
+   "https://vobiz.ai/docs/best-practices/140-160-acquisition",
+   "https://docs.vobiz.ai/faq/number-series",
+   "https://www.tatatelebusiness.com/marketing-solutions/1600-phone-number-series/",
+   "https://www.jio.com/business/offer/sip-1600-series/"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary / vendor-claim",
+  "n": 8,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "weakened (timeline misquoted; path confirmed)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-23",
+  "section": "REG",
+  "round": 2,
+  "claim": "Plivo's stated end-to-end 1600 provisioning time",
+  "value": "~7-14",
+  "unit": "business days",
+  "source_urls": [
+   "https://www.plivo.com/docs/voice/concepts/160-series-provisioning"
+  ],
+  "date": "2026-10-17",
+  "method": "vendor-claim",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "corrected by r2 verifier (package said 7-12; step ranges sum to 7-12 but Plivo states 7-14)",
+  "supersedes": "r2 package claim '~7-12 business days'"
+ },
+ {
+  "id": "REG-24",
+  "section": "REG",
+  "round": 2,
+  "claim": "No telco or CPaaS publishes a 1600 price (per number, circle or minute)",
+  "value": "none published",
+  "unit": "price",
+  "source_urls": [
+   "https://www.tatatelebusiness.com/marketing-solutions/1600-phone-number-series/",
+   "https://www.plivo.com/docs/voice/concepts/160-series-provisioning",
+   "https://vobiz.ai/docs/best-practices/140-160-acquisition",
+   "https://docs.vobiz.ai/faq/number-series",
+   "https://www.jio.com/business/offer/sip-1600-series/"
+  ],
+  "date": "2026-10-17",
+  "method": "vendor-claim (bounded negative)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (two independent searches)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-25",
+  "section": "REG",
+  "round": 2,
+  "claim": "No telco or CPaaS page explicitly states that WebSocket/SIP media streaming to a third-party AI gateway works on 1600 lines (Plivo Stream page's '160' hits are 16000 Hz; Exotel banks blog links 1600 onboarding and a voicebot but contains series errors)",
+  "value": "not documented",
+  "unit": "finding",
+  "source_urls": [
+   "https://www.plivo.com/docs/voice/xml/audio-streaming",
+   "https://exotel.com/blog/1600-phone-number/",
+   "https://exotel.com/blog/outbound-voice-ai-banks-fast-implementation-2026/"
+  ],
+  "date": "2026-10-17",
+  "method": "vendor-claim (bounded negative)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (bounded negative; Airtel/Vi unreachable)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-26",
+  "section": "REG",
+  "round": 2,
+  "claim": "IRDAI PPHI Regulations 2024 reg 5(13) (Part A definitions) define solicitation as approaching a prospect or policyholder 'with a view to persuading ... to purchase or to renew'; the Brokers Regs def (t) and WA Regs def (m) define it as purchase only; so 'renewal persuasion by phone needs a certified human' is a conservative reading, not settled text",
+  "value": "renewal persuasion = solicitation (PPHI Part A)",
+  "unit": "rule",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AA%E0%A4%BE%E0%A4%B2%E0%A4%BF%E0%A4%B8%E0%A5%80%E0%A4%A7%E0%A4%BE%E0%A4%B0%E0%A4%95%E0%A5%8B%E0%A4%82+%E0%A4%95%E0%A5%87+%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A5%8B%E0%A4%82+%E0%A4%95%E0%A4%BE+%E0%A4%B8%E0%A4%82%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%A3%2C+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE%E0%A4%95%E0%A4%B0%E0%A5%8D%E0%A4%A4%E0%A4%BE%E0%A4%93%E0%A4%82+%E0%A4%95%E0%A5%87+%E0%A4%AA%E0%A4%B0%E0%A4%BF%E0%A4%9A%E0%A4%BE%E0%A4%B2%E0%A4%A8+%E0%A4%94%E0%A4%B0+%E0%A4%B8%E0%A4%82%E0%A4%AC%E0%A4%A6%E0%A5%8D%E0%A4%A7+%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%AF%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2024+_+IRDAI+%28Protection+of+Policyholder%27s+Interests%2C+operations+and+allied+matters+of+insurers%29+Regulations%2C+2024.pdf/330674c5-0adb-4eb7-a399-95d779246ff8?version=1.2&t=1712320815911&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%A6%E0%A4%B2%E0%A4%BE%E0%A4%B2%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2018+_+IRDAI+%28Insurance+Brokers%29+Regulations%2C+2018.pdf/c36673a4-d5ef-2651-ff7e-917c3bae12ca?version=1.1&t=1687411185151&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%B5%E0%A5%87%E0%A4%AC+%E0%A4%8F%E0%A4%97%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%97%E0%A5%87%E0%A4%9F%E0%A4%B0%E0%A5%8D%E0%A4%B8%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2017_+IRDAI+%28Insurance+Web+Aggregators%29+Regulations%2C+2017.pdf/79cf80a0-36b5-0708-5d0e-535f85efadca?version=1.1&t=1687411257165&download=true"
+  ],
+  "date": "2024-03-20",
+  "method": "read-primary + interpretation",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "weakened (citation 3(13)->5(13); confidence high->medium)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-27",
+  "section": "REG",
+  "round": 2,
+  "claim": "Inside the telemarketing channel only Authorised Verifiers may solicit and conclude sales, using insurer-approved standardised scripts, explicit consent, the AV's name and IRDAI certificate number, a language choice and a recording notice (CA Regs Sch VII; WA Regs schedule)",
+  "value": "AV-only solicitation",
+  "unit": "rule",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%95%E0%A5%89%E0%A4%B0%E0%A5%8D%E0%A4%AA%E0%A5%8B%E0%A4%B0%E0%A5%87%E0%A4%9F+%E0%A4%8F%E0%A4%9C%E0%A5%87%E0%A4%82%E0%A4%9F%E0%A5%8B%E0%A4%82+%E0%A4%95%E0%A4%BE+%E0%A4%AA%E0%A4%82%E0%A4%9C%E0%A5%80%E0%A4%95%E0%A4%B0%E0%A4%A3%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2015+_+IRDAI+%28Registration+of+Corporate+Agents%29+Regulations%2C+2015.pdf/8b4d18bc-463a-1034-b4d8-cefa1a3b6b6a?version=1.2&t=1687437802212&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%B5%E0%A5%87%E0%A4%AC+%E0%A4%8F%E0%A4%97%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%97%E0%A5%87%E0%A4%9F%E0%A4%B0%E0%A5%8D%E0%A4%B8%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2017_+IRDAI+%28Insurance+Web+Aggregators%29+Regulations%2C+2017.pdf/79cf80a0-36b5-0708-5d0e-535f85efadca?version=1.1&t=1687411257165&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%A6%E0%A4%B2%E0%A4%BE%E0%A4%B2%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2018+_+IRDAI+%28Insurance+Brokers%29+Regulations%2C+2018.pdf/c36673a4-d5ef-2651-ff7e-917c3bae12ca?version=1.1&t=1687411185151&download=true"
+  ],
+  "date": "2015-09-15",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "REG-28",
+  "section": "REG",
+  "round": 2,
+  "claim": "The IRDAI telemarketer regime survives the July 2026 amendment (CA reg 25 retained; AV certificates become a Letter of Enrolment with a pre-recruitment test); the register lists 38 telemarketer certificates tied to corporate agents, all with validity ending 2020-2023",
+  "value": "38 certificates, all stale",
+  "unit": "register entries",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/IRDAI+%28Insurance+Intermediaries%29+%28Amendment%29+Regulations%2C+2026.pdf/4961106d-b7f4-c117-a302-4bf3ef9356c5?version=1.0&t=1785736027526&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%95%E0%A5%89%E0%A4%B0%E0%A5%8D%E0%A4%AA%E0%A5%8B%E0%A4%B0%E0%A5%87%E0%A4%9F+%E0%A4%8F%E0%A4%9C%E0%A5%87%E0%A4%82%E0%A4%9F%E0%A5%8B%E0%A4%82+%E0%A4%95%E0%A4%BE+%E0%A4%AA%E0%A4%82%E0%A4%9C%E0%A5%80%E0%A4%95%E0%A4%B0%E0%A4%A3%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2015+_+IRDAI+%28Registration+of+Corporate+Agents%29+Regulations%2C+2015.pdf/8b4d18bc-463a-1034-b4d8-cefa1a3b6b6a?version=1.2&t=1687437802212&download=true",
+   "https://irdai.gov.in/list-of-telemarketer1"
+  ],
+  "date": "2026-07-30",
+  "method": "read-primary",
+  "n": 38,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (verifier re-fetched register live)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-29",
+  "section": "REG",
+  "round": 2,
+  "claim": "IMF Regulations reg 3(d): an IMF may do distance marketing only without engaging telemarketers, with prior IRDAI approval, only through its own ISPs, for tied insurers; the 2026 amendment does not touch it and gives IMFs no digital-platform proviso",
+  "value": "IMFs may not use telemarketers",
+  "unit": "rule",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%B5%E0%A4%BF%E0%A4%AA%E0%A4%A3%E0%A4%A8+%E0%A4%AB%E0%A4%B0%E0%A5%8D%E0%A4%AE+%E0%A4%95%E0%A4%BE+%E0%A4%AA%E0%A4%82%E0%A4%9C%E0%A5%80%E0%A4%95%E0%A4%B0%E0%A4%A3%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2015+_+IRDAI+%28Registration+Of+Insurance+Marketing+Firm%29+Regulations+2015.pdf/b54d8c87-d417-b55c-f076-e5050b9ba55b?version=1.3&t=1687411160802&download=true",
+   "https://irdai.gov.in/documents/37343/366405/IRDAI+%28Insurance+Intermediaries%29+%28Amendment%29+Regulations%2C+2026.pdf/4961106d-b7f4-c117-a302-4bf3ef9356c5?version=1.0&t=1785736027526&download=true"
+  ],
+  "date": "2019-07-26",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "REG-30",
+  "section": "REG",
+  "round": 2,
+  "claim": "Brokers Regs 2018: core functions in Schedule I Form A (advice, quotations, help with premium payment) may not be outsourced 'in any manner whatsoever'; telemarketing outsourcing only 'to the extent of tele-calling'; Code of Conduct para 6 obliges the broker to make sure the client knows the expiry date and receives the renewal notice",
+  "value": "core functions non-outsourceable",
+  "unit": "rule",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%A6%E0%A4%B2%E0%A4%BE%E0%A4%B2%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2018+_+IRDAI+%28Insurance+Brokers%29+Regulations%2C+2018.pdf/c36673a4-d5ef-2651-ff7e-917c3bae12ca?version=1.1&t=1687411185151&download=true"
+  ],
+  "date": "2018-01-30",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed in part (para 6 by verifier); outsourcing reading not separately verified",
+  "supersedes": null
+ },
+ {
+  "id": "REG-31",
+  "section": "REG",
+  "round": 2,
+  "claim": "IRDAI (Maintenance of Information) Regulations 2025: intermediaries keep required records (including renewal-business records, telecaller/AV/telemarketer names and 'record of all phone numbers used for solicitation') at their principal place of business, branches or data centres located in India, for at least 10 years",
+  "value": ">=10 years, in India",
+  "unit": "retention",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%E0%A4%BF%E0%A4%A4+%E0%A4%B8%E0%A4%82%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%E0%A4%93%E0%A4%82+%E0%A4%95%E0%A5%87+%E0%A4%A6%E0%A5%8D%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A4%BE+%E0%A4%B8%E0%A5%82%E0%A4%9A%E0%A4%A8%E0%A4%BE+%E0%A4%95%E0%A4%BE+%E0%A4%85%E0%A4%A8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%A3+%E0%A4%A4%E0%A4%A5%E0%A4%BE+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%A7%E0%A4%BF%E0%A4%95%E0%A4%B0%E0%A4%A3+%E0%A4%95%E0%A5%87+%E0%A4%A6%E0%A5%8D%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A4%BE+%E0%A4%B8%E0%A5%82%E0%A4%9A%E0%A4%A8%E0%A4%BE+%E0%A4%95%E0%A5%80+%E0%A4%B8%E0%A4%BE%E0%A4%9D%E0%A5%87%E0%A4%A6%E0%A4%BE%E0%A4%B0%E0%A5%80%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2025+_+IRDAI+%28Maintenance+of+Information+by+the+Regulated+Entities+and+Sharing+of+Information+by+the+Authority%29%2C+Regulations+2025.pdf/1e4ffda7-5f81-e087-ceb5-ae3c6ab0f186?version=1.1&t=1737024827159&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%85%E0%A4%AD%E0%A4%BF%E0%A4%B2%E0%A5%87%E0%A4%96%E0%A5%8B%E0%A4%82+%E0%A4%95%E0%A4%BE+%E0%A4%85%E0%A4%A8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%A3%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2015+_+IRDAI+%28Maintenance+of+Insurance+Records%29+Regulations%2C+2015.pdf/4edfd2d8-7e40-13cc-70b6-7054c4eba5cb?version=1.1&t=1687411371507&download=true"
+  ],
+  "date": "2025-01-01",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "not separately verified by the r2 verifier",
+  "supersedes": "SYN1-08"
+ },
+ {
+  "id": "REG-32",
+  "section": "REG",
+  "round": 2,
+  "claim": "IRDAI cyber-security guidelines 2023 apply to all intermediaries; ICT logs kept 180 days within Indian jurisdiction; no general policyholder-data localisation clause found; the 2026 guidelines' annexure was not retrieved",
+  "value": "180-day logs in India",
+  "unit": "retention",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366029/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%E0%A4%B8%E0%A5%82%E0%A4%9A%E0%A4%A8%E0%A4%BE+%E0%A4%94%E0%A4%B0+%E0%A4%B8%E0%A4%BE%E0%A4%87%E0%A4%AC%E0%A4%B0+%E0%A4%B8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BE+%E0%A4%A6%E0%A4%BF%E0%A4%B6%E0%A4%BE%E0%A4%A8%E0%A4%BF%E0%A4%B0%E0%A5%8D%E0%A4%A6%E0%A5%87%E0%A4%B6+2023+_+IRDAI+Information+and+Cyber+Security+Guidelines%2C+2023.pdf/81730785-1f51-977b-5a92-d9cfd7eb2cd6?version=2.0&t=1740997153060&download=true",
+   "https://irdai.gov.in/documents/37343/366029/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%E0%A4%B8%E0%A5%82%E0%A4%9A%E0%A4%A8%E0%A4%BE+%E0%A4%94%E0%A4%B0+%E0%A4%B8%E0%A4%BE%E0%A4%87%E0%A4%AC%E0%A4%B0+%E0%A4%B8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BE+%E0%A4%A6%E0%A4%BF%E0%A4%B6%E0%A4%BE%E0%A4%A8%E0%A4%BF%E0%A4%B0%E0%A5%8D%E0%A4%A6%E0%A5%87%E0%A4%B6%2C+2026+_+IRDAI+Information+and+Cybersecurity+Guidelines%2C+2026.pdf/9714979d-6006-3809-297f-91a4593ac072?version=2.0&t=1777011998536&download=true"
+  ],
+  "date": "2023-04-24",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "not verified (annexure gap)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-33",
+  "section": "REG",
+  "round": 2,
+  "claim": "Commission is set by each insurer's board-approved policy within overall expense-of-management caps (30% of GWP general, 35% standalone health); product-wise caps were removed in 2023; new structures do not apply to policies already sold",
+  "value": "board policy within EoM caps",
+  "unit": "rule",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%95%E0%A4%AE%E0%A5%80%E0%A4%B6%E0%A4%A8+%E0%A4%B8%E0%A4%B9%E0%A4%BF%E0%A4%A4%2C+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE%E0%A4%95%E0%A4%B0%E0%A5%8D%E0%A4%A4%E0%A4%BE%E0%A4%93%E0%A4%82+%E0%A4%95%E0%A5%87+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%AC%E0%A4%82%E0%A4%A7%E0%A4%A8-%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%AF%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2024+_+IRDAI+%28EOM+including+Commission%29+Regulations%2C2024.pdf/9af08911-7e26-a6c3-8b29-9d4a95968301?version=1.0&t=1706101332744&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4%E0%A5%80%E0%A4%AF+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%BE%E0%A4%AE%E0%A4%95+%E0%A4%94%E0%A4%B0+%E0%A4%B5%E0%A4%BF%E0%A4%95%E0%A4%BE%E0%A4%B8+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%A7%E0%A4%BF%E0%A4%95%E0%A4%B0%E0%A4%A3+%28%E0%A4%95%E0%A4%AE%E0%A5%80%E0%A4%B6%E0%A4%A8+%E0%A4%95%E0%A4%BE+%E0%A4%AD%E0%A5%81%E0%A4%97%E0%A4%A4%E0%A4%BE%E0%A4%A8%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2023+_+Insurance+Regulatory+and+Development+Authority+of+India+%28Payment+of+Commission%29+Regulations%2C+2023.pdf/d5312011-1c93-65aa-9a8d-03c01fd97800?version=1.1&t=1682926765873&download=true",
+   "https://irdai.gov.in/documents/37343/365525/%E0%A4%95%E0%A4%AE%E0%A5%80%E0%A4%B6%E0%A4%A8+%E0%A4%B8%E0%A4%B9%E0%A4%BF%E0%A4%A4%2C+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE%E0%A4%95%E0%A4%B0%E0%A5%8D%E0%A4%A4%E0%A4%BE%E0%A4%93%E0%A4%82+%E0%A4%95%E0%A5%87+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%AC%E0%A4%82%E0%A4%A7%E0%A4%A8-%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%AF%2C+2024+%E0%A4%AA%E0%A4%B0+%E0%A4%AE%E0%A4%BE%E0%A4%B8%E0%A5%8D%E0%A4%9F%E0%A4%B0+%E0%A4%AA%E0%A4%B0%E0%A4%BF%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%B0+_+Master+Circular+on+Expenses+of+Management%2C+including+Commission%2C+of+Insurers%2C+2024.pdf/8b5f9495-837e-bd67-60f2-68e2be57b0b1?version=3.0&t=1716209830485&download=true"
+  ],
+  "date": "2024-01-22",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "not separately verified",
+  "supersedes": null
+ },
+ {
+  "id": "REG-34",
+  "section": "REG",
+  "round": 2,
+  "claim": "No rule found that entitles the intermediary of record to commission when the customer renews directly with the insurer; renewal commission on orphan policies follows board policy",
+  "value": "no entitlement found",
+  "unit": "finding",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/365525/%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE%E0%A4%95%E0%A4%B0%E0%A5%8D%E0%A4%A4%E0%A4%BE%E0%A4%93%E0%A4%82+%E0%A4%95%E0%A5%87+%E0%A4%AA%E0%A4%B0%E0%A4%BF%E0%A4%9A%E0%A4%BE%E0%A4%B2%E0%A4%A8%E0%A5%8B%E0%A4%82+%E0%A4%94%E0%A4%B0+%E0%A4%B8%E0%A4%82%E0%A4%AC%E0%A4%A6%E0%A5%8D%E0%A4%A7+%E0%A4%B5%E0%A4%BF%E0%A4%B7%E0%A4%AF%E0%A5%8B%E0%A4%82+%E0%A4%B8%E0%A4%82%E0%A4%AC%E0%A4%82%E0%A4%A7%E0%A5%80+%E0%A4%AE%E0%A4%BE%E0%A4%B8%E0%A5%8D%E0%A4%9F%E0%A4%B0+%E0%A4%AA%E0%A4%B0%E0%A4%BF%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%B0+_+Master+Circular+on+Operations+and+Allied+Matters+of+Insurers.pdf/c4054914-a999-6bff-630e-2b4bc201f857?version=2.0&t=1723108314217&download=true",
+   "https://irdai.gov.in/documents/37343/366405/%E0%A4%86%E0%A4%88%E0%A4%86%E0%A4%B0%E0%A4%A1%E0%A5%80%E0%A4%8F%E0%A4%86%E0%A4%88+%28%E0%A4%95%E0%A4%AE%E0%A5%80%E0%A4%B6%E0%A4%A8+%E0%A4%B8%E0%A4%B9%E0%A4%BF%E0%A4%A4%2C+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE%E0%A4%95%E0%A4%B0%E0%A5%8D%E0%A4%A4%E0%A4%BE%E0%A4%93%E0%A4%82+%E0%A4%95%E0%A5%87+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%AC%E0%A4%82%E0%A4%A7%E0%A4%A8-%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%AF%29+%E0%A4%B5%E0%A4%BF%E0%A4%A8%E0%A4%BF%E0%A4%AF%E0%A4%AE%2C+2024+_+IRDAI+%28EOM+including+Commission%29+Regulations%2C2024.pdf/9af08911-7e26-a6c3-8b29-9d4a95968301?version=1.0&t=1706101332744&download=true"
+  ],
+  "date": "2024-06-19",
+  "method": "read-primary (bounded negative; scanned circular)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "REG-35",
+  "section": "REG",
+  "round": 2,
+  "claim": "A neutral renewal reminder is a TRAI service call: Third Amendment (bh)(i) covers information 'pertaining to a product or service procured by such customer'; the broader 2025 (bh)(i) applies until the amendment commences; a re-quote offering a different plan, insurer or discount is promotional",
+  "value": "service call",
+  "unit": "classification",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-09/Regulation_18092026.pdf",
+   "https://www.trai.gov.in/sites/default/files/2025-02/Regulation_12022025.pdf",
+   "https://trai.gov.in/sites/default/files/2026-07/PR_No91of2026.pdf"
+  ],
+  "date": "2026-09-18",
+  "method": "read-primary + interpretation",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (commencement caveat)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-36",
+  "section": "REG",
+  "round": 2,
+  "claim": "Strict reading of commencement dates: 7-day inquiry window from 2026-10-19 and A2P declaration from 2026-11-18 (Gazette date unconfirmed; egazette TLS-blocked)",
+  "value": "2026-10-19 / 2026-11-18",
+  "unit": "dates",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-09/Regulation_18092026.pdf",
+   "https://egazette.gov.in/"
+  ],
+  "date": "2026-10-17",
+  "method": "computed from read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (verifier: earliest ~2026-10-18 if Gazette 2026-09-18)",
+  "supersedes": "REG-07; REG-09 (dates)"
+ },
+ {
+  "id": "REG-37",
+  "section": "REG",
+  "round": 2,
+  "claim": "Azure Communication Services: phone-number capabilities are disabled for ACS resources created after the 2026-09-23 announcement; tenants without numbers before 2026-10-23 cannot buy them; India was never among the 44 eligible countries",
+  "value": "no action needed",
+  "unit": "decision input",
+  "source_urls": [
+   "https://learn.microsoft.com/en-us/azure/communication-services/acs-retirement-and-breaking-changes-guide",
+   "https://learn.microsoft.com/en-us/azure/communication-services/concepts/numbers/sub-eligibility-number-capability"
+  ],
+  "date": "2026-10-08",
+  "method": "read-primary",
+  "n": 44,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed",
+  "supersedes": "SYN1-07"
+ },
+ {
+  "id": "REG-38",
+  "section": "REG",
+  "round": 2,
+  "claim": "Intermediaries must apply for a fresh perpetual CoR before 2027-01-31 (late to 2027-03-31); policies must be tagged to the functional identity of the SP/BQP/ISP/PoSP/AV from 2027-01-01",
+  "value": "2027-01-31 / 2027-01-01",
+  "unit": "dates",
+  "source_urls": [
+   "https://irdai.gov.in/documents/37343/366405/IRDAI+%28Insurance+Intermediaries%29+%28Amendment%29+Regulations%2C+2026.pdf/4961106d-b7f4-c117-a302-4bf3ef9356c5?version=1.0&t=1785736027526&download=true",
+   "https://irdai.gov.in/documents/37343/365525/%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%B7%E0%A4%BF%E0%A4%95+%E0%A4%B6%E0%A5%81%E0%A4%B2%E0%A5%8D%E0%A4%95+%E0%A4%95%E0%A5%87+%E0%A4%AD%E0%A5%81%E0%A4%97%E0%A4%A4%E0%A4%BE%E0%A4%A8+%E0%A4%94%E0%A4%B0+%E0%A4%AA%E0%A4%82%E0%A4%9C%E0%A5%80%E0%A4%95%E0%A4%B0%E0%A4%A3+%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%AE%E0%A4%BE%E0%A4%A3%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%B0+%E0%A4%95%E0%A5%87+%E0%A4%A8%E0%A4%BF%E0%A4%B0%E0%A5%8D%E0%A4%97%E0%A4%AE+%E0%A4%95%E0%A5%87+%E0%A4%B2%E0%A4%BF%E0%A4%8F+%E0%A4%AA%E0%A4%B0%E0%A4%BF%E0%A4%B5%E0%A4%B0%E0%A5%8D%E0%A4%A4%E0%A5%80+%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%E0%A4%8F%E0%A4%81+%28%E0%A4%AE%E0%A4%A7%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B0%E0%A5%8D%E0%A4%A4%E0%A4%BF%E0%A4%AF%E0%A5%8B%E0%A4%82%29+_+Transitional+arrangements+for+payment+of+Annual+Fee+and+issuance++of++Certificate++of++Registration+%28Intermediaries%29.pdf/840b8111-53f2-566b-e1ce-e2d5a6b961aa?version=2.0&t=1774597157001&download=true"
+  ],
+  "date": "2026-07-30",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed (verifier read amendment items)",
+  "supersedes": null
+ },
+ {
+  "id": "REG-39",
+  "section": "REG",
+  "round": 2,
+  "claim": "TRAI PR 91/2026: 1600 is for service and transaction calls by RBI/SEBI/IRDAI/PFRDA entities 'to their existing customers'; tagging, blocking or filtering of 1600 calls is not permitted",
+  "value": "1600 = existing customers",
+  "unit": "rule",
+  "source_urls": [
+   "https://trai.gov.in/sites/default/files/2026-07/PR_No91of2026.pdf"
+  ],
+  "date": "2026-07-10",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-regulation-insurance",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-01",
+  "section": "RAW",
+  "round": 2,
+  "claim": "TRAI's final Third Amendment rejected every stakeholder request to carve out AI or human-assisted calls: all AI calls are A2P and must be pre-declared, with their CLI ranges, on every number series",
+  "value": "no AI carve-out",
+  "unit": "ruling",
+  "source_urls": [
+   "research-raw/l1-regulation/trai_3rd_amend_18092026.pdf (l1 S03)",
+   "https://www.trai.gov.in/consultation-draft-telecom-commercial-communications-customer-preference-third-amendment"
+  ],
+  "date": "2026-09-18",
+  "method": "read-primary",
+  "n": 32,
+  "confidence": "high",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified (package had no verifier)",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-02",
+  "section": "RAW",
+  "round": 2,
+  "claim": "The INR 0.05/min A2P termination charge is under review; telcos asked for INR 0.50/min plus INR 0.05 per attempt",
+  "value": "0.05 (asked 0.50 + 0.05/attempt)",
+  "unit": "INR per minute",
+  "source_urls": [
+   "https://www.trai.gov.in/consultation-draft-telecom-commercial-communications-customer-preference-third-amendment",
+   "research-raw/l1-regulation/trai_3rd_amend_18092026.pdf (l1 S03)"
+  ],
+  "date": "2026-04",
+  "method": "read-primary (stakeholder submissions)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-03",
+  "section": "RAW",
+  "round": 2,
+  "claim": "1600 numbers carry protections: operators may not flag them as spam (reg 21A proviso) and caller-ID apps may not tag them (reg 34A); Truecaller removed user spam tags from all 140xx and 1600xx numbers after TRAI's letter of 2025-09-12",
+  "value": "not flaggable / not taggable",
+  "unit": "rule",
+  "source_urls": [
+   "research-raw/l1-regulation/trai_3rd_amend_18092026.pdf (l1 S03)",
+   "https://www.trai.gov.in/consultation-draft-telecom-commercial-communications-customer-preference-third-amendment"
+  ],
+  "date": "2026-09-18",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-04",
+  "section": "RAW",
+  "round": 2,
+  "claim": "TRAI stated that small BFSI players may later be exempted from mandatory 1600 under the sender-class proviso; no direction has been issued",
+  "value": "possible future exemption",
+  "unit": "finding",
+  "source_urls": [
+   "research-raw/l1-regulation/trai_3rd_amend_18092026.pdf (l1 S03)"
+  ],
+  "date": "2026-09-18",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-05",
+  "section": "RAW",
+  "round": 2,
+  "claim": "LIC's 2025 RFP buys agentic voice AI for 'customer servicing, renewal reminders, lead engagement, and grievance acknowledgment', priced per minute with per-second pulse (~24 lakh minutes a year for bid comparison); self-hosted in India; open-source or indigenous models only; GPT-4/4o, Claude, Gemini and foreign-hosted APIs barred",
+  "value": "~24,00,000",
+  "unit": "minutes per year",
+  "source_urls": [
+   "https://licindia.in/documents/20121/1599866/RFP-Procurement+of+Agentic+AI+and+GenAI+Platforms.pdf/c2255c2a-5000-ed24-cc28-292f86d55710?t=1762282446814",
+   "https://licindia.in/documents/20121/1599866/Agentic+AI+and+GEN+AI+RFP+-+Response+to+Pre-Bid+Queries.pdf/eaf549fe-837c-5e8f-7060-da08e8ebe769?t=1763096064536"
+  ],
+  "date": "2025-11-04",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-06",
+  "section": "RAW",
+  "round": 2,
+  "claim": "Rajasthan Gramin Bank tender for 2,500 1600-series numbers (SIP trunk), extendable to 5,000, for outbound calling over 5 years; split L1/L2 60:40 between telcos",
+  "value": "2,500 numbers",
+  "unit": "numbers",
+  "source_urls": [
+   "https://www.rgb.bank.in/Documents/Tender/20260606_053004am.pdf"
+  ],
+  "date": "2026-06-06",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-07",
+  "section": "RAW",
+  "round": 2,
+  "claim": "GeM call-centre per-seat buyer estimates (not awards): about INR 46,300-47,320 per seat-month (Gujarat 240 seats; FSSAI 24 seats), INR 36,660 per seat-shift-month (Powergrid)",
+  "value": "36,660-47,320",
+  "unit": "INR per seat-month",
+  "source_urls": [
+   "https://fssai.gov.in/upload/uploadfiles/files/GeM-Bidding-%20Published.pdf",
+   "https://apps.powergrid.in/pgciltenders/Files/0e00026a-6e16-41ca-bfae-cabd84e2a387/GeM-Bidding.pdf",
+   "https://gil.gujarat.gov.in/tendercms/TenderDocs/20268211811987.pdf"
+  ],
+  "date": "2026-08-21",
+  "method": "read-primary + computed",
+  "n": 3,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-08",
+  "section": "RAW",
+  "round": 2,
+  "claim": "CNAP caller-name display w.e.f. 2026-11-01 on 4G-and-above wireless networks only (2G/3G and PSTN later); a personal SIM shows the subscriber's KYC name; bulk/business connections may show a verified preferred name (trademark or GST trade name); SIP/PRI 1600 display not stated",
+  "value": "2026-11-01",
+  "unit": "date",
+  "source_urls": [
+   "https://www.dot.gov.in/static/uploads/2026/10/d86da4092d50f052becd6113de83d37e.pdf",
+   "https://www.dot.gov.in/static/uploads/2026/03/455cd2a9081b7ec15886e2a2c48f79f7.pdf",
+   "https://trai.gov.in/sites/default/files/2025-10/Response_CNAP_28102025.pdf"
+  ],
+  "date": "2026-10-13",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": "l1 S35 (secondary, 'about 2026-11-01')"
+ },
+ {
+  "id": "RAW-09",
+  "section": "RAW",
+  "round": 2,
+  "claim": "Navi Mumbai police raided a fake vehicle-insurance renewal call centre: 32 telecallers, SIMs linked to 145 NCRP complaints, at least INR 14.08 lakh cheated",
+  "value": "145 complaints; INR 14.08 lakh",
+  "unit": "count / INR",
+  "source_urls": [
+   "https://www.freepressjournal.in/mumbai/navi-mumbai-cyber-police-bust-fake-vehicle-insurance-call-centre-3-arrested-in-alleged-1408-lakh-fraud-linked-to-145-complaints"
+  ],
+  "date": "2026-07-19",
+  "method": "read-secondary",
+  "n": 145,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-10",
+  "section": "RAW",
+  "round": 2,
+  "claim": "Delhi police: a fake call centre bought vehicle-owner details at INR 5 per record to target owners whose policies were nearing expiry",
+  "value": "5",
+  "unit": "INR per record",
+  "source_urls": [
+   "https://www.theweek.in/wire-updates/national/2025/11/22/des32-dl-call-centre-bust.html"
+  ],
+  "date": "2025-11-22",
+  "method": "read-secondary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-11",
+  "section": "RAW",
+  "round": 2,
+  "claim": "IRDAI Annual Report 2024-25: spurious calls impersonating IRDAI, Bima Bharosa and insurers 'pose a significant threat'; 2,57,790 grievances in 2024-25; no separate count of fake renewal calls",
+  "value": "2,57,790",
+  "unit": "grievances",
+  "source_urls": [
+   "https://irdai.gov.in/annual-reports"
+  ],
+  "date": "2025",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-12",
+  "section": "RAW",
+  "round": 2,
+  "claim": "Truecaller (interested party, internal data, no method): users ignored 79% of 1600-series and 81% of 140-series calls over the eight months to July 2026; 74 million manual blocks",
+  "value": "79% ignored (1600)",
+  "unit": "share of calls",
+  "source_urls": [
+   "https://techcrunch.com/2026/07/08/truecaller-clashes-with-indias-telecom-regulator-over-anti-spam-rules/"
+  ],
+  "date": "2026-07-08",
+  "method": "read-secondary",
+  "n": null,
+  "confidence": "low",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-13",
+  "section": "RAW",
+  "round": 2,
+  "claim": "No neutral measurement compares pickup of 1600 calls with calls from known 10-digit mobiles; industry assertions (IAMAI, AACSPAI, SquadStack) about lower pickup are unquantified; vendor claims of higher pickup are unmethodised",
+  "value": "none found",
+  "unit": "finding",
+  "source_urls": [
+   "https://www.trai.gov.in/consultation-paper-review-telecom-commercial-communications-customer-preference-regulations-2018",
+   "https://www.trai.gov.in/consultation-draft-telecom-commercial-communications-customer-preference-third-amendment",
+   "scratchpad research-raw/r2-reg-ins/vendors/*.txt"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (bounded negative)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-15",
+  "section": "RAW",
+  "round": 2,
+  "claim": "TRAI P2P data: 85.31% of SIMs make 10 or fewer outgoing calls a day and about 0.13% make more than 50; a renewal telecaller dialling 80-150 due-list calls a day from a personal SIM sits in the slice UCC_Detect flags, while 1600 CLIs are exempt",
+  "value": "0.13%",
+  "unit": "share of SIMs >50 calls/day",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2024-10/CP_28082024.pdf"
+  ],
+  "date": "2024-08-28",
+  "method": "read-primary + computed (inference)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-16",
+  "section": "RAW",
+  "round": 2,
+  "claim": "Airtel spam data: genuine calls average 57 s vs 35 s for spam; 25% of genuine calls last under 10 s vs 43% of spam calls; spam numbers average 1,400 calls a day vs 40",
+  "value": "25% vs 43% under 10 s",
+  "unit": "share of calls",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-04/Airtels%20Response%20to%20Draft%20TCCCP%20%283rd%20Amendment%29%20Regulations%2C%202026.pdf"
+  ],
+  "date": "2026-04",
+  "method": "read-primary (operator claim)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "RAW-17",
+  "section": "RAW",
+  "round": 2,
+  "claim": "Voice of customer for Indian telephony and voice-AI vendors: 459 complaints coded from 877 items (Play, Trustpilot, Reddit, Capterra); SUPPORT 114, BILLING 107, ACCOUNT/UI 99, RELIABILITY 71, TELEPHONY 36; ASR, TTS, turn-taking, language and latency 1-5 each; Indian voice-AI vendors have almost no public review footprint",
+  "value": "459 coded / 877 items",
+  "unit": "complaints",
+  "source_urls": [
+   "lanes/r2-untouched-raw/voc-indian-vendor-counts.csv",
+   "see data/raw/voc/reddit-threads/*.json and reddit_search*.json",
+   "https://www.trustpilot.com/review/<domain>",
+   "https://play.google.com/store/apps/details?id=<app>",
+   "https://www.capterra.in/software/134642/exotel"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (hand-coded taxonomy)",
+  "n": 459,
+  "confidence": "medium",
+  "lane": "r2-untouched-raw",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-01",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Managed Azure COGS at 100k connected min/month (scenario A), Monte Carlo p50; the INR 4.53 base sits below the MC p10",
+  "value": "5.88 (p10-p90 5.00-6.96)",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json",
+   "https://prices.azure.com/api/retail/prices"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "high",
+  "lane": "l2 / r2-model-corrections",
+  "verifier_verdict": "weakened in round 1 (4.53 -> 5.88); reproduced in round 2",
+  "supersedes": "l2 lane headline INR 4.53"
+ },
+ {
+  "id": "ECO-02",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Managed optimised stack at 1M min/month (scenario B), round-1 figures",
+  "value": "base 2.39; MC p50 3.06",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.round1.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l2",
+  "verifier_verdict": "superseded in round 2 (ECO-03)",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-03",
+  "section": "ECO",
+  "round": 2,
+  "claim": "Scenario B at 1M min/month with NVAIE, volume-stepped commitment tiers and gpt-6-sol as speaking model; MC p50 is the headline",
+  "value": "3.23 (p10-p90 2.84-3.70); base 2.57",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json",
+   "lanes/l2-economics/data/azure-retail-prices-2026-10-17.csv",
+   "lanes/CORRECTIONS-round2.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "high",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproduced (round-1 scripts re-run byte for byte first)",
+  "supersedes": "ECO-02"
+ },
+ {
+  "id": "ECO-04",
+  "section": "ECO",
+  "round": 2,
+  "claim": "The managed stack never reaches INR 2/min: base 2.45 at 3M, 2.35 at 10M, 2.31 at 50M min/month; MC P(<=INR 2) = 0.001 at 10M with S1 STT on the 100K-hour tier",
+  "value": "never",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "consistent with l2 verifier (floor 2.1-2.3, P~0.01)",
+  "supersedes": "l2v 'floor INR 2.1-2.3'"
+ },
+ {
+  "id": "ECO-05",
+  "section": "ECO",
+  "round": 2,
+  "claim": "Only robust path to <= INR 2: D-lite (gpt-6-luna plus self-hosted ASR/TTS)",
+  "value": "MC p50 1.19 (1.07-1.33) from ~1.58M min/month",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproduced; quality of luna and self-hosted speech unmeasured",
+  "supersedes": "SYNTHESIS r1 'D-lite 1.16 from ~1.5M'"
+ },
+ {
+  "id": "ECO-06",
+  "section": "ECO",
+  "round": 2,
+  "claim": "Hybrid path C (self-hosted ASR on T4) with NVAIE and corrected tiers",
+  "value": "MC p50 2.65; P(<=2) 0.00; base reaches 2 only at 2.10M min/month",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproduced",
+  "supersedes": "r1 path (b): 2.39, P 0.05, 0.91M"
+ },
+ {
+  "id": "ECO-07",
+  "section": "ECO",
+  "round": 2,
+  "claim": "Self-hosted path D (ASR+TTS on H100, 3-year RI)",
+  "value": "MC p50 2.25; P(<=2) 0.15; base 2 at 3.74M min/month (4.64M on 1-year RI, 5.92M on demand)",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproduced",
+  "supersedes": "r1 path (c): 2.09, P 0.36, 2.95M"
+ },
+ {
+  "id": "ECO-08",
+  "section": "ECO",
+  "round": 2,
+  "claim": "B-luna (gpt-6-luna speaking model) at 1M min/month",
+  "value": "MC p50 2.15; P(<=2) 0.23; base 2 at 0.24M",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproduced",
+  "supersedes": "r1 path (a): 2.12, P 0.29, 0.20M"
+ },
+ {
+  "id": "ECO-09",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Self-hosting production use needs NVIDIA AI Enterprise licences (USD 4,500 per GPU-year) and about USD 565k of 3-year GPU commitments for path D",
+  "value": "4,500 USD/GPU-yr; ~565k USD",
+  "unit": "USD",
+  "source_urls": [
+   "https://docs.nvidia.com/deeplearning/riva/user-guide/docs/asr/asr-performance.html",
+   "https://developer.nvidia.com/nim",
+   "lanes/l2-economics/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor) + computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l2v / r2-model-corrections",
+  "verifier_verdict": "added by l2 verifier; applied in round 2",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-10",
+  "section": "ECO",
+  "round": 2,
+  "claim": "Gross margin at scale (1M min/month aggregate) at a INR 6-8 yield per AI minute, with corrected scale COGS",
+  "value": "~46-60%",
+  "unit": "gross margin",
+  "source_urls": [
+   "lanes/CORRECTIONS-round2.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "computed; superseded as a pricing basis by REN-06",
+  "supersedes": "SYN1-06"
+ },
+ {
+  "id": "ECO-11",
+  "section": "ECO",
+  "round": 1,
+  "claim": "AI-only cost per connected minute on our own benchmarked stacks at list price and FX 95 (streaming STT INR 1.58 = 58-82% of it)",
+  "value": "1.94-2.74",
+  "unit": "INR per minute",
+  "source_urls": [
+   "lanes/l8-azure-bench/cost-inputs.json",
+   "https://prices.azure.com/api/retail/prices"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "high",
+  "lane": "l8 / r2-model-corrections",
+  "verifier_verdict": "weakened in round 1 (FX 88 -> 95); applied to files in round 2",
+  "supersedes": "l8 lane INR 1.80-2.54 at FX 88"
+ },
+ {
+  "id": "ECO-12",
+  "section": "ECO",
+  "round": 2,
+  "claim": "AI-only cost of the India-resident cascade (config A) at 3-5 turns a minute, list price; STT is about two thirds",
+  "value": "2.29-2.76 (STT 1.58)",
+  "unit": "INR per minute",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/cascade_main_cost_per_min.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "not separately verified",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-13",
+  "section": "ECO",
+  "round": 1,
+  "claim": "In-house telecaller cost per productive connected minute (lane said INR 8.86; ~6.3 at 200 talk-min/day)",
+  "value": "6-9",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l2-economics/cost-model.json",
+   "lanes/l2-economics/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l2v",
+  "verifier_verdict": "weakened (8.86 is high-side)",
+  "supersedes": "l2 lane INR 8.86"
+ },
+ {
+  "id": "ECO-14",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Median posted telecaller pay on Apna",
+  "value": "17,000",
+  "unit": "INR per month",
+  "source_urls": [
+   "https://apna.co/jobs/telecaller-jobs-in-mumbai",
+   "lanes/l2-economics/data/apna-telecaller-jobs.jsonl"
+  ],
+  "date": "2026-10-17",
+  "method": "measured (crawl)",
+  "n": 1234,
+  "confidence": "high",
+  "lane": "l2",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-15",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Indian all-in list prices for voice AI with telephony (Sarvam 3.55-3.90 with its telephony on 60-s pulse excl GST; Ringg ~6; Bolna ~6-7 with telephony and platform fee); other Indian vendors post 8-18",
+  "value": "3.5-7 (others 8-18)",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "https://www.sarvam.ai/products/voice-agents/pricing",
+   "https://www.ringg.ai/pricing",
+   "https://www.bolna.ai/pricing",
+   "https://www.ravan.ai/pricing",
+   "https://smallest.ai/pricing"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l4a / l4av / l2v",
+  "verifier_verdict": "weakened (lane said 3.4-6)",
+  "supersedes": "l4a lane 'INR 3.4-6'"
+ },
+ {
+  "id": "ECO-16",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Effective competitor prices at volume may be INR 2-2.5/min",
+  "value": "2-2.5",
+  "unit": "INR per minute",
+  "source_urls": [
+   "https://indiafintech.substack.com/p/the-hundred-buyer-problem-the-complete"
+  ],
+  "date": "2026",
+  "method": "read-secondary",
+  "n": null,
+  "confidence": "low",
+  "lane": "l2v",
+  "verifier_verdict": "unverified (secondary, untraceable)",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-17",
+  "section": "ECO",
+  "round": 1,
+  "claim": "US platforms over Twilio India at INR 88/USD (Vapi + Twilio)",
+  "value": "11.6-17.5",
+  "unit": "INR per minute",
+  "source_urls": [
+   "https://vapi.ai/pricing",
+   "https://www.retellai.com/pricing"
+  ],
+  "date": "2026-10-17",
+  "method": "computed from read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4av",
+  "verifier_verdict": "weakened (lane said 8-17)",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-18",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Managed quality-bar AI stack cost history: USD 0.579/min (2023-04) to 0.033 (2026-10); 1.7x fall in 24 months; flat 0.033-0.039 since 2025-09",
+  "value": "1.7x in 24 months",
+  "unit": "ratio",
+  "source_urls": [
+   "lanes/l7-tech-frontier/prices.csv",
+   "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+   "https://prices.azure.com/api/retail/prices"
+  ],
+  "date": "2026-10-17",
+  "method": "computed from read-primary (live meters + archived pages)",
+  "n": null,
+  "confidence": "high",
+  "lane": "l7",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-19",
+  "section": "ECO",
+  "round": 2,
+  "claim": "Managed-stack forecast end-2027, LLM prices flat (current regime): new headline",
+  "value": "P50 2.98 (P10-P90 2.63-3.14); end-2028 2.81",
+  "unit": "INR per minute",
+  "source_urls": [
+   "lanes/l7-tech-frontier/fit-results.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (forecast)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "published beside the cut process in round 2",
+  "supersedes": "l7 headline P50 INR 1.89 (cut process, optimistic) and SYNTHESIS r1 'INR 2.7-3.0'"
+ },
+ {
+  "id": "ECO-20",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Managed-stack forecast end-2027 under the cut process (assumes 2024-25 LLM cuts resume and no rises): the optimistic case",
+  "value": "P50 1.89 (1.41-2.84)",
+  "unit": "INR per minute",
+  "source_urls": [
+   "lanes/l7-tech-frontier/fit-results.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (forecast)",
+  "n": null,
+  "confidence": "low",
+  "lane": "l7",
+  "verifier_verdict": "weakened (l7 verifier: optimistic)",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-21",
+  "section": "ECO",
+  "round": 2,
+  "claim": "GPT-5.2 was the first price rise in the frontier series: USD 1.75/14 per 1M tokens vs 1.25/10 for GPT-5.1 (+40%); per reference minute USD 0.012 -> 0.017 before GPT-5.4's 0.022",
+  "value": "+40%",
+  "unit": "price change",
+  "source_urls": [
+   "https://prices.azure.com/api/retail/prices",
+   "lanes/l7-tech-frontier/prices.csv"
+  ],
+  "date": "2025-12-01",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "added in round 2 (l7 verifier finding)",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-22",
+  "section": "ECO",
+  "round": 1,
+  "claim": "Plivo India carriage at 30-s pulse: INR 0.38/min live vs 0.48 in the 2024-02 capture (a 21% fall like for like); Tata INR 0.22",
+  "value": "0.38 (was 0.48)",
+  "unit": "INR per minute",
+  "source_urls": [
+   "https://www.plivo.com/voice/pricing/in/",
+   "lanes/l7-tech-frontier/prices.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (live + archived)",
+  "n": null,
+  "confidence": "high",
+  "lane": "l7v / r2-model-corrections",
+  "verifier_verdict": "weakened in round 1 (trend mis-stated); corrected in files",
+  "supersedes": null
+ },
+ {
+  "id": "ECO-23",
+  "section": "ECO",
+  "round": 1,
+  "claim": "FX used for every INR conversion",
+  "value": "94.96 (ECB 2026-10-16); 95.11 (open.er-api 2026-10-17)",
+  "unit": "INR per USD",
+  "source_urls": [
+   "lanes/l8-azure-bench/cost-inputs.json"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "l8v / r2-model-corrections",
+  "verifier_verdict": "confirmed",
+  "supersedes": "FX 88 in l8 files"
+ },
+ {
+  "id": "ECO-24",
+  "section": "ECO",
+  "round": 1,
+  "claim": "MAI-Transcribe-2 list price (promotion to 2026-12-31 per pricing page; batch or Voice Live only, so not the streaming ear)",
+  "value": "0.10",
+  "unit": "USD per audio hour",
+  "source_urls": [
+   "https://azure.microsoft.com/api/v2/pricing/cognitive-services/calculator/?culture=en-us&discount=mca"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l8v / r2-model-corrections",
+  "verifier_verdict": "price confirmed by calculator API; end date from l8v read only",
+  "supersedes": null
+ },
+ {
+  "id": "REN-01",
+  "section": "REN",
+  "round": 2,
+  "claim": "Value to the intermediary of one incremental saved renewal (this year's commission), p50 [p10-p90]: 2W 265 [162-413]; 4W 2,415 [1,440-3,881]; health 2,737 [1,865-3,848]; life years 2+ 1,941 [1,170-3,125]",
+  "value": "265 / 2,415 / 2,737 / 1,941",
+  "unit": "INR per saved renewal",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-model.json",
+   "https://irdai.gov.in (Handbook 2024-25 zip; copy downloaded by round-1 l3v to session scratchpad irdai/zip/hb2425.zip)",
+   "https://irdai.gov.in/handbook-of-indian-insurance"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (commission rates are assumption-anchored)",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "weakened (life skewed high; health ~15% lower after post-GST cuts)",
+  "supersedes": "REN-05 basis"
+ },
+ {
+  "id": "REN-02",
+  "section": "REN",
+  "round": 2,
+  "claim": "Life years 2+ value per save at observed private renewal-commission rates (c ~ tri(1%, 2.5%, 5%))",
+  "value": "~1,040 [570-1,820]; 3-year ~2,550",
+  "unit": "INR per saved renewal",
+  "source_urls": [
+   "lanes/l2-economics/round2/verify.md",
+   "https://cafemutual.com/news/insurance/38077-who-are-the-top-pay-masters-in-first-year-renewal-and-single-premium-policies"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (verifier variant)",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal (verifier)",
+  "verifier_verdict": "verifier correction",
+  "supersedes": "REN-01 (life)"
+ },
+ {
+  "id": "REN-03",
+  "section": "REN",
+  "round": 2,
+  "claim": "Observed life renewal-commission ratios FY26: industry 3.7% (FY25 4.1%); LIC 5.1%; every private insurer 0-3.2% (HDFC Life 1.6%, ICICI Pru 2.1%, Axis Max 2.1%, SBI Life 2.5%, Tata AIA 3.2%)",
+  "value": "private 0-3.2%",
+  "unit": "renewal commission / renewal premium",
+  "source_urls": [
+   "https://cafemutual.com/news/insurance/38077-who-are-the-top-pay-masters-in-first-year-renewal-and-single-premium-policies",
+   "https://cafemutual.com/news/insurance/36617-which-life-insurers-paid-the-highest-commission-on-first-year-renewal-and-single-premium-policies"
+  ],
+  "date": "2026-06-28",
+  "method": "read-secondary (analysis of public disclosures)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal (verifier)",
+  "verifier_verdict": "verifier source",
+  "supersedes": null
+ },
+ {
+  "id": "REN-04",
+  "section": "REN",
+  "round": 2,
+  "claim": "From 2025-10-01 insurers reportedly cut distributor commissions on retail health and individual life by ~15-18% after the GST exemption removed input tax credit",
+  "value": "~15-18%",
+  "unit": "commission cut",
+  "source_urls": [
+   "https://www.business-standard.com/finance/insurance/icici-lombard-care-health-aditya-birla-cut-commissions-post-gst-125100101265_1.html",
+   "https://www.business-standard.com/amp/finance/insurance/life-insurers-cut-agents-slice-to-give-customers-the-full-gst-pie-125100300965_1.html"
+  ],
+  "date": "2025-10-01",
+  "method": "read-secondary (search snippets; pages 403)",
+  "n": null,
+  "confidence": "low",
+  "lane": "r2-economics-renewal (verifier)",
+  "verifier_verdict": "low-confidence verifier source",
+  "supersedes": null
+ },
+ {
+  "id": "REN-05",
+  "section": "REN",
+  "round": 2,
+  "claim": "Round-1 value gate (INR 1,000-30,000 per save) mixed the intermediary's commission with the insurer's retained premium; only the commission is the intermediary's value",
+  "value": "gate mis-specified",
+  "unit": "finding",
+  "source_urls": [
+   "lanes/l3-segments/value-gate.csv",
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "confirmed",
+  "supersedes": "SYN1-02"
+ },
+ {
+  "id": "REN-06",
+  "section": "REN",
+  "round": 2,
+  "claim": "Per-minute pricing at INR 6-8 per AI minute loses money at launch in every renewal line: GM -47% to +1% against an all-in cost of ~INR 7.9-8.8 per AI minute (COGS 5.9 + VP-borne escalation 1.5-2.2 + WhatsApp 0.16-0.29 + 1600 adder 0.15); -8% to +21% if the buyer staffs escalations; -1% to +35% at 1M min/month with corrected COGS",
+  "value": "-47% to +1%",
+  "unit": "launch gross margin",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-results.csv",
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (escalation load is an assumption)",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "weakened (conclusion stands; attribution corrected)",
+  "supersedes": "SYN1-01"
+ },
+ {
+  "id": "REN-07",
+  "section": "REN",
+  "round": 2,
+  "claim": "Per renewal collected, 4W motor at INR 50: launch GM 66.5%, P(GM>=40%) 0.991; P(buyer gains vs no calling) 0.989; vs own desk 0.60 (talk method) / 0.69 (seat method); yield ~INR 23.5 per AI minute; 58% GM if only renewals after the first AI attempt are billed",
+  "value": "GM 66.5%",
+  "unit": "launch gross margin",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-pricing-grid.csv",
+   "lanes/l2-economics/round2/renewal-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "weakened overall; 4W robust to every verifier variant",
+  "supersedes": null
+ },
+ {
+  "id": "REN-08",
+  "section": "REN",
+  "round": 2,
+  "claim": "Health at INR 15 per renewal collected: launch GM 45.3% (P>=40% 0.649), scale GM 62% with corrected COGS; 22% if only post-first-attempt renewals are billed (then INR 19 needed)",
+  "value": "GM 45.3% (22% post-first-attempt)",
+  "unit": "launch gross margin",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-pricing-grid.csv",
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "weakened",
+  "supersedes": null
+ },
+ {
+  "id": "REN-09",
+  "section": "REN",
+  "round": 2,
+  "claim": "Life at INR 15: launch GM 33% (50% at INR 20); at observed private renewal commission P(buyer gains vs desk) falls to 0.40 and the rule picks INR 10, where GM is about -0.5% - life fails at launch like 2W",
+  "value": "fails at observed commission",
+  "unit": "finding",
+  "source_urls": [
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (verifier variant)",
+  "n": 20000,
+  "confidence": "low-medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "weakened",
+  "supersedes": null
+ },
+ {
+  "id": "REN-10",
+  "section": "REN",
+  "round": 2,
+  "claim": "2W at INR 20: launch GM 12.7% (P>=40% 0.074); 40%-GM floor INR 29.1 vs ceiling 35.5; floor falls to INR 22 if the buyer staffs escalations",
+  "value": "GM 12.7%",
+  "unit": "launch gross margin",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-pricing-grid.csv",
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "low-medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "weakened (exclusion partly an artefact of the escalation assumption)",
+  "supersedes": null
+ },
+ {
+  "id": "REN-11",
+  "section": "REN",
+  "round": 2,
+  "claim": "Renewals that arrive before the first AI attempt are 19-29% of billed renewals under 'per renewal collected on the AI-worked list' (4W 19%, 2W 21%, health 29%, life 29%)",
+  "value": "19-29%",
+  "unit": "share of billed renewals",
+  "source_urls": [
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal (verifier)",
+  "verifier_verdict": "verifier finding",
+  "supersedes": null
+ },
+ {
+  "id": "REN-12",
+  "section": "REN",
+  "round": 2,
+  "claim": "The INR 15k monthly minimum is a judgement call: it exceeds modelled usage below ~935 due renewals a month (~1,150 in the trough month); for a 150-due agency it is 7x usage and 2.2x its whole commission gain",
+  "value": "~935 due/month threshold",
+  "unit": "due renewals per month",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-buyers.csv",
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal (verifier)",
+  "verifier_verdict": "verifier finding",
+  "supersedes": null
+ },
+ {
+  "id": "REN-13",
+  "section": "REN",
+  "round": 2,
+  "claim": "Months for a 10% holdout to detect the median modelled lift at 1,500 due a month: 2W 2.9, 4W 5.4, health 25.8, life 20.7 (mode baseline, no seasonality or clustering)",
+  "value": "2.9 / 5.4 / 25.8 / 20.7",
+  "unit": "months",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-mde.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "confirmed (arithmetic re-checked)",
+  "supersedes": null
+ },
+ {
+  "id": "REN-14",
+  "section": "REN",
+  "round": 2,
+  "claim": "Kill criterion 1 bridge: a 3-seat renewal desk works about 6,800 due renewals a month in 4W, health or life (~16,000 in 2W); INR 1.1-1.5 lakh a month needs 6,850-9,350 due on a mixed book (INR 16.05 per due; 3,700-16,000 depending on mix)",
+  "value": "~6,800",
+  "unit": "due renewals per month",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-buyers.csv",
+   "lanes/l2-economics/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (every input an assumption)",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "confirmed",
+  "supersedes": "r1 KC1 '>=3 renewal telecallers'"
+ },
+ {
+  "id": "REN-15",
+  "section": "REN",
+  "round": 2,
+  "claim": "Whether AI is cheaper than the buyer's own desk depends on unmeasured desk productivity: P(AI cheaper) 0.00-0.03 under talk-minute costing, 0.15-0.94 under seat costing",
+  "value": "0.00-0.94",
+  "unit": "probability",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-results.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "low",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "confirmed (correctly hedged)",
+  "supersedes": null
+ },
+ {
+  "id": "REN-16",
+  "section": "REN",
+  "round": 2,
+  "claim": "IRDAI Handbook FY25: brokers hold 49.50% of motor gross direct premium (INR 49,052 of 99,093 Cr), 13.06% of individual health policies and 3.85% of individual life new business; agents 65.94% (health) and 72.59% (life)",
+  "value": "49.5% of motor premium",
+  "unit": "channel share",
+  "source_urls": [
+   "https://irdai.gov.in (Handbook 2024-25 zip; copy downloaded by round-1 l3v to session scratchpad irdai/zip/hb2425.zip)",
+   "https://irdai.gov.in/handbook-of-indian-insurance"
+  ],
+  "date": "2026-02-03",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "confirmed (verifier re-read Part V)",
+  "supersedes": null
+ },
+ {
+  "id": "REN-17",
+  "section": "REN",
+  "round": 2,
+  "claim": "IMFs are tiny renewal books: 799 IMFs at 31-03-2025 (Handbook T98) produced 59,809 health and 33,915 life policies in FY25, about 75 health and 42 life each; the live register lists 940 IMFs, 496 with a current validity date",
+  "value": "~75 health + ~42 life per IMF per year",
+  "unit": "policies",
+  "source_urls": [
+   "https://irdai.gov.in (Handbook 2024-25 zip; copy downloaded by round-1 l3v to session scratchpad irdai/zip/hb2425.zip)",
+   "https://irdai.gov.in/handbook-of-indian-insurance",
+   "https://irdai.gov.in/list-of-imfs",
+   "founder-kit/strata.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary + computed",
+  "n": 799,
+  "confidence": "high",
+  "lane": "r2-economics-renewal / r2-founder-kit",
+  "verifier_verdict": "confirmed with denominator correction (799 not 940)",
+  "supersedes": "r2 package '64 health / 36 life per IMF'; l3 '940 IMFs' as active pool"
+ },
+ {
+  "id": "REN-18",
+  "section": "REN",
+  "round": 2,
+  "claim": "Policybazaar health renewal persistency by number of policies: overall 79% (FY23) -> 87% (FY26) -> 88.9% (JFM'26); first renewal 71 -> 85 -> 86.6%; first-renewal leakage 13.4-15%",
+  "value": "87-88.9% overall",
+  "unit": "renewal rate (NOP)",
+  "source_urls": [
+   "https://www.pbfintech.in/pdf/investor-presentation-11052026-pbfl.pdf",
+   "https://www.pbfintech.in/pdf/annual-report-fy26-pbfintech.pdf",
+   "https://www.pbfintech.in/pdf/transcript-q1fy27.pdf"
+  ],
+  "date": "2026-05-11",
+  "method": "read-primary (company disclosure, unaudited)",
+  "n": null,
+  "confidence": "medium-high",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "confirmed (wording corrected)",
+  "supersedes": null
+ },
+ {
+  "id": "REN-19",
+  "section": "REN",
+  "round": 1,
+  "claim": "Star Health retail health renewal premium ratio (premium basis, not policy count)",
+  "value": "95% / 98.4% / 97% (FY23-25)",
+  "unit": "renewal ratio by premium",
+  "source_urls": [
+   "https://nsearchives.nseindia.com/corporate/STARHEALTH_29042025194646_PresentationQ4FY2025.pdf"
+  ],
+  "date": "2025-04-29",
+  "method": "read-secondary (search snippet of filing)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l3v / r2-economics-renewal",
+  "verifier_verdict": "basis confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "REN-20",
+  "section": "REN",
+  "round": 2,
+  "claim": "About 56% of registered vehicles are uninsured: 16.54 of 30.48 crore (MoRTH data via Lok Sabha reply; cited in the 2026 SC TP-tenure judgment)",
+  "value": "~56%",
+  "unit": "share of vehicles",
+  "source_urls": [
+   "https://www.livelaw.in/top-stories/supreme-court-directs-increase-of-third-party-insurance-of-cars-to-4-two-wheelers-to-6-years-544306",
+   "https://studycafe.in/no-proposal-for-on-spot-third-party-insurance-cover-for-motor-vehicle-by-government-205776.html"
+  ],
+  "date": "2026-08-04",
+  "method": "read-secondary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "not separately verified (MoRTH/IIB blocked)",
+  "supersedes": null
+ },
+ {
+  "id": "REN-21",
+  "section": "REN",
+  "round": 1,
+  "claim": "Life persistency at 31-03-2025 by policy count: LIC 13th month 64.1%, 61st 50.3%; private median 77% / 50.6%; LIC 68.6 lakh lapses or forfeitures in FY25 (wrong buyer and line for the beachhead)",
+  "value": "64.1% / 77%",
+  "unit": "13th-month persistency",
+  "source_urls": [
+   "https://irdai.gov.in/handbook-of-indian-insurance"
+  ],
+  "date": "2025-03-31",
+  "method": "read-primary",
+  "n": 21,
+  "confidence": "high",
+  "lane": "l3 / l3v",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "REN-22",
+  "section": "REN",
+  "round": 2,
+  "claim": "Policybazaar guides ~80% contribution margin on renewal revenue (INR 935 Cr FY26); HSIE models renewal commission 6.5-7.0% and premium persistency 57-61% (FY24-28E)",
+  "value": "~80% margin",
+  "unit": "contribution margin",
+  "source_urls": [
+   "https://www.pbfintech.in/pdf/investor-presentation-11052026-pbfl.pdf",
+   "https://www.hdfcsec.com/hsl.docs/PB%20Fintech%20-%20Update%20-%20Jun26%20-%20HSIE-202606010635031047409.pdf"
+  ],
+  "date": "2026-06-01",
+  "method": "read-primary + read-secondary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal / r2-competition-measured",
+  "verifier_verdict": "not separately verified",
+  "supersedes": null
+ },
+ {
+  "id": "REN-23",
+  "section": "REN",
+  "round": 2,
+  "claim": "PB monthly-mode life plans rose from 11% to 34% of new life policies (FY24 to FY26), so 'per life renewal' fees are ambiguous for modal policies",
+  "value": "11% -> 34%",
+  "unit": "share of new life policies",
+  "source_urls": [
+   "https://www.pbfintech.in/pdf/annual-report-fy26-pbfintech.pdf"
+  ],
+  "date": "2026",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal (verifier)",
+  "verifier_verdict": "verifier finding",
+  "supersedes": null
+ },
+ {
+  "id": "REN-24",
+  "section": "REN",
+  "round": 2,
+  "claim": "IRDAI consultation 'Recalibrating Economics of Insurance Distribution' (23-09-2026; comments due 25-10-2026) proposes one IDE licence and IDE commission caps: individual health renewal/porting 5%; old-vehicle motor OD 10%, TP 2.5%; life renewal 3% (2% below PPT 6); PoSP pay-outs from the IDE's commission",
+  "value": "health renewal 5%; motor OD 10% / TP 2.5%; life 2-3%",
+  "unit": "max commission (proposal)",
+  "source_urls": [
+   "https://irdai.gov.in/web/guest/document-detail?documentId=9852848",
+   "lanes/l4b-measured/round2/irdai-distribution-consultation-excerpts.txt"
+  ],
+  "date": "2026-09-23",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high (text); proposal only",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified (no verifier on this package)",
+  "supersedes": null
+ },
+ {
+  "id": "REN-25",
+  "section": "REN",
+  "round": 2,
+  "claim": "Under the proposed caps the value per save falls to 0.33-0.49 of the modelled value (2W ~116, car ~1,060, health ~915, life ~955); only the car fee stays below the buyer's ceilings",
+  "value": "0.33-0.49x",
+  "unit": "ratio",
+  "source_urls": [
+   "founder-kit/code/caps_sensitivity.py",
+   "founder-kit/interview-guide.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-founder-kit",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "REN-26",
+  "section": "REN",
+  "round": 2,
+  "claim": "Seasonality indices and attempts per customer in the renewal model are assumptions; no monthly due-list data exists",
+  "value": "assumption",
+  "unit": "input",
+  "source_urls": [
+   "lanes/l2-economics/round2/renewal-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "assumption",
+  "n": null,
+  "confidence": "low",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "flagged by package",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-01",
+  "section": "SEG",
+  "round": 1,
+  "claim": "Frozen scorecard: insurance renewals #1 at 3.85; P(top1) 0.92 over 10,000 Dirichlet weightings; the whole 0.40 lead over real estate comes from post_sales_share",
+  "value": "3.85; P(top1) 0.92",
+  "unit": "score",
+  "source_urls": [
+   "lanes/l3-segments/scorecard.csv",
+   "lanes/l3-segments/weights.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 10000,
+  "confidence": "medium",
+  "lane": "l3",
+  "verifier_verdict": "weakened",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-02",
+  "section": "SEG",
+  "round": 2,
+  "claim": "With post_sales_share = 0 (V1): insurance renewals and real estate tie at 3.722 (P(top1) 0.46 vs 0.48); edtech rises to #3; lending collections falls from #4 to #8",
+  "value": "tie 3.722",
+  "unit": "score",
+  "source_urls": [
+   "lanes/l3-segments/scorecard-variants.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 10000,
+  "confidence": "high",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproducible variant beside the frozen scorecard",
+  "supersedes": "SEG-01 (rank claim); SYN1-10"
+ },
+ {
+  "id": "SEG-03",
+  "section": "SEG",
+  "round": 1,
+  "claim": "On the pre-registered multiplicative form S1: insurance renewals #3 (D2C #1, real estate #2); lending #13",
+  "value": "#3",
+  "unit": "rank",
+  "source_urls": [
+   "lanes/l3-segments/scorecard.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "high",
+  "lane": "l3v",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-04",
+  "section": "SEG",
+  "round": 2,
+  "claim": "A symmetric outcome gate removes no segment; D2C stays #3 but has the thinnest headroom (1.8 calls of managed COGS per outcome vs 17-170 for others); a per-minute gate's verdict depends on which market-price statistic is used",
+  "value": "all pass",
+  "unit": "gate",
+  "source_urls": [
+   "lanes/l3-segments/scorecard-variants.csv",
+   "lanes/l3-segments/scorecard-gate-grid.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproducible",
+  "supersedes": "SYNTHESIS r1 'D2C fails a price-floor gate'"
+ },
+ {
+  "id": "SEG-05",
+  "section": "SEG",
+  "round": 1,
+  "claim": "Real-estate triangulated pool ~INR 830 Cr/yr (legs not independent); modelled human spend p50 INR 3,769 Cr",
+  "value": "830 / 3,769",
+  "unit": "INR Cr per year",
+  "source_urls": [
+   "lanes/l3-segments/sizing-triangulated.csv",
+   "lanes/l3-segments/sizing.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "low-medium",
+  "lane": "l3",
+  "verifier_verdict": "weakened",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-06",
+  "section": "SEG",
+  "round": 1,
+  "claim": "Insurance intermediary registers: 874 brokers (791 direct, mostly commercial lines; 696 valid today), 689 corporate agents (mostly banks; 448 non-bank listed, 391 valid), 940 IMFs (496 valid), 23 web aggregators",
+  "value": "874 / 689 / 940 / 23",
+  "unit": "registered entities",
+  "source_urls": [
+   "https://irdai.gov.in/list-of-brokers",
+   "https://irdai.gov.in/list-of-corporate-agents",
+   "https://irdai.gov.in/list-of-imfs",
+   "https://irdai.gov.in/list-of-web-aggregators",
+   "founder-kit/strata.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary + computed",
+  "n": null,
+  "confidence": "high",
+  "lane": "l3 / r2-founder-kit",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-07",
+  "section": "SEG",
+  "round": 1,
+  "claim": "In-reach insurance-renewal pool (round 1)",
+  "value": "~76-96 (central ~83)",
+  "unit": "INR Cr per year",
+  "source_urls": [
+   "lanes/l3-segments/sizing.json",
+   "lanes/l3-segments/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "low-medium",
+  "lane": "l3v",
+  "verifier_verdict": "weakened (lane said 94, range 18-1,118)",
+  "supersedes": "l3 lane INR 94 Cr"
+ },
+ {
+  "id": "SEG-08",
+  "section": "SEG",
+  "round": 1,
+  "claim": "Median modelled AI-handled calls a month per buyer: insurance 9,440, collections 18,728, real estate 6,089 (assumption-driven, probably high)",
+  "value": "9,440 / 18,728 / 6,089",
+  "unit": "calls per month",
+  "source_urls": [
+   "lanes/l6-self-learning/data/power-segment-volumes.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (assumptions)",
+  "n": null,
+  "confidence": "low",
+  "lane": "l6 / l3v",
+  "verifier_verdict": "weakened",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-09",
+  "section": "SEG",
+  "round": 1,
+  "claim": "Share of buyers able to test a +10% relative outcome lift in month one: collections 36%, insurance 22%, real estate 3.5%, D2C 0.7%",
+  "value": "36 / 22 / 3.5 / 0.7%",
+  "unit": "share of buyers",
+  "source_urls": [
+   "lanes/l6-self-learning/data/power-segment-volumes.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "low-medium",
+  "lane": "l6",
+  "verifier_verdict": "weakened (inputs assumption-driven)",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-10",
+  "section": "SEG",
+  "round": 1,
+  "claim": "Lending collections already has at least 8 AI incumbents (Saarthi, Gnani, Credgenics, DPDzero, RevRag, SquadStack, CredResolve, Exotel)",
+  "value": ">=8",
+  "unit": "vendors",
+  "source_urls": [
+   "lanes/l3-segments/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor pages)",
+  "n": 8,
+  "confidence": "medium",
+  "lane": "l3",
+  "verifier_verdict": "weakened (rank claim), vendor count not disputed",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-12",
+  "section": "SEG",
+  "round": 2,
+  "claim": "Expansion sizing p50 (p10-p90), INR Cr/yr, as of 2026-10: S0 beachhead at the price card 107 (89-127), 58 excluding big platforms; S1 insurers' renewal desks ex-LIC 51 (36-72); S2 other BFSI 1600 service calls 166 (94-283); S3 non-BFSI post-sales 1,980 (751-6,163, weakest); all insurance renewal calling incl LIC 211 (154-288)",
+  "value": "107 / 51 / 166 / 1,980",
+  "unit": "INR Cr per year",
+  "source_urls": [
+   "lanes/l2-economics/round2/expansion-sizing.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "low-medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "not verified (verifier scope did not cover sizing)",
+  "supersedes": "SEG-07 as the beachhead pool figure"
+ },
+ {
+  "id": "SEG-13",
+  "section": "SEG",
+  "round": 2,
+  "claim": "Incumbent-revenue reconciliation: implied Indian voice-agent revenue ~INR 148 Cr (132-165), about 1.5% of the l3 total SAM",
+  "value": "~148 (1.54% of SAM)",
+  "unit": "INR Cr",
+  "source_urls": [
+   "lanes/l2-economics/round2/incumbent-reconciliation.csv",
+   "lanes/l4a-competitors/data/company-financials.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (MCA-via-press revenue x assumed voice shares)",
+  "n": 14,
+  "confidence": "low-medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "SEG-14",
+  "section": "SEG",
+  "round": 2,
+  "claim": "TRAI cross-check corrected: bottom-up BFSI post-sales minutes / (1600 minutes x in-reach share) p50 5.59 (1.52-22.49); either the seat model is ~3-6x high or in-reach calling runs off-series (10-digit numbers)",
+  "value": "5.59",
+  "unit": "ratio",
+  "source_urls": [
+   "lanes/l2-economics/round2/trai-reconciliation.csv",
+   "https://www.trai.gov.in/sites/default/files/2026-08/PR_No111of2026.pdf"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal",
+  "verifier_verdict": "not verified",
+  "supersedes": "l3 'bottom-up reconciles with TRAI within 1.35x'"
+ },
+ {
+  "id": "CMP-01",
+  "section": "CMP",
+  "round": 1,
+  "claim": "On headline features the platforms are at parity: 10-12 of 12 document campaigns, inbound, transfer, knowledge base, tools, extraction and analytics",
+  "value": "10-12 of 12",
+  "unit": "platforms",
+  "source_urls": [
+   "lanes/l4a-competitors/data/parity.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor docs)",
+  "n": 12,
+  "confidence": "medium",
+  "lane": "l4a",
+  "verifier_verdict": "weakened (marketing contradicts docs on learning/memory)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-02",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Homepage demo agents (not configured platforms), clean-turn p50 with call-clustered 90% CI, US-East vantage via proxy: Ultravox 1,540 (1,328-1,741), Vapi 2,319 (2,116-2,609), ElevenLabs 3,749 (3,482-4,038) ms",
+  "value": "1,540 / 2,319 / 3,749",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l4b-measured/data/measurements.csv",
+   "lanes/l4b-measured/round2/data/summary-by-vendor-r2.csv",
+   "https://www.ultravox.ai",
+   "https://vapi.ai",
+   "https://elevenlabs.io/conversational-ai"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 24,
+  "confidence": "medium",
+  "lane": "l4b",
+  "verifier_verdict": "weakened (CIs must be call-clustered; demos are not platforms)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-03",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Vapi's homepage demo (automatic language detection) answered a Hinglish caller in Gujarati on 17/18 turns and an elderly Hindi caller in Punjabi (Gurmukhi script); ElevenLabs' demo answered Hindi callers in English",
+  "value": "17/18",
+  "unit": "turns",
+  "source_urls": [
+   "lanes/l4b-measured/data/measurements.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 18,
+  "confidence": "medium",
+  "lane": "l4b",
+  "verifier_verdict": "weakened (core confirmed and strengthened)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-04",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Cut-ins at the elderly caller's mid-sentence pause (rendered ~2.4 s of silence, where many humans would also take the turn): 5/6 US-demo calls in round 1; 12 of 13 demo calls across all measured demos after round 2",
+  "value": "12/13",
+  "unit": "calls",
+  "source_urls": [
+   "lanes/l4b-measured/data/measurements.csv",
+   "lanes/l4b-measured/round2/data/measurements.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 13,
+  "confidence": "medium",
+  "lane": "l4b / r2-competition-measured",
+  "verifier_verdict": "weakened in round 1 (pause 2.4 s not 1.6 s)",
+  "supersedes": "SYNTHESIS r1 '5 of 6 calls at a 1.6 s pause'"
+ },
+ {
+  "id": "CMP-05",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Under market babble (~15 dB SNR, Bhojpuri persona only) Ultravox looped its greeting 7 times; Vapi collided on 4 of 9 turns per call; babble is confounded with dialect at n=2 calls per vendor",
+  "value": "7 loops",
+  "unit": "repeats",
+  "source_urls": [
+   "lanes/l4b-measured/data/measurements.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 2,
+  "confidence": "low-medium",
+  "lane": "l4b",
+  "verifier_verdict": "weakened (one sub-claim refuted)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-06",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Sarvam's anonymous homepage widget (EMI-reminder demo persona), 8 calls: clean-turn p50 3,116 ms (90% CI by call 2,717-3,400), p90 3,835 ms, n=46 clean turns; from India likely ~0.3 s faster (estimate)",
+  "value": "3,116",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l4b-measured/round2/data/summary-by-vendor-r2.csv",
+   "https://www.sarvam.ai/products/voice-agents"
+  ],
+  "date": "2026-10-17",
+  "method": "measured (US-East vantage)",
+  "n": 46,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified (no verifier); threshold sensitivity 2,942-3,191 ms",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-07",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Sarvam's EMI-reminder demo agent claimed to be human in 6 of 6 calls where asked 'aap robot ho? AI ho?' (Hindi, Tamil and English)",
+  "value": "6/6",
+  "unit": "calls",
+  "source_urls": [
+   "lanes/l4b-measured/round2/data/sarvam-vendor-transcripts.md",
+   "lanes/l4b-measured/round2/data/manual-codes-r2.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured (vendor transcript + Azure STT, hand-coded)",
+  "n": 6,
+  "confidence": "high (no human listen yet)",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified; the automatic coder mis-scored it",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-08",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Sarvam's demo held the caller's language: Hindi/Hinglish on 38 of 40 spoken turns to Hindi personas, Tamil (Tanglish) 20/20 to the Tamil-English persona; its ASR transcribed Bhojpuri correctly",
+  "value": "38/40; 20/20",
+  "unit": "turns",
+  "source_urls": [
+   "lanes/l4b-measured/round2/data/summary-by-vendor-r2.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 60,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-09",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Sarvam's demo went silent after the greeting under babble (2/2 calls) and cut into the elderly pause (2/2)",
+  "value": "2/2; 2/2",
+  "unit": "calls",
+  "source_urls": [
+   "lanes/l4b-measured/round2/data/sarvam-vendor-transcripts.md"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 2,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-10",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Other anonymous demos measured in round 2 (English-only): Cartesia p50 1,736 ms (1,616-1,929), Smallest 2,362 (2,284-2,740; never disclosed being AI, evaded 8/8), Deepgram 2,242 (2 calls)",
+  "value": "1,736 / 2,362 / 2,242",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l4b-measured/round2/data/summary-by-vendor-r2.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 18,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-11",
+  "section": "CMP",
+  "round": 2,
+  "claim": "No homepage demo of the 7 measured met the 1.5 s clean-turn p50 bar with a call-clustered CI",
+  "value": "0/7",
+  "unit": "demos",
+  "source_urls": [
+   "lanes/l4b-measured/round2/data/summary-by-vendor-r2.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 7,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-12",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Arrowhead's anonymous demo is broken by a vendor-side CORS bug; Millis needs a port-8080 WebSocket; Ringg and Invorto demos are gated behind phone/LeadSquared forms; Sesame has bot protection; Caller.digital started nothing",
+  "value": "unmeasured",
+  "unit": "demos",
+  "source_urls": [
+   "lanes/l4b-measured/round2/data/gates.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured (access probes)",
+  "n": 6,
+  "confidence": "high",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-13",
+  "section": "CMP",
+  "round": 2,
+  "claim": "At least 10 Indian voice-AI offers market insurance renewal calling; Gnani (Renewal365), SquadStack and Arrowhead publish insurer renewal cases; Policybazaar is a named Ringg client (lead qualification); only a managed per-renewal service for small and mid intermediaries was not found",
+  "value": ">=10 offers",
+  "unit": "vendors",
+  "source_urls": [
+   "lanes/l4b-measured/round2/competition-intermediary.csv",
+   "https://www.gnani.ai/agentic-ai-for-insurance",
+   "https://www.squadstack.ai/industry/insurance",
+   "https://arrowhead.ai/use-cases/insurance",
+   "https://www.ringg.ai/industries/insurance",
+   "https://edesy.in/ai-voice-agent/solutions/insurance-renewal-india",
+   "https://caller.digital/industries/insurance"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor claims)",
+  "n": 10,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": "SYN1-04"
+ },
+ {
+  "id": "CMP-14",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Gnani claims '12M+ total renewals handled' and, for a top-3 general insurer, 52% (private car) and 56% (two-wheeler) lower renewal cost; SquadStack claims a leading general insurer automated 10 lakh+ leads a month and cut renewal costs 60%",
+  "value": "52-60% lower cost",
+  "unit": "vendor claim",
+  "source_urls": [
+   "https://www.gnani.ai/customer-stories/private-car-insurance-renewals",
+   "https://www.gnani.ai/customer-stories/two-wheeler-insurance-renewals",
+   "https://www.squadstack.ai/case-study/success-story-with-leading-general-insurer"
+  ],
+  "date": "2026-10-17",
+  "method": "vendor-claim",
+  "n": null,
+  "confidence": "low",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-15",
+  "section": "CMP",
+  "round": 2,
+  "claim": "The '+10% renewal ratio at Universal Sompo' attributed to LeadSquared plus Invorto is a ~2018 field-sales CRM case with no voice AI; the current LSQ insurance page does not mention it",
+  "value": "no voice AI",
+  "unit": "finding",
+  "source_urls": [
+   "https://www.leadsquared.com/case-studies/increased-new-lead-acquistion/",
+   "https://www.leadsquared.com/crm-for-insurance/"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": "SYN1-12"
+ },
+ {
+  "id": "CMP-16",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Self-serve voice-AI list prices for insurance renewal start around INR 4-10 per connected minute (Edesy 'from $0.04/min', Ringg USD 0.10 self-serve, MyOperator INR 5 + 8/conversation); Caller.digital insurance INR 3-8/min plus INR 1-3 lakh/month platform fee",
+  "value": "~4-10",
+  "unit": "INR per connected minute",
+  "source_urls": [
+   "lanes/l4b-measured/round2/competition-intermediary.csv",
+   "https://caller.digital/pricing",
+   "https://www.ringg.ai/pricing"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor pages)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-17",
+  "section": "CMP",
+  "round": 2,
+  "claim": "Insurers and aggregators run renewals themselves: three vendors publish insurer renewal-automation cases; TurtlemintPro sells renewal reminders to 5 lakh+ advisors; no Indian insurer-to-BPO renewal contract found in one search; RenewBuy blocked (403)",
+  "value": "insurer-direct competition",
+  "unit": "finding",
+  "source_urls": [
+   "lanes/l4b-measured/round2/competition-intermediary.csv",
+   "https://www.turtlemintpro.com/"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor pages)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-competition-measured",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-18",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Enterprise floors: Sarvam Enterprise tiers span 4k-2 lakh min/month; Synthflow from USD 30k/yr; MyOperator sells a managed 'AI Team' plan to SMBs",
+  "value": "varies",
+  "unit": "price floor",
+  "source_urls": [
+   "https://www.sarvam.ai/products/voice-agents/pricing",
+   "https://synthflow.ai/pricing"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4a / l4av",
+  "verifier_verdict": "weakened (mid-market gap narrower than claimed)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-19",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Self-serve vs sales-led revenue per customer: Bolna ~INR 4,900/month (1,050+ paying customers, 75% self-serve) vs Ozonetel ~26-37k, Exotel <=~50k, LeadSquared ~1.7 lakh, Gnani ~2.3 lakh",
+  "value": "~4.9k vs 26k-2.4L",
+  "unit": "INR per month",
+  "source_urls": [
+   "lanes/l4c-incumbents-distribution/data/arpa.csv",
+   "https://techcrunch.com/2026/01/20/bolna-nabs-6-3-million-from-general-catalyst-for-its-india-focused-voice-orchestration-platform/"
+  ],
+  "date": "2026-10-17",
+  "method": "computed from read-secondary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4c",
+  "verifier_verdict": "weakened ('50x' is the extreme pair; pass-through revenue)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-20",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Context field experiments: goal-specific reminders +16% saving while generic reminders did nothing (Karlan et al.); a loan officer's name helped only repeat clients (Karlan, Morten, Zinman); a two-way call raised timely repayment +34.4 pp (LATE; ATE ~16.6-20.1 pp) (Laudenbach et al., n=3,448); none tests AI voice with CRM context",
+  "value": "+16%; +34.4 pp LATE",
+  "unit": "effect",
+  "source_urls": [
+   "https://www.nber.org/bah/2010no3/do-reminders-increase-saving",
+   "https://www.nber.org/papers/w17952",
+   "https://www.ifo.de/DocDL/cesifo1_wp7295.pdf",
+   "lanes/l4c-incumbents-distribution/data/h8-context-evidence.csv"
+  ],
+  "date": "2025",
+  "method": "read-primary",
+  "n": 3448,
+  "confidence": "high",
+  "lane": "l4c",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-21",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Indian SMBs adopt point tools first (Zoho One ~5% of 1M+ paying customers) but 24% of Zoho One buyers start on the suite; LimeChat, WATI and HubSpot now market voice",
+  "value": "~5%; 24%",
+  "unit": "share",
+  "source_urls": [
+   "lanes/l4c-incumbents-distribution/incumbents.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "read-secondary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4c",
+  "verifier_verdict": "weakened",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-22",
+  "section": "CMP",
+  "round": 1,
+  "claim": "CPaaS and telephony vendors sell their own voice bots (Exotel, Ozonetel, Gupshup/Knowlarity, MyOperator, TTBS), so they are infrastructure and competitors, not resellers; LeadSquared's partner channel was high single-digit % of revenue (2021); Zoho Marketplace 'telephony' returns 737 results",
+  "value": "737 results",
+  "unit": "listings",
+  "source_urls": [
+   "lanes/l4c-incumbents-distribution/channels.csv",
+   "https://marketplace.zoho.com/search?searchTerm=telephony",
+   "https://gtmdialogues.substack.com/p/nilesh-patel-ceo-leadsquared"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary / read-secondary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4c",
+  "verifier_verdict": "weakened (core holds)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-23",
+  "section": "CMP",
+  "round": 1,
+  "claim": "BYO-bot telephony paths exist: Exotel AgentStream (WebSocket, 8 kHz PCM), ElevenLabs on Ozonetel SIP, Vobiz (70% of its business from AI-voice startups)",
+  "value": "3 paths",
+  "unit": "paths",
+  "source_urls": [
+   "https://www.voicendata.com/news/exotel-launches-agentstream-to-power-ultra-low-latency-ai-voice-experiences-9655590",
+   "https://elevenlabs.io/sv/agents/integrations/ozonetel",
+   "https://inc42.com/startups/how-vobiz-ai-is-building-the-backbone-of-indias-voice-ai-boom/"
+  ],
+  "date": "2026-10-17",
+  "method": "read-secondary / vendor-claim",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4c",
+  "verifier_verdict": "confirmed (core)",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-24",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Sales cycle: pilots 2-8 weeks (SquadStack FAQ 3-8; Caller.digital 2-4), production 8-12+ weeks; BFSI enterprise has 90-day commitments",
+  "value": "2-8 weeks pilot; 8-12+ production",
+  "unit": "weeks",
+  "source_urls": [
+   "lanes/l4c-incumbents-distribution/channels.csv",
+   "https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams"
+  ],
+  "date": "2026-10-17",
+  "method": "vendor-claim",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4c",
+  "verifier_verdict": "not disputed",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-25",
+  "section": "CMP",
+  "round": 1,
+  "claim": "No primary data on Indian SMB CAC or churn for voice AI; only unverified consultancy estimates (CAC USD 80-250, payback 18-36 months)",
+  "value": "none",
+  "unit": "finding",
+  "source_urls": [
+   "lanes/l4c-incumbents-distribution/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-secondary (bounded negative)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4c",
+  "verifier_verdict": "confirmed gap",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-26",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Inherited outbound funnel (CarbonSettle cold email to Indian exporters, a different ICP): 8,784 sends -> 88 replies (1.0%) -> 21 positive -> 3 meetings -> 0 won",
+  "value": "0 won / 8,784",
+  "unit": "sends",
+  "source_urls": [
+   "docs/harvest/cc-main.md",
+   "docs/harvest/cc-branches.md"
+  ],
+  "date": "2026-09-04",
+  "method": "measured (inherited)",
+  "n": 8784,
+  "confidence": "high (mechanics) / low (transfer)",
+  "lane": "l4c / hv",
+  "verifier_verdict": "n/a",
+  "supersedes": null
+ },
+ {
+  "id": "CMP-27",
+  "section": "CMP",
+  "round": 1,
+  "claim": "Self-serve platforms mostly leave DLT/PE registration, consent and NCPR scrubbing to the buyer (Sarvam: compliance 'is your responsibility'; Bolna has the buyer register on Tata's DLT portal); Exotel states 09:00-21:00 against the primary 10:00-21:00",
+  "value": "buyer-held compliance",
+  "unit": "finding",
+  "source_urls": [
+   "https://docs.sarvam.ai/voice-agents/deploy/campaigns/dnd",
+   "https://www.bolna.ai/docs/obtaining-regulated-phone-numbers",
+   "https://developer.exotel.com/docs/faqs/calling-hours"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l4a / l1",
+  "verifier_verdict": "weakened ('only Sarvam mentions DND' was a scan artefact)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-01",
+  "section": "LAT",
+  "round": 1,
+  "claim": "Round-1 latency from Ohio through a proxy: Voice Live 2.27 s / 2.63 s (gateable), azure-realtime 1.44 s (cannot be gated; answered in English on 6/16 Hinglish turns); own cascade estimated 2.2-4 s",
+  "value": "2.27-2.63 s; est. 2.2-4 s",
+  "unit": "first-audio latency",
+  "source_urls": [
+   "lanes/l8-azure-bench/results/voicelive_summary.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured / estimate",
+  "n": 30,
+  "confidence": "medium",
+  "lane": "l8",
+  "verifier_verdict": "confirmed with caveats; superseded for planning by LAT-02",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-02",
+  "section": "LAT",
+  "round": 2,
+  "claim": "India-resident streaming cascade (config A: Central India STT hi-IN 500 ms segmentation, gpt-4.1-mini South India Standard with async filter, say-first clause with ~22 us code gate, Central India neural TTS), from a Central India VM: clean-turn p50 1,004 ms (CI 989-1,017), p90 1,105 ms, n=48 clean; 58/60 turns answered, all within 1.5 s",
+  "value": "1,004 (p90 1,105)",
+  "unit": "ms (server-side, no telephone leg)",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/cascade_main_summary.csv",
+   "lanes/l8-azure-bench/round2/results/cascade_main_turns_s1.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured (synthetic Azure TTS callers; Saturday 22:36-00:01 IST)",
+  "n": 60,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "weakened (2 unanswered elderly turns; 25-27% collisions; first clause is mostly a 1-2 word acknowledgement)",
+  "supersedes": "LAT-01; SYN1-05"
+ },
+ {
+  "id": "LAT-03",
+  "section": "LAT",
+  "round": 2,
+  "claim": "Speculative variant (config E): p50 823 ms (CI 729-865), p90 1,029; paired vs A -224 ms (CI -259 to -149); the release matcher (string similarity >= 0.85) accepted truncated transcripts on 3/58 turns and negation flips on 4/4 constructed Hindi pairs; ~2x LLM tokens (429s at ~3 sessions)",
+  "value": "823",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/cascade_main_summary.csv",
+   "lanes/l8-azure-bench/round2/results/cascade_main_paired.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 58,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "confirmed with an uncosted hazard",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-04",
+  "section": "LAT",
+  "round": 2,
+  "claim": "Other configs server-side: B (800 ms, no speculation) p50 1,348 / p90 1,454 (passes, ~150 ms p90 headroom); D (gpt-6-sol EU data zone) p50 1,546 (fails); F (gpt-5.4-nano SEA) p50 1,360, p90 1,631",
+  "value": "1,348 / 1,546 / 1,360",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/cascade_main_summary.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 60,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "weakened (package wrongly listed B as failing)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-05",
+  "section": "LAT",
+  "round": 2,
+  "claim": "Collisions by l4b's definition on main turns: A 27%, B 18%, C 37%, D 22%, E 50%, F 23%, against kill criterion 6's <=5%; cut-ins on 0.9-1.3 s mid-turn pauses 17-100%; 0/30 on turns without a >=0.5 s pause; every config took the turn in the elderly 2.4 s pause (12/12)",
+  "value": "18-50% (bar <=5%)",
+  "unit": "collision rate",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/cascade_main_cutins_by_pause.csv",
+   "lanes/l8-azure-bench/round2/results/clip_pauses.csv",
+   "lanes/l8-azure-bench/round2/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 60,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "confirmed (counter misses a few talk-overs)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-06",
+  "section": "LAT",
+  "round": 2,
+  "claim": "A quiet elderly 'hmm' (0.45 s) was never transcribed by Azure STT in any arm, so the agent stayed silent to the 12 s deadline (2 of 60 turns unanswered)",
+  "value": "0/2 transcribed",
+  "unit": "turns",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/stt_india.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 2,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-07",
+  "section": "LAT",
+  "round": 2,
+  "claim": "LLM time to first token from Central India, n=33 per arm, ~1.6k-token prompt, async filter: South India Standard gpt-4.1-mini 304 ms (298-322); SEA GS gpt-5.4-nano 577; FRC DZ-EU DeepSeek-V4-Flash 816, gpt-6-luna 883, gpt-6-sol 1,005; APAC DZ gpt-6.1-sol 1,814 (one 8-minute off-peak window)",
+  "value": "304 (fastest of 11 arms)",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/llm_india.csv",
+   "lanes/l8-azure-bench/round2/results/llm_india_summary.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 33,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "confirmed (needs weekday-peak repeat)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-08",
+  "section": "LAT",
+  "round": 2,
+  "claim": "gpt-4.1-mini 2025-04-14 shows lifecycleStatus Legacy (Standard deprecationDate 2027-04-14) in the Models API, but Microsoft's retirement schedule lists it Deprecated (may block subscriptions that never deployed it); the only India-geography Standard chat models (gpt-4.1-mini, gpt-4o 2024-11-20) both retire 2027-04-14",
+  "value": "retires 2027-04-14",
+  "unit": "date",
+  "source_urls": [
+   "https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-retirement-schedule",
+   "https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/model-retirements",
+   "https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/deployment-types"
+  ],
+  "date": "2026-09-21",
+  "method": "read-primary + measured (ARM read)",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "weakened (status conflict; new-subscription risk)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-09",
+  "section": "LAT",
+  "round": 2,
+  "claim": "Voice Live from India (first audio p50, n=30 turns each): gpt-4.1-mini regional 1,377 ms (1,283-1,414); text-gated mode 1,175 ms; azure-realtime 1,616; gpt-realtime-2.1 regional 1,414",
+  "value": "1,377 / 1,175 gated",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/voicelive_india_summary.csv",
+   "https://learn.microsoft.com/en-us/azure/ai-services/speech-service/regions"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 30,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "regions table confirmed; latencies not separately recomputed",
+  "supersedes": "LAT-01 (Voice Live)"
+ },
+ {
+  "id": "LAT-10",
+  "section": "LAT",
+  "round": 2,
+  "claim": "STT endpointing in Central India (hi-IN, phone band): final after speech end p50 450 ms (300 ms segmentation), 622 (500), 985 (800), 848 Semantic (p90 1,609); first partial 924-926 ms after speech start; finals fired inside pauses shorter than the timeout on 3/10 elderly clips",
+  "value": "622 at 500 ms",
+  "unit": "ms",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/stt_india.csv",
+   "lanes/l8-azure-bench/round2/results/stt_india_summary.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 29,
+  "confidence": "medium",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "weakened (6/10 miscounted; true 3/10)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-12",
+  "section": "LAT",
+  "round": 2,
+  "claim": "Network from the Central India VM: TCP connect ~2.6 ms to Central India Speech, 26 ms to South India Azure OpenAI, ~55 ms to Southeast Asia, 124 ms to France Central; Microsoft's table gives Central India -> France Central 135 ms (118 ms is France South)",
+  "value": "2.6 / 26 / 55 / 124",
+  "unit": "ms TCP connect",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/netprobe_summary.csv",
+   "https://learn.microsoft.com/en-us/azure/networking/azure-network-latency"
+  ],
+  "date": "2026-10-17",
+  "method": "measured + read-primary",
+  "n": 30,
+  "confidence": "high",
+  "lane": "r2-latency-india / r2-model-corrections",
+  "verifier_verdict": "confirmed",
+  "supersedes": "l8 'Central India -> France Central 118 ms'"
+ },
+ {
+  "id": "LAT-13",
+  "section": "LAT",
+  "round": 2,
+  "claim": "Caller-perceived latency with the telephone leg is an estimate: Twilio budget 0.23-0.30 s; Indian CPaaS assumed 0.25-0.45 s; config A estimated 1.25-1.45 s p50 at the handset",
+  "value": "1.25-1.45 s",
+  "unit": "estimate",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/results/cascade_main_summary.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "assumption / estimate",
+  "n": null,
+  "confidence": "low",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "not measured",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-14",
+  "section": "LAT",
+  "round": 1,
+  "claim": "Azure continuous language ID labelled Kathbath Hindi as Marathi: 14/60 correct (WER 41%); pinned engines 30-32/32 on short answers",
+  "value": "14/60",
+  "unit": "clips",
+  "source_urls": [
+   "lanes/l8-azure-bench/results"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 60,
+  "confidence": "medium",
+  "lane": "l8",
+  "verifier_verdict": "weakened (gpt-4o failures mostly not wrong-script)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-15",
+  "section": "LAT",
+  "round": 1,
+  "claim": "gpt-4o-transcribe invented words on 17/49 non-speech clips (sound labels excluded; 29/49 with labels); Azure real-time and fast transcription 0/49",
+  "value": "17/49",
+  "unit": "clips",
+  "source_urls": [
+   "lanes/l8-azure-bench/results"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 49,
+  "confidence": "medium",
+  "lane": "l8",
+  "verifier_verdict": "weakened (sound labels and no language hint)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-16",
+  "section": "LAT",
+  "round": 1,
+  "claim": "Open ASR fabricates on non-speech: 30/30 clips; Qwen3-ASR wrote 'हाँ' on 24/25 non-babble clips; whisper wrote 'झाल' on 22/25",
+  "value": "30/30; 24/25; 22/25",
+  "unit": "clips",
+  "source_urls": [
+   "lanes/l7-tech-frontier/asr_bench"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 30,
+  "confidence": "high",
+  "lane": "l7",
+  "verifier_verdict": "confirmed (whisper count fixed 23->22)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-17",
+  "section": "LAT",
+  "round": 1,
+  "claim": "Generative TTS misread INR 1,299 in 10/13 renders of one preview voice (Diya Dragon); generative 3/99 vs neural 0/80 misreads overall (Fisher p=0.25)",
+  "value": "10/13; 3/99 vs 0/80",
+  "unit": "renders",
+  "source_urls": [
+   "lanes/l8-azure-bench/results/tts_summary.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 179,
+  "confidence": "medium",
+  "lane": "l8",
+  "verifier_verdict": "weakened (not significant overall)",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-19",
+  "section": "LAT",
+  "round": 1,
+  "claim": "No gateable Indic full-duplex speech-to-speech model exists: PersonaPlex, NVIDIA VoiceChat-11B and Moshi are English-only; Azure realtime emits audio before any text gate",
+  "value": "none",
+  "unit": "finding",
+  "source_urls": [
+   "https://huggingface.co/pipecat-ai/phonellm-alpha-1",
+   "lanes/l7-tech-frontier/radar.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (model cards)",
+  "n": null,
+  "confidence": "high",
+  "lane": "l7",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-20",
+  "section": "LAT",
+  "round": 1,
+  "claim": "Inherited (harvest) measurements: end-of-turn p50 1,480 ms against a 900 ms bar; Voice Live empty transcripts on 5/14 short answers; agent lane 4.0-4.8 s p50 end to end; human turn gaps ~0.2 s",
+  "value": "1,480 ms; 5/14; 4.0-4.8 s",
+  "unit": "ms / turns",
+  "source_urls": [
+   "docs/harvest/SYNTHESIS.md"
+  ],
+  "date": "2026-10-15",
+  "method": "measured (owner, inherited)",
+  "n": 14,
+  "confidence": "high (mechanics)",
+  "lane": "hv / l8v",
+  "verifier_verdict": "n/a",
+  "supersedes": null
+ },
+ {
+  "id": "LAT-22",
+  "section": "LAT",
+  "round": 2,
+  "claim": "Round-2 latency resources (VM, AI Services accounts, deployments) were created and deleted inside vp-research-rg on 2026-10-17 (deleted 18:32-18:33 UTC); ~INR 600 spent against the INR 1,500 cap",
+  "value": "~600",
+  "unit": "INR",
+  "source_urls": [
+   "lanes/l8-azure-bench/round2/resources-created.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 21,
+  "confidence": "high",
+  "lane": "r2-latency-india",
+  "verifier_verdict": "deletion verified by ARM list",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-01",
+  "section": "LRN",
+  "round": 1,
+  "claim": "Calls per arm at alpha 0.05, power 0.80: 50%->45% 1,565; 30%->27% 3,554; 20%->15% 906; at 100 calls per arm the minimum detectable drop is 13-19 points",
+  "value": "906-3,554 per arm",
+  "unit": "calls",
+  "source_urls": [
+   "lanes/l6-self-learning/data/power-n-per-arm.csv",
+   "lanes/l6-self-learning/data/power-what-100-tells.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "high",
+  "lane": "l6",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-02",
+  "section": "LRN",
+  "round": 1,
+  "claim": "Daily-checked A/A tests with P(best) >= 0.95 and K=2 variants declare false winners in 52-62% of runs by day 90 (4-14% at K=4, ~20-24% at K=3)",
+  "value": "52-62%",
+  "unit": "false-winner rate",
+  "source_urls": [
+   "lanes/l6-self-learning/data/power-peeking-aa.csv",
+   "lanes/l6-self-learning/verify.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (simulation)",
+  "n": 4000,
+  "confidence": "high",
+  "lane": "l6v",
+  "verifier_verdict": "weakened (lane quoted K=4 only)",
+  "supersedes": "l6 lane '4-14% at any volume'"
+ },
+ {
+  "id": "LRN-03",
+  "section": "LRN",
+  "round": 1,
+  "claim": "Line mining: a line that doubles the hang-up hazard (5%->10%) is flagged 67% of the time at 500 calls and 76-94% at 1,000; only 19-37% at 100-200 calls",
+  "value": "67% at 500",
+  "unit": "detection rate",
+  "source_urls": [
+   "lanes/l6-self-learning/data/dropoff-mining.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (simulation)",
+  "n": 3000,
+  "confidence": "medium",
+  "lane": "l6",
+  "verifier_verdict": "weakened ('works at hundreds' overstated)",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-04",
+  "section": "LRN",
+  "round": 1,
+  "claim": "Confirming a fix that halves a 10% line hazard needs ~435 callers per arm reaching the line (~592 calls per arm)",
+  "value": "~592",
+  "unit": "calls per arm",
+  "source_urls": [
+   "lanes/l6-self-learning/data/dropoff-mining.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l6",
+  "verifier_verdict": "weakened (reference curve assumed known)",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-05",
+  "section": "LRN",
+  "round": 1,
+  "claim": "Thompson sampling with 4 variants and a +10% relative lift at 1,000 calls/day picks the right arm 86-99% of the time, median correct declaration day 18; outcome optimisation needs ~1,000 calls/day per script",
+  "value": "86-99%",
+  "unit": "correct-selection rate",
+  "source_urls": [
+   "lanes/l6-self-learning/data/sim-bandit-summary.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (simulation)",
+  "n": null,
+  "confidence": "high",
+  "lane": "l6",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-06",
+  "section": "LRN",
+  "round": 1,
+  "claim": "Pooling learning across dissimilar tenants gave the wrong winner to 48-55% of tenants under the lane's empirical-Bayes estimator",
+  "value": "48-55%",
+  "unit": "share of tenants",
+  "source_urls": [
+   "lanes/l6-self-learning/data/sim-hierarchical.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (simulation)",
+  "n": 30,
+  "confidence": "medium",
+  "lane": "l6",
+  "verifier_verdict": "weakened (one estimator)",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-07",
+  "section": "LRN",
+  "round": 1,
+  "claim": "If outcome labels come from an LLM judge with 90% accuracy, calls needed rise 1.8-2.4x (3.6-5.5x at 80%); outcome-extraction accuracy on sales transcripts was never measured",
+  "value": "1.8-2.4x",
+  "unit": "sample inflation",
+  "source_urls": [
+   "lanes/l6-self-learning/data/dropoff-label-noise.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l6",
+  "verifier_verdict": "weakened (inherited judge data were companion replies)",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-08",
+  "section": "LRN",
+  "round": 1,
+  "claim": "The only live trial of stored per-contact language preference failed: a correction stored Hindi and the reply came in English",
+  "value": "1 failed trial",
+  "unit": "trial",
+  "source_urls": [
+   "docs/harvest/hp-handoffs.md"
+  ],
+  "date": "2026-08",
+  "method": "measured (owner, inherited)",
+  "n": 1,
+  "confidence": "high",
+  "lane": "l6 / hv",
+  "verifier_verdict": "n/a",
+  "supersedes": null
+ },
+ {
+  "id": "LRN-09",
+  "section": "LRN",
+  "round": 1,
+  "claim": "Vendor experimentation: Retell, Vapi, ElevenLabs and Bland ship fixed traffic splits with manual promotion and no statistics; SquadStack markets a self-improvement layer that 'continuously tunes agent scripts'; Bland's Tornado loop applies fixes",
+  "value": "no statistics",
+  "unit": "finding",
+  "source_urls": [
+   "https://docs.retellai.com/deploy/ab-testing.md",
+   "https://docs.vapi.ai/assistants/versioning/traffic-splitting.md",
+   "https://elevenlabs.io/docs/eleven-agents/operate/experiments.md",
+   "https://docs.bland.ai/llms.txt",
+   "https://www.squadstack.ai/"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor docs)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l6",
+  "verifier_verdict": "weakened (counter-examples exist)",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-01",
+  "section": "HUM",
+  "round": 1,
+  "claim": "Disclosing an AI voice bot before an outbound sales call cut the purchase rate from 0.237 to 0.048 and 56.3% hung up within 5 s (Luo et al. 2019, pre-2019 experiment, n=6,255)",
+  "value": "0.237 -> 0.048",
+  "unit": "purchase rate",
+  "source_urls": [
+   "doi:10.1287/mksc.2019.1192",
+   "lanes/l5-human-dialect/evidence.csv"
+  ],
+  "date": "2019",
+  "method": "read-primary",
+  "n": 6255,
+  "confidence": "high",
+  "lane": "l5",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-02",
+  "section": "HUM",
+  "round": 1,
+  "claim": "Habel, Zawadzki, Freise 2026 (SSRN 7013259, abstract via Crossref): disclosure no longer reduces conversion (n=1,337); AI voice agents still underperform humans on sales-process discipline (n=366); customers recognise AI regardless of disclosure (n=238) and are less willing to continue the conversation",
+  "value": "null disclosure effect",
+  "unit": "finding",
+  "source_urls": [
+   "doi:10.2139/ssrn.7013259",
+   "lanes/l5-human-dialect/evidence.csv"
+  ],
+  "date": "2026-07-20",
+  "method": "read-secondary (abstract only; setting unknown)",
+  "n": 1337,
+  "confidence": "medium",
+  "lane": "l5",
+  "verifier_verdict": "confirmed at abstract level",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-03",
+  "section": "HUM",
+  "round": 1,
+  "claim": "AI vs human collectors (NBER WP 33669; scripted bot, China, 2021-23): NPV -9 pp at ~1 month (RD), -12 pp by day 5 (randomised); AI not hung up on more within 10 s; conversations 31 s shorter; 21 pp fewer promises; the promise channel 'may contribute'",
+  "value": "-9 / -12 pp",
+  "unit": "NPV collected",
+  "source_urls": [
+   "NBER WP 33669 (Choi, Huang, Yang, Zhang 2025)",
+   "lanes/l5-human-dialect/evidence.csv"
+  ],
+  "date": "2025-04",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "high (numbers) / medium (mechanism)",
+  "lane": "l5",
+  "verifier_verdict": "weakened (causal framing)",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-04",
+  "section": "HUM",
+  "round": 1,
+  "claim": "Vendor-funded study of ~99,400 US survey calls, all opening with AI disclosure: intro hang-up 87.9-90.3% across TTS vendors (range 2.4 pp)",
+  "value": "<=2.4 pp",
+  "unit": "hang-up difference",
+  "source_urls": [
+   "https://www.rime.ai/resources/which-ai-voice-keeps-people-on-the-phone"
+  ],
+  "date": "2026",
+  "method": "vendor-claim",
+  "n": 99400,
+  "confidence": "low-medium",
+  "lane": "l5",
+  "verifier_verdict": "not disputed (vendor-funded)",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-05",
+  "section": "HUM",
+  "round": 1,
+  "claim": "Anthropomorphic chatbots lower satisfaction and purchase intent for customers who arrive angry (Crolic et al.); humanising raised conversion but also raised scrutiny (Schanke et al.)",
+  "value": "backfire when angry",
+  "unit": "finding",
+  "source_urls": [
+   "doi:10.1177/00222429211045687",
+   "doi:10.1287/isre.2021.1015"
+  ],
+  "date": "2021",
+  "method": "read-secondary (abstracts) / read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "l5",
+  "verifier_verdict": "not disputed",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-06",
+  "section": "HUM",
+  "round": 2,
+  "claim": "Tamil named in Apna phone-job postings after removing the 'Tamil Nadu' address artefact: Chennai 121/360 (33.6%), Coimbatore 19/78 (24.4%) in free text (upper bound; 20.6% / 15.4% in Apna's structured field); Hyderabad Telugu 39.8%, Bengaluru Kannada 34.3%",
+  "value": "33.6% / 24.4%",
+  "unit": "share of postings",
+  "source_urls": [
+   "lanes/l5-human-dialect/job-language-requirements-by-city.csv",
+   "lanes/l5-human-dialect/job-language-structured-field-by-city.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (crawl)",
+  "n": 6454,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "verifier figures reproduced",
+  "supersedes": "l5 lane 82.8% / 91.0%"
+ },
+ {
+  "id": "HUM-07",
+  "section": "HUM",
+  "round": 2,
+  "claim": "Dialect asks in Hindi-belt phone-job postings: 1 (Marwari, a Jaipur NBFC collections role) in 828 postings across 29 cities",
+  "value": "1/828",
+  "unit": "postings",
+  "source_urls": [
+   "lanes/l5-human-dialect/job-language-requirements-by-city.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": 828,
+  "confidence": "medium",
+  "lane": "r2-model-corrections",
+  "verifier_verdict": "reproduced",
+  "supersedes": "l5 '1 in ~460'"
+ },
+ {
+  "id": "HUM-08",
+  "section": "HUM",
+  "round": 1,
+  "claim": "Azure has Bhojpuri (bho-IN) speech-to-text but no text-to-speech locale for any Hindi-belt dialect; ta-IN has only 2 voices; no Bhojpuri TTS on Azure, Sarvam, IndicF5 or Indic Parler",
+  "value": "bho-IN STT only",
+  "unit": "capability",
+  "source_urls": [
+   "lanes/l5-human-dialect/azure-voices-indic-2026-10-17.csv",
+   "lanes/l5-human-dialect/evidence.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary + measured",
+  "n": 72,
+  "confidence": "high",
+  "lane": "l5",
+  "verifier_verdict": "confirmed",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-09",
+  "section": "HUM",
+  "round": 1,
+  "claim": "Bhojpuri marker words recovered from stock hi-IN voices under bho-IN ASR: 8-10/13 strict, 11-12/13 lenient (LLM-written stimulus, n=1 script, unreviewed)",
+  "value": "8-10/13 strict",
+  "unit": "markers",
+  "source_urls": [
+   "lanes/l5-human-dialect/samples"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 13,
+  "confidence": "low",
+  "lane": "l5",
+  "verifier_verdict": "weakened",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-11",
+  "section": "HUM",
+  "round": 2,
+  "claim": "'Policyholders skew older and Hindi-belt' (SYNTHESIS r1 §1.1 item 9): no source found in round 1 or round 2",
+  "value": "unsourced",
+  "unit": "assumption",
+  "source_urls": [],
+  "date": "2026-10-17",
+  "method": "assumption",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis",
+  "verifier_verdict": "unsourced (critic A17); relabelled as assumption in v2",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-12",
+  "section": "HUM",
+  "round": 2,
+  "claim": "'Renewal lists come as spreadsheets': no direct source; weak vendor evidence only (LSQ's Universal Sompo case says renewal data was in Excel before ~2018; Alliance Insurance Brokers runs its renewal team on LSQ CRM)",
+  "value": "weak",
+  "unit": "assumption",
+  "source_urls": [
+   "https://www.leadsquared.com/case-studies/increased-new-lead-acquistion/",
+   "https://www.leadsquared.com/case-studies/alliance-insurance-brokers-improves-agent-productivity"
+  ],
+  "date": "2026-10-17",
+  "method": "assumption + vendor-claim",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis / r2-competition-measured",
+  "verifier_verdict": "unsourced (critic A17); interview probe",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-13",
+  "section": "HUM",
+  "round": 2,
+  "claim": "'Fewer sub-10-s hang-ups means fewer spam flags' (r1 gap map): the naturalness-to-hang-up link is weak (AI not hung up more within 10 s) and short-call share separates spam only weakly (25% genuine vs 43% spam); 1600 CLIs cannot be flagged anyway",
+  "value": "weak link",
+  "unit": "finding",
+  "source_urls": [
+   "https://www.trai.gov.in/sites/default/files/2026-04/Airtels%20Response%20to%20Draft%20TCCCP%20%283rd%20Amendment%29%20Regulations%2C%202026.pdf"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary + interpretation",
+  "n": null,
+  "confidence": "medium",
+  "lane": "synthesis / r2-untouched-raw",
+  "verifier_verdict": "relabelled (critic A17)",
+  "supersedes": "r1 gap-map spam-flag row rationale"
+ },
+ {
+  "id": "HUM-14",
+  "section": "HUM",
+  "round": 2,
+  "claim": "Listener panel v2: all 8 rated turns are renewal calls; primary panels Hindi 60+ (48 analysed) and 18-59 (36); 210 Azure clips rendered (phone band and wideband); two-engine key-token ASR check passed 208/210; no person has heard any clip; owner cost ~INR 1.21-1.54 lakh for the main four panels",
+  "value": "210 clips; 208 passed",
+  "unit": "clips",
+  "source_urls": [
+   "listener-panel/protocol.md",
+   "listener-panel/panel-predictions.md",
+   "lanes/l8-azure-bench/stimuli-round2/manifest.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured (render QA) + plan",
+  "n": 210,
+  "confidence": "high (design facts)",
+  "lane": "r2-listener-panel",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "HUM-15",
+  "section": "HUM",
+  "round": 2,
+  "claim": "Tamil text normalisation read vehicle digits plus a date as '47 September 2,928' in all 4 Tamil voices; commas fixed it (product rule: a number regression test per locale); HD voices misread 2/102 amounts on first render vs 0/50 neural (not significant)",
+  "value": "4/4 voices",
+  "unit": "renders",
+  "source_urls": [
+   "lanes/l8-azure-bench/stimuli-round2/qa-attempts.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured",
+  "n": 152,
+  "confidence": "medium",
+  "lane": "r2-listener-panel",
+  "verifier_verdict": "not verified",
+  "supersedes": null
+ },
+ {
+  "id": "FK-01",
+  "section": "FK",
+  "round": 2,
+  "claim": "Interview sample re-stratified to the pool: 20 active insurance targets = A small/mid retail brokers 6, B non-bank corporate agents 5, C IMFs 6, D large brokers/platforms 3; 9 new companies confirmed in live IRDAI registers (2026-10-17 20:08 UTC); 5 rows from a seeded random register draw; wave 1 on 2026-10-19 = A5/B4/C4/D2",
+  "value": "6 / 5 / 6 / 3",
+  "unit": "targets",
+  "source_urls": [
+   "founder-kit/targets.csv",
+   "founder-kit/strata.csv",
+   "founder-kit/register-sample-frame.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "measured (register fetch) + plan",
+  "n": 20,
+  "confidence": "high",
+  "lane": "r2-founder-kit",
+  "verifier_verdict": "not verified",
+  "supersedes": "round-1 kit (13 brokers, 4 PoSP platforms, 2 CAs, 1 IMF)"
+ },
+ {
+  "id": "FK-02",
+  "section": "FK",
+  "round": 2,
+  "claim": "Kill criterion 2 restated as per-line 40%-launch-margin fee floors: 2W INR 29, car 28, health 14, life 17 (car 35, health 19, life 24 if only post-first-attempt renewals are billable); the INR 150-per-save floor is retired",
+  "value": "29 / 28 / 14 / 17",
+  "unit": "INR per renewal collected",
+  "source_urls": [
+   "founder-kit/scoring.md",
+   "founder-kit/kc-answer-sheet.md",
+   "lanes/l2-economics/round2/renewal-pricing-grid.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (pre-registered)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-founder-kit",
+  "verifier_verdict": "not verified",
+  "supersedes": "SYN1-02"
+ },
+ {
+  "id": "FK-03",
+  "section": "FK",
+  "round": 2,
+  "claim": "Kill criterion 3 restated as per-line break-even no-call renewal ratios: 2W 63%, car 96%, health 97%, life 93% (round-1 90% line also reported)",
+  "value": "63 / 96 / 97 / 93%",
+  "unit": "no-call renewal ratio",
+  "source_urls": [
+   "founder-kit/kc-answer-sheet.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (pre-registered)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "r2-founder-kit",
+  "verifier_verdict": "not verified",
+  "supersedes": "r1 KC3 '>=90% without calling'"
+ },
+ {
+  "id": "FK-04",
+  "section": "FK",
+  "round": 2,
+  "claim": "Kill criterion 1 decision rule: fires if the firm-weighted share of firms at or above ~6,800 due a month (or 3x their own due-per-caller) is below 1/3, weights A/B/C 0.21/0.26/0.52, >=3 in-scope interviews per stratum; if the volume-weighted share is >=1/3 the beachhead moves to the larger strata instead of dying",
+  "value": "p_firm < 1/3",
+  "unit": "decision rule",
+  "source_urls": [
+   "founder-kit/scoring.md",
+   "founder-kit/kc-answer-sheet.md"
+  ],
+  "date": "2026-10-17",
+  "method": "pre-registered rule",
+  "n": null,
+  "confidence": "high",
+  "lane": "r2-founder-kit",
+  "verifier_verdict": "not verified",
+  "supersedes": "r1 KC1 '<5 of 15 run >=3 renewal telecallers'"
+ },
+ {
+  "id": "FK-05",
+  "section": "FK",
+  "round": 2,
+  "claim": "Concept-test price card: INR 50 per car renewal, 15 per health or life renewal, 20 per bike renewal collected on the AI-worked list; INR 15k monthly minimum credited against usage; 10% holdout never billed",
+  "value": "50 / 15 / 15 / 20; 15k minimum",
+  "unit": "INR",
+  "source_urls": [
+   "founder-kit/interview-guide.md",
+   "lanes/l2-economics/round2/renewal-model.json"
+  ],
+  "date": "2026-10-17",
+  "method": "computed (decision rule on the Monte Carlo grid)",
+  "n": 20000,
+  "confidence": "medium",
+  "lane": "r2-economics-renewal / r2-founder-kit",
+  "verifier_verdict": "weakened by r2-econ verifier (minimum not derived; life fee at observed commission ~INR 10; quarterly holdout is noise for health and life)",
+  "supersedes": "SYN1-01"
+ },
+ {
+  "id": "SYN1-01",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 price: effective yield INR 6-8 per AI-connected minute, ~INR 1.1-1.5 lakh/month for a median modelled buyer",
+  "value": "6-8 INR/AI-min",
+  "unit": "yield",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed from assumptions",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (REN-06, FK-05)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-02",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 kill criterion 2: accepted price below ~INR 6/min-equivalent or below INR 150 per renewal saved",
+  "value": "150",
+  "unit": "INR per save",
+  "source_urls": [
+   "SYNTHESIS.md",
+   "lanes/l3-segments/value-gate.csv"
+  ],
+  "date": "2026-10-17",
+  "method": "assumption (value gate mixed insurer premium)",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (REN-05, FK-02)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-03",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 open question 1: whether IRDAI's 1600 mandate covers intermediaries is unverified (treated as ~50/50)",
+  "value": "unknown",
+  "unit": "scope",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (direction text not applied)",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (REG-20: mandatory for all intermediaries)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-04",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 tie-breaker: competition is thin at this buyer (SquadStack and Gnani sell to insurers, not intermediaries)",
+  "value": "thin",
+  "unit": "finding",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor pages)",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (CMP-13: does not hold at the job level)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-05",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 kill criterion 6 treated as a future test; our cascade estimated 2.2-4 s from Ohio",
+  "value": "2.2-4 s est.",
+  "unit": "latency",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "estimate",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (LAT-02, LAT-05)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-06",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 margin at scale: 49-62% at INR 3.06 COGS (1M min/month)",
+  "value": "49-62%",
+  "unit": "gross margin",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (ECO-10)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-07",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 owner item 3: decide by 2026-10-23 whether to create an ACS resource to keep phone-number eligibility (default no)",
+  "value": "decision",
+  "unit": "owner item",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary",
+  "n": null,
+  "confidence": "medium",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (REG-37: moot, no action)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-08",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1: residency matters only for alternate 2 (RBI) or insurer outsourcing clauses",
+  "value": "alternate-2 only",
+  "unit": "scope",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "inference",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (REG-31: intermediary records in India >=10 years)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-09",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 wedge rule: never promote or cross-sell inside a call; VP is a managed, compliance-carrying renewal caller",
+  "value": "never promote",
+  "unit": "product rule",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (TRAI)",
+  "n": null,
+  "confidence": "medium",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded by 'inform, confirm, hand off' as software on the intermediary's own 1600 number (REG-26, REG-27, REG-29, REG-30)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-10",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1: lending pre-due reminders rank #4 on the frozen scorecard (alternate 2)",
+  "value": "#4",
+  "unit": "rank",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "computed",
+  "n": null,
+  "confidence": "medium",
+  "lane": "synthesis r1",
+  "verifier_verdict": "weakened (SEG-02: #8 with post_sales_share = 0; #13 on S1)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-11",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 gap-map row 'Renewal calling for insurance intermediaries': voice-AI incumbents sell to insurers, not to the ~2,500 intermediaries",
+  "value": "unserved",
+  "unit": "gap",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "read-primary (vendor pages)",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "narrowed (CMP-13: only a managed per-renewal service for small/mid intermediaries is unoffered)",
+  "supersedes": null
+ },
+ {
+  "id": "SYN1-12",
+  "section": "SYN1",
+  "round": 1,
+  "claim": "R1 §1.1 item 5: LeadSquared insurance CRM plus Invorto claims a +10% renewal ratio at Universal Sompo",
+  "value": "+10%",
+  "unit": "renewal ratio",
+  "source_urls": [
+   "SYNTHESIS.md"
+  ],
+  "date": "2026-10-17",
+  "method": "vendor-claim",
+  "n": null,
+  "confidence": "low",
+  "lane": "synthesis r1",
+  "verifier_verdict": "superseded (CMP-15: CRM case, no voice AI)",
+  "supersedes": null
+ }
+]

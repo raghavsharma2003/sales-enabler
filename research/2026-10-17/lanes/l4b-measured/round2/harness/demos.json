@@ -1,0 +1,293 @@
+[
+ {
+  "id": "vapi",
+  "vendor": "Vapi",
+  "url": "https://vapi.ai",
+  "agent": "Vapi homepage assistant (English, generic)",
+  "steps": [
+   {
+    "click": "Start call",
+    "role": "button",
+    "after": 2000
+   }
+  ],
+  "endSteps": [
+   {
+    "click": "End call",
+    "role": "button"
+   }
+  ]
+ },
+ {
+  "id": "elevenlabs",
+  "vendor": "ElevenLabs Agents",
+  "url": "https://elevenlabs.io/conversational-ai",
+  "agent": "ElevenLabs product assistant",
+  "steps": [
+   {
+    "click": "text=Voice",
+    "after": 1500,
+    "optional": true
+   },
+   {
+    "click": "Start Call",
+    "role": "button",
+    "after": 2000
+   },
+   {
+    "click": "I agree",
+    "role": "button",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "ravan_hi",
+  "vendor": "Ravan.ai (Agni)",
+  "url": "https://ravan.ai",
+  "agent": "Agni live demo, Hindi",
+  "steps": [
+   {
+    "click": "text=Talk to Agni in Hindi",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "husky_payment",
+  "vendor": "HuskyVoice.AI",
+  "url": "https://www.huskyvoice.ai/live-demo?country=India",
+  "agent": "Deepika, Payment Reminder (Financial Services, Hinglish)",
+  "steps": [
+   {
+    "click": "Talk to",
+    "role": "button",
+    "nth": 7,
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "husky_realestate",
+  "vendor": "HuskyVoice.AI",
+  "url": "https://www.huskyvoice.ai/live-demo?country=India",
+  "agent": "Deepika, Real Estate Lead Qualification (Hindi)",
+  "steps": [
+   {
+    "click": "Talk to",
+    "role": "button",
+    "nth": 2,
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "vyora",
+  "vendor": "Vyora AI",
+  "url": "https://vyora.ai",
+  "agent": "Vyora homepage 'Tap to talk' agent",
+  "steps": [
+   {
+    "click": "text=Tap to talk",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "ultravox",
+  "vendor": "Ultravox (Inworld)",
+  "url": "https://demo.ultravox.ai/embed?transcriptOptional=true",
+  "agent": "Ultravox demo agent",
+  "steps": [
+   {
+    "click": "Start Call",
+    "role": "button",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "calib",
+  "vendor": "Calibration agent (local)",
+  "url": "http://127.0.0.1:8899/harness/calib.html",
+  "agent": "known rule: reply 600 ms silence + 500 ms delay",
+  "steps": [
+   {
+    "click": "#go",
+    "after": 500
+   }
+  ],
+  "noProxy": true
+ },
+ {
+  "id": "calib_long",
+  "vendor": "Calibration agent, long replies, no barge-in (local)",
+  "url": "http://127.0.0.1:8899/harness/calib.html?reply=P4_t01",
+  "agent": "known rule: reply after 600 ms silence + 500 ms with a 9 s clip; never yields",
+  "steps": [
+   {
+    "click": "#go",
+    "after": 500
+   }
+  ],
+  "noProxy": true
+ },
+ {
+  "id": "sarvam_emi",
+  "vendor": "Sarvam (Voice Agents)",
+  "url": "https://www.sarvam.ai/products/voice-agents",
+  "agent": "Sarvam homepage live widget: Hitesh, EMI Payment Reminder",
+  "steps": [
+   {
+    "click": "Accept all",
+    "role": "button",
+    "after": 800,
+    "optional": true,
+    "timeout": 5000
+   },
+   {
+    "eval": "document.querySelector('[role=group][aria-label=\"Available voice agents\"]').scrollIntoView({block:'center'})"
+   },
+   {
+    "wait": 4000
+   },
+   {
+    "click": "[role=group][aria-label=\"Available voice agents\"] button:has-text(\"EMI Payment Reminder\")",
+    "after": 2000
+   },
+   {
+    "click": "Start voice call with Hitesh",
+    "role": "button",
+    "after": 2000
+   }
+  ],
+  "endSteps": [
+   {
+    "click": "End call with",
+    "role": "button"
+   }
+  ],
+  "agentThr": 0.0126,
+  "scoreAgentFloorDb": -40
+ },
+ {
+  "id": "sarvam_cart",
+  "vendor": "Sarvam (Voice Agents)",
+  "url": "https://www.sarvam.ai/products/voice-agents",
+  "agent": "Sarvam homepage live widget: Simran, Cart Recovery Nudge (default)",
+  "steps": [
+   {
+    "click": "Accept all",
+    "role": "button",
+    "after": 800,
+    "optional": true,
+    "timeout": 5000
+   },
+   {
+    "eval": "document.querySelector('[role=group][aria-label=\"Available voice agents\"]').scrollIntoView({block:'center'})"
+   },
+   {
+    "wait": 4000
+   },
+   {
+    "click": "Start voice call with Simran",
+    "role": "button",
+    "after": 2000
+   }
+  ],
+  "endSteps": [
+   {
+    "click": "End call with",
+    "role": "button"
+   }
+  ],
+  "agentThr": 0.0126,
+  "scoreAgentFloorDb": -40
+ },
+ {
+  "id": "smallest",
+  "vendor": "Smallest.ai (Atoms)",
+  "url": "https://smallest.ai/",
+  "agent": "Smallest homepage Atoms agent (default card: Hospital Receptionist Mia)",
+  "loadWait": 7000,
+  "steps": [
+   {
+    "evalOrReload": "(async()=>{for(let i=0;i<30;i++){const b=[...document.querySelectorAll('button')].find(x=>(x.innerText||'').includes('Start conversation'));if(b){b.scrollIntoView({block:'center'});await new Promise(r=>setTimeout(r,800));b.click();return i+1}await new Promise(r=>setTimeout(r,500))}return 0})()",
+    "tries": 4
+   },
+   {
+    "wait": 2000
+   }
+  ],
+  "endSteps": [
+   {
+    "eval": "(()=>{const b=[...document.querySelectorAll('button')].find(x=>/end|stop|hang/i.test(x.innerText||x.getAttribute('aria-label')||''));if(b)b.click()})()"
+   }
+  ]
+ },
+ {
+  "id": "cartesia",
+  "vendor": "Cartesia (Line agents)",
+  "url": "https://www.cartesia.ai/",
+  "agent": "Cartesia homepage agent 'Skylar' (warm and unhurried)",
+  "steps": [
+   {
+    "click": ".hero-orb-scope button[aria-label=\"Talk to Skylar\"] >> visible=true",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "deepgram",
+  "vendor": "Deepgram Voice Agent (playground)",
+  "url": "https://playground.deepgram.com/voice-agent",
+  "agent": "Deepgram playground default agent (general-purpose assistant, Gemini 3.1 Flash Lite, Deepgram voice), anonymous 10-min trial",
+  "steps": [
+   {
+    "click": "Start|Connect|Talk",
+    "role": "button",
+    "after": 2000
+   }
+  ],
+  "endSteps": [
+   {
+    "click": "End Conversation",
+    "role": "button"
+   }
+  ]
+ },
+ {
+  "id": "arrowhead",
+  "vendor": "Arrowhead AI",
+  "url": "https://arrowhead.ai/",
+  "agent": "Arrowhead homepage live bot (Hindi default). 2026-10-17: broken by a CORS origin mismatch; for an owner retry on a normal network",
+  "steps": [
+   {
+    "click": "text=Click to talk to the bot",
+    "after": 3000
+   }
+  ]
+ },
+ {
+  "id": "millis_hi",
+  "vendor": "Millis AI",
+  "url": "https://demo.millis.ai/",
+  "agent": "Millis generalist demo agent, language Hindi. Needs a network that allows wss on port 8080 (owner Mode A)",
+  "steps": [
+   {
+    "click": "#demo-simple-select",
+    "after": 800
+   },
+   {
+    "click": "^Hindi$",
+    "role": "option",
+    "after": 800
+   },
+   {
+    "click": "Start Demo",
+    "role": "button",
+    "after": 2000
+   }
+  ]
+ }
+]

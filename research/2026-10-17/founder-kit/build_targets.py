@@ -1,6 +1,9 @@
 """Build founder-kit/targets.csv from hand-verified research rows (2026-10-17).
 Every row: verified via IRDAI register (segment 1) or the company's own website (fetched 2026-10-17).
-No personal names or personal contact details are stored. Buyer column holds role titles only."""
+No personal names or personal contact details are stored. Buyer column holds role titles only.
+Round 2 (2026-10-17, critic A12): 9 insurance rows added (INS-21..INS-29) and stratum/selection/wave/status columns;
+the 20 ACTIVE insurance rows mirror the in-reach pool (A small/mid brokers 6, B non-bank CAs 5, C IMFs 6, D large/platforms 3).
+Run: python3 -I build_targets.py targets.csv"""
 import csv, re, sys
 
 OUT = sys.argv[1]
@@ -136,6 +139,64 @@ dict(company="Girnar Insurance Brokers Pvt Ltd (InsuranceDekho)", segment=S1, su
  buyer="Head - Renewals; Head - POSP Channel",
  size="IRDAI composite broker, CoR 588. Site claim: 17 Mn+ customers.",
  priority="C", vvia="IRDAI broker register (CoR 588) + own website", vurl=IRDAI_BR + " ; https://www.insurancedekho.com/"),
+# ---- Round 2 additions (2026-10-17, critic A12): rows that make the 20 active INS targets mirror the in-reach pool.
+# Every new row re-checked in the IRDAI register pages fetched live at 2026-10-17 20:08 UTC. Register-random rows come
+# from a seeded draw (seed 20261019) over register entries whose validity date is on or after 2026-10-17; they were
+# NOT selected on any phone-team signal, so they measure how common renewal desks are without the round-1 selection bias.
+dict(company="Saggio Insurance Broking Pvt Ltd", segment=S1, subtype="small retail broker (outbound life telesales)", city="New Delhi",
+ why="Two Apna posts (2026-10-03, 10-07) posted as 'Saggio Insurance Marketing' with the work location 'SAGGIO INSURANCE BROKERS P.LTD, Najafgarh Road Industrial Area': an outbound telesales process selling life policies, 10:00-18:30. Own site (saggioinsurance.com) names Saggio Insurance Broking Pvt Ltd, 'Regulated by IRDAI', and sells life, health, car and bike cover. A new-business desk; whether it also works renewals is the interview question.",
+ evidence="https://www.saggioinsurance.com/ ; https://apna.co/job/new-delhi/telesales-executive-910007993 ; https://apna.co/job/delhi-ncr/telecalling-executive-154600689",
+ buyer="Principal Officer / Director; Telesales Head",
+ size="IRDAI direct broker (Life & General), CoR 1049 (valid to 2028-03-27). Small: one telesales floor.",
+ priority="B", vvia="IRDAI broker register (CoR 1049) + own website", vurl=IRDAI_BR + " ; https://www.saggioinsurance.com/"),
+dict(company="Raising Group Insurance Marketing LLP", segment=S1, subtype="insurance marketing firm (IMF)", city="New Delhi (Munirka)",
+ why="Apna post (2026-10-07) for telecallers on 'Outbound/Inbound calling for insurance sales', explaining insurance products: an IMF with its own phone desk, typical of the 'district-level small distributor' stratum. IMF distance marketing is restricted to its own ISPs with prior IRDAI approval (IMF Regs reg 3(d), l1 round 2), so this is an interview, not a pilot target, until counsel answers.",
+ evidence="https://apna.co/job/delhi-ncr/telecaller-519433729",
+ buyer="Designated Partner / Principal Officer",
+ size="IRDAI IMF, registration IMF186576201220190330, Delhi (NCT); validity shown to 2028-12-05. No website found by us (do not guess domains).",
+ priority="B", vvia="IRDAI IMF register (IMF186576201220190330)", vurl=IRDAI_IMF),
+dict(company="Planway Futuristic IMF Pvt Ltd", segment=S1, subtype="insurance marketing firm (IMF)", city="New Delhi (Janakpuri)",
+ why="Apna post (2026-10-07) for a 'BPO Telecaller' for a calling process with sales skills, posted by the IMF itself. A small IMF phone desk; product line and renewal work unknown. Wrong-entity trap: planway.in is an unrelated Tamil Nadu construction firm.",
+ evidence="https://apna.co/job/new-delhi/bpo-telecaller-78511353",
+ buyer="Principal Officer / Director",
+ size="IRDAI IMF, registration IMF187215540920210465, Delhi (NCT); validity shown to 2027-09-06. No website found by us.",
+ priority="C", vvia="IRDAI IMF register (IMF187215540920210465)", vurl=IRDAI_IMF),
+dict(company="Riskcovery IMF Pvt Ltd", segment=S1, subtype="insurance marketing firm (IMF), register-random", city="Delhi (NCT)",
+ why="Drawn at random (position 1 of the seeded draw) from the 496 IMFs whose register validity runs past 2026-10-17. No phone-team evidence was looked for: this row exists to measure how common renewal desks are among ordinary IMFs. riskcovery.com returned a 114-byte placeholder, so no site is verified.",
+ evidence="https://irdai.gov.in/list-of-imfs",
+ buyer="Principal Officer / Director",
+ size="IRDAI IMF, registration IMF187317660220220504; validity shown to 2028-02-02. Size unknown (FY25 IRDAI Handbook: IMFs averaged about 75 health and 42 life policies a year).",
+ priority="C", vvia="IRDAI IMF register (IMF187317660220220504)", vurl=IRDAI_IMF),
+dict(company="Uniqver Insurance Marketing Pvt Ltd", segment=S1, subtype="insurance marketing firm (IMF), register-random", city="Kerala",
+ why="Drawn at random (position 2 of the seeded draw) from IMFs with current validity. Registered in 2025 (registration code dated 2025-03), so a young firm. No site found.",
+ evidence="https://irdai.gov.in/list-of-imfs",
+ buyer="Principal Officer / Director",
+ size="IRDAI IMF, registration IMF08960320250784; validity shown to 2028-03-11. Size unknown.",
+ priority="C", vvia="IRDAI IMF register (IMF08960320250784)", vurl=IRDAI_IMF),
+dict(company="Metroxone Insurance Marketing and Risk Management Pvt Ltd", segment=S1, subtype="insurance marketing firm (IMF), register-random", city="Maharashtra",
+ why="Drawn at random (position 3 of the seeded draw) from IMFs with current validity. The register spells the name 'METROXONE INSURANCE MARKETING AD RISK MANAGEMENT PRIVATE LIMITED'. No site found.",
+ evidence="https://irdai.gov.in/list-of-imfs",
+ buyer="Principal Officer / Director",
+ size="IRDAI IMF, registration IMF08210320250779; validity shown to 2028-03-04. Size unknown.",
+ priority="C", vvia="IRDAI IMF register (IMF08210320250779)", vurl=IRDAI_IMF),
+dict(company="NLVD Assurance (OPC) Pvt Ltd", segment=S1, subtype="non-bank corporate agent", city="Noida",
+ why="Two Apna posts (2026-10-08) for a Telecalling Executive and an Insurance Sales Executive in Noida Sector 2: a small corporate agent with its own phone work. nlvd.in returned a WordPress error page, so no site is verified.",
+ evidence="https://apna.co/job/noida/telecalling-executive-838535511 ; https://apna.co/job/noida/insurance-sales-executive-833752193",
+ buyer="Director / Principal Officer",
+ size="IRDAI corporate agent (composite), CA0219; validity to 2028-03-31. One-person company form (OPC), so small.",
+ priority="B", vvia="IRDAI corporate-agent register (CA0219)", vurl=IRDAI_CA),
+dict(company="S. Sood Corporate Advisors Ltd", segment=S1, subtype="non-bank corporate agent, register-random", city="not stated in the fields we keep",
+ why="Drawn at random (position 1 of the seeded draw) from the 66 currently valid, non-bank, non-NBFC corporate agents whose names indicate an insurance or advisory business (composite or general). The name suggests corporate clients, so qualification (>=50% retail) may fail; that is itself a reading of the stratum.",
+ evidence="https://irdai.gov.in/list-of-corporate-agents",
+ buyer="Principal Officer / Director",
+ size="IRDAI corporate agent (composite), CA0684; validity to 2028-09-16. Size unknown.",
+ priority="C", vvia="IRDAI corporate-agent register (CA0684)", vurl=IRDAI_CA),
+dict(company="DGV Digital Insurance Pvt Ltd", segment=S1, subtype="non-bank corporate agent, register-random", city="not stated in the fields we keep",
+ why="Drawn at random (position 2 of the seeded draw) from the same 66 corporate agents. Wrong-entity traps: dgvdigital.com is an unrelated Vietnamese software firm and dgv.in serves 'Digivriddhi'; neither names this company.",
+ evidence="https://irdai.gov.in/list-of-corporate-agents",
+ buyer="Principal Officer / Director",
+ size="IRDAI corporate agent (composite), CA1043; validity to 2028-04-23. Size unknown.",
+ priority="C", vvia="IRDAI corporate-agent register (CA1043)", vurl=IRDAI_CA),
 
 # ---------------- Segment 2: real estate, own digital inquiries -> site visits ----------------
 dict(company="Appaswamy Real Estates Ltd", segment=S2, subtype="mid-size developer", city="Chennai",
@@ -383,8 +444,51 @@ dict(company="Radical Minds Technologies Pvt Ltd", segment=S3, subtype="multilin
 ]
 
 PRI = {"A": "1", "B": "2", "C": "3"}
+# ---- Round 2 stratification of the insurance rows (critic A12). Strata mirror the in-reach pool:
+#  A = small/mid retail brokers, B = non-bank corporate agents, C = IMFs, D = large brokers and PoSP platforms.
+#  selection: website (picked for visible renewal flows), signal (picked for a phone-team job post), random (seeded
+#  register draw), size (picked for scale). wave 1 = the first 15 contacts on Mon 2026-10-19; wave 2 = the other 5.
+#  reserve rows stay in the file (stable IDs) but are not in the active 20.
+STRATA = {
+ "Probus Insurance Broker Pvt Ltd": ("A", "website", "2", "active"),
+ "SMC Insurance Brokers Pvt Ltd": ("D", "website", "", "reserve"),
+ "Square Insurance Brokers Pvt Ltd": ("A", "website", "1", "active"),
+ "GreenLife Insurance Broking Pvt Ltd": ("D", "website", "", "reserve"),
+ "RM Insurance Broking Pvt Ltd (RMIB)": ("A", "website", "1", "active"),
+ "Vizza Insurance Broking Services Pvt Ltd": ("A", "signal", "", "reserve"),
+ "Bajaj Capital Insurance Broking Ltd": ("D", "website", "", "reserve"),
+ "Muthoot Risk Insurance and Broking Services Pvt Ltd": ("D", "website", "", "reserve"),
+ "Coverfox Insurance Broking Pvt Ltd": ("D", "website", "", "reserve"),
+ "Hero Insurance Broking India Pvt Ltd": ("D", "size", "1", "active"),
+ "Clarion Insurance Broking Services Pvt Ltd": ("A", "signal", "1", "active"),
+ "BYR Insurance Brokers Pvt Ltd": ("A", "signal", "1", "active"),
+ "RB Insurance Marketing LLP": ("C", "signal", "1", "active"),
+ "Mihit Insurance Advisory Services Pvt Ltd": ("B", "signal", "1", "active"),
+ "Golden Arm Insurance Financial Services Pvt Ltd": ("B", "signal", "1", "active"),
+ "Derisq Insurance Brokers Pvt Ltd": ("A", "signal", "", "reserve"),
+ "Landmark Insurance Brokers Pvt Ltd (PolicyBoss)": ("D", "size", "2", "active"),
+ "Turtlemint Insurance Broking Services Pvt Ltd": ("D", "size", "1", "active"),
+ "D2C Insurance Broking Pvt Ltd (RenewBuy)": ("D", "size", "", "reserve"),
+ "Girnar Insurance Brokers Pvt Ltd (InsuranceDekho)": ("D", "size", "", "reserve"),
+ "Saggio Insurance Broking Pvt Ltd": ("A", "signal", "1", "active"),
+ "Raising Group Insurance Marketing LLP": ("C", "signal", "1", "active"),
+ "Planway Futuristic IMF Pvt Ltd": ("C", "signal", "2", "active"),
+ "Riskcovery IMF Pvt Ltd": ("C", "random", "1", "active"),
+ "Uniqver Insurance Marketing Pvt Ltd": ("C", "random", "1", "active"),
+ "Metroxone Insurance Marketing and Risk Management Pvt Ltd": ("C", "random", "2", "active"),
+ "NLVD Assurance (OPC) Pvt Ltd": ("B", "signal", "1", "active"),
+ "S. Sood Corporate Advisors Ltd": ("B", "random", "1", "active"),
+ "DGV Digital Insurance Pvt Ltd": ("B", "random", "2", "active"),
+}
+STRATUM_RULE = {
+ "A": "Counts in KC1-KC3 (stratum A). Pilot-eligible.",
+ "B": "Counts in KC1-KC3 (stratum B). Pilot-eligible.",
+ "C": "Counts in KC1-KC3 (stratum C). Interview only: no pilot or LOI ask until counsel answers the IMF reg 3(d) question (l1 round 2, U6-INS-2).",
+ "D": "Learning interview. Reported separately and weighted by renewal volume, never in the KC1 firm count. Procurement 3-9 months (l4c).",
+}
 cols = ["id", "company", "segment", "subtype", "city", "why_they_fit", "evidence_urls", "likely_buyer_role",
-        "size_signal", "priority", "verified_via", "verification_url", "accessed"]
+        "size_signal", "priority", "verified_via", "verification_url", "accessed",
+        "stratum", "selection", "wave", "status", "stratum_rule"]
 seg_prefix = {S1: "INS", S2: "RE", S3: "LEN"}
 counts = {}
 out = []
@@ -394,12 +498,22 @@ for r in rows:
                 "subtype": r["subtype"], "city": r["city"], "why_they_fit": r["why"], "evidence_urls": r["evidence"],
                 "likely_buyer_role": r["buyer"], "size_signal": r["size"], "priority": r["priority"],
                 "verified_via": r["vvia"], "verification_url": r["vurl"], "accessed": ACC})
+    st = STRATA.get(r["company"], ("", "", "", "active")) if r["segment"] == S1 else ("", "", "", "active")
+    if r["segment"] == S1:
+        assert r["company"] in STRATA, r["company"]
+    out[-1].update({"stratum": st[0], "selection": st[1], "wave": st[2], "status": st[3],
+                    "stratum_rule": STRATUM_RULE.get(st[0], "") if st[3] == "active" else ("reserve: " + STRATUM_RULE.get(st[0], "") if st[0] else "")})
 # privacy guard: no emails, no phone numbers in any field
 for r in out:
     blob = " ".join(r.values())
     assert not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", blob), r["company"]
     assert not re.search(r"(?<!\d)(\+91[- ]?)?[6-9]\d{9}(?!\d)", blob), r["company"]
-assert counts == {S1: 20, S2: 20, S3: 20}, counts
+assert counts == {S1: 29, S2: 20, S3: 20}, counts
+from collections import Counter as _C
+_act = [r for r in out if r["segment"] == S1 and r["status"] == "active"]
+assert len(_act) == 20, len(_act)
+assert _C(r["stratum"] for r in _act) == {"A": 6, "B": 5, "C": 6, "D": 3}, _C(r["stratum"] for r in _act)
+assert _C(r["stratum"] for r in _act if r["wave"] == "1") == {"A": 5, "B": 4, "C": 4, "D": 2}
 with open(OUT, "w", newline="", encoding="utf-8") as f:
     w = csv.DictWriter(f, fieldnames=cols)
     w.writeheader(); w.writerows(out)

@@ -5,7 +5,9 @@ import numpy as np, pandas as pd, soundfile as sf
 
 RAW = sys.argv[1]
 HERE = os.path.dirname(os.path.abspath(__file__)); RES = os.path.join(HERE, '..', 'results'); LANE = os.path.join(HERE, '..')
-FX = 88.0
+FX = 95.0  # round 2 (2026-10-17): was 88.0; ECB 94.96 on 2026-10-16. Round-1 copy: analyze.round1.py.
+# WARNING: cost-inputs.json was hand-extended after this script ran and then corrected by correct_round2.py.
+# Re-running this script overwrites cost-inputs.json without those additions; re-apply them if you do.
 q = lambda s, p: float(np.percentile(s.dropna(), p)) if s.dropna().size else None
 
 # ---------- network RTT (warm keep-alive, front door answers without model work) ----------

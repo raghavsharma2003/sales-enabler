@@ -1,0 +1,8 @@
+cin-stt                  ip 20.192.44.106 tcp p50    2.6  tls p50   21.7  cold total p50   40.6  warm req p50    3.3 status 401
+cin-tts                  ip 20.192.44.108 tcp p50    2.7  tls p50   21.2  cold total p50   75.2  warm req p50    2.7 status 401
+cin-acct (Voice Live)    ip 20.192.170.56 tcp p50    2.4  tls p50   25.3  cold total p50  676.0  warm req p50    1.3 status 401
+sin-aoai                 ip 20.192.158.81 tcp p50   26.1  tls p50   68.8  cold total p50  140.1  warm req p50   27.0 status 401
+sea-stt                  ip 20.43.132.19 tcp p50   54.2  tls p50   71.4  cold total p50  239.0  warm req p50   57.9 status 401
+sea-tts                  ip 20.43.132.24 tcp p50   54.9  tls p50   72.5  cold total p50  280.7  warm req p50   51.6 status 401
+sea-aoai                 ip 23.98.109.37 tcp p50   55.7  tls p50  130.3  cold total p50  295.2  warm req p50   49.9 status 401
+frc-aoai                 ip 20.111.5.9 tcp p50  124.2  tls p50  265.8  cold total p50  636.2  warm req p50  126.5 status 401

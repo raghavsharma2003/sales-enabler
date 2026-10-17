@@ -33,6 +33,23 @@ Method
    Azure Neural TTS); C Azure realtime speech-to-speech (gpt-realtime flagship family).
    A self-hosted stack D is a computed point today (not a time series) and is reported beside.
 INR at the fetched rate 95.11 (open.er-api.com, 2026-10-17) and at the programme default 88.
+
+Round-2 corrections (2026-10-17, package r2-model-corrections, critic A10; l7 verify.md claims 3, 4, 7).
+Round-1 code and outputs are kept as fit.round1.py, prices.round1.csv, fit-results.round1.json, curves.round1.png.
+  * prices.csv gains GPT-5.1 (2025-11-13, $1.25/$0.125/$10) and GPT-5.2 (2025-12-11, $1.75/$0.175/$14) from the Azure
+    Retail Prices API and llm-prices git history. GPT-5.2 is the first per-token rise in the frontier series.
+  * Method 3 (new): the cut process of method 2 imports the 2024-25 LLM cut rate (8 of 11 LLM cuts fall in 2024-01 ..
+    2025-08) and simulates no rises, which contradicts the series' own last-18-month evidence (frontier multiplier ~1.0,
+    small tier has had no new low since 2025-08). Two current-regime variants are now published beside it:
+      forecast_llm_flat          LLM components held at today's level (the CURRENT-REGIME HEADLINE); speech and
+                                 realtime components follow the method-2 cut process unchanged;
+      forecast_llm_recent_regime LLM components follow their own level changes since 2025-04-17, rises included,
+                                 as a Poisson jump process (rate = events / 1.5 years).
+    Method 3 runs after method 2, so methods 1-2 consume the RNG exactly as in round 1.
+  * curves.png bottom panel shows the LLM-flat P50 and P10-P90 beside the cut-process ones; the telephony panel no
+    longer calls the 2026-03 Plivo capture a contradiction and shows the like-for-like 30 s pulse fall (0.48 -> 0.38).
+  * Not changed: FX is still a fixed 95.11 with no depreciation path (verify.md claim 3), so every INR forecast is
+    still optimistic by the rupee's drift; cache-write meters and reasoning tokens are still not modelled.
 """
 import csv, json, math, os, random
 from datetime import date
@@ -303,6 +320,59 @@ for s_, comps in STACKS.items():
                   'prob_below_inr_1p0': sum(1 for x in draws if x * FX_FETCHED < 1.0) / len(draws)}
     results['stacks'][s_]['forecast_cut_process'] = fc2
 
+# --- method 3 (round 2): current-regime LLM forecasts -------------------------------------
+# (a) llm_flat: LLM list prices stay where they are today; speech/realtime keep the method-2 cut process.
+# (b) llm_recent_regime: each LLM component replays its own level changes since REC_START (rises included).
+REC_YEARS = yrs(NOW) - yrs(REC_START)
+REC_EVENTS = {}
+for k in CUT_SERIES:
+    if CLASS[k] != 'llm': continue
+    env = FITS[k][0]
+    REC_EVENTS[k] = [{'date': d1, 'log_size': math.log(v1 / v0), 'label': lab1}
+                     for (d0, v0, _), (d1, v1, lab1) in zip(env, env[1:])
+                     if d1 > REC_START and abs(math.log(v1 / v0)) > 0.005]
+results['llm_recent_regime_events'] = {'window': [REC_START, NOW], 'years': REC_YEARS,
+                                       'by_series': {k: {'n_events': len(v), 'rate_per_year': len(v) / REC_YEARS, 'events': v}
+                                                     for k, v in REC_EVENTS.items()}}
+
+def forecast_mode(comps, T, mode, n=20000):
+    dt_ = yrs(T) - yrs(NOW)
+    draws = []
+    for _ in range(n):
+        tot = 0.0
+        for c in comps:
+            v = current(c)
+            if CLASS[c] == 'llm':
+                if mode == 'llm_recent_regime' and REC_EVENTS.get(c):
+                    ev = REC_EVENTS[c]
+                    for _ in range(poisson(len(ev) / REC_YEARS * dt_)):
+                        v *= math.exp(RNG.choice(ev)['log_size'])
+                # mode 'llm_flat' (or no recent events): hold today's level
+            else:
+                cl = CP[CLASS[c]]
+                for _ in range(poisson(cl['rate_per_component_year'] * dt_)):
+                    v *= math.exp(RNG.choice(cl['sizes']))
+            tot += v
+        draws.append(tot)
+    return {'inr_p10': q(draws, 0.10) * FX_FETCHED, 'inr_p50': q(draws, 0.50) * FX_FETCHED,
+            'inr_p90': q(draws, 0.90) * FX_FETCHED,
+            'prob_below_inr_0p5': sum(1 for x in draws if x * FX_FETCHED < 0.5) / len(draws),
+            'prob_below_inr_1p0': sum(1 for x in draws if x * FX_FETCHED < 1.0) / len(draws)}
+
+for mode in ('llm_flat', 'llm_recent_regime'):
+    for s_, comps in STACKS.items():
+        results['stacks'][s_]['forecast_' + mode] = {T: forecast_mode(comps, T, mode) for T in TARGETS}
+
+results['forecast_headline'] = {
+    'note': ('Round 2: the cut-process forecast (method 2) assumes the 2024-25 LLM cut rate continues and is the OPTIMISTIC '
+             'case. The current-regime headline holds LLM list prices flat (method 3a), consistent with the frontier '
+             'series\' last-18-month multiplier of ~1.0 and no new small-tier low since 2025-08. INR at a fixed 95.11.'),
+    'by_stack_end_2027_inr_p10_p50_p90': {
+        s_: {'current_regime_llm_flat': [round(v['forecast_llm_flat']['2027-12-31'][k], 3) for k in ('inr_p10', 'inr_p50', 'inr_p90')],
+             'llm_recent_regime_jumps': [round(v['forecast_llm_recent_regime']['2027-12-31'][k], 3) for k in ('inr_p10', 'inr_p50', 'inr_p90')],
+             'optimistic_cut_process': [round(v['forecast_cut_process']['2027-12-31'][k], 3) for k in ('inr_p10', 'inr_p50', 'inr_p90')]}
+        for s_, v in results['stacks'].items()}}
+
 # historical value of stack A and B at past dates (step functions of each component's envelope)
 def level_at(k, d):
     env = FITS[k][0]
@@ -415,8 +485,16 @@ for vend, c, dy in (('Plivo', S1, -9), ('Tata Tele Business', S2, 0), ('Sarvam (
     axT.plot([dt(d) for d, _ in pp], [v for _, v in pp], '-o', color=c, lw=2, ms=5, markeredgecolor=SURF)
     axT.annotate(f'{vend} Rs {pp[-1][1]:.2f}', xy=(dt(pp[-1][0]), pp[-1][1]), xytext=(6, dy),
                  textcoords='offset points', fontsize=8, color=INK2, va='center')
-axT.annotate('2026-03 capture Rs 0.74 vs live Rs 0.38:\nkept as a contradiction', xy=(dt('2026-03-16'), 0.74),
-             xytext=(-150, -8), textcoords='offset points', fontsize=7.5, color=MUTED)
+axT.annotate('2026-03 capture: Rs 0.74 is the "Local Calls" row;\nsame capture lists Rs 0.40 (not a price rise)', xy=(dt('2026-03-16'), 0.74),
+             xytext=(-170, -8), textcoords='offset points', fontsize=7.5, color=MUTED)
+p30 = sorted((r['date'], float(r['price_in'])) for r in rows if r['component'] == 'telephony' and r['series'] == 'india_cpaas_30s_pulse')
+if p30:
+    live30 = [(r['date'], float(r['price_in'])) for r in tel if r['vendor'] == 'Plivo' and '30 s pulse' in r['model_or_plan']]
+    pp30 = p30 + live30
+    axT.plot([dt(d) for d, _ in pp30], [v for _, v in pp30], ':', color=S1, lw=1.2)
+    axT.plot([dt(d) for d, _ in p30], [v for _, v in p30], 'o', ms=5, color=SURF, markeredgecolor=S1, markeredgewidth=1.4)
+    axT.annotate('Plivo at a 30 s pulse: Rs 0.48 (2024-02)\n-> Rs 0.38 (live), -21% like for like', xy=(dt(p30[0][0]), p30[0][1]),
+                 xytext=(2, -62), textcoords='offset points', fontsize=7.5, color=MUTED)
 axT.axvline(dt('2026-11-17'), color=MUTED, lw=1, ls=':')
 axT.annotate('TRAI A2P termination\ncharge up to +Rs 0.05/min\nfrom 2026-11-17 (dotted line)', xy=(dt('2026-11-17'), 0.08),
              xytext=(-118, 0), textcoords='offset points', fontsize=7.5, color=MUTED)
@@ -442,10 +520,21 @@ for s, (c, name) in cols.items():
     md = [nowv] + [fc[T]['inr_p50'] for T in TARGETS]
     ax.fill_between(xs, lo, hi, color=c, alpha=0.15, lw=0)
     ax.plot(xs, md, '--', color=c, lw=1.5)
-    lab_pos.append([md[-1], c, f'{name}: now Rs {nowv:.2f}; end-2027 P50 Rs {fc["2027-12-31"]["inr_p50"]:.2f}'])
+    ff = results['stacks'][s]['forecast_llm_flat']
+    has_llm = any(CLASS.get(cc) == 'llm' for cc in STACKS[s])
+    if has_llm:
+        md2 = [nowv] + [ff[T]['inr_p50'] for T in TARGETS]
+        lo2 = [nowv] + [ff[T]['inr_p10'] for T in TARGETS]; hi2 = [nowv] + [ff[T]['inr_p90'] for T in TARGETS]
+        ax.plot(xs, md2, ':', color=c, lw=2.2)
+        ax.plot(xs, lo2, '-', color=c, lw=0.6, alpha=0.6); ax.plot(xs, hi2, '-', color=c, lw=0.6, alpha=0.6)
+        txt = (f'{name}: now Rs {nowv:.2f}\nend-2027 P50 Rs {ff["2027-12-31"]["inr_p50"]:.2f} if LLM prices stay flat (current regime);\n'
+               f'Rs {fc["2027-12-31"]["inr_p50"]:.2f} if 2024-25 LLM cuts resume (optimistic)')
+    else:
+        txt = f'{name}: now Rs {nowv:.2f}; end-2027 P50 Rs {fc["2027-12-31"]["inr_p50"]:.2f} (no LLM component)'
+    lab_pos.append([md[-1], c, txt])
 lab_pos.sort(key=lambda r: r[0])
 for i in range(1, len(lab_pos)):
-    if lab_pos[i][0] < lab_pos[i - 1][0] * 1.6: lab_pos[i][0] = lab_pos[i - 1][0] * 1.6
+    if lab_pos[i][0] < lab_pos[i - 1][0] * 1.9: lab_pos[i][0] = lab_pos[i - 1][0] * 1.9
 for y, c, txt in lab_pos:
     ax.annotate(txt, xy=(dt('2029-01-15'), y), fontsize=7.5, color=INK2, va='center')
     ax.plot([dt('2028-12-31')], [y], 's', color=c, ms=5)
@@ -464,12 +553,13 @@ ax.set_xlim(dt('2023-01-01'), dt('2031-06-30'))
 ax.set_xticks([dt(f'{y}-01-01') for y in range(2023, 2030)])
 for sp in ('top', 'right'): ax.spines[sp].set_visible(False)
 fig.suptitle('Voice-AI list prices per reference minute, 2023-2026, and forecasts to 2028 '
-             '(solid = cheapest available or newest at quality bar; dots = dated list prices; dashed + band = cut-process P50 and P10-P90)',
+             '(solid = cheapest available or newest at quality bar; dots = dated list prices)\nForecasts: dashed + shaded band = cut-process P50 and P10-P90 (optimistic: 2024-25 LLM cut rate); '
+             'dotted + thin lines = LLM prices held flat (current regime) P50 and P10-P90',
              fontsize=10.5, color=INK, x=0.01, ha='left')
 fig.text(0.01, 0.005, 'Sources: prices.csv (Azure Retail Prices API, Common Crawl captures of vendor price pages, '
-         'llm-prices git history, lanes l2/l4a). Workload: lane l2 base case. Generated by fit.py, 2026-10-17.',
+         'llm-prices git history, lanes l2/l4a). Workload: lane l2 base case. Generated by fit.py, 2026-10-17; round-2 corrections applied (GPT-5.1/5.2 rows, LLM-flat forecast).',
          fontsize=7.5, color=MUTED)
-fig.tight_layout(rect=(0, 0.02, 1, 0.96))
+fig.tight_layout(rect=(0, 0.02, 1, 0.95))
 fig.savefig(os.path.join(HERE, 'curves.png'), dpi=130)
 for k, v in results['stacks'].items():
     print(k, 'now USD %.4f (INR %.2f)' % (v['now_usd_per_min'], v['now_inr_per_min_fetched_fx']),
@@ -479,6 +569,9 @@ print('cut process', results['cut_process']['by_class'])
 for c in results['cut_process']['cuts']: print('   cut', c['series'], c['date'], '%.0f%%' % ((math.exp(c['log_size']) - 1) * 100), c['label'])
 for k, v in results['stacks'].items():
     print(k, 'cut-process', {T: (round(x['inr_p10'], 2), round(x['inr_p50'], 2), round(x['inr_p90'], 2), 'P(<0.5)=%.2f' % x['prob_below_inr_0p5'], 'P(<1)=%.2f' % x['prob_below_inr_1p0']) for T, x in v['forecast_cut_process'].items()})
+for k, v in results['stacks'].items():
+    for mode in ('forecast_llm_flat', 'forecast_llm_recent_regime'):
+        print(k, mode, {T: (round(x['inr_p10'], 2), round(x['inr_p50'], 2), round(x['inr_p90'], 2), 'P(<1)=%.3f' % x['prob_below_inr_1p0']) for T, x in v[mode].items()})
 for k, v in results['series'].items():
     print(k, 'decline x%.1f since %s;' % (v['total_decline_factor'], v['first']['date']),
           'full mult/yr %.2f;' % v['fit_full']['annual_multiplier'],

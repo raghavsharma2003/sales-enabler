@@ -1,0 +1,2119 @@
+{
+ "generated": "2026-10-17",
+ "prices": {
+  "s1_stt_per_hr": 1.0,
+  "s1_stt_commit_100k_per_hr": 0.4,
+  "fast_tx_per_hr": 0.36,
+  "vl_std_speech_in_per_1k": 0.015,
+  "vl_byo_speech_in_per_1k": 0.0125,
+  "neural_tts_per_1m": 15.0,
+  "hd_tts_per_1m": 22.0,
+  "neural_tts_commit_80m_per_1m": 12.0,
+  "neural_tts_commit_400m_per_1m": 9.75,
+  "neural_tts_commit_2000m_per_1m": 7.5,
+  "neural_tts_commit_4000m_per_1m": 6.0,
+  "gpt6_sol": [
+   2.0,
+   0.2,
+   2.5,
+   10.0
+  ],
+  "gpt61_sol": [
+   2.0,
+   0.1,
+   2.5,
+   10.0
+  ],
+  "gpt6_luna": [
+   0.1,
+   0.01,
+   0.125,
+   0.5
+  ],
+  "gpt56_terra": [
+   2.0,
+   0.2,
+   2.5,
+   12.0
+  ],
+  "gpt56_luna": [
+   0.2,
+   0.02,
+   0.25,
+   1.2
+  ],
+  "gpt54_nano": [
+   0.2,
+   0.02,
+   0.2,
+   1.25
+  ],
+  "gpt41_mini": [
+   0.4,
+   0.1,
+   0.4,
+   1.6
+  ],
+  "gpt41_nano": [
+   0.1,
+   0.025,
+   0.1,
+   0.4
+  ],
+  "deepseek_v4_flash": [
+   0.19,
+   0.028,
+   0.19,
+   0.51
+  ],
+  "grok41_fast": [
+   0.2,
+   0.2,
+   0.2,
+   0.5
+  ],
+  "gpt_oss_120b": [
+   0.15,
+   0.15,
+   0.15,
+   0.6
+  ],
+  "llama33_70b": [
+   0.71,
+   0.71,
+   0.71,
+   0.71
+  ],
+  "aca_vcpu_s": 2.4e-05,
+  "aca_gib_s": 3e-06,
+  "aca_env_hr": 0.14,
+  "blob_hot_gb_mo": 0.02,
+  "log_ingest_gb": 3.22,
+  "t4_vm": [
+   0.579,
+   0.3404109589041096,
+   0.21986301369863015
+  ],
+  "a10_vm": [
+   4.48,
+   2.8672374429223746,
+   1.9711948249619482
+  ],
+  "a100_vm": [
+   5.142,
+   3.3614155251141553,
+   1.9082572298325724
+  ],
+  "h100_vm": [
+   9.772,
+   7.328995433789954,
+   5.374581430745814
+  ],
+  "nvaie_per_gpu_hr": 0.5136986301369864,
+  "plivo_min_inr": 0.38,
+  "plivo_pulse_s": 30,
+  "plivo_number_mo_inr": 200,
+  "vobiz_via_sarvam_min_inr": 0.4,
+  "sarvam_number_mo_inr": 59,
+  "tata_stream_unl_conc_mo_inr": 1100,
+  "tata_fup_min_per_user": 5000,
+  "acs_direct_routing_min": 0.004,
+  "twilio_in_mobile_min": 0.0496
+ },
+ "scenarios": [
+  {
+   "name": "A. Managed today (quality bar)",
+   "monthly_min": 100000,
+   "base_components_inr": {
+    "telephony": 0.4775,
+    "asr": 0.855,
+    "llm": 1.2969514,
+    "tts": 0.9196000000000001,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.76,
+    "support": 0.15
+   },
+   "base_cogs_inr": 4.534354729467774,
+   "base_price_inr_at_gm": 11.335886823669433,
+   "mc": {
+    "cogs_p10": 5.004955946616654,
+    "cogs_p50": 5.883336187132535,
+    "cogs_p90": 6.95621366616743,
+    "price_p10": 12.033991727365182,
+    "price_p50": 14.761452902932387,
+    "price_p90": 18.32511879380456,
+    "p_cogs_le_2": 0.0,
+    "comp_p50": {
+     "telephony": 0.47338787397311954,
+     "asr": 1.130338637110886,
+     "llm": 1.8696652686549406,
+     "tts": 0.8929834220549462,
+     "infra": 0.08054578164361319,
+     "storage": 0.01905012348814781,
+     "observability": 0.01107855187562347,
+     "fixed_platform": 1.0574690954830863,
+     "support": 0.19006271406377015
+    }
+   },
+   "llm": "gpt6_sol",
+   "tts": "hd",
+   "asr": "voicelive_std",
+   "telephony": "plivo"
+  },
+  {
+   "name": "A0. Plain cascade reference (S1 STT + 5.6 terra + HD)",
+   "monthly_min": 100000,
+   "base_components_inr": {
+    "telephony": 0.4775,
+    "asr": 1.5833333333333333,
+    "llm": 1.3607913999999999,
+    "tts": 0.9196000000000001,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.76,
+    "support": 0.15
+   },
+   "base_cogs_inr": 5.326528062801106,
+   "base_price_inr_at_gm": 13.316320157002766,
+   "mc": {
+    "cogs_p10": 5.51049515472399,
+    "cogs_p50": 6.362311086661313,
+    "cogs_p90": 7.398076011138413,
+    "price_p10": 13.170080743650722,
+    "price_p50": 15.969263505760303,
+    "price_p90": 19.601215233754093,
+    "p_cogs_le_2": 0.0,
+    "comp_p50": {
+     "telephony": 0.47367206875383244,
+     "asr": 1.560009870610379,
+     "llm": 1.9520063474700713,
+     "tts": 0.895539783503916,
+     "infra": 0.0803678161711068,
+     "storage": 0.019019626928473397,
+     "observability": 0.011096107145132967,
+     "fixed_platform": 1.0527164114215575,
+     "support": 0.191806081472206
+    }
+   },
+   "llm": "gpt56_terra",
+   "tts": "hd",
+   "asr": "s1",
+   "telephony": "plivo"
+  },
+  {
+   "name": "B. Managed optimised",
+   "monthly_min": 1000000,
+   "base_components_inr": {
+    "telephony": 0.27555555555555555,
+    "asr": 0.7125,
+    "llm": 0.7941658,
+    "tts": 0.3056625,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.076,
+    "support": 0.15
+   },
+   "base_cogs_inr": 2.389187185023329,
+   "base_price_inr_at_gm": 5.972967962558322,
+   "mc": {
+    "cogs_p10": 2.6738185679707467,
+    "cogs_p50": 3.055760334521777,
+    "cogs_p90": 3.505278776821991,
+    "price_p10": 6.376750313252298,
+    "price_p50": 7.658362872821304,
+    "price_p90": 9.324829869872808,
+    "p_cogs_le_2": 0.0,
+    "comp_p50": {
+     "telephony": 0.2847475056863257,
+     "asr": 0.9433708315056638,
+     "llm": 1.0289155119901565,
+     "tts": 0.31404633768541107,
+     "infra": 0.08029749888975225,
+     "storage": 0.019275817025730915,
+     "observability": 0.011005734445054966,
+     "fixed_platform": 0.10586478664005566,
+     "support": 0.1913452089801699
+    }
+   },
+   "llm": "gpt61_sol",
+   "tts": "neural_commit400m",
+   "asr": "voicelive_byo",
+   "telephony": "tata_unlimited"
+  },
+  {
+   "name": "C. Hybrid (self-hosted ASR on T4, managed LLM+TTS)",
+   "monthly_min": 1000000,
+   "base_components_inr": {
+    "telephony": 0.27555555555555555,
+    "asr": 0.03978473581213308,
+    "llm": 0.7941658,
+    "tts": 0.3056625,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.326,
+    "support": 0.15
+   },
+   "base_cogs_inr": 1.9664719208354622,
+   "base_price_inr_at_gm": 4.916179802088656,
+   "mc": {
+    "cogs_p10": 2.0742179469014213,
+    "cogs_p50": 2.3854865911464027,
+    "cogs_p90": 2.7712504049849045,
+    "price_p10": 4.9337893383518425,
+    "price_p50": 5.996064483751363,
+    "price_p90": 7.341204378327504,
+    "p_cogs_le_2": 0.0511,
+    "comp_p50": {
+     "telephony": 0.2847455389598841,
+     "asr": 0.03595376495220925,
+     "llm": 1.029992040327237,
+     "tts": 0.3144201956822435,
+     "infra": 0.0805607359411292,
+     "storage": 0.018943745077395515,
+     "observability": 0.010996875603473124,
+     "fixed_platform": 0.3755396348807748,
+     "support": 0.19120620218089437
+    }
+   },
+   "llm": "gpt61_sol",
+   "tts": "neural_commit400m",
+   "asr": "selfhost",
+   "telephony": "tata_unlimited"
+  },
+  {
+   "name": "D. Self-hosted at scale (ASR+TTS on H100, managed LLM)",
+   "monthly_min": 5000000,
+   "base_components_inr": {
+    "telephony": 0.27511111111111114,
+    "asr": 0.14909088888888888,
+    "llm": 0.7941658,
+    "tts": 0.14909088888888888,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.1152,
+    "support": 0.15
+   },
+   "base_cogs_inr": 1.7079620183566624,
+   "base_price_inr_at_gm": 4.269905045891655,
+   "mc": {
+    "cogs_p10": 1.800924836198738,
+    "cogs_p50": 2.0855369761087137,
+    "cogs_p90": 2.4508549338232077,
+    "price_p10": 4.302729124378155,
+    "price_p50": 5.242874085553488,
+    "price_p90": 6.4637675444462435,
+    "p_cogs_le_2": 0.36235,
+    "comp_p50": {
+     "telephony": 0.2848484055793346,
+     "asr": 0.14813870287228084,
+     "llm": 1.0325384682722933,
+     "tts": 0.14699054653215196,
+     "infra": 0.0801171491755396,
+     "storage": 0.01932803326505352,
+     "observability": 0.011027034308681287,
+     "fixed_platform": 0.13388646820081193,
+     "support": 0.19186724097325897
+    }
+   },
+   "llm": "gpt61_sol",
+   "tts": "selfhost",
+   "asr": "selfhost",
+   "telephony": "tata_unlimited"
+  },
+  {
+   "name": "B-luna. Managed optimised + 6-luna speaking model",
+   "monthly_min": 1000000,
+   "base_components_inr": {
+    "telephony": 0.27555555555555555,
+    "asr": 0.7125,
+    "llm": 0.09588387999999999,
+    "tts": 0.3056625,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.076,
+    "support": 0.15
+   },
+   "base_cogs_inr": 1.690905265023329,
+   "base_price_inr_at_gm": 4.227263162558322,
+   "mc": {
+    "cogs_p10": 1.8665667980411975,
+    "cogs_p50": 2.1171734170317804,
+    "cogs_p90": 2.4306890364467715,
+    "price_p10": 4.429339361404465,
+    "price_p50": 5.322712922897654,
+    "price_p90": 6.444479266320469,
+    "p_cogs_le_2": 0.2944,
+    "comp_p50": {
+     "telephony": 0.2847475056863257,
+     "asr": 0.9433708315056638,
+     "llm": 0.1156934935832164,
+     "tts": 0.31404633768541107,
+     "infra": 0.08029749888975225,
+     "storage": 0.019275817025730915,
+     "observability": 0.011005734445054966,
+     "fixed_platform": 0.10586478664005566,
+     "support": 0.1913452089801699
+    }
+   },
+   "llm": "gpt6_luna",
+   "tts": "neural_commit400m",
+   "asr": "voicelive_byo",
+   "telephony": "tata_unlimited"
+  },
+  {
+   "name": "B-HD. Managed optimised but DragonHD voice",
+   "monthly_min": 1000000,
+   "base_components_inr": {
+    "telephony": 0.27555555555555555,
+    "asr": 0.7125,
+    "llm": 0.7941658,
+    "tts": 0.6897000000000001,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.076,
+    "support": 0.15
+   },
+   "base_cogs_inr": 2.773224685023329,
+   "base_price_inr_at_gm": 6.933061712558322,
+   "mc": {
+    "cogs_p10": 3.0456082847078885,
+    "cogs_p50": 3.459094881893113,
+    "cogs_p90": 3.930604035985934,
+    "price_p10": 7.252631256722685,
+    "price_p50": 8.656446317859123,
+    "price_p90": 10.488261637060969,
+    "p_cogs_le_2": 0.0,
+    "comp_p50": {
+     "telephony": 0.2847475056863257,
+     "asr": 0.9433708315056638,
+     "llm": 1.0289155119901565,
+     "tts": 0.7086173773414405,
+     "infra": 0.08029749888975225,
+     "storage": 0.019275817025730915,
+     "observability": 0.011005734445054966,
+     "fixed_platform": 0.10586478664005566,
+     "support": 0.1913452089801699
+    }
+   },
+   "llm": "gpt61_sol",
+   "tts": "hd",
+   "asr": "voicelive_byo",
+   "telephony": "tata_unlimited"
+  },
+  {
+   "name": "D-lite. Self-hosted at scale + 6-luna speaking model",
+   "monthly_min": 5000000,
+   "base_components_inr": {
+    "telephony": 0.27511111111111114,
+    "asr": 0.14909088888888888,
+    "llm": 0.09588387999999999,
+    "tts": 0.14909088888888888,
+    "infra": 0.064125,
+    "storage": 0.0053437499999999995,
+    "observability": 0.005834579467773438,
+    "fixed_platform": 0.1152,
+    "support": 0.15
+   },
+   "base_cogs_inr": 1.0096800983566623,
+   "base_price_inr_at_gm": 2.5242002458916555,
+   "mc": {
+    "cogs_p10": 1.0428010529996663,
+    "cogs_p50": 1.1611105328778646,
+    "cogs_p90": 1.2989678472347683,
+    "price_p10": 2.4634903838893747,
+    "price_p50": 2.9112890256129154,
+    "price_p90": 3.4750353484089187,
+    "p_cogs_le_2": 1.0,
+    "comp_p50": {
+     "telephony": 0.2848484055793346,
+     "asr": 0.14813870287228084,
+     "llm": 0.11573656573039146,
+     "tts": 0.14699054653215196,
+     "infra": 0.0801171491755396,
+     "storage": 0.01932803326505352,
+     "observability": 0.011027034308681287,
+     "fixed_platform": 0.13388646820081193,
+     "support": 0.19186724097325897
+    }
+   },
+   "llm": "gpt6_luna",
+   "tts": "selfhost",
+   "asr": "selfhost",
+   "telephony": "tata_unlimited"
+  }
+ ],
+ "tornado": {
+  "A. Managed today (quality bar)": {
+   "base": 4.534354729467774,
+   "rows": [
+    {
+     "input": "fixed_platform_usd_mo",
+     "low_val": 300,
+     "high_val": 2500,
+     "cogs_at_low": 4.059354729467773,
+     "cogs_at_high": 6.149354729467773,
+     "swing": 2.09
+    },
+    {
+     "input": "monthly_min",
+     "low_val": 33333.333333333336,
+     "high_val": 300000,
+     "cogs_at_low": 6.054354729467773,
+     "cogs_at_high": 4.027688062801107,
+     "swing": 2.0266666666666664
+    },
+    {
+     "input": "llm_cache_hit",
+     "low_val": 0.6,
+     "high_val": 0.92,
+     "cogs_at_low": 5.509738729467774,
+     "cogs_at_high": 4.261247209467773,
+     "swing": 1.2484915200000009
+    },
+    {
+     "input": "turns_per_min",
+     "low_val": 3.0,
+     "high_val": 6.0,
+     "cogs_at_low": 4.216648129467774,
+     "cogs_at_high": 5.169767929467773,
+     "swing": 0.9531197999999996
+    },
+    {
+     "input": "asr_ref_factor",
+     "low_val": 1.0,
+     "high_val": 2.0,
+     "cogs_at_low": 4.534354729467774,
+     "cogs_at_high": 5.389354729467773,
+     "swing": 0.8549999999999995
+    },
+    {
+     "input": "llm_sys_tok",
+     "low_val": 2000,
+     "high_val": 5000,
+     "cogs_at_low": 4.285834729467774,
+     "cogs_at_high": 5.031394729467774,
+     "swing": 0.7455600000000002
+    },
+    {
+     "input": "llm_call_multiplier",
+     "low_val": 1.0,
+     "high_val": 1.6,
+     "cogs_at_low": 4.322550329467774,
+     "cogs_at_high": 4.957963529467774,
+     "swing": 0.6354132000000003
+    },
+    {
+     "input": "agent_talk_share",
+     "low_val": 0.35,
+     "high_val": 0.65,
+     "cogs_at_low": 4.258474729467773,
+     "cogs_at_high": 4.810234729467774,
+     "swing": 0.5517600000000007
+    },
+    {
+     "input": "tts_chars_per_agent_min",
+     "low_val": 610,
+     "high_val": 1040,
+     "cogs_at_low": 4.315949729467773,
+     "cogs_at_high": 4.810234729467774,
+     "swing": 0.49428500000000053
+    },
+    {
+     "input": "fx_inr_per_usd",
+     "low_val": 88.0,
+     "high_val": 97.0,
+     "cogs_at_low": 4.2464812230859375,
+     "cogs_at_high": 4.616604302719726,
+     "swing": 0.3701230796337889
+    },
+    {
+     "input": "support_inr_per_min",
+     "low_val": 0.05,
+     "high_val": 0.4,
+     "cogs_at_low": 4.434354729467773,
+     "cogs_at_high": 4.784354729467774,
+     "swing": 0.35000000000000053
+    },
+    {
+     "input": "llm_out_tok_per_turn",
+     "low_val": 50,
+     "high_val": 110,
+     "cogs_at_low": 4.443154729467773,
+     "cogs_at_high": 4.716754729467773,
+     "swing": 0.27360000000000007
+    },
+    {
+     "input": "vl_tok_per_s",
+     "low_val": 9.3,
+     "high_val": 12.0,
+     "cogs_at_low": 4.474504729467774,
+     "cogs_at_high": 4.705354729467773,
+     "swing": 0.23084999999999933
+    },
+    {
+     "input": "llm_ctx_tok",
+     "low_val": 100,
+     "high_val": 1000,
+     "cogs_at_low": 4.4846507294677735,
+     "cogs_at_high": 4.7083187294677735,
+     "swing": 0.22366799999999998
+    },
+    {
+     "input": "tts_waste",
+     "low_val": 1.0,
+     "high_val": 1.25,
+     "cogs_at_low": 4.450754729467773,
+     "cogs_at_high": 4.659754729467774,
+     "swing": 0.20900000000000052
+    },
+    {
+     "input": "llm_hist_tok",
+     "low_val": 200,
+     "high_val": 800,
+     "cogs_at_low": 4.4846507294677735,
+     "cogs_at_high": 4.633762729467773,
+     "swing": 0.1491119999999997
+    },
+    {
+     "input": "avg_call_min",
+     "low_val": 1.0,
+     "high_val": 3.5,
+     "cogs_at_low": 4.607979729467774,
+     "cogs_at_high": 4.502801158039202,
+     "swing": 0.10517857142857157
+    },
+    {
+     "input": "tts_cache_share",
+     "low_val": 0.0,
+     "high_val": 0.1,
+     "cogs_at_low": 4.534354729467774,
+     "cogs_at_high": 4.4423947294677735,
+     "swing": 0.09196000000000026
+    },
+    {
+     "input": "infra_vcpu_per_call",
+     "low_val": 0.1,
+     "high_val": 0.5,
+     "cogs_at_low": 4.503574729467774,
+     "cogs_at_high": 4.585654729467773,
+     "swing": 0.08207999999999949
+    },
+    {
+     "input": "minutes_per_number_mo",
+     "low_val": 2000,
+     "high_val": 10000,
+     "cogs_at_low": 4.584354729467774,
+     "cogs_at_high": 4.5043547294677735,
+     "swing": 0.08000000000000007
+    },
+    {
+     "input": "infra_headroom",
+     "low_val": 1.2,
+     "high_val": 2.5,
+     "cogs_at_low": 4.521529729467773,
+     "cogs_at_high": 4.577104729467774,
+     "swing": 0.05557500000000015
+    },
+    {
+     "input": "pulse_s",
+     "low_val": 30,
+     "high_val": 60,
+     "cogs_at_low": 4.534354729467774,
+     "cogs_at_high": 4.581854729467773,
+     "swing": 0.04749999999999943
+    },
+    {
+     "input": "rec_mb_per_min",
+     "low_val": 0.12,
+     "high_val": 1.92,
+     "cogs_at_low": 4.531682854467774,
+     "cogs_at_high": 4.571760979467774,
+     "swing": 0.040078124999999964
+    },
+    {
+     "input": "post_call_tok",
+     "low_val": 2000,
+     "high_val": 8000,
+     "cogs_at_low": 4.524854729467774,
+     "cogs_at_high": 4.553354729467774,
+     "swing": 0.028500000000000192
+    },
+    {
+     "input": "log_kb_per_min",
+     "low_val": 5,
+     "high_val": 100,
+     "cogs_at_low": 4.529978794866944,
+     "cogs_at_high": 4.5576930473388675,
+     "swing": 0.027714252471923828
+    },
+    {
+     "input": "guard_in_tok_per_turn",
+     "low_val": 800,
+     "high_val": 2500,
+     "cogs_at_low": 4.523821129467773,
+     "cogs_at_high": 4.549402729467773,
+     "swing": 0.02558159999999976
+    },
+    {
+     "input": "infra_gib_per_call",
+     "low_val": 0.25,
+     "high_val": 1.0,
+     "cogs_at_low": 4.527942229467773,
+     "cogs_at_high": 4.547179729467773,
+     "swing": 0.01923750000000002
+    },
+    {
+     "input": "rec_retention_mo",
+     "low_val": 3,
+     "high_val": 36,
+     "cogs_at_low": 4.5303469169677735,
+     "cogs_at_high": 4.545042229467773,
+     "swing": 0.01469531249999978
+    }
+   ]
+  },
+  "B. Managed optimised": {
+   "base": 2.389187185023329,
+   "rows": [
+    {
+     "input": "asr_ref_factor",
+     "low_val": 1.0,
+     "high_val": 2.0,
+     "cogs_at_low": 2.389187185023329,
+     "cogs_at_high": 3.101687185023329,
+     "swing": 0.7125000000000004
+    },
+    {
+     "input": "turns_per_min",
+     "low_val": 3.0,
+     "high_val": 6.0,
+     "cogs_at_low": 2.197176985023329,
+     "cogs_at_high": 2.7732075850233286,
+     "swing": 0.5760305999999997
+    },
+    {
+     "input": "llm_cache_hit",
+     "low_val": 0.8,
+     "high_val": 0.95,
+     "cogs_at_low": 2.686863985023329,
+     "cogs_at_high": 2.240348785023329,
+     "swing": 0.4465151999999999
+    },
+    {
+     "input": "llm_call_multiplier",
+     "low_val": 1.0,
+     "high_val": 1.6,
+     "cogs_at_low": 2.261180385023329,
+     "cogs_at_high": 2.645200785023329,
+     "swing": 0.3840203999999998
+    },
+    {
+     "input": "support_inr_per_min",
+     "low_val": 0.05,
+     "high_val": 0.4,
+     "cogs_at_low": 2.289187185023329,
+     "cogs_at_high": 2.6391871850233293,
+     "swing": 0.3500000000000001
+    },
+    {
+     "input": "llm_out_tok_per_turn",
+     "low_val": 50,
+     "high_val": 110,
+     "cogs_at_low": 2.297987185023329,
+     "cogs_at_high": 2.5715871850233287,
+     "swing": 0.2735999999999996
+    },
+    {
+     "input": "llm_sys_tok",
+     "low_val": 1500,
+     "high_val": 3000,
+     "cogs_at_low": 2.311667185023329,
+     "cogs_at_high": 2.544227185023329,
+     "swing": 0.23255999999999988
+    },
+    {
+     "input": "tata_fup_use",
+     "low_val": 0.5,
+     "high_val": 1.0,
+     "cogs_at_low": 2.554187185023329,
+     "cogs_at_high": 2.334187185023329,
+     "swing": 0.21999999999999975
+    },
+    {
+     "input": "fixed_platform_usd_mo",
+     "low_val": 300,
+     "high_val": 2500,
+     "cogs_at_low": 2.341687185023329,
+     "cogs_at_high": 2.550687185023329,
+     "swing": 0.20900000000000007
+    },
+    {
+     "input": "monthly_min",
+     "low_val": 333333.3333333333,
+     "high_val": 3000000,
+     "cogs_at_low": 2.5422982961344402,
+     "cogs_at_high": 2.338150147986292,
+     "swing": 0.2041481481481484
+    },
+    {
+     "input": "vl_tok_per_s",
+     "low_val": 9.3,
+     "high_val": 12.0,
+     "cogs_at_low": 2.339312185023329,
+     "cogs_at_high": 2.531687185023329,
+     "swing": 0.19237499999999974
+    },
+    {
+     "input": "fx_inr_per_usd",
+     "low_val": 88.0,
+     "high_val": 97.0,
+     "cogs_at_low": 2.244498538641493,
+     "cogs_at_high": 2.430526798275282,
+     "swing": 0.186028259633789
+    },
+    {
+     "input": "agent_talk_share",
+     "low_val": 0.35,
+     "high_val": 0.65,
+     "cogs_at_low": 2.297488435023329,
+     "cogs_at_high": 2.480885935023329,
+     "swing": 0.18339750000000032
+    },
+    {
+     "input": "tts_chars_per_agent_min",
+     "low_val": 610,
+     "high_val": 1040,
+     "cogs_at_low": 2.316592341273329,
+     "cogs_at_high": 2.480885935023329,
+     "swing": 0.16429359375000008
+    },
+    {
+     "input": "llm_ctx_tok",
+     "low_val": 100,
+     "high_val": 1000,
+     "cogs_at_low": 2.358179185023329,
+     "cogs_at_high": 2.497715185023329,
+     "swing": 0.1395360000000001
+    },
+    {
+     "input": "tts_cache_share",
+     "low_val": 0.1,
+     "high_val": 0.35,
+     "cogs_at_low": 2.450319685023329,
+     "cogs_at_high": 2.348432185023329,
+     "swing": 0.10188750000000013
+    },
+    {
+     "input": "llm_hist_tok",
+     "low_val": 200,
+     "high_val": 800,
+     "cogs_at_low": 2.358179185023329,
+     "cogs_at_high": 2.4512031850233287,
+     "swing": 0.09302399999999977
+    },
+    {
+     "input": "infra_vcpu_per_call",
+     "low_val": 0.1,
+     "high_val": 0.5,
+     "cogs_at_low": 2.3584071850233292,
+     "cogs_at_high": 2.440487185023329,
+     "swing": 0.08207999999999993
+    },
+    {
+     "input": "tts_waste",
+     "low_val": 1.0,
+     "high_val": 1.25,
+     "cogs_at_low": 2.361399685023329,
+     "cogs_at_high": 2.430868435023329,
+     "swing": 0.06946874999999997
+    },
+    {
+     "input": "infra_headroom",
+     "low_val": 1.2,
+     "high_val": 2.5,
+     "cogs_at_low": 2.376362185023329,
+     "cogs_at_high": 2.431937185023329,
+     "swing": 0.05557500000000015
+    },
+    {
+     "input": "rec_mb_per_min",
+     "low_val": 0.12,
+     "high_val": 1.92,
+     "cogs_at_low": 2.386515310023329,
+     "cogs_at_high": 2.426593435023329,
+     "swing": 0.040078124999999964
+    },
+    {
+     "input": "avg_call_min",
+     "low_val": 1.0,
+     "high_val": 3.5,
+     "cogs_at_low": 2.4153121850233292,
+     "cogs_at_high": 2.3779907564519003,
+     "swing": 0.03732142857142895
+    },
+    {
+     "input": "post_call_tok",
+     "low_val": 2000,
+     "high_val": 8000,
+     "cogs_at_low": 2.379687185023329,
+     "cogs_at_high": 2.408187185023329,
+     "swing": 0.028499999999999748
+    },
+    {
+     "input": "log_kb_per_min",
+     "low_val": 5,
+     "high_val": 100,
+     "cogs_at_low": 2.3848112504224988,
+     "cogs_at_high": 2.4125255028944226,
+     "swing": 0.027714252471923828
+    },
+    {
+     "input": "guard_in_tok_per_turn",
+     "low_val": 800,
+     "high_val": 2500,
+     "cogs_at_low": 2.378653585023329,
+     "cogs_at_high": 2.404235185023329,
+     "swing": 0.025581600000000204
+    },
+    {
+     "input": "infra_gib_per_call",
+     "low_val": 0.25,
+     "high_val": 1.0,
+     "cogs_at_low": 2.382774685023329,
+     "cogs_at_high": 2.402012185023329,
+     "swing": 0.01923750000000002
+    },
+    {
+     "input": "rec_retention_mo",
+     "low_val": 3,
+     "high_val": 36,
+     "cogs_at_low": 2.385179372523329,
+     "cogs_at_high": 2.3998746850233292,
+     "swing": 0.014695312500000224
+    },
+    {
+     "input": "minutes_per_number_mo",
+     "low_val": 2000,
+     "high_val": 10000,
+     "cogs_at_low": 2.389187185023329,
+     "cogs_at_high": 2.389187185023329,
+     "swing": 0.0
+    }
+   ]
+  },
+  "D. Self-hosted at scale (ASR+TTS on H100, managed LLM)": {
+   "base": 1.7079620183566624,
+   "rows": [
+    {
+     "input": "monthly_min",
+     "low_val": 1666666.6666666667,
+     "high_val": 15000000,
+     "cogs_at_low": 2.53494779613444,
+     "cogs_at_high": 1.5496072141692279,
+     "swing": 0.9853405819652121
+    },
+    {
+     "input": "turns_per_min",
+     "low_val": 3.0,
+     "high_val": 6.0,
+     "cogs_at_low": 1.5159518183566623,
+     "cogs_at_high": 2.091982418356662,
+     "swing": 0.5760305999999997
+    },
+    {
+     "input": "llm_cache_hit",
+     "low_val": 0.8,
+     "high_val": 0.95,
+     "cogs_at_low": 2.0056388183566622,
+     "cogs_at_high": 1.5591236183566626,
+     "swing": 0.44651519999999967
+    },
+    {
+     "input": "llm_call_multiplier",
+     "low_val": 1.0,
+     "high_val": 1.6,
+     "cogs_at_low": 1.5799552183566623,
+     "cogs_at_high": 1.9639756183566623,
+     "swing": 0.38402040000000004
+    },
+    {
+     "input": "support_inr_per_min",
+     "low_val": 0.05,
+     "high_val": 0.4,
+     "cogs_at_low": 1.6079620183566623,
+     "cogs_at_high": 1.9579620183566624,
+     "swing": 0.3500000000000001
+    },
+    {
+     "input": "llm_out_tok_per_turn",
+     "low_val": 50,
+     "high_val": 110,
+     "cogs_at_low": 1.6167620183566622,
+     "cogs_at_high": 1.8903620183566623,
+     "swing": 0.27360000000000007
+    },
+    {
+     "input": "llm_sys_tok",
+     "low_val": 1500,
+     "high_val": 3000,
+     "cogs_at_low": 1.6304420183566624,
+     "cogs_at_high": 1.8630020183566622,
+     "swing": 0.23255999999999988
+    },
+    {
+     "input": "tata_fup_use",
+     "low_val": 0.5,
+     "high_val": 1.0,
+     "cogs_at_low": 1.8729620183566624,
+     "cogs_at_high": 1.6529620183566625,
+     "swing": 0.21999999999999997
+    },
+    {
+     "input": "llm_ctx_tok",
+     "low_val": 100,
+     "high_val": 1000,
+     "cogs_at_low": 1.6769540183566622,
+     "cogs_at_high": 1.8164900183566624,
+     "swing": 0.1395360000000001
+    },
+    {
+     "input": "gpu_ops_inr_mo",
+     "low_val": 300000,
+     "high_val": 900000,
+     "cogs_at_low": 1.6679620183566624,
+     "cogs_at_high": 1.7879620183566625,
+     "swing": 0.1200000000000001
+    },
+    {
+     "input": "fx_inr_per_usd",
+     "low_val": 88.0,
+     "high_val": 97.0,
+     "cogs_at_low": 1.6208045830859374,
+     "cogs_at_high": 1.7328641427197264,
+     "swing": 0.112059559633789
+    },
+    {
+     "input": "llm_hist_tok",
+     "low_val": 200,
+     "high_val": 800,
+     "cogs_at_low": 1.6769540183566622,
+     "cogs_at_high": 1.7699780183566622,
+     "swing": 0.093024
+    },
+    {
+     "input": "gpu_util",
+     "low_val": 0.2,
+     "high_val": 0.55,
+     "cogs_at_low": 1.7913780675009485,
+     "cogs_at_high": 1.7079620183566624,
+     "swing": 0.08341604914428613
+    },
+    {
+     "input": "infra_vcpu_per_call",
+     "low_val": 0.1,
+     "high_val": 0.5,
+     "cogs_at_low": 1.6771820183566624,
+     "cogs_at_high": 1.7592620183566623,
+     "swing": 0.08207999999999993
+    },
+    {
+     "input": "gpu_derate",
+     "low_val": 0.3,
+     "high_val": 0.8,
+     "cogs_at_low": 1.780306308546988,
+     "cogs_at_high": 1.7079620183566624,
+     "swing": 0.07234429019032551
+    },
+    {
+     "input": "infra_headroom",
+     "low_val": 1.2,
+     "high_val": 2.5,
+     "cogs_at_low": 1.6951370183566623,
+     "cogs_at_high": 1.7507120183566625,
+     "swing": 0.05557500000000015
+    },
+    {
+     "input": "fixed_platform_usd_mo",
+     "low_val": 300,
+     "high_val": 2500,
+     "cogs_at_low": 1.6984620183566623,
+     "cogs_at_high": 1.7402620183566624,
+     "swing": 0.04180000000000006
+    },
+    {
+     "input": "rec_mb_per_min",
+     "low_val": 0.12,
+     "high_val": 1.92,
+     "cogs_at_low": 1.7052901433566623,
+     "cogs_at_high": 1.7453682683566625,
+     "swing": 0.040078125000000187
+    },
+    {
+     "input": "avg_call_min",
+     "low_val": 1.0,
+     "high_val": 3.5,
+     "cogs_at_low": 1.7340870183566623,
+     "cogs_at_high": 1.6967655897852338,
+     "swing": 0.037321428571428505
+    },
+    {
+     "input": "post_call_tok",
+     "low_val": 2000,
+     "high_val": 8000,
+     "cogs_at_low": 1.6984620183566623,
+     "cogs_at_high": 1.7269620183566623,
+     "swing": 0.02849999999999997
+    },
+    {
+     "input": "log_kb_per_min",
+     "low_val": 5,
+     "high_val": 100,
+     "cogs_at_low": 1.7035860837558323,
+     "cogs_at_high": 1.7313003362277561,
+     "swing": 0.027714252471923828
+    },
+    {
+     "input": "guard_in_tok_per_turn",
+     "low_val": 800,
+     "high_val": 2500,
+     "cogs_at_low": 1.6974284183566621,
+     "cogs_at_high": 1.7230100183566623,
+     "swing": 0.025581600000000204
+    },
+    {
+     "input": "infra_gib_per_call",
+     "low_val": 0.25,
+     "high_val": 1.0,
+     "cogs_at_low": 1.7015495183566625,
+     "cogs_at_high": 1.7207870183566623,
+     "swing": 0.019237499999999796
+    },
+    {
+     "input": "rec_retention_mo",
+     "low_val": 3,
+     "high_val": 36,
+     "cogs_at_low": 1.7039542058566624,
+     "cogs_at_high": 1.7186495183566624,
+     "swing": 0.014695312500000002
+    },
+    {
+     "input": "agent_talk_share",
+     "low_val": 0.35,
+     "high_val": 0.65,
+     "cogs_at_low": 1.7079620183566624,
+     "cogs_at_high": 1.7079620183566624,
+     "swing": 0.0
+    },
+    {
+     "input": "tts_chars_per_agent_min",
+     "low_val": 610,
+     "high_val": 1040,
+     "cogs_at_low": 1.7079620183566624,
+     "cogs_at_high": 1.7079620183566624,
+     "swing": 0.0
+    },
+    {
+     "input": "tts_waste",
+     "low_val": 1.0,
+     "high_val": 1.25,
+     "cogs_at_low": 1.7079620183566624,
+     "cogs_at_high": 1.7079620183566624,
+     "swing": 0.0
+    },
+    {
+     "input": "vl_tok_per_s",
+     "low_val": 9.3,
+     "high_val": 12.0,
+     "cogs_at_low": 1.7079620183566624,
+     "cogs_at_high": 1.7079620183566624,
+     "swing": 0.0
+    },
+    {
+     "input": "minutes_per_number_mo",
+     "low_val": 2000,
+     "high_val": 10000,
+     "cogs_at_low": 1.7079620183566624,
+     "cogs_at_high": 1.7079620183566624,
+     "swing": 0.0
+    }
+   ]
+  }
+ },
+ "levers_B": {
+  "base": 2.389187185023329,
+  "rows": [
+   {
+    "lever": "llm",
+    "option": "gpt6_luna",
+    "cogs": 1.690905265023329,
+    "delta_vs_base": -0.6982819199999999,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.09588387999999999,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt54_nano",
+    "cogs": 1.735310545023329,
+    "delta_vs_base": -0.6538766399999998,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.14028916,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt41_nano",
+    "cogs": 1.701356785023329,
+    "delta_vs_base": -0.6878303999999997,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.1063354,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt41_mini",
+    "cogs": 1.860591985023329,
+    "delta_vs_base": -0.5285951999999998,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.2655706,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "deepseek_v4_flash",
+    "cogs": 1.719379729023329,
+    "delta_vs_base": -0.6698074559999998,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.124358344,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt56_luna",
+    "cogs": 1.739916145023329,
+    "delta_vs_base": -0.6492710399999999,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.14489475999999998,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt61_sol",
+    "cogs": 2.389187185023329,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt6_sol",
+    "cogs": 2.500815985023329,
+    "delta_vs_base": 0.11162880000000008,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.9057945999999999,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt56_terra",
+    "cogs": 2.564655985023329,
+    "delta_vs_base": 0.17546879999999998,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.9696345999999999,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "neural_commit400m",
+    "cogs": 2.389187185023329,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "neural_commit80m",
+    "cogs": 2.459724685023329,
+    "delta_vs_base": 0.07053750000000036,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.3762000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "neural",
+    "cogs": 2.553774685023329,
+    "delta_vs_base": 0.1645875000000001,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.4702500000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "hd",
+    "cogs": 2.773224685023329,
+    "delta_vs_base": 0.38403750000000025,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.6897000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "asr",
+    "option": "voicelive_byo",
+    "cogs": 2.389187185023329,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "asr",
+    "option": "voicelive_std",
+    "cogs": 2.531687185023329,
+    "delta_vs_base": 0.14250000000000007,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.855,
+     "llm": 0.7941658,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "asr",
+    "option": "s1",
+    "cogs": 3.2600205183566624,
+    "delta_vs_base": 0.8708333333333336,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 1.5833333333333333,
+     "llm": 0.7941658,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "telephony",
+    "option": "tata_unlimited",
+    "cogs": 2.389187185023329,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.27555555555555555,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "telephony",
+    "option": "plivo",
+    "cogs": 2.5911316294677733,
+    "delta_vs_base": 0.20194444444444448,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.7125,
+     "llm": 0.7941658,
+     "tts": 0.3056625,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.076,
+     "support": 0.15
+    }
+   }
+  ]
+ },
+ "levers_A": {
+  "base": 4.534354729467774,
+  "rows": [
+   {
+    "lever": "llm",
+    "option": "gpt6_luna",
+    "cogs": 3.3528450494677733,
+    "delta_vs_base": -1.1815096800000005,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 0.11544172000000001,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt54_nano",
+    "cogs": 3.4102873694677736,
+    "delta_vs_base": -1.1240673600000002,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 0.17288404,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt41_nano",
+    "cogs": 3.3649199294677734,
+    "delta_vs_base": -1.1694348000000003,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 0.1275166,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt41_mini",
+    "cogs": 3.5876987294677734,
+    "delta_vs_base": -0.9466560000000004,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 0.35029540000000003,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "deepseek_v4_flash",
+    "cogs": 3.3956570654677734,
+    "delta_vs_base": -1.1386976640000004,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 0.15825373599999998,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt56_luna",
+    "cogs": 3.4214137694677733,
+    "delta_vs_base": -1.1129409600000004,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 0.18401044,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt61_sol",
+    "cogs": 4.3901675294677736,
+    "delta_vs_base": -0.14418720000000018,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.1527642,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt6_sol",
+    "cogs": 4.534354729467774,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "llm",
+    "option": "gpt56_terra",
+    "cogs": 4.598194729467774,
+    "delta_vs_base": 0.0638399999999999,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.3607913999999999,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "neural_commit400m",
+    "cogs": 4.022304729467773,
+    "delta_vs_base": -0.5120500000000003,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.40755000000000013,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "neural_commit80m",
+    "cogs": 4.116354729467774,
+    "delta_vs_base": -0.41800000000000015,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.5016,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "neural",
+    "cogs": 4.2417547294677735,
+    "delta_vs_base": -0.2926000000000002,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.6270000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "tts",
+    "option": "hd",
+    "cogs": 4.534354729467774,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "asr",
+    "option": "voicelive_byo",
+    "cogs": 4.391854729467774,
+    "delta_vs_base": -0.14250000000000007,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.7125,
+     "llm": 1.2969514,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "asr",
+    "option": "voicelive_std",
+    "cogs": 4.534354729467774,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "asr",
+    "option": "s1",
+    "cogs": 5.262688062801106,
+    "delta_vs_base": 0.7283333333333326,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 1.5833333333333333,
+     "llm": 1.2969514,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "telephony",
+    "option": "tata_unlimited",
+    "cogs": 4.337410285023329,
+    "delta_vs_base": -0.19694444444444503,
+    "component": {
+     "telephony": 0.28055555555555556,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   },
+   {
+    "lever": "telephony",
+    "option": "plivo",
+    "cogs": 4.534354729467774,
+    "delta_vs_base": 0.0,
+    "component": {
+     "telephony": 0.4775,
+     "asr": 0.855,
+     "llm": 1.2969514,
+     "tts": 0.9196000000000001,
+     "infra": 0.064125,
+     "storage": 0.0053437499999999995,
+     "observability": 0.005834579467773438,
+     "fixed_platform": 0.76,
+     "support": 0.15
+    }
+   }
+  ]
+ },
+ "fx88": {
+  "A. Managed today (quality bar)": 4.2464812230859375,
+  "A0. Plain cascade reference (S1 STT + 5.6 terra + HD)": 4.980283889752604,
+  "B. Managed optimised": 2.244498538641493,
+  "C. Hybrid (self-hosted ASR on T4, managed LLM+TTS)": 1.871351767604311,
+  "D. Self-hosted at scale (ASR+TTS on H100, managed LLM)": 1.6208045830859374,
+  "B-luna. Managed optimised + 6-luna speaking model": 1.597668970641493,
+  "B-HD. Managed optimised but DragonHD voice": 2.6002385386414932,
+  "D-lite. Self-hosted at scale + 6-luna speaking model": 0.9739750150859375
+ },
+ "volume_curve_B": [
+  {
+   "monthly_min": 10000,
+   "cogs": 9.968187185023329,
+   "price": 24.92046796255832
+  },
+  {
+   "monthly_min": 50000,
+   "cogs": 3.8437427405788847,
+   "price": 9.609356851447211
+  },
+  {
+   "monthly_min": 100000,
+   "cogs": 3.078187185023329,
+   "price": 7.695467962558322
+  },
+  {
+   "monthly_min": 300000,
+   "cogs": 2.5678168146529585,
+   "price": 6.419542036632396
+  },
+  {
+   "monthly_min": 1000000,
+   "cogs": 2.389187185023329,
+   "price": 5.972967962558322
+  },
+  {
+   "monthly_min": 3000000,
+   "cogs": 2.338150147986292,
+   "price": 5.845375369965729
+  },
+  {
+   "monthly_min": 10000000,
+   "cogs": 2.320287185023329,
+   "price": 5.8007179625583225
+  }
+ ],
+ "volume_curve_D": [
+  {
+   "monthly_min": 100000,
+   "cogs": 21.969113573912217,
+   "price": 54.92278393478054
+  },
+  {
+   "monthly_min": 300000,
+   "cogs": 8.186017277615921,
+   "price": 20.4650431940398
+  },
+  {
+   "monthly_min": 1000000,
+   "cogs": 3.361933573912218,
+   "price": 8.404833934780545
+  },
+  {
+   "monthly_min": 3000000,
+   "cogs": 1.9836239442825883,
+   "price": 4.95905986070647
+  },
+  {
+   "monthly_min": 5000000,
+   "cogs": 1.7079620183566624,
+   "price": 4.269905045891655
+  },
+  {
+   "monthly_min": 10000000,
+   "cogs": 1.5688257326877464,
+   "price": 3.922064331719366
+  },
+  {
+   "monthly_min": 30000000,
+   "cogs": 1.5303886956507093,
+   "price": 3.825971739126773
+  }
+ ],
+ "selfhost_breakeven": {
+  "asr:t4_vm:on-demand": {
+   "inr_per_min_at_100pct": 0.036669999999999994,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.051466666666666654,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:t4_vm:1-yr RI": {
+   "inr_per_min_at_100pct": 0.021559360730593606,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.030258751902587516,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:t4_vm:3-yr RI": {
+   "inr_per_min_at_100pct": 0.013924657534246576,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.01954337899543379,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:a10_vm:on-demand": {
+   "inr_per_min_at_100pct": 0.12229885057471264,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.17164750957854405,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:a10_vm:1-yr RI": {
+   "inr_per_min_at_100pct": 0.07827228651655908,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.1098558407249952,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:a10_vm:3-yr RI": {
+   "inr_per_min_at_100pct": 0.05381135298028306,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.07552470593723938,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:a100_vm:on-demand": {
+   "inr_per_min_at_100pct": 0.06988412017167384,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.09808297567954222,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:a100_vm:1-yr RI": {
+   "inr_per_min_at_100pct": 0.04568447423259581,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.06411856032645026,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:a100_vm:3-yr RI": {
+   "inr_per_min_at_100pct": 0.02593482644264583,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.03639975641073099,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:h100_vm:on-demand": {
+   "inr_per_min_at_100pct": 0.08454826958105646,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.11866423800850029,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:h100_vm:1-yr RI": {
+   "inr_per_min_at_100pct": 0.06341116267851052,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.08899812305755862,
+   "breakeven_util_vs_hd": null
+  },
+  "asr:h100_vm:3-yr RI": {
+   "inr_per_min_at_100pct": 0.046501387606635,
+   "managed_inr_per_min": 0.7125,
+   "breakeven_util": 0.06526510541282105,
+   "breakeven_util_vs_hd": null
+  },
+  "tts:a100_vm:on-demand": {
+   "inr_per_min_at_100pct": 0.04132741116751269,
+   "managed_inr_per_min": 0.3056625,
+   "breakeven_util": 0.13520602353089664,
+   "breakeven_util_vs_hd": 0.044940638503167346
+  },
+  "tts:a100_vm:1-yr RI": {
+   "inr_per_min_at_100pct": 0.027016453036027475,
+   "managed_inr_per_min": 0.3056625,
+   "breakeven_util": 0.08838654737178252,
+   "breakeven_util_vs_hd": 0.029378483075279984
+  },
+  "tts:a100_vm:3-yr RI": {
+   "inr_per_min_at_100pct": 0.015337092794762636,
+   "managed_inr_per_min": 0.3056625,
+   "breakeven_util": 0.05017656007774142,
+   "breakeven_util_vs_hd": 0.016678004344022005
+  },
+  "tts:h100_vm:on-demand": {
+   "inr_per_min_at_100pct": 0.05335287356321839,
+   "managed_inr_per_min": 0.3056625,
+   "breakeven_util": 0.17454831247934696,
+   "breakeven_util_vs_hd": 0.058017478863873845
+  },
+  "tts:h100_vm:1-yr RI": {
+   "inr_per_min_at_100pct": 0.040014630241956645,
+   "managed_inr_per_min": 0.3056625,
+   "breakeven_util": 0.1309111527974699,
+   "breakeven_util_vs_hd": 0.04351308203779539
+  },
+  "tts:h100_vm:3-yr RI": {
+   "inr_per_min_at_100pct": 0.029343979075911054,
+   "managed_inr_per_min": 0.3056625,
+   "breakeven_util": 0.09600124017801023,
+   "breakeven_util_vs_hd": 0.03190950312734999
+  }
+ },
+ "salary_sample": {
+  "n": 1234,
+  "p10": 12000.0,
+  "p25": 13500.0,
+  "p50": 17000.0,
+  "p75": 20000.0,
+  "p90": 22500.0,
+  "basis": "mid-point of posted monthly band, unique postings, Apna, 2026-10-17",
+  "tiers": {
+   "tier1_metro": {
+    "n": 855,
+    "p25": 15000.0,
+    "p50": 17500.0,
+    "p75": 20000.0
+   },
+   "tier2_3": {
+    "n": 368,
+    "p25": 12500.0,
+    "p50": 14000.0,
+    "p75": 17500.0
+   },
+   "wfh": {
+    "n": 11,
+    "p25": 10000.0,
+    "p50": 12500.0,
+    "p75": 15500.0
+   }
+  },
+  "by_city_median": {
+   "mumbai/bombay": 17500.0,
+   "mumbai metropolitan": 17500.0,
+   "pune": 16500.0,
+   "thane": 19000.0,
+   "navi mumbai": 18750.0,
+   "bengaluru/bangalore": 19000.0,
+   "hyderabad": 17500.0,
+   "chennai": 17500.0,
+   "kolkata/calcutta": 14000.0,
+   "ahmedabad": 16500.0,
+   "surat": 15500.0,
+   "noida": 17500.0,
+   "delhi-ncr": 18500.0,
+   "gurgaon/gurugram": 17500.0,
+   "jaipur": 14000.0,
+   "lucknow": 12500.0,
+   "indore": 17000.0,
+   "bhopal": 11000.0,
+   "chandigarh": 19500.0,
+   "new delhi": 17500.0,
+   "mohali": 16000.0
+  },
+  "by_city_n": {
+   "bengaluru/bangalore": 115,
+   "new delhi": 109,
+   "chennai": 107,
+   "hyderabad": 104,
+   "noida": 71,
+   "jaipur": 60,
+   "mumbai/bombay": 58,
+   "pune": 49,
+   "delhi-ncr": 47,
+   "ahmedabad": 40,
+   "indore": 40,
+   "kolkata/calcutta": 33,
+   "mumbai metropolitan": 30,
+   "chandigarh": 29,
+   "navi mumbai": 28,
+   "surat": 27,
+   "lucknow": 27,
+   "mohali": 20,
+   "thane": 15,
+   "gurgaon/gurugram": 15,
+   "bhopal": 15
+  }
+ },
+ "telecaller": {
+  "inr_per_connected_min": {
+   "p10": 6.59517859599609,
+   "p50": 8.855151631172,
+   "p90": 12.150927350336033
+  },
+  "inr_per_connected_call": {
+   "p10": 10.552285753593743,
+   "p50": 14.168242609875202,
+   "p90": 19.441483760537654
+  },
+  "inr_per_qualified_lead": {
+   "p10": 43.96256664757941,
+   "p50": 66.96205080054749,
+   "p90": 106.24829983407027
+  }
+ },
+ "telecaller_fixed_salary_check": {
+  "inr_per_connected_min": {
+   "p10": 7.421800521863586,
+   "p50": 9.613575173615507,
+   "p90": 12.791799258250995
+  },
+  "inr_per_connected_call": {
+   "p10": 11.874880834981738,
+   "p50": 15.38172027778481,
+   "p90": 20.466878813201593
+  },
+  "inr_per_qualified_lead": {
+   "p10": 48.86846642994639,
+   "p50": 72.84387066495925,
+   "p90": 113.3887271467528
+  }
+ },
+ "buyer_outcome_compare": {
+  "lead qualification (speed-to-lead)": {
+   "human_inr_per_outcome": 70.841213049376,
+   "ai_at_2_per_min": 30.0,
+   "ai_at_3.5_per_min": 52.5,
+   "ai_at_5_per_min": 75.0,
+   "ai_at_6_per_min": 90.0,
+   "ai_breakeven_price_per_min": 4.722747536625067
+  },
+  "COD confirmation / NDR": {
+   "human_inr_per_outcome": 7.813369086328235,
+   "ai_at_2_per_min": 2.3529411764705883,
+   "ai_at_3.5_per_min": 4.11764705882353,
+   "ai_at_5_per_min": 5.882352941176471,
+   "ai_at_6_per_min": 7.0588235294117645,
+   "ai_breakeven_price_per_min": 6.6413637233789995
+  },
+  "EMI reminder (early bucket)": {
+   "human_inr_per_outcome": 40.480693171072005,
+   "ai_at_2_per_min": 11.428571428571429,
+   "ai_at_3.5_per_min": 20.0,
+   "ai_at_5_per_min": 28.571428571428573,
+   "ai_at_6_per_min": 34.285714285714285,
+   "ai_breakeven_price_per_min": 7.0841213049376
+  },
+  "appointment reminder": {
+   "human_inr_per_outcome": 12.65021661596,
+   "ai_at_2_per_min": 2.857142857142857,
+   "ai_at_3.5_per_min": 5.0,
+   "ai_at_5_per_min": 7.142857142857143,
+   "ai_at_6_per_min": 8.571428571428571,
+   "ai_breakeven_price_per_min": 8.855151631172
+  }
+ },
+ "crossing_volume_inr2": {
+  "A. Managed today (quality bar)": null,
+  "A0. Plain cascade reference (S1 STT + 5.6 terra + HD)": null,
+  "B. Managed optimised": null,
+  "C. Hybrid (self-hosted ASR on T4, managed LLM+TTS)": 911591.8676884496,
+  "D. Self-hosted at scale (ASR+TTS on H100, managed LLM)": 2945516.4229035284,
+  "B-luna. Managed optimised + 6-luna speaking model": 199070.90248583813,
+  "B-HD. Managed optimised but DragonHD voice": null,
+  "D-lite. Self-hosted at scale + 6-luna speaking model": 1474322.7476065715
+ }
+}

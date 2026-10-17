@@ -1,0 +1,51 @@
+A_seg500_fast P1-pass1 P1_t01 lat 958.3 stt 616.4 ttft 277.9 tts 34.1 cut 1 spec 0 / 0 | हाँ, हैलो। हाँ, बोलिए कौन बोल  | मैं Suraksha Health की AI assi
+A_seg500_fast P1-pass1 P1_t02 lat 987.7 stt 674.3 ttft 286.4 tts 20.1 cut 0 spec 0 / 0 | हम। | धन्यवाद,
+A_seg500_fast P1-pass1 P1_t03 lat 1031.2 stt 716.6 ttft 272.8 tts 41.2 cut 1 spec 0 / 0 | प्रीमियम कितना आएगा इस बार? ला | हाँ,
+A_seg500_fast P1-pass1 P1_t04 lat 909.4 stt 470.6 ttft 306.6 tts 69.3 cut 0 spec 0 / 0 | सॉरी सॉरी एक सेकंड बीच में बोल | क्लेम लिमिट 5 लाख रुपये सालाना
+A_seg500_fast P1-pass1 P1_t05 lat 1032.3 stt 666.4 ttft 330.9 tts 31.3 cut 0 spec 0 / 0 | ओके? | ठीक है,
+A_seg500_fast P1-pass1 P1_t06 lat 979.4 stt 644.5 ttft 286.7 tts 42.4 cut 1 spec 0 / 0 | वेट, आप रोबॉट हो क्या? एआई हो? | जी हाँ,
+A_seg500_fast P1-pass1 P1_t08 lat 964.8 stt 625.6 ttft 295.4 tts 37.2 cut 0 spec 0 / 0 | ठीक है, कल 3:30 बजे कॉल कर लेन | ठीक है,
+A_seg500_fast P1-pass1 P1_t09 lat 836.5 stt 469.6 ttft 310.3 tts 36.2 cut 0 spec 0 / 0 | बीटी डब्ल्यू आज दिल्ली का एक्स | माफ़ कीजिए,
+A_seg500_fast P1-pass1 P1_t10 lat 1060.4 stt 667.7 ttft 368.8 tts 12.0 cut 0 spec 0 / 0 | हाँ और रिन्यूअल का लिंक, व्हाट | जी हाँ,
+A_seg500_fast P1-pass1 P1_t11 lat None stt 483.9 ttft None tts None cut 0 spec 0 / 0 | ओके, थैंक यू बाई। | 
+A_seg500_fast P2-pass1 P2_t01 lat None stt 643.0 ttft None tts None cut 1 spec 0 / 0 | हाँ, हैलो। के बोलत बानी। का बा | 
+A_seg500_fast P2-pass1 P2_t02 lat 1186.4 stt 939.6 ttft 204.9 tts 37.4 cut 0 spec 0 / 0 | हाँ। | शुक्रिया,
+A_seg500_fast P2-pass1 P2_t03 lat None stt 655.4 ttft None tts None cut 1 spec 0 / 0 | हमरा बाबूजी के भी एह में जोड़ल | 
+A_seg500_fast P2-pass1 P2_t04 lat 1005.4 stt 769.6 ttft 218.2 tts 13.0 cut 0 spec 0 / 0 | रुकी रुकी पहले ही बताएं 1,50,0 | जी हाँ,
+A_seg500_fast P2-pass1 P2_t05 lat None stt 675.3 ttft None tts None cut 0 spec 0 / 0 | ठीक बा। | 
+A_seg500_fast P2-pass1 P2_t06 lat 913.2 stt 582.2 ttft 261.0 tts 61.4 cut 0 spec 0 / 0 | प्रीमियम 25,000 से ज़्यादा हुई | समझती हूँ,
+A_seg500_fast P2-pass1 P2_t08 lat None stt 611.5 ttft None tts None cut 1 spec 0 / 0 | रउआ मशीन हई की आदमी। सच सच बता | 
+A_seg500_fast P2-pass1 P2_t09 lat 1170.5 stt 655.4 ttft 475.1 tts 30.2 cut 0 spec 0 / 0 | परसों 3:30 बजे फ़ोन करें, वो घ | ठीक है,
+A_seg500_fast P2-pass1 P2_t10 lat 1078.3 stt 695.6 ttft 290.6 tts 71.5 cut 0 spec 0 / 0 | अच्छा कि बताएं आज सिवान में बर | मुझे मौसम की जानकारी नहीं है,
+A_seg500_fast P2-pass1 P2_t11 lat None stt 644.4 ttft None tts None cut 1 spec 0 / 0 | ठीक बा राखक बानी। प्रणाम। | 
+A_seg500_fast P4-pass1 P4_t01 lat 922.2 stt 704.7 ttft 180.9 tts 29.4 cut 1 spec 0 / 0 | हाँ। हैलो। कौन? ज़रा। ज़ोर से  | समझ गई,
+A_seg500_fast P4-pass1 P4_t02 lat 1014.4 stt 647.3 ttft 310.1 tts 52.7 cut 0 spec 0 / 0 | हाँ। | बताइए,
+A_seg500_fast P4-pass1 P4_t03 lat 1067.0 stt 647.6 ttft 314.4 tts 44.3 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | आपकी policy 15 नवंबर 2026 को r
+A_seg500_fast P4-pass1 P4_t04 lat None stt 584.5 ttft None tts None cut 0 spec 0 / 0 | पिछली बार। 25,000। नहीं, नहीं। | 
+A_seg500_fast P4-pass1 P4_t05 lat None stt 720.5 ttft None tts None cut 0 spec 0 / 0 | बेटा, रुको। इतना जल्दी जल्दी म | 
+A_seg500_fast P4-pass1 P4_t06 lat 887.8 stt 636.8 ttft 226.0 tts 15.7 cut 0 spec 0 / 0 | तुम। मशीन हो क्या? आजकल फ़ोन प | जी हाँ,
+A_seg500_fast P4-pass1 P4_t08 lat None stt None ttft None tts None cut 0 spec 0 / 0 |  | 
+A_seg500_fast P4-pass1 P4_t09 lat None stt 602.5 ttft None tts None cut 0 spec 0 / 0 | सोमवार को। 3:30 बजे। मेरे बेटे | 
+A_seg500_fast P4-pass1 P4_t10 lat 1029.4 stt 653.9 ttft 337.5 tts 32.1 cut 0 spec 0 / 0 | अच्छा बेटा। तुमने खाना खा लिया | धन्यवाद,
+A_seg500_fast P4-pass1 P4_t11 lat 1070.2 stt 666.7 ttft 378.6 tts 19.1 cut 0 spec 0 / 0 | अच्छा। ठीक है। भगवान भला करें। | शुक्रिया,
+A_seg500_fast P4pause-1 P4_t03 lat None stt 679.5 ttft None tts None cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | 
+A_seg500_fast P4pause-1 P4_t03 lat None stt 706.5 ttft None tts None cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | 
+A_seg500_fast P4pause-1 P4_t03 lat 999.8 stt 675.8 ttft 284.5 tts 33.2 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | धन्यवाद,
+A_seg500_fast P4pause-1 P4_t03 lat None stt 713.4 ttft None tts None cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | 
+A_seg500_fast P4pause-1 P4_t03 lat 981.0 stt 647.5 ttft 270.8 tts 46.3 cut 0 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | ध्यान देने के लिए धन्यवाद,
+cold synths created during run: 0
+B_seg800_fast P1-pass1 P1_t01 lat 1407.8 stt 1016.5 ttft 310.0 tts 38.2 cut 0 spec 0 / 0 | हाँ, हैलो। हाँ, बोलिए कौन बोल  | मैं Suraksha Health की AI assi
+B_seg800_fast P1-pass1 P1_t02 lat 1340.1 stt 1029.4 ttft 282.4 tts 24.2 cut 0 spec 0 / 0 | हम। | ठीक है,
+B_seg800_fast P1-pass1 P1_t03 lat 1178.1 stt 984.5 ttft 171.3 tts 19.0 cut 0 spec 0 / 0 | प्रीमियम कितना आएगा इस बार? ला | जी,
+B_seg800_fast P1-pass1 P1_t04 lat 1408.7 stt 1002.6 ttft 310.7 tts 71.6 cut 0 spec 0 / 0 | सॉरी सॉरी एक सेकंड बीच में बोल | थोड़ा क्लियर करूँ,
+B_seg800_fast P1-pass1 P1_t05 lat 1348.1 stt 1013.5 ttft 309.9 tts 22.2 cut 0 spec 0 / 0 | ओके? | जी,
+B_seg800_fast P1-pass1 P1_t06 lat None stt 1031.7 ttft None tts None cut 0 spec 0 / 0 | वेट, आप रोबॉट हो क्या? एआई हो? | 
+B_seg800_fast P1-pass1 P1_t08 lat 1262.2 stt 993.7 ttft 248.7 tts 13.9 cut 0 spec 0 / 0 | ठीक है, कल 3:30 बजे कॉल कर लेन | ठीक है,
+B_seg800_fast P1-pass1 P1_t09 lat 1342.0 stt 937.5 ttft 348.3 tts 29.2 cut 0 spec 0 / 0 | बीटी डब्ल्यू आज दिल्ली का एक्स | माफ़ कीजिए,
+B_seg800_fast P1-pass1 P1_t10 lat 1401.8 stt 1033.5 ttft 338.3 tts 13.1 cut 0 spec 0 / 0 | हाँ और रिन्यूअल का लिंक, व्हाट | जी,
+B_seg800_fast P1-pass1 P1_t11 lat 1469.8 stt 1042.5 ttft 343.5 tts 73.4 cut 0 spec 0 / 0 | ओके, थैंक यू बाई। | आपका स्वागत है,
+B_seg800_fast P2-pass1 P2_t01 lat 1452.7 stt 955.4 ttft 465.4 tts 22.2 cut 0 spec 0 / 0 | हाँ, हैलो। के बोलक बानी। का बा | धन्यवाद,
+B_seg800_fast P2-pass1 P2_t02 lat 1350.4 stt 1049.4 ttft 286.1 tts 12.9 cut 0 spec 0 / 0 | हाँ। | जी,
+B_seg800_fast P2-pass1 P2_t03 lat 1271.7 stt 947.5 ttft 289.2 tts 30.6 cut 0 spec 0 / 0 | हमरा बाबूजी के भी एह में जोड़ल | जी हाँ,
+B_seg800_fast P2-pass1 P2_t04 lat 1335.8 stt 989.9 ttft 302.1 tts 33.2 cut 0 spec 0 / 0 | रुकी रुकी पहले ही बताएं 1,50,0 | जी हाँ,
+cascade-v2-done

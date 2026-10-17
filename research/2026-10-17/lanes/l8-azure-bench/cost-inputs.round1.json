@@ -1,0 +1,437 @@
+{
+ "lane": "l8-azure-bench",
+ "generated": "2026-10-17",
+ "fx_inr_per_usd": 88.0,
+ "method": "Measured on Azure (southeastasia GlobalStandard; francecentral DataZone EU for gpt-6-*, DeepSeek-V4-Flash, gpt-4o-*-transcribe) from a container in Columbus, Ohio via an egress proxy; prices from the Azure Retail Prices API fetched 2026-10-17. Per-minute figures exclude telephony, infra, storage and margin.",
+ "assumptions": {
+  "llm_turns_per_connected_min": 5.0,
+  "llm_turns_per_min_range": [
+   3,
+   8
+  ],
+  "agent_talk_seconds_per_connected_min": 24.0,
+  "agent_talk_range_s": [
+   15,
+   35
+  ],
+  "asr_streams_whole_call": true,
+  "prompt_tokens_note": "measured prompt ~1.6-1.7k tokens per turn incl. ~1.5k system + 1-3 short history turns; a real call grows ~60-100 tokens per turn of history"
+ },
+ "measured": {
+  "llm_per_turn": {
+   "DeepSeek-V4-Flash(DZ-EU)": {
+    "prompt_tokens_p50": 1651,
+    "cached_share": 0.918,
+    "completion_tokens_p50": 42,
+    "cost_inr_per_turn": 0.0087,
+    "cost_inr_per_turn_uncached": 0.0326,
+    "ttft_p50_ms_from_ohio": 1224,
+    "server_ttft_est_p50_ms": 1106,
+    "n": 33
+   },
+   "DeepSeek-V4.1-Flash": {
+    "prompt_tokens_p50": 1652,
+    "cached_share": 0.918,
+    "completion_tokens_p50": 40,
+    "cost_inr_per_turn": 0.0085,
+    "cost_inr_per_turn_uncached": 0.0479,
+    "ttft_p50_ms_from_ohio": 2833,
+    "server_ttft_est_p50_ms": 2581,
+    "n": 33
+   },
+   "Llama-3.3-70B": {
+    "prompt_tokens_p50": 1666,
+    "cached_share": 0.0,
+    "completion_tokens_p50": 27,
+    "cost_inr_per_turn": 0.1066,
+    "cost_inr_per_turn_uncached": 0.1066,
+    "ttft_p50_ms_from_ohio": 2792,
+    "server_ttft_est_p50_ms": 2539,
+    "n": 33
+   },
+   "Phi-4": {
+    "prompt_tokens_p50": 1640,
+    "cached_share": 0.0,
+    "completion_tokens_p50": 44,
+    "cost_inr_per_turn": 0.0201,
+    "cost_inr_per_turn_uncached": 0.0201,
+    "ttft_p50_ms_from_ohio": 3359,
+    "server_ttft_est_p50_ms": 3107,
+    "n": 33
+   },
+   "gpt-4.1-mini": {
+    "prompt_tokens_p50": 1623,
+    "cached_share": 0.876,
+    "completion_tokens_p50": 38,
+    "cost_inr_per_turn": 0.0248,
+    "cost_inr_per_turn_uncached": 0.0625,
+    "ttft_p50_ms_from_ohio": 2059,
+    "server_ttft_est_p50_ms": 1807,
+    "n": 33
+   },
+   "gpt-4.1-nano": {
+    "prompt_tokens_p50": 1623,
+    "cached_share": 0.837,
+    "completion_tokens_p50": 33,
+    "cost_inr_per_turn": 0.0065,
+    "cost_inr_per_turn_uncached": 0.0155,
+    "ttft_p50_ms_from_ohio": 2157,
+    "server_ttft_est_p50_ms": 1905,
+    "n": 33
+   },
+   "gpt-5.4-mini": {
+    "prompt_tokens_p50": 1624,
+    "cached_share": 0.737,
+    "completion_tokens_p50": 43,
+    "cost_inr_per_turn": 0.0537,
+    "cost_inr_per_turn_uncached": 0.1251,
+    "ttft_p50_ms_from_ohio": 1974,
+    "server_ttft_est_p50_ms": 1722,
+    "n": 33
+   },
+   "gpt-5.4-nano": {
+    "prompt_tokens_p50": 1624,
+    "cached_share": 0.812,
+    "completion_tokens_p50": 45,
+    "cost_inr_per_turn": 0.0127,
+    "cost_inr_per_turn_uncached": 0.0337,
+    "ttft_p50_ms_from_ohio": 1890,
+    "server_ttft_est_p50_ms": 1638,
+    "n": 33
+   },
+   "gpt-6-luna(DZ-EU)": {
+    "prompt_tokens_p50": 1624,
+    "cached_share": 0.938,
+    "completion_tokens_p50": 44,
+    "cost_inr_per_turn": 0.0046,
+    "cost_inr_per_turn_uncached": 0.0179,
+    "ttft_p50_ms_from_ohio": 1475,
+    "server_ttft_est_p50_ms": 1357,
+    "n": 33
+   },
+   "gpt-6-sol(DZ-EU)": {
+    "prompt_tokens_p50": 1624,
+    "cached_share": 0.938,
+    "completion_tokens_p50": 39,
+    "cost_inr_per_turn": 0.0866,
+    "cost_inr_per_turn_uncached": 0.3536,
+    "ttft_p50_ms_from_ohio": 1608,
+    "server_ttft_est_p50_ms": 1490,
+    "n": 33
+   },
+   "gpt-oss-120b": {
+    "prompt_tokens_p50": 1688,
+    "cached_share": 0.0,
+    "completion_tokens_p50": 67,
+    "cost_inr_per_turn": 0.0262,
+    "cost_inr_per_turn_uncached": 0.0262,
+    "ttft_p50_ms_from_ohio": 2578,
+    "server_ttft_est_p50_ms": 2326,
+    "n": 33
+   }
+  },
+  "tts_chars_per_audio_second": {
+   "en-IN-Aarti:DragonHDLatestNeural": 15.73,
+   "en-IN-AartiIndicNeural": 11.21,
+   "en-IN-Meera:DragonHDLatestNeural": 13.73,
+   "hi-IN-Diya:DragonLatestNeural": 13.08,
+   "hi-IN-Kavya:MAI-Voice-2.1": 11.18,
+   "hi-IN-Kavya:MAI-Voice-2.1-Flash": 11.89,
+   "hi-IN-KavyaNeural": 11.09,
+   "hi-IN-MadhurNeural": 10.01,
+   "hi-IN-SwaraNeural": 9.81,
+   "mr-IN-AarohiNeural": 10.23,
+   "ta-IN-PallaviNeural": 12.01
+  },
+  "tts_service_latency_p50_ms": {
+   "en-IN-Aarti:DragonHDLatestNeural": 421,
+   "en-IN-AartiIndicNeural": 482,
+   "en-IN-Meera:DragonHDLatestNeural": 420,
+   "hi-IN-Diya:DragonLatestNeural": 806,
+   "hi-IN-Kavya:MAI-Voice-2.1": 1080,
+   "hi-IN-Kavya:MAI-Voice-2.1-Flash": 579,
+   "hi-IN-KavyaNeural": 189,
+   "hi-IN-MadhurNeural": 229,
+   "hi-IN-SwaraNeural": 229,
+   "mr-IN-AarohiNeural": 98,
+   "ta-IN-PallaviNeural": 110
+  },
+  "asr_wer_nb_pct": {
+   "rt": {
+    "hi": 11.0,
+    "ta": 21.77,
+    "bn": 17.63,
+    "mr": 18.2,
+    "te": 22.14,
+    "en_IN": 18.11
+   },
+   "fast": {
+    "hi": 9.99,
+    "ta": 23.02,
+    "bn": 16.57,
+    "mr": 18.8,
+    "te": 22.14,
+    "en_IN": 18.18
+   },
+   "mai2": {
+    "hi": 8.25,
+    "ta": 17.57,
+    "bn": 13.53,
+    "mr": 17.89,
+    "te": 18.67,
+    "en_IN": 13.08
+   },
+   "gpt4o": {
+    "hi": 20.26,
+    "ta": 36.86,
+    "bn": 24.16,
+    "mr": 38.2,
+    "te": 31.93,
+    "en_IN": 46.36
+   },
+   "gpt4omini": {
+    "hi": 12.88,
+    "ta": 42.3,
+    "bn": 29.03,
+    "mr": 31.73,
+    "te": 36.14,
+    "en_IN": 16.92
+   },
+   "rt_lid": {
+    "hi": 41.24,
+    "ta": 21.77,
+    "bn": 18.39,
+    "mr": 19.1,
+    "te": 27.26,
+    "en_IN": 18.67
+   },
+   "fast_llm": {
+    "hi": 10.71,
+    "ta": 125.04,
+    "bn": 113.22,
+    "mr": 96.24,
+    "te": 119.43,
+    "en_IN": 22.52
+   }
+  },
+  "rtt_ms_from_test_container": {
+   "southeastasia": 252,
+   "francecentral": 118
+  },
+  "llm_async_content_filter_ttft_delta_ms": {
+   "gpt-6-luna": -304,
+   "gpt-5.4-nano": -298,
+   "DeepSeek-V4-Flash": -242,
+   "gpt-4.1-mini": -208,
+   "gpt-5.4-mini": -188,
+   "Llama-3.3-70B": "-318 (CI includes 0)",
+   "n_pairs": 32,
+   "source": "results/llm_filter_ab.csv"
+  },
+  "stt_final_after_speech_end_ms_server_est": {
+   "segmentation_300ms_p50": 442,
+   "default_p50": 825,
+   "n": 20,
+   "source": "results/rt_latency_summary.csv"
+  },
+  "voice_live_first_audio_after_speech_end_ms_server_est_p50": {
+   "gpt-4.1-mini+azure-speech+Swara": 2268,
+   "gpt-4.1-mini+mai-transcribe-2+Meera-HD": 2634,
+   "azure-realtime+diya(S2S)": 1436,
+   "n_turns_each": 16,
+   "est_inr_per_min_std_meters": {
+    "gpt-4.1-mini arms": [
+     2.12,
+     2.47
+    ],
+    "azure-realtime": 3.74
+   },
+   "source": "results/voicelive_summary.csv"
+  },
+  "tts_number_readback": {
+   "neural_voices_mismatch": "0/80 short sentences",
+   "generative_voices_mismatch": "3/99 short sentences (Diya Dragon 1/20, Aarti DragonHD 1/20, Kavya MAI-Voice-2.1-Flash 1/20)",
+   "stimulus_case": "hi-IN-Diya:DragonLatestNeural misread Rs 1,299 in 10/13 renders (2 ASR engines agree)",
+   "source": "results/tts_numbers_summary.csv, stimuli/manifest.csv"
+  }
+ },
+ "prices_usd": {
+  "asr_per_hour": {
+   "speech_realtime_s1": 1.0,
+   "speech_fast_transcription": 0.36,
+   "speech_fast_transcription_promo_from_2026_09_01": 0.1,
+   "speech_batch": 0.18,
+   "gpt_transcribe": 0.27,
+   "gpt_live_transcribe": 1.02,
+   "gpt_4o_transcribe_audio_per_1m_tokens": 6.0,
+   "gpt_4o_mini_transcribe_audio_per_1m_tokens": 3.0,
+   "mai_transcribe_2": "not listed in Retail Prices API on 2026-10-17 (preview)"
+  },
+  "tts_per_1m_chars": {
+   "neural": 15.0,
+   "neural_hd_dragon": 22.0,
+   "mai_voice_2_1": "not listed (preview)",
+   "personal_voice": 24.0,
+   "neural_commit_80M_overage": 11.4
+  },
+  "llm_per_1m_tokens_in_cached_out": {
+   "gpt-4.1-mini": [
+    0.4,
+    0.1,
+    1.6
+   ],
+   "gpt-4.1-nano": [
+    0.1,
+    0.025,
+    0.4
+   ],
+   "gpt-5.4-mini": [
+    0.75,
+    0.075,
+    4.5
+   ],
+   "gpt-5.4-nano": [
+    0.2,
+    0.02,
+    1.25
+   ],
+   "gpt-6-luna(DZ-EU)": [
+    0.11,
+    0.011,
+    0.55
+   ],
+   "gpt-6-sol(DZ-EU)": [
+    2.2,
+    0.22,
+    11.0
+   ],
+   "DeepSeek-V4-Flash(DZ-EU)": [
+    0.21,
+    0.031,
+    0.56
+   ],
+   "DeepSeek-V4.1-Flash": [
+    0.3,
+    0.006,
+    1.2
+   ],
+   "Llama-3.3-70B": [
+    0.71,
+    0.71,
+    0.71
+   ],
+   "Phi-4": [
+    0.125,
+    0.125,
+    0.5
+   ],
+   "gpt-oss-120b": [
+    0.15,
+    0.15,
+    0.6
+   ]
+  },
+  "llm_global_price_reference": {
+   "gpt-6-luna": [
+    0.1,
+    0.01,
+    0.5
+   ],
+   "gpt-6-sol": [
+    2.0,
+    0.2,
+    10.0
+   ],
+   "DeepSeek-V4-Flash": [
+    0.19,
+    0.028,
+    0.51
+   ]
+  }
+ },
+ "example_stacks_ai_only": [
+  {
+   "asr": "speech realtime S1",
+   "llm": "gpt-4.1-mini",
+   "voice": "hi-IN-SwaraNeural",
+   "usd_per_min": {
+    "asr": 0.01667,
+    "llm": 0.00141,
+    "tts": 0.00353,
+    "total_ai": 0.02161
+   },
+   "inr_per_min_total_ai": 1.902
+  },
+  {
+   "asr": "speech realtime S1",
+   "llm": "gpt-5.4-nano",
+   "voice": "hi-IN-SwaraNeural",
+   "usd_per_min": {
+    "asr": 0.01667,
+    "llm": 0.00072,
+    "tts": 0.00353,
+    "total_ai": 0.02092
+   },
+   "inr_per_min_total_ai": 1.841
+  },
+  {
+   "asr": "speech realtime S1",
+   "llm": "gpt-6-luna(DZ-EU)",
+   "voice": "hi-IN-SwaraNeural",
+   "usd_per_min": {
+    "asr": 0.01667,
+    "llm": 0.00026,
+    "tts": 0.00353,
+    "total_ai": 0.02046
+   },
+   "inr_per_min_total_ai": 1.8
+  },
+  {
+   "asr": "speech realtime S1",
+   "llm": "gpt-6-luna(DZ-EU)",
+   "voice": "en-IN-Meera:DragonHDLatestNeural",
+   "usd_per_min": {
+    "asr": 0.01667,
+    "llm": 0.00026,
+    "tts": 0.00725,
+    "total_ai": 0.02418
+   },
+   "inr_per_min_total_ai": 2.127
+  },
+  {
+   "asr": "speech realtime S1",
+   "llm": "gpt-6-sol(DZ-EU)",
+   "voice": "en-IN-Meera:DragonHDLatestNeural",
+   "usd_per_min": {
+    "asr": 0.01667,
+    "llm": 0.00492,
+    "tts": 0.00725,
+    "total_ai": 0.02884
+   },
+   "inr_per_min_total_ai": 2.538
+  },
+  {
+   "asr": "speech realtime S1",
+   "llm": "DeepSeek-V4-Flash(DZ-EU)",
+   "voice": "hi-IN-SwaraNeural",
+   "usd_per_min": {
+    "asr": 0.01667,
+    "llm": 0.00049,
+    "tts": 0.00353,
+    "total_ai": 0.02069
+   },
+   "inr_per_min_total_ai": 1.821
+  }
+ ],
+ "levers_not_measured": {
+  "vad_gated_streaming_stt": "if billing is per second of audio sent, sending only caller speech (~40-50% of a call) cuts ASR from INR 1.47 to ~0.6-0.75/min (derived)",
+  "stt_commitment_tier": "l2 lists $0.40/h at 100k h/month, i.e. INR ~0.59/min full-call (read from l2 cost-model.json)",
+  "mai_transcribe_2_price": "no Retail API meter on 2026-10-17"
+ },
+ "india_hosted_latency_adjustment_ms": {
+  "central_india_to_southeastasia_rtt_p50": 53,
+  "south_india_to_southeastasia_rtt_p50": 37,
+  "central_india_to_france_central_rtt_p50": 118,
+  "source": "https://learn.microsoft.com/en-us/azure/networking/azure-network-latency (30 days to 2026-07-30)"
+ }
+}

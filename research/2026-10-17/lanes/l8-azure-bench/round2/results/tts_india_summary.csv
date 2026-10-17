@@ -1,0 +1,10 @@
+region,voice,format,n,ttfb_p50_ms,ttfb_p50_ci95,ttfb_p90_ms,chars_mean,errors
+centralindia,en-IN-Meera:DragonHDLatestNeural,pcm16k,30,188,186-191,201,116,0
+centralindia,hi-IN-Kavya:MAI-Voice-2.1-Flash,pcm16k,30,363,352-376,480,116,0
+centralindia,hi-IN-KavyaNeural,pcm16k,30,99,91-116,148,116,0
+centralindia,hi-IN-SwaraNeural,pcm16k,30,95,84-104,152,116,0
+centralindia,hi-IN-SwaraNeural,mulaw8k,30,93,81-102,123,116,0
+southeastasia,hi-IN-Kavya:MAI-Voice-2.1-Flash,pcm16k,30,401,338-446,474,116,0
+southeastasia,en-IN-Meera:DragonHDLatestNeural,pcm16k,30,293,290-296,309,116,0
+southeastasia,hi-IN-KavyaNeural,pcm16k,30,115,111-127,138,116,0
+southeastasia,hi-IN-SwaraNeural,pcm16k,30,164,118-173,183,116,0

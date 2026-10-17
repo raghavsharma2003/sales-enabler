@@ -1,0 +1,22 @@
+resource_type,name,region,created_utc_approx,purpose,deleted_utc_approx,deletion_verified_by
+Microsoft.CognitiveServices/accounts (AIServices S0),vp-r2lat-cin,centralindia,2026-10-17T16:52Z,Speech STT/TTS + Voice Live in India,2026-10-17T18:33Z (deleted + purged),ARM resource list + deletedAccounts list empty for r2lat
+Microsoft.CognitiveServices/accounts (AIServices S0),vp-r2lat-sin,southindia,2026-10-17T16:52Z,India-geography (Standard) LLM deployments,2026-10-17T18:33Z (deleted + purged),ARM resource list + deletedAccounts list empty for r2lat
+Microsoft.CognitiveServices/accounts/raiPolicies,vp-r2lat-sin/r2-async-filter,southindia,2026-10-17T17:02Z,Asynchronous_filter copy of l8-async-filter,deleted with account,account purged
+Microsoft.Network/networkSecurityGroups,vp-r2lat-nsg,centralindia,2026-10-17T16:53Z,VM subnet NSG (no inbound allow rules),2026-10-17T18:33Z,ARM resource list
+Microsoft.Network/publicIPAddresses (Standard static),vp-r2lat-pip,centralindia,2026-10-17T16:53Z,VM outbound,2026-10-17T18:32Z (deleteOption=Delete with VM),ARM resource list
+Microsoft.Network/virtualNetworks,vp-r2lat-vnet,centralindia,2026-10-17T16:54Z,VM network,2026-10-17T18:33Z,ARM resource list
+Microsoft.Network/networkInterfaces,vp-r2lat-nic,centralindia,2026-10-17T16:54Z,VM NIC,2026-10-17T18:32Z (deleteOption=Delete with VM),ARM resource list
+Microsoft.Compute/virtualMachines (Standard_D4s_v5 Ubuntu 24.04),vp-r2lat-vm,centralindia,2026-10-17T16:56Z,India-hosted benchmark host (ACI provider not registered on subscription),2026-10-17T18:32Z,GET returns ResourceNotFound
+Microsoft.Compute/disks (StandardSSD 30 GB OS disk),vp-r2lat-vm OS disk,centralindia,2026-10-17T16:56Z,VM OS disk,2026-10-17T18:32Z (deleteOption=Delete with VM),ARM resource list
+Microsoft.Compute/virtualMachines/runCommands,smoke1/setup1/comp1/csmoke1/cascade1/kill1/cascade2/kill2/main1/main2,centralindia,2026-10-17,job execution,deleted with VM,VM deleted
+Blob container,vpresearchraw1017/r2lat-transfer,southeastasia (existing account),2026-10-17T16:58Z,transient bundle/results transfer,2026-10-17T18:33Z,container list shows only research-2026-10-17
+Deployment,vp-research-ai-sea/r2-gpt-5-4-nano-async (GlobalStandard),southeastasia,2026-10-17T17:03Z,LLM TTFT + cascade config F,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-research-ai-sea/r2-gpt-4-1-mini-async (GlobalStandard),southeastasia,2026-10-17T17:03Z,LLM TTFT,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-research-ai-sea/r2-gpt-5-4-mini-async (GlobalStandard; also priority-tier A/B),southeastasia,2026-10-17T17:03Z,LLM TTFT,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-research-ai-sea/r2-gpt-5-4-mini-dzapac-async (DataZoneStandard APAC),southeastasia,2026-10-17T17:03Z,LLM TTFT,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-research-ai-sea/r2-gpt-6-1-sol-dzapac-async (DataZoneStandard APAC),southeastasia,2026-10-17T17:03Z,LLM TTFT,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-research-ai-frc/r2-gpt-6-luna-dz-async (DataZoneStandard EU),francecentral,2026-10-17T17:04Z,LLM TTFT,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-research-ai-frc/r2-gpt-6-sol-dz-async (DataZoneStandard EU),francecentral,2026-10-17T17:04Z,LLM TTFT + cascade config D,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-research-ai-frc/r2-deepseek-v4-flash-dz-async (DataZoneStandard EU),francecentral,2026-10-17T17:04Z,LLM TTFT,2026-10-17T18:32Z,deployments list empty
+Deployment,vp-r2lat-sin/r2-gpt-4-1-mini-std-async (Standard regional India),southindia,2026-10-17T17:04Z,LLM TTFT + cascade configs A/B/C/E,2026-10-17T18:32Z,deleted then account purged
+Deployment,vp-r2lat-sin/r2-gpt-5-4-nano-async (GlobalStandard),southindia,2026-10-17T17:04Z,LLM TTFT,2026-10-17T18:32Z,deleted then account purged

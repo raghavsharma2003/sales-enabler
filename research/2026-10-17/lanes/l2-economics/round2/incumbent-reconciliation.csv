@@ -1,0 +1,18 @@
+company,fy,revenue_cr_low,revenue_cr_high,voice_agent_share_low,voice_agent_share_mode,voice_agent_share_high,implied_voice_agent_rev_cr_p50,source,method,note
+Exotel,FY25,490.5,490.5,0.02,0.05,0.1,27.1,"Entrackr/MediaNama RoC 2026-01 (l4a, l4c)",read-secondary (MCA via press) x assumption share,CPaaS; telephony cost 212 Cr = 44% of costs; voicebot/AgentStream share unknown
+Gnani.ai,FY25,53.9,57.0,0.5,0.7,0.9,38.8,Inc42 / Entrepreneur (l4a),read-secondary (MCA via press) x assumption share,voice AI + speech analytics; some non-India revenue
+Sarvam AI,FY25,29.1,29.1,0.1,0.3,0.6,9.5,Inc42 from MCA (l4a),read-secondary (MCA via press) x assumption share,models/APIs/enterprise/government; voice agents a part
+SquadStack,FY24,26.5,26.5,0.1,0.3,0.5,7.9,Inc42 (l4a),read-secondary (MCA via press) x assumption share,human + AI telecalling; AI share unknown; FY24 down 50%
+Yellow.ai,FY25,233.6,235.9,0.03,0.08,0.15,20.1,Inc42 (l4a),read-secondary (MCA via press) x assumption share,global CX automation; voice x India-domestic share
+Haptik,FY25,156.6,231.1,0.02,0.05,0.1,10.6,lapaasvoice (unverified) / Inc42 FY24 (l4a),read-secondary (MCA via press) x assumption share,Jio-group heavy; chat-first
+Ozonetel,FY24,110.3,110.3,0.02,0.05,0.1,6.1,Inc42 (l4a),read-secondary (MCA via press) x assumption share,cloud contact centre; AI bot share unknown
+Knowlarity (Gupshup),FY25,87.8,87.8,0.01,0.03,0.08,3.4,Inc42 (l4c),read-secondary (MCA via press) x assumption share,cloud telephony
+Uniphore (India entity),FY24,194.2,194.2,0.02,0.06,0.12,12.7,Inc42 (l4a),read-secondary (MCA via press) x assumption share,global; India entity largely serves global work
+LeadSquared,FY25,326.2,326.2,0.0,0.005,0.02,2.5,Entrackr RoC 2025-10 (l4c),read-secondary (MCA via press) x assumption share,CRM; Invorto voice AI new
+Bolna,run-rate Jan 2026,6.0,6.0,0.8,0.9,1.0,5.4,Inc42 Jan 2026 (l4a),read-secondary (MCA via press) x assumption share,~0.5 Cr/month run-rate
+Ringg AI,FY25,0.905,0.905,0.9,1.0,1.0,0.9,Inc42 (l4a),read-secondary (MCA via press) x assumption share,
+smallest.ai (India entity),FY25,0.932,0.932,0.5,0.8,1.0,0.7,Inc42 (l4a),read-secondary (MCA via press) x assumption share,parent books US revenue
+Convin,FY24,9.1,9.1,0.0,0.05,0.2,0.7,Inc42 (l4a),read-secondary (MCA via press) x assumption share,"QA/analytics, not agents"
+TOTAL implied Indian voice-agent revenue (FY24-26 mix),mixed,,,,,,148.4,sum of rows,computed,p10 132 / p90 165 Cr
+Implied AI penetration of l3 total SAM (revenue / SAM),,,,,,,1.54,,computed (percent),p10 0.71% / p90 2.92%
+Gnani+SquadStack voice revenue vs l3 insurance-renewal SAM (ratio),,,,,,,,,computed,"not computable: neither discloses an insurance-renewal revenue split; both sell mainly to insurers, not intermediaries"
