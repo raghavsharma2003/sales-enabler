@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "updatedAt": "2026-10-15",
+ "updatedAt": "2026-10-17",
  "nodes": [
   {
    "id": "product.general",
@@ -6779,6 +6779,130 @@
    "date": "2026-10-15",
    "title": "Visual report for owner review: Relay audit + sibling harvest (https://claude.ai/artifact/2LgyKp71gmQsYqTD1FwEu8). Awaiting owner discussion before market research.",
    "path": "docs/harvest/report/relay-audit.html"
+  },
+  {
+   "id": "directive.2026-10-17.carbonsettle-unrelated",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "CarbonSettle is an unrelated carbon-compliance business. command_centre is a reference for what a daily-use company operating product feels like (VP must be ~100x better and include voice AI); it is NOT a market, ICP, data source or buyer hypothesis for VP.",
+   "reverse_if": "never (owner fact)"
+  },
+  {
+   "id": "directive.2026-10-17.vp-venture",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Working name \"Vyakti Platform (VP)\" (rename later; collides with the html-portfolio Vyakti cloning product). New venture: no customers, no product. Indian voice-AI agents inside an AI company command centre; Indian businesses, likely B2C; pre-sales and post-sales use cases; exclude big consumer-internet companies with in-house teams (Blinkit, Swiggy, Zepto, Zomato)."
+  },
+  {
+   "id": "directive.2026-10-17.price-target",
+   "type": "requirement",
+   "status": "proposed",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner target: price under Rs 2 per minute without missing features; build components in-house to get cost down.",
+   "reverse_if": "H2 cost model shows no architecture reaches it at the latency/realism bar; then change target or pricing unit, not quality"
+  },
+  {
+   "id": "risk.2026-10-17.price-vs-measured-cost",
+   "type": "risk",
+   "status": "open",
+   "source": "harvest",
+   "date": "2026-10-17",
+   "title": "Measured Taxila cascade AI cost ~$0.027/min (~Rs 2.4 at Rs 88/$) already exceeds the Rs 2/min target before telephony; target, architecture or pricing unit must move.",
+   "path": "docs/harvest/tx-voice.md"
+  },
+  {
+   "id": "open.2026-10-17.inhouse-vs-azure-only",
+   "type": "open-question",
+   "status": "open",
+   "source": "analysis",
+   "date": "2026-10-17",
+   "title": "\"Build everything in-house\" vs Azure-only: reconcile as self-hosted/own models running on Azure compute? Needs owner confirmation once H2/H9 economics exist."
+  },
+  {
+   "id": "doc.2026-10-17.vp-research-brief",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "analysis",
+   "date": "2026-10-17",
+   "title": "VP research brief (deeper rewrite of owner request): one beachhead decision, 10 falsifiable hypotheses (H1 regulation, H2 economics, H3 segments, H4 measured competitors, H5 emotional, H6 dialect, H7 self-learning statistics, H8 command-centre wedge, H9 tech curves, H10 distribution), raw materials, methods, external proof.",
+   "path": "research/2026-10-17/vp-research-brief.md"
+  },
+  {
+   "id": "idea.2026-10-17.1",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 1 (unbiased idea, to be tested): Emotional, relational, extremely human-like conversational voice agents",
+   "tested_by": "H5"
+  },
+  {
+   "id": "idea.2026-10-17.2",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 2 (unbiased idea, to be tested): Self-evolving agents that learn from every call (e.g. modify the line where 90/100 dropped)",
+   "tested_by": "H7"
+  },
+  {
+   "id": "idea.2026-10-17.3",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 3 (unbiased idea, to be tested): Hyper-personalisation: regional accent/dialect (e.g. Bihari-Hindi mix), per-person memory, cross-source user data",
+   "tested_by": "H6"
+  },
+  {
+   "id": "idea.2026-10-17.4",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 4 (unbiased idea, to be tested): Company context ingested at onboarding",
+   "tested_by": "H8"
+  },
+  {
+   "id": "idea.2026-10-17.5",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 5 (unbiased idea, to be tested): Price under Rs 2/min, components built in-house",
+   "tested_by": "H2"
+  },
+  {
+   "id": "idea.2026-10-17.6",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 6 (unbiased idea, to be tested): Feature parity with Bolna, Vapi, ElevenLabs and peers",
+   "tested_by": "H4"
+  },
+  {
+   "id": "idea.2026-10-17.7",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 7 (unbiased idea, to be tested): Whole-company AI command centre (scraping, lead gen, voice/WhatsApp/email campaigns, omnichannel data, SEO/AEO, analytics, AI CRM, AI ERP)",
+   "tested_by": "H8"
+  },
+  {
+   "id": "idea.2026-10-17.8",
+   "type": "open-question",
+   "status": "untested",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner idea 8 (unbiased idea, to be tested): Voice AI will be a large future domain; more ideas to come",
+   "tested_by": "H9"
   }
  ],
  "edges": [
@@ -13723,6 +13847,76 @@
    "from": "artifact.2026-10-15.relay-audit",
    "to": "decision.2026-10-15.rebuild-verdict",
    "relation": "presents"
+  },
+  {
+   "from": "directive.2026-10-17.carbonsettle-unrelated",
+   "to": "artifact.2026-10-15.relay-audit",
+   "relation": "corrects"
+  },
+  {
+   "from": "directive.2026-10-17.carbonsettle-unrelated",
+   "to": "customer.study-abroad",
+   "relation": "context-for"
+  },
+  {
+   "from": "directive.2026-10-17.vp-venture",
+   "to": "directive.2026-10-15.vision",
+   "relation": "refines"
+  },
+  {
+   "from": "risk.2026-10-17.price-vs-measured-cost",
+   "to": "directive.2026-10-17.price-target",
+   "relation": "threatens"
+  },
+  {
+   "from": "open.2026-10-17.inhouse-vs-azure-only",
+   "to": "directive.2026-10-15.azure-only",
+   "relation": "questions"
+  },
+  {
+   "from": "doc.2026-10-17.vp-research-brief",
+   "to": "directive.2026-10-17.vp-venture",
+   "relation": "serves"
+  },
+  {
+   "from": "idea.2026-10-17.1",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
+  },
+  {
+   "from": "idea.2026-10-17.2",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
+  },
+  {
+   "from": "idea.2026-10-17.3",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
+  },
+  {
+   "from": "idea.2026-10-17.4",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
+  },
+  {
+   "from": "idea.2026-10-17.5",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
+  },
+  {
+   "from": "idea.2026-10-17.6",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
+  },
+  {
+   "from": "idea.2026-10-17.7",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
+  },
+  {
+   "from": "idea.2026-10-17.8",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "tested-by"
   }
  ]
 }
