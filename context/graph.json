@@ -6903,6 +6903,24 @@
    "date": "2026-10-17",
    "title": "Owner idea 8 (unbiased idea, to be tested): Voice AI will be a large future domain; more ideas to come",
    "tested_by": "H9"
+  },
+  {
+   "id": "component.azure.vp-research-rg",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-17",
+   "title": "Azure resource group vp-research-rg (southeastasia) with AIServices account vp-research-ai-sea: VP-owned, isolated from Taxila/Vyakti quota regions; research benchmark spend capped at INR 10,000 (owner, 2026-10-17); spend ledger kept per lane."
+  },
+  {
+   "id": "decision.2026-10-17.research-launch",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-17",
+   "title": "Owner approved the deeper research brief: 10 lanes (H1-H10) + adversarial verification + synthesis + founder interview kit + listener panel + completeness critic; Azure cap INR 10,000.",
+   "reverse_if": "owner stops or re-scopes",
+   "path": "research/2026-10-17/vp-research-brief.md"
   }
  ],
  "edges": [
@@ -13917,6 +13935,16 @@
    "from": "idea.2026-10-17.8",
    "to": "doc.2026-10-17.vp-research-brief",
    "relation": "tested-by"
+  },
+  {
+   "from": "decision.2026-10-17.research-launch",
+   "to": "doc.2026-10-17.vp-research-brief",
+   "relation": "executes"
+  },
+  {
+   "from": "component.azure.vp-research-rg",
+   "to": "directive.2026-10-15.azure-scope",
+   "relation": "complies-with"
   }
  ]
 }
