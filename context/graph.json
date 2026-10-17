@@ -6835,74 +6835,82 @@
   {
    "id": "idea.2026-10-17.1",
    "type": "open-question",
-   "status": "untested",
+   "status": "reframe",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 1 (unbiased idea, to be tested): Emotional, relational, extremely human-like conversational voice agents",
-   "tested_by": "H5"
+   "tested_by": "H5",
+   "triage": "Reframe as human-competent: language lock, turn-taking, backchannels, short replies, safe numbers and binding commitments. That is core for the wedge.\n\n'Emotional/relational' has no outcome evidence:\n- In the collections study, AI was not hung up on more within 10 s. The gap came with 21 pp fewer promises, which the paper says only 'may contribute' [l5v].\n- AI trails human sellers on sales-process discipline (n=366), and disclosure no longer cuts conversion (n=1,337) [l5v].\n- Warmth backfires with angry customers and collides with collections conduct rules [l5].\n\nMeasure warmth in a pilot befo"
   },
   {
    "id": "idea.2026-10-17.2",
    "type": "open-question",
-   "status": "untested",
+   "status": "reframe",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 2 (unbiased idea, to be tested): Self-evolving agents that learn from every call (e.g. modify the line where 90/100 dropped)",
-   "tested_by": "H7"
+   "tested_by": "H7",
+   "triage": "Core in scoped forms:\n- per-contact memory, from 1 call;\n- line-level drop-off mining: a line that doubles hang-ups is found 67% of the time at 500 calls and 76-94% at 1,000;\n- local-metric fix confirmation, ~1,200 calls [l6v].\n\nNot valid as stated:\n- '90 of 100 dropped' cannot validate a line: the minimum detectable drop is 13-19 pts at 100 calls per arm [l6].\n- Daily-checked K=2 dashboards declare false winners in 52-62% of A/A runs by day 90 [l6v].\n- Outcome optimisation needs ~1,000 calls/day per script, and only 22% of insurance buyers can test a +10% lift in month one [l6]."
   },
   {
    "id": "idea.2026-10-17.3",
    "type": "open-question",
-   "status": "untested",
+   "status": "reframe",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 3 (unbiased idea, to be tested): Hyper-personalisation: regional accent/dialect (e.g. Bihari-Hindi mix), per-person memory, cross-source user data",
-   "tested_by": "H6"
+   "tested_by": "H6",
+   "triage": "Core: regional-language matching and per-contact memory. Memory is parity in India, not a moat [l6].\n\nLater, opt-in only: dialect.\n- Employers ask for a dialect in 1 of 828 Hindi-belt postings [l5v].\n- Azure has no Hindi-belt dialect TTS [l5].\n- Automatic inference fails: a telecom circle is too coarse and language ID cannot separate Bhojpuri from Hindi [l5v].\n- The listener panel has not run.\n\nDrop: pooling personal data across sources and tenants. DPDP s.8(2) contracts constrain it and WhatsApp data is barred [l1, l6]."
   },
   {
    "id": "idea.2026-10-17.4",
    "type": "open-question",
-   "status": "untested",
+   "status": "core-for-wedge",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 4 (unbiased idea, to be tested): Company context ingested at onboarding",
-   "tested_by": "H8"
+   "tested_by": "H8",
+   "triage": "In narrow form: policy and customer fields plus a small approved fact base, not a full company brain.\n\nField experiments show specific context beats generic:\n- goal-specific reminders +16% saving, while generic reminders did nothing;\n- a loan officer's name helped only repeat clients;\n- a human two-way call raised on-time repayment by 34.4 pp LATE [l4cv].\n\nNo study tests AI voice with CRM context [l4c]."
   },
   {
    "id": "idea.2026-10-17.5",
    "type": "open-question",
-   "status": "untested",
+   "status": "reframe",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 5 (unbiased idea, to be tested): Price under Rs 2/min, components built in-house",
-   "tested_by": "H2"
+   "tested_by": "H2",
+   "triage": "Rs 2/min is not reachable at the measured quality bar on managed Azure: the floor is Rs 2.1-2.3 and MC p50 is Rs 3.06 at 1M min/month [l2v]. Indian all-in list prices are Rs 3.5-7 [l4av].\n\nSo the pricing unit changes (per renewal), not the quality, and Rs 2 becomes a scale-stage COGS target. The only robust <= Rs 2 path is D-lite at Rs 1.16 from ~1.5M min/month, and it is quality-gated.\n\nBuild in-house the differentiating layers: compliance router, competence layer, attribution and memory. Do not build commodity ASR or TTS: open ASR fabricates on silence [l7], and self-hosting needs NVAIE lice"
   },
   {
    "id": "idea.2026-10-17.6",
    "type": "open-question",
-   "status": "untested",
+   "status": "drop",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 6 (unbiased idea, to be tested): Feature parity with Bolna, Vapi, ElevenLabs and peers",
-   "tested_by": "H4"
+   "tested_by": "H4",
+   "triage": "Dropped as a strategy:\n- Incumbents already ship 10-12 of 12 headline features [l4a].\n- Indian list prices compressed to Rs 3.5-7 [l4av], so a parity or undercut wedge is dead [l4a].\n\nBuild only the subset the renewal use case needs: campaigns, transfer, knowledge base, tools, extraction, analytics and memory."
   },
   {
    "id": "idea.2026-10-17.7",
    "type": "open-question",
-   "status": "untested",
+   "status": "later",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 7 (unbiased idea, to be tested): Whole-company AI command centre (scraping, lead gen, voice/WhatsApp/email campaigns, omnichannel data, SEO/AEO, analytics, AI CRM, AI ERP)",
-   "tested_by": "H8"
+   "tested_by": "H8",
+   "triage": "H8's kill condition (buyers want a point tool that plugs into what they have) is met on desk evidence:\n- no buyer was found switching CRM for voice AI;\n- point-first adoption: Zoho One is ~5% of Zoho's 1M+ paying customers;\n- incumbents bundle voice [l4c, l4cv].\n\nIt is an expansion path. Revisit if 5 or more of the first 15 qualified prospects would buy voice only inside a replacement CRM [l4c]."
   },
   {
    "id": "idea.2026-10-17.8",
    "type": "open-question",
-   "status": "untested",
+   "status": "reframe",
    "source": "user",
    "date": "2026-10-17",
    "title": "Owner idea 8 (unbiased idea, to be tested): Voice AI will be a large future domain; more ideas to come",
-   "tested_by": "H9"
+   "tested_by": "H9",
+   "triage": "Right as a direction, wrong as a bet on cost collapse:\n- Managed AI cost fell only 1.7x in 24 months and has been flat at $0.033-0.039/min since 2025-09 [l7].\n- The end-2027 forecast P50 is Rs 1.89 on the optimistic path and Rs 2.7-3.0 on the current regime [l7v].\n- No gateable Indic full-duplex speech-to-speech exists [l7].\n\nPlan on flattening, dated curves."
   },
   {
    "id": "component.azure.vp-research-rg",
@@ -6921,6 +6929,474 @@
    "title": "Owner approved the deeper research brief: 10 lanes (H1-H10) + adversarial verification + synthesis + founder interview kit + listener panel + completeness critic; Azure cap INR 10,000.",
    "reverse_if": "owner stops or re-scopes",
    "path": "research/2026-10-17/vp-research-brief.md"
+  },
+  {
+   "id": "research.2026-10-17.round1",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-17",
+   "title": "VP research round 1: 10 hypothesis lanes + 10 adversarial verifiers + synthesis + critic + founder kit + listener panel (24 agents, ~INR 1,924 Azure est.). Every prediction was at least partly wrong; critic found 4 decision-level problems -> round 2 launched.",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "decision.2026-10-17.beachhead-r1",
+   "type": "decision",
+   "status": "proposed",
+   "source": "research",
+   "date": "2026-10-17",
+   "title": "Provisional beachhead (round 1): Retail insurance distribution. The buyers are IRDAI-registered retail intermediaries: IMFs (940), retail-focused brokers (out of 874, of which 791 are direct brokers mostly in commercial lines), non-bank corporate agents (out of 689, mostly banks), and the renewal books of PoSP/insurtech platforms such as Turtlemint (550k+ PoSPs). Source [l3, l3v, l4c]. Mode ~1,300 in-reach firms, ~980 of which phone [l3]. \u2014 Renewal reminders and lapse revival for motor, health and life policies, each ending in a WhatsApp utility template (Rs 0.115) carrying a payment link and an autopay-mandate option. RBI allows auto-debit without extra authentication up to Rs 1 lakh for insurance premiums [l4cv]. Callback handling and human escalation are included. A renewal or expiry reminder counts as a service call under TCCCPR def (bh)(i) [l1].; Outbound-consented service calls to the intermediary's existing policyholders, plus inbound callbacks. No cold calling. No promotion or cross-sell inside the call: one offer line makes the whole call promotional, so a cross-sell needs a separate 140xx call with consent [l1]. Calls go from tenant-held numbers. These are 1600xx if the IRDAI 1600 mandate (in force since 2026-02-15) covers intermediaries, which is unverified; otherwise A2P-declared 10-digit CLIs [l1].; buyer The founder or principal officer of an IMF or retail broker. At a PoSP platform or non-bank corporate agent, the head of renewals or operations. Reached by founder-led direct sales to the enumerable IRDAI registers (~2,500 firms) [l4c].; pricing Per renewal collected on the due list the AI works, earned in code from the payment record, plus a monthly platform minimum. Incremental saves measured against a 10-20% holdout are reported as the proof of value. Not per minute: the managed cost of goods sold (COGS) of Rs 3.1-5.9/min against Indian list prices of Rs 3.5-7/min leaves no per-minute margin [l2v, l4av]. Under H2's rule, the pricing unit changes, not the quality bar. (Hypothesis to test in interviews:\n- Effective yield of Rs 6-8 per AI-connected minute, at or below a human's Rs 6-9 per connected minute [l2v]. Kill below about Rs 6/min-equivalent or Rs 150 per renewal saved [l3].\n- Pilot Rs 25-50k/month per renewal book.\n- Production about Rs 1.1-1.5 lakh/month for a median modelled buyer: 9,440 calls x ~2 min, both assumptions [calc from l6, l2]. This sits inside the sales-led band of Rs 25k-2L [l4c].\n- Billed by invoice, e-NACH or prepay, because card and UPI auto-debit needs extra authentication above Rs 15k [l4cv].). Confidence moderate-low.",
+   "reverse_if": "Fewer than 5 of 15 qualified intermediaries run at least 3 renewal telecallers or a renewal desk [l3].; Accepted price is below about Rs 6/min-equivalent or below Rs 150 per renewal saved [l3].; The interviewees' own renewal ratio by line is already 90% or more without calling, or they lose no commission on lapses. This tests whether the pain measured at insurers exists at intermediaries [l3v].; After 60 targeted intermediaries, fewer than 10 take a discovery call or fewer than 3 accept a paid pilot within 10 weeks [l4c].; Counsel finds intermediaries must use 1600xx but cannot obtain it, or that non-1600 service calls are unlawful, and the tenant has no compliant number path [l1].; Our agent misses the battery bar on the elderly and Hinglish personas: clean-turn p50 <= 1.5 s, collisions <= 5%, barge-in handled >= 90%, correct language >= 95% of turns, no loop or drop under babble. Separ",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "decision.2026-10-17.alternate-1",
+   "type": "decision",
+   "status": "proposed",
+   "source": "research",
+   "date": "2026-10-17",
+   "title": "Alternate 1: Alternate 1: Real-estate inquiry-to-site-visit qualification. Speed-to-lead calls to a developer's or channel partner's own digital inquiries, outbound from 140xx inside TRAI's 7-day digital-inquiry window (from ~2026-10-18), plus inbound and missed-call returns [l1]. Buyer: sales head at a mid-size developer or channel-partner firm. Priced per qualified site visit booked (Rs 300-500) with a monthly floor [l3].",
+   "reverse_if": "Most of the buyer's call volume comes from bought or cold lists rather than its own inquiries [l3].; Developers or channel partners will not pay Rs 300-500 per qualified site visit [l3].; A bundled incumbent (Sell.Do or LSQ Invorto) passes our battery at <= Rs 4-6/min all-in [l4b thresholds].; After 60 targeted firms, fewer than 10 discovery calls or fewer than 3 paid pilots within 10 weeks.; The DND share of inquiry leads makes the 140xx-plus-registered-consent path unworkable [l1]."
+  },
+  {
+   "id": "decision.2026-10-17.alternate-2",
+   "type": "decision",
+   "status": "proposed",
+   "source": "research",
+   "date": "2026-10-17",
+   "title": "Alternate 2: Alternate 2: Lending pre-due and early-bucket (DPD 0-30) reminders for base-layer NBFCs, MFIs and DRA collection agencies, priced per promise-to-pay kept or per account cured. It is sold as 'compliance by construction' against the RBI conduct rules from 2027-01-01: contact only 08:00-19:00, every call recorded and kept 6 months, call logs, and a grievance officer on every communication [l1].",
+   "reverse_if": "Counsel rules that a vendor-run AI caller is a recovery agent or agency needing certification, or carries obligations we cannot meet [l1, l3].; An incumbent at <= Rs 3/min passes our battery [l3].; Evidence that warmth or human-likeness hurts collection outcomes or draws conduct complaints [l3, l5].; Agencies cannot lawfully call from the lender's 1600xx numbers [l1].; A data-residency requirement cannot be met on Azure [l2v]."
+  },
+  {
+   "id": "measure.2026-10-17.subscribers-dnd-preferences",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l1 (TRAI PR 111/2026)",
+   "date": "2026-10-17",
+   "title": "Subscribers / DND preferences: 1.348 bn / 224 M (16%); 84% treated as deemed consent for 140xx promotion",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.suspected-spam-calls-flagged-by-telco-ai-q1-fy27",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l1",
+   "date": "2026-10-17",
+   "title": "Suspected-spam calls flagged by telco AI, Q1 FY27: 22.99 bn of 721.79 bn",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.1600-series-calls-q1-fy27",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l1, l3v",
+   "date": "2026-10-17",
+   "title": "1600-series calls, Q1 FY27: 1.15 bn",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.dpdp-core-obligations-in-force",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l1",
+   "date": "2026-10-17",
+   "title": "DPDP core obligations in force: ~2027-05-13",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.a2p-pre-declaration-and-termination-charge-up-to-r",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l1, l7v",
+   "date": "2026-10-17",
+   "title": "A2P pre-declaration and termination charge (up to Rs 0.05/min) in force: ~2026-11-17",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.rbi-recovery-conduct-rules-08-00-19-00-recording-k",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l1",
+   "date": "2026-10-17",
+   "title": "RBI recovery conduct rules (08:00-19:00, recording kept 6 months): from 2027-01-01",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.whatsapp-india-utility-vs-marketing-message",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l1, l3v",
+   "date": "2026-10-17",
+   "title": "WhatsApp India utility vs marketing message: Rs 0.115 vs Rs 0.8631 (effective 2026-10-01)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.managed-azure-cogs-at-100k-min-month",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l2v",
+   "date": "2026-10-17",
+   "title": "Managed Azure COGS at 100k min/month: MC p50 Rs 5.88 (p10-p90 Rs 5.0-7.0)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.managed-optimised-cogs-at-1m-min-month",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l2, l2v",
+   "date": "2026-10-17",
+   "title": "Managed optimised COGS at 1M min/month: base Rs 2.39; MC p50 Rs 3.06; floor Rs 2.1-2.3 with commitment tiers",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.only-robust-rs-2-path-d-lite-6-luna-self-hosted-as",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l2v",
+   "date": "2026-10-17",
+   "title": "Only robust <= Rs 2 path (D-lite: 6-luna + self-hosted ASR/TTS): MC p50 Rs 1.16 from ~1.5M min/month; quality unmeasured",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.ai-only-cost-own-azure-benchmark-list-price",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l8v",
+   "date": "2026-10-17",
+   "title": "AI-only cost, own Azure benchmark, list price: Rs 1.94-2.74/min (streaming STT Rs 1.58)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.indian-all-in-voice-agent-list-prices",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l4av",
+   "date": "2026-10-17",
+   "title": "Indian all-in voice-agent list prices: Rs 3.5-7/min (Sarvam Rs 3.55-3.90, Ringg Rs 6, Bolna ~Rs 6-7); others Rs 8-18",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.telecaller-median-posted-pay",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l2",
+   "date": "2026-10-17",
+   "title": "Telecaller median posted pay: Rs 17,000/month (n=1,234 unique Apna postings)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.telecaller-cost-per-connected-minute",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l2v",
+   "date": "2026-10-17",
+   "title": "Telecaller cost per connected minute: Rs 6-9 (Rs 6.3 at 200 talk-min/day; lane p50 Rs 8.86 is high-side)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.managed-ai-cost-history-at-fixed-workload",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l7",
+   "date": "2026-10-17",
+   "title": "Managed AI cost history at fixed workload: $0.579 (2023-04) to $0.033 = Rs 3.14 (2026-10); 1.7x in the last 24 months",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.managed-stack-forecast-end-2027",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l7v",
+   "date": "2026-10-17",
+   "title": "Managed-stack forecast, end-2027: P50 Rs 1.89 (optimistic); Rs 2.7-3.0 if the current regime continues",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.life-13th-month-persistency-lic-private-median",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l3, l3v (IRDAI Handbook 2024-25)",
+   "date": "2026-10-17",
+   "title": "Life 13th-month persistency, LIC / private median: 64.1% / 77% (n=21)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.insurance-renewal-in-reach-pool",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l3v",
+   "date": "2026-10-17",
+   "title": "Insurance-renewal in-reach pool: ~Rs 76-96 Cr/yr (lane said 94; range 18-1,118)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.real-estate-triangulated-pool-human-spend-p50",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l3",
+   "date": "2026-10-17",
+   "title": "Real-estate triangulated pool / human spend p50: Rs 830 Cr / Rs 3,769 Cr",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.irdai-intermediaries",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l3, l4c",
+   "date": "2026-10-17",
+   "title": "IRDAI intermediaries: 874 brokers, 689 corporate agents, 940 IMFs, 23 web aggregators (~2,500)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.median-modelled-ai-calls-month-insurance-collectio",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l6, l3v",
+   "date": "2026-10-17",
+   "title": "Median modelled AI calls/month: insurance / collections / real estate: 9,440 / 18,728 / 6,089 (assumption-driven, probably high)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.buyers-able-to-test-a-10-outcome-lift-in-month-one",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l6",
+   "date": "2026-10-17",
+   "title": "Buyers able to test a +10% outcome lift in month one: insurance / collections / real estate / D2C: 22% / 36% / 3.5% / 0.7%",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.a-a-false-winners-daily-p-best-0-95-k-2-by-day-90",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l6v",
+   "date": "2026-10-17",
+   "title": "A/A false winners, daily P(best) >= 0.95, K=2, by day 90: 52-62%",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l4b, l4bv",
+   "date": "2026-10-17",
+   "title": "Demo-agent clean-turn p50: Ultravox / Vapi / ElevenLabs: 1,540 / 2,319 / 3,749 ms (call-clustered 90% CI 1,324-1,737 / 2,111-2,609 / 3,473-4,038)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.vapi-wrong-language-replies-to-hinglish-caller",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l4b",
+   "date": "2026-10-17",
+   "title": "Vapi wrong-language replies to Hinglish caller: Gujarati on 17/18 turns",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.cut-ins-at-the-elderly-mid-sentence-pause",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l4bv",
+   "date": "2026-10-17",
+   "title": "Cut-ins at the elderly mid-sentence pause: 5/6 calls (pause renders as ~2.4 s)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.open-asr-fabrication-on-non-speech",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l7v",
+   "date": "2026-10-17",
+   "title": "Open ASR fabrication on non-speech: 30/30 clips; Qwen3-ASR wrote 'haan' on 24/25",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.mai-transcribe-2-vs-azure-real-time-pooled-kathbat",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l8",
+   "date": "2026-10-17",
+   "title": "MAI-Transcribe-2 vs Azure real-time, pooled Kathbath, phone band: 15.1% vs 18.1% WER (MAI-2 batch-only on our resources)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.azure-continuous-language-id-on-kathbath-hindi",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l8",
+   "date": "2026-10-17",
+   "title": "Azure continuous language ID on Kathbath Hindi: 14/60 correct (read as Marathi)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.ai-vs-human-collections-npv",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l5v (NBER w33669)",
+   "date": "2026-10-17",
+   "title": "AI vs human collections NPV: -9 pp (~1 month, RD) / -12 pp (day 5, randomised); 21 pp fewer promises",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.human-two-way-collection-call-effect-on-timely-rep",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l4cv",
+   "date": "2026-10-17",
+   "title": "Human two-way collection call effect on timely repayment: +34.4 pp LATE (ATE 16.6-20.1 pp), n=3,448",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.revenue-per-customer-self-serve-vs-sales-led",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l4cv",
+   "date": "2026-10-17",
+   "title": "Revenue per customer, self-serve vs sales-led: ~Rs 4.9k vs Rs 26k-2.4L per month",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.rbi-e-mandate-auto-debit-cap-without-extra-authent",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l4cv",
+   "date": "2026-10-17",
+   "title": "RBI e-mandate auto-debit cap without extra authentication: Rs 15,000 per debit (Rs 1 lakh for insurance premiums)",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.acs-standalone-retirement",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l7v",
+   "date": "2026-10-17",
+   "title": "ACS standalone retirement: announced 2026-09-23, effective 2028-09-30; no PSTN numbers for resources created after ~2026-10-23",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-17.listener-panel-budget",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "l5",
+   "date": "2026-10-17",
+   "title": "Listener panel budget: ~Rs 77.5k plus Rs 30-50k for coordinators",
+   "method": "see lane",
+   "path": "research/2026-10-17/SYNTHESIS.md"
+  },
+  {
+   "id": "rejected.2026-10-17.acs-direct-routing",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l7, l7v",
+   "date": "2026-10-17",
+   "title": "ACS Call Automation + Direct Routing as the Indian telephony leg: ACS never sold Indian numbers, new ACS resources lose phone capability after the 2026-09-23 retirement announcement (retire 2028-09-30). Use tenant-held numbers via Indian CPaaS (Exotel AgentStream / Ozonetel SIP / Vobiz / Plivo) into an Azure gateway."
+  },
+  {
+   "id": "rejected.2026-10-17.study-abroad-beachhead",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l3",
+   "date": "2026-10-17",
+   "title": "Study abroad as the beachhead (ranks #12, pool ~INR 80 Cr, outbound students fell 9.08 lakh (2023) to 6.26 lakh (2025))."
+  },
+  {
+   "id": "rejected.2026-10-17.d2c-per-minute",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l3v, l2",
+   "date": "2026-10-17",
+   "title": "D2C COD/NDR per-minute wedge: Shopify apps at INR 2.4-3.3/min, WhatsApp utility INR 0.115/msg, ticket p50 ~INR 19k/month; no margin at managed COGS."
+  },
+  {
+   "id": "rejected.2026-10-17.parity-undercut",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l4a, l4av",
+   "date": "2026-10-17",
+   "title": "Feature-parity / price-undercut wedge: incumbents ship 10-12/12 headline features; Indian all-in list prices INR 3.5-7/min."
+  },
+  {
+   "id": "rejected.2026-10-17.dialect-tts-wedge",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l5, l5v",
+   "date": "2026-10-17",
+   "title": "Dialect TTS for the wedge: employers ask for a dialect in 1/828 Hindi-belt postings; no Hindi-belt dialect TTS locale on Azure; automatic region/dialect inference unreliable."
+  },
+  {
+   "id": "rejected.2026-10-17.cross-tenant-pooling",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l1, l6v",
+   "date": "2026-10-17",
+   "title": "Cross-tenant pooled learning: DPDP s.8(2) processor limits, WhatsApp data barred; pooling gave wrong winner to 48-55% of dissimilar tenants in simulation."
+  },
+  {
+   "id": "rejected.2026-10-17.k2-dashboards",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l6v",
+   "date": "2026-10-17",
+   "title": "Daily-checked K=2 A/B dashboards as \"self-learning\": 52-62% false winners in A/A by day 90."
+  },
+  {
+   "id": "rejected.2026-10-17.harvest-trai-ai-rule",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "l1",
+   "date": "2026-10-17",
+   "title": "Harvest claim \"TRAI outbound-AI rules in force since 2026-03-10\": no primary support (traces to a vendor blog). Real AI hooks: A2P pre-declaration (~2026-11-17), MeitY synthetic-audio duty, TCCCPR deception clause."
+  },
+  {
+   "id": "open.2026-10-17.round2",
+   "type": "open-question",
+   "status": "open",
+   "source": "critic",
+   "date": "2026-10-17",
+   "title": "Round 2 running: insurance-intermediary regulation (1600 scope, solicitation, outsourcing, data location, commission), pain at actual buyer + per-renewal economics, India-hosted latency vs kill criterion 6 (<=1.5 s), Sarvam/Indian demo measurement, competition at intermediary level, model-file corrections, untouched raw materials, founder-kit and listener-panel rebalance.",
+   "path": "research/2026-10-17/CRITIC.md"
+  },
+  {
+   "id": "component.azure.vpresearchraw1017",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-17",
+   "title": "Blob storage vpresearchraw1017 (vp-research-rg, Cool tier) holds the 4.4 GB raw research material; research/2026-10-17/raw-manifest.csv lists path, bytes, sha256."
   }
  ],
  "edges": [
@@ -13945,6 +14421,251 @@
    "from": "component.azure.vp-research-rg",
    "to": "directive.2026-10-15.azure-scope",
    "relation": "complies-with"
+  },
+  {
+   "from": "research.2026-10-17.round1",
+   "to": "decision.2026-10-17.research-launch",
+   "relation": "executes"
+  },
+  {
+   "from": "decision.2026-10-17.beachhead-r1",
+   "to": "research.2026-10-17.round1",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-17.alternate-1",
+   "to": "decision.2026-10-17.beachhead-r1",
+   "relation": "alternate-to"
+  },
+  {
+   "from": "decision.2026-10-17.alternate-2",
+   "to": "decision.2026-10-17.beachhead-r1",
+   "relation": "alternate-to"
+  },
+  {
+   "from": "measure.2026-10-17.subscribers-dnd-preferences",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.suspected-spam-calls-flagged-by-telco-ai-q1-fy27",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.1600-series-calls-q1-fy27",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.dpdp-core-obligations-in-force",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.a2p-pre-declaration-and-termination-charge-up-to-r",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.rbi-recovery-conduct-rules-08-00-19-00-recording-k",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.whatsapp-india-utility-vs-marketing-message",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.managed-azure-cogs-at-100k-min-month",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.managed-optimised-cogs-at-1m-min-month",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.only-robust-rs-2-path-d-lite-6-luna-self-hosted-as",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.ai-only-cost-own-azure-benchmark-list-price",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.indian-all-in-voice-agent-list-prices",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.telecaller-median-posted-pay",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.telecaller-cost-per-connected-minute",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.managed-ai-cost-history-at-fixed-workload",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.managed-stack-forecast-end-2027",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.life-13th-month-persistency-lic-private-median",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.insurance-renewal-in-reach-pool",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.real-estate-triangulated-pool-human-spend-p50",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.irdai-intermediaries",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.median-modelled-ai-calls-month-insurance-collectio",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.buyers-able-to-test-a-10-outcome-lift-in-month-one",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.a-a-false-winners-daily-p-best-0-95-k-2-by-day-90",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.vapi-wrong-language-replies-to-hinglish-caller",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.cut-ins-at-the-elderly-mid-sentence-pause",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.open-asr-fabrication-on-non-speech",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.mai-transcribe-2-vs-azure-real-time-pooled-kathbat",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.azure-continuous-language-id-on-kathbath-hindi",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.ai-vs-human-collections-npv",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.human-two-way-collection-call-effect-on-timely-rep",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.revenue-per-customer-self-serve-vs-sales-led",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.rbi-e-mandate-auto-debit-cap-without-extra-authent",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.acs-standalone-retirement",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-17.listener-panel-budget",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.acs-direct-routing",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.study-abroad-beachhead",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.d2c-per-minute",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.parity-undercut",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.dialect-tts-wedge",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.cross-tenant-pooling",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.k2-dashboards",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.harvest-trai-ai-rule",
+   "to": "research.2026-10-17.round1",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-17.harvest-trai-ai-rule",
+   "to": "harvest.2026-10-15",
+   "relation": "corrects"
+  },
+  {
+   "from": "open.2026-10-17.round2",
+   "to": "research.2026-10-17.round1",
+   "relation": "follows"
   }
  ]
 }
