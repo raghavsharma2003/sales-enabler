@@ -1,0 +1,10 @@
+source,what_was_wanted,status,date,workaround
+WebSearch (programme-wide shared budget),dated news/papers for the survey,unavailable: budget of 200 searches per turn already used by other agents when this lane started (0 searches run by l7),2026-10-17,primary URLs fetched directly (Microsoft Learn; Azure Retail Prices API; Hugging Face API/cards; git; Common Crawl)
+web.archive.org (Wayback CDX and snapshots),price-page history,blocked: connection reset by the egress proxy (curl and WebFetch),2026-10-17,Common Crawl index via data.commoncrawl.org range requests (lane l4a method)
+index.commoncrawl.org,CDX API,blocked: connection reset,2026-10-17,cluster.idx binary search on data.commoncrawl.org
+github.com web and api.github.com,release feeds,403: session is bound to configured repositories,2026-10-17,git clone --filter=blob:none (git protocol works) and raw.githubusercontent.com
+openai.com/api/pricing (live),current OpenAI prices,JS-rendered: no prices in HTML,2026-10-17,Azure Retail Prices API meters + llm-prices dataset + older CC captures
+aws.amazon.com transcribe/polly pricing; cloud.google.com speech/tts pricing,hyperscaler price history,CC captures are JS shells with no prices,2026-10-17,Azure series used as the hyperscaler reference
+huggingface.co ai4bharat/IndicVoices; ai4bharat/indic-conformer-600m-multilingual,Indic conversational benchmark data; IndicConformer weights,gated (requires accepting terms with an account; sign-ups not allowed for this lane),2026-10-17,FLEURS hi_in (open) used instead; owner action listed
+Kathbath benchmark zip (indicwhisper.objectstore.e2enetworks.net),Indic read-speech benchmark,reachable but 3.46 GB; not downloaded within lane time,2026-10-17,FLEURS hi_in subset
+nvidia/nemotron-3.5-asr-streaming-0.6b,self-host ASR candidate,not run: needs the NeMo toolkit (too heavy for the CPU sandbox),2026-10-17,vendor FLEURS-hi WER quoted as vendor claim

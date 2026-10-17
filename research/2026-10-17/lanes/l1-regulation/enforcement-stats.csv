@@ -1,0 +1,21 @@
+period,metric,value,source_id
+Q1 FY2026-27 (Apr-Jun 2026),UCC complaints registered,"1,085,000",S11
+Q1 FY2026-27,Actionable complaints,"553,000",S11
+Q1 FY2026-27,Telecom resources barred 15 days (1st violation),"137,053",S11
+Q1 FY2026-27,Telecom resources disconnected 1 year (repeat),"46,786",S11
+Q1 FY2026-27,Senders blacklisted 1 year,263,S11
+Q1 FY2026-27,SMS headers blocked,"2,873",S11
+Q1 FY2026-27,Promotional calls originated on 140 series,13.16 billion,S11
+Q1 FY2026-27,140-series calls blocked by DND preferences,1.48 billion (11.2% computed),S11
+Q1 FY2026-27,Calls originated from 1600 series,1.15 billion,S11
+Q1 FY2026-27,Incoming calls flagged by telco AI as suspected spam,22.99 billion of 721.79 billion (3.2% computed),S11
+Q1 FY2026-27,Warning notifications to suspected spam senders (from 2026-06-23),"243,000",S11
+as of 2026-06-30,Preferences registered on DND registry,224 million of 1.348 billion subscribers (16%),S11
+April 2026,Disconnections for UCC violations; of which SIP/PRI (A2P),"20,591; 15,736 (~75%)",S03 memo
+2025 (calendar),Notices to unregistered telemarketers,"731,120",S12
+2025,Entities under 1-month communication restriction,"473,075",S12
+2025,Repeat offenders under 6-month caps,"89,936",S12
+2025,Telecom resources disconnected,"184,482",S12
+Aug 2024 to Jan 2026,Telecom resources disconnected cumulatively,21.05 lakh,S12
+2025,UCC complaints (all channels); via DND app,31.09 lakh; 17.06 lakh,S12
+Feb 2026 direction,Share of UCC complaints against unregistered telemarketers,~85%,S10

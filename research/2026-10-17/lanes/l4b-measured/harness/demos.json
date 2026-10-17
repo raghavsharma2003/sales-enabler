@@ -1,0 +1,151 @@
+[
+ {
+  "id": "vapi",
+  "vendor": "Vapi",
+  "url": "https://vapi.ai",
+  "agent": "Vapi homepage assistant (English, generic)",
+  "steps": [
+   {
+    "click": "Start call",
+    "role": "button",
+    "after": 2000
+   }
+  ],
+  "endSteps": [
+   {
+    "click": "End call",
+    "role": "button"
+   }
+  ]
+ },
+ {
+  "id": "elevenlabs",
+  "vendor": "ElevenLabs Agents",
+  "url": "https://elevenlabs.io/conversational-ai",
+  "agent": "ElevenLabs product assistant",
+  "steps": [
+   {
+    "click": "text=Voice",
+    "after": 1500,
+    "optional": true
+   },
+   {
+    "click": "Start Call",
+    "role": "button",
+    "after": 2000
+   },
+   {
+    "click": "I agree",
+    "role": "button",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "ravan_hi",
+  "vendor": "Ravan.ai (Agni)",
+  "url": "https://ravan.ai",
+  "agent": "Agni live demo, Hindi",
+  "steps": [
+   {
+    "click": "text=Talk to Agni in Hindi",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "husky_payment",
+  "vendor": "HuskyVoice.AI",
+  "url": "https://www.huskyvoice.ai/live-demo?country=India",
+  "agent": "Deepika, Payment Reminder (Financial Services, Hinglish)",
+  "steps": [
+   {
+    "click": "Talk to",
+    "role": "button",
+    "nth": 7,
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "husky_realestate",
+  "vendor": "HuskyVoice.AI",
+  "url": "https://www.huskyvoice.ai/live-demo?country=India",
+  "agent": "Deepika, Real Estate Lead Qualification (Hindi)",
+  "steps": [
+   {
+    "click": "Talk to",
+    "role": "button",
+    "nth": 2,
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "vyora",
+  "vendor": "Vyora AI",
+  "url": "https://vyora.ai",
+  "agent": "Vyora homepage 'Tap to talk' agent",
+  "steps": [
+   {
+    "click": "text=Tap to talk",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "smallest",
+  "vendor": "Smallest.ai (Atoms)",
+  "url": "https://smallest.ai",
+  "agent": "Smallest homepage voice agent",
+  "steps": [
+   {
+    "scroll": 700
+   },
+   {
+    "click": "button:has-text(\"Start conversation\")",
+    "after": 2000,
+    "force": true
+   }
+  ]
+ },
+ {
+  "id": "ultravox",
+  "vendor": "Ultravox (Inworld)",
+  "url": "https://demo.ultravox.ai/embed?transcriptOptional=true",
+  "agent": "Ultravox demo agent",
+  "steps": [
+   {
+    "click": "Start Call",
+    "role": "button",
+    "after": 2000
+   }
+  ]
+ },
+ {
+  "id": "calib",
+  "vendor": "Calibration agent (local)",
+  "url": "http://127.0.0.1:8899/harness/calib.html",
+  "agent": "known rule: reply 600 ms silence + 500 ms delay",
+  "steps": [
+   {
+    "click": "#go",
+    "after": 500
+   }
+  ],
+  "noProxy": true
+ },
+ {
+  "id": "calib_long",
+  "vendor": "Calibration agent, long replies, no barge-in (local)",
+  "url": "http://127.0.0.1:8899/harness/calib.html?reply=P4_t01",
+  "agent": "known rule: reply after 600 ms silence + 500 ms with a 9 s clip; never yields",
+  "steps": [
+   {
+    "click": "#go",
+    "after": 500
+   }
+  ],
+  "noProxy": true
+ }
+]

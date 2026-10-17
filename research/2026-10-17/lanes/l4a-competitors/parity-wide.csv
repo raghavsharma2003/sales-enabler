@@ -1,0 +1,25 @@
+feature,Bolna,Sarvam Samvaad,Gnani Inya,Smallest Atoms,Ringg,Ravan.ai (Agni),SquadStack,Subverse AI,VoiceGenie (Oriserve),Haptik,Yellow.ai,Skit.ai,Exotel,Ozonetel,Convin,Vapi,Retell,Bland,Synthflow,ElevenLabs Agents,PolyAI,Hume EVI,LiveKit (substrate)
+outbound_campaigns,yes,yes,partial,yes,yes,yes,yes,unknown,unknown,unknown,unknown,unknown,yes,yes,unknown,yes,yes,yes,yes,partial,unknown,unknown,partial
+inbound,yes,yes,partial,yes,yes,yes,partial,unknown,unknown,unknown,unknown,unknown,yes,yes,unknown,yes,yes,yes,yes,yes,yes,unknown,yes
+warm_transfer,yes,yes,partial,yes,yes,partial,yes,unknown,partial,yes,unknown,unknown,unknown,unknown,unknown,yes,yes,yes,yes,yes,unknown,unknown,yes
+voicemail_amd,partial,partial,yes,unknown,yes,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,yes,yes,partial,partial,yes,unknown,unknown,unknown
+dtmf,yes,unknown,yes,unknown,yes,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,yes,yes,unknown,partial,yes,unknown,unknown,yes
+knowledge_base,yes,yes,yes,yes,yes,yes,unknown,yes,unknown,yes,unknown,unknown,unknown,unknown,unknown,yes,yes,yes,yes,yes,unknown,unknown,unknown
+function_calling_tools,yes,yes,partial,yes,yes,yes,unknown,yes,unknown,unknown,unknown,unknown,unknown,unknown,unknown,yes,yes,yes,yes,yes,unknown,unknown,unknown
+crm_integrations,partial,unknown,yes,unknown,partial,partial,yes,partial,unknown,unknown,unknown,unknown,yes,yes,unknown,partial,yes,partial,yes,yes,unknown,unknown,unknown
+whatsapp,partial,partial,unknown,unknown,yes,unknown,partial,yes,unknown,yes,yes,unknown,yes,yes,yes,unknown,unknown,unknown,yes,yes,unknown,unknown,yes
+email,partial,unknown,yes,unknown,partial,unknown,unknown,yes,unknown,unknown,unknown,unknown,unknown,unknown,yes,partial,partial,unknown,partial,unknown,unknown,unknown,unknown
+post_call_extraction,yes,partial,yes,yes,yes,yes,partial,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,yes,yes,yes,yes,yes,unknown,unknown,unknown
+analytics,yes,yes,yes,yes,yes,yes,yes,unknown,unknown,unknown,unknown,unknown,unknown,yes,yes,yes,yes,yes,yes,yes,unknown,unknown,unknown
+ab_testing,unknown,unknown,unknown,unknown,yes,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,yes,yes,yes,unknown,yes,unknown,unknown,unknown
+auto_optimisation_learning,unknown,partial,unknown,unknown,unknown,unknown,partial,unknown,unknown,unknown,partial,unknown,partial,unknown,unknown,unknown,partial,partial,partial,partial,unknown,unknown,unknown
+multilingual_indic,yes,yes,yes,yes,yes,yes,yes,unknown,partial,yes,yes,partial,unknown,yes,unknown,partial,partial,partial,partial,yes,unknown,unknown,unknown
+code_switching,yes,yes,yes,yes,unknown,partial,yes,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,partial,partial,partial,unknown,partial,unknown,unknown,unknown
+dialects,unknown,partial,partial,partial,unknown,partial,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,partial,unknown,unknown,unknown
+custom_cloned_voices,yes,partial,yes,yes,yes,partial,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,yes,yes,yes,unknown,yes,unknown,partial,unknown
+emotion,partial,unknown,partial,yes,unknown,partial,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,partial,yes,partial,unknown,yes,unknown,yes,unknown
+memory_across_calls,partial,partial,unknown,unknown,unknown,partial,partial,unknown,unknown,unknown,unknown,unknown,partial,unknown,unknown,unknown,yes,yes,yes,unknown,unknown,unknown,unknown
+compliance_dnd_dlt_consent,partial,partial,partial,partial,partial,partial,yes,unknown,unknown,unknown,unknown,partial,unknown,unknown,unknown,partial,partial,partial,partial,partial,unknown,unknown,unknown
+testing_simulation,partial,yes,yes,partial,yes,partial,unknown,unknown,unknown,unknown,partial,unknown,unknown,unknown,unknown,yes,yes,yes,yes,yes,unknown,unknown,partial
+white_label,partial,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,partial,partial,unknown,yes,unknown,unknown,unknown,unknown
+on_prem_india_residency,yes,partial,yes,yes,yes,partial,yes,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,partial,unknown,partial,partial,partial,unknown,unknown,yes

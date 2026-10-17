@@ -1,0 +1,553 @@
+feature,vendor,value,evidence,source,accessed,method
+outbound_campaigns,Bolna,yes,"Batch calling (CSV, schedule, up to 3 retries) + workflow campaigns API",https://www.bolna.ai/docs/outbound/batch-calling,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Sarvam Samvaad,yes,"Campaigns: cohorts, dialing rate, lifecycle",https://docs.sarvam.ai/voice-agents/deploy/campaigns,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Gnani Inya,partial,Agent builder + aggregated stats; campaign object not clearly documented,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Smallest Atoms,yes,"Campaigns, audiences, calls-per-second",https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Ringg,yes,"Campaigns, calling lists, workflows",https://docs.ringg.ai/documentation/deploy/campaigns,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Ravan.ai (Agni),yes,"Outbound, contacts, campaigns API",https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,SquadStack,yes,"Core use: sales, collections, onboarding outbound",https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Subverse AI,unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,Haptik,unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,Skit.ai,unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,Exotel,yes,Dialer/campaigns,https://exotel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Ozonetel,yes,Predictive dialers,https://ozonetel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Convin,unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,Vapi,yes,"Campaigns: up to 10,000 contacts, maxConcurrency 1-500, predial webhook (2026-09-22 review)",https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Retell,yes,"Batch calls (+$0.005/dial), saved/draft batch runs (2026-09-22 review)",https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Bland,yes,Batch/outbound at volume; daily caps by plan,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,Synthflow,yes,Campaigns,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,ElevenLabs Agents,partial,Outbound calls and batch calling exist; no campaign control plane comparable to Vapi/Bolna (2026-09-22 review),https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+outbound_campaigns,PolyAI,unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,Hume EVI,unknown,not found in sources read,,2026-10-17,
+outbound_campaigns,LiveKit (substrate),partial,Outbound SIP calls; no campaign manager (build your own),https://docs.livekit.io/llms.txt ; https://livekit.com/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Bolna,yes,"Inbound tab, receiving calls, caller matching from API/CSV/Sheet",https://www.bolna.ai/docs/inbound/receiving-calls,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Sarvam Samvaad,yes,deploy/inbounds,https://docs.sarvam.ai/voice-agents/deploy/inbounds,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Gnani Inya,partial,Enterprise contact-centre deployments (homepage); no inbound page in docs index,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Smallest Atoms,yes,SIP trunking; Alohaa (Indian telephony) integration,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Ringg,yes,Agent types: inbound / outbound-inbound,https://docs.ringg.ai/documentation/build-agents/agents/agent-types.md,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Ravan.ai (Agni),yes,Inbound calls page,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,SquadStack,partial,Support use case named,https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Subverse AI,unknown,not found in sources read,,2026-10-17,
+inbound,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+inbound,Haptik,unknown,not found in sources read,,2026-10-17,
+inbound,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+inbound,Skit.ai,unknown,not found in sources read,,2026-10-17,
+inbound,Exotel,yes,Cloud telephony + AI voice agents,https://exotel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Ozonetel,yes,Contact-centre suite,https://ozonetel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Convin,unknown,not found in sources read,,2026-10-17,
+inbound,Vapi,yes,Inbound support example,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Retell,yes,"Inbound, reserved inbound concurrency",https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Bland,yes,Inbound numbers,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Synthflow,yes,Inbound,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,ElevenLabs Agents,yes,Twilio/SIP inbound,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,PolyAI,yes,Enterprise inbound customer-service voice assistants (positioning); docs host unreachable (502) from sandbox,https://www.polyai.com (blocked),2026-10-17,read-primary (docs index/pricing/homepage)
+inbound,Hume EVI,unknown,not found in sources read,,2026-10-17,
+inbound,LiveKit (substrate),yes,SIP inbound,https://docs.livekit.io/llms.txt ; https://livekit.com/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Bolna,yes,Live transfer tool; SIP trunk call transfer; pre-transfer webhook (2026-09-22 review),https://www.bolna.ai/docs/sip-trunking/call-transfer,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Sarvam Samvaad,yes,Call transfer tool; forwarding billed INR 0.40/30 s (pricing),https://docs.sarvam.ai/voice-agents/build/tools/call-transfer,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Gnani Inya,partial,Transfer referenced in stats only,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Smallest Atoms,yes,Call transfer / call control pages,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Ringg,yes,System tools: call transfer,https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/tools/system-tools.md,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Ravan.ai (Agni),partial,Tools & functions (transfer not separately documented),https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,SquadStack,yes,Human advisors pod for hand-offs (managed service),https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Subverse AI,unknown,not found in sources read,,2026-10-17,
+warm_transfer,VoiceGenie (Oriserve),partial,'human associates' seats in plans,https://voicegenie.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Haptik,yes,'AI + Human' hand-off positioning,https://www.haptik.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+warm_transfer,Skit.ai,unknown,not found in sources read,,2026-10-17,
+warm_transfer,Exotel,unknown,not found in sources read,,2026-10-17,
+warm_transfer,Ozonetel,unknown,not found in sources read,,2026-10-17,
+warm_transfer,Convin,unknown,not found in sources read,,2026-10-17,
+warm_transfer,Vapi,yes,Warm transfer modes; transfer call tool,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Retell,yes,"Transfer call tool, agent transfer, warm transfer (+latency complaints in forum)",https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Bland,yes,Warm transfer page; transfer billed $0.03-0.05/min,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,Synthflow,yes,"Call transfers, SIP transfers",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,ElevenLabs Agents,yes,Transfer to number / agent transfer,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+warm_transfer,PolyAI,unknown,not found in sources read,,2026-10-17,
+warm_transfer,Hume EVI,unknown,not found in sources read,,2026-10-17,
+warm_transfer,LiveKit (substrate),yes,SIP transfer,https://docs.livekit.io/llms.txt ; https://livekit.com/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Bolna,partial,"Voicemail detection exists, implemented as LLM classification of transcript every 7 s up to 30 s (OSS voicemail_handler.py), not acoustic AMD",https://www.bolna.ai/docs/agent-setup/call-tab,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Sarvam Samvaad,partial,Voicemail referenced in run-time/conversation settings; pricing: voicemail counts as connected and is billed,https://docs.sarvam.ai/voice-agents/build/conversation-settings,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Gnani Inya,yes,Voicemail Detection page,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+voicemail_amd,Ringg,yes,Call settings: voicemail handling,https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/call-settings.md,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Ravan.ai (Agni),unknown,None found,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,
+voicemail_amd,SquadStack,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Subverse AI,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Haptik,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Skit.ai,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Exotel,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Ozonetel,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Convin,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Vapi,yes,Voicemail detection; voicemail tool,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Retell,yes,Handle voicemail and IVR,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Bland,partial,Call recipes mention voicemail,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,Synthflow,partial,Call configuration,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,ElevenLabs Agents,yes,Voicemail detection,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+voicemail_amd,PolyAI,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,Hume EVI,unknown,not found in sources read,,2026-10-17,
+voicemail_amd,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+dtmf,Bolna,yes,"inbound/dtmf, inbound/ivr pages; dtmf_enabled flag in OSS ConversationConfig",https://www.bolna.ai/docs/inbound/dtmf,2026-10-17,read-primary (docs index/pricing/homepage)
+dtmf,Sarvam Samvaad,unknown,No DTMF page found,https://docs.sarvam.ai/voice-agents/llms.txt,2026-10-17,
+dtmf,Gnani Inya,yes,DTMF Collection page,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+dtmf,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+dtmf,Ringg,yes,System tools: wait for keypad input,https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/tools/system-tools.md,2026-10-17,read-primary (docs index/pricing/homepage)
+dtmf,Ravan.ai (Agni),unknown,None found,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,
+dtmf,SquadStack,unknown,not found in sources read,,2026-10-17,
+dtmf,Subverse AI,unknown,not found in sources read,,2026-10-17,
+dtmf,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+dtmf,Haptik,unknown,not found in sources read,,2026-10-17,
+dtmf,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+dtmf,Skit.ai,unknown,not found in sources read,,2026-10-17,
+dtmf,Exotel,unknown,not found in sources read,,2026-10-17,
+dtmf,Ozonetel,unknown,not found in sources read,,2026-10-17,
+dtmf,Convin,unknown,not found in sources read,,2026-10-17,
+dtmf,Vapi,yes,Keypad input; IVR navigation,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+dtmf,Retell,yes,Press digit / capture DTMF,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+dtmf,Bland,unknown,None found,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,
+dtmf,Synthflow,partial,SIP,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+dtmf,ElevenLabs Agents,yes,Play keypad touch tone; multimodal input,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+dtmf,PolyAI,unknown,not found in sources read,,2026-10-17,
+dtmf,Hume EVI,unknown,not found in sources read,,2026-10-17,
+dtmf,LiveKit (substrate),yes,DTMF,https://docs.livekit.io/llms.txt ; https://livekit.com/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Bolna,yes,RAG over PDF/URL; multilingual KB mode,https://www.bolna.ai/docs/knowledge-base,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Sarvam Samvaad,yes,build/knowledge-base,https://docs.sarvam.ai/voice-agents/build/knowledge-base,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Gnani Inya,yes,Creating a Knowledge Base; FAQ entries,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Smallest Atoms,yes,"Knowledge Base page; KB $3/GB, queries $2/1K (pricing)",https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Ringg,yes,Knowledge base from files/URLs,https://docs.ringg.ai/documentation/inventory/knowledge-base.md,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Ravan.ai (Agni),yes,Knowledge base API,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,SquadStack,unknown,not found in sources read,,2026-10-17,
+knowledge_base,Subverse AI,yes,Knowledge base,https://docs.subverseai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+knowledge_base,Haptik,yes,Retrieval from documents and websites,https://www.haptik.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+knowledge_base,Skit.ai,unknown,not found in sources read,,2026-10-17,
+knowledge_base,Exotel,unknown,not found in sources read,,2026-10-17,
+knowledge_base,Ozonetel,unknown,not found in sources read,,2026-10-17,
+knowledge_base,Convin,unknown,not found in sources read,,2026-10-17,
+knowledge_base,Vapi,yes,Knowledge bases,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Retell,yes,KB +$0.005/min,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Bland,yes,Knowledge,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,Synthflow,yes,Knowledge base,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,ElevenLabs Agents,yes,KB / RAG (~250 ms added),https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+knowledge_base,PolyAI,unknown,not found in sources read,,2026-10-17,
+knowledge_base,Hume EVI,unknown,not found in sources read,,2026-10-17,
+knowledge_base,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Bolna,yes,"Custom function calls, Cal.com booking, MCP server",https://www.bolna.ai/docs/tool-calling/custom-function-calls,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Sarvam Samvaad,yes,"HTTPS tool, code tools, data validation, tool mocking, MCP",https://docs.sarvam.ai/voice-agents/build/tools,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Gnani Inya,partial,Action logs / integrations and actions,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Smallest Atoms,yes,Tools library; API tool; coding-agent build,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Ringg,yes,"Pre/on/post-call API tools, jq function tools, workspace tools",https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/tools/overview.md,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Ravan.ai (Agni),yes,Tools & functions,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,SquadStack,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Subverse AI,yes,Custom functions,https://docs.subverseai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Haptik,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Skit.ai,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Exotel,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Ozonetel,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Convin,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Vapi,yes,"Tools, versioned; MCP",https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Retell,yes,"Function calling, integration tools",https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Bland,yes,"Tools, integration tools",https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,Synthflow,yes,"Actions, webhooks",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,ElevenLabs Agents,yes,"Client, webhook, MCP, system tools",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+function_calling_tools,PolyAI,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,Hume EVI,unknown,not found in sources read,,2026-10-17,
+function_calling_tools,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+crm_integrations,Bolna,partial,"No native CRM connector page found; CRM pushes via webhooks, workflows, Zapier/make/n8n",https://www.bolna.ai/docs/agent-setup/analytics-tab,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Sarvam Samvaad,unknown,No CRM connector page found,https://docs.sarvam.ai/voice-agents/llms.txt,2026-10-17,
+crm_integrations,Gnani Inya,yes,CRM Integration and Action page,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+crm_integrations,Ringg,partial,"Integration tools (Google Sheets, Slack, calendars, other apps); no named CRM connector page",https://docs.ringg.ai/documentation/inventory/tools-integrations/connect-an-app.md,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Ravan.ai (Agni),partial,Integrations / appointments; Cal.com,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,SquadStack,yes,'two-way CRM integrations' (claim),https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Subverse AI,partial,Freshdesk,https://docs.subverseai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+crm_integrations,Haptik,unknown,not found in sources read,,2026-10-17,
+crm_integrations,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+crm_integrations,Skit.ai,unknown,not found in sources read,,2026-10-17,
+crm_integrations,Exotel,yes,"CTI integrations Zoho, Zendesk, Salesforce, Freshdesk, HubSpot, LeadSquared",https://exotel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Ozonetel,yes,"Zoho, Zendesk, Salesforce, Freshdesk, HubSpot, LeadSquared",https://ozonetel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Convin,unknown,not found in sources read,,2026-10-17,
+crm_integrations,Vapi,partial,GoHighLevel and partner connectors; most CRMs via tools,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Retell,yes,"Connect CRMs, calendars; GoHighLevel/HubSpot contact sync",https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Bland,partial,HubSpot setup guide; post-call webhooks,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,Synthflow,yes,"Salesforce, HubSpot, GoHighLevel",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,ElevenLabs Agents,yes,"HubSpot, Salesforce, Zendesk, Freshdesk",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+crm_integrations,PolyAI,unknown,not found in sources read,,2026-10-17,
+crm_integrations,Hume EVI,unknown,not found in sources read,,2026-10-17,
+crm_integrations,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+whatsapp,Bolna,partial,Via AiSensy node in beta Workflows and make.com tutorial; open OSS issue #1077 requests native WhatsApp,https://www.bolna.ai/docs/tutorials/make-com/send-whatsapp-after-bolna-call,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Sarvam Samvaad,partial,"Samvaad WhatsApp agents (press, 2025); 'WhatsApp campaigns' listed only in Enterprise (pricing page)",https://www.sarvam.ai/products/voice-agents/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Gnani Inya,unknown,None found,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,
+whatsapp,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+whatsapp,Ringg,yes,WhatsApp agents + WhatsApp tools during calls; INR 2 per 5-min chat session,https://docs.ringg.ai/documentation/build-agents/agents/whatsapp-agents/overview.md,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Ravan.ai (Agni),unknown,None found,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,
+whatsapp,SquadStack,partial,Lead management & omnichannel outreach product,https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Subverse AI,yes,WhatsApp trigger/channel,https://docs.subverseai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+whatsapp,Haptik,yes,"Web, chat, voice, WhatsApp channels",https://www.haptik.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Yellow.ai,yes,Omnichannel platform,https://yellow.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Skit.ai,unknown,not found in sources read,,2026-10-17,
+whatsapp,Exotel,yes,WhatsApp from INR 0.80/marketing conversation (2024 price page),https://exotel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Ozonetel,yes,WhatsApp bots (case study),https://ozonetel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Convin,yes,WA chat and WA call channels,https://convin.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,Vapi,unknown,None found in docs index,https://docs.vapi.ai/llms.txt,2026-10-17,
+whatsapp,Retell,unknown,None found (forum feature request #2665),https://docs.retellai.com/llms.txt,2026-10-17,
+whatsapp,Bland,unknown,None found,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,
+whatsapp,Synthflow,yes,"WhatsApp Business Calling, chat",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,ElevenLabs Agents,yes,"WhatsApp channel, templates, tools",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+whatsapp,PolyAI,unknown,not found in sources read,,2026-10-17,
+whatsapp,Hume EVI,unknown,not found in sources read,,2026-10-17,
+whatsapp,LiveKit (substrate),yes,WhatsApp connector (pricing page),https://docs.livekit.io/llms.txt ; https://livekit.com/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+email,Bolna,partial,Via n8n/make.com tutorials,https://www.bolna.ai/docs/tutorials,2026-10-17,read-primary (docs index/pricing/homepage)
+email,Sarvam Samvaad,unknown,None found,https://docs.sarvam.ai/voice-agents/llms.txt,2026-10-17,
+email,Gnani Inya,yes,Email Integration and Action page,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+email,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+email,Ringg,partial,Workflow blocks / alerts,https://docs.ringg.ai/documentation/build-agents/workflows/block-reference.md,2026-10-17,read-primary (docs index/pricing/homepage)
+email,Ravan.ai (Agni),unknown,None found,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,
+email,SquadStack,unknown,not found in sources read,,2026-10-17,
+email,Subverse AI,yes,Email agent,https://docs.subverseai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+email,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+email,Haptik,unknown,not found in sources read,,2026-10-17,
+email,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+email,Skit.ai,unknown,not found in sources read,,2026-10-17,
+email,Exotel,unknown,not found in sources read,,2026-10-17,
+email,Ozonetel,unknown,not found in sources read,,2026-10-17,
+email,Convin,yes,Email channel,https://convin.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+email,Vapi,partial,Email address reading; alerts,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+email,Retell,partial,Alerts only,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+email,Bland,unknown,None found,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,
+email,Synthflow,partial,Notifications,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+email,ElevenLabs Agents,unknown,None found,https://elevenlabs.io/docs/llms.txt,2026-10-17,
+email,PolyAI,unknown,not found in sources read,,2026-10-17,
+email,Hume EVI,unknown,not found in sources read,,2026-10-17,
+email,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Bolna,yes,"Extractions, dispositions API, call summary, custom analytics",https://www.bolna.ai/docs/api-reference/dispositions/overview,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Sarvam Samvaad,partial,Goals and call-log analytics; on-end hooks,https://docs.sarvam.ai/voice-agents/build/on-start-on-end-hooks,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Gnani Inya,yes,Disposition prompt; conversation statistics,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Smallest Atoms,yes,Post-call metrics / analytics; logs analysis,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Ringg,yes,Advanced Analysis typed variables; post-call tools,https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/advanced-analysis.md,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Ravan.ai (Agni),yes,"After-call webhook, call history",https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,SquadStack,partial,AI lead manager / quality audits,https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Subverse AI,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Haptik,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Skit.ai,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Exotel,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Ozonetel,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Convin,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Vapi,yes,Structured outputs; scorecards,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Retell,yes,Post-call analysis data,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Bland,yes,"Post-call webhooks, analysis",https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,Synthflow,yes,Post-call analysis,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,ElevenLabs Agents,yes,"Data collection, success evaluation, post-call webhooks",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+post_call_extraction,PolyAI,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,Hume EVI,unknown,not found in sources read,,2026-10-17,
+post_call_extraction,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+analytics,Bolna,yes,"Call analytics, call history with per-component cost/traces",https://www.bolna.ai/docs/agent-setup/call-analytics,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Sarvam Samvaad,yes,"Agent analytics (connectivity, engagement, goals), boards with SQL widgets, log analyser",https://docs.sarvam.ai/voice-agents/monitor/agent-analytics,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Gnani Inya,yes,Call analytics pipeline; agent analytics; 100% call QA (Analytics product),https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Smallest Atoms,yes,"Analytics, metrics overview",https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Ringg,yes,"Dashboard, cohorts, advanced analytics INR 2/call",https://docs.ringg.ai/get-started/dashboard-tour.md,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Ravan.ai (Agni),yes,Platform analytics,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,SquadStack,yes,Analytics & reporting; ROI engine,https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Subverse AI,unknown,not found in sources read,,2026-10-17,
+analytics,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+analytics,Haptik,unknown,not found in sources read,,2026-10-17,
+analytics,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+analytics,Skit.ai,unknown,not found in sources read,,2026-10-17,
+analytics,Exotel,unknown,not found in sources read,,2026-10-17,
+analytics,Ozonetel,yes,"Voice of customer, QA",https://ozonetel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Convin,yes,Conversation intelligence QA (core product),https://convin.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Vapi,yes,"Monitoring, scorecards, insights",https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Retell,yes,"Custom dashboards, AI QA ($0.10/min)",https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Bland,yes,Analytics,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,Synthflow,yes,Analytics,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,ElevenLabs Agents,yes,"Analytics, Spotlight",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+analytics,PolyAI,unknown,not found in sources read,,2026-10-17,
+analytics,Hume EVI,unknown,not found in sources read,,2026-10-17,
+analytics,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+ab_testing,Bolna,unknown,No experiment/traffic-split page found in 486-URL sitemap,https://www.bolna.ai/docs/sitemap.xml,2026-10-17,
+ab_testing,Sarvam Samvaad,unknown,Versioning exists; no traffic-split page,https://docs.sarvam.ai/voice-agents/build/agent/versioning,2026-10-17,
+ab_testing,Gnani Inya,unknown,None found,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,
+ab_testing,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+ab_testing,Ringg,yes,Drafts and versions: split call traffic for A/B,https://docs.ringg.ai/documentation/build-agents/test-and-improve/drafts-and-versions.md,2026-10-17,read-primary (docs index/pricing/homepage)
+ab_testing,Ravan.ai (Agni),unknown,None found,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,
+ab_testing,SquadStack,unknown,not found in sources read,,2026-10-17,
+ab_testing,Subverse AI,unknown,not found in sources read,,2026-10-17,
+ab_testing,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+ab_testing,Haptik,unknown,not found in sources read,,2026-10-17,
+ab_testing,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+ab_testing,Skit.ai,unknown,not found in sources read,,2026-10-17,
+ab_testing,Exotel,unknown,not found in sources read,,2026-10-17,
+ab_testing,Ozonetel,unknown,not found in sources read,,2026-10-17,
+ab_testing,Convin,unknown,not found in sources read,,2026-10-17,
+ab_testing,Vapi,yes,Traffic splitting,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+ab_testing,Retell,yes,A/B testing page,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+ab_testing,Bland,yes,Experiments API,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+ab_testing,Synthflow,unknown,None found,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,
+ab_testing,ElevenLabs Agents,yes,Experiments: deterministic traffic split,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+ab_testing,PolyAI,unknown,not found in sources read,,2026-10-17,
+ab_testing,Hume EVI,unknown,not found in sources read,,2026-10-17,
+ab_testing,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,Bolna,unknown,None found,https://www.bolna.ai/docs/sitemap.xml,2026-10-17,
+auto_optimisation_learning,Sarvam Samvaad,partial,'Building & improving agents' guide; Genie assistant builds agents; no automatic learning loop documented,https://docs.sarvam.ai/voice-agents/build/genie,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,Gnani Inya,unknown,None found,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,
+auto_optimisation_learning,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+auto_optimisation_learning,Ringg,unknown,None found ('context graph' only in funding PR),https://docs.ringg.ai/llms.txt,2026-10-17,
+auto_optimisation_learning,Ravan.ai (Agni),unknown,None found,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,
+auto_optimisation_learning,SquadStack,partial,'AI + human quality audits' managed by vendor; no self-serve learning loop,https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,Subverse AI,unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,Haptik,unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,Yellow.ai,partial,"'self-heal' agents, automated testing (claim)",https://yellow.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,Skit.ai,unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,Exotel,partial,'Every intervention trains the AI for next time' (claim),https://exotel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,Ozonetel,unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,Convin,unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,Vapi,unknown,None found,https://docs.vapi.ai/llms.txt,2026-10-17,
+auto_optimisation_learning,Retell,partial,AI QA metrics + 'test and improve' workflow (human in loop),https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,Bland,partial,Analyze failed run,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,Synthflow,partial,"'Data fine-tuning: use past calls to train smarter agents' (announced, not GA)",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,ElevenLabs Agents,partial,ElevenAgents Architect (assisted building); tests from real calls,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+auto_optimisation_learning,PolyAI,unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,Hume EVI,unknown,not found in sources read,,2026-10-17,
+auto_optimisation_learning,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+multilingual_indic,Bolna,yes,10+ Indian languages; per-language STT/TTS/voice pipeline,https://www.bolna.ai/docs/customizations/supported-languages,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Sarvam Samvaad,yes,11 Indian languages + English for agents (22 for APIs),https://docs.sarvam.ai/voice-agents/overview,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Gnani Inya,yes,'40+ languages and dialects' incl. 9 Indian languages named (homepage); own STT/TTS/S2S models,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Smallest Atoms,yes,Pulse STT 38+ languages; Lightning TTS 15+/70+ languages,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Ringg,yes,20+ languages (10 Indian) ; proprietary Parrot STT,https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/voice-and-language.md,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Ravan.ai (Agni),yes,"Hindi, Hinglish + 28 more (homepage); Growth plan 40+ languages",https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,SquadStack,yes,9 Indian languages,https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Subverse AI,unknown,not found in sources read,,2026-10-17,
+multilingual_indic,VoiceGenie (Oriserve),partial,50+ languages; Hindi/Hinglish marketing,https://voicegenie.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Haptik,yes,100+ languages (claim),https://www.haptik.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Yellow.ai,yes,VOX voice agents '500+ languages' (claim),https://yellow.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Skit.ai,partial,Hindi + English + regional expansion (India case study),https://skit.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Exotel,unknown,not found in sources read,,2026-10-17,
+multilingual_indic,Ozonetel,yes,24 vernacular languages (claim),https://ozonetel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Convin,unknown,not found in sources read,,2026-10-17,
+multilingual_indic,Vapi,partial,Multilingual via provider choice; no Indian-language quality claim,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Retell,partial,Multilingual mode; Hindi digit failures and no Sarvam provider (forum 2026-05),https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Bland,partial,40+ languages claim; no Indic quality claim,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,Synthflow,partial,Multilingual; no Indic claim,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,ElevenLabs Agents,yes,"70+ languages incl. Hindi, Tamil etc. (provider-native)",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+multilingual_indic,PolyAI,unknown,not found in sources read,,2026-10-17,
+multilingual_indic,Hume EVI,unknown,not found in sources read,,2026-10-17,
+multilingual_indic,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+code_switching,Bolna,yes,Mid-call language switching via LLM matrix-language prompt (OSS prompts.py); Soniox/Gladia code-switching STT; Kalpa/Maya Hinglish TTS,https://www.bolna.ai/docs/customizations/language-switching-behavior,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Sarvam Samvaad,yes,Language switching in core tools / conversation settings,https://docs.sarvam.ai/voice-agents/build/tools/core-tools,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Gnani Inya,yes,Language Switch Prompt page,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Smallest Atoms,yes,Language detection; Lightning v3.1 Pro,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Ringg,unknown,Not documented as such,https://docs.ringg.ai/llms.txt,2026-10-17,
+code_switching,Ravan.ai (Agni),partial,Hinglish claimed; not documented,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,SquadStack,yes,Claims mid-sentence switching incl. Hinglish/Taminglish; Arth ASR trained on 600M+ min Indian telephony (claim),https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Subverse AI,unknown,not found in sources read,,2026-10-17,
+code_switching,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+code_switching,Haptik,unknown,not found in sources read,,2026-10-17,
+code_switching,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+code_switching,Skit.ai,unknown,not found in sources read,,2026-10-17,
+code_switching,Exotel,unknown,not found in sources read,,2026-10-17,
+code_switching,Ozonetel,unknown,not found in sources read,,2026-10-17,
+code_switching,Convin,unknown,not found in sources read,,2026-10-17,
+code_switching,Vapi,partial,Multilingual support page (provider-dependent),https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Retell,partial,Forum: 'Agent is not Switching Language even on consumer's request' (2026-04),https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Bland,partial,'Agents can switch languages mid-call' (FAQ claim),https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,Synthflow,unknown,None found,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,
+code_switching,ElevenLabs Agents,partial,Language detection tool,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+code_switching,PolyAI,unknown,not found in sources read,,2026-10-17,
+code_switching,Hume EVI,unknown,not found in sources read,,2026-10-17,
+code_switching,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+dialects,Bolna,unknown,No dialect page; accents handled only via provider choice,https://www.bolna.ai/docs/sitemap.xml,2026-10-17,
+dialects,Sarvam Samvaad,partial,Marketing: 'trained on Indian languages and dialects'; no dialect selection documented,https://www.sarvam.ai/products/voice-agents,2026-10-17,read-primary (docs index/pricing/homepage)
+dialects,Gnani Inya,partial,Homepage claims dialect coverage; no dialect controls in docs,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+dialects,Smallest Atoms,partial,Voices & languages; WildASR robustness (accent/noise) page,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+dialects,Ringg,unknown,None found,https://docs.ringg.ai/llms.txt,2026-10-17,
+dialects,Ravan.ai (Agni),partial,'100+ languages & dialects' marketing claim (inconsistent with 40+ on pricing),https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+dialects,SquadStack,unknown,not found in sources read,,2026-10-17,
+dialects,Subverse AI,unknown,not found in sources read,,2026-10-17,
+dialects,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+dialects,Haptik,unknown,not found in sources read,,2026-10-17,
+dialects,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+dialects,Skit.ai,unknown,not found in sources read,,2026-10-17,
+dialects,Exotel,unknown,not found in sources read,,2026-10-17,
+dialects,Ozonetel,unknown,not found in sources read,,2026-10-17,
+dialects,Convin,unknown,not found in sources read,,2026-10-17,
+dialects,Vapi,unknown,None found,https://docs.vapi.ai/llms.txt,2026-10-17,
+dialects,Retell,unknown,None found,https://docs.retellai.com/llms.txt,2026-10-17,
+dialects,Bland,unknown,None found,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,
+dialects,Synthflow,unknown,None found,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,
+dialects,ElevenLabs Agents,partial,Accent selection in voice library; accent drift FAQs,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+dialects,PolyAI,unknown,not found in sources read,,2026-10-17,
+dialects,Hume EVI,unknown,not found in sources read,,2026-10-17,
+dialects,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Bolna,yes,clone-voices page; ElevenLabs/Soniox voices,https://www.bolna.ai/docs/clone-voices,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Sarvam Samvaad,partial,Speakers & voice selection; cloning not documented for agents,https://docs.sarvam.ai/voice-agents/build/voice-language,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Gnani Inya,yes,Voice clone embeddings; voice-cloned TTS (REST),https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Smallest Atoms,yes,Instant clone UI/API/SDK,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Ringg,yes,Voice and language: pick or clone a voice,https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/voice-and-language.md,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Ravan.ai (Agni),partial,Agent voice settings,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,SquadStack,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Subverse AI,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Haptik,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Skit.ai,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Exotel,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Ozonetel,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Convin,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Vapi,yes,Custom voices via ElevenLabs etc.,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Retell,yes,Clone voice; custom voice,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Bland,yes,Clone voice API,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,Synthflow,unknown,None found,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,
+custom_cloned_voices,ElevenLabs Agents,yes,"Instant and professional voice cloning, voice design",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,PolyAI,unknown,not found in sources read,,2026-10-17,
+custom_cloned_voices,Hume EVI,partial,Octave voice design (docs index 1 hit),https://dev.hume.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+custom_cloned_voices,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+emotion,Bolna,partial,"Expressive controls only through TTS providers (ElevenLabs style, Cartesia); sentiment as an extraction field",https://www.bolna.ai/docs/agent-setup/analytics-tab,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,Sarvam Samvaad,unknown,None found,https://docs.sarvam.ai/voice-agents/llms.txt,2026-10-17,
+emotion,Gnani Inya,partial,Audio tags (TTS) and analytics; no emotion-adaptive agent behaviour documented,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,Smallest Atoms,yes,Emotion detection in Pulse STT; listener ratings,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,Ringg,unknown,None found,https://docs.ringg.ai/llms.txt,2026-10-17,
+emotion,Ravan.ai (Agni),partial,'Emotion-aware' speech-to-speech claim; analytics emotion fields,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,SquadStack,unknown,not found in sources read,,2026-10-17,
+emotion,Subverse AI,unknown,not found in sources read,,2026-10-17,
+emotion,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+emotion,Haptik,unknown,not found in sources read,,2026-10-17,
+emotion,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+emotion,Skit.ai,unknown,not found in sources read,,2026-10-17,
+emotion,Exotel,unknown,not found in sources read,,2026-10-17,
+emotion,Ozonetel,unknown,not found in sources read,,2026-10-17,
+emotion,Convin,unknown,not found in sources read,,2026-10-17,
+emotion,Vapi,partial,Hume integration,https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,Retell,yes,Expressive mode (emotion and emphasis),https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,Bland,partial,Voice settings,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,Synthflow,unknown,None found,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,
+emotion,ElevenLabs Agents,yes,Expressive mode; v3 audio tags,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,PolyAI,unknown,not found in sources read,,2026-10-17,
+emotion,Hume EVI,yes,Empathic Voice Interface: emotion-aware S2S is the product; pricing not shown on page 2026-10-17,https://www.hume.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+emotion,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Bolna,partial,Per-call context injection from caller lookup (API/CSV/Sheet); no persistent cross-call memory store in docs or OSS (memory/ has only an in-memory scalar cache); OSS issue #1078 'MemCode recall' open,https://www.bolna.ai/docs/prompting/using-context,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,Sarvam Samvaad,partial,Variables & personalization per call; no cross-call memory documented,https://docs.sarvam.ai/voice-agents/build/variables-personalization,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,Gnani Inya,unknown,None found,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,
+memory_across_calls,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+memory_across_calls,Ringg,unknown,None found,https://docs.ringg.ai/llms.txt,2026-10-17,
+memory_across_calls,Ravan.ai (Agni),partial,'Agent memory' listed in Scale plan ($497/mo) only; not documented,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,SquadStack,partial,Homepage copy implies remembering context (truncated claim),https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,Subverse AI,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Haptik,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Skit.ai,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Exotel,partial,'Memory Layer' product claim,https://exotel.com,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,Ozonetel,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Convin,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Vapi,unknown,None found,https://docs.vapi.ai/llms.txt,2026-10-17,
+memory_across_calls,Retell,yes,Contact memory,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,Bland,yes,Contact memory API,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,Synthflow,yes,"Memory of past calls, memory stores API",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+memory_across_calls,ElevenLabs Agents,unknown,None found,https://elevenlabs.io/docs/llms.txt,2026-10-17,
+memory_across_calls,PolyAI,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,Hume EVI,unknown,not found in sources read,,2026-10-17,
+memory_across_calls,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,Bolna,partial,"Calling-hour guardrails (off by default, recipient timezone), compliance application (CIN+GST) before numbers, documented 140/160-series + DLT process the customer performs; no NCPR scrubbing or consent ledger found; 0 DND/DLT/TRAI terms in llms.txt",https://www.bolna.ai/docs/outbound/calling-guardrails,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Sarvam Samvaad,partial,"Org-wide DND suppression list (manual/bulk/API); docs warn 'Calling compliance is your responsibility' (consent, DND, telemarketing rules); no NCPR/DLT handling",https://docs.sarvam.ai/voice-agents/deploy/campaigns/dnd,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Gnani Inya,partial,Real-time quality & compliance monitoring (QA); SOC2/ISO27001; RBI/IRDAI residency claims; no DND/DLT dialling controls found,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Smallest Atoms,partial,"HIPAA ZDR add-on $1,000/mo, PII removal; no DND/DLT/consent controls found",https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Ringg,partial,"Calling window (default IST), per-person call caps (max 50), timezone; 0 DND/DLT/TRAI terms in docs index; homepage FAQ tells buyer consent+disclosure required",https://docs.ringg.ai/documentation/build-agents/customize-agent-behaviour/call-settings.md,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Ravan.ai (Agni),partial,Homepage claims DND/NCPR scrubbing before dialing + compliance-aligned call windows + audit trail; not in docs index,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,SquadStack,yes,"Claims TRAI DND registry scrub + client DND lists, hard 9:30-20:30 window, consent gating, opt-out, configurable AI disclosure (vendor claim, not verified)",https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Subverse AI,unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,Haptik,unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,Skit.ai,partial,"US collections compliance (TCPA, FDCPA, state DNC, quiet hours, Mini-Miranda); India: no DND/DLT stated",https://skit.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Exotel,unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,Ozonetel,unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,Convin,unknown,Homepage copy 'customers won't know it's AI' conflicts with disclosure practice,https://convin.ai,2026-10-17,
+compliance_dnd_dlt_consent,Vapi,partial,"Recording consent plan, GDPR, HIPAA ($2K/mo add-on); predial webhook can re-check consent; no DND/DLT/NCPR",https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Retell,partial,"Security & compliance, data retention; TCPA guidance on site; no DND/DLT",https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Bland,partial,"Guard rails, audit logs, BAAs/DPAs; no DND/DLT",https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,Synthflow,partial,SOC2/GDPR/ISO 27001; AI transparency statement; no DND/DLT,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,ElevenLabs Agents,partial,"TCPA compliance page, HIPAA; no DND/DLT",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+compliance_dnd_dlt_consent,PolyAI,unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,Hume EVI,unknown,not found in sources read,,2026-10-17,
+compliance_dnd_dlt_consent,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+testing_simulation,Bolna,partial,"Graph-agent testing, 'test before calling customers', extraction tests; no synthetic-caller simulation suite found",https://www.bolna.ai/docs/production/test-before-calling-customers,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Sarvam Samvaad,yes,Test cases + run tests; simulated test run INR 2 per run (pricing),https://docs.sarvam.ai/voice-agents/build/tests,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Gnani Inya,yes,Testing your agent; trigger test call,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Smallest Atoms,partial,Quickstart / crew CLI testing; no simulation suite page,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Ringg,yes,"Test an agent (phone/web call), test multi-prompt agents, Evals product (custom pricing)",https://docs.ringg.ai/documentation/build-agents/test-and-improve/test-an-agent.md,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Ravan.ai (Agni),partial,Quickstart test flows only,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,SquadStack,unknown,not found in sources read,,2026-10-17,
+testing_simulation,Subverse AI,unknown,not found in sources read,,2026-10-17,
+testing_simulation,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+testing_simulation,Haptik,unknown,not found in sources read,,2026-10-17,
+testing_simulation,Yellow.ai,partial,automated test (claim),https://yellow.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Skit.ai,unknown,not found in sources read,,2026-10-17,
+testing_simulation,Exotel,unknown,not found in sources read,,2026-10-17,
+testing_simulation,Ozonetel,unknown,not found in sources read,,2026-10-17,
+testing_simulation,Convin,unknown,not found in sources read,,2026-10-17,
+testing_simulation,Vapi,yes,"Evals (text), simulations (synthetic voice), scorecards",https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Retell,yes,Test and improve agents; simulation testing,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Bland,yes,"Evaluations, test analytics",https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,Synthflow,yes,"Test Center, custom evaluations",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,ElevenLabs Agents,yes,"Agent testing, simulate conversations",https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+testing_simulation,PolyAI,unknown,not found in sources read,,2026-10-17,
+testing_simulation,Hume EVI,unknown,not found in sources read,,2026-10-17,
+testing_simulation,LiveKit (substrate),partial,Agent testing helpers,https://docs.livekit.io/llms.txt ; https://livekit.com/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+white_label,Bolna,partial,"Enterprise sub-accounts with usage APIs (agency-style), no rebrand page found",https://www.bolna.ai/docs/enterprise/sub-accounts,2026-10-17,read-primary (docs index/pricing/homepage)
+white_label,Sarvam Samvaad,unknown,None found,https://docs.sarvam.ai/voice-agents/llms.txt,2026-10-17,
+white_label,Gnani Inya,unknown,None found,https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,
+white_label,Smallest Atoms,unknown,None found,https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,
+white_label,Ringg,unknown,None found,https://docs.ringg.ai/llms.txt,2026-10-17,
+white_label,Ravan.ai (Agni),unknown,None found,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,
+white_label,SquadStack,unknown,not found in sources read,,2026-10-17,
+white_label,Subverse AI,unknown,not found in sources read,,2026-10-17,
+white_label,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+white_label,Haptik,unknown,not found in sources read,,2026-10-17,
+white_label,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+white_label,Skit.ai,unknown,not found in sources read,,2026-10-17,
+white_label,Exotel,unknown,not found in sources read,,2026-10-17,
+white_label,Ozonetel,unknown,not found in sources read,,2026-10-17,
+white_label,Convin,unknown,not found in sources read,,2026-10-17,
+white_label,Vapi,partial,"Third-party white-label wrappers (Vapify, Voicerr) in integration list",https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+white_label,Retell,partial,GoHighLevel agency integration; partner programme,https://docs.retellai.com/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+white_label,Bland,unknown,None found,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,
+white_label,Synthflow,yes,"Sub-accounts; white-label + reseller toolkit $2,000/mo (2026-03 pricing) / Enterprise",https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+white_label,ElevenLabs Agents,unknown,None found,https://elevenlabs.io/docs/llms.txt,2026-10-17,
+white_label,PolyAI,unknown,not found in sources read,,2026-10-17,
+white_label,Hume EVI,unknown,not found in sources read,,2026-10-17,
+white_label,LiveKit (substrate),unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Bolna,yes,India data residency for Enterprise; routing calls through Indian servers; on-prem guide,https://www.bolna.ai/docs/enterprise/data-residency,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Sarvam Samvaad,partial,Sovereign/India-trained positioning; residency terms not documented for agents,https://www.sarvam.ai/products/voice-agents,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Gnani Inya,yes,"Cloud, private cloud, on-prem, air-gapped (homepage)",https://docs.gnani.ai/llms.txt ; https://gnani.ai/,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Smallest Atoms,yes,On-prem / zero-data-retention / dedicated infrastructure (docs + Enterprise pricing),https://docs.smallest.ai/llms.txt ; https://smallest.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Ringg,yes,On-prem deployment included in Enterprise (pricing page),https://www.ringg.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Ravan.ai (Agni),partial,Enterprise on-prem/private cloud claimed on pricing page,https://docs.ravan.ai/llms.txt ; https://www.ravan.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,SquadStack,yes,Models run in India; on-prem/private cloud options (claim),https://www.squadstack.ai/fully-managed-telecalling-for-sales-operations-teams ; https://www.squadstack.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Subverse AI,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,VoiceGenie (Oriserve),unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Haptik,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Yellow.ai,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Skit.ai,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Exotel,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Ozonetel,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Convin,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Vapi,partial,"EU region and data residency, ZDR; no India region found",https://docs.vapi.ai/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Retell,unknown,No residency page; Retell-managed numbers US/Canada only (2026-09-22 review),https://docs.retellai.com/llms.txt,2026-10-17,
+on_prem_india_residency,Bland,partial,Self-hosted models; enterprise dedicated infra; no India region,https://docs.bland.ai/llms.txt ; https://www.bland.ai,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,Synthflow,partial,LATAM/DACH regionalization; no India,https://docs.synthflow.ai/llms.txt ; https://synthflow.ai/pricing,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,ElevenLabs Agents,partial,Data residency page (EU/US); no India region found,https://elevenlabs.io/docs/llms.txt,2026-10-17,read-primary (docs index/pricing/homepage)
+on_prem_india_residency,PolyAI,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,Hume EVI,unknown,not found in sources read,,2026-10-17,
+on_prem_india_residency,LiveKit (substrate),yes,Open-source self-host; LiveKit Cloud regions,https://docs.livekit.io/llms.txt ; https://livekit.com/pricing,2026-10-17,read-primary (docs index/pricing/homepage)

@@ -1,0 +1,1 @@
+platform,date,account_plan,agent_id_or_url,voice_name,voice_provider,tts_model,asr_provider_model,asr_languages,llm_model,temperature,interruption_setting,endpointing_ms_or_setting,noise_suppression,silence_timeout_s,max_call_s,background_sound,displayed_price_per_min,region_or_server,notes

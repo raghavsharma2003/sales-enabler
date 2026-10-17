@@ -1,0 +1,10 @@
+market,currency,effective,category,price_per_message
+India,INR,2026-10-01,marketing,0.8631
+India,INR,2026-10-01,utility,0.115
+India,INR,2026-10-01,authentication,0.115
+India,INR,2026-10-01,authentication-international,2.4971
+India,INR,2026-10-01,service (column in rate card),0.115
+India,USD,2026-10-01,marketing,0.0118
+India,USD,2026-10-01,utility,0.0014
+India,USD,2026-10-01,authentication,0.0014
+India,USD,2026-10-01,authentication-international,0.0304

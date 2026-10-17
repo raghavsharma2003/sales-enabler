@@ -1,0 +1,7 @@
+model,condition,n,wer_pct,cer_pct,cpu_rtf,note
+qwen3-asr-0.6b,wb,20,17.1,6.3,3.07,
+qwen3-asr-0.6b,nb,20,20.3,10.1,0.94,
+qwen3-asr-0.6b,non-speech probe,30,,,,30/30 fabricated; e.g. babble:इतना बड़ा इतना मज़ादा इतना इतन; babble:ताई तो बहुत खाबे जी बेकर है; babble:मतलब नगल नहीं सकता और आज; babble:यदि व्यस्त हो मैं नानमर्जुमन ब; babble:हाँ गलत गलत और आज तक; brown:हाँ
+whisper-turbo,wb,20,27.9,9.4,5.39,
+whisper-turbo,nb,20,28.4,10.4,4.23,
+whisper-turbo,non-speech probe,30,,,,30/30 fabricated; e.g. babble:अगला लेला बस्टोरा आस्टमेशिस; babble:अजय को; babble:अजय वो जो जो जो जो जो जो जो जो; babble:जब रप्लोई जब रप्लोफ जब रप्लोफ; babble:यह दिदी वायक्ष्टाव में ही तानम; brown:अजय

@@ -1,0 +1,6 @@
+check,metric,p10,p50,p90,bottom_up_p50,ratio_bottom_up_to_check_p50
+D2C event-based (orders x COD/NDR calls),SAM INR Cr/yr,31.718,49.584,75.413,214.687,4.33
+Insurance renewals event-based (policies due x follow-up calls),SAM INR Cr/yr,22.161,39.733,69.19,122.127,3.074
+Auto service reminders event-based (vehicle parc x reminders),SAM INR Cr/yr,19.983,32.232,50.747,537.538,16.677
+Top-down TRAI 1600-series connected minutes vs bottom-up BFSI post-sales human minutes (in-reach firms only),bn min/yr,1.719,2.581,3.773,3.496,1.354
+Top-down TRAI 140-series promotional connected minutes vs bottom-up pre-sales human minutes (in-reach firms only),bn min/yr,9.331,15.448,23.429,20.909,1.353
