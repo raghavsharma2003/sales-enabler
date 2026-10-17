@@ -10573,6 +10573,15 @@
    "date": "2026-10-17",
    "title": "KC6 vs KC10: no configuration yet satisfies speed + turn-taking + India residency + model lifecycle together (fast India model gpt-4.1-mini retires 2027-04-14; gpt-6-sol handles pauses but has no India SKU).",
    "path": "research/2026-10-17/CRITIC-v2.md"
+  },
+  {
+   "id": "artifact.2026-10-17.vp-research",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-17",
+   "title": "Visual research report for owner discussion (https://claude.ai/artifact/CxxVkxBv1jmPUgH8TiXPp1): money per minute, regulation map, market, measured demos, our India latency, cost curve, segments, candidate wedge + kill criteria, idea triage, gaps, red-team, next four weeks, predictions scored.",
+   "path": "research/2026-10-17/report/vp-research.html"
   }
  ],
  "edges": [
@@ -18987,6 +18996,16 @@
    "from": "open.2026-10-17.kc6-vs-kc10",
    "to": "decision.2026-10-17.beachhead-v2",
    "relation": "challenges"
+  },
+  {
+   "from": "artifact.2026-10-17.vp-research",
+   "to": "decision.2026-10-17.beachhead-v2",
+   "relation": "presents"
+  },
+  {
+   "from": "artifact.2026-10-17.vp-research",
+   "to": "research.2026-10-17.round2",
+   "relation": "presents"
   }
  ]
 }
