@@ -1,0 +1,8426 @@
+[
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "218",
+"max_streams_greedy": "223"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "218",
+"max_streams_greedy": "223"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "960",
+"max_streams_greedy": "970"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "960",
+"max_streams_greedy": "970"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "219",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "760",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "233",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "980",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "208",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "660",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "227",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1010",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "231",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "927",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "177",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "560",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "233",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1070",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "190",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "620",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "940",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "190",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "580",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "166",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "420",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "215",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "700",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "222",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "830",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "210",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "759",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "192",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "750",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "13",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "65",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "980",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "205",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "930",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "196",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "750",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "227",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "907",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "204",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "179",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "810",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "110"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "555"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "128",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "300",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "730",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "104",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "490",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "138",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "670",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "140"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "630"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "135"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "640"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "3"
+},
+{
+"path": [
+"On-Prem",
+"A100",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "141",
+"max_streams_greedy": "142"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "141",
+"max_streams_greedy": "142"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "640",
+"max_streams_greedy": "650"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "640",
+"max_streams_greedy": "650"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "143",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "150",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "630",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "134",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "440",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "148",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "654",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "146",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "120",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "430",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "153",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "700",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "130",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "470",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "149",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "630",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "123",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "400",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "112",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "300",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "476",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "547",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "139",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "520",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "124",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "505",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "14",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "68",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "150",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "650",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "135",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "130",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "553",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "144",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "610",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "550",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "111",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "514",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "61"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "324"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "65",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "330",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "148",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "400",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "65",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "320",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "73",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "350",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "71"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "340"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "69"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "330"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "3"
+},
+{
+"path": [
+"On-Prem",
+"A40",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "141",
+"max_streams_greedy": "141"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "141",
+"max_streams_greedy": "141"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "625",
+"max_streams_greedy": "630"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "625",
+"max_streams_greedy": "630"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "514",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "147",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "630",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "136",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "450",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "145",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "650",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "145",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "118",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "450",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "144",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "660",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "120",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "480",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "147",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "620",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "123",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "400",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "330",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "136",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "480",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "550",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "138",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "520",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "127",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "500",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "7",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "36",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "145",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "630",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "134",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "130",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "500",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "143",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "530",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "109",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "490",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "59"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "320"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "70",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "350",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "147",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "64",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "304",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "68",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "333",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "68"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "331"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "67"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "325"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "3"
+},
+{
+"path": [
+"On-Prem",
+"A30",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": "112"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": "112"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": "500"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": "500"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "425",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "113",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "501",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "107",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "374",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "116",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "520",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "112",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "490",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "97",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "370",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "116",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "550",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "104",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "393",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "114",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "500",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "100",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "341",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "90",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "270",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "111",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "111",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "443",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "427",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "103",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "420",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "9",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "46",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "113",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "520",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "107",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "493",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "105",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "456",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "113",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "485",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "107",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "450",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "81",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "44"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "227"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "240",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "106",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "275",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "47",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "231",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "53",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "260",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "52"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "255"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "51"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "248"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "3"
+},
+{
+"path": [
+"On-Prem",
+"A10",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "338",
+"max_streams_greedy": "340"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "338",
+"max_streams_greedy": "340"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1430",
+"max_streams_greedy": "1430"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1430",
+"max_streams_greedy": "1430"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "344",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1100",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "355",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1400",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "320",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "960",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "368",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1590",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "357",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1370",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "270",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "660",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "366",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1620",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "280",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "770",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "360",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "295",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "800",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "254",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "326",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1020",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "333",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "330",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1070",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "293",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1070",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "25",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "124",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "367",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "300",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1300",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "290",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "900",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "358",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1380",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "310",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1100",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "270",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "1240",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "190"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "997"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "247",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "1200",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "570",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "1480",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "160",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "770",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "310",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "1250",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "282"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "1250"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "250"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "1140"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "5"
+},
+{
+"path": [
+"On-Prem",
+"H100",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "126",
+"max_streams_greedy": "127"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "126",
+"max_streams_greedy": "127"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "565",
+"max_streams_greedy": "569"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "565",
+"max_streams_greedy": "569"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "126",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "463",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "132",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "576",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "120",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "400",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "133",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "596",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "131",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "540",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "108",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "380",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "135",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "624",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "114",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "410",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "131",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "544",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "112",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "357",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "97",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "290",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "124",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "430",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "127",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "480",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "123",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "453",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "112",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "460",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "10",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "133",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "590",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "120",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "550",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "115",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "444",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "130",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "543",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "120",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "460",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "97",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "444",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "53"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "280"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "117",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "308",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "56",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "272",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "58",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "285",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "57"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "280"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "57"
+},
+{
+"path": [
+"On-Prem",
+"V100",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "276"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": "48"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": "48"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "227",
+"max_streams_greedy": "226"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "227",
+"max_streams_greedy": "226"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "210",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "228",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "180",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "234",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "222",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "210",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "50",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "239",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "47",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "220",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "227",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "45",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "180",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "42",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "156",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "193",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "50",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "244",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "215",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "46",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "214",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "3",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "15",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "50",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "227",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "47",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "210",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "221",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "215",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "35",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "173",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "18"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "97"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "17",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "94",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "37",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "93",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "21",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "104",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "17",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "86",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "17"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "85"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "17"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "84"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "2"
+},
+{
+"path": [
+"On-Prem",
+"T4",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "109",
+"max_streams_greedy": "110"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "109",
+"max_streams_greedy": "110"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "506",
+"max_streams_greedy": "510"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "506",
+"max_streams_greedy": "510"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "109",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "430",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "114",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "503",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "106",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "373",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "111",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "114",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "482",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "97",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "370",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "116",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "540",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "102",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "114",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "493",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "98",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "340",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "87",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "280",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "109",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "400",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "109",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "440",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "108",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "430",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "100",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "426",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "8",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "42",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "112",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "516",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "106",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "490",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "103",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "447",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "111",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "480",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "106",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "460",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "83",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "340",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "38"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "213"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "42",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "214",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "86",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "247",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "203",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "43",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "212",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "42"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "208"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "41"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "204"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "3"
+},
+{
+"path": [
+"On-Prem",
+"L4",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "265",
+"max_streams_greedy": "266"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "265",
+"max_streams_greedy": "266"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1100",
+"max_streams_greedy": "1130"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1100",
+"max_streams_greedy": "1130"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "260",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"English (GB)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "860",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "280",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Spanish (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1180",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "250",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Spanish (Spain)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "740",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "280",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1200",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Russian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "283",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Russian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1080",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "180",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Hindi",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "294",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Hindi",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1240",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "220",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "730",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Arabian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "277",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Arabian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1060",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Italian",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "225",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Italian",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "600",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Korean",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "195",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Korean",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "500",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "253",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Portuguese (Brazil)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "800",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"French",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "264",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"French",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "970",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Dutch",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "250",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Dutch",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "800",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "210",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC",
+"Dutch (Belgium)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "800",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "19",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-XL",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "100",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "287",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified",
+"German",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1150",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1020",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "210",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified",
+"Japanese",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "750",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "266",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1050",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "200",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Conformer-CTC-Unified-ML-CS",
+"Japanese-English (JP)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "800",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "190",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "900",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "107"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B-Unified",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "520"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "105",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B-Unified",
+"Mandarin",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "540",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": "240",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-0.6B-Unified-ML-CS",
+"Spanish-English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "650",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "578",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "122",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"EMEA",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": "590",
+"max_streams_greedy": null
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "118"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (universal)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "570"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": null,
+"max_streams_greedy": "114"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-CTC-1.1B-Unified-ML-CS",
+"Multilingual (concat)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "960",
+"max_streams_ngram": null,
+"max_streams_greedy": "550"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, low-latency"
+],
+"chunk_ms": "320",
+"max_streams_ngram": null,
+"max_streams_greedy": "3"
+},
+{
+"path": [
+"On-Prem",
+"L40",
+"Parakeet-RNNT-1.1B-Unified-ML-CS",
+"Multilingual",
+"Streaming, high-throughput"
+],
+"chunk_ms": "1600",
+"max_streams_ngram": null,
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.2xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "33",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.2xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "150",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.2xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "52",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.2xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "236",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.8xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "36",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.8xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "173",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.8xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "57",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.8xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "266",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.16xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "32",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.16xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "150",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.16xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "50",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g4dn.16xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.2xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "77",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.2xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "310",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.2xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "122",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.2xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "500",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.8xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "81",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.8xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "360",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.8xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "130",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.8xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "570",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.16xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "82",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.16xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "370",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.16xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "131",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"g5.16xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "580",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.2xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "81",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.2xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "300",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.2xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "119",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.2xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "480",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.8xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "94",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.8xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.8xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "136",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.8xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "570",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.16xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "95",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.16xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.16xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p3.16xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "580",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p4d.24xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "160",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p4d.24xlarge",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "640",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p4d.24xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"AWS",
+"p4d.24xlarge",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "910",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-1g_[a100_12vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-1g_[a100_12vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "500",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-1g_[a100_12vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "200",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-1g_[a100_12vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "800",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-4g_[a100_48vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "155",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-4g_[a100_48vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "620",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-4g_[a100_48vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "220",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-4g_[a100_48vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "920",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-8g_[a100_96vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "156",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-8g_[a100_96vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "650",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-8g_[a100_96vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "220",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"a2-highgpu-8g_[a100_96vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "900",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[t4_8vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "32",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[t4_8vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "142",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[t4_8vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "49",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[t4_8vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[t4_32vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "33",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[t4_32vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "159",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[t4_32vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "54",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[t4_32vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "248",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[t4_64vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "33",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[t4_64vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "157",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[t4_64vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "54",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[t4_64vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "243",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[v100_8vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "85",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[v100_8vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "320",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[v100_8vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "124",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-8_[v100_8vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "480",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[v100_32vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "93",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[v100_32vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[v100_32vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "135",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-32_[v100_32vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "556",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[v100_64vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "94",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[v100_64vcpu]",
+"Conformer-CTC",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "390",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[v100_64vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, low-latency"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "133",
+"max_streams_greedy": null
+},
+{
+"path": [
+"GCP",
+"n1-highmem-64_[v100_64vcpu]",
+"Citrinet-1024",
+"English (US)",
+"Streaming, high-throughput"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "550",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, low-latency",
+"12 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "193",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, low-latency",
+"24 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "203",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, low-latency",
+"48 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "203",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, low-latency",
+"96 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "212",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, high-throughput",
+"12 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "730",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, high-throughput",
+"24 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "826",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, high-throughput",
+"48 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "860",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A100",
+"Streaming, high-throughput",
+"96 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "910",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A40",
+"Streaming, low-latency",
+"16 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "143",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A40",
+"Streaming, low-latency",
+"32 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "145",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A40",
+"Streaming, low-latency",
+"64 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "142",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A40",
+"Streaming, high-throughput",
+"16 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "614",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A40",
+"Streaming, high-throughput",
+"32 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "640",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A40",
+"Streaming, high-throughput",
+"64 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "620",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A30",
+"Streaming, low-latency",
+"16 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A30",
+"Streaming, low-latency",
+"32 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "142",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A30",
+"Streaming, low-latency",
+"64 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "139",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A30",
+"Streaming, high-throughput",
+"16 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "605",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A30",
+"Streaming, high-throughput",
+"32 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "630",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A30",
+"Streaming, high-throughput",
+"64 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "610",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A10",
+"Streaming, low-latency",
+"16 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "111",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A10",
+"Streaming, low-latency",
+"32 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "112",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A10",
+"Streaming, low-latency",
+"64 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A10",
+"Streaming, high-throughput",
+"16 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "490",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A10",
+"Streaming, high-throughput",
+"32 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": null
+},
+{
+"path": [
+"A10",
+"Streaming, high-throughput",
+"64 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "508",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, low-latency",
+"20 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "303",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, low-latency",
+"40 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "330",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, low-latency",
+"80 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "310",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, low-latency",
+"160 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "343",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, high-throughput",
+"20 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1230",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, high-throughput",
+"40 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1320",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, high-throughput",
+"80 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1350",
+"max_streams_greedy": null
+},
+{
+"path": [
+"H100",
+"Streaming, high-throughput",
+"160 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1400",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, low-latency",
+"8 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "119",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, low-latency",
+"12 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "123",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, low-latency",
+"20 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "124",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, low-latency",
+"40 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "125",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, high-throughput",
+"8 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "453",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, high-throughput",
+"12 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, high-throughput",
+"20 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "540",
+"max_streams_greedy": null
+},
+{
+"path": [
+"V100",
+"Streaming, high-throughput",
+"40 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "554",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, low-latency",
+"8 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, low-latency",
+"16 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, low-latency",
+"32 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, low-latency",
+"64 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "48",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, high-throughput",
+"8 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "220",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, high-throughput",
+"16 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "226",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, high-throughput",
+"32 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "226",
+"max_streams_greedy": null
+},
+{
+"path": [
+"T4",
+"Streaming, high-throughput",
+"64 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "228",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, low-latency",
+"16 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, low-latency",
+"32 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, low-latency",
+"64 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, low-latency",
+"128 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "110",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, high-throughput",
+"16 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "500",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, high-throughput",
+"32 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, high-throughput",
+"64 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "510",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L4",
+"Streaming, high-throughput",
+"128 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "506",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, low-latency",
+"16 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "261",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, low-latency",
+"32 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "270",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, low-latency",
+"64 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "275",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, low-latency",
+"128 cores"
+],
+"chunk_ms": "160",
+"max_streams_ngram": "267",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, high-throughput",
+"16 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1000",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, high-throughput",
+"32 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1100",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, high-throughput",
+"64 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1140",
+"max_streams_greedy": null
+},
+{
+"path": [
+"L40",
+"Streaming, high-throughput",
+"128 cores"
+],
+"chunk_ms": "800",
+"max_streams_ngram": "1100",
+"max_streams_greedy": null
+}
+]

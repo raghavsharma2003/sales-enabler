@@ -1,0 +1,59 @@
+{
+ "y1": [
+  {
+   "tag": "in_g38_3m_meera_P1_tb0b",
+   "model": "gemini-3.8-live",
+   "minutes": 3,
+   "script": "P1",
+   "vad": "meera",
+   "seed": 22,
+   "cfg": [
+    "--api",
+    "v1alpha",
+    "--lang",
+    "hi-IN",
+    "--proactive",
+    "--thinking",
+    "budget0"
+   ]
+  }
+ ],
+ "y2": [
+  {
+   "tag": "in_g38_3m_meera_P4_tb0",
+   "model": "gemini-3.8-live",
+   "minutes": 3,
+   "script": "P4",
+   "vad": "meera",
+   "seed": 23,
+   "cfg": [
+    "--api",
+    "v1alpha",
+    "--lang",
+    "hi-IN",
+    "--proactive",
+    "--thinking",
+    "budget0"
+   ]
+  }
+ ],
+ "y3": [
+  {
+   "tag": "in_g38_2m_meera_PAUSE_tb0",
+   "model": "gemini-3.8-live",
+   "minutes": 2.5,
+   "script": "PAUSE",
+   "vad": "meera",
+   "seed": 24,
+   "cfg": [
+    "--api",
+    "v1alpha",
+    "--lang",
+    "hi-IN",
+    "--proactive",
+    "--thinking",
+    "budget0"
+   ]
+  }
+ ]
+}

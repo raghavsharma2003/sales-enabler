@@ -1,0 +1,298 @@
+{
+ "workload": {
+  "exchanges_per_min": 5,
+  "agent_speech_s": 24.0,
+  "caller_speech_s": 24.0,
+  "tts_chars_per_agent_min": 800,
+  "tts_waste": 1.1,
+  "stt_streamed_s": 60.0,
+  "stt_vad_gated_s": 30.0,
+  "llm_in_tok_per_exch": 2500,
+  "llm_out_tok_per_exch": 60,
+  "llm_waste": 1.2,
+  "llm_cache_share": 0.7,
+  "gem_tts_audio_tok_per_s": 25,
+  "gem_tts_text_tok": 150
+ },
+ "tts_chars_per_min": 352.0,
+ "llm_in_per_min": 15000.0,
+ "llm_out_per_min": 360.0,
+ "realtime_inr_per_min": {
+  "gpt-realtime-2.1-mini": {
+   "1": 1.811,
+   "3": 1.911,
+   "5": 2.019,
+   "10": 2.291
+  },
+  "gpt-realtime-2.1": {
+   "1": 6.753,
+   "3": 6.635,
+   "5": 6.728,
+   "10": 7.053
+  }
+ },
+ "budget": [
+  {
+   "gst": "exclusive",
+   "net_price": 2.0,
+   "telephony": 0.38,
+   "gross_margin": 0.4,
+   "ai_plus_infra_budget": 0.82
+  },
+  {
+   "gst": "exclusive",
+   "net_price": 2.0,
+   "telephony": 0.38,
+   "gross_margin": 0.5,
+   "ai_plus_infra_budget": 0.62
+  },
+  {
+   "gst": "exclusive",
+   "net_price": 2.0,
+   "telephony": 0.38,
+   "gross_margin": 0.6,
+   "ai_plus_infra_budget": 0.42
+  },
+  {
+   "gst": "exclusive",
+   "net_price": 2.0,
+   "telephony": 0.48,
+   "gross_margin": 0.4,
+   "ai_plus_infra_budget": 0.72
+  },
+  {
+   "gst": "exclusive",
+   "net_price": 2.0,
+   "telephony": 0.48,
+   "gross_margin": 0.5,
+   "ai_plus_infra_budget": 0.52
+  },
+  {
+   "gst": "exclusive",
+   "net_price": 2.0,
+   "telephony": 0.48,
+   "gross_margin": 0.6,
+   "ai_plus_infra_budget": 0.32
+  },
+  {
+   "gst": "inclusive",
+   "net_price": 1.695,
+   "telephony": 0.38,
+   "gross_margin": 0.4,
+   "ai_plus_infra_budget": 0.637
+  },
+  {
+   "gst": "inclusive",
+   "net_price": 1.695,
+   "telephony": 0.38,
+   "gross_margin": 0.5,
+   "ai_plus_infra_budget": 0.467
+  },
+  {
+   "gst": "inclusive",
+   "net_price": 1.695,
+   "telephony": 0.38,
+   "gross_margin": 0.6,
+   "ai_plus_infra_budget": 0.298
+  },
+  {
+   "gst": "inclusive",
+   "net_price": 1.695,
+   "telephony": 0.48,
+   "gross_margin": 0.4,
+   "ai_plus_infra_budget": 0.537
+  },
+  {
+   "gst": "inclusive",
+   "net_price": 1.695,
+   "telephony": 0.48,
+   "gross_margin": 0.5,
+   "ai_plus_infra_budget": 0.367
+  },
+  {
+   "gst": "inclusive",
+   "net_price": 1.695,
+   "telephony": 0.48,
+   "gross_margin": 0.6,
+   "ai_plus_infra_budget": 0.198
+  }
+ ],
+ "stacks": [
+  [
+   "Self-host on Azure grant (IndicConformer T4 3-yr RI + Veena H100 NVL 3-yr RI) + gpt-6-luna cached",
+   0.3
+  ],
+  [
+   "Self-host IndicConformer (E2E L4) + Groq + Veena (E2E H100 on-demand), 50% util, at scale",
+   0.34
+  ],
+  [
+   "same but Veena at LOW capacity (24 streams/H100)",
+   0.44
+  ],
+  [
+   "Inworld all-in, Growth plan (STT-1 + Gemma 4 26B + TTS-2 Flash)",
+   0.5
+  ],
+  [
+   "Self-host IndicConformer (E2E L4, 50%) + gpt-oss-120b@Groq + Bulbul V4 Flash Growth",
+   0.8
+  ],
+  [
+   "Inworld all-in, On-Demand",
+   0.85
+  ],
+  [
+   "Azure grant at scale, VAD-gated STT",
+   1.0
+  ],
+  [
+   "Smallest Pulse + gpt-oss-120b@Groq + Lightning V3.1",
+   1.12
+  ],
+  [
+   "Sarvam STT Growth + gpt-oss-120b@Groq (cached) + Bulbul V4 Flash Growth",
+   1.17
+  ],
+  [
+   "Azure grant at scale (STT 100K-h commit + gpt-4.1-mini cached + Neural TTS 400M commit)",
+   1.32
+  ],
+  [
+   "Sarvam STT PAYG + gpt-oss-120b@Groq + Bulbul V4 Flash PAYG",
+   1.35
+  ],
+  [
+   "Gemini Transcribe Live + 3.1 Flash-Lite (cached) + 3.8 Flash TTS (2026 price)",
+   1.63
+  ],
+  [
+   "OpenAI/Azure gpt-realtime-2.1-mini (3-min call)",
+   1.91
+  ],
+  [
+   "Deepgram Nova-3 multi (promo) + gpt-oss-120b@Groq + Cartesia Sonic Scale",
+   1.96
+  ],
+  [
+   "ElevenLabs Scribe RT + gpt-oss-120b@Groq + v3 Conversational/Flash",
+   2.12
+  ],
+  [
+   "same, 2027 TTS price",
+   2.21
+  ],
+  [
+   "Azure grant PAYG (S1 STT + gpt-4.1-mini regional cached + DragonHD) = g3 config A shape",
+   2.68
+  ],
+  [
+   "Sarvam Samvaad Growth (retail all-in)",
+   3.15
+  ],
+  [
+   "ElevenLabs Scribe RT + gpt-oss-120b@Groq + v4/v3 expressive",
+   3.45
+  ],
+  [
+   "Gemini 3.1 Flash Live (measured, 3-min)",
+   4.71
+  ],
+  [
+   "Ultravox PAYG",
+   4.75
+  ],
+  [
+   "GPT-Live-1 + gpt-6-luna backend",
+   4.82
+  ],
+  [
+   "Cartesia Managed Agents",
+   5.7
+  ],
+  [
+   "Gemini 3.8 Live (measured, 3-min)",
+   5.72
+  ],
+  [
+   "Deepgram Voice Agent Standard",
+   7.12
+  ],
+  [
+   "ElevenLabs Agents + Groq LLM",
+   7.76
+  ]
+ ],
+ "realtime_inr_per_min_out_cached": {
+  "gpt-realtime-2.1-mini": {
+   "1": 1.457,
+   "3": 1.498,
+   "5": 1.594,
+   "10": 1.858
+  },
+  "gpt-realtime-2.1": {
+   "1": 5.6,
+   "3": 5.29,
+   "5": 5.345,
+   "10": 5.641
+  }
+ },
+ "breakeven": [
+  {
+   "selfhost": "Veena 2xH100 E2E Networks on-demand",
+   "fleet_inr_month": 553413.0,
+   "vs": "Sarvam Bulbul V4 Flash Growth",
+   "managed_inr_min": 0.598,
+   "breakeven_min_month": 925440
+  },
+  {
+   "selfhost": "Veena 2xH100 E2E Networks on-demand",
+   "fleet_inr_month": 553413.0,
+   "vs": "Inworld TTS-2 Flash Growth",
+   "managed_inr_min": 0.234,
+   "breakeven_min_month": 2365013
+  },
+  {
+   "selfhost": "Veena 2xH100 E2E Networks on-demand",
+   "fleet_inr_month": 553413.0,
+   "vs": "ElevenLabs Flash/v3 Conversational",
+   "managed_inr_min": 1.338,
+   "breakeven_min_month": 413612
+  },
+  {
+   "selfhost": "Veena 2xH100 Yotta Shakti Cloud monthly",
+   "fleet_inr_month": 392226.0,
+   "vs": "Sarvam Bulbul V4 Flash Growth",
+   "managed_inr_min": 0.598,
+   "breakeven_min_month": 655896
+  },
+  {
+   "selfhost": "IndicConformer 2xL4 E2E Networks on-demand",
+   "fleet_inr_month": 71540.0,
+   "vs": "Sarvam STT Growth",
+   "managed_inr_min": 0.41,
+   "breakeven_min_month": 174488
+  },
+  {
+   "selfhost": "IndicConformer 2xL4 E2E Networks on-demand",
+   "fleet_inr_month": 71540.0,
+   "vs": "Inworld STT-1 paid",
+   "managed_inr_min": 0.158,
+   "breakeven_min_month": 452785
+  },
+  {
+   "selfhost": "IndicConformer 2xL4 E2E Networks on-demand",
+   "fleet_inr_month": 71540.0,
+   "vs": "Azure STT 100K-h commit",
+   "managed_inr_min": 0.633,
+   "breakeven_min_month": 113017
+  },
+  {
+   "selfhost": "IndicConformer 2xT4 Azure centralindia 3-yr RI",
+   "fleet_inr_month": 30495.0,
+   "vs": "Azure STT PAYG",
+   "managed_inr_min": 1.583,
+   "breakeven_min_month": 19264
+  }
+ ]
+}

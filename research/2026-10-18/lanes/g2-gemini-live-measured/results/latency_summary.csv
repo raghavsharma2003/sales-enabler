@@ -1,0 +1,14 @@
+vantage,model,vad,flags,calls,spoken_turns,clean_turns,p50_ms,p50_ci_lo,p50_ci_hi,p90_ms,p90_ci_lo,p90_ci_hi,share_le_1200ms,cutin_rate_spoken,no_reply_rate_spoken,vad_end_after_eos_p50_ms,first_audio_after_vad_end_p50_ms
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0,1,13,8,5052,,,8946,,,0.0,0.231,0.154,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,52,23,2977,2029,5656,7604,5728,8277,0.174,0.481,0.077,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,server,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,29,12,2666,1825,3297,5668,4271,6766,0.167,0.448,0.138,,
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,api=v1alpha lang=hi-IN thinking=budget0,5,47,37,1970,1949,2135,3214,2793,5831,0.081,0.191,0.021,1359,625
+india-centralindia-vm,gemini-3.1-flash-live-preview,server,api=v1alpha lang=hi-IN thinking=budget0,2,17,13,2303,2303,2688,7104,6876,7396,0.0,0.176,0.059,2039,266
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,54,26,819,784,847,1514,1013,1537,0.846,0.519,0.0,499,345
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=none proactive,6,79,52,1250,1122,1428,1656,1564,1802,0.442,0.342,0.0,519,606
+india-centralindia-vm,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=none proactive,2,24,19,1386,1187,1942,2239,1763,3218,0.474,0.208,0.0,1119,86
+sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,167,138,2061,1836,2285,3376,2853,4249,0.138,0.054,0.12,,
+sandbox-us-east-proxy,gemini-3.1-flash-live-preview,meera,api=v1alpha lang=hi-IN thinking=budget0,8,126,124,2026,1959,2148,3832,2408,4946,0.105,0.008,0.008,1306,672
+sandbox-us-east-proxy,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=none proactive,8,182,158,1409,1346,1529,1974,1828,2053,0.31,0.126,0.005,456,914
+sandbox-us-east-proxy,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,39,23,1434,1408,2027,2698,2267,2841,0.174,0.308,0.103,1211,183
+sandbox-us-east-proxy,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=none proactive,1,13,10,1654,,,6660,,,0.2,0.154,0.077,1132,342

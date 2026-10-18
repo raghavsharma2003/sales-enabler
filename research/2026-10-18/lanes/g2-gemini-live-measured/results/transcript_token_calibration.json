@@ -1,0 +1,32 @@
+{
+ "method": "countTokens on concatenated real transcripts (input and output) from g2 calls",
+ "date": "2026-10-18",
+ "detail": {
+  "gemini-2.5-flash:in": {
+   "chars": 31559,
+   "tokens": null,
+   "tok_per_char": null,
+   "status": 404
+  },
+  "gemini-2.5-flash:out": {
+   "chars": 60000,
+   "tokens": null,
+   "tok_per_char": null,
+   "status": 404
+  },
+  "gemini-3.5-flash-lite:in": {
+   "chars": 31559,
+   "tokens": 10875,
+   "tok_per_char": 0.3446,
+   "status": 200
+  },
+  "gemini-3.5-flash-lite:out": {
+   "chars": 60000,
+   "tokens": 17293,
+   "tok_per_char": 0.2882,
+   "status": 200
+  }
+ },
+ "tokens_per_char": 0.3446,
+ "note": "max over models/directions used (conservative)"
+}

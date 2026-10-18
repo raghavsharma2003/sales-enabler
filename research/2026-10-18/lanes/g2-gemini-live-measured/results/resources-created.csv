@@ -1,0 +1,8 @@
+resource,type,location,created_utc,deleted_utc,note
+g2-vm-cin,"Microsoft.Compute/virtualMachines (Standard_D2als_v6, zone 3)",centralindia,2026-10-18T18:33,2026-10-18T19:08,B-series NotAvailableForSubscription; D2als_v7/F2als_v7/D2as_v7/D2ads_v7/D2alds_v7/F2as_v7/F2ads_v7 failed allocation (no charge)
+g2-osdisk,Microsoft.Compute/disks (30 GB StandardSSD_LRS),centralindia,2026-10-18T18:33,2026-10-18T19:08,deleteOption Delete; verified 404
+g2-nic,Microsoft.Network/networkInterfaces,centralindia,2026-10-18T18:17,2026-10-18T19:09,verified 404
+g2-ip,"Microsoft.Network/publicIPAddresses (Standard, static)",centralindia,2026-10-18T18:17,2026-10-18T19:09,verified 404
+g2-vnet,Microsoft.Network/virtualNetworks,centralindia,2026-10-18T18:17,2026-10-18T19:09,verified 404
+g2-nsg,Microsoft.Network/networkSecurityGroups (no inbound rules),centralindia,2026-10-18T18:17,2026-10-18T19:09,verified 404
+vpresearchraw1017/g2-transfer,blob container (bundle + results transfer),southeastasia,2026-10-18T18:35,2026-10-18T19:10,deleted after download

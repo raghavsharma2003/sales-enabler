@@ -53,23 +53,31 @@ def create():
     print('nic', wait_ok(f'{NET}/networkInterfaces/g2-nic', '2024-05-01'))
     pub = open(f'{SP}/g2_vm_ed25519.pub').read().strip()
     size = sys.argv[2] if len(sys.argv) > 2 else 'Standard_B2s'
-    body = {'location': LOC, 'tags': tags, 'properties': {
+    body = {'location': LOC, 'tags': tags, **({'zones': [os.environ['G2_ZONE']]} if os.environ.get('G2_ZONE') else {}), 'properties': {
         'hardwareProfile': {'vmSize': size},
         'storageProfile': {'imageReference': {'publisher': 'Canonical', 'offer': 'ubuntu-24_04-lts', 'sku': 'server', 'version': 'latest'},
-                           'diskControllerType': os.environ.get('G2_DISK_CTRL', 'NVMe'),
+                           **({'diskControllerType': os.environ['G2_DISK_CTRL']} if os.environ.get('G2_DISK_CTRL') else {}),
                            'osDisk': {'name': 'g2-osdisk', 'createOption': 'FromImage', 'deleteOption': 'Delete', 'diskSizeGB': 30, 'managedDisk': {'storageAccountType': 'StandardSSD_LRS'}}},
         'osProfile': {'computerName': 'g2vmcin', 'adminUsername': 'azureuser', 'linuxConfiguration': {'disablePasswordAuthentication': True, 'ssh': {'publicKeys': [{'path': '/home/azureuser/.ssh/authorized_keys', 'keyData': pub}]}}},
         'networkProfile': {'networkInterfaces': [{'id': f'{NET}/networkInterfaces/g2-nic', 'properties': {'deleteOption': 'Delete'}}]}}}
     s, d = arm('PUT', f'{RG}/Microsoft.Compute/virtualMachines/{VM}?api-version=2024-07-01', body); print('vm', s, (d.get('error') or {}).get('message', '')[:300])
     print('vm', wait_ok(f'{RG}/Microsoft.Compute/virtualMachines/{VM}', '2024-07-01', 120))
 def sas(hours=8):
-    s, d = arm('POST', f'{RG}/Microsoft.Storage/storageAccounts/{STORAGE}/listServiceSas?api-version=2023-05-01', {
-        'canonicalizedResource': f'/blob/{STORAGE}/{CONTAINER}', 'signedResource': 'c', 'signedPermission': 'rwcl', 'signedProtocol': 'https',
-        'signedExpiry': (datetime.datetime.utcnow() + datetime.timedelta(hours=hours)).strftime('%Y-%m-%dT%H:%M:%SZ')})
-    if s != 200: print('sas', s, str(d)[:300]); return None
+    """Container service SAS signed locally with the account key (listKeys); sv=2022-11-02. Written to the scratchpad only."""
+    import hmac, hashlib, base64, urllib.parse
+    s, d = arm('POST', f'{RG}/Microsoft.Storage/storageAccounts/{STORAGE}/listKeys?api-version=2023-05-01')
+    if s != 200: print('keys', s); return None
+    key = d['keys'][0]['value']
+    now = datetime.datetime.now(datetime.timezone.utc)
+    st = (now - datetime.timedelta(minutes=10)).strftime('%Y-%m-%dT%H:%M:%SZ'); se = (now + datetime.timedelta(hours=hours)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    sp, sv, sr, spr = 'racwl', '2022-11-02', 'c', 'https'
+    canon = f'/blob/{STORAGE}/{CONTAINER}'
+    sts = '\n'.join([sp, st, se, canon, '', '', spr, sv, sr, '', '', '', '', '', '', ''])
+    sig = base64.b64encode(hmac.new(base64.b64decode(key), sts.encode('utf-8'), hashlib.sha256).digest()).decode()
+    tok = urllib.parse.urlencode({'sv': sv, 'st': st, 'se': se, 'sr': sr, 'sp': sp, 'spr': spr, 'sig': sig})
     os.makedirs(f'{SP}/g2', exist_ok=True)
-    open(f'{SP}/g2/sas.txt', 'w').write(d['serviceSasToken'])
-    return d['serviceSasToken']
+    open(f'{SP}/g2/sas.txt', 'w').write(tok)
+    return tok
 def ensure_container():
     s, d = arm('PUT', f'{RG}/Microsoft.Storage/storageAccounts/{STORAGE}/blobServices/default/containers/{CONTAINER}?api-version=2023-05-01', {'properties': {'publicAccess': 'None'}})
     print('container', s)

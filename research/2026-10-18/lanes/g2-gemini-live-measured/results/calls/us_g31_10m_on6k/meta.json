@@ -1,0 +1,94 @@
+{
+ "args": {
+  "model": "gemini-3.1-flash-live-preview",
+  "api": "v1alpha",
+  "minutes": 10.0,
+  "script": "P1",
+  "compression": "on:6000:3000",
+  "vad": "meera",
+  "thinking": "budget0",
+  "voice": "Despina",
+  "lang": "hi-IN",
+  "affective": false,
+  "proactive": false,
+  "stream_end": false,
+  "audio_dir": "/home/user/sales-enabler/research/2026-10-18/lanes/g2-gemini-live-measured/harness/audio_phone16k",
+  "persona": "/home/user/sales-enabler/research/2026-10-18/lanes/g2-gemini-live-measured/harness/persona.txt",
+  "gap_ms": 500,
+  "gap_jitter_ms": 400,
+  "reply_timeout": 10.0,
+  "seed": 10,
+  "save_audio": true,
+  "out": "/tmp/claude-0/-home-user/5e2837be-8576-5279-a870-65aba61ebd82/scratchpad/research-raw-1018/g2-gemini-live-measured/runs_us",
+  "tag": "us_g31_10m_on6k"
+ },
+ "wall_start_utc": "2026-10-18T18:48:16Z",
+ "host": "vm",
+ "setup": {
+  "model": "models/gemini-3.1-flash-live-preview",
+  "generationConfig": {
+   "responseModalities": [
+    "AUDIO"
+   ],
+   "speechConfig": {
+    "voiceConfig": {
+     "prebuiltVoiceConfig": {
+      "voiceName": "Despina"
+     }
+    },
+    "languageCode": "hi-IN"
+   },
+   "thinkingConfig": {
+    "thinkingBudget": 0
+   }
+  },
+  "systemInstruction": "<persona 2955 chars>",
+  "inputAudioTranscription": {},
+  "outputAudioTranscription": {},
+  "sessionResumption": {},
+  "realtimeInputConfig": {
+   "automaticActivityDetection": {
+    "endOfSpeechSensitivity": "END_SENSITIVITY_HIGH",
+    "silenceDurationMs": 300,
+    "prefixPaddingMs": 60
+   }
+  },
+  "contextWindowCompression": {
+   "triggerTokens": 6000,
+   "slidingWindow": {
+    "targetTokens": 3000
+   }
+  }
+ },
+ "call_s": 610.693,
+ "n_frames": 30465,
+ "n_clip_frames": 5860,
+ "caller_speech_s": 117.2,
+ "agent_audio_s": 364.11,
+ "connections": [
+  {
+   "t": 6.598199979634956e-05,
+   "ws_open_ms": 431.315849999919,
+   "setup_ms": 219.31828300012057,
+   "resumed": false,
+   "first_frame_t": 0.6402207509999971
+  },
+  {
+   "t": 300.8682110999998,
+   "ws_open_ms": 296.3754269999299,
+   "setup_ms": 311.1317709999639,
+   "resumed": true,
+   "rotate_reason": "forced",
+   "rotate_gap_ms": 658.9,
+   "first_frame_t": 301.4564258759997
+  }
+ ],
+ "errors": [
+  {
+   "t": 300.81667014699997,
+   "code": 1011,
+   "reason": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: h"
+  }
+ ],
+ "n_turns": 37
+}

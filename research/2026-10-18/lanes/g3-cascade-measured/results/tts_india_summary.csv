@@ -1,0 +1,13 @@
+arm,text,calls,ok,ttfb_p50_ms,ttfb_p50_ci95,ttfb_p90_ms,rtf_p50,max_underrun_ms,failures
+az:hi-in-diya:DragonHDOmniIndicNeural,sentence,24,24,302,297-305,308,0.245,0,{}
+az:hi-IN-SwaraNeural,sentence,24,24,113,106-122,162,0.032,0,{}
+az:en-IN-Meera:DragonHDLatestNeural,sentence,24,24,169,166-170,178,0.284,0,{}
+az:hi-IN-KavyaNeural,sentence,24,24,107,88-116,147,0.03,0,{}
+az:en-IN-Aarti:DragonHDLatestNeural,sentence,24,24,169,166-171,177,0.288,0,{}
+az:hi-IN-KavyaNeural,short,6,6,60,28-104,104,0.077,0,{}
+az:en-IN-Aarti:DragonHDLatestNeural,short,6,6,157,150-168,168,0.332,0,{}
+az:hi-in-diya:DragonHDOmniIndicNeural,short,6,6,285,282-290,290,0.315,0,{}
+az:en-IN-Meera:DragonHDLatestNeural,short,6,6,157,151-161,161,0.333,0,{}
+az:hi-IN-SwaraNeural,short,6,6,46,30-77,77,0.072,0,{}
+gg:gemini-3.8-flash-lite-tts:Despina,sentence,1,0,,None-None,,,0,{'429': 1}
+gg:gemini-3.8-flash-tts:Despina,sentence,2,1,1316,None-None,1316,,0,{'429': 1}

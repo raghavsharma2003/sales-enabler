@@ -1,0 +1,12 @@
+resource_type,name,region,created_utc_approx,purpose,deleted_utc_approx,deletion_verified_by
+Microsoft.CognitiveServices/accounts (AIServices S0),g3-cin,centralindia,2026-10-18T18:45Z,real-time STT hi-IN + neural/DragonHD TTS from India,,
+Microsoft.CognitiveServices/accounts (AIServices S0),g3-sin,southindia,2026-10-18T18:45Z,gpt-4.1-mini Standard (India geography) baseline LLM,,
+Deployment,g3-sin/g3-gpt-4-1-mini-std (Standard cap 100),southindia,2026-10-18T18:46Z,baseline LLM for configs C1/C2,,
+Microsoft.Network/networkSecurityGroups,g3-nsg,centralindia,2026-10-18T18:45Z,VM subnet NSG (no inbound allow rules),,
+Microsoft.Network/virtualNetworks,g3-vnet,centralindia,2026-10-18T18:45Z,VM network,,
+Microsoft.Network/publicIPAddresses (Standard static),g3-ip,centralindia,2026-10-18T18:45Z,VM outbound,,
+Microsoft.Network/networkInterfaces,g3-nic,centralindia,2026-10-18T18:46Z,VM NIC,,
+Microsoft.Compute/virtualMachines (Standard_D4s_v5 Ubuntu 24.04),g3-vm-cin,centralindia,2026-10-18T18:47Z,India-hosted cascade host,,
+Microsoft.Compute/disks (StandardSSD 30 GB),g3-osdisk,centralindia,2026-10-18T18:47Z,VM OS disk,,
+Blob container,vpresearchraw1017/g3-transfer,southeastasia (existing account),2026-10-18T18:45Z,bundle/results transfer,,
+Microsoft.CognitiveServices/accounts/raiPolicies,g3-sin/g3-async-filter,southindia,2026-10-18T19:05Z,Asynchronous_filter copy of l8-async-filter (round-2 parity),,

@@ -1,0 +1,86 @@
+{
+ "args": {
+  "model": "gemini-2.5-flash-native-audio-latest",
+  "api": "v1alpha",
+  "minutes": 10.0,
+  "script": "P1",
+  "compression": "off",
+  "vad": "meera",
+  "thinking": "budget0",
+  "voice": "Despina",
+  "lang": "hi-IN",
+  "affective": true,
+  "proactive": true,
+  "stream_end": false,
+  "audio_dir": "/home/user/sales-enabler/research/2026-10-18/lanes/g2-gemini-live-measured/harness/audio_phone16k",
+  "persona": "/home/user/sales-enabler/research/2026-10-18/lanes/g2-gemini-live-measured/harness/persona.txt",
+  "gap_ms": 500,
+  "gap_jitter_ms": 400,
+  "reply_timeout": 10.0,
+  "seed": 10,
+  "save_audio": true,
+  "out": "/tmp/claude-0/-home-user/5e2837be-8576-5279-a870-65aba61ebd82/scratchpad/research-raw-1018/g2-gemini-live-measured/runs_us",
+  "tag": "us_g25_10m_off"
+ },
+ "wall_start_utc": "2026-10-18T18:38:25Z",
+ "host": "vm",
+ "setup": {
+  "model": "models/gemini-2.5-flash-native-audio-latest",
+  "generationConfig": {
+   "responseModalities": [
+    "AUDIO"
+   ],
+   "speechConfig": {
+    "voiceConfig": {
+     "prebuiltVoiceConfig": {
+      "voiceName": "Despina"
+     }
+    },
+    "languageCode": "hi-IN"
+   },
+   "thinkingConfig": {
+    "thinkingBudget": 0
+   },
+   "enableAffectiveDialog": true
+  },
+  "systemInstruction": "<persona 2955 chars>",
+  "inputAudioTranscription": {},
+  "outputAudioTranscription": {},
+  "sessionResumption": {},
+  "realtimeInputConfig": {
+   "automaticActivityDetection": {
+    "endOfSpeechSensitivity": "END_SENSITIVITY_HIGH",
+    "silenceDurationMs": 300,
+    "prefixPaddingMs": 60
+   }
+  },
+  "proactivity": {
+   "proactiveAudio": true
+  }
+ },
+ "call_s": 602.834,
+ "n_frames": 30074,
+ "n_clip_frames": 8155,
+ "caller_speech_s": 163.1,
+ "agent_audio_s": 236.2,
+ "connections": [
+  {
+   "t": 5.336200001693214e-05,
+   "ws_open_ms": 339.81797099977484,
+   "setup_ms": 191.4355069998237,
+   "resumed": false,
+   "first_frame_t": 0.5192816839998886
+  },
+  {
+   "t": 542.4065695419999,
+   "ws_open_ms": 274.83098399989103,
+   "setup_ms": 312.36366699977225,
+   "resumed": true,
+   "rotate_reason": "goAway",
+   "rotate_gap_ms": 677.3,
+   "first_frame_t": 542.97448459
+  }
+ ],
+ "errors": [],
+ "n_turns": 50
+}

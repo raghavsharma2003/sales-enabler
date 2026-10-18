@@ -1,0 +1,30 @@
+vantage,model,vad,flags,script,calls,spoken_turns,clean_turns,p50_ms,p50_ci_lo,p50_ci_hi,p90_ms,p90_ci_lo,p90_ci_hi,share_le_1200ms,cutin_rate_spoken,no_reply_rate_spoken,vad_end_after_eos_p50_ms,first_audio_after_vad_end_p50_ms
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0,P1,1,13,8,5052,,,8946,,,0.0,0.231,0.154,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,P1,1,16,8,1952,,,8395,,,0.25,0.438,0.062,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,P4,1,10,5,5656,,,6937,,,0.0,0.2,0.3,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,PAUSE,1,15,6,3841,,,6606,,,0.167,0.6,0.0,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,W,1,11,4,2616,,,4383,,,0.25,0.636,0.0,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,server,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,P1,1,14,8,3297,,,6350,,,0.125,0.143,0.286,,
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,server,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,PAUSE,1,15,4,1825,,,3539,,,0.25,0.733,0.0,,
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,api=v1alpha lang=hi-IN thinking=budget0,P1,2,21,20,1964,1957,2052,4707,3199,6071,0.05,0.048,0.0,1370,596
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,api=v1alpha lang=hi-IN thinking=budget0,P4,1,10,8,1946,,,2442,,,0.125,0.2,0.0,1330,616
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,api=v1alpha lang=hi-IN thinking=budget0,PAUSE,1,10,4,1904,,,2467,,,0.25,0.5,0.1,1240,664
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,api=v1alpha lang=hi-IN thinking=budget0,W,1,6,5,2193,,,2910,,,0.0,0.167,0.0,1399,637
+india-centralindia-vm,gemini-3.1-flash-live-preview,server,api=v1alpha lang=hi-IN thinking=budget0,P1,1,9,9,2303,,,6562,,,0.0,0.0,0.0,2039,267
+india-centralindia-vm,gemini-3.1-flash-live-preview,server,api=v1alpha lang=hi-IN thinking=budget0,PAUSE,1,8,4,2688,,,6176,,,0.0,0.375,0.125,2079,261
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=budget0 proactive,P1,2,30,21,811,784,847,1537,1507,1537,0.81,0.3,0.0,499,342
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=budget0 proactive,P4,1,14,3,827,,,976,,,1.0,0.786,0.0,519,308
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=budget0 proactive,PAUSE,1,10,2,720,,,898,,,1.0,0.8,0.0,340,380
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=none proactive,P1,3,46,34,1101,1010,1147,1550,1438,1625,0.559,0.261,0.0,499,566
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=none proactive,P4,1,13,8,1488,,,1686,,,0.125,0.385,0.0,839,622
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=none proactive,PAUSE,1,11,5,1558,,,1769,,,0.4,0.545,0.0,859,699
+india-centralindia-vm,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=none proactive,W,1,9,5,1354,,,1727,,,0.2,0.444,0.0,519,854
+india-centralindia-vm,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=none proactive,P1,1,14,13,1187,,,1715,,,0.538,0.071,0.0,1099,86
+india-centralindia-vm,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=none proactive,PAUSE,1,10,6,1942,,,2774,,,0.333,0.4,0.0,1299,674
+sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,meera,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,P1,8,167,138,2061,1836,2285,3376,2853,4249,0.138,0.054,0.12,,
+sandbox-us-east-proxy,gemini-3.1-flash-live-preview,meera,api=v1alpha lang=hi-IN thinking=budget0,P1,8,126,124,2026,1959,2148,3832,2408,4946,0.105,0.008,0.008,1306,672
+sandbox-us-east-proxy,gemini-3.8-live,meera,api=v1alpha lang=hi-IN thinking=none proactive,P1,8,182,158,1409,1346,1529,1974,1828,2053,0.31,0.126,0.005,456,914
+sandbox-us-east-proxy,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=budget0 proactive,P1,1,15,11,1408,,,2267,,,0.273,0.2,0.067,1057,157
+sandbox-us-east-proxy,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=budget0 proactive,P4,1,13,7,1434,,,2777,,,0.143,0.308,0.154,1304,131
+sandbox-us-east-proxy,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=budget0 proactive,PAUSE,1,11,5,2027,,,2613,,,0.0,0.455,0.091,1208,818
+sandbox-us-east-proxy,gemini-3.8-live,server,api=v1alpha lang=hi-IN thinking=none proactive,P1,1,13,10,1654,,,6660,,,0.2,0.154,0.077,1132,342

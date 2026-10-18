@@ -1,0 +1,17 @@
+arm,calls,ok,ttft_p50_ms,ttft_p50_ci95,ttft_p90_ms,total_p50_ms,prompt_tokens_mean,cached_share,completion_tokens_mean,or_cost_usd_mean,failures
+or:openai/gpt-oss-120b@groq,30,30,253,222-273,490,336,1973,0.62,87.5,0.0002569,{}
+or:meta-llama/llama-3.1-8b-instruct@groq,22,14,261,249-277,284,312,1780,0.14,35.2,8.54e-05,{'429': 8}
+az:g3-gpt-4-1-mini-std,30,30,526,329-570,636,595,1736,0.96,33.0,,{}
+or:meta-llama/llama-3.3-70b-instruct@groq,24,19,546,503-757,817,687,1781,0.0,32.2,0.0010763,{'429': 5}
+or:openai/gpt-oss-20b@groq,30,30,558,521-591,792,603,1802,0.27,51.1,0.0001326,{}
+or:openai/gpt-oss-120b@cerebras,30,30,642,632-680,943,661,1802,0.85,71.6,0.0006845,{}
+or:google/gemini-3.1-flash-lite@google-ai-studio,30,30,743,722-835,1022,878,1805,0.0,33.3,0.0005011,{}
+gm:gemini-flash-lite-latest,30,30,760,665-812,908,891,1805,0.0,27.8,,{}
+gm:gemini-3.5-flash-lite,30,30,783,712-827,980,888,1805,0.0,27.6,,{}
+gm:gemini-3.1-flash-lite,30,30,885,776-1024,1508,1015,1805,0.0,34.7,,{}
+or:google/gemini-2.5-flash-lite@google-ai-studio,30,30,899,839-1062,1107,1019,1805,0.39,22.3,0.0001256,{}
+or:deepseek/deepseek-v4-flash@deepinfra,30,30,1258,1109-1455,2495,2597,1762,0.73,38.1,7.32e-05,{}
+gm:gemini-3.6-flash,22,16,1260,1226-1480,1743,1525,1803,0.0,31.6,,{'429': 6}
+or:meta-llama/llama-3.3-70b-instruct@deepinfra,30,30,2585,1543-4305,12498,12705,1762,0.0,32.3,0.0001865,{}
+gm:gemini-3.8-flash,23,17,3279,2088-4260,10355,3285,1803,0.0,34.4,,"{'503': 1, '429': 5}"
+or:qwen/qwen3.7-flash@alibaba,30,0,,None-None,,,,,,,{'200': 30}

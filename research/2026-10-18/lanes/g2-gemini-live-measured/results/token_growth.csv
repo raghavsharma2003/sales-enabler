@@ -1,0 +1,1097 @@
+tag,vantage,model,minutes_target,compression,vad,script,flags,invocation,turn,t_s,prompt_tokens,prompt_text,prompt_audio,resp_audio,thoughts,cached,usd
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,2.9123,1208,1207,1,0,0,0,0.000607
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,12.4829,1272,1270,2,191,0,0,0.002933
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,2,27.3254,1593,1577,16,26,0,0,0.001148
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,41.006,1728,1709,19,260,0,0,0.004032
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,3,63.6561,2321,2282,39,290,0,0,0.004738
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,4,72.9915,2757,2691,66,79,0,0,0.002491
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,5,78.2366,2946,2872,74,1,0,0,0.00167
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,88.9324,2994,2919,75,204,0,0,0.004132
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,7,100.2407,3314,3218,96,0,0,0,0.001897
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,7,113.0002,3431,3334,97,205,0,0,0.004418
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,8,130.626,3851,3735,116,264,0,0,0.005384
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,9,142.8067,4341,4201,140,145,0,0,0.004261
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,10,152.5216,4568,4416,152,114,0,0,0.004032
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,11,156.9755,4798,4638,160,0,0,0,0.002799
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,12,179.185,4921,4760,161,101,0,0,0.004075
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,12,192.8979,5236,5067,169,170,0,0,0.00508
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,13,199.1514,5509,5322,187,59,0,0,0.00393
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,14,204.8125,5675,5482,193,17,0,0,0.003524
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,18,14,215.2066,5746,5551,195,193,0,0,0.005677
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,19,16,237.7867,6143,5928,215,213,0,0,0.006165
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,20,17,249.057,6575,6339,236,127,0,0,0.005402
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,21,18,258.68,6849,6599,250,124,0,0,0.005537
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,22,20,273.3754,7086,6825,261,41,0,0,0.004687
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,23,20,282.1708,7231,6968,263,120,0,0,0.005713
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,24,21,285.6811,7442,7170,272,25,0,0,0.004701
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,25,21,298.2512,7668,7394,274,156,0,0,0.006391
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,26,22,302.9154,7926,7636,290,60,0,0,0.005408
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,27,23,307.214,8090,7794,296,0,0,0,0.004785
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,28,23,316.2132,8158,7861,297,170,0,0,0.006862
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,29,25,339.0995,8519,8206,313,211,0,0,0.007574
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,30,26,350.4342,8928,8595,333,127,0,0,0.006821
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,31,27,359.793,9199,8853,346,123,0,0,0.00694
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,32,29,374.4546,9435,9078,357,3,0,0,0.005646
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,33,29,382.2914,9553,9194,359,119,0,0,0.007102
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,34,30,386.0048,9762,9394,368,25,0,0,0.006101
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,35,30,387.8788,9856,9486,370,0,0,0,0.005853
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,36,30,399.2257,10013,9642,371,167,0,0,0.007938
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,37,31,404.429,10287,9898,389,58,0,0,0.006812
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,38,32,408.8654,10452,10057,395,33,0,0,0.006609
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,39,33,418.1442,10535,10137,398,171,0,0,0.008315
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,40,34,419.9662,10801,10388,413,0,0,0,0.006433
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,41,34,431.3609,10892,10478,414,211,0,0,0.009013
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,42,35,443.3899,11327,10893,434,127,0,0,0.008273
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,43,36,454.6684,11598,11151,447,123,0,0,0.008393
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,44,38,468.958,11835,11376,459,21,0,0,0.007317
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,45,38,478.4606,11977,11516,461,119,0,0,0.008569
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,46,39,496.4158,12390,11920,470,156,0,0,0.009242
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,47,40,503.4548,12662,12177,485,57,0,0,0.008228
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,48,41,507.6298,12826,12335,491,31,0,0,0.008013
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,49,42,516.9522,12909,12415,494,169,0,0,0.009718
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,50,43,519.4642,13174,12665,509,9,0,0,0.007968
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,51,43,529.7709,13266,12755,511,188,0,0,0.010167
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,52,44,532.1438,13562,13033,529,0,0,0,0.008103
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,53,44,542.2511,13680,13150,530,127,0,0,0.009689
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,54,45,551.8958,13645,13115,530,122,0,0,0.009612
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,55,47,566.1205,13882,13340,542,14,0,0,0.008464
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,56,47,574.9986,14016,13472,544,119,0,0,0.009796
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,57,48,578.5705,14226,13673,553,0,0,0,0.008495
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,58,48,579.8896,14321,13767,554,0,0,0,0.008545
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,59,48,581.4092,14391,13836,555,0,0,0,0.008583
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,60,48,591.8717,14506,13950,556,167,0,0,0.010647
+us_g25_10m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,61,49,601.2028,14820,14246,574,115,0,0,0.010225
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,2.9954,1208,1207,1,14,0,0,0.000775
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,4.6826,1277,1274,3,50,0,0,0.001246
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,1,11.5026,1357,1352,5,145,0,0,0.002431
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,15.304,1628,1609,19,0,0,0,0.000861
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,2,29.5484,1757,1737,20,254,0,0,0.003976
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,3,33.4187,2167,2127,40,0,0,0,0.001184
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,3,34.7817,2236,2195,41,0,0,0,0.001221
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,3,36.4229,2305,2263,42,17,0,0,0.001461
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,3,50.0691,2427,2383,44,236,0,0,0.004156
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,4,57.7616,2797,2731,66,110,0,0,0.002884
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,5,61.9247,3035,2958,77,25,0,0,0.00201
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,5,74.409,3113,3034,79,241,0,0,0.004646
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,7,85.8088,3478,3375,103,31,0,0,0.002368
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,7,92.6592,3590,3484,106,73,0,0,0.002936
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,8,98.2979,3740,3629,111,0,0,0,0.002148
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,8,107.8386,3861,3749,112,161,0,0,0.004143
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,9,117.2454,4217,4089,128,65,0,0,0.003208
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,10,119.0751,4341,4209,132,0,0,0,0.002502
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,18,11,131.9031,4423,4290,133,18,0,0,0.00276
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,19,11,138.0688,4554,4419,135,76,0,0,0.003527
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,20,12,154.7005,4913,4772,141,150,0,0,0.004609
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,21,13,162.1855,5170,5015,155,114,0,0,0.00434
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,22,14,166.758,5408,5242,166,20,0,0,0.003359
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,23,14,173.457,5478,5310,168,136,0,0,0.004791
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,24,16,191.6926,5776,5596,180,75,0,0,0.004238
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,25,17,203.3504,6023,5837,186,142,0,0,0.005181
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,26,18,211.1245,6311,6113,198,40,0,0,0.00413
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,27,20,226.173,6444,6243,201,28,0,0,0.00406
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,28,20,234.0869,6585,6382,203,73,0,0,0.004676
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,29,21,250.5974,6938,6730,208,149,0,0,0.005777
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,30,22,258.209,7183,6961,222,114,0,0,0.005515
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,31,23,262.5095,7423,7190,233,42,0,0,0.004798
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,32,24,269.9372,7508,7273,235,137,0,0,0.005986
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,33,25,273.7982,7725,7479,246,0,0,0,0.004477
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,34,25,278.8676,7816,7569,247,75,0,0,0.005425
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,35,26,290.75,8065,7812,253,142,0,0,0.006369
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,36,27,297.2505,8353,8088,265,40,0,0,0.005319
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,37,29,311.7442,8485,8217,268,24,0,0,0.005201
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,38,29,319.2623,8630,8360,270,74,0,0,0.005878
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,39,30,335.8859,8986,8711,275,149,0,0,0.006968
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,40,31,343.0683,9231,8942,289,115,0,0,0.006718
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,41,32,347.4417,5198,5065,133,21,0,0,0.003184
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,42,32,358.6405,5276,5141,135,241,0,0,0.005868
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,43,34,369.3047,5645,5485,160,27,0,0,0.003547
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,44,34,374.6938,5757,5595,162,76,0,0,0.004195
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,45,35,377.2483,5908,5741,167,0,0,0,0.003371
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,46,35,386.81,6031,5863,168,142,0,0,0.005139
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,47,36,393.6556,6321,6141,180,40,0,0,0.004091
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,48,38,408.5311,6455,6272,183,9,0,0,0.003793
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,49,38,414.5674,6577,6392,185,76,0,0,0.004663
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,50,39,430.8044,6937,6747,190,149,0,0,0.005731
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,51,40,437.9321,7183,6979,204,114,0,0,0.00547
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,52,41,442.1427,7424,7209,215,25,0,0,0.004549
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,53,41,453.6483,7502,7285,217,242,0,0,0.007197
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,54,43,464.3769,7868,7627,241,11,0,0,0.004668
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,55,43,469.5956,7964,7721,243,76,0,0,0.005502
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,56,44,481.4071,8208,7960,248,143,0,0,0.00644
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,57,45,488.5766,8497,8237,260,40,0,0,0.005378
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,58,47,503.0253,8629,8366,263,9,0,0,0.00508
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,59,47,509.8886,8751,8486,265,76,0,0,0.00595
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,60,48,526.513,9109,8839,270,148,0,0,0.007005
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,61,49,534.3226,4918,4793,125,113,0,0,0.004128
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,62,50,538.2374,5155,5019,136,18,0,0,0.003134
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,63,50,549.3178,5231,5093,138,241,0,0,0.005853
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,64,52,560.0972,5223,5085,138,10,0,0,0.003076
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,65,52,565.2362,5315,5175,140,76,0,0,0.00392
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,66,53,567.449,5460,5316,144,0,0,0,0.00309
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,67,53,577.247,5582,5437,145,142,0,0,0.004857
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,68,54,584.3017,5866,5710,156,40,0,0,0.003803
+us_g25_10m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,69,55,590.683,5982,5823,159,53,0,0,0.004025
+us_g25_1m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,2.9734,1208,1207,1,12,0,0,0.00075
+us_g25_1m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,4.7178,1274,1271,3,6,0,0,0.000717
+us_g25_1m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,0,11.7842,1330,1325,5,122,0,0,0.002142
+us_g25_1m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,1,27.2842,1538,1520,18,312,0,0,0.004558
+us_g25_1m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,2,31.3305,2026,1983,43,0,0,0,0.00112
+us_g25_1m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,2,47.8305,2156,2112,44,323,0,0,0.005064
+us_g25_1m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,3,58.6128,2666,2595,71,122,0,0,0.002975
+us_g25_1m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,3.2055,1208,1207,1,11,0,0,0.000739
+us_g25_1m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,11.2554,1274,1271,3,169,0,0,0.002672
+us_g25_1m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,1,24.8176,1540,1519,21,287,0,0,0.004267
+us_g25_1m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,29.0706,2003,1956,47,13,0,0,0.001275
+us_g25_1m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,2,44.6106,2127,2078,49,311,0,0,0.004918
+us_g25_1m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,3,52.8816,2621,2540,81,112,0,0,0.002857
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,3.0313,1208,1207,1,0,0,0,0.000607
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,4.7365,1271,1269,2,0,0,0,0.000641
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,0,16.9928,1432,1429,3,164,0,0,0.002691
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,1,32.93,1682,1665,17,310,0,0,0.004603
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,2,37.0123,2173,2128,45,54,0,0,0.001847
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,2,54.581,2315,2268,47,357,0,0,0.005559
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,3,81.1336,3053,2970,83,393,0,0,0.00645
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,4,101.1858,3629,3506,123,359,0,0,0.00643
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,5,105.3192,4205,4047,158,6,0,0,0.00257
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,5,120.4195,4264,4104,160,346,0,0,0.006684
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,7,143.9009,4857,4662,195,225,0,0,0.005616
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,9,167.611,5254,5037,217,86,0,0,0.004202
+us_g25_3m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,10,173.7901,5443,5220,223,39,0,0,0.003747
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,3.425,1208,1207,1,4,0,0,0.000655
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,12.2968,1267,1264,3,170,0,0,0.002681
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,2,26.8618,1568,1550,18,18,0,0,0.001045
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,41.5312,1693,1673,20,245,0,0,0.003837
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,3,65.6137,2262,2224,38,332,0,0,0.00521
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,4,70.2021,2743,2678,65,51,0,0,0.002146
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,5,74.5132,2900,2830,70,0,0,0,0.001625
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,85.8072,2966,2895,71,230,0,0,0.00442
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,7,96.6522,3318,3224,94,9,0,0,0.002002
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,7,105.6371,3407,3311,96,172,0,0,0.004007
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,8,108.1915,3691,3579,112,0,0,0,0.002125
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,8,119.6311,3813,3700,113,194,0,0,0.004517
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,9,127.4429,4168,4039,129,92,0,0,0.003511
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,11,145.0333,4372,4235,137,0,0,0,0.002528
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,11,157.3066,4492,4354,138,209,0,0,0.005099
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,12,180.8011,5019,4866,153,322,0,0,0.006756
+us_g25_3m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,13,186.7083,5524,5344,180,27,0,0,0.003536
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,3.2724,1208,1207,1,46,0,0,0.001159
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,13.9825,1293,1290,3,202,0,0,0.003078
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,2,28.7272,1632,1612,20,12,0,0,0.00101
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,42.889,1749,1727,22,277,0,0,0.004254
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,3,64.7143,2357,2318,39,294,0,0,0.004804
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,4,71.1072,2795,2730,65,79,0,0,0.002508
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,5,75.6088,2981,2910,71,6,0,0,0.00174
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,90.6789,3036,2963,73,334,0,0,0.005709
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,7,117.8481,3611,3508,103,300,0,0,0.005663
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,8,131.7534,4176,4046,130,189,0,0,0.004681
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,9,141.89,4525,4379,146,119,0,0,0.004056
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,11,157.8638,4762,4607,155,6,0,0,0.002841
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,11,168.445,4883,4726,157,183,0,0,0.00503
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,12,172.0421,5159,4994,165,15,0,0,0.003172
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,12,174.1355,5248,5081,167,13,0,0,0.003197
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,12,188.3256,5408,5239,169,244,0,0,0.006054
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,13,192.8948,5782,5593,189,48,0,0,0.00394
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,14,197.0899,5929,5736,193,33,0,0,0.003843
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,18,14,204.5607,6016,5820,196,153,0,0,0.005334
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,19,16,224.387,6349,6140,209,139,0,0,0.005365
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,20,17,227.2968,6577,6357,220,13,0,0,0.003994
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,21,17,235.9727,6699,6477,222,120,0,0,0.005345
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,22,18,243.703,6960,6727,233,73,0,0,0.004939
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,23,20,258.3331,7134,6896,238,28,0,0,0.004498
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,24,20,265.4635,7275,7035,240,66,0,0,0.00503
+us_g25_5m_off,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,25,21,284.6553,7614,7372,242,231,0,0,0.007184
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,3.314,1208,1207,1,28,0,0,0.000942
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,12.6105,1291,1288,3,184,0,0,0.002861
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,2,27.4452,1605,1587,18,50,0,0,0.001448
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,43.4484,1745,1724,21,291,0,0,0.004417
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,3,65.4677,2378,2336,42,290,0,0,0.004774
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,4,70.9308,2811,2744,67,67,0,0,0.002377
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,5,75.1441,2981,2907,74,2,0,0,0.0017
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,92.7564,3037,2961,76,374,0,0,0.006196
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,7,117.7294,3679,3566,113,222,0,0,0.004786
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,8,132.1539,4122,3991,131,172,0,0,0.004452
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,9,143.5746,4460,4312,148,180,0,0,0.00476
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,11,158.2284,4779,4616,163,0,0,0,0.002797
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,11,169.7045,4903,4739,164,196,0,0,0.005214
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,12,188.1437,5419,5242,177,171,0,0,0.005204
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,13,192.2435,5693,5500,193,39,0,0,0.003797
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,14,196.6576,5833,5636,197,5,0,0,0.003469
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,14,209.447,5888,5689,199,284,0,0,0.006849
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,16,230.47,6396,6169,227,172,0,0,0.005829
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,18,17,244.3179,6774,6533,241,172,0,0,0.006053
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,19,18,256.8207,7112,6854,258,177,0,0,0.006325
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,20,20,272.7016,7429,7156,273,37,0,0,0.004841
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,21,20,284.9162,7571,7295,276,226,0,0,0.007188
+us_g25_5m_on6k,sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,22,21,293.3824,7939,7648,291,58,0,0,0.005393
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,18.7047,1211,869,315,309,0,0,0.005305
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,38.8289,1671,917,659,386,0,0,0.007297
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,42.7093,2268,988,1101,0,0,0,0.004044
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,2,59.8463,2371,1003,1187,333,0,0,0.008309
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,3,81.5643,3094,1091,1748,274,0,0,0.00935
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,4,97.7592,3525,1137,2067,288,0,0,0.01051
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,5,115.699,4035,1193,2461,294,0,0,0.011806
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,7,144.098,4571,1255,2871,347,0,0,0.013718
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,8,161.5451,5196,1325,3350,262,0,0,0.014188
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,9,175.1847,5673,1388,3706,211,0,0,0.014691
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,10,182.7797,5974,1422,3925,143,0,0,0.014557
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,11,186.7395,6239,1449,4125,12,0,0,0.013606
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,12,11,198.5556,6368,1468,4221,200,0,0,0.016164
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,13,12,218.6308,6905,1535,4643,241,0,0,0.017972
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,14,13,234.3145,7429,1578,5068,164,0,0,0.018356
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,15,14,238.3441,7721,1612,5286,0,0,0,0.017067
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,16,14,248.8073,7765,1615,5325,212,0,0,0.01973
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,17,16,273.6792,8182,1666,5645,274,0,0,0.021472
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,18,17,291.7632,8697,1718,6050,278,0,0,0.022774
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,19,18,305.3801,9191,1780,6422,205,0,0,0.023061
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,20,19,312.9252,9486,1814,6635,142,0,0,0.02297
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,21,20,316.8684,9750,1841,6834,0,0,0,0.021883
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,22,20,330.1936,9851,1856,6918,235,0,0,0.024966
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,23,21,350.6829,10439,1927,7379,244,0,0,0.02651
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,24,22,367.6225,10968,1970,7807,197,0,0,0.027262
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,25,23,383.9595,11356,2008,8105,241,0,0,0.028713
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,26,25,411.4265,11813,2063,8451,334,0,0,0.030908
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,27,26,428.0118,12424,2134,8919,241,0,0,0.031249
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,28,27,441.9843,12870,2191,9254,207,0,0,0.031889
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,29,29,470.0145,13329,2245,9611,240,0,0,0.033397
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,30,30,491.4008,13927,2317,10079,247,0,0,0.034939
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,31,31,505.7398,14335,2360,10388,154,0,0,0.034782
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,32,32,520.9756,14650,2391,10632,239,0,0,0.036557
+us_g31_10m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,33,34,548.3171,15104,2446,10977,337,0,0,0.038809
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,18.0559,1211,869,315,296,0,0,0.005149
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,40.988,1658,918,645,413,0,0,0.00758
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,46.1157,2286,996,1115,0,0,0,0.004092
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,2,63.683,2388,1011,1200,376,0,0,0.00887
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,3,90.801,3153,1107,1797,416,0,0,0.011213
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,4,108.3929,3759,1184,2234,388,0,0,0.012246
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,5,112.5203,4360,1263,2674,0,0,0,0.008969
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,5,129.4021,4403,1266,2712,380,0,0,0.013645
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,7,159.4815,5061,1347,3205,396,0,0,0.015377
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,8,178.5231,5768,1443,3728,301,0,0,0.015878
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,9,191.9963,6306,1511,4124,205,0,0,0.015965
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,10,195.5744,6604,1548,4337,42,0,0,0.014676
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,12,11,199.4563,6730,1560,4437,0,0,0,0.014481
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,13,11,211.9815,6831,1575,4521,222,0,0,0.017408
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,14,12,238.848,7402,1645,4966,407,0,0,0.021016
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,15,13,256.5828,7997,1722,5392,378,0,0,0.022003
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,16,14,260.6113,8590,1802,5823,0,0,0,0.018821
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,17,14,277.293,8630,1805,5858,370,0,0,0.023368
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,18,16,300.2517,4049,1230,2419,216,0,0,0.010771
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,19,17,320.3984,4203,1243,2562,312,0,0,0.012362
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,20,18,333.7364,4762,1322,2968,202,0,0,0.01232
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,21,19,338.1641,5057,1358,3179,66,0,0,0.011347
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,22,20,356.236,5319,1389,3388,263,0,0,0.014362
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,23,21,381.0724,5958,1467,3887,343,0,0,0.016877
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,24,22,398.9523,6487,1536,4261,381,0,0,0.018507
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,25,23,419.709,7130,1619,4735,370,0,0,0.019859
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,26,25,442.5914,7776,1700,5216,215,0,0,0.019503
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,27,26,458.1234,8226,1758,5554,228,0,0,0.020716
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,28,27,471.7476,8666,1817,5877,205,0,0,0.021454
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,29,28,476.3268,8964,1854,6090,64,0,0,0.020428
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,30,29,480.5016,9121,1871,6210,0,0,0,0.020033
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,31,29,495.585,3852,1207,2266,285,0,0,0.011123
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,32,30,515.0832,4508,1292,2775,224,0,0,0.011982
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,33,31,539.617,5035,1354,3176,375,0,0,0.015043
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,34,32,543.2532,5633,1430,3604,0,0,0,0.011884
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,35,32,559.734,5673,1433,3639,367,0,0,0.016396
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,36,34,581.5926,6325,1516,4120,195,0,0,0.015837
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,37,35,597.3249,6749,1572,4440,228,0,0,0.017235
+us_g31_10m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,38,36,609.0076,7154,1621,4738,167,0,0,0.017434
+us_g31_1m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,16.667,1213,869,317,260,0,0,0.004723
+us_g31_1m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,37.6956,1714,910,715,308,0,0,0.006523
+us_g31_1m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,41.7784,2197,969,1079,0,0,0,0.003964
+us_g31_1m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,2,60.0215,2299,984,1164,364,0,0,0.008598
+us_g31_1m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,3,77.0656,2867,1050,1592,325,0,0,0.009463
+us_g31_1m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,19.0319,1213,869,317,319,0,0,0.005431
+us_g31_1m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,40.3449,1678,918,661,475,0,0,0.008372
+us_g31_1m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,56.3375,2494,1017,1288,205,0,0,0.007087
+us_g31_1m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,3,69.7371,2837,1060,1538,247,0,0,0.008373
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,16.0891,1213,869,317,245,0,0,0.004543
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,36.721,1723,905,735,308,0,0,0.00658
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,40.8168,2212,968,1101,0,0,0,0.004029
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,2,59.4633,2309,983,1181,379,0,0,0.008828
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,3,80.6345,3086,1083,1782,268,0,0,0.009374
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,4,100.9248,3519,1135,2097,371,0,0,0.011594
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,5,105.0327,4102,1210,2521,0,0,0,0.008471
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,5,120.6098,4141,1213,2555,335,0,0,0.012595
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,7,146.193,4739,1284,3002,274,0,0,0.013257
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,8,161.48,5276,1354,3407,213,0,0,0.013792
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,9,177.0249,5684,1405,3708,248,0,0,0.015154
+us_g31_3m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,10,184.0134,6108,1453,4028,58,0,0,0.01387
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,19.9677,1213,869,317,344,0,0,0.005731
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,39.5499,1713,923,683,433,0,0,0.007937
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,43.5694,2378,1003,1172,0,0,0,0.004268
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,2,60.9193,2481,1018,1258,338,0,0,0.008594
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,3,87.8374,3213,1112,1820,408,0,0,0.01119
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,4,101.5015,3806,1180,2249,282,0,0,0.011016
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,5,124.2178,4314,1238,2635,413,0,0,0.013789
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,7,151.6653,5004,1318,3159,334,0,0,0.014474
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,8,171.7083,5621,1391,3627,329,0,0,0.015872
+us_g31_3m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,9,179.27,6152,1452,4017,88,0,0,0.014196
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,21.6015,1215,869,319,382,0,0,0.006193
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,36.0215,1760,935,716,306,0,0,0.006521
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,57.7494,2348,1011,1164,347,0,0,0.008414
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,3,78.6665,3095,1107,1733,253,0,0,0.009065
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,4,96.9095,3516,1154,2041,314,0,0,0.010757
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,5,110.8175,4070,1223,2450,190,0,0,0.010547
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,7,136.0831,4465,1270,2750,278,0,0,0.012538
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,8,150.0492,5001,1332,3158,183,0,0,0.012669
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,9,159.7179,5370,1378,3435,105,0,0,0.012599
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,10,166.0983,5532,1393,3556,102,0,0,0.012937
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,11,186.2841,5841,1430,3798,312,0,0,0.01621
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,12,206.9731,6532,1517,4332,248,0,0,0.01711
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,12,13,228.0289,7067,1564,4754,315,0,0,0.019215
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,13,14,241.2986,7620,1634,5161,189,0,0,0.018977
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,14,16,266.7376,8018,1681,5464,280,0,0,0.021013
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,15,17,280.9912,8559,1747,5875,181,0,0,0.021107
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,16,18,290.65,8924,1791,6150,108,0,0,0.021089
+us_g31_5m_off,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,17,19,298.6071,9142,1812,6319,101,0,0,0.021528
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,17.934,1215,869,319,292,0,0,0.005113
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,38.657,1652,914,645,372,0,0,0.007084
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,42.67,2219,991,1073,0,0,0,0.003962
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,2,54.6508,2321,1006,1158,203,0,0,0.006665
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,3,80.8708,2859,1072,1584,391,0,0,0.010248
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,4,98.3738,3435,1146,1998,372,0,0,0.011317
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,5,102.2589,4010,1222,2423,0,0,0,0.008186
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,5,115.2875,4054,1226,2461,276,0,0,0.011614
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,7,137.3457,4582,1289,2856,185,0,0,0.011755
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,8,152.8493,4993,1339,3173,220,0,0,0.013163
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,9,167.0201,5405,1390,3484,212,0,0,0.014039
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,10,178.9848,5880,1433,3864,78,0,0,0.013603
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,12,11,193.7609,6165,1469,4085,177,0,0,0.015481
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,13,12,219.6525,6673,1533,4485,378,0,0,0.019141
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,14,13,236.5047,7236,1607,4888,365,0,0,0.020249
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,15,14,240.3052,7805,1684,5306,0,0,0,0.017181
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,16,14,253.6009,7848,1688,5343,281,0,0,0.020667
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,17,16,275.3205,8381,1751,5743,182,0,0,0.020726
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,18,17,286.7955,3985,1226,2391,121,0,0,0.009544
+us_g31_5m_on6k,sandbox-us-east-proxy,gemini-3.1-flash-live-preview,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,19,18,293.0169,4230,1254,2574,56,0,0,0.009335
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,2.8749,1313,1029,257,0,0,0,0.001543
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,12.8856,1382,1036,317,176,102,0,0.004299
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,19.9162,1624,1064,505,128,65,0,0.004142
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,23.441,1855,1099,679,0,0,0,0.002861
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,35.7182,1949,1115,755,196,80,0,0.005813
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,53.3418,2444,1175,1162,178,63,0,0.006787
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,59.7339,2697,1208,1356,108,68,0,0.006576
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,63.6555,2896,1231,1512,0,0,0,0.005459
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,5,72.3742,2923,1234,1534,181,91,0,0.008109
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,7,91.935,3276,1284,1811,135,121,0,0.008561
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,8,103.5172,3584,1322,2059,135,64,0,0.009076
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,9,114.9938,3869,1357,2287,154,66,0,0.010024
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,10,120.3677,4086,1384,2453,84,57,0,0.009661
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,135.2516,4349,1420,2660,193,64,0,0.011649
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,12,152.7028,4826,1468,3067,183,73,0,0.012826
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,13,159.2251,5084,1501,3266,105,57,0,0.01244
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,14,163.3586,5282,1525,3420,0,0,0,0.011404
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,171.9523,5306,1528,3439,181,86,0,0.014022
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,16,190.6968,5659,1578,3716,136,51,0,0.014193
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,19,17,202.4488,5969,1616,3966,137,60,0,0.015024
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,20,18,214.1169,6256,1651,4196,162,41,0,0.015955
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,21,19,219.1701,6481,1678,4370,80,45,0,0.015531
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,22,20,222.7332,6646,1698,4497,0,0,0,0.014764
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,23,20,234.3004,6741,1714,4574,194,53,0,0.017574
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,24,21,252.0945,7234,1773,4980,184,82,0,0.018847
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,25,22,256.806,7492,1806,5179,63,89,0,0.018048
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,26,23,260.5923,7637,1822,5290,17,70,0,0.017756
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,27,23,269.2483,7697,1832,5326,186,55,0,0.019831
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,28,25,288.6048,8054,1882,5607,141,58,0,0.020185
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,29,26,300.831,8366,1920,5859,162,50,0,0.021186
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,30,27,312.8394,8685,1960,6114,162,51,0,0.021986
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,31,28,318.0327,8910,1987,6288,75,63,0,0.021538
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,32,29,321.9274,9072,2008,6411,0,0,0,0.020739
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,33,29,333.1705,9165,2024,6486,194,78,0,0.023655
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,34,30,350.8089,9663,2084,6896,186,74,0,0.024816
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,35,31,355.1757,9923,2117,7097,65,54,0,0.023902
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,36,32,358.9364,10071,2133,7211,25,85,0,0.023915
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,37,32,367.0124,10141,2143,7257,170,56,0,0.02567
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,38,34,386.1221,10482,2192,7523,136,49,0,0.026065
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,39,35,397.7227,10789,2230,7770,136,58,0,0.026876
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,40,36,409.6846,11076,2265,8000,155,52,0,0.027793
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,41,37,414.5783,11294,2292,8167,75,48,0,0.027336
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,42,38,429.6162,11549,2329,8365,194,70,0,0.029485
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,43,39,447.6451,12045,2388,8774,190,256,0,0.031545
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,44,40,452.6513,12310,2421,8980,64,154,0,0.030217
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,45,41,456.4061,12457,2438,9092,0,0,0,0.029104
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,46,41,465.6757,12481,2441,9111,191,55,0,0.031703
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,47,43,484.5176,12844,2491,9398,137,43,0,0.0319
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,48,44,497.1707,13156,2530,9649,160,77,0,0.033111
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,49,45,508.7692,13473,2570,9902,156,62,0,0.033785
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,50,46,513.6475,13692,2597,10070,78,49,0,0.033314
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,51,47,528.7012,13950,2634,10271,192,89,0,0.035493
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,52,48,546.1724,14442,2693,10676,182,67,0,0.036533
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,53,49,551.812,14699,2726,10874,97,50,0,0.036055
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,54,50,555.6543,14890,2751,11020,17,61,0,0.035602
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,55,50,564.0558,14949,2760,11056,178,59,0,0.037639
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,56,52,585.8672,15298,2809,11330,199,49,0,0.038705
+us_g38_10m_off,sandbox-us-east-proxy,gemini-3.8-live,10.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,57,53,591.9413,15617,2851,11579,61,37,0,0.037774
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,2.9299,1313,1029,257,50,51,0,0.002372
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,10.7471,1426,1043,342,123,56,0,0.003536
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,18.0801,1608,1068,477,139,49,0,0.004121
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,21.6245,1851,1104,662,44,54,0,0.003585
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,30.295,1988,1125,764,130,72,0,0.00502
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,49.1937,2405,1181,1103,196,130,0,0.007132
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,64.8625,2888,1223,1516,145,44,0,0.007403
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,68.8342,3140,1258,1709,95,52,0,0.007444
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,5,76.2168,3205,1266,1752,140,74,0,0.008219
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,7,98.8322,3501,1305,1987,226,75,0,0.009989
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,8,113.4849,3925,1360,2328,211,73,0,0.010864
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,9,124.2053,4314,1417,2632,147,69,0,0.011033
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,10,127.7974,4526,1448,2791,44,50,0,0.010212
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,141.3016,4745,1481,2959,162,52,0,0.012166
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,12,158.8691,5208,1544,3333,194,74,0,0.013818
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,13,167.6604,5487,1586,3542,162,0,0,0.013759
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,14,171.6229,5756,1621,3752,72,47,0,0.013547
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,178.3504,5822,1629,3796,138,55,0,0.014513
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,16,199.44,6117,1668,4030,192,90,0,0.01605
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,19,17,212.31,6505,1722,4336,173,49,0,0.016596
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,20,18,224.5846,6846,1771,4602,157,142,0,0.017657
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,21,19,227.8847,7070,1802,4771,39,35,0,0.01629
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,22,20,231.4181,7190,1819,4858,0,0,0,0.015938
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,23,20,240.3104,7282,1835,4932,136,59,0,0.01807
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,24,21,257.1669,7707,1891,5277,173,99,0,0.019771
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,25,22,265.4766,7958,1927,5466,160,0,0,0.019763
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,26,23,269.2734,8224,1962,5673,70,51,0,0.01956
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,27,23,276.5841,8290,1970,5717,156,53,0,0.020739
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,28,25,298.2517,8606,2012,5969,191,66,0,0.022005
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,29,26,312.0776,8993,2065,6277,201,56,0,0.023044
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,30,27,323.7236,9367,2117,6571,158,59,0,0.023462
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,31,28,327.4906,9593,2149,6741,45,79,0,0.02273
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,32,29,331.3551,9720,2166,6835,50,58,0,0.022991
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,33,29,339.5923,9858,2188,6937,122,55,0,0.024164
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,34,30,354.9545,4367,1451,2649,136,66,0,0.010964
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,35,31,363.4156,4569,1478,2802,161,46,0,0.011654
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,36,32,367.0595,4835,1511,3011,37,61,0,0.010885
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,37,32,374.2249,4903,1518,3058,154,42,0,0.012349
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,38,34,395.0153,5216,1560,3307,184,51,0,0.013529
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,39,35,408.814,5594,1614,3605,172,52,0,0.014323
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,40,36,420.3115,5929,1660,3870,163,47,0,0.015022
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,41,37,423.9774,6160,1692,4045,48,39,0,0.014155
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,42,38,427.9802,6289,1709,4141,0,0,0,0.013705
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,43,38,436.4207,6382,1724,4217,127,70,0,0.015783
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,44,39,453.5163,6796,1780,4553,183,88,0,0.017586
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,45,40,461.5672,7060,1819,4752,155,51,0,0.01771
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,46,41,465.2727,7320,1853,4956,61,57,0,0.017246
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,47,41,472.6456,7387,1860,5002,156,49,0,0.018493
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,48,43,493.6019,7704,1902,5253,194,67,0,0.019815
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,49,44,504.6985,8092,1956,5561,127,72,0,0.019998
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,50,45,517.1074,8372,1993,5782,160,53,0,0.020999
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,51,46,520.4943,8599,2024,5954,44,48,0,0.020124
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,52,47,524.0243,8725,2041,6047,0,0,0,0.019672
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,53,47,532.9897,8820,2057,6124,136,0,0,0.021547
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,54,48,550.2617,9246,2114,6469,182,94,0,0.023599
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,55,49,558.229,9509,2153,6667,156,0,0,0.023488
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,56,50,562.047,9771,2187,6871,0,0,0,0.022253
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,57,50,569.5528,9795,2189,6891,139,54,0,0.024226
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,58,52,590.9721,10091,2228,7126,193,75,0,0.025702
+us_g38_10m_on6k,sandbox-us-east-proxy,gemini-3.8-live,10.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,59,53,597.9064,4431,1453,2699,71,39,0,0.010214
+us_g38_1m_off,sandbox-us-east-proxy,gemini-3.8-live,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,2.9186,1313,1029,257,17,65,0,0.002039
+us_g38_1m_off,sandbox-us-east-proxy,gemini-3.8-live,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,11.8269,1419,1043,335,147,66,0,0.003848
+us_g38_1m_off,sandbox-us-east-proxy,gemini-3.8-live,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,22.7861,1625,1066,494,231,73,0,0.005382
+us_g38_1m_off,sandbox-us-east-proxy,gemini-3.8-live,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,35.5703,2075,1126,852,131,63,0,0.005256
+us_g38_1m_off,sandbox-us-east-proxy,gemini-3.8-live,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,3,53.4598,2492,1181,1192,196,69,0,0.007124
+us_g38_1m_off,sandbox-us-east-proxy,gemini-3.8-live,1.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,4,63.3881,2805,1220,1438,162,67,0,0.007475
+us_g38_1m_on6k,sandbox-us-east-proxy,gemini-3.8-live,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,3.0488,1313,1029,257,0,0,0,0.001543
+us_g38_1m_on6k,sandbox-us-east-proxy,gemini-3.8-live,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,13.0369,1384,1037,318,176,56,0,0.004096
+us_g38_1m_on6k,sandbox-us-east-proxy,gemini-3.8-live,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,20.4703,1624,1063,506,136,99,0,0.004393
+us_g38_1m_on6k,sandbox-us-east-proxy,gemini-3.8-live,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,24.2313,1861,1097,687,15,74,0,0.003397
+us_g38_1m_on6k,sandbox-us-east-proxy,gemini-3.8-live,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,35.0538,1985,1117,777,170,97,0,0.005645
+us_g38_1m_on6k,sandbox-us-east-proxy,gemini-3.8-live,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,51.627,2452,1175,1160,158,53,0,0.006496
+us_g38_1m_on6k,sandbox-us-east-proxy,gemini-3.8-live,1.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,61.1795,2717,1209,1367,150,71,0,0.007127
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,13.5127,1385,1038,318,188,69,0,0.004299
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,1,24.8041,1642,1070,517,193,119,0,0.005205
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,2,38.2908,2049,1130,834,152,132,0,0.005768
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,3,55.8649,2490,1182,1199,188,69,0,0.00705
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,4,63.803,2752,1214,1403,113,58,0,0.006737
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,5,76.6951,2981,1238,1586,194,69,0,0.008325
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,7,97.4361,3344,1285,1876,181,85,0,0.009146
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,8,108.8392,3715,1334,2172,137,49,0,0.009381
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,9,120.9957,4001,1367,2403,168,45,0,0.010453
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,11,135.4125,4361,1463,2629,0,0,0,0.008984
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,11,144.7112,4394,1421,2706,141,129,0,0.011456
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,12,163.6272,4818,1473,3056,200,80,0,0.013033
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,13,171.2578,5105,1505,3285,111,55,0,0.012563
+us_g38_3m_off,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,14,178.5902,5311,1530,3446,88,54,0,0.012785
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,3.1812,1313,1029,257,25,60,0,0.002113
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,11.2149,1427,1043,343,134,50,0,0.003644
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,18.1818,1615,1063,489,127,48,0,0.004004
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,21.808,1845,1098,662,0,0,0,0.002809
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,32.5877,1939,1114,738,176,83,0,0.005535
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,50.0729,2415,1174,1128,182,85,0,0.006831
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,55.6501,2666,1201,1326,86,38,0,0.006082
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,59.4353,2840,1222,1461,24,49,0,0.005808
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,5,67.0555,2904,1229,1504,158,67,0,0.007631
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,7,88.5173,3221,1269,1757,188,69,0,0.008789
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,8,101.5741,3593,1313,2059,179,44,0,0.009508
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,9,111.7733,3938,1359,2332,121,70,0,0.009782
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,10,115.4495,4112,1380,2465,44,35,0,0.009116
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,118.9402,4236,1396,2557,0,0,0,0.008718
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,11,127.5292,4332,1413,2634,124,46,0,0.010657
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,12,143.4451,4734,1461,2966,145,80,0,0.012094
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,13,149.2394,4946,1486,3131,86,46,0,0.011746
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,153.1579,5121,1507,3265,8,62,0,0.0113
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,14,160.6407,5169,1514,3292,155,92,0,0.013286
+us_g38_3m_on6k,sandbox-us-east-proxy,gemini-3.8-live,3.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,19,16,181.2845,5426,1542,3497,224,48,0,0.014552
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,2.7847,1313,1029,257,9,56,0,0.001903
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,13.4719,1410,1043,326,165,65,0,0.004033
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,21.9843,1639,1070,502,147,65,0,0.004365
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,25.7045,1892,1106,695,25,70,0,0.00353
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,34.2953,2029,1126,798,125,69,0,0.005049
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,51.2083,2435,1175,1133,171,75,0,0.00667
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,59.0368,2680,1208,1321,127,65,0,0.006685
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,62.8955,2905,1236,1496,25,58,0,0.005976
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,5,70.3815,2971,1244,1540,146,53,0,0.007543
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,7,93.1107,3278,1286,1781,219,101,0,0.00939
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,8,104.7427,3687,1335,2113,136,76,0,0.009314
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,9,115.6156,3977,1373,2343,143,56,0,0.010027
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,10,118.7532,4178,1397,2498,25,53,0,0.00908
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,131.2003,4371,1423,2649,122,56,0,0.01073
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,12,148.2591,4775,1472,2982,174,61,0,0.012412
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,13,155.4127,5023,1505,3173,129,60,0,0.012466
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,14,159.3054,5250,1532,3351,0,0,0,0.011202
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,166.4734,5275,1534,3372,145,53,0,0.013245
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,16,188.8529,5581,1576,3612,217,143,0,0.015265
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,19,17,200.6248,5983,1623,3941,137,106,0,0.015161
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,20,18,211.6022,6274,1661,4172,142,46,0,0.015673
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,21,19,217.3771,6474,1685,4326,97,81,0,0.01577
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,22,20,220.9031,6665,1711,4471,0,0,0,0.014696
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,23,20,230.9498,6760,1727,4548,158,73,0,0.017164
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,24,21,248.3484,7217,1788,4918,184,87,0,0.018694
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,25,22,256.1913,7478,1823,5118,131,76,0,0.018635
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,26,23,260.0206,7709,1853,5297,25,44,0,0.017779
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,27,23,267.0695,7776,1860,5343,136,55,0,0.019304
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,28,25,287.4142,8069,1899,5575,174,47,0,0.020449
+us_g38_5m_off,sandbox-us-east-proxy,gemini-3.8-live,5.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,29,26,294.1713,8358,1938,5799,76,54,0,0.020005
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,2.8539,1313,1029,257,0,0,0,0.001543
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,11.4355,1384,1038,317,141,51,0,0.003651
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,22.1722,1581,1060,470,204,95,0,0.00508
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,37.0662,1982,1102,799,179,67,0,0.005673
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,3,54.6366,2463,1164,1192,183,63,0,0.006928
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,4,61.6203,2722,1198,1391,116,42,0,0.006653
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,5,65.5015,2935,1226,1556,20,63,0,0.006111
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,74.3434,2996,1233,1596,186,48,0,0.008161
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,7,95.7198,3353,1282,1878,193,58,0,0.009173
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,8,109.7041,3734,1331,2184,189,67,0,0.01012
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,9,121.9844,4086,1375,2466,179,50,0,0.010802
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,10,128.4609,4331,1405,2657,106,63,0,0.01058
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,11,132.5171,4528,1429,2810,0,0,0,0.009502
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,143.0338,4623,1445,2887,185,52,0,0.012199
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,12,159.2037,5111,1508,3286,143,87,0,0.013097
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,13,164.8022,5321,1533,3449,86,83,0,0.012902
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,14,168.6404,5494,1553,3584,25,52,0,0.012451
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,175.118,5559,1560,3628,124,69,0,0.013853
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,16,196.2667,5839,1599,3847,191,59,0,0.015298
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,19,17,209.8088,6219,1649,4151,188,87,0,0.016337
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,20,18,222.2054,6570,1692,4433,161,45,0,0.016702
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,21,19,228.5525,6795,1720,4606,112,53,0,0.016691
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,22,20,242.9391,7093,1760,4842,184,59,0,0.018319
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,23,21,258.8495,7578,1823,5238,144,100,0,0.019259
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,24,22,267.0485,7786,1848,5399,114,59,0,0.019217
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,25,23,270.9009,7997,1876,5562,16,56,0,0.018537
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,26,23,277.5042,8054,1882,5599,129,84,0,0.020134
+us_g38_5m_on6k,sandbox-us-east-proxy,gemini-3.8-live,5.0,on:6000:3000,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,27,25,292.5162,8283,1910,5778,71,79,0,0.019974
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,0,0,18.1893,1587,1046,514,133,0,0,0.003922
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,1,1,22.713,1806,1068,689,173,0,0,0.004944
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,2,1,32.5252,2020,1086,869,108,0,0,0.004718
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,2,40.1359,2195,1107,1003,133,0,0,0.005435
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,3,44.7651,2419,1133,1179,184,0,0,0.006595
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,5,3,54.7516,2639,1156,1360,112,0,0,0.006291
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,6,4,61.8969,2803,1177,1483,118,0,0,0.006748
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,7,5,66.6543,3008,1200,1643,99,0,0,0.007017
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,8,5,77.2116,3229,1222,1826,128,0,0,0.007931
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,9,6,92.983,3651,1264,2184,133,0,0,0.009096
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,10,8,114.3942,3873,1289,2359,71,0,0,0.008896
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,11,8,117.7745,4058,1306,2513,79,0,0,0.009466
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,12,8,125.7479,4316,1332,2729,148,0,0,0.010962
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,13,9,130.4661,4556,1358,2919,128,0,0,0.011312
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,14,9,140.94,4773,1380,3098,125,0,0,0.011829
+us_g38_2m_server_PAUSE_tb0,sandbox-us-east-proxy,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,15,10,153.4807,5097,1408,3372,135,0,0,0.012792
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,12.0541,1408,1039,342,151,76,0,0.003959
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,1,19.962,1627,1065,511,155,59,0,0.004457
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,2,37.162,1995,1116,804,259,59,0,0.006622
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,3,56.6555,2595,1191,1297,218,63,0,0.007684
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,4,68.0771,3106,1236,1733,26,46,0,0.006645
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,5,71.9547,3212,1247,1814,25,85,0,0.00706
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,6,87.8269,3333,1255,1913,196,65,0,0.009325
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,7,107.7296,3703,1302,2210,249,111,0,0.011094
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,9,125.8798,4163,1362,2578,213,83,0,0.011685
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,9,132.9936,4384,1390,2753,141,57,0,0.01125
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,10,138.0542,4592,1415,2912,74,67,0,0.010987
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,11,150.6277,4868,1454,3131,135,48,0,0.01232
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,12,168.038,5316,1512,3499,165,73,0,0.01394
+us_g38_3m_server_P1,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,13,174.9587,5605,1557,3719,69,37,0,0.013319
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,0,0,10.842,1408,1039,342,122,0,0,0.003269
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,1,1,21.1636,1594,1063,482,215,0,0,0.004823
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,2,2,35.6921,2046,1129,840,195,0,0,0.005707
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,3,53.7397,2577,1200,1272,181,0,0,0.006888
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,4,59.6049,2844,1238,1475,74,0,0,0.006241
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,5,5,63.4907,3015,1262,1604,93,0,0,0.006875
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,6,6,79.3724,3136,1270,1703,200,0,0,0.008462
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,7,7,91.0114,3517,1321,2005,168,0,0,0.009022
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,8,8,104.7058,3873,1362,2294,192,0,0,0.010207
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,9,9,116.0431,4244,1415,2586,143,0,0,0.010535
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,10,10,120.8483,4456,1444,2747,80,0,0,0.010284
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,11,12,139.3728,4734,1486,2965,189,0,0,0.012278
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,12,12,155.2856,5113,1532,3280,201,0,0,0.013401
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,13,13,161.2132,5406,1575,3502,89,0,0,0.012755
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,14,14,165.0068,5590,1598,3645,75,0,0,0.013033
+us_g38_3m_server_P1_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,15,15,175.069,5823,1613,3849,55,0,0,0.013417
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,0,0,19.7448,1589,1046,516,171,0,0,0.004385
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,1,1,29.7388,1843,1077,713,191,0,0,0.005239
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,2,2,34.4773,2140,1113,946,250,0,0,0.006673
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,2,49.5381,2356,1134,1125,241,0,0,0.007117
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,3,66.837,2929,1202,1600,160,0,0,0.007621
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,5,4,78.9063,3329,1251,1925,108,0,0,0.008009
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,6,5,93.6047,3654,1287,2192,174,0,0,0.009629
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,7,8,121.2763,3895,1317,2377,181,0,0,0.010291
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,8,9,123.479,4189,1349,2621,0,0,0,0.008875
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,9,9,134.8477,4302,1360,2721,203,0,0,0.011619
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,10,10,141.4169,4599,1404,2946,114,0,0,0.011259
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,11,11,146.1699,4800,1429,3102,124,0,0,0.011866
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,12,11,156.287,5021,1453,3283,114,0,0,0.012307
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,13,13,178.5006,5433,1496,3632,75,0,0,0.012918
+us_g38_3m_server_P4_tb0,sandbox-us-east-proxy,gemini-3.8-live,3.0,off,server,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,14,13,184.3615,5641,1511,3811,73,0,0,0.013442
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,6.9501,1217,1216,1,83,0,0,0.001607
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,12.8136,1373,1370,3,80,0,0,0.001654
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,1,19.3454,1480,1474,6,218,0,0,0.003371
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,1,23.9552,1657,1645,12,92,0,0,0.001962
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,2,27.2072,1790,1775,15,41,0,0,0.001424
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,3,37.9616,1917,1900,17,237,0,0,0.003845
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,4,43.444,2222,2190,32,126,0,0,0.002703
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,46.9105,2408,2369,39,52,0,0,0.001925
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,5,52.7693,2533,2492,41,47,0,0,0.001933
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,6,63.5592,2652,2606,46,81,0,0,0.002413
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,7,67.0447,2781,2732,49,5,0,0,0.001573
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,7,73.6087,2879,2828,51,82,0,0,0.002551
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,8,76.0586,3030,2971,59,15,0,0,0.001842
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,8,80.4045,3113,3052,61,88,0,0,0.002765
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,8,84.6959,3261,3198,63,72,0,0,0.002652
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,9,87.7433,3371,3305,66,24,0,0,0.002139
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,9,92.5155,3477,3409,68,6,0,0,0.001981
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,9,100.3448,3577,3507,70,120,0,0,0.003403
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,18,10,103.8369,3792,3711,81,13,0,0,0.002254
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,19,10,107.7119,3884,3801,83,104,0,0,0.003397
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,20,11,115.3471,4022,3936,86,147,0,0,0.00399
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,21,11,119.5118,4187,4095,92,58,0,0,0.00302
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,22,12,122.9902,4305,4210,95,22,0,0,0.002654
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,23,12,130.994,4421,4324,97,121,0,0,0.003905
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,24,13,148.1153,4654,4545,109,73,0,0,0.003475
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,25,14,151.8791,4782,4669,113,8,0,0,0.002769
+in_g25_2m_meera_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,26,14,160.3555,4878,4763,115,117,0,0,0.00413
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,13.4985,1213,1212,1,229,0,0,0.003357
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,1,24.7757,1637,1617,20,88,0,0,0.001924
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,2,34.5022,1800,1777,23,268,0,0,0.004174
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,3,40.9041,2121,2086,35,16,0,0,0.00134
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,3,47.453,2213,2176,37,260,0,0,0.004319
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,4,50.8077,2423,2376,47,23,0,0,0.001605
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,5,54.0205,2509,2460,49,100,0,0,0.002577
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,64.1646,2613,2560,53,280,0,0,0.004799
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,6,66.167,2909,2838,71,34,0,0,0.00204
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,6,68.9417,3008,2935,73,36,0,0,0.002119
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,7,72.679,3141,3066,75,63,0,0,0.002514
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,7,85.7933,3243,3164,79,272,0,0,0.005083
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,8,89.8172,3672,3569,103,38,0,0,0.00255
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,8,92.4722,3767,3661,106,5,0,0,0.002208
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,9,98.0859,3904,3796,108,98,0,0,0.003398
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,9,112.454,4075,3963,112,299,0,0,0.005906
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,10,118.2853,4550,4412,138,25,0,0,0.00292
+in_g25_2m_meera_W,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,10,124.5735,4653,4512,141,173,0,0,0.004755
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,6.4449,1217,1216,1,40,0,0,0.001091
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,12.0951,1374,1371,3,65,0,0,0.001474
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,1,17.0956,1474,1468,6,121,0,0,0.002204
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,1,21.6812,1613,1603,10,82,0,0,0.001816
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,2,25.4751,1738,1725,13,119,0,0,0.002329
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,3,33.4175,1858,1843,15,101,0,0,0.002178
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,4,40.73,2055,2030,25,97,0,0,0.002254
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,44.9612,2193,2164,29,77,0,0,0.002093
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,5,54.0557,2318,2287,31,131,0,0,0.002808
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,6,60.5637,2547,2509,38,51,0,0,0.001981
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,6,64.087,2687,2646,41,44,0,0,0.001974
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,7,72.5792,2811,2768,43,169,0,0,0.003541
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,7,75.0739,3029,2976,53,8,0,0,0.001743
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,8,79.2525,3107,3052,55,80,0,0,0.002651
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,8,85.4488,3250,3193,57,114,0,0,0.003135
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,9,90.1928,3424,3359,65,61,0,0,0.002606
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,9,93.6115,3582,3511,71,57,0,0,0.002652
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,9,100.8167,3708,3635,73,116,0,0,0.003429
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,18,10,103.446,3874,3794,80,33,0,0,0.002533
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,19,11,106.2617,3979,3897,82,55,0,0,0.002854
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,20,11,112.6379,4117,4032,85,55,0,0,0.002931
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,21,11,118.7921,4259,4169,90,87,0,0,0.003399
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,22,12,123.5973,4455,4356,99,36,0,0,0.002907
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,23,13,132.3521,4580,4479,101,141,0,0,0.004235
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,24,14,141.3973,4828,4715,113,81,0,0,0.003668
+in_g25_2m_server_PAUSE,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,25,14,144.7394,4982,4863,119,24,0,0,0.003076
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,4.6067,1208,1207,1,84,0,0,0.001615
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,1,7.8985,1299,1295,4,159,0,0,0.002567
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,2,12.1459,1403,1395,8,43,0,0,0.001238
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,16.1263,1526,1514,12,19,0,0,0.001021
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,3,24.4486,1654,1640,14,196,0,0,0.003214
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,3,28.1404,1882,1858,24,3,0,0,0.001037
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,4,39.0968,2078,2052,26,220,0,0,0.003744
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,5,45.8693,2221,2188,33,138,0,0,0.002849
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,6,55.1203,2491,2445,46,44,0,0,0.001888
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,7,64.3493,2576,2527,49,174,0,0,0.003498
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,8,82.6594,2945,2877,68,367,0,0,0.006046
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,9,95.4213,3282,3203,79,179,0,0,0.003986
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,11,118.5104,3661,3566,95,123,0,0,0.003544
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,12,126.6968,3866,3759,107,30,0,0,0.00256
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,13,140.2931,3983,3874,109,33,0,0,0.00266
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,15,14,148.2126,4128,4017,111,97,0,0,0.003505
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,16,16,165.9469,4516,4396,120,135,0,0,0.004178
+in_g25_3m_meera_P1a,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,17,17,169.5612,4670,4542,128,53,0,0,0.003291
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,6.5648,1217,1216,1,44,0,0,0.001139
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,11.7464,1374,1371,3,53,0,0,0.001331
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,1,26.2092,1473,1467,6,299,0,0,0.004339
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,2,45.5548,1925,1894,31,164,0,0,0.003008
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,3,50.9789,2102,2064,38,137,0,0,0.00279
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,3,66.5364,2250,2209,41,298,0,0,0.004803
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,4,70.9052,2682,2621,61,0,0,0,0.001494
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,4,73.1499,2758,2696,62,14,0,0,0.001702
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,4,83.9037,2922,2858,64,130,0,0,0.003181
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,5,95.6426,3160,3087,73,27,0,0,0.002086
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,6,99.6655,3284,3209,75,17,0,0,0.002034
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,6,116.0167,3364,3287,77,371,0,0,0.006326
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,7,118.7799,3861,3760,101,0,0,0,0.002183
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,7,135.5676,3980,3878,102,328,0,0,0.006181
+in_g25_3m_meera_P4,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,14,10,182.7595,4473,4339,134,0,0,0,0.002572
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,0,0,4.3442,1208,1207,1,8,0,0,0.000702
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,1,0,11.6749,1271,1268,3,133,0,0,0.002239
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,2,2,36.793,1518,1505,13,122,0,0,0.002256
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,3,3,51.2907,1659,1644,15,274,0,0,0.004155
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,4,4,54.5619,2037,2000,37,115,0,0,0.002491
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,5,5,71.6356,2278,2237,41,270,0,0,0.004482
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,6,6,76.1207,2645,2583,62,69,0,0,0.002305
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,7,6,80.2577,2820,2752,68,13,0,0,0.001736
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,8,7,91.2316,2886,2816,70,236,0,0,0.00445
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,9,9,120.4635,3336,3242,94,192,0,0,0.004207
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,10,10,133.5198,3724,3612,112,177,0,0,0.004266
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,11,11,145.0667,4063,3933,130,99,0,0,0.003544
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,12,14,177.7842,4274,4137,137,0,0,0,0.002479
+in_g25_3m_server_P1,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0 affective proactive,13,14,185.7459,4395,4257,138,96,0,0,0.003694
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,0,0,20.6502,1367,872,468,198,0,0,0.004434
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,1,1,25.3015,1689,904,708,126,0,0,0.004314
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,2,1,38.9157,1895,922,880,189,0,0,0.0056
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,3,2,44.3517,2180,961,1080,86,0,0,0.004993
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,4,3,49.1272,2354,979,1208,117,0,0,0.005762
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,5,3,62.5801,2555,996,1376,189,0,0,0.007143
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,6,5,78.1644,2870,1034,1605,124,0,0,0.007078
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,7,5,92.6591,3080,1055,1776,226,0,0,0.008831
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,8,6,95.6512,3437,1102,2032,0,0,0,0.006922
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,9,6,113.9965,3618,1116,2197,285,0,0,0.010848
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,10,7,118.581,4056,1168,2527,58,0,0,0.009153
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,11,7,131.1098,4257,1187,2693,178,0,0,0.011105
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,12,8,134.1444,4550,1227,2904,0,0,0,0.009632
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,13,8,147.8275,4696,1239,3036,200,0,0,0.012437
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,14,9,150.1526,5004,1280,3255,6,0,0,0.010797
+in_g31_2m_meera_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,15,9,160.9278,5134,1290,3361,156,0,0,0.012922
+in_g31_2m_meera_W,india-centralindia-vm,gemini-3.1-flash-live-preview,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0,0,0,20.9629,1252,871,354,331,0,0,0.005687
+in_g31_2m_meera_W,india-centralindia-vm,gemini-3.1-flash-live-preview,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0,1,1,50.5797,1980,952,921,455,0,0,0.008937
+in_g31_2m_meera_W,india-centralindia-vm,gemini-3.1-flash-live-preview,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0,2,2,78.0923,2780,1048,1533,468,0,0,0.011001
+in_g31_2m_meera_W,india-centralindia-vm,gemini-3.1-flash-live-preview,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0,3,3,104.2523,3628,1155,2170,449,0,0,0.012764
+in_g31_2m_meera_W,india-centralindia-vm,gemini-3.1-flash-live-preview,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0,4,4,106.6408,4264,1231,2630,31,0,0,0.009185
+in_g31_2m_meera_W,india-centralindia-vm,gemini-3.1-flash-live-preview,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0,5,4,119.0638,4330,1237,2676,269,0,0,0.012184
+in_g31_2m_meera_W,india-centralindia-vm,gemini-3.1-flash-live-preview,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=budget0,6,5,132.0647,4817,1298,3038,196,0,0,0.012439
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,0,0,30.193,1388,872,489,427,0,0,0.007245
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,1,1,35.1634,2019,936,964,122,0,0,0.005058
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,2,1,51.9898,2226,954,1137,280,0,0,0.007487
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,3,2,74.5918,2716,1004,1513,360,0,0,0.009612
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,4,3,79.4646,3269,1066,1920,137,0,0,0.008204
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,5,3,94.5663,3484,1085,2098,228,0,0,0.009844
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,6,5,109.848,3859,1126,2378,106,0,0,0.009251
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,7,5,132.3431,4066,1144,2551,418,0,0,0.013527
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,8,6,153.7591,4887,1241,3185,279,0,0,0.013834
+in_g31_2m_server_PAUSE,india-centralindia-vm,gemini-3.1-flash-live-preview,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=budget0,9,7,175.2886,5429,1297,3603,370,0,0,0.016222
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,18.2122,1214,869,318,283,0,0,0.005002
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,39.3411,1649,918,644,393,0,0,0.007337
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,56.4726,2348,1011,1178,236,0,0,0.007124
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,3,82.7632,2940,1085,1644,368,0,0,0.010162
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,4,95.6807,3495,1161,2035,265,0,0,0.010156
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,5,99.7354,3932,1216,2357,6,0,0,0.008055
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,5,111.2978,3998,1221,2404,239,0,0,0.010996
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,7,134.7047,4464,1278,2755,223,0,0,0.0119
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,8,150.2694,4934,1331,3120,207,0,0,0.012842
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,9,160.5935,5344,1386,3419,126,0,0,0.012809
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,10,166.129,5543,1410,3562,75,0,0,0.012644
+in_g31_3m_meera_P1a,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,11,172.1643,5720,1427,3698,51,0,0,0.012776
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,17.4722,1210,869,314,280,0,0,0.004954
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,40.7029,1652,912,653,412,0,0,0.007587
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,44.7476,2269,988,1122,0,0,0,0.004107
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,2,56.6192,2370,1003,1206,204,0,0,0.006818
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,3,76.7778,2906,1070,1631,234,0,0,0.008504
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,4,94.9912,3413,1115,2037,228,0,0,0.009683
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,5,98.9814,3793,1161,2317,0,0,0,0.007822
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,5,110.734,3839,1164,2358,242,0,0,0.010851
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,7,134.652,4305,1219,2711,239,0,0,0.011915
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,8,153.8509,4791,1277,3081,308,0,0,0.013897
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,9,166.8471,5332,1342,3483,151,0,0,0.013267
+in_g31_3m_meera_P1b,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,10,173.1204,5610,1376,3689,70,0,0,0.012939
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,0,0,23.8312,1360,872,461,269,0,0,0.005265
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,1,1,40.2203,1764,915,760,339,0,0,0.007034
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,2,2,45.1818,2262,972,1141,119,0,0,0.00558
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,3,2,61.5055,2470,990,1313,276,0,0,0.007994
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,4,3,64.5704,2896,1043,1624,0,0,0,0.005654
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,5,3,83.6336,3080,1058,1791,297,0,0,0.00973
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,6,4,99.1346,3680,1126,2265,177,0,0,0.009763
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,7,5,101.1184,3943,1156,2456,0,0,0,0.008235
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,8,5,119.6389,4100,1170,2597,310,0,0,0.012389
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,9,7,137.8597,4535,1225,2913,207,0,0,0.012142
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,10,8,140.8057,4856,1260,3149,8,0,0,0.010488
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,11,8,157.0804,5029,1276,3292,260,0,0,0.013953
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,12,9,170.3198,5501,1327,3655,189,0,0,0.014228
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,13,10,172.8272,5776,1356,3863,0,0,0,0.012606
+in_g31_3m_meera_P4,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0,14,10,180.1847,5885,1363,3963,72,0,0,0.013775
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,18.1502,1217,869,321,289,0,0,0.005083
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,1,1,43.9207,1661,912,664,474,0,0,0.008364
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,60.4442,2489,1016,1288,213,0,0,0.007182
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,3,3,80.548,3054,1082,1731,231,0,0,0.008776
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,4,4,107.2791,3561,1119,2147,414,0,0,0.012248
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,5,5,124.0712,4254,1203,2666,282,0,0,0.012284
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,6,7,149.2768,4785,1266,3070,265,0,0,0.01334
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,7,8,167.3491,5302,1322,3471,278,0,0,0.014741
+in_g31_3m_server_P1,india-centralindia-vm,gemini-3.1-flash-live-preview,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=budget0,8,9,177.8064,5770,1374,3823,152,0,0,0.014323
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,0,0,5.4747,1378,1032,319,0,0,0,0.001731
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,1,0,17.3589,1539,1044,466,140,75,0,0.004198
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,2,1,21.955,1766,1071,642,166,58,0,0.004982
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,3,1,32.7953,1976,1092,815,136,80,0,0.005256
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,4,2,42.7151,2178,1116,969,191,81,0,0.0064
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,5,3,47.4709,2472,1155,1196,105,52,0,0.005948
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,6,3,62.5511,2713,1183,1391,245,65,0,0.008293
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,7,4,69.1711,3045,1233,1643,120,55,0,0.007541
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,8,5,73.7528,3247,1257,1799,168,53,0,0.008594
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,9,5,76.103,3406,1279,1918,0,0,0,0.006713
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,10,5,86.7459,3483,1287,1985,193,59,0,0.009502
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,11,6,89.3916,3770,1326,2205,0,0,0,0.007609
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,12,6,102.4199,3948,1344,2361,150,53,0,0.010129
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,13,7,106.952,4194,1380,2547,157,66,0,0.010857
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,14,7,118.3566,4404,1401,2720,150,62,0,0.01129
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,15,8,121.3048,4640,1434,2899,25,57,0,0.010329
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,16,8,133.2029,4820,1454,3045,168,68,0,0.012547
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,17,9,137.9903,5086,1490,3249,140,88,0,0.012941
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,18,9,150.1987,5287,1512,3410,164,92,0,0.013746
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,19,10,152.4783,5533,1546,3596,0,0,0,0.011947
+in_g38_2m_meera_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,20,10,159.8553,5643,1553,3697,75,42,0,0.013345
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,0,0,3.2275,1321,1031,263,17,93,0,0.002185
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,1,0,5.4715,1404,1040,323,16,62,0,0.00222
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,2,0,12.6654,1492,1051,386,126,69,0,0.003769
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,3,1,29.3604,1888,1100,711,186,66,0,0.005487
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,4,2,34.7151,2241,1153,985,66,59,0,0.004877
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,5,2,42.785,2327,1163,1047,157,56,0,0.006149
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,6,3,48.2637,2879,1443,1295,0,0,0,0.004967
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,7,3,62.9783,2929,1450,1336,311,145,0,0.00948
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,8,4,65.3962,3106,1266,1661,21,46,0,0.006391
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,9,5,83.8154,3365,1282,1890,235,86,0,0.009839
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,10,6,87.9033,3738,1336,2179,18,50,0,0.00798
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,11,6,96.5343,3817,1343,2237,165,82,0,0.010067
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,12,7,113.3144,4257,1398,2598,184,72,0,0.011374
+in_g38_2m_meera_W,india-centralindia-vm,gemini-3.8-live,2.0,off,meera,W,api=v1alpha lang=hi-IN thinking=none proactive,13,8,125.2497,4592,1444,2861,180,44,0,0.012024
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,0,0,23.9504,1588,1046,515,262,107,0,0.005955
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,1,1,28.8135,1969,1089,819,231,84,0,0.006424
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,2,1,42.4812,2183,1108,998,203,89,0,0.006661
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,3,2,49.4886,2468,1139,1224,124,57,0,0.006271
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,4,3,54.2533,2678,1161,1390,189,69,0,0.007619
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,5,3,66.7345,2895,1181,1571,175,57,0,0.007955
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,6,4,76.9015,3140,1215,1756,216,83,0,0.009145
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,7,5,81.7714,3470,1257,2014,178,55,0,0.009368
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,8,5,93.8899,3685,1276,2194,166,72,0,0.009855
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,9,6,110.6098,4162,1330,2591,166,58,0,0.011024
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,10,7,115.4515,4429,1365,2799,46,47,0,0.010184
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,11,7,126.4688,4638,1383,2974,139,47,0,0.011839
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,12,8,142.5329,5013,1426,3282,181,156,0,0.013789
+in_g38_2m_server_PAUSE,india-centralindia-vm,gemini-3.8-live,2.5,off,server,PAUSE,api=v1alpha lang=hi-IN thinking=none proactive,13,9,154.6124,5417,1468,3618,119,39,0,0.013558
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,3.3844,1313,1029,257,75,44,0,0.002641
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,12.7074,1424,1041,342,165,39,0,0.003962
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,21.3465,1652,1066,519,166,96,0,0.004781
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,24.997,1921,1100,730,37,97,0,0.003896
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,35.1112,2056,1120,831,160,97,0,0.00569
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,52.3326,2504,1174,1201,176,104,0,0.007064
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,60.3241,2756,1206,1395,152,50,0,0.007138
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,64.0746,3012,1237,1596,32,90,0,0.006505
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,5,73.14,3077,1244,1640,196,94,0,0.008628
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,7,95.2181,3443,1292,1932,209,67,0,0.009574
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,8,108.3063,3849,1344,2258,191,62,0,0.010353
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,9,118.7206,4206,1391,2542,135,75,0,0.010627
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,10,124.4308,4401,1417,2689,98,67,0,0.010607
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,128.1959,4593,1443,2835,0,0,0,0.009587
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,11,136.4642,4685,1459,2909,113,65,0,0.01147
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,12,153.1067,5079,1508,3232,176,74,0,0.013272
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,13,158.8737,5331,1539,3429,91,86,0,0.01292
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,162.4412,5515,1563,3569,25,115,0,0.012697
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,14,169.3802,5581,1570,3614,147,44,0,0.013981
+in_g38_3m_meera_P1a,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,19,15,179.4733,5832,1601,3810,160,72,0,0.014875
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,3.0979,1313,1029,257,25,72,0,0.002167
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,11.2071,1426,1043,342,137,54,0,0.003695
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,19.3468,1616,1062,491,157,58,0,0.004415
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,23.1906,1878,1097,694,0,0,0,0.002905
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,33.0875,1973,1113,771,166,62,0,0.005419
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,49.9323,2432,1168,1149,159,77,0,0.006578
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,58.6711,2659,1195,1325,172,60,0,0.007205
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,70.6215,2968,1237,1564,157,100,0,0.007954
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,7,92.0633,3287,1279,1817,203,66,0,0.009143
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,8,103.5332,3680,1328,2135,137,79,0,0.0094
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,9,113.773,3970,1365,2366,135,63,0,0.010025
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,10,118.2287,4158,1386,2513,70,72,0,0.009742
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,11,121.769,4311,1405,2631,11,53,0,0.009317
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,130.4979,4431,1425,2717,136,53,0,0.01109
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,12,145.7874,4846,1472,3061,138,64,0,0.012231
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,13,153.9131,5048,1495,3218,144,83,0,0.012877
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,14,157.649,5295,1526,3410,72,76,0,0.01258
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,164.4034,5363,1534,3456,140,67,0,0.0135
+in_g38_3m_meera_P1b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,15,169.6479,5603,1563,3645,54,45,0,0.012958
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,0,0,18.1882,1548,1046,473,151,114,0,0.004529
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,1,1,28.6013,1767,1070,644,201,125,0,0.005709
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,2,2,33.3486,2071,1109,881,167,62,0,0.005758
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,3,2,46.5884,2280,1129,1054,196,87,0,0.006752
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,4,3,49.3725,2565,1162,1278,21,62,0,0.005236
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,5,3,65.7832,2781,1183,1457,230,84,0,0.008396
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,6,4,78.9028,3243,1232,1836,130,55,0,0.00824
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,7,5,82.9346,3479,1258,2022,0,0,0,0.00701
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,8,5,95.1924,3568,1267,2100,221,65,0,0.010195
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,9,7,108.1103,3859,1302,2326,80,53,0,0.009153
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,10,8,111.0716,4004,1321,2434,50,52,0,0.009127
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,11,8,113.4314,4099,1332,2504,0,0,0,0.008511
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,12,8,125.1592,4172,1339,2568,220,93,0,0.011767
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,13,9,136.162,4560,1382,2881,134,51,0,0.011517
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,14,10,144.6106,4758,1403,3036,154,64,0,0.012296
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,15,11,149.3464,4998,1429,3226,168,52,0,0.013
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,16,11,161.1375,5207,1450,3398,159,91,0,0.013599
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,17,12,163.8542,5453,1484,3584,20,46,0,0.012312
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,18,12,165.7833,5532,1494,3639,0,0,0,0.012037
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,19,12,180.6376,5669,1508,3760,241,70,0,0.015618
+in_g38_3m_meera_P4,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=none proactive,20,13,192.8032,6116,1556,4125,138,57,0,0.015454
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,11.959,1408,1039,342,148,62,0,0.00386
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,1,26.0838,1623,1064,508,305,88,0,0.006378
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,2,42.5193,2193,1146,960,231,59,0,0.006777
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,3,60.3425,2737,1218,1402,193,68,0,0.007742
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,4,67.1327,3019,1256,1618,112,68,0,0.007446
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,5,71.0975,3236,1286,1785,75,108,0,0.007705
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,6,84.8112,3356,1294,1883,142,94,0,0.008747
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,7,99.103,3659,1332,2126,243,74,0,0.010626
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,8,113.4825,4110,1389,2490,205,81,0,0.011336
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,9,125.7172,4494,1441,2794,173,48,0,0.011755
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,10,130.3974,4742,1472,2985,70,74,0,0.011232
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,11,143.5131,5011,1510,3200,151,68,0,0.012851
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,12,160.4622,5480,1572,3583,160,106,0,0.014325
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,13,166.9998,5721,1607,3765,109,108,0,0.014294
+in_g38_3m_server_P1,india-centralindia-vm,gemini-3.8-live,3.0,off,server,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,14,173.4377,5932,1633,3930,78,49,0,0.014171
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,0,0,4.2425,1136,1135,1,20,0,0,0.000811
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,1,0,14.6551,1240,1237,3,169,0,0,0.002655
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,2,2,36.8577,1520,1500,20,102,0,0,0.002034
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,3,3,48.6339,1655,1632,23,294,0,0,0.004413
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,4,4,62.38,2105,2069,36,118,0,0,0.002559
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,5,5,72.678,2241,2197,44,204,0,0,0.003678
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,6,7,82.8609,2593,2531,62,18,0,0,0.001667
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,7,7,93.8069,2652,2588,64,232,0,0,0.00427
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,8,8,113.3712,3084,2995,89,158,0,0,0.003661
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,9,9,130.1986,3436,3329,107,189,0,0,0.004254
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,10,11,162.6408,3811,3687,124,332,0,0,0.0062
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,11,12,177.9957,4328,4173,155,54,0,0,0.0032
+in_g25_3m_meera_P1_noflags,india-centralindia-vm,gemini-2.5-flash-native-audio-latest,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0,12,13,195.3143,4468,4311,157,315,0,0,0.006406
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,0,0,3.443,1313,1029,257,75,0,0,0.002443
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,1,0,11.0415,1429,1044,344,123,0,0,0.003291
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,2,1,20.7106,1609,1067,479,206,0,0,0.004709
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,2,24.4033,1937,1113,733,63,0,0,0.00379
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,2,35.4516,2073,1135,833,196,0,0,0.005702
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,5,3,53.2042,2583,1205,1245,194,0,0,0.006967
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,6,4,59.121,2861,1248,1454,106,0,0,0.00657
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,7,5,62.7923,3063,1275,1609,39,0,0,0.006251
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,8,5,70.968,3129,1283,1653,179,0,0,0.008069
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,9,7,91.1538,3478,1331,1928,171,0,0,0.008834
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,10,8,103.3252,3832,1375,2214,159,0,0,0.009581
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,11,9,115.1065,4148,1415,2466,173,0,0,0.010535
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,12,10,119.7473,4391,1449,2651,70,0,0,0.00988
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,13,11,123.2414,4550,1473,2768,59,0,0,0.010117
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,14,11,132.7318,4687,1494,2870,154,0,0,0.011579
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,15,12,149.9647,5141,1558,3236,190,0,0,0.013156
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,16,13,156.9729,5415,1600,3442,133,0,0,0.013122
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,17,14,160.7958,5652,1634,3623,75,0,0,0.012995
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,18,14,168.1274,5718,1642,3667,160,0,0,0.014153
+in_g38_3m_meera_P1_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,19,15,173.9511,5985,1676,3876,62,0,0,0.013629
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,0,0,3.2604,1313,1029,257,25,123,0,0.002396
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,1,0,11.0658,1428,1043,344,126,54,0,0.003569
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,2,1,21.1767,1613,1068,482,209,67,0,0.005057
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,3,2,24.9369,1948,1117,738,68,47,0,0.004079
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,4,2,33.4083,2085,1138,840,126,79,0,0.005241
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,5,3,50.0313,2495,1191,1175,171,67,0,0.006772
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,6,4,52.9605,2743,1227,1363,26,48,0,0.005537
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,7,5,56.6354,2842,1237,1438,63,71,0,0.006317
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,8,5,64.9592,2908,1245,1482,177,110,0,0.007999
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,9,7,83.2963,3255,1293,1755,115,176,0,0.008407
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,10,8,94.2509,3539,1327,1983,123,50,0,0.008645
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,11,9,108.7699,3812,1364,2199,238,48,0,0.010692
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,12,10,114.9935,4141,1406,2456,102,48,0,0.009862
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,13,11,118.5019,4340,1437,2604,44,51,0,0.009647
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,14,11,127.0101,4480,1461,2706,128,63,0,0.011033
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,15,12,143.1745,4893,1515,3043,162,103,0,0.012673
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,16,13,146.3515,5135,1551,3225,27,67,0,0.011464
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,17,14,150.177,5234,1560,3301,65,55,0,0.012101
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,18,14,155.7082,5301,1568,3346,110,60,0,0.012804
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,19,16,175.6219,5567,1606,3552,167,99,0,0.01431
+in_g38_3m_meera_P1c,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=none proactive,20,17,181.3576,5845,1644,3768,58,75,0,0.01357
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,0,0,5.7678,1378,1032,319,24,0,0,0.002019
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,1,0,17.5424,1580,1049,490,141,0,0,0.003949
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,2,1,22.3194,1808,1076,667,210,0,0,0.005328
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,1,35.2086,2046,1098,865,196,0,0,0.00577
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,2,45.4817,2324,1135,1078,201,0,0,0.006497
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,5,3,50.0393,2624,1170,1315,233,0,0,0.007619
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,6,3,62.8689,2863,1193,1513,195,0,0,0.007774
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,7,4,67.5308,3127,1229,1713,74,0,0,0.006949
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,8,5,72.0803,3273,1247,1823,164,0,0,0.008372
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,9,5,84.6119,3511,1270,2020,188,0,0,0.009269
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,10,6,87.3563,3793,1309,2235,57,0,0,0.008371
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,11,6,89.2613,3878,1320,2295,38,0,0,0.008331
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,12,6,100.5879,4061,1340,2444,151,0,0,0.010149
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,13,7,105.1178,4305,1372,2632,156,0,0,0.010797
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,14,7,107.3642,4461,1390,2752,16,0,0,0.009491
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,15,7,119.642,4571,1404,2834,230,0,0,0.012315
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,16,8,122.7776,4908,1452,3093,81,0,0,0.01134
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,17,8,135.0537,5075,1469,3227,183,0,0,0.012979
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,18,9,137.3965,5345,1504,3436,30,0,0,0.011796
+in_g38_2m_meera_PAUSE_tb0,india-centralindia-vm,gemini-3.8-live,2.5,off,meera,PAUSE,api=v1alpha lang=hi-IN thinking=budget0 proactive,19,9,146.7378,5492,1517,3556,135,0,0,0.013426
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,0,0,3.2125,1313,1029,257,75,0,0,0.002443
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,1,0,11.1849,1427,1044,342,121,0,0,0.003261
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,2,1,19.4624,1605,1068,474,162,0,0,0.004167
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,2,22.916,1879,1108,682,61,0,0,0.003609
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,2,34.4475,2014,1129,782,210,0,0,0.005713
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,5,3,50.958,2538,1198,1209,164,0,0,0.006494
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,6,4,57.02,2783,1238,1390,100,0,0,0.006299
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,7,5,68.2797,2998,1264,1557,166,0,0,0.007611
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,8,7,89.4404,3329,1310,1818,203,0,0,0.008873
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,9,8,102.9587,3726,1361,2136,193,0,0,0.009745
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,10,9,113.4743,4091,1413,2423,139,0,0,0.009997
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,11,10,118.3012,4288,1438,2573,78,0,0,0.009734
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,12,11,121.787,4455,1462,2698,64,0,0,0.009959
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,13,11,132.6596,4592,1483,2800,189,0,0,0.01178
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,14,12,149.3465,5087,1546,3204,166,0,0,0.012764
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,15,13,155.3045,5337,1584,3392,101,0,0,0.012576
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,16,14,159.0637,5534,1611,3542,68,0,0,0.01265
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,17,14,166.7408,5602,1618,3589,167,0,0,0.013985
+in_g38_3m_meera_P1_tb0b,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P1,api=v1alpha lang=hi-IN thinking=budget0 proactive,18,15,173.4244,5877,1653,3805,85,0,0,0.013675
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,0,0,5.904,1378,1032,319,25,0,0,0.002031
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,1,0,17.2638,1581,1049,491,128,0,0,0.003796
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,2,1,26.0193,1776,1076,637,163,0,0,0.004674
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,3,2,30.88,2036,1111,836,152,0,0,0.005165
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,4,2,40.1013,2248,1135,1008,98,0,0,0.005051
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,5,3,42.9289,2421,1163,1133,40,0,0,0.004751
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,6,3,44.8354,2506,1174,1193,21,0,0,0.004712
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,7,3,54.5748,2679,1193,1333,116,0,0,0.006286
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,8,4,57.1406,2880,1225,1480,24,0,0,0.005647
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,9,4,66.8839,3055,1246,1618,109,0,0,0.007097
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,10,5,69.0961,3230,1275,1742,28,0,0,0.006518
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,11,5,71.1106,3319,1284,1808,10,0,0,0.006507
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,12,5,80.5917,3434,1298,1895,156,0,0,0.00853
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,13,7,96.817,3649,1328,2056,167,0,0,0.009168
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,14,8,99.8244,3900,1359,2252,67,0,0,0.008579
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,15,8,109.9242,4078,1379,2396,118,0,0,0.009638
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,16,9,112.6978,4275,1406,2544,69,0,0,0.009515
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,17,9,120.0833,4380,1418,2623,122,0,0,0.010396
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,18,10,126.8894,4569,1444,2764,117,0,0,0.010779
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,19,11,131.5641,4773,1472,2918,143,0,0,0.011574
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,20,11,133.8274,4901,1489,3013,18,0,0,0.010372
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,21,11,140.4686,5014,1503,3098,90,0,0,0.011501
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,22,12,143.0445,5171,1524,3216,50,0,0,0.011391
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,23,12,144.938,5254,1534,3275,13,0,0,0.011132
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,24,12,153.7301,5423,1554,3410,87,0,0,0.012439
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,25,13,156.4721,5584,1578,3527,25,0,0,0.012065
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,26,13,159.7029,5710,1594,3623,0,0,0,0.012065
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,27,13,166.9666,5758,1597,3666,129,0,0,0.013744
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,28,14,169.2193,5963,1629,3817,25,0,0,0.012973
+in_g38_3m_meera_P4_tb0,india-centralindia-vm,gemini-3.8-live,3.0,off,meera,P4,api=v1alpha lang=hi-IN thinking=budget0 proactive,29,14,176.4592,6115,1644,3940,72,0,0,0.013917

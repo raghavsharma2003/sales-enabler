@@ -1,0 +1,24 @@
+item,unit,usd,inr_at_95,source,date_read,method,note
+Azure real-time STT (S1 Speech To Text),per audio hour,1.00,95.0,https://prices.azure.com/api/retail/prices (centralindia; Foundry Tools / Azure Speech / S1 Speech To Text),2026-10-18,read-primary,billed on streamed audio; the cascade streams the whole call
+Azure STT commitment 2K h/month,per audio hour (overage rate),0.80,76.0,Retail Prices API centralindia Commitment Tier Speech to Text Azure 2K,2026-10-18,read-primary,unit price $1600/month for 2K h
+Azure STT commitment 10K h/month,per audio hour,0.65,61.75,Retail Prices API centralindia Commitment Tier Speech to Text Azure 10K,2026-10-18,read-primary,unit $6500/month
+Azure STT commitment 50K h/month,per audio hour,0.50,47.5,Retail Prices API centralindia Commitment Tier Speech to Text Azure 50K,2026-10-18,read-primary,unit $25000/month
+Azure STT commitment 100K h/month,per audio hour,0.40,38.0,Retail Prices API centralindia Commitment Tier Speech to Text Azure 100K,2026-10-18,read-primary,unit $40000/month
+Azure neural TTS (S1 Neural Text To Speech),per 1M characters,15.00,1425,Retail Prices API centralindia,2026-10-18,read-primary,hi-IN Swara/Kavya
+Azure HD TTS (Neural HD Text to Speech),per 1M characters,22.00,2090,Retail Prices API centralindia,2026-10-18,read-primary,DragonHD voices; MAI-Voice meter not found in the API (assumed HD rate)
+Azure neural TTS commitment 400M chars/month,per 1M characters (overage),9.75,926,Retail Prices API centralindia,2026-10-18,read-primary,unit $3900/month
+Azure neural TTS commitment 2000M chars/month,per 1M characters,7.50,712,Retail Prices API centralindia,2026-10-18,read-primary,unit $15000/month
+gpt-4.1-mini regional (South India Standard) input,per 1M tokens,0.44,41.8,Retail Prices API southindia gpt 4.1 mini Inp regnl,2026-10-18,read-primary,Legacy; retires 2027-04-14 (Azure models API southindia)
+gpt-4.1-mini regional cached input,per 1M tokens,0.11,10.45,Retail Prices API southindia,2026-10-18,read-primary,
+gpt-4.1-mini regional output,per 1M tokens,1.76,167.2,Retail Prices API southindia,2026-10-18,read-primary,
+gemini-3.5-flash-lite input / cached / output (Gemini API standard),per 1M tokens,0.30 / 0.03 / 2.50,28.5 / 2.85 / 237.5,https://ai.google.dev/gemini-api/docs/pricing via lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,no implicit cache hits observed on the free tier (cached_tokens 0 in 30/30 bench calls)
+gemini-3.1-flash-lite input / cached / output,per 1M tokens,0.25 / 0.025 / 1.50,23.75 / 2.38 / 142.5,g1 prices.json,2026-10-18,read-primary,
+gemini-3.8-flash-tts text in / audio out (to 2026-12-31),per 1M tokens,0.50 / 9.00,47.5 / 855,g1 prices.json,2026-10-18,read-primary,doubles to 1.00 / 18.00 from 2027-01-01 (announced on the pricing page); 25 audio tokens per second (measured 24.8)
+gemini-3.8-flash-lite-tts text in / audio out (to 2026-12-31),per 1M tokens,0.50 / 6.00,47.5 / 570,g1 prices.json,2026-10-18,read-primary,doubles to 1.00 / 12.00 from 2027-01-01
+gemini-3.5-transcribe-live audio in / text out,per 1M tokens,3.50 / 21.00,332.5 / 1995,g1 prices.json,2026-10-18,read-primary,25 audio tokens per second; Google publishes $0.005/min audio + $0.004/min text
+openai/gpt-oss-120b on Groq via OpenRouter in / out,per 1M tokens,0.15 / 0.60,14.25 / 57,https://openrouter.ai/api/v1/models/openai/gpt-oss-120b/endpoints,2026-10-18,read-primary,OpenRouter also returns per-request usage.cost; credit purchases carry OpenRouter's platform fee (not modelled)
+openai/gpt-oss-120b on Cerebras via OpenRouter in / out,per 1M tokens,0.35 / 0.75,33.25 / 71.25,OpenRouter endpoints,2026-10-18,read-primary,
+meta-llama/llama-3.3-70b-instruct on Groq via OpenRouter in / out,per 1M tokens,0.59 / 0.79,56 / 75,OpenRouter endpoints,2026-10-18,read-primary,upstream 429s in 5/24 bench calls
+google/gemini-3.1-flash-lite on Google AI Studio via OpenRouter in / out,per 1M tokens,0.25 / 1.50,23.75 / 142.5,OpenRouter endpoints,2026-10-18,read-primary,paid path; flex 0.125/0.75
+Standard_D4s_v5 Linux VM centralindia,per hour,0.202,19.2,Retail Prices API,2026-10-18,read-primary,research host only (not in per-minute AI cost)
+FX,INR per USD,,95,task instruction,2026-10-18,assumption,

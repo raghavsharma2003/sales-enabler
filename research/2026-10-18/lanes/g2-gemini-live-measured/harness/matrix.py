@@ -16,7 +16,7 @@ def main():
         tag = c['tag']
         if os.path.exists(os.path.join(out, tag, 'turns.jsonl')):
             continue
-        cmd = [py, os.path.join(HERE, 'live_call.py'), '--model', c['model'], *MODEL_CFG[c['model']], '--minutes', str(c['minutes']),
+        cmd = [py, os.path.join(HERE, 'live_call.py'), '--model', c['model'], *c.get('cfg', MODEL_CFG[c['model']]), '--minutes', str(c['minutes']),
                '--script', c.get('script', 'P1'), '--compression', c.get('compression', 'off'), '--vad', c.get('vad', 'meera'),
                '--seed', str(c.get('seed', 1)), '--out', out, '--tag', tag] + (['--save-audio'] if c.get('save_audio', True) else []) + c.get('extra', [])
         backoff = 30

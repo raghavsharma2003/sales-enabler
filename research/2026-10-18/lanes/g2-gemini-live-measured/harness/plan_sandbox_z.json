@@ -1,0 +1,69 @@
+{
+ "z1": [
+  {
+   "tag": "us_g38_3m_server_P1_tb0",
+   "model": "gemini-3.8-live",
+   "minutes": 3,
+   "script": "P1",
+   "vad": "server",
+   "seed": 31,
+   "cfg": [
+    "--api",
+    "v1alpha",
+    "--lang",
+    "hi-IN",
+    "--proactive",
+    "--thinking",
+    "budget0"
+   ]
+  }
+ ],
+ "z2": [
+  {
+   "tag": "us_g38_2m_server_PAUSE_tb0",
+   "model": "gemini-3.8-live",
+   "minutes": 2.5,
+   "script": "PAUSE",
+   "vad": "server",
+   "seed": 32,
+   "cfg": [
+    "--api",
+    "v1alpha",
+    "--lang",
+    "hi-IN",
+    "--proactive",
+    "--thinking",
+    "budget0"
+   ]
+  }
+ ],
+ "z3": [
+  {
+   "tag": "us_g38_3m_server_P4_tb0",
+   "model": "gemini-3.8-live",
+   "minutes": 3,
+   "script": "P4",
+   "vad": "server",
+   "seed": 33,
+   "cfg": [
+    "--api",
+    "v1alpha",
+    "--lang",
+    "hi-IN",
+    "--proactive",
+    "--thinking",
+    "budget0"
+   ]
+  }
+ ],
+ "z4": [
+  {
+   "tag": "us_g38_3m_server_P1",
+   "model": "gemini-3.8-live",
+   "minutes": 3,
+   "script": "P1",
+   "vad": "server",
+   "seed": 31
+  }
+ ]
+}
