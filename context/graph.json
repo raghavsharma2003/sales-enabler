@@ -10582,6 +10582,57 @@
    "date": "2026-10-17",
    "title": "Visual research report for owner discussion (https://claude.ai/artifact/CxxVkxBv1jmPUgH8TiXPp1): money per minute, regulation map, market, measured demos, our India latency, cost curve, segments, candidate wedge + kill criteria, idea triage, gaps, red-team, next four weeks, predictions scored.",
    "path": "research/2026-10-17/report/vp-research.html"
+  },
+  {
+   "id": "directive.2026-10-18.voice-core",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-18",
+   "title": "Owner: emotional, relational, exactly-human-sounding voice agents are THE core product; self-evolving/learning agents and deeper personalisation can be a higher pricing tier. Target calling price ~Rs 2/min without losing human-likeness."
+  },
+  {
+   "id": "directive.2026-10-18.self-serve",
+   "type": "requirement",
+   "status": "proposed",
+   "source": "user",
+   "date": "2026-10-18",
+   "title": "Owner direction: build a self-serve platform like Vapi (not the command centre for now), with learning agents and personalisation from the hypotheses; strategy to be set after the Gemini / provider analysis."
+  },
+  {
+   "id": "directive.2026-10-18.provider-open",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-18",
+   "title": "Owner relaxes Azure-only for the voice stack evaluation: explore Gemini (Live / TTS, API and Vertex), OpenRouter-routed models and other services, deeply; choose by measured cost, human-likeness and latency.",
+   "reverse_if": "owner reinstates Azure-only",
+   "supersedes": "directive.2026-10-15.azure-only (for voice-stack evaluation)"
+  },
+  {
+   "id": "decision.2026-10-18.no-free-key-rotation",
+   "type": "decision",
+   "status": "proposed",
+   "source": "analysis",
+   "date": "2026-10-18",
+   "title": "Do not build a rotation system across many free-tier Google keys: it circumvents per-account quotas (Google API terms), free-tier data may be used by Google to improve products (customer call audio/PII -> DPDP risk), and a platform on it can be cut off without notice; price on paid tiers (Gemini API paid or Vertex AI) because that is the true unit cost.",
+   "reverse_if": "Google grants an explicit programme (credits/startup tier) covering the use"
+  },
+  {
+   "id": "open.2026-10-18.s2s-vs-gate-law",
+   "type": "open-question",
+   "status": "open",
+   "source": "analysis",
+   "date": "2026-10-18",
+   "title": "Tension: owner wants expressive speech-to-speech (Gemini Live native audio); inherited law 25 (measured in 4 repos) says gate every word before it is heard and realtime S2S is not the speaker. Must be measured (gate lag, violation rate) or resolved by expressive-TTS cascades / hybrids."
+  },
+  {
+   "id": "open.2026-10-18.maya-1p3-claim",
+   "type": "open-question",
+   "status": "open",
+   "source": "user",
+   "date": "2026-10-18",
+   "title": "Owner recalls Maya in-app Gemini Live calling at ~Rs 1.3/min; derivation unknown (free-tier pool? list price? call length?). Verify from raw usage metadata and price pages; Gemini prices reportedly about to rise."
   }
  ],
  "edges": [
