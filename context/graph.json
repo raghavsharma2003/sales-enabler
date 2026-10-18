@@ -10633,6 +10633,15 @@
    "source": "user",
    "date": "2026-10-18",
    "title": "Owner recalls Maya in-app Gemini Live calling at ~Rs 1.3/min; derivation unknown (free-tier pool? list price? call length?). Verify from raw usage metadata and price pages; Gemini prices reportedly about to rise."
+  },
+  {
+   "id": "decision.2026-10-18.test-credentials",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user+analysis",
+   "date": "2026-10-18",
+   "title": "Voice-stack tests: OpenRouter key ($6 budget), ONE owner-account Gemini free-tier key used within its own limits on synthetic test audio only (no rotation across keys), Azure total research spend <= $100 on founder-grant-covered direct services. Scope: measure pricing and latency, build a pricing estimate; product build later.",
+   "reverse_if": "owner provides paid Gemini/Vertex access or changes budget"
   }
  ],
  "edges": [
@@ -19057,6 +19066,11 @@
    "from": "artifact.2026-10-17.vp-research",
    "to": "research.2026-10-17.round2",
    "relation": "presents"
+  },
+  {
+   "from": "decision.2026-10-18.test-credentials",
+   "to": "decision.2026-10-18.no-free-key-rotation",
+   "relation": "implements"
   }
  ]
 }
