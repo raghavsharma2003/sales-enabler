@@ -1,0 +1,21 @@
+set,turns,model,tier,vantage,calls,n,p50_ms,p50_ci95_call_cluster,p90_ms,p90_ci95_call_cluster,share_le_1200ms,share_le_1500ms,cutin_turns,no_reply_turns
+paired latency calls (2 min),all reply turns,3.1-flash-live,free,centralindia-vm,6,34,1974,1624-2164,2726,2351-3696,0/34,5/34,5/39,0/39
+paired latency calls (2 min),clean (say+short),3.1-flash-live,free,centralindia-vm,6,28,1974,1692-2164,2858,2320-4589,0/28,4/28,5/39,0/39
+paired latency calls (2 min),all reply turns,3.1-flash-live,free,sandbox-us-east-proxy,6,37,1928,1630-2233,4533,2828-7116,3/37,8/37,3/40,0/40
+paired latency calls (2 min),clean (say+short),3.1-flash-live,free,sandbox-us-east-proxy,6,31,1928,1645-2248,5099,3407-7843,3/31,8/31,3/40,0/40
+paired latency calls (2 min),all reply turns,3.1-flash-live,paid,centralindia-vm,6,33,1950,1705-2125,5299,2839-5755,1/33,6/33,4/37,0/37
+paired latency calls (2 min),clean (say+short),3.1-flash-live,paid,centralindia-vm,6,27,1903,1664-2079,5570,2731-5819,1/27,6/27,4/37,0/37
+paired latency calls (2 min),all reply turns,3.1-flash-live,paid,sandbox-us-east-proxy,6,35,1917,1452-2058,2727,2130-6273,2/35,8/35,5/42,2/42
+paired latency calls (2 min),clean (say+short),3.1-flash-live,paid,sandbox-us-east-proxy,6,29,1862,1475-2025,3143,2112-7870,2/29,7/29,5/42,2/42
+paired latency calls (2 min),all reply turns,3.8-live,free,centralindia-vm,6,31,1089,958-1291,1584,1400-1856,19/31,25/31,23/54,0/54
+paired latency calls (2 min),clean (say+short),3.8-live,free,centralindia-vm,6,25,1089,958-1262,1618,1290-2325,16/25,20/25,23/54,0/54
+paired latency calls (2 min),all reply turns,3.8-live,free,sandbox-us-east-proxy,6,43,1660,1385-1684,1967,1726-2135,9/43,17/43,9/52,0/52
+paired latency calls (2 min),clean (say+short),3.8-live,free,sandbox-us-east-proxy,6,37,1582,1385-1664,1966,1727-2263,9/37,16/37,9/52,0/52
+paired latency calls (2 min),all reply turns,3.8-live,paid,centralindia-vm,6,30,1006,950-1253,1524,1496-1560,18/30,25/30,22/53,1/53
+paired latency calls (2 min),clean (say+short),3.8-live,paid,centralindia-vm,6,26,962,872-1233,1492,1244-1525,17/26,23/26,22/53,1/53
+paired latency calls (2 min),all reply turns,3.8-live,paid,sandbox-us-east-proxy,6,43,1382,1164-1572,1815,1760-1848,16/43,26/43,11/54,0/54
+paired latency calls (2 min),clean (say+short),3.8-live,paid,sandbox-us-east-proxy,6,36,1380,1159-1549,1796,1653-1863,14/36,24/36,11/54,0/54
+"cost calls (sandbox, paid, P1)",all reply turns,3.1-flash-live,paid,sandbox-us-east-proxy,13,262,1891,1843-1921,2497,2316-2996,45/262,71/262,7/273,4/273
+"cost calls (sandbox, paid, P1)",clean (say+short),3.1-flash-live,paid,sandbox-us-east-proxy,13,204,1871,1838-1912,2310,2202-6274,24/204,45/204,7/273,4/273
+"cost calls (sandbox, paid, P1)",all reply turns,3.8-live,paid,sandbox-us-east-proxy,13,303,1326,1232-1391,1850,1733-1920,113/303,195/303,54/357,0/357
+"cost calls (sandbox, paid, P1)",clean (say+short),3.8-live,paid,sandbox-us-east-proxy,13,224,1294,1205-1364,1673,1585-1740,88/224,163/224,54/357,0/357

@@ -1,0 +1,9 @@
+vantage,model,mode,n,lines,ttfb_ms_p50,ttfb_ms_p90,total_ms_p50,rtf_p50,rtf_p90,audio_s_mean,chars_per_audio_s,audio_tok_per_s,usd_per_spoken_min_now,inr_per_spoken_min_now,usd_per_spoken_min_2027,inr_per_spoken_min_2027,errors
+centralindia,gemini-3.8-flash-lite-tts,nonstream,20,20,3422,3940,3423,0.381,0.541,8.46,8.13,25.0,0.0091,0.864,0.01819,1.729,0
+centralindia,gemini-3.8-flash-lite-tts,stream,40,20,857,997,2090,0.241,0.277,8.89,7.73,25.0,0.00909,0.864,0.01819,1.728,0
+centralindia,gemini-3.8-flash-tts,nonstream,19,19,4257,4895,4258,0.508,0.604,8.74,7.76,25.01,0.0136,1.292,0.0272,2.584,1
+centralindia,gemini-3.8-flash-tts,stream,40,20,1094,1280,3133,0.362,0.419,8.69,7.91,25.01,0.0136,1.292,0.0272,2.584,0
+us-smoke,gemini-3.8-flash-lite-tts,nonstream,1,1,3080,3080,3083,0.213,0.213,14.49,5.59,24.78,0.00901,0.856,0.01802,1.712,0
+us-smoke,gemini-3.8-flash-lite-tts,stream,1,1,606,606,2314,0.185,0.185,12.48,6.49,25.0,0.0091,0.865,0.01821,1.73,0
+us-smoke,gemini-3.8-flash-tts,nonstream,1,1,4592,4592,4595,0.355,0.355,12.93,6.27,24.75,0.01347,1.279,0.02693,2.559,0
+us-smoke,gemini-3.8-flash-tts,stream,1,1,870,870,3668,0.286,0.286,12.84,6.31,25.0,0.0136,1.292,0.0272,2.584,0

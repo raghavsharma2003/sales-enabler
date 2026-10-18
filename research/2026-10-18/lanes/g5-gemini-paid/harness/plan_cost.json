@@ -1,0 +1,326 @@
+{
+ "c31off": [
+  {
+   "tag": "cost_g31_3m_off_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 3,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_10m_off_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 10,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_1m_off_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 1,
+   "expect_usd": 0.06,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_5m_off_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 5,
+   "expect_usd": 0.5,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_3m_off_b",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 13,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_10m_off_b",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 20,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  }
+ ],
+ "c31on6k": [
+  {
+   "tag": "cost_g31_3m_on6k_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 3,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_10m_on6k_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 10,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_1m_on6k_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 1,
+   "expect_usd": 0.06,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_5m_on6k_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 5,
+   "expect_usd": 0.5,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_3m_on6k_b",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 13,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g31_10m_on6k_b",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 20,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  }
+ ],
+ "c38off": [
+  {
+   "tag": "cost_g38_3m_off_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 3,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_10m_off_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 10,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_1m_off_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 1,
+   "expect_usd": 0.06,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_5m_off_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 5,
+   "expect_usd": 0.5,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_3m_off_b",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 13,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_10m_off_b",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 20,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  }
+ ],
+ "c38on6k": [
+  {
+   "tag": "cost_g38_3m_on6k_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 3,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_10m_on6k_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 10,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_1m_on6k_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 1,
+   "expect_usd": 0.06,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_5m_on6k_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 5,
+   "expect_usd": 0.5,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_3m_on6k_b",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 13,
+   "expect_usd": 0.25,
+   "cap_usd": 2.5
+  },
+  {
+   "tag": "cost_g38_10m_on6k_b",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 20,
+   "expect_usd": 1.6,
+   "cap_usd": 2.5
+  }
+ ],
+ "cx31": [
+  {
+   "tag": "cost_g31_10m_on2k5_a",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:2500:1500",
+   "vad": "meera",
+   "seed": 10,
+   "expect_usd": 1.0,
+   "cap_usd": 2.0
+  }
+ ],
+ "cx38": [
+  {
+   "tag": "cost_g38_10m_on2k5_a",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:2500:1500",
+   "vad": "meera",
+   "seed": 10,
+   "expect_usd": 1.0,
+   "cap_usd": 2.0
+  }
+ ]
+}

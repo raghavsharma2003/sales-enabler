@@ -1,0 +1,5 @@
+model,vantage,rounds_paired,n_paid,n_free,p50_paid_ms,p50_free_ms,p50_diff_paid_minus_free_ms,diff_ci95_round_cluster,p90_paid_ms,p90_free_ms,median_of_round_median_diffs_ms,rounds_paid_faster
+3.1-flash-live,centralindia-vm,6,33,34,1950,1974,-24,-172 to 233,5299,2726,18,3/6
+3.1-flash-live,sandbox-us-east-proxy,6,35,37,1917,1928,-11,-240 to 91,2727,4533,-133,4/6
+3.8-live,centralindia-vm,6,30,31,1006,1089,-82,-210 to 166,1524,1584,-18,3/6
+3.8-live,sandbox-us-east-proxy,6,43,43,1382,1660,-278,-337 to -92,1815,1967,-172,6/6

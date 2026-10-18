@@ -1,0 +1,9 @@
+model,tier,vantage,turns,first_tx_minus_first_audio_ms_p50,p90,max,turns_tx_at_or_before_first_audio,turns_tx_after_first_audio_gt_100ms,audio_s_received_at_first_tx_p50,single_response_turns,hold_needed_ms_p50,hold_needed_ms_p90,hold_needed_ms_max,turns_hold_needed_gt_100ms,audio_ahead_of_text_max_s_p50,audio_ahead_of_text_max_s_p90
+3.1-flash-live,free,centralindia-vm,39,0,0,0,39/39,0/39,0.0,30,0,0,0,0/30,0.93,1.33
+3.1-flash-live,free,sandbox-us-east-proxy,40,0,0,0,40/40,0/40,0.0,29,0,0,4110,1/29,0.76,1.2
+3.1-flash-live,paid,centralindia-vm,54,0,0,0,54/54,0/54,0.0,36,0,0,0,0/36,0.74,1.45
+3.1-flash-live,paid,sandbox-us-east-proxy,312,0,0,0,312/312,0/312,0.0,258,0,0,101,1/258,0.61,1.19
+3.8-live,free,centralindia-vm,54,0,0,-0,54/54,0/54,0.04,29,0,0,0,0/29,0.46,0.72
+3.8-live,free,sandbox-us-east-proxy,52,0,0,-0,52/52,0/52,0.04,34,0,0,219,1/34,0.43,0.72
+3.8-live,paid,centralindia-vm,79,0,0,-0,79/79,0/79,0.0,38,0,0,0,0/38,0.53,0.89
+3.8-live,paid,sandbox-us-east-proxy,411,0,0,0,411/411,0/411,0.04,299,0,0,0,0/299,0.41,0.75

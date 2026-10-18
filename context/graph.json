@@ -10658,6 +10658,42 @@
    "source": "verified",
    "date": "2026-10-18",
    "title": "Owner added $20 prepaid credit; paid key verified (generateContent OK; context caching OK = paid tier). Lane g5-gemini-paid launched: paired paid-vs-free Live latency (sandbox + Central India VM), paid-tier cost per minute by call length and compression, gate lag, Gemini TTS latency; hard stop at $18 by own usageMetadata ledger."
+  },
+  {
+   "id": "measure.2026-10-18.gemini-live-cost",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "g5-gemini-paid",
+   "date": "2026-10-18",
+   "title": "Gemini Live paid list price per connected minute (measured usageMetadata x price, INR 95/$): 3.1-flash-live 2.47 (1 min) / 4.19-4.71 (3 min) / 6.38-10.74 (10 min); 3.8-live 3.31 / 5.72 / 9.05-12.70. ~70% is past audio re-billed every turn; tight compression flattens cost (2.85-3.68 at 10 min) but keeps only ~17-27 s of history. 3-16x over a INR 0.2-1.0 AI budget.",
+   "path": "research/2026-10-18/lanes/g5-gemini-paid/findings.md"
+  },
+  {
+   "id": "measure.2026-10-18.gemini-live-latency-india",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "g5-gemini-paid",
+   "date": "2026-10-18",
+   "title": "Gemini Live from Central India VM, caller end-of-speech to first audio: 3.8-live p50 ~1.0-1.1 s but talks over caller on ~42% of turns; 3.1-flash-live p50 ~1.95 s. Paid vs free: no reliable difference from India (3.8 sandbox -278 ms only). Both replied into the elderly 2.4 s pause 26/26 with 300 ms VAD.",
+   "path": "research/2026-10-18/lanes/g5-gemini-paid/findings.md"
+  },
+  {
+   "id": "measure.2026-10-18.gemini-live-gate-lag",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "g5-gemini-paid",
+   "date": "2026-10-18",
+   "title": "Gemini Live output transcript arrives with or before first audio on 1,041/1,041 turns (0 ms lag p50/p90/max); audio arrives 2-3x real time, so a text gate can stay ahead of playback. Refutes the assumption that S2S cannot be gated at the transcript level (violation-rate battery not yet run).",
+   "path": "research/2026-10-18/lanes/g5-gemini-paid/findings.md"
+  },
+  {
+   "id": "measure.2026-10-18.gemini-tts",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "g5-gemini-paid",
+   "date": "2026-10-18",
+   "title": "Gemini TTS paid, India: 3.8-flash-lite-tts stream first byte p50 857 ms, INR 0.86/spoken min (1.73 from 2027-01-01); 3.8-flash-tts 1,094 ms, INR 1.29 (2.58 from 2027-01-01).",
+   "path": "research/2026-10-18/lanes/g5-gemini-paid/findings.md"
   }
  ],
  "edges": [
@@ -19097,6 +19133,36 @@
    "from": "evidence.2026-10-18.gemini-paid-key-active",
    "to": "evidence.2026-10-18.gemini-paid-key-prepay",
    "relation": "supersedes"
+  },
+  {
+   "from": "measure.2026-10-18.gemini-live-cost",
+   "to": "evidence.2026-10-18.gemini-paid-key-active",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.gemini-live-latency-india",
+   "to": "evidence.2026-10-18.gemini-paid-key-active",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.gemini-live-gate-lag",
+   "to": "evidence.2026-10-18.gemini-paid-key-active",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.gemini-tts",
+   "to": "evidence.2026-10-18.gemini-paid-key-active",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.gemini-live-cost",
+   "to": "open.2026-10-18.maya-1p3-claim",
+   "relation": "answers"
+  },
+  {
+   "from": "measure.2026-10-18.gemini-live-gate-lag",
+   "to": "open.2026-10-18.s2s-vs-gate-law",
+   "relation": "informs"
   }
  ]
 }

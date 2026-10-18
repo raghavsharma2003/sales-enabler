@@ -1,0 +1,56 @@
+{
+ "in": [
+  {
+   "tag": "sample_in_g31_worried",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "W",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 7,
+   "expect_usd": 0.3,
+   "cap_usd": 1.0,
+   "save_audio": true
+  },
+  {
+   "tag": "sample_in_g31_elderly",
+   "model": "gemini-3.1-flash-live-preview",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "PAUSE",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 7,
+   "expect_usd": 0.3,
+   "cap_usd": 1.0,
+   "save_audio": true
+  },
+  {
+   "tag": "sample_in_g38_worried",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "W",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 7,
+   "expect_usd": 0.3,
+   "cap_usd": 1.0,
+   "save_audio": true
+  },
+  {
+   "tag": "sample_in_g38_elderly",
+   "model": "gemini-3.8-live",
+   "tier": "paid",
+   "minutes": 3,
+   "script": "PAUSE",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 7,
+   "expect_usd": 0.3,
+   "cap_usd": 1.0,
+   "save_audio": true
+  }
+ ]
+}
