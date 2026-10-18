@@ -10642,6 +10642,14 @@
    "date": "2026-10-18",
    "title": "Voice-stack tests: OpenRouter key ($6 budget), ONE owner-account Gemini free-tier key used within its own limits on synthetic test audio only (no rotation across keys), Azure total research spend <= $100 on founder-grant-covered direct services. Scope: measure pricing and latency, build a pricing estimate; product build later.",
    "reverse_if": "owner provides paid Gemini/Vertex access or changes budget"
+  },
+  {
+   "id": "evidence.2026-10-18.gemini-paid-key-prepay",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-18",
+   "title": "Owner-supplied Gemini paid-tier key (compliance@carbonsettle.com project) authenticates (63 models incl. 3.1-flash-live, 3.8-live) but returns HTTP 402 \"prepayment credits are depleted\": project is on Prepay with $0 balance. Gemini API Prepay (effective 2026-03-23): buy credits at aistudio.google.com/billing, min $5, credits expire after 12 months, non-refundable; optional per-project monthly spend cap on the Spend page. Owner cap for this key: $20. New projects cannot use some older models (gemini-2.5-flash-lite returned \"no longer available to new users\")."
   }
  ],
  "edges": [
@@ -19071,6 +19079,11 @@
    "from": "decision.2026-10-18.test-credentials",
    "to": "decision.2026-10-18.no-free-key-rotation",
    "relation": "implements"
+  },
+  {
+   "from": "evidence.2026-10-18.gemini-paid-key-prepay",
+   "to": "decision.2026-10-18.test-credentials",
+   "relation": "extends"
   }
  ]
 }
