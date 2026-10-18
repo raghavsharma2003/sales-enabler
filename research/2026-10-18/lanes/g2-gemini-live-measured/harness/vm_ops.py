@@ -56,6 +56,7 @@ def create():
     body = {'location': LOC, 'tags': tags, 'properties': {
         'hardwareProfile': {'vmSize': size},
         'storageProfile': {'imageReference': {'publisher': 'Canonical', 'offer': 'ubuntu-24_04-lts', 'sku': 'server', 'version': 'latest'},
+                           'diskControllerType': os.environ.get('G2_DISK_CTRL', 'NVMe'),
                            'osDisk': {'name': 'g2-osdisk', 'createOption': 'FromImage', 'deleteOption': 'Delete', 'diskSizeGB': 30, 'managedDisk': {'storageAccountType': 'StandardSSD_LRS'}}},
         'osProfile': {'computerName': 'g2vmcin', 'adminUsername': 'azureuser', 'linuxConfiguration': {'disablePasswordAuthentication': True, 'ssh': {'publicKeys': [{'path': '/home/azureuser/.ssh/authorized_keys', 'keyData': pub}]}}},
         'networkProfile': {'networkInterfaces': [{'id': f'{NET}/networkInterfaces/g2-nic', 'properties': {'deleteOption': 'Delete'}}]}}}
