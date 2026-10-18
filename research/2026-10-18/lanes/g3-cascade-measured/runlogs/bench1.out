@@ -1,0 +1,19 @@
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing 
+29 or:google/gemini-2.5-flash-lite@google-ai-studio 200 795.2 878.4 1820 1012 17 | Rs 24,500 saal ka premium hai, GST ke saath. 
+29 or:deepseek/deepseek-v4-flash@deepinfra 200 925.0 1181.4 1779 1536 32 | Ji, maaf kijiye. Renewal premium 24,500 rupaye saa 
+29 or:openai/gpt-oss-120b@groq 200 496.7 851.5 2586 1792 180 | Thik hai, premium 24,500 rupaye saal ka hai.Bilkul 
+29 az:hi-IN-SwaraNeural 200 15.9 225.9 2.513 0.0 
+29 az:hi-in-diya:DragonHDOmniIndicNeural 200 280.2 663.1 2.25 0.0 
+29 az:en-IN-Aarti:DragonHDLatestNeural 200 152.3 444.6 1.35 0.0 
+29 az:en-IN-Meera:DragonHDLatestNeural 200 160.4 434.4 1.3 0.0 
+29 az:hi-IN-KavyaNeural 200 10.9 111.6 2.312 0.0 
+0 gg:gemini-3.8-flash-lite-tts:Despina 429 None 363.9 0 None 429 {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing 
+0 gg:gemini-3.8-flash-tts:Despina 200 1316.5 3282.0 8.48 0.0 
+1 gg:gemini-3.8-flash-tts:Despina 429 None 287.4 0 None 429 {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing 

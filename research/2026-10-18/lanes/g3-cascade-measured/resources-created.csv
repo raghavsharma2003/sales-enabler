@@ -10,3 +10,4 @@ Microsoft.Compute/virtualMachines (Standard_D4s_v5 Ubuntu 24.04),g3-vm-cin,centr
 Microsoft.Compute/disks (StandardSSD 30 GB),g3-osdisk,centralindia,2026-10-18T18:47Z,VM OS disk,,
 Blob container,vpresearchraw1017/g3-transfer,southeastasia (existing account),2026-10-18T18:45Z,bundle/results transfer,,
 Microsoft.CognitiveServices/accounts/raiPolicies,g3-sin/g3-async-filter,southindia,2026-10-18T19:05Z,Asynchronous_filter copy of l8-async-filter (round-2 parity),,
+TEARDOWN by coordinator after container restart (2026-10-18/19),all g3 resources above,,,"VM g3-vm-cin deleted (verified ResourceNotFound); disk, NIC, IP, vnet, NSG deleted; deployment g3-gpt-4-1-mini-std deleted; accounts g3-cin and g3-sin deleted and purged; blob container g3-transfer deleted after copying its 48 files to scratchpad research-raw-1018/g3-cascade-measured/blob-recovered. Resource group left with vp-research-ai-sea, vp-research-ai-frc, vpresearchraw1017 only.",,

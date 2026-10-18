@@ -1,0 +1,30 @@
+generativelanguage.googleapis.com 172.217.117.4 tcp_ms 6.6 tls_ms 27.2 [(71.8, 28.3), (5.9, 26.0), (6.5, 27.2), (7.0, 27.6), (6.6, 26.9)]
+openrouter.ai 104.18.2.115 tcp_ms 7.8 tls_ms 28.0 [(33.7, 28.0), (5.7, 28.6), (9.1, 26.2), (6.9, 27.2), (7.8, 28.0)]
+g3-sin-1018.openai.azure.com 20.192.158.81 tcp_ms 26.1 tls_ms 67.0 [(42.5, 76.9), (32.7, 75.5), (23.4, 57.7), (26.1, 67.0), (24.8, 66.2)]
+centralindia.tts.speech.microsoft.com 20.192.44.108 tcp_ms 4.2 tls_ms 21.3 [(6.2, 21.3), (5.1, 23.7), (4.2, 21.6), (3.9, 20.6), (3.8, 21.0)]
+centralindia.stt.speech.microsoft.com 20.192.44.106 tcp_ms 6.2 tls_ms 22.4 [(15.1, 22.5), (4.3, 22.9), (6.2, 22.2), (5.5, 22.4), (8.9, 22.0)]
+0 or:meta-llama/llama-3.3-70b-instruct@groq 429 None 1251.1 None None None |  429 {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct is tem
+0 az:g3-gpt-4-1-mini-std 200 639.3 676.7 1756 1664 46 | [pleasant, clear] Shukriya, aapka renewal 15 Novem 
+0 gm:gemini-3.5-flash-lite 200 678.5 759.7 1829 0 43 | [warm, polite] Ji haan, aapki Suraksha Family Heal 
+0 or:google/gemini-3.1-flash-lite@google-ai-studio 200 822.5 885.9 1829 0 30 | [warm, professional] Haan, bilkul. Aapki Suraksha  
+0 or:openai/gpt-oss-120b@cerebras 200 1423.5 1436.2 1821 1792 55 | [calm] Theek hai, aapke policy ka renewal date 15  
+1 or:google/gemini-3.1-flash-lite@google-ai-studio 200 1142.0 1259.1 1834 0 45 | [warm, polite] Ji shukriya, aapki Suraksha Family  
+1 az:g3-gpt-4-1-mini-std 200 621.5 657.3 1761 1664 45 | [pleasant, clear] Shukriya, aapka renewal 15 Novem 
+1 or:openai/gpt-oss-120b@cerebras 200 643.7 652.6 1826 1792 93 | [calm, friendly] Thik hai, aapka renewal date 15 N 
+1 gm:gemini-3.5-flash-lite 200 866.1 1007.7 1834 0 55 | [warm, friendly] Sahi samay hai, aapki Suraksha Fa 
+0 gg:gemini-3.8-flash-lite-tts:Despina 200 1132.1 2990.1 13.48 0.0 
+0 az:hi-IN-SwaraNeural 200 92.7 386.7 12.425 0.0 
+0 gi:gemini-3.8-flash-lite-tts:Despina 429 None 421.9 0 None 429 {"error":{"message":"Rate limit exceeded for model gemini-3.8-flash-lite-tts (limit: 10 requests per day on Free Tie
+0 az:en-IN-Aarti:DragonHDLatestNeural 200 170.5 2177.0 7.5 0.0 
+0 az:hi-in-diya:DragonHDOmniIndicNeural 200 304.0 2255.7 9.45 0.0 
+C1_az_az41_azneural P1-pass0 P1_t01 lat 1372.3 stt 607.7 ttft 620.3 llmdone 1264.6 tts 143.6 cut 0 | हाँ, हैलो। हाँ, बोलिए कौन बोल  | calm, polite | समझ गया, | 
+C1_az_az41_azneural P1-pass0 P1_t02 lat 1380.0 stt 679.7 ttft 635.3 llmdone 1355.4 tts 64.6 cut 0 | हम। | gentle, clear | धन्यवाद, | 
+C1_az_az41_azneural P1-pass0 P1_t03 lat 1337.6 stt 722.9 ttft 550.5 llmdone 1309.9 tts 63.6 cut 0 | प्रीमियम कितना आएगा इस बार? ला | understanding, clear | जी, | 
+cold synths created during run: 0
+C6_gtl_or_azneural P1-pass0 P1_t01 lat None stt None ttft None llmdone None tts None cut 0 |  |  |  | 
+C6_gtl_or_azneural P1-pass0 P1_t02 lat None stt None ttft None llmdone None tts None cut 0 |  |  |  | 
+C6_gtl_or_azneural P1-pass0 P1_t03 lat None stt None ttft None llmdone None tts None cut 0 |  |  |  | 
+cold synths created during run: 0
+/usr/lib/python3.12/asyncio/base_events.py:712: RuntimeWarning: coroutine 'Connection.close' was never awaited
+C4_az_gm_gtts P1-pass0 P1_t01 lat None stt 613.7 ttft None llmdone None tts None cut 0 | हाँ, हैलो। हाँ, बोलिए कौन बोल  |  |  |  tts:429 {"error":{"message":"Rate limit exceeded for model gemini-3.8-flash-lite-tts (limit: 10 requests per day on Fre
+C4_az_gm_gtts P1-pass0 P1_t02 lat None stt 755.8 ttft None llmdone None tts None cut 0 | हम। |  |  |  tts:429 {"error":{"message":"Rate limit exceeded for model gemini-3.8-flash-lite-tts (limit: 10 requests per day on Fre

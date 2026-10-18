@@ -1,0 +1,21 @@
+casc1-done
+== ../results/casc_c1.log
+C1_az_az41_azneural P4pause-0 P4_t03 lat 1072.5 stt 706.4 ttft 331.4 llmdone 1319.0 tts 16.9 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | ध्यान देने के लिए धन्यव
+C1_az_az41_azneural P4pause-0 P4_t03 lat 1044.1 stt 686.5 ttft 306.1 llmdone 1269.3 tts 11.9 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | धन्यवाद, | 
+cold synths created during run: 0
+== ../results/casc_c2.log
+C2_az_az41_azhd P4pause-0 P4_t03 lat 1194.5 stt 694.9 ttft 305.9 llmdone 1221.6 tts 180.3 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | ध्यान देने के लिए धन्यवा
+C2_az_az41_azhd P4pause-0 P4_t03 lat 1134.5 stt 671.7 ttft 270.8 llmdone 1229.3 tts 187.4 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | धन्यवाद, | 
+cold synths created during run: 0
+== ../results/casc_c3.log
+C3_az_or_azhd P4pause-0 P4_t03 lat 1002.3 stt 637.5 ttft 208.5 llmdone 923.6 tts 147.2 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | बिल्कुल, | 
+C3_az_or_azhd P4pause-0 P4_t03 lat 1136.8 stt 700.5 ttft 217.7 llmdone 990.6 tts 209.9 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | बिल्कुल, | 
+cold synths created during run: 0
+== ../results/casc_c6.log
+C6_gtl_or_azneural P4pause-0 P4_t03 lat 991.4 stt 759.1 ttft 190.6 llmdone 1012.5 tts 33.2 cut 1 | हमारी पॉलिसी कब खत्म हो रही है | None | समझ गया, | 
+C6_gtl_or_azneural P4pause-0 P4_t03 lat 1041.9 stt 756.4 ttft 203.5 llmdone 1017.8 tts 64.4 cut 1 | हमारी पॉलिसी कब खत्म हो रही है | None | समय पूछने पर, | 
+cold synths created during run: 0
+== ../results/casc_c7.log
+C7_az_gm_azneural P4pause-0 P4_t03 lat 1533.2 stt 668.7 ttft 821.2 llmdone 1543.0 tts 16.2 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | जी हाँ, | 
+C7_az_gm_azneural P4pause-0 P4_t03 lat 1564.5 stt 707.4 ttft 731.0 llmdone 1536.8 tts 79.5 cut 1 | हमारी पॉलिसी। कब खत्म हो रही ह | None | Bilkul samajh gayi, | 
+cold synths created during run: 0
