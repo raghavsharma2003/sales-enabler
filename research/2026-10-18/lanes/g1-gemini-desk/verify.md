@@ -1,148 +1,225 @@
-# Adversarial verification: lane g1-gemini-desk (2026-10-18)
+# Adversarial verification: lane g1-gemini-desk
 
-Verifier read the lane files, re-opened every cited Google page on 2026-10-18 (WebFetch plus raw `curl` copies saved in
-`/tmp/claude-0/-home-user/5e2837be-8576-5279-a870-65aba61ebd82/scratchpad/verify-g1/raw/`), re-ran the cost model, and
-cross-checked it against lane g2's measured per-invocation `usageMetadata`
-(`lanes/g2-gemini-live-measured/results/token_growth.csv`, `calls_cost.csv`, `cost_fit_params.csv`). No paid calls were
-made. Nothing was committed.
+Second, independent verifier pass, run 2026-10-19 against the lane's 2026-10-18 outputs. This file replaces the first
+pass, which is preserved in git at da58e01. Where the two passes agree, this one adds new evidence. Where they differ, the
+difference is stated.
+
+## Method
+
+**Pages.** Every cited Google page was downloaded again with `curl` and searched as raw text. Copies are in
+`/tmp/claude-0/-home-user/5e2837be-8576-5279-a870-65aba61ebd82/scratchpad/verify-g1b/raw/`. That folder is ephemeral,
+so the URLs below are the durable sources.
+
+**Page history from Common Crawl.** Three older captures were fetched by byte range from `data.commoncrawl.org`:
+
+| page | crawl | capture | WARC offset / length |
+|---|---|---|---|
+| pricing | CC-MAIN-2026-34 | 2026-08-07 22:45 | 60083182 / 31120 |
+| pricing | CC-MAIN-2026-34 | 2026-08-13 21:29 | 61005035 / 31433 |
+| live-api/best-practices | CC-MAIN-2026-30 | 2026-07-19 19:35 | 58401334 / 23135 |
+
+**Cost model.** `live_cost_model.py` was copied to the scratchpad and re-run there. The lane's own CSV was not
+overwritten. The lean rows were then checked by hand.
+
+**Back-test.** The model was compared with lane g5's paid-key meter, using each call's raw per-turn rows
+(`lanes/g5-gemini-paid/results/token_growth_per_turn.csv` and `sessions.csv`; vantage `sandbox-us-east-proxy`). It was
+also compared with lane g2's free-key rows.
+
+**Meera history.** Read with `git show` and `git log -S` on `/home/user/html-portfolio`. `api/_gkeys.js` was not opened,
+because it holds keys.
+
+**Limits.** No paid calls were made. Nothing was committed.
 
 ## Verdicts
 
 | # | claim | verdict |
 |---|---|---|
-| 1 | Live list prices (3.8 Live, 3.8 Live Extended Thinking, 3.1 Flash Live Preview) | confirmed |
-| 2 | Each turn re-bills the whole context, with past audio billed at the audio input rate | confirmed (one exception on 2.5) |
-| 3 | `slidingWindow:{}` defaults never fire in normal calls | confirmed |
-| 4 | Computed ₹/min grid | weakened (arithmetic is right; the cap rows and the Meera row are optimistic) |
-| 5 | ~₹1.3/min is Meera's computed `callcost-2026-08-23`, not measured, with no per-turn re-billing | confirmed (the attribution is inferred) |
-| 6 | Meera's live and TTS models have an earliest shutdown of 2026-11-17 | confirmed |
-| 7 | No India region for Live on Agent Platform | confirmed |
-| 8 | Gemini API terms: data use, residency, age | confirmed (two paraphrases need fixing) |
+| 1 | Live list prices for 3.8 Live, 3.8 Live Extended Thinking and 3.1 Flash Live Preview; no price change announced | **confirmed** |
+| 2 | Each turn re-bills the whole context, with past audio billed at the audio input rate | **confirmed**; 2.5-native-audio-latest is an exception |
+| 3 | `slidingWindow:{}` defaults are too high to cap cost | **confirmed**; explicit triggers are soft |
+| 4 | Computed ₹ per minute grid | **weakened**: the arithmetic is exact, but the grid runs low for 3.8 and for capped calls |
+| 5 | ~₹1.3/min is Meera's `callcost-2026-08-23`: computed, not measured, with no per-turn re-billing | **weakened**: the facts about the entry hold; the identification is inferred |
+| 6 | Earliest shutdown 2026-11-17 for Meera's live and TTS models | **confirmed**; two wording fixes |
+| 7 | No India region for Live on Agent Platform | **confirmed**, with a stronger source |
+| 8 | Gemini API terms: data use, residency, age | **confirmed**; two paraphrases are wrong |
 
 ## 1. Live list prices: confirmed
 
-The pricing page was re-read with "Last updated 2026-10-16 UTC". It has one shared Standard table for `gemini-3.8-live`,
-`gemini-3.8-live-extended-thinking` and `gemini-3.1-flash-live-preview`, and the paid figures quoted below appear
-verbatim on it.
+The pricing page (last updated 2026-10-16) has one Standard table for `gemini-3.8-live`,
+`gemini-3.8-live-extended-thinking` and `gemini-3.1-flash-live-preview`. It reads verbatim:
 
-| tier | input | output |
+| tier | input | output (including thinking tokens) |
 |---|---|---|
 | free | "Free of charge" | "Free of charge" |
-| paid, per 1M tokens | "$0.75 (text)", "$3.00 or $0.005/min (audio)", "$1.00 or $0.002/min (image/video)" | "$4.50 (text)", "$12.00 or $0.018/min (audio)" |
+| paid, per 1M tokens (USD) | "$0.75 (text)"; "$3.00 or $0.005/min (audio)"; "$1.00 or $0.002/min (image/video)" | "$4.50 (text)"; "$12.00 or $0.018/min (audio)" |
 
-- **No dated price change.** The Live rows carry no "through" or "starting" dates. The page does date changes for
-  3.6/3.7/3.8 Flash (2027-01-01) and for Gemini 4 Argon (2026-12-01).
-- **Agent Platform matches.** It lists the same 3.8 Live figures, Non-global.
+The Agent Platform pricing page lists the same 3.8 Live rates, as Non-global. It adds video (avatar) output at $1.00.
 
-Unit notes:
-- $3/1M at 25 tok/s is $0.0045 a minute. The page rounds it up to $0.005.
-- $12/1M at 25 tok/s is exactly $0.018 a minute.
-- The $4.50 text output rate includes thinking tokens.
-- Only a Standard tier exists for Live: no Batch, Flex or Priority.
+**No price change is announced.**
+- The Live rows carry no "through" or "starting" dates.
+- The Gemini API changelog (last entry October 13, 2026) has no Live price entry.
+
+**Price history (new).**
+- The 2026-08-07 and 2026-08-13 Common Crawl captures (page last updated 2026-08-05 and 2026-08-13) show
+  `gemini-3.1-flash-live-preview` at identical rates, with no dated change.
+- In those captures the 2027-01-01 doubling sits only under `gemini-3.6-flash` and `gemini-3.7-flash`.
+- So Meera's note "they DOUBLE on 2027-01-01 per the page" did not cover the Live row. The lane left this open in
+  `prices.json`; it can now be closed.
+- The terms add that price changes take effect "30 days after they are posted unless otherwise specified".
+
+**Unit checks.**
+- At 25 tokens per second, $3 per 1M is $0.0045 a minute, which Google rounds to $0.005.
+- $12 per 1M is exactly $0.018 a minute.
+- $0.002 a minute for video at $1 per 1M implies about 33 tokens per second. That matches Meera's measured ~30 tokens a
+  frame at about 1 fps. It does not match the Agent Platform's 258 tokens per image.
 
 ## 2. Per-turn context re-billing: confirmed
 
-The best-practices page (last updated 2026-09-15) says, verbatim:
+**The documentation.**
+- The best-practices page (last updated 2026-09-15) says, verbatim:
+  - "The API charges you per turn for all tokens present in the session context window."
+  - "Past tokens are re-processed and accounted for in each new turn, up to your configured context window size."
+  - "The API bills you for the accumulated native audio tokens at the standard audio input rate on every turn."
+- The Agent Platform pricing page prints the same rule twice: "Tokens from past turns are re-processed and billed in
+  every new turn".
 
-- "The API charges you per turn for all tokens present in the session context window."
-- "Past tokens are re-processed and accounted for in each new turn, up to your configured context window size."
-- "The API bills you for the accumulated native audio tokens at the standard audio input rate on every turn."
+**New: the rule predates Meera's estimate.** The 2026-07-19 capture of the best-practices page (page last updated
+2026-06-01) already carries the same three sentences. So the rule was published before Meera's 2026-08-23 estimate. The
+lane's archaeology §5 says this could not be checked; it can now be answered.
 
-The Agent Platform pricing page prints the same rule: "Tokens from past turns are re-processed and billed in every new
-turn, up to the configured context window size limit." It also states the 25 tokens per second audio rate.
+**The paid meter agrees.** Lane g5 recorded 1,093 paid usage events across 55 paid sessions (26 cost calls and 29
+latency calls).
+- `prompt_text` never fell below the system-instruction size: 868 tokens on 3.1 and 1,029 on 3.8. So the system
+  instruction is billed on every turn.
+- `prompt_audio` grows turn over turn.
+- `cached` was 0 on every event.
 
-**The meter agrees.** g2's real usageMetadata for 3.1 and 3.8 shows:
-- `prompt_audio` grows by about 1,157-1,234 tokens per minute;
-- a text intercept of about 869-1,029 tokens (the persona) is present on every invocation.
+**Corrections.**
+- **2.5 native audio is an exception.** On `gemini-2.5-flash-native-audio-latest` (g2, free key, 10 minutes), history
+  is metered as text:
 
-So the system instruction really is billed every turn, even though the billing section never names it.
+  | | text | audio |
+  |---|---|---|
+  | first turn | 1,207 | 1 |
+  | last turn | 14,246 | 574 |
 
-Corrections:
-- **2.5 native audio is an exception.** On `gemini-2.5-flash-native-audio-latest`, history is metered as text, not
-  audio: about 1,338 text tokens per minute of growth against 59 audio. That contradicts the doc's "retains
-  conversational history as raw audio tokens" for 2.5.
-- **No invoice check yet.** usageMetadata is the meter, not an invoice, and no paid invoice has been reconciled.
+  This contradicts "retains conversational history as raw audio tokens" for 2.5. It also means g1's 2.5 sensitivity row
+  overstates 2.5's cost, because it bills that history at the audio rate.
+- **No invoice yet.** `usageMetadata` is the meter, not an invoice, and no Google invoice has been reconciled.
 
 ## 3. Compression defaults: confirmed
 
-The API reference says, verbatim:
-
+The API reference (last updated 2026-10-09) says, verbatim:
 - triggerTokens: "If not set, the default is 80% of the model's context window limit."
 - targetTokens: "The default value is trigger_tokens/2."
-- "System instructions and any `BidiGenerateContentSetup.prefixTurns` will always remain."
+- "System instructions and any BidiGenerateContentSetup.prefixTurns will always remain."
 
-`models.list` gives `inputTokenLimit` 131072 for all three Live models. 80% of that is 104,858.
+`models.list` gives `inputTokenLimit` 131072 for all three Live models. 80% of that is 104,857.6.
 
-g2 measured final contexts of 14.5k-15.6k tokens at 10 minutes, consistent with g1's 13k-23k computed range. That is far
-below the trigger.
+**Measured 10-minute contexts with compression off.**
+- g2: 14.5k-15.6k tokens.
+- g5 (paid): 15.9k-17.1k tokens.
+- Both had a persona of about 1.2k tokens.
 
-Caveat for the recommendation "set triggerTokens explicitly": g2's explicit trigger 6,000 / target 3,000 did not hold.
-Compression fired only after the prompt reached 8,630-10,091 tokens, and it landed at 3,852-4,431. The cap is soft.
+**Meera-size prompts do not change the conclusion.**
+- With a Meera-size prompt of 14k-21k tokens, the model reaches about 25k-28k tokens at 10 minutes.
+- Even a 17k prompt reaches only about 96k after 70 minutes.
+- Meera also rotates to a fresh session at `goAway`.
+- So the default never fires.
+
+**Qualifier.** The quoted "14-22k at 10 minutes" applies to the lean prompt only.
+
+**New caveat: explicit triggers are soft** (g5 paid raw rows).
+
+| trigger / target | prompt reached before first eviction |
+|---|---|
+| 6000 / 3000 | 8.2k-9.9k |
+| 2500 / 1500 | 3.1k-3.5k |
+
+A 5-minute 3.8 call reached 8,659 tokens and never compressed.
 
 ## 4. Computed ₹ per minute: weakened
 
-**The arithmetic is right.**
-- Re-running `live_cost_model.py` gives a byte-identical CSV of 720 rows (576 live, 144 cascade).
-- All quoted values match the CSV:
-  - lean: 2.676 / 4.600 / 6.524 / 11.333
-  - Meera 12k: 7.165 / 9.089 / 11.013 / 15.822
-  - 4k cap: 2.676 / 4.600 / 5.466 / 6.043
-- A hand calculation of the lean 1-minute row also gives $0.02817, or ₹2.676.
-- Prices are paid list. FX ₹95 is an assumption, not sourced.
+**The arithmetic is exact.**
+- The re-run CSV is byte-identical: 720 rows (576 live, 144 cascade).
+- Hand calculation, lean profile:
+  - 1 minute: $0.02817, or ₹2.676;
+  - 10 minutes: $0.1193 a minute, or ₹11.333.
+- Every quoted value matches the CSV:
+  - lean: 2.676 / 4.600 / 6.524 / 11.333;
+  - Meera 12k: 7.17 / 9.09 / 11.01 / 15.82;
+  - 4k cap: 2.68 / 4.60 / 5.47 / 6.04.
+- Prices are paid Standard list. FX ₹95 is an assumption shared across lanes, not sourced.
 
-**Back-test against g2 measurements.** I fed g1's model each g2 call's own measured inputs: call length, persona size,
-invocations per minute, and talk shares.
+**Against g5's paid meter** (₹ per minute; n = 1-2 calls per cell; US-East sandbox):
 
-| setup | model as % of measured cost |
-|---|---|
-| no compression, 3.8 | 87-94% (₹2.66 vs 2.83 at 1 min; ₹10.87 vs 11.53 at 10 min) |
-| no compression, 3.1 | 85-92% (₹6.63 vs 7.45 at 10 min) |
-| compression 6k/3k, 3.8, 10 min | 72% (₹6.42 vs 8.98) |
-| compression 6k/3k, 3.1, 10 min | 84% (₹4.66 vs 5.57) |
+| | 1 min | 3 min | 5 min | 10 min |
+|---|---|---|---|---|
+| g1 lean, no compression | 2.68 | 4.60 | 6.52 | 11.33 |
+| g5 3.1, off | 2.47 | 4.71 | 6.85 | 10.74 |
+| g1 vs 3.1 | +9% | -2% | -5% | +5% |
+| g5 3.8, off | 3.31 | 5.72 | 8.05 | 12.70 |
+| g1 vs 3.8 | -19% | -20% | -19% | -11% |
+| g1 "history ≤ 4k" | 2.68 | 4.60 | 5.47 | 6.04 |
+| g5 3.1, trigger 6000 | 2.55 | 4.19 | 5.34 | 6.38 |
+| g5 3.8, trigger 6000 | 3.34 | 5.72 | 7.94 | 9.05 |
+| g1 cap vs 3.8 | -20% | -20% | -31% | -33% |
 
-The uncompressed shortfall is mostly text-history growth, about 184 tokens per minute, which the model does not include.
+**Back-test with each call's own parameters.** Fed each g5 call's measured turns per minute, talk shares, system
+instruction and first-turn audio, the model returns 70-95% of the measured cost (26 calls).
 
-Corrections:
-- **The history-cap rows are optimistic.** The "≤4k history" figures (5.47 / 6.04, and 9.95 / 10.53 for Meera) are too
-  low, because real compression fires well above triggerTokens. At 10 minutes the measured cap saved 22% (3.8:
-  11.53 to 8.98) and 25% (3.1: 7.45 to 5.57). The model implies 47%.
-- **The "Meera-size 12k" profile is low.**
-  - Meera's own "$0.0105 per rotation" implies 14k text tokens (14,000 × $0.75/1M). At 14k the row becomes ₹8.02 /
-    9.94 / 11.87 / 16.68.
-  - Her live setup frame is about 70 KB (`liveCall.ts` comment). At the 4.03-4.07 bytes per token measured in
-    `cache-plateau`, that is about 16-18k tokens. At 17k the row becomes ₹9.30 / 11.23 / 13.15 / 17.96.
-- **Turn rate.** 6 turns a minute matches 3.8 (g2 measured 4.7-6.1). 3.1 measured only 3.6-3.9, so the 4-turns-a-minute
-  sensitivity row (2.03 to 7.80) is the better 3.1 analogue.
+What the model leaves out:
+- text-history growth of about 184 tokens per minute;
+- 3.8's interleaved thinking, about 64 tokens per invocation (about ₹0.15 a minute);
+- the soft trigger: it assumes compression fires exactly at the trigger.
 
-## 5. Origin of ~₹1.3 per minute: confirmed
+**The 3.1 headline match is a coincidence.** The model assumes 6 turns a minute against 3.7-4.9 measured on 3.1, and
+that offsets the omissions above. g5's "within about 8%" holds for 3.1 only.
 
-Read with `git show origin/claude/ai-companion-app-rkt1lv:context/measurements.md` (head f4f78ade, 2026-10-14).
+**The Meera-size row is low.**
+- Meera's live setup frame is about 70 KB (`liveCall.ts:3044`): the persona plus a live tail of about 21k bytes.
+- At 3.4-4.05 bytes per token, that is 17k-21k tokens. The 3.4 is g5's persona, 2,956 B for 869 tokens; the 4.05 is
+  Meera's `cache-plateau`.
+- At 17k tokens the row becomes ₹9.30 / 11.23 / 13.15 / 17.96.
 
-The `callcost-2026-08-23` entry says:
-- "live voice $0.0142" per typical minute, computed from prices fetched 2026-08-23, with "lane constants read from the
-  shipping code";
+**Use g5's measured table, not this grid, as the cost figure.** The grid stays useful for sensitivity.
+
+## 5. Origin of ~₹1.3 per minute: weakened
+
+**The entry says what the lane says.** Read from `origin/claude/ai-companion-app-rkt1lv:context/measurements.md`, head
+f4f78ade, 2026-10-14. `callcost-2026-08-23` says:
+- "live voice $0.0142" per typical minute;
+- computed from "lane constants read from the shipping code" and prices fetched 2026-08-23;
 - "Today-cost $0 until the free pool's daily budget exhausts";
 - the system instruction is "billed per cascade TURN and per goAway rotation (~$0.0105/rotation)";
-- "real usageMetadata per call" is ranked first among the things still unmeasured.
+- "real usageMetadata per call" heads the list of things still unmeasured.
 
-It also gives "30 min/day month: live $13 (Rs.1,096)", which implies about ₹84-86 to the dollar. $0.0142 is ₹1.22 at
-₹86 and ₹1.35 at ₹95.
+`decisions.md` confirms "Live calls = gemini-3.1-flash-live-preview (free pool mint…)" and `paid-lane-off-by-default`
+(2026-08-25). The reconstruction gives $0.01336, which is -5.9% from $0.0142: consistent, but not proof.
 
-Corrections:
-- **The attribution is inferred, not documented.**
-  - The only "₹1.3" string on that branch is `market-sweep-2026-08`: "vs our ₹1.3/min COGS". It gives no derivation,
-    and "COGS" does not appear in `docs/research/market-sweep-2026-08-25.md`.
-  - Commit 0657e21b (2026-08-25T11:56Z) predates `watchcost-measured` (360cd190, 12:20Z), so the measured ₹1.1-1.6
-    watch figure is not its source.
-  - `cache-plateau`'s "live 10-min call ≈ $0.13" is a second non-compounding list-price candidate.
-  - The conclusion is the same either way.
-- **The "within 6%" reconstruction shows consistency, not identification.** With talk share 0.39 it gives $0.0129-0.0149
-  for any prompt size from 12k to 17k and any rotation interval from 5 to 15 minutes. It also bills 60 s of continuous
-  input audio, which 3.1 does not.
+**Why the identification is only inferred.**
+- **The only "₹1.3" anywhere** on main, the Maya branch and the oct09 branch is `market-sweep-2026-08`: "vs our
+  ₹1.3/min COGS". It gives no derivation.
+- **The arithmetic does not reach ₹1.3 at Meera's own FX.**
+  - Her two conversions imply ₹85.8 to the dollar (Rs 1,096 for $12.78) and ₹85.0 (Rs 2,210 for $26.01).
+  - At those rates $0.0142 is ₹1.21-1.22.
+  - ₹1.3 needs about ₹92.
+- **Other candidates exist.**
+  - `cache-plateau`: "live 10-min call ≈ $0.13", or $0.013 a minute.
+  - `watchcost-measured`: ₹1.1-1.6 a minute, from real `usageMetadata` on the paid key. That was about 25 sessions of 80 s
+    each, with "persona text amortized, not live-probed". It was committed at 12:20Z (360cd190), 24 minutes after the
+    sweep entry at 11:56Z (0657e21b).
+
+**The conclusion holds either way.** Every candidate is either non-compounding list-price arithmetic or a short session
+with the persona amortized. None is a measured full call under per-turn re-billing. The measured paid cost is ₹2.5-3.3 a
+minute at 1 minute and ₹6.4-12.7 at 10 minutes (g5).
+
+**Wording fix.** Replace "is Meera's callcost figure" with "most likely restates callcost's $0.0142; no derivation is
+recorded".
 
 ## 6. Shutdowns: confirmed
 
-The deprecations page lists "Shutdown date (earliest)" November 17, 2026 for each of these:
+The deprecations page (last updated 2026-10-12) lists "November 17, 2026" for each of these:
 
 | model | recommended replacement |
 |---|---|
@@ -152,53 +229,72 @@ The deprecations page lists "Shutdown date (earliest)" November 17, 2026 for eac
 | `gemini-2.5-flash-preview-tts` | same as above |
 | `gemini-2.5-pro-preview-tts` | same as above |
 
-- That date is 30 days after 2026-10-18.
-- Meera's code pins `LIVE_MODEL = "models/gemini-3.1-flash-live-preview"` (`api/live-token.js`) and TTS
-  `gemini-3.1-flash-tts-preview` (`api/speech.js`).
+`gemini-3.8-live`, `gemini-3.8-live-extended-thinking` and both 3.8 TTS models have "No shutdown date announced".
 
-Corrections:
-- **The dates are earliest possible, not fixed.** The page says these are "the earliest possible dates", and the exact
-  dates will be communicated with advance notice. "Shut down soon" overstates that certainty.
-- **3.8 Live is safe.** `gemini-3.8-live` has "No shutdown date announced".
-- **One more retirement.** On the Agent Platform, `gemini-live-2.5-flash-native-audio` retires on 2026-12-13.
+**Fixes.**
+- **The dates are not fixed.** The page calls them "the earliest possible dates", with the exact date communicated "with
+  advance notice". The date is 29 days from today, 2026-10-19.
+- **Only two of the five are Meera's.**
+
+  | model | used by |
+  |---|---|
+  | `gemini-3.1-flash-live-preview` | Meera `api/live-token.js` `LIVE_MODEL`; Maya `lib/voice/maya/profile.ts` |
+  | `gemini-3.1-flash-tts-preview` | Meera `api/speech.js` `MODEL` and `FREE_MODEL`; Maya `lib/voice/maya/profile.ts` |
+  | `gemini-2.5-flash-native-audio-preview-12-2025` | only a latency comment in `live-token.js` |
+  | the 2.5 TTS models | "was here briefly", per a `speech.js` comment |
+
+- **One more retirement.** On the Agent Platform, `gemini-live-2.5-flash-native-audio` retires 2026-12-13.
 
 ## 7. No India region: confirmed
 
-**`gemini-3.8-live`** (Agent Platform model page):
-- model availability, Standard PayGo and Provisioned Throughput: "Multi-region: `us`, `eu`" plus "United States:
-  `us-central1`";
-- ML processing: "Multi-region: `us`, `eu`";
-- GA September 24, 2026; retirement "September 25, 2027 or later".
+**Model pages.**
+- `gemini-3.8-live` (last updated 2026-10-16):
+  - availability, Standard PayGo and Provisioned Throughput: "Multi-region: us, eu" plus `us-central1`;
+  - ML processing: "Multi-region: us, eu";
+  - GA September 24, 2026; retirement "September 25, 2027 or later".
+- `gemini-live-2.5-flash-native-audio`: seven us-* and six europe-* regions.
 
-**`gemini-live-2.5-flash-native-audio`:** seven us-* and six europe-* regions.
+**New, stronger source: the Agent Platform locations page.**
+- `docs.cloud.google.com/gemini-enterprise-agent-platform/resources/locations`, last updated 2026-10-15.
+- Its Mumbai (`asia-south1`) column supports only:
+  - `gemini-3.5-flash-lite`;
+  - `gemini-3.5-flash`;
+  - `gemini-2.5-flash`;
+  - `gemini-embedding-001` and the text and multimodal embeddings.
+- No Live, Transcribe Live or Live Translate model has a Mumbai cell.
+- `asia-south2` (Delhi) is not a column at all.
 
-No asia-south1, asia-south2 or any other asia-* region appears on either page.
+**Effect on V4.** V4's Vertex Mumbai/Delhi arm can exist only for cascade text models, not for Live.
 
 ## 8. Terms: confirmed
 
-The terms page shows "Effective March 23, 2026" and "Last updated 2026-04-28".
+The terms page shows "Effective March 23, 2026" and was last updated 2026-04-28.
 
-- **Paid:** "Google doesn't use your prompts ... or responses to improve our products". Prompts are logged "for a limited
-  period of time" for abuse detection, and "may be stored transiently or cached in any country".
-- **Unpaid:** content is used to "provide, improve, and develop Google products"; "human reviewers may read"; "Do not
-  submit sensitive, confidential, or personal information".
+- **Paid:** Google "doesn't use your prompts … or responses to improve our products". Prompts are logged "for a limited
+  period of time" for abuse detection. Data "may be stored transiently or cached in any country in which Google or its
+  agents maintain facilities".
+- **Unpaid:** content is used to "provide, improve, and develop Google products"; "human reviewers may read, annotate,
+  and process"; "Do not submit sensitive, confidential, or personal information".
 
-Corrections:
-- **The under-18 restriction is broader than the lane's paraphrase.** The terms say: "You must be 18 years of age or
-  older" and "will not use the Services as part of a website, application, or other service ... that is directed
-  towards or is likely to be accessed by individuals under the age of 18". This applies to any API client, not to
-  "professional use directed at minors". It would bar a children's product outright.
-- **"Not for consumer use" restricts the developer, not the product.** It describes who uses AI Studio and the API:
-  "developers building with Google AI models for professional or business purposes". The same section contemplates
-  making "API Clients available to users". It does not ban consumer-facing apps.
-- **What counts as Paid.** The API counts as Paid "only when accessing the API through a Cloud Project associated with
-  an active billing account".
-- **EEA, Switzerland and UK.** Paid-tier data terms apply to all usage from these regions, and only Paid Services may
-  serve users there.
+**Corrections.**
+- **The age rule is broader than the lane's paraphrase.**
+  - The terms say "You must be 18 years of age or older to use the APIs". They also bar any API client "that is directed
+    towards or is likely to be accessed by individuals under the age of 18".
+  - That covers every API client, not "professional use directed at minors".
+  - It is a live V7 risk for the study-abroad configuration, whose callers can be school students under 18.
+- **"Not for consumer use" restricts the developer, not the end product.** The text is: "for developers building with
+  Google AI models for professional or business purposes, not for consumer use". The same section allows making "API
+  Clients available to users".
+
+**Additions.**
+- "Paid" applies "only when accessing the API through a Cloud Project associated with an active billing account".
+- Only Paid Services may serve users in the EEA, Switzerland and the UK.
+- India is on the available-regions list (last updated 2026-04-28).
 
 ## Housekeeping
 
-- **Missing file.** `meera-gemini-archaeology.md` §5 cites "computed in `findings.md`" for the AI budget, but no
-  `findings.md` exists in this lane directory. The matching numbers are in `lanes/g2-gemini-live-measured/results/ai_budget.csv`.
-- **Ephemeral raw copies.** g1's raw page copies live in the session scratchpad, so they are ephemeral. The Google URLs
-  above are the durable sources.
+- **Missing file.** `meera-gemini-archaeology.md` §5 cites `findings.md`, which does not exist in this lane directory.
+- **Ephemeral raw copies.** g1's raw copies are in the scratchpad (`research-raw-1018/g1-gemini-desk/`), so they are
+  ephemeral.
+- **Not verified.** Latency figures inherited in the archaeology were not checked. They are not load-bearing here, and
+  their vantage is unrecorded: 1,550 ms (n=16), 2,536 ms (n=21) and 3,298 ms (n=8).

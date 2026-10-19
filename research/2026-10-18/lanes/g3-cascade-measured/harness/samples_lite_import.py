@@ -13,5 +13,5 @@ for lid, style, _, text in LINES:
   m = meta.get(lid, {})
   manifest({'line_id': lid, 'engine': 'gemini-3.8-flash-lite-tts (Interactions API, stream, rendered from the Central India VM)', 'voice': 'Despina',
             'style_or_ssml': f'speech_metadata.style="{style}"', 'text': text, 'file': os.path.basename(mp3), 'duration_s': dur(wav),
-            'in_tokens': m.get('in_tokens'), 'out_tokens': m.get('out_tokens'), 'rendered_utc': m.get('ts')})
+            'in_tokens': m.get('in_tokens'), 'out_tokens': m.get('out_tokens'), 'rendered_utc': m.get('ts'), 'render_vantage': 'Central India VM'})
   print(lid, 'ok', dur(wav))

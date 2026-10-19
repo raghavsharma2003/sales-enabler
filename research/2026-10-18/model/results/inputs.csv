@@ -1,0 +1,49 @@
+key,value,lo,hi,unit,source,date,method,note
+fx,95.0,90,100,INR per USD,task instruction; g2 verify read Pluang mid-market 94.95 on 2026-10-19,2026-10-19,assumption,MC uniform 90-100
+exch_per_min,5,3,7,caller-agent exchanges per connected minute,lanes/g3-cascade-measured/results/rederived_usage_per_exchange.csv (battery 3.15-4.96); g5 Live 3.7-7.3 billed turns/min,2026-10-18,assumption,"MC triangular(3,5,7)"
+agent_s,24,15,40,seconds of agent speech per connected minute,g3 reference shape; g5/g2 Live calls 20-41 s (lanes/g2.../verify.md #7),2026-10-18,assumption,"MC triangular(15,24,40)"
+caller_s,24,12,32,seconds of caller speech per connected minute,g3 reference shape; g5 Live sessions.csv 13-19 s VAD speech,2026-10-18,assumption,"MC triangular(12,22,32); agent+caller capped at 56 s"
+stt_gated_ratio,1.186,1.1,1.4,audio seconds sent per second of caller speech when VAD-gated,"lanes/g3-cascade-measured/results/rederived_usage_per_exchange.csv (C1+gated, C6+gated)",2026-10-18,measured,n=30 exchanges per gated run; MC uniform
+az_stt_usd_h,1.0,,,"USD per audio hour (S1 real-time STT, centralindia)",lanes/g3-cascade-measured/results/cost_inputs.csv; re-read 2026-10-19 (g3 verify.md),2026-10-19,read-primary,
+az_tts_neural_usd_1m,15.0,,,USD per 1M chars (S1 Neural TTS),lanes/g3-cascade-measured/results/cost_inputs.csv,2026-10-19,read-primary,
+az_tts_hd_usd_1m,22.0,,,USD per 1M chars (Neural HD / DragonHD),lanes/g3-cascade-measured/results/cost_inputs.csv,2026-10-19,read-primary,
+az_cnv_usd_1m,24.0,,,USD per 1M chars (S1 Custom Neural Realtime Characters),model/inputs/azure_custom_voice_centralindia_2026-10-19.json,2026-10-19,read-primary,
+az_cnv_host_usd_h,4.032,,,USD per hour per hosted custom neural voice model,model/inputs/azure_custom_voice_centralindia_2026-10-19.json,2026-10-19,read-primary,"= USD 2,943/month = INR 2.80 lakh/month per voice at FX 95"
+cps_az_neural,10.03,9.3,10.3,"billed chars per agent-second, hi-IN-SwaraNeural (incl. cancelled requests)",lanes/g3-cascade-measured/results/rederived_usage_per_exchange.csv C1,2026-10-18,measured,
+cps_az_hd,17.18,15.3,17.5,"billed chars per agent-second, en-IN-Aarti DragonHD",lanes/g3-cascade-measured/results/rederived_usage_per_exchange.csv C2 (C3 17.51),2026-10-18,measured,
+cps_vendor,14.67,11.0,17.5,"billed chars per agent-second, unmeasured vendor voices",lanes/g4-market-selfhost/prices.csv (800 chars/agent-min x 1.10 waste),2026-10-18,assumption,
+gtl_audio_usd_1m,3.5,,,"USD per 1M audio tokens in, gemini-3.5-transcribe-live (25 tok/s)",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+gtl_text_usd_1m,21.0,,,"USD per 1M text tokens out, gemini-3.5-transcribe-live",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+gtl_text_tok_per_utt,14.6,,,transcript text tokens per caller utterance,"lanes/g3.../results/cost_inputs.csv note (countTokens, not metered)",2026-10-18,measured,"MC: per-minute text tokens uniform(14.6 x exch, 175 = Google's published estimate)"
+gem_lite_tts_out_usd_1m_2026,6.0,,,"USD per 1M audio tokens out, gemini-3.8-flash-lite-tts to 2026-12-31",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+gem_lite_tts_out_usd_1m_2027,12.0,,,"same, from 2027-01-01 (announced)",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+gem_flash_tts_out_usd_1m_2026,9.0,,,"USD per 1M audio tokens out, gemini-3.8-flash-tts to 2026-12-31",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+gem_flash_tts_out_usd_1m_2027,18.0,,,"same, from 2027-01-01 (announced)",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+gem_tts_text_in_usd_1m_2026,0.5,,,"USD per 1M text tokens in, 3.8 TTS models (1.00 from 2027-01-01)",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+gem_tts_lead_s,0.25,,,leading silence billed per TTS request (s),lanes/g5-gemini-paid/results/tts_summary.csv (0.14-0.36 s),2026-10-18,measured,
+flashlite_usd_1m,0.3,,,"USD per 1M input tokens, gemini-3.5-flash-lite (cached 0.03, output 2.50); not in the 2027 doubling",lanes/g1-gemini-desk/prices.json,2026-10-18,read-primary,
+live_text_in_usd_1m,0.75,,,"USD per 1M, gemini-3.8-live / 3.1-flash-live text in",lanes/g1-gemini-desk/prices.json; g2/g5 verify re-read,2026-10-19,read-primary,
+live_audio_in_usd_1m,3.0,,,USD per 1M audio tokens in (re-billed every invocation),lanes/g1-gemini-desk/prices.json,2026-10-19,read-primary,
+live_text_out_usd_1m,4.5,,,"USD per 1M text out (thinking, transcripts)",lanes/g1-gemini-desk/prices.json,2026-10-19,read-primary,
+live_audio_out_usd_1m,12.0,,,USD per 1M audio tokens out,lanes/g1-gemini-desk/prices.json,2026-10-19,read-primary,no announced change for Live
+oss_groq_usd_1m,0.15,,,"USD per 1M in, gpt-oss-120b on Groq via OpenRouter (cache read 0.075, out 0.60)",lanes/g3-cascade-measured/results/cost_inputs.csv,2026-10-19,read-primary,
+openrouter_fee,0.055,,,OpenRouter platform fee on credit purchases,lanes/g4-market-selfhost/prices.csv / vendor-risk.csv,2026-10-18,read-primary,g3 costs did not include it
+openrouter_ledger_factor,1.2,1.0,1.45,OpenRouter account ledger / per-response usage.cost (cancelled streams),lanes/g3-cascade-measured/verify.md #7,2026-10-19,measured,verifier: model ~1.2x below ledger; ledger windows not fully attributable
+gpt41mini_usd_1m,0.44,,,"USD per 1M in, gpt-4.1-mini regional South India (cached 0.11, out 1.76); Legacy, retires 2027-04-14",lanes/g3-cascade-measured/results/cost_inputs.csv,2026-10-19,read-primary,
+gemma4_inworld_usd_1m,0.07,,,"USD per 1M in, Gemma 4 26B-A4B on Inworld (out 0.34, no cache price)",lanes/g4-market-selfhost/prices.csv,2026-10-18,read-primary,
+sarvam_stt_inr_min,0.41,,,"INR per audio minute, Sarvam real-time STT (Growth/Business), excl. GST",lanes/g4-market-selfhost/prices.csv,2026-10-18,read-primary,
+bulbul_v4f_inr_1k,1.7,,,"INR per 1K chars, Sarvam Bulbul V4 Flash (Growth/Business), excl. GST",lanes/g4-market-selfhost/prices.csv,2026-10-18,read-primary,
+inworld_stt_usd_h,0.1,,,"USD per audio hour, Inworld STT-1 (paid plans)",lanes/g4-market-selfhost/prices.csv,2026-10-18,read-primary,
+inworld_tts2f_usd_1m,7.0,,,"USD per 1M chars, Inworld TTS-2 Flash (Growth, USD 1,500/month credits); on-demand 15",lanes/g4-market-selfhost/prices.csv,2026-10-18,read-primary,
+inworld_growth_usd_month,1500,,,"USD per month, Inworld Growth plan (credits)",lanes/g4-market-selfhost/prices.csv,2026-10-18,read-primary,
+realtime_mini_inr_min_3,1.911,1.5,6.93,"INR/min, gpt-realtime-2.1-mini 3-min call with prefix caching (no cache 6.93; output cached 1.50)",lanes/g4-market-selfhost/summary.json,2026-10-18,computed,desk computation from OpenAI price page; not measured
+sh_stt_inr_min_u50,0.0467,,,"INR per connected min, IndicConformer on E2E L4 at 50% utilisation",lanes/g4-market-selfhost/selfhost.csv,2026-10-18,computed,"throughput vendor-claim/assumed; cost scales as 0.5/util; MC util uniform(0.3,0.7)"
+sh_tts_inr_min_u50,0.139,,,"INR per connected min, Veena on E2E H100 on-demand at 50% utilisation",lanes/g4-market-selfhost/selfhost.csv,2026-10-18,computed,
+sh_stt_fleet_inr_month,71540,,,"INR/month, 2x L4 minimum fleet",lanes/g4-market-selfhost/selfhost.csv,2026-10-18,computed,
+sh_tts_fleet_inr_month,553413,,,"INR/month, 2x H100 minimum fleet (E2E on-demand)",lanes/g4-market-selfhost/selfhost.csv,2026-10-18,computed,
+tel_inr_min,0.43,0.38,0.48,"INR per billed minute, Indian CPaaS (Plivo 0.38 / Sarvam-Vobiz 0.40, 30 s pulses)",voice-stack-brief.md section 1; 2026-10-17/lanes/l2-economics/data/vendor-and-telephony-prices.csv,2026-10-17,read-primary,MC uniform; 30-s pulse rounding modelled on call length
+tel_1600_inr_min,,0.48,0.8,INR per minute on a 1600-series number,SYNTHESIS-v2 3.1 [REG-24]: not published by any CPaaS,2026-10-17,assumption,sensitivity only; no price exists in any source
+tel_tata_inr_min,0.22,,,"INR/min, Tata Smartflo concurrency plan at full FUP (lever)",2026-10-17/lanes/l2-economics/data/vendor-and-telephony-prices.csv,2026-10-17,computed,
+infra_inr_min,0.03,0.01,0.06,"INR per connected minute, orchestration VM + egress + recordings",computed from Standard_D4s_v5 USD 0.202/h at ~20 concurrent calls (concurrency per VM not measured),2026-10-19,assumption,"MC triangular(0.01,0.03,0.06)"
+gst,0.18,,,GST rate on the platform's sale,Indian GST on SaaS (standard rate),2026-10-19,read-primary,"input GST (and IGST paid under reverse charge on imported services) is recoverable as ITC, so COGS are modelled ex-GST; CA to confirm"
+price_inr_min,2.0,,,target PRICE per connected minute,owner directive 2026-10-18,2026-10-18,assumption,

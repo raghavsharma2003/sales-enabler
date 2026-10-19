@@ -10621,7 +10621,7 @@
   {
    "id": "open.2026-10-18.s2s-vs-gate-law",
    "type": "open-question",
-   "status": "open",
+   "status": "informed",
    "source": "analysis",
    "date": "2026-10-18",
    "title": "Tension: owner wants expressive speech-to-speech (Gemini Live native audio); inherited law 25 (measured in 4 repos) says gate every word before it is heard and realtime S2S is not the speaker. Must be measured (gate lag, violation rate) or resolved by expressive-TTS cascades / hybrids."
@@ -10629,7 +10629,7 @@
   {
    "id": "open.2026-10-18.maya-1p3-claim",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "source": "user",
    "date": "2026-10-18",
    "title": "Owner recalls Maya in-app Gemini Live calling at ~Rs 1.3/min; derivation unknown (free-tier pool? list price? call length?). Verify from raw usage metadata and price pages; Gemini prices reportedly about to rise."
@@ -10694,6 +10694,212 @@
    "date": "2026-10-18",
    "title": "Gemini TTS paid, India: 3.8-flash-lite-tts stream first byte p50 857 ms, INR 0.86/spoken min (1.73 from 2027-01-01); 3.8-flash-tts 1,094 ms, INR 1.29 (2.58 from 2027-01-01).",
    "path": "research/2026-10-18/lanes/g5-gemini-paid/findings.md"
+  },
+  {
+   "id": "research.2026-10-18.voice-stack",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Voice-stack pricing+latency research (g1-g5 + pricing model, workflow wf_26207e21-b67 resumed after container restart): No stack we measured end to end can be sold at \u20b92 a minute all-in with a 40-60% margin. The budget allows \u20b90.34-0.74 a minute of AI cost (ex-GST, \u20b90.54 at 50%); the cheapest measured stack (C6g) costs \u20b90.94 at the reference workload and \u20b91.07 on the Monte Carlo (p10-p90 0.91-1.22). Recommend base \u20b92.99 ex-GST (43% Monte Carlo margin), plus \u20b93.99, premium \u20b96.49 plus \u20b93.5 lakh a month per dedicated voice. \u20b92 becomes possible only if Inworld (desk \u20b90.53) or self-hosting (desk \u20b90.43-0.51 from about 2.5M minutes a month) passes the listener panel and the India latency test. Gemini Live costs \u20b94.2-5",
+   "path": "research/2026-10-18/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-18.ai-budget-rs2",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "AI budget for a Rs 2/min price: At \u20b92 ex-GST the allowed AI cost is \u20b90.54 a minute at 50% margin (\u20b90.74 at 40%, \u20b90.34 at 60%), with telephony at \u20b90.43 and infrastructure at \u20b90.03. If the \u20b92 includes GST, it is \u20b90.22-0.56. Without infrastructure this matches the lanes' \u20b90.20-0.82 range. On a 1600-series line at \u20b90.60-0.80 (no published price) it falls to \u20b90.17-0.57. Source: model/results/ai_budget_inr2.csv.",
+   "path": "research/2026-10-18/model/results/ai_budget_inr2.csv"
+  },
+  {
+   "id": "measure.2026-10-18.stack-c6g-0",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "C6g: VAD-gated gemini-3.5-transcribe-live + gpt-oss-120b@Groq (OpenRouter) + Azure neural (cheapest measured) | AI Rs/min 3-min 0.94 at the reference workload; Monte Carlo p50 1.07 (p10-p90 0.91-1.22) | all-in 1.44 (with telephony and infra) | India p50 1,038 (CI 990-1,163), p90 1,453; cut-ins 23%; elderly pause 6/6 | fits Rs2: no: 28% margin at \u20b92 at the reference workload, 14% on the Monte Carlo with pers"
+  },
+  {
+   "id": "measure.2026-10-18.stack-c6-1",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "C6: transcribe-live (ungated) + gpt-oss@Groq + Azure neural | AI Rs/min 3-min 1.24 (Monte Carlo 1.21-1.52) | all-in 1.74 | India p50 1,031 (1,010-1,052), p90 1,404; cut-ins 32% | fits Rs2: no (13% margin at \u20b92)"
+  },
+  {
+   "id": "measure.2026-10-18.stack-c1g-2",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "C1g: Azure STT gated + gpt-4.1-mini South India + Azure neural (all-Azure) | AI Rs/min 3-min 1.36 (Monte Carlo 1.15-1.57) | all-in 1.85 | India p50 989 (967-994), p90 1,072; cut-ins 30% | fits Rs2: no (7%); needs \u20b93.09 for 40%"
+  },
+  {
+   "id": "measure.2026-10-18.stack-c1-3",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "C1: Azure STT full stream + gpt-4.1-mini + Azure neural (round-2 baseline) | AI Rs/min 3-min 2.19 | all-in 2.68 | India p50 1,026 (1,017-1,035), p90 1,143; cut-ins 27%; pause 12/12 | fits Rs2: no (negative margin)"
+  },
+  {
+   "id": "measure.2026-10-18.stack-c6g-hd-4",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "C6g-HD: C6g with Azure DragonHD voice | AI Rs/min 3-min 1.47 (Monte Carlo 1.35-1.87) | all-in 1.97 | India p50 about 1,090 (computed: C6 plus 56 ms HD first byte) | fits Rs2: no (2%); needs \u20b93.77 for 40%"
+  },
+  {
+   "id": "measure.2026-10-18.stack-c2-c3-5",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "C2/C3: Azure STT + gpt-4.1-mini or gpt-oss + DragonHD | AI Rs/min 3-min 2.70 | all-in 3.19-3.20 | India p50 1,133 / 1,044; cut-ins 15% / 27% | fits Rs2: no"
+  },
+  {
+   "id": "measure.2026-10-18.stack-c8-6",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "C8: transcribe-live + gemini-3.5-flash-lite + Azure neural | AI Rs/min 3-min 1.53 | all-in 2.03 | India p50 1,688 (fails 1.2 s; flash-lite TTFT 783 ms, free tier) | fits Rs2: no"
+  },
+  {
+   "id": "measure.2026-10-18.stack-g-a-7",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "G-A: all-Gemini (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts) | AI Rs/min 3-min 1.56 (2026) / 1.92 (2027 price) | all-in 2.05 / 2.42 | India p50 2,532 (computed; fails) | fits Rs2: no"
+  },
+  {
+   "id": "measure.2026-10-18.stack-g-e-8",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "G-E: gated transcribe-live + gpt-oss + 3.8-flash-lite-tts | AI Rs/min 3-min 0.98 (2026) / 1.34 (2027) | all-in 1.47 / 1.84 | India p50 1,978 (computed; fails) | fits Rs2: no"
+  },
+  {
+   "id": "measure.2026-10-18.stack-sarvam-stt-gated-gpt-oss-groq--9",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Sarvam STT gated + gpt-oss@Groq + Bulbul V4 Flash (Growth) | AI Rs/min 3-min 1.04 (Monte Carlo 0.87-1.29) | all-in 1.54 | India p50 not measured | fits Rs2: no (23%)"
+  },
+  {
+   "id": "measure.2026-10-18.stack-inworld-all-in-stt-1-gemma-4-2-10",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Inworld all-in (STT-1 + Gemma 4 26B + TTS-2 Flash, Growth credits) | AI Rs/min 3-min 0.53 (Monte Carlo 0.46-0.63) | all-in 1.02 | India p50 not measured (vendor claim: 462 ms after turn close, plus about 954 ms VAD) | fits Rs2: on paper (49% at \u20b92) at 250k minutes a month or more; Hindi, latency and residen"
+  },
+  {
+   "id": "measure.2026-10-18.stack-self-host-indicconformer-e2e-l-11",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Self-host IndicConformer (E2E L4) + gpt-oss@Groq + Veena (E2E H100) | AI Rs/min 3-min 0.43 at 50% utilisation (Monte Carlo 0.36-0.55) | all-in 0.93 | India p50 not measured (vendor claim: Veena under 80 ms) | fits Rs2: on paper (54%) only from about 2.5M minutes a month (fleet floor \u20b96.25 lakh/mont"
+  },
+  {
+   "id": "measure.2026-10-18.stack-gpt-realtime-2-1-mini-prefix-c-12",
+   "type": "measurement",
+   "status": "unverified",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "gpt-realtime-2.1-mini (prefix caching) | AI Rs/min 3-min 1.91 (1.50 to 6.93 if caching fails) | all-in 2.41 | India p50 not measured from India | fits Rs2: no"
+  },
+  {
+   "id": "measure.2026-10-18.stack-gemini-3-1-flash-live-meera-s--13",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Gemini 3.1 flash live (Meera's model; shuts down 2026-11-17) | AI Rs/min 3-min 4.71 off / 4.19 with 6k compression (paid meter) | all-in 4.69-5.21 | India p50 1,950 (1,705-2,125), p90 5,299 | fits Rs2: no (6-14x the budget)"
+  },
+  {
+   "id": "measure.2026-10-18.stack-gemini-3-8-live-off-6k-compres-14",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Gemini 3.8 Live (off / 6k compression) | AI Rs/min 3-min 5.72 (paid meter); 11.6 at a Meera-size 13k persona (model) | all-in 6.22 | India p50 1,006 (950-1,253), p90 1,524; talk-over 42%; 819 with thinkingBudget:0 but 52% c | fits Rs2: no (needs \u20b910.4 for 40% at 3 minutes)"
+  },
+  {
+   "id": "decision.2026-10-19.tier-base",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Proposed tier Base: human-like, emotional and relational voice: C6g pipeline: VAD-gated gemini-3.5-transcribe-live + gpt-oss-120b on Groq + stock Azure neural voice (or the panel's pick at equal cost); persona plus light memory (0-3k tokens) | price \u20b92.99 ex-GST (\u20b93.53 incl. GST); \u20b98.97 per 3-minute call. Alternative: \u20b92.25 plus telephony at cost (44% margin). | COGS \u20b91.72 Monte Carlo minute-weighted (p10-p90 1.51-1.93): AI 1.22, telephony 0.46, infra 0.03. Referenc | GM 43% Monte Carlo (49% at the reference workload); P(call margin \u2265 40%) = 0.70; 14% at \u20b92.00 all-in",
+   "reverse_if": "Listener panel rates the base voice below the A/A noise floor of the best candidate (human reference, DragonHD, Inworld TTS-2, Bulbul V4): switch the voice and re-price (DragonHD needs \u20b93.77 or more for 40%); Reconciled provider billing over at least 1,000 real minutes shows AI cost above \u20b91.25 a minute at the 3-minute median; After a pause-aware release policy, p50 above 1.2 s or cut-ins above 5% on the elderly or Hinglish persona over a real Indian phone line (V4); Gross margin below 40% for two consecutive months at list price; Google meters transcribe-live by session wall-clock rather than gated audio (+\u20b90.26-0.50): move to Azure gated STT and re-price; Price moves: down to \u20b92.49 if Inwo"
+  },
+  {
+   "id": "decision.2026-10-19.tier-plus",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Proposed tier Plus: learning agents: Base plus learned memory in context (2-8k tokens, cached) plus a post-call learning pass on gpt-4.1-mini (South India) | price \u20b93.99 ex-GST (\u20b94.71 incl. GST); \u20b911.97 per 3-minute call | COGS \u20b92.14 Monte Carlo minute-weighted (1.87-2.59); AI 1.65. Reference workload: 1.91. | GM 46% Monte Carlo (52% at the reference workload); P(call margin \u2265 40%) = 0.77",
+   "reverse_if": "Recall accuracy across repeat calls below 95%, or stored preferences ignored more than 1 time in 20 (V6); The memory prompt pushes p50 above 1.2 s from India; Plus attach rate below the threshold the owner sets before launch; Any base kill criterion that re-prices base re-prices plus by the same amount"
+  },
+  {
+   "id": "decision.2026-10-19.tier-premium",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Proposed tier Premium: deep personalisation and a dedicated voice: India-processed: Azure STT gated (Central India) + gpt-4.1-mini (South India) + Azure Custom Neural Voice; 5-16k tokens of personal memory; post-call learning | price \u20b96.49 ex-GST (\u20b97.66 incl. GST), plus \u20b93.5 lakh a month per dedicated voice. Custom Neural Voice hosting is $4.032/h = \u20b92 | COGS \u20b93.52 Monte Carlo minute-weighted (3.00-4.30); AI 3.02. Reference workload: 3.38. | GM 46% Monte Carlo (48% at the reference workload); P(call margin \u2265 40%) = 0.73; about 20% on the voice",
+   "reverse_if": "In the blind panel the dedicated voice does not beat the base voice beyond the noise floor; Microsoft's Custom Neural Voice limited-access approval is refused or delayed past launch; No India-region successor to gpt-4.1-mini (retires 2027-04-14) announced by 2027-02-01; Voice-talent consent and rights cannot be contracted; Customer volume too low to justify a \u20b92.8 lakh/month hosted voice"
+  },
+  {
+   "id": "decision.2026-10-19.tier-base-contingency-if-",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Proposed tier Base contingency, if the panel rejects stock neural voices: C6g with Azure DragonHD | price \u20b93.49 gives 35%; needs \u20b93.77 for 40% or \u20b94.52 for 50% | COGS \u20b92.26 Monte Carlo minute-weighted (1.97-2.56) | GM 35% at \u20b93.49 (41% at the reference workload)",
+   "reverse_if": "Triggered only by base kill criterion 1; If triggered, plus moves to about \u20b94.99"
+  },
+  {
+   "id": "rejected.2026-10-19.gemini-live-at-rs2",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "g1,g2,g5",
+   "date": "2026-10-19",
+   "title": "Gemini Live (3.1 flash live / 3.8 live) as the base speaker at ~Rs 2/min: paid meter Rs 4.2-5.7/min at 3-min calls, Rs 6.4-12.7 at 10 min (every turn re-bills past audio; compression fires late or erases memory); 6-14x the AI budget. 3.1 flash live shuts down from 2026-11-17. Keep only as a premium/experimental voice if the listener panel shows a human-likeness win beyond noise."
+  },
+  {
+   "id": "rejected.2026-10-19.maya-1p3",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "g1",
+   "date": "2026-10-19",
+   "title": "\"Maya in-app calling ~Rs 1.3/min\": a 2026-08-23 code-constant estimate at list price that billed the system prompt once per rotation and ignored documented per-turn re-billing; product actually ran on a free key pool at $0; never a measured cost. Paid meter for the same model: Rs 2.47 (1 min) to 10.74 (10 min)."
+  },
+  {
+   "id": "open.2026-10-19.turn-taking",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Binding problem across ALL stacks: 15-42% cut-ins and 100% take the elderly caller 2.4 s pause; pause-aware release policy must reach <=5% cut-ins at p50 <=1.2 s before any stack is human-like in timing."
+  },
+  {
+   "id": "open.2026-10-19.base-provider-policy",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Base tier C6g uses Google transcription + gpt-oss on Groq via OpenRouter (US processing) + Azure voice: needs owner decision on non-Azure providers and data residency (DPDP / IRDAI records-in-India) before build."
   }
  ],
  "edges": [
@@ -19163,6 +19369,116 @@
    "from": "measure.2026-10-18.gemini-live-gate-lag",
    "to": "open.2026-10-18.s2s-vs-gate-law",
    "relation": "informs"
+  },
+  {
+   "from": "research.2026-10-18.voice-stack",
+   "to": "directive.2026-10-18.voice-core",
+   "relation": "answers"
+  },
+  {
+   "from": "measure.2026-10-18.stack-c6g-0",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-c6-1",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-c1g-2",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-c1-3",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-c6g-hd-4",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-c2-c3-5",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-c8-6",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-g-a-7",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-g-e-8",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-sarvam-stt-gated-gpt-oss-groq--9",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-inworld-all-in-stt-1-gemma-4-2-10",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-self-host-indicconformer-e2e-l-11",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-gpt-realtime-2-1-mini-prefix-c-12",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-gemini-3-1-flash-live-meera-s--13",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-18.stack-gemini-3-8-live-off-6k-compres-14",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "decision.2026-10-19.tier-base",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-19.tier-plus",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-19.tier-premium",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-19.tier-base-contingency-if-",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-19.gemini-live-at-rs2",
+   "to": "research.2026-10-18.voice-stack",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-19.maya-1p3",
+   "to": "open.2026-10-18.maya-1p3-claim",
+   "relation": "closes"
   }
  ]
 }

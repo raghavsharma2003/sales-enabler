@@ -1,0 +1,35 @@
+stack,input,low,high,ai_at_low,ai_at_high,ai_at_reference
+C6g,e,3,7,0.785,1.107,0.941
+C6g-HD,e,3,7,1.316,1.638,1.473
+C1,e,3,7,2.072,2.316,2.187
+L38,e,3,7,3.561,7.41,5.713
+C6g,agent_s,15,40,0.817,1.162,0.941
+C6g-HD,agent_s,15,40,1.15,2.047,1.473
+C1,agent_s,15,40,2.059,2.416,2.187
+L38,agent_s,15,40,4.756,7.416,5.713
+C6g,caller_s,12,32,0.823,1.02,0.941
+C6g-HD,caller_s,12,32,1.354,1.552,1.473
+C1,caller_s,12,32,2.187,2.187,2.187
+L38,caller_s,12,32,4.813,6.313,5.713
+C6g,fx,90,100,0.892,0.991,0.941
+C6g-HD,fx,90,100,1.395,1.55,1.473
+C1,fx,90,100,2.072,2.302,2.187
+L38,fx,90,100,5.413,6.014,5.713
+C6g,or_ledger,1.0,1.45,0.903,0.989,0.941
+C6g,gr,1.1,1.4,0.924,0.984,0.941
+C6g,groq_cache,0.75,0.9,0.959,0.933,0.941
+C6g,s_extra_tokens (persona+memory above the lanes' harness prompt),0,,0.941,,0.941
+L38,s_extra_tokens (persona+memory above the lanes' harness prompt),0,,5.713,,5.713
+L31,s_extra_tokens (persona+memory above the lanes' harness prompt),0,,4.146,,4.146
+C6g,s_extra_tokens (persona+memory above the lanes' harness prompt),2000,,1.127,,0.941
+L38,s_extra_tokens (persona+memory above the lanes' harness prompt),2000,,6.616,,5.713
+L31,s_extra_tokens (persona+memory above the lanes' harness prompt),2000,,4.763,,4.146
+C6g,s_extra_tokens (persona+memory above the lanes' harness prompt),4000,,1.313,,0.941
+L38,s_extra_tokens (persona+memory above the lanes' harness prompt),4000,,7.518,,5.713
+L31,s_extra_tokens (persona+memory above the lanes' harness prompt),4000,,5.381,,4.146
+C6g,s_extra_tokens (persona+memory above the lanes' harness prompt),8000,,1.685,,0.941
+L38,s_extra_tokens (persona+memory above the lanes' harness prompt),8000,,9.323,,5.713
+L31,s_extra_tokens (persona+memory above the lanes' harness prompt),8000,,6.616,,4.146
+C6g,s_extra_tokens (persona+memory above the lanes' harness prompt),13000,,2.149,,0.941
+L38,s_extra_tokens (persona+memory above the lanes' harness prompt),13000,,11.58,,5.713
+L31,s_extra_tokens (persona+memory above the lanes' harness prompt),13000,,8.16,,4.146

@@ -7,16 +7,16 @@
   "tts_waste": 1.1,
   "stt_streamed_s": 60.0,
   "stt_vad_gated_s": 30.0,
-  "llm_in_tok_per_exch": 2500,
-  "llm_out_tok_per_exch": 60,
-  "llm_waste": 1.2,
-  "llm_cache_share": 0.7,
+  "llm_in_tok_per_exch": 2140,
+  "llm_out_tok_per_exch": 43,
+  "llm_waste": 1.84,
+  "llm_cache_share": 0.83,
   "gem_tts_audio_tok_per_s": 25,
   "gem_tts_text_tok": 150
  },
  "tts_chars_per_min": 352.0,
- "llm_in_per_min": 15000.0,
- "llm_out_per_min": 360.0,
+ "llm_in_per_min": 19688.0,
+ "llm_out_per_min": 395.6,
  "realtime_inr_per_min": {
   "gpt-realtime-2.1-mini": {
    "1": 1.811,
@@ -124,47 +124,67 @@
   ],
   [
    "Self-host IndicConformer (E2E L4) + Groq + Veena (E2E H100 on-demand), 50% util, at scale",
-   0.34
+   0.37
   ],
   [
    "same but Veena at LOW capacity (24 streams/H100)",
-   0.44
+   0.47
   ],
   [
    "Inworld all-in, Growth plan (STT-1 + Gemma 4 26B + TTS-2 Flash)",
-   0.5
+   0.54
   ],
   [
    "Self-host IndicConformer (E2E L4, 50%) + gpt-oss-120b@Groq + Bulbul V4 Flash Growth",
-   0.8
+   0.83
   ],
   [
-   "Inworld all-in, On-Demand",
+   "g3 MEASURED C6 gated: Gemini transcribe-live + gpt-oss-120b@Groq(OR) + Azure neural (3-min, ref shape)",
    0.85
   ],
   [
+   "Inworld all-in, On-Demand",
+   0.88
+  ],
+  [
+   "Sarvam STT Growth VAD-gated + gpt-oss-120b@Groq + Bulbul V4 Flash Growth",
+   0.99
+  ],
+  [
+   "Gemini Transcribe Live VAD-gated + gpt-oss-120b@Groq + 3.8 Flash-Lite TTS (2026 price)",
+   1.01
+  ],
+  [
    "Azure grant at scale, VAD-gated STT",
-   1.0
+   1.02
   ],
   [
    "Smallest Pulse + gpt-oss-120b@Groq + Lightning V3.1",
-   1.12
+   1.15
   ],
   [
    "Sarvam STT Growth + gpt-oss-120b@Groq (cached) + Bulbul V4 Flash Growth",
-   1.17
+   1.19
+  ],
+  [
+   "g3 MEASURED C1 gated: Azure STT + gpt-4.1-mini + Azure neural (3-min, ref shape)",
+   1.24
   ],
   [
    "Azure grant at scale (STT 100K-h commit + gpt-4.1-mini cached + Neural TTS 400M commit)",
-   1.32
+   1.34
   ],
   [
    "Sarvam STT PAYG + gpt-oss-120b@Groq + Bulbul V4 Flash PAYG",
-   1.35
+   1.38
+  ],
+  [
+   "India-processed managed: Sarvam STT Growth + Yotta Shakti gpt-oss-120b (INR 23.5/1M, no cache, low conf) + Bulbul V4 Flash Growth",
+   1.48
   ],
   [
    "Gemini Transcribe Live + 3.1 Flash-Lite (cached) + 3.8 Flash TTS (2026 price)",
-   1.63
+   1.62
   ],
   [
    "OpenAI/Azure gpt-realtime-2.1-mini (3-min call)",
@@ -172,19 +192,19 @@
   ],
   [
    "Deepgram Nova-3 multi (promo) + gpt-oss-120b@Groq + Cartesia Sonic Scale",
-   1.96
+   1.99
   ],
   [
    "ElevenLabs Scribe RT + gpt-oss-120b@Groq + v3 Conversational/Flash",
-   2.12
+   2.14
   ],
   [
    "same, 2027 TTS price",
-   2.21
+   2.2
   ],
   [
    "Azure grant PAYG (S1 STT + gpt-4.1-mini regional cached + DragonHD) = g3 config A shape",
-   2.68
+   2.7
   ],
   [
    "Sarvam Samvaad Growth (retail all-in)",
@@ -192,7 +212,7 @@
   ],
   [
    "ElevenLabs Scribe RT + gpt-oss-120b@Groq + v4/v3 expressive",
-   3.45
+   3.48
   ],
   [
    "Gemini 3.1 Flash Live (measured, 3-min)",
@@ -220,7 +240,7 @@
   ],
   [
    "ElevenLabs Agents + Groq LLM",
-   7.76
+   7.79
   ]
  ],
  "realtime_inr_per_min_out_cached": {

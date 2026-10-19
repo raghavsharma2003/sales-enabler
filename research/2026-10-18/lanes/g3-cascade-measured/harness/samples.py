@@ -10,6 +10,7 @@ import os, sys, csv, json, time, base64, subprocess, html, requests
 SP = '/tmp/claude-0/-home-user/5e2837be-8576-5279-a870-65aba61ebd82/scratchpad'
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'samples')
 RAW = f'{SP}/research-raw-1018/g3-cascade-measured/samples_wav'
+VANTAGE = os.environ.get('RENDER_VANTAGE', 'sandbox (US-East via egress proxy); no latency claim')   # added 2026-10-19 (manifest column)
 LINES = [
   ('L1_worried', 'worried, anxious, voice slightly shaky', 'fearful',
    'मुझे सच में बहुत tension हो रही है… पापा की report अभी तक नहीं आई, और doctor phone ही नहीं उठा रहे।'),
@@ -60,7 +61,7 @@ def gemini(model):
     if data is None: print('no audio', json.dumps(d)[:300]); continue
     wav = os.path.join(RAW, f'{lid}__{tag}.wav'); open(wav, 'wb').write(base64.b64decode(data)); to_mp3(wav, mp3)
     manifest({'line_id': lid, 'engine': f'{model} (Interactions API, unary)', 'voice': 'Despina', 'style_or_ssml': f'speech_metadata.style="{style}"', 'text': text,
-              'file': os.path.basename(mp3), 'duration_s': dur(wav), 'in_tokens': usage.get('total_input_tokens'), 'out_tokens': usage.get('total_output_tokens'), 'rendered_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())})
+              'file': os.path.basename(mp3), 'duration_s': dur(wav), 'in_tokens': usage.get('total_input_tokens'), 'out_tokens': usage.get('total_output_tokens'), 'rendered_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'render_vantage': VANTAGE})
     print(lid, model, 'ok', dur(wav), flush=True); time.sleep(22)
 def azure():
   sys.argv = sys.argv[:1]; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -81,7 +82,7 @@ def azure():
       if r.status_code != 200: print(lid, voice, r.status_code, r.text[:200]); continue
       wav = os.path.join(RAW, f'{lid}__{tag}.wav'); open(wav, 'wb').write(r.content); to_mp3(wav, mp3)
       manifest({'line_id': lid, 'engine': f'Azure Speech centralindia REST ({voice})', 'voice': voice, 'style_or_ssml': (f'mstts:express-as style={mai_style}' if styled else 'none (DragonHD infers emotion from text)'),
-                'text': text, 'file': os.path.basename(mp3), 'duration_s': dur(wav), 'in_tokens': len(text), 'out_tokens': '', 'rendered_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())})
+                'text': text, 'file': os.path.basename(mp3), 'duration_s': dur(wav), 'in_tokens': len(text), 'out_tokens': '', 'rendered_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'render_vantage': VANTAGE})
       print(lid, voice, 'ok', dur(wav), flush=True)
 if __name__ == '__main__':
   os.makedirs(OUT, exist_ok=True); os.makedirs(RAW, exist_ok=True)

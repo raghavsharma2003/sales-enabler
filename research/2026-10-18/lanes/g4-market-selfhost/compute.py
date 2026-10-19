@@ -17,10 +17,14 @@ W = dict(
     tts_waste=1.10,                 # synthesised-but-not-played (l2 base)
     stt_streamed_s=60.0,            # streaming STT billed on the whole streamed call (Azure/Deepgram/ElevenLabs convention)
     stt_vad_gated_s=30.0,           # alt: VAD-gated (caller share x 1.25, as g3)
-    llm_in_tok_per_exch=2500,       # ~1.6k system (g3 component_bench prompt) + avg history + context
-    llm_out_tok_per_exch=60,
-    llm_waste=1.2,                  # prefetch/hedge/retry multiplier (l2 base 1.2)
-    llm_cache_share=0.70,           # share of input tokens served from prompt cache where the provider caches
+    # LLM matched to g3 measured usage (results/analysis_output.txt, C3/C6 gpt-oss-120b@Groq, n=60 exchanges each):
+    # prompt base ~1,730 + ~55-61 tokens growth per exchange -> mean 2,140 over a 3-min (15-exchange) call;
+    # waste factor 1.84 (speculative/hedged responses, 1.85-1.9 responses per turn); cached share 0.82-0.83;
+    # completion 76-85 tokens per exchange INCLUDING wasted responses -> 43 x 1.84 = 79.
+    llm_in_tok_per_exch=2140,
+    llm_out_tok_per_exch=43,
+    llm_waste=1.84,                 # g3 measured (l2 base was 1.2)
+    llm_cache_share=0.83,           # g3 measured for gpt-oss-120b@Groq in the cascade; providers without caching use the no-cache column
     gem_tts_audio_tok_per_s=25,     # Gemini TTS audio tokens/s (g1; g3 measured 24.8)
     gem_tts_text_tok=150,           # text-in tokens for ~352 chars (assumption)
 )
@@ -114,7 +118,7 @@ def llm(v, product, pin, pc, pout, url, notes='', fee=0.0, conf='high', currency
     pc_eff = pc if pc is not None else pin
     cache = (LLM_IN * (1 - W['llm_cache_share']) * pin + LLM_IN * W['llm_cache_share'] * pc_eff + LLM_OUT * pout) / 1e6 * k * (1 + fee)
     add('LLM', v, product, f'{pin} / {pc if pc is not None else "-"} / {pout}', 'per 1M tokens (in / cached in / out)', currency, nocache,
-        f'{LLM_IN:.0f} in + {LLM_OUT:.0f} out tokens/min (5 exch x 2,500 in / 60 out x 1.2), no cache', cache, '70% of input from prompt cache', 'via prompt', url,
+        f'{LLM_IN:.0f} in + {LLM_OUT:.0f} out tokens/min (5 exch x 2,140 in / 43 out x 1.84 waste, g3-matched), no cache', cache, f'{W["llm_cache_share"]*100:.0f}% of input from prompt cache (g3 measured)', 'via prompt', url,
         conf=conf, notes=notes + (f'; incl. OpenRouter {fee*100:.1f}% credit fee' if fee else ''))
 ORE = 'https://openrouter.ai/api/v1/models/{id}/endpoints'
 llm('Groq (direct)', 'openai/gpt-oss-120b (~500 tok/s vendor)', 0.15, 0.075, 0.60, 'https://console.groq.com/docs/models', 'cache price from OpenRouter Groq endpoint; dev plan 250K TPM / 1K RPM')
@@ -129,6 +133,10 @@ llm('Microsoft Azure (grant)', 'gpt-4.1-mini regional South India Standard', 0.4
 llm('DeepSeek (cheapest OR endpoint)', 'deepseek/deepseek-v4.1-flash', 0.04, 0.0016, 0.144, ORE.format(id='deepseek/deepseek-v4.1-flash'), 'cheapest provider fp4; quality/latency not measured', fee=0.055, conf='medium')
 llm('Inworld', 'Gemma 4 26B-A4B (Inworld Inference)', 0.07, None, 0.34, 'https://inworld.ai/models', 'vendor-reported 0.23 s TTFT best hour')
 llm('Sarvam', 'Sarvam 105B', 15.0, 5.0, 60.0, SV, 'INR prices excl. GST', currency='INR')
+llm('Yotta Shakti Studio (India-hosted serverless)', 'OpenAI OSS 120B (single listed price INR 23.50 per 1M tokens, applied to input AND output)', 23.5, None, 23.5,
+    'https://shakticloud.ai/pricing (Shakti Studio AI Endpoint Pricing)', 'page shows one price under a "1M Input Token / 1M Output Token" toggle; which side it is could not be resolved from the static page; no cache price; India data centres', conf='low', currency='INR')
+# Groq gpt-oss-120b at the g3-matched workload with prompt caching: reused by S2S rows and stacks
+LLM_GROQ_CACHED = (LLM_IN * (1 - W['llm_cache_share']) * 0.15 + LLM_IN * W['llm_cache_share'] * 0.075 + LLM_OUT * 0.60) / 1e6 * FX
 
 # ---------------- S2S / all-in agent platforms ----------------
 def realtime(L, a_in, a_cin, a_out, t_in, t_cin, t_out, sys_tok=2000, txt_out=60, E=5, cpad=1.2, out_cached=False):
@@ -156,13 +164,13 @@ for m, p in RT.items():
             '3-min call, 5 exch/min, caller 24 s/min (x1.2 padding) at 10 tok/s, agent 24 s/min at 20 tok/s, 2k-token system prompt, context re-billed with prefix caching',
             rt_tab[m][10], '10-min call', 'yes (multilingual)', url, 'computed', 'medium',
             f'1/3/5/10-min INR/min = {rt_tab[m][1]}/{rt_tab[m][3]}/{rt_tab[m][5]}/{rt_tab[m][10]}; if the previous reply is also cache-served: {rt_tab_opt[m][1]}/{rt_tab_opt[m][3]}/{rt_tab_opt[m][5]}/{rt_tab_opt[m][10]}; excludes input transcription model; {extra}')
-luna_cache = (LLM_IN * 0.3 * 0.10 + LLM_IN * 0.7 * 0.01 + LLM_OUT * 0.50) / 1e6 * FX
+luna_cache = (LLM_IN * (1 - W['llm_cache_share']) * 0.10 + LLM_IN * W['llm_cache_share'] * 0.01 + LLM_OUT * 0.50) / 1e6 * FX
 add('S2S', 'OpenAI (direct)', 'gpt-live-1 voice session ($0.05/min, per-second) + backend gpt-6-luna', 0.05, 'per session minute', 'USD', 0.05 * FX + luna_cache,
     'session minutes = connected minutes; backend gpt-6-luna at our LLM workload (cached)', 0.05 * FX, 'voice session only', 'yes', 'https://developers.openai.com/api/docs/pricing ; guides/realtime-costs',
     'computed', 'high', 'billed for silence too ("active session time includes ... both are silent")')
 add('S2S', 'Ultravox (acquired by Inworld)', 'Ultravox calls PAYG ($0.05/min; first 30 min free)', 0.05, 'per call minute', 'USD', 0.05 * FX, 'published per-minute price', 0.05 * FX + 0.005 * FX,
     '+ Ultravox SIP 0.5c/min', 'Ultravox v0.7 lists hi input (l7); output voices not verified', 'https://www.ultravox.ai/pricing', notes='PAYG hard cap 5 concurrent calls; Pro $100/mo removes cap')
-add('S2S', 'ElevenLabs', 'ElevenAgents / Speech Engine ($0.08/min; burst $0.16) + BYO LLM', 0.08, 'per minute', 'USD', 0.08 * FX + LLM_IN * 0.15e-6 * FX * 0.65 + LLM_OUT * 0.6e-6 * FX,
+add('S2S', 'ElevenLabs', 'ElevenAgents / Speech Engine ($0.08/min; burst $0.16) + BYO LLM', 0.08, 'per minute', 'USD', 0.08 * FX + LLM_GROQ_CACHED,
     '$0.08/min + gpt-oss-120b@Groq LLM (cached)', 0.16 * FX, 'burst rate', 'yes', EL, 'computed', 'medium', 'LLM billed separately (pass-through); concurrency 4-40 by plan')
 add('S2S', 'Sarvam', 'Samvaad Voice Agents (all models included)', '3.50 PAYG / 3.25 Pro / 3.15 Growth / 3.00 Business', 'per 60-s pulse', 'INR', 3.15, 'Growth plan (4K+ min/mo); 60-s pulses round up',
     3.00, 'Business (16K-2 lakh min/mo; "coming soon")', 'yes (11 Indic + English)', 'https://www.sarvam.ai/products/voice-agents/pricing', notes='excl. GST and telephony (Vobiz INR 0.20/30 s); this is a competitor retail price, not a component')
@@ -298,8 +306,8 @@ VR = [
  dict(provider='Azure GPU VMs centralindia (founder grant)', products='NC T4 / NV A10 / NC A100 / NC H100', training='n/a (own models)', retention='own control', india_residency='YES (Central India)', lifecycle='NCasT4 v3 since 2021; H100 NVL since 2024-05',
       rate_limits='GPU quota approval required; harvest records quota failures', inr_billing='grant credits', verdict='grant makes them free short-term but list price is 2.5-3x Indian GPU clouds', sources=AZV, confidence='high'),
  dict(provider='Google Gemini API', products='gemini-3.8-live, 3.1-flash-live-preview, 3.8 Flash(-Lite) TTS, 3.5 Transcribe Live', training='Paid tier: "Used to improve our products: No"; free tier: Yes, human reviewers may read',
-      retention='per Gemini API terms (g1)', india_residency='Gemini API global processing; Vertex asia-south1 only via Provisioned Throughput for some models (g1 prices.json)',
-      lifecycle='3.1-flash-live-preview legacy, earliest shutdown 2026-11-17; 3.8 Live GA 2026-09-15; TTS GA 2026-09-22 with price DOUBLING 2027-01-01', rate_limits='free-tier limits not published (AI Studio only); per-project',
+      retention='per Gemini API terms (g1)', india_residency='NO: Gemini API global processing; Vertex/Agent Platform gemini-3.8-live availability and ML processing us/eu multi-region only, no asia-south1/2 (g1 verify.md section 7)',
+      lifecycle='3.1-flash-live-preview and 3.1-flash-tts-preview: earliest shutdown 2026-11-17; 3.8 Live GA 2026-09-15 (Vertex GA 2026-09-24, retirement "2027-09-25 or later"); 3.8 TTS GA 2026-09-22 with price DOUBLING 2027-01-01 (g1)', rate_limits='free-tier limits not published (AI Studio only); per-project',
       inr_billing='USD (Google Cloud billing)', verdict='free tier unusable for customer audio; Meera model being shut down', sources='https://ai.google.dev/gemini-api/docs/pricing ; lanes/g1-gemini-desk/live-billing-mechanics.md', confidence='high'),
  dict(provider='Ultravox (acquired by Inworld)', products='Ultravox realtime calls', training='Inworld terms (served at ultravox.ai/terms): no training of generally available models on non-public Materials, except feedback / trust-and-safety',
       retention='not stated on pricing page', india_residency='not offered on Ultravox page', lifecycle='ownership change (acquired by Inworld; banner on site)', rate_limits='PAYG hard cap 5 concurrent calls; Pro removes caps',
@@ -313,9 +321,9 @@ VR = [
       india_residency='India isolated environment (in.residency.elevenlabs.io) for STORAGE, Enterprise only; processing may occur elsewhere (EU processing restriction via ZRM only documented for EU)',
       lifecycle='v4 just launched; v3 still listed', rate_limits='agent concurrency 4-40 by plan; burst at 2x price', inr_billing='USD; prices exclude taxes', verdict='quality benchmark; price 2-4x Indian TTS',
       sources='https://elevenlabs.io/terms-of-use ; https://elevenlabs.io/docs/overview/administration/data-residency', confidence='high'),
- dict(provider='Sarvam AI', products='Bulbul V4 Flash / V3, STT, Samvaad agents, Sarvam 105B', training='Privacy policy lists "model training / service improvement: inputs and outputs, where applicable" on CONSENT basis',
+ dict(provider='Sarvam AI', products='Bulbul V4 Flash / V3, STT, Samvaad agents, Sarvam 105B', training='Privacy policy "AI Model Training & Your Data - Default Policy: Opt-In": content (inputs, uploads, prompts, generated outputs) IS used to train/fine-tune/improve models UNLESS you opt out in account settings or by email (i.e. on by default)',
       retention='deletion on request subject to law (DPDPA framing)', india_residency='Indian company; but policy allows cross-border transfer (US cloud: AWS/GCP/Azure; EU model providers)', lifecycle='Bulbul V4 Flash new; Business plan "coming soon"',
-      rate_limits='agents: 4 / 10 / 30 / 120 concurrent; API higher limits by custom arrangement', inr_billing='YES, INR prepaid credits, GST extra, non-refundable', verdict='rupee pricing; get written no-training + India-only processing',
+      rate_limits='agents: 4 / 10 / 30 / 120 concurrent; API higher limits by custom arrangement', inr_billing='YES, INR prepaid credits, GST extra, non-refundable', verdict='rupee pricing; MUST opt out of training (default on) and get written India-only processing',
       sources='https://www.sarvam.ai/privacy-policy ; https://www.sarvam.ai/terms-of-service ; pricing pages', confidence='high'),
  dict(provider='Cartesia', products='Sonic-3.6 TTS, Ink-2 STT, Managed Agents', training='Privacy policy: may use content to train models; opt-out via form', retention='not stated', india_residency='no; privacy policy says services designed for users in the United States only; on-prem/VPC via sales',
       lifecycle='Sonic-3.6 current', rate_limits='TTS concurrency 2/3/5/15; agents 8/12/20/60 by plan', inr_billing='USD', verdict='terms risk for Indian customer data', sources='https://cartesia.ai/legal/privacy-policy ; https://cartesia.ai/pricing', confidence='high'),
@@ -338,7 +346,7 @@ VR = [
  dict(provider='E2E Networks', products='GPU cloud T4..B200', training='n/a', retention='own control', india_residency='YES (Indian DCs; page says MeitY empanelled)', lifecycle='n/a', rate_limits='capacity by availability',
       inr_billing='YES, INR authoritative, excl. 18% GST; hourly/per-minute', verdict='cheapest published H100/L4 in INR', sources=E2E, confidence='high'),
  dict(provider='Yotta Shakti Cloud', products='H100 SXM / L40S VMs, bare metal, serverless', training='n/a', retention='own control', india_residency='YES (Mumbai HQ; Indian DCs)', lifecycle='n/a', rate_limits='n/a',
-      inr_billing='YES, INR; data transfer included', verdict='monthly dedicated H100 ~INR 269/h', sources=YT, confidence='high'),
+      inr_billing='YES, INR; data transfer included', verdict='monthly dedicated H100 ~INR 269/h; Shakti Studio serverless lists OpenAI OSS 120B at INR 23.50 per 1M tokens (India-hosted LLM option; input/output side ambiguous on static page)', sources=YT, confidence='high'),
  dict(provider='Jarvislabs', products='L4 / A100 / H100 / H200', training='n/a', retention='own control', india_residency='YES (India Noida region)', lifecycle='n/a', rate_limits='25+ GPUs via sales',
       inr_billing='INR for Indian customers (rates not machine-readable); USD outside India', verdict='per-minute billing, good for bursty research', sources=JL, confidence='medium'),
  dict(provider='Open model licences (self-host)', products='Veena, IndicF5, Indic Parler, Orpheus, Chatterbox, CSM-1B, Kokoro, Kyutai TTS, IndicConformer, Whisper turbo', training='own control',
@@ -382,6 +390,11 @@ stacks = [
     ('Inworld all-in, On-Demand', f('S2S', 'Inworld', 'Realtime speech-to-speech', alt=True)),
     ('Sarvam STT Growth + gpt-oss-120b@Groq (cached) + Bulbul V4 Flash Growth', f('STT', 'Sarvam', 'Growth') + llm_groq + f('TTS', 'Sarvam', 'Growth/Business plan')),
     ('Sarvam STT PAYG + gpt-oss-120b@Groq + Bulbul V4 Flash PAYG', f('STT', 'Sarvam', 'PAYG') + llm_groq + f('TTS', 'Sarvam', 'V4 Flash (PAYG')),
+    ('India-processed managed: Sarvam STT Growth + Yotta Shakti gpt-oss-120b (INR 23.5/1M, no cache, low conf) + Bulbul V4 Flash Growth', f('STT', 'Sarvam', 'Growth') + f('LLM', 'Yotta', 'OpenAI OSS') + f('TTS', 'Sarvam', 'Growth/Business plan')),
+    ('Sarvam STT Growth VAD-gated + gpt-oss-120b@Groq + Bulbul V4 Flash Growth', f('STT', 'Sarvam', 'Growth', alt=True) + llm_groq + f('TTS', 'Sarvam', 'Growth/Business plan')),
+    ('Gemini Transcribe Live VAD-gated + gpt-oss-120b@Groq + 3.8 Flash-Lite TTS (2026 price)', f('STT', 'Gemini', 'transcribe', alt=True) + llm_groq + f('TTS', 'Gemini', 'gemini-3.8-flash-lite-tts')),
+    ('g3 MEASURED C6 gated: Gemini transcribe-live + gpt-oss-120b@Groq(OR) + Azure neural (3-min, ref shape)', 0.854),
+    ('g3 MEASURED C1 gated: Azure STT + gpt-4.1-mini + Azure neural (3-min, ref shape)', 1.242),
     ('Smallest Pulse + gpt-oss-120b@Groq + Lightning V3.1', f('STT', 'Smallest', 'Pulse') + llm_groq + f('TTS', 'Smallest', 'Lightning V3.1 ($0.175')),
     ('Deepgram Nova-3 multi (promo) + gpt-oss-120b@Groq + Cartesia Sonic Scale', f('STT', 'Deepgram', 'promo') + llm_groq + f('TTS', 'Cartesia', 'Scale')),
     ('ElevenLabs Scribe RT + gpt-oss-120b@Groq + v3 Conversational/Flash', f('STT', 'ElevenLabs', 'Scribe') + llm_groq + f('TTS', 'ElevenLabs', 'Turbo')),

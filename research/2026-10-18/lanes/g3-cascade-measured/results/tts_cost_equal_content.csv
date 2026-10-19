@@ -1,0 +1,15 @@
+agent_chars_per_min,tts,speaking_rate_chars_per_s,agent_audio_s_per_min,inr_per_connected_min
+240,Azure neural PAYG ($15/1M chars),,,0.342
+240,Azure neural 2000M-char commitment ($7.50/1M),,,0.171
+240,Azure DragonHD / Neural HD PAYG ($22/1M),,,0.502
+240,gemini-3.8-flash-lite-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5),11.37,22.4,0.325
+240,gemini-3.8-flash-lite-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5),11.37,22.4,0.65
+240,gemini-3.8-flash-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5),13.99,18.4,0.4
+240,gemini-3.8-flash-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5),13.99,18.4,0.8
+400,Azure neural PAYG ($15/1M chars),,,0.57
+400,Azure neural 2000M-char commitment ($7.50/1M),,,0.285
+400,Azure DragonHD / Neural HD PAYG ($22/1M),,,0.836
+400,gemini-3.8-flash-lite-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5),11.37,36.4,0.526
+400,gemini-3.8-flash-lite-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5),11.37,36.4,1.051
+400,gemini-3.8-flash-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5),13.99,29.8,0.644
+400,gemini-3.8-flash-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5),13.99,29.8,1.289

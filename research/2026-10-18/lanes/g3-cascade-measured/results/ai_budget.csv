@@ -1,0 +1,19 @@
+gst_treatment,net_revenue_inr_per_min,gross_margin,telephony_inr_per_min,allowed_ai_inr_per_min
+"price ex-GST (B2B, GST added on top)",2.0,0.4,0.38,0.82
+"price ex-GST (B2B, GST added on top)",2.0,0.4,0.43,0.77
+"price ex-GST (B2B, GST added on top)",2.0,0.4,0.48,0.72
+"price ex-GST (B2B, GST added on top)",2.0,0.5,0.38,0.62
+"price ex-GST (B2B, GST added on top)",2.0,0.5,0.43,0.57
+"price ex-GST (B2B, GST added on top)",2.0,0.5,0.48,0.52
+"price ex-GST (B2B, GST added on top)",2.0,0.6,0.38,0.42
+"price ex-GST (B2B, GST added on top)",2.0,0.6,0.43,0.37
+"price ex-GST (B2B, GST added on top)",2.0,0.6,0.48,0.32
+price GST-inclusive (18% inside),1.695,0.4,0.38,0.637
+price GST-inclusive (18% inside),1.695,0.4,0.43,0.587
+price GST-inclusive (18% inside),1.695,0.4,0.48,0.537
+price GST-inclusive (18% inside),1.695,0.5,0.38,0.467
+price GST-inclusive (18% inside),1.695,0.5,0.43,0.417
+price GST-inclusive (18% inside),1.695,0.5,0.48,0.367
+price GST-inclusive (18% inside),1.695,0.6,0.38,0.298
+price GST-inclusive (18% inside),1.695,0.6,0.43,0.248
+price GST-inclusive (18% inside),1.695,0.6,0.48,0.198
