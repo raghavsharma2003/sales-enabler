@@ -1,0 +1,401 @@
+# VP voice lab: provider adapters (async). Keys come from the environment; nothing secret is logged.
+import os, json, time, base64, asyncio, html, re, threading
+import aiohttp
+from catalog import BRAINS, STT, TTS, FX
+from audio import Resampler
+
+GEM = 'https://generativelanguage.googleapis.com/v1beta'
+GEM_WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
+def env(k, d=None): return os.environ.get(k, d)
+def ws_text(m):
+    """Gemini Live sends JSON in binary frames; Azure in text frames. Returns the JSON text or None."""
+    if m.type == aiohttp.WSMsgType.TEXT: return m.data
+    if m.type == aiohttp.WSMsgType.BINARY:
+        try: return m.data.decode('utf-8')
+        except Exception: return None
+    return None
+def az_host(endpoint): return endpoint.rstrip('/').replace('https://', '').replace('.cognitiveservices.azure.com', '.openai.azure.com')
+
+# ---------------------------------------------------------------- Gemini key choice: free test key first, paid on quota
+class GeminiKeys:
+    """Owner directive 2026-10-18: use the free test key as much as its own limits allow; the paid key (capped) only
+    when the free key is out of quota. One key at a time, never rotated across accounts."""
+    def __init__(self):
+        self.free = env('GEMINI_TEST_KEY'); self.paid = env('GEMINI_PAID_KEY')
+        self.free_blocked_until = 0.0
+        self.paid_cap = float(env('GEMINI_PAID_REMAINING_USD', '5.0')); self.paid_spent = 0.0
+        self.ledger = None
+    def load(self, path):
+        """Paid-key spend survives restarts (the owner's $20 cap is global, not per process)."""
+        self.ledger = path
+        try:
+            self.paid_spent = sum(json.loads(l).get('usd', 0) for l in open(path))
+        except FileNotFoundError: pass
+    def pick(self):
+        if self.free and time.time() >= self.free_blocked_until: return self.free, 'free'
+        if self.paid and self.paid_spent < self.paid_cap: return self.paid, 'paid'
+        return None, 'none'
+    def quota_hit(self, tier, seconds=600):
+        if tier == 'free': self.free_blocked_until = time.time() + seconds
+    def charge(self, tier, usd):
+        if tier == 'paid' and usd:
+            self.paid_spent += usd
+            if self.ledger:
+                with open(self.ledger, 'a') as f: f.write(json.dumps({'ts': time.time(), 'usd': usd}) + '\n')
+GKEYS = GeminiKeys()
+def is_quota(status, text):
+    t = (text or '').lower()
+    return status == 429 or 'resource_exhausted' in t or 'quota' in t or status == 402
+
+# ---------------------------------------------------------------- LLM streaming
+def _strip(t):
+    return re.sub(r'[*_#`~]|[\U0001F300-\U0001FAFF☀-➿]', '', t)
+
+async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, timing, max_tokens=180):
+    """Yields text deltas; fills usage {'in','out','cached','usd'} and timing {'req','first','done','err'}."""
+    b = BRAINS[brain_id]; timing['req'] = time.perf_counter()
+    host = b['host']
+    if host in ('sin', 'sea', 'or'):
+        if host == 'or':
+            url = 'https://openrouter.ai/api/v1/chat/completions'; hdr = {'Authorization': 'Bearer ' + env('OPENROUTER_API_KEY', ''), 'X-Title': 'vp-voicelab'}
+            body = {'model': b['model'], 'provider': {'order': [b['provider']], 'allow_fallbacks': False}, 'usage': {'include': True}}
+        else:
+            ep = env('LAB_AI_ENDPOINT') if host == 'sin' else env('VP_AI_ENDPOINT')
+            key = env('LAB_AI_KEY') if host == 'sin' else env('VP_AI_KEY')
+            url = f'https://{az_host(ep)}/openai/v1/chat/completions'; hdr = {'api-key': key}
+            body = {'model': b['model'], 'stream_options': {'include_usage': True}}
+        body.update({'messages': messages, 'stream': True, 'max_completion_tokens': max_tokens + b.get('out_pad', 0), 'temperature': 0.6})
+        if host == 'or': body['max_tokens'] = body.pop('max_completion_tokens')
+        if 'gpt-oss' in b['model'] or 'gptoss' in b['model'] or 'kimi' in b['model']: body.pop('temperature', None)
+        body.update(b.get('extra', {}))
+        async with http.post(url, headers=hdr, json=body, timeout=aiohttp.ClientTimeout(total=60, sock_read=30)) as r:
+            timing['status'] = r.status
+            if r.status != 200:
+                timing['err'] = f'{r.status} {(await r.text())[:300]}'; timing['done'] = time.perf_counter(); return
+            async for raw in r.content:
+                line = raw.strip()
+                if not line.startswith(b'data:'): continue
+                data = line[5:].strip()
+                if data == b'[DONE]': break
+                try: d = json.loads(data)
+                except Exception: continue
+                u = d.get('usage')
+                if u:
+                    usage['in'] = u.get('prompt_tokens', 0) or 0; usage['out'] = u.get('completion_tokens', 0) or 0
+                    usage['cached'] = ((u.get('prompt_tokens_details') or {}).get('cached_tokens', 0)) or 0
+                    if host == 'or' and u.get('cost') is not None: usage['usd_reported'] = u.get('cost')
+                for ch in d.get('choices') or []:
+                    c = (ch.get('delta') or {}).get('content')
+                    if c:
+                        if 'first' not in timing: timing['first'] = time.perf_counter()
+                        yield c
+    elif host == 'gm':
+        sysm = '\n\n'.join(m['content'] for m in messages if m['role'] == 'system'); contents = []
+        for m in messages:
+            if m['role'] == 'system': continue
+            role = 'model' if m['role'] == 'assistant' else 'user'
+            if contents and contents[-1]['role'] == role: contents[-1]['parts'][0]['text'] += '\n' + m['content']
+            else: contents.append({'role': role, 'parts': [{'text': m['content']}]})
+        if not contents or contents[0]['role'] != 'user': contents.insert(0, {'role': 'user', 'parts': [{'text': '(call connected)'}]})
+        body = {'systemInstruction': {'parts': [{'text': sysm}]}, 'contents': contents,
+                'generationConfig': {'maxOutputTokens': max_tokens, 'temperature': 0.6, 'thinkingConfig': b.get('thinking', {'thinkingLevel': 'minimal'})}}
+        for attempt in range(2):
+            key, tier = GKEYS.pick(); timing['key'] = tier
+            if not key: timing['err'] = 'no Gemini key with budget left'; break
+            async with http.post(f"{GEM}/models/{b['model']}:streamGenerateContent?alt=sse", headers={'x-goog-api-key': key}, json=body,
+                                 timeout=aiohttp.ClientTimeout(total=60, sock_read=30)) as r:
+                timing['status'] = r.status
+                if r.status != 200:
+                    txt = await r.text()
+                    if is_quota(r.status, txt) and tier == 'free': GKEYS.quota_hit('free'); continue
+                    timing['err'] = f'{r.status} {txt[:300]}'; break
+                async for raw in r.content:
+                    line = raw.strip()
+                    if not line.startswith(b'data:'): continue
+                    try: d = json.loads(line[5:].strip())
+                    except Exception: continue
+                    um = d.get('usageMetadata')
+                    if um:
+                        usage['in'] = um.get('promptTokenCount', 0) or 0
+                        usage['out'] = (um.get('candidatesTokenCount', 0) or 0) + (um.get('thoughtsTokenCount', 0) or 0)
+                        usage['cached'] = um.get('cachedContentTokenCount', 0) or 0
+                    for c in d.get('candidates') or []:
+                        for p in (c.get('content') or {}).get('parts') or []:
+                            t = p.get('text')
+                            if t and not p.get('thought'):
+                                if 'first' not in timing: timing['first'] = time.perf_counter()
+                                yield t
+                break
+    timing['done'] = time.perf_counter()
+    usd = (usage.get('in', 0) - usage.get('cached', 0)) * b['in'] / 1e6 + usage.get('cached', 0) * b['in'] * 0.25 / 1e6 + usage.get('out', 0) * b['out'] / 1e6
+    usage['usd'] = usage.get('usd_reported', usd) if host == 'or' else usd
+    if host == 'gm': GKEYS.charge(timing.get('key'), usage['usd'])
+
+async def llm_once(http, brain_id, messages, max_tokens=400):
+    usage, timing, out = {}, {}, []
+    async for d in llm_stream(http, brain_id, messages, usage, timing, max_tokens=max_tokens): out.append(d)
+    return ''.join(out), usage, timing
+
+# ---------------------------------------------------------------- TTS
+def az_ssml(voice, text, style=None):
+    body = html.escape(text)
+    if style: body = f"<mstts:express-as style='{style}'>{body}</mstts:express-as>"
+    if voice.startswith('en-IN') and ('DragonHD' in voice or 'MAI' in voice):   # multilingual voices: pin Hindi
+        body = f"<lang xml:lang='hi-IN'>{body}</lang>"
+    return (f"<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='hi-IN'>"
+            f"<voice name='{voice}'>{body}</voice></speak>")
+
+try:
+    import azure.cognitiveservices.speech as sp
+except Exception:
+    sp = None
+
+class AzureSynth:
+    """One pre-connected Azure websocket synthesizer (24 kHz PCM). speak() streams chunks into an asyncio queue."""
+    def __init__(self, voice):
+        self.voice = voice
+        cfg = sp.SpeechConfig(subscription=env('LAB_SPEECH_KEY'), region=env('LAB_SPEECH_REGION', 'centralindia'))
+        cfg.set_speech_synthesis_output_format(sp.SpeechSynthesisOutputFormat.Raw24Khz16BitMonoPcm)
+        self.s = sp.SpeechSynthesizer(speech_config=cfg, audio_config=None)
+        self.conn = sp.Connection.from_speech_synthesizer(self.s); self.conn.open(True)
+        self.sink = None; self.loop = None
+        self.s.synthesizing.connect(self._chunk)
+        self.s.speak_ssml_async(az_ssml(voice, 'जी।')).get()     # warm the connection
+        self.last = time.time()
+    def _chunk(self, e):
+        sink, loop = self.sink, self.loop
+        if sink is not None and loop is not None:
+            loop.call_soon_threadsafe(sink.put_nowait, bytes(e.result.audio_data))
+    async def speak(self, text, style=None):
+        """Async generator of 24 kHz PCM chunks for one clause."""
+        q = asyncio.Queue(); self.sink = q; self.loop = asyncio.get_running_loop()
+        fut = self.s.speak_ssml_async(az_ssml(self.voice, text, style))
+        done = asyncio.get_running_loop().run_in_executor(None, fut.get)
+        try:
+            while True:
+                get = asyncio.ensure_future(q.get())
+                finished, _ = await asyncio.wait({get, done}, return_when=asyncio.FIRST_COMPLETED)
+                if get in finished: yield get.result(); continue
+                get.cancel()
+                while not q.empty(): yield q.get_nowait()
+                res = done.result()
+                if res.reason == sp.ResultReason.Canceled:
+                    raise RuntimeError('azure tts canceled: ' + str(res.cancellation_details.error_details)[:200])
+                break
+        finally:
+            self.sink = None; self.last = time.time()
+    def stop(self):
+        try: self.s.stop_speaking_async().get()
+        except Exception: pass
+
+class SynthPool:
+    def __init__(self): self.free = {}; self.lock = threading.Lock()
+    def get(self, voice):
+        with self.lock:
+            lst = self.free.get(voice) or []
+            if lst: return lst.pop()
+        return AzureSynth(voice)
+    def put(self, s):
+        with self.lock: self.free.setdefault(s.voice, []).append(s)
+    def warm(self, voice, n=2):
+        with self.lock: have = len(self.free.get(voice) or [])
+        for _ in range(max(0, n - have)):
+            try: self.put(AzureSynth(voice))
+            except Exception: break
+POOL = SynthPool()
+
+async def gemini_tts(http, model, voice, text, style, usage, timing):
+    """Async generator of 24 kHz PCM chunks from Gemini TTS (Interactions API, streamed L16)."""
+    content = {'type': 'text', 'text': text}
+    if style: content['annotations'] = [{'type': 'speech_metadata', 'style': style}]
+    body = {'model': model, 'input': [{'type': 'user_input', 'content': [content]}],
+            'response_format': {'type': 'audio', 'mime_type': 'audio/l16', 'sample_rate': 24000},
+            'generation_config': {'speech_config': [{'voice': voice}]}, 'stream': True}
+    timing.setdefault('req', time.perf_counter())
+    for attempt in range(2):
+        key, tier = GKEYS.pick(); timing['key'] = tier
+        if not key: timing['err'] = 'no Gemini key with budget left'; return
+        async with http.post(f'{GEM}/interactions', headers={'x-goog-api-key': key}, json=body, timeout=aiohttp.ClientTimeout(total=90, sock_read=30)) as r:
+            if r.status != 200:
+                txt = await r.text()
+                if is_quota(r.status, txt) and tier == 'free': GKEYS.quota_hit('free'); continue
+                timing['err'] = f'{r.status} {txt[:300]}'; return
+            nbytes = 0; skip = True
+            async for raw in r.content:
+                line = raw.strip()
+                if not line.startswith(b'data:'): continue
+                s = line[5:].strip()
+                if s == b'[DONE]': break
+                try: e = json.loads(s)
+                except Exception: continue
+                et = e.get('event_type')
+                if et == 'step.delta' and (e.get('delta') or {}).get('type') == 'audio':
+                    b = base64.b64decode(e['delta']['data'])
+                    if skip:   # trim leading digital silence so first sound is real speech
+                        arr = memoryview(b).cast('h') if len(b) % 2 == 0 else None
+                        if arr is not None:
+                            k = 0
+                            while k < len(arr) and abs(arr[k]) < 64: k += 1
+                            b = b[2 * k:]
+                            if not b: continue
+                        skip = False
+                    if 'first' not in timing: timing['first'] = time.perf_counter()
+                    nbytes += len(b); yield b
+                elif et == 'interaction.completed':
+                    u = (e.get('interaction') or {}).get('usage') or {}
+                    usage['in'] = u.get('total_input_tokens', 0); usage['out'] = u.get('total_output_tokens', 0)
+                elif et in ('error', 'interaction.failed'):
+                    timing['err'] = json.dumps(e)[:300]
+            usage['audio_s'] = usage.get('audio_s', 0) + nbytes / 48000
+            break
+
+def tts_usd(tts_id, chars=0, audio_s=0.0):
+    t = TTS[tts_id]
+    if t['kind'] == 'azure': return chars * t['usd_1m_chars'] / 1e6
+    return audio_s / 60 * t['usd_audio_min']
+
+# ---------------------------------------------------------------- STT
+class AzureSTT:
+    """Azure real-time STT (Central India), 16 kHz push stream. Calls on_partial(text) / on_final(text) on the loop."""
+    def __init__(self, loop, on_partial, on_final, on_error, lang='hi-IN', seg_ms=500):
+        c = sp.SpeechConfig(subscription=env('LAB_SPEECH_KEY'), region=env('LAB_SPEECH_REGION', 'centralindia'))
+        c.speech_recognition_language = lang
+        c.set_property(sp.PropertyId.Speech_SegmentationSilenceTimeoutMs, str(seg_ms))
+        self.stream = sp.audio.PushAudioInputStream(stream_format=sp.audio.AudioStreamFormat(samples_per_second=16000, bits_per_sample=16, channels=1))
+        self.rec = sp.SpeechRecognizer(speech_config=c, audio_config=sp.audio.AudioConfig(stream=self.stream))
+        cb = lambda f, *a: loop.call_soon_threadsafe(f, *a)
+        self.rec.recognizing.connect(lambda e: cb(on_partial, e.result.text))
+        self.rec.recognized.connect(lambda e: cb(on_final, e.result.text) if e.result.reason == sp.ResultReason.RecognizedSpeech and e.result.text else None)
+        self.rec.canceled.connect(lambda e: cb(on_error, str(e.cancellation_details.error_details)[:200]) if e.cancellation_details.reason == sp.CancellationReason.Error else None)
+        self.rec.start_continuous_recognition_async()
+        self.audio_s = 0.0
+    async def start(self): pass
+    def write(self, pcm, is_speech): self.stream.write(pcm); self.audio_s += len(pcm) / 32000
+    def end_of_speech(self): pass
+    async def close(self):
+        self.stream.close()
+        try: await asyncio.get_running_loop().run_in_executor(None, lambda: self.rec.stop_continuous_recognition_async().get())
+        except Exception: pass
+
+class GeminiSTT:
+    """gemini-3.5-transcribe-live over the Live websocket. Caller audio in 40 ms chunks; the session's own VAD is helped
+    by an explicit audioStreamEnd when our VAD sees the caller stop (hybrid, as measured in g3)."""
+    def __init__(self, http, on_partial, on_final, on_error, lang='hi-IN'):
+        self.http = http; self.on_partial = on_partial; self.on_final = on_final; self.on_error = on_error; self.lang = lang
+        self.ws = None; self.buf = b''; self.audio_s = 0.0; self.tier = None; self.reader = None; self.ended = True; self.closed = False; self.trace = None
+    async def start(self):
+        for attempt in range(2):
+            key, tier = GKEYS.pick(); self.tier = tier
+            if not key: raise RuntimeError('no Gemini key with budget left')
+            try:
+                self.ws = await self.http.ws_connect(GEM_WS, headers={'x-goog-api-key': key}, max_msg_size=0, heartbeat=20)
+                await self.ws.send_json({'setup': {'model': 'models/' + STT['gemini']['model'], 'generationConfig': {'responseModalities': ['TEXT']},
+                                                   'inputAudioTranscription': {'languageCodes': [self.lang]}}})
+                m = await self.ws.receive(timeout=15)
+                if ws_text(m) is None or 'setupComplete' not in ws_text(m):
+                    raise RuntimeError(f'setup failed: {getattr(m, "data", m.type)!s:.200} close={self.ws.close_code}')
+                break
+            except Exception as e:
+                if tier == 'free' and attempt == 0 and ('quota' in str(e).lower() or '1011' in str(e) or 'exhaust' in str(e).lower()):
+                    GKEYS.quota_hit('free'); continue
+                raise
+        self.reader = asyncio.ensure_future(self._read())
+    async def _read(self):
+        try:
+            async for m in self.ws:
+                txt = ws_text(m)
+                if txt is None: continue
+                d = json.loads(txt); sc = d.get('serverContent') or {}
+                if 'interimInputTranscription' in sc: self.on_partial(sc['interimInputTranscription'].get('text', ''))
+                if 'inputTranscription' in sc:
+                    t = sc['inputTranscription'].get('text', '').strip()
+                    if t: self.on_final(t)
+                if 'goAway' in d or 'error' in d: self.on_error(json.dumps(d)[:200])
+        except Exception as e:
+            if not self.closed: self.on_error(repr(e)[:200])
+    def write(self, pcm, is_speech):
+        if self.ws is None or self.ws.closed: return
+        self.buf += pcm
+        if is_speech: self.ended = False
+        if len(self.buf) >= 1280:      # 40 ms at 16 kHz
+            b, self.buf = self.buf, b''; self.audio_s += len(b) / 32000
+            asyncio.ensure_future(self.ws.send_json({'realtimeInput': {'audio': {'data': base64.b64encode(b).decode(), 'mimeType': 'audio/pcm;rate=16000'}}}))
+    def end_of_speech(self):
+        if self.ws is not None and not self.ws.closed and not self.ended:
+            self.ended = True
+            if self.buf:
+                b, self.buf = self.buf, b''; self.audio_s += len(b) / 32000
+                asyncio.ensure_future(self.ws.send_json({'realtimeInput': {'audio': {'data': base64.b64encode(b).decode(), 'mimeType': 'audio/pcm;rate=16000'}}}))
+            asyncio.ensure_future(self.ws.send_json({'realtimeInput': {'audioStreamEnd': True}}))
+            if self.trace: self.trace('stt_stream_end')
+    async def close(self):
+        self.closed = True
+        try:
+            if self.ws is not None: await self.ws.close()
+        except Exception: pass
+        if self.reader: self.reader.cancel()
+
+class OaiRealtimeSTT:
+    """Azure OpenAI realtime transcription session (gpt-4o-transcribe), the way Taxila's Asha hears: server VAD off,
+    our VAD commits the buffer at end of speech; deltas stream as partials."""
+    def __init__(self, http, deployment, on_partial, on_final, on_error, lang='hi'):
+        self.http = http; self.dep = deployment; self.on_partial = on_partial; self.on_final = on_final; self.on_error = on_error
+        self.lang = lang; self.ws = None; self.rs = Resampler(16000, 24000); self.audio_s = 0.0; self.part = ''; self.closed = False; self.dirty = False
+    async def start(self):
+        url = f"wss://{az_host(env('LAB_AI_ENDPOINT'))}/openai/v1/realtime?intent=transcription"
+        self.ws = await self.http.ws_connect(url, headers={'api-key': env('LAB_AI_KEY')}, max_msg_size=0, heartbeat=20)
+        await self.ws.send_json({'type': 'session.update', 'session': {'type': 'transcription', 'audio': {'input': {
+            'format': {'type': 'audio/pcm', 'rate': 24000}, 'turn_detection': None,
+            'transcription': {'model': self.dep, 'language': self.lang,
+                              'prompt': 'Hinglish phone call: Hindi in Devanagari, English words in Latin script.'}}}}})
+        self.reader = asyncio.ensure_future(self._read())
+    async def _read(self):
+        try:
+            async for m in self.ws:
+                if m.type != aiohttp.WSMsgType.TEXT: continue
+                d = json.loads(m.data); ty = d.get('type', '')
+                if ty == 'conversation.item.input_audio_transcription.delta':
+                    self.part += d.get('delta', ''); self.on_partial(self.part)
+                elif ty == 'conversation.item.input_audio_transcription.completed':
+                    t = (d.get('transcript') or '').strip(); self.part = ''
+                    if t: self.on_final(t)
+                elif ty == 'error': self.on_error(json.dumps(d)[:240])
+        except Exception as e:
+            if not self.closed: self.on_error(repr(e)[:200])
+    def write(self, pcm, is_speech):
+        if self.ws is None or self.ws.closed: return
+        b = self.rs(pcm); self.audio_s += len(pcm) / 32000; self.dirty = True
+        asyncio.ensure_future(self.ws.send_json({'type': 'input_audio_buffer.append', 'audio': base64.b64encode(b).decode()}))
+    def end_of_speech(self):
+        if self.ws is not None and not self.ws.closed and self.dirty:
+            self.dirty = False
+            asyncio.ensure_future(self.ws.send_json({'type': 'input_audio_buffer.commit'}))
+    async def close(self):
+        self.closed = True
+        try:
+            if self.ws is not None: await self.ws.close()
+        except Exception: pass
+
+class Gate:
+    """VAD gate (cost lever, as g3): forward caller audio only around speech, with a 200 ms pre-roll and a tail so the
+    recogniser's own end-of-speech rule can fire. audio_s counts only what was sent."""
+    def __init__(self, inner, tail_ms=700, preroll_ms=200):
+        import collections
+        self.inner = inner; self.tail = tail_ms / 20; self.ring = collections.deque(maxlen=preroll_ms // 20); self.open = False; self.sil = 0
+    async def start(self): await self.inner.start()
+    @property
+    def audio_s(self): return self.inner.audio_s
+    def write(self, pcm, is_speech):
+        if is_speech:
+            if not self.open:
+                for b in self.ring: self.inner.write(b, False)
+                self.ring.clear(); self.open = True
+            self.sil = 0
+        if self.open:
+            self.inner.write(pcm, is_speech)
+            if not is_speech:
+                self.sil += 1
+                if self.sil >= self.tail: self.open = False
+        else: self.ring.append(pcm)
+    def end_of_speech(self): self.inner.end_of_speech()
+    async def close(self): await self.inner.close()

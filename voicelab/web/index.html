@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VP Voice Lab</title>
+<meta name="theme-color" content="#0f1115">
+<style>
+:root{
+  --bg:#f6f5f2; --card:#ffffff; --ink:#1b1c1f; --muted:#6b6f78; --line:#e4e2dc; --soft:#efede7;
+  --accent:#1f6f5c; --accent-ink:#ffffff; --warn:#a1441d; --danger:#b3261e; --ok:#1f6f5c; --chip:#eef4f1;
+  --agent:#f3efe6; --me:#e9f1ee; --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 24px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1115; --card:#171a20; --ink:#ecebe7; --muted:#9aa0aa; --line:#2a2e36; --soft:#1e222a;
+  --accent:#5fc3a6; --accent-ink:#0b1210; --warn:#e39a6f; --danger:#f2847c; --ok:#5fc3a6; --chip:#1c2a26;
+  --agent:#231f17; --me:#16231f; --shadow:none; } }
+:root[data-theme="dark"]{ --bg:#0f1115; --card:#171a20; --ink:#ecebe7; --muted:#9aa0aa; --line:#2a2e36; --soft:#1e222a;
+  --accent:#5fc3a6; --accent-ink:#0b1210; --warn:#e39a6f; --danger:#f2847c; --ok:#5fc3a6; --chip:#1c2a26; --agent:#231f17; --me:#16231f; --shadow:none; }
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 96px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:4px 0 14px}
+h1{font-size:20px;margin:0;letter-spacing:-.01em} h2{font-size:16px;margin:0 0 10px} h3{font-size:14px;margin:0 0 6px}
+.meta{color:var(--muted);font-size:12.5px;text-align:right}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--soft);padding:4px;border-radius:12px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--muted);padding:9px 6px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:999px;font:inherit;font-size:13.5px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 4px}
+input[type=text],input[type=password],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+textarea{min-height:70px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px} @media(max-width:520px){.row{grid-template-columns:1fr}}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.toggle small{display:block;color:var(--muted);font-size:12px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);padding:11px 16px;border-radius:11px;font:inherit;font-weight:650;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)} .btn:disabled{opacity:.5;cursor:default}
+.mystery{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mystery .big{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+.stacks{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;padding-right:2px}
+.stack{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--card)}
+.stack.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)}
+.stack.off{opacity:.5;cursor:not-allowed} .stack .t{font-weight:600;font-size:14px} .stack .r{font-size:12px;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--chip);color:var(--accent);margin-left:6px;font-weight:600;vertical-align:1px}
+.tag.done{background:var(--soft);color:var(--muted)}
+.callbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0}
+.callbtn{width:92px;height:92px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 35%,transparent)}
+.callbtn.live{background:var(--danger);color:#fff;box-shadow:0 8px 24px color-mix(in srgb,var(--danger) 35%,transparent)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%} @media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--soft);border-radius:10px;padding:8px 10px} .stat b{display:block;font-size:17px;font-variant-numeric:tabular-nums} .stat span{font-size:11.5px;color:var(--muted)}
+.state{font-weight:700;font-size:13px;padding:4px 10px;border-radius:999px;background:var(--soft)}
+.state.speaking{background:var(--agent)} .state.listening{background:var(--me)} .state.thinking{background:var(--chip)}
+.caps{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;width:100%;margin-top:4px}
+.cap{padding:8px 11px;border-radius:12px;max-width:88%;font-size:14.5px;word-wrap:break-word}
+.cap.agent{background:var(--agent);align-self:flex-start} .cap.user{background:var(--me);align-self:flex-end} .cap.partial{opacity:.65}
+.cap .lat{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.err{color:var(--danger);font-size:13px;margin-top:6px}
+.scale{display:flex;gap:6px;flex-wrap:wrap} .scale button{min-width:40px;padding:7px 0;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.scale button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.q{margin:12px 0} .q .h{font-weight:600;font-size:14px} .q .d{font-size:12px;color:var(--muted);margin-bottom:6px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:640px} th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:180px} th{font-size:11.5px;color:var(--muted);font-weight:600}
+td.num{font-variant-numeric:tabular-nums}
+.hist{display:flex;flex-direction:column;gap:10px} .hist audio{width:100%;margin-top:6px}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+.reveal{background:var(--chip);border-radius:12px;padding:12px;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:13.5px;max-width:90vw;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>VP Voice Lab</h1><div class="meta" id="meta"></div></header>
+
+  <div id="gate" class="card" hidden>
+    <h2>Enter the lab</h2>
+    <label for="g-key">Passcode</label><input id="g-key" type="password" autocomplete="current-password">
+    <label for="g-name">Your name (she remembers you by this)</label><input id="g-name" type="text" placeholder="e.g. Raghav">
+    <div style="margin-top:14px"><button class="btn" id="g-go">Continue</button></div>
+    <div class="err" id="g-err"></div>
+  </div>
+
+  <div id="main" hidden>
+    <div class="tabs" role="tablist">
+      <button class="on" data-tab="call">Call</button><button data-tab="results">Results</button><button data-tab="history">History</button>
+    </div>
+
+    <section id="tab-call">
+      <div class="card" id="setup">
+        <div class="seg" id="mode"><button data-mode="blind" class="on">Blind tour</button><button data-mode="pick">Pick a stack</button></div>
+        <div id="blindbox" style="margin-top:12px">
+          <div class="mystery"><div><div class="big" id="m-name">Mystery stack A</div><div class="small muted" id="m-prog"></div></div>
+          <button class="btn ghost" id="m-skip">Skip</button></div>
+          <div class="hint">You won't see which stack this is until you've rated it, so price and brand don't colour what you hear.</div>
+        </div>
+        <div id="pickbox" style="margin-top:12px" hidden><div class="stacks" id="stacks"></div></div>
+        <div class="row">
+          <div><label for="scenario">Scenario</label><select id="scenario"></select></div>
+          <div><label for="brain">Brain</label><select id="brain"></select></div>
+        </div>
+        <div class="row">
+          <div><label for="voice">Voice</label><select id="voice"></select></div>
+          <div></div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="toggle"><div>Headphones on<small>Turns off the browser's echo cancellation so she hears you when you talk over her. Switch off if you're on speaker.</small></div><input type="checkbox" id="hp" checked></div>
+          <div class="toggle"><div>Phone-line sound<small>Simulates an 8 kHz call both ways, how it will sound on a real phone</small></div><input type="checkbox" id="phone"></div>
+          <div class="toggle"><div>Patient turn-taking<small>Waits longer when you trail off mid-sentence ("aur…", "matlab…")</small></div><input type="checkbox" id="smart" checked></div>
+        </div>
+        <div class="hint">Best with wired or earbud headphones. On speaker, switch "Headphones on" off.</div>
+      </div>
+
+      <div class="card">
+        <div class="callbox">
+          <button class="callbtn" id="callbtn">Call</button>
+          <div class="state" id="state" hidden>Connecting</div>
+          <div class="stats" id="stats" hidden>
+            <div class="stat"><b id="s-time">0:00</b><span>duration</span></div>
+            <div class="stat"><b id="s-lat">–</b><span>last reply gap</span></div>
+            <div class="stat"><b id="s-rpm">–</b><span>₹ per minute (AI)</span></div>
+            <div class="stat"><b id="s-inr">–</b><span>₹ so far</span></div>
+          </div>
+          <div class="caps" id="caps"></div>
+          <div class="err" id="callerr"></div>
+        </div>
+      </div>
+
+      <div class="card" id="rate" hidden>
+        <h2>Rate this call</h2>
+        <div class="small muted">1 = poor, 5 = indistinguishable from a good human caller.</div>
+        <div id="qs"></div>
+        <div class="q"><div class="h">Would you pick this for the product?</div>
+          <div class="scale" data-k="would_pick"><button data-v="1">Yes</button><button data-v="0">No</button></div></div>
+        <label for="notes">Notes: what felt human, what broke the spell</label><textarea id="notes"></textarea>
+        <div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="r-save">Save rating</button><button class="btn ghost" id="r-skip">Skip</button></div>
+        <div class="reveal" id="reveal" hidden></div>
+      </div>
+    </section>
+
+    <section id="tab-results" hidden>
+      <div class="card"><h2>Your ratings by stack</h2><div class="small muted" style="margin-bottom:10px">Averages of your ratings (1–5; overall 1–10). ₹/min and reply gap are measured on your calls; "report" is what the desk research predicted.</div>
+        <div class="tablewrap"><table id="rtable"></table></div></div>
+    </section>
+
+    <section id="tab-history" hidden>
+      <div class="card"><h2>Recordings</h2><div class="small muted" style="margin-bottom:10px">Left channel is you, right channel is her.</div><div class="hist" id="hist"></div></div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
