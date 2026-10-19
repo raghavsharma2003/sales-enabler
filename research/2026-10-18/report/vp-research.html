@@ -1,0 +1,595 @@
+<title>Vyakti Platform Research</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the same inspection dossier as the Relay audit. Sticky index left, findings right, charts break to full column width. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --ink:#151A21; --muted:#5A6472; --line:#D9DEE4; --grid:#E6EAEE;
+  --accent:#1D5C8C; --accent-soft:#E3EDF6;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --zone:#E2F3EA;
+  --ok:#1F7A4D; --ok-bg:#E2F3EA; --warn:#9A6200; --warn-bg:#FBF0D9; --bad:#B23B2E; --bad-bg:#F9E3E0; --idle:#5A6472; --idle-bg:#E8EBEF;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1318; --surface:#171C23; --ink:#E6EAF0; --muted:#98A2B0; --line:#2A313B; --grid:#232A33;
+  --accent:#7DB3E0; --accent-soft:#1B2B3A;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --zone:#15301F;
+  --ok:#5FCB8F; --ok-bg:#15301F; --warn:#E8B04A; --warn-bg:#33270F; --bad:#F08A7C; --bad-bg:#3A1B17; --idle:#A3ADBA; --idle-bg:#232A33;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --surface:#171C23; --ink:#E6EAF0; --muted:#98A2B0; --line:#2A313B; --grid:#232A33;
+  --accent:#7DB3E0; --accent-soft:#1B2B3A;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --zone:#15301F;
+  --ok:#5FCB8F; --ok-bg:#15301F; --warn:#E8B04A; --warn-bg:#33270F; --bad:#F08A7C; --bad-bg:#3A1B17; --idle:#A3ADBA; --idle-bg:#232A33;
+  color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body);margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 80px;display:grid;grid-template-columns:210px minmax(0,1fr);gap:48px}
+nav.index{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start;font-size:13px}
+nav.index ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+nav.index a{display:block;padding:6px 10px;border-radius:6px;color:var(--muted);text-decoration:none}
+nav.index a:hover,nav.index a:focus-visible{background:var(--accent-soft);color:var(--ink);outline:none}
+nav.index .brand{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:10px}
+main{min-width:0;display:grid;gap:68px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(30px,4.6vw,48px);font-weight:700;letter-spacing:-.02em}
+h2{font-size:28px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:18px;font-weight:600}
+p{margin:0;max-width:70ch}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+section{display:grid;gap:20px;scroll-margin-top:24px;min-width:0}
+.lede{font-size:17px;color:var(--muted);max-width:68ch}
+.note{font-size:13.5px;color:var(--muted)}
+.verdict{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:22px 24px;display:grid;gap:12px}
+.verdict strong{font-family:var(--f-display);font-size:21px;line-height:1.3}
+.verdict ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stat{background:var(--surface);padding:16px 18px;display:grid;gap:2px;align-content:start}
+.stat b{font:500 26px var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.k{font-weight:600}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip{display:inline-block;font:500 11.5px var(--f-mono);padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+.ok{color:var(--ok);background:var(--ok-bg)} .warn{color:var(--warn);background:var(--warn-bg)} .bad{color:var(--bad);background:var(--bad-bg)} .idle{color:var(--idle);background:var(--idle-bg)}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 18px 12px;display:grid;gap:10px;min-width:0}
+.fig h3{font-size:16px}
+.fig .sub{font-size:13px;color:var(--muted)}
+.chart{width:100%;overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:560px}
+.chart svg text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.chart svg text.lbl{fill:var(--ink);font-family:var(--f-body);font-size:12px}
+.chart svg text.val{fill:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+details{font-size:13.5px}
+details summary{cursor:pointer;color:var(--accent);font-weight:500}
+details summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+details .tbl{margin-top:10px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;gap:8px;align-content:start;min-width:0}
+.card h3{font-size:16px}
+.card p,.card li{font-size:14px}
+.card ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.steps{display:grid;gap:10px;list-style:none;margin:0;padding:0}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;font-size:14px}
+.steps li b.d{font:500 12.5px var(--f-mono);color:var(--accent)}
+.steps li .who{font:500 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.redteam{border-left:3px solid var(--bad);padding:2px 0 2px 16px;display:grid;gap:6px}
+.redteam b{font-family:var(--f-display);font-size:17px}
+code{font:13px var(--f-mono);background:var(--idle-bg);padding:1px 5px;border-radius:4px;word-break:break-word}
+.cols.two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.dates{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.dates li{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.dates li:last-child{border-bottom:0}
+.dates b{font:500 13px var(--f-mono);color:var(--accent);font-variant-numeric:tabular-nums}
+@media (max-width:480px){.cols.two{grid-template-columns:minmax(0,1fr)}.dates li{grid-template-columns:minmax(0,1fr);gap:2px}}
+.foot{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px;display:grid;gap:6px}
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font:12.5px/1.45 var(--f-body);padding:8px 10px;border-radius:8px;max-width:300px;box-shadow:0 4px 16px rgb(0 0 0 / .18)}
+#tip b{font-weight:600}
+.hit{cursor:default}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr);gap:28px}nav.index{position:static}nav.index ol{display:flex;flex-wrap:wrap;gap:4px}nav.index a{padding:4px 8px;border:1px solid var(--line)}.steps li{grid-template-columns:minmax(0,1fr);gap:4px}}
+</style>
+
+<div class="wrap">
+<nav class="index" aria-label="Sections">
+  <div class="brand">VP research · 17 Oct 2026</div>
+  <ol>
+    <li><a href="#answer">The answer so far</a></li>
+    <li><a href="#voice">Voice price and latency</a></li>
+    <li><a href="#money">Money per minute</a></li>
+    <li><a href="#rules">What the law allows</a></li>
+    <li><a href="#market">The market</a></li>
+    <li><a href="#demos">Competitor demos</a></li>
+    <li><a href="#ours">Our stack from India</a></li>
+    <li><a href="#tech">Technology curve</a></li>
+    <li><a href="#segments">Segments</a></li>
+    <li><a href="#wedge">The candidate wedge</a></li>
+    <li><a href="#ideas">Your eight ideas</a></li>
+    <li><a href="#gaps">Gaps</a></li>
+    <li><a href="#redteam">Red-team</a></li>
+    <li><a href="#next">Next four weeks</a></li>
+    <li><a href="#predictions">Predictions scored</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="answer">
+  <div class="eyebrow">Two research rounds · 37 agents · 200-claim evidence ledger · ₹3,316 Azure (est.)</div>
+  <h1>The voice AI market in India rewards outcomes and compliance. Per-minute pricing loses money at launch.</h1>
+  <p class="lede">The research was built to pick one place to start, with evidence and with conditions that would rule it out. It found a candidate. It also found good reasons to doubt it, and those are kept on this page.</p>
+  <p class="note"><b>Updated 19 Oct:</b> human-like voice is now the core product, aimed at a self-serve platform. The new <a href="#voice">voice price and latency</a> section answers whether ₹2 a minute is possible.</p>
+  <div class="verdict">
+    <span class="chip warn">Provisional · confidence moderate to low</span>
+    <strong>Best-supported start: renewal reminder calls for small and mid insurance brokers and corporate agents, car and health policies first. Price per renewal collected, not per minute.</strong>
+    <ul>
+      <li><b>The call can only inform, confirm and hand off.</b> Under IRDAI rules, persuading someone to renew is regulated solicitation, reserved for certified humans. The AI reminds, reads back the premium and date, sends a payment link, and passes anything persuasive to a person.</li>
+      <li><b>It must run on the broker's own 1600-series number.</b> That number series became mandatory for every insurance intermediary's service calls on 15 Feb 2026.</li>
+      <li><b>The pool is small.</b> About ₹107 Cr a year at the tested price. The venture-scale case depends on moving to other bank and insurer service calls (₹166 Cr) and then post-sales calling outside finance (₹1,980 Cr, the weakest estimate).</li>
+      <li><b>The red-team found the offer does not yet hang together.</b> See its section below before you decide anything.</li>
+    </ul>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>₹5.88</b><span>our managed Azure cost per connected minute at launch volume (p50)</span></div>
+    <div class="stat"><b>₹3.5–7</b><span>what Indian competitors list per minute, all-in</span></div>
+    <div class="stat"><b>₹6–9</b><span>a human telecaller's cost per connected minute</span></div>
+    <div class="stat"><b>1.0 s</b><span>our India-hosted cascade's reply time (server side, p50, n=48)</span></div>
+    <div class="stat"><b>15–50%</b><span>of turns where our cascade cut the caller off (bar: ≤5%)</span></div>
+    <div class="stat"><b>0 of 11</b><span>pre-registered predictions that held exactly as written</span></div>
+  </div>
+</section>
+
+<section id="voice">
+  <div class="eyebrow">Added 19 Oct 2026 · Gemini paid and free keys, OpenRouter, Azure · measured from Central India</div>
+  <h2>Voice price and latency</h2>
+  <p>You asked how to keep human-like, emotional voice at about ₹2 a minute. At a ₹2 price, telephony takes about ₹0.43 and a 40–60% margin takes most of the rest, which leaves only ₹0.34–0.74 a minute for all the AI. No stack we measured end to end fits inside that today. The cheapest measured one costs ₹0.94–1.07.</p>
+  <div class="verdict">
+    <span class="chip warn" style="white-space:normal;justify-self:start">Provisional until the listener panel</span>
+    <strong>Base ₹2.99 a minute, plus ₹3.99 with learning agents, premium ₹6.49 with deep personalisation and a dedicated voice. All prices are ex-GST.</strong>
+    <p>₹2 a minute becomes possible only if a cheaper voice provider (Inworld) or self-hosted Indian models pass the listener panel and the India speed test. Both are desk estimates today, and both need volume: about 250,000 minutes a month for Inworld's credits, about 2.5 million for self-hosting.</p>
+  </div>
+  <div class="fig">
+    <h3>AI cost per connected minute, 3-minute call</h3>
+    <div class="sub">The green band is what a ₹2 price leaves for AI at a 40–60% margin. Labels show reply time from India and how often the agent cut the caller off. Hover a row for the stack's parts.</div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>Measured end to end from India</span><span><i style="background:var(--s2)"></i>Priced from published rates, speed not tested</span></div>
+    <div class="chart" id="chV" role="img" aria-label="Dot chart of AI cost per minute for each voice stack against the budget band"></div>
+    <details><summary>Show the numbers</summary><div class="tbl"><table id="tV"></table></div></details>
+  </div>
+  <div class="fig">
+    <h3>Gemini Live gets dearer per minute the longer the call</h3>
+    <div class="sub">₹ per connected minute on the paid meter. Solid lines have no history compression; dashed lines compress at 6,000 tokens. Every turn re-bills the past audio.</div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>3.1 flash live (Meera's model)</span><span><i style="background:var(--s2)"></i>3.8 live</span></div>
+    <div class="chart" id="chW" role="img" aria-label="Line chart of Gemini Live cost per minute by call length"></div>
+    <details><summary>Show the numbers</summary><div class="tbl"><table id="tW"></table></div></details>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>Gemini Live is expressive and expensive</h3><p>At paid prices it costs ₹4.2–5.7 a minute on a 3-minute call and ₹6.4–12.7 on a 10-minute call. Compressing hard keeps it at about ₹2.9–3.7, but then the agent remembers only the last 17–27 seconds. Meera's 3.1 model is scheduled to shut down from 17 Nov 2026.</p></div>
+    <div class="card"><h3>The ₹1.3 figure was never measured</h3><p>It traces to a 23 Aug estimate in Meera's notes, worked out from code constants. That estimate billed the system prompt once instead of on every turn, as Google's documentation describes. Meera itself ran on free keys at ₹0. The same model on the paid meter costs ₹2.47 a minute for a 1-minute call and ₹10.74 for a 10-minute call.</p></div>
+    <div class="card"><h3>Paid tier is not faster</h3><p>In paired tests from India, the paid and free keys showed no reliable speed difference. 3.8 live replies in about 1.0 s, the same as our Azure pipeline, but it talked over the caller on 42% of turns. 3.1 replies in about 1.95 s.</p></div>
+    <div class="card"><h3>Words can be checked before they are heard</h3><p>On Gemini Live, the text of a reply arrived together with its first audio on all 1,041 turns tested. In a pipeline, the text always exists before the voice. Either way a safety check can stay ahead of playback.</p></div>
+    <div class="card"><h3>Turn-taking is the real gap</h3><p>Every stack cut callers off on 15–42% of turns, and every one spoke into the elderly caller's 2.4-second pause. A human-sounding voice that interrupts does not sound human. This needs fixing first, on whichever stack wins.</p></div>
+    <div class="card"><h3>Where the cheapest stack runs</h3><p>The base stack uses Google's transcription, an open model (gpt-oss) served by Groq through OpenRouter, and an Azure voice, so audio is processed outside India. Insurance records must stay in India. Your provider policy and data residency need a decision before build.</p></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Tier</th><th>What runs it</th><th>Price per minute (ex-GST)</th><th>Cost per minute</th><th>Gross margin</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Base: human-like, emotional voice</td><td>Gated Gemini transcription, gpt-oss on Groq, stock Azure neural voice</td><td class="num">₹2.99 (₹8.97 per 3-minute call)</td><td class="num">₹1.72 (1.51–1.93)</td><td class="num">43% (49% at the reference workload)</td></tr>
+      <tr><td class="k">Plus: learning agents</td><td>Base, plus learned memory in the prompt and a learning pass after each call</td><td class="num">₹3.99</td><td class="num">₹2.14 (1.87–2.59)</td><td class="num">46%</td></tr>
+      <tr><td class="k">Premium: deep personalisation and a dedicated voice</td><td>India-processed Azure pipeline with a custom neural voice</td><td class="num">₹6.49 + ₹3.5 lakh a month per voice</td><td class="num">₹3.52 (3.00–4.30)</td><td class="num">46%</td></tr>
+      <tr><td class="k">Base if listeners reject stock voices</td><td>Base with Azure's high-definition voice</td><td class="num">₹3.49</td><td class="num">₹2.26 (1.97–2.56)</td><td class="num">35%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Costs are measured usage × published list prices, with Monte Carlo ranges over talk ratio, turns, call length and exchange rate. No provider invoice has been reconciled yet, and OpenRouter's per-response cost ran 1.2–1.8× our ledger in one check. Telephony is modelled at about ₹0.43 a minute; 1600-series numbers have no published price, and at ₹0.60–0.80 base margin falls to 35–43%. Spend: Gemini paid $14.88 of your $20, OpenRouter $0.18 of $6, Azure within the $100 cap (estimates).</p>
+  <ol class="steps">
+    <li><b class="d">Next</b><div><span class="who">You</span><br>Run the listener panel on the 27 matched expressive samples, the Gemini Live samples and a human reference. It decides the base voice and whether Gemini Live earns a place in premium.</div></li>
+    <li><b class="d">Next</b><div><span class="who">Me, about ₹200</span><br>A pause-aware turn-taking policy on the base stack: cut-ins at or below 5% with replies at or below 1.2 s.</div></li>
+    <li><b class="d">Next</b><div><span class="who">Me, about ₹2.5k</span><br>Test Inworld from India, and the self-hosted Indian models on one GPU each. These are the only paths to ₹2.</div></li>
+    <li><b class="d">Next</b><div><span class="who">Me</span><br>About 20 calls of known length reconciled against the providers' billing exports, so cost stops being list-price arithmetic.</div></li>
+    <li><b class="d">Next</b><div><span class="who">You</span><br>A trial number from a calling provider, for the real phone-line test and a 1600-series price.</div></li>
+  </ol>
+  <p class="note">Predictions written before the tests: 5 of 9 held. Cost growth with call length and the lack of a cheap Gemini path both came out as predicted. Two did not: that compression would keep cost flat, and that the transcript would arrive too late for a safety check.</p>
+</section>
+
+<section id="money">
+  <div class="eyebrow">H2 · rupees per connected minute</div>
+  <h2>Money per minute</h2>
+  <p>Your target was under ₹2 a minute with nothing missing. On managed Azure at the quality bar we measured, the cost floor is about ₹2.1–2.3 even at a million minutes a month. Only a mix of a cheaper model and self-hosted speech gets near ₹1.2, and that needs about 1.6 million minutes a month and passing quality tests nobody has run. Meanwhile Indian competitors already list at ₹3.5–7. Selling per minute against them at launch costs us money.</p>
+  <div class="fig">
+    <h3>Cost and price per connected minute</h3>
+    <div class="sub">Ranges are p10–p90 or published ranges; dots mark the central value. Hover a row for its source.</div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>Our cost</span><span><i style="background:var(--s2)"></i>Market list prices</span><span><i style="background:var(--s3)"></i>Human telecaller</span></div>
+    <div class="chart" id="chA" role="img" aria-label="Range chart of cost and price per connected minute in rupees"></div>
+    <details><summary>Show the numbers</summary><div class="tbl"><table id="tA"></table></div></details>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>What this means</h3><ul><li>₹2 a minute becomes a cost target for when volume is large, not a price.</li><li>Per renewal, the same call is worth far more: a ₹50 fee per car renewal equals about ₹23 per AI minute.</li><li>Self-hosting speech only pays above about 1.6M minutes a month, plus NVIDIA licences and multi-year GPU commitments.</li></ul></div>
+    <div class="card"><h3>Where costs come from</h3><ul><li>Streaming speech-to-text is the biggest line: about ₹1.58 of every AI minute.</li><li>Telephony adds ₹0.38–0.48 a minute; it can never be built in-house, because only licensed telcos may connect calls to the Indian network.</li><li>All Azure prices are in dollars. The rupee moved from 88 to 95 per dollar in a year.</li></ul></div>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="eyebrow">H1 · TRAI, DPDP, IRDAI, RBI, Meta · primary texts</div>
+  <h2>What the law allows</h2>
+  <p>Regulation decides which markets exist. Cold sales calls are lawful today from 140-series numbers to people who have not registered a Do-Not-Disturb preference. When the data-protection law's core duties start around 13 May 2027, calling bought or scraped consumer lists loses its legal basis. Calls to your own customers about what they already bought are the most durable ground.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Use case</th><th>Today</th><th>By Oct 2027</th><th>Number to call from</th></tr></thead>
+    <tbody id="regRows"></tbody>
+  </table></div>
+  <p class="note">"With conditions" means lawful only if specific registration, consent, hours and number-series rules are met. Every automated call must also be declared to the operator in advance from about 18 Nov 2026. No TRAI rule requires the AI to say it is an AI; our product rule is to say so at the start and never deny it.</p>
+  <div class="fig">
+    <h3>Dates that bind</h3>
+    <ol class="dates">
+      <li><b>19 Oct 2026</b><span>The 7-day window for calling someone after a digital inquiry starts (strict reading)</span></li>
+      <li><b>25 Oct 2026</b><span>Comments close on IRDAI's proposal to cap renewal commissions</span></li>
+      <li><b>1 Nov 2026</b><span>Caller-name display (CNAP) starts on 4G and above</span></li>
+      <li><b>18 Nov 2026</b><span>Every automated call must be pre-declared to the operator</span></li>
+      <li><b>1 Jan 2027</b><span>RBI recovery-call rules: 08:00–19:00 only, every call recorded and kept 6 months</span></li>
+      <li><b>31 Jan 2027</b><span>Existing insurance intermediaries re-apply for registration</span></li>
+      <li><b>14 Apr 2027</b><span>The fastest India-hosted model (gpt-4.1-mini) retires</span></li>
+      <li><b>~13 May 2027</b><span>Data-protection law's core duties start; bought consumer lists lose their legal basis</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="market">
+  <div class="eyebrow">H4 desk research · H8 · H10</div>
+  <h2>The market</h2>
+  <p>On headline features, the platforms already match each other: 10 to 12 of the 12 platforms read in depth document campaigns, inbound, transfer, knowledge bases, tools, extraction and analytics. Copying them gets us nothing. Where they leave room is narrower and more Indian.</p>
+  <div class="cols two">
+    <div class="card"><h3>Indian voice-AI players</h3><p>Bolna, Sarvam, Gnani, Smallest.ai, Ringg, Ravan, SubVerse, VoiceGenie, Haptik, Yellow.ai, SquadStack (humans plus AI, sold per outcome), Exotel and Ozonetel bots, plus at least 10 offers that sell insurance renewal calling specifically.</p></div>
+    <div class="card"><h3>CRMs that already bundle voice</h3><p>LeadSquared with Invorto, Sell.Do for real estate, Salesforce Agentforce Voice in Hindi (from May 2026), Zoho with Hindi speech recognition and free agents, MyOperator's managed AI team. This is the real competition for a company command centre.</p></div>
+    <div class="card"><h3>What buyers complain about</h3><p>Of 459 coded complaints about Indian vendors: support 114, billing 107, account and interface 99, reliability 71. Voice quality itself drew only 1 to 5 each. Service failures dominate.</p></div>
+    <div class="card"><h3>How buyers buy</h3><p>Point tools first, suites later: Zoho One is about 5% of Zoho's paying customers. Sales-led vendors earn ₹26k–2.4L a month per customer, self-serve about ₹4.9k. Pilots take 2–8 weeks, production 8–12+. No vendor publishes acquisition cost or churn.</p></div>
+  </div>
+</section>
+
+<section id="demos">
+  <div class="eyebrow">H4 measured · 7 public homepage demos · 4 synthetic Indian caller personas</div>
+  <h2>Competitor demos</h2>
+  <p>We called the public demo agents of seven platforms with the same simulated callers: urban Hinglish, Bhojpuri-Hindi with background chatter, Tamil-English, and an elderly Hindi speaker who pauses mid-sentence. None of them replied within 1.5 seconds once the test's run-to-run variation is counted. These were each vendor's own demo agent, measured from the US; nobody has yet built our renewal agent on their platforms, which is the real test.</p>
+  <div class="fig">
+    <h3>Median reply time on clean turns</h3>
+    <div class="sub">Dot is the median; whisker is the 90% interval clustered by call. Measured 17 Oct 2026 from a US-East sandbox, so Indian users would see somewhat less.</div>
+    <div class="chart" id="chC" role="img" aria-label="Dot and whisker chart of competitor demo reply times"></div>
+    <details><summary>Show the numbers</summary><div class="tbl"><table id="tC"></table></div></details>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>Language drift</h3><p>Demos that auto-detect language drifted badly: Vapi answered a Hinglish caller in Gujarati on 17 of 18 turns. Sarvam's Hindi-first demo held the caller's language on 38 of 40 Hindi turns.</p></div>
+    <div class="card"><h3>Pauses and noise</h3><p>12 of 13 demo calls cut into the elderly caller's 2.4-second pause. Under background chatter, Ultravox looped its greeting and Sarvam fell silent.</p></div>
+    <div class="card"><h3>Saying it is an AI</h3><p>Asked "are you a robot?", Sarvam's EMI-reminder persona said it was human in some calls; the automatic coding of this is unverified and nobody has listened yet. ElevenLabs disclosed 7 of 7 times.</p></div>
+  </div>
+</section>
+
+<section id="ours">
+  <div class="eyebrow">Kill criterion 6 · measured from a Central India VM · 6 configurations × 60 turns</div>
+  <h2>Our stack from India</h2>
+  <p>Round 1's latency numbers were taken from the US through a proxy and overstated our delay two to five times. Measured from inside India, a cascade of Azure speech recognition, a fast model in South India and Azure neural voices replied in about one second. Speed is solved on the server side. Turn-taking is not: every configuration interrupted the caller far too often, and all of them talked over the elderly caller's pause every time.</p>
+  <div class="fig">
+    <h3>Reply time against interruptions</h3>
+    <div class="sub">Each dot is one configuration. The green box is the target: reply within 1.5 s and interrupt on no more than 5% of turns. Nothing is in it yet.</div>
+    <div class="chart" id="chD" role="img" aria-label="Scatter of our six cascade configurations, reply time against interruption rate"></div>
+    <details><summary>Show the numbers</summary><div class="tbl"><table id="tD"></table></div></details>
+  </div>
+  <p class="note">Speculative starts (configs C and E) are faster but unsafe as built: the matcher accepted truncated transcripts and passed "yes" when the caller said "no" on 4 of 4 constructed pairs. The telephone leg is not measured yet; it adds an estimated 0.25–0.45 s. The fastest India model, gpt-4.1-mini, retires on 14 Apr 2027.</p>
+</section>
+
+<section id="tech">
+  <div class="eyebrow">H9 · Azure list prices since 2023 · fixed workload</div>
+  <h2>Technology curve</h2>
+  <p>The AI cost of a managed voice cascade at our quality bar fell 17.5 times since April 2023, from about ₹55 to ₹3.1 a minute. Nearly all of that fall happened before late 2025. For the last year the curve has been flat, and the newest frontier model was the first price rise in its series. "Voice AI will cost almost nothing" holds for small models and open self-hosted ones, but the managed stack we can use today is planning on a flat line.</p>
+  <div class="fig">
+    <h3>AI cost per connected minute, managed Azure stack</h3>
+    <div class="sub">Log scale. Forecast whiskers are p10–p90 for 31 Dec 2027. Excludes telephony.</div>
+    <div class="chart" id="chB" role="img" aria-label="Line chart of AI cost per minute from 2023 to 2026 with 2027 forecasts"></div>
+    <details><summary>Show the numbers</summary><div class="tbl"><table id="tB"></table></div></details>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>Real now</h3><ul><li>A text-gated cascade: speech recognition, a fast model, streaming neural voice. It is the only design that can check every word before the caller hears it.</li><li>Azure's newest batch transcriber had the lowest error on Indian phone audio (15.1% vs 18.1% word error), but only on finished recordings.</li><li>Language must be fixed per call: automatic detection read Hindi as Marathi on 46 of 60 clips.</li></ul></div>
+    <div class="card"><h3>Not ready</h3><ul><li>Full-duplex speech-to-speech that can be checked before it speaks does not exist for Indian languages.</li><li>Open transcribers invent words on silence: one wrote "हाँ" (yes) on 24 of 25 silent or noisy clips. A fabricated "yes" is a fake consent.</li><li>No Bhojpuri or other Hindi-belt dialect voice exists on Azure, Sarvam or the open Indic models.</li></ul></div>
+    <div class="card"><h3>What does not get cheaper</h3><ul><li>Telephony, which is set by licensed carriers.</li><li>Compliance: registration, consent records, number series, recordings kept 6 months to 10 years.</li><li>Distribution and support, which drive most complaints.</li></ul></div>
+  </div>
+</section>
+
+<section id="segments">
+  <div class="eyebrow">H3 · weights fixed before scoring · 19 segments</div>
+  <h2>Segments</h2>
+  <p>The scorecard weighs pain, current telecalling spend, volume, regulatory safety, integration, sales cycle and ability to pay. Insurance renewals and real estate tie once an extra criterion added mid-study is removed. D2C order confirmation fails because Shopify apps already sell it below our cost. Study abroad, the old configuration in the codebase, ranks 12th.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Segment</th><th>Score (without the added criterion)</th><th>Rank as frozen</th><th>Rank without it</th><th>Chance of top 3</th></tr></thead>
+    <tbody id="segRows"></tbody>
+  </table></div>
+  <div class="fig">
+    <h3>Market size along the expansion path</h3>
+    <div class="sub">₹ Cr a year, p50 with p10–p90 whiskers, log scale. Modelled from assumptions; no verifier ran on this model.</div>
+    <div class="chart" id="chE" role="img" aria-label="Dot and whisker chart of market size by expansion stage"></div>
+  </div>
+</section>
+
+<section id="wedge">
+  <div class="eyebrow">SYNTHESIS-v2 · kill criteria</div>
+  <h2>The candidate wedge</h2>
+  <div class="cols">
+    <div class="card"><h3>Beachhead: insurance renewals</h3><ul><li>Buyers: small and mid retail brokers and non-bank corporate agents with about 1,000+ renewals due a month; renewal books of large brokers and agent platforms.</li><li>Insurance marketing firms are interviewed but not offered pilots: their rules may forbid telemarketing outright.</li><li>Software the broker runs on its own 1600 number. VP is never the sender.</li></ul></div>
+    <div class="card"><h3>Alternate 1: real-estate site visits</h3><ul><li>Speed-to-lead calls to a developer's own inquiries, priced per qualified site visit (₹300–500, an assumption).</li><li>Ties on the scorecard; not researched in round 2.</li><li>Problems: pre-sales rules, CRMs that already bundle voice, AI not cheaper per minute here.</li></ul></div>
+    <div class="card"><h3>Alternate 2: bank and NBFC reminders</h3><ul><li>Pre-due EMI and service reminders on lenders' 1600 numbers.</li><li>A dated trigger: RBI's call conduct rules from 1 Jan 2027 (08:00–19:00 only, every call recorded).</li><li>At least 8 AI competitors already sell here.</li></ul></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Price card for Monday's interviews</th><th>Fee per renewal collected</th><th>Gross margin at launch</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Car (4W motor)</td><td class="num">₹50</td><td class="num">66.5%</td><td><span class="chip ok">sell</span></td></tr>
+      <tr><td class="k">Health</td><td class="num">₹15 (₹19 if only post-call renewals bill)</td><td class="num">45.3%</td><td><span class="chip warn">sell once "collected" is defined</span></td></tr>
+      <tr><td class="k">Life</td><td class="num">₹15</td><td class="num">33%</td><td><span class="chip idle">probe only</span></td></tr>
+      <tr><td class="k">Two-wheeler</td><td class="num">₹20</td><td class="num">12.7%</td><td><span class="chip idle">probe only</span></td></tr>
+      <tr><td class="k">Any line, per minute at ₹6–8</td><td class="num">—</td><td class="num">−47% to +1%</td><td><span class="chip bad">loses money</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Plus a ₹15k monthly minimum credited against usage and a 10% holdout that is never billed. A 1,500-renewal broker would pay about ₹24k a month.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Kill criterion</th><th>Status</th><th>Decided by</th></tr></thead>
+    <tbody id="kcRows"></tbody>
+  </table></div>
+</section>
+
+<section id="ideas">
+  <div class="eyebrow">Your list, tested · each with the evidence that would reverse it</div>
+  <h2>Your eight ideas</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Idea</th><th>Verdict</th><th>Why</th><th>What would reverse it</th></tr></thead>
+    <tbody id="ideaRows"></tbody>
+  </table></div>
+</section>
+
+<section id="gaps">
+  <div class="eyebrow">What nobody serves well</div>
+  <h2>Gaps</h2>
+  <div class="cols">
+    <div class="card"><h3>Compliance as product</h3><p>Number-series routing by sector, automated-call declarations, hours, consent records and blocking sales talk inside service calls. Most self-serve platforms leave all of it to the buyer.</p></div>
+    <div class="card"><h3>Indian phone conversation competence</h3><p>Locking the caller's language, waiting through elderly pauses, hearing a quiet "hmm", staying short, surviving noise. Every demo and our own build fail parts of this today.</p></div>
+    <div class="card"><h3>Number and consent integrity</h3><p>Reading back amounts and dates, never treating a transcriber's "yes" as consent, writing prices out before speech. A design rule for us, not a proven weakness of others.</p></div>
+    <div class="card"><h3>Trust against scams</h3><p>Fake renewal and "your policy lapsed, pay now" calls are documented. A verified 1600 number, the caller-name display from 1 Nov 2026 and no cold payment links are product scope. Nobody found addresses this.</p></div>
+    <div class="card"><h3>Honest experimentation</h3><p>Retell, Vapi, ElevenLabs and Bland ship two-way split tests with no statistics. Checked daily, those pick a false winner 52–62% of the time over 90 days.</p></div>
+    <div class="card"><h3>A managed service for the mid-market</h3><p>Self-serve platforms assume an engineer; enterprise plans start high. A managed, per-outcome service for small and mid firms is unoffered. That gap may exist because the segment is hard to serve profitably.</p></div>
+  </div>
+</section>
+
+<section id="redteam">
+  <div class="eyebrow">CRITIC-v2 · an independent agent told to break the decision</div>
+  <h2>Red-team</h2>
+  <p>Round 2 closed most research gaps. The red-team's view is that the weak point is now the fit between the decision and what Monday's interviews actually test.</p>
+  <div class="redteam"><b>The offer is not one product yet.</b><p>The regulation points to software the broker runs on its own number. The interview card pitches a service VP runs. The only gap competitors leave open is the managed version. And ₹50 per car renewal is 2–6 times what self-serve AI calling costs per minute, on the line where the AI is not allowed to re-quote.</p></div>
+  <div class="redteam"><b>The buyer test is close to a coin flip.</b><p>Insurance marketing firms are half the firms by count and probably too small; if they all fail, the "enough buyers" test fires about half the time even when brokers pass. The likeliest outcome routes VP to large brokers and platforms, where competition is densest.</p></div>
+  <div class="redteam"><b>The economics rest on assumed commissions and a live proposal.</b><p>IRDAI proposed capping renewal commissions on 23 Sep 2026 (comments close 25 Oct). Under the caps, the value of a saved renewal falls to about a third to a half. The same paper proposes a single licence for all intermediaries, which could rewrite the rules the buyer strata rest on. Nobody has read that half yet.</p></div>
+  <div class="redteam"><b>No configuration meets everything at once.</b><p>Fast enough, polite in turn-taking, processed in India and on a model that will not retire next April: no tested setup does all four.</p></div>
+</section>
+
+<section id="next">
+  <div class="eyebrow">Owner actions in date order · from SYNTHESIS-v2 §11 and CRITIC-v2 §4</div>
+  <h2>Next four weeks</h2>
+  <ol class="steps">
+    <li><b class="d">Sun 18 Oct</b><div><span class="who">You</span><br>Decide what Monday tests: the managed service or the software the broker runs. Log it before the first call. Fix the price-ceiling wording in the guide, make the commission-cap question mandatory, and run two mock interviews.</div></li>
+    <li><b class="d">Mon 19 Oct</b><div><span class="who">You</span><br>Send the first 15 insurance contacts, by stratum. Brief a telecom, data-protection and insurance lawyer with the eight questions in SYNTHESIS-v2 §3.7; ask for answers by 13 Nov.</div></li>
+    <li><b class="d">Tue 20 Oct</b><div><span class="who">Me</span><br>Reconcile the Azure invoice against the spend log (₹3,316 estimated).</div></li>
+    <li><b class="d">23–25 Oct</b><div><span class="who">You</span><br>Second outreach wave. Decide whether to comment on IRDAI's distribution consultation (closes Sun 25 Oct). No action needed on Azure Communication Services.</div></li>
+    <li><b class="d">Fri 30 Oct</b><div><span class="who">You</span><br>Telephony quotes from Exotel, Plivo, Vobiz, Tata, Jio, Ozonetel: 1600 for a small intermediary, price, audio streaming to our AI, caller-name display, a trial number.</div></li>
+    <li><b class="d">Thu 29 Oct</b><div><span class="who">Both</span><br>Interim interview check. Only then decide whether to fund the listener panel (about ₹1.2–1.5 lakh).</div></li>
+    <li><b class="d">Fri 6 Nov</b><div><span class="who">Me, with your trial number</span><br>Turn-taking redesign, then the test battery over a real Indian phone line in weekday hours. Our renewal agent built on Sarvam, Ringg, Bolna and Gnani for the real competitor test (needs your sign-ups).</div></li>
+    <li><b class="d">Fri 13 Nov</b><div><span class="who">Both</span><br>Score the interviews and the lawyer's answers against the kill criteria. Hold, move to larger brokers, switch to real estate, or re-price.</div></li>
+  </ol>
+</section>
+
+<section id="predictions">
+  <div class="eyebrow">Written and committed before any research</div>
+  <h2>Predictions scored</h2>
+  <p>I wrote eleven predictions before the research started. None held exactly as written. Scored generously (a partly-right prediction counts half), my Brier score was 0.042 against 0.050 for a coin flip. Scored strictly, it was 0.357 against 0.250: worse than a coin flip. The misses cluster on mechanisms (which law bites, which number series applies) and on magnitudes (how fast costs fall, how low competitors price).</p>
+  <div class="foot">
+    <span>Sources: <code>research/2026-10-17/</code> on branch <code>claude/serene-franklin-9w7f1v</code>: <code>SYNTHESIS-v2.md</code>, <code>CRITIC-v2.md</code>, <code>ledger.json</code> (200 claims with source, date, method and verifier verdict), the ten lane folders and their round-2 work, <code>founder-kit/</code> and <code>listener-panel/</code>. Raw downloads (4.4 GB) are in VP's Azure storage, listed in <code>raw-manifest.csv</code>.</span>
+    <span>Limits: no buyer has been interviewed, no listener has rated a clip, and every caller in every test was a synthetic Azure voice. Three round-2 packages had no adversarial verifier.</span>
+  </div>
+</section>
+
+</main>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+(function(){
+const NS='http://www.w3.org/2000/svg';
+const tip=document.getElementById('tip');
+function showTip(e,html){tip.innerHTML=html;tip.hidden=false;moveTip(e);}
+function moveTip(e){const pad=14;let x=e.clientX+pad,y=e.clientY+pad;const r=tip.getBoundingClientRect();if(x+r.width>innerWidth-8)x=e.clientX-r.width-pad;if(y+r.height>innerHeight-8)y=e.clientY-r.height-pad;tip.style.left=x+'px';tip.style.top=y+'px';}
+function hideTip(){tip.hidden=true;}
+function el(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);if(parent)parent.appendChild(n);return n;}
+function txt(parent,x,y,s,cls,anchor){const t=el('text',{x,y,'text-anchor':anchor||'start'},parent);if(cls)t.setAttribute('class',cls);t.textContent=s;return t;}
+function hover(node,html){node.addEventListener('mouseenter',e=>showTip(e,html));node.addEventListener('mousemove',moveTip);node.addEventListener('mouseleave',hideTip);node.setAttribute('tabindex','0');node.addEventListener('focus',()=>{const b=node.getBoundingClientRect();showTip({clientX:b.right,clientY:b.top},html)});node.addEventListener('blur',hideTip);}
+function fillTable(id,head,rows){const t=document.getElementById(id);t.innerHTML='<thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((c,i)=>'<td'+(i>0?' class="num"':'')+'>'+c+'</td>').join('')+'</tr>').join('')+'</tbody>';}
+
+/* Chart A: price ladder */
+const A=[
+ {l:'Our managed cost at launch (100k min/mo)',lo:5.0,hi:6.96,m:5.88,c:'s1',src:'l2 cost model, Monte Carlo p10–p90, corrected round 2'},
+ {l:'All-in per AI minute with escalation, WhatsApp, 1600',lo:7.9,hi:8.8,m:null,c:'s1',src:'r2 renewal model (REN-06)'},
+ {l:'Our managed cost at scale (1M min/mo)',lo:2.84,hi:3.70,m:3.23,c:'s1',src:'l2 corrected, ECO-03'},
+ {l:'Managed floor with commitment tiers',lo:2.1,hi:2.3,m:null,c:'s1',src:'l2 verifier; P(≤ ₹2) ≈ 0.01'},
+ {l:'Cheaper model + self-hosted speech (≥1.6M min/mo)',lo:1.19,hi:1.19,m:1.19,c:'s1',src:'D-lite path, ECO-05; quality untested'},
+ {l:'Indian platforms, cheapest all-in list',lo:3.5,hi:7,m:null,c:'s2',src:'l4a verifier: Sarvam ₹3.55–3.90 with telephony, Ringg ₹6, Bolna ~₹6–7'},
+ {l:'Other Indian vendors, list',lo:8,hi:18,m:null,c:'s2',src:'l4a verifier'},
+ {l:'US platforms over Twilio India',lo:11.6,hi:17.5,m:null,c:'s2',src:'l4a verifier, at ₹88/$'},
+ {l:'Human telecaller, per connected minute',lo:6,hi:9,m:6.3,c:'s3',src:'l2 verifier; ₹6.3 at 200 talk-min/day; median posted pay ₹17,000 (n=1,234 Apna posts)'}
+];
+(function(){const W=820,rowH=34,top=28,left=330,right=24,H=top+A.length*rowH+30,max=18;const x=v=>left+(W-left-right)*v/max;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`},null);
+ for(let v=0;v<=max;v+=2){el('line',{x1:x(v),x2:x(v),y1:top-8,y2:H-26,stroke:'var(--grid)','stroke-width':1},svg);txt(svg,x(v),H-10,'₹'+v,null,'middle');}
+ el('line',{x1:x(2),x2:x(2),y1:top-14,y2:H-26,stroke:'var(--ink)','stroke-width':1.5,'stroke-dasharray':'4 3'},svg);txt(svg,x(2)+6,top-16,'Your ₹2 target','val');
+ A.forEach((d,i)=>{const y=top+i*rowH+rowH/2;txt(svg,left-12,y+4,d.l,'lbl','end');
+  const g=el('g',{class:'hit'},svg);el('rect',{x:left,y:y-rowH/2,width:W-left-right,height:rowH,fill:'transparent'},g);
+  const col=`var(--${d.c})`;
+  if(d.hi>d.lo){el('rect',{x:x(d.lo),y:y-5,width:Math.max(2,x(d.hi)-x(d.lo)),height:10,rx:4,fill:col,'fill-opacity':.35},g);}
+  if(d.m!=null){el('circle',{cx:x(d.m),cy:y,r:5,fill:col,stroke:'var(--surface)','stroke-width':2},g);}else{el('rect',{x:x(d.lo),y:y-5,width:Math.max(4,x(d.hi)-x(d.lo)),height:10,rx:4,fill:col,'fill-opacity':.85},g);}
+  const lab=d.lo===d.hi?`₹${d.lo}`:(d.m!=null?`₹${d.m} (${d.lo}–${d.hi})`:`₹${d.lo}–${d.hi}`);txt(g,x(d.hi)+8,y+4,lab,'val');
+  hover(g,`<b>${d.l}</b><br>${lab} per connected minute<br><span style="opacity:.8">${d.src}</span>`);});
+ document.getElementById('chA').appendChild(svg);
+ fillTable('tA',['Item','Low ₹','High ₹','Central ₹','Source'],A.map(d=>[d.l,d.lo,d.hi,d.m??'—',d.src]));})();
+
+/* Chart B: cost history + forecast, log scale */
+const B=[['2023-04-01',.57911],['2023-12-01',.21191],['2024-06-01',.11759],['2024-10-17',.05597],['2025-05-01',.04331],['2025-09-01',.03518],['2026-01-01',.03737],['2026-04-01',.03932],['2026-08-01',.03489],['2026-10-17',.03300]].map(([d,u])=>({d:new Date(d),v:+(u*95.11).toFixed(2)}));
+const F=[{k:'Current regime (prices flat)',d:new Date('2027-12-31'),p10:2.633,p50:2.985,p90:3.138},{k:'Optimistic (2024–25 cuts continue)',d:new Date('2027-12-31'),p10:1.409,p50:1.895,p90:2.837}];
+(function(){const W=820,H=320,l=56,r=170,t=20,b=34;const d0=new Date('2023-01-01').getTime(),d1=new Date('2028-03-01').getTime();
+ const x=d=>l+(W-l-r)*(d.getTime()-d0)/(d1-d0);const lg=v=>Math.log10(v);const y=v=>t+(H-t-b)*(lg(60)-lg(v))/(lg(60)-lg(1));
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ [1,2,5,10,20,50].forEach(v=>{el('line',{x1:l,x2:W-r,y1:y(v),y2:y(v),stroke:'var(--grid)'},svg);txt(svg,l-8,y(v)+4,'₹'+v,null,'end');});
+ [2023,2024,2025,2026,2027,2028].forEach(yr=>{const dx=x(new Date(yr+'-01-01'));txt(svg,dx,H-12,String(yr),null,'middle');el('line',{x1:dx,x2:dx,y1:H-b,y2:H-b+4,stroke:'var(--muted)'},svg);});
+ el('line',{x1:l,x2:W-r,y1:y(2),y2:y(2),stroke:'var(--ink)','stroke-dasharray':'4 3','stroke-width':1.5},svg);txt(svg,l+6,y(2)-6,'Your ₹2 target','val');
+ const path=B.map((p,i)=>(i?'L':'M')+x(p.d).toFixed(1)+' '+y(p.v).toFixed(1)).join(' ');
+ const area=path+` L${x(B[B.length-1].d)} ${y(1)} L${x(B[0].d)} ${y(1)} Z`;
+ el('path',{d:area,fill:'var(--s1)','fill-opacity':.08},svg);el('path',{d:path,fill:'none',stroke:'var(--s1)','stroke-width':2},svg);
+ const last=B[B.length-1];el('circle',{cx:x(last.d),cy:y(last.v),r:5,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2},svg);
+ txt(svg,x(B[0].d)+8,y(B[0].v)+4,'₹'+B[0].v+' (Apr 2023)','val');
+ F.forEach((f,i)=>{const fx=x(f.d)+(i?14:-14);const g=el('g',{class:'hit'},svg);
+  el('line',{x1:fx,x2:fx,y1:y(f.p90),y2:y(f.p10),stroke:'var(--s1)','stroke-width':2},g);
+  el('circle',{cx:fx,cy:y(f.p50),r:5,fill:i?'var(--surface)':'var(--s1)',stroke:'var(--s1)','stroke-width':2},g);
+  el('rect',{x:fx-12,y:y(f.p90)-6,width:24,height:y(f.p10)-y(f.p90)+12,fill:'transparent'},g);
+  hover(g,`<b>${f.k}</b><br>End-2027 forecast: p50 ₹${f.p50} (p10 ₹${f.p10}, p90 ₹${f.p90})`);
+  txt(svg,x(f.d)+30,y(f.p50)+4+(i?10:-4),(i?'Optimistic ':'Flat prices ')+'₹'+f.p50,'val');});
+ el('line',{x1:x(last.d),x2:x(F[0].d)-14,y1:y(last.v),y2:y(F[0].p50),stroke:'var(--s1)','stroke-dasharray':'3 4','stroke-width':1.5},svg);
+ /* crosshair over history */
+ const cross=el('line',{x1:0,x2:0,y1:t,y2:H-b,stroke:'var(--muted)','stroke-width':1,visibility:'hidden'},svg);
+ const dot=el('circle',{r:5,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2,visibility:'hidden'},svg);
+ const ov=el('rect',{x:l,y:t,width:x(last.d)-l+6,height:H-t-b,fill:'transparent'},svg);
+ ov.addEventListener('mousemove',e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());let best=B[0];B.forEach(q=>{if(Math.abs(x(q.d)-p.x)<Math.abs(x(best.d)-p.x))best=q});
+  cross.setAttribute('x1',x(best.d));cross.setAttribute('x2',x(best.d));cross.setAttribute('visibility','visible');dot.setAttribute('cx',x(best.d));dot.setAttribute('cy',y(best.v));dot.setAttribute('visibility','visible');
+  showTip(e,`<b>${best.d.toISOString().slice(0,7)}</b><br>₹${best.v} per minute (AI only)`);});
+ ov.addEventListener('mouseleave',()=>{cross.setAttribute('visibility','hidden');dot.setAttribute('visibility','hidden');hideTip();});
+ document.getElementById('chB').appendChild(svg);
+ fillTable('tB',['Date','₹ per minute','Note'],B.map(p=>[p.d.toISOString().slice(0,10),p.v,'history (USD × 95.11)']).concat(F.map(f=>['2027-12-31',`${f.p50} (${f.p10}–${f.p90})`,f.k])));})();
+
+/* Chart C: demo latency */
+const C=[{v:'Ultravox',p:1540,lo:1328,hi:1741,n:'8 calls',nt:'Barge-in handled 6/6; looped greeting under babble'},{v:'Cartesia',p:1736,lo:1616,hi:1929,n:'8 calls',nt:'English only; 18 of 71 turns got no reply'},{v:'Deepgram',p:2242,lo:2242,hi:2246,n:'2 calls',nt:'English only; very small sample'},{v:'Vapi',p:2319,lo:2116,hi:2609,n:'8 calls',nt:'Answered a Hinglish caller in Gujarati on 17 of 18 turns'},{v:'Smallest.ai',p:2362,lo:2284,hi:2740,n:'8 calls',nt:'English only; evaded the robot question 8/8'},{v:'Sarvam',p:3116,lo:2717,hi:3400,n:'8 calls',nt:'Held Hindi 38/40 and Tamil 20/20; ~0.3 s faster from India (estimate)'},{v:'ElevenLabs',p:3749,lo:3482,hi:4038,n:'8 calls',nt:'Answered Hindi callers in English; disclosed AI 7/7'}];
+(function(){const W=820,rowH=34,top=26,left=120,right=60,H=top+C.length*rowH+30,max=4500;const x=v=>left+(W-left-right)*v/max;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ for(let v=0;v<=max;v+=500){el('line',{x1:x(v),x2:x(v),y1:top-6,y2:H-26,stroke:'var(--grid)'},svg);txt(svg,x(v),H-10,(v/1000).toFixed(1)+' s',null,'middle');}
+ el('line',{x1:x(1500),x2:x(1500),y1:top-14,y2:H-26,stroke:'var(--ink)','stroke-dasharray':'4 3','stroke-width':1.5},svg);txt(svg,x(1500)+6,top-14,'1.5 s bar','val');
+ C.forEach((d,i)=>{const y=top+i*rowH+rowH/2;txt(svg,left-12,y+4,d.v,'lbl','end');const g=el('g',{class:'hit'},svg);
+  el('rect',{x:left,y:y-rowH/2,width:W-left-right,height:rowH,fill:'transparent'},g);
+  el('line',{x1:x(d.lo),x2:x(d.hi),y1:y,y2:y,stroke:'var(--s1)','stroke-width':2},g);
+  el('circle',{cx:x(d.p),cy:y,r:5,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2},g);
+  txt(g,x(d.hi)+8,y+4,(d.p/1000).toFixed(2)+' s','val');
+  hover(g,`<b>${d.v}</b> · ${d.n}<br>Median ${d.p} ms (90% CI ${d.lo}–${d.hi})<br>${d.nt}`);});
+ document.getElementById('chC').appendChild(svg);
+ fillTable('tC',['Demo','Median ms','CI low','CI high','Calls','Observation'],C.map(d=>[d.v,d.p,d.lo,d.hi,d.n,d.nt]));})();
+
+/* Chart D: our cascade configurations */
+const D=[{k:'A',d:'500 ms end-of-speech, fast India model',x:1004,y:25},{k:'B',d:'800 ms end-of-speech, fast India model',x:1344,y:15},{k:'C',d:'800 ms + speculative start',x:1015,y:33},{k:'D',d:'800 ms + speculative, quality model (EU)',x:1591,y:18},{k:'E',d:'500 ms + speculative start',x:826,y:50},{k:'F',d:'800 ms + speculative, nano model (SEA)',x:1384,y:20}];
+(function(){const W=820,H=330,l=56,r=24,t=20,b=40,xmax=1800,ymax=55;const x=v=>l+(W-l-r)*v/xmax,y=v=>t+(H-t-b)*(1-v/ymax);
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ el('rect',{x:x(0),y:y(5),width:x(1500)-x(0),height:y(0)-y(5),fill:'var(--zone)'},svg);txt(svg,x(20),y(5)-6,'Target: ≤1.5 s and ≤5% interruptions',null);
+ for(let v=0;v<=xmax;v+=300){el('line',{x1:x(v),x2:x(v),y1:t,y2:H-b,stroke:'var(--grid)'},svg);txt(svg,x(v),H-b+16,(v/1000).toFixed(1)+' s',null,'middle');}
+ for(let v=0;v<=50;v+=10){el('line',{x1:l,x2:W-r,y1:y(v),y2:y(v),stroke:'var(--grid)'},svg);txt(svg,l-8,y(v)+4,v+'%',null,'end');}
+ txt(svg,(l+W-r)/2,H-6,'Median reply time on clean turns (server side, India)',null,'middle');
+ const yl=txt(svg,14,(t+H-b)/2,'Turns with a premature cut-in',null,'middle');yl.setAttribute('transform',`rotate(-90 14 ${(t+H-b)/2})`);
+ D.forEach(p=>{const g=el('g',{class:'hit'},svg);el('circle',{cx:x(p.x),cy:y(p.y),r:14,fill:'transparent'},g);
+  el('circle',{cx:x(p.x),cy:y(p.y),r:6,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2},g);txt(g,x(p.x)+10,y(p.y)-8,p.k,'val');
+  hover(g,`<b>Config ${p.k}</b>: ${p.d}<br>Median ${p.x} ms · cut-ins on ${p.y}% of 60 turns<br>Elderly 2.4 s pause cut into 12 of 12`);});
+ document.getElementById('chD').appendChild(svg);
+ fillTable('tD',['Config','Setup','Median ms','Cut-in turns %'],D.map(p=>[p.k,p.d,p.x,p.y]));})();
+
+/* Chart E: expansion stages */
+const E=[{k:'S0 Intermediary renewals (the beachhead)',p:107,lo:89,hi:127},{k:'S1 Insurers\' renewal desks (excl. LIC)',p:51,lo:36,hi:72},{k:'S2 Other bank and NBFC service calls',p:166,lo:94,hi:283},{k:'S3 Post-sales calling outside finance',p:1980,lo:751,hi:6163}];
+(function(){const W=820,rowH=40,top=20,left=300,right=70,H=top+E.length*rowH+30;const lg=Math.log10,a=lg(20),bb=lg(8000);const x=v=>left+(W-left-right)*(lg(v)-a)/(bb-a);
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ [20,50,100,200,500,1000,2000,5000].forEach(v=>{el('line',{x1:x(v),x2:x(v),y1:top-4,y2:H-26,stroke:'var(--grid)'},svg);txt(svg,x(v),H-10,'₹'+v,null,'middle');});
+ E.forEach((d,i)=>{const y=top+i*rowH+rowH/2;txt(svg,left-12,y+4,d.k,'lbl','end');const g=el('g',{class:'hit'},svg);
+  el('rect',{x:left,y:y-rowH/2,width:W-left-right,height:rowH,fill:'transparent'},g);
+  el('line',{x1:x(d.lo),x2:x(d.hi),y1:y,y2:y,stroke:'var(--s1)','stroke-width':2},g);el('circle',{cx:x(d.p),cy:y,r:5,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2},g);
+  txt(g,x(d.hi)+8,y+4,'₹'+d.p+' Cr','val');hover(g,`<b>${d.k}</b><br>p50 ₹${d.p} Cr/yr (p10 ${d.lo}, p90 ${d.hi})`);});
+ document.getElementById('chE').appendChild(svg);})();
+
+/* Chart V: voice stacks, AI cost per minute at 3-minute calls */
+const V=[
+ {k:'Self-hosted Indian models (≥2.5M min/month)',v:.43,lo:.36,hi:.55,m:false,lat:'not tested',parts:'IndicConformer on an E2E L4 GPU, gpt-oss on Groq, Veena voice on an E2E H100; at 50% utilisation; vendor throughput claims'},
+ {k:'Inworld all-in (credit plan)',v:.53,lo:.46,hi:.63,m:false,lat:'not tested',parts:'Inworld STT-1, Gemma 4 26B, TTS-2 Flash; needs about 250k minutes a month'},
+ {k:'Base stack: gated Gemini transcription + gpt-oss + Azure voice',v:.94,lo:.91,hi:1.22,m:true,lat:'1.04 s · 23% cut-ins',parts:'gemini-3.5-transcribe-live behind a voice gate, gpt-oss-120b on Groq via OpenRouter, Azure neural voice (config C6g)'},
+ {k:'Gated transcription + gpt-oss + Gemini voice',v:.98,lo:.98,hi:1.34,m:false,lat:'~2.0 s (computed)',parts:'As base with Gemini 3.8 flash-lite TTS; ₹1.34 from 1 Jan 2027'},
+ {k:'Sarvam speech + gpt-oss + Bulbul voice',v:1.04,lo:.87,hi:1.29,m:false,lat:'not tested',parts:'Sarvam STT (gated), gpt-oss on Groq, Bulbul V4 Flash, Growth plan prices'},
+ {k:'Same as base, ungated transcription',v:1.24,lo:1.21,hi:1.52,m:true,lat:'1.03 s · 32% cut-ins',parts:'Config C6'},
+ {k:'All-Azure, gated (India-processed)',v:1.36,lo:1.15,hi:1.57,m:true,lat:'0.99 s · 30% cut-ins',parts:'Azure STT Central India, gpt-4.1-mini South India, Azure neural voice (C1g); gpt-4.1-mini retires 14 Apr 2027'},
+ {k:'Base with Azure high-definition voice',v:1.47,lo:1.35,hi:1.87,m:false,lat:'~1.09 s (computed)',parts:'C6g with DragonHD voice'},
+ {k:'Gemini transcription + 3.5 flash-lite + Azure voice',v:1.53,lo:1.53,hi:1.53,m:true,lat:'1.69 s',parts:'Config C8; flash-lite first token 783 ms on free tier'},
+ {k:'All-Gemini pipeline',v:1.56,lo:1.56,hi:1.92,m:false,lat:'~2.5 s (computed)',parts:'transcribe-live, 3.5 flash-lite, 3.8 flash-lite TTS; ₹1.92 from 1 Jan 2027'},
+ {k:'OpenAI realtime mini',v:1.91,lo:1.50,hi:6.93,m:false,lat:'not tested',parts:'gpt-realtime-2.1-mini with prefix caching; up to ₹6.93 if caching fails'},
+ {k:'All-Azure, full stream (round-2 baseline)',v:2.19,lo:2.19,hi:2.19,m:true,lat:'1.03 s · 27% cut-ins',parts:'Config C1'},
+ {k:'Azure speech + Azure high-definition voice',v:2.70,lo:2.70,hi:2.70,m:true,lat:'1.04–1.13 s · 15–27% cut-ins',parts:'Configs C2 and C3'},
+ {k:'Gemini 3.1 flash live (6k compression)',v:4.19,lo:4.19,hi:4.71,m:true,lat:'1.95 s',parts:'Meera\'s model on the paid meter; ₹4.71 without compression; shuts down from 17 Nov 2026'},
+ {k:'Gemini 3.8 live',v:5.72,lo:5.72,hi:5.72,m:true,lat:'1.01 s · 42% talk-over',parts:'Paid meter; ₹11.6 at a Meera-size prompt (modelled)'}
+];
+(function(){const W=980,rowH=30,top=30,left=360,right=250,H=top+V.length*rowH+30,max=6;const x=v=>left+(W-left-right)*v/max;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ el('rect',{x:x(.34),y:top-10,width:x(.74)-x(.34),height:H-top-26,fill:'var(--zone)'},svg);txt(svg,x(.34),top-14,'Budget at ₹2 price',null);
+ for(let v=0;v<=max;v+=1){el('line',{x1:x(v),x2:x(v),y1:top-6,y2:H-26,stroke:'var(--grid)'},svg);txt(svg,x(v),H-10,'₹'+v,null,'middle');}
+ V.forEach((d,i)=>{const y=top+i*rowH+rowH/2;txt(svg,left-12,y+4,d.k,'lbl','end');const g=el('g',{class:'hit'},svg);
+  el('rect',{x:left,y:y-rowH/2,width:W-left-right,height:rowH,fill:'transparent'},g);
+  const col=d.m?'var(--s1)':'var(--s2)';
+  if(d.hi>d.lo)el('line',{x1:x(d.lo),x2:x(d.hi),y1:y,y2:y,stroke:col,'stroke-width':2},g);
+  el('circle',{cx:x(d.v),cy:y,r:5,fill:d.m?col:'var(--surface)',stroke:col,'stroke-width':2},g);
+  txt(g,x(Math.max(d.v,d.hi))+8,y+4,'₹'+d.v.toFixed(2)+' · '+d.lat,'val');
+  hover(g,`<b>${d.k}</b><br>₹${d.v.toFixed(2)} AI per minute (range ${d.lo}–${d.hi})<br>India reply: ${d.lat}<br><span style="opacity:.8">${d.parts}</span>`);});
+ document.getElementById('chV').appendChild(svg);
+ fillTable('tV',['Stack','AI ₹/min (3-min call)','Low','High','Measured','India reply','Parts'],V.map(d=>[d.k,d.v,d.lo,d.hi,d.m?'yes':'desk',d.lat,d.parts]));})();
+
+/* Chart W: Gemini Live cost by call length */
+const WL=[{k:'3.1 flash live, no compression',c:'s1',d:false,p:[2.47,4.71,6.85,10.74]},{k:'3.1 flash live, 6k compression',c:'s1',d:true,p:[2.55,4.19,5.34,6.38]},{k:'3.8 live, no compression',c:'s2',d:false,p:[3.31,5.72,8.05,12.70]},{k:'3.8 live, 6k compression',c:'s2',d:true,p:[3.34,5.72,7.94,9.05]}];
+const LEN=[1,3,5,10];
+(function(){const W=900,H=300,l=56,r=250,t=20,b=40,xmax=10,ymax=14;const x=v=>l+(W-l-r)*v/xmax,y=v=>t+(H-t-b)*(1-v/ymax);
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+ for(let v=0;v<=ymax;v+=2){el('line',{x1:l,x2:W-r,y1:y(v),y2:y(v),stroke:'var(--grid)'},svg);txt(svg,l-8,y(v)+4,'₹'+v,null,'end');}
+ LEN.forEach(m=>{txt(svg,x(m),H-b+16,m+' min',null,'middle');});
+ txt(svg,(l+W-r)/2,H-6,'Call length',null,'middle');
+ el('line',{x1:l,x2:W-r,y1:y(.54),y2:y(.54),stroke:'var(--ink)','stroke-dasharray':'4 3','stroke-width':1.5},svg);txt(svg,l+6,y(.54)-6,'AI budget at ₹2 price (50% margin)','val');
+ WL.forEach((s,si)=>{const path=s.p.map((v,i)=>(i?'L':'M')+x(LEN[i]).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  el('path',{d:path,fill:'none',stroke:`var(--${s.c})`,'stroke-width':2,'stroke-dasharray':s.d?'6 4':'none'},svg);
+  s.p.forEach((v,i)=>{const g=el('g',{class:'hit'},svg);el('circle',{cx:x(LEN[i]),cy:y(v),r:12,fill:'transparent'},g);el('circle',{cx:x(LEN[i]),cy:y(v),r:4,fill:`var(--${s.c})`,stroke:'var(--surface)','stroke-width':2},g);hover(g,`<b>${s.k}</b><br>${LEN[i]}-minute call: ₹${v} per minute`);});
+  const ly=y(s.p[3])+[-2,10,-2,12][si];txt(svg,x(10)+10,ly+4,s.k.replace('flash live','flash').replace(', no compression',' · none').replace(', 6k compression',' · 6k')+'  ₹'+s.p[3].toFixed(2),'val');});
+ document.getElementById('chW').appendChild(svg);
+ fillTable('tW',['Model and setting','1 min','3 min','5 min','10 min'],WL.map(s=>[s.k].concat(s.p)));})();
+
+/* Regulation rows */
+const R=[['Cold sales calls to bought or scraped consumer lists','warn','With conditions: 140 number, no DND recipients, 10:00–21:00','bad','Not viable (data-protection consent)','140xx'],
+['Follow-up of a lead who filled a form','warn','With conditions, inside a 7-day window','warn','With conditions','140xx'],
+['Inbound calls and callbacks','ok','Lawful','ok','Lawful (privacy notice)','n/a'],
+['Order, delivery and appointment reminders','warn','With conditions by sector','warn','With conditions','1600 BFSI · 1601 utilities, logistics · declared 10-digit others'],
+['Insurance renewal reminder, neutral','warn','With conditions; persuasion is reserved for certified humans','warn','With conditions, more paperwork','1600 mandatory since 15 Feb 2026'],
+['Insurance re-quote or switch by the AI','bad','Not viable for the AI','bad','Not viable for the AI','140xx, certified human only'],
+['Renewal calls for insurance marketing firms','idle','Unclear (they may not use telemarketers)','idle','Unclear','1600'],
+['Collections for RBI-regulated lenders','warn','With conditions','warn','Stricter from 1 Jan 2027','1600'],
+['WhatsApp, customer started the chat','ok','Lawful','ok','Lawful','n/a'],
+['WhatsApp, business started it','warn','Opted-in only; cold is not viable','warn','Opted-in only','n/a']];
+const lab={ok:'Lawful',warn:'With conditions',bad:'Not viable',idle:'Unclear'};
+document.getElementById('regRows').innerHTML=R.map(r=>`<tr><td class="k">${r[0]}</td><td><span class="chip ${r[1]}">${lab[r[1]]}</span><br><span class="note">${r[2]}</span></td><td><span class="chip ${r[3]}">${lab[r[3]]}</span><br><span class="note">${r[4]}</span></td><td>${r[5]}</td></tr>`).join('');
+
+/* Segments */
+const SG=[['Insurance renewals',3.722,1,1,'99.6%'],['Real estate',3.722,2,1,'99.8%'],['Edtech admissions',3.389,7,3,'51%'],['Fintech and SaaS onboarding',3.278,4,4,'12%'],['D2C order confirmation',3.222,3,5,'22%'],['Solar rooftop',3.222,10,5,'3%'],['Study abroad',3.222,11,5,'0%'],['Lending collections',3.167,4,8,'6%'],['Healthcare clinics',3.167,6,8,'0%'],['Auto dealers',3.167,7,8,'0%']];
+document.getElementById('segRows').innerHTML=SG.map(s=>`<tr><td class="k">${s[0]}</td><td><div style="display:flex;align-items:center;gap:10px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--s1);width:${((s[1]-2.4)/1.4*140).toFixed(0)}px"></span><span class="num">${s[1].toFixed(2)}</span></div></td><td class="num">#${s[2]}</td><td class="num">#${s[3]}</td><td class="num">${s[4]}</td></tr>`).join('');
+
+/* Kill criteria */
+const K=[['KC1 Too few buyers with enough renewals','warn','at risk','Interviews, 29 Oct and 13 Nov'],['KC2 Price too low','idle','not yet tested','Interviews'],['KC3 No leakage without calling','idle','not yet tested','Interviews; lawyer on direct renewals'],['KC4 Outreach fails (60 firms, 10 weeks)','idle','not yet tested','Tracker, by 28 Dec'],['KC5 No compliant 1600 number path','warn','at risk','Telephony quotes 30 Oct'],['KC6 Our call quality fails','warn','at risk: interruptions fail','Handset test 6 Nov'],['KC7 Pilot worse than their human desk','idle','not yet tested','Pilot, from late Nov'],['KC8 No lawful operating model','idle','not yet tested','Lawyer, 13 Nov'],['KC9 IRDAI commission caps close the fee window','warn','at risk','IRDAI final rules'],['KC10 No fast model hosted in India','warn','at risk','Deployability test 30 Oct']];
+document.getElementById('kcRows').innerHTML=K.map(k=>`<tr><td class="k">${k[0]}</td><td><span class="chip ${k[1]}">${k[2]}</span></td><td>${k[3]}</td></tr>`).join('');
+
+/* Ideas */
+const I=[['1 Emotional, relational, very human voice','warn','Reframe','No outcome evidence that warmth lifts results. Competence matters: language lock, pauses, short replies, binding confirmations. The renewal call also looks like a known scam.','A holdout pilot where a warmer version lifts renewals without more complaints'],
+['2 Agents that learn from every call','warn','Reframe','100 calls cannot validate a change (needs a 13–19 point swing). A problem line shows up at 500–1,000 calls; outcome learning needs ~1,000 calls a day per script.','A script reaching ~1,000 calls a day with outcome tagging ≥95% accurate'],
+['3 Hyper-personalisation, accents and dialects','warn','Reframe','Language matching and memory are core. Dialect is rare in job asks (1 in 828), no dialect voice exists, and dialect cannot be inferred reliably. Pooling data across companies is barred.','Listeners in Bihar prefer it with no patronising penalty, and buyers ask for it'],
+['4 Company context at onboarding','ok','Core, narrow','Specific context beats generic in field experiments. For renewals: policy fields plus a small approved fact base.','Pilot escalations show missing company facts more than 10% of the time'],
+['5 Under ₹2 a minute, built in-house','warn','Reframe','Managed Azure never reaches ₹2; per-minute pricing loses money at launch. Build compliance and conversation layers in-house; buy speech for now.','~1.6M minutes a month with the cheaper stack passing quality tests'],
+['6 Every feature Bolna, Vapi, ElevenLabs have','bad','Drop as strategy','Parity already exists; self-serve renewal calling sells from ₹4–10 a minute.','5 of 15 prospects reject VP over a specific missing feature'],
+['7 Whole-company AI command centre','idle','Later','Buyers adopt point tools first and no one was found switching CRM for voice AI.','5 of the first 15 qualified prospects would only buy voice inside a new CRM'],
+['8 Voice AI will be huge','warn','Reframe','Right direction. Plan on flat costs: 1.7× cheaper in 24 months, flat since late 2025.','Azure meters put the managed stack at ≤₹2.5 a minute at 1M min/month']];
+document.getElementById('ideaRows').innerHTML=I.map(i=>`<tr><td class="k">${i[0]}</td><td><span class="chip ${i[1]}">${i[2]}</span></td><td>${i[3]}</td><td>${i[4]}</td></tr>`).join('');
+})();
+</script>
