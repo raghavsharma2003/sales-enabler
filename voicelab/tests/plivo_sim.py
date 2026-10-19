@@ -2,7 +2,7 @@
 # the Stream XML, and the bidirectional 8 kHz mu-law websocket, with the synthetic caller clips as the caller. Prints
 # per-turn timing and captions from the page's event poll, and writes what the "phone" heard to a WAV. Proves the
 # phone path end to end except the PSTN leg itself (Plivo <-> the handset), which only a real call can.
-# Usage: python plivo_sim.py BASE_URL PASSCODE PRESET [--turns 3] [--wav out.wav] (needs PLIVO_* env, as the server)
+# Usage: python plivo_sim.py BASE_URL PASSCODE PRESET [--turns 3] [--wav out.wav] [--verify MOBILE] (needs PLIVO_* env)
 import asyncio, json, sys, time, os, re, argparse, uuid, base64, wave
 import numpy as np
 import aiohttp
@@ -20,17 +20,29 @@ def to_ulaw8k(pcm16k):
 async def main():
     ap = argparse.ArgumentParser(); ap.add_argument('base'); ap.add_argument('key'); ap.add_argument('preset')
     ap.add_argument('--scenario', default='renewal'); ap.add_argument('--turns', type=int, default=3); ap.add_argument('--tester', default='sim-phone')
-    ap.add_argument('--caller', default=(phone.ALLOWED or [''])[0], help='an allow-listed number (default: the first in PLIVO_ALLOWED_TO)'); ap.add_argument('--wav')
+    ap.add_argument('--caller', default=(phone.ALLOWED or [''])[0], help='an allow-listed number (default: the first in PLIVO_ALLOWED_TO)')
+    ap.add_argument('--verify', help="add this mobile as the tester's own phone first (missed-call verification), then call from it"); ap.add_argument('--wav')
     a = ap.parse_args(); base = a.base.rstrip('/'); H = {'x-lab-key': a.key}
     clips = [to_ulaw8k(open(os.path.join(CLIPS, c + '.pcm'), 'rb').read()) for c in ORDER[:a.turns]]
     t0 = time.monotonic(); play_until = [0.0]; heard = bytearray(); replies = []; bursts = []; res = {'errors': [], 'server_ms': []}
     async with aiohttp.ClientSession() as http:
-        r = await http.post(base + '/api/phone/dialin', json={'preset': a.preset, 'scenario': a.scenario, 'tester': a.tester, 'consent': True}, headers=H)
+        if a.verify:      # a tester adds their own mobile: the page asks, then the "missed call" from it proves it
+            caller = phone.india(a.verify)
+            r = await http.post(base + '/api/phone/verify', json={'number': a.verify, 'tester': a.tester}, headers=H); v = await r.json(); print('verify', r.status, v, flush=True)
+            if not v.get('verified'):
+                r = await http.post(f'{base}/plivo/answer/{phone.HOOK}', data={'CallUUID': 'sim-v', 'From': caller, 'To': phone.NUMBER, 'Direction': 'inbound'})
+                print('missed call ->', 'rejected (unanswered)' if 'rejected' in await r.text() else 'ANSWERED', flush=True)
+            nid = v['id']
+        else:
+            caller = a.caller
+            async with http.get(base + '/api/phone/numbers?tester=' + a.tester, headers=H) as r: nid = (await r.json())['numbers'][0]['id']   # the lab test phone
+        async with http.get(base + '/api/phone/numbers?tester=' + a.tester, headers=H) as r: print('my numbers', [n['label'] for n in (await r.json())['numbers']], flush=True)
+        r = await http.post(base + '/api/phone/dialin', json={'preset': a.preset, 'scenario': a.scenario, 'tester': a.tester, 'consent': True, 'from_id': nid}, headers=H)
         d = await r.json(); print('dialin', r.status, d, flush=True); tok = d['token']
         # a caller who is not on the allow-list is turned away without answering
         r = await http.post(f'{base}/plivo/answer/{phone.HOOK}', data={'CallUUID': 'sim-x', 'From': '919999900000', 'To': phone.NUMBER, 'Direction': 'inbound'})
         print('stranger ->', 'rejected' if 'rejected' in await r.text() else 'NOT REJECTED', flush=True)
-        r = await http.post(f'{base}/plivo/answer/{phone.HOOK}', data={'CallUUID': 'sim-' + uuid.uuid4().hex[:8], 'From': '+' + a.caller, 'To': phone.NUMBER, 'Direction': 'inbound'})
+        r = await http.post(f'{base}/plivo/answer/{phone.HOOK}', data={'CallUUID': 'sim-' + uuid.uuid4().hex[:8], 'From': '+' + caller, 'To': phone.NUMBER, 'Direction': 'inbound'})
         xml = await r.text(); url = re.search(r'<Stream[^>]*>([^<]+)</Stream>', xml).group(1).replace('&amp;', '&').strip()
         print('answer xml ok:', 'bidirectional="true"' in xml and 'audio/x-mulaw;rate=8000' in xml, flush=True)
         if url.startswith('wss://') and base.startswith('http://'): url = 'ws://' + base.split('://', 1)[1] + '/plivo/' + url.split('/plivo/', 1)[1]

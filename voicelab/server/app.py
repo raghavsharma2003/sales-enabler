@@ -65,7 +65,7 @@ async def catalog(req):
         's2s': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['voice']} for k, v in S2S.items()},
         'stt': {k: {'label': v['label']} for k, v in STT.items()},
         'scenarios': SCENARIOS, 'fx': FX,
-        'phone': {'on': phone.on(), 'number': phone.pretty(phone.NUMBER) if phone.NUMBER else None, 'allowed': [phone.pretty(x) for x in phone.ALLOWED]},
+        'phone': {'on': phone.on(), 'number': phone.pretty(phone.NUMBER) if phone.NUMBER else None, 'tel': '+' + phone.NUMBER if phone.NUMBER else None},
         'spend_today_usd': round(LAB.spend_today(), 3), 'daily_cap_usd': DAILY_USD,
         'gemini': {'free_ok': time.time() >= pv.GKEYS.free_blocked_until, 'paid_left_usd': round(pv.GKEYS.paid_cap - pv.GKEYS.paid_spent, 3),
                    'vertex_on': pv.VERTEX.usable(), 'vertex_left_inr': round((pv.VERTEX_CAP_USD - pv.VERTEX.spent) * FX)}})
@@ -245,36 +245,57 @@ async def ws_call(req):
 # ---- phone leg (Plivo). The page asks for a call (/api/phone/call rings an allowed test number; /api/phone/dialin
 # arms the lab number for the next allowed caller), then polls /api/phone/events for the same messages a browser
 # call gets over its websocket. Plivo reaches us on /plivo/* with a path secret instead of the lab passcode.
-DIALIN = f'{DATA}/phone-dialin.json'
+DIALIN = f'{DATA}/phone-dialin-by-number.json'     # {number: the stack its owner last armed}, for unarmed dial-ins
 def phone_cfg(d, direction):
     cfg = {k: d.get(k) for k in ('preset', 'scenario', 'tester', 'brain', 'voice', 'smart_turn', 'blind', 'consent')}
     cfg['smart_turn'] = cfg['smart_turn'] is not False; cfg['blind'] = bool(cfg['blind']); cfg['line'] = direction
     return prepare(cfg)
 
+async def phone_numbers(req):
+    return web.json_response({'numbers': phone.NUMBERS.listing(req.query.get('tester', '')), 'lab_number': phone.pretty(phone.NUMBER) if phone.NUMBER else None})
+
+async def phone_verify(req):
+    if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
+    d = await req.json(); num = phone.india(d.get('number')); tester = (d.get('tester') or '')[:40]
+    if not phone.MOBILE.match(num): return web.json_response({'error': 'Enter a 10-digit Indian mobile number'}, status=400)
+    if num in phone.ALLOWED or (phone.NUMBERS.owner(num) or '').lower() == tester.lower():
+        return web.json_response({'verified': True, 'id': phone.NUMBERS.nid(num)})
+    phone.NUMBERS.start_verify(num, tester)          # new, or verified by someone else: the missed call proves it again
+    return web.json_response({'verified': False, 'id': phone.NUMBERS.nid(num), 'lab_number': phone.pretty(phone.NUMBER), 'lab_tel': '+' + phone.NUMBER,
+                              'expires_s': phone.Numbers.TTL})
+
 async def phone_call(req):
     if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
     d = await req.json()
-    to = phone.india(d.get('to') or (phone.ALLOWED[0] if phone.ALLOWED else ''))
-    if to not in phone.ALLOWED: return web.json_response({'error': 'the lab only rings its test numbers'}, status=403)
+    to = phone.NUMBERS.resolve(d.get('to_id'))
+    if to is None: return web.json_response({'error': 'Add and verify your number first'}, status=403)
+    if not phone.NUMBERS.count_call(to): return web.json_response({'error': f'{phone.Numbers.DAILY_CALLS} calls to this number today is the lab limit'}, status=429)
     cfg, preset, err = phone_cfg(d, 'out')
     if err: return web.json_response({'error': err}, status=400)
     s = phone.SESSIONS.new(cfg, 'out', to)
     err = await phone.dial(LAB.http, s)
     if err: s['state'] = 'failed'; return web.json_response({'error': err}, status=502)
     phone.SESSIONS.note(s, {'t': 'state', 's': 'Ringing'})
-    return web.json_response({'token': s['token'], 'to': phone.pretty(to)})
+    return web.json_response({'token': s['token'], 'to': phone.NUMBERS.masked(to)})
 
 async def phone_dialin(req):
     if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
     d = await req.json()
+    frm = phone.NUMBERS.resolve(d.get('from_id'))
+    if frm is None: return web.json_response({'error': 'Add and verify your number first'}, status=403)
     cfg, preset, err = phone_cfg(d, 'in')
     if err: return web.json_response({'error': err}, status=400)
-    for old in list(phone.SESSIONS.by_token.values()):        # one armed dial-in at a time: the newest wins
-        if old['dir'] == 'in' and old['state'] == 'waiting': old['state'] = 'replaced'; phone.SESSIONS.note(old, {'t': 'phone_end', 'why': 'replaced'})
-    s = phone.SESSIONS.new(cfg, 'in')
-    if not is_test(cfg['tester']): json.dump(cfg, open(DIALIN, 'w'))     # unarmed dial-ins later reuse a person's stack
+    for old in list(phone.SESSIONS.by_token.values()):        # one armed dial-in per phone: the newest wins
+        if old['dir'] == 'in' and old['state'] == 'waiting' and old.get('from') == frm:
+            old['state'] = 'replaced'; phone.SESSIONS.note(old, {'t': 'phone_end', 'why': 'replaced'})
+    s = phone.SESSIONS.new(cfg, 'in'); s['from'] = frm
+    if not is_test(cfg['tester']):                          # an unarmed dial-in from this phone later reuses this stack
+        try: saved = json.load(open(DIALIN))
+        except Exception: saved = {}
+        saved[frm] = cfg; json.dump(saved, open(DIALIN, 'w'))
     phone.SESSIONS.note(s, {'t': 'state', 's': 'Waiting for your call'})
-    return web.json_response({'token': s['token'], 'number': phone.pretty(phone.NUMBER), 'expires_s': phone.Sessions.TTL})
+    return web.json_response({'token': s['token'], 'number': phone.pretty(phone.NUMBER), 'tel': '+' + phone.NUMBER, 'from': phone.NUMBERS.masked(frm),
+                              'expires_s': phone.Sessions.TTL})
 
 async def phone_events(req):
     s = phone.SESSIONS.by_token.get(req.query.get('p', ''))
@@ -303,16 +324,19 @@ async def plivo_answer(req):
         if s is None or s['dir'] != 'out' or s.get('hangup'): return xml(phone.REJECT_XML)
     else:
         caller = phone.india(f.get('From'))
-        if caller not in phone.ALLOWED:
-            log.info('plivo: rejected inbound from ...%s', caller[-4:]); return xml(phone.REJECT_XML)
-        s = phone.SESSIONS.waiting_dialin()
-        if s is None:                     # nobody armed dial-in: use the last stack someone armed, attributed to them
-            try: cfg = json.load(open(DIALIN))
+        if phone.NUMBERS.missed_call(caller):      # the verification missed call: number proven, call cut unanswered
+            log.info('plivo: verified ...%s', caller[-3:]); return xml(phone.REJECT_XML)
+        if not phone.NUMBERS.allowed(caller):
+            log.info('plivo: rejected inbound from ...%s', caller[-3:]); return xml(phone.REJECT_XML)
+        s = phone.SESSIONS.waiting_dialin(caller)
+        if s is None:                     # nobody armed dial-in: use the stack this phone's owner last armed
+            try: cfg = json.load(open(DIALIN)).get(caller) or {}
             except Exception: cfg = {}
-            if not cfg or is_test(cfg.get('tester')): cfg = {'preset': 'base', 'scenario': 'renewal', 'tester': 'phone', 'smart_turn': True, 'blind': False, 'line': 'in'}
+            if not cfg or is_test(cfg.get('tester')):
+                cfg = {'preset': 'base', 'scenario': 'renewal', 'tester': phone.NUMBERS.owner(caller) or 'phone', 'smart_turn': True, 'blind': False, 'line': 'in'}
             cfg, preset, err = prepare(cfg)
             if err: log.info('plivo: inbound refused: %s', err); return xml(phone.REJECT_XML)
-            s = phone.SESSIONS.new(cfg, 'in')
+            s = phone.SESSIONS.new(cfg, 'in'); s['from'] = caller
     s['call_uuid'] = f.get('CallUUID'); s['state'] = 'answered'
     phone.SESSIONS.note(s, {'t': 'state', 's': 'Connecting'})
     return xml(phone.answer_xml(phone.ws_url(f"/plivo/stream/{s['stream']}")))
@@ -375,7 +399,7 @@ async def plivo_stream(req):
 
 async def on_start(app):
     LAB.http = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=64, keepalive_timeout=120))
-    pv.GKEYS.load(f'{DATA}/gemini-paid.jsonl'); pv.VERTEX.load(f'{DATA}/vertex-spend.jsonl')
+    pv.GKEYS.load(f'{DATA}/gemini-paid.jsonl'); pv.VERTEX.load(f'{DATA}/vertex-spend.jsonl'); phone.NUMBERS.load(f'{DATA}/phone-numbers.json')
     for m in filter(None, os.environ.get('LAB_TEST_BLOCK_MODELS', '').split(',')):   # test hook: pretend a model is out of quota
         pv.GKEYS.quota_hit('free', 86400, m); pv.GKEYS.quota_hit('paid', 86400, m)
     async def warm():
@@ -404,6 +428,8 @@ def build():
     app.router.add_get('/api/testers', testers)
     app.router.add_route('*', '/api/memory', memory)
     app.router.add_get('/ws', ws_call)
+    app.router.add_get('/api/phone/numbers', phone_numbers)
+    app.router.add_post('/api/phone/verify', phone_verify)
     app.router.add_post('/api/phone/call', phone_call)
     app.router.add_post('/api/phone/dialin', phone_dialin)
     app.router.add_get('/api/phone/events', phone_events)

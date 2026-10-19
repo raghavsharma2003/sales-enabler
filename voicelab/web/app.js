@@ -118,17 +118,53 @@ function fillVoices() {
 }
 
 // ------------------------------------------------------------------ browser or real phone
+const VERIFY_NOTE = "We check it's your phone with a free missed call. Your number stays on the lab server and is used only to ring you for tests.";
 function renderWhere() {
   const ph = S.cat.phone || {}; if (!ph.on) S.where = 'browser';
   document.querySelectorAll('#where button').forEach((x) => { x.classList.toggle('on', x.dataset.w === S.where); if (x.dataset.w === 'phone') x.disabled = !ph.on; });
   const onPhone = S.where === 'phone';
   for (const id of ['t-hp', 't-phone', 'hphint']) $(id).hidden = onPhone;
-  $('phonehint').hidden = !onPhone; $('dialbtn').hidden = !onPhone || !!(S.live && !S.live.ended);
-  if (onPhone) $('phonehint').innerHTML = `She rings <b>${ph.allowed.join(', ')}</b>. Or tap “I'll dial in instead” and call <b>${ph.number}</b> from that phone within 10 minutes.`;
+  $('phonebox').hidden = !onPhone; $('dialbtn').hidden = !onPhone || !!(S.live && !S.live.ended);
+  if (onPhone && !S.numbers) loadNumbers(); else renderPhoneHint();
   if (!(S.live && !S.live.ended)) $('callbtn').textContent = onPhone ? 'Call me' : 'Call';
   $('s-rpm-l').textContent = onPhone ? '₹ per minute (AI + line)' : '₹ per minute (AI)';
   $('s-lat-l').textContent = onPhone ? 'last reply gap (server)' : 'last reply gap';
 }
+const labTel = () => `<a href="tel:${S.cat.phone.tel}">${S.cat.phone.number}</a>`;
+async function loadNumbers(pick) {
+  let r; try { r = await api('/api/phone/numbers?tester=' + encodeURIComponent(S.name)); } catch { return; }
+  S.numbers = r.numbers || [];
+  const sel = $('myphone'); sel.innerHTML = '';
+  for (const n of S.numbers) sel.add(new Option(n.label, n.id));
+  sel.add(new Option('+ Add my number', '__add'));
+  const saved = pick || LS.get('vl_myphone_' + S.name, '');
+  sel.value = S.numbers.some((n) => n.id === saved) ? saved : (S.numbers.find((n) => n.mine) || { id: '__add' }).id;
+  renderPhoneHint();
+}
+function renderPhoneHint() {
+  const sel = $('myphone'); const adding = sel.value === '__add' || !sel.value;
+  $('addphone').hidden = !adding;
+  if (adding && !S.verifying) $('verifyhint').textContent = VERIFY_NOTE;
+  const n = (S.numbers || []).find((x) => x.id === sel.value);
+  $('phonehint').innerHTML = n ? `She rings <b>${n.label}</b>. Or tap “I'll dial in instead” and call ${labTel()} from that phone.` : '';
+}
+$('myphone').onchange = () => { if ($('myphone').value !== '__add') LS.set('vl_myphone_' + S.name, $('myphone').value); renderPhoneHint(); };
+$('verifybtn').onclick = async () => {
+  const num = $('newphone').value.trim(); if (!num) { $('newphone').focus(); return; }
+  let r; try { r = await api('/api/phone/verify', { method: 'POST', body: JSON.stringify({ number: num, tester: S.name }) }); } catch (e) { r = { error: e.message }; }
+  if (r.error) { $('verifyhint').innerHTML = `<span style="color:var(--danger)">${r.error}</span>`; return; }
+  if (r.verified) { LS.set('vl_myphone_' + S.name, r.id); $('newphone').value = ''; await loadNumbers(r.id); toast('Number added'); return; }
+  S.verifying = true; clearInterval(S.vpoll); const t0 = Date.now();
+  $('verifyhint').innerHTML = `Now give a missed call from <b>${num}</b> to ${labTel()}. It cuts by itself and costs nothing. Waiting…`;
+  S.vpoll = setInterval(async () => {
+    if (Date.now() - t0 > r.expires_s * 1000) { clearInterval(S.vpoll); S.verifying = false; $('verifyhint').textContent = 'No missed call arrived in 10 minutes. Tap Verify to try again.'; return; }
+    let d; try { d = await api('/api/phone/numbers?tester=' + encodeURIComponent(S.name)); } catch { return; }
+    if ((d.numbers || []).some((n) => n.id === r.id)) {
+      clearInterval(S.vpoll); S.verifying = false; LS.set('vl_myphone_' + S.name, r.id); $('newphone').value = '';
+      await loadNumbers(r.id); toast('Number verified. Tap “Call me”.');
+    }
+  }, 2000);
+};
 document.querySelectorAll('#where button').forEach((b) => b.onclick = () => { S.where = b.dataset.w; LS.set('vl_where', S.where); renderWhere(); });
 
 // ------------------------------------------------------------------ audio + call
@@ -187,15 +223,18 @@ function callBody(pid) {
 async function startPhone(kind) {
   const pid = currentPresetId(); const p = preset(pid);
   if (!p || !p.enabled) { toast('This stack is not available yet'); return; }
+  const num = $('myphone').value;
+  if (!num || num === '__add') { toast('Add and verify your number first'); $('newphone').focus(); return; }
   $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true;
   const L = S.live = { pid, caps: [], pend: {}, lat: [], latByRid: {}, t0: performance.now(), started: false, ended: false, partial: {}, blind: S.mode === 'blind', phone: true, after: 0 };
   setCallUI(true, kind === 'out' ? 'Ringing' : 'Waiting for your call'); $('dialbtn').hidden = true;
   let r;
-  try { r = await api(kind === 'out' ? '/api/phone/call' : '/api/phone/dialin', { method: 'POST', body: JSON.stringify(callBody(pid)) }); }
+  const body = { ...callBody(pid), [kind === 'out' ? 'to_id' : 'from_id']: num };
+  try { r = await api(kind === 'out' ? '/api/phone/call' : '/api/phone/dialin', { method: 'POST', body: JSON.stringify(body) }); }
   catch (e) { r = { error: e.message }; }
   if (!r || r.error) { L.ended = true; setCallUI(false); $('callerr').textContent = (r && r.error) || 'Could not start the call'; renderWhere(); return; }
   L.token = r.token;
-  if (kind === 'in') $('callerr').innerHTML = `<span style="color:var(--ink)">Call <b>${r.number}</b> now from your test phone. She picks up.</span>`;
+  if (kind === 'in') $('callerr').innerHTML = `<span style="color:var(--ink)">Call <a href="tel:${r.tel}" style="color:var(--accent);font-weight:700">${r.number}</a> now from ${r.from}. She picks up.</span>`;
   L.poll = setInterval(pollPhone, 400);
   L.timer = setInterval(() => { if (!L.callId) return; const s = Math.floor((performance.now() - L.t0) / 1000); $('s-time').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 500);
 }

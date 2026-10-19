@@ -2,7 +2,7 @@
 # me"), opens a bidirectional audio stream to /plivo/stream/<token>, and the same Call classes the browser uses run on
 # it unchanged: PlivoLine stands in for the browser websocket. The line is G.711 mu-law at 8 kHz, which is what the
 # phone network carries end to end anyway, so nothing audible is lost; Plivo's L16 docs don't state the byte order.
-import os, json, base64, hmac, hashlib, time, uuid, math
+import os, re, json, base64, hmac, hashlib, time, uuid, math
 from collections import deque
 from xml.sax.saxutils import escape
 import numpy as np
@@ -116,13 +116,51 @@ class Sessions:
         s['n'] += 1; s['log'].append((s['n'], d))
     def events(self, s, after):
         return [dict(d, n=n) for n, d in s['log'] if n > after]
-    def waiting_dialin(self):
-        live = [s for s in self.by_token.values() if s['dir'] == 'in' and s['state'] == 'waiting' and time.time() - s['created'] < self.TTL]
-        return max(live, key=lambda s: s['created']) if live else None
+    def waiting_dialin(self, caller):
+        """the newest armed dial-in for this caller's number (or armed for any allowed number)"""
+        live = [s for s in self.by_token.values() if s['dir'] == 'in' and s['state'] == 'waiting' and time.time() - s['created'] < self.TTL
+                and s.get('from') in (caller, None)]
+        return max(live, key=lambda s: (s.get('from') == caller, s['created'])) if live else None
     def gc(self):
         for t, s in list(self.by_token.items()):
             if time.time() - s['created'] > 3 * 3600: self.by_token.pop(t, None); self.by_stream.pop(s['stream'], None)
 SESSIONS = Sessions()
+
+MOBILE = re.compile(r'^91[6-9]\d{9}$')
+class Numbers:
+    """Testers' own phones. The lab rings a number only after its owner proves it with a missed call to the lab
+    number from that phone (caller ID; the call is rejected unanswered, so it costs nothing), so nobody can make the
+    lab ring a stranger. Numbers live only in the lab's data directory on the VM, never in the repo. The page refers
+    to a number by an opaque id and shows it masked."""
+    TTL = 600; DAILY_CALLS = 20
+    def __init__(self): self.path = None; self.known = {}; self.pending = {}; self.calls = {}
+    def load(self, path):
+        self.path = path
+        try: self.known = json.load(open(path))
+        except Exception: self.known = {}
+    def save(self):
+        if not self.path: return
+        tmp = self.path + '.tmp'; json.dump(self.known, open(tmp, 'w')); os.replace(tmp, self.path)
+    def nid(self, num): return hmac.new((HOOK or '-').encode(), num.encode(), hashlib.sha256).hexdigest()[:12]
+    def masked(self, num): return f'+91 {num[2:4]}••• ••{num[-3:]}'
+    def allowed(self, num): return num in ALLOWED or num in self.known
+    def resolve(self, nid): return next((n for n in [*ALLOWED, *self.known] if self.nid(n) == nid), None) if nid else None
+    def owner(self, num): return (self.known.get(num) or {}).get('tester')
+    def listing(self, tester):
+        out = [{'id': self.nid(n), 'label': 'Lab test phone ' + self.masked(n), 'mine': False} for n in ALLOWED]
+        return out + [{'id': self.nid(n), 'label': self.masked(n), 'mine': True} for n, v in self.known.items()
+                      if n not in ALLOWED and (v.get('tester') or '').lower() == (tester or '').lower()]
+    def start_verify(self, num, tester): self.pending[num] = {'tester': tester, 'created': time.time()}
+    def missed_call(self, num):
+        """an inbound call from a number waiting for verification: verify it (the caller then gets rejected)"""
+        p = self.pending.get(num)
+        if not p or time.time() - p['created'] > self.TTL: return False
+        self.known[num] = {'tester': p['tester'], 'verified': time.time()}; self.pending.pop(num, None); self.save()
+        return True
+    def count_call(self, num):
+        k = (num, time.strftime('%Y-%m-%d')); self.calls[k] = self.calls.get(k, 0) + 1
+        return self.calls[k] <= self.DAILY_CALLS
+NUMBERS = Numbers()
 
 async def api(http, method, path, data=None):
     async with http.request(method, API + path, json=data, headers=auth_header()) as r:

@@ -31,7 +31,7 @@ h1{font-size:20px;margin:0;letter-spacing:-.01em} h2{font-size:16px;margin:0 0 1
 .seg button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:999px;font:inherit;font-size:13.5px;cursor:pointer}
 .seg button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 4px}
-input[type=text],input[type=password],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+input[type=text],input[type=password],input[type=tel],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
 textarea{min-height:70px;resize:vertical}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px} @media(max-width:520px){.row{grid-template-columns:1fr}}
 .toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
@@ -74,6 +74,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .hint{font-size:12.5px;color:var(--muted);margin-top:8px}
 .consent{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:13px;color:var(--ink);line-height:1.4}
 .consent input{margin-top:3px;flex:none}
+.addrow{display:flex;gap:8px;margin-top:8px} .addrow input{flex:1;min-width:0}
+.hint a{color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -113,7 +115,15 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         </div>
         <label>Talk to her</label>
         <div class="seg" id="where"><button data-w="browser" class="on">In the browser</button><button data-w="phone">On a real phone call</button></div>
-        <div class="hint" id="phonehint" hidden></div>
+        <div id="phonebox" hidden>
+          <label for="myphone">Your phone</label>
+          <select id="myphone"></select>
+          <div id="addphone" hidden>
+            <div class="addrow"><input type="tel" id="newphone" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile, e.g. 98765 43210"><button class="btn" id="verifybtn">Verify</button></div>
+            <div class="hint" id="verifyhint"></div>
+          </div>
+          <div class="hint" id="phonehint"></div>
+        </div>
         <div style="margin-top:10px">
           <div class="toggle" id="t-hp"><div>Headphones on<small>Turns off the browser's echo cancellation so she hears you when you talk over her. Switch off if you're on speaker.</small></div><input type="checkbox" id="hp" checked></div>
           <div class="toggle" id="t-phone"><div>Phone-line sound<small>Simulates an 8 kHz call both ways, how it will sound on a real phone</small></div><input type="checkbox" id="phone"></div>
