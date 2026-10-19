@@ -18,25 +18,36 @@ def az_host(endpoint): return endpoint.rstrip('/').replace('https://', '').repla
 
 # ---------------------------------------------------------------- Gemini key choice: free test key first, paid on quota
 class GeminiKeys:
-    """Owner directive 2026-10-18: use the free test key as much as its own limits allow; the paid key (capped) only
-    when the free key is out of quota. One key at a time, never rotated across accounts."""
+    """Owner directive 2026-10-18: use the free test key as much as its own limits allow; the paid key (capped) when the
+    free key is out of quota. Only these two keys, both the owner's; never rotated across other accounts.
+    Lab 2026-10-19: Tier-1 Gemini caps gemini-3.8-flash-tts at 100 requests per day per model (quotaId
+    GenerateRequestsPerDayPerProjectPerModel), so quota is tracked per (key, model): a per-model daily cap rests only
+    that model on that key until the daily reset; a per-minute 429 rests the key for the window the error names."""
     def __init__(self):
         self.free = env('GEMINI_TEST_KEY'); self.paid = env('GEMINI_PAID_KEY')
-        self.free_blocked_until = 0.0
+        self.blocked = {}            # (tier, model or '*') -> unix time it may be used again
         self.paid_cap = float(env('GEMINI_PAID_REMAINING_USD', '5.0')); self.paid_spent = 0.0
         self.ledger = None
+    @property
+    def free_blocked_until(self): return self.blocked.get(('free', '*'), 0.0)
     def load(self, path):
-        """Paid-key spend survives restarts (the owner's $20 cap is global, not per process)."""
+        """Paid-key spend survives restarts (the owner's cap is global, not per process)."""
         self.ledger = path
         try:
             self.paid_spent = sum(json.loads(l).get('usd', 0) for l in open(path))
         except FileNotFoundError: pass
-    def pick(self):
-        if self.free and time.time() >= self.free_blocked_until: return self.free, 'free'
-        if self.paid and self.paid_spent < self.paid_cap: return self.paid, 'paid'
+    def usable(self, tier, model=None, now=None):
+        now = now or time.time()
+        return now >= self.blocked.get((tier, '*'), 0) and (model is None or now >= self.blocked.get((tier, model), 0))
+    def pick(self, exclude=(), model=None):
+        if self.free and 'free' not in exclude and self.usable('free', model): return self.free, 'free'
+        if self.paid and 'paid' not in exclude and self.usable('paid', model) and self.paid_spent < self.paid_cap: return self.paid, 'paid'
         return None, 'none'
-    def quota_hit(self, tier, seconds=600):
-        if tier == 'free': self.free_blocked_until = time.time() + seconds
+    def quota_hit(self, tier, seconds=60, model=None):
+        k = (tier, model or '*'); self.blocked[k] = max(self.blocked.get(k, 0), time.time() + seconds)
+    def next_usable(self, model=None):
+        ts = [max(self.blocked.get((t, '*'), 0), self.blocked.get((t, model), 0) if model else 0) for t in ('free', 'paid')]
+        return min(ts)
     def charge(self, tier, usd):
         if tier == 'paid' and usd:
             self.paid_spent += usd
@@ -46,6 +57,47 @@ GKEYS = GeminiKeys()
 def is_quota(status, text):
     t = (text or '').lower()
     return status == 429 or 'resource_exhausted' in t or 'quota' in t or status == 402
+def seconds_to_daily_reset():
+    """Gemini API daily quotas reset at midnight US Pacific (07:00 UTC in daylight time, 08:00 UTC otherwise)."""
+    import datetime
+    now = datetime.datetime.now(datetime.timezone.utc)
+    hour = 7 if 3 <= now.month <= 10 or (now.month == 11 and now.day < 2) else 8
+    reset = now.replace(hour=hour, minute=0, second=0, microsecond=0)
+    if reset <= now: reset += datetime.timedelta(days=1)
+    return (reset - now).total_seconds()
+def quota_window(text):
+    """(seconds to rest, per_model) after a quota error: until the daily reset for per-day quotas, else the error's
+    retryDelay or a minute."""
+    t = text or ''
+    per_model = 'PerModel' in t
+    if 'PerDay' in t or 'per_day' in t.lower(): return seconds_to_daily_reset(), per_model
+    m = re.search(r'"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"', t)
+    return (min(120.0, max(5.0, float(m.group(1)))) if m else 60.0), per_model
+
+async def gemini_post(http, url, body, timing, **kw):
+    """POST to the Gemini API with key failover: on a quota error rest that key (or that key's model, for per-model
+    caps) for its window and try the other key; if both rest for under 2 s, wait once. Returns an open response
+    (caller releases it) or None with timing['err'] set; with no usable key it returns at once (no doomed request)."""
+    mm = re.search(r'/models/([^:/]+)[:]', url); model = mm.group(1) if mm else None
+    tried = []; waited = False
+    while True:
+        key, tier = GKEYS.pick(exclude=tried, model=model)
+        if not key:
+            soon = GKEYS.next_usable(model) - time.time()
+            if not waited and 0 < soon <= 2.0:
+                waited = True; tried = []; await asyncio.sleep(soon); continue
+            timing.setdefault('err', f'429 no Gemini key has quota left for {model} now (resets {int(max(soon, 0) // 60)} min)')
+            timing['quota_out'] = True; return None
+        timing['key'] = tier
+        r = await http.post(url, headers={'x-goog-api-key': key}, json=body, **kw)
+        if r.status == 200: return r
+        txt = await r.text(); r.release()
+        if is_quota(r.status, txt):
+            secs, per_model = quota_window(txt)
+            GKEYS.quota_hit(tier, secs, model if per_model else None); tried.append(tier)
+            timing['quota'] = timing.get('quota', 0) + 1; timing['err'] = f'{r.status} {txt[:300]}'
+            continue
+        timing['err'] = f'{r.status} {txt[:300]}'; return None
 
 # ---------------------------------------------------------------- LLM streaming
 def _strip(t):
@@ -102,16 +154,11 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
         if not contents or contents[0]['role'] != 'user': contents.insert(0, {'role': 'user', 'parts': [{'text': '(call connected)'}]})
         body = {'systemInstruction': {'parts': [{'text': sysm}]}, 'contents': contents,
                 'generationConfig': {'maxOutputTokens': max_tokens, 'temperature': 0.6, 'thinkingConfig': b.get('thinking', {'thinkingLevel': 'minimal'})}}
-        for attempt in range(2):
-            key, tier = GKEYS.pick(); timing['key'] = tier
-            if not key: timing['err'] = 'no Gemini key with budget left'; break
-            async with http.post(f"{GEM}/models/{b['model']}:streamGenerateContent?alt=sse", headers={'x-goog-api-key': key}, json=body,
-                                 timeout=aiohttp.ClientTimeout(total=60, sock_read=30)) as r:
-                timing['status'] = r.status
-                if r.status != 200:
-                    txt = await r.text()
-                    if is_quota(r.status, txt) and tier == 'free': GKEYS.quota_hit('free'); continue
-                    timing['err'] = f'{r.status} {txt[:300]}'; break
+        r = await gemini_post(http, f"{GEM}/models/{b['model']}:streamGenerateContent?alt=sse", body, timing,
+                              timeout=aiohttp.ClientTimeout(total=60, sock_read=30))
+        if r is not None:
+            timing['status'] = 200; timing.pop('err', None)
+            try:
                 async for raw in r.content:
                     line = raw.strip()
                     if not line.startswith(b'data:'): continue
@@ -128,7 +175,8 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
                             if t and not p.get('thought'):
                                 if 'first' not in timing: timing['first'] = time.perf_counter()
                                 yield t
-                break
+            finally:
+                r.release()
     timing['done'] = time.perf_counter()
     usd = (usage.get('in', 0) - usage.get('cached', 0)) * b['in'] / 1e6 + usage.get('cached', 0) * b['in'] * 0.25 / 1e6 + usage.get('out', 0) * b['out'] / 1e6
     usage['usd'] = usage.get('usd_reported', usd) if host == 'or' else usd
@@ -215,40 +263,37 @@ async def gemini_tts(http, model, voice, text, style, usage, timing):
     body = {'contents': [{'parts': [{'text': prompt}]}],
             'generationConfig': {'responseModalities': ['AUDIO'], 'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': voice}}}}}
     timing.setdefault('req', time.perf_counter())
-    for attempt in range(2):
-        key, tier = GKEYS.pick(); timing['key'] = tier
-        if not key: timing['err'] = 'no Gemini key with budget left'; return
-        async with http.post(f'{GEM}/models/{model}:streamGenerateContent?alt=sse', headers={'x-goog-api-key': key}, json=body,
-                             timeout=aiohttp.ClientTimeout(total=90, sock_read=30)) as r:
-            if r.status != 200:
-                txt = await r.text()
-                if is_quota(r.status, txt) and tier == 'free': GKEYS.quota_hit('free'); continue
-                timing['err'] = f'{r.status} {txt[:300]}'; return
-            nbytes = 0; skip = True; carry = b''
-            async for raw in r.content:
-                line = raw.strip()
-                if not line.startswith(b'data:'): continue
-                try: e = json.loads(line[5:].strip())
-                except Exception: continue
-                for c in e.get('candidates') or []:
-                    for p in (c.get('content') or {}).get('parts') or []:
-                        idata = p.get('inlineData')
-                        if not idata or not idata.get('data'): continue
-                        b = carry + base64.b64decode(idata['data'])
-                        if len(b) % 2: carry, b = b[-1:], b[:-1]
-                        else: carry = b''
-                        if skip:   # trim leading digital silence so the first sound is speech
-                            arr = memoryview(b).cast('h'); k = 0
-                            while k < len(arr) and abs(arr[k]) < 64: k += 1
-                            b = b[2 * k:]
-                            if not b: continue
-                            skip = False
-                        if 'first' not in timing: timing['first'] = time.perf_counter()
-                        nbytes += len(b); yield b
-                um = e.get('usageMetadata')
-                if um: usage['in'] = um.get('promptTokenCount', 0); usage['out'] = um.get('candidatesTokenCount', 0)
-            usage['audio_s'] = usage.get('audio_s', 0) + nbytes / 48000
-            break
+    r = await gemini_post(http, f'{GEM}/models/{model}:streamGenerateContent?alt=sse', body, timing,
+                          timeout=aiohttp.ClientTimeout(total=90, sock_read=30))
+    if r is None: return
+    timing.pop('err', None)
+    try:
+        nbytes = 0; skip = True; carry = b''
+        async for raw in r.content:
+            line = raw.strip()
+            if not line.startswith(b'data:'): continue
+            try: e = json.loads(line[5:].strip())
+            except Exception: continue
+            for c in e.get('candidates') or []:
+                for p in (c.get('content') or {}).get('parts') or []:
+                    idata = p.get('inlineData')
+                    if not idata or not idata.get('data'): continue
+                    b = carry + base64.b64decode(idata['data'])
+                    if len(b) % 2: carry, b = b[-1:], b[:-1]
+                    else: carry = b''
+                    if skip:   # trim leading digital silence so the first sound is speech
+                        arr = memoryview(b).cast('h'); k = 0
+                        while k < len(arr) and abs(arr[k]) < 64: k += 1
+                        b = b[2 * k:]
+                        if not b: continue
+                        skip = False
+                    if 'first' not in timing: timing['first'] = time.perf_counter()
+                    nbytes += len(b); yield b
+            um = e.get('usageMetadata')
+            if um: usage['in'] = um.get('promptTokenCount', 0); usage['out'] = um.get('candidatesTokenCount', 0)
+        usage['audio_s'] = usage.get('audio_s', 0) + nbytes / 48000
+    finally:
+        r.release()
 
 def tts_usd(tts_id, chars=0, audio_s=0.0):
     t = TTS[tts_id]

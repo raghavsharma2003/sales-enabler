@@ -175,6 +175,7 @@ async def ws_call(req):
     call = None
     try:
         msg = await ws.receive(timeout=30)
+        if msg.type != aiohttp.WSMsgType.TEXT: return ws          # client went away before starting
         cfg = json.loads(msg.data)
         if cfg.get('t') != 'start': await ws.send_json({'t': 'error', 'msg': 'expected start'}); return ws
         cfg.setdefault('scenario', 'renewal'); cfg['tester'] = (cfg.get('tester') or 'owner')[:40]
@@ -216,7 +217,7 @@ async def ws_call(req):
             dur = call.rec.write(f'{d}/call.wav')
             summ = call.summary(); summ['audio_s'] = round(dur, 1)
             json.dump(summ, open(f'{d}/meta.json', 'w'), ensure_ascii=False, indent=1)
-            try: await ws.send_json({'t': 'ended', 'summary': {k: summ[k] for k in ('id', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'components', 'preset', 'cost_parts_inr')}})
+            try: await ws.send_json({'t': 'ended', 'summary': {k: summ[k] for k in ('id', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'components', 'preset', 'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks')}})
             except Exception: pass
             LAB.calls.pop(call.id, None)
             await ws.close()
@@ -225,6 +226,8 @@ async def ws_call(req):
 async def on_start(app):
     LAB.http = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=64, keepalive_timeout=120))
     pv.GKEYS.load(f'{DATA}/gemini-paid.jsonl')
+    for m in filter(None, os.environ.get('LAB_TEST_BLOCK_MODELS', '').split(',')):   # test hook: pretend a model is out of quota
+        pv.GKEYS.quota_hit('free', 86400, m); pv.GKEYS.quota_hit('paid', 86400, m)
     async def warm():
         loop = asyncio.get_running_loop()
         for v in ('hi-IN-SwaraNeural', 'en-IN-Aarti:DragonHDLatestNeural'):

@@ -10,6 +10,8 @@ from audio import VAD, Recorder, Resampler
 import providers as pv
 
 BOUND = re.compile(r'[,.?!।;:—]')
+# same model on another host first; otherwise the fastest India-resident brain (lab 2026-10-19: Groq rate-limited gpt-oss)
+BRAIN_FALLBACK = {'gpt-oss-120b@groq': 'gpt-oss-120b', 'gpt-oss-120b': 'gpt-oss-120b@groq'}
 TAG = re.compile(r'^\s*\[([^\]]{0,60})\]\s*')
 CUES = set('और लेकिन तो कि क्योंकि मतलब जैसे या पर जो अगर फिर यानी वो aur lekin toh to ki kyunki kyonki matlab jaise ya par agar phir '
            'yaani and but so because like or the a an um uh hmm actually basically which that if then with'.split())
@@ -35,7 +37,7 @@ class Call:
         self.eos_sample = None; self.eos_t = None; self.last_reply_eos = None
         self.closed = False; self.http = lab.http; self.client_lat = {}; self.talk_over = 0; self.barge_ins = 0
         self.memory = lab.memory_get(cfg['tester'], cfg['scenario'])
-        self.cost_task = None; self.trace = []
+        self.cost_task = None; self.trace = []; self.voice_fallbacks = 0; self.brain_fallbacks = 0
     def tr(self, kind, info=''):
         if len(self.trace) < 600: self.trace.append((round(now() - self.t0, 3), kind, str(info)[:120]))
     # ---- transport
@@ -111,7 +113,7 @@ class Call:
                 'started': time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(self.wall0)), 'duration_s': round(dur, 1),
                 'usd': round(tot, 5), 'inr': round(tot * FX, 2), 'inr_per_min': round(tot * FX / max(dur / 60, 1e-6), 3),
                 'cost_parts_inr': {k: round(v * FX, 3) for k, v in self.cost.items()},
-                'latency_p50_ms': p50, 'latencies_ms': lat, 'replies': replies, 'talk_over': self.talk_over, 'barge_ins': self.barge_ins,
+                'latency_p50_ms': p50, 'latencies_ms': lat, 'replies': replies, 'talk_over': self.talk_over, 'barge_ins': self.barge_ins, 'voice_fallbacks': self.voice_fallbacks, 'brain_fallbacks': self.brain_fallbacks,
                 'turns': self.turns, 'client_latency': self.client_lat, 'transcript': self.transcript, 'errors': self.errors[:20], 'trace': self.trace}
 
 # =====================================================================================================================
@@ -168,31 +170,39 @@ class Reply:
         q = asyncio.Queue(); tts = asyncio.ensure_future(self.tts_loop(q))
         try:
             buf = ''; tag_done = not c.notes; n_clause = 0
-            async for d in pv.llm_stream(c.http, c.brain, msgs, self.llm_u, self.llm_t):
-                buf += d; self.text += d
-                if not tag_done:
-                    s = buf.lstrip()
-                    if not s: continue
-                    if s[0] == '[':
-                        m = TAG.match(buf)
-                        if m: self.style = m.group(1).strip().lower(); buf = buf[m.end():]; tag_done = True
-                        elif len(s) > 64: tag_done = True
-                        else: continue
-                    else: tag_done = True
-                while True:
-                    m = BOUND.search(buf)
-                    # never split inside a number ("18,450", "2.5"): a separator after a digit waits for the next char
-                    while m and buf[m.start()] in ',.' and m.start() > 0 and buf[m.start() - 1].isdigit():
-                        if m.end() >= len(buf): m = None; break
-                        if not buf[m.end()].isdigit(): break
-                        m = BOUND.search(buf, m.end())
-                    if m and (n_clause > 0 or len(buf[:m.start()].split()) >= 1):
-                        cl = buf[:m.end()]; buf = buf[m.end():]
-                        if cl.strip(): await q.put(cl); n_clause += 1
-                    elif len(buf) > 80 and ' ' in buf[50:]:
-                        k = buf.rfind(' '); await q.put(buf[:k]); buf = buf[k:]; n_clause += 1
-                    else: break
-            if self.llm_t.get('err'): c.errors.append('brain: ' + self.llm_t['err'][:200]); await c.send({'t': 'error', 'msg': 'brain: ' + self.llm_t['err'][:160]})
+            fb = BRAIN_FALLBACK.get(c.brain, 'gpt-4.1-mini-in')
+            for brain in [c.brain] + ([fb] if fb != c.brain else []):
+                if brain != c.brain:
+                    # the stack's brain failed before saying a word (rate limit, outage): answer with the fallback
+                    why = self.llm_t.get('err', '')[:120]; c.errors.append(f'brain fallback to {brain}: ' + why)
+                    await c.send({'t': 'error', 'msg': f"Brain busy ({why[:60]}); this reply used {BRAINS[brain]['label']}"})
+                    self.llm_t = {}; self.llm_u = {}; c.brain_fallbacks += 1
+                async for d in pv.llm_stream(c.http, brain, msgs, self.llm_u, self.llm_t):
+                    buf += d; self.text += d
+                    if not tag_done:
+                        s = buf.lstrip()
+                        if not s: continue
+                        if s[0] == '[':
+                            m = TAG.match(buf)
+                            if m: self.style = m.group(1).strip().lower(); buf = buf[m.end():]; tag_done = True
+                            elif len(s) > 64: tag_done = True
+                            else: continue
+                        else: tag_done = True
+                    while True:
+                        m = BOUND.search(buf)
+                        # never split inside a number ("18,450", "2.5"): a separator after a digit waits for the next char
+                        while m and buf[m.start()] in ',.' and m.start() > 0 and buf[m.start() - 1].isdigit():
+                            if m.end() >= len(buf): m = None; break
+                            if not buf[m.end()].isdigit(): break
+                            m = BOUND.search(buf, m.end())
+                        if m and (n_clause > 0 or len(buf[:m.start()].split()) >= 1):
+                            cl = buf[:m.end()]; buf = buf[m.end():]
+                            if cl.strip(): await q.put(cl); n_clause += 1
+                        elif len(buf) > 80 and ' ' in buf[50:]:
+                            k = buf.rfind(' '); await q.put(buf[:k]); buf = buf[k:]; n_clause += 1
+                        else: break
+                if self.text or not self.llm_t.get('err'): break
+            if self.llm_t.get('err') and not self.text: c.errors.append('brain: ' + self.llm_t['err'][:200]); await c.send({'t': 'error', 'msg': 'brain: ' + self.llm_t['err'][:160]})
             if buf.strip():
                 if not tag_done: buf = TAG.sub('', buf)
                 await q.put(buf)
@@ -263,7 +273,7 @@ class Reply:
                     rest.append(pv._strip(x).strip())
                 txt = ' '.join(r for r in rest if r)
                 if txt:
-                    u2, t2 = {}, {}
+                    u2, t2 = {}, {}; self.tts2_t = t2
                     await produce(txt, seg2_q, u2, t2)
                     c.add_cost('voice', pv.tts_usd(c.tts, audio_s=u2.get('audio_s', 0)))
                     if t2.get('err'): c.errors.append('tts: ' + t2['err'][:200])
@@ -279,7 +289,8 @@ class Reply:
                     if ch is None: break
                     await self.emit(ch, 0)
                 c.add_cost('voice', pv.tts_usd(c.tts, audio_s=u1.get('audio_s', 0)))
-                if self.tts_t.get('err'): c.errors.append('tts: ' + self.tts_t['err'][:200]); await c.send({'t': 'error', 'msg': 'voice: ' + self.tts_t['err'][:160]})
+                if self.tts_t.get('err'): c.errors.append('tts: ' + self.tts_t['err'][:200])
+                if self.spoken[0][1] == 0 and self.tts_t.get('err'): await self.voice_fallback(first, 0, self.tts_t['err'])
                 txt = await rest_task
                 if txt:
                     self.spoken.append([txt, 0])
@@ -287,8 +298,38 @@ class Reply:
                         ch = await seg2_q.get()
                         if ch is None: break
                         await self.emit(ch, 1)
+                    t2 = getattr(self, 'tts2_t', {})
+                    if self.spoken[1][1] == 0 and t2.get('err'): await self.voice_fallback(txt, 1, t2['err'])
             finally:
                 p1.cancel(); rest_task.cancel()
+
+    async def voice_fallback(self, text, idx, why):
+        """The stack's Gemini TTS failed (Tier-1 daily cap of 100 requests per model, or a rate limit): speak this part
+        with Gemini Flash-Lite TTS in the same voice, else an Azure voice, so the call never goes silent; say so once."""
+        c = self.c
+        if self.cancelled or not text: return
+        c.voice_fallbacks += 1; c.errors.append('voice fallback: ' + why[:160]); c.tr('voice_fallback', why[:80])
+        model = TTS[c.tts].get('model')
+        if model == 'gemini-3.8-flash-tts':
+            u, tm = {}, {}; got = False
+            async for ch in pv.gemini_tts(c.http, 'gemini-3.8-flash-lite-tts', c.voice, text, self.style if c.notes else None, u, tm):
+                got = True; self.tts_t.setdefault('first', time.perf_counter()); await self.emit(ch, idx)
+            if got:
+                c.add_cost('voice', pv.tts_usd('gemini-lite', audio_s=u.get('audio_s', 0)))
+                if c.voice_fallbacks == 1:
+                    await c.send({'t': 'error', 'msg': "Gemini Flash TTS hit Google's daily cap (100 requests per model), so replies use Gemini Flash-Lite TTS, same voice. Rate the voice with that in mind."})
+                return
+        if c.voice_fallbacks == 1 or not getattr(c, 'azure_fb_noted', False):
+            c.azure_fb_noted = True
+            await c.send({'t': 'error', 'msg': 'Gemini voice is out of quota right now, so replies use a backup Azure voice. Skip rating the voice for this call.'})
+        loop = asyncio.get_running_loop()
+        s = await loop.run_in_executor(None, pv.POOL.get, 'hi-IN-SwaraNeural'); self.synth = s
+        try:
+            async for ch in s.speak(text):
+                self.tts_t.setdefault('first', time.perf_counter()); await self.emit(ch, idx)
+            c.add_cost('voice', len(text) * 15.0 / 1e6)
+        finally:
+            if self.synth is s and not self.cancelled: self.synth = None; pv.POOL.put(s)
 
 class CascadeCall(Call):
     kind = 'cascade'

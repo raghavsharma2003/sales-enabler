@@ -266,6 +266,7 @@ function reveal() {
   const comp = s.components ? Object.entries(s.components).map(([k, v]) => `${k}: ${v}`).join(' · ') : '';
   $('reveal').innerHTML = `<b>${L.blind ? 'It was: ' : ''}${p.label}</b><div class="small" style="margin-top:4px">${comp}</div>
     <div class="small" style="margin-top:6px">Measured: ₹${(s.inr_per_min ?? 0).toFixed(2)}/min AI cost · median reply gap ${lat} · ${s.replies ?? 0} replies · ${s.talk_over ?? 0} talk-overs · ${s.barge_ins ?? 0} interruptions handled</div>
+    ${(s.voice_fallbacks || s.brain_fallbacks) ? `<div class="small" style="margin-top:4px;color:var(--warn)">${s.voice_fallbacks ? s.voice_fallbacks + ' replies used a backup voice. ' : ''}${s.brain_fallbacks ? s.brain_fallbacks + ' replies used a backup brain.' : ''}</div>` : ''}
     <div class="small muted" style="margin-top:4px">Report predicted: ${p.ref}</div>`;
   $('reveal').hidden = false;
 }
