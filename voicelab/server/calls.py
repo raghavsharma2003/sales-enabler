@@ -149,6 +149,8 @@ class Reply:
         if self.synth is not None:
             s = self.synth; self.synth = None
             asyncio.get_running_loop().run_in_executor(None, s.stop)
+        if getattr(self.c, 'bulbul', None) is not None and TTS[self.c.tts]['kind'] == 'sarvam' and not self.done:
+            self.c.bulbul.reset()      # no cancel message in Bulbul: drop the socket, next reply opens a fresh one
         self.task.cancel()
     def heard_text(self):
         """What the caller actually heard, from the playback clock (for history after an interruption)."""
@@ -227,6 +229,20 @@ class Reply:
             finally:
                 if self.synth is not None and not self.cancelled:
                     s = self.synth; self.synth = None; pv.POOL.put(s)
+        elif t['kind'] == 'sarvam':
+            while True:
+                cl = await q.get()
+                if cl is None: break
+                cl = pv._strip(cl).strip()
+                if not cl: continue
+                while len(self.spoken) <= idx: self.spoken.append(['', 0])
+                self.spoken[idx][0] = cl
+                self.tts_t.setdefault('req', time.perf_counter())
+                async for chunk in c.bulbul.speak(cl):
+                    self.tts_t.setdefault('first', time.perf_counter())
+                    await self.emit(chunk, idx)
+                c.tts_chars += len(cl); c.add_cost('voice', pv.tts_usd(c.tts, chars=len(cl)))
+                idx += 1
         else:
             # Gemini TTS: first clause alone (fast first sound), then the rest of the reply in one request so the
             # prosody of the remainder is continuous. The second request starts while the first still plays.
@@ -291,7 +307,7 @@ class CascadeCall(Call):
         self.finals = []; self.partial = ''; self.pending = None; self.active = None; self.overlap = []
         self.seg = 0; self.final_seg = 0      # speech segments seen / latest segment that has produced a final
         self.tts_chars = 0; self.stt_lag_ms = None; self.final_t = None; self.smart = cfg.get('smart_turn', True)
-        self.tick_task = None; self.stt = None
+        self.tick_task = None; self.stt = None; self.bulbul = None
     def components(self):
         return {'stt': self.stt_id, 'gated': self.gated, 'brain': self.brain, 'tts': self.tts, 'voice': self.voice, 'notes': self.notes}
     def map_style(self, style):
@@ -310,11 +326,14 @@ class CascadeCall(Call):
         k = STT[self.stt_id]['kind']
         if k == 'azure': inner = pv.AzureSTT(loop, on_p, on_f, on_e)
         elif k == 'gemini': inner = pv.GeminiSTT(self.http, on_p, on_f, on_e)
+        elif k == 'sarvam': inner = pv.SarvamSTT(self.http, STT[self.stt_id]['model'], on_p, on_f, on_e)
         else: inner = pv.OaiRealtimeSTT(self.http, STT[self.stt_id]['deployment'], on_p, on_f, on_e)
         if hasattr(inner, 'trace'): inner.trace = self.tr
         self.stt = pv.Gate(inner) if self.gated else inner
         if TTS[self.tts]['kind'] == 'azure':
             await loop.run_in_executor(None, pv.POOL.warm, self.voice, 2)
+        if TTS[self.tts]['kind'] == 'sarvam':
+            self.bulbul = pv.SarvamTTS(self.http, TTS[self.tts]['model'], self.voice); await self.bulbul.warm()
         await self.stt.start()
         self.tick_task = asyncio.ensure_future(self.tick())
         self.cost_task = asyncio.ensure_future(self.cost_loop())
@@ -423,6 +442,7 @@ class CascadeCall(Call):
         for r in (self.pending, self.active):
             if r is not None: r.cancel()
         if self.stt: await self.stt.close()
+        if self.bulbul: await self.bulbul.close()
         self.meter()
 
 # =====================================================================================================================

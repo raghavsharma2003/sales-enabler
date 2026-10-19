@@ -43,9 +43,9 @@ python tests/sim_caller.py URL PASSCODE PRESET --turns 3     # one headless call
 ```
 
 Keys live only in the scratchpad env files and in `/opt/voicelab/.env` (mode 600) on the VM. Budget guards: $15/day
-across the lab, 20 minutes per call, Gemini paid key capped at the $5 left of the owner's $20.
+across the lab, 20 minutes per call, Gemini paid key capped at what is left of the owner's $30 (topped up $10 on 2026-10-19).
 
 ## Not built yet
 
-Inworld and Sarvam stacks (need the owner's keys), AWS (needs keys), a real phone leg (needs a Plivo/Vobiz number),
-an LLM "is the caller done?" turn classifier.
+A real phone leg (owner is setting up Plivo), an LLM "is the caller done?" turn classifier. Inworld and AWS are out of
+scope by owner decision (2026-10-19). Sarvam (Saaras STT, Bulbul v4 Flash, Sarvam-105B) runs on the owner's key.

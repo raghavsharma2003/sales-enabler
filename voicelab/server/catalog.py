@@ -10,6 +10,8 @@ STT = {
                 'usd_min': 0.005 + 0.0005, 'src': 'g1 prices.json: audio in $3.5/1M (25 tok/s) + text out'},
     'azure':   {'label': 'Azure Speech hi-IN (Central India)', 'kind': 'azure', 'lang': 'hi-IN',
                 'usd_min': 1.0 / 60, 'src': 'Azure S1 real-time STT $1.00/audio hour'},
+    'sarvam':  {'label': 'Sarvam Saaras v4 realtime (codemix)', 'kind': 'sarvam', 'model': 'saaras:v4', 'lang': 'hi-IN',
+                'usd_min': 0.5 / FX, 'src': 'Sarvam docs: ₹30 per audio hour, billed per second'},
     'asha':    {'label': 'gpt-4o-transcribe realtime (Asha-style ears)', 'kind': 'oai_rt_tx', 'deployment': 'lab-4otx',
                 'usd_min': 0.006, 'src': 'Azure retail: gpt-4o-transcribe audio in $6/1M tokens ≈ $0.006/min'},
 }
@@ -29,6 +31,8 @@ BRAINS = {
                           'extra': {'reasoning_effort': 'none'}},
     'llama-4-maverick':  {'ttft_ms': 1060, 'label': 'Llama 4 Maverick (Azure, open weights)', 'host': 'sin', 'model': 'lab-llama4mav', 'in': 0.25, 'out': 1.0},
     'mistral-medium-3.5':{'ttft_ms': 1508, 'label': 'Mistral Medium 3.5 (Azure)', 'host': 'sin', 'model': 'lab-mistralmed', 'in': 0.40, 'out': 2.0, 'price_note': 'unverified'},
+    'sarvam-105b':       {'label': 'Sarvam-105B conversations (India)', 'host': 'sv', 'model': 'sarvam-105b-conversations',
+                          'in': 15 / FX, 'out': 60 / FX, 'extra': {'reasoning_effort': None}},
     'gemini-3.8-flash':  {'ttft_ms': 2577, 'label': 'Gemini 3.8 Flash', 'host': 'gm', 'model': 'gemini-3.8-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'low'}},
     'gemini-3.5-flash-lite': {'ttft_ms': 826, 'label': 'Gemini 3.5 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.5-flash-lite', 'in': 0.30, 'out': 2.50, 'thinking': {'thinkingLevel': 'minimal'}},
     'gemini-3.6-flash':  {'ttft_ms': 1496, 'label': 'Gemini 3.6 Flash', 'host': 'gm', 'model': 'gemini-3.6-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'minimal'}},
@@ -51,6 +55,11 @@ TTS = {
                'usd_1m_chars': 22.0, 'price_note': 'unverified: priced like HD until the meter is read', 'emotion': True,
                'styles': ['happy', 'sad', 'hopeful', 'relieved', 'softvoice', 'excited', 'joyful', 'regretful', 'surprised', 'confused', 'determined', 'fearful'],
                'src': 'voices list centralindia 2026-10-19'},
+    'sarvam': {'label': 'Sarvam Bulbul v4 Flash', 'kind': 'sarvam', 'model': 'bulbul:v4-flash', 'default_voice': 'ishita_enhi_customer_expressive',
+               'voices': ['ishita_enhi_customer_expressive', 'simran_enhi_companion', 'simran_enhi_customer', 'shalini_enhi_customer', 'ishita_enhi_companion',
+                          'sanchita_enhi_companion', 'simran_enhi_banking_expressive', 'kavya_hi_conversational', 'ritu_hi_conversation', 'aarti_hi_customer',
+                          'shubh_enhi_companion', 'sunny_enhi_customer'],
+               'usd_1m_chars': 20 * 100 / FX, 'src': 'Sarvam pricing page: ₹20 per 10K chars (v4 Flash, pay as you go)'},
     'gemini': {'label': 'Gemini 3.8 Flash TTS', 'kind': 'gemini', 'model': 'gemini-3.8-flash-tts', 'default_voice': 'Despina',
                'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
                'usd_audio_min': 9.0 * 25 * 60 / 1e6, 'src': 'g1: $9/1M audio tokens (doubles 2027-01-01)'},
@@ -75,12 +84,12 @@ S2S = {
 # ref = the report's numbers (AI ₹/min, latency) so the lab can show "report said" next to "you measured".
 P = lambda **k: k
 PRESETS = [
-    P(id='inworld', label='Inworld all-in', ref='₹0.53 · not tested', needs='INWORLD_API_KEY'),
     P(id='base', label='Base: gated Gemini transcription + gpt-oss + Azure voice', ref='₹0.94 · 1.04 s · 23% cut-ins',
       stt='gemini', gated=True, brain='gpt-oss-120b@groq', tts='azure'),
     P(id='base-gemvoice', label='Gated transcription + gpt-oss + Gemini voice', ref='₹0.98 · ~2.0 s (computed)',
       stt='gemini', gated=True, brain='gpt-oss-120b@groq', tts='gemini-lite'),
-    P(id='sarvam', label='Sarvam speech + gpt-oss + Bulbul voice', ref='₹1.04 · not tested', needs='SARVAM_API_KEY'),
+    P(id='sarvam', label='Sarvam speech + gpt-oss + Bulbul voice', ref='₹1.04 · not tested', needs='SARVAM_API_KEY',
+      stt='sarvam', gated=True, brain='gpt-oss-120b@groq', tts='sarvam'),
     P(id='base-ungated', label='Same as base, ungated transcription', ref='₹1.24 · 1.03 s · 32% cut-ins',
       stt='gemini', gated=False, brain='gpt-oss-120b@groq', tts='azure'),
     P(id='azure-gated', label='All-Azure, gated (India-processed)', ref='₹1.36 · 0.99 s · 30% cut-ins',
@@ -103,6 +112,8 @@ PRESETS = [
       stt='asha', gated=False, brain='gpt-4.1', tts='azure-hd', new=True),
     P(id='mai-emotion', label='Azure MAI-Voice emotional voice + per-reply emotion', ref='new · preview voice',
       stt='gemini', gated=True, brain='gpt-4.1-mini-in', tts='azure-mai', notes=True, new=True),
+    P(id='sarvam-india', label='All-Sarvam: Saaras + Sarvam-105B + Bulbul (Indian stack)', ref='new', needs='SARVAM_API_KEY',
+      stt='sarvam', gated=True, brain='sarvam-105b', tts='sarvam', new=True),
     P(id='maya-cascade', label='Maya voice (Despina) cascade, with delivery notes', ref='new',
       stt='gemini', gated=True, brain='gemini-3.5-flash-lite', tts='gemini', notes=True, new=True),
 ]

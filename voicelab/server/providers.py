@@ -55,8 +55,11 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
     """Yields text deltas; fills usage {'in','out','cached','usd'} and timing {'req','first','done','err'}."""
     b = BRAINS[brain_id]; timing['req'] = time.perf_counter()
     host = b['host']
-    if host in ('sin', 'sea', 'or'):
-        if host == 'or':
+    if host in ('sin', 'sea', 'or', 'sv'):
+        if host == 'sv':
+            url = 'https://api.sarvam.ai/v1/chat/completions'; hdr = {'api-subscription-key': env('SARVAM_API_KEY', '')}
+            body = {'model': b['model']}
+        elif host == 'or':
             url = 'https://openrouter.ai/api/v1/chat/completions'; hdr = {'Authorization': 'Bearer ' + env('OPENROUTER_API_KEY', ''), 'X-Title': 'vp-voicelab'}
             body = {'model': b['model'], 'provider': {'order': [b['provider']], 'allow_fallbacks': False}, 'usage': {'include': True}}
         else:
@@ -65,7 +68,7 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
             url = f'https://{az_host(ep)}/openai/v1/chat/completions'; hdr = {'api-key': key}
             body = {'model': b['model'], 'stream_options': {'include_usage': True}}
         body.update({'messages': messages, 'stream': True, 'max_completion_tokens': max_tokens + b.get('out_pad', 0), 'temperature': 0.6})
-        if host == 'or': body['max_tokens'] = body.pop('max_completion_tokens')
+        if host in ('or', 'sv'): body['max_tokens'] = body.pop('max_completion_tokens')
         if b.get('no_temp') or 'gpt-oss' in b['model'] or 'gptoss' in b['model'] or 'kimi' in b['model']: body.pop('temperature', None)
         body.update(b.get('extra', {}))
         async with http.post(url, headers=hdr, json=body, timeout=aiohttp.ClientTimeout(total=60, sock_read=30)) as r:
@@ -249,8 +252,8 @@ async def gemini_tts(http, model, voice, text, style, usage, timing):
 
 def tts_usd(tts_id, chars=0, audio_s=0.0):
     t = TTS[tts_id]
-    if t['kind'] == 'azure': return chars * t['usd_1m_chars'] / 1e6
-    return audio_s / 60 * t['usd_audio_min']
+    if 'usd_1m_chars' in t: return chars * t['usd_1m_chars'] / 1e6      # Azure, Sarvam: per character
+    return audio_s / 60 * t['usd_audio_min']                            # Gemini: per audio token
 
 # ---------------------------------------------------------------- STT
 class AzureSTT:
@@ -373,6 +376,106 @@ class OaiRealtimeSTT:
         try:
             if self.ws is not None: await self.ws.close()
         except Exception: pass
+
+SARVAM_STT_WS = 'wss://api.sarvam.ai/speech-to-text-realtime/ws'
+class SarvamSTT:
+    """Sarvam Saaras realtime STT (India-hosted per Sarvam), 16 kHz PCM in 100 ms chunks, codemix output (Hindi in
+    Devanagari, English in Latin). Sarvam's own VAD endpoints each utterance; partials stream in between."""
+    def __init__(self, http, model, on_partial, on_final, on_error, lang='hi-IN', silence_ms=400):
+        self.http = http; self.model = model; self.on_partial = on_partial; self.on_final = on_final; self.on_error = on_error
+        self.lang = lang; self.silence_ms = silence_ms; self.ws = None; self.buf = b''; self.audio_s = 0.0; self.closed = False; self.trace = None
+    async def start(self):
+        q = (f'?language_code={self.lang}&model={self.model}&stream_type=fast&mode=codemix&encoding=linear16&sample_rate=16000'
+             f'&silence_duration_ms={self.silence_ms}')
+        self.ws = await self.http.ws_connect(SARVAM_STT_WS + q, headers={'Api-Subscription-Key': env('SARVAM_API_KEY', '')}, max_msg_size=0, heartbeat=20)
+        self.reader = asyncio.ensure_future(self._read()); self.pinger = asyncio.ensure_future(self._ping())
+    async def _ping(self):
+        while not self.closed:
+            await asyncio.sleep(20)
+            try: await self.ws.send_json({'event': 'ping'})
+            except Exception: return
+    async def _read(self):
+        try:
+            async for m in self.ws:
+                txt = ws_text(m)
+                if txt is None: continue
+                d = json.loads(txt); ev = d.get('event')
+                if ev == 'transcript.partial': self.on_partial(d.get('text', ''))
+                elif ev == 'transcript.final':
+                    t = (d.get('text') or '').strip()
+                    if t: self.on_final(t)
+                elif ev == 'error': self.on_error(json.dumps(d)[:200])
+        except Exception as e:
+            if not self.closed: self.on_error(repr(e)[:200])
+        if not self.closed and self.ws is not None and self.ws.close_code not in (None, 1000):
+            self.on_error(f'sarvam stt closed {self.ws.close_code}')
+    def write(self, pcm, is_speech):
+        if self.ws is None or self.ws.closed: return
+        self.buf += pcm
+        if len(self.buf) >= 3200:      # 100 ms at 16 kHz
+            b, self.buf = self.buf, b''; self.audio_s += len(b) / 32000
+            asyncio.ensure_future(self.ws.send_json({'event': 'audio_input', 'audio': base64.b64encode(b).decode()}))
+    def end_of_speech(self):
+        if self.ws is not None and not self.ws.closed and self.buf:
+            b, self.buf = self.buf, b''; self.audio_s += len(b) / 32000
+            asyncio.ensure_future(self.ws.send_json({'event': 'audio_input', 'audio': base64.b64encode(b).decode()}))
+    async def close(self):
+        self.closed = True
+        try:
+            if self.ws is not None:
+                await self.ws.send_json({'event': 'end'}); await self.ws.close()
+        except Exception: pass
+
+SARVAM_TTS_WS = 'wss://api.sarvam.ai/text-to-speech/ws'
+class SarvamTTS:
+    """Bulbul streaming TTS over one warm socket per call (24 kHz linear16). speak() sends one clause plus flush and
+    yields audio until Bulbul's 'final' event. There is no cancel message, so an interrupted reply closes the socket
+    and the next speak() opens a fresh one (vendor guidance)."""
+    def __init__(self, http, model, voice):
+        self.http = http; self.model = model; self.voice = voice; self.ws = None; self.lock = asyncio.Lock(); self.pinger = None
+    async def _open(self):
+        self.ws = await self.http.ws_connect(f'{SARVAM_TTS_WS}?model={self.model}&send_completion_event=true',
+                                             headers={'Api-Subscription-Key': env('SARVAM_API_KEY', '')}, max_msg_size=0, heartbeat=20)
+        await self.ws.send_json({'type': 'config', 'data': {'language_code': 'hi-IN', 'speaker': self.voice, 'speech_sample_rate': 24000,
+                                                            'output_audio_codec': 'linear16', 'min_buffer_size': 30}})
+    async def warm(self):
+        try:
+            async with self.lock:
+                if self.ws is None or self.ws.closed: await self._open()
+        except Exception: pass
+        if self.pinger is None: self.pinger = asyncio.ensure_future(self._keepalive())
+    async def _keepalive(self):
+        """Bulbul idles a socket out after about a minute; a slow first reply (4.3 s) was seen on a cold socket."""
+        while True:
+            await asyncio.sleep(25)
+            if self.lock.locked(): continue
+            try:
+                async with self.lock:
+                    if self.ws is None or self.ws.closed: await self._open()
+                    else: await self.ws.send_json({'type': 'ping'})
+            except Exception: pass
+    async def speak(self, text):
+        async with self.lock:
+            if self.ws is None or self.ws.closed: await self._open()
+            await self.ws.send_json({'type': 'text', 'data': {'text': text}})
+            await self.ws.send_json({'type': 'flush'})
+            while True:
+                m = await self.ws.receive(timeout=20)
+                txt = ws_text(m)
+                if txt is None: raise RuntimeError(f'bulbul socket closed {self.ws.close_code}')
+                d = json.loads(txt); ty = d.get('type')
+                if ty == 'audio': yield base64.b64decode(d['data']['audio'])
+                elif ty in ('pong', 'ping'): continue
+                elif ty == 'error': raise RuntimeError('bulbul: ' + json.dumps(d)[:200])
+                elif ty == 'event' and (d.get('data') or {}).get('event_type') == 'final': break
+    def reset(self):
+        ws, self.ws = self.ws, None
+        if ws is not None and not ws.closed: asyncio.ensure_future(ws.close())
+        asyncio.ensure_future(self.warm())     # reopen now, not on the next reply's critical path
+    async def close(self):
+        if self.pinger: self.pinger.cancel(); self.pinger = None
+        ws, self.ws = self.ws, None
+        if ws is not None and not ws.closed: await ws.close()
 
 class Gate:
     """VAD gate (cost lever, as g3): forward caller audio only around speech, with a 200 ms pre-roll and a tail so the
