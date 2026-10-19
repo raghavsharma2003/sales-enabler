@@ -263,9 +263,9 @@ function reveal() {
 }
 
 // ------------------------------------------------------------------ results + history
-async function refreshCalls() { try { S.calls = await api('/api/calls'); } catch { S.calls = []; } }
+async function refreshCalls() { try { S.calls = await api('/api/calls?tester=' + encodeURIComponent(S.name)); } catch { S.calls = []; } }
 async function renderResults() {
-  const rows = await api('/api/results'); const t = $('rtable');
+  const rows = await api('/api/results?tester=' + encodeURIComponent(S.name)); const t = $('rtable');
   const f = (x, d = 1) => (x == null ? '–' : Number(x).toFixed(d));
   t.innerHTML = `<tr><th>Stack</th><th>Overall</th><th>Voice</th><th>Emotion</th><th>Talk</th><th>Hinglish</th><th>Turns</th><th>Speed</th><th>Pick</th><th>₹/min</th><th>Reply gap</th><th>Talk-over</th><th>Calls</th><th>Report</th></tr>` +
     rows.map((r) => `<tr><td>${r.label}</td><td class="num"><b>${f(r.scores.overall)}</b></td><td class="num">${f(r.scores.voice_human)}</td><td class="num">${f(r.scores.emotion)}</td>

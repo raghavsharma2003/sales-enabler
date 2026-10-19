@@ -82,8 +82,9 @@ def load_ratings():
     return r
 
 async def calls_list(req):
-    rs = load_ratings(); out = []
+    rs = load_ratings(); out = []; who = req.query.get('tester')
     for c in load_calls():
+        if who and c.get('tester') != who: continue
         c2 = {k: c.get(k) for k in ('id', 'tester', 'preset', 'scenario', 'components', 'started', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'blind')}
         c2['rating'] = rs.get(c['id']); out.append(c2)
     return web.json_response(out[::-1])
@@ -107,7 +108,8 @@ async def rate(req):
 
 RATING_KEYS = ['voice_human', 'emotion', 'conversation', 'hinglish', 'turn_taking', 'speed', 'overall']
 async def results(req):
-    rs = load_ratings(); calls = load_calls(); by = defaultdict(lambda: {'calls': 0, 'rated': 0, 'mins': 0.0, 'inr': 0.0, 'lat': [], 'talk_over': 0, 'replies': 0, 'scores': defaultdict(list), 'pick': 0})
+    who = req.query.get('tester')
+    rs = load_ratings(); calls = [c for c in load_calls() if not who or c.get('tester') == who]; by = defaultdict(lambda: {'calls': 0, 'rated': 0, 'mins': 0.0, 'inr': 0.0, 'lat': [], 'talk_over': 0, 'replies': 0, 'scores': defaultdict(list), 'pick': 0})
     for c in calls:
         b = by[c['preset']]; b['calls'] += 1; b['mins'] += c.get('duration_s', 0) / 60; b['inr'] += c.get('inr', 0)
         b['lat'] += [x for x in c.get('latencies_ms') or [] if x is not None]; b['talk_over'] += c.get('talk_over', 0); b['replies'] += c.get('replies', 0)
