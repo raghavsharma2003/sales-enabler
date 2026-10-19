@@ -3,7 +3,7 @@ const $ = (id) => document.getElementById(id);
 const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
              set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 const S = { key: LS.get('vl_key', ''), name: LS.get('vl_name', ''), ok: LS.get('vl_consent', false), scope: 'mine', cat: null, mode: LS.get('vl_mode', 'blind'), pick: LS.get('vl_pick', 'base'),
-            calls: [], live: null, lastCall: null };
+            calls: [], live: null, lastCall: null, where: LS.get('vl_where', 'browser') };
 const QS = [
   ['voice_human', 'Voice sounds human', 'Timbre, prosody, breath. Does it sound like a person?'],
   ['emotion', 'Emotion fits the moment', 'Warm when you were worried, brisk when you were rushed, never fake'],
@@ -24,7 +24,7 @@ async function boot() {
   if (!S.key || !S.name || !S.ok) { showGate(); return; }
   try { S.cat = await api('/api/catalog'); } catch (e) { showGate(e.message === 'passcode' ? 'Wrong passcode' : 'Server not reachable'); return; }
   $('gate').hidden = true; $('main').hidden = false;
-  renderMeta(); fillSelects(); renderMode(); await refreshCalls(); renderBlind();
+  renderMeta(); fillSelects(); renderMode(); renderWhere(); await refreshCalls(); renderBlind();
 }
 function showGate(err) {
   $('main').hidden = true; $('gate').hidden = false; $('g-key').value = S.key; $('g-name').value = S.name; $('g-ok').checked = S.ok; $('g-err').textContent = err || '';
@@ -117,6 +117,20 @@ function fillVoices() {
   if (S.mode === 'blind') $('brain').value = '';
 }
 
+// ------------------------------------------------------------------ browser or real phone
+function renderWhere() {
+  const ph = S.cat.phone || {}; if (!ph.on) S.where = 'browser';
+  document.querySelectorAll('#where button').forEach((x) => { x.classList.toggle('on', x.dataset.w === S.where); if (x.dataset.w === 'phone') x.disabled = !ph.on; });
+  const onPhone = S.where === 'phone';
+  for (const id of ['t-hp', 't-phone', 'hphint']) $(id).hidden = onPhone;
+  $('phonehint').hidden = !onPhone; $('dialbtn').hidden = !onPhone || !!(S.live && !S.live.ended);
+  if (onPhone) $('phonehint').innerHTML = `She rings <b>${ph.allowed.join(', ')}</b>. Or tap “I'll dial in instead” and call <b>${ph.number}</b> from that phone within 10 minutes.`;
+  if (!(S.live && !S.live.ended)) $('callbtn').textContent = onPhone ? 'Call me' : 'Call';
+  $('s-rpm-l').textContent = onPhone ? '₹ per minute (AI + line)' : '₹ per minute (AI)';
+  $('s-lat-l').textContent = onPhone ? 'last reply gap (server)' : 'last reply gap';
+}
+document.querySelectorAll('#where button').forEach((b) => b.onclick = () => { S.where = b.dataset.w; LS.set('vl_where', S.where); renderWhere(); });
+
 // ------------------------------------------------------------------ audio + call
 function capTime(sample) {
   const c = S.live && S.live.caps; if (!c || !c.length) return null;
@@ -166,6 +180,34 @@ async function startCall() {
   ws.onclose = () => { if (!L.ended) { L.ended = true; setCallUI(false); cleanup(); if (L.callId) showRate(); } };
   L.timer = setInterval(() => { const s = Math.floor((performance.now() - L.t0) / 1000); $('s-time').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 500);
 }
+function callBody(pid) {
+  return { preset: pid, scenario: $('scenario').value, tester: S.name, brain: $('brain').value || null, voice: $('voice').value || null,
+           smart_turn: $('smart').checked, blind: S.mode === 'blind', consent: S.ok };
+}
+async function startPhone(kind) {
+  const pid = currentPresetId(); const p = preset(pid);
+  if (!p || !p.enabled) { toast('This stack is not available yet'); return; }
+  $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true;
+  const L = S.live = { pid, caps: [], pend: {}, lat: [], latByRid: {}, t0: performance.now(), started: false, ended: false, partial: {}, blind: S.mode === 'blind', phone: true, after: 0 };
+  setCallUI(true, kind === 'out' ? 'Ringing' : 'Waiting for your call'); $('dialbtn').hidden = true;
+  let r;
+  try { r = await api(kind === 'out' ? '/api/phone/call' : '/api/phone/dialin', { method: 'POST', body: JSON.stringify(callBody(pid)) }); }
+  catch (e) { r = { error: e.message }; }
+  if (!r || r.error) { L.ended = true; setCallUI(false); $('callerr').textContent = (r && r.error) || 'Could not start the call'; renderWhere(); return; }
+  L.token = r.token;
+  if (kind === 'in') $('callerr').innerHTML = `<span style="color:var(--ink)">Call <b>${r.number}</b> now from your test phone. She picks up.</span>`;
+  L.poll = setInterval(pollPhone, 400);
+  L.timer = setInterval(() => { if (!L.callId) return; const s = Math.floor((performance.now() - L.t0) / 1000); $('s-time').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 500);
+}
+async function pollPhone() {
+  const L = S.live; if (!L || !L.token || L.polling || L.ended) return; L.polling = true;
+  try {
+    const r = await fetch(`/api/phone/events?p=${L.token}&after=${L.after}`, { headers: { 'x-lab-key': S.key } });
+    if (r.status === 404) { onMsg({ t: 'phone_end', why: 'lost' }); return; }
+    const d = await r.json();
+    for (const e of d.events) { L.after = Math.max(L.after, e.n); onMsg(e); if (S.live !== L || L.ended) break; }
+  } catch {} finally { L.polling = false; }
+}
 function onAudio(buf) {
   const L = S.live; if (!L || !L.player) return;
   const rid = new DataView(buf, 0, 4).getUint32(0, true);
@@ -192,14 +234,19 @@ function onPlayer(d) {
 function onMsg(d) {
   const L = S.live; if (!L) return;
   switch (d.t) {
-    case 'ready': L.callId = d.call_id; setState('listening'); break;
+    case 'ready': L.callId = d.call_id; if (L.phone) { L.t0 = performance.now(); $('callerr').textContent = ''; } setState('listening'); break;
     case 'state': setState(d.s); break;
-    case 'reply': if (d.eos_sample != null) L.pend[d.rid] = capTime(d.eos_sample); setState('speaking'); break;
+    case 'reply':
+      if (L.phone) {   // no audio in the page: show the server's reply gap (the phone network's own delay comes on top)
+        if (d.server_ms != null) { L.lat.push(d.server_ms); L.latByRid[d.rid] = d.server_ms; $('s-lat').textContent = (d.server_ms / 1000).toFixed(2) + ' s'; }
+      } else if (d.eos_sample != null) L.pend[d.rid] = capTime(d.eos_sample);
+      setState('speaking'); break;
     case 'flush': L.player?.port.postMessage({ type: 'flush', rid: d.rid }); setState('listening'); break;
     case 'cap': addCap(d); break;
     case 'cost': $('s-inr').textContent = '₹' + d.inr.toFixed(2); $('s-rpm').textContent = d.secs > 20 ? '₹' + d.inr_per_min.toFixed(2) : '…'; break;
     case 'error': $('callerr').textContent = d.msg; break;
     case 'ended': L.summary = d.summary; L.ended = true; setCallUI(false); cleanup(); showRate(); break;
+    case 'phone_end': L.ended = true; setCallUI(false); cleanup(); if (d.why === 'cancelled') $('callerr').textContent = ''; break;
   }
 }
 function addCap(d) {
@@ -213,14 +260,15 @@ function addCap(d) {
 }
 function setState(s) { const el = $('state'); el.hidden = false; el.className = 'state ' + s; el.textContent = { listening: 'Listening', thinking: 'Thinking', speaking: 'Speaking', Connecting: 'Connecting' }[s] || s; }
 function setCallUI(live, state) {
-  const b = $('callbtn'); b.classList.toggle('live', live); b.textContent = live ? 'Hang up' : 'Call';
+  const b = $('callbtn'); b.classList.toggle('live', live); b.textContent = live ? 'Hang up' : (S.where === 'phone' ? 'Call me' : 'Call');
   $('stats').hidden = !live && !S.live; if (live) { $('s-lat').textContent = '–'; $('s-rpm').textContent = '–'; $('s-inr').textContent = '–'; setState(state || 'Connecting'); }
   else $('state').hidden = true;
   $('setup').querySelectorAll('select,input,button').forEach((x) => x.disabled = live);
-  if (!live) fillVoices();
+  if (!live) { fillVoices(); renderWhere(); }
 }
 function hangup() {
   const L = S.live; if (!L) return;
+  if (L.phone) { $('callbtn').textContent = 'Ending…'; if (L.token) api('/api/phone/hangup', { method: 'POST', body: JSON.stringify({ token: L.token }) }).catch(() => {}); return; }
   try { L.ws.send(JSON.stringify({ t: 'hangup' })); } catch {}
   setTimeout(() => { if (!L.ended) { try { L.ws.close(); } catch {} } }, 8000);
   L.mic?.port && (L.mic.port.onmessage = null);
@@ -229,11 +277,12 @@ function hangup() {
 }
 function cleanup() {
   const L = S.live; if (!L) return;
-  clearInterval(L.timer); L.stream?.getTracks().forEach((t) => t.stop());
+  clearInterval(L.timer); clearInterval(L.poll); L.stream?.getTracks().forEach((t) => t.stop());
   try { L.ctxIn?.close(); } catch {} setTimeout(() => { try { L.ctxOut?.close(); } catch {} }, 300);
   try { L.wake?.release(); } catch {}
 }
-$('callbtn').onclick = () => { if (S.live && !S.live.ended && $('callbtn').classList.contains('live')) hangup(); else startCall(); };
+$('callbtn').onclick = () => { if (S.live && !S.live.ended && $('callbtn').classList.contains('live')) hangup(); else if (S.where === 'phone') startPhone('out'); else startCall(); };
+$('dialbtn').onclick = () => startPhone('in');
 
 // ------------------------------------------------------------------ rating
 function showRate() {
@@ -266,7 +315,7 @@ function reveal() {
   const lat = L.lat.length ? (L.lat.slice().sort((a, b) => a - b)[Math.floor(L.lat.length / 2)] / 1000).toFixed(2) + ' s' : '–';
   const comp = s.components ? Object.entries(s.components).map(([k, v]) => `${k}: ${v}`).join(' · ') : '';
   $('reveal').innerHTML = `<b>${L.blind ? 'It was: ' : ''}${p.label}</b><div class="small" style="margin-top:4px">${comp}</div>
-    <div class="small" style="margin-top:6px">Measured: ₹${(s.inr_per_min ?? 0).toFixed(2)}/min AI cost · median reply gap ${lat} · ${s.replies ?? 0} replies · ${s.talk_over ?? 0} talk-overs · ${s.barge_ins ?? 0} interruptions handled</div>
+    <div class="small" style="margin-top:6px">Measured: ₹${(s.inr_per_min ?? 0).toFixed(2)}/min ${L.phone ? 'AI + phone line' : 'AI cost'} · median reply gap ${lat}${L.phone ? ' at the server (the phone network adds its own delay, not measured yet)' : ''} · ${s.replies ?? 0} replies · ${s.talk_over ?? 0} talk-overs · ${s.barge_ins ?? 0} interruptions handled</div>
     ${(s.voice_fallbacks || s.brain_fallbacks) ? `<div class="small" style="margin-top:4px;color:var(--warn)">${s.voice_fallbacks ? s.voice_fallbacks + ' replies used a backup voice. ' : ''}${s.brain_fallbacks ? s.brain_fallbacks + ' replies used a backup brain.' : ''}</div>` : ''}
     <div class="small muted" style="margin-top:4px">Report predicted: ${p.ref}</div>`;
   $('reveal').hidden = false;
@@ -298,7 +347,7 @@ async function renderHistory() {
   await refreshCalls(); const h = $('hist'); h.innerHTML = '';
   for (const c of S.calls.slice(0, 60)) {
     const p = preset(c.preset); const el = document.createElement('div'); el.className = 'card'; el.style.margin = '0';
-    el.innerHTML = `<div><b>${p ? p.label : c.preset}</b> <span class="small muted">· ${c.scenario} · ${c.tester} · ${c.started.replace('T', ' ')}</span></div>
+    el.innerHTML = `<div><b>${p ? p.label : c.preset}</b> <span class="small muted">· ${c.scenario} · ${c.tester} · ${c.started.replace('T', ' ')}</span>${c.line ? '<span class="tag">phone</span>' : ''}</div>
       <div class="small muted">${Math.round(c.duration_s)} s · ₹${(c.inr_per_min ?? 0).toFixed(2)}/min · reply gap ${c.latency_p50_ms ? (c.latency_p50_ms / 1000).toFixed(2) + ' s' : '–'}${c.rating ? ' · overall ' + c.rating.overall + '/10' : ''}</div>
       <audio controls preload="none" src="/api/calls/${c.id}/audio?k=${encodeURIComponent(S.key)}"></audio>
       <details><summary>Transcript</summary><div class="tx small" style="margin-top:6px">loading…</div></details>`;

@@ -8,6 +8,7 @@ from catalog import STT, BRAINS, TTS, S2S, FX, PRESETS
 from persona import compile_prompt, KICKOFF
 from audio import VAD, Recorder, Resampler
 import providers as pv
+import phone
 
 BOUND = re.compile(r'[,.?!।;:—]')
 # same model on another host first; otherwise the fastest India-resident brain (lab 2026-10-19: Groq rate-limited gpt-oss)
@@ -64,11 +65,14 @@ class Call:
     async def cost_loop(self):
         while not self.closed:
             await asyncio.sleep(2.0)
-            self.meter()
+            self.meter(); self.meter_line()
             tot = sum(self.cost.values())
             await self.send({'t': 'cost', 'usd': round(tot, 5), 'inr': round(tot * FX, 3), 'inr_per_min': round(tot * FX / self.minutes(), 3),
                              'parts': {k: round(v * FX, 3) for k, v in self.cost.items()}, 'secs': round(now() - self.t0, 1)})
     def meter(self): pass
+    def meter_line(self):
+        # a real phone call adds Plivo's per-minute charge (paid from the Plivo wallet, so not added to the lab's AI spend)
+        if self.cfg.get('line'): self.cost['phone'] = phone.line_inr(self.cfg['line'], now() - self.t0) / FX
     # ---- caller audio
     async def on_mic(self, pcm):
         self.rec.add_caller(pcm)
@@ -106,14 +110,14 @@ class Call:
         if self.cost_task: self.cost_task.cancel()
     def components(self): return {}
     def summary(self):
-        self.meter()
+        self.meter(); self.meter_line()
         tot = sum(self.cost.values()); dur = now() - self.t0
         lat = [self.client_lat.get(str(m['rid'])) or m.get('server_ms') for m in self.turns if m.get('server_ms') is not None]
         lat = sorted(x for x in lat if x is not None)
         p50 = lat[len(lat) // 2] if lat else None
         replies = sum(1 for m in self.turns if m.get('server_ms') is not None)
         return {'id': self.id, 'tester': self.cfg['tester'], 'preset': self.cfg['preset'], 'scenario': self.cfg['scenario'], 'kind': self.kind,
-                'components': self.components(), 'blind': self.cfg.get('blind', False), 'phone': self.cfg.get('phone', False), 'consent': bool(self.cfg.get('consent')),
+                'components': self.components(), 'blind': self.cfg.get('blind', False), 'phone': self.cfg.get('phone', False), 'line': self.cfg.get('line'), 'consent': bool(self.cfg.get('consent')),
                 'started': time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(self.wall0)), 'duration_s': round(dur, 1),
                 'usd': round(tot, 5), 'inr': round(tot * FX, 2), 'inr_per_min': round(tot * FX / max(dur / 60, 1e-6), 3),
                 'cost_parts_inr': {k: round(v * FX, 3) for k, v in self.cost.items()},

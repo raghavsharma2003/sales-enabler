@@ -84,7 +84,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <h2>Enter the lab</h2>
     <label for="g-key">Passcode</label><input id="g-key" type="password" autocomplete="current-password">
     <label for="g-name">Your name (she remembers you by this, and your ratings are filed under it)</label><input id="g-name" type="text" placeholder="e.g. Raghav">
-    <label class="consent"><input type="checkbox" id="g-ok"> <span>I agree that my test calls are recorded (audio and transcript) and processed by AI providers (Microsoft Azure, Google Gemini, Groq via OpenRouter) for this voice test. Google's free tier may use audio to improve its products. Please don't share personal details on the calls.</span></label>
+    <label class="consent"><input type="checkbox" id="g-ok"> <span>I agree that my test calls are recorded (audio and transcript) and processed by AI providers (Microsoft Azure, Google Gemini, Groq via OpenRouter, Sarvam) for this voice test, and phone calls go through Plivo. Google's free tier may use audio to improve its products. Please don't share personal details on the calls.</span></label>
     <div style="margin-top:14px"><button class="btn" id="g-go">Continue</button></div>
     <div class="err" id="g-err"></div>
   </div>
@@ -111,22 +111,26 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
           <div><label for="voice">Voice</label><select id="voice"></select></div>
           <div></div>
         </div>
+        <label>Talk to her</label>
+        <div class="seg" id="where"><button data-w="browser" class="on">In the browser</button><button data-w="phone">On a real phone call</button></div>
+        <div class="hint" id="phonehint" hidden></div>
         <div style="margin-top:10px">
-          <div class="toggle"><div>Headphones on<small>Turns off the browser's echo cancellation so she hears you when you talk over her. Switch off if you're on speaker.</small></div><input type="checkbox" id="hp" checked></div>
-          <div class="toggle"><div>Phone-line sound<small>Simulates an 8 kHz call both ways, how it will sound on a real phone</small></div><input type="checkbox" id="phone"></div>
+          <div class="toggle" id="t-hp"><div>Headphones on<small>Turns off the browser's echo cancellation so she hears you when you talk over her. Switch off if you're on speaker.</small></div><input type="checkbox" id="hp" checked></div>
+          <div class="toggle" id="t-phone"><div>Phone-line sound<small>Simulates an 8 kHz call both ways, how it will sound on a real phone</small></div><input type="checkbox" id="phone"></div>
           <div class="toggle"><div>Patient turn-taking<small>Waits longer when you trail off mid-sentence ("aur…", "matlab…")</small></div><input type="checkbox" id="smart" checked></div>
         </div>
-        <div class="hint">Best with wired or earbud headphones. On speaker, switch "Headphones on" off.</div>
+        <div class="hint" id="hphint">Best with wired or earbud headphones. On speaker, switch "Headphones on" off.</div>
       </div>
 
       <div class="card">
         <div class="callbox">
           <button class="callbtn" id="callbtn">Call</button>
+          <button class="btn ghost" id="dialbtn" hidden>I'll dial in instead</button>
           <div class="state" id="state" hidden>Connecting</div>
           <div class="stats" id="stats" hidden>
             <div class="stat"><b id="s-time">0:00</b><span>duration</span></div>
-            <div class="stat"><b id="s-lat">–</b><span>last reply gap</span></div>
-            <div class="stat"><b id="s-rpm">–</b><span>₹ per minute (AI)</span></div>
+            <div class="stat"><b id="s-lat">–</b><span id="s-lat-l">last reply gap</span></div>
+            <div class="stat"><b id="s-rpm">–</b><span id="s-rpm-l">₹ per minute (AI)</span></div>
             <div class="stat"><b id="s-inr">–</b><span>₹ so far</span></div>
           </div>
           <div class="caps" id="caps"></div>

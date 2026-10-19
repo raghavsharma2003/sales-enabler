@@ -7,6 +7,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from catalog import PRESETS, BRAINS, TTS, S2S, STT, SCENARIOS, FX, enabled
 from persona import MEMORY_PROMPT
 import providers as pv
+import phone
 from calls import make_call
 
 DATA = os.environ.get('LAB_DATA', os.path.join(HERE, '..', 'data'))
@@ -64,6 +65,7 @@ async def catalog(req):
         's2s': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['voice']} for k, v in S2S.items()},
         'stt': {k: {'label': v['label']} for k, v in STT.items()},
         'scenarios': SCENARIOS, 'fx': FX,
+        'phone': {'on': phone.on(), 'number': phone.pretty(phone.NUMBER) if phone.NUMBER else None, 'allowed': [phone.pretty(x) for x in phone.ALLOWED]},
         'spend_today_usd': round(LAB.spend_today(), 3), 'daily_cap_usd': DAILY_USD,
         'gemini': {'free_ok': time.time() >= pv.GKEYS.free_blocked_until, 'paid_left_usd': round(pv.GKEYS.paid_cap - pv.GKEYS.paid_spent, 3),
                    'vertex_on': pv.VERTEX.usable(), 'vertex_left_inr': round((pv.VERTEX_CAP_USD - pv.VERTEX.spent) * FX)}})
@@ -86,7 +88,7 @@ async def calls_list(req):
     rs = load_ratings(); out = []; who = req.query.get('tester')
     for c in load_calls():
         if who and c.get('tester') != who: continue
-        c2 = {k: c.get(k) for k in ('id', 'tester', 'preset', 'scenario', 'components', 'started', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'blind')}
+        c2 = {k: c.get(k) for k in ('id', 'tester', 'preset', 'scenario', 'components', 'started', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'blind', 'line')}
         c2['rating'] = rs.get(c['id']); out.append(c2)
     return web.json_response(out[::-1])
 
@@ -170,6 +172,34 @@ async def remember(call):
         except Exception as e:
             call.errors.append('memory: ' + repr(e)[:160])
 
+def prepare(cfg):
+    """Validate a call request (browser or phone). Returns (cfg, preset, error)."""
+    cfg.setdefault('scenario', 'renewal'); cfg['tester'] = (cfg.get('tester') or 'owner')[:40]
+    if cfg['scenario'] not in SCENARIOS: cfg['scenario'] = 'renewal'
+    preset = next((p for p in PRESETS if p['id'] == cfg.get('preset')), None)
+    if preset is None or not enabled(preset):
+        return cfg, preset, 'this stack is not available yet' + (f" (needs {preset['needs']})" if preset else '')
+    if cfg.get('brain') and cfg['brain'] not in BRAINS: cfg['brain'] = None
+    if LAB.spend_today() >= DAILY_USD: return cfg, preset, f'daily lab budget of ${DAILY_USD:.0f} reached'
+    return cfg, preset, None
+
+def ready_msg(call, preset):
+    blind = call.cfg.get('blind')
+    return {'t': 'ready', 'call_id': call.id, 'components': None if blind else call.components(), 'label': None if blind else preset['label']}
+
+async def finish(call):
+    """Close a call, extract memory, write the recording and meta. Returns the summary the page shows."""
+    await call.close()
+    try: await asyncio.wait_for(remember(call), 20)
+    except Exception: pass
+    d = f'{DATA}/calls/{call.id}'; os.makedirs(d, exist_ok=True)
+    dur = call.rec.write(f'{d}/call.wav')
+    summ = call.summary(); summ['audio_s'] = round(dur, 1)
+    json.dump(summ, open(f'{d}/meta.json', 'w'), ensure_ascii=False, indent=1)
+    LAB.calls.pop(call.id, None)
+    return {k: summ.get(k) for k in ('id', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'components', 'preset',
+                                     'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks', 'line')}
+
 async def ws_call(req):
     ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20)
     await ws.prepare(req)
@@ -179,16 +209,11 @@ async def ws_call(req):
         if msg.type != aiohttp.WSMsgType.TEXT: return ws          # client went away before starting
         cfg = json.loads(msg.data)
         if cfg.get('t') != 'start': await ws.send_json({'t': 'error', 'msg': 'expected start'}); return ws
-        cfg.setdefault('scenario', 'renewal'); cfg['tester'] = (cfg.get('tester') or 'owner')[:40]
-        preset = next((p for p in PRESETS if p['id'] == cfg.get('preset')), None)
-        if preset is None or not enabled(preset):
-            await ws.send_json({'t': 'error', 'msg': 'this stack is not available yet' + (f" (needs {preset['needs']})" if preset else '')}); return ws
-        if cfg.get('brain') and cfg['brain'] not in BRAINS: cfg['brain'] = None
-        if LAB.spend_today() >= DAILY_USD:
-            await ws.send_json({'t': 'error', 'msg': f'daily lab budget of ${DAILY_USD:.0f} reached'}); return ws
+        cfg.pop('line', None)
+        cfg, preset, err = prepare(cfg)
+        if err: await ws.send_json({'t': 'error', 'msg': err}); return ws
         call = make_call(LAB, ws, cfg); LAB.calls[call.id] = call
-        await ws.send_json({'t': 'ready', 'call_id': call.id, 'components': None if cfg.get('blind') else call.components(),
-                            'label': None if cfg.get('blind') else preset['label']})
+        await ws.send_json(ready_msg(call, preset))
         try:
             await call.start()
         except Exception as e:
@@ -211,17 +236,141 @@ async def ws_call(req):
         if call: call.errors.append('ws: ' + repr(e)[:200])
     finally:
         if call is not None:
-            await call.close()
-            try: await asyncio.wait_for(remember(call), 20)
+            summ = await finish(call)
+            try: await ws.send_json({'t': 'ended', 'summary': summ})
             except Exception: pass
-            d = f'{DATA}/calls/{call.id}'; os.makedirs(d, exist_ok=True)
-            dur = call.rec.write(f'{d}/call.wav')
-            summ = call.summary(); summ['audio_s'] = round(dur, 1)
-            json.dump(summ, open(f'{d}/meta.json', 'w'), ensure_ascii=False, indent=1)
-            try: await ws.send_json({'t': 'ended', 'summary': {k: summ[k] for k in ('id', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'components', 'preset', 'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks')}})
-            except Exception: pass
-            LAB.calls.pop(call.id, None)
             await ws.close()
+    return ws
+
+# ---- phone leg (Plivo). The page asks for a call (/api/phone/call rings an allowed test number; /api/phone/dialin
+# arms the lab number for the next allowed caller), then polls /api/phone/events for the same messages a browser
+# call gets over its websocket. Plivo reaches us on /plivo/* with a path secret instead of the lab passcode.
+DIALIN = f'{DATA}/phone-dialin.json'
+def phone_cfg(d, direction):
+    cfg = {k: d.get(k) for k in ('preset', 'scenario', 'tester', 'brain', 'voice', 'smart_turn', 'blind', 'consent')}
+    cfg['smart_turn'] = cfg['smart_turn'] is not False; cfg['blind'] = bool(cfg['blind']); cfg['line'] = direction
+    return prepare(cfg)
+
+async def phone_call(req):
+    if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
+    d = await req.json()
+    to = phone.india(d.get('to') or (phone.ALLOWED[0] if phone.ALLOWED else ''))
+    if to not in phone.ALLOWED: return web.json_response({'error': 'the lab only rings its test numbers'}, status=403)
+    cfg, preset, err = phone_cfg(d, 'out')
+    if err: return web.json_response({'error': err}, status=400)
+    s = phone.SESSIONS.new(cfg, 'out', to)
+    err = await phone.dial(LAB.http, s)
+    if err: s['state'] = 'failed'; return web.json_response({'error': err}, status=502)
+    phone.SESSIONS.note(s, {'t': 'state', 's': 'Ringing'})
+    return web.json_response({'token': s['token'], 'to': phone.pretty(to)})
+
+async def phone_dialin(req):
+    if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
+    d = await req.json()
+    cfg, preset, err = phone_cfg(d, 'in')
+    if err: return web.json_response({'error': err}, status=400)
+    for old in list(phone.SESSIONS.by_token.values()):        # one armed dial-in at a time: the newest wins
+        if old['dir'] == 'in' and old['state'] == 'waiting': old['state'] = 'replaced'; phone.SESSIONS.note(old, {'t': 'phone_end', 'why': 'replaced'})
+    s = phone.SESSIONS.new(cfg, 'in')
+    if not is_test(cfg['tester']): json.dump(cfg, open(DIALIN, 'w'))     # unarmed dial-ins later reuse a person's stack
+    phone.SESSIONS.note(s, {'t': 'state', 's': 'Waiting for your call'})
+    return web.json_response({'token': s['token'], 'number': phone.pretty(phone.NUMBER), 'expires_s': phone.Sessions.TTL})
+
+async def phone_events(req):
+    s = phone.SESSIONS.by_token.get(req.query.get('p', ''))
+    if s is None: return web.json_response({'error': 'unknown call'}, status=404)
+    try: after = int(req.query.get('after', '0'))
+    except ValueError: after = 0
+    return web.json_response({'state': s['state'], 'n': s['n'], 'events': phone.SESSIONS.events(s, after)})
+
+async def phone_hangup(req):
+    d = await req.json(); s = phone.SESSIONS.by_token.get(d.get('token', ''))
+    if s is None: return web.json_response({'error': 'unknown call'}, status=404)
+    s['hangup'] = True
+    if s['state'] == 'waiting': s['state'] = 'cancelled'; phone.SESSIONS.note(s, {'t': 'phone_end', 'why': 'cancelled'})
+    else: await phone.hangup(LAB.http, s)
+    return web.json_response({'ok': True})
+
+async def plivo_form(req):
+    return dict(await req.post()) if req.method == 'POST' else dict(req.query)
+
+async def plivo_answer(req):
+    if not hmac.compare_digest(req.match_info['hook'], phone.HOOK or '-'): raise web.HTTPForbidden()
+    f = await plivo_form(req); tok = req.match_info.get('token')
+    xml = lambda t: web.Response(text=t, content_type='application/xml')
+    if tok:
+        s = phone.SESSIONS.by_token.get(tok)
+        if s is None or s['dir'] != 'out' or s.get('hangup'): return xml(phone.REJECT_XML)
+    else:
+        caller = phone.india(f.get('From'))
+        if caller not in phone.ALLOWED:
+            log.info('plivo: rejected inbound from ...%s', caller[-4:]); return xml(phone.REJECT_XML)
+        s = phone.SESSIONS.waiting_dialin()
+        if s is None:                     # nobody armed dial-in: use the last stack someone armed, attributed to them
+            try: cfg = json.load(open(DIALIN))
+            except Exception: cfg = {}
+            if not cfg or is_test(cfg.get('tester')): cfg = {'preset': 'base', 'scenario': 'renewal', 'tester': 'phone', 'smart_turn': True, 'blind': False, 'line': 'in'}
+            cfg, preset, err = prepare(cfg)
+            if err: log.info('plivo: inbound refused: %s', err); return xml(phone.REJECT_XML)
+            s = phone.SESSIONS.new(cfg, 'in')
+    s['call_uuid'] = f.get('CallUUID'); s['state'] = 'answered'
+    phone.SESSIONS.note(s, {'t': 'state', 's': 'Connecting'})
+    return xml(phone.answer_xml(phone.ws_url(f"/plivo/stream/{s['stream']}")))
+
+async def plivo_hangup(req):
+    if not hmac.compare_digest(req.match_info['hook'], phone.HOOK or '-'): raise web.HTTPForbidden()
+    f = await plivo_form(req); tok = req.match_info.get('token')
+    s = phone.SESSIONS.by_token.get(tok) if tok else next((x for x in phone.SESSIONS.by_token.values() if x.get('call_uuid') == f.get('CallUUID')), None)
+    if s is not None and s['line'] is None and s['state'] in ('dialing', 'answered'):
+        cause = (f.get('HangupCauseName') or f.get('HangupCause') or 'no answer').replace('_', ' ').lower()
+        s['state'] = 'failed'
+        phone.SESSIONS.note(s, {'t': 'error', 'msg': f'The call ended before it connected ({cause}).'}); phone.SESSIONS.note(s, {'t': 'phone_end', 'why': cause})
+    return web.Response(text='ok')
+
+async def plivo_stream(req):
+    s = phone.SESSIONS.by_stream.get(req.match_info['stream'])
+    if s is None or s['line'] is not None: raise web.HTTPForbidden()
+    ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20)
+    await ws.prepare(req)
+    line = phone.PlivoLine(ws, s); s['line'] = line; call = None
+    try:
+        while line.stream_id is None:                       # Plivo sends 'start' first
+            m = await ws.receive(timeout=15)
+            if m.type != aiohttp.WSMsgType.TEXT: return ws
+            d = json.loads(m.data)
+            if d.get('event') == 'start': line.stream_id = (d.get('start') or {}).get('streamId')
+        cfg, preset, err = prepare(dict(s['cfg']))
+        if err: line.post({'t': 'error', 'msg': err}); return ws
+        call = make_call(LAB, line, cfg); LAB.calls[call.id] = call
+        s['call_id'] = call.id; s['state'] = 'live'; line.post(ready_msg(call, preset))
+        try:
+            await call.start()
+        except Exception as e:
+            log.exception('phone start'); line.post({'t': 'error', 'msg': 'could not start: ' + repr(e)[:200]}); call.errors.append('start: ' + repr(e)[:200])
+            return ws
+        t_end = time.monotonic() + 20 * 60
+        async for m in ws:
+            if m.type == aiohttp.WSMsgType.TEXT:
+                d = json.loads(m.data); ev = d.get('event')
+                if ev == 'media': await call.on_mic(line.mic(d['media']['payload']))
+                elif ev == 'stop': break
+                elif ev in ('dtmf', 'clearedAudio', 'playedStream'): call.tr('plivo_' + ev)
+            if s.get('hangup'): break
+            if time.monotonic() > t_end: line.post({'t': 'error', 'msg': '20-minute call limit'}); break
+    except asyncio.TimeoutError:
+        line.post({'t': 'error', 'msg': 'the phone audio never started'})
+    except Exception as e:
+        log.exception('plivo ws')
+        if call: call.errors.append('plivo: ' + repr(e)[:200])
+    finally:
+        if call is not None:
+            summ = await finish(call); line.post({'t': 'ended', 'summary': summ})
+        else:
+            line.post({'t': 'phone_end', 'why': 'no call'})
+        s['state'] = 'ended'
+        try: await phone.hangup(LAB.http, s)             # the caller may already be gone; Plivo then answers 404
+        except Exception: pass
+        await ws.close()
     return ws
 
 async def on_start(app):
@@ -235,6 +384,10 @@ async def on_start(app):
             try: await loop.run_in_executor(None, pv.POOL.warm, v, 2)
             except Exception as e: log.warning('warm %s %r', v, e)
     asyncio.ensure_future(warm())
+    async def plivo():
+        try: await phone.ensure_app(LAB.http, log)
+        except Exception as e: log.warning('plivo setup %r', e)
+    if phone.on() and phone.LINK: asyncio.ensure_future(plivo())
 async def on_stop(app):
     await LAB.http.close()
 
@@ -251,6 +404,13 @@ def build():
     app.router.add_get('/api/testers', testers)
     app.router.add_route('*', '/api/memory', memory)
     app.router.add_get('/ws', ws_call)
+    app.router.add_post('/api/phone/call', phone_call)
+    app.router.add_post('/api/phone/dialin', phone_dialin)
+    app.router.add_get('/api/phone/events', phone_events)
+    app.router.add_post('/api/phone/hangup', phone_hangup)
+    for pat in ('/plivo/answer/{hook}', '/plivo/answer/{hook}/{token}'): app.router.add_route('*', pat, plivo_answer)
+    for pat in ('/plivo/hangup/{hook}', '/plivo/hangup/{hook}/{token}'): app.router.add_route('*', pat, plivo_hangup)
+    app.router.add_get('/plivo/stream/{stream}', plivo_stream)
     app.router.add_static('/static/', WEB, show_index=False)
     app.on_startup.append(on_start); app.on_cleanup.append(on_stop)
     return app

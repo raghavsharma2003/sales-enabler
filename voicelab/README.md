@@ -30,6 +30,16 @@ A test-call bench for the owner to talk to every candidate voice stack before ch
 - **Every call stores** a stereo WAV (left caller, right agent on the playback clock), per-reply latency (server: caller
   end of speech → first audio sent; client: last speech sample captured → first sample played, incl. output latency),
   talk-overs, barge-ins, metered cost per component (₹ at 95/$), transcript, and an event trace.
+- **Real phone** (`server/phone.py`, Plivo India, number +91 80 6549 4553 on the `vp-voicelab` sub-account): "Call me"
+  rings an allow-listed test phone; "I'll dial in" arms the lab number for the next allow-listed caller (others are
+  rejected unanswered). Plivo's Answer XML opens a bidirectional `<Stream>` (G.711 mu-law, 8 kHz: what the phone
+  network carries anyway, and unambiguous where Plivo's L16 byte order is undocumented) to `/plivo/stream/<token>`;
+  `PlivoLine` stands in for the browser websocket so every stack runs unchanged (24 kHz agent audio → 95-tap low-pass
+  → 8 kHz; caller 8 kHz → 16 kHz; a barge-in flush becomes `clearAudio`). The page polls `/api/phone/events` for the
+  same captions/state/cost a browser call gets. Webhooks use a path secret derived from the auth token; the server
+  points the number at itself via Plivo's Application API at startup. Plivo minutes (₹0.376 in / ₹0.38 out, 60 s pulse)
+  appear as the `phone` cost part but are not added to the lab's AI spend cap. `tests/plivo_sim.py` plays Plivo's side
+  (webhook → XML → mu-law websocket) to test everything but the PSTN leg.
 - **Memory:** after each call a cheap model extracts durable facts about the caller per scenario; the next call's brief
   includes them ("Open chat, she remembers you").
 
@@ -47,5 +57,6 @@ across the lab, 20 minutes per call, Gemini paid key capped at what is left of t
 
 ## Not built yet
 
-A real phone leg (owner is setting up Plivo), an LLM "is the caller done?" turn classifier. Inworld and AWS are out of
+An LLM "is the caller done?" turn classifier; an end-to-end reply gap measured on the handset for phone calls (the
+page shows the server's gap; the phone network's own delay is not measured yet). Inworld and AWS are out of
 scope by owner decision (2026-10-19). Sarvam (Saaras STT, Bulbul v4 Flash, Sarvam-105B) runs on the owner's key.

@@ -73,3 +73,20 @@ after the keep-alive fix (9 replies).
   after an interruption fixed it.
 - **Both Sarvam-brain and gpt-oss calls repeated the caller's wrong "25,000 last year"** as if it were true, even with
   the correction rule. This is a brain-quality difference for the owner's ratings to capture.
+
+## Phone leg (Plivo), added later on 2026-10-19
+
+The method is a fake-Plivo caller (`voicelab/tests/plivo_sim.py`) run against the production lab over TLS. It plays
+Plivo's side of an inbound call: answer webhook → Stream XML → 8 kHz mu-law websocket, with the same g5 caller clips.
+It is n=1 call on the "Base" stack, 3 replies.
+
+| Check | Result |
+|---|---|
+| Server reply gap (caller end of speech → first audio sent to Plivo) | 641, 999, 903 ms |
+| Caller not on the allow-list | rejected without answering (`<Hangup reason="rejected"/>`) |
+| Barge-in | `clearAudio` sent, Plivo's `clearedAudio` logged |
+| Phone audio intelligible | Azure STT hi-IN read the 8 kHz agent audio back correctly (local run) |
+| Cost parts on a 51 s call | voice ₹0.76, phone line ₹0.38 (one 60 s pulse), ears ₹0.09, brain ₹0.09, memory ₹0.03 |
+
+Not measured: a real PSTN call, any Plivo trial-account restrictions, and the reply gap at the handset. The phone
+network adds its own delay on top of the server gap.

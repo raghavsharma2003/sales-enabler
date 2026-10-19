@@ -171,7 +171,7 @@ def secrets():
     sea = envfile(f'{SP}/vp-azure.env'); out.update({'VP_AI_ENDPOINT': sea['VP_AI_ENDPOINT'], 'VP_AI_KEY': sea['VP_AI_KEY']})
     if os.path.exists(f'{SP}/vertex-sa.json'):        # Google Cloud service account for Vertex AI (owner's credit)
         out['VERTEX_SA_B64'] = base64.b64encode(open(f'{SP}/vertex-sa.json', 'rb').read()).decode()
-    extra = f'{SP}/voicelab-extra.env'          # owner-supplied keys later (Inworld, Sarvam, AWS), if present
+    extra = f'{SP}/voicelab-extra.env'          # owner-supplied keys (Sarvam, Plivo), if present
     if os.path.exists(extra): out.update(envfile(extra))
     if os.path.exists(f'{SP}/voicelab/lab-pass.txt'): out['LAB_PASSCODE'] = open(f'{SP}/voicelab/lab-pass.txt').read().strip()
     return out
