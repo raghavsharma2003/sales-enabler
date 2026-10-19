@@ -7,4 +7,5 @@ cd "$HERE" && tar czf $SP/voicelab/voicelab-bundle.tgz --exclude='__pycache__' s
 cd "$HERE/ops"
 python3 lab_ops.py sas >/dev/null
 python3 lab_ops.py put $SP/voicelab/voicelab-bundle.tgz voicelab-bundle.tgz
+python3 lab_ops.py prune >/dev/null           # Azure allows 25 managed Run Commands per VM
 python3 lab_ops.py run "deploy-$(date +%H%M%S)" vm_setup.sh 1200

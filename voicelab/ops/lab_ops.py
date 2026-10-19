@@ -209,6 +209,16 @@ def listres():
         s, _ = arm('GET', f'{path}?api-version={api}'); print(path.split('/')[-1], s)
     s, d = arm('GET', f'{CS}/{AI_ACCT}/deployments?api-version=2024-10-01')
     for x in d.get('value', []): print('  dep', x['name'], x['properties']['model']['name'], x['sku'], x['properties'].get('provisioningState'))
+def prune(keep=5):
+    """Azure keeps at most 25 managed Run Commands per VM; delete all but the newest `keep` (their logs stay in blob)."""
+    path = f'{RG}/Microsoft.Compute/virtualMachines/{VM}/runCommands'
+    s, d = arm('GET', f'{path}?api-version=2024-03-01&$expand=instanceView')
+    rcs = d.get('value', [])
+    when = lambda x: ((x.get('properties') or {}).get('instanceView') or {}).get('startTime') or ''
+    rcs.sort(key=when, reverse=True)
+    for x in rcs[keep:]:
+        s, _ = arm('DELETE', f"{path}/{x['name']}?api-version=2024-03-01"); print('DELETE', x['name'], s)
+    print('kept', [x['name'] for x in rcs[:keep]])
 def delete_vm():
     for path, api in VMRES():
         s, d = arm('DELETE', f'{path}?api-version={api}'); print('DELETE', path.split('/')[-1], s)
@@ -230,5 +240,6 @@ if __name__ == '__main__':
     elif cmd == 'run': run(sys.argv[2], open(sys.argv[3]).read(), int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4].isdigit() else 3600, '--async' in sys.argv)
     elif cmd == 'status': status(sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 0)
     elif cmd == 'list': listres()
+    elif cmd == 'prune': prune()
     elif cmd == 'delete-vm': delete_vm()
     else: raise SystemExit(cmd)
