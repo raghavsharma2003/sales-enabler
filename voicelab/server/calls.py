@@ -107,7 +107,7 @@ class Call:
         p50 = lat[len(lat) // 2] if lat else None
         replies = sum(1 for m in self.turns if m.get('server_ms') is not None)
         return {'id': self.id, 'tester': self.cfg['tester'], 'preset': self.cfg['preset'], 'scenario': self.cfg['scenario'], 'kind': self.kind,
-                'components': self.components(), 'blind': self.cfg.get('blind', False), 'phone': self.cfg.get('phone', False),
+                'components': self.components(), 'blind': self.cfg.get('blind', False), 'phone': self.cfg.get('phone', False), 'consent': bool(self.cfg.get('consent')),
                 'started': time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(self.wall0)), 'duration_s': round(dur, 1),
                 'usd': round(tot, 5), 'inr': round(tot * FX, 2), 'inr_per_min': round(tot * FX / max(dur / 60, 1e-6), 3),
                 'cost_parts_inr': {k: round(v * FX, 3) for k, v in self.cost.items()},

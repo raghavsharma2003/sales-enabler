@@ -72,6 +72,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:13.5px;max-width:90vw;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
 .hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+.consent{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:13px;color:var(--ink);line-height:1.4}
+.consent input{margin-top:3px;flex:none}
 </style>
 </head>
 <body>
@@ -81,7 +83,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <div id="gate" class="card" hidden>
     <h2>Enter the lab</h2>
     <label for="g-key">Passcode</label><input id="g-key" type="password" autocomplete="current-password">
-    <label for="g-name">Your name (she remembers you by this)</label><input id="g-name" type="text" placeholder="e.g. Raghav">
+    <label for="g-name">Your name (she remembers you by this, and your ratings are filed under it)</label><input id="g-name" type="text" placeholder="e.g. Raghav">
+    <label class="consent"><input type="checkbox" id="g-ok"> <span>I agree that my test calls are recorded (audio and transcript) and processed by AI providers (Microsoft Azure, Google Gemini, Groq via OpenRouter) for this voice test. Google's free tier may use audio to improve its products. Please don't share personal details on the calls.</span></label>
     <div style="margin-top:14px"><button class="btn" id="g-go">Continue</button></div>
     <div class="err" id="g-err"></div>
   </div>
@@ -144,8 +147,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     </section>
 
     <section id="tab-results" hidden>
-      <div class="card"><h2>Your ratings by stack</h2><div class="small muted" style="margin-bottom:10px">Averages of your ratings (1–5; overall 1–10). ₹/min and reply gap are measured on your calls; "report" is what the desk research predicted.</div>
+      <div class="card"><div class="seg" id="rscope" style="margin-bottom:12px"><button data-s="mine" class="on">Mine</button><button data-s="all">Everyone</button></div>
+        <h2 id="rtitle">Your ratings by stack</h2><div class="small muted" style="margin-bottom:10px">Averages of ratings (1–5; overall 1–10). ₹/min and reply gap are measured on the calls; "report" is what the desk research predicted.</div>
         <div class="tablewrap"><table id="rtable"></table></div></div>
+      <div class="card" id="tcard" hidden><h2>Who has tested</h2><div class="tablewrap"><table id="ttable"></table></div></div>
     </section>
 
     <section id="tab-history" hidden>

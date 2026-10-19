@@ -107,9 +107,15 @@ async def rate(req):
     return web.json_response({'ok': True})
 
 RATING_KEYS = ['voice_human', 'emotion', 'conversation', 'hinglish', 'turn_taking', 'speed', 'overall']
-async def results(req):
+def is_test(name):   # the lab's own headless and UI test callers never count as people
+    return (name or '').lower().startswith(('smoke', 'sim', 'uitest', 'preview'))
+def scoped_calls(req):
     who = req.query.get('tester')
-    rs = load_ratings(); calls = [c for c in load_calls() if not who or c.get('tester') == who]; by = defaultdict(lambda: {'calls': 0, 'rated': 0, 'mins': 0.0, 'inr': 0.0, 'lat': [], 'talk_over': 0, 'replies': 0, 'scores': defaultdict(list), 'pick': 0})
+    if who: return [c for c in load_calls() if c.get('tester') == who]
+    return [c for c in load_calls() if not is_test(c.get('tester'))]
+async def results(req):
+    rs = load_ratings(); calls = scoped_calls(req)
+    by = defaultdict(lambda: {'calls': 0, 'rated': 0, 'mins': 0.0, 'inr': 0.0, 'lat': [], 'talk_over': 0, 'replies': 0, 'scores': defaultdict(list), 'pick': 0, 'people': defaultdict(list)})
     for c in calls:
         b = by[c['preset']]; b['calls'] += 1; b['mins'] += c.get('duration_s', 0) / 60; b['inr'] += c.get('inr', 0)
         b['lat'] += [x for x in c.get('latencies_ms') or [] if x is not None]; b['talk_over'] += c.get('talk_over', 0); b['replies'] += c.get('replies', 0)
@@ -118,6 +124,7 @@ async def results(req):
             b['rated'] += 1; b['pick'] += 1 if r.get('would_pick') else 0
             for k in RATING_KEYS:
                 if isinstance(r.get(k), (int, float)): b['scores'][k].append(r[k])
+            if isinstance(r.get('overall'), (int, float)): b['people'][c.get('tester')].append(r['overall'])
     out = []
     for pid, b in by.items():
         lat = sorted(b['lat']); p50 = lat[len(lat) // 2] if lat else None
@@ -125,9 +132,18 @@ async def results(req):
         out.append({'preset': pid, 'label': p['label'], 'ref': p.get('ref'), 'calls': b['calls'], 'rated': b['rated'], 'minutes': round(b['mins'], 1),
                     'inr_per_min': round(b['inr'] / b['mins'], 2) if b['mins'] > 0 else None, 'latency_p50_ms': p50,
                     'talk_over_pct': round(100 * b['talk_over'] / b['replies']) if b['replies'] else None, 'would_pick': b['pick'],
-                    'scores': {k: round(sum(v) / len(v), 2) for k, v in b['scores'].items() if v}})
+                    'scores': {k: round(sum(v) / len(v), 2) for k, v in b['scores'].items() if v},
+                    'people': len(b['people']), 'overall_by_person': {n: round(sum(v) / len(v), 1) for n, v in b['people'].items()}})
     out.sort(key=lambda x: -(x['scores'].get('overall') or 0))
     return web.json_response(out)
+
+async def testers(req):
+    rs = load_ratings(); t = defaultdict(lambda: {'calls': 0, 'rated': 0, 'minutes': 0.0, 'last': ''})
+    for c in load_calls():
+        if is_test(c.get('tester')): continue
+        x = t[c.get('tester')]; x['calls'] += 1; x['minutes'] += c.get('duration_s', 0) / 60; x['last'] = max(x['last'], c.get('started', ''))
+        if c['id'] in rs: x['rated'] += 1
+    return web.json_response(sorted(({'tester': k, **v, 'minutes': round(v['minutes'], 1)} for k, v in t.items()), key=lambda r: r['last'], reverse=True))
 
 async def memory(req):
     tester = req.query.get('tester', ''); scen = req.query.get('scenario', 'open')
@@ -228,6 +244,7 @@ def build():
     app.router.add_get('/api/calls/{id}/audio', call_audio)
     app.router.add_post('/api/rate', rate)
     app.router.add_get('/api/results', results)
+    app.router.add_get('/api/testers', testers)
     app.router.add_route('*', '/api/memory', memory)
     app.router.add_get('/ws', ws_call)
     app.router.add_static('/static/', WEB, show_index=False)

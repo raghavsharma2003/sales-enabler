@@ -2,7 +2,7 @@
 const $ = (id) => document.getElementById(id);
 const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
              set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
-const S = { key: LS.get('vl_key', ''), name: LS.get('vl_name', ''), cat: null, mode: LS.get('vl_mode', 'blind'), pick: LS.get('vl_pick', 'base'),
+const S = { key: LS.get('vl_key', ''), name: LS.get('vl_name', ''), ok: LS.get('vl_consent', false), scope: 'mine', cat: null, mode: LS.get('vl_mode', 'blind'), pick: LS.get('vl_pick', 'base'),
             calls: [], live: null, lastCall: null };
 const QS = [
   ['voice_human', 'Voice sounds human', 'Timbre, prosody, breath. Does it sound like a person?'],
@@ -21,15 +21,23 @@ async function api(path, opt = {}) {
 
 // ------------------------------------------------------------------ gate + boot
 async function boot() {
-  if (!S.key || !S.name) { showGate(); return; }
+  if (!S.key || !S.name || !S.ok) { showGate(); return; }
   try { S.cat = await api('/api/catalog'); } catch (e) { showGate(e.message === 'passcode' ? 'Wrong passcode' : 'Server not reachable'); return; }
   $('gate').hidden = true; $('main').hidden = false;
   renderMeta(); fillSelects(); renderMode(); await refreshCalls(); renderBlind();
 }
 function showGate(err) {
-  $('main').hidden = true; $('gate').hidden = false; $('g-key').value = S.key; $('g-name').value = S.name; $('g-err').textContent = err || '';
+  $('main').hidden = true; $('gate').hidden = false; $('g-key').value = S.key; $('g-name').value = S.name; $('g-ok').checked = S.ok; $('g-err').textContent = err || '';
 }
-$('g-go').onclick = () => { S.key = $('g-key').value.trim(); S.name = $('g-name').value.trim(); LS.set('vl_key', S.key); LS.set('vl_name', S.name); boot(); };
+$('g-go').onclick = () => {
+  S.key = $('g-key').value.trim(); S.name = $('g-name').value.trim().slice(0, 40); S.ok = $('g-ok').checked;
+  if (!S.name) { $('g-err').textContent = 'Please enter your name'; return; }
+  if (!S.ok) { $('g-err').textContent = 'Please tick the consent box to continue'; return; }
+  LS.set('vl_key', S.key); LS.set('vl_name', S.name); LS.set('vl_consent', S.ok); boot();
+};
+document.querySelectorAll('#rscope button').forEach((b) => b.onclick = () => {
+  S.scope = b.dataset.s; document.querySelectorAll('#rscope button').forEach((x) => x.classList.toggle('on', x === b)); renderResults();
+});
 function renderMeta() {
   const c = S.cat; const g = c.gemini || {};
   $('meta').innerHTML = `${S.name} · lab spend today $${c.spend_today_usd.toFixed(2)} / $${c.daily_cap_usd}<br>Gemini paid credit left $${(g.paid_left_usd ?? 0).toFixed(2)}`;
@@ -146,7 +154,7 @@ async function startCall() {
   const ws = L.ws = new WebSocket(`${proto}://${location.host}/ws?k=${encodeURIComponent(S.key)}`); ws.binaryType = 'arraybuffer';
   ws.onopen = () => {
     ws.send(JSON.stringify({ t: 'start', preset: pid, scenario: $('scenario').value, tester: S.name, brain: $('brain').value || null,
-                             voice: $('voice').value || null, phone, smart_turn: $('smart').checked, headphones: $('hp').checked, blind: L.blind }));
+                             voice: $('voice').value || null, phone, smart_turn: $('smart').checked, headphones: $('hp').checked, blind: L.blind, consent: S.ok }));
     L.started = true;
   };
   L.mic.port.onmessage = (e) => {
@@ -265,15 +273,24 @@ function reveal() {
 // ------------------------------------------------------------------ results + history
 async function refreshCalls() { try { S.calls = await api('/api/calls?tester=' + encodeURIComponent(S.name)); } catch { S.calls = []; } }
 async function renderResults() {
-  const rows = await api('/api/results?tester=' + encodeURIComponent(S.name)); const t = $('rtable');
+  const all = S.scope === 'all';
+  const rows = await api('/api/results' + (all ? '' : '?tester=' + encodeURIComponent(S.name))); const t = $('rtable');
+  $('rtitle').textContent = all ? "Everyone's ratings by stack" : 'Your ratings by stack';
   const f = (x, d = 1) => (x == null ? '–' : Number(x).toFixed(d));
-  t.innerHTML = `<tr><th>Stack</th><th>Overall</th><th>Voice</th><th>Emotion</th><th>Talk</th><th>Hinglish</th><th>Turns</th><th>Speed</th><th>Pick</th><th>₹/min</th><th>Reply gap</th><th>Talk-over</th><th>Calls</th><th>Report</th></tr>` +
-    rows.map((r) => `<tr><td>${r.label}</td><td class="num"><b>${f(r.scores.overall)}</b></td><td class="num">${f(r.scores.voice_human)}</td><td class="num">${f(r.scores.emotion)}</td>
+  const ppl = (r) => all ? `<td class="num" title="${Object.entries(r.overall_by_person || {}).map(([n, v]) => n + ': ' + v).join(', ')}">${r.people}</td>` : '';
+  t.innerHTML = `<tr><th>Stack</th>${all ? '<th>People</th>' : ''}<th>Overall</th><th>Voice</th><th>Emotion</th><th>Talk</th><th>Hinglish</th><th>Turns</th><th>Speed</th><th>Pick</th><th>₹/min</th><th>Reply gap</th><th>Talk-over</th><th>Calls</th><th>Report</th></tr>` +
+    rows.map((r) => `<tr><td>${r.label}${all && r.people ? '<div class="small muted">' + Object.entries(r.overall_by_person).map(([n, v]) => n + ' ' + v).join(' · ') + '</div>' : ''}</td>${ppl(r)}<td class="num"><b>${f(r.scores.overall)}</b></td><td class="num">${f(r.scores.voice_human)}</td><td class="num">${f(r.scores.emotion)}</td>
       <td class="num">${f(r.scores.conversation)}</td><td class="num">${f(r.scores.hinglish)}</td><td class="num">${f(r.scores.turn_taking)}</td><td class="num">${f(r.scores.speed)}</td>
       <td class="num">${r.would_pick}/${r.rated}</td><td class="num">${r.inr_per_min == null ? '–' : '₹' + r.inr_per_min.toFixed(2)}</td>
       <td class="num">${r.latency_p50_ms == null ? '–' : (r.latency_p50_ms / 1000).toFixed(2) + ' s'}</td><td class="num">${r.talk_over_pct == null ? '–' : r.talk_over_pct + '%'}</td>
       <td class="num">${r.calls}</td><td class="small muted" style="text-align:left">${r.ref || ''}</td></tr>`).join('');
   if (!rows.length) t.innerHTML = '<tr><td>No calls yet.</td></tr>';
+  $('tcard').hidden = !all;
+  if (all) {
+    const ts = await api('/api/testers');
+    $('ttable').innerHTML = '<tr><th>Person</th><th>Calls</th><th>Rated</th><th>Minutes</th><th>Last call</th></tr>' +
+      (ts.map((x) => `<tr><td>${x.tester}</td><td class="num">${x.calls}</td><td class="num">${x.rated}</td><td class="num">${x.minutes}</td><td class="num">${x.last.replace('T', ' ').slice(0, 16)}</td></tr>`).join('') || '<tr><td>Nobody yet.</td></tr>');
+  }
 }
 async function renderHistory() {
   await refreshCalls(); const h = $('hist'); h.innerHTML = '';
