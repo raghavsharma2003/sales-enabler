@@ -13,7 +13,7 @@ async def main():
     ap.add_argument('--tester', default='sim'); ap.add_argument('--clips', default=','.join(ORDER))
     a = ap.parse_args()
     url = a.base.replace('https://', 'wss://').replace('http://', 'ws://').rstrip('/') + '/ws?k=' + a.key
-    clips = [open(os.path.join(CLIPS, c + '.pcm'), 'rb').read() for c in a.clips.split(',')][:a.turns]
+    clips = [open(os.path.join(CLIPS, c + '.pcm'), 'rb').read() for c in a.clips.split(',')[:a.turns]]
     out = asyncio.Queue(); play_until = [0.0]; replies = {}; t0 = time.monotonic(); res = {'errors': [], 'turns': []}
     sent = [0]
     async with aiohttp.ClientSession() as s:

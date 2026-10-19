@@ -59,7 +59,7 @@ async def ping(req): return web.json_response({'ok': True})
 async def catalog(req):
     return web.json_response({
         'presets': [{**{k: v for k, v in p.items() if k != 'needs'}, 'enabled': enabled(p), 'needs': p.get('needs')} for p in PRESETS],
-        'brains': {k: {'label': v['label'], 'in': v['in'], 'out': v['out']} for k, v in BRAINS.items()},
+        'brains': {k: {'label': v['label'], 'in': v['in'], 'out': v['out'], 'ttft_ms': v.get('ttft_ms')} for k, v in BRAINS.items()},
         'tts': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['default_voice']} for k, v in TTS.items()},
         's2s': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['voice']} for k, v in S2S.items()},
         'stt': {k: {'label': v['label']} for k, v in STT.items()},

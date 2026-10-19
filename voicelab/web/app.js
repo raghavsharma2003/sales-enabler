@@ -89,7 +89,7 @@ function fillSelects() {
   for (const [k, v] of Object.entries(S.cat.scenarios)) sc.add(new Option(v.label, k));
   sc.value = LS.get('vl_scen', 'renewal'); sc.onchange = () => LS.set('vl_scen', sc.value);
   const br = $('brain'); br.innerHTML = ''; br.add(new Option("Stack's own brain", ''));
-  for (const [k, v] of Object.entries(S.cat.brains)) br.add(new Option(`${v.label} · $${v.in}/$${v.out} per 1M`, k));
+  for (const [k, v] of Object.entries(S.cat.brains)) br.add(new Option(`${v.label} · ${v.ttft_ms ? (v.ttft_ms / 1000).toFixed(2) + ' s to first word' : 'speed not measured'} · $${v.in}/$${v.out} per 1M`, k));
   br.value = LS.get('vl_brain', ''); br.onchange = () => LS.set('vl_brain', br.value);
   $('phone').checked = LS.get('vl_phone', false); $('phone').onchange = () => LS.set('vl_phone', $('phone').checked);
   $('smart').checked = LS.get('vl_smart', true); $('smart').onchange = () => LS.set('vl_smart', $('smart').checked);

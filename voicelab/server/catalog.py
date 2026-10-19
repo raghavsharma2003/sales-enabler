@@ -15,21 +15,24 @@ STT = {
 }
 
 # ---------------------------------------------------------------- brains (LLM)
+# ttft_ms: median time to first token from the lab VM (Central India), n=6, renewal brief, 2026-10-19 (tests/brain_bench.py)
 # host: sin = vp-lab-ai-sin (South India account), sea = vp-research-ai-sea, or = OpenRouter, gm = Gemini API
 BRAINS = {
-    'gpt-oss-120b@groq': {'label': 'gpt-oss-120b on Groq (report baseline)', 'host': 'or', 'model': 'openai/gpt-oss-120b', 'provider': 'groq',
+    'gpt-oss-120b@groq': {'ttft_ms': 483, 'label': 'gpt-oss-120b on Groq (report baseline)', 'host': 'or', 'model': 'openai/gpt-oss-120b', 'provider': 'groq',
                           'in': 0.15, 'out': 0.60, 'extra': {'reasoning': {'effort': 'low', 'exclude': True}}, 'out_pad': 400},
-    'gpt-oss-120b':      {'label': 'gpt-oss-120b (Azure)', 'host': 'sin', 'model': 'lab-gptoss120b', 'in': 0.15, 'out': 0.60,
+    'gpt-oss-120b':      {'ttft_ms': 1466, 'label': 'gpt-oss-120b (Azure)', 'host': 'sin', 'model': 'lab-gptoss120b', 'in': 0.15, 'out': 0.60,
                           'extra': {'reasoning_effort': 'low'}, 'out_pad': 400},
-    'gpt-4.1-mini-in':   {'label': 'GPT-4.1 mini (Azure, India-resident)', 'host': 'sin', 'model': 'lab-gpt41mini-in', 'in': 0.44, 'out': 1.76},
-    'gpt-4.1':           {'label': 'GPT-4.1 (Azure)', 'host': 'sin', 'model': 'lab-gpt41', 'in': 2.0, 'out': 8.0},
-    'gpt-chat-latest':   {'label': 'gpt-chat-latest (Azure, premium)', 'host': 'sin', 'model': 'lab-gptchat', 'in': 5.0, 'out': 30.0},
-    'kimi-k2.6':         {'label': 'Kimi K2.6 (Azure, open weights)', 'host': 'sea', 'model': 'lab-kimik26', 'in': 0.95, 'out': 4.0,
+    'gpt-4.1-mini-in':   {'ttft_ms': 641, 'label': 'GPT-4.1 mini (Azure, India-resident)', 'host': 'sin', 'model': 'lab-gpt41mini-in', 'in': 0.44, 'out': 1.76},
+    'gpt-4.1':           {'ttft_ms': 1765, 'label': 'GPT-4.1 (Azure)', 'host': 'sin', 'model': 'lab-gpt41', 'in': 2.0, 'out': 8.0},
+    'gpt-chat-latest':   {'label': 'gpt-chat-latest (Azure, premium)', 'host': 'sin', 'model': 'lab-gptchat', 'in': 5.0, 'out': 30.0, 'no_temp': True},
+    'kimi-k2.6':         {'ttft_ms': 1629, 'label': 'Kimi K2.6 (Azure, open weights)', 'host': 'sea', 'model': 'lab-kimik26', 'in': 0.95, 'out': 4.0,
                           'extra': {'reasoning_effort': 'none'}},
-    'llama-4-maverick':  {'label': 'Llama 4 Maverick (Azure, open weights)', 'host': 'sin', 'model': 'lab-llama4mav', 'in': 0.25, 'out': 1.0},
-    'mistral-medium-3.5':{'label': 'Mistral Medium 3.5 (Azure)', 'host': 'sin', 'model': 'lab-mistralmed', 'in': 0.40, 'out': 2.0, 'price_note': 'unverified'},
-    'gemini-3.8-flash':  {'label': 'Gemini 3.8 Flash', 'host': 'gm', 'model': 'gemini-3.8-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'low'}},
-    'gemini-3.5-flash-lite': {'label': 'Gemini 3.5 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.5-flash-lite', 'in': 0.30, 'out': 2.50, 'thinking': {'thinkingLevel': 'minimal'}},
+    'llama-4-maverick':  {'ttft_ms': 1060, 'label': 'Llama 4 Maverick (Azure, open weights)', 'host': 'sin', 'model': 'lab-llama4mav', 'in': 0.25, 'out': 1.0},
+    'mistral-medium-3.5':{'ttft_ms': 1508, 'label': 'Mistral Medium 3.5 (Azure)', 'host': 'sin', 'model': 'lab-mistralmed', 'in': 0.40, 'out': 2.0, 'price_note': 'unverified'},
+    'gemini-3.8-flash':  {'ttft_ms': 2577, 'label': 'Gemini 3.8 Flash', 'host': 'gm', 'model': 'gemini-3.8-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'low'}},
+    'gemini-3.5-flash-lite': {'ttft_ms': 826, 'label': 'Gemini 3.5 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.5-flash-lite', 'in': 0.30, 'out': 2.50, 'thinking': {'thinkingLevel': 'minimal'}},
+    'gemini-3.6-flash':  {'ttft_ms': 1496, 'label': 'Gemini 3.6 Flash', 'host': 'gm', 'model': 'gemini-3.6-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'minimal'}},
+    'gemini-3.1-flash-lite': {'ttft_ms': 2843, 'label': 'Gemini 3.1 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.1-flash-lite', 'in': 0.25, 'out': 1.50, 'thinking': {'thinkingLevel': 'minimal'}},
 }
 
 # ---------------------------------------------------------------- text-to-speech
@@ -99,9 +102,9 @@ PRESETS = [
     P(id='asha', label="Asha's architecture: gpt-4o-transcribe + GPT-4.1 + DragonHD", ref='new · Taxila tutor stack',
       stt='asha', gated=False, brain='gpt-4.1', tts='azure-hd', new=True),
     P(id='mai-emotion', label='Azure MAI-Voice emotional voice + per-reply emotion', ref='new · preview voice',
-      stt='gemini', gated=True, brain='gemini-3.8-flash', tts='azure-mai', notes=True, new=True),
+      stt='gemini', gated=True, brain='gpt-4.1-mini-in', tts='azure-mai', notes=True, new=True),
     P(id='maya-cascade', label='Maya voice (Despina) cascade, with delivery notes', ref='new',
-      stt='gemini', gated=True, brain='gemini-3.8-flash', tts='gemini', notes=True, new=True),
+      stt='gemini', gated=True, brain='gemini-3.5-flash-lite', tts='gemini', notes=True, new=True),
 ]
 
 def enabled(p):

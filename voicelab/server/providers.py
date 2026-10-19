@@ -66,7 +66,7 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
             body = {'model': b['model'], 'stream_options': {'include_usage': True}}
         body.update({'messages': messages, 'stream': True, 'max_completion_tokens': max_tokens + b.get('out_pad', 0), 'temperature': 0.6})
         if host == 'or': body['max_tokens'] = body.pop('max_completion_tokens')
-        if 'gpt-oss' in b['model'] or 'gptoss' in b['model'] or 'kimi' in b['model']: body.pop('temperature', None)
+        if b.get('no_temp') or 'gpt-oss' in b['model'] or 'gptoss' in b['model'] or 'kimi' in b['model']: body.pop('temperature', None)
         body.update(b.get('extra', {}))
         async with http.post(url, headers=hdr, json=body, timeout=aiohttp.ClientTimeout(total=60, sock_read=30)) as r:
             timing['status'] = r.status
@@ -205,47 +205,45 @@ class SynthPool:
 POOL = SynthPool()
 
 async def gemini_tts(http, model, voice, text, style, usage, timing):
-    """Async generator of 24 kHz PCM chunks from Gemini TTS (Interactions API, streamed L16)."""
-    content = {'type': 'text', 'text': text}
-    if style: content['annotations'] = [{'type': 'speech_metadata', 'style': style}]
-    body = {'model': model, 'input': [{'type': 'user_input', 'content': [content]}],
-            'response_format': {'type': 'audio', 'mime_type': 'audio/l16', 'sample_rate': 24000},
-            'generation_config': {'speech_config': [{'voice': voice}]}, 'stream': True}
+    """Async generator of 24 kHz PCM chunks from Gemini TTS, streamGenerateContent (the path g5 measured at 0.86-1.1 s
+    first byte from India; the Interactions API with L16 did not stream progressively, 3.8-4.9 s, lab 2026-10-19).
+    A delivery note becomes the g5 'Say in a ... tone:' prefix, which g5 checked is not read aloud."""
+    prompt = f'Say in a {style} tone: {text}' if style else text
+    body = {'contents': [{'parts': [{'text': prompt}]}],
+            'generationConfig': {'responseModalities': ['AUDIO'], 'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': voice}}}}}
     timing.setdefault('req', time.perf_counter())
     for attempt in range(2):
         key, tier = GKEYS.pick(); timing['key'] = tier
         if not key: timing['err'] = 'no Gemini key with budget left'; return
-        async with http.post(f'{GEM}/interactions', headers={'x-goog-api-key': key}, json=body, timeout=aiohttp.ClientTimeout(total=90, sock_read=30)) as r:
+        async with http.post(f'{GEM}/models/{model}:streamGenerateContent?alt=sse', headers={'x-goog-api-key': key}, json=body,
+                             timeout=aiohttp.ClientTimeout(total=90, sock_read=30)) as r:
             if r.status != 200:
                 txt = await r.text()
                 if is_quota(r.status, txt) and tier == 'free': GKEYS.quota_hit('free'); continue
                 timing['err'] = f'{r.status} {txt[:300]}'; return
-            nbytes = 0; skip = True
+            nbytes = 0; skip = True; carry = b''
             async for raw in r.content:
                 line = raw.strip()
                 if not line.startswith(b'data:'): continue
-                s = line[5:].strip()
-                if s == b'[DONE]': break
-                try: e = json.loads(s)
+                try: e = json.loads(line[5:].strip())
                 except Exception: continue
-                et = e.get('event_type')
-                if et == 'step.delta' and (e.get('delta') or {}).get('type') == 'audio':
-                    b = base64.b64decode(e['delta']['data'])
-                    if skip:   # trim leading digital silence so first sound is real speech
-                        arr = memoryview(b).cast('h') if len(b) % 2 == 0 else None
-                        if arr is not None:
-                            k = 0
+                for c in e.get('candidates') or []:
+                    for p in (c.get('content') or {}).get('parts') or []:
+                        idata = p.get('inlineData')
+                        if not idata or not idata.get('data'): continue
+                        b = carry + base64.b64decode(idata['data'])
+                        if len(b) % 2: carry, b = b[-1:], b[:-1]
+                        else: carry = b''
+                        if skip:   # trim leading digital silence so the first sound is speech
+                            arr = memoryview(b).cast('h'); k = 0
                             while k < len(arr) and abs(arr[k]) < 64: k += 1
                             b = b[2 * k:]
                             if not b: continue
-                        skip = False
-                    if 'first' not in timing: timing['first'] = time.perf_counter()
-                    nbytes += len(b); yield b
-                elif et == 'interaction.completed':
-                    u = (e.get('interaction') or {}).get('usage') or {}
-                    usage['in'] = u.get('total_input_tokens', 0); usage['out'] = u.get('total_output_tokens', 0)
-                elif et in ('error', 'interaction.failed'):
-                    timing['err'] = json.dumps(e)[:300]
+                            skip = False
+                        if 'first' not in timing: timing['first'] = time.perf_counter()
+                        nbytes += len(b); yield b
+                um = e.get('usageMetadata')
+                if um: usage['in'] = um.get('promptTokenCount', 0); usage['out'] = um.get('candidatesTokenCount', 0)
             usage['audio_s'] = usage.get('audio_s', 0) + nbytes / 48000
             break
 

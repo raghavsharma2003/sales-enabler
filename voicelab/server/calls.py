@@ -566,7 +566,7 @@ class AzureRealtimeCall(Call):
         self.up = await self.http.ws_connect(url, headers={'api-key': pv.env('LAB_AI_KEY')}, max_msg_size=0, heartbeat=20)
         await self.up.send_json({'type': 'session.update', 'session': {'type': 'realtime', 'instructions': self.system, 'output_modalities': ['audio'],
             'audio': {'input': {'format': {'type': 'audio/pcm', 'rate': 24000}, 'noise_reduction': {'type': 'near_field'},
-                                'turn_detection': {'type': 'semantic_vad', 'eagerness': 'low', 'create_response': True, 'interrupt_response': True},
+                                'turn_detection': {'type': 'semantic_vad', 'eagerness': 'medium', 'create_response': True, 'interrupt_response': True},
                                 'transcription': {'model': 'lab-4ominitx', 'language': 'hi'}},
                       'output': {'format': {'type': 'audio/pcm', 'rate': 24000}, 'voice': self.voice}}}})
         self.reader = asyncio.ensure_future(self.read())
