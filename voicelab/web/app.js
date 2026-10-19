@@ -40,7 +40,8 @@ document.querySelectorAll('#rscope button').forEach((b) => b.onclick = () => {
 });
 function renderMeta() {
   const c = S.cat; const g = c.gemini || {};
-  $('meta').innerHTML = `${S.name} · lab spend today $${c.spend_today_usd.toFixed(2)} / $${c.daily_cap_usd}<br>Gemini paid credit left $${(g.paid_left_usd ?? 0).toFixed(2)}`;
+  $('meta').innerHTML = `${S.name} · lab spend today $${c.spend_today_usd.toFixed(2)} / $${c.daily_cap_usd}<br>` +
+    (g.vertex_on ? `Gemini via Google Cloud credit · ₹${(g.vertex_left_inr ?? 0).toLocaleString('en-IN')} left` : `Gemini paid credit left $${(g.paid_left_usd ?? 0).toFixed(2)}`);
 }
 
 // ------------------------------------------------------------------ tabs

@@ -65,7 +65,8 @@ async def catalog(req):
         'stt': {k: {'label': v['label']} for k, v in STT.items()},
         'scenarios': SCENARIOS, 'fx': FX,
         'spend_today_usd': round(LAB.spend_today(), 3), 'daily_cap_usd': DAILY_USD,
-        'gemini': {'free_ok': time.time() >= pv.GKEYS.free_blocked_until, 'paid_left_usd': round(pv.GKEYS.paid_cap - pv.GKEYS.paid_spent, 3)}})
+        'gemini': {'free_ok': time.time() >= pv.GKEYS.free_blocked_until, 'paid_left_usd': round(pv.GKEYS.paid_cap - pv.GKEYS.paid_spent, 3),
+                   'vertex_on': pv.VERTEX.usable(), 'vertex_left_inr': round((pv.VERTEX_CAP_USD - pv.VERTEX.spent) * FX)}})
 
 def load_calls():
     out = []
@@ -225,7 +226,7 @@ async def ws_call(req):
 
 async def on_start(app):
     LAB.http = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=64, keepalive_timeout=120))
-    pv.GKEYS.load(f'{DATA}/gemini-paid.jsonl')
+    pv.GKEYS.load(f'{DATA}/gemini-paid.jsonl'); pv.VERTEX.load(f'{DATA}/vertex-spend.jsonl')
     for m in filter(None, os.environ.get('LAB_TEST_BLOCK_MODELS', '').split(',')):   # test hook: pretend a model is out of quota
         pv.GKEYS.quota_hit('free', 86400, m); pv.GKEYS.quota_hit('paid', 86400, m)
     async def warm():

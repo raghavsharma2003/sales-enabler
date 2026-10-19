@@ -99,6 +99,70 @@ async def gemini_post(http, url, body, timing, **kw):
             continue
         timing['err'] = f'{r.status} {txt[:300]}'; return None
 
+# ---------------------------------------------------------------- Vertex AI (owner's Google Cloud credit, 2026-10-19)
+# Project vp-voice, service account vp-voicelab (Vertex AI User + Service Usage Viewer). The ₹28,693 free-trial
+# credit covers Google's own Gemini models on Vertex (not AI Studio) and expires 2026-11-15, and the billing account
+# is a paid one, so the lab caps its own Vertex spend and stops using Vertex the day before expiry.
+VERTEX_PROJECT = env('VERTEX_PROJECT', 'vp-voice')
+VERTEX_CAP_USD = float(env('VERTEX_CAP_USD', str(20000 / FX)))
+VERTEX_LAST_DAY = env('VERTEX_LAST_DAY', '2026-11-14')
+VERTEX_MODELS = {'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'}
+class VertexAuth:
+    def __init__(self):
+        self.sa = None; self.tok = None; self.exp = 0.0; self.spent = 0.0; self.ledger = None; self.lock = asyncio.Lock()
+        p = env('VERTEX_SA_FILE')
+        if p and os.path.exists(p):
+            try: self.sa = json.load(open(p))
+            except Exception: self.sa = None
+    def load(self, path):
+        self.ledger = path
+        try: self.spent = sum(json.loads(l).get('usd', 0) for l in open(path))
+        except FileNotFoundError: pass
+    def usable(self):
+        return self.sa is not None and self.spent < VERTEX_CAP_USD and time.strftime('%Y-%m-%d') <= VERTEX_LAST_DAY
+    def charge(self, usd):
+        if usd:
+            self.spent += usd
+            if self.ledger:
+                with open(self.ledger, 'a') as f: f.write(json.dumps({'ts': time.time(), 'usd': usd}) + '\n')
+    async def token(self, http):
+        async with self.lock:
+            if self.tok and time.time() < self.exp - 300: return self.tok
+            from cryptography.hazmat.primitives import hashes, serialization
+            from cryptography.hazmat.primitives.asymmetric import padding
+            b64 = lambda x: base64.urlsafe_b64encode(x).rstrip(b'=')
+            now = int(time.time())
+            h = b64(json.dumps({'alg': 'RS256', 'typ': 'JWT', 'kid': self.sa['private_key_id']}).encode())
+            c = b64(json.dumps({'iss': self.sa['client_email'], 'scope': 'https://www.googleapis.com/auth/cloud-platform',
+                                'aud': self.sa['token_uri'], 'iat': now, 'exp': now + 3600}).encode())
+            key = serialization.load_pem_private_key(self.sa['private_key'].encode(), None)
+            sig = b64(key.sign(h + b'.' + c, padding.PKCS1v15(), hashes.SHA256()))
+            async with http.post(self.sa['token_uri'], data={'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                                                             'assertion': (h + b'.' + c + b'.' + sig).decode()}) as r:
+                d = await r.json()
+            self.tok = d['access_token']; self.exp = time.time() + int(d.get('expires_in', 3600))
+            return self.tok
+VERTEX = VertexAuth()
+
+async def vertex_post(http, model, body, timing, location='global', **kw):
+    """streamGenerateContent on Vertex AI. Returns an open response or None (timing['vertex_err'] set) so the caller
+    can fall back to the Gemini API keys."""
+    if not (VERTEX.usable() and model in VERTEX_MODELS): return None
+    host = 'aiplatform.googleapis.com' if location == 'global' else f'{location}-aiplatform.googleapis.com'
+    url = f'https://{host}/v1/projects/{VERTEX_PROJECT}/locations/{location}/publishers/google/models/{model}:streamGenerateContent?alt=sse'
+    try:
+        tok = await VERTEX.token(http)
+        r = await http.post(url, headers={'Authorization': 'Bearer ' + tok}, json=body, **kw)
+    except Exception as e:
+        timing['vertex_err'] = repr(e)[:200]; return None
+    if r.status == 200: timing['key'] = 'vertex'; return r
+    timing['vertex_err'] = f'{r.status} {(await r.text())[:300]}'; r.release(); return None
+
+def with_roles(body):
+    """Vertex requires a role on every content entry; the Gemini API accepts it too."""
+    for c in body.get('contents', []): c.setdefault('role', 'user')
+    return body
+
 # ---------------------------------------------------------------- LLM streaming
 def _strip(t):
     return re.sub(r'[*_#`~]|[\U0001F300-\U0001FAFF☀-➿]', '', t)
@@ -154,8 +218,10 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
         if not contents or contents[0]['role'] != 'user': contents.insert(0, {'role': 'user', 'parts': [{'text': '(call connected)'}]})
         body = {'systemInstruction': {'parts': [{'text': sysm}]}, 'contents': contents,
                 'generationConfig': {'maxOutputTokens': max_tokens, 'temperature': 0.6, 'thinkingConfig': b.get('thinking', {'thinkingLevel': 'minimal'})}}
-        r = await gemini_post(http, f"{GEM}/models/{b['model']}:streamGenerateContent?alt=sse", body, timing,
-                              timeout=aiohttp.ClientTimeout(total=60, sock_read=30))
+        to = aiohttp.ClientTimeout(total=60, sock_read=30)
+        r = await vertex_post(http, b['model'], with_roles(body), timing, timeout=to)
+        if r is None:
+            r = await gemini_post(http, f"{GEM}/models/{b['model']}:streamGenerateContent?alt=sse", body, timing, timeout=to)
         if r is not None:
             timing['status'] = 200; timing.pop('err', None)
             try:
@@ -180,7 +246,9 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
     timing['done'] = time.perf_counter()
     usd = (usage.get('in', 0) - usage.get('cached', 0)) * b['in'] / 1e6 + usage.get('cached', 0) * b['in'] * 0.25 / 1e6 + usage.get('out', 0) * b['out'] / 1e6
     usage['usd'] = usage.get('usd_reported', usd) if host == 'or' else usd
-    if host == 'gm': GKEYS.charge(timing.get('key'), usage['usd'])
+    if host == 'gm':
+        if timing.get('key') == 'vertex': VERTEX.charge(usage['usd'])
+        else: GKEYS.charge(timing.get('key'), usage['usd'])
 
 async def llm_once(http, brain_id, messages, max_tokens=400):
     usage, timing, out = {}, {}, []
@@ -263,8 +331,10 @@ async def gemini_tts(http, model, voice, text, style, usage, timing):
     body = {'contents': [{'parts': [{'text': prompt}]}],
             'generationConfig': {'responseModalities': ['AUDIO'], 'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': voice}}}}}
     timing.setdefault('req', time.perf_counter())
-    r = await gemini_post(http, f'{GEM}/models/{model}:streamGenerateContent?alt=sse', body, timing,
-                          timeout=aiohttp.ClientTimeout(total=90, sock_read=30))
+    to = aiohttp.ClientTimeout(total=90, sock_read=30)
+    r = await vertex_post(http, model, with_roles(body), timing, timeout=to)
+    if r is None:
+        r = await gemini_post(http, f'{GEM}/models/{model}:streamGenerateContent?alt=sse', body, timing, timeout=to)
     if r is None: return
     timing.pop('err', None)
     try:
@@ -292,6 +362,7 @@ async def gemini_tts(http, model, voice, text, style, usage, timing):
             um = e.get('usageMetadata')
             if um: usage['in'] = um.get('promptTokenCount', 0); usage['out'] = um.get('candidatesTokenCount', 0)
         usage['audio_s'] = usage.get('audio_s', 0) + nbytes / 48000
+        usage['via'] = timing.get('key')
     finally:
         r.release()
 

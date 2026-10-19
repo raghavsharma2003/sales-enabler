@@ -24,6 +24,10 @@ def incomplete(text):
     return last in CUES
 
 def now(): return time.monotonic()
+def charge_tts_backend(usage, usd):
+    """Gemini TTS spend goes to the Vertex credit ledger when Vertex served it, else to the paid-key ledger."""
+    if usage.get('via') == 'vertex': pv.VERTEX.charge(usd)
+    elif usage.get('via') == 'paid': pv.GKEYS.charge('paid', usd)
 
 class Call:
     kind = 'base'
@@ -275,7 +279,7 @@ class Reply:
                 if txt:
                     u2, t2 = {}, {}; self.tts2_t = t2
                     await produce(txt, seg2_q, u2, t2)
-                    c.add_cost('voice', pv.tts_usd(c.tts, audio_s=u2.get('audio_s', 0)))
+                    usd2 = pv.tts_usd(c.tts, audio_s=u2.get('audio_s', 0)); c.add_cost('voice', usd2); charge_tts_backend(u2, usd2)
                     if t2.get('err'): c.errors.append('tts: ' + t2['err'][:200])
                 else: await seg2_q.put(None)
                 return txt
@@ -288,7 +292,7 @@ class Reply:
                     ch = await q1.get()
                     if ch is None: break
                     await self.emit(ch, 0)
-                c.add_cost('voice', pv.tts_usd(c.tts, audio_s=u1.get('audio_s', 0)))
+                usd1 = pv.tts_usd(c.tts, audio_s=u1.get('audio_s', 0)); c.add_cost('voice', usd1); charge_tts_backend(u1, usd1)
                 if self.tts_t.get('err'): c.errors.append('tts: ' + self.tts_t['err'][:200])
                 if self.spoken[0][1] == 0 and self.tts_t.get('err'): await self.voice_fallback(first, 0, self.tts_t['err'])
                 txt = await rest_task
@@ -315,7 +319,7 @@ class Reply:
             async for ch in pv.gemini_tts(c.http, 'gemini-3.8-flash-lite-tts', c.voice, text, self.style if c.notes else None, u, tm):
                 got = True; self.tts_t.setdefault('first', time.perf_counter()); await self.emit(ch, idx)
             if got:
-                c.add_cost('voice', pv.tts_usd('gemini-lite', audio_s=u.get('audio_s', 0)))
+                usdf = pv.tts_usd('gemini-lite', audio_s=u.get('audio_s', 0)); c.add_cost('voice', usdf); charge_tts_backend(u, usdf)
                 if c.voice_fallbacks == 1:
                     await c.send({'t': 'error', 'msg': "Gemini Flash TTS hit Google's daily cap (100 requests per model), so replies use Gemini Flash-Lite TTS, same voice. Rate the voice with that in mind."})
                 return

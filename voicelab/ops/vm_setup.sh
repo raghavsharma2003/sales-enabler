@@ -14,10 +14,11 @@ mkdir -p /opt/voicelab/app /opt/voicelab/data
 cd /opt/voicelab
 [ -d venv ] || python3 -m venv venv
 ./venv/bin/pip install -q --upgrade pip >/dev/null 2>&1 || true
-./venv/bin/pip install -q aiohttp numpy onnxruntime azure-cognitiveservices-speech
+./venv/bin/pip install -q aiohttp numpy onnxruntime azure-cognitiveservices-speech cryptography
 curl -sS -o bundle.tgz -H "x-ms-version: 2022-11-02" "https://vpresearchraw1017.blob.core.windows.net/vl-transfer/voicelab-bundle.tgz?$SAS"
 rm -rf app.new && mkdir app.new && tar xzf bundle.tgz -C app.new && rm -rf app && mv app.new app
 umask 077
+if [ -n "$VERTEX_SA_B64" ]; then echo "$VERTEX_SA_B64" | base64 -d > /opt/voicelab/vertex-sa.json; fi
 cat > /opt/voicelab/.env <<ENV
 LAB_AI_ENDPOINT=$LAB_AI_ENDPOINT
 LAB_AI_KEY=$LAB_AI_KEY
@@ -30,6 +31,7 @@ GEMINI_PAID_KEY=$GEMINI_PAID_KEY
 GEMINI_PAID_REMAINING_USD=15.0
 OPENROUTER_API_KEY=$OPENROUTER_API_KEY
 SARVAM_API_KEY=$SARVAM_API_KEY
+VERTEX_SA_FILE=/opt/voicelab/vertex-sa.json
 LAB_PASSCODE=$LAB_PASSCODE
 LAB_DATA=/opt/voicelab/data
 LAB_DAILY_USD=15
@@ -37,7 +39,7 @@ LAB_HOST=127.0.0.1
 LAB_PORT=8080
 ENV
 umask 022
-chown -R voicelab:voicelab /opt/voicelab && chmod 600 /opt/voicelab/.env
+chown -R voicelab:voicelab /opt/voicelab && chmod 600 /opt/voicelab/.env; [ -f /opt/voicelab/vertex-sa.json ] && chmod 600 /opt/voicelab/vertex-sa.json
 cat > /etc/systemd/system/voicelab.service <<UNIT
 [Unit]
 Description=VP voice lab
