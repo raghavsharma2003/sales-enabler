@@ -1,5 +1,37 @@
 # Current project state
 
+> **Since 2026-10-20 the live state is `context/DIRECTION.md`**, which gets rewritten at each phase change. Context
+> rules are in `context/PROTOCOL.md`. This file keeps the dated checkpoint history. New entries are added only at a
+> phase boundary.
+
+## October 20 phase boundary: voice lab paused, product build next
+
+**Voice lab, Oct 19–20.** This is recorded in the graph as 99 nodes (`npm run context -- --grep voicelab`).
+- **Where it ran:** a test-call lab on an India VM. It has browser calls and real Plivo phone calls; testers verify
+  their own numbers with a missed call.
+- **What it covered:** 20+ stacks.
+- **Round 1:** 65 calls, 33 ratings. Every stack's content was judged robotic. The brief was the cause, not the brains.
+- **What got built in response:**
+  - brief v2 with an agenda ledger computed in code;
+  - her own guarded hang-up;
+  - build-your-own stacks;
+  - no-swap test integrity;
+  - results filed under the combination that actually ran.
+- **Text bake-off:** 540 verdicts. Gemini 3.8 Flash was best but slow from India; GPT-6 Luna came last.
+
+**Why it paused.**
+- Google restricted Vertex on vp-voice. An appeal has been prepared.
+- Gemini API Tier 1 caps TTS at 100 requests per model per day.
+- OpenRouter's Gemini voice does not stream.
+- The owner paused the lab until a paid Vertex project (`voicelab-india`) arrives. The runbook is in
+  `research/2026-10-20/voicelab/google-access.md`.
+
+**Next.** The owner's product brief, then the whole product start to end:
+- users can select the voice stack;
+- the owner leans towards Gemini TTS;
+- the lab's adapters, brief v2, hang-up guard and combination identity get ported in.
+- No round-2 human ratings exist yet.
+
 ## October 10 active private Azure Voice Live adapter increment
 
 Clean baseline `848e166` retains the locally verified speech-delivery, comparison and bounded Taxila audition packet. The new objective is an actual private Azure Voice Live Diya/Arjun adapter that preserves the same accountable delivery contract and Azure-only paid-provider boundary. Work is split across composition ticket/API/admission, the shared delivery contract, provider handshake/configuration, private gateway, browser lifecycle and Agent Studio UI. Source is active; no real Voice Live handshake, provider session, audio result, browser call or adapter verdict exists yet.

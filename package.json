@@ -8,6 +8,7 @@
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/run-tests.mjs",
+    "context": "node scripts/context.mjs",
     "context:check": "node scripts/check-context.mjs",
     "automation:worker": "node --env-file=.env.local --import tsx scripts/automation-worker.ts",
     "voice:gateway": "node --env-file-if-exists=.env.local --import tsx scripts/voice-gateway.ts",

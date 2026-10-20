@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "updatedAt": "2026-10-17",
+ "updatedAt": "2026-10-20",
  "nodes": [
   {
    "id": "product.general",
@@ -10900,6 +10900,991 @@
    "source": "model",
    "date": "2026-10-19",
    "title": "Base tier C6g uses Google transcription + gpt-oss on Groq via OpenRouter (US processing) + Azure voice: needs owner decision on non-Azure providers and data residency (DPDP / IRDAI records-in-India) before build."
+  },
+  {
+   "id": "directive.2026-10-19.hear-before-choose",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-19",
+   "title": "Owner: test-call every candidate stack by ear before choosing; conversation and voice quality is what differentiates us; margin may be compromised, the voice may not; needs a better brain than gpt-oss; look deeper at Gemini (Hinglish voices) and Maya; no self-hosting until volume; Inworld and AWS dropped, Sarvam in.",
+   "quote": "quality of the convo and the voice is extremely important ... that is something which should differentiate us"
+  },
+  {
+   "id": "directive.2026-10-19.group-testing",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-19",
+   "title": "Owner: several people (owner, Gaurav, Aryan, Rachit) test and rate; friends must be able to enter their own phone numbers and get called."
+  },
+  {
+   "id": "directive.2026-10-20.human-conversation",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner after round 1: conversation, content, emotion and relation were not good on any stack. Agents must hold proper human conversations instead of repeating the agenda; more expressive and human; still get the agenda done subtly; learn from Maya; Gemini for ears; a strong brain (look at the newest cheap fast models)."
+  },
+  {
+   "id": "directive.2026-10-20.agent-hangup",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: she can end the call herself when it is done; friendly, human, professional but interesting and nice to talk to."
+  },
+  {
+   "id": "directive.2026-10-20.world-class-telecalling",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: world-class telecalling = open with something interesting and useful, never waste their time, read the person and talk more if they want, then ask clearly; do not open with \"I am an AI agent\" and repeat. The test page must let the owner pick STT, brain and TTS, plus 4-5 curated best combinations."
+  },
+  {
+   "id": "directive.2026-10-20.no-midcall-swap",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: a model must never change mid-test-call, and a brain/voice changed on a ready-made stack must be tracked as the combination that actually ran, because the owner's impressions are recorded against what the page shows. If quota is missing, say so and the owner buys more."
+  },
+  {
+   "id": "directive.2026-10-20.openrouter-gemini",
+   "type": "requirement",
+   "status": "superseded",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: route every Gemini model except Live through OpenRouter while the Gemini keys are capped and Vertex is restricted."
+  },
+  {
+   "id": "directive.2026-10-20.stop-and-wait",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: calls failing and slow again; stop building and re-routing APIs (wasted tokens); wait for the Vertex key or the owner pays for one."
+  },
+  {
+   "id": "directive.2026-10-20.product-phase",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: move to the product and build it start to end; the 5-10 lab combinations get tested inside the product; voice selection happens once Vertex is back; end users get an option to select the voice-AI stack; owner generally likes Gemini TTS, the rest is chosen after the product is built. Owner will give the product brief next."
+  },
+  {
+   "id": "directive.2026-10-20.context-before-compact",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: before every compaction, write the valuable context deeply into the graph (choices made and everything around them) so nothing is lost; a long-running, large build needs a structure for managing context and direction.",
+   "path": "context/PROTOCOL.md"
+  },
+  {
+   "id": "component.voicelab",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Voice lab: aiohttp server + vanilla browser client on the India VM, every candidate stack callable from browser or real phone, blind tour, ratings, results per combination, stereo recordings, per-component cost meter.",
+   "path": "voicelab/README.md"
+  },
+  {
+   "id": "component.voicelab.calls",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "calls.py: one Call base for cascade (Silero VAD -> STT -> brain streamed into clauses -> TTS), Gemini Live and Azure realtime; turn release on latest final, continuation-word hold 1.4 s, withdraw/interrupt/backchannel; invalidate(reason) on any component failure; combo(); end_after_playback().",
+   "path": "voicelab/server/calls.py"
+  },
+  {
+   "id": "component.voicelab.providers",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "providers.py: Azure OpenAI/Speech/MAI-Voice, Gemini API (5xx retried twice), Vertex (VERTEX_OFF + 6 h 401/403 breaker), OpenRouter brains and or_tts, Sarvam; explain(err) for exact failure reasons; or_balance() from /api/v1/credits.",
+   "path": "voicelab/server/providers.py"
+  },
+  {
+   "id": "component.voicelab.catalog",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "catalog.py: STT/brain/TTS/S2S registry with measured ttft and prices; round-1 presets and round-2 v2 presets (v2-live, v2-flashlite, v2-54mini, v2-38flash, v2-mai, v2-flashlite-or; v2-luna off-tour); scenarios renewal/support/followup/open.",
+   "path": "voicelab/server/catalog.py"
+  },
+  {
+   "id": "component.voicelab.persona-v2",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "persona_v2.py: brief v2 (SCRIPT top; IDENTITY, GOVERNOR, MEDIUM, SOUNDS, CORE with ending, SAFETY, OPENING_OUT) + code-derived agenda ledger appended last every turn + hangup_ok + spoken() tag cleaner + preference-only MEMORY_PROMPT.",
+   "path": "voicelab/server/persona_v2.py"
+  },
+  {
+   "id": "component.voicelab.phone",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "phone.py: Plivo India leg: Answer XML -> bidirectional mu-law 8 kHz Stream -> PlivoLine (stands in for the browser websocket), FIR resamplers, HMAC path-secret webhooks, Numbers (missed-call verification, 20 calls/number/day), ensure_app() links the number at startup.",
+   "path": "voicelab/server/phone.py"
+  },
+  {
+   "id": "component.voicelab.app",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "app.py: routes (calls, ratings, results by combo, phone APIs, Plivo webhooks), prepare/preflight (quota + OpenRouter balance), custom_preset (build-your-own), memory per tester per scenario namespace.",
+   "path": "voicelab/server/app.py"
+  },
+  {
+   "id": "component.voicelab.web",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "web/app.js + index.html: modes Blind tour / Pick a stack / Build your own; browser-or-phone toggle; add-number + missed-call verify; \"Testing: <combination>\" line; invalid-call notice; ratings; history.",
+   "path": "voicelab/web/app.js"
+  },
+  {
+   "id": "component.voicelab.convo-bench",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "convo_bench.py: text bake-off: simulated callers (6 renewal, 3 followup profiles), repetition/agenda/question/script/hang-up metrics, blind pairwise judges from two model families, --reuse, # arm pinning.",
+   "path": "voicelab/evals/convo_bench.py"
+  },
+  {
+   "id": "component.voicelab.harnesses",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "tests/: plivo_sim.py (fake Plivo incl. --verify), voice_bench.py (India brain/voice latency), sim_caller.py (headless call, --custom stt,brain,tts or s2s:ENGINE), brain_bench.py.",
+   "path": "voicelab/tests/sim_caller.py"
+  },
+  {
+   "id": "component.voicelab.ops",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "ops/: lab_ops.py (Azure setup in vp-research-rg only, Run Command with prune() under the 25 limit), deploy.sh, vm_setup.sh (env incl. PLIVO_*, LAB_PUBLIC_URL, VERTEX_OFF default 1), smoke.sh, bench.sh, pull_data.sh.",
+   "path": "voicelab/ops/lab_ops.py"
+  },
+  {
+   "id": "component.azure.vl-vm-cin",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Azure VM vl-vm-cin (Standard_D2as_v5, Central India, vp-research-rg): Caddy TLS -> voicelab on 127.0.0.1:8080; https://vp-voicelab-1019.centralindia.cloudapp.azure.com (passcode owner-only); data dir holds calls, ratings, numbers."
+  },
+  {
+   "id": "component.azure.vp-lab-accounts",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Lab Azure accounts in vp-research-rg: vp-lab-ai-sin (South India; gpt-4.1/-mini, gpt-5.4-mini, gpt-oss-120b, DeepSeek-V4.1-Flash, Mistral-Large-3, gpt-realtime-mini, transcribe) and vp-lab-speech-cin (Central India; neural, DragonHD, MAI-Voice-2.1)."
+  },
+  {
+   "id": "component.plivo.vp-voicelab",
+   "type": "component",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Plivo India sub-account vp-voicelab: Bengaluru number +91 80 6549 4553 (Rs 236/month), application vp-voicelab, trial credit Rs 764 expiring 2026-11-16, Rs 80 monthly usage limit on the console; Rs 0.376/min in, 0.38 out, 60 s pulse."
+  },
+  {
+   "id": "component.gcp.vp-voice",
+   "type": "component",
+   "status": "restricted",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Google Cloud project vp-voice (team@vyakti.ai): Rs 28,694 free-trial credit to 2026-11-15; service account vp-voicelab; Vertex RESTRICTED by Google Trust & Safety on 2026-10-20 (appeal prepared).",
+   "path": "research/2026-10-20/voicelab/google-access.md"
+  },
+  {
+   "id": "decision.2026-10-19.voicelab-shape",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Build a dedicated Python test lab (aiohttp + browser) rather than test stacks inside the Next.js product: every stack behind one Call interface, server-side VAD and timing so stacks are measured identically, recording + cost on every call.",
+   "rationale": "Speed of iteration on audio/turn-taking and identical measurement across 20+ stacks; the product was not the bottleneck.",
+   "reverse_if": "The product (owner directive 2026-10-20) needs these adapters in its own runtime; port, do not run two voice stacks."
+  },
+  {
+   "id": "decision.2026-10-19.plivo-mulaw",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Phone leg on Plivo India with G.711 mu-law 8 kHz bidirectional Stream and a PlivoLine adapter so every stack runs unchanged on a real call.",
+   "rationale": "mu-law is what the PSTN carries anyway; Plivo L16 byte order is undocumented.",
+   "reverse_if": "Plivo documents L16 byte order and a wideband path measurably improves STT/voice; or product telephony picks another CPaaS (1600-series / Exotel) for compliance."
+  },
+  {
+   "id": "decision.2026-10-19.missed-call-verify",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-19",
+   "title": "Testers add their own numbers and prove them with a missed call to the lab number (caller ID on the answer webhook, rejected unanswered = free); the lab rings or accepts only verified numbers, 20 calls/number/day.",
+   "rationale": "No OTP SMS cost or DLT registration; the lab never rings a number its owner did not ask for.",
+   "reverse_if": "Caller-ID spoofing is observed, or the lab opens beyond the team (then OTP or product auth)."
+  },
+  {
+   "id": "decision.2026-10-20.brief-v2-ledger",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Conversation brief v2: shapes not lines; react, then a view, before any question; empathy shown never named; counts and goal check LAST; an agenda ledger computed in code from the transcript every turn (spent facts, AI disclosure done, offers + outcomes, wrong caller numbers, laugh cap, goal-stall nudge, ready-to-finish); value-first opening; earn then ask.",
+   "rationale": "Round 1 showed the brief, not the brains, made every stack robotic; Meera/Maya measured that quoted text is recited, position is mechanism, and a brief alone repeats itself.",
+   "reverse_if": "Round-2 human ratings for v2 stacks are not above round-1 on conversation/emotion, or the ledger measurably drives repetition of its own rows."
+  },
+  {
+   "id": "decision.2026-10-20.agent-hangup-guard",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "She may end the call (<end_call> marker in cascades, end_call tool on Live/realtime), honoured only when hangup_ok: her line is a goodbye and the caller is not mid-question; on a call she waits 1.5 s after playback and stays if the caller speaks.",
+   "rationale": "Unguarded, simulated calls ended abruptly on 17-40% of hang-ups.",
+   "reverse_if": "Testers report she ends calls too early or never ends them; or a production metric shows caller-initiated re-dials after her hang-ups."
+  },
+  {
+   "id": "decision.2026-10-20.sound-tags-gemini-only",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Non-verbal sound tags (<laugh>, <chuckle>, <sigh>, <breath>) are allowed only on Gemini TTS voices; tone notes map to MAI-Voice styles or the OpenRouter instructions field; every other voice gets tags stripped.",
+   "rationale": "Gemini 3.8 TTS does not speak the tags as words (STT check n=6); other engines would read them aloud.",
+   "reverse_if": "Listeners judge the tags unnatural or inaudible, or another engine documents equivalent tags."
+  },
+  {
+   "id": "decision.2026-10-20.preference-only-memory",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Per-tester memory stores only the caller's stated preferences (namespace scenario-v2), never brief facts or the agent's own claims.",
+   "rationale": "v1 memory accumulated brief facts, contradictions and gender errors and re-injected them every call.",
+   "reverse_if": "Product memory design (provenance, scope, correction) replaces it."
+  },
+  {
+   "id": "decision.2026-10-20.round2-stacks",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Round-2 curated stacks: v2-live (Gemini 3.8 Live Despina), v2-flashlite (Gemini ears + 3.5 Flash-Lite + Gemini 3.8 Flash-Lite TTS), v2-54mini (GPT-5.4 mini), v2-38flash (Gemini 3.8 Flash), v2-mai (Flash-Lite + Azure MAI-Voice styles), v2-flashlite-or (via OpenRouter); v2-luna kept off-tour; plus Build-your-own for any combination.",
+   "rationale": "Covers the round-1 winner family, the fastest good brain, the best-judged brain, the fastest voice and the owner's pick.",
+   "reverse_if": "Round-2 ratings put an off-list combination on top, or a new model beats these in the bake-off and India latency."
+  },
+  {
+   "id": "decision.2026-10-20.no-midcall-swaps",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Test integrity: fallbacks off unless LAB_FALLBACKS=1; Gemini 5xx retried twice on the same model; any component failure ends the call as invalid with the exact reason (Google 5xx vs quota vs other), excluded from results; preflight refuses a call whose Gemini model has no quota.",
+   "rationale": "Owner directive; a silent Azure swap was rated as Gemini.",
+   "reverse_if": "Production calls (not tests) need availability over attribution; that is a separate product policy (open.2026-10-20.product-failover-policy)."
+  },
+  {
+   "id": "decision.2026-10-20.combo-identity",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Every call is filed under the canonical combination that actually ran (brief|stt+brain+tts~voice or brief|s2s~voice); a change on a v2 preset becomes a custom combination; the page shows \"Testing: <combination>\".",
+   "rationale": "Brain overrides were filed under the preset (v2-flashlite ran gpt-5.4-mini and vice versa).",
+   "reverse_if": "None foreseen; the product's analytics should keep the same identity."
+  },
+  {
+   "id": "decision.2026-10-20.google-from-india-only",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Any workload using Google credentials (Vertex or Gemini API) runs only from the India VM, rate-limited; never from the coding agent's sandbox; new keys ramp slowly; no bake-off batch in the first 48 h of a new project.",
+   "rationale": "vp-voice was restricted hours after one SA key ran ~600 requests/hour from the US sandbox while the VM used it from India.",
+   "reverse_if": "Google states the restriction had another cause, or a Google-sanctioned eval path (e.g. batch API) is used."
+  },
+  {
+   "id": "decision.2026-10-20.openrouter-explicit",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "OpenRouter Gemini brains (*@or, provider pinned google-vertex) and voices (gemini-lite-or, gemini-or) are separate, separately-rated choices; a call never silently reroutes to them.",
+   "rationale": "Through OpenRouter the voice is non-streaming (+~1.5 s); rating it as the direct path would mislead.",
+   "reverse_if": "OpenRouter streams Gemini TTS, or the owner chooses OpenRouter as the product path."
+  },
+  {
+   "id": "decision.2026-10-20.or-balance-preflight",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Before a call that uses OpenRouter, read the real account balance (/api/v1/credits, cached 2 min) and refuse below $0.30.",
+   "rationale": "I had reported the key's $49.8 limit as credit; the real balance was $5.51.",
+   "reverse_if": "OpenRouter is no longer used, or auto top-up is configured."
+  },
+  {
+   "id": "decision.2026-10-20.pause-lab",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Lab work paused: no further re-routing or fixes until a paid Vertex key (compliance@carbonsettle.com, project voicelab-india) arrives or the vp-voice appeal is approved; then switch back per the runbook and collect round-2 ratings.",
+   "rationale": "Owner directive; with Gemini keys capped and OpenRouter TTS non-streaming, failing slow calls were wasting testers and tokens.",
+   "reverse_if": "Vertex access returns (then resume), or the owner asks to test on what exists."
+  },
+  {
+   "id": "decision.2026-10-20.product-stack-selectable",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "The product exposes the voice stack (ears, brain, voice, or speech-to-speech engine) as a user choice with curated defaults, carrying the lab's adapters, combination identity and brief v2; the default stack is chosen after Vertex returns and round-2 ratings; Gemini TTS is the owner's current leaning.",
+   "rationale": "Owner directive 2026-10-20; also matches the self-serve Vapi-like direction.",
+   "reverse_if": "The owner's product brief says otherwise, or ratings show stack choice confuses users (then hide behind presets)."
+  },
+  {
+   "id": "decision.2026-10-20.context-protocol",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Context management protocol: log as you go (every milestone) and run the full pre-compaction ritual when compaction is mentioned; new nodes are schema-checked (decision reverse_if, measurement n+method, rejection broke); a SessionStart hook re-injects context/DIRECTION.md and log debt after every compaction; subagents drop proposals in context/inbox/.",
+   "rationale": "Owner directive; this repo already has 933 nodes and auto-compaction can strike without warning.",
+   "reverse_if": "The ritual costs more than it saves (sessions spend more on logging than on re-deriving), or the hook output is ignored."
+  },
+  {
+   "id": "measure.2026-10-19.lab-smoke-india",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Lab smoke from the India VM, reply gap (caller end of speech -> first audio sent): base stack 0.49-0.91 s (STT 0.45, gpt-oss@groq 0.33, Azure voice 0.05); Azure-brain stacks 1.1-1.7 s; Gemini-TTS stacks 2.2-3.2 s after streamGenerateContent; Gemini 3.1 Live ~1.6 s; realtime-mini 2.4-2.7 s.",
+   "n": "1 call x ~3 replies per stack",
+   "method": "sim_caller.py headless synthetic caller from the VM",
+   "path": "research/2026-10-19/voicelab/results/smoke-india-2026-10-19.md"
+  },
+  {
+   "id": "measure.2026-10-19.brain-ttft-india",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Brain first token from India (v1 brief): gpt-oss@groq 483 ms, GPT-4.1 mini India 641, Gemini 3.5 Flash-Lite 826, Llama 4 1060, Kimi K2.6 1629, GPT-4.1 1765, Gemini 3.8 Flash 2577.",
+   "n": "n=6 per brain",
+   "method": "brain_bench.py from vl-vm-cin",
+   "path": "research/2026-10-19/voicelab/results/brain-bench-india-2026-10-19.txt"
+  },
+  {
+   "id": "measure.2026-10-19.sarvam-india",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "All-Sarvam (Saaras v4 + Sarvam-105B + Bulbul v4 Flash) reply gap 0.97-1.18 s; Sarvam-105B ~100 ms first token; Rs 1.39-1.51/min, the voice is most of it.",
+   "n": "9 replies",
+   "method": "sim_caller.py from the VM"
+  },
+  {
+   "id": "measure.2026-10-19.gemini-tts-tier1-cap",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Gemini API Tier 1 caps gemini-3.8-flash-tts at 100 requests/day per project per model (quotaId GenerateRequestsPerDayPerProjectPerModel); flash-lite-tts has its own cap; each reply uses 1-2 requests; reset midnight US Pacific (12:30 IST). Group testing hit it within an hour: 45 TTS 429s, 6/12 All-Gemini calls silent.",
+   "n": "4 testers, 1 day",
+   "method": "429 error bodies + lab logs"
+  },
+  {
+   "id": "measure.2026-10-19.plivo-sim-gap",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Phone leg via fake Plivo over TLS against production: base stack server reply gap 641/999/903 ms; stranger rejected; barge-in -> clearAudio; phone audio transcribed back correctly.",
+   "n": "n=3 replies",
+   "method": "tests/plivo_sim.py",
+   "path": "voicelab/tests/plivo_sim.py"
+  },
+  {
+   "id": "measure.2026-10-20.round1-ratings",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Round 1 human ratings (overall /10): Gemini 3.1 Live 7.0 (2/2 would pick); Sarvam + gpt-oss + Bulbul 6.0; Gemini 3.8 Live 6.0; gpt-oss + Gemini voice 6.0; Asha stack 6.0; All-Gemini 5.5; Azure-voice stacks 1.5-4.5 (0 would pick). Every stack's content judged robotic.",
+   "n": "65 calls (54 browser, 11 real phone), 33 ratings, 4 testers, n=1-4 per stack",
+   "method": "lab ratings form, pulled from VM data 2026-10-20",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.robotic-signature",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Round-1 agent turns: 53% end on a question; 19% mention link/callback/advisor; median 22 words (p90 37); 21% restate \"I am an AI assistant\".",
+   "n": "316 agent turns, renewal scenario",
+   "method": "transcript analysis of round-1 calls",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.round1-reply-gap",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Round-1 reply gap medians (server): Azure-voice cascades 0.95-1.4 s; Gemini-voice cascades 2.4-2.8 s (Gemini TTS first audio 0.84-1.16 s of it); Asha 4.9 s. Browser-measured median 1.74 s.",
+   "n": "browser n=199 replies",
+   "method": "server per-reply timing + client playback clock",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.brief-v1-v2",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Same brains (gpt-4.1-mini / gemini-3.5-flash-lite), v1 -> v2: words/turn 33.7/32.7 -> 20.9/18.7; question-ending 62%/76% -> 13%/29%; stock phrases per call 1.8/2.7 -> 0.7/0; flash-lite agenda turns 100% -> 51%. Judges split: v2 won busy/chatty/skeptic, v1 won worried/angry/confused (concrete answers) until fixed.",
+   "n": "6 simulated callers x 10 turns per brain per brief",
+   "method": "convo_bench.py, GPT-4.1 caller, blind pairwise judges",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.hangup-guard",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Abrupt agent hang-ups in simulated calls: 17-40% unguarded -> 0 with hangup_ok.",
+   "n": "bench calls across brains (text)",
+   "method": "convo_bench.py she_hung_up / abrupt_hangup metrics",
+   "path": "voicelab/evals/convo_bench.py"
+  },
+  {
+   "id": "measure.2026-10-20.brain-bakeoff-v2",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Brains on brief v2, win % (GPT-4.1 judge / Gemini 3.8 Flash judge): Gemini 3.8 Flash 65/75; DeepSeek V4.1 Flash 57/76 (romanised Hindi 4/call); Gemini 3.6 Flash 48/77; Gemini 3.5 Flash-Lite 52/61; GPT-5.4 mini 59/48; GPT-5.6 Sol 61/43; GPT-5.6 Terra 44/38; GPT-6 Sol 39/28; GPT-4.1 mini 46/25; GPT-6 Luna 28/30.",
+   "n": "540 blind pairwise verdicts; 6 callers x 10 turns per brain",
+   "method": "convo_bench.py from the US sandbox (this run triggered the Vertex restriction)",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.brain-ttft-india-v2",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Brain first token from India, v2 brief (ms): gpt-oss@groq 535; GPT-4.1 mini 567; Gemini 3.5 Flash-Lite 699; GPT-5.4 mini 960; Gemini 3.6 Flash 1102 (p90 13.3 s); GPT-5.6 Sol (OR) 1174; GPT-6 Luna (OR) 1438; GPT-5.6 Terra (OR) 1604; GPT-6 Sol (OR) 1739; Gemini 3.8 Flash 1991 (thinking floor \"low\"); DeepSeek V4.1 Flash 2800.",
+   "n": "n=5 per brain, medians",
+   "method": "voice_bench.py from vl-vm-cin",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.voice-first-audio-india",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Voice first audio from India (ms): Azure MAI-Voice-2.1-Flash 425; Gemini 3.8 Flash-Lite TTS stream 624; Gemini 3.8 Flash TTS stream 772; Gemini TTS via Interactions API 4,700-5,100.",
+   "n": "n=5 (Interactions n=15)",
+   "method": "voice_bench.py from vl-vm-cin",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.round2-smoke",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Round-2 smoke reply gap from India: v2-live 0.79-1.55 s; v2-flashlite 1.6-2.2; v2-54mini 2.0-2.6; v2-luna 1.9-3.3; v2-38flash 2.9-4.2.",
+   "n": "1 call x ~3 replies per stack",
+   "method": "sim_caller.py from the VM",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "measure.2026-10-20.openrouter-gemini-latency",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Via OpenRouter from India: Gemini 3.5 Flash-Lite brain 0.91 s, 3.8 Flash 2.18 s first token (direct 0.70/1.99; AI Studio provider once 12.8 s, so pin google-vertex); Gemini 3.8 Flash-Lite / Flash TTS 2.14/2.20 s first audio, not progressive (direct stream 0.62/0.77); v2-flashlite-or reply gap 2.8-3.1 s; 3.8 Flash + Flash TTS via OR 3.8-6.4 s.",
+   "n": "n=4",
+   "method": "voice_bench.py + sim_caller.py from the VM"
+  },
+  {
+   "id": "measure.2026-10-20.vertex-usage-before-restriction",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "vp-voice Vertex usage before restriction: ~730 requests, <USD 1; ~128 from the India VM over 19-20 Oct, ~600 from the US sandbox in one hour (08:00-09:00 UTC 20 Oct), one SA key.",
+   "n": "all requests 19-20 Oct",
+   "method": "lab logs + bench logs",
+   "path": "research/2026-10-20/voicelab/google-access.md"
+  },
+  {
+   "id": "measure.2026-10-20.openrouter-balance",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "OpenRouter: the key's limit read $49.8 but the account balance was $5.51 (/api/v1/credits).",
+   "n": "n=1 read",
+   "method": "OpenRouter credits API"
+  },
+  {
+   "id": "rejected.2026-10-20.brief-v1",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Brief v1 (agenda without state, humanness rules mid-brief, ~12 question-asking instructions, empathy phrased as labels).",
+   "tried": "Brief v1 (agenda without state, humanness rules mid-brief, ~12 question-asking instructions, empathy phrased as labels).",
+   "broke": "Every stack sounded robotic: 53% question endings, 21% AI restatements, agenda repeated, \"mai samajh sakti hu\"; brains invented the caller's name; Hindi romanised when the script rule moved mid-brief."
+  },
+  {
+   "id": "rejected.2026-10-20.gemini-tts-style-prefix",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "\"Say in a <style> tone:\" text prefix to steer Gemini 3.8 TTS.",
+   "tried": "\"Say in a <style> tone:\" text prefix to steer Gemini 3.8 TTS.",
+   "broke": "Spoken aloud on real Hindi calls (testers heard \"say in a warm tone\"); the earlier g5 check that said otherwise was wrong.",
+   "reverse_if": "Google documents a prefix the model does not speak."
+  },
+  {
+   "id": "rejected.2026-10-20.gemini-tts-interactions-live",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Gemini 3.8 TTS through the Interactions API (speech_metadata style, 8 kHz mu-law, tags not spoken).",
+   "tried": "Gemini 3.8 TTS through the Interactions API (speech_metadata style, 8 kHz mu-law, tags not spoken).",
+   "broke": "First audio 4.7-5.1 s from India (n=15); L16 there did not stream (3.8-4.9 s).",
+   "reverse_if": "Google publishes a low-latency style path."
+  },
+  {
+   "id": "rejected.2026-10-20.silent-fallback-in-tests",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Automatic voice/brain fallback during test calls (Gemini TTS -> Flash-Lite -> Azure; gpt-oss Groq -> Azure).",
+   "tried": "Automatic voice/brain fallback during test calls (Gemini TTS -> Flash-Lite -> Azure; gpt-oss Groq -> Azure).",
+   "broke": "A Google 503 swapped in an Azure voice under an \"out of quota\" message; the tester rated a voice that was not the stack's.",
+   "reverse_if": "Only for production calls under an explicit, disclosed failover policy."
+  },
+  {
+   "id": "rejected.2026-10-20.preset-override-attribution",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Filing a call under the preset clicked even when its brain/voice was changed.",
+   "tried": "Filing a call under the preset clicked even when its brain/voice was changed.",
+   "broke": "v2-flashlite calls ran gpt-5.4-mini and v2-54mini calls ran flash-lite, under the wrong names."
+  },
+  {
+   "id": "rejected.2026-10-20.google-from-sandbox",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Running Google-credentialed eval batches from the coding agent's US sandbox.",
+   "tried": "Running Google-credentialed eval batches from the coding agent's US sandbox.",
+   "broke": "One SA key used from two countries + ~600 requests/hour on a fresh free-trial project; Google restricted Vertex on vp-voice the same day.",
+   "reverse_if": "Never with the same key; only via a Google-sanctioned batch path."
+  },
+  {
+   "id": "rejected.2026-10-20.free-key-rotation",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Per-call rotation across ~40 free Gemini API keys from personal, company and friends' accounts (owner asked 2026-10-18 and again 2026-10-20).",
+   "tried": "Per-call rotation across ~40 free Gemini API keys from personal, company and friends' accounts (owner asked 2026-10-18 and again 2026-10-20).",
+   "broke": "Circumvents Google's per-account rate limits against the Gemini API terms; would jeopardise the open Vertex appeal and every linked account; keys and pasted passwords exposed in chat. Declined both times; keys never stored or used."
+  },
+  {
+   "id": "rejected.2026-10-20.gemini-tier1-for-volume",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Gemini API Tier 1 keys as the production voice path.",
+   "tried": "Gemini API Tier 1 keys as the production voice path.",
+   "broke": "100 requests/day per model for 3.8 Flash TTS; four testers exhausted it in an hour.",
+   "reverse_if": "Tier 2+ limits measured adequate, or Vertex quotas confirmed for production."
+  },
+  {
+   "id": "rejected.2026-10-20.grok-4.7",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "grok-4.7 as a brain (deployed in vp-lab-ai-sin).",
+   "tried": "grok-4.7 as a brain (deployed in vp-lab-ai-sin).",
+   "broke": "24.8 s to first token (reasoning model); unusable for live turns. Removed from the catalog.",
+   "reverse_if": "A non-reasoning low-latency variant appears."
+  },
+  {
+   "id": "rejected.2026-10-19.plivo-l16",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Plivo L16 16 kHz audio on the stream.",
+   "tried": "Plivo L16 16 kHz audio on the stream.",
+   "broke": "Byte order undocumented; risk of noise on every call.",
+   "reverse_if": "Plivo documents it."
+  },
+  {
+   "id": "rejected.2026-10-20.raw-fact-memory",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Per-tester memory that stored whatever the call said.",
+   "tried": "Per-tester memory that stored whatever the call said.",
+   "broke": "Accumulated the brief's facts, contradictions and gender errors and re-injected them each call."
+  },
+  {
+   "id": "rejected.2026-10-20.or-key-limit-as-balance",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Reading the OpenRouter key's limit as available credit.",
+   "tried": "Reading the OpenRouter key's limit as available credit.",
+   "broke": "Reported $49.8 to the owner; real balance $5.51 (my error)."
+  },
+  {
+   "id": "rejected.2026-10-20.unguarded-hangup",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Letting the brain end the call whenever it emits the marker.",
+   "tried": "Letting the brain end the call whenever it emits the marker.",
+   "broke": "Abrupt hang-ups on 17-40% of simulated endings (mid-question, no goodbye)."
+  },
+  {
+   "id": "risk.2026-10-20.google-dependency",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Gemini voice/ears depend on Google access that was restricted without a stated reason; a product default on Gemini TTS needs a second voice path ready (MAI-Voice measured 425 ms) and clean account hygiene (one region, slow ramps, no shared keys).",
+   "mitigation": "MAI-Voice stack kept in round 2; google-from-india-only rule."
+  },
+  {
+   "id": "risk.2026-10-20.secrets-pasted",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Credentials were pasted in chat: Vertex SA key (vp-voice), Plivo auth token, OpenRouter key, Sarvam key, ~40 free Gemini keys and several CarbonSettle mailbox passwords.",
+   "mitigation": "Owner advised: delete the SA key before the appeal, delete the free keys, change the pasted passwords, regenerate the Plivo token after testing. Not confirmed done."
+  },
+  {
+   "id": "risk.2026-10-20.gemini-3.1-live-sunset",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Round-1 best-rated stack (Gemini 3.1 Flash Live, Maya's model) shuts down 2026-11-17; not on Vertex.",
+   "mitigation": "Round 2 tests Gemini 3.8 Live as its successor."
+  },
+  {
+   "id": "risk.2026-10-20.trial-expiries",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Plivo trial credit Rs 764 expires 2026-11-16 with a Rs 80 monthly usage limit; vp-voice free credit expires 2026-11-15 (and is restricted).",
+   "mitigation": "Owner decides on Plivo recharge (Rs 2,000 minimum + Rs 40 fee) when phone testing resumes."
+  },
+  {
+   "id": "risk.2026-10-20.carbonsettle-account-exposure",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "The paid Vertex project is on CarbonSettle's main Google account (compliance@carbonsettle.com); if reviewers link it to vp-voice, action lands on CarbonSettle's account.",
+   "mitigation": "India-VM-only use, low volume, slow ramp; owner told; a fresh Vyakti-only account is the safer alternative."
+  },
+  {
+   "id": "risk.2026-10-20.caller-id-spoofing",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Missed-call verification trusts caller ID, which can be spoofed.",
+   "mitigation": "Passcode-gated lab, 20 calls/number/day; product needs real auth."
+  },
+  {
+   "id": "open.2026-10-20.round2-human-ratings",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Round-2 human ratings of the v2 stacks (the decider for the default stack and for reversing brief v2).",
+   "closes_when": "Paid Vertex back, then >=3 testers x every round-2 stack, rated on the lab form."
+  },
+  {
+   "id": "open.2026-10-20.handset-reply-gap",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Reply gap measured at the handset on a real PSTN call (only the server gap is known).",
+   "closes_when": "Stereo recording of a real call from the handset side, or a loopback phone."
+  },
+  {
+   "id": "open.2026-10-20.live-affective",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Whether Gemini 3.8 Live keeps \"affective\" behaviour now that the config field is gone.",
+   "closes_when": "Blind listening of 3.8 Live vs 3.1 Live on the same lines."
+  },
+  {
+   "id": "open.2026-10-20.sound-tags-audible",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Are <laugh>/<sigh>/<breath> tags audible and natural on the fast Gemini TTS path (not spoken as words, n=6 STT; audibility unverified)?",
+   "closes_when": "Listener check on 10+ tagged lines."
+  },
+  {
+   "id": "open.2026-10-20.luna-by-ear",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "GPT-6 Luna: owner's pick, judged last by both LLM judges; confirm by ear.",
+   "closes_when": "Rate v2-luna (off-tour) in round 2."
+  },
+  {
+   "id": "open.2026-10-20.default-stack",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Product default voice stack (owner leans Gemini TTS; ears Gemini; brain between Gemini 3.5 Flash-Lite, GPT-5.4 mini, Gemini 3.8 Flash; or 3.8 Live speech-to-speech).",
+   "closes_when": "Round-2 ratings + India latency + cost per minute under the tier prices."
+  },
+  {
+   "id": "open.2026-10-20.product-failover-policy",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Production calls need availability (fallback) while tests need attribution (no swaps). What does the product do when a component fails mid-call: disclosed same-voice fallback, graceful end, or retry?",
+   "closes_when": "Owner decision in the product brief."
+  },
+  {
+   "id": "open.2026-10-20.paid-vertex",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Paid Vertex project voicelab-india on compliance@carbonsettle.com via Instinct: pending; vp-voice appeal submission unconfirmed.",
+   "closes_when": "Owner sends the SA JSON (runbook in google-access.md) or Google replies."
+  },
+  {
+   "id": "open.2026-10-20.product-brief",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "The owner's product brief (what to build start to end and how to proceed) is the next input.",
+   "closes_when": "Owner message."
+  },
+  {
+   "id": "asset.voicelab.agenda-ledger",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Agenda ledger: per-turn state derived in code from the transcript (spent facts, disclosure done, offers+outcomes, wrong numbers, laugh cap, goal stall, ready-to-finish), appended last as a system note.",
+   "value": "high",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/persona_v2.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.hangup-guard",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Agent hang-up with guard (goodbye required, not after a caller question, 1.5 s beat, stays if the caller speaks), across cascade marker and S2S tool.",
+   "value": "high",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/persona_v2.py",
+    "voicelab/server/calls.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.combo-identity",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Canonical combination identity for every call + invalidate-with-exact-reason, so analytics and A/B results are filed under what actually ran.",
+   "value": "high",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/app.py",
+    "voicelab/server/calls.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.stack-adapters",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Interchangeable STT/brain/TTS/S2S adapters with measured ttft and price metadata (Azure, MAI-Voice, Gemini API/Vertex/Live, OpenRouter, Sarvam) and a build-your-own selector.",
+   "value": "high",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/providers.py",
+    "voicelab/server/catalog.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.turn-taking",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Turn release on latest final, continuation-word hold, withdraw/interrupt with history truncated to what was heard, backchannel logging.",
+   "value": "high",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/calls.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.plivo-line",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "PlivoLine: PSTN leg as a drop-in for the browser socket (mu-law codec, FIR resamplers, clearAudio on barge-in, HMAC path-secret webhooks).",
+   "value": "high",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/phone.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.missed-call-verify",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Missed-call phone-number verification (free, no SMS/DLT).",
+   "value": "medium",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/phone.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.convo-bench",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Conversation bake-off: simulated caller profiles, repetition/agenda/question/hang-up metrics, blind cross-family pairwise judges.",
+   "value": "high",
+   "effort": "reuse",
+   "paths": [
+    "voicelab/evals/convo_bench.py"
+   ]
+  },
+  {
+   "id": "asset.voicelab.cost-meter",
+   "type": "asset",
+   "status": "prototype",
+   "source": "voicelab",
+   "date": "2026-10-20",
+   "title": "Per-component metered cost per call (Rs at 95/$) incl. phone minutes.",
+   "value": "medium",
+   "effort": "port",
+   "paths": [
+    "voicelab/server/calls.py"
+   ]
+  },
+  {
+   "id": "evidence.2026-10-20.round1-review",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Voice lab round-1 review and round-2 system (ratings, robotic signature, brief v1->v2, bake-off, India latency, round-2 stacks, not-measured list).",
+   "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "id": "evidence.2026-10-20.google-access",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vertex restriction record, appeal text, paid-project Instinct prompt and the switch-back runbook.",
+   "path": "research/2026-10-20/voicelab/google-access.md"
+  },
+  {
+   "id": "evidence.2026-10-19.phone-leg-desk",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-19",
+   "title": "Desk research: India CPaaS for the phone leg (Plivo, Exotel, others) and provider API notes.",
+   "path": "research/2026-10-19/voicelab/desk/phone-leg.md"
+  },
+  {
+   "id": "open.2026-10-20.reprice-tiers",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Re-price the proposed tiers for the stack that wins round 2: the proposed Base (C6g: gpt-oss + stock Azure neural voice) is contradicted by round 1 (Azure-voice stacks 1.5-4.5/10, 0 would pick; owner wants a better brain than gpt-oss). Nearest measured candidate: all-Gemini G-A AI Rs 1.56/min (2026 prices), 1.92 (2027).",
+   "closes_when": "Default stack chosen (open.2026-10-20.default-stack), then pricing_model.py re-run with its measured cost."
   }
  ],
  "edges": [
@@ -19479,6 +20464,651 @@
    "from": "rejected.2026-10-19.maya-1p3",
    "to": "open.2026-10-18.maya-1p3-claim",
    "relation": "closes"
+  },
+  {
+   "from": "directive.2026-10-19.hear-before-choose",
+   "to": "directive.2026-10-18.voice-core",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.human-conversation",
+   "to": "directive.2026-10-18.voice-core",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.world-class-telecalling",
+   "to": "directive.2026-10-18.voice-core",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.agent-hangup",
+   "to": "directive.2026-10-18.voice-core",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.product-phase",
+   "to": "directive.2026-10-18.self-serve",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.context-before-compact",
+   "to": "directive.2026-10-15.context-graph",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.stop-and-wait",
+   "to": "directive.2026-10-20.openrouter-gemini",
+   "relation": "supersedes"
+  },
+  {
+   "from": "component.voicelab.calls",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.providers",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.catalog",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.persona-v2",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.phone",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.app",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.web",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.convo-bench",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.harnesses",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab.ops",
+   "to": "component.voicelab",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.azure.vl-vm-cin",
+   "to": "component.azure.vp-research-rg",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.azure.vp-lab-accounts",
+   "to": "component.azure.vp-research-rg",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.voicelab",
+   "to": "component.azure.vl-vm-cin",
+   "relation": "lives-in"
+  },
+  {
+   "from": "component.voicelab.phone",
+   "to": "component.plivo.vp-voicelab",
+   "relation": "requires"
+  },
+  {
+   "from": "component.voicelab.providers",
+   "to": "component.gcp.vp-voice",
+   "relation": "requires"
+  },
+  {
+   "from": "component.voicelab",
+   "to": "directive.2026-10-19.hear-before-choose",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.phone",
+   "to": "directive.2026-10-19.group-testing",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab",
+   "to": "decision.2026-10-19.voicelab-shape",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.phone",
+   "to": "decision.2026-10-19.plivo-mulaw",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.phone",
+   "to": "decision.2026-10-19.missed-call-verify",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.persona-v2",
+   "to": "decision.2026-10-20.brief-v2-ledger",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.persona-v2",
+   "to": "decision.2026-10-20.agent-hangup-guard",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.calls",
+   "to": "decision.2026-10-20.agent-hangup-guard",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.persona-v2",
+   "to": "decision.2026-10-20.sound-tags-gemini-only",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.app",
+   "to": "decision.2026-10-20.preference-only-memory",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.catalog",
+   "to": "decision.2026-10-20.round2-stacks",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.calls",
+   "to": "decision.2026-10-20.no-midcall-swaps",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.app",
+   "to": "decision.2026-10-20.no-midcall-swaps",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.app",
+   "to": "decision.2026-10-20.combo-identity",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.web",
+   "to": "decision.2026-10-20.combo-identity",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.providers",
+   "to": "decision.2026-10-20.google-from-india-only",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.catalog",
+   "to": "decision.2026-10-20.openrouter-explicit",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.providers",
+   "to": "decision.2026-10-20.or-balance-preflight",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab",
+   "to": "decision.2026-10-20.pause-lab",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.catalog",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "implements"
+  },
+  {
+   "from": "component.voicelab.persona-v2",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-20.brief-v2-ledger",
+   "to": "directive.2026-10-20.human-conversation",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.brief-v2-ledger",
+   "to": "directive.2026-10-20.world-class-telecalling",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.agent-hangup-guard",
+   "to": "directive.2026-10-20.agent-hangup",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.no-midcall-swaps",
+   "to": "directive.2026-10-20.no-midcall-swap",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.combo-identity",
+   "to": "directive.2026-10-20.no-midcall-swap",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.openrouter-explicit",
+   "to": "directive.2026-10-20.openrouter-gemini",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.pause-lab",
+   "to": "directive.2026-10-20.stop-and-wait",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.product-stack-selectable",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.context-protocol",
+   "to": "directive.2026-10-20.context-before-compact",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.round2-stacks",
+   "to": "directive.2026-10-20.world-class-telecalling",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-19.missed-call-verify",
+   "to": "directive.2026-10-19.group-testing",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.google-from-india-only",
+   "to": "decision.2026-10-18.no-free-key-rotation",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-18.provider-open",
+   "to": "directive.2026-10-15.azure-only",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-19.plivo-mulaw",
+   "to": "directive.2026-10-15.telephony-later",
+   "relation": "challenges"
+  },
+  {
+   "from": "decision.2026-10-20.brief-v2-ledger",
+   "to": "asset.hp-maya-latest.loop-repeat-fence",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.brief-v2-ledger",
+   "to": "asset.hp-maya-latest.single-compiler-with-core-tail-budget-gate",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.context-protocol",
+   "to": "asset.hp-maya-latest.context-memory-system",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-20.round1-ratings",
+   "to": "decision.2026-10-20.brief-v2-ledger",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.robotic-signature",
+   "to": "decision.2026-10-20.brief-v2-ledger",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.brief-v1-v2",
+   "to": "decision.2026-10-20.brief-v2-ledger",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.hangup-guard",
+   "to": "decision.2026-10-20.agent-hangup-guard",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.brain-bakeoff-v2",
+   "to": "decision.2026-10-20.round2-stacks",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.brain-ttft-india-v2",
+   "to": "decision.2026-10-20.round2-stacks",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.voice-first-audio-india",
+   "to": "decision.2026-10-20.round2-stacks",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.round2-smoke",
+   "to": "decision.2026-10-20.round2-stacks",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.openrouter-gemini-latency",
+   "to": "decision.2026-10-20.openrouter-explicit",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.vertex-usage-before-restriction",
+   "to": "decision.2026-10-20.google-from-india-only",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.openrouter-balance",
+   "to": "decision.2026-10-20.or-balance-preflight",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-19.gemini-tts-tier1-cap",
+   "to": "decision.2026-10-20.pause-lab",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-19.plivo-sim-gap",
+   "to": "decision.2026-10-19.plivo-mulaw",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-19.lab-smoke-india",
+   "to": "component.voicelab",
+   "relation": "verifies-bounded-local"
+  },
+  {
+   "from": "measure.2026-10-20.round1-ratings",
+   "to": "measure.2026-10-18.stack-gemini-3-1-flash-live-meera-s--13",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.brief-v2-ledger",
+   "to": "rejected.2026-10-20.brief-v1",
+   "relation": "supersedes"
+  },
+  {
+   "from": "rejected.2026-10-20.gemini-tts-style-prefix",
+   "to": "decision.2026-10-20.sound-tags-gemini-only",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-20.gemini-tts-interactions-live",
+   "to": "measure.2026-10-20.voice-first-audio-india",
+   "relation": "from"
+  },
+  {
+   "from": "decision.2026-10-20.no-midcall-swaps",
+   "to": "rejected.2026-10-20.silent-fallback-in-tests",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-20.combo-identity",
+   "to": "rejected.2026-10-20.preset-override-attribution",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-20.google-from-india-only",
+   "to": "rejected.2026-10-20.google-from-sandbox",
+   "relation": "supersedes"
+  },
+  {
+   "from": "rejected.2026-10-20.free-key-rotation",
+   "to": "decision.2026-10-18.no-free-key-rotation",
+   "relation": "extends"
+  },
+  {
+   "from": "rejected.2026-10-20.gemini-tier1-for-volume",
+   "to": "measure.2026-10-19.gemini-tts-tier1-cap",
+   "relation": "from"
+  },
+  {
+   "from": "rejected.2026-10-19.plivo-l16",
+   "to": "decision.2026-10-19.plivo-mulaw",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.preference-only-memory",
+   "to": "rejected.2026-10-20.raw-fact-memory",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-20.or-balance-preflight",
+   "to": "rejected.2026-10-20.or-key-limit-as-balance",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-20.agent-hangup-guard",
+   "to": "rejected.2026-10-20.unguarded-hangup",
+   "relation": "supersedes"
+  },
+  {
+   "from": "risk.2026-10-20.google-dependency",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "constrains"
+  },
+  {
+   "from": "risk.2026-10-20.carbonsettle-account-exposure",
+   "to": "decision.2026-10-20.pause-lab",
+   "relation": "constrains"
+  },
+  {
+   "from": "risk.2026-10-20.caller-id-spoofing",
+   "to": "decision.2026-10-19.missed-call-verify",
+   "relation": "constrains"
+  },
+  {
+   "from": "risk.2026-10-20.trial-expiries",
+   "to": "component.plivo.vp-voicelab",
+   "relation": "constrains"
+  },
+  {
+   "from": "open.2026-10-20.round2-human-ratings",
+   "to": "decision.2026-10-20.brief-v2-ledger",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-20.default-stack",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.product-failover-policy",
+   "to": "decision.2026-10-20.no-midcall-swaps",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.paid-vertex",
+   "to": "decision.2026-10-20.pause-lab",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.luna-by-ear",
+   "to": "measure.2026-10-20.brain-bakeoff-v2",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-20.product-brief",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.round2-human-ratings",
+   "to": "open.2026-10-20.default-stack",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-20.paid-vertex",
+   "to": "open.2026-10-20.round2-human-ratings",
+   "relation": "informs"
+  },
+  {
+   "from": "asset.voicelab.agenda-ledger",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.agenda-ledger",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.hangup-guard",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.hangup-guard",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.combo-identity",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.combo-identity",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.stack-adapters",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.stack-adapters",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.turn-taking",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.turn-taking",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.plivo-line",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.plivo-line",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.missed-call-verify",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.missed-call-verify",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.convo-bench",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.convo-bench",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "asset.voicelab.cost-meter",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.voicelab.cost-meter",
+   "to": "component.voicelab",
+   "relation": "lives-in"
+  },
+  {
+   "from": "measure.2026-10-20.round1-ratings",
+   "to": "evidence.2026-10-20.round1-review",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-20.brief-v1-v2",
+   "to": "evidence.2026-10-20.round1-review",
+   "relation": "from"
+  },
+  {
+   "from": "measure.2026-10-20.brain-bakeoff-v2",
+   "to": "evidence.2026-10-20.round1-review",
+   "relation": "from"
+  },
+  {
+   "from": "decision.2026-10-19.plivo-mulaw",
+   "to": "evidence.2026-10-19.phone-leg-desk",
+   "relation": "derived-from"
+  },
+  {
+   "from": "component.gcp.vp-voice",
+   "to": "evidence.2026-10-20.google-access",
+   "relation": "best-source"
+  },
+  {
+   "from": "measure.2026-10-20.round1-ratings",
+   "to": "decision.2026-10-19.tier-base",
+   "relation": "challenges"
+  },
+  {
+   "from": "directive.2026-10-19.hear-before-choose",
+   "to": "decision.2026-10-19.tier-base",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-20.reprice-tiers",
+   "to": "decision.2026-10-19.tier-base",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-20.reprice-tiers",
+   "to": "measure.2026-10-18.stack-g-a-7",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-20.default-stack",
+   "to": "open.2026-10-20.reprice-tiers",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-20.default-stack",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "requires"
+  },
+  {
+   "from": "decision.2026-10-20.round2-stacks",
+   "to": "open.2026-10-18.s2s-vs-gate-law",
+   "relation": "leaves-open"
   }
  ]
 }

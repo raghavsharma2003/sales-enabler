@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/scripts/context.mjs\"; [ -f \"$f\" ] || f=\"$CLAUDE_PROJECT_DIR/sales-enabler/scripts/context.mjs\"; [ -f \"$f\" ] && node \"$f\" --brief 2>/dev/null || true",
+            "timeout": 30,
+            "statusMessage": "Loading project direction and log debt"
+          }
+        ]
+      }
+    ]
+  }
+}
