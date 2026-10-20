@@ -12120,7 +12120,8 @@
    "source": "user",
    "date": "2026-10-20",
    "title": "Owner clarification (correcting a misreading): Opus 5.5 at extra-high is for the main chat only. Workflows, subagents and parallel agents get the model and effort the use case needs, by how much strength, intelligence and effort it requires.",
-   "quote": "opus 5.5 extra high in this main chat rest places for workflows and sub and parallel agents choose the model depending on the usecase"
+   "quote": "opus 5.5 extra high in this main chat rest places for workflows and sub and parallel agents choose the model depending on the usecase",
+   "rationale_owner": "A mixture of models and efforts gives better performance at lower tokens; invest more where great intelligence is needed."
   },
   {
    "id": "decision.2026-10-20.account-restart-opus55",
@@ -12131,6 +12132,16 @@
    "title": "Owner judged the first authorized-surface run under-powered and asked for a restart on Opus 5.5 (Sonnet 5.5 at least if Opus errors). Stopped wf_1e4d0167-0c8 (nothing had finished) and relaunched as wf_b9977e22-228 with no model override, so every agent inherits the session model claude-opus-5-5; effort xhigh for the Bolna ground-truth lane and the synthesis, high for the four vendor API/SDK lanes; any agent that dies on a terminal error reruns once on Sonnet 5.5 (labelled :sonnet-fallback).",
    "rationale": "Owner instruction for this run; inheriting the session model is the most reliable way to pin Opus 5.5, and the fallback keeps a lane from silently disappearing.",
    "reverse_if": "Fallback labels show Opus 5.5 failing systematically (then run the lanes on Sonnet 5.5 deliberately), or the owner redirects."
+  },
+  {
+   "id": "decision.2026-10-20.account-mixed-tiers",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Authorized account phase relaunched as wf_36b25033-85c with mixed tiers per the ladder: Opus 5.5 (inherited session model) at xhigh for the Bolna ground-truth lane and the cross-vendor synthesis; Sonnet 5.5 at high for the four standard vendor API/SDK lanes (Vapi, Retell, ElevenLabs, Sarvam), which the Opus synthesis cross-checks. Each agent that dies on a terminal error reruns once on the other tier (label :fallback-opus or :fallback-sonnet). Restart cost: a few minutes of in-flight Bolna work; nothing had completed.",
+   "rationale": "Owner directive: a mix of models and efforts gives better performance per token; invest the strongest model where intelligence matters most.",
+   "reverse_if": "The synthesis finds the Sonnet lanes' claims materially weaker or wrong (rerun those lanes on Opus 5.5), or fallbacks fire systematically on one tier."
   }
  ],
  "edges": [
@@ -21540,6 +21551,16 @@
    "from": "decision.2026-10-20.account-restart-opus55",
    "to": "directive.2026-10-20.model-clarified",
    "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.account-mixed-tiers",
+   "to": "decision.2026-10-20.account-restart-opus55",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-20.account-mixed-tiers",
+   "to": "decision.2026-10-20.model-selection",
+   "relation": "implements"
   }
  ]
 }
