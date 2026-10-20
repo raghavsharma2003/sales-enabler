@@ -51,6 +51,14 @@ BRAINS = {
                           'in': 4.0, 'out': 20.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
     'gpt-5.6-terra@or':  {'ttft_ms': 1604, 'label': 'GPT-5.6 Terra (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-terra', 'provider': 'openai',
                           'in': 2.0, 'out': 12.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
+    # Gemini through OpenRouter (pinned to its Google Vertex route), for while the lab's own Gemini keys are capped and
+    # vp-voice's Vertex access is under appeal (2026-10-20). India first token: Flash-Lite 0.91 s, 3.8 Flash 2.18 s (n=4).
+    'gemini-3.5-flash-lite@or': {'ttft_ms': 910, 'label': 'Gemini 3.5 Flash-Lite via OpenRouter', 'host': 'or', 'model': 'google/gemini-3.5-flash-lite',
+                          'provider': 'google-vertex', 'in': 0.30, 'out': 2.50, 'extra': {'reasoning': {'effort': 'minimal', 'exclude': True}}},
+    'gemini-3.6-flash@or': {'label': 'Gemini 3.6 Flash via OpenRouter', 'host': 'or', 'model': 'google/gemini-3.6-flash',
+                          'provider': 'google-vertex', 'in': 0.75, 'out': 3.75, 'extra': {'reasoning': {'effort': 'minimal', 'exclude': True}}},
+    'gemini-3.8-flash@or': {'ttft_ms': 2180, 'label': 'Gemini 3.8 Flash via OpenRouter', 'host': 'or', 'model': 'google/gemini-3.8-flash',
+                          'provider': 'google-vertex', 'in': 0.825, 'out': 4.125, 'extra': {'reasoning': {'effort': 'low', 'exclude': True}}, 'out_pad': 400},
     'gemini-3.1-flash-lite': {'ttft_ms': 2843, 'label': 'Gemini 3.1 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.1-flash-lite', 'in': 0.25, 'out': 1.50, 'thinking': {'thinkingLevel': 'minimal'}},
 }
 
@@ -78,6 +86,14 @@ TTS = {
     'gemini': {'label': 'Gemini 3.8 Flash TTS', 'kind': 'gemini', 'model': 'gemini-3.8-flash-tts', 'default_voice': 'Despina',
                'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
                'usd_audio_min': 9.0 * 25 * 60 / 1e6, 'src': 'g1: $9/1M audio tokens (doubles 2027-01-01)'},
+    # the same Gemini voices through OpenRouter: no streaming (the clip arrives whole, ~2.1 s first audio from India vs
+    # 0.6-0.8 s direct), but a real per-reply style instruction ('instructions'), so her tone can follow the moment
+    'gemini-lite-or': {'label': 'Gemini 3.8 Flash-Lite TTS via OpenRouter (styled, ~2 s start)', 'kind': 'or_tts', 'model': 'google/gemini-3.8-flash-lite-tts',
+               'default_voice': 'Despina', 'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
+               'usd_audio_min': 6.0 * 25 * 60 / 1e6, 'src': 'OpenRouter speech models API 2026-10-20: $0.5 in / $6 out per 1M (same as Google)'},
+    'gemini-or': {'label': 'Gemini 3.8 Flash TTS via OpenRouter (styled, ~2 s start)', 'kind': 'or_tts', 'model': 'google/gemini-3.8-flash-tts',
+               'default_voice': 'Despina', 'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
+               'usd_audio_min': 9.0 * 25 * 60 / 1e6, 'src': 'OpenRouter speech models API 2026-10-20: $0.5 in / $9 out per 1M'},
     'gemini-lite': {'label': 'Gemini 3.8 Flash-Lite TTS', 'kind': 'gemini', 'model': 'gemini-3.8-flash-lite-tts', 'default_voice': 'Despina',
                'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
                'usd_audio_min': 6.0 * 25 * 60 / 1e6, 'src': 'g1: $6/1M audio tokens'},
@@ -143,6 +159,9 @@ PRESETS = [
       stt='gemini', gated=True, brain='gemini-3.8-flash', tts='gemini-lite', brief='v2', round=2, new=True),
     P(id='v2-mai', label='v2 · Gemini ears + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', ref='round 2 · fastest voice, 0.43 s',
       stt='gemini', gated=True, brain='gemini-3.5-flash-lite', tts='azure-mai', brief='v2', round=2, new=True),
+    P(id='v2-flashlite-or', label='v2 · Gemini ears + Flash-Lite + Gemini voice, via OpenRouter (styled voice, starts ~1.5 s later)',
+      ref='round 2 · while the Gemini keys are capped', stt='gemini', gated=True, brain='gemini-3.5-flash-lite@or', tts='gemini-lite-or',
+      brief='v2', round=2, new=True),
     P(id='v2-luna', label='v2 · Gemini ears + GPT-6 Luna + Gemini voice', ref='owner’s pick, judged last in the bake-off, 1.4 s',
       stt='gemini', gated=True, brain='gpt-6-luna@or', tts='gemini-lite', brief='v2', new=True),
 ]

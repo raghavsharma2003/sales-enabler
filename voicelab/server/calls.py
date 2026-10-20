@@ -231,7 +231,7 @@ class Reply:
                         if not s: continue
                         if s[0] == '[':
                             m = TAG.match(buf)
-                            if m: self.style = m.group(1).strip().lower(); buf = buf[m.end():]; tag_done = True
+                            if m: self.style = re.sub(r'^tone:\s*', '', m.group(1).strip().lower()); buf = buf[m.end():]; tag_done = True
                             elif len(s) > 64: tag_done = True
                             else: continue
                         else: tag_done = True
@@ -314,7 +314,8 @@ class Reply:
             seg2 = None; seg2_q = asyncio.Queue()
             async def produce(text, out_q, usage, timing):
                 try:
-                    async for ch in pv.gemini_tts(c.http, t['model'], c.voice, text, self.style if c.notes else None, usage, timing):
+                    gen = (pv.or_tts if t['kind'] == 'or_tts' else pv.gemini_tts)(c.http, t['model'], c.voice, text, self.style if c.notes else None, usage, timing)
+                    async for ch in gen:
                         await out_q.put(ch)
                 finally:
                     await out_q.put(None)
@@ -400,8 +401,10 @@ class CascadeCall(Call):
         if self.v2(): self.memory = lab.memory_get(cfg['tester'], cfg['scenario'] + '-v2')     # fresh, cleaner memory for v2
         styles = TTS[self.tts].get('styles') if TTS[self.tts].get('emotion') else None
         if self.v2():
-            self.notes = bool(TTS[self.tts].get('emotion'))           # MAI-Voice: a free-form tone per reply picks its style
-            self.sounds = TTS[self.tts]['kind'] == 'gemini'            # Gemini 3.8 TTS understands <laugh>/<sigh>/<breath>
+            kind = TTS[self.tts]['kind']
+            # a free-form tone per reply: picks MAI-Voice's style, or becomes the Gemini-via-OpenRouter 'instructions'
+            self.notes = bool(TTS[self.tts].get('emotion')) or kind == 'or_tts'
+            self.sounds = kind in ('gemini', 'or_tts')                 # Gemini 3.8 TTS understands <laugh>/<sigh>/<breath>
             self.system = persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'], notes=self.notes, sounds=self.sounds)
         else: self.system = compile_prompt(cfg['scenario'], self.memory, notes=self.notes, note_styles=styles)
         self.history = [{'role': 'user', 'content': self.kickoff()}]

@@ -386,6 +386,26 @@ async def gemini_tts(http, model, voice, text, style, usage, timing):
     finally:
         r.release()
 
+async def or_tts(http, model, voice, text, instructions, usage, timing):
+    """Async generator of 24 kHz PCM from a Gemini TTS model through OpenRouter's speech endpoint. The audio arrives
+    whole (no progressive streaming); 'instructions' carries the delivery style, never the text."""
+    timing.setdefault('req', time.perf_counter())
+    body = {'model': model, 'input': text, 'voice': voice, 'response_format': 'pcm'}
+    if instructions: body['instructions'] = instructions
+    n = 0; odd = b''
+    async with http.post('https://openrouter.ai/api/v1/audio/speech', json=body, timeout=aiohttp.ClientTimeout(total=60, sock_read=30),
+                         headers={'Authorization': 'Bearer ' + env('OPENROUTER_API_KEY', ''), 'X-Title': 'vp-voicelab'}) as r:
+        if r.status != 200:
+            timing['err'] = f'{r.status} {(await r.text())[:300]}'; return
+        async for ch in r.content.iter_any():
+            ch = odd + ch
+            if len(ch) % 2: odd, ch = ch[-1:], ch[:-1]
+            else: odd = b''
+            if not ch: continue
+            timing.setdefault('first', time.perf_counter()); n += len(ch)
+            yield ch
+    usage['audio_s'] = n / 48000; usage['via'] = 'openrouter'
+
 def tts_usd(tts_id, chars=0, audio_s=0.0):
     t = TTS[tts_id]
     if 'usd_1m_chars' in t: return chars * t['usd_1m_chars'] / 1e6      # Azure, Sarvam: per character
