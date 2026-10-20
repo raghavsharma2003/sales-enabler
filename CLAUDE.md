@@ -38,6 +38,19 @@ directive wins. Example: Azure-only was superseded for the voice stack by `direc
   - then tell the owner it is safe.
 - **After a compaction,** clear any log debt the brief reports first. Mine the transcript if needed.
 
+## Model policy (owner directive 2026-10-20)
+
+**Opus 5.5 at extra-high effort is the main agent.** It orchestrates workflows and subagents across three tiers
+(`decision.2026-10-20.model-tiers`):
+
+| Tier | Use it for |
+|---|---|
+| Opus 5.5 | Judgment: synthesis, adversarial verification of architecture or decision claims, judge panels, product and system design, anything that becomes a `context/` decision |
+| Sonnet 5.5 | Execution: research and teardown lanes (browsing, captures, REA runs), build workstreams, tests |
+| Haiku 5.5 | Mechanical work: manifests, format conversion, link and secret scans, simple extraction, shaping inbox JSON |
+
+Never skip verification to save a tier. If limits bind, move work down a tier.
+
 ## Standing rules
 
 - **Secrets:**

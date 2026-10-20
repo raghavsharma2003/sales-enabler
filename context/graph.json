@@ -12045,6 +12045,25 @@
    "title": "Account-phase teardown proceeds on the owner's terms override (contract risk is Vyakti's: accounts may be closed; Exotel 6.2 also bears on Exotel as a future telephony partner). Lines kept regardless of terms: no bypassing authentication, captchas, bot protection or rate limits; no probing for other tenants' data or vulnerabilities; no copying code, UI or assets into VP; no prompt-extraction jailbreaks of their agents; synthetic data only, calls only to our own numbers, low load; redact auth tokens and cookies from every saved HAR; opt out of training on our data where offered before the first call.",
    "rationale": "Contract terms are the owner's risk to accept; the kept lines concern unauthorized access, IP and third parties, which an owner override does not change.",
    "reverse_if": "Legal advice says a specific activity creates liability beyond account loss, or a vendor objects in writing."
+  },
+  {
+   "id": "directive.2026-10-20.model-policy",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner model policy: Opus 5.5 at extra-high effort is the main agent; it orchestrates workflows and subagents across Opus 5.5, Sonnet 5.5 and Haiku 5.5.",
+   "quote": "opus 5.5 extra high should be the main agent here and you can orchestrate opus 5.5 and sonnet and haiku 5.5 workflows and subagents"
+  },
+  {
+   "id": "decision.2026-10-20.model-tiers",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Tier assignment: main loop Opus 5.5 (extra-high effort, set by the owner's session). Opus 5.5 subagents for judgment: synthesis, adversarial verification of architecture/decision claims, judge panels, product and system design, anything that becomes a context decision. Sonnet 5.5 for execution: research and teardown lanes (browsing, captures, REA runs), build workstreams, tests. Haiku 5.5 for mechanical work: manifests, format conversion, link and secret scans, simple extraction, inbox JSON shaping.",
+   "rationale": "Judgment errors compound into the graph and the product, so they get the strongest model; bulk execution is checked downstream by Opus verifiers, so it can run on a cheaper tier.",
+   "reverse_if": "Opus verifiers refute or downgrade a materially larger share of Sonnet-lane claims than of Opus-lane claims on comparable work, or usage limits bind on a tier (move work down, never skip verification)."
   }
  ],
  "edges": [
@@ -21394,6 +21413,11 @@
    "from": "evidence.2026-10-20.vendor-terms",
    "to": "risk.2026-10-20.vendor-terms",
    "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-20.model-tiers",
+   "to": "directive.2026-10-20.model-policy",
+   "relation": "derived-from"
   }
  ]
 }
