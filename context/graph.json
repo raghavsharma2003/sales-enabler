@@ -12077,7 +12077,7 @@
   {
    "id": "decision.2026-10-20.model-selection",
    "type": "decision",
-   "status": "confirmed",
+   "status": "superseded",
    "source": "model",
    "date": "2026-10-20",
    "title": "Per-task model and effort selection. Judge each task on five things: stakes (does the output become a decision, a graph node, product code or something the owner acts on), ambiguity/novelty, depth of reasoning, whether a stronger agent verifies it downstream, and volume. Default ladder: Opus 5.5 max/xhigh for product and system design, final synthesis, adversarial verification of decision-critical claims, security-sensitive code, judge panels; Opus 5.5 high for core build workstreams (voice runtime, data model), hard debugging, inference from ambiguous evidence (e.g. architecture from captures); Sonnet 5.5 high/medium for standard research lanes, feature code from a clear spec with tests, UI from a design; Sonnet 5.5 low or Haiku 5.5 medium for extraction, formatting, fixtures, synthetic data; Haiku 5.5 low for manifests, secret and link scans, inventories. Escalate: a task that fails verification or proves harder reruns one tier up. Never downgrade verification of a decision-critical claim.",
@@ -12093,6 +12093,25 @@
    "title": "Owner confirmed the four kept lines and said start. Launched the authorized-surface phase (workflow wf_1e4d0167-0c8): Bolna open-source code read in full + each vendor's own REST API/SDK on our own keys (Bolna, Vapi, Retell, ElevenLabs, Sarvam), documenting data model, endpoint surface, call lifecycle, webhook payloads, billing metering and config knobs, then an Opus cross-vendor synthesis. No browser logins, no outbound calls, no number purchases, no spend; synthetic data; keys sourced from the mode-600 scratchpad env, never printed. Outputs research/2026-10-20/account-phase/, raw data/account-phase/, graph proposals context/inbox/. Browser dashboard walk-throughs and the live call battery are held for a paced phase that needs the owner's login codes.",
    "rationale": "The API/SDK surface and Bolna's open code are fully authorized and reveal the real internals (data model, call lifecycle, billing) without touching any protection or other tenant.",
    "reverse_if": "A vendor API key is rejected (fall back to docs/OpenAPI for that lane), or the owner redirects scope."
+  },
+  {
+   "id": "directive.2026-10-20.opus-only",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: always Opus 5.5 on extra-high as the main AI, and Opus 5.5 only for every workflow agent and subagent; no Sonnet or Haiku. Building frontier product needs frontier models.",
+   "quote": "always 5.5 opus on xtra high as the main ai, in the workflow also update the old model to opus 5.5 only"
+  },
+  {
+   "id": "decision.2026-10-20.opus-only",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Every agent runs Opus 5.5: the main loop at extra-high (owner sets via /effort xhigh), and every workflow agent and subagent with model 'opus' and effort 'xhigh'. Sonnet and Haiku are not used. Supersedes the per-task model ladder. The two runs already in flight (wf_560edf6c-5d6, wf_1e4d0167-0c8) finish on the models they started with; every new workflow and subagent from this point uses Opus 5.5 xhigh.",
+   "rationale": "Owner directive: frontier product, frontier models throughout.",
+   "reverse_if": "Opus usage limits stall in-flight work (the owner then decides whether to allow a lower tier for bulk mechanical steps); never drop verification."
   }
  ],
  "edges": [
@@ -21472,6 +21491,16 @@
    "from": "decision.2026-10-20.account-authorized-launch",
    "to": "evidence.2026-10-20.teardown-brief",
    "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.opus-only",
+   "to": "directive.2026-10-20.opus-only",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.opus-only",
+   "to": "decision.2026-10-20.model-selection",
+   "relation": "supersedes"
   }
  ]
 }
