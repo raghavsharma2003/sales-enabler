@@ -1,0 +1,91 @@
+{
+ "date": "2026-10-20",
+ "fx_inr_per_usd": 95.0,
+ "platform": {
+  "usd_per_min": 0.08,
+  "burst_usd_per_min": 0.16,
+  "inr_per_min": 7.6,
+  "burst_inr_per_min": 15.2,
+  "plan_effective_usd_per_min": {
+   "Starter": 0.08,
+   "Creator": 0.08,
+   "Pro": 0.08,
+   "Scale": 0.08,
+   "Business": 0.08
+  },
+  "silence_billing": "silent periods billed at 5% of the per-minute rate (docs-md/eleven-agents__customization__llm__optimizing-costs.md)",
+  "text_message_usd": 0.003,
+  "src": "data/teardown/elevenlabs/pricing/elevenlabs.io_pricing_agents.html.txt (\"Additional call minutes cost $0.08 per minute (burst pricing $0.16 per minute ...)\"; LLM billed separately; ElevenLabs adds no telephony fee)"
+ },
+ "llm_passthrough_inr_per_min": {
+  "lo": 0.193,
+  "hi": 0.721,
+  "src": "research/2026-10-18/lanes/g4-market-selfhost/prices.csv rows gemini-3.1-flash-lite (INR 0.175/min with 83% cache) and gemini-3.5-flash-lite (INR 0.655/min no cache); x1.10 for the Vertex regional uplift stated in data/teardown/elevenlabs/docs-md/eleven-agents__customization__llm.md. ElevenAgents default LLM in the OpenAPI schema is gemini-2.5-flash (not priced in g4; same flash class)."
+ },
+ "telephony_inr_per_min": {
+  "plivo_or_exotel_inr": {
+   "lo": 0.38,
+   "hi": 0.6,
+   "src": "research/2026-10-17/lanes/l2-economics/report.md rows 10/12 and line 360: Plivo India INR 0.38/min (30 s pulse), INR 0.60 in a competitor comparison; Exotel rates are quote-gated"
+  },
+  "twilio_to_india_mobile_inr": {
+   "lo": 4.71,
+   "hi": 6.64,
+   "src": "research/2026-10-17/lanes/l2-economics/report.md row 12: Twilio India $0.0496-0.0699/min (outbound to India only from non-Indian numbers per the vapi lane)"
+  }
+ },
+ "all_in_inr_per_min": {
+  "standard_exotel_or_plivo": {
+   "lo": 8.17,
+   "hi": 8.92
+  },
+  "burst_exotel_or_plivo": {
+   "lo": 15.77,
+   "hi": 16.52
+  },
+  "standard_twilio": {
+   "lo": 12.5,
+   "hi": 14.96
+  }
+ },
+ "own_api_transfer_price": {
+  "asr_usd": 0.0065,
+  "tts_usd": 0.0141,
+  "sum_usd": 0.0206,
+  "platform_fee_over_own_api_x": 3.89,
+  "src": "data/teardown/elevenlabs/pricing/elevenlabs.io_pricing_api.html.txt (Scribe v2 Realtime $0.39/h; Flash/Turbo $0.04 per 1K chars); 352 chars/min from research/2026-10-18/lanes/g4-market-selfhost/findings.md"
+ },
+ "reconstructed_cogs_platform_inr_per_min": {
+  "components": {
+   "asr_own_gpu": {
+    "lo": 0.03,
+    "hi": 0.09,
+    "basis": "research/2026-10-18/lanes/g4-market-selfhost/findings.md self-host table: IndicConformer/Riva-class streaming ASR on L4/T4 at 30-70% utilisation (INR 0.03-0.09/min); assumed comparable to Scribe realtime cost"
+   },
+   "tts_own_gpu": {
+    "lo": 0.07,
+    "hi": 0.34,
+    "basis": "research/2026-10-18/lanes/g4-market-selfhost/findings.md: Veena/Orpheus-class 3B TTS on H100 INR 0.07-0.34/min across clouds/utilisation; assumed comparable to Eleven v4 Turbo"
+   },
+   "media_orchestration": {
+    "lo": 0.1,
+    "hi": 0.95,
+    "basis": "upper bound = LiveKit Cloud agent-session list $0.01/min (pricing-history.json LiveKit 2026-10-17) x 95; self-hosted LiveKit on GCP (observed livekit.rtc.*.elevenlabs.io on GCP) should be below it; lower bound assumed"
+   }
+  },
+  "total": {
+   "lo": 0.2,
+   "hi": 1.38
+  },
+  "implied_gross_margin_on_platform_fee": {
+   "lo": 0.818,
+   "hi": 0.974
+  },
+  "grade": "inferred (GPU-cost analogues, not ElevenLabs data)"
+ },
+ "history": {
+  "2026-06-06": "$0.08/min (Common Crawl, l4a pricing-history.json)",
+  "2026-10-17": "$0.08/min, burst $0.16 (l4a live read; INR 7.04 at FX 88)",
+  "2026-10-20": "$0.08/min, burst $0.16, LLM extra, telephony BYO (this read): unchanged in USD; INR 7.60 at FX 95"
+ }
+}
