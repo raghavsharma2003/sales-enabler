@@ -1,0 +1,754 @@
+[
+ {
+  "id": "EXO-01",
+  "dimension": "surface",
+  "claim": "Exotel runs two docs portals: developer.exotel.com (Docusaurus 3.9.2 on CloudFront; llms.txt lists 341 .md pages across AgentStream, App Bazaar flows, Voice v1/v2/v3, Legs/ExoML, Campaigns v2, Contacts/Lists, ExoPhones, SIP trunking, SMS/WhatsApp/RCS, ExoVerify, MCP server, VoiceBot Tools, CQA, Gen AI, Users, FAQs) and docs.exotel.com (Archbee; llms.txt lists 915 pages, 357 of them Ameyo-lineage contact centre, 10 for 'Intelligent Voice Agents', 35 for AgentStream).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/probe/developer.exotel.com_llms.txt",
+   "data/teardown/exotel/probe/docs.exotel.com_llms.txt",
+   "data/teardown/exotel/dns/getent.txt",
+   "https://developer.exotel.com/llms.txt",
+   "https://docs.exotel.com/llms.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-02",
+  "dimension": "surface",
+  "claim": "The voice-AI surface has three layers sold separately: (a) Exotel VoiceBot, a prompt-built LLM agent with its own console (voicebot.in.exotel.com India / voicebot.sg.exotel.com Singapore) attached to calls through an App Bazaar 'Voicebot' applet or the Connect API; (b) AgentStream, a bring-your-own-bot WebSocket stream (plus StreamKit Cloud SIP bridge and SIP trunking) for third-party bots; (c) Harmony, the contact-centre layer with 'Monitored Bot' human-in-the-loop supervision, AI Assist, CQA and CCDP.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents.md",
+   "data/teardown/exotel/dev-md/agentstream__overview.md",
+   "data/teardown/exotel/site/html/products__ai-human-harmony-cx-platform__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-03",
+  "dimension": "surface",
+  "claim": "VoiceBot builder flow per the docs: describe the bot in a prompt (optionally attach PDF/DOCX/TXT or MP3/WAV/M4A call recordings, 100 MB) -> 'Build Bot' generates Identity / Objective / Behaviour -> Configuration tab (language, voice) -> Advanced tab (versions). 'Enhance Prompt', templates and 'Web Call' testing are marked 'Coming Soon'; the only test path documented is a real phone call from 'Talk to Bot'.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-04",
+  "dimension": "surface",
+  "claim": "The public voicebot console bundle (login page, no login) exposes 21 console routes: dashboard, bots, build-bot, build-tools, tools, tools/database, talk-to-bot, call-logs, interaction-history, reports, users, account, model-configuration, contact-center, agent-dashboard and agent/interactions. There is no campaign, contact list, consent or DND route in the voicebot console.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
+   "data/teardown/exotel/capture/voicebot-in-login.har",
+   "https://voicebot.in.exotel.com/voicebot/login"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-05",
+  "dimension": "surface",
+  "claim": "Voice campaigns for a bot are run outside the voicebot console: the docs route the user to my.exotel.com App Bazaar to build a flow with the Voicebot applet (pasting the bot's WSS URL), then to Campaigns to create a call campaign with a list and a virtual number. So 'upload a list and call it with my bot' spans two consoles and a copy-pasted URL.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents.md",
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__connect-your-number-to-your-voicebot.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-06",
+  "dimension": "surface",
+  "claim": "Human-in-the-loop is a productised layer ('Monitored Bot'): a Monitoring Agent role watches live bot sessions with live transcript, AI summary and a sentiment pill; 'Sentiment Crash' and 'Bot Repetition Loop' raise critical alerts; 'Barge' disconnects the bot and connects the agent; capacity rules are 'Attention Span' and 'Agent Reserve'; overflow goes to a live queue in business hours or a callback outside them. Requires an existing Exotel contact centre and Monitoring Agent licences.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__getting-started.md",
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__human-in-the-loop-ecosystem.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-07",
+  "dimension": "surface",
+  "claim": "Exotel MCP server (mcp.exotel.com, open source github.com/exotel/ExotelMCP, Java/Spring) lets an AI client create bots by natural language: the repo defines 131 MCP tools, 46 of them for VoiceBot and its Tools Server, including exotel_voicebot_create (async bot generation), place_call, assistant_update_prompt / push_version / create_multiagent, persona_*, tts_list_providers/voices, specialization_* and a Tools Server (tenants, OpenAPI-defined tools with versions and tests, data tables, knowledge corpora). This is Exotel's 'copilot builder'.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotService.java",
+   "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotAdminTools.java",
+   "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotToolsService.java",
+   "data/teardown/exotel/site/html/build__set-up-a-voice-agent-for-your-phone-number-in-an-afternoon__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-08",
+  "dimension": "surface",
+  "claim": "Maturity signals are mixed: VoiceBot docs carry 'Coming Soon' items (templates, prompt enhancer, web call); the Sept 2026 release post lists fixes for 10 s dead air on slow TTS handshakes, ~29 s dead calls from voice/language mismatch, distorted sped-up recordings, outcomes mislabelled 'completed by bot', duplicate rows, and long-range report failures; a 'call evaluator + recommender agent' is still in testing.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents.md",
+   "data/teardown/exotel/site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-09",
+  "dimension": "surface",
+  "claim": "Corrects l4a parity.csv (Exotel rows that were 'unknown'): dtmf=yes (stream dtmf events, Gather/IVR applets, DTMF encryption); knowledge_base=yes (PDF/DOCX/TXT/XLSX, 50 MB / 500 pages); function_calling_tools=yes (HTTP tools that must pass a test before activation; OpenAPI tool versions); post_call_extraction=yes (webhook events sentiment/summary/intent/entity/outcome); ab_testing=yes (version traffic allocation); analytics=yes (reports, embedded Superset, call ratings); multilingual_indic=yes (hi/en certified, 9 Indic alpha); warm_transfer=partial (Connect applet after the bot; 'Barge' only in Monitored Bot); voicemail_amd=partial (AMD is an ECC contact-centre licence, not documented for VoiceBot/AgentStream). Full table in parity-delta.csv.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/parity-delta.csv",
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-10",
+  "dimension": "docs-api",
+  "claim": "No OpenAPI file is published for VoiceBot; the developer portal has a 'VoiceBot Tools API Reference (Swagger)' entry but its .md is 404. The voicebot data model is recoverable from the public console bundle (95 named endpoint constants) and the MCP source: voicebots (v1/v2, archive/restore, freeze/unfreeze + freeze-audit-log, test-webhook, appflow), assistants with immutable versions and 'traffic-allocation', bot-generation jobs, personas, specializations (e.g. language_switching overrides), llm/tts/asr providers and models, vad-configs, prompt-enhancer, text-sessions (+ws) and test-threads, voicebot-sessions (tool-calls, recording), voicebot-outcomes, call-logs, reports/report-requests, get-usage, call-ratings, transcript-feedback categories, superset guest-token, and dp-endpoint (the bot's WSS URL).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
+   "data/teardown/exotel/dev-failed-recheck.txt",
+   "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotAdminTools.java"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-11",
+  "dimension": "docs-api",
+  "claim": "What the voicebot data model reveals: the bot is an 'assistant' with agents, instructions, llm_config, mcp_tools and intent_detection_config, versioned and A/B-splittable; there is no contact, campaign, consent, opt-out or memory object in the voicebot API. Contacts, lists, campaigns, retries and DND live in the telephony product (Campaigns v2), and customer profiles live in the contact centre (cc-list/process-list/crm-customers).",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
+   "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotAdminTools.java",
+   "data/teardown/exotel/dev-md/campaigns__api-reference__create-campaign.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-12",
+  "dimension": "docs-api",
+  "claim": "Outbound bot call = two calls: GET /voicebot/api/v1/accounts/{id}/bots/{botId}/dp-endpoint returns a wss:// URL, then POST api.in.exotel.com/v1/Accounts/{sid}/Calls/connect.json with StreamType=bidirectional and StreamUrl=<that wss>. Exotel's own VoiceBot therefore rides the same AgentStream WebSocket path a third-party bot uses.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotService.java"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-13",
+  "dimension": "docs-api",
+  "claim": "AgentStream WebSocket protocol: Exotel->bot events connected/start/media/dtmf/mark/stop; bot->Exotel media/mark/clear (bidirectional Voicebot applet only); base64 16-bit little-endian mono PCM at 8 kHz default with 16/24 kHz by URL param (upsampled from the 8 kHz phone leg); chunks 3,200-100,000 bytes in multiples of 320; max session 60 minutes; ids MZ.../CA.../AC... and the event names mirror Twilio Media Streams.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/agentstream__websocket-protocol.md",
+   "data/teardown/exotel/site/html/build__voice-ai-phone-calls-latency-and-audio__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-14",
+  "dimension": "docs-api",
+  "claim": "Connect Voice AI API parameters: From, CallerId, StreamUrl (<=600 chars), StreamType=bidirectional, Record, RecordingChannels single|dual, TimeLimit (<=14,400 s), CustomField (<=128 chars), StatusCallback + StatusCallbackEvents (answered/terminal/ringing), StreamName. Docs say this path is 'not for menus, disclosure before bot, bot->human' — those need the Flow path or ExoML Legs (gRPC events + start_stream).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/agentstream__connect-voice-ai.md",
+   "data/teardown/exotel/dev-md/agentstream__what-to-use-when.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-15",
+  "dimension": "docs-api",
+  "claim": "Campaigns v2 API: POST /v2/accounts/{sid}/campaigns with from (<=5,000 inline numbers) or lists (<=5 static / 1 dynamic), caller_id, flow url, retries {0-3, interval_mins, Linear|Exponential, on busy/no-answer/failed}, one absolute schedule {send_at, end_at}, throttle (calls/min), call_duplicate_numbers (default false), per-call and campaign callbacks. The scheduling guide says recurring schedules are not supported natively and time zones are not converted.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/campaigns__api-reference__create-campaign.md",
+   "data/teardown/exotel/dev-md/campaign-guides__campaign-scheduling.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-16",
+  "dimension": "docs-api",
+  "claim": "Contact CSV rules: header row with mandatory 'number'; E.164, 91-prefixed or 10-digit accepted; numbers with spaces, dashes or parentheses are 'rejected during processing' (not normalised); 60 MB, 1,00,000 rows static / 5,00,000 dynamic; upload returns success/duplicate/failure counts; @@column variables personalise greetings.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/campaign-guides__campaign-contacts-management.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-17",
+  "dimension": "docs-api",
+  "claim": "Docs quality: after three passes 34 of 341 developer llms.txt .md links (10%) still failed, and 5 pages return 404 as both .md and HTML (dead index entries); the .md endpoint was also flaky (60 of 78 first-pass failures returned 200 on a recheck, 16 of those failed again on refetch). The developer portal also contradicts the pricing page (Starter/Growth/Enterprise plans with 99.5/99.9% SLAs vs the Dabbler/Believer/Influencer plans sold) and the docs portal (trial credits 1,000 vs 500 on the pricing page), and gives three different voicebot console hosts (voicebot.mum1, voicebot.in, voicebot.sg).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/fetchlog-dev-md.csv",
+   "data/teardown/exotel/dev-failed-recheck.txt",
+   "data/teardown/exotel/dev-md/getting-started__upgrade-account.md",
+   "data/teardown/exotel/site/html/pricing__business-phone-system__.txt",
+   "data/teardown/exotel/docs-md/business-phone-system__create-a-trial-account.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-18",
+  "dimension": "docs-api",
+  "claim": "VoiceBot webhooks: session_start, session_end, pre_agent_transfer and transcript_events (turn-progress / turn-complete); per-session overrides via WebSocket custom params or the session_start response; retries on non-2xx; consumers must tolerate out-of-order events; event types sentiment, summary, intent, entity, outcome, transcript; network_type sip|pstn.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__voicebot-webhooks.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-19",
+  "dimension": "architecture",
+  "claim": "Hosting: India control plane on AWS ap-south-1 (Mumbai) — voicebot.in.exotel.com -> 'voicebot-production-alb' ap-south-1, voicebot.mum1 -> a second ap-south-1 ALB, mcp.exotel.com, api.in / ccm-api.in and my.in -> ap-south-1 EC2 ranges; Singapore/global on ap-southeast-1 (api.exotel.com -> 'twilix-public-alb', my.exotel.com -> 'obelix-public-application', voicebot.exotel.com/sg). Marketing site on Vercel (Next.js), developer docs on CloudFront, docs portal on Archbee, India dashboard login on Auth0 (id.accounts.in.exotel.com -> exotel-in.auth0.com via Cloudflare), status on Atlassian Statuspage.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dns/getent.txt",
+   "data/teardown/exotel/dns/aws-ip-ranges.json",
+   "data/teardown/exotel/capture/my-in-login.json",
+   "data/teardown/exotel/capture/home.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-20",
+  "dimension": "architecture",
+  "claim": "The public REST API is Twilio-shaped: /v1/Accounts/{AccountSid}/Calls/connect, IncomingPhoneNumbers, StatusCallback, CallSid 'CA...', AccountSid 'AC...', Stream 'MZ...', and the Singapore API load balancer is named 'twilix'. Inference: Exotel modelled its API and stream protocol on Twilio's, which lowers switching cost for Twilio-trained builders (and for VP: Pipecat ships an ExotelFrameSerializer).",
+  "grade": "inferred",
+  "evidence": [
+   "data/teardown/exotel/dns/getent.txt",
+   "data/teardown/exotel/dev-md/agentstream__websocket-protocol.md",
+   "data/teardown/exotel/repos/agent-stream/README.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-21",
+  "dimension": "architecture",
+  "claim": "Media plane is Exotel-owned: per its engineering blog, AgentStream sits between Asterisk and the downstream AI and moves 320-byte (20 ms, 8 kHz, 16-bit) frames 'ticker-paced' both ways with under 20 ms added one-way; ClearStream (Go; RNNoise/DeepFilter NR, NLMS AEC, VAD, AGC to -18 dBFS) is being added in the AudioSocket path with a stated <4 ms p50 and a production target of end-October 2026. ClearStream's roadmap names RTPEngine in Exotel's media path.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/site/html/build__why-we-built-clearstream__.txt",
+   "data/teardown/exotel/site/html/build__voice-ai-phone-calls-latency-and-audio__.txt",
+   "data/teardown/exotel/repos/ClearStream/ROADMAP.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-22",
+  "dimension": "architecture",
+  "claim": "Orchestration is Exotel's own, not LiveKit or Pipecat: the voicebot console bundle has zero LiveKit/Pipecat/Daily-SDK references, the bot is reached as a WSS 'dp-endpoint', and STT/LLM/TTS providers are server-configured lists (llm/providers, tts/providers, asr/providers, vad-configs). LiveKit/Pipecat appear only as third-party targets in AgentStream integration guides.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
+   "data/teardown/exotel/capture/voicebot-js/useEccContext-D7GE1FAx.js",
+   "data/teardown/exotel/docs-md/exotel-agentstream__connect-exotel-sip-trunk-to-livekit.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-23",
+  "dimension": "architecture",
+  "claim": "Documented VoiceBot stacks (Jul 2026): English and Hindi 'Certified' = STT Deepgram or ElevenLabs, LLM Gemma, TTS Smallest AI or ElevenLabs (default voice 'Avni'); Arabic beta on ElevenLabs/Speechmatics + Gemini; nine Indic languages alpha on Azure/Sarvam/ElevenLabs/Gemini STT, Gemini 2.5 Flash or Gemma 3 26B, Google/Sarvam/ElevenLabs TTS; code-switching to a secondary language only works when STT and TTS come from the same provider. Noise suppression and turn detection are 'applied by default'. Sept 2026 adds Maya Research TTS and automatic model failover.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__voice-ai-supported-languages-and-recommended-stacks.md",
+   "data/teardown/exotel/site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-24",
+  "dimension": "architecture",
+  "claim": "BYOK: customers can plug their own STT (Speechmatics, Azure), LLM (e.g. GPT-4o-mini) and TTS (ElevenLabs, Google) keys per bot via 'Model Configuration' rules; the console exposes llm/vendor-models and per-provider model lists.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__user-guide-bring-your-own-model-key-for-voicebot.md",
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-25",
+  "dimension": "architecture",
+  "claim": "The VoiceBot console is a module of the Ameyo-lineage contact-centre web app, not a standalone product: React + MUI X (licensed) + zod front end whose largest chunk is 'useEccContext' (10.1 MB) with Keycloak auth, XMPP chat rosters, cc-list/process-list/campaign APIs and 'AmeyoFSMSlice'; it embeds exotelSDK (WebRTC client 'SIP version 1.0.22') built on a vendored SIP.js 0.20.0 (public source map). npm has the same SDK at 3.0.17 (2026-10-16), so the console ships an older build.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/capture/voicebot-in-login.json",
+   "data/teardown/exotel/capture/voicebot-js/useEccContext-D7GE1FAx.js",
+   "data/teardown/exotel/capture/voicebot-js/exotelsdk.js",
+   "data/teardown/exotel/capture/maps/exotelsdk.js.map"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-26",
+  "dimension": "architecture",
+  "claim": "Telephony partners visible on the status page (Jul-Oct 2026 maintenance notices): Airtel SIP trunks (Huawei-to-Nokia migration across DL/MU/AP/MP pilots), Tata (emergency activity on Mumbai pilot; DC SBC to AP virtual SBC), Jio (Mumbai pilot, DID additions), Vodafone (SOFTX to PSX), an AP-Hyderabad data centre and Bangalore/Mumbai TTSL MPLS links. Exotel claims a UL VNO licence that lets it allocate 1600/1601 numbers directly.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/status/history.rss",
+   "data/teardown/exotel/status/history-p1.html",
+   "data/teardown/exotel/status/history-p2.html",
+   "data/teardown/exotel/blog/1600-phone-number.html"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-27",
+  "dimension": "architecture",
+  "claim": "SIP path requirements (BYO SIP-native bots): signalling TCP 5070 (India default) or TLS 443; RTP/SRTP UDP 10000-40000 open to Exotel; G.711 A-law mandatory in India (415 on mismatch); CPS limit 429, channel limit 603; IP allow-list or SIP Digest auth. Exotel staff on its forum: media and signalling 'cannot leave India when using SIP trunking', so a US-hosted bot platform must self-host in India.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/site/html/build__sip-native-vs-websocket-voice-ai-bots-exotel-agentstream__.txt",
+   "data/teardown/exotel/community/t40.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-28",
+  "dimension": "architecture",
+  "claim": "AgentStream is the telephony substrate for many of VP's deep-set competitors: docs.exotel.com carries integration guides for ElevenLabs Agents, LiveKit, Bolna, Retell, Smallest Atoms, Sarvam, Pipecat (via Daily), Cartesia, OpenAI Realtime, Omnidimension, Rapida, NLPearl and Vocallabs; Exotel claims 'almost 40% of India's voice AI conversations already run on Exotel's rails' and an Agora partnership targeting 50-100 M AI interactions a year.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/exotel-agentstream__connect-exotel-sip-trunking-to-bolna-voice-ai.md",
+   "data/teardown/exotel/docs-md/exotel-agentstream__connect-exotel-sip-trunking-to-retell-ai.md",
+   "data/teardown/exotel/docs-md/exotel-agentstream__connect-exotel-to-sarvam-voice-agents.md",
+   "data/teardown/exotel/docs-md/exotel-agentstream__elevenlabss-elevenagents-agentstream-integration.md",
+   "data/teardown/exotel/site/html/newsroom__exotel-launches-indias-first-agent-streaming-platform-for-voice-ai__.txt",
+   "data/teardown/exotel/site/html/newsroom__agora-exotel-ai-voice-bot-collaboration__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-29",
+  "dimension": "architecture",
+  "claim": "Latency claims are layered and inconsistent: Connect API call setup ~700 ms average / ~1.1 s p95; AgentStream 'sub-20 ms' media (and '<50 ms' in another post); '<250 ms end-to-end media latency' guaranteed; 'sub-800 ms response' achievable; the sample repo lists round trips of ~500 ms (OpenAI Realtime), ~750 ms (ElevenLabs), ~600 ms (Gemini Live), 2-4 s (Gemini S2S) and ~4 s (pipeline). Exotel's own Sept 2026 post says it has not measured a natural turn and will not quote one. No public demo exists to measure (confirms l4b).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/blog/achieve-low-latency-voice-ai-exotel.html",
+   "data/teardown/exotel/community/t20.json",
+   "data/teardown/exotel/site/html/build__voice-ai-phone-calls-latency-and-audio__.txt",
+   "data/teardown/exotel/capture/home.json",
+   "research/2026-10-17/lanes/l4b-measured/report.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-30",
+  "dimension": "architecture",
+  "claim": "No public web-call widget exists on exotel.com: Playwright captures of the homepage, the AgentStream page and the Gen-AI voice agents page opened zero WebSockets; the only chat widget is AllinCall (clients.allincall.in, the Cogno AI acquisition). The VoiceBot docs list 'Web Call' as Coming Soon.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/capture/home.json",
+   "data/teardown/exotel/capture/agentstream-product.json",
+   "data/teardown/exotel/capture/genai-voice-agents.json",
+   "data/teardown/exotel/docs-md/intelligent-voice-agents.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-31",
+  "dimension": "architecture",
+  "claim": "Analytics are embedded Apache Superset (superset/guest-token endpoint); custom tool integrations run as declarative routes on a shared Apache Camel engine (Sept 2026); Exotel's internal voicebot evaluation framework scores transcripts with Char/Word/LLM metrics using an Azure OpenAI scorer (per ClearStream notes).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
+   "data/teardown/exotel/site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt",
+   "data/teardown/exotel/repos/ClearStream/DEVLOG.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-32",
+  "dimension": "pricing",
+  "claim": "Business phone plans are published again and unchanged in structure: Dabbler INR 9,999 / 5 months (4,999 rental + 5,000 credits, 1 ExoPhone, 3 agents), Believer 19,999 / 11 months, Influencer 49,499 / 11 months; 1 credit = INR 1; 7-day trial with 500 credits. This contradicts the 2026-10-17 'quote-based since 2025' reading (l4a pricing-history.json, l4c incumbents.csv): the Common Crawl captures were of the /pricing hub, which never carries prices.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/site/html/pricing__business-phone-system__.txt",
+   "data/teardown/exotel/site/html/pricing__.txt",
+   "research/2026-10-17/lanes/l4a-competitors/pricing-history.json",
+   "research/2026-10-20/teardown/exotel/pricing.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-33",
+  "dimension": "pricing",
+  "claim": "Dabbler's 4,999 rental + 5,000 credits for 5 months is the same as in Exotel's 2017 pricing explainer: the entry price has not moved in about nine years.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/blog/exotel-pricing-why-you-pay-what-you-pay.html",
+   "data/teardown/exotel/site/html/pricing__business-phone-system__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-34",
+  "dimension": "pricing",
+  "claim": "AgentStream and VoiceBot per-minute prices are not published: both pricing pages say 'Voice Streaming (Agent Stream) is excluded from the plans ... contact hello@exotel.com'. An all-in INR/min list price for an Exotel AI outbound call cannot be derived from public material.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/site/html/pricing__business-phone-system__.txt",
+   "data/teardown/exotel/site/html/pricing__enterprise-contact-center__.txt",
+   "research/2026-10-19/voicelab/desk/phone-leg.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-35",
+  "dimension": "pricing",
+  "claim": "Exotel's own blog puts its PSTN rate at 'typically' INR 0.80-1.00/min outbound and 0.30-0.50/min inbound, billed in 60-second pulses. 60-s pulses inflate billed minutes ~25% for 0.5-3.5 min calls (vs ~12% for the 30-s pulses VP's Plivo model assumes).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/blog/migrate-twilio-to-exotel-voice-ai-india.html",
+   "data/teardown/exotel/dev-md/getting-started__regions-availability.md",
+   "research/2026-10-20/teardown/exotel/pricing.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-36",
+  "dimension": "pricing",
+  "claim": "Reconstructed COGS for Exotel VoiceBot on its certified hi/en stack (Deepgram Nova-3 + Gemma + Smallest Lightning, own telephony): INR 1.42 (lo) / 1.95 (mid) / 3.60 (hi, ElevenLabs Flash TTS + Gemini LLM) per connected minute ex-GST, using 2026-10-18 component list prices. Against Indian AI list prices of INR 3.5-7/min (l4a), the mid COGS implies a 44-72% gross margin and the low stack 60-80%; the high stack would lose money at 3.5. Exotel's own carrier cost should sit below any reseller's (it is the carrier-facing VNO).",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/pricing.json",
+   "research/2026-10-18/lanes/g4-market-selfhost/prices.csv",
+   "research/2026-10-17/lanes/l4a-competitors/report.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-37",
+  "dimension": "pricing",
+  "claim": "If VP rode Exotel AgentStream instead of Plivo, telephony alone would rise from the model's INR 0.46 to 0.80-1.00 per minute (+0.34 to +0.54) before the unpublished streaming fee, taking VP base-tier COGS from 1.72 to at least 2.02-2.22 INR/min.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/pricing.json",
+   "research/2026-10-18/model/results/tiers.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-38",
+  "dimension": "pricing",
+  "claim": "Exotel FY25 (RoC via Entrackr): operating revenue INR 490.5 Cr, PAT ~20 Cr, telephony cost 212 Cr (44% of costs) — re-cited from l4a/l4c, not re-read.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "research/2026-10-17/lanes/l4a-competitors/data/company-financials.csv",
+   "research/2026-10-17/lanes/l4c-incumbents-distribution/report.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-39",
+  "dimension": "velocity",
+  "claim": "Last 6 months (2026-04-20..10-20): 17 /build engineering posts (18 May-25 Sep 2026); docs.exotel.com pages created in window: AgentStream 9 of 36, MCP 7 of 8, Intelligent Voice Agents 2 of 11, Harmony 0 of 12; npm: exotel-ai-assist 33 releases, signal-design-system 30, webrtc-client-sdk 5, webrtc-core-sdk 4; GitHub: ExotelMCP 25 commits by 7 authors, Agent-Stream 11, ClearStream 371 (an engineer's personal repo). The developer changelog's newest entry is 16 Feb 2026, so it lags the product by 8 months.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/velocity.json",
+   "data/teardown/exotel/npm/_exotel-npm-dev_exotel-ai-assist.time.json",
+   "data/teardown/exotel/repos/ExotelMCP/README.md",
+   "data/teardown/exotel/docs-md/mcp-server.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-40",
+  "dimension": "velocity",
+  "claim": "Recent launches: Connect Voice AI API and SIP-trunk guides for 9 bot platforms (Apr 2026), Dubverse team acqui-hire to lead CQA and AI (8 Apr 2026), Exotel MCP (May 2026), 'fully agentic AI voice call' via MCP (13 Aug 2026), VoiceBot model failover / immutable versions / per-bot nudges / 20-min cap / Maya TTS (10 Sep 2026), ClearStream (Sep 2026, production target end-Oct).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/velocity.json",
+   "data/teardown/exotel/site/html/newsroom__exotel-acqui-hires-dubverse-voice-ai-team__.txt",
+   "data/teardown/exotel/site/html/newsroom__exotel-powers-indias-first-fully-agentic-ai-voice-call__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-41",
+  "dimension": "velocity",
+  "claim": "Status page (Atlassian, 52 components): in the 6-month window it shows 5 unplanned incidents, all minor and all dated 22-23 Jun 2026 with created = resolved at 00:00 UTC (posted after the fact), plus 42 maintenance notices (Jul-Oct). There is no component for VoiceBot, AgentStream or MCP. Two components have shown 'major_outage' with no open incident since 25 Jun (ECC 4.x on-prem group) and 17 Sep 2026 (App16).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/velocity.json",
+   "data/teardown/exotel/status/api_v2_summary.json",
+   "data/teardown/exotel/status/api_v2_incidents.json",
+   "data/teardown/exotel/status/history-p2.html"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-42",
+  "dimension": "india-plumbing",
+  "claim": "Number types: 140-series for promotional calls (DLT registration mandatory, priced separately), landline and mobile DIDs for transactional calls 'only to registered or inquired customers' with customer data kept in a CRM, toll-free and mobile virtual numbers inbound only. 'Exotel does not allow cold calling.'",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/business-phone-system__onboarding.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-43",
+  "dimension": "india-plumbing",
+  "claim": "NCPR handling is partly done by Exotel: a 'whitelist' of numbers that called or texted the ExoPhone in the last 6 months may be called transactionally even if on NCPR; other NCPR numbers can be called transactionally only after the buyer signs a DND opt-in agreement on letterhead, adds consent text to its website T&Cs and shows CRM lead proof with timestamps, promising opt-in proof within 24 hours of a complaint. Bulk and promotional calls to Jammu & Kashmir numbers are blocked.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/business-phone-system__calling-whitelisted-customer.md",
+   "data/teardown/exotel/docs-md/business-phone-system__onboarding.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-44",
+  "dimension": "india-plumbing",
+  "claim": "The developer docs claim automatic NDNC filtering at contact upload and at campaign execution, with 'dnd_filtered' and 'dnd_category_blocked' statuses in reports, and category-level preference handling (0-7).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/faqs__ndnc-dnd.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-45",
+  "dimension": "india-plumbing",
+  "claim": "Calling windows are guidance, not an enforced control in the docs: '9 AM-9 PM IST' for promotional campaigns, a separate '10 AM-6 PM' best practice, and 'ensure end_at falls before 9 PM' left to the user; no doc describes Exotel rejecting an out-of-window schedule. (l4a's calling-hours source page now renders only as a client-side shell and its .md is 404.) Confirms ledger CMP-27's 09:00-21:00 reading.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/campaign-guides__campaign-scheduling.md",
+   "data/teardown/exotel/docs-md/business-phone-system__calling-whitelisted-customer.md",
+   "data/teardown/exotel/probe/dev-calling-hours.html"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-46",
+  "dimension": "india-plumbing",
+  "claim": "Consent for recording is the buyer's job: Exotel recommends a recording announcement and opt-out via a Greeting applet and documenting consent in the buyer's T&Cs. Retention defaults: recordings 90 days, CDRs and SMS logs 1 year, account logs 2 years, API logs 90 days, webhook logs 30 days.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/faqs__data-privacy.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-47",
+  "dimension": "india-plumbing",
+  "claim": "DPDP: VoiceBot PII masking is opt-in per bot and post-call only (names, phones, emails, Aadhaar, PAN, bank, card, passport, DOB, addresses plus plain-language custom rules up to 500 chars); audio recordings are not masked and live webhook transcripts are delivered unmasked.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__masking-sensitive-data-pii-in-voicebot.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-48",
+  "dimension": "india-plumbing",
+  "claim": "Data residency: India accounts live in Mumbai and the region chosen at sign-up is permanent (separate accounts per region); observed India hosts resolve to AWS ap-south-1. Contact-centre deployment can be private cloud, customer cloud or on-premise.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/getting-started__create-account.md",
+   "data/teardown/exotel/dns/getent.txt",
+   "data/teardown/exotel/site/html/pricing__enterprise-contact-center__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-49",
+  "dimension": "india-plumbing",
+  "claim": "KYC gates everything production: business email required (Gmail may be rejected), phone OTP, then business KYC (CoI/GST/shop licence, business PAN, signatory ID, letter of authorisation) taking 1-3 business days (up to 5). Without KYC a trial can only call between verified users of the same account; KYC is 'mandatory to activate your phone number and unlock the Voicebot applet'.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/dev-md/getting-started__create-account.md",
+   "data/teardown/exotel/dev-md/getting-started__kyc-verification.md",
+   "data/teardown/exotel/docs-md/business-phone-system__create-a-trial-account.md",
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__connect-your-number-to-your-voicebot.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-50",
+  "dimension": "india-plumbing",
+  "claim": "1600/1601 series: Exotel says it can run 1600, 140 and regular DIDs side by side and allocate 1600 numbers circle by circle under its UL VNO licence. No page states that AgentStream or the Voicebot applet works on a 1600 line (ledger REG-25 stays open).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/blog/1600-phone-number.html",
+   "research/2026-10-17/ledger.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-51",
+  "dimension": "india-plumbing",
+  "claim": "Exotel lobbies against explicit consent for AI auto-dialled calls: its TRAI submissions (Oct 2024; Apr 2026) argue explicit consent should not be mandatory for robo/auto-dialer calls and ask for a 'human-assisted API call' carve-out from A2P rules (re-cited from r2).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-17/lanes/r2-untouched-raw/trai-stakeholder-positions.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-52",
+  "dimension": "failure-modes",
+  "claim": "Exotel complaint corpus (deduplicated across l4a and r2, excluding the Ameyo agent app): ~17 public items; top codes SUPPORT, TELEPHONY and ACCOUNT_UI, then BILLING and SALES_DELIVERY. The Ameyo mobile agent app adds 51 Play reviews dominated by RELIABILITY and ACCOUNT_UI (logouts, disconnects). The same 2026-04-25 review was coded RELIABILITY in r2 and SUPPORT;ACCOUNT_UI in l4a, so per-code counts are soft.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-17/lanes/l4a-competitors/complaints.csv",
+   "research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-53",
+  "dimension": "failure-modes",
+  "claim": "AI sales motion is the sharpest complaint: a long-time Exotel IVR customer asked for the AI Voice Agent and after a week of follow-ups got only a demo promise — 'there has been absolutely no response or progress from their team' (Trustpilot, 23 Apr 2026). A builder was told 'I need a registered company and KYC done before even a demo' (r/developersIndia, 25 Feb 2025).",
+  "grade": "observed",
+  "evidence": [
+   "https://www.trustpilot.com/review/exotel.com",
+   "https://www.reddit.com/r/developersIndia/comments/1ixp48z/",
+   "research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-54",
+  "dimension": "failure-modes",
+  "claim": "Support and billing: 'very very very very worest customer service, dont subscripe they waste your time and money' (Trustpilot, Sep 2026); 'They pick up your calls till payment only and after that you are at God's Sake' and 'too many hidden charges' (Trustpilot, Jun 2023); 'We get billing error from a matured so called technology driven company' (Capterra). Trustpilot TrustScore 2.5 on 5 reviews, all 1-star; Exotel has not replied.",
+  "grade": "observed",
+  "evidence": [
+   "https://www.trustpilot.com/review/exotel.com",
+   "https://www.capterra.com/p/233144/Exotel/reviews/?page=2",
+   "research/2026-10-17/lanes/l4a-competitors/complaints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-55",
+  "dimension": "failure-modes",
+  "claim": "UI and findability: 'The chat assistant is clunky. Everytime i have tried to use it, i have failed. Its just gimmicky.' (Trustpilot, Apr 2026); 'Platform can be difficult to navigate ... interface feels outdated' and 'Some time date not easily we set to find call recording' (Capterra.in, Nov 2024, 5-star reviews' cons).",
+  "grade": "observed",
+  "evidence": [
+   "https://www.trustpilot.com/review/exotel.com",
+   "data/teardown/exotel/complaints/capterra-in.html",
+   "https://www.capterra.in/software/134642/exotel"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-56",
+  "dimension": "failure-modes",
+  "claim": "Telephony quality on the AI path: 'people benchmark in the API playground and are shocked when Exotel compression makes it sound different' (r/AI_Agents, Aug 2026); 'Call drops ... would not be able to make calls for some reason' and 'agents can not hear the voice clearly' (Capterra); 'no more option for voice hindi pronunciation' (Capterra).",
+  "grade": "observed",
+  "evidence": [
+   "https://www.reddit.com/r/AI_Agents/comments/1vxpmy3/",
+   "https://www.capterra.com/p/233144/Exotel/reviews/?page=3",
+   "research/2026-10-17/lanes/l4a-competitors/complaints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-57",
+  "dimension": "failure-modes",
+  "claim": "BYO-bot integration friction (LiveKit community, Jan-Mar 2026): 'My provider (Exotel) doesn't support SIP-based outbound or SIP REFER-based call forwarding'; LiveKit's answer is to proxy the WebSocket through an Asterisk server; transfers fail with 'participant does not exist' because 'call transfer with Exotel requires using Exotel's own API'; an inbound trunk misconfiguration produced SIP 503s. On Exotel's forum a StreamKit INVITE was rejected 403 because the AccountSid is case-sensitive, and a Vapi user found no SIP settings on a trial account (needs KYC).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/complaints/lk-t124.json",
+   "data/teardown/exotel/complaints/lk-t121.json",
+   "data/teardown/exotel/complaints/lk-t468.json",
+   "data/teardown/exotel/community/t18.json",
+   "data/teardown/exotel/community/t40.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-58",
+  "dimension": "failure-modes",
+  "claim": "Vendor-admitted VoiceBot failures fixed in Sep 2026: up to 10 s of dead air on a slow TTS handshake (now ~2 s timeout-and-retry), ~29 s zero-audio dead calls from voice/language mismatch, distorted and sped-up recordings (wrong sample rate), sessions mislabelled 'completed by bot' when the caller went idle or the session errored, duplicate rows in bot and interaction lists (data-level fix still in progress), long-range interaction reports failing, timestamps without dates.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-59",
+  "dimension": "failure-modes",
+  "claim": "Compliance rigidity bites buyers: 'Not allowed for automated calls for COD verification. Should have an ability to call DND numbers based on flow ID approved internally' (Capterra); 'Not providing services outside India, so we manage multiple providers' (Capterra.in, 2019).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-17/lanes/l4a-competitors/complaints.csv",
+   "data/teardown/exotel/complaints/capterra-in.html"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-60",
+  "dimension": "v2",
+  "claim": "Marketing claims memory and self-learning: Harmony lists 'CCDP: Unified memory layer for contextual interaction every time' and 'Kaizen intelligence loop - The self learning process'. The docs do not back it: the CCDP docs page is a title with no body, 'Kaizen' appears in no doc, and the voicebot API has no memory or customer-profile object (context comes from the contact-centre CRM objects). Confirms the ledger CMP-01 pattern (marketing ahead of docs on memory).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/site/html/products__ai-human-harmony-cx-platform__.txt",
+   "data/teardown/exotel/docs-md/conversational-context.md",
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
+   "research/2026-10-17/ledger.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-61",
+  "dimension": "v2",
+  "claim": "Learning-loop primitives that do exist (observed in docs/bundle): immutable bot versions with rollback and traffic allocation (A/B), transcript feedback categories, per-conversation call ratings and feedback summaries, outcome labels, and a 'call evaluator paired with a recommender agent' on an agent harness that is being tested on production traffic but not shipped. Personalisation is per-call: @@column variables, custom parameters (max 3, 256 chars) and session_start webhook overrides.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
+   "data/teardown/exotel/site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt",
+   "data/teardown/exotel/docs-md/intelligent-voice-agents.md",
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__voicebot-webhooks.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-62",
+  "dimension": "v2",
+  "claim": "Exotel's stated thesis is human-supervised AI ('one human supervises many AI bots'; the bot-first, human-as-backup model is 'fundamentally flawed') and models as commodity ('Models eventually will be like electricity'), with the moat in rails and context.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/exotel/site/html/newsroom__exotel-launches-indias-first-agent-streaming-platform-for-voice-ai__.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-63",
+  "dimension": "method",
+  "claim": "REA (rea-agents 6.7.0): inspect-web-network-capture worked on slimmed HARs for voicebot.in.exotel.com and exotel.com but returns re-emitted records with digests, not analysis; it rejected the Auth0 login HAR outright because one Facebook-pixel URL with '[ph][0]' brackets failed its URI validation (fail-closed). analyze-web-bundle against a headless-Chromium CDP target produced no output in 300 s (same as the Vapi lane). inspect-web-page returned a script inventory but was 'policy_filtered' for scripts, storage and websockets. Bundle analysis was done with Playwright HAR + our own extraction.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/capture/rea/voicebot-in-login.inspect.json",
+   "data/teardown/exotel/capture/rea/my-in-login.inspect.json",
+   "data/teardown/exotel/capture/rea/voicebot-analyze-web-bundle.json",
+   "data/teardown/exotel/capture/rea/voicebot-inspect-web-page.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-64",
+  "dimension": "method",
+  "claim": "Blocked and not bypassed: Trustpilot and G2 returned HTTP 403 to curl (Trustpilot read via WebFetch summary instead); GitHub API is not available to this session (public repos cloned read-only through the git proxy); job-post bodies are client-rendered and were not readable. No sign-up, login, form, OTP or demo request was made.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/exotel/complaints/trustpilot-p1.html",
+   "data/teardown/exotel/complaints/g2.html",
+   "data/teardown/exotel/jobs/software-engineer-2-voicebot-at-exotel-wkdypwu3yh.html"
+  ],
+  "date": "2026-10-20"
+ }
+]

@@ -4,8 +4,8 @@
   "2026-10-20"
  ],
  "build_posts": {
-  "n_total": 18,
-  "n_in_window": 18,
+  "n_total": 17,
+  "n_in_window": 17,
   "items": [
    {
     "file": "site/html/build__exotel-mcp-your-ai-can-now-make-phone-calls__.txt",
@@ -70,10 +70,6 @@
    {
     "file": "site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt",
     "date": "2026-09-10"
-   },
-   {
-    "file": "site/html/build__.txt",
-    "date": "2026-09-25"
    },
    {
     "file": "site/html/build__strengthening-security-risk-mitigation-and-measures__.txt",

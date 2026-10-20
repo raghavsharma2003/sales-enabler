@@ -1,0 +1,125 @@
+{
+ "lane": "elevenlabs",
+ "scored": "2026-10-20",
+ "phase": "authorized-surface (API key, no calls)",
+ "note": "Predictions are scored only where an API/SDK read could decide them. not-testable means a call, upload or timed sign-up is still needed (later call-battery phase).",
+ "results": [
+  {
+   "id": "EL-P01",
+   "task": "onboarding",
+   "verdict": "not-testable",
+   "why": "No timed sign-up and no call were made. API-level support only: phone numbers are import-only (no buy route), so a handset call needs an imported Twilio/Exotel/SIP number.",
+   "evidence": [
+    "data/account-phase/elevenlabs/derived/endpoint-surface.csv"
+   ]
+  },
+  {
+   "id": "EL-P02",
+   "task": "build standard agent",
+   "verdict": "not-testable",
+   "why": "No call placed, so the 30% English-reply threshold is untested. Partial support: a Hindi agent needs language=hi, a swapped voice (default voice Eric is not verified for hi but the API accepts it) and optionally language_detection and hinglish_mode; four separate settings, none cross-validated.",
+   "evidence": [
+    "data/account-phase/elevenlabs/api-reads/voice-default.json",
+    "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json"
+   ]
+  },
+  {
+   "id": "EL-P03",
+   "task": "messy 50-row CSV",
+   "verdict": "not-testable",
+   "why": "No CSV upload. Partial support: the batch recipient schema has phone_number, id and initiation data only; no dedupe, suppression, consent or number-normalisation field.",
+   "evidence": [
+    "data/account-phase/elevenlabs/openapi/openapi-live.json"
+   ]
+  },
+  {
+   "id": "EL-P04",
+   "task": "schedule within calling hours",
+   "verdict": "partially-supported",
+   "why": "Public batch API carries scheduled_time_unix plus timezone only and no end time, daily window or day-of-week rule (schema). The batch screen itself was not seen, and whether the unpublished campaigns product is enabled for our workspace was not probed (undocumented routes out of scope).",
+   "evidence": [
+    "data/account-phase/elevenlabs/openapi/openapi-live.json"
+   ]
+  },
+  {
+   "id": "EL-P05",
+   "task": "voicemail + transfer",
+   "verdict": "not-testable",
+   "why": "No transfer or voicemail call placed. Twilio machine-detection config exists in telephony_call_config; agent-side voicemail_detection is a system tool.",
+   "evidence": [
+    "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json"
+   ]
+  },
+  {
+   "id": "EL-P06",
+   "task": "find a failed call and its reason",
+   "verdict": "not-testable",
+   "why": "No failed call to find. Partial support: conversation list has 40 filters including termination_reasons and call_result is the five-value enum answered|voicemail|busy|no_answer|failed; no India-specific reason code exists in any enum.",
+   "evidence": [
+    "data/account-phase/elevenlabs/derived/endpoint-surface.csv",
+    "data/account-phase/elevenlabs/openapi/openapi-live.json"
+   ]
+  },
+  {
+   "id": "EL-P07",
+   "task": "export",
+   "verdict": "not-testable",
+   "why": "No batch run. An export route exists per batch; its contents were not read.",
+   "evidence": [
+    "data/account-phase/elevenlabs/derived/endpoint-surface.csv"
+   ]
+  },
+  {
+   "id": "EL-P08",
+   "task": "handset reply gap on Indian PSTN",
+   "verdict": "not-testable",
+   "why": "No call placed; no handset latency measured. Only the control-plane region was observed (us-central1).",
+   "evidence": [
+    "data/account-phase/elevenlabs/api-reads/user.headers.txt"
+   ]
+  },
+  {
+   "id": "EL-P09",
+   "task": "disclosure + bot question",
+   "verdict": "partially-supported",
+   "why": "An agent created through the API starts with an empty first_message and empty prompt, so nothing discloses AI status by default; the dashboard-created agent starts with a generic greeting. The 9/10 admission clause is untested.",
+   "evidence": [
+    "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json",
+    "data/account-phase/elevenlabs/api-reads/agent-existing.json"
+   ]
+  },
+  {
+   "id": "EL-P10",
+   "task": "billing",
+   "verdict": "partially-supported",
+   "why": "Two of three clauses observed in schema: separate llm_charge/llm_price lines exist and cost_fiat is present on the conversation record. The $0.08 platform rate and 5% silence rate were not verified (no billed call).",
+   "evidence": [
+    "data/account-phase/elevenlabs/openapi/openapi-live.json"
+   ]
+  },
+  {
+   "id": "EL-P11",
+   "task": "barge-in + short answers",
+   "verdict": "not-testable",
+   "why": "No call. Defaults seen: interruption_ignore_terms [] with merge_with_default_ignore_terms false (a built-in default list is implied, its language unknown).",
+   "evidence": [
+    "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json"
+   ]
+  },
+  {
+   "id": "EL-P12",
+   "task": "memory across calls",
+   "verdict": "hit",
+   "why": "Default agent has user_memory.enabled=false and enabling it returned 403 feature_not_available \"User memories are not available for this workspace.\" The memory control is behind a workspace flag.",
+   "evidence": [
+    "data/account-phase/elevenlabs/api-writes/patch-rich-response.json",
+    "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json"
+   ]
+  }
+ ],
+ "tally": {
+  "not-testable": 8,
+  "partially-supported": 3,
+  "hit": 1
+ }
+}

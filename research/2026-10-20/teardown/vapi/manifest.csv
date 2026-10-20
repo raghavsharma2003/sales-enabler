@@ -780,3 +780,7 @@ data/teardown/vapi/status/s_feed.rss,171544,514fae00baa0164d0a622bcee29b7cfe1c50
 data/teardown/vapi/status/s_incidents.rss,84043,16f4bf276acf7a8b05c9d6ca87a7d586d0a8a749320beaa4093b343558f826ac,https://status.vapi.ai/incidents.rss,2026-10-20T17:22:48Z
 data/teardown/vapi/status/s_index.json,308492,76c8dcb0d959598c977d7184698576ff71dcebb4ad20fa34caa8417dab977e16,https://status.vapi.ai/index.json,2026-10-20T17:22:49Z
 data/teardown/vapi/status/status_index.html,865691,0df7480a3b1e52c85326ae95849ff16c26b5fec247fe6ab643fd2a85b4a7fec2,https://status.vapi.ai/,2026-10-20T17:22:44Z
+data/teardown/vapi/verify/doh-recheck-2026-10-20.jsonl,5296,e0f7df2335f7636325bed81ca361e8b98c5feb7a5b65cc92e017f26d4133fd70,https://dns.google/resolve and https://cloudflare-dns.com/dns-query (6 hostnames x 2 resolvers),2026-10-20T19:25:00Z
+data/teardown/vapi/verify/npm-vapi-ai-web-time-2026-10-20.json,12508,02547af93ce1eb44cf2291bc7d0fc45b7d4e0d401496ba06c7c571a75f1bf533,npm view @vapi-ai/web time --json (registry.npmjs.org),2026-10-20T19:25:00Z
+data/teardown/vapi/verify/daily.co_pricing_video-sdk.html,190573,27e06f162a8d9bf0c7f9ee642d7f6dad2a960c7477c6a65e23b6f8d5848dc62a,https://www.daily.co/pricing/video-sdk/,2026-10-20T19:25:00Z
+data/teardown/vapi/verify/sourcemap-recheck-2026-10-20.txt,110,8e3fa745b041b2061025f7003e75a8910b1f4126b0b7d7e3beca02173e35ce86,https://dashboard.vapi.ai/js/index-PFf57Fb9.js.map; https://dashboard.vapi.ai/js/index-ClVtSOHD.js.map (HTTP status only),2026-10-20T19:25:00Z

@@ -1,0 +1,50 @@
+"""Exotel price points (now vs 2026-10-17 history) and a reconstructed COGS for Exotel's own VoiceBot on its documented
+'certified' English/Hindi stack (Deepgram or ElevenLabs STT, Gemma LLM, Smallest AI or ElevenLabs TTS).
+Component INR/connected-minute figures are re-used from research/2026-10-18/lanes/g4-market-selfhost/prices.csv (FX 95).
+Usage: python3 -I pricing.py <out_json>"""
+import json, sys
+FX = 95.0
+price_points = [
+ {"item": "Business phone plans (Dabbler / Believer / Influencer)", "value": "INR 9,999 (5 mo, 4,999 rental + 5,000 credits, 1 ExoPhone, 3 agents) / 19,999 (11 mo, 10,499 rental + 9,500 credits, 2 ExoPhones, 6 agents) / 49,499 (11 mo, 10,499 rental + 39,000 credits, 10 ExoPhones, unlimited agents); 1 credit = INR 1",
+  "date": "2026-10-20", "grade": "observed", "evidence": "data/teardown/exotel/site/html/pricing__business-phone-system__.txt; https://exotel.com/pricing/business-phone-system/",
+  "vs_history": "Same plan names/prices as the 2024-03-03 Common Crawl capture (l4a pricing-history.json); Believer credits now 9,500 and Influencer 39,000 (2024 capture did not list credits per plan). Dabbler's 4,999 rental + 5,000 credits structure is unchanged since the 2017 pricing blog (data/teardown/exotel/blog/exotel-pricing-why-you-pay-what-you-pay.html). CONTRADICTS l4a/l4c 'quote-based since 2025': the 2025-2026 captures were of the /pricing hub, which carries no prices; prices live on /pricing/business-phone-system/."},
+ {"item": "Contact-centre seats", "value": "XPrime USD 70, XPro USD 100, XTRM talk-to-sales (per agent per month inferred; page does not state the unit)", "date": "2026-10-20", "grade": "observed",
+  "evidence": "data/teardown/exotel/site/html/pricing__enterprise-contact-center__.txt; https://exotel.com/pricing/enterprise-contact-center/", "vs_history": "not in 2026-10-17 history (new row)"},
+ {"item": "AgentStream (voice streaming) and VoiceBot per-minute price", "value": "not published: 'Voice Streaming (Agent Stream) is excluded from the plans ... contact hello@exotel.com'", "date": "2026-10-20", "grade": "observed",
+  "evidence": "both pricing pages above", "vs_history": "confirms research/2026-10-19/voicelab/desk/phone-leg.md section 2.3"},
+ {"item": "Outbound / inbound PSTN rate", "value": "INR 0.80-1.00/min outbound, 0.30-0.50/min inbound ('typically'), billed in 60-second pulses", "date": "2026-02-19 (blog) / 2026-10-20 (docs read)", "grade": "vendor-claimed",
+  "evidence": "data/teardown/exotel/blog/migrate-twilio-to-exotel-voice-ai-india.html; data/teardown/exotel/dev-md/getting-started__regions-availability.md (60-second pulse)", "vs_history": "l2 vendor-and-telephony-prices.csv had 'not published'; this is the first Exotel per-minute figure in the corpus"},
+ {"item": "Trial", "value": "pricing page: 7-day trial, 500 free credits; docs portal: 1,000 credits; outbound only between verified users before KYC", "date": "2026-10-20", "grade": "observed",
+  "evidence": "pricing__business-phone-system__.txt; data/teardown/exotel/docs-md/business-phone-system__create-a-trial-account.md", "vs_history": "phone-leg.md (2026-10-19) recorded the same 500-vs-1,000 conflict"},
+]
+# Reconstructed COGS (INR per connected minute, ex-GST) for Exotel's certified hi/en stack.
+comp = {
+ "stt": {"lo": 0.437, "mid": 0.874, "hi": 0.874, "basis": "Deepgram Nova-3 Multilingual streaming regular rate: 0.437 VAD-gated (30 s) .. 0.874 whole call (60 s); ElevenLabs Scribe v2 RT 0.309-0.618 sits inside"},
+ "llm": {"lo": 0.144, "mid": 0.144, "hi": 0.524, "basis": "Gemma 4 26B-A4B on Inworld list (0.144) as proxy for Exotel's 'Gemma'; hi = gemini-3.1-flash-lite uncached (0.524) for the Gemini rows"},
+ "tts": {"lo": 0.585, "mid": 0.585, "hi": 1.672, "basis": "Smallest Lightning V3.1 at 352 chars/min (0.585); hi = ElevenLabs Flash/Turbo at 440 chars/min (1.672); ElevenLabs v3 multilingual would be 2.675-3.344"},
+ "telephony_carrier": {"lo": 0.22, "mid": 0.30, "hi": 0.43, "basis": "Exotel's own carrier cost is unknown; bracketed by Tata Smartflo full-FUP 0.22 and Plivo/Vobiz resale 0.38-0.43 (2026-10-18 inputs.csv)"},
+ "media_infra": {"lo": 0.03, "mid": 0.05, "hi": 0.10, "basis": "Asterisk/AgentStream media + voicebot orchestration on AWS ap-south-1; VP model uses 0.03 (0.01-0.06)"},
+}
+tot = {k: round(sum(c[k] for c in comp.values()), 3) for k in ("lo", "mid", "hi")}
+vp_on_exotel = {
+ "note": "What VP would pay per connected minute if it rode Exotel AgentStream instead of Plivo: Exotel PSTN 0.80-1.00 (60-s pulse) + unpublished streaming fee, vs Plivo 0.38/30-s pulse in the VP model.",
+ "vp_ai_cogs_base_tier": 1.219, "vp_model_telephony": 0.462,
+ "exotel_telephony_lo": 0.80, "exotel_telephony_hi": 1.00,
+ "delta_telephony_inr_min_lo": round(0.80 - 0.462, 3), "delta_telephony_inr_min_hi": round(1.00 - 0.462, 3),
+ "vp_all_in_cogs_on_exotel_lo_excl_stream_fee": round(1.219 + 0.80, 3), "vp_all_in_cogs_on_exotel_hi_excl_stream_fee": round(1.219 + 1.00, 3),
+ "source": "research/2026-10-18/model/results/tiers.csv (base tier) + Exotel blog rate",
+}
+pulse = {"note": "60-second pulse rounding: for a call of d minutes the billed minutes are ceil(d). Mean inflation for d uniform in (0.5,3.5): ",
+         "inflation": None}
+import math, random
+random.seed(20261020)
+xs = [random.uniform(0.5, 3.5) for _ in range(100000)]
+pulse["inflation"] = round(sum(math.ceil(x) for x in xs) / sum(xs) - 1, 3)
+pulse["inflation_30s_pulse"] = round(sum(math.ceil(x * 2) / 2 for x in xs) / sum(xs) - 1, 3)
+out = {"generated": "2026-10-20", "fx_inr_per_usd": FX, "price_points": price_points,
+       "exotel_voicebot_cogs_inr_per_conn_min": {"components": comp, "total": tot, "grade": "inferred",
+         "stack_source": "data/teardown/exotel/docs-md/intelligent-voice-agents__voice-ai-supported-languages-and-recommended-stacks.md (vendor-documented stack, not captured at runtime)"},
+       "all_in_list_price_inr_per_min": {"value": None, "grade": "unknown", "why": "VoiceBot and AgentStream per-minute prices are sales-quoted; needs an account-phase quote"},
+       "vp_on_exotel_agentstream": vp_on_exotel, "pulse_rounding": pulse}
+json.dump(out, open(sys.argv[1], "w"), indent=1)
+print(json.dumps({"cogs_total": tot, "pulse": pulse, "vp": vp_on_exotel}, indent=1))

@@ -576,3 +576,5 @@ data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents_pricing,217056,7a98
 data/teardown/sarvam/web/www.sarvam.ai_robots.txt,115,c9abe867a9fdfb00eaea7c942bc731a1b804c450c34ed90552ff11d057e2e5ab,https://www.sarvam.ai/robots.txt,2026-10-20T16:54:21Z
 data/teardown/sarvam/web/www.sarvam.ai_sitemap.xml,75971,c9b3b8a2343091c9f4d2eed0829cfda6cda59d623db4d8fe2ce8d2ae7f2c6910,https://www.sarvam.ai/sitemap.xml,2026-10-20T16:54:22Z
 data/teardown/sarvam/ws/widget-ws-protocol-summary-2026-10-17.json,4741,e9b1a68f905d7a5c6661877800ee1fe4ea5fc5743cbd162be2c14536146fec5a,"derived: own captured WebSocket frames, wss://apps.sarvam.ai/api/app-runtime (round-2 calls 2026-10-17T17:06-17:36Z)",2026-10-20T16:57:00Z
+data/teardown/sarvam/verify/doh-recheck-2026-10-20.jsonl,7035,1878441deddba091dcd75136f89472c169792febf69ef8132e128658c1b2a93d,https://cloudflare-dns.com/dns-query; https://dns.google/resolve,2026-10-20T19:15:57Z
+data/teardown/sarvam/verify/npm-conv-ai-time-2026-10-20.json,1757,6e402ee64e5592295dced284c74ab6084b401717815c59bd94d5784558660db8,https://registry.npmjs.org/sarvam-conv-ai-sdk (npm view time),2026-10-20T19:16:00Z

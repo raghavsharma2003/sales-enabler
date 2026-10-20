@@ -1,0 +1,73 @@
+{
+ "title": "What the authorized API surface could not reach: input to the browser walk-through phase and the call battery",
+ "date": "2026-10-20",
+ "source": "consolidated from the five account-phase lanes (claims graded unknown, rejected routes, lane only-with-login lists) and the public-phase predictions",
+ "logins_needed": {
+  "bolna": "dashboard login (hCaptcha + email); trial calls only to verified numbers",
+  "vapi": "dashboard login with an email code at each login (trial-accounts report)",
+  "retell": "dashboard login with TOTP at every login (trial-accounts report)",
+  "elevenlabs": "dashboard login; free tier is non-commercial under ToU 4(c)",
+  "sarvam": "dashboard session on the SARVAM2 account, or a Voice Agents workspace key from Settings > API Key (open.2026-10-20.acct-sarvam-workspace-key)",
+  "synthflow": "sales-only; no account (from USD 30k/yr)",
+  "squadstack": "sales-only; no account",
+  "exotel": "tenant unverified; voicebot access unconfirmed"
+ },
+ "dashboard_items": [
+  {"theme": "billing and spend", "items": [
+   {"vendor": "bolna", "need": "invoice or billing page to settle whether the USD 0.02/min platform fee applies on the bundled plan", "ref": "ACB-52, BOL-35"},
+   {"vendor": "vapi", "need": "org billing, spend cap (billingLimit), concurrency limit, invoices (API key gets 401)", "ref": "AP-01, AP-38, AP-39"},
+   {"vendor": "retell", "need": "credit balance, invoices, budget, auto-recharge", "ref": "RAP-06, RAP-52"},
+   {"vendor": "elevenlabs", "need": "billing portal, seats, invoices, key management (401)", "ref": "AP-EL-05"},
+   {"vendor": "sarvam", "need": "ledger and invoice lines; plan band (docs and marketing disagree)", "ref": "SAC-50, SAR-37"}]},
+  {"theme": "agent building (time and motion: build the standard agent)", "items": [
+   {"vendor": "bolna", "need": "stored defaults of a dashboard-built agent (docs say incremental_delay 400 / interrupt 2 words; API agents store 900 / 1) and Auto Build output", "ref": "ACB-08, P03"},
+   {"vendor": "vapi", "need": "Composer chat builder (no API surface) and the defaults it writes", "ref": "AP-60, VAP-P03"},
+   {"vendor": "retell", "need": "Conductor-built agent: disclosure preset, language, timezone", "ref": "RAP-20, RAP-53, RET-P03"},
+   {"vendor": "elevenlabs", "need": "template agent: voice, language, hinglish_mode, language_detection tool as the UI sets them", "ref": "AP-EL-20, AP-EL-21, EL-P02"},
+   {"vendor": "sarvam", "need": "an agent's full config JSON, version history, Genie behaviour", "ref": "SAC-07, SAC-55, SAR-P03"}]},
+  {"theme": "data import (messy 50-row synthetic CSV)", "items": [
+   {"vendor": "bolna", "need": "batch CSV upload and workflow-campaign entry upload with duplicates, 10-digit numbers, Hindi names, empty columns, an opt-out row", "ref": "ACB-19, ACB-20, P04a-f"},
+   {"vendor": "vapi", "need": "campaign CSV import behaviour on bad and 10-digit numbers", "ref": "VAP-P04"},
+   {"vendor": "retell", "need": "contact CSV import with column mapping and default_country (JWT-only by API)", "ref": "RAP-01, RAP-02, RET-P04"},
+   {"vendor": "elevenlabs", "need": "batch upload screen and the unpublished campaigns product", "ref": "AP-EL-52, EL-P03"},
+   {"vendor": "sarvam", "need": "cohort validation and the rejected-records file; DND suppression count", "ref": "SAC-17, SAC-18, SAR-P04"}]},
+  {"theme": "scheduling and compliance", "items": [
+   {"vendor": "bolna", "need": "guardrail UI (whole hours, off by default), compliance application and number purchase flow", "ref": "ACB-54, P02, P05"},
+   {"vendor": "vapi", "need": "3-day 10:00-21:00 IST schedule: number of campaigns and clicks needed", "ref": "VAP-P05"},
+   {"vendor": "retell", "need": "the 'Campaigns' screen if any; window default and a 07:00-23:00 IST window", "ref": "RAP-39, RET-P05"},
+   {"vendor": "elevenlabs", "need": "whether a daily window exists outside the public batch API", "ref": "AP-EL-37, EL-P04"},
+   {"vendor": "sarvam", "need": "whether a 07:00-23:00 window is refused; DND list UI", "ref": "SAC-16, SAR-P05"}]},
+  {"theme": "telephony setup", "items": [
+   {"vendor": "vapi", "need": "importing an Indian SIP trunk as byo-phone-number; CLI shown to the callee", "ref": "AP-53, AP-55, VAP-P02"},
+   {"vendor": "retell", "need": "Indian SIP trunk import UX; KYC (Persona) gate on outbound", "ref": "RAP-48, RET-P01, RET-P02"},
+   {"vendor": "elevenlabs", "need": "Exotel and SIP number import; residency workspace option", "ref": "AP-EL-36, EL-P01"},
+   {"vendor": "sarvam", "need": "telephony connection and number objects; number KYC", "ref": "SAC-07, SAR-P02"}]},
+  {"theme": "failed calls, analytics, export", "items": [
+   {"vendor": "all", "need": "find a failed call and its reason; export results with extracted fields", "ref": "VAP-P07/P08, RET-P07/P08, EL-P06/P07, SAR-P07/P08, P07/P08"},
+   {"vendor": "retell", "need": "export creation (list-only by API), dashboards, alerts, AI QA, Conductor", "ref": "RAP-45, RAP-47"},
+   {"vendor": "sarvam", "need": "boards, query-schema table list, call logs", "ref": "SAC-34, SAC-55"},
+   {"vendor": "bolna", "need": "hidden auto-created judges: are they shown anywhere in the dashboard?", "ref": "ACB-13"}]},
+  {"theme": "team, roles, webhooks, memory", "items": [
+   {"vendor": "retell", "need": "workspaces, members, RBAC, SSO; account-level webhook URL and webhook-badge key", "ref": "RAP-06, RAP-41"},
+   {"vendor": "elevenlabs", "need": "user-memory flag and its UI; webhook settings", "ref": "AP-EL-48, EL-P12"},
+   {"vendor": "sarvam", "need": "org policy and roles; webhook signing setting", "ref": "SAC-31, open.2026-10-20.acct-sarvam-hook-signing-and-retries"},
+   {"vendor": "bolna", "need": "sub-accounts (Enterprise-only, 403)", "ref": "ACB-15"}]},
+  {"theme": "public-phase-only vendors", "items": [
+   {"vendor": "synthflow", "need": "whole product surface (sales demo only)", "ref": "SYN-40"},
+   {"vendor": "squadstack", "need": "portal surface beyond lead ingestion (sales demo only)", "ref": "SQS-06, SQS-13"},
+   {"vendor": "exotel", "need": "voicebot/AgentStream access and its per-minute price (not published)", "ref": "EXO-34"}]}
+ ],
+ "call_battery_items": [
+  {"item": "handset-side reply gap per vendor on Indian PSTN; Bolna against its code-implied 1.4 s floor", "ref": "ACB-33, P09a, VAP-P09, RET-P09, EL-P08, SAR-P09"},
+  {"item": "short Hindi replies spoken over the agent ('nahi', 'haan', 'ruko', 'bas'): reach the brain or dropped", "ref": "ACB-34, AP-47, EL-P11"},
+  {"item": "caller speech during the opening line", "ref": "ACB-35"},
+  {"item": "cut-ins at the 2.4 s elderly pause", "ref": "SAR-P10, open.2026-10-19.turn-taking"},
+  {"item": "Hindi and regional operator messages ('switched off', 'not reachable', 'busy') for voicemail/IVR detection", "ref": "ACB-41, VAP-P06, RET-P06, EL-P05, SAR-P06"},
+  {"item": "language hold on the Hinglish battery; ElevenLabs hinglish_mode on vs off", "ref": "P11a/b, RET-P10, AP-EL-20, SAR-P11"},
+  {"item": "AI disclosure when asked, on API-built vs dashboard-built agents", "ref": "RAP-20, RET-P12, EL-P09, SAR-P14, P12"},
+  {"item": "real cost lines on a connected call: Retell 4,000-token scaling, ElevenLabs initiated vs irreversible LLM generations, Sarvam pulse debits, Vapi + carrier invoice", "ref": "RAP-51, AP-EL-34, SAR-P13, VAP-P10, RET-P11"},
+  {"item": "webhook delivery, signature and retries as received at our endpoint", "ref": "RAP-41, AP-EL-40, SAC-31, ACB-53"},
+  {"item": "warm transfer with a spoken summary", "ref": "ACB-42, SAR-P06, P06c"}
+ ],
+ "rules_for_both_phases": "Synthetic, fictional data only; calls only to our own verified numbers; store only the standard battery brief in vendor accounts (risk.2026-10-20.acct-vendor-prompt-processing); no paid step without the owner's go; the kept lines in decision.2026-10-20.teardown-lines hold."
+}

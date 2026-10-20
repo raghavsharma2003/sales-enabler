@@ -56,35 +56,61 @@
  {
   "id": "EL-06",
   "dimension": "surface",
-  "claim": "The signed-out dashboard bundle carries a generated API client for an unpublished outbound-campaigns product: campaigns submit/pause/resume/stop/progress/calls/export, campaign leads with a suppressLead mutation, an attention queue (resolve/retry), workspace campaign config and a pre-revoke-status check. None of these 23 routes is in the public OpenAPI or docs. Conversation records already carry campaign_id, campaign_lead_id, cold_attempt and conversation_type (initial/retry/callback/redirect).",
+  "claim": "The signed-out dashboard bundle carries a generated API client for an unpublished outbound-campaigns product: 16 unique paths (18 method-level operations) for campaigns submit/pause/resume/stop/progress/calls/export, campaign leads (useSuppressLead = DELETE a lead), an attention queue (resolve/retry), workspace campaign config and a pre-revoke-status check, plus a dashboard page route /outbound-campaigns. None of these paths is in the public OpenAPI or docs (the public docs use \"outbound campaigns\" only as a name for batch calling). Batch-call metadata on conversation records already carries campaign {campaign_id, campaign_lead_id, cold_attempt, conversation_type initial/retry/callback/redirect}.",
   "grade": "observed",
   "evidence": [
    "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json",
    "data/teardown/elevenlabs/app-js/_index.json",
-   "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
+   "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json",
+   "research/2026-10-20/teardown/elevenlabs/verify.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-counts",
+   "note": "Substance confirmed, counts wrong. bundle_endpoints.py stores (method,path) and (\"?\",path) keys for the same path, so \"23 routes\" double-counts: 16 unique paths, 18 method-level operations. useSuppressLead is a DELETE on campaigns/{campaignId}/leads/{leadId}. New: the dashboard route table includes conversationalAiOutboundCampaigns: `${a}/outbound-campaigns` (a UI page path). The campaign object is in the public schema as BatchCallingCampaignInformation on ConversationHistoryBatchCallModel.campaign (changelog 2026-8-31).",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "The signed-out dashboard bundle carries a generated API client for an unpublished outbound-campaigns product: campaigns submit/pause/resume/stop/progress/calls/export, campaign leads with a suppressLead mutation, an attention queue (resolve/retry), workspace campaign config and a pre-revoke-status check. None of these 23 routes is in the public OpenAPI or docs. Conversation records already carry campaign_id, campaign_lead_id, cold_attempt and conversation_type (initial/retry/callback/redirect)."
+  }
  },
  {
   "id": "EL-07",
   "dimension": "surface",
-  "claim": "Inference from EL-06: ElevenLabs is building a lead-level campaign control plane (retries, callbacks, suppression, an exceptions queue) on top of batch calling; the 2026-10-17 parity row \"no campaign control plane comparable to Vapi/Bolna\" is true of the public product today but is likely to expire.",
+  "claim": "Inference from EL-06: ElevenLabs is building a lead-level campaign control plane (retries, callbacks, suppression, an exceptions queue) on top of batch calling; the 2026-10-17 parity row \"no campaign control plane comparable to Vapi/Bolna\" is true of the public product today but is likely to expire. Falsifiable form: outbound-campaigns paths appear in the public OpenAPI or docs by 2027-01-31.",
   "grade": "inferred",
   "evidence": [
    "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json",
    "research/2026-10-17/lanes/l4a-competitors/parity.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed-made-falsifiable",
+   "note": "Inference stands (16 generated paths + a dashboard page route + campaign metadata already in public conversation records). \"Likely to expire\" had no horizon; verifier added one so it can be scored.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Inference from EL-06: ElevenLabs is building a lead-level campaign control plane (retries, callbacks, suppression, an exceptions queue) on top of batch calling; the 2026-10-17 parity row \"no campaign control plane comparable to Vapi/Bolna\" is true of the public product today but is likely to expire."
+  }
  },
  {
   "id": "EL-08",
   "dimension": "surface",
-  "claim": "The dashboard bundle also references unpublished automations (with schedule-preview and runs), task-agents/task-runs, company-oracle (knowledge sources with ingest), templates (browse, from-agent), cloud-storage-destinations and analytics queries (latency, LLM cost, interruptions, concurrency and queue over time): 326 convai routes in the bundle are absent from the public OpenAPI.",
+  "claim": "The dashboard bundle also references unpublished automations (schedule-preview, runs, activate), task-agents/task-runs, company-oracle (knowledge sources with ingest), templates (browse, from-agent, import), cloud-storage-destinations and analytics queries (latency, LLM cost, interruptions, concurrency and queue over time): 204 unique /v1/convai and /v1/speech-engine paths (243 method-level operations) in the bundle are absent from the public OpenAPI, out of 335 unique such paths in the bundle.",
   "grade": "observed",
   "evidence": [
-   "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json"
+   "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json",
+   "research/2026-10-20/teardown/elevenlabs/verify.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-counts",
+   "note": "Substance confirmed (automations, task-agents, company-oracle, templates, cloud-storage-destinations and /v1/convai/query/* analytics all present). Counts were inflated by double keys: re-run with dedupe by normalised path gives 335 unique scoped paths and 204 unpublished (243 method-level operations), not 568 and 326. Check script: scratchpad bundle_check.py logic is in verify.md.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "The dashboard bundle also references unpublished automations (with schedule-preview and runs), task-agents/task-runs, company-oracle (knowledge sources with ingest), templates (browse, from-agent), cloud-storage-destinations and analytics queries (latency, LLM cost, interruptions, concurrency and queue over time): 326 convai routes in the bundle are absent from the public OpenAPI."
+  }
  },
  {
   "id": "EL-09",
@@ -95,7 +121,14 @@
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json",
    "data/teardown/elevenlabs/_convai_endpoints.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Re-counted: 322 paths, 1,644 schemas, 141 /v1/convai paths with 194 operations; plus 20 speech-engine/flows operations = 214 lines in _convai_endpoints.txt.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-10",
@@ -116,7 +149,14 @@
   "evidence": [
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "TelephonyProvider enum = [twilio, sip_trunk, exotel]; /v1/convai/phone-numbers has POST/GET only (import); no buy-number flow in saved agents docs (Telnyx, Vonage, ACS connect via SIP).",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-12",
@@ -137,7 +177,14 @@
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json",
    "data/teardown/elevenlabs/changelog/entries/2026-6-8.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "All defaults re-read in the schema: llm gemini-2.5-flash, TTS eleven_v4_turbo, ASR scribe_realtime (changelog 2026-6-8 line 15), turn_v3, eagerness normal, turn_timeout 7.0, soft-timeout timeout_seconds -1 with message \"Hhmmmm...yeah.\", speculative_turn false.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-14",
@@ -148,7 +195,14 @@
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json",
    "data/teardown/elevenlabs/docs-md/eleven-agents__customization__llm.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "LLM enum has 111 values; CustomLLMAPIType = chat_completions/responses/websocket. The docs do label these open models \"Hosted by ElevenLabs\" and say they run in the US or the enterprise deployment region (customization__llm.md lines 188-208).",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-15",
@@ -159,7 +213,14 @@
    "data/teardown/elevenlabs/docs-md/eleven-agents__customization__realtime-models.md",
    "data/teardown/elevenlabs/pricing/elevenlabs.io_pricing_api.html.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "realtime-models.md lines 27-29 (gradual rollout per workspace) and 46/187-188 (Max not in India or Singapore residency); pricing_api page says \"OpenAI Realtime-compatible\".",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-16",
@@ -172,7 +233,14 @@
    "data/teardown/elevenlabs/sdk-npm-client/unpacked/package/dist/utils/location.js",
    "data/teardown/elevenlabs/sdk-npm-react-native/unpacked/package/package.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Re-read ConnectionFactory.js (voice defaults to webrtc unless signedUrl/orchestrator/textOnly), location.js (livekit.rtc.<eu|in>.residency.elevenlabs.io; no SG entry in the SDK), WebSocketConnection.js (/v1/convai/conversation?agent_id=), react-native peerDependencies @livekit/react-native ^2.12.0.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-17",
@@ -182,19 +250,37 @@
   "evidence": [
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Schema strings re-found: AuthorizationMethod enum has livekit_token and livekit_token_website; LivekitStackType [standard, static]; GetPhoneNumberOutboundSIPTrunkConfigResponseModel \"Whether a LiveKit SIP outbound trunk is configured\"; is_livekit.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-18",
   "dimension": "architecture",
-  "claim": "Inference from EL-16/17 + DNS: ElevenLabs runs its own LiveKit (server and LiveKit SIP) under its own domains on Google Cloud rather than LiveKit Cloud, Pipecat or Vocode; orchestration (turn model, ASR, TTS, LLM routing) is its own.",
+  "claim": "Inference from EL-16/17 + DNS + HTTP fingerprint: ElevenLabs runs LiveKit server (and LiveKit SIP) under its own domains behind Google Cloud load balancers, not LiveKit Cloud (no livekit.cloud CNAME; GCP LB headers; livekit-server health and validate responses). Whether the orchestrator (turn model, ASR, TTS, LLM routing) is in-house or built on LiveKit Agents is unknown; it is transport-independent, since the same agents are reached over plain WebSocket by the SDK, Exotel and Twilio.",
   "grade": "inferred",
   "evidence": [
    "data/teardown/elevenlabs/net/doh-livekit.rtc.elevenlabs.io.json",
    "data/teardown/elevenlabs/net/gcp-cloud.json",
-   "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
+   "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json",
+   "data/teardown/elevenlabs/verify-2026-10-20/http/",
+   "data/teardown/elevenlabs/verify-2026-10-20/dns/",
+   "research/2026-10-20/teardown/elevenlabs/verify.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-narrowed",
+   "note": "Strengthened on LiveKit-on-GCP: GET https://livekit.rtc.elevenlabs.io/ and the in.residency host return \"OK\" and /rtc/validate returns 401 \"no permissions to access the room\" (livekit-server responses) with \"via: 1.1 google\"; the zone is on Google Cloud DNS with no CNAME to livekit.cloud. Weakened on orchestration: nothing observed distinguishes an in-house orchestrator from the LiveKit Agents framework, and nothing bears on Pipecat or Vocode, so that part is removed. What is observed is that the same agents are reachable over plain WebSocket (SDK, Exotel, Twilio) without LiveKit.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Inference from EL-16/17 + DNS: ElevenLabs runs its own LiveKit (server and LiveKit SIP) under its own domains on Google Cloud rather than LiveKit Cloud, Pipecat or Vocode; orchestration (turn model, ASR, TTS, LLM routing) is its own."
+  }
  },
  {
   "id": "EL-19",
@@ -206,7 +292,14 @@
    "data/teardown/elevenlabs/net/doh-api.elevenlabs.io.json",
    "data/teardown/elevenlabs/net/doh-api.in.residency.elevenlabs.io.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Re-matched every A record against the saved cloud.json (creationTime 2026-10-20T07:07): all API/web/LiveKit hosts are in scope \"global\" prefixes. New: livekit.rtc.* responses carry \"via: 1.1 google\" (GCP external HTTPS load balancer).",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-20",
@@ -218,42 +311,82 @@
    "data/teardown/elevenlabs/net/doh-sip.rtc.in.residency.elevenlabs.io.json",
    "data/teardown/elevenlabs/net/gcp-cloud.json",
    "data/teardown/elevenlabs/net/rdap-199.88.252.34.json",
-   "data/teardown/elevenlabs/docs-md/eleven-agents__phone-numbers__sip-trunking.md"
+   "data/teardown/elevenlabs/docs-md/eleven-agents__phone-numbers__sip-trunking.md",
+   "data/teardown/elevenlabs/verify-2026-10-20/dns/",
+   "research/2026-10-20/teardown/elevenlabs/verify.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed-strengthened",
+   "note": "Re-resolved via Google DoH with EDNS client subnets for Jio (49.36.0.0/24), Airtel (106.192.0.0/24), Azure Central India (20.192.0.0/24), US and EU: every answer identical, ECS scope /0, so there is no geo-DNS. rtc.elevenlabs.io is its own Google Cloud DNS zone with no CNAME to a third party. RDAP: 199.88.252.0/24 registrant Eleven Labs Inc (EL-1185); 136.112.0.0/12 is GOOGL. Scope caveat: this is the inbound signalling address only; sip-trunking.md lines 268-271 and 310 say SIP requests may come from different IPs and RTP uses dynamic IPs.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-21",
   "dimension": "architecture",
-  "claim": "Inference from EL-20: a standard (non-Enterprise) Indian customer on SIP has media anchored in Iowa, adding roughly one India-US round trip (~200-250 ms; Azure Central India-East US is 201 ms) to every turn, and is exposed to the TRAI rule that Indian SIP termination needs an Indian server (Plivo states this for Vapi). India residency (Enterprise only) moves SIP to Mumbai.",
-  "grade": "inferred",
+  "claim": "Hypothesis, not observed: a standard (non-Enterprise) Indian customer pays roughly one India-US round trip (~200-250 ms) per turn. Observed: the inbound SIP signalling address for standard workspaces (sip.rtc.elevenlabs.io) is a single us-central1 IP for every client subnet, including Indian ones. Vendor-claimed: standard-workspace data is hosted in the US, self-hosted LLMs run in the US, and India residency (Enterprise only, SIP in asia-south1) \"may\" reduce latency. Unknown: where RTP media and the agent runtime run (docs: SIP servers distributed, RTP on dynamic IPs). Per Vapi and Plivo docs, Indian numbers need SIP termination or media anchoring in India (vendor-claimed), which a US SIP endpoint may not satisfy. Settled by EL-P08.",
+  "grade": "unknown",
   "evidence": [
    "data/teardown/elevenlabs/net/doh-sip.rtc.elevenlabs.io.json",
    "research/2026-10-17/lanes/l8-azure-bench/report.md",
-   "data/teardown/vapi/docs-md/advanced__sip__plivo.md"
+   "data/teardown/vapi/docs-md/advanced__sip__plivo.md",
+   "data/teardown/elevenlabs/verify-2026-10-20/dns/",
+   "data/teardown/elevenlabs/docs-md/overview__administration__data-residency.md",
+   "data/teardown/elevenlabs/docs-md/eleven-agents__customization__llm.md",
+   "research/2026-10-17/lanes/l2-economics/report.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "downgraded",
+   "note": "The cited evidence shows only that the inbound SIP signalling address for standard workspaces is a us-central1 regional IP. The same doc says SIP servers are distributed and \"SIP requests may come from different IP addresses\" (lines 268-271) and that \"RTP uses dynamic IP addresses\" (line 310), so where media is anchored is not observed. Where the agent runtime runs for a standard workspace is also not observed (API and LiveKit hosts are global anycast). Vendor statements point the same way as the hypothesis: customer data is hosted in the US by default (data-residency.md line 12), self-hosted LLMs run in the US unless enterprise region (llm.md line 208), and residency \"may potentially reduce latency\" (line 148). The TRAI point rests on Vapi's and Plivo's statements, i.e. vendor-claimed. Downgraded to unknown until EL-P08 measures it.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_grade": "inferred",
+   "original_claim": "Inference from EL-20: a standard (non-Enterprise) Indian customer on SIP has media anchored in Iowa, adding roughly one India-US round trip (~200-250 ms; Azure Central India-East US is 201 ms) to every turn, and is exposed to the TRAI rule that Indian SIP termination needs an Indian server (Plivo states this for Vapi). India residency (Enterprise only) moves SIP to Mumbai."
+  }
  },
  {
   "id": "EL-22",
   "dimension": "architecture",
-  "claim": "One 25 s public demo call on elevenlabs.io/conversational-ai (synthetic caller clip, 2026-10-20 17:56 UTC) used a WebSocket to wss://api.elevenlabs.io/v1/convai/conversation from react_sdk 0.14.0-beta.0 (not WebRTC), agent output pcm_44100, user input pcm_16000, server ping 216-223 ms from our US-East egress; 113 frames received (95 audio, 16 ping), 282 sent (262 user_audio_chunk). The demo agent sends no AI disclosure in its first message (\"Hey, how can I help you today?\").",
+  "claim": "One ~25 s public demo call on elevenlabs.io/conversational-ai (synthetic caller clip, 2026-10-20 17:56 UTC) used a WebSocket to wss://api.elevenlabs.io/v1/convai/conversation from react_sdk 0.14.0-beta.0 (no RTCPeerConnection), agent output pcm_44100, user input pcm_16000; 112 frames received (94 audio, 16 ping), 279 sent (262 user_audio_chunk); the first 3 server ping_ms values were 216-223 ms through our US-East agent proxy. The page overrode the agent with first_message \"Hey, how can I help you today?\" and language \"en\"; that first message carries no AI disclosure.",
   "grade": "observed",
   "evidence": [
    "data/teardown/elevenlabs/demo-call/demo-call-signal.json",
    "data/teardown/elevenlabs/har-sanitized/demo-call.slim.har"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-counts",
+   "note": "demo-call-signal.json records rx 112 (94 audio, 16 ping, 1 conversation_initiation_metadata, 1 agent_response) and tx 279 (262 user_audio_chunk, 16 pong, 1 initiation), not 113/95/282. Only the first 3 of 16 ping_ms values were captured (223, 216, 223). Those pings include the agent-proxy hop (l4b line 114: proxy round trips 76-430 ms), so they do not measure distance to the backend. The page itself sent conversation_config_override {first_message \"Hey, how can I help you today?\", language \"en\"}, so the missing disclosure is the page's configured first message. The HAR holds no WebSocket frames; the frame data comes only from the signal file.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "One 25 s public demo call on elevenlabs.io/conversational-ai (synthetic caller clip, 2026-10-20 17:56 UTC) used a WebSocket to wss://api.elevenlabs.io/v1/convai/conversation from react_sdk 0.14.0-beta.0 (not WebRTC), agent output pcm_44100, user input pcm_16000, server ping 216-223 ms from our US-East egress; 113 frames received (95 audio, 16 ping), 282 sent (262 user_audio_chunk). The demo agent sends no AI disclosure in its first message (\"Hey, how can I help you today?\")."
+  }
  },
  {
   "id": "EL-23",
   "dimension": "architecture",
-  "claim": "Speech stack is first-party: ASR Scribe v2 Realtime (scribe_realtime; scribe_v2_turbo also in enum), TTS Eleven v4 Turbo default (also v4, v3 conversational, flash/turbo v2.5, multilingual v2), own turn-detection model turn_v3, own RAG embeddings (e5_mistral_7b_instruct, multilingual_e5_large_instruct). Only the LLM is third-party by default.",
+  "claim": "Speech stack in the agent config is first-party: ASR Scribe v2 Realtime (scribe_realtime; scribe_v2_turbo also in enum), TTS Eleven v4 Turbo default (also v4, v3 conversational, flash/turbo v2.5, multilingual v2), own turn-detection model turn_v3. RAG embeddings are open-weight third-party models (intfloat e5-mistral-7b-instruct default, multilingual-e5-large-instruct; MIT), hosting not observed. By default the third-party components are the LLM and the embedding model.",
   "grade": "observed",
   "evidence": [
-   "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
+   "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json",
+   "data/teardown/elevenlabs/verify-2026-10-20/hf/intfloat_e5-mistral-7b-instruct.json",
+   "data/teardown/elevenlabs/verify-2026-10-20/hf/intfloat_multilingual-e5-large-instruct.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-subclaim-refuted",
+   "note": "Refuted sub-claim: e5_mistral_7b_instruct and multilingual_e5_large_instruct are open-weight models published by intfloat on Hugging Face under MIT (created 2023-12-20 and 2024-02-08), not ElevenLabs' own; so \"Only the LLM is third-party by default\" is wrong (the default RAG embedding is third-party open weights, hosting not observed). ASR/TTS/turn-model enums confirmed: ASRProvider [elevenlabs, scribe_realtime, scribe_v2_turbo], TTSConversationalModel 8 values default eleven_v4_turbo, TurnModel [turn_v2, turn_v3]. Grade stays observed for what the schema exposes; that these first-party models are what actually runs is not observed beyond the config.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Speech stack is first-party: ASR Scribe v2 Realtime (scribe_realtime; scribe_v2_turbo also in enum), TTS Eleven v4 Turbo default (also v4, v3 conversational, flash/turbo v2.5, multilingual v2), own turn-detection model turn_v3, own RAG embeddings (e5_mistral_7b_instruct, multilingual_e5_large_instruct). Only the LLM is third-party by default."
+  }
  },
  {
   "id": "EL-24",
@@ -264,29 +397,53 @@
    "data/teardown/elevenlabs/docs-md/eleven-agents__customization__llm.md",
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Docs line 174 quoted accurately; data-residency.md line 123 says LLM availability differs by region. Inference stands; the region of the Vertex endpoint for non-residency traffic is still not observed.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-25",
   "dimension": "architecture",
-  "claim": "Platform plumbing seen on the signed-out app page: Next.js (Turbopack chunks under elevenlabs.io/app_assets), MobX, Google Identity Toolkit (Firebase Auth) for sign-in, Stripe, hCaptcha, PostHog proxied via /dachshund, VWO, Clarity, Sentry, and a Cloud Function us-central1-xi-labs.cloudfunctions.net/geolocation (GCP project xi-labs).",
+  "claim": "Platform plumbing seen signed-out: Next.js (Turbopack chunks under elevenlabs.io/app_assets), MobX, Google Identity Toolkit (Firebase Auth or GCP Identity Platform) for sign-in, Stripe, hCaptcha, PostHog proxied via /dachshund, VWO, Clarity and a Cloud Function us-central1-xi-labs.cloudfunctions.net/geolocation (GCP project xi-labs) on the app sign-in page; Sentry on the marketing site.",
   "grade": "observed",
   "evidence": [
    "data/teardown/elevenlabs/web/app-sign-in.json",
    "data/teardown/elevenlabs/web/www-agents.json",
    "data/teardown/elevenlabs/har-sanitized/app-sign-in.slim.har"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected",
+   "note": "Sentry is seen on the marketing page (www-agents.json: o4506471608221696.ingest.us.sentry.io, __SENTRY__), not on the app sign-in page, whose only Sentry string is hCaptcha's own CSP report-uri. identitytoolkit.googleapis.com backs both Firebase Auth and GCP Identity Platform; the capture cannot tell which. The other items re-found as stated.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Platform plumbing seen on the signed-out app page: Next.js (Turbopack chunks under elevenlabs.io/app_assets), MobX, Google Identity Toolkit (Firebase Auth) for sign-in, Stripe, hCaptcha, PostHog proxied via /dachshund, VWO, Clarity, Sentry, and a Cloud Function us-central1-xi-labs.cloudfunctions.net/geolocation (GCP project xi-labs)."
+  }
  },
  {
   "id": "EL-26",
   "dimension": "architecture",
-  "claim": "The convai widget core (0.21.0) bundles @fingerprintjs/fingerprintjs 5.x and Preact; the widget fingerprints the browser (inferred use: abuse limiting or anonymous user identity).",
+  "claim": "The convai widget core (0.21.0) bundles @fingerprintjs/fingerprintjs 5.x and Preact; when the embedder passes no userId, the widget uses the FingerprintJS visitorId (persisted in localStorage elevenlabs_convai_user_id, random-UUID fallback) as the conversation user_id.",
   "grade": "observed",
   "evidence": [
-   "data/teardown/elevenlabs/sdk-npm-convai-widget-core/unpacked/package/package.json"
+   "data/teardown/elevenlabs/sdk-npm-convai-widget-core/unpacked/package/package.json",
+   "data/teardown/elevenlabs/sdk-npm-convai-widget-core/unpacked/package/dist/index.js"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-upgraded",
+   "note": "The inferred use is now observed: widget-core index.js za() reads localStorage \"elevenlabs_convai_user_id\", else uses FingerprintJS visitorId (falling back to crypto.randomUUID), stores it, and sets it as the conversation userId when the embedder gave none (line 3545). It also calls m1.openfpcdn.io npm-monitoring. v2 relevance: per-user memory on widget traffic would be keyed to a browser fingerprint.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "The convai widget core (0.21.0) bundles @fingerprintjs/fingerprintjs 5.x and Preact; the widget fingerprints the browser (inferred use: abuse limiting or anonymous user identity)."
+  }
  },
  {
   "id": "EL-27",
@@ -296,7 +453,14 @@
   "evidence": [
    "data/teardown/elevenlabs/jobs/ashby-elevenlabs.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Re-searched 157 job JSON records: 0 mention LiveKit, WebRTC or SIP; vLLM/SGLang/TensorRT/Triton in Research Engineer - Inference; India roles as stated.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-28",
@@ -307,7 +471,14 @@
    "data/teardown/elevenlabs/sdk-npm-client/unpacked/package/dist/utils/orchestrator.js",
    "data/teardown/elevenlabs/docs-md/overview__capabilities__private-deployment.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "orchestrator.js constructEnclaveSetupConfig (bedrock_inference_profile, post-call webhooks) and private-deployment.md (\"available on AWS and GCP\", Azure later in H2 2026) re-read.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-29",
@@ -319,7 +490,14 @@
    "research/2026-10-20/teardown/elevenlabs/pricing-allin.json",
    "research/2026-10-17/lanes/l4a-competitors/pricing-history.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Pricing page text re-read: $0.080/min every plan, burst $0.160, text $0.003, LLM \"at cost\", no telephony fee; included minutes divide to $0.08/min on every paid plan. l4a pricing-history rows 2026-06-06 and 2026-10-17 match.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-30",
@@ -335,36 +513,61 @@
  {
   "id": "EL-31",
   "dimension": "pricing",
-  "claim": "All-in list price for an Indian outbound minute at FX 95: INR 8.17-8.92 via Exotel or Plivo (platform INR 7.60 + LLM INR 0.19-0.72 + telephony INR 0.38-0.60); INR 15.8-16.5 in burst; INR 12.5-15.0 via Twilio to an Indian mobile. That is about 2x Sarvam (INR 3.4-3.9) and above the INR 3.5-7 Indian band.",
+  "claim": "All-in list price for an Indian outbound minute at FX 95: INR 8.17-8.92 via Exotel or Plivo (platform INR 7.60 + LLM INR 0.19-0.72 + telephony INR 0.38-0.60, Exotel assumed at Plivo's published rate; the Plivo route may be unavailable on a standard workspace because Indian numbers need media anchored in India); INR 15.8-16.5 in burst; INR 12.5-15.0 via Twilio to an Indian mobile. That is 2.1-2.6x Sarvam (INR 3.4-3.9), and the platform fee alone (INR 7.60) is above the INR 3.5-7 Indian band.",
   "grade": "inferred",
   "evidence": [
    "research/2026-10-20/teardown/elevenlabs/pricing-allin.json",
    "research/2026-10-18/lanes/g4-market-selfhost/prices.csv",
    "research/2026-10-17/lanes/l2-economics/report.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed-with-caveats",
+   "note": "Arithmetic reproduces (7.60+0.193+0.38=8.17; 7.60+0.721+0.60=8.92; Twilio 12.50-14.96). Caveats: (1) the LLM band uses gemini-3.1/3.5-flash-lite rows while the schema default is gemini-2.5-flash, and the low end assumes 83% prompt-cache hits ElevenLabs may not pass through; (2) Exotel per-minute rates are quote-gated (l2 row 12), so the Exotel figure assumes Plivo's rate; (3) l2 line 188 and Vapi's Plivo page say Indian numbers need media anchored in India, so the Plivo route on a standard (US-SIP) workspace may not be available at all. Ratio to Sarvam is 2.1-2.6x. The headline survives every caveat because the INR 7.60 platform fee alone is above the INR 3.5-7 band.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "All-in list price for an Indian outbound minute at FX 95: INR 8.17-8.92 via Exotel or Plivo (platform INR 7.60 + LLM INR 0.19-0.72 + telephony INR 0.38-0.60); INR 15.8-16.5 in burst; INR 12.5-15.0 via Twilio to an Indian mobile. That is about 2x Sarvam (INR 3.4-3.9) and above the INR 3.5-7 Indian band."
+  }
  },
  {
   "id": "EL-32",
   "dimension": "pricing",
-  "claim": "The $0.08 platform fee is 3.9x what the same ASR and TTS cost on ElevenLabs' own API list (Scribe v2 Realtime $0.39/h = $0.0065/min plus Flash/Turbo TTS $0.04 per 1K chars x 352 chars = $0.0141/min).",
+  "claim": "The $0.08 platform fee is 3.3-3.9x what the same ASR and TTS cost on ElevenLabs' own API list (Scribe v2 Realtime $0.39/h = $0.0065/min plus Flash/Turbo or v4 Turbo TTS $0.04 per 1K chars x 352-440 billed chars per connected minute = $0.0141-0.0176/min).",
   "grade": "inferred",
   "evidence": [
    "research/2026-10-20/teardown/elevenlabs/pricing-allin.json",
    "data/teardown/elevenlabs/pricing/elevenlabs.io_pricing_api.html.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed-with-sensitivity",
+   "note": "Arithmetic reproduces (0.08 / (0.0065 + 0.0141) = 3.9). The API page's own convention is 1K chars ~ 1 min of speech; on g4's alt basis of 440 billed chars per connected minute the ratio is 3.3x. Range 3.3-3.9x.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "The $0.08 platform fee is 3.9x what the same ASR and TTS cost on ElevenLabs' own API list (Scribe v2 Realtime $0.39/h = $0.0065/min plus Flash/Turbo TTS $0.04 per 1K chars x 352 chars = $0.0141/min)."
+  }
  },
  {
   "id": "EL-33",
   "dimension": "pricing",
-  "claim": "Reconstructed platform COGS (own ASR + own TTS on own GPUs, self-hosted LiveKit on GCP, LLM passed through): INR 0.20-1.38 per minute, implying 82-97% gross margin on the INR 7.60 platform fee; ElevenLabs could price an Indian minute near Sarvam's and stay profitable.",
-  "grade": "inferred",
+  "claim": "Hypothesis, analogue-based (not ElevenLabs data): if ElevenLabs' own ASR and TTS cost what comparable self-hosted models cost on rented GPUs, and LiveKit self-hosting costs below LiveKit Cloud list, platform COGS would be INR 0.20-1.38 per minute (82-97% gross margin on the INR 7.60 fee). Utilisation headroom, free tier, backup-LLM cascade, turn model, RAG and egress are excluded; no ElevenLabs cost or margin data was found.",
+  "grade": "unknown",
   "evidence": [
    "research/2026-10-20/teardown/elevenlabs/pricing-allin.json",
    "research/2026-10-18/lanes/g4-market-selfhost/findings.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "downgraded",
+   "note": "Every COGS component is an analogue: other models (IndicConformer/Riva-class ASR, Veena/Orpheus-class 3B TTS) on rented GPUs from g4, plus a LiveKit Cloud retail price as an upper bound. None is an observation of ElevenLabs. The model excludes utilisation headroom for burst (3x concurrency), free-tier minutes, the default-on backup-LLM cascade, the turn model, RAG embeddings and egress. The corpus has no ElevenLabs margin or cost data (company-financials.csv has funding and ARR only), and \"could price near Sarvam and stay profitable\" cannot be falsified from public data. Kept as a hypothesis band; downgraded to unknown.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_grade": "inferred",
+   "original_claim": "Reconstructed platform COGS (own ASR + own TTS on own GPUs, self-hosted LiveKit on GCP, LLM passed through): INR 0.20-1.38 per minute, implying 82-97% gross margin on the INR 7.60 platform fee; ElevenLabs could price an Indian minute near Sarvam's and stay profitable."
+  }
  },
  {
   "id": "EL-34",
@@ -409,7 +612,14 @@
    "data/teardown/elevenlabs/status/incidents-parsed.json",
    "data/teardown/elevenlabs/status/proxy_widget.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "Re-classified the 25 incident titles by hand: 9 name Agents/SIP/Twilio/batch/conversation history, 4 are SIP/Twilio, 5 are EU residency; none is India residency.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-38",
@@ -421,41 +631,74 @@
    "data/teardown/elevenlabs/changelog/entries/2026-6-1.md",
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "exotel.md re-read: Voicebot applet WebSocket wss://api(.in.residency).elevenlabs.io/v1/convai/conversation/exotel, 8 kHz PCM (line 236), Calls/connect.json with API key/token, Mumbai and Singapore clusters, gated applet + channel provisioning \"1 to 2 business days\", Connect applet for transfers. Note: in the default environment Exotel media goes to the global anycast API host, whose backend region is not visible.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-39",
   "dimension": "india",
-  "claim": "India data residency exists as an Enterprise-only isolated environment (in.residency.elevenlabs.io, separate workspace and API key); storage is in India but \"processing may nevertheless occur outside\", Realtime v1 Max is unavailable there, and agents must be recreated (no migration). This corrects the 2026-10-17 parity row \"Data residency page (EU/US); no India region found\".",
+  "claim": "India data residency exists as an Enterprise-only isolated environment (in.residency.elevenlabs.io, separate workspace and API key, blank on creation, limited migration support); storage is in India but \"processing may nevertheless occur outside\", Realtime v1 Max is unavailable there, and the docs say in-region users may see lower latency from localized processing (vendor-claimed). This corrects the 2026-10-17 parity row \"Data residency page (EU/US); no India region found\".",
   "grade": "observed",
   "evidence": [
    "data/teardown/elevenlabs/docs-md/overview__administration__data-residency.md",
    "data/teardown/elevenlabs/docs-md/eleven-agents__customization__realtime-models.md",
    "research/2026-10-17/lanes/l4a-competitors/parity.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-wording",
+   "note": "data-residency.md line 118 says \"limited support for migrating\" (workspace starts blank, line 58; professional voice clones can be link-shared), not \"no migration\". Lines 146-151 vendor-claim that residency \"may potentially reduce latency due to localized processing\" for in-region users.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "India data residency exists as an Enterprise-only isolated environment (in.residency.elevenlabs.io, separate workspace and API key); storage is in India but \"processing may nevertheless occur outside\", Realtime v1 Max is unavailable there, and agents must be recreated (no migration). This corrects the 2026-10-17 parity row \"Data residency page (EU/US); no India region found\"."
+  }
  },
  {
   "id": "EL-40",
   "dimension": "india",
-  "claim": "Across 258 saved agents/overview docs pages there is no mention of TRAI, DLT, NCPR/DND, 140/160-series or Indian calling hours; the only telemarketing-law page is TCPA (US). Batch calling has no calling-window, DNC or consent field; the TCPA page tells the buyer to keep DNC lists, honour 8am-9pm and record consent. India compliance is left to the buyer (confirms ledger CMP-27).",
+  "claim": "Across 258 saved agents/overview docs pages (bodies) and all 804 page titles in the docs index there is no mention of TRAI, DLT, NCPR/DND, 140/160-series or Indian calling hours; the only telemarketing-law page is TCPA (US). The batch-calling API has no calling-window, DNC or consent field; the TCPA page tells the buyer to keep DNC lists, honour 8am-9pm and record consent. India compliance is left to the buyer (confirms ledger CMP-27).",
   "grade": "observed",
   "evidence": [
    "data/teardown/elevenlabs/docs-md/eleven-agents__legal__tcpa.md",
    "data/teardown/elevenlabs/docs-md/eleven-agents__phone-numbers__batch-calls.md",
-   "research/2026-10-17/ledger.md"
+   "research/2026-10-17/ledger.md",
+   "data/teardown/elevenlabs/verify-2026-10-20/docs-full/llms-full.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed-scope-noted",
+   "note": "Body grep of all 258 saved pages and 6 help pages: zero hits for TRAI, DLT, NCPR, NDNC, DND, TCCCPR, 140/160-series (the only regex hits were \"16000\" sample rates and image hashes). Title grep of the full 804-page index: no India-compliance page; compliance titles are TCPA, HIPAA and Twilio regional routing. The lane's docs/llms-full.txt is byte-identical to llms.txt (the URL redirects; re-fetched today, still a redirect), so bodies of the other 546 pages (API reference, help center) were not checked. Batch submit schema has no window, DNC or consent field (it has scheduled_time_unix, timezone, target_concurrency_limit).",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Across 258 saved agents/overview docs pages there is no mention of TRAI, DLT, NCPR/DND, 140/160-series or Indian calling hours; the only telemarketing-law page is TCPA (US). Batch calling has no calling-window, DNC or consent field; the TCPA page tells the buyer to keep DNC lists, honour 8am-9pm and record consent. India compliance is left to the buyer (confirms ledger CMP-27)."
+  }
  },
  {
   "id": "EL-41",
   "dimension": "india",
-  "claim": "AI disclosure and recording consent are a contractual duty of the buyer (ElevenAgents terms): notice must precede any interaction; the sample verbal line is \"Hi, I'm an AI assistant. This call may be recorded...\". The platform does not inject it.",
+  "claim": "AI disclosure and recording consent are a contractual duty of the buyer (ElevenAgents terms): notice must be presented immediately prior to any interaction; the sample verbal line is \"Hi, I'm an AI assistant. This call may be recorded...\". The web widget offers a configurable terms dialog; for phone calls the platform injects nothing.",
   "grade": "observed",
   "evidence": [
-   "data/teardown/elevenlabs/docs-md/eleven-agents__legal__disclosure-requirement.md"
+   "data/teardown/elevenlabs/docs-md/eleven-agents__legal__disclosure-requirement.md",
+   "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected",
+   "note": "\"The platform does not inject it\" was too broad. The web widget has a built-in, configurable terms/consent dialog (WidgetConfig terms_text/terms_html/terms_key; shareable_page_show_terms default true; the 2026-10-17 and 2026-10-20 demos showed it before the call). For phone calls no platform-injected disclosure appears in the docs or schema.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "AI disclosure and recording consent are a contractual duty of the buyer (ElevenAgents terms): notice must precede any interaction; the sample verbal line is \"Hi, I'm an AI assistant. This call may be recorded...\". The platform does not inject it."
+  }
  },
  {
   "id": "EL-42",
@@ -477,7 +720,14 @@
    "data/teardown/elevenlabs/docs-md/eleven-agents__phone-numbers__twilio-integration__regional-routing.md",
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "TwilioRegionId enum = [us1, ie1, au1]; regional-routing.md line 17 says numbers default to us1 even if non-US. Twilio India rule is from Twilio's own guideline page saved by the vapi lane.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-44",
@@ -488,7 +738,14 @@
    "data/teardown/elevenlabs/docs-md/overview__models.md",
    "data/teardown/elevenlabs/docs-md/eleven-agents__customization__tools__system-tools__language-detection.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "All 12 Indic languages appear in overview__models.md; language-detection.md line 8 \"not enabled automatically\", line 22 \"The LLM should call this tool when\".",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-45",
@@ -499,7 +756,14 @@
    "research/2026-10-17/lanes/l4b-measured/report.md",
    "research/2026-10-17/lanes/l4b-measured/data/elevenlabs-ws-timing.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "l4b report lines 48-53, 140-146 and 191 re-read; every number matches. Caveat carried from l4b line 39: demo agents, not configured platforms.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-46",
@@ -556,25 +820,43 @@
  {
   "id": "EL-51",
   "dimension": "v2",
-  "claim": "Memory across calls is not documented publicly, but the data model has memory entries (MemoryEntrySearchResult with version and a source of conversation or manual; LoadableMemoryEntry; resource type convai_memory_entries) and the dashboard bundle calls /v1/convai/agents/{id}/memories CRUD and /agents/{id}/user-memory/preview. Memory is in development or private beta (inference).",
+  "claim": "Memory across calls has no feature documentation; the only public mention is the versioning doc listing \"user memories\" under agent privacy settings, while the public PrivacyConfig schema has no memory field. The data model has memory entries (MemoryEntrySearchResult with version and a conversation or manual source, since 2026-04-27; LoadableMemoryEntry; resource type convai_memory_entries) and the dashboard bundle calls /v1/convai/agents/{id}/memories CRUD and /agents/{id}/user-memory/preview and erase. Memory is in development or private beta (inference).",
   "grade": "observed",
   "evidence": [
    "data/teardown/elevenlabs/openapi/api.elevenlabs.io_openapi.json",
    "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json",
-   "data/teardown/elevenlabs/changelog/entries/2026-6-15.md"
+   "data/teardown/elevenlabs/changelog/entries/2026-6-15.md",
+   "data/teardown/elevenlabs/docs-md/eleven-agents__operate__versioning.md",
+   "data/teardown/elevenlabs/changelog/entries/2026-4-27.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-wording",
+   "note": "Not entirely undocumented: eleven-agents__operate__versioning.md line 532 lists the agent `privacy` settings as \"Retention settings, zero-retention mode, and user memories\", while the public PrivacyConfig schema has no memory field. Schemas MemoryEntrySearchResult/ConversationSource/ManualSource landed 2026-04-27 and LoadableMemoryEntry 2026-06-15 (changelog). Dashboard hooks: useGetMemoryEntryRoute, useUpdateMemoryEntryRoute, useDeleteMemoryEntryRoute, useGetPreviewUserMemoryRoute, useErasePreviewUserMemoryRoute. The private-beta inference stands.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Memory across calls is not documented publicly, but the data model has memory entries (MemoryEntrySearchResult with version and a source of conversation or manual; LoadableMemoryEntry; resource type convai_memory_entries) and the dashboard bundle calls /v1/convai/agents/{id}/memories CRUD and /agents/{id}/user-memory/preview. Memory is in development or private beta (inference)."
+  }
  },
  {
   "id": "EL-52",
   "dimension": "v2",
-  "claim": "Personalisation today is per-call: dynamic variables, per-conversation overrides (prompt, first message, language, voice), user_id for grouping conversations, and Twilio inbound personalisation webhooks; nothing carries facts from one call to the next without the buyer's own store (the docs recommend summarising history from post-call webhooks).",
+  "claim": "Personalisation today is per-call: dynamic variables, per-conversation overrides (prompt, first message, language, voice), user_id for grouping conversations, and conversation-initiation webhooks for inbound telephony and messaging; nothing carries facts from one call to the next without the buyer's own store (the docs recommend summarising history from post-call webhooks).",
   "grade": "observed",
   "evidence": [
    "data/teardown/elevenlabs/docs-md/eleven-agents__customization__personalization.md",
    "data/teardown/elevenlabs/docs-md/eleven-agents__customization__llm__optimizing-costs.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-wording",
+   "note": "personalization.md lines 77-81: conversation initiation webhooks serve inbound telephony and messaging in general, not only Twilio.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Personalisation today is per-call: dynamic variables, per-conversation overrides (prompt, first message, language, voice), user_id for grouping conversations, and Twilio inbound personalisation webhooks; nothing carries facts from one call to the next without the buyer's own store (the docs recommend summarising history from post-call webhooks)."
+  }
  },
  {
   "id": "EL-53",
@@ -586,19 +868,35 @@
    "data/teardown/elevenlabs/docs-md/eleven-agents__operate__experiments.md",
    "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "confirmed",
+   "note": "architect__faq.md lines 7-8 and 39-40; experiments.md: deterministic routing by conversation ID, manual \"Promote the winner\", no significance test. The doc contradicts itself (routing by conversation ID yet \"the same user ... across sessions\").",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md"
+  }
  },
  {
   "id": "EL-54",
   "dimension": "v2",
-  "claim": "Marketing vs docs: the India page claims Hinglish-tuned speech and India-ready compliance; the docs have no Hinglish guidance and no Indian regulatory controls; the 2026-10-17 demo answered Hindi callers in English. Same pattern as ledger CMP-01 (marketing ahead of docs).",
+  "claim": "Marketing vs docs: the India page claims speech \"tuned for how India actually speaks, including Hinglish\" and \"compliance controls\"; the docs (258 page bodies, 804 titles) contain no \"Hinglish\" and no Indian regulatory controls. Same pattern as ledger CMP-01 (marketing ahead of docs). The 2026-10-17 demo's English replies are not evidence here: the demo page forces language \"en\".",
   "grade": "inferred",
   "evidence": [
    "data/teardown/elevenlabs/india/elevenlabs.io_india.txt",
    "data/teardown/elevenlabs/docs/llms.txt",
-   "research/2026-10-17/lanes/l4b-measured/report.md"
+   "research/2026-10-17/lanes/l4b-measured/report.md",
+   "data/teardown/elevenlabs/demo-call/demo-call-signal.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verify": {
+   "status": "corrected-evidence-removed",
+   "note": "The demo evidence is withdrawn. The 2026-10-20 capture shows the elevenlabs.io page itself sends conversation_config_override language \"en\", and l4b line 39 already flagged ElevenLabs' English as a likely configuration artefact, so English answers to Hindi callers say nothing about Hinglish capability. What remains is two observations (India page vs docs), so the inference stands on narrower ground.",
+   "verified": "2026-10-20",
+   "by": "adversarial verifier",
+   "detail": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "original_claim": "Marketing vs docs: the India page claims Hinglish-tuned speech and India-ready compliance; the docs have no Hinglish guidance and no Indian regulatory controls; the 2026-10-17 demo answered Hindi callers in English. Same pattern as ledger CMP-01 (marketing ahead of docs)."
+  }
  },
  {
   "id": "EL-55",

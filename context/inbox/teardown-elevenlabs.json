@@ -5,7 +5,7 @@
    "type": "evidence",
    "status": "proposed",
    "source": "verified",
-   "title": "ElevenLabs Agents public teardown (account-free): 56 graded claims (44 observed, 9 inferred, 3 vendor-claimed) from the 804-page docs index (258 pages saved as Markdown), the public OpenAPI (322 paths, 141 convai), pricing pages, 32 changelog entries, the incident.io status feed, 6 npm SDKs and the PyPI SDK, DNS/RDAP of 19 hostnames, passive captures of elevenlabs.io/agents and the signed-out app, one 25 s public demo call, 157 job posts, Trustpilot, GitHub issues and HN. sha256 manifest of 3,809 raw files.",
+   "title": "ElevenLabs Agents public teardown (account-free): 56 graded claims from the 804-page docs index (258 page bodies saved as Markdown), the public OpenAPI (322 paths, 141 convai), pricing pages, 32 changelog entries, the incident.io status feed, 6 npm SDKs and the PyPI SDK, DNS/RDAP of 19 hostnames, passive captures of elevenlabs.io/agents and the signed-out app, one 25 s public demo call, 157 job posts, Trustpilot, GitHub issues and HN. Adversarially verified the same day: 37 claims re-checked, 2 downgraded to unknown (EL-21 Iowa media anchoring; EL-33 82-97% margin), 1 sub-claim refuted (EL-23 embeddings are intfloat open weights), 15 corrected or scoped. Grades now 44 observed, 7 inferred, 3 vendor-claimed, 2 unknown. sha256 manifest of 3,846 raw files.",
    "path": "research/2026-10-20/teardown/elevenlabs/claims.json",
    "date": "2026-10-20"
   },
@@ -14,7 +14,7 @@
    "type": "evidence",
    "status": "proposed",
    "source": "verified",
-   "title": "ElevenLabs is building a lead-level outbound campaign product that is not public yet. The signed-out dashboard bundle carries 23 unpublished /v1/convai/outbound-campaigns routes: campaigns submit/pause/resume/stop/progress/export, leads with suppressLead, an attention queue (resolve/retry), workspace config and pre-revoke-status. Conversation records already carry campaign_id, campaign_lead_id, cold_attempt and conversation_type (initial/retry/callback/redirect). The public product is still single-start batch calling with no calling window, retry policy or suppression. Of 568 convai routes in the bundle, 326 are absent from the public OpenAPI (also automations, task-agents, memories, templates).",
+   "title": "ElevenLabs is building a lead-level outbound campaign product that is not public yet. The signed-out dashboard bundle carries a generated client for 16 unpublished /v1/convai/outbound-campaigns paths (18 operations): campaigns submit/pause/resume/stop/progress/calls/export, leads with useSuppressLead (DELETE a lead), an attention queue (resolve/retry), workspace config and pre-revoke-status, plus a dashboard page route /outbound-campaigns. Public conversation records already carry batch-call campaign metadata {campaign_id, campaign_lead_id, cold_attempt, conversation_type initial/retry/callback/redirect} (2026-08-31). The public product is still single-start batch calling with no calling window, retry policy or suppression. Of 335 unique convai/speech-engine paths in the bundle, 204 (243 operations) are absent from the public OpenAPI, including automations, task-agents, memories, templates and analytics queries. Counts re-done by the verifier with dedupe by normalised path; the lane first reported 23 and 326 of 568 because paths seen by both regexes were counted twice.",
    "path": "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json",
    "date": "2026-10-20"
   },
@@ -23,7 +23,7 @@
    "type": "evidence",
    "status": "proposed",
    "source": "verified",
-   "title": "ElevenLabs has an India data-residency environment, but only on Enterprise. The 2026-10-17 parity row \"no India region found\" is wrong. in.residency.elevenlabs.io is a separate workspace: storage is in India, \"processing may nevertheless occur outside\", Realtime v1 Max is not offered there and agents are not migrated. DNS shows SIP is regional: sip.rtc.elevenlabs.io is in GCP us-central1 and sip.rtc.in.residency.elevenlabs.io is in asia-south1 (Mumbai). The static-IP SIP /24 (199.88.252.0/24) is registered to Eleven Labs Inc. Inference: a self-serve Indian buyer on SIP has media anchored in Iowa, adding about one India-US round trip (~200-250 ms) per turn, and faces the TRAI rule that Indian SIP termination needs an Indian server.",
+   "title": "ElevenLabs has an India data-residency environment, but only on Enterprise. The 2026-10-17 parity row \"no India region found\" is wrong. in.residency.elevenlabs.io is a separate, blank workspace with limited migration; storage is in India, \"processing may nevertheless occur outside\", and Realtime v1 Max is not offered there. Observed: SIP signalling is regional. sip.rtc.elevenlabs.io is one GCP us-central1 IP and sip.rtc.in.residency.elevenlabs.io is asia-south1 (Mumbai). The answer is the same for Jio, Airtel and Azure Central India client subnets (ECS scope /0, no geo-DNS), and the static-IP SIP /24 (199.88.252.0/24) is registered to Eleven Labs Inc. Vendor-claimed: standard-workspace data and self-hosted LLMs are in the US, and residency \"may\" reduce latency. Unknown (verifier downgrade of EL-21): where RTP media and the agent runtime run for a standard Indian buyer, since the docs say SIP servers are distributed and RTP uses dynamic IPs, and so whether a ~200-250 ms India-US penalty per turn exists. EL-P08 measures it.",
    "path": "data/teardown/elevenlabs/net/doh-sip.rtc.in.residency.elevenlabs.io.json",
    "date": "2026-10-20"
   },
@@ -50,7 +50,7 @@
    "type": "measurement",
    "status": "measured",
    "source": "verified",
-   "title": "ElevenAgents all-in list price for an Indian outbound minute at FX 95: INR 8.17-8.92 via Exotel or Plivo, INR 15.8-16.5 in burst, INR 12.5-15.0 via Twilio. The platform fee is $0.08 = INR 7.60 on every plan and is unchanged in USD since 2026-06-06. The rest is LLM pass-through (INR 0.19-0.72) and telephony (INR 0.38-0.60). The $0.08 fee is 3.9x the same ASR and TTS on ElevenLabs' own API list. Reconstructed platform COGS of INR 0.20-1.38/min implies an 82-97% gross margin (inference, not measured).",
+   "title": "ElevenAgents all-in list price for an Indian outbound minute at FX 95: INR 8.17-8.92 via Exotel or Plivo, INR 15.8-16.5 in burst, INR 12.5-15.0 via Twilio. The platform fee is $0.08 = INR 7.60 on every plan, unchanged in USD since 2026-06-06, and alone is above the INR 3.5-7 Indian band (2.1-2.6x Sarvam all-in). The rest is LLM pass-through (INR 0.19-0.72, flash-lite rows; the default gemini-2.5-flash is not priced) and telephony (INR 0.38-0.60; Exotel is quote-gated and assumed equal to Plivo, and the Plivo route may be closed on a standard US-SIP workspace because Indian numbers need media anchored in India). The $0.08 fee is 3.3-3.9x the same ASR and TTS on ElevenLabs' own API list. A reconstructed-COGS margin (82-97%) is an analogue hypothesis that the verifier downgraded to unknown (EL-33).",
    "n": "4 price components (platform, burst, LLM pass-through range from g4 workload, telephony range) + 3 own-API list prices",
    "method": "computed from elevenlabs.io/pricing/agents and /pricing/api read 2026-10-20, g4 prices.csv/selfhost tables and l2 telephony rates (code/pricing.py); list prices, not an invoice",
    "path": "research/2026-10-20/teardown/elevenlabs/pricing-allin.json",
@@ -72,7 +72,7 @@
    "type": "evidence",
    "status": "proposed",
    "source": "verified",
-   "title": "ElevenLabs v2 signals.\n- Memory across calls is undocumented but in the data model: memory entries with version and a conversation/manual source. The dashboard calls /agents/{id}/memories and /agents/{id}/user-memory/preview.\n- Personalisation today is per call only: dynamic variables, overrides and user_id.\n- The improvement loop is human-gated: Spotlight finds an issue, Architect proposes a branch with tests, a teammate merges, and experiments split traffic with manual promotion.\n- \"Proactive proposals\" and scheduled automations are announced; the bundle already calls /convai/automations and /triage-tickets/{id}/architect-dispatches.",
+   "title": "ElevenLabs v2 signals.\n- Memory across calls has no feature docs. The only public mention is \"user memories\" under agent privacy settings in the versioning doc; the public PrivacyConfig has no memory field. The data model has memory entries (version, conversation/manual source, since 2026-04-27), and the dashboard calls /agents/{id}/memories and /agents/{id}/user-memory/preview.\n- On widget traffic the default user_id is a FingerprintJS browser fingerprint (persisted in localStorage), so any per-user memory there is keyed to a device, not an authenticated person.\n- Personalisation today is per call only: dynamic variables, overrides, user_id and initiation webhooks.\n- The improvement loop is human-gated: Spotlight finds an issue, Architect proposes a branch with tests, a teammate merges, and experiments split traffic with manual promotion and no documented significance test.\n- \"Proactive proposals\" and scheduled automations are announced; the bundle already calls /convai/automations and /triage-tickets/{id}/architect-dispatches.",
    "path": "research/2026-10-20/teardown/elevenlabs/bundle-endpoints.json",
    "date": "2026-10-20"
   },
@@ -81,8 +81,8 @@
    "type": "decision",
    "status": "proposed",
    "source": "model",
-   "title": "Proposed: treat ElevenLabs Agents as the strongest global rival for Indian enterprise voice. It is not just a TTS vendor: it has India residency, native Exotel, Indian GTM hires and Indian agent logos, and a campaign product in the pipeline. Score VP against it on five runnable tasks:\n- handset reply gap on Indian PSTN on a standard (non-Enterprise) plan;\n- Hinglish language hold on the default configuration;\n- recurring 09:00-21:00 IST windows with per-lead retries and suppression;\n- messy-CSV hygiene (+91 normalisation, dedupe, opt-out);\n- Indian carrier and regulatory failure reasons in plain language.",
-   "rationale": "Public evidence shows ElevenLabs owns the speech stack (ASR, TTS, turn model, S2S), ships ~6 agent features a week, already solved domestic Indian telephony through Exotel, and is building leads/suppression/retries; its platform margin is 82-97% (inferred) so a price cut is cheap for it. Its public gaps for Indian outbound are regional processing for self-serve buyers, Indian compliance controls, Hinglish handling and India-specific failure reasons.",
+   "title": "Proposed: treat ElevenLabs Agents as the strongest global rival for Indian enterprise voice. It is not just a TTS vendor: it has India residency, native Exotel, Indian GTM hires and (vendor-claimed) Indian agent logos, and a campaign product in the pipeline. Score VP against it on five runnable tasks:\n- handset reply gap on Indian PSTN on a standard (non-Enterprise) plan;\n- Hinglish language hold on the default configuration;\n- recurring 09:00-21:00 IST windows with per-lead retries and suppression;\n- messy-CSV hygiene (+91 normalisation, dedupe, opt-out);\n- Indian carrier and regulatory failure reasons in plain language.",
+   "rationale": "Public evidence shows ElevenLabs owns the speech stack (ASR, TTS, turn model, S2S; embeddings are open weights), ships ~6 agent features a week, already offers domestic Indian telephony through Exotel (after a 1-2 business-day applet enablement), and has a leads/suppression/retries campaign product built but unpublished. Its margin is unknown: an analogue COGS estimate suggests room to cut price, but the verifier graded it unknown. Its public gaps for Indian outbound are India-region processing for self-serve buyers (the latency effect is unmeasured), Indian compliance controls, Hinglish handling on a configured agent (unmeasured; the public demo forces English) and India-specific failure reasons.",
    "reverse_if": "ElevenLabs makes outbound campaigns public with calling windows and suppression and offers India-region processing on self-serve plans; or the account phase measures handset p50 <= 1.5 s with >= 90% Hinglish language hold on the default configuration; or it prices Indian minutes at or below INR 4 all-in.",
    "date": "2026-10-20"
   },
@@ -91,8 +91,8 @@
    "type": "risk",
    "status": "open",
    "source": "model",
-   "title": "Within about one quarter, ElevenLabs could launch its hidden outbound-campaigns product (leads, retries, suppression) and cross-call memory, and cut its Indian price toward INR 4/min. A 82-97% platform margin (inferred) makes the cut affordable. That would close the usability and price gaps VP is targeting, leaving only India-resident latency, compliance and Hinglish quality.",
-   "mitigation": "Re-run code/bundle_endpoints.py weekly against the signed-out app bundle and the public OpenAPI (radar watchlist), and diff the changelog. Build VP's Indian operator layer (DLT/140-160 declaration, NCPR scrub, consent ledger, IST windows, business-language outcomes) as the product, and keep India-resident processing on every plan.",
+   "title": "Within about one quarter, ElevenLabs could launch its hidden outbound-campaigns product (leads, retries, suppression) and cross-call memory, and cut its Indian price toward INR 4/min. Its margin is unknown (an analogue estimate of 82-97% was downgraded to unknown by the verifier), so how cheap a cut would be is unknown too. That would close the usability and price gaps VP is targeting, leaving India-resident latency (unmeasured), compliance and Hinglish quality.",
+   "mitigation": "Re-run code/bundle_endpoints.py weekly against the signed-out app bundle and the public OpenAPI (radar watchlist), deduping by normalised path (code/verify_bundle_check.py), and diff the changelog. Build VP's Indian operator layer (DLT/140-160 declaration, NCPR scrub, consent ledger, IST windows, business-language outcomes) as the product, and keep India-resident processing on every plan.",
    "date": "2026-10-20"
   },
   {
@@ -101,12 +101,12 @@
    "status": "open",
    "source": "model",
    "title": "Do the pre-registered ElevenLabs account-phase predictions EL-P01 to EL-P12 hold?\n- Web call within 10 min, but an Indian-handset call takes >= 30 min via Twilio and >= 1 business day via Exotel.\n- The CSV keeps duplicates and the opt-out row and does not prefix +91.\n- There is no calling window.\n- LLM voicemail detection misses Indian operator announcements.\n- Handset reply gap p50 is 2.0-3.2 s on a standard plan.\n- There is no cross-call memory by default.",
-   "closes_when": "An ElevenLabs trial (the existing free account from the Instinct report, plus an Exotel or Twilio number) runs EL-P01 to EL-P12. That needs timed screen recordings, the 50-row CSV outcome per row, a scheduling attempt, three Indian operator announcements, the l4b battery on our Plivo/Exotel number (>= 30 clean turns, stereo), the invoice lines, and a check whether outbound-campaigns or memory is visible in the workspace.",
+   "closes_when": "An ElevenLabs trial (the existing free account from the Instinct report, plus an Exotel or Twilio number) runs EL-P01 to EL-P12. That needs timed screen recordings, the 50-row CSV outcome per row, a scheduling attempt, three Indian operator announcements, the l4b battery on our Plivo/Exotel number (>= 30 clean turns, stereo), the invoice lines, and a check whether outbound-campaigns or memory is visible in the workspace. Before the run, apply the verifier's fixes (verify.md): pre-register a configured-agent (hi + Hindi voice + language detection) language-hold companion to EL-P02 with a coding rule; define \"mishandled\" per category for EL-P03 and EL-P11; score EL-P08 separately for the Exotel (WebSocket) and SIP routes, with its residency clause not-testable without Enterprise; add the 5% silence rate to EL-P10.",
    "path": "research/2026-10-20/teardown/elevenlabs/predictions.json",
    "date": "2026-10-20"
   },
   {
-   "id": "asset.2026-10-20.bundle-vs-openapi-diff",
+   "id": "asset.2026-10-20.elevenlabs-bundle-vs-openapi-diff",
    "type": "asset",
    "status": "proposed",
    "source": "verified",
@@ -117,10 +117,20 @@
     "research/2026-10-20/teardown/elevenlabs/code/har_scripts.py",
     "research/2026-10-20/teardown/elevenlabs/code/har_slim.py",
     "research/2026-10-20/teardown/elevenlabs/code/fetch.sh",
-    "research/2026-10-20/teardown/elevenlabs/code/build_manifest.py"
+    "research/2026-10-20/teardown/elevenlabs/code/build_manifest.py",
+    "research/2026-10-20/teardown/elevenlabs/code/verify_bundle_check.py"
    ],
-   "value": "Found ElevenLabs outbound-campaigns, memories, automations and task-agents (326 unpublished routes) before any announcement. It runs weekly as change-watch on any vendor whose dashboard ships a generated client (Fern, OpenAPI codegen).",
+   "value": "Found ElevenLabs outbound-campaigns (16 paths), memories, automations and task-agents (204 unpublished unique paths) before any announcement. It runs weekly as change-watch on any vendor whose dashboard ships a generated client (Fern, OpenAPI codegen). Known bug: bundle_endpoints.py keys (method,path) and (\"?\",path) separately, so any path seen by both regexes is counted twice. Report counts deduped by normalised path, as verify_bundle_check.py does.",
    "effort": "about 1 minute per vendor per run, with no account",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "evidence.2026-10-20.elevenlabs-verification",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Adversarial verification of the ElevenLabs lane: 37 of 56 claims re-checked against their files plus fresh public re-captures. Two inferences were downgraded to unknown: Iowa media anchoring with a ~200-250 ms India penalty (EL-21), and an 82-97% platform margin (EL-33). One sub-claim was refuted: RAG embeddings are intfloat E5 open weights, not ElevenLabs' own. Hidden-route counts were corrected (16 campaign paths, 204 unpublished paths; bundle_endpoints.py double-counts). New observations: no geo-DNS on SIP for Indian subnets; livekit-server behind GCP LBs; the widget uses a browser fingerprint as user_id; the public demo forces language \"en\", so English replies there test the page, not the platform. Predictions are falsifiable; EL-P02, P03, P08, P10 and P11 need sharpening before the run. Inference.",
+   "path": "research/2026-10-20/teardown/elevenlabs/verify.md",
    "date": "2026-10-20"
   }
  ],
@@ -266,9 +276,29 @@
    "relation": "informed-by"
   },
   {
-   "from": "asset.2026-10-20.bundle-vs-openapi-diff",
+   "from": "asset.2026-10-20.elevenlabs-bundle-vs-openapi-diff",
    "to": "evidence.2026-10-20.elevenlabs-hidden-campaigns",
    "relation": "from"
+  },
+  {
+   "from": "evidence.2026-10-20.elevenlabs-verification",
+   "to": "evidence.2026-10-20.elevenlabs-claims",
+   "relation": "tests"
+  },
+  {
+   "from": "evidence.2026-10-20.elevenlabs-verification",
+   "to": "evidence.2026-10-20.elevenlabs-india-residency-sip-region",
+   "relation": "challenges"
+  },
+  {
+   "from": "evidence.2026-10-20.elevenlabs-verification",
+   "to": "measure.2026-10-20.elevenlabs-india-all-in-price",
+   "relation": "challenges"
+  },
+  {
+   "from": "evidence.2026-10-20.elevenlabs-verification",
+   "to": "open.2026-10-20.elevenlabs-account-phase",
+   "relation": "informs"
   }
  ],
  "events": [
@@ -277,6 +307,12 @@
    "event": "teardown_elevenlabs_done",
    "source": "research/2026-10-20/teardown/elevenlabs/claims.json",
    "details": "ElevenLabs Agents lane (account-free) finished. Work done:\n- read the 804-page llms.txt (258 pages saved), the OpenAPI (322 paths), pricing, 32 changelog entries and the status RSS;\n- unpacked 6 npm SDKs and the PyPI wheel;\n- resolved 19 hostnames (DoH) and matched them to GCP ranges and RDAP;\n- captured elevenlabs.io/agents and the signed-out app, and made one 25 s public demo call (WebSocket, react_sdk 0.14.0-beta.0);\n- read 157 job posts, Trustpilot, GitHub issues and HN via WebFetch/Algolia.\nOutputs: claims.json (56), predictions.json (EL-P01..P12), pricing-allin.json (INR 8.17-8.92/min via Exotel/Plivo), bundle-endpoints.json (326 unpublished convai routes, incl. outbound-campaigns and memories), velocity.json and manifest.csv (3,809 files).\nREA: inspect-web-network-capture needed percent-encoded URLs, then gave no stack inference; analyze-javascript-application ran in 6 s but left host literals unresolved.\nBlocked and not bypassed: Reddit, G2, the GitHub API and curl HTML (403)."
+  },
+  {
+   "date": "2026-10-20",
+   "event": "teardown_elevenlabs_verified",
+   "source": "research/2026-10-20/teardown/elevenlabs/verify.md",
+   "details": "Adversarial verifier re-checked 37 of 56 ElevenLabs claims. Two were downgraded to unknown (EL-21, EL-33), one sub-claim refuted (EL-23), 15 corrected or scoped, 18 confirmed as written; none was refuted whole, so no node was removed. claims.json was edited in place (verify blocks keep the original text). Inbox nodes corrected: SIP region, hidden campaigns, all-in price, v2 memory, decision rationale, risk, open-question, asset (renamed to the lane id convention). The lane never wrote report.md, and the verifier's attempt to create it was blocked by the harness; verify.md is the Verification section of record. Re-captures are in data/teardown/elevenlabs/verify-2026-10-20/ (37 files, in manifest.csv)."
   }
  ]
 }

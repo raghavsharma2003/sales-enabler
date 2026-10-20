@@ -1,0 +1,500 @@
+[
+ {
+  "id": "XS-01",
+  "area": "method",
+  "claim": "The five account-phase lanes hold 282 graded claims (Bolna 57, Vapi 61, Retell 55, ElevenLabs 54, Sarvam 55; 242 observed, 23 inferred, 12 vendor-claimed, 5 unknown). Every claim carries evidence and every cited local path exists on disk.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json",
+   "research/2026-10-20/account-phase/vapi/claims.json",
+   "research/2026-10-20/account-phase/retell/claims.json",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json",
+   "research/2026-10-20/account-phase/sarvam/claims.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-02",
+  "area": "method",
+  "claim": "Re-check of the Sonnet-tier lanes (decision.2026-10-20.account-mixed-tiers reverse_if): 20 decision-critical Vapi, Retell, ElevenLabs and Sarvam claims re-read against their saved raw artifacts; 19 confirmed in full, 1 confirmed on the response only (Retell RAP-10: the request body with the unknown field was not saved), 0 contradicted. 3 Bolna claims (Opus lane) also confirmed, including a code trace of the 900 ms hold. The reversal condition is not met.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/synthesis/lane-spotcheck.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-03",
+  "area": "method",
+  "claim": "Six Sarvam claims graded observed (SAC-20, SAC-22, SAC-29, SAC-45, SAC-47, SAC-49) rest only on vendor docs pages, because the Voice Agents key was refused; this synthesis treats them as vendor-claimed.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/sarvam/claims.json",
+   "research/2026-10-20/account-phase/synthesis/lane-spotcheck.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-04",
+  "area": "method",
+  "claim": "The Retell lane's report text (relayed to the main loop) cites claim ids that are shifted against its claims.json in several sections: e.g. report RAP-35 is claims RAP-34 (Indian numbers to +1), report RAP-43 is claims RAP-40 (live control), report RAP-33 is claims RAP-31 (platform voices), report RAP-19 is claims RAP-20 (disclosure). claims.json ids are authoritative; the saved report.md should be corrected or annotated.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/retell/claims.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-05",
+  "area": "data-model",
+  "claim": "Every vendor's root object is a single agent document that holds voice, brain, turn-taking, tools and post-call analysis; none normalises config into separate tables (ElevenLabs reads back 313 leaf settings in one JSON).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-07",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-40",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-11",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-09",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-12"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-06",
+  "area": "data-model",
+  "claim": "4 of 5 vendors version agents, with three incompatible semantics: Vapi publishes a new immutable version on every PATCH; ElevenLabs commits a version on every write (even a no-op) inside branches; Retell and Sarvam use draft then publish/commit, and Retell refuses edits to a published version (422). Bolna agents are unversioned in the API (PATCH merges, PUT replaces); only Bolna workflows have a CAS draft and published versions.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-19",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-10",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-12",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-12",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-07",
+   "data/account-phase/bolna/openapi/endpoints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-07",
+  "area": "data-model",
+  "claim": "At 4 of 4 vendors whose API we could write to, the stored or running defaults of an API-created agent differ from the docs or from a dashboard-created agent: Bolna stores its open-source defaults (incremental_delay 900 vs docs 400; interrupt after 1 word vs docs 2); Retell's API agent lacks the AI-disclosure preset its dashboard agent has; ElevenLabs' new agent runs deepseek-v41-flash and speculative_turn true while its schema says gemini-2.5-flash and false; Vapi stores a name-only assistant with no model, voice or turn-taking fields and applies defaults at call time.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-08",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-20",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-14",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-18",
+   "research/2026-10-20/account-phase/synthesis/lane-spotcheck.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-08",
+  "area": "data-model",
+  "claim": "3 of the 4 writable vendors accept unknown request fields and silently drop them (Bolna 201, Retell 201, ElevenLabs 200 and commits a version); only Vapi rejects them ('property unknownKnob should not exist'). Bolna also accepted and did not persist its own documented llm_agent.routes.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-09",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-10",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-10",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-15",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-02"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-09",
+  "area": "data-model",
+  "claim": "The call is the centre of every data model; no vendor's API has a contact that owns consent, suppression and history. Retell's CRM contact is the closest (memory text, do_not_call) but keys on the exact phone string and stored 9000000001 as +19000000001; Sarvam has cohorts plus an org-wide DND list; Bolna, Vapi and ElevenLabs carry the person inline on each call.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-33",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-34",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-17",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-21",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-12",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-08"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-10",
+  "area": "data-model",
+  "claim": "Only Sarvam separates the dial attempt (30 fields: connectivity_status, failure_reason, ended_by, next_action_status, retry counters) from the conversation; the other four keep one record per dial with not-connected as a status.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-19",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-35",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-23",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-33",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-21"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-11",
+  "area": "data-model",
+  "claim": "None of the five APIs has a consent record, DLT/header field, 140/160/1600 series field or NCPR scrub object; calling windows are whole hours and off by default (Bolna), absolute earliest/latest dates (Vapi), one window per batch with America/Los_Angeles default (Retell), a single start time (ElevenLabs), or free-form HH:MM strings (Sarvam). None derives a window from the call's category.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-54",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-58",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-49",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-37",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-52",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-15"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-12",
+  "area": "data-model",
+  "claim": "Cross-call memory is live for customers at 1 of 5 (Retell: one running text brief per contact, read on and update off by default); ElevenLabs has it built behind a workspace flag (403 on our key); Bolna, Vapi and Sarvam have per-call variables and session or journey state only.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-32",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-48",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-55",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-51",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-45"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-13",
+  "area": "data-model",
+  "claim": "All five run an LLM judge after the call (Bolna auto-creates two hidden gpt-4.1-mini dispositions per agent; Vapi structured outputs and scorecards; Retell custom typed fields on a separate analysis model; ElevenLabs criteria and data collection on by default; Sarvam output variables and goal rules), and none feeds a judged result back into the agent automatically.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-12",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-22",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-22",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-49",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-47"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-14",
+  "area": "api-surface",
+  "claim": "Documented agent-platform operations: Bolna 128 (96 paths, rebuilt from doc fragments, no spec file); Vapi 143 over 74 public paths, plus 246 operations over 137 paths in the public web SDK client; Retell 109 (SDK equals spec); ElevenLabs 200 of 420 under /v1/convai and /v1/speech-engine; Sarvam 68 Voice Agents operations plus 53 Model API operations. Vapi's 143 was counted by this lane from the saved spec.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv",
+   "data/account-phase/vapi/openapi/api-json.json",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-05",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-03",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-07",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-06"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-15",
+  "area": "api-surface",
+  "claim": "Richest areas differ by vendor: ElevenLabs on config breadth, branches/merge and 65 per-agent permissions; Vapi on QA and events (simulations, scorecards, 29 webhook message types with 8 call-changing replies); Retell on live-call control (inject context, listen, take over) and contacts; Bolna on Indian telephony (trunk presets incl. Exotel and Vobiz, compliance applications) and workflow journeys with WhatsApp; Sarvam on campaign operations (retry ladder by outcome class, cohort rejects, attempt records, SQL boards) while exposing no agent authoring by REST.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-16",
+  "area": "api-surface",
+  "claim": "What the dashboard can do but an API key cannot, by vendor: Vapi org billing, spend cap, limits and the Composer chat builder (401 / no route); Retell CSV contact import (JWT-only), export creation, billing and members; ElevenLabs key management, billing and seats (401); Sarvam all agent authoring, telephony and KB objects (dashboard/Genie/MCP only); Bolna sub-accounts (Enterprise 403). No vendor offers full dashboard parity on an API key.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-01",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-60",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-01",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-47",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-05",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-07",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-15"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-17",
+  "area": "api-surface",
+  "claim": "Webhook signing is on at 3 of 5 (Retell HMAC by default; ElevenLabs HMAC; Vapi via an optional HMAC credential) and absent at 2 (Bolna execution webhooks, Sarvam). Retries default to none at Vapi, 3 at Retell, re-delivery on request at Sarvam. A pre-call or inbound decision hook exists in some form at all five; a per-contact predial veto only at Vapi.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-41",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-40",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-31",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-32",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-53",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-31"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-18",
+  "area": "api-surface",
+  "claim": "Patterns the Bolna code shows that closed vendors' APIs also expose (inference, weighted by the 0.85 blind-calibration hit rate): trimming the assistant's history to what the caller heard (ElevenLabs agent_response_correction event and per-turn interrupted flag; Vapi interruption counts); speculative LLM generation at an early end of turn (Bolna Flux eager EOT; ElevenLabs speculative_turn with initiated vs irreversible generations metered apart); a cheap separate model for post-call judges (Bolna gpt-4.1-mini, Retell post_call_analysis_model, ElevenLabs analysis_llm); LLM-classified voicemail on transcript text (Bolna, Vapi providers, Retell detection_prompt, ElevenLabs system tool).",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-36",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-37",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-38",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-34",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-22",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-41",
+   "research/2026-10-20/account-phase/bolna/blind-scoring.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-19",
+  "area": "lifecycle",
+  "claim": "All five have a post-call processing phase between 'ended' and final: Bolna call-disconnected then completed; Retell call_ended then call_analyzed; ElevenLabs processing then done; Vapi's end-of-call-report carries analysis; Sarvam's webhook follows the attempt. A VP state machine needs the same explicit phase.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-41",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-33",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-33",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-29",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-21"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-20",
+  "area": "lifecycle",
+  "claim": "End-reason taxonomies are engineering codes keyed to providers: Vapi 638 values, Retell 39, ElevenLabs call_result 5 plus termination_reason, Bolna 12 hangup_detail values plus telephony hangup fields, Sarvam ended_by plus failure_reason. None carries a business outcome (agreed, call back, refused, wrong number, DND) as a field of its own; that lives in a custom judge if the buyer builds one.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-24",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-35",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-32",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-40",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-19"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-21",
+  "area": "turn-taking",
+  "claim": "Default turn-taking vocabularies are English at the three vendors whose defaults are readable: Bolna's accidental-interruption list and English check-in on a Hindi agent; Vapi's 22 acknowledgement and 20 interruption phrases; ElevenLabs requires interruption_ignore_terms to be filled per language by hand. Sarvam exposes only three coarse builder settings; Retell exposes backchannel_words; no stop-phrase list appeared among the knobs the lane read.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-34",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-11",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-47",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-17",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-36",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-18"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-22",
+  "area": "turn-taking",
+  "claim": "Bolna's code discards a short final transcript spoken while the agent talks unless it exactly matches its English stop list, and drops everything said during the welcome; with stored API defaults its reply cannot start sooner than about 1.4 s after the caller's last word from turn 2 on (500 ms endpointing, then a 900 ms hold timed from the final, re-traced by this lane in interruption_manager.py). Not yet measured on a call.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-33",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-34",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-35",
+   "research/2026-10-20/account-phase/synthesis/lane-spotcheck.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-23",
+  "area": "config",
+  "claim": "Turn-taking knob depth runs from fine (Vapi: wait seconds, three endpointing plans incl. a custom webhook, numWords/voiceSeconds/backoff; ElevenLabs: eagerness, timeouts, speculative turn, turn model, per-language ignore terms, soft-timeout fillers; Retell: responsiveness, interruption sensitivity, backchannel, per-node overrides; Bolna: words-to-interrupt, incremental delay, backoff, check-ins) to coarse (Sarvam: interrupt on/off, sensitivity L/M/H, eagerness 3 levels). No vendor ships a Hindi or Hinglish default lexicon.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-46",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-17",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-18",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-32",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-36"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-24",
+  "area": "config",
+  "claim": "India language and voice depth visible in the APIs: Retell 6 India locales of 63 (te-IN refused) and 6 of 300 voices with an Indian accent; Vapi 22 stock voices all English-labelled and hi-Latn refused on nova-3; ElevenLabs 7,750 shared Hindi voices but accepts its English default voice on a Hindi agent; Bolna lists 16 Hindi TTS providers with 1,280 ElevenLabs Hindi voices; Sarvam 222 job-tagged persona voices (hi 116). Catalogue size is not the gap; guided defaults are.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-26",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-29",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-44",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-45",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-21",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-22",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-17",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-40"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-25",
+  "area": "config",
+  "claim": "Failover is component-partial everywhere it is visible: Bolna fails over only the LLM (Azure provisioned to pay-as-you-go overflow) and runs its circuit breaker in shadow mode; Retell offers cross-provider TTS fallback_voice_ids; Vapi offers fallbackModels and a transcriber fallbackPlan it injected on create; ElevenLabs reroutes deprecated models by schedule without an edit. No API shows a telephony carrier failover.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-48",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-49",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-18",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-41",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-18",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-24"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-26",
+  "area": "billing",
+  "claim": "Per-call typed cost lines exist at 4 of 5 (Bolna 5 lines in cents; Vapi 8 lines in USD; Retell product lines in cents per second; ElevenLabs a charging block in credits and fiat with speculative LLM generations split out); Sarvam exposes no cost, usage or balance route. None of the five groups cost by campaign or contact in its API.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-21",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-35",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-37",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-51",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-45",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-34",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-50"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-27",
+  "area": "billing",
+  "claim": "Balance is readable with an API key at Bolna (wallet in cents plus concurrency) and partly at ElevenLabs (character usage); not at Vapi (org routes 401), Retell (no route) or Sarvam (no route). A spend cap settable by API key was observed at none; Vapi's cap tops out at USD 1,000/month and is dashboard-only.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-04",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-05",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-38",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-06",
+   "research/2026-10-20/account-phase/sarvam/claims.json#SAC-50"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-28",
+  "area": "billing",
+  "claim": "Defaults that raise cost silently: ElevenLabs bursting on by default (2x price) and a server-default LLM about 2.4x the cost of its schema default (INR 1.23 vs 0.51 per minute at FX 95); Retell burst on by default (+USD 0.10/min for the whole call per its rate card); Sarvam 60-second agent pulses (a 30-s call costs INR 7.40 per connected minute at PAYG).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-26",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-35",
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-05",
+   "research/2026-10-20/teardown/sarvam/claims.json#SAR-38"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-29",
+  "area": "billing",
+  "claim": "Public-phase all-in INR per connected Indian outbound minute (FX 95, ex GST) against what the API shows: Sarvam 3.9-7.4 by call length (60-s pulses); Bolna 6.1-8.0; ElevenLabs 8.2-8.9 via Exotel/Plivo (15.8-16.5 in burst); Retell 8.3-13.6 on a BYO Indian trunk (22-37 on Retell-managed numbers); Vapi 12.5-17.0 via Twilio. The API phase changed none of these, because no billable call was placed.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/sarvam/claims.json#SAR-38",
+   "research/2026-10-20/teardown/bolna/claims.json#BOL-36",
+   "research/2026-10-20/teardown/elevenlabs/claims.json#EL-31",
+   "research/2026-10-20/teardown/retell/claims.json#RET-35",
+   "research/2026-10-20/teardown/vapi/claims.json#VAP-35"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-30",
+  "area": "billing",
+  "claim": "Reconstructed margins from the public phase (inferred, not measured): Bolna bundled voice 46-72% at PAYG; Vapi hosting fee about 90-98%; Retell infra line about 75-85%; ElevenLabs platform fee 82-97%; Sarvam list price 2.3-3.0x its own API list cost. Every incumbent has room to cut price toward a VP undercut.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/claims.json#BOL-38",
+   "research/2026-10-20/teardown/vapi/claims.json#VAP-36",
+   "research/2026-10-20/teardown/retell/claims.json#RET-36",
+   "research/2026-10-20/teardown/elevenlabs/claims.json#EL-33",
+   "research/2026-10-20/teardown/sarvam/claims.json#SAR-40"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-31",
+  "area": "for-vp",
+  "claim": "Parity floor confirmed from at least 4 of 5 APIs: versioned agents with pinning; per-call overrides and variables; a pre-call decision hook; HTTP tools, transfer and end-call; a post-call webhook with the full record; typed per-call costs; a post-call LLM judge with typed extraction; simulated-caller tests; campaign create/status/cancel; knowledge bases; SIP/number import; an MCP server.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-32",
+  "area": "for-vp",
+  "claim": "Places no incumbent API covers, each tied to a task VP can run: (1) contact-and-compliance layer with India-default E.164, cross-format dedupe, consent, DND/NCPR and category-derived windows on by default (task: messy 50-row CSV + window battery); (2) Hinglish turn-taking that never discards a short reply and listens during the opening (task: 'nahi/haan/ruko/bas' over the agent, 2.4 s pause); (3) the stored config is what runs: defaults materialised, unknown fields refused, voice-language checks, model-in-effect per call, disclosure on every creation path (task: create by API, read back, call, compare); (4) owned outcomes and economics: business outcome beside the engineering code, visible editable judges, cost and funnel by campaign and contact, per-second billing (task: find a failed call and why; cost of one campaign); (5) dashboard parity on the API and MCP, incl. import, export, balance and spend cap (task: chat builder sets up and runs a campaign end to end with no dashboard).",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/synthesis/data-model-matrix.csv",
+   "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv",
+   "research/2026-10-20/account-phase/synthesis/vp-v1-schema.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-33",
+  "area": "for-vp",
+  "claim": "Beat (2) is a hypothesis, not yet an advantage: VP's own lab stacks still cut in on 15-42% of turns and every stack took the 2.4 s elderly pause (open.2026-10-19.turn-taking). It becomes a beat only when VP and the incumbents are scored on the same battery.",
+  "grade": "inferred",
+  "evidence": [
+   "context/graph.json (open.2026-10-19.turn-taking)",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-34"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-34",
+  "area": "for-vp",
+  "claim": "Signed webhooks, versioning, simulation tests, per-call cost lines and live-call context injection are parity (3-5 vendors each), not a wedge; parity plus undercut was rejected on 2026-10-17 and the margins above show incumbents can follow on price.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv",
+   "context/graph.json (rejected.2026-10-17.parity-undercut)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-35",
+  "area": "only-with-login",
+  "claim": "The walk-through phase needs owner-assisted logins at Vapi (email code), Retell (TOTP each login) and a Sarvam workspace key; Synthflow and SquadStack are sales-only and Exotel's voicebot access is unconfirmed. The consolidated list of dashboard items and billable battery items is in dashboard-walkthrough.json.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/synthesis/dashboard-walkthrough.json",
+   "context/graph.json (evidence.2026-10-20.trial-accounts-report)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-36",
+  "area": "hygiene",
+  "claim": "Leftovers from the account phase that a later phase must know about: Retell keeps one synthetic agent and engine on purpose (VP-SYNTHETIC-teardown-renewal-hinglish); ElevenLabs keeps one environment variable 'teardown_probe' that has no DELETE route; Vapi traffic-allocation rows and version history cannot be deleted by API. Bolna, Sarvam and the other Vapi/ElevenLabs probes were removed.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/retell/claims.json#RAP-52",
+   "research/2026-10-20/account-phase/elevenlabs/claims.json#AP-EL-53",
+   "research/2026-10-20/account-phase/vapi/claims.json#AP-59",
+   "research/2026-10-20/account-phase/bolna/claims.json#ACB-04"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "XS-37",
+  "area": "api-surface",
+  "claim": "QA is the largest single block of Vapi's public API: 51 of its 143 operations sit under /eval (incl. simulations), /observability (scorecards) and /structured-output; ElevenLabs has 48 /v1/convai/agents operations and 15 test operations. Counted by this lane from the saved specs.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/vapi/openapi/api-json.json",
+   "data/account-phase/elevenlabs/derived/endpoint-surface.csv"
+  ],
+  "date": "2026-10-20"
+ }
+]

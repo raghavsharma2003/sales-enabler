@@ -12179,6 +12179,810 @@
    "title": "The consolidated decision brief is a product blueprint, organised by product dimension rather than by segment: onboarding, agent builder, conversation and voice quality, telephony, campaigns and data import, compliance handling, analytics and recordings, integrations, the LLM-native setup experience, pricing, reliability and support. For each: how the best competitor does it, where each falls short (evidence-graded), VP's better design, and where VP's own features (emotional voice, memory, personalisation, self-learning later) sit on top. Pre-sale vs post-sale moves to a go-to-market section. The running workflows are not restarted; their outputs feed the blueprint.",
    "rationale": "Owner directive; organising by dimension makes 'better in every way' checkable item by item.",
    "reverse_if": "The owner asks for a different organising frame."
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-teardown",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Bolna account-phase teardown: open-source engine read at HEAD bc59921 (43,962 source lines) plus our own API key (57 requests, one synthetic agent created/read/patched/put/deleted, no calls, spend 0, wallet 500.0 before and after). 57 graded claims (49 observed, 4 inferred, 3 vendor-claimed, 1 unknown) covering data model, endpoint surface, call lifecycle, turn-taking, webhooks, metering, config knobs and India gaps. OpenAPI rebuilt from 128 doc-page fragments (96 paths, 183 schemas).",
+   "path": "research/2026-10-20/account-phase/bolna/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-bolna-blind-calibration",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Black-box teardown method calibrated on Bolna: blind architecture inferences scored against the code hit 0.85 (14 TRUE, 6 PARTLY, 0 FALSE), Brier 0.086, against a mean stated confidence of 0.69; it missed every timing constant and turn-taking policy that only the code shows.",
+   "n": "20 checkable blind inferences with contamination none or possible (18 none-only: hit 0.86, Brier 0.093); 4 contaminated rows excluded",
+   "method": "Pre-registered rule from research/2026-10-20/teardown/bolna/blind-inferences.json: TRUE/PARTLY/FALSE per row against bolna-ai/bolna @bc59921, hit = (TRUE + 0.5 PARTLY)/n, Brier over stated confidence; verdicts by reading the cited files, 2026-10-20",
+   "path": "research/2026-10-20/account-phase/bolna/blind-scoring.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Inference from code and our API defaults: Bolna's default cascade cannot start a reply sooner than about 1.4 s after the caller's last word from turn 2 on, because 500 ms STT endpointing is followed by a fixed 900 ms incremental_delay audio hold measured from the final; LLM and TTS run inside the hold, transport and 100-200 ms frame buffering add on top. Not yet measured on a call.",
+   "path": "research/2026-10-20/account-phase/bolna/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-short-reply-drop",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Observed in Bolna's code: while the agent speaks, a final transcript of N words or fewer (default N=1) that is not on the English-only exact-match stop list is discarded, so 'nahi', 'haan', 'ruko', 'bas' never reach the LLM; everything said while the welcome plays is dropped (voicemail evidence only); a Hindi agent's check-in defaults to the English 'Hey, are you still there'.",
+   "path": "research/2026-10-20/account-phase/bolna/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-auto-judges",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Observed via our API: creating an agent makes Bolna generate two LLM-judge dispositions within about 25 s, 'Call Success' and 'Call Completion' (gpt-4.1-mini, success/failure/unsure), rewritten from the agent's own prompt and Hinglish-aware ('dekhta hoon', 'baad mein' = not success). They are free to the customer, hidden from the dispositions list endpoints and deleted with the agent. Bolna already ships LLM-native outcome analytics by default.",
+   "path": "data/account-phase/bolna/api-live/disposition_default.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-api-drift",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Observed via our API: Bolna's stored agent defaults contradict its API docs (words to interrupt 1 vs 2, incremental_delay 900 vs 400 ms, hangup_after_silence 20 vs 10 s, TTS stream false and 40-char buffer vs true and 250); an unknown field is accepted with 201 and dropped; documented semantic 'routes' are accepted and not persisted; the executions filter shows an undocumented 'prepared' status. Developer-surface gap VP can beat with a tested, spec-first API.",
+   "path": "data/account-phase/bolna/api-live/agentA_readback_v2.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-language-switch",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Observed in Bolna's code: mid-call language switching keeps one pre-warmed STT socket per language, runs an unbiased Sarvam saaras:v3 language-ID stream beside the locked live ASR, and asks a dedicated Switch LLM (default Claude Haiku 4.5) to judge the matrix language under about 15 Indic rules before swapping STT, TTS and prompt with a handoff clip. This is the strongest part of the stack and the bar for VP's Hinglish handling; it is still a whole-stack swap, not one code-mixed register.",
+   "path": "research/2026-10-20/account-phase/bolna/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-llm-overflow",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Observed in Bolna's code: the only production failover is for the LLM, where Azure OpenAI turns on a provisioned deployment are re-issued on a pay-as-you-go overflow deployment on 429/5xx or a stream that drops before any token (retries off when overflow exists, overflow turns metered separately). STT/TTS have reconnects only, the provider circuit breaker runs in shadow, telephony is single-provider per agent.",
+   "path": "research/2026-10-20/account-phase/bolna/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-bolna-campaign-model",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Observed (API schema + node catalogue): Bolna is call-centric with no contact, consent or memory object, and runs two overlapping outbound systems: batches (CSV, only valid/total counts) and workflow campaigns (row-level failure codes, corrective re-upload, +91 default, de-dup by reference_id not phone, funnel report, 9 node types incl. AiSensy WhatsApp). The only cross-call state is a workflow execution's state.*.",
+   "path": "data/account-phase/bolna/api-live/workflow_node_types.json"
+  },
+  {
+   "id": "open.2026-10-20.acct-bolna-battery-items",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Does Bolna's live behaviour match what its code predicts? The call battery must add: reply gap vs the inferred 1.4 s floor (P09a), short Hindi interjections ('nahi', 'haan', 'ruko', 'bas') spoken over agent speech, caller speech over the welcome, Hindi and regional operator messages for voicemail (P06a), language hold under Hinglish (P11a/b), and a dashboard-created agent's stored defaults vs the API defaults.",
+   "closes_when": "Battery run on our verified Plivo number with stereo recordings, n >= 30 turns, scored per item; plus GET /v2/agent readback of one dashboard-created agent."
+  },
+  {
+   "id": "risk.2026-10-20.acct-vendor-prompt-processing",
+   "type": "risk",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Competitor platforms run their own LLMs over whatever prompt we store: Bolna rewrote our synthetic agent prompt into two judge questions within 25 s of creation. Putting VP's proprietary persona brief v2, agenda ledger or any real customer data into a competitor account would hand it to their pipelines.",
+   "mitigation": "Store only the synthetic standard battery brief and fictional data in vendor accounts; never paste VP's own prompts or customer data; opt out of data use where a vendor offers it before the first call; delete test agents after each session."
+  },
+  {
+   "id": "asset.2026-10-20.acct-bolna-openapi",
+   "type": "asset",
+   "status": "available",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Reconstructed Bolna OpenAPI 3.1 spec (96 paths, 183 schemas, merged from 128 public doc-page fragments, 0 conflicts) plus an endpoint table with params and response codes.",
+   "paths": [
+    "data/account-phase/bolna/openapi/bolna-openapi-merged.json",
+    "data/account-phase/bolna/openapi/endpoints.csv"
+   ],
+   "value": "Lets the call-battery phase script Bolna calls, batches and webhooks without re-reading 156 doc pages; a template for the same merge on any Mintlify-documented vendor.",
+   "effort": "done; regenerate by re-fetching the docs pages and re-running the merge (about 3 minutes)"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "ElevenLabs Agents authorized-surface phase: 54 graded claims (50 observed, 3 inferred, 1 unknown) from about 110 authorized requests with our free-tier key at about 1 per second, the live OpenAPI (420 operations, 64 exercised), five published packages read without installing (JS SDK, Python SDK, client, types, CLI; plus react) and one REA run on the client SDK dist. No call, number, batch, simulation, test run or webhook. Synthetic probe objects were created, read back and deleted (one environment variable cannot be deleted).",
+   "path": "research/2026-10-20/account-phase/elevenlabs/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-elevenlabs-defaults-diverge-from-schema",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "ElevenLabs new-agent defaults differ from its own OpenAPI defaults, and the API ignores typos. A freshly created agent comes back with LLM deepseek-v41-flash (schema: gemini-2.5-flash), speculative_turn true (schema: false), bursting on (excess calls at double price), a 180 s call queue, sentiment and topic analysis on, retention -1 and a US-English default voice (Eric, not verified for Hindi) that the API accepts on a language=hi agent. Unknown properties are dropped with a 200 and still commit a new version. Defaults, not the spec, decide what a buyer gets.",
+   "path": "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-elevenlabs-default-llm-cost",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "ElevenLabs prices LLM pass-through at USD 0.0054 per minute for gemini-2.5-flash and USD 0.0130 for its server-default deepseek-v41-flash (4,000-character prompt, 5.27 agent messages per minute implied), so the default costs 2.4x the cheaper model: about INR 1.23 against INR 0.51 per minute at FX 95. gpt-5.4-mini is USD 0.0129, claude-sonnet-5 USD 0.0372, gpt-4 USD 0.48; a 12,000-character prompt with 20 pages and RAG multiplies cost about 7.5x.",
+   "n": "111 LLM rows returned per calculator call; 2 calls (4k-character prompt no RAG; 12k-character prompt, 20 pages, RAG)",
+   "method": "POST /v1/convai/llm-usage/calculate with our key on 2026-10-20 (free calculator, no call placed); INR conversion at FX 95 is our assumption from the 2026-10-18 cost model",
+   "path": "data/account-phase/elevenlabs/derived/llm-cost-4k.csv"
+  },
+  {
+   "id": "measure.2026-10-20.acct-elevenlabs-config-surface-size",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Size of ElevenLabs' agent configuration surface as read back from one new agent: 313 non-widget leaf settings (179 with schema descriptions), 65 per-agent permission strings, 111 selectable LLMs (54 with reasoning-effort levels, 43 deprecated or in warning), 11 TTS models (94 languages on the v4 family), 72 call-start override languages, 26 WebSocket error types, 27 conversation-initiation sources, 40 conversation-list filters, 420 API operations of which 200 are agents/speech-engine. Use as the size to beat for a simpler surface, not a target to copy.",
+   "n": "1 agent read-back (313 leaves) plus counts from the live OpenAPI and GET /llm/list, 2026-10-20",
+   "method": "flatten the GET /v1/convai/agents/{id} JSON and join with the OpenAPI schema (research/.../code/derive_knobs.py, derive_surface.py); counts of enum members and operations from the spec",
+   "path": "data/account-phase/elevenlabs/derived/agent-config-knobs.csv"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-elevenlabs-hinglish-mode-undocumented",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "ElevenLabs has an agent-level hinglish_mode flag (mixes English into Hindi, Malayalam, Telugu or Kannada replies; default false) that appears in the OpenAPI and the agent read-back but in none of its 258 saved docs pages. The server persists it even on a language=en agent, so it is not cross-checked, and nothing says what it changes in prompt, ASR or TTS. This is the nearest thing a competitor ships to VP's core idea, and it is a boolean. Its audible effect is untested.",
+   "path": "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-elevenlabs-memory-gated",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "ElevenLabs user memory exists but is gated by a workspace flag. Enabling platform_settings.privacy.user_memory returned 403 \"User memories are not available for this workspace\"; the knob has scale minimal|balanced|maximum, the workspace has user_memory.retention_days, permissions include agent_view_memories and agent_edit_memories, and the agent reserves a memory_entry_search tool slot that cannot be set through the public schema. Recall by user_id across calls is coming from the leader; how memory is written (facts, summaries, preferences) is unknown.",
+   "path": "data/account-phase/elevenlabs/api-writes/patch-rich-response.json"
+  },
+  {
+   "id": "asset.2026-10-20.acct-elevenlabs-wire-protocol-taxonomy",
+   "type": "asset",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Reusable reading: ElevenLabs' typed call-event taxonomy (about 40 event types over one socket) from the published @elevenlabs/types 0.25.0, including contextual_update (push text into context without forcing a reply), user_activity, tentative_user_transcript, conversation_history with a persistent_session_token for resume, context_usage, ping with ping_ms, vad_score, guardrail_triggered and 26 error types. A checklist for VP's own event schema, to be re-expressed in our own words, not copied.",
+   "paths": [
+    "data/account-phase/elevenlabs/sdk/npm-types/unpacked/package/dist/generated/types/asyncapi-types.d.ts",
+    "data/account-phase/elevenlabs/sdk/npm-client/unpacked/package/dist/types.d.ts"
+   ],
+   "value": "Shortcut to a complete list of events a web or phone client of a voice agent must handle, including resume, mid-call context injection and error taxonomy.",
+   "effort": "1 day to turn into a VP event-schema spec"
+  },
+  {
+   "id": "decision.2026-10-20.acct-elevenlabs-parity-floor-items",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed additions to the v1 parity floor from ElevenLabs' live API (on top of the Vapi list in decision.2026-10-20.acct-vapi-parity-floor-items): an agent version on every write with branch, merge proposal and percentage traffic deployments; three kinds of agent test (response, tool call, simulated persona with up to 30 success conditions and up to 50 turns); post-call evaluation criteria and typed data-collection fields stored on the call; per-turn named latency timers, tool calls and interruption flags in the transcript; a call-result enum and termination reason with a provider error object; fine-grained per-agent permissions; a CLI that pulls and pushes agents as files; pre-call personalisation hook and post-call signed webhooks.",
+   "rationale": "All exist in the live API of the funded leader (claims AP-EL-09 to AP-EL-14, AP-EL-26 to AP-EL-28, AP-EL-37, AP-EL-38) and are the baseline a developer or ops buyer compares us with. They are cheap next to the Indian-operator layer and do not differentiate by themselves.",
+   "reverse_if": "Buyer interviews (10-15 operations leads) show Indian enterprise users never use branching, simulated tests or webhooks, or a competitor with fewer objects wins the same configure-and-fix tasks in usability sessions."
+  },
+  {
+   "id": "decision.2026-10-20.acct-elevenlabs-beat-list-api-visible",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed places to beat ElevenLabs that its API makes visible: (1) the Indian operator layer is absent from the batch and call objects (no calling window, DND/NCPR scrub, consent or suppression field, no India-specific failure reason); (2) safe defaults: reject unknown fields, cross-check voice against language, show the model actually in effect per call and never reroute silently, retention and redaction chosen at onboarding, bursting off until the buyer opts in; (3) a first-class contact/lead object (ElevenLabs has only a user_id string); (4) dependency-clean deletion; (5) a Hinglish switch that is measured and documented, not a boolean.",
+   "rationale": "Each gap is observed in the live API and docs (claims AP-EL-12, AP-EL-13, AP-EL-18 to AP-EL-20, AP-EL-26, AP-EL-27, AP-EL-33, AP-EL-47). They fit the measured pain areas (usability, support, billing) in the 459 coded Indian complaints, and the owner wants better design, usability and case handling.",
+   "reverse_if": "A later ElevenLabs release ships the campaigns product with windows, retries and suppression (its dashboard bundle already carries those routes), or buyer interviews rank any of these below price and voice quality."
+  },
+  {
+   "id": "risk.2026-10-20.acct-elevenlabs-silent-model-fallback",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "ElevenLabs LLM deprecation can reroute traffic to a replacement model without the buyer editing the agent (warning 90 days, fallback from 60 days at 25% of traffic, complete at 20 days). A competitor or a supplier doing this to VP would change voice behaviour under a fixed agent version, and a VP test filed under one model may not have run on it (inference from the fields, no live fallback seen).",
+   "mitigation": "VP pins every model by dated id, records the model actually used on each call, gates any replacement behind the owner and keeps the no-mid-test-swap rule (directive.2026-10-20.no-midcall-swap)."
+  },
+  {
+   "id": "rejected.2026-10-20.acct-elevenlabs-api-key-for-key-management",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Rejected: using the ElevenLabs API key to read or manage workspace API keys, billing and seats.",
+   "tried": "GET /v1/workspace/api-keys with our xi-api-key; also tried DELETE on an environment variable and DELETE of a tool after its agent was deleted.",
+   "broke": "Key listing answered 401 \"Neither authorization header nor xi-api-key received\" although the key was sent, environment variables have no DELETE route (405), and the tool and KB document stayed \"in use by Unknown / Main\" (409) until force=true. Key management, billing and seats need a dashboard login; cleanup of probes is partly impossible."
+  },
+  {
+   "id": "open.2026-10-20.acct-elevenlabs-live-behaviour-unmeasured",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "ElevenLabs behaviours the API names but only a call can settle: what hinglish_mode changes, whether a Hindi agent on the default English voice is audibly wrong, what speculative_turn costs in initiated-versus-irreversible LLM generations, whether a live model fallback is visible in the call record, how the bring-your-own-brain speech engine behaves, whether the hidden outbound-campaigns product is enabled on a new workspace, the real handset reply gap with default turn settings, and API rate limits.",
+   "closes_when": "The call-battery phase places at least 30 clean turns per configuration (default Hindi agent, voice-swapped Hindi agent, hinglish_mode on and off) on our own verified numbers with a billable plan, and a dashboard-login pass confirms which of the unpublished product areas are visible."
+  },
+  {
+   "id": "open.2026-10-20.acct-elevenlabs-speech-engine-bring-your-own-brain",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Should VP offer a speech-engine style interface (we run speech, turn-taking and telephony; the customer or we run the brain over a WebSocket)? ElevenLabs ships exactly this (POST /v1/speech-engine with a ws_url and a cascade timeout). It would let VP's Hinglish brain and later memory ride other voice stacks, and it would let competitors put a brain on ElevenLabs' voices.",
+   "closes_when": "Buyer interviews show whether Indian enterprises already own a brain (CRM or LLM layer) they want to keep, and the architecture review shows the turn-taking floor holds with a remote brain over India-region links."
+  },
+  {
+   "id": "evidence.2026-10-20.acct-retell-claims",
+   "type": "evidence",
+   "title": "Retell authorized-surface phase: 55 graded claims (51 observed, 4 inferred) from about 100 authorized API requests with our own key (one org, vp-teardown), the live OpenAPI, the published retell-sdk (npm and PyPI 6.2.8), the MCP server and web client SDK, and one REA run on the web client SDK. No call, number, batch, chat, knowledge base or test run; probe objects deleted except one synthetic agent and engine.",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "path": "research/2026-10-20/account-phase/retell/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-retell-surface-parity",
+   "type": "measurement",
+   "title": "Retell publishes its whole API: the TypeScript SDK 6.2.8 has 109 method+path operations, the live OpenAPI (revision 2026-10-19-becf7f8, byte-identical to the public-phase copy) has the same 109, no SDK-only routes. Of 38 GET operations swept, 36 answer to an API key and 2 CSV-import routes answer 401 Invalid JWT (dashboard login only). No billing, balance, spend-cap, member or analytics-aggregate route exists.",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "n": "109 SDK ops vs 109 OpenAPI ops; 38 GET operations called once each with invalid probe ids",
+   "method": "script over src/resources of the extracted npm package compared with the OpenAPI operation list; GET sweep at about 1 request per 1.2 s (limit is 30 to 100 per 10 s) with our API key on 2026-10-20",
+   "path": "data/account-phase/retell/derived/sdk-vs-openapi.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-retell-india-voice-and-language-depth",
+   "type": "measurement",
+   "title": "Retell India depth in its own catalogue: 6 India locales of 63 (en-IN, hi-IN, kn-IN, mr-IN, ta-IN, ur-IN; te-IN rejected by the live validator); 6 of 300 voices have accent Indian, none labelled Hindi; Hindi voices exist only via community search; pronunciation alphabets are ipa, cmu, pinyin, jyutping; the PII categories include no Indian ID type (aadhaar rejected).",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "n": "1 voice list (300 voices), 5 community searches for hindi, 1 rejected language, 1 rejected PII category",
+   "method": "GET /list-voices and POST /search-community-voice with our key; validator error texts from create-agent probes; SDK type enums, 2026-10-20",
+   "path": "data/account-phase/retell/api-reads/list-voices.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-retell-platform-voices-are-relisted",
+   "type": "evidence",
+   "title": "Inference: Retell Platform Voices are mostly re-listed third-party voices. Of the 21 platform (retell-*) voices, 15 preview files are named minimax-*, 2 fish_audio-*, 1 cartesia-*, and 3 carry no provider tag; Cartesia previews sit in a folder named cartesia-sonic-3.6-2026-09-08. It rests on file names only (no audio or traffic), so treat the \"self-hosted models\" vendor claim as unproven rather than refuted.",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "path": "data/account-phase/retell/api-reads/list-voices.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-retell-contact-number-handling",
+   "type": "measurement",
+   "title": "Retell CRM contact create on India numbers: \"9000000001\" (10 digits) was stored as +19000000001; \"09000000003\" and \"12345\" were stored verbatim; \"+919000000003\" and \"09000000003\" coexisted as two contacts; only an identical string was refused as a duplicate. So a messy lead list yields wrong-country numbers and double contacts with no warning.",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "n": "6 contacts created, 1 duplicate attempt, all deleted afterwards",
+   "method": "POST /create-contact with synthetic numbers on our org, read back the stored phone_number, 2026-10-20",
+   "path": "data/account-phase/retell/api-writes/create-contact-plain10.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-retell-disclosure-default-gap",
+   "type": "measurement",
+   "title": "Retell AI disclosure default depends on the creation path: the dashboard-seeded agent has handbook_config {ai_disclosure:true, default_personality:true}; an agent created through the API with only response_engine and voice_id has no handbook_config at all, although the docs say new agents get AI Disclosure When Asked by default. Whether the runtime still applies the preset was not tested on a call.",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "n": "2 agents compared (1 dashboard-seeded, 1 API-created, since deleted)",
+   "method": "GET /get-agent on both after a bare POST /create-agent, 2026-10-20",
+   "path": "data/account-phase/retell/api-reads/get-agent-minimal-created.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-retell-version-model",
+   "type": "evidence",
+   "title": "Retell versioning: publishing freezes a version in place, and PATCH on a published version is refused (422 \"Cannot update published agent other than version title\"); create-agent-version(base_version) returns a draft and clones the response engine with it (agent v1 with llm v1); draft edits never publish. Agents carry prod and staging tags and calls freeze the tag used.",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "path": "data/account-phase/retell/api-writes/update-agent-after-publish.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-retell-live-call-control",
+   "type": "evidence",
+   "title": "Retell lets a running call be steered by API: update-live-call appends additional_context to the transcript with role injected and can interrupt and regenerate (trigger_response); listen-live-call mints a subscribe-only token; take-over permanently stops the agent. This is a real mid-call control plane that a supervisor, a CRM event or a second model can drive.",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "path": "data/account-phase/retell/derived/sdk-call-subobjects.txt"
+  },
+  {
+   "id": "rejected.2026-10-20.acct-retell-csv-import-by-api-key",
+   "type": "rejection",
+   "title": "Loading a CSV of contacts into Retell with an API key (upload-contact-import-file then create-contact-import with column mapping and default_country).",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "tried": "POST /upload-contact-import-file with a synthetic 11-row messy CSV, GET /get-contact-import, and create-contact-import with a placeholder id, all with our Bearer key.",
+   "broke": "Upload and status answer 401 \"Unauthorized: Invalid JWT\" although both are in the public OpenAPI and SDKs; create-contact-import validates but needs an upload id only the upload route can mint. The messy-CSV time-and-motion test therefore needs the dashboard login (or batch-call tasks, which are billable).",
+   "path": "data/account-phase/retell/api-writes/upload-contact-import-file.json"
+  },
+  {
+   "id": "decision.2026-10-20.acct-retell-beat-list",
+   "type": "decision",
+   "title": "Proposed: from Retell's API, VP v1 should match these and beat them on the India path: (1) draft/publish with an engine cloned per version and frozen tags on calls; (2) per-call overrides (agent, variables, metadata) with an idempotency key; (3) a pre-answer inbound hook that can reject or reroute; (4) a live control plane for context injection and takeover; (5) typed per-product per-second cost on every call; (6) simulation tests with mocked tools. Beat: one contact object that normalises to E.164 with India as the default country and de-duplicates across formats; disclosure default-on on every creation path including the API; DNC/consent/window checks default-on for outbound; Indic-script pronunciation and Hindi-first voice catalogue; business-outcome codes beside the engineering disconnection reason; scriptable bulk import, export, batch status/cancel and aggregate analytics in the API, not only the dashboard.",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "rationale": "Each match item exists in Retell's typed API and is something an Indian enterprise team building a renewal flow will expect; each beat item is a place where the same API shows a gap that the Indian complaint set (support, billing, account/UI, reliability) points at: wrong-country numbers, no dedupe, API-only agents without the disclosure preset, no batch status, JWT-only import and export.",
+   "reverse_if": "The call battery shows Retell's defaults handle Hinglish turn-taking and disclosure better than assumed (the gap list then shrinks to import/export/analytics), or Indian buyers in the interview set rank any beat item below price and uptime."
+  },
+  {
+   "id": "decision.2026-10-20.acct-retell-api-parity-for-chat-setup",
+   "type": "decision",
+   "title": "Proposed: because setup is LLM-native (directive.2026-10-20.llm-native), VP exposes every dashboard action as an API/MCP operation with the same auth as the dashboard, so the chat builder and a customer's own agent can do everything a human can; Retell's JWT-only import/export and missing batch status/cancel are the counterexample.",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "rationale": "Retell's own MCP server is two tools (search docs, run SDK code), so an agent can do only what the SDK can; the missing operations (import, export create, billing, analytics, batch list/cancel) are exactly what a chat-driven operator would be asked to do.",
+   "reverse_if": "A chat builder shows no unmet need for these operations in the first 20 customer setup sessions."
+  },
+  {
+   "id": "open.2026-10-20.acct-retell-call-metering-and-defaults",
+   "type": "open-question",
+   "title": "What do Retell's real call_cost product lines, billed-duration scaling (prompt over 4,000 tokens), burst surcharge and default turn-taking look like on a Hinglish call, and does a bare API-created agent still say it is an AI when asked?",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "closes_when": "The call-battery phase places calls on (a) a dashboard-built and (b) an API-built agent with the same prompt, reads call_cost.product_costs, llm_token_usage, latency and disconnection_reason, and asks \"aap AI ho?\" in at least 8 calls each."
+  },
+  {
+   "id": "open.2026-10-20.acct-retell-batch-semantics",
+   "type": "open-question",
+   "title": "How does a Retell batch call treat duplicates, Indian numbers without +91, empty variables, the do_not_call flag and calling windows when the CSV or tasks are realistic?",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "closes_when": "A 50-row synthetic batch (to our own verified numbers only) is created in the call-battery phase and per-call results are read back with list-calls filtered by batch_call_id; the same rows are also tried through the dashboard CSV path."
+  },
+  {
+   "id": "risk.2026-10-20.acct-retell-leftover-probe-objects",
+   "type": "risk",
+   "title": "Our Retell org still holds one synthetic agent (VP-SYNTHETIC-teardown-renewal-hinglish, v0 published, v1 draft) and its LLM engine with a fictional insurer prompt and an example.invalid webhook, next to the dashboard-seeded default agent. A later phase could mistake them for production or place a call on them.",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "mitigation": "Name prefix VP-SYNTHETIC; reuse them in the call-battery phase or delete them first; the contacts, flow and test definition were already deleted; never attach a real number or webhook to them."
+  },
+  {
+   "id": "evidence.2026-10-20.acct-sarvam-claims",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Sarvam authorized-surface phase: 55 graded claims (39 observed, 7 inferred, 7 vendor-claimed, 2 unknown) from 29 authorized requests with our own Model API keys (plus 6 unauthenticated GETs of public MCP OAuth metadata), the live Voice Agents and Model API OpenAPI files, 52 re-fetched docs pages, four published SDK packages (Python and npm, conv-ai and model SDKs) and one REA run on the npm conv-ai SDK. No call, number, agent or other billable action; the Voice Agents control plane refused both keys, so no Voice Agents object was read or created.",
+   "path": "research/2026-10-20/account-phase/sarvam/claims.json",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "rejected.2026-10-20.acct-sarvam-model-key-for-voice-agents",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "title": "Using the stored Sarvam keys (Model API class) against the Voice Agents control plane to create and read back an agent, list deployments or read analytics.",
+   "tried": "One read-only GET per route on apps.sarvam.ai (analytics query-schema, app-authoring deployments, app-runtime signed-URL) with all-zero UUID scope, with X-API-Key, Bearer and the Model API header, using both the SARVAM2 and the SARVAM team key. The same keys returned 200 on api.sarvam.ai/v2/models.",
+   "broke": "Every Voice Agents route answered 401 \"Invalid API key format\" (X-API-Key) or \"Malformed token\" / \"Invalid Bearer token\" (Bearer). Voice Agents needs a separate workspace key made in the dashboard (Settings > API Key); the Model API key is a different class. So no agent config JSON, deployment, campaign, cohort or call log could be read, and the lane relied on the OpenAPI, SDKs and docs for the Voice Agents data model.",
+   "path": "data/account-phase/sarvam/api-reads/va-schema-xapikey.body",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "measure.2026-10-20.acct-sarvam-api-surface",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "title": "Sarvam publishes a 68-operation Voice Agents REST API (analytics 24, scheduling 19, evals 15, app-authoring 6, outbounds 1, BYOK 3) and a 53-operation Model API; the Voice Agents spec has no agent create/edit/commit, telephony, knowledge-base, voice, secrets, API-key or DND operations (the docs name a DND API the spec lacks), so agent authoring lives only in the dashboard, Genie and the MCP server.",
+   "n": "68 Voice Agents operations, 175 schemas; 53 Model API operations",
+   "method": "script over the live OpenAPI files (docs.sarvam.ai/openapi/voice-agents.json and apis.json, fetched 2026-10-20, voice-agents spec identical to the public-phase copy) grouped by service base URL; absence checked by path and keyword search (0 matches for dnd, dlt, ncpr)",
+   "path": "data/account-phase/sarvam/derived/endpoints.csv",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-sarvam-webhook-model",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Sarvam webhooks are post-call only (campaign attempt, inbound call, instant outbound), with {url, metadata} as the whole config: no signature or secret field, no mid-call hook, English-only transcripts (en_text), delivery records running/completed/failed and re-delivery of up to 200 attempts. Mid-call integration is the opposite direction: the agent calls the customer HTTPS tool, on-start/on-end hooks or Python code tools.",
+   "path": "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "measure.2026-10-20.acct-sarvam-sdk-spec-drift",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "title": "Sarvam artefacts disagree with each other: three language lists (OpenAPI 13 with Sanskrit, Python SDK 13 with Konkani, npm SDK 11), different audio rates (Python in 16/48 kHz, npm in 8/16 kHz), the npm SDK is 7 months behind Python (0.0.42 vs 1.1.1), 12 documented doc-vs-spec mismatches in all (e.g. a DND API and ConnectionConfig fields that the spec lacks).",
+   "n": "3 SDK/spec artefacts compared; 12 mismatches recorded",
+   "method": "scripted diff of enums in the OpenAPI, sarvam-conv-ai-sdk 1.1.1 (PyPI wheel) and 0.0.42 (npm tarball), plus manual reading of 52 docs pages, 2026-10-20",
+   "path": "data/account-phase/sarvam/derived/doc-vs-spec-mismatches.json",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-sarvam-stt-vad-knobs",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Turn-taking lives in Sarvam's STT service: the realtime STT WebSocket exposes ten frame-level VAD parameters (thresholds, min speech frames, negative-frame window, interrupt frames, pre-speech pad, volume gate) while the agent builder offers only three coarse settings (interrupt on/off, sound sensitivity, eagerness) plus nudges. Mapping builder sliders to those parameters is inferred, not documented.",
+   "path": "data/account-phase/sarvam/sdk/pypi-sarvamai/x/sarvamai/speech_to_text_streaming/client.py",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-sarvam-voice-persona-catalog",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Sarvam sells voices as job-tagged personas: 222 v4-flash slugs named name_language_style across 50 style tokens (customer 15, recovery 10, companion 11, sales 5, banking 5, insurance 3; hi 116, en 62, enhi 13); the docs say 176 voices while the API enum has 266 slugs.",
+   "path": "data/account-phase/sarvam/derived/tts-voice-catalog-summary.json",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "decision.2026-10-20.acct-sarvam-parity-floor-items",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "title": "Proposed: add to the v1 parity floor what Sarvam's API already gives buyers: attempt and interaction records with failure reason and ended-by, cohort validation with a downloadable rejected-records file, retry ladder by outcome class, per-user number rotation, first-class transfer records, stereo recordings, post-call webhooks with re-delivery, an eval API with a judge, a SQL analytics API and typed SDKs plus an MCP server.",
+   "rationale": "Each exists in Sarvam's live spec at INR 3-3.5/min (claims SAC-14 to SAC-23, SAC-29, SAC-33, SAC-34), so an Indian enterprise buyer comparing against it will expect them. They are a floor, not a wedge, in line with the 2026-10-17 rejection of parity-undercut.",
+   "reverse_if": "Buyer interviews show Indian operations leads never use failure-reason filters, rejected-record downloads, evals or SQL boards (a no-code-only buyer), or usability sessions show a simpler model wins the same tasks.",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "decision.2026-10-20.acct-sarvam-beat-where-thin",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "title": "Proposed: aim VP's differentiation at the places Sarvam's API is thin: user-visible model and voice choice, signed webhooks, mid-call function hooks, a usage and cost API, cross-call memory, consent/DND/window objects with category-aware calling hours, and an agent-authoring REST API that is as complete as the dashboard.",
+   "rationale": "Sarvam's spec has no model picker or BYO (temperature only), WebhookConfig is url plus metadata with no signing, no mid-call callback, no usage/balance endpoint, memory is per call with caller context pulled from the customer, and compliance is \"your responsibility\" with free-form calling windows. These are measurable gaps on tasks we can run in the call-battery phase.",
+   "reverse_if": "Interviews show buyers do not value these (they take a closed bundle at INR 3-3.5 without wanting hooks or signing), or Sarvam ships them (watch changelog/OpenAPI hash).",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "open.2026-10-20.acct-sarvam-workspace-key",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "title": "Needed: a Voice Agents workspace API key (dashboard Settings > API Key) or a dashboard session on the SARVAM2 account. Without it we still lack: an agent's full config JSON, version history, telephony connection and number objects, KB ingestion, query-schema table list, a messy-CSV cohort validation, schedule-window enforcement, voicemail/transfer behaviour, call logs and ledger lines.",
+   "closes_when": "The owner or Instinct creates a workspace key (kept in the scratchpad env file) or lets a dashboard phase run; then create and read back one synthetic agent, a paused future campaign with a 50-row messy cohort, a test suite run (INR 2) and the query-schema list, and score pre-registered predictions SAR-P01 to P08.",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "open.2026-10-20.acct-sarvam-hook-signing-and-retries",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "title": "Does Sarvam sign webhooks (the settings page mentions secrets for webhook auth headers), how does it retry a failed delivery, and do tool-call or transfer events exist beyond the 8 typed SDK messages?",
+   "closes_when": "A call-battery campaign or instant outbound run delivers to a public endpoint of ours and we record headers, retries on forced 500s, and the WebSocket frames for variable_update, state_transition, kb_query and tool_call.",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "asset.2026-10-20.acct-sarvam-spec-analysis-kit",
+   "type": "asset",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Sarvam teardown tables: endpoints.csv (121 operations with service, base URL, schemas), data-model.json (object graph), config-knobs.json (35 knobs graded), conv-ai-sdk-protocol.json (message types, SDK diffs), doc-vs-spec-mismatches.json, tts-voice-catalog-summary.json and the scripts that build them.",
+   "paths": [
+    "data/account-phase/sarvam/derived/endpoints.csv",
+    "data/account-phase/sarvam/derived/data-model.json",
+    "data/account-phase/sarvam/derived/config-knobs.json",
+    "data/account-phase/sarvam/derived/conv-ai-sdk-protocol.json",
+    "data/account-phase/sarvam/derived/doc-vs-spec-mismatches.json",
+    "research/2026-10-20/account-phase/sarvam/code/derive.py",
+    "research/2026-10-20/account-phase/sarvam/code/derive2.py"
+   ],
+   "value": "Feeds the product blueprint dimensions (data model, lifecycle, config, billing) and the parity-floor Kano list; the scripts re-run against a changed spec to give a diff in minutes.",
+   "effort": "Low: re-run derive.py after refetching the OpenAPI; about 15 minutes.",
+   "date": "2026-10-20"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-synthesis-claims",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Cross-vendor synthesis of the authorized-surface phase (Bolna, Vapi, Retell, ElevenLabs, Sarvam): 37 graded claims (28 observed, 9 inferred) over the five lanes' 282 claims, plus a data-model matrix (15 objects x 5 vendors), an API-surface matrix (30 capabilities), a VP v1 schema proposal and the consolidated dashboard/battery list. The narrative SYNTHESIS.md was returned as text for the main loop to save at research/2026-10-20/account-phase/SYNTHESIS.md.",
+   "path": "research/2026-10-20/account-phase/synthesis/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-synthesis-sonnet-lane-spotcheck",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Sonnet-tier lane quality check: 19 of 20 decision-critical Vapi/Retell/ElevenLabs/Sarvam claims confirmed in full against saved raw artifacts, 1 confirmed on the response only (Retell RAP-10 request body not saved), 0 contradicted; Bolna (Opus) 3 of 3. Defects found are bookkeeping, not substance: 6 Sarvam 'observed' claims rest on docs only, and the Retell report text cites shifted claim ids. The reverse_if of decision.2026-10-20.account-mixed-tiers is not met.",
+   "n": "20 Sonnet-lane claims (Vapi 5, Retell 6, ElevenLabs 5, Sarvam 4) + 3 Bolna claims; 282 lane claims checked for evidence-path existence",
+   "method": "Synthesis lane re-read each claim's saved response, spec or code under data/account-phase/<lane>/ with python3 -I field lookups and grep (no network, no key), 2026-10-20; verdict confirmed | confirmed-partly | contradicted",
+   "path": "research/2026-10-20/account-phase/synthesis/lane-spotcheck.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-synthesis-config-integrity",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "At 4 of 4 vendors we could write to, an API-created agent's stored or running defaults differ from the docs or the dashboard (Bolna OSS defaults vs docs; Retell API agent lacks the dashboard's AI-disclosure preset; ElevenLabs server default LLM and speculative_turn differ from its schema; Vapi stores a name-only assistant and applies defaults at call time). 3 of 4 silently accept and drop unknown fields; only Vapi rejects them.",
+   "n": "4 vendors with a working write key (Sarvam's key was refused); one create + read-back per vendor plus one unknown-field probe each",
+   "method": "Lane probes on our own accounts (synthetic agents), read back by API; cross-checked by the synthesis against the saved responses, 2026-10-20",
+   "path": "research/2026-10-20/account-phase/synthesis/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-synthesis-india-operator-layer",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "India operator layer across five vendor APIs: 0 of 5 have a consent record, DLT/header, number-series or NCPR object; 0 of 5 derive calling windows from the call category; 2 of 5 default window time zones to America/Los_Angeles (Bolna OSS, Retell batches); Retell stored a 10-digit Indian number as +1 and de-duplicates on the exact string; Indian-default normalisation appears only in Bolna campaigns/callbacks and Sarvam cohorts (schema).",
+   "n": "5 vendor APIs (schemas of 96-322 paths each, plus 6 Retell contact probes)",
+   "method": "Lane schema reads and synthetic contact probes, consolidated by the synthesis lane 2026-10-20 (claims XS-09, XS-11)",
+   "path": "research/2026-10-20/account-phase/synthesis/data-model-matrix.csv"
+  },
+  {
+   "id": "measure.2026-10-20.acct-synthesis-billing-surface",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Billing as the APIs expose it: typed per-call cost lines at 4 of 5 (not Sarvam); balance readable by API key at 2 of 5, partly (Bolna wallet, ElevenLabs character usage); spend cap settable by API key at 0 of 5 observed; cost grouped by campaign or contact at 0 of 5. Silent cost raisers on by default: ElevenLabs bursting and a 2.4x-cost default LLM, Retell burst; Sarvam's 60-s pulses make a 30-s call INR 7.40 per connected minute.",
+   "n": "5 vendor APIs; no billable call placed, so no real invoice line was read",
+   "method": "Lane schema reads and read-only account routes, consolidated by the synthesis lane 2026-10-20 (claims XS-26 to XS-29)",
+   "path": "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-synthesis-shared-patterns",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Inference (weighted by the 0.85 Bolna blind-calibration hit rate): patterns in Bolna's code that closed vendors' APIs also expose: history trimmed to what the caller heard (ElevenLabs agent_response_correction), speculative generation at early end of turn (ElevenLabs speculative_turn, metered separately), a cheap separate model for post-call judges, LLM-classified voicemail on transcript text, and component-partial failover (LLM at Bolna, TTS at Retell, STT/LLM at Vapi, scheduled model reroute at ElevenLabs; no carrier failover anywhere).",
+   "path": "research/2026-10-20/account-phase/synthesis/claims.json"
+  },
+  {
+   "id": "decision.2026-10-20.acct-synthesis-vp-data-model",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed VP v1 object model: Org/Workspace (wallet, spend cap, concurrency on the API); Agent with draft/publish versions and a materialised resolved config; Deployment pinning a version or split; Contact as a first-class object (India-default E.164, cross-format dedupe, consent ledger, DND/NCPR, attempt history, memory slot for v2); Campaign as a policy (call category -> window, retry ladder by outcome, attempt budget, pacing, caller-ID pool, built-in predial check); Attempt separate from Conversation; customer-owned Outcome/Judge definitions; signed webhooks; INR cost lines. Consolidates the lane proposals acct-vapi-contact-compliance-layer, acct-vapi-one-publish-model and acct-sarvam-parity-floor-items.",
+   "rationale": "The convergent shape across five APIs is agent + call + post-call judge; every gap they share sits on the person and the policy (contact, consent, windows, retries, outcomes), which is where Indian enterprise calling is regulated and where 70% of Indian complaints sit (support, billing, account/UI).",
+   "reverse_if": "Usability sessions or the first buyer interviews show a contact-centric model slows first-campaign setup with no drop in errors, or the walk-through finds an incumbent dashboard already ships contacts with consent, windows and retries that its API hides.",
+   "path": "research/2026-10-20/account-phase/synthesis/vp-v1-schema.json"
+  },
+  {
+   "id": "decision.2026-10-20.acct-synthesis-parity-floor",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed v1 API parity floor, confirmed from at least 4 of 5 incumbent APIs (not marketing): versioned agents with pinning; per-call overrides and variables; a pre-call decision hook; HTTP tools, transfer and end-call; post-call webhook with the full record; typed per-call cost; post-call LLM judge with typed extraction; simulated-caller tests; campaign create/status/cancel; knowledge bases; SIP/number import; an MCP server. Parity, not wedge.",
+   "rationale": "An Indian enterprise evaluating VP against these platforms will expect each item; each is shipped by 4-5 of 5 vendors per api-surface-matrix.csv.",
+   "reverse_if": "Buyer interviews (10-15 operations leads) rank an item as unused (Kano indifferent), or the dashboard walk-through finds a must-have the APIs did not show.",
+   "path": "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv"
+  },
+  {
+   "id": "decision.2026-10-20.acct-synthesis-beat-list",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed 5 places to beat, each gapped in every incumbent API and tied to a runnable task: (1) contact-and-compliance layer on by default (task: messy 50-row CSV + window battery); (2) Hinglish turn-taking that never discards a short reply and listens during the opening (task: 'nahi/haan/ruko/bas' over the agent, 2.4 s pause); (3) the stored config is what runs: materialised defaults, unknown fields refused, voice-language checks, model-in-effect per call, disclosure on every creation path (task: create by API, read back, call, compare); (4) owned outcomes and economics: business outcome beside the engineering code, visible editable judges, cost and funnel by campaign/contact, per-second billing (task: find a failed call and why; cost one campaign); (5) dashboard parity on the API and MCP for chat-driven setup (task: chat builder runs a campaign end to end with no dashboard).",
+   "rationale": "Parity plus undercut was rejected (rejected.2026-10-17.parity-undercut) and incumbents have the margin to follow on price (XS-30); these five are gaps visible in their own typed APIs and match the Indian complaint classes, and each can be scored as task success.",
+   "reverse_if": "The walk-through or call battery shows incumbents pass these tasks, or buyer interviews do not rank the failures as switching reasons; for (2), VP's own stack fails to beat them on the same battery.",
+   "path": "research/2026-10-20/account-phase/synthesis/claims.json"
+  },
+  {
+   "id": "asset.2026-10-20.acct-synthesis-v1-schema",
+   "type": "asset",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "VP v1 schema kit: object model, agent config knobs (languages, voice, brain, opening, turn-taking with Hindi/Hinglish lexicons and a never-discard short-reply policy, call control, transfer, analysis, compliance, privacy, validation), attempt/conversation state machine, event list and INR cost lines, each item marked parity or beat with evidence ids; plus the two cross-vendor matrices.",
+   "paths": [
+    "research/2026-10-20/account-phase/synthesis/vp-v1-schema.json",
+    "research/2026-10-20/account-phase/synthesis/data-model-matrix.csv",
+    "research/2026-10-20/account-phase/synthesis/api-surface-matrix.csv"
+   ],
+   "value": "Starting spec for the product data model and API, so the build does not re-derive what five vendors already show",
+   "effort": "done (proposal); owner review needed; timing defaults to be set by VP's battery"
+  },
+  {
+   "id": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "The Hinglish turn-taking beat is a hypothesis: incumbents' code and defaults show English lexicons, dropped short replies and a ~1.4 s hold, but VP's own lab stacks still cut in on 15-42% of turns and all took the 2.4 s elderly pause. Claiming it before measuring both sides on one battery would repeat a parity-style claim without evidence.",
+   "mitigation": "Score VP and at least Bolna, Vapi, Retell, ElevenLabs and Sarvam on the same stereo-recorded Hinglish battery (short replies over the agent, speech during the opening, 2.4 s pause, reply gap) before the beat goes into any pitch; until then keep it out of positioning."
+  },
+  {
+   "id": "open.2026-10-20.acct-synthesis-walkthrough-and-battery",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "What the API phase could not reach, consolidated for the next phases: dashboard items (billing and spend caps at all five; dashboard-built agent defaults; messy-CSV import; scheduling/compliance screens; Indian SIP/number setup; failed-call finding and export; roles; Composer/Conductor/Genie builders; Sarvam everything behind the workspace key; Synthflow/SquadStack/Exotel whole surface) and billable call-battery items (reply gap, short Hindi replies, speech over the opening, operator messages, language hold, disclosure on API vs dashboard agents, real cost lines, webhook delivery, warm transfer).",
+   "closes_when": "The owner-assisted walk-through runs the six-task time-and-motion list on each deep-set vendor and the call battery scores each battery item with n >= 30 turns per configuration on our own verified numbers.",
+   "path": "research/2026-10-20/account-phase/synthesis/dashboard-walkthrough.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-vapi-claims",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi authorized-surface phase: 61 graded claims (53 observed, 5 inferred, 2 vendor-claimed, 1 unknown) from about 87 authorized API requests with our own key, the live OpenAPI, five published packages (server SDK TS and Python, web SDK, MCP server, CLI) and one REA run on the web SDK dist. No call, number or billable action. Probe objects were deleted.",
+   "path": "research/2026-10-20/account-phase/vapi/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-vapi-hidden-api-surface",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi's public web SDK (@vapi-ai/web 3.0.0) ships a REST client with 137 unique paths (246 operations), 68 more than the 74-path public OpenAPI; our private key was accepted on the read routes we tried (assistant versions and drafts, voice library, token, credential, template, test-suite, workflow, v2 call and assistant) and refused on /org and /org/feature-flag.",
+   "n": "137 paths and 246 operations parsed from api.ts; about 14 of the extra read routes called once each",
+   "method": "script over the extracted npm package (data/account-phase/vapi/derived/web-sdk-ops.json) diffed against the OpenAPI path set, then authorized GETs with our key on 2026-10-20",
+   "path": "data/account-phase/vapi/derived/web-sdk-ops.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-vapi-patch-is-publish",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi: every assistant PATCH publishes an immutable version (v1 then v2, parentVersion, configHash); drafts are separate sparse records with a baseVersion and two coexisted for one assistant; a name-only assistant stores no model, voice or turn-taking fields, so the stored record does not show what will run. Traffic splits are an append-only ledger (actor type and key id recorded) that outlives the assistant.",
+   "path": "data/account-phase/vapi/api-reads/sdkop-assistant-versions.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-vapi-ended-reason-families",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi's Call.endedReason has 638 values: 300 call.in-progress.error-*, 270 pipeline-error-*, 20 call.start.error-*, 5 ringing, 2 forwarding, 2 other call.*, 39 plain (customer-busy, voicemail, silence-timed-out...). All are engineering codes keyed to a provider; none expresses a business outcome (agreed, call back, refused, wrong number, DND).",
+   "n": "638 enum values",
+   "method": "counted by prefix from the Call.endedReason enum in the OpenAPI served at api.vapi.ai/api-json on 2026-10-20 (data/account-phase/vapi/derived/ended-reasons.json)",
+   "path": "data/account-phase/vapi/derived/ended-reasons.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-vapi-indic-stt-matrix",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Indic speech-to-text coverage inside Vapi's 14 transcriber variants: 12 Indic codes on ElevenLabs, Cartesia, Soniox and Vapi's own transcriber; 11 on Azure and Gladia; Deepgram has hi and hi-Latn but the live API rejected hi-Latn on nova-3; Google only Hindi and Bengali; AssemblyAI none. No Indian speech vendor is a provider (custom hooks only), and none of the 22 stock Vapi voices is Hindi.",
+   "n": "14 transcriber variants, 20 voice variants, 22 stock voices, 1 live validation rejection",
+   "method": "language enums read from the OpenAPI; one deliberately invalid create (no object stored) to read the server-side language list for nova-3; voice library read via GET /voice-library/vapi",
+   "path": "data/account-phase/vapi/derived/transcriber-indic-language-matrix.json"
+  },
+  {
+   "id": "measure.2026-10-20.acct-vapi-account-limits",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Our Vapi org (Usage-only) allows 4 concurrent calls and 2 concurrent simulations; a failed POST /call still returns the live capacity block (concurrencyLimit 4, remaining 3). Spend cap, members and billing cannot be read with an API key.",
+   "n": "2 API responses (one failed POST /call, one GET /eval/simulation/concurrency)",
+   "method": "authorized requests on 2026-10-20; the failed create used an empty body so no call could start",
+   "path": "data/account-phase/vapi/api-writes2/call-invalid-empty.json"
+  },
+  {
+   "id": "evidence.2026-10-20.acct-vapi-no-india-objects",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Across Vapi's 74 paths and 1,018 schemas there is no contact, consent, suppression/DND, DLT, calling-window or retry-policy object; phone numbers come in five types only (byo-phone-number, twilio, vonage, vapi, telnyx); campaigns carry only schedulePlan {earliestAt, latestAt} and an optional blocking predial webhook. Composer (the chat builder) has no REST trace beyond a file purpose value.",
+   "path": "data/account-phase/vapi/openapi/api-json.json"
+  },
+  {
+   "id": "rejected.2026-10-20.acct-vapi-api-key-for-org-billing",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Reading Vapi org settings, spend cap, billing and feature flags with the API key.",
+   "tried": "GET /org and GET /org/feature-flag (routes present in the public web SDK) with our private bearer key; also tried the org probe earlier in the lane.",
+   "broke": "Both returned 401 'Invalid Key. Hot tip, you may be using the private key instead of the public key'. Org, billing, members and limits need a dashboard JWT, so the authorized API gives no invoice lines, balance or spend-cap values; real cost per connected minute needs a placed call plus the dashboard.",
+   "path": "data/account-phase/vapi/api-reads2/org.json"
+  },
+  {
+   "id": "decision.2026-10-20.acct-vapi-parity-floor-items",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed: the v1 parity floor taken from Vapi's API is eight items:\n- immutable assistant versions with hash and parent, pinned by label;\n- a traffic split between versions;\n- typed per-component cost on every call plus a query endpoint;\n- a webhook envelope with version and call-changing request/response events (assistant-request, tool-calls, transfer, predial) with retries and signing;\n- programmable QA (structured outputs, scorecards, simulated personas, latency assertions);\n- per-turn latency in the call record;\n- typed concurrency state on create;\n- TypeScript and Python SDKs, an MCP server and config-as-code.\nAdd to the Kano must-be list; test each against the buyer interviews.",
+   "rationale": "Each item exists in Vapi's live API (claims AP-19, AP-21, AP-30, AP-31, AP-34, AP-35, AP-16, AP-17, AP-25, AP-08 to AP-10, AP-61) and is the baseline a developer-platform buyer compares against. They are cheap relative to the Indian-operator layer and do not differentiate, so they are a floor, not a wedge.",
+   "reverse_if": "10-15 buyer interviews show Indian operations leads never use versions, splits or webhooks (a pure no-code buyer), or a competitor with a simpler model wins the same tasks in usability sessions."
+  },
+  {
+   "id": "decision.2026-10-20.acct-vapi-contact-compliance-layer",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed: build the contact-and-compliance layer Vapi lacks as first-class objects in VP v1:\n- a contact record with consent state, suppression and history;\n- a predial veto on by default, driven by our own scrub list;\n- caller-ID class and DLT fields;\n- per-contact calling windows in local time, retries and attempt budgets;\n- business-language outcomes mapped from engineering codes, raw code kept beside.",
+   "rationale": "Vapi has no such objects (1,018 schemas), one absolute window per campaign and no retries, 638 engineering end reasons, and cannot terminate Indian numbers. Indian complaints concentrate on usability, support and billing, and these objects are where an operator's daily work happens. The same layer serves pre-sale and post-sale calling.",
+   "reverse_if": "Vapi ships contacts, per-contact windows with retries and an Indian termination route; or buyer interviews rank another gap (voice quality, price) well above operator workflow; or the regulation lane finds the objects cannot be delivered without a licensed telephony partner we do not have."
+  },
+  {
+   "id": "decision.2026-10-20.acct-vapi-one-publish-model",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed: VP uses one publish path (draft, test, publish, ramp) where an ordinary edit never publishes, stored assistants are shown with a resolved-config view (the effective STT, LLM, TTS, endpointing and interruption lists), and splits cannot silently pin out a later fix.",
+   "rationale": "Vapi's PATCH publishes immediately, drafts are a separate sparse object that can multiply, a name-only assistant stores nothing about what will run, and an explicit split ignores later publishes (docs). That combination matches complaints that a draft does not hold the prompt. The cost of our version is a clearer state machine and one extra screen.",
+   "reverse_if": "Usability sessions (5 target users, our onboarding vs the best competitor) show the extra step slows task completion with no drop in errors, or buyers explicitly want edit-equals-publish."
+  },
+  {
+   "id": "open.2026-10-20.acct-vapi-runtime-defaults",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Which Vapi defaults actually run on a Hinglish call: monitorPlan listen and control on or off, endpointing choice, denoising, voicemail detection, the English interruption and acknowledgement lists, transcriber fallback, and the real webhook payloads and retries?",
+   "closes_when": "The call-battery phase places a Hinglish call on a Vapi assistant with no turn-taking overrides, reads the stored call artifact and logs (performanceMetrics, call-logs), and captures the webhooks on a public endpoint of ours; the same call is repeated with the Hindi lists overridden."
+  },
+  {
+   "id": "asset.2026-10-20.acct-vapi-spec-analysis-kit",
+   "type": "asset",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Reusable authorized-API teardown kit: a read-only probe helper (key from an env file into a header, response and filtered headers saved, 1 request per second), an OpenAPI schema dumper, a language-enum matrix builder and a claims and manifest builder.",
+   "paths": [
+    "research/2026-10-20/account-phase/vapi/code/vapi_probe.sh",
+    "research/2026-10-20/account-phase/vapi/code/oa.py",
+    "research/2026-10-20/account-phase/vapi/code/build_claims.py",
+    "research/2026-10-20/account-phase/vapi/code/build_manifest.py"
+   ],
+   "value": "Turns any vendor with a bearer-key REST API and an OpenAPI file into a graded surface map in about an hour: create-and-read-back of a synthetic object, validation-error mining for hidden bounds, and a sha256 manifest.",
+   "effort": "Low: change the base URL, auth header and the resource list; about 30 minutes for a new vendor."
+  },
+  {
+   "id": "evidence.2026-10-20.account-synthesis",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Authorized-surface account phase complete (wf_36b25033-85c, 6/6 agents, 0 errors, 0 spend at every vendor): 282 lane claims (242 observed); all five APIs converge on one agent document + one call record with typed costs + a post-call LLM judge, and none models the person called or the calling policy; at 4 of 4 writable vendors the stored agent differs from docs/dashboard and 3 of 4 silently drop unknown fields; turn-taking defaults are English everywhere readable; a 12-item parity floor shipped by 4-5 of 5; no incumbent lets an API key do all the dashboard can. Bolna blind calibration 14 TRUE / 6 PARTLY / 0 FALSE of 20 (hit 0.85, Brier 0.086). Sonnet lanes re-checked 19/20 confirmed, 1 partly, 0 contradicted.",
+   "path": "research/2026-10-20/account-phase/SYNTHESIS.md"
+  },
+  {
+   "id": "rejected.2026-10-20.subagent-md-writes",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Having workflow subagents write their own report.md / SYNTHESIS.md files.",
+   "tried": "Lane prompts in both teardown workflows told each agent to write report.md (and the synthesis to write SYNTHESIS.md).",
+   "broke": "The subagent harness refused every Markdown write ('subagents return findings as text'); JSON/CSV files were written, but all 15 report.md files and the SYNTHESIS.md were missing until the main loop recovered them from the run journals.",
+   "reverse_if": "The harness starts allowing subagent Markdown writes."
+  },
+  {
+   "id": "decision.2026-10-20.reports-via-results",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Workflow lanes return their full report text in the structured result (summary field); the main loop writes report.md/SYNTHESIS.md from the run journal, appends a structured-result section, secret-scans, then merges the lane's context/inbox JSON. Lanes still write JSON/CSV data files directly.",
+   "rationale": "Subagent Markdown writes are blocked; recovering from the journal is lossless and keeps one secret scan at the point of writing.",
+   "reverse_if": "Subagents can write Markdown again."
   }
  ],
  "edges": [
@@ -21638,6 +22442,736 @@
    "from": "directive.2026-10-20.intent-better-product",
    "to": "open.2026-10-20.presale-vs-postsale",
    "relation": "constrains"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-teardown",
+   "to": "decision.2026-10-20.account-authorized-launch",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-teardown",
+   "to": "decision.2026-10-20.teardown-lines",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "measure.2026-10-20.acct-bolna-blind-calibration",
+   "to": "evidence.2026-10-20.acct-bolna-teardown",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-short-reply-drop",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-auto-judges",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-auto-judges",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-api-drift",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-language-switch",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-language-switch",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-llm-overflow",
+   "to": "open.2026-10-20.product-failover-policy",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-campaign-model",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-bolna-campaign-model",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-20.acct-bolna-battery-items",
+   "to": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-20.acct-bolna-battery-items",
+   "to": "evidence.2026-10-20.acct-bolna-short-reply-drop",
+   "relation": "tests"
+  },
+  {
+   "from": "risk.2026-10-20.acct-vendor-prompt-processing",
+   "to": "evidence.2026-10-20.acct-bolna-auto-judges",
+   "relation": "derived-from"
+  },
+  {
+   "from": "risk.2026-10-20.acct-vendor-prompt-processing",
+   "to": "decision.2026-10-20.teardown-lines",
+   "relation": "informs"
+  },
+  {
+   "from": "asset.2026-10-20.acct-bolna-openapi",
+   "to": "open.2026-10-20.acct-bolna-battery-items",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.2026-10-20.acct-bolna-openapi",
+   "to": "evidence.2026-10-20.acct-bolna-teardown",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-defaults-diverge-from-schema",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-elevenlabs-default-llm-cost",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-elevenlabs-config-surface-size",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-hinglish-mode-undocumented",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-memory-gated",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "asset.2026-10-20.acct-elevenlabs-wire-protocol-taxonomy",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-20.acct-elevenlabs-parity-floor-items",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-20.acct-elevenlabs-beat-list-api-visible",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "risk.2026-10-20.acct-elevenlabs-silent-model-fallback",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "rejected.2026-10-20.acct-elevenlabs-api-key-for-key-management",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "open.2026-10-20.acct-elevenlabs-live-behaviour-unmeasured",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "open.2026-10-20.acct-elevenlabs-speech-engine-bring-your-own-brain",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "to": "decision.2026-10-20.teardown-lines",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-20.acct-elevenlabs-parity-floor-items",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-elevenlabs-parity-floor-items",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-elevenlabs-beat-list-api-visible",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-elevenlabs-beat-list-api-visible",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-20.acct-elevenlabs-beat-list-api-visible",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-memory-gated",
+   "to": "module.memory-learning",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-memory-gated",
+   "to": "decision.2026-10-20.preference-only-memory",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-elevenlabs-hinglish-mode-undocumented",
+   "to": "design.voice-platform-blueprint",
+   "relation": "informs"
+  },
+  {
+   "from": "asset.2026-10-20.acct-elevenlabs-wire-protocol-taxonomy",
+   "to": "design.voice-platform-blueprint",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "risk.2026-10-20.acct-elevenlabs-silent-model-fallback",
+   "to": "directive.2026-10-20.no-midcall-swap",
+   "relation": "constrains"
+  },
+  {
+   "from": "open.2026-10-20.acct-elevenlabs-live-behaviour-unmeasured",
+   "to": "evidence.2026-10-20.acct-elevenlabs-claims",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.acct-elevenlabs-speech-engine-bring-your-own-brain",
+   "to": "design.voice-platform-blueprint",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-20.acct-elevenlabs-default-llm-cost",
+   "to": "evidence.2026-10-20.acct-elevenlabs-defaults-diverge-from-schema",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-retell-claims",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-retell-claims",
+   "to": "decision.2026-10-20.teardown-lines",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-surface-parity",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-india-voice-and-language-depth",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-retell-platform-voices-are-relisted",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-contact-number-handling",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-disclosure-default-gap",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-retell-version-model",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-retell-live-call-control",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "rejected.2026-10-20.acct-retell-csv-import-by-api-key",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-20.acct-retell-beat-list",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-20.acct-retell-beat-list",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-contact-number-handling",
+   "to": "decision.2026-10-20.acct-retell-beat-list",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-disclosure-default-gap",
+   "to": "decision.2026-10-20.acct-retell-beat-list",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-india-voice-and-language-depth",
+   "to": "decision.2026-10-20.acct-retell-beat-list",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-retell-version-model",
+   "to": "decision.2026-10-20.acct-retell-beat-list",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-retell-live-call-control",
+   "to": "decision.2026-10-20.acct-retell-beat-list",
+   "relation": "supports"
+  },
+  {
+   "from": "rejected.2026-10-20.acct-retell-csv-import-by-api-key",
+   "to": "decision.2026-10-20.acct-retell-beat-list",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-20.acct-retell-beat-list",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.acct-retell-api-parity-for-chat-setup",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "implements"
+  },
+  {
+   "from": "rejected.2026-10-20.acct-retell-csv-import-by-api-key",
+   "to": "decision.2026-10-20.acct-retell-api-parity-for-chat-setup",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.acct-retell-surface-parity",
+   "to": "decision.2026-10-20.acct-retell-api-parity-for-chat-setup",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-20.acct-retell-call-metering-and-defaults",
+   "to": "measure.2026-10-20.acct-retell-disclosure-default-gap",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.acct-retell-batch-semantics",
+   "to": "measure.2026-10-20.acct-retell-contact-number-handling",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.acct-retell-batch-semantics",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "risk.2026-10-20.acct-retell-leftover-probe-objects",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-sarvam-claims",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-sarvam-claims",
+   "to": "decision.2026-10-20.teardown-lines",
+   "relation": "implements"
+  },
+  {
+   "from": "rejected.2026-10-20.acct-sarvam-model-key-for-voice-agents",
+   "to": "evidence.2026-10-20.acct-sarvam-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-sarvam-api-surface",
+   "to": "evidence.2026-10-20.acct-sarvam-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-sarvam-webhook-model",
+   "to": "evidence.2026-10-20.acct-sarvam-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-sarvam-sdk-spec-drift",
+   "to": "evidence.2026-10-20.acct-sarvam-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-sarvam-stt-vad-knobs",
+   "to": "evidence.2026-10-20.acct-sarvam-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-sarvam-voice-persona-catalog",
+   "to": "evidence.2026-10-20.acct-sarvam-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "rejected.2026-10-20.acct-sarvam-model-key-for-voice-agents",
+   "to": "open.2026-10-20.trial-accounts",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-sarvam-stt-vad-knobs",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-sarvam-parity-floor-items",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-sarvam-parity-floor-items",
+   "to": "measure.2026-10-20.acct-sarvam-api-surface",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-sarvam-beat-where-thin",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-sarvam-beat-where-thin",
+   "to": "evidence.2026-10-20.acct-sarvam-webhook-model",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-sarvam-beat-where-thin",
+   "to": "ledger.CMP-27",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-20.acct-sarvam-workspace-key",
+   "to": "open.2026-10-20.trial-accounts",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.acct-sarvam-hook-signing-and-retries",
+   "to": "evidence.2026-10-20.acct-sarvam-webhook-model",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "asset.2026-10-20.acct-sarvam-spec-analysis-kit",
+   "to": "decision.2026-10-20.teardown-launch",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-synthesis-claims",
+   "to": "decision.2026-10-20.account-authorized-launch",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-synthesis-claims",
+   "to": "decision.2026-10-20.teardown-lines",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-sonnet-lane-spotcheck",
+   "to": "decision.2026-10-20.account-mixed-tiers",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-sonnet-lane-spotcheck",
+   "to": "decision.2026-10-20.model-selection",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-sonnet-lane-spotcheck",
+   "to": "evidence.2026-10-20.acct-synthesis-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-config-integrity",
+   "to": "evidence.2026-10-20.acct-synthesis-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-config-integrity",
+   "to": "decision.2026-10-20.no-midcall-swaps",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-india-operator-layer",
+   "to": "evidence.2026-10-20.acct-synthesis-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-india-operator-layer",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-billing-surface",
+   "to": "evidence.2026-10-20.acct-synthesis-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-synthesis-billing-surface",
+   "to": "open.2026-10-20.reprice-tiers",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-synthesis-shared-patterns",
+   "to": "evidence.2026-10-20.acct-synthesis-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-synthesis-shared-patterns",
+   "to": "open.2026-10-20.product-failover-policy",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-vp-data-model",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-vp-data-model",
+   "to": "open.2026-10-20.product-decision",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-vp-data-model",
+   "to": "measure.2026-10-20.acct-synthesis-india-operator-layer",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-vp-data-model",
+   "to": "measure.2026-10-20.acct-synthesis-config-integrity",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-parity-floor",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-parity-floor",
+   "to": "evidence.2026-10-20.acct-synthesis-claims",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-beat-list",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-beat-list",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-beat-list",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-beat-list",
+   "to": "directive.2026-10-20.intent-better-product",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-20.acct-synthesis-beat-list",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "asset.2026-10-20.acct-synthesis-v1-schema",
+   "to": "decision.2026-10-20.acct-synthesis-vp-data-model",
+   "relation": "implements"
+  },
+  {
+   "from": "asset.2026-10-20.acct-synthesis-v1-schema",
+   "to": "open.2026-10-20.product-decision",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "asset.2026-10-20.acct-synthesis-v1-schema",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "implements"
+  },
+  {
+   "from": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "to": "decision.2026-10-20.acct-synthesis-beat-list",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-20.acct-synthesis-walkthrough-and-battery",
+   "to": "open.2026-10-20.trial-accounts",
+   "relation": "requires"
+  },
+  {
+   "from": "open.2026-10-20.acct-synthesis-walkthrough-and-battery",
+   "to": "decision.2026-10-20.acct-synthesis-beat-list",
+   "relation": "tests"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-vapi-claims",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-vapi-claims",
+   "to": "decision.2026-10-20.teardown-lines",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-20.acct-vapi-hidden-api-surface",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-vapi-patch-is-publish",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-vapi-ended-reason-families",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-vapi-indic-stt-matrix",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.acct-vapi-account-limits",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.acct-vapi-no-india-objects",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "rejected.2026-10-20.acct-vapi-api-key-for-org-billing",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-parity-floor-items",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-parity-floor-items",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-parity-floor-items",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-contact-compliance-layer",
+   "to": "evidence.2026-10-20.acct-vapi-no-india-objects",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-contact-compliance-layer",
+   "to": "measure.2026-10-20.acct-vapi-ended-reason-families",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-contact-compliance-layer",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-contact-compliance-layer",
+   "to": "ledger.REG-35",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-one-publish-model",
+   "to": "evidence.2026-10-20.acct-vapi-patch-is-publish",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.acct-vapi-one-publish-model",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-20.acct-vapi-runtime-defaults",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-20.acct-vapi-runtime-defaults",
+   "to": "measure.2026-10-20.acct-vapi-indic-stt-matrix",
+   "relation": "tests"
+  },
+  {
+   "from": "asset.2026-10-20.acct-vapi-spec-analysis-kit",
+   "to": "decision.2026-10-20.teardown-launch",
+   "relation": "reusable-for"
+  },
+  {
+   "from": "evidence.2026-10-20.account-synthesis",
+   "to": "decision.2026-10-20.account-mixed-tiers",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.account-synthesis",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.account-synthesis",
+   "to": "open.2026-10-20.product-decision",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.reports-via-results",
+   "to": "rejected.2026-10-20.subagent-md-writes",
+   "relation": "supersedes"
   }
  ]
 }

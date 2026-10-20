@@ -8,18 +8,37 @@
    "data/teardown/vapi/docs/docs.vapi.ai_llms.txt",
    "https://docs.vapi.ai/llms.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "308 distinct non-API-reference links in llms.txt (lane: 307).",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-02",
   "dimension": "surface",
-  "claim": "There is no contact/CRM object: the public API has no /contact or /customer endpoint; a customer is an inline object (number, name, email, externalId, sipUri, extension) on each call or campaign row. Consent, suppression, opt-out and contact history live in the buyer's own system.",
+  "claim": "The public API exposes no /contact or /customer endpoint: a customer is passed inline (number, name, email, externalId, sipUri, extension, numberE164CheckEnabled) on each call or campaign row. Call, CreateCallDTO and Session also carry a customerId (\"To call a transient customer, use `customer` instead\"), which implies a stored customer entity that the public API cannot create or list; how it is populated is unknown. Consent, suppression, opt-out and contact history are not modelled in the public API and live in the buyer's system (see VAP-47).",
   "grade": "observed",
   "evidence": [
    "data/teardown/vapi/openapi/api.vapi.ai_api-json (paths; schema CreateCustomerDTO)",
    "https://api.vapi.ai/api-json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "There is no contact/CRM object: the public API has no /contact or /customer endpoint; a customer is an inline object (number, name, email, externalId, sipUri, extension) on each call or campaign row. Consent, suppression, opt-out and contact history live in the buyer's own system.",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "customerId on CreateCallDTO, Call and Session contradicts 'a customer is an inline object' as an absolute. Narrowed to the public API surface.",
+   "evidence": [
+    "data/teardown/vapi/openapi/api.vapi.ai_api-json (CreateCallDTO.customerId, Session.customerId)"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-03",
@@ -32,7 +51,15 @@
    "data/teardown/vapi/openapi/api.vapi.ai_api-json (Campaign, CreateCampaignDTO)",
    "research/2026-10-17/lanes/l4a-competitors/parity.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Docs quotes re-read: 10,000 rows, lowercase number header, 5 MB in the Dashboard, no draft state, read-only after creation, PATCH accepts only a status-only cancellation.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-04",
@@ -48,7 +75,7 @@
  {
   "id": "VAP-05",
   "dimension": "surface",
-  "claim": "Chat/copilot builders ship: Composer (alpha, in-dashboard assistant that creates assistants, numbers, integrations, troubleshoots; cannot delete, test, or reach external systems), a Composer-based onboarding flow rolling out from 2026-05-18, an Agent Builder page (\"describe what you want\" plus templates incl. \"Build a bilingual receptionist\"), and Simulations inside Composer (2026-09-14).",
+  "claim": "Chat/copilot builders ship: Composer (alpha; an in-dashboard assistant that creates and configures assistants, numbers, integrations and webhooks and troubleshoots; it cannot reach external systems), a Composer-based onboarding flow rolling out from 2026-05-18, an Agent Builder page (\"describe what you want to build\" plus templates incl. \"Build a bilingual receptionist\"), Simulations in Composer (2026-09-14: creates and runs scenarios, personalities and suites) and per-conversation approval modes incl. \"Bypass approvals\" (2026-09-28). The composer page's own Limitations list (\"Cannot delete resources\", \"Cannot test your agent\", \"Cannot deploy to production automatically\") is stale: the same page says Composer can delete resources, and the changelog says it runs simulations.",
   "grade": "observed",
   "evidence": [
    "data/teardown/vapi/docs-md/composer.md",
@@ -56,7 +83,19 @@
    "data/teardown/vapi/changelog/entries/2026-9-14.md",
    "data/teardown/vapi/dashboard-js-lazy/js__AgentBuilderPage-BQ6Au6GN.js"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "Chat/copilot builders ship: Composer (alpha, in-dashboard assistant that creates assistants, numbers, integrations, troubleshoots; cannot delete, test, or reach external systems), a Composer-based onboarding flow rolling out from 2026-05-18, an Agent Builder page (\"describe what you want\" plus templates incl. \"Build a bilingual receptionist\"), and Simulations inside Composer (2026-09-14).",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Part refuted: 'cannot delete, test' is contradicted by composer.md's Deletion section ('Composer can delete resources ... unless you have selected Bypass') and by changelog 2026-09-14 and 2026-09-28.",
+   "evidence": [
+    "data/teardown/vapi/docs-md/composer.md (Safety features, Deletion)",
+    "data/teardown/vapi/changelog/entries/2026-9-28.md"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-06",
@@ -68,7 +107,15 @@
    "data/teardown/vapi/dashboard-js-lazy/js__CallHealthIssuePage-BmzvjsqJ.js",
    "data/teardown/vapi/dashboard-js-lazy/js__agentImprovementKickoff-DsRJ9i6J.js"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Strings re-found: 'Ask agent to respond now' (js__index-D8jWSzwx.js), 'Latency over ${k} seconds' (CallHealthIssuePage), flags enable-mission-control-alpha, enable-full-duplex-harness, enable-multi-harness.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-07",
@@ -102,7 +149,15 @@
    "data/teardown/vapi/docs-md/calls__outbound-calling.md",
    "research/2026-10-20/teardown/vapi/bundle-findings.json (campaign_wizard_strings)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "free-telephony.md lines 13, 50-52 and the dashboard string re-read.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-10",
@@ -124,7 +179,15 @@
    "data/teardown/vapi/openapi/api.vapi.ai_api-json",
    "data/teardown/vapi/openapi/docs.vapi.ai_openapi_api-reference.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "74 paths in both files, identical path sets; 1,018 schemas in api-json (the docs copy has 1,645).",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-12",
@@ -134,7 +197,15 @@
   "evidence": [
    "research/2026-10-20/teardown/vapi/bundle-findings.json (api_paths_used_by_dashboard)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "142 path strings in bundle-findings.json.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-13",
@@ -145,7 +216,15 @@
    "data/teardown/vapi/openapi/api.vapi.ai_api-json (Call.endedReason)",
    "data/teardown/vapi/docs-md/calls__call-ended-reason.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "638 values re-counted; 331 start with 'call' (329 'call.' plus 2 'call-'), 270 'pipeline-error'.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-14",
@@ -166,7 +245,15 @@
   "evidence": [
    "data/teardown/vapi/openapi/api.vapi.ai_api-json (Org)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Org.channel enum and billingLimit description re-read.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-16",
@@ -178,7 +265,17 @@
    "data/teardown/vapi/status/s_feed.rss",
    "data/teardown/vapi/jobs/ashby-vapi.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "inferred",
+   "grade_after": "inferred",
+   "note": "Strengthened: the 2026-05-21 RCA says traffic was restored to the 'weekly cluster first, then the daily cluster'. Intuit is a named customer on the careers page. What 'hcs' is stays unknown.",
+   "evidence": [
+    "data/teardown/vapi/status/s_feed.rss (incident 901977)"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-17",
@@ -191,31 +288,64 @@
    "data/teardown/vapi/sdk-pypi-server/pypi.json",
    "data/teardown/vapi/sdk-npm-web/x/package/package.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "package.json re-read (@vapi-ai/web 3.0.0 depends on @daily-co/daily-js ^0.93.0 and events); PyPI 3.0.0 uploaded 2026-10-12T21:41Z; npm shows 308 web SDK versions.",
+   "evidence": [
+    "data/teardown/vapi/verify/npm-vapi-ai-web-time-2026-10-20.json"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-18",
   "dimension": "architecture",
-  "claim": "Browser calls run on Daily WebRTC: the homepage demo POSTed api.vapi.ai/call/web (201) which returned transport.provider \"daily\" and a vapi.daily.co room; signalling went to wss://ip-129-158-55-187s-iad.wss.daily.co; the SFU is mediasoup (SDP o=mediasoup-client), Opus 48 kHz; the Vapi bot joined as a second participant with countryCode \"USA\". Confirms l4b demo-inventory (Daily).",
+  "claim": "Browser calls run on Daily WebRTC: the homepage demo POSTed api.vapi.ai/call/web (201), which returned transport.provider \"daily\" and a vapi.daily.co room; signalling went to wss://ip-129-158-55-187s-iad.wss.daily.co using mediasoup's protocol (routerRtpCapabilities, ICE-lite transports), Opus 48 kHz. The SDP line o=mediasoup-client is written by the browser library, so 'the SFU is mediasoup' is an inference from the protocol. Two bot-side participants joined: one sends the SDK's 'listening' start signal, the other publishes the audio track and the transcripts. Both report countryCode \"USA\". Confirms l4b demo-inventory (Daily).",
   "grade": "observed",
   "evidence": [
    "data/teardown/vapi/demo-call/demo-call-signal.json",
    "data/teardown/vapi/demo-call/demo-call.redacted.har",
    "research/2026-10-17/lanes/l4b-measured/data/demo-inventory.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "Browser calls run on Daily WebRTC: the homepage demo POSTed api.vapi.ai/call/web (201) which returned transport.provider \"daily\" and a vapi.daily.co room; signalling went to wss://ip-129-158-55-187s-iad.wss.daily.co; the SFU is mediasoup (SDP o=mediasoup-client), Opus 48 kHz; the Vapi bot joined as a second participant with countryCode \"USA\". Confirms l4b demo-inventory (Daily).",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "The lane counted one bot participant; the capture has two remote participants (c64e87b7 sends 'listening'; 84e10fa4 carries the SFU track and transcript messages). o=mediasoup-client is client-generated.",
+   "evidence": [
+    "data/teardown/vapi/sdk-npm-web/x/package/vapi.ts (onAppMessage 'listening'; 'Vapi Speaker' track filter)"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-19",
   "dimension": "architecture",
-  "claim": "Daily room metadata from the same capture: SFU worker group \"oke-us-ashburn-1\" (Oracle Kubernetes Engine, US-Ashburn), geoGroup us-east-1, turn_providers \"cloudflare,twilio\", enable_transcription true, allow_sip and allow_dialout on; the SFU IP 129.158.55.187 is registered to Oracle (RDAP). The relayed path used Twilio TURN over TLS 443 (54.172.60.x, AWS us-east-1).",
+  "claim": "Daily join metadata from the same capture (gs.daily.co/rooms/check response): SFU worker group \"oke-us-ashburn-1\" (Oracle Kubernetes Engine, US-Ashburn) and geoGroup us-east-1. Vapi's Daily domain properties show turn_providers \"cloudflare,twilio\", enable_transcription true, allow_sip and allow_dialout on, api_plan_id PLAN_PAID and enable_metered_billing true. The SFU IP 129.158.55.187 is in Oracle's 129.144.0.0-129.159.255.255 block (RDAP). Our media went through Twilio TURN over TLS 443 (54.172.60.x, AWS us-east-1); that relay was forced by our sandbox's network path and says nothing about a normal caller's route. That the Ashburn SFU follows our US-East vantage is an inference.",
   "grade": "observed",
   "evidence": [
    "data/teardown/vapi/demo-call/demo-call.redacted.har (gs.daily.co/rooms/check)",
    "data/teardown/vapi/net/rdap-129.158.55.187.json",
    "data/teardown/vapi/net/aws-ip-ranges.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "Daily room metadata from the same capture: SFU worker group \"oke-us-ashburn-1\" (Oracle Kubernetes Engine, US-Ashburn), geoGroup us-east-1, turn_providers \"cloudflare,twilio\", enable_transcription true, allow_sip and allow_dialout on; the SFU IP 129.158.55.187 is registered to Oracle (RDAP). The relayed path used Twilio TURN over TLS 443 (54.172.60.x, AWS us-east-1).",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "transcription/SIP/dial-out flags are Vapi's Daily domain properties, not room metadata; the TURN relay is a sandbox artefact; metered-billing flags added (they bear on VAP-36).",
+   "evidence": [
+    "data/teardown/vapi/net/rdap-129.158.55.187.json",
+    "data/teardown/vapi/net/aws-ip-ranges.json"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-20",
@@ -227,7 +357,17 @@
    "data/teardown/vapi/net/aws-ip-ranges.json",
    "data/teardown/vapi/docs-md/calls__call-features.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Re-resolved through Google and Cloudflare DoH at 19:25Z: the capture hostname is a CNAME to an AWS ELB (ac6f...-a53b....elb.us-west-2.amazonaws.com, the Kubernetes load-balancer naming pattern) at 44.249.229.131 (AWS us-west-2 EC2 range). The docs hostname returns NOERROR with no A record at both resolvers.",
+   "evidence": [
+    "data/teardown/vapi/verify/doh-recheck-2026-10-20.jsonl"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-21",
@@ -238,7 +378,17 @@
    "data/teardown/vapi/demo-call/demo-call.redacted.har",
    "data/teardown/vapi/openapi/api.vapi.ai_api-json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Headers re-read (server cloudflare, x-powered-by Express). cf-ray IAD names the Cloudflare POP nearest our US-East vantage, not Vapi's origin. The NestJS inference is strengthened: the OpenAPI is served at /api-json, the @nestjs/swagger default path. It stays an inference.",
+   "evidence": [
+    "data/teardown/vapi/verify/doh-recheck-2026-10-20.jsonl"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-22",
@@ -250,7 +400,17 @@
    "data/teardown/vapi/net/aws-ip-ranges.json",
    "data/teardown/vapi/status/s_feed.rss"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "DNS re-resolved (sip.vapi.ai 44.229.228.186 and 44.238.177.138, AWS us-west-2; sip.eu.vapi.ai 63.182.83.170, AWS eu-central-1). The RCA says 'Customers served from our EU and AUS regions were not affected'; a 2026-09-20 maintenance names 'the Vapi EU or AUS regions'; 'Australia SBC was rebooted' on 2026-10-20.",
+   "evidence": [
+    "data/teardown/vapi/verify/doh-recheck-2026-10-20.jsonl"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-23",
@@ -261,7 +421,15 @@
    "data/teardown/vapi/net/rdap-167.150.224.1.json",
    "data/teardown/vapi/docs-md/security-and-privacy__static-ip-addresses.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "inferred",
+   "grade_after": "inferred",
+   "note": "The OCI token sits on the /24 sub-allocation 167.150.224.0/24 (net name OCI-NETWORK-RANGE, registered 2025-10-21, registrant Vapi Inc.); its parent is the /23 that the static-IP docs publish. The inference stands.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-24",
@@ -285,7 +453,15 @@
    "data/teardown/vapi/sdk-npm-web/x/package/package.json",
    "research/2026-10-20/teardown/vapi/bundle-findings.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "inferred",
+   "grade_after": "inferred",
+   "note": "Re-grepped: 'livekit' appears only as the smart-endpointing option ('LiveKit is only available in English'); 'pipecat' only as a link to Daily's STT benchmark. No LiveKit client SDK strings.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-26",
@@ -317,7 +493,17 @@
    "data/teardown/vapi/rea/dashboard-login-inspect-web-page.json",
    "data/teardown/vapi/har/dashboard-login-2026-10-20.redacted.har"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Two .map URLs re-requested at 19:25Z: 404. 0 sourceMappingURL comments in 561 files. WorkOS, Turnstile, PostHog, Sentry, Nango and Stripe strings re-found; daily-js 0.91.0 in js__vapi-CsuwxCgU.js.",
+   "evidence": [
+    "data/teardown/vapi/verify/sourcemap-recheck-2026-10-20.txt"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-29",
@@ -328,7 +514,15 @@
    "data/teardown/vapi/demo-call/demo-call-signal.json (console)",
    "data/teardown/vapi/demo-call/demo-call.redacted.har"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Console line 'daily-js version 0.85.0 is no longer supported' and the c.daily.co/static/krisp/v2.2.1 weights request re-found.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-30",
@@ -340,7 +534,18 @@
    "data/teardown/vapi/docs-md/providers__voice__vapi-voices.md",
    "data/teardown/vapi/demo-call/demo-call.redacted.har"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Counts depend on the source and '18 LLM providers' is not reproduced. Docs provider pages: 11 transcribers, 17 LLM, 15 voice. OpenAPI enums: 14 transcribers (incl. custom, vapi, talkscriber), 17 model providers (incl. custom-llm, vapi), 20 voice providers. Vapi Voices v1 lists Hindi ('hi') among its languages.",
+   "evidence": [
+    "data/teardown/vapi/docs-md/providers__voice__vapi-voices.md",
+    "data/teardown/vapi/openapi/api.vapi.ai_api-json"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-31",
@@ -353,19 +558,36 @@
    "data/teardown/vapi/changelog/entries/2026-4-27.md",
    "research/2026-10-17/lanes/l4b-measured/report.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "multilingual.md (Deepgram Nova 2/3 'multi', Google 'Multilingual', Gladia) and the 2026-04-27 Flux entry re-read; the dashboard says LiveKit endpointing is English-only.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-32",
   "dimension": "architecture",
-  "claim": "REA as a tool: inspect-web-network-capture rejected raw HARs over its 32 MB budget (fixed by slimming bodies), then only normalised records (no stack inference); analyze-web-bundle on the dashboard ran >5 min at ~6 GB RSS with no output before our 300 s timeout; inspect-web-page worked (58 scripts, 0 source maps, storage keys incl. AUTH_PROVIDER). Stack facts came from our own HAR/bundle analysis.",
+  "claim": "REA as a tool: inspect-web-network-capture rejected raw HARs over its 32 MB budget (fixed by slimming bodies), then returned only normalised records (no stack inference). analyze-web-bundle on the dashboard died with a V8 'JavaScript heap out of memory' fatal error at about 8.07 GB of heap after about 506 s and left an empty JSON. inspect-web-page worked (58 scripts, 0 source maps, storage keys incl. AUTH_PROVIDER). Stack facts came from our own HAR/bundle analysis.",
   "grade": "observed",
   "evidence": [
    "data/teardown/vapi/rea/dashboard-login-har-inspect.json",
    "data/teardown/vapi/rea/dashboard-login-analyze-web-bundle.err",
    "data/teardown/vapi/rea/dashboard-login-inspect-web-page.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "REA as a tool: inspect-web-network-capture rejected raw HARs over its 32 MB budget (fixed by slimming bodies), then only normalised records (no stack inference); analyze-web-bundle on the dashboard ran >5 min at ~6 GB RSS with no output before our 300 s timeout; inspect-web-page worked (58 scripts, 0 source maps, storage keys incl. AUTH_PROVIDER). Stack facts came from our own HAR/bundle analysis.",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "The lane's '>5 min at ~6 GB RSS, no output before our 300 s timeout' does not match the saved .err: the GC trace is at 501-506 s with ~8,060 MB heap, ending in a heap OOM.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-33",
@@ -376,7 +598,17 @@
    "data/teardown/vapi/pricing/vapi.ai_pricing.html",
    "research/2026-10-17/lanes/l4a-competitors/pricing-history.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Pricing figures re-read from the saved page. The EU region (Premier only) is not on the pricing page; it comes from docs security-and-privacy__eu-region.md. The page also lists transport fees charged by the provider (Twilio in $0.008 / out $0.014, Vonage $0.00814, Telnyx $0.0055; Vapi SIP, WebSockets and Daily WebRTC free).",
+   "evidence": [
+    "data/teardown/vapi/docs-md/security-and-privacy__eu-region.md"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-34",
@@ -386,12 +618,20 @@
   "evidence": [
    "research/2026-10-20/teardown/vapi/bundle-findings.json (legacy_bundled_plans_snippet)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Snippet re-read in bundle-findings.json.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-35",
   "dimension": "pricing",
-  "claim": "All-in buyer price for an Indian outbound minute on Vapi via Twilio (the only documented route; Twilio allows outbound to India only from non-Indian numbers at $0.0496/min to Indian mobiles): USD 0.131-0.179/min = INR 12.5-17.0/min at FX 95, of which INR 9.46 is hosting plus telephony before any AI. Confirms ECO-17 (INR 11.6-17.5 at FX 88).",
+  "claim": "All-in buyer price for an Indian outbound minute on Vapi via Twilio (one documented route and the one priced here; Telnyx, Vonage, DIDWW, BYO SIP and the WebSocket transport are also documented, and their India rates were not computed). Twilio allows outbound to India only from non-Indian numbers, at $0.0496/min to Indian mobiles: USD 0.131-0.179/min = INR 12.5-17.0/min at FX 95, of which INR 9.46 is hosting plus telephony before any AI. Hosting is 28-38% of the total. Confirms ECO-17 (INR 11.6-17.5 at FX 88).",
   "grade": "inferred",
   "evidence": [
    "research/2026-10-20/teardown/vapi/pricing.json",
@@ -399,19 +639,38 @@
    "data/teardown/vapi/india/www.twilio.com_en-us_guidelines_in_voice",
    "research/2026-10-17/ledger.md (ECO-17)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "All-in buyer price for an Indian outbound minute on Vapi via Twilio (the only documented route; Twilio allows outbound to India only from non-Indian numbers at $0.0496/min to Indian mobiles): USD 0.131-0.179/min = INR 12.5-17.0/min at FX 95, of which INR 9.46 is hosting plus telephony before any AI. Confirms ECO-17 (INR 11.6-17.5 at FX 88).",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "inferred",
+   "grade_after": "inferred",
+   "note": "Arithmetic re-done (0.05 + 0.0095-0.0099 + 0.0077-0.0452 + 0.0146-0.0238 + 0.0496). Twilio India - Mobile $0.0496 re-read. 'The only documented route' was wrong.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-36",
   "dimension": "pricing",
   "claim": "Reconstructed Vapi-side COGS: model and telephony lines are pass-through (0 margin unless platform-key discounts exist, unknown); the $0.05 hosting fee carries an estimated USD 0.001-0.005/min of own cost (per-call VM, SBC, media relay, storage, DB, logs), i.e. an estimated 90-98% gross margin on hosting. Not measured.",
-  "grade": "inferred",
+  "grade": "unknown",
   "evidence": [
    "research/2026-10-20/teardown/vapi/pricing.json",
    "data/teardown/vapi/blog/how-we-achieved-99-99-reliability-at-vapi.txt",
    "https://news.ycombinator.com/item?id=46189900"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "downgraded",
+   "grade_before": "inferred",
+   "grade_after": "unknown",
+   "note": "The 90-98% hosting margin rests on an assumed vCPU share per call and an assumed vCPU-hour price, neither observed. 'Per-call isolated VM' is vendor-claimed. The HN 60-70% figure is a competitor founder's statement (VAP-53). 'Pass-through at cost / no markup' is vendor-claimed on the pricing page. One component checked: Daily audio-only is $0.00099 per participant-minute at entry list ($0.00036 at volume), and a web call has 3 participants (VAP-18), so up to about $0.003/min for web calls. That fits inside the estimate but does not establish it. Vapi's Daily domain is on metered billing (VAP-19).",
+   "evidence": [
+    "data/teardown/vapi/verify/daily.co_pricing_video-sdk.html"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-37",
@@ -422,7 +681,15 @@
    "data/teardown/vapi/docs-md/billing__pricing-and-success-packages.md",
    "data/teardown/vapi/docs-md/calls__call-concurrency.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Core $29 + 20 x $10 = $229 re-computed; call-concurrency.md line 42 ('50-100 numbers') re-read.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-38",
@@ -433,7 +700,15 @@
    "data/teardown/vapi/changelog/whats-new_llms.txt",
    "data/teardown/vapi/changelog/entries/"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Re-counted from the 26 entry files: 82 numbered items from 2026-04-13 to 2026-10-12, 29 in the 2026-03-31 summary, 111 in all.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-39",
@@ -445,7 +720,17 @@
    "data/teardown/vapi/sdk-npm-web/x/package/package.json",
    "https://registry.npmjs.org/@vapi-ai/web"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "npm registry re-read: 2.5.2 on 2025-12-01, then 2.6.1 on 2026-07-07, with nothing in between; PyPI 1.9.0 on 2025-11-19, 1.9.1 on 2026-04-07.",
+   "evidence": [
+    "data/teardown/vapi/verify/npm-vapi-ai-web-time-2026-10-20.json"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-40",
@@ -455,7 +740,15 @@
   "evidence": [
    "data/teardown/vapi/changelog/entries/"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "No India, Hindi or Indic item in the 26 entries (one 'indicates' false hit).",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-41",
@@ -467,29 +760,59 @@
    "data/teardown/vapi/status/incidents-parsed.json",
    "https://status.vapi.ai/incident/901977"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Re-counted: 51 distinct ids first seen on or after 2026-04-20 (33 incidents, 18 maintenances). '114 since 2024-10' is the coverage of the 250-item RSS feed, which reaches back to 2024-10-11; it is not Vapi's whole history. The feed also holds a separate incident: 37,806 calls dropped in the Daily cluster between 9:10 and 10:05 AM PST.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-42",
   "dimension": "india-plumbing",
-  "claim": "Vapi cannot terminate Indian numbers: its Plivo SIP guide says \"Indian phone numbers cannot be used with Plivo on Vapi due to TRAI regulations. These regulations require SIP termination to occur via an Indian server, which Vapi does not currently support.\" Plivo's own Vapi guide repeats it.",
+  "claim": "Vapi does not support SIP termination on an Indian server, so Indian numbers cannot be terminated on it over SIP. Its Plivo guide says: \"Indian phone numbers cannot be used with Plivo on Vapi due to TRAI regulations. These regulations require SIP termination to occur via an Indian server, which Vapi does not currently support.\" Plivo's own Vapi guide repeats it. Counter-claim, vendor content (unverified): a July 2026 dev.to post by an Indian DID reseller (Boni) says its +91 inbound numbers can terminate to Vapi's SIP URI.",
   "grade": "observed",
   "evidence": [
    "data/teardown/vapi/docs-md/advanced__sip__plivo.md",
    "data/teardown/vapi/india/plivo.com_docs_voice-agents_sip-trunking_integration-guides_vapi"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "Vapi cannot terminate Indian numbers: its Plivo SIP guide says \"Indian phone numbers cannot be used with Plivo on Vapi due to TRAI regulations. These regulations require SIP termination to occur via an Indian server, which Vapi does not currently support.\" Plivo's own Vapi guide repeats it.",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "The quote is verbatim. The lane's headline generalised from Plivo to all SIP termination; that follows from the stated reason but is Vapi's statement, not our test. The dev.to counter-claim is in the lane's own india/ folder.",
+   "evidence": [
+    "data/teardown/vapi/india/dev.to_animesh_gupta_705a19fc6f8_how-to-give-your-livekit-vapi-or-retell-voice-agent-a-real-indian-91-phone-number-am6"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-43",
   "dimension": "india-plumbing",
-  "claim": "The only documented outbound route to Indian handsets is international: Twilio's India guideline says \"Outbound calls to India can only be made from international (non-Indian) numbers\" and warns that high volumes of short calls may trigger carrier blocks. An Indian enterprise on Vapi therefore cannot present a 140xx, 1600xx or declared 10-digit Indian CLI.",
-  "grade": "observed",
+  "claim": "Vapi's native outbound routes to Indian handsets are international. The free Vapi number is US-only; Twilio's India guideline says \"Outbound calls to India can only be made from international (non-Indian) numbers\" and warns that high volumes of short calls may trigger carrier blocks; Plivo-on-Vapi cannot use Indian numbers. Inference: through Vapi's native telephony an Indian enterprise cannot present a 140xx, 1600xx or declared 10-digit Indian CLI. It can only do so by bridging through an Indian-licensed provider (the provider's media stream into Vapi's WebSocket transport, or SIP that Vapi says it does not support for Indian numbers). Vapi does not document that bridge for India.",
+  "grade": "inferred",
   "evidence": [
    "data/teardown/vapi/india/www.twilio.com_en-us_guidelines_in_voice",
    "data/teardown/vapi/docs-md/advanced__sip__plivo.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "The only documented outbound route to Indian handsets is international: Twilio's India guideline says \"Outbound calls to India can only be made from international (non-Indian) numbers\" and warns that high volumes of short calls may trigger carrier blocks. An Indian enterprise on Vapi therefore cannot present a 140xx, 1600xx or declared 10-digit Indian CLI.",
+  "verification": {
+   "result": "downgraded",
+   "grade_before": "observed",
+   "grade_after": "inferred",
+   "note": "The Twilio sentence is observed; 'cannot present a 140xx/1600xx/declared CLI' is a conclusion, and as written it contradicted VAP-44's own bridge path. Scoped to native telephony.",
+   "evidence": [
+    "data/teardown/vapi/docs/docs.vapi.ai_llms.txt (calls/websocket-transport)"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-44",
@@ -501,7 +824,15 @@
    "research/2026-10-20/teardown/regulation-segment/claims.json (RS-07, RS-08)",
    "data/teardown/vapi/india/dev.to_animesh_gupta_705a19fc6f8_how-to-give-your-livekit-vapi-or-retell-voice-agent-a-real-indian-91-phone-number-am6"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "inferred",
+   "grade_after": "inferred",
+   "note": "Consistent with RS-07/RS-08 (both observed in the regulation lane) and with VAP-43 as corrected.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-45",
@@ -515,7 +846,15 @@
    "research/2026-10-20/teardown/regulation-segment/claims.json (RS-24)",
    "research/2026-10-17/lanes/l4a-competitors/parity.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Word-bounded grep over the 105 saved pages as well as the index: DND, NCPR, DLT and DPDP 0; TRAI only in the Plivo page.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-46",
@@ -527,7 +866,17 @@
    "data/teardown/vapi/openapi/api.vapi.ai_api-json (SchedulePlan)",
    "research/2026-10-20/teardown/vapi/bundle-findings.json (campaign_wizard_strings)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Docs re-read. The 7-day horizon and 15-minute steps are Dashboard limits; the API SchedulePlan has only earliestAt (required) and latestAt in ISO 8601, with no time-zone or retry field, and no documented horizon. The rest is verbatim: one time zone and window per campaign; undispatched contacts stop at the end of the window; retries only while waiting up to 1 hour for concurrency.",
+   "evidence": [
+    "data/teardown/vapi/openapi/api.vapi.ai_api-json (SchedulePlan, CreateCampaignDTO)"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-47",
@@ -538,7 +887,15 @@
    "data/teardown/vapi/docs-md/outbound-campaigns__number-warming.md",
    "data/teardown/vapi/docs-md/outbound-campaigns__webhooks.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "number-warming.md line 17 quote is verbatim.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-48",
@@ -551,7 +908,15 @@
    "research/2026-10-20/teardown/vapi/bundle-findings.json",
    "data/teardown/vapi/status/s_feed.rss"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Regions confirmed (EU Premier-only; RCA names EU and AUS). The ':india' suffix appears on only one, legacy, model entry (gpt-4-1106-preview, Azure OpenAI region 'india'); the Azure region list in the bundle includes 'india'. 'Every resource lives with the org's region' is the docs' statement; where recordings are stored was not observed.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-49",
@@ -562,7 +927,18 @@
    "research/2026-10-20/teardown/vapi/bundle-findings.json (campaign_csv_phone_normaliser, campaign_csv_row_validation, campaign_csv_reject_on_error)",
    "data/teardown/vapi/dashboard-js-lazy/js__index-Dy8CkNeM.js"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "The function os() and the whole-file rejection are verbatim in js__index-Dy8CkNeM.js. This is the dashboard client only. The server applies an E.164 check to customer.number by default (CreateCustomerDTO.numberE164CheckEnabled, default true), so a mis-prefixed '+98xxxxxxxx' or '+0...' may be rejected at creation rather than dialled; which happens is unknown. No dedupe logic in the client code; server-side dedupe is unknown. The docs mention the stripping but not the '+' prefixing.",
+   "evidence": [
+    "data/teardown/vapi/openapi/api.vapi.ai_api-json (CreateCustomerDTO.numberE164CheckEnabled)",
+    "data/teardown/vapi/docs-md/outbound-campaigns__contact-data.md"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-50",
@@ -573,7 +949,18 @@
    "data/teardown/vapi/docs-md/calls__call-concurrency.md",
    "data/teardown/vapi/docs-md/providers__voice__vapi-voices.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Observations confirmed (+918... in the concurrency example; Naina, Rohan, Sagar 'Indian American'). Hindi is a supported language (Vapi Voices v1 'hi'; Deepgram 'hi'; Azure hi-IN, gu-IN, bn-IN), so 'not a supported market' holds for telephony and regulation, not for language.",
+   "evidence": [
+    "data/teardown/vapi/docs-md/providers__transcriber__deepgram.md",
+    "data/teardown/vapi/docs-md/providers__transcriber__azure.md"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-51",
@@ -598,19 +985,37 @@
    "research/2026-10-17/lanes/l4b-measured/report.md",
    "data/teardown/vapi/blog/how-we-solved-latency-at-vapi.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "not re-checked",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "support.vapi.ai is still behind the Vercel checkpoint and no thread was saved. A web search on 2026-10-20 returned the thread title and a snippet consistent with the quote ('estimated is 875ms, actual is 3-4sec'). The forum text rests on search snippets.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-53",
   "dimension": "failure-modes",
   "claim": "BILLING: an HN user reported \"60-70% of our total spend was the Vapi platform fee, and only 30-40% was actual LLM/STT/TTS usage\"; a forum thread is titled \"assistant hallucinating and vapi overcharging\". Structural cause (inference): a fixed $0.05/min platform fee on top of pass-through model costs.",
-  "grade": "observed",
+  "grade": "vendor-claimed",
   "evidence": [
    "https://news.ycombinator.com/item?id=46189900",
    "https://support.vapi.ai/t/26876220/assistant-hallucinating-and-vapi-overcharging",
    "research/2026-10-20/teardown/vapi/pricing.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "downgraded",
+   "grade_before": "observed",
+   "grade_after": "vendor-claimed",
+   "note": "The '60-70% of our total spend was the Vapi platform fee' comment (HN 46189900) is by the founder of Dograh, in his own 'Show HN: Dograh - an OSS Vapi alternative' thread. It is an interested competitor's claim, not a neutral customer report. The forum title is observed via search only.",
+   "evidence": [
+    "data/teardown/vapi/complaints/hn-vapi-comments.json (objectID 46189900, story 46189836)"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-54",
@@ -622,7 +1027,15 @@
    "data/teardown/vapi/blog/how-we-achieved-99-99-reliability-at-vapi.txt",
    "research/2026-10-17/lanes/l4a-competitors/complaints.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "RCA text (incident 901977, posted 2026-05-29) and the blog lines '99.99%' and '<5 second failover' re-read verbatim.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-55",
@@ -633,7 +1046,15 @@
    "data/teardown/vapi/blog/how-we-achieved-99-99-reliability-at-vapi.txt",
    "data/teardown/vapi/status/s_feed.rss"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "inferred",
+   "grade_after": "inferred",
+   "note": "Strengthened: a status-page maintenance titled 'NeonDB Scheduled Maintenance: DB endpoing restart' says 'Neon is doing scheduled maintenance in our region us-west-2'. The May RCA itself never names the provider, so this stays an inference.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-56",
@@ -686,20 +1107,32 @@
  {
   "id": "VAP-60",
   "dimension": "v2",
-  "claim": "Memory across calls: none in the docs (0 hits for \"memory\" in the 307-page index). Personalisation is server-supplied at call time (assistant-request webhook or dynamic variables from CSV columns, max 100,000 chars per contact). Confirms the l4a parity row memory_across_calls = unknown as a bounded negative.",
-  "grade": "observed",
+  "claim": "Memory across voice calls: no feature found. Checked: the 308-link docs index (titles and one-line descriptions, 0 'memory'), 105 of 308 pages as Markdown, and CreateCallDTO (no session or previous-call field). The nearest feature is chat Sessions: persistent multi-turn chat context, 24 h default expiry, optionally tied to a customerId. Voice personalisation is server-supplied at call time (assistant-request webhook, or dynamic variables from CSV columns, max 100,000 chars per contact). A bounded negative for voice.",
+  "grade": "inferred",
   "evidence": [
    "data/teardown/vapi/docs/docs.vapi.ai_llms.txt",
    "data/teardown/vapi/docs-md/assistants__personalization.md",
    "data/teardown/vapi/docs-md/outbound-campaigns__contact-data.md",
    "research/2026-10-17/lanes/l4a-competitors/parity.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "Memory across calls: none in the docs (0 hits for \"memory\" in the 307-page index). Personalisation is server-supplied at call time (assistant-request webhook or dynamic variables from CSV columns, max 100,000 chars per contact). Confirms the l4a parity row memory_across_calls = unknown as a bounded negative.",
+  "verification": {
+   "result": "downgraded",
+   "grade_before": "observed",
+   "grade_after": "inferred",
+   "note": "Absence was checked against the index and about a third of the pages, not 'the docs'. The lane missed Sessions, the closest thing to memory.",
+   "evidence": [
+    "data/teardown/vapi/docs/docs.vapi.ai_llms.txt (chat/session-management)",
+    "data/teardown/vapi/openapi/api.vapi.ai_api-json (Session, CreateCallDTO)"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-61",
   "dimension": "v2",
-  "claim": "The learning loop is tooling plus human: Monitoring (monitors, scheduled triggers on Insights, issues, notifiers; GA 2026-04-13), Scorecards, Structured outputs, Evals (text decisions), Simulations (AI-tester voice/chat suites), Traffic splitting (manual percentage canaries, no statistics, per LRN-09) and a flag-gated Composer \"Improve the assistant\" kickoff. Nothing applies changes automatically; Composer \"cannot deploy to production automatically\".",
+  "claim": "The learning loop is tooling started by a human: Monitoring (monitors, scheduled triggers on Insights, issues, notifiers; GA 2026-04-13), Scorecards, Structured outputs, Evals (text), Simulations (AI-tester voice/chat suites), Traffic splitting (manual percentage canaries, no statistics, per LRN-09) and a flag-gated Composer \"Improve the assistant\" kickoff. No autonomous trigger was found. But once a human starts Composer it can apply the fix, create and run simulations, and (in \"Bypass approvals\" mode, 2026-09-28) apply changes, including publishing, without pausing.",
   "grade": "observed",
   "evidence": [
    "data/teardown/vapi/docs-md/observability__monitoring-quickstart.md",
@@ -708,7 +1141,21 @@
    "research/2026-10-20/teardown/vapi/bundle-findings.json",
    "research/2026-10-17/ledger.md (LRN-09)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before_verification": "The learning loop is tooling plus human: Monitoring (monitors, scheduled triggers on Insights, issues, notifiers; GA 2026-04-13), Scorecards, Structured outputs, Evals (text decisions), Simulations (AI-tester voice/chat suites), Traffic splitting (manual percentage canaries, no statistics, per LRN-09) and a flag-gated Composer \"Improve the assistant\" kickoff. Nothing applies changes automatically; Composer \"cannot deploy to production automatically\".",
+  "verification": {
+   "result": "refuted",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Refuted sub-claim: 'Nothing applies changes automatically; Composer cannot deploy to production automatically'. The quote comes from composer.md's stale Limitations list. The same page's Approval modes list 'Bypass approvals: Composer applies changes without pausing', covering publishes, and changelog 2026-09-14 adds Composer-run simulations.",
+   "evidence": [
+    "data/teardown/vapi/docs-md/composer.md (Approval modes)",
+    "data/teardown/vapi/changelog/entries/2026-9-14.md",
+    "data/teardown/vapi/changelog/entries/2026-9-28.md",
+    "data/teardown/vapi/dashboard-js-lazy/js__agentImprovementKickoff-DsRJ9i6J.js"
+   ],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-62",
@@ -720,7 +1167,15 @@
    "data/teardown/vapi/docs-md/observability__monitoring-quickstart.md",
    "research/2026-10-17/ledger.md (CMP-01)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "corrected",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "Homepage quotes verbatim; no memory claim on the homepage. The 'manual monitor -> issue -> human fix -> regression test' description needs VAP-61's correction: Composer can do the fix and the test steps once a human starts it. The marketing-docs gap is narrower than stated.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  },
  {
   "id": "VAP-63",
@@ -731,6 +1186,14 @@
    "data/teardown/vapi/docs-md/gpt-live__overview.md",
    "research/2026-10-20/teardown/vapi/bundle-findings.json (feature_flags)"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "result": "confirmed",
+   "grade_before": "observed",
+   "grade_after": "observed",
+   "note": "gpt-live__overview.md re-read (speaker plus reasoner, no separate transcriber or TTS, beta, 22 OpenAI voices only); flags present in js__index-PFf57Fb9.js.",
+   "evidence": [],
+   "date": "2026-10-20"
+  }
  }
 ]

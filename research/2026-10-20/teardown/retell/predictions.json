@@ -7,7 +7,14 @@
   "basis": "accounts__kyc.md (KYC before outbound, one person per account); deploy__purchase-number.md (US/CA numbers only); community t/758 (Plivo inbound 'user busy'), t/3145 (Plivo India numbers on request), t/3723 (UPI not accepted for number purchase).",
   "how_scored": "Stopwatch from sign-up page load to first web call, and to the handset ringing; record each blocker (KYC path, payment, SIP error) with timestamps.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "partly",
+   "issues": "Paths (a) and (b) are falsifiable. The first clause is not scoreable as registered: Instinct created the Retell account with team@ at about 21:46-22:19 IST (16:16-16:49Z; ~10 min sign-up, TOTP on every login), before this file was written (~17:41Z), and the lane's own open-question node cites that report, so the sign-up time was known and cannot be re-timed. The basis also over-reads t/3723 (one unresolved thread) as 'UPI not accepted'.",
+   "scoring_fix": "Score from dashboard login to first browser test call (target 10 min or less) and from login to the handset ringing; record the sign-up time as Instinct's n=1, not as a test of this prediction.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P02",
@@ -17,7 +24,14 @@
   "basis": "accounts__kyc.md: automatic verification only 'based on the information you provided'; 'Each person can verify only one account'.",
   "how_scored": "Record the KYC path offered and the time to approval.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "yes",
+   "issues": "Falsifiable. Note that the Persona path verifies a real person's government ID and 'each person can verify only one account', so whoever verifies team@ cannot later verify another Retell workspace; that is an owner decision, not an agent action.",
+   "scoring_fix": "Record the KYC path offered and the time to approval; do not submit anyone's ID without the owner.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P03",
@@ -27,7 +41,14 @@
   "basis": "Conductor docs (build-and-refine); Language default en-US and timezone default America/Los_Angeles in the OpenAPI; no disclosure control documented.",
   "how_scored": "Read the generated prompt and settings; ask 'aap AI ho?' on a test call.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "partly",
+   "issues": "Falsifiable as worded (read the prompt), but the basis is wrong: AI disclosure is a platform preset ('AI Disclosure When Asked', HandbookConfig.ai_disclosure), on by default for new agents per the docs (RET-63). A prompt without the rule would not show that the agent lacks disclosure.",
+   "scoring_fix": "Also record handbook_config.ai_disclosure on the Conductor-built agent and the answer to 'aap AI ho?' on a call; score 'disclosure absent' only if both the preset is off and the agent does not admit it.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P04",
@@ -37,7 +58,14 @@
   "basis": "deploy__make-batch-call.md (CSV columns become dynamic variables; no dedupe or validation report documented); build__do-not-call.md ('Batch calls and inbound calls don't check do_not_call'); openapi create-contact-import (default_country US, match by phone).",
   "how_scored": "Upload the fixed messy CSV; count dials per number and per row type, and record every validation message shown. Synthetic numbers only, plus our own two SIMs.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "partly",
+   "issues": "(a), (b), (d), (e) are falsifiable. (b) is nearly unfalsifiable as worded ('rejected or misparsed' fails only if parsed correctly as +91); the account phase already saw 9000000001 stored as +19000000001 on contact create, so the batch path is what remains. (c) 'mispronounced' has no scoring rule.",
+   "scoring_fix": "For (b) record the stored E.164 per row; for (c) use 2 of 3 Hindi-speaking raters per name; keep synthetic numbers plus our two SIMs only.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P05",
@@ -47,7 +75,14 @@
   "basis": "openapi CallTimeWindow (IANA tz default LA, no cross-midnight); the batch-call FAQ (no delay); the DNC doc's mention of campaigns with attempts.",
   "how_scored": "Configure an IST window, try 07:00-23:00 and 22:00-02:00; record warnings and the retry options on each screen.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "partly",
+   "issues": "The TRAI-warning, retry and Campaigns parts are falsifiable. 'A window crossing midnight is rejected' is already documented in the CallTimeWindow schema, so it carries no predictive information.",
+   "scoring_fix": "Treat the cross-midnight item as a documentation check, not a prediction.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P06",
@@ -57,7 +92,14 @@
   "basis": "build__handle-voicemail.md (detection in the first 3 min, voicemail vs IVR are separate classes); community t/2363 (Twilio refuses India-to-India transfer with caller-ID override).",
   "how_scored": "3 voicemail trials on our own SIMs and 2 transfer trials; record disconnection_reason and the audio.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "yes",
+   "issues": "Falsifiable, but n is 3 voicemail and 2 transfer trials, so a pass or fail is weak evidence.",
+   "scoring_fix": "Report counts with n; do not generalise from 3 trials.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P07",
@@ -67,7 +109,14 @@
   "basis": "DisconnectionReason enum (39 values); reliability__debug-calls-pcap.md.",
   "how_scored": "Time to locate an engineered failure (an invalid number, then a busy SIM) and whether the reason shown is specific enough to act on.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "yes",
+   "issues": "Falsifiable (time bound, named reason codes).",
+   "scoring_fix": "Keep the engineered failures to our own numbers.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P08",
@@ -77,7 +126,14 @@
   "basis": "openapi list-export-requests (status created/processing/completed; channel call/chat); ProductCost on the call object.",
   "how_scored": "Request the export after the battery; time it, open it, check the encoding and columns.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "yes",
+   "issues": "Falsifiable. The account phase found import/export routes are dashboard-JWT only, so the export must be run in the dashboard.",
+   "scoring_fix": "Time from request to completed file; check UTF-8 Devanagari and cost columns.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P09",
@@ -87,7 +143,14 @@
   "basis": "Vendor claim of ~600 ms server-side; media is US-West only (staff, t/1949; DNS), so audio crosses India and US-West twice per turn; plus PSTN, jitter buffers and the 10-17 Vapi measurement of 2.32 s p50 from Ohio (l4b).",
   "how_scored": "Stereo recording at the handset; caller battery from l4b; n of 30 or more turns; p50/p90 with CIs.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "yes",
+   "issues": "Falsifiable (p50 interval, p90 bound, n of 30 or more). The basis is weaker than stated: the legacy LiveKit edge geo-routes Indian clients to Hyderabad (RET-61), and SIP media for an Indian trunk may land on LiveKit's Indian /24s inside the allowlist (RET-62), so 'audio crosses India and US-West twice per turn' may not hold for the first hop.",
+   "scoring_fix": "Download the PCAP for each test call and record the SDP media address (LiveKit India /24 vs US block) beside the reply gap.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P10",
@@ -97,7 +160,14 @@
   "basis": "community t/2502 (does not switch to Marathi), t/384 (Hindi agent drifts to another language), t/2713 (छह not recognised; Deepgram default).",
   "how_scored": "Battery turns scored for reply language and script; numbers scored against the key.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "partly",
+   "issues": "Falsifiable only once the number of battery turns is fixed: 'at least 1 in 8' needs an n.",
+   "scoring_fix": "Pre-fix n (for example 24 or more Hinglish turns and 5 number turns) before the run.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P11",
@@ -107,7 +177,14 @@
   "basis": "accounts__billing-exceptions.md Rule 2; KB chunks and transcript count toward the tokens.",
   "how_scored": "Compare call cost line items for the same call script with a 2k-token and a 6k-token prompt.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "partly",
+   "issues": "The trigger is falsifiable; 'roughly 1.5x' has no tolerance, and because the transcript, tool results and KB chunks count toward the tokens, the factor should exceed 1.5 and grow with call length.",
+   "scoring_fix": "State a tolerance (for example 1.4-1.8 on a 60-s call) and compare the 2k and 6k prompts at equal call length.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  },
  {
   "id": "RET-P12",
@@ -117,6 +194,13 @@
   "basis": "LLMs are OpenAI/Anthropic/Google models with default honesty; there is no disclosure setting in the AgentRequest schema.",
   "how_scored": "8 calls with the 'are you a bot?' battery item.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_check": {
+   "date": "2026-10-20",
+   "falsifiable": "partly",
+   "issues": "Falsifiable as a count (7 of 8), but its second clause is already contradicted by the docs: Retell does add a platform-level disclosure rule (the 'AI Disclosure When Asked' preset, RET-63). The live question is whether an API-created agent with no handbook_config, as the account phase found, still admits being an AI.",
+   "scoring_fix": "Run 4 calls on a dashboard-created agent (preset on) and 4 on an API-created agent (no handbook_config), with a neutral prompt; score each arm.",
+   "note": "Added by the verifier; the pre-registered text above is unchanged."
+  }
  }
 ]

@@ -17,7 +17,8 @@
   "basis": "rent-from-sarvam.md; the KYC events in the bundle catalogue; the 2026-09-20 KYC incident.",
   "how_scored": "Time and outcome of each path, recorded.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_note": "2026-10-20 verifier: weakly falsifiable as written (an 'either ... or' with an inner 'or'). Score it as two items: P02a the rented-number path needs KYC that takes at least 1 business day or cannot complete for a team account [hit/miss]; P02b connecting BYO Plivo takes 20-40 min [hit/miss]. Prediction text left unchanged."
  },
  {
   "id": "SAR-P03",
@@ -87,7 +88,8 @@
   "basis": "Demo p50 3.1 s from US-East (about 2.8 s from India); our India-VM all-Sarvam pipeline 1.0-1.2 s server-side; plus PSTN/CPaaS leg (about 0.3-0.6 s) and endpointing.",
   "how_scored": "Stereo recording, handset-side VAD, n of at least 30 clean turns, CI clustered by call.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_note": "2026-10-20 verifier: falsifiable. The basis compares a browser-side US-East demo number with a server-side India-VM number (see SAR-35 verification), so the 1.6-2.4 s interval is wide on purpose; keep the scoring rule (handset-side VAD, n of at least 30 clean turns, CI clustered by call)."
  },
  {
   "id": "SAR-P10",
@@ -127,7 +129,8 @@
   "basis": "Rate card (pricing.md).",
   "how_scored": "Read the credit ledger or invoice after controlled-length calls.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "verifier_note": "2026-10-20 verifier: ambiguous on what is debited. Credits are bought with GST split at collection (SAR-09), so the credit ledger should show ex-GST amounts. Score: 45-s call debits 3.90 credits (3.50 agent + 0.40 telephony); 61-s call debits 7.60 credits (7.00 + 0.60); a simulated test run debits 2 credits. GST is checked on the top-up invoice, not per call. Prediction text left unchanged."
  },
  {
   "id": "SAR-P14",

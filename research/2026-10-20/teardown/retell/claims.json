@@ -1,182 +1,1210 @@
 [
- {"id": "RET-01", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+ {
+  "id": "RET-01",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The docs index (llms.txt) lists 356 pages: 108 API reference, 70 build, 35 integrations, 23 deprecation notices, 20 deploy, 15 accounts, 14 features, 12 reliability, 9 test, 9 Conductor, 7 AI QA, 6 custom LLM. The full corpus (llms-full.txt) is 1.63 MB and splits into 338 pages.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_llms.txt", "data/teardown/retell/docs/pages/_index.tsv", "https://docs.retellai.com/llms.txt"]},
- {"id": "RET-02", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_llms.txt",
+   "data/teardown/retell/docs/pages/_index.tsv",
+   "https://docs.retellai.com/llms.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-02",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Product surface. Build: single-prompt and multi-prompt agents (multi-prompt deprecated 2026-12-15) and conversation flows, with node types: conversation, subagent, function, code, logic split, transfer, press digit, SMS, extract variable, agent transfer, MCP, end, global, plus reusable subflows, Flex Mode and finetune examples. Tools: end call, cold/warm/agentic-warm transfer, SMS, press digit, custom HTTP function, JavaScript code, MCP, HubSpot/Salesforce/Zendesk/Cal.com. Test: LLM playground, simulation and batch tests, web and phone tests. Deploy: US/CA numbers, custom SIP (Twilio, Telnyx, Vonage, Avaya, Genesys, Five9, Amazon Connect), inbound webhook, batch calls, A/B splits, web call, chat widget, SMS. Monitor: session history, contacts/CRM, contact memory, live monitoring, dashboards, alerting, webhooks, post-call analysis, AI QA. Accounts: workspaces, RBAC, KYC, credits, keys, retention, PII, signed URLs.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_llms.txt"]},
- {"id": "RET-03", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_llms.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-03",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Conductor (launched 2026-07-02) is an in-dashboard copilot. It proposes agent edits as per-setting diffs that a human must accept, runs simulated calls, inspects calls/KB/QA/contacts and builds dashboards. Billing is in credits: 0.5/1/3 per message by tier; free allowance 30 per user and 200 per workspace per day; then USD 0.20 per credit.",
-  "evidence": ["data/teardown/retell/web/www.retellai.com_changelog.txt", "data/teardown/retell/docs/pages/conductor__usage-and-billing.md", "data/teardown/retell/docs/pages/conductor__overview.md"]},
- {"id": "RET-04", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com_changelog.txt",
+   "data/teardown/retell/docs/pages/conductor__usage-and-billing.md",
+   "data/teardown/retell/docs/pages/conductor__overview.md"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-04",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Built-in CRM (2026-06-19). Contacts are keyed by phone number and carry a do_not_call flag, custom fields, tags and a memory field. Two-way sync with Salesforce and HubSpot (docs also cover Dynamics, Zoho, GoHighLevel). The API has CSV contact import (upload-contact-import-file, create-contact-import): it matches by phone number, ignores unmapped columns, and default_country is US.",
-  "evidence": ["data/teardown/retell/docs/openapi-summary.json", "data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/web/www.retellai.com_changelog.txt"]},
- {"id": "RET-05", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/openapi-summary.json",
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/web/www.retellai.com_changelog.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-05",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Batch calls take a CSV with a 'phone number' column; every other non-reserved column becomes a dynamic variable. Settings: time windows and reserved concurrency. States: Draft, Planned (not editable), Ongoing, Sent. Metrics: Sent, Picked Up, Successful. Pacing: 'There is no per-call interval or delay setting'. No retry setting is documented. The API has create-batch-call only (no list, get or cancel); per-call results come from list-calls filtered by batch_call_id. Price: +USD 0.005 per dial.",
-  "evidence": ["data/teardown/retell/docs/pages/deploy__make-batch-call.md", "data/teardown/retell/docs/openapi-summary.json"]},
- {"id": "RET-06", "dimension": "surface", "grade": "inferred", "date": "2026-10-20",
-  "claim": "A separate 'Campaigns' object exists in the product: per-lead attempts, a do-not-call outcome, campaign DNC settings. The DNC doc refers to it ('no further attempts are scheduled'), and the homepage advertises 'control pacing and retries'. It is undocumented: no campaign page and none of the 109 API operations. Inferred from the DNC doc, the marketing copy and the OpenAPI.",
-  "evidence": ["data/teardown/retell/docs/pages/build__do-not-call.md", "data/teardown/retell/web/www.retellai.com.txt", "data/teardown/retell/docs/openapi-summary.json"]},
- {"id": "RET-07", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/deploy__make-batch-call.md",
+   "data/teardown/retell/docs/openapi-summary.json"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Re-read deploy__make-batch-call.md (FAQ: 'There is no per-call interval or delay setting') and the OpenAPI: create-batch-call is the only batch operation."
+  }
+ },
+ {
+  "id": "RET-06",
+  "dimension": "surface",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "A separate 'Campaigns' object exists: the DNC doc refers to per-lead attempts, a do-not-call outcome ('no further attempts are scheduled') and campaign DNC settings; the homepage advertises 'control pacing and retries'; and the OpenAPI DashboardSource enum lists 'campaign' as a dashboard dataset beside call and chat. It has no docs page and none of the 109 API operations creates, lists or controls it. Its fields (attempts, retries, pacing) are inferred from the DNC doc and marketing, not documented.",
+  "evidence": [
+   "data/teardown/retell/docs/pages/build__do-not-call.md",
+   "data/teardown/retell/web/www.retellai.com.txt",
+   "data/teardown/retell/docs/openapi-summary.json",
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml (DashboardSource, line 9496)"
+  ],
+  "claim_lane": "A separate 'Campaigns' object exists in the product: per-lead attempts, a do-not-call outcome, campaign DNC settings. The DNC doc refers to it ('no further attempts are scheduled'), and the homepage advertises 'control pacing and retries'. It is undocumented: no campaign page and none of the 109 API operations. Inferred from the DNC doc, the marketing copy and the OpenAPI.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Stronger than the lane said: the OpenAPI DashboardSource enum lists 'campaign' as a dataset beside call and chat, so a campaign object exists server-side. Its fields (attempts, retries, pacing) remain undocumented, so the grade stays inferred."
+  }
+ },
+ {
+  "id": "RET-07",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Live call monitoring. /v2/listen-live-call mints a subscribe-only token; /v2/take-over-live-call lets that listener take over the call. Marketing adds whisper and auto-actions (transfer, webhook, alert) driven by live call scoring.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/web/www.retellai.com_changelog.txt"]},
- {"id": "RET-08", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/web/www.retellai.com_changelog.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-08",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "A/B testing means weighted agent lists on a phone number or chat config. Results are compared by filtering analytics by agent version. No significance test, sequential stopping or auto-promotion is documented (confirms ledger LRN-09).",
-  "evidence": ["data/teardown/retell/docs/pages/deploy__ab-testing.md", "research/2026-10-17/ledger.md"]},
- {"id": "RET-09", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/deploy__ab-testing.md",
+   "research/2026-10-17/ledger.md"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-09",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Team roles. The RBAC doc body lists Admin, Developer and Member; its summary says Admin, Developer, Analyst, Viewer. The pricing table puts RBAC and SSO under Enterprise. Each workspace isolates agents, numbers, keys, billing and members. 'Retell does not expose an API to programmatically create' workspaces.",
-  "evidence": ["data/teardown/retell/docs/pages/accounts__access-control.md", "data/teardown/retell/docs/pages/accounts__workspace.md", "data/teardown/retell/web/www.retellai.com_pricing.txt"]},
- {"id": "RET-10", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/accounts__access-control.md",
+   "data/teardown/retell/docs/pages/accounts__workspace.md",
+   "data/teardown/retell/web/www.retellai.com_pricing.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-10",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Chat agents run on the web widget, SMS or the API, priced per AI message at USD 0.0005-0.10. There is no WhatsApp: 'Retell has no built-in integrations with third-party chat platforms such as WhatsApp or Messenger.' This resolves the 10-17 parity cell whatsapp=unknown to 'no'.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_llms-full.txt (line 7507)", "research/2026-10-17/lanes/l4a-competitors/parity.csv"]},
- {"id": "RET-11", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_llms-full.txt (line 7507)",
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "llms-full.txt line 7507 quoted verbatim; parity.csv has no Retell whatsapp row to contradict."
+  }
+ },
+ {
+  "id": "RET-11",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Naturalness controls: Agent Handbook tones, including Conversational Mode (Professional + Conversational, natural fillers, high empathy); a 'Colloquial Model' that rewrites agent wording in real time (about 50 ms per the vendor); Expressive Mode emotion tags; dynamic voice speed and response eagerness.",
-  "evidence": ["data/teardown/retell/docs/pages/build__conversational-mode.md", "data/teardown/retell/web/www.retellai.com_changelog.txt"]},
- {"id": "RET-12", "dimension": "surface", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/build__conversational-mode.md",
+   "data/teardown/retell/web/www.retellai.com_changelog.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-12",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "KYC is required before outbound calls, number purchase and SMS. Paths: automatic, Persona government-ID check (83 countries), or slower manual review. 'Each person can verify only one account.'",
-  "evidence": ["data/teardown/retell/docs/pages/accounts__kyc.md"]},
- {"id": "RET-13", "dimension": "api", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/accounts__kyc.md"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "accounts__kyc.md re-read: automatic, Persona (83 countries), manual review; 'Each person can verify only one account.'"
+  }
+ },
+ {
+  "id": "RET-13",
+  "dimension": "api",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Published OpenAPI 3.0.3: 'Retell SDK' v3.0.0, x-retell-spec-revision 2026-10-19-becf7f8, 109 operations, 319 schemas, base https://api.retellai.com. SDKs are generated by Stainless (config.yaml); a Speakeasy gen.yaml is also published.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/docs/docs.retellai.com_config.yaml", "data/teardown/retell/docs/docs.retellai.com_gen.yaml", "data/teardown/retell/docs/openapi-summary.json"]},
- {"id": "RET-14", "dimension": "api", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/docs/docs.retellai.com_config.yaml",
+   "data/teardown/retell/docs/docs.retellai.com_gen.yaml",
+   "data/teardown/retell/docs/openapi-summary.json"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "openapi-summary.json: 109 ops, 319 schemas, revision 2026-10-19-becf7f8; the account phase found the live spec byte-identical (account-retell.json)."
+  }
+ },
+ {
+  "id": "RET-14",
+  "dimension": "api",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Data model:\n- agent (voice) with a response engine: retell-llm, conversation-flow or custom-LLM WebSocket;\n- draft and published versions;\n- chat-agent, call (phone/web), chat;\n- phone-number with weighted inbound, outbound and SMS agent lists;\n- knowledge-base, voice (clone, community), batch-call (create only);\n- contact (import, memory, conversations), app (integration connections), CRM config and sync jobs;\n- test-case definition, batch test, test run;\n- asset, export request (list only), concurrency.\nThere is no campaign, DNC-list, consent or calling-policy object.",
-  "evidence": ["data/teardown/retell/docs/openapi-summary.json"]},
- {"id": "RET-15", "dimension": "api", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/openapi-summary.json"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-15",
+  "dimension": "api",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The call object carries:\n- disconnection_reason, 39 values, including user_requested_dnc, voicemail_reached, ivr_reached, dial_busy, dial_no_answer, marked_as_spam, scam_detected, credit_exhausted, budget_reached, error_asr;\n- per-component latency tracking;\n- ProductCost line items in cents per second;\n- a public log.\nAlerts cover 14 metrics, including call success rate, negative sentiment, transfer failures, QA-not-passed and total cost.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml"]},
- {"id": "RET-16", "dimension": "api", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "DisconnectionReason enum re-extracted: 39 values, including every named one."
+  }
+ },
+ {
+  "id": "RET-16",
+  "dimension": "api",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The Language enum has 63 locales. Indian ones: en-IN, hi-IN, kn-IN, mr-IN, ta-IN, ur-IN only (no Telugu, Bengali, Gujarati, Malayalam, Punjabi or Odia). Providers: ASR azure, deepgram, soniox, assemblyai, muse; TTS elevenlabs, openai, cartesia, minimax, fish_audio, inworld, platform; speech-to-speech only the gpt-realtime family; 32 LLMs (OpenAI, Anthropic, Google). Kannada, Marathi, Tamil and Urdu ASR is Azure or Soniox only; there is no Sarvam provider.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/docs/pages/build__language-support.md"]},
- {"id": "RET-17", "dimension": "api", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/docs/pages/build__language-support.md"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Re-extracted: Language enum 63 values, -IN locales exactly en, hi, kn, mr, ta, ur; LLMModel 32; S2S 6 gpt-realtime models; language-support ASR table shows kn/mr/ta/ur on Azure and Soniox only."
+  }
+ },
+ {
+  "id": "RET-17",
+  "dimension": "api",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "US defaults: agent timezone and batch call_time_window default to America/Los_Angeles; windows cannot cross midnight; contact import default_country is US; agent language defaults to en-US.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml"]},
- {"id": "RET-18", "dimension": "api", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "OpenAPI re-read: agent timezone and CallTimeWindow default America/Los_Angeles; cross-midnight not allowed; contact import default_country 'Defaults to US'."
+  }
+ },
+ {
+  "id": "RET-18",
+  "dimension": "api",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The docs contradict themselves on India calling. The BatchCallTask description says a Retell-purchased number supports only US destinations. The international-calling page lists 15 destinations reachable from Retell-managed numbers, including India at USD 0.15/min (Twilio) or 0.25/min (Telnyx).",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/docs/pages/deploy__international-call.md"]},
- {"id": "RET-19", "dimension": "api", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/docs/pages/deploy__international-call.md"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Both texts re-read: BatchCallTask (line 1435) and create-phone-call (line 12860) say purchased numbers support only US destinations; deploy__international-call.md lists India at 0.15 (Twilio) and 0.25 (Telnyx)."
+  }
+ },
+ {
+  "id": "RET-19",
+  "dimension": "api",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Developer surfaces:\n- Custom LLM over WebSocket (llm_websocket_url): the buyer runs the brain, Retell does telephony and turn-taking;\n- an MCP server, hosted at mcp.retellai.com and on npm as @retell-ai/mcp-server 6.2.8;\n- a CLI, n8n and Zapier nodes, and a ChatGPT app (2026-03-19).",
-  "evidence": ["data/teardown/retell/web/www.retellai.com_llms.txt.raw", "data/teardown/retell/sdk/npm-view__retell-ai_mcp-server.json", "data/teardown/retell/web/www.retellai.com_changelog.txt"]},
- {"id": "RET-20", "dimension": "architecture", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com_llms.txt.raw",
+   "data/teardown/retell/sdk/npm-view__retell-ai_mcp-server.json",
+   "data/teardown/retell/web/www.retellai.com_changelog.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-20",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Hosting, from public DNS:\n- api.retellai.com: AWS Global Accelerator anycast (13.248.202.14, 3.33.169.178);\n- sip.retellai.com: 18.98.16.120-123, AWS us-west-2 EC2;\n- mcp.retellai.com: an ELB in us-west-2;\n- dashboard and docs: Vercel;\n- www: Webflow;\n- status: Atlassian Statuspage;\n- login: Auth0 custom domain behind Cloudflare.",
-  "evidence": ["data/teardown/retell/dns/doh_api.retellai.com_A.json", "data/teardown/retell/dns/doh_sip.retellai.com_A.json", "data/teardown/retell/dns/doh_mcp.retellai.com_CNAME.json", "data/teardown/retell/dns/aws-ip-ranges.json", "data/teardown/retell/har/dashboard-login.slim.har"]},
- {"id": "RET-21", "dimension": "architecture", "grade": "observed", "date": "2026-10-20",
-  "claim": "Retell's SIP allowlist includes three blocks registered to LiveKit Incorporated: 153.57.128.0/18 ('all regions'), 143.223.88.0/21 and 161.115.160.0/19 ('certain United States traffic'). The rest are AWS us-west-2 blocks: 18.98.16.120/30 (signalling) and 3.42.144.0/23.",
-  "evidence": ["data/teardown/retell/docs/pages/deploy__custom-telephony.md", "data/teardown/retell/dns/rdap_153.57.128.1.json", "data/teardown/retell/dns/rdap_143.223.88.1.json", "data/teardown/retell/dns/rdap_161.115.160.1.json", "data/teardown/retell/dns/aws-ip-ranges.json"]},
- {"id": "RET-22", "dimension": "architecture", "grade": "inferred", "date": "2026-10-20",
-  "claim": "PSTN/SIP media for at least some calls lands on LiveKit Cloud's SIP and media service, with Retell's own AWS us-west-2 SIP edge in front for signalling. Retell does not rent LiveKit as its agent framework. Inferred from RET-21 and RET-23.",
-  "evidence": ["data/teardown/retell/docs/pages/deploy__custom-telephony.md", "data/teardown/retell/dns/rdap_153.57.128.1.json"]},
- {"id": "RET-23", "dimension": "architecture", "grade": "observed", "date": "2026-10-20",
-  "claim": "The web SDK (retell-client-js-sdk 3.0.x; 3.0.0 published 2026-09-08) has two transports:\n- legacy LiveKit: hard-coded wss://retell-ai-4ihahnq7.livekit.cloud, depends on livekit-client ^2.5.1;\n- a new 'gateway' transport: WHIP-style SDP POST to https://api.retellai.com/webrtc-proxy/{call_id}/v1/webrtc/sessions, Google STUN by default; gateways answer on private addresses.\nv3 create-web-call returns transport 'gateway' only. The ListenLiveCall gateway_ip example is 54.183.22.7 (AWS us-west-1).",
-  "evidence": ["data/teardown/retell/sdk/client-js/x/package/src/livekit-transport.ts", "data/teardown/retell/sdk/client-js/x/package/src/gateway-transport.ts", "data/teardown/retell/sdk/client-js/x/package/src/transport.ts", "data/teardown/retell/sdk/npm-view_retell-client-js-sdk.json", "data/teardown/retell/docs/docs.retellai.com_openapi.yaml"]},
- {"id": "RET-24", "dimension": "architecture", "grade": "inferred", "date": "2026-10-20",
-  "claim": "Orchestration is Retell's own: a scheduling queue and workers, per the 2026-09-05 and 09-16 postmortems. Browser media is moving from LiveKit Cloud to Retell's own WebRTC gateway (September 2026); LiveKit stays for legacy web calls and some SIP media. No Pipecat or Vocode traces in the SDK or docs. Inferred from RET-21, RET-23, RET-38 and the 2026-09-30 create_web_call_v2 deprecation.",
-  "evidence": ["data/teardown/retell/sdk/client-js/x/package/src/gateway-transport.ts", "data/teardown/retell/status/incidents.tsv", "data/teardown/retell/docs/pages/deprecation-notice__2026__09-30_create_web_call_v2.md"]},
- {"id": "RET-25", "dimension": "architecture", "grade": "observed", "date": "2026-10-20",
-  "claim": "Retell support wrote on community thread 1949 (2026-03-25): 'Retell infrastructure is only in US(west) region. We don't have any other PoP at the moment.' DNS agrees (us-west-2 SIP and MCP; us-west-1 gateway example), as does the compliance page ('we do not currently operate services within the European Union'). The quote is observed; whether all media is hosted in US-West rests on the vendor's word.",
-  "evidence": ["data/teardown/retell/complaints/threads/t_1949.json", "https://community.retellai.com/t/1949", "data/teardown/retell/docs/pages/general__compliance.md", "data/teardown/retell/dns/doh_sip.retellai.com_A.json"]},
- {"id": "RET-26", "dimension": "architecture", "grade": "observed", "date": "2026-10-20",
-  "claim": "The dashboard is served from Vercel (iad1). It redirects through /api/auth/login (nextjs-auth0 pattern) to Auth0 Universal Login with reCAPTCHA Enterprise. No app bundle is served before login, so the dashboard's JS, routes and screens cannot be inspected without an account.",
-  "evidence": ["data/teardown/retell/har/dashboard-login.slim.har", "data/teardown/retell/har/dashboard-login.summary.json", "data/teardown/retell/rea/rea-inspect-dashboard-slim.json"]},
- {"id": "RET-27", "dimension": "architecture", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/dns/doh_api.retellai.com_A.json",
+   "data/teardown/retell/dns/doh_sip.retellai.com_A.json",
+   "data/teardown/retell/dns/doh_mcp.retellai.com_CNAME.json",
+   "data/teardown/retell/dns/aws-ip-ranges.json",
+   "data/teardown/retell/har/dashboard-login.slim.har"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "DNS re-run 19:25Z (Cloudflare and Google DoH, 4 client subnets): same records; IPs matched to AWS ip-ranges createDate 2026-10-20-15-47-05 (Global Accelerator; us-west-2 EC2). sip, api and mcp return identical answers for Indian and US subnets (ECS scope /0)."
+  }
+ },
+ {
+  "id": "RET-21",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "Retell's SIP allowlist includes three blocks registered to LiveKit Incorporated: 153.57.128.0/18 ('all regions'), 143.223.88.0/21 and 161.115.160.0/19 ('certain United States traffic'). The rest are AWS us-west-2 blocks: 18.98.16.120/30 (signalling only) and 3.42.144.0/23. LiveKit's RDAP remarks label /24s inside these blocks by region: 143.223.91.0/24 'production-omumbai1a-main', 143.223.94.0/24 'production-ohyderabad1a-main', 161.115.170.0/24 'production-osbxmum1b-main', plus Chicago, Dubai, Singapore, Ashburn, San Jose, Frankfurt, London and others. So the 'certain United States traffic' blocks also carry LiveKit's Indian /24s.",
+  "evidence": [
+   "data/teardown/retell/docs/pages/deploy__custom-telephony.md",
+   "data/teardown/retell/dns/rdap_153.57.128.1.json",
+   "data/teardown/retell/dns/rdap_143.223.88.1.json",
+   "data/teardown/retell/dns/rdap_161.115.160.1.json",
+   "data/teardown/retell/dns/aws-ip-ranges.json"
+  ],
+  "claim_lane": "Retell's SIP allowlist includes three blocks registered to LiveKit Incorporated: 153.57.128.0/18 ('all regions'), 143.223.88.0/21 and 161.115.160.0/19 ('certain United States traffic'). The rest are AWS us-west-2 blocks: 18.98.16.120/30 (signalling) and 3.42.144.0/23.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Allowlist and RDAP ownership confirmed. Added: the RDAP remarks LiveKit filed on these allocations label /24s by LiveKit region, and the blocks the doc calls 'certain United States traffic' include Mumbai and Hyderabad /24s, so the doc's labels are narrower than the blocks."
+  }
+ },
+ {
+  "id": "RET-22",
+  "dimension": "architecture",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "Some PSTN/SIP media lands on LiveKit-owned addresses: the allowlist marks 18.98.16.120/30 (AWS us-west-2) as signalling only and lists three LiveKit Inc. blocks plus 3.42.144.0/23 (AWS us-west-2) for media. Which calls use which media block, and whether the LiveKit addresses are LiveKit Cloud's SIP and media service, is not observed. Inferred from RET-21; the PCAP download in the account phase would show the SDP media addresses.",
+  "evidence": [
+   "data/teardown/retell/docs/pages/deploy__custom-telephony.md",
+   "data/teardown/retell/dns/rdap_153.57.128.1.json"
+  ],
+  "claim_lane": "PSTN/SIP media for at least some calls lands on LiveKit Cloud's SIP and media service, with Retell's own AWS us-west-2 SIP edge in front for signalling. Retell does not rent LiveKit as its agent framework. Inferred from RET-21 and RET-23.",
+  "verification": {
+   "status": "downgraded",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Narrowed. The allowlist supports 'some media lands on LiveKit-owned addresses'. It does not support 'Retell does not rent LiveKit as its agent framework': nothing observed speaks to the server-side framework (moved to RET-22b, unknown). Whether the LiveKit addresses are LiveKit Cloud's SIP service or LiveKit IPs serving Retell some other way is also not observed."
+  }
+ },
+ {
+  "id": "RET-23",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "The web SDK (retell-client-js-sdk 3.0.x; 3.0.0 published 2026-09-08) has two transports:\n- legacy LiveKit: hard-coded wss://retell-ai-4ihahnq7.livekit.cloud, depends on livekit-client ^2.5.1;\n- a new 'gateway' transport: WHIP-style SDP POST to https://api.retellai.com/webrtc-proxy/{call_id}/v1/webrtc/sessions, Google STUN by default; signalling is relayed by Retell because 'gateways answer on a private address', and media goes to the ICE candidates in the SDP answer.\nv3 create-web-call returns transport 'gateway' only. The gateway keeps LiveKit's room and identity-token model, so its server software is unknown. The ListenLiveCall gateway_ip example (54.183.22.7, AWS us-west-1) is an example value, not an observed address.",
+  "evidence": [
+   "data/teardown/retell/sdk/client-js/x/package/src/livekit-transport.ts",
+   "data/teardown/retell/sdk/client-js/x/package/src/gateway-transport.ts",
+   "data/teardown/retell/sdk/client-js/x/package/src/transport.ts",
+   "data/teardown/retell/sdk/npm-view_retell-client-js-sdk.json",
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml"
+  ],
+  "claim_lane": "The web SDK (retell-client-js-sdk 3.0.x; 3.0.0 published 2026-09-08) has two transports:\n- legacy LiveKit: hard-coded wss://retell-ai-4ihahnq7.livekit.cloud, depends on livekit-client ^2.5.1;\n- a new 'gateway' transport: WHIP-style SDP POST to https://api.retellai.com/webrtc-proxy/{call_id}/v1/webrtc/sessions, Google STUN by default; gateways answer on private addresses.\nv3 create-web-call returns transport 'gateway' only. The ListenLiveCall gateway_ip example is 54.183.22.7 (AWS us-west-1).",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "SDK source and OpenAPI confirmed (3.0.2 tarball; livekit-client ^2.5.1; create-web-call transport enum [gateway]). Two notes: 54.183.22.7 is an OpenAPI example value, not an observed gateway, so it is weak evidence of region; and the gateway keeps LiveKit's token model (room_name 'web_call_...', identity claims, 'the gateway creates the room for a valid token'), so what software the gateway runs is unknown."
+  }
+ },
+ {
+  "id": "RET-24",
+  "dimension": "architecture",
+  "grade": "vendor-claimed",
+  "date": "2026-10-20",
+  "claim": "Retell operates its own call-scheduling queues, containers with a fixed number of dequeue slots, concurrency-based autoscaling and call workers, per its own 2026-09-05 and 2026-09-16 postmortems (vendor text, not observed). Inbound calls hold the highest queue priority. Browser media moved from the LiveKit Cloud transport to a Retell-operated WHIP-style gateway in September 2026 (observed, RET-23); LiveKit remains in the SDK as the legacy transport and in the SIP allowlist (RET-21).",
+  "evidence": [
+   "data/teardown/retell/sdk/client-js/x/package/src/gateway-transport.ts",
+   "data/teardown/retell/status/incidents.tsv",
+   "data/teardown/retell/docs/pages/deprecation-notice__2026__09-30_create_web_call_v2.md"
+  ],
+  "claim_lane": "Orchestration is Retell's own: a scheduling queue and workers, per the 2026-09-05 and 09-16 postmortems. Browser media is moving from LiveKit Cloud to Retell's own WebRTC gateway (September 2026); LiveKit stays for legacy web calls and some SIP media. No Pipecat or Vocode traces in the SDK or docs. Inferred from RET-21, RET-23, RET-38 and the 2026-09-30 create_web_call_v2 deprecation.",
+  "grade_lane": "inferred",
+  "verification": {
+   "status": "downgraded",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Split. The browser-transport migration is observed (RET-23). What remains is the vendor's own description of its queues, containers and workers in two postmortems: vendor text, so vendor-claimed. 'No Pipecat or Vocode traces in the SDK or docs' is not evidence about a server-side framework (moved to RET-22b, unknown)."
+  }
+ },
+ {
+  "id": "RET-25",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "Retell support wrote on community thread 1949 (2026-03-25): 'Retell infrastructure is only in US(west) region. We don't have any other PoP at the moment.' Retell-operated hosts agree: sip.retellai.com is AWS us-west-2 EC2 and mcp.retellai.com an ELB in us-west-2, and both return the same records for Indian and US client subnets; api.retellai.com is Global Accelerator anycast, so its back-end region is not visible. The compliance page says 'we do not currently operate services within the European Union'. Counter-observation: the legacy LiveKit Cloud project resolves to LiveKit's Hyderabad /24 for Indian client subnets (RET-61), so the quote holds at most for Retell-operated compute, not for every media edge. The quote is seven months old.",
+  "evidence": [
+   "data/teardown/retell/complaints/threads/t_1949.json",
+   "https://community.retellai.com/t/1949",
+   "data/teardown/retell/docs/pages/general__compliance.md",
+   "data/teardown/retell/dns/doh_sip.retellai.com_A.json",
+   "data/teardown/retell/verify/dns-recheck/doh-ecs-recheck-2026-10-20.jsonl",
+   "data/teardown/retell/dns/rdap_143.223.88.1.json"
+  ],
+  "claim_lane": "Retell support wrote on community thread 1949 (2026-03-25): 'Retell infrastructure is only in US(west) region. We don't have any other PoP at the moment.' DNS agrees (us-west-2 SIP and MCP; us-west-1 gateway example), as does the compliance page ('we do not currently operate services within the European Union'). The quote is observed; whether all media is hosted in US-West rests on the vendor's word.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Quote confirmed verbatim (2026-03-25; a 2026-03-20 staff post says 'Currently Retell's servers are located in US West region'). Corrections: the us-west-1 gateway address is an OpenAPI example, not DNS; and a re-run with client-subnet DNS shows the legacy LiveKit Cloud project geo-routes Indian clients to LiveKit's Hyderabad edge (RET-61), so 'no other PoP' holds at most for Retell-operated compute, not for every media edge."
+  }
+ },
+ {
+  "id": "RET-26",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "The dashboard is served from Vercel (x-vercel-id 'iad1', the edge that answered our US-East sandbox; the app's region is not shown). It redirects through /api/auth/login (nextjs-auth0 pattern) to Auth0 Universal Login on auth.retellai.com behind Cloudflare, with reCAPTCHA Enterprise. No app bundle is served before login, so the dashboard's JS, routes and screens cannot be inspected without an account.",
+  "evidence": [
+   "data/teardown/retell/har/dashboard-login.slim.har",
+   "data/teardown/retell/har/dashboard-login.summary.json",
+   "data/teardown/retell/rea/rea-inspect-dashboard-slim.json"
+  ],
+  "claim_lane": "The dashboard is served from Vercel (iad1). It redirects through /api/auth/login (nextjs-auth0 pattern) to Auth0 Universal Login with reCAPTCHA Enterprise. No app bundle is served before login, so the dashboard's JS, routes and screens cannot be inspected without an account.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "HAR re-read: 3 x 307 on dashboard.retellai.com (Vercel), /api/auth/login, then auth.retellai.com (server: cloudflare) /authorize and /u/login/identifier with reCAPTCHA Enterprise. Correction: x-vercel-id 'iad1::...' names the Vercel edge that answered our US-East sandbox, not the dashboard's region."
+  }
+ },
+ {
+  "id": "RET-27",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The homepage 'Get a call' demo is an inline script that calls https://api.retellai.com/v2/create-phone-call from the browser with an embedded bearer credential plus a reCAPTCHA token (credential redacted from our copies; REA web-bundle found the same endpoint). The from-numbers are six US +1415 numbers. The phone parser prepends '1' to any 10-digit input, so an Indian mobile typed without +91 becomes a +1 number.",
-  "evidence": ["data/teardown/retell/web/www.retellai.com_pricing.raw", "data/teardown/retell/rea/rea-web-bundle-pricing.json"]},
- {"id": "RET-28", "dimension": "architecture", "grade": "vendor-claimed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com_pricing.raw",
+   "data/teardown/retell/rea/rea-web-bundle-pricing.json"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Inline script re-read in the saved home, pricing, careers and changelog pages: six +1415 from-numbers, parsePhoneNumber prepends '1' to 10 digits, reCAPTCHA token plus a bearer header (redacted in every copy). The account phase saw the same US default on contacts (9000000001 stored as +19000000001)."
+  }
+ },
+ {
+  "id": "RET-28",
+  "dimension": "architecture",
+  "grade": "vendor-claimed",
+  "date": "2026-10-20",
   "claim": "Marketing and reliability docs claim:\n- a 'proprietary voice AI orchestration' and a 'proprietary turn-taking model';\n- '~600ms latency';\n- 'self-hosted models to reduce third-party dependencies';\n- Platform Voices that are 'fine-tuned specifically for conversational AI over the phone';\n- a 99.9% uptime guarantee.",
-  "evidence": ["data/teardown/retell/web/www.retellai.com.txt", "data/teardown/retell/docs/pages/reliability__reliability-overview.md", "data/teardown/retell/docs/docs.retellai.com_llms-full.txt (line 8856)"]},
- {"id": "RET-29", "dimension": "architecture", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com.txt",
+   "data/teardown/retell/docs/pages/reliability__reliability-overview.md",
+   "data/teardown/retell/docs/docs.retellai.com_llms-full.txt (line 8856)"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-29",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "STT routing: the presets ('Optimize for speed' / 'Optimize for accuracy') can split calls across providers and fall back automatically; Azure is single-language only; Deepgram and Soniox handle code-switching. 'Muse' appears only in the API spec, as an ASR provider that 'detects turn ends itself'. Who makes Muse is unknown; it may be in-house.",
-  "evidence": ["data/teardown/retell/docs/pages/build__asr-providers.md", "data/teardown/retell/docs/docs.retellai.com_openapi.yaml"]},
- {"id": "RET-30", "dimension": "company", "grade": "vendor-claimed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/build__asr-providers.md",
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "build__asr-providers.md and the OpenAPI re-read; 'Muse detects turn ends itself and ignores this value' is verbatim."
+  }
+ },
+ {
+  "id": "RET-30",
+  "dimension": "company",
+  "grade": "vendor-claimed",
+  "date": "2026-10-20",
   "claim": "Job posts (newest 2026-10-14) claim USD 80M ARR with a team of 50, up from USD 5M at the start of 2025, a valuation over USD 1.5B, and customers including CVS/Aetna, American Airlines, Lenovo and Grab. This updates data/company-financials.csv: ARR >USD 50M (Jan 2026) and USD 60M (Jul 2026), and a July post still says USD 60M.",
-  "evidence": ["data/teardown/retell/jobs/ashby-retell-ai.json", "research/2026-10-17/lanes/l4a-competitors/data/company-financials.csv"]},
- {"id": "RET-31", "dimension": "company", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/jobs/ashby-retell-ai.json",
+   "research/2026-10-17/lanes/l4a-competitors/data/company-financials.csv"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-31",
+  "dimension": "company",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "27 open roles, all in the SF Bay Area (in-office in Redwood City) except a Singapore forward-deployed engineer and remote contract roles. Language-specific FDE and CSE roles are Mandarin and Spanish only; none are in or for India. Stack keywords: React, TypeScript, Node, Python.",
-  "evidence": ["data/teardown/retell/jobs/ashby-retell-ai.json", "data/teardown/retell/web/www.retellai.com_careers.txt"]},
- {"id": "RET-32", "dimension": "pricing", "grade": "observed", "date": "2026-10-20",
-  "claim": "Rate card, 2026-10-20:\n- voice infra USD 0.055/min;\n- TTS 0.015 (Platform, MiniMax, Fish, Cartesia, OpenAI, Inworld) up to 0.10 (ElevenLabs v3 and v4);\n- LLM 0.0016-0.32 standard, fast tier up to 0.64 (GPT 6 Astra);\n- speech-to-speech gpt-realtime 0.07-0.38;\n- telephony: Retell US 0.015, India 0.15 (Twilio) or 0.25 (Telnyx), custom SIP free;\n- add-ons: KB, denoise, guardrails +0.005; PII +0.01; AI QA 0.10/min (first 100 min free); batch +0.005/dial; branded call +0.10/call;\n- monthly: number 2; concurrency 20 free then 8/slot; KB 10 free then 8 each; verified number 10 (shown as both monthly and one-time).",
-  "evidence": ["data/teardown/retell/web/www.retellai.com_pricing.txt", "data/teardown/retell/docs/pages/deploy__international-call.md"]},
- {"id": "RET-33", "dimension": "pricing", "grade": "observed", "date": "2026-10-20",
-  "claim": "This confirms the 10-17 history: the headline USD 0.07-0.31/min is unchanged since Dec 2024 (pricing-history.json, Retell 2026-10-17 'live'). But the page's own fast-tier LLM and speech-to-speech rows go above 0.31, so the headline is not a ceiling.",
-  "evidence": ["research/2026-10-17/lanes/l4a-competitors/pricing-history.json", "data/teardown/retell/web/www.retellai.com_pricing.txt"]},
- {"id": "RET-34", "dimension": "pricing", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/jobs/ashby-retell-ai.json",
+   "data/teardown/retell/web/www.retellai.com_careers.txt"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-32",
+  "dimension": "pricing",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "Rate card, 2026-10-20 (re-fetched 19:27Z, unchanged):\n- voice infra USD 0.055/min;\n- TTS 0.015 (Platform, MiniMax, Fish, Cartesia, OpenAI, Inworld) up to 0.10 (ElevenLabs v3 and v4);\n- LLM standard 0.0016 (GPT 5 nano) to 0.384 (GPT 6.1 Sol Ultrafast); fast tier up to 0.64 (GPT 6 Astra);\n- speech-to-speech gpt-realtime 0.07-0.38;\n- telephony: Retell US 0.015, India 0.15 (Twilio) or 0.25 (Telnyx), custom SIP free;\n- add-ons: KB, denoise, guardrails +0.005; PII +0.01; AI QA 0.10/min (first 100 min free); batch +0.005/dial; branded call +0.10/call;\n- monthly: number 2; concurrency 20 free then 8/slot; KB 10 free then 8 each; verified number 10 (shown as both monthly and one-time).",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com_pricing.txt",
+   "data/teardown/retell/docs/pages/deploy__international-call.md",
+   "data/teardown/retell/verify/pricing-refetch/www.retellai.com_pricing.raw"
+  ],
+  "claim_lane": "Rate card, 2026-10-20:\n- voice infra USD 0.055/min;\n- TTS 0.015 (Platform, MiniMax, Fish, Cartesia, OpenAI, Inworld) up to 0.10 (ElevenLabs v3 and v4);\n- LLM 0.0016-0.32 standard, fast tier up to 0.64 (GPT 6 Astra);\n- speech-to-speech gpt-realtime 0.07-0.38;\n- telephony: Retell US 0.015, India 0.15 (Twilio) or 0.25 (Telnyx), custom SIP free;\n- add-ons: KB, denoise, guardrails +0.005; PII +0.01; AI QA 0.10/min (first 100 min free); batch +0.005/dial; branded call +0.10/call;\n- monthly: number 2; concurrency 20 free then 8/slot; KB 10 free then 8 each; verified number 10 (shown as both monthly and one-time).",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Rate card re-fetched 2026-10-20T19:27Z: 140 price strings and all 19 telephony options identical to the lane's copy. One correction: the standard LLM column goes to 0.384 (GPT 6.1 Sol Ultrafast, which has no fast-tier price), not 0.32."
+  }
+ },
+ {
+  "id": "RET-33",
+  "dimension": "pricing",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "The headline USD 0.07-0.31/min appears on the 2024-12-06 capture and on today's page (pricing-history.json; the 2025-06-18 and 2026-06-12 captures did not record the headline), so 'unchanged since Dec 2024' rests on two endpoints. Behind it the structure changed: a 0.07-0.08 voice engine that included the voice became 0.055 infra plus 0.015-0.10 TTS. The page's own rows exceed 0.31 (GPT 6.1 Sol Ultrafast 0.384, fast-tier GPT 6 Astra 0.64, gpt-realtime 2.x 0.38), so the headline is not a ceiling (observed).",
+  "evidence": [
+   "research/2026-10-17/lanes/l4a-competitors/pricing-history.json",
+   "data/teardown/retell/web/www.retellai.com_pricing.txt"
+  ],
+  "claim_lane": "This confirms the 10-17 history: the headline USD 0.07-0.31/min is unchanged since Dec 2024 (pricing-history.json, Retell 2026-10-17 'live'). But the page's own fast-tier LLM and speech-to-speech rows go above 0.31, so the headline is not a ceiling.",
+  "grade_lane": "observed",
+  "verification": {
+   "status": "downgraded",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "pricing-history.json has the 0.07-0.31 headline on 2024-12-06 only; the 2025-06-18 and 2026-06-12 captures did not record a headline. 'Unchanged since Dec 2024' therefore rests on two endpoints, and the composition behind it changed. The 'not a ceiling' half is observed and kept."
+  }
+ },
+ {
+  "id": "RET-34",
+  "dimension": "pricing",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Billing rules:\n- per-second billing; voicemail billed only while the agent is active; failed calls free;\n- a 10-second minimum when the agent speaks a dynamic first message;\n- prompts over 4,000 tokens scale billed duration by tokens/4,000; the count includes the transcript, tool results and KB chunks;\n- concurrency burst +USD 0.10/min for the whole call;\n- stable cluster +0.02/min (enterprise);\n- since 2026-09-30, prepaid USD credits via Stripe, and calls stop at a zero balance.",
-  "evidence": ["data/teardown/retell/docs/pages/accounts__billing-exceptions.md", "data/teardown/retell/docs/pages/accounts__billing.md", "data/teardown/retell/docs/pages/deploy__concurrency.md", "data/teardown/retell/web/www.retellai.com_pricing.txt"]},
- {"id": "RET-35", "dimension": "pricing", "grade": "inferred", "date": "2026-10-20",
-  "claim": "All-in INR per connected minute for an Indian outbound call, ex GST, FX 95, computed from the observed rate card. BYO Indian SIP trunk (INR 0.43/min, 30-s pulses), Platform voice, 60-s call, prompt 4k tokens or less: INR 8.3 (GPT-5 mini), 11.4 (calculator-default LLM at USD 0.04) or 13.6 (GPT-5.6 Terra, 'recommended'). With a 6k-token prompt: 8.7-20.0 (16.7-20.0 for GPT-5.6 Terra), depending on whether the 4,000-token rule scales only the LLM line or the whole duration. Retell-managed US number dialling India: 22.1-27.5 via Twilio, 31.6-37.0 via Telnyx. Add 18% GST if input credit is not recoverable. Compare ECO-15 (Indian vendors 3.5-7) and ECO-17 (US platforms over Twilio India 11.6-17.5).",
-  "evidence": ["research/2026-10-20/teardown/retell/pricing-allin.csv", "research/2026-10-20/teardown/retell/code/pricing_allin.py", "research/2026-10-18/model/results/inputs.csv", "research/2026-10-17/ledger.md"]},
- {"id": "RET-36", "dimension": "pricing", "grade": "inferred", "date": "2026-10-20",
-  "claim": "COGS reconstruction against list prices read on 2026-10-18 (g4 prices.csv):\n- Infra line USD 0.055 vs STT 0.0058-0.0092 (Deepgram Nova-3 multilingual streaming) plus media and turn-taking compute (assumed 0.002-0.006, unmeasured): about 75-85% gross margin.\n- Platform voice 0.015 vs Cartesia/MiniMax list 0.013-0.021 at 352 billed chars/min: break-even at list, so they need volume rates or their own TTS.\n- ElevenLabs Flash 0.04 vs list 0.014: about 65%. ElevenLabs v3 0.10 vs 0.028: about 72%.\n- GPT-4.1-mini 0.0128/min vs 0.004-0.009 (5 exchanges/min, up to 4k tokens, cached vs uncached): 30-70%.\n- The calculator default of 0.11/min carries COGS of about 0.03-0.05: about 55-70% gross margin.",
-  "evidence": ["research/2026-10-18/lanes/g4-market-selfhost/prices.csv", "research/2026-10-18/model/results/inputs.csv", "data/teardown/retell/web/www.retellai.com_pricing.txt"]},
- {"id": "RET-37", "dimension": "pricing", "grade": "inferred", "date": "2026-10-20",
-  "claim": "Retell is not price-competing in India. Its cheapest realistic Indian configuration (INR 8-14 on a BYO trunk) is 2-4x the Indian list prices (3.5-7) and 3-6x VP's INR 2-3 target. Reaching INR 3 would need Indian hosting plus cheaper STT/TTS; nothing in jobs, docs or the status page shows that.",
-  "evidence": ["research/2026-10-20/teardown/retell/pricing-allin.csv", "data/teardown/retell/jobs/ashby-retell-ai.json", "research/2026-10-18/model/results/summary.json"]},
- {"id": "RET-38", "dimension": "velocity", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/accounts__billing-exceptions.md",
+   "data/teardown/retell/docs/pages/accounts__billing.md",
+   "data/teardown/retell/docs/pages/deploy__concurrency.md",
+   "data/teardown/retell/web/www.retellai.com_pricing.txt"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Billing-exceptions Rules 1-2, concurrency burst (+0.10/min on the entire call), stable cluster +0.02/min (reliability overview), credit billing (09/30/2026, usage stops at zero, credit_exhausted) and the pricing FAQ (nearest second; voicemail billed only while the agent is active; failed calls not billed) all re-read. Note: the marketing line 'No minimums' contradicts Rule 1."
+  }
+ },
+ {
+  "id": "RET-35",
+  "dimension": "pricing",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "All-in INR per connected minute for an Indian outbound call, ex GST, FX 95, computed from the observed rate card (not from billing). BYO Indian SIP trunk (INR 0.43/min, 30-s pulses), Platform voice, 60-s call, prompt 4k tokens or less: INR 8.3 (GPT-5 mini), 11.4 (calculator-default LLM at USD 0.04) or 13.6 (GPT-5.6 Terra, 'recommended'). With a 6k-token prompt: 8.7-20.0, depending on whether the 4,000-token rule scales only the LLM line or the whole duration. Retell-managed US number dialling India: 22.1-27.5 via Twilio, 31.6-37.0 via Telnyx. Add 18% GST if input credit is not recoverable. Caveats: (1) the 4,000-token count includes the growing transcript, tool results and KB chunks, but the model holds prompt tokens fixed across 30-180 s, so the '4k or less' rows for long calls are optimistic; (2) the BYO path assumes an Indian trunk can terminate on Retell's US SIP edge at domestic CPaaS rates, which is unverified (a third party says TRAI needs an India-based SBC, t/981; ledger REG-25); (3) the Retell-managed +1 path cannot carry BFSI service calls, which must come from 1600-series numbers (RET-64); (4) whether debits follow the rate card is what RET-P11 tests. Compare ECO-15 (Indian vendors 3.55-7, others 8-18) and ECO-17 (US platforms over Twilio India 11.6-17.5).",
+  "evidence": [
+   "research/2026-10-20/teardown/retell/pricing-allin.csv",
+   "research/2026-10-20/teardown/retell/code/pricing_allin.py",
+   "research/2026-10-18/model/results/inputs.csv",
+   "research/2026-10-17/ledger.md",
+   "research/2026-10-17/ledger.md (REG-10, REG-20, REG-25)",
+   "data/teardown/retell/complaints/threads/t_981.json"
+  ],
+  "claim_lane": "All-in INR per connected minute for an Indian outbound call, ex GST, FX 95, computed from the observed rate card. BYO Indian SIP trunk (INR 0.43/min, 30-s pulses), Platform voice, 60-s call, prompt 4k tokens or less: INR 8.3 (GPT-5 mini), 11.4 (calculator-default LLM at USD 0.04) or 13.6 (GPT-5.6 Terra, 'recommended'). With a 6k-token prompt: 8.7-20.0 (16.7-20.0 for GPT-5.6 Terra), depending on whether the 4,000-token rule scales only the LLM line or the whole duration. Retell-managed US number dialling India: 22.1-27.5 via Twilio, 31.6-37.0 via Telnyx. Add 18% GST if input credit is not recoverable. Compare ECO-15 (Indian vendors 3.5-7) and ECO-17 (US platforms over Twilio India 11.6-17.5).",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "pricing_allin.py re-run: 324 rows, byte-identical to pricing-allin.csv; the BYO 60-s row hand-checked (0.078 + 0.005 batch = 0.083 USD x 95 + INR 0.43 = 8.32). Kept as inferred, with four caveats the lane omitted."
+  }
+ },
+ {
+  "id": "RET-36",
+  "dimension": "pricing",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "Line-item margins against list prices read 2026-10-18 (g4 prices.csv; 352 billed chars/min):\n- Infra 0.055 vs Deepgram Nova-3 multilingual streaming 0.0058-0.0092 plus an assumed, unmeasured 0.002-0.006 for media and turn-taking compute: about 72-86% gross margin. Any LiveKit Cloud SIP or media fees (RET-22) are outside the assumption.\n- Platform voice 0.015 vs Cartesia Scale 0.013 to MiniMax turbo 0.021 at list: about break-even. The account phase found most Platform voice previews are MiniMax, Fish or Cartesia files (account-retell.json), consistent with resale at volume rates.\n- ElevenLabs Flash 0.04 vs 40 USD per 1M chars (0.014): about 65%. ElevenLabs v3/v4 0.10 vs 80 USD per 1M (0.028): about 72%.\n- GPT-4.1-mini 0.0128/min vs 0.004-0.009 (g4's 19,688 input + 396 output tokens/min at Azure South India regional rates, cached vs uncached): 30-70%.\nThese are list-price reconstructions; Retell's negotiated rates are unknown.",
+  "evidence": [
+   "research/2026-10-18/lanes/g4-market-selfhost/prices.csv",
+   "research/2026-10-18/model/results/inputs.csv",
+   "data/teardown/retell/web/www.retellai.com_pricing.txt",
+   "context/inbox/account-retell.json"
+  ],
+  "claim_lane": "COGS reconstruction against list prices read on 2026-10-18 (g4 prices.csv):\n- Infra line USD 0.055 vs STT 0.0058-0.0092 (Deepgram Nova-3 multilingual streaming) plus media and turn-taking compute (assumed 0.002-0.006, unmeasured): about 75-85% gross margin.\n- Platform voice 0.015 vs Cartesia/MiniMax list 0.013-0.021 at 352 billed chars/min: break-even at list, so they need volume rates or their own TTS.\n- ElevenLabs Flash 0.04 vs list 0.014: about 65%. ElevenLabs v3 0.10 vs 0.028: about 72%.\n- GPT-4.1-mini 0.0128/min vs 0.004-0.009 (5 exchanges/min, up to 4k tokens, cached vs uncached): 30-70%.\n- The calculator default of 0.11/min carries COGS of about 0.03-0.05: about 55-70% gross margin.",
+  "verification": {
+   "status": "downgraded",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Line items recomputed from g4 prices.csv. Infra margin is 72-86% on the lane's own inputs (it wrote 75-85%) and rests on an unmeasured compute assumption that omits any LiveKit fees; the ElevenLabs and GPT-4.1-mini lines reproduce. The calculator-default margin is split out to RET-36b and graded unknown."
+  }
+ },
+ {
+  "id": "RET-37",
+  "dimension": "pricing",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "Retell does not compete on price with the cheapest Indian self-serve vendors. Its BYO-trunk configuration (INR 8.3-13.6, RET-35) is 1.2-3.8x the lowest Indian band (3.55-7: Sarvam, Ringg, Bolna; ECO-15) and sits inside the 8-18 band other Indian vendors post; it is 2.8-6.8x VP's INR 2-3 target. Its voice-infra line alone is USD 0.055 = INR 5.2/min at FX 95, above VP's target before any LLM, TTS or telephony. Reaching INR 3 would need a lower platform fee, not Indian hosting. Nothing in jobs, docs or the status page shows an India price or region.",
+  "evidence": [
+   "research/2026-10-20/teardown/retell/pricing-allin.csv",
+   "data/teardown/retell/jobs/ashby-retell-ai.json",
+   "research/2026-10-18/model/results/summary.json"
+  ],
+  "claim_lane": "Retell is not price-competing in India. Its cheapest realistic Indian configuration (INR 8-14 on a BYO trunk) is 2-4x the Indian list prices (3.5-7) and 3-6x VP's INR 2-3 target. Reaching INR 3 would need Indian hosting plus cheaper STT/TTS; nothing in jobs, docs or the status page shows that.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Ratios recomputed: 8.3-13.6 is 1.2-3.8x the 3.55-7 band (the lane wrote 2-4x) and sits inside the 8-18 band ECO-15 records for other Indian vendors; vs VP's INR 2-3 it is 2.8-6.8x (lane: 3-6x). 'Reaching INR 3 would need Indian hosting' does not follow: the gap is the platform fee, and hosting location changes latency, not the rate card."
+  }
+ },
+ {
+  "id": "RET-38",
+  "dimension": "velocity",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The status page shows 12 incidents from 2026-04-20 to 2026-10-20 (6 major, 4 minor, 2 none) and 50 since 2025-03. Two postmortems:\n- 2026-09-05: a race in the custom-LLM path stalled scheduling queues fleet-wide, and stuck containers reported low use, so autoscaling never fired.\n- 2026-09-16: a deployment let two workers take the same call; about 22% of calls failed from 17:37 to 18:20 PST.",
-  "evidence": ["data/teardown/retell/status/incidents.tsv", "data/teardown/retell/web/status.retellai.com_api_v2_incidents.json.raw"]},
- {"id": "RET-39", "dimension": "velocity", "grade": "inferred", "date": "2026-10-20",
-  "claim": "Detection lag. The 2026-09-05 postmortem says impact grew from roughly 10:00 to 16:00 PST, but the first public status update was at 16:49 PST: about 6 hours between onset and acknowledgement. Inferred from RET-38.",
-  "evidence": ["data/teardown/retell/web/status.retellai.com_api_v2_incidents.json.raw"]},
- {"id": "RET-40", "dimension": "velocity", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/status/incidents.tsv",
+   "data/teardown/retell/web/status.retellai.com_api_v2_incidents.json.raw"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "incidents.json re-read: 12 incidents since 2026-04-20 (6 major, 4 minor, 2 none), postmortem texts as stated. Note: Statuspage's incidents.json returns the 50 most recent incidents, so '50 since 2025-03' is a window set by that cap (earliest returned 2025-03-14); it is exact for that window and says nothing about earlier incidents."
+  }
+ },
+ {
+  "id": "RET-39",
+  "dimension": "velocity",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "Detection. The 2026-09-05 postmortem says one customer's custom-LLM calls began stalling initialisations at about 10:00 PST and impact grew until about 16:00, when most containers were blocked; its prevention list adds the queue monitoring that did not exist. The status incident dates the fleet-wide failure of web and outbound calls to 16:10; the first public update was posted at 16:49, 39 minutes later. So: about 6 hours of growing, undetected degradation, then 39 minutes to public acknowledgement. On 2026-09-16, errors rose at 17:40, the on-call engineer was paged at 17:47 and the public post went up at 18:15. Inferred from RET-38.",
+  "evidence": [
+   "data/teardown/retell/web/status.retellai.com_api_v2_incidents.json.raw"
+  ],
+  "claim_lane": "Detection lag. The 2026-09-05 postmortem says impact grew from roughly 10:00 to 16:00 PST, but the first public status update was at 16:49 PST: about 6 hours between onset and acknowledgement. Inferred from RET-38.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "The 6 hours are a latent build-up, not the gap to acknowledging a broad outage: the vendor's own incident text dates the fleet-wide failure to 16:10 and the first post was 16:49. Both facts are kept, separated."
+  }
+ },
+ {
+  "id": "RET-40",
+  "dimension": "velocity",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Release cadence:\n- marketing changelog posts on 2026-05-27, 06-19, 07-02 and 08-24, none since;\n- 16 deprecation notices dated 2026-04 to 2026-12;\n- 80 retell-sdk npm releases since 2026-04-20 (6.2.8 on 2026-10-17);\n- web SDK 3.0.0 on 2026-09-08;\n- OpenAPI spec revision dated 2026-10-19.\nThe API surface changes weekly.",
-  "evidence": ["data/teardown/retell/web/www.retellai.com_changelog.txt", "data/teardown/retell/docs/docs.retellai.com_llms.txt", "data/teardown/retell/sdk/npm-view_retell-sdk.json", "data/teardown/retell/sdk/npm-view_retell-client-js-sdk.json"]},
- {"id": "RET-41", "dimension": "velocity", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com_changelog.txt",
+   "data/teardown/retell/docs/docs.retellai.com_llms.txt",
+   "data/teardown/retell/sdk/npm-view_retell-sdk.json",
+   "data/teardown/retell/sdk/npm-view_retell-client-js-sdk.json"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Partly re-checked: npm registry metadata gives 80 retell-sdk versions since 2026-04-20 (257 in all; 6.2.8 on 2026-10-17T18:54Z) and retell-client-js-sdk 3.0.0 on 2026-09-08 (3.0.2 on 2026-09-30). Changelog and deprecation counts not recounted."
+  }
+ },
+ {
+  "id": "RET-41",
+  "dimension": "velocity",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Launches in the last 6 months:\n- 05-27: Agent Versioning 2.0 with staging/production environments, granular multilingual, iOS/Android call-screening handling, custom voicemail, Voice Orb share page.\n- 06-19 launch week: Built-in CRM, Live Call Monitoring, Custom Dashboards, Colloquial Model, Expressive Mode.\n- 07-02: Conductor.\n- 08-24: Retell Workflows (integration library, tool store), GPT-5.6, GPT Realtime 2.1.\n- September: credit billing and the gateway WebRTC transport.",
-  "evidence": ["data/teardown/retell/web/www.retellai.com_changelog.txt", "data/teardown/retell/docs/pages/accounts__billing.md"]},
- {"id": "RET-42", "dimension": "india-plumbing", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com_changelog.txt",
+   "data/teardown/retell/docs/pages/accounts__billing.md"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-42",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The docs corpus (338 pages, 1.63 MB) mentions TRAI, DLT, NCPR, DPDP, 'Do Not Disturb' and 'data residency' zero times. 'India' appears 5 times: the language picker, the international rate tables and Zoho's data centre. TCPA appears 0 times in the docs; only the marketing FAQ mentions it.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_llms-full.txt"]},
- {"id": "RET-43", "dimension": "india-plumbing", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_llms-full.txt"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Recounted word-bounded over llms-full.txt (1,631,278 bytes): TRAI, DLT, NCPR, DPDP, DND, NDNC, TCPA, 'data residency', Asia/Kolkata 0; India 5 (language picker, two rate tables, the international-call example, Zoho). TCPA appears in the homepage FAQ only. The OpenAPI also has 0."
+  }
+ },
+ {
+  "id": "RET-43",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "DNC handling. 'Do-not-contact Handling' (off by default) detects a stop request in any language, confirms once with a fixed, non-editable script and sets contact.do_not_call. That flag is honoured by create-phone-call only when honor_internal_dnc is true (default false), by dashboard outbound (default on) and by campaigns with internal DNC on. 'Batch calls and inbound calls don't check do_not_call.' There is no NCPR/DND registry scrub.",
-  "evidence": ["data/teardown/retell/docs/pages/build__do-not-call.md"]},
- {"id": "RET-44", "dimension": "india-plumbing", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/build__do-not-call.md"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "build__do-not-call.md re-read; every element verbatim, including 'Batch calls and inbound calls don't check do_not_call.'"
+  }
+ },
+ {
+  "id": "RET-44",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Calling windows are minute-based per IANA timezone (default America/Los_Angeles), with optional days of the week. There is no category-aware rule: no TRAI 09:00-21:00 default and no warning outside it.",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/docs/pages/deploy__make-batch-call.md"]},
- {"id": "RET-45", "dimension": "india-plumbing", "grade": "observed", "date": "2026-10-20",
-  "claim": "Indian numbers. Retell sells US/CA numbers only, and caller-ID services (branded call, verified number) are US-only, so an Indian CLI needs a BYO elastic SIP trunk or dial-to-SIP. Community threads show the friction:\n- Plivo inbound fails with 'user busy' (t/758);\n- Plivo Indian numbers are on request; a Retell 'Diamond partner' recommends Vobiz (t/3145);\n- a third party says TRAI needs an India-based SBC such as Cloudonix (t/981; unverified);\n- TeleCMI IP whitelisting questions (t/842);\n- Twilio refuses an India-to-India transfer with caller-ID override (t/2363).",
-  "evidence": ["data/teardown/retell/docs/pages/deploy__purchase-number.md", "data/teardown/retell/docs/pages/build__telephony__branded-call.md", "data/teardown/retell/docs/pages/build__telephony__verified-phone.md", "data/teardown/retell/complaints/threads/t_758.json", "data/teardown/retell/complaints/threads/t_3145.json", "data/teardown/retell/complaints/threads/t_981.json", "data/teardown/retell/complaints/threads/t_842.json", "data/teardown/retell/complaints/threads/t_2363.json"]},
- {"id": "RET-46", "dimension": "india-plumbing", "grade": "inferred", "date": "2026-10-20",
-  "claim": "On Retell the buyer does all Indian compliance outside the platform. For a promotional (pre-sale) campaign that means 140-series/DLT registration, consent capture, NCPR scrubbing and window enforcement. For a service (post-sale) call they still bring an Indian trunk and enforce IST windows themselves. Retell's only relevant control is its internal DNC flag, which batch calls ignore. Inferred from RET-42 to RET-45, ledger REG-35 and CMP-27.",
-  "evidence": ["research/2026-10-17/ledger.md", "data/teardown/retell/docs/pages/build__do-not-call.md"]},
- {"id": "RET-47", "dimension": "india-plumbing", "grade": "observed", "date": "2026-10-20",
-  "claim": "Data handling, per the compliance doc:\n- SOC 2 Type 1 and 2; HIPAA (self-signed BAA); GDPR via the AWS DPA;\n- zero-data-retention agreements with LLM/ASR/TTS subprocessors (vendor-claimed);\n- storage modes: everything / everything_except_pii / basic_attributes_only;\n- retention per agent, 1 day to 2 years;\n- PII redaction post-call only, 14 US-centric categories (ssn, passport, driver_license and so on; no Aadhaar or PAN);\n- signed URLs that expire in 24 h.\nMarketing also claims ISO 27001 and 'Enterprise On-prem'; the compliance doc lists neither.",
-  "evidence": ["data/teardown/retell/docs/pages/general__compliance.md", "data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/web/www.retellai.com.txt"]},
- {"id": "RET-48", "dimension": "india-plumbing", "grade": "observed", "date": "2026-10-20",
-  "claim": "Support has a 24-hour SLA, with 'active support between 9 AM and 9 PM PST', which is 21:30-09:30 IST (computed), so Indian business hours get no active support. Forum pattern: an auto-acknowledgement ('our team will respond within 8 hours'), a redirect to the forum, then templated, citation-style answers ('Based on the sources ... (1)').",
-  "evidence": ["data/teardown/retell/docs/pages/reliability__reliability-overview.md", "data/teardown/retell/complaints/threads/t_1645.json", "data/teardown/retell/complaints/threads/t_747.json", "data/teardown/retell/complaints/threads/t_758.json"]},
- {"id": "RET-49", "dimension": "india-plumbing", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/docs/pages/deploy__make-batch-call.md"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "CallTimeWindow schema re-read: minutes since local midnight, IANA timezone defaulting to America/Los_Angeles, optional day list; no category or TRAI rule anywhere in the spec or docs."
+  }
+ },
+ {
+  "id": "RET-45",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "Indian numbers. Retell sells US/CA numbers only (purchase page, its FAQ and staff in t/981; the international-call page's 'Retell also offers international numbers to purchase' contradicts them), and caller-ID services (branded call, verified number) are US-only, so an Indian CLI needs a BYO elastic SIP trunk or dial-to-SIP. Community threads show the friction:\n- Plivo inbound fails with 'user busy' (t/758);\n- Plivo Indian numbers are on request; a self-described Retell 'Diamond partner' recommends Vobiz (t/3145);\n- a third party says TRAI needs an India-based SBC such as Cloudonix (t/981; unverified);\n- TeleCMI IP whitelisting questions (t/842);\n- Twilio refuses an India-to-India transfer with caller-ID override, fixed by turning the override off; the transferred leg cannot be recorded (t/2363).",
+  "evidence": [
+   "data/teardown/retell/docs/pages/deploy__purchase-number.md",
+   "data/teardown/retell/docs/pages/build__telephony__branded-call.md",
+   "data/teardown/retell/docs/pages/build__telephony__verified-phone.md",
+   "data/teardown/retell/complaints/threads/t_758.json",
+   "data/teardown/retell/complaints/threads/t_3145.json",
+   "data/teardown/retell/complaints/threads/t_981.json",
+   "data/teardown/retell/complaints/threads/t_842.json",
+   "data/teardown/retell/complaints/threads/t_2363.json",
+   "data/teardown/retell/docs/pages/deploy__international-call.md"
+  ],
+  "claim_lane": "Indian numbers. Retell sells US/CA numbers only, and caller-ID services (branded call, verified number) are US-only, so an Indian CLI needs a BYO elastic SIP trunk or dial-to-SIP. Community threads show the friction:\n- Plivo inbound fails with 'user busy' (t/758);\n- Plivo Indian numbers are on request; a Retell 'Diamond partner' recommends Vobiz (t/3145);\n- a third party says TRAI needs an India-based SBC such as Cloudonix (t/981; unverified);\n- TeleCMI IP whitelisting questions (t/842);\n- Twilio refuses an India-to-India transfer with caller-ID override (t/2363).",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Confirmed, with one more docs contradiction: deploy__international-call.md says 'Retell also offers international numbers to purchase', while the purchase page, its FAQ and staff (t/981) say US and Canada only. In t/3145 the first reply recommending Twilio is from a forum admin not marked staff."
+  }
+ },
+ {
+  "id": "RET-46",
+  "dimension": "india-plumbing",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "On Retell the buyer does Indian compliance outside the platform. Promotional (pre-sale): 140-series/DLT registration, consent capture, NCPR scrubbing and window enforcement. Post-sale is not uniformly lighter: for BFSI, including insurers and insurance intermediaries, service and transactional calls must come from 1600-series numbers irrespective of consent (ledger REG-10, REG-20), which Retell cannot supply (US/CA numbers only) and a BYO trunk must provision (RET-64). For non-BFSI service calls the buyer still enforces IST windows and A2P pre-declaration (REG-07). Retell's only relevant control is its internal DNC flag, which batch calls ignore. Inferred from RET-42 to RET-45 and ledger REG-07, REG-10, REG-20, REG-35 and CMP-27.",
+  "evidence": [
+   "research/2026-10-17/ledger.md",
+   "data/teardown/retell/docs/pages/build__do-not-call.md",
+   "research/2026-10-17/ledger.md (REG-07, REG-10, REG-20)"
+  ],
+  "claim_lane": "On Retell the buyer does all Indian compliance outside the platform. For a promotional (pre-sale) campaign that means 140-series/DLT registration, consent capture, NCPR scrubbing and window enforcement. For a service (post-sale) call they still bring an Indian trunk and enforce IST windows themselves. Retell's only relevant control is its internal DNC flag, which batch calls ignore. Inferred from RET-42 to RET-45, ledger REG-35 and CMP-27.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "The post-sale half understated the burden. For BFSI, including insurers and insurance intermediaries (VP's beachhead), service and transactional calls must come from 1600-series numbers irrespective of consent (ledger REG-10, REG-20). Retell cannot supply one, and 'bring an Indian trunk' is a choice for non-BFSI service calls (the Retell +1 number can dial India) but a 1600 obligation for BFSI."
+  }
+ },
+ {
+  "id": "RET-47",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "Data-handling controls in the API spec and docs:\n- storage modes: everything / everything_except_pii / basic_attributes_only;\n- retention per agent, 1 day to 2 years;\n- PII redaction post-call only, 14 US-centric categories (person_name, address, email, phone_number, ssn, passport, driver_license, credit_card, bank_account, password, pin, medical_id, date_of_birth, customer_account_number; no Aadhaar or PAN);\n- signed URLs that expire in 24 h by default;\n- BAA and DPA self-signed at click-agreements.retellai.com.\nThe pages disagree on certifications: the homepage claims ISO 27001 and 'Enterprise On-prem', the compliance doc lists neither. The certifications themselves are vendor-claimed (RET-47b).",
+  "evidence": [
+   "data/teardown/retell/docs/pages/general__compliance.md",
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/web/www.retellai.com.txt"
+  ],
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Split. The controls are visible in the OpenAPI and docs (observed). SOC 2, HIPAA, GDPR-via-AWS and the subprocessor ZDR agreements are the vendor describing its own audits and contracts, so they move to RET-47b as vendor-claimed (the same rule the Sarvam verifier applied to internals stated in docs)."
+  },
+  "claim_lane": "Data handling, per the compliance doc:\n- SOC 2 Type 1 and 2; HIPAA (self-signed BAA); GDPR via the AWS DPA;\n- zero-data-retention agreements with LLM/ASR/TTS subprocessors (vendor-claimed);\n- storage modes: everything / everything_except_pii / basic_attributes_only;\n- retention per agent, 1 day to 2 years;\n- PII redaction post-call only, 14 US-centric categories (ssn, passport, driver_license and so on; no Aadhaar or PAN);\n- signed URLs that expire in 24 h.\nMarketing also claims ISO 27001 and 'Enterprise On-prem'; the compliance doc lists neither."
+ },
+ {
+  "id": "RET-47b",
+  "dimension": "india-plumbing",
+  "grade": "vendor-claimed",
+  "date": "2026-10-20",
+  "claim": "Per the compliance doc: SOC 2 Type 1 and Type 2 certified; HIPAA compliant (BAA required before PHI); GDPR 'by utilizing Amazon Web Services', with no services operated in the EU; Zero Data Retention agreements with its LLM, ASR and TTS subprocessors; personal identifiers excluded from internal logs and product analytics by default. None of this is verified: no report, certificate or subprocessor contract was seen.",
+  "evidence": [
+   "data/teardown/retell/docs/pages/general__compliance.md"
+  ],
+  "verification": {
+   "status": "added (split from RET-47)",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "No DPDP, India data-residency or Indian sectoral (IRDAI/RBI) statement exists alongside these."
+  }
+ },
+ {
+  "id": "RET-48",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "Support has a 24-hour SLA, with 'active support between 9 AM and 9 PM PST' (lower for enterprise). That is 21:30-09:30 IST while US Pacific is on daylight time (to 2026-11-01) and 22:30-10:30 IST in winter (computed), so Indian business hours get at most the first 30 minutes of active support. Forum pattern: an auto-acknowledgement ('our team will respond within 8 hours'), a list of resources signed by an AI support agent, then templated, citation-style answers ('Based on the sources ... (1)').",
+  "evidence": [
+   "data/teardown/retell/docs/pages/reliability__reliability-overview.md",
+   "data/teardown/retell/complaints/threads/t_1645.json",
+   "data/teardown/retell/complaints/threads/t_747.json",
+   "data/teardown/retell/complaints/threads/t_758.json"
+  ],
+  "claim_lane": "Support has a 24-hour SLA, with 'active support between 9 AM and 9 PM PST', which is 21:30-09:30 IST (computed), so Indian business hours get no active support. Forum pattern: an auto-acknowledgement ('our team will respond within 8 hours'), a redirect to the forum, then templated, citation-style answers ('Based on the sources ... (1)').",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "SLA text confirmed. The IST conversion depends on daylight time: 9 AM-9 PM Pacific is 21:30-09:30 IST until 2026-11-01 and 22:30-10:30 IST after it. Either way Indian business hours get at most the first 30 minutes."
+  }
+ },
+ {
+  "id": "RET-49",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Payments are Stripe USD credits. On 2026-10-06 a user saved UPI as the default Stripe payment method, yet number purchase still demanded 'Add payment method' (t/3723).",
-  "evidence": ["data/teardown/retell/complaints/threads/t_3723.json", "https://community.retellai.com/t/3723"]},
- {"id": "RET-50", "dimension": "failure-modes", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/complaints/threads/t_3723.json",
+   "https://community.retellai.com/t/3723"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "t_3723 re-read. It is one unresolved thread (18 views, staff asked for a screenshot); the cause is not shown. Do not read it as 'UPI is not accepted', as the basis of RET-P01 does."
+  }
+ },
+ {
+  "id": "RET-50",
+  "dimension": "failure-modes",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "The 10-17 coding of 700 Retell items (688 forum titles), recounted here: TELEPHONY 232, OTHER_QUESTION 125, TOOLS_INTEGRATION 103, ACCOUNT_UI 99, BILLING 69, RELIABILITY 61, AGENT_BEHAVIOUR 61, ASR 37, VOICE_TTS 32, TURN_TAKING 27, LANGUAGE 25, SUPPORT 22. 12 items are India-relevant. A fresh forum search (10 India terms) found 40 India-touching threads; 19 were read in full.",
-  "evidence": ["research/2026-10-17/lanes/l4a-competitors/complaints.csv", "data/teardown/retell/complaints/search_india.json", "data/teardown/retell/complaints/threads/"]},
- {"id": "RET-51", "dimension": "failure-modes", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "research/2026-10-17/lanes/l4a-competitors/complaints.csv",
+   "data/teardown/retell/complaints/search_india.json",
+   "data/teardown/retell/complaints/threads/"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-51",
+  "dimension": "failure-modes",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Hindi ASR misses digits: 'Agent is not able to identify छह when user says', even with boosted keywords. Staff replied six days later that errors come from the ASR provider (Deepgram by default) and suggested Soniox (t/2713, 2026-05-15 to 21).",
-  "evidence": ["data/teardown/retell/complaints/threads/t_2713.json", "https://community.retellai.com/t/problem-with-stt/2713"]},
- {"id": "RET-52", "dimension": "failure-modes", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/complaints/threads/t_2713.json",
+   "https://community.retellai.com/t/problem-with-stt/2713"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-52",
+  "dimension": "failure-modes",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Indian multilingual drift. The agent says it knows Marathi, gives one line in Marathi, then 'continued talking in English again'. Indian-accent mishearing: 'Nicco Super Bowl' heard as 'Niku super board'. Staff suggested a single Indian language instead of multilingual (t/2502, 20 posts, 330 views). A Hindi agent sometimes 'speaking like arabic' (t/384).",
-  "evidence": ["data/teardown/retell/complaints/threads/t_2502.json", "data/teardown/retell/complaints/threads/t_384.json", "https://community.retellai.com/t/2502"]},
- {"id": "RET-53", "dimension": "failure-modes", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/complaints/threads/t_2502.json",
+   "data/teardown/retell/complaints/threads/t_384.json",
+   "https://community.retellai.com/t/2502"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-53",
+  "dimension": "failure-modes",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Missing Indian languages and providers. Telugu and Bengali are 'not supported yet'; staff answered 'You can try the GPT Realtime' (t/1645). Two Sarvam STT/TTS requests ('the way of speech ... in Hindi is not satisfactory') have no reply (t/2856, t/2866).",
-  "evidence": ["data/teardown/retell/complaints/threads/t_1645.json", "data/teardown/retell/complaints/threads/t_2856.json", "data/teardown/retell/complaints/threads/t_2866.json"]},
- {"id": "RET-54", "dimension": "failure-modes", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/complaints/threads/t_1645.json",
+   "data/teardown/retell/complaints/threads/t_2856.json",
+   "data/teardown/retell/complaints/threads/t_2866.json"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-54",
+  "dimension": "failure-modes",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Indian users fail to connect: 'A subset of users in India cannot connect to the Retell voice agent, receiving \"user not join\" errors' on WebSocket setup. Staff: 'Retell infrastructure is only in US(west) region' (t/1949).",
-  "evidence": ["data/teardown/retell/complaints/threads/t_1949.json"]},
- {"id": "RET-55", "dimension": "failure-modes", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/complaints/threads/t_1949.json"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "t_1949 re-read: 'A subset of users in India cannot connect ... \"user not join\"' (2026-03-20)."
+  }
+ },
+ {
+  "id": "RET-55",
+  "dimension": "failure-modes",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Indian price discovery is manual. To 'Pricing for India' (100 one-minute calls), staff answered: telephony USD 0.15-0.25/min at international rates plus USD 0.07-0.31 for AI, about USD 22-56 in total (t/3428).",
-  "evidence": ["data/teardown/retell/complaints/threads/t_3428.json"]},
- {"id": "RET-56", "dimension": "failure-modes", "grade": "vendor-claimed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/complaints/threads/t_3428.json"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "t_3428 re-read: staff estimate USD 22-46 (Twilio) and 32-56 (Telnyx) for 100 one-minute calls."
+  }
+ },
+ {
+  "id": "RET-56",
+  "dimension": "failure-modes",
+  "grade": "vendor-claimed",
+  "date": "2026-10-20",
   "claim": "Trustpilot returned 403 to the sandbox, and we did not work around it. Secondary review blogs, some run by competitors, say support goes through an AI and Discord and that costs climb from USD 0.07 to USD 0.13-0.20+ per minute. Not verified.",
-  "evidence": ["data/teardown/retell/complaints/trustpilot-retellai.com.html", "https://www.eesel.ai/blog/retell-ai-reviews", "https://www.getmacha.com/blog/best-retell-ai-alternatives"]},
- {"id": "RET-57", "dimension": "v2", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/complaints/trustpilot-retellai.com.html",
+   "https://www.eesel.ai/blog/retell-ai-reviews",
+   "https://www.getmacha.com/blog/best-retell-ai-alternatives"
+  ],
+  "verification": {
+   "status": "not-rechecked",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Outside the verifier's scope (architecture, pricing, India plumbing, v2) or vendor-claimed already; grade left as the lane set it."
+  }
+ },
+ {
+  "id": "RET-57",
+  "dimension": "v2",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Contact memory is a running brief of up to 2,000 characters per contact. After each phone call or SMS chat, a memory prompt (also up to 2,000 characters) rewrites it. New agents save off and read on; web calls don't save; 'Basic Attributes Only' storage disables it. Marketing says agents 'resume where the last call left off'. The docs show it is a 2,000-character summary, not retrieval over history.",
-  "evidence": ["data/teardown/retell/docs/pages/features__contact-memory.md", "data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/web/www.retellai.com_changelog.txt"]},
- {"id": "RET-58", "dimension": "v2", "grade": "observed", "date": "2026-10-20",
-  "claim": "Learning loop. Conductor turns failed calls into simulation tests and proposes fixes that a human accepts; the vendor says it 'already handles 70% of Retell's own simulation testing internally'. AI QA scores cohorts against resolution criteria (USD 0.10/min). A/B uses fixed splits. There is no autonomous optimisation or bandit.",
-  "evidence": ["data/teardown/retell/web/www.retellai.com_changelog.txt", "data/teardown/retell/docs/pages/conductor__test-and-improve.md", "data/teardown/retell/docs/pages/ai-qa__overview.md", "data/teardown/retell/docs/pages/deploy__ab-testing.md"]},
- {"id": "RET-59", "dimension": "v2", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/pages/features__contact-memory.md",
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/web/www.retellai.com_changelog.txt"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "features__contact-memory.md re-read: 2,000-character brief, save off and read on for new agents, phone and SMS only, Basic Attributes Only disables it; changelog line 144 'resume where the last call left off'."
+  }
+ },
+ {
+  "id": "RET-58",
+  "dimension": "v2",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "Learning loop. Conductor investigates unsuccessful calls, turns them into simulation tests and proposes fixes that a human accepts; the vendor says it 'already handles 70% of Retell's own simulation testing internally'. AI QA scores cohorts against resolution criteria (USD 0.10/min). A/B uses fixed splits. No autonomous optimisation, bandit or significance test is documented.",
+  "evidence": [
+   "data/teardown/retell/web/www.retellai.com_changelog.txt",
+   "data/teardown/retell/docs/pages/conductor__test-and-improve.md",
+   "data/teardown/retell/docs/pages/ai-qa__overview.md",
+   "data/teardown/retell/docs/pages/deploy__ab-testing.md"
+  ],
+  "claim_lane": "Learning loop. Conductor turns failed calls into simulation tests and proposes fixes that a human accepts; the vendor says it 'already handles 70% of Retell's own simulation testing internally'. AI QA scores cohorts against resolution criteria (USD 0.10/min). A/B uses fixed splits. There is no autonomous optimisation or bandit.",
+  "verification": {
+   "status": "corrected",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Confirmed as a bounded negative over the docs (0 hits for bandit, auto-promote or significance testing in the 1.63 MB corpus). 'There is no' becomes 'none is documented': an undocumented dashboard feature cannot be excluded without an account."
+  }
+ },
+ {
+  "id": "RET-59",
+  "dimension": "v2",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "Personalisation:\n- dynamic variables per call or CSV column;\n- a per-call agent_override;\n- contact fields and CRM context read in;\n- post-call analysis written back as contact attributes, with backfill across history;\n- built-in variables such as current_hour_[timezone].",
-  "evidence": ["data/teardown/retell/docs/docs.retellai.com_openapi.yaml", "data/teardown/retell/web/www.retellai.com_changelog.txt"]},
- {"id": "RET-60", "dimension": "tooling", "grade": "observed", "date": "2026-10-20",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml",
+   "data/teardown/retell/web/www.retellai.com_changelog.txt"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "agent_override (4 hits), current_hour_[timezone] and /backfill-contact-analysis-data re-found in the OpenAPI and corpus."
+  }
+ },
+ {
+  "id": "RET-60",
+  "dimension": "tooling",
+  "grade": "observed",
+  "date": "2026-10-20",
   "claim": "REA 6.7.0 results:\n- inspect-web-network-capture failed on the full 15.5 MB HAR with embedded bodies (decoder RangeError), then worked on a slimmed HAR (bodies and cookies stripped).\n- analyze-web-bundle over a local CDP Chromium worked on www.retellai.com/pricing: 40 scripts, 0 parse failures. It surfaced the one API endpoint (create-phone-call) and low-value UTM 'endpoint candidates'.\n- rea doctor reports no native engines (Ghidra, JADX and others are not needed for web work).",
-  "evidence": ["data/teardown/retell/rea/rea-inspect-dashboard-har.json", "data/teardown/retell/rea/rea-inspect-dashboard-slim.json", "data/teardown/retell/rea/rea-web-bundle-pricing.json"]}
+  "evidence": [
+   "data/teardown/retell/rea/rea-inspect-dashboard-har.json",
+   "data/teardown/retell/rea/rea-inspect-dashboard-slim.json",
+   "data/teardown/retell/rea/rea-web-bundle-pricing.json"
+  ],
+  "verification": {
+   "status": "confirmed",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "rea-inspect-dashboard-har.err shows 'Capture decoder failed unexpectedly (RangeError)'; the slimmed run and the web-bundle result exist. The 15.5 MB full HAR was not kept, so its size is lane-reported."
+  }
+ },
+ {
+  "id": "RET-22b",
+  "dimension": "architecture",
+  "grade": "unknown",
+  "date": "2026-10-20",
+  "claim": "Which framework Retell's server-side agent runtime is built on (LiveKit Agents, Pipecat, another, or its own code) is unknown. The postmortems' queues, containers and workers fit either an in-house runtime or a framework's worker dispatch, and client SDKs and docs cannot show a server-side framework, so the lane's 'Retell does not rent LiveKit as its agent framework' and 'no Pipecat or Vocode traces' prove nothing either way.",
+  "evidence": [
+   "data/teardown/retell/web/status.retellai.com_api_v2_incidents.json.raw",
+   "data/teardown/retell/sdk/client-js/x/package/src/types.ts (line 188: LiveKit 'server' participant)"
+  ],
+  "verification": {
+   "status": "added (split from RET-22 and RET-24)",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Split out so the unsupported negation does not ride on RET-22's grade."
+  }
+ },
+ {
+  "id": "RET-36b",
+  "dimension": "pricing",
+  "grade": "unknown",
+  "date": "2026-10-20",
+  "claim": "Gross margin at the calculator default (USD 0.11/min) is unknown. The default LLM line (USD 0.04/min) matches GPT 5 and GPT 5.1 on the rate card, but the cited g4 prices.csv has no price for either, so its COGS cannot be computed from the cited evidence; the lane's 'COGS about 0.03-0.05, 55-70% gross margin' has no traceable LLM input.",
+  "evidence": [
+   "research/2026-10-18/lanes/g4-market-selfhost/prices.csv",
+   "data/teardown/retell/web/www.retellai.com_pricing.raw"
+  ],
+  "verification": {
+   "status": "added (split from RET-36)",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "The default model is not named in the calculator code (the first checked radio sets it)."
+  }
+ },
+ {
+  "id": "RET-61",
+  "dimension": "architecture",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "The legacy LiveKit Cloud host in the web SDK (retell-ai-4ihahnq7.livekit.cloud) geo-resolves by client subnet. Indian subnets (49.36.0.0/24, 103.21.124.0/24) get 143.223.94.99 and .107, inside the /24 LiveKit labels 'production-ohyderabad1a-main' in RDAP; a us-west-2 subnet gets 161.115.185.x ('osanjose1a'); 8.8.8.0/24 gets 161.115.177.x ('ophoenix1b'); the sandbox's resolver gets 161.115.179.x ('oashburn1b'). sip, api and mcp.retellai.com return the same records for every subnet (ECS scope /0): no geo-routing on Retell-operated hosts.",
+  "evidence": [
+   "data/teardown/retell/verify/dns-recheck/doh-ecs-recheck-2026-10-20.jsonl",
+   "data/teardown/retell/dns/rdap_143.223.88.1.json",
+   "data/teardown/retell/dns/rdap_161.115.160.1.json"
+  ],
+  "verification": {
+   "status": "added",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "22 DoH lookups at 2026-10-20T19:25Z via dns.google (edns_client_subnet) and cloudflare-dns.com. Region names are LiveKit's own RDAP labels; physical location is not measured (the sandbox proxy prevents RTT probing)."
+  }
+ },
+ {
+  "id": "RET-62",
+  "dimension": "architecture",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "On the legacy LiveKit web transport, an Indian browser's media first lands on LiveKit's Hyderabad edge and is carried on LiveKit's network to wherever the agent participant runs (Retell says US-West). Retell-operated hosts do not geo-route, and the v3 gateway transport has no DNS name to geo-test; whether it has any non-US edge is unknown. For PSTN via a BYO Indian trunk, the media addresses could be LiveKit's Mumbai or Hyderabad /24s, which sit inside the allowlisted blocks (RET-21), or US blocks; only the SDP in a PCAP will show which. Inferred from RET-61, RET-21, RET-23 and RET-25.",
+  "evidence": [
+   "data/teardown/retell/verify/dns-recheck/doh-ecs-recheck-2026-10-20.jsonl",
+   "data/teardown/retell/docs/pages/deploy__custom-telephony.md",
+   "data/teardown/retell/sdk/client-js/x/package/src/livekit-transport.ts"
+  ],
+  "verification": {
+   "status": "added",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Bears on RET-P09: the 'audio crosses India and US-West twice per turn' basis may not hold for the first hop."
+  }
+ },
+ {
+  "id": "RET-63",
+  "dimension": "surface",
+  "grade": "observed",
+  "date": "2026-10-20",
+  "claim": "AI disclosure is a platform control. The Agent Handbook has an 'AI Disclosure When Asked' preset (~30 tokens; 'When asked, acknowledge being a virtual assistant'; OpenAPI HandbookConfig.ai_disclosure), which the docs say is on by default for new agents. Agents built through Retell's Claude connector also open with 'Hi, this is an AI assistant.' The account phase found that an agent created through the API with only an engine and a voice has no handbook_config at all (account-retell.json), so the default depends on the creation path. This contradicts the stated bases of RET-P03 ('no disclosure control documented') and RET-P12 ('no disclosure setting in the AgentRequest schema').",
+  "evidence": [
+   "data/teardown/retell/docs/docs.retellai.com_llms-full.txt (lines 4754, 4864-4869, 4897, 20667-20672)",
+   "data/teardown/retell/docs/docs.retellai.com_openapi.yaml (HandbookConfig.ai_disclosure, line 5974)",
+   "context/inbox/account-retell.json"
+  ],
+  "verification": {
+   "status": "added",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Decision-relevant: disclosure is a VP standing rule."
+  }
+ },
+ {
+  "id": "RET-64",
+  "dimension": "india-plumbing",
+  "grade": "inferred",
+  "date": "2026-10-20",
+  "claim": "For BFSI post-sale work on Retell (VP's insurance-renewal beachhead), service and transactional calls must come from 1600-series numbers irrespective of consent (ledger REG-10, REG-20). Retell-managed numbers are US/CA only (RET-45), so the Retell +1 to India path (INR 22-37, RET-35) is not a compliant route for an IRDAI entity's service calls. A BYO trunk must carry a 1600 number: Plivo states about 7-14 business days to provision (REG-23), no telco publishes a price (REG-24), and no CPaaS states that 1600 lines may stream media to a third-party AI gateway (REG-25), let alone one hosted in the US. So post-sale BFSI on Retell is different plumbing, not lighter plumbing.",
+  "evidence": [
+   "research/2026-10-17/ledger.md (REG-10, REG-20, REG-22 to REG-25)",
+   "data/teardown/retell/docs/pages/deploy__purchase-number.md",
+   "data/teardown/retell/complaints/threads/t_981.json"
+  ],
+  "verification": {
+   "status": "added",
+   "by": "verifier (adversarial pass)",
+   "date": "2026-10-20",
+   "note": "Reasoned from ledger rows plus Retell's number scope; no Retell document mentions 1600."
+  }
+ }
 ]

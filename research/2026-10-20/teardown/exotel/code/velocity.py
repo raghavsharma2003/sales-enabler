@@ -9,6 +9,7 @@ out = {'window': [W0, W1]}
 # 1. /build engineering posts (date line "Author·DD Mon YYYY")
 posts = []
 for f in glob.glob(os.path.join(D, 'site/html/build__*.txt')):
+    if os.path.basename(f) == 'build__.txt': continue  # index page, not a post
     m = re.search(r'·(\d{1,2}) ([A-Z][a-z]{2})[a-z]* (20\d\d)', open(f).read())
     if m:
         d = f"{m.group(3)}-{MON[m.group(2)]:02d}-{int(m.group(1)):02d}"
