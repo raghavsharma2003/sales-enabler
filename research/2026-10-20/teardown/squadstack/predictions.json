@@ -1,0 +1,114 @@
+[
+ {
+  "id": "SQS-P01",
+  "task": "onboarding",
+  "prediction": "Through the marketing path (Book a Demo), time from first contact to the first live call to our phone is at least 10 business days; SquadStack's own figure is about 2 weeks of setup before a 4-8 week pilot.",
+  "p": 0.85,
+  "score_by": "calendar days from demo request to first PSTN call to our verified number",
+  "basis": "SQS-01, SQS-34; llms.txt 'roughly 2 weeks of setup'"
+ },
+ {
+  "id": "SQS-P02",
+  "task": "onboarding",
+  "prediction": "A fresh team@vyakti.ai sign-up on ai-platform.squadstack.ai or app.osno.ai does not reach a live PSTN call within 60 minutes: it lands on /access-denied, an onboarding or approval step, or needs a sales-provisioned number.",
+  "p": 0.7,
+  "score_by": "minutes and clicks from sign-up to first live call; note the screen where it stops",
+  "basis": "SQS-04, SQS-69 (/access-denied route, capability flags)"
+ },
+ {
+  "id": "SQS-P03",
+  "task": "build agent",
+  "prediction": "If an AI-platform account works, the agent editor exposes the fields seen in the public bundle: STT provider (sarvam / cartesia / squadstack_ws / arc_stt) with fallback routing, TTS ElevenLabs (default) / Cartesia / Sarvam, temperature default 0.5, max_tokens 100, max session 240 s, user-idle 10 s x 3.",
+  "p": 0.8,
+  "score_by": "screenshot of the agent config page; count fields that match",
+  "basis": "SQS-16, SQS-21"
+ },
+ {
+  "id": "SQS-P04",
+  "task": "messy 50-row CSV",
+  "prediction": "The import accepts .csv only against campaign-specific required headers; rows with +91 prefixes, spaces or 11-digit numbers go to a 'failed imports' file; duplicate lead_ids are rejected (409); Devanagari names import; empty columns pass; the opt-out row is dialled unless separately added to the DNC blacklist. Net: success with errors, at least 3 rows mishandled.",
+  "p": 0.7,
+  "score_by": "rows imported, rows failed with reason, whether the opt-out row is dialled",
+  "basis": "SQS-13, SQS-47; ui-strings 'Download Failed Imports', '10 digits comma separated'"
+ },
+ {
+  "id": "SQS-P05",
+  "task": "schedule in calling hours",
+  "prediction": "There is no per-campaign calling-window field in the self-serve UI; the platform enforces one 9:30-20:30 window and anything narrower needs the CSM.",
+  "p": 0.65,
+  "score_by": "presence of a window field; a test schedule at 20:45 IST is refused or deferred",
+  "basis": "SQS-46, SQS-49"
+ },
+ {
+  "id": "SQS-P06",
+  "task": "voicemail",
+  "prediction": "There is no real-time answering-machine detection. On voicemail the agent speaks for at least 10 s on at least half of the hits, and the call is labelled 'Voicemail' only after the call from transcript keywords.",
+  "p": 0.7,
+  "score_by": "5 calls to a number set to voicemail: seconds of agent speech before hang-up; outcome label",
+  "basis": "SQS-11"
+ },
+ {
+  "id": "SQS-P07",
+  "task": "transfer",
+  "prediction": "Self-serve offers no configurable warm or cold transfer to an arbitrary PSTN number; transfer exists only as a managed hand-off to SquadStack's human advisors or a CSM-built integration.",
+  "p": 0.6,
+  "score_by": "presence of a transfer tool in the agent editor; a test transfer to our second number",
+  "basis": "SQS-10"
+ },
+ {
+  "id": "SQS-P08",
+  "task": "find a failed call and its reason",
+  "prediction": "A failed call can be found by outcome filter within the last 10 days, but its reason is an outcome label (e.g. 'Abruptly disconnected and not Receiving') rather than a technical cause; STT/LLM/TTS failures are visible only as aggregate counts on Observability.",
+  "p": 0.75,
+  "score_by": "time to locate a deliberately failed call; whether a technical cause is shown for that call",
+  "basis": "SQS-18, SQS-58"
+ },
+ {
+  "id": "SQS-P09",
+  "task": "export",
+  "prediction": "Export works: lead CSV download and scheduled lead-journey reports, under 3 minutes.",
+  "p": 0.7,
+  "score_by": "time to a CSV containing call outcome and recording URL for our test calls",
+  "basis": "SQS-03 (/downloads, /reports), ui-strings 'Download as CSV'"
+ },
+ {
+  "id": "SQS-P10",
+  "task": "handset reply gap (Indian PSTN)",
+  "prediction": "The median handset-side reply gap (our end of speech to agent audio, stereo recording) is 1.0-1.6 s; the claimed 'median 0.8 s or less' does not hold at the handset.",
+  "p": 0.75,
+  "score_by": "p50 and p90 over at least 30 turns of the standard l4b battery on our Plivo number",
+  "basis": "SQS-21..SQS-23 (cascade: STT finalize + Gemini Flash TTFT + ElevenLabs/Cartesia TTFB + CPaaS path); r2 latency lane PSTN path"
+ },
+ {
+  "id": "SQS-P11",
+  "task": "language hold",
+  "prediction": "With a Hinglish caller the agent holds Hindi/Hinglish on at least 90% of turns (deterministic language switching is on by default).",
+  "p": 0.8,
+  "score_by": "language of each agent turn across the Hinglish battery",
+  "basis": "SQS-16"
+ },
+ {
+  "id": "SQS-P12",
+  "task": "disclosure",
+  "prediction": "A default-configured agent does not volunteer that it is an AI; asked 'are you a bot?' three times, it deflects or claims to be human at least once.",
+  "p": 0.5,
+  "score_by": "transcripts of the 'are you a bot?' probe, 3 calls",
+  "basis": "SQS-46 ('configurable AI disclosure'), SQS-58/SQS-59 (naturalness marketing); weak basis, coin-flip-level"
+ },
+ {
+  "id": "SQS-P13",
+  "task": "price",
+  "prediction": "A written quote for one Hindi-English BFSI renewal or lead-qualification use case lands at INR 2.5-5 per live minute plus a one-time setup fee per use case, or a base-plus-success-fee structure, with a 90-day minimum.",
+  "p": 0.65,
+  "score_by": "the written quote, if one is ever obtained legitimately (e.g. from a buyer interviewee)",
+  "basis": "SQS-34..SQS-37"
+ },
+ {
+  "id": "SQS-P14",
+  "task": "plumbing",
+  "prediction": "Outbound calls to our handset arrive from a 10-digit mobile or landline-series number, not a 140 or 1600-series number, and the caller ID changes across calls.",
+  "p": 0.7,
+  "score_by": "caller IDs of at least 5 calls",
+  "basis": "SQS-48, SQS-49"
+ }
+]
