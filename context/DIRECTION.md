@@ -51,7 +51,7 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
 | `directive.2026-10-20.agent-hangup` | She ends the call herself when it is done; friendly, professional, interesting. |
 | `directive.2026-10-20.no-midcall-swap` | A test never changes a model mid-call. Results are filed under the combination that actually ran. |
 | `directive.2026-10-20.stop-and-wait` | Don't burn tokens re-routing around provider limits. Wait, or the owner pays for capacity. |
-| `directive.2026-10-20.opus-only` | Opus 5.5 only, at extra-high effort, for the main agent and every workflow agent and subagent. No Sonnet or Haiku. |
+| `directive.2026-10-20.model-clarified` | The main chat runs Opus 5.5 at extra-high. Workflows, subagents and parallel agents get the model and effort the task needs (ladder in `CLAUDE.md`). |
 | `directive.2026-10-20.terms-override` | Vendor terms are not a constraint on the teardown (owner's risk). The kept lines in `decision.2026-10-20.teardown-lines` still hold. |
 | `directive.2026-10-20.context-before-compact` | Write deep context to the graph before every compaction (`PROTOCOL.md`). |
 | `directive.2026-10-18.provider-open` | Not Azure-only any more: Gemini, OpenRouter and others are allowed, chosen by measurement. |

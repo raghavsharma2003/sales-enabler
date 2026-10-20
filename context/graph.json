@@ -12077,7 +12077,7 @@
   {
    "id": "decision.2026-10-20.model-selection",
    "type": "decision",
-   "status": "superseded",
+   "status": "confirmed",
    "source": "model",
    "date": "2026-10-20",
    "title": "Per-task model and effort selection. Judge each task on five things: stakes (does the output become a decision, a graph node, product code or something the owner acts on), ambiguity/novelty, depth of reasoning, whether a stronger agent verifies it downstream, and volume. Default ladder: Opus 5.5 max/xhigh for product and system design, final synthesis, adversarial verification of decision-critical claims, security-sensitive code, judge panels; Opus 5.5 high for core build workstreams (voice runtime, data model), hard debugging, inference from ambiguous evidence (e.g. architecture from captures); Sonnet 5.5 high/medium for standard research lanes, feature code from a clear spec with tests, UI from a design; Sonnet 5.5 low or Haiku 5.5 medium for extraction, formatting, fixtures, synthetic data; Haiku 5.5 low for manifests, secret and link scans, inventories. Escalate: a task that fails verification or proves harder reruns one tier up. Never downgrade verification of a decision-critical claim.",
@@ -12106,12 +12106,21 @@
   {
    "id": "decision.2026-10-20.opus-only",
    "type": "decision",
-   "status": "confirmed",
+   "status": "superseded",
    "source": "user",
    "date": "2026-10-20",
    "title": "Every agent runs Opus 5.5: the main loop at extra-high (owner sets via /effort xhigh), and every workflow agent and subagent with model 'opus' and effort 'xhigh'. Sonnet and Haiku are not used. Supersedes the per-task model ladder. The two runs already in flight (wf_560edf6c-5d6, wf_1e4d0167-0c8) finish on the models they started with; every new workflow and subagent from this point uses Opus 5.5 xhigh.",
    "rationale": "Owner directive: frontier product, frontier models throughout.",
    "reverse_if": "Opus usage limits stall in-flight work (the owner then decides whether to allow a lower tier for bulk mechanical steps); never drop verification."
+  },
+  {
+   "id": "directive.2026-10-20.model-clarified",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner clarification (correcting a misreading): Opus 5.5 at extra-high is for the main chat only. Workflows, subagents and parallel agents get the model and effort the use case needs, by how much strength, intelligence and effort it requires.",
+   "quote": "opus 5.5 extra high in this main chat rest places for workflows and sub and parallel agents choose the model depending on the usecase"
   }
  ],
  "edges": [
@@ -21501,6 +21510,16 @@
    "from": "decision.2026-10-20.opus-only",
    "to": "decision.2026-10-20.model-selection",
    "relation": "supersedes"
+  },
+  {
+   "from": "directive.2026-10-20.model-clarified",
+   "to": "decision.2026-10-20.opus-only",
+   "relation": "supersedes"
+  },
+  {
+   "from": "directive.2026-10-20.model-clarified",
+   "to": "decision.2026-10-20.model-selection",
+   "relation": "supports"
   }
  ]
 }
