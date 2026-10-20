@@ -14,6 +14,9 @@ import phone
 BOUND = re.compile(r'[,.?!।;:—]')
 # same model on another host first; otherwise the fastest India-resident brain (lab 2026-10-19: Groq rate-limited gpt-oss)
 BRAIN_FALLBACK = {'gpt-oss-120b@groq': 'gpt-oss-120b', 'gpt-oss-120b': 'gpt-oss-120b@groq'}
+# Owner directive 2026-10-20: a test call never swaps a model mid-call (a swapped voice or brain makes the rating about
+# something else). A component that fails ends the call as invalid with the reason; fallbacks only with LAB_FALLBACKS=1.
+FALLBACKS = os.environ.get('LAB_FALLBACKS') == '1'
 TAG = re.compile(r'^\s*\[([^\]]{0,60})\]\s*')
 CUES = set('और लेकिन तो कि क्योंकि मतलब जैसे या पर जो अगर फिर यानी वो aur lekin toh to ki kyunki kyonki matlab jaise ya par agar phir '
            'yaani and but so because like or the a an um uh hmm actually basically which that if then with'.split())
@@ -44,11 +47,22 @@ class Call:
         self.closed = False; self.http = lab.http; self.client_lat = {}; self.talk_over = 0; self.barge_ins = 0
         self.memory = lab.memory_get(cfg['tester'], cfg['scenario'])
         self.cost_task = None; self.trace = []; self.voice_fallbacks = 0; self.brain_fallbacks = 0
-        self.wants_end = False; self.ended_by = None; self.ending = None
+        self.wants_end = False; self.ended_by = None; self.ending = None; self.invalid = None
     def v2(self): return getattr(self, 'preset', {}).get('brief') == 'v2' and self.cfg.get('scenario') in persona_v2.SCEN
     def kickoff(self):
         if not self.v2(): return KICKOFF
         return '(call connected; they phoned you)' if self.cfg.get('line') == 'in' else persona_v2.KICKOFF
+    async def invalidate(self, reason):
+        """A component failed mid-call: stop the call and say exactly what failed, so nobody rates a different stack."""
+        if self.invalid: return
+        self.invalid = reason; self.errors.append('invalid: ' + reason); self.tr('invalid', reason)
+        await self.send({'t': 'invalid', 'msg': reason})
+        self.ended_by = 'invalid'; self.wants_end = True
+    def combo(self):
+        """The canonical name of what actually ran (results group by this, not by the preset clicked)."""
+        c = self.components(); brief = 'v2' if self.v2() else 'v1'
+        if 's2s' in c: return f"{brief}|{c['s2s']}~{c.get('voice')}"
+        return f"{brief}|{c['stt']}{'' if c.get('gated') else '/ungated'}+{c['brain']}+{c['tts']}~{c.get('voice')}"
     async def end_after_playback(self, why='agent'):
         """She decided the call is over (said goodbye and asked to hang up): let her goodbye finish playing, then wait a
         beat; if the caller starts talking in that beat they had more to say, so the call stays up."""
@@ -140,7 +154,7 @@ class Call:
         replies = sum(1 for m in self.turns if m.get('server_ms') is not None)
         return {'id': self.id, 'tester': self.cfg['tester'], 'preset': self.cfg['preset'], 'scenario': self.cfg['scenario'], 'kind': self.kind,
                 'components': self.components(), 'blind': self.cfg.get('blind', False), 'phone': self.cfg.get('phone', False), 'line': self.cfg.get('line'), 'brief': 'v2' if self.v2() else 'v1',
-                'ended_by': self.ended_by or 'caller', 'consent': bool(self.cfg.get('consent')),
+                'ended_by': self.ended_by or 'caller', 'invalid': self.invalid, 'combo': self.combo(), 'consent': bool(self.cfg.get('consent')),
                 'started': time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(self.wall0)), 'duration_s': round(dur, 1),
                 'usd': round(tot, 5), 'inr': round(tot * FX, 2), 'inr_per_min': round(tot * FX / max(dur / 60, 1e-6), 3),
                 'cost_parts_inr': {k: round(v * FX, 3) for k, v in self.cost.items()},
@@ -202,7 +216,7 @@ class Reply:
         try:
             buf = ''; tag_done = not c.notes; n_clause = 0
             fb = BRAIN_FALLBACK.get(c.brain, 'gpt-4.1-mini-in')
-            for brain in [c.brain] + ([fb] if fb != c.brain else []):
+            for brain in [c.brain] + ([fb] if FALLBACKS and fb != c.brain else []):
                 if brain != c.brain:
                     # the stack's brain failed before saying a word (rate limit, outage): answer with the fallback
                     why = self.llm_t.get('err', '')[:120]; c.errors.append(f'brain fallback to {brain}: ' + why)
@@ -235,7 +249,9 @@ class Reply:
                             k = buf.rfind(' '); await q.put(buf[:k]); buf = buf[k:]; n_clause += 1
                         else: break
                 if self.text or not self.llm_t.get('err'): break
-            if self.llm_t.get('err') and not self.text: c.errors.append('brain: ' + self.llm_t['err'][:200]); await c.send({'t': 'error', 'msg': 'brain: ' + self.llm_t['err'][:160]})
+            if self.llm_t.get('err') and not self.text:
+                c.errors.append('brain: ' + self.llm_t['err'][:200])
+                await c.invalidate(pv.explain(self.llm_t['err'], 'The brain (' + BRAINS[c.brain]['label'] + ')'))
             if persona_v2.END.search(buf): self.ends = True; buf = persona_v2.END.sub('', buf)
             buf = re.sub(r'<[^>]{0,20}$', '', buf)
             if buf.strip():
@@ -249,7 +265,8 @@ class Reply:
         try: await tts
         except asyncio.CancelledError: raise
         except Exception as e:
-            c.errors.append('tts: ' + repr(e)[:200]); await c.send({'t': 'error', 'msg': 'voice: ' + repr(e)[:160]})
+            c.errors.append('tts: ' + repr(e)[:200])
+            await c.invalidate(pv.explain(repr(e), 'The voice (' + TTS[c.tts]['label'] + ')'))
         self.done = True
     async def tts_loop(self, q):
         c = self.c; t = TTS[c.tts]; idx = 0
@@ -343,6 +360,9 @@ class Reply:
         with Gemini Flash-Lite TTS in the same voice, else an Azure voice, so the call never goes silent; say so once."""
         c = self.c
         if self.cancelled or not text: return
+        if not FALLBACKS:
+            c.errors.append('voice failed: ' + why[:160])
+            await c.invalidate(pv.explain(why, 'The voice (' + TTS[c.tts]['label'] + ')')); return
         c.voice_fallbacks += 1; c.errors.append('voice fallback: ' + why[:160]); c.tr('voice_fallback', why[:80])
         model = TTS[c.tts].get('model')
         if model == 'gemini-3.8-flash-tts':
@@ -499,8 +519,8 @@ class CascadeCall(Call):
                 words = len((' '.join(self.overlap) + ' ' + self.partial).split())
                 if a.first is None and v.speech_ms() >= 250:
                     # released but not yet audible and the caller is still going: withdraw it and merge the turn
-                    self.tr('withdraw', f'rid={a.rid}'); a.cancel(); self.active = a = None
-                    if self.history and self.history[-1]['role'] == 'user':
+                    self.tr('withdraw', f'rid={a.rid}'); wtext = a.user_text; a.cancel(); self.active = a = None
+                    if wtext and self.history and self.history[-1]['role'] == 'user' and self.history[-1]['content'] == wtext:
                         self.finals = [self.history.pop()['content']] + self.finals
                         if self.transcript and self.transcript[-1]['who'] == 'caller': self.transcript.pop()
                 elif self.agent_playing() and v.speech_ms() >= 300 and (words >= 2 or v.speech_ms() >= 700):
@@ -656,7 +676,8 @@ class GeminiLiveCall(Call):
         except Exception as e:
             if not self.closed: self.errors.append('live: ' + repr(e)[:200]); await self.send({'t': 'error', 'msg': 'live: ' + repr(e)[:160]})
         if not self.closed and self.up is not None and self.up.close_code not in (None, 1000):
-            self.errors.append(f'live closed {self.up.close_code}'); await self.send({'t': 'error', 'msg': f'live session closed ({self.up.close_code})'})
+            self.errors.append(f'live closed {self.up.close_code}')
+            await self.invalidate(f"The Gemini Live session was closed by Google (code {self.up.close_code})")
     def _end_turn(self, interrupted=False):
         if self.agent_text.strip():
             self.transcript.append({'who': 'agent', 'text': self.agent_text.strip(), 'interrupted': interrupted, 't': round(now() - self.t0, 2)})

@@ -89,7 +89,8 @@ async def calls_list(req):
     rs = load_ratings(); out = []; who = req.query.get('tester')
     for c in load_calls():
         if who and c.get('tester') != who: continue
-        c2 = {k: c.get(k) for k in ('id', 'tester', 'preset', 'scenario', 'components', 'started', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'blind', 'line')}
+        c2 = {k: c.get(k) for k in ('id', 'tester', 'preset', 'scenario', 'components', 'started', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'blind', 'line', 'invalid')}
+        c2['combo_label'] = combo_label(combo_of(c))[0]
         c2['rating'] = rs.get(c['id']); out.append(c2)
     return web.json_response(out[::-1])
 
@@ -114,14 +115,14 @@ RATING_KEYS = ['voice_human', 'emotion', 'conversation', 'hinglish', 'turn_takin
 def is_test(name):   # the lab's own headless and UI test callers never count as people
     return (name or '').lower().startswith(('smoke', 'sim', 'uitest', 'preview'))
 def scoped_calls(req):
-    who = req.query.get('tester')
-    if who: return [c for c in load_calls() if c.get('tester') == who]
-    return [c for c in load_calls() if not is_test(c.get('tester'))]
+    who = req.query.get('tester'); calls = [c for c in load_calls() if not c.get('invalid')]
+    if who: return [c for c in calls if c.get('tester') == who]
+    return [c for c in calls if not is_test(c.get('tester'))]
 async def results(req):
     rs = load_ratings(); calls = scoped_calls(req)
     by = defaultdict(lambda: {'calls': 0, 'rated': 0, 'mins': 0.0, 'inr': 0.0, 'lat': [], 'talk_over': 0, 'replies': 0, 'scores': defaultdict(list), 'pick': 0, 'people': defaultdict(list)})
     for c in calls:
-        b = by[c['preset']]; b['calls'] += 1; b['mins'] += c.get('duration_s', 0) / 60; b['inr'] += c.get('inr', 0)
+        b = by[combo_of(c)]; b['calls'] += 1; b['mins'] += c.get('duration_s', 0) / 60; b['inr'] += c.get('inr', 0)
         b['lat'] += [x for x in c.get('latencies_ms') or [] if x is not None]; b['talk_over'] += c.get('talk_over', 0); b['replies'] += c.get('replies', 0)
         r = rs.get(c['id'])
         if r:
@@ -132,7 +133,7 @@ async def results(req):
     out = []
     for pid, b in by.items():
         lat = sorted(b['lat']); p50 = lat[len(lat) // 2] if lat else None
-        label, ref = stack_label(pid)
+        label, ref = combo_label(pid)
         out.append({'preset': pid, 'label': label, 'ref': ref, 'calls': b['calls'], 'rated': b['rated'], 'minutes': round(b['mins'], 1),
                     'inr_per_min': round(b['inr'] / b['mins'], 2) if b['mins'] > 0 else None, 'latency_p50_ms': p50,
                     'talk_over_pct': round(100 * b['talk_over'] / b['replies']) if b['replies'] else None, 'would_pick': b['pick'],
@@ -188,6 +189,32 @@ def custom_preset(c):
     if 'sarvam' in (STT[stt]['kind'], TTS[tts]['kind'], BRAINS[brain]['host']) or brain == 'sarvam-105b': p['needs'] = 'SARVAM_API_KEY'
     return p, None
 
+def preset_combo(p):
+    brief = p.get('brief', 'v1')
+    if p.get('s2s'): return f"{brief}|{p['s2s']}~{S2S[p['s2s']]['voice']}"
+    return f"{brief}|{p['stt']}{'' if p.get('gated') else '/ungated'}+{p['brain']}+{p['tts']}~{TTS[p['tts']]['default_voice']}"
+def combo_of(meta):
+    """What a recorded call actually ran (older calls predate the field, so rebuild it from their components)."""
+    if meta.get('combo'): return meta['combo']
+    c = meta.get('components') or {}; brief = meta.get('brief') or 'v1'
+    if 's2s' in c: return f"{brief}|{c['s2s']}~{c.get('voice')}"
+    if 'brain' in c: return f"{brief}|{c.get('stt')}{'' if c.get('gated') else '/ungated'}+{c.get('brain')}+{c.get('tts')}~{c.get('voice')}"
+    return meta.get('preset')
+def combo_label(combo):
+    p = next((x for x in PRESETS if preset_combo(x) == combo), None)
+    if p: return p['label'], p.get('ref', '')
+    try:
+        brief, rest = combo.split('|', 1); body, voice = rest.rsplit('~', 1)
+        if '+' in body:
+            stt, brain, tts = body.split('+', 2); stt = stt.split('/')[0]
+            lab = f"{STT[stt]['label']} + {BRAINS[brain]['label']} + {TTS[tts]['label']}"
+            if voice != TTS[tts]['default_voice']: lab += f' ({voice})'
+        else:
+            lab = S2S[body]['label'] + (f' ({voice})' if voice != S2S[body]['voice'] else '')
+        return ('Custom · ' if brief == 'v2' else 'Round 1 · ') + lab, 'built on the page' if brief == 'v2' else 'old brief'
+    except Exception:
+        return combo, ''
+
 def stack_label(pid):
     p = next((x for x in PRESETS if x['id'] == pid), None)
     if p: return p['label'], p.get('ref', '')
@@ -206,18 +233,47 @@ def prepare(cfg):
         cfg['preset'] = preset['id']; cfg['_preset'] = preset; cfg['blind'] = False; cfg['brain'] = None; cfg['voice'] = cfg['custom'].get('voice')
     else:
         preset = next((p for p in PRESETS if p['id'] == cfg.get('preset')), None)
+        if preset is not None and preset.get('brief') == 'v2' and not cfg.get('blind'):
+            # a brain or voice changed on a ready-made stack is a different combination: run and file it as that
+            b, v = cfg.get('brain') or preset.get('brain'), cfg.get('voice')
+            if preset.get('s2s'):
+                spec = {'s2s': preset['s2s'], 'voice': v} if v and v != S2S[preset['s2s']]['voice'] else None
+            else:
+                changed = b != preset['brain'] or (v and v != TTS[preset['tts']]['default_voice'])
+                spec = {'stt': preset['stt'], 'brain': b, 'tts': preset['tts'], 'voice': v, 'gated': preset.get('gated', True)} if changed else None
+            if spec:
+                cfg['custom'] = spec; return prepare(cfg)
     if preset is None or not enabled(preset):
         return cfg, preset, 'this stack is not available yet' + (f" (needs {preset['needs']})" if preset else '')
     if SCENARIOS[cfg['scenario']].get('v2_only') and preset.get('brief') != 'v2':
         return cfg, preset, 'this use case runs on the round-2 (v2) stacks and custom builds only'
     if cfg.get('brain') and cfg['brain'] not in BRAINS: cfg['brain'] = None
     if LAB.spend_today() >= DAILY_USD: return cfg, preset, f'daily lab budget of ${DAILY_USD:.0f} reached'
+    err = preflight(preset, cfg)
+    if err: return cfg, preset, err
     return cfg, preset, None
+
+def preflight(p, cfg):
+    """Refuse a call up front when one of its own models cannot serve it (no swaps mid-call, so check first)."""
+    need = []
+    if p.get('s2s'):
+        if S2S[p['s2s']]['kind'] == 'gemini_live': need.append((S2S[p['s2s']]['model'], S2S[p['s2s']]['label']))
+    else:
+        brain = cfg.get('brain') or p['brain']
+        if STT[p['stt']]['kind'] == 'gemini': need.append((STT[p['stt']]['model'], STT[p['stt']]['label']))
+        if BRAINS[brain]['host'] == 'gm' and not pv.VERTEX.usable(): need.append((BRAINS[brain]['model'], BRAINS[brain]['label']))
+        if TTS[p['tts']]['kind'] == 'gemini' and not pv.VERTEX.usable(): need.append((TTS[p['tts']]['model'], TTS[p['tts']]['label']))
+    for model, label in need:
+        key, tier = pv.GKEYS.pick(model=model)
+        if not key:
+            mins = int(max(0, pv.GKEYS.next_usable(model) - time.time()) // 60)
+            return f"{label} has no Gemini quota left right now (back in about {mins} min). Pick a stack without it, or top up the Gemini key."
+    return None
 
 def ready_msg(call, preset):
     blind = call.cfg.get('blind')
-    return {'t': 'ready', 'call_id': call.id, 'components': None if blind else call.components(), 'label': None if blind else preset['label'],
-            'preset': None if blind else call.cfg['preset']}
+    return {'t': 'ready', 'call_id': call.id, 'components': None if blind else call.components(),
+            'label': None if blind else combo_label(call.combo())[0], 'preset': None if blind else call.cfg['preset']}
 
 async def finish(call):
     """Close a call, extract memory, write the recording and meta. Returns the summary the page shows."""
@@ -230,7 +286,7 @@ async def finish(call):
     json.dump(summ, open(f'{d}/meta.json', 'w'), ensure_ascii=False, indent=1)
     LAB.calls.pop(call.id, None)
     return {k: summ.get(k) for k in ('id', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'components', 'preset',
-                                     'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks', 'line', 'ended_by')}
+                                     'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks', 'line', 'ended_by', 'invalid', 'combo')}
 
 async def ws_call(req):
     ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20)

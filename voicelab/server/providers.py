@@ -74,6 +74,13 @@ def quota_window(text):
     m = re.search(r'"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"', t)
     return (min(120.0, max(5.0, float(m.group(1)))) if m else 60.0), per_model
 
+_T503 = {}
+def _test_503(model):
+    spec = os.environ.get('LAB_TEST_503', '')
+    if not spec or ':' not in spec or spec.split(':')[0] != model: return False
+    _T503[model] = _T503.get(model, 0) + 1
+    return _T503[model] > int(spec.split(':')[1])
+
 async def gemini_post(http, url, body, timing, **kw):
     """POST to the Gemini API with key failover: on a quota error rest that key (or that key's model, for per-model
     caps) for its window and try the other key; if both rest for under 2 s, wait once. Returns an open response
@@ -89,7 +96,13 @@ async def gemini_post(http, url, body, timing, **kw):
             timing.setdefault('err', f'429 no Gemini key has quota left for {model} now (resets {int(max(soon, 0) // 60)} min)')
             timing['quota_out'] = True; return None
         timing['key'] = tier
+        if _test_503(model):                     # test hook: LAB_TEST_503=model:N fails that model after N requests
+            timing['err'] = '503 {"error": {"code": 503, "status": "UNAVAILABLE"}} (lab test hook)'; return None
         r = await http.post(url, headers={'x-goog-api-key': key}, json=body, **kw)
+        for _ in range(2):        # Google's own 5xx (lab 2026-10-20: a 503 "service unavailable"): retry the same model
+            if r.status < 500: break
+            r.release(); timing['retries'] = timing.get('retries', 0) + 1; await asyncio.sleep(0.4)
+            r = await http.post(url, headers={'x-goog-api-key': key}, json=body, **kw)
         if r.status == 200: return r
         txt = await r.text(); r.release()
         if is_quota(r.status, txt):
@@ -623,3 +636,13 @@ class Gate:
         else: self.ring.append(pcm)
     def end_of_speech(self): self.inner.end_of_speech()
     async def close(self): await self.inner.close()
+
+def explain(err, what):
+    """A tester-facing reason a component failed, without guessing: Google 5xx vs quota vs anything else."""
+    e = err or ''
+    if e.startswith(('500', '502', '503', '504')) or 'UNAVAILABLE' in e:
+        return f"{what} was unavailable on Google's side ({e[:3]}), not a quota problem"
+    if e.startswith('429') or 'quota' in e.lower() or 'RESOURCE_EXHAUSTED' in e:
+        m = re.search(r'resets (\d+) min', e)
+        return f"{what} hit its quota on the Gemini keys" + (f" (resets in {m.group(1)} min)" if m else '')
+    return f"{what} failed: {e[:120]}"

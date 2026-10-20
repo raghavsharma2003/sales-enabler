@@ -223,7 +223,7 @@ function bandpass(ctx, node) {
 async function startCall() {
   const pid = currentPresetId(); const p = preset(pid);
   if (pid !== 'custom' && (!p || !p.enabled)) { toast('This stack is not available yet'); return; }
-  $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true;
+  $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true; $('testing').hidden = true; $('testing').textContent = '';
   const phone = $('phone').checked;
   const L = S.live = { pid, caps: [], pend: {}, lat: [], t0: performance.now(), started: false, ended: false, partial: {}, blind: S.mode === 'blind' };
   setCallUI(true, 'Connecting');
@@ -268,7 +268,7 @@ async function startPhone(kind) {
   if (pid !== 'custom' && (!p || !p.enabled)) { toast('This stack is not available yet'); return; }
   const num = $('myphone').value;
   if (!num || num === '__add') { toast('Add and verify your number first'); $('newphone').focus(); return; }
-  $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true;
+  $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true; $('testing').hidden = true; $('testing').textContent = '';
   const L = S.live = { pid, caps: [], pend: {}, lat: [], latByRid: {}, t0: performance.now(), started: false, ended: false, partial: {}, blind: S.mode === 'blind', phone: true, after: 0 };
   setCallUI(true, kind === 'out' ? 'Ringing' : 'Waiting for your call'); $('dialbtn').hidden = true;
   let r;
@@ -316,7 +316,8 @@ function onPlayer(d) {
 function onMsg(d) {
   const L = S.live; if (!L) return;
   switch (d.t) {
-    case 'ready': L.callId = d.call_id; if (L.pid === 'custom' && d.preset) L.pid = d.preset; if (L.phone) { L.t0 = performance.now(); $('callerr').textContent = ''; } setState('listening'); break;
+    case 'ready': L.callId = d.call_id; if (d.preset && d.preset !== L.pid) L.pid = d.preset;
+      if (d.label) { $('testing').textContent = 'Testing: ' + d.label; $('testing').hidden = false; } if (L.phone) { L.t0 = performance.now(); $('callerr').textContent = ''; } setState('listening'); break;
     case 'state': setState(d.s); break;
     case 'reply':
       if (L.phone) {   // no audio in the page: show the server's reply gap (the phone network's own delay comes on top)
@@ -328,7 +329,11 @@ function onMsg(d) {
     case 'cost': $('s-inr').textContent = '₹' + d.inr.toFixed(2); $('s-rpm').textContent = d.secs > 20 ? '₹' + d.inr_per_min.toFixed(2) : '…'; break;
     case 'error': $('callerr').textContent = d.msg; break;
     case 'agent_hangup': $('callerr').innerHTML = '<span style="color:var(--ink)">She ended the call.</span>'; break;
-    case 'ended': L.summary = d.summary; L.ended = true; setCallUI(false); cleanup(); showRate(); break;
+    case 'invalid': L.invalid = d.msg; $('callerr').innerHTML = `<b>This call stopped and won't count:</b> ${d.msg}. Nothing was swapped in; start a new call when ready.`; break;
+    case 'ended': L.summary = d.summary; L.ended = true; setCallUI(false); cleanup();
+      if (L.invalid || (d.summary && d.summary.invalid)) { if (!L.invalid) $('callerr').innerHTML = `<b>This call won't count:</b> ${d.summary.invalid}`; }
+      else showRate();
+      break;
     case 'phone_end': L.ended = true; setCallUI(false); cleanup(); if (d.why === 'cancelled') $('callerr').textContent = ''; break;
   }
 }
@@ -394,7 +399,8 @@ $('r-save').onclick = async () => {
 };
 $('r-skip').onclick = () => { reveal(); };
 function reveal() {
-  const L = S.live; const p = preset(L.pid) || { label: labelFor((L.summary || {}).preset || L.pid), ref: 'built on the page' }; const s = L.summary || {};
+  const L = S.live; const s = L.summary || {};
+  const p0 = preset(L.pid); const p = { label: $('testing').textContent.replace(/^Testing: /, '') || (p0 ? p0.label : labelFor(L.pid)), ref: p0 ? p0.ref : 'built on the page' };
   const lat = L.lat.length ? (L.lat.slice().sort((a, b) => a - b)[Math.floor(L.lat.length / 2)] / 1000).toFixed(2) + ' s' : '–';
   const comp = s.components ? Object.entries(s.components).map(([k, v]) => `${k}: ${v}`).join(' · ') : '';
   $('reveal').innerHTML = `<b>${L.blind ? 'It was: ' : ''}${p.label}</b><div class="small" style="margin-top:4px">${comp}</div>
@@ -430,7 +436,7 @@ async function renderHistory() {
   await refreshCalls(); const h = $('hist'); h.innerHTML = '';
   for (const c of S.calls.slice(0, 60)) {
     const el = document.createElement('div'); el.className = 'card'; el.style.margin = '0';
-    el.innerHTML = `<div><b>${labelFor(c.preset)}</b> <span class="small muted">· ${c.scenario} · ${c.tester} · ${c.started.replace('T', ' ')}</span>${c.line ? '<span class="tag">phone</span>' : ''}</div>
+    el.innerHTML = `<div><b>${c.combo_label || labelFor(c.preset)}</b>${c.invalid ? ' <span class="tag done">did not count</span>' : ''} <span class="small muted">· ${c.scenario} · ${c.tester} · ${c.started.replace('T', ' ')}</span>${c.line ? '<span class="tag">phone</span>' : ''}</div>
       <div class="small muted">${Math.round(c.duration_s)} s · ₹${(c.inr_per_min ?? 0).toFixed(2)}/min · reply gap ${c.latency_p50_ms ? (c.latency_p50_ms / 1000).toFixed(2) + ' s' : '–'}${c.rating ? ' · overall ' + c.rating.overall + '/10' : ''}</div>
       <audio controls preload="none" src="/api/calls/${c.id}/audio?k=${encodeURIComponent(S.key)}"></audio>
       <details><summary>Transcript</summary><div class="tx small" style="margin-top:6px">loading…</div></details>`;
