@@ -33,24 +33,23 @@ BRAINS = {
     'mistral-medium-3.5':{'ttft_ms': 1508, 'label': 'Mistral Medium 3.5 (Azure)', 'host': 'sin', 'model': 'lab-mistralmed', 'in': 0.40, 'out': 2.0, 'price_note': 'unverified'},
     'sarvam-105b':       {'label': 'Sarvam-105B conversations (India)', 'host': 'sv', 'model': 'sarvam-105b-conversations',
                           'in': 15 / FX, 'out': 60 / FX, 'extra': {'reasoning_effort': None}},
-    'gemini-3.8-flash':  {'ttft_ms': 2577, 'label': 'Gemini 3.8 Flash', 'host': 'gm', 'model': 'gemini-3.8-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'low'}},
+    'gemini-3.8-flash':  {'ttft_ms': 1991, 'label': 'Gemini 3.8 Flash', 'host': 'gm', 'model': 'gemini-3.8-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'low'}},
     'gemini-3.5-flash-lite': {'ttft_ms': 826, 'label': 'Gemini 3.5 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.5-flash-lite', 'in': 0.30, 'out': 2.50, 'thinking': {'thinkingLevel': 'minimal'}},
-    'gemini-3.6-flash':  {'ttft_ms': 1496, 'label': 'Gemini 3.6 Flash', 'host': 'gm', 'model': 'gemini-3.6-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'minimal'}},
+    'gemini-3.6-flash':  {'ttft_ms': 1102, 'label': 'Gemini 3.6 Flash', 'host': 'gm', 'model': 'gemini-3.6-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'minimal'}},
     # conversation bake-off candidates, deployed 2026-10-20 (prices filled from the vendor pages before any cost claim)
-    'gpt-5.4-mini':      {'label': 'GPT-5.4 mini (Azure)', 'host': 'sin', 'model': 'lab-gpt54mini', 'in': 0.0, 'out': 0.0, 'no_temp': True,
-                          'extra': {'reasoning_effort': 'none'}, 'price_note': 'unverified'},
-    'deepseek-v4.1-flash': {'label': 'DeepSeek V4.1 Flash (Azure, open weights)', 'host': 'sin', 'model': 'lab-dsv41flash', 'in': 0.0, 'out': 0.0, 'price_note': 'unverified'},
-    'grok-4.7':          {'label': 'Grok 4.7 (Azure)', 'host': 'sin', 'model': 'lab-grok47', 'in': 0.0, 'out': 0.0, 'price_note': 'unverified'},
+    'gpt-5.4-mini':      {'ttft_ms': 960, 'label': 'GPT-5.4 mini (Azure)', 'host': 'sin', 'model': 'lab-gpt54mini', 'in': 0.75, 'out': 4.50, 'no_temp': True,
+                          'extra': {'reasoning_effort': 'none'}, 'price_note': 'OpenAI list price (2026-10-20 sweep); Azure meter not read'},
+    'deepseek-v4.1-flash': {'ttft_ms': 2800, 'label': 'DeepSeek V4.1 Flash (Azure, open weights)', 'host': 'sin', 'model': 'lab-dsv41flash', 'in': 0.0, 'out': 0.0, 'price_note': 'unverified'},
     'mistral-large-3':   {'label': 'Mistral Large 3 (Azure, open weights)', 'host': 'sin', 'model': 'lab-mistrall3', 'in': 0.0, 'out': 0.0, 'legacy_max': True, 'price_note': 'unverified'},
     # OpenAI's newest tiers through OpenRouter (provider pinned to OpenAI), thinking off; Azure quota for these is held by
     # Taxila's deployments, so the bake-off reaches them here. Prices: OpenAI pricing page via the 2026-10-20 research sweep.
-    'gpt-6-luna@or':     {'label': 'GPT-6 Luna (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-6-luna', 'provider': 'openai',
+    'gpt-6-luna@or':     {'ttft_ms': 1438, 'label': 'GPT-6 Luna (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-6-luna', 'provider': 'openai',
                           'in': 0.10, 'out': 0.50, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
-    'gpt-6-sol@or':      {'label': 'GPT-6 Sol (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-6-sol', 'provider': 'openai',
+    'gpt-6-sol@or':      {'ttft_ms': 1739, 'label': 'GPT-6 Sol (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-6-sol', 'provider': 'openai',
                           'in': 2.0, 'out': 10.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
-    'gpt-5.6-sol@or':    {'label': 'GPT-5.6 Sol (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-sol', 'provider': 'openai',
+    'gpt-5.6-sol@or':    {'ttft_ms': 1174, 'label': 'GPT-5.6 Sol (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-sol', 'provider': 'openai',
                           'in': 4.0, 'out': 20.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
-    'gpt-5.6-terra@or':  {'label': 'GPT-5.6 Terra (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-terra', 'provider': 'openai',
+    'gpt-5.6-terra@or':  {'ttft_ms': 1604, 'label': 'GPT-5.6 Terra (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-terra', 'provider': 'openai',
                           'in': 2.0, 'out': 12.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
     'gemini-3.1-flash-lite': {'ttft_ms': 2843, 'label': 'Gemini 3.1 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.1-flash-lite', 'in': 0.25, 'out': 1.50, 'thinking': {'thinkingLevel': 'minimal'}},
 }
@@ -142,8 +141,10 @@ PRESETS = [
       stt='gemini', gated=True, brain='gpt-5.4-mini', tts='gemini-lite', brief='v2', round=2, new=True),
     P(id='v2-38flash', label='v2 · Gemini ears + Gemini 3.8 Flash + Gemini voice', ref='round 2 · best judged brain, slow (2.0 s)',
       stt='gemini', gated=True, brain='gemini-3.8-flash', tts='gemini-lite', brief='v2', round=2, new=True),
-    P(id='v2-luna', label='v2 · Gemini ears + GPT-6 Luna + Gemini voice', ref='round 2 · owner’s pick, judged last, 1.4 s',
-      stt='gemini', gated=True, brain='gpt-6-luna@or', tts='gemini-lite', brief='v2', round=2, new=True),
+    P(id='v2-mai', label='v2 · Gemini ears + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', ref='round 2 · fastest voice, 0.43 s',
+      stt='gemini', gated=True, brain='gemini-3.5-flash-lite', tts='azure-mai', brief='v2', round=2, new=True),
+    P(id='v2-luna', label='v2 · Gemini ears + GPT-6 Luna + Gemini voice', ref='owner’s pick, judged last in the bake-off, 1.4 s',
+      stt='gemini', gated=True, brain='gpt-6-luna@or', tts='gemini-lite', brief='v2', new=True),
 ]
 
 def enabled(p):
@@ -153,5 +154,6 @@ def enabled(p):
 SCENARIOS = {
     'renewal': {'label': 'Insurance renewal (she calls you)', 'agent_first': True},
     'support': {'label': 'Late order support (you call her)', 'agent_first': True},
+    'followup': {'label': 'Study-abroad enquiry follow-up (she calls you)', 'agent_first': True, 'v2_only': True},
     'open':    {'label': 'Open chat, she remembers you', 'agent_first': True},
 }

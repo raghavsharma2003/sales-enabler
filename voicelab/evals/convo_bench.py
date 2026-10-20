@@ -38,6 +38,17 @@ feels heard and gets a straight answer. Might agree to an advisor call at the en
 thing twice. Mixes Hindi and English. Polite but distracted (kids in background). Needs things said simply.""",
 }
 
+# study-abroad enquiry follow-up (scenario 'followup')
+FOLLOWUP = {
+    'keen': """Karan, 22, Nagpur, final-year B.Tech student, filled the enquiry form. Excited but anxious about costs, asks
+lots of questions (Germany vs Canada, IELTS, part-time work), speaks Hinglish fast. Will book a session if it feels useful.""",
+    'parent': """Meena, 49, Indore, Karan's mother, picks up his phone. Protective, worried about money and safety abroad, mostly
+Hindi. Wants to know who is calling and why; may agree to a session in the evening when Karan is home.""",
+    'cold': """Priya, 24, Pune, working at an IT company, filled the form weeks ago half-seriously and forgot. Busy, slightly
+annoyed at first, but curious about Germany's low tuition. Might take the WhatsApp shortlist instead of a session.""",
+}
+FOLLOWUP_NAMES = {'keen': 'Karan', 'parent': 'Karan', 'cold': 'Priya'}
+
 SIM_PROMPT = """You are role-playing a real Indian person receiving a phone call. Stay fully in character; you are not an
 assistant. Your hidden profile:
 {profile}
@@ -84,7 +95,7 @@ def metrics(tr):
         rep.append(len(g & prev) / len(g) if g else 0.0)
     wrong = any(re.search(r'25,?000|पच्चीस हज़ार|पच्चीस हजार', c) for c in caller)
     corrected = any(re.search(r'16,?900|सोलह हज़ार नौ', h) for h in her)
-    agreed = any(re.search(r'25,?000|पच्चीस हज़ार', h) and not re.search(r'16,?900', h) for h in her)
+    agreed = any(re.search(r'25,?000|पच्चीस हज़ार', h) and not re.search(r'16,?900|25,?000 नहीं|नहीं.{0,12}25,?000|not 25', h) for h in her)
     hung = bool(tr and tr[-1].get('hung_up'))
     closing = re.compile(r'bye|बाय|thank|थैंक|धन्यवाद|शुक्रिया|ठीक है|ok|चलो|बाद में|done|बस', re.I)
     abrupt = hung and not (len(caller) and closing.search(caller[-1]))
@@ -122,19 +133,21 @@ async def retry(f, *a, tries=4):
             if i == tries - 1: raise
             await asyncio.sleep((15 if '429' in repr(e) else 2) * (i + 1))   # rate limits need a real wait
 
-async def dialogue(http, brain, persona, caller_id, turns, kickoff):
+async def dialogue(http, brain, persona, caller_id, turns, kickoff, scenario='renewal'):
     v2 = hasattr(persona, 'tail')
-    system = persona.compile_prompt('renewal', [], caller=NAMES[caller_id]) if v2 else persona.compile_prompt('renewal', [])
+    names = FOLLOWUP_NAMES if scenario == 'followup' else NAMES
+    system = persona.compile_prompt(scenario, [], caller=names[caller_id]) if v2 else persona.compile_prompt(scenario, [])
+    profiles = FOLLOWUP if scenario == 'followup' else CALLERS
     hist = [{'role': 'user', 'content': kickoff}]; tr = []; ttfts = []; usd = 0.0
     for i in range(turns):
-        txt, ttft, u = await retry(agent_turn, http, brain, system, hist, persona.tail(tr) if v2 else None); usd += u
+        txt, ttft, u = await retry(agent_turn, http, brain, system, hist, persona.tail(tr, scenario) if v2 else None); usd += u
         if ttft: ttfts.append(ttft)
         last_caller = next((t['text'] for t in reversed(tr) if t['who'] == 'caller'), '')
         hung = hasattr(persona, 'ends') and persona.ends(txt) and persona.hangup_ok(txt, last_caller)
         txt = persona.spoken(txt) if hasattr(persona, 'spoken') else txt
         hist.append({'role': 'assistant', 'content': txt}); tr.append({'who': 'agent', 'text': txt})
         if hung: tr[-1]['hung_up'] = True; break                      # she ended the call
-        say, u = await retry(caller_turn, http, CALLERS[caller_id], tr); usd += u
+        say, u = await retry(caller_turn, http, profiles[caller_id], tr); usd += u
         if not say or '<END>' in say: break
         hist.append({'role': 'user', 'content': say}); tr.append({'who': 'caller', 'text': say})
     return {'brain': brain, 'caller': caller_id, 'transcript': tr, 'ttft_ms': ttfts, 'usd': round(usd, 5), 'metrics': metrics(tr)}
@@ -151,9 +164,12 @@ async def main():
     ap.add_argument('--callers', default='all'); ap.add_argument('--turns', type=int, default=8); ap.add_argument('--out', default='convo-out')
     ap.add_argument('--seed', type=int, default=7); ap.add_argument('--no-judge', action='store_true')
     ap.add_argument('--reuse', action='store_true', help='judge the dialogues already saved in --out instead of running new ones')
+    ap.add_argument('--scenario', default='renewal', help='renewal (judged) or followup (measured only)')
     a = ap.parse_args(); random.seed(a.seed)
     load = lambda v: importlib.import_module('persona' if v == 'v1' else 'persona_' + v)
-    brains = a.brains.split(','); callers = list(CALLERS) if a.callers == 'all' else a.callers.split(',')
+    brains = a.brains.split(','); pool = FOLLOWUP if a.scenario == 'followup' else CALLERS
+    callers = list(pool) if a.callers == 'all' else a.callers.split(',')
+    if a.scenario != 'renewal': a.no_judge = True
     arm = {b: (b.split('#')[0], load(b.split('#')[1] if '#' in b else a.persona)) for b in brains}
     os.makedirs(a.out, exist_ok=True)
     async with aiohttp.ClientSession() as http:
@@ -162,9 +178,9 @@ async def main():
         async def one(b, c):
             async with sem:
                 brain, persona = arm[b]
-                try: r = await dialogue(http, brain, persona, c, a.turns, persona.KICKOFF); r['brain'] = b; return r
+                try: r = await dialogue(http, brain, persona, c, a.turns, persona.KICKOFF, a.scenario); r['brain'] = b; return r
                 except Exception as e: return {'brain': b, 'caller': c, 'error': repr(e)[:300], 'transcript': [], 'metrics': {}, 'ttft_ms': []}
-        dpath = os.path.join(a.out, f'dialogues-{a.persona}.json')
+        dpath = os.path.join(a.out, f'dialogues-{a.persona}-{a.scenario}.json')
         if a.reuse: runs = [r for r in json.load(open(dpath)) if r['brain'] in brains and r['caller'] in callers]
         else:
             runs = await asyncio.gather(*(one(b, c) for b in brains for c in callers))

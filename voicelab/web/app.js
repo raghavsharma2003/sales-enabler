@@ -70,7 +70,7 @@ function blindCurrent() {
   for (let k = 0; k < order.length; k++) { const j = (i + k) % order.length; if (!rated(order[j])) return { id: order[j], i: j, order }; }
   return { id: order[i % order.length], i: i % order.length, order, allDone: true };
 }
-function currentPresetId() { return S.mode === 'blind' ? blindCurrent().id : S.pick; }
+function currentPresetId() { return S.mode === 'blind' ? blindCurrent().id : S.mode === 'build' ? 'custom' : S.pick; }
 function renderBlind() {
   const b = blindCurrent(); const done = b.order.filter(rated).length;
   $('m-name').textContent = 'Mystery stack ' + letter(b.i);
@@ -80,14 +80,54 @@ function renderBlind() {
 $('m-skip').onclick = () => { const b = blindCurrent(); LS.set('vl_blind_' + S.name, (b.i + 1) % b.order.length); renderBlind(); };
 function renderMode() {
   document.querySelectorAll('#mode button').forEach((x) => x.classList.toggle('on', x.dataset.mode === S.mode));
-  $('blindbox').hidden = S.mode !== 'blind'; $('pickbox').hidden = S.mode !== 'pick';
-  if (S.mode === 'pick') renderStacks(); else renderBlind();
+  $('blindbox').hidden = S.mode !== 'blind'; $('pickbox').hidden = S.mode !== 'pick'; $('buildbox').hidden = S.mode !== 'build';
+  $('brainwrap').hidden = $('voicewrap').hidden = S.mode === 'build';
+  if (S.mode === 'pick') renderStacks(); else if (S.mode === 'build') fillBuild(); else renderBlind();
   fillVoices();
+}
+$('showold').onchange = renderStacks;
+
+// ------------------------------------------------------------------ build your own: any ears + brain + voice, or speech-to-speech
+const B = LS.get('vl_build', { kind: 'cascade', stt: 'gemini', brain: 'gemini-3.5-flash-lite', tts: 'gemini-lite', voice: '', s2s: 'gemini-3.8-live', s2sv: '' });
+function opts(sel, entries, val) { sel.innerHTML = ''; for (const [k, l] of entries) sel.add(new Option(l, k)); if (entries.some(([k]) => k === val)) sel.value = val; }
+function fillBuild() {
+  const c = S.cat;
+  document.querySelectorAll('#bkind button').forEach((x) => x.classList.toggle('on', x.dataset.k === B.kind));
+  $('b-cascade').hidden = B.kind !== 'cascade'; $('b-s2s').hidden = B.kind !== 's2s';
+  opts($('b-stt'), Object.entries(c.stt).map(([k, v]) => [k, v.label]), B.stt);
+  opts($('b-brain'), Object.entries(c.brains).map(([k, v]) => [k, `${v.label}${v.ttft_ms ? ' · ' + (v.ttft_ms / 1000).toFixed(1) + ' s' : ''}`]), B.brain);
+  opts($('b-tts'), Object.entries(c.tts).map(([k, v]) => [k, v.label]), B.tts);
+  const t = c.tts[$('b-tts').value]; opts($('b-voice'), t.voices.map((v) => [v, v + (v === t.default ? ' (default)' : '')]), B.voice || t.default);
+  opts($('b-s2se'), Object.entries(c.s2s).map(([k, v]) => [k, v.label]), B.s2s);
+  const e = c.s2s[$('b-s2se').value]; opts($('b-s2sv'), e.voices.map((v) => [v, v + (v === e.default ? ' (default)' : '')]), B.s2sv || e.default);
+}
+function saveBuild() {
+  Object.assign(B, { stt: $('b-stt').value, brain: $('b-brain').value, tts: $('b-tts').value, voice: $('b-voice').value, s2s: $('b-s2se').value, s2sv: $('b-s2sv').value });
+  LS.set('vl_build', B);
+}
+for (const id of ['b-stt', 'b-brain', 'b-voice', 'b-s2sv']) $(id).onchange = saveBuild;
+$('b-tts').onchange = () => { B.voice = ''; saveBuild(); B.voice = ''; fillBuild(); saveBuild(); };
+$('b-s2se').onchange = () => { saveBuild(); B.s2sv = ''; fillBuild(); saveBuild(); };
+document.querySelectorAll('#bkind button').forEach((b) => b.onclick = () => { B.kind = b.dataset.k; LS.set('vl_build', B); fillBuild(); });
+function customSpec() {
+  return B.kind === 's2s' ? { s2s: $('b-s2se').value, voice: $('b-s2sv').value } : { stt: $('b-stt').value, brain: $('b-brain').value, tts: $('b-tts').value, voice: $('b-voice').value };
+}
+function customLabel(spec) {
+  const c = S.cat;
+  if (spec.s2s) return 'Custom · ' + (c.s2s[spec.s2s]?.label || spec.s2s);
+  return `Custom · ${c.stt[spec.stt]?.label || spec.stt} + ${c.brains[spec.brain]?.label || spec.brain} + ${c.tts[spec.tts]?.label || spec.tts}`;
+}
+function labelFor(pid) {
+  const p = preset(pid); if (p) return p.label;
+  if (pid && pid.startsWith('custom:')) { const r = pid.slice(7); return customLabel(r.includes('+') ? Object.fromEntries(r.split('+').map((x, i) => [['stt', 'brain', 'tts'][i], x])) : { s2s: r }); }
+  return pid;
 }
 document.querySelectorAll('#mode button').forEach((b) => b.onclick = () => { S.mode = b.dataset.mode; LS.set('vl_mode', S.mode); renderMode(); });
 function renderStacks() {
   const box = $('stacks'); box.innerHTML = '';
-  for (const p of presets()) {
+  const old = $('showold').checked;
+  const list = presets().filter((p) => p.brief === 'v2' || old).sort((a, b) => (b.round || 0) - (a.round || 0) || (b.brief === 'v2') - (a.brief === 'v2'));
+  for (const p of list) {
     const el = document.createElement('div'); el.className = 'stack' + (p.id === S.pick ? ' on' : '') + (p.enabled ? '' : ' off');
     el.innerHTML = `<div><div class="t">${p.label}${p.new ? '<span class="tag">new</span>' : ''}${rated(p.id) ? '<span class="tag done">rated</span>' : ''}</div>
       <div class="r">report: ${p.ref}${p.enabled ? '' : ' · needs ' + p.needs}</div></div>`;
@@ -108,7 +148,7 @@ function fillSelects() {
 }
 function fillVoices() {
   const p = preset(currentPresetId()); const v = $('voice'); v.innerHTML = '';
-  if (!p) return;
+  if (!p) { $('brain').disabled = true; return; }
   let list = [], def = '';
   if (p.s2s) { const s = S.cat.s2s[p.s2s]; list = s.voices; def = s.default; }
   else if (p.tts) { const t = S.cat.tts[p.tts]; list = t.voices; def = t.default; }
@@ -182,7 +222,7 @@ function bandpass(ctx, node) {
 }
 async function startCall() {
   const pid = currentPresetId(); const p = preset(pid);
-  if (!p || !p.enabled) { toast('This stack is not available yet'); return; }
+  if (pid !== 'custom' && (!p || !p.enabled)) { toast('This stack is not available yet'); return; }
   $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true;
   const phone = $('phone').checked;
   const L = S.live = { pid, caps: [], pend: {}, lat: [], t0: performance.now(), started: false, ended: false, partial: {}, blind: S.mode === 'blind' };
@@ -207,7 +247,8 @@ async function startCall() {
   const ws = L.ws = new WebSocket(`${proto}://${location.host}/ws?k=${encodeURIComponent(S.key)}`); ws.binaryType = 'arraybuffer';
   ws.onopen = () => {
     ws.send(JSON.stringify({ t: 'start', preset: pid, scenario: $('scenario').value, tester: S.name, brain: $('brain').value || null,
-                             voice: $('voice').value || null, phone, smart_turn: $('smart').checked, headphones: $('hp').checked, blind: L.blind, consent: S.ok }));
+                             voice: $('voice').value || null, phone, smart_turn: $('smart').checked, headphones: $('hp').checked, blind: L.blind, consent: S.ok,
+                             custom: pid === 'custom' ? customSpec() : null }));
     L.started = true;
   };
   L.mic.port.onmessage = (e) => {
@@ -220,11 +261,11 @@ async function startCall() {
 }
 function callBody(pid) {
   return { preset: pid, scenario: $('scenario').value, tester: S.name, brain: $('brain').value || null, voice: $('voice').value || null,
-           smart_turn: $('smart').checked, blind: S.mode === 'blind', consent: S.ok };
+           smart_turn: $('smart').checked, blind: S.mode === 'blind', consent: S.ok, custom: pid === 'custom' ? customSpec() : null };
 }
 async function startPhone(kind) {
   const pid = currentPresetId(); const p = preset(pid);
-  if (!p || !p.enabled) { toast('This stack is not available yet'); return; }
+  if (pid !== 'custom' && (!p || !p.enabled)) { toast('This stack is not available yet'); return; }
   const num = $('myphone').value;
   if (!num || num === '__add') { toast('Add and verify your number first'); $('newphone').focus(); return; }
   $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true;
@@ -275,7 +316,7 @@ function onPlayer(d) {
 function onMsg(d) {
   const L = S.live; if (!L) return;
   switch (d.t) {
-    case 'ready': L.callId = d.call_id; if (L.phone) { L.t0 = performance.now(); $('callerr').textContent = ''; } setState('listening'); break;
+    case 'ready': L.callId = d.call_id; if (L.pid === 'custom' && d.preset) L.pid = d.preset; if (L.phone) { L.t0 = performance.now(); $('callerr').textContent = ''; } setState('listening'); break;
     case 'state': setState(d.s); break;
     case 'reply':
       if (L.phone) {   // no audio in the page: show the server's reply gap (the phone network's own delay comes on top)
@@ -353,7 +394,7 @@ $('r-save').onclick = async () => {
 };
 $('r-skip').onclick = () => { reveal(); };
 function reveal() {
-  const L = S.live; const p = preset(L.pid); const s = L.summary || {};
+  const L = S.live; const p = preset(L.pid) || { label: labelFor((L.summary || {}).preset || L.pid), ref: 'built on the page' }; const s = L.summary || {};
   const lat = L.lat.length ? (L.lat.slice().sort((a, b) => a - b)[Math.floor(L.lat.length / 2)] / 1000).toFixed(2) + ' s' : '–';
   const comp = s.components ? Object.entries(s.components).map(([k, v]) => `${k}: ${v}`).join(' · ') : '';
   $('reveal').innerHTML = `<b>${L.blind ? 'It was: ' : ''}${p.label}</b><div class="small" style="margin-top:4px">${comp}</div>
@@ -388,8 +429,8 @@ async function renderResults() {
 async function renderHistory() {
   await refreshCalls(); const h = $('hist'); h.innerHTML = '';
   for (const c of S.calls.slice(0, 60)) {
-    const p = preset(c.preset); const el = document.createElement('div'); el.className = 'card'; el.style.margin = '0';
-    el.innerHTML = `<div><b>${p ? p.label : c.preset}</b> <span class="small muted">· ${c.scenario} · ${c.tester} · ${c.started.replace('T', ' ')}</span>${c.line ? '<span class="tag">phone</span>' : ''}</div>
+    const el = document.createElement('div'); el.className = 'card'; el.style.margin = '0';
+    el.innerHTML = `<div><b>${labelFor(c.preset)}</b> <span class="small muted">· ${c.scenario} · ${c.tester} · ${c.started.replace('T', ' ')}</span>${c.line ? '<span class="tag">phone</span>' : ''}</div>
       <div class="small muted">${Math.round(c.duration_s)} s · ₹${(c.inr_per_min ?? 0).toFixed(2)}/min · reply gap ${c.latency_p50_ms ? (c.latency_p50_ms / 1000).toFixed(2) + ' s' : '–'}${c.rating ? ' · overall ' + c.rating.overall + '/10' : ''}</div>
       <audio controls preload="none" src="/api/calls/${c.id}/audio?k=${encodeURIComponent(S.key)}"></audio>
       <details><summary>Transcript</summary><div class="tx small" style="margin-top:6px">loading…</div></details>`;

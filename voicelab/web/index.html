@@ -98,19 +98,34 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 
     <section id="tab-call">
       <div class="card" id="setup">
-        <div class="seg" id="mode"><button data-mode="blind" class="on">Blind tour</button><button data-mode="pick">Pick a stack</button></div>
+        <div class="seg" id="mode"><button data-mode="blind" class="on">Blind tour</button><button data-mode="pick">Pick a stack</button><button data-mode="build">Build your own</button></div>
         <div id="blindbox" style="margin-top:12px">
           <div class="mystery"><div><div class="big" id="m-name">Mystery stack A</div><div class="small muted" id="m-prog"></div></div>
           <button class="btn ghost" id="m-skip">Skip</button></div>
           <div class="hint">You won't see which stack this is until you've rated it, so price and brand don't colour what you hear.</div>
         </div>
-        <div id="pickbox" style="margin-top:12px" hidden><div class="stacks" id="stacks"></div></div>
-        <div class="row">
-          <div><label for="scenario">Scenario</label><select id="scenario"></select></div>
-          <div><label for="brain">Brain</label><select id="brain"></select></div>
+        <div id="pickbox" style="margin-top:12px" hidden><div class="stacks" id="stacks"></div>
+          <label class="consent" style="margin-top:8px"><input type="checkbox" id="showold"> <span>Show the round-1 stacks too (old brief)</span></label></div>
+        <div id="buildbox" style="margin-top:12px" hidden>
+          <div class="seg" id="bkind"><button data-k="cascade" class="on">Ears + brain + voice</button><button data-k="s2s">Speech-to-speech</button></div>
+          <div id="b-cascade">
+            <div class="row"><div><label for="b-stt">Ears (speech-to-text)</label><select id="b-stt"></select></div>
+              <div><label for="b-brain">Brain</label><select id="b-brain"></select></div></div>
+            <div class="row"><div><label for="b-tts">Voice engine</label><select id="b-tts"></select></div>
+              <div><label for="b-voice">Voice</label><select id="b-voice"></select></div></div>
+          </div>
+          <div id="b-s2s" hidden>
+            <div class="row"><div><label for="b-s2se">Engine</label><select id="b-s2se"></select></div>
+              <div><label for="b-s2sv">Voice</label><select id="b-s2sv"></select></div></div>
+          </div>
+          <div class="hint">Every combination runs on the round-2 conversation brief, and your ratings are filed under the combination.</div>
         </div>
         <div class="row">
-          <div><label for="voice">Voice</label><select id="voice"></select></div>
+          <div><label for="scenario">Scenario</label><select id="scenario"></select></div>
+          <div id="brainwrap"><label for="brain">Brain</label><select id="brain"></select></div>
+        </div>
+        <div class="row">
+          <div id="voicewrap"><label for="voice">Voice</label><select id="voice"></select></div>
           <div></div>
         </div>
         <label>Talk to her</label>

@@ -11,6 +11,7 @@ async def main():
     ap = argparse.ArgumentParser(); ap.add_argument('base'); ap.add_argument('key'); ap.add_argument('preset')
     ap.add_argument('--scenario', default='renewal'); ap.add_argument('--turns', type=int, default=3); ap.add_argument('--brain'); ap.add_argument('--voice')
     ap.add_argument('--tester', default='sim'); ap.add_argument('--clips', default=','.join(ORDER))
+    ap.add_argument('--custom', help='a page-built stack: stt,brain,tts[,voice] or s2s:ENGINE[,voice]')
     a = ap.parse_args()
     url = a.base.replace('https://', 'wss://').replace('http://', 'ws://').rstrip('/') + '/ws?k=' + a.key
     clips = [open(os.path.join(CLIPS, c + '.pcm'), 'rb').read() for c in a.clips.split(',')[:a.turns]]
@@ -18,7 +19,12 @@ async def main():
     sent = [0]
     async with aiohttp.ClientSession() as s:
         async with s.ws_connect(url, max_msg_size=0, heartbeat=20) as ws:
-            await ws.send_json({'t': 'start', 'preset': a.preset, 'scenario': a.scenario, 'tester': a.tester, 'brain': a.brain, 'voice': a.voice})
+            custom = None
+            if a.custom:
+                parts = a.custom.split(',')
+                custom = ({'s2s': parts[0][4:], 'voice': (parts[1:] or [None])[0]} if parts[0].startswith('s2s:')
+                          else dict(zip(('stt', 'brain', 'tts', 'voice'), parts)))
+            await ws.send_json({'t': 'start', 'preset': a.preset, 'scenario': a.scenario, 'tester': a.tester, 'brain': a.brain, 'voice': a.voice, 'custom': custom})
             async def mic():
                 nxt = time.monotonic()
                 while not ws.closed:

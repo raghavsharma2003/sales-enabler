@@ -132,8 +132,8 @@ async def results(req):
     out = []
     for pid, b in by.items():
         lat = sorted(b['lat']); p50 = lat[len(lat) // 2] if lat else None
-        p = next((x for x in PRESETS if x['id'] == pid), {'label': pid, 'ref': ''})
-        out.append({'preset': pid, 'label': p['label'], 'ref': p.get('ref'), 'calls': b['calls'], 'rated': b['rated'], 'minutes': round(b['mins'], 1),
+        label, ref = stack_label(pid)
+        out.append({'preset': pid, 'label': label, 'ref': ref, 'calls': b['calls'], 'rated': b['rated'], 'minutes': round(b['mins'], 1),
                     'inr_per_min': round(b['inr'] / b['mins'], 2) if b['mins'] > 0 else None, 'latency_p50_ms': p50,
                     'talk_over_pct': round(100 * b['talk_over'] / b['replies']) if b['replies'] else None, 'would_pick': b['pick'],
                     'scores': {k: round(sum(v) / len(v), 2) for k, v in b['scores'].items() if v},
@@ -174,20 +174,50 @@ async def remember(call):
         except Exception as e:
             call.errors.append('memory: ' + repr(e)[:160])
 
+def custom_preset(c):
+    """A stack the tester assembled on the page ("Build your own"): any ears + brain + voice, or a speech-to-speech
+    engine. It always runs on brief v2. Its id names the parts so results group by combination."""
+    c = c or {}
+    if c.get('s2s'):
+        if c['s2s'] not in S2S: return None, 'unknown speech-to-speech engine'
+        return {'id': f"custom:{c['s2s']}", 'label': 'Custom · ' + S2S[c['s2s']]['label'], 's2s': c['s2s'], 'brief': 'v2'}, None
+    stt, brain, tts = c.get('stt'), c.get('brain'), c.get('tts')
+    if stt not in STT or brain not in BRAINS or tts not in TTS: return None, 'pick ears, a brain and a voice'
+    p = {'id': f'custom:{stt}+{brain}+{tts}', 'label': f"Custom · {STT[stt]['label']} + {BRAINS[brain]['label']} + {TTS[tts]['label']}",
+         'stt': stt, 'gated': c.get('gated', True) is not False, 'brain': brain, 'tts': tts, 'brief': 'v2'}
+    if 'sarvam' in (STT[stt]['kind'], TTS[tts]['kind'], BRAINS[brain]['host']) or brain == 'sarvam-105b': p['needs'] = 'SARVAM_API_KEY'
+    return p, None
+
+def stack_label(pid):
+    p = next((x for x in PRESETS if x['id'] == pid), None)
+    if p: return p['label'], p.get('ref', '')
+    if pid.startswith('custom:'):
+        q, _ = custom_preset({'s2s': pid[7:]} if '+' not in pid else dict(zip(('stt', 'brain', 'tts'), pid[7:].split('+', 2))))
+        if q: return q['label'], 'built on the page'
+    return pid, ''
+
 def prepare(cfg):
     """Validate a call request (browser or phone). Returns (cfg, preset, error)."""
     cfg.setdefault('scenario', 'renewal'); cfg['tester'] = (cfg.get('tester') or 'owner')[:40]
     if cfg['scenario'] not in SCENARIOS: cfg['scenario'] = 'renewal'
-    preset = next((p for p in PRESETS if p['id'] == cfg.get('preset')), None)
+    if cfg.get('custom'):
+        preset, err = custom_preset(cfg['custom'])
+        if err: return cfg, None, err
+        cfg['preset'] = preset['id']; cfg['_preset'] = preset; cfg['blind'] = False; cfg['brain'] = None; cfg['voice'] = cfg['custom'].get('voice')
+    else:
+        preset = next((p for p in PRESETS if p['id'] == cfg.get('preset')), None)
     if preset is None or not enabled(preset):
         return cfg, preset, 'this stack is not available yet' + (f" (needs {preset['needs']})" if preset else '')
+    if SCENARIOS[cfg['scenario']].get('v2_only') and preset.get('brief') != 'v2':
+        return cfg, preset, 'this use case runs on the round-2 (v2) stacks and custom builds only'
     if cfg.get('brain') and cfg['brain'] not in BRAINS: cfg['brain'] = None
     if LAB.spend_today() >= DAILY_USD: return cfg, preset, f'daily lab budget of ${DAILY_USD:.0f} reached'
     return cfg, preset, None
 
 def ready_msg(call, preset):
     blind = call.cfg.get('blind')
-    return {'t': 'ready', 'call_id': call.id, 'components': None if blind else call.components(), 'label': None if blind else preset['label']}
+    return {'t': 'ready', 'call_id': call.id, 'components': None if blind else call.components(), 'label': None if blind else preset['label'],
+            'preset': None if blind else call.cfg['preset']}
 
 async def finish(call):
     """Close a call, extract memory, write the recording and meta. Returns the summary the page shows."""
@@ -211,7 +241,7 @@ async def ws_call(req):
         if msg.type != aiohttp.WSMsgType.TEXT: return ws          # client went away before starting
         cfg = json.loads(msg.data)
         if cfg.get('t') != 'start': await ws.send_json({'t': 'error', 'msg': 'expected start'}); return ws
-        cfg.pop('line', None)
+        cfg.pop('line', None); cfg.pop('_preset', None)
         cfg, preset, err = prepare(cfg)
         if err: await ws.send_json({'t': 'error', 'msg': err}); return ws
         call = make_call(LAB, ws, cfg); LAB.calls[call.id] = call
@@ -250,7 +280,7 @@ async def ws_call(req):
 # call gets over its websocket. Plivo reaches us on /plivo/* with a path secret instead of the lab passcode.
 DIALIN = f'{DATA}/phone-dialin-by-number.json'     # {number: the stack its owner last armed}, for unarmed dial-ins
 def phone_cfg(d, direction):
-    cfg = {k: d.get(k) for k in ('preset', 'scenario', 'tester', 'brain', 'voice', 'smart_turn', 'blind', 'consent')}
+    cfg = {k: d.get(k) for k in ('preset', 'scenario', 'tester', 'brain', 'voice', 'smart_turn', 'blind', 'consent', 'custom')}
     cfg['smart_turn'] = cfg['smart_turn'] is not False; cfg['blind'] = bool(cfg['blind']); cfg['line'] = direction
     return prepare(cfg)
 

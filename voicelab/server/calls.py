@@ -260,7 +260,7 @@ class Reply:
                 while True:
                     cl = await q.get()
                     if cl is None: break
-                    cl = pv._strip(cl).strip()
+                    cl = c.say(pv._strip(cl)).strip()
                     if not cl: continue
                     while len(self.spoken) <= idx: self.spoken.append(['', 0])
                     self.spoken[idx][0] = cl
@@ -278,7 +278,7 @@ class Reply:
             while True:
                 cl = await q.get()
                 if cl is None: break
-                cl = pv._strip(cl).strip()
+                cl = c.say(pv._strip(cl)).strip()
                 if not cl: continue
                 while len(self.spoken) <= idx: self.spoken.append(['', 0])
                 self.spoken[idx][0] = cl
@@ -293,7 +293,7 @@ class Reply:
             # prosody of the remainder is continuous. The second request starts while the first still plays.
             first = await q.get()
             if first is None: return
-            first = pv._strip(first).strip(); rest = []
+            first = c.say(pv._strip(first)).strip(); rest = []
             seg2 = None; seg2_q = asyncio.Queue()
             async def produce(text, out_q, usage, timing):
                 try:
@@ -305,7 +305,7 @@ class Reply:
                 while True:
                     x = await q.get()
                     if x is None: break
-                    rest.append(pv._strip(x).strip())
+                    rest.append(c.say(pv._strip(x)).strip())
                 txt = ' '.join(r for r in rest if r)
                 if txt:
                     u2, t2 = {}, {}; self.tts2_t = t2
@@ -317,7 +317,7 @@ class Reply:
             rest_task = asyncio.ensure_future(collect_rest())
             u1 = {}; q1 = asyncio.Queue()
             p1 = asyncio.ensure_future(produce(first, q1, u1, self.tts_t))
-            self.spoken.append([first, 0])
+            self.spoken.append([persona_v2.spoken(first), 0])
             try:
                 while True:
                     ch = await q1.get()
@@ -328,7 +328,7 @@ class Reply:
                 if self.spoken[0][1] == 0 and self.tts_t.get('err'): await self.voice_fallback(first, 0, self.tts_t['err'])
                 txt = await rest_task
                 if txt:
-                    self.spoken.append([txt, 0])
+                    self.spoken.append([persona_v2.spoken(txt), 0])
                     while True:
                         ch = await seg2_q.get()
                         if ch is None: break
@@ -379,7 +379,10 @@ class CascadeCall(Call):
         self.notes = bool(preset.get('notes'))
         if self.v2(): self.memory = lab.memory_get(cfg['tester'], cfg['scenario'] + '-v2')     # fresh, cleaner memory for v2
         styles = TTS[self.tts].get('styles') if TTS[self.tts].get('emotion') else None
-        if self.v2(): self.system = persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'])
+        if self.v2():
+            self.notes = bool(TTS[self.tts].get('emotion'))           # MAI-Voice: a free-form tone per reply picks its style
+            self.sounds = TTS[self.tts]['kind'] == 'gemini'            # Gemini 3.8 TTS understands <laugh>/<sigh>/<breath>
+            self.system = persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'], notes=self.notes, sounds=self.sounds)
         else: self.system = compile_prompt(cfg['scenario'], self.memory, notes=self.notes, note_styles=styles)
         self.history = [{'role': 'user', 'content': self.kickoff()}]
         self.finals = []; self.partial = ''; self.pending = None; self.active = None; self.overlap = []
@@ -388,9 +391,13 @@ class CascadeCall(Call):
         self.tick_task = None; self.stt = None; self.bulbul = None
     def components(self):
         return {'stt': self.stt_id, 'gated': self.gated, 'brain': self.brain, 'tts': self.tts, 'voice': self.voice, 'notes': self.notes}
+    def say(self, clause):
+        """Text for the voice: v2 replies may carry sound tags (kept only for a voice that understands them)."""
+        return persona_v2.spoken(clause, keep_sounds=getattr(self, 'sounds', False)) if self.v2() else clause
     def map_style(self, style):
         t = TTS[self.tts]
         if not style or not t.get('emotion'): return None
+        if self.v2(): return persona_v2.mai_style(style)
         for s in t['styles']:
             if s in style: return s
         return None
@@ -660,7 +667,8 @@ class GeminiLiveCall(Call):
         """Hand her the ledger as silent context (no reply expected), Maya's direct() pattern: what is spent, offers and
         outcomes, how they sound, whether they sound ready to finish."""
         try:
-            note = '<context, not from the caller: ' + persona_v2.ledger(self.transcript, self.cfg['scenario']).replace('\n', ' | ') + '>'
+            led = persona_v2.ledger(self.transcript, self.cfg['scenario']).replace('then <end_call>', 'then the end_call tool')
+            note = '<context, not from the caller: ' + led.replace('\n', ' | ') + '>'
             await self.up.send_json({'clientContent': {'turns': [{'role': 'user', 'parts': [{'text': note}]}], 'turnComplete': False}})
         except Exception as e: self.errors.append('ledger note: ' + repr(e)[:120])
     async def resume(self):
@@ -684,7 +692,10 @@ class AzureRealtimeCall(Call):
         super().__init__(lab, ws, cfg)
         self.spec = S2S[preset['s2s']]; self.preset = preset
         self.voice = cfg.get('voice') if cfg.get('voice') in self.spec['voices'] else self.spec['voice']
-        self.system = compile_prompt(cfg['scenario'], self.memory)
+        if self.v2():
+            self.memory = lab.memory_get(cfg['tester'], cfg['scenario'] + '-v2')
+            self.system = persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'], end='tool') + '\n\n' + persona_v2.LAST
+        else: self.system = compile_prompt(cfg['scenario'], self.memory)
         self.up = None; self.rs = Resampler(16000, 24000); self.buf = b''; self.cur = None; self.cur_item = None
         self.agent_text = ''; self.first_play = None; self.resp_rid = {}
     def components(self): return {'s2s': self.preset['s2s'], 'deployment': self.spec['deployment'], 'voice': self.voice}
@@ -695,10 +706,13 @@ class AzureRealtimeCall(Call):
             'audio': {'input': {'format': {'type': 'audio/pcm', 'rate': 24000}, 'noise_reduction': {'type': 'near_field'},
                                 'turn_detection': {'type': 'semantic_vad', 'eagerness': 'medium', 'create_response': True, 'interrupt_response': True},
                                 'transcription': {'model': 'lab-4ominitx', 'language': 'hi'}},
-                      'output': {'format': {'type': 'audio/pcm', 'rate': 24000}, 'voice': self.voice}}}})
+                      'output': {'format': {'type': 'audio/pcm', 'rate': 24000}, 'voice': self.voice}},
+            **({'tools': [{'type': 'function', 'name': 'end_call', 'description': 'Hang up the phone. Use it only right after your own goodbye '
+                           'line, when the conversation is over; never while they are still talking or asking.',
+                           'parameters': {'type': 'object', 'properties': {}}}]} if self.v2() else {})}})
         self.reader = asyncio.ensure_future(self.read())
         self.cost_task = asyncio.ensure_future(self.cost_loop())
-        await self.up.send_json({'type': 'conversation.item.create', 'item': {'type': 'message', 'role': 'user', 'content': [{'type': 'input_text', 'text': KICKOFF}]}})
+        await self.up.send_json({'type': 'conversation.item.create', 'item': {'type': 'message', 'role': 'user', 'content': [{'type': 'input_text', 'text': self.kickoff()}]}})
         await self.up.send_json({'type': 'response.create'})
     async def on_frame(self, pcm, speaking):
         if self.up is None or self.up.closed: return
@@ -744,6 +758,8 @@ class AzureRealtimeCall(Call):
                            + (ot.get('text_tokens', 0) or 0) * P['out_text'] + (ot.get('audio_tokens', 0) or 0) * P['out_audio']) / 1e6
                     self.add_cost('realtime', usd)
                     self._end_turn()
+                elif ty == 'response.function_call_arguments.done' and d.get('name') == 'end_call':
+                    asyncio.ensure_future(self.end_after_playback())
                 elif ty == 'error':
                     self.errors.append('rt: ' + json.dumps(d)[:200]); await self.send({'t': 'error', 'msg': 'realtime: ' + json.dumps(d.get('error'))[:160]})
         except Exception as e:
@@ -760,7 +776,7 @@ class AzureRealtimeCall(Call):
         except Exception: pass
 
 def make_call(lab, ws, cfg):
-    preset = next(p for p in PRESETS if p['id'] == cfg['preset'])
+    preset = cfg.get('_preset') or next(p for p in PRESETS if p['id'] == cfg['preset'])
     if preset.get('s2s'):
         kind = S2S[preset['s2s']]['kind']
         return (GeminiLiveCall if kind == 'gemini_live' else AzureRealtimeCall)(lab, ws, cfg, preset)
