@@ -36,6 +36,22 @@ BRAINS = {
     'gemini-3.8-flash':  {'ttft_ms': 2577, 'label': 'Gemini 3.8 Flash', 'host': 'gm', 'model': 'gemini-3.8-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'low'}},
     'gemini-3.5-flash-lite': {'ttft_ms': 826, 'label': 'Gemini 3.5 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.5-flash-lite', 'in': 0.30, 'out': 2.50, 'thinking': {'thinkingLevel': 'minimal'}},
     'gemini-3.6-flash':  {'ttft_ms': 1496, 'label': 'Gemini 3.6 Flash', 'host': 'gm', 'model': 'gemini-3.6-flash', 'in': 0.75, 'out': 3.75, 'thinking': {'thinkingLevel': 'minimal'}},
+    # conversation bake-off candidates, deployed 2026-10-20 (prices filled from the vendor pages before any cost claim)
+    'gpt-5.4-mini':      {'label': 'GPT-5.4 mini (Azure)', 'host': 'sin', 'model': 'lab-gpt54mini', 'in': 0.0, 'out': 0.0, 'no_temp': True,
+                          'extra': {'reasoning_effort': 'none'}, 'price_note': 'unverified'},
+    'deepseek-v4.1-flash': {'label': 'DeepSeek V4.1 Flash (Azure, open weights)', 'host': 'sin', 'model': 'lab-dsv41flash', 'in': 0.0, 'out': 0.0, 'price_note': 'unverified'},
+    'grok-4.7':          {'label': 'Grok 4.7 (Azure)', 'host': 'sin', 'model': 'lab-grok47', 'in': 0.0, 'out': 0.0, 'price_note': 'unverified'},
+    'mistral-large-3':   {'label': 'Mistral Large 3 (Azure, open weights)', 'host': 'sin', 'model': 'lab-mistrall3', 'in': 0.0, 'out': 0.0, 'legacy_max': True, 'price_note': 'unverified'},
+    # OpenAI's newest tiers through OpenRouter (provider pinned to OpenAI), thinking off; Azure quota for these is held by
+    # Taxila's deployments, so the bake-off reaches them here. Prices: OpenAI pricing page via the 2026-10-20 research sweep.
+    'gpt-6-luna@or':     {'label': 'GPT-6 Luna (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-6-luna', 'provider': 'openai',
+                          'in': 0.10, 'out': 0.50, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
+    'gpt-6-sol@or':      {'label': 'GPT-6 Sol (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-6-sol', 'provider': 'openai',
+                          'in': 2.0, 'out': 10.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
+    'gpt-5.6-sol@or':    {'label': 'GPT-5.6 Sol (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-sol', 'provider': 'openai',
+                          'in': 4.0, 'out': 20.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
+    'gpt-5.6-terra@or':  {'label': 'GPT-5.6 Terra (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-terra', 'provider': 'openai',
+                          'in': 2.0, 'out': 12.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
     'gemini-3.1-flash-lite': {'ttft_ms': 2843, 'label': 'Gemini 3.1 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.1-flash-lite', 'in': 0.25, 'out': 1.50, 'thinking': {'thinkingLevel': 'minimal'}},
 }
 

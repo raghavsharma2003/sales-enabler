@@ -184,7 +184,7 @@ async def llm_stream(http: aiohttp.ClientSession, brain_id, messages, usage, tim
             url = f'https://{az_host(ep)}/openai/v1/chat/completions'; hdr = {'api-key': key}
             body = {'model': b['model'], 'stream_options': {'include_usage': True}}
         body.update({'messages': messages, 'stream': True, 'max_completion_tokens': max_tokens + b.get('out_pad', 0), 'temperature': 0.6})
-        if host in ('or', 'sv'): body['max_tokens'] = body.pop('max_completion_tokens')
+        if host in ('or', 'sv') or b.get('legacy_max'): body['max_tokens'] = body.pop('max_completion_tokens')
         if b.get('no_temp') or 'gpt-oss' in b['model'] or 'gptoss' in b['model'] or 'kimi' in b['model']: body.pop('temperature', None)
         body.update(b.get('extra', {}))
         async with http.post(url, headers=hdr, json=body, timeout=aiohttp.ClientTimeout(total=60, sock_read=30)) as r:

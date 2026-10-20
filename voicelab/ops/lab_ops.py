@@ -30,7 +30,7 @@ TAGS = {'lane': 'voicelab', 'created': '2026-10-19', 'owner_ask': 'test-call lab
 DEPLOYMENTS = {
     # brains (OpenAI-compatible chat)
     'lab-gpt41mini-in': ('gpt-4.1-mini', '2025-04-14', 'OpenAI', 'Standard', 50),       # regional South India (residency)
-    'lab-gpt41':        ('gpt-4.1', '2025-04-14', 'OpenAI', 'GlobalStandard', 50),
+    'lab-gpt41':        ('gpt-4.1', '2025-04-14', 'OpenAI', 'GlobalStandard', 300),     # also the bake-off's caller simulator + judge
     'lab-gpt56terra':   ('gpt-5.6-terra', '2026-07-09', 'OpenAI', 'GlobalStandard', 50),
     'lab-gpt6luna':     ('gpt-6-luna', '2026-09-22', 'OpenAI', 'GlobalStandard', 50),
     'lab-gptchat':      ('gpt-chat-latest', '2026-10-07', 'OpenAI', 'GlobalStandard', 50),
@@ -41,6 +41,11 @@ DEPLOYMENTS = {
     'lab-grok41fast':   ('grok-4-1-fast-non-reasoning', '1', 'xAI', 'GlobalStandard', 50),
     'lab-qwen3':        ('qwen3-32b', '1', 'Alibaba', 'GlobalStandard', 50),
     'lab-gptoss120b':   ('gpt-oss-120b', '1', 'OpenAI-OSS', 'GlobalStandard', 50),
+    # conversation bake-off 2026-10-20: newest models with free quota (gpt-6-luna / 5.6-luna quota is held by Taxila)
+    'lab-gpt54mini':    ('gpt-5.4-mini', '2026-03-17', 'OpenAI', 'GlobalStandard', 50),
+    'lab-dsv41flash':   ('DeepSeek-V4.1-Flash', '2026-09-10', 'DeepSeek', 'GlobalStandard', 50),
+    'lab-grok47':       ('grok-4.7', '1', 'xAI', 'GlobalStandard', 50),
+    'lab-mistrall3':    ('Mistral-Large-3', '1', 'Mistral AI', 'GlobalStandard', 50),
     # speech-to-speech
     'lab-rtmini':       ('gpt-realtime-mini', '2025-10-06', 'OpenAI', 'GlobalStandard', 10),
     'lab-rt21mini':     ('gpt-realtime-2.1-mini', '2026-07-07', 'OpenAI', 'GlobalStandard', 10),
