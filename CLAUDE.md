@@ -40,16 +40,26 @@ directive wins. Example: Azure-only was superseded for the voice stack by `direc
 
 ## Model policy (owner directive 2026-10-20)
 
-**Opus 5.5 at extra-high effort is the main agent.** It orchestrates workflows and subagents across three tiers
-(`decision.2026-10-20.model-tiers`):
+**Opus 5.5 at extra-high effort is the main agent.** It picks the model *and* effort for every workflow agent and
+subagent by what the task needs (`decision.2026-10-20.model-selection`). Judge each task on five things:
+- **stakes:** does the output become a decision, a graph node, product code, or something the owner acts on?
+- **ambiguity and novelty;**
+- **depth of reasoning;**
+- **verification:** does a stronger agent check it downstream?
+- **volume.**
 
-| Tier | Use it for |
+Default ladder:
+
+| Model and effort | Typical tasks |
 |---|---|
-| Opus 5.5 | Judgment: synthesis, adversarial verification of architecture or decision claims, judge panels, product and system design, anything that becomes a `context/` decision |
-| Sonnet 5.5 | Execution: research and teardown lanes (browsing, captures, REA runs), build workstreams, tests |
-| Haiku 5.5 | Mechanical work: manifests, format conversion, link and secret scans, simple extraction, shaping inbox JSON |
+| Opus 5.5, max / xhigh | Product and system design, final synthesis, adversarial verification of decision-critical claims, security-sensitive code, judge panels |
+| Opus 5.5, high | Core build workstreams (voice runtime, data model), hard debugging, inference from ambiguous evidence (e.g. architecture from network captures) |
+| Sonnet 5.5, high / medium | Standard research lanes, feature code from a clear spec with tests, UI built from a design |
+| Sonnet 5.5 low, or Haiku 5.5 medium | Extraction, formatting, fixtures, synthetic data |
+| Haiku 5.5, low | Manifests, secret and link scans, inventories |
 
-Never skip verification to save a tier. If limits bind, move work down a tier.
+**Escalate:** a task that fails verification, or proves harder than expected, reruns one tier up. **Never downgrade**
+the verification of a decision-critical claim.
 
 ## Standing rules
 

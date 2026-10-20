@@ -12058,12 +12058,31 @@
   {
    "id": "decision.2026-10-20.model-tiers",
    "type": "decision",
-   "status": "confirmed",
+   "status": "superseded",
    "source": "model",
    "date": "2026-10-20",
    "title": "Tier assignment: main loop Opus 5.5 (extra-high effort, set by the owner's session). Opus 5.5 subagents for judgment: synthesis, adversarial verification of architecture/decision claims, judge panels, product and system design, anything that becomes a context decision. Sonnet 5.5 for execution: research and teardown lanes (browsing, captures, REA runs), build workstreams, tests. Haiku 5.5 for mechanical work: manifests, format conversion, link and secret scans, simple extraction, inbox JSON shaping.",
    "rationale": "Judgment errors compound into the graph and the product, so they get the strongest model; bulk execution is checked downstream by Opus verifiers, so it can run on a cheaper tier.",
    "reverse_if": "Opus verifiers refute or downgrade a materially larger share of Sonnet-lane claims than of Opus-lane claims on comparable work, or usage limits bind on a tier (move work down, never skip verification)."
+  },
+  {
+   "id": "directive.2026-10-20.model-by-use-case",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: choose the model (and effort) per use case, by how much strength, intelligence and effort the task requires.",
+   "quote": "choose the model depending on the use case and how much strength and intelligence and efforts the usecase will require"
+  },
+  {
+   "id": "decision.2026-10-20.model-selection",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Per-task model and effort selection. Judge each task on five things: stakes (does the output become a decision, a graph node, product code or something the owner acts on), ambiguity/novelty, depth of reasoning, whether a stronger agent verifies it downstream, and volume. Default ladder: Opus 5.5 max/xhigh for product and system design, final synthesis, adversarial verification of decision-critical claims, security-sensitive code, judge panels; Opus 5.5 high for core build workstreams (voice runtime, data model), hard debugging, inference from ambiguous evidence (e.g. architecture from captures); Sonnet 5.5 high/medium for standard research lanes, feature code from a clear spec with tests, UI from a design; Sonnet 5.5 low or Haiku 5.5 medium for extraction, formatting, fixtures, synthetic data; Haiku 5.5 low for manifests, secret and link scans, inventories. Escalate: a task that fails verification or proves harder reruns one tier up. Never downgrade verification of a decision-critical claim.",
+   "rationale": "Owner directive; cost and limits are spent where judgment matters, and cheap tiers are safe only where a stronger agent checks the result.",
+   "reverse_if": "Measured verifier refutation rates show a tier under-performing for a task class (move that class up), or a tier's limits bind (move work down a tier, never drop verification)."
   }
  ],
  "edges": [
@@ -21418,6 +21437,21 @@
    "from": "decision.2026-10-20.model-tiers",
    "to": "directive.2026-10-20.model-policy",
    "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.model-selection",
+   "to": "directive.2026-10-20.model-by-use-case",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.model-selection",
+   "to": "decision.2026-10-20.model-tiers",
+   "relation": "supersedes"
+  },
+  {
+   "from": "directive.2026-10-20.model-by-use-case",
+   "to": "directive.2026-10-20.model-policy",
+   "relation": "extends"
   }
  ]
 }
