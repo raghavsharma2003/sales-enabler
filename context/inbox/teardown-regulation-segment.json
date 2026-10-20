@@ -1,0 +1,237 @@
+{
+ "nodes": [
+  {
+   "id": "evidence.2026-10-20.regulation-segment-lane",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Teardown lane regulation-segment: 60 graded claims (40 observed, 17 inferred, 3 vendor-claimed) and a 10-job compliance matrix. Built from re-fetched primary texts (TCCCPR 2018 plus all three amendments, the 1600/1601 directions, the DPDP Act and Rules from eGazette, RBI's 2026 recovery directions), 14 vendor compliance pages and Bolna's 257-chunk dashboard bundle. The harness refused the report.md write; its text is in the lane's structured output.",
+   "path": "research/2026-10-20/teardown/regulation-segment/claims.json"
+  },
+  {
+   "id": "decision.2026-10-20.regulation-segment-postsale-first",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed: post-sale first. Lead with due-date reminders (renewal and pre-due payment/EMI, with service-appointment reminders included), then onboarding/application follow-up. Pre-sale enters only in a second wave, as consented inbound-lead follow-up inside TRAI's 7-day inquiry window. Never cold outbound. Not in v1: market surveys and collections in default.",
+   "rationale": "Service calls need no explicit consent (inferred consent lasts the contract's life), are never blocked by DND once FULLY BLOCK migrates to BLOCK PROMO, have no TRAI calling band, and are covered by DPDP s.7(a). A self-serve platform can therefore ship them compliantly with nothing outside its control. Promotional calls need 140xx, a 10:00-21:00 window and 7-day inquiry evidence. DND numbers (16% of subscribers) are reachable only with CRF-registered consent, and CRF upload is open only to 11 pilot banks; bought lists lose their DPDP basis on ~2027-05-13. Promotional volume is ~11x service volume, so this is a friction/risk choice, not a market-size one.",
+   "reverse_if": "Any of the following. Buyer interviews show self-serve buyers' main job is inbound-lead follow-up (then add it to v1 with a consent ledger). TRAI opens CRF legacy-consent upload to all senders, or DPDP consent managers ship usable APIs. Counsel holds that non-BFSI, non-1601 senders may not make service calls from declared 10-digit numbers. TRAI adds an AI-specific consent rule or series for service calls. The A2P charge on declared numbers moves toward INR 0.50/min or per attempt. Measured pickup on 1600/declared CLIs is too low for reminders to work.",
+   "path": "research/2026-10-20/teardown/regulation-segment/job-matrix.csv"
+  },
+  {
+   "id": "decision.2026-10-20.regulation-segment-compliance-core",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed v1 compliance core, shared by every job (Kano must-be):\n- (M1) per-call category classifier plus in-call promotion/solicitation fence;\n- (M2) series/CLI routing, A2P declaration export and number health;\n- (M4) tenant-wide opt-out/suppression with attempt caps;\n- (M6) DPDP notice, recording disclosure, retention and India residency;\n- non-removable AI disclosure.\nPerformance tier: a calling-window engine keyed by category and sector. Deferred with pre-sale: the consent/inquiry ledger. Never market NCPR scrubbing as a feature: on 140 the operator scrubs.",
+   "rationale": "One promotional line turns a service call promotional (def (av)), and wrong-category templates are now sanctioned in their own right. Every vendor read leaves compliance to the buyer, and their docs are stale (no A2P declaration) or wrong (9-21 hours; 'voice needs no DLT'). Buyers rarely complain about compliance (1.3% of coded Indian complaints), so it is a floor, not the wedge.",
+   "reverse_if": "Account-phase tests show incumbents already enforce category, windows and A2P declaration correctly (then it is parity, not a gap). Or counsel finds a lighter rule set for AI service calls. Or buyer interviews rank these features irrelevant to switching.",
+   "path": "research/2026-10-20/teardown/regulation-segment/job-matrix.csv"
+  },
+  {
+   "id": "rejected.2026-10-20.regulation-segment-cold-outbound-lead",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Cold outbound sales (bought or scraped B2C lists, win-back) as VP's lead job.",
+   "tried": "Evaluated cold promotional outbound against the primary texts as a candidate first job for the self-serve platform.",
+   "broke": "It needs 140xx and a 10:00-21:00 window, and reaches only non-DND numbers (deemed consent). It carries the highest complaint exposure; sanctions bar or disconnect all of the sender's numbers at all operators. Its DPDP basis for bought lists of individuals ends ~2027-05-13 (no legitimate-interest ground). Every module it needs depends on operator scrubbing or CRF consent, which VP cannot control.",
+   "path": "research/2026-10-20/teardown/regulation-segment/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.regulation-segment-vendor-compliance-docs",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Indian vendors' compliance docs against primary text:\n- 0 of 3 mention the Third Amendment, A2P pre-declaration (due ~2026-11-18) or 1601;\n- 2 of 3 state TRAI hours as 9 AM-9 PM (Bolna for all calls; Exotel for promotional), against the primary 10:00 start, and neither separates service calls, which have no band;\n- Exotel says 'voice calls do not require DLT', calls a telco disincentive a sender penalty, and classes surveys/feedback as UCC;\n- all 3 put compliance on the buyer.",
+   "n": "3 Indian vendors (Bolna, Sarvam, Exotel); 14 public pages plus 2 llms.txt indexes",
+   "method": "Public page fetch on 2026-10-20 (raw HTML in data/teardown/regulation-segment/vendor-*), read against the TCCCPR 2018/2025/2026 texts",
+   "path": "research/2026-10-20/teardown/regulation-segment/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.regulation-segment-bolna-bundle",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Bolna's public dashboard code has one calling-compliance control: a calling window (call_start_hour/call_end_hour), off by default, with a bypass flag. It also has retry settings (minimum 15-minute interval). It has 0 strings for DND/NCPR, DLT, A2P, opt-out/suppression, consent records or AI disclosure. Its pilot terms make the customer 'solely responsible' for notices and consents for recording, data and use of AI. Bounded negative: client code only.",
+   "n": "257 JS chunks (13.5 MB); closed chunk graph from platform.bolna.ai/login",
+   "method": "REA capture-browser-scenario (connect mode) to list script URLs, curl of the public assets, static grep; nothing executed",
+   "path": "research/2026-10-20/teardown/regulation-segment/manifest.csv"
+  },
+  {
+   "id": "evidence.2026-10-20.regulation-segment-dpdp-rules-gazette",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "DPDP Rules G.S.R. 846(E), read in primary from eGazette (previously TLS-blocked). The Gazette is dated 2025-11-13, so Rule 4 (consent managers) applies from ~2026-11-13 and the core obligations (notice, security, rights, retention) from ~2027-05-13. Rule 6: one-year log retention and processor-contract safeguards. Rule 15: no general localisation. Rule 16 / s.17(2)(b): a research exemption.",
+   "url": "https://egazette.gov.in/WriteReadData/2025/267650.pdf"
+  },
+  {
+   "id": "evidence.2026-10-20.regulation-segment-rbi-recovery-primary",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "RBI/2026-27/230 (NBFC RBC Third Amendment Directions, effective 2027-01-01), read in primary:\n- contact only 08:00-19:00;\n- call time and count logs;\n- two-way recordings kept 6 months, borrower told;\n- excessive or out-of-hours calling deemed harsh;\n- grievance officer on every recovery communication;\n- IIBF-certified recovery agents;\n- explicit TCCCPR compliance (100AB).\n100A extends these to normal-course collection only 'wherever explicitly specified'.",
+   "url": "https://www.rbi.org.in/scripts/NotificationUser.aspx?Id=13672&Mode=0"
+  },
+  {
+   "id": "open.2026-10-20.regulation-segment-survey-feedback-category",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Is a feedback/NPS call to one's own customer a service call, a commercial communication, or neither? Is a third-party market survey a commercial communication? TRAI's 2018 memo says surveys 'may not be directly falling under' the definition; Exotel treats both as UCC (9-21).",
+   "closes_when": "A counsel opinion or a TRAI clarification classifies feedback and survey calls.",
+   "path": "research/2026-10-20/teardown/regulation-segment/claims.json"
+  },
+  {
+   "id": "open.2026-10-20.regulation-segment-platform-as-sender",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Could VP, as bring-your-own-carrier software placing calls on the tenant's CLIs, be read as a TCCCPR 'Sender' under def (bf)(iii) ('caused ... the voice call to be made')? Could it be an RBI 'recovery agency' or an IRDAI 'telemarketer' when it runs calls as a managed service?",
+   "closes_when": "A counsel opinion on VP's role under TCCCPR def (bf), RBI para 6(11A) and IRDAI CA Regs def (q), for both the self-serve and the managed configuration.",
+   "path": "research/2026-10-20/teardown/regulation-segment/claims.json"
+  },
+  {
+   "id": "risk.2026-10-20.regulation-segment-a2p-declaration",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "From ~2026-11-18 every AI call on every number series must come from CLIs pre-declared as A2P to the originating operator and recorded on DLT; an undeclared call is UCC. No Indian vendor doc read covers this, and tenants onboarding in November may not know.",
+   "mitigation": "The product collects and exports each tenant's A2P declaration pack (CLI ranges, purpose, volumes), blocks campaigns on undeclared CLIs, and confirms with Plivo/Vobiz/Exotel how they record declarations (account phase).",
+   "path": "research/2026-10-20/teardown/regulation-segment/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.regulation-segment-rea-tooling",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Tool findings.\nREA 6.7.0:\n- analyze-web-bundle hung (no output, killed at 300 s and 420 s) on a proxied headless-Chromium target;\n- capture-browser-scenario launch mode has no proxy option, so navigation failed;\n- connect mode to our own CDP Chromium worked (115 script URLs).\nTLS: trai.gov.in (emSign root) and egazette.gov.in (missing Let's Encrypt YR1 intermediate) verify with Mozilla roots plus the published YR1 chain, with no verification disabled.",
+   "n": "5 REA runs (2 analyze-web-bundle, 1 launch, 2 connect); 2 TLS hosts",
+   "method": "Direct runs on 2026-10-20; evidence in data/teardown/regulation-segment/rea-evidence/",
+   "path": "research/2026-10-20/teardown/regulation-segment/manifest.csv"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-20.regulation-segment-postsale-first",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.regulation-segment-postsale-first",
+   "to": "decision.2026-10-17.beachhead-v2",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-20.regulation-segment-postsale-first",
+   "to": "evidence.2026-10-20.regulation-segment-lane",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.regulation-segment-postsale-first",
+   "to": "ledger.REG-35",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.regulation-segment-postsale-first",
+   "to": "open.2026-10-20.regulation-segment-survey-feedback-category",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-20.regulation-segment-compliance-core",
+   "to": "evidence.2026-10-20.regulation-segment-lane",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.regulation-segment-compliance-core",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.regulation-segment-compliance-core",
+   "to": "open.2026-10-20.regulation-segment-platform-as-sender",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-20.regulation-segment-cold-outbound-lead",
+   "to": "ledger.REG-05",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-20.regulation-segment-cold-outbound-lead",
+   "to": "ledger.REG-01",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-20.regulation-segment-vendor-compliance-docs",
+   "to": "ledger.CMP-27",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.regulation-segment-bolna-bundle",
+   "to": "ledger.CMP-27",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.regulation-segment-vendor-compliance-docs",
+   "to": "evidence.2026-10-20.regulation-segment-lane",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.regulation-segment-bolna-bundle",
+   "to": "evidence.2026-10-20.regulation-segment-lane",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.regulation-segment-rea-tooling",
+   "to": "evidence.2026-10-20.regulation-segment-lane",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.regulation-segment-dpdp-rules-gazette",
+   "to": "ledger.REG-05",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-20.regulation-segment-rbi-recovery-primary",
+   "to": "ledger.REG-13",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-20.regulation-segment-platform-as-sender",
+   "to": "kc.2026-10-17.kc8",
+   "relation": "informs"
+  },
+  {
+   "from": "risk.2026-10-20.regulation-segment-a2p-declaration",
+   "to": "ledger.REG-36",
+   "relation": "derived-from"
+  },
+  {
+   "from": "risk.2026-10-20.regulation-segment-a2p-declaration",
+   "to": "decision.2026-10-20.regulation-segment-compliance-core",
+   "relation": "constrains"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-20",
+   "event": "teardown_lane_regulation_segment",
+   "details": "Regulation/segment lane (decision 1) finished in the account-free phase.\nRe-fetched TCCCPR 2018 and all three amendments, the 1600/1601 directions, PR 111/91/20 (byte-identical to the 10-17 copies), the DPDP Rules from eGazette (Gazette 2025-11-13) and RBI/2026-27/230 in primary; read 14 vendor compliance pages and Bolna's 257-chunk dashboard bundle.\nProposed post-sale first: due-date reminders, then onboarding/application follow-up; pre-sale only consented inbound-lead follow-up in a second wave; never cold outbound.\nProposed a shared v1 compliance core.\nFound Bolna and Exotel docs stale or wrong (9-21 hours; no A2P; 'voice needs no DLT').\nREA analyze-web-bundle hung; connect-mode scenario worked.\nThe harness refused report.md, so its text is in the structured output.",
+   "source": "research/2026-10-20/teardown/regulation-segment/claims.json"
+  }
+ ]
+}

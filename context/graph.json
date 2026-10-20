@@ -11991,6 +11991,32 @@
    "title": "Owner said go on the teardown brief. Phase 1 (account-free) launched as workflow wf_560edf6c-5d6: Bolna blind inference scored against its open code (method calibration), 7 vendor public-surface lanes (Sarvam, Vapi, Retell, ElevenLabs Agents, Synthflow, SquadStack, Exotel) each with an adversarial verifier, regulation/segment lane (pre vs post-sale), radar of ~20 others + new entrants, synthesis. Outputs under research/2026-10-20/teardown/, raw under data/teardown/ (gitignored, sha256 manifests), graph proposals in context/inbox/. Phase 2 (account phase: time-and-motion, fixed tasks, PSTN call battery) waits on trial accounts created via Instinct.",
    "rationale": "Account-free work needs no OTPs and calibrates the inference method before it is trusted on closed vendors.",
    "reverse_if": "The owner changes the deep set, or the Bolna calibration hit rate is so low that inferred architecture claims on closed vendors must be dropped in favour of account-phase observation only."
+  },
+  {
+   "id": "evidence.2026-10-20.trial-accounts-report",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Instinct trial-account report (21:46-22:19 IST): ready = ElevenLabs (free, 10k credits, ~10 min sign-up), Vapi ($5, ~7 min, email code at login), Retell ($10, ~10 min, TOTP mandatory every login), Bolna ($5, ~12 min, trial calls only to verified numbers), Exotel (150 credits, unverified tenant, voicebot access unconfirmed), Sarvam (team@ credits exhausted -36.58; owner's personal account 88.90 credits). Sales-only: Synthflow (from $30k/yr), SquadStack AI. No cards, agents or calls. Terms review was stopped by the owner part-way; clauses found: ElevenLabs ToU 4(c) free users non-commercial only; Vapi restriction 7 no reverse engineering/decompiling/extracting source; Exotel 6.2 no building a competing product. Bolna, Retell, Sarvam terms not reviewed. Sign-up minutes are a first time-and-motion data point (n=1 each, Instinct agent, mostly email wait)."
+  },
+  {
+   "id": "risk.2026-10-20.vendor-terms",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Vendor terms restrict the teardown: Exotel 6.2 bars building a competing product; Vapi restriction 7 bars reverse engineering/decompiling/extracting source; ElevenLabs free tier is non-commercial only; Bolna/Retell/Sarvam unread. Breach risks account bans or claims against Vyakti.",
+   "mitigation": "Full terms read by an agent before any account use (research/2026-10-20/teardown/terms/); use each account only for activities its terms allow; Exotel account not used for the teardown; no logged-in bundle/source inspection on Vapi; owner decides on anything ambiguous (e.g. an ElevenLabs paid plan for commercial use)."
+  },
+  {
+   "id": "risk.2026-10-20.teardown-creds-pasted",
+   "type": "risk",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "The 12 teardown credentials (passwords and API keys for Bolna, ElevenLabs, Retell, Sarvam x2, Vapi) were pasted into chat by the owner; now in the session transcript.",
+   "mitigation": "Stored only in a mode-600 scratchpad env file; never committed or printed; rotate all of them when the teardown ends; no cards on file, so exposure is bounded by free credits."
   }
  ],
  "edges": [
@@ -21305,6 +21331,21 @@
    "from": "open.2026-10-20.trial-accounts",
    "to": "decision.2026-10-20.teardown-launch",
    "relation": "constrains"
+  },
+  {
+   "from": "evidence.2026-10-20.trial-accounts-report",
+   "to": "open.2026-10-20.trial-accounts",
+   "relation": "partially-verifies"
+  },
+  {
+   "from": "risk.2026-10-20.vendor-terms",
+   "to": "decision.2026-10-20.teardown-launch",
+   "relation": "constrains"
+  },
+  {
+   "from": "risk.2026-10-20.teardown-creds-pasted",
+   "to": "risk.2026-10-20.secrets-pasted",
+   "relation": "extends"
   }
  ]
 }

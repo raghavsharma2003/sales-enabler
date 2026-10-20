@@ -1,0 +1,229 @@
+{
+ "nodes": [
+  {
+   "id": "evidence.2026-10-20.sarvam-lane",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Teardown lane sarvam (account-free): 62 graded claims (45 observed, 14 inferred, 3 vendor-claimed) and 14 pre-registered account-phase predictions. Sources: 160 Voice Agents docs pages plus the OpenAPI (68 ops, 175 schemas), the changelog and status feeds, HARs of the product and login pages (53 dashboard chunks, 700-event analytics catalogue), npm and PyPI SDKs read without installing, DNS/RDAP/cloud IP ranges, and the round-2 widget WebSocket dumps. The harness refused the report.md write, so the report text is in the lane's structured output.",
+   "path": "research/2026-10-20/teardown/sarvam/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.sarvam-hosting-orchestration",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Sarvam architecture, observed. The voice runtime (apps.sarvam.ai) is in Azure Central India (4.213.0.0/16) and the model APIs (api.sarvam.ai) sit on an AWS ap-south-1 EKS-style ELB. Orchestration is its own app-runtime harness: one JSON/base64 WebSocket, 16 kHz WAV chunks, no WebRTC, and no LiveKit/Daily/Pipecat code in the SDK or the dashboard bundle (the \"no framework\" part is inference). BYO telephony from 7 providers; rented numbers on Vobiz.",
+   "path": "data/teardown/sarvam/ws/widget-ws-protocol-summary-2026-10-17.json"
+  },
+  {
+   "id": "measure.2026-10-20.sarvam-effective-price-per-connected-min",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Sarvam effective all-in price per connected minute, ex GST, Sarvam telephony: PAYG 30 s call INR 7.40, 45 s 5.20, 60 s 3.90, 90 s 5.07; Growth 90 s 4.60. 60 s agent pulses plus 30 s telephony pulses put typical 30-90 s Indian calls at INR 4.6-7.4, not 3.55-3.90.",
+   "n": "rate card x 9 call lengths x 4 plans (36 rows)",
+   "method": "computed from the observed 2026-10-20 rate card (www pricing page and docs pricing.md); FX 95; GST 18%",
+   "path": "research/2026-10-20/teardown/sarvam/pricing-allin.csv"
+  },
+  {
+   "id": "measure.2026-10-20.sarvam-cogs-inference",
+   "type": "measurement",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Inference: Sarvam COGS. Per call-minute, models at its own Growth API list prices cost INR 1.16-1.33 (lab measured 1.39-1.51 at PAYG). Self-hosted marginal compute is about INR 0.24-0.34 (g4 proxies, 50% utilisation). Against an INR 3.00-3.50 price, the compute margin is about 89-93%.",
+   "n": "5 component prices + 1 lab stack (n=9 replies, 3 calls) + 3 self-host proxies",
+   "method": "desk computation: Sarvam API list prices (2026-10-20) x g4 usage assumptions (352 TTS chars/min, STT streamed) and g4 self-host throughput proxies; not measured on Sarvam infrastructure",
+   "path": "research/2026-10-20/teardown/sarvam/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.sarvam-compliance-gaps",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Sarvam leaves India plumbing to the buyer. Rented numbers are 10-digit 11/79/80 series only (PAN/Aadhaar KYC); there is no 140/1600/1601, A2P, DLT or NCPR handling (0 mentions in 160 docs pages); caller-ID rotation is pitched to stop contacts \"learning to ignore one number\"; calling windows are free-form; there is no AI-disclosure control, while the demo agent denied being AI 6/6. Its own EMI-reminder showcase therefore needs a BYO 1600 trunk to be lawful for a regulated lender (inference).",
+   "path": "research/2026-10-20/teardown/sarvam/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.sarvam-analytics-event-catalog",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Sarvam's 700-event product-analytics catalogue is public in its login-page bundle. Each event has an owner team and activation role (aha/setup/habit). It shows its activation definition (agent, tool, KB, inbound and campaign created; MCP bound), the Cart Abandonment vertical (Shopify + Razorpay), Razorpay UPI autopay billing, and an org model-training consent toggle. A reference for VP's own activation metrics.",
+   "path": "data/teardown/sarvam/platform-scripts/analytics-event-catalog.json"
+  },
+  {
+   "id": "risk.2026-10-20.sarvam-postsale-contested",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Sarvam is converging on the post-sale jobs VP is weighing: demos are EMI reminder, cart recovery and appointment booking; the productised vertical is Cart Abandonment; its outcome variables are built around collections. It sells at INR 3-3.5/min with India-hosted Hindi-first models, so post-sale-first is contested on price and language.",
+   "mitigation": "Compete where Sarvam is absent, not on price or language: regulated BFSI service calls that are 1600/A2P-ready and compliant by construction, with enforced AI disclosure, handset reply gap of 1.5 s or less and better turn-taking. Prove each with the account-phase battery before claiming it.",
+   "path": "research/2026-10-20/teardown/sarvam/claims.json"
+  },
+  {
+   "id": "decision.2026-10-20.sarvam-where-vp-wins",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed: against Sarvam, VP claims only these measurable edges: (1) AI disclosure enforced in code; (2) handset reply gap on Indian PSTN of 1.5 s p50 or less (demo 3.1 s; Sarvam's own models reach about 1.0-1.2 s in our pipeline); (3) turn-taking under elderly pauses and babble; (4) regulated-call plumbing (1600/A2P routing, category windows, opt-out from the CSV); (5) fair short-call billing. Not claimed: price, Hindi/Tamil language hold, or having a copilot (Genie exists).",
+   "rationale": "SAR-34/35/38/44-49/53/54 in the lane claims. Sarvam leads on price and holds language; Genie already covers chat-driven build, deploy and diagnosis.",
+   "reverse_if": "The account phase shows configured Sarvam agents disclosing AI by default and a handset p50 of 1.5 s or less on PSTN, or Sarvam ships 1600/A2P routing and a disclosure guardrail.",
+   "path": "research/2026-10-20/teardown/sarvam/claims.json"
+  },
+  {
+   "id": "rejected.2026-10-20.sarvam-rea-cdp-bundle",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "REA analyze-web-bundle through our loopback CDP Chromium on indus.sarvam.ai",
+   "tried": "rea-agents 6.7.0 analyze-web-bundle --fetch-source-maps against a headless Chromium on CDP port 9333, loading the public login page (no login).",
+   "broke": "Cloudflare served that CDP-attached browser an \"Attention Required\" challenge: REA saw 5 scripts and 0 endpoints. A Playwright-launched Chromium loaded the real app (53 Next.js chunks) without a challenge. We did not bypass it; the analysis came from the Playwright HAR plus static grep. inspect-web-network-capture only decodes HARs, and analyze-javascript-application is Electron-oriented (zero counts on the npm SDK).",
+   "path": "data/teardown/sarvam/rea/indus-login-analyze-web-bundle.json"
+  },
+  {
+   "id": "open.2026-10-20.sarvam-account-phase",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Sarvam account phase: score the 14 pre-registered predictions (SAR-P01-P14). Sign-up and KYC path; Genie agent quality and disclosure; messy-CSV dedupe and opt-out; out-of-hours window; voicemail on Indian operator announcements; warm vs blind transfer on BYO Plivo; failed-call reason; export columns; handset reply gap (predicted p50 1.6-2.4 s); invoice pulse rounding.",
+   "closes_when": "A trial account on team email runs the fixed task list twice and the PSTN battery (n of at least 30 clean turns) on our Plivo number, and each prediction is scored hit or miss in predictions.json.",
+   "path": "research/2026-10-20/teardown/sarvam/predictions.json"
+  }
+ ],
+ "edges": [
+  {
+   "from": "evidence.2026-10-20.sarvam-lane",
+   "to": "directive.2026-10-20.teardown-rea",
+   "relation": "implements"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-lane",
+   "to": "decision.2026-10-20.teardown-launch",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-lane",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "informed-by"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-hosting-orchestration",
+   "to": "evidence.2026-10-20.sarvam-lane",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-hosting-orchestration",
+   "to": "measure.2026-10-19.sarvam-india",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-20.sarvam-effective-price-per-connected-min",
+   "to": "measure.2026-10-17.indian-all-in-voice-agent-list-prices",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-20.sarvam-effective-price-per-connected-min",
+   "to": "evidence.2026-10-20.sarvam-lane",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.sarvam-cogs-inference",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-20.sarvam-cogs-inference",
+   "to": "measure.2026-10-19.sarvam-india",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-compliance-gaps",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-compliance-gaps",
+   "to": "decision.2026-10-17.beachhead-v2",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-compliance-gaps",
+   "to": "constraint.no-ai-identity-deception-v6",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.sarvam-analytics-event-catalog",
+   "to": "evidence.2026-10-20.sarvam-lane",
+   "relation": "part-of"
+  },
+  {
+   "from": "risk.2026-10-20.sarvam-postsale-contested",
+   "to": "decision.2026-10-17.beachhead-v2",
+   "relation": "challenges"
+  },
+  {
+   "from": "risk.2026-10-20.sarvam-postsale-contested",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.sarvam-where-vp-wins",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.sarvam-where-vp-wins",
+   "to": "evidence.2026-10-20.sarvam-compliance-gaps",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.sarvam-where-vp-wins",
+   "to": "evidence.2026-10-20.sarvam-hosting-orchestration",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.sarvam-where-vp-wins",
+   "to": "measure.2026-10-20.sarvam-effective-price-per-connected-min",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.sarvam-where-vp-wins",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.sarvam-where-vp-wins",
+   "to": "open.2026-10-20.sarvam-account-phase",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-20.sarvam-rea-cdp-bundle",
+   "to": "directive.2026-10-20.teardown-rea",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-20.sarvam-account-phase",
+   "to": "open.2026-10-20.trial-accounts",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-20",
+   "event": "teardown_lane_sarvam",
+   "details": "Sarvam lane finished the account-free phase. 62 graded claims (45 observed, 14 inferred, 3 vendor-claimed) and 14 pre-registered predictions.\n- Read: 160 docs pages, the OpenAPI (68 ops), changelog and status feeds, HARs of the product and login pages (53 chunks, 700-event analytics catalogue), the npm/PyPI SDKs (not installed), DNS/RDAP and cloud IP ranges, and the round-2 widget WS dumps.\n- Hosting: voice runtime on Azure Central India, model APIs on AWS Mumbai; own WebSocket orchestration with no WebRTC.\n- Price: rates unchanged since 10-17, but 60-s pulses put 30-90 s calls at INR 4.6-7.4 per connected minute; docs and the marketing page disagree on plan fees. COGS inference: compute margin about 89-93%.\n- Compliance: 10-digit rented numbers only, caller-ID rotation, no 1600/A2P, no disclosure control.\n- Segment: Sarvam converges on post-sale (EMI, cart recovery).\n- Tooling: REA analyze-web-bundle hit a Cloudflare challenge in CDP Chromium; Playwright HAR worked. The harness refused report.md.",
+   "source": "research/2026-10-20/teardown/sarvam/claims.json"
+  }
+ ]
+}
