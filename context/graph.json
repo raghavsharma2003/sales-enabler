@@ -12160,6 +12160,25 @@
    "date": "2026-10-20",
    "title": "Which product to build and what it is like (segment and first jobs, v1 scope and parity floor, where VP wins, stack defaults, pricing), decided jointly once the research completes.",
    "closes_when": "Both teardown runs (public wf_560edf6c-5d6, authorized account phase wf_36b25033-85c) finish, a consolidated decision brief is written across all research (2026-10-17 rounds, voice lab, teardown, terms, regulation), and the owner decides."
+  },
+  {
+   "id": "directive.2026-10-20.intent-better-product",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner clarification of intent: the research exists to understand each competitor's product end to end so VP can be better than any of them in every way, while also carrying VP's own extra features (emotional, relational, human-sounding voice; memory and personalisation; later self-learning). Pre-sale vs post-sale was over-weighted; it is an input, not the organising question.",
+   "quote": "the intent was to understand ... these product end to end so that we can make a better one then any of them, a product which is better in everyway while having the extra features we are offering"
+  },
+  {
+   "id": "decision.2026-10-20.blueprint-frame",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "The consolidated decision brief is a product blueprint, organised by product dimension rather than by segment: onboarding, agent builder, conversation and voice quality, telephony, campaigns and data import, compliance handling, analytics and recordings, integrations, the LLM-native setup experience, pricing, reliability and support. For each: how the best competitor does it, where each falls short (evidence-graded), VP's better design, and where VP's own features (emotional voice, memory, personalisation, self-learning later) sit on top. Pre-sale vs post-sale moves to a go-to-market section. The running workflows are not restarted; their outputs feed the blueprint.",
+   "rationale": "Owner directive; organising by dimension makes 'better in every way' checkable item by item.",
+   "reverse_if": "The owner asks for a different organising frame."
   }
  ],
  "edges": [
@@ -21599,6 +21618,26 @@
    "from": "open.2026-10-20.product-decision",
    "to": "open.2026-10-20.default-stack",
    "relation": "requires"
+  },
+  {
+   "from": "decision.2026-10-20.blueprint-frame",
+   "to": "directive.2026-10-20.intent-better-product",
+   "relation": "derived-from"
+  },
+  {
+   "from": "directive.2026-10-20.intent-better-product",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-20.blueprint-frame",
+   "to": "open.2026-10-20.product-decision",
+   "relation": "informs"
+  },
+  {
+   "from": "directive.2026-10-20.intent-better-product",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "constrains"
   }
  ]
 }

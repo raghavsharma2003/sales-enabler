@@ -32,7 +32,15 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
   created by the owner (`open.2026-10-20.trial-accounts`).
   - **Watch:** parity as a *wedge* was rejected on 2026-10-17. v1 has to win on measured task failures, not on feature
     count (`open.2026-10-20.parity-floor-vs-wedge`).
-  - **Watch:** pre-sale vs post-sale is partly a TRAI question (`open.2026-10-20.presale-vs-postsale`).
+  - **Watch:** pre-sale vs post-sale is partly a TRAI question (`open.2026-10-20.presale-vs-postsale`). It is a
+    go-to-market input, not the organising question (`directive.2026-10-20.intent-better-product`).
+- **The goal of the research:** understand each competitor's product end to end, then design VP to be better in every
+  dimension, with VP's own features on top. The final brief is a dimension-by-dimension product blueprint
+  (`decision.2026-10-20.blueprint-frame`). For each dimension it gives:
+  - how the best competitor does it;
+  - where each one falls short;
+  - VP's better design;
+  - where emotional voice, memory, personalisation and later self-learning sit.
 - **The voice stack is a user choice** in the product, with curated defaults (`decision.2026-10-20.product-stack-selectable`).
   The default is picked after Vertex returns and round-2 ratings are in. The owner leans towards **Gemini TTS**.
 - **The voice lab is paused** (`decision.2026-10-20.pause-lab`):
