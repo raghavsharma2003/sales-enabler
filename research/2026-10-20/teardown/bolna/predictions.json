@@ -1,0 +1,161 @@
+{
+ "lane": "bolna-blind",
+ "registered_at": "2026-10-20T17:30:00Z",
+ "note": "Pre-registered before any account exists. Score after the account phase: hit/miss per row, Brier score over p.",
+ "predictions": [
+  {
+   "id": "P01",
+   "task": "onboarding",
+   "prediction": "Sign-up (hCaptcha + email) to first live call reaching our verified Indian handset takes 12-25 min (p50 ~15), on a Bolna-provided number; trial limited to verified numbers and 2 concurrent calls.",
+   "p": 0.75,
+   "how_scored": "minutes and clicks from sign-up to first answered call"
+  },
+  {
+   "id": "P02",
+   "task": "telephony",
+   "prediction": "Buying an Indian DID on a trial is blocked until the compliance application (CIN Pvt Ltd + GST) and Vobiz KYC are approved, so not the same day.",
+   "p": 0.85,
+   "how_scored": "attempt purchase on day 1; record the gate"
+  },
+  {
+   "id": "P03",
+   "task": "build-agent",
+   "prediction": "Studio Auto Build yields a working agent in <=10 min carrying the default stack (Vobiz, Deepgram nova-3 hi, Azure gpt-4.1-mini, ElevenLabs Turbo v2.5 'Tripti').",
+   "p": 0.8,
+   "how_scored": "time to saved agent; read the agent JSON via GET /v2/agent"
+  },
+  {
+   "id": "P04a",
+   "task": "messy-csv",
+   "prediction": "Duplicate rows are not de-duplicated (both dialled).",
+   "p": 0.75,
+   "how_scored": "upload the standard messy 50-row CSV; count executions per number"
+  },
+  {
+   "id": "P04b",
+   "task": "messy-csv",
+   "prediction": "Invalid numbers are counted and skipped without per-row reasons.",
+   "p": 0.7,
+   "how_scored": "compare the dashboard 'valid contacts' count with the CSV; look for row-level errors"
+  },
+  {
+   "id": "P04c",
+   "task": "messy-csv",
+   "prediction": "10-digit Indian numbers without +91 are rejected rather than normalised to E.164.",
+   "p": 0.65,
+   "how_scored": "include 5 such rows"
+  },
+  {
+   "id": "P04d",
+   "task": "messy-csv",
+   "prediction": "The opt-out row is dialled; there is no opt-out/DND column semantics.",
+   "p": 0.85,
+   "how_scored": "include one row flagged opt_out=yes"
+  },
+  {
+   "id": "P04e",
+   "task": "messy-csv",
+   "prediction": "Hindi-script (Devanagari) names pass through intact as prompt variables.",
+   "p": 0.8,
+   "how_scored": "listen for the name in the greeting"
+  },
+  {
+   "id": "P04f",
+   "task": "messy-csv",
+   "prediction": "Empty columns reach the prompt as blanks, producing awkward lines.",
+   "p": 0.6,
+   "how_scored": "rows with empty first_name"
+  },
+  {
+   "id": "P05",
+   "task": "scheduling",
+   "prediction": "Calling guardrails are off by default; windows are whole-hour only; no day-of-week, holiday or per-number frequency caps; batch start rounds up to the next 10 minutes.",
+   "p": 0.75,
+   "how_scored": "configure a 10:00-21:00 window and a schedule at hh:03"
+  },
+  {
+   "id": "P06a",
+   "task": "voicemail",
+   "prediction": "Voicemail detection misclassifies >=1 of 5 Indian operator/IVR messages ('switched off', 'busy', in Hindi).",
+   "p": 0.6,
+   "how_scored": "5 calls to numbers playing operator messages"
+  },
+  {
+   "id": "P06b",
+   "task": "transfer",
+   "prediction": "Cold transfer to our second number works on Plivo/Vobiz.",
+   "p": 0.75,
+   "how_scored": "trigger transfer phrase"
+  },
+  {
+   "id": "P06c",
+   "task": "transfer",
+   "prediction": "Warm transfer passes a summary or context to the human side.",
+   "p": 0.5,
+   "how_scored": "listen on the receiving handset"
+  },
+  {
+   "id": "P07",
+   "task": "failed-call",
+   "prediction": "Call history filters by status work; 'failed' carries error_message but 'stopped'/provider-side failures give no actionable reason.",
+   "p": 0.7,
+   "how_scored": "force a failed call (invalid number, busy line); find it and its reason"
+  },
+  {
+   "id": "P08",
+   "task": "export",
+   "prediction": "Async CSV report for 50 rows arrives in <5 min with extracted fields as columns.",
+   "p": 0.75,
+   "how_scored": "generate report after the batch"
+  },
+  {
+   "id": "P09a",
+   "task": "latency",
+   "prediction": "Handset-side reply gap on Indian PSTN with the default stack: p50 1.3-2.2 s, p90 >= 2.5 s.",
+   "p": 0.7,
+   "how_scored": "stereo recording at our Plivo number, caller battery from l4b, n>=30 turns"
+  },
+  {
+   "id": "P09b",
+   "task": "latency",
+   "prediction": "With the India-residency config (Plivo + Azure OpenAI, no BYOK): p50 1.1-1.7 s.",
+   "p": 0.5,
+   "how_scored": "same battery, India config (needs Enterprise or support enablement)"
+  },
+  {
+   "id": "P10",
+   "task": "region",
+   "prediction": "A default Vobiz call to an Indian number is processed on the ap-south-1 websocket cluster despite docs saying US is the default.",
+   "p": 0.6,
+   "how_scored": "raw logs / latency comparison US vs India config"
+  },
+  {
+   "id": "P11a",
+   "task": "language",
+   "prediction": "In the Hinglish battery the agent holds the caller's language on >=80% of turns.",
+   "p": 0.55,
+   "how_scored": "language-hold scoring per turn"
+  },
+  {
+   "id": "P11b",
+   "task": "language",
+   "prediction": "When the caller switches fully to Hindi, >=1 in 5 replies come back in English.",
+   "p": 0.5,
+   "how_scored": "Hindi-switch scenario"
+  },
+  {
+   "id": "P12",
+   "task": "disclosure",
+   "prediction": "An Auto-Built agent without an explicit disclosure rule admits being an AI when asked 'are you a bot?'.",
+   "p": 0.7,
+   "how_scored": "battery 'are you a bot?' item"
+  },
+  {
+   "id": "P13",
+   "task": "support",
+   "prediction": "First human reply to a trial-account email ticket takes >24 h.",
+   "p": 0.6,
+   "how_scored": "one support ticket, timestamped"
+  }
+ ]
+}

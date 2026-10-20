@@ -1,0 +1,482 @@
+[
+ {
+  "id": "RS-01",
+  "dimension": "call-category",
+  "claim": "TCCCPR 2018 defines a commercial communication as a call or message whose primary purpose is to inform about, advertise or solicit business for goods or services, a supplier, or a business or investment opportunity. Everything in TCCCPR hangs off this test.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2018/RegulationUcc19072018.pdf (regulation 2, \"Commercial Communication\")",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-02",
+  "dimension": "call-category",
+  "claim": "A promotional voice call is a commercial communication containing promotional material or an advertisement; if promotional content is mixed into any commercial voice call, the whole call is treated as promotional (Second Amendment def (av)). Confirms ledger REG-08.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2nd-amend-2025/Regulation_12022025.pdf (reg 2(e), def (av))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-03",
+  "dimension": "call-category",
+  "claim": "Third Amendment def (bh): (i) a service call is one by a Sender to its Customer with information pertaining to a product or service procured by that customer (warranty or service, recall, safety, balance, delivery, OTP), not promotional and needing no explicit consent; (ii) a call to facilitate an ongoing purchase needs explicit consent valid 7 days, renewable by the customer 7 days at a time. Confirms REG-35 and adds the (ii) limb.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (reg 2(h), def (bh))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-04",
+  "dimension": "call-category",
+  "claim": "TRAI Second Amendment memorandum para 37: no cross-sell, upsell or promotional offer to existing customers may go as a service message; para 39: EMI reminders and similar long-running service messages rest on inferred consent valid for the duration or discharge of the contract.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2nd-amend-2025/Regulation_12022025.pdf (Explanatory Memorandum paras 37, 39)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-05",
+  "dimension": "call-category",
+  "claim": "TRAI wrote in 2018 that communications \"to survey the market may not be directly falling under the definition of commercial communications\" and deferred a position; no later TCCCPR text classifies surveys. Exotel's FAQ instead labels \"survey and feedback calls\" as UCC restricted to 9 AM-9 PM.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2018/RegulationUcc19072018.pdf (memorandum para 4.3.13); /home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-calling-hours/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-06",
+  "dimension": "call-category",
+  "claim": "From the Third Amendment's 90-day bucket (on or after ~2026-12-18, strict reading), a complaint arising from a content template registered in the wrong category blacklists that template, and five such blacklistings in 90 days suspend the Sender for one month or until all templates are re-verified. Mis-labelling a promotional script as service is now a sanction of its own.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (reg 25 complaint mechanism, wrong-category proviso; date computed)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-07",
+  "dimension": "number-series",
+  "claim": "Promotional calls only from 140xx; RBI-, SEBI-, IRDAI- and PFRDA-regulated entities make service and transactional calls only from 1600xx after their Jan-Mar 2026 deadlines, \"even with the explicit or inferred consent\"; 1601xx is for utilities and logistics/courier service calls (Phase I) and never for promotion. The re-downloaded PDFs are byte-identical to the 2026-10-17 copies. Confirms REG-10, REG-20, l1 S08.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-dir-1600-bfsi-2025-11-19/Direction_19112025.pdf; /home/user/sales-enabler/data/teardown/regulation-segment/trai-dir-1600-irdai-2025-12-16/Direction_16122025.pdf; /home/user/sales-enabler/data/teardown/regulation-segment/trai-dir-1601-2026-08-10/Direction_10082026.pdf; /home/user/sales-enabler/data/teardown/regulation-segment/trai-pr91-2026/PR_No91of2026.pdf",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-08",
+  "dimension": "a2p-ai",
+  "claim": "Every AI call is an A2P call (\"initiated by an application, software system, or automated platform without direct human dialling ... including ... artificial voice\"). Every Sender must declare A2P use and CLI ranges to its originating operator in advance, recorded on DLT; an undeclared A2P call is UCC. Reg 4 sits in the 60-day bucket: on or after 2026-11-18 on the strict reading. Confirms REG-07, REG-36, RAW-01.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (def (ea); reg 4; commencement cl. 1(3))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-09",
+  "dimension": "number-series",
+  "claim": "CLIs from 140xx, 1600xx and 1601xx may not be flagged \"Suspected UCC/spam\" (reg 21A proviso) and are exempt from the up-to-INR 0.05/min A2P termination charge (reg 35A); declared 10-digit CLIs get neither protection.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (reg 21A, reg 35A)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-10",
+  "dimension": "ncpr-preference",
+  "claim": "Third Amendment Schedule II: BLOCK PROMO blocks only promotional communications and never transactional, service or government communications in any time band; every FULLY BLOCK preference is migrated to BLOCK PROMO within 15 days of commencement (on or after ~2026-11-03). After that, no DND preference blocks a genuine service call.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (Schedule II Note-3/Note-4; memorandum para 22)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-11",
+  "dimension": "ncpr-preference",
+  "claim": "Scrubbing is defined as comparing the Sender's target list with DL-Preference and DL-Consent on the DLT platform (TCCCPR 2018 def (be)), run by the access provider for promotional traffic. A software platform can only add its own suppression list; registry scrubbing needs the operator or CPaaS (inference from the definition and the vendor docs read).",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2018/RegulationUcc19072018.pdf (def (be)); /home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-faq-ndnc-dnd/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-sarvam-dnd/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-12",
+  "dimension": "consent",
+  "claim": "Third Amendment def (bb) Relationship: (ii) a written or digital inquiry within the preceding 7 days, kept in verifiable form; (iii) an application within the preceding 3 months. The old 12-month post-purchase relationship was removed; consent from a transaction now lasts only for the duration or discharge of the contract.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (reg 2(g); memorandum section 4.2)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-13",
+  "dimension": "consent",
+  "claim": "Explicit consent is consent recorded by the Consent Registrar, or obtained by verifiable means outside the CRF and then registered. Uploading legacy consents has been piloted only with 11 banks (direction of 10.12.2025), and TRAI \"will issue further necessary directions\". On a complaint the originating operator checks that the consent \"on its face, appear[s] genuine to an objective, reasonable observer\".",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (def (y); memorandum on consent); /home/user/sales-enabler/data/teardown/regulation-segment/trai-dir-crf-pilot-2025-06-13/Direction_13062025.pdf",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-14",
+  "dimension": "consent",
+  "claim": "Third Amendment def (k) Explanation 3: nothing in TCCCPR exempts a Sender from its obligations or liability under the DPDP Act. The two regimes stack on every call.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (def (k))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-15",
+  "dimension": "calling-hours",
+  "claim": "Promotional calls: the 00-06, 06-08, 08-10 and 21-24 bands are default OFF for every customer, so the default window is 10:00-21:00 (TCCCPR 2018 Schedule II item 3 Note-1). Service, transactional and government communications have no TRAI time restriction (Third Amendment Schedule II; memorandum para 22.B.ii).",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2018/RegulationUcc19072018.pdf (Schedule II item 3); /home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (Schedule II; memorandum para 22)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-16",
+  "dimension": "calling-hours",
+  "claim": "Bolna's docs give TRAI's allowed hours as 9:00 AM-9:00 PM IST for outbound calls, and its window guardrail is off by default with a per-call bypass flag. Exotel's FAQ gives 9 AM-9 PM for promotional calls and says Exotel does not enforce hours at API level. Both contradict the primary 10:00 promotional start; neither distinguishes service calls, which have no band. Confirms l1 S28 and extends CMP-27 to Bolna.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-bolna-calling-guardrails/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-calling-hours/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-17",
+  "dimension": "dlt",
+  "claim": "Exotel's developer FAQ says \"DLT registration is only required for SMS. Voice calls do not require DLT templates or Entity IDs.\" This contradicts the primary texts: voice senders register as Principal Entities, 1600 CLIs need header and template registration on DLT, and A2P declarations are recorded on DLT from ~2026-11-18.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-faq-dlt-compliance/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (reg 4); /home/user/sales-enabler/data/teardown/regulation-segment/vendor-bolna-regulated-numbers/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-18",
+  "dimension": "enforcement",
+  "claim": "Exotel's TRAI FAQ lists a penalty of \"Up to INR 1,000 per complaint per day\" for calling DND numbers. The only INR 1,000-per-count figure in TCCCPR 2018 is the financial disincentive on originating access providers (reg 27), not a penalty on senders. This is the same misattribution l1 recorded for a \"INR 10 lakh fine\".",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-faq-trai-regulations/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2018/RegulationUcc19072018.pdf (reg 27)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-19",
+  "dimension": "dlt",
+  "claim": "Bolna documents the buyer registering as Principal Entity on the Tata DLT portal (INR 5,900), then header and template registration and PE/TM IDs for 160-series numbers via Plivo. It names an \"RBI / SEBI certificate\" as the regulator proof (IRDAI and PFRDA omitted) and says nothing about A2P declaration or 1601.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-bolna-regulated-numbers/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-20",
+  "dimension": "competitor-compliance",
+  "claim": "Bolna's public dashboard code (257 JS chunks, 13.5 MB, a closed chunk graph reached from platform.bolna.ai/login on 2026-10-20) contains one calling-compliance control: the calling-window guardrail (call_start_hour/call_end_hour) with a bypass flag. It also has retry settings (intervals of at least 15 minutes; retry on voicemail). It contains no strings for DND/NCPR, DLT, A2P, opt-out or suppression lists, consent records or AI disclosure. Bounded negative: client code only, so server-side features would not show.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/bolna-platform-js-bundle/ ; /home/user/sales-enabler/data/teardown/regulation-segment/bolna-platform-js-bundle-lazy/ ; /home/user/sales-enabler/data/teardown/regulation-segment/bolna-platform-js-bundle-lazy2/; /home/user/sales-enabler/data/teardown/regulation-segment/rea-evidence/",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-21",
+  "dimension": "liability",
+  "claim": "Bolna's pilot terms, shipped inside the dashboard bundle: \"Call recordings are mandatory for the Pilot. The Customer is solely responsible for obtaining all required notices and consents from end users for call recording, data processing, and use of AI ... shall comply with all applicable laws, including telemarketing and privacy regulations.\"",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/bolna-platform-js-bundle/main-C1LSCXZ3.js",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-22",
+  "dimension": "liability",
+  "claim": "Sarvam's DND docs (read 2026-10-20) offer an org-wide DND suppression list (manual, bulk or API) and state \"Calling compliance is your responsibility. Make sure you have consent to call each contact and that your list respects Do Not Disturb (DND) and any local telemarketing regulations.\" Confirms CMP-27 and the parity row.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-sarvam-dnd/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-23",
+  "dimension": "liability",
+  "claim": "Exotel's TRAI FAQ says \"the responsibility for regulatory compliance lies with you\". It offers an automatic NDNC check on campaign uploads, with flagged numbers skipped; that feature is vendor-claimed and not tested.",
+  "grade": "vendor-claimed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-faq-trai-regulations/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-faq-ndnc-dnd/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-24",
+  "dimension": "liability",
+  "claim": "Retell's terms put telemarketing compliance on the customer and cite only US law (TCPA, TSR, DNC). They require agents to identify the business and the purpose at call start and to disclose the AI's nature when asked: a contractual AI-disclosure pattern. Vapi's terms make the customer solely responsible for lawful use and third-party providers. Neither has an India or TRAI clause.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-retell-terms/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-vapi-terms/page.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-25",
+  "dimension": "competitor-compliance",
+  "claim": "SquadStack (managed telecalling) claims \"TRAI-compliant\", \"DPDP\", \"anti-spam compliance\" and a \"compliance audit trail\" on its page (2026-10-20). The 2026-10-17 parity row also recorded claims of DND scrubbing, a 9:30-20:30 window, consent gating and configurable AI disclosure. All untested.",
+  "grade": "vendor-claimed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-squadstack-managed/page.html; /home/user/sales-enabler/research/2026-10-17/lanes/l4a-competitors/parity.csv (compliance_dnd_dlt_consent, SquadStack)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-26",
+  "dimension": "competitor-compliance",
+  "claim": "None of the Indian vendors' compliance docs read (Bolna, Sarvam, Exotel, 2026-10-20) mention the Third Amendment, A2P pre-declaration (due ~2026-11-18) or the 1601 series; the Bolna and Sarvam llms.txt indexes have 0 hits for A2P or 1601. Bounded negative over the pages read.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/vendor-bolna-calling-guardrails/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-bolna-regulated-numbers/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-sarvam-dnd/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-calling-hours/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-faq-dlt-compliance/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-exotel-faq-trai-regulations/page.html; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-bolna-llms-txt/llms.txt; /home/user/sales-enabler/data/teardown/regulation-segment/vendor-sarvam-llms-txt/llms.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-27",
+  "dimension": "dpdp",
+  "claim": "The DPDP Rules (G.S.R. 846(E)) carry a Gazette date of Thursday 2025-11-13 (e-upload id CG-DL-E-14112025-267650). Rules 1, 2 and 17-21 apply from publication; Rule 4 (consent managers) one year later, about 2026-11-13; Rules 3, 5-16, 22 and 23 eighteen months later, about 2027-05-13. This settles REG-05's 13-vs-14 split in favour of the 13th; the date arithmetic is ours.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/dpdp-rules-2025-egazette/267650.pdf (rule 1; Gazette header No. 760)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-28",
+  "dimension": "dpdp",
+  "claim": "Rule 3 notice must be understandable on its own and itemise the data and the purpose. It must give a link to withdraw consent, exercise rights and complain to the Board. Under Act s.5 the notice accompanies consent requests (s.6), not s.7 legitimate uses.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/dpdp-rules-2025-egazette/267650.pdf (rule 3); /home/user/sales-enabler/data/teardown/regulation-segment/dpdp-act-2023-trai-copy/DPDT_11082024.pdf (s.5(1))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-29",
+  "dimension": "dpdp",
+  "claim": "Rule 6 security safeguards cover processing done on the fiduciary's behalf by a processor. They require logs and monitoring, keeping logs and personal data for one year for breach investigation, and a processor contract that includes safeguards (rule 6(1)(f)).",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/dpdp-rules-2025-egazette/267650.pdf (rule 6)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-30",
+  "dimension": "dpdp",
+  "claim": "There is no general localisation. Act s.16 lets the Government restrict transfers to notified countries; Rule 15 adds requirements for data made available to foreign states; Rule 13(4) can localise specified data of Significant Data Fiduciaries. Sector rules bind harder, e.g. IRDAI intermediary records in India for at least 10 years (REG-31).",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/dpdp-act-2023-trai-copy/DPDT_11082024.pdf (s.16); /home/user/sales-enabler/data/teardown/regulation-segment/dpdp-rules-2025-egazette/267650.pdf (rules 13(4), 15)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-31",
+  "dimension": "dpdp",
+  "claim": "Act s.17(2)(b) with Rule 16 exempts processing for research or statistical purposes if the data is not used for a decision about a specific person and Second-Schedule standards are met. That is a candidate basis for genuine market-research surveys; whether brand \"surveys\" that feed marketing qualify is our inference (they would not).",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/dpdp-act-2023-trai-copy/DPDT_11082024.pdf (s.17(2)(b)); /home/user/sales-enabler/data/teardown/regulation-segment/dpdp-rules-2025-egazette/267650.pdf (rule 16; Second Schedule)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-32",
+  "dimension": "dpdp",
+  "claim": "Act s.7(a) lets a fiduciary process data a person voluntarily provided for a specified purpose until she objects (pharmacy-receipt and real-estate-broker illustrations). A service call to an existing customer about the product she bought fits; a bought or scraped list of individuals needs consent once core obligations apply (~2027-05-13). Confirms REG-05.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/dpdp-act-2023-trai-copy/DPDT_11082024.pdf (s.7(a))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-33",
+  "dimension": "a2p-ai",
+  "claim": "No TRAI instrument requires telling the callee the voice is an AI. Re-checked 2026-10-20: the directions listing runs to 2026-10-01 (a tariff direction), the consultation listing to 2026-10-09 (a broadcasting audit manual), and the latest UCC release is PR 111/2026 (Q1 FY27). The only AI-specific duty is the A2P declaration to the operator. Confirms REG-06.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-listing-directions/directions.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-listing-consultation/consultation.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-listing-pressrelease/press-release.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-34",
+  "dimension": "a2p-ai",
+  "claim": "A call made to deceive or attempt to deceive is UCC (Second Amendment (bw) proviso). RBI's 2026 recovery directions list \"making false or misleading representations\" and \"anonymous calls\" as harsh practices. An agent that denies being AI, or will not name the lender, is exposed under both regimes; the application to AI is our inference.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2nd-amend-2025/Regulation_12022025.pdf (def (bw)); /home/user/sales-enabler/data/teardown/regulation-segment/rbi-recovery-amend-2026-notification/notification-13672.html (para 100Z)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-35",
+  "dimension": "a2p-ai",
+  "claim": "The IT Rules amendment (G.S.R. 120(E), notified 2026-02-10, in force 2026-02-20) requires intermediaries offering tools that generate synthetic audio to ensure a \"prominently prefixed audio disclosure\" and provenance metadata. Whether a B2B voice-agent platform is such an intermediary is unresolved. The primary text was not retrieved; this rests on law-firm summaries.",
+  "grade": "vendor-claimed",
+  "evidence": "https://www.amsshardul.com/wp-content/uploads/2026/02/Legislative-Update-IT-Rules-Amendment.pdf; https://www.mondaq.com/india-it-intermediary-rules-amended-%E2%80%93-new-obligations-for-ai-synthetic-content/1743594",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-36",
+  "dimension": "sector-rbi",
+  "claim": "RBI NBFC Responsible Business Conduct Third Amendment Directions 2026 (RBI/2026-27/230, dated 2026-08-06, effective 2027-01-01), read in primary on 2026-10-20 without CAPTCHA:\n- contact only 08:00-19:00 unless the borrower asks;\n- time and number of calls documented;\n- calls recorded both ways, kept 6 months, borrower told;\n- excessive calling and calling outside hours deemed harsh;\n- every recovery communication carries the grievance officer's details;\n- recovery agents need an IIBF certificate;\n- NBFCs must also comply with TCCCPR (100AB).\nConfirms REG-13 on the primary text.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/rbi-recovery-amend-2026-notification/notification-13672.html (paras 100A-100AB)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-37",
+  "dimension": "sector-rbi",
+  "claim": "Para 100A applies the section to recovery from borrowers in default, and \"wherever explicitly specified\" to collection in the normal course. Para 100Y's hours and civility rules are written for employees and agents in \"collection / recovery\", so pre-due EMI reminders by an NBFC probably fall under the 08:00-19:00 rule from 2027-01-01. That reading is our inference and needs counsel. The 100P recording duty applies to recovery calls.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/rbi-recovery-amend-2026-notification/notification-13672.html (paras 100A, 100P, 100Y)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-38",
+  "dimension": "sector-rbi",
+  "claim": "A \"recovery agency\" is any entity or individual other than the NBFC's own employees, engaged under an outsourcing arrangement to assist recovery from a borrower in default; its agents must hold an IIBF certificate. A vendor running AI recovery calls as a managed service plausibly is a recovery agency whose \"agent\" cannot be certified. Software operated by the lender is the safer characterisation (inference; counsel).",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/rbi-recovery-amend-2026-notification/notification-13672.html (paras 6(11A), 6(11B), 100I)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-39",
+  "dimension": "enforcement",
+  "claim": "Q1 FY2026-27: 137,053 telecom resources barred for 15 days, 46,786 disconnected for a year, 263 senders blacklisted. Sanctions take the sender's telecom resources (bar, disconnect, blacklist across all operators), not fines. In April 2026 about 75% of UCC disconnections were SIP/PRI lines used for A2P calls. Re-downloaded, byte-identical. Confirms l1 enforcement-stats.csv.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-pr111-2026/PR_No111of2026.pdf; /home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (memorandum on A2P, para ii)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-40",
+  "dimension": "enforcement",
+  "claim": "As of 2026-10-20 TRAI has issued no TCCCPR direction after 2026-10-01 (that one is about tariff publication), no Q2 FY27 UCC highlights and no consultation on AI calling.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-listing-directions/directions.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-listing-consultation/consultation.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-listing-pressrelease/press-release.html",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-41",
+  "dimension": "tcccpr-history",
+  "claim": "TRAI lists exactly three amendments to the 2018 regulations: the (Amendment) Regulations 2018 of 2018-12-21 (commencement dates only, plus a corrigendum), the Second Amendment of 2025-02-12, and the Third Amendment of 2026-09-18.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-listing-regulations/regulations.html; /home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-amend-2018/RegulationTCCCP21122018.pdf",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-42",
+  "dimension": "liability",
+  "claim": "Under TCCCPR 2018 def (bf), a \"Sender\" includes the owner of the number or header, the person who made, caused or authorised the call, and the entity whose goods are offered. The enterprise is therefore the Sender. A platform that places the call could also be read as a Sender under limb (iii) \"caused ... the voice call to be made\"; that reading is our inference, for counsel.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2018/RegulationUcc19072018.pdf (def (bf))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-43",
+  "dimension": "liability",
+  "claim": "If a Sender not registered with an access provider makes commercial calls, all its telecom resources may be suspended or disconnected (Second Amendment reg 3(2)). Under the Third Amendment a first proven violation bars all of a Sender's resources at all operators for 15 days, and a repeat brings one-year disconnection and blacklisting. A CPaaS that lends its CLIs is treated as a sender/aggregator (REG-12). Whoever holds the numbers holds the risk.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-2nd-amend-2025/Regulation_12022025.pdf (reg 3(2)); /home/user/sales-enabler/data/teardown/regulation-segment/trai-tcccpr-3rd-amend-2026/Regulation_18092026.pdf (reg 25(5)-(6))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-44",
+  "dimension": "liability",
+  "claim": "Under DPDP the enterprise (Data Fiduciary) must protect personal data \"including in respect of any processing undertaken by it or on its behalf by a Data Processor\" (Rule 6(1)) and may use a processor only under a valid contract (Act s.8(2)). The penalties fall on the fiduciary; a processor such as VP carries contractual and reputational exposure.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/dpdp-rules-2025-egazette/267650.pdf (rule 6(1)); /home/user/sales-enabler/data/teardown/regulation-segment/dpdp-act-2023-trai-copy/DPDT_11082024.pdf (s.8(2))",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-45",
+  "dimension": "demand",
+  "claim": "Buyers rarely voice compliance as a pain: COMPLIANCE_DATA is 6 of 459 coded Indian voice and telephony complaints (1.3%) and 9 of 1,141 mentions (0.8%) in the l4a corpus. Kano: compliance is must-be, a hygiene factor that hurts only when it fails, not something buyers ask for.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv; /home/user/sales-enabler/research/2026-10-17/lanes/l4a-competitors/complaint-taxonomy.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-46",
+  "dimension": "demand",
+  "claim": "Volume points the other way: in Q1 FY27, 140-series promotional calls (13.16 bn) were about 11x the 1600-series calls (1.15 bn), and 1.48 bn of the 140 calls were DND-blocked. Post-sale first is a choice about regulatory and setup friction, not about market size.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/trai-pr111-2026/PR_No111of2026.pdf",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-47",
+  "dimension": "tooling",
+  "claim": "trai.gov.in serves an eMudhra emSign chain whose root is not in this container's system store, and egazette.gov.in serves its leaf without the Let's Encrypt YR1 intermediate. Both verified against Mozilla's root store (curl.se, dated 2026-10-20) plus the published YR1 chain from letsencrypt.org. TLS verification was never disabled. This closes l1's \"egazette TLS-blocked\" gap (blocked-sources.csv).",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/manifest.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-48",
+  "dimension": "tooling",
+  "claim": "REA 6.7.0 results:\n- analyze-web-bundle produced no output and was killed by timeout twice (300 s and 420 s) against a proxied headless-Chromium target;\n- capture-browser-scenario in launch mode has no proxy option, so navigation failed;\n- connect mode to our own CDP Chromium worked and listed 115 script URLs;\n- Sarvam's dashboard answered with a Cloudflare challenge, which was not pursued.",
+  "grade": "observed",
+  "evidence": "/home/user/sales-enabler/data/teardown/regulation-segment/rea-evidence/",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-49",
+  "dimension": "job-matrix",
+  "claim": "lead-qualification (pre-sale): Promotional, because qualifying for a sale solicits business (def (av)). Lawful on 140xx inside the 7-day digital-inquiry window (def (bb)(ii)) or the 3-month application window (bb)(iii). DND recipients are reachable only with CRF-registered explicit consent, and CRF upload is open only to the 11 pilot banks. Productisation weight: Heavy: needs the consent/inquiry ledger with expiry plus the telco-dependent CRF and scrubbing.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-50",
+  "dimension": "job-matrix",
+  "claim": "outbound-sales-cold (pre-sale): Promotional on 140xx to non-DND numbers (deemed consent), 10:00-21:00. From ~2027-05-13, DPDP consent is needed for bought or scraped lists of individuals. It carries the highest complaint and resource-sanction exposure. Productisation weight: Heavy, and its legal basis shrinks in May 2027.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-51",
+  "dimension": "job-matrix",
+  "claim": "market-survey (pre-sale): Possibly not a commercial communication at all (TRAI 2018 para 4.3.13), but still A2P and so must be declared. It has no designated series, so its 10-digit CLIs face spam flags, and Exotel treats surveys as UCC. The DPDP research exemption fits only genuine research. Productisation weight: Medium rules, high deliverability risk; low value.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-52",
+  "dimension": "job-matrix",
+  "claim": "appointment-setting (split): A sales appointment (demo, test drive, site visit) is promotional, like lead qualification. A service appointment for an existing customer (service due, warranty visit) is a service call under (bh)(i) \"warranty or service\": no DND block and no time band. Productisation weight: Light for service appointments; Heavy for sales appointments.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-53",
+  "dimension": "job-matrix",
+  "claim": "renewal-reminder (post-sale): A neutral reminder before expiry is a service call under (bh)(i), inside the contract's inferred consent; any offer makes the whole call promotional. BFSI senders (including IRDAI intermediaries) must use 1600; others use declared CLIs. A lapse-revival call after expiry may be promotional, because the contract is discharged. Productisation weight: Light generically; Medium-heavy for insurance (IRDAI solicitation boundary, IMF reg 3(d), records in India for 10 years).",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-54",
+  "dimension": "job-matrix",
+  "claim": "payment-emi-reminder (post-sale): A service call on inferred consent for the duration of the contract (memo para 39). RBI-regulated entities use 1600; utilities use 1601; others use declared CLIs. Lenders: 08:00-19:00 is likely from 2027-01-01 (para 100Y, inference). Productisation weight: Medium: the shared core plus a lending preset.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-55",
+  "dimension": "job-matrix",
+  "claim": "feedback-nps (post-sale): Classification is open. It is not listed in (bh)(i), and arguably not commercial if nothing is offered; Exotel treats it as UCC. It must carry zero offers. Productisation weight: Light, but classification is unresolved (lawyer Q(c)).",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-56",
+  "dimension": "job-matrix",
+  "claim": "onboarding-kyc-followup (post-sale): A service call to customers under (bh)(i). Applicants are covered by the 3-month application relationship (bb)(iii). BFSI senders use 1600. KYC data is never collected by voice; send a secure link. Productisation weight: Medium: the shared core plus application-evidence capture.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-57",
+  "dimension": "job-matrix",
+  "claim": "cs-checkin (post-sale): A service call only while it stays on product information. Any upgrade suggestion makes it promotional (memo para 37), and the drift risk is high. Productisation weight: Light-Medium; a strong in-call content fence is mandatory.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-58",
+  "dimension": "job-matrix",
+  "claim": "collections (post-sale): A service call on 1600 for regulated entities, plus RBI's 2027 conduct regime: 08:00-19:00, logged call counts, recordings kept 6 months with notice, grievance-officer details, the harsh-practices list, IIBF-certified agents, and the recovery-agency question. Productisation weight: Heavy, but well specified and with a dated buying trigger (2027-01-01).",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/job-matrix.csv; /home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-59",
+  "dimension": "recommendation",
+  "claim": "Lead with post-sale. The jobs are due-date reminders (renewal and pre-due payment, never post-default collections) and onboarding/application follow-up. Service appointment reminders come free with the same template. The only pre-sale job worth a second wave is consented inbound-lead follow-up inside the 7-day window; cold outbound never. Reason: post-sale needs no consent infrastructure outside VP's control, while pre-sale depends on CRF consent upload, closed to non-banks, and on telco scrubbing.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "RS-60",
+  "dimension": "recommendation",
+  "claim": "Insurance renewal (beachhead-v2) is the heaviest regulated variant of the lightest job family. Under the owner's self-serve enterprise framing, keep it as the first vertical preset and design-partner set on the shared post-sale compliance core, not as the product's boundary.",
+  "grade": "inferred",
+  "evidence": "/home/user/sales-enabler/research/2026-10-20/teardown/regulation-segment/report.md (the harness refused this write; full text is in the lane structured output)",
+  "date": "2026-10-20"
+ }
+]

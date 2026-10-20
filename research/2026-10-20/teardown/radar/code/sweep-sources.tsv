@@ -1,0 +1,9 @@
+sweep	hn-show	https://hn.algolia.com/api/v1/search_by_date?query=voice%20agent&tags=show_hn&hitsPerPage=50
+sweep	hn-story	https://hn.algolia.com/api/v1/search_by_date?query=voice%20AI%20India&tags=story&hitsPerPage=50
+sweep	inc42-feed	https://inc42.com/feed/
+sweep	inc42-funding-feed	https://inc42.com/buzz/funding/feed/
+sweep	entrackr-feed	https://entrackr.com/feed/
+sweep	yourstory-feed	https://yourstory.com/feed
+sweep	producthunt-topic	https://www.producthunt.com/topics/voice-ai
+sweep	yc-directory	https://www.ycombinator.com/companies?query=voice%20agent
+sweep	techcrunch-voice	https://techcrunch.com/tag/voice-ai/feed/

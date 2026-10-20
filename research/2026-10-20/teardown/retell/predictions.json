@@ -1,0 +1,122 @@
+[
+ {
+  "id": "RET-P01",
+  "task": "onboarding",
+  "prediction": "Sign-up (team email via Auth0) to a first browser test call takes 10 min or less. Sign-up to the first live call ringing OUR Indian handset takes more than 30 min on both paths, because outbound needs KYC first: (a) Retell-managed US number dialling India internationally needs KYC (automatic or a real person's government ID via Persona) plus a payment method; (b) BYO Indian SIP trunk (Plivo or Vobiz) takes 45-120 min including trunk setup, and the first attempt fails with a SIP error (403/486 'user busy' class) at least once.",
+  "confidence": "0.6",
+  "basis": "accounts__kyc.md (KYC before outbound, one person per account); deploy__purchase-number.md (US/CA numbers only); community t/758 (Plivo inbound 'user busy'), t/3145 (Plivo India numbers on request), t/3723 (UPI not accepted for number purchase).",
+  "how_scored": "Stopwatch from sign-up page load to first web call, and to the handset ringing; record each blocker (KYC path, payment, SIP error) with timestamps.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P02",
+  "task": "kyc",
+  "prediction": "A new team@vyakti.ai workspace is NOT auto-verified; outbound calling stays locked until a named person completes Persona ID verification, and that person's identity cannot then verify a second Retell account.",
+  "confidence": "0.7",
+  "basis": "accounts__kyc.md: automatic verification only 'based on the information you provided'; 'Each person can verify only one account'.",
+  "how_scored": "Record the KYC path offered and the time to approval.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P03",
+  "task": "build-agent",
+  "prediction": "Conductor builds the standard Hinglish agent in 20 min or less, but the generated prompt does not contain an 'admit you are an AI when asked' rule unless we ask for it, and it sets en-US (not hi-IN + en-IN) unless told.",
+  "confidence": "0.6",
+  "basis": "Conductor docs (build-and-refine); Language default en-US and timezone default America/Los_Angeles in the OpenAPI; no disclosure control documented.",
+  "how_scored": "Read the generated prompt and settings; ask 'aap AI ho?' on a test call.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P04",
+  "task": "messy-csv",
+  "prediction": "Messy 50-row CSV uploaded as a batch call: (a) duplicate phone numbers are dialled twice, no dedupe [0.7]; (b) 10-digit Indian numbers without +91 are rejected as non-E.164 or misparsed, unless pre-formatted [0.75]; (c) Devanagari names survive as dynamic variables [0.8] but are mispronounced by an en-IN voice [0.5]; (d) empty columns pass as empty strings into the prompt with no warning [0.6]; (e) the opt-out row is dialled, because batch calls do not check do_not_call [0.85]. Via contact import instead: rows are matched and merged by phone number, and default_country must be changed from US to IN by hand [0.7].",
+  "confidence": "see items",
+  "basis": "deploy__make-batch-call.md (CSV columns become dynamic variables; no dedupe or validation report documented); build__do-not-call.md ('Batch calls and inbound calls don't check do_not_call'); openapi create-contact-import (default_country US, match by phone).",
+  "how_scored": "Upload the fixed messy CSV; count dials per number and per row type, and record every validation message shown. Synthetic numbers only, plus our own two SIMs.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P05",
+  "task": "schedule",
+  "prediction": "Scheduling inside calling hours works, but the time window defaults to America/Los_Angeles; a 07:00-23:00 IST window is accepted with no TRAI warning; a window crossing midnight is rejected. Batch calls offer no retry or attempt setting; if a 'Campaigns' screen exists, it offers retries and DNC settings that batch calls lack.",
+  "confidence": "0.8",
+  "basis": "openapi CallTimeWindow (IANA tz default LA, no cross-midnight); the batch-call FAQ (no delay); the DNC doc's mention of campaigns with attempts.",
+  "how_scored": "Configure an IST window, try 07:00-23:00 and 22:00-02:00; record warnings and the retry options on each screen.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P06",
+  "task": "voicemail-transfer",
+  "prediction": "Voicemail and IVR detection misclassifies at least 1 of 3 Indian operator announcements (switched off, not reachable, busy message; Hindi + English) [0.55]. Warm transfer to our second Indian number works on a BYO Indian trunk [0.6], but from a Retell-Twilio US number it fails when 'show the user's number' is on [0.6].",
+  "confidence": "see items",
+  "basis": "build__handle-voicemail.md (detection in the first 3 min, voicemail vs IVR are separate classes); community t/2363 (Twilio refuses India-to-India transfer with caller-ID override).",
+  "how_scored": "3 voicemail trials on our own SIMs and 2 transfer trials; record disconnection_reason and the audio.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P07",
+  "task": "find-failed-call",
+  "prediction": "Finding a failed call and its reason takes 3 min or less (call history filter on disconnection_reason) [0.75]. Indian-carrier SIP failures surface only as generic dial_failed / telephony_provider_unavailable / sip_routing_error, so the real cause needs the PCAP download [0.6].",
+  "confidence": "see items",
+  "basis": "DisconnectionReason enum (39 values); reliability__debug-calls-pcap.md.",
+  "how_scored": "Time to locate an engineered failure (an invalid number, then a busy SIM) and whether the reason shown is specific enough to act on.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P08",
+  "task": "export",
+  "prediction": "Call history export is an asynchronous export request (CSV) that completes in 10 min or less for under 100 calls; Devanagari transcript text is preserved; per-call cost line items are included.",
+  "confidence": "0.6",
+  "basis": "openapi list-export-requests (status created/processing/completed; channel call/chat); ProductCost on the call object.",
+  "how_scored": "Request the export after the battery; time it, open it, check the encoding and columns.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P09",
+  "task": "handset-reply-gap",
+  "prediction": "Handset-side reply gap on Indian PSTN (our Plivo or Vobiz number through a BYO trunk to Retell US-West, cascade stack with a mid-size LLM and platform voice): p50 1.6-2.4 s from caller end-of-speech to first agent audio at the handset; p90 above 2.8 s. Through a Retell-managed US number dialling India: p50 a further 0.1-0.3 s.",
+  "confidence": "0.6",
+  "basis": "Vendor claim of ~600 ms server-side; media is US-West only (staff, t/1949; DNS), so audio crosses India and US-West twice per turn; plus PSTN, jitter buffers and the 10-17 Vapi measurement of 2.32 s p50 from Ohio (l4b).",
+  "how_scored": "Stereo recording at the handset; caller battery from l4b; n of 30 or more turns; p50/p90 with CIs.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P10",
+  "task": "language-hold",
+  "prediction": "With hi-IN + en-IN selected, at least 1 in 8 Hinglish battery turns gets a reply in the wrong language or script, or misses a requested switch; Hindi digits (e.g. chhah, saath) are mis-transcribed in at least 1 of 5 number turns on the default ASR.",
+  "confidence": "0.55",
+  "basis": "community t/2502 (does not switch to Marathi), t/384 (Hindi agent drifts to another language), t/2713 (छह not recognised; Deepgram default).",
+  "how_scored": "Battery turns scored for reply language and script; numbers scored against the key.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P11",
+  "task": "billing",
+  "prediction": "A 6k-token Hinglish persona plus KB prompt triggers the 4,000-token rule: the cost breakdown shows billed duration scaled by roughly 1.5x. We predict the scaling hits the LLM line only [0.5]; if it scales the whole Retell line, effective INR/min on a BYO trunk rises from ~13.6 to ~20 (pricing-allin.csv).",
+  "confidence": "0.7 (rule triggers); 0.5 (scope)",
+  "basis": "accounts__billing-exceptions.md Rule 2; KB chunks and transcript count toward the tokens.",
+  "how_scored": "Compare call cost line items for the same call script with a 2k-token and a 6k-token prompt.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "RET-P12",
+  "task": "disclosure",
+  "prediction": "With a neutral prompt (no persona instruction to claim humanity), the agent admits being an AI when asked 'aap AI ho?' in at least 7 of 8 calls; Retell adds no platform-level disclosure line.",
+  "confidence": "0.7",
+  "basis": "LLMs are OpenAI/Anthropic/Google models with default honesty; there is no disclosure setting in the AgentRequest schema.",
+  "how_scored": "8 calls with the 'are you a bot?' battery item.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ }
+]

@@ -1,0 +1,270 @@
+{
+ "nodes": [
+  {
+   "id": "evidence.2026-10-20.vapi-claims",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi public teardown (account-free): 63 graded claims (53 observed, 7 inferred, 3 vendor-claimed) from docs (307-page llms.txt, 105 pages as Markdown, OpenAPI 74 paths), the pricing page, 561 public dashboard JS files, one 25 s homepage demo call capture, SDKs, job posts, engineering blog, status RSS and Trustpilot/HN; sha256 manifest of 781 raw files. report.md was refused by the subagent harness; its text is in the lane structured output.",
+   "path": "research/2026-10-20/teardown/vapi/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-20.vapi-no-india-termination",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi cannot terminate Indian numbers: its Plivo guide says TRAI requires SIP termination on an Indian server, \"which Vapi does not currently support\". Twilio allows outbound to India only from non-Indian numbers. So an Indian enterprise on Vapi has no 140xx/1600xx/declared CLI and no DLT or A2P path. Regions are US (us-west-2), EU (Premier only) and AUS; no India region.",
+   "path": "data/teardown/vapi/docs-md/advanced__sip__plivo.md"
+  },
+  {
+   "id": "measure.2026-10-20.vapi-india-all-in-price",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi all-in list price for an Indian outbound minute via Twilio: USD 0.131-0.179 = INR 12.5-17.0 at FX 95, of which INR 9.46 is hosting ($0.05) plus Twilio to an Indian mobile ($0.0496) before any AI. Vapi-side hosting margin is an estimated 90-98% (inference, not measured).",
+   "n": "5 price components (hosting, Deepgram, OpenAI, ElevenLabs calculator ranges; Twilio India-mobile rate)",
+   "method": "computed from vapi.ai/pricing and twilio.com/en-us/voice/pricing/in read 2026-10-20 (code/pricing.py); list prices, not an invoice",
+   "path": "research/2026-10-20/teardown/vapi/pricing.json"
+  },
+  {
+   "id": "evidence.2026-10-20.vapi-campaign-engine-limits",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi campaigns:\n- one absolute window (earliestAt/latestAt, at most 7 days ahead, one time zone);\n- no recurring daily window, no per-contact retry (retry only waits up to 1 h for concurrency), no draft, read-only after launch;\n- the buyer owns retries, attempt budgets and suppression.\nThe dashboard CSV code prepends \"+\" to any number (10-digit Indian mobiles become \"+98...\"), rejects the whole file on one empty number, and has no dedupe or opt-out column.",
+   "path": "research/2026-10-20/teardown/vapi/bundle-findings.json"
+  },
+  {
+   "id": "evidence.2026-10-20.vapi-architecture",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi architecture (graded):\n- Observed: web calls on Daily WebRTC (mediasoup SFU on Oracle OKE us-ashburn-1; Cloudflare and Twilio TURN); call orchestration websocket in AWS us-west-2; own SIP SBCs on AWS us-west-2 and eu-central-1; Express API behind Cloudflare.\n- Vendor-claimed: own streaming pipeline (VAD state machine, predict-and-scrap endpointing, latency-routed Azure OpenAI pool), not Pipecat or LiveKit Agents; Neon with Aurora fallback, k8s multi-cluster, Temporal.",
+   "path": "research/2026-10-20/teardown/vapi/claims.json"
+  },
+  {
+   "id": "measure.2026-10-20.vapi-status-incidents-6mo",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi status page, 2026-04-20 to 2026-10-20: 33 incidents and 18 maintenances. Includes a full US outage on 2026-05-21 of ~4 h 07 min (two hard-dependency databases; per the RCA, \"scheduled and campaign calls ... were not retried automatically\"), ~2 h of US call failures on 2026-08-19, and 3 SIP incidents in October. This sits against a 99.99% uptime claim (blog 2025-08-12).",
+   "n": "51 distinct incident/maintenance ids in the window (114 since 2024-10)",
+   "method": "status.vapi.ai/feed.rss (Better Stack) fetched 2026-10-20, items grouped by incident link; durations = first to last update; RCA text read from the feed",
+   "path": "data/teardown/vapi/status/incidents-parsed.json"
+  },
+  {
+   "id": "measure.2026-10-20.vapi-release-velocity",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi velocity:\n- 25 weekly changelog entries with 82 items from 2026-04-13 to 2026-10-12 (about 3.3 items a week);\n- October 2025 to March 2026 published only as one retroactive summary;\n- SDK release gaps of 4-7 months over the same winter, then v3.0.0 of both server SDKs and the web SDK in October 2026;\n- nothing India-specific shipped.",
+   "n": "26 changelog entries (111 numbered items); 2 SDK release histories",
+   "method": "docs.vapi.ai/whats-new/llms.txt and each entry .md; npm view @vapi-ai/web time; pypi.org/pypi/vapi_server_sdk/json; fetched 2026-10-20",
+   "path": "data/teardown/vapi/changelog/whats-new_llms.txt"
+  },
+  {
+   "id": "evidence.2026-10-20.vapi-v2-loop",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vapi v2 notes:\n- No memory across calls (0 memory pages); personalisation is server-supplied variables at call time.\n- The improvement loop is manual: monitors, issues, scorecards, evals, simulations, traffic splits without statistics, and a flag-gated Composer \"Improve the assistant\" kickoff. Composer \"cannot deploy to production automatically\".\n- Unannounced alpha: Mission Control (sentiment cards, live listen, live call control).",
+   "path": "research/2026-10-20/teardown/vapi/claims.json"
+  },
+  {
+   "id": "decision.2026-10-20.vapi-reference-not-rival",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Proposed: use Vapi as the developer-surface reference for the v1 parity floor, not as an Indian-market rival. Score VP against Vapi on five runnable tasks:\n- domestic Indian CLI with declared A2P;\n- messy-CSV hygiene (+91 normalisation, dedupe, opt-out);\n- recurring 10:00-21:00 windows with per-contact retries;\n- handset reply gap on Indian PSTN;\n- business-language failure reasons with a Hinglish language lock.",
+   "rationale": "Vapi ships the deepest developer surface: versioning, tools, logs with 638 ended reasons, evals, simulations, monitors, Composer and campaigns. It cannot place domestic Indian calls, and its list price for an Indian minute is INR 12.5-17. So it sets the parity bar but competes for Indian buyers only through a bridge. The five tasks are where its documented behaviour fails Indian operations.",
+   "reverse_if": "Vapi ships Indian SIP termination or an India region; or campaigns gain recurring windows plus per-contact retries; or 3+ buyer interviews name Vapi (bridged through an Indian CPaaS) as their incumbent; or the account phase shows the CSV normaliser is corrected server-side and the Indian-PSTN p50 reply gap is <= 1.5 s.",
+   "path": "research/2026-10-20/teardown/vapi/predictions.json"
+  },
+  {
+   "id": "rejected.2026-10-20.vapi-rea-analyze-web-bundle",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "REA analyze-web-bundle as the bundle-analysis step for a large SPA dashboard (Vapi).",
+   "tried": "npx rea-agents@6.7.0 analyze-web-bundle on headless Chromium CDP (dashboard.vapi.ai/register, allowed origin dashboard.vapi.ai, --fetch-source-maps, 4 s observation), plus inspect-web-network-capture on the raw Playwright HARs.",
+   "broke": "analyze-web-bundle ran >5 min at ~105% CPU and ~6 GB RSS and wrote nothing before the 300 s timeout (the bolna lane hit the same empty output). inspect-web-network-capture refused HARs over 32 MB (42 MB raw) until bodies were stripped, then returned only normalised records. inspect-web-page worked (58 scripts, 0 source maps). Route, flag and CSV findings came from our own string analysis of 561 public chunks.",
+   "path": "data/teardown/vapi/rea/dashboard-login-analyze-web-bundle.err"
+  },
+  {
+   "id": "risk.2026-10-20.vapi-india-entry",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Vapi (USD 72M raised; claims 1M developers) adds an India region or Indian SIP termination through a licensed partner, and gains Composer-built agents with 1600-series calling. That would remove our plumbing moat against the reference developer platform.",
+   "mitigation": "Watch Vapi changelog, status regions and SIP docs weekly (radar watchlist). Make VP's Indian operator layer (A2P declaration, consent and suppression, recurring windows and retries, business-language outcomes) the product, not just domestic routing. Keep BYOT so a buyer's existing Indian carrier works from day one."
+  },
+  {
+   "id": "open.2026-10-20.vapi-account-phase",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Do Vapi's pre-registered account-phase predictions P01-P10 hold?\n- Browser call within 10 min, but no Indian-handset call without a second vendor and an international CLI.\n- The CSV normaliser mis-prefixes 10-digit numbers; no recurring window or retries.\n- Indian-PSTN reply gap p50 of 2.4-3.4 s.\n- Invoice at INR 12-18/min.",
+   "closes_when": "A Vapi trial (sign-up via team email, spend cap, Twilio account) runs P01-P10. That needs timed screen recordings, the 50-row CSV outcome per row, a 3-day schedule attempt, the l4b battery on our Plivo number (>= 30 clean turns, stereo), and the Vapi plus Twilio invoice lines.",
+   "path": "research/2026-10-20/teardown/vapi/predictions.json"
+  },
+  {
+   "id": "asset.2026-10-20.vapi-demo-signal-capture",
+   "type": "asset",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Reusable public-widget signalling capture. demo_signal.mjs (Playwright, synthetic fake-device caller, RTCPeerConnection wrapper for ICE servers, remote SDP and selected-pair stats, websocket frame heads, HAR) plus har_redact.py, har_slim.py, bundle_findings.py and build_manifest.py.",
+   "paths": [
+    "research/2026-10-20/teardown/vapi/code/demo_signal.mjs",
+    "research/2026-10-20/teardown/vapi/code/har_redact.py",
+    "research/2026-10-20/teardown/vapi/code/har_slim.py",
+    "research/2026-10-20/teardown/vapi/code/bundle_findings.py",
+    "research/2026-10-20/teardown/vapi/code/build_manifest.py"
+   ],
+   "value": "Identifies the WebRTC provider, SFU host and cloud, TURN providers and call-orchestration region of any public demo widget in one 25 s call. It also makes HARs safe to keep (tokens redacted) and REA-sized.",
+   "effort": "Low: change the button selector and URL; about 2 minutes per vendor."
+  }
+ ],
+ "edges": [
+  {
+   "from": "evidence.2026-10-20.vapi-claims",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-claims",
+   "to": "decision.2026-10-20.teardown-launch",
+   "relation": "implements"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-no-india-termination",
+   "to": "evidence.2026-10-20.vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-no-india-termination",
+   "to": "ledger.CMP-27",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-no-india-termination",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-20.vapi-india-all-in-price",
+   "to": "ledger.ECO-17",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-20.vapi-india-all-in-price",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-campaign-engine-limits",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-campaign-engine-limits",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-architecture",
+   "to": "measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-architecture",
+   "to": "evidence.2026-10-20.vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.vapi-status-incidents-6mo",
+   "to": "evidence.2026-10-20.vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-20.vapi-release-velocity",
+   "to": "evidence.2026-10-20.vapi-claims",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-v2-loop",
+   "to": "ledger.LRN-09",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-20.vapi-v2-loop",
+   "to": "ledger.CMP-01",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.vapi-reference-not-rival",
+   "to": "evidence.2026-10-20.vapi-no-india-termination",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.vapi-reference-not-rival",
+   "to": "evidence.2026-10-20.vapi-campaign-engine-limits",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.vapi-reference-not-rival",
+   "to": "measure.2026-10-20.vapi-india-all-in-price",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.vapi-reference-not-rival",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-20.vapi-reference-not-rival",
+   "to": "open.2026-10-20.vapi-account-phase",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-20.vapi-rea-analyze-web-bundle",
+   "to": "directive.2026-10-20.teardown-rea",
+   "relation": "informs"
+  },
+  {
+   "from": "risk.2026-10-20.vapi-india-entry",
+   "to": "decision.2026-10-20.vapi-reference-not-rival",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-20.vapi-account-phase",
+   "to": "open.2026-10-20.trial-accounts",
+   "relation": "extends"
+  },
+  {
+   "from": "asset.2026-10-20.vapi-demo-signal-capture",
+   "to": "decision.2026-10-20.teardown-launch",
+   "relation": "reusable-for"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-20",
+   "event": "teardown_vapi_done",
+   "source": "research/2026-10-20/teardown/vapi/claims.json",
+   "details": "Vapi lane (account-free) finished. Work done:\n- read 307-page llms.txt, 105 docs pages, OpenAPI (74 paths) and the webhooks spec;\n- captured vapi.ai and the dashboard login passively, plus 561 public dashboard JS chunks;\n- ran one 25 s homepage demo call with a synthetic tone (Daily WebRTC on Oracle OKE; orchestration in AWS us-west-2);\n- packed SDKs, and read job posts, the engineering blog, 250 status-RSS items, Trustpilot (WebFetch) and HN.\nOutputs: claims.json (63), predictions.json (P01-P10), pricing.json (INR 12.5-17.0/min Indian outbound), bundle-findings.json and manifest.csv (781 files).\nREA: analyze-web-bundle produced nothing in 300 s; HAR inspect needed slimming.\nBlocked and not bypassed: Reddit, G2, support.vapi.ai (Vercel checkpoint), GitHub API.\nreport.md was refused by the subagent harness; its text went back in the structured output."
+  }
+ ]
+}
