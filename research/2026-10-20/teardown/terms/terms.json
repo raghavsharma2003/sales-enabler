@@ -1,0 +1,1176 @@
+[
+  {
+    "vendor": "Bolna",
+    "url": "https://www.bolna.ai/terms-of-service",
+    "read_on": "2026-10-20",
+    "summary": "Bans reverse engineering and \"use the Platform to develop a competing product\". There is no benchmarking or automation clause, and the Acceptable Use Policy the ToS incorporates is not published.",
+    "source_method": "curl of live server-rendered HTML, parsed to text (no JS rendering needed). platform.bolna.ai is a login-gated SPA and links no separate terms.",
+    "documents": [
+      {
+        "name": "Terms of Service",
+        "url": "https://www.bolna.ai/terms-of-service",
+        "version": "Last updated: 13th August, 2026"
+      },
+      {
+        "name": "Beta Community Terms & Conditions (only if you join the beta)",
+        "url": "https://www.bolna.ai/beta-terms",
+        "version": "Version 1.0, Updated on 25th June 2026"
+      },
+      {
+        "name": "Privacy Policy (incorporated by the ToS preamble)",
+        "url": "https://www.bolna.ai/privacy-policy",
+        "version": "Last updated: 28th March, 2025"
+      },
+      {
+        "name": "Pricing page FAQ (not a contract term; context for the trial)",
+        "url": "https://www.bolna.ai/pricing",
+        "version": "undated"
+      }
+    ],
+    "notes": [
+      "The ToS incorporates an 'Acceptable Use Policy' by reference, but no such page is published: /acceptable-use-policy, /acceptable-use, /aup and /usage-policy all return 404 and sitemap-main.xml lists none. Its contents are therefore unknown.",
+      "Contracting entity is inconsistent: the ToS names Voxlabs Private Limited; the Privacy Policy and site footer name Whismurwave Inc."
+    ],
+    "clauses": [
+      {
+        "topic": "competitive_use",
+        "section": "ToS §3 Acceptable Use",
+        "quote": "You agree not to use, and not to permit any authorised user, affiliate, or third party to use, the Platform to: … Reverse engineer, decompile, or use the Platform to develop a competing product; or",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "ToS / Privacy Policy",
+        "quote": "not addressed",
+        "source_url": null
+      },
+      {
+        "topic": "benchmarking",
+        "section": "Beta Community Terms §4 Confidentiality (beta members only)",
+        "quote": "Don't share screenshots, demos, or descriptions of unreleased features publicly without written consent from Bolna … These obligations apply for 12 months after the beta ends",
+        "source_url": "https://www.bolna.ai/beta-terms"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "ToS §3 Acceptable Use",
+        "quote": "Transmit malware or attempt to probe, disrupt, or gain unauthorised access to any system; … Reverse engineer, decompile, or use the Platform to develop a competing product; or … Circumvent usage limits, billing mechanisms, or security controls.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "Beta Community Terms §5 What's Not Permitted (beta members only)",
+        "quote": "Reverse engineering … Extracting prompt modules or proprietary systems",
+        "source_url": "https://www.bolna.ai/beta-terms"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "Scraping / bots / browser automation",
+        "quote": "not addressed in the ToS (the incorporated Acceptable Use Policy is not published, so it cannot be checked)",
+        "source_url": null
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToS",
+        "quote": "not addressed",
+        "source_url": null
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "Pricing page FAQ 'Is there a free trial available?'",
+        "quote": "Yes! We offer $5 in free credits when you sign up. This gives you the opportunity to test our platform and experience the service firsthand before committing to a larger purchase.",
+        "source_url": "https://www.bolna.ai/pricing"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "Beta Community Terms §2 and §5 (beta members only)",
+        "quote": "Credits are non-transferable, have no cash value, expire at the end of the beta period for each feature, and cannot carry over to a paid plan. … Bulk calls unrelated to testing",
+        "source_url": "https://www.bolna.ai/beta-terms"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §2 Data Roles",
+        "quote": "Where you deploy the Platform toward your own end users, you act as Data Fiduciary under the DPDP Act and Bolna acts as Data Processor.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §6 Disclaimer of Warranties",
+        "quote": "The contents of the website and the Platform are proprietary to us. You do not acquire any intellectual property rights, title, or interest in the website content or the Platform.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Ownership of call recordings / transcripts; model training",
+        "quote": "not addressed (no clause assigns ownership of recordings or transcripts, and none mentions model training)",
+        "source_url": null
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Privacy Policy §2 and §3",
+        "quote": "Call Transcripts and Recordings: We collect and may review call content. Admins may access these in full. … Provision of Services: Delivering and enhancing core features. … Analytics: Studying usage to enhance experience and performance.",
+        "source_url": "https://www.bolna.ai/privacy-policy"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Beta Community Terms §6 Data and Privacy (beta members only)",
+        "quote": "Call transcripts and agent configs … Used to evaluate and improve the product during beta",
+        "source_url": "https://www.bolna.ai/beta-terms"
+      },
+      {
+        "topic": "other",
+        "section": "ToS preamble (incorporation)",
+        "quote": "By accepting these Terms, you agree to be bound by them and by our Privacy Policy and Acceptable Use Policy, each incorporated by reference.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS preamble vs Privacy Policy §1 (entity)",
+        "quote": "These Terms are entered into between you (the \"Customer\") and Voxlabs Private Limited, operating as Bolna",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "Privacy Policy §1 (entity)",
+        "quote": "This Privacy Policy (\"Policy\") governs your use of the software application Bolna AI (\"Application\") provided by Whismurwave Inc, doing business under the brand name Bolna",
+        "source_url": "https://www.bolna.ai/privacy-policy"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §1 Acceptance and Eligibility",
+        "quote": "You agree to provide true, accurate, and complete information during registration and to promptly update any information if it changes.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §5 Enforcement",
+        "quote": "We may, without liability and with or without prior notice, suspend or restrict access, block specific numbers or campaigns, require remediation, or terminate access upon actual or suspected violation of these Terms or the Acceptable Use Policy, and may cooperate with law enforcement or regulatory authorities as required.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §4 Customer Responsibility",
+        "quote": "You are solely responsible for the content, legality, and accuracy of all communications made using the Platform, and for obtaining all required consents for outreach and call recording.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §11 Amendments",
+        "quote": "We reserve the right to modify or update these Terms at any time, without prior notice and at our sole discretion.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §12 (separate agreement prevails)",
+        "quote": "Where you and Bolna execute a separate written agreement or Order Form, that agreement prevails to the extent of any inconsistency.",
+        "source_url": "https://www.bolna.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "Beta Community Terms §8 Intellectual Property (beta members only)",
+        "quote": "All features, prompt modules, templates, and platform infrastructure remain Bolna's property. Feedback you share may be used to improve the product without compensation or attribution.",
+        "source_url": "https://www.bolna.ai/beta-terms"
+      }
+    ],
+    "activities": {
+      "a": {
+        "verdict": "ambiguous",
+        "clause": "ToS §3: \"use the Platform to develop a competing product\"",
+        "note": "The mechanics are ordinary customer use and nothing bars evaluation or benchmarking as such; the pricing FAQ even frames the free credits as a way \"to test our platform\". The same §3 bullet can be read to reach an evaluation whose stated purpose is to feed a competing product."
+      },
+      "b": {
+        "verdict": "ambiguous",
+        "clause": "Not addressed in the ToS; incorporated Acceptable Use Policy is unpublished",
+        "note": "No scraping, bot or automation clause in the ToS. §3 \"Circumvent usage limits, billing mechanisms, or security controls\" applies only if the automation does that. The unpublished AUP may say more."
+      },
+      "c": {
+        "verdict": "prohibited",
+        "clause": "ToS §3: \"Reverse engineer, decompile\" (Beta §5 adds \"Extracting prompt modules or proprietary systems\")",
+        "note": "Reading JS bundles or source maps to learn how the platform is built is reverse engineering on the plain words. Merely watching the DevTools network tab for your own requests is less clearly covered."
+      },
+      "d": {
+        "verdict": "prohibited",
+        "clause": "ToS §3: \"use the Platform to develop a competing product\"",
+        "note": "On the plain words. A narrower reading (the bullet only bans building the competitor on top of Bolna) is arguable but not obvious."
+      },
+      "e": {
+        "verdict": "ambiguous",
+        "clause": "Not addressed (no ownership clause for recordings/transcripts); Privacy §2: Bolna \"may review call content\"",
+        "note": "Nothing prohibits keeping them, and nothing grants ownership either. §6 only says the website and Platform contents are Bolna's."
+      }
+    }
+  },
+  {
+    "vendor": "Retell AI",
+    "url": "https://www.retellai.com/legal/terms-of-service",
+    "read_on": "2026-10-20",
+    "summary": "The most explicit of the six. It bans benchmarking and competitive analysis without written consent, automated extraction, reverse engineering, and developing competing services. It also records and trains on calls unless you opt out.",
+    "source_method": "curl of live server-rendered HTML (https://www.retellai.com/terms-of-service redirects to /legal/terms-of-service), parsed to text.",
+    "documents": [
+      {
+        "name": "Terms of Service (incl. Addendum 1)",
+        "url": "https://www.retellai.com/legal/terms-of-service",
+        "version": "Last Updated: October 7, 2026"
+      },
+      {
+        "name": "Prohibited Use Policy (incorporated by ToS §4.1)",
+        "url": "https://www.retellai.com/legal/prohibited-use-policy",
+        "version": "Last Updated: October 7, 2026"
+      },
+      {
+        "name": "Privacy Policy (incorporated by the ToS preamble)",
+        "url": "https://www.retellai.com/legal/privacy-policy",
+        "version": "Last Updated: July 20, 2026"
+      }
+    ],
+    "notes": [],
+    "clauses": [
+      {
+        "topic": "competitive_use",
+        "section": "ToS §10.1 In General",
+        "quote": "In addition to the foregoing, Customer shall not: (a) use AI-generated voices or content produced by the Services to train, improve, or develop models or services that compete with Retell AI; … (f) use the Services to build a product, service, or platform that functions as a substitute for, or intermediary layer on top of, the Services;",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "Prohibited Use Policy §6 Platform Abuse",
+        "quote": "You may not reverse engineer the Product, bypass safeguards or service limits, attempt to evade detection or enforcement mechanisms, interfere with platform integrity, conduct vulnerability testing without authorization, or use the Product to develop competing services.",
+        "source_url": "https://www.retellai.com/legal/prohibited-use-policy"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "ToS §10.1 and §10.2 (scope of licence)",
+        "quote": "The Service is made available to you for your legitimate business use only. … Subject to your compliance with these Terms, Retell AI grants you a limited, non-exclusive, non-transferable, and revocable license to access and use the Service for your personal or internal business purposes.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "ToS §10.1(d)",
+        "quote": "(d) use the Services for benchmarking or competitive analysis without Retell AI’s prior written consent;",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "Publishing comparisons (as a separate act)",
+        "quote": "not addressed separately; §10.1(d) bars the benchmarking itself",
+        "source_url": null
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "ToS §10.1",
+        "quote": "You are expressly prohibited from reverse engineering, decompiling, or otherwise attempting to derive source code or underlying models. … (b) scrape, crawl, or use any automated means to extract data, voice samples, model outputs, or other content from the Services;",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "Prohibited Use Policy §6 and §10",
+        "quote": "You may not reverse engineer the Product, bypass safeguards or service limits … You may not attempt to circumvent, evade, or undermine safeguards, monitoring systems, or enforcement mechanisms designed to detect or prevent prohibited uses of the Product.",
+        "source_url": "https://www.retellai.com/legal/prohibited-use-policy"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToS §7 Beta, Evaluation, and Trial Services",
+        "quote": "From time to time Retell AI may offer beta, evaluation, or trial versions of the Services. Such Services are provided “as-is” without any warranties or commitments of any kind, and Retell AI shall have no liability or indemnification obligation arising from or relating to Customer’s use of beta, evaluation, or trial Services.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToS §9 Limitation of Liability",
+        "quote": "OUR TOTAL AGGREGATE LIABILITY UNDER THESE TERMS FOR ALL CLAIMS WILL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID FOR THE SERVICE THAT GAVE RISE TO THE CLAIM DURING THE 12 MONTHS BEFORE THE LIABILITY AROSE OR, (B) ONE HUNDRED DOLLARS ($100) IF YOU ARE USING THE SERVICES UNDER A FREE TRIAL, PILOT, BETA PROGRAM, OR OTHER UNPAID ARRANGEMENT.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "Non-commercial / evaluation-only limits on trials",
+        "quote": "not addressed",
+        "source_url": null
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §10.3 User-Generated Content",
+        "quote": "You retain ownership of any content you submit, upload, or provide to the Service, including software, text, audio, video, images, user-generated content, reviews, testimonials, forum posts, and social media posts (“User Content”). By submitting User Content, you grant Retell AI a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, adapt, publish, translate, and distribute such User Content in connection with the Service.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §10.4 AI-Generated Content",
+        "quote": "The ownership and intellectual property rights to any content generated by Retell AI’s models, algorithms, or AI systems in the provision of Services, including voice outputs, transcripts, summaries, and call analytics (“AI-Generated Content”), are subject to the following terms. Retell AI or its licensors retain ownership of the underlying AI models and algorithms used to generate the AI-Generated Content. You are granted a license to use the AI-Generated Content for Your personal or internal business purposes, subject to the restrictions outlined in these Terms.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §11 Call Recording and Third-Party Vendors",
+        "quote": "If you do not opt-out of recording, you give Retell AI permission to record calls made using the Service and process communication data (“Communications”) and User Content for offering AI-powered analytics and the development, training, and improvement of artificial intelligence and machine learning models that are included in the Service. However, before being used for these purposes, the data will be de-identified and aggregated using commercially reasonable industry-standard technologies.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §10.1 (aggregated data)",
+        "quote": "Retell AI may collect and use aggregated and de-identified data derived from Customer’s and its consumer’s use of the Services for purposes of operating, improving, and developing the Services, provided such data cannot reasonably be used to identify Customer, its users, or any consumers.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Privacy Policy (uses of personal information)",
+        "quote": "to train the artificial intelligence models that support our Services or that support our business and administrative functions;",
+        "source_url": "https://www.retellai.com/legal/privacy-policy"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §9 (liability cap carve-outs)",
+        "quote": "THE LIMITATIONS IN THIS SECTION SHALL NOT APPLY TO CUSTOMER’S INDEMNIFICATION OBLIGATIONS, BREACH OF SECTION 4 OR THE PROHIBITED USE POLICY, OR VIOLATION OF INTELLECTUAL PROPERTY RIGHTS.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "Prohibited Use Policy §11 (use-case questions)",
+        "quote": "Retell may ask you to describe your use case at sign-up or at any time, and you must respond accurately and promptly.",
+        "source_url": "https://www.retellai.com/legal/prohibited-use-policy"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §10.7 Trademarks (publicity)",
+        "quote": "You grant Retell AI the right to identify you as a user of the Service, using your trademarks and logos on Retell AI’s website and in its marketing materials. … Customer may revoke Retell AI’s right to use its your name, logo and trademarks in marketing or publicity at any time by written notice.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §22 Enforcement and Waiver; §4.2 audit",
+        "quote": "Retell AI will determine, in its sole discretion, whether You violated or attempted to violate any of the provisions of this Agreement or the Prohibited Use Policy. … Retell AI retains the right to audit your use of our Services to ensure your compliance with the applicable laws.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §10.5 Feedback",
+        "quote": "You grant Retell AI a perpetual, irrevocable, worldwide, royalty-free license to use, modify, and incorporate such Feedback into the Service without any obligation to compensate You.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §14 Modifications to Terms",
+        "quote": "Retell AI reserves the right to modify these Terms at any time in its sole discretion. Updated versions of the Terms will be posted on the website and are effective immediately.",
+        "source_url": "https://www.retellai.com/legal/terms-of-service"
+      }
+    ],
+    "activities": {
+      "a": {
+        "verdict": "prohibited",
+        "clause": "ToS §10.1(d): \"use the Services for benchmarking or competitive analysis without Retell AI’s prior written consent\"",
+        "note": "Building an agent and placing test calls is ordinary use, but timing the steps and reading the analytics in order to compare against your own product is competitive analysis. Prohibited unless Retell consents in writing."
+      },
+      "b": {
+        "verdict": "prohibited",
+        "clause": "ToS §10.1(b): \"scrape, crawl, or use any automated means to extract data ... or other content from the Services\"",
+        "note": "A Playwright run that records timings and reads analytics is an automated means of extracting data."
+      },
+      "c": {
+        "verdict": "prohibited",
+        "clause": "ToS §10.1: \"expressly prohibited from reverse engineering, decompiling, or otherwise attempting to derive source code or underlying models\"; PUP §6",
+        "note": "Source maps and bundles are squarely covered. Passive network-tab viewing is less clear, but it falls within \"reverse engineer the Product\" when the purpose is to learn the design."
+      },
+      "d": {
+        "verdict": "prohibited",
+        "clause": "PUP §6: \"use the Product to develop competing services\"; ToS §10.1(d)",
+        "note": "§10.1(a) also bars using Retell output to train or develop competing models or services, and §10.1(f) bars building a substitute or intermediary layer."
+      },
+      "e": {
+        "verdict": "allowed",
+        "clause": "ToS §10.3 (you own User Content); §10.4 (licence to AI-Generated Content, which includes transcripts, \"for Your personal or internal business purposes\")",
+        "note": "This covers keeping the material only. Using it for benchmarking or competitive analysis is §10.1(d), and using it to train competing models is §10.1(a). Retell records the calls and trains on them unless you opt out (§11)."
+      }
+    }
+  },
+  {
+    "vendor": "Sarvam AI",
+    "url": "https://www.sarvam.ai/terms-of-service",
+    "read_on": "2026-10-20",
+    "summary": "The ToS grant is broad, but §10.5(a) bans building a competing product and the EULA bars a direct competitor from benchmarking or competitive use. It is the only one of the six that names traffic monitoring as reverse engineering.",
+    "source_method": "curl of live server-rendered HTML, parsed to text (/terms-of-use redirects to /terms-of-service). indus.sarvam.ai, dashboard.sarvam.ai and platform.sarvam.ai all redirect to a login page, so they were not read. Email addresses on the pages are Cloudflare-obfuscated.",
+    "documents": [
+      {
+        "name": "Terms of Service (covers sarvam.ai, platform.sarvam.ai, indus.sarvam.ai and related dashboards/consoles)",
+        "url": "https://www.sarvam.ai/terms-of-service",
+        "version": "Version 2.0, Effective from July 29, 2026"
+      },
+      {
+        "name": "End User License Agreement (made part of the agreement by ToS §1.4)",
+        "url": "https://www.sarvam.ai/eula",
+        "version": "Last Modified: 22nd May, 2026"
+      },
+      {
+        "name": "Privacy Policy (incorporated by ToS §8.1)",
+        "url": "https://www.sarvam.ai/privacy-policy",
+        "version": "Updated on: July 29, 2026"
+      }
+    ],
+    "notes": [
+      "Samvaad: no Samvaad-specific terms were found. The Voice Agents product page's console buttons link to https://indus.sarvam.ai/samvaad/home, and docs.sarvam.ai says \"Log in at indus.sarvam.ai/samvaad to create, deploy, and manage your agents.\" Samvaad is therefore the Sarvam Voice Agents console, which the ToS covers by name (indus.sarvam.ai; §10.4 Sarvam Voice Agents). The EULA's \"Software\" definition also includes \"Voice Agents Platform components\".",
+      "Training default conflicts across documents: ToS §17.5 says training is subject to consent \"(where required)\"; the EULA says no training without explicit opt-in; the Privacy Policy's heading says \"Default Policy: Opt-In\", but its text describes training unless you opt out.",
+      "§10.5's heading is 'Developer Platform, Models, APIs and Sarvam Indus', but its text says \"the Offerings\", which the ToS defines as every Product and the Website. Voice Agents are listed among the Products and run on indus.sarvam.ai."
+    ],
+    "clauses": [
+      {
+        "topic": "competitive_use",
+        "section": "ToS §10.5(a) Developer Platform, Models, APIs and Sarvam Indus",
+        "quote": "(a) use the Offerings, or any content, data, output or other information received or derived from the Offerings, to directly or indirectly develop, train, test, fine-tune or otherwise improve any machine learning algorithm or artificial intelligence system (including any architectures, models, weights or datasets), or to build any product, model or service that competes with the Offerings, except as expressly permitted by us in writing;",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "EULA, License Restrictions (vi), (vii)",
+        "quote": "(vi) license the Software if You are a direct competitor of Sarvam for benchmarking or competitive purposes; (vii) use the Software or Output to train, develop, or fine-tune AI/ML models competing with Sarvam’s products;",
+        "source_url": "https://www.sarvam.ai/eula"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "ToS §1.2 and §4.1 (the broad grant these restrictions carve out of)",
+        "quote": "Both Personal Users and Customers may use the Offerings for their own purposes, including commercial purposes and to build their own products, applications and services, in each case subject to Section 4.1 and the applicable Product-Specific Terms. … Such purposes may include using the Offerings (in particular the developer platform, models and APIs) to develop, operate and offer your own products, applications and services, including for a fee, provided that such use is at all times in accordance with these Terms and the applicable Product-Specific Terms",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "ToS §4.2 Conditions of Use",
+        "quote": "(iii) be only for purposes consistent with the spirit and intended purpose of the Offerings;",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "EULA, License Restrictions (vi)",
+        "quote": "(vi) license the Software if You are a direct competitor of Sarvam for benchmarking or competitive purposes;",
+        "source_url": "https://www.sarvam.ai/eula"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "ToS §10.5(a) (\"test\" any AI system with Sarvam output)",
+        "quote": "to directly or indirectly develop, train, test, fine-tune or otherwise improve any machine learning algorithm or artificial intelligence system",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "Publishing comparisons",
+        "quote": "not addressed",
+        "source_url": null
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "ToS §10.5(b), (e)",
+        "quote": "(b) reverse engineer, decompile, disassemble, or otherwise attempt to discover the source code, model weights, data representations, or underlying algorithms of the Offerings, including by monitoring or tracking the inputs and outputs flowing through the Offerings in order to recreate them; … (e) develop or operate any application or integration that interacts with the Offerings other than through the interfaces and on the terms we authorise.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "ToS §9 Acceptable Use and User Conduct",
+        "quote": "access or attempt to access the Offerings by any means other than the interface we provide or authorise, or circumvent any access, usage or security restrictions (for example, scraping, or creating accounts in bulk or by automated means); use any data mining, scraping, harvesting or similar data-gathering or extraction methods in connection with the Offerings, including for machine learning purposes, or harvest, collect or store personal data of other users; probe, scan or test the vulnerability of any system or network, or breach or circumvent any security or authentication measures, except where done in compliance with any bug bounty programme we may offer;",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "EULA, License Restrictions (ii), (ix)",
+        "quote": "(ii) modify, translate, reverse engineer, decompile, disassemble, create derivative works, or otherwise attempt to derive the source code; … (ix) extract, scrape, or systematically collect data beyond your authorized API usage;",
+        "source_url": "https://www.sarvam.ai/eula"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToS §5.4 Free Credits and Trials",
+        "quote": "We may, at our sole discretion, offer free credits, promotional credits, trial usage or other complimentary access to the Offerings (“Free Credits”). Free Credits are provided as a matter of discretion and not of right; they may be subject to eligibility criteria, usage limits and expiry, have no cash value, are non-transferable and non-refundable, and may not be redeemed for cash.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToS §4.4 Beta, Trial and Evaluation Versions",
+        "quote": "In exchange for your use of a Beta Version, you agree that we may collect and analyse crash, diagnostic, performance and usage data regarding your use, to test and improve the Product. During the Beta, trial or evaluation period, no express or implied warranties apply, the Product is provided “as-is” with all defects, and no technical or other support is included.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToS §10.2 (Dubbing / TTS / STT) last sentence; §10.5(c)",
+        "quote": "Where a Product is made available to you on a free or trial basis, its Output may be restricted to non-commercial use as set out in the applicable Product-Specific Terms. … (c) exceed, circumvent or manipulate any rate limits, quotas, credits or usage-based metering, or create multiple accounts to exploit free plans or evade enforcement of these Terms;",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "EULA, Software Evaluation License",
+        "quote": "Software Evaluation License: If the Software is provided to You for evaluation purposes, Sarvam grants to You a nonexclusive, limited, royalty-free, nontransferable evaluation license to use the Software solely for evaluation prior to purchase (an “Evaluation License”).",
+        "source_url": "https://www.sarvam.ai/eula"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §7.1 Ownership",
+        "quote": "As between you and Sarvam, you retain all rights and ownership of your Content. We do not claim any ownership rights in your Content.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §17.4 Your Intellectual Property in Inputs and Outputs",
+        "quote": "You retain title to and the intellectual property rights in your Inputs. To the extent possible and permissible by law, we assign to you our rights in the Output generated for you, subject to this Section.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToS §17.5 Our Rights and Use of Data",
+        "quote": "We may collect, store, analyse and use data related to the Use of the AI Services, and track performance, to debug, benchmark, develop and improve the AI Services. We may aggregate and anonymise such data (which shall be Sarvam IP) and may use anonymised and aggregated data for marketing and sales materials. Where and to the extent we use Inputs, Outputs or usage data for training our machine-learning models, we will do so in accordance with the Privacy Policy and applicable law, and (where required) subject to your consent, which you may decline or withdraw in accordance with the Privacy Policy; in such cases, access to certain Offerings may be restricted.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Privacy Policy, 'AI Model Training & Your Data'",
+        "quote": "AI Model Training & Your Data Default Policy: Opt-In We use Your content (including inputs, uploads, prompts, or generated outputs) to train, fine-tune, and/ or improve our AI models unless you explicitly opt-out through your account settings or by writing to",
+        "source_url": "https://www.sarvam.ai/privacy-policy"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "EULA (Your Content / Output)",
+        "quote": "Sarvam will not use Your Content to train our AI models unless you provide explicit opt-in consent.",
+        "source_url": "https://www.sarvam.ai/eula"
+      },
+      {
+        "topic": "other",
+        "section": "ToS preamble (scope: dashboards and indus.sarvam.ai)",
+        "quote": "These Terms govern your access to and use of our website located at https://www.sarvam.ai/ and any related sub-domains, dashboards, consoles and platforms we operate, including https://platform.sarvam.ai/ and https://indus.sarvam.ai/",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §1.4 (EULA forms part of the agreement)",
+        "quote": "Without limitation, the Sarvam Terms of Service applicable to platform and API usage, the End User License Agreement (EULA), the Data Processing Addendum (DPA) and any Product-Specific Terms referenced in Section 6 form part of your agreement with us.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "EULA definition of Software",
+        "quote": "“Software” means the object code versions of the product, proprietary language models, speech processing tools, the Indus conversational AI chatbot, Voice Agents Platform components, and Developer Tools (SDKs, APIs)",
+        "source_url": "https://www.sarvam.ai/eula"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §3.1 Registration",
+        "quote": "You must provide your full legal name, a valid email address and any other information we request, and you warrant that all such information is accurate and complete and that you will keep it updated.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §10 lead-in; §15.2",
+        "quote": "A breach of this Section is a material breach of these Terms and may result in immediate suspension or termination under Section 15, without prejudice to any other remedy. … however, we may act immediately in cases of material breach, security risk, or breach of Sections 9 or 10.",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §10.4 Sarvam Voice Agents (applies to our test calls too)",
+        "quote": "deploy an agent without clearly and accurately disclosing, where required by applicable law, that the individual is interacting with an automated or AI system and, where applicable, on whose behalf the agent is calling; … record, monitor, store or transcribe conversations without the notice, disclosure or consent required by applicable law or contract; or",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "ToS §7.4 Feedback",
+        "quote": "You hereby irrevocably and unconditionally assign to Sarvam all right, title and interest (including all intellectual property rights) in and to such Feedback",
+        "source_url": "https://www.sarvam.ai/terms-of-service"
+      }
+    ],
+    "activities": {
+      "a": {
+        "verdict": "prohibited",
+        "clause": "EULA (vi): \"license the Software if You are a direct competitor of Sarvam for benchmarking or competitive purposes\" (Software includes \"Voice Agents Platform components\"); ToS §10.5(a)",
+        "note": "The ToS grant is unusually broad (commercial use, building your own products), but the EULA bars a direct competitor from using the platform for benchmarking or competitive purposes. §10.5(a) offers a route: \"except as expressly permitted by us in writing\"."
+      },
+      "b": {
+        "verdict": "prohibited",
+        "clause": "ToS §9: \"use any data mining, scraping, harvesting or similar data-gathering or extraction methods in connection with the Offerings\"; §10.5(e); EULA (ix)",
+        "note": "§10.5(e) also bars operating \"any application or integration that interacts with the Offerings other than through the interfaces and on the terms we authorise\", which a Playwright driver is."
+      },
+      "c": {
+        "verdict": "prohibited",
+        "clause": "ToS §10.5(b): \"... including by monitoring or tracking the inputs and outputs flowing through the Offerings in order to recreate them\"; EULA (ii)",
+        "note": "Sarvam is the only one of the six vendors whose terms name traffic monitoring. The words \"in order to recreate them\" narrow it a little, but bundles and source maps fall within \"attempt to discover the source code\"."
+      },
+      "d": {
+        "verdict": "prohibited",
+        "clause": "ToS §10.5(a): \"... or to build any product, model or service that competes with the Offerings, except as expressly permitted by us in writing\"",
+        "note": "The clause covers \"any content, data, output or other information received or derived from the Offerings\" and uses \"directly or indirectly\", so learned patterns are within its words. EULA (vii) adds a ban on training competing models."
+      },
+      "e": {
+        "verdict": "allowed",
+        "clause": "ToS §7.1 (you retain ownership of Content); §17.4 (Output rights assigned to you)",
+        "note": "This covers keeping the material only. Under §10.5(a) any output derived from the Offerings may not be used to develop, test or improve your own AI system or a competing product. Training on your content is opt-out per the Privacy Policy text (see the conflict note)."
+      }
+    }
+  },
+  {
+    "vendor": "Vapi",
+    "url": "https://vapi.ai/terms-of-service",
+    "read_on": "2026-10-20",
+    "summary": "Has no competitive-use or benchmarking clause, so hands-on evaluation is allowed. It does bar automated access (item 8), reverse engineering (item 7) and producing datasets for third-party products (item 14).",
+    "source_method": "curl of live server-rendered HTML, parsed to text. The use-restriction list in §2(d) is an unnumbered HTML list; the numbers below are its order on the page (item 7 = reverse engineering, matching the brief).",
+    "documents": [
+      {
+        "name": "Terms of Service",
+        "url": "https://vapi.ai/terms-of-service",
+        "version": "Last Updated: September 14, 2026"
+      },
+      {
+        "name": "Privacy Policy (incorporated by ToS §1; ranks below the ToS under §20)",
+        "url": "https://vapi.ai/privacy",
+        "version": "Last Updated: September 9, 2023"
+      }
+    ],
+    "notes": [
+      "The 2023 Privacy Policy says recordings and transcripts \"may be retained to help train and improve the AI models\". The 2026 ToS §4(b) is narrower (de-identified service improvement, no third-party model training) and wins under the §20 order of precedence.",
+      "Under §2(c), Optional and Customer-Managed Providers (e.g. an ElevenLabs voice or an LLM selected inside Vapi) are governed by their own terms. A Vapi test that uses an ElevenLabs voice can therefore pull in ElevenLabs' Prohibited Use Policy."
+    ],
+    "clauses": [
+      {
+        "topic": "competitive_use",
+        "section": "Competitive use / building a competing product",
+        "quote": "not addressed (no clause names competitors or competing products; the nearest clauses follow)",
+        "source_url": null
+      },
+      {
+        "topic": "competitive_use",
+        "section": "§2(a) Right to Use and License (purpose limit)",
+        "quote": "Subject to your compliance with these Terms, Vapi hereby grants you a non-exclusive, non-transferable, non-assignable, non-sublicensable, and revocable right to use the Services, solely for the purpose of deploying AI voice agents and solely in the manner described in these Terms and in any technical documentation contained in, or provided with, the Services (the \"Documentation\").",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "§2(d) Use Restrictions, items 1 and 14",
+        "quote": "do anything with the Services other than use them for your own use as intended under these Terms, including not to license, sell, rent, lease, transfer, assign, reproduce, distribute, host or otherwise commercially exploit the Services or any portion of the Services; … leverage the Service to produce datasets for neural network training, machine modeling, or developing templates or products for third-party.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "§2(b) What We Provide",
+        "quote": "The Services include but are not limited to a hosted software solution (\"Platform\") that allows you to create, test, manage and optimize voice agents that can interact with your customers and stakeholders and respond to queries by such individuals in the most realistic manner possible.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "Benchmarking / publishing comparisons",
+        "quote": "not addressed",
+        "source_url": null
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "§2(d) item 7 (reverse engineering) and definition of Vapi Software",
+        "quote": "reverse engineer, duplicate, decompile, disassemble, or decode any part of the Vapi Software we provide or the Services, or otherwise extract the source code of the software of the Service; … For purposes of these Terms, Vapi Software means the client-side software or application made available by Vapi for you to install or execute as part of the Services.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "§2(d) item 8 (robots / automated access / scraping)",
+        "quote": "use any robot, spider, crawler, scraper, avatar, miner or other manual or automated means to access the Services, \"scrape\" or download data from any part of our Platform or our website, or extract any information that doesn't relate to Your Content;",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "§2(d) items 6, 11, 13",
+        "quote": "copy, modify, translate, adapt, merge, archive, download, upload, disclose, distribute, sell, lease, syndicate, broadcast, perform, display, make available, make derivatives of, or otherwise use the Services or its content on the Services, other than as expressly permitted by these Terms or enabled by the Services' intended functionality, except to the extent the foregoing restrictions are expressly prohibited by applicable law; … try to detect, scan, or test any vulnerabilities of the Services or any of our or our Provider's system or network, or breach or override any security or authentication protections for the Services; … access the Service in ways that are not authorized by these Terms; or",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "§2(d) closing sentence",
+        "quote": "In all cases, Vapi will reasonably determine, in good faith, whether any action of an end-user violates the above rules. Violation of the above rules is a breach of these Terms.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "Free tier / trial restrictions",
+        "quote": "not addressed",
+        "source_url": null
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§4(a) Your Content",
+        "quote": "Vapi does not claim any ownership of Your Content or assert any rights under your Intellectual Property Rights other than as granted under these Terms. As between you and Vapi, you also own all information, code, images, reports, summaries, transcripts, recordings, audio, works of authorship and other materials generated or produced by the Services on your behalf (\"Output\"), except to the extent such Output incorporates any templates, pre-existing materials, or Intellectual Property Rights of Vapi or its licensors.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§4(b) Rights You Grant Us",
+        "quote": "We use Your Content to: (a) provide and maintain the Services, and (b) improve, enhance, and optimize the performance of the service and call improvement-related features, including, without limitation, speech recognition accuracy, end-of-turn detection, interruption detection, and latency reduction, provided that such processing is conducted in a manner that does not identify the business or the caller and does not disclose business' proprietary information. … We do not share Your Content with third-party services for their independent model training purposes.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§4(b) Data Management Controls (ZDR)",
+        "quote": "Zero Data Retention (ZDR): When ZDR is enabled, we do not store any call data, including transcripts, audio stream, or logs beyond the scope of the interaction on the Platform after call completion.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§5 Aggregate Stats",
+        "quote": "Such Aggregated Statistics are wholly owned by Vapi with all rights reserved and may be used for operating, developing, providing, promoting, and improving the Services.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Privacy Policy (call data)",
+        "quote": "Call recordings, transcripts and logs may be retained to help train and improve the AI models, in accordance with applicable laws.",
+        "source_url": "https://vapi.ai/privacy"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§20 Final Terms (order of precedence)",
+        "quote": "In the event of a conflict or inconsistency among the components of these Terms, the following order of precedence shall govern, in descending order: (1) any executed Order Form between you and Vapi; (2) any executed Master Services Agreement between you and Vapi; (3) the DPA, with respect to the processing of personal data; (4) these Terms of Service; and (5) the Privacy Policy.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "§2(d) item 12; §3(a) Registration",
+        "quote": "pretend to be someone else or falsely represent your association with any other entity; … You represent and warrant that: (a) all registration information you submit is truthful and accurate; and (b) you will maintain and promptly update such information to keep it true, accurate, current and complete.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "§4(b) Feedback",
+        "quote": "you agree that Vapi shall own all right, title, and interest in and to such Feedback, including all intellectual property rights therein, and Vapi may incorporate such Feedback into its products without restriction and without any financial obligation to you.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "§2(c)(iii) Third-Party Services",
+        "quote": "(iii) you are solely responsible for reviewing, entering into, and complying with all applicable agreements, terms of service, acceptable use policies, privacy policies, data-processing terms, and cross-border transfer mechanisms applicable to such provider;",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "§7(b) Termination by Vapi",
+        "quote": "(ii) your use of the Services poses a security risk, may adversely affect Vapi's systems or other customers, or may subject Vapi to material legal liability … Vapi may terminate the Services for your material breach of these Terms only after providing you with written notice (which may be by email to the address associated with your Account) describing the breach with reasonable specificity and a period of at least ten (10) days to cure such breach",
+        "source_url": "https://vapi.ai/terms-of-service"
+      },
+      {
+        "topic": "other",
+        "section": "§12(b) Arbitration (court carve-outs)",
+        "quote": "(1) any controversy, allegation, or claim that arises out of or relates to our actual or alleged intellectual property rights; (2) any claim related to, or arising from, allegations of theft, piracy, invasion of privacy, or unauthorized use; (3) any claim for equitable relief.",
+        "source_url": "https://vapi.ai/terms-of-service"
+      }
+    ],
+    "activities": {
+      "a": {
+        "verdict": "allowed",
+        "clause": "§2(a) licence + §2(b) (\"create, test, manage and optimize voice agents\"); no competitive-use or benchmarking clause",
+        "note": "The licence is \"solely for the purpose of deploying AI voice agents\". Building and test-calling an agent fits that, but an evaluation that never intends to deploy sits at its edge."
+      },
+      "b": {
+        "verdict": "prohibited",
+        "clause": "§2(d) item 8: \"use any robot, spider, crawler, scraper, avatar, miner or other manual or automated means to access the Services\"",
+        "note": "The API is the sanctioned automated channel (§2(a) Documentation). Driving the dashboard with Playwright is an \"automated means to access the Services\". The trailing \"doesn't relate to Your Content\" qualifier could be read as narrowing the list, but the first limb stands on its own."
+      },
+      "c": {
+        "verdict": "prohibited",
+        "clause": "§2(d) item 7: \"reverse engineer, duplicate, decompile, disassemble, or decode any part of the Vapi Software ... or otherwise extract the source code\"",
+        "note": "The JS bundle is \"client-side software ... for you to ... execute as part of the Services\". Source maps are literally extracted source. Passive network-tab viewing is less clear (\"decode any part of ... the Services\")."
+      },
+      "d": {
+        "verdict": "ambiguous",
+        "clause": "Not addressed; nearest is §2(d) item 14: \"leverage the Service to produce datasets for ... developing templates or products for third-party\"",
+        "note": "No clause bars learning from the product or building a competitor. The risk is item 14. Teardown artefacts such as timing tables, transcript corpora and claims files are datasets produced with the Service, and VP's product is for third parties. Taking away patterns only, with no dataset, is the lowest-risk reading."
+      },
+      "e": {
+        "verdict": "allowed",
+        "clause": "§4(a): \"you also own all ... transcripts, recordings, audio ... generated or produced by the Services on your behalf (\"Output\")\"",
+        "note": "Ownership is clear. Turning the recordings into a training or product dataset is §2(d) item 14."
+      }
+    }
+  },
+  {
+    "vendor": "ElevenLabs",
+    "url": "https://elevenlabs.io/terms-of-use",
+    "read_on": "2026-10-20",
+    "summary": "The Prohibited Use Policy §12 bans using the Services to \"research or develop products or services that compete with ours\", plus bots, automated extraction and reverse engineering. Starter fixes only the free-plan non-commercial bar.",
+    "source_method": "curl of live server-rendered HTML, parsed to text. The non-EEA Terms apply to an India-based user (an EEA/UK version exists at /terms-of-use-eu; its non-commercial clause is also numbered §1(c)).",
+    "documents": [
+      {
+        "name": "Terms of Service (non-EEA)",
+        "url": "https://elevenlabs.io/terms-of-use",
+        "version": "Last Updated: 09 October 2026"
+      },
+      {
+        "name": "Prohibited Use Policy (Supplemental Terms; applies to all Services)",
+        "url": "https://elevenlabs.io/use-policy",
+        "version": "Last Updated: 09 October 2026"
+      },
+      {
+        "name": "ElevenAgents Terms (Service-Specific Terms for Agents / Conversational AI)",
+        "url": "https://elevenlabs.io/agents-terms",
+        "version": "Last updated: October 09, 2026"
+      },
+      {
+        "name": "ElevenAPI Terms (API, MCP, CLI)",
+        "url": "https://elevenlabs.io/elevenapi-terms",
+        "version": "Last updated: October 09, 2026"
+      },
+      {
+        "name": "robots.txt (referenced by the Prohibited Use Policy)",
+        "url": "https://elevenlabs.io/robots.txt",
+        "version": "fetched 2026-10-20"
+      },
+      {
+        "name": "Pricing page (plan features; not a contract term)",
+        "url": "https://elevenlabs.io/pricing",
+        "version": "fetched 2026-10-20"
+      }
+    ],
+    "notes": [
+      "The brief's 'section 4(c)' is §1(c)(i) in the 09 October 2026 version (§4(c) is now 'Rights to your Content'). The text is the one the brief describes.",
+      "Starter ($6/mo, pricing page 'Commercial License') removes only the free-plan non-commercial bar. ToU §1(c) says that \"in either case\" use must comply with the Prohibited Use Policy, and its §12 bans on competitive research, automated extraction and reverse engineering apply on every plan."
+    ],
+    "clauses": [
+      {
+        "topic": "competitive_use",
+        "section": "Prohibited Use Policy §12 Commercial and Technical Restrictions",
+        "quote": "You may not use our Services in ways that circumvent our commercial terms, misuse our intellectual property, or otherwise undermine the intended operation of our Services. This includes: … Using our Services or Output to develop, train, fine-tune, or improve any AI model or service, or including Output in a dataset used for any of those purposes, except as expressly permitted under the applicable terms … Using our Services or Output to research or develop products or services that compete with ours",
+        "source_url": "https://elevenlabs.io/use-policy"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "ToU §5(b) Limited License",
+        "quote": "For clarity, any use of the Services other than as specifically authorized herein, without our prior written permission, is strictly prohibited and will terminate the license granted herein.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "Benchmarking by the customer",
+        "quote": "not addressed as a named restriction (the word appears only in ToU §2 as ElevenLabs' own purpose, quoted under topic 5); PUP §12 'research ... products or services that compete with ours' reaches competitive benchmarking",
+        "source_url": null
+      },
+      {
+        "topic": "benchmarking",
+        "section": "Publishing comparisons",
+        "quote": "not addressed",
+        "source_url": null
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "Prohibited Use Policy §12",
+        "quote": "Using bots, scraping, or automated tools to extract data from our Services, except as permitted by our robots.txt … Modifying, reverse engineering, decompiling, or creating derivative works from our Services, attempting to access our source code or model weights, or removing proprietary notices … Accessing our Services other than through the interfaces and APIs we make available to you, or operating a client, wrapper, or proxy that gives anyone else access to our Services outside the terms that apply",
+        "source_url": "https://elevenlabs.io/use-policy"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "Prohibited Use Policy §8 Platform Integrity and Security",
+        "quote": "Engaging in or facilitating coordinated, automated, or large-scale activity intended to evade limits or controls we apply to individual accounts … Testing or reverse engineering our Services to discover or exploit vulnerabilities, except as we authorize in writing",
+        "source_url": "https://elevenlabs.io/use-policy"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "robots.txt, group 'User-Agent: *'",
+        "quote": "User-Agent: * … Disallow: /app/",
+        "source_url": "https://elevenlabs.io/robots.txt"
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "ElevenAPI Terms §2.2 and §3.1",
+        "quote": "API calls, commands, and resulting Services activity are attributed to the account and workspace whose credential is used and are your responsibility, whether or not you authorized them and whether initiated by a person, script, pipeline, coding assistant, or other automated process … Your API integrations must tolerate additive changes to responses, and must not rely on undocumented behavior.",
+        "source_url": "https://elevenlabs.io/elevenapi-terms"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToU §1(c) Use Restrictions (the brief's '4(c)')",
+        "quote": "(i) if you access or use our Services free of charge (such a user, a “Free User”), you may only use the Services for non-commercial purposes; (ii) if you access or use our Services through a paid subscription plan (such a user, a “Paid User”), you may use the Services for commercial purposes, but in either case, your access and use of the Services and any Output must still comply with the Prohibited Use Policy. … If using the Services for non-commercial purposes, a personal e-mail address must be used.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "Prohibited Use Policy §12",
+        "quote": "Using our Services for commercial purposes on a free plan … Manipulating credits or tokens, creating multiple accounts to abuse free plans or evade enforcement, or artificially inflating Voice Library rewards",
+        "source_url": "https://elevenlabs.io/use-policy"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ToU §6(b)(ii) Promotional Credits",
+        "quote": "From time to time, ElevenLabs may issue Prepaid Credits without charge as part of a promotional, marketing, or trial program (“Promotional Credits”). Promotional Credits are subject to these Terms unless otherwise expressly stated at the time of issuance and may be subject to additional restrictions, including limitations on use, expiration, or eligibility.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "Pricing page, Starter plan",
+        "quote": "Starter … Everything in free, plus … Commercial License",
+        "source_url": "https://elevenlabs.io/pricing"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "ElevenAgents Terms §3.2 Platform Numbers",
+        "quote": "ElevenLabs may also change, reassign, or reclaim any Platform Number, including on non-payment, expiry of your plan entitlement or of any trial, or where a telecommunications provider, regulator, or fraud- or abuse-prevention measure requires it, and does not warrant that any Platform Number will remain assigned to you.",
+        "source_url": "https://elevenlabs.io/agents-terms"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToU §4(c) Rights to your Content",
+        "quote": "Except as expressly set forth herein, as between you and ElevenLabs, you retain all rights in and to your Input. … Except as expressly set forth herein, as between you and ElevenLabs, you retain all rights in and to your Output.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToU §4(d) License to Your Content",
+        "quote": "You hereby grant to ElevenLabs a license to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, publicly or otherwise perform and display, and use your Content to provide the Services (including the trust and safety features therein), to improve the Services, and to develop new services and products. … perpetual and irrevocable (which means this license cannot be withdrawn),",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToU §4(i) Data Deletion and Opt Out",
+        "quote": "In addition, you may opt out of our use of your Content for training at any time by navigating to the 'Data use' menu in the 'Terms and Privacy' section of your ElevenLabs account. Your Content will no longer be used to improve our Services (including the Models) once the request has been processed by our team, except as may be necessary to provide the Services to you, but does not affect any uses of (or materials resulting from uses of) your Content prior to that date.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToU §2 Personal Data",
+        "quote": "You acknowledge that ElevenLabs may process personal data relating to the operation, support, or use of our Services for our own business purposes, such as billing, account management, data analysis, benchmarking, technical support, product development, research and development of its AI models, improvement of its systems and technologies, and compliance with law.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ToU §14 Modifying and Terminating Our Services",
+        "quote": "You are responsible for exporting any Content you wish to retain before your access to a Service ends.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "ElevenAgents Terms Exhibit 2 §2 Conversation Data",
+        "quote": "Conversation data generated in connection with Speech Engine is Customer Content (or Content, as applicable) under the Underlying ElevenLabs Agreement.",
+        "source_url": "https://elevenlabs.io/agents-terms"
+      },
+      {
+        "topic": "other",
+        "section": "Prohibited Use Policy (intro)",
+        "quote": "Attempting to violate this Policy is itself a violation, whether or not the attempt succeeds.",
+        "source_url": "https://elevenlabs.io/use-policy"
+      },
+      {
+        "topic": "other",
+        "section": "ToU §2 and §1(c) (accuracy; business email)",
+        "quote": "You represent and warrant that any information that you provide to ElevenLabs in connection with the Services is accurate. … To the extent you register for the Services using a business entity’s email address, you acknowledge that we may deem such entity a Controller (as defined in the Data Processing Addendum) as it relates to the Personal Data contained in your account, and we may take action on your account at the direction of the Controller.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      },
+      {
+        "topic": "other",
+        "section": "ElevenAgents Terms §3.5 Disclosure and Consent (applies to test calls)",
+        "quote": "You shall clearly and prominently inform each Agent User, before they can access a Customer AI Agent, that: (a) they are interacting with AI rather than a human; (b) the interaction is processed by ElevenLabs, its affiliates, and its service providers, including any LLM Provider whose model you select; and (c) where you enable recording or conversation-retention features, the interaction is recorded.",
+        "source_url": "https://elevenlabs.io/agents-terms"
+      },
+      {
+        "topic": "other",
+        "section": "ToU §5(d) Feedback",
+        "quote": "You understand that we may use such Feedback for any purpose, commercial or otherwise, without acknowledgement or compensation to you, including to develop, copy, publish, or improve the Feedback or Services, or to improve or develop new products, services, or technologies in ElevenLabs’ sole discretion.",
+        "source_url": "https://elevenlabs.io/terms-of-use"
+      }
+    ],
+    "activities": {
+      "a": {
+        "verdict": "prohibited",
+        "clause": "PUP §12: \"Using our Services or Output to research or develop products or services that compete with ours\" (all plans); on Free also ToU §1(c)(i) non-commercial only",
+        "note": "Starter makes commercial use lawful but does not touch the competitive-research ban. ToU §5(b) offers a route: anything else needs \"our prior written permission\"."
+      },
+      "b": {
+        "verdict": "prohibited",
+        "clause": "PUP §12: \"Using bots, scraping, or automated tools to extract data from our Services, except as permitted by our robots.txt\"; robots.txt (User-Agent: *) \"Disallow: /app/\"",
+        "note": "The robots.txt exception does not reach the logged-in app, which is under /app/."
+      },
+      "c": {
+        "verdict": "prohibited",
+        "clause": "PUP §12: \"reverse engineering, decompiling, or creating derivative works from our Services, attempting to access our source code\"",
+        "note": "PUP §8 separately bars testing or reverse engineering to find vulnerabilities, and ElevenAPI §3.1 says integrations must not rely on undocumented behaviour."
+      },
+      "d": {
+        "verdict": "prohibited",
+        "clause": "PUP §12: \"research or develop products or services that compete with ours\" and \"develop, train, fine-tune, or improve any AI model or service\" using Services or Output",
+        "note": "Both limbs reach design learnings, and the second reaches any VP service improved with ElevenLabs output."
+      },
+      "e": {
+        "verdict": "allowed",
+        "clause": "ToU §4(c): \"you retain all rights in and to your Input\" / \"... your Output\"; §14 (export before access ends)",
+        "note": "Keeping is fine; using the files to improve VP or for competitive research is PUP §12. ElevenLabs holds a perpetual, irrevocable licence to the same content to improve the Services and develop new products (§4(d)). Opting out (§4(i)) only works going forward, so opt out before the first call."
+      }
+    }
+  },
+  {
+    "vendor": "Exotel",
+    "url": "https://exotel.com/terms-of-service-exotel/",
+    "read_on": "2026-10-20",
+    "summary": "§6.2 is a standalone promise not to build a competing product, so it binds VP as a customer whatever the trial does. There are no reverse-engineering, automation or benchmarking clauses.",
+    "source_method": "curl of live server-rendered HTML, parsed to text (first attempt hit a TLS reset; a retry succeeded). The page shows no 'last updated' date; its schema.org metadata says dateModified 2025-06-27T10:46:50+00:00. The page renders the second half of the agreement twice; the two copies differ only in whitespace and one repeated plain-English gloss line.",
+    "documents": [
+      {
+        "name": "Terms of Service (Cloud Communication Solution Agreement)",
+        "url": "https://exotel.com/terms-of-service-exotel/",
+        "version": "no visible date; page metadata dateModified 2025-06-27"
+      },
+      {
+        "name": "Privacy Policy (consented to under ToS §6.5)",
+        "url": "https://exotel.com/privacy-policy/",
+        "version": "no visible date; page metadata dateModified 2024-06-06"
+      }
+    ],
+    "notes": [
+      "§6.2 is a standalone promise, not a restriction on how the Product is used: \"will not ... build a product or service which competes with the Product\". On its words it binds VP for as long as VP is an Exotel customer under these terms, including if VP only buys Exotel telephony for its own platform.",
+      "Whether VP \"competes with the Product\" is a fact question. Clause 1 defines the Product as Exophone numbers, the platform/UI/APIs, the browser extension/SDK, the mobile app and documentation, and describes calls, IVR and SMS. Exotel's site also sells AI Voice Agents, but this agreement does not name them.",
+      "Cross-references inside the agreement are off by one in places (e.g. it cites 'clause 21.2 (Termination)' and 'clause 17 (Confidentiality Obligations)', but the headings are 20.2 and 16). That makes it harder to interpret.",
+      "No reverse-engineering, scraping, automation or benchmarking clause exists in this agreement."
+    ],
+    "clauses": [
+      {
+        "topic": "competitive_use",
+        "section": "§6.2 Customer's Representations and Warranties (confirmed)",
+        "quote": "(6.2) You and/or your Authorised User(s) will not copy, modify, duplicate, mirror, republish, download, transmit, license, sell, transfer, assign, display or otherwise commercially exploit or distribute all or any portion of the Proprietary Technology and the Product in any form or assist third parties in obtaining access to the Product or build a product or service which competes with the Product.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "§6.2 plain-English summary printed beside the clause",
+        "quote": "Please do not allow anyone to build or help build any product that is similar to or competes with our product.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "§6.2 definition of Proprietary Technology",
+        "quote": "By “Proprietary Technology” we mean our communication and optimization solutions, user interfaces, API adaptation details, configurations and related documentation.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "competitive_use",
+        "section": "§1 Description of Product",
+        "quote": "Use of our Product enables our customers to make, create, control, track, monitor, record conference calls, interactive voice response calls and send SMSs at any time, and/or combine the APIs to arrive at new functions.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "benchmarking",
+        "section": "Benchmarking / publishing comparisons",
+        "quote": "not addressed (clause 16 confidentiality, quoted under topic 6, could reach publishing non-public information about the Product)",
+        "source_url": null
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "Reverse engineering / decompiling / source extraction / scraping / bots / browser automation",
+        "quote": "not addressed as such; nearest is §6.2 'copy, modify, duplicate, mirror, republish, download ... all or any portion of the Proprietary Technology' (quoted under topic 1)",
+        "source_url": null
+      },
+      {
+        "topic": "reverse_engineering_scraping_automation",
+        "section": "§3(d) API Throttling Limit",
+        "quote": "(d) API Throttling Limit is 200 (Two Hundred). This API Throttling Limit may be increased based on a request from you.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "Free trial account restrictions",
+        "quote": "not addressed (the site offers 'Try For Free'; the agreement has no trial-account clause)",
+        "source_url": null
+      },
+      {
+        "topic": "free_tier_trial",
+        "section": "§33 Beta Release (new services on trial)",
+        "quote": "(1) We may make new services available to you on a trial basis at no additional cost for a limited period of time (hereinafter, the “Trial Period”) which will be determined at our sole discretion (hereinafter, the “Beta Version Service”). (2) You understand and agree that the Beta Version Service does not form part of our Product.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§8 Data Sharing",
+        "quote": "(8.1) During the Term of this Agreement, you will be able to download Customer Data and Exotel Data for the previous 9 (Nine) months. … (8.3) Before terminating this Agreement in accordance with clause 21.2 (Termination), you will be responsible for downloading the Customer Data and Exotel Data for your records. (8.4) On termination of the Agreement your Customer Data and Exotel Data will be deleted as soon as reasonably possible.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§8.1 definition of Exotel Data",
+        "quote": "we mean the data automatically generated and recorded by Exotel system pursuant to your and/or your Authorised User(s)’ use of the Product which includes but is not limited to billing and pricing information, meta data about a call (telecom circle, operator, location of call, time of call and duration), activities that you or your Authorised User(s) do in creating work flows, SMS templates, audio uploads and activities performed either by you or your Authorized User(s) in and during a call such as dual tone multi frequency key access and details of the Authorized Users.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§8.2",
+        "quote": "(8.2) Customer Data and Exotel Data will be treated as Confidential Information (defined in clause 17 below)",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "§6.6 and §14 Regulatory Disclosure",
+        "quote": "(6.6) You and/or your Authorised User(s) will only make call recordings and use such call recordings in accordance with the applicable laws. … You understand and agree that in order to comply with the applicable laws, we may either review or disclose the content of the conference calls or messages transmitted by you and/or your Authorised User(s) using our Product under this Agreement and perform any other act, as may be required by law from us.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Model training",
+        "quote": "not addressed in the ToS; the Privacy Policy purpose list mentions only 'provision of training' within call analytics (quoted next)",
+        "source_url": null
+      },
+      {
+        "topic": "data_ownership_training",
+        "section": "Privacy Policy, purposes of processing item 5",
+        "quote": "5. call analytics such as understanding the manner in which your business functions, provision of training and analysing call patterns and call reporting, agent productivity, team efficiency etc",
+        "source_url": "https://exotel.com/privacy-policy/"
+      },
+      {
+        "topic": "other",
+        "section": "§15.2 Intellectual Property Rights (assignment)",
+        "quote": "You have agreed to assign to us all present and future rights (including Intellectual Property Rights), title and interests, in, over and upon any and all content, corrections or enhancements, adaptations and additions in relation to our Product, in India or any part of the world.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "other",
+        "section": "§16.1 and §16.2 Confidentiality",
+        "quote": "(a) any data or information that is competitively sensitive material, and not generally known to the public, including, but not limited to, information relating to the Product; … Any Confidential Information of the Disclosing Party will be used by the Receiving Party solely for the purpose of carrying out the Receiving Party’s obligations under this Agreement.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "other",
+        "section": "§3(a) Restrictions (purpose)",
+        "quote": "(a) The Product can be used only by you and/or a person whom you may specifically authorise to use our Product, (hereinafter referred to as an “Authorized User”) for business communication purposes.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "other",
+        "section": "§20.2(b)(ii) Termination",
+        "quote": "(ii) there is a breach or alleged breach of the representations and warranties given by you in this Agreement;",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "other",
+        "section": "§11 Publicity",
+        "quote": "You agree to grant us the right to use your brand name and logos on our Website and other marketing material solely for marketing purposes.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "other",
+        "section": "§7 Know Your Customer Obligations",
+        "quote": "You agree to provide us with complete and accurate information at the Company Info Page, KYC Page and such other URLs as informed to you by us from time to time. … By “KYC Page” we mean our know your customer page wherein you are required to upload your proof of identity documents such as address proof, your incorporation certificate and such other documents as may be requested from time to time.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "other",
+        "section": "Preamble (separate contract governs)",
+        "quote": "The exception to this Agreement would be that your organization has a separate contract with us covering the use of our Product, in which case that contract will govern your use of Exotel’s Product.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      },
+      {
+        "topic": "other",
+        "section": "§6.12",
+        "quote": "(6.12) You and/or your Authorised Users will not use the Product to inter-alia collect or process personal data of a data subject (who is in the European Union) in the course of an activity which falls within the scope of European Union law.",
+        "source_url": "https://exotel.com/terms-of-service-exotel/"
+      }
+    ],
+    "activities": {
+      "a": {
+        "verdict": "ambiguous",
+        "clause": "§6.2: \"or build a product or service which competes with the Product\" (standalone covenant); §3(a): \"for business communication purposes\"",
+        "note": "Test calls are ordinary use. But §6.2 is breached by building a competitor at all, not by any particular use of the trial. So the answer turns on whether VP \"competes with the Product\" as clause 1 defines it. If it does, VP cannot be an Exotel customer under these terms in good standing, and §20.2(b)(ii) allows immediate termination on an alleged breach."
+      },
+      "b": {
+        "verdict": "ambiguous",
+        "clause": "Not addressed; §6.2 \"copy ... mirror, republish, download ... any portion of the Proprietary Technology\" (which includes \"user interfaces\"); §3(d) API limit 200",
+        "note": "There is no automation clause. Scripted capture of UI screens or flows could fall within copy, mirror or download of the Proprietary Technology."
+      },
+      "c": {
+        "verdict": "ambiguous",
+        "clause": "No reverse-engineering clause; §6.2 copy/download of Proprietary Technology (\"user interfaces, API adaptation details\"); §16.1/16.2 confidentiality",
+        "note": "Saving bundles or source maps is downloading or copying Proprietary Technology. What you learn is non-public \"information relating to the Product\" that may be used \"solely\" for the Agreement's purposes."
+      },
+      "d": {
+        "verdict": "prohibited",
+        "clause": "§6.2: \"build a product or service which competes with the Product\"; plain-English gloss \"build or help build any product that is similar to or competes with our product\"",
+        "note": "Activity (d) assumes a competing product, so the clause applies directly. §15.2's assignment of \"content, corrections or enhancements, adaptations and additions in relation to our Product\" adds a separate IP risk for anything you build around Exotel."
+      },
+      "e": {
+        "verdict": "allowed",
+        "clause": "§8.1/§8.3: you may (and should) download Customer Data and Exotel Data \"for your records\"; §6.6 recordings per applicable law",
+        "note": "Exotel Data (call metadata) is Confidential Information (§8.2), so §16.2 limits its use to the Agreement's purposes."
+      }
+    }
+  }
+]

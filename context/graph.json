@@ -12003,7 +12003,7 @@
   {
    "id": "risk.2026-10-20.vendor-terms",
    "type": "risk",
-   "status": "open",
+   "status": "accepted-by-owner",
    "source": "model",
    "date": "2026-10-20",
    "title": "Vendor terms restrict the teardown: Exotel 6.2 bars building a competing product; Vapi restriction 7 bars reverse engineering/decompiling/extracting source; ElevenLabs free tier is non-commercial only; Bolna/Retell/Sarvam unread. Breach risks account bans or claims against Vyakti.",
@@ -12017,6 +12017,34 @@
    "date": "2026-10-20",
    "title": "The 12 teardown credentials (passwords and API keys for Bolna, ElevenLabs, Retell, Sarvam x2, Vapi) were pasted into chat by the owner; now in the session transcript.",
    "mitigation": "Stored only in a mode-600 scratchpad env file; never committed or printed; rotate all of them when the teardown ends; no cards on file, so exposure is bounded by free credits."
+  },
+  {
+   "id": "evidence.2026-10-20.vendor-terms",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Vendor terms read in full (public pages, 167 quoted fragments checked against fetched text): competitive use or analysis is restricted at Retell (10.1(d) no benchmarking/competitive analysis without written consent), Sarvam (10.5(a) no competing product; EULA bars a competitor from benchmarking), ElevenLabs (Prohibited Use 12: no research to develop competing products), Bolna (ToS 3: no use to develop a competing product), Exotel (6.2: no building a competing product). Vapi has no competitive clause but bans reverse engineering (2(d)7) and automated access (2(d)8); customer owns transcripts/recordings (4(a)). Retell trains on calls unless opted out; ElevenLabs takes a perpetual content licence; Sarvam's policy is contradictory. Reading of terms, not legal advice.",
+   "path": "research/2026-10-20/teardown/terms/terms.md"
+  },
+  {
+   "id": "directive.2026-10-20.terms-override",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner, after seeing the terms: vendor terms are not a constraint; the owner allows and directs full reverse engineering with REA of Exotel, Vapi, ElevenLabs (free plan), and the others, as a learning exercise; owner will give the Retell OTP when asked.",
+   "quote": "whatever these companies terms says its fine with me"
+  },
+  {
+   "id": "decision.2026-10-20.teardown-lines",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Account-phase teardown proceeds on the owner's terms override (contract risk is Vyakti's: accounts may be closed; Exotel 6.2 also bears on Exotel as a future telephony partner). Lines kept regardless of terms: no bypassing authentication, captchas, bot protection or rate limits; no probing for other tenants' data or vulnerabilities; no copying code, UI or assets into VP; no prompt-extraction jailbreaks of their agents; synthetic data only, calls only to our own numbers, low load; redact auth tokens and cookies from every saved HAR; opt out of training on our data where offered before the first call.",
+   "rationale": "Contract terms are the owner's risk to accept; the kept lines concern unauthorized access, IP and third parties, which an owner override does not change.",
+   "reverse_if": "Legal advice says a specific activity creates liability beyond account loss, or a vendor objects in writing."
   }
  ],
  "edges": [
@@ -21346,6 +21374,26 @@
    "from": "risk.2026-10-20.teardown-creds-pasted",
    "to": "risk.2026-10-20.secrets-pasted",
    "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.terms-override",
+   "to": "evidence.2026-10-20.vendor-terms",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-20.teardown-lines",
+   "to": "directive.2026-10-20.terms-override",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-20.teardown-lines",
+   "to": "risk.2026-10-20.vendor-terms",
+   "relation": "supersedes"
+  },
+  {
+   "from": "evidence.2026-10-20.vendor-terms",
+   "to": "risk.2026-10-20.vendor-terms",
+   "relation": "supports"
   }
  ]
 }
