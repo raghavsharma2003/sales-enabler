@@ -11981,6 +11981,16 @@
    "date": "2026-10-20",
    "title": "Deep teardown needs our own trial accounts on the 8 vendors (sign-up email + phone OTP, some need a card); the agent cannot pass OTPs, so the owner or Instinct creates them with a team email and a spend cap.",
    "closes_when": "Accounts exist and credentials sit in a scratchpad env file (never chat)."
+  },
+  {
+   "id": "decision.2026-10-20.teardown-launch",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner said go on the teardown brief. Phase 1 (account-free) launched as workflow wf_560edf6c-5d6: Bolna blind inference scored against its open code (method calibration), 7 vendor public-surface lanes (Sarvam, Vapi, Retell, ElevenLabs Agents, Synthflow, SquadStack, Exotel) each with an adversarial verifier, regulation/segment lane (pre vs post-sale), radar of ~20 others + new entrants, synthesis. Outputs under research/2026-10-20/teardown/, raw under data/teardown/ (gitignored, sha256 manifests), graph proposals in context/inbox/. Phase 2 (account phase: time-and-motion, fixed tasks, PSTN call battery) waits on trial accounts created via Instinct.",
+   "rationale": "Account-free work needs no OTPs and calibrates the inference method before it is trusted on closed vendors.",
+   "reverse_if": "The owner changes the deep set, or the Bolna calibration hit rate is so low that inferred architecture claims on closed vendors must be dropped in favour of account-phase observation only."
   }
  ],
  "edges": [
@@ -21285,6 +21295,16 @@
    "from": "directive.2026-10-20.product-brief",
    "to": "open.2026-10-20.product-brief",
    "relation": "closes"
+  },
+  {
+   "from": "decision.2026-10-20.teardown-launch",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "implements"
+  },
+  {
+   "from": "open.2026-10-20.trial-accounts",
+   "to": "decision.2026-10-20.teardown-launch",
+   "relation": "constrains"
   }
  ]
 }
