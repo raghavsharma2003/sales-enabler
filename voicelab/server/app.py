@@ -115,7 +115,8 @@ RATING_KEYS = ['voice_human', 'emotion', 'conversation', 'hinglish', 'turn_takin
 def is_test(name):   # the lab's own headless and UI test callers never count as people
     return (name or '').lower().startswith(('smoke', 'sim', 'uitest', 'preview'))
 def scoped_calls(req):
-    who = req.query.get('tester'); calls = [c for c in load_calls() if not c.get('invalid')]
+    # a call that failed, or (before 2026-10-20) had a backup voice/brain swapped in, rated something else: never count it
+    who = req.query.get('tester'); calls = [c for c in load_calls() if not c.get('invalid') and not c.get('voice_fallbacks') and not c.get('brain_fallbacks')]
     if who: return [c for c in calls if c.get('tester') == who]
     return [c for c in calls if not is_test(c.get('tester'))]
 async def results(req):
