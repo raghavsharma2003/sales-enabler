@@ -22,8 +22,17 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
 
 ## Phase now: product build, start to end (since 2026-10-20)
 
-- **The product brief comes next** (`directive.2026-10-20.product-phase`, `open.2026-10-20.product-brief`). The owner
-  will say what to build and how to proceed. Plan from that brief. Don't guess ahead.
+- **The product brief is in** (`directive.2026-10-20.product-brief`). The product serves Indian enterprises calling
+  their customers, pre-sale and post-sale.
+  - v1: what competitors have, made better on design, usability, case handling and intelligence.
+  - Setup is LLM-native and chat-driven (`directive.2026-10-20.llm-native`).
+  - v2 brings memory, personalisation and self-learning, built on harness2.
+- **Step 1 is the competitor teardown.** It is deeper, not bigger, and uses REA. Proposed brief:
+  `research/2026-10-20/product/teardown-brief.md`. Nothing launches before the owner says go. It needs trial accounts
+  created by the owner (`open.2026-10-20.trial-accounts`).
+  - **Watch:** parity as a *wedge* was rejected on 2026-10-17. v1 has to win on measured task failures, not on feature
+    count (`open.2026-10-20.parity-floor-vs-wedge`).
+  - **Watch:** pre-sale vs post-sale is partly a TRAI question (`open.2026-10-20.presale-vs-postsale`).
 - **The voice stack is a user choice** in the product, with curated defaults (`decision.2026-10-20.product-stack-selectable`).
   The default is picked after Vertex returns and round-2 ratings are in. The owner leans towards **Gemini TTS**.
 - **The voice lab is paused** (`decision.2026-10-20.pause-lab`):

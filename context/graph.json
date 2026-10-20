@@ -11724,11 +11724,12 @@
   {
    "id": "open.2026-10-20.product-brief",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "source": "model",
    "date": "2026-10-20",
    "title": "The owner's product brief (what to build start to end and how to proceed) is the next input.",
-   "closes_when": "Owner message."
+   "closes_when": "Owner message.",
+   "closed_by": "directive.2026-10-20.product-brief"
   },
   {
    "id": "asset.voicelab.agenda-ledger",
@@ -11885,6 +11886,101 @@
    "date": "2026-10-20",
    "title": "Re-price the proposed tiers for the stack that wins round 2: the proposed Base (C6g: gpt-oss + stock Azure neural voice) is contradicted by round 1 (Azure-voice stacks 1.5-4.5/10, 0 would pick; owner wants a better brain than gpt-oss). Nearest measured candidate: all-Gemini G-A AI Rs 1.56/min (2026 prices), 1.92 (2027).",
    "closes_when": "Default stack chosen (open.2026-10-20.default-stack), then pricing_model.py re-run with its measured cost."
+  },
+  {
+   "id": "directive.2026-10-20.product-brief",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner product brief: Indian enterprises fire voice agents at their customers for pre-sale (selling, market surveys, outreach) and post-sale (feedback, surveys, customer success); find where the main value shows. v1 = what competitors have, made better: product design, usability, UI/UX and animation, whole user flow, every case handled, more intelligence. Onboard in 30-60 min, any data in, fire an agent, every recording, overview + deep analytics. Buyer selects STT/brain/TTS. v2 (later): memory, personalisation across long/frequent conversations, attribute extraction, self-learning agent (e.g. a drop-off line learned by call 100 changes on call 101), visible recursive improvement.",
+   "quote": "go in the market with the product which basically competitor have, and we just make it better than them"
+  },
+  {
+   "id": "directive.2026-10-20.llm-native",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: the product layer is LLM-native and agent-driven: the buyer talks to a chat agent (\"I have this CSV, fire this\") which explains and does the setup, rather than navigating a fixed structure."
+  },
+  {
+   "id": "directive.2026-10-20.teardown-rea",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: reverse-engineer the top voice-AI products (Vapi, ElevenLabs, Bolna and others, plus new launches) to their core with REA (github.com/morluto/rea): product, tech, offerings (e.g. Bolna's CRM layer); take the best of all; store every finding so effort and tokens are not wasted; parallel workflows and autonomous sessions allowed."
+  },
+  {
+   "id": "directive.2026-10-20.harness2-later",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: when building self-improving agents later, use the fundamentals of google-research/harness2 (recursive harness optimisation)."
+  },
+  {
+   "id": "directive.2026-10-20.deeper-not-bigger",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: wants a deeper version of the teardown task, not a bigger one: first state what a top professional would add, the rawest material, the methods and tools, and what external evidence shows it is right; then rewrite the prompt."
+  },
+  {
+   "id": "evidence.2026-10-20.teardown-brief",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Teardown brief (deeper rewrite): 3 decisions (pre/post-sale first, v1 parity floor, where we are measurably better); 8 deep vendors used as a customer (surface map, time-and-motion task list, PSTN call battery, graded architecture, unit economics, failures, India plumbing, v2 notes) + radar + change watch; Bolna blind-inference calibration; external proof via buyers, listener panel, usability sessions.",
+   "path": "research/2026-10-20/product/teardown-brief.md"
+  },
+  {
+   "id": "evidence.2026-10-20.rea-tool",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "REA (morluto/rea, read 2026-10-20 at 90e433d): MCP + CLI reverse-engineering toolkit; relevant targets here: websites (structure, scripts, network), HAR captures, JavaScript/Electron bundles and source maps, Android APKs (JADX), packet summaries (SNI, DNS); disclaimer excludes bypassing auth/bot protection and copying proprietary code.",
+   "url": "https://github.com/morluto/rea"
+  },
+  {
+   "id": "evidence.2026-10-20.harness2-tool",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-20",
+   "title": "Harness2 (google-research/harness2, read 2026-10-20 at 1cfe254): recursive agent harnessing with fixed weights; task-level Propose-Probe-Compose over 8 editable components (system prompt, guardrails, memory, tool guidance, subagents, skills, scripts, plugins) plus a persistent improvement harness of lessons; model-backed runs expect Vertex AI.",
+   "url": "https://github.com/google-research/harness2"
+  },
+  {
+   "id": "open.2026-10-20.parity-floor-vs-wedge",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Owner's v1 (competitor parity, made better on design/usability/case handling/intelligence) meets rejected.2026-10-17.parity-undercut (parity + price undercut is no wedge). Different claim: parity as a floor, UX and case handling as the wedge; Indian complaints are ~70% support/billing/account-UI (RAW-17). Unproven until measured.",
+   "closes_when": "Teardown task-list scores show incumbents failing tasks we can pass, and buyer interviews rank those failures as switching reasons."
+  },
+  {
+   "id": "open.2026-10-20.presale-vs-postsale",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Pre-sale or post-sale first, and which job: promotional AI calls carry heavier TRAI duties (140-series, consent, NCPR, windows) than neutral service calls (REG-35); the earlier proposed beachhead was post-sale insurance renewals (beachhead-v2).",
+   "closes_when": "Teardown regulation/segment lane + 10-15 buyer interviews give a recommendation with evidence."
+  },
+  {
+   "id": "open.2026-10-20.trial-accounts",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Deep teardown needs our own trial accounts on the 8 vendors (sign-up email + phone OTP, some need a card); the agent cannot pass OTPs, so the owner or Instinct creates them with a team email and a spend cap.",
+   "closes_when": "Accounts exist and credentials sit in a scratchpad env file (never chat)."
   }
  ],
  "edges": [
@@ -21109,6 +21205,86 @@
    "from": "decision.2026-10-20.round2-stacks",
    "to": "open.2026-10-18.s2s-vs-gate-law",
    "relation": "leaves-open"
+  },
+  {
+   "from": "directive.2026-10-20.product-brief",
+   "to": "directive.2026-10-20.product-phase",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.product-brief",
+   "to": "directive.2026-10-18.self-serve",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-20.llm-native",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "part-of"
+  },
+  {
+   "from": "directive.2026-10-20.teardown-rea",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "part-of"
+  },
+  {
+   "from": "directive.2026-10-20.harness2-later",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-20.teardown-brief",
+   "to": "directive.2026-10-20.teardown-rea",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.teardown-brief",
+   "to": "directive.2026-10-20.deeper-not-bigger",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-20.teardown-brief",
+   "to": "evidence.2026-10-20.rea-tool",
+   "relation": "requires"
+  },
+  {
+   "from": "directive.2026-10-20.harness2-later",
+   "to": "evidence.2026-10-20.harness2-tool",
+   "relation": "requires"
+  },
+  {
+   "from": "open.2026-10-20.parity-floor-vs-wedge",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-20.parity-floor-vs-wedge",
+   "to": "ledger.RAW-17",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-20.presale-vs-postsale",
+   "to": "decision.2026-10-17.beachhead-v2",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-20.presale-vs-postsale",
+   "to": "ledger.REG-35",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-20.trial-accounts",
+   "to": "evidence.2026-10-20.teardown-brief",
+   "relation": "constrains"
+  },
+  {
+   "from": "evidence.2026-10-20.teardown-brief",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "informed-by"
+  },
+  {
+   "from": "directive.2026-10-20.product-brief",
+   "to": "open.2026-10-20.product-brief",
+   "relation": "closes"
   }
  ]
 }
