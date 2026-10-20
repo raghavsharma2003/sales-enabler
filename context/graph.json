@@ -12142,6 +12142,24 @@
    "title": "Authorized account phase relaunched as wf_36b25033-85c with mixed tiers per the ladder: Opus 5.5 (inherited session model) at xhigh for the Bolna ground-truth lane and the cross-vendor synthesis; Sonnet 5.5 at high for the four standard vendor API/SDK lanes (Vapi, Retell, ElevenLabs, Sarvam), which the Opus synthesis cross-checks. Each agent that dies on a terminal error reruns once on the other tier (label :fallback-opus or :fallback-sonnet). Restart cost: a few minutes of in-flight Bolna work; nothing had completed.",
    "rationale": "Owner directive: a mix of models and efforts gives better performance per token; invest the strongest model where intelligence matters most.",
    "reverse_if": "The synthesis finds the Sonnet lanes' claims materially weaker or wrong (rerun those lanes on Opus 5.5), or fallbacks fire systematically on one tier."
+  },
+  {
+   "id": "directive.2026-10-20.research-then-decide",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner: finish the research, report when all of it is done, and then the owner and agent decide together what product to build and what it will be like.",
+   "quote": "continue with the research and when all of its done let me know we will decide what product to build"
+  },
+  {
+   "id": "open.2026-10-20.product-decision",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-20",
+   "title": "Which product to build and what it is like (segment and first jobs, v1 scope and parity floor, where VP wins, stack defaults, pricing), decided jointly once the research completes.",
+   "closes_when": "Both teardown runs (public wf_560edf6c-5d6, authorized account phase wf_36b25033-85c) finish, a consolidated decision brief is written across all research (2026-10-17 rounds, voice lab, teardown, terms, regulation), and the owner decides."
   }
  ],
  "edges": [
@@ -21561,6 +21579,26 @@
    "from": "decision.2026-10-20.account-mixed-tiers",
    "to": "decision.2026-10-20.model-selection",
    "relation": "implements"
+  },
+  {
+   "from": "open.2026-10-20.product-decision",
+   "to": "directive.2026-10-20.research-then-decide",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-20.product-decision",
+   "to": "open.2026-10-20.presale-vs-postsale",
+   "relation": "requires"
+  },
+  {
+   "from": "open.2026-10-20.product-decision",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "requires"
+  },
+  {
+   "from": "open.2026-10-20.product-decision",
+   "to": "open.2026-10-20.default-stack",
+   "relation": "requires"
   }
  ]
 }
