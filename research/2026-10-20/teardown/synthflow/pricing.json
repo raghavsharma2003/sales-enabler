@@ -1,0 +1,103 @@
+{
+ "date": "2026-10-20",
+ "fx_inr_per_usd": 95.0,
+ "sources": {
+  "enterprise_floor": "synthflow.ai/pricing read 2026-10-20: 'Enterprise contracts start at $30,000 annually' (data/teardown/synthflow/site/pricing.html)",
+  "last_public_paygo": "research/2026-10-17/lanes/l4a-competitors/pricing-history.json obs 2026-03-14 and 2026-06-16 (Common Crawl): voice engine $0.09/min + LLM $0.02 (GPT-4.1 mini) .. $0.05 (GPT-4.1) + managed Twilio $0.02 (US)",
+  "twilio_india_mobile": "research/2026-10-20/teardown/vapi/pricing.json: twilio.com/en-us/voice/pricing/in India-Mobile $0.0496/min; outbound to India only from non-Indian numbers",
+  "vapi_calculator_components": "research/2026-10-20/teardown/vapi/pricing.json: Deepgram $0.0095-0.0099, OpenAI $0.0077-0.0452, ElevenLabs $0.0146-0.0238 per min (pass-through list prices)",
+  "plivo_india": "research/2026-10-17/lanes/l2-economics (vendor-and-telephony-prices.csv): Plivo India INR 0.38/min, 30 s pulse; media anchoring in India required"
+ },
+ "current_public_price": {
+  "model": "sales-led enterprise only; no per-minute list price published",
+  "floor_usd_per_year": 30000,
+  "floor_inr_per_year": 2850000.0,
+  "floor_inr_per_month": 237500,
+  "grade": "observed"
+ },
+ "last_public_per_minute_usd": {
+  "platform_lo": 0.11,
+  "platform_hi": 0.14,
+  "platform_inr": [
+   10.45,
+   13.3
+  ],
+  "grade": "observed (Common Crawl, 2026-03/06)"
+ },
+ "india_outbound_allin_estimate": {
+  "path": "last public platform rate + BYO Twilio to an Indian mobile from a non-Indian caller ID (Synthflow sells US/CA/AU numbers only; SIP trunk is Enterprise-only and Synthflow has no India PoP)",
+  "usd_per_min": [
+   0.1596,
+   0.1896
+  ],
+  "inr_per_min": [
+   15.16,
+   18.01
+  ],
+  "grade": "inferred",
+  "caveat": "the 2026 enterprise per-minute rate is unpublished; the H1 2026 PAYG rate is used as the best public anchor"
+ },
+ "effective_inr_per_min_at_floor": {
+  "5000_min_per_month": [
+   47.5,
+   47.5
+  ],
+  "10000_min_per_month": [
+   23.75,
+   23.75
+  ],
+  "25000_min_per_month": [
+   15.16,
+   18.01
+  ],
+  "50000_min_per_month": [
+   15.16,
+   18.01
+  ]
+ },
+ "cogs_reconstruction_usd_per_min": {
+  "third_party_stack": {
+   "stt_deepgram": [
+    0.0095,
+    0.0099
+   ],
+   "llm_openai_class": [
+    0.0077,
+    0.0452
+   ],
+   "tts_elevenlabs": [
+    0.0146,
+    0.0238
+   ],
+   "own_infra_sbc_freeswitch_janus_gcp": [
+    0.002,
+    0.006
+   ]
+  },
+  "grade": "inferred (stack from docs/bundle/job posts; component prices are other vendors' list prices, Synthflow's negotiated rates unknown)",
+  "third_party_total": [
+   0.0338,
+   0.0849
+  ],
+  "third_party_total_inr": [
+   3.21,
+   8.07
+  ],
+  "gross_margin_vs_last_public_platform_rate": [
+   0.39,
+   0.69
+  ],
+  "note": "Since 2026-08-25 non-enterprise agents run on Synthflow LLM, and Synthflow STT/TTS exist; moving the three AI lines in-house is consistent with pushing COGS below the third-party floor (inferred; in-house cost unknown)."
+ },
+ "vs_2026_10_17": {
+  "pricing_history_typical_usd": [
+   0.15,
+   0.24
+  ],
+  "at_fx95_inr": [
+   14.25,
+   22.8
+  ],
+  "change": "no new public per-minute price since 2026-06; enterprise-only floor $30k/yr confirmed unchanged since 2026-09-10"
+ }
+}

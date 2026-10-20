@@ -1,0 +1,657 @@
+[
+ {
+  "id": "SYN-01",
+  "dimension": "surface",
+  "claim": "Public docs index (llms.txt) lists 234 pages; the docs sitemap holds 135 more (106 dated changelog entries plus pages such as Aurora, legacy-cluster migration and outbound number pooling). The public OpenAPI 3.1 'PLATFORM API' has 69 paths and 110 operations under three base URLs: api.synthflow.ai/v2 (Global), api.us.synthflow.ai/v2 and api.eu.synthflow.ai/v2.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs/docs.synthflow.ai_llms.txt",
+   "data/teardown/synthflow/docs/docs.synthflow.ai_sitemap.xml",
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json",
+   "https://docs.synthflow.ai/openapi.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-02",
+  "dimension": "surface",
+  "claim": "Product surface: agent builder with Prompt Builder and node-based Flow Designer (multi-agent subflows, JSON import, templates); Aurora in-app copilot; actions (real-time booking, TEL/SIP/dynamic transfers with phone books, custom HTTP actions, in-call SMS/WhatsApp, post-call SMS and email, information extractors, custom evaluations, MCP connectors); knowledge base (PDF, URL, crawl, Zendesk import); Memory groups; Test Center simulations; version control; deployment to bought numbers, own Twilio, SIP, WhatsApp Business calling, WebSocket media, voice widget and chat (API, widget, WhatsApp, SMS); Campaigns; Workflows; logs with SIP ladder, PCAP download and live listen-in; analytics; CSV export; signed webhooks; agency subaccounts with custom domain, branding, limits and permissions; three roles, SSO, 2FA and allowed domains; billing.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs/docs.synthflow.ai_llms.txt",
+   "data/teardown/synthflow/docs-md/getting-started.md",
+   "data/teardown/synthflow/docs-md/sip-call-ladder.md",
+   "data/teardown/synthflow/docs-md/subaccounts.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-03",
+  "dimension": "surface",
+  "claim": "Enterprise gating is broad: SIP trunking and custom numbers, Campaigns, Aurora, the fallback voice, automatic daily exports, GPT models, BYOK (OpenAI/Azure) and SSO are Enterprise-only. Docs say the earlier Pro, Growth and Agency plans 'are no longer sold'. Self-serve is effectively closed to new buyers.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/telephony.md",
+   "data/teardown/synthflow/docs-md/batch-calling.md",
+   "data/teardown/synthflow/docs-md/aurora.md",
+   "data/teardown/synthflow/docs-md/voice-configuration.md",
+   "data/teardown/synthflow/docs-md/export-call-data.md",
+   "data/teardown/synthflow/docs-md/general-configuration.md",
+   "data/teardown/synthflow/docs-md/concurrency.md"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv (white_label, outbound_campaigns rows did not record gating)"
+ },
+ {
+  "id": "SYN-04",
+  "dimension": "surface",
+  "claim": "Sign-up is gated: 'new accounts may be reviewed before full workspace access is enabled', showing a holding page. Email/password users must reset their password after approval. Sign-in still runs on the legacy Bubble app at fine-tuner.ai/auth (Google, SSO, email).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/account-access-login.md",
+   "data/teardown/synthflow/capture/login.summary.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-05",
+  "dimension": "surface",
+  "claim": "Campaigns (outbound lists) shipped on 2026-08-18 as an Enterprise feature that support must switch on. They are created only through the API; the portal shows progress. Each request carries 1-10,000 recipients, up to 1,000,000 per campaign. A campaign is cancelled after seven days. Failed recipients are not retried. There is no per-campaign webhook. De-duplication happens only when the caller supplies an id. The calling window cannot cross midnight or be edited after creation. An agent's business hours that conflict with the window make recipients fail immediately instead of waiting.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/batch-calling.md",
+   "data/teardown/synthflow/docs-md/changelog__2026__8__18.md",
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json (POST /calls/batch)"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv outbound_campaigns=yes (confirmed, but Enterprise-only and API-only)"
+ },
+ {
+  "id": "SYN-06",
+  "dimension": "surface",
+  "claim": "Contact data model: a contact is name*, phone_number*, email and contact_metadata.company. There are no consent, opt-out, DND or timezone fields, and no suppression-list endpoint anywhere in the 110 operations. 'Contacts' was renamed 'Memory' on 2026-05-12.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json (POST /contacts)",
+   "data/teardown/synthflow/docs-md/changelog__2026__5__12.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-07",
+  "dimension": "surface",
+  "claim": "Opt-out is detected after the call, not enforced: the post-call LLM-judge payload carries opted_in and no_opt_out booleans ('false if the caller asked to be removed'), and the buyer has to act on them.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/webhooks.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-08",
+  "dimension": "surface",
+  "claim": "The call object exposes 14 statuses, 10 end_call_reason values plus custom reasons, a telephony hang-up side and disconnect reason, ring and connect durations, RTCP-derived RTT, jitter, loss and MOS per WAN and LAN leg, a full action-execution timeline and collected variables. The data model is telephony-first in its observability.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json (GET /calls/{call_id})"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-09",
+  "dimension": "surface",
+  "claim": "Silent API behaviour: on non-enterprise plans, requests that set llm to a GPT value 'are still accepted and the response looks normal, but the agent stays on Synthflow LLM. Nothing in the response signals that the value was ignored.'",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/changelog__2026__8__25.md",
+   "data/teardown/synthflow/docs-md/general-configuration.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-10",
+  "dimension": "surface",
+  "claim": "Billing mechanics: calls are metered per second and aggregated across calls into whole minutes. no-answer and hangup_on_voicemail calls are billed a flat 5 s; failed and user-canceled calls are not billed. Five AI chat messages count as one minute. Billing thresholds trigger invoices and are not spending caps.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/usage.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-11",
+  "dimension": "surface",
+  "claim": "Capacity: each workspace has a concurrency limit and a call-attempts-per-second (CAPS) limit. Warm-transfer attempts start new outbound calls that count against CAPS, so transfer-heavy campaigns can starve. Subaccounts share the parent's limits. Over-limit calls get HTTP 429 or a short queue.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/concurrency.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-12",
+  "dimension": "surface",
+  "claim": "Team model: three workspace roles (Super Admin, Admin, Member). Granular permissions exist only for agency subaccounts (actions, agent types, editor options, integrations), not for individual members.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/user-management.md",
+   "data/teardown/synthflow/docs-md/manage-subaccount-permissions.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-13",
+  "dimension": "surface",
+  "claim": "Analytics in progress, behind flags that are off by default: a call-quality card (turn latency p50/p95 measured from the end of caller speech to the agent's first audio, transfers, predicted CSAT, containment), a 'voice-ux-evaluation' that scores unanswered questions, false action claims, off-topic replies and re-asked questions at one LLM call per call, and predicted CSAT.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default",
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_index-boN6ncNO.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-14",
+  "dimension": "surface",
+  "claim": "Dashboard migration: the React app at app.synthflow.ai (Vite, React Router) became the default for every workspace on 2026-10-14. Authentication and Settings still run on the Bubble.io app at fine-tuner.ai. Public flag descriptions show the public /v2/subaccounts API was served by Bubble until it moved to a 'BFF', and that subaccount names were still stored in Bubble.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/new-synthflow-app.md",
+   "data/teardown/synthflow/capture/app.summary.json",
+   "data/teardown/synthflow/capture/login.summary.json",
+   "data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-15",
+  "dimension": "surface",
+  "claim": "The MCP server and the official ChatGPT, Claude and Codex connectors are region-bound (mcp.synthflow.ai, mcp.us.synthflow.ai, mcp.eu.synthflow.ai) and expose the same tool set as Aurora.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/openai.md",
+   "data/teardown/synthflow/docs-md/mcp-server.md",
+   "data/teardown/synthflow/docs-md/aurora.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-16",
+  "dimension": "surface",
+  "claim": "Aurora is Enterprise-only. It has thread memory and workspace-level 'Learnings', and the public flag says its router 'will choose between Claude Sonnet and Haiku'.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/aurora.md",
+   "data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-20",
+  "dimension": "architecture",
+  "claim": "Hosting is Google Cloud. Every SIP signalling, media and egress IP in the allow-list maps to GCP us-east1 (Global and US clusters), europe-west3 (EU) or northamerica-south1 (LATAM media nodes), checked against Google's cloud.json of 2026-10-20. One US signalling IP (4.138.180.50) is in Microsoft's 4.128.0.0/12. DNS: api.us and api.eu sit on GCP global anycast load balancers; app, api (Global) and fine-tuner.ai sit behind Cloudflare.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/synthflow/ip-regions.csv",
+   "data/teardown/synthflow/ipranges/gcp-cloud.json",
+   "data/teardown/synthflow/ipranges/rdap-4.138.180.50.json",
+   "data/teardown/synthflow/ipranges/dns-map.json",
+   "data/teardown/synthflow/docs-md/ip-allow-lists.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-21",
+  "dimension": "architecture",
+  "claim": "There is no India region. Clusters are Global (EU storage, US or EU compute), US and EU; the legacy Global cluster is being retired in Q4 2026. A point of presence near callers is offered on request: the LATAM case cut RTT from 191.3 ms to 99.5 ms. The in-region target is RTT under 100 ms and MOS above 4.2.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/customer-region.md",
+   "data/teardown/synthflow/docs-md/legacy-cluster-migration.md",
+   "data/teardown/synthflow/docs-md/call-quality.md",
+   "data/teardown/synthflow/docs-md/deploy-in-latam-regions.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-22",
+  "dimension": "architecture",
+  "claim": "Telephony is self-run: its own SBCs on non-standard SIP ports 32681 (UDP/TCP) and 32682 (TLS), with RTP on 10000-60000. A job post names Kamailio, RTPEngine and FreeSWITCH on GCP and Kubernetes. A public FreeSWITCH fork ('Synthflow's FreeSWITCH source for image builds') and a VoiceBlender fork (Go) were updated in 2026.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/ip-allow-lists.md",
+   "data/teardown/synthflow/jobs/jobs.deel.com_synthflow-ai_job-details_edcb20bf-1024-453b-9826-bb25d6888862_overview.txt",
+   "https://github.com/SynthFlowAI"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-23",
+  "dimension": "architecture",
+  "claim": "Browser WebRTC (dashboard Web Call and silent live listen-in) runs on a Janus WebRTC gateway through janode and the AudioBridge plugin. ICE is forced to TURN relay (iceTransportPolicy 'relay'). The BFF returns janusPublicUrl from GET /webrtc/ice-servers or POST /v3/webrtc/token, and calls carry a janus_pod_name.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_index-boN6ncNO.js",
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_condensed-ui-DecseHOV.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-24",
+  "dimension": "architecture",
+  "claim": "Custom web and app integration uses raw WebSocket media rather than WebRTC (wss://webrtc-us.synthflow.ai/ws-audio, RTP-framed or raw audio, connect-then-bind across media nodes). The older websocket endpoint was deprecated on 2026-05-27.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/ws-media-integration.md",
+   "data/teardown/synthflow/docs-md/changelog__2026__5__27.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-25",
+  "dimension": "architecture",
+  "claim": "LiveKit evidence is historical only. A sample recording URL in the app bundle is signed by the GCP service account livekit-egress@synthflow-dev, with a 2024-08 timestamp in its path, so LiveKit Egress was used for recordings in dev. No LiveKit client or signalling appears in the 2026 app bundle; WebRTC goes through Janus. LiveKit is not current production orchestration.",
+  "grade": "inferred",
+  "evidence": [
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_condensed-ui-DecseHOV.js",
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_index-boN6ncNO.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-26",
+  "dimension": "architecture",
+  "claim": "Orchestration is in-house and probably Python. The end-reason map contains 'orchestrator-dev…/outbound' URLs inside aiohttp-format errors ('Request failed: 500, message=…, url=…') and raw Python exceptions ('NoneType' object has no attribute …). No Pipecat or Vocode markers were found in public material.",
+  "grade": "inferred",
+  "evidence": [
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_index-boN6ncNO.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-27",
+  "dimension": "architecture",
+  "claim": "STT: the public API enum is deepgram, deepgram-nova-3 and synthflow-stt; the frontend enum adds soniox-stt-rt-v3. Endpointing modes are speculative, faster and high_accuracy, plus a transcriber_eager_end_of_turn parameter (flag: 'starts the answer as soon as the caller probably finished speaking… costs more').",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json",
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_condensed-ui-DecseHOV.js",
+   "data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-28",
+  "dimension": "architecture",
+  "claim": "'Multilingual' agents almost certainly run Deepgram Nova-3 multi. Synthflow's list ('English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian, and Dutch') matches Deepgram's Nova-3 multi list word for word. So Hinglish code-switching is whatever Nova-3 multi does, and no other Indian language can be mixed in.",
+  "grade": "inferred",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/about-supported-languages.md",
+   "https://developers.deepgram.com/docs/models-languages-overview (read 2026-10-20)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-29",
+  "dimension": "architecture",
+  "claim": "TTS: ElevenLabs is the default (Flash v2 for English, v2.5 otherwise; eight ElevenLabs models up to v4 and v4 Turbo). Deepgram Aura-2 appears in the frontend enum and as a fallback provider. 'Synthflow TTS', their own engine with 200 voices, shipped on 2026-05-13; the docs claim sub-200 ms time to first audio and say multilingual delivery stays 'biased toward English'. The subprocessor list names ElevenLabs, Deepgram, OpenAI, Twilio, Bubble.io and GCP.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/voice-configuration.md",
+   "data/teardown/synthflow/docs-md/elevenlabs.md",
+   "data/teardown/synthflow/docs-md/changelog__2026__5__13.md",
+   "data/teardown/synthflow/docs-md/ai-transparency.md",
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_condensed-ui-DecseHOV.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-30",
+  "dimension": "architecture",
+  "claim": "LLM: the only third-party models are OpenAI's (GPT-4o through GPT-6 Luna), plus 'Synthflow LLM' and 'Advanced Synthflow LLM' (synthflow-premium). Since 2026-08-25 every non-enterprise agent is forced onto Synthflow LLM. The base model behind Synthflow LLM is not disclosed anywhere public. A 'Prompt Reuse' metric (prompt caching) suggests a provider-side prompt cache.",
+  "grade": "unknown",
+  "evidence": [
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json",
+   "data/teardown/synthflow/docs-md/general-configuration.md",
+   "data/teardown/synthflow/docs-md/changelog__2026__9__25.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-31",
+  "dimension": "architecture",
+  "claim": "The homepage 'Talk to Synthflow' demo is a separate 'Conductor' web widget on Fly.io. It streams raw PCM16 at 24 kHz over a WebSocket (no WebRTC) and admits callers through Cloudflare Turnstile plus a six-digit email code, with a 240 s cap. Its agent table maps to speech-to-speech models (gpt-realtime-2, gpt-realtime-mini, gemini-3.8-live), so the marketing demo is not the product's cascade. It was not exercised because entry needs an email OTP and Turnstile.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/extracted/widget/conductor-webwidget-synthflow-homepage.fly.dev_widget.js",
+   "data/teardown/synthflow/extracted/widget/conductor-webwidget-synthflow-homepage.fly.dev_runtime-config.js",
+   "data/teardown/synthflow/capture/home.summary.json"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4b-measured/report.md:133 'Synthflow (recorded samples only)': superseded, a gated live widget now exists"
+ },
+ {
+  "id": "SYN-32",
+  "dimension": "architecture",
+  "claim": "Surrounding SaaS: Webflow site with HubSpot EU forms; app on Cloudflare; PostHog through an EU proxy (events.synthflow.ai), plus Amplitude; a self-hosted Sentry proxy; Flipt feature flags; Activepieces Cloud embedded as Workflows (workflow.synthflow.ai is a CNAME to cloud.activepieces.com); integration.app; WorkOS (admin links); Pylon support portal; Temporal workflows (flag text); Stripe billing; incident.io status page.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/capture/home.summary.json",
+   "data/teardown/synthflow/capture/app.summary.json",
+   "data/teardown/synthflow/ipranges/dns-map.json",
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_index-boN6ncNO.js",
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_condensed-ui-DecseHOV.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-33",
+  "dimension": "architecture",
+  "claim": "flipt.synthflow.ai serves a 60-flag evaluation snapshot, descriptions included, to unauthenticated visitors. It exposes migration internals and roadmap (Bubble→React, the Memory Service, Postgres dual-writes, a Soniox custom voice for one customer, voice-UX evaluation). This is a pattern for VP to avoid.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-34",
+  "dimension": "architecture",
+  "claim": "Source maps are referenced (sourceMappingURL) but not served: the .map URLs return the SPA's 3,351-byte HTML. No official SDK exists on npm or PyPI; there is only an n8n node under @synthflow-ai (author email at synthflow.ai), and PyPI 'synthflow' is an unrelated package. The GitHub org SynthFlowAI has 6 public repos.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_index-boN6ncNO.js",
+   "data/teardown/synthflow/sdk-n8n/x/package/package.json",
+   "https://github.com/SynthFlowAI",
+   "https://pypi.org/pypi/synthflow/json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-40",
+  "dimension": "pricing",
+  "claim": "Pricing remains Enterprise-only, 'Enterprise contracts start at $30,000 annually' (INR 28.5 lakh/yr at FX 95), with no per-minute list price. This confirms pricing-history.json (2026-09-10, 2026-10-17) and ledger CMP-18.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/site/pricing.html",
+   "https://synthflow.ai/pricing",
+   "research/2026-10-17/lanes/l4a-competitors/pricing-history.json",
+   "research/2026-10-17/ledger.md#CMP-18"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-41",
+  "dimension": "pricing",
+  "claim": "Estimated all-in cost of an Indian outbound minute: INR 15.2-18.0. This is the last public platform rate (H1 2026: $0.09 voice engine + $0.02-0.05 LLM) plus a BYO Twilio leg to an Indian mobile ($0.0496), dialled from a non-Indian caller ID. The $30k floor is added on top: at 5,000 min/month the effective rate is INR 47.5/min, at 10,000 min/month INR 23.75/min, and from 25,000 min/month it converges to the list rate. All of this is 3-5x Indian list prices (INR 3-6).",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/synthflow/pricing.json",
+   "research/2026-10-20/teardown/synthflow/code/pricing.py",
+   "research/2026-10-20/teardown/vapi/pricing.json",
+   "research/2026-10-17/lanes/l4a-competitors/report.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-42",
+  "dimension": "pricing",
+  "claim": "COGS reconstruction on a third-party stack (Deepgram + an OpenAI-class LLM + ElevenLabs + their own GCP SBC/FreeSWITCH/Janus fleet): $0.034-0.085/min (INR 3.2-8.1), a 39-69% gross margin against the last public platform rate. Forcing non-enterprise agents onto Synthflow LLM and shipping in-house STT and TTS fits a push to lower COGS. The in-house unit cost is not public.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/synthflow/pricing.json",
+   "data/teardown/synthflow/docs-md/changelog__2026__8__25.md",
+   "data/teardown/synthflow/docs-md/changelog__2026__5__13.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-43",
+  "dimension": "pricing",
+  "claim": "Synthflow sells numbers only in the US, Canada and Australia, at $1.50 a month.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/phone-numbers.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-44",
+  "dimension": "pricing",
+  "claim": "In-product reselling (Stripe rebilling of subaccounts) ended on 2026-09-15. This supersedes the 2026-10-17 parity cell 'white-label + reseller toolkit $2,000/mo'. White-label survives as custom domain, branding and limits.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/billing.md",
+   "data/teardown/synthflow/docs-md/changelog__2026__7__29.md"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv white_label"
+ },
+ {
+  "id": "SYN-50",
+  "dimension": "velocity",
+  "claim": "The docs carry 106 dated changelog entries from 2025-01 to 2026-10-20, 67 of them in the last six months. The pace is 10-12 a month since 2026-03, against 1-5 a month in 2025.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/synthflow/changelog.csv",
+   "research/2026-10-20/teardown/synthflow/code/changelog.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-51",
+  "dimension": "velocity",
+  "claim": "Themes of the last six months: contact-centre integrations (Zoom, RingCX, 8x8, Five9 handoff), the Bubble-to-React app rebuild, in-house TTS and LLM, Campaigns and business hours (2026-08-18), transfer outcome states and failure reasons, call-quality metrics on every call, simulations in the editor, the EU region (2026-05-01), and MCP, Claude, ChatGPT and Codex connectors. Product weight sits on enterprise inbound CX.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/synthflow/changelog.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-52",
+  "dimension": "velocity",
+  "claim": "The status page moved to incident.io on 2026-07-16 and earlier history was not carried over. It shows three incidents since August: on 2026-08-07 post-call AI outputs were empty for 2 h 50 m after a model-restriction config change (the webhooks still fired); on 2026-08-17 calls failed for 9-12 min in the EU and US and warm transfers failed intermittently for 3 h 42 m; on 2026-09-07 white-label logins failed. It also lists 8 maintenance windows.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/status/status.synthflow.ai_feed.rss.out",
+   "data/teardown/synthflow/extracted/app/status.synthflow.ai_api_v1_summary",
+   "data/teardown/synthflow/docs-md/changelog__2026__7__16.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-53",
+  "dimension": "velocity",
+  "claim": "The 2026-08-07 incident ('restricted which AI models the platform was permitted to call') lines up with the rollout of llm_selection_restriction (ENG-6621), which forced non-enterprise accounts onto Synthflow LLM on 2026-08-25.",
+  "grade": "inferred",
+  "evidence": [
+   "data/teardown/synthflow/status/status.synthflow.ai_feed.rss.out",
+   "data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-54",
+  "dimension": "velocity",
+  "claim": "Funding: a $20M Series A (Accel, June 2025), about $30M in total, Berlin HQ, founded 2023. Claimed scale: '65M+ voice calls every month in 30+ countries', '1,000+ customers', '99.99% uptime'.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/synthflow/site/pricing.html",
+   "data/teardown/synthflow/jobs/jobs.deel.com_synthflow-ai_job-details_edcb20bf-1024-453b-9826-bb25d6888862_overview.txt",
+   "https://synthflow.ai/news/synthflow-raises-20m-series-a"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-60",
+  "dimension": "india_plumbing",
+  "claim": "None of the 371 fetched docs pages mentions India, TRAI, DLT, NCPR/DND, the 140/160 series, DPDP or do-not-call scrubbing. The only Indian-adjacent items are the Hindi language and the Asia/Kolkata timezone.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/",
+   "data/teardown/synthflow/docs-md/time-zones.md"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv compliance_dnd_dlt_consent=partial (confirmed: no DND/DLT)"
+ },
+ {
+  "id": "SYN-61",
+  "dimension": "india_plumbing",
+  "claim": "An Indian enterprise cannot present a compliant Indian CLI on Synthflow out of the box. Synthflow sells only US, Canadian and Australian numbers; Twilio allows outbound calls to India only from non-Indian numbers; SIP trunks are Enterprise-only; and Indian carrier trunks (Plivo and others) require media anchored in India, where Synthflow has no point of presence. A 140/160-series or Indian-DID deployment would need a custom PoP.",
+  "grade": "inferred",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/phone-numbers.md",
+   "data/teardown/synthflow/docs-md/telephony.md",
+   "data/teardown/synthflow/docs-md/customer-region.md",
+   "research/2026-10-20/teardown/vapi/pricing.json",
+   "research/2026-10-17/lanes/l2-economics/report.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-62",
+  "dimension": "india_plumbing",
+  "claim": "Consent is left to the buyer. The product has a recording-consent prompt toggle and an example AI disclosure ('This is an AI-powered call from Synthflow…'), and states that outbound AI calls are placed only where 'the customer has confirmed user consent is collected'. There is no consent ledger, no DNC list and no suppression list.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/ai-transparency.md",
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json (agent.is_consent_enabled, consent_message)"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/ledger.md#CMP-27 (confirmed)"
+ },
+ {
+  "id": "SYN-63",
+  "dimension": "india_plumbing",
+  "claim": "Calling windows can be set per campaign (call_time_window) and per agent (business hours), in the agent's timezone. There are no jurisdiction presets, holiday calendars or per-recipient timezones; the buyer must encode the Indian window by hand.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/batch-calling.md",
+   "data/teardown/synthflow/docs-md/business-hours.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-64",
+  "dimension": "india_plumbing",
+  "claim": "Residency and DPDP: data is stored in the EU (Global cluster) or the US or EU, and the cluster cannot be changed later. Options are a 30-day retention toggle and PII redaction of US-centric types (SSN, cards, names, emails, phones, addresses), with no Aadhaar or PAN. With no India residency, cross-border transfer obligations fall on the buyer.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/customer-region.md",
+   "data/teardown/synthflow/docs-md/security-and-compliance.md"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv on_prem_india_residency=partial (now: none for India)"
+ },
+ {
+  "id": "SYN-65",
+  "dimension": "india_plumbing",
+  "claim": "Hindi is the only Indic language. There is no Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam or Punjabi, no en-IN accent (English is American, British or Australian), and Multilingual delivery is 'biased toward English'.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/about-supported-languages.md",
+   "data/teardown/synthflow/docs-md/voice-configuration.md",
+   "data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json (agent.language enum)"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv multilingual_indic=partial (confirmed), code_switching=unknown (now partial via Nova-3 multi)"
+ },
+ {
+  "id": "SYN-70",
+  "dimension": "failure_modes",
+  "claim": "Trustpilot (TrustScore 4.1, 215 reviews, unchanged since 2026-10-17) has 21 one- and two-star product reviews from 2024-05 to 2026-05. Coded: SUPPORT 19, BILLING 11, RELIABILITY 9, PLAN_GATING 4, TELEPHONY 3, and 1 each for CAMPAIGNS, FAILURE_VISIBILITY, UNANNOUNCED_CHANGE, WHITE_LABEL and ACCOUNT_UI. This extends the 11 hand-coded rows in complaints.csv and keeps the same order (support > billing > reliability).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/complaints/trustpilot-webfetch-2026-10-20.json",
+   "https://www.trustpilot.com/review/synthflow.ai?stars=1&stars=2",
+   "research/2026-10-17/lanes/l4a-competitors/complaints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-71",
+  "dimension": "failure_modes",
+  "claim": "The failure-reason taxonomy is not normalised. The dashboard's end-reason label map keys on raw strings, among them Python exceptions (\"'NoneType' object has no attribute 'replace'\"), internal orchestrator URLs, '403 : Forbidden' and '484 : Address Incomplete', and folds them into 'System Error'.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/extracted/app/app.synthflow.ai_assets_index-boN6ncNO.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-72",
+  "dimension": "failure_modes",
+  "claim": "The public feedback board shows the same pains: a request for Slack support because email went unanswered ('5 days ago'), 'Don't make breaking changes to the Assistants API endpoints' (pagination changed 'with no heads up'), no fallback when Synthflow returns an error on the V2 SIP path, and missing Urdu and Arabic.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/feedback/feedback.synthflow.ai_.txt",
+   "https://feedback.synthflow.ai/"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-73",
+  "dimension": "failure_modes",
+  "claim": "Sources that were blocked and not bypassed: G2 and Capterra (403 to WebFetch), Reddit (unreachable), security.synthflow.ai (Cloudflare challenge) and Trustpilot to curl (403; WebFetch worked). Synthflow claims '4.5 / 1,000+ reviews on G2', which is unverified.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/complaints/trustpilot-webfetch-2026-10-20.json",
+   "data/teardown/synthflow/feedback/security.synthflow.ai_.txt",
+   "data/teardown/synthflow/site/pricing.html"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-80",
+  "dimension": "v2",
+  "claim": "Memory groups: per-contact summaries (questions, solutions, preferences) are injected at the start of each call. Contacts are matched by phone number and memory is shared across voice, SMS and WhatsApp. The backend is moving from Postgres to a dedicated Memory Service (flag modes off, dual-write and canonical).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/memory.md",
+   "data/teardown/synthflow/docs-md/changelog__2026__6__22.md",
+   "data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv memory_across_calls=yes (confirmed)"
+ },
+ {
+  "id": "SYN-81",
+  "dimension": "v2",
+  "claim": "Marketing and docs disagree on learning. The marketing pages promise 'insights … feed back into the next version — so agents improve continuously' and 'Data Fine-Tuning' (future tense). The docs' Learn step is analytics, logs and export, plus Aurora prompt-review skills; no automated optimisation loop, fine-tuning or A/B testing is documented.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/site/home.html",
+   "data/teardown/synthflow/site/conversational-ai-platform.html",
+   "data/teardown/synthflow/docs-md/getting-started.md",
+   "data/teardown/synthflow/docs-md/aurora.md"
+  ],
+  "date": "2026-10-20",
+  "prior": "research/2026-10-17/lanes/l4a-competitors/parity.csv auto_optimisation_learning=partial (now: marketing only), ab_testing=unknown (still none)"
+ },
+ {
+  "id": "SYN-82",
+  "dimension": "v2",
+  "claim": "Personalisation inputs: custom variables, dynamic prompt injection, the inbound-call webhook, SIP X-headers and the Diversion header, and memory. Evaluation: Test Center simulations with AI-generated cases, custom evaluations, and post-call LLM-judge fields (persona, steps, objections, goal and others).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/docs-md/custom-variables.md",
+   "data/teardown/synthflow/docs-md/dynamic-prompt-injection.md",
+   "data/teardown/synthflow/docs-md/pass-call-context.md",
+   "data/teardown/synthflow/docs-md/simulations.md",
+   "data/teardown/synthflow/docs-md/webhooks.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SYN-90",
+  "dimension": "method",
+  "claim": "REA 6.7.0: inspect-web-network-capture ran in 3.7 s on the 10 MB app HAR and returned a lossless 10 MB evidence envelope with no analytic summary (it refuses --token-limit for structured output). analyze-web-bundle over CDP against app.synthflow.ai produced no output in 300 s, the same failure the vapi lane saw. Findings came from Playwright HARs plus our own bundle and flag parsing.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/synthflow/rea/app-har-inspect.json",
+   "data/teardown/synthflow/rea/app-analyze-web-bundle.status.json"
+  ],
+  "date": "2026-10-20"
+ }
+]
