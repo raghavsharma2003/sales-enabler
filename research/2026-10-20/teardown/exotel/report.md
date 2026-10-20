@@ -251,3 +251,69 @@ The list is in account_phase_needs. 14 predictions are pre-registered in predict
 - **Not available:** no APK analysis. Exotel's VoiceBot has no app, and the Ameyo agent app could only be fetched from third-party mirrors, which the boundaries rule out.
 
 Net: REA confirmed provenance but contributed no architecture facts on this vendor.
+
+---
+
+## Verification (adversarial pass, 2026-10-20)
+
+Full log: `research/2026-10-20/teardown/exotel/verify.md`. In `claims.json` every changed claim keeps its original text in `claim_before` and its original grade in `verification.grade_before`.
+
+**Totals.**
+- 44 of 64 claims re-checked: 29 confirmed, 10 corrected, 5 downgraded, 0 refuted outright.
+- 3 sub-claims refuted in place: the AMD parity cell, the EXO-37 magnitude, and EXO-45's "page is dead" and "left to the buyer".
+- 6 verifier claims added.
+- Grades now: 51 observed, 13 vendor-claimed, 4 inferred, 2 unknown (70 claims).
+
+**Downgrades.**
+
+| claim | change | reason |
+|---|---|---|
+| EXO-20 (Twilio-shaped) | inferred → unknown | It rested on doc placeholders, the 'twilix' load-balancer name and memory. Real Exotel ids are 32-hex CallSids and name-like AccountSids. Pipecat needs a dedicated Exotel serializer. |
+| EXO-22 (own orchestration) | inferred → unknown | A front-end bundle cannot show what serves the bot's WSS dp-endpoint. The TalkToBot chunk was never captured: only 46 of about 140 chunks were. |
+| EXO-24 (BYOK) | observed → vendor-claimed | Only a user guide supports it. |
+| EXO-30 (no web-call widget) | observed → inferred | A universal negative from three page loads without clicks. |
+| EXO-31 (Superset / Camel / Azure scorer) | observed → vendor-claimed | Superset is observed. Camel is blog-only. The Azure scorer comes from a personal repo. |
+
+**Corrections that change the report's text above.**
+- **Dimension 1 / parity, AMD.** "AMD is an ECC contact-centre licence only" is wrong.
+  - A Beta Voice API AMD exists (docs.exotel.com/voice-apis/answering-machine-detection-amd, created 2026-06-15). It is enabled by the account manager, returns its result in the terminal StatusCallback about 3–5 s after answer, and is not shown in the dashboard.
+  - ExoML create-a-leg has `amd_enable`, and ExoML Legs can start an AgentStream.
+  - What stays true: no doc shows AMD on Connect Voice AI, Campaigns v2 or the Voicebot applet. (EXO-09, EXO-V01)
+- **Dimension 6, "what it leaves to the buyer".** True on the Campaigns v2 / VoiceBot path, false for Exotel as a whole.
+  - The calling-hours FAQ is live and says Exotel "does not automatically enforce calling hour restrictions at the API level". The report called that page dead.
+  - The ECC contact centre has tenant-level and process-level DNC lists and per-lead daily time windows.
+  - The Outbound Dialer guide lists a dashboard "Daily window" and "Days of week". (EXO-45, EXO-V02, EXO-V03)
+- **Dimension 4, VP on AgentStream.** The penalty is +0.46 to +0.69 INR/min like-for-like, not +0.34 to +0.54. VP base-tier COGS becomes about 2.17–2.40, not 2.02–2.22.
+  - The lane compared Plivo per connected minute with Exotel per billed minute.
+  - Pulse inflation is about 15% vs 7.4% on the VP call mix. 25% vs 12% holds only under a uniform 0.5–3.5 min assumption. (EXO-37, EXO-35)
+- **Dimension 4, pricing history.** The /pricing hub did carry prices in the 2024-03-03 capture, so "never carries prices" is wrong. That the 2025–26 "quote-based" reading was an artefact is inference; Common Crawl refused queries on 2026-10-20. (EXO-32)
+- **Dimension 3, architecture.**
+  - The console's SDK "1.0.22" is the webrtc-core-sdk package version (Jul 2025) against 3.0.17 on npm (Oct 2026). Confirmed from the npm tarball's build banner.
+  - The ECC contact centre ships as about 30 container images from Oracle Cloud's Mumbai registry: Kafka, ksqldb, Citus/Postgres 18, Redis, Eureka, Superset, CCDP and others. "Exotel on AWS" holds for the CPaaS and voicebot hosts only. (EXO-25, EXO-V04)
+- **Dimension 2, wording.**
+  - MZ/CA/AC ids are doc placeholders.
+  - 5 of the 21 "console routes" are not screens.
+  - The same ECC app registers contact-centre contacts routes and ships voice-campaign code. (EXO-13, EXO-04)
+- **Builder testing.** The bundle has text-session test endpoints and a `botTextTestingService` chunk, so an in-browser text test probably exists. Only voice web call is "Coming Soon". (EXO-03)
+
+**What this changes in "What this means for the three decisions".**
+- **Decision 2.** DNC/opt-out lists, a daily calling window and AMD are parity with Exotel's contact centre, so they are must-be features, not delighters.
+- **Decision 3.** Two of the five "where VP can be measurably better" tasks narrow to the bot path, applied by default in one console:
+  - enforced calling windows and DND/consent records;
+  - voicemail detection on the bot path.
+
+  Exotel has them only in ECC, behind an account manager, or 3–5 s late. The other three tasks stand.
+- **Risk.** The larger AgentStream cost penalty strengthens "keep Plivo primary".
+
+**Process conflict to resolve before the account phase (EXO-V06).**
+- `risk.2026-10-20.vendor-terms` is `accepted-by-owner`, with mitigation "Exotel account not used for the teardown". The reason is ToS §6.2's standalone no-competing-product promise.
+- This report's Instinct checklist, EXO-P01..P14 and `open.2026-10-20.exotel-account-phase` all assume an Exotel trial on team@vyakti.ai.
+- The owner must decide, or get a written agreement, before any Exotel sign-up.
+
+**Predictions.** All 14 state a measurable pass rule.
+- P02 and P13 have an OR clause that is already true or easy to satisfy.
+- P04, P05 and P06 are contradicted in part by docs found in this pass.
+- P07's "actionable" needs a rubric.
+- P12 tests our own prompt at n = 5.
+
+Suggested amendments are in verify.md. `predictions.json` was not edited.

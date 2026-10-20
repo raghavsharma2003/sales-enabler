@@ -1,8 +1,8 @@
 feature,prior_value_2026-10-17,value_2026-10-20,change,grade,evidence,note
 outbound_campaigns,yes,yes (Enterprise-only; API-only creation; shipped 2026-08-18),qualified,observed,data/teardown/synthflow/docs-md/batch-calling.md,"no CSV upload documented, no auto-retry, 7-day cap, window not editable, no DNC"
-inbound,yes,yes,confirmed,observed,data/teardown/synthflow/docs-md/business-hours.md,"business hours with out-of-hours action"
-warm_transfer,yes,yes (TEL/SIP/dynamic; phone books; time-to-human; 9 failure reasons),confirmed,observed,data/teardown/synthflow/docs-md/call-transfers.md,"warm transfers consume CAPS"
-voicemail_amd,partial,yes,upgraded,observed,data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json,"end_call_reason voicemail/voicemail_message_left; voicemail_message prompt or exact; Indian operator announcements untested"
+inbound,yes,yes,confirmed,observed,data/teardown/synthflow/docs-md/business-hours.md,business hours with out-of-hours action
+warm_transfer,yes,yes (TEL/SIP/dynamic; phone books; time-to-human; 9 failure reasons),confirmed,observed,data/teardown/synthflow/docs-md/call-transfers.md,warm transfers consume CAPS
+voicemail_amd,partial,yes,upgraded,observed,data/teardown/synthflow/openapi/docs.synthflow.ai_openapi.json,end_call_reason voicemail/voicemail_message_left; voicemail_message prompt or exact; Indian operator announcements untested
 dtmf,partial,partial (IVR navigation beta: DTMF only),confirmed,observed,data/teardown/synthflow/docs-md/set-up-ivr-handling.md,
 knowledge_base,yes,yes (PDF/URL/crawl/Zendesk; searches visible in logs),confirmed,observed,data/teardown/synthflow/docs-md/knowledge-base.md,
 function_calling_tools,yes,yes (custom actions + MCP connectors),confirmed,observed,data/teardown/synthflow/docs-md/actions-overview.md,
@@ -10,12 +10,12 @@ crm_integrations,yes,yes (Salesforce incl. sandbox; HubSpot; GHL; Freshworks; Ze
 whatsapp,yes,yes (WhatsApp Business calling; WhatsApp/SMS chat US cluster only),qualified,observed,data/teardown/synthflow/docs-md/customer-region.md,
 email,partial,yes (post-call email action 2026-09-22),upgraded,observed,data/teardown/synthflow/docs-md/changelog__2026__9__22.md,
 post_call_extraction,yes,yes (extractors + LLM-judge fields),confirmed,observed,data/teardown/synthflow/docs-md/webhooks.md,
-analytics,yes,yes (call-quality card and predicted CSAT behind flags),confirmed,observed,data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default,
-ab_testing,unknown,no evidence,confirmed-absent,observed,data/teardown/synthflow/docs-md/,"version control and simulations only"
-auto_optimisation_learning,partial,marketing-only,downgraded,observed,data/teardown/synthflow/site/home.html,"'Data Fine-Tuning' future tense; docs Learn = analytics/logs/export"
+analytics,yes,yes (call-quality card and predicted CSAT behind flags that are off for every workspace),confirmed,observed,data/teardown/synthflow/extracted/app/flipt.synthflow.ai_internal_v1_evaluation_snapshot_namespace_default,verifier 2026-10-20: flags have 0 rollouts in the public snapshot (SYN-13)
+ab_testing,unknown,no evidence,confirmed-absent,observed,data/teardown/synthflow/docs-md/,version control and simulations only
+auto_optimisation_learning,partial,overstated in marketing (manual loop documented),downgraded,observed,data/teardown/synthflow/site/home.html,"'Data Fine-Tuning' future tense; docs Learn = analytics/logs/export; verifier 2026-10-20: 'feed back into the next version' fits the documented manual loop; overstated, not contradicted (SYN-81)"
 multilingual_indic,partial,partial (Hindi only),confirmed,observed,data/teardown/synthflow/docs-md/about-supported-languages.md,
-code_switching,unknown,partial (Multilingual = Deepgram Nova-3 multi set incl. Hindi; delivery biased to English),upgraded,inferred,data/teardown/synthflow/docs-md/voice-configuration.md,
-dialects,unknown,none,confirmed-absent,observed,data/teardown/synthflow/docs-md/about-supported-languages.md,"English accents US/UK/AU only"
+code_switching,unknown,"partial (Multilingual = Deepgram's ten-language multi set, Nova-3 or Flux, incl. Hindi; Synthflow TTS delivery biased to English)",upgraded,inferred,data/teardown/synthflow/docs-md/voice-configuration.md,verifier 2026-10-20: model not determined (SYN-28); bias note is about Synthflow TTS (SYN-65)
+dialects,unknown,none,confirmed-absent,observed,data/teardown/synthflow/docs-md/about-supported-languages.md,English accents US/UK/AU only
 custom_cloned_voices,unknown,yes (clone or import; ElevenLabs BYO key),upgraded,observed,data/teardown/synthflow/docs-md/voice-configuration.md,
 emotion,unknown,partial (ElevenLabs v3/v4 audio tags),upgraded,observed,data/teardown/synthflow/docs-md/voice-configuration.md,
 memory_across_calls,yes,yes (cross-channel; Memory Service migration),confirmed,observed,data/teardown/synthflow/docs-md/memory.md,
@@ -23,4 +23,4 @@ compliance_dnd_dlt_consent,partial,partial (no DND/DLT/NCPR; opt-out only as pos
 testing_simulation,yes,yes (Test Center in editor 2026-09-23),confirmed,observed,data/teardown/synthflow/docs-md/simulations.md,
 white_label,yes ($2000/mo reseller toolkit),yes (custom domain/branding/limits; in-product reselling removed 2026-09-15),superseded,observed,data/teardown/synthflow/docs-md/billing.md,
 on_prem_india_residency,partial,none for India (Global/US/EU clusters; GCP us-east1/europe-west3),downgraded,observed,research/2026-10-20/teardown/synthflow/ip-regions.csv,
-public_demo (l4b),recorded samples only,gated live widget (Turnstile + email OTP; S2S models),superseded,observed,data/teardown/synthflow/extracted/widget/conductor-webwidget-synthflow-homepage.fly.dev_widget.js,"not exercised: OTP boundary"
+public_demo (l4b),recorded samples only,gated live widget (Turnstile + work email + six-digit code; S2S models in client config),superseded,observed,data/teardown/synthflow/extracted/widget/conductor-webwidget-synthflow-homepage.fly.dev_widget.js,not exercised: OTP boundary; verifier 2026-10-20: S2S runtime is inferred from client config only (SYN-31b)

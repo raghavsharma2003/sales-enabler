@@ -28,24 +28,45 @@
  {
   "id": "EXO-03",
   "dimension": "surface",
-  "claim": "VoiceBot builder flow per the docs: describe the bot in a prompt (optionally attach PDF/DOCX/TXT or MP3/WAV/M4A call recordings, 100 MB) -> 'Build Bot' generates Identity / Objective / Behaviour -> Configuration tab (language, voice) -> Advanced tab (versions). 'Enhance Prompt', templates and 'Web Call' testing are marked 'Coming Soon'; the only test path documented is a real phone call from 'Talk to Bot'.",
+  "claim": "VoiceBot builder flow per the docs: describe the bot in a prompt (optionally attach PDF/DOCX/TXT or MP3/WAV/M4A call recordings, 100 MB) -> 'Build Bot' generates Identity / Objective / Behaviour -> Configuration tab (language, voice) -> Advanced tab (versions). 'Enhance Prompt', templates and 'Web Call' testing are marked 'Coming Soon'; the only documented test path is a real phone call from 'Talk to Bot'. The console bundle also has text-session and test-thread endpoints (text-sessions/ws) and a botTextTestingService chunk, so a text (not voice) test in the browser probably exists.",
   "grade": "observed",
   "evidence": [
-   "data/teardown/exotel/docs-md/intelligent-voice-agents.md"
+   "data/teardown/exotel/docs-md/intelligent-voice-agents.md",
+   "research/2026-10-20/teardown/exotel/bundle-endpoints.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "VoiceBot builder flow per the docs: describe the bot in a prompt (optionally attach PDF/DOCX/TXT or MP3/WAV/M4A call recordings, 100 MB) -> 'Build Bot' generates Identity / Objective / Behaviour -> Configuration tab (language, voice) -> Advanced tab (versions). 'Enhance Prompt', templates and 'Web Call' testing are marked 'Coming Soon'; the only test path documented is a real phone call from 'Talk to Bot'.",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "observed",
+   "note": "The docs' only test path is a real phone call, but the console bundle references a text-testing chunk (botTextTestingService) and TEXT_SESSIONS / TEXT_SESSION_WS / TEST_THREADS endpoints, so an in-browser text test likely exists. Voice web call is 'Coming Soon'.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-04",
   "dimension": "surface",
-  "claim": "The public voicebot console bundle (login page, no login) exposes 21 console routes: dashboard, bots, build-bot, build-tools, tools, tools/database, talk-to-bot, call-logs, interaction-history, reports, users, account, model-configuration, contact-center, agent-dashboard and agent/interactions. There is no campaign, contact list, consent or DND route in the voicebot console.",
+  "claim": "The public voicebot console bundle (login page, no login) has 16 voicebot screen routes under /voicebot/ (dashboard, bots, build-bot, build-tools, tools, tools/database, talk-to-bot, call-logs, interaction-history, reports, users, account, model-configuration, contact-center, agent-dashboard, agent/interactions) plus 5 non-screen paths. None of the /voicebot/ routes is a campaign, contact-list, consent or DND screen. The same ECC app bundle does register contact-centre contact routes and ships contact-centre voice-campaign code, so 'no contacts or campaigns anywhere in the console app' would be wrong.",
   "grade": "observed",
   "evidence": [
    "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
    "data/teardown/exotel/capture/voicebot-in-login.har",
-   "https://voicebot.in.exotel.com/voicebot/login"
+   "https://voicebot.in.exotel.com/voicebot/login",
+   "data/teardown/exotel/capture/voicebot-js/routesConfig-CSrOOUEl.js",
+   "research/2026-10-20/teardown/exotel/verify.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "The public voicebot console bundle (login page, no login) exposes 21 console routes: dashboard, bots, build-bot, build-tools, tools, tools/database, talk-to-bot, call-logs, interaction-history, reports, users, account, model-configuration, contact-center, agent-dashboard and agent/interactions. There is no campaign, contact list, consent or DND route in the voicebot console.",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "observed",
+   "note": "Of the 21 extracted '/voicebot/...' strings, 5 are not screens (api/v1, api/v1/ecc/authenticate, auth/iam/logout, login, unauthorized). The extractor only matched '/voicebot/' paths: the same app router also registers ECC contact-centre routes (ManageContactsWrapper at SUPERVISOR+'/contacts', admin manage-contacts) and the bundle carries Ameyo voice-campaign machinery ('Parallel Predictive Voice Campaign', MANAGE_CONTACTS, optOut config). Only 46 of the ~140 chunks routesConfig references were captured (VoicebotTalkToBot, VoicebotBuildBot, botsApi, outcomesService, botTextTestingService were not).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-05",
@@ -56,7 +77,15 @@
    "data/teardown/exotel/docs-md/intelligent-voice-agents.md",
    "data/teardown/exotel/docs-md/intelligent-voice-agents__connect-your-number-to-your-voicebot.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "connect-your-number doc Part 2 steps 2-7 (App Bazaar applet, copy 'Voicebot URL' from voicebot console, paste, assign ExoPhone) and intelligent-voice-agents.md lines 176-182 (Campaigns > Create Call Campaigns with the flow) re-read.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-06",
@@ -96,13 +125,27 @@
  {
   "id": "EXO-09",
   "dimension": "surface",
-  "claim": "Corrects l4a parity.csv (Exotel rows that were 'unknown'): dtmf=yes (stream dtmf events, Gather/IVR applets, DTMF encryption); knowledge_base=yes (PDF/DOCX/TXT/XLSX, 50 MB / 500 pages); function_calling_tools=yes (HTTP tools that must pass a test before activation; OpenAPI tool versions); post_call_extraction=yes (webhook events sentiment/summary/intent/entity/outcome); ab_testing=yes (version traffic allocation); analytics=yes (reports, embedded Superset, call ratings); multilingual_indic=yes (hi/en certified, 9 Indic alpha); warm_transfer=partial (Connect applet after the bot; 'Barge' only in Monitored Bot); voicemail_amd=partial (AMD is an ECC contact-centre licence, not documented for VoiceBot/AgentStream). Full table in parity-delta.csv.",
+  "claim": "Corrects l4a parity.csv (Exotel rows that were 'unknown'): dtmf=yes; knowledge_base=yes; function_calling_tools=yes; post_call_extraction=yes; ab_testing=yes; analytics=yes; multilingual_indic=yes (hi/en certified, 9 Indic alpha); warm_transfer=partial (Connect applet after the bot; pre_agent_transfer webhook; 'Barge' only in Monitored Bot); voicemail_amd=partial (Beta Voice API AMD enabled by the account manager, delivered only in callbacks ~3-5 s after answer, plus amd_enable on ExoML Legs, which can start an AgentStream; and an ECC campaign checkbox; not documented for Connect Voice AI, Campaigns v2 or the Voicebot applet). Full table in parity-delta.csv (its voicemail_amd row is superseded by this claim).",
   "grade": "observed",
   "evidence": [
    "research/2026-10-20/teardown/exotel/parity-delta.csv",
-   "research/2026-10-17/lanes/l4a-competitors/parity.csv"
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv",
+   "data/teardown/exotel/docs-md/voice-apis__answering-machine-detection-amd.md",
+   "data/teardown/exotel/docs-md/voice-apis__post-create-a-leg.md",
+   "data/teardown/exotel/dev-md/legs__overview.md",
+   "data/teardown/exotel/dev-md/agentstream__bot-stream-legs-api.md",
+   "https://docs.exotel.com/voice-apis/answering-machine-detection-amd.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "Corrects l4a parity.csv (Exotel rows that were 'unknown'): dtmf=yes (stream dtmf events, Gather/IVR applets, DTMF encryption); knowledge_base=yes (PDF/DOCX/TXT/XLSX, 50 MB / 500 pages); function_calling_tools=yes (HTTP tools that must pass a test before activation; OpenAPI tool versions); post_call_extraction=yes (webhook events sentiment/summary/intent/entity/outcome); ab_testing=yes (version traffic allocation); analytics=yes (reports, embedded Superset, call ratings); multilingual_indic=yes (hi/en certified, 9 Indic alpha); warm_transfer=partial (Connect applet after the bot; 'Barge' only in Monitored Bot); voicemail_amd=partial (AMD is an ECC contact-centre licence, not documented for VoiceBot/AgentStream). Full table in parity-delta.csv.",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "observed",
+   "note": "voicemail_amd cell refuted as written ('AMD is an ECC licence, not documented for VoiceBot/AgentStream'). docs.exotel.com/voice-apis/answering-machine-detection-amd (createdAt 2026-06-15): AMD is a Beta Voice API feature enabled by the account manager, results (AnsweredBy HUMAN/MACHINE/NOTSURE/NA + AmdCause) only in callbacks, about 3-5 s after answer, not in reports or dashboard. ExoML create-a-leg has amd_enable / async_amd and an amd_result_success event; ExoML Legs is one of the three documented AgentStream control paths (start_stream on leg_answered). No doc says AMD works on Connect Voice AI, Campaigns v2 or the Voicebot applet. Corrected cell: voicemail_amd = partial (API beta, AM-enabled, async callback; ECC campaign checkbox; not documented on the dashboard bot-campaign path).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-10",
@@ -119,14 +162,23 @@
  {
   "id": "EXO-11",
   "dimension": "docs-api",
-  "claim": "What the voicebot data model reveals: the bot is an 'assistant' with agents, instructions, llm_config, mcp_tools and intent_detection_config, versioned and A/B-splittable; there is no contact, campaign, consent, opt-out or memory object in the voicebot API. Contacts, lists, campaigns, retries and DND live in the telephony product (Campaigns v2), and customer profiles live in the contact centre (cc-list/process-list/crm-customers).",
+  "claim": "What the voicebot data model reveals (from the 46 captured console chunks and the ExotelMCP source): the bot is an 'assistant' with agents, instructions, llm_config, mcp_tools and intent_detection_config, versioned and A/B-splittable; no contact, campaign, consent, opt-out or memory object was found in the voicebot API. Contacts, lists, campaigns, retries and NDNC filtering live in the telephony product (Campaigns v2); customer profiles, campaigns and DNC lists live in the ECC contact centre (cc-list/process-list/crm-customers, DNC tab). Uncaptured lazy chunks (botsApi, outcomesService) could hold more.",
   "grade": "inferred",
   "evidence": [
    "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
    "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotAdminTools.java",
    "data/teardown/exotel/dev-md/campaigns__api-reference__create-campaign.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "What the voicebot data model reveals: the bot is an 'assistant' with agents, instructions, llm_config, mcp_tools and intent_detection_config, versioned and A/B-splittable; there is no contact, campaign, consent, opt-out or memory object in the voicebot API. Contacts, lists, campaigns, retries and DND live in the telephony product (Campaigns v2), and customer profiles live in the contact centre (cc-list/process-list/crm-customers).",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "inferred",
+   "note": "Kept as inferred with a coverage caveat: the negative rests on 46 of the ~140 console chunks routesConfig references plus the MCP source. The bot-specific API chunks (botsApi, outcomesService) were not captured. The ECC module in the same app has campaign, contact, DNC and optOut objects.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-12",
@@ -136,18 +188,37 @@
   "evidence": [
    "data/teardown/exotel/repos/ExotelMCP/src/main/java/com/example/mcp_api/service/VoiceBotService.java"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Re-read VoiceBotService.java (ExotelMCP HEAD fa82e99, 2026-09-14) lines 356-384: GET .../bots/{id}/dp-endpoint -> wss URL -> POST /v1/Accounts/{sid}/Calls/connect.json with StreamType=bidirectional, StreamUrl. Observed for the MCP place-call path and consistent with the documented Voicebot-applet flow (bot URL pasted into App Bazaar); that every VoiceBot call uses this path is inference.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-13",
   "dimension": "docs-api",
-  "claim": "AgentStream WebSocket protocol: Exotel->bot events connected/start/media/dtmf/mark/stop; bot->Exotel media/mark/clear (bidirectional Voicebot applet only); base64 16-bit little-endian mono PCM at 8 kHz default with 16/24 kHz by URL param (upsampled from the 8 kHz phone leg); chunks 3,200-100,000 bytes in multiples of 320; max session 60 minutes; ids MZ.../CA.../AC... and the event names mirror Twilio Media Streams.",
+  "claim": "AgentStream WebSocket protocol (docs): Exotel->bot events connected/start/media/dtmf/mark/stop; bot->Exotel media/mark/clear (mark and clear on the bidirectional Voicebot path only); base64 16-bit little-endian mono linear PCM at 8 kHz default, with 16 or 24 kHz on request (Exotel's latency post says these are upsampled from the 8 kHz phone leg); chunks 3,200-100,000 bytes in multiples of 320; max session 60 minutes. The doc's example ids use Twilio-style placeholders (MZ.../CA.../AC...), but real Exotel CallSids are 32-hex and AccountSids are names.",
   "grade": "observed",
   "evidence": [
    "data/teardown/exotel/dev-md/agentstream__websocket-protocol.md",
-   "data/teardown/exotel/site/html/build__voice-ai-phone-calls-latency-and-audio__.txt"
+   "data/teardown/exotel/site/html/build__voice-ai-phone-calls-latency-and-audio__.txt",
+   "data/teardown/exotel/docs-md/voice-apis__answering-machine-detection-amd.md",
+   "data/teardown/exotel/community/t18.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "AgentStream WebSocket protocol: Exotel->bot events connected/start/media/dtmf/mark/stop; bot->Exotel media/mark/clear (bidirectional Voicebot applet only); base64 16-bit little-endian mono PCM at 8 kHz default with 16/24 kHz by URL param (upsampled from the 8 kHz phone leg); chunks 3,200-100,000 bytes in multiples of 320; max session 60 minutes; ids MZ.../CA.../AC... and the event names mirror Twilio Media Streams.",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "observed",
+   "note": "The MZ/CA/AC ids are placeholders in the protocol doc's examples ('MZxxxxxxxx...'). Real Exotel ids are not in that format: CallSids in docs payloads are 32-hex (e.g. f3dec10279a310e2831754a4ec841a5f in the AMD doc) and AccountSids are names (forum: 'Exotel171m'). 'Mirrors Twilio Media Streams' was a comparison from memory with no saved source; removed from the observed claim (see EXO-20).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-14",
@@ -158,7 +229,15 @@
    "data/teardown/exotel/dev-md/agentstream__connect-voice-ai.md",
    "data/teardown/exotel/dev-md/agentstream__what-to-use-when.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Re-read agentstream__connect-voice-ai.md (StreamUrl <=600, TimeLimit <=14400, CustomField <=128, RecordingChannels) and what-to-use-when.md line 39 ('Not for: menus, disclosure before bot, bot->human').",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-15",
@@ -167,9 +246,18 @@
   "grade": "observed",
   "evidence": [
    "data/teardown/exotel/dev-md/campaigns__api-reference__create-campaign.md",
-   "data/teardown/exotel/dev-md/campaign-guides__campaign-scheduling.md"
+   "data/teardown/exotel/dev-md/campaign-guides__campaign-scheduling.md",
+   "data/teardown/exotel/dev-md/call-support__advanced-features__outbound-dialer.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Re-read create-campaign.md (from <=5,000; lists <=5 static/1 dynamic; retries 0-3 Linear/Exponential; throttle; call_duplicate_numbers default false) and campaign-scheduling.md line 139 (no native recurring schedules) and 51 (no time-zone conversion). Caveat: a different developer page, call-support__advanced-features__outbound-dialer.md, documents dashboard campaigns with a 'Daily window' and 'Days of week' setting and a /v1/.../Campaigns API; the docs disagree with each other (see EXO-45, EXO-V03).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-16",
@@ -179,7 +267,15 @@
   "evidence": [
    "data/teardown/exotel/dev-md/campaign-guides__campaign-contacts-management.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Re-read campaign-contacts-management.md lines 56-69 and 142-153. Note the upload response reports duplicate_count, so duplicates are skipped but counted, not silent (bears on EXO-P04).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-17",
@@ -214,21 +310,39 @@
    "data/teardown/exotel/dns/getent.txt",
    "data/teardown/exotel/dns/aws-ip-ranges.json",
    "data/teardown/exotel/capture/my-in-login.json",
-   "data/teardown/exotel/capture/home.json"
+   "data/teardown/exotel/capture/home.json",
+   "data/teardown/exotel/verify-dns/getent-recheck.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Re-resolved all hosts 2026-10-20T20:18Z (same CNAMEs and IPs); every India IP falls in AWS ip-ranges ap-south-1 EC2 (ranges file createDate 2026-10-20-15-47-05); exotel.com responses carry server: Vercel and x-vercel-id; my.in login lands on id.accounts.in.exotel.com/u/login/identifier with cdn.auth0.com assets. Scope: these are the CPaaS/voicebot hosts; ECC contact-centre images are distributed from Oracle Cloud's Mumbai registry (EXO-V04), so 'Exotel runs on AWS' should not be generalised to ECC.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-20",
   "dimension": "architecture",
-  "claim": "The public REST API is Twilio-shaped: /v1/Accounts/{AccountSid}/Calls/connect, IncomingPhoneNumbers, StatusCallback, CallSid 'CA...', AccountSid 'AC...', Stream 'MZ...', and the Singapore API load balancer is named 'twilix'. Inference: Exotel modelled its API and stream protocol on Twilio's, which lowers switching cost for Twilio-trained builders (and for VP: Pipecat ships an ExotelFrameSerializer).",
-  "grade": "inferred",
+  "claim": "Unknown whether Exotel modelled its REST API and stream protocol on Twilio's: the Singapore API load balancer is named 'twilix' and the AgentStream doc uses Twilio-style placeholder ids, but real Exotel ids are not Twilio-format and no saved source states Twilio compatibility. Switching cost for VP does not depend on it: Pipecat already ships an Exotel serializer (EXO-V05).",
+  "grade": "unknown",
   "evidence": [
    "data/teardown/exotel/dns/getent.txt",
    "data/teardown/exotel/dev-md/agentstream__websocket-protocol.md",
    "data/teardown/exotel/repos/agent-stream/README.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "The public REST API is Twilio-shaped: /v1/Accounts/{AccountSid}/Calls/connect, IncomingPhoneNumbers, StatusCallback, CallSid 'CA...', AccountSid 'AC...', Stream 'MZ...', and the Singapore API load balancer is named 'twilix'. Inference: Exotel modelled its API and stream protocol on Twilio's, which lowers switching cost for Twilio-trained builders (and for VP: Pipecat ships an ExotelFrameSerializer).",
+  "verification": {
+   "status": "downgraded",
+   "grade_before": "inferred",
+   "note": "The inference rested on (a) Twilio-style placeholder ids in one doc, (b) the SG ALB name 'twilix', (c) a memory of Twilio's REST paths, not a saved source. Real Exotel ids are not Twilio-format (EXO-13), and Pipecat ships a dedicated ExotelFrameSerializer, which suggests the wire format is not Twilio's. What survives and matters for decision 2 is observed elsewhere: Exotel's own agent-stream repo runs Pipecat with ExotelFrameSerializer (EXO-V05).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-21",
@@ -240,19 +354,36 @@
    "data/teardown/exotel/site/html/build__voice-ai-phone-calls-latency-and-audio__.txt",
    "data/teardown/exotel/repos/ClearStream/ROADMAP.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "vendor-claimed",
+   "note": "Grade stays vendor-claimed. ClearStream is a personal repository (github.com/Saurabhsharma209/ClearStream, last commit by 'ClearStream Dev Agent' 2026-09-30), not an exotel-org repo; its ROADMAP's RTPEngine statement is one engineer's description, weaker than the engineering blog.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-22",
   "dimension": "architecture",
-  "claim": "Orchestration is Exotel's own, not LiveKit or Pipecat: the voicebot console bundle has zero LiveKit/Pipecat/Daily-SDK references, the bot is reached as a WSS 'dp-endpoint', and STT/LLM/TTS providers are server-configured lists (llm/providers, tts/providers, asr/providers, vad-configs). LiveKit/Pipecat appear only as third-party targets in AgentStream integration guides.",
-  "grade": "inferred",
+  "claim": "Unknown which orchestration runs Exotel VoiceBot. The 46 captured console chunks contain no LiveKit, Pipecat or Daily client SDK, but that is a front end and the bot is reached server-side through a WSS 'dp-endpoint' that a custom engine or a framework such as Pipecat could equally serve. Needs a server-side signal (job posts, error strings in a captured call, an engineering post).",
+  "grade": "unknown",
   "evidence": [
    "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
    "data/teardown/exotel/capture/voicebot-js/useEccContext-D7GE1FAx.js",
    "data/teardown/exotel/docs-md/exotel-agentstream__connect-exotel-sip-trunk-to-livekit.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "Orchestration is Exotel's own, not LiveKit or Pipecat: the voicebot console bundle has zero LiveKit/Pipecat/Daily-SDK references, the bot is reached as a WSS 'dp-endpoint', and STT/LLM/TTS providers are server-configured lists (llm/providers, tts/providers, asr/providers, vad-configs). LiveKit/Pipecat appear only as third-party targets in AgentStream integration guides.",
+  "verification": {
+   "status": "downgraded",
+   "grade_before": "inferred",
+   "note": "The evidence cannot support the inference. The bundle checked is a front end; absence of LiveKit/Pipecat/Daily client SDKs in it says nothing about the server that answers the dp-endpoint WebSocket, and a Pipecat server behind a WSS endpoint is exactly what Exotel's own agent-stream repo demonstrates. The VoicebotTalkToBot chunk was not captured. Provider lists and vad-configs are a config surface any framework can sit behind.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-23",
@@ -269,12 +400,20 @@
   "id": "EXO-24",
   "dimension": "architecture",
   "claim": "BYOK: customers can plug their own STT (Speechmatics, Azure), LLM (e.g. GPT-4o-mini) and TTS (ElevenLabs, Google) keys per bot via 'Model Configuration' rules; the console exposes llm/vendor-models and per-provider model lists.",
-  "grade": "observed",
+  "grade": "vendor-claimed",
   "evidence": [
    "data/teardown/exotel/docs-md/intelligent-voice-agents__user-guide-bring-your-own-model-key-for-voicebot.md",
    "research/2026-10-20/teardown/exotel/bundle-endpoints.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "downgraded",
+   "grade_before": "observed",
+   "note": "Capability statement from a user guide; only the /voicebot/model-configuration route and llm/vendor-models endpoint are observed, which does not show customer keys being accepted. Per the lane's own grading rule this is vendor-claimed.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-25",
@@ -285,9 +424,19 @@
    "data/teardown/exotel/capture/voicebot-in-login.json",
    "data/teardown/exotel/capture/voicebot-js/useEccContext-D7GE1FAx.js",
    "data/teardown/exotel/capture/voicebot-js/exotelsdk.js",
-   "data/teardown/exotel/capture/maps/exotelsdk.js.map"
+   "data/teardown/exotel/capture/maps/exotelsdk.js.map",
+   "data/teardown/exotel/verify-npm-webrtc-core/exotel-npm-dev-webrtc-core-sdk-3.0.17.tgz",
+   "data/teardown/exotel/npm/_exotel-npm-dev_webrtc-core-sdk.time.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Strengthened: the 'SIP version 1.0.22' banner is webrtc-core-sdk's package version (npm 3.0.17 tarball webpack.config.js: \"SIP version ' + pkg.version\"); source map lists ../webrtc-core-sdk/src/sip-0.20.0.js. npm time: 1.0.22 published 2025-07-25, 3.0.17 on 2026-10-16, so the console ships a core SDK about 15 months old.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-26",
@@ -300,7 +449,15 @@
    "data/teardown/exotel/status/history-p2.html",
    "data/teardown/exotel/blog/1600-phone-number.html"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Counted in saved Statuspage history: Airtel 17, Huawei 22, Nokia 23, Tata 6, Vodafone 6, Jio 3, TTSL 5 mentions. The UL VNO licence part is vendor-claimed (blog).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-27",
@@ -311,7 +468,15 @@
    "data/teardown/exotel/site/html/build__sip-native-vs-websocket-voice-ai-bots-exotel-agentstream__.txt",
    "data/teardown/exotel/community/t40.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "vendor-claimed",
+   "note": "t40.json: the 'cannot leave India' answer is by a forum user flagged staff/admin/moderator (2026-08-04). Grade stays vendor-claimed.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-28",
@@ -345,32 +510,51 @@
  {
   "id": "EXO-30",
   "dimension": "architecture",
-  "claim": "No public web-call widget exists on exotel.com: Playwright captures of the homepage, the AgentStream page and the Gen-AI voice agents page opened zero WebSockets; the only chat widget is AllinCall (clients.allincall.in, the Cogno AI acquisition). The VoiceBot docs list 'Web Call' as Coming Soon.",
-  "grade": "observed",
+  "claim": "No public web-call widget was found on exotel.com: Playwright loads of the homepage, the AgentStream page and the Gen-AI voice agents page opened zero WebSockets without interaction; the only chat widget is AllinCall (clients.allincall.in). The VoiceBot docs list 'Web Call' as Coming Soon. Other pages and click-triggered widgets were not tested.",
+  "grade": "inferred",
   "evidence": [
    "data/teardown/exotel/capture/home.json",
    "data/teardown/exotel/capture/agentstream-product.json",
    "data/teardown/exotel/capture/genai-voice-agents.json",
    "data/teardown/exotel/docs-md/intelligent-voice-agents.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "No public web-call widget exists on exotel.com: Playwright captures of the homepage, the AgentStream page and the Gen-AI voice agents page opened zero WebSockets; the only chat widget is AllinCall (clients.allincall.in, the Cogno AI acquisition). The VoiceBot docs list 'Web Call' as Coming Soon.",
+  "verification": {
+   "status": "downgraded",
+   "grade_before": "observed",
+   "note": "A universal negative from three page loads without interaction (homepage, AgentStream page, Gen-AI voice agents page: ws=[]). A widget opening only after a click would not show. The console does embed a WebRTC SIP client (exotelSDK), behind login. Inferred, not observed.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-31",
   "dimension": "architecture",
-  "claim": "Analytics are embedded Apache Superset (superset/guest-token endpoint); custom tool integrations run as declarative routes on a shared Apache Camel engine (Sept 2026); Exotel's internal voicebot evaluation framework scores transcripts with Char/Word/LLM metrics using an Azure OpenAI scorer (per ClearStream notes).",
-  "grade": "observed",
+  "claim": "Analytics are embedded Apache Superset (observed: superset/guest-token endpoint and a 'superset' image in ECC release notes). Vendor-claimed: custom tool integrations run as declarative routes on a shared Apache Camel engine (Sep 2026 post). Weak: a personal repo (ClearStream) says its Char/Word/LLM transcript scoring matches Exotel's production VoiceBot evaluation framework; its own scorer uses Azure OpenAI, which is not evidence that production does.",
+  "grade": "vendor-claimed",
   "evidence": [
    "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
    "data/teardown/exotel/site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt",
-   "data/teardown/exotel/repos/ClearStream/DEVLOG.md"
+   "data/teardown/exotel/repos/ClearStream/DEVLOG.md",
+   "data/teardown/exotel/docs-md/contact-center__contact-center-patch-release-notes-version-6102.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "Analytics are embedded Apache Superset (superset/guest-token endpoint); custom tool integrations run as declarative routes on a shared Apache Camel engine (Sept 2026); Exotel's internal voicebot evaluation framework scores transcripts with Char/Word/LLM metrics using an Azure OpenAI scorer (per ClearStream notes).",
+  "verification": {
+   "status": "downgraded",
+   "grade_before": "observed",
+   "note": "Mixed claim graded observed. Superset is now observed twice (superset/guest-token endpoint in the console; a 'superset' image in the ECC 6.11 release-note image table, see EXO-V04). The Apache Camel engine comes only from the Sep 2026 blog (vendor-claimed). The 'Azure OpenAI scorer' comes from a personal repo's DEVLOG that says its code 'matches production telephony VoiceBot framework exactly' and lists an Azure OpenAI LLM scorer; that production uses Azure OpenAI is not stated. Graded at its weakest part.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-32",
   "dimension": "pricing",
-  "claim": "Business phone plans are published again and unchanged in structure: Dabbler INR 9,999 / 5 months (4,999 rental + 5,000 credits, 1 ExoPhone, 3 agents), Believer 19,999 / 11 months, Influencer 49,499 / 11 months; 1 credit = INR 1; 7-day trial with 500 credits. This contradicts the 2026-10-17 'quote-based since 2025' reading (l4a pricing-history.json, l4c incumbents.csv): the Common Crawl captures were of the /pricing hub, which never carries prices.",
+  "claim": "Business phone plans are published on /pricing/business-phone-system/ (read 2026-10-20) with the same prices as the 2024-03-03 capture: Dabbler INR 9,999 / 5 months (4,999 rental + 5,000 credits, 1 ExoPhone, 3 agents), Believer 19,999 / 11 months, Influencer 49,499 / 11 months; 1 credit = INR 1; 7-day trial with 500 credits. This contradicts the 2026-10-17 'quote-based since 2025' reading (l4a pricing-history.json, l4c incumbents.csv) as a description of today. Inference, not verified: the 2025-26 captures were of the /pricing hub, which stopped carrying prices after the 2024 capture, while the prices moved to the sub-page.",
   "grade": "observed",
   "evidence": [
    "data/teardown/exotel/site/html/pricing__business-phone-system__.txt",
@@ -378,7 +562,16 @@
    "research/2026-10-17/lanes/l4a-competitors/pricing-history.json",
    "research/2026-10-20/teardown/exotel/pricing.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "Business phone plans are published again and unchanged in structure: Dabbler INR 9,999 / 5 months (4,999 rental + 5,000 credits, 1 ExoPhone, 3 agents), Believer 19,999 / 11 months, Influencer 49,499 / 11 months; 1 credit = INR 1; 7-day trial with 500 credits. This contradicts the 2026-10-17 'quote-based since 2025' reading (l4a pricing-history.json, l4c incumbents.csv): the Common Crawl captures were of the /pricing hub, which never carries prices.",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "observed",
+   "note": "'The /pricing hub ... never carries prices' is contradicted by l4a's own pricing-history.json: the 2024-03-03 Common Crawl capture of https://exotel.com/pricing/ carried Dabbler/Believer/Influencer prices. The hub stopped carrying prices sometime between 2024-03 and 2025-06. Whether /pricing/business-phone-system/ carried prices through 2025-26 was not verified: the Common Crawl index returned connection resets / 504 on 2026-10-20 for CC-MAIN-2025-33/38/47/51 and 2026-08/12/25. Today's prices remain observed; the 'artefact' explanation of l4a/l4c is inference.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-33",
@@ -389,7 +582,15 @@
    "data/teardown/exotel/blog/exotel-pricing-why-you-pay-what-you-pay.html",
    "data/teardown/exotel/site/html/pricing__business-phone-system__.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Blog datePublished/dateModified 2017-02-17: 'Rs 5000 worth of credits ... Rs. 4999 one time charge for 5 months'. Observed at three points only (2017 blog, 2024-03-03 Common Crawl in l4a, 2026-10-20 page); 'has not moved' between those points is inference.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-34",
@@ -401,19 +602,36 @@
    "data/teardown/exotel/site/html/pricing__enterprise-contact-center__.txt",
    "research/2026-10-19/voicelab/desk/phone-leg.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "pricing__business-phone-system__.txt line 119: 'Voice Streaming (Agent Stream) is excluded from the plans listed above ... contact us at hello@exotel.com'.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-35",
   "dimension": "pricing",
-  "claim": "Exotel's own blog puts its PSTN rate at 'typically' INR 0.80-1.00/min outbound and 0.30-0.50/min inbound, billed in 60-second pulses. 60-s pulses inflate billed minutes ~25% for 0.5-3.5 min calls (vs ~12% for the 30-s pulses VP's Plivo model assumes).",
+  "claim": "Exotel's own blog puts its PSTN rate at 'typically' INR 0.80-1.00/min outbound and 0.30-0.50/min inbound, and the developer docs say India is billed per 60-second pulse. Pulse inflation depends on call length: about 25% (vs 12.5% for 30-s pulses) if calls are uniform on 0.5-3.5 min, about 15% (vs 7.4%) on the VP pricing model's call mix.",
   "grade": "vendor-claimed",
   "evidence": [
    "data/teardown/exotel/blog/migrate-twilio-to-exotel-voice-ai-india.html",
    "data/teardown/exotel/dev-md/getting-started__regions-availability.md",
    "research/2026-10-20/teardown/exotel/pricing.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "Exotel's own blog puts its PSTN rate at 'typically' INR 0.80-1.00/min outbound and 0.30-0.50/min inbound, billed in 60-second pulses. 60-s pulses inflate billed minutes ~25% for 0.5-3.5 min calls (vs ~12% for the 30-s pulses VP's Plivo model assumes).",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "vendor-claimed",
+   "note": "The 25% vs 12% pulse inflation holds only for call lengths uniform on 0.5-3.5 min. On the VP model's call-length mix (research/2026-10-18/model, 30-s overhead factor 0.462/0.43 = 1.074), 60-s pulses add about 14.9% against 7.4% for 30-s. Grade stays vendor-claimed for the rate; the inflation figure is an assumption-dependent computation. The blog cites the rate with a footnote '[1]', so it may not be Exotel's own tariff.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-36",
@@ -425,18 +643,37 @@
    "research/2026-10-18/lanes/g4-market-selfhost/prices.csv",
    "research/2026-10-17/lanes/l4a-competitors/report.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "inferred",
+   "note": "Arithmetic re-done: lo 1.416, mid 1.953, hi 3.600; components match research/2026-10-18/lanes/g4-market-selfhost/prices.csv rows (Nova-3 regular 0.874/0.437, Inworld Gemma 4 26B 0.144, gemini-3.1-flash-lite 0.524, Smallest Lightning V3.1 0.585, ElevenLabs Flash/Turbo 1.672 at 440 chars). Margin bands check: (3.5-1.953)/3.5=44%, (7-1.953)/7=72%. Caveats: the stack is the vendor-documented one, not captured; 'Gemma' is priced via a third-party host as proxy; Exotel's VoiceBot price is unknown, so the margin is conditional on it pricing inside the INR 3.5-7 band.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-37",
   "dimension": "pricing",
-  "claim": "If VP rode Exotel AgentStream instead of Plivo, telephony alone would rise from the model's INR 0.46 to 0.80-1.00 per minute (+0.34 to +0.54) before the unpublished streaming fee, taking VP base-tier COGS from 1.72 to at least 2.02-2.22 INR/min.",
+  "claim": "If VP rode Exotel AgentStream instead of Plivo, telephony per connected minute would rise from the VP model's 0.462 to about 0.92-1.15 INR (Exotel's 'typical' 0.80-1.00 per billed minute with 60-s pulses on the VP model's call mix), i.e. +0.46 to +0.69 INR/min before the unpublished streaming fee, taking VP base-tier COGS from 1.715 to about 2.17-2.40 INR/min.",
   "grade": "inferred",
   "evidence": [
    "research/2026-10-20/teardown/exotel/pricing.json",
-   "research/2026-10-18/model/results/tiers.csv"
+   "research/2026-10-18/model/results/tiers.csv",
+   "research/2026-10-18/model/pricing_model.py",
+   "research/2026-10-20/teardown/exotel/verify.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "If VP rode Exotel AgentStream instead of Plivo, telephony alone would rise from the model's INR 0.46 to 0.80-1.00 per minute (+0.34 to +0.54) before the unpublished streaming fee, taking VP base-tier COGS from 1.72 to at least 2.02-2.22 INR/min.",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "inferred",
+   "note": "Refuted in magnitude, direction holds. The lane subtracted VP's per-connected-minute telephony (0.462 = 0.43 per billed minute x 30-s pulse overhead 1.074) from Exotel's per-billed-minute rate (0.80-1.00) and dropped the 0.034 infra already inside VP's 1.715 COGS. Like-for-like (Exotel rate x 60-s overhead 1.149 on the same call mix): Exotel 0.919-1.149 per connected minute, delta +0.457 to +0.687, VP base-tier COGS 2.17-2.40 before any stream fee (not 2.02-2.22).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-38",
@@ -485,7 +722,15 @@
    "data/teardown/exotel/status/api_v2_incidents.json",
    "data/teardown/exotel/status/history-p2.html"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "api_v2_summary.json re-read: 52 components; 'Contact Center - On-Prem (ECC 4.x)' major_outage since 2026-06-25 and 'App16' since 2026-09-17; 0 open incidents; 5 incidents all minor with created_at = resolved_at on 22-23 Jun 2026; no bot/stream/MCP component.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-42",
@@ -495,7 +740,15 @@
   "evidence": [
    "data/teardown/exotel/docs-md/business-phone-system__onboarding.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "business-phone-system__onboarding.md lines 39-41, 67-71.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-43",
@@ -506,7 +759,15 @@
    "data/teardown/exotel/docs-md/business-phone-system__calling-whitelisted-customer.md",
    "data/teardown/exotel/docs-md/business-phone-system__onboarding.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "calling-whitelisted-customer.md lines 8-14, 38 ('called or sent an SMS'), 63 (J&K bulk/promotional block); onboarding.md lines 43-57 (DND agreement).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-44",
@@ -521,14 +782,28 @@
  {
   "id": "EXO-45",
   "dimension": "india-plumbing",
-  "claim": "Calling windows are guidance, not an enforced control in the docs: '9 AM-9 PM IST' for promotional campaigns, a separate '10 AM-6 PM' best practice, and 'ensure end_at falls before 9 PM' left to the user; no doc describes Exotel rejecting an out-of-window schedule. (l4a's calling-hours source page now renders only as a client-side shell and its .md is 404.) Confirms ledger CMP-27's 09:00-21:00 reading.",
+  "claim": "Calling windows: Exotel says it 'does not automatically enforce calling hour restrictions at the API level' and leaves Campaigns v2 schedules (one absolute send_at/end_at, 'ensure end_at falls before 9 PM') to the user; no doc describes Exotel rejecting an out-of-window schedule. Configurable windows do exist elsewhere: the Outbound Dialer guide lists a dashboard 'Daily window' and 'Days of week', and the ECC contact centre has per-lead daily Time Window slots that disable dialing outside them. Confirms ledger CMP-27 (09:00-21:00) for the API path only.",
   "grade": "observed",
   "evidence": [
    "data/teardown/exotel/dev-md/campaign-guides__campaign-scheduling.md",
    "data/teardown/exotel/docs-md/business-phone-system__calling-whitelisted-customer.md",
-   "data/teardown/exotel/probe/dev-calling-hours.html"
+   "data/teardown/exotel/probe/dev-calling-hours.html",
+   "data/teardown/exotel/verify-calling-hours/faqs__calling-hours.md",
+   "data/teardown/exotel/dev-md/faqs__calling-hours.md",
+   "data/teardown/exotel/dev-md/call-support__advanced-features__outbound-dialer.md",
+   "data/teardown/exotel/docs-md/contact-center__lead-and-dialing-configuration.md",
+   "https://developer.exotel.com/docs/faqs/calling-hours.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "claim_before": "Calling windows are guidance, not an enforced control in the docs: '9 AM-9 PM IST' for promotional campaigns, a separate '10 AM-6 PM' best practice, and 'ensure end_at falls before 9 PM' left to the user; no doc describes Exotel rejecting an out-of-window schedule. (l4a's calling-hours source page now renders only as a client-side shell and its .md is 404.) Confirms ledger CMP-27's 09:00-21:00 reading.",
+  "verification": {
+   "status": "corrected",
+   "grade_before": "observed",
+   "note": "Partly refuted. (1) The calling-hours page is not dead: developer.exotel.com/docs/faqs/calling-hours.md returned 200 (7,506 bytes) on the lane's own refetch at 18:36Z and again at 20:15Z, and says 'Exotel does not automatically enforce calling hour restrictions at the API level' - stronger evidence for the API-level reading than the lane cited. (2) But 'left to the buyer' is too broad: the Outbound Dialer guide documents a dashboard 'Daily window' and 'Days of week' setting, and ECC Lead Management lets a supervisor set per-day Time Window slots, outside which 'the lead remains disabled' for dialing. So configurable (not automatic) windows exist in the dashboard/ECC; none is documented for Campaigns v2 or the bot path.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-46",
@@ -538,7 +813,15 @@
   "evidence": [
    "data/teardown/exotel/dev-md/faqs__data-privacy.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "faqs__data-privacy.md lines 20-27 (retention), 47-76 (consent best practice), 87 (recording off by default).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-47",
@@ -548,7 +831,15 @@
   "evidence": [
    "data/teardown/exotel/docs-md/intelligent-voice-agents__masking-sensitive-data-pii-in-voicebot.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "masking doc lines 14, 57-59, 80, 103-113.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-48",
@@ -560,7 +851,15 @@
    "data/teardown/exotel/dns/getent.txt",
    "data/teardown/exotel/site/html/pricing__enterprise-contact-center__.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "create-account.md lines 34-44; India IPs re-resolved to ap-south-1.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-49",
@@ -571,9 +870,18 @@
    "data/teardown/exotel/dev-md/getting-started__create-account.md",
    "data/teardown/exotel/dev-md/getting-started__kyc-verification.md",
    "data/teardown/exotel/docs-md/business-phone-system__create-a-trial-account.md",
-   "data/teardown/exotel/docs-md/intelligent-voice-agents__connect-your-number-to-your-voicebot.md"
+   "data/teardown/exotel/docs-md/intelligent-voice-agents__connect-your-number-to-your-voicebot.md",
+   "data/teardown/exotel/docs-md/exotel-agentstream__elevenlabss-elevenagents-agentstream-integration.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "create-account.md lines 25-31; kyc-verification.md lines 23, 84-85; connect-your-number doc line 22; create-a-trial-account.md line 56. The ElevenLabs AgentStream guide adds that the Voicebot applet 'is gated by default ... until your account has been provisioned for it'. Contradicted by the Sep 2026 post's 'VoiceBot is live by default on all Exolite accounts' (already noted in the lane).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-50",
@@ -594,7 +902,15 @@
   "evidence": [
    "research/2026-10-17/lanes/r2-untouched-raw/trai-stakeholder-positions.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "r2 trai-stakeholder rows re-read: Oct 2024 submission ('explicit consent should NOT be mandatory for robo/auto-dialer calls') and Apr 2026 ('Human-Assisted API Calls' carve-out). Re-cited from r2's primary read; the PDFs were not re-opened in this pass.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-52",
@@ -615,9 +931,18 @@
   "evidence": [
    "https://www.trustpilot.com/review/exotel.com",
    "https://www.reddit.com/r/developersIndia/comments/1ixp48z/",
-   "research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv"
+   "research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv",
+   "data/teardown/exotel/verify-trustpilot/webfetch-summary.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Quotes trace to saved rows in r2 voc-indian-complaints.csv and l4a complaints.csv; Trustpilot re-read 2026-10-20 via WebFetch (model-mediated): Anand Chandak review dated Apr 23, 2026 present.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-54",
@@ -627,9 +952,18 @@
   "evidence": [
    "https://www.trustpilot.com/review/exotel.com",
    "https://www.capterra.com/p/233144/Exotel/reviews/?page=2",
-   "research/2026-10-17/lanes/l4a-competitors/complaints.csv"
+   "research/2026-10-17/lanes/l4a-competitors/complaints.csv",
+   "data/teardown/exotel/verify-trustpilot/webfetch-summary.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Trustpilot re-read 2026-10-20 (WebFetch, model-mediated): TrustScore 2.5, 'All reviews (5)', 1-star 100%, 'Hasn't replied to negative reviews'. The raw page is behind an AWS WAF challenge for curl, so the only saved copy is the summary.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-55",
@@ -641,7 +975,15 @@
    "data/teardown/exotel/complaints/capterra-in.html",
    "https://www.capterra.in/software/134642/exotel"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "'clunky' quote present on the re-read Trustpilot page and in r2/l4a rows.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-56",
@@ -653,7 +995,15 @@
    "https://www.capterra.com/p/233144/Exotel/reviews/?page=3",
    "research/2026-10-17/lanes/l4a-competitors/complaints.csv"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "r/AI_Agents compression quote traced to r2 voc-indian-complaints.csv (saved row).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-57",
@@ -667,7 +1017,15 @@
    "data/teardown/exotel/community/t18.json",
    "data/teardown/exotel/community/t40.json"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "REFER / 'participant does not exist' / 'own API' / Asterisk / 503 strings present in the saved LiveKit threads; the case-sensitive AccountSid reply in t18.json is from a non-staff user (harsh2010), not Exotel.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-58",
@@ -677,7 +1035,15 @@
   "evidence": [
    "data/teardown/exotel/site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Sep 2026 post re-read: '10 seconds of dead air ... times out and retries in about 2 seconds'; '~29 seconds with zero audio'. These are vendor admissions; graded observed as statements the vendor made.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-59",
@@ -688,7 +1054,15 @@
    "research/2026-10-17/lanes/l4a-competitors/complaints.csv",
    "data/teardown/exotel/complaints/capterra-in.html"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "'COD verification' quote in l4a complaints.csv; 'outside India' quote in r2 voc-indian-complaints.csv.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-60",
@@ -699,9 +1073,18 @@
    "data/teardown/exotel/site/html/products__ai-human-harmony-cx-platform__.txt",
    "data/teardown/exotel/docs-md/conversational-context.md",
    "research/2026-10-20/teardown/exotel/bundle-endpoints.json",
-   "research/2026-10-17/ledger.md"
+   "research/2026-10-17/ledger.md",
+   "data/teardown/exotel/docs-md/contact-center__contact-center-patch-release-notes-version-6102.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "Harmony page has 'CCDP: Unified memory layer ...' and 'Kaizen intelligence loop - The self learning process'; conversational-context.md is 126 bytes (front matter only). Nuance: CCDP is a real shipped component, a 'ccdp' container image listed in ECC 6.8-6.11 patch release notes (EXO-V04); what is undocumented is any memory behaviour, not the component's existence.",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-61",
@@ -714,7 +1097,15 @@
    "data/teardown/exotel/docs-md/intelligent-voice-agents.md",
    "data/teardown/exotel/docs-md/intelligent-voice-agents__voicebot-webhooks.md"
   ],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "verification": {
+   "status": "confirmed",
+   "grade_before": "observed",
+   "note": "saveTrafficAllocation PUT /v2/accounts/{a}/voicebots/{b}/versions/traffic-allocation in useEccContext; Sep post: 'call evaluator paired with a recommender agent ... tested against real production call traffic'; custom params max 3 / 256 chars (intelligent-voice-agents.md 164-167).",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  },
  {
   "id": "EXO-62",
@@ -750,5 +1141,114 @@
    "data/teardown/exotel/jobs/software-engineer-2-voicebot-at-exotel-wkdypwu3yh.html"
   ],
   "date": "2026-10-20"
+ },
+ {
+  "id": "EXO-V01",
+  "dimension": "docs-api",
+  "grade": "observed",
+  "claim": "Answering-machine detection exists outside the contact centre: a Beta Voice API AMD (docs.exotel.com, createdAt 2026-06-15) enabled by the account manager returns AnsweredBy (HUMAN/MACHINE/NOTSURE/NA) and AmdCause on Leg 2 in the terminal StatusCallback, asynchronously about 3-5 s after answer, and not in reports or the dashboard; ExoML create-a-leg has amd_enable and async_amd with an amd_result_success event. A bot on the ExoML Legs path could therefore get AMD, but only after it has already been streaming for ~3-5 s, and no doc shows AMD on Connect Voice AI, Campaigns v2 or the Voicebot applet.",
+  "evidence": [
+   "data/teardown/exotel/docs-md/voice-apis__answering-machine-detection-amd.md",
+   "data/teardown/exotel/docs-md/voice-apis__post-create-a-leg.md",
+   "data/teardown/exotel/dev-md/legs__overview.md",
+   "https://docs.exotel.com/voice-apis/answering-machine-detection-amd.md"
+  ],
+  "date": "2026-10-20",
+  "verification": {
+   "status": "added",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
+ },
+ {
+  "id": "EXO-V02",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "claim": "Opt-out suppression is not entirely left to the buyer: the ECC contact centre has a tenant-level DNC list ('They will not dial through any of the campaign or queues created under that tenant from Auto-Dial'), a process-level DNC tab for voice campaigns, and dispositions that can remove a number from an outbound dialer list ('Do Not Call'). Nothing equivalent is documented for Campaigns v2 or the VoiceBot path, where the docs only advise removing opt-outs by hand.",
+  "evidence": [
+   "data/teardown/exotel/docs-md/contact-center__dnc-tab.md",
+   "data/teardown/exotel/docs-md/contact-center__process-settings.md",
+   "data/teardown/exotel/docs-md/contact-center__disposition.md",
+   "data/teardown/exotel/dev-md/call-support__advanced-features__outbound-dialer.md",
+   "https://docs.exotel.com/contact-center/dnc-tab.md"
+  ],
+  "date": "2026-10-20",
+  "verification": {
+   "status": "added",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
+ },
+ {
+  "id": "EXO-V03",
+  "dimension": "india-plumbing",
+  "grade": "observed",
+  "claim": "Exotel's docs disagree on campaign scheduling: the Campaigns v2 scheduling guide offers one absolute send_at/end_at window with no recurrence, the calling-hours FAQ says Exotel 'does not automatically enforce calling hour restrictions at the API level', the Outbound Dialer guide lists a dashboard 'Daily window' (9:00 AM - 9:00 PM) and 'Days of week' setting, and ECC Lead Management has per-lead daily Time Window slots outside which the lead is disabled for dialing.",
+  "evidence": [
+   "data/teardown/exotel/dev-md/campaign-guides__campaign-scheduling.md",
+   "data/teardown/exotel/verify-calling-hours/faqs__calling-hours.md",
+   "data/teardown/exotel/verify-calling-hours/outbound-dialer.md",
+   "data/teardown/exotel/docs-md/contact-center__lead-and-dialing-configuration.md"
+  ],
+  "date": "2026-10-20",
+  "verification": {
+   "status": "added",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
+ },
+ {
+  "id": "EXO-V04",
+  "dimension": "architecture",
+  "grade": "observed",
+  "claim": "The ECC contact centre (whose web app hosts the VoiceBot console) ships as a container stack listed in its patch release notes: appserver, appserverui, asrouting, ccdp, chat-service, cms, crm-connector, customer-fetcher, data-engine, eureka, gateway, ingress-nginx-controller, interaction-service, kafka-connect, ksqldb, schema-registry, citus/postgresql 18, redis (Sentinel and Modules), scheduler, superset, fluentd and others, all pulled from bom.ocir.io (Oracle Cloud Infrastructure Registry, Mumbai; 296 references across the release notes). Inferred: a Kubernetes, Spring-Cloud-and-Kafka microservice stack distributed through OCI Mumbai. Unknown: whether Exotel's ECC SaaS runs on OCI or AWS.",
+  "evidence": [
+   "data/teardown/exotel/docs-md/contact-center__contact-center-patch-release-notes-version-6102.md",
+   "data/teardown/exotel/docs-md/contact-center__contact-center-patch-release-notes-690.md"
+  ],
+  "date": "2026-10-20",
+  "verification": {
+   "status": "added",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
+ },
+ {
+  "id": "EXO-V05",
+  "dimension": "architecture",
+  "grade": "observed",
+  "claim": "Exotel's own open-source agent-stream repo runs a Pipecat bot on AgentStream through Pipecat's ExotelFrameSerializer (integrations/pipecat/bot.py, pipecat-ai>=0.0.92), so a Pipecat-based VP bot can attach to AgentStream without writing its own framing.",
+  "evidence": [
+   "data/teardown/exotel/repos/agent-stream/integrations/pipecat/bot.py",
+   "data/teardown/exotel/repos/agent-stream/integrations/pipecat/requirements.txt"
+  ],
+  "date": "2026-10-20",
+  "verification": {
+   "status": "added",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
+ },
+ {
+  "id": "EXO-V06",
+  "dimension": "method",
+  "grade": "observed",
+  "claim": "The account-phase plan conflicts with an owner-accepted mitigation: risk.2026-10-20.vendor-terms (status accepted-by-owner) says 'Exotel account not used for the teardown', because Exotel ToS 6.2 is a standalone promise not to 'build a product or service which competes with the Product' that binds VP for as long as it is a customer. This lane's account-phase checklist, EXO-P01..P14 and open.2026-10-20.exotel-account-phase all assume an Exotel trial under team@vyakti.ai. The owner must decide, or get a written agreement, before Instinct signs up.",
+  "evidence": [
+   "context/graph.json",
+   "research/2026-10-20/teardown/terms/terms.md"
+  ],
+  "date": "2026-10-20",
+  "verification": {
+   "status": "added",
+   "date": "2026-10-20",
+   "by": "adversarial verifier",
+   "log": "research/2026-10-20/teardown/exotel/verify.md"
+  }
  }
 ]

@@ -7,7 +7,9 @@
   "basis": "data/teardown/synthflow/docs-md/account-access-login.md (accounts may be reviewed); concurrency.md (Pro/Growth/Agency 'no longer sold'); synthflow.ai/pricing (Enterprise from $30k/yr)",
   "how_scored": "Stopwatch from sign-up submit to the workspace opening, then to first web call and first handset ring. Record every gate (review page, sales call, payment) with timestamps.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable on its primary metric (>24 h from sign-up submit to first live handset call). The 'email or sales conversation' clause is descriptive; score only the timestamp and record each gate. Text unchanged."
  },
  {
   "id": "SYN-P02",
@@ -17,7 +19,9 @@
   "basis": "data/teardown/synthflow/docs-md/phone-numbers.md; telephony.md; telephony-errors.md; twilio.md",
   "how_scored": "Log each attempt's error_message from the call record and the minutes spent on Twilio setup.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes (compound AND)",
+  "verifier_note": "2026-10-20 verifier: falsifiable but compound. Score as P02a 'a purchased US number cannot place the call to our Indian handset, so BYO Twilio is needed' [hit/miss] and P02b 'BYO Twilio setup takes >=30 min and hits at least one Twilio-side error' [hit/miss]. Text unchanged."
  },
  {
   "id": "SYN-P03",
@@ -27,7 +31,9 @@
   "basis": "data/teardown/synthflow/docs-md/general-configuration.md; changelog__2026__8__25.md; about-supported-languages.md",
   "how_scored": "Screenshot the model and language selectors; send one PUT /assistants with llm=gpt-4.1-mini and GET it back.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable. The silent-ignore part is already documented (changelog 2026-08-25), so it carries little information; the 20-minute build time and the language picker are the informative parts."
  },
  {
   "id": "SYN-P04",
@@ -37,7 +43,9 @@
   "basis": "data/teardown/synthflow/docs-md/batch-calling.md; OpenAPI POST /calls/batch and POST /contacts (no consent or opt-out fields)",
   "how_scored": "Count rows accepted, rejected at upload, failed at dial, and dialled despite opt-out; time the task.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "no as written; yes if scored as sub-items",
+  "verifier_note": "2026-10-20 verifier: 'fails or turns awkward' cannot be falsified. Score four sub-items instead: (a) no CSV upload path for campaigns in the portal [hit if absent]; (b) duplicate rows without ids are dialled twice [hit/miss]; (c) the bad-number rows are accepted at create time and fail at dial time [hit/miss]; (d) the opt-out row is dialled [hit/miss; synthetic numbers we own only]. Hindi names pass through without error [hit/miss]. Text unchanged."
  },
  {
   "id": "SYN-P05",
@@ -47,7 +55,9 @@
   "basis": "data/teardown/synthflow/docs-md/batch-calling.md; business-hours.md",
   "how_scored": "Run one campaign whose window overlaps the agent's hours and one that does not; count recipients failed versus waiting.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "partly",
+  "verifier_note": "2026-10-20 verifier: the clause 'setting both ... makes at least one recipient fail' contradicts the docs for overlapping windows (batch-calling.md: keep the campaign window inside the agent's hours and both gates pass). Score it only on the non-overlapping configuration (prediction: every recipient fails with 'Call cannot be initiated outside the configured working hours'), and expect 0 failures in the overlapping one. The rest is falsifiable."
  },
  {
   "id": "SYN-P06",
@@ -57,7 +67,9 @@
   "basis": "openapi end_call_reason enum (voicemail, human_pick_up_cut_off…); call-transfers.md; concurrency.md (warm transfer is a new outbound call)",
   "how_scored": "Three calls each to a switched-off SIM, a caller-tune SIM and a voicemail box; record end_call_reason and status against ground truth; time the transfer from trigger to the human's first audio.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable; ground truth needs our own switched-off, caller-tune and voicemail SIMs."
  },
  {
   "id": "SYN-P07",
@@ -67,7 +79,9 @@
   "basis": "app bundle end-reason map (raw Python and SIP strings); batch-calling.md (no automatic retry); logs.md",
   "how_scored": "Record the time to locate each failure and quote its reason text; check whether the text names a cause the operator can act on.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable."
  },
  {
   "id": "SYN-P08",
@@ -77,7 +91,9 @@
   "basis": "data/teardown/synthflow/docs-md/export-call-data.md",
   "how_scored": "Time the export and open the CSV; check which columns carry end reason, transcript and extracted variables.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable."
  },
  {
   "id": "SYN-P09",
@@ -87,7 +103,9 @@
   "basis": "customer-region.md and ip-regions.csv (media in GCP us-east1 or europe-west3, no India PoP); call-quality.md (100 ms in-region target only); enterprise-comparison '< 800 ms' (vendor-claimed, platform-side)",
   "how_scored": "Stereo recording at the handset, battery from l4b, n>=30 turns per agent, p50/p95 with bootstrap CI; compare with the call record's turn-latency field if exposed.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes, except the last clause",
+  "verifier_note": "2026-10-20 verifier: the p50/p95 thresholds are falsifiable. The clause about Synthflow's call-quality card is probably unscorable: the call_quality_analytics flag is disabled with no rollouts in the public snapshot (SYN-13), so the card is off for every workspace. Score it only if the card or a turn-latency field is actually visible."
  },
  {
   "id": "SYN-P10",
@@ -97,7 +115,9 @@
   "basis": "data/teardown/synthflow/docs-md/about-supported-languages.md (Multilingual = Nova-3 multi set); voice-configuration.md ('biased toward English')",
   "how_scored": "l4b Hinglish code-switch battery; per-turn language and pronunciation coding by two Hindi speakers.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable; note SYN-28 (Multilingual + Synthflow TTS is told to use Synthflow STT), so record which STT and TTS the agent ran on."
  },
  {
   "id": "SYN-P11",
@@ -107,7 +127,9 @@
   "basis": "data/teardown/synthflow/docs-md/ai-transparency.md (example disclosure is guidance, not enforced)",
   "how_scored": "Five calls with the 'are you a bot?' probe; record disclosure without prompting and the answer to the probe.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable."
  },
  {
   "id": "SYN-P12",
@@ -117,7 +139,9 @@
   "basis": "claims SYN-60..65",
   "how_scored": "Walk every settings page and campaign screen; screenshot anything compliance-related.",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "yes",
+  "verifier_note": "2026-10-20 verifier: falsifiable (a bounded negative over every settings and campaign screen)."
  },
  {
   "id": "SYN-P13",
@@ -127,6 +151,8 @@
   "basis": "synthflow.ai/pricing; pricing-history.json (H1 2026 PAYG $0.11-0.14 before telephony)",
   "how_scored": "Record the quote lines from any sales call (only if the owner authorises a sales conversation).",
   "date": "2026-10-20",
-  "status": "pre-registered"
+  "status": "pre-registered",
+  "falsifiable": "conditional",
+  "verifier_note": "2026-10-20 verifier: falsifiable only if the owner authorises a sales conversation; otherwise it stays unscored, which should be recorded rather than treated as a hit."
  }
 ]

@@ -99,5 +99,17 @@
    22.8
   ],
   "change": "no new public per-minute price since 2026-06; enterprise-only floor $30k/yr confirmed unchanged since 2026-09-10"
+ },
+ "verifier_2026_10_20": {
+  "note": "Lane figures above are kept as computed. Corrections (see verify.md, SYN-41/42).",
+  "india_outbound_allin_inr_per_min_corrected": [
+   15.16,
+   25.61
+  ],
+  "upper_bound_basis": "Synthflow's own H1-2026 'PAYG typically $0.15-0.24/min' (pricing-history.json, CC 2026-03-14 and 2026-06-16) minus its $0.02 managed US Twilio leg plus Twilio India mobile $0.0496 = $0.1796-0.2696 = INR 17.06-25.61",
+  "floor_treatment": "pricing.py treats the $30k/yr floor as a usage commitment (max of floor/min and usage rate); Synthflow does not say whether it is a commitment or a fee on top. As a fee on top, add INR 47.5 / 23.75 / 9.5 per minute at 5k / 10k / 25k min per month.",
+  "ratio_vs_indian_list": "about 2-7x against INR 3.5-7 (l4a), not '3-5x (INR 3-6)'",
+  "cogs_caveats": "own_infra_sbc_freeswitch_janus_gcp ($0.002-0.006) has no source and is a placeholder; component prices are Vapi's pass-through rates, not Synthflow's costs; non-enterprise agents run on Synthflow LLM since 2026-08-25",
+  "grade": "inferred"
  }
 }

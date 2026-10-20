@@ -2035,3 +2035,8 @@ data/teardown/exotel/status/history-p2.html.txt,4517,f9baecd06d31539e911657f0a7a
 data/teardown/exotel/status/history-p3.html,97633,b1cea828082947f079cd5a2bba2908b4fda8f4574d6c8f31ecb73b4e64ce78ee,https://status.exotel.com/history?page=3,2026-10-20T18:33:01Z
 data/teardown/exotel/status/history-p3.html.txt,4517,f9baecd06d31539e911657f0a7aed4568cea434e16ad0ff43150a83205508e2a,https://status.exotel.com/history?page=3 (text extract),2026-10-20T18:33:01Z
 data/teardown/exotel/status/history.rss,33016,82f3f44090b17fbb961093f29d85ad8b9457b90a381803063410fc7b91d4e2e9,https://status.exotel.com/history.rss,2026-10-20T18:32:44Z
+data/teardown/exotel/verify-dns/getent-recheck.txt,1221,77c78cc80b9e48c2503404714da7c279a2cfd7e5f88dfe561fd3916448717678,getent ahosts (local resolver),2026-10-20T20:18:01Z
+data/teardown/exotel/verify-calling-hours/faqs__calling-hours.md,7506,ef43c3c611fdbb254d6b648500226d48ab93edda4130275b574a6e45baa60da4,https://developer.exotel.com/docs/faqs/calling-hours.md,2026-10-20T20:15:45Z
+data/teardown/exotel/verify-calling-hours/outbound-dialer.md,9766,64d4f93644df4a792f4fc14b82e9e59b16764574c01a4149640d230fb658b665,https://developer.exotel.com/docs/call-support/advanced-features/outbound-dialer.md,2026-10-20T20:15:45Z
+data/teardown/exotel/verify-npm-webrtc-core/exotel-npm-dev-webrtc-core-sdk-3.0.17.tgz,455460,89b6c2a096ba7ca286556160724642e70c2fd8a3bbde857bfc9d92d416b53df7,https://registry.npmjs.org/@exotel-npm-dev/webrtc-core-sdk/-/webrtc-core-sdk-3.0.17.tgz,2026-10-20T20:14:00Z
+data/teardown/exotel/verify-trustpilot/webfetch-summary.txt,1069,969d45ebe1baeee046bd61a52ce3321ee2cd221a1908fe6a58e1bd8dc906c9e6,https://www.trustpilot.com/review/exotel.com (WebFetch model summary),2026-10-20T20:12:00Z

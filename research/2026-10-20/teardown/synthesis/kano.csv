@@ -1,0 +1,47 @@
+feature,kano_class,Bolna,Sarvam,Vapi,Retell,ElevenLabs,Synthflow,SquadStack,Exotel,coverage,account_only,evidence
+Test call from the builder (browser or phone),must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,P:o,7Y/1P of 8,time only,BOL-03 SAR-03 VAP-18 RET-23 EL-01 SYN-23 SQS-72 EXO-03
+List/CSV campaign with per-row variables,must-be,Y:o,Y:o,Y:o,Y:o,Y:o,P:o,P:o,Y:o,6Y/2P of 8,behaviour,BOL-03 SAR-14 VAP-03 RET-05 EL-05 SYN-05 SQS-13 EXO-05
+Recurring calling window with days of week,must-be,P:o,Y:o,N:o,Y:o,N:o,P:o,P:i,P:o,2Y/4P of 8,enforcement,BOL-48 SAR-49 VAP-46 RET-44 EL-05 SYN-63 SQS-49/71 EXO-45/V03
+Retries by outcome,must-be,Y:o,Y:o,N:o,N:o,P:o,N:o,Y:i,Y:o,4Y/1P of 8,behaviour,BOL-03 SAR-16 VAP-47 RET-05 EL-05 SYN-05 SQS-15 EXO-15
+"Inbound: number to agent, caller lookup",must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,P:o,Y:o,7Y/1P of 8,,BOL-03 SAR-02 VAP-14 RET-14 EL-01 SYN-02 SQS-72 EXO-parity-delta
+Transfer to a human (cold/warm),must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,P:o,P:o,6Y/2P of 8,warm context,BOL-03 SAR-16 VAP-01 RET-02 EL-01 SYN-02 SQS-10 EXO-parity-delta
+Voicemail / IVR detection,must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,P:o,P:o,6Y/2P of 8,accuracy on Indian operator announcements,BC-09 SAR-02 VAP-01 RET-15 EL-01 SYN-parity-delta SQS-11 EXO-V01
+DTMF,must-be,Y:o,N:o,Y:o,Y:o,Y:o,P:o,?:u,Y:o,5Y/1P of 8,,BOL-03 SAR-12 VAP-01 RET-02 EL-01 SYN-parity-delta - EXO-parity-delta
+Knowledge base,must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,8Y/0P of 8,,BC-11 SAR-02 VAP-01 RET-14 EL-01 SYN-02 SQS-04 EXO-parity-delta
+HTTP tools during the call,must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:i,Y:o,8Y/0P of 8,,api-surface-matrix SQS-10 EXO-parity-delta
+Post-call judge with typed extraction,must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,8Y/0P of 8,quality,api-surface-matrix SYN-07 SQS-16 EXO-parity-delta
+Post-call webhook (full record),must-be,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,8Y/0P of 8,delivery/retries,api-surface-matrix SYN-02 SQS-14 EXO-parity-delta
+"Call log: recording, transcript, cost, reason",must-be,Y:o,P:o,Y:o,Y:o,Y:o,Y:o,P:o,P:o,5Y/3P of 8,reason quality,BOL-06 SAR-16 VAP-13 RET-15 EL-09 SYN-08 SQS-18 EXO-58
+Export with extracted fields,must-be,Y:o,P:o,Y:o,P:o,P:o,Y:o,Y:o,P:o,4Y/4P of 8,contents and time,BOL-06 SAR-P08 VAP-10 RET-P08 EL-P07 SYN-02 SQS-P09 EXO-P08
+Agent versions and publish,must-be,P:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,7Y/1P of 8,,"BOL-01 (API: none, ACB) SAR-16 VAP-11 RET-14 EL-01 SYN-02 SQS-04 EXO-04"
+Indian CLI path (own numbers or native Indian carrier),must-be,Y:o,Y:o,N:o,P:o,P:o,N:i,Y:i,Y:o,4Y/2P of 8,CLI series shown to callee,BOL-07 SAR-27/45 VAP-42/43 RET-45 EL-38 SYN-61 SQS-23 EXO-42
+Hindi/Hinglish plus major Indic languages,must-be,Y:o,Y:o,P:o,P:o,Y:o,P:o,Y:v,P:v,4Y/4P of 8,language hold,BOL-01 SAR-02 VAP-31 RET-16 EL-40 SYN-65 SQS-16 EXO-parity-delta
+Suppression/DNC honoured on every outbound path,must-be,N:o,Y:o,N:o,P:o,N:o,N:o,Y:o,P:o,2Y/2P of 8,cross-campaign behaviour,BOL-46 SAR-44 VAP-47 RET-43 EL-38 SYN-06/62 SQS-47/72 EXO-45
+INR billing with GST (UPI),must-be,P:o,Y:o,N:o,N:o,P:v,N:o,Y:o,Y:o,3Y/2P of 8,checkout,BOL-33 SAR-09 VAP-33 RET-49 EL-29 SYN-40 SQS-06 EXO-32
+Team roles,must-be,P:o,Y:o,P:o,P:o,Y:o,P:o,Y:o,?:u,3Y/4P of 8,,BOL-05 SAR-10 VAP-07 RET-09 AP-EL SYN-12 SQS-03 -
+India data residency option,must-be (BFSI),P:o,Y:v,N:o,N:o,P:o,N:o,P:o,Y:o,2Y/3P of 8,contract,BOL-49 SAR-50/63 VAP-48 RET-25 EL-39 SYN-21 SQS-52 EXO-48
+AI disclosure as a platform default,VP rule (buyer class unknown),N:i,N:o,N:i,P:o,N:o,P:o,P:v,N:i,0Y/3P of 8,default behaviour,BOL-52 SAR-54 VAP-45 RET-63/RAP-19 EL-41 SYN-62 SQS-46 EXO-P12
+PSTN reply gap and turn-taking,performance,?:u,?:u,?:u,?:u,?:u,?:u,?:u,?:u,0Y/0P of 8,yes (battery),predictions TP; BC-06; SAR-35; EL-45; VAP-52
+Language hold on code-switched turns,performance,?:u,?:u,?:u,?:u,?:u,?:u,?:u,?:u,0Y/0P of 8,yes (battery),RET-52 SYN-65 EL-54(withdrawn) l4b
+All-in price per connected minute (and pulse length),performance,see economics.csv,see economics.csv,see economics.csv,see economics.csv,see economics.csv,see economics.csv,see economics.csv,see economics.csv,,,economics.csv
+Simulated-caller tests / evals,performance,P:o,Y:o,Y:o,Y:o,Y:o,Y:o,P:o,P:o,5Y/3P of 8,,api-surface-matrix SYN-82 SQS-65 EXO-03
+Chat/copilot builder (LLM-native setup),"performance (parity, not a wedge)",Y:o,Y:o,Y:o,Y:o,Y:o,P:o,?:u,P:o,5Y/2P of 8,what it writes,BOL-02 SAR-03 VAP-05 RET-03 EL-03 SYN-16 - EXO-01
+MCP server / API breadth,performance,Y:o,Y:o,Y:o,Y:o,Y:v,Y:o,N:o,Y:o,7Y/0P of 8,,BOL-02 SAR-15 VAP(AP-10) RET-19 EL-01 SYN-15 SQS-13 EXO-01
+Live listen / take over,performance,P:o,?:u,P:o,Y:o,P:o,Y:o,?:u,Y:v,3Y/3P of 8,,BOL-03 - VAP-06/20 RET-07 EL-01 SYN-02 - EXO-01
+A/B traffic split,performance,N:o,N:o,Y:o,Y:o,Y:o,N:o,P:v,Y:o,4Y/1P of 8,,BOL-61 SAR-59 VAP-61 RET-08 EL-51 SYN-parity-delta SQS-65 EXO-60
+Analytics / dashboards,performance,P:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,Y:o,7Y/1P of 8,,api-surface-matrix SAR-20 SYN-13 SQS-28 EXO-31
+WhatsApp follow-up in the same agent,performance (radar says must-be),P:o,P:o,?:u,N:o,Y:o,Y:o,P:i,Y:o,3Y/3P of 8,,BOL-03 SAR-11 - RET-10 EL-01 SYN-parity-delta SQS-54 EXO-parity-delta; RAD-53
+CRM integrations,performance,P:o,?:u,P:o,Y:o,Y:o,Y:o,Y:o,Y:o,5Y/2P of 8,,BOL-04 - VAP-01 RET-04 l4a SYN-parity-delta l4a EXO-parity-delta
+Typed per-call cost on the record,performance,Y:o,N:o,Y:o,Y:o,Y:o,?:u,?:u,?:u,4Y/0P of 8,invoice match,api-surface-matrix
+Failure reasons a person can act on,performance,P:o,Y:o,P:o,P:o,P:o,P:o,N:o,P:o,1Y/6P of 8,yes (task T5),BOL-P07 SAR-17 VAP-13 RET-15 EL-09 SYN-71 SQS-18 EXO-58
+Cross-format dedupe + India-default normalisation + per-row reasons,performance (full form = delighter),P:o,P:o,N:o,N:o,N:i,N:o,P:i,P:o,0Y/4P of 8,yes (task T2),ACB-19/20 SAR-16 VAP-49 RAP-54 EL-P03 SYN-05 SQS-P04 EXO-16
+Category-aware windows (service / promo / RBI collections),delighter,N:o,N:o,N:o,N:o,N:o,N:o,N:i,N:o,0Y/0P of 8,confirm no hidden setting,RS-16 RS-20 SAR-49 VAP-46 RET-44 EL-05 SYN-63 SQS-49 EXO-45
+In-call promotion/solicitation fence,delighter,N:i,N:i,N:i,N:i,N:i,N:i,N:i,N:i,0Y/0P of 8,yes (REG-P4),RS-21..RS-24 (no vendor ships one)
+A2P CLI-range declaration export,delighter (must-be after 2026-11-18),N:o,N:o,N:o,N:o,N:o,N:o,N:o,N:o,0Y/0P of 8,REG-P3,RS-26 SAR-44 RET-42 EL-38 SYN-60
+140/1600/1601 provisioning done for the buyer,delighter,P:o,N:o,N:o,N:o,P:i,N:o,N:o,P:v,0Y/3P of 8,time to a working CLI,BOL-44 SAR-45 VAP-44 RET-64 EL-38 SYN-61 SQS-48 EXO-42/50
+Consent / inquiry ledger with expiry,delighter (pre-sale must-be),N:o,N:o,N:o,N:o,N:o,N:o,N:o,N:o,0Y/0P of 8,,measure.2026-10-20.acct-synthesis-india-operator-layer; SYN-62 SQS-50 EXO-46
+Cross-call memory (v2),delighter,N:o,N:o,N:i,Y:o,P:o,Y:o,P:v,N:o,2Y/2P of 8,recall quality,BC-12 SAR-58 VAP-60 RET-57 EL-51/EL-P12 SYN-80 SQS-62/74 EXO-60
+Automatic improvement loop without a human gate (v2),delighter,N:o,N:o,N:o,N:o,N:o,N:o,N:v,N:o,0Y/0P of 8,,BOL-61 SAR-59 VAP-61 RET-58 EL-52 SYN-81 SQS-64 EXO-61
+Carrier failover on upstream telephony failure,delighter,N:i,?:u,?:u,?:u,?:u,?:u,?:u,?:u,0Y/0P of 8,induced failure,BOL-40 evidence.2026-10-20.acct-bolna-llm-overflow
+Business-language outcome owned by the customer,delighter,N:o,P:o,N:o,N:o,N:o,N:o,P:o,P:o,0Y/3P of 8,,XS-20 SAR-59 SQS-15 EXO-10
+Every dashboard action on API/MCP (chat-driven setup),delighter,N:o,N:o,N:o,N:o,N:o,?:u,N:o,?:u,0Y/0P of 8,,XS-16 SAR-15

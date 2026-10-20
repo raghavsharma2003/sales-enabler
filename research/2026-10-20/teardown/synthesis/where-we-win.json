@@ -1,0 +1,239 @@
+{
+ "date": "2026-10-20",
+ "note": "Hypotheses, not findings. Each must pass its task in the account phase on the same battery and task list as VP. Prediction ids refer to research/2026-10-20/teardown/synthesis/predictions-consolidated.json (lane_id).",
+ "hypotheses": [
+  {
+   "id": "W1",
+   "hypothesis": "Compliance by default: suppression on every path, category-aware windows, consent/inquiry ledger, series-aware CLI routing and an A2P declaration export, all on without configuration.",
+   "incumbent_failure_evidence": [
+    "8/8 leave Indian compliance to the buyer by contract or docs (RS-21..RS-24, SAR-44, VAP-47, RET-42/43, EL-38, SYN-62, EXO-45)",
+    "Retell batch calls ignore the DNC flag; DNC off by default (RET-43)",
+    "Synthflow opt-out exists only as a post-call judge field, which failed silently for 2 h 50 m on 2026-08-07 (SYN-66)",
+    "Bolna and Exotel publish wrong hours (9-21 for all calls) and Exotel says voice needs no DLT (RS-16, RS-17)",
+    "0 of 5 APIs have consent or DLT objects (measure.2026-10-20.acct-synthesis-india-operator-layer)"
+   ],
+   "task": "T2 messy CSV (rings on N2 must be 0) + T3 window battery (promo at 09:30 and 21:30 IST, service at 09:30, cross-midnight) + T9b mid-call opt-out then a second campaign",
+   "pass_bar": "VP: 0 rings on N2 and on the mid-call opt-out number; promo 09:30 refused and service 09:30 allowed; incumbents: median >=1 ring on N2 or opt-out",
+   "kill_bar": "2 or more incumbents give 0 rings on N2 and on the opt-out number by default and refuse promo at 09:30 (then this is parity)",
+   "caveat": "Compliance is 1.3% of coded complaints (RS-45): a must-be floor that fails suddenly, not the reason buyers switch.",
+   "predictions": [
+    "TP Bolna P04d",
+    "RET-P04",
+    "EL-P03",
+    "VAP-P04",
+    "SYN-P04",
+    "SQS-P04",
+    "EXO-P04",
+    "REG-P1",
+    "REG-P2",
+    "REG-P5",
+    "REG-P8"
+   ]
+  },
+  {
+   "id": "W2",
+   "hypothesis": "CSV hygiene and campaign robustness: India-default normalisation, cross-format and cross-script dedupe, per-row reasons, retries by outcome and recurring windows in one upload.",
+   "incumbent_failure_evidence": [
+    "Vapi dashboard prepends '+' (10-digit Indian mobile becomes +98...), one empty number rejects the file, no dedupe (VAP-49)",
+    "Retell contact import makes 10-digit numbers +1 and does not merge formats (RAP-54)",
+    "Vapi, Retell and Synthflow have no per-contact retries; Synthflow cancels a campaign after 7 days (VAP-47, RET-05, SYN-05)",
+    "ElevenLabs batch has one start time and no window (EL-05); Exotel needs two consoles and rejects rather than normalises (EXO-15/16)",
+    "Complaints: \"because their batch calling didn't work I couldn't use any of it\" (Synthflow Trustpilot 2024-12-06, SYN-70); Bolna 2026-10-13 \"Some scheduled calls were not placed (India region)\""
+   ],
+   "task": "T2 messy 50-row CSV + T3 three-day recurring 10:00-19:00 IST schedule",
+   "pass_bar": "VP handles >=48/50 rows as the spec expects in <5 min with 0 manual edits; incumbent median <=40/50 or >15 min including header fixes",
+   "kill_bar": "Incumbent median >=45/50 rows correct and <5 min",
+   "predictions": [
+    "Bolna P04a-c",
+    "SAR-P04",
+    "VAP-P04",
+    "VAP-P05",
+    "RET-P04",
+    "RET-P05",
+    "EL-P03",
+    "EL-P04",
+    "SYN-P04",
+    "SYN-P05",
+    "SQS-P04",
+    "EXO-P04",
+    "EXO-P05"
+   ]
+  },
+  {
+   "id": "W3",
+   "hypothesis": "Lower reply gap on Indian PSTN because media and brain run in India and turn release is pause-aware.",
+   "incumbent_failure_evidence": [
+    "Retell US-West only; Indian users get \"user not join\" (RET-25, RET-54)",
+    "Vapi orchestration us-west-2, no India termination (VAP-20, VAP-42); forum: dashboard 575-1000 ms vs 3-4 s live (VAP-52)",
+    "ElevenLabs standard SIP signalling in us-central1 (EL-20); demo p50 3.75 s (l4b)",
+    "Sarvam demo p50 3.1 s browser-side vs <500 ms claim (SAR-35)",
+    "Bolna code holds each reply about 1.4 s (500 ms endpointing + 900 ms incremental delay, account phase)"
+   ],
+   "task": "Battery B on every vendor: 4 personas x 2 calls, >=30 clean turns per vendor, stereo at our Plivo edge",
+   "pass_bar": "VP clean-turn p50 at least 0.3 s below the best incumbent and p90 <=2.5 s, with cut-ins <=5%",
+   "kill_bar": "VP p50 not lower than the best India-hosted incumbent (Bolna, Sarvam, SquadStack, Exotel) by 0.3 s, or VP cut-ins above the incumbent median",
+   "caveat": "VP itself is unproven: cascade reply gaps 1.6-2.2 s (Flash-Lite) and 15-42% cut-ins in the lab (open.2026-10-19.turn-taking).",
+   "predictions": [
+    "Bolna P09a/b",
+    "SAR-P09",
+    "VAP-P09",
+    "RET-P09",
+    "EL-P08",
+    "SYN-P09",
+    "SQS-P10",
+    "EXO-P09",
+    "EXO-P10",
+    "RAD-P2"
+   ]
+  },
+  {
+   "id": "W4",
+   "hypothesis": "Hinglish turn-taking that never discards a short reply (\"haan\", \"nahi\", \"ruko\", \"bas\") and listens during the opening line.",
+   "incumbent_failure_evidence": [
+    "Bolna discards finals of <=N words spoken over the agent unless they exactly match an English stop phrase (BC-19); drops caller speech during the welcome (ACB-35)",
+    "Vapi ships 22 English acknowledgement and 20 English interruption phrases by default (XS-21)",
+    "ElevenLabs answered \"haan\"/\"hmm\" with \"Are you still there?\" on 4 of 16 short turns (l4b)",
+    "Sarvam demo cut into the 2.4 s elderly pause 2/2 and went silent under babble 2/2 (SAR-53)"
+   ],
+   "task": "Battery items short_hmm/short_haan/short_ok, the barge turns, pause_mid_1.6s and the 2.4 s elderly pause; plus 4 scripted short Hindi replies spoken over the agent",
+   "pass_bar": "VP handles >=90% of short replies correctly and stops within 600 ms on barge turns; incumbent median <=70%",
+   "kill_bar": "VP not better than the incumbent median on the same items (risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven)",
+   "predictions": [
+    "EL-P11",
+    "SAR-P10",
+    "SAR-P12",
+    "VAP-P09"
+   ]
+  },
+  {
+   "id": "W5",
+   "hypothesis": "Language hold on Hinglish, Hindi and Tamil-English, including numbers and times, against the non-Indian platforms.",
+   "incumbent_failure_evidence": [
+    "Retell: Marathi agent drifts back to English (t/2502, 330 views); Hindi digit \"छह\" missed (t/2713); Telugu and Bengali unsupported (t/1645)",
+    "Synthflow: Hindi is the only Indic language; Multilingual delivery English-biased (SYN-65)",
+    "Vapi replied in Gujarati to a Hinglish caller on 17 of 18 turns (l4b; configuration-dependent)",
+    "ElevenLabs accepts its English default voice on a Hindi agent (XS-24); its demo forced English, so the l4b English replies are not evidence (EL-54)"
+   ],
+   "task": "Battery B language-ID per agent turn (machine LID plus manual read) and the number/time content checks",
+   "pass_bar": "VP >=95% correct-language turns and >=90% number/time checks; better than Vapi, Retell, ElevenLabs and Synthflow",
+   "kill_bar": "Not a claim against Sarvam or SquadStack (CMP-08): drop W5 if VP is below either of them",
+   "predictions": [
+    "Bolna P11a/b",
+    "SAR-P11",
+    "RET-P10",
+    "EL-P02",
+    "SYN-P10",
+    "SQS-P11",
+    "EXO-P11"
+   ]
+  },
+  {
+   "id": "W6",
+   "hypothesis": "Failure explainability: a failed call is found in under a minute with a business-language reason, the carrier code kept, and a suggested action.",
+   "incumbent_failure_evidence": [
+    "Vapi: 638 engineering end codes (VAP-13)",
+    "Synthflow: end-reason labels keyed on raw Python exceptions and internal URLs (SYN-71); \"Bot fails to make calls with no explanation\" (Trustpilot 2024-07-17)",
+    "SquadStack: outcome label only, 10-day search window (SQS-18)",
+    "Bolna: 9 of 18 incidents were upstream Indian telephony with no carrier failover (BOL-40)",
+    "Exotel admits mislabelled outcomes and 29 s dead calls (EXO-58)",
+    "Radar: MyOperator now sells a human \"AI Agent Manager\" to find and fix failures (RAD-15)"
+   ],
+   "task": "T5: five induced failures (invalid row, our number rejects busy, answer-and-hang-up at 3 s, broken tool URL, out-of-window schedule); time to find each and a 0-2 actionability score",
+   "pass_bar": "VP <60 s per failure, 5/5 reasons correct, score 2 on >=4/5; incumbent median >2 min or score <=1",
+   "kill_bar": "Incumbent median <2 min with a correct, actionable reason on >=4/5",
+   "predictions": [
+    "Bolna P07",
+    "SAR-P07",
+    "VAP-P07",
+    "RET-P07",
+    "EL-P06",
+    "SYN-P07",
+    "SQS-P08",
+    "EXO-P07"
+   ]
+  },
+  {
+   "id": "W7",
+   "hypothesis": "Minutes from sign-up to the first ring on an Indian handset from an Indian CLI, self-serve.",
+   "incumbent_failure_evidence": [
+    "Vapi needs a second vendor (Twilio) and shows a +1 CLI (VAP-42/43)",
+    "Retell needs Persona KYC of a named person and sells US/CA numbers only (RET-12, RET-45)",
+    "Synthflow is review-gated from USD 30k/yr (SYN-03/04/40); SquadStack sign-in is allowlisted (SQS-70)",
+    "Exotel KYC takes 1-3 business days before calls beyond verified users (EXO-44)",
+    "Complaints: Bolna \"Booked Demo many times since last 1 month, but not callback\" (Trustpilot 2026-01-23); Exotel no AI-voice demo after a week (Trustpilot 2026-04-23)"
+   ],
+   "task": "T0 timed from the sign-up form to the first ring on our Plivo number; record the CLI series seen in the Plivo inbound webhook",
+   "pass_bar": "VP <=15 min to a ring from an Indian CLI on a BYO or pre-provisioned number; incumbent median >=45 min",
+   "kill_bar": "Bolna or Sarvam reach a ring from an Indian CLI in <=20 min",
+   "caveat": "VP cannot skip the tenant's own KYC and DLT/PE registration; the edge is the guided path and bring-your-own-carrier.",
+   "predictions": [
+    "Bolna P01/P02",
+    "SAR-P01/P02",
+    "VAP-P01/P02",
+    "RET-P01/P02",
+    "EL-P01",
+    "SYN-P01/P02",
+    "SQS-P01/P02",
+    "EXO-P01/P02"
+   ]
+  },
+  {
+   "id": "W8",
+   "hypothesis": "Fair, transparent billing: per-second or short pulses, one fee line, cost per campaign and contact, balance and spend cap on the API.",
+   "incumbent_failure_evidence": [
+    "Sarvam 60 s agent pulses: a 30 s call costs INR 7.40 per connected minute (SAR-38); Exotel PSTN 60 s pulses (EXO-35)",
+    "Retell scales billed duration above 4,000 prompt tokens and has burst on by default (RET-34); ElevenLabs bursting on by default at 2x (XS-27)",
+    "Bolna USD 0.02 platform fee ambiguity (BOL-35); spend cap by API key at 0 of 5 (XS-28)",
+    "Complaints: billing 107 of 459 coded Indian complaints (RAW-17); Bolna refund unanswered for months (Trustpilot 2026-02-25); ElevenLabs \"charging me credits for the AI agent's mistakes\" (2026-07-24)"
+   ],
+   "task": "T7 invoice audit: 10 calls each of 30, 45 and 90 s per vendor; compare debits and invoice lines with the rate card",
+   "pass_bar": "VP invoice equals its rate card within 1% and has the lowest effective INR/min on 30-90 s calls among at least 5 of 7 incumbents",
+   "kill_bar": "Buyer interviews do not rank billing fairness among their top 5 switching reasons",
+   "predictions": [
+    "SAR-P13",
+    "VAP-P10",
+    "RET-P11",
+    "EL-P10",
+    "EXO-P14",
+    "RAD-P1"
+   ]
+  },
+  {
+   "id": "W9",
+   "hypothesis": "Human support inside Indian business hours.",
+   "incumbent_failure_evidence": [
+    "Retell active support 9 AM-9 PM PST = 21:30-09:30 IST (RET-48)",
+    "Vapi: no response SLA below Core (VAP-56)",
+    "ElevenLabs support routes to an AI agent that cannot resolve billing (Trustpilot 2026-06-11)",
+    "Synthflow: SUPPORT is 19 of 21 low reviews (SYN-70); Bolna Trustpilot 4/4 one-star on support and refunds",
+    "Support is the top Indian complaint code (114 of 459, RAW-17)"
+   ],
+   "task": "T8: one real setup question filed at 11:00 IST on a weekday; time to first human reply",
+   "pass_bar": "Incumbent median >24 h against a VP target <2 h",
+   "kill_bar": "Incumbent median <4 h",
+   "caveat": "An operating promise, not product; it costs headcount and must be priced into the tiers.",
+   "predictions": [
+    "Bolna P13",
+    "EXO-P13"
+   ]
+  },
+  {
+   "id": "W10",
+   "hypothesis": "The stored config is what runs, and every dashboard action is on the API and MCP, so a chat agent can set up and run a campaign end to end.",
+   "incumbent_failure_evidence": [
+    "At 4 of 4 writable vendors an API-created agent stores or runs defaults that differ from docs or dashboard; 3 of 4 silently drop unknown fields (XS-07, XS-08)",
+    "No vendor lets an API key do everything the dashboard can (XS-16); Retell import/export are dashboard-only (RET-P08 note)",
+    "Synthflow silently ignores a GPT model value on non-enterprise plans (SYN-09)"
+   ],
+   "task": "T1 build by API and by the vendor copilot, read back, call, compare; then the chat builder runs T2-T6 without opening the dashboard",
+   "pass_bar": "VP: 0 silent drops and 0 default drift; all of T2-T6 done through chat",
+   "kill_bar": "An incumbent copilot (Sarvam Genie already builds, deploys and runs campaigns, SAR-03) completes T2-T6 without the dashboard",
+   "predictions": [
+    "SAR-P03",
+    "RET-P03",
+    "VAP-P03",
+    "EXO-P03"
+   ]
+  }
+ ]
+}

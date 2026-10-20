@@ -223,3 +223,76 @@ SAR-P09 got a note that its basis mixes a browser-side and a server-side number.
 - Added `evidence.2026-10-20.sarvam-dashboard-telemetry-us` with 4 edges, and a `teardown_lane_sarvam_verified` event.
 - No node was removed: none of the refuted claims (SAR-07, SAR-31) had its own node.
 
+
+
+## Verification (adversarial verifier, workflow wf_560edf6c-5d6)
+
+- Checked: 52; confirmed: 30; downgraded: 7; refuted: 2
+- Hit rate: 30 of 52 re-checked claims (58%) held without change. 46 of 52 (88%) hold in substance once corrected. 2 were refuted, 3 downgraded, 1 regraded and 1 split into an unknown.
+
+### Refuted
+
+- SAR-07: The invite gate retired on 2026-08-06 was described in the event catalogue as the gate for 'Coding Agents / Work Agents', not Voice Agents. The changelog start date marks when the changelog section began, not when self-serve opened. The claim is now graded unknown.
+- SAR-31: The bundle maps production to api.sarvam.ai (AWS, ELB k8s-vistaar) and staging to saas-staging-vistaar. Only the QA and stage01 hosts carry 'azure', and the Mixpanel proxy is on AWS (k8s-saasprodplatforma). Nothing shows Azure is the primary platform cloud. The claim is now graded unknown.
+
+### Downgraded
+
+- SAR-38 (observed -> inferred): The effective price per connected minute is computed from the rate card, not seen in billing (SAR-P13 tests billing). The 36 rows recompute exactly. The range was misstated: a 60-s call is INR 3.40-3.90, and 30-90 s calls that are not whole minutes are 4.40-7.40.
+- SAR-39b (inferred -> unknown): Split out of SAR-39. The self-hosted compute figure of INR 0.24-0.34/min and the 89-93% margin came from g4 proxies of different models (IndicConformer, Veena, Groq-class serving) whose throughput is assumed. The API-list COGS of INR 1.16-1.33 stays inferred.
+- SAR-29 (inferred -> unknown): Which open-weight models run in the voice stack was not observed. The API price list shows what Sarvam resells, and the one GLM routing report is about Work Agents/Cowork, a different product.
+- SAR-26 (inferred -> inferred (narrowed)): No WebRTC rules out only a LiveKit or Daily room on the web path. Pipecat-style server frameworks run behind custom WebSocket serializers, so client code cannot exclude them. The server-side framework is now stated as unknown.
+- SAR-20 (inferred -> vendor-claimed): The docs say outright that the analytics store is ClickHouse, and the Boards API returns CLICKHOUSE_ERROR. That is a vendor statement, not our inference.
+- SAR-40 (inferred -> inferred (narrowed)): 'Lowest Indian list price' is wrong: SquadStack quotes INR 2-5 and Ravan's enterprise tier is USD 0.02-0.04. The '5-10x compute cushion' rested on SAR-39b and did not match its own inputs. Kept: Sarvam's list price is 2.3-3.0x its own API list cost.
+- SAR-61/SAR-62 (observed/inferred -> observed/inferred (reframed)): Cart recovery, the one productised vertical, is a pre-purchase job, and the menu also has lead qualification and pre-approved loans. So 'lean/converging post-sale' does not hold. The overlap with VP is collections and EMI reminders specifically.
+
+### Notes
+
+The lane's report.md was never on disk; its own inbox event says the harness refused the write. The verifier created /home/user/sales-enabler/research/2026-10-20/teardown/sarvam/report.md: a provenance note, a findings index by dimension built from the verified claims.json, short sections on the three decisions and account-phase needs, and the Verification section. Detail is in /home/user/sales-enabler/research/2026-10-20/teardown/sarvam/verify.md.
+
+Re-checks run:
+- DNS through 2 DoH resolvers, saved to data/teardown/sarvam/verify/doh-recheck-2026-10-20.jsonl.
+- npm publish times, saved to data/teardown/sarvam/verify/npm-conv-ai-time-2026-10-20.json.
+- All 12,420 widget audio chunks decoded: none has a RIFF header. They are labelled audio/wav but are headerless PCM, about 100 ms each at 16 kHz.
+- All 36 price rows recomputed.
+- 162 docs pages grepped with word boundaries: TRAI appears once, as an Exotel NDNC failure-reason example.
+- The OpenAPI, bundle, event catalogue and HAR re-read.
+- 577 of 577 manifest hashes matched.
+
+Corrections with the grade kept:
+- SAR-04: team counts by owner are platform 202 and samvaad 158.
+- SAR-06: the org-profile step was dropped on 2026-08-07.
+- SAR-12: the TTS model (Bulbul V3/V4) is selectable per agent.
+- SAR-22: ELB IPs rotate, and api.sarvam.ai is also the dashboard's production API base.
+- SAR-24: the Azure/AWS split is corrected.
+- SAR-25: audio format corrected as above.
+- SAR-35: the comparison is not like-for-like, and 'same models' is not established.
+- SAR-37: marketing fees are Pro 2,000, Growth 10,000, Business 50,000.
+- SAR-41: sarvam-105b was raised on 2026-08-18 before the 10-10 cut.
+- SAR-44: the TRAI negative is corrected.
+- SAR-48: the 'spam-evasion' label is removed.
+- SAR-58: 'marketing vs docs disagree' does not hold.
+
+New claims:
+- SAR-63 (observed): the dashboard's main PostHog project records sessions to the US cloud (ui_host us.posthog.com; k.sarvam.ai CNAMEs to a cf-prod-us proxy). It records 100% of sessions, with inputs unmasked and network bodies and headers captured.
+- SAR-64 (inferred): this probably breaks the 'all data stays in India' claim for the dashboard, pending a logged-in check.
+- SAR-65 (inferred): the Cart Abandonment vertical auto-rents 10-digit numbers, while a promotional cart-recovery call needs 140xx.
+
+Predictions: all 14 are falsifiable. verifier_notes were added to P02 (split into a/b), P13 (score in credits) and P09.
+
+Inbox /home/user/sales-enabler/context/inbox/teardown-sarvam.json:
+- 10 nodes corrected. The price measure is now source model / proposed. The COGS node drops the 89-93% margin. The post-sale risk is narrowed. The REA rejection's 'broke' field is fixed.
+- Added evidence.2026-10-20.sarvam-dashboard-telemetry-us with 4 edges, plus a teardown_lane_sarvam_verified event.
+- Validated with nodeErrors: 0 errors, all edge ends exist. No node needed removal, because neither refuted claim had its own node.
+
+Other files:
+- claims.json was edited in place. Each re-checked claim carries a verification object, and the original text is kept as claim_before_verification.
+- 2 rows were appended to manifest.csv for the saved re-checks.
+
+Not re-checked: SAR-01, 02, 03, 05, 08, 10, 13, 55, 56, 57.
+
+Residual risks:
+- DNS was resolved from a US vantage only.
+- The raw round-2 WebSocket dumps are only in the ephemeral scratchpad.
+- SAR-63 shows configuration, not captured traffic.
+
+No git commit or push was made, and graph.json was not touched.

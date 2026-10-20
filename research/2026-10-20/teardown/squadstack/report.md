@@ -217,3 +217,86 @@ WHAT THIS MEANS FOR THE THREE DECISIONS
 - Claims: 69 {"observed": 45, "inferred": 11, "vendor_claimed": 12, "unknown": 1}
 - REA used: True
 - REA notes: REA (rea-agents@latest, rea 6.7.0) ran but produced no usable evidence. (1) 'npx -y rea-agents@latest inspect data/teardown/squadstack/har/ai-platform.har --format json' returned {code: target_unavailable, message: 'Cannot open artifact: unsupported binary format', constraint: file_format_rejected} on a Playwright 1.56 HAR with embedded content. (2) 'analyze-web-bundle http://127.0.0.1:9334 <targetId> --observation-ms 6000 --fetch-source-maps --format json' against headless Chromium 141 over CDP, on https://ai-platform.squadstack.ai/auth, printed nothing to stdout or stderr and was killed by the 280 s timeout. This matches the synthflow lane's timeout. (3) 'rea doctor' reports healthy:false: Hopper, Ghidra, IDA, jadx and kuna engines are missing; node 22.22.0 is OK. Fallbacks that worked: Playwright HAR plus request logs for the portal login, the AI-platform auth page, the homepage and the Vanta trust centre (including its GraphQL responses); the Next.js _buildManifest.js giving a 61-route map and 98 public chunks downloaded directly; JS bodies extracted from the HAR; string and endpoint extraction with python3 -I. No APK was analysed: the only Android app is the gig-worker app com.squad.run, and downloading it needs Google credentials. Status is recorded in data/teardown/squadstack/rea/rea-status.json and rea-doctor.json.
+
+---
+
+## Verification (adversarial verifier, 2026-10-20)
+
+Scope: I re-checked 36 claims. These were every observed or inferred claim on architecture, pricing, India plumbing or v2 (29), plus 7 surface or account-phase claims that feed inbox nodes (SQS-04, 10, 11, 16, 18, 68, 69). For each I re-opened the cited file or URL and re-ran string extraction with python3 -I; no downloaded code was run. I also made fresh public captures, with no login and no form, stored under data/teardown/squadstack/verify-*/ and listed in manifest.csv:
+- the app.osno.ai build (28 chunks);
+- the ai-platform route shells /ai-agents/new, /observability and /call-details (the server sends them before the client-side auth redirect), plus 20 chunks the lane had not captured, including the 518 KB agent-editor page chunk;
+- redirect headers for 4 URLs;
+- the GitHub org and lens-mcp pages, via WebFetch.
+
+The full log, with before and after text, is verification.json. claims.json carries a `verification` object on every re-checked claim. verify.md was not written because of the harness rule against report .md files; verification.json replaces it.
+
+Result:
+- 19 confirmed, 9 corrected in wording, 5 refuted in part, 2 downgraded, 1 upgraded, 7 claims added.
+- Grades before: 45 observed, 11 inferred, 12 vendor-claimed, 1 unknown (69 claims).
+- Grades after: 50 observed, 14 inferred, 12 vendor-claimed, 0 unknown (76 claims).
+
+### Refuted in part (corrected in claims.json)
+- **SQS-21, the TTS default and the STT list.** `h=["eleven_multilingual_v2"]` is a hide-list: the editor hides that model unless an agent already uses it. It is not the default. The TTS module's default-model constant is `eleven_flash_v2_5`. The array [sarvam, cartesia, squadstack_ws, arc_stt] is not an enumeration of STT providers. It is an internal-only filter, applied in both the TTS and STT pickers to users without `view_internal_voice_options`. arc_stt is an STT router: only its params carry fallback / best-latency / load-balance, fallback_chain, strict and weights. Provider option lists come from the server.
+- **SQS-33, REA.** analyze-web-bundle did produce output. rea-ai-platform-web-bundle.json was written at 18:32:51Z, 28 s after the 280 s timeout fired, by the orphaned child process. It is complete: 34 scripts parsed, 0 failures. Its evidence value is near zero: framework fingerprints, 1 route, 1 endpoint, and source maps "not_requested" despite --fetch-source-maps.
+- **SQS-41, the COGS headline.** The arithmetic reproduces on all 15 rows. The frame does not: Multilingual v2 is hidden legacy, not "the bundle default". On ElevenLabs Flash v2.5, COGS is INR 1.95-3.58 (mid 2.30-2.71). That is a 15-36% loss at INR 2 and a 23-34% margin at INR 3.5, not break-even. The in-call LLM line is a proxy: the editor names OpenAI, SimpliSmart, AWS Bedrock and OpenRouter as providers, so that line is unverified.
+- **SQS-49, the calling window.** Two layout chunks show a daily calling pause from 23:00 to 09:00: static_chunks_app_layout-d48c9dd2f46b1a7e.js, which the lane had downloaded, and the Osno layout. The window in code is therefore 09:00-23:00. That is wider than the marketed 9:30-20:30 and than the 10:00-21:00 default promotional band. Server enforcement was not observed.
+- **SQS-10, transfer.** The editor's call-closing scenarios trigger `transfer_call()`, and there is a "Live Seller Transfer" custom-scenario placeholder. So an agent-level transfer tool exists; its destination is not visible. The 301 on the old page was re-confirmed.
+
+### Downgraded (observed to inferred)
+- **SQS-23.** The SDK facts are observed. That the server is Pipecat is inferred from the client protocol; no server-side artifact was seen.
+- **SQS-27.** The GitHub listing has no saved copy; I re-read it with WebFetch: 82 repos, including django-*, DRF, celery-beat, pghero, terraform-aws-* and label-studio copies. The portal uses `csrftoken` / `x-csrftoken`. Together these support a Django backend but do not prove it.
+
+### Upgraded
+- **SQS-69, unknown to inferred.** Both builds ship `ENABLE_EMAIL_DOMAIN_RESTRICTION: true`. Sign-in passes only for squadstack.ai/.com addresses or allowlisted emails. Everyone else gets "Sign in is temporarily disabled for external users." Osno also needs a provisioned user with an expiry date. The gate is client-side, so the claim stays inferred.
+
+### Corrected in wording (substance holds)
+- **SQS-22:** the extraction model is the editor's default, not what production is known to run.
+- **SQS-24:** removed the unverified "Ozonetel serializer" claim. Plivo's trust-centre purpose is "to build Human-like Voice AI Agents".
+- **SQS-32:** "owned at most for ASR" overreached. An LLM hosted on SimpliSmart or Bedrock is possible; no in-house TTS constant was found.
+- **SQS-40:** added SquadStack's own Osno price ($0.04-0.08/min advertised).
+- **SQS-42:** added a ramp caveat. The "dial attempts" conclusion survives a 5x error.
+- **SQS-47:** the 10-digit rule applies to the DNC paste field. Lead-import validation was not seen.
+- **SQS-52:** "LLM calls route via OpenRouter" generalised from one default. Also, the trust centre says OpenAI and Gemini data is "stored exclusively in India".
+- **SQS-65:** the editor does have intra-call memory (state management with stages and memory_keys; "In-Call Memory"). There is no cross-call memory or Lift screen.
+- **SQS-68:** Osno is a second brand on the same code, and it is gated, not self-serve.
+
+### Confirmed
+SQS-04, 11 (strengthened: 0 AMD or voicemail matches in the editor chunk), 16, 18, 25, 26, 28, 29, 30, 34, 35, 37, 38, 39, 48, 50, 51, 54, 63.
+
+### Added (observed)
+- **SQS-70:** the allowlisted sign-in on both builds.
+- **SQS-71:** the 23:00-09:00 calling-pause notice.
+- **SQS-72:** call-closing tools: transfer_call, send_link, hangup_call, dnd_request, schedule_callback. The editor also has test call and chat, and inbound-number generation.
+- **SQS-73:** in-call LLM providers OpenAI, SimpliSmart, AWS Bedrock and OpenRouter. Summariser gpt-4o-mini by default; RAG on Gemini or SquadStack/Qdrant.
+- **SQS-74:** memory in code is intra-call only.
+- **SQS-75:** docs.squadstack.com 301-redirects to apidocs.squadstack.com.
+- **SQS-76:** Plug-N-Play, the only wallet flow, sells human tele-callers, not AI agents.
+
+### Text above that is now wrong
+- **HEADLINE:** read the TTS default, the STT list, "Orchestration is Pipecat" (inferred server-side) and "The backend is Django" (inferred) per the corrections above.
+- **Section 1:** "Plug-N-Play, a self-serve flow" sells human tele-callers. "Osno ... self-serve brand" is gated. "Transfer exists only as a managed hand-off" is refuted in part.
+- **Section 3:** "REA failed on both paths" is wrong: the CDP path finished late with near-empty output.
+- **Section 4:** the COGS table's first row label is wrong: Multilingual v2 is not the default. Add a Flash v2.5 row: INR 1.95-3.58, mid margin -15% to -36% at INR 2 and 23% to 34% at INR 3.5.
+- **Section 6:** "10-digit number validation" applies to the DNC field. Add the 23:00-09:00 pause and the in-call `dnd_request()`.
+- **Section 8:** "No memory screen" should read "intra-call memory exists; no cross-call memory".
+- **Decision 3:** add that SquadStack's builders are closed today, and that transfer belongs on the parity floor, not on VP's edge list.
+
+### Predictions
+All 14 are falsifiable. I left the pre-registered text unchanged.
+- P03, P05 and P07 rest on premises corrected above:
+  - P03: field list;
+  - P05: 9:30-20:30, whereas code shows 09:00-23:00, so as written P05 will probably score false;
+  - P07: a transfer tool exists, so p=0.6 is too high.
+- P02's premise is now observed, so p of about 0.95. It also cannot be run without breaching the Terms; score it from the bundle.
+- P12 (p=0.5, weak basis) and P13 (a three-way OR) carry little information. Tighten P13 to one price structure before scoring.
+- P10's basis cites "Gemini Flash TTFT", but the in-call LLM was not observed.
+
+### Effect on the three decisions
+- **Pre-sale vs post-sale:** the compliance wedge is stronger. SquadStack has no 140/1600, and its window leaves 21:00-23:00 and 09:00-10:00 open for promotional calls. But SquadStack does capture in-call DND.
+- **Parity floor:** add an agent transfer tool, call-closing triggers, in-call DND, callback scheduling, multi-stage state, STT fallback routing, LLM hot-swap and fallback, and test call/chat with inbound test numbers.
+- **Where VP wins:** "minutes to first live call" and "real-time AMD" are stronger. Drop "transfer". On Flash TTS, SquadStack can price at INR 3.5 with a healthy margin, so VP's case cannot rest on SquadStack being underwater at INR 2-3.5.
+
+### Hygiene
+- The Osno chunk hard-codes 15 external email addresses. They stay in the gitignored raw file only and are not reproduced anywhere.
+- The Lens key was not reproduced or used.
+- Terms are not the constraint: the owner overrode vendor terms (directive.2026-10-20.terms-override). The kept line that matters is "no bypassing authentication" (decision.2026-10-20.teardown-lines). The sign-in allowlist (SQS-70) is therefore a hard stop: a team@vyakti.ai account will not get in unless SquadStack provisions access under VP's real identity. Leave SquadStack and Osno off the Instinct account-setup list unless the owner approves a sales/demo request. SQS-67 and the account-phase open question were annotated to match.

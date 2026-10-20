@@ -286,3 +286,83 @@ Price is not a durable wedge (82-97% margin). Do not compete on voice quality, w
 - **analyze-web-bundle:** not run, because the vapi lane recorded it running more than 5 minutes at about 6 GB RSS with no output.
 
 Every architecture fact in this lane came from our own reading: SDK source, DNS-over-HTTPS matched to GCP cloud.json and ARIN RDAP, the HAR, and string extraction from the signed-out bundle. REA confirmed none of it independently.
+
+
+## Verification (adversarial verifier, workflow wf_560edf6c-5d6)
+
+- Checked: 37; confirmed: 34; downgraded: 2; refuted: 1
+- Hit rate: 34/37 (92%) of the re-checked claims kept their grade and substance. Only 18/37 (49%) were exactly right as written: 15 needed corrected counts, narrower wording, caveats or withdrawn evidence.
+
+### Refuted
+
+- EL-23: Sub-claim refuted, claim corrected. The RAG embedding models e5_mistral_7b_instruct and multilingual_e5_large_instruct are intfloat open weights on Hugging Face under MIT (created 2023-12-20 and 2024-02-08; data/teardown/elevenlabs/verify-2026-10-20/hf/). They are not ElevenLabs' own, so 'only the LLM is third-party by default' is false. The first-party ASR, TTS and turn-model enums are confirmed.
+
+### Downgraded
+
+- EL-21 (inferred -> unknown): The evidence shows only that the inbound SIP signalling address (sip.rtc.elevenlabs.io) is one us-central1 IP. That holds for every client subnet, Indian ones included (ECS scope /0, re-checked). The same SIP doc says SIP servers are distributed, outbound SIP comes from varying IPs (lines 268-271) and RTP uses dynamic IPs (line 310), so where media is anchored is not observed. The agent-runtime region is not visible either (global anycast LB). US hosting and residency 'may reduce latency' are vendor claims. The TRAI rule comes from Vapi's and Plivo's docs. The ~200-250 ms per-turn penalty is now a hypothesis for EL-P08.
+- EL-33 (inferred -> unknown): Every COGS component is an analogue: other vendors' models on rented GPUs (g4) plus LiveKit Cloud's retail price. None is an ElevenLabs observation. The model leaves out burst headroom (3x concurrency), free tier, the default-on backup-LLM cascade, the turn model, RAG and egress. The corpus has no ElevenLabs cost or margin data. 'Could price near Sarvam and stay profitable' cannot be falsified from public data. Kept as an analogue hypothesis band.
+
+### Notes
+
+REPORT.MD: the lane never wrote research/2026-10-20/teardown/elevenlabs/report.md, although its task list marks it done. My attempt to create it, holding a stub plus the Verification section, was blocked by the harness ("Subagents should return findings as text"). I did not work around that. /home/user/sales-enabler/research/2026-10-20/teardown/elevenlabs/verify.md is the Verification section of record; the main loop should paste it into report.md when the lane report is written.
+
+SCOPE: I re-checked all 27 observed or inferred claims in architecture, pricing, India and v2, plus 10 claims they depend on (EL-06, 07, 08, 09, 11, 13, 14, 15, 37, 45). That is 37 of 56. The rest were not re-checked.
+
+GRADES in claims.json: before, 44 observed, 9 inferred, 3 vendor-claimed. After, 44 observed, 7 inferred, 3 vendor-claimed, 2 unknown. Every touched claim has a `verify` block that keeps the original text and grade.
+
+VERIFICATION, every change:
+- EL-21 and EL-33: downgraded to unknown (reasons above).
+- EL-23: sub-claim refuted (embeddings).
+- EL-06 and EL-08: counts corrected. code/bundle_endpoints.py stores (method,path) and ('?',path) keys separately, so any path both regexes match is counted twice. Outbound-campaigns has 16 paths (18 operations), not 23. Unpublished convai paths are 204 unique (243 operations) out of 335, not 326 of 568. The substance stands. Added: a dashboard page route /outbound-campaigns; useSuppressLead is a DELETE on a lead.
+- EL-07: given a falsifiable horizon (public by 2027-01-31).
+- EL-18: narrowed. LiveKit-on-GCP is strengthened: livekit-server returns 'OK' at / and 401 'no permissions to access the room' at /rtc/validate, with 'via: 1.1 google', on a Cloud DNS zone with no CNAME. Removed 'own orchestration, not Pipecat/Vocode', since nothing observed separates it from LiveKit Agents.
+- EL-20: strengthened. There is no geo-DNS: Jio, Airtel and Azure Central India subnets get identical answers.
+- EL-22: frame counts corrected (rx 112 with 94 audio; tx 279). Only 3 of 16 pings were captured, and they include the proxy hop. The page set language 'en'.
+- EL-25: Sentry is on the marketing site only. Identity Toolkit could be Firebase Auth or Identity Platform.
+- EL-26: part upgraded to observed. When the embedder passes no userId, the widget uses the FingerprintJS visitorId as the conversation user_id.
+- EL-31: arithmetic holds; caveats added. The LLM band uses flash-lite, not the default gemini-2.5-flash. Exotel's rate is quote-gated, so Plivo's was assumed. The Plivo route may be closed on a US-SIP workspace. The ratio to Sarvam is 2.1-2.6x. The headline holds because the INR 7.60 fee alone is above the INR 3.5-7 band.
+- EL-32: ratio is 3.3-3.9x.
+- EL-39: 'limited migration', not 'no migration'.
+- EL-40: scope stated. The lane's llms-full.txt is a redirect to llms.txt, so only 258 of 804 page bodies were grepped; all 804 titles were also checked.
+- EL-41: the widget has a configurable terms/consent dialog. Phone calls get nothing injected.
+- EL-51: there is one public mention of 'user memories' (versioning doc).
+- EL-52: initiation webhooks serve all inbound channels, not only Twilio.
+- EL-54: demo evidence withdrawn, because the public demo page forces language 'en'.
+- Confirmed as written: EL-09, 11, 13, 14, 15, 16, 17, 19, 24, 27, 28, 29, 37, 38, 43, 44, 45, 53.
+
+NEW FINDINGS from verification:
+- Indian buyers on standard workspaces always get the us-central1 SIP signalling address.
+- The widget's default end-user id is a browser fingerprint. That matters for v2 memory and identity.
+- Language results from the public demo test the page's configuration, not the platform. This applies to l4b too.
+- The docs say 'Hosted by ElevenLabs' LLMs and default customer data are US-hosted.
+- None of the 25 status incidents involved India residency.
+- bundle_endpoints.py double-counts, so other lanes that reused it may report inflated counts.
+
+PREDICTIONS (predictions.json left unedited because it is pre-registered; notes in verify.md): all are falsifiable, but five need fixing before the run.
+- P02 is near-tautological on a default English agent. It needs a coding rule and a configured-agent companion.
+- P03 and P11 need per-category definitions of 'mishandled'.
+- P08's residency clause is not testable without Enterprise, and its basis should separate the Exotel WebSocket route from the SIP route.
+- P10 is low-information; it should add the 5% silence rate.
+
+INBOX (context/inbox/teardown-elevenlabs.json): no node was refuted outright, so none was removed. Changes:
+- Corrected the SIP-region evidence: the Iowa media inference is replaced by an observed / vendor-claimed / unknown split.
+- Corrected the counts in the hidden-campaigns evidence and the asset value. The asset value now names the double-count and its fix.
+- In the all-in-price measurement, the decision rationale and the risk, the 82-97% margin is restated as an unverified analogue estimate.
+- Memory-loop node: added the one public mention and the fingerprint user_id.
+- Open-question closes_when now lists the prediction fixes.
+- Renamed asset.2026-10-20.bundle-vs-openapi-diff to asset.2026-10-20.elevenlabs-bundle-vs-openapi-diff, per the lane id rule.
+- Added evidence.2026-10-20.elevenlabs-verification (path verify.md), 4 edges and 1 event.
+- Result: 13 nodes, no dangling edges, and every node and event passes scripts/lib/context-schema.mjs nodeErrors in a dry run. graph.json is untouched and nothing is committed.
+
+FILES:
+- /home/user/sales-enabler/research/2026-10-20/teardown/elevenlabs/claims.json (edited in place)
+- /home/user/sales-enabler/research/2026-10-20/teardown/elevenlabs/verify.md
+- /home/user/sales-enabler/research/2026-10-20/teardown/elevenlabs/manifest.csv (37 verify rows appended; 3,846 rows now)
+- /home/user/sales-enabler/research/2026-10-20/teardown/elevenlabs/code/verify_bundle_check.py
+- /home/user/sales-enabler/research/2026-10-20/teardown/elevenlabs/code/verify_ipmatch.py
+- /home/user/sales-enabler/data/teardown/elevenlabs/verify-2026-10-20/ (dns/, http/, hf/, docs-full/)
+- /home/user/sales-enabler/context/inbox/teardown-elevenlabs.json
+
+BOUNDARIES: public GETs only (DoH, three LiveKit host GETs without a token, the Hugging Face API, the docs index). No sign-up, token fetch or demo session.
+
+NOT VERIFIED: EL-01 to 05, 10, 12, 30, 34-36, 42 and 46-50, plus any India-vantage latency.
