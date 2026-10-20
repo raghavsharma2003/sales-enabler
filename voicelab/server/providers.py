@@ -386,6 +386,19 @@ async def gemini_tts(http, model, voice, text, style, usage, timing):
     finally:
         r.release()
 
+_OR_BAL = {'t': 0.0, 'usd': None}
+async def or_balance(http):
+    """OpenRouter account balance in USD (total credits - total usage), cached 2 minutes; None if unknown."""
+    if time.time() - _OR_BAL['t'] < 120: return _OR_BAL['usd']
+    try:
+        async with http.get('https://openrouter.ai/api/v1/credits', headers={'Authorization': 'Bearer ' + env('OPENROUTER_API_KEY', '')},
+                            timeout=aiohttp.ClientTimeout(total=8)) as r:
+            d = (await r.json()).get('data') or {}
+            _OR_BAL.update(t=time.time(), usd=float(d['total_credits']) - float(d['total_usage']))
+    except Exception:
+        _OR_BAL.update(t=time.time() - 90, usd=None)            # retry soon; an unknown balance never blocks a call
+    return _OR_BAL['usd']
+
 async def or_tts(http, model, voice, text, instructions, usage, timing):
     """Async generator of 24 kHz PCM from a Gemini TTS model through OpenRouter's speech endpoint. The audio arrives
     whole (no progressive streaming); 'instructions' carries the delivery style, never the text."""

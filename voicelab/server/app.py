@@ -254,6 +254,18 @@ def prepare(cfg):
     if err: return cfg, preset, err
     return cfg, preset, None
 
+OR_MIN_USD = 0.30
+def uses_openrouter(p, cfg):
+    if p.get('s2s'): return False
+    return BRAINS[cfg.get('brain') or p['brain']]['host'] == 'or' or TTS[p['tts']]['kind'] == 'or_tts'
+async def or_check(p, cfg):
+    """A stack that runs on OpenRouter needs credit for the whole call: refuse up front rather than die mid-call."""
+    if p is None or not uses_openrouter(p, cfg): return None
+    bal = await pv.or_balance(LAB.http)
+    if bal is not None and bal < OR_MIN_USD:
+        return f"OpenRouter credit is nearly used up (${bal:.2f} left), so stacks that run through OpenRouter can't start. Top up OpenRouter or pick another stack."
+    return None
+
 def preflight(p, cfg):
     """Refuse a call up front when one of its own models cannot serve it (no swaps mid-call, so check first)."""
     need = []
@@ -300,6 +312,7 @@ async def ws_call(req):
         if cfg.get('t') != 'start': await ws.send_json({'t': 'error', 'msg': 'expected start'}); return ws
         cfg.pop('line', None); cfg.pop('_preset', None)
         cfg, preset, err = prepare(cfg)
+        err = err or await or_check(cfg.get('_preset') or preset, cfg)
         if err: await ws.send_json({'t': 'error', 'msg': err}); return ws
         call = make_call(LAB, ws, cfg); LAB.calls[call.id] = call
         await ws.send_json(ready_msg(call, preset))
@@ -361,6 +374,7 @@ async def phone_call(req):
     if to is None: return web.json_response({'error': 'Add and verify your number first'}, status=403)
     if not phone.NUMBERS.count_call(to): return web.json_response({'error': f'{phone.Numbers.DAILY_CALLS} calls to this number today is the lab limit'}, status=429)
     cfg, preset, err = phone_cfg(d, 'out')
+    err = err or await or_check(cfg.get('_preset') or preset, cfg)
     if err: return web.json_response({'error': err}, status=400)
     s = phone.SESSIONS.new(cfg, 'out', to)
     err = await phone.dial(LAB.http, s)
@@ -374,6 +388,7 @@ async def phone_dialin(req):
     frm = phone.NUMBERS.resolve(d.get('from_id'))
     if frm is None: return web.json_response({'error': 'Add and verify your number first'}, status=403)
     cfg, preset, err = phone_cfg(d, 'in')
+    err = err or await or_check(cfg.get('_preset') or preset, cfg)
     if err: return web.json_response({'error': err}, status=400)
     for old in list(phone.SESSIONS.by_token.values()):        # one armed dial-in per phone: the newest wins
         if old['dir'] == 'in' and old['state'] == 'waiting' and old.get('from') == frm:
