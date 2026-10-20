@@ -12121,6 +12121,16 @@
    "date": "2026-10-20",
    "title": "Owner clarification (correcting a misreading): Opus 5.5 at extra-high is for the main chat only. Workflows, subagents and parallel agents get the model and effort the use case needs, by how much strength, intelligence and effort it requires.",
    "quote": "opus 5.5 extra high in this main chat rest places for workflows and sub and parallel agents choose the model depending on the usecase"
+  },
+  {
+   "id": "decision.2026-10-20.account-restart-opus55",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-20",
+   "title": "Owner judged the first authorized-surface run under-powered and asked for a restart on Opus 5.5 (Sonnet 5.5 at least if Opus errors). Stopped wf_1e4d0167-0c8 (nothing had finished) and relaunched as wf_b9977e22-228 with no model override, so every agent inherits the session model claude-opus-5-5; effort xhigh for the Bolna ground-truth lane and the synthesis, high for the four vendor API/SDK lanes; any agent that dies on a terminal error reruns once on Sonnet 5.5 (labelled :sonnet-fallback).",
+   "rationale": "Owner instruction for this run; inheriting the session model is the most reliable way to pin Opus 5.5, and the fallback keeps a lane from silently disappearing.",
+   "reverse_if": "Fallback labels show Opus 5.5 failing systematically (then run the lanes on Sonnet 5.5 deliberately), or the owner redirects."
   }
  ],
  "edges": [
@@ -21520,6 +21530,16 @@
    "from": "directive.2026-10-20.model-clarified",
    "to": "decision.2026-10-20.model-selection",
    "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-20.account-restart-opus55",
+   "to": "decision.2026-10-20.account-authorized-launch",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-20.account-restart-opus55",
+   "to": "directive.2026-10-20.model-clarified",
+   "relation": "informed-by"
   }
  ]
 }
