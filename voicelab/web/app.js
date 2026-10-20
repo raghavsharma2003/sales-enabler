@@ -60,7 +60,9 @@ function seededShuffle(arr, seed) {
   const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { h = Math.imul(h ^ (h >>> 13), 1274126177); const j = Math.abs(h) % (i + 1); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-function blindOrder() { return seededShuffle(presets().filter((p) => p.enabled).map((p) => p.id), S.name.toLowerCase()); }
+// the blind tour covers the newest round only (round 2: the human-conversation brief); "Pick a stack" still has them all
+function tourPresets() { const r = Math.max(0, ...presets().map((p) => p.round || 0)); return presets().filter((p) => p.enabled && (p.round || 0) === r); }
+function blindOrder() { return seededShuffle(tourPresets().map((p) => p.id), S.name.toLowerCase()); }
 function letter(i) { return String.fromCharCode(65 + i); }
 function rated(pid) { return S.calls.some((c) => c.preset === pid && c.tester === S.name && c.rating); }
 function blindCurrent() {
@@ -284,6 +286,7 @@ function onMsg(d) {
     case 'cap': addCap(d); break;
     case 'cost': $('s-inr').textContent = '₹' + d.inr.toFixed(2); $('s-rpm').textContent = d.secs > 20 ? '₹' + d.inr_per_min.toFixed(2) : '…'; break;
     case 'error': $('callerr').textContent = d.msg; break;
+    case 'agent_hangup': $('callerr').innerHTML = '<span style="color:var(--ink)">She ended the call.</span>'; break;
     case 'ended': L.summary = d.summary; L.ended = true; setCallUI(false); cleanup(); showRate(); break;
     case 'phone_end': L.ended = true; setCallUI(false); cleanup(); if (d.why === 'cancelled') $('callerr').textContent = ''; break;
   }

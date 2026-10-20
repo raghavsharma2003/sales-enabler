@@ -327,7 +327,9 @@ async def gemini_tts(http, model, voice, text, style, usage, timing):
     """Async generator of 24 kHz PCM chunks from Gemini TTS, streamGenerateContent (the path g5 measured at 0.86-1.1 s
     first byte from India; the Interactions API with L16 did not stream progressively, 3.8-4.9 s, lab 2026-10-19).
     A delivery note becomes the g5 'Say in a ... tone:' prefix, which g5 checked is not read aloud."""
-    prompt = f'Say in a {style} tone: {text}' if style else text
+    # 3.8 TTS reads its text verbatim: the old 'Say in a ... tone:' prefix was spoken aloud on real calls (testers,
+    # 2026-10-19). Style belongs in the Interactions API's speech_metadata; this path sends the words only.
+    prompt = text
     body = {'contents': [{'parts': [{'text': prompt}]}],
             'generationConfig': {'responseModalities': ['AUDIO'], 'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': voice}}}}}
     timing.setdefault('req', time.perf_counter())

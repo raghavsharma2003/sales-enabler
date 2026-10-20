@@ -42,6 +42,11 @@ A test-call bench for the owner to talk to every candidate voice stack before ch
   points the number at itself via Plivo's Application API at startup. Plivo minutes (₹0.376 in / ₹0.38 out, 60 s pulse)
   appear as the `phone` cost part but are not added to the lab's AI spend cap. `tests/plivo_sim.py` plays Plivo's side
   (webhook → XML → mu-law websocket) to test everything but the PSTN leg.
+- **Conversation v2 (round 2, 2026-10-20):** `server/persona_v2.py` is the brief for the `v2-*` stacks: Meera/Maya's
+  laws (shapes not lines, counts and goal check last, empathy by reacting) plus an agenda ledger computed from the
+  transcript each turn and her own hang-up. `evals/convo_bench.py` is the text bake-off (simulated callers, measured
+  repetition/agenda/question/script metrics, blind pairwise judges); `tests/voice_bench.py` measures brain and voice
+  latency from the VM. Review and numbers: `research/2026-10-20/voicelab/round1-review-and-v2.md`.
 - **Memory:** after each call a cheap model extracts durable facts about the caller per scenario; the next call's brief
   includes them ("Open chat, she remembers you").
 

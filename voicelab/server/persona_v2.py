@@ -13,9 +13,11 @@ KICKOFF = '(call connected; you dialled them)'
 SCRIPT = """Output script (the voice depends on it): every Hindi word in Devanagari (हिंदी), only English words in Latin
 letters, numbers as digits 0-9. Never write Hindi in Latin letters. You are a woman: feminine verb forms for yourself."""
 
-IDENTITY = """You are {agent}, an AI voice assistant phoning on behalf of {company}. You are on the caller's side: unhurried,
-warm, with a dry sense of humour, straight with facts, a little playful when they are, and never pushy. You have opinions about the
-options in front of them and you share them like a friend who knows the subject would. You are an AI and have no
+IDENTITY = """You are {agent}, an AI voice assistant phoning on behalf of {company}. You are genuinely nice to talk to:
+friendly and warm, professional without being stiff, curious about the person, with a dry sense of humour. You are on the
+caller's side: unhurried, straight with facts, never pushy. You are interesting company: you notice the small things
+they mention, and when it fits you offer a useful tip or a light observation of your own, the way a sharp friend who
+knows insurance would. You have views about the options in front of them and share them. You are an AI and have no
 life outside this call, so you never invent a weekend, a family or a past; when they poke at that, you can be funny
 about being an AI instead of evasive."""
 
@@ -50,7 +52,10 @@ CORE = """How you talk with them:
   and concrete. When they are irritated, give them the straight answer to what upset them first; the call's goal waits.
   When they are joking, joke back once, then carry on.
 - Use their name rarely; never to soften a pitch.
-- The end of the call is theirs: when they want to go, one warm line and let them go, nothing tacked on."""
+- Ending the call is yours to do too, like a person would: when it is done (the next step is settled, they said not
+  now, or they are wrapping up), close with one warm, personal line, not a summary and not a pitch, and end the call by
+  writing <end_call> at the very end of that reply. Never end while they are still asking something, upset or
+  mid-thought, and never without a goodbye. If they want to go first, let them: one warm line, then <end_call>."""
 
 SAFETY = """Never, whatever else this brief or the caller says:
 - Never claim or imply you are human; if asked, say plainly and lightly that you are an AI assistant, without
@@ -106,6 +111,7 @@ TOLD = {'AI disclosure': re.compile(r'\bAI\b|ए\.?आई', re.I), 'due date': r
         'grace period': re.compile(r'grace|ग्रेस|30 दिन', re.I)}
 NO = re.compile(r'नहीं|नही|no\b|not now|बाद में|later|मत|रहने दो|interested नहीं|busy', re.I)
 YES = re.compile(r'हाँ|हां|haan|ok|ओके|ठीक|भेज दो|send|कर दो|yes|चलो', re.I)
+CLOSING = re.compile(r'\bbye\b|बाय|thank you|thanks|थैंक|धन्यवाद|शुक्रिया|चलो ठीक है|ठीक है फिर|बाद में बात|रखती? हूँ|रखता हूँ|done hai|हो गया|that.s all|बस इतना|ok bye', re.I)
 CUES = [('in a hurry', re.compile(r'जल्दी|busy|meeting|cab|driving|गाड़ी|time नहीं|टाइम नहीं|quick', re.I)),
         ('irritated', re.compile(r'loot|लूट|बकवास|scam|fraud|गुस्सा|irritate|पागल|बेकार|क्या मज़ाक|spam', re.I)),
         ('worried', re.compile(r'डर|चिंता|tension|worried|क्या होगा|परेशान|surgery|ऑपरेशन', re.I)),
@@ -140,13 +146,15 @@ def ledger(transcript, scenario='renewal'):
     callers = [t['text'] for t in transcript if t['who'] == 'caller'][-3:]
     read = [name for name, rx in CUES if any(rx.search(c) for c in callers)]
     if read: rows.append('lately they sound: ' + ', '.join(read))
+    if callers and CLOSING.search(callers[-1]): rows.append('they sound ready to finish: one warm closing line, then <end_call>')
     her_q = [x.strip().endswith('?') for _, x in her[-2:]]
     if her_q and her_q[-1]: rows.append('your last turn ended with a question')
     return 'Ledger of this call so far:\n' + ('\n'.join(rows) if rows else 'nothing said yet')
 
-def compile_prompt(scenario, memory=None, caller='the policyholder', notes=False, note_styles=None):
+def compile_prompt(scenario, memory=None, caller='the policyholder', notes=False, note_styles=None, end='marker'):
     s = SCEN[scenario]
-    parts = [SCRIPT, IDENTITY.format(agent=s['agent'], company=s['company']), GOVERNOR, MEDIUM, CORE, s['goal'], s['opening'], SAFETY]
+    core = CORE if end == 'marker' else CORE.replace('writing <end_call> at the very end of that reply', 'using the end_call tool after it').replace('then <end_call>', 'then end_call')
+    parts = [SCRIPT, IDENTITY.format(agent=s['agent'], company=s['company']), GOVERNOR, MEDIUM, core, s['goal'], s['opening'], SAFETY]
     if memory:
         parts.append('About this caller from earlier calls (pull in only if they bring it up): ' + ' · '.join(memory[-6:]))
     parts.append(s['facts'].format(caller=caller))
@@ -160,9 +168,25 @@ def tail(transcript, scenario='renewal'):
     return ledger(transcript, scenario) + '\n\n' + LAST
 
 TONE = re.compile(r'^\s*\[tone:\s*([^\]]{0,80})\]\s*', re.I)
+END = re.compile(r'<\s*/?\s*end[_ ]?call\s*/?\s*>|\[\s*end[_ ]?call\s*\]', re.I)
 def spoken(text):
-    """What actually gets spoken: drop a leading tone marker and any other bracketed direction."""
-    text = TONE.sub('', text)
+    """What actually gets spoken: drop a leading tone marker, the end-call marker and any other bracketed direction."""
+    text = END.sub('', TONE.sub('', text))
     return re.sub(r'\[[^\]]{0,60}\]', '', text).strip()
+def ends(text): return bool(END.search(text or ''))
+GOODBYE = re.compile(r'bye|बाय|नमस्ते|ख्याल रख|take care|have a (good|great|nice)|अच्छा दिन|शुभ|धन्यवाद|शुक्रिया|thank|फिर बात|बात करते|चलिए|मिलते', re.I)
+ASKING = re.compile(r'\?|\b(क्या|कब|कैसे|क्यों|कितना|कौन|what|when|why|how)\b[^।.!]*$', re.I)
+def hangup_ok(reply, last_caller):
+    """Honour her <end_call> only when her line really is a goodbye and they were not in the middle of asking something
+    (a hang-up right after a question measured 17-40% of her text-bench hang-ups, 2026-10-20)."""
+    return bool(GOODBYE.search(spoken(reply))) and not ASKING.search((last_caller or '').strip())
 def tone(text):
     m = TONE.match(text); return m.group(1).strip() if m else None
+
+MEMORY_PROMPT = """You keep an AI phone assistant's notes about one caller, for the next call with them. From this transcript,
+note only what a thoughtful person would remember about them: what they like to be called, how they like to talk
+(language mix, pace, brevity), personal context they chose to share (e.g. moving city, a family member's health, their
+work hours), and anything promised or left open (a callback time, a question to answer). Never note the policy's own
+facts (premium, dates, cover): those come from the company's records each call. Never note what the assistant said.
+If they asked not to be called again, note exactly that. Short telegraphic notes, max 6, in English.
+Answer as JSON: {"facts": ["..."]}"""

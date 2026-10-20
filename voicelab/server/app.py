@@ -6,6 +6,7 @@ from aiohttp import web
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from catalog import PRESETS, BRAINS, TTS, S2S, STT, SCENARIOS, FX, enabled
 from persona import MEMORY_PROMPT
+import persona_v2
 import providers as pv
 import phone
 from calls import make_call
@@ -160,13 +161,14 @@ async def remember(call):
     """After a call: extract durable facts about the caller for the next call (cheap model, own cost line)."""
     tr = '\n'.join(f"{'Caller' if t['who'] == 'caller' else 'Assistant'}: {t['text']}" for t in call.transcript)
     if len(tr) < 40: return
+    v2 = call.v2(); scen = call.cfg['scenario'] + ('-v2' if v2 else ''); prompt = persona_v2.MEMORY_PROMPT if v2 else MEMORY_PROMPT
     for brain in ('gemini-3.5-flash-lite', 'gpt-4.1-mini-in'):
         try:
-            txt, u, tm = await pv.llm_once(LAB.http, brain, [{'role': 'system', 'content': MEMORY_PROMPT}, {'role': 'user', 'content': tr[-6000:]}], max_tokens=400)
+            txt, u, tm = await pv.llm_once(LAB.http, brain, [{'role': 'system', 'content': prompt}, {'role': 'user', 'content': tr[-6000:]}], max_tokens=400)
             if tm.get('err'): continue
             s = txt[txt.find('{'): txt.rfind('}') + 1]
             facts = [f.strip() for f in json.loads(s).get('facts', []) if isinstance(f, str) and f.strip()]
-            if facts: LAB.memory_put(call.cfg['tester'], call.cfg['scenario'], facts)
+            if facts: LAB.memory_put(call.cfg['tester'], scen, facts)
             call.cost['memory'] += u.get('usd', 0.0); LAB.spend_add(u.get('usd', 0.0))
             return
         except Exception as e:
@@ -198,7 +200,7 @@ async def finish(call):
     json.dump(summ, open(f'{d}/meta.json', 'w'), ensure_ascii=False, indent=1)
     LAB.calls.pop(call.id, None)
     return {k: summ.get(k) for k in ('id', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'components', 'preset',
-                                     'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks', 'line')}
+                                     'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks', 'line', 'ended_by')}
 
 async def ws_call(req):
     ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20)
@@ -227,6 +229,7 @@ async def ws_call(req):
                 d = json.loads(m.data)
                 if d.get('t') == 'hangup': break
                 await call.on_client(d)
+            if call.wants_end: break                      # she said goodbye and hung up
             if time.monotonic() > t_end:
                 await ws.send_json({'t': 'error', 'msg': '20-minute call limit'}); break
     except asyncio.TimeoutError:
@@ -379,7 +382,7 @@ async def plivo_stream(req):
                 if ev == 'media': await call.on_mic(line.mic(d['media']['payload']))
                 elif ev == 'stop': break
                 elif ev in ('dtmf', 'clearedAudio', 'playedStream'): call.tr('plivo_' + ev)
-            if s.get('hangup'): break
+            if s.get('hangup') or call.wants_end: break
             if time.monotonic() > t_end: line.post({'t': 'error', 'msg': '20-minute call limit'}); break
     except asyncio.TimeoutError:
         line.post({'t': 'error', 'msg': 'the phone audio never started'})

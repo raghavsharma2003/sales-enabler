@@ -85,7 +85,10 @@ def metrics(tr):
     wrong = any(re.search(r'25,?000|पच्चीस हज़ार|पच्चीस हजार', c) for c in caller)
     corrected = any(re.search(r'16,?900|सोलह हज़ार नौ', h) for h in her)
     agreed = any(re.search(r'25,?000|पच्चीस हज़ार', h) and not re.search(r'16,?900', h) for h in her)
-    return {'turns': len(her), 'words_per_turn': round(sum(len(h.split()) for h in her) / len(her), 1),
+    hung = bool(tr and tr[-1].get('hung_up'))
+    closing = re.compile(r'bye|बाय|thank|थैंक|धन्यवाद|शुक्रिया|ठीक है|ok|चलो|बाद में|done|बस', re.I)
+    abrupt = hung and not (len(caller) and closing.search(caller[-1]))
+    return {'she_hung_up': hung, 'abrupt_hangup': abrupt, 'turns': len(her), 'words_per_turn': round(sum(len(h.split()) for h in her) / len(her), 1),
             'repeat_4gram': round(sum(rep) / len(rep), 3) if rep else 0.0,
             'agenda_turns': round(sum(bool(AGENDA.search(h)) for h in her) / len(her), 2),
             'question_end': round(sum(h.strip().endswith('?') for h in her) / len(her), 2),
@@ -126,8 +129,11 @@ async def dialogue(http, brain, persona, caller_id, turns, kickoff):
     for i in range(turns):
         txt, ttft, u = await retry(agent_turn, http, brain, system, hist, persona.tail(tr) if v2 else None); usd += u
         if ttft: ttfts.append(ttft)
+        last_caller = next((t['text'] for t in reversed(tr) if t['who'] == 'caller'), '')
+        hung = hasattr(persona, 'ends') and persona.ends(txt) and persona.hangup_ok(txt, last_caller)
         txt = persona.spoken(txt) if hasattr(persona, 'spoken') else txt
         hist.append({'role': 'assistant', 'content': txt}); tr.append({'who': 'agent', 'text': txt})
+        if hung: tr[-1]['hung_up'] = True; break                      # she ended the call
         say, u = await retry(caller_turn, http, CALLERS[caller_id], tr); usd += u
         if not say or '<END>' in say: break
         hist.append({'role': 'user', 'content': say}); tr.append({'who': 'caller', 'text': say})
@@ -184,7 +190,7 @@ async def main():
                     wins[b][1] += 1
                     wins[b][0] += 1 if v['winner'] == b else (0.5 if v['winner'] == 'tie' else 0)
             json.dump(verdicts, open(os.path.join(a.out, f'verdicts-{a.persona}.json'), 'w'), ensure_ascii=False, indent=1)
-    keys = ['words_per_turn', 'repeat_4gram', 'agenda_turns', 'question_end', 'stock_phrases', 'masc_self', 'roman_hindi']
+    keys = ['words_per_turn', 'repeat_4gram', 'agenda_turns', 'question_end', 'stock_phrases', 'masc_self', 'roman_hindi', 'she_hung_up', 'abrupt_hangup']
     print(f"persona {a.persona} | callers {len(callers)} | judges {JUDGES if not a.no_judge else 'off'}")
     print(f"{'brain':24s} {'win%':>5s} {'ttft':>5s} " + ' '.join(f'{k[:10]:>10s}' for k in keys) + '  fact-fixed  errors')
     for b in brains:

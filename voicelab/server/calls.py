@@ -6,6 +6,7 @@ from collections import defaultdict
 import aiohttp
 from catalog import STT, BRAINS, TTS, S2S, FX, PRESETS
 from persona import compile_prompt, KICKOFF
+import persona_v2
 from audio import VAD, Recorder, Resampler
 import providers as pv
 import phone
@@ -43,6 +44,27 @@ class Call:
         self.closed = False; self.http = lab.http; self.client_lat = {}; self.talk_over = 0; self.barge_ins = 0
         self.memory = lab.memory_get(cfg['tester'], cfg['scenario'])
         self.cost_task = None; self.trace = []; self.voice_fallbacks = 0; self.brain_fallbacks = 0
+        self.wants_end = False; self.ended_by = None; self.ending = None
+    def v2(self): return getattr(self, 'preset', {}).get('brief') == 'v2' and self.cfg.get('scenario') in persona_v2.SCEN
+    def kickoff(self):
+        if not self.v2(): return KICKOFF
+        return '(call connected; they phoned you)' if self.cfg.get('line') == 'in' else persona_v2.KICKOFF
+    async def end_after_playback(self, why='agent'):
+        """She decided the call is over (said goodbye and asked to hang up): let her goodbye finish playing, then wait a
+        beat; if the caller starts talking in that beat they had more to say, so the call stays up."""
+        if self.ending is not None or self.closed: return
+        self.ending = now(); self.tr('end_requested', why)
+        try:
+            t_lim = now() + 30
+            while self.agent_playing() and now() < t_lim: await asyncio.sleep(0.05)
+            seg0 = self.vad.n; t_beat = now() + 1.5
+            while now() < t_beat:
+                if self.vad.speaking: self.tr('end_cancelled', 'caller spoke'); return
+                await asyncio.sleep(0.05)
+            self.ended_by = why; self.wants_end = True; self.tr('agent_hangup', '')
+            await self.send({'t': 'agent_hangup'})
+        finally:
+            if not self.wants_end: self.ending = None
     def tr(self, kind, info=''):
         if len(self.trace) < 600: self.trace.append((round(now() - self.t0, 3), kind, str(info)[:120]))
     # ---- transport
@@ -117,7 +139,8 @@ class Call:
         p50 = lat[len(lat) // 2] if lat else None
         replies = sum(1 for m in self.turns if m.get('server_ms') is not None)
         return {'id': self.id, 'tester': self.cfg['tester'], 'preset': self.cfg['preset'], 'scenario': self.cfg['scenario'], 'kind': self.kind,
-                'components': self.components(), 'blind': self.cfg.get('blind', False), 'phone': self.cfg.get('phone', False), 'line': self.cfg.get('line'), 'consent': bool(self.cfg.get('consent')),
+                'components': self.components(), 'blind': self.cfg.get('blind', False), 'phone': self.cfg.get('phone', False), 'line': self.cfg.get('line'), 'brief': 'v2' if self.v2() else 'v1',
+                'ended_by': self.ended_by or 'caller', 'consent': bool(self.cfg.get('consent')),
                 'started': time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(self.wall0)), 'duration_s': round(dur, 1),
                 'usd': round(tot, 5), 'inr': round(tot * FX, 2), 'inr_per_min': round(tot * FX / max(dur / 60, 1e-6), 3),
                 'cost_parts_inr': {k: round(v * FX, 3) for k, v in self.cost.items()},
@@ -133,7 +156,7 @@ class Reply:
         self.buf = []; self.cancelled = False; self.done = False; self.first = None; self.play_start = None
         self.spoken = []        # [clause, samples24] in emitted order
         self.llm_t = {}; self.llm_u = {}; self.tts_t = {}; self.style = None; self.text = ''
-        self.synth = None; self.task = asyncio.ensure_future(self.run())
+        self.synth = None; self.ends = False; self.task = asyncio.ensure_future(self.run())
     async def emit(self, pcm24, clause_idx):
         if self.cancelled or not pcm24: return
         if not self.released: self.buf.append((pcm24, clause_idx)); return
@@ -187,6 +210,8 @@ class Reply:
                     self.llm_t = {}; self.llm_u = {}; c.brain_fallbacks += 1
                 async for d in pv.llm_stream(c.http, brain, msgs, self.llm_u, self.llm_t):
                     buf += d; self.text += d
+                    if persona_v2.END.search(buf): self.ends = True; buf = persona_v2.END.sub('', buf)
+                    if '<' in buf[-12:] and '>' not in buf[buf.rfind('<'):]: continue     # maybe a marker arriving in pieces
                     if not tag_done:
                         s = buf.lstrip()
                         if not s: continue
@@ -211,6 +236,8 @@ class Reply:
                         else: break
                 if self.text or not self.llm_t.get('err'): break
             if self.llm_t.get('err') and not self.text: c.errors.append('brain: ' + self.llm_t['err'][:200]); await c.send({'t': 'error', 'msg': 'brain: ' + self.llm_t['err'][:160]})
+            if persona_v2.END.search(buf): self.ends = True; buf = persona_v2.END.sub('', buf)
+            buf = re.sub(r'<[^>]{0,20}$', '', buf)
             if buf.strip():
                 if not tag_done: buf = TAG.sub('', buf)
                 await q.put(buf)
@@ -350,9 +377,11 @@ class CascadeCall(Call):
         self.voice = cfg.get('voice') or TTS[self.tts]['default_voice']
         if self.voice not in TTS[self.tts]['voices']: self.voice = TTS[self.tts]['default_voice']
         self.notes = bool(preset.get('notes'))
+        if self.v2(): self.memory = lab.memory_get(cfg['tester'], cfg['scenario'] + '-v2')     # fresh, cleaner memory for v2
         styles = TTS[self.tts].get('styles') if TTS[self.tts].get('emotion') else None
-        self.system = compile_prompt(cfg['scenario'], self.memory, notes=self.notes, note_styles=styles)
-        self.history = [{'role': 'user', 'content': KICKOFF}]
+        if self.v2(): self.system = persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'])
+        else: self.system = compile_prompt(cfg['scenario'], self.memory, notes=self.notes, note_styles=styles)
+        self.history = [{'role': 'user', 'content': self.kickoff()}]
         self.finals = []; self.partial = ''; self.pending = None; self.active = None; self.overlap = []
         self.seg = 0; self.final_seg = 0      # speech segments seen / latest segment that has produced a final
         self.tts_chars = 0; self.stt_lag_ms = None; self.final_t = None; self.smart = cfg.get('smart_turn', True)
@@ -368,6 +397,9 @@ class CascadeCall(Call):
     def messages_for(self, user_text):
         msgs = [{'role': 'system', 'content': self.system}] + self.history
         if user_text: msgs = msgs + [{'role': 'user', 'content': user_text}]
+        if self.v2():     # the ledger + counts go last, every turn (position is mechanism)
+            tr = self.transcript + ([{'who': 'caller', 'text': user_text}] if user_text else [])
+            msgs = msgs + [{'role': 'system', 'content': persona_v2.tail(tr, self.cfg['scenario'])}]
         return msgs
     async def start(self):
         loop = asyncio.get_running_loop()
@@ -440,6 +472,9 @@ class CascadeCall(Call):
         spoken = ' '.join(s[0] for s in r.spoken if s[0])
         self._commit_assistant(spoken)
         await self.send({'t': 'cap', 'who': 'agent', 'text': spoken, 'final': True, 'rid': r.rid, 'style': r.style})
+        if r.ends:
+            if persona_v2.hangup_ok(spoken, r.user_text or ''): asyncio.ensure_future(self.end_after_playback())
+            else: self.tr('end_ignored', 'no goodbye, or they were asking')
     async def tick(self):
         while not self.closed:
             await asyncio.sleep(0.03)
@@ -512,7 +547,11 @@ class GeminiLiveCall(Call):
         super().__init__(lab, ws, cfg)
         self.spec = S2S[preset['s2s']]; self.preset = preset
         self.voice = cfg.get('voice') if cfg.get('voice') in self.spec['voices'] else self.spec['voice']
-        self.system = compile_prompt(cfg['scenario'], self.memory)
+        if self.v2(): self.memory = lab.memory_get(cfg['tester'], cfg['scenario'] + '-v2')
+        if self.v2():
+            self.system = (persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'], end='tool')
+                           + '\n\n' + persona_v2.LAST)
+        else: self.system = compile_prompt(cfg['scenario'], self.memory)
         self.up = None; self.reader = None; self.cur = None; self.buf = b''; self.tier = None; self.agent_text = ''; self.user_text = ''
         self.handle = None
     def components(self): return {'s2s': self.preset['s2s'], 'model': self.spec['model'], 'voice': self.voice}
@@ -523,6 +562,9 @@ class GeminiLiveCall(Call):
              'inputAudioTranscription': {}, 'outputAudioTranscription': {},
              'realtimeInputConfig': {'automaticActivityDetection': {'silenceDurationMs': 500, 'prefixPaddingMs': 100}},
              'sessionResumption': ({'handle': self.handle} if self.handle else {})}
+        if self.v2():
+            s['tools'] = [{'functionDeclarations': [{'name': 'end_call', 'description': 'Hang up the phone. Use it only right after '
+                           'your own goodbye line, when the conversation is over; never while they are still talking or asking.'}]}]
         if self.spec.get('compression'):
             trig, targ = self.spec['compression']
             s['contextWindowCompression'] = {'triggerTokens': trig, 'slidingWindow': {'targetTokens': targ}}
@@ -548,7 +590,7 @@ class GeminiLiveCall(Call):
         self.up = await self.connect()
         self.reader = asyncio.ensure_future(self.read())
         self.cost_task = asyncio.ensure_future(self.cost_loop())
-        await self.up.send_json({'clientContent': {'turns': [{'role': 'user', 'parts': [{'text': KICKOFF}]}], 'turnComplete': True}})
+        await self.up.send_json({'clientContent': {'turns': [{'role': 'user', 'parts': [{'text': self.kickoff()}]}], 'turnComplete': True}})
     async def on_frame(self, pcm, speaking):
         if self.up is None or self.up.closed: return
         self.buf += pcm
@@ -589,6 +631,14 @@ class GeminiLiveCall(Call):
                         self._end_turn(interrupted=True)
                     if sc.get('turnComplete'):
                         self._end_turn()
+                tc = d.get('toolCall')
+                if tc:
+                    resp = []
+                    for fc in tc.get('functionCalls') or []:
+                        resp.append({'id': fc.get('id'), 'name': fc.get('name'), 'response': {'ok': True}})
+                        if fc.get('name') == 'end_call': asyncio.ensure_future(self.end_after_playback())
+                    try: await self.up.send_json({'toolResponse': {'functionResponses': resp}})
+                    except Exception: pass
                 um = d.get('usageMetadata')
                 if um:
                     usd = gemini_usage_usd(um); self.add_cost('live', usd); pv.GKEYS.charge(self.tier, usd)
@@ -604,7 +654,15 @@ class GeminiLiveCall(Call):
         if self.agent_text.strip():
             self.transcript.append({'who': 'agent', 'text': self.agent_text.strip(), 'interrupted': interrupted, 't': round(now() - self.t0, 2)})
             asyncio.ensure_future(self.send({'t': 'cap', 'who': 'agent', 'text': self.agent_text.strip(), 'final': True, 'rid': self.cur}))
+            if self.v2(): asyncio.ensure_future(self.note_ledger())
         self.agent_text = ''; self.cur = None
+    async def note_ledger(self):
+        """Hand her the ledger as silent context (no reply expected), Maya's direct() pattern: what is spent, offers and
+        outcomes, how they sound, whether they sound ready to finish."""
+        try:
+            note = '<context, not from the caller: ' + persona_v2.ledger(self.transcript, self.cfg['scenario']).replace('\n', ' | ') + '>'
+            await self.up.send_json({'clientContent': {'turns': [{'role': 'user', 'parts': [{'text': note}]}], 'turnComplete': False}})
+        except Exception as e: self.errors.append('ledger note: ' + repr(e)[:120])
     async def resume(self):
         old = self.up
         try:
