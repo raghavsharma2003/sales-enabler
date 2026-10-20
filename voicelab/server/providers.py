@@ -119,6 +119,9 @@ class VertexAuth:
         try: self.spent = sum(json.loads(l).get('usd', 0) for l in open(path))
         except FileNotFoundError: pass
     def usable(self):
+        # VERTEX_OFF=1: Google restricted project vp-voice (2026-10-20 notice, appeal pending); a 401/403 also trips a
+        # 6-hour breaker so a restricted project is not hit on every reply (Gemini API keys serve meanwhile).
+        if os.environ.get('VERTEX_OFF') == '1' or time.time() < getattr(self, 'blocked_until', 0): return False
         return self.sa is not None and self.spent < VERTEX_CAP_USD and time.strftime('%Y-%m-%d') <= VERTEX_LAST_DAY
     def charge(self, usd):
         if usd:
@@ -156,7 +159,9 @@ async def vertex_post(http, model, body, timing, location='global', **kw):
     except Exception as e:
         timing['vertex_err'] = repr(e)[:200]; return None
     if r.status == 200: timing['key'] = 'vertex'; return r
-    timing['vertex_err'] = f'{r.status} {(await r.text())[:300]}'; r.release(); return None
+    timing['vertex_err'] = f'{r.status} {(await r.text())[:300]}'; r.release()
+    if r.status in (401, 403): VERTEX.blocked_until = time.time() + 6 * 3600
+    return None
 
 def with_roles(body):
     """Vertex requires a role on every content entry; the Gemini API accepts it too."""
