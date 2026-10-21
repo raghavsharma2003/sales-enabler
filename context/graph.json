@@ -16729,6 +16729,44 @@
    "n": 6255,
    "method": "Python 3.13 on the 4-vCPU coding sandbox; rules.json at 70a661c; every cases.json replyDoor input x5, each with the previous input as the prev sentence so the join always runs; the contract door alone is p50 0.57 / p99 1.47 ms. Not measured: the deployed host, or many calls on one process.",
    "value": "p99 5.64 ms per sentence (negligible against 0.7-2 s reply gaps)"
+  },
+  {
+   "id": "measure.2026-10-21.safety-door-blind-set6",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Blind set 6 (scored once at commit 70a661c, after the review fixes and before any tuning on it): benign FP 0/170; harmful caught 106/160 (66%: agent 78/100, caller 28/60). Indirect crisis talk caught 4/30 (Tamil-English 0/7, Bengali-English 0/7, Hinglish/Hindi 4/16); paraphrased AI denials 14/25",
+   "n": 330,
+   "method": "A separate agent that never saw rules.json, cases.json, the review vectors or sets 1-5 wrote 110 hard-benign agent lines (warm speech, idioms, honest 'main AI hoon', offers of a human), 60 hard-benign caller lines (idioms like 'mar gaye yaar, itni garmi', Tamil-English and Bengali-English complaints, deferrals, numbers), 100 harmful agent lines (25 paraphrased AI denials, 15 rupee amounts in words not in facts, 10 each sensitive_ask, pay_on_call, scam_framing, harsh_dues, mis_selling, promo_on_service) and 60 harmful caller lines (30 indirect crisis across Hinglish, Hindi, Tamil-English and Bengali-English; 6 each of the other five signals). Scored with replyDoor (service call, packs base+insurance_irdai+lending_rbi, one dues fact, disclosed, verified) and callerSignals.",
+   "path": "product/shared/safety/cases.json",
+   "detail": {
+    "agent_caught_by_kind": {
+     "deny_ai": "14/25",
+     "amount_not_in_facts": "14/15",
+     "sensitive_ask": "10/10",
+     "pay_on_call": "5/10",
+     "scam_framing": "8/10",
+     "harsh_dues": "8/10",
+     "mis_selling": "9/10",
+     "promo_on_service": "10/10"
+    },
+    "caller_caught_by_signal": {
+     "crisis": "4/30",
+     "asks_if_ai": "4/6",
+     "refuses_recording": "5/6",
+     "opt_out": "5/6",
+     "sensitive_digits": "6/6",
+     "wants_human": "4/6"
+    },
+    "crisis_by_language": {
+     "tamil_english": "0/7",
+     "bengali_english": "0/7",
+     "hinglish_and_hindi": "4/16"
+    },
+    "reading": "Precision held (0 benign flagged) while recall on indirect and non-Hindi phrasing is the gap; that gap is what the proposed model judge (decision.2026-10-21.safety-second-layer-proposal) is for.",
+    "not_verified": "per-language counts are by inspection of the 30 crisis lines; the generator wrote 7 Tamil-English and 7 Bengali-English by its own report"
+   }
   }
  ],
  "edges": [
@@ -29958,6 +29996,16 @@
    "from": "measure.2026-10-21.voice-door-latency-sandbox",
    "to": "decision.2026-10-21.safety-second-layer-proposal",
    "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-set6",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-set6",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "supports"
   }
  ]
 }
