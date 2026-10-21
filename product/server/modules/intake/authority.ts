@@ -1,7 +1,8 @@
 // Who wins when two sources disagree about one attribute (memory-omni blueprint §2, "authority by subject").
 // Self subjects (how the person wants to be treated) are the person's to state; record subjects (amounts,
 // dates, status) belong to the system of record. A fresh higher authority wins; an equal authority from
-// another source with a different value goes to review; nothing older or more authoritative is overwritten.
+// another system with a different value goes to review (a tenant's own uploads count as one system);
+// nothing older or more authoritative is overwritten.
 
 export type Authority = 'system' | 'crm' | 'upload' | 'agent' | 'person';
 
@@ -36,6 +37,8 @@ export function decide(key: string, existing: Claim | null, incoming: Claim, now
   // A stale value has lost its authority: a newer observation replaces it, whoever made it.
   if (stale) return { take: true, why: 'existing_stale' };
   if (ri < re) return { take: false, why: 'kept_more_authoritative' };
-  if (existing.sourceId && existing.sourceId === incoming.sourceId) return { take: true, why: 'same_source_newer' };
+  // One lineage: the same source, or two of the tenant's own file uploads (a newer list replaces an older one).
+  const lineage = (existing.sourceId && existing.sourceId === incoming.sourceId) || (existing.authority === 'upload' && incoming.authority === 'upload');
+  if (lineage) return { take: true, why: 'same_source_newer' };
   return { take: false, why: 'conflict_review' };
 }
