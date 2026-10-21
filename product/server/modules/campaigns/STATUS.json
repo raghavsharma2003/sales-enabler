@@ -164,8 +164,8 @@
     }
   ],
   "tests": {
-    "passed": 62,
-    "total": 62,
+    "passed": 64,
+    "total": 64,
     "files": [
       "tests/campaigns.test.ts (37, Postgres)",
       "tests/campaigns-review.test.ts (13, Postgres: WGC-01..08 and control)",
@@ -228,7 +228,7 @@
     "kernel tests: 'prepare() runs outside the transaction' counts every idle-in-transaction session in the database, so it fails when run in parallel with suites that legitimately hold a claim transaction open (campaigns G11 predial waits up to 800 ms inside the claim by design). It passes alone (3/3). Scope the count to the test's own backend or connection.",
     "calls module: e2e step 8b. campaignFunnel counts end_reason IS NULL as connected.",
     "runtime/carrier relay: sign KYC events to POST /hooks/telephony/kyc with VP_TELEPHONY_WEBHOOK_SECRET (at least 32 characters), body {provider, eventId, providerRef, status, evidence}.",
-    "intake: on erasure, cancel the person's queued attempts in the same transaction by calling registry.get('attempt.cancel_for_contact').run({ q: <the erasure tx client>, workspaceId, actor: { type: 'system', id: 'intake.erase' } }, { contactId, reason: 'erased' }). Also confirm evidence.statedAt as the consent effective-time field (WGC-06), and normalise expiresAt to ISO at consent.record, import and webhook (WGC-05)."
+    "intake: call cancelContactAttempts(q, workspaceId, contactId, 'erased') from campaigns/index.ts inside dpdp.request.execute's transaction. Give consent_record.effective_at a DEFAULT (e.g. now()), so writers that don't set it (tests, older code) keep working; the gate already orders by it when present."
   ],
   "full_suite_note": "On 2026-10-21 the whole product suite (scripts/test.mjs) on this head ran 212 tests: 209 pass, 3 fail, none in campaigns. agents test.simulate and learning gates also fail on the base commit 6610597 without this module, so they predate it. The kernel prepare() test is the parallel-run flake described in needs_from_others.",
   "risk_classes": "Every campaigns tool listed in research/2026-10-21/blueprint/data/workspace-tool-registry.json uses the registry's class. Not in the registry: campaign.stop_at_cap, number.pause_flagged and attempt.retry_per_ladder (external, A3 when VP acts), and the reads campaign.list, campaign.get and attempt.list.",

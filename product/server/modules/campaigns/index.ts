@@ -125,6 +125,14 @@ const singleCallV: Validator<ReturnType<typeof singleCallBase>> = Object.assign(
 
 // ---- tools ----
 
+/** Cancel every attempt still waiting for a person ('created' or 'queued'), on the caller's transaction. Intake's erasure
+ *  calls this inside dpdp.request.execute; attempts already dialling finish and the calls module settles them. */
+export async function cancelContactAttempts(q: Queryable, workspaceId: string, contactId: string, reason: string): Promise<{ cancelled: number }> {
+  const r = await q.query(`UPDATE attempt SET status = 'cancelled', blocked_by = $3, next_eligible_at = NULL
+    WHERE workspace_id = $1 AND contact_id = $2 AND status IN ('created','queued')`, [workspaceId, contactId, reason.slice(0, 120)]);
+  return { cancelled: r.rowCount ?? 0 };
+}
+
 export function registerCampaignTools(registry: Registry): void {
   const reg = registry.register.bind(registry);
 
@@ -548,9 +556,7 @@ export function registerCampaignTools(registry: Registry): void {
     summary: 'Cancel every attempt still queued for a person (erasure and other system paths only)',
     run: async (ctx, i) => {
       if (ctx.actor.type !== 'system' && ctx.actor.type !== 'vp_success') throw new Error('only a system path cancels a person\'s queued attempts');
-      const r = await ctx.q.query(`UPDATE attempt SET status = 'cancelled', blocked_by = $3 WHERE workspace_id = $1 AND contact_id = $2 AND status = 'created'`,
-        [ctx.workspaceId, i.contactId, i.reason]);
-      return { cancelled: r.rowCount ?? 0 };
+      return cancelContactAttempts(ctx.q, ctx.workspaceId, i.contactId, i.reason);
     },
   }));
 

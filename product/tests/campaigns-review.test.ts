@@ -252,3 +252,26 @@ test('WGC-05 an ISO expiry in the past still expires; a missing one does not', {
   const v = await gate(await attempt(w, await promoContact(w, { expiresAt: '31/12/2027' })));
   assert.ok(!v.allowed && v.code === 'consent_expired' && /unreadable/.test(v.detail ?? ''), 'unreadable fails closed even if it looks future');
 });
+
+test('cancelContactAttempts runs on the caller\'s transaction and rolls back with it', { skip }, async () => {
+  const { cancelContactAttempts } = await import('../server/modules/campaigns/index.ts');
+  const w = await world('service');
+  const c = await contact(w);
+  const a1 = await attempt(w, c.id);
+  await assert.rejects(tx(pool, async q => { assert.equal((await cancelContactAttempts(q, w.ws, c.id, 'erased')).cancelled, 1); throw new Error('erasure failed'); }));
+  assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM attempt WHERE id = $1', [a1]))!.status, 'created', 'rolled back with the erasure');
+  const other = await world('service');
+  assert.equal((await tx(pool, q => cancelContactAttempts(q, other.ws, c.id, 'erased'))).cancelled, 0, 'another workspace cancels nothing');
+  assert.equal((await tx(pool, q => cancelContactAttempts(q, w.ws, c.id, 'erased'))).cancelled, 1);
+});
+
+test('consent ordering honours consent_record.effective_at when intake provides it', { skip }, async () => {
+  const has = await one(pool, "SELECT 1 FROM information_schema.columns WHERE table_name = 'consent_record' AND column_name = 'effective_at'");
+  if (!has) return;   // intake migration 0105 not applied in this database yet
+  const w = await world('service');
+  const c = await contact(w, { serviceConsent: false });
+  await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, granted, created_at, effective_at) VALUES ($1,$2,'all','withdrawal',false,$3,$3)", [w.ws, c.id, IST('2026-10-10', '10:00')]);
+  // Inserted later, but effective earlier (an undated grant placed just before the withdrawal): history, never the latest.
+  await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, created_at, effective_at) VALUES ($1,$2,'service','contract',$3,$4)", [w.ws, c.id, IST('2026-10-20', '10:00'), IST('2026-10-10', '09:59')]);
+  assert.equal(code(await gate(await attempt(w, c.id))), 'no_basis');
+});

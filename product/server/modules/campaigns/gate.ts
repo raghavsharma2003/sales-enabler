@@ -84,7 +84,7 @@ export function suppressionSource(source: string | null): string {
   return cls === 'call' ? 'in_call' : cls || 'workspace';
 }
 
-interface ConsentRow { id: string; purpose: string; basis: string; granted: boolean; evidence: Record<string, unknown> | null; created_at: Date }
+interface ConsentRow { id: string; purpose: string; basis: string; granted: boolean; evidence: Record<string, unknown> | null; created_at: Date; effective_at: string | null }
 const parseTime = (v: unknown): number | null => {
   if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(v)) return null;   // ISO only: '31/12/2025' is unreadable, never a guess
   const t = Date.parse(v);
@@ -93,6 +93,9 @@ const parseTime = (v: unknown): number | null => {
 /** When consent was given or withdrawn: evidence.statedAt (what the source says) when readable, else when it was recorded.
  *  A grant whose stated time is unreadable counts as the oldest record, so it can never outrank a withdrawal. */
 function effectiveAt(r: ConsentRow): number {
+  // intake's consent_record.effective_at (migration 0105) is authoritative when present: it is clamped to the insert
+  // time, and undated grants arriving after a withdrawal are placed just before it.
+  if (r.effective_at) { const t = Date.parse(r.effective_at); if (!Number.isNaN(t)) return t; }
   const raw = r.evidence?.statedAt;
   if (raw === undefined || raw === null || raw === '') return r.created_at.getTime();
   const t = parseTime(raw);
@@ -213,13 +216,13 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
     }],
     ['G5', async () => {
       if (test) { consent = { basis: 'consent' }; return; }   // a member's own verified phone
-      const recs = await many<ConsentRow>(q, `SELECT id, purpose, basis, granted, evidence, created_at FROM consent_record
-         WHERE workspace_id = $1 AND contact_id = $2 AND channel = 'voice'`, [ws, contact!.id]);
+      const recs = await many<ConsentRow>(q, `SELECT cr.id, cr.purpose, cr.basis, cr.granted, cr.evidence, cr.created_at, to_jsonb(cr)->>'effective_at' AS effective_at
+         FROM consent_record cr WHERE cr.workspace_id = $1 AND cr.contact_id = $2 AND cr.channel = 'voice'`, [ws, contact!.id]);
       // Every purpose that covers this call: the category's own, the general ones, and for service/transactional any
       // relationship purpose. The newest record across them decides (by when it was given, not when it was inserted), so
       // a newer withdrawal on any covering purpose beats every older grant, and re-importing an old "yes" cannot re-open.
       const covers = (p: string) => PURPOSE_ALL.includes(p) || (category === 'promotional' ? p === 'promotional' : p !== 'promotional');
-      const ordered = recs.filter(r => covers(r.purpose)).sort((x, y) => effectiveAt(y) - effectiveAt(x) || y.created_at.getTime() - x.created_at.getTime());
+      const ordered = recs.filter(r => covers(r.purpose)).sort((x, y) => effectiveAt(y) - effectiveAt(x) || y.created_at.getTime() - x.created_at.getTime() || (y.id < x.id ? -1 : y.id > x.id ? 1 : 0));
       const cut = ordered.findIndex(r => !r.granted);
       if (cut === 0) throw new Refuse('no_basis', `consent withdrawn (${ordered[0].purpose})`);
       const grants = (cut < 0 ? ordered : ordered.slice(0, cut))
