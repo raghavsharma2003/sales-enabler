@@ -12,6 +12,8 @@ import { asciiDigits } from './mapping.ts';
 import { dndProvider } from './dnd.ts';
 // The memory module's one export for erasure inside another module's transaction (agreed with the integrator).
 import { forgetContactMemory } from '../memory/index.ts';
+// And campaigns' one export for erasure: cancel the person's queued attempts in this same transaction (review WGC-07).
+import { cancelContactAttempts } from '../campaigns/index.ts';
 import { audienceWhere } from './audiences.ts';
 import { e164Hash, hashWith, workspaceSalt } from './store.ts';
 
@@ -388,6 +390,7 @@ export function registerContactTools(reg: Registry): void {
           surfaces.audiences = (await ctx.q.query('DELETE FROM audience_member WHERE contact_id = $1', [c.id])).rowCount ?? 0;
           surfaces.conflicts = (await ctx.q.query('DELETE FROM intake_attribute_conflict WHERE contact_id = $1', [c.id])).rowCount ?? 0;
           surfaces.memory_facts = (await forgetContactMemory(ctx.q, ws, c.id)).facts;
+          surfaces.attempts_cancelled = (await cancelContactAttempts(ctx.q, ws, c.id, 'erased')).cancelled;
           surfaces.merge_snapshots = (await ctx.q.query('DELETE FROM intake_merge WHERE workspace_id = $1 AND kept_id = $2', [ws, c.id])).rowCount ?? 0;
           await ctx.q.query('DELETE FROM dnd_status WHERE contact_id = $1', [c.id]);
           await ctx.q.query(`UPDATE contact SET e164 = 'erased:' || id::text, name = NULL, language = NULL, custom = '{}'::jsonb, erased_at = now(), updated_at = now()

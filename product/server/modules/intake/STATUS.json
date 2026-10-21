@@ -134,7 +134,8 @@
     "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 18.9-21.7 s alone, re-import 7.7-13.0 s (n=9); 16-81 s inside the full suite (n=8). CI runs the same checks on 5,000 rows; VP_PERF=1 runs 50,000 and asserts 60 s",
     "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept",
     "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json for every registered blueprint tool (contact.suppress external since it joined A3_VERBS)",
-    "Consent ordered by effective_at (stated time, else insert; clamped to insert); an older or undated imported grant after a withdrawal is history only and reported as consent_older_than_latest (review WGC-06)"
+    "Consent ordered by effective_at (stated time, else insert; clamped to insert); an older or undated imported grant after a withdrawal is history only and reported as consent_older_than_latest (review WGC-06)",
+    "DPDP erase_me cancels the person's created/queued attempts through campaigns' cancelContactAttempts in the same transaction (review WGC-07); the receipt counts them"
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -177,10 +178,6 @@
       "what": "Read policy.retention.get for memory retention (forgetContactMemory is now used by dpdp.request.execute)."
     },
     {
-      "from": "campaigns",
-      "what": "Export cancelContactAttempts(q, ws, contactId, reason) for dpdp.request.execute to call in its transaction (review WGC-07); and order G5 consent by effective_at."
-    },
-    {
       "from": "memory",
       "what": "minor.ts: read birth_year (younger possible age) and age_group (fail closed if any bound < 18 or unreadable), ideally via AGE_KEY_SYNONYMS / canonicalAgeKey from ../intake/index.ts."
     }
@@ -189,7 +186,7 @@
     "intake.retention (daily 03:10 IST)"
   ],
   "cross_module_imports": [
-    "forgetContactMemory from ../memory/index.ts: the one sanctioned data-function import (integrator, 2026-10-21), so DPDP erasure forgets memory inside its own transaction. Everything else goes through the registry."
+    "forgetContactMemory from ../memory/index.ts and cancelContactAttempts from ../campaigns/index.ts: the sanctioned data functions (integrator, 2026-10-21), so DPDP erasure forgets memory and cancels queued attempts inside its own transaction. Everything else goes through the registry."
   ],
   "suppression_sources": {
     "in_call": "contact.suppress_after_opt_out (evidence: conversationId, campaignId, quote)",

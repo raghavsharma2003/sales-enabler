@@ -286,6 +286,9 @@ test('DPDP erase leaves a tombstone and the suppression; re-import, webhook and 
   const cid = (await w.contactBy('+919000000051'))!.id;
   await w.approve(await w.call('consent.record', { contactId: cid, purpose: 'service', basis: 'consent', granted: true }));
   await pool.query("INSERT INTO memory_fact (workspace_id, contact_id, kind, key, value, quote, purpose, basis) VALUES ($1,$2,'preference','language','\"hi\"','Hindi mein baat kijiye','service','consent')", [w.ws, cid]);
+  // Queued work for the person (review WGC-07): the erasure cancels it in the same transaction; finished attempts stay.
+  const queued = (await one<{ id: string }>(pool, "INSERT INTO attempt (workspace_id, contact_id, status) VALUES ($1,$2,'created') RETURNING id", [w.ws, cid]))!.id;
+  const done = (await one<{ id: string }>(pool, "INSERT INTO attempt (workspace_id, contact_id, status) VALUES ($1,$2,'no_answer') RETURNING id", [w.ws, cid]))!.id;
   await w.ok('contact.suppress', { contactId: cid, reason: 'asked' });
   const prop = await w.call('dpdp.request.execute', { contactId: cid, scope: 'erase_me', requestedBy: 'person', evidence: 'verified request on call' }, w.as('owner'));
   const out = await w.approve(prop);
@@ -294,6 +297,9 @@ test('DPDP erase leaves a tombstone and the suppression; re-import, webhook and 
   assert.ok(c!.e164.startsWith('erased:') && c!.name === null && c!.erased_at);
   assert.equal(Number((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM attribute WHERE contact_id = $1', [cid]))!.n), 0);
   assert.equal(out.surfaces.memory_facts, 1, 'memory is forgotten through the memory module');
+  assert.equal(out.surfaces.attempts_cancelled, 1);
+  assert.equal((await one<{ status: string; blocked_by: string }>(pool, 'SELECT status, blocked_by FROM attempt WHERE id = $1', [queued]))!.status, 'cancelled');
+  assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM attempt WHERE id = $1', [done]))!.status, 'no_answer');
   assert.equal(Number((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM memory_fact WHERE contact_id = $1', [cid]))!.n), 0);
   assert.equal(Number((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM tombstone WHERE workspace_id = $1', [w.ws]))!.n), 1);
   const supp = await many<{ e164: string | null; e164_hash: string | null }>(pool, 'SELECT e164, e164_hash FROM suppression WHERE workspace_id = $1', [w.ws]);
