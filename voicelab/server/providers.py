@@ -119,6 +119,7 @@ async def gemini_post(http, url, body, timing, **kw):
 VERTEX_PROJECT = env('VERTEX_PROJECT', 'vp-voice')
 VERTEX_CAP_USD = float(env('VERTEX_CAP_USD', str(20000 / FX)))
 VERTEX_LAST_DAY = env('VERTEX_LAST_DAY', '2026-11-14')
+INDIA_REGIONS = {'centralindia', 'southindia', 'westindia', 'jioindiacentral', 'jioindiawest', 'india', 'in', 'asia-south1', 'asia-south2'}
 VERTEX_MODELS = {'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'}
 class VertexAuth:
     def __init__(self):
@@ -135,6 +136,10 @@ class VertexAuth:
         # VERTEX_OFF=1: Google restricted project vp-voice (2026-10-20 notice, appeal pending); a 401/403 also trips a
         # 6-hour breaker so a restricted project is not hit on every reply (Gemini API keys serve meanwhile).
         if os.environ.get('VERTEX_OFF') == '1' or time.time() < getattr(self, 'blocked_until', 0): return False
+        # India only (appeal commitment 2026-10-21): the lab VM must set VP_REGION=centralindia (or another Indian region)
+        if (os.environ.get('VP_REGION') or '').strip().lower() not in INDIA_REGIONS:
+            if not getattr(self, 'region_warned', False): self.region_warned = True; print('Vertex refused: VP_REGION is not an Indian region', flush=True)
+            return False
         return self.sa is not None and self.spent < VERTEX_CAP_USD and time.strftime('%Y-%m-%d') <= VERTEX_LAST_DAY
     def charge(self, usd):
         if usd:

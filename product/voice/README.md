@@ -316,6 +316,7 @@ body names another call, 404 for an unknown call, 409 if the call is not joined,
 | `VP_WORKER_ID` | Set by the launcher (`w0`…); shown on health |
 | `GEMINI_PAID_KEY` | Gemini API: ears (Live transcription), speech-to-speech, and text/TTS unless Vertex is configured |
 | `VERTEX_SA_FILE`, `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_OFF` | Optional Vertex AI route for Gemini text and TTS; chosen once per call |
+| `VP_REGION` | Where this runtime runs. The Vertex route is used only for an Indian region (`centralindia`, `southindia`, `westindia`, `asia-south1`, …); otherwise the Gemini API key serves and one reason is logged |
 | `LAB_AI_ENDPOINT`, `LAB_AI_KEY` | Azure OpenAI (GPT-5.4 mini) |
 | `VP_AI_ENDPOINT`, `VP_AI_KEY` | Second Azure OpenAI account (brains hosted there) |
 | `OPENROUTER_API_KEY` | OpenRouter brains and the styled Gemini voice |

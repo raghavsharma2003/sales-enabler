@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 171,
-    "passed": 171,
+    "ran": 174,
+    "passed": 174,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -33,7 +33,8 @@
       "test_runtime_fixture.py": "one source, both doors: sim calls covering every RuntimeEvent type and all three judge outcomes; output checked against tests/vectors/runtime_events.json, and live batches run through calls validateRuntimeBatch (product/tests/voice-runtime-events.test.ts runs the committed fixture through it in the TS suite); a supervisor_live call (listen pair, whisper, takeover) so ingest validates the supervisor moments",
       "test_launch.py": "multi-process launcher with two real worker processes: tickets spread, overflow on at_capacity, refused only when all are full; retry returns to its owner; /end reaches the owner and frees the slot; health sums workers; media socket via /w/<i>/; workers stop with the front; nginx config",
       "test_live.py": "live controls: whisper redacted into the LAST block, spent after one reply, a denial whisper still blocked by RD2, no text in events, capped, refused after takeover; sim takeover (she stops, doored line, member bridged both ways, drop and no-join close the call, crisis call taken over, limits stop); cascade takeover cut at a near sentence end vs at once, member audio to the line and caller audio to the member; listener mix of both legs writing nothing; HTTP refusals (unsigned, replayed body, unknown, unjoined, sim listen, empty whisper), sim takeover end to end, browser listen socket",
-      "test_devsim.py": "the development runtime as a real process: refuses without VP_DEVSIM=1; a signed sim call with whisper and takeover over HTTP"
+      "test_devsim.py": "the development runtime as a real process: refuses without VP_DEVSIM=1; a signed sim call with whisper and takeover over HTTP",
+      "test_google_route.py": "Vertex route only when VP_REGION names an Indian region (else the Gemini API key, one logged reason per cause); VERTEX_OFF still wins"
     }
   },
   "works": [
@@ -84,7 +85,8 @@
     "A recording refusal discards the whole recording, not just the rest of the call",
     "Google route (Vertex or Gemini API key) is chosen once per call; 5xx retries stay on the same model and route",
     "neverSay hits are reported under RD7, as the shared rules do",
-    "v2-live (Gemini Live) holds each turn until its transcript has passed the door: safe, but slower; recommend no production calls on it until its latency is measured with the hold"
+    "v2-live (Gemini Live) holds each turn until its transcript has passed the door: safe, but slower; recommend no production calls on it until its latency is measured with the hold",
+    "Vertex (Agent Platform) is picked only when VP_REGION is an Indian region (centralindia, asia-south1, ...); unset or elsewhere uses the Gemini API key and logs one reason (appeal commitment 2026-10-21). The lab VM needs VP_REGION=centralindia for Vertex too"
   ],
   "sharedRuleGapsFixed": "The 9 gaps the runtime reported were fixed in rules.json at eaae1c1 (clause-scoped noneClause, local PIN context); they are normal tests now.",
   "reviewFixes": {

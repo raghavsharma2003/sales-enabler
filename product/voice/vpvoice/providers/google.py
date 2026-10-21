@@ -1,7 +1,7 @@
 # Google access for Gemini models. One route per call, chosen when the call starts and never switched mid-call
 # (directive.2026-10-20.no-midcall-swap): Vertex AI when a service account is configured (VERTEX_SA_FILE), else the
 # Gemini API key (GEMINI_PAID_KEY). The Live websocket (ears, speech-to-speech) uses the Gemini API key.
-import asyncio, base64, json, os, re, time
+import asyncio, base64, json, logging, os, re, time
 
 GEM = 'https://generativelanguage.googleapis.com/v1beta'
 GEM_WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
@@ -43,6 +43,20 @@ class VertexToken:
 
 
 _VERTEX = {}
+# Agent Platform (Vertex) is called only from India (appeal commitment, decision.2026-10-21.appeal-commitments-binding):
+# a runtime picks the Vertex route only when VP_REGION names an Indian region; anywhere else it uses the Gemini API key.
+INDIA_REGIONS = {'centralindia', 'southindia', 'westindia', 'jioindiacentral', 'jioindiawest', 'india', 'in', 'asia-south1', 'asia-south2'}
+_REFUSED = set()
+
+
+def vertex_region_ok(env):
+    """True when VP_REGION says this runtime runs in India. Logs the refusal once per reason per process."""
+    region = (env.get('VP_REGION') or '').strip().lower()
+    if region in INDIA_REGIONS: return True
+    why = f'Vertex route refused: VP_REGION={region or "(unset)"} is not an Indian region; Agent Platform is called only from India'
+    if why not in _REFUSED:
+        _REFUSED.add(why); logging.getLogger('vp.voice.google').warning(why)
+    return False
 
 
 class GoogleRoute:
@@ -52,7 +66,7 @@ class GoogleRoute:
         self.project = env.get('VERTEX_PROJECT', ''); self.location = env.get('VERTEX_LOCATION', 'global')
         sa_path = env.get('VERTEX_SA_FILE')
         self.vertex = None
-        if sa_path and os.path.exists(sa_path) and env.get('VERTEX_OFF') != '1':
+        if sa_path and os.path.exists(sa_path) and env.get('VERTEX_OFF') != '1' and vertex_region_ok(env):
             if sa_path not in _VERTEX:
                 with open(sa_path) as f: _VERTEX[sa_path] = VertexToken(json.load(f))
             self.vertex = _VERTEX[sa_path]
