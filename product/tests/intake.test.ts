@@ -241,12 +241,12 @@ test('suppression holds on re-import; opt-out columns and the A3 opt-out verb su
   await w.ok('contact.suppress', { e164: '+91 90000 00043', reason: 'called the helpline' });
   const c = await w.importText('phone\n9000000043\n');
   assert.equal(c.counts.suppressed, 1);
-  // The opt-out verb: VP itself (system) runs it at once as A3; a member's call waits for approval.
+  // The opt-out verb is A3 (it only lowers risk): VP itself and a member allowed to call it both run it at once.
   const sys = await reg.execute<any>(pool, 'contact.suppress_after_opt_out', { e164: '9000000044', quote: 'call mat karna' }, { workspaceId: w.ws, actor: { type: 'system' } });
   assert.equal(sys.status, 'confirmed');
   assert.equal((sys as any).mode, 'A3');
   const mem = await w.call('contact.suppress_after_opt_out', { contactId: asha });
-  assert.equal(mem.status, 'needs_approval');
+  assert.equal(mem.status === 'confirmed' && (mem as any).mode, 'A3');
   // Release: a compliance member proposes, an owner approves; a builder cannot.
   const comp = await w.member('compliance');
   assert.equal((await w.call('contact.unsuppress', { suppressionId: s.suppressionId, reason: 'person asked to be called again' }, w.as('builder'))).status, 'not_executed');

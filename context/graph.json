@@ -16085,6 +16085,126 @@
    "date": "2026-10-21",
    "title": "Campaigns seams still to close with siblings:\n- How the tombstone hash is salted. The gate checks both sha256(e164) and HMAC(workspace_id, e164).\n- The calls module creating the conversation row from ticket.conversationId, settling or releasing attempt.reservation_id, and calling attempt.retry_per_ladder on call end.\n- Wiring the module into server/modules/index.ts and starting the worker in main.ts.\n- A tool that marks a line A2P-declared and a member phone verified.\n- The JSON defaults files the blueprint cites.",
    "closes_when": "Every item has a tool name or a merged sibling that implements it, and an end-to-end test drives a campaign from launch to settled cost."
+  },
+  {
+   "id": "component.2026-10-21.intake-module",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Intake module: chunked or one-shot 20 MB uploads, mapping with per-row preview, one write path by authority and freshness, signed idempotent contacts webhook, append-only consent, suppression, DPDP erase with tombstones, DND seam, audiences",
+   "path": "product/server/modules/intake/",
+   "details": "21 tools, 2 raw routes, migration 0101. 18/18 tests (node:test, throwaway Postgres 16). Not verified: XLSX/Sheets, unmerge, conflict resolution, real NCPR lookup, concurrent overlapping commits, a full 20 MB commit, erasure of transcripts and recordings."
+  },
+  {
+   "id": "measure.2026-10-21.intake-50k-import",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "A 50,000-row CSV (2.94 MB, 7 columns, 50 Excel-mangled rows) imports in one transaction in 19.4-21.7 s; re-importing it (all rows update) takes 11.7-14.5 s",
+   "n": 8,
+   "method": "product/tests/intake-scale.test.ts: upload in 4 parts over HTTP, source.map, then source.commit via registry.execute; throwaway Postgres 16 on the coding sandbox (4 vCPU, 15 GB); 5 runs alone, 3 inside the full suite at concurrency 4; wall-clock around the commit call",
+   "path": "product/server/modules/intake/STATUS.json"
+  },
+  {
+   "id": "decision.2026-10-21.intake-upload-lineage",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "A tenant's own file uploads count as one lineage: a newer upload replaces an older upload's value at equal authority; only different systems at equal rank go to review",
+   "rationale": "The blueprint's rule (equal authorities with different values go to review) applied literally to uploads sent every row of a monthly re-upload to review. Uploads are one asserter, the tenant.",
+   "reverse_if": "Tenants keep several independent lists (different branches or vendors) whose values for the same person legitimately disagree, and review is wanted between them; then make lineage per source and ask at commit."
+  },
+  {
+   "id": "rejected.2026-10-21.intake-equal-upload-review",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Sending equal-authority disagreements between two uploads to review",
+   "tried": "decide(): equal authority from a different source_id means conflict_review, applied to every source including file uploads.",
+   "broke": "The 50k re-import test: 49,950 rows went to review and 0 updated, because each upload is its own source."
+  },
+  {
+   "id": "decision.2026-10-21.intake-erase-in-place",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "DPDP erase_me keeps the contact row as a husk (e164 'erased:<id>', no name or attributes) instead of deleting it",
+   "rationale": "consent_record and suppression cascade on contact delete (0002). Deleting the person would delete the consent history and the suppression the erasure must keep. The tombstone (HMAC of the number, per-workspace salt) blocks re-creation; suppressions are re-keyed to the hash.",
+   "reverse_if": "The consent and suppression ledgers stop referencing contact with ON DELETE CASCADE (e.g. they key on e164_hash), so the row can be deleted outright."
+  },
+  {
+   "id": "decision.2026-10-21.intake-stale-loses-authority",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "A value past its max age loses its authority: a newer observation from a lower authority replaces it",
+   "rationale": "Freshness bounds authority (blueprint \u00a72, DataAuthorityClaim max_age). A month-old CRM amount should not beat today's upload of the same field.",
+   "reverse_if": "A record subject from the system of record (rank 100) is overwritten by a stale-but-correct case in practice; then exempt rank 100 or mark the replacement for review."
+  },
+  {
+   "id": "decision.2026-10-21.intake-dnd-fail-closed",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "DND unknown, never checked, or checked more than 7 days ago is 'unknown', and contact.dial_facts blocks promotional calls on it; service calls are not blocked by DND",
+   "rationale": "Task brief: unknown DND is a fact the dial gate treats as fail-closed for promotional. On 140xx the operator scrubs too (trust-telephony M4). The real NCPR adapter stays disabled until a licensed lookup is contracted.",
+   "reverse_if": "Counsel or the carrier contract says service calls must also respect NCPR, or a fresher bound than 7 days is required."
+  },
+  {
+   "id": "open.2026-10-21.intake-scale-unexplained-failure",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "The intake 50k scale test failed once, on the first full-suite run (concurrency 4, fresh database), and the reason was not captured; three later full runs and five solo runs passed",
+   "closes_when": "Ten full-suite runs with captured output show no failure, or the failure recurs and its error is recorded."
+  },
+  {
+   "id": "open.2026-10-21.intake-hook-secret-vault",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Webhook HMAC secrets sit in plaintext in intake_source.hook_secret until a vault exists",
+   "closes_when": "Secrets move to the workspace vault with a rotate tool, and the column is dropped."
+  },
+  {
+   "id": "rejected.2026-10-21.gate-own-tombstone-hash",
+   "type": "rejection",
+   "title": "The dial gate hashed numbers its own way (sha256 / HMAC keyed by workspace id) while intake writes tombstones as HMAC with a secret per-workspace salt, so G3 never matched an erased person and G4 missed post-erasure suppressions that keep only a hash.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop (integration of intake + campaigns)",
+   "broke": "An erased person (DPDP) could pass G3/G4 on any path that creates or reaches a contact without intake's import check. Caught by reading intake's needs_from_others before any real call; a cross-module test now proves the fix (it fails on the old gate).",
+   "path": "product/server/identity.ts"
+  },
+  {
+   "id": "decision.2026-10-21.one-number-fingerprint",
+   "type": "decision",
+   "title": "Number fingerprints for erased people live in the kernel (server/identity.ts: HMAC-SHA256 with the per-workspace salt in intake_salt); every module that writes or checks a tombstone or a hash-only suppression uses it.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "Safety-critical matching must have one definition; two modules each hashing their own way is how the erasure gap happened.",
+   "reverse_if": "The salt has to rotate (then identity.ts must check every live salt) or a regulator asks for a different pseudonymisation scheme.",
+   "path": "product/server/identity.ts"
+  },
+  {
+   "id": "decision.2026-10-21.a3-for-members",
+   "type": "decision",
+   "title": "A3 verbs (pause, stop, suppress after opt-out, end a runaway call, stop at cap, pause a flagged number, revert to last good) run at once for any member whose role may call them, not only for VP itself; attempt.retry_per_ladder, which re-dials someone, still gives a member a card.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop (raised by the campaigns builder)",
+   "rationale": "A person who wants things safer should never wait for an approval tap; the closed A3 list is defined by lowering risk, which holds whoever asks.",
+   "reverse_if": "Owners report a member pausing or stopping campaigns as sabotage or by mistake often enough that a confirm step is wanted, or a verb on the list turns out to raise risk in some flow."
   }
  ],
  "edges": [
@@ -29079,6 +29199,56 @@
    "from": "component.2026-10-21.campaigns-module",
    "to": "open.2026-10-21.campaigns-seams",
    "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-upload-lineage",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-erase-in-place",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-stale-loses-authority",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-dnd-fail-closed",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.intake-upload-lineage",
+   "to": "rejected.2026-10-21.intake-equal-upload-review",
+   "relation": "supersedes"
+  },
+  {
+   "from": "measure.2026-10-21.intake-50k-import",
+   "to": "component.2026-10-21.intake-module",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "open.2026-10-21.intake-hook-secret-vault",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "open.2026-10-21.intake-scale-unexplained-failure",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "evidence.2026-10-21.vp-blueprint",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.one-number-fingerprint",
+   "to": "rejected.2026-10-21.gate-own-tombstone-hash",
+   "relation": "derived-from"
   }
  ]
 }

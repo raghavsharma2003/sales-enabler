@@ -151,6 +151,18 @@ test('G3 erased: a tombstone stops a re-imported person', { skip }, async () => 
   assert.equal(code(await gate(await attempt(w))), 'erased');
 });
 
+test('G3/G4 match what intake writes on erasure: salted tombstone, and a suppression kept only as a hash', { skip }, async () => {
+  const { numberHash } = await import('../server/identity.ts');
+  const { e164Hash } = await import('../server/modules/intake/store.ts');
+  const w = await world();
+  assert.equal(await numberHash(pool, w.ws, w.e164), await e164Hash(pool, w.ws, w.e164), 'one fingerprint for both modules');
+  await pool.query('INSERT INTO tombstone (workspace_id, e164_hash) VALUES ($1,$2)', [w.ws, await e164Hash(pool, w.ws, w.e164)]);
+  assert.equal(code(await gate(await attempt(w))), 'erased');
+  const w2 = await world();
+  await pool.query("INSERT INTO suppression (workspace_id, e164, e164_hash, reason, source) VALUES ($1, NULL, $2, 'erased person', 'dpdp')", [w2.ws, await e164Hash(pool, w2.ws, w2.e164)]);
+  assert.equal(code(await gate(await attempt(w2))), 'suppressed:dpdp', 'a hash-only suppression still stops the call');
+});
+
 test('G4 suppressed:<source>, campaign scope and the internal DND list', { skip }, async () => {
   const w = await world();
   await pool.query("INSERT INTO suppression (workspace_id, e164, reason, source) VALUES ($1,$2,'said dobara call mat karna','in_call')", [w.ws, w.e164]);

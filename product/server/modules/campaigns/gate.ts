@@ -4,6 +4,7 @@
 // time zone, a query error) refuses with check_unavailable, inside a savepoint so the claim can still record why.
 import { createHash, createHmac } from 'node:crypto';
 import type { AgentConfig, CallCategory } from '../../../shared/agent-config.ts';
+import { numberHash } from '../../identity.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { lintAgentConfig } from '../../../shared/safety/index.ts';
 import { getStack } from '../../../shared/stacks.ts';
@@ -125,6 +126,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
   const dp = await loadDialPolicy(q, ws);
   const tz = (!test && contact?.timezone) || 'Asia/Kolkata';   // a test rings a member's phone; the row only lends its variables
   let target = '';
+  let targetHash = '';
   let number: NumberRow | null = null;
   let consent: GatePass['consent'] = { basis: 'consent' };
   let reserved = 0, maxDurationS = 0;
@@ -153,14 +155,18 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       await q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['dial:' + ws + ':' + target]);
     }],
     ['G3', async () => {
-      const t = await one(q, 'SELECT 1 FROM tombstone WHERE workspace_id = $1 AND e164_hash = ANY($2)', [ws, tombstoneHashes(ws, target)]);
+      // The intake module writes tombstones as HMAC(per-workspace salt, E.164) (server/identity.ts); the two legacy
+      // shapes are still checked so a tombstone written any earlier way also stops the call.
+      targetHash = await numberHash(q, ws, target);
+      const t = await one(q, 'SELECT 1 FROM tombstone WHERE workspace_id = $1 AND e164_hash = ANY($2)', [ws, [targetHash, ...tombstoneHashes(ws, target)]]);
       if (t) throw new Refuse('erased', 'this person asked to be forgotten');
     }],
     ['G4', async () => {
+      // After an erasure a suppression keeps only the number's hash (e164 is NULL), so match by hash too.
       const s = await one<{ scope: string; source: string | null; reason: string }>(q, `SELECT scope, source, reason FROM suppression
-        WHERE workspace_id = $1 AND (e164 = $2 OR ($3::uuid IS NOT NULL AND contact_id = $3::uuid))
+        WHERE workspace_id = $1 AND (e164 = $2 OR e164_hash = $5 OR ($3::uuid IS NOT NULL AND contact_id = $3::uuid))
           AND (scope = 'workspace' OR (scope = 'campaign' AND scope_id = $4::uuid)) ORDER BY created_at LIMIT 1`,
-        [ws, target, test ? null : contact?.id ?? null, campaign?.id ?? null]);
+        [ws, target, test ? null : contact?.id ?? null, campaign?.id ?? null, targetHash]);
       if (s) throw new Refuse(`suppressed:${s.scope === 'campaign' ? 'campaign' : (s.source || 'workspace')}`, s.reason);
       if (contact && !test) {
         const d = await one<{ internal: boolean }>(q, 'SELECT internal FROM dnd_status WHERE contact_id = $1', [contact.id]);
