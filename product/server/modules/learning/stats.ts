@@ -130,13 +130,15 @@ export function armFor(experimentId: string, unitId: string, treatmentShare = 0.
 export interface AaUnit { id: string; success: boolean; hasOutcome: boolean }
 export interface AaResult {
   units: number; runs: number; falseWinners: number; falseWinnerRate: number;
-  coverage: number; coverageImbalanceP: number; plumbingOk: boolean; passed: boolean; reasons: string[];
+  falseWinnerRateLower: number; coverage: number; coverageImbalanceP: number; plumbingOk: boolean; passed: boolean; reasons: string[];
 }
 
 /** Shadow A/A: re-randomise the tenant's own units into two shadow arms `runs` times and run the production test on
  *  each split. Both arms ran the same version, so every "winner" is false; the rate estimates the procedure's real
  *  false-winner rate on this tenant's data. The plumbing check fails when outcomes are missing too often or unevenly
- *  (an outcome writer that writes for some calls only). */
+ *  (an outcome writer that writes for some calls only). The rate is judged by its one-sided 99% Wilson lower bound:
+ *  with 1,000 re-randomisations the point estimate alone breached 6.5% on 2-6% of clean iid datasets (measured,
+ *  100 salts each at n = 120 / 300 / 1,000), which would block healthy tenants for Monte Carlo noise. */
 export function shadowAA(units: AaUnit[], o: { runs?: number; alpha?: number; salt?: string; minUnits?: number; maxFalseRate?: number; minCoverage?: number } = {}): AaResult {
   const runs = o.runs ?? 1000, alpha = o.alpha ?? 0.05, salt = o.salt ?? 'aa';
   const minUnits = o.minUnits ?? 100, maxFalse = o.maxFalseRate ?? 0.065, minCoverage = o.minCoverage ?? 0.8;
@@ -155,10 +157,11 @@ export function shadowAA(units: AaUnit[], o: { runs?: number; alpha?: number; sa
   const coverage = units.length ? (covA.k + covB.k) / units.length : 0;
   const coverageImbalanceP = covA.n && covB.n ? twoProportionZ(covA, covB).p : 1;
   const falseWinnerRate = runs ? falseWinners / runs : 0;
+  const falseWinnerRateLower = runs ? wilson(falseWinners, runs, 2.326347874040841).lo : 0;
   if (units.length < minUnits) reasons.push(`only ${units.length} eligible contacts; the shadow A/A needs ${minUnits}`);
   if (coverage < minCoverage) reasons.push(`outcomes recorded for ${(coverage * 100).toFixed(1)}% of calls (need ${minCoverage * 100}%): check the outcome writer`);
   if (coverageImbalanceP < 0.01) reasons.push('outcomes are recorded unevenly across shadow arms: check the outcome writer');
-  if (falseWinnerRate > maxFalse) reasons.push(`false-winner rate ${(falseWinnerRate * 100).toFixed(1)}% exceeds ${maxFalse * 100}%`);
+  if (falseWinnerRateLower > maxFalse) reasons.push(`false-winner rate ${(falseWinnerRate * 100).toFixed(1)}% (99% lower bound ${(falseWinnerRateLower * 100).toFixed(1)}%) exceeds ${maxFalse * 100}%`);
   const plumbingOk = coverage >= minCoverage && coverageImbalanceP >= 0.01;
-  return { units: units.length, runs, falseWinners, falseWinnerRate, coverage, coverageImbalanceP, plumbingOk, passed: reasons.length === 0, reasons };
+  return { units: units.length, runs, falseWinners, falseWinnerRate, falseWinnerRateLower, coverage, coverageImbalanceP, plumbingOk, passed: reasons.length === 0, reasons };
 }

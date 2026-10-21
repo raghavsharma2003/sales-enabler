@@ -116,6 +116,16 @@ async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: V
   return { issues, moments, calls, lessons };
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Cited ids that are really this workspace's evidence: shown to the model, or one of its own calls. */
+async function ownEvidence(q: Queryable, ws: string, known: Set<string>, ids: unknown[]): Promise<string[]> {
+  const strs = [...new Set(ids.filter((x): x is string => typeof x === 'string'))].slice(0, 20);
+  const unknown = strs.filter(x => !known.has(x) && UUID_RE.test(x));
+  const calls = unknown.length ? new Set((await many<{ id: string }>(q, 'SELECT id FROM conversation WHERE workspace_id = $1 AND id = ANY($2::uuid[])', [ws, unknown])).map(r => r.id)) : new Set<string>();
+  return strs.filter(x => known.has(x) || calls.has(x));
+}
+
 const proposeIn = obj({ agentId: uuid(), max: opt(num({ int: true, min: 1, max: 3 })) });
 
 async function propose(ctx: ToolCtx, i: { agentId: string; max?: number }) {
@@ -148,7 +158,7 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number }) {
     const kind = PROPOSAL_KINDS.includes(p?.kind) ? p.kind : null;
     let ops: ChangeOp[] | null = null, parseError: string | null = null;
     try { ops = parseOps(p?.change); } catch (e) { parseError = e instanceof Error ? e.message : String(e); }
-    const cited = (Array.isArray(p?.evidenceIds) ? p.evidenceIds : []).filter((x: unknown) => typeof x === 'string' && known.has(x));
+    const cited = await ownEvidence(ctx.q, ws, known, Array.isArray(p?.evidenceIds) ? p.evidenceIds : []);
     const hash = ops ? changeHash(ops) : null;
     if (hash && tried.has(hash)) { out.push({ status: 'skipped', reason: 'this workspace already tested or rejected this change' }); continue; }
 

@@ -1,0 +1,52 @@
+{
+  "module": "learning",
+  "date": "2026-10-21",
+  "tools": [
+    { "name": "learning.propose", "risk": "draft" },
+    { "name": "proposal.list", "risk": "read" },
+    { "name": "proposal.get", "risk": "read" },
+    { "name": "proposal.probe", "risk": "test" },
+    { "name": "proposal.accept", "risk": "policy", "autonomy": "A2" },
+    { "name": "experiment.start", "risk": "external", "autonomy": "A2" },
+    { "name": "experiment.assign", "risk": "read" },
+    { "name": "experiment.check", "risk": "draft" },
+    { "name": "experiment.stop", "risk": "draft" },
+    { "name": "experiment.list", "risk": "read" },
+    { "name": "experiment.get", "risk": "read" },
+    { "name": "lesson.list", "risk": "read" },
+    { "name": "learning.power", "risk": "read" }
+  ],
+  "migrations": ["db/migrations/0801_learning.sql"],
+  "tests": { "passed": 19, "total": 19, "files": ["tests/learning.stats.test.ts", "tests/learning.test.ts"], "method": "node --import tsx --test tests/learning*.test.ts against vp_mod_learning on the throwaway cluster, 3 consecutive green runs; tsc clean" },
+  "works": [
+    "Propose: evidence = open issues, moments (by hazard), recent live calls with judge results, and the workspace's lessons; the LLM (purpose 'learning', JSON) returns ops on the latest version's config; every cited id is checked against this workspace's own rows; uncited proposals are gated out",
+    "Gates (block, never warn): editable allowlist, empty locked-section diff on the resolved config, provenance (no new number or unverified domain), manipulation lint (incl. Hinglish urgency), never-say, shared lintAgentConfig and replyDoor",
+    "Tenant library: a change this workspace already rejected, lost or stopped (same change hash) is not re-proposed",
+    "Probe: test.simulate on current and proposed configs with the same sim callers and seeds; fewer passes or any guarded metric worse (safety_violations, disclosure_missed, hung_up, cut_ins, reply_gap_ms) rejects and records a lesson; unreported metrics are listed, not assumed fine",
+    "Accept (A2): treatment version (brief via brief.compile), baseline from the workspace's own live calls on the control version (or given), Fleiss power at alpha 0.05 / power 0.8, calls-to-prove stored on the proposal and the experiment before launch, pre-registration hash",
+    "Start (A2): shadow A/A (1,000 re-randomisations of the tenant's own contacts) plus outcome-plumbing check; too little history waits (aa_pending), broken plumbing fails (aa_failed + issue)",
+    "Assign: sticky arm per contact (hash of experiment and contact); stopped/decided experiments send no traffic",
+    "Check: test calls excluded; any treatment safety violation, 3+ complaints/opt-outs at 2x control, or the always-valid mSPRT harm test stops the arm at once, calls deployment.revert_to_last_good (A3), opens a critical issue and records a lesson",
+    "No peeking: effect is neither computed nor shown before the horizon and the minimum days; at the horizon one two-sided two-proportion z test; a win is sent to version.publish only if that tool is approval-gated, so it becomes an A2 card",
+    "No pooling: every query filters by workspace; rows in another workspace that point at this workspace's versions are ignored (tested)"
+  ],
+  "untested": [
+    "Against real sibling modules (all four sibling tools are fakes in tests)",
+    "With a real LLM: proposal quality, cost per cycle, and the INR 200/day test budget are not metered here",
+    "Moment-level fast lane on live calls (moment rows are read as evidence; this module does not compute hazards)",
+    "Clustered standard errors: the unit is the contact, but repeat calls within a contact are collapsed rather than modelled",
+    "Winner expiry/drift (60 days) and re-confirm cards; staged safety ramp (first 50 calls at 20%); Bonferroni for more than two arms",
+    "Retry/pacing policy changes: they live in campaigns, outside the agent config this module edits",
+    "Guardrails other than safety violations and complaint/opt-out reason codes (cut-ins, reply gap, disclosure rate, CLI flags)"
+  ],
+  "needs_from_others": [
+    "agents: test.simulate {agentId, config, simCallerIds, seeds} -> {runs:[{simCallerId, seed, passed, metrics:{hung_up, safety_violations, disclosure_missed, cut_ins, reply_gap_ms}}]} (risk test)",
+    "agents: brief.compile {config: AgentConfig} -> {text, hash, bytes}; without it a treatment version cannot start",
+    "agents: version.publish {agentId, versionId} registered as an A2 risk class (learning refuses to call it otherwise)",
+    "agents or calls: deployment.revert_to_last_good {agentId} (A3 verb in shared/approval.ts)",
+    "calls/campaigns: call experiment.assign {agentId, contactId} at dial time and stamp conversation.agent_version_id with the version that actually ran",
+    "calls/intelligence: conversation.outcome values (default success value 'success', configurable per experiment), reason_code 'opt_out'/'complaint'/'abuse_report', analysis.safety_violation and analysis.judge",
+    "a scheduler: run experiment.check after each connected call on an agent with a running experiment",
+    "kernel: add learning to server/modules/index.ts (module export: module from server/modules/learning/index.ts)"
+  ]
+}
