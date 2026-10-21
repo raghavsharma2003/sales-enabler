@@ -38,3 +38,20 @@ setFakeLlm((req: LlmRequest) => {
   return reply('Namaste. Main yahan hoon. Aap bataiye: kaunsi calls karwani hain, ya kisi page ka kaam karna hai? Drafts aur tests main khud kar leta hoon; jo logon tak pahunchta hai ya paise lagata hai, wo aapke tap ke baad.');
 });
 import('../../server/main.ts');
+
+// DEV ONLY: a tiny control port so an e2e flow can set what the fake voice runtime reports about stacks (POST a JSON health body, or null).
+import { createServer } from 'node:http';
+import { runtime, FakeRuntime } from '../../server/runtime-client.ts';
+import { forgetRuntimeHealth } from '../../server/modules/agents/index.ts';
+const hook = createServer((req, res) => {
+  let body = '';
+  req.on('data', c => { body += c; });
+  req.on('end', () => {
+    const rt = runtime();
+    if (req.method === 'POST' && rt instanceof FakeRuntime) {
+      try { rt.healthReply = JSON.parse(body || 'null'); forgetRuntimeHealth(); res.writeHead(204).end(); } catch { res.writeHead(400).end(); }
+    } else res.writeHead(404).end();
+  });
+});
+hook.on('error', e => console.error('health hook not listening:', (e as Error).message));   // never take the dev server down
+hook.listen(Number(process.env.HEALTH_HOOK_PORT ?? Number(process.env.PORT ?? 8799) + 1), '127.0.0.1');

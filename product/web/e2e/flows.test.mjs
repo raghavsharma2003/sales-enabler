@@ -344,3 +344,28 @@ test('Approval sheet: the hold is not offered until the details of the change ha
     assert.ok(await sheet().locator('dl.kv').count() > 0, 'the details are on screen by the time the hold is offered');
   } finally { await page.unroute('**/v1/actions?status=proposed*'); }
 });
+
+test('Stack picker: the voice runtime\'s own word on each stack (unknown shows nothing, unavailable says why and cannot be chosen)', async () => {
+  const hook = async body => { const r = await fetch(`http://127.0.0.1:${Number(new URL(BASE).port) + 1}/`, { method: 'POST', body: JSON.stringify(body) }); assert.equal(r.status, 204, 'dev health hook'); };
+  const emi = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'EMI pre-due reminder'", [ws])).rows[0].id;
+  const open = async () => { await page.goto(`${BASE}/agents/${emi}`); await page.getByRole('tab', { name: 'Voice stack' }).click(); await page.locator('.stackcard').first().waitFor(); await page.getByText('Provider cost per minute').first().waitFor(); };
+  const flash = () => page.locator('.stackcard', { hasText: 'Gemini 3.5 Flash-Lite + Gemini voice' }).first();
+  try {
+    // 1. unknown: no runtime has reported. Nothing alarming, and nothing disabled.
+    await hook(null);
+    await open();
+    assert.equal(await page.getByText('Unavailable', { exact: true }).count(), 0, 'unknown shows no Unavailable chip');
+    assert.equal(await flash().getByRole('button', { name: 'Choose this stack' }).isDisabled(), false);
+    // 2. unavailable with the runtime's reason; every stack the runtime does not list is unavailable too.
+    await hook({ stacks: { 'v2-live': { available: true, reason: null, missing: [] }, 'v2-flashlite': { available: false, reason: 'Our Google voice connection is being set up.', missing: [] } } });
+    await open();
+    await flash().getByText('Unavailable', { exact: true }).waitFor();
+    await flash().getByText('Our Google voice connection is being set up.').waitFor();
+    const pick = flash().getByRole('button', { name: 'Choose this stack' });
+    assert.equal(await pick.isDisabled(), true, 'an unavailable stack cannot be chosen');
+    // 3. available: no chip, choosable.
+    const live = page.locator('.stackcard', { hasText: 'Gemini 3.8 Live' }).first();
+    assert.equal(await live.getByText('Unavailable', { exact: true }).count(), 0);
+    assert.equal(await live.getByRole('button', { name: 'Choose this stack' }).isDisabled(), false);
+  } finally { await hook(null); }
+});
