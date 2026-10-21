@@ -66,7 +66,12 @@ export type RuntimeEvent =
       quantity: number; unit: 'second' | 'token' | 'char' | 'call' | 'request'; inrMilli: number; detail?: Record<string, unknown> }
   | { seq: number; type: 'safety'; at: string; rule: SafetyRuleId; action: 'blocked' | 'replaced' | 'flagged' | 'redacted' | 'suspended_goal';
       detail: string }                                    // detail never contains the blocked text verbatim if it held secrets
-  | { seq: number; type: 'moment'; at: string; kind: 'objection' | 'question' | 'commitment' | 'opt_out' | 'callback_request' | 'confusion' | 'laughter'; atMs: number; note: string }
+  // Supervisor moments (live_listen_started/ended, whisper, takeover) mark what a person did on the live call, for the
+  // call page's timeline. A whisper moment NEVER carries the whisper: its note must be absent or empty.
+  | { seq: number; type: 'moment'; at: string;
+      kind: 'objection' | 'question' | 'commitment' | 'opt_out' | 'callback_request' | 'confusion' | 'laughter'
+        | 'live_listen_started' | 'live_listen_ended' | 'whisper' | 'takeover';
+      atMs: number; note?: string }
   | { seq: number; type: 'tool'; at: string; name: string; args: Record<string, unknown>; status: 'requested' | 'done' | 'failed' }
   | { seq: number; type: 'hand_off'; at: string; reason: string; target: string; summary: string }
   // What a model judge did on a caller turn, for analysis only: never caller text, never a safety signal. A real raise

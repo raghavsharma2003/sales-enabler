@@ -33,13 +33,23 @@ const manifest = obj({
   runtimeVersion: str({ max: 100 }),
 });
 
+/** A whisper moment records THAT a supervisor sent a note, never what it said. */
+function noWhisperText(v: Validator<{ kind: string; note?: string }>): Validator<unknown> {
+  return (value, p = '') => {
+    const out = v(value, p);
+    if (out.kind === 'whisper' && out.note && out.note.trim()) throw new ValidationError(p ? `${p}.note` : 'note', 'a whisper moment never carries the whisper; leave note out');
+    return out;
+  };
+}
+
 const EVENTS: Record<RuntimeEvent['type'], Validator<unknown>> = {
   'call.started': obj({ seq, type: str(), at, manifest }),
   turn: obj({ seq, type: str(), at, speaker, text: str({ max: 20_000 }), startMs: ms, endMs: ms, interrupted: opt(bool()), latencyMs: opt(ms), tone: opt(str({ max: 50 })) }),
   cost: obj({ seq, type: str(), at, component: str({ oneOf: ['telephony', 'ears', 'brain', 'voice', 'platform'] }), provider: str({ max: 100 }),
     quantity: num({ min: 0 }), unit: str({ oneOf: ['second', 'token', 'char', 'call', 'request'] }), inrMilli: num({ int: true, min: 0 }), detail: opt(record(any())) }),
   safety: obj({ seq, type: str(), at, rule: str({ oneOf: RULES }), action: str({ oneOf: ['blocked', 'replaced', 'flagged', 'redacted', 'suspended_goal'] }), detail: str({ max: 2000 }) }),
-  moment: obj({ seq, type: str(), at, kind: str({ oneOf: ['objection', 'question', 'commitment', 'opt_out', 'callback_request', 'confusion', 'laughter'] }), atMs: ms, note: str({ max: 2000 }) }),
+  moment: noWhisperText(obj({ seq, type: str(), at, kind: str({ oneOf: ['objection', 'question', 'commitment', 'opt_out', 'callback_request', 'confusion', 'laughter',
+    'live_listen_started', 'live_listen_ended', 'whisper', 'takeover'] }), atMs: ms, note: opt(str({ max: 2000 })) })),
   tool: obj({ seq, type: str(), at, name: str({ max: 100 }), args: record(any()), status: str({ oneOf: ['requested', 'done', 'failed'] }) }),
   hand_off: obj({ seq, type: str(), at, reason: str({ max: 500 }), target: str({ max: 200 }), summary: str({ max: 2000 }) }),
   judge: obj({ seq, type: str(), at, judge: str({ oneOf: ['caller_crisis'] }), mode: str({ oneOf: ['shadow', 'raise'] }),
@@ -155,7 +165,7 @@ async function apply(c: pg.PoolClient, conv: Conv, e: RuntimeEvent): Promise<boo
       return false;
     case 'moment':
       await c.query(`INSERT INTO call_moment (workspace_id, conversation_id, source, kind, at_ms, note) VALUES ($1,$2,'runtime',$3,$4,$5)`,
-        [ws, conv.id, e.kind, e.atMs, e.note]);
+        [ws, conv.id, e.kind, e.atMs, e.note ?? null]);
       if (e.kind === 'opt_out') {
         await c.query(`INSERT INTO call_opt_out (workspace_id, conversation_id, contact_id, status) VALUES ($1,$2,$3,$4) ON CONFLICT (conversation_id) DO NOTHING`,
           [ws, conv.id, conv.contact_id, conv.contact_id ? 'pending' : 'no_contact']);

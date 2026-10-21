@@ -29,8 +29,8 @@
     "db/migrations/0602_call_judge_event.sql"
   ],
   "tests": {
-    "passed": 25,
-    "total": 25,
+    "passed": 26,
+    "total": 26,
     "files": [
       "tests/calls.test.ts"
     ],
@@ -55,7 +55,8 @@
     "Post-call caller-crisis judge (shared/safety/judge.ts, purpose safety_judge, 5 s per line). It judges each caller line the floor did not flag, with the previous caller line as context. mode raise: an RD3 'flagged' call_safety_event per hit, detail 'judge_raised kind=<k> confidence=<c>' (never the words), which counts as safety. mode shadow: analysis.judge_shadow only, with no event, flag, safety_violation or monitor input. analysis.judge_unavailable and judge_calls are recorded, and a cost_line (component analysis, provider safety_judge, tokens, priced:false) is written whenever the judge was called. No VP_LLM_SAFETY_JUDGE_* or VP_LLM_DEFAULT_* keys means no call.",
     "RuntimeEvent 'judge' (shared/runtime-protocol.ts) is validated strictly: unknown outcome, mode 'off' or any extra field (text) gives 422. It is stored in call_judge_event with no flag and no call_safety_event. analysis.crisis_judge = {shadow, raised, unavailable, runtime:{...}, postCall:{...}} tells one story across live and post-call.",
     "test.browser_call treats the runtime admission cap (503 at_capacity, from StartReply.retryable/retryAfterS or the reason text) as 'busy, try again in N seconds'. It leaves no conversation row behind, because nothing was placed.",
-    "Live control goes through runtime().control. live.listen (A1, audited) returns the person's receive-only join. live.whisper is external (A2) and keeps its runtime request in run(). live.takeover is for a signed-in member only (refused for agents even with a role) and returns the person's two-way join. A refusal (404 unknown, 409 not live) shows the runtime's own reason. The runtime's hand_off {reason:'takeover', target:'member:<id>'} adds the flag human_joined."
+    "Live control goes through runtime().control. live.listen (A1, audited) returns the person's receive-only join. live.whisper is external (A2) and keeps its runtime request in run(). live.takeover is for a signed-in member only (refused for agents even with a role) and returns the person's two-way join. A refusal (404 unknown, 409 not live) shows the runtime's own reason. The runtime's hand_off {reason:'takeover', target:'member:<id>'} adds the flag human_joined.",
+    "Supervisor moments (live_listen_started, live_listen_ended, whisper, takeover) are accepted, stored in call_moment, never a safety signal, and shown by call.explain in plain words. A whisper moment with a non-empty note is refused with 422: it never carries the whisper."
   ],
   "untested": [
     "The real voice runtime end to end (no cross-language signature test). The hook now verifies raw bytes, so any byte-exact signer works.",
@@ -66,7 +67,7 @@
     "Load: search p95 and the time from hang-up to analysis.",
     "The callback retry time: the analysis does not yet extract the stated callback time, so attempt.retry_per_ladder gets no 'at' for callbacks.",
     "The crisis judge with a real model (tests use setFakeLlm with assumeConfigured).",
-    "live.listen, live.whisper and live.takeover against the real runtime: the voice builder agreed the semantics on 2026-10-21 but has not built the routes yet, so they 404 until then. Tests use the agreed reply shapes on a fake runtime."
+    "live.listen, live.whisper and live.takeover end to end against the real runtime (4ad75e4). Their reply shapes were checked by reading voice/vpvoice/server.py live_control: join for listen and takeover, ok for whisper, {ok:false, reason} with 404/409/422. Not run across the two processes."
   ],
   "needs_from_others": [
     "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). It is not listed yet.",
@@ -78,7 +79,6 @@
     "money module: price 'analysis' token cost lines (written with inr_milli 0 and detail.priced false).",
     "web/runtime: serve the test-call WebRTC offer at /v1/test-calls/:conversationId/offer (the ticket's offerUrl), or tell this module the right URL.",
     "blueprint: the companion data/blueprint/intelligence-module.json (34 codes, 20 monitors) is not in the repo. taxonomy.ts holds this module's own 34 codes.",
-    "voice runtime: implement /v1/calls/{id}/listen, /whisper and /takeover. Each body carries conversationId. listen {by}: returns a listen-only join. whisper {text, by}: context for the agent's next turn, never spoken. takeover {memberId}: the agent stops for good, the call is bridged to the person, and it returns their join.",
     "kernel (runtime-client.ts): StartReply should gain retryable and retryAfterS on 503 at_capacity, and join should be typed to the runtime's real shapes (expiresAtMs; sip has no url/token). control('end') must send {conversationId, endReason?}. campaigns dispatch() should treat at_capacity as not placed: release the hold, requeue after retryAfterS, and spend no ladder step."
   ],
   "jobs": [

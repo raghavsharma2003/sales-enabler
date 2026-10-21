@@ -820,3 +820,29 @@ test('atCapacity reads the runtime admission cap from the reply fields or from t
   assert.equal(atCapacity({ accepted: false, reason: 'runtime returned 422: unknown stack' }), null);
   assert.equal(atCapacity({ accepted: true }), null);
 });
+
+test('supervisor moments are accepted and never a safety signal; a whisper moment never carries the whisper', { skip }, async () => {
+  const w = await workspace();
+  setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null }));
+  const c = await call(w);
+  const m = (seq: number, kind: string, atMs: number, note?: string): RuntimeEvent => ({ seq, type: 'moment', at: now(), kind, atMs, ...(note !== undefined ? { note } : {}) } as RuntimeEvent);
+  const ev = fullCall();
+  ev.splice(ev.length - 1, 0, m(70, 'live_listen_started', 42000), m(71, 'whisper', 50000), m(72, 'whisper', 51000, ''), m(73, 'live_listen_ended', 90000), m(74, 'takeover', 65000, 'member joined'));
+  const r = await post(c.conv, ev);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  await analysesSettled();
+  const rows = await many<any>(pool, "SELECT kind, at_ms, note FROM call_moment WHERE conversation_id = $1 AND source = 'runtime' ORDER BY at_ms", [c.conv]);
+  assert.deepEqual(rows.map(x => x.kind), ['live_listen_started', 'whisper', 'whisper', 'takeover', 'live_listen_ended']);
+  assert.ok(rows.filter(x => x.kind === 'whisper').every(x => !x.note));
+  const conv = await one<any>(pool, 'SELECT flags, analysis FROM conversation WHERE id = $1', [c.conv]);
+  assert.ok(!conv.flags.includes('safety'), 'no supervisor moment sets the safety flag');
+  assert.equal(conv.analysis.safety_violation, false);
+  const ex = await registry.execute<any>(pool, 'call.explain', { conversationId: c.conv }, { workspaceId: w.ws, actor: w.member });
+  assert.ok(ex.status === 'confirmed' && ex.result.because.some((b: any) => b.point === 'A supervisor sent the agent a note.' && !b.evidence.said));
+
+  const c2 = await call(w);
+  const bad = await post(c2.conv, [m(1, 'whisper', 1000, 'They paid yesterday')]);
+  assert.equal(bad.status, 422, 'a whisper moment with its text is refused');
+  assert.match(JSON.stringify(bad.body), /never carries the whisper/);
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_moment WHERE conversation_id = $1', [c2.conv])).n, 0);
+});

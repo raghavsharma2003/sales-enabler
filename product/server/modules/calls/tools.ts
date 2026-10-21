@@ -41,6 +41,12 @@ async function liveCall(ctx: ToolCtx, id: string) {
 
 const SYSTEM = { type: 'system' as const, id: 'calls.test_call' };
 
+// What a person did on the live call (runtime moments). Never what a whisper said: the runtime never sends it.
+const SUPERVISOR_MOMENTS: Record<string, string> = {
+  live_listen_started: 'A supervisor started listening.', live_listen_ended: 'The supervisor stopped listening.',
+  whisper: 'A supervisor sent the agent a note.', takeover: 'A person took over the call; the agent stopped.',
+};
+
 /** The runtime's admission cap: POST /v1/calls answers 503 {error:'at_capacity', retryAfterS} and places nothing.
  *  Read from StartReply.retryable/retryAfterS when the kernel client sets them, else from the reason text it carries today. */
 export function atCapacity(rep: { accepted: boolean; reason?: string; retryable?: boolean; retryAfterS?: number }): { retryAfterS: number } | null {
@@ -192,6 +198,7 @@ export function registerTools(r: Registry): void {
         'SELECT source, kind, at_ms, note, quote FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY at_ms NULLS LAST', [c.id, ctx.workspaceId]);
       for (const m of moments) {
         if (m.source === 'analysis' && m.quote) because.push({ point: `${m.kind.replaceAll('_', ' ')}${m.note ? ': ' + m.note : ''}`, evidence: { quote: m.quote, atMs: m.at_ms } });
+        else if (m.source === 'runtime' && SUPERVISOR_MOMENTS[m.kind]) because.push({ point: SUPERVISOR_MOMENTS[m.kind], evidence: { event: 'moment', kind: m.kind, atMs: m.at_ms } });
         else if (m.source === 'runtime') because.push({ point: `${m.kind.replaceAll('_', ' ')} (noted live)${m.note ? ': ' + m.note : ''}`, evidence: { event: 'moment', atMs: m.at_ms, said: said(m.at_ms) } });
       }
       for (const s of await many<{ rule: string; action: string; detail: string; seq: number }>(ctx.q, 'SELECT rule, action, detail, seq FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId])) {
