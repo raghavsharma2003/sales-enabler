@@ -16891,6 +16891,17 @@
    "title": "RuntimeEvent 'judge' (caller_crisis: mode shadow|raise, outcome raised|shadow|unavailable, kind, confidence, reason, latencyMs; never text) is stored in call_judge_event for analysis only. A live raise is two records: the 'safety' RD3 event (handling, flag, violation) and the 'judge' event (the judge's record)",
    "rationale": "The live runtime needs the same 'shadow counts nothing' rule as post-call analysis. Ingest writes no flag and no call_safety_event for a judge event. analysis.crisis_judge sums the runtime and post-call counts. It is not analysis.judge, which learning reads as the outcome judge.",
    "reverse_if": "The owner wants judge-unavailable outages to open an issue; then add a monitor on call_judge_event (outages only, never shadow hits)."
+  },
+  {
+   "id": "measure.2026-10-21.ui-review-3-main-loop",
+   "type": "measurement",
+   "title": "Third main-loop review of the screens, after web copy pass 2 (c257b28): every leak from the second review is fixed. Six small copy items remain, none of them developer identifiers.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "n": 6,
+   "method": "Read settings-activity-d, call-d, contact-d, campaign-draft-d and agent-stack-d at full size, plus the 26-screen mobile contact sheet, at c257b28. Checked each against decision.2026-10-21.no-developer-text-in-ui. Fixed since the second review: tool ids in the activity feed (now sentences grouped by day), 'did not return JSON', 'suppressed', 'Asia/Kolkata', 'Dnd unknown', 'te', ISO dates, 'policy v1', the file path in the cost basis, and the stack jargon. Remaining: the lowercase receipt chip; 'An agent' as an ambiguous actor; practice-call rows without the agent's name; 'allow-list' on the compliance tab; lowercase component names under 'Made of'; an unexplained 'Gemini key' chip. Not inspected at full size: the other 21 desktop shots.",
+   "value": "second-review leaks 0 left; 6 minor copy items open"
   }
  ],
  "edges": [
@@ -30190,6 +30201,11 @@
    "from": "risk.2026-10-21.raise-mode-reply-wait",
    "to": "decision.2026-10-21.safety-second-layer-proposal",
    "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.ui-review-3-main-loop",
+   "to": "measure.2026-10-21.ui-review-2-main-loop",
+   "relation": "follows"
   }
  ]
 }
