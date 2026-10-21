@@ -4,10 +4,11 @@
   "safety.check (read)",
   "safety.cases (read)"
  ],
+ "judge": "shared/safety/judge.json + judge.ts: raise-only caller-crisis judge (default shadow, no call without VP_LLM_SAFETY_JUDGE_* keys); eval: node product/scripts/judge-eval.mjs <model> on the lab VM (README)",
  "tests": {
-  "passed": 14,
-  "total": 14,
-  "file": "product/tests/safety.test.ts",
+  "passed": 26,
+  "total": 26,
+  "file": "product/tests/safety.test.ts (14) + product/tests/safety-judge.test.ts (12)",
   "vectors": 2378
  },
  "works": [

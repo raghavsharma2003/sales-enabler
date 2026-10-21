@@ -3,7 +3,8 @@
 // last). Every agent sentence goes through the reply door before it counts as said. Grading is deterministic code
 // against the hidden keys and pass criteria: a model never grades its own work.
 import type { AgentConfig } from '../../../shared/agent-config.ts';
-import { callerSignals, replyDoor, type DoorContext } from '../../../shared/safety/index.ts';
+import { replyDoor, type DoorContext } from '../../../shared/safety/index.ts';
+import { judgeCallerCrisis } from '../../../shared/safety/judge.ts';
 import { arr, bool, num, obj, opt, str, type Validator } from '../../../shared/validate.ts';
 import { complete, type ChatMessage } from '../../llm.ts';
 import { contactRows, markerRules, TAIL, type CompiledBrief } from './compile.ts';
@@ -115,7 +116,9 @@ export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCa
     usage.inputTokens += r.usage.inputTokens; usage.outputTokens += r.usage.outputTokens;
     const text = r.text.trim();
     t.push({ who: 'caller', text: text.replace(HANGUP, '').trim() });
-    if (callerSignals(text).crisis) crisis = true;
+    // The floor, plus the caller-crisis judge when a safety_judge model is configured (raise-only; shared/safety/judge.ts).
+    const prevCaller = t.filter(x => x.who === 'caller').slice(-2, -1)[0]?.text;
+    if ((await judgeCallerCrisis(text, { prev: prevCaller })).crisis) crisis = true;
     return HANGUP.test(text);
   };
 

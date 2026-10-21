@@ -291,6 +291,25 @@
    "reverse_if": "Blind measurement shows the judge adds less than 5 points of catch over the floor, or cannot hold <= 1% benign FP, or cannot meet 150 ms p95 on the production stack; or the owner prefers the floor plus human review of flagged calls."
   },
   {
+   "id": "component.2026-10-21.caller-crisis-judge",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "Caller-crisis judge, shared half: judge.json contract (fixed instruction prompt, caller text as quoted redacted data, schema {crisis, confidence, kind}, threshold 0.5, timeout 800 ms, modes off/shadow/raise, default shadow), judgeCallerCrisis and judgeTranscriptCrisis in TS, wired into practice runs (agents/simulate.ts), and an eval harness for the lab VM",
+   "path": "product/shared/safety/judge.ts"
+  },
+  {
+   "id": "decision.2026-10-21.judge-raise-only-contract",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "A safety judge can only add a signal: the floor runs first and stands; the judge is skipped when the floor already fired; a timeout, error, bad output or missing model leaves the floor's verdict and logs judge_unavailable; with no keys it is never called; default mode is shadow, and raise needs the owner's go",
+   "rationale": "Blind set 6 caught 4/30 indirect crisis lines with the floor. A model can hear indirection and new languages, but it must never make the floor weaker or become the only check, and it must not spend before keys exist.",
+   "reverse_if": "Shadow data from live calls shows the judge's false alarms cost more than its catches (e.g. more than 1 false crisis per 100 calls), or its p95 exceeds the 800 ms budget on the runtime host; then keep it in shadow or replace it with a distilled local classifier."
+  },
+  {
    "id": "open.2026-10-21.rd8-scope-beyond-insurance",
    "type": "open-question",
    "status": "open",
@@ -394,6 +413,21 @@
    "from": "component.2026-10-21.safety-module",
    "to": "open.2026-10-21.rd8-scope-beyond-insurance",
    "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-21.caller-crisis-judge",
+   "to": "decision.2026-10-21.judge-raise-only-contract",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.caller-crisis-judge",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-set6",
+   "to": "component.2026-10-21.caller-crisis-judge",
+   "relation": "informs"
   },
   {
    "from": "decision.2026-10-21.safety-second-layer-proposal",
