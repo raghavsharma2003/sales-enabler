@@ -17,7 +17,12 @@ export interface Req {
   body: unknown;
 }
 
-export interface Res { status?: number; body?: unknown; headers?: Record<string, string>; raw?: Buffer | string }
+export interface Res {
+  status?: number; body?: unknown; headers?: Record<string, string>; raw?: Buffer | string;
+  /** Stream the body (e.g. Server-Sent Events). write() flushes a chunk; the response ends when the promise settles.
+   *  `closed` aborts when the client goes away. */
+  stream?: (write: (chunk: string) => void, closed: AbortSignal) => Promise<void>;
+}
 export type Handler = (req: Req) => Promise<Res>;
 
 interface Route { method: string; parts: string[]; handler: Handler }
@@ -77,6 +82,15 @@ export class Router {
       if (!m) return send(404, { error: { code: 'not_found', message: 'no such route' } });
       const body = await readBody(req);
       const out = await m.handler({ method: req.method ?? 'GET', path: url.pathname, params: m.params, query: url.searchParams, headers: req.headers, body });
+      if (out.stream) {
+        res.writeHead(out.status ?? 200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', 'x-accel-buffering': 'no', ...(out.headers ?? {}) });
+        const ac = new AbortController();
+        res.on('close', () => ac.abort());
+        try { await out.stream(chunk => { if (!res.writableEnded) res.write(chunk); }, ac.signal); }
+        catch (e) { console.error('[vp] stream failed', e); if (!res.writableEnded) res.write('event: error\ndata: {"message":"the stream failed"}\n\n'); }
+        res.end();
+        return;
+      }
       if (out.raw !== undefined) {
         res.writeHead(out.status ?? 200, out.headers ?? {});
         res.end(out.raw);

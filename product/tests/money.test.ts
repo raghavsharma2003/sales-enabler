@@ -193,10 +193,13 @@ test('wallet states follow the balance; low raises one issue; ok resolves it; bl
   await pool.query('UPDATE wallet SET balance_inr_milli = 2000000 WHERE workspace_id = $1', [ws]);
   assert.equal(await st(), 'ok');
   assert.deepEqual((await issues()).map(i => i.status), ['resolved']);
-  // a settle above the balance (a live call always finishes) overdraws it
+  // settle never charges above the hold (the kernel records the excess as VP's overrun), so a settle empties the
+  // wallet at most; overdrawn comes from an adjustment such as a chargeback
   const r = await run(c => reserve(c, { workspaceId: ws, inrMilli: 2_000_000 }));
   assert.ok(r.ok);
   if (r.ok) await run(c => settle(c, r.reservationId, 2_100_000));
+  assert.equal(await st(), 'empty');
+  await pool.query('UPDATE wallet SET balance_inr_milli = -100000 WHERE workspace_id = $1', [ws]);
   assert.equal(await st(), 'overdrawn');
   assert.equal((await issues()).at(-1)!.severity, 'critical');
   await run(c => setWalletBlocked(c, ws, true));
@@ -368,7 +371,7 @@ test('tenancy: another workspace cannot read or change these rows', { skip }, as
 // ---------------------------------------------------------------- ledger gaps, proven here, fixed by the kernel (STATUS.json)
 // Marked todo so the gate stays green while they wait on the kernel; each fails today.
 
-test('ledger gap: settle above the hold must not push a cap over its limit', { skip, todo: 'kernel: clamp settle to the hold (needs_from_others #1)' }, async () => {
+test('ledger: settle above the hold never pushes a cap over its limit', { skip }, async () => {
   const { ws } = await workspace(10_000_000);
   const b = (await one<{ id: string }>(pool, "INSERT INTO budget (workspace_id, scope_type, period, cap_inr_milli) VALUES ($1,'workspace','total',30000) RETURNING id", [ws]))!.id;
   const r = await run(c => reserve(c, { workspaceId: ws, inrMilli: 27_920 }));
@@ -378,7 +381,7 @@ test('ledger gap: settle above the hold must not push a cap over its limit', { s
   assert.ok(Number(s!.s) <= 30_000, `cap 30000 overrun: spent ${s!.s}`);
 });
 
-test('ledger gap: reserve must see a daily cap reset at IST midnight without waiting for the job', { skip, todo: 'kernel: call money_roll_periods in reserve (needs_from_others #2)' }, async () => {
+test('ledger: reserve sees a daily cap reset at IST midnight without waiting for the job', { skip }, async () => {
   const { ws } = await workspace(10_000_000);
   await pool.query("INSERT INTO budget (workspace_id, scope_type, period, cap_inr_milli, spent_inr_milli, period_start) VALUES ($1,'workspace','daily',1000,1000, (now() AT TIME ZONE 'Asia/Kolkata')::date - 1)", [ws]);
   const r = await run(c => reserve(c, { workspaceId: ws, inrMilli: 500 }));

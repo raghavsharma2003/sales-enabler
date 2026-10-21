@@ -19,9 +19,22 @@ export interface ReserveInput {
 
 const lock = (q: Queryable, ws: string) => q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['money:' + ws]);
 
+// Daily/monthly caps reset at Asia/Kolkata midnight. The money module owns money_roll_periods(); reserve() calls it
+// (when it exists) so a cap never refuses on yesterday's spend while waiting for the nightly job.
+let rollExists = false;
+async function rollPeriods(q: Queryable, ws: string) {
+  if (!rollExists) {
+    const r = await one<{ ok: boolean }>(q, "SELECT to_regprocedure('money_roll_periods(uuid,timestamptz)') IS NOT NULL AS ok");
+    rollExists = Boolean(r?.ok);
+    if (!rollExists) return;
+  }
+  await q.query('SELECT money_roll_periods($1, now())', [ws]);
+}
+
 export async function reserve(q: Queryable, r: ReserveInput): Promise<ReserveResult> {
   if (!Number.isInteger(r.inrMilli) || r.inrMilli < 0) throw new Error('reserve: inrMilli must be a non-negative integer');
   await lock(q, r.workspaceId);
+  await rollPeriods(q, r.workspaceId);
   const w = await one<{ balance: string; state: string; held: string }>(q,
     `SELECT w.balance_inr_milli::text AS balance, w.state,
             coalesce((SELECT sum(inr_milli) FROM reservation WHERE workspace_id = w.workspace_id AND status = 'held'), 0)::text AS held
@@ -46,17 +59,22 @@ export async function reserve(q: Queryable, r: ReserveInput): Promise<ReserveRes
   return { ok: true, reservationId: row!.id };
 }
 
-/** Turn a hold into spend at the actual cost (which may be lower or higher than held). */
+/** Turn a hold into spend at the actual cost. Cost above the hold is NOT charged to the customer: the wallet and caps
+ *  are charged min(actual, held) and the excess is recorded as overrun_inr_milli for VP to absorb. */
 export async function settle(q: Queryable, reservationId: string, actualInrMilli: number): Promise<void> {
   if (!Number.isInteger(actualInrMilli) || actualInrMilli < 0) throw new Error('settle: actualInrMilli must be a non-negative integer');
   const ws = await one<{ workspace_id: string }>(q, 'SELECT workspace_id FROM reservation WHERE id = $1', [reservationId]);
   if (!ws) return;
   await lock(q, ws.workspace_id);
-  const r = await one<{ status: string; budget_ids: string[] }>(q, 'SELECT status, budget_ids FROM reservation WHERE id = $1 FOR UPDATE', [reservationId]);
+  const r = await one<{ status: string; budget_ids: string[]; held: string }>(q,
+    'SELECT status, budget_ids, inr_milli::text AS held FROM reservation WHERE id = $1 FOR UPDATE', [reservationId]);
   if (!r || r.status !== 'held') return;     // settling twice is a no-op
-  await q.query(`UPDATE reservation SET status = 'settled', settled_inr_milli = $2, settled_at = now() WHERE id = $1`, [reservationId, actualInrMilli]);
-  await q.query('UPDATE wallet SET balance_inr_milli = balance_inr_milli - $2, updated_at = now() WHERE workspace_id = $1', [ws.workspace_id, actualInrMilli]);
-  if (r.budget_ids.length) await q.query('UPDATE budget SET spent_inr_milli = spent_inr_milli + $2 WHERE id = ANY($1)', [r.budget_ids, actualInrMilli]);
+  const charge = Math.min(actualInrMilli, Number(r.held));
+  const overrun = actualInrMilli - charge;
+  await q.query(`UPDATE reservation SET status = 'settled', settled_inr_milli = $2, overrun_inr_milli = $3, settled_at = now() WHERE id = $1`,
+    [reservationId, charge, overrun]);
+  await q.query('UPDATE wallet SET balance_inr_milli = balance_inr_milli - $2, updated_at = now() WHERE workspace_id = $1', [ws.workspace_id, charge]);
+  if (r.budget_ids.length) await q.query('UPDATE budget SET spent_inr_milli = spent_inr_milli + $2 WHERE id = ANY($1)', [r.budget_ids, charge]);
 }
 
 /** Return a hold untouched (the action never happened). */

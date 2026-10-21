@@ -195,3 +195,15 @@ test('ledger: holds count against the wallet and caps; settle spends once', { sk
   const w = await one<{ b: string }>(pool, 'SELECT balance_inr_milli::text AS b FROM wallet WHERE workspace_id = $1', [ws]);
   assert.equal(w!.b, '7000');
 });
+
+test('a held draft (A0) cannot be approved by a role that may not approve drafts', { skip }, async () => {
+  const { argsHash } = await import('../shared/approval.ts');
+  const { ws } = await workspace();
+  const viewer = await one<{ id: string }>(pool, "INSERT INTO member (workspace_id, email, role) VALUES ($1,'v@example.test','viewer') RETURNING id", [ws]);
+  const r = registry();
+  const args = { text: 'held' };
+  const a = await one<{ id: string }>(pool, `INSERT INTO action (workspace_id, tool, args, args_hash, risk_class, status, expires_at)
+    VALUES ($1,'note.add',$2,$3,'draft','proposed', now() + interval '1 hour') RETURNING id`, [ws, JSON.stringify(args), argsHash('note.add', args)]);
+  const v = await r.approve(pool, a!.id, { workspaceId: ws, memberId: viewer!.id });
+  assert.equal(v.status, 'not_executed');
+});

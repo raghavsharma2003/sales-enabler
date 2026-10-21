@@ -10,7 +10,7 @@
 //       the object version, and the tool runs in the same transaction. Nobody can hand execute() an approval.
 // Every run appends a hash-chained audit row in the same transaction as its effects.
 import type pg from 'pg';
-import { argsHash, authorise, isA3, needsHumanApproval, type RiskClass, type Role } from '../shared/approval.ts';
+import { argsHash, authorise, canApprove, isA3, needsHumanApproval, type RiskClass, type Role } from '../shared/approval.ts';
 import { ValidationError, type Validator } from '../shared/validate.ts';
 import { appendAudit } from './audit.ts';
 import { one, tx, type Queryable } from './db.ts';
@@ -156,6 +156,9 @@ export class Registry {
         const input = t.input(a.args);              // re-validate what is stored, not what was sent
         h = argsHash(t.name, input);
         if (h !== a.args_hash) throw new Refusal('the stored action does not match its hash; it was not run');
+        // Any held action (A2, or a draft held because the workspace lowered autonomy to A0) needs an approver whose
+        // role may approve its risk class; authorise() alone lets non-A2 classes through.
+        if (!canApprove(m.role, t.risk)) throw new Refusal(`a ${m.role} cannot approve ${t.risk} actions`);
         const v = authorise({ tool: t.name, args: input, risk: t.risk, approver: { role: m.role }, tokenArgsHash: a.args_hash });
         if (!v.allowed) throw new Refusal(v.reason);
 
