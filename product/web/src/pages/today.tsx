@@ -94,7 +94,7 @@ export default function Today() {
                   <p className="bignum serif tnum" aria-label={`Spent today ${inr(b.spendToday.inrMilli)}`}>{inr(b.spendToday.inrMilli)}</p>
                   {dayCap ? <Meter label="Today against your cap" value={b.spendToday.inrMilli} max={dayCap} tone={b.spendToday.inrMilli / dayCap > 0.85 ? 'brick' : 'leaf'} note={`${inr(b.spendToday.inrMilli)} of ${inr(dayCap)}`} /> : <p className="small muted">No daily cap is set. <Link to="/settings/billing">See the wallet</Link></p>}
                   <hr className="rule" />
-                  {b.wallet ? <dl className="kv"><div><dt>Wallet</dt><dd className="tnum">{inr(b.wallet.balanceInrMilli)} {b.wallet.state !== 'active' && <Chip tone="brick">{b.wallet.state}</Chip>}</dd></div>
+                  {b.wallet ? <dl className="kv"><div><dt>Wallet</dt><dd className="tnum">{inr(b.wallet.balanceInrMilli)} {b.wallet.state !== 'active' && <Chip tone="brick">{b.wallet.state === 'empty' ? 'Empty' : b.wallet.state}</Chip>}</dd></div>
                     <div><dt>Runway at today's pace</dt><dd>{wallet.data?.runwayDays != null ? <span className="tnum">{wallet.data.runwayDays} days</span> : <NotMeasured />}</dd></div></dl> : <p className="small muted">No wallet yet.</p>}
                 </Card>
 

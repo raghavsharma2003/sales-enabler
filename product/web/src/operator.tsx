@@ -157,7 +157,7 @@ export function Card({ c }: { c: OperatorCard }) {
   const w = c.risk ? RISK_WORDS[c.risk] : null;
   return (
     <article className={cls} aria-label={`${c.type} card: ${c.title}`}>
-      <div className="ocard-type"><span>{label(c.type)}</span>{c.state && c.state !== 'fresh' && <Chip tone={c.state === 'approved' ? 'leaf' : c.state === 'failed' || c.state === 'rejected' ? 'brick' : 'marigold'}>{c.state === 'waiting' ? 'Waiting for you' : c.state}</Chip>}</div>
+      <div className="ocard-type"><span>{label(c.type)}</span>{c.state && c.state !== 'fresh' && <Chip tone={c.state === 'approved' ? 'leaf' : c.state === 'failed' || c.state === 'rejected' ? 'brick' : 'marigold'}>{STATE_LABEL[c.state]}</Chip>}</div>
       <h4>{c.title}</h4>
       {c.body && <p className="small">{c.body}</p>}
       {c.quote && <blockquote className="small" style={{ margin: 0, paddingLeft: 10, borderLeft: '3px solid var(--peacock)' }} lang="hi">“{c.quote}”</blockquote>}
@@ -170,18 +170,20 @@ export function Card({ c }: { c: OperatorCard }) {
       )}
       {c.type === 'receipt' && (
         <div className="stack-s">
-          <Chip tone={c.outcome === 'confirmed' ? 'leaf' : c.outcome === 'unknown' ? 'marigold' : 'brick'}>{c.outcome === 'confirmed' ? 'Confirmed' : c.outcome === 'unknown' ? 'Unknown' : 'Not executed'}</Chip>
+          <Chip tone={c.outcome === 'confirmed' ? 'leaf' : c.outcome === 'unknown' ? 'marigold' : 'brick'}>{c.outcome === 'confirmed' ? 'Approved' : c.outcome === 'unknown' ? 'Not known yet' : 'Could not finish'}</Chip>
           {c.undo && <p className="small muted">{c.undo}</p>}
         </div>
       )}
       {w && c.type !== 'receipt' && <p className="small muted">{w.label}. {c.costLabel}</p>}
       {needsHold && (st.state === 'idle' || st.state === 'running') && <HoldButton label={c.type === 'launch' ? 'Hold to launch' : 'Hold to approve'} onConfirm={() => void approve()} busy={st.state === 'running'} />}
-      {st.state === 'approved' && <p className="donetxt"><Check size={15} aria-hidden /> Confirmed by the server.</p>}
-      {st.state === 'failed' && <p className="hint hint-bad" role="alert">Not executed: {st.note}. Nothing was changed.</p>}
-      {st.state === 'unknown' && <p className="hint hint-bad" role="alert">Result unknown: {st.note}. VP did not retry.</p>}
+      {st.state === 'approved' && <p className="donetxt"><Check size={15} aria-hidden /> Done.</p>}
+      {st.state === 'failed' && <p className="hint hint-bad" role="alert">Could not finish: {st.note}. Nothing was changed.</p>}
+      {st.state === 'unknown' && <p className="hint hint-bad" role="alert">Not known yet: {st.note}. VP did not retry.</p>}
       {c.href && <Link to={c.href} className="small">Open the page</Link>}
       {c.provenance && <p className="ocard-foot">{c.provenance}</p>}
     </article>
   );
 }
 const label = (t: OperatorCard['type']) => ({ plan: 'Plan', diff: 'Change', launch: 'Launch', call: 'Call', chart: 'Chart', approval: 'Approval', issue: 'Issue', receipt: 'Receipt', question: 'Question', progress: 'Progress' })[t];
+
+const STATE_LABEL = { fresh: 'New', waiting: 'Waiting for you', approved: 'Approved', rejected: 'Declined', stale: 'Out of date', expired: 'Expired', failed: 'Could not finish' } as const;

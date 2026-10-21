@@ -151,7 +151,7 @@ function Billing() {
         <p className="bignum serif tnum">{inr(d.balanceMilli)}</p>
         <dl className="kv"><div><dt>State</dt><dd><Chip tone={d.state === 'ok' ? 'leaf' : 'marigold'}>{prettyCode(d.state)}</Chip></dd></div><div><dt>Held for calls</dt><dd className="tnum">{inr(d.heldMilli)}</dd></div><div><dt>Available</dt><dd className="tnum">{inr(d.availableMilli)}</dd></div>
           <div><dt>Runway</dt><dd>{d.runwayDays != null ? <span className="tnum">{d.runwayDays} days at today's pace</span> : <NotMeasured>Not measured yet</NotMeasured>}</dd></div></dl>
-        {d.warnings.map(x => <p key={x} className="hint hint-bad" role="status">{x}</p>)}
+        {d.warnings.map(x => <p key={x} className="hint hint-bad" role="status">{walletNote(x)}</p>)}
         {d.caps.map((c, i) => <div key={i} style={{ marginTop: 8 }}><Meter label={`${prettyCode(c.scope)} cap, ${c.period}`} value={c.spentInrMilli ?? 0} max={c.capInrMilli} note={`${inr(c.spentInrMilli ?? 0)} of ${inr(c.capInrMilli)}`} /></div>)}
         {d.caps.length === 0 && <p className="small muted" style={{ marginTop: 8 }}>No spend caps are set.</p>}</>}</Async>
         <hr className="rule" /><TextField label="Add money (₹)" type="number" inputMode="numeric" min={100} value={amt} onChange={e => setAmt(e.target.value)} hint="Adding money is a spend, so it asks for your approval. It is not reversible in the product." />
@@ -176,7 +176,7 @@ function Compliance() {
   return (
     <div className="stack">
       <Card><CardHead title="Rules every call follows" sub="Enforced in code at one dial gate and one reply door, not in a prompt. They cannot be switched off." />
-        <Async q={q} what="Safety rules" tool="safety.cases">{d => <><ul className="billing">{d.rules.reply.map(r => <li key={r.id}><div><strong>{r.reason.charAt(0).toUpperCase() + r.reason.slice(1)}</strong><span className="small muted"> · {r.action === 'block' ? 'blocked' : 'replaced'} before it is said</span></div><Chip tone="leaf">Always on</Chip></li>)}</ul><p className="small muted">Rules last updated {(() => { const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.rules.version); return m ? new Date(m[1] + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'recently'; })()}. Also always on: DND and opt-out checks before every attempt, and the AI disclosure, spoken once and lightly.</p></>}</Async></Card>
+        <Async q={q} what="Safety rules" tool="safety.cases">{d => <><ul className="billing">{d.rules.reply.map(r => <li key={r.id}><div><strong>{ruleWords(r.reason)}</strong><span className="small muted"> · {r.action === 'block' ? 'blocked' : 'replaced'} before it is said</span></div><Chip tone="leaf">Always on</Chip></li>)}</ul><p className="small muted">Rules last updated {(() => { const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.rules.version); return m ? new Date(m[1] + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'recently'; })()}. Also always on: DND and opt-out checks before every attempt, and the AI disclosure, spoken once and lightly.</p></>}</Async></Card>
       <Card><CardHead title="Workspace calling hours" sub="The outer band every campaign window must sit inside. Widening it is a policy change." />
         {policy ? <><div className="formgrid"><TextField label="From" type="time" value={band.start} onChange={e => setBand({ ...band, start: e.target.value })} /><TextField label="To" type="time" value={band.end} onChange={e => setBand({ ...band, end: e.target.value })} /></div>
           <div style={{ marginTop: 12 }}>{band.start < band.end ? <Btn kind="primary" onClick={() => void act('policy.window.set', { outerBand: band }, { describe: 'Calling hours changed.' })}>Ask to set</Btn> : <Btn disabled reason="The band must end after it starts.">Ask to set</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
@@ -222,7 +222,7 @@ function Integrations() {
   const q = useData('integrations', async () => ({ list: (await run<{ integrations: { id: string; kind: string; name: string }[] }>('integration.list', {})).integrations, kinds: (await run<{ kinds: { id: string; label: string; secrets: string[] }[] }>('integration.kinds', {})).kinds }));
   return <Async q={q} what="Integrations" tool="integration.list">{d => <div className="stack">
     <Card><CardHead title="Connected" />{d.list.length === 0 ? <Empty title="Nothing connected" body="Connect your CRM or calendar so outcomes come from your own system, which is how a result earns the grade “confirmed by your system”." /> : <ul className="billing">{d.list.map(i => <li key={i.id}><strong>{i.name}</strong><Chip>{i.kind}</Chip></li>)}</ul>}</Card>
-    <Card><CardHead title="What can be connected" sub="Credentials are encrypted and never shown again. Connecting is a policy change." /><ul className="billing">{d.kinds.map(k => <li key={k.id}><strong>{k.label}</strong><span className="small muted">needs {k.secrets.map(s => s.replace(/_/g, ' ')).join(', ')}</span></li>)}</ul><p className="small muted" style={{ marginTop: 8 }}>Connecting is done with Saarthi or the API for now, so credentials never pass through a page.</p></Card></div>}</Async>;
+    <Card><CardHead title="What can be connected" sub="Credentials are encrypted and never shown again. Connecting is a policy change." /><ul className="billing">{d.kinds.map(k => <li key={k.id}><strong>{k.label}</strong><span className="small muted">needs {k.secrets.map(secretWords).join(', ')}</span></li>)}</ul><p className="small muted" style={{ marginTop: 8 }}>Connecting is done with Saarthi or the API for now, so credentials never pass through a page.</p></Card></div>}</Async>;
 }
 
 function dayLabel(iso: string): string {
@@ -241,3 +241,9 @@ function Activity() {
     }}</Async></Card>;
 }
 export { count, Lock };
+
+const SECRET_WORDS: Record<string, string> = { service_account_json: 'service account file', api_key: 'API key', api_token: 'API token', webhook_url: 'webhook address', client_id: 'client ID' };
+const secretWords = (s: string) => SECRET_WORDS[s] ?? s.replace(/_/g, ' ').replace(/\bjson\b/gi, 'file').replace(/\burl\b/gi, 'address');
+const ruleWords = (r: string) => { const t = r.replace(/neverSay/g, 'never-say list').replace(/([a-z])([A-Z])/g, '$1 $2'); return t.charAt(0).toUpperCase() + t.slice(1); };
+
+const walletNote = (x: string) => /^no money available/i.test(x) ? 'There is no money to spend. New attempts wait; calls already live always finish.' : x.charAt(0).toUpperCase() + x.slice(1);

@@ -107,6 +107,7 @@ textarea.input { min-height: 88px; resize: vertical; line-height: 1.5; }
 .seg-o[aria-checked="true"] { background: var(--forest); color: var(--nav-ink); font-weight: 600; }
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
+@media (min-width: 900px) { .tabs { flex-wrap: wrap; overflow-x: visible; } }
 .tab { min-height: 44px; padding: 0 14px; border: 0; background: transparent; cursor: pointer; color: var(--ink-2); font-weight: 600; font-size: 0.9375rem; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
 .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--terra); }
 .tab-count { margin-left: 8px; font-size: 0.75rem; background: var(--sunk); border-radius: 999px; padding: 1px 7px; color: var(--ink-2); }

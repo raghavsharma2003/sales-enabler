@@ -71,7 +71,7 @@ test('Learning: propose, simulate, accept shows an approval card, and the screen
     await page.getByRole('button', { name: 'Test this on real calls…' }).first().click();
     await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
     await hold(sheet().locator('.hold'));
-    await sheet().getByText(/Done\.|Not executed/).waitFor({ timeout: 8000 });
+    await sheet().getByText(/Done\.|Could not finish/).waitFor({ timeout: 8000 });
     const executed = (await actions('executed')).some(a => a.tool === 'proposal.accept');
     const shownDone = await sheet().getByText(/Done\./).count();
     assert.equal(!!shownDone, executed, 'the sheet says done exactly when the server executed it');
@@ -93,7 +93,7 @@ test('DPDP: erase request needs a hold, then the person is gone from search and 
   await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
   assert.match(await sheet().innerText(), /Deletes|removes/i, 'the card says this deletes');
   await hold(sheet().locator('.hold'));
-  await sheet().getByText(/Done\.|Not executed/).waitFor({ timeout: 8000 });
+  await sheet().getByText(/Done\.|Could not finish/).waitFor({ timeout: 8000 });
   const ok = (await sheet().getByText(/Done\./).count()) > 0;
   const executed = (await actions('executed')).some(a => a.tool === 'dpdp.request.execute');
   assert.equal(ok, executed, 'the screen matches the server');
@@ -118,7 +118,7 @@ test('A3: Pause, Resume and Stop run at once with no approval card, and the pill
   await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
   assert.equal(await state(), 'paused', 'nothing changes before the hold');
   await hold(sheet().locator('.hold'));
-  await sheet().getByText(/Done\.|Not executed/).waitFor({ timeout: 8000 });
+  await sheet().getByText(/Done\.|Could not finish/).waitFor({ timeout: 8000 });
   const afterResume = await state();
   t.diagnostic('state after resume: ' + afterResume);
   assert.equal((await sheet().getByText(/Done\./).count()) > 0, afterResume === 'running', 'the sheet agrees with the server');
@@ -141,8 +141,8 @@ test('Operator: an A2 approval card from the chat holds, then the card and the s
   const before = (await actions('proposed')).filter(a => a.tool === 'wallet.topup').length;
   assert.ok(before >= 1, 'the server holds the proposal; nothing happened yet');
   await hold(card.locator('.hold'));
-  await card.getByText(/Confirmed by the server|Not executed|Result unknown/).waitFor({ timeout: 8000 });
-  const confirmed = (await card.getByText(/Confirmed by the server/).count()) > 0;
+  await card.getByText(/Done\.|Could not finish|Not known yet/).waitFor({ timeout: 8000 });
+  const confirmed = (await card.getByText(/Done\./).count()) > 0;
   const executed = (await actions('executed')).some(a => a.tool === 'wallet.topup');
   assert.equal(confirmed, executed, 'the card says confirmed exactly when the server executed it');
 });

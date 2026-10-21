@@ -40,7 +40,7 @@ export function ApprovalSheet() {
       )}
       {!done && allowed && <HoldButton label="Hold to approve" onConfirm={() => void decide(true)} busy={p.state === 'running'} />}
       {done && rc?.status === 'confirmed' && <p className="donetxt">Done. Confirmed by the server, not assumed.</p>}
-      {done && rc?.status === 'not_executed' && <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> Not executed: {rc.reason}. Nothing was changed.</p>}
+      {done && rc?.status === 'not_executed' && <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> Could not finish: {rc.reason}. Nothing was changed.</p>}
       {done && rc?.status === 'unknown' && <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> The result is unknown: {rc.reason}. VP did not retry. Check Activity before trying again.</p>}
       {done && p.error && <p className="state state-failed" role="alert">{p.error}</p>}
       <div className="row" style={{ justifyContent: 'flex-end' }}>

@@ -107,7 +107,7 @@ async function main() {
       let s = 1; const ev: RuntimeEvent[] = [{ seq: s++, type: 'call.started', at: now(), manifest }];
       for (const t of c.turns) ev.push({ seq: s++, type: 'turn', at: now(), ...t } as RuntimeEvent);
       for (const m of c.moments) ev.push({ seq: s++, type: 'moment', at: now(), kind: m.kind, atMs: m.atMs, note: m.note });
-      ev.push({ seq: s++, type: 'cost', at: now(), component: 'telephony', provider: 'carrier-sample', quantity: Math.max(1, c.secs), unit: 'second', inrMilli: c.cost });
+      ev.push({ seq: s++, type: 'cost', at: now(), component: 'telephony', provider: 'exotel', quantity: Math.max(1, c.secs), unit: 'second', inrMilli: c.cost });
       ev.push({ seq: s++, type: 'call.ended', at: now(), endReason: c.end, durationS: c.secs, transcript: c.turns.map(t => ({ speaker: t.speaker, text: t.text, startMs: t.startMs })), manifest } as RuntimeEvent);
       const body = JSON.stringify({ protocol: 1, conversationId: conv, events: ev });
       const res = await fetch(base + '/hooks/runtime', { method: 'POST', headers: { 'content-type': 'application/json', 'x-vp-signature': sign(SECRET, body) }, body });

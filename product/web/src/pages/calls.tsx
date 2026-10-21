@@ -94,7 +94,7 @@ function Body({ c }: { c: CallDoc }) {
             {c.tools.length > 0 && <p className="small muted">Tools used: {c.tools.map(t => `${t.name} (${t.status})`).join(', ')}.</p>}</Card>
           <Card><CardHead title="What ran and what it cost" />
             <Kv rows={[['Voice stack', c.ran ? (getStack(c.ran)?.label ?? 'A stack that is no longer listed') : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
-            {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={c.costLines.map(l => [`${prettyCode(l.component)} · ${l.provider}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
+            {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={c.costLines.map(l => [`${prettyCode(l.component)} · ${prettyCode(l.provider)}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
         </div>
       </div>
     </>
