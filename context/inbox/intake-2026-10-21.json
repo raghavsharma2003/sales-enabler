@@ -217,6 +217,11 @@
       "date": "2026-10-21",
       "event": "intake-integration-fixes",
       "details": "contact.suppress external (A3 via A3_VERBS); stable suppression source codes with evidence (0104); audience text comparisons COLLATE \"C\"; DPDP uses memory's forgetContactMemory; STATUS states dial-time attribute authority and freshness. 18/18 intake tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-scale-default-5k",
+      "details": "intake-scale defaults to 5,000 rows (same correctness checks, ~2 s commit) so it no longer loads a shared CI database during timing-sensitive worker tests; VP_PERF=1 runs 50,000 rows with the 60 s bound (passed at 17.8 s alone). measure.2026-10-21.intake-50k-import (n=17) stays the record."
     }
   ]
 }

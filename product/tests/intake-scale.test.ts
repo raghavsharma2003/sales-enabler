@@ -1,8 +1,9 @@
-// Scale: a 50,000-row CSV (about 3.5 MB, synthetic numbers +91 90000 00000..49999) is uploaded in parts over
+// Scale: a CSV with synthetic numbers (+91 90000 00000 upward, every 1000th row Excel-mangled) is uploaded in parts over
 // HTTP and imported in one transaction, then imported again (the update path). Correctness (every row lands once,
-// verdicts and counts right) is always checked. Speed is a measurement, not a gate: wall-clock under a shared
-// runner measures the runner (a loaded 2-core CI box took 155 s). Set VP_PERF=1 to assert the 60 s bound, which holds
-// alone on the 4-vCPU sandbox (about 20 s fresh, 8-13 s re-import; measure.2026-10-21.intake-50k-import).
+// verdicts and counts right) is always checked. By default the file has 5,000 rows, so it does not load a shared CI
+// database while timing-sensitive worker tests run. VP_PERF=1 runs the full 50,000 rows (2.94 MB) and asserts the 60 s
+// bound, which holds alone on the 4-vCPU sandbox (about 20 s fresh, 8-13 s re-import; a loaded 2-core CI box took 155 s;
+// measure.2026-10-21.intake-50k-import, n=17).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import type { AddressInfo } from 'node:net';
@@ -14,8 +15,8 @@ import { module as intake } from '../server/modules/intake/index.ts';
 
 const URL_ = process.env.DATABASE_URL;
 const skip = !URL_ ? 'DATABASE_URL not set' : false;
-const N = 50_000;
 const PERF = process.env.VP_PERF === '1';
+const N = PERF ? 50_000 : 5_000;
 const BUDGET_MS = 60_000;
 let pool: pg.Pool, reg: Registry, base = '', close = () => {};
 

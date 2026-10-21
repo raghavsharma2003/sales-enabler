@@ -111,7 +111,7 @@
     "total": 19,
     "files": [
       "product/tests/intake.test.ts (18)",
-      "product/tests/intake-scale.test.ts (1)"
+      "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)"
     ],
     "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
   },
@@ -130,7 +130,7 @@
     "Audiences: saved attribute filters compiled to parameterised SQL (all/any; eq, neq, in, gt/gte/lt/lte on numbers or ISO dates, exists, missing, contains), list audiences from an import, preview with matched/suppressed/callable/DND-unknown",
     "Viewers get PII scrubbed in reads",
     "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
-    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 18.9-21.7 s alone, re-import 7.7-13.0 s (n=9); 16-81 s inside the full suite (n=8). Correctness always tested; the 60 s speed bound only with VP_PERF=1",
+    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 18.9-21.7 s alone, re-import 7.7-13.0 s (n=9); 16-81 s inside the full suite (n=8). CI runs the same checks on 5,000 rows; VP_PERF=1 runs 50,000 and asserts 60 s",
     "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept",
     "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json for every registered blueprint tool (contact.suppress external since it joined A3_VERBS)"
   ],
