@@ -6,7 +6,7 @@ import type pg from 'pg';
 import { createPool, one, tx } from '../server/db.ts';
 import { setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { Registry, type Actor } from '../server/tools.ts';
-import { module as memory, compileBrief, BriefTooLarge, detectRefused } from '../server/modules/memory/index.ts';
+import { module as memory, compileBrief, BriefTooLarge, detectRefused, minorStatus } from '../server/modules/memory/index.ts';
 import { forgetContactMemory } from '../server/modules/memory/forget.ts';
 import { BRIEF_MAX_BYTES } from '../shared/agent-config.ts';
 
@@ -376,4 +376,53 @@ test('forgetContactMemory joins the caller transaction: rollback keeps facts, co
   assert.equal((await briefText(w)).status, 'empty');
   assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM memory_fact WHERE contact_id = $1', [w.contact]))!.n, '0');
   assert.match((await briefText(other)).text, /language=hi/, 'other contacts are untouched');
+});
+
+test('minorStatus reads age, date of birth and minor flags, and fails closed', () => {
+  const now = new Date('2026-10-21T00:00:00Z');
+  const v = (key: string, value: unknown) => minorStatus([{ key, value }], now);
+  assert.equal(minorStatus([], now), 'unknown');
+  assert.equal(v('age', 16), 'minor');
+  assert.equal(v('Age', '35 years'), 'adult');
+  assert.equal(v('umar', '१७ साल'), 'minor', 'Devanagari digits');
+  assert.equal(v('age', '17-19'), 'minor');
+  assert.equal(v('age', '30-40'), 'unclear');
+  assert.equal(v('age', 'teen'), 'unclear');
+  assert.equal(v('date_of_birth', '2012-03-04'), 'minor');
+  assert.equal(v('dob', '21/10/2008'), 'adult', 'DD/MM/YYYY, 18 today');
+  assert.equal(v('dob', '22/10/2008'), 'minor', 'turns 18 tomorrow');
+  assert.equal(v('dob', '2008'), 'minor', 'a bare year assumes the younger age');
+  assert.equal(v('dob', '1990-13-01'), 'unclear');
+  assert.equal(v('dob', 'kal pata karenge'), 'unclear');
+  assert.equal(v('is_minor', 'yes'), 'minor');
+  assert.equal(v('minor', false), 'adult');
+  assert.equal(v('minor', 'maybe'), 'unclear');
+  assert.equal(minorStatus([{ key: 'age', value: 34 }, { key: 'dob', value: '2011-01-01' }], now), 'minor', 'any minor wins');
+  assert.equal(minorStatus([{ key: 'age', value: 34 }, { key: 'dob', value: '??' }], now), 'unclear');
+  assert.equal(v('city', 'Pune'), 'unknown', 'unrelated keys do not count');
+});
+
+test('imported contacts: age or birth date in attribute rows blocks extraction and the brief', { skip }, async () => {
+  const attr = (contact: string, key: string, value: unknown) =>
+    pool.query("INSERT INTO attribute (contact_id, key, value, authority) VALUES ($1,$2,$3,'upload')", [contact, key, JSON.stringify(value)]);
+  const cases: [string, unknown, string][] = [['age', 16, 'minor'], ['date_of_birth', '2012-03-04', 'minor'], ['dob', 'not sure', 'age_unclear']];
+  for (const [key, value, reason] of cases) {
+    const w = await world({ undoMinutes: 0 });
+    llmSays([LANG]);
+    await extract(w, await call(w, TURNS));                 // remembered while age was unknown
+    assert.equal((await briefText(w)).status, 'ok');
+    await attr(w.contact, key, value);                       // then an import brings the age in
+    const seen = llmSays([TIME]);
+    assert.equal((await extract(w, await call(w, TURNS))).reason, reason, key);
+    assert.equal(seen.length, 0, 'the model never sees a minor\'s call');
+    assert.deepEqual(await briefText(w), { text: '', status: reason, factIds: [], bytes: 0 });
+  }
+  const adult = await world({ undoMinutes: 0 });
+  await attr(adult.contact, 'age', '42');
+  llmSays([LANG]);
+  assert.equal((await extract(adult, await call(adult, TURNS))).status, 'done');
+  assert.equal((await briefText(adult)).status, 'ok');
+  const flagged = await world({ undoMinutes: 0 });
+  await pool.query(`UPDATE contact SET custom = '{"minor": "true"}' WHERE id = $1`, [flagged.contact]);
+  assert.equal((await extract(flagged, await call(flagged, TURNS))).reason, 'minor', 'contact.custom still counts');
 });

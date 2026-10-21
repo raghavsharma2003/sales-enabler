@@ -12,6 +12,7 @@ import { tool, type PrepareCtx, type Registry, type ToolCtx } from '../../tools.
 import { bool, num, obj, opt, record, str, uuid } from '../../../shared/validate.ts';
 import { compileBrief, type BriefFact } from './brief.ts';
 import { forgetContactMemory } from './forget.ts';
+import { contactMinorStatus } from './minor.ts';
 import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
 
 interface Policy { enabled: boolean; undoMinutes: number; allowedCategories: Record<string, string> }
@@ -60,9 +61,9 @@ type Load = { skip: string } | { prior: { status: string; reason: string | null;
 /** Read everything extraction needs and every skip condition. Runs twice: through the pool in prepare() (before the
  *  model call) and inside the transaction in run() (before any write), so a gate can never rely on a stale read. */
 async function load(q: Queryable, ws: string, conversationId: string, lock: boolean): Promise<Load> {
-  const conv = await one<{ id: string; contact_id: string | null; channel: string; status: string; run_manifest: any; transcript: any; started_at: Date; cfg: any; minor: string | null }>(q,
-    `SELECT c.id, c.contact_id, c.channel, c.status, c.run_manifest, c.transcript, c.started_at, v.config AS cfg, ct.custom->>'minor' AS minor
-     FROM conversation c LEFT JOIN agent_version v ON v.id = c.agent_version_id LEFT JOIN contact ct ON ct.id = c.contact_id AND ct.workspace_id = c.workspace_id
+  const conv = await one<{ id: string; contact_id: string | null; channel: string; status: string; run_manifest: any; transcript: any; started_at: Date; cfg: any }>(q,
+    `SELECT c.id, c.contact_id, c.channel, c.status, c.run_manifest, c.transcript, c.started_at, v.config AS cfg
+     FROM conversation c LEFT JOIN agent_version v ON v.id = c.agent_version_id
      WHERE c.id = $1 AND c.workspace_id = $2${lock ? ' FOR UPDATE OF c' : ''}`, [conversationId, ws]);
   if (!conv) throw new Error('no such conversation in this workspace');
 
@@ -75,7 +76,8 @@ async function load(q: Queryable, ws: string, conversationId: string, lock: bool
   if (conv.status === 'live') return { skip: 'call_not_ended' };
   const pol = await policy(q, ws);
   if (!pol.enabled) return { skip: 'memory_off' };
-  if (conv.minor === 'true') return { skip: 'minor' };
+  const age = await contactMinorStatus(q, ws, conv.contact_id);
+  if (age === 'minor' || age === 'unclear') return { skip: age === 'minor' ? 'minor' : 'age_unclear' };
   const am = fromConfig(conv.cfg?.agent);
   if (!am.write) return { skip: 'agent_memory_write_off' };
   if (!am.purpose) return { skip: 'no_purpose' };
@@ -192,6 +194,8 @@ async function brief(ctx: ToolCtx, i: { contactId: string; agentId: string }) {
   if (!(await policy(q, ws)).enabled) return empty('off');
   if (!am.read) return empty('off_for_agent');
   if (!am.purpose) return empty('no_purpose');
+  const age = await contactMinorStatus(q, ws, i.contactId);
+  if (age === 'minor' || age === 'unclear') return empty(age === 'minor' ? 'minor' : 'age_unclear');
   const facts = await usableFacts(q, ws, i.contactId, am.purpose);
   if (!facts.length) return empty('empty');
   const b = compileBrief(facts);       // throws BriefTooLarge; the registry returns not_executed and the caller dials without memory
@@ -320,3 +324,4 @@ export const module: Module = {
 export { compileBrief, BriefTooLarge } from './brief.ts';
 export { gate, detectRefused } from './gates.ts';
 export { forgetContactMemory } from './forget.ts';
+export { minorStatus } from './minor.ts';
