@@ -931,3 +931,77 @@ test('a refused attempt carries plain words for people beside the developer deta
   assert.match(a!.precheck.explain.message, /^It is outside calling hours for this person\. We will try again Tue,? 10:00/);
   assert.match(a!.precheck.detail, /Asia\/Kolkata/, 'the developer detail is kept');
 });
+
+// ---- runtime at capacity (503 at_capacity): requeue, never fail ----
+
+class BusyRuntime extends FakeRuntime {
+  constructor(public busyFor: number) { super(); }
+  starts = 0;
+  async start(ticket: Parameters<FakeRuntime['start']>[0]) {
+    this.starts++;
+    if (this.busyFor > 0) { this.busyFor--; return { accepted: false, retryable: true, retryAfterS: 10, reason: 'the voice engine is at capacity' }; }
+    return super.start(ticket);
+  }
+}
+
+test('runtime at capacity: the attempt is requeued, not failed; no ladder step, no hold, no dial counted; it dials once capacity frees', { skip }, async () => {
+  const w = await world();
+  const id = await attempt(w);
+  const busy = new BusyRuntime(1);
+  const rep = await tick(deps(w, NOON, { runtime: busy }));
+  assert.equal(rep.atCapacity, 1);
+  assert.equal(rep.rejected, 0);
+  const a = await one<{ status: string; outcome_class: string | null; dialed_at: Date | null; reservation_id: string | null; conversation_id: string | null; scheduled_for: Date; blocked_by: string }>(pool,
+    'SELECT status, outcome_class, dialed_at, reservation_id, conversation_id, scheduled_for, blocked_by FROM attempt WHERE id = $1', [id]);
+  assert.equal(a!.status, 'created');
+  assert.equal(a!.outcome_class, null, 'no failure recorded');
+  assert.equal(a!.dialed_at, null, 'nothing rang, so the number\'s gap and ceilings are untouched');
+  assert.equal(a!.reservation_id, null);
+  assert.equal(a!.blocked_by, 'runtime_at_capacity');
+  const wait = a!.scheduled_for.getTime() - NOON.getTime();
+  assert.ok(wait >= 10_000 && wait <= 15_000, `due after retryAfterS + 0-50% jitter (${wait} ms)`);
+  assert.equal((await one<{ n: number }>(pool, "SELECT count(*)::int AS n FROM reservation WHERE attempt_id = $1 AND status = 'held'", [id]))!.n, 0, 'the hold is released');
+  assert.equal((await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM attempt WHERE retry_of = $1', [id]))!.n, 0, 'no ladder step');
+  assert.equal((await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM conversation WHERE attempt_id = $1', [id]))!.n, 0, 'no empty conversation left behind');
+  assert.ok(await one(pool, "SELECT 1 FROM audit_event WHERE workspace_id = $1 AND action = 'attempt.deferred' AND payload->>'reason' = 'runtime at capacity'", [w.ws]));
+  assert.ok(!(await one(pool, "SELECT 1 FROM audit_event WHERE workspace_id = $1 AND action IN ('attempt.unknown', 'attempt.retry_per_ladder')", [w.ws])));
+
+  // Not due yet: nothing happens. Once due and the runtime has room, it dials, exactly once.
+  assert.equal((await tick(deps(w, new Date(NOON.getTime() + 5_000), { runtime: busy }))).claimed, 0);
+  const later = new Date(NOON.getTime() + 20_000);
+  const r2 = await tick(deps(w, later, { runtime: busy }));
+  assert.equal(r2.dispatched, 1);
+  assert.equal(busy.tickets.filter(t => t.attemptId === id).length, 1);
+  const b = await one<{ status: string; dialed_at: Date }>(pool, 'SELECT status, dialed_at FROM attempt WHERE id = $1', [id]);
+  assert.equal(b!.status, 'dialing');
+  assert.equal(b!.dialed_at.getTime(), later.getTime());
+});
+
+test('runtime at capacity: the tick stops claiming (back-pressure); concurrency does not count the requeued attempt', { skip }, async () => {
+  const w = await world();
+  await pool.query('INSERT INTO dial_policy (workspace_id, concurrency) VALUES ($1, 1)', [w.ws]);
+  const ids = [await attempt(w)];
+  for (let k = 0; k < 3; k++) ids.push(await attempt(w, { contact: await addContact(w) }));
+  const busy = new BusyRuntime(5);
+  const rep = await tick(deps(w, NOON, { runtime: busy }));
+  assert.equal(busy.starts, 1, 'one start hit the full runtime, then the tick stopped');
+  assert.equal(rep.claimed, 1);
+  const st = await one<{ created: number }>(pool, "SELECT count(*) FILTER (WHERE status = 'created')::int AS created FROM attempt WHERE id = ANY($1)", [ids]);
+  assert.equal(st!.created, 4, 'all four still queued, none failed');
+  // With concurrency 1, the requeued attempt holds no line: another attempt passes G12 when the runtime frees.
+  busy.busyFor = 0;
+  const r2 = await tick(deps(w, NOON, { runtime: busy }));
+  assert.equal(r2.dispatched, 1, 'one line, one call');
+});
+
+test('a non-retryable runtime refusal still fails before any ring, as before', { skip }, async () => {
+  const w = await world();
+  const id = await attempt(w);
+  const refusing: Runtime = { start: async () => ({ accepted: false, reason: 'runtime returned 422: unknown stack' }), control: async () => ({ ok: true }) };
+  const rep = await tick(deps(w, NOON, { runtime: refusing }));
+  assert.equal(rep.rejected, 1);
+  assert.equal(rep.atCapacity, 0);
+  const a = await one<{ status: string; outcome_class: string }>(pool, 'SELECT status, outcome_class FROM attempt WHERE id = $1', [id]);
+  assert.deepEqual(a, { status: 'failed', outcome_class: 'provider_error' });
+  assert.equal((await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM attempt WHERE retry_of = $1', [id]))!.n, 1, 'the ladder still schedules its retry');
+});

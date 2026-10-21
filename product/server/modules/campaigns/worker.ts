@@ -219,7 +219,7 @@ export async function buildTicket(d: WorkerDeps, a: AttemptRow, v: GatePass, con
   };
 }
 
-export type DispatchResult = 'dispatched' | 'rejected' | 'unknown';
+export type DispatchResult = 'dispatched' | 'rejected' | 'unknown' | 'at_capacity';
 
 /** Hand a claimed attempt to the runtime, once. */
 export async function dispatch(d: WorkerDeps, a: AttemptRow, v: GatePass, conversationId: string): Promise<DispatchResult> {
@@ -240,9 +240,31 @@ export async function dispatch(d: WorkerDeps, a: AttemptRow, v: GatePass, conver
     });
     return 'unknown';
   }
+  if (!reply.accepted && reply.retryable) { await requeueAtCapacity(d, a, v, reply.retryAfterS ?? 5); return 'at_capacity'; }
   if (!reply.accepted) { await failBeforeRing(d, a, v, reply.reason ?? 'runtime refused'); return 'rejected'; }
   await d.pool.query('UPDATE attempt SET dispatched_at = now() WHERE id = $1 AND dispatched_at IS NULL', [a.id]);
   return 'dispatched';
+}
+
+/** The runtime is full (503 at_capacity) and placed nothing. This is not a failure: the same attempt goes back to the
+ *  queue as if it was never claimed (no outcome, no ladder step, no dial on the number's budget), the hold is released,
+ *  and it becomes due after retryAfterS plus 0-50% jitter. The next claim runs the full gate again, so a time outside the
+ *  window simply defers it to the next window. */
+async function requeueAtCapacity(d: WorkerDeps, a: AttemptRow, v: GatePass, retryAfterS: number) {
+  const now = d.now?.() ?? new Date();
+  const delayMs = Math.round(retryAfterS * 1000 * (1 + Math.random() * 0.5));
+  const due = new Date(now.getTime() + delayMs);
+  await tx(d.pool, async c => {
+    await c.query(`UPDATE attempt SET status = 'created', scheduled_for = $2, next_eligible_at = $2, blocked_by = 'runtime_at_capacity',
+        claimed_at = NULL, dialed_at = NULL, dispatched_at = NULL, number_id = NULL, cli_e164 = NULL, carrier = NULL,
+        reservation_id = NULL, conversation_id = NULL
+      WHERE id = $1 AND status = 'dialing'`, [a.id, due]);
+    await release(c, v.reservationId);
+    // Nothing happened on this conversation; the next claim opens a fresh one.
+    await c.query("DELETE FROM conversation WHERE attempt_id = $1 AND status = 'live' AND workspace_id = $2", [a.id, a.workspace_id]);
+    await appendAudit(c, { workspaceId: a.workspace_id, actorType: 'system', actorId: SYSTEM.id, action: 'attempt.deferred', objectType: 'attempt', objectId: a.id,
+      payload: { reason: 'runtime at capacity', retryAfterS, dueAt: due.toISOString() } });
+  });
 }
 
 /** The runtime refused before any ring: release the hold, mark a provider error that never spends the person's budget,
@@ -280,11 +302,11 @@ export async function advanceCampaigns(d: WorkerDeps): Promise<void> {
     [d.workspaceId ?? null]);
 }
 
-export interface TickReport { claimed: number; dispatched: number; blocked: number; deferred: number; unknown: number; rejected: number; stale: number }
+export interface TickReport { claimed: number; dispatched: number; blocked: number; deferred: number; unknown: number; rejected: number; stale: number; atCapacity: number }
 
 /** One pass: reconcile, advance campaigns, then claim and dispatch up to `max` attempts. */
 export async function tick(d: WorkerDeps, max = 50): Promise<TickReport> {
-  const rep: TickReport = { claimed: 0, dispatched: 0, blocked: 0, deferred: 0, unknown: 0, rejected: 0, stale: await reconcileStale(d) };
+  const rep: TickReport = { claimed: 0, dispatched: 0, blocked: 0, deferred: 0, unknown: 0, rejected: 0, atCapacity: 0, stale: await reconcileStale(d) };
   await advanceCampaigns(d);
   for (let i = 0; i < max; i++) {
     const o = await claimNext(d);
@@ -305,6 +327,7 @@ export async function tick(d: WorkerDeps, max = 50): Promise<TickReport> {
       continue;
     }
     const r = await dispatch(d, o.attempt, v, o.conversationId!);
+    if (r === 'at_capacity') { rep.atCapacity++; break; }   // back-pressure: a full runtime gets no more starts this tick
     if (r === 'dispatched') rep.dispatched++; else if (r === 'unknown') rep.unknown++; else rep.rejected++;
   }
   return rep;
