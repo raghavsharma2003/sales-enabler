@@ -46,3 +46,12 @@ Layout:
 - **Industry-neutral:** no insurance assumptions in code. Sector rules live in sector packs.
 - **Gates:** `npx tsc -p tsconfig.json` clean, `node --import tsx --test tests/<name>.test.ts` green against your own
   database (`vp_mod_<name>` on the throwaway cluster).
+- **Cross-module calls go through the registry by tool name** (`registry.execute(pool, 'memory.brief', ...)` with a
+  `system` actor), never by importing another module's files. If the tool is not registered (a sibling is not merged
+  yet), degrade the way the blueprint says (e.g. memory `not_loaded`), never crash. Shared conventions:
+  - `agent_version.config` holds `{ agent: AgentConfig, brief: { text, hash, bytes } }`: the brief is compiled once at
+    publish; tickets copy it.
+  - `memory.brief` (read, memory module): `{ contactId, agentId }` -> `{ text, status }`, text <= 1200 bytes.
+  - `money.estimate` (read, money module): `{ stackId, minutes, calls }` -> `{ perMinuteInrMilli, totalInrMilli, basis }`.
+  - `safety.check` (read, safety module): `{ text, ctx }` -> DoorVerdict, for previews.
+  - Runtime seam: `server/runtime-client.ts` (`runtime()`, `sign`, `verify`; FakeRuntime when VP_RUNTIME_URL is unset).
