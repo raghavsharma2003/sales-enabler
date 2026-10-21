@@ -37,6 +37,16 @@
       "date": "2026-10-21",
       "title": "Registry.approve checks approver roles only for A2 risk classes, so any active member (a viewer too) can approve an A0-held draft",
       "mitigation": "Done by the kernel: Registry.approve checks canApprove for every risk class (integrator, 2026-10-21)"
+    },
+    {
+      "id": "decision.2026-10-21.operator-no-credentials",
+      "type": "decision",
+      "status": "proposed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "The Operator never handles credentials: integration.stage_secrets is screen-only; at A0 it would otherwise have stored plaintext secrets in action.args and the card diff",
+      "rationale": "Verified in code: proposeA0 persisted validated input to action.args and copied args into the approval card diff; any Operator call also puts the secret in the model's context. Redacting after the fact still leaves it with the model provider.",
+      "reverse_if": "A sealed-input path exists where the model only ever sees a reveal/stash handle the person created on screen, never the secret text"
     }
   ],
   "edges": [
@@ -59,6 +69,11 @@
       "from": "risk.2026-10-21.kernel-approve-draft-any-member",
       "to": "component.2026-10-21.operator-module",
       "relation": "informs"
+    },
+    {
+      "from": "decision.2026-10-21.operator-no-credentials",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
     }
   ],
   "events": [
@@ -76,6 +91,11 @@
       "date": "2026-10-21",
       "event": "operator-ma01-aligned",
       "details": "Operator tool list and plan view use the kernel's heldForApproval (MA-01); test shows a plan with attempt.retry_per_ladder stops at a tap and nobody is re-dialled, while campaign.pause runs at A3. 20/20 operator tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "operator-no-credentials",
+      "details": "Review item verified (A0 would have stored stage_secrets plaintext in action.args and the card diff) and fixed by making the tool screen-only for the Operator; test checks action, audit_event, message and SSE at A1 and A0; 21/21 operator tests."
     }
   ]
 }

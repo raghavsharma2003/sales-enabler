@@ -25,6 +25,12 @@ export type Caps = typeof CAPS;
 
 /** Tools that only lower risk or erase the client's own data: never held for a tap, even at A0. */
 const A0_EXEMPT = new Set(['operator.autonomy.lower', 'operator.preference.forget']);
+
+/** Tools whose args carry credentials. The Operator never offers or calls them: a secret would otherwise sit in the
+ *  model's context, an A0 action row and a card diff. The person hands credentials over on the screen instead. */
+export const SCREEN_ONLY: ReadonlyMap<string, string> = new Map([
+  ['integration.stage_secrets', 'Credentials are handed over on the Integrations screen (Settings → Integrations), never in chat; VP does not see or store them here.'],
+]);
 const PLAN_TOOL = 'operator_plan';
 
 export interface Upload { name: string; content: string }
@@ -161,7 +167,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   const fnName = (name: string) => name.replace(/[^a-zA-Z0-9_-]/g, '_');
   const all = registry.list();
   const byFn = new Map(all.map(t => [fnName(t.name), t.name]));   // every tool, so a refusal can name the role
-  const allowed = all.filter(t => t.roles.includes(member.role));
+  const allowed = all.filter(t => t.roles.includes(member.role) && !SCREEN_ONLY.has(t.name));
   const tools: LlmTool[] = allowed.map(t => {
     const fn = fnName(t.name);
     const def = registry.get(t.name)!;
@@ -183,6 +189,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
 
   // 3. Call one tool for the Operator: A0 wrap, then the registry.
   const execute = async (name: string, args: unknown): Promise<OpReceipt> => {
+    if (SCREEN_ONLY.has(name)) return { status: 'not_executed', reason: SCREEN_ONLY.get(name)! };
     if (!allowedNames.has(name)) return { status: 'not_executed', reason: registry.get(name) ? `a ${member.role} cannot use ${name}` : `there is no tool called "${name}"` };
     const def = registry.get(name)!;
     if (settings.autonomy === 'A0' && (def.risk === 'draft' || def.risk === 'test') && !A0_EXEMPT.has(name)) {
@@ -285,7 +292,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
       const why = typeof s?.why === 'string' ? s.why.slice(0, 200) : undefined;
       const def = registry.get(name);
       if (!def || !allowedNames.has(name)) {
-        return { n: i + 1, tool: name, why, runs: 'refused', status: 'refused', reason: def ? `a ${member.role} cannot use ${name}` : `there is no tool called "${name}"`, args: s?.args };
+        return { n: i + 1, tool: name, why, runs: 'refused', status: 'refused', reason: SCREEN_ONLY.get(name) ?? (def ? `a ${member.role} cannot use ${name}` : `there is no tool called "${name}"`), args: undefined };
       }
       try { def.input(s?.args ?? {}); } catch (e) {
         if (e instanceof ValidationError) return { n: i + 1, tool: name, why, risk: def.risk, runs: 'refused', status: 'refused', reason: e.message, args: s?.args };
