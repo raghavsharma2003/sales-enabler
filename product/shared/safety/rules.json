@@ -1,0 +1,714 @@
+{
+  "schema": 1,
+  "version": "2026-10-21.1",
+  "about": "Reply-door, caller-signal, redaction and compile-lint rules as data. The TypeScript door (product/shared/safety/index.ts) and the Python door (product/voice) load this one file and are held to cases.json. Rules are evaluated in array order; the first reply rule that fires decides. Industry-neutral rules have scope.packs absent; sector rules name their pack.",
+  "regex": {
+    "dialect": "Common subset of ECMAScript (flags 'iu') and Python re (flags re.I). No named groups, no \\p{...}, no variable-width lookbehind. \\b is used only next to Latin letters. Patterns run on the NORMALISED text.",
+    "normalise": [
+      "Unicode NFC, then lowercase",
+      "remove zero-width characters U+200B U+200C U+200D U+FEFF",
+      "chandrabindu U+0901 -> anusvara U+0902; nukta U+093C removed",
+      "Devanagari digits U+0966..U+096F -> 0..9",
+      "curly quotes and apostrophes -> ' and \"",
+      "runs of whitespace -> one space, trimmed",
+      "PATTERNS get the same Devanagari folding (NFC, nukta removed, chandrabindu -> anusvara) before compiling; they are not lowercased."
+    ]
+  },
+  "texts": {
+    "honest_ai": "Ji, main {brand} ki taraf se ek AI assistant hoon. Aap chahein toh team ke kisi vyakti se baat karwa di jaayegi.",
+    "recording_stopped": "Ji bilkul, aage ki baat record nahi hogi.",
+    "crisis_support": "Aap akele nahi hain. Abhi kisi se baat karna madad karega: Tele-MANAS 14416 par 24 ghante muft baat ho sakti hai, aur turant khatra ho toh 112. Kya main aapko hamari team ke kisi vyakti se jod doon?",
+    "stop_digits": "Ek second, please koi bhi OTP, PIN ya card number mujhe mat bataiye. Main kabhi nahi poochhungi, aapki suraksha ke liye."
+  },
+  "masks": {
+    "otp": "[OTP]",
+    "card": "[CARD]",
+    "cvv": "[CVV]",
+    "upi_pin": "[UPI_PIN]",
+    "aadhaar": "[AADHAAR]"
+  },
+  "lexicon": {
+    "ai_clause": "(\\bai\\b|\\ba\\.i\\.|एआई|\\bartificial intelligence\\b|virtual assistant|digital assistant|automated (assistant|voice|agent|system)|\\bbot\\b|voice ?bot|chat ?bot)",
+    "agenda": "(\\bpremium\\b|\\bemi\\b|\\bdues?\\b|\\boverdue\\b|outstanding|\\bbakaya\\b|\\bbaki\\b|\\bpayment\\b|\\bpay\\b|\\brenew(al)?\\b|\\boffer\\b|discount|\\bplan\\b|\\bpolicy\\b|\\bloan\\b|\\binstallment\\b|\\bkisht\\b|\\border\\b|\\bbooking\\b|\\bappointment\\b|\\bfees?\\b|\\bbill\\b|भुगतान|प्रीमियम|किस्त|बकाया)",
+    "currency": "(₹|\\brs\\.?|\\binr\\b|\\brupe(e|es)\\b|\\brupa(ye|y|ya|ee)\\b|रुपये|रुपए|रुपया|\\bhazaa?r\\b|\\bthousand\\b|\\blakh\\b|\\blac\\b|\\bcrore\\b|हज़ार|हजार|लाख|करोड़)",
+    "dues_fact_key": "(due|dues|emi|overdue|outstanding|arrear|balance|bakaya|installment|instalment|penalty|late_fee)"
+  },
+  "reply": [
+    {
+      "id": "rd2.claims_human",
+      "rule": "RD2",
+      "kind": "deny_ai",
+      "action": "replace",
+      "replacement": "honest_ai",
+      "reason": "claims to be a human or denies being an AI",
+      "any": [
+        "\\b(main|mai|mein|me)\\b[^.?!]{0,25}\\b(insaan|insan|human|manushya|real person|asli (insaan|insan|vyakti|aadmi|ladki)|zinda (insaan|vyakti)|ladki|ladka|aurat|aadmi|mahila)\\b[^.?!]{0,12}\\b(hoon|hun|hu|hoo)\\b",
+        "\\b(main|mai|mein|me)\\b[^.?!]{0,25}\\b(ai|bot|robot|machine|computer|recording|recorded)\\b ?(nahi|nahin|nhi|nai|thodi|thodi na|thode hi|thodi hi) ?(hoon|hun|hu|hoo)\\b",
+        "\\bi'?\\s?a?m (not|no) (an? )?(ai|bot|robot|machine|computer|recording|virtual|automated)\\b",
+        "\\bi am not (an? )?(ai|bot|robot|machine|computer|recording|virtual|automated)\\b",
+        "\\bi'?\\s?a?m (a |an )?(real|actual|live|genuine) (person|human|woman|man|lady|girl)\\b",
+        "\\bi am (a |an )?(real|actual|live|genuine) (person|human|woman|man|lady|girl)\\b",
+        "\\b(i'?m|i am) (a )?human( being)?\\b",
+        "\\b(main|mai)\\b[^.?!]{0,35}\\b(employee|staff member|staff|karmachari|karamchari)\\b ?(hoon|hun|hu)\\b",
+        "\\b(i'?m|i am) (an? |one of the |a member of (the|their|your) )?(employee|staff member|staff)\\b",
+        "\\b(no|nahi|nahin),? (main|i'?m|i am) (real|human|insaan|asli)\\b",
+        "\\b(i'?m|i am|this is|yeh|ye) not a (bot|robot|machine|recording)\\b",
+        "\\bkoi (bot|robot|machine) nahi (hoon|hun|hu)\\b",
+        "मैं[^।?!]{0,20}(इंसान|मनुष्य|असली)[^।?!]{0,8}(हूं|हूँ|हु)",
+        "मैं[^।?!]{0,20}(एआई|ai|रोबोट|मशीन|बॉट)[^।?!]{0,4}नहीं",
+        "\\b(this is|i'?m|i am|main) (a |an |ek )?(live|real|actual) (agent|person|executive|human|insaan)\\b",
+        "\\bnot (a|an) (bot|robot|machine|ai|recording)\\b(?! ?(issue|problem|wala|related))",
+        "\\b(main|mai)\\b[^.?!]{0,20}\\b(branch|office|desk|counter|call cent(er|re))\\b[^.?!]{0,12}\\b(mein|me|pe|par)\\b ?(baithi|baitha|baith)",
+        "\\b(sitting|seated) (at|in) (our|the|my)\\b[^.?!]{0,15}\\b(office|branch|desk|cent(er|re))\\b",
+        "\\b(hoon|hun|hu|am)\\b,? (koi |a |an )?(machine|software|bot|robot|computer|recording|program)\\b ?(nahi|nahin|nhi|not)\\b",
+        "\\b(bot|ai|robot|machine|computer)\\b[^.?!]{0,15}\\b(afwah|afwaah|galat fehmi|galatfehmi|jhooth|jhoot|bakwas|rumou?r|myth)\\b",
+        "\\b(ai|bot|robot|machine)\\b ?(wagairah|wagaira|vagairah|vagaira|vagera|wala|wali)? ?(kuch nahi|koi nahi) (hai|hoon|hun)\\b"
+      ],
+      "none": [
+        "\\b(main|mai|i'?m|i am)\\b[^.?!]{0,25}\\b(ai|artificial intelligence|virtual assistant|digital assistant|ai assistant)\\b[^.?!]{0,20}\\b(hoon|hun|hu|am)\\b[^.?!]{0,30}\\b(insaan|human) (nahi|nahin|nhi|not)\\b",
+        "\\bnot a human\\b",
+        "\\b(insaan|insan|human) (nahi|nahin|nhi)\\b"
+      ]
+    },
+    {
+      "id": "rd3.no_agenda_in_crisis",
+      "rule": "RD3",
+      "kind": "crisis_suspend",
+      "scope": {
+        "when": "crisis"
+      },
+      "action": "replace",
+      "replacement": "crisis_support",
+      "reason": "the goal is suspended during a crisis: no agenda, no ending the call",
+      "any": [
+        "@agenda",
+        "\\b(bye|goodbye|alvida|call (end|khatam|kaat|cut)|phone rakh|rakhti hoon|disconnect|i'?ll let you go|have a (good|nice) day)\\b"
+      ]
+    },
+    {
+      "id": "rd4.sensitive_ask",
+      "rule": "RD4",
+      "kind": "sensitive_ask",
+      "action": "block",
+      "reason": "asks for an OTP, PIN, CVV, card number, UPI PIN, password or full Aadhaar",
+      "all": [
+        "(\\botp\\b|one[- ]time password|\\bpin\\b|\\bm-?pin\\b|\\bcvv\\b|\\bcvc\\b|card (number|no|ke number|ka number|details)|card ke (peeche|piche)|\\bpassword\\b|\\bpasscode\\b|net ?banking|\\bupi pin\\b|\\baadhaa?r (number|no|card number)|\\baadhaa?r ka (pura|poora) number|\\bverification code\\b|ओटीपी|पिन|सीवीवी|पासवर्ड|आधार नंबर|कार्ड नंबर|(aaya|aayega|aaega|received|sms|message|bheja)[^.?!]{0,30}\\bcode\\b|\\bcode\\b[^.?!]{0,30}\\b(aaya|aayega|sms|message)|\\baadhaa?r\\b[^.?!]{0,20}\\b(saare|sare|pura|poora|full|complete|barah|12|twelve)\\b|\\b(4|6|four|six|char|chhe)[- ]digit (code|number|otp)\\b|\\bcode\\b[^.?!]{0,25}\\b(came|arrived|on your phone|phone par|phone pe))",
+        "(\\bbata ?(o|iye|yiye|ye|ein|aiye|dijiye|deejiye|do|dena|na|sakte|sakti|payenge|denge)\\b|\\bbol ?(o|iye|ein|dijiye|deejiye|do|dena|sakte)\\b|\\bnote kar(a|wa)\\b|\\bshare\\b|\\btell me\\b|\\bread (out|it|me)\\b|\\bconfirm\\b|\\bgive me\\b|\\bprovide\\b|\\bspell\\b|\\bsend me\\b|\\bnote kar\\b|\\bdictate\\b|\\bwhat is (your|the)\\b|\\bwhat'?s your\\b|\\bkya hai\\b|\\bbhej(o|iye|dijiye| dijiye)\\b|\\bpadh(o|iye|kar)\\b|बताइए|बताइये|बताओ|बोलिए|बताएं|\\bpadh ?(o|iye|kar|ke|dijiye|do)\\b|\\bsuna ?(o|iye|dijiye|do|dena|denge)\\b|बता (दीजिए|दीजिये|दो|देना|दें)|बोल (दीजिए|दो)|भेज (दीजिए|दो)|शेयर|सुना (दीजिए|दो))"
+      ],
+      "none": [
+        "\\b(mat|na|nahi|nahin|never|don'?t|do not|kabhi|kisi ko|no one|nobody|koi bhi .{0,20}nahi)\\b[^.?!]{0,30}\\b(bata|bol|share|tell|give|poochh|puchh|maang|ask)",
+        "\\b(bata|bol|share|tell|give|poochh|puchh|maang|ask)[a-z]*\\b[^.?!]{0,25}\\b(mat|nahi|nahin|never)\\b",
+        "\\b(hum|we|main|i|{brand}|bank|company)\\b[^.?!]{0,30}\\b(kabhi|never)\\b",
+        "(last|aakhri|akhri|antim|pichhle|pichle) (4|four|char|chaar|2|two|do)\\b",
+        "\\b(registered|registered mobile|mobile number|phone number|date of birth|janam tithi|pin ?code|pincode)\\b",
+        "मत (बताइए|बताइये|बताएं|बताना|बताओ)|कभी (नहीं|भी)",
+        "\\b(agar koi|if (anyone|someone|somebody)|koi bhi)\\b[^.?!]{0,60}\\b(maange|maangta|maangti|maangte|poochhe|puchhe|asks?|bole)\\b"
+      ]
+    },
+    {
+      "id": "rd5.link_not_verified",
+      "rule": "RD5",
+      "kind": "builtin:links",
+      "action": "block",
+      "reason": "a link or domain outside the brand's verified domains"
+    },
+    {
+      "id": "rd5.pay_on_call",
+      "rule": "RD5",
+      "kind": "pay_on_call",
+      "action": "block",
+      "reason": "takes payment on the call or to a personal account; only a verified link or autopay, sent after the call",
+      "any": [
+        "\\b(abhi|isi|is|iss)\\b ?(call|phone) (par|pe|mein|me)\\b[^.?!]{0,30}\\b(pay|payment|bhugtan|transfer|bhej|jama|process|debit|kaat|collect|le leti|le lungi|le lu)",
+        "\\b(pay|payment|bhugtan|transfer|jama)\\b[^.?!]{0,30}\\b(isi|is|iss|abhi) ?(call|phone) (par|pe|mein|me)\\b",
+        "\\b(on|during|over) (this|the) (call|phone)\\b[^.?!]{0,30}\\b(pay|payment|process|transfer|debit|charge)",
+        "\\b(pay|payment|process|transfer|debit|charge)[a-z]*\\b[^.?!]{0,30}\\b(on|during|over) (this|the) (call|phone)\\b",
+        "\\b(mere|meri|hamare personal|personal|is|iss|my|this) (number|upi|upi id|account|gpay|phonepe|paytm)\\b[^.?!]{0,30}\\b(pay|payment|bhej|transfer|jama|send|kar do|kar dijiye)",
+        "\\b(pay|payment|bhej|transfer|send|jama)[a-z]*\\b[^.?!]{0,30}\\b(mere|meri|my|personal|is|iss|this) (number|upi|upi id|account|gpay|phonepe|paytm)\\b",
+        "\\b(card|debit card|credit card)\\b[^.?!]{0,30}\\b(se|from|using)\\b[^.?!]{0,15}\\b(abhi|right now|now)\\b[^.?!]{0,20}\\b(pay|payment|kaat|debit|charge|process)",
+        "\\b(main|i)\\b[^.?!]{0,25}\\b(payment|amount|paisa|paise)\\b[^.?!]{0,20}\\b(process|kaat|debit|charge)[a-z]*\\b[^.?!]{0,10}\\b(deti|dungi|kar deti|kar dungi|will|can|'ll)",
+        "\\bqr\\b[^.?!]{0,30}\\b(scan|bhej)[^.?!]{0,30}\\b(abhi|now)\\b",
+        "(अभी|इसी) (कॉल|फ़ोन|फोन) (पर|में)[^।?!]{0,30}(भुगतान|पेमेंट|पैसे)",
+        "\\b(pay|payment|transfer)[a-z]*\\b[^.?!]{0,40}\\b(while we'?re|while we are|on the line|line par|line pe)\\b",
+        "\\b(call|phone|line) (par|pe) hi\\b",
+        "\\b(account number|account no|upi id|upi|qr code|gpay number|phonepe number|paytm number|id|number)\\b[^.?!]{0,20}\\b(deti|dungi|de rahi|bhej rahi|bhejti|note kar|likh|bolti|bol rahi|bata rahi|batati|bataungi)[a-z]*\\b[^.?!]{0,40}\\b(transfer|pay|bhej|jama|send)",
+        "\\b(meri|mere|my|hamare|humare|our)\\b[^.?!]{0,20}\\b(account|khata|khate|upi|wallet)\\b ?(mein|me|par|pe|in|to|into)\\b[^.?!]{0,15}\\b(jama|transfer|bhej|pay|send|daal|deposit)",
+        "\\b(bhabhi|bhai|behen|bahan|dost|friend|colleague|sir|madam|manager|uncle|cousin)[a-z]* (ke|ki|ka|'s) (account|upi|number|khata|khate|wallet|gpay|phonepe|paytm)\\b",
+        "\\b(mere saamne|line par|line pe|call par|call pe) hi\\b[^.?!]{0,10}\\b(karna|kar|pay|bhej|transfer)"
+      ],
+      "none": [
+        "\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)[^.?!]{0,15}\\b(maang|leti|lete|lungi|liya|lena|dena|denge|karti|karte|kiya|hoga|lenge)",
+        "\\b(kuch bhi|kisi bhi tarah ka|kisi bhi prakar ka|koi bhi|koi)\\b[^.?!]{0,30}\\b(nahi|nahin|never|not)\\b(?! ?(toh|to|tho)\\b)"
+      ]
+    },
+    {
+      "id": "rd6.regulator_impersonation",
+      "rule": "RD6",
+      "kind": "scam_framing",
+      "action": "block",
+      "reason": "poses as a regulator or the government",
+      "any": [
+        "\\b(irdai|irda|rbi|sebi|trai|uidai|government|sarkar|sarkaari|ministry|income tax department|cyber cell|police department)\\b[^.?!]{0,25}\\b(se bol|ki taraf se|ki or se|from|calling|department se|officer|se call|ke office|office se|se phone|ka official|ki official|ki guarantee|guaranteed|approved scheme|ki scheme|ka scheme)",
+        "(आरबीआई|सरकार|सरकारी|इरडा)[^।?!]{0,20}(से बोल|की तरफ से|की ओर से|ऑफिस से|की गारंटी|की स्कीम)",
+        "\\b(calling|call kar rah[ei]|bol rah[ei]|speaking) (from|on behalf of)\\b ?(the )?(irdai|irda|rbi|sebi|trai|uidai|government|police|cyber cell|income tax)\\b"
+      ]
+    },
+    {
+      "id": "rd9.harsh_dues",
+      "rule": "RD9",
+      "kind": "harsh_practice",
+      "scope": {
+        "packs": [
+          "lending_rbi"
+        ],
+        "when": "dues",
+        "join": "or"
+      },
+      "action": "block",
+      "reason": "threat, intimidation, shaming or third-party pressure on a dues call (RBI Fair Practices)",
+      "any": [
+        "\\b(police|jail|jel|arrest|giraftar|warrant|thana|criminal|lawsuit|sue you|recovery agents?|goons)\\b",
+        "\\b(court|legal|kanooni|kanuni|fir|f\\.i\\.r\\.?)\\b[^.?!]{0,20}\\b(case|action|notice|karwai|kaarwai|karenge|karegi|hoga|hogi|file|darj|lodge|le jayenge|ghaseet|ghasit|bhejenge|lenge|proceedings)\\b",
+        "\\b(ghar|office|daftar|dukaan|workplace|home|house)\\b[^.?!]{0,25}\\b(aa(yenge|enge|ayenge|jayenge)|bhej ?(enge|denge|dunga|dungi|deti|deta)|pahunch(enge|jayenge)|visit karenge|recovery (agent|team|wale)|will come|will visit|send (someone|people|agents))",
+        "\\b(family|papa|mummy|mother|father|pita|mata|wife|husband|biwi|pati|bhai|behen|beta|beti|sasural|in-?laws|parivaar|parivar|ghar ?waa?l|relatives|rishtedaar|padosi|neighbou?rs|boss|manager|employer|colleague|office|daftar|workplace|office waa?l|friends|dost)[a-z]*\\b[^.?!]{0,30}\\b(bata ?(yenge|denge|dunga|dungi|deti|degi)|inform|call kar(enge|denge)|phone kar(enge|denge|ke)|pata chal|tell|contact|bata ?(denge|dunga|dungi))",
+        "\\b(sharam|sharm|besharam|izzat|beizzati|badnaam|badnami|shame|ashamed|dhokebaaz|dhokebaz|chor|fraud ho|cheat|defaulter ho aap|aap jaise log|kaise insaan|defaulter)\\b",
+        "\\b(cibil|credit score|score)\\b[^.?!]{0,25}\\b(kharab kar|barbaad kar|ruin|destroy|zero kar|band kar)[a-z]*\\b",
+        "\\b(saman|samaan|saaman|gaadi|ghar|property|bike|car|furniture|tv)\\b[^.?!]{0,20}\\b(utha ?(lenge|le jayenge|ke le)|zabt|seize|kabza|jabt|le jayenge)",
+        "(पुलिस|जेल|गिरफ्तार|कोर्ट|शर्म|बदनाम|घर आ(एंगे|येंगे))",
+        "(परिवार|घरवाल|घर वाल|रिश्तेदार|पड़ोसी|बॉस|ऑफिस)[^।?!]{0,30}(बता देंगे|बताएंगे|बता दूंगी|फोन कर|फ़ोन कर)",
+        "\\b(send|sending)\\b[^.?!]{0,10}\\b(people|someone|agents|our team|recovery|our (men|boys|guys))\\b[^.?!]{0,25}\\b(home|house|office|workplace)",
+        "\\btell your (relatives|family|boss|employer|neighbou?rs|colleagues|friends)\\b",
+        "\\b(humare|hamare|apne) (log|aadmi|ladke|bande) (aake|aa ke|aayenge|bhejenge)"
+      ],
+      "none": [
+        "\\b(koi|no|nobody|kisi ko)\\b ?(recovery agent|recovery team|police|legal action|court case|case|visit|agent|aadmi)\\b[^.?!]{0,40}\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)",
+        "\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)[^.?!]{0,12}\\b(aayega|aayenge|aaega|bheja|bhejenge|bhejega|visit|come|hoga|hogi|karenge|karega|batayenge|bataenge)"
+      ]
+    },
+    {
+      "id": "rd6.pay_to_receive",
+      "rule": "RD6",
+      "kind": "scam_framing",
+      "action": "block",
+      "reason": "pay-to-receive framing (refund, bonus, prize or fund value released against a fee)",
+      "all": [
+        "\\b(refund|bonus|cashback|reward|prize|inaam|lottery|jackpot|lucky draw|fund value|maturity|claim amount|claim ka paisa|surrender value|gift|jeeta|jeeti|won|winner|loan pass|loan approve|loan sanction|disburse|pass ho gaya|approve ho gaya|sanction ho gaya)\\b",
+        "\\b(fee|fees|charge|charges|processing|gst|tax|token amount|registration amount|shulk|rakam|deposit)\\b",
+        "\\b(bhej|bhar|bhariye|bharna|pay|jama|transfer|send|de do|dena (hoga|padega)|kara|deposit|pehle|pahle|first)"
+      ],
+      "none": [
+        "\\b(koi|no|bina|without|zero|kuch bhi nahi|kuch nahi)\\b[^.?!]{0,8}\\b(fee|charge|charges|payment|processing|pay)\\b",
+        "\\b(fee|charge|charges|payment)\\b[^.?!]{0,10}\\b(nahi|nahin|not|free)\\b",
+        "\\b(kabhi|never)\\b[^.?!]{0,30}\\b(fee|charge|pay)"
+      ]
+    },
+    {
+      "id": "rd6.pay_to_receive_hi",
+      "rule": "RD6",
+      "kind": "scam_framing",
+      "action": "block",
+      "reason": "pay-to-receive framing (Devanagari)",
+      "any": [
+        "(रिफंड|बोनस|इनाम|लॉटरी|कैशबैक|फंड वैल्यू|मैच्योरिटी|क्लेम)[^।?!]{0,40}(पहले|के लिए|छुडाने)[^।?!]{0,30}(शुल्क|फीस|चार्ज|भुगतान|जमा|टैक्स|पैसे)"
+      ],
+      "none": [
+        "(कोई|बिना) (शुल्क|फीस|चार्ज)|(शुल्क|फीस|चार्ज)[^।?!]{0,10}नहीं|पहले ही (हो|मिल)"
+      ]
+    },
+    {
+      "id": "rd6.lapsed_pay_to_revive",
+      "rule": "RD6",
+      "kind": "scam_framing",
+      "action": "block",
+      "reason": "'lapsed, pay to revive' framing",
+      "all": [
+        "\\b(lapse|lapsed|laps ho|band ho (gayi|gaya|jayegi)|expire ho|expired|deactivate|block ho)\\w*",
+        "\\b(revive|reviv|reactivat|chalu|restore|wapas|vapas|bach|save|recover)\\w*",
+        "\\b(pay|payment|jama|bhar|fee|charge|amount|paise|transfer)\\w*"
+      ]
+    },
+    {
+      "id": "rd6.threat_or_false_urgency",
+      "rule": "RD6",
+      "kind": "scam_framing",
+      "action": "block",
+      "reason": "deadline threat or false urgency",
+      "any": [
+        "\\b(warna|varna|otherwise|or else|if you don'?t|nahi( kiya| kiye| kara| bhara| diya| kiya gaya)? (toh|to|tho))\\b[^.?!]{0,40}\\b(police|legal|court|jail|arrest|block|band|cancel|seize|zabt|penalty|jurmana|blacklist|suspend|freeze)",
+        "\\b(last chance|final chance|aakhri mauka|akhri mauka|antim mauka|now or never|abhi nahi toh kabhi nahi|abhi ya kabhi nahi|sirf aaj|only today|today only|aaj raat tak hi|expires tonight|hurry up|jaldi kijiye warna|last warning|final warning|aakhri warning|aakhri chetavni)\\b",
+        "\\b(account|card|sim|number|policy|connection|kyc)\\b[^.?!]{0,30}\\b(block|band|suspend|freeze|deactivate)[a-z]*\\b[^.?!]{0,20}\\b(ho jayega|ho jaayega|kar diya jayega|will be)\\b[^.?!]{0,30}\\b(agar|if|unless|jab tak)\\b",
+        "(आखिरी मौका|वरना|नहीं तो)[^।?!]{0,30}(पुलिस|ब्लॉक|बंद|कानूनी)",
+        "\\bor (your|the|aapka|aapki)\\b[^.?!]{0,30}\\b(cancel|block|band|suspend|freeze|lapse|forfeit)",
+        "\\b(account|card|sim|number|connection|kyc|service|wallet|upi|net ?banking)\\b[^.?!]{0,20}\\b(block|band|suspend|freeze|deactivate)[a-z]*\\b ?(hone wala|hone wali|ho jayega|ho jayegi|ho jaayega|ho jaayegi|kar diya jayega|kar di jayegi|will be|is going to be)\\b[^.?!]{0,40}\\b(ghant|hours?|minute|aaj raat|aaj hi|turant|immediately|today|tonight|nahi (liya|kiya|kara|karaya|bhara|diya)|agar|unless|if)",
+        "\\b(account|card|sim|number|connection|kyc|wallet|upi|bijli|electricity|power|gas|water|service)\\b[^.?!]{0,30}\\b(ghante|hours?|minute|aaj raat|aaj shaam|shaam tak|aaj hi|tonight|today)\\b[^.?!]{0,15}\\b(block|band|suspend|freeze|deactivate|cut|kaat|disconnect)",
+        "\\b(band|block|suspend|cut|disconnect|freeze)[a-z ]{0,30}\\b(bachne ke liye|bachna hai toh|to avoid (this|it|that))\\b",
+        "\\b(will be|is going to be) (cut|disconnected|blocked|suspended|frozen|deactivated) (tonight|today|in \\d|within|by)\\b",
+        "\\b(act|pay|clear|respond)\\b[^.?!]{0,15}\\bwithin (the next )?(one|an|1|two|2|few) (hour|hours|minutes)\\b",
+        "\\b(drugs|narcotics|digital arrest|money laundering|hawala)\\b"
+      ]
+    },
+    {
+      "id": "rd8.irdai_solicitation",
+      "rule": "RD8",
+      "kind": "solicitation",
+      "scope": {
+        "packs": [
+          "insurance_irdai"
+        ]
+      },
+      "action": "block",
+      "reason": "IRDAI solicitation fence: guaranteed-return claims, regulator impersonation, switching or bundling pressure",
+      "any": [
+        "\\b(guaranteed|guarantee|pakka|confirm|100 ?%|hundred percent|sure ?shot|fixed)\\b[^.?!]{0,20}\\b(return|returns|munafa|profit|double|growth|income)\\b",
+        "\\b(paisa|paise|money|amount)\\b[^.?!]{0,20}\\b(double|dugna|duguna|doguna|teen guna|do guna|triple)\\b",
+        "\\b(risk[- ]free|bina risk|zero risk|no risk|(koi|no) (risk|jokhim|khatra) (nahi|nahin|nhi|hai hi nahi|bilkul nahi))\\b",
+        "\\b(fd|fixed deposit|bank fd)\\b[^.?!]{0,30}\\b(better|zyada|se achha|jaisa|same as|like)\\b",
+        "\\b(purani|old|existing|current)\\b[^.?!]{0,25}\\b(policy)\\b[^.?!]{0,30}\\b(band|surrender|cancel|chhod|close|nikaal|nikal|tod|break)[a-z]*\\b[^.?!]{0,60}\\b(nayi|naya|new)\\b",
+        "\\b(nayi|naya|new)\\b[^.?!]{0,20}\\b(policy)\\b[^.?!]{0,40}\\b(purani|old|existing)\\b[^.?!]{0,25}\\b(band|surrender|cancel|close)",
+        "\\b(loan|card|account)\\b[^.?!]{0,30}\\b(ke saath|with|along with)\\b[^.?!]{0,15}\\b(policy|insurance)\\b[^.?!]{0,20}\\b(lena (zaroori|padega|hoga)|compulsory|mandatory|must)",
+        "\\b(return|returns|munafa|profit)\\b[^.?!]{0,15}\\b(pakka|guaranteed|guarantee|confirm|fixed)\\b",
+        "\\brisk\\b[^.?!]{0,25}\\b(bilkul nahi|bilkul bhi nahi|zero)\\b",
+        "(दोगुना|दुगना|दुगुना|तीन गुना|डबल)[^।?!]{0,15}(हो जाएगा|हो जायेगा|होगा|मिलेगा)|कोई जोखिम नहीं|जोखिम नहीं|गारंटीड रिटर्न|पक्का रिटर्न|गारंटी रिटर्न",
+        "\\b(purani|purane|old|existing)\\b[^.?!]{0,30}\\b(policy|plan)\\b[^.?!]{0,40}\\b(nikaal|nikal|tod|band|surrender)[a-z]*\\b[^.?!]{0,25}\\b(naye|nayi|naya|new)\\b",
+        "\\bguarantee (dete|deti|deta|de rahe|de rahi|dete hain)\\b",
+        "\\b(loss|nuksan|nuksaan|ghata)\\b[^.?!]{0,15}\\b(koi chance (hi )?nahi|nahi hoga|ho hi nahi sakta|impossible)\\b",
+        "\\b(can ?not|can'?t|won'?t) lose\\b",
+        "\\bone hundred percent (sure|safe|guaranteed)\\b"
+      ],
+      "none": [
+        "\\b(guarantee|guaranteed|pakka|fixed)\\b ?(nahi|nahin|nhi|not|no)\\b|\\b(no|koi) (guarantee|guaranteed)\\b|\\bmarket risk (hota|hai|hain|hoga)\\b|\\bnot guaranteed\\b"
+      ]
+    },
+    {
+      "id": "rd7.promotion_fence",
+      "rule": "RD7",
+      "kind": "promotion",
+      "scope": {
+        "categories": [
+          "service",
+          "transactional"
+        ]
+      },
+      "action": "block",
+      "reason": "promotion on a service or transactional call",
+      "any": [
+        "\\b(offer|offers|discount|discounts|cashback|special deal|deal hai|exclusive|limited[- ]period|limited time|pre-?approved|free gift|coupon|promo code|sale chal|festive (offer|sale)|best price|special price|sirf aapke liye|only for you|just for you|specially for you|on sale|special rate|sasta pad ?(ega|jayega|jaayega)|saste mein)\\b",
+        "\\b\\d{1,2} ?(%|percent|pratishat) (off|discount|chhoot|ki chhoot|kam)\\b",
+        "\\b(upgrade|top-?up|add-?on|naya plan|new plan|better plan|bada plan|premium plan)\\b[^.?!]{0,40}\\b(karna chahenge|kar lijiye|karwa lijiye|karwa dein|le lijiye|lena chahenge|would you like|interested|should take|try kariye)",
+        "\\b(interested|dilchaspi|lena chahenge|would you like)\\b[^.?!]{0,30}\\b(new|naya|nayi|another|ek aur|extra|additional)\\b[^.?!]{0,15}\\b(policy|loan|card|plan|product|scheme|course|package|flat)\\b",
+        "(ऑफ़र|ऑफर|छूट|डिस्काउंट|कैशबैक)",
+        "\\bwould you like to (upgrade|try|buy|add|take|switch|subscribe|enrol|enroll|purchase)\\b",
+        "\\b(package|plan|policy|card|course|membership|add-?on|scheme|subscription|insurance|cover)\\b[^.?!]{0,10}\\bbhi\\b[^.?!]{0,5}\\b(le lijiye|le lo|le lein|lena chahenge|karwa lijiye|add kar)",
+        "\\b(naya|nayi|naye|new|better|upgraded)\\b[^.?!]{0,10}\\b(plan|pack|policy|card|cover|product|connection|package|scheme|membership)\\b[^.?!]{0,30}\\b(lena chahiye|le lijiye|lijiye|le lo|try kar|switch kar|lena chahenge|kaisa rahega)",
+        "\\b(shall|should|can|may) i add (it|this|that|one)\\b",
+        "\\b(naya|nayi|naye|new|hamare|humare|our)\\b[^.?!]{0,25}\\b(plan|membership|card|policy|scheme|product|package|course|service)\\b[^.?!]{0,20}\\b(ke baare mein (sunna|jaanna)|sunna chahenge|jaanna chahenge|hear about|tell you about)",
+        "\\bupgrade (karne|kar ne|karwane) ka (mauka|chance|option)\\b"
+      ],
+      "none": [
+        "\\b(koi|no|nahi)\\b[^.?!]{0,10}\\b(offer|discount)\\b[^.?!]{0,20}\\b(nahi|not|bech|sell|push)",
+        "\\b(sell|bechne|bechna|push|offer)\\b[^.?!]{0,20}\\b(nahi|not)\\b"
+      ]
+    },
+    {
+      "id": "rd10.recording_after_refusal",
+      "rule": "RD10",
+      "kind": "recording",
+      "scope": {
+        "when": "recordingRefused"
+      },
+      "action": "replace",
+      "replacement": "recording_stopped",
+      "reason": "the caller refused recording; she must not keep or insist on it",
+      "any": [
+        "\\b(record|recording|recorded)\\b[^.?!]{0,30}\\b(ho rahi|ho raha|chal rahi|chalu|jaari|jari|continue|on rahegi|zaroori|zaruri|mandatory|required|compulsory|band nahi|nahi rok|can'?t stop|cannot stop|is being|will be|must)",
+        "\\b(is being|will be|are being) recorded\\b",
+        "(रिकॉर्ड|रिकॉर्डिंग)[^।?!]{0,20}(हो रही|चालू|ज़रूरी|जरूरी)"
+      ]
+    },
+    {
+      "id": "rd1.agenda_before_disclosure",
+      "rule": "RD1",
+      "kind": "disclosure_ledger",
+      "scope": {
+        "when": "undisclosed"
+      },
+      "action": "block",
+      "reason": "agenda before the AI clause has been heard; carry the clause in this turn",
+      "all": [
+        "@agenda"
+      ],
+      "none": [
+        "@ai_clause"
+      ]
+    },
+    {
+      "id": "rd11.account_detail_before_identity",
+      "rule": "RD11",
+      "kind": "builtin:per_contact_facts",
+      "scope": {
+        "when": "unverified"
+      },
+      "action": "block",
+      "reason": "a per-contact account detail before identity is verified"
+    },
+    {
+      "id": "rd11.account_amount_before_identity",
+      "rule": "RD11",
+      "kind": "identity",
+      "scope": {
+        "when": "unverified"
+      },
+      "action": "block",
+      "reason": "account details (amounts, numbers, status) before identity is verified",
+      "any": [
+        "\\b(aapka|aapki|aapke|your)\\b[^.?!]{0,25}\\b(premium|emi|dues?|outstanding|balance|bakaya|loan|policy number|account number|account|order|report|result|bill|installment|kisht|claim|limit|statement)\\b[^.?!]{0,30}(\\d|@currency)",
+        "\\b(aapka|aapki|aapke|your)\\b[^.?!]{0,25}\\b(report|test result|diagnosis|loan|emi|dues?|policy|claim)\\b[^.?!]{0,25}\\b(overdue|bounce|bounced|reject|rejected|positive|negative|pending|lapse|default)"
+      ]
+    },
+    {
+      "id": "rd.never_say",
+      "rule": "RD7",
+      "check": "never_say",
+      "kind": "builtin:never_say",
+      "action": "block",
+      "reason": "a phrase the business listed under neverSay"
+    },
+    {
+      "id": "rd.amount_not_in_facts",
+      "rule": "RD6",
+      "check": "amount_not_in_facts",
+      "kind": "builtin:amounts",
+      "action": "block",
+      "reason": "a rupee amount that is not in the agent's facts"
+    }
+  ],
+  "caller": [
+    {
+      "id": "cs.crisis.self_harm",
+      "signal": "crisis",
+      "any": [
+        "\\b(suicide|suicidal|khudkushi|khudkhushi|aatmahatya|atmahatya|aatm hatya)\\b",
+        "\\b(kill|hurt|harm) (myself|meself)\\b",
+        "\\b(end|ending|take) (my|my own) life\\b",
+        "\\b(want|wanna|going) to die\\b",
+        "\\b(don'?t|do not) want to (live|be alive|exist)\\b",
+        "\\bno (reason|point) (to|in) (live|living|go on)\\b",
+        "\\b(better off dead|end it all)\\b",
+        "\\b(marna|mar jaana|mar jana|mar jaun|mar jaau|mar jaaun|mar jau|marne)\\b[^.?!]{0,15}\\b(chahta|chahti|chahte|chaahta|chaahti|ka mann|ka man|ka dil|ka soch|wala hoon|wali hoon|hi theek|behtar)",
+        "\\b(jeene|jine|jeena|jina)\\b[^.?!]{0,15}\\b(ka mann nahi|ka man nahi|ka dil nahi|ki ichha nahi|nahi chahta|nahi chahti|ka koi matlab nahi|ka koi fayda nahi|se tang)",
+        "\\b(khud ko|apne aap ko|apni jaan|jaan)\\b[^.?!]{0,15}\\b(khatam|maar|nuksan|nuksaan|hurt|de dunga|de dungi|le lunga|le lungi|dena chahta|dena chahti)",
+        "\\b(sab|sabkuch|sab kuch|zindagi|life)\\b[^.?!]{0,10}\\b(khatam kar (dunga|dungi|lunga|lungi|deta|deti)|khatam karna chahta|khatam karna chahti)",
+        "\\b(neend ki goliyan|sleeping pills|zeher|zehar|poison|faansi|fansi|phansi)\\b[^.?!]{0,40}\\b(kha|le|laga|lagaa|take|taking|swallow|soch)",
+        "\\b(chhat|building|bridge|pul|train)\\b[^.?!]{0,20}\\b(se kood|se koodna|se kud|se jump|jump kar|ke aage)",
+        "(आत्महत्या|खुदकुशी|मरना चाहता|मरना चाहती|मर जाना चाहता|मर जाना चाहती|जीने का मन नहीं|जीना नहीं चाहता|जीना नहीं चाहती|खुद को खत्म|अपनी जान)",
+        "\\b(marr?) (jaun|jaaun|jau|jaau|jaungi|jaunga|jaaunga|jaaungi)\\b[^.?!]{0,10}\\b(toh|to|tho)\\b[^.?!]{0,20}\\b(theek|thik|achha|accha|behtar|better|sukoon|chain|khush)",
+        "\\b(jeena|jina) nahi (hai|h)\\b",
+        "जीना नहीं (है|चाहता|चाहती)|(सब कुछ|सबकुछ|ज़िंदगी|जिंदगी)[^।?!]{0,10}खत्म कर (दूंगा|दूंगी|लूंगा|लूंगी)",
+        "\\b(sab|sabkuch|sab kuch|zindagi|life|khud ko|apne aap ko)\\b[^.?!]{0,10}\\bkhatam kar ?(na|dena|lena) chah(ta|ti|te)\\b",
+        "\\bkuch (galat|ulta seedha|ulta sidha) kar (lunga|lungi|baithunga|baithungi|dunga|dungi|lena)\\b",
+        "\\b(jahar|zahar|jeher|zeher|zehar)\\b[^.?!]{0,15}\\b(kha|pi|le)\\b",
+        "(सुसाइड|ज़हर खा|जहर खा)",
+        "\\b(so jaun|so jaaun|so jau|sota rahun|soti rahun)\\b[^.?!]{0,15}\\b(kabhi )?(na|nahi) (uthun|uthu|uthoon|jaagun|uthna)\\b",
+        "\\b(never wake up|kabhi na uthun|kabhi nahi uthna)\\b",
+        "\\b(goliyan|pills|tablets)\\b[^.?!]{0,10}\\bjama kar (li|liya|li hain|rakhi|rakhi hain)\\b"
+      ],
+      "none": [
+        "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne)\\b[^.?!]{0,15}\\b(mar|die|dying|killing)"
+      ]
+    },
+    {
+      "id": "cs.crisis.danger",
+      "signal": "crisis",
+      "any": [
+        "\\b(mujhe|hume|humein|meri biwi ko|mere bachche ko)\\b[^.?!]{0,15}\\b(maar (raha|rahe|rahi|dalega|dalenge|dega)|maar daalega|pit raha|peet raha|maar-peet)",
+        "\\b(bachao|bachaao|help me please|somebody help|someone is (hurting|attacking|beating)|being (attacked|beaten|hit))\\b",
+        "\\b(domestic violence|ghar mein ghus|ghus aaya|ghus aaye|chaku|knife|gun|bandook)\\b[^.?!]{0,25}\\b(hai|mere|aaya|aaye|point|has)",
+        "\\b(heart attack|saans nahi aa rahi|can'?t breathe|behosh|unconscious|bahut khoon)\\b",
+        "(बचाओ|मुझे मार रहा|मार डालेगा)"
+      ]
+    },
+    {
+      "id": "cs.asks_if_ai",
+      "signal": "asksIfAi",
+      "any": [
+        "\\b(aap|tum|tu|ye|yeh|kya)\\b[^.?!]{0,15}\\b(ai|a\\.i\\.|robot|bot|machine|computer|recording|recorded|automatic|automated)\\b[^.?!]{0,10}\\b(ho|hain|hai|hu|ho kya|hai kya|bol rahi|bol rahe|se baat)\\b",
+        "\\b(aap|tum|tu)\\b[^.?!]{0,10}\\b(insaan|insan|human|real|asli|zinda)\\b[^.?!]{0,10}\\b(ho|hain|hai)\\b[^.?!]{0,6}(\\?|\\bya\\b|\\bkya\\b|\\bna\\b|$)",
+        "\\bkya (aap|tum|main)\\b[^.?!]{0,15}\\b(insaan|insan|human|real person|asli|machine|robot|ai|bot)\\b",
+        "\\b(are|r) (you|u) (a |an )?(bot|robot|ai|machine|computer|human|real|real person|person|recording|automated|actual person|live person)\\b",
+        "\\b(is this|am i talking to|am i speaking to|speaking with|talking to) (a |an )?(bot|robot|ai|machine|computer|recording|recorded|real person|human|automated|real human)",
+        "\\b(real person|human|insaan|asli insaan) (hai|hain|ho) (ya|or) (machine|robot|ai|bot|recording)\\b",
+        "\\b(machine|robot|ai|bot|recording) (hai|ho|hain) (ya|or) (real|insaan|human|asli)\\b",
+        "\\b(koi insaan|koi human|real person) (hai|bhi hai)\\b",
+        "(क्या आप|आप)[^।?!]{0,10}(रोबोट|मशीन|एआई|बॉट|इंसान)[^।?!]{0,6}(हो|हैं|है)"
+      ]
+    },
+    {
+      "id": "cs.refuses_recording",
+      "signal": "refusesRecording",
+      "any": [
+        "\\b(record|recording|recorded)\\b[^.?!]{0,12}\\b(mat|na|nahi|nahin|band|bandh|off|stop|rok)\\b[^.?!]{0,10}\\b(karo|kijiye|karein|karna|kare|chahiye|kar do|kar dijiye|karo please|chahta|chahti)?",
+        "\\b(don'?t|do not|please don'?t|stop|i don'?t want (you )?to|i don'?t want (this|the call) (to be )?)\\b ?(record|recording)",
+        "\\b(i (do not|don'?t) (consent|agree) to)\\b[^.?!]{0,30}\\brecord",
+        "\\b(no recording|without recording|bina recording)\\b",
+        "(रिकॉर्ड|रिकॉर्डिंग)[^।?!]{0,10}(मत|बंद|नहीं)",
+        "\\b(record|recording|recorded)\\b[^.?!]{0,20}\\b(aitraaz|aitraz|etraaz|objection|object|aapatti|problem|dikkat)\\b ?(hai|h|he)\\b",
+        "\\b(record|recording)\\b[^.?!]{0,30}\\b(haan|consent|permission|ijazat|anumati|allow)\\b[^.?!]{0,10}\\b(nahi|nahin|not)\\b",
+        "\\b(record|recording)\\b[^.?!]{0,40}\\b(rok|band kar|bandh kar|stop kar)\\s?(do|dijiye|dein|o)\\b",
+        "\\b(mat|na) (karo|kijiye|karna|karein)\\b ?record",
+        "\\b(don'?t|do not) want\\b[^.?!]{0,20}\\brecord(ed|ing)?\\b"
+      ],
+      "none": [
+        "\\b(record|recording)\\b[^.?!]{0,20}\\b(theek|thik|ok|okay|fine|chalega|koi baat nahi|no problem|no issue)\\b",
+        "\\b(koi (problem|dikkat|issue) nahi)\\b[^.?!]{0,20}\\brecord"
+      ]
+    },
+    {
+      "id": "cs.refuses_recording.objection",
+      "signal": "refusesRecording",
+      "all": [
+        "\\brecord",
+        "\\b(aapatti|aitraaz|aitraz|etraaz|objection)\\b ?(hai|h|he)\\b"
+      ]
+    },
+    {
+      "id": "cs.refuses_recording.dont_want",
+      "signal": "refusesRecording",
+      "all": [
+        "\\brecord",
+        "\\b(nahi chahiye|hata do|hatao|delete kar|mita do|band karo|band kijiye)\\b"
+      ],
+      "none": [
+        "\\b(record|recording)\\b[^.?!]{0,20}\\b(theek|thik|ok|okay|fine|chalega|koi baat nahi|no problem|no issue|bhej|send)\\b"
+      ]
+    },
+    {
+      "id": "cs.opt_out.strong",
+      "signal": "optOut",
+      "any": [
+        "\\b(dobara|dubara|phir se|fir se|phir kabhi|kabhi bhi|kabhi|aage se|ab se|future mein)\\b[^.?!]{0,15}\\b(call|phone|contact)\\b[^.?!]{0,8}\\b(mat|na|nahi|nahin)\\b",
+        "\\b(call|phone|contact)\\b[^.?!]{0,8}\\b(mat|na|nahi)\\b[^.?!]{0,8}\\b(karna|karo|kijiye|karein|kare)\\b[^.?!]{0,10}\\b(dobara|dubara|phir se|fir se|kabhi|aage se)\\b",
+        "\\b(don'?t|do not|never|stop)\\b[^.?!]{0,6}\\b(call|calling|phone|contact|ring)(ing)?\\b[^.?!]{0,10}\\b(me|us|this number)?[^.?!]{0,6}\\b(again|anymore|any more|ever)\\b",
+        "\\bstop calling\\b",
+        "\\b(remove|delete|hata|hatao|hata do|hata dijiye|nikal|nikalo|nikaal do)\\b[^.?!]{0,15}\\b(my number|mera number|number|list)\\b",
+        "\\b(my number|mera number|number)\\b[^.?!]{0,15}\\b(remove|delete|hata|hatao|hata do|hata dijiye|nikal|nikalo|nikaal do)\\b",
+        "\\b(unsubscribe|opt out|opt-out|dnd)\\b",
+        "\\b(ye|yeh|aise|aisi|in|inn)\\b[^.?!]{0,5}\\b(calls?)\\b[^.?!]{0,10}\\b(band karo|band kijiye|band kar do|bandh karo|stop karo|nahi chahiye)\\b",
+        "\\b(not interested|interest nahi hai)\\b[^.?!]{0,20}\\b(call|phone)\\b[^.?!]{0,10}\\b(mat|don'?t|never|nahi)\\b",
+        "(दोबारा|फिर से|कभी)[^।?!]{0,10}(कॉल|फ़ोन|फोन)[^।?!]{0,6}(?<![\\u0900-\\u097F])(मत|न)(?![\\u0900-\\u097F])",
+        "(नंबर)[^।?!]{0,10}(हटा)",
+        "\\b(call|calls|phone)\\b ?(nahi|nahin|mat|na)\\b ?(aani|aana|aane|aaye|aayega) chahiye\\b",
+        "\\b(baar baar|bar bar|roz roz|har din|daily)\\b[^.?!]{0,20}\\b(call|phone)\\b[^.?!]{0,25}\\b(band karo|band kijiye|mat karo|bas karo|band kar do)",
+        "\\b(call|calls|phone)\\b ?(nahi|nahin) chahiye\\b",
+        "\\b(band karo|band kijiye|bas karo)\\b ?(ye|yeh|yah)? ?(call|calls) (karna|karne)\\b",
+        "\\b(call|calls) (karna|karne) band\\b"
+      ]
+    },
+    {
+      "id": "cs.opt_out.plain",
+      "signal": "optOut",
+      "any": [
+        "\\b(mujhe|humein|hume|is number par|is number pe)?\\b ?(call|phone)\\b ?(mat|na) (karna|karo|kijiye|karein|kare|kariye)\\b",
+        "\\b(don'?t|do not|please don'?t) (call|phone|ring) (me|us|this number)\\b"
+      ],
+      "none": [
+        "\\b(abhi|aaj|kal|baad mein|baad me|thodi der|shaam|subah|raat|dopahar|later|right now|now|today|tomorrow|this week|next week|agle hafte|weekend|meeting|busy|drive|office time|working hours|\\d ?baje|before|after|ke baad|se pehle)\\b"
+      ]
+    },
+    {
+      "id": "cs.sensitive_digits",
+      "signal": "readingSensitiveDigits",
+      "builtin": "sensitive_digits",
+      "about": "Fires on a sensitive context word (OTP, PIN, CVV, card, UPI, Aadhaar, password, code) near a run of 3+ digits (spoken digit words count), or on any digit run of 12+ (card / Aadhaar length), or a Luhn-valid run of 13-19.",
+      "context": "(\\botp\\b|\\bo t p\\b|one[- ]time|\\bpin\\b|\\bm-?pin\\b|\\bcvv\\b|\\bcvc\\b|\\bcard\\b|\\bupi\\b|\\baadhaa?r\\b|\\baadhar\\b|\\bpassword\\b|\\bcode\\b|ओटीपी|पिन|कार्ड|आधार|सीवीवी)",
+      "none": [
+        "\\b(last|aakhri|akhri|antim) (4|four|char|chaar)\\b[^.?!]{0,15}\\b(aadhaa?r|aadhar|mobile|phone|number)\\b",
+        "(\\b(pin ?code|pincode|area code|std code|zip code|postal code)\\b|पिन ?कोड|पिनकोड)"
+      ]
+    },
+    {
+      "id": "cs.wants_human",
+      "signal": "wantsHuman",
+      "any": [
+        "\\b(kisi|koi|real|asli|ek|actual|live)?\\b ?(insaan|insan|human|real person|person|aadmi|vyakti|banda|bande|manager|supervisor|senior|agent|executive|customer care|staff|team member|officer|branch)\\b[^.?!]{0,12}\\b(se|sey)\\b[^.?!]{0,6}\\b(baat|connect|transfer|jodo|jod)\\b[^.?!]{0,6}\\b(karao|karwao|karwaiye|karvao|karaiye|karwa do|kara do|karwa dijiye|kara dijiye|karni hai|karna hai|karna chahta|karna chahti|karna chahunga|karna chahungi|chahiye|kijiye|karo|do)\\b",
+        "\\b(talk|speak) (to|with) (a |an |some |the |your )?(human|real person|person|someone|somebody|manager|supervisor|agent|representative|executive|customer care|real human|live agent)\\b",
+        "\\b(transfer|connect) (me|my call|this call|the call|call)\\b[^.?!]{0,20}\\b(human|person|someone|manager|agent|representative|executive|team)?",
+        "\\b(call|mujhe)\\b[^.?!]{0,10}\\b(transfer|connect) (karo|kijiye|karein|kar do|kar dijiye|karwao|karwa do)\\b",
+        "\\b(get me|i want|i need) (a |an |the )?(human|real person|manager|supervisor|agent|representative)\\b",
+        "\\b(machine|robot|bot|ai)\\b[^.?!]{0,10}\\b(se baat nahi|se nahi|nahi chahiye|hatao|hata do|band karo)\\b",
+        "(इंसान|मैनेजर|किसी व्यक्ति|किसी इंसान)[^।?!]{0,8}से[^।?!]{0,6}बात[^।?!]{0,6}(कराओ|करवाओ|कराइए|करवाइए|करनी है|करना है)",
+        "\\b(kisi|senior|manager|supervisor|insaan|human|aadmi|aurat|banda|wale|waale|person|executive|agent|officer|staff|representative|customer care)\\b[^.?!]{0,15}\\bko\\b ?(line|phone)? ?(par|pe)? ?(laiye|lao|laao|do|dijiye|dena|de do)\\b",
+        "(इंसान|मैनेजर|व्यक्ति|आदमी|सीनियर|सुपरवाइजर|कस्टमर केयर)[^।?!]{0,8}से[^।?!]{0,6}बात[^।?!]{0,25}(कराओ|करवाओ|कराइए|करवाइए|करनी है|करना है|कनेक्ट)",
+        "\\b(ko|pe|par)\\b (transfer|connect) (karo|kijiye|karein|kar do|kar dijiye)\\b",
+        "\\b(unse|usse|unke saath|kisi aur se|kisi se)\\b ?baat (karwao|karao|karwaiye|karaiye|karwa do|kara do|karwa dijiye)\\b",
+        "(मैनेजर|सीनियर|इंसान|किसी)[^।?!]{0,10}को (फोन|फ़ोन|लाइन)[^।?!]{0,6}(दीजिए|दो|दें)",
+        "\\b(koi aur|kisi aur)\\b[^.?!]{0,25}\\b(baat kar sake|baat karega|baat kare|live)\\b",
+        "\\blive (baat|person|agent|insaan)\\b"
+      ],
+      "none": [
+        "\\b(baat (karke|kar ke|kar lunga|kar lungi|karke batata|karke bataungi)|poochh ?(ke|kar)|puchh ?(ke|kar)|discuss kar)\\b"
+      ]
+    }
+  ],
+  "redact": {
+    "about": "Redaction is context-first (red team: a checksum gate lowers recall on ASR output, because a misheard digit fails the checksum and the number leaks). Context near a digit run masks it; with no context, a checksum (Luhn for 13-19 digits, Verhoeff for 12) raises confidence enough to mask. 10-digit Indian phone numbers are not masked unless an OTP/PIN context sits next to them.",
+    "digit_token": "(?:[0-9]|zero|oh|one|two|three|four|five|six|seven|eight|nine|shunya|sunya|sifar|ek|do|teen|tin|char|chaar|paanch|panch|chhe|chhah|chah|che|saat|sat|aath|ath|nau|no)",
+    "words_to_digits": {
+      "zero": "0",
+      "oh": "0",
+      "shunya": "0",
+      "sunya": "0",
+      "sifar": "0",
+      "one": "1",
+      "ek": "1",
+      "two": "2",
+      "do": "2",
+      "three": "3",
+      "teen": "3",
+      "tin": "3",
+      "four": "4",
+      "char": "4",
+      "chaar": "4",
+      "five": "5",
+      "paanch": "5",
+      "panch": "5",
+      "six": "6",
+      "chhe": "6",
+      "chhah": "6",
+      "chah": "6",
+      "che": "6",
+      "seven": "7",
+      "saat": "7",
+      "sat": "7",
+      "eight": "8",
+      "aath": "8",
+      "ath": "8",
+      "nine": "9",
+      "nau": "9",
+      "no": "9",
+      "शून्य": "0",
+      "एक": "1",
+      "दो": "2",
+      "तीन": "3",
+      "चार": "4",
+      "पांच": "5",
+      "पाँच": "5",
+      "छह": "6",
+      "छः": "6",
+      "छे": "6",
+      "सात": "7",
+      "आठ": "8",
+      "नौ": "9"
+    },
+    "context_window_chars": 40,
+    "kinds": [
+      {
+        "kind": "cvv",
+        "context": "(\\bcvv\\b|\\bcvc\\b|card ke (peeche|piche)|back of (the|my) card|security code|सीवीवी)",
+        "minDigits": 3,
+        "maxDigits": 4
+      },
+      {
+        "kind": "upi_pin",
+        "context": "(\\bupi\\b[^.?!]{0,10}\\bpin\\b|\\bm-?pin\\b|\\batm pin\\b|\\bpin\\b|पिन)",
+        "minDigits": 4,
+        "maxDigits": 6
+      },
+      {
+        "kind": "otp",
+        "context": "(\\botp\\b|\\bo t p\\b|one[- ]time (password|code)|verification code|\\bcode\\b|ओटीपी)",
+        "minDigits": 4,
+        "maxDigits": 8
+      },
+      {
+        "kind": "aadhaar",
+        "context": "(\\baadhaa?r\\b|\\baadhar\\b|\\buidai\\b|\\buid\\b|आधार)",
+        "minDigits": 12,
+        "maxDigits": 12
+      },
+      {
+        "kind": "card",
+        "context": "(\\bcard\\b|\\bdebit\\b|\\bcredit\\b|\\bvisa\\b|\\bmastercard\\b|\\brupay\\b|कार्ड)",
+        "minDigits": 12,
+        "maxDigits": 19
+      }
+    ],
+    "not_secret_code": "(pin ?code|pincode|area code|std code|promo code|coupon code|zip code|postal code|order (id|number|no)|पिन ?कोड|पिनकोड)"
+  },
+  "lint": {
+    "T-L1": {
+      "about": "Refuse any config text that tells the agent to claim to be human, hide being an AI, or deny it. Scanned on every string in the config, with its JSON path.",
+      "any": [
+        "\\b(say|tell|claim|pretend|act|insist|state|reply|answer|respond)[a-z]*\\b[^.?!]{0,40}\\b(you are|you're|you were|to be|that you'?re|as)\\b[^.?!]{0,15}\\b(a |an )?(human|real person|real human|real woman|real man|live person|live agent|staff member|employee|person not)\\b",
+        "\\b(say|tell|claim|pretend|insist|state|reply|answer|respond)[a-z]*\\b[^.?!]{0,30}\\b(not|never|isn'?t|aren'?t)\\b[^.?!]{0,6}\\b(an? )?(ai|bot|robot|machine|automated|virtual)\\b",
+        "\\b(never|don'?t|do not|must not|should not|avoid|without)\\b[^.?!]{0,10}\\b(reveal|disclos|admit|mention|say|tell|confirm|acknowledg|let (them|the caller|customers?) know)[a-z]*\\b[^.?!]{0,40}\\b(ai|a\\.i\\.|bot|robot|automated|virtual assistant|artificial|machine)\\b",
+        "\\b(hide|conceal|mask|cover up|keep secret|not reveal)[a-z]*\\b[^.?!]{0,30}\\b(ai|a\\.i\\.|bot|robot|automated|artificial|machine)\\b",
+        "\\b(deny|denies|denying)\\b[^.?!]{0,20}\\b(being|you are|you'?re|that)?\\b[^.?!]{0,10}\\b(an? )?(ai|bot|robot|machine|automated)\\b",
+        "\\b(pose|posing|impersonat|pass yourself off|pass as)[a-z]*\\b[^.?!]{0,25}\\b(human|person|employee|staff|agent of)\\b",
+        "\\b(khud ko|apne aap ko)\\b[^.?!]{0,20}\\b(insaan|insan|human|real|asli|staff|employee|karmachari)\\b[^.?!]{0,15}\\b(batana|batao|bolna|bolo|bataiye|kehna|kaho|dikhana)\\b",
+        "\\b(ai|bot|robot|machine)\\b[^.?!]{0,15}\\b(hone ki baat|hai yeh|hai ye|ho yeh)?[^.?!]{0,10}\\b(mat|nahi|na)\\b[^.?!]{0,6}\\b(batana|batao|bolna|bolo|bataiye|kehna|kaho)\\b",
+        "\\b(kabhi|bilkul)\\b[^.?!]{0,10}\\b(mat|nahi|na)\\b[^.?!]{0,10}\\b(batana|batao|bolna|bolo|bataiye|kehna|kaho)\\b[^.?!]{0,20}\\b(ai|bot|robot|machine)\\b",
+        "\\b(insaan|insan|human|real person|asli)\\b[^.?!]{0,15}\\b(bankar|ban kar|hone ka natak|hone ka dikhawa|ki tarah pesh)\\b",
+        "\\b(if|agar|jab)\\b[^.?!]{0,30}\\b(asked|asks|poochhe|puchhe|pooche|puche)\\b[^.?!]{0,40}\\b(say|tell|answer|bolo|kaho|batao|bolna|kehna)\\b[^.?!]{0,30}\\b(human|real person|insaan|insan|staff|employee|not (an? )?(ai|bot)|nahi (ai|bot))\\b"
+      ],
+      "none": [
+        "\\b(never|don'?t|do not|must not|should not|na|mat|kabhi nahi)\\b[^.?!]{0,8}\\b(claim|pretend|say|tell|act|pose|insist|deny|kaho|bolo)[a-z]*\\b[^.?!]{0,30}\\b(human|real person|insaan|not an ai|employee|staff)\\b",
+        "\\b(honest|honestly|truthfully|always (say|admit|confirm|disclose))\\b[^.?!]{0,30}\\b(ai|bot)\\b",
+        "\\b(sound|speak|talk|feel|warm)[a-z]*\\b[^.?!]{0,20}\\b(like a human|human-?like|natural|like a real person)\\b(?![^.?!]{0,20}\\b(pretend|claim|say you are))",
+        "\\bsay (yes|haan)\\b|\\b(admit|confirm|say|tell them|disclose)[a-z]* (that )?(you are|you'?re|she is|main) (an? )?(ai|bot|virtual|automated)\\b"
+      ],
+      "never_say_hides_ai": "(\\bai\\b|a\\.i\\.|artificial|\\bbot\\b|robot|automated|virtual assistant|digital assistant|एआई|machine)",
+      "disclosure_clause_requires": "@ai_clause"
+    },
+    "T-L2": {
+      "categories": [
+        "service",
+        "transactional"
+      ],
+      "dropPurposes": [
+        "offer"
+      ]
+    },
+    "T-L3": {
+      "allowedPurposes": {
+        "service": [
+          "service",
+          "identity",
+          "logistics"
+        ],
+        "transactional": [
+          "service",
+          "identity",
+          "logistics"
+        ],
+        "promotional": [
+          "offer",
+          "identity",
+          "logistics"
+        ]
+      },
+      "offerLanguage": "(\\boffer\\b|discount|cashback|% ?off|\\bpercent off\\b|free gift|\\bcoupon\\b|promo code|limited[- ]period|pre-?approved|\\bdeal\\b|छूट|ऑफर)",
+      "about": "Drops facts whose purpose tag is not allowed for the call category, and facts tagged service/logistics/identity whose text reads as an offer on a service or transactional call (a mis-tag)."
+    },
+    "T-L4": {
+      "about": "Refuse any link or bare domain in the config (outside brand.verifiedDomains itself) whose host is not a verified domain or its subdomain. Email addresses are not links. Link shorteners are never verified.",
+      "shorteners": [
+        "bit.ly",
+        "tinyurl.com",
+        "t.co",
+        "goo.gl",
+        "rb.gy",
+        "cutt.ly",
+        "is.gd",
+        "ow.ly",
+        "rzp.io",
+        "wa.me",
+        "shorturl.at",
+        "tiny.cc"
+      ]
+    }
+  },
+  "links": {
+    "pattern": "(?:https?://)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:com|in|co\\.in|net|org|io|app|me|ly|gl|co|info|biz|xyz|link|page|pay|bank|insurance|online|site|store|shop|club|tech|ai|gd|at|cc|gov\\.in|org\\.in|ac\\.in|edu|edu\\.in|nic\\.in)(?![a-z0-9-])(?:[/?#][^\\s]*)?",
+    "about": "A host is accepted when it equals a verified domain or ends with '.' + a verified domain. Spoken forms ('dot com') are rewritten to '.com' before matching."
+  }
+}
