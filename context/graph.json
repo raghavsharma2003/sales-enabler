@@ -16655,6 +16655,47 @@
    "source": "main loop, on the voice builder's M3 report",
    "rationale": "The speech-to-speech stack (v2-live) played audio before the door read it (review M3). The runtime now holds each turn until every sentence passes the door, which makes it safe but slower than its 1.2 s card said, and that gap is unmeasured. Sarvam (also beta) has an unresolved data-training term. Offering a stack whose safety or speed is unverified on real calls breaks the product's honest-number rule.",
    "reverse_if": "a beta stack passes the reply-door attack battery on its real transport and its reply gap with the hold is measured from India (n>=30 turns); then it is marked available"
+  },
+  {
+   "id": "decision.2026-10-21.rd2-allow-list",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "RD2 is an allow-list: any first-person sentence about her own nature (an AI or human noun next to main/\u092e\u0948\u0902/I with a copula or a negation, or 'ek/koi bot/insaan') passes only if it affirms AI-ness; denials (AI noun + negation), human claims ('insaan hoon', 'human here', 'a real person') and 'aap insaan se baat kar rahe hain' are replaced with the honest disclosure",
+   "rationale": "Adversarial review B1: 13+ plain denials passed because the rule enumerated denial shapes; enumerating will always lose to paraphrase (same lesson as rejected.2026-10-21.gate-dnd-unknown-passes). Over-triggering costs one honest sentence.",
+   "reverse_if": "Benign false positives from the allow-list exceed 0.5% on a fresh blind set (e.g. persona small talk mentioning 'machine' or 'person'), or the model judge proposal ships and covers RD2 with better precision at equal recall."
+  },
+  {
+   "id": "rejected.2026-10-21.enumerated-denial-shapes",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "RD2 as a list of denial shapes missed plain denials: 'Ji nahi, main bot nahi.', '\u092e\u0948\u0902 machine \u0928\u0939\u0940\u0902, Riya \u0939\u0942\u0901\u0964', '\u092c\u093f\u0932\u094d\u0915\u0941\u0932 \u0907\u0902\u0938\u093e\u0928 \u0939\u0942\u0901\u0964', 'Nope, human here.' (adversarial review B1)",
+   "tried": "rd2.claims_human: patterns for 'main ... insaan hoon', 'koi bot nahi', Devanagari \u0928\u0939\u0940\u0902 next to \u092e\u0948\u0902, plus exemptions.",
+   "broke": "Every new paraphrase needed a new pattern; the review found 19 passing denials in Hinglish, Devanagari, mixed script and English, plus soft-hyphen, word-joiner and Cyrillic variants. Replaced by the allow-list (decision rd2-allow-list) and shared NFKC/strip/homoglyph normalisation."
+  },
+  {
+   "id": "measure.2026-10-21.safety-review-before-after",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Adversarial review fixes (B1, B5, B6, M1, M2, m1) on cases.json with the 58 review vectors plus 11 M2/m1 parity vectors: before 0/1,221 benign flagged and 768/816 harmful caught (48 of 51 review harmful vectors missed); after 0/1,221 and 827/827",
+   "n": 2048,
+   "method": "node --import tsx --test tests/safety.test.ts on cases.json, before at commit 3b67373 + review vectors, after at this commit. In-sample: the fixes target these vectors. The review's own TS tests B1, B5, B6, M1 and m1 now pass; B3 (sentence splitting in the simulation lane) is outside this module and still fails.",
+   "path": "product/shared/safety/cases.json"
+  },
+  {
+   "id": "decision.2026-10-21.operator-no-credentials",
+   "type": "decision",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "The Operator never handles credentials: integration.stage_secrets is screen-only; at A0 it would otherwise have stored plaintext secrets in action.args and the card diff",
+   "rationale": "Verified in code: proposeA0 persisted validated input to action.args and copied args into the approval card diff; any Operator call also puts the secret in the model's context. Redacting after the fact still leaves it with the model provider.",
+   "reverse_if": "A sealed-input path exists where the model only ever sees a reveal/stash handle the person created on screen, never the secret text"
   }
  ],
  "edges": [
@@ -29854,6 +29895,26 @@
    "from": "decision.2026-10-21.beta-stacks-test-only",
    "to": "decision.2026-10-21.stack-choice-no-default",
    "relation": "refines"
+  },
+  {
+   "from": "decision.2026-10-21.rd2-allow-list",
+   "to": "rejected.2026-10-21.enumerated-denial-shapes",
+   "relation": "supersedes"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "decision.2026-10-21.rd2-allow-list",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-21.safety-review-before-after",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-21.operator-no-credentials",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
   }
  ]
 }

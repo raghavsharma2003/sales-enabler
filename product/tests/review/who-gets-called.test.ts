@@ -120,7 +120,7 @@ test('control: a consented, fresh-DND promotional contact passes the gate at noo
 // WGC-01 to WGC-08 are fixed; their tests now run in tests/campaigns-review.test.ts.
 
 test('WGC-09 the children\'s-data gate reads "Year of Birth" / "Age Group" columns as no age data at all',
-  { todo: 'WGC-09: age-like headers outside the synonym list fall through to "unknown", and memory runs' }, () => {
+  () => {
     const now = IST(TUE, '12:00');
     assert.notEqual(minorStatus([{ key: attrKey('Year of Birth'), value: '2012' }], now), 'unknown', 'a 14-year-old by year of birth');
     assert.notEqual(minorStatus([{ key: attrKey('Birth Year'), value: '2012' }], now), 'unknown');

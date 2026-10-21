@@ -1,5 +1,12 @@
 # Adversarial review: what she says (2026-10-21)
 
+**Status (2026-10-21):** all 13 findings are fixed. B1, B5, B6, M1, M2 and m1 are fixed in shared/safety (f1e4d3e).
+B2, B3, B4, M3, M4 and M5 are fixed in the voice runtime (55f7a14). B3 in practice runs is fixed in agents (e1acd77),
+and M6 in calls (67f3730). The TS tests in what-she-says.test.ts are ordinary tests now. B3 and M6 are tested in their
+modules' own files. The Python tests in voice/tests/test_review.py become ordinary tests as the voice port of
+f1e4d3e lands. M3 left a cost: v2-live's reply gap under the door hold is unmeasured, so beta stacks are test-only
+(decision.2026-10-21.beta-stacks-test-only).
+
 **Scope.** This review covered:
 - `product/shared/safety/**`;
 - `product/voice/**`;

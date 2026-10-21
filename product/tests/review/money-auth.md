@@ -1,5 +1,13 @@
 # Review: money, approvals and auth (2026-10-21)
 
+**Status (2026-10-21):** all 10 findings are fixed.
+- Kernel: MA-01, 03, 04, 05 and 06 (8b898c2), plus the prepare() action id and unknown-outcome rule for MA-08 (7057eb3).
+- Workspace: MA-02, 07 and 10 (3cd38bd), and the invite throttle (cdb0f9b).
+- Money: MA-08 and 09 (5f3aa23, 8394e4d).
+- Operator: the flagged A0 secret leak is closed too (27b06f1).
+
+The remaining tests in money-auth.test.ts are ordinary tests.
+
 Adversarial review of the kernel (`server/{tools,auth,http,ledger,app,jobs,runtime-client,identity}.ts`,
 `shared/approval.ts`), `modules/money/**`, `modules/workspace/**`, the `/v1/actions` approval path and the three
 `/hooks/*` routes.
