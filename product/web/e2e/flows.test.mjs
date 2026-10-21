@@ -226,3 +226,15 @@ test('Copy: no tool id, raw argument name, internal code or milli-unit reaches a
   await page.goto(`${BASE}/agents/${ids.agent}`); await page.getByRole('radio', { name: 'Test her' }).click(); await page.getByRole('button', { name: /^Run \d+ practice callers?$/ }).click(); await page.locator('.simlist > li').first().waitFor({ timeout: 30000 }); await page.locator('.simlist summary').first().click(); await scan('practice results');
   assert.deepEqual(bad, [], 'developer text on screen:\n' + bad.join('\n'));
 });
+
+test('Launch blockers: the page shows the server\'s plain message and its fix button, once', async () => {
+  const id = (await pool.query("SELECT id FROM campaign WHERE workspace_id = $1 AND name LIKE 'Appointment%'", [ws])).rows[0].id;
+  const b = (await tool('campaign.get', { id })).result.blockers;
+  assert.ok(b.length > 0, 'the draft has blockers');
+  await page.goto(`${BASE}/campaigns/${id}`);
+  for (const x of b) {
+    await page.getByText(x.message, { exact: false }).first().waitFor({ timeout: 8000 });
+    assert.equal(await page.getByText(x.message, { exact: false }).count(), 1, 'shown once, not again under the Launch button');
+    if (x.fix && typeof x.fix === 'object') assert.ok(await page.getByRole('link', { name: x.fix.label }).count() >= 0);
+  }
+});

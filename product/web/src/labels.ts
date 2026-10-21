@@ -68,8 +68,21 @@ export function fieldValue(path: string, v: unknown): string | null {
   return String(v);
 }
 
-/** Launch blockers in plain words, with where to fix them. The server's `fix` text is never shown. */
-export function blockerCopy(b: Blocker): { text: string; to?: { label: string; href: string } } {
+/** Where a fix tool is done in the app. The server names the tool and the button text; the page is ours. */
+const FIX_PAGE: Record<string, string> = {
+  'number.search': '/numbers', 'number.rent': '/numbers', 'number.a2p.declare': '/numbers', 'member.phone.verify_start': '/numbers',
+  'wallet.topup': '/settings/billing', 'cap.raise': '/settings/billing', 'cap.lower': '/settings/billing',
+  'stack.set': '/agents', 'version.publish': '/agents', 'brief.edit': '/agents', 'campaign.audience.add': '/contacts',
+  'policy.window.set': '/settings/compliance', 'brand.update': '/settings/brand',
+};
+
+/** A launch blocker as a person reads it. Newer servers send a plain `message`, an optional `why` and a structured `fix`;
+ *  an older string-shaped blocker is mapped by code so developer text still never shows. */
+export function blockerCopy(b: Blocker): { text: string; why?: string; to?: { label: string; href: string } } {
+  if (b.fix && typeof b.fix === 'object') {
+    const href = FIX_PAGE[b.fix.tool];
+    return { text: b.message, why: b.why, to: href ? { label: b.fix.label, href } : undefined };
+  }
   const m = b.message;
   switch (b.code) {
     case 'no_line': {
@@ -85,7 +98,6 @@ export function blockerCopy(b: Blocker): { text: string; to?: { label: string; h
     case 'beta_stack': return { text: 'This agent\'s voice stack is in beta, so campaigns refuse it. Beta stacks are for test calls only. Choose another stack and publish again.', to: { label: 'Open agents', href: '/agents' } };
     case 'category_mismatch': { const a = /is for (\w+) calls; this campaign is (\w+)/.exec(m); return { text: a ? `The agent is set up for ${a[1]} calls, but this campaign is for ${a[2]} calls. Use an agent made for ${a[2]} calls.` : 'The agent and the campaign are for different kinds of call.', to: { label: 'Open agents', href: '/agents' } }; }
     case 'no_audience': return { text: 'Nobody is in the audience to call.', to: { label: 'Open contacts', href: '/contacts' } };
-    case 'window_invalid': return { text: m.charAt(0).toUpperCase() + m.slice(1) + '.' };
     default: return { text: m.charAt(0).toUpperCase() + m.slice(1) + '.' };
   }
 }

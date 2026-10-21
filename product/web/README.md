@@ -22,4 +22,4 @@ Sign in as `asha@saanjh.example` / `sample-password-1234` (synthetic). Use `serv
 - `npx tsc -p product/tsconfig.json` and `npx tsc -p product/web/tsconfig.json`
 - `node --import tsx product/scripts/ui-contract.ts --strict` (every tool the UI calls is registered; also run by `tests/web.test.ts`)
 - `node --import tsx --test product/tests/web.test.ts` (build size, contrast, no colour literals, approver map, tool list, contract)
-- `sh product/web/e2e/run.sh`: browser tests against the real server and a fresh database, seven flows (API key reveal-once, learning propose/simulate/accept, DPDP erase, A3 pause/resume/stop, an A2 card from the Operator chat). It skips with a message when there is no Chromium or no Postgres 16.
+- `sh product/web/e2e/run.sh`: browser tests against the real server and a fresh database, eleven flows (API key reveal-once, learning propose/simulate/accept, DPDP erase, A3 pause/resume/stop, an A2 card from the Operator chat). It skips with a message when there is no Chromium or no Postgres 16.

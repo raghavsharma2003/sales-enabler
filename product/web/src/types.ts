@@ -48,7 +48,7 @@ export interface ContactDoc {
   consent: { id: string; purpose: string; channel: string; basis: string; source: string | null; granted: boolean; created_at: string }[];
   suppressions: { id: string; reason: string; scope: string; created_at?: string }[];
   service: { allowed: boolean; reasons: string[] }; promotional: { allowed: boolean; reasons: string[] };
-  attempts: { id: string; status: string; blocked_by: string | null; precheck: unknown; outcome_class: string | null; dialed_at: string | null; created_at: string; conversation_id: string | null; campaign_id: string }[];
+  attempts: { id: string; status: string; blocked_by: string | null; precheck: { allowed?: boolean; code?: string; explain?: { message: string; why?: string } } | null; outcome_class: string | null; dialed_at: string | null; created_at: string; conversation_id: string | null; campaign_id: string }[];
   memory: { optedOut: boolean; facts: { id: string; conversationId: string | null; key: string; value: string; quote: string | null; purpose: string; basis: string; status: string; usable: boolean; saidAt: string | null }[] } | null;
 }
 export interface ImportColumn { header: string; sample: string[]; field: string; key?: string; confidence: number; why: string }
@@ -57,7 +57,7 @@ export interface ImportPreview { uploadId: string; columns: ImportColumn[]; rows
 export interface AudienceRow { id: string; name: string; matched: number | null; callable: number | null; suppressed: number | null; dndUnknown: number | null; note: string }
 
 export interface CampaignRow { id: string; name: string; category: string; state: string; pauseCause: string | null; attempts: number; blocked: number; launchedAt: string | null }
-export interface Blocker { code: string; message: string; fix?: string; role?: string }
+export interface Blocker { code: string; message: string; why?: string; fix?: string | { tool: string; label: string; role?: string }; role?: string }
 export interface CampaignDoc {
   id: string; name: string; category: string; state: string; policyVersion: number; agentVersionId: string | null; audienceId: string | null;
   window: { days: number[]; ranges: { start: string; end: string }[] }; concurrency: number | null; capInrMilli: number | null; preset?: string;
