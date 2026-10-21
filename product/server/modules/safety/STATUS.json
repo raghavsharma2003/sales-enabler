@@ -8,14 +8,14 @@
   "passed": 14,
   "total": 14,
   "file": "product/tests/safety.test.ts",
-  "vectors": 1979
+  "vectors": 2048
  },
  "works": [
   "replyDoor: RD1 agenda-before-disclosure gate, RD2 denial -> honest replacement from rules.json texts, RD3 crisis (no agenda, no ending; replacement carries Tele-MANAS 14416 and 112), RD4 sensitive asks with negation/warning exemptions, RD5 pay-on-call and links outside verified domains (shorteners never verified), RD6 pay-to-receive / lapsed-revive / threats and false urgency / regulator impersonation, RD7 promotion fence on service+transactional, RD8 IRDAI fence (insurance pack), RD9 harsh practice (lending pack or any dues call), RD10 recording after refusal, RD11 per-contact facts and account details before identity, neverSay, rupee amounts not in facts (incl. '18 hazaar 450', '1.5 lakh')",
   "callerSignals: crisis (self-harm and danger, Hinglish, Hindi, English), asksIfAi, refusesRecording, optOut (strong vs time-deferral), readingSensitiveDigits (digits, spoken English/Hindi/Devanagari number words, Luhn), wantsHuman",
   "redact: OTP, card (context or Luhn), CVV, UPI/ATM PIN, full Aadhaar (context or Verhoeff); phones and pin codes survive; idempotent",
   "lintAgentConfig: T-L1 over every string with its path, neverSay hiding AI, disclosure clause must say AI; T-L2 offer facts on service/transactional; T-L3 purpose/category table and offer-looking facts mis-tagged; T-L4 links outside verified domains and shorteners; lintedFacts() returns the surviving facts",
-  "door latency p50 0.30 ms, p99 0.71 ms (n=6,080)"
+  "door latency p50 0.46 ms, p99 1.12 ms (n=6,255)"
  ],
  "untested": [
   "real ASR transcripts and real LLM-generated agent lines (all vectors are synthetic)",
@@ -26,6 +26,8 @@
   "T-L5 (ambience warning) is not implemented: AgentConfig has no ambience field"
  ],
  "needs_from_others": [
+  "voice runtime: rules.json gained normalisation (executable contract: NFKC, strip, fold, drop, space), words_to_amounts, lexicon entries that reference other entries (expand @name recursively), rd2.denial / rd2.real_person_claim / rd2.self_nature_unaffirmed, cs.crisis.recall / cs.crisis.tamil; per_contact_facts compares digits; redaction and digit signals read foldForDigits(text)",
+  "simulation lane (agents/simulate.ts): B3, a rule split across sentences (\"Bot? Nahi ji, main Priya hoon.\") passes a per-sentence door; door the whole reply or carry the previous sentence",
   "voice runtime: rules.json gained noneClause, anchor and regex.clause_split (clause-scoped negation) and caller rules may use all; the Python door must implement them to keep parity",
   "voice runtime: load product/shared/safety/rules.json (or call safety.check) and run cases.json; today its hand-written door scores 131/253 harmful caught and 12/469 benign blocked on these vectors",
   "voice runtime: stop recording when callerSignals.refusesRecording, since the RD10 replacement text says recording has stopped",
@@ -35,7 +37,7 @@
   "owner/counsel: RD8 scope beyond insurance (open.2026-10-21.rd8-scope-beyond-insurance)"
  ],
  "fp_rate": {
-  "in_sample": "0/1214 (0.00%)",
+  "in_sample": "0/1221 (0.00%)",
   "blind_set4": "13/230 (5.65%)",
   "blind_set5": "25/240 (10.42%), scored once at c213aff before tuning on it",
   "blind_history": "0/180, 2/230, 12/230 on sets 1-3, each before tuning on it; set 4 was half hard negatives and a third keyword-free harmful lines",
@@ -43,7 +45,7 @@
   "date": "2026-10-21"
  },
  "catch_rate": {
-  "in_sample": "765/765 (100.00%)",
+  "in_sample": "827/827 (100.00%)",
   "blind_set4": "93/130 (71.54%)",
   "blind_set5": "67/130 (51.54%), scored once at c213aff before tuning on it",
   "blind_history": "78/110, 96/130, 111/130 on sets 1-3",

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { AgentConfig } from '../shared/agent-config.ts';
-import { callerSignals, lintAgentConfig, lintedFacts, luhn, redact, replyDoor, RULES, safetyText, verhoeff, type CallerSignals, type DoorContext } from '../shared/safety/index.ts';
+import { callerSignals, expandLexicon, lintAgentConfig, lintedFacts, luhn, redact, replyDoor, RULES, safetyText, verhoeff, type CallerSignals, type DoorContext } from '../shared/safety/index.ts';
 import casesDoc from '../shared/safety/cases.json' with { type: 'json' };
 import { module as safetyModule } from '../server/modules/safety/index.ts';
 import { Registry } from '../server/tools.ts';
@@ -106,7 +106,7 @@ test('property: every rules.json pattern compiles in JS and stays inside the Pyt
   walk(RULES);
   assert.ok(patterns.length > 100);
   for (const p of patterns) {
-    const src = p.replace(/@([a-z_]+)/g, (m, n: string) => RULES.lexicon[n] ?? m).replace(/\{brand\}/g, 'x');
+    const src = expandLexicon(p).replace(/\{brand\}/g, 'x');
     assert.doesNotThrow(() => new RegExp(src, 'iu'), p);
     assert.doesNotMatch(src, /\(\?<[a-zA-Z]|\\p\{|\\k</, `named group or \\p in ${p}`);
     for (const lb of src.matchAll(/\(\?<[=!]([^()]*)\)/g)) assert.doesNotMatch(lb[1], /[*+?{]/, `variable-width lookbehind in ${p}`);

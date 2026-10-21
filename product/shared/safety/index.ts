@@ -44,6 +44,8 @@ interface RedactKind { kind: keyof Rules['masks']; context: string; minDigits: n
 interface Rules {
   schema: number; version: string;
   regex: { clause_split: string; back_reference: string };
+  words_to_amounts: { units: Record<string, number>; multipliers: Record<string, number> };
+  normalisation: { form: string; strip: string[]; fold: Record<string, string>; drop: string[]; space: string[] };
   texts: Record<string, string>;
   masks: { otp: string; card: string; cvv: string; upi_pin: string; aadhaar: string };
   lexicon: Record<string, string>;
@@ -67,13 +69,17 @@ function re(pattern: string, brand = '', flags = 'iu'): RegExp {
   const key = flags + '\u0000' + brand + '\u0000' + pattern;
   let r = reCache.get(key);
   if (!r) {
-    const src = foldDevanagari(pattern)
-      .replace(/@([a-z_]+)/g, (m, name: string) => RULES.lexicon[name] ?? m)
+    const src = foldDevanagari(expandLexicon(pattern))
       .replace(/\{brand\}/g, brand ? escapeRe(normalise(brand)) : '(?!x)x');
     r = new RegExp(src, flags);
     reCache.set(key, r);
   }
   return r;
+}
+/** '@name' expands to the lexicon entry, recursively (an entry may use another), up to 5 levels. */
+export function expandLexicon(p: string): string {
+  for (let i = 0; i < 5 && /@[a-z_]+/.test(p); i++) p = p.replace(/@([a-z_]+)/g, (m, name: string) => RULES.lexicon[name] ?? m);
+  return p;
 }
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&');
 
@@ -82,12 +88,30 @@ const foldDevanagari = (s: string) => s.normalize('NFC').replace(/\u0901/g, '\u0
 
 /** The normalisation every pattern runs on (rules.json regex.normalise; the Python door does the same). */
 export function normalise(text: string): string {
-  return text.normalize('NFC').toLowerCase()
-    .replace(/[​-‍﻿]/g, '')
-    .replace(/ँ/g, 'ं').replace(/़/g, '')
-    .replace(/[०-९]/g, d => String(d.charCodeAt(0) - 0x0966))
-    .replace(/[‘’ʼ]/g, "'").replace(/[“”]/g, '"')
-    .replace(/\s+/g, ' ').trim();
+  const n = norm();
+  let t = text.normalize(n.form as 'NFKC').replace(n.strip, '').toLowerCase();
+  t = t.replace(n.foldRe, ch => n.fold[ch]).replace(n.drop, '')
+    .replace(/[\u0966-\u096F]/g, d => String(d.charCodeAt(0) - 0x0966));
+  return t.replace(n.space, ' ').replace(/ {2,}/g, ' ').trim();
+}
+
+/** The case-preserving part of the normalisation (form, strip, homoglyph fold, spaces as one U+0020 each): digit
+ *  runs and redaction read this, so fullwidth digits, no-break or thin spaces and invisible characters cannot split
+ *  or hide a number, while stored text keeps its case. */
+export function foldForDigits(text: string): string {
+  const n = norm();
+  return text.normalize(n.form as 'NFKC').replace(n.strip, '').replace(n.space, ' ');
+}
+
+// rules.json normalisation compiled once: code-point ranges become character classes.
+let normC: { form: string; strip: RegExp; fold: Record<string, string>; foldRe: RegExp; drop: RegExp; space: RegExp } | null = null;
+function norm() {
+  if (normC) return normC;
+  const N = RULES.normalisation;
+  const cls = (ranges: string[]) => new RegExp('[' + ranges.map(r => r.split('-').map(h => `\\u{${h}}`).join('-')).join('') + ']', 'gu');
+  const keys = Object.keys(N.fold).map(k => k.replace(/[\\^\]-]/g, '\\$&')).join('');
+  normC = { form: N.form, strip: cls(N.strip), fold: N.fold, foldRe: new RegExp(`[${keys}]`, 'gu'), drop: cls(N.drop), space: cls(N.space) };
+  return normC;
 }
 
 type Matchable = { any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; anchor?: number; coClause?: boolean };
@@ -203,8 +227,11 @@ function builtin(name: string, raw: string, t: string, ctx: DoorContext): boolea
         const v = normalise(f.value);
         if (v.length < 3) continue;
         if (t.includes(v)) return `fact ${f.key}`;
+        // Compare digits, not spellings: "₹18,450" in the facts and "18450" or "18,450" in speech are the same figure.
+        const digits = f.value.replace(/[^0-9\u0966-\u096F]/g, '').replace(/[\u0966-\u096F]/g, d => String(d.charCodeAt(0) - 0x0966));
+        if (digits.length >= 3 && digitRuns(raw).some(r => r.digits === digits || r.digits.replace(/^0+/, '') === digits)) return `fact ${f.key}`;
         const amt = parseAmounts(f.value, true);
-        if (amt.length && amountsIn(raw).some(a => amt.includes(a))) return `fact ${f.key}`;
+        if (amt.length && parseAmounts(raw, true).some(a => amt.includes(a))) return `fact ${f.key}`;
       }
       return false;
     }
@@ -228,12 +255,33 @@ function builtin(name: string, raw: string, t: string, ctx: DoorContext): boolea
 
 // Amounts: a number counts as money when a currency marker sits next to it, or when it carries a multiplier
 // (hazaar, lakh) in a sentence that talks about money.
-const MULT: Record<string, number> = { k: 1e3, hazar: 1e3, hazaar: 1e3, thousand: 1e3, 'हज़ार': 1e3, 'हजार': 1e3, lakh: 1e5, lac: 1e5, lakhs: 1e5, 'लाख': 1e5, crore: 1e7, crores: 1e7, 'करोड़': 1e7 };
-const NUM = /(\d[\d,]*(?:\.\d+)?)(?:\s*(k|hazaa?r|thousand|lakhs?|lac|crores?|हज़ार|हजार|लाख|करोड़)(?![a-z]))?/giu;
+// Multipliers and spoken number words come from rules.json words_to_amounts (shared with the Python door).
+let amountC: { mult: Record<string, number>; num: RegExp; spoken: RegExp } | null = null;
+function amountTables() {
+  if (amountC) return amountC;
+  const W = RULES.words_to_amounts;
+  const alt = (keys: string[]) => keys.sort((a, b) => b.length - a.length).map(k => /^[a-z]+$/.test(k) ? `\\b${k}\\b` : `(?<![\\u0900-\\u097F])${k}(?![\\u0900-\\u097F])`).join('|');
+  const m = alt(Object.keys(W.multipliers)), u = alt(Object.keys(W.units));
+  amountC = {
+    mult: W.multipliers,
+    num: new RegExp(`(\\d[\\d,]*(?:\\.\\d+)?)(?:\\s*(${m}))?`, 'giu'),
+    spoken: new RegExp(`((?:${u})(?:\\s+(?:${u}))*)\\s*(?=(?:${m}))`, 'giu'),
+  };
+  return amountC;
+}
+/** 'paanch hazaar' -> '5 hazaar': number words before a multiplier become digits (the multiplier stays). */
+function spokenToDigits(t: string): string {
+  const { spoken } = amountTables();
+  return t.replace(spoken, (run: string) => {
+    const v = run.trim().split(/\s+/).reduce((sum, w) => sum + (RULES.words_to_amounts.units[w] ?? 0), 0);
+    return v ? `${v} ` : run;
+  });
+}
 const MONEY_TALK = /(premium|emi|amount|payment|pay\b|fee|fees|price|bill|due|kimat|keemat|charge|refund|cashback|bonus|prize|reward|cover|sum assured|salary|income|return|profit|munafa|balance|loan|rent|kiraya|deposit|bhugtan|bakaya|kisht|installment|paise|paisa)/iu;
 
 function parseAmounts(s: string, lenient: boolean): number[] {
-  const t = normalise(s);
+  const t = spokenToDigits(normalise(s));
+  const { mult: MULT, num: NUM } = amountTables();
   const out: number[] = [];
   const cur = re(RULES.lexicon.currency);
   const moneyTalk = lenient || MONEY_TALK.test(t);
@@ -243,7 +291,7 @@ function parseAmounts(s: string, lenient: boolean): number[] {
   for (const m of t.matchAll(NUM)) {
     const base = Number(m[1].replace(/,/g, ''));
     if (!Number.isFinite(base)) continue;
-    const unit = m[2] ? MULT[m[2]] ?? (m[2].startsWith('haza') ? 1e3 : m[2].startsWith('lakh') ? 1e5 : m[2].startsWith('crore') ? 1e7 : 1) : 1;
+    const unit = m[2] ? MULT[m[2]] ?? 1 : 1;
     const start = m.index ?? 0, value = base * unit;
     const prev = parts[parts.length - 1];
     if (prev && prev.unit > 1 && value < prev.unit && /^\s*(aur |and )?$/.test(t.slice(prev.end, start))) {
@@ -301,7 +349,7 @@ export function callerSignals(text: string): CallerSignals {
   if (!t) return s;
   for (const r of RULES.caller) {
     if (s[r.signal]) continue;
-    if (r.builtin === 'sensitive_digits') s[r.signal] = sensitiveDigits(text, t, r);
+    if (r.builtin === 'sensitive_digits') s[r.signal] = sensitiveDigits(foldForDigits(text), t, r);
     else s[r.signal] = fires(r, t);
   }
   return s;
@@ -355,7 +403,8 @@ function digitRuns(text: string): Run[] {
 const notSecretCode = () => re((RULES.redact as unknown as { not_secret_code: string }).not_secret_code);
 
 /** Mask spans that must never be stored (OTP, card, CVV, UPI PIN, full Aadhaar). */
-export function redact(text: string): string {
+export function redact(input: string): string {
+  const text = foldForDigits(input);
   const w = RULES.redact.context_window_chars;
   const lower = text.toLowerCase();
   const spans: { start: number; end: number; mask: string }[] = [];

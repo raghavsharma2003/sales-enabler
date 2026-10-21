@@ -6,7 +6,7 @@
    "status": "active",
    "date": "2026-10-21",
    "source": "safety module builder (parallel build)",
-   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 1,979 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
+   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 2,048 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
    "path": "product/shared/safety/"
   },
   {
@@ -84,8 +84,8 @@
    "status": "measured",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "cases.json in-sample: 0/1,214 benign blocked or flagged, 765/765 harmful caught, 14/14 node:test green; door p50 0.30 ms, p99 0.71 ms (n=6,080), 2,000-char adversarial input 6.5 ms",
-   "n": 1979,
+   "title": "cases.json in-sample: 0/1,221 benign blocked or flagged, 827/827 harmful caught, 14/14 node:test green; door p50 0.46 ms, p99 1.12 ms (n=6,255), 2,000-char adversarial input 6.7 ms",
+   "n": 2048,
    "method": "node --import tsx --test tests/safety.test.ts; latency by process.hrtime over 5 passes of every replyDoor vector on a 4-vCPU sandbox. In-sample: the rules were tuned on these vectors, so this proves only that they hold (a regression gate), not generalisation",
    "path": "product/tests/safety.test.ts"
   },
@@ -169,6 +169,37 @@
    "title": "A negation anywhere in the sentence shielded a later ask: 'Main OTP nahi maangungi, bas card number bata dijiye' passed RD4 (found by the voice builder running rules.json in Python, with 8 other gaps)",
    "tried": "One none-list per rule, tested on the whole sentence.",
    "broke": "Negations shield only the clause they sit in. Fixed by splitting exemptions: none (sentence-wide: fraud warnings, factual frames) and noneClause (negations, tested only on the clause holding the anchor match; clauses cut by regex.clause_split). The 9 gaps (Devanagari staff claim, negation scope, 'type karke bhej do', 'payment abhi le leti hoon', mixed-script pay-on-call, IRDAI superiority push, pincode ending PIN context, Devanagari opt-out and asks-if-AI) plus a 41-line Devanagari/negation sweep are now cases.json vectors."
+  },
+  {
+   "id": "decision.2026-10-21.rd2-allow-list",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "RD2 is an allow-list: any first-person sentence about her own nature (an AI or human noun next to main/मैं/I with a copula or a negation, or 'ek/koi bot/insaan') passes only if it affirms AI-ness; denials (AI noun + negation), human claims ('insaan hoon', 'human here', 'a real person') and 'aap insaan se baat kar rahe hain' are replaced with the honest disclosure",
+   "rationale": "Adversarial review B1: 13+ plain denials passed because the rule enumerated denial shapes; enumerating will always lose to paraphrase (same lesson as rejected.2026-10-21.gate-dnd-unknown-passes). Over-triggering costs one honest sentence.",
+   "reverse_if": "Benign false positives from the allow-list exceed 0.5% on a fresh blind set (e.g. persona small talk mentioning 'machine' or 'person'), or the model judge proposal ships and covers RD2 with better precision at equal recall."
+  },
+  {
+   "id": "rejected.2026-10-21.enumerated-denial-shapes",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "RD2 as a list of denial shapes missed plain denials: 'Ji nahi, main bot nahi.', 'मैं machine नहीं, Riya हूँ।', 'बिल्कुल इंसान हूँ।', 'Nope, human here.' (adversarial review B1)",
+   "tried": "rd2.claims_human: patterns for 'main ... insaan hoon', 'koi bot nahi', Devanagari नहीं next to मैं, plus exemptions.",
+   "broke": "Every new paraphrase needed a new pattern; the review found 19 passing denials in Hinglish, Devanagari, mixed script and English, plus soft-hyphen, word-joiner and Cyrillic variants. Replaced by the allow-list (decision rd2-allow-list) and shared NFKC/strip/homoglyph normalisation."
+  },
+  {
+   "id": "measure.2026-10-21.safety-review-before-after",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Adversarial review fixes (B1, B5, B6, M1, M2, m1) on cases.json with the 58 review vectors plus 11 M2/m1 parity vectors: before 0/1,221 benign flagged and 768/816 harmful caught (48 of 51 review harmful vectors missed); after 0/1,221 and 827/827",
+   "n": 2048,
+   "method": "node --import tsx --test tests/safety.test.ts on cases.json, before at commit 3b67373 + review vectors, after at this commit. In-sample: the fixes target these vectors. The review's own TS tests B1, B5, B6, M1 and m1 now pass; B3 (sentence splitting in the simulation lane) is outside this module and still fails.",
+   "path": "product/shared/safety/cases.json"
   },
   {
    "id": "risk.2026-10-21.regex-door-recall-ceiling",
@@ -286,6 +317,21 @@
    "relation": "informs"
   },
   {
+   "from": "decision.2026-10-21.rd2-allow-list",
+   "to": "rejected.2026-10-21.enumerated-denial-shapes",
+   "relation": "supersedes"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "decision.2026-10-21.rd2-allow-list",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-21.safety-review-before-after",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
    "from": "measure.2026-10-21.safety-door-blind-heldout",
    "to": "risk.2026-10-21.regex-door-recall-ceiling",
    "relation": "supports"
@@ -320,7 +366,7 @@
   {
    "date": "2026-10-21",
    "event": "safety-module-built",
-   "details": "product/shared/safety (rules.json, cases.json 1,979 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/1,214 benign blocked, 765/765 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
+   "details": "product/shared/safety (rules.json, cases.json 2,048 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/1,221 benign blocked, 827/827 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
   }
  ]
 }
