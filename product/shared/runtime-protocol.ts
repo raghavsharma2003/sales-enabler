@@ -9,6 +9,7 @@
 // Events carry a per-call monotonically increasing seq. The control plane is idempotent on (conversationId, seq),
 // so the runtime may retry a batch safely. The runtime must flush call.ended last; cost lines may arrive before it.
 import type { AgentConfig, Language } from './agent-config.ts';
+import type { StackComponents } from './stacks.ts';
 
 export const PROTOCOL_VERSION = 1;
 
@@ -26,7 +27,9 @@ export interface CallTicket {
   // The static brief, compiled ONCE by the control plane's compile() (inherited law: one compile() for every lane).
   // The runtime never re-words it; per turn it appends only its generic LAST block (position is mechanism).
   brief: { text: string; hash: string; bytes: number };
-  stack: { id: string; combinationId: string };      // the runtime refuses a stack it does not know; it never substitutes
+  // The parts travel with every ticket, curated or built ('custom'): the runtime runs exactly these, refuses a curated id
+  // whose parts differ from its own table, and never substitutes a part.
+  stack: { id: string; combinationId: string; components: StackComponents };
   contact: {
     displayName: string;                 // what she may call them; may be '' (then no name is used)
     language?: Language;

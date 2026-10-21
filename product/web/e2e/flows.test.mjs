@@ -189,8 +189,16 @@ test('Operator: an A2 approval card from the chat holds, then the card and the s
   assert.equal(confirmed, executed, 'the card says confirmed exactly when the server executed it');
 });
 
-test('Browser call on a draft with no voice stack shows the server\'s own refusal, word for word', async () => {
+// New agents start on the default stack (decision.2026-10-22.default-stack). Drafts saved before it existed have no stack, and no
+// tool clears one, so the flows that test that state make it in SQL.
+async function stacklessEmi() {
   const emi = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'EMI pre-due reminder'", [ws])).rows[0].id;
+  await pool.query(`UPDATE agent SET draft = jsonb_set(draft, '{voice}', '{"stackId": ""}') WHERE id = $1`, [emi]);
+  return emi;
+}
+
+test('Browser call on a draft with no voice stack shows the server\'s own refusal, word for word', async () => {
+  const emi = await stacklessEmi();
   const server = await tool('test.browser_call', { agentId: emi, useDraft: true });
   assert.equal(server.status, 'not_executed', 'a draft with no stack is refused');
   await page.goto(`${BASE}/agents/${emi}`);
@@ -231,7 +239,7 @@ test('Browser call on a draft that compiles: the server prepares a session and t
 });
 
 test('Stack picker: beta stacks say "test calls only", and an unmeasured reply gap shows no number', async () => {
-  const emi = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'EMI pre-due reminder'", [ws])).rows[0].id;
+  const emi = await stacklessEmi();
   await page.goto(`${BASE}/agents/${emi}?tab=voice`);
   const live = page.locator('.stackcard', { hasText: 'Gemini 3.8 Live' });
   await live.waitFor();
@@ -374,7 +382,7 @@ test('Stack picker: the voice runtime\'s own word on each stack (unknown shows n
     assert.fail('the server never reported the health the hook set; last stack.list: ' + last);
   };
   const stateOf = (list, id) => list.find(x => x.id === id)?.availability?.state;
-  const emi = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'EMI pre-due reminder'", [ws])).rows[0].id;
+  const emi = await stacklessEmi();
   const open = async () => { await page.goto(`${BASE}/agents/${emi}`); await page.getByRole('tab', { name: 'Voice stack' }).click(); await page.locator('.stackcard').first().waitFor(); await page.getByText('Provider cost per minute').first().waitFor(); };
   const flash = () => page.locator('.stackcard', { hasText: 'Gemini 3.5 Flash-Lite + Gemini voice' }).first();
   try {

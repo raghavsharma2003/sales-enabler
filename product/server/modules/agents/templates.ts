@@ -2,6 +2,7 @@
 // are notes about behaviour, never lines (the recitable-line lint checks every template in tests); the specifics live in
 // facts rows, where a number can be checked. No template picks a voice stack: there is no default, the user chooses.
 import type { AgentConfig, Fact, Goal } from '../../../shared/agent-config.ts';
+import { DEFAULT_STACK_ID } from '../../../shared/stacks.ts';
 
 export interface Template {
   id: string;
@@ -24,7 +25,7 @@ function cfg(s: Spec): AgentConfig {
     sectorPacks: [], neverSay: [], tools: [], objections: [],
     memory: { read: true, write: true, briefMaxBytes: 1200 },
     limits: { maxDurationS: 300, maxSilenceS: 10, maxTurns: 40 },
-    voice: { stackId: '' },
+    voice: { stackId: DEFAULT_STACK_ID },
     recording: { enabled: true, announce: true },
     ...s,
   };

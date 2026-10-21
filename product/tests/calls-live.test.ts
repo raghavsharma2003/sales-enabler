@@ -112,7 +112,7 @@ test('live tools against the real runtime: whisper (approved), listen refused on
     protocol: 1, conversationId: cid, attemptId: null, workspaceId: ws, direction: 'outbound',
     transport: { kind: 'sim', simCallerId: 'calls-live-test' },
     agent: { ...got.result.draft, versionHash: got.result.draftHash }, brief: brief.result,
-    stack: { id: 'v2-flashlite', combinationId: combinationId(requireStack('v2-flashlite'), got.result.draft.voice?.voiceId) },
+    stack: { id: 'v2-flashlite', combinationId: combinationId(requireStack('v2-flashlite'), got.result.draft.voice?.voiceId), components: requireStack('v2-flashlite').components },
     contact: { displayName: '', timezone: 'Asia/Kolkata', facts: {}, memoryBrief: '', memoryStatus: 'disabled' },
     consent: { basis: 'consent' }, limits: { maxDurationS: 120, maxCostInrMilli: 10_000 }, test: true,
   };

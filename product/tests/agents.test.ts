@@ -6,6 +6,7 @@ import { BUDGET, BriefBudgetError, BriefLintError, compile, compileReport, TAIL 
 import { draftHash, validateConfig, versionHashOf } from '../server/modules/agents/config.ts';
 import { shapeFields, shapeLint } from '../server/modules/agents/lint.ts';
 import { TEMPLATES } from '../server/modules/agents/templates.ts';
+import { DEFAULT_STACK_ID } from '../shared/stacks.ts';
 
 const base = () => structuredClone(TEMPLATES.find(t => t.id === 'insurance-renewal')!.config);
 const bytes = (s: string) => Buffer.byteLength(s, 'utf8');
@@ -47,7 +48,7 @@ test('section order keeps the laws: script and identity first, facts after safet
   assert.equal(names[names.length - 1], 'DELIVERY', 'a style-capable voice gets the delivery marker');
   assert.ok(!r.text.includes(TAIL), 'the counts and goal check are appended by the runtime after the ledger, every turn');
   assert.ok(bytes(TAIL) <= BUDGET.TAIL);
-  assert.ok(!compileReport(base()).sections.some(s => s.name === 'SOUNDS' || s.name === 'DELIVERY'), 'no stack chosen: no voice-specific sections');
+  assert.ok(!compileReport({ ...base(), voice: { stackId: '' } }).sections.some(s => s.name === 'SOUNDS' || s.name === 'DELIVERY'), 'no stack chosen (an older draft): no voice-specific sections');
   assert.ok(compileReport({ ...base(), voice: { stackId: 'v2-flashlite' } }).sections.some(s => s.name === 'SOUNDS'));
 });
 
@@ -146,7 +147,7 @@ test('templates: at least 14 across industries and jobs, each valid, under budge
   for (const t of TEMPLATES) {
     assert.deepEqual(validateConfig(t.config), t.config, `${t.id} validates unchanged`);
     assert.deepEqual(shapeLint(t.config), [], `${t.id} has no sentence-shaped lines`);
-    assert.equal(t.config.voice.stackId, '', `${t.id} picks no stack: there is no default`);
+    assert.equal(t.config.voice.stackId, DEFAULT_STACK_ID, `${t.id} starts on the provisional default stack`);
     assert.match(t.config.opening.disclosureClause, /AI assistant/, `${t.id} discloses`);
     for (const [path, text] of shapeFields(t.config)) assert.ok(!/["“”]/.test(text), `${t.id} ${path}`);
     const r = compileReport(t.config);

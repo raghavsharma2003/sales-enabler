@@ -7,7 +7,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import type { Fact } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
-import { combinationId, getStack } from '../../../shared/stacks.ts';
+import { combinationId, resolveStack } from '../../../shared/stacks.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
 import { release } from '../../ledger.ts';
@@ -199,14 +199,14 @@ export async function freshAttributes(d: WorkerDeps, contactId: string, keys: st
 
 export async function buildTicket(d: WorkerDeps, a: AttemptRow, v: GatePass, conversationId: string): Promise<CallTicket> {
   const agent = v.version.config.agent!;
-  const stack = getStack(agent.voice.stackId)!;
+  const stack = resolveStack(agent.voice);   // G10 already refused a voice setting that names no stack
   const mem = await memoryBrief(d, a.workspace_id, v.contact?.id ?? null, v.version.agent_id, agent.memory?.read !== false);
   const stored = { ...(v.contact?.custom ?? {}), ...(v.contact ? await freshAttributes(d, v.contact.id, (agent.facts ?? []).filter(f => f.perContact).map(f => f.key)) : {}) };
   return {
     protocol: 1, conversationId, attemptId: a.id, workspaceId: a.workspace_id, direction: 'outbound',
     transport: { kind: 'sip', to: v.target, from: v.number.e164, trunk: v.number.carrier },
     agent, brief: v.version.config.brief!,
-    stack: { id: stack.id, combinationId: combinationId(stack, agent.voice.voiceId) },
+    stack: { id: stack.id, combinationId: combinationId(stack, agent.voice.voiceId), components: stack.components },
     contact: {
       displayName: v.contact?.name ?? '', ...(v.contact?.language ? { language: v.contact.language as CallTicket['contact']['language'] } : {}),
       timezone: v.contact?.timezone ?? 'Asia/Kolkata',

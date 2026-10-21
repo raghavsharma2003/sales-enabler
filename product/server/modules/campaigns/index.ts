@@ -10,7 +10,7 @@ import { HttpError, type Req, type Res } from '../../http.ts';
 import { verify } from '../../runtime-client.ts';
 import { CALL_CATEGORIES, type CallCategory } from '../../../shared/agent-config.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
-import { getStack } from '../../../shared/stacks.ts';
+import { stackOf } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { tool, UnknownOutcome, type Registry, type ToolCtx } from '../../tools.ts';
@@ -80,7 +80,7 @@ export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): 
     why: 'Calls run only on a published version, so you know exactly what people will hear.', fix: { tool: 'campaign.draft', label: 'Pick the agent', role: 'builder' } });
   else if (!agent || !v.config.brief?.text) out.push({ code: 'version_not_publishable', message: 'This agent version is not ready to call people yet.',
     fix: { tool: 'version.publish', label: 'Publish the agent', role: 'builder' } });
-  else if (getStack(agent.voice?.stackId ?? '')?.status === 'beta') out.push({ code: 'beta_stack', message: 'The voice this agent uses is still in beta, so it can only make test calls.',
+  else if (stackOf(agent.voice)?.status === 'beta') out.push({ code: 'beta_stack', message: 'The voice this agent uses is still in beta, so it can only make test calls.',
     why: 'Choose an available voice for calls to customers.', fix: { tool: 'stack.set', label: 'Choose a voice', role: 'builder' } });
   else if (agent.category !== c.call_category) out.push({ code: 'category_mismatch',
     message: `This agent was built for ${categoryWord(agent.category)} calls, but the campaign is set up for ${categoryWord(c.call_category)} calls.`,

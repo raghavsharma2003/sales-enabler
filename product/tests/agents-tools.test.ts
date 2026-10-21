@@ -11,7 +11,8 @@ import { verifyAudit } from '../server/audit.ts';
 import { compile, markerRules, TAIL } from '../server/modules/agents/compile.ts';
 import { versionHashOf } from '../server/modules/agents/config.ts';
 import { forgetRuntimeHealth, module } from '../server/modules/agents/index.ts';
-import { FakeRuntime, setRuntime } from '../server/runtime-client.ts';
+import { DEFAULT_STACK_ID } from '../shared/stacks.ts';
+import { FakeRuntime, setRuntime, type RuntimeHealth, type StackHealth } from '../server/runtime-client.ts';
 
 const URL_ = process.env.DATABASE_URL;
 const skip = !URL_ ? 'DATABASE_URL not set' : false;
@@ -44,19 +45,19 @@ async function fromTemplate(call: Awaited<ReturnType<typeof workspace>>['call'],
   return ok<any>(await call('agent.create', { name: 'Renewals', templateId }));
 }
 
-test('agent.create from a template stores a draft with no stack; list and get read it back', { skip }, async () => {
+test('agent.create from a template starts on the default stack; list and get read it back', { skip }, async () => {
   const { call } = await workspace();
   const c = await fromTemplate(call);
   assert.equal(c.status, 'draft');
   assert.equal(c.compiles, true);
   assert.deepEqual(c.lint, []);
-  assert.equal(c.draft.voice.stackId, '');
-  assert.equal(c.stackChosen, false);
+  assert.equal(c.draft.voice.stackId, DEFAULT_STACK_ID, 'a new agent starts on the provisional default stack');
+  assert.equal(c.stackChosen, true);
   assert.equal(c.draft.agentId, c.agentId);
   const g = ok<any>(await call('agent.get', { agentId: c.agentId }));
   assert.equal(g.draftHash, c.draftHash);
   assert.equal(g.brief.hash, compile(g.draft).hash);
-  assert.equal(g.stack, null);
+  assert.equal(g.stack.id, DEFAULT_STACK_ID);
   const l = ok<any>(await call('agent.list', {}));
   assert.deepEqual(l.agents.map((a: { id: string }) => a.id), [c.agentId]);
   const t = ok<any>(await call('template.list', {}));
@@ -86,7 +87,7 @@ test('agent.create from plain words drafts through the compile model, validates,
   assert.equal(seen[0].purpose, 'compile');
   assert.equal(seen[0].json, true);
   assert.equal(c.status, 'draft');
-  assert.equal(c.draft.voice.stackId, '', 'the drafting model can never pick a stack');
+  assert.equal(c.draft.voice.stackId, DEFAULT_STACK_ID, 'the drafting model never picks a stack: the draft starts on the default');
   assert.equal(c.draft.facts[0].source, 'llm.draft');
   assert.equal(c.compiles, false, 'a quoted line in the draft is shown, and blocks compiling');
   assert.ok(c.lint.some((f: { path: string }) => f.path === 'persona.notes[0]'));
@@ -142,17 +143,21 @@ test('stack.list carries each stack\'s availability from the runtime\'s health, 
   } finally { setRuntime(null); forgetRuntimeHealth(); }
 });
 
-test('there is no default stack: stack.list says so, publish refuses until one is chosen, voice.set needs a stack', { skip }, async () => {
+test('new agents start on the provisional default stack; a draft with no stack cannot publish; voice.set needs a stack', { skip }, async () => {
   const { call, ws, member } = await workspace();
   const s = ok<any>(await call('stack.list', {}));
-  assert.equal(s.default, null);
+  assert.equal(s.default, DEFAULT_STACK_ID);
+  assert.ok(s.stacks.some((x: any) => x.id === s.default), 'the default is one of the curated stacks');
   assert.ok(s.stacks.length >= 5);
   for (const st of s.stacks) {
     assert.ok(['measured', 'computed', 'vendor', 'not_measured'].includes(st.replyGap.grade));
     assert.ok(st.replyGap.source.length > 0);
     assert.equal(st.pricePerMinute.grade, 'not_measured', 'a missing figure reads not measured, never zero');
   }
-  const c = await fromTemplate(call);
+  const c0 = await fromTemplate(call);
+  // Fixture in SQL: no tool clears a stack, but drafts saved before the default existed have stackId ''.
+  await pool.query(`UPDATE agent SET draft = jsonb_set(draft, '{voice}', '{"stackId": ""}') WHERE id = $1`, [c0.agentId]);
+  const c = { ...c0, draftHash: ok<any>(await call('agent.get', { agentId: c0.agentId })).draftHash };
   refused(await call('voice.set', { agentId: c.agentId, voiceId: 'Kore' }), /choose a voice stack first/);
   const p = await call('version.publish', { agentId: c.agentId, draftHash: c.draftHash });
   assert.equal(p.status, 'needs_approval');
@@ -165,8 +170,10 @@ test('there is no default stack: stack.list says so, publish refuses until one i
   assert.ok(set.brief.sections.some((x: { name: string }) => x.name === 'SOUNDS'), 'a tag-safe voice adds the sounds section');
   const v = ok<any>(await call('voice.set', { agentId: c.agentId, voiceId: 'Kore', speed: 1.05 }));
   assert.deepEqual(v.voice, { stackId: 'v2-flashlite', voiceId: 'Kore', speed: 1.05 });
-  const again = ok<any>(await call('stack.set', { agentId: c.agentId, stackId: 'v2-54mini' }));
-  assert.equal(again.voiceCleared, true, 'a voice belongs to its stack');
+  const same = ok<any>(await call('stack.set', { agentId: c.agentId, stackId: 'v2-54mini' }));
+  assert.equal(same.voiceCleared, false, 'a new brain with the same voice part keeps the chosen voice');
+  const again = ok<any>(await call('stack.set', { agentId: c.agentId, stackId: 'v2-mai' }));
+  assert.equal(again.voiceCleared, true, 'a voice belongs to the part that speaks');
 });
 
 test('version.publish needs approval, is bound to the draft it showed, and stores { agent, brief }', { skip }, async () => {
@@ -370,4 +377,55 @@ test('roles: a viewer can read but not draft', { skip }, async () => {
   const { call } = await workspace('viewer');
   ok(await call('template.list', {}));
   refused(await call('agent.create', { name: 'x', templateId: 'insurance-renewal' }), /viewer cannot use agent.create/);
+});
+
+test('build your own: stack.list offers the parts; stack.set takes ears, brain and voice or one engine; wrong combinations are refused in plain words', { skip }, async () => {
+  const { call } = await workspace();
+  const list = ok<any>(await call('stack.list', {}));
+  for (const part of ['ears', 'brain', 'voice', 's2s']) assert.ok(list.components.some((c: any) => c.part === part), `parts include ${part}`);
+  for (const c of list.components) {
+    assert.ok(c.processedIn && c.route && c.price, `${c.id} says where it runs, how it is routed and what it costs`);
+    assert.ok(['measured', 'computed', 'vendor', 'not_measured'].includes(c.latency.grade));
+    assert.ok(!(c.part === 'brain' && /^gemini/.test(c.id)) || c.route === 'vertex', 'Gemini is routed through Vertex');
+  }
+  const c = await fromTemplate(call);
+  const built = ok<any>(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { ears: 'azure', brain: 'gpt-5.4-mini', voice: 'azure-mai' } }));
+  assert.equal(built.stack.id, 'custom');
+  assert.equal(built.stack.status, 'beta', 'a stack you build runs test calls only until it is measured');
+  assert.equal(built.stack.replyGap.grade, 'not_measured');
+  assert.match(built.stack.label, /Azure Speech.*GPT-5\.4 mini.*MAI/);
+  const g = ok<any>(await call('agent.get', { agentId: c.agentId }));
+  assert.deepEqual(g.draft.voice, { stackId: 'custom', components: { ears: 'azure', brain: 'gpt-5.4-mini', voice: 'azure-mai', gatedEars: true } });
+  const engine = ok<any>(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { s2s: 'gemini-3.8-live' } }));
+  assert.equal(engine.stack.kind, 's2s');
+  refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom' }), /needs its parts/);
+  refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { s2s: 'gemini-3.8-live', ears: 'azure' } }), /choose it alone/);
+  refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { ears: 'azure', brain: 'gpt-99', voice: 'azure' } }), /not a brain .* we offer/);
+  refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { ears: 'azure', brain: 'gpt-5.4-mini' } }), /choose the voice/);
+  refused(await call('stack.set', { agentId: c.agentId, stackId: 'v2-flashlite', components: { ears: 'azure' } }), /fixed parts/);
+  // Going back to a curated stack drops the parts.
+  const back = ok<any>(await call('stack.set', { agentId: c.agentId, stackId: 'v2-flashlite' }));
+  assert.equal(back.stack.id, 'v2-flashlite');
+  assert.deepEqual(ok<any>(await call('agent.get', { agentId: c.agentId })).draft.voice, { stackId: 'v2-flashlite' });
+});
+
+test('a built stack is available only when the runtime reports every one of its parts available; parts are unknown until it reports them', { skip }, async () => {
+  const { availabilityOf } = await import('../server/modules/agents/index.ts');
+  const parts = { ears: 'azure', brain: 'gpt-5.4-mini', voice: 'azure-mai', gatedEars: true };
+  assert.equal(availabilityOf('custom', null, parts).state, 'unknown');
+  assert.equal(availabilityOf('custom', { stacks: {} }, parts).state, 'unknown', 'a runtime that does not report parts yet: unknown, not unavailable');
+  const ok1: StackHealth = { available: true, reason: null, missing: [] };
+  const h: RuntimeHealth & { components: Record<string, Record<string, StackHealth>> } = { stacks: {}, components: { ears: { azure: ok1 }, brain: { 'gpt-5.4-mini': ok1 },
+    voice: { 'azure-mai': { available: false, reason: 'This voice is in preview and not connected yet.', missing: [] } } } };
+  assert.deepEqual(availabilityOf('custom', h, parts), { state: 'unavailable', reason: 'This voice is in preview and not connected yet.' });
+  h.components.voice['azure-mai'] = ok1;
+  assert.deepEqual(availabilityOf('custom', h, parts), { state: 'available', reason: null });
+  const { call } = await workspace();
+  const fake = new FakeRuntime(); setRuntime(fake); forgetRuntimeHealth();
+  try {
+    fake.healthReply = h; forgetRuntimeHealth();
+    const by = Object.fromEntries(ok<any>(await call('stack.list', {})).components.map((c: any) => [`${c.part}:${c.id}`, c.availability.state]));
+    assert.equal(by['ears:azure'], 'available');
+    assert.equal(by['ears:sarvam'], 'unavailable', 'a part the runtime does not list is unavailable');
+  } finally { setRuntime(null); forgetRuntimeHealth(); }
 });

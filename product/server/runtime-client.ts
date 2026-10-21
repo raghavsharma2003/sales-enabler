@@ -40,7 +40,9 @@ export interface StartReply { accepted: boolean; join?: Join; reason?: string; r
 /** Per stack, as the runtime's GET /v1/health reports it: whether it can run on this runtime and, when not, its plain reason
  *  ("This voice isn't offered on our Google Cloud route yet") or the credentials it lacks. */
 export interface StackHealth { available: boolean; reason: string | null; missing: unknown[] }
-export interface RuntimeHealth { stacks: Record<string, StackHealth> }
+/** components: per part ('ears' | 'brain' | 'voice' | 's2s') and part id, the same shape as a stack's. Absent from a runtime
+ *  that does not report parts yet, which reads as unknown, never unavailable. */
+export interface RuntimeHealth { stacks: Record<string, StackHealth>; components?: Record<string, Record<string, StackHealth>> }
 
 export interface Runtime {
   start(ticket: CallTicket): Promise<StartReply>;
@@ -85,11 +87,19 @@ export class HttpRuntime implements Runtime {
       if (!r.ok) return null;
       const j = await r.json() as { stacks?: Record<string, { available?: unknown; reason?: unknown; missing?: unknown }> };
       if (!j.stacks || typeof j.stacks !== 'object') return null;
+      const one = (v: { available?: unknown; reason?: unknown; missing?: unknown } | undefined): StackHealth =>
+        ({ available: v?.available === true, reason: typeof v?.reason === 'string' && v.reason ? v.reason : null, missing: Array.isArray(v?.missing) ? v.missing : [] });
       const stacks: Record<string, StackHealth> = {};
-      for (const [id, v] of Object.entries(j.stacks)) {
-        stacks[id] = { available: v?.available === true, reason: typeof v?.reason === 'string' && v.reason ? v.reason : null, missing: Array.isArray(v?.missing) ? v.missing : [] };
+      for (const [id, v] of Object.entries(j.stacks)) stacks[id] = one(v);
+      const raw = (j as { components?: unknown }).components;
+      if (!raw || typeof raw !== 'object') return { stacks };
+      const components: Record<string, Record<string, StackHealth>> = {};
+      for (const [part, ids] of Object.entries(raw as Record<string, unknown>)) {
+        if (!ids || typeof ids !== 'object') continue;
+        components[part] = {};
+        for (const [id, v] of Object.entries(ids as Record<string, never>)) components[part][id] = one(v);
       }
-      return { stacks };
+      return { stacks, components };
     } catch { return null; }
   }
 }

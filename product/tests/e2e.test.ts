@@ -238,17 +238,12 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     assert.ok(tpl, 'a non-insurance home-services template exists');
     assert.notEqual(tpl.industry, 'insurance');
     const ag = confirmed(await owner.tool('agent.create', { name: 'AC repair follow-up', templateId: tpl.id }), 'agent.create');
-    assert.equal(ag.stackChosen, false, 'a template chooses no stack');
-    assert.equal(ag.draft.voice.stackId, '');
+    assert.equal(ag.stackChosen, true, 'a new agent starts on the default stack');
+    assert.equal(ag.draft.voice.stackId, 'v2-flashlite');
     s.agentId = ag.agentId;
 
-    // Publishing without a stack is refused on approval: there is no default to fall back to.
-    const early = await owner.run('version.publish', { agentId: s.agentId, draftHash: ag.draftHash });
-    assert.equal(early.status, 'not_executed', 'publish without a stack is refused');
-    assert.match(early.reason, /stack/i);
-
     const sl = confirmed(await owner.tool('stack.list'), 'stack.list');
-    assert.equal(sl.default, null, 'stack.list has no default');
+    assert.equal(sl.default, 'v2-flashlite', 'stack.list names the provisional default');
     const pick = sl.stacks.find((x: any) => x.id === 'v2-flashlite' && x.status === 'available');
     assert.ok(pick, 'v2-flashlite is offered');
     const set = confirmed(await owner.tool('stack.set', { agentId: s.agentId, stackId: pick.id }), 'stack.set');

@@ -6,7 +6,7 @@ import { runtime } from '../../runtime-client.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import type { AgentConfig } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
-import { combinationId, requireStack } from '../../../shared/stacks.ts';
+import { combinationId, resolveStack } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
 import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLower } from './stats.ts';
@@ -92,7 +92,7 @@ export function registerTools(r: Registry): void {
         cfg = v.config; versionId = v.id;
       }
       if (!cfg?.agent || !cfg?.brief?.text || !cfg.brief.hash) throw new Error('this agent has no compiled brief yet; compile the draft first');
-      const stack = requireStack(cfg.agent.voice?.stackId);
+      const stack = resolveStack(cfg.agent.voice);
 
       const spent = await one<{ s: string }>(ctx.pool, `SELECT coalesce(sum(cost_inr_milli), 0)::text AS s FROM conversation
         WHERE workspace_id = $1 AND channel = 'test' AND started_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata'`, [ctx.workspaceId]);
@@ -104,7 +104,7 @@ export function registerTools(r: Registry): void {
       const ticket: CallTicket = {
         protocol: 1, conversationId: id, attemptId: null, workspaceId: ctx.workspaceId, direction: 'outbound',
         transport: { kind: 'webrtc', offerUrl: `/v1/test-calls/${id}/offer` },
-        agent: cfg.agent, brief: cfg.brief, stack: { id: stack.id, combinationId: combinationId(stack, cfg.agent.voice.voiceId) },
+        agent: cfg.agent, brief: cfg.brief, stack: { id: stack.id, combinationId: combinationId(stack, cfg.agent.voice.voiceId), components: stack.components },
         contact: { displayName: '', timezone: 'Asia/Kolkata', facts: {}, memoryBrief: '', memoryStatus: 'disabled' },
         consent: { basis: 'consent' },
         limits: { maxDurationS: Math.min(cfg.agent.limits?.maxDurationS ?? 300, 900), maxCostInrMilli: TEST_CALL_MAX_COST_INR_MILLI },

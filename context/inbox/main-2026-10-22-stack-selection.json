@@ -1,0 +1,106 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-22.default-stack",
+   "type": "decision",
+   "title": "Provisional default stack: v2-flashlite (Azure ears + Gemini 3.5 Flash-Lite brain + Gemini 3.8 Flash-Lite voice). New agents start on it, stack.list names it, and the user can change it. Agents saved before the default keep stackId '' and must choose before they publish.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "rationale": "The owner asked for a default plus free choice, and leans towards Gemini voices. Flash-Lite was the fastest well-judged brain (0.70 s to first text, 2026-10-20). Every part is on Vertex or Azure, and the 22 Oct smoke completed with 0 errors (2.0-2.7 s reply gap). v2-live is faster (1.1-1.5 s) but beta: it talks over callers and has not passed the safety attack test.",
+   "reverse_if": "Round-2 human ratings or the first real use-case calls favour another stack on quality, reply gap or conversion; or Gemini TTS pricing (doubling 2027-01-01) or availability changes."
+  },
+  {
+   "id": "decision.2026-10-22.custom-stack-contract",
+   "type": "decision",
+   "title": "Build your own: voice = { stackId: 'custom', components: { ears, brain, voice, gatedEars } | { s2s } }, with parts drawn from shared/components.ts (ids are the runtime's catalog keys). resolveStack() is the one resolver for every caller (createVersion, ticket builders, the campaign gate, blockers). Every CallTicket carries stack.components. A built stack is always beta, so it runs test calls only until measured. Its availability is every part's runtime health, and it is unknown until the runtime reports parts.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "rationale": "The owner wants component-level choice 'at least for testing', while calls to real people stay on measured, safety-tested combinations. Beta already blocks non-test dials (decision.2026-10-21.beta-stacks-test-only), so no new gate is needed. One resolver means no caller can read a custom stack differently.",
+   "reverse_if": "Measured custom combinations should go live: add a promote path that measures one and marks it available."
+  },
+  {
+   "id": "decision.2026-10-22.voice-follows-speaking-part",
+   "type": "decision",
+   "title": "stack.set keeps the chosen voice when the part that speaks (the voice or s2s component) is unchanged, e.g. switching only the brain. It clears the voice only when the speaking part changes.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "rationale": "A voice name belongs to the TTS or s2s part, not to the whole stack. Clearing it on a brain change threw away a choice that still applied.",
+   "reverse_if": "Voices start depending on the brain (e.g. a per-brain style map)."
+  },
+  {
+   "id": "decision.2026-10-22.routing-applied",
+   "type": "decision",
+   "title": "Routing in the parts catalog: Gemini goes through vertex. GPT-4.1/5.4 mini, gpt-oss, Llama and Kimi go through azure-foundry (India, or Singapore for Kimi). The GPT-6 and GPT-5.6 tiers go through OpenRouter, because our Foundry quota for them is held by Taxila. Sarvam goes direct. gpt-oss-120b@groq (OpenRouter) is not offered, because gpt-oss-120b is on our Foundry.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "rationale": "Owner directive.2026-10-22.provider-routing. Cost of the Groq rule: gpt-oss first token was 0.48 s on Groq against 1.47 s on Azure (lab, n=6, 2026-10-19).",
+   "reverse_if": "The owner prefers Groq's speed for gpt-oss, or Foundry quota for the GPT-6 tiers becomes ours."
+  },
+  {
+   "id": "decision.2026-10-22.assistant-name",
+   "type": "decision",
+   "title": "The in-product assistant is shown as 'Assistant', not 'Saarthi'. Internal code names (operator) are unchanged.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "rationale": "There are two reasons. The owner's directive rules out Hindi in the UI. Saarthi.ai is also an existing Indian voice-AI competitor in collections (ledger.SEG-10), so the name would clash with their brand.",
+   "reverse_if": "The owner picks a brand name for the assistant."
+  },
+  {
+   "id": "risk.2026-10-22.product-runtime-no-azure-ears",
+   "type": "risk",
+   "title": "The product voice runtime had no Azure Speech ears (only Gemini and Sarvam). build() also sent every non-gemini ears kind to SarvamEars, so 'azure' ears would have run Sarvam with no model.",
+   "status": "open",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "mitigation": "The voice builder is porting the lab's Azure Speech ears, with a fake-based test. Until then, Azure-ears stacks must show unavailable at the runtime, never fall into SarvamEars."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-22.default-stack",
+   "to": "directive.2026-10-22.full-stack-selection",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-22.default-stack",
+   "to": "open.2026-10-20.default-stack",
+   "relation": "resolves"
+  },
+  {
+   "from": "decision.2026-10-22.custom-stack-contract",
+   "to": "directive.2026-10-22.full-stack-selection",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-22.routing-applied",
+   "to": "directive.2026-10-22.provider-routing",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-22.assistant-name",
+   "to": "directive.2026-10-22.enterprise-english-ui",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-22.assistant-name",
+   "to": "ledger.SEG-10",
+   "relation": "informed-by"
+  },
+  {
+   "from": "risk.2026-10-22.product-runtime-no-azure-ears",
+   "to": "decision.2026-10-22.ears-azure-not-gemini",
+   "relation": "constrains"
+  },
+  {
+   "from": "decision.2026-10-22.default-stack",
+   "to": "decision.2026-10-21.stack-choice-no-default",
+   "relation": "supersedes"
+  }
+ ],
+ "events": []
+}

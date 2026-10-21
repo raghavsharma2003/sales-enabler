@@ -3,7 +3,8 @@
 // showed into an immutable agent_version holding { agent, brief }, and deployment.split (A2) decides where it runs.
 import type { AgentConfig, ToolGrant } from '../../../shared/agent-config.ts';
 import { RISK_CLASSES } from '../../../shared/approval.ts';
-import { requireStack, STACKS, StackError, type VoiceStack } from '../../../shared/stacks.ts';
+import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackOf, STACKS, StackError, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
+import { COMPONENTS, getComponent, type Component } from '../../../shared/components.ts';
 import { lintAgentConfig } from '../../../shared/safety/index.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import type { Module } from '../../app.ts';
@@ -47,8 +48,18 @@ function preview(c: AgentConfig) {
 type Availability = { state: 'available' | 'unavailable' | 'unknown'; reason: string | null };
 /** Whether the voice runtime can run a stack, from its own health report. With no report (the fake runtime, or the runtime
  *  unreachable) it is unknown: never assumed available. The reason is the runtime's own plain sentence. */
-export function availabilityOf(id: string, h: RuntimeHealth | null): Availability {
+export function availabilityOf(id: string, h: RuntimeHealth | null, components?: StackComponents): Availability {
   if (!h) return { state: 'unknown', reason: null };
+  if (id === CUSTOM_STACK_ID && components) {     // a built stack runs if each of its parts does; the first part that cannot says why
+    if (!h.components) return { state: 'unknown', reason: null };
+    const parts = components.s2s ? [['s2s', components.s2s]] : [['ears', components.ears], ['brain', components.brain], ['voice', components.voice]];
+    for (const [part, pid] of parts) {
+      const v = pid ? h.components[part as string]?.[pid] : undefined;
+      if (!v) return { state: 'unavailable', reason: "Our voice engine doesn't offer one of these parts yet." };
+      if (!v.available) return { state: 'unavailable', reason: v.reason ?? "One of these parts isn't connected on our voice engine yet." };
+    }
+    return { state: 'available', reason: null };
+  }
   const v = h.stacks[id];
   if (!v) return { state: 'unavailable', reason: "Our voice engine doesn't offer this stack yet." };
   if (v.available) return { state: 'available', reason: null };
@@ -65,9 +76,26 @@ async function runtimeHealth(): Promise<RuntimeHealth | null> {
 /** Tests that swap the runtime's health call this so the next stack.list asks again. */
 export function forgetRuntimeHealth(): void { healthCache = null; }
 
+/** A part a stack can be built from, with the runtime's word on whether it can run here (unknown until it reports). */
+function componentCard(c: Component, h: RuntimeHealth | null) {
+  const v = h?.components?.[c.part]?.[c.id];
+  const availability: Availability = !h ? { state: 'unknown', reason: null }
+    : !h.components ? { state: 'unknown', reason: null }        // a runtime that does not report parts yet: unknown, not unavailable
+    : !v ? { state: 'unavailable', reason: "Our voice engine doesn't offer this part yet." }
+    : v.available ? { state: 'available', reason: null } : { state: 'unavailable', reason: v.reason ?? "This part's provider isn't connected on our voice engine yet." };
+  return { id: c.id, part: c.part, label: c.label, maker: c.maker, route: c.route, processedIn: c.processedIn, latency: c.latency, price: c.price,
+    status: c.status, note: c.note ?? null, voices: c.voices ?? [], defaultVoice: c.defaultVoice ?? null, availability };
+}
+
 function stackCard(s: VoiceStack, h: RuntimeHealth | null = null) {
   return { id: s.id, label: s.label, kind: s.kind, status: s.status, note: s.note, replyGap: s.replyGap, requires: s.requires ?? [], risks: s.risks ?? [],
-    availability: availabilityOf(s.id, h),
+    availability: availabilityOf(s.id, h, s.components),
+    components: s.components,
+    // Each part in plain words: what it is, how it is routed and where it is processed (a part not in the catalog is left out).
+    parts: (['ears', 'brain', 'voice', 's2s'] as const).flatMap(part => {
+      const c = s.components[part] ? getComponent(part, s.components[part]!) : undefined;
+      return c ? [{ part, id: c.id, label: c.label, maker: c.maker, route: c.route, processedIn: c.processedIn }] : [];
+    }),
     // money.estimate is not reachable from inside a tool yet (see STATUS.json); a missing figure reads "not measured", never zero.
     pricePerMinute: { value: 'not measured', grade: 'not_measured' as const, source: 'money.estimate not wired into the picker yet' } };
 }
@@ -172,7 +200,7 @@ const libraryRow = (c: LibraryCaller) => ({ id: c.id, source: 'default' as const
 
 /** The one path that creates an immutable version: validate, require a chosen stack, number it, hash it, compile ONCE. */
 async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null) {
-  try { requireStack(cfg.voice.stackId); } catch (e) { if (e instanceof StackError) throw new ValidationError('voice.stackId', e.message); throw e; }
+  try { resolveStack(cfg.voice); } catch (e) { if (e instanceof StackError) throw new ValidationError('voice.stackId', e.message); throw e; }
   await ctx.q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['agent_version:' + agentId]);
   const n = await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [agentId]);
   const agent: AgentConfig = validateConfig({ ...cfg, agentId, version: n!.n, versionHash: '' });
@@ -228,7 +256,7 @@ export function registerAgentTools(r: Registry): void {
       const row = await one<{ id: string }>(ctx.q, "INSERT INTO agent (workspace_id, name, job, status, draft) VALUES ($1,$2,$3,'draft','{}') RETURNING id", [ctx.workspaceId, i.name, draft.job]);
       draft.agentId = row!.id;
       await saveDraft(ctx, row!.id, draft);
-      return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...preview(draft), stackChosen: false, usage };
+      return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...preview(draft), stackChosen: !!stackOf(draft.voice), usage };
     },
   }));
 
@@ -242,7 +270,7 @@ export function registerAgentTools(r: Registry): void {
     name: 'agent.get', risk: 'read', summary: 'Read one agent: its draft, lint, brief preview and versions',
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId);
-      const stack = STACKS.find(s => s.id === a.draft.voice.stackId);
+      const stack = stackOf(a.draft.voice);
       const versions = await many(ctx.q, 'SELECT id, number, hash, created_at FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 20', [a.id]);
       const tests = await many(ctx.q, 'SELECT id, passed, draft_hash, created_at FROM agent_test_run WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC LIMIT 10', [a.id, ctx.workspaceId]);
       return { agent: { id: a.id, name: a.name, job: a.job, status: a.status, updatedAt: a.updated_at }, draft: a.draft, draftHash: draftHash(a.draft),
@@ -265,23 +293,31 @@ export function registerAgentTools(r: Registry): void {
   }));
 
   r.register(tool(obj({}), {
-    name: 'stack.list', risk: 'read', summary: 'The finalised voice stacks with their figures and grades; there is no default',
+    name: 'stack.list', risk: 'read', summary: 'The curated voice stacks with their figures and grades, the default, and the parts a stack can be built from',
     run: async () => {
       const h = await runtimeHealth();
-      return { default: null, note: 'There is no default stack yet: choose one for each agent.', stacks: STACKS.map(s => stackCard(s, h)) };
+      return { default: DEFAULT_STACK_ID, note: 'New agents start on the default stack. Choose another, or build your own from the parts below.',
+        stacks: STACKS.map(s => stackCard(s, h)), components: COMPONENTS.map(c => componentCard(c, h)) };
     },
   }));
 
-  r.register(tool(obj({ agentId: uuid(), stackId: str({ min: 1, max: 60 }) }), {
-    name: 'stack.set', risk: 'draft', summary: "Choose an agent's voice stack from the finalised stacks",
+  r.register(tool(obj({ agentId: uuid(), stackId: str({ min: 1, max: 60 }),
+    components: opt(obj({ ears: opt(str({ max: 60 })), brain: opt(str({ max: 60 })), voice: opt(str({ max: 60 })), s2s: opt(str({ max: 60 })), gatedEars: opt(bool()) })) }), {
+    name: 'stack.set', risk: 'draft', summary: "Choose an agent's voice stack: a curated one, or stackId 'custom' with the parts (ears, brain and voice, or one speech-to-speech engine)",
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
       let s: VoiceStack;
-      try { s = requireStack(i.stackId); } catch (e) { if (e instanceof StackError) throw new ValidationError('stackId', e.message + `; choose one of: ${STACKS.map(x => x.id).join(', ')}`); throw e; }
-      const changed = a.draft.voice.stackId !== s.id;
-      const next: AgentConfig = { ...a.draft, voice: changed ? { stackId: s.id } : a.draft.voice };   // a voice belongs to its stack
+      try { s = resolveStack({ stackId: i.stackId, components: i.components as StackComponents | undefined }); }
+      catch (e) { if (e instanceof StackError) throw new ValidationError(i.stackId === CUSTOM_STACK_ID ? 'components' : 'stackId', e.message + (i.stackId === CUSTOM_STACK_ID ? '' : `; choose one of: ${STACKS.map(x => x.id).join(', ')}, or ${CUSTOM_STACK_ID}`)); throw e; }
+      const nextVoice = s.id === CUSTOM_STACK_ID ? { stackId: s.id, components: s.components } : { stackId: s.id };
+      // A voice belongs to the part that speaks: keep it only while that part is unchanged.
+      const speaker = (v: { stackId?: string; components?: StackComponents } | undefined) => { const r = stackOf(v); return r ? (r.components.s2s ?? r.components.voice) : null; };
+      const changed = JSON.stringify(nextVoice) !== JSON.stringify({ stackId: a.draft.voice.stackId, ...(a.draft.voice.components ? { components: a.draft.voice.components } : {}) });
+      const keepVoice = !changed || speaker(a.draft.voice) === speaker(nextVoice);
+      const next: AgentConfig = { ...a.draft, voice: keepVoice ? { ...a.draft.voice, ...nextVoice, ...(nextVoice.components ? {} : { components: undefined }) } : nextVoice };
+      if (!next.voice.components) delete next.voice.components;
       await saveDraft(ctx, a.id, next);
-      return { agentId: a.id, stack: stackCard(s), voiceCleared: changed && !!a.draft.voice.voiceId, draftHash: draftHash(next), ...preview(next) };
+      return { agentId: a.id, stack: stackCard(s), voiceCleared: !keepVoice && !!a.draft.voice.voiceId, draftHash: draftHash(next), ...preview(next) };
     },
   }));
 
@@ -289,8 +325,8 @@ export function registerAgentTools(r: Registry): void {
     name: 'voice.set', risk: 'draft', summary: "Choose the agent's voice and speed within its chosen stack",
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
-      if (!a.draft.voice.stackId) throw new ValidationError('agentId', 'choose a voice stack first (stack.set): there is no default');
-      const next: AgentConfig = { ...a.draft, voice: { stackId: a.draft.voice.stackId, voiceId: i.voiceId, ...(i.speed !== undefined ? { speed: i.speed } : {}) } };
+      if (!stackOf(a.draft.voice)) throw new ValidationError('agentId', 'choose a voice stack first (stack.set)');
+      const next: AgentConfig = { ...a.draft, voice: { ...a.draft.voice, voiceId: i.voiceId, ...(i.speed !== undefined ? { speed: i.speed } : {}) } };
       await saveDraft(ctx, a.id, next);
       return { agentId: a.id, voice: next.voice, draftHash: draftHash(next) };
     },

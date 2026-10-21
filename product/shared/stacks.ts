@@ -1,7 +1,10 @@
-// The voice stacks a user can choose for an agent. These are the round-2 curated stacks from the
-// voice lab (voicelab/server/catalog.py), plus the owner's pick and the all-Indian stack.
-// There is deliberately NO default yet (decision.2026-10-21.stack-choice-no-default): the user picks.
+// The voice stacks a user can choose for an agent: the round-2 curated stacks from the voice lab
+// (voicelab/server/catalog.py), plus the owner's pick and the all-Indian stack, or a stack the user builds part by part
+// from shared/components.ts (directive.2026-10-22.full-stack-selection). New agents start on DEFAULT_STACK_ID, a
+// provisional default (decision.2026-10-22.default-stack) the user can change; the runtime never substitutes one.
 // Measured figures carry their grade and source so the picker never shows an unlabelled number.
+
+import { getComponent, type Component, type Part } from './components.ts';
 
 export type Grade = 'measured' | 'computed' | 'vendor' | 'not_measured';
 
@@ -88,17 +91,64 @@ export const STACKS: readonly VoiceStack[] = [
   },
 ];
 
+/** Provisional: new agents start here, and the user may change it (decision.2026-10-22.default-stack). */
+export const DEFAULT_STACK_ID = 'v2-flashlite';
+/** The stack id of a combination the user built part by part; its parts travel in voice.components. */
+export const CUSTOM_STACK_ID = 'custom';
+
 export function getStack(id: string): VoiceStack | undefined {
   return STACKS.find(s => s.id === id);
 }
 
-/** A stack id is valid for an agent only if it is in the catalog. There is no fallback default. */
+/** A curated stack id is valid for an agent only if it is in the catalog. Nothing is ever substituted. */
 export function requireStack(id: string | undefined | null): VoiceStack {
-  if (!id) throw new StackError('choose a voice stack: there is no default yet');
+  if (!id) throw new StackError('choose a voice stack');
+  if (id === CUSTOM_STACK_ID) throw new StackError('a stack you build yourself needs its parts: ears, brain and voice, or one speech-to-speech engine');
   const s = getStack(id);
   if (!s) throw new StackError(`unknown voice stack "${id}"`);
   return s;
 }
+
+/** The stack an agent's voice settings name: a curated one, or one built from its parts. Throws StackError with a plain
+ *  sentence for anything that cannot run as asked. A built stack is always beta (test calls only) until it is measured. */
+export function resolveStack(voice: { stackId?: string | null; components?: StackComponents | null } | undefined | null): VoiceStack {
+  if (voice?.stackId !== CUSTOM_STACK_ID) {
+    if (voice?.components) throw new StackError('a curated stack has fixed parts: choose "build your own" to pick them');
+    return requireStack(voice?.stackId);
+  }
+  const c = voice.components;
+  if (!c) throw new StackError('a stack you build yourself needs its parts: ears, brain and voice, or one speech-to-speech engine');
+  const need = (part: Part, id: string | undefined): Component => {
+    if (!id) throw new StackError(`choose the ${PART_WORD[part]}`);
+    const x = getComponent(part, id);
+    if (!x) throw new StackError(`"${id}" is not a ${PART_WORD[part]} we offer`);
+    return x;
+  };
+  let parts: Component[]; let components: StackComponents; let kind: VoiceStack['kind'];
+  if (c.s2s) {
+    if (c.ears || c.brain || c.voice) throw new StackError('a speech-to-speech engine hears, thinks and speaks by itself: choose it alone, or choose ears, brain and voice');
+    parts = [need('s2s', c.s2s)]; components = { s2s: c.s2s }; kind = 's2s';
+  } else {
+    parts = [need('ears', c.ears), need('brain', c.brain), need('voice', c.voice)];
+    components = { ears: c.ears, brain: c.brain, voice: c.voice, gatedEars: c.gatedEars ?? true }; kind = 'cascade';
+  }
+  return {
+    id: CUSTOM_STACK_ID, kind, components, brief: 'v2',
+    label: parts.map(p => p.label).join(' + '),
+    replyGap: { value: 'not measured', grade: 'not_measured', source: 'A stack you build yourself is measured on its first test calls.' },
+    note: 'Built by you from our parts. It runs test calls only until it has been measured.',
+    requires: [...new Set(parts.flatMap(p => p.requires))],
+    status: 'beta',
+    risks: parts.filter(p => p.status === 'beta').map(p => `${p.label} is in beta`),
+  };
+}
+
+/** resolveStack without the throw, for code that only needs to know whether the settings name a stack. */
+export function stackOf(voice: Parameters<typeof resolveStack>[0]): VoiceStack | undefined {
+  try { return resolveStack(voice); } catch (e) { if (e instanceof StackError) return undefined; throw e; }
+}
+
+const PART_WORD: Record<Part, string> = { ears: 'ears (speech to text)', brain: 'brain (language model)', voice: 'voice', s2s: 'speech-to-speech engine' };
 
 export class StackError extends Error {
   constructor(message: string) { super(message); this.name = 'StackError'; }

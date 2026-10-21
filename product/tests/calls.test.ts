@@ -320,6 +320,9 @@ test('a draft test call compiles the real agents draft through brief.compile and
   const raw = await one<any>(pool, 'SELECT draft FROM agent WHERE id = $1', [agentId]);
   assert.ok(raw.draft.schema && !raw.draft.brief, 'agents stores the draft as a bare AgentConfig');
 
+  assert.equal(raw.draft.voice.stackId, 'v2-flashlite', 'a new agent starts on the default stack');
+  // Fixture in SQL: drafts saved before the default existed have stackId ''; no tool clears a stack.
+  await pool.query(`UPDATE agent SET draft = jsonb_set(draft, '{voice}', '{"stackId": ""}') WHERE id = $1`, [agentId]);
   const noStack = await registry.execute<any>(pool, 'test.browser_call', { agentId, useDraft: true }, ctx);
   assert.equal(noStack.status, 'not_executed');
   assert.match(noStack.status === 'not_executed' ? noStack.reason : '', /stack/i, 'the refusal says what is missing, in plain words');
@@ -336,6 +339,7 @@ test('a draft test call compiles the real agents draft through brief.compile and
   assert.equal(t.result.draftHash, ed.result.draftHash);
   const ticket = fakeRuntime.tickets.find(x => x.conversationId === t.result.conversationId)!;
   assert.equal(ticket.agent.versionHash, ed.result.draftHash, 'the ticket says which draft ran');
+  assert.deepEqual(ticket.stack.components, (await import('../shared/stacks.ts')).requireStack('v2-flashlite').components, 'the ticket carries the parts that will run');
   const compiled = await registry.execute<any>(pool, 'brief.compile', { config: (await one<any>(pool, 'SELECT draft FROM agent WHERE id = $1', [agentId])).draft }, ctx);
   assert.equal(compiled.status === 'confirmed' && compiled.result.hash, ticket.brief.hash, 'the one compile() made the brief');
   assert.ok(ticket.brief.text.length > 0 && ticket.test);

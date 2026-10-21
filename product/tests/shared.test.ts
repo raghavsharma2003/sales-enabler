@@ -111,3 +111,20 @@ test('validate: every validator carries a JSON Schema for the LLM tool list', as
     required: ['name', 'tags'],
   });
 });
+
+test('resolveStack: curated ids resolve to their own parts; custom needs parts from the catalog; nothing is substituted', async () => {
+  const { resolveStack, stackOf, requireStack, DEFAULT_STACK_ID, STACKS } = await import('../shared/stacks.ts');
+  const { COMPONENTS, getComponent } = await import('../shared/components.ts');
+  assert.ok(STACKS.some(s => s.id === DEFAULT_STACK_ID), 'the default is a curated stack');
+  assert.deepEqual(resolveStack({ stackId: 'v2-mai' }).components, requireStack('v2-mai').components);
+  for (const s of STACKS) {
+    const c = s.components;
+    for (const [part, id] of Object.entries({ ears: c.ears, brain: c.brain, voice: c.voice, s2s: c.s2s })) {
+      if (id) assert.ok(getComponent(part as 'ears', id), `curated stack ${s.id} uses ${part} "${id}", which must be in the parts catalog`);
+    }
+  }
+  assert.equal(new Set(COMPONENTS.map(c => `${c.part}:${c.id}`)).size, COMPONENTS.length, 'part ids are unique within a part');
+  assert.equal(stackOf({ stackId: 'custom', components: { ears: 'azure', brain: 'nope', voice: 'azure' } }), undefined);
+  assert.equal(stackOf({ stackId: '' }), undefined);
+  assert.throws(() => resolveStack({ stackId: 'custom', components: { ears: 'azure', brain: 'gemini-3.5-flash-lite' } }), /choose the voice/);
+});

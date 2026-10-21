@@ -5,6 +5,7 @@ import { CALL_CATEGORIES, JOBS, LANGUAGES, SECTOR_PACKS, type AgentConfig } from
 import { ValidationError } from '../../../shared/validate.ts';
 import { complete } from '../../llm.ts';
 import { validateConfig } from './config.ts';
+import { DEFAULT_STACK_ID } from '../../../shared/stacks.ts';
 
 const SYSTEM = `You draft the configuration of a phone agent for an Indian business from the owner's plain words.
 Answer with one JSON object with exactly these fields:
@@ -28,7 +29,7 @@ const STRUCTURE = {
   schema: 1, agentId: '', version: 0, versionHash: '', tools: [],
   memory: { read: true, write: true, briefMaxBytes: 1200 },
   limits: { maxDurationS: 300, maxSilenceS: 10, maxTurns: 40 },
-  voice: { stackId: '' },
+  voice: { stackId: DEFAULT_STACK_ID },
   recording: { enabled: true, announce: true },
 } as const;
 

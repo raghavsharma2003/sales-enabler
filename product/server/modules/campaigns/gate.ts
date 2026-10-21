@@ -7,7 +7,7 @@ import type { AgentConfig, CallCategory } from '../../../shared/agent-config.ts'
 import { numberHash } from '../../identity.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { lintAgentConfig } from '../../../shared/safety/index.ts';
-import { getStack } from '../../../shared/stacks.ts';
+import { stackOf } from '../../../shared/stacks.ts';
 import type { Queryable } from '../../db.ts';
 import { many, one } from '../../db.ts';
 import { release, reserve } from '../../ledger.ts';
@@ -346,8 +346,8 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       if (version.config.lint && version.config.lint.ok === false) throw new Refuse('version_not_publishable', 'the version failed its lint for this category');
       const lint = lintAgentConfig(agent).filter(f => f.effect === 'refuse');
       if (lint.length) throw new Refuse('version_not_publishable', lint.map(f => f.rule).join(','));
-      const stack = getStack(agent.voice?.stackId ?? '');
-      if (!stack) throw new Refuse('version_not_publishable', `unknown voice stack "${agent.voice?.stackId ?? ''}"`);
+      const stack = stackOf(agent.voice);
+      if (!stack) throw new Refuse('version_not_publishable', `the voice settings name no stack we can run ("${agent.voice?.stackId ?? ''}")`);
       // decision.2026-10-21.beta-stacks-test-only: a beta stack takes test calls to a member's verified phone, nothing else.
       if (stack.status === 'beta' && !test) throw new Refuse('version_not_publishable', `the ${stack.label} stack is in beta: test calls only`);
       const missing = (agent.sectorPacks ?? []).filter(p => p !== 'base' && !dp.sector_packs.includes(p));

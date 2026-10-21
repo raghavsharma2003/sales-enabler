@@ -3,6 +3,7 @@
 // reminder, a clinic's appointment confirmer and a D2C brand's COD verifier are the same shape with
 // different jobs, facts and sector packs. Persona fields are SHAPES and notes, never lines to say
 // (inherited law: sentence-shaped prompt text gets recited).
+import type { StackComponents } from './stacks.ts';
 import type { RiskClass } from './approval.ts';
 
 /** What the call is for. 'custom' lets a business describe its own job in plain words. */
@@ -85,7 +86,9 @@ export interface AgentConfig {
   handOff: HandOff;
   memory: { read: boolean; write: boolean; briefMaxBytes: 1200 };
   limits: { maxDurationS: number; maxSilenceS: number; maxTurns: number };
-  voice: { stackId: string; voiceId?: string; speed?: number };  // stackId must name a stack in shared/stacks.ts; no default
+  // stackId names a curated stack in shared/stacks.ts, or 'custom' with the parts in components (shared/components.ts
+  // ids). New agents start on DEFAULT_STACK_ID. The runtime runs exactly these parts or refuses the call.
+  voice: { stackId: string; components?: StackComponents; voiceId?: string; speed?: number };
   recording: { enabled: boolean; announce: boolean };
 }
 

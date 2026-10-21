@@ -52,8 +52,10 @@ export const agentConfigV = obj({
   }),
   memory: obj({ read: bool(), write: bool(), briefMaxBytes: lit([1200] as const) }),
   limits: obj({ maxDurationS: num({ int: true, min: 30, max: 1800 }), maxSilenceS: num({ int: true, min: 3, max: 60 }), maxTurns: num({ int: true, min: 4, max: 200 }) }),
-  // stackId '' in a draft means "not chosen yet": there is no default. Publishing requires a real one.
-  voice: obj({ stackId: str({ max: 60 }), voiceId: opt(str({ max: 80 })), speed: opt(num({ min: 0.7, max: 1.3 })) }),
+  // stackId '' in a draft means "not chosen" (older drafts). New drafts start on DEFAULT_STACK_ID. Publishing requires a
+  // stack resolveStack() accepts: a curated id, or 'custom' with its parts.
+  voice: obj({ stackId: str({ max: 60 }), components: opt(obj({ ears: opt(str({ max: 60 })), brain: opt(str({ max: 60 })), voice: opt(str({ max: 60 })),
+    s2s: opt(str({ max: 60 })), gatedEars: opt(bool()) })), voiceId: opt(str({ max: 80 })), speed: opt(num({ min: 0.7, max: 1.3 })) }),
   recording: obj({ enabled: bool(), announce: bool() }),
 }) as unknown as Validator<AgentConfig>;
 
