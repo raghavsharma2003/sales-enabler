@@ -16696,6 +16696,28 @@
    "title": "The Operator never handles credentials: integration.stage_secrets is screen-only; at A0 it would otherwise have stored plaintext secrets in action.args and the card diff",
    "rationale": "Verified in code: proposeA0 persisted validated input to action.args and copied args into the approval card diff; any Operator call also puts the secret in the model's context. Redacting after the fact still leaves it with the model provider.",
    "reverse_if": "A sealed-input path exists where the model only ever sees a reveal/stash handle the person created on screen, never the secret text"
+  },
+  {
+   "id": "measure.2026-10-21.ui-review-main-loop",
+   "type": "measurement",
+   "title": "The main loop reviewed the 26 web screens by eye at cee4313: layout, mobile behaviour and honesty are strong, but developer text leaks into the UI on 4 of the 7 screens it opened in full.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "n": 7,
+   "method": "Read the desktop contact sheet of all 26 screens plus 7 full-size shots (agent-stack-d, today-m, campaign-draft-d, call-m, operator-plan-d, contacts-import-m and the desktop sheet) from product/web/shots after cee4313; web.test.ts 8/8 and ui-contract --strict 82/82 run locally.",
+   "value": "Leaks: approval-card args (inrMilli 500000), 'by wallet.topup', tool developer summaries, campaign blocker text with tool ids and rule codes, 'Ran v2-flashlite', 'Settlement None', 'Analysis: failed' with no reason, '1 guarded opt-outs', a duplicate 'Not measured' chip, and 'Click' on mobile",
+   "path": "product/web/shots/"
+  },
+  {
+   "id": "decision.2026-10-21.no-developer-text-in-ui",
+   "type": "decision",
+   "title": "No tool id, raw argument name, internal code or milli-unit ever reaches a person in the UI. Server messages meant for people are plain sentences; codes stay machine-readable alongside them.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop UI review",
+   "rationale": "The product promise is world-class and usable by any business owner. Text like 'To fix: number.search then number.rent' or 'inrMilli 500000' reads as broken software and hides what the person must do. The structural fix is server blockers and refusals carrying {code, message, why, fix:{tool,label}}, plus a rendered-text test that fails on tool-id patterns.",
+   "reverse_if": "never for end-user screens; a developer or API-console view may show codes behind an explicit 'details' toggle"
   }
  ],
  "edges": [
@@ -29915,6 +29937,11 @@
    "from": "decision.2026-10-21.operator-no-credentials",
    "to": "component.2026-10-21.operator-module",
    "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-21.no-developer-text-in-ui",
+   "to": "measure.2026-10-21.ui-review-main-loop",
+   "relation": "derived_from"
   }
  ]
 }
