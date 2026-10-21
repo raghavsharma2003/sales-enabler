@@ -133,6 +133,16 @@ Changes to the runbook above:
 - **Region guard:** the lab and the product take the Vertex route only when `VP_REGION` names an Indian region (voice
   c5be193). The switch-back must set `VP_REGION=centralindia` in `/opt/voicelab/.env` along with `VERTEX_OFF=0`. Without
   it, Gemini stacks stay off, and the only sign is one line in the log.
+- **Vertex-only env (voice 8a45c64, lab da936f8):** `VERTEX_OFF=0` must be passed, because the script still defaults it to 1.
+  - `VERTEX_LIVE_LOCATION` has no default. Until it is set, the Gemini-ears and Live stacks are unavailable.
+    Setting it waits on the owner's ruling on Live processing outside India (`open.2026-10-21.vertex-live-in-india`).
+  - `VERTEX_MODEL_MAP` takes the ids from Instinct's Model Garden table.
+  - On the VM, check what the docs left unconfirmed:
+    - whether the websocket accepts camelCase;
+    - `mediaChunks` versus `audio`;
+    - `interimInputTranscription`;
+    - `audioStreamEnd`;
+    - the server message keys.
 - **Instinct checklist, before the key is made:**
   - read the Cloud Logging notice;
   - delete every old key;
