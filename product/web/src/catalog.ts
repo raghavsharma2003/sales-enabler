@@ -49,7 +49,9 @@ export const PURPOSE_HINT: Record<string, string> = { service: 'About their own 
 
 export function prettyId(id: string | undefined): string {
   if (!id) return '';
-  return id.replace(/@or$/, ' via OpenRouter').replace(/-/g, ' ').replace(/\b(gemini|gpt|sarvam|azure|mai)\b/gi, m => m[0].toUpperCase() + m.slice(1)).replace(/\bgpt\b/i, 'GPT');
+  const via = /@or$/.test(id) ? ' via OpenRouter' : '';
+  const words = id.replace(/@or$/, '').split('-').map(w => w === 'gpt' || w === 'mai' ? w.toUpperCase() : /^\d+b$/i.test(w) ? w.toUpperCase() : /^\d/.test(w) ? w : w[0].toUpperCase() + w.slice(1));
+  return words.join(' ').replace('Flash Lite', 'Flash-Lite').replace('MAI Voice', 'MAI-Voice') + via;
 }
 
 /** Language codes as the server stores them (hi-en, hi, ta ...) next to the agent-config ones. */

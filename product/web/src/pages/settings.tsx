@@ -244,6 +244,6 @@ export { count, Lock };
 
 const SECRET_WORDS: Record<string, string> = { service_account_json: 'service account file', api_key: 'API key', api_token: 'API token', webhook_url: 'webhook address', client_id: 'client ID' };
 const secretWords = (s: string) => SECRET_WORDS[s] ?? s.replace(/_/g, ' ').replace(/\bjson\b/gi, 'file').replace(/\burl\b/gi, 'address');
-const ruleWords = (r: string) => { const t = r.replace(/neverSay/g, 'never-say list').replace(/([a-z])([A-Z])/g, '$1 $2'); return t.charAt(0).toUpperCase() + t.slice(1); };
+const ruleWords = (r: string) => { const t = r.replace(/\s*\(allow-list:[^)]*\)/, '. She may only mention her own nature to say she is an AI').replace(/neverSay/g, 'never-say list').replace(/([a-z])([A-Z])/g, '$1 $2'); return t.charAt(0).toUpperCase() + t.slice(1); };
 
 const walletNote = (x: string) => /^no money available/i.test(x) ? 'There is no money to spend. New attempts wait; calls already live always finish.' : x.charAt(0).toUpperCase() + x.slice(1);

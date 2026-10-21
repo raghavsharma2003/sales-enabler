@@ -166,7 +166,7 @@ export function pageFor(tool: string): string | null {
 // Audit events that are not tools; written so the tool-contract scan does not mistake them for tool ids.
 const PROPOSED = ['action', 'propose'].join('.'), CREATED = ['workspace', 'create'].join('.');
 export function activitySentence(line: string, action: string): string {
-  const actor = /^(.+?) (?:ran|asked|did|made|set|changed) /.exec(line)?.[1] ?? 'Someone';
+  const actor = (/^(.+?) (?:ran|asked|did|made|set|changed|created|added|saved|reviewed) /.exec(line)?.[1] ?? 'Someone').replace(/^An agent$/, 'Saarthi');
   if (action === CREATED) return `${actor} created the workspace`;
   if (action === PROPOSED) {
     const words = /asked to run (.+?) and is waiting/.exec(line)?.[1];

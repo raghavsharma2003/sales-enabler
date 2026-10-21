@@ -1,13 +1,12 @@
 // The voice stack picker. Owner directive: the user chooses among the finalised stacks; NO default is preselected and nothing
 // is marked "recommended". Every figure carries its grade and source; a missing price or latency says so instead of showing 0.
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Check, KeyRound, Volume2 } from 'lucide-react';
+import { AlertTriangle, Check, Volume2 } from 'lucide-react';
 import { STACKS, type VoiceStack } from '../../shared/stacks.ts';
 import * as api from './api.ts';
 import { Btn, Chip, Figure, NotMeasured, Segmented } from './ui.tsx';
 import { inr } from './format.ts';
 import { prettyId } from './catalog.ts';
-const CRED: Record<string, string> = { GEMINI: 'Gemini', AZURE_OPENAI: 'Azure OpenAI', AZURE_SPEECH: 'Azure Speech', OPENROUTER: 'OpenRouter', SARVAM: 'Sarvam' };
 import { useApp } from './store.tsx';
 
 export const BETA_REASON = 'Beta stacks run test calls only: the dial gate refuses them for any call to a real person until their risks are cleared and the stack is marked available.';
@@ -64,7 +63,6 @@ function StackCard({ s, selected, price, onPick }: { s: VoiceStack; selected: bo
           <div className="row" style={{ gap: 6, marginTop: 6 }}>
             <Chip tone="peacock">{s.kind === 's2s' ? 'Speech to speech' : 'Cascade'}</Chip>
             <Chip tone={s.status === 'available' ? 'leaf' : 'marigold'} title={s.status === 'beta' ? BETA_REASON : undefined}>{s.status === 'available' ? 'Available' : 'Beta: test calls only'}</Chip>
-            {s.requires?.map(r => <Chip key={r} icon={<KeyRound size={11} aria-hidden />} title={`Needs the ${CRED[r] ?? r} credential on the voice runtime`}>{CRED[r] ?? r} key</Chip>)}
           </div>
         </div>
       </div>
