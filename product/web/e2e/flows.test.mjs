@@ -1,5 +1,8 @@
 // Each flow drives the UI and then asks the server what is true. Fixtures that no tool can make yet are made in SQL and said so.
-import { test, before, after } from 'node:test';
+import { test as nodeTest, before, after } from 'node:test';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import pg from 'pg';
@@ -10,12 +13,37 @@ const BASE = process.env.BASE ?? 'http://localhost:8799';
 const EMAIL = 'asha@saanjh.example', PASSWORD = 'sample-password-1234';
 let browser, ctx, page, pool, ws;
 
+// A failure must be diagnosable from one run: the flow's name, the last screenshot, the URL, the browser console and any failed
+// requests are written to E2E_DIAG_DIR (default: a folder under the OS temp dir) and the path is put in the error message.
+const DIAG = process.env.E2E_DIAG_DIR || path.join(os.tmpdir(), 'vp-e2e-diag');
+const consoleLog = [];
+const test = (name, optsOrFn, maybeFn) => {
+  const fn = maybeFn ?? optsOrFn, opts = maybeFn ? optsOrFn : {};
+  nodeTest(name, opts, async t => {
+    consoleLog.length = 0;
+    try { await fn(t); } catch (err) {
+      const slug = name.replace(/[^a-z0-9]+/gi, '-').slice(0, 60).toLowerCase();
+      try {
+        fs.mkdirSync(DIAG, { recursive: true });
+        await page.screenshot({ path: path.join(DIAG, slug + '.png') }).catch(() => {});
+        fs.writeFileSync(path.join(DIAG, slug + '.txt'), `flow: ${name}\nurl: ${page.url()}\nerror: ${err?.stack ?? err}\n\nbrowser console and failed requests:\n${consoleLog.join('\n')}\n`);
+        err.message += `\n[diagnostics: ${path.join(DIAG, slug)}.png and .txt]`;
+      } catch { /* diagnostics must never hide the real failure */ }
+      throw err;
+    }
+  });
+};
+
 before(async () => {
   browser = await pw.chromium.launch({ executablePath: process.env.CHROME || undefined });
   ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   const r = await ctx.request.post(BASE + '/v1/login', { data: { email: EMAIL, password: PASSWORD } });
   assert.ok(r.ok(), 'sign in');
   page = await ctx.newPage();
+  page.on('console', m => consoleLog.push(`[${m.type()}] ${m.text()}`));
+  page.on('pageerror', e => consoleLog.push(`[pageerror] ${e.message}`));
+  page.on('requestfailed', r => consoleLog.push(`[requestfailed] ${r.method()} ${r.url()} ${r.failure()?.errorText}`));
+  page.on('response', r => { if (r.status() >= 400) consoleLog.push(`[http ${r.status()}] ${r.request().method()} ${r.url()}`); });
   pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
   ws = (await pool.query("SELECT id FROM workspace WHERE name = 'Saanjh Services' ORDER BY created_at DESC LIMIT 1")).rows[0].id;
 });
@@ -23,9 +51,17 @@ after(async () => { await browser?.close(); await pool?.end(); });
 
 const tool = async (name, args = {}) => (await (await ctx.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
 const actions = async status => (await (await ctx.request.get(`${BASE}/v1/actions?status=${status}`)).json()).actions;
+// Press and keep pressing until the page itself says the hold completed (the button leaves its 'holding' state), then release.
+// A fixed wall-clock hold is wrong under load: the browser can process the press late and the release right after it.
 async function hold(locator) {
+  await locator.scrollIntoViewIfNeeded();
   const b = await locator.boundingBox();
-  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.waitForTimeout(1500); await page.mouse.up();
+  const el = await locator.elementHandle();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down();
+  try {
+    await page.waitForFunction(e => e.classList.contains('holding'), el, { timeout: 5000 });
+    await page.waitForFunction(e => !e.classList.contains('holding'), el, { timeout: 10000 });
+  } finally { await page.mouse.up(); }
 }
 const sheet = () => page.getByRole('dialog');
 
@@ -61,9 +97,15 @@ test('Learning: propose, simulate, accept shows an approval card, and the screen
   let props = (await tool('proposal.list')).result;
   assert.ok(props.some(p => p.status === 'drafted'), 'the server holds a drafted proposal');
   await page.getByRole('button', { name: 'Simulate first' }).first().click();
-  await page.waitForTimeout(2500);
-  props = (await tool('proposal.list')).result;
+  // The probe runs on the server; wait for its status to leave 'drafted' instead of sleeping.
+  const t0 = Date.now();
+  for (;;) {
+    props = (await tool('proposal.list')).result;
+    if (props[0].status !== 'drafted' || Date.now() - t0 > 30000) break;
+    await new Promise(r => setTimeout(r, 250));
+  }
   const probed = props[0];
+  t.diagnostic(`probe finished in ${Date.now() - t0} ms`);
   await page.reload();
   t.diagnostic('proposal status after simulating: ' + probed.status);
   if (probed.status === 'awaiting_approval') {
@@ -125,9 +167,9 @@ test('A3: Pause, Resume and Stop run at once with no approval card, and the pill
   await sheet().waitFor({ state: 'detached', timeout: 5000 });   // a confirmed approval closes itself
   // Stop is offered whatever state it is in and, like Pause, lowers risk, so it runs at once.
   await page.getByRole('button', { name: 'Stop', exact: true }).click();
-  await page.waitForTimeout(1500);
+  let s = await state();
+  for (const t0 = Date.now(); !['stopped', 'done', 'cancelled'].includes(s) && Date.now() - t0 < 15000; ) { await new Promise(r => setTimeout(r, 250)); s = await state(); }
   assert.equal(await sheet().count(), 0, 'no approval card for a stop');
-  const s = await state();
   assert.ok(['stopped', 'done', 'cancelled'].includes(s), 'the server stopped it: ' + s);
 });
 
@@ -256,7 +298,9 @@ test('Ask Saarthi on a launch blocker with no page: the dock gets the sentence a
   const card = page.locator('.dock article[aria-label^="plan card"]').first();
   await card.waitFor({ timeout: 10000 });
   assert.match(await card.innerText(), /Waits for your tap|Runs now/i, 'the plan says which steps wait for a tap');
-  assert.ok((await actions('proposed')).some(a => a.tool === 'cap.raise'), 'the server holds the spend step for the person\'s tap');
+  // The plan card is shown before the server has filed the step's proposal, so wait for the proposal instead of reading it at once.
+  const held = await page.waitForFunction(async () => (await (await fetch('/v1/actions?status=proposed')).json()).actions.some(a => a.tool === 'cap.raise'), null, { timeout: 15000 }).then(() => true, () => false);
+  assert.ok(held, 'the server holds the spend step for the person\'s tap');
   assert.equal((await actions('executed')).some(a => a.tool === 'cap.raise'), false, 'nothing that spends has run: the plan only waits');
 });
 
