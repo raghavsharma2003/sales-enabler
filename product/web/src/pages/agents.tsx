@@ -4,7 +4,7 @@ import { useApp, useData, useTool } from '../store.tsx';
 import { agentList } from '../data.ts';
 import { Link, useNav } from '../router.tsx';
 import { Async, Btn, Card, Chip, Empty, PageHead, Sheet, TextArea, TextField } from '../ui.tsx';
-import { jobLabel, langShort, stackLabel, voiceStackOf } from '../catalog.ts';
+import { jobLabel, langShort, voiceStackOf } from '../catalog.ts';
 import { ago } from '../format.ts';
 import type { AgentRow } from '../types.ts';
 import AgentBuilder from './agent-builder.tsx';
@@ -38,7 +38,7 @@ function AgentCard({ a }: { a: AgentRow }) {
       </div>
       <h3 className="serif" style={{ fontSize: '1.25rem' }}><Link to={`/agents/${a.id}`} className="rowlink">{a.name}</Link></h3>
       <p className="small muted">{jobLabel(a.job)}{a.category ? ` · ${a.category}` : ''}{a.languages.length ? ` · ${[...new Set(a.languages.map(langShort))].slice(0, 3).join(', ')}` : ''}</p>
-      {stack ? <p className="small"><strong>Voice:</strong> {stackLabel(stack.label)}</p> : <p className="small"><Chip tone="marigold">No voice chosen</Chip> <Link to={`/agents/${a.id}?tab=voice`}>Choose one</Link></p>}
+      {stack ? <p className="small"><strong>Voice:</strong> {stack.label}</p> : <p className="small"><Chip tone="marigold">No voice chosen</Chip> <Link to={`/agents/${a.id}?tab=voice`}>Choose one</Link></p>}
     </li>
   );
 }

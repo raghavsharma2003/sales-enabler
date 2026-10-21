@@ -6,7 +6,6 @@ import { STACKS } from '../../shared/stacks.ts';
 import * as api from './api.ts';
 import { Async, Btn, Chip, Figure, NotMeasured, Segmented } from './ui.tsx';
 import { inr } from './format.ts';
-import { stackLabel } from './catalog.ts';
 import { useApp, useData } from './store.tsx';
 
 export const BETA_REASON = 'Beta stacks run test calls only: the dial gate refuses them for any call to a real person until their risks are cleared and the stack is marked available.';
@@ -156,7 +155,7 @@ function Summary({ d, stackId, curated, parts, isCustom }: { d: StackList; stack
     <div className="stacksum">
       <h3>Current stack</h3>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <strong>{isCustom ? 'Your own stack' : stackLabel(curated!.label)}</strong>
+        <strong>{isCustom ? 'Your own stack' : curated!.label}</strong>
         <StatusChips status={isCustom ? 'beta' : curated!.status} avail={avail} isDefault={stackId === d.default} />
       </div>
       {avail?.reason && <p className="risk small"><AlertTriangle size={14} aria-hidden /> {avail.reason}</p>}
@@ -223,7 +222,7 @@ function StackCard({ s, selected, isDefault, price, busy, onPick }: { s: StackRo
   return (
     <li className={`stackcard${selected ? ' sel' : ''}`}>
       <div className="stackcard-head">
-        <div className="grow"><h4>{stackLabel(s.label)}</h4>
+        <div className="grow"><h4>{s.label}</h4>
           <div className="row" style={{ gap: 6, marginTop: 6 }}>
             <Chip tone="peacock">{s.kind === 's2s' ? 'Speech to speech' : 'Separate parts'}</Chip>
             <StatusChips status={s.status} avail={s.availability} isDefault={isDefault} />

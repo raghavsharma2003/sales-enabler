@@ -61,5 +61,3 @@ export const langShort = (c: string | null | undefined) => (c ? LANG_SHORT[c] ??
 import { stackOf, type VoiceStack } from '../../shared/stacks.ts';
 /** The stack an agent (or a call) names, curated or built part by part: one resolver for both. A built stack is always beta. */
 export const voiceStackOf = (v: { stackId?: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string } | null } | null | undefined): VoiceStack | undefined => (v?.stackId ? stackOf({ stackId: v.stackId, components: v.stackId === 'custom' ? v.components ?? null : null }) : undefined);
-/** Stack labels come from the server with the part names of the API in them; a person reads the plain words. */
-export const stackLabel = (label: string) => label.replace(/\bears\b/g, 'speech recognition');
