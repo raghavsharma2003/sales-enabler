@@ -37,9 +37,17 @@ export type Join =
  *  The caller must not count that as a failed attempt. */
 export interface StartReply { accepted: boolean; join?: Join; reason?: string; retryable?: boolean; retryAfterS?: number }
 
+/** Per stack, as the runtime's GET /v1/health reports it: whether it can run on this runtime and, when not, its plain reason
+ *  ("This voice isn't offered on our Google Cloud route yet") or the credentials it lacks. */
+export interface StackHealth { available: boolean; reason: string | null; missing: unknown[] }
+export interface RuntimeHealth { stacks: Record<string, StackHealth> }
+
 export interface Runtime {
   start(ticket: CallTicket): Promise<StartReply>;
   control(conversationId: string, action: 'end' | 'whisper' | 'takeover' | 'listen', body?: Record<string, unknown>): Promise<{ ok: boolean; detail?: unknown }>;
+  /** null when no runtime has reported (the fake, or the runtime unreachable): availability is then unknown, never assumed.
+   *  Optional so a stand-in runtime in a test need not implement it; absent means unknown. */
+  health?(): Promise<RuntimeHealth | null>;
 }
 
 export class HttpRuntime implements Runtime {
@@ -70,6 +78,20 @@ export class HttpRuntime implements Runtime {
     const r = await this.post(`/v1/calls/${encodeURIComponent(id)}/${action}`, { ...body, conversationId: id });
     return { ok: r.ok, detail: await r.json().catch(() => null) };
   }
+  /** GET /v1/health carries no secrets and is not signed. The launcher answers 503 when no worker is up: that is "unknown". */
+  async health(): Promise<RuntimeHealth | null> {
+    try {
+      const r = await fetch(new URL('/v1/health', this.base), { signal: AbortSignal.timeout(3_000) });
+      if (!r.ok) return null;
+      const j = await r.json() as { stacks?: Record<string, { available?: unknown; reason?: unknown; missing?: unknown }> };
+      if (!j.stacks || typeof j.stacks !== 'object') return null;
+      const stacks: Record<string, StackHealth> = {};
+      for (const [id, v] of Object.entries(j.stacks)) {
+        stacks[id] = { available: v?.available === true, reason: typeof v?.reason === 'string' && v.reason ? v.reason : null, missing: Array.isArray(v?.missing) ? v.missing : [] };
+      }
+      return { stacks };
+    } catch { return null; }
+  }
 }
 
 /** Records tickets in memory. Used by tests and by the dev server when VP_RUNTIME_URL is unset. */
@@ -81,6 +103,9 @@ export class FakeRuntime implements Runtime {
     return { accepted: true, join: { kind: 'sim', url: `/dev/call/${ticket.conversationId}`, token: 'fake', expiresAtMs: Date.now() + 600_000 } };
   }
   async control(id: string, action: string, body?: Record<string, unknown>) { this.controls.push({ id, action, body }); return { ok: true }; }
+  /** What health() returns; tests set it. null by default: the fake runtime reports nothing about stacks. */
+  healthReply: RuntimeHealth | null = null;
+  async health() { return this.healthReply; }
 }
 
 let current: Runtime | null = null;

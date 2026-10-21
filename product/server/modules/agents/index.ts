@@ -10,6 +10,7 @@ import type { Module } from '../../app.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one } from '../../db.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
+import { runtime, type RuntimeHealth } from '../../runtime-client.ts';
 import { BriefBudgetError, BriefLintError, compile, compileReport } from './compile.ts';
 import { draftHash, validateConfig, versionHashOf } from './config.ts';
 import { DraftError, draftFromDescription } from './draft.ts';
@@ -43,8 +44,30 @@ function preview(c: AgentConfig) {
   }
 }
 
-function stackCard(s: VoiceStack) {
+type Availability = { state: 'available' | 'unavailable' | 'unknown'; reason: string | null };
+/** Whether the voice runtime can run a stack, from its own health report. With no report (the fake runtime, or the runtime
+ *  unreachable) it is unknown: never assumed available. The reason is the runtime's own plain sentence. */
+export function availabilityOf(id: string, h: RuntimeHealth | null): Availability {
+  if (!h) return { state: 'unknown', reason: null };
+  const v = h.stacks[id];
+  if (!v) return { state: 'unavailable', reason: "Our voice engine doesn't offer this stack yet." };
+  if (v.available) return { state: 'available', reason: null };
+  return { state: 'unavailable', reason: v.reason ?? "This stack's providers aren't connected on our voice engine yet." };
+}
+let healthCache: { at: number; h: RuntimeHealth | null; rt: unknown } | null = null;
+async function runtimeHealth(): Promise<RuntimeHealth | null> {
+  const rt = runtime();
+  if (healthCache && healthCache.rt === rt && Date.now() - healthCache.at < 30_000) return healthCache.h;
+  const h = rt.health ? await rt.health().catch(() => null) : null;
+  healthCache = { at: Date.now(), h, rt };
+  return h;
+}
+/** Tests that swap the runtime's health call this so the next stack.list asks again. */
+export function forgetRuntimeHealth(): void { healthCache = null; }
+
+function stackCard(s: VoiceStack, h: RuntimeHealth | null = null) {
   return { id: s.id, label: s.label, kind: s.kind, status: s.status, note: s.note, replyGap: s.replyGap, requires: s.requires ?? [], risks: s.risks ?? [],
+    availability: availabilityOf(s.id, h),
     // money.estimate is not reachable from inside a tool yet (see STATUS.json); a missing figure reads "not measured", never zero.
     pricePerMinute: { value: 'not measured', grade: 'not_measured' as const, source: 'money.estimate not wired into the picker yet' } };
 }
@@ -243,7 +266,10 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({}), {
     name: 'stack.list', risk: 'read', summary: 'The finalised voice stacks with their figures and grades; there is no default',
-    run: async () => ({ default: null, note: 'There is no default stack yet: choose one for each agent.', stacks: STACKS.map(stackCard) }),
+    run: async () => {
+      const h = await runtimeHealth();
+      return { default: null, note: 'There is no default stack yet: choose one for each agent.', stacks: STACKS.map(s => stackCard(s, h)) };
+    },
   }));
 
   r.register(tool(obj({ agentId: uuid(), stackId: str({ min: 1, max: 60 }) }), {

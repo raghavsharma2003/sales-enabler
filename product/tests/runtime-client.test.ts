@@ -66,3 +66,39 @@ test('control: every body carries conversationId (the runtime\'s replay guard), 
     assert.ok(s.seen.every(x => x.signed));
   } finally { await s.close(); }
 });
+
+test('health: per-stack availability and reasons come from GET /v1/health; a non-200 or a malformed body is null (unknown)', async () => {
+  const body = { ok: true, stacks: {
+    'v2-luna': { available: true, reason: null, missing: [], status: 'beta' },
+    'v2-gemini': { available: false, reason: "This voice isn't offered on our Google Cloud route yet", missing: [], status: 'beta' },
+    'sarvam-india': { available: false, reason: null, missing: [['SARVAM_API_KEY']], status: 'beta' },
+  } };
+  const s = await stub(path => path === '/v1/health' ? { status: 200, body } : { status: 404, body: {} });
+  try {
+    const h = await s.rt.health();
+    assert.deepEqual(h, { stacks: {
+      'v2-luna': { available: true, reason: null, missing: [] },
+      'v2-gemini': { available: false, reason: "This voice isn't offered on our Google Cloud route yet", missing: [] },
+      'sarvam-india': { available: false, reason: null, missing: [['SARVAM_API_KEY']] },
+    } });
+  } finally { await s.close(); }
+  for (const [status, b] of [[503, { ok: false, stacks: {} }], [200, 'not json'], [200, { ok: true }]] as const) {
+    const t = await stub(() => ({ status, body: b }));
+    try { assert.equal(await t.rt.health(), null, `${status} ${JSON.stringify(b)} must read as unknown`); } finally { await t.close(); }
+  }
+});
+
+test('availabilityOf: no report is unknown, never available; a missing stack or missing credentials is unavailable with a plain reason', async () => {
+  const { availabilityOf } = await import('../server/modules/agents/index.ts');
+  assert.deepEqual(availabilityOf('v2-luna', null), { state: 'unknown', reason: null });
+  const h = { stacks: {
+    a: { available: true, reason: null, missing: [] },
+    b: { available: false, reason: "Gemini listening isn't offered on our Google Cloud route yet", missing: [] },
+    c: { available: false, reason: null, missing: [['SARVAM_API_KEY']] },
+  } };
+  assert.deepEqual(availabilityOf('a', h), { state: 'available', reason: null });
+  assert.deepEqual(availabilityOf('b', h), { state: 'unavailable', reason: "Gemini listening isn't offered on our Google Cloud route yet" });
+  assert.equal(availabilityOf('c', h).state, 'unavailable');
+  assert.doesNotMatch(availabilityOf('c', h).reason ?? '', /SARVAM|_KEY/, 'a credential name never reaches a person');
+  assert.equal(availabilityOf('zz', h).state, 'unavailable');
+});

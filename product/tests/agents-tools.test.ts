@@ -10,7 +10,8 @@ import { Registry, type Actor, type Receipt } from '../server/tools.ts';
 import { verifyAudit } from '../server/audit.ts';
 import { compile, markerRules, TAIL } from '../server/modules/agents/compile.ts';
 import { versionHashOf } from '../server/modules/agents/config.ts';
-import { module } from '../server/modules/agents/index.ts';
+import { forgetRuntimeHealth, module } from '../server/modules/agents/index.ts';
+import { FakeRuntime, setRuntime } from '../server/runtime-client.ts';
 
 const URL_ = process.env.DATABASE_URL;
 const skip = !URL_ ? 'DATABASE_URL not set' : false;
@@ -120,6 +121,25 @@ test('brief.edit applies a validated patch; locked fields, bad values and stale 
   refused(await call('brief.edit', { agentId: c.agentId, patch: [{ op: 'set', path: 'facts[99].value', value: 'x' }] }), /does not exist/);
   const g = ok<any>(await call('agent.get', { agentId: c.agentId }));
   assert.equal(g.draftHash, e.draftHash, 'refused edits change nothing');
+});
+
+test('stack.list carries each stack\'s availability from the runtime\'s health, and unknown when the runtime reports nothing', { skip }, async () => {
+  const { call } = await workspace();
+  const fake = new FakeRuntime();
+  setRuntime(fake); forgetRuntimeHealth();
+  try {
+    const none = ok<any>(await call('stack.list', {}));
+    assert.ok(none.stacks.every((s: any) => s.availability.state === 'unknown' && s.availability.reason === null), 'no report is unknown, never available');
+    const [first, second] = ok<any>(await call('stack.list', {})).stacks;
+    fake.healthReply = { stacks: { [first.id]: { available: true, reason: null, missing: [] },
+      [second.id]: { available: false, reason: "This voice isn't offered on our Google Cloud route yet", missing: [] } } };
+    forgetRuntimeHealth();
+    const by = Object.fromEntries(ok<any>(await call('stack.list', {})).stacks.map((s: any) => [s.id, s.availability]));
+    assert.deepEqual(by[first.id], { state: 'available', reason: null });
+    assert.deepEqual(by[second.id], { state: 'unavailable', reason: "This voice isn't offered on our Google Cloud route yet" });
+    assert.ok(Object.entries(by).filter(([id]) => id !== first.id && id !== second.id).every(([, v]: any) => v.state === 'unavailable'),
+      'a stack the runtime does not list is unavailable');
+  } finally { setRuntime(null); forgetRuntimeHealth(); }
 });
 
 test('there is no default stack: stack.list says so, publish refuses until one is chosen, voice.set needs a stack', { skip }, async () => {
