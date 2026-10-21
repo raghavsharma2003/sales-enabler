@@ -15456,6 +15456,39 @@
    "title": "VP is horizontal: built for many kinds of Indian enterprises (services, lending, insurance, education, healthcare, retail, logistics, real estate and others), not insurance-first. Agent presets and templates are industry-neutral jobs (reminders, follow-ups, feedback, onboarding, collections-in-good-standing, inbound support, lead qualification on consented leads); sector packs add rules on top.",
    "rationale": "Owner directive 2026-10-21; supersedes the blueprint's BFSI-gated design-partner ordering.",
    "reverse_if": "Buyer interviews show one segment pays far more and the owner chooses to focus."
+  },
+  {
+   "id": "decision.2026-10-21.kernel-approvals-server-side",
+   "type": "decision",
+   "title": "A2 actions are stored as server-side proposals and run once on a signed-in member's approval, bound to sha256(tool + canonical args) and the object version, in the same transaction as their audit row. No caller can hand execute() an approval; API keys can never approve.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop (product kernel build)",
+   "rationale": "The blueprint's approval token must be minted on a human tap and bound to args + object version. Taking an approval as a parameter would let any code path (or a prompt-injected Operator) assert one. Storing the proposal makes the card show exactly what will run, and re-validating stored args with the hash catches tampering.",
+   "reverse_if": "A real flow needs an approval that cannot be expressed as one stored action (e.g. batch approvals across many objects) and the per-action card proves too slow for owners in use.",
+   "path": "product/server/tools.ts"
+  },
+  {
+   "id": "decision.2026-10-21.parallel-cloud-sessions",
+   "type": "decision",
+   "title": "Build the product with 12 parallel cloud sessions (voice runtime + 10 backend modules + web), each owning disjoint directories on the same branch, instead of one local workflow.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "This container has 4 CPUs, which caps a local workflow at 2 concurrent agents; separate sessions each get their own container. The kernel (registry, approvals, auth, audit, ledger, LLM door, runtime seam, contracts) was written first by the main loop so the modules share one foundation instead of inventing their own. Models per the ladder: Opus 5.5 for safety, campaigns+dial gate, agents+compiler, intake, operator, calls+intelligence, memory, learning, money and the voice runtime; Sonnet 5.5 for workspace plumbing and the web UI built from the design language. Cloud sessions run at their default effort (effort cannot be set per session); verification of decision-critical modules is planned at Opus xhigh after merge.",
+   "reverse_if": "Sessions collide on shared files or rebase loops cost more than the parallelism saves, or module quality from a session fails the post-merge review on more than a few modules.",
+   "path": "product/ARCHITECTURE.md"
+  },
+  {
+   "id": "decision.2026-10-21.cross-module-by-tool-name",
+   "type": "decision",
+   "title": "Modules call each other only through the tool registry by tool name (memory.brief, money.estimate, safety.check, test.simulate, contact.suppress_after_opt_out), never by importing each other, and degrade as the blueprint says when a tool is absent.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "Lets modules be built in parallel without stubs for each other, keeps every cross-module effect validated, role-checked and audited, and makes the Operator's view of the system the same as the code's.",
+   "reverse_if": "A hot path (e.g. the dial gate claim loop) measurably needs in-process calls for latency, or registry indirection hides a cross-module transaction that must be atomic.",
+   "path": "product/ARCHITECTURE.md"
   }
  ],
  "edges": [
