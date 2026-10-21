@@ -277,14 +277,13 @@ function spokenToDigits(t: string): string {
     return v ? `${v} ` : run;
   });
 }
-const MONEY_TALK = /(premium|emi|amount|payment|pay\b|fee|fees|price|bill|due|kimat|keemat|charge|refund|cashback|bonus|prize|reward|cover|sum assured|salary|income|return|profit|munafa|balance|loan|rent|kiraya|deposit|bhugtan|bakaya|kisht|installment|paise|paisa)/iu;
 
 function parseAmounts(s: string, lenient: boolean): number[] {
   const t = spokenToDigits(normalise(s));
   const { mult: MULT, num: NUM } = amountTables();
   const out: number[] = [];
   const cur = re(RULES.lexicon.currency);
-  const moneyTalk = lenient || MONEY_TALK.test(t);
+  const moneyTalk = lenient || re(RULES.lexicon.money_talk).test(t);
   // Spoken compounds ("1 lakh 20 hazaar", "18 hazaar 450") are one amount: a part joins the previous one when only
   // spaces or "aur"/"and" sit between them and it is smaller than the previous part's multiplier.
   const parts: { value: number; unit: number; start: number; end: number; m: RegExpMatchArray }[] = [];

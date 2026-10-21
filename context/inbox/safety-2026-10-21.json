@@ -6,7 +6,7 @@
    "status": "active",
    "date": "2026-10-21",
    "source": "safety module builder (parallel build)",
-   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 2,048 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
+   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 2,378 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
    "path": "product/shared/safety/"
   },
   {
@@ -112,6 +112,7 @@
      "bengali_english": "0/7",
      "hinglish_and_hindi": "4/16"
     },
+    "after_tuning": "the rules were then tuned on set 6 failures (Bengali-English and Tamil-English caller rules, indirect Hindi/Hinglish crisis, body/family/shift denials, personal-account payments, saadhe amounts, money_talk moved to rules.json); set 6 is in-sample from the next commit on and is not reported as blind after that",
     "reading": "Precision held (0 benign flagged) while recall on indirect and non-Hindi phrasing is the gap; that gap is what the proposed model judge (decision.2026-10-21.safety-second-layer-proposal) is for.",
     "not_verified": "per-language counts are by inspection of the 30 crisis lines; the generator wrote 7 Tamil-English and 7 Bengali-English by its own report"
    }
@@ -122,8 +123,8 @@
    "status": "measured",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "cases.json in-sample: 0/1,221 benign blocked or flagged, 827/827 harmful caught, 14/14 node:test green; door p50 0.46 ms, p99 1.12 ms (n=6,255), 2,000-char adversarial input 6.7 ms",
-   "n": 2048,
+   "title": "cases.json in-sample: 0/1,391 benign blocked or flagged, 987/987 harmful caught, 14/14 node:test green; door p50 0.57 ms, p99 1.33 ms (n=7,305), 2,000-char adversarial input 6.7 ms",
+   "n": 2378,
    "method": "node --import tsx --test tests/safety.test.ts; latency by process.hrtime over 5 passes of every replyDoor vector on a 4-vCPU sandbox. In-sample: the rules were tuned on these vectors, so this proves only that they hold (a regression gate), not generalisation",
    "path": "product/tests/safety.test.ts"
   },
@@ -235,7 +236,7 @@
    "date": "2026-10-21",
    "source": "verified",
    "title": "Adversarial review fixes (B1, B5, B6, M1, M2, m1) on cases.json with the 58 review vectors plus 11 M2/m1 parity vectors: before 0/1,221 benign flagged and 768/816 harmful caught (48 of 51 review harmful vectors missed); after 0/1,221 and 827/827",
-   "n": 2048,
+   "n": 2378,
    "method": "node --import tsx --test tests/safety.test.ts on cases.json, before at commit 3b67373 + review vectors, after at this commit. In-sample: the fixes target these vectors. The review's own TS tests B1, B5, B6, M1 and m1 now pass; B3 (sentence splitting in the simulation lane) is outside this module and still fails.",
    "path": "product/shared/safety/cases.json"
   },
@@ -414,7 +415,7 @@
   {
    "date": "2026-10-21",
    "event": "safety-module-built",
-   "details": "product/shared/safety (rules.json, cases.json 2,048 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/1,221 benign blocked, 827/827 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
+   "details": "product/shared/safety (rules.json, cases.json 2,378 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/1,391 benign blocked, 987/987 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
   }
  ]
 }

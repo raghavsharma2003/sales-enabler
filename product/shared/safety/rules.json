@@ -35,7 +35,8 @@
     "copula_first": "(\\b(hoon|hun|hu|hoo|am)\\b|हूं|हु|हूँ)",
     "ai_affirm": "((\\b(ai|a\\.i\\.|artificial intelligence|virtual assistant|digital assistant|ai assistant|ai agent|automated assistant|bot)\\b|एआई)(?:(?!\\b(nahi|nahin|nhi|nai|na|not)\\b|नहीं|नही)[^.?!।]){0,30}(\\b(hoon|hun|hu|am)\\b|हूं|हु)|\\b(i'?m|i am) (an? )?(ai|virtual|digital|automated)\\b|\\b(main|mai)\\b[^.?!।]{0,25}\\b(ai|bot)\\b(?! ?(nahi|nahin|nhi|na|not)\\b)|मैं[^।?!.]{0,25}(एआई|\\bai\\b)(?! ?(नहीं|नही))|\\bjust an ai\\b)",
     "self_ref": "(\\b(main|mai|mein|me|i|i'?m|myself)\\b|मैं)",
-    "neg_pred": "@neg(?! ?((ho|hoga|hogi|hai|hain|kar|karti|karte|chal|ki|ka|ke|issue|problem|related)\\b|होग|हो |है|कर|चल|की|का|के))"
+    "neg_pred": "@neg(?! ?((ho|hoga|hogi|hai|hain|kar|karti|karte|chal|ki|ka|ke|issue|problem|related)\\b|होग|हो |है|कर|चल|की|का|के))",
+    "money_talk": "(premium|emi|amount|payment|\\bpay\\b|fee|fees|price|bill|due|kimat|keemat|charge|refund|cashback|bonus|prize|reward|scholarship|stipend|grant|subsidy|compensation|incentive|commission|cover|sum assured|salary|income|return|profit|munafa|balance|loan|rent|kiraya|deposit|bhugtan|bakaya|kisht|installment|paise|paisa)"
   },
   "reply": [
     {
@@ -46,12 +47,21 @@
       "replacement": "honest_ai",
       "reason": "denies being an AI or claims to be human",
       "any": [
-        "@ai_noun( ?(assistant|agent|wala|wali|vala|vali|-?vachine|असिस्टेंट|वाला|वाली))?[ ,-]{0,3}@neg_pred",
+        "@ai_noun( ?(assistant|agent|wala|wali|vala|vali|-?vachine|-?वशीन|असिस्टेंट|वाला|वाली))?[ ,-]{0,3}@neg_pred",
         "\\b(i'?m|i am|this is|it'?s|yeh|ye) not (an? )?(ai|bot|robot|machine|computer|recording|automated|virtual)\\b(?! ?(issue|problem|related|call))",
         "@human_noun ?(hi |bhi |ही |भी )?@copula_first",
         "\\b(real|asli|zinda) ?(hi )?(hoon|hun|hu)\\b|(असली|रियल|जिंदा) ?(ही )?(हूं|हु)",
         "\\bhuman here\\b|\\b(i'?m|i am) (just )?(a |an )?(real |actual |live |genuine |normal )?(person|human|woman|man|lady|girl)\\b",
-        "(\\b(aap|you)\\b|आप)[^.?!।]{0,25}@human_noun[^.?!।]{0,12}(\\b(se|to|with)\\b|से)[^.?!।]{0,10}(hi |ही )?(\\bbaat kar rahe\\b|बात कर रहे|\\bare (talking|speaking)\\b|\\btalking\\b)"
+        "(\\b(aap|you)\\b|आप)[^.?!।]{0,25}@human_noun[^.?!।]{0,12}(\\b(se|to|with)\\b|से)[^.?!।]{0,10}(hi |ही )?(\\bbaat kar rahe\\b|बात कर रहे|\\bare (talking|speaking)\\b|\\btalking\\b)",
+        "\\b(definitely|certainly|totally|bilkul)? ?not (a|an) (computer|bot|robot|machine|recording)\\b",
+        "\\b(recorded|automated|robot|computer|\\bai\\b) (message|call|voice|awaaz) (nahi|nahin|नहीं|is not|isn'?t)\\b",
+        "\\blive baat kar rahi\\b|\\bno (ai|robot|bot|machine)\\b|\\bnothing (automated|robotic)\\b|\\bhumans? only\\b",
+        "\\b(robot|bot|machine|ai|computer) kaise (ho sakti|ho sakta|hoon)\\b",
+        "\\b(regular|normal|simple) (girl|woman|lady|person|ladki|employee|staff)\\b|\\b(ek|ik) (normal|regular) (employee|staff|ladki)\\b",
+        "\\b(kha ke aayi|kha kar aayi|khana kha ke|paani peeti|paani pee rahi|chai pee ke|chai pi ke|had my (chai|coffee|tea|lunch)|dying for (coffee|chai|tea)|my shift (just )?(started|ends))\\b",
+        "\\b(thodi |bahut |aaj )?(tired|thaki hui|thak gayi|bimaar|beemar|bukhar mein)\\s(hoon|hun|hu)\\b",
+        "\\b(main|mai)\\b[^.?!]{0,10}\\b(apni|apne)\\b[^.?!]{0,15}\\b(ke saath rehti|ke saath rahti|ke saath rehta|ko dawai)",
+        "\\bmera bhi ek (bhai|behen|beta|beti|parivaar)\\b"
       ],
       "none": [
         "@ai_affirm[^.?!।]{0,40}@human_noun ?@neg",
@@ -222,7 +232,12 @@
         "(payment|पेमेंट|भुगतान)[^।?!]{0,15}(अभी|इसी)[^।?!]{0,8}(call|कॉल|फोन|phone)",
         "(payment|पेमेंट|भुगतान|pay|transaction)[^।?!.]{0,40}(कॉल|call|line|लाइन) (पर|pe|par) (ही )?(रुकी|रुका|रहूंगी|hold|hoon|ruki)",
         "\\b(line|call) (pe|par) (rehte|rehkar|rahte) (hue|huye)\\b[^.?!]{0,20}\\b(transaction|payment|pay|transfer)",
-        "\\b(personal wallet|personal account|personal upi|पर्सनल)\\b"
+        "\\b(personal wallet|personal account|personal upi|पर्सनल)\\b",
+        "\\b(gpay|google pay|phonepe|paytm|upi)\\b[^.?!]{0,20}\\b(mere|meri|my|own)\\b ?(number|naam|account|id)\\b",
+        "\\b(my|mere|meri)\\b ?(cousin|brother|sister|friend|bhai|behen|dost|husband|colleague)('?s)? (account|upi|number|khata|khate)\\b",
+        "\\b(mere|meri|my) naam (pe|par)\\b[^.?!]{0,15}\\b(bhej|transfer|pay|daal)",
+        "(पैसे|रकम|पेमेंट)[^।?!]{0,15}(अभी|इसी)[^।?!]{0,8}(कॉल|call|फोन)[^।?!]{0,6}(में|पर)[^।?!]{0,10}(भेज|डाल|ट्रांसफर)",
+        "\\bcash\\b[^.?!]{0,30}\\b(le jaungi|le jaunga|lene aaungi|collect kar)\\b|\\bmujhe hi dena\\b"
       ],
       "none": [
         "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b"
@@ -284,7 +299,9 @@
         "\\b(family|parivaar|ghar walon|relatives|rishtedaar)\\b[^.?!]{0,15}\\b(ko )?(call|phone) karna padega\\b",
         "(दफ्तर|ऑफिस|घर|office)[^।?!]{0,10}(तक )?(जाएंगे|आएंगे|पहुंचेंगे|आ जाएंगे)",
         "(पडोसि|पडोसी|रिश्तेदार|परिवार|घरवाल|बॉस)[^।?!]{0,30}(पता चल|बताएंगे|पूछेंगे|बता देंगे|फोन करेंगे)",
-        "(नौकरी पर बन|नौकरी चली जाएगी|naukri pe ban|naukri chali)"
+        "(नौकरी पर बन|नौकरी चली जाएगी|naukri pe ban|naukri chali)",
+        "\\b(pados|padosi|mohalla|mohalle|society)\\w*\\b[^.?!]{0,20}\\b(bata denge|batayenge|bata dunga|bata dungi)",
+        "(बदनामी|badnami|social media|सोशल मीडिया)[^।?!.]{0,25}(डालेंगे|daalenge|post|पोस्ट|फैला)"
       ],
       "none": [
         "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b",
@@ -356,7 +373,7 @@
       "action": "block",
       "reason": "'lapsed, pay to revive' framing (Devanagari / mixed)",
       "all": [
-        "(लैप्स|lapse|lapsed|बंद हो (चुकी|गई|गया|चुका)|एक्सपायर|expire)",
+        "(लैप्स|lapse|lapsed|बंद हो (चुकी|गई|गया|चुका)|एक्सपायर|expire|दोबारा चालू|फिर से चालू)",
         "(चालू|रिवाइव|revive|वापस|दोबारा शुरू|reactivat)",
         "(पैसे|भुगतान|पेमेंट|payment|रकम|जमा|भर|डाल)"
       ]
@@ -402,7 +419,8 @@
       "any": [
         "\\b(kisi ko|anyone|kisi se)\\b[^.?!]{0,10}\\b(batana nahi|mat batana|don'?t tell|na batayein)\\b",
         "(हमारे और आपके बीच|आपके और हमारे बीच|किसी को (मत|न) बताना|किसी से बात (मत|न)|किसी से बात की तो)",
-        "\\b(between (you and me|us)|beech mein hi rehna|kisi se baat mat)\\b"
+        "\\b(between (you and me|us)|beech mein hi rehna|kisi se baat mat)\\b",
+        "\\b(kisi se|kisi ko|anyone)\\b[^.?!]{0,10}\\b(share mat|share na|mat batana|mat bataiyega|batana nahi)\\b|\\bconfidential (hai|rakhiye|rakhna)\\b"
       ],
       "none": [
         "(\\botp\\b|\\bpin\\b|\\bcvv\\b|password|card|ओटीपी)"
@@ -440,7 +458,8 @@
         "\\b(loss|nuksan|nuksaan|ghata)\\b[^.?!]{0,10}\\b(ka )?(sawaal|sawal) hi nahi\\b",
         "\\b(paisa|paise|money)\\b[^.?!]{0,30}\\b(pakka|guaranteed) (dugna|double|doguna)\\b",
         "(नुकसान|घाटा)[^।?!]{0,10}(का सवाल ही नहीं|हो ही नहीं सकता|नहीं होगा)",
-        "(अनिवार्य|ज़रूरी|जरूरी) है[^।?!]{0,10}$"
+        "(अनिवार्य|ज़रूरी|जरूरी) है[^।?!]{0,10}$",
+        "\\bdouble (paisa|paise|amount|money|return)\\b"
       ],
       "none": [
         "\\b(guarantee|guaranteed|pakka|fixed)\\b ?(nahi|nahin|nhi|not|no)\\b|\\b(no|koi) (guarantee|guaranteed)\\b|\\bmarket risk (hota|hai|hain|hoga)\\b|\\bnot guaranteed\\b"
@@ -669,7 +688,16 @@
         "(\\b(neend ki|sleeping|saari|bahut saari|poori|dher|sab)\\b)[^.?!]{0,10}\\bgol(i|iyan|iyaan|iyon)\\b",
         "\\b(jeene|jine)\\b[^.?!]{0,10}\\b(ka koi fayda nahi|ka fayda nahi|ki himmat nahi|ka koi matlab nahi|ki wajah nahi|ka mann nahi)\\b|\\bkoi fayda nahi (jeene|jine)\\b|\\b(himmat|taakat) nahi (jeene|jine)",
         "\\b(can'?t|cannot|can not|don'?t want to) go on\\b|\\bgive up on (life|living)\\b|\\bno way out\\b",
-        "(जीना|जीने)[^।?!]{0,6}(ही |भी )?नहीं|मरना है|मर जाऊंगा|मर जाऊंगी|जिंदा नहीं रहना|ज़िंदा नहीं रहना|खुद को खत्म|जीने की हिम्मत नहीं"
+        "(जीना|जीने)[^।?!]{0,6}(ही |भी )?नहीं|मरना है|मर जाऊंगा|मर जाऊंगी|जिंदा नहीं रहना|ज़िंदा नहीं रहना|खुद को खत्म|जीने की हिम्मत नहीं",
+        "\\b(agar|jab|jo) main (na|nahi) (rahun|rahu|rahunga|rahungi|raha|rahi)\\b",
+        "\\bsab (chhod|chod) ke (chala|chali) (jaunga|jaungi|jaun|jaau)\\b[^.?!]{0,30}\\b(pata|hamesha|chup)",
+        "\\buth(u|un|oon|ungi|unga) hi (na|nahi)\\b",
+        "\\bek hi raasta bacha\\b|\\bkoi raasta nahi bacha\\b",
+        "\\b(saari|saare|sab|sabhi) ek saath kha\\b",
+        "\\bzindagi se thak (gaya|gayi|chuka|chuki)\\b|\\bsab nipta (dena|dun|doon)\\b",
+        "\\b(end it|want it (all )?to end|want everything to stop|disappear(ing)? forever|nobody will (even )?notice|won'?t be (here|around) (anymore|much longer))\\b",
+        "(मन करता है|दिल करता है)[^।?!]{0,15}(सब खत्म|मर जा)|सब खत्म कर (दूं|दूंगा|दूंगी)",
+        "दुनिया (से चला जाना|से चली जाना|छोड)|मेरे जाने के बाद|कूद जाने का|छत से कूद|जीने की वजह नहीं|(खुद को|अपने आप को) नुकसान|हाथ पर कट|हाथ काट"
       ],
       "none": [
         "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne|kaam ke maare|thak|bore|boriyat)\\b[^.?!]{0,20}\\b(mar|marna|die|dying|killing)",
@@ -687,7 +715,31 @@
         "\\b(thar?kolai|thakkolai|tharkolai)\\b",
         "\\bvaazha ?(pidikkala|pudikala|pidikala|venam|vendam|mudiyala|mudiyadhu)\\b",
         "\\buyir(a|ai)? ?(vaazha )?(venam|vendam|vida poren|vidaporen|vittudalam)\\b",
-        "\\b(naan|nan) (poidren|poyiduven|irukka maaten|irukkamaaten)\\b"
+        "\\b(naan|nan) (poidren|poyiduven|irukka maaten|irukkamaaten)\\b",
+        "\\bvaa?zha?nu?m? ?nu thonala\\b|\\bvaazha venam\\b",
+        "\\bnaan illa(ma|ama|maa) irundha\\b",
+        "\\bthookku\\b",
+        "\\bseththu (poiduven|poidalam|poren)\\b|\\bsethu poiduven\\b",
+        "\\b(inime|ini) irukka maaten\\b",
+        "\\bsaapttudu(vena|ven|valam)\\b",
+        "\\bellam mudinjidum\\b"
+      ]
+    },
+    {
+      "id": "cs.crisis.bengali",
+      "signal": "crisis",
+      "about": "Bengali-English (romanised) suicidal statements, biased to recall.",
+      "any": [
+        "\\b(bachte|bachar|benche thakar) (ichhe|icche|ichchhe) (kore na|nei)\\b",
+        "\\bami na thakle\\b",
+        "\\b(nijeke|nijke) (shesh|sesh) kor",
+        "\\b(shesh|sesh) kore (dite chai|dibo|debo|felbo)\\b",
+        "\\b(uthtei|uthte) na\\b",
+        "\\bdori\\b[^.?!]{0,20}\\b(ready|rekhechi|jhulbo)\\b",
+        "\\bjibon\\b[^.?!]{0,10}\\b(bohon korte parchi na|r parchi na|niye thakte parchi na)\\b",
+        "\\bami chole gele\\b",
+        "\\b(morte|more jete) (chai|ichhe)\\b",
+        "\\batmohotya\\b"
       ]
     },
     {
@@ -729,6 +781,16 @@
       "none": [
         "\\b(achha|accha|badhiya|natural|mast|nice|good)\\b ?(lagta|lag raha|lagti|hai|feel)|अच्छा लगता",
         "\\b(bola|boli|bole|kaha|keh raha|keh rahi|kehta|kehti|said|says)\\b[^.?!]{0,25}\\b(ai|bot|robot|machine)\\b"
+      ]
+    },
+    {
+      "id": "cs.asks_if_ai.ta_bn",
+      "signal": "asksIfAi",
+      "any": [
+        "\\b(robot|bot|machine|ai|computer)\\s?(ah|aa)\\b[^.?!]{0,15}\\b(illa|real|manushan)",
+        "\\b(neenga|nee)\\b[^.?!]{0,10}\\b(robot|bot|machine|ai)\\b",
+        "\\b(tumi|apni)\\b[^.?!]{0,8}\\b(ki )?(robot|bot|machine|ai)\\b",
+        "\\b(robot|bot|machine|ai) naki manush\\b|\\bmanush naki (robot|machine|bot|ai)\\b"
       ]
     },
     {
@@ -776,6 +838,13 @@
       ]
     },
     {
+      "id": "cs.refuses_recording.ta_bn",
+      "signal": "refusesRecording",
+      "any": [
+        "\\brecord (pannadheenga|pannadhinga|pannadhe|panna vendam|korben na|korbe na|korbenna|koro na)\\b"
+      ]
+    },
+    {
       "id": "cs.opt_out.strong",
       "signal": "optOut",
       "any": [
@@ -818,6 +887,15 @@
       ]
     },
     {
+      "id": "cs.opt_out.ta_bn",
+      "signal": "optOut",
+      "any": [
+        "\\b(ar|aar) call (korben|korbe|koro) na\\b",
+        "\\b(list|number)\\b[^.?!]{0,15}\\b(theke soriye|soriye din|bad diye din)\\b",
+        "\\b(call|phone) (pannadheenga|pannadhinga|panna vendam)\\b"
+      ]
+    },
+    {
       "id": "cs.sensitive_digits",
       "signal": "readingSensitiveDigits",
       "builtin": "sensitive_digits",
@@ -854,6 +932,15 @@
       ],
       "none": [
         "\\b(baat (karke|kar ke|kar lunga|kar lungi|karke batata|karke bataungi)|poochh ?(ke|kar)|puchh ?(ke|kar)|discuss kar)\\b"
+      ]
+    },
+    {
+      "id": "cs.wants_human.ta_bn",
+      "signal": "wantsHuman",
+      "any": [
+        "\\b(human|manushan|aal)\\b[^.?!]{0,8}\\bkitta pesa(num|num)?\\b",
+        "\\bmanush(er|ẽr)? (sathe|shathe) kotha\\b",
+        "\\bekjon manush\\b"
       ]
     }
   ],
@@ -1195,7 +1282,12 @@
       "डेढ": 1.5,
       "dhai": 2.5,
       "dhaai": 2.5,
-      "ढाई": 2.5
+      "ढाई": 2.5,
+      "saadhe": 0.5,
+      "sadhe": 0.5,
+      "साढे": 0.5,
+      "sawa": 0.25,
+      "सवा": 0.25
     },
     "multipliers": {
       "k": 1000,
