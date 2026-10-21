@@ -16871,6 +16871,16 @@
    "date": "2026-10-21",
    "source": "main loop",
    "mitigation": "Measure it before the owner decides on raise. Run judge-eval on the lab VM for judge p50/p95, and compare against each stack's first-sentence time. The alternative is to speak first and cut into the crisis path when a raise lands, accepting about one sentence of normal reply before help is offered. Present both options with numbers."
+  },
+  {
+   "id": "decision.2026-10-21.calls-crisis-judge-shadow-counts-nothing",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Post-call crisis judge in calls: a raise hit is an RD3 'flagged' call_safety_event (counts as a safety event); a shadow hit lives only in analysis.judge_shadow and changes no event, flag, safety_violation, monitor or experiment",
+   "rationale": "Keeps the shadow semantics of decision.2026-10-21.judge-raise-only-contract. learning and the safety_event_rate monitor read safety events, so a shadow row there would change outcomes. Calls loops over caller lines with safety's judgeCallerCrisis rather than judgeTranscriptCrisis, so it also sees judge_unavailable and the usage of every call, hit or not.",
+   "reverse_if": "The owner moves the judge to raise in production (set VP_SAFETY_JUDGE_MODE=raise; the code path already exists), or safety extends judgeTranscriptCrisis to return unavailable counts and per-call usage; then call that instead of the local loop."
   }
  ],
  "edges": [
