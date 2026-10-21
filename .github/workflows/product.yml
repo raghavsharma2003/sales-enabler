@@ -1,0 +1,46 @@
+# Gates for the VP product tree (product/): typecheck, migrations on a clean Postgres 16, the test suite,
+# the web build, and the Python voice runtime's unit tests. The old Relay app is not gated here.
+name: product
+on:
+  push:
+    paths: ['product/**', '.github/workflows/product.yml', 'package.json', 'package-lock.json']
+  pull_request:
+    paths: ['product/**', '.github/workflows/product.yml', 'package.json', 'package-lock.json']
+jobs:
+  control-plane:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: vp, POSTGRES_PASSWORD: vp, POSTGRES_DB: vp_test }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U vp" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://vp:vp@localhost:5432/vp_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: npm ci
+      - name: typecheck
+        run: npx tsc -p product/tsconfig.json
+      - name: migrate (twice, to prove idempotence)
+        run: node product/scripts/migrate.mjs && node product/scripts/migrate.mjs
+      - name: tests
+        run: node product/scripts/test.mjs
+      - name: web build
+        run: if [ -f product/web/build.mjs ]; then node product/web/build.mjs; fi
+  voice-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: unit tests
+        run: |
+          if [ -d product/voice ]; then
+            cd product/voice
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+            python -m unittest discover -v
+          fi
