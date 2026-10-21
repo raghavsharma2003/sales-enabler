@@ -17470,6 +17470,55 @@
    "date": "2026-10-22",
    "title": "Theme quality and the quote pass rate with a real model are not measured; tests use a scripted fake",
    "mitigation": "Run insight.refresh on a design partner's real calls, then read the stored quotesDropped and themesDropped against quotesProposed and review the themes by hand."
+  },
+  {
+   "id": "rejected.2026-10-22.offer-every-tool",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-22",
+   "title": "Rejected: offering the Operator model every tool the member's role may use on every call.",
+   "tried": "operator/loop.ts sent all role-allowed tools (plus operator_plan with every name in its enum) on each model call.",
+   "broke": "On the real modules an owner's request carried 166 tools and 80,361 schema chars (~23k tokens), so the 60k-token turn cap allowed about 2 model calls; above the 128 tools some OpenAI-style endpoints are reported to cap at (unverified). Measured by tests/operator-toolset.test.ts with the old loop: n=5 requests, every one 166 tools; the size guard fails with 'a request offered 166 tools (cap 40)'."
+  },
+  {
+   "id": "decision.2026-10-22.operator-toolset",
+   "type": "decision",
+   "status": "active",
+   "source": "model",
+   "date": "2026-10-22",
+   "title": "The Operator offers at most 40 tools per model call: the page's tools (client sends page), tools the message's words point at, tools used earlier in the thread, a core read set, operator_plan, and operator_find_tools to pull more into the next call of the same turn. Offering is not permission: the role filter and SCREEN_ONLY are unchanged. Turn caps: 8 model calls (was 6), 60k tokens.",
+   "rationale": "rejected.2026-10-22.offer-every-tool; measure.2026-10-22.operator-tool-payload.",
+   "reverse_if": "A real model fails tasks because a needed tool was not offered and it did not call operator_find_tools, more often than a measured threshold; or providers make large tool lists cheap and unlimited."
+  },
+  {
+   "id": "measure.2026-10-22.operator-tool-payload",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-22",
+   "title": "Operator tool payload per model call, owner role, real modules, scripted model: before 166 tools / 80,361 schema chars (n=5); after, agents page 29 tools / 14,489 chars (n=5), campaigns page with one find_tools lookup 33-40 tools / 18,169-22,421 chars, mean 20,295 (n=6). About 72-82% smaller.",
+   "n": 16,
+   "method": "JSON length of the tools array in each recorded LlmRequest, tests/operator-toolset.test.ts, before = the same test against the previous loop.ts"
+  },
+  {
+   "id": "decision.2026-10-22.learning-issue-trigger",
+   "type": "decision",
+   "status": "active",
+   "source": "model",
+   "date": "2026-10-22",
+   "title": "A calls monitor issue triggers learning.propose automatically (job learning.propose_from_issues): content signals only (early hang-ups, opt-outs, safety interventions), the agent its evidence calls ran, one run and at most one proposal per issue, at most 3 runs per workspace per IST day. Proposals are drafts; probe, accept (A2) and start (A2) still gate any live traffic.",
+   "rationale": "Owner wants learning to start itself; the blueprint's triage puts engineering causes (tool failures, engine errors, dropped quotes) before content, so those never become script proposals.",
+   "reverse_if": "Auto-drafted proposals are mostly rejected by owners (noise), or engineering-signal issues turn out to have content causes often enough to propose on them."
+  },
+  {
+   "id": "open.2026-10-22.operator-result-clipping",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-22",
+   "title": "Operator tool results longer than resultChars (8,000) reach the model cut mid-JSON (seen with agent.create, whose result carries the whole draft). A real model may misread or miss ids at the end.",
+   "closes_when": "Large tool results are summarised to their ids and key fields (or the clip keeps valid JSON) and a test shows the model still gets every id it needs."
   }
  ],
  "edges": [
@@ -31059,6 +31108,21 @@
    "from": "component.product.calls-cross-call-insight",
    "to": "decision.2026-10-22.insight-cost-bounds",
    "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-22.operator-toolset",
+   "to": "rejected.2026-10-22.offer-every-tool",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-22.operator-toolset",
+   "to": "measure.2026-10-22.operator-tool-payload",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-22.learning-issue-trigger",
+   "to": "component.2026-10-21.learning-module",
+   "relation": "extends"
   }
  ]
 }
