@@ -2,7 +2,7 @@
 // raises and plan changes are spend (A2, owner approves); lowering a cap only lowers risk, so it runs at once;
 // reads are A1. A manual credit is VP success's alone, carries a reason, and is audited with it.
 import { formatInr } from '../../../shared/money.ts';
-import { num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
+import { bool, num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import type { Module } from '../../app.ts';
 import type { Job } from '../../jobs.ts';
 import { appendAudit } from '../../audit.ts';
@@ -50,9 +50,10 @@ async function setCap(ctx: ToolCtx, i: CapInput, dir: 'raise' | 'lower') {
 }
 
 export function register(r: Registry): void {
-  r.register(tool(obj({ stackId: str({ max: 60 }), minutes: num({ min: 0, max: 1e8 }), calls: num({ int: true, min: 0, max: 1e7 }) }), {
-    name: 'money.estimate', risk: 'read', summary: 'estimate what VP pays providers for minutes and calls on a stack',
-    run: (ctx, i) => estimate(ctx.q, i),
+  r.register(tool(obj({ stackId: str({ max: 60 }), minutes: num({ min: 0, max: 1e8 }), calls: num({ int: true, min: 0, max: 1e7 }),
+    components: opt(obj({ ears: opt(str({ max: 60 })), brain: opt(str({ max: 60 })), voice: opt(str({ max: 60 })), s2s: opt(str({ max: 60 })), gatedEars: opt(bool()) })) }), {
+    name: 'money.estimate', risk: 'read', summary: "estimate what VP pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components)",
+    run: (ctx, i) => estimate(ctx.q, i as Parameters<typeof estimate>[1]),
   }));
 
   r.register(tool(obj({ stackId: str({ max: 60 }) }), {

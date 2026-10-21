@@ -3,7 +3,8 @@
 // No customer price exists yet (decision.2026-10-21.pricing-deferred): every figure here is provider cost, and the
 // customer price is reported as 'not_set' until an active price_card row exists.
 import { formatInr } from '../../../shared/money.ts';
-import { requireStack } from '../../../shared/stacks.ts';
+import { CUSTOM_STACK_ID, requireStack, resolveStack, StackError, type StackComponents } from '../../../shared/stacks.ts';
+import { partLines } from './prices.ts';
 import { ValidationError } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { settle } from '../../ledger.ts';
@@ -30,9 +31,21 @@ export async function costLines(q: Queryable, stackId: string): Promise<Estimate
   return rows.map(r => ({ component: r.component, provider: r.provider, inrMicroPerMin: Number(r.m), inrMicroPerCall: Number(r.c), grade: r.grade, source: r.source, asOf: r.as_of }));
 }
 
+/** Cost lines for a stack a user built from parts: worked out from the same list prices and minute profile as the stored
+ *  cards, never stored. A part with no list price yet is refused in plain words. */
+export function customLines(components: StackComponents | undefined): EstimateLine[] {
+  let s;
+  try { s = resolveStack({ stackId: CUSTOM_STACK_ID, components }); }
+  catch (e) { if (e instanceof StackError) throw new ValidationError('components', e.message); throw e; }
+  try {
+    return partLines(CUSTOM_STACK_ID, s.components).map(r => ({ component: r.component, provider: r.provider, inrMicroPerMin: r.inrMicroPerMin,
+      inrMicroPerCall: r.inrMicroPerCall, grade: r.grade, source: r.source, asOf: r.asOf }));
+  } catch { throw new ValidationError('components', 'one of these parts has no list price on file yet, so its cost cannot be worked out'); }
+}
+
 /** Provider cost for `minutes` connected minutes across `calls` calls on a stack. Integer milli-rupees. */
-export async function estimate(q: Queryable, i: { stackId: string; minutes: number; calls: number }): Promise<Estimate> {
-  const lines = await costLines(q, i.stackId);
+export async function estimate(q: Queryable, i: { stackId: string; minutes: number; calls: number; components?: StackComponents }): Promise<Estimate> {
+  const lines = i.stackId === CUSTOM_STACK_ID ? customLines(i.components) : await costLines(q, i.stackId);
   const perMinMicro = lines.reduce((s, l) => s + l.inrMicroPerMin, 0);
   const perCallMicro = lines.reduce((s, l) => s + l.inrMicroPerCall, 0);
   const totalMicro = perMinMicro * i.minutes + perCallMicro * i.calls;

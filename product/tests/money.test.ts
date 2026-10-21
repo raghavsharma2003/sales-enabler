@@ -530,3 +530,19 @@ test('MA-09: a runtime that goes silent past the longest call releases its hold;
   await pool.query("UPDATE reservation SET created_at = now() - interval '20 minutes' WHERE id = $1", [h3.reservationId]);
   assert.equal((await run(c => sweepHolds(c, ws))).map(s => s.attemptId).join(), shortA);
 });
+
+test('a stack built from parts is priced from the same list prices: the default stack\'s parts cost the same as the default; every part is priceable', { skip }, async () => {
+  const { customLines } = await import('../server/modules/money/money.ts');
+  const { COMPONENTS } = await import('../shared/components.ts');
+  const { requireStack, DEFAULT_STACK_ID } = await import('../shared/stacks.ts');
+  const curated = await estimate(pool, { stackId: DEFAULT_STACK_ID, minutes: 100, calls: 50 });
+  const built = await estimate(pool, { stackId: 'custom', minutes: 100, calls: 50, components: requireStack(DEFAULT_STACK_ID).components });
+  assert.equal(built.perMinuteInrMilli, curated.perMinuteInrMilli, 'the same parts cost the same, built or curated');
+  assert.equal(built.totalInrMilli, curated.totalInrMilli);
+  const pick = (part: string) => COMPONENTS.filter(c => c.part === part).map(c => c.id);
+  for (const ears of pick('ears')) for (const brain of pick('brain')) for (const voice of pick('voice')) {
+    assert.doesNotThrow(() => customLines({ ears, brain, voice, gatedEars: true }), `${ears} + ${brain} + ${voice} must have a price`);
+  }
+  for (const s2s of pick('s2s')) assert.doesNotThrow(() => customLines({ s2s }), `${s2s} must have a price`);
+  assert.throws(() => customLines({ ears: 'azure', brain: 'nope', voice: 'azure' }), /not a brain .* we offer/);
+});

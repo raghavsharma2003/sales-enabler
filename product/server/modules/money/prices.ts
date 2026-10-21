@@ -3,7 +3,7 @@
 // usage assumption (how much caller audio the ears hear, how many replies, how much she speaks): that is MINUTE below,
 // labelled as an assumption on every row until the meter replaces it with measured per-stack averages.
 // Amounts are micro-rupees (INR x 1e6) so sub-paisa per-minute lines keep their precision; totals round to milli.
-import { STACKS } from '../../../shared/stacks.ts';
+import { STACKS, type StackComponents } from '../../../shared/stacks.ts';
 
 export const FX = 95;                 // the research programme's INR per USD (catalog.py)
 export const AS_OF = '2026-10-20';    // the date the catalog prices were read
@@ -43,11 +43,22 @@ export const BRAINS: Record<string, Brain> = {
   'gemini-3.8-flash': { provider: 'Gemini 3.8 Flash', inUsd1m: 0.75, outUsd1m: 3.75, src: `${CAT} BRAINS` },
   'gpt-6-luna@or': { provider: 'GPT-6 Luna via OpenRouter', inUsd1m: 0.10, outUsd1m: 0.50, src: `${CAT} BRAINS: OpenAI pricing page via the 2026-10-20 sweep` },
   'sarvam-105b': { provider: 'Sarvam-105B', inUsd1m: 15 / FX, outUsd1m: 60 / FX, src: `${CAT} BRAINS: ₹15 in / ₹60 out per 1M tokens` },
+  // The rest of the parts a stack can be built from (shared/components.ts), same source.
+  'gemini-3.6-flash': { provider: 'Gemini 3.6 Flash', inUsd1m: 0.75, outUsd1m: 3.75, src: `${CAT} BRAINS` },
+  'gpt-4.1-mini-in': { provider: 'GPT-4.1 mini (Azure, India)', inUsd1m: 0.44, outUsd1m: 1.76, src: `${CAT} BRAINS` },
+  'gpt-4.1': { provider: 'GPT-4.1 (Azure)', inUsd1m: 2.0, outUsd1m: 8.0, src: `${CAT} BRAINS` },
+  'gpt-oss-120b': { provider: 'gpt-oss-120b (Azure)', inUsd1m: 0.15, outUsd1m: 0.60, src: `${CAT} BRAINS` },
+  'llama-4-maverick': { provider: 'Llama 4 Maverick (Azure)', inUsd1m: 0.25, outUsd1m: 1.0, src: `${CAT} BRAINS` },
+  'kimi-k2.6': { provider: 'Kimi K2.6 (Azure)', inUsd1m: 0.95, outUsd1m: 4.0, src: `${CAT} BRAINS` },
+  'gpt-6-sol@or': { provider: 'GPT-6 Sol via OpenRouter', inUsd1m: 2.0, outUsd1m: 10.0, src: `${CAT} BRAINS: OpenAI pricing page via the 2026-10-20 sweep` },
 };
 export const VOICES: Record<string, Voice> = {
   'gemini-lite': { provider: 'Gemini 3.8 Flash-Lite TTS', usdAudioMin: 6.0 * 25 * 60 / 1e6, price: '$6/1M audio tokens', src: `${CAT} TTS.gemini-lite: g1` },
   'azure-mai': { provider: 'Azure MAI-Voice-2.1', usd1mChars: 22.0, price: '$22/1M chars (unverified: priced like HD until the meter is read)', src: `${CAT} TTS.azure-mai` },
   sarvam: { provider: 'Sarvam Bulbul v4 Flash', usd1mChars: 20 * 100 / FX, price: '₹20 per 10K chars', src: `${CAT} TTS.sarvam: Sarvam pricing page` },
+  gemini: { provider: 'Gemini 3.8 Flash TTS', usdAudioMin: 9.0 * 25 * 60 / 1e6, price: '$9/1M audio tokens (doubles 2027-01-01)', src: `${CAT} TTS.gemini: g1` },
+  azure: { provider: 'Azure neural voice', usd1mChars: 15.0, price: '$15/1M chars', src: `${CAT} TTS.azure: Azure S1 neural TTS` },
+  'azure-hd': { provider: 'Azure HD voice', usd1mChars: 22.0, price: '$22/1M chars', src: `${CAT} TTS.azure-hd: Azure Neural HD` },
 };
 // Plivo India outbound, console read 2026-10-19, 60 s pulse. The pulse rounds each call up; on average half a pulse.
 export const TELEPHONY = { provider: 'Plivo India outbound', inrMin: 0.38, pulseSec: 60, price: '₹0.38/min, 60 s pulse', src: 'voicelab/server/phone.py RATE_INR_MIN (console 2026-10-19)' };
@@ -68,9 +79,14 @@ const micro = (inr: number) => Math.round(inr * 1e6);
 
 /** The provider cost card for every stack in shared/stacks.ts. Throws if a stack names a component with no price. */
 export function computeCard(): CardRow[] {
+  return STACKS.flatMap(s => partLines(s.id, s.components));
+}
+
+/** The cost lines for one set of parts: a curated stack's, or one a user built ('custom'). Throws if a part has no price. */
+export function partLines(stackId: string, c: StackComponents): CardRow[] {
   const rows: CardRow[] = [];
-  for (const s of STACKS) {
-    const c = s.components;
+  {
+    const s = { id: stackId, kind: c.s2s ? 's2s' : 'cascade' };
     const add = (r: Omit<CardRow, 'stackId' | 'asOf' | 'inrMicroPerCall'> & { inrMicroPerCall?: number }) =>
       rows.push({ stackId: s.id, asOf: AS_OF, inrMicroPerCall: 0, ...r });
     if (s.kind === 's2s') {
