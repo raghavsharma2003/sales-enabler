@@ -66,13 +66,13 @@
     "db/migrations/0801_learning.sql"
   ],
   "tests": {
-    "passed": 20,
-    "total": 20,
+    "passed": 21,
+    "total": 21,
     "files": [
       "tests/learning.stats.test.ts",
       "tests/learning.test.ts"
     ],
-    "method": "node --import tsx --test tests/learning*.test.ts against vp_mod_learning, 2 consecutive green runs; whole tree tests/*.test.ts 145/145; tsc clean"
+    "method": "node --import tsx --test tests/learning*.test.ts against vp_mod_learning, 2 consecutive green runs; tsc clean"
   },
   "works": [
     "Propose: evidence = open issues, moments (by hazard), recent live calls with judge results, and the workspace's lessons; the LLM (purpose 'learning', JSON) returns ops on the latest version's config; every cited id is checked against this workspace's own rows; uncited proposals are gated out",
@@ -84,7 +84,8 @@
     "Assign: sticky arm per contact (hash of experiment and contact); stopped/decided experiments send no traffic",
     "Check: test calls excluded; any treatment safety violation, 3+ complaints/opt-outs at 2x control, or the always-valid mSPRT harm test stops the arm at once, calls deployment.revert_to_last_good {agentId, binding} (A3), opens a critical issue and records a lesson",
     "No peeking: effect is neither computed nor shown before the horizon and the minimum days; at the horizon one two-sided two-proportion z test; a win is proposed as deployment.split at 100% treatment on the experiment's binding, only if that tool is approval-gated, so it becomes an A2 card",
-    "No pooling: every query filters by workspace; rows in another workspace that point at this workspace's versions are ignored (tested)"
+    "No pooling: every query filters by workspace; rows in another workspace that point at this workspace's versions are ignored (tested)",
+    "Calls contract: success values are the business's outcome_definition.goal_values (via the campaign that runs the agent, else the goal's outcome key, or outcomeDefinitionId); hazard codes default to catalogue END_OPTED_OUT / CONV_COMPLAINT / END_CRISIS; baseline, power, horizon, verdict and the shadow A/A count only contacts with a recorded outcome (NULL = untrusted AI guess), and the card says so; guardrails count every live contact. Cross-module test writes conversations the way calls does"
   ],
   "untested": [
     "Against real sibling modules (all four sibling tools are fakes in tests)",
@@ -101,7 +102,7 @@
     "agents or calls: deployment.revert_to_last_good {agentId, binding} (A3 verb) — not registered yet; until then a hazard stop still cuts treatment traffic via experiment.assign and opens a critical issue",
     "agents: deployment.split stays A2 (registered, external)",
     "calls/campaigns: call experiment.assign {agentId, contactId} at dial time, stamp conversation.agent_version_id with the version that ran, and call experiment.check after each connected call",
-    "calls/intelligence: conversation.outcome values (default success value 'success', configurable per experiment), reason_code 'opt_out'/'complaint'/'abuse_report', analysis.safety_violation and analysis.judge"
+    "calls: keep conversation.outcome NULL unless verified, a person's label or a trusted judge's guess (refreshOutcome), and reason_code from the catalogue enum"
   ],
   "jobs": [
     {

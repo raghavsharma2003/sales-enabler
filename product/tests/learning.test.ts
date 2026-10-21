@@ -88,6 +88,8 @@ async function workspace() {
   const agentId = (await one<{ id: string }>(pool, "INSERT INTO agent (workspace_id, name, status) VALUES ($1, 'Riya', 'live') RETURNING id", [ws]))!.id;
   const versionId = (await one<{ id: string }>(pool, "INSERT INTO agent_version (agent_id, number, hash, config) VALUES ($1, 1, 'h1', $2) RETURNING id",
     [agentId, JSON.stringify({ agent: cfg(agentId), brief: { text: 'brief v1', hash: 'b1', bytes: 8 } })]))!.id;
+  await pool.query(`INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values)
+    VALUES ($1, 'visit', 'Did the customer confirm the visit?', '{confirmed,rescheduled,declined}', '{confirmed}')`, [ws]);
   for (let i = 0; i < 2; i++) await pool.query("INSERT INTO sim_caller (workspace_id, agent_id, persona, scenario) VALUES ($1,$2,'busy','asks to call later')", [ws, agentId]);
   const actor: Actor = { type: 'member', id: member, role: 'owner' };
   // Receipts are read loosely in tests (any): each assertion checks the status it expects first.
@@ -97,12 +99,13 @@ async function workspace() {
 }
 
 let phone = 9000000000;
-/** Live (or test) conversations on a version: n contacts, the first `successes` with outcome 'success'. */
+/** Live (or test) conversations on a version, written the way calls writes them: n contacts, the first `successes` with
+ *  the goal value 'confirmed' (outcome_definition 'visit'), the rest 'declined'; reason codes from the catalogue. */
 async function calls(ws: string, versionId: string, n: number, successes: number, o: { reasonCode?: string; channel?: string; outcome?: (i: number) => string | null; contactIds?: string[] } = {}) {
   const ids: string[] = [];
   for (let i = 0; i < n; i++) {
     const contact = o.contactIds?.[i] ?? (await one<{ id: string }>(pool, 'INSERT INTO contact (workspace_id, e164) VALUES ($1,$2) RETURNING id', [ws, `+91${phone++}`]))!.id;
-    const outcome = o.outcome ? o.outcome(i) : i < successes ? 'success' : 'no';
+    const outcome = o.outcome ? o.outcome(i) : i < successes ? 'confirmed' : 'declined';
     const c = await one<{ id: string }>(pool, `INSERT INTO conversation (workspace_id, contact_id, agent_version_id, channel, status, outcome, reason_code, started_at)
       VALUES ($1,$2,$3,$4,'done',$5,$6, now()) RETURNING id`, [ws, contact, versionId, o.channel ?? 'phone', outcome, o.reasonCode ?? null]);
     ids.push(c!.id);
@@ -242,7 +245,7 @@ test('accept is A2 and shows calls-to-prove from the workspace\'s own baseline b
 
 test('shadow A/A gates the launch: missing outcomes fail the plumbing check; clean history launches', { skip }, async () => {
   const broken = await workspace();
-  const [ev] = await calls(broken.ws, broken.versionId, 200, 40, { outcome: i => (i % 2 ? null : i < 80 ? 'success' : 'no') });
+  const [ev] = await calls(broken.ws, broken.versionId, 200, 40, { outcome: i => (i % 20 ? null : 'confirmed') });   // outcomes on 5% of calls: a broken writer
   fakeProposals(ev!);
   const pid = (await broken.call('learning.propose', { agentId: broken.agentId, max: 1 })).result.proposals[0].id;
   await broken.call('proposal.probe', { proposalId: pid });
@@ -271,7 +274,7 @@ test('sticky arms; no verdict before the horizon (no peeking); a win is proposed
 
   const contacts = await newContacts(t.ws, perArm * 3);
   const half = contacts.slice(0, perArm);
-  await dial(t, half, (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'success' : 'no') : (i % 10 < 2 ? 'success' : 'no')));
+  await dial(t, half, (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'confirmed' : 'declined') : (i % 10 < 2 ? 'confirmed' : 'declined')));
   const mid = await t.call('experiment.check', { experimentId });
   assert.equal(mid.result.state, 'running');
   assert.equal(mid.result.decision, undefined, 'no effect is computed before the horizon');
@@ -279,10 +282,10 @@ test('sticky arms; no verdict before the horizon (no peeking); a win is proposed
   const view = await t.call('experiment.get', { id: experimentId });
   assert.equal(view.result.result.decision, undefined);
 
-  await dial(t, contacts.slice(perArm), (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'success' : 'no') : (i % 10 < 2 ? 'success' : 'no')));
+  await dial(t, contacts.slice(perArm), (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'confirmed' : 'declined') : (i % 10 < 2 ? 'confirmed' : 'declined')));
   // Test calls never count, even a flood of complaints on the treatment arm.
   const tv = (await one<{ id: string }>(pool, 'SELECT treatment_version_id AS id FROM experiment WHERE id = $1', [experimentId]))!.id;
-  await calls(t.ws, tv, 10, 0, { channel: 'test', reasonCode: 'complaint' });
+  await calls(t.ws, tv, 10, 0, { channel: 'test', reasonCode: 'CONV_COMPLAINT' });
   const done = await t.call('experiment.check', { experimentId });
   assert.equal(done.result.state, 'decided', JSON.stringify(done.result));
   assert.equal(done.result.verdict, 'win');
@@ -300,7 +303,7 @@ test('hazard stop: complaints on the treatment arm stop it at once and revert th
   const t = await workspace();
   const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.05, minDays: 0, binding: 'inbound' });
   const contacts = await newContacts(t.ws, 30);
-  const arms = await dial(t, contacts, () => 'no', arm => (arm === 'treatment' ? 'complaint' : null));
+  const arms = await dial(t, contacts, () => 'declined', arm => (arm === 'treatment' ? 'END_OPTED_OUT' : null));
   assert.ok(arms.treatment! >= 3);
   const before = reverts.length;
   const job = jobs.find(j => j.name === 'learning.check')!;
@@ -349,10 +352,10 @@ test('no pooling: another workspace cannot read, change or contaminate this work
 
   // Rows in workspace B that point at A's versions (a cross-tenant bug elsewhere) never reach A's readout.
   const e = await one<{ control: string; treatment: string }>(pool, 'SELECT control_version_id AS control, treatment_version_id AS treatment FROM experiment WHERE id = $1', [experimentId]);
-  await calls(b.ws, e!.treatment, 20, 0, { reasonCode: 'complaint' });
+  await calls(b.ws, e!.treatment, 20, 0, { reasonCode: 'CONV_COMPLAINT' });
   const r = await a.call('experiment.check', { experimentId });
   assert.equal(r.result.state, 'running', JSON.stringify(r.result));
-  assert.deepEqual(r.result.progress, { control: 0, treatment: 0, horizonPerArm: r.result.progress.horizonPerArm });
+  assert.deepEqual([r.result.progress.control, r.result.progress.treatment, r.result.progress.withoutOutcome], [0, 0, 0]);
 
   // A's baseline comes from A's calls only, even when B has many successes on A's version id.
   const c = await workspace();
@@ -396,4 +399,55 @@ test('without version.candidate the experiment is pre-registered but start refus
     const n = await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM agent_version WHERE agent_id = $1', [t.agentId]);
     assert.equal(n!.n, '1', 'learning never writes agent_version itself');
   } finally { bindLearning({ pool, registry }); }
+});
+
+test('cross-module: conversations written the way calls writes them trip the hazard stop and reach a decision', { skip }, async () => {
+  // Calls writes catalogue reason codes (END_OPTED_OUT, CONV_COMPLAINT, END_CRISIS) and, in conversation.outcome, a value
+  // from the business's own outcome_definition, or NULL when only an untrusted AI guess exists. The success values come
+  // from goal_values of the definition on the campaign that runs this agent (not the goal key), found without being passed.
+  const setup = async () => {
+    const t = await workspace();
+    const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values)
+      VALUES ($1, 'renewal', 'Did they renew?', '{paid,promised,refused}', '{paid}') RETURNING id`, [t.ws]))!.id;
+    const dep = (await one<{ id: string }>(pool, `INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,'campaign',$3) RETURNING id`,
+      [t.ws, t.agentId, JSON.stringify([{ version_id: t.versionId, percent: 100 }])]))!.id;
+    await pool.query(`INSERT INTO campaign (workspace_id, name, deployment_id, call_category, outcome_definition_id) VALUES ($1,'renewals',$2,'service',$3)`, [t.ws, dep, def]);
+    // History: 150 contacts, 30 paid, 100 refused, 20 with no trusted outcome (NULL) — those 20 are not counted.
+    const [ev] = await calls(t.ws, t.versionId, 150, 0, { outcome: i => (i < 30 ? 'paid' : i < 130 ? 'refused' : null) });
+    fakeProposals(ev!);
+    const pid = (await t.call('learning.propose', { agentId: t.agentId, max: 1 })).result.proposals[0].id;
+    await t.call('proposal.probe', { proposalId: pid });
+    return { t, pid, def };
+  };
+
+  const { t, pid, def } = await setup();
+  const acc = await t.approve((await t.call('proposal.accept', { proposalId: pid, mdeAbs: 0.3, minDays: 0 })).actionId);
+  assert.equal(acc.status, 'confirmed', JSON.stringify(acc));
+  assert.equal(acc.result.baseline, 30 / 130, 'baseline 30/130: the 20 calls without a trusted outcome are excluded');
+  assert.match(acc.result.counting, /only calls with a recorded outcome/);
+  const e = await one<{ design: any }>(pool, 'SELECT design FROM experiment WHERE id = $1', [acc.result.experimentId]);
+  assert.deepEqual([e!.design.successValues, e!.design.outcomeDefinitionId], [['paid'], def]);
+  assert.deepEqual(e!.design.hazardCodes, ['END_OPTED_OUT', 'CONV_COMPLAINT', 'END_CRISIS']);
+  const st = await t.approve((await t.call('experiment.start', { experimentId: acc.result.experimentId })).actionId);
+  assert.equal(st.result.state, 'running', JSON.stringify(st.result));
+
+  // Decision: treatment pays 80%, control 20%; every fifth contact has no trusted outcome and must not count.
+  const perArm = acc.result.perArm as number;
+  const contacts = await newContacts(t.ws, perArm * 3);
+  await dial(t, contacts, (arm, i) => (i % 5 === 4 ? null as unknown as string : (arm === 'treatment' ? i % 10 < 8 : i % 10 < 2) ? 'paid' : 'refused'));
+  const done = await t.call('experiment.check', { experimentId: acc.result.experimentId });
+  assert.equal(done.result.state, 'decided', JSON.stringify(done.result));
+  assert.equal(done.result.verdict, 'win');
+  const counted = done.result.decision.control.n + done.result.decision.treatment.n;
+  assert.ok(counted <= Math.ceil(contacts.length * 0.8) + 1, `only calls with an outcome count (${counted} of ${contacts.length})`);
+  assert.equal(done.result.publish.status, 'needs_approval');
+
+  // Hazard: END_OPTED_OUT on the treatment arm stops it at once.
+  const h = await setup();
+  const acc2 = await h.t.approve((await h.t.call('proposal.accept', { proposalId: h.pid, mdeAbs: 0.05, minDays: 0 })).actionId);
+  await h.t.approve((await h.t.call('experiment.start', { experimentId: acc2.result.experimentId })).actionId);
+  await dial(h.t, await newContacts(h.t.ws, 30), () => null as unknown as string, arm => (arm === 'treatment' ? 'END_OPTED_OUT' : null));
+  const stop = await h.t.call('experiment.check', { experimentId: acc2.result.experimentId });
+  assert.equal(stop.result.state, 'stopped_guardrail', JSON.stringify(stop.result));
+  assert.match(stop.result.reason, /complaints\/opt-outs/);
 });

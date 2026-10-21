@@ -45,8 +45,8 @@
       "status": "confirmed",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "Learning module tests: 20/20 pass (after the integrator contract changes), 2 consecutive runs; whole tree 145/145 (9 known-answer stats incl. Fleiss power reproducing the blueprint's 1,565/686/2,036/1,094/6,510/14,751 per arm; 10 Postgres tests: gates, probe regression, A2 accept with calls-to-prove, A/A plumbing fail and pass, no-peeking, win -> A2 deployment.split card, start refuses without version.candidate, background job, hazard stop -> A3 revert, safety stop, no cross-workspace pooling).",
-      "n": 20,
+      "title": "Learning module tests: 21/21 pass (after the integrator contract changes), 2 consecutive runs (9 known-answer stats incl. Fleiss power reproducing the blueprint's 1,565/686/2,036/1,094/6,510/14,751 per arm; 10 Postgres tests: gates, probe regression, A2 accept with calls-to-prove, A/A plumbing fail and pass, no-peeking, win -> A2 deployment.split card, start refuses without version.candidate, background job, hazard stop -> A3 revert, safety stop, no cross-workspace pooling). Cross-module test with calls-shaped conversations (END_OPTED_OUT, goal_values outcomes, NULL untrusted outcomes) shows both the hazard stop and the decision firing.",
+      "n": 21,
       "method": "node --import tsx --test tests/learning*.test.ts on the throwaway cluster (vp_mod_learning); sibling tools faked",
       "path": "product/server/modules/learning/STATUS.json"
     },
@@ -58,6 +58,16 @@
       "date": "2026-10-21",
       "title": "Learning calls agents tools agreed with the integrator on 2026-10-21 but not yet registered: test.simulate_batch {agentId, config, simCallerIds, seeds} -> {runs}; version.candidate {agentId, config, parentVersionId, note} -> {versionId, number, versionHash, brief}; deployment.revert_to_last_good {agentId, binding} (A3). Winners go to deployment.split (A2, registered). The dialer must call experiment.assign; calls also call experiment.check per connected call.",
       "closes_when": "The agents, calls and campaigns modules register these tools with matching shapes and an integration test runs propose -> probe -> accept -> start -> check across real modules."
+    },
+    {
+      "id": "decision.2026-10-21.learning-counts-outcome-calls",
+      "type": "decision",
+      "status": "active",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Learning's success metric uses each business's outcome_definition.goal_values (never a literal) and counts only contacts with a recorded outcome (verified, manager, or a trusted judge's guess); guardrails use catalogue reason codes END_OPTED_OUT, CONV_COMPLAINT, END_CRISIS on every live contact.",
+      "rationale": "The calls builder found the earlier defaults ('success', 'opt_out'/'complaint') matched nothing calls writes, which silently disabled the decision and the hazard stop; untrusted AI guesses must never feed experiments (blueprint F4).",
+      "reverse_if": "Calls changes where outcomes or reason codes live, or a validated leading indicator is approved as a primary metric for a tenant."
     }
   ],
   "edges": [
@@ -85,6 +95,11 @@
       "from": "component.2026-10-21.learning-module",
       "to": "open.2026-10-21.learning-sibling-contracts",
       "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-21.learning-counts-outcome-calls",
+      "to": "component.2026-10-21.learning-module",
+      "relation": "constrains"
     }
   ],
   "events": [

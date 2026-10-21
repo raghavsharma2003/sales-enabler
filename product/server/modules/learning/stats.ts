@@ -144,9 +144,10 @@ export function shadowAA(units: AaUnit[], o: { runs?: number; alpha?: number; sa
   const minUnits = o.minUnits ?? 100, maxFalse = o.maxFalseRate ?? 0.065, minCoverage = o.minCoverage ?? 0.8;
   const reasons: string[] = [];
   let falseWinners = 0;
+  const scored = units.filter(u => u.hasOutcome);      // the production test counts only units with an outcome
   for (let r = 0; r < runs; r++) {
     const a = { k: 0, n: 0 }, b = { k: 0, n: 0 };
-    for (const u of units) {
+    for (const u of scored) {
       const arm = hash32(`${salt}:${r}:${u.id}`) & 1 ? a : b;
       arm.n++; if (u.success) arm.k++;
     }
@@ -158,10 +159,10 @@ export function shadowAA(units: AaUnit[], o: { runs?: number; alpha?: number; sa
   const coverageImbalanceP = covA.n && covB.n ? twoProportionZ(covA, covB).p : 1;
   const falseWinnerRate = runs ? falseWinners / runs : 0;
   const falseWinnerRateLower = runs ? wilson(falseWinners, runs, 2.326347874040841).lo : 0;
-  if (units.length < minUnits) reasons.push(`only ${units.length} eligible contacts; the shadow A/A needs ${minUnits}`);
+  if (scored.length < minUnits) reasons.push(`only ${scored.length} contacts with a recorded outcome; the shadow A/A needs ${minUnits}`);
   if (coverage < minCoverage) reasons.push(`outcomes recorded for ${(coverage * 100).toFixed(1)}% of calls (need ${minCoverage * 100}%): check the outcome writer`);
   if (coverageImbalanceP < 0.01) reasons.push('outcomes are recorded unevenly across shadow arms: check the outcome writer');
   if (falseWinnerRateLower > maxFalse) reasons.push(`false-winner rate ${(falseWinnerRate * 100).toFixed(1)}% (99% lower bound ${(falseWinnerRateLower * 100).toFixed(1)}%) exceeds ${maxFalse * 100}%`);
   const plumbingOk = coverage >= minCoverage && coverageImbalanceP >= 0.01;
-  return { units: units.length, runs, falseWinners, falseWinnerRate, falseWinnerRateLower, coverage, coverageImbalanceP, plumbingOk, passed: reasons.length === 0, reasons };
+  return { units: scored.length, runs, falseWinners, falseWinnerRate, falseWinnerRateLower, coverage, coverageImbalanceP, plumbingOk, passed: reasons.length === 0, reasons };
 }

@@ -226,7 +226,8 @@ async function probe(ctx: ToolCtx, i: { proposalId: string; simCallerIds?: strin
 
 const acceptIn = obj({
   proposalId: uuid(),
-  successValues: opt(arr(str({ min: 1, max: 60 }), { min: 1, max: 10 })),
+  successValues: opt(arr(str({ min: 1, max: 80 }), { min: 1, max: 10 })),
+  outcomeDefinitionId: opt(uuid()),
   baselineRate: opt(num({ min: 0.01, max: 0.99 })),
   mdeAbs: opt(num({ min: 0.005, max: 0.5 })),
   minDays: opt(num({ int: true, min: 0, max: 28 })),
@@ -236,7 +237,27 @@ const acceptIn = obj({
 });
 type AcceptIn = ReturnType<typeof acceptIn>;
 
-const DEFAULT_HAZARD_CODES = ['opt_out', 'complaint', 'abuse_report'];
+/** Catalogue reason codes (conversation.reason_code, written by calls) that mean harm to the person called. */
+const DEFAULT_HAZARD_CODES = ['END_OPTED_OUT', 'CONV_COMPLAINT', 'END_CRISIS'];
+
+/** The success values for this agent's outcome: the business's own outcome_definition.goal_values, never a literal.
+ *  Found through the campaigns that run this agent, or by the goal's outcome key; an explicit definition id wins. */
+async function goalValues(q: Queryable, ws: string, agentId: string, cfg: AgentConfig, definitionId?: string): Promise<{ values: string[]; definitionId: string }> {
+  const rows = definitionId
+    ? await many<{ id: string; goal_values: string[] }>(q, 'SELECT id, goal_values FROM outcome_definition WHERE workspace_id = $1 AND id = $2', [ws, definitionId])
+    : await many<{ id: string; goal_values: string[] }>(q, `SELECT DISTINCT d.id, d.goal_values FROM outcome_definition d
+        WHERE d.workspace_id = $1 AND cardinality(d.goal_values) > 0 AND (
+          d.id IN (SELECT c.outcome_definition_id FROM campaign c JOIN deployment dp ON dp.id = c.deployment_id AND dp.workspace_id = c.workspace_id
+                   WHERE c.workspace_id = $1 AND dp.agent_id = $2)
+          OR (NOT EXISTS (SELECT 1 FROM campaign c JOIN deployment dp ON dp.id = c.deployment_id WHERE c.workspace_id = $1 AND dp.agent_id = $2 AND c.outcome_definition_id IS NOT NULL)
+              AND d.name = ANY($3::text[])))`, [ws, agentId, (cfg.goals ?? []).map(g => g.outcome)]);
+  if (definitionId && !rows.length) throw new Error('no such outcome definition in this workspace');
+  if (rows.length > 1) throw new Error('this agent records more than one outcome; pass outcomeDefinitionId to choose the one to test');
+  if (!rows.length || !rows[0]!.goal_values?.length) throw new Error("no success values: set goal values on this agent's outcome definition, or pass successValues");
+  return { values: rows[0]!.goal_values, definitionId: rows[0]!.id };
+}
+
+const COUNTING = 'counts only calls with a recorded outcome (verified, a person\'s label, or a trusted judge\'s guess); calls without one are not in the test';
 
 async function accept(ctx: ToolCtx, i: AcceptIn) {
   const ws = ctx.workspaceId;
@@ -247,15 +268,16 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
   const base = p.base_version_id ? await versionById(ctx.q, ws, p.base_version_id) : null;
   if (!base) throw new Error('the version this proposal was drafted against is gone');
 
-  const successValues = i.successValues ?? ['success'];
+  const goal = i.successValues ? { values: i.successValues, definitionId: i.outcomeDefinitionId ?? null } : await goalValues(ctx.q, ws, p.agent_id, agentOf(base), i.outcomeDefinitionId);
+  const successValues = goal.values;
   const hazardCodes = i.hazardCodes ?? DEFAULT_HAZARD_CODES;
   // Baseline from this workspace's own calls on the control version: no other tenant's data, ever.
   let baseline = i.baselineRate, baselineSource = 'given';
   if (baseline === undefined) {
-    const hist = await units(ctx.q, ws, [base.id], new Date(Date.now() - 90 * 86_400_000), successValues, hazardCodes);
-    if (hist.length < 30) throw new Error(`only ${hist.length} live contacts on the control version; give baselineRate to plan the test`);
+    const hist = (await units(ctx.q, ws, [base.id], new Date(Date.now() - 90 * 86_400_000), successValues, hazardCodes)).filter(u => u.has_outcome);
+    if (hist.length < 30) throw new Error(`only ${hist.length} live contacts with a recorded outcome on the control version; give baselineRate to plan the test`);
     baseline = Math.min(0.95, Math.max(0.02, hist.filter(u => u.success).length / hist.length));
-    baselineSource = `own calls, n=${hist.length}`;
+    baselineSource = `own calls with an outcome, n=${hist.length}`;
   }
   const mde = i.mdeAbs ?? Math.max(0.02, Math.round(baseline * 0.2 * 1000) / 1000);
   if (baseline + mde >= 1) throw new Error('the target rate must stay below 100%');
@@ -264,7 +286,7 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
   const treatmentCfg = applyOps(agentOf(base), parseOps(p.change));
   const treatment = await treatmentVersion(ws, base, treatmentCfg, p.id);
   const design = {
-    binding: i.binding ?? 'campaign', treatmentConfig: treatmentCfg, metric: 'outcome_success', unit: 'contact', successValues, hazardCodes, baselineSource, plan,
+    binding: i.binding ?? 'campaign', treatmentConfig: treatmentCfg, metric: 'outcome_success', unit: 'contact', outcomeDefinitionId: goal.definitionId, successValues, counting: COUNTING, hazardCodes, baselineSource, plan,
     horizonPerArm: plan.perArm, treatmentShare: 0.5, alpha: 0.05, power: 0.8, minDays: i.minDays ?? 7, maxDays: i.maxDays ?? 28,
     test: 'two-proportion z, two-sided, fixed horizon', stop: 'verdict only at the horizon; guardrails stop at once',
     guardrails: { safetyViolations: 'any in the treatment arm', events: { codes: hazardCodes, minEvents: 3, ratio: 2, alwaysValid: 'mSPRT alpha 0.05' } },
@@ -274,7 +296,8 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
     VALUES ($1,$2,$3,$4,$5,$6,'aa_pending') RETURNING id`, [ws, p.agent_id, p.id, base.id, treatment.id, JSON.stringify({ ...design, preregistrationHash: prereg })]);
   await ctx.q.query(`UPDATE proposal SET status = 'testing', calls_to_prove = $2 WHERE id = $1`, [p.id, plan.total]);
   return { experimentId: e!.id, treatmentVersionId: treatment.id, ...(treatment.reason ? { treatmentPending: treatment.reason } : {}), callsToProve: plan.total, perArm: plan.perArm, baseline, mdeAbs: mde,
-    note: `about ${plan.total} live calls (${plan.perArm} per arm) to prove ${(baseline * 100).toFixed(1)}% -> ${((baseline + mde) * 100).toFixed(1)}%` };
+    counting: COUNTING,
+    note: `about ${plan.total} live calls with a recorded outcome (${plan.perArm} per arm) to prove ${(baseline * 100).toFixed(1)}% -> ${((baseline + mde) * 100).toFixed(1)}%` };
 }
 
 /** The treatment arm is an immutable version made by the agents module (version.candidate compiles its brief once and
@@ -313,7 +336,7 @@ async function start(ctx: ToolCtx, i: { experimentId: string; aaRuns?: number })
   if (!t?.config?.brief) return { state: e.state, launched: false, reason: 'the treatment version has no compiled brief' };
 
   const hist = await units(ctx.q, ws, [e.control_version_id], null, e.design.successValues, e.design.hazardCodes);
-  const aa = shadowAA(hist.map(u => ({ id: u.unit, success: u.success, hasOutcome: u.has_outcome })), { runs: i.aaRuns ?? 1000, salt: e.id });
+  const aa = shadowAA(hist.map(u => ({ id: u.unit, success: u.success, hasOutcome: u.has_outcome })), { runs: i.aaRuns ?? 1000, salt: e.id, minCoverage: 0.1 });
   await ctx.q.query(`INSERT INTO shadow_aa (workspace_id, agent_id, experiment_id, metric, runs, false_winners, passed, detail) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
     [ws, e.agent_id, e.id, e.design.metric, aa.runs, aa.falseWinners, aa.passed, JSON.stringify(aa)]);
   if (!aa.passed) {
@@ -343,7 +366,8 @@ async function assign(ctx: ToolCtx, i: { agentId: string; contactId: string }) {
 
 function tally(rows: UnitRow[], versionId: string) {
   const r = rows.filter(u => u.version_id === versionId);
-  return { n: r.length, success: r.filter(u => u.success).length, hazard: r.filter(u => u.hazard).length, safety: r.filter(u => u.safety).length };
+  // n: every live contact (guardrails need no outcome). m: contacts with a recorded outcome (the only ones the test counts).
+  return { n: r.length, m: r.filter(u => u.has_outcome).length, success: r.filter(u => u.success).length, hazard: r.filter(u => u.hazard).length, safety: r.filter(u => u.safety).length };
 }
 
 export function hazardTrip(control: { n: number; hazard: number }, treatment: { n: number; hazard: number; safety: number }, g: { minEvents: number; ratio: number }): string | null {
@@ -365,7 +389,7 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const tv = e.treatment_version_id!;               // a running experiment always has its treatment version
   const rows = await units(ctx.q, ws, [e.control_version_id, tv], e.started_at, d.successValues, d.hazardCodes);
   const c = tally(rows, e.control_version_id), t = tally(rows, tv);
-  const progress = { control: c.n, treatment: t.n, horizonPerArm: d.horizonPerArm };
+  const progress = { control: c.m, treatment: t.m, withoutOutcome: c.n - c.m + t.n - t.m, horizonPerArm: d.horizonPerArm, counting: COUNTING };
 
   // Fast lane: a harmful arm stops at once, whatever the horizon.
   const trip = hazardTrip(c, t, d.guardrails.events);
@@ -380,19 +404,19 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
     return { state: 'stopped_guardrail', reason: trip, revert: revert.status, progress };
   }
 
-  if (e.expires_at && e.expires_at.getTime() < Date.now() && (c.n < d.horizonPerArm || t.n < d.horizonPerArm)) {
+  if (e.expires_at && e.expires_at.getTime() < Date.now() && (c.m < d.horizonPerArm || t.m < d.horizonPerArm)) {
     await ctx.q.query(`UPDATE experiment SET state = 'expired', decided_at = now() WHERE id = $1`, [e.id]);
-    await addLesson(ctx.q, ws, e.agent_id, `Expired before the horizon (${c.n}+${t.n} of ${2 * d.horizonPerArm} calls): no claim either way.`, 'expired', e.proposal_id, null, { experimentId: e.id });
+    await addLesson(ctx.q, ws, e.agent_id, `Expired before the horizon (${c.m}+${t.m} of ${2 * d.horizonPerArm} calls): no claim either way.`, 'expired', e.proposal_id, null, { experimentId: e.id });
     return { state: 'expired', progress };
   }
 
   // No peeking: until the horizon the effect is not computed, let alone shown.
-  const guard = sequentialGuard({ control: c.n, treatment: t.n, horizonPerArm: d.horizonPerArm, startedAt: e.started_at, minDays: d.minDays });
+  const guard = sequentialGuard({ control: c.m, treatment: t.m, horizonPerArm: d.horizonPerArm, startedAt: e.started_at, minDays: d.minDays });
   if (!guard.mayDecide) return { state: 'running', progress, remainingCalls: guard.remainingCalls, note: guard.reason };
 
-  const controlArm: Arm = { k: c.success, n: c.n }, treatmentArm: Arm = { k: t.success, n: t.n };
+  const controlArm: Arm = { k: c.success, n: c.m }, treatmentArm: Arm = { k: t.success, n: t.m };
   const decision = decide(controlArm, treatmentArm, d.alpha);
-  const result = { ...e.result, decision: { ...decision, control: controlArm, treatment: treatmentArm, label: `proved on ${c.n + t.n} calls, 95% interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points` } };
+  const result = { ...e.result, decision: { ...decision, control: controlArm, treatment: treatmentArm, label: `proved on ${c.m + t.m} calls with a recorded outcome, 95% interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points` } };
   let publish: { status: string; actionId?: string; reason?: string } | null = null;
   if (decision.verdict === 'win') publish = await proposePublish(ws, e);
   await ctx.q.query(`UPDATE experiment SET state = 'decided', result = $2, decided_at = now() WHERE id = $1`, [e.id, JSON.stringify({ ...result, publish })]);
@@ -400,7 +424,7 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const hash = e.proposal_id ? (await one<{ h: string }>(ctx.q, 'SELECT change_hash AS h FROM proposal WHERE id = $1', [e.proposal_id]))?.h ?? null : null;
   const text = decision.verdict === 'win' ? `Won: ${result.decision.label}. Proposed for publish; a person approves it.`
     : decision.verdict === 'loss' ? `Lost: ${result.decision.label}. Control kept.`
-    : `No detectable effect at n=${c.n + t.n} (interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points). Control kept.`;
+    : `No detectable effect at n=${c.m + t.m} (interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points). Control kept.`;
   await addLesson(ctx.q, ws, e.agent_id, text, decision.verdict === 'win' ? 'won' : decision.verdict === 'loss' ? 'lost' : 'null_result', e.proposal_id, hash, { experimentId: e.id, ...result.decision });
   return { state: 'decided', verdict: decision.verdict, decision: result.decision, publish, progress };
 }
