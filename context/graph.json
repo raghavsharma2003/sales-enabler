@@ -16307,6 +16307,27 @@
    "date": "2026-10-21",
    "source": "integration verifier",
    "closes_when": "every e2e todo step is a normal passing step and the full suite is green on CI"
+  },
+  {
+   "id": "rejected.2026-10-21.unscoped-dispatcher-in-tests",
+   "type": "rejection",
+   "title": "A test called the campaigns dispatcher tick() without a workspaceId. On the shared CI database that dispatcher claimed attempts that belonged to another test file running in parallel.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop, CI run on 2f32449",
+   "broke": "At 2f32449 the WIP e2e test called tick({ pool, registry, now }) with no workspaceId. It claimed the campaigns double-claim test's attempts, so campaigns saw 3 of 5 claimed and e2e dispatched 3 instead of 2. Both failures looked like load contention and were first reported as flakes. 7e998c0 scopes every tick to the e2e workspace. product/ARCHITECTURE.md now says that any test driving a worker or a job body passes its own workspaceId.",
+   "path": "product/tests/e2e.test.ts"
+  },
+  {
+   "id": "measure.2026-10-21.claim-race-under-load",
+   "type": "measurement",
+   "title": "The 12-worker / 5-attempt claim race test (FOR UPDATE SKIP LOCKED) passes every time under load once nothing outside its workspace claims rows: 0 failures in 205 runs.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "n": 205,
+   "method": "node --test --test-name-pattern 'double claim' tests/campaigns.test.ts on a throwaway Postgres 16 in the 4-vCPU sandbox. 15 runs with 4 busy-loop processes saturating the CPU, then 190 runs while intake-scale (50k rows) imported into the same database.",
+   "value": "0/205 failures"
   }
  ],
  "edges": [
@@ -29386,6 +29407,11 @@
    "from": "open.2026-10-21.e2e-findings-f3-f7",
    "to": "measure.2026-10-21.e2e-acceptance-first-run",
    "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-21.claim-race-under-load",
+   "to": "rejected.2026-10-21.unscoped-dispatcher-in-tests",
+   "relation": "supports"
   }
  ]
 }

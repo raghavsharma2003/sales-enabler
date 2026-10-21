@@ -46,6 +46,9 @@ Layout:
 - **Industry-neutral:** no insurance assumptions in code. Sector rules live in sector packs.
 - **Gates:** `npx tsc -p tsconfig.json` clean, `node --import tsx --test tests/<name>.test.ts` green against your own
   database (`vp_mod_<name>` on the throwaway cluster).
+- **Tests share one database in CI, four files at a time.** A test that drives a worker or a job body (the dispatcher
+  `tick()`, `claimNext`, a sweep) passes its own `workspaceId`. An unscoped call claims other files' rows. That was
+  the 2f32449 campaigns/e2e failure, and it looked like load.
 - **Cross-module calls go through the registry by tool name** (`registry.execute(pool, 'memory.brief', ...)` with a
   `system` actor), never by importing another module's files. If the tool is not registered (a sibling is not merged
   yet), degrade the way the blueprint says (e.g. memory `not_loaded`), never crash. Shared conventions:
