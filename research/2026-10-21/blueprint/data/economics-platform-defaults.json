@@ -1,0 +1,136 @@
+{
+  "id": "economics-platform-defaults",
+  "module": "economics-platform",
+  "status": "proposed, for owner review",
+  "date": "2026-10-21",
+  "directive": "directive.2026-10-21.blueprint-end-to-end",
+  "grades": "M measured by us (n, method); C computed (model or arithmetic on cited inputs); O observed; V vendor-claimed; I inferred; U unknown",
+  "fx_inr_per_usd": 95,
+  "rate_card": {
+    "unit": "INR per connected second, quoted per minute; telephony, AI, platform, default analysis and recording included; GST 18% shown beside every price",
+    "pulse": "1 s, from carrier answer to hang-up, rounded up to the next whole second; no minimum",
+    "not_billed": ["unanswered", "busy", "failed before answer", "blocked at precheck", "VP-fault (auto-credited with reason)", "browser tests inside the daily test budget"],
+    "carrier_pulse": "VP absorbs carrier pulse rounding (Plivo 30 s per l2 data or 60 s per console read 2026-10-19 in voicelab/server/phone.py; conflict, settle on first invoice); cost to VP about INR 0.03-0.07 per minute on the reminder call mix (C, EXO-35 corrected pulse inflation 7.4-15%)",
+    "no_fees": ["setup", "platform", "per seat", "per concurrent line", "per dial", "burst"],
+    "pass_through_lines": {
+      "a2p_carrier_charge": "actual; INR 0 today on 140/1600/1601; up to INR 0.05/min on declared 10-digit; telcos asked INR 0.50/min and INR 0.05 per attempt (O, r2-untouched-raw findings 1.2)",
+      "number_rental": "carrier price at cost (Plivo about INR 200-236/month, Vobiz INR 59/30 days, 1600 unpublished: U)",
+      "whatsapp": "Meta rate at cost (utility INR 0.115, marketing not used cold); BSP markup shown if a BSP is used (about 26%, AiSensy 0.145)",
+      "sms_dlt": "carrier rate at cost",
+      "dedicated_voice": "Premium only, monthly fee"
+    },
+    "gst": "18%; CGST+SGST intra-state or IGST inter-state from GSTIN and place of supply; timing on wallet top-ups (advance receipt voucher vs consumption) is a CA question",
+    "price_change_policy": "increases need 30 days notice; decreases apply at once; annual commits lock the rate 12 months; FX absorbed within +-10%"
+  },
+  "tiers_proposed": {
+    "note": "Re-priced from decision.2026-10-19.tier-* because the default voice is no longer the stock Azure neural voice rated 1.5-4.5/10. Final numbers are fixed after round-2 ratings pick the default stack (open.2026-10-20.reprice-tiers).",
+    "Base": {"what": "the ear-picked default stack, brief v2 + ledger, turn-taking presets, reply door, default analysis, recordings 90 days, preference memory (late v1), 10 concurrent calls, unlimited members", "price_ex_gst": 3.49, "price_incl_gst": 4.12},
+    "Plus": {"what": "Base + relational memory brief, commitments, learning inbox with fixed-horizon tests, retention 1 year, 25 concurrent", "price_ex_gst": 3.99, "price_incl_gst": 4.71},
+    "Premium": {"what": "Plus + India-resident stack option, deep personalisation, dedicated brand voice, SSO, 99.9% SLO with service credits, named IST support, 100 concurrent", "price_ex_gst": 6.49, "price_incl_gst": 7.66, "dedicated_voice_inr_per_month": 350000, "dedicated_voice_basis": "Azure Custom Neural Voice hosting about INR 2.80 lakh/month in Central India (research/2026-10-18/SYNTHESIS.md section 5); approval unverified"},
+    "Premium_Live": {"status": "not offered until the 200+ attack-turn gate passes (voice module)", "price_rule": "measured COGS / 0.65 with a 5-minute max duration; Live COGS INR 4.7-6.2 at 3 min and 6.4-12.7 AI-only at 10 min (M, g5 n=1-2 per cell)"}
+  },
+  "base_price_by_winning_stack": {
+    "rule": "Base = smallest of 2.99 / 3.49 / 3.99 that keeps p50 gross margin >= 30% at 2026 prices and >= 25% after known 2027 price changes, after a 2% payment fee; never chosen by downgrading the voice (req-02)",
+    "Indic (all-Sarvam)": {"ai": "1.39-1.51 (M meter, n=9 replies)", "cogs": "1.93-2.05", "base": 2.99, "margin_at_base": "29-33% (telephony+pulse taken as 0.45)"},
+    "Natural (Gemini cascade, G-A)": {"ai": "1.56; 1.92 from 2027-01-01 (I composite)", "cogs": "2.10; 2.46", "base": 3.49, "margin_at_base": "38%; 28%"},
+    "Fast (Azure STT CI + gpt-4.1-mini SI + MAI-Voice)": {"ai": "1.36-2.70 (MAI meter unread: U)", "cogs": "1.90-3.24", "base": "3.49 if MAI bills like neural; 3.99 if like HD", "margin_at_base": "5-44% at 3.49"},
+    "C6g reference (not a default: voice rated 1.5-4.5, gpt-oss brain fails req-08)": {"ai": "0.94 (M, n=30 turns)", "cogs": "1.48"}
+  },
+  "cogs_adders_inr_per_min": {"telephony": "0.38-0.48 + pulse 0.03-0.07", "infra": 0.03, "default_analysis": "0.06 (INR 0.17 per 3-min call, intelligence-module.json)", "memory_brief": "0.02-0.05 (memory-omni-defaults.json)", "learning_pass_plus": "0.04-0.29 (research/2026-10-18 section 5)", "payment_fee": "about 2% of price (I, unmodelled before)"},
+  "price_ladder_triggers": {
+    "rule": "Base list drops when measured COGS p50 (meter reconciled to vendor invoices within 5%) stays at or below the trigger for 2 consecutive months AND the tier's default passes the listener panel at or above the launch default within noise",
+    "2.99": "COGS <= 1.94",
+    "2.49": "COGS <= 1.62",
+    "1.99": "COGS <= 1.29 (35% margin); first plausible at 1.6-2.5M min/month on self-hosted speech or D-lite (COR section 2; research/2026-10-18 section 4)",
+    "excluded_paths": "Inworld (owner, req-54); AWS (owner deferral); scale-to-zero T4 TTS for live calls (rejected.harvest.11)"
+  },
+  "volume_thresholds_min_per_month": {
+    "250k": "negotiate telephony concurrency plan (Tata Smartflo about INR 0.22/min at full FUP) and Azure speech commitments; Inworld would be cheapest here but is excluded",
+    "1.6M": "D-lite (GPT-6 luna + self-hosted speech) reaches INR 2 (desk, COR section 2)",
+    "2.5M": "self-hosted IndicConformer + open TTS beats managed (desk INR 0.43-0.51 AI at 50% utilisation; 2-GPU floor makes it INR 6.50 at 100k)"
+  },
+  "wallet": {
+    "methods": ["UPI (QR, VPA, UPI Autopay mandate)", "cards", "netbanking", "invoice + NEFT/RTGS to a per-tenant virtual account"],
+    "emandate_cap_inr": 15000,
+    "invoice_mode_trigger": "monthly spend above INR 15,000 or on request; credit limit = one month prepaid or a deposit",
+    "states": {
+      "healthy": "runway >= 3 days at last-7-day pace",
+      "low": "runway < 3 days or available < INR 1,000: banner, Treasurer top-up card, owner notice",
+      "critical": "runway < 12 h: new launches blocked with reason; running campaigns continue",
+      "exhausted": "available (balance - in-flight reservations) <= 0: no new attempts; live calls finish; scheduled attempts deferred, not cancelled",
+      "overdrawn": "balance < 0, bounded by in-flight reservations (e.g. 10 concurrent x 8 min x 3.49 = INR 279); shown in red; settles on next top-up; numbers kept 30 days"
+    },
+    "never": ["cut a live call for money", "release numbers on an empty wallet inside 30 days", "show a negative balance in normal type"],
+    "reservation_per_attempt": "rate x max duration (default 480 s => INR 27.92 at Base), released at hang-up"
+  },
+  "caps": {
+    "workspace_monthly": "required before first launch; default 1.2 x first campaign p90 estimate, rounded up",
+    "campaign_budget": "required; default campaign p90 estimate rounded up",
+    "api_key": "daily and monthly INR caps; new run-scoped key default INR 2,000/day, INR 20,000/month",
+    "test_budget_per_day": 200,
+    "operator_premium_brain_per_day": 500,
+    "behaviour": "80% notify; 100% stop at a call boundary (Treasurer A3); live calls finish; raising a cap is A2 with re-auth above 2x"
+  },
+  "refunds": {
+    "unused_paid_balance": "refundable any time to source, no fee, within 7 working days",
+    "promotional_credit": "not refundable",
+    "vp_fault_calls": "never billed; credited automatically with the reason code",
+    "disputes": "per-call dispute button; human decision within 2 business days; credit note with GST adjustment"
+  },
+  "trial": {"credit_inr": 300, "browser_tests": "free inside the INR 200/day test budget for 14 days, no card", "first_real_ring": "up to 10 calls to the member's own verified number from a trial line"},
+  "speed_budget_ms_at_handset": {
+    "endpoint": {"p50": 450, "p90": 800, "best_measured": "450 Azure STT at 300 ms segmentation; 622 at 500 ms (M, l8 round2)"},
+    "hold": {"p50_expected": 50, "p90": 1400, "note": "0 on complete turns; 1,400 only after a continuation cue (voicelab/server/calls.py)"},
+    "brain_first_token": {"p50": 350, "p90": 700, "best_measured": "304 gpt-4.1-mini South India (n=33); 535 gpt-oss@groq; 699 Gemini 3.5 Flash-Lite (n=5)"},
+    "voice_first_audio": {"p50": 350, "p90": 600, "best_measured": "19-29 Azure opening clause on warm socket; 95 Swara; 425 MAI-Voice; 624 Gemini 3.8 Flash-Lite TTS + 140-360 leading silence (trimmed by VP)"},
+    "phone_leg": {"p50": 300, "p90": 450, "status": "250-450 estimated (I); never measured"},
+    "total": {"p50": 1500, "p90": 2500, "cut_ins_max_pct": 5},
+    "opening": "first utterance synthesised during the ring, so the opening has no TTS wait"
+  },
+  "slo_v1": {
+    "call_path_availability": "99.5% monthly (agent first word within 3 s of answer over answered attempts; carrier failures tracked separately)",
+    "mid_call_vp_failure": "<= 0.5% of answered calls",
+    "dialer_adherence": "99% of due attempts start within 5 min of due time inside window",
+    "api_availability": "99.9%",
+    "webhook_delivery": "p95 first attempt <= 10 s; retries 72 h; >= 99.99% eventual",
+    "detect": "<= 5 min", "client_notice": "<= 15 min", "status_post": "<= 15 min, then every 30 min", "rca": "<= 5 business days"
+  },
+  "slo_v2": {"call_path_availability": "99.9% with service credits on Premium"},
+  "synthetic_monitoring": {"v1": "20 s echo-bot call every 5 min per (carrier x default preset), from India; component probes every 1 min", "cost_estimate": "about 17k min/month at 6 pairs => about INR 36k/month; v1 starts with 2 pairs => about INR 12k/month (C)", "quota_lane": "production path with its own micro-quota and spend cap; excluded from client metrics; evals and research never use production keys (rejected.harvest.14)"},
+  "failover": {
+    "tests": "never fall back; a failure invalidates the call with the exact reason (decision.2026-10-20.no-midcall-swaps)",
+    "call_start": "router checks provider health and quota; a red component routes the whole call to the tenant's declared alternate stack (heard and approved); filed under the combination that ran",
+    "mid_call": "only a pre-declared same-voice, same-model fallback in another deployment or region (e.g. gpt-4.1-mini deployment A to B); else a graceful close shape and one callback inside window and budget; not billed",
+    "carrier": "two declared carriers per tenant, each with its own A2P-declared CLI; auto-switch for new attempts only if pre-approved (A3), else pause + card; trigger 10%+ dial failures in 15 min on 20+ dials (intelligence M07)",
+    "resume": "paused_by=provider_outage auto-resumes after 10 min green inside window (campaigns module); dials that never reached answer are re-queued without budget charge; answered calls cut by VP get one callback and are not billed"
+  },
+  "capacity": {
+    "tpm_per_concurrent_call": "13-25k (M, l8 round2: 50k-TPM deployment returned 429 on 13/35 turns at 3 concurrent speculative streams)",
+    "admission": "dialer reserves provider quota per call (token bucket) before dialing; no reservation, no dial",
+    "lanes": "hot (live calls) vs background (analysis, learning, Operator) with background capped at 30% of shared deployments and paused after a hot 429 (asset.tx-core.quota-lanes-hot-vs-background-tpm-isolation)",
+    "voice_rt_min_instances_per_region": 2,
+    "scale_to_zero": "never for live media; workers and Scout may scale to zero and wake before signing (HV law 30)"
+  },
+  "api": {
+    "source_of_truth": "one OpenAPI 3.1 spec generating server validators, TS and Python SDKs, MCP tools, the Operator tool registry, docs and CLI",
+    "unknown_fields": "422 with field path and a suggestion",
+    "idempotency": "Idempotency-Key required on every create and dial; 24 h replay window",
+    "concurrency_control": "ETag / If-Match on object versions",
+    "dry_run": "every write accepts dry_run=true and returns plan, diff, cost and risk class",
+    "versioning": "dated VP-Version header pinned per key; 90-day deprecation notice; defaults never change silently",
+    "errors": "code, message, field, fix_url, request_id",
+    "rate_limits": "per key, documented; 429 with Retry-After",
+    "parity_check": "CI fails if any dashboard action lacks a spec operation"
+  },
+  "webhooks": {"payload": "slim: id, type, created, object ref, small summary; full object by API", "signature": "HMAC-SHA256 over timestamp + body; 5-min replay window; secret rotation with overlap", "retries": "exponential for 72 h", "replay": "UI and API, single event or time range", "auto_disable": "after 50 consecutive failures over at least 24 h, with notice", "delivery_states": "confirmed | not_executed | unknown; unknown never auto-retried as success (HV law 17)"},
+  "hooks": {"predial": "customer veto, 1,500 ms timeout, default fail-closed (skip this attempt with reason)", "precall": "personalisation during the ring, 800 ms budget; timeout => call proceeds without it", "inbound_preanswer": "reject or reroute before answer"},
+  "integrations_v1": ["Google Sheets (read + sync + write-back tab)", "payment webhooks (Razorpay, Cashfree, PayU) as outcome sources", "first design partner's CRM (LeadSquared, Zoho, Kylas, Salesforce candidates)", "WhatsApp utility follow-ups (Cloud API or BSP)", "generic signed webhooks and REST"],
+  "scout": {
+    "watchlist": "research/2026-10-20/teardown/radar/watchlist.json (67 URLs; deep set 8 vendors)",
+    "cadence": {"status_feeds": "daily", "pricing_changelog_docs_openapi_sdks": "weekly, Monday 06:00 IST", "new_entrant_sweep": "weekly", "dashboard_rewalks": "monthly, human with owner approval under decision.2026-10-20.teardown-lines", "call_battery": "quarterly and on any tripwire"},
+    "tripwires": ["India region or PoP", "INR, UPI or GST billing", "TRAI, DLT, NCPR, DND, A2P, 140, 1600 or 1601 in docs", "Hinglish mode", "memory GA", "campaigns object with DNC, windows or retries", "published all-in price <= INR 4/min", "funding >= USD 5M", "new Indian telephony integration", "named Indian BFSI customer", "self-serve launch (e.g. SquadStack/Osno allowlist off)", "deep-set vendor goes enterprise-only", "spend cap by API key", "signed webhooks at Bolna or Sarvam", "carrier failover"],
+    "outputs": ["context/inbox/*.json entries graded observed with date and diff path", "weekly Scout card to VP's owner", "monthly owner digest", "W1-W10 scoreboard refresh", "market price index"],
+    "rules": ["public pages only, no logins by Scout", "same fetch options as research/2026-10-20/teardown/radar/code/probe.py", "403/429 recorded as 'unreachable', never as 'no change'", "a vendor claim never enters the graph as observed"]
+  },
+  "per_outcome_card_managed_partners_only": {"car": 50, "health": 15, "life": 15, "two_wheeler": 20, "monthly_minimum_credited_inr": 15000, "holdout_never_billed_pct": 10, "source": "research/2026-10-17/SYNTHESIS-v2.md section 4", "risk": "IRDAI commission-cap consultation (comments 2026-10-25) may cut value per save to 0.33-0.49x"}
+}

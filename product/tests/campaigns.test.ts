@@ -515,12 +515,13 @@ test('a draft with blockers cannot launch, and says why', { skip }, async () => 
   assert.ok(r.status === 'not_executed' && /launch blocked: no published agent version/.test(r.reason));
 });
 
-test('pause and stop: A3 when VP acts, approval when a person does; stop cancels what has not dialled', { skip }, async () => {
+test('pause and stop: A3 whether VP or a person acts; resume needs a person; stop cancels what has not dialled', { skip }, async () => {
   const w = await world();
   const id = await readyCampaign(w);
   await pool.query("UPDATE campaign SET state = 'running' WHERE id = $1", [id]);
   const person = await registry.execute(pool, 'campaign.pause', { id }, as(w));
-  assert.equal(person.status, 'needs_approval');
+  assert.ok(person.status === 'confirmed' && person.mode === 'A3', 'pausing only lowers risk: no approval wait');
+  await pool.query("UPDATE campaign SET state = 'running', pause_cause = NULL WHERE id = $1", [id]);
   const sys = await registry.execute<{ cause: string }>(pool, 'campaign.pause', { id, cause: 'opt_out_spike' }, SYS(w));
   assert.ok(sys.status === 'confirmed' && sys.mode === 'A3' && sys.result.cause === 'opt_out_spike');
   const resumeSys = await registry.execute(pool, 'campaign.resume', { id }, SYS(w));

@@ -1,0 +1,675 @@
+{
+ "id": "integrator-resolutions-2026-10-21",
+ "status": "proposed, for owner review",
+ "directive": "directive.2026-10-21.blueprint-end-to-end",
+ "grades": "M measured by us (n, method); C computed; O observed; V vendor-claimed; I inferred; U unknown; P proposed product default",
+ "note": "Machine-readable companion to the integrated blueprint (blueprint_md, returned in the workflow's structured output). Proposed graph entries are for the main loop to review and merge; nothing here is logged to context/ yet.",
+ "opening_spec": {
+  "turn_1": "check it is the right person; the brand may be named; no purpose and no account detail",
+  "turn_2": "one breath: her name, the brand, 'AI assistant' in passing, the one useful fact, why she is calling; then stop",
+  "recording_notice": "her next content turn, where a sector pack requires a spoken notice",
+  "repeat_rule": "disclosure is spent only when playback marks show it was heard; if talked over, it comes once in her next turn; never otherwise repeated unprompted",
+  "questions": "'aap AI ho?' always gets the honest answer; denial is blocked at the reply door",
+  "test": "2-3 placements on the listener panel plus hang-up hazard at the disclosure moment against neighbouring moments (about 900 calls per arm to detect 15% vs 20% at alpha 0.05 and power 0.8 [C, the l6 method]); never an undisclosed arm",
+  "reverse_if": "counsel reads the IT Rules audio duty as requiring the AI clause in the first words"
+ },
+ "stack_default_rule": "the best whole-call ear rating (>= 3 testers per stack, at the handset) among stacks that pass the joint gate: handset p50 <= 1.5 s, p90 <= 2.5 s, cut-ins <= 5%",
+ "predicted_gap_by_preset_C": [
+  {
+   "preset": "Indic (Sarvam Saaras + sarvam-105b + Bulbul)",
+   "server": "0.97-1.18 s measured (n=9 replies)",
+   "handset_predicted": "1.2-1.6 s"
+  },
+  {
+   "preset": "Fast (Azure STT CI + gpt-4.1-mini SI + MAI-Voice)",
+   "server": "1.00 s with a neural voice (n=60); with MAI not measured",
+   "handset_predicted": "1.6-2.0 s"
+  },
+  {
+   "preset": "Natural (Gemini ears + fast brain + Gemini 3.8 Flash-Lite TTS)",
+   "server": "1.6-2.2 s smoke (n about 3)",
+   "handset_predicted": "2.0-2.5 s"
+  },
+  {
+   "preset": "Premium Live (Gemini 3.8 Live, text-gated)",
+   "server": "0.8-1.6 s ungated",
+   "handset_predicted": "not measured; gate needs transcript lead-time distribution and buffered latency"
+  }
+ ],
+ "price_provisional_inr_ex_gst": {
+  "rule": "Base = lowest of 2.99 / 3.49 / 3.99 keeping p50 gross margin >= 30% (2026) and >= 25% (after known 2027 changes) after a 2% payment fee; never by downgrading the voice",
+  "base_range_today": "3.49-3.99 for Indic, or Fast if MAI bills like a neural voice; Natural from 2027-01-01 (about 4.16) and Fast if MAI bills like HD need more than 3.99: VP keeps the voice and the owner chooses a 4.49 step or a lower 2027 margin (open decision 2); not printed until re-metered with brief v2, ledger and memory brief",
+  "plus": "Base + 0.50",
+  "premium": "6.49 plus a dedicated voice at INR 3.5 lakh/month",
+  "sector_packs": "India-resident call stack, analysis model and Operator brain at the Base margin rule",
+  "ladder": {
+   "2.99": "COGS <= 1.94",
+   "2.49": "COGS <= 1.62",
+   "1.99": "COGS <= 1.29",
+   "basis": "price = COGS / 0.65 (about 33% margin after the 2% payment fee); a step applies when measured COGS p50, reconciled to invoices within 5%, stays at or under the trigger for 2 consecutive months and the voice still passes the listener panel (economics-platform-defaults.json)"
+  }
+ },
+ "billing_modes": {
+  "vp_provisioned": "telephony re-billed at cost on VP's invoice where counsel and carrier terms allow",
+  "bring_your_own": "VP bills a platform rate = all-in minus the INR 0.45 telephony allowance; the carrier bills its own line at its pulse; the product shows the computed all-in total and effective rate",
+  "w8": "judged on the sum of both invoices until a single invoice is allowed"
+ },
+ "v05_slice": {
+  "scope": [
+   "hear-it-first",
+   "sign-up",
+   "Talk thread with about 25 core tools",
+   "voice by ear",
+   "browser call",
+   "CSV intake",
+   "ring my phone",
+   "one service campaign",
+   "dial gate G1-G12 (no predial hook)",
+   "reply door (disclosure, denial, crisis, numbers, OTP and payment, hang-up guard)",
+   "call page",
+   "simple Today",
+   "wallet with caps"
+  ],
+  "one_of_each": [
+   "a non-BFSI preset (appointment or subscription reminder)",
+   "one carrier path (in-product rental if terms allow, else Plivo BYO)",
+   "one stack (best that passes the joint gate)"
+  ],
+  "entry_conditions": [
+   "credentials rotated",
+   "VP's own DLT registration and trial-line A2P declaration by 2026-11-14",
+   "VP-owned Google organisation and Vertex project",
+   "buyer interviews started"
+  ],
+  "exit": [
+   "W1 graded on carrier CDRs",
+   "W2 >= 48/50",
+   "W6 < 60 s",
+   "W7 <= 15 min",
+   "joint speed gate at the handset",
+   "voice-rt load test",
+   "30 days of zero-ring audits",
+   "3 partners with an outcome source wired",
+   "penetration test passed"
+  ]
+ },
+ "resolved_defaults": [
+  {
+   "default": "disclosure placement and repeats",
+   "conflict": "voice: turn 2 after a name check; trust RD1: first breath; campaigns: after the useful opening; workspace sample: AI line first; RD1 re-offer vs R4 no repeat",
+   "resolved": "turn 1 name check (brand allowed, no purpose or account detail); turn 2 one breath: her name, brand, 'AI assistant' in passing, useful fact, why calling; spent only when heard by playback marks; if talked over, once in her next turn; never otherwise repeated unprompted",
+   "owner": "voice (shape), trust-telephony (predicates)",
+   "reverse_if": "counsel reads the IT Rules audio duty as requiring the AI clause in the first words"
+  },
+  {
+   "default": "recording notice",
+   "conflict": "turn 2 overloaded",
+   "resolved": "spoken in her next content turn where a sector pack requires it; elsewhere CO may move it to the post-call notice",
+   "owner": "trust-telephony"
+  },
+  {
+   "default": "cross-midnight windows",
+   "conflict": "campaigns allowed for service; trust quiet hours 22:00-07:00",
+   "resolved": "refused for every category",
+   "owner": "trust-telephony"
+  },
+  {
+   "default": "person-requested time",
+   "conflict": "campaigns: inside the outer band; trust: may reach 07:00-08:00 and 21:00-22:00",
+   "resolved": "up to 07:00-22:00 for service and transactional; RBI pack stays 08:00-19:00; never quiet hours",
+   "owner": "trust-telephony"
+  },
+  {
+   "default": "API key default cap",
+   "conflict": "economics INR 2,000/day; trust INR 5,000/day",
+   "resolved": "INR 2,000/day and 20,000/month",
+   "owner": "economics-platform"
+  },
+  {
+   "default": "trial line caps",
+   "conflict": "workspace 5 rings/day; trust 20 per number per day; economics up to 10 calls",
+   "resolved": "5 verified numbers per workspace; 10 rings per number per day; 30 across all workspaces; 300 s; 09:00-21:00",
+   "owner": "trust-telephony"
+  },
+  {
+   "default": "free trial",
+   "conflict": "INR 300 credit plus INR 200/day free tests for 14 days (abuse vector)",
+   "resolved": "INR 500 lifetime per verified phone; paid workspaces get the INR 200/day test budget",
+   "owner": "economics-platform"
+  },
+  {
+   "default": "predial timeout",
+   "conflict": "800 ms (campaigns, trust) vs 1,500 ms (economics)",
+   "resolved": "800 ms, two-phase (reserve, veto outside the transaction, confirm or release), fail closed",
+   "owner": "campaigns"
+  },
+  {
+   "default": "webhook retries",
+   "conflict": "intelligence 8 retries over 24 h; economics 72 h exponential",
+   "resolved": "72 h exponential retries; 30-day replay; auto-disable after 50 consecutive failures over 24 h",
+   "owner": "economics-platform"
+  },
+  {
+   "default": "preference memory tier",
+   "conflict": "economics Base; memory-omni screen 'Memory is in Plus'",
+   "resolved": "preferences in Base (late v1); relational memory in Plus",
+   "owner": "economics-platform"
+  },
+  {
+   "default": "fast-lane revert autonomy",
+   "conflict": "learning A3 vs spine 'publish always needs A2'",
+   "resolved": "explicit A3 verb deployment.revert_to_last_good with three conditions; else throttle and card",
+   "owner": "learning (rule), workspace (registry)"
+  },
+  {
+   "default": "Operator name and shell sizes",
+   "conflict": "VP vs Saarthi; rail 224 vs 216; panel 400 vs 360",
+   "resolved": "'VP' in v0.5; design-language shell (rail 64/216, Talk dock 360, Talk route 760 + 456)",
+   "owner": "design-language"
+  },
+  {
+   "default": "concurrency included",
+   "conflict": "Base 10 vs Retell's free 20",
+   "resolved": "Base 20, Plus 50, Premium 100, subject to quota admission",
+   "owner": "economics-platform"
+  },
+  {
+   "default": "Plivo pulse",
+   "conflict": "30 s (l2 rate card) vs 60 s (console read, voicelab/server/phone.py)",
+   "resolved": "plan on 60 s until the first invoice settles it",
+   "owner": "economics-platform"
+  },
+  {
+   "default": "Gemini 3.8 Live talk-over",
+   "conflict": "42% vs 20/51",
+   "resolved": "about 40% (20/51 non-pause turns to 22/53 turns, g5)",
+   "owner": "voice"
+  },
+  {
+   "default": "learning test budget",
+   "conflict": "2 cycles a day at INR 100-200 each vs INR 200/day",
+   "resolved": "1 cycle a day; 2 on Plus at INR 400/day",
+   "owner": "learning"
+  },
+  {
+   "default": "recordings retention",
+   "conflict": "memory-omni 90 days vs IRDAI 10-year call records",
+   "resolved": "by tier (Base 90 days, Plus 1 year); sector packs raise the floor; long retention at storage cost",
+   "owner": "trust-telephony"
+  }
+ ],
+ "registry_additions": [
+  {
+   "tool": "campaign.preview_schedule",
+   "risk_class": "read",
+   "autonomy": "auto",
+   "min_role": "OP",
+   "module": "campaigns",
+   "page": "schedule preview"
+  },
+  {
+   "tool": "campaign.test_row",
+   "risk_class": "test",
+   "autonomy": "A1 inside the test budget; rings only verified member phones",
+   "min_role": "BU",
+   "module": "campaigns",
+   "page": "rows and reasons"
+  },
+  {
+   "tool": "followup.rule.set",
+   "risk_class": "draft on a draft campaign; external on a running one",
+   "autonomy": "A1 / A2",
+   "min_role": "OP",
+   "module": "campaigns",
+   "page": "after the call"
+  },
+  {
+   "tool": "inbound.route.set",
+   "risk_class": "external",
+   "autonomy": "A2",
+   "min_role": "OP",
+   "module": "campaigns",
+   "page": "inbound routes"
+  },
+  {
+   "tool": "attempt.explain",
+   "risk_class": "read",
+   "autonomy": "auto",
+   "min_role": "VI (PII scrubbed)",
+   "module": "campaigns",
+   "page": "person in campaign"
+  },
+  {
+   "tool": "attempt.retry_unknown",
+   "risk_class": "external",
+   "autonomy": "A2 (unknown outcomes are never auto-retried)",
+   "min_role": "OP",
+   "module": "campaigns",
+   "page": "run page"
+  },
+  {
+   "tool": "ledgerpack.approve",
+   "risk_class": "draft",
+   "autonomy": "A1; shown in the publish diff",
+   "min_role": "BU",
+   "module": "voice",
+   "page": "publish review"
+  },
+  {
+   "tool": "turnpolicy.set",
+   "risk_class": "draft",
+   "autonomy": "A1",
+   "min_role": "BU",
+   "module": "voice",
+   "page": "turn-taking panel"
+  },
+  {
+   "tool": "lexicon.edit",
+   "risk_class": "draft",
+   "autonomy": "A1",
+   "min_role": "BU",
+   "module": "voice",
+   "page": "turn-taking panel"
+  },
+  {
+   "tool": "monitor.set",
+   "risk_class": "policy to disable or loosen; draft to add or tighten",
+   "autonomy": "A2 / A1",
+   "min_role": "CO or OW to loosen",
+   "module": "intelligence",
+   "page": "issues and monitors"
+  },
+  {
+   "tool": "alert.route.set",
+   "risk_class": "policy",
+   "autonomy": "A2",
+   "min_role": "OW or CO",
+   "module": "intelligence",
+   "page": "issues and monitors"
+  },
+  {
+   "tool": "refund.request",
+   "risk_class": "spend",
+   "autonomy": "A2; a human decides",
+   "min_role": "OW",
+   "module": "economics-platform",
+   "page": "billing and wallet"
+  },
+  {
+   "tool": "dispute.open",
+   "risk_class": "draft",
+   "autonomy": "A1",
+   "min_role": "OP",
+   "module": "economics-platform",
+   "page": "call page, billing"
+  },
+  {
+   "tool": "billing.mode.set",
+   "risk_class": "spend",
+   "autonomy": "A2 with re-auth",
+   "min_role": "OW",
+   "module": "economics-platform",
+   "page": "billing and wallet"
+  },
+  {
+   "tool": "deployment.revert_to_last_good",
+   "risk_class": "external",
+   "autonomy": "A3 only when the fast lane flagged a moment the current version introduced, the previous version ran 200+ connected calls without that flag, and it re-passes today's compile, lint, locked-section, provenance and fact checks; otherwise A2",
+   "min_role": "OP",
+   "module": "learning",
+   "page": "where callers leave; fast-lane alarm"
+  },
+  {
+   "tool": "view.mode.set",
+   "risk_class": "read (UI preference)",
+   "autonomy": "auto",
+   "min_role": "any",
+   "module": "design-language",
+   "page": "every page"
+  },
+  {
+   "tool": "envelope.set",
+   "risk_class": "policy",
+   "autonomy": "A2 with re-auth (v2)",
+   "min_role": "OW",
+   "module": "learning",
+   "page": "what VP may change"
+  }
+ ],
+ "proposed_graph_entries": [
+  {
+   "id": "decision.2026-10-21.blueprint-v05-slice",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Build order: a v0.5 vertical slice (one non-BFSI service preset, one carrier path, one measured stack; hear-it-first to call page with the dial gate and reply door) ships before the rest of v1; exit on W1, W2, W6, W7, the joint speed gate, a load test, 30 days of zero-ring audits and 3 partners with outcomes.",
+   "reverse_if": "the slice's exit bars are met while building more in parallel without slipping them, or the owner directs otherwise",
+   "relates": [
+    "rejected.harvest.19"
+   ]
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-opening-spec",
+   "type": "decision",
+   "status": "proposed",
+   "title": "One opening spec for every module: turn 1 checks the person; turn 2 in one breath gives her name, the brand, 'AI assistant' in passing and the useful fact; disclosure is spent only when heard; recording notice in the next content turn where required.",
+   "reverse_if": "counsel requires the AI clause in the first words, or the placement test shows the disclosure moment's hang-up hazard exceeds neighbouring moments by more than 5 points (then wording or placement change, never presence)",
+   "relates": [
+    "requirement req-47"
+   ]
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-joint-speed-gate",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Speed and cut-ins are one gate at the handset (p50 ≤ 1.5 s, p90 ≤ 2.5 s, cut-ins ≤ 5%, stereo battery); the default stack is the best whole-call ear rating among stacks that pass; slower presets stay opt-in with their wait shown.",
+   "reverse_if": "the owner decides to ship a stack below the gate under a stated looser bar",
+   "relates": [
+    "open.2026-10-20.default-stack",
+    "open.2026-10-19.turn-taking"
+   ]
+  },
+  {
+   "id": "computed.2026-10-21.blueprint-predicted-gap-brief-v2",
+   "type": "measurement",
+   "status": "computed",
+   "title": "Predicted handset reply gap recomputed with brief-v2 TTFT (567-641 ms, n=5-6) instead of 304 ms (n=33 on a 1.6k-token warm prompt): Indic 1.2-1.6 s (server 0.97-1.18 s, n=9 replies); Fast 1.6-2.0 s (server 1.00 s with a neural voice, n=60, before brief v2 and MAI); Natural 2.0-2.5 s (server 1.6-2.2 s, smoke n about 3). Only Indic is predicted inside the 1.5 s bar; no stack passes the 5% cut-in bar.",
+   "method": "sum of measured component medians (LAB2, CAT, L8R2) plus a phone leg of 250-450 ms that has never been measured [I]; grade C; replaced by the Phase 0 handset battery",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-in-product-rental",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Pursue in-product number rental in the tenant's name through a carrier partner (Vobiz precedent at Sarvam and Bolna), with bring-your-own as the second path; VP never carries calls or becomes the sender.",
+   "reverse_if": "carriers refuse partner or sub-account terms in the KC5 quote round, or counsel finds VP would carry sender or aggregator duties"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-billing-modes",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Two billing modes: VP-provisioned lines re-bill telephony at cost where allowed; bring-your-own lines pay a platform rate (all-in minus INR 0.45 telephony allowance) and the carrier bills its line; the product shows the computed all-in total; W8/T7 judged on the sum of invoices.",
+   "reverse_if": "counsel and carrier terms allow a single all-in invoice on bring-your-own lines"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-selfserve-per-second-pricing",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Self-serve prices per connected second with an all-in display; Base set by the margin rule after re-metering (INR 3.49-3.99 on today's numbers).",
+   "supersedes": "rejected.2026-10-17.per-minute-launch (for self-serve scope only: the buyer staffs escalation, the tenant's carrier bills 1600 carriage, WhatsApp passes through at cost)",
+   "reverse_if": "re-metered COGS plus per-workspace costs put p50 margin below 25% at the chosen Base, or buyer interviews reject per-minute in favour of per-outcome"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-outcome-sources",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Outcome sources that need no developer (paid-list re-upload or Sheet column, insurer MIS file parser, manager confirmation graded below system-verified) count as verified sources at their authority grade; interim metrics need no integration.",
+   "reverse_if": "manager-confirmed outcomes disagree with system-verified outcomes beyond the calibration bar (agreement < 0.90)"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-nonbfsi-first",
+   "type": "decision",
+   "status": "proposed",
+   "title": "v0.5 runs with at least one non-BFSI design partner on a declared 10-digit line; insurance and lending presets are gated on KC5 and KC8.",
+   "reverse_if": "KC5 and KC8 both pass before v0.5 starts"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-vp-north-star",
+   "type": "decision",
+   "status": "proposed",
+   "title": "VP's north star is verified earned outcomes per week across tenants; connected minutes are a revenue metric only.",
+   "supersedes": "spine section 3 'outcome-bearing connected minutes per week' (no graph node)",
+   "reverse_if": "outcome verification coverage stays under 60% of live campaigns after 90 days, making the count unrepresentative"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-owner-expert-views",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Owner view by default for Owners and Viewers (outcomes, money, approvals, plain words); Expert view for Builders, Compliance and Developers; no view hides a safety state or blocker.",
+   "reverse_if": "5-user sessions show owners need the expert detail to complete tasks"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-defaults-registry",
+   "type": "decision",
+   "status": "proposed",
+   "title": "Every shared default has one owning module, recorded in integrator-resolutions.json resolved_defaults, with a CI check that fails when any module defaults file disagrees.",
+   "reverse_if": "none expected (a hygiene rule)"
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-revert-verb",
+   "type": "decision",
+   "status": "proposed",
+   "title": "deployment.revert_to_last_good is the only automatic version change: A3 only under three conditions (flagged moment introduced by the current version; previous version 200+ clean calls; re-passes today's checks), else a 25% throttle and a card.",
+   "reverse_if": "a revert ever ships a version that fails a current check"
+  },
+  {
+   "id": "rejected.2026-10-21.blueprint-taxila-echo-as-vp-evidence",
+   "type": "rejection",
+   "status": "proposed",
+   "title": "Citing Taxila's 0/66 echo false barge-ins as evidence for VP's echo handling: it was Azure Voice Live preview reference AEC on a simulated loudspeaker harness, not VP's stack or a real phone (docs/harvest/tx-voice.md section 6.2)."
+  },
+  {
+   "id": "risk.2026-10-21.blueprint-natural-misses-speed-gate",
+   "type": "risk",
+   "status": "open",
+   "title": "The owner-preferred Gemini-voice stack is predicted at 2.0-2.5 s at the handset against a 1.5 s bar; if the ear prefers it strongly, speed and voice conflict at the default."
+  },
+  {
+   "id": "open.2026-10-21.blueprint-carrier-partner-rental",
+   "type": "open-question",
+   "status": "open",
+   "title": "Will Vobiz, Plivo or Exotel let VP rent numbers in the tenant's name inside VP (partner or sub-account KYC), at what price and time, and with AI streaming on 1600?",
+   "closes_by": "KC5 quote round, ~2026-10-30"
+  },
+  {
+   "id": "open.2026-10-21.blueprint-t10-branching-task",
+   "type": "open-question",
+   "status": "open",
+   "title": "Can the brief, ledger and stages layer handle a branching job (slot booking with a two-step identity check) as well as a graph builder? Task T10 decides whether VP needs a flow builder for parity."
+  }
+ ],
+ "changes_from_redteam": [
+  "[better-in-every-sense, critical] User flow broke at telephony (BYO-only v1). Fixed: in-product rental in the tenant's name through a carrier partner is now decision 6 (Vobiz rentals inside Sarvam and Bolna are the observed precedent), asked in the KC5 quote round (~2026-10-30); BYO is the second path; VP Success assisted onboarding added; W7b (first production call, KYC included) added. Terms stay [U] until carriers answer. (§1, §5, §6.7, §11, §12)",
+  "[better-in-every-sense, critical] BFSI beachhead vs non-resident default stack. Fixed: sector packs (IRDAI, RBI) carry an India-resident call stack, analysis model and Operator brain priced by the Base margin rule, not Premium-only; BFSI workspaces use India-resident Operator brains only. (§6.1, §8.3)",
+  "[better-in-every-sense, critical] Results unverifiable for SMBs without webhooks. Fixed: no-developer outcome sources (paid-list re-upload or Sheet column, insurer MIS file parser, manager confirmation graded below system-verified) plus interim metrics (promise with date, callback booked, agenda done, link opened); 10-15 buyer interviews are a Phase 0 gate. (§6.4, §11, §12)",
+  "[better-in-every-sense + feasibility, critical] First jobs depend on KC5 (1600 streaming) and KC8 (solicitation). Fixed: v0.5 starts with a non-BFSI partner on a declared 10-digit line; appointment and subscription presets ship first; insurance and lending presets are gated on KC5 and counsel; no IRDAI-pack build before counsel. (§3, §6.3, §11)",
+  "[feasibility, critical] No buildable v1 (rejected.harvest.19). Fixed: a v0.5 vertical slice (one non-BFSI preset, one carrier path, one measured stack; hear-it-first to call page) with exit bars (W1 on carrier CDRs, W2, W6, W7, the joint speed gate, load test, 30 days of zero-ring audits, 3 partners with outcomes, pen test); every other item waits behind it. (P13, §11)",
+  "[feasibility, critical] Speed vs voice; predicted gap used a 304 ms TTFT measured on a smaller warm prompt. Fixed: gaps recomputed with brief-v2 TTFT (567-641 ms, n=5-6): Natural predicted 2.0-2.5 s at the handset, Fast 1.6-2.0 s, Indic 1.2-1.6 s; speed and cut-ins are one joint gate at the handset; the default is the best whole-call ear rating among passing stacks; Natural is opt-in with its wait shown (open decision 1). Not fixable by design alone: no stack passes the cut-in bar today. (§1 decision 4, §8.1-8.2)",
+  "[better-in-every-sense, major] Natural proposed as default despite missing the bar. Fixed by the joint gate above; the turn-taking battery is a hard v0.5 exit and Phase 0 gate (~2026-11-06). (§8.2, §11)",
+  "[better-in-every-sense, major] Catalogue could not contain the best voices. Partly fixed: ElevenLabs and Cartesia are proposed as benchmark rows in the round-2 whole-call ear test (open decision 11). Not fixed: the dedicated brand voice stays Premium/v2 because its approval is unverified and it costs INR 3.5 lakh a month. (§8.3, §14)",
+  "[better-in-every-sense + feasibility, major] All-in per-second billing contradicted BYO, where the carrier bills the tenant. Fixed: two billing modes; on BYO, VP bills a platform rate (all-in minus the INR 0.45 telephony allowance) and shows the computed all-in total and effective rate at the carrier's pulse; W8/T7 judged on the sum of both invoices until counsel allows one invoice. (§6.8)",
+  "[better-in-every-sense + feasibility, major] Per-minute launch pricing contradicted rejected.2026-10-17.per-minute-launch. Fixed: a proposed decision supersedes it for self-serve scope only (buyer staffs escalation, carriers bill 1600, WhatsApp at cost) with reverse_if (INT proposed_graph_entries); no price printed until re-metered; per-outcome pricing restated as a software fee while the tenant runs its own number and humans. (§8.3, open decision 2)",
+  "[better-in-every-sense + feasibility, major] Margins left out fixed and acquisition costs and used a lean-persona AI cost. Fixed: the x1.3 persona-and-memory uplift applied (Natural COGS ~2.57, 3.04 in 2027); Base shown as INR 3.49-3.99 provisional; the fixed-cost layer is named (Operator, tests, monitoring, support, disputes); trial capped at INR 500 lifetime per verified phone; recovery is open decision 12. (§8.3)",
+  "[better-in-every-sense, major] 'Cheaper than everyone' overclaimed. Fixed: the only cost claim is 'the lowest effective price on short calls, per second, with caps', allowed only after the T7 invoice audit; Sarvam Business (whole minutes) and claimed SquadStack/Bolna floors are stated; no price-led hero. (§8.5, §9)",
+  "[better-in-every-sense, major] v1 lacked regional languages (req-10). Fixed in part: five regional betas (Tamil, Telugu, Kannada, Marathi, Bengali) in v1 on the Indic stack, each gated on its own opt-out, crisis, disclosure and goodbye lexicons and ≥ 95% language hold; GA in v2; the loss to Sarvam on languages is stated. (§6.2, §9)",
+  "[better-in-every-sense, major] Parity holes (flows, agent hand-off, text channels, generic SIP, custom LLM, concurrency). Fixed in part: a stages layer plus agent-to-agent hand-off, proven on a new T10 branching task before any graph builder; custom-LLM endpoint in v1; Base concurrency raised to 20 (Retell's free floor). Deferred with reason: generic SIP and WhatsApp conversational agents in v2, Telegram v3 (req-67 is nice-priority). (§6.3, §6.8, §9, §11)",
+  "[better-in-every-sense + feasibility, major] Four conflicting disclosure placements; turn 2 overloaded; no lawful control for the disclosure test. Fixed: one opening spec owned by voice and checked by trust (name check; then her name, brand, 'AI assistant' in passing, useful fact); 'spent only when heard' resolves RD1 vs R4; recording notice moved to her next content turn; the test is a placement A/B plus hazard at the disclosure moment, never an undisclosed arm; reversal if counsel requires the clause in the first words. (§6.2, §11, App B, open decision 16)",
+  "[better-in-every-sense, major] Self-learning promise contradicted by copy rules. Put to the owner: a bounded standing approval envelope in v2 and the copy 'improves itself within limits you set, and proves what it changes' (open decision 5). (§5, §6.6)",
+  "[better-in-every-sense, major] Statistics and internals shown to an owner on a phone. Fixed: Owner view by default for Owners and Viewers; Expert view for Builders, Compliance and Developers; same objects, no hidden safety states. (§3, §6.9)",
+  "[better-in-every-sense, major] SquadStack's human CSMs beat 'just talk'. Fixed: VP Success assisted onboarding (IST hours) acting only through the same tools and ledger, included for the first 10-20 tenants; the unassisted share is tracked. (§5, open decision 15)",
+  "[better-in-every-sense, major] W7 was a vanity metric. Fixed: W7 is measured on Bolna and Sarvam with a stopwatch; W7b (sign-up to the first production call from the tenant's declared line, KYC included) added; competitors' ring time graded [U]. (§4.4, §11, §12)",
+  "[better-in-every-sense, major] Registry missed actions other modules defined. Fixed: 17 tools added with risk classes (INT registry_additions), CI parity check across module screens. (§6.1)",
+  "[better-in-every-sense, major] v1 scope repeated rejected.harvest.19. Fixed by the v0.5 slice (see the feasibility critical item). (§11)",
+  "[feasibility, major] Reply-door classifier predicates had unmeasured errors and latency. Fixed: each predicate labelled deterministic or classifier-based; risky turns hold the whole reply; a blocked later clause plays a pre-rendered bridge then regenerates; a Phase 0 battery measures false positives, false negatives and added latency; model-based fences ship only after measured recall. (§6.2, §11)",
+  "[feasibility, major] Echo evidence (0/66) came from Azure Voice Live preview on a simulated harness. Fixed: no longer cited as VP evidence; VP builds reference echo handling against its own outbound audio and tests it on the Plivo leg with real handsets and speakerphones. (§6.2)",
+  "[feasibility, major] W3 could not be computed. Fixed: an absolute handset bar (p50 ≤ 1.5 s, p90 ≤ 2.5 s, cut-ins ≤ 5%) is the pass condition; Bolna and Sarvam are measured on the same handset before any comparative claim; the Plivo recharge before 2026-11-16 is an owner decision. (§9, §11, open decision 13)",
+  "[feasibility, major] Voice quality rested on text-only measures. Fixed: Phase 0 adds agenda completion per simulated call scored against hidden keys beside whole-call human ratings; if no stack reaches 7.0, the best-rated passing stack ships with its rating shown. (§11, open decision 1)",
+  "[feasibility, major] Self-learning targets did not fit the arithmetic. Fixed: first proved change within 30 days only for turn-taking; any slot 60-90 days at L2; probes ≥ 60 runs per arm with the reference spread measured on ≥ 2 pairs; FDR control on drop-off flags; test budget matched to one cycle a day (two on Plus at INR 400). (§6.4, §6.6)",
+  "[feasibility, major] Auto-revert could republish a stale version. Fixed: deployment.revert_to_last_good is an explicit A3 verb allowed only if the previous version ran 200+ clean calls and re-passes today's compile, lint, locked-section, provenance and fact checks; otherwise a 25% throttle and a card. (§5)",
+  "[feasibility, major] Predial hook inside the claim transaction broke the 50 ms precheck. Fixed: two-phase reserve, veto outside the transaction, confirm or release; one timeout (800 ms) in the defaults registry. (§6.3, App B)",
+  "[feasibility, major] Failure modes under-designed. Fixed: pre-rendered hold and close clips per voice at publish; a cross-provider declared alternate before production; VP-owned Google organisation and Vertex project with measured quotas; a voice-rt load test, India DR (RPO ≤ 15 min, RTO ≤ 4 h) and on-call runbooks before v0.5 exits. (§6.8, §7.2, §7.3)",
+  "[feasibility, major] Security gaps. Fixed: in-call tool arguments bound to the dialled contact's record keys; an egress allowlist with private-range blocking for every tenant URL; the Operator sees receipts, headers and value shapes, never raw rows; free minutes capped per verified phone; credential rotation is a v0.5 entry condition; a penetration test before production. (§6.1, §6.7, §11)",
+  "[feasibility, major] Identity disclosed before verification. Fixed: a knowledge check before account details or memory on inbound, lending outbound and when a relative answers; generic callback openers; no call purpose on the verify page for lending and collections. (§6.3, §6.5, §6.7)",
+  "[feasibility, major] Rejected ideas re-proposed without edges. Fixed: per-minute pricing superseded only for self-serve with reverse_if; price-led hero removed; per-outcome restated as a software fee; the Premium Live gate now needs the transcript lead-time distribution and buffered latency, not a count. (§8.2, §8.3, §8.5, INT)",
+  "[feasibility, major] Self-serve built without buyer evidence; support uncosted. Fixed: 10-15 buyer interviews in Phase 0 before self-serve-only surfaces; support priced into the fixed-cost layer. (§10, §11, open decision 12)",
+  "[feasibility, major] VP's own DLT registration and trial-line A2P declaration missing from the critical path. Fixed: dated Phase 0 task due 2026-11-14. (§6.7, §11)",
+  "[minor] Tiers: preferences in Base, relational memory in Plus. Autonomy: explicit revert verb. Defaults: Appendix B names one owner per default with a CI check. Shell and name: 'VP' in v0.5, the design-language shell. (§5, App B)",
+  "[minor] Case table extended: bereavement, a new number offered, unsupported language, a minor answering, 'WhatsApp pe bhej do', a third party asking for account details, mid-call tool or provider failure. (§4.11)",
+  "[minor] Claims hygiene: Bolna's 'hidden hold', Retell's batch-DNC claim and 'nobody owns the Hinglish call' were dropped; W7 competitor gap graded [U]; latency always carries its vantage; 'cheaper' stays out of copy until T7. (§1, §4.4, §8.5, §9)",
+  "[minor] 'Beyond everyone' inflation: the blueprint leads with ten defining decisions and marks each comparison as beat on paper, match, lose today or unproven, each with its proof. (§1, §9)",
+  "[minor] UI proof and animation (req-37): signature moments prototyped as rendered motion for the owner before build; incumbents recorded on video at 390 px before any UI claim. (§6.9)",
+  "[minor] Recordings retention: by tier (Base 90 days, Plus 1 year), sector floors (IRDAI 10 years) priced at storage cost. (§6.5, §8.3)",
+  "[minor] Redaction by context, checksums only to raise confidence; spam-label and pickup monitoring per line with optional Truecaller verification; DLT SMS and WhatsApp template approvals on the readiness rail with timers; name-check clip cached and intro rendered on answer. (§6.2, §6.3, §6.7)",
+  "[minor] Judges calibrated on human quick-rate labels, promise-to-payment tracked separately; VP north star changed to verified earned outcomes per week (minutes are revenue, not the goal); the Operator's voice ear chosen on recorded human commands; simulator prompts framed as QA writing tasks on test quota. (§6.1, §6.4, §6.6, §12)",
+  "[minor] Cross-module conflicts resolved: cross-midnight windows refused (quiet hours), person-requested time 07:00-22:00 for service, API key cap INR 2,000/day, trial 5 numbers and 10 rings per number a day, webhook retries 72 h with 30-day replay, Plivo pulse planned at 60 s, Live talk-over ~40%. (App B)",
+  "[added from the MISSING lists] 'Predictions' defined (v2 per-contact likelihoods ordering calls, labelled observed; v3 forecasts); scanned-PDF intake by OCR with review (beta); req-57/18 kept as v3; every one of the 68 owner requirements mapped with status. (§6.4, §6.5, App A)"
+ ],
+ "open_decisions": [
+  {
+   "question": "Which stack is the default, and what happens when the ear's favourite (Gemini voice) is slower than the speed bar?",
+   "recommendation": "Let the ear judge whole calls at the handset (≥ 3 testers per stack, stereo battery on Jio, Airtel and Vi). The default is the best-rated stack that passes the joint gate (handset p50 ≤ 1.5 s, p90 ≤ 2.5 s, cut-ins ≤ 5%). Natural (Gemini voice) ships as an opt-in preset with its wait shown until it passes. If no stack passes, ship the best-rated one with its measured numbers shown, fix turn-taking first, and make no speed claim.",
+   "options": [
+    "Joint gate decides (recommended)",
+    "Natural as default with a stated looser bar (p50 ≤ 2.0 s, cut-ins ≤ 10%)",
+    "Fastest stack regardless of rating"
+   ],
+   "why": "req-01 and req-11 are both must. Natural measured 1.6-2.2 s at the server (smoke, n≈3) and is predicted 2.0-2.5 s at the handset; only Indic is predicted inside 1.5 s; every stack cuts in on 15-42% of turns today."
+  },
+  {
+   "question": "What is the Base price and pricing unit, and how is the INR 2 target handled?",
+   "recommendation": "Per connected second with an all-in display. Set Base by the margin rule after re-metering the chosen default on the India VM with brief v2, the ledger and a memory brief (INR 3.49-3.99 ex-GST on today's numbers). If the ear's pick needs more than 3.99 (Natural from 2027-01-01, about 4.16; Fast if MAI bills like HD), keep the voice and choose between a 4.49 step and a lower 2027 margin. Sign that v1 launches above INR 2 and reaches it through the pre-registered ladder (2.99 / 2.49 / 1.99 when measured COGS stays at or under 1.94 / 1.62 / 1.29). Log a decision superseding rejected.2026-10-17.per-minute-launch for self-serve scope.",
+   "options": [
+    "Per-second all-in, Base by the margin rule (recommended)",
+    "Launch at INR 2.99 and accept under 30% margin",
+    "Per-outcome pricing for everyone"
+   ],
+   "why": "req-41 (must, 5 repeats) conflicts with req-02 (voice beats margin): no measured stack reaches INR 2 with a voice that passed the ear test. The old rejection was computed for a managed model in which VP paid human escalation and 1600 carriage."
+  },
+  {
+   "question": "Who are the first design partners?",
+   "recommendation": "At least one non-BFSI partner (appointment or subscription reminders on a declared 10-digit line) for the v0.5 slice. Insurance renewal and lending pre-due follow only after the KC5 carrier answers (~2026-10-30) and counsel on KC8 (~2026-11-13).",
+   "options": [
+    "Non-BFSI first, BFSI after the gates (recommended)",
+    "BFSI first, waiting for 1600 numbers",
+    "Both in parallel"
+   ],
+   "why": "Both lead presets need 1600 numbers. KC5 (AI streaming on 1600) is at risk and KC8 (is a renewal reminder solicitation?) is untested; a negative answer would remove the first preset and the partners."
+  },
+  {
+   "question": "Should VP rent Indian numbers in the tenant's name inside the product, or stay bring-your-own only?",
+   "recommendation": "Ask Vobiz, Plivo and Exotel in the KC5 quote round for partner or sub-account rental in the tenant's name; ship in-product rental where carrier terms and counsel allow; keep bring-your-own as the second path with guided forms and VP Success.",
+   "options": [
+    "In-product rental plus bring-your-own (recommended)",
+    "Bring-your-own only",
+    "VP as carrier partner of record"
+   ],
+   "why": "Sarvam and Bolna already rent Indian numbers inside their products [O]. Bring-your-own only loses the first production call on user flow and convenience. VP must never carry calls itself or become the sender."
+  },
+  {
+   "question": "How does VP honour 'self-learning' (req-34) without a model approving its own changes?",
+   "recommendation": "Ship the fast lane and fix cards in v1. In v2 add a bounded standing approval envelope: turn timing within preset ranges, middle-slot reorders and objection packs from the approved library auto-start as 10% splits, are promoted only on passing fixed-horizon tests and stop on any guardrail. Adopt the copy 'improves itself within limits you set, and proves what it changes'.",
+   "options": [
+    "Envelope plus honest copy (recommended)",
+    "Every change one tap; 'self-learning' banned below L4",
+    "Autonomous rewriting"
+   ],
+   "why": "req-34 is must (3 repeats). An opening change needs 686-2,036 calls per arm to prove [C l6] and an objection fix about 600-1,200 calls [I]; daily A/B peeking gave 52-62% false winners in A/A; the competitors' autonomous loops removed the guard."
+  },
+  {
+   "question": "Does preference memory ship in Base (late v1) or wait for v2?",
+   "recommendation": "Base, late v1, gated by MEM-SIM (recall ≥ 95%, ≤ 1 in 20 preferences ignored) and an India latency A/B (≤ 50 ms added). It slips to v2 if either fails. Relational memory stays in Plus (v2).",
+   "options": [
+    "Base, late v1 (recommended)",
+    "Plus only",
+    "v2 only"
+   ],
+   "why": "Retell already ships contact memory, so preferences are parity. The cost is about INR 0.06-0.15 per 3-minute call [C]. req-36 keeps the human voice in Base."
+  },
+  {
+   "question": "What is the Operator called in the product?",
+   "recommendation": "'VP' for v0.5; test 'Saarthi' in the 5-user sessions after a brand check.",
+   "options": [
+    "VP (recommended for v0.5)",
+    "Saarthi",
+    "Munim"
+   ],
+   "why": "The design module proposed Saarthi while the spine and workspace used VP. A name users mistake for a person would blur VP's own AI honesty."
+  },
+  {
+   "question": "What is the production failover policy (open.2026-10-20.product-failover-policy)?",
+   "recommendation": "Tests never fall back. At call start, route the whole call to a declared, heard alternate stack on a different provider. Mid-call, only a same-voice, same-model deployment in another region; otherwise pre-rendered hold and close clips and one unbilled callback. Carrier failover is pre-dial only, via a declared line of the same brand.",
+   "options": [
+    "As recommended",
+    "No failover: pause campaigns",
+    "Automatic mid-call voice swap"
+   ],
+   "why": "Silent fallback in tests was rejected; a same-provider alternate fails in a provider-wide outage; a mid-call voice swap breaks the experience and the run manifest."
+  },
+  {
+   "question": "Should the runtime split into a Python voice service and a TypeScript control plane?",
+   "recommendation": "Yes: port the Python lab as voice-rt in Azure Central India, with the control plane in TypeScript on India-resident Postgres. Reverse if a TypeScript port matches battery latency with less operations work.",
+   "options": [
+    "Split (recommended)",
+    "All TypeScript",
+    "All Python"
+   ],
+   "why": "The lab's adapters, ledger, hang-up guard, Plivo line and meter are Python and measured; the product plane needs one API spec and one registry."
+  },
+  {
+   "question": "Do regional languages ship in v1?",
+   "recommendation": "Five betas in v1 (Tamil, Telugu, Kannada, Marathi, Bengali) on the Indic stack, each released only when its opt-out, crisis, disclosure and goodbye lexicons pass and language hold is ≥ 95%; GA in v2; dialect only by opt-in.",
+   "options": [
+    "Five gated betas (recommended)",
+    "Hindi belt only in v1, said plainly",
+    "All languages GA in v1"
+   ],
+   "why": "req-10. Sarvam supports 11 Indic languages; its demo held Hindi 38/40 and Tamil-English 20/20 [M CMP-08]. Safety predicates must work in each language before a single call."
+  },
+  {
+   "question": "Should ElevenLabs and Cartesia voices join the round-2 ear test?",
+   "recommendation": "Yes, as benchmark rows in the whole-call blind test (small spend), so 'chosen by ear' compares against the best voices available. The default must still pass the cost, residency and speed rules.",
+   "options": [
+    "Add as benchmarks (recommended)",
+    "Keep to Gemini, Azure and Sarvam"
+   ],
+   "why": "req-54 names Gemini and Azure first. Without the strongest voices in the test, VP cannot know how far its voice is from the best, and 'better voice' stays unknowable."
+  },
+  {
+   "question": "How are fixed per-workspace costs (Operator brain, tests, monitoring, support) recovered?",
+   "recommendation": "A free trial of INR 500 lifetime per verified phone; a credited INR 1,000 first top-up; Operator fair use that scales with spend; human support priced into the tiers; no seat or platform fee.",
+   "options": [
+    "As recommended",
+    "A monthly platform fee",
+    "Absorb everything in the per-minute margin"
+   ],
+   "why": "The earlier margins left out Operator turns, test budgets, synthetic monitoring (INR 12-36k a month), support and disputes; INR 200 a day free for 14 days was an abuse vector."
+  },
+  {
+   "question": "Approve the small spends needed before 2026-11-14?",
+   "recommendation": "Approve the Plivo recharge (trial credit expires 2026-11-16), VP's own DLT principal-entity registration and trial-line A2P declaration, a VP-owned Google organisation and Vertex project, and counsel on KC8, sender status and billing.",
+   "options": [
+    "Approve all (recommended)",
+    "Approve counsel and DLT only"
+   ],
+   "why": "W7 cannot run after the 2026-11-17 A2P date without VP's declared trial line; the handset battery needs a working line; production must not run on another company's account."
+  },
+  {
+   "question": "Who builds the v0.5 slice, and by when?",
+   "recommendation": "Name owners for voice-rt, the control plane and design now; target 6-8 weeks to the first partner calls [I]; hold every other v1 item behind the slice's exit bars.",
+   "options": [
+    "As recommended",
+    "Build all nine modules in parallel"
+   ],
+   "why": "v1 as first written was the whole platform with no critical path, which the graph rejected (rejected.harvest.19)."
+  },
+  {
+   "question": "Is assisted onboarding part of the product?",
+   "recommendation": "Include VP Success for the first 10-20 tenants in IST hours, acting only through the same tools and ledger; track the share of tenants that reach a live campaign without it.",
+   "options": [
+    "Included (recommended)",
+    "Paid add-on",
+    "None"
+   ],
+   "why": "SquadStack's human success managers are the real 'just talk' benchmark; carrier, KYC and outcome wiring are the hardest steps for an owner on a phone."
+  },
+  {
+   "question": "Approve the one opening spec and how its disclosure is tested?",
+   "recommendation": "Approve: turn 1 checks it is the right person; turn 2 in one breath gives her name, the brand, 'AI assistant' in passing and the useful fact; disclosure is repeated only if it was not heard. Test 2-3 placements on the listener panel and by hazard at the disclosure moment; wording and placement may change, presence never; no undisclosed arm.",
+   "options": [
+    "Approve the spec and placement test (recommended)",
+    "AI clause in the first words of the call",
+    "Disclose only when asked"
+   ],
+   "why": "req-47 (must): never deny, disclose once and lightly, never as an opener that makes people hang up. Four modules had specified four placements; disclosure only when asked would break the standing rule."
+  }
+ ]
+}

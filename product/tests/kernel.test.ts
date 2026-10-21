@@ -103,14 +103,16 @@ test('A2 refuses a role that cannot approve, a tampered action, and a changed ob
   assert.equal(st!.status, 'cancelled');
 });
 
-test('A3 verbs run at once only for VP itself; a member still needs approval', { skip }, async () => {
+test('A3 verbs run at once for VP itself and for a member allowed to call them; a viewer may not', { skip }, async () => {
   const { ws, member } = await workspace();
   const r = registry();
-  const id = '00000000-0000-4000-8000-000000000001';  // campaign.pause here is 'external', so a member gets a card
+  const id = '00000000-0000-4000-8000-000000000001';
   const sys = await r.execute(pool, 'campaign.pause', { id }, { workspaceId: ws, actor: { type: 'system' } });
   assert.equal(sys.status === 'confirmed' && sys.mode, 'A3');
   const mem = await r.execute(pool, 'campaign.pause', { id }, { workspaceId: ws, actor: { type: 'member', id: member, role: 'owner' } });
-  assert.equal(mem.status, 'needs_approval');
+  assert.equal(mem.status === 'confirmed' && mem.mode, 'A3');
+  const viewer = await r.execute(pool, 'campaign.pause', { id }, { workspaceId: ws, actor: { type: 'member', id: member, role: 'viewer' } });
+  assert.equal(viewer.status, 'not_executed');
 });
 
 test('roles gate who may call a tool', { skip }, async () => {

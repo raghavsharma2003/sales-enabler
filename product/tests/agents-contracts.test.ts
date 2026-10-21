@@ -157,7 +157,7 @@ test('version.candidate creates an immutable, undeployed version compiled once, 
   assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM agent_version WHERE agent_id = $1', [agentId]))!.n, '2', 'refusals number nothing');
 });
 
-test('deployment.revert_to_last_good: A3 for the system, a card for a member, restores the previous split and says why', { skip }, async () => {
+test('deployment.revert_to_last_good: A3 for the system and for a member, restores the previous split and says why', { skip }, async () => {
   const w = await workspace();
   const { agentId, v1 } = await published(w);
   refused(await w.call('deployment.revert_to_last_good', { agentId }, SYSTEM), /never been deployed/);
@@ -167,9 +167,7 @@ test('deployment.revert_to_last_good: A3 for the system, a card for a member, re
   const cand = ok<any>(await w.call('version.candidate', { agentId, config: withStack(), parentVersionId: v1.versionId, note: 'treatment' }, SYSTEM));
   const split = ok<any>(await w.approve(await w.call('deployment.split', { agentId, binding: 'campaign', split: [{ versionId: v1.versionId, percent: 50 }, { versionId: cand.versionId, percent: 50 }] })));
 
-  // A member gets an approval card; the system actor (a guardrail stop) runs it at once.
-  const card = await w.call('deployment.revert_to_last_good', { agentId, binding: 'campaign' });
-  assert.equal(card.status, 'needs_approval');
+  // A3 verbs only lower risk: the system actor (a guardrail stop) and a member alike run it at once.
   const r = await w.call('deployment.revert_to_last_good', { agentId, reason: 'guardrail: opt-outs doubled' }, SYSTEM);
   assert.equal(r.status === 'confirmed' && r.mode, 'A3');
   const out = ok<any>(r);
@@ -180,8 +178,9 @@ test('deployment.revert_to_last_good: A3 for the system, a card for a member, re
   assert.deepEqual(cur!.split, [{ version_id: v1.versionId, percent: 100 }]);
   const audit = await one<{ payload: any }>(pool, "SELECT payload FROM audit_event WHERE workspace_id = $1 AND action = 'deployment.reverted'", [w.ws]);
   assert.equal(audit!.payload.reason, 'guardrail: opt-outs doubled');
-  // The member's card was shown against the split that has now changed: it is void.
-  refused(await w.approve(card), /changed since it was proposed/);
+  ok(await w.approve(await w.call('deployment.split', { agentId, binding: 'campaign', split: [{ versionId: v1.versionId, percent: 50 }, { versionId: cand.versionId, percent: 50 }] })));
+  const byMember = await w.call('deployment.revert_to_last_good', { agentId, binding: 'campaign' });
+  assert.equal(byMember.status === 'confirmed' && byMember.mode, 'A3', 'a person reverting to last good does not wait for approval');
 
   const other = await workspace();
   refused(await other.call('deployment.revert_to_last_good', { agentId }, SYSTEM), /no such agent/);

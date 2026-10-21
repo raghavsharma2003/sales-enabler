@@ -335,8 +335,9 @@ test('the model is asked outside any transaction; a transcript changed meanwhile
   const conv = await call(w, TURNS);
   let idleInTx: number | null = null;
   setFakeLlm(async () => {
-    const s = await one<{ n: string }>(pool, "SELECT count(*)::text AS n FROM pg_stat_activity WHERE state LIKE 'idle in transaction%' AND datname = current_database()");
-    idleInTx = Number(s!.n);
+    // This file's tests run one at a time on this pool, so a checked-out client here could only be extract()'s own
+    // transaction (pg_stat_activity would also count other test files running in parallel).
+    idleInTx = pool.totalCount - pool.idleCount;
     return { text: JSON.stringify({ facts: [LANG] }), toolCalls: [], usage: { inputTokens: 1, outputTokens: 1 }, model: 'fake', provider: 'fake' };
   });
   const out = await extract(w, conv);

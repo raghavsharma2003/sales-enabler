@@ -124,7 +124,10 @@ export class Registry {
     const h = argsHash(name, input);
     const ctxFor = (q: Queryable): ToolCtx => ({ q, workspaceId: opts.workspaceId, actor: opts.actor });
 
-    const selfA3 = isA3(name) && (opts.actor.type === 'agent' || opts.actor.type === 'system');
+    // A3 verbs only lower risk or spend (pause, stop, suppress after opt-out, revert to last good): they run at once for
+    // VP itself and for any member whose role may call the tool. Nobody waits for approval to make things safer.
+    // The exception is attempt.retry_per_ladder, which re-dials someone: a member asking for it gets a card.
+    const selfA3 = isA3(name) && (opts.actor.type === 'agent' || opts.actor.type === 'system' || name !== 'attempt.retry_per_ladder');
     if (needsHumanApproval(t.risk) && !selfA3) {
       const summary = t.describe ? t.describe(input) : t.summary;
       const row = await tx(pool, async c => {

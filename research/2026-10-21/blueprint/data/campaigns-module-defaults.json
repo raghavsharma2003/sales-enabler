@@ -1,0 +1,601 @@
+{
+ "id": "blueprint.campaigns-module-defaults",
+ "module": "campaigns",
+ "status": "proposed",
+ "date": "2026-10-21",
+ "source": "model (campaigns module designer); evidence paths in each entry",
+ "grades": "M measured, O observed, V vendor-claimed, I inferred, U unknown, P proposed product choice",
+ "state_machine": {
+  "campaign": {
+   "states": [
+    "draft",
+    "ready",
+    "scheduled",
+    "running",
+    "paused",
+    "completed",
+    "cancelled",
+    "recurring"
+   ],
+   "running_substates": [
+    "dialing",
+    "waiting_for_window",
+    "throttled",
+    "draining"
+   ],
+   "transitions": [
+    {
+     "from": "draft",
+     "to": "ready",
+     "by": "engine",
+     "when": "launch checklist all green (computed on every change)"
+    },
+    {
+     "from": "ready",
+     "to": "draft",
+     "by": "engine",
+     "when": "any checklist item turns red (e.g. agent version unpublished, number lost A2P declaration)"
+    },
+    {
+     "from": "ready",
+     "to": "scheduled",
+     "by": "person tap (A2) or API key with campaign.launch scope inside its spend cap",
+     "when": "start_at in the future"
+    },
+    {
+     "from": "ready",
+     "to": "running",
+     "by": "person tap (A2) or scoped API key",
+     "when": "start now"
+    },
+    {
+     "from": "scheduled",
+     "to": "running",
+     "by": "engine",
+     "when": "start_at reached and checklist still green; else back to ready with the blocker named"
+    },
+    {
+     "from": "running",
+     "to": "paused",
+     "by": "person (A3 risk-lowering) or guard (A3)",
+     "reasons": [
+      "person",
+      "spend_cap",
+      "wallet_low",
+      "opt_out_spike",
+      "complaint",
+      "number_flagged_or_barred",
+      "provider_outage",
+      "agent_version_retired",
+      "a2p_or_kyc_lapsed",
+      "canary_guardrail",
+      "predial_fail_closed_rate"
+     ]
+    },
+    {
+     "from": "paused",
+     "to": "running",
+     "by": "person (A2), or engine only when paused_by=provider_outage and auto_resume_after_outage=true and health green 10 min and inside window",
+     "note": "guard pauses for opt-out spike, complaint, flagged number or canary never auto-resume"
+    },
+    {
+     "from": "running",
+     "to": "completed",
+     "by": "engine",
+     "when": "every audience member terminal, or end_at reached (remaining members get reason 'campaign ended')"
+    },
+    {
+     "from": "draft|ready|scheduled|running|paused",
+     "to": "cancelled",
+     "by": "person (A3 risk-lowering)",
+     "effect": "no new dials; in-flight calls finish (draining); scheduled follow-ups ask: keep or cancel"
+    },
+    {
+     "from": "completed",
+     "to": "recurring",
+     "by": "engine",
+     "when": "recurrence on; parent waits for next run"
+    },
+    {
+     "from": "recurring",
+     "to": "running",
+     "by": "engine",
+     "when": "next run time; a CampaignRun is spawned with its own estimate and period budget"
+    }
+   ]
+  },
+  "attempt": [
+   "created",
+   "prechecked",
+   "blocked(rule) | deferred(next_eligible_at)",
+   "queued",
+   "dialing",
+   "ringing",
+   "connected | no_answer | busy | switched_off | not_reachable | invalid_number | carrier_blocked | provider_error | unknown",
+   "classified(human | voicemail | operator_message | ivr)",
+   "ended",
+   "next_action(retry_at | callback_at | handoff | followups | none)"
+  ],
+  "unknown_rule": "an attempt whose dial result is not confirmed by the carrier is reconciled against the carrier record for 15 min; still unknown -> state unknown, shown as an issue, never auto-retried (HV law 17)"
+ },
+ "categories": {
+  "service": {
+   "definition": "about something the person already bought or a relationship they have (renewal due, EMI due, appointment, onboarding pending); no offer, upsell or cross-sell",
+   "trai_band": "none (RS-15)",
+   "vp_default_window": "Mon-Sat 10:00-19:00 contact local time",
+   "outer_band_default": "08:00-21:00 (workspace policy, Compliance role can set)",
+   "dnd": "not blocked once FULLY BLOCK migrates to BLOCK PROMO about 2026-11-03 (RS-10)",
+   "consent": "relationship basis; no explicit consent needed (RS-03/04/12)",
+   "series": "1600xx for RBI/SEBI/IRDAI/PFRDA entities; 1601xx utilities and logistics; declared 10-digit otherwise (L1 claims 9-10)",
+   "followup_template_category": "utility / transactional only"
+  },
+  "transactional": {
+   "definition": "about a transaction the person just made (order, delivery slot, payment failure)",
+   "trai_band": "none",
+   "vp_default_window": "all days 09:00-21:00",
+   "series": "as service",
+   "followup_template_category": "utility / transactional only"
+  },
+  "promotional": {
+   "definition": "anything that sells or offers",
+   "trai_band": "10:00-21:00 hard (RS-15); no role can widen",
+   "series": "140xx only",
+   "consent": "explicit; DND numbers need CRF-registered consent (RS-13); inquiry evidence valid 7 days, application 3 months (RS-12)",
+   "row_rule": "row held unless consent evidence present and in date and DND status is known-not-registered or consent is CRF-registered",
+   "phase": "wave 2 (v2) as a launchable category; v1 holds promotional rows with a reason"
+  }
+ },
+ "windows": {
+  "presets": {
+   "insurance_renewal": "Mon-Sat 10:00-19:00",
+   "lending_pre_due": "Mon-Sat 08:00-19:00 (RBI/2026-27/230 from 2027-01-01, applied now)",
+   "appointment_reminder": "Mon-Sun 09:00-20:00",
+   "subscription_utility": "Mon-Sat 10:00-19:00",
+   "promotional": "10:00-21:00 (hard)"
+  },
+  "multi_range": true,
+  "days_of_week": true,
+  "timezone": "contact local time from a row timezone column; +91 numbers default Asia/Kolkata",
+  "holidays": {
+   "default_off": [
+    "Republic Day 26 Jan",
+    "Independence Day 15 Aug",
+    "Gandhi Jayanti 2 Oct",
+    "Diwali (Lakshmi Puja day)"
+   ],
+   "tenant_list": true,
+   "state_holidays": "only from a State column in the data; never inferred from the number series (MNP keeps the series: research/2026-10-17/lanes/l5-human-dialect/report.md section (c))",
+   "grade": "proposed (product choice; tune on measured campaigns)"
+  },
+  "cross_midnight": "allowed for service and transactional only, set by Compliance role with a reason; daily caps and holidays count on the window's start date; refused for promotional",
+  "person_requested_time": "honoured inside the outer band and the attempt budget; outside it the agent offers the nearest allowed slot"
+ },
+ "retry_ladder_default_service": [
+  {
+   "outcome": "busy",
+   "retries": [
+    "+30 min",
+    "+2 h"
+   ],
+   "max": 2,
+   "counts_to_person_budget": true
+  },
+  {
+   "outcome": "no_answer",
+   "ring_timeout_s": 40,
+   "retries": [
+    "+3 h",
+    "next day, other half of window"
+   ],
+   "max": 2,
+   "counts_to_person_budget": true
+  },
+  {
+   "outcome": "switched_off_or_not_reachable",
+   "retries": [
+    "+4 h",
+    "next day"
+   ],
+   "max": 2,
+   "counts_to_person_budget": false,
+   "network_attempt_cap": 3
+  },
+  {
+   "outcome": "voicemail_or_ivr",
+   "agent_action": "hang up, no message (voice module default)",
+   "retries": [
+    "+4 h",
+    "next day"
+   ],
+   "max": 2,
+   "counts_to_person_budget": true
+  },
+  {
+   "outcome": "short_call",
+   "definition": "connected under 10 s, caller ended, no intent captured, no opt-out phrase",
+   "retries": [
+    "next day, other half of window"
+   ],
+   "max": 1,
+   "counts_to_person_budget": true
+  },
+  {
+   "outcome": "provider_error_confirmed_no_ring",
+   "retries": [
+    "+2 min",
+    "+10 min",
+    "+30 min"
+   ],
+   "max": 3,
+   "counts_to_person_budget": false
+  },
+  {
+   "outcome": "dropped_by_vp_mid_call",
+   "retries": [
+    "+5 min recovery call, opener acknowledges the drop"
+   ],
+   "max": 1,
+   "counts_to_person_budget": true,
+   "only_if": "agenda not completed"
+  },
+  {
+   "outcome": "unknown",
+   "retries": [],
+   "max": 0,
+   "note": "never auto-retried; reconcile then review"
+  },
+  {
+   "outcome": "call_me_later",
+   "retries": [
+    "at the stated time if allowed, else nearest allowed slot"
+   ],
+   "max": 2,
+   "counts_to_person_budget": true
+  },
+  {
+   "outcome": "relative_answered",
+   "retries": [
+    "stated time, else +1 day"
+   ],
+   "max": 1,
+   "counts_to_person_budget": true
+  },
+  {
+   "outcome": "wrong_party",
+   "retries": [],
+   "max": 0,
+   "effect": "identifier marked wrong_party for this contact across campaigns"
+  },
+  {
+   "outcome": "opt_out",
+   "retries": [],
+   "max": 0,
+   "effect": "tenant-wide suppression at once (A3)"
+  },
+  {
+   "outcome": "invalid_or_unallocated",
+   "retries": [],
+   "max": 0,
+   "effect": "identifier invalid"
+  },
+  {
+   "outcome": "carrier_blocked_ucc_or_dnd",
+   "retries": [],
+   "max": 0,
+   "effect": "issue raised; CLI health checked; Compliance notified"
+  }
+ ],
+ "attempt_budgets": {
+  "insurance_renewal": {
+   "per_person_day": 2,
+   "per_person_week": 5,
+   "per_run": 6
+  },
+  "lending_pre_due": {
+   "per_person_day": 2,
+   "per_person_week": 6,
+   "per_run": 6,
+   "logs": "call time and count per borrower exportable"
+  },
+  "appointment_reminder": {
+   "per_person_day": 2,
+   "per_appointment": 3
+  },
+  "subscription_utility": {
+   "per_person_day": 1,
+   "per_person_week": 3,
+   "per_run": 4
+  },
+  "promotional": {
+   "per_person_day": 1,
+   "per_person_week": 3,
+   "per_run": 3
+  },
+  "workspace_ceiling_owned_by_trust_telephony": {
+   "per_number_day_all_campaigns_and_api": 3,
+   "min_gap_same_number_minutes": 120
+  },
+  "grade": "proposed (product choice; tune on measured campaigns)"
+ },
+ "pacing": {
+  "canary": {
+   "first_n_calls": 20,
+   "starts_per_min": 3,
+   "guardrails_pause_if": [
+    "opt-outs >= 3 of first 20 connected",
+    "early hang-up (<10 s) > 50% of first 20 connected",
+    "provider errors >= 5",
+    "promotion-fence blocks >= 2 on a service call"
+   ],
+   "first_campaign_review_stop": "on by default for a workspace's first campaign: stop after 20 calls for a person's review"
+  },
+  "steady_starts_per_min_default": "min(30, 3 x max_concurrency)",
+  "starts_per_min_range": [
+   1,
+   1200
+  ],
+  "jitter": "starts spread over the first 10 min of each window opening; no burst at 10:00:00",
+  "reserved_inbound": "max(1, 20% of workspace concurrency) whenever an inbound number is bound; 0 otherwise",
+  "per_cli_day_cap_declared_10_digit": 200,
+  "per_cli_day_cap_140_1600_1601": "carrier calls-per-second limit only",
+  "carrier_cps": "read from the BYO connection; Plivo India limit unknown (U)",
+  "grade": "proposed (product choice; tune on measured campaigns)"
+ },
+ "caller_id": {
+  "pool_rule": "every CLI in the pool matches category x sector series, is A2P-declared, KYC-valid, healthy and carries the same CNAP name",
+  "sticky_per_contact": true,
+  "rotation_to_evade_flags": "never (SquadStack sells 'spam number rotation', research/2026-10-20/teardown/squadstack/claims.json SQS-48; Sarvam rotates 10-digit CLIs, SAR-47)",
+  "flagged_cli": "paused (A3), never silently replaced"
+ },
+ "predial": {
+  "built_in": "always on, not removable: one precheck inside the claim transaction (invariant 1)",
+  "customer_veto_webhook": {
+   "optional": true,
+   "timeout_ms": 800,
+   "on_timeout_or_error": "skip with reason PREDIAL_TIMEOUT (fail closed)",
+   "pause_if_fail_closed_rate": "> 5% of attempts in 10 min",
+   "signed": "HMAC-SHA256"
+  }
+ },
+ "precheck_reason_codes": [
+  "OUT_OF_WINDOW",
+  "HOLIDAY",
+  "SUPPRESSED",
+  "TOMBSTONED",
+  "CONSENT_MISSING",
+  "CONSENT_EXPIRED",
+  "DND_PROMO",
+  "BUDGET_PERSON_DAY",
+  "BUDGET_PERSON_WEEK",
+  "BUDGET_RUN",
+  "NUMBER_DAY_CEILING",
+  "NUMBER_GAP",
+  "CONTACT_IN_CALL",
+  "CALLED_BY_OTHER_CAMPAIGN_TODAY",
+  "IDENTIFIER_INVALID",
+  "WRONG_PARTY",
+  "WALLET_LOW",
+  "SPEND_CAP",
+  "CLI_UNHEALTHY",
+  "CLI_SERIES_MISMATCH",
+  "A2P_UNDECLARED",
+  "KYC_PENDING",
+  "AGENT_VERSION_UNPUBLISHED",
+  "TEST_MODE_UNVERIFIED_NUMBER",
+  "PREDIAL_VETO",
+  "PREDIAL_TIMEOUT",
+  "CAMPAIGN_ENDED"
+ ],
+ "intake": {
+  "formats": [
+   "CSV (any delimiter, BOM, CRLF, UTF-8/UTF-16/Windows-1252)",
+   "XLSX/XLS (sheet picker, Excel date serials, leading apostrophes)",
+   "Google Sheets (read-only, one sheet; sync for recurring)",
+   "API push (1-1,000 rows per request, external_id idempotency, per-row results)",
+   "CRM connectors (memory-omni owns auth)"
+  ],
+  "limits_v1": {
+   "rows_per_file": 200000,
+   "mb_per_file": 100,
+   "grade": "proposed (product choice; tune on measured campaigns)",
+   "benchmarks": "Bolna 150,000 rows / 32 MB; Exotel 1,00,000 static / 60 MB; Retell 50 MB; ElevenLabs 25 MB; Vapi 5 MB / 10,000; Sarvam 100 MB"
+  },
+  "whole_file_refusal_only_if": "the file cannot be parsed at all (encrypted, binary, password-protected); the reason and fix are shown",
+  "mapping": "deterministic header synonyms (English, Hindi, Hinglish: Mobile, Mob No, Contact, phone no, फ़ोन, मोबाइल) first; an LLM only for unresolved columns, given headers and value shapes, never personal values; user confirms with one tap; mapping remembered per source",
+  "questions_max": 3,
+  "normaliser": [
+   "strip spaces, dashes, dots, brackets, quotes, leading apostrophe; convert Devanagari and other Indic digits to ASCII",
+   "+91 + 10 digits starting 6-9 -> mobile",
+   "10 digits starting 6-9 -> +91 (India default)",
+   "0 + 10 digits -> +91 (trunk prefix)",
+   "91 + 10 digits, 0091 + 10 digits -> +91",
+   "0 + STD code + subscriber with 10 significant digits -> +91 landline; truncated -> reject LANDLINE_TRUNCATED",
+   "extension (x22, ext 22) -> dropped and flagged EXTENSION_DROPPED",
+   "bare 10 digits starting 0-5 -> reject; VP never guesses a foreign country and never prepends '+' (stranger guard)",
+   "explicit non-+91 country code -> NON_INDIAN, not dialled in an Indian campaign",
+   "scientific notation (9.1E+11) -> reject SCI_NOTATION (digits lost)",
+   "two numbers in one cell -> hold MULTI_NUMBER (never guess)",
+   "toll-free and short codes (1800...) -> reject NOT_PERSONAL"
+  ],
+  "dedupe": "within an upload: same E.164 and same normalised record key (policy/loan/customer id; hyphens and case removed), or same E.164 and same transliteration-normalised name (honorifics stripped, case and spacing folded, Devanagari/Tamil to Latin key) when no record key -> one person; near-matches are flagged, never merged; same E.164 and different record key -> separate people on a shared number; conflicts: opt-out wins, first complete valid value wins, all conflicts listed",
+  "row_codes": {
+   "ready": [
+    "OK_NEW",
+    "OK_LINKED_EXISTING",
+    "NORMALISED"
+   ],
+   "merged": [
+    "DUPLICATE_OF_ROW",
+    "SHARED_NUMBER"
+   ],
+   "suppressed": [
+    "OPTED_OUT_IN_FILE",
+    "OPTED_OUT_EARLIER",
+    "OPT_OUT_CONFLICT_OPT_OUT_WINS",
+    "TOMBSTONED"
+   ],
+   "held": [
+    "HELD_PROMO_NO_CONSENT",
+    "HELD_PROMO_DND",
+    "HELD_MULTI_NUMBER",
+    "HELD_REQUIRED_VARIABLE_MISSING",
+    "HELD_IMPOSSIBLE_DATE",
+    "HELD_CATEGORY_CONFLICT"
+   ],
+   "rejected": [
+    "EMPTY_PHONE",
+    "TOO_SHORT",
+    "TOO_LONG",
+    "LETTERS",
+    "ALL_ZERO",
+    "SCI_NOTATION",
+    "COUNTRY_CODE_ONLY",
+    "NSN_STARTS_0",
+    "LANDLINE_TRUNCATED",
+    "NOT_PERSONAL",
+    "NON_INDIAN",
+    "PLACEHOLDER_TEXT"
+   ],
+   "skipped": [
+    "EMPTY_ROW",
+    "WHITESPACE_ROW",
+    "EXTRA_FIELDS",
+    "TRUNCATED_ROW",
+    "REPEATED_HEADER",
+    "NO_PHONE_NOTES_ONLY"
+   ]
+  },
+  "failed_rows_file": "CSV of held, rejected and skipped rows with original values, row code, plain reason, fix, and an empty fixed_value column; re-upload merges by original row id",
+  "per_row_overrides": [
+   "language",
+   "voice (from the agent's approved voice list only)",
+   "variables",
+   "preferred_time (narrows the person's window)"
+  ],
+  "not_overridable_per_row": [
+   "prompt",
+   "first_message",
+   "category",
+   "disclosure"
+  ],
+  "why_not": "per-row prompt or first-message overrides (allowed by ElevenLabs batch, EL-05) bypass compile(), the recitation lint and the reply-door predicates (HV laws 2, 3, 10)"
+ },
+ "messy50_expected": {
+  "ready_people": {
+   "R01": "Sunita (N1)",
+   "R07": "Rakesh (N1, shared number, separate slot >= 120 min)",
+   "R13": "Karthik (N3)",
+   "R17": "Meena (N4, service; BLOCK PROMO does not block service)"
+  },
+  "duplicates_merged": [
+   "R02",
+   "R03",
+   "R04",
+   "R05",
+   "R06",
+   "R08",
+   "R10",
+   "R11",
+   "R14",
+   "R15"
+  ],
+  "suppressed": {
+   "R09": "OPTED_OUT_IN_FILE (N2); R10 and R11 merged into it, OPT_OUT_CONFLICT_OPT_OUT_WINS on R11"
+  },
+  "held": {
+   "R12": "HELD_MULTI_NUMBER",
+   "R16": "HELD_PROMO_NO_CONSENT (also duplicate of R13)",
+   "R18": "HELD_PROMO_DND (same person as R17)"
+  },
+  "rejected": [
+   "R19",
+   "R20",
+   "R21",
+   "R22",
+   "R23",
+   "R24",
+   "R25",
+   "R26",
+   "R27",
+   "R30",
+   "R31",
+   "R32",
+   "R39",
+   "R40",
+   "R41",
+   "R42",
+   "R43",
+   "R44",
+   "R45",
+   "R46",
+   "R47",
+   "R48",
+   "R49",
+   "R50"
+  ],
+  "non_indian": [
+   "R28",
+   "R29"
+  ],
+  "skipped": [
+   "R33",
+   "R34",
+   "R35",
+   "R36",
+   "R37",
+   "R38"
+  ],
+  "questions_asked": 1,
+  "question": "2 rows are promotional offers inside a service renewal list; hold them (default) or start a separate promotional campaign?",
+  "dials": "N1 x1 for Sunita, N1 x1 for Rakesh in a later slot, N3 x1, N4 x1; N2 x0",
+  "source": "research/2026-10-20/teardown/synthesis/messy-50.spec.json"
+ },
+ "followups": {
+  "types": [
+   "whatsapp_utility_template",
+   "dlt_sms_template",
+   "callback",
+   "human_handoff_warm",
+   "human_hot_callback",
+   "outcome_watch"
+  ],
+  "outbox": "durable, stable operation id, states confirmed | not_executed | unknown; unknown never auto-retried (HV law 17)",
+  "whatsapp": "business-initiated utility template needs WhatsApp opt-in; else falls back to the DLT SMS template; no cold marketing templates (L1 claims 22-26)",
+  "sms": "DLT entity id, header and template id on the rule; template category must match campaign category (wrong-category blacklisting about 2026-12-17/18, RS-06)",
+  "links": "client's own domain only; no payment on the call (spine P5)",
+  "hot_callback_sla_business_hours_h": 2,
+  "outcome_watch": "waits for an outcome event (renewal paid, EMI paid, booking confirmed) until a deadline, then branches (close, or a gentle reminder within budget)"
+ },
+ "inbound": {
+  "routing": "number -> deployment (agent version or split) with business hours",
+  "after_hours_default": "same agent answers; any hand-off becomes a next-business-hours callback and she says so plainly",
+  "after_hours_options": [
+   "same agent, callbacks next business hours (default)",
+   "separate after-hours version",
+   "forward to an on-call phone",
+   "take a message and send an SMS acknowledgement"
+  ],
+  "caller_lookup": "exact E.164 -> 0, 1 or n contacts; shared number -> identity confirmation before account details; an outbound attempt to this person from this CLI in the last 7 days -> callback continuity (continue that campaign's agenda, mark the attempt reached_by_callback, cancel pending retries)",
+  "overflow": "queue up to 30 s with a short line, then forward to a human number or promise a callback inside policy",
+  "abuse": "more than 10 calls per hour from one caller -> polite end",
+  "grade": "proposed (product choice; tune on measured campaigns)"
+ },
+ "estimate": {
+  "inputs": "eligible people x expected attempts x P(connect) x expected minutes x all-in INR per connected minute + follow-up messages + A2P line",
+  "before_history": "preset priors labelled 'assumption, no history'",
+  "after_50_calls": "campaign's own rates with n",
+  "shown": "p10-p90 INR incl. GST and a required cap (default p90 rounded up)"
+ },
+ "evidence": {
+  "sarvam": "research/2026-10-20/teardown/sarvam/claims.json SAR-16 (retry ladder by outcome, 0.1-500 attempts/s, allowed_schedule); research/2026-10-21/walkthroughs/sarvam/report.md sarvam-26 (commit gate)",
+  "bolna": "research/2026-10-20/account-phase/bolna/report.md s1.7 (row codes, +91 default, dedupe on reference_id); research/2026-10-21/walkthroughs/bolna/report.md [46] (150,000 rows), 22-23",
+  "elevenlabs": "research/2026-10-20/teardown/elevenlabs/claims.json EL-05; walkthroughs 33-batch-telephony-form, 35-batch-schedule",
+  "retell": "research/2026-10-20/teardown/retell/claims.json RET-05, RET-43; walkthroughs retell 24, 25",
+  "exotel": "research/2026-10-20/teardown/exotel/claims.json EXO-15, EXO-16, EXO-44",
+  "squadstack": "research/2026-10-20/teardown/squadstack/claims.json SQS-03, SQS-13, SQS-72",
+  "vapi": "research/2026-10-20/teardown/vapi/claims.json VAP-46, VAP-49, VAP-54",
+  "synthflow": "research/2026-10-20/teardown/synthflow/claims.json SYN-05, SYN-63",
+  "regulation": "research/2026-10-20/teardown/regulation-segment/report.md RS-03..RS-16",
+  "walkthrough_synthesis": "research/2026-10-21/walkthroughs/SYNTHESIS.md section 2.13"
+ }
+}

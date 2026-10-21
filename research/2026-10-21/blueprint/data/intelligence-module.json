@@ -1,0 +1,191 @@
+{
+  "id": "intelligence",
+  "title": "Per-call and campaign AI analysis, live mission control, reporting",
+  "status": "proposed (blueprint for owner review)",
+  "date": "2026-10-21",
+  "directive": "directive.2026-10-21.blueprint-end-to-end",
+  "grades": "M measured by us (n, method) | C computed | O observed (capture, API read-back, code) | V vendor-claimed | I inferred | U unknown",
+  "note": "Thresholds marked I are proposed defaults to recalibrate on the first design-partner data. Carrier-code mappings are standard SIP / Q.850 semantics; which code each Indian carrier (Plivo, Exotel, Vobiz) actually returns for DND, CLI/DLT and announcements is U until task T4 and live calls run.",
+
+  "pipeline_after_hangup": [
+    {"step": 1, "what": "hang-up event, engineering reason, carrier code (SIP status, Q.850 cause, provider cause name)", "owner": "engine", "target_s": 1},
+    {"step": 2, "what": "cost lines metered per second in INR (telephony, ears, brain incl. cached/speculative, voice, platform, analysis)", "owner": "engine (meter)", "target_s": 5},
+    {"step": 3, "what": "transcript of record: ASR finals ordered by audio offset (HV law 29), \\p{M} kept, non-speech probe flags, romanised copy by deterministic transliteration (no LLM, no cost)", "owner": "engine", "target_s": 10},
+    {"step": 4, "what": "code analyses: agenda-ledger completion, per-turn latency segments, cut-ins and overlaps from the stereo channels, heard-vs-planned text, person-reading state per turn, reply-door interventions, compliance trace, clause-at-hang-up", "owner": "engine", "target_s": 15},
+    {"step": 5, "what": "one LLM analysis pass (cached instructions): summary, outcome extraction with spans, objections with spans, commitments with spans, memory proposals with spans, next action", "owner": "Call analyst agent", "target_s": 40},
+    {"step": 6, "what": "span verification in code: every quote must be an exact substring of the stored transcript at the cited offset; failures are dropped and counted", "owner": "engine", "target_s": 41},
+    {"step": 7, "what": "outcome reconciliation: when the CRM disposition, payment or booking event arrives, the outcome becomes verified and judge agreement is updated", "owner": "engine", "target_s": "on event (minutes to days)"},
+    {"step": 8, "what": "signed webhooks, CRM write-back (confirmed / not_executed / unknown; unknown never auto-retried)", "owner": "engine (durable outbox)", "target_s": 60},
+    {"step": 9, "what": "monitors evaluate; issues opened or updated; Supervisor and Operator notified", "owner": "engine + Supervisor", "target_s": 60}
+  ],
+
+  "analysis_cost": {
+    "default_pass_inr_per_3min_connected_call": 0.17,
+    "basis": "C: 3,000 cached instruction tokens at INR 2.85/M + 1,800 transcript tokens at INR 28.5/M + 450 output tokens at INR 237.5/M (gemini-3.5-flash-lite list price, research/2026-10-18/lanes/g3-cascade-measured/results/cost_inputs.csv)",
+    "translation_on_demand_inr_per_3min_call": 0.43,
+    "translation_policy": "only when someone opens the English view or exports with translation; cached; shown in the analysis cost line",
+    "contrast": "Retell AI QA USD 0.10/min = INR 9.5/min, INR 28.5 for a 3-min call (O price RET-58; C arithmetic at FX 95)",
+    "target": "default analysis at or below INR 0.20 per connected call, inside the all-in price; never a separate per-minute QA fee"
+  },
+
+  "reason_catalogue": [
+    {"code": "PRE_WINDOW", "stage": "precheck", "carrier": "none (never dialled)", "reason_en": "Not called yet: outside this person's calling window", "reason_hi": "Abhi call nahi kiya: calling window ke bahar", "action": "Shows the next slot; Widen window (Compliance role)", "retry": "deferred to next window, automatic", "fixes": "nobody / you", "charged": false},
+    {"code": "PRE_SUPPRESSED", "stage": "precheck", "carrier": "none", "reason_en": "Not called: this person asked not to be called (date, call link)", "reason_hi": "Call nahi kiya: inhone mana kiya tha", "action": "None. Suppression is never cleared by import", "retry": "never", "fixes": "nobody", "charged": false},
+    {"code": "PRE_CONSENT", "stage": "precheck", "carrier": "none", "reason_en": "Not called: no consent or basis on record for this call category", "reason_hi": "Consent record nahi hai", "action": "Add consent source, or change the call category", "retry": "after fix", "fixes": "you", "charged": false},
+    {"code": "PRE_BUDGET", "stage": "precheck", "carrier": "none", "reason_en": "Not called: attempt budget for this person reached (3 this week)", "reason_hi": "Is hafte 3 baar try ho chuka", "action": "Raise budget (Operator) or wait", "retry": "next budget period", "fixes": "you", "charged": false},
+    {"code": "PRE_SPEND_CAP", "stage": "precheck", "carrier": "none", "reason_en": "Paused: spend cap reached", "reason_hi": "Spend cap poora ho gaya", "action": "Raise cap (Owner) or top up", "retry": "on resume", "fixes": "you", "charged": false},
+    {"code": "PRE_NUMBER_INVALID", "stage": "precheck", "carrier": "none", "reason_en": "Number could not be read as an Indian mobile or landline (row, original value)", "reason_hi": "Number galat format mein hai", "action": "Fix in CSV or edit the contact", "retry": "after fix", "fixes": "you", "charged": false},
+    {"code": "PRE_DUPLICATE", "stage": "precheck", "carrier": "none", "reason_en": "Same person as another row; called once", "reason_hi": "Duplicate row, ek hi baar call", "action": "None", "retry": "n/a", "fixes": "nobody", "charged": false},
+    {"code": "PRE_CLI_NOT_READY", "stage": "precheck", "carrier": "none", "reason_en": "Waiting for a healthy caller ID (KYC pending or number paused)", "reason_hi": "Caller ID abhi ready nahi", "action": "Open Numbers; KYC timer shown", "retry": "automatic when ready", "fixes": "you / VP", "charged": false},
+    {"code": "DIAL_BUSY", "stage": "dial", "carrier": "SIP 486 / Q.850 17 (I)", "reason_en": "Line busy", "reason_hi": "Line busy thi", "action": "Retry per ladder (default +30 min)", "retry": "ladder", "fixes": "nobody", "charged": false},
+    {"code": "DIAL_NO_ANSWER", "stage": "dial", "carrier": "SIP 480/408 / Q.850 18-19 (I)", "reason_en": "Rang, no answer", "reason_hi": "Ghanti baji, uthaya nahi", "action": "Retry in a different hour band", "retry": "ladder", "fixes": "nobody", "charged": false},
+    {"code": "DIAL_SWITCHED_OFF", "stage": "dial", "carrier": "operator announcement in early media, classified in the first 6 s (I)", "reason_en": "Phone switched off (operator message)", "reason_hi": "Phone switch off tha", "action": "Retry after 3 h, at most 2 more", "retry": "ladder", "fixes": "nobody", "charged": "fewest seconds"},
+    {"code": "DIAL_NOT_REACHABLE", "stage": "dial", "carrier": "operator announcement (I)", "reason_en": "Not reachable or out of coverage (operator message)", "reason_hi": "Network se bahar tha", "action": "Retry later", "retry": "ladder", "fixes": "nobody", "charged": "fewest seconds"},
+    {"code": "DIAL_INVALID_NUMBER", "stage": "dial", "carrier": "SIP 404 / Q.850 1, or 'number does not exist' announcement (I)", "reason_en": "Number does not exist", "reason_hi": "Ye number exist nahi karta", "action": "Fix the contact; no retry", "retry": "never", "fixes": "you", "charged": false},
+    {"code": "DIAL_BARRED", "stage": "dial", "carrier": "Q.850 21 or barring announcement (I)", "reason_en": "Incoming calls barred on this number", "reason_hi": "Is number par incoming band hai", "action": "Use another channel (WhatsApp/SMS follow-up)", "retry": "never by voice", "fixes": "nobody", "charged": false},
+    {"code": "DIAL_DND_BLOCKED", "stage": "dial", "carrier": "carrier rejection on preference scrub (code U until live test)", "reason_en": "Blocked by the network because of the person's DND preference", "reason_hi": "DND ki wajah se network ne roka", "action": "No retry. A promotional call to this person needs registered consent", "retry": "never", "fixes": "you (consent) or nobody", "charged": false},
+    {"code": "DIAL_CLI_REJECTED", "stage": "dial", "carrier": "carrier rejection of the calling number or header, e.g. series wrong for the category or not on the A2P declaration (code U until live test)", "reason_en": "The network rejected your caller ID for this kind of call", "reason_hi": "Network ne aapka caller ID reject kiya", "action": "Line keeper pauses that CLI (A3) and proposes the right series or a re-declaration", "retry": "after fix", "fixes": "you / VP", "charged": false},
+    {"code": "DIAL_SPAM_FLAGGED", "stage": "dial", "carrier": "carrier or CNAP spam label (U)", "reason_en": "This caller ID is flagged as spam by the network", "reason_hi": "Caller ID spam mark ho gaya", "action": "Pause CLI (A3); review early-hang-up ratio (TRAI reg 21A)", "retry": "from another healthy CLI", "fixes": "VP / you", "charged": false},
+    {"code": "DIAL_CARRIER_ERROR", "stage": "dial", "carrier": "SIP 5xx / Q.850 34, 38, 41 (I)", "reason_en": "Network problem at the carrier", "reason_hi": "Carrier ki network problem", "action": "Automatic retry +10 min; Issue opens if it spikes", "retry": "automatic", "fixes": "VP / carrier", "charged": false},
+    {"code": "DIAL_DECLINED", "stage": "dial", "carrier": "SIP 603 (I)", "reason_en": "The person cut the ring", "reason_hi": "Ghanti kaat di", "action": "One retry on another day", "retry": "ladder (max 1)", "fixes": "nobody", "charged": false},
+    {"code": "CONN_VOICEMAIL", "stage": "connected", "carrier": "answered; machine detected", "reason_en": "Voicemail", "reason_hi": "Voicemail", "action": "Hang up, no message (default); retry", "retry": "ladder", "fixes": "nobody", "charged": "fewest seconds"},
+    {"code": "CONN_IVR", "stage": "connected", "carrier": "answered; menu detected", "reason_en": "Reached a phone menu", "reason_hi": "IVR menu laga", "action": "Hang up (default) or navigate by DTMF if set", "retry": "ladder", "fixes": "you (DTMF path)", "charged": "fewest seconds"},
+    {"code": "CONN_NO_SPEECH", "stage": "connected", "carrier": "answered; no speech", "reason_en": "Answered, nobody spoke", "reason_hi": "Uthaya par koi bola nahi", "action": "Retry later", "retry": "ladder", "fixes": "nobody", "charged": true},
+    {"code": "CONN_WRONG_PERSON", "stage": "connected", "carrier": "n/a", "reason_en": "Someone else answered; no account details were shared", "reason_hi": "Koi aur tha; details share nahi ki", "action": "Mark the number for review; callback if they gave a time", "retry": "per answer", "fixes": "you", "charged": true},
+    {"code": "END_EARLY_HANGUP", "stage": "conversation", "carrier": "caller BYE", "reason_en": "Hung up in under 10 s, during a named moment of the call", "reason_hi": "10 second se pehle kaat diya", "action": "Listen; see the drop-off ribbon for the pattern", "retry": "ladder (max 1)", "fixes": "you / Coach", "charged": true},
+    {"code": "END_TOOL_ERROR", "stage": "conversation", "carrier": "n/a", "reason_en": "Your tool failed (name, status, URL); she used the graceful line", "reason_hi": "Aapka tool fail hua", "action": "Fix tool, then Test tool", "retry": "callback after fix", "fixes": "you", "charged": true},
+    {"code": "END_AGENT_ERROR", "stage": "conversation", "carrier": "n/a", "reason_en": "A VP voice service was slow or failed; she closed politely and a callback was booked", "reason_hi": "VP ki taraf se problem; callback set", "action": "None for you; VP Issue linked", "retry": "callback", "fixes": "VP", "charged": "not for the failed seconds (policy, economics module)"},
+    {"code": "END_TRANSFER_FAILED", "stage": "conversation", "carrier": "transfer leg result", "reason_en": "Your team did not pick up the transfer", "reason_hi": "Team ne transfer nahi uthaya", "action": "Hot callback task created for the named person", "retry": "callback", "fixes": "you", "charged": true},
+    {"code": "END_MAX_DURATION", "stage": "conversation", "carrier": "n/a", "reason_en": "Closed at the time limit", "reason_hi": "Time limit par band", "action": "Raise limit if this is common", "retry": "callback if agenda open", "fixes": "you", "charged": true},
+    {"code": "END_SILENCE", "stage": "conversation", "carrier": "n/a", "reason_en": "Closed after a long silence; callback booked inside the window", "reason_hi": "Lambi khamoshi; callback set", "action": "None", "retry": "callback", "fixes": "nobody", "charged": true},
+    {"code": "END_OPT_OUT", "stage": "conversation", "carrier": "n/a", "reason_en": "Asked not to be called again; suppressed everywhere at once", "reason_hi": "Dobara call mat karna bola; suppress kiya", "action": "None", "retry": "never", "fixes": "nobody", "charged": true},
+    {"code": "END_CALLBACK", "stage": "conversation", "carrier": "n/a", "reason_en": "Asked for a callback; scheduled", "reason_hi": "Callback maanga; set kar diya", "action": "None", "retry": "scheduled", "fixes": "nobody", "charged": true},
+    {"code": "END_CRISIS", "stage": "conversation", "carrier": "n/a", "reason_en": "Caller sounded in distress: Tele-MANAS 14416 and 112 given, your team alerted", "reason_hi": "Caller pareshan the: helpline di, team ko alert", "action": "Human follow-up (named owner)", "retry": "no campaign retry", "fixes": "you", "charged": true},
+    {"code": "END_COMPLETED", "stage": "conversation", "carrier": "n/a", "reason_en": "Completed; see outcome", "reason_hi": "Call poori hui", "action": "Outcome card", "retry": "n/a", "fixes": "n/a", "charged": true},
+    {"code": "UNKNOWN", "stage": "any", "carrier": "unmapped code shown raw", "reason_en": "We could not classify this yet (raw code shown); VP has been notified", "reason_hi": "Abhi wajah pata nahi; VP ko bataya", "action": "None; counted toward the unknown-share metric", "retry": "never auto-retried (HV law 17)", "fixes": "VP", "charged": "per meter"}
+  ],
+
+  "t5_mapping": [
+    {"induced": "invalid row", "code": "PRE_NUMBER_INVALID", "found_via": "Campaign > Not called > 'Number unreadable (1)' or Today issue card", "action": "Fix in CSV (row link)"},
+    {"induced": "our number rejects as busy", "code": "DIAL_BUSY", "found_via": "Calls > filter Not connected > Busy", "action": "Retry scheduled at the next ladder step (time shown)"},
+    {"induced": "answer then hang up at 3 s", "code": "END_EARLY_HANGUP", "found_via": "Calls > Hung up early; call page shows the clause at hang-up", "action": "Listen (3 s); pattern goes to the drop-off ribbon"},
+    {"induced": "broken tool URL", "code": "END_TOOL_ERROR", "found_via": "Issue 'policy_lookup returns 404' (High) with calls impacted", "action": "Fix tool, Test tool"},
+    {"induced": "out-of-window schedule", "code": "PRE_WINDOW", "found_via": "Campaign > Not called > 'Outside window'", "action": "Next slot shown; Widen window (Compliance role)"}
+  ],
+
+  "default_monitors": [
+    {"id": "M01", "signal": "crisis words (reply door R5)", "threshold": "any", "severity": "Critical", "auto": "Supervisor keeps the call open, helplines given, on-duty human alerted (push + WhatsApp if consented)", "category": "Safety"},
+    {"id": "M02", "signal": "a reply that claimed or implied being human was replaced (reply door R3)", "threshold": "any", "severity": "High", "auto": "Issue with the turn; Coach proposal", "category": "Compliance"},
+    {"id": "M03", "signal": "number not from data blocked (reply door R6)", "threshold": "any", "severity": "High", "auto": "Issue with the clause", "category": "Compliance"},
+    {"id": "M04", "signal": "promotion fence hit on a service call (reply door R7)", "threshold": "any", "severity": "High", "auto": "Issue", "category": "Compliance"},
+    {"id": "M05", "signal": "opt-out rate", "threshold": "over 2x the 7-day baseline on 100+ connected (I)", "severity": "High", "auto": "notify; auto-pause the campaign at 3x (A3, undo)", "category": "Trust"},
+    {"id": "M06", "signal": "connect rate", "threshold": "below 70% of the 7-day baseline on 50+ dials (I)", "severity": "Medium", "auto": "notify with top dial reasons", "category": "Telephony"},
+    {"id": "M07", "signal": "carrier errors", "threshold": "10%+ of dials in 15 min on 20+ dials (I)", "severity": "High", "auto": "notify; failover per the platform policy", "category": "Telephony"},
+    {"id": "M08", "signal": "early hang-up ratio per 10-digit CLI (TRAI reg 21A guard)", "threshold": "1.5x the pool median on 50+ connected per CLI in 24 h (I)", "severity": "High", "auto": "Line keeper pauses that CLI (A3, undo)", "category": "Telephony"},
+    {"id": "M09", "signal": "early hang-ups under 10 s", "threshold": "1.5x baseline on 100+ connected (I)", "severity": "Medium", "auto": "link to drop-off ribbon", "category": "Conversation"},
+    {"id": "M10", "signal": "catastrophic moment (fast lane)", "threshold": "one moment with 3x+ expected hang-up hazard and 10+ hang-ups within the first 30 connected (I)", "severity": "High", "auto": "Coach drafts a proposal; human approves", "category": "Conversation"},
+    {"id": "M11", "signal": "cut-in rate", "threshold": "over 15% of turns on 50+ turns (W3 bar is 5%)", "severity": "Medium", "auto": "link to turn-taking panel", "category": "Conversation"},
+    {"id": "M12", "signal": "reply gap p90 (server)", "threshold": "over 2.5 s on 50+ turns", "severity": "Medium", "auto": "link to run manifest and stack", "category": "Speed"},
+    {"id": "M13", "signal": "tool errors", "threshold": "over 2% of tool calls on 20+ calls", "severity": "High", "auto": "Issue with the tool and failing request", "category": "Integration"},
+    {"id": "M14", "signal": "empty ASR on short replies (haan, ok, hmm)", "threshold": "over 10% of 50+ short replies", "severity": "Medium", "auto": "Issue", "category": "Conversation"},
+    {"id": "M15", "signal": "loops (same clause shape twice or a ledger stall)", "threshold": "over 3% of calls", "severity": "Medium", "auto": "Issue with examples", "category": "Conversation"},
+    {"id": "M16", "signal": "spend pace vs budget", "threshold": "80% warn, 100% stop at a call boundary", "severity": "Medium / High", "auto": "Treasurer stops at cap (A3)", "category": "Cost"},
+    {"id": "M17", "signal": "webhook or CRM write-back failures", "threshold": "5 consecutive, or unknown status over 1%", "severity": "High", "auto": "Issue; unknown never auto-retried", "category": "Integration"},
+    {"id": "M18", "signal": "judge drift or judge model change", "threshold": "extracted outcome rate moves more than 2 SE from the verified rate, or a deprecation notice for a pinned judge model", "severity": "Medium", "auto": "label goes back to 'Calibrating'", "category": "Analysis"},
+    {"id": "M19", "signal": "language hold", "threshold": "below 95% of turns on 50+ turns (W5 bar)", "severity": "Medium", "auto": "Issue", "category": "Conversation"},
+    {"id": "M20", "signal": "disclosure appended by the reply door (brain forgot it)", "threshold": "over 5% of introductions", "severity": "Low", "auto": "Coach proposal (the door already fixed each call)", "category": "Compliance"}
+  ],
+
+  "health_strip_rules": [
+    "0 monitors on: 'Monitoring is off for this campaign. We can't tell you it is healthy.' plus Turn on defaults",
+    "monitors on, no data yet: 'Watching 20 things. Nothing to judge yet (0 calls).'",
+    "monitors on, a monitor has never been read back: that monitor shows 'not live yet' (HV law 21)",
+    "monitors on, data flowing, 0 open issues: 'Watching 20 things, last check 12 s ago, 0 open issues' (never 'Great news' or 'all good')"
+  ],
+
+  "metric_layer": [
+    {"name": "dials", "def": "attempts that reached the carrier (precheck-blocked excluded)"},
+    {"name": "connected_human", "def": "answered by a person; voicemail, IVR and announcements excluded (HV law 20)"},
+    {"name": "connect_rate", "def": "connected_human / dials"},
+    {"name": "contacts_reached_rate", "def": "contacts with 1+ human connection / eligible contacts"},
+    {"name": "conversation_rate", "def": "connected calls past the opening: 10 s or more and 1+ caller turn"},
+    {"name": "agenda_done_rate", "def": "conversations where the ledger marks every must item done (code, no LLM)"},
+    {"name": "outcome_rate_verified", "def": "outcomes earned from a system of record / eligible contacts"},
+    {"name": "outcome_rate_extracted", "def": "LLM-extracted outcome / conversations; shown as 'AI guess' until the judge is Trusted"},
+    {"name": "early_hangup_10s_rate", "def": "connected_human calls ended by the caller under 10 s / connected_human"},
+    {"name": "opt_out_rate", "def": "END_OPT_OUT / conversations"},
+    {"name": "cost_inr", "def": "sum of cost lines, INR incl. GST shown separately"},
+    {"name": "cost_per_connected_min", "def": "cost_inr / connected minutes"},
+    {"name": "cost_per_contact", "def": "cost_inr across all attempts of a contact"},
+    {"name": "cost_per_outcome", "def": "cost_inr of the campaign / verified outcomes (extracted variant labelled)"},
+    {"name": "reply_gap_p50_p90", "def": "server-side per turn; handset only where a stereo handset recording exists, else 'not measured'"},
+    {"name": "cut_in_rate", "def": "agent audio starting while caller audio is active, from the stereo channels / agent turns"},
+    {"name": "short_reply_kept_rate", "def": "caller replies of 1-2 words that produced a transcript and a response / such replies"},
+    {"name": "language_hold_rate", "def": "agent turns in the caller's language per LID / agent turns"},
+    {"name": "words_per_turn, question_ending_rate", "def": "agent text, per turn"},
+    {"name": "disclosure_delivered_rate", "def": "conversations whose first agent turn carried the light AI line (door-appended counted separately)"},
+    {"name": "ai_denials", "def": "replies claiming to be human that reached TTS (must be 0; the door replaces them)"},
+    {"name": "judge_agreement", "def": "agreement of an extracted label with the verified source on paired calls, with Wilson 95% interval"}
+  ],
+
+  "statistics_rules": {
+    "observed_not_causal": "every driver (segment, hour, number, voice, version outside an experiment) carries this label; only randomised experiments in the learning module may say 'caused'",
+    "under_powered": "a difference is shown as a finding only when its 95% interval excludes 0 and each group has 100+ units; else 'under-powered: about N more calls per group', N from the two-proportion formula at alpha 0.05, power 0.8 (reproduces l6: 15%->10% = 686, 50%->55% = 1,565)",
+    "hazard_flag": "a moment is flagged when P(hazard > 1.25x the expected curve) >= 0.99 and 50+ callers reached it (l6 s.4.8); 2x lines are found 19% / 67% / 94% at 100 / 500 / 1,000 calls (C)",
+    "no_winner_badges": "no 'winner' or 'best variant' badge from daily two-arm comparisons (rejected.2026-10-17.k2-dashboards)",
+    "label_noise": "an extracted label at 90% accuracy needs 1.8-2.4x more calls in any test (l6 L09); the power meter applies the measured inflation"
+  },
+
+  "judges_default": [
+    {"name": "Summary", "type": "text, 60 words max, in English plus the client's working language", "source": "LLM (pinned)", "editable": true, "trusted_without_calibration": "n/a (descriptive)"},
+    {"name": "Agenda done", "type": "per must/nice item: done, partly, not reached", "source": "code (agenda ledger)", "editable": "via the brief", "trusted_without_calibration": true},
+    {"name": "Outcome", "type": "client-defined values, e.g. renewal_paid, promised_with_date, needs_human, not_interested, wrong_person", "source": "system of record when wired (verified); LLM extraction with spans as provisional", "editable": true, "trusted_without_calibration": false},
+    {"name": "Mood path", "type": "start and end state plus turns where it changed (hurried, irritated, worried, chatty, confused, calm)", "source": "code signals (rate, loudness vs baseline, overlaps, lexical cues) plus LLM label", "editable": true, "trusted_without_calibration": false},
+    {"name": "Objections", "type": "list with exact quotes and offsets", "source": "LLM, spans verified in code", "editable": true, "trusted_without_calibration": "quotes yes (verified), cluster labels no"},
+    {"name": "Commitments", "type": "who promised what by when, with quote", "source": "LLM, spans verified; company-side commitments need approval", "editable": true, "trusted_without_calibration": false}
+  ],
+  "judge_rules": [
+    "created visible and editable at agent creation (contrast: Bolna creates two judges and hides them from list endpoints, evidence.2026-10-20.acct-bolna-auto-judges)",
+    "each judge has a version: dated model id, prompt hash, temperature 0; an edit creates a new version and re-baselines trends",
+    "a judge never sees the agent version or experiment arm",
+    "preference-style judgements use a model family different from the agent's brain; outcome labels are extractions with spans, not grades",
+    "Trusted only at agreement 0.90 or more with a Wilson 95% lower bound of 0.80 or more on 50+ paired calls (about 46 of 50, or 88 of 100; C); re-audited monthly on a 5% sample and after any model change",
+    "until Trusted, the label shows as 'AI guess' and cannot feed experiments or the north-star number"
+  ],
+
+  "export_schema_per_campaign": [
+    "contact_id", "contact name", "number (masked unless role allows)", "attempts", "final dial reason code + business reason", "carrier code",
+    "outcome (business value)", "outcome source (verified system / AI guess)", "extracted fields (client-defined)", "summary",
+    "transcript native", "transcript romanised", "transcript English (optional, on demand)", "recording link (signed, expires in 7 days, access audited)",
+    "cost INR (per call and per contact)", "agent version + combination id", "call start IST", "duration s", "commitments", "next action"
+  ],
+  "export_t6_fields_covered": ["number", "outcome", "extracted fields", "transcript", "recording link", "cost"],
+
+  "webhooks": {
+    "signing": "HMAC-SHA256, always on, secret rotatable",
+    "events": ["attempt.result", "call.ended", "call.analyzed", "outcome.earned", "outcome.verified", "issue.opened", "issue.resolved", "campaign.state", "report.ready"],
+    "payload": "slim (ids, status, reason, outcome, cost) with a signed fetch link; full payload optional",
+    "retries": "8 attempts over 24 h, exponential backoff, idempotency key per event",
+    "replay": "30 days, from the developer page or by API/MCP",
+    "auto_disable": "after 50 consecutive failures, with an Issue (contrast ElevenLabs: 10+ failures)"
+  },
+
+  "crm_write_back": {
+    "v1_targets": "the design partners' CRMs (candidates: LeadSquared, Zoho, Salesforce; chosen with the first three partners)",
+    "fields": ["disposition (business outcome)", "summary", "next action and date", "recording link", "call time", "cost"],
+    "status": "confirmed | not_executed | unknown; unknown is never auto-retried (HV law 17)",
+    "mapping": "the Data steward proposes a field mapping; the client approves it once"
+  },
+
+  "states": {
+    "empty": "explains the concept and offers one action ('No calls yet. Place a test call and this page fills in.')",
+    "zero": "real zero with its reasons ('0 connected of 120 dialled: 74 switched off, 46 no answer')",
+    "loading": "skeleton plus what is happening and how long ('Analysing 12 calls, about 20 s')",
+    "failed": "names the cause and a retry ('Could not load: analysis service timed out. Retry. Status')",
+    "not_measured": "'not measured' with why ('no handset recording on this call'), never 0",
+    "under_powered": "'under-powered: about N more calls per group'",
+    "sample": "diagonal SAMPLE watermark, a toggle, never mixed with real rows",
+    "stale": "freshness stamp on every number ('updated 14 s ago')",
+    "redacted": "masked by role, with who can see it"
+  }
+}
