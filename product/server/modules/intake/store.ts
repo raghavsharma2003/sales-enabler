@@ -132,7 +132,7 @@ export async function applyRows(q: Queryable, ws: string, rows: InRow[], o: Appl
     }
     const up = { cid: [] as string[], key: [] as string[], val: [] as string[], at: [] as string[] };
     const conflicts = { cid: [] as string[], key: [] as string[], kept: [] as string[], inc: [] as string[] };
-    const mirror: Record<string, { cid: string[]; v: string[] }> = Object.fromEntries(MIRROR.map(k => [k, { cid: [], v: [] }]));
+    const mirror = new Map<string, Partial<Record<(typeof MIRROR)[number], string>>>();
     for (const m of live) {
       const cid = idOf.get(m.e164)!;
       const observedAt = m.observedAt ?? now;
@@ -146,7 +146,7 @@ export async function applyRows(q: Queryable, ws: string, rows: InRow[], o: Appl
           up.cid.push(cid); up.key.push(key); up.val.push(JSON.stringify(value)); up.at.push(observedAt.toISOString());
           existing.set(cid + '\u0000' + key, inc);
           changed = true;
-          if ((MIRROR as readonly string[]).includes(key) && typeof value === 'string') { mirror[key].cid.push(cid); mirror[key].v.push(value); }
+          if ((MIRROR as readonly string[]).includes(key) && typeof value === 'string') mirror.set(cid, { ...mirror.get(cid), [key]: value });
         } else if (d.why === 'conflict_review') {
           bump('conflict_review'); issue({ row: m.first, code: 'conflict_review', detail: key });
           conflicts.cid.push(cid); conflicts.key.push(key); conflicts.kept.push(JSON.stringify(ex)); conflicts.inc.push(JSON.stringify({ ...inc, value }));
@@ -162,8 +162,13 @@ export async function applyRows(q: Queryable, ws: string, rows: InRow[], o: Appl
     if (conflicts.cid.length) await q.query(`INSERT INTO intake_attribute_conflict (workspace_id, contact_id, key, kept, incoming)
         SELECT $1, t.cid, t.key, t.kept, t.inc FROM unnest($2::uuid[], $3::text[], $4::jsonb[], $5::jsonb[]) AS t(cid, key, kept, inc)`,
       [ws, conflicts.cid, conflicts.key, conflicts.kept, conflicts.inc]);
-    for (const k of MIRROR) if (mirror[k].cid.length) await q.query(`UPDATE contact c SET ${k} = t.v, updated_at = now()
-        FROM unnest($1::uuid[], $2::text[]) AS t(cid, v) WHERE c.id = t.cid AND c.workspace_id = $3`, [mirror[k].cid, mirror[k].v, ws]);
+    // Winning name, language and timezone are mirrored onto the contact row, in one statement.
+    if (mirror.size) {
+      const m = [...mirror.entries()];
+      await q.query(`UPDATE contact c SET name = coalesce(t.n, c.name), language = coalesce(t.l, c.language), timezone = coalesce(t.z, c.timezone), updated_at = now()
+          FROM unnest($1::uuid[], $2::text[], $3::text[], $4::text[]) AS t(cid, n, l, z) WHERE c.id = t.cid AND c.workspace_id = $5`,
+        [m.map(e => e[0]), m.map(e => e[1].name ?? null), m.map(e => e[1].language ?? null), m.map(e => e[1].timezone ?? null), ws]);
+    }
 
     // 5. Consent is appended with its evidence; a consent value without a purpose is not consent.
     const cons = { cid: [] as string[], purpose: [] as string[], channel: [] as string[], basis: [] as string[], granted: [] as boolean[], ev: [] as string[] };

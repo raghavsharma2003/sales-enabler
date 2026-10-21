@@ -209,9 +209,14 @@ test('consent is append-only: grants and withdrawals add rows; updates and delet
   assert.equal(ev!.granted, true);
   assert.equal(ev!.purpose, 'renewal_reminder');
   assert.equal(ev!.evidence.statedAt, '2026-10-01');
-  await w.ok('consent.record', { contactId: cid, purpose: 'renewal_reminder', basis: 'withdrawal', granted: false, source: 'email' });
+  // consent.record is a policy tool: an operator proposes, Compliance or the Owner approves.
+  const op = await w.member('operator');
+  const prop = await w.call('consent.record', { contactId: cid, purpose: 'renewal_reminder', basis: 'withdrawal', granted: false, source: 'email' }, w.as('operator', op));
+  assert.equal(prop.status, 'needs_approval');
+  assert.equal((await reg.approve(pool, (prop as any).actionId, { workspaceId: w.ws, memberId: op })).status, 'not_executed', 'an operator cannot approve policy');
+  await w.approve(prop);
   const future = await w.call('consent.record', { contactId: cid, purpose: 'x1', basis: 'consent', granted: true, at: '2099-01-01T00:00:00Z' });
-  assert.equal(future.status, 'not_executed');
+  assert.equal((await reg.approve(pool, (future as any).actionId, { workspaceId: w.ws, memberId: w.owner })).status, 'not_executed', 'consent cannot be dated in the future');
   const rows = await many<{ id: string; granted: boolean }>(pool, 'SELECT id, granted FROM consent_record WHERE contact_id = $1 ORDER BY created_at, id', [cid]);
   assert.deepEqual(rows.map(r => r.granted), [true, false]);
   await assert.rejects(pool.query('UPDATE consent_record SET granted = true WHERE id = $1', [rows[1].id]), /append-only/);
@@ -241,12 +246,14 @@ test('suppression holds on re-import; opt-out columns and the A3 opt-out verb su
   await w.ok('contact.suppress', { e164: '+91 90000 00043', reason: 'called the helpline' });
   const c = await w.importText('phone\n9000000043\n');
   assert.equal(c.counts.suppressed, 1);
-  // The opt-out verb is A3 (it only lowers risk): VP itself and a member allowed to call it both run it at once.
+  // The opt-out verb: VP itself (system) runs it at once as A3; a member's call waits for approval.
   const sys = await reg.execute<any>(pool, 'contact.suppress_after_opt_out', { e164: '9000000044', quote: 'call mat karna' }, { workspaceId: w.ws, actor: { type: 'system' } });
   assert.equal(sys.status, 'confirmed');
   assert.equal((sys as any).mode, 'A3');
-  const mem = await w.call('contact.suppress_after_opt_out', { contactId: asha });
-  assert.equal(mem.status === 'confirmed' && (mem as any).mode, 'A3');
+  // A member may run it at once too: nobody waits for approval to make things safer (kernel rule for A3 verbs).
+  const mem = await w.call('contact.suppress_after_opt_out', { e164: '9000000045' });
+  assert.equal(mem.status, 'confirmed');
+  assert.equal((mem as any).mode, 'A3');
   // Release: a compliance member proposes, an owner approves; a builder cannot.
   const comp = await w.member('compliance');
   assert.equal((await w.call('contact.unsuppress', { suppressionId: s.suppressionId, reason: 'person asked to be called again' }, w.as('builder'))).status, 'not_executed');
@@ -260,7 +267,7 @@ test('DPDP erase leaves a tombstone and the suppression; re-import, webhook and 
   const w = await workspace();
   await w.importText('phone,name,amount_due\n9000000051,Asha,100\n9000000052,Bilal,200\n', { audienceName: 'renewals' });
   const cid = (await w.contactBy('+919000000051'))!.id;
-  await w.ok('consent.record', { contactId: cid, purpose: 'service', basis: 'consent', granted: true });
+  await w.approve(await w.call('consent.record', { contactId: cid, purpose: 'service', basis: 'consent', granted: true }));
   await w.ok('contact.suppress', { contactId: cid, reason: 'asked' });
   const prop = await w.call('dpdp.request.execute', { contactId: cid, scope: 'erase_me', requestedBy: 'person', evidence: 'verified request on call' }, w.as('owner'));
   const out = await w.approve(prop);
@@ -347,7 +354,8 @@ test('tenancy: another workspace cannot read or change these people, uploads, au
   assert.equal((await b.call('source.commit', { uploadId: up.uploadId })).status, 'not_executed');
   assert.equal((await b.call('source.receipt', { receiptId: res.receiptId })).status, 'not_executed');
   assert.equal((await b.call('audience.preview', { audienceId: res.audienceId })).status, 'not_executed');
-  assert.equal((await b.call('consent.record', { contactId: cid, purpose: 'x1', basis: 'consent', granted: true })).status, 'not_executed');
+  const bc = await b.call('consent.record', { contactId: cid, purpose: 'x1', basis: 'consent', granted: true });
+  assert.equal((await reg.approve(pool, (bc as any).actionId, { workspaceId: b.ws, memberId: b.owner })).status, 'not_executed');
   const un = await b.call('contact.unsuppress', { suppressionId: s.suppressionId, reason: 'not mine at all' });
   assert.equal(un.status, 'needs_approval');
   assert.equal((await reg.approve(pool, (un as any).actionId, { workspaceId: b.ws, memberId: b.owner })).status, 'not_executed');
@@ -424,7 +432,7 @@ test('merge: A2, the merged number becomes an identifier, later imports of it la
   const w = await workspace();
   await w.importText('phone,name,plan\n9000000101,Asha,gold\n9000000102,Asha S,\n');
   const k = (await w.contactBy('+919000000101'))!.id, m = (await w.contactBy('+919000000102'))!.id;
-  await w.ok('consent.record', { contactId: m, purpose: 'service', basis: 'consent', granted: true });
+  await w.approve(await w.call('consent.record', { contactId: m, purpose: 'service', basis: 'consent', granted: true }));
   await w.ok('contact.suppress', { contactId: m, reason: 'asked' });
   const out = await w.approve(await w.call('contact.merge', { keepId: k, mergeId: m }));
   assert.equal(out.keptId, k);

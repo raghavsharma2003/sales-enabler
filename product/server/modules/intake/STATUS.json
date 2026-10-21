@@ -19,7 +19,7 @@
     },
     {
       "id": "consent.record",
-      "risk": "draft"
+      "risk": "policy"
     },
     {
       "id": "contact.dial_facts",
@@ -43,7 +43,7 @@
     },
     {
       "id": "contact.merge",
-      "risk": "destructive"
+      "risk": "external"
     },
     {
       "id": "contact.search",
@@ -51,12 +51,13 @@
     },
     {
       "id": "contact.suppress",
-      "risk": "draft"
+      "risk": "draft",
+      "note": "registry: external with an A3 override; draft here until the kernel A3 list carries it"
     },
     {
       "id": "contact.suppress_after_opt_out",
       "risk": "policy",
-      "autonomy": "A3 for system/agent actors"
+      "autonomy": "A3: runs at once for system, agents and members whose role may call it"
     },
     {
       "id": "contact.unsuppress",
@@ -92,7 +93,8 @@
     "POST /hooks/contacts/:sourceId (HMAC-SHA256 over timestamp + '.' + exact body bytes, 300 s skew, idempotent on eventId)"
   ],
   "migrations": [
-    "product/db/migrations/0101_intake.sql"
+    "product/db/migrations/0101_intake.sql",
+    "product/db/migrations/0102_intake_attr_index.sql"
   ],
   "tests": {
     "passed": 18,
@@ -101,7 +103,7 @@
       "product/tests/intake.test.ts (17)",
       "product/tests/intake-scale.test.ts (1)"
     ],
-    "full_suite": "173/173 in 3 of 4 runs of all product tests at concurrency 4; the first run had 1 failure in intake-scale whose reason was not captured (open.2026-10-21.intake-scale-unexplained-failure)"
+    "full_suite": "233/233 on the rebased head in 2 of 3 full runs at concurrency 4; the other failed only the then 60 s scale budget (74.4 s). Ceiling now 120 s (open.2026-10-21.intake-scale-contention)"
   },
   "works": [
     "CSV/TSV/semicolon/pipe with RFC 4180 quoting, BOM, CRLF; delimiter detection",
@@ -113,12 +115,13 @@
     "DPDP erase_me: tombstone (HMAC with a per-workspace salt), suppression kept and re-keyed to the hash, attributes/aliases/audiences/memory facts removed, contact kept as a husk so consent history survives; re-import, webhook and dial_facts all refuse the person; forget_memory scope",
     "contact.dial_facts for the dial gate: tombstone, suppressions, DND (unknown or older than 7 days fails closed for promotional), latest consent per purpose, service/promotional verdicts with reasons",
     "DND provider seam: FakeDndProvider for tests, DisabledDndProvider (always unknown) as the production default",
-    "contact.merge (A2): attributes by authority, every FK to contact re-pointed (found from pg_constraint), merged number kept as an identifier, 30-day snapshot",
+    "contact.merge (external, A2): attributes by authority, every FK to contact re-pointed (found from pg_constraint), merged number kept as an identifier, 30-day snapshot",
     "contact.export (A2): formula-escaped CSV, suppressed and erased excluded by default, the file is redacted from action.result",
     "Audiences: saved attribute filters compiled to parameterised SQL (all/any; eq, neq, in, gt/gte/lt/lte on numbers or ISO dates, exists, missing, contains), list audiences from an import, preview with matched/suppressed/callable/DND-unknown",
     "Viewers get PII scrubbed in reads",
     "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
-    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 19.4-21.7 s, re-import 11.7-14.5 s (n=8, measure.2026-10-21.intake-50k-import)"
+    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 19.4-21.7 s alone, re-import 7.7-13.0 s (n=7); 16-74 s inside the full suite (n=6) (measure.2026-10-21.intake-50k-import)",
+    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json (consent.record policy, contact.merge external, export/DPDP Owner+Compliance), except contact.suppress (see needs_from_others)"
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -134,6 +137,10 @@
     {
       "from": "kernel",
       "what": "Add `module as intake` from ./intake/index.ts to server/modules/index.ts (builders may not edit it)."
+    },
+    {
+      "from": "kernel",
+      "what": "Add contact.suppress to shared/approval.ts A3_VERBS (the registry marks it external with an A3 risk-lowering override); intake will then switch it from draft to external. Likewise dpdp.request.execute's override 'A3 when the person asked on a call' has no kernel path yet."
     },
     {
       "from": "kernel",

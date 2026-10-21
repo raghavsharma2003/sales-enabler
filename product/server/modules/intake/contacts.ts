@@ -149,7 +149,9 @@ export function registerContactTools(reg: Registry): void {
     basis: str({ oneOf: ['consent', 'contract', 'legitimate_use', 'legal_obligation', 'withdrawal'] }), granted: bool(),
     source: opt(str({ max: 120 })), at: opt(str({ max: 40 })), evidence: opt(record(any(), { maxKeys: 20 })),
   }), {
-    name: 'consent.record', risk: 'draft', summary: 'Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent',
+    name: 'consent.record', risk: 'policy', roles: ['owner', 'compliance', 'operator'],
+    describe: i => `Record that this person ${i.granted ? 'gave' : 'withdrew'} ${i.basis} for "${i.purpose}" on ${i.channel ?? 'voice'}${i.source ? ' (source: ' + i.source + ')' : ''}. Consent is append-only.`,
+    summary: 'Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent',
     run: async (ctx, i) => {
       const c = await contactById(ctx.q, ctx.workspaceId, i.contactId);
       if (c.erased_at) throw new Error('this person was erased; consent cannot be recorded against them');
@@ -181,7 +183,9 @@ export function registerContactTools(reg: Registry): void {
   };
 
   reg.register(tool(obj({ ...target, reason: str({ min: 2, max: 200 }), scope: opt(str({ oneOf: ['workspace', 'campaign'] })), scopeId: opt(uuid()) }), {
-    name: 'contact.suppress', risk: 'draft', summary: 'Stop calling a person (workspace-wide or one campaign); works for numbers not on file too. Lowers risk, so it never waits for approval',
+    // The registry lists this as external with an A3 (risk-lowering) override. Until the kernel's A3 list carries it,
+    // it is a draft so that stopping calls to someone never waits for an approval.
+    name: 'contact.suppress', risk: 'draft', roles: ['owner', 'operator', 'compliance'], summary: 'Stop calling a person (workspace-wide or one campaign); works for numbers not on file too. Lowers risk, so it never waits for approval',
     run: async (ctx, i) => {
       if (i.scope === 'campaign' && !i.scopeId) throw new Error('a campaign suppression needs scopeId');
       return addSuppression(ctx, i, i.reason, 'member:' + (ctx.actor.id ?? ctx.actor.type), i.scope ?? 'workspace', i.scopeId);
@@ -246,7 +250,7 @@ export function registerContactTools(reg: Registry): void {
 
   // ---- merge (A2) ----
   reg.register(tool(obj({ keepId: uuid(), mergeId: uuid() }), {
-    name: 'contact.merge', risk: 'destructive',
+    name: 'contact.merge', risk: 'external', roles: ['owner', 'operator', 'compliance'],
     summary: 'Merge two records of the same person into one; the merged number becomes an identifier of the kept one (reversible for 30 days from the snapshot)',
     describe: i => `Merge contact ${i.mergeId.slice(0, 8)} into ${i.keepId.slice(0, 8)}: one person, both numbers, the stronger value per field`,
     version: async (ctx, i) => {
@@ -306,7 +310,7 @@ export function registerContactTools(reg: Registry): void {
 
   // ---- export (policy: PII leaves VP) ----
   reg.register(tool(obj({ audienceId: opt(uuid()), keys: opt(arr(str({ pattern: /^[\p{L}\p{N}_]{1,60}$/u }), { max: 50 })), includeSuppressed: opt(bool()) }), {
-    name: 'contact.export', risk: 'policy', roles: ['owner', 'compliance', 'operator'],
+    name: 'contact.export', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'Export people as CSV (personal data leaves VP; approved by Compliance or Owner, audited)',
     describe: i => `Export ${i.audienceId ? 'audience ' + i.audienceId.slice(0, 8) : 'every contact'} as CSV${i.keys?.length ? ' with ' + i.keys.join(', ') : ''}${i.includeSuppressed ? ', including suppressed people' : ''}. Personal data leaves VP.`,
     version: async (ctx, i) => i.audienceId ? (await one<{ v: string }>(ctx.q, 'SELECT md5(definition::text) AS v FROM audience WHERE id = $1 AND workspace_id = $2', [i.audienceId, ctx.workspaceId]))?.v ?? null : null,
@@ -336,7 +340,7 @@ export function registerContactTools(reg: Registry): void {
     ...target, scope: str({ oneOf: ['erase_me', 'forget_memory'] }), requestedBy: str({ oneOf: ['person', 'compliance', 'tenant'] }),
     evidence: str({ min: 3, max: 500 }), suppress: opt(bool()),
   }), {
-    name: 'dpdp.request.execute', risk: 'destructive',
+    name: 'dpdp.request.execute', risk: 'destructive', roles: ['owner', 'compliance'],
     summary: 'Carry out a DPDP request: erase a person (data gone, tombstone and suppression kept so nothing can call them again) or forget their memory',
     describe: i => i.scope === 'erase_me'
       ? `Erase ${i.contactId ? 'contact ' + i.contactId.slice(0, 8) : 'the person with this number'}: personal data, attributes, aliases and memory are deleted; a tombstone and ${i.suppress === false ? 'existing' : 'a'} suppression stay. Cannot be undone.`

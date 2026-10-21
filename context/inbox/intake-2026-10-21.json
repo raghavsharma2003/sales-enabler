@@ -16,9 +16,9 @@
       "status": "measured",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "A 50,000-row CSV (2.94 MB, 7 columns, 50 Excel-mangled rows) imports in one transaction in 19.4-21.7 s; re-importing it (all rows update) takes 11.7-14.5 s",
-      "n": 8,
-      "method": "product/tests/intake-scale.test.ts: upload in 4 parts over HTTP, source.map, then source.commit via registry.execute; throwaway Postgres 16 on the coding sandbox (4 vCPU, 15 GB); 5 runs alone, 3 inside the full suite at concurrency 4; wall-clock around the commit call",
+      "title": "A 50,000-row CSV (2.94 MB, 7 columns, 50 Excel-mangled rows) imports in one transaction in 19.4-21.7 s alone (n=7) and re-imports in 7.7-13.0 s; inside the full product suite at concurrency 4 the same commit took 16.1-74.4 s (n=6)",
+      "n": 13,
+      "method": "product/tests/intake-scale.test.ts: upload in 4 parts over HTTP, source.map, then source.commit via registry.execute; throwaway Postgres 16 on the coding sandbox (4 vCPU, 15 GB); wall-clock around the commit call; 7 solo runs, 6 full-suite runs (one of them failed the old 60 s budget at 74.4 s). Sampling pg_stat_activity during a slow full run showed no lock waits.",
       "path": "product/server/modules/intake/STATUS.json"
     },
     {
@@ -72,13 +72,13 @@
       "reverse_if": "Counsel or the carrier contract says service calls must also respect NCPR, or a fresher bound than 7 days is required."
     },
     {
-      "id": "open.2026-10-21.intake-scale-unexplained-failure",
+      "id": "open.2026-10-21.intake-scale-contention",
       "type": "open-question",
       "status": "open",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "The intake 50k scale test failed once, on the first full-suite run (concurrency 4, fresh database), and the reason was not captured; three later full runs and five solo runs passed",
-      "closes_when": "Ten full-suite runs with captured output show no failure, or the failure recurs and its error is recorded."
+      "title": "Under the full product suite (4 test files at once) the 50k import intermittently runs 3-4x slower (up to 77 s) with Postgres mostly idle and no lock waits; the scale test ceiling is 120 s for that reason, and the first uncaptured failure was most likely the old 60 s budget",
+      "closes_when": "A profile of a slow full-suite run shows where the time goes (Node CPU, a sibling test, or I/O), or ten full runs stay under 30 s."
     },
     {
       "id": "open.2026-10-21.intake-hook-secret-vault",
@@ -128,7 +128,7 @@
     },
     {
       "from": "component.2026-10-21.intake-module",
-      "to": "open.2026-10-21.intake-scale-unexplained-failure",
+      "to": "open.2026-10-21.intake-scale-contention",
       "relation": "leaves-open"
     },
     {
@@ -141,7 +141,7 @@
     {
       "date": "2026-10-21",
       "event": "intake-module-built",
-      "details": "Intake module pushed: 21 tools, uploads and a signed contacts webhook, migration 0101; 18/18 intake tests and 173/173 product tests (3 of 4 full runs) on the throwaway Postgres. Verified: phone edge cases, authority and dedupe, append-only consent, suppression on re-import, DPDP tombstone and suppression, webhook signature and idempotency, tenancy, DND fail-closed, 50k rows in 19.4-21.7 s (n=8). Not verified: XLSX, real NCPR, concurrent overlapping commits, a 20 MB commit, transcript erasure."
+      "details": "Intake module pushed: 21 tools, uploads and a signed contacts webhook, migration 0101; 18/18 intake tests and 233/233 product tests on the rebased head (2 of 3 full runs; the other hit the then 60 s scale budget at 74.4 s) on the throwaway Postgres. Verified: phone edge cases, authority and dedupe, append-only consent, suppression on re-import, DPDP tombstone and suppression, webhook signature and idempotency, tenancy, DND fail-closed, 50k rows in 19.4-21.7 s alone (n=7), 16-74 s under the full suite (n=6). Not verified: XLSX, real NCPR, concurrent overlapping commits, a 20 MB commit, transcript erasure."
     }
   ]
 }
