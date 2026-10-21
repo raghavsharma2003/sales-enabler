@@ -1,0 +1,44 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-22.vertex-availability-probe",
+   "type": "measurement",
+   "title": "Vertex on vp-voice from the India VM, new key. Text: gemini-3.5-flash-lite, 3.6-flash and 3.8-flash all 200 (0.95-1.67 s for 5 tokens). TTS: gemini-3.8-flash-tts 200 (2.07 s, whole clip) and 3.8-flash-lite-tts 200 (1.65 s), so both ARE on Vertex generateContent, contrary to the docs reading; 3.1-flash-tts-preview 20.1 s; 2.5-flash-tts 3.06 s. Live: gemini-3.8-live gives setupComplete only at us-central1 (2.08 s including connect). It reports 'not found' in europe-west4, europe-west1 and asia-south1, gives 404 on the us/eu hosts, and refuses TEXT output ('Unsupported modality for Vertex Live API'). gemini-3.5-transcribe-live-preview and gemini-3.1-flash-live-preview are 'publisher model not found' at us-central1 and europe-west4. TLS connect is about 30 ms to every aiplatform host.",
+   "status": "measured", "date": "2026-10-22", "source": "verified",
+   "n": "1 request per model/region (about 22 in all, spaced about 2 s apart)",
+   "method": "Run Command probe scripts on vl-vm-cin (Central India) with the service account's bearer token: generateContent (global) and the Live websocket setup (LlmBidiService v1), reading close reasons. No call came from the sandbox."
+  },
+  {
+   "id": "decision.2026-10-22.ears-azure-not-gemini",
+   "type": "decision",
+   "title": "Gemini ears are retired: Vertex offers no Gemini transcription model, and Live refuses text-only output. Ears go to Azure Speech (Central India, streaming hi-IN), per the routing rule that what Azure has goes to Azure. The lab's round-2 stacks (v2-flashlite, v2-54mini, v2-38flash, v2-mai, v2-luna) now listen with Azure Speech. The older Gemini-ears presets show unavailable, with a reason. VERTEX_MODEL_MAP maps gemini-3.5-transcribe-live to null.",
+   "status": "confirmed", "date": "2026-10-22", "source": "main loop",
+   "rationale": "The probe found 'publisher model not found' for the transcribe model in both regions, and 'Unsupported modality' for TEXT out on 3.8-live. Azure Speech was measured at 0.45 s from India. One measured weakness: a quiet elderly 'hmm' was missed (ledger.LAT-06).",
+   "reverse_if": "Vertex lists a Gemini transcription model for vp-voice, or measured Hinglish WER or turn-taking on Azure ears is clearly worse than another available ear (Sarvam Saaras, or gpt-4o-transcribe on Azure)."
+  },
+  {
+   "id": "measure.2026-10-22.round2-smoke-vertex",
+   "type": "measurement",
+   "title": "Round-2 lab stacks on Vertex from India: every call completed with 0 errors. Reply gap (caller end of speech to first audio sent, server_ms):\n- v2-live (Gemini 3.8 Live, us-central1): 1.20 / 1.46 / 1.09 s, ₹1.90/min;\n- v2-mai (Azure ears + Flash-Lite + MAI-Voice): 2.06 / 1.76 / 1.81 s, ₹1.56/min;\n- v2-flashlite (Azure ears + Flash-Lite + Gemini 3.8 Flash-Lite TTS): 2.69 / 2.37 / 2.00 s, ₹1.55/min;\n- v2-38flash: 2.60 / 2.68 s, ₹1.21/min.\nThe disclosure 'AI assistant' was spoken in each.",
+   "status": "measured", "date": "2026-10-22", "source": "verified",
+   "n": "1 call x 2-3 replies per stack",
+   "method": "voicelab/tests/sim_caller.py on the VM against the deployed lab: synthetic Hinglish caller clips (g5 battery), 3 turns, scenario renewal. Cost from the lab meter."
+  },
+  {
+   "id": "decision.2026-10-22.vertex-live-us-central1",
+   "type": "decision",
+   "title": "VERTEX_LIVE_LOCATION=us-central1, the only region where gemini-3.8-live set up for vp-voice. The owner accepts processing outside India (directive.2026-10-22.processing-anywhere).",
+   "status": "confirmed", "date": "2026-10-22", "source": "main loop",
+   "rationale": "Measured: setupComplete at us-central1 only.",
+   "reverse_if": "Live set-up succeeds in a nearer region (europe-west4 or asia-south1), measured by the same probe."
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-22.ears-azure-not-gemini", "to": "measure.2026-10-22.vertex-availability-probe", "relation": "derived-from" },
+  { "from": "decision.2026-10-22.ears-azure-not-gemini", "to": "directive.2026-10-22.provider-routing", "relation": "implements" },
+  { "from": "decision.2026-10-22.vertex-live-us-central1", "to": "measure.2026-10-22.vertex-availability-probe", "relation": "derived-from" },
+  { "from": "measure.2026-10-22.vertex-availability-probe", "to": "measure.2026-10-21.vertex-live-docs-read", "relation": "contradicts" },
+  { "from": "measure.2026-10-22.round2-smoke-vertex", "to": "open.2026-10-20.round2-human-ratings", "relation": "informs" }
+ ],
+ "events": []
+}

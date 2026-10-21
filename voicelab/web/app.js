@@ -88,7 +88,7 @@ function renderMode() {
 $('showold').onchange = renderStacks;
 
 // ------------------------------------------------------------------ build your own: any ears + brain + voice, or speech-to-speech
-const B = LS.get('vl_build', { kind: 'cascade', stt: 'gemini', brain: 'gemini-3.5-flash-lite', tts: 'gemini-lite', voice: '', s2s: 'gemini-3.8-live', s2sv: '' });
+const B = LS.get('vl_build', { kind: 'cascade', stt: 'azure', brain: 'gemini-3.5-flash-lite', tts: 'gemini-lite', voice: '', s2s: 'gemini-3.8-live', s2sv: '' });
 function opts(sel, entries, val) { sel.innerHTML = ''; for (const [k, l] of entries) sel.add(new Option(l, k)); if (entries.some(([k]) => k === val)) sel.value = val; }
 function fillBuild() {
   const c = S.cat;

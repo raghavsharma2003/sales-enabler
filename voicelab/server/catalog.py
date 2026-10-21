@@ -132,20 +132,23 @@ PRESETS = [
       stt='sarvam', gated=True, brain='sarvam-105b', tts='sarvam', new=True),
     P(id='maya-cascade', label='Maya voice (Despina) cascade, with delivery notes', ref='new',
       stt='gemini', gated=True, brain='gemini-3.5-flash-lite', tts='gemini', notes=True, new=True),
+    # round 2 (2026-10-20): the human-conversation brief v2. Ears moved from Gemini transcribe-live to Azure Speech on
+    # 2026-10-22: Vertex does not offer a Gemini transcription model (probe from the VM: "publisher model ... not found";
+    # gemini-3.8-live refuses TEXT output), and the routing rule sends what Azure has to Azure.
     # round 2 (2026-10-20): the human-conversation brief v2 (voicelab/server/persona_v2.py) with its agenda ledger and
     # her own hang-up. Brains picked by the text bake-off (evals/convo_bench.py) and the India latency bench.
     P(id='v2-live', label='v2 · Gemini 3.8 Live, Despina (speech-to-speech)', ref='round 2 · judges’ best brain family, ~1.2 s',
       s2s='gemini-3.8-live', brief='v2', round=2, new=True),
-    P(id='v2-flashlite', label='v2 · Gemini ears + Gemini 3.5 Flash-Lite + Gemini voice', ref='round 2 · fastest good brain, 0.70 s',
-      stt='gemini', gated=True, brain='gemini-3.5-flash-lite', tts='gemini-lite', brief='v2', round=2, new=True),
-    P(id='v2-54mini', label='v2 · Gemini ears + GPT-5.4 mini + Gemini voice', ref='round 2 · OpenAI fast tier, 0.96 s',
-      stt='gemini', gated=True, brain='gpt-5.4-mini', tts='gemini-lite', brief='v2', round=2, new=True),
-    P(id='v2-38flash', label='v2 · Gemini ears + Gemini 3.8 Flash + Gemini voice', ref='round 2 · best judged brain, slow (2.0 s)',
-      stt='gemini', gated=True, brain='gemini-3.8-flash', tts='gemini-lite', brief='v2', round=2, new=True),
-    P(id='v2-mai', label='v2 · Gemini ears + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', ref='round 2 · fastest voice, 0.43 s',
-      stt='gemini', gated=True, brain='gemini-3.5-flash-lite', tts='azure-mai', brief='v2', round=2, new=True),
-    P(id='v2-luna', label='v2 · Gemini ears + GPT-6 Luna + Gemini voice', ref='owner’s pick, judged last in the bake-off, 1.4 s',
-      stt='gemini', gated=True, brain='gpt-6-luna@or', tts='gemini-lite', brief='v2', new=True),
+    P(id='v2-flashlite', label='v2 · Azure ears + Gemini 3.5 Flash-Lite + Gemini voice', ref='round 2 · fastest good brain, 0.70 s',
+      stt='azure', gated=True, brain='gemini-3.5-flash-lite', tts='gemini-lite', brief='v2', round=2, new=True),
+    P(id='v2-54mini', label='v2 · Azure ears + GPT-5.4 mini + Gemini voice', ref='round 2 · OpenAI fast tier, 0.96 s',
+      stt='azure', gated=True, brain='gpt-5.4-mini', tts='gemini-lite', brief='v2', round=2, new=True),
+    P(id='v2-38flash', label='v2 · Azure ears + Gemini 3.8 Flash + Gemini voice', ref='round 2 · best judged brain, slow (2.0 s)',
+      stt='azure', gated=True, brain='gemini-3.8-flash', tts='gemini-lite', brief='v2', round=2, new=True),
+    P(id='v2-mai', label='v2 · Azure ears + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', ref='round 2 · fastest voice, 0.43 s',
+      stt='azure', gated=True, brain='gemini-3.5-flash-lite', tts='azure-mai', brief='v2', round=2, new=True),
+    P(id='v2-luna', label='v2 · Azure ears + GPT-6 Luna + Gemini voice', ref='owner’s pick, judged last in the bake-off, 1.4 s',
+      stt='azure', gated=True, brain='gpt-6-luna@or', tts='gemini-lite', brief='v2', new=True),
 ]
 
 def enabled(p):

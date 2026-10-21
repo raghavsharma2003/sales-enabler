@@ -105,8 +105,9 @@ class Catalog(unittest.TestCase):
 class NotRerouted(Base):
     def test_live_without_a_location_makes_ears_and_s2s_unavailable(self):
         pv.VERTEX_LIVE_LOCATION = ''
-        self.assertEqual(pv.unavailable(P['v2-flashlite']), pv.NOT_OFFERED['ears'])
+        self.assertEqual(pv.unavailable(P['maya-cascade']), pv.NOT_OFFERED['ears'])
         self.assertEqual(pv.unavailable(P['v2-live']), pv.NOT_OFFERED['s2s'])
+        self.assertIsNone(pv.unavailable(P['v2-flashlite']), 'round-2 stacks listen with Azure Speech since 2026-10-22: no Live needed')
         self.assertIsNone(pv.unavailable(P['sarvam-india']), 'a stack with no Google part does not care')
         self.assertIsNone(pv.unavailable(P['azure-stream']))
         with self.assertRaises(RuntimeError) as e: asyncio.run(pv.vertex_live(FakeHttp(), 'gemini-3.8-live'))
