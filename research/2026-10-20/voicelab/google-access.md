@@ -130,6 +130,9 @@ Changes to the runbook above:
     (`vl-transfer/inbox/vp-voice-sa.json`, 12 h expiry). It is never pasted in chat or put in Drive.
   - A VM Run Command pulls the blob to `/opt/voicelab/vertex-sa.json` (mode 600), and the blob is then deleted.
   - The agent checks only `client_email` and `project_id`, never the key.
+- **Region guard:** the lab and the product take the Vertex route only when `VP_REGION` names an Indian region (voice
+  c5be193). The switch-back must set `VP_REGION=centralindia` in `/opt/voicelab/.env` along with `VERTEX_OFF=0`. Without
+  it, Gemini stacks stay off, and the only sign is one line in the log.
 - **Instinct checklist, before the key is made:**
   - read the Cloud Logging notice;
   - delete every old key;
