@@ -173,6 +173,8 @@
     "money module: money.estimate { stackId, minutes, calls } -> { perMinuteInrMilli, basis }. campaign.estimate reads it through the registry when it is registered.",
     "workspace module: a tool that verifies a member phone (it writes verified_test_phone.verified_at), and one that records an A2P declaration reference (it sets phone_number.a2p_status = 'declared', a2p_ref).",
     "agents module: put config.lint = { ok } on agent_version. G10 reads it and also calls shared/safety lintAgentConfig.",
-    "blueprint data: research/2026-10-21/blueprint/data/{campaigns-module-defaults,trust-telephony-defaults,workspace-tool-registry}.json are not in the repo. The defaults in defaults.ts were transcribed from the module markdown."
-  ]
+    "blueprint data: research/2026-10-21/blueprint/data/{campaigns-module-defaults,trust-telephony-defaults,workspace-tool-registry}.json are not in the repo. The defaults in defaults.ts were transcribed from the module markdown.",
+    "kernel tests: 'prepare() runs outside the transaction' counts every idle-in-transaction session in the database, so it fails when run in parallel with suites that legitimately hold a claim transaction open (campaigns G11 predial waits up to 800 ms inside the claim by design). It passes alone (3/3). Scope the count to the test's own backend or connection."
+  ],
+  "full_suite_note": "On 2026-10-21 the whole product suite (scripts/test.mjs) on this head ran 212 tests: 209 pass, 3 fail, none in campaigns. agents test.simulate and learning gates also fail on the base commit 6610597 without this module, so they predate it. The kernel prepare() test is the parallel-run flake described in needs_from_others."
 }
