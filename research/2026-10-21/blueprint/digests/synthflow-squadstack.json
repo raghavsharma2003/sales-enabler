@@ -1,0 +1,261 @@
+{
+ "adopt": [
+  {
+   "pattern": "Name the product after a loop (Build, Evaluate, Launch, Learn) and make the chat assistant act on the real workspace with exactly the same tool set as the API and MCP server, with results rendered inline (call cards, charts, version diffs).",
+   "evidence": "Synthflow docs getting-started.md (BELL framework) and aurora.md; MCP server and Claude/ChatGPT/Codex connectors expose the same tool set (SYN-15/16, observed) in research/2026-10-20/teardown/synthflow/report.md. Aurora is Enterprise-only, so VP can win by shipping it to everyone. Chat setup is parity at 5 of 6 dashboards (research/2026-10-21/walkthroughs/SYNTHESIS.md).",
+   "why": "Directive: the application is LLM-driven and the client just talks. Parity is the floor; the wedge is W10 (every dashboard action on API/MCP, stored config equals running config)."
+  },
+  {
+   "pattern": "Per-call telephony observability on every call: SIP ladder, PCAP, per-leg RTT/jitter/loss/MOS, ring and connect durations, action-execution timeline, live listen-in, transfer outcome states with failure reasons. Normalise the failure taxonomy (do not copy raw exceptions).",
+   "evidence": "SYN-08 and SYN-02 (observed, OpenAPI GET /calls/{call_id}); parity-delta.csv warm_transfer row (9 failure reasons); SYN-71 shows the raw-string label map to avoid. Complaint data ties pain to telephony and failure visibility (SYN-70).",
+   "why": "Enterprise buyers expect it; a business-language reason plus carrier code plus action is where VP beats both vendors (W6)."
+  },
+  {
+   "pattern": "Test Center: AI-generated simulation suites bound to one agent, run in parallel, rerun after every change to catch regressions; strongest on a graph-shaped flow.",
+   "evidence": "data/teardown/synthflow/docs-md/simulations.md; Test Center shipped 2026-09-23 (changelog.csv); SquadStack has agent evals and prompt versions (SQS-65). Pre-deploy simulation ships at 6 vendors (RAD-52 in research/2026-10-20/teardown/radar/report.md).",
+   "why": "Parity floor. Grade the suites against verified keys and predicates, not a model judging itself (inherited law)."
+  },
+  {
+   "pattern": "Cross-channel contact memory keyed on phone number, summarised and injected at call start, shared across voice, SMS and WhatsApp; add SquadStack's capped extraction points (up to 20), Refresh versus Rolling History modes and a stale-data confirm flag.",
+   "evidence": "SYN-80 (observed, docs-md/memory.md); SQS-62 (vendor-claimed) and SQS-74 (code shows intra-call memory only) in research/2026-10-20/teardown/squadstack/claims.json.",
+   "why": "v2 memory. Use typed slots with provenance, not whatever the call said (rejected.2026-10-20.raw-fact-memory)."
+  },
+  {
+   "pattern": "Lift's learning shape: one human-reviewed prompt edit at a time, prompt split into locked sections (compliance, pricing, identity, AI disclosure) and optimisable sections, staged rollout to a quarter, half, all traffic.",
+   "evidence": "SQS-64 (vendor-claimed: claimed lifts 1.5% to 2.7% bookings on 12k leads, no screen in bundles) in research/2026-10-20/teardown/squadstack/report.md section 8. Synthflow's loop is manual (SYN-81).",
+   "why": "This is the pattern v2 should beat. Drive it with sequential or bandit statistics, not daily-checked K=2 dashboards (rejected.2026-10-17.k2-dashboards: 52-62% false winners in A/A) and no cross-tenant pooling (rejected.2026-10-17.cross-tenant-pooling)."
+  },
+  {
+   "pattern": "Typed call-closing tools as first-class primitives: transfer_call, send_link, hangup_call, dnd_request, schedule_callback, with a dnd_request that writes to suppression immediately.",
+   "evidence": "SQS-72 (observed, editor chunk) in research/2026-10-20/teardown/squadstack/verify.md; transfer with phone books and time-to-human in docs-md/call-transfers.md. Verifier moved transfer onto the parity floor.",
+   "why": "Pairs the best in-call primitive with dial-time enforcement. Guard hang-up by predicate (rejected.2026-10-20.unguarded-hangup)."
+  },
+  {
+   "pattern": "One campaign canvas across voice bot, human call, IVR, SMS (Sender ID and DLT Entity ID fields) and email, with a lead router, lead prioritisation rules and a bucket-to-outcome disposition model with a webhook when a lead's journey ends.",
+   "evidence": "SQS-03/05/14/15 (observed, 61-route manifest, route names only) in research/2026-10-20/teardown/squadstack/report.md; Synthflow signed webhooks (SYN-02).",
+   "why": "Campaign is the root object for the client's view of the whole campaign end to end; DLT fields belong on the form (0 of 6 dashboards had them, W/SYNTHESIS.md)."
+  },
+  {
+   "pattern": "STT, LLM and TTS routers with fallback, best-latency and hot-swap after N turns, plus context summarisation after 5 turns keeping the last 3 - but every fallback logged and attributed to the stack that actually ran.",
+   "evidence": "SQS-16/21 (observed, agent-editor chunk, arc_stt params). Contrast rejected.2026-10-20.silent-fallback-in-tests and rejected.2026-10-20.preset-override-attribution.",
+   "why": "Resilience without breaking test integrity or hiding which model ran."
+  },
+  {
+   "pattern": "Per-second metering, failed and user-cancelled calls not billed, no-answer flat 5 s; unlike Synthflow, hard spend caps and bounded call defaults.",
+   "evidence": "SYN-10 (observed, docs-md/usage.md: thresholds invoice and are not caps); must-be item C in research/2026-10-21/walkthroughs/SYNTHESIS.md; billing is a top complaint (SYN-70: BILLING 11).",
+   "why": "Billing trust is a churn driver at Synthflow; fair metering plus caps is cheap to ship."
+  },
+  {
+   "pattern": "Region-pinned workspaces with per-region API and MCP hosts and a documented in-region quality target (RTT, MOS), adding an India region.",
+   "evidence": "SYN-15/21 and SYN-21b (vendor-claimed LATAM PoP: RTT 191.3 to 99.5 ms) in research/2026-10-20/teardown/synthflow/claims.json. No India region at Synthflow.",
+   "why": "Makes residency and latency a visible contract term, which neither vendor offers for India."
+  },
+  {
+   "pattern": "A dated public changelog and an incident-style status page with clear incident write-ups; agency subaccounts with branding and limits later for BPO and reseller buyers.",
+   "evidence": "SYN-50/52 (106 changelog entries, incident.io status), SYN-02/12; SquadStack has neither (SQS-43). Avoid the public flag snapshot (SYN-33) and the resellers-removed surprise (SYN-44).",
+   "why": "Transparency is cheap velocity-credibility; leaking internal flags is the anti-pattern."
+  }
+ ],
+ "beat": [
+  {
+   "gap": "Minutes from sign-up to first ring on an Indian handset from an Indian CLI. Synthflow: review-gated, from $30k a year, US/CA/AU numbers only, no Indian carrier. SquadStack: Book a Demo, about 2 weeks of setup before a 4-8 week pilot, builders allowlisted.",
+   "how_vp_beats": "Self-serve onboarding with a BYO or pre-provisioned Indian number and a chat-built first agent. Task T0; pass: VP 15 minutes or less while incumbents' median is 45 or more (W7). Risk: SquadStack self-serve is 'a flag flip, not a build', so measure monthly.",
+   "evidence": "SYN-04/43/61; SQS-70 and SQS-P01 (p=0.85, unscored); research/2026-10-20/teardown/SYNTHESIS.md W7; research/2026-10-20/teardown/synthflow/report.md."
+  },
+  {
+   "gap": "Suppression is not enforced at dial time. Synthflow's only opt-out signal is a post-call LLM-judge field that did not run for 2 h 50 m on 2026-08-07 while webhooks still fired empty; no DNC or suppression endpoint in 110 operations. SquadStack has a pasted DNC blacklist and an in-call dnd_request, but its messy-CSV opt-out row is predicted to be dialled unless blacklisted.",
+   "how_vp_beats": "One suppression predicate checked at the single dial path and carried across campaigns, written by in-call DND requests. Tasks T2 and T9b; pass: 0 rings on opt-out rows and 0 after opt-out, incumbents' median 1 or more (W1).",
+   "evidence": "SYN-06/07/66; SQS-47/72, SQS-P04; research/2026-10-20/teardown/SYNTHESIS.md section 2.2 and W1; rejected.harvest.07 (enroll-time-only suppression failed)."
+  },
+  {
+   "gap": "Campaign robustness. Synthflow: API-only and Enterprise-only, 7-day cancel, no retries, window not editable and cannot cross midnight, agent hours that clash with the window fail recipients immediately, no per-campaign webhook, dedupe only with caller ids, no CSV upload documented. SquadStack: a failed-imports file but predicted mishandling of at least 3 messy rows.",
+   "how_vp_beats": "CSV and API import with row-level repair and a failed-rows file, retries by outcome, editable and cross-midnight windows, per-campaign webhook, no silent fail when hours conflict. Tasks T2 and T3; pass: 48 of 50 messy rows right in under 5 minutes (W2).",
+   "evidence": "SYN-05/63; SQS-P04; research/2026-10-20/teardown/synthflow/parity-delta.csv; W2 in research/2026-10-20/teardown/SYNTHESIS.md."
+  },
+  {
+   "gap": "Failed-call diagnosis. Synthflow shows raw Python exceptions and internal orchestrator URLs as end reasons. SquadStack shows an outcome label, searchable for 10 days only, with STT/LLM/TTS failures as aggregate counts and per-call spans in an internal tool.",
+   "how_vp_beats": "A business-language reason plus carrier code plus a suggested action on every failed call, retained well beyond 10 days, readable by the client and by chat. Task T5, five induced failures; pass: under 60 s each, 5 of 5 correct, 4 or more actionable (W6).",
+   "evidence": "SYN-71; SQS-18/28 and SQS-P08; W6 in research/2026-10-20/teardown/SYNTHESIS.md."
+  },
+  {
+   "gap": "Voicemail and Indian operator announcements. SquadStack classifies voicemail only after the call from transcript keywords (0 AMD matches in the editor), so the agent talks into the announcement. Synthflow has voicemail end reasons but nothing tested on Indian operator tones.",
+   "how_vp_beats": "Real-time answering-machine detection tuned to Indian announcements (switched off, not reachable, caller tune then silence) with seconds-to-hang-up scored. Task T4; pass: correct class and hang-up under a stated threshold on all 5 synthetic announcements.",
+   "evidence": "SQS-11 (observed, strengthened by verifier) and SQS-P06 (p=0.7, unscored); parity-delta.csv voicemail_amd; research/2026-10-20/teardown/SYNTHESIS.md T4."
+  },
+  {
+   "gap": "Hinglish and Indic depth. Synthflow: Hindi is the only Indic language, no en-IN, Multilingual is a ten-language Deepgram set and Synthflow TTS keeps an English-biased delivery. SquadStack: 9 Indian languages and deterministic switching, strongest incumbent on language.",
+   "how_vp_beats": "Beat Synthflow on the l4b code-switch battery (language ID per turn, numbers and times, product terms). Against SquadStack it is unproven; W5 is dropped if SquadStack scores at or above VP. Own stacks still cut in on 15-42% of turns (open.2026-10-19.turn-taking), so W3 and W4 are unproven for VP itself.",
+   "evidence": "SYN-28/65, SYN-P10 (p=0.55); SQS-20, SQS-P11 (p=0.8); W5 in research/2026-10-20/teardown/SYNTHESIS.md; ledger CMP-08."
+  },
+  {
+   "gap": "AI disclosure and honesty. Synthflow: consent toggle and an example text, no default disclosure. SquadStack: disclosure 'configurable', naturalness KPI counts calls dropped within 10 s of the caller realising it is an AI, and its Turing test rewards being mistaken for a human.",
+   "how_vp_beats": "A fixed, light, once-only disclosure that cannot be removed, no manipulation, crisis lines by predicate. Test in the listener panel and pilot: pass only if hang-ups rise by 5 points or less against undisclosed agents (otherwise reverse, per decision.2026-10-20.squadstack-where-vp-wins).",
+   "evidence": "SYN-62, SYN-P11 (p=0.6, unscored); SQS-46/58/59; risk.2026-10-20.squadstack-humanlike-norm; research/2026-10-20/teardown/squadstack/report.md."
+  },
+  {
+   "gap": "Stored config is not what runs, and disclosure of providers is incomplete. Synthflow silently ignores an llm value on non-enterprise plans and omits Anthropic and Soniox from its subprocessor list. SquadStack's trust-centre list omits ElevenLabs, Cartesia, Sarvam, Daily and OpenRouter.",
+   "how_vp_beats": "Read-back after every write, loud errors on ignored fields, one compile() for every lane, and a subprocessor list generated from what actually ran. Task T1 by API and by chat; pass: 0 silent drops (W10).",
+   "evidence": "SYN-09/37; SQS-24/52; W10 in research/2026-10-20/teardown/SYNTHESIS.md (4 of 4 writable vendors drift)."
+  },
+  {
+   "gap": "India residency and DPDP. Synthflow has no India region, stores in EU or US, and its PII redaction lacks Aadhaar and PAN. SquadStack keeps origins in Mumbai but uses US subprocessors (OpenAI, Plivo) and its privacy policy gives no DPDP notice to the people called.",
+   "how_vp_beats": "Indian call path and storage by default, Aadhaar and PAN redaction, a DPDP-grade notice, a per-call record of where media and LLM ran. Test by tracing a real call end to end.",
+   "evidence": "SYN-21/64; SQS-50/51/52; research/2026-10-20/teardown/SYNTHESIS.md TS-17 (only 4 of 8 vendors keep the call path in India by default)."
+  },
+  {
+   "gap": "Pricing transparency. Synthflow is Enterprise from $30k a year with an estimated INR 15.2-25.6 Indian minute (2-7x Indian list) and no cap on spend; SquadStack quotes INR 2-5 a live minute plus a setup fee per use case and a 90-day pilot, and can price at INR 3.5 profitably on Flash TTS.",
+   "how_vp_beats": "An experience claim, not undercutting: a published all-in INR per connected minute with telephony and GST, no floor, no setup fee, per-second billing and bounded defaults, reconciled against a real invoice. Price alone is not a wedge.",
+   "evidence": "SYN-40/41; SQS-34/35/38/41; rejected.2026-10-17.parity-undercut; research/2026-10-20/teardown/SYNTHESIS.md TS-20 and section 6."
+  },
+  {
+   "gap": "Human support in Indian business hours. Synthflow's low reviews are 19 of 21 about support (plus 11 billing); SquadStack's public failures are about its gig workers' payouts and a hiring pause, so the human hand-off is fragile.",
+   "how_vp_beats": "An operating promise backed by an agent that finds the failure, explains it and proposes the fix (the human 'AI Agent Manager' job MyOperator now sells). Task T8, ticket filed at 11:00 IST; pass: median under 2 h against incumbents' median over 24 h (W9).",
+   "evidence": "SYN-70; SQS-56/57; RAD-15 and RAD-50 in research/2026-10-20/teardown/radar/report.md; W9."
+  },
+  {
+   "gap": "Learning that is more than a manual loop or a marketing line. Synthflow documents analytics plus Aurora prompt review only; SquadStack's Lift, Optimize and cross-call memory are claimed but absent from its public bundles.",
+   "how_vp_beats": "v2 only: gated, reviewed learning with locked compliance, pricing and identity sections, staged rollout and sequential statistics, plus typed cross-call memory. Test: A/A false-winner rate far below the 52-62% naive baseline we measured in simulation; memory slots verified against keys.",
+   "evidence": "SYN-80/81; SQS-62/64/65/74; rejected.2026-10-17.k2-dashboards; research/2026-10-20/teardown/SYNTHESIS.md section 4 (learning loops human-gated everywhere)."
+  }
+ ],
+ "numbers": [
+  {
+   "metric": "Synthflow enterprise floor",
+   "value": "USD 30,000 a year (INR 28.5 lakh at FX 95); no per-minute list price",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/synthflow/claims.json SYN-40; data/teardown/synthflow/site/pricing.html"
+  },
+  {
+   "metric": "Synthflow all-in Indian outbound minute",
+   "value": "INR 15.2-25.6 (computed from list prices via BYO Twilio from a non-Indian CLI); about 2-7x Indian list of INR 3.5-7",
+   "grade": "inferred",
+   "evidence": "research/2026-10-20/teardown/synthflow/pricing.json verifier_2026_10_20 block; SYN-41"
+  },
+  {
+   "metric": "Synthflow effective rate if the $30k floor is a usage commitment",
+   "value": "INR 47.5 per minute at 5,000 min/month, 23.75 at 10,000; stops binding at about 9,000-16,000 min/month. As a fee on top add 47.5 / 23.75 / 9.5 at 5k / 10k / 25k",
+   "grade": "inferred",
+   "evidence": "research/2026-10-20/teardown/synthflow/pricing.json; SYN-41"
+  },
+  {
+   "metric": "Synthflow reconstructed COGS and margin",
+   "value": "USD 0.034-0.085 per minute (INR 3.2-8.1); gross margin 39-69%; own-infra line is an unsourced placeholder",
+   "grade": "inferred",
+   "evidence": "research/2026-10-20/teardown/synthflow/pricing.json; SYN-42"
+  },
+  {
+   "metric": "Synthflow API and docs surface",
+   "value": "69 paths, 110 operations; 370 docs pages saved; 0 India, TRAI, DLT, NCPR, DPDP mentions",
+   "grade": "observed",
+   "evidence": "SYN-01, SYN-60 in research/2026-10-20/teardown/synthflow/claims.json"
+  },
+  {
+   "metric": "Synthflow changelog velocity",
+   "value": "106 dated entries 2025-01-05 to 2026-10-20; 67 in the last six months; 8-12 a month since 2026-03 versus 1-4 in 2025 (Feb-Jul 2025 empty)",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/synthflow/changelog.csv; SYN-50"
+  },
+  {
+   "metric": "Synthflow opt-out silent failure window",
+   "value": "2 h 50 m on 2026-08-07 (08:20-11:10 UTC): judge, extractors and post-call SMS did not run while webhooks fired with empty fields",
+   "grade": "observed (incident) / inferred (opt-out impact)",
+   "evidence": "data/teardown/synthflow/status/status.synthflow.ai_feed.rss.out; SYN-52, SYN-66"
+  },
+  {
+   "metric": "Synthflow Trustpilot",
+   "value": "TrustScore 4.1 over 215; 21 one- and two-star product reviews coded SUPPORT 19, BILLING 11, RELIABILITY 9, PLAN_GATING 4, TELEPHONY 3",
+   "grade": "observed",
+   "evidence": "SYN-70; research/2026-10-17/lanes/l4a-competitors/complaints.csv"
+  },
+  {
+   "metric": "Synthflow campaign limits",
+   "value": "1-10,000 recipients per request, 1,000,000 per campaign, auto-cancel after 7 days, no retry, API-only, Enterprise-only",
+   "grade": "observed",
+   "evidence": "SYN-05; data/teardown/synthflow/docs-md/batch-calling.md"
+  },
+  {
+   "metric": "Synthflow hosting footprint",
+   "value": "69 of 70 SIP/media/egress IPs on GCP (us-east1 50, europe-west3 17, northamerica-south1 2); 1 Microsoft; no India region",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/synthflow/ip-regions.csv; SYN-20/21"
+  },
+  {
+   "metric": "Synthflow funding and claimed scale",
+   "value": "USD 20M Series A (Accel, 2025-06), about USD 30M total; claims 65M+ calls a month and 1,000+ customers",
+   "grade": "vendor-claimed",
+   "evidence": "SYN-54; data/teardown/synthflow/site/pricing.html"
+  },
+  {
+   "metric": "Synthflow claimed audio quality",
+   "value": "In-region RTT under 100 ms and MOS above 4.2 as docs targets; Synthflow TTS about 100-200 ms first audio; LATAM PoP RTT 191.3 to 99.5 ms",
+   "grade": "vendor-claimed",
+   "evidence": "SYN-21, SYN-21b, SYN-29; data/teardown/synthflow/docs-md/call-quality.md"
+  },
+  {
+   "metric": "SquadStack list price",
+   "value": "'typically INR 2-5 per live minute' incl. telephony, plus a setup fee per use case; Osno advertises USD 0.04-0.08 per minute",
+   "grade": "vendor-claimed",
+   "evidence": "SQS-34/35/38/40 in research/2026-10-20/teardown/squadstack/claims.json"
+  },
+  {
+   "metric": "SquadStack reconstructed COGS (INR per connected minute)",
+   "value": "ElevenLabs Flash v2.5 1.95-3.58 (margin -15% to -36% at INR 2, 23-34% at INR 3.5); Cartesia mid 2.2; Sarvam mid 1.6; self-hosted TTS mid 1.1",
+   "grade": "inferred",
+   "evidence": "research/2026-10-20/teardown/squadstack/cogs.csv; SQS-41 as corrected in verify.md (in-call LLM line is a proxy)"
+  },
+  {
+   "metric": "SquadStack financials",
+   "value": "FY24 revenue INR 26.5 Cr (half of FY23's 53.0 Cr), loss INR 46.3 Cr, USD 24.6M raised, 851 staff",
+   "grade": "vendor-claimed (secondary source, Inc42)",
+   "evidence": "research/2026-10-17/lanes/l4a-competitors/report.md rows 19 and 110"
+  },
+  {
+   "metric": "SquadStack portal surface",
+   "value": "61 routes in the Next.js build manifest, 98 public chunks; agent object defaults: temperature 0.5, max tokens 100, session 240 s, idle 10 s x 3, summarise after 5 turns",
+   "grade": "observed",
+   "evidence": "SQS-03/16 in research/2026-10-20/teardown/squadstack/claims.json"
+  },
+  {
+   "metric": "SquadStack calling pause in code",
+   "value": "23:00-09:00 daily pause (window 09:00-23:00), wider than the marketed 9:30-20:30; server enforcement not seen",
+   "grade": "observed (constant), enforcement unknown",
+   "evidence": "SQS-71 and SQS-49 in research/2026-10-20/teardown/squadstack/verification.json"
+  },
+  {
+   "metric": "SquadStack hiring signal",
+   "value": "22 open roles: 10 sales or marketing, 4 product (3 for a self-serve Voice AI platform), 1 engineering",
+   "grade": "observed",
+   "evidence": "SQS-45"
+  },
+  {
+   "metric": "SquadStack failure record (supply side)",
+   "value": "Partner app com.squad.run 15,007 ratings, 3.85 stars; Capterra 0 buyer reviews; G2 and Trustpilot blocked (403, not bypassed)",
+   "grade": "observed",
+   "evidence": "SQS-55/56; research/2026-10-20/teardown/squadstack/report.md section 7"
+  },
+  {
+   "metric": "SquadStack naturalness claims",
+   "value": "Abrupt-disconnect rate about 10% versus about 40% in 2025-01; 'Turing test' 81% of 1,563 counts any listener who picked at least one of two AI clips as human",
+   "grade": "vendor-claimed",
+   "evidence": "SQS-58/59"
+  },
+  {
+   "metric": "SquadStack ASR claim",
+   "value": "Arth V2: 67 ms finalize-to-response, 8.85% semantic WER; benchmark gated on Hugging Face",
+   "grade": "vendor-claimed",
+   "evidence": "SQS-31"
+  },
+  {
+   "metric": "Verifier hit rates for both lanes",
+   "value": "Synthflow 30 of 50 re-checked claims confirmed unchanged, 46 kept grade, 0 refuted outright; SquadStack 19 of 36 unchanged, 28 substance held, 5 refuted in part, 2 downgraded; both lanes' predictions unscored",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/synthflow/report.md and research/2026-10-20/teardown/squadstack/report.md verification sections; T/SYNTHESIS.md 1.2"
+  },
+  {
+   "metric": "Pre-registered predictions on these two vendors",
+   "value": "13 Synthflow (SYN-P01..P13) and 14 SquadStack (SQS-P01..P14), all unscored; handset reply gap predicted at least 1.6 s p50 (Synthflow, p=0.6) and 1.0-1.6 s (SquadStack, p=0.75)",
+   "grade": "unknown (predictions, not measurements)",
+   "evidence": "research/2026-10-20/teardown/synthflow/predictions.json; research/2026-10-20/teardown/squadstack/predictions.json; research/2026-10-20/teardown/predictions.md TP-071..097"
+  }
+ ]
+}

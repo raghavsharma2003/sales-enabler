@@ -1,0 +1,215 @@
+{
+ "adopt": [
+  {
+   "pattern": "Immutable agent versions with a Stable/Live pill, a traffic split and 'Test this version', plus a version column in every call log row",
+   "evidence": "exotel-04-rollout and exotel-22 (research/2026-10-21/walkthroughs/exotel/report.md section 13); versions + traffic-allocation endpoint in research/2026-10-20/teardown/exotel/bundle-endpoints.json (EXO-61). Split control itself not seen: graded partial.",
+   "why": "Cheap, buyers expect it, and it is the substrate for VP's later self-learning (a version column makes every call attributable)."
+  },
+  {
+   "pattern": "Support AgentStream (WebSocket bidirectional, 8 kHz PCM, mark/clear for barge-in) as a bring-your-own-carrier path from day one, via the existing Pipecat ExotelFrameSerializer",
+   "evidence": "EXO-12, EXO-V05, decision.2026-10-20.exotel-rails-not-rival-in-ux; Exotel publishes guides for 9+ rival platforms (EXO-28); ElevenLabs native Exotel provider since 2026-06-01.",
+   "why": "Many Indian enterprises already hold Exotel numbers and 1600/140 series. Meeting them there removes the carrier objection at near-zero build cost. Keep Plivo primary (risk.2026-10-20.exotel-rails-dependence)."
+  },
+  {
+   "pattern": "Live concurrency meter with last-updated time, and reports that state their freshness lag",
+   "evidence": "exotel-25 (concurrency 0/5), exotel-24 ('up to 30 mins')",
+   "why": "Honest state display that builds trust; VP should add a spend meter beside it."
+  },
+  {
+   "pattern": "Post-call webhooks with typed events (sentiment, summary, intent, entity, outcome, transcript turns), per-session overrides via custom params, retries on non-2xx, out-of-order tolerance documented",
+   "evidence": "EXO-18 (docs intelligent-voice-agents__voicebot-webhooks.md)",
+   "why": "Integration contract buyers' CRMs already expect; VP should add signing and idempotency keys (Bolna lacks signed webhooks per account-phase)."
+  },
+  {
+   "pattern": "Intents as named post-call classifications shown as a column in the call log, defined with name + description",
+   "evidence": "exotel notes; wt-exotel confirms; 3 intents on the demo agent",
+   "why": "Parity must-be; VP's version should classify against verified keys, not self-grade."
+  },
+  {
+   "pattern": "Tools that must pass a test before activation; knowledge base with Processing/Trained status and Active/Archived; account-level lookup tables attached per agent",
+   "evidence": "research/2026-10-20/teardown/exotel/parity-delta.csv (function_calling_tools, knowledge_base); exotel-17, exotel-08, exotel-04-knowledge-base",
+   "why": "Prevents silent broken tools in production; low build cost."
+  },
+  {
+   "pattern": "Pre-provisioned demo agent and flow at sign-up so first value does not require a build",
+   "evidence": "voicebot-mum-prod-default-flow and 'Exotel-Voicebot' created at sign-up (walkthrough report section 2, wt-exotel-06, inferred)",
+   "why": "Good onboarding instinct; VP should go further with a browser test call that needs no number."
+  },
+  {
+   "pattern": "Monitored Bot: a human supervisor sees live sentiment, gets Sentiment Crash / Repetition Loop alerts and can barge in",
+   "evidence": "teardown report dim 1 (Harmony); EXO-62 thesis",
+   "why": "A delighter at Exotel today; maps to VP's Supervisor surface and to the crisis-line and escalation predicates (safety by predicate, not instruction)."
+  },
+  {
+   "pattern": "Build-by-chat through an open MCP server (131 tools, 46 voicebot) including an AI-initiated outbound call",
+   "evidence": "ExotelMCP repo, 25 commits / 7 authors (velocity.json); Aug 2026 launch post",
+   "why": "Confirms chat setup is parity (5 of 6 vendors ship a copilot). VP's differentiation is full dashboard-to-API parity (W10), not having a copilot."
+  },
+  {
+   "pattern": "Locked platform safety layer above the editable prompt, plus a Mask Sensitive Data toggle, bounded silence nudges that end the call, and a max-duration setting",
+   "evidence": "exotel-15 (locked System Prompt), nudges 7 s x3 then end [notes]",
+   "why": "Right shape; VP makes it non-removable and visible (AI disclosure once, crisis lines Tele-MANAS 14416 and 112) and defaults masking, max duration and burst-off to ON/bounded (must-be item C)."
+  }
+ ],
+ "beat": [
+  {
+   "gap": "Three shells, three design languages, three contact stores; a bot campaign spans the voicebot console, App Bazaar and Campaigns",
+   "how_vp_beats": "One shell and one contact store from list to first call. Test: time from sign-up to first call on a verified Indian handset and number of surfaces touched (Exotel: 3 shells, 5-step banner then 6+ steps). Pass bar from W7: VP 15 min or less on a BYO or pre-provisioned number versus incumbents' 45+.",
+   "evidence": "exotel-01, 02, 14, 13; EXO-P02/P04; W2, W7 in research/2026-10-20/teardown/SYNTHESIS.md; wt-exotel-44"
+  },
+  {
+   "gap": "Calling windows, DND/consent and opt-out suppression are not enforced on the API or bot path; one absolute send_at/end_at window; campaign form has no consent/DND/window field. They exist only in ECC or behind an account manager",
+   "how_vp_beats": "Window, DND/NCPR scrub, consent ledger and category-aware series routing applied by default on every campaign, with a stated reason for each skipped contact. Test W1/T2/T3: 0 rings on opt-out rows and a refused promotional call at 09:30. Kill if two incumbents already score 0 and 0. Caveat: parity features exist at Exotel, so the win is default-on and reasoned, not existence.",
+   "evidence": "EXO-45, EXO-V02/V03, exotel-10, TP-102; verify.md corrections; W1"
+  },
+  {
+   "gap": "CSV hygiene: numbers with spaces/dashes/brackets rejected not normalised; duplicates dropped silently; opt-out row dialled unless removed by hand (predicted)",
+   "how_vp_beats": "Normalise to E.164, report every fix and every drop with a reason, dedupe loudly. Test W2/T2: 48 of 50 messy rows right in under 5 minutes versus incumbents' median 45 of 50.",
+   "evidence": "EXO-16, TP-101; W2"
+  },
+  {
+   "gap": "No browser test call ('Web Call: Coming soon'), phone card with no input, every iteration needs a real call; no simulation or eval suite",
+   "how_vp_beats": "Browser voice call and text simulation docked beside the editor, no number and no KYC needed. Test: iterations per minute during the build of the standard Hinglish agent (Exotel predicted 15-40 min build, EXO-P03).",
+   "evidence": "exotel-02; wt-exotel-21; decision.2026-10-21.wt-exotel-parity-and-beat"
+  },
+  {
+   "gap": "No visible endpointing/interruption/backchannel controls; Exotel has never published a natural-turn measurement; hi/en code-switching only when STT and TTS share a provider; no Hinglish mode",
+   "how_vp_beats": "Visible, tunable Hinglish turn-taking presets that sum to a predicted reply gap, and a measured handset reply gap on Indian PSTN. Test W3/W4: p50 at least 0.3 s below the best India-hosted incumbent, p90 2.5 s or less, cut-ins 5% or less, 90%+ keep of short replies (haan/nahi/ruko/bas). Unproven for VP too (open.2026-10-19.turn-taking: 15-42% cut-ins on our stacks); do not claim before the battery.",
+   "evidence": "EXO-29, exotel-15, EXO-23, TP-106; W3/W4; risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven"
+  },
+  {
+   "gap": "Failure reasons: vendor admits mislabelled outcomes, duplicate rows, dead calls; Analytics renders blank with no message; 'Unable to load' toasts name no cause; bot failures vs telephony failures sit in separate consoles",
+   "how_vp_beats": "Find any failed call in under 60 s with a business-language reason, the carrier code and a next action; gate and error messages always name the cause and the fix. Test W6/T5 with 5 induced failures: under 60 s each, 5/5 correct, 4+ actionable.",
+   "evidence": "EXO-58, exotel-23, exotel-10, TP-104; W6"
+  },
+  {
+   "gap": "Model, voice and STT pickers show a name only; no price, latency or Indic coverage; stack truth is contradictory (Gemma vs Gemini 3 Flash; azure vs Deepgram; Clyde vs Avni)",
+   "how_vp_beats": "Every stack choice shows India-measured latency, INR per minute and Indic coverage, and one all-in INR per-minute headline including telephony, pulse and turn wait; stored config read back equals what runs (W10: 0 silent drops).",
+   "evidence": "exotel-15, wt-exotel-14/16/35, must-be item A in walkthroughs SYNTHESIS; XS-07/08"
+  },
+  {
+   "gap": "Pricing opacity and pulses: VoiceBot/AgentStream per-minute unpublished (quote, GST page, KYC first); 60 s pulses inflate billed minutes about 15% on VP's call mix; hidden charges complaints; no spend cap",
+   "how_vp_beats": "Published per-second or 30 s pulse all-in rate, cost per campaign and per contact, and a spend cap per workspace and API key. Test W8/T7 invoice audit at 30, 45, 90 s calls: invoice within 1% of rate card, lowest per effective minute against 5 of 7 incumbents. Price alone is not the wedge (rejected.2026-10-17.parity-undercut).",
+   "evidence": "pricing.json, EXO-35, EXO-59, exotel-25; W8; must-be item C"
+  },
+  {
+   "gap": "Start friction: KYC 1-3 business days, enablement email for AgentStream, sales-gated pricing, no demo after a week (Trustpilot 2026-04-23)",
+   "how_vp_beats": "Same-day self-serve start with a pre-provisioned number or guided BYO number (including Exotel import), KYC document list and time stated before any credential is asked. Test W7/T0. Kill if Bolna or Sarvam reach a first ring in 20 min or less.",
+   "evidence": "EXO-49, EXO-P02, EXO-54, wt-exotel notes; W7, W9"
+  },
+  {
+   "gap": "Memory and learning are marketing, not product: CCDP memory page empty, Kaizen in no doc, no memory object, evaluator/recommender only in testing, no automatic loop at any of 8 vendors",
+   "how_vp_beats": "v2: per-contact relational memory and a self-learning loop with honest statistics (power analysis, A/A guard) on top of Exotel-style versions. Test: recall quality on a second call to the same contact; improvement per version against a held-out set. Not yet built or measured: label as v2 hypothesis.",
+   "evidence": "EXO-60, EXO-61, parity-delta.csv (memory, auto_optimisation); l4a report 'learning loops with honest statistics'"
+  },
+  {
+   "gap": "No expressive or relational voice control; emotion only as sentiment alerts to a human",
+   "how_vp_beats": "Emotional, relational Hinglish voice is VP's core (directive.2026-10-18.voice-core): beat via the human round-2 ratings after Vertex returns, with a non-removable one-time AI disclosure. Cannot be claimed until rated by ear; Exotel's own voice quality is unmeasured, so the comparison itself is open.",
+   "evidence": "parity-delta.csv emotion row; DIRECTION.md voice lab results (round 1 best 7.0/10); EXO-P12"
+  }
+ ],
+ "numbers": [
+  {
+   "metric": "Exotel FY25 operating revenue",
+   "value": "INR 490.5 Cr (Inc42: 475 Cr); PAT about 20 Cr; telephony cost 212 Cr (44% of costs); 749 staff",
+   "grade": "vendor-claimed (secondary RoC via Entrackr, not re-read)",
+   "evidence": "research/2026-10-20/teardown/exotel/claims.json EXO-38; research/2026-10-17/lanes/l4a-competitors/report.md line 114"
+  },
+  {
+   "metric": "Market share claim",
+   "value": "about 40% of India's voice-AI conversations; 3,500+ businesses",
+   "grade": "vendor-claimed",
+   "evidence": "EXO-28; l4a report line 114"
+  },
+  {
+   "metric": "Entry plan price",
+   "value": "Dabbler INR 9,999 / 5 months (4,999 rental + 5,000 credits); Believer 19,999; Influencer 49,499",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/exotel/pricing.json"
+  },
+  {
+   "metric": "VoiceBot / AgentStream per-minute list price",
+   "value": "not published",
+   "grade": "unknown",
+   "evidence": "pricing.json all_in_list_price_inr_per_min"
+  },
+  {
+   "metric": "PSTN outbound rate and pulse",
+   "value": "INR 0.80-1.00/min typically, 60 s pulse (about 15% billed-minute inflation on VP call mix vs 7.4% at 30 s)",
+   "grade": "vendor-claimed (rate); inferred (inflation)",
+   "evidence": "pricing.json; verify.md EXO-35"
+  },
+  {
+   "metric": "Reconstructed VoiceBot COGS per connected minute",
+   "value": "INR 1.42 / 1.95 / 3.60 (lo/mid/hi); mid margin 44-72% at INR 3.5-7",
+   "grade": "inferred",
+   "evidence": "pricing.json exotel_voicebot_cogs_inr_per_conn_min"
+  },
+  {
+   "metric": "VP on Exotel AgentStream vs Plivo",
+   "value": "+INR 0.46 to +0.69/min before stream fee; VP base COGS about 2.17-2.40",
+   "grade": "inferred (corrected)",
+   "evidence": "verify.md EXO-37"
+  },
+  {
+   "metric": "Claimed Connect call setup",
+   "value": "about 700 ms avg, 1.1 s p95; media 'sub-20 ms'",
+   "grade": "vendor-claimed",
+   "evidence": "EXO-29; handset reply gap itself unknown"
+  },
+  {
+   "metric": "Handset reply gap on Indian PSTN",
+   "value": "not measured; prediction median 1.6-2.4 s, p90 >= 2.8 s, n>=30 (confidence 0.5, unscored)",
+   "grade": "unknown",
+   "evidence": "predictions.json EXO-P09; TP-106"
+  },
+  {
+   "metric": "Vendor-admitted dead air / dead calls (fixed Sep 2026)",
+   "value": "up to 10 s dead air; about 29 s zero-audio calls",
+   "grade": "observed (vendor's own post)",
+   "evidence": "EXO-58"
+  },
+  {
+   "metric": "API surface",
+   "value": "95 endpoint constants, 21 login-bundle routes (5 not screens); MCP 131 tools (46 voicebot); 0 campaign/contact/consent/memory objects under /voicebot/",
+   "grade": "observed (46 of about 140 chunks captured)",
+   "evidence": "bundle-endpoints.json; verify.md EXO-04, EXO-11"
+  },
+  {
+   "metric": "Docs health",
+   "value": "34 of 341 developer .md links fail, 5 dead; docs.exotel.com 915 pages (357 Ameyo)",
+   "grade": "observed",
+   "evidence": "EXO-17"
+  },
+  {
+   "metric": "Velocity 2026-04-20 to 10-20",
+   "value": "17 engineering posts; exotel-ai-assist 33 npm releases; ExotelMCP 25 commits / 7 authors; developer changelog stale since 2026-02-16; 5 unplanned incidents all posted after the fact",
+   "grade": "measured",
+   "evidence": "velocity.json; EXO-41"
+  },
+  {
+   "metric": "KYC and activation time",
+   "value": "1-3 business days (up to 5); AgentStream also needs an enablement email; predicted >= 2 business days to first AgentStream call (0.8)",
+   "grade": "vendor-claimed (docs); prediction unscored",
+   "evidence": "EXO-49; TP-099"
+  },
+  {
+   "metric": "Ratings",
+   "value": "Trustpilot 2.5 on 5 reviews (all 1-star); Capterra.in 4.3 on 69",
+   "grade": "observed",
+   "evidence": "l4a report line 281; EXO-54"
+  },
+  {
+   "metric": "Trial account state",
+   "value": "150 credits, 0 min used, concurrency 5, KYC pending, no calls",
+   "grade": "observed",
+   "evidence": "research/2026-10-21/walkthroughs/exotel/report.md section 0; exotel-01, exotel-25"
+  },
+  {
+   "metric": "Parity gap vs Exotel on compliance defaults",
+   "value": "0 of 6 vendor dashboards put consent, DND or DLT on the campaign form, Exotel included; 0 of 6 show a predicted reply gap; 0 of 6 offer a Hinglish mode",
+   "grade": "observed",
+   "evidence": "research/2026-10-21/walkthroughs/SYNTHESIS.md lines 28-29; exotel-10"
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+const fs = require('fs');
+const path = require('path');
+const dir = __dirname;
+const B = '/home/user/sales-enabler/research/2026-10-21/blueprint/';
+const visual = JSON.parse(fs.readFileSync(B + 'visual.json', 'utf8'));
+const integ = JSON.parse(fs.readFileSync(B + 'integration.json', 'utf8'));
+const data = JSON.stringify({ visual, integration: { open_decisions: integ.open_decisions } }).replace(/<\//g, '<\\/');
+const parts = ['p1-head.html', 'p2-top.html', 'p3-screens.html', 'p4-rest.html'].map(f => fs.readFileSync(path.join(dir, f), 'utf8'));
+const script = fs.readFileSync(path.join(dir, 'p5-script.html'), 'utf8');
+const html = parts.join('\n') + '\n<script id="bp-data" type="application/json">' + data + '</script>\n' + script;
+fs.writeFileSync(path.join(dir, 'vyakti-blueprint.html'), html);
+fs.writeFileSync(path.join(dir, 'check.js'), script.replace(/^<script>/, '').replace(/<\/script>\s*$/, ''));
+console.log('bytes', html.length);

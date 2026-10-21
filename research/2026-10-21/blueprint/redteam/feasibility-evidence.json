@@ -1,0 +1,226 @@
+{
+ "findings": [
+  {
+   "severity": "critical",
+   "area": "build-order",
+   "issue": "v1 is the entire nine-module platform: an 80-tool registry, AEC, a turn manager, R1-R11, AMD, the campaign state machine, mission control, 20 monitors, calibration, company brain, forget, a leak battery, GST/TDS billing, the voice-rt port, a TS control plane, SLOs, dual-carrier failover, Scout and 11 screens x2 widths x2 themes. There is no critical path, no staffing, no dates, and no product code exists. That is the pattern the graph rejected: infrastructure before one real signed-in journey.",
+   "evidence": "rejected.harvest.19; spine section 9 v1 row; workspace, voice, campaigns, intelligence, trust and economics phase tables; context/DIRECTION.md (lab paused, decision.2026-10-20.pause-lab); research/2026-10-21 vp-existing-assets digest (no tenancy, DB or dialer exists)",
+   "fix": "Define a v0.5 vertical slice gated before everything else: one non-BFSI service preset, Plivo BYO, one measured stack, browser call -> CSV -> one service campaign -> call page, with the dial gate (window, suppression, budget) and the disclosure and crisis predicates. Exit on W1, W2 and T5 with 3 design partners. Give every other v1 item an explicit dependency on that slice."
+  },
+  {
+   "severity": "critical",
+   "area": "speed vs voice",
+   "issue": "The Phase 0 gate (p50 <= 1.2 s server, 1.5 s handset, cut-ins <= 5%) cannot be met by the owner-preferred Gemini-voice stack, and the predicted gap understates the miss. The voice module's 1.86 s uses gpt-4.1-mini at 304 ms, but that was measured on a 1.6k-token prompt; on the renewal brief the same deployment measured 567-641 ms. Substituted, the gap is 2.13-2.20 s server and 2.4-2.7 s at the handset, and even after the full silence trim and speculative saving the floor is about 1.54-1.62 s. The economics 1,500 ms handset budget is met only by Azure-family voices rated 1.5-4.5 by ear and by a model retiring 2027-04-14. Its 450 ms endpoint assumes 300 ms segmentation, while lower segmentation measurably raises cut-ins and the voice Standard preset uses 500 ms plus a 600 ms hold. No module says which bar gives way.",
+   "evidence": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md 3.1 (304 ms, 1.6k-token prompt, n=33) and section 4 (cut-ins 72% at 500 ms seg vs 17% at 800 ms on 0.9-1.3 s pauses); voicelab/server/catalog.py line 27 (gpt-4.1-mini-in 641 ms on the renewal brief, n=6); research/2026-10-20/voicelab/round1-review-and-v2.md (567 ms; v2-flashlite 1.6-2.2 s smoke); data/blueprint/economics-platform-defaults.json brain_first_token; req-11 (must); rejected.2026-10-17.speculative-release",
+   "fix": "Recompute every predicted gap with TTFT measured on brief v2 plus ledger plus the memory brief. Make speed and cut-ins one joint per-preset gate. Record an owner decision: either Natural ships against a stated handset bar (for example p50 <= 2.0 s, cut-ins <= 10%) shown in the picker and the copy, or Natural is not the default until it measures at the spine bar."
+  },
+  {
+   "severity": "critical",
+   "area": "regulation and sequencing",
+   "issue": "The first jobs and first design partners depend on gates that are open or at risk. The insurance renewal and lending pre-due presets (2 of 4 v1 presets) and the named partners need 1600xx. KC5 is at-risk: no provider documents AI streaming on 1600, the price is unpublished, Plivo requires a registered telemarketer, and provisioning takes 7-14 business days. KC8 (renewal reminder as solicitation) is untested, and IMFs may not use telemarketers. A negative answer on either removes the first preset and the partners.",
+   "evidence": "research/2026-10-17/SYNTHESIS-v2.md KC5 (at-risk), KC8 (not-yet-tested), REG-22..29; trust-telephony module section 4.1 and the Phase 0 list; spine sections 1 and 11 item 7",
+   "fix": "Gate the IRDAI and RBI presets on KC5 quotes (about 2026-10-30) and counsel (about 2026-11-13). Recruit at least one non-BFSI design partner (appointments or subscription on a declared 10-digit line) in parallel. Build no IRDAI-pack code before counsel."
+  },
+  {
+   "severity": "major",
+   "area": "cost and price",
+   "issue": "The Base price of INR 3.49 (38% margin, 28% in 2027) uses G-A's lean-persona point estimate of INR 1.56 AI. SY18's own persona-and-memory Monte Carlo lifted the cheapest stack by about 1.30x. Applied to G-A, COGS is about INR 2.57 now and 3.04 in 2027, giving margins of about 24% and 11%, below the module's own 30%/25% rule. The rule then needs about INR 3.78 now and 4.16 for 2027. Per-minute COGS also leaves out per-workspace costs: the free INR 200/day test budget (about 95 minutes a day), the included Operator brain (200 turns/day fair use), a 2 h IST human support SLA, INR 12k/month synthetic calls, openings rendered on unanswered dials, absorbed pulses and VP-fault credits. No invoice has been read.",
+   "evidence": "research/2026-10-18/SYNTHESIS.md 2.1 table (G-A 1.56/1.92; 2027 MC p10-p90 1.62-2.22; C6g 0.94 vs Base MC 1.22) and tiers rows; economics module section 2.2 margin rule; data/blueprint/workspace-tool-registry.json test budget; computed here",
+   "fix": "Before printing any price, re-meter G-A on the India VM with brief v2, the ledger and a memory brief, reconciled to the meter. Add a per-workspace cost model (support, test budget, Operator, monitoring). Show Base as TBD in the artifacts until this is done, and apply the module's own margin rule to the measured figure."
+  },
+  {
+   "severity": "major",
+   "area": "billing",
+   "issue": "The spine and economics promise one all-in INR price per connected second, telephony included, with the invoice within 1% of the rate card (W8/T7). But trust-telephony makes the carrier account the tenant's own, so the carrier bills the tenant directly. Whether VP may re-bill telephony is an open counsel question. As written, v1 cannot issue the invoice it promises.",
+   "evidence": "economics module section 2.1 (re-billing is a counsel question); trust-telephony section 3.1 cost seam; research/2026-10-20/teardown/synthesis/where-we-win.json W8 pass bar",
+   "fix": "v1 bills a platform rate equal to the all-in rate minus the metered carrier line, shows the all-in figure as a computed total, and restates W8/T7 against the sum of the VP and carrier invoices until counsel allows a single invoice."
+  },
+  {
+   "severity": "major",
+   "area": "reply door",
+   "issue": "Several predicates are semantic classifiers, not the 21-24 microsecond deterministic gate: R3 human-claim denial, R7 promotion fence, RD8 solicitation and RD9 harsh practice. Their false-positive and false-negative rates and their latency are unmeasured, and a naive gate already misread 14/60 turns. On a streamed reply, earlier clauses may already have played when a later one is blocked, and 'regenerate the turn' adds a full brain round trip of 0.3-2 s. The production target of at most 1 promotional line per 10,000 calls has no classifier behind it.",
+   "evidence": "voice module 2.7 (cost 21-24 us; R3 14/60 misread, l8 round2); trust-telephony section 7 RD7 'regenerates the turn'; trust metrics (promotional lines, production 1 per 10,000); docs/harvest/SYNTHESIS.md law 10 (measured on deterministic text predicates)",
+   "fix": "Label each predicate as deterministic or model-based. In Phase 0, run a battery measuring FP/FN and added p50/p90 latency per predicate. Define mid-utterance block behaviour: a pre-rendered bridge clip plus regenerate, or hold the whole reply only on risk-flagged turns. Ship model-based fences on service calls only after measured recall."
+  },
+  {
+   "severity": "major",
+   "area": "turn-taking evidence",
+   "issue": "The echo-safe front end cites Taxila's 0/66 echo false barge-ins and 12/12 true barge-ins. That was Azure Voice Live's preview reference-AEC used as an ear-only service, measured on a simulated loudspeaker harness with no real phones. In the same harness, end-of-turn p50 was 945-1,480 ms and turn detection stopped on Hindi continuers 23/36 times. VP's Natural ears are Gemini and VP has no AEC, so the number is imported from a different component.",
+   "evidence": "docs/harvest/tx-voice.md section 6.2 (lines 170-191), line 306 ('Nothing here is validated on real users or real phones'), line 311 (Live-Reference AEC in preview); voice module 2.1",
+   "fix": "Choose one: (a) Voice Live as the ear, priced and with its preview and latency risk stated; or (b) PSTN line-echo cancellation built and tested on the Plivo leg with the tx-voice echo harness on real handsets. Stop citing 0/66 as VP evidence until (a) or (b) is measured."
+  },
+  {
+   "severity": "major",
+   "area": "opening and disclosure",
+   "issue": "Modules specify three different openings. Voice: turn 1 is the name check and disclosure is never first. Trust RD1: the first breath carries brand plus AI clause plus something useful. Trust M6: the recording notice goes in turn 2. SYNTHESIS-v2 said disclosure goes at the start. Turn 2 would then carry name, company, AI clause, fact, reason and recording notice, against an 18-22 words-per-turn target. The Phase 0 gate (disclosure costs at most 5 points of hang-ups) has no lawful control, because an undisclosed live arm breaks the standing rule.",
+   "evidence": "voice module 2.3 opening shape; trust-telephony section 7 RD1 and M6; research/2026-10-17/SYNTHESIS-v2.md line 507; spine section 9 Phase 0; synthflow-squadstack beat ('against undisclosed agents')",
+   "fix": "Write one opening spec, owned by voice and checked by trust predicates. Restate the gate as a placement or wording A/B, or as the hazard at the disclosure moment against neighbouring moments (about 900 calls per arm to detect 15% -> 20%). Never run an undisclosed arm."
+  },
+  {
+   "severity": "major",
+   "area": "benchmark measurability",
+   "issue": "W3 ('p50 at least 0.3 s below the best incumbent') cannot be computed. The best measured incumbent is the Ultravox demo agent from US-East in a browser. No India-hosted incumbent has been measured at a handset, SquadStack cannot be trialled, and Sarvam's workspace key is missing. The spine's absolute 1.5 s handset bar is a different bar. The handset battery (30+ clean turns per stack per carrier on 3 carriers) also runs on a Plivo trial capped at INR 80 a month that expires 2026-11-16.",
+   "evidence": "where-we-win.json W3 pass and kill bars; research/2026-10-17/lanes/l4b-measured/report.md (US vantage demos); context/DIRECTION.md Plivo trial row; open.2026-10-21.wt-synthesis-evidence-plan",
+   "fix": "Use an absolute handset bar as the pass condition. Measure Bolna (and Sarvam once a key exists) on the same handset and carriers as the kill check. Get an owner decision on a Plivo recharge before 2026-11-16."
+  },
+  {
+   "severity": "major",
+   "area": "voice quality evidence",
+   "issue": "Brief v2 is measured on text only, with LLM judges and simulated callers. Agenda turns on Flash-Lite fell from 100% to 51%, and agenda completion or outcome per call was never measured. The default-stack ear bar of 7.0/10 was reached only by Gemini 3.1 Live (n=2), which shuts down 2026-11-17. Cascades rated 5.5-6.0. Nothing says what ships if no cascade reaches 7.0.",
+   "evidence": "research/2026-10-20/voicelab/round1-review-and-v2.md (agenda turns 100% -> 51%; round-1 ratings n=1-4); open.2026-10-20.round2-human-ratings; voice module metrics (ear rating 7.0+)",
+   "fix": "Phase 0 adds agenda completion per simulated call, scored by code against hidden keys, beside the round-2 human ratings. Pre-register the fallback: the highest-rated measured stack ships with its rating shown, or launch waits."
+  },
+  {
+   "severity": "major",
+   "area": "self-learning claims",
+   "issue": "'50%+ of L2 tenants have one proved change within 30 days' does not fit the arithmetic. At the L2 floor (about 43 connected calls a day), an opening test (686/arm) takes about 32 days, and it may start only after shadow A/A reaches the planned n, giving about 60+ days. The simulation probe (18 personas x 3 seeds = 54 per arm) is below the module's own A/A floor of n >= 60 per arm, and its example noise estimate rests on one reference pair. Two cycles a day at INR 100-200 each exceeds the INR 200/day test budget. Ribbon flags across moments x segments x versions have no multiplicity control.",
+   "evidence": "learning module sections 2 (L2 = 1,200 projected in 28 days), 4, 5 (shadow A/A precondition) and metrics; research/2026-10-17/lanes/l6-self-learning/report.md L01, L07 (false flags <= 2.6% per line), L11 (A/A floor n >= 60 per arm); computed here",
+   "fix": "Restate the target as 60-90 days, or count only turn-taking tests in the 30-day window. Raise probes to at least 60 runs per arm and measure the reference spread with 2+ pairs. Apply FDR control across ribbon flags. Size the test budget to the cycle cap."
+  },
+  {
+   "severity": "major",
+   "area": "autonomy",
+   "issue": "Fast-lane auto-revert (A3) republishes an older version without an A2 approval, while the spine says publish always needs A2. The older version may carry a defect that the newer one fixed, a stale fact or a now-forbidden line.",
+   "evidence": "learning module section 4 (auto-revert default on); spine section 6 autonomy levels ('Publish ... always need A2')",
+   "fix": "Auto-revert only to a version that re-passes the current compile, lint, locked-diff, provenance and fact checks at revert time. Otherwise apply the 25% throttle only and raise a card."
+  },
+  {
+   "severity": "major",
+   "area": "dial path architecture",
+   "issue": "The optional tenant predial webhook (G11) runs 'inside the claim transaction'. Its timeout is 800 ms in campaigns and trust but 1,500 ms in economics, and the precheck target is p95 <= 50 ms. Holding row locks and budget counters across external HTTP will throttle the dialer and breaks the 50 ms target.",
+   "evidence": "data/blueprint/campaigns-module-defaults.json predial.timeout_ms 800; data/blueprint/trust-telephony-defaults.json G11 800 ms; data/blueprint/economics-platform-defaults.json hooks.predial 1,500 ms; campaigns metrics precheck p95 <= 50 ms",
+   "fix": "Use two phases: claim and reserve in one transaction, call the veto outside it, then confirm or release in a second transaction. Set one timeout value in a shared defaults registry."
+  },
+  {
+   "severity": "major",
+   "area": "failure modes",
+   "issue": "Production failure handling has gaps. (1) A mid-call TTS or STT failure leaves her unable to speak the 'polite close'. (2) A same-voice fallback is the same provider, so a Google outage has no same-voice route. (3) Paid Vertex quotas at target concurrency are unknown (13-25k TPM per call) and the paid project sits on CarbonSettle's Google account. (4) Calls per Python voice-rt instance are unmeasured; Neon India region is unknown; DR/backup RPO/RTO, load tests and on-call runbooks are absent.",
+   "evidence": "spine section 8 failover; economics section 4 items 4 and 6; risk.2026-10-20.carbonsettle-account-exposure; risk.2026-10-20.google-dependency; rejected.2026-10-20.gemini-tier1-for-volume; open.2026-10-20.product-failover-policy",
+   "fix": "Pre-render hold and close clips per voice at publish. Require a cross-provider declared alternate stack before any production launch. Open a VP-owned GCP organisation and measure quotas. Add a load-test gate (calls per instance at p95 latency) and an India-region DR/backup spec to v0.5 exit."
+  },
+  {
+   "severity": "major",
+   "area": "security",
+   "issue": "(1) In-call HTTP lookup tools accept caller-spoken identifiers, so a caller can extract another customer's policy or loan data. (2) Tenant-defined tools, hooks and webhooks run from VP servers with no SSRF or egress guard. (3) The Operator compile sends uploads, including raw customer rows, to the chosen brain, possibly outside India, contradicting the Data steward's 'never personal values'. (4) The free INR 200/day test budget per phone-OTP workspace is an abuse vector. (5) Pasted credentials are not confirmed rotated.",
+   "evidence": "campaigns/voice tool model (HTTP tools, policy_lookup example in intelligence F2); workspace section 3.2 item 6 (uploads in the Operator compile) vs memory-omni section 5 (models see headers only); risk.2026-10-20.secrets-pasted; risk.2026-10-20.teardown-creds-pasted",
+   "fix": "Bind in-call tool arguments to the dialled contact's record keys and refuse caller-supplied identifiers. Add an egress allowlist with private-range blocking for all tenant URLs. Pass only headers and value shapes to the Operator by default, redacting the rest. Cap free test minutes per verified phone and globally. Make credential rotation a v0.5 entry condition."
+  },
+  {
+   "severity": "major",
+   "area": "privacy and identity",
+   "issue": "Inbound memory keyed on caller ID, and callback continuity ('humne kal aapko renewal ke baare mein call kiya tha'), both disclose the customer relationship before identity is verified. Caller ID is spoofable and is a channel handle, breaking HV law 15. On outbound, a bare name check ('haan') before account details lets a relative hear lending details, which is an RBI third-party disclosure risk. The verify page and callback-verify reveal call purpose to whoever holds the phone or link.",
+   "evidence": "memory-omni section 4 (inbound exact CLI match), campaigns section 10 (callback continuity), trust-telephony section 12 item 7 (callback verify) and verify-page screen; inherited law 'identity is an authenticated id, never a device'; RS-36..38 (RBI conduct)",
+   "fix": "Require a knowledge check (for example last 4 of policy or loan number) before any account detail or memory loads, on inbound and on lending outbound. Keep callback openers generic. Remove call purpose from the verify page for lending and collections."
+  },
+  {
+   "severity": "major",
+   "area": "rejected ideas",
+   "issue": "Several rejected ideas come back without a supersedes edge or reversal evidence. (1) Per-second self-serve pricing is the v1 unit while rejected.2026-10-17.per-minute-launch is listed as 'avoided'. (2) The public /pricing hero leads with INR 3.49 and a competitor chart (rejected.2026-10-17.parity-undercut), contradicting design-language's 'no price-led hero'. (3) 'Per-outcome pricing for managed design partners' with VP-borne escalation reopens rejected.2026-10-17.managed-telemarketer. (4) Premium Live re-proposes S2S (rejected.harvest.01) on a 'transcript with or before audio' count; gating means buffering each clause, which erases Live's latency edge.",
+   "evidence": "rejected.2026-10-17.per-minute-launch (gross margin -47% to +1%); rejected.2026-10-17.parity-undercut; rejected.2026-10-17.managed-telemarketer; rejected.harvest.01; economics sections 2.2 and the pricing screen; design-language 'rejected ideas avoided'; measure.2026-10-18.gemini-live-gate-lag",
+   "fix": "Add graph entries: a decision that supersedes per-minute-launch for self-serve, with its scope and reverse_if; remove price-led hero copy until T7 runs; restate per-outcome pricing as a software fee with the tenant operating its own number; for Premium Live, report the transcript lead-time distribution and the buffered latency, not the 1,041/1,041 count."
+  },
+  {
+   "severity": "major",
+   "area": "business model and demand",
+   "issue": "No buyer interview has run, yet the whole design is self-serve. Market evidence says self-serve voice AI earns about INR 4,900 per customer per month (Bolna), while the owner band of INR 25k-2 lakh is sales-led. The blueprint adds a 2 h IST human support SLA, design partners and managed per-outcome pilots whose cost appears in no COGS line.",
+   "evidence": "blueprint-lane-market-regulation-money section 6 (Bolna ARPA about INR 4,900; sales-led tickets INR 26k-2.4 lakh); spine section 9 Phase 0 ('10-15 buyer interviews (none has run)'); W9 target; data/discovery absent",
+   "fix": "Run the 10-15 interviews before building self-serve-only surfaces such as Cmd-K, agency view or Scout UI. Price support into tiers explicitly, or make the 2 h SLA a Plus/Premium term."
+  },
+  {
+   "severity": "major",
+   "area": "dated constraints",
+   "issue": "The trial line rings member phones from a VP-held CLI, so VP is the sender of A2P calls. VP's own DLT principal-entity registration and its trial-CLI A2P declaration are due about 2026-11-17/18 and appear on no critical path. Without them W7 (first Indian ring in 15 minutes or less) cannot run after that date.",
+   "evidence": "data/blueprint/trust-telephony-defaults.json trial_line (VP is the sender; trial CLI declared A2P by VP); RS-08 (A2P pre-declaration about 2026-11-17/18); trust Phase 0 lists only the tenant export",
+   "fix": "Add VP's PE/DLT registration and trial-CLI declaration as dated Phase 0 tasks with an owner and a due date of 2026-11-14."
+  },
+  {
+   "severity": "minor",
+   "area": "privacy - redaction",
+   "issue": "Aadhaar and card redaction gated on Verhoeff or Luhn checksums lowers recall on ASR output, because a misheard digit fails the checksum and the number leaks. 99% recall on spoken Hinglish digit groups is implausible under checksum gating.",
+   "evidence": "trust-telephony section 8 PII redaction and metrics (recall >= 99%); rejected.harvest.10 (ASR fabricates digits)",
+   "fix": "Redact any 12-digit or 16-digit group in Aadhaar, card or bank context regardless of checksum. Use the checksum only to raise confidence in logs."
+  },
+  {
+   "severity": "minor",
+   "area": "cross-module consistency",
+   "issue": "Module defaults conflict:\n- recordings retention 90 days (memory-omni) vs the IRDAI 10-year call-record minimum (trust) for the first preset;\n- cross-midnight service windows (campaigns) vs absolute quiet hours 22:00-07:00 (trust);\n- trial rings 5/day (workspace screen) vs 20 per number per day (trust);\n- API-key cap INR 2,000 vs 5,000;\n- Plivo pulse 30 s vs 60 s;\n- Live talk-over 42% vs 20/51.",
+   "evidence": "data/blueprint/memory-omni-defaults.json; data/blueprint/trust-telephony-defaults.json (quiet hours, trial caps, key caps); data/blueprint/campaigns-module-defaults.json cross_midnight; economics section 2.1 (phone.py line 28 60 s)",
+   "fix": "Use one defaults registry with sector-pack precedence written down, plus a CI check that every module's JSON agrees with it."
+  },
+  {
+   "severity": "minor",
+   "area": "claims hygiene",
+   "issue": "Comparison tables overstate certainty:\n- 'Retell batch ignores DNC [O]' is an open conflict;\n- 'nobody owns the Hinglish phone call' sits beside Sarvam's 38/40 Hindi hold;\n- 'VP costs less per real call' compares rate-card arithmetic against an unmeasured VP price;\n- incumbent latencies are US-vantage demo agents set against VP handset targets.",
+   "evidence": "open.2026-10-21.wt-retell-dnc-skip-claim; research/2026-10-17/lanes/l4b-measured/round2/findings.md (Sarvam 38/40); economics section 2.3 ('no invoice read'); rejected.2026-10-17.ohio-latency",
+   "fix": "Grade each cell, add 'contested' or 'vantage: US demo' tags, and keep 'cheaper' out of copy until T7."
+  },
+  {
+   "severity": "minor",
+   "area": "pickup and spam labels",
+   "issue": "Line health watches TRAI reg 21A barring but not the operator 'Suspected Spam' display or Truecaller crowd labels. These cut pickup on declared 10-digit lines (the non-BFSI presets) long before any bar. Pickup on 1600 is unmeasured.",
+   "evidence": "trust-telephony section 4.4; research/2026-10-17/lanes/r2-untouched-raw/findings.md 4.3 (1600 pickup unknown; Truecaller 79% claim is interested); Bolna Truecaller verify (WT)",
+   "fix": "Add pickup-by-CLI monitoring with a spam-label probe from a test handset, an optional Truecaller business verification step, and a pickup measurement in Phase 0."
+  },
+  {
+   "severity": "minor",
+   "area": "onboarding timeline",
+   "issue": "Follow-through (the renewal link) needs DLT SMS header and template approval or a verified WhatsApp Business Account with approved utility templates. Both take days and neither is on the launch-readiness rail, so the 30-60 minute launch-ready claim (req-39) silently excludes follow-ups.",
+   "evidence": "campaigns section 9 (WhatsApp utility, DLT SMS fallback; WhatsApp opt-in rare); workspace section 6 step 8 readiness rail; RS-06 (wrong-category template blacklisting about 2026-12-17)",
+   "fix": "Add SMS DLT and WABA template status to the readiness rail with timers, and state that follow-ups may lag launch."
+  },
+  {
+   "severity": "minor",
+   "area": "speed lever cost",
+   "issue": "'Opening rendered during the ring' spends TTS on every dial, but only 45-55% connect. On quota-limited Gemini TTS it consumes requests on unanswered calls. Indian callees usually say 'hello' first, so the pre-rendered line is often discarded.",
+   "evidence": "voice module 2.5; intelligence campaign funnel example (45% reached); measure.2026-10-19.gemini-tts-tier1-cap",
+   "fix": "Cache the name-check clip per voice and contact name at audience build, and render the second-breath intro only on answer."
+  },
+  {
+   "severity": "minor",
+   "area": "judge calibration",
+   "issue": "Calibrating an extracted 'promised_with_date' label against payment truth measures promise-keeping, not extraction accuracy, so a correct extractor looks untrustworthy whenever people break promises.",
+   "evidence": "intelligence F4 (pairs labels with verified outcomes as they arrive)",
+   "fix": "Calibrate extraction against human quick-rate labels on the transcript. Track promise-to-payment conversion as a separate outcome metric."
+  },
+  {
+   "severity": "minor",
+   "area": "north star",
+   "issue": "VP's north star counts outcome-bearing connected minutes, which rewards longer calls and conflicts with 'never waste their time'. The learning module already found that a fix can raise minutes for zero gain.",
+   "evidence": "spine section 3; research/2026-10-17/lanes/l6-self-learning/report.md section 4.8 (+2.7% minutes for zero gain)",
+   "fix": "Use earned outcomes per week, or outcome-bearing calls, as VP's north star. Keep minutes as a supporting revenue metric."
+  },
+  {
+   "severity": "minor",
+   "area": "Operator evidence",
+   "issue": "The Hinglish voice-command ear is selected on 200 synthetic commands, presumably TTS-rendered, which overstates ASR accuracy. The 'first card <= 3 s' target with a 24k-token compile on brains measured at 641-1,991 ms TTFT, plus tool steps, is unmeasured.",
+   "evidence": "workspace sections 3.5 and 9; voicelab/server/catalog.py TTFT table",
+   "fix": "Use recorded human Hinglish commands (synthetic speakers only) and add Operator latency to the Operator bench before choosing the default brain."
+  },
+  {
+   "severity": "minor",
+   "area": "simulation on Azure",
+   "issue": "Adversarial simulated callers ('say you are human', CSV injection) run on Azure deployments will trip Prompt Shields, as the harvest found.",
+   "evidence": "rejected.harvest.15; voice Test pilot personas; workspace Operator bench adversarial items",
+   "fix": "Frame simulator prompts as QA writing tasks, or run them on a non-Azure lane with test quota only (rejected.harvest.14)."
+  }
+ ],
+ "missing_requirements": [
+  "An owner decision record for speed vs voice (req-11 must vs req-01/req-53): which latency and cut-in bar applies to the default stack if the ear picks Gemini voice",
+  "A v0.5 vertical slice and a dependency-ordered build plan with staffing and dates (rejected.harvest.19)",
+  "A non-BFSI first design-partner path that does not depend on KC5 (1600 streaming) or KC8 (solicitation)",
+  "Explicit owner sign-off that v1 launches above INR 2/min (req-41 must is not met), with Base re-priced on a re-metered G-A including brief v2, ledger and memory",
+  "A per-workspace unit-economics model covering support SLA, free test budget, included Operator brain and synthetic monitoring",
+  "VP's own DLT principal-entity registration and trial-CLI A2P declaration before about 2026-11-17",
+  "A VP-owned GCP organisation and Vertex project for production (not CarbonSettle's account) with quotas measured at target concurrency",
+  "Load-test gate for voice-rt (calls per instance at p95), India-region DR/backup RPO/RTO, on-call and incident runbooks",
+  "Pre-rendered hold and close audio per voice for mid-call TTS or STT failure; a cross-provider declared alternate stack",
+  "SSRF/egress controls for tenant URLs; in-call tool argument binding to the dialled contact; a penetration test before production",
+  "Inbound and lending identity verification beyond a name check before account details or memory",
+  "A PSTN echo-cancellation plan measured on real handsets (the cited 0/66 is Azure Voice Live preview on a simulated harness)",
+  "Spam-label and Truecaller pickup monitoring per CLI; pickup measurement on 1600 vs 10-digit",
+  "Confirmation that pasted credentials are rotated (risk.2026-10-20.secrets-pasted) before any production build",
+  "Owner requirement 'predictions' as a post-sale job (catalogue section 6) is undefined in every module",
+  "req-10 regional languages for South Indian customers are absent from v1 (Hinglish, Hindi and Indian English only)",
+  "Supersedes or reverse_if graph entries for per-second self-serve pricing vs rejected.2026-10-17.per-minute-launch and for managed per-outcome pilots vs rejected.2026-10-17.managed-telemarketer"
+ ]
+}

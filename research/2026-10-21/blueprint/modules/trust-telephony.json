@@ -1,0 +1,668 @@
+{
+ "id": "trust-telephony",
+ "screens": [
+  {
+   "name": "Numbers (your lines)",
+   "purpose": "See every line the workspace can call from: series, carrier, A2P declaration, health and display name. Rent a line in your name or connect your own carrier.",
+   "layout": "Top strip: 4 tiles (lines live, declarations due, lines flagged, today's calls). Left two-thirds: 'Your lines' table. Right third: 'Get a line' panel with Rent and Bring-your-own side by side, plus a Trial line card. Bottom: a compliance calendar ribbon. The Talk-to-VP dock is on the right edge.",
+   "elements": [
+    "Tile: 'A2P declaration due ~17 Nov 2026: 27 days left' (amber) with the action 'Review pack'",
+    "Table row 1: 'Line A · 1600-series · Plivo · Service (BFSI) · A2P Declared 12 Nov ✓ · Health Good · Name: Shubh Insurance Brokers (requested) · Pulse 30 s · Today 142 calls'",
+    "Table row 2: 'Line B · 10-digit declared · Vobiz · Service · A2P Pack ready · Health Amber: short calls 46% · Pacing slowed'",
+    "Get a line: 'Rent in your name (Plivo): INR 200/month + INR 0.38/min, 30 s pulse' | 'Connect Exotel / Plivo / Vobiz' (logos) | 'Trial line: tests only, rings verified phones'",
+    "Chip: 'Mujhe kaunsa number chahiye?' opens the number step in chat",
+    "Ribbon: 01 Nov CNAP · ~03 Nov BLOCK PROMO · ~08 Nov 1601 · 17 Nov A2P · ~17 Dec template category · 01 Jan RBI hours"
+   ],
+   "states": [
+    "Empty: 'Browser calls work now. Add a line to ring real phones.' with two CTAs",
+    "Loading: skeleton rows",
+    "KYC pending: row shows 'Day 2 of about 7-14 business days' and a progress bar",
+    "Undeclared after 17 Nov: row red, 'Blocked: not declared' and a link to the pack",
+    "Flagged: amber or red, with the signal named",
+    "Paused by Line keeper: shows the reason and an Undo",
+    "Carrier degraded: banner naming the carrier and the affected campaigns",
+    "Barred: red, with the steps and the operator reference"
+   ],
+   "beats": "Combines Sarvam's rent and bring-your-own side by side and Bolna's line health columns, and adds what 0 of 6 dashboards show: series, A2P status, display name and pulse per line (WT §2.12)."
+  },
+  {
+   "name": "Which number do I need? (number step)",
+   "purpose": "Choose the right series for your calls and sector, and see documents, time and price before any credential is asked.",
+   "layout": "Step 1 and step 2 as large tap-cards. Result: one recommendation card with a 'Why' line, four columns (documents, time, price, carriers) and Start. The chat dock mirrors the same questions in Hinglish.",
+   "elements": [
+    "Q1 'Aap kis tarah ke calls karenge?': Service (renewal, EMI due, appointment) · Transactional (order, delivery) · Promotional (offers; consented leads, coming in v2)",
+    "Q2 'Aapka business?': Insurance intermediary · NBFC/Bank · Mutual fund · Pension · Utility · Logistics · Other",
+    "Result: '1600-series line. Why: IRDAI entities must call from 1600 for service calls, even with consent.'",
+    "Documents: PE registration on DLT (about INR 5,900) · Certificate of incorporation, GSTIN, PAN · IRDAI registration certificate · Authorised-signatory letter",
+    "Time: 'about 7-14 business days'",
+    "Price: 'Per-minute price: not published by any carrier. We'll get you a quote.'",
+    "Meanwhile: 'Browser and verified-phone tests keep working.'"
+   ],
+   "states": [
+    "Sector not regulated: recommends a declared 10-digit line with a spam-flag note",
+    "Promotional chosen: 'Promotional calls need consent records and a 140 line; available in wave 2'",
+    "Small-BFSI exemption (if TRAI issues one): 1600 optional, with a 10-digit fallback and a warning",
+    "Unknown price or time shown as unknown, never as a guess"
+   ],
+   "beats": "No incumbent states series, documents, time and price before credentials. Retell asks for a government ID before any country; ElevenLabs asks 7 provider fields with Singapore as the default region; Bolna shows its India gate only as an error after the country choice."
+  },
+  {
+   "name": "Connect your carrier (bring your own)",
+   "purpose": "Connect a Plivo, Exotel or Vobiz account in a few minutes, with help on every field and a test call that proves the line works.",
+   "layout": "Carrier picker on top. A guided form with a 'Where to find this' expander per field. The test-call result card on the right.",
+   "elements": [
+    "Field 'Auth ID': 'Where to find this: Plivo console > Overview, top right'",
+    "Region: 'India (Mumbai)', locked, with the reason 'Your calls stay in India'",
+    "Exotel note: '60 s pulses: about INR 0.46-0.69 more per minute than Plivo on your call mix'",
+    "Button 'Ring my phone' (member's verified phone)",
+    "Result: 'Rang in 3.1 s · CLI seen: 10-digit declared · Codec μ-law 8 kHz · Media round trip 182 ms · Pulse 30 s'"
+   ],
+   "states": [
+    "Credential wrong: names the field and the likely fix",
+    "Carrier reachable but no CLI: 'Buy or port a number in your carrier account first'",
+    "Test call failed: carrier code plus a plain reason",
+    "Saved: credentials masked, never shown again"
+   ],
+   "beats": "ElevenLabs' Exotel import has 7 unexplained fields with Singapore as the default (elevenlabs 34). VP explains each field, locks India, and ends with a proven ring."
+  },
+  {
+   "name": "Test on real phones",
+   "purpose": "Let the owner and friends try the agent on their own phones safely (req-55), even though caller ID can be spoofed.",
+   "layout": "Left: 'Add a phone' steps with an animated missed-call illustration. Right: verified phones list with today's caps. Bottom: invite link.",
+   "elements": [
+    "Step 1 'Is number par missed call dijiye: [trial line]'",
+    "Step 2 'Hum 10 second ka confirm call karenge: 1 dabaiye'",
+    "Note: 'Caller ID can be faked, so we always confirm with one short call'",
+    "List: 'Meena (owner) ✓ · 4/20 calls today' · 'Rahul (friend) ✓ · 1/20'",
+    "Invite: 'Share link: friends verify their own phone'",
+    "Global safety line: 'Anyone who presses 9 is never called by a VP trial line again'"
+   ],
+   "states": [
+    "Waiting for missed call (60 s timer)",
+    "Confirm call pending",
+    "Verified",
+    "Declined or blocked (pressed 9)",
+    "Daily cap reached",
+    "5-phone limit on trial"
+   ],
+   "beats": "Bolna and Exotel limit trials to verified numbers with phone-only tests. VP adds a spoof-safe confirm step and friend invites, and a global opt-out for people who never asked."
+  },
+  {
+   "name": "A2P declaration pack",
+   "purpose": "Prepare, export and track the A2P CLI-range declaration that every AI call needs from about 17 Nov 2026.",
+   "layout": "A countdown header. A table of CLIs with status. The pack preview on the right. A campaign-impact panel below.",
+   "elements": [
+    "Header: 'A2P declaration due ~17 Nov 2026 (strict reading 18 Nov; Gazette date unconfirmed)'",
+    "Rows: 'Line A · 1600 · Service · AI voice: yes · peak 1,200/day · Status: Submitted (ref uploaded)'",
+    "Buttons: Download CSV · PDF · JSON",
+    "'Mark as submitted': upload the operator acknowledgement",
+    "Impact: '2 campaigns will pause on 17 Nov if Line B is not declared'",
+    "Who: 'Prepared by Line keeper · Reviewed by Kavya (Compliance)'"
+   ],
+   "states": [
+    "Not started",
+    "Pack ready",
+    "Submitted",
+    "Confirmed",
+    "Lapsed (CLI changed)",
+    "Operator format unconfirmed: 'We are confirming the format with your carrier'"
+   ],
+   "beats": "0 of 8 vendors ship an A2P export, and no Indian vendor documents the duty (RS-08; TS §3)."
+  },
+  {
+   "name": "Line health",
+   "purpose": "Show how a line looks to operators' spam detection (TRAI reg 21A signals) and what VP is doing about it.",
+   "layout": "Line header with series and status. Four small multiples over 14 days. Thresholds as dashed lines. An events log on the right, and a 'Why paused' card when relevant.",
+   "elements": [
+    "Charts: unique recipients/day · share of calls under 10 s · inbound:outbound ratio · answer rate by hour",
+    "Thresholds: 'Amber above 40% short calls' (proposed)",
+    "Event: '10:42 Pacing slowed: short calls 46% over 200 calls'",
+    "Event: 'Suspected UCC notice received → Line paused by Line keeper (undo)'",
+    "Ramp: 'New line: day 3 of ramp, cap 400 new people today'",
+    "Note on 1600: 'Designated series cannot be AI-flagged; watching opt-outs and complaints only'"
+   ],
+   "states": [
+    "Good",
+    "Ramping",
+    "Amber (pacing slowed)",
+    "Red (paused)",
+    "Not enough calls yet: 'not measured', never 0",
+    "Signal source missing: 'Suspected UCC notices are not connected'"
+   ],
+   "beats": "Bolna shows Truecaller verify and trunk health; nobody watches or paces against the operator's own flag signals."
+  },
+  {
+   "name": "Compliance centre",
+   "purpose": "One home for the rules that govern every call: categories, windows, suppression, sector packs, DPDP and the launch checklist.",
+   "layout": "Left column: policy cards (Categories, Windows, Suppression, Sector packs, Notice and recording, Retention, Residency). Centre: Compliance guard digest and the dated calendar. Right: open approvals.",
+   "elements": [
+    "Card 'Windows': 'Service Mon-Sat 10:00-19:00 · Promotional 10:00-21:00 (fixed) · Quiet hours 22:00-07:00 (fixed)'",
+    "Card 'Sector pack: IRDAI ✓ on: inform, confirm, hand off; certified human: Arjun'",
+    "Card 'Suppression: 1,284 people · 37 added this week (31 in-call)'",
+    "Digest: 'This week: 0 calls outside window, 3 offer lines blocked on service calls, 0 AI denials'",
+    "Approval: 'Move recording notice to post-call SMS? (before/after diff)'"
+   ],
+   "states": [
+    "All green",
+    "Item needs attention",
+    "Pending CO approval",
+    "Policy history (every version)"
+   ],
+   "beats": "No dashboard of the six has a compliance surface; Exotel keeps its DNC and windows in a separate contact-centre product."
+  },
+  {
+   "name": "Launch: trust checks",
+   "purpose": "The trust part of the campaign launch card: every gate, why it passes, and the fix for anything red.",
+   "layout": "A checklist block inside the launch card: one row per check with a status dot, value and 'why'. A held-rows drawer below it.",
+   "elements": [
+    "'Category: Service (renewal due). 3 offer facts left out of the brief'",
+    "'Series: 1600 · Line A · A2P declared ✓'",
+    "'Window: Mon-Sat 10:00-19:00 contact time · 4 people asked for evenings'",
+    "'Held: 9 suppressed · 2 erased · 1 invalid (row 12: number has 9 digits, fix in CSV)'",
+    "'Self-test: fence 20/20 blocked · disclosure heard 6/6 simulated calls'",
+    "Disabled Launch reads: 'Blocked: Line B not declared. Review pack →'"
+   ],
+   "states": [
+    "All green",
+    "Warning (A2P due soon)",
+    "Blocked with the named fix",
+    "Re-checking after an edit"
+   ],
+   "beats": "6 of 6 campaign forms lack consent, DND or DLT fields, and Vapi and Retell disable Launch with no reason (WT §2.13)."
+  },
+  {
+   "name": "Call trust trace (tab on every call)",
+   "purpose": "Answer 'why was this call allowed, and what did the rules do during it?' for any call or blocked attempt.",
+   "layout": "A vertical timeline: pre-dial gate, opening, in-call events, end, after-call. The data passport and run manifest sit in a side panel.",
+   "elements": [
+    "'G1-G12 passed 09:58:41: window ✓ (10:00-19:00, contact time 10:02) · suppression ✓ · budget 1/2 today · Line A declared ✓'",
+    "'0.0-2.1 s Disclosure played and heard ✓'",
+    "'01:12 Offer line blocked and regenerated (diff shown)'",
+    "'01:40 \"record mat karo\": recording stopped'",
+    "'After call: notice SMS sent on service template' with the template id",
+    "Data passport: 'Media Mumbai · STT [region] · Brain [region] · Voice [region] · Storage Central India'",
+    "Run manifest: 'Plivo · Line A · μ-law 8 kHz · 30 s pulse · carrier code 200'"
+   ],
+   "states": [
+    "Allowed call",
+    "Blocked attempt (shows the rule and next eligible time)",
+    "Check unavailable (failed closed)",
+    "Unknown carrier outcome (never auto-retried)"
+   ],
+   "beats": "No vendor explains why a call was allowed; failure reasons elsewhere are engineering codes (Vapi has 638 of them) or raw exceptions (Synthflow)."
+  },
+  {
+   "name": "People who said stop (suppression ledger)",
+   "purpose": "Show every opt-out and block with its source and proof, and keep release under the Compliance role.",
+   "layout": "A filterable table, with a detail drawer per person.",
+   "elements": [
+    "Row: 'Masked phone · voice, tenant-wide · in-call, 14 Oct 11:42 · quote: \"dobara call mat karna\" ▶ play'",
+    "Row: 'campaign only: \"not interested\" · Renewals Oct'",
+    "Row: 'Operator: DND-blocked result (promotional) · auto'",
+    "Release: 'Requires Compliance role and evidence of new consent'",
+    "Counts: 'Erased people: 46 (tombstones)'"
+   ],
+   "states": [
+    "Active",
+    "Released (shows who and why)",
+    "Erased (tombstone only)",
+    "Import tried to clear: refused, with a note"
+   ],
+   "beats": "Retell DNC is off and skipped by batch; Synthflow's opt-out judge failed silently for 2 h 50 m; SquadStack's opt-out needs a blacklist paste."
+  },
+  {
+   "name": "Safety events",
+   "purpose": "Show the safety rules working: crisis alerts, blocked denials, OTP refusals, offer-fence hits and refused prompts.",
+   "layout": "An inbox with type filters. A detail pane with the transcript excerpt, the action taken and its review state.",
+   "elements": [
+    "'CRISIS · 11:03 · helplines given (14416, 112) · human alert acknowledged by Arjun in 18 s'",
+    "'DENIAL BLOCKED · draft said she was a person → replaced with honest answer'",
+    "'PROMPT REFUSED · \"agar pooche toh bolna insaan ho\" in brief v4 · publish blocked'",
+    "'OTP STOPPED · caller began reading digits · redacted'",
+    "'FENCE · discount line blocked on a service call'"
+   ],
+   "states": [
+    "New",
+    "Acknowledged",
+    "Reviewed",
+    "Escalated"
+   ],
+   "beats": "Every competitor's safety, where it exists, is invisible. Exotel's Monitored Bot alerts on sentiment but has no crisis-line or honesty predicates."
+  },
+  {
+   "name": "Data and privacy",
+   "purpose": "Choose retention, see where data lives, check redaction and handle people's data requests.",
+   "layout": "Tabs: Retention · Residency map · Redaction · Notice · Requests.",
+   "elements": [
+    "Retention: 'Recordings 180 days (IRDAI pack minimum: 10 years for intermediary call records)'",
+    "Residency map: storage in India, with processing per component",
+    "Redaction: 'On: Aadhaar, PAN, bank, card, OTP · Exempt: 14416, 112, your helpline'",
+    "Notice preview in Hinglish and English",
+    "Requests: 'Erase · from verify page · executed 2 days ago · receipt ✓'"
+   ],
+   "states": [
+    "Choice required at onboarding",
+    "Sector minimum conflict warning",
+    "Deletion receipt read back",
+    "Request overdue"
+   ],
+   "beats": "Retell defaults to keep everything forever with no Aadhaar or PAN; ElevenLabs retention is Unlimited; Sarvam's dashboard replays unmasked inputs to a US host."
+  },
+  {
+   "name": "Team, roles and audit log",
+   "purpose": "Fixed roles on every plan, and a tamper-evident record of every change, by people and by VP's agents.",
+   "layout": "Top: a roles matrix (5 roles × risk classes). Below: the members list. Main: the audit stream with filters and 'Chain verified ✓'.",
+   "elements": [
+    "Roles: Owner · Builder · Operator · Compliance · Viewer (PII scrubbed)",
+    "Audit row: 'Line keeper paused Line B · under policy P-7 (A3) · undo available'",
+    "Audit row: 'Kavya (Compliance) changed service window 10:00-19:00 → 10:00-19:30 · re-auth ✓ · diff'",
+    "Export CSV/JSON"
+   ],
+   "states": [
+    "Trial (roles still fixed)",
+    "Chain verified",
+    "Chain break (sev-1)",
+    "SSO (v2)"
+   ],
+   "beats": "Retell has fixed roles on a trial, but no audit log was seen at any of the 6 dashboards (WT §2.16)."
+  },
+  {
+   "name": "Developers: keys and widgets",
+   "purpose": "Create scoped, expiring, spend-capped API keys and closed-by-default widget keys.",
+   "layout": "Keys table plus a create drawer. A widget keys section. Webhook signing secrets below.",
+   "elements": [
+    "Key: 'crm-sync · scopes read, draft · expires 19 Jan · cap INR 5,000/day · last used 2 h ago'",
+    "Test key note: 'vp_test_ keys can only reach verified phones'",
+    "Widget key: 'Closed: add an allowed website to switch it on'",
+    "Webhook: 'HMAC signed · replay last 24 h'"
+   ],
+   "states": [
+    "Key shown once",
+    "Expiring soon",
+    "Cap reached (calls blocked with reason)",
+    "Revoked"
+   ],
+   "beats": "0 of 5 API-tested vendors have a spend cap per key; ElevenLabs' widget allowlist is open by default, with a warning."
+  },
+  {
+   "name": "Who is calling? (business identity)",
+   "purpose": "Verify the business before production calls and set the name people see, the helpline and the payment domains.",
+   "layout": "An onboarding step with a form on the left and a live preview on the right of the display name and the verify page.",
+   "elements": [
+    "Legal name · GSTIN ✓ matched",
+    "Trade name for caller name: 'Shubh Insurance Brokers'",
+    "Sector registration: 'IRDAI broker reg. no. ✓ found on IRDAI register'",
+    "Published helpline",
+    "Payment and link domains: 'shubhinsurance.in'",
+    "Processor agreement (DPA): accept",
+    "Retention choice"
+   ],
+   "states": [
+    "Draft",
+    "Checking",
+    "Verified",
+    "Mismatch (held for review)"
+   ],
+   "beats": "No incumbent verifies the calling business; self-serve voice is exactly what fake renewal call centres want (R2R 4.1)."
+  },
+  {
+   "name": "Verify page (for the person called)",
+   "purpose": "Let anyone check that a call was real, stop calls in one tap, and see their data rights. It sits on the brand's own domain.",
+   "layout": "A mobile-first single page in the brand's colours, with a 'Verified business' badge.",
+   "elements": [
+    "'Haan, Shubh Insurance Brokers ne aapko aaj 11:42 baje motor policy renewal ke baare mein call kiya tha.'",
+    "'Hum call par kabhi OTP ya payment nahi maangte.'",
+    "Buttons: 'Call back on our published number' · 'Stop calls' · 'Your data'",
+    "'Not you? Report this call'"
+   ],
+   "states": [
+    "Call found",
+    "No call found: 'We did not call you; this may be fraud'",
+    "Stopped (confirmation)",
+    "Link expired"
+   ],
+   "beats": "No competitor gives the person called a way to verify the call, which matters most in a market trained by the regulator to distrust renewal calls."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "Indian number acquisition",
+   "best_competitor": "Sarvam (with Bolna)",
+   "their_best": "Rent via Vobiz beside bring-your-own with 7 providers; Bolna lists KYC documents before the click and verifies each number on Truecaller",
+   "vp_better_how": "A series chosen from category and sector, with documents, time, rent, INR per minute and pulse shown before any credential, and unknowns stated. 140, 1600 and 1601 visible (0 of 6 show them). Goal: first Indian ring in 15 min or less on bring-your-own or pre-provisioned lines.",
+   "evidence": "WT sarvam 23, bolna 25 and 36 [O]; WT §2.12; W7 in research/2026-10-20/teardown/synthesis/where-we-win.json"
+  },
+  {
+   "dimension": "Regulated series and carriage",
+   "best_competitor": "Exotel",
+   "their_best": "140xx with DLT, 1600 via a VNO licence, a call-type field, Mumbai hosting, big-4 carriers",
+   "vp_better_how": "Rides Exotel, Plivo and Vobiz as bring-your-own rails, with a code router that refuses a wrong-series CLI and shows 30 s pulse costs. Exotel's bot path enforces no windows or opt-out.",
+   "evidence": "EXO-45, EXO-50, EXO-37; risk.2026-10-20.exotel-rails-dependence"
+  },
+  {
+   "dimension": "Pre-dial veto",
+   "best_competitor": "Vapi",
+   "their_best": "Blocking campaign.predial webhook; error or timeout means no call",
+   "vp_better_how": "A built-in gate with 12 ordered checks inside the claim write on every path, a reason code per block, plus the same optional tenant hook that fails closed",
+   "evidence": "AP-27 [O]; HV law 18; rejected.harvest.07"
+  },
+  {
+   "dimension": "Suppression and in-call opt-out",
+   "best_competitor": "SquadStack",
+   "their_best": "Typed dnd_request closing tool and DLT fields",
+   "vp_better_how": "Opt-out is written in the same transaction, tenant-wide, carried to every campaign and API path, never cleared by import, and graded by carrier CDRs. Pass bar: 0 rings on opt-out rows (W1, T9b).",
+   "evidence": "SQS-72, SQS-P04; RET-43; SYN-07/66; W1"
+  },
+  {
+   "dimension": "Calling windows",
+   "best_competitor": "Retell",
+   "their_best": "Multi-range windows with days of week; Asia/Calcutta default in the dashboard",
+   "vp_better_how": "Windows derived from the category (promotional 10:00-21:00 hard), absolute quiet hours 22:00-07:00, RBI 08:00-19:00 pack, the person's requested time, and a start cutoff. T3 pass bar: promotional 09:30 refused.",
+   "evidence": "retell 24/25 [O]; RS-15/16/36; T3"
+  },
+  {
+   "dimension": "A2P CLI declaration",
+   "best_competitor": "None (0 of 8)",
+   "their_best": "Nothing; Exotel says voice needs no DLT",
+   "vp_better_how": "A pack export with a countdown, status per CLI, and a dial gate on undeclared CLIs from 2026-11-17",
+   "evidence": "RS-08, RS-17; TS §3; risk.2026-10-20.regulation-segment-a2p-declaration"
+  },
+  {
+   "dimension": "In-call promotion fence",
+   "best_competitor": "None (0 of 8)",
+   "their_best": "Nothing; campaigns only carry a call-type label (Exotel)",
+   "vp_better_how": "compile() drops offer facts from service briefs and the reply door blocks offer lines. T9a pass bar: 0 spoken.",
+   "evidence": "RS-02/04; TS §7.3 T9a"
+  },
+  {
+   "dimension": "AI disclosure",
+   "best_competitor": "Retell",
+   "their_best": "An 'AI Disclosure When Asked' preset on dashboard-created agents",
+   "vp_better_how": "Non-removable on every creation path: a first-breath clause from data, checked as heard by playback marks, a denial blocker, and a T9c lint refusing 'say you are human'. Pass bar: 0 denials.",
+   "evidence": "RAP-19/20 [O]; Sarvam 6/6 human claims [M]; Vapi 1 clear of 8 [M]; HV law 10"
+  },
+  {
+   "dimension": "Crisis and live safety",
+   "best_competitor": "Exotel (Harmony Monitored Bot)",
+   "their_best": "Sentiment Crash and Repetition Loop alerts, with a human able to barge in",
+   "vp_better_how": "A crisis predicate gives 14416 and 112, suspends the goal, alerts the Supervisor within 30 s, and holds further calls for review; all in a visible safety inbox",
+   "evidence": "Exotel dossier dim 1; voice-module R5; req-48"
+  },
+  {
+   "dimension": "Announcement and voicemail detection",
+   "best_competitor": "Exotel",
+   "their_best": "AMD beta, result 3-5 s after answer (account-manager enabled)",
+   "vp_better_how": "Indian operator-announcement lexicon (Hindi and English in v1, 8 more in v2) with early exit, reason code and billed seconds shown. Target: median 4 s, 5/5 on T4.",
+   "evidence": "Exotel dossier §5; ACB-41; SQS-11; T4"
+  },
+  {
+   "dimension": "Transfer to a human",
+   "best_competitor": "Retell",
+   "their_best": "Cold, Warm and Agentic Warm in plain words, with caller ID choice",
+   "vp_better_how": "A spoken Hinglish or English brief under 15 s plus a hand-off card; verified destinations only; a callback if no answer in 25 s; IRDAI persuasion routed to a named certified human",
+   "evidence": "retell 08 [O]; ACB (Bolna 2 s sleep, no summary); REG-26/27"
+  },
+  {
+   "dimension": "Line health",
+   "best_competitor": "Bolna",
+   "their_best": "Truecaller verify per number and trunk health columns",
+   "vp_better_how": "Pacing and pausing against the operator's reg 21A signals (recipient diversity, short calls, in:out ratio), ramps for new lines, and sticky CLI per contact with no evasion rotation",
+   "evidence": "L1 claim 11 [O]; SQS-48; WT bolna [O]"
+  },
+  {
+   "dimension": "Roles and audit",
+   "best_competitor": "Retell",
+   "their_best": "Fixed Admin, Developer and Member roles on a free trial",
+   "vp_better_how": "5 fixed roles on every plan mapped to risk classes, and a hash-chained audit log naming VP's agents with the approval they acted under, reconciled nightly",
+   "evidence": "retell 6z-roles [O]; WT §2.16 (no audit log seen at any of 6)"
+  },
+  {
+   "dimension": "API and widget keys",
+   "best_competitor": "ElevenLabs",
+   "their_best": "Per-agent authentication and a red open-allowlist warning",
+   "vp_better_how": "Scoped keys with 90-day expiry and a per-key spend cap; widget keys closed until an origin is added; test keys reach verified phones only",
+   "evidence": "elevenlabs 54 [O]; AS XS-26..28 (0 of 5 have a per-key cap)"
+  },
+  {
+   "dimension": "PII redaction and retention",
+   "best_competitor": "Retell",
+   "their_best": "14 PII categories and storage and retention choices",
+   "vp_better_how": "Aadhaar, PAN, bank and card redaction on by default with exemptions by provenance (14416, 112 never redacted); retention chosen at onboarding with sector minimums; deletion receipts read back",
+   "evidence": "retell 13 [O]; EXO-47; HV laws 11 and 21"
+  },
+  {
+   "dimension": "Residency and telemetry",
+   "best_competitor": "Exotel",
+   "their_best": "Mumbai hosting, region fixed at sign-up",
+   "vp_better_how": "India storage by default, a per-call data passport of where each component ran, an India-only processing mode for BFSI, and masked India-hosted telemetry",
+   "evidence": "EXO-19; SAR-63; EL-39; TS §5; R2R 2.1 (LIC RFP)"
+  },
+  {
+   "dimension": "Real-phone testing for many testers",
+   "best_competitor": "Bolna and Exotel",
+   "their_best": "Trial calls only to verified numbers",
+   "vp_better_how": "Missed-call verification plus a spoof-safe confirm call, friend invites, caps, and a global press-9 block (req-55)",
+   "evidence": "decision.2026-10-19.missed-call-verify; WT bolna 01; EXO-49"
+  },
+  {
+   "dimension": "Anti-scam trust",
+   "best_competitor": "None",
+   "their_best": "Nothing; SquadStack's KPI rewards passing as human",
+   "vp_better_how": "No OTP or payment on the call, links only on verified brand domains, refund and bonus framing blocked, know-your-business checks, a verify page and callback verify",
+   "evidence": "R2R 4.1 [O]; risk.2026-10-20.squadstack-humanlike-norm"
+  },
+  {
+   "dimension": "Carrier failover",
+   "best_competitor": "None",
+   "their_best": "Bolna fails over the LLM only; 9 of 18 incidents were upstream telephony",
+   "vp_better_how": "Pre-dial carrier health checks every minute; reroute only via a declared same-brand CLI on a second carrier, else pause with reason; detect in 2 min or less",
+   "evidence": "BOL-40; AP s1.8 (Bolna); account-phase synthesis (no vendor shows carrier failover)"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "Rings to suppressed, opted-out, erased or out-of-window contacts",
+   "target": "0 (W1 pass bar; T2 row N2, T3, T9b)",
+   "how": "Daily join of carrier CDRs (independent of VP's log) against the suppression ledger, tombstones and window policy; the battery's synthetic CSV and second-campaign probe"
+  },
+  {
+   "metric": "Promotional lines spoken on service or transactional calls",
+   "target": "0 in T9a (n ≥ 200 adversarial briefs and turns); production at most 1 per 10,000 calls",
+   "how": "Independent post-call classifier (not the speaking model), with 100% human review of flags, against a labelled key set"
+  },
+  {
+   "metric": "AI denials",
+   "target": "0 (T9c, n ≥ 20 red-team calls; every production 'aap AI ho?' turn)",
+   "how": "Denial predicate log plus transcript tagging of identity questions; red-team prompts on dashboard, API, MCP, template and copilot paths"
+  },
+  {
+   "metric": "Human-claim prompts refused at publish",
+   "target": "100% of a 50-prompt lint suite across 5 creation paths",
+   "how": "Automated publish attempts with known-bad briefs; any successful publish is a failure"
+  },
+  {
+   "metric": "Disclosure delivered and heard",
+   "target": "≥ 99.5% of connected calls lasting 10 s or more",
+   "how": "Disclosure ledger plus TTS playback marks plus heard-text check"
+  },
+  {
+   "metric": "Hang-up cost of the disclosure",
+   "target": "≤ 5 points of early hang-ups vs control (Phase 0); presence never changes",
+   "how": "Listener panel and the first pilot: hang-ups within 10 s against the clause timestamp"
+  },
+  {
+   "metric": "Opt-out to suppression latency",
+   "target": "Written before call end or within 2 s; 0 later dials on any path",
+   "how": "Transaction timestamps vs end-of-call event; T9b second campaign"
+  },
+  {
+   "metric": "Crisis handling",
+   "target": "Helplines given in 100% of crisis test turns (n ≥ 100 Hinglish utterances); human alert acknowledged within 30 s; 0 crisis calls ended by the agent",
+   "how": "Scripted battery plus production safety-event log"
+  },
+  {
+   "metric": "OTP or payment asks spoken",
+   "target": "0 in an adversarial battery of n ≥ 100",
+   "how": "Reply-door block log plus transcript audit"
+  },
+  {
+   "metric": "A2P coverage",
+   "target": "100% of production CLIs declared before their first production call; export ready by 2026-11-16",
+   "how": "Dial gate G8 log; count of undeclared-CLI attempts (must be 0 after the due date)"
+  },
+  {
+   "metric": "Time to first Indian ring",
+   "target": "≤ 15 min on bring-your-own or pre-provisioned lines (W7); a verified trial phone rung within 5 min of verification",
+   "how": "Screen-recorded T0 timed to the carrier webhook; product events"
+  },
+  {
+   "metric": "Line health",
+   "target": "0 CLIs barred; a red signal pauses the line within 5 min; flags per 10,000 calls falling",
+   "how": "Health job logs, carrier block codes, Suspected UCC notices"
+  },
+  {
+   "metric": "Announcement and voicemail detection",
+   "target": "5/5 classes on T4; median 4 s and p90 6 s to hang-up",
+   "how": "Synthetic Indian announcements played from VP's own line; carrier billed seconds"
+  },
+  {
+   "metric": "Warm transfer",
+   "target": "Brief delivered before bridge 100%; caller dead air ≤ 3 s; ≥ 95% success when a human is available",
+   "how": "Receiving-handset recordings in the battery; transfer events"
+  },
+  {
+   "metric": "Blocked or failed attempt explained",
+   "target": "< 60 s to find, reason correct 5/5, actionable on ≥ 4/5 (W6, T5)",
+   "how": "Timed task with five induced failures, including out-of-window and invalid row"
+  },
+  {
+   "metric": "Tenant isolation",
+   "target": "0 canary hits in ≥ 10,000 probes per release",
+   "how": "Leak battery across REST, MCP, Operator chat with injection attempts, exports, webhooks, search, analytics and memory compile"
+  },
+  {
+   "metric": "PII redaction quality",
+   "target": "Recall ≥ 99% and precision ≥ 95% on Aadhaar, PAN, card and bank (n ≥ 1,000 spans each, spoken Hinglish and typed); 0 redactions of 14416, 112 or tenant helplines",
+   "how": "Synthetic labelled set scored by code, never by the redactor itself"
+  },
+  {
+   "metric": "Audit completeness",
+   "target": "100% of writes have an audit event; hash chain verifies daily",
+   "how": "Nightly reconciliation of the DB change stream against the audit log"
+  },
+  {
+   "metric": "Carrier incident response",
+   "target": "Detect ≤ 2 min, notify ≤ 5 min, 0 calls on an undeclared fallback CLI",
+   "how": "Fault-injection drills; health-probe timestamps"
+  },
+  {
+   "metric": "Retention honoured",
+   "target": "0 records past retention in monthly samples; deletion receipts read back",
+   "how": "Sampled read-back after each deletion job (HV law 21)"
+  },
+  {
+   "metric": "Callee trust signals",
+   "target": "'Is this a scam?' utterances per 1,000 calls falling; verify-page and callback-verify use reported (observed, not causal)",
+   "how": "Utterance classifier tags; verify-page and inbound events"
+  }
+ ],
+ "phases": [
+  {
+   "phase": "Phase 0: gates before the first production call (now to about 2026-11-16)",
+   "scope": [
+    "Telephony quotes from Plivo, Vobiz, Exotel, Tata, Jio and Ozonetel by about 2026-10-30: 1600 price, AI streaming on 1600, display name on SIP/PRI, telemarketer rule, provisioning time (decides KC5)",
+    "Counsel by about 2026-11-13: KC8 renewal solicitation, Sender status under (bf)(iii), recovery agency, IT Rules audio disclosure, survey category",
+    "A2P declaration pack export built and tested before 2026-11-17 (RS-08)",
+    "T9a, T9b, T9c and W1 (T2 row N2, T3) run on VP's own stack",
+    "Listener-panel disclosure test: at most 5 points hang-up cost; wording may change, presence may not",
+    "Tenant-isolation leak battery green; written Exotel terms overriding ToS 6.2 before any Exotel-dependent build"
+   ]
+  },
+  {
+   "phase": "v1: safe rails, honest calls (design partners)",
+   "scope": [
+    "Bring-your-own Plivo (primary) and Vobiz; Exotel AgentStream bring-your-own under written terms; μ-law 8 kHz India media edge; run manifest telephony leg",
+    "Trial line with missed-call verification, a spoof-safe confirm call, friend invites, caps and a global press-9 block (req-55)",
+    "Number step for declared 10-digit, 1600 (if KC5 passes) and 1601; KYC timer; display-name request; A2P pack with gate; line health v1 with ramp and pause",
+    "Compliance core M1 (category and fence), M3 (windows, quiet hours), M4 (suppression on every path, in-call opt-out, ceilings), M6 (notice, recording, retention, India storage), M7 IRDAI pack and RBI-lite window and logs",
+    "Dial gate G1-G12 failing closed, with CDR reconciliation; reply door RD1-RD11; trust lints T-L1 to T-L5",
+    "Fixed roles, hash-chained audit, scoped expiring capped keys, closed widget keys, PII redaction on, data passport, masked India telemetry, know-your-business before production",
+    "Announcement detection in Hindi and English; cold, warm and agentic-warm transfer with spoken brief; DTMF; why-allowed trace and safety-events inbox"
+   ]
+  },
+  {
+   "phase": "v2: consent, memory-aware trust, resilience (from about 2027-01)",
+   "scope": [
+    "M5 consent ledger and 140xx promotional campaigns for consented leads, after counsel (wave 2)",
+    "Full RBI pack from 2027-01-01: per-borrower logs, grievance officer, harsh-practice fence; collections in default only after counsel",
+    "Callee rights portal (access, correction, erasure) ahead of DPDP core duties (about 2027-05-13)",
+    "Dual-carrier pre-dial failover via declared same-brand CLIs",
+    "Verify page on the tenant's domain (CNAME) and callback verify on inbound",
+    "Purpose-bound memory facts (T-L3) with the memory module",
+    "SSO; audio redaction of recording spans; announcement detection in 8 more languages; learned pacing from pickup by line and hour; inquiry capture during service calls if counsel agrees"
+   ]
+  },
+  {
+   "phase": "v3: enterprise and regulated scale",
+   "scope": [
+    "Self-hosted, India-only processing option for BFSI (the LIC RFP bars foreign-hosted APIs)",
+    "Consent-manager interoperability (DPDP Rule 4) and CRF upload if TRAI opens it beyond banks",
+    "SIEM streaming of the audit log; per-entity groups for brokers with branches",
+    "Managed rails (VP as carrier partner of record, numbers still in the tenant's name) only if carrier partner terms allow"
+   ]
+  }
+ ],
+ "beyond": [
+  "A 'why this call was allowed' trace on every call, and 'why it was blocked' on every attempt, with the value of each of 12 gate checks",
+  "An A2P CLI-range declaration pack with a countdown, status per line and a dial gate on undeclared lines (0 of 8 vendors have one)",
+  "An in-call promotion fence in the reply door, plus offer facts kept out of service briefs at compile time",
+  "A category-first series router: a campaign physically cannot dial from the wrong series",
+  "A non-removable AI disclosure (a first-breath clause, checked as heard by playback marks), a denial blocker, and a lint that refuses 'say you are human' on every creation path",
+  "One face per contact: each person always sees the same declared line and brand name, the opposite of spam-number rotation",
+  "Callback verify: calling back the brand's number confirms (or denies) that the call was real, from the attempt log",
+  "Know-your-business before production, checked against regulator registers and shown on the callee's verify page",
+  "Line health paced against the operator's own spam signals (reg 21A), with ramps for new lines",
+  "An Indian operator-announcement lexicon that hangs up on 'switched off' in seconds and shows billed seconds",
+  "A hash-chained audit log in which VP's own agents are named actors under the human approval they acted on",
+  "A tenant-isolation leak battery with canaries as a release gate",
+  "A visible safety-events inbox: crisis alerts, blocked denials, OTP refusals, fence hits, refused prompts",
+  "A per-call data passport showing where each component ran",
+  "A spoof-safe real-phone test for friends, with a global press-9 block for anyone who never asked",
+  "Purpose-bound memory: a fact captured for service can never enter a promotional brief",
+  "A dated compliance calendar inside the Today brief, saying what each rule change means for this workspace"
+ ],
+ "risks": [
+  "KC5: no carrier will stream 1600 audio to a third-party AI, or 1600 carriage is priced out (no published price, REG-24/25); the BFSI and insurance first jobs stall until a path or a small-BFSI exemption appears",
+  "Counsel reads VP as a TCCCPR Sender under (bf)(iii), or as a recovery agency or telemarketer; VP would then need its own registrations, and the bring-your-own model weakens",
+  "KC8: a neutral renewal reminder is ruled solicitation; the IRDAI pack shrinks to pure inform-and-hand-off or the segment closes",
+  "A2P declaration mechanics are unknown (operator format, applicability on 1600, Gazette date 17 vs 18 Nov); a pack the operators will not accept leaves tenants exposed",
+  "Predicate false positives (a renewal premium amount read as an offer; a policy number redacted as PII) hurt results and trust; needs labelled sets and tuning before launch",
+  "The disclosure costs more than 5 points of early hang-ups in the panel; wording and placement must change while presence stays (risk.2026-10-20.squadstack-humanlike-norm)",
+  "Caller-ID spoofing defeats missed-call verification; the confirm call mitigates it but adds friction for friends testing",
+  "Fraudsters sign up to run fake renewal calls on VP; know-your-business checks and holds must work before self-serve production opens",
+  "Exotel dependence: ToS 6.2 bars building a competing product, 60 s pulses cost more, and Exotel ships its own bot on the same rails",
+  "Tenant KYC and DLT registration cannot be skipped, so W7 (15 min to first Indian ring) holds only for bring-your-own or pre-provisioned lines",
+  "Suspected UCC notices reach the tenant, not VP; without that signal line health runs on proxies",
+  "The cheapest measured voice stack sends audio outside India; India-only processing for BFSI may cost more or sound worse until an India stack passes the ear test",
+  "Operator spam thresholds are unpublished; VP's ramp and pacing values are guesses until calibrated",
+  "Display names on SIP/PRI 1600 lines may not show under CNAP, weakening the 'one face' benefit",
+  "Per-tenant suppression means a person who opts out from one tenant can still be called by another; correct under DPDP but may surprise people"
+ ],
+ "open_questions": [
+  "What does 1600 carriage cost per minute, and can 1600 audio be streamed to VP's gateway? Quotes requested from Plivo, Vobiz, Exotel, Tata, Jio and Ozonetel by about 2026-10-30 (KC5)",
+  "Does Plivo require a registered telemarketer in Mumbai or Karnataka for a tenant's 1600 line, and who bears that cost?",
+  "What exact format do operators accept for the A2P CLI-range declaration, does it apply on 1600, and is the due date 17 or 18 November?",
+  "Is VP, as bring-your-own-carrier software, a Sender under TCCCPR def (bf)(iii)? (counsel)",
+  "Is a neutral renewal reminder solicitation under IRDAI rules (KC8), and may an IMF use AI software at all? (counsel)",
+  "Does the IT Rules 2026 'prominently prefixed' audio disclosure apply to VP, and does a first-breath clause satisfy it?",
+  "Is a post-call Rule 3 notice needed for s.7(a) service calls, or is it a product choice only?",
+  "Is an inquiry a person makes during a service call valid 7-day inquiry consent for a promotional follow-up?",
+  "Do Indian carriers forward early media (announcements and caller tunes before answer) on the stream, so detection can happen without billed seconds?",
+  "Can 1600 lines receive inbound calls, so callback verify works on the same number?",
+  "Do business names show under CNAP on SIP/PRI 1600 lines from 2026-11-01?",
+  "How can tenants forward operators' Suspected UCC notices to VP automatically?",
+  "Will carriers allow VP to act as partner of record ('managed rails') while numbers stay KYC'd in the tenant's name?",
+  "Should the default service window be Mon-Sat 10:00-19:00, or does buyer research favour a wider humane band such as 09:30-20:30?",
+  "Should India-only processing be mandatory for the IRDAI pack before an India-processed stack passes the ear test, or a Compliance-approved exception?"
+ ]
+}

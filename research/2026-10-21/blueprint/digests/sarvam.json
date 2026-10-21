@@ -1,0 +1,230 @@
+{
+ "adopt": [
+  {
+   "pattern": "Attempt and interaction as separate first-class records (dial attempt with failure_reason, ended_by, retry counters, 0..1 conversation), keeping the carrier code Sarvam leaves null",
+   "evidence": "SAR-16/17 [O] OpenAPI (attempt 30 fields, interaction 31); account-phase/SYNTHESIS.md line 287 (XS-10); A 'Data model'",
+   "why": "Failed calls become queryable and explainable; the join to cost and campaign is clean. Parity floor, not a wedge."
+  },
+  {
+   "pattern": "Retry ladder per outcome class (busy, failed, no_answer, short_duration, provider_error, internal_error) with intervals, per-user phone rotation, 0.1-500 attempts per second, on the campaign object",
+   "evidence": "SAR-16 [O]; A 'Data model'; walkthroughs/SYNTHESIS.md must-be 4 (put retries on the campaign form)",
+   "why": "Only Sarvam and Bolna have a retry ladder; VP should show it on the campaign form, with rotation limited to compliant CLIs."
+  },
+  {
+   "pattern": "Cohort upload with valid/rejected counts and a downloadable rejected_records file; JSON stream of up to 1,000 contacts per request",
+   "evidence": "SAR-14, A 'Data model' [O]; missing duplicate and DND counters noted",
+   "why": "Row-level reasons are the base for VP's CSV contract; add duplicate, DND and consent counters on top."
+  },
+  {
+   "pattern": "Prompt-box agent creation as the page hero with vertical chips and templates, plus a copilot docked beside every builder tab (build, review, improve, diagnose failed calls, place a test call)",
+   "evidence": "W §13 [O] sarvam-02, 03, 36; wt-sarvam-56; SAR-03; walkthroughs/SYNTHESIS.md 'Best: Sarvam for chat-first creation'",
+   "why": "Best chat-first creation of the six dashboards; parity for 5 of 6, so VP must match then go further (runs the whole campaign by chat)."
+  },
+  {
+   "pattern": "Docked test panel (Voice, Phone, Chat) with a setup summary, an Automated tests tab with a simulated user and AI judge, and the cost of a run shown at the button",
+   "evidence": "W §7 sarvam-10, 09, 22 [O]; SAR-59; A evals 15 ops; INR 2 per run",
+   "why": "Closes the build loop in one screen and prices testing honestly; VP adds latency and cost per turn."
+  },
+  {
+   "pattern": "API-tool authoring: cURL paste to auto-fill, inline Send, run timing (call start, during, call end), '@' mapping of response fields, Mock API and Data Verifier for pre-API testing",
+   "evidence": "W §3 sarvam-06, 06b [O]; walkthroughs/SYNTHESIS.md 'Best API-tool authoring: Sarvam'",
+   "why": "Fastest honest path to a working tool; VP adds testing against a synthetic CSV row."
+  },
+  {
+   "pattern": "Job-tagged, filterable voice catalogue (gender, model, language chips, 'Great for X' tags, preview with character counter) and Indic number reading, native-script glyphs, mid-call language switching",
+   "evidence": "W §4 voices.txt, sarvam-08 [O]; measure.2026-10-21.wt-sarvam-voice-catalogue-counts; account-phase tts-voice-catalog-summary.json",
+   "why": "Voice choice by job is how Indian buyers shop; VP adds per-voice latency, price and honest per-language counts."
+  },
+  {
+   "pattern": "Inline gate with the fix in the same step ('This version is not committed' + Commit version button), and disabled controls that name what unlocks them",
+   "evidence": "W §13 sarvam-26, sarvam-05 [O]; Kano/must-be D in walkthroughs/SYNTHESIS.md",
+   "why": "Counter-pattern to silent disabled buttons at Vapi and Retell; VP makes it a persistent preflight checklist."
+  },
+  {
+   "pattern": "INR rate table with units per plan (per minute, per pulse, per run), prepaid credits with Razorpay, GST split, UPI autopay, failed/unanswered calls free",
+   "evidence": "W §11 sarvam-22 [O]; SAR-09, SAR-36 [O]",
+   "why": "Indian buyers pay in INR with UPI; VP shows an all-in INR per connected minute and shorter pulses."
+  },
+  {
+   "pattern": "Hosted MCP server with one-click Add to Cursor/Claude and a verify prompt, six API recipe cards, a changelog modal in-product",
+   "evidence": "SAR-15; W sarvam-32, 33, 37 [O]",
+   "why": "Developer and agent onboarding in two steps; VP puts every dashboard action on API and MCP (Sarvam's spec lacks agent authoring)."
+  },
+  {
+   "pattern": "Collections disposition model as a template (promised_to_pay date and time, refused_to_pay_reason, willingness_to_pay, wrong_number, related_party, dispute, settlement, final_disposition) plus self-QA flags (bot_went_on_loop, is_hallucinating, language_switch_handling)",
+   "evidence": "SAR-60 [O] widget-ws-protocol-summary-2026-10-17.json",
+   "why": "Typed business outcomes beside engineering end reasons; no vendor has a business outcome as a field (XS-20)."
+  },
+  {
+   "pattern": "Webhook delivery records (running, completed, failed) with re-delivery of up to 200 attempts per request, and per-deployment and per-campaign webhook config",
+   "evidence": "SAR-18 [O]; A 'Webhooks'",
+   "why": "Integrator-friendly recovery; VP adds signatures and a replay UI."
+  },
+  {
+   "pattern": "Activation-event catalogue with an owner team and an activation role (aha, setup, habit) per product event, and a post-test 'How did that call go?' prompt that hands problems to the copilot",
+   "evidence": "SAR-04 [O] analytics-event-catalog.json (700 events, 77 with roles); SAR-03",
+   "why": "Measure VP's own time-to-first-call and aha from day one; feedback loop into the copilot."
+  }
+ ],
+ "beat": [
+  {
+   "gap": "Handset reply gap: Sarvam's own demo shows p50 3.1 s (about 2.8 s from India) against a marketed <500 ms; its public models are 0.97-1.18 s in our pipeline, so the remaining seconds are orchestration, endpointing and demo config. No dashboard shows a predicted reply gap.",
+   "how_vp_beats": "Show a live predicted reply gap with the sum of components at every stack choice; ship India-tuned endpointing and a handset-side measurement. Test W3: stereo recording, at least 30 clean turns per vendor, VP p50 at least 0.3 s below the best India-hosted incumbent, p90 2.5 s or less. Honest caveat: VP lab round-2 smoke gaps are 0.8-4.2 s by stack, so this is a target, not a result.",
+   "evidence": "R2 §1 (n=46, 8 calls); SAR-34/35; DIRECTION.md reply-gap table; teardown SYNTHESIS W3; SAR-P09 unscored"
+  },
+  {
+   "gap": "AI disclosure is a prompt line, not a control: the demo claimed to be human 6 of 6 times when asked; no setting or guardrail exists; default 'Quiet office' ambience and companion/therapist voices push human mimicry.",
+   "how_vp_beats": "Disclosure enforced in code (a predicate, not an instruction) on every creation path including templates and copilot output, light single disclosure, no default fake ambience. Test: red-team prompt telling the agent to say it is human, then 'aap AI ho?' on 20 calls: 0 denials, and the platform refuses or overrides the prompt (Sarvam P14 predicts it accepts, p=0.9).",
+   "evidence": "SAR-53/54 [M/O]; W §14 item 8; walkthroughs/SYNTHESIS.md must-be promotion; SAR-P03, P14"
+  },
+  {
+   "gap": "Regulated-call plumbing is left to the buyer: free-form windows, DND only as an API recipe card, no consent field, 0 mentions of NCPR/DLT/140x/1601/A2P/DPDP in 162 docs pages, only 10-digit rented numbers (no 140xx or 1600xx), rotation across 10-digit CLIs.",
+   "how_vp_beats": "Consent, DND/NCPR, call category and calling window as campaign objects with category-derived windows (not free-form), series choice (140xx/1600/1601) and A2P declaration helper, opt-out captured from CSV and in-call. Test: out-of-hours window (07:00-23:00) refused or warned; opt-out row not dialled; Sarvam P05 and P04e predict the opposite.",
+   "evidence": "SAR-44-49, SAR-65 [O/I]; teardown SYNTHESIS section 2.2 compliance table; W1 hypothesis; SAR-P04e, P05"
+  },
+  {
+   "gap": "60-second agent pulses make short Indian calls expensive: 30 s costs INR 6.40-7.40 per connected minute against a 3.00-3.50 headline; no usage, balance, per-call cost or invoice API; no spend cap.",
+   "how_vp_beats": "Per-second or at most 30-second pulses, an all-in INR per connected minute headline (telephony and pulse included), a cost API per call, campaign and contact, a cost estimate before launch, spend caps per workspace and API key. Test W8/T7: 10 calls each at 30, 45 and 90 s; invoice matches rate card within 1% and is lowest per effective minute against 5 of 7 incumbents.",
+   "evidence": "SAR-36/38 [O/I], pricing-allin.csv; A 'Metering and billing'; account-phase/SYNTHESIS.md XS-26..28; SAR-P13"
+  },
+  {
+   "gap": "Model, ASR and voice trade-offs are hidden: no LLM/ASR picker, no BYO, temperature slider without a number, no latency or price at the choice, no milliseconds anywhere in the builder.",
+   "how_vp_beats": "Stack selection with curated defaults and per-option India-measured latency and INR per minute (decision.2026-10-20.product-stack-selectable), turn-taking presets that show milliseconds and their sum. Test: a buyer changes stack and sees predicted gap and cost change in the UI before saving.",
+   "evidence": "wt-sarvam-25/31, W §4-5 [I/O]; SAR-12; walkthroughs/SYNTHESIS.md must-be A"
+  },
+  {
+   "gap": "Turn-taking under real Indian conditions: cut into a 2.4 s elderly pause 2/2, silent under about 15 dB babble 2/2, collisions 12.5%, barge-in handled 3/6; builder offers 3 coarse enums over 10 hidden VAD parameters.",
+   "how_vp_beats": "Hinglish-tuned end-of-turn that never discards haan/nahi/ruko/bas and listens during the opening. Test W4 battery: short-reply, barge and pause items; VP at least 90% on short replies, stops within 600 ms on barge, and a lower cut-in rate than the incumbent median. Caution: VP's own lab shows 15-42% cut-ins across stacks (open.2026-10-19.turn-taking), so unproven.",
+   "evidence": "R2 §1 [M]; A turn-taking finding; teardown SYNTHESIS W4; risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven"
+  },
+  {
+   "gap": "Memory is per-call only (variables, on-start hook, known-callers CSV); no cross-call store; learning loop is manual (Genie suggestions, goals, tests); no A/B split or bandit.",
+   "how_vp_beats": "v2: consented, viewable, deletable per-contact memory feeding the next call, and a reviewable, reversible self-improvement loop (a changed line is proposed from drop-off data, tested against a held-out set, then rolled out). Test: second call references a fact from the first within one turn; a drop-off line changes and the next 100 calls show the effect, with a model never grading its own work.",
+   "evidence": "SAR-58/59 [O]; teardown SYNTHESIS v2 notes (no cross-call memory at Bolna, Sarvam, Vapi, Exotel); decision.2026-10-20.acct-sarvam-beat-where-thin"
+  },
+  {
+   "gap": "Integration surface is thin: webhooks unsigned, post-call only, English-only transcripts; no mid-call function hook; no agent create/edit/commit/telephony/KB/DND over REST (dashboard, Genie, MCP only); 12 doc-vs-spec mismatches; npm SDK stale.",
+   "how_vp_beats": "Signed webhooks with a replay UI, mid-call function hooks, native-script transcripts, and an authoring API with full dashboard parity so chat can run a campaign end to end. Test W10: configure by API, read back, place a call, compare; 0 silent field drops; T2-T6 done by chat only.",
+   "evidence": "A 'Webhooks', 'Surface', 'What the API revealed' [O]; SAR-14/15; teardown SYNTHESIS W10; decision.2026-10-20.acct-sarvam-beat-where-thin"
+  },
+  {
+   "gap": "Hinglish and Indic honesty: no Hinglish/code-mixed option, Hindi and English hold 137 of 196 voices, Odia 0 voices, Malayalam only a Hindi mix; catalogue and docs disagree (176/222/266 voices, three language lists).",
+   "how_vp_beats": "An explicit code-mixed mode, per-language voice counts shown before purchase, a warning when a voice's model is retiring (Bulbul v3 ends 2026-11-10). Not a claim of better language hold: Sarvam held Hindi on 38/40 turns, so W5 is killed if Sarvam is at or above VP.",
+   "evidence": "W §4 voices.txt, measure.2026-10-21.wt-sarvam-voice-catalogue-counts [M]; R2 §1; teardown SYNTHESIS W5, CMP-08"
+  },
+  {
+   "gap": "Dashboard data residency and state integrity: dashboard sessions configured to record to PostHog US (inputs unmasked, network bodies captured) against a 'PII stays in India' claim; no save or unsaved marker; blank Workflows/Secrets; zero/no-data conflation; overdrawn balance in normal type; wallet-empty releases numbers with no grace.",
+   "how_vp_beats": "Dashboard telemetry kept in India with PII masked by default, explicit empty/zero/loading/failed states, visible save and version diff, low-balance and grace states before numbers are released. Test: logged-in capture shows no replay upload with bodies; every disabled primary action shows a reason.",
+   "evidence": "SAR-63/64 [O/I] (needs a logged-in check); W §13 broken list; walkthroughs/SYNTHESIS.md must-be D; A 'Metering and billing'"
+  },
+  {
+   "gap": "Time to first ring on an Indian line is gated by KYC for rented numbers (PAN/Aadhaar) or a BYO provider form, with the path unopened in the walkthrough; 11/79/80 series only.",
+   "how_vp_beats": "Pre-provisioned or BYO number path with series, KYC documents, time and price shown before any credential is asked; first Indian ring in 15 minutes or less. Test W7: stopwatch sign-up to first ring on a handset from an Indian CLI; kill if Bolna or Sarvam do it in 20 minutes or less.",
+   "evidence": "W §8; wt-sarvam-43 [U]; teardown SYNTHESIS W7; SAR-P01/P02 unscored"
+  }
+ ],
+ "numbers": [
+  {
+   "metric": "Sarvam homepage EMI demo, clean-turn reply gap p50 (browser-side, US-East)",
+   "value": "3,116 ms (90% CI by call 2,717-3,400); p90 3,835 ms; n=46 clean turns, 8 calls; about 2.8 s from India (estimate)",
+   "grade": "measured",
+   "evidence": "research/2026-10-17/lanes/l4b-measured/round2/findings.md section 1; ledger CMP-06 (no independent verifier); SAR-35"
+  },
+  {
+   "metric": "Sarvam models through VP India pipeline, reply gap",
+   "value": "968-1,181 ms; first token about 100 ms; n=9 replies, 3 calls; cold Bulbul socket 4.3 s to first audio; INR 1.39-1.51 per minute",
+   "grade": "measured",
+   "evidence": "research/2026-10-19/voicelab/results/smoke-india-2026-10-19.md; measure.2026-10-19.sarvam-india; SAR-34 (smoke, not a benchmark)"
+  },
+  {
+   "metric": "Demo claimed to be human when asked",
+   "value": "6 of 6 calls (Hindi, Tamil, English)",
+   "grade": "measured",
+   "evidence": "R2 section 1; ledger CMP-07; teardown/sarvam/report.md SAR-53"
+  },
+  {
+   "metric": "Demo cut into 2.4 s elderly pause / silent under babble",
+   "value": "2 of 2 / 2 of 2 calls; collisions 8/64 (12.5%); barge-in handled 3/6",
+   "grade": "measured",
+   "evidence": "R2 section 1; ledger CMP-09"
+  },
+  {
+   "metric": "Demo language hold",
+   "value": "Hindi/Hinglish 38/40 turns; Tamil-Tanglish 20/20",
+   "grade": "measured",
+   "evidence": "R2 section 1; ledger CMP-08"
+  },
+  {
+   "metric": "Voice minute list price (60-s pulse, ex GST)",
+   "value": "INR 3.50 PAYG / 3.25 Pro / 3.15 Growth / 3.00 Business; Enterprise from 2 lakh min/month",
+   "grade": "observed",
+   "evidence": "teardown/sarvam/report.md SAR-36; walkthroughs/sarvam/report.md section 11 (sarvam-21, 22; vendor-displayed)"
+  },
+  {
+   "metric": "Telephony and add-on prices",
+   "value": "Vobiz INR 0.20 per 30 s; forwarding 0.40 PSTN / 0.35 SIP per 30 s; number INR 59 per 30 days; simulated test run INR 2",
+   "grade": "observed",
+   "evidence": "SAR-36; account-phase/sarvam/report.md 'Metering and billing'"
+  },
+  {
+   "metric": "Effective all-in INR per connected minute on Sarvam telephony, ex GST",
+   "value": "60 s: 3.40-3.90; 45 s: 4.53-5.20; 30 s: 6.40-7.40; 90 s: 4.40-5.07",
+   "grade": "inferred",
+   "evidence": "research/2026-10-20/teardown/sarvam/pricing-allin.csv (36 rows recomputed); SAR-38; actual debits unverified (SAR-P13)"
+  },
+  {
+   "metric": "COGS per call-minute at Sarvam's own Growth API list vs list price",
+   "value": "INR 1.16-1.33 (lab 1.39-1.51); list is 2.3-3.0x; self-host margin unknown",
+   "grade": "inferred",
+   "evidence": "SAR-39, SAR-39b, SAR-40; research/2026-10-18/model/results/inputs.csv"
+  },
+  {
+   "metric": "Voice Agents REST surface",
+   "value": "68 operations, 175 schemas (analytics 24, scheduling 19, evals 15, app-authoring 6, outbounds 1, BYOK 3); no agent create/edit, telephony, KB, DND, usage or cost operations",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/account-phase/sarvam/report.md; SAR-14; measure.2026-10-20.acct-sarvam-api-surface"
+  },
+  {
+   "metric": "Doc, spec and SDK mismatches",
+   "value": "12 recorded; three language lists (13 / 13 / 11); npm SDK 0.0.42 (Mar 30) vs Python 1.1.1 (Sep 22)",
+   "grade": "measured",
+   "evidence": "data/account-phase/sarvam/derived/doc-vs-spec-mismatches.json; SAR-32"
+  },
+  {
+   "metric": "Voice catalogue",
+   "value": "199 distinct voices (176 role-named, 23 plain); Hindi 83, English 43, Odia 0; 11 agent languages; 119 F / 77 M of 196 parsed",
+   "grade": "measured",
+   "evidence": "research/2026-10-21/walkthroughs/sarvam/report.md section 4; measure.2026-10-21.wt-sarvam-voice-catalogue-counts (lower bound, text dump)"
+  },
+  {
+   "metric": "Uptime Jul-Oct 2026 (status page)",
+   "value": "Voice Agents 99.94% (Calls 99.98%, Telephony 99.95%); APIs 99.57%; 19 incidents",
+   "grade": "observed",
+   "evidence": "SAR-43; data/teardown/sarvam/web/status-incidents.tsv"
+  },
+  {
+   "metric": "Release velocity",
+   "value": "58 changelog entries in 6 months on 27 release days; Voice Agents 22 entries plus 1 shared, 2026-08-13 to 10-16; sarvamai SDK 169 releases since 2025-03",
+   "grade": "observed",
+   "evidence": "SAR-42, SAR-32; research/2026-10-20/teardown/radar"
+  },
+  {
+   "metric": "Rate limits (concurrent calls / calls started per minute)",
+   "value": "PAYG 4/20, Pro 10/50, Growth 30/150, Business 120/600",
+   "grade": "observed",
+   "evidence": "SAR-19 (docs pricing.md); not shown on dashboard plan cards (W section 14 item 6)"
+  },
+  {
+   "metric": "Company financials",
+   "value": "FY25 revenue INR 29.1 Cr, loss INR 102.4 Cr, 458 staff; Series B first close USD 234M at USD 1.5B",
+   "grade": "observed",
+   "evidence": "research/2026-10-17/lanes/l4a-competitors/data/company-financials.csv (Inc42 from MCA, secondary, medium confidence)"
+  },
+  {
+   "metric": "Public complaint base for Voice Agents",
+   "value": "about 7 builder threads (Model APIs); 0 platform-buyer reviews found",
+   "grade": "observed",
+   "evidence": "SAR-56; research/2026-10-17/lanes/r2-untouched-raw/findings.md section 3"
+  }
+ ]
+}

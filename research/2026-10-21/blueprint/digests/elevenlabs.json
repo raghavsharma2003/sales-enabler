@@ -1,0 +1,270 @@
+{
+ "adopt": [
+  {
+   "pattern": "Itemised per-call diagnostics and cost",
+   "evidence": "Every conversation carries termination_reason, error {code, reason}, call_result (5 values), SIP messages, queue_wait_secs, 40 filters, and a charging block (platform, LLM irreversible vs initiated, TTS, ASR, analysis, is_burst, cost_fiat). [o] research/2026-10-20/teardown/elevenlabs/claims.json EL-12; research/2026-10-20/account-phase/elevenlabs/report.md section 5",
+   "why": "The best debugging and billing-audit surface among the six vendors. Fix: add Indian reasons (DND, CLI/DLT, operator announcement, window) and a business-outcome field, since no vendor has one (XS-20)."
+  },
+  {
+   "pattern": "A version on every write, with branches, merge proposals and a traffic split",
+   "evidence": "Agent -> Branch -> immutable Version -> MergeProposal -> Deployment %; Main 100% Live badge. [o] account-phase report section 1; walkthroughs/elevenlabs 8-branches.png",
+   "why": "Safe iteration and rollback are a parity floor. Fix: reject unknown fields (ElevenLabs drops them and still commits a version), skip no-op versions, make merge a policy check rather than a person-only gate, record the model actually in effect per call."
+  },
+  {
+   "pattern": "Inline price and latency on every model row, with a Detailed costs panel",
+   "evidence": "LLM drawer groups by provider and shows latency range, $/min and $/msg per row. [d] walkthroughs/elevenlabs/report.md section 4, 61-llm-list.png",
+   "why": "A self-serve buyer choosing a stack needs this (decision.2026-10-20.product-stack-selectable). Fix: India-measured p50/p90 with n and region, the prompt-size assumption stated, all-in INR per minute including telephony, and the same strip for ASR and voice, which ElevenLabs does not show."
+  },
+  {
+   "pattern": "A 1-2 sentence description under every setting incl. its billing impact, and explained locks",
+   "evidence": "'Each upload is billed, so this helps control cost'; 'locked because Turn V3 requires Scribe v2 Realtime'. [o] 44-agent-settings.png, walkthroughs report section 13",
+   "why": "Best settings explanation of the six dashboards. Fix: show units in milliseconds and the resulting turn-taking floor, which is invisible at ElevenLabs."
+  },
+  {
+   "pattern": "Template gallery with a live flow preview and one-click use",
+   "evidence": "45+ templates with node graph preview. [o] 02-after-login.png; walkthroughs SYNTHESIS best-for-templates",
+   "why": "Fastest route to a believable first agent. Fix: India templates (renewal, collections, appointment, lead qualification), AI disclosure built into each, and node text written as shapes not quotable sentences (their sample opening lines are sentence-shaped, which our recitation law says get recited)."
+  },
+  {
+   "pattern": "Docked test panel with mock tools on every config page",
+   "evidence": "Inline/Widget test, mock tools, debugger, history, voice settings. [o] 38-agent-builder.png, 9-preview.png",
+   "why": "Test-while-editing cuts first-run time (4 clicks, 1 field to a browser test). Fix: label the start-call state, no unexplained red button, and run the same test through the phone path."
+  },
+  {
+   "pattern": "CSV contract shown before upload with per-row overrides",
+   "evidence": "Required phone_number; optional prompt, first_message, voice_id, language; other columns become variables; 25 MB. [o] 33-batch-telephony-form.png, EL-05",
+   "why": "Per-row personalisation is the base of campaign personalisation. Fix: row preview with a reason per rejected row, +91 normalisation, dedupe across formats, DND status and consent source per row."
+  },
+  {
+   "pattern": "Typed event taxonomy with mid-call context push and a history trimmed to what the caller heard",
+   "evidence": "About 40 events: contextual_update, agent_response_correction, interrupted flag, conversation_history + resume token, vad_score, internal_turn_probability, 26 error types. [o] account-phase report section 4; account-phase SYNTHESIS lines 98-99",
+   "why": "Lets memory and personalisation inject context mid-call and keeps the transcript honest after barge-in. Fix: expose the same events to VP's own agents and to customers' webhooks."
+  },
+  {
+   "pattern": "Pre-call initiation webhook plus signed post-call webhooks",
+   "evidence": "Pre-call POST returns dynamic variables and overrides; HMAC ElevenLabs-Signature; auto-disable after 10+ consecutive failures. [o] account-phase report section 4",
+   "why": "The hook where a per-contact memory brief can be injected before the first word (v2). Fix: delivery log with retries visible to the buyer."
+  },
+  {
+   "pattern": "Go-live checklist inside the assistant ('0 of 10 ready')",
+   "evidence": "[o] walkthroughs 8-architect.png text capture",
+   "why": "Turns launch readiness into a visible list. Fix: gate on predicates (disclosure present, window set, DND scrub on, end-call tool on, spend cap set), not on the assistant's opinion (rejected.harvest.03: safety by instruction leaks)."
+  },
+  {
+   "pattern": "Config-as-code CLI with push/pull and a residency switch",
+   "evidence": "Rust CLI behind an npm launcher; residency global/us/eu/in/sg. [o] account-phase report section 2",
+   "why": "Lets teams version configs and lets the chat agent drive the same operations (W10: every dashboard action reachable by API/MCP). Fix: full API parity, including keys and billing which ElevenLabs refuses to an API key."
+  },
+  {
+   "pattern": "Three test types: LLM, tool and simulated personas with success conditions and repeat runs",
+   "evidence": "Simulation success conditions (2026-06-22), agent test repeat runs (2026-06-01). [o] research/2026-10-20/teardown/elevenlabs/velocity.json; account-phase report section 1",
+   "why": "Regression safety for agents. Fix: classify outcomes against verified keys, never have a model grade its own work; add Hinglish personas with pauses, backchannels and interruptions."
+  },
+  {
+   "pattern": "Conversational polish controls: soft-timeout fillers, pre-tool speech, tool interruption mode, per-language interruption ignore terms",
+   "evidence": "Soft timeout filler (LLM-generated option), pre-tool speech, interruption_ignore_terms per language. [o] account-phase report section 6; velocity.json 2026-04-27, 06-08, 06-22",
+   "why": "Hides tool latency and handles backchannels. Fix: ship Hindi/Hinglish seed lists on by default (theirs is empty and English), and do not copy default-on speculative generation without a negation-aware release check (rejected.2026-10-17.speculative-release: 3/58 truncated transcripts accepted, 4/4 negation flips)."
+  },
+  {
+   "pattern": "Safety and privacy UX: open-allowlist warning, per-agent authentication, retention and zero-retention toggles, sentiment acknowledgement, widget consent dialog",
+   "evidence": "'Any host will be able to connect' red box; Zero Retention Mode, Store Call Audio, retention; sentiment 'Acknowledge'; terms_text/terms_html dialog. [o] 54-agent-security.png, 41-agent-analysis.png, EL-41",
+   "why": "Visible warnings and consent are the right instincts. Fix: closed by default, retention and redaction chosen at onboarding, DPDP notice and recording consent injected into phone calls (ElevenLabs injects nothing)."
+  }
+ ],
+ "beat": [
+  {
+   "gap": "The campaign form has no India operator layer: no calling window, retry rule, DND/NCPR scrub, consent source, DLT, dedupe, +91 normalisation or cost estimate; Submit is disabled with the reason only in a placeholder.",
+   "how_vp_beats": "Put consent source, DND/NCPR scrub, category-driven IST windows, DLT/CLI selection, retries by outcome, a cost estimate and a stated reason on every disabled action on the campaign form; hold suppression across campaigns on a first-class contact. Test (W1/W2, T2/T9): a messy 50-row synthetic CSV with duplicates, 10-digit numbers, an opt-out row and Hindi names; pass = 0 dials to DND or opted-out rows and 48/50 rows right in under 5 minutes. Risk: ElevenLabs' hidden campaigns product (16 paths, suppressLead, attention queue) may close part of this by 2027-01-31.",
+   "evidence": "[o] EL-05, EL-40, EL-06/07; walkthroughs 33-batch-telephony-form.png, 35-batch-schedule.png; WS finding 1 (0 of 6 dashboards put consent, DND or DLT on the form); decision.2026-10-21.wt-elevenlabs-beat-list"
+  },
+  {
+   "gap": "Reply gap on Indian PSTN is unknown for a standard plan: SIP signalling is us-central1 for every Indian buyer, residency is Enterprise-only, and the demo measured p50 3.75 s from the US.",
+   "how_vp_beats": "India-hosted media and cascade on every plan, with the measured reply gap shown per stack choice. Test (W3): same Indian handset, same script, 30+ clean turns per vendor; pass = VP p50 at least 0.3 s below the best incumbent, p90 2.5 s or less, cut-ins 5% or less. Not yet won: VP's own lab shows 0.8-4.2 s gaps and 15-42% cut-ins (DIRECTION.md), so this stays a hypothesis.",
+   "evidence": "[m] L4B clean-turn p50 3.75 s, n=63 (US-East via proxy, demo agent); [o] EL-20 no geo-DNS; [u] EL-21, EL-P08 predicted 2.0-3.2 s untested; teardown SYNTHESIS W3"
+  },
+  {
+   "gap": "Hinglish turn-taking: interruption ignore terms are empty and English by default, haan/hmm were answered 'Are you still there?' on 4 of 16 short turns, and there is no millisecond control or visible floor.",
+   "how_vp_beats": "Hindi and Hinglish backchannel and interruption lists on by default, a visible turn-taking floor in milliseconds, and a stop within 600 ms on barge-in. Test (W4): short-reply, barge-in and pause items plus 4 short Hindi replies spoken over the agent; pass = 90% or more handled and no cut-in on the elderly-pause item. The ElevenLabs numbers come from a demo, so re-measure on a configured agent before claiming a win.",
+   "evidence": "[m] L4B 4/16 and barge-in 3/7; [o] walkthroughs 44-agent-settings.png (ignore terms), report section 5; TS W4; 0 of 6 dashboards ship an editable Hindi backchannel list (WS finding 2)"
+  },
+  {
+   "gap": "Language handling is unvalidated: the default American voice is accepted on a Hindi agent, language detection is OFF, no Hinglish row exists, hinglish_mode is an undocumented boolean, and Turn V3 locks ASR to Scribe v2 Realtime.",
+   "how_vp_beats": "A measured, documented Hinglish setting, a voice-language cross-check that refuses a mismatch, Indic voice filters, and Indic ASR choice not tied to the turn model. Test (W5): per-turn language ID plus content checks over the battery; pass = 95% or more language hold and better than every non-Indian platform.",
+   "evidence": "[o] account-phase report section 7 (c)(d); walkthroughs 62-language-list.png, 15-voice-library.png, 44-agent-settings.png; evidence.2026-10-20.acct-elevenlabs-hinglish-mode-undocumented"
+  },
+  {
+   "gap": "Defaults hold lines open and raise spend: end-conversation tool OFF, silence end-call disabled, burst ON at 2x price, speculative generations metered separately, default LLM 2.4x the schema default, no AI disclosure in the first message, open allowlist, silent model reroute, unlimited retention.",
+   "how_vp_beats": "Bounded call and spend defaults (end-call on, silence hang-up on, max duration set, burst opt-in, workspace spend cap and API-key cap), AI disclosure in the first message on every creation path including templates and copilot output (disclosed once, lightly), no silent model change, the model in effect recorded per call. Test: read back an API-created and a dashboard-created agent and diff them; pass = 0 silent drops, 0 defaults that differ from the docs.",
+   "evidence": "[o] walkthroughs 42-agent-tools.png, 54-agent-security.png, 61-llm-list.png; account-phase report section 7; risk.2026-10-20.acct-elevenlabs-silent-model-fallback; WS must-be item C and AI-disclosure promotion"
+  },
+  {
+   "gap": "No contact object: the caller is a user_id string, which on the widget is a browser fingerprint, so suppression, attempt history and memory cannot attach to a person.",
+   "how_vp_beats": "A first-class contact with India-default E.164, DND status, consent source, attempt history and a reserved memory slot, shared by campaigns, calls and WhatsApp. Test: the same number in two campaigns is suppressed in the second after opt-out in the first.",
+   "evidence": "[o] EL-10, EL-26; walkthroughs 25-users.png; WS must-be item B; decision.2026-10-20.acct-elevenlabs-beat-list-api-visible"
+  },
+  {
+   "gap": "Number path is import-only behind provider credentials: Exotel needs 7 fields, a support-gated Voicebot applet (1-2 business days) and a chained Connect applet for transfer, Region defaults to Singapore under +91, no price or KYC step; Twilio routes via us1.",
+   "how_vp_beats": "Buy or port an India number in-product with KYC documents, time and price stated before any credential is asked, and a tested path to a first ring on an Indian handset. Test (W7): time from sign-up to first ring on an Indian line; no incumbent reached one in the 6 dashboard walks.",
+   "evidence": "[o] walkthroughs 31-phone-import.png, 34-phone-exotel-form.png; EL-38, EL-43; WS finding 4; WS must-be item 16"
+  },
+  {
+   "gap": "Cost is opaque: dashboard $/min is 1.7-2.3x below the API calculator with the prompt size unstated, headlines leave out telephony and the turn wait, USD only, burst on by default, 5% silence rate, no cost by campaign or contact, no spend cap by API key.",
+   "how_vp_beats": "An honest cost strip in INR that states its prompt-size assumption and itemises telephony, per-second or short pulses, one fee line, cost per campaign and per contact, a spend cap by workspace and key. Test (W8/T7): 10 calls each at 30, 45 and 90 s; pass = the invoice matches the rate card within 1% and VP is lowest per effective minute against 5 of 7 incumbents. Do not sell on list price alone: the ElevenLabs margin is unknown.",
+   "evidence": "[o/i] walkthroughs 61-llm-list.png, 51-subscription.png; EL-31, EL-33; WS must-be item A; rejected.2026-10-17.parity-undercut"
+  },
+  {
+   "gap": "Setup is chat-assisted but not chat-run: Architect is Alpha, free only through October 2026, edits on a branch, needs a person to merge, does no scheduled work, and key management and billing cannot be done by API.",
+   "how_vp_beats": "The client only talks: VP's agents build the agent, import and clean the list, launch, monitor and report the campaign end to end, with every dashboard action reachable through the same API. Test (W10/T1-T6): build, call, launch and report by chat only; pass = 0 silent config drops and no dashboard visit. Kill if an incumbent copilot does the same.",
+   "evidence": "[o] EL-03, 8-architect.png; account-phase report sections 7 and 8; WS finding 8 (chat setup is parity in 5 of 6); decision.2026-10-20.llm-native"
+  },
+  {
+   "gap": "Failure reasons are engineering codes (5 call results, SIP messages); no India-specific reason exists for DND, CLI/DLT rejection, operator announcement or window violation, and an empty history reads 'No results'.",
+   "how_vp_beats": "Plain-language failure explanations in Indian terms with a one-click fix, shown on the call and in the campaign view. Test (W6/T4): find a failed call and its reason; pass = under 3 minutes with the Indian cause named, against a generic failed/no_answer at ElevenLabs.",
+   "evidence": "[o] EL-12, EL-P06 (A predictions-scored.json); walkthroughs 16-history.png; account-phase SYNTHESIS end-reason taxonomy (XS-20)"
+  },
+  {
+   "gap": "Support is AI-only at the moment of a billing dispute (Trustpilot 3.0 from 1,192 reviews); no human route in Indian business hours.",
+   "how_vp_beats": "A human support promise in IST business hours (an operating promise, not product). Test (W9/T8): ticket filed at 11:00 IST; pass = VP answers in under 2 hours while the incumbent median is over 24 hours.",
+   "evidence": "[o] EL-46; TS W9 (ElevenLabs routes support to an AI; Retell active support 21:30-09:30 IST)"
+  },
+  {
+   "gap": "Memory and learning are gated and human-run: user memory returns 403 and shows as an Alpha tab, widget memory would key to a browser fingerprint, experiments are promoted by hand with no significance test, and Architect proposes changes for a person to merge.",
+   "how_vp_beats": "v2: a governed per-contact memory brief injected through the pre-call hook, and improvement loops gated by sequential statistics, with per-tenant learning only (no cross-tenant pooling, DPDP). Test: A/A false-winner rate on the loop; reject K=2 daily-checked dashboards (52-62% false winners by day 90). Timing risk: ElevenLabs memory may leave Alpha within 1-2 quarters.",
+   "evidence": "[o] evidence.2026-10-20.acct-elevenlabs-memory-gated, EL-26, EL-51/53; walkthroughs 7-knowledge-base.png; rejected.2026-10-17.k2-dashboards; rejected.2026-10-17.cross-tenant-pooling; ledger.LRN-09"
+  }
+ ],
+ "numbers": [
+  {
+   "metric": "Platform fee per call minute (all plans)",
+   "value": "USD 0.08 = INR 7.60 at FX 95; burst USD 0.16 = INR 15.2",
+   "grade": "observed",
+   "evidence": "teardown claims.json EL-29; walkthroughs 51-subscription.png"
+  },
+  {
+   "metric": "All-in Indian outbound minute (platform + LLM + telephony)",
+   "value": "INR 8.17-8.92 via Exotel/Plivo; 15.8-16.5 burst; 12.5-15.0 via Twilio",
+   "grade": "inferred",
+   "evidence": "teardown/elevenlabs/pricing-allin.json; EL-31 (Exotel rate assumed equal to Plivo)"
+  },
+  {
+   "metric": "All-in price vs Sarvam (INR 3.4-3.9)",
+   "value": "2.1-2.6x",
+   "grade": "inferred",
+   "evidence": "teardown verify.md EL-31"
+  },
+  {
+   "metric": "Platform fee vs ElevenLabs' own API list for ASR+TTS (USD 0.0206/min)",
+   "value": "3.3-3.9x",
+   "grade": "inferred",
+   "evidence": "EL-32; pricing-allin.json"
+  },
+  {
+   "metric": "Gross margin",
+   "value": "unknown (82-97% analogue withdrawn)",
+   "grade": "unknown",
+   "evidence": "teardown verify.md EL-33"
+  },
+  {
+   "metric": "Default LLM cost per minute",
+   "value": "USD 0.0078 on dashboard vs USD 0.0130 on API calculator (DeepSeek Flash 4.1); gemini-2.5-flash USD 0.0054",
+   "grade": "displayed-by-vendor / observed",
+   "evidence": "walkthroughs 61-llm-list.png; measure.2026-10-20.acct-elevenlabs-default-llm-cost"
+  },
+  {
+   "metric": "Clean-turn reply gap, homepage demo, US-East via proxy",
+   "value": "p50 3.75 s, n=63, call-clustered 90% CI 3.47-4.04 s (demo agent forced to en; US vantage overstates latency 2-5x)",
+   "grade": "measured",
+   "evidence": "research/2026-10-17/lanes/l4b-measured/report.md; measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs"
+  },
+  {
+   "metric": "End-of-turn transcript / agent_response / first audio after caller stops",
+   "value": "p50 2.65 s / 2.77 s / 3.06 s, n=72 turns",
+   "grade": "measured",
+   "evidence": "l4b-measured/report.md (data/elevenlabs-ws-timing.csv)"
+  },
+  {
+   "metric": "Short Hindi backchannels (haan/hmm) mishandled",
+   "value": "4 of 16 short turns answered 'Are you still there?'",
+   "grade": "measured",
+   "evidence": "l4b-measured/report.md; small n, demo agent"
+  },
+  {
+   "metric": "Barge-in handled / collisions",
+   "value": "3 of 7 / 3% of turns",
+   "grade": "measured",
+   "evidence": "l4b-measured/report.md; small n"
+  },
+  {
+   "metric": "Handset reply gap on Indian PSTN, standard plan",
+   "value": "untested; predicted p50 2.0-3.2 s",
+   "grade": "unknown",
+   "evidence": "teardown predictions.md EL-P08; account-phase predictions-scored.json"
+  },
+  {
+   "metric": "Hindi/Hinglish language hold",
+   "value": "no valid measurement (demo forced en)",
+   "grade": "unknown",
+   "evidence": "teardown verify.md EL-54"
+  },
+  {
+   "metric": "Agent configuration surface",
+   "value": "313 non-widget settings, 65 permission strings, 111-value LLM enum (dashboard lists 45 models + Custom)",
+   "grade": "measured",
+   "evidence": "measure.2026-10-20.acct-elevenlabs-config-surface-size; EL-14; walkthroughs 61-llm-list.png"
+  },
+  {
+   "metric": "Hidden outbound-campaigns surface",
+   "value": "16 unpublished paths (18 operations); 204 of 335 unique convai paths in the bundle unpublished",
+   "grade": "observed",
+   "evidence": "teardown verify.md (EL-06/08 corrected from 23 and 326/568)"
+  },
+  {
+   "metric": "Indian compliance mentions in docs",
+   "value": "0 of 258 page bodies and 804 titles for TRAI, DLT, NCPR/DND, 140/160, IST hours; 0 'Hinglish'",
+   "grade": "observed",
+   "evidence": "EL-40, EL-54"
+  },
+  {
+   "metric": "Languages in agent picker",
+   "value": "88 listed, 14 South Asian, no Hinglish row",
+   "grade": "observed",
+   "evidence": "walkthroughs 62-language-list.png"
+  },
+  {
+   "metric": "Changelog velocity",
+   "value": "195 ElevenAgents items in 32 weekly entries (2026-04-01 to 10-12), median 6 per entry; Vapi 82",
+   "grade": "observed",
+   "evidence": "EL-35; teardown SYNTHESIS line 349 (not re-verified)"
+  },
+  {
+   "metric": "Status incidents",
+   "value": "25 in 75 days; 9 name Agents/SIP/Twilio/batch/history; 4 SIP/Twilio; 0 India residency",
+   "grade": "observed",
+   "evidence": "EL-37 (verified)"
+  },
+  {
+   "metric": "Trustpilot score",
+   "value": "3.0 from 1,192 reviews (via model summary)",
+   "grade": "observed",
+   "evidence": "EL-46"
+  },
+  {
+   "metric": "Company scale",
+   "value": "Series D USD 500M at USD 11B (Feb 2026); ARR above USD 500M (Apr 2026)",
+   "grade": "vendor-claimed",
+   "evidence": "research/2026-10-17/lanes/l4a-competitors/report.md line 142"
+  },
+  {
+   "metric": "Dashboards (of 6 vendors) that reached a ring on an Indian line",
+   "value": "0 of 6; ElevenLabs stopped at import-only numbers",
+   "grade": "observed",
+   "evidence": "walkthroughs SYNTHESIS finding 4; 34-phone-exotel-form.png"
+  },
+  {
+   "metric": "Teardown verification hit rate for this vendor",
+   "value": "34 of 37 re-checked claims kept grade and substance (92%); 18 of 37 exact as written (49%)",
+   "grade": "measured",
+   "evidence": "teardown verify.md"
+  }
+ ]
+}

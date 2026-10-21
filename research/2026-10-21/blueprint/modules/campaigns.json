@@ -1,0 +1,522 @@
+{
+ "id": "campaigns",
+ "screens": [
+  {
+   "name": "Import: drop and contract",
+   "purpose": "Turn any customer file, Sheet or API push into a staged list, showing what the agent needs before anything is uploaded.",
+   "layout": "Docked chat on the right (VP's thread). Main area: top bar with breadcrumb Campaigns > Renewal Nov > Who. Left column: the contract card generated from the preset and agent variables. Centre: a large drop zone with source tabs (File, Google Sheet, API, CRM). Below: a mapping table that appears after drop. Bottom: sticky action bar.",
+   "elements": [
+    "Contract card: 'Aapke renewal agent ko chahiye: Name, Phone, Policy No, Due Date. Madad karte hain: Premium, Product, Language, Preferred time. Baaki columns variables ban jaate hain.' with a 'Download sample CSV' link (synthetic Hinglish rows)",
+    "Drop zone: 'CSV ya Excel yahan daalein, 2,00,000 rows tak' plus tabs Google Sheet (Connect, read-only), API (shows the endpoint and a curl snippet with [secret] for the key), CRM (via Integrations)",
+    "Mapping table rows: 'Phone Number -> phone (sample shape: 10 digits) · confidence high · why: header synonym', 'Mob No 2 -> alt phone (ask?)', 'Premium (INR) -> premium (amounts like 24,500 and 24.5k)', 'Email -> not mapped (empty in all rows)'",
+    "Remembered mapping chip: 'Same as last upload from this Sheet'",
+    "Question chips (max 3), each with a default: 'Due date 01/12/2026: 1 Dec (column looks DD/MM) | 12 Jan'",
+    "Sticky bar: 'Map confirm karein' primary, 'Ask VP' secondary",
+    "Chat echo: 'File mili: 1,240 rows. Mapping 9 sec mein ready; ek sawaal hai.'"
+   ],
+   "states": [
+    "empty: contract card plus drop zone, one CTA 'Upload list'",
+    "parsing: progress bar with rows read and first 200-row preview within 3 s",
+    "mapping ready: table with confidence and one confirm",
+    "unparseable file: 'Ye file khul nahi rahi (password-protected Excel). Password hata kar dobara bhejein.' with the reason; never a silent failure",
+    "Sheet connected: 'Syncs every 15 min for recurring campaigns' with last-synced time",
+    "API source: per-row results shown live as pushes arrive"
+   ],
+   "beats": "ElevenLabs shows a generic contract with per-row prompt overrides and nothing about Indian numbers (EL-05); VP's contract is generated from the agent's own variables, keeps prompts out of rows, and supports Sheets and API push. Vapi rejects the whole file for one bad row (VAP-49); VP never does. Retell cannot import by API key (rejected.2026-10-20.acct-retell-csv-import-by-api-key); VP can."
+  },
+  {
+   "name": "Import result: rows and reasons",
+   "purpose": "Show exactly what will happen to every row, why, and how to fix it, in under a minute of reading.",
+   "layout": "Header with the receipt summary sentence. A counter strip of clickable chips. Below, a dense row table with filters by chip and search. Right drawer opens a row detail. Footer: download failed rows, re-upload fixes, 'Hear a row', continue.",
+   "elements": [
+    "Summary sentence: '50 rows -> 4 log call honge, 3 numbers par. 10 duplicate jode, 1 opt-out, 3 hold, 26 dial nahi ho sakte, 6 tooti rows skip.'",
+    "Counter chips: Ready 4 · Normalised 5 · Duplicates 10 · Suppressed 1 · DND held 1 · Consent held 1 · Other holds 1 · Rejected 24 · Non-Indian 2 · Skipped 6",
+    "Row table columns: Row, Name (native script and Latin), Phone as given, Normalised (+91 masked), Code, Reason, Fix. Examples: 'R03 · Sunita Verma · 10-digit -> +91 · DUPLICATE_OF_ROW R01 · same policy SH-100001'; 'R11 · इमरान कुरैशी · OPT_OUT_CONFLICT_OPT_OUT_WINS · R09 says opted out on 2026-10-12'; 'R27 · LANDLINE_TRUNCATED · Mumbai number needs 8 digits after 22, found 4 · Fix: correct number'; 'R30 · SCI_NOTATION · Excel turned this into 9.1E+11 · Fix: export column as text'; 'R28 · NON_INDIAN · +1 number, not dialled in an Indian campaign'; 'R18 · HELD_PROMO_DND · promotional row to a DND number needs registered consent'",
+    "Shared-number badge on R07: 'Same phone as Sunita, different policy: called in a separate slot'",
+    "Row drawer: original cells, normalised values, merge history, conflicts list ('premium blank in R06; kept 24,500 from R01')",
+    "Buttons: 'Download failed rows (32)' with fixed_value column, 'Re-upload fixes', 'Ring my phone as R01', 'Continue to campaign'",
+    "Chat chip: 'R27 ka number adhoora hai, skip kar do'"
+   ],
+   "states": [
+    "validating: chips count up live; table usable for rows done",
+    "all clean: 'Sab rows ready' with no failed-rows button",
+    "holds present: hold chips highlighted with the one question pinned",
+    "re-upload merged: 'Re-upload se 9 rows theek hui, 3 abhi bhi galat' with a diff",
+    "large file: virtualised table, chip counts exact, never a sampled number shown as total"
+   ],
+   "beats": "Sarvam gives valid/rejected counts and a rejected file but no duplicate, DND or consent counters (SAR-16); Bolna gives row codes but dedupes on reference_id, not phone (ACB-19/20); Exotel drops duplicates silently and rejects spaced numbers (EXO-15/16). VP shows every row's fate with a plain reason, fixes, cross-script dedupe and opt-out precedence, and the messy-50 is designed to land 50/50 (pass bar 48/50)."
+  },
+  {
+   "name": "Campaign policy (category-first)",
+   "purpose": "Set what kind of call this is and let that decide window, number series, consent rules, templates and the in-call fence, with every other field defaulted.",
+   "layout": "Single scrolling page with a left section rail that turns green per section: 1 Kind of call, 2 Who, 3 Agent, 4 When, 5 How hard, 6 From which number, 7 After the call, 8 Money, 9 Outcome, 10 Checks. Main column with section cards. Chat docked right; Strategist's draft diff shown as highlights.",
+   "elements": [
+    "Section 1 cards: 'Service: jo cheez unke paas pehle se hai (renewal, EMI, appointment). Koi offer nahi.' · 'Transactional: abhi kiya hua transaction' · 'Promotional: kuch bechna ya offer. 140-series, 10:00-21:00, DND numbers ke liye registered consent.' Selected: Service, sector Insurance",
+    "Derived line under the choice: 'Is choice se: window Mon-Sat 10:00-19:00 · number series 1600 · offers blocked during the call · WhatsApp utility templates only'",
+    "When: a weekly grid with multi-range bars, days toggles, holiday list ('26 Jan, 15 Aug, 2 Oct, Diwali off'), timezone 'contact local time (IST for +91)', cadence picker 'Due date se: T-30, T-15, T-7, T-2' and 'Stop when renewal-paid webhook arrives'",
+    "How hard: retry ladder table (busy +30 min, +2 h ...), budgets 'Har vyakti: 2/din, 5/hafta, 6/run', ring timeout 40 s, pacing 'Canary 20 calls @ 3/min, phir 30/min', 'Concurrency: 10 of 12 · 2 inbound ke liye reserved'",
+    "From: pool list with series, A2P declared tick, CNAP name 'Shree Insurance Brokers', health, 'Sticky per person: on'",
+    "After the call: per-outcome rule table with each rule's contract ('Sends WhatsApp utility renewal_link_v2 within 2 min; no opt-in -> DLT SMS 1107... template')",
+    "Money: estimate 'INR 4,100-6,300 incl. GST (assumption, no history)', cap field required",
+    "Promotional window field (when Promotional chosen): start clamps at 10:00 with 'Promotional: 10:00-21:00 (TRAI). 09:30 allowed nahi.'"
+   ],
+   "states": [
+    "draft from chat: Strategist's values highlighted with a one-line reason each",
+    "manual: same page, defaults prefilled from the preset",
+    "running campaign: edits become a revision with a diff; narrowing applies at once, widening shows an approval card",
+    "compliance flag: 'Brief mein 2 offer lines hain (top-up cover) - service call par block hongi' with link to the brief",
+    "category override: Compliance role only, reason required, logged"
+   ],
+   "beats": "0 of 6 campaign forms carry consent, DND or DLT (WT §2.13). Retell defaults to 00:00-23:59 with one window and no retries (retell 25); ElevenLabs has one start time (EL-05); Exotel has a call type that does not drive a window and no recurrence (EXO-15); Synthflow cannot cross midnight (SYN-05). VP's first question compiles into the window, series, consent, template and fence."
+  },
+  {
+   "name": "Launch card",
+   "purpose": "One approval that shows who, when, what she will say, from where, the checks, the money and the expected outcome; and when launch is impossible, names each blocker with a link.",
+   "layout": "A card in the chat thread and the same card as a modal on the campaign page. Top: title and state pill. Body rows: Who, Sample, When, From, Checks, Money, Outcome, After the call. Bottom: hold-to-confirm Launch with role and expiry note, or a blocker list.",
+   "elements": [
+    "Title: 'Renewal reminders · Nov · Service'",
+    "Who: '1,182 log · 9 opt-out skip · 3 hold (dekhein)'",
+    "Sample: 20-second audio player 'R01 jaisa call suniye' with transcript lines in Devanagari and Latin, and a tick 'AI disclosure: ek baar, useful baat ke baad'",
+    "When: 7-day strip with windows shaded and 'about 1,050 reached by Thu 18:00 (assumption)'",
+    "From: '1600 number [phone] · CNAP: Shree Insurance Brokers · A2P declared'",
+    "Checks: green list (agent v6 published, simulations 6/6, window valid, budget cap set, first-20 review stop on)",
+    "Money: 'INR 4,100-6,300 incl. GST · cap INR 7,000' (illustrative)",
+    "Outcome: 'Renewals confirmed: abhi koi history nahi; pehle 100 calls baseline banayenge'",
+    "Launch button: hold 1.2 s; footnote 'Approval bound to these exact settings; re-estimates after 2 h'",
+    "Disabled state list: '1. 1600 number A2P par declared nahi -> Export declaration (Compliance role)' · '2. Agent v7 draft hai, v6 live -> Publish v7 (diff) / v6 use karein' · '3. Budget cap missing -> Set cap (Owner)' · each with 'Ask VP to fix'"
+   ],
+   "states": [
+    "ready: Launch enabled",
+    "blocked: Launch disabled with ordered blockers and links",
+    "stale: 'Audience badla - card purana ho gaya, dobara estimate' with refresh",
+    "approved: shows approver, time, args hash; becomes the campaign's launch receipt",
+    "voice request 'haan launch karo': card rendered, tap still required"
+   ],
+   "beats": "Vapi disables Next with no reason (vapi 83), Retell disables Send with no reason (retell 24), ElevenLabs hides the reason in a placeholder (elevenlabs 33). Sarvam's inline commit gate (sarvam-26) is the nearest; VP names every blocker, its role and fix, renders a sample from a real row, and prices the run before launch, which no incumbent does by campaign."
+  },
+  {
+   "name": "Campaign run page",
+   "purpose": "The live operational view of a campaign: where every person stands, what is waiting and why, and what VP did on its own.",
+   "layout": "Header: name, state pill with sub-state, spend vs cap bar, next window. Tabs: Run (default), Results (intelligence), Live (mission control, intelligence), Audience, Policy, Follow-ups, Activity. Run tab: a progress band, a queue panel, a calendar strip, an issues rail, and an attempts table.",
+   "elements": [
+    "State pill: 'Running · waiting for window · next Mon 10:00'",
+    "Progress band: Eligible 1,182 · Called 612 · Connected 341 · Agenda done 188 · Retries scheduled 203 · Waiting for window 271 · Held 3 · Done 492",
+    "Queue panel: 'Abhi dial ho rahe: 9 · Throttled: 0 · Reserved inbound: 2 lines'",
+    "Outage banner example: 'Carrier outage 13:05-15:19: 86 attempts aage khiske, 0 double dials. Health 10 min green -> 15:29 par resume.' with 'Extend end by 2 h 14 min' card",
+    "Guard pause card: 'Pehle 20 calls mein 3 opt-out - campaign roka. Calls suniye.' with Resume (needs a person)",
+    "Attempts table: Person, Attempt no, Time, Result, Carrier code raw ('USER_BUSY / 17'), Business reason ('Busy - retry 16:40'), Next action, link to call page",
+    "Issues rail: 'Pune: switched-off 31% - retries shaam ko shift kiye'",
+    "Activity: 'VP ne kiya: 14:02 retry ladder se 23 retries schedule; 14:10 opt-out R-882 suppress'"
+   ],
+   "states": [
+    "scheduled: countdown and the schedule preview",
+    "running dialing / waiting for window / throttled / draining",
+    "paused with cause (person, spend cap, outage, guard)",
+    "completed: summary and 'Recurring next run' if on",
+    "cancelled: what already happened vs what was stopped",
+    "empty data: 'Abhi koi call nahi hua' distinct from zero ('0 connected of 40 called') and from loading and failed"
+   ],
+   "beats": "Vapi drops undispatched contacts at latestAt and did not retry outage calls (VAP-46, VAP-54); Synthflow cancels after 7 days and never retries failures (SYN-05); Retell's batch API is create-only (RET-05). VP shows sub-states, outage accounting, guard pauses with causes, and every attempt with raw carrier code plus business reason."
+  },
+  {
+   "name": "Person in campaign: why and when",
+   "purpose": "Answer 'Sunita ko call kyun nahi gaya?' or 'kab hoga?' in one look, from the precheck trace.",
+   "layout": "Drawer from any person row or a chat answer card. Top: person header with identifiers and shared-number badge. Middle: timeline of attempts and prechecks. Bottom: next eligible time, budgets used, and actions.",
+   "elements": [
+    "Header: 'Sunita Verma · सुनीता वर्मा · +91 xxxxxx (masked) · shared with Rakesh Verma'",
+    "Timeline items: '10:02 Precheck allowed (window v3, suppression v12, budget 1/2) -> Dialed -> Busy (carrier 17) -> retry 10:32' · '10:32 Deferred: NUMBER_GAP - Rakesh ko 10:15 par call hua; agla slot 12:15' · '12:15 Connected 1m42s -> \"kal shaam 6 baje\" -> callback 18:00'",
+    "Budget meters: 'Aaj 2/2 · Hafta 3/5 · Number aaj 3/3'",
+    "Rule badges link to the policy version that decided",
+    "Actions: 'Call now' (single call, passes the same dial path), 'Change preferred time', 'Suppress' (A3)"
+   ],
+   "states": [
+    "allowed and queued",
+    "deferred with the next eligible time",
+    "blocked with the rule and fix",
+    "suppressed (opt-out with source quote and date)",
+    "unknown attempt: 'Carrier ne confirm nahi kiya - reconcile ho raha hai; auto-retry nahi hoga' with 'Retry' needing a person"
+   ],
+   "beats": "No incumbent explains a non-dial: Sarvam's carrier field is null, Vapi returns engineering end codes only (VAP-13), SquadStack shows an outcome label searchable for 10 days (SQS-18). VP stores the rule, its version and the next time for every precheck."
+  },
+  {
+   "name": "Schedule preview",
+   "purpose": "Show what will happen over the next 7 days to the real audience before any call is placed.",
+   "layout": "Calendar heatmap (days x hours) of planned dials, with overlays for windows, holidays and caps. Side panel lists people who will wait and why, grouped by reason. Top toggle: this campaign / all campaigns on the workspace.",
+   "elements": [
+    "Heatmap cells: 'Mon 10:00-11:00: 140 dials planned'",
+    "Overlay labels: 'Diwali: off', 'Window ends 19:00'",
+    "Waiting list: 'Shared number, next slot: 38', 'Weekly budget used by another campaign: 12', 'Held: due date missing: 12'",
+    "Collision note: '23 log is hafte 2 campaigns mein hain - VP ek din mein ek hi call karega'",
+    "Predicted finish line: 'about 1,050 reached by Thu 18:00 (assumption)'"
+   ],
+   "states": [
+    "computing (precheck dry run over the audience)",
+    "clean",
+    "conflicts present with fix links",
+    "recurring: preview of the next run"
+   ],
+   "beats": "No incumbent previews a schedule; Retell and Exotel accept a window and start; Vapi drops contacts not dispatched by latestAt. VP runs the real precheck as a dry run, so the preview and the dialer cannot disagree."
+  },
+  {
+   "name": "After the call: follow-through and hand-offs",
+   "purpose": "Define what happens after each outcome and work the human hand-off queue.",
+   "layout": "Two panes. Left: per-outcome rule table on the campaign. Right: the hand-off queue for human closers, with SLA timers. Bottom: outbox status strip.",
+   "elements": [
+    "Rule rows: 'Renew karunga -> WhatsApp utility renewal_link_v2 (2 min) · opt-in nahi -> DLT SMS template' · 'Promise to pay 20 Nov -> wait for payment webhook till 21 Nov -> unpaid: ek reminder call' · 'Call me later -> callback at stated time' · 'Wants discount or re-quote -> hand-off to Certified renewals desk' · 'No contact after last attempt -> DLT SMS with callback number'",
+    "Each rule shows its contract: needs, sends, window, template category",
+    "Hand-off card: 'Rakesh Verma · wants motor re-quote · brief: policy SH-100777, due 1 Dec, asked about NCB · play from 01:12 · SLA 1h 20m left' with Claim, Call now, Disposition",
+    "Outbox strip: 'Aaj: 412 confirmed · 3 not executed (template rejected) · 0 unknown'"
+   ],
+   "states": [
+    "no rules: preset defaults offered",
+    "template pending DLT approval: rule disabled with reason and link",
+    "human desk offline: warm transfer becomes hot callback, stated",
+    "SLA breach: card turns amber and notifies the owner"
+   ],
+   "beats": "SquadStack has the one canvas for bot, human and DLT SMS but is managed and allowlisted (SQS-03); Bolna's transfer is effectively cold (POST after a fixed 2 s sleep, ACB) and its campaigns need a separate workflow; Retell and ElevenLabs batch forms have no follow-ups. VP keeps follow-through on the campaign, with outcome watches and a durable outbox."
+  },
+  {
+   "name": "Inbound routes",
+   "purpose": "Bind numbers to agents, decide after-hours behaviour, and keep callbacks connected to the campaign that caused them.",
+   "layout": "List of numbers with route cards. Each card: number, series, agent version, hours, after-hours mode, overflow, reserved capacity. Detail pane shows recent inbound calls with lookup result.",
+   "elements": [
+    "Route card: '1600 [phone] -> Renewal agent v6 · Mon-Sat 09:00-19:00 · after hours: same agent, hand-offs next business hours · overflow: 30 s then on-call · reserved: 2 lines'",
+    "Lookup example: 'Caller matched Sunita Verma · last outbound 1 day ago from this number -> continue Renewal Nov agenda'",
+    "Shared-number example: 'Matched 2 people - agent confirms identity first'",
+    "Abuse limit: '10 calls/hour per caller'"
+   ],
+   "states": [
+    "unbound number: 'Is number par koi agent nahi' with Bind",
+    "after hours active",
+    "over capacity: queue and overflow shown live",
+    "callback continuity hit: attempt marked reached-by-callback, retries cancelled"
+   ],
+   "beats": "Bolna has inbound caller lookup and spam caps but nothing ties a returned call to the campaign that caused it; Retell's batch reserved-concurrency readout is the nearest capacity control (retell 24). VP adds callback continuity, sticky caller ID so people can call back, and reserved inbound lines so outbound never makes an inbound caller hear busy."
+  },
+  {
+   "name": "Preset gallery",
+   "purpose": "Start a campaign from an India post-sale job with the sector rules, required columns, cadence and follow-ups already set.",
+   "layout": "Grid of four preset cards plus 'Describe your own job' in chat. Each card opens a side sheet listing what it sets.",
+   "elements": [
+    "Insurance renewal (IRDAI pack): 'Inform, confirm, hand off · 1600 · T-30/-15/-7/-2 · stops on renewal paid · no payment on call'",
+    "Lending pre-due (RBI-ready logs): '08:00-19:00 · promise date and mode · call time and count logs · recordings 6 months with notice'",
+    "Appointment reminder: 'T-24 h and T-2 h · confirm, reschedule, cancel · address SMS'",
+    "Subscription or utility reminder: '1601 for utilities and logistics · bill or renewal link'",
+    "Side sheet: required columns, window, budgets, follow-ups, judges, what counsel still has to confirm (KC8 for insurance)"
+   ],
+   "states": [
+    "preset chosen: campaign draft created with all sections green except Who",
+    "sector mismatch: 'Lending preset needs an RBI-regulated entity number (1600)' with link to Numbers"
+   ],
+   "beats": "Retell's 28 templates and ElevenLabs' 45+ are US-shaped (FDCPA, 401k) with none for India; Sarvam has an EMI collection template without regulated plumbing. VP's presets carry IRDAI and RBI defaults, required columns and follow-through, and there is deliberately no cold-outbound preset."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "CSV contract before upload",
+   "best_competitor": "ElevenLabs",
+   "their_best": "Required phone_number, optional prompt, first_message, voice_id and language, other columns as variables, 25 MB, Test call",
+   "vp_better_how": "Contract generated from the agent's own variables and preset with a sample file; per-row language, voice, variables and preferred time but never prompt or first message (which would bypass compile(), the recitation lint and the reply door); 200,000 rows; Sheets and API push",
+   "evidence": "research/2026-10-20/teardown/elevenlabs/claims.json EL-05; walkthroughs elevenlabs 33-batch-telephony-form [O]; HV laws 2, 3, 10 in docs/harvest/SYNTHESIS.md"
+  },
+  {
+   "dimension": "Indian number normalisation",
+   "best_competitor": "Bolna",
+   "their_best": "+91 default for bare numbers in workflow campaigns",
+   "vp_better_how": "Full India normaliser (0, 91, 0091 prefixes, Indic digits, landlines with STD length checks, extensions, scientific notation, two-number cells) plus a stranger guard that never prefixes '+' or '+1'",
+   "evidence": "ACB-19/20 research/2026-10-20/account-phase/bolna/report.md s1.7 [O]; Vapi VAP-49 (+98), Retell RAP-34 (+1), Exotel EXO-16 (spaced numbers rejected) [O]; risk.2026-10-20.synthesis-test-list-dials-strangers"
+  },
+  {
+   "dimension": "Dedupe and identity",
+   "best_competitor": "Exotel",
+   "their_best": "Duplicates dropped by default (call_duplicate_numbers false)",
+   "vp_better_how": "Loud dedupe on E.164 plus record key or transliteration key across scripts, honorific stripping, near matches flagged not merged, opt-out precedence, shared-number people kept separate with a per-number slot rule",
+   "evidence": "EXO-15 research/2026-10-20/teardown/exotel/claims.json [O]; Bolna dedupes on reference_id (ACB-20) [O]; messy-50 spec R02-R11"
+  },
+  {
+   "dimension": "Row reasons and failed rows",
+   "best_competitor": "Sarvam (rejected_records file) and Bolna (row codes, corrective re-upload)",
+   "their_best": "Valid/rejected counts with a rejected file; row codes invalid_phone, missing_required_value, duplicate_reference_id, empty_row",
+   "vp_better_how": "A code, plain reason and fix per row; counters for duplicate, suppressed, DND, consent and holds; failed-rows file with fixed_value re-upload by row id; a whole file is never rejected for a bad row",
+   "evidence": "SAR-16 [O]; ACB-19/20 [O]; Vapi rejects the whole upload for one bad row (VAP-49) [O]"
+  },
+  {
+   "dimension": "Compliance on the campaign form",
+   "best_competitor": "Exotel",
+   "their_best": "Transactional vs Promotional call type field",
+   "vp_better_how": "Category first, compiled into window ceiling, series, per-row consent rule, follow-up template category and in-call promotion fence",
+   "evidence": "research/2026-10-21/walkthroughs/SYNTHESIS.md §2.13 (0 of 6 forms carry consent, DND or DLT; Exotel call type not shown driving a window) [O]; RS-01/02/15 research/2026-10-20/teardown/regulation-segment/report.md"
+  },
+  {
+   "dimension": "Calling windows",
+   "best_competitor": "Retell",
+   "their_best": "Multi-range windows with days of week",
+   "vp_better_how": "Multi-range windows per category in contact local time, holidays, cross-midnight rules for service only, a hard 10:00-21:00 promotional band, person-requested times inside an outer band; T3 refused at form, API and gate",
+   "evidence": "retell 25 (default 00:00-23:59) [O]; VAP-46 one absolute window; EL-05 one start time; SYN-63 cannot cross midnight, no holidays [O]"
+  },
+  {
+   "dimension": "Retry ladder",
+   "best_competitor": "Sarvam",
+   "their_best": "Per-outcome retries for six classes, max 0-20, intervals",
+   "vp_better_how": "Fourteen outcome classes including voicemail, call-me-later, wrong party, opt-out and dropped-by-us; person, number and network budgets so carrier faults never spend a person's patience; unknown never auto-retried; visible on the form",
+   "evidence": "SAR-16 research/2026-10-20/teardown/sarvam/claims.json [O]; Exotel retries 0-3 (EXO-15); Retell, Vapi, ElevenLabs none (RET-05, VAP-46, EL-05) [O]; HV law 17"
+  },
+  {
+   "dimension": "Attempt separate from call",
+   "best_competitor": "Sarvam",
+   "their_best": "Attempt (30 fields) and 0..1 interaction (31 fields)",
+   "vp_better_how": "Precheck result with rule versions and next eligible time, raw carrier code kept beside a class and business reason, next action",
+   "evidence": "SAR-16 [O]; Sarvam carrier field always null (SAC-19 in research/2026-10-20/account-phase/synthesis/vp-v1-schema.json) [O]"
+  },
+  {
+   "dimension": "Pacing and concurrency",
+   "best_competitor": "Sarvam (0.1-500 attempts/s) and Retell (reserved-concurrency readout)",
+   "their_best": "Wide pacing range; 'allocated to batch calling: 15' readout",
+   "vp_better_how": "Canary ramp with guardrail auto-pause, jitter at window opening, reserved inbound readout, per-CLI daily caps on declared 10-digit numbers, first-campaign review stop",
+   "evidence": "SAR-16 [O]; retell 24 [O]; Exotel throttle EXO-15 [O]; operator flagging signals in research/2026-10-17/lanes/l1-regulation/report.md claim 11"
+  },
+  {
+   "dimension": "Caller ID",
+   "best_competitor": "Sarvam",
+   "their_best": "Per-user phone rotation",
+   "vp_better_how": "Compliant pool (series, A2P, KYC, health, one CNAP name), sticky per person so people recognise and call back; flagged numbers paused and named, never rotated around",
+   "evidence": "SAR-47 [I]; SquadStack 'spam number rotation' SQS-48 [O]; RS-09 (140/1600/1601 cannot be AI-flagged)"
+  },
+  {
+   "dimension": "Veto before dial",
+   "best_competitor": "Vapi",
+   "their_best": "Blocking campaign.predial webhook; error or timeout means no call",
+   "vp_better_how": "A built-in precheck that cannot be removed plus an optional signed customer veto that fails closed and pauses the campaign above 5% fail-closed",
+   "evidence": "AP-27 research/2026-10-20/account-phase/vapi/claims.json [O]; rejected.harvest.07"
+  },
+  {
+   "dimension": "Budget and estimate",
+   "best_competitor": "None (no vendor groups cost by campaign)",
+   "their_best": "Per-call cost lines (Retell, ElevenLabs, Vapi)",
+   "vp_better_how": "Pre-launch p10-p90 estimate in INR incl. GST with labelled assumptions, a required cap that stops at a call boundary, rates replaced by the campaign's own after 50 calls",
+   "evidence": "research/2026-10-21/walkthroughs/SYNTHESIS.md §2.14 (0 of 5 cost by campaign) [O]"
+  },
+  {
+   "dimension": "Follow-ups across channels",
+   "best_competitor": "SquadStack",
+   "their_best": "One campaign canvas with Voice Bot, human Call, IVR, SMS with DLT fields, Email; dnd_request and schedule_callback tools",
+   "vp_better_how": "Self-serve per-outcome follow-through table on the campaign, durable outbox with confirmed/not executed/unknown, outcome watches that close promises, warm transfer with a spoken brief or a hot callback with SLA",
+   "evidence": "SQS-03, SQS-72 research/2026-10-20/teardown/squadstack/claims.json [O]; Bolna cold transfer (ACB, research/2026-10-20/account-phase/bolna/report.md s5.6) [O]"
+  },
+  {
+   "dimension": "Resilience to outages",
+   "best_competitor": "None observed",
+   "their_best": "Vapi claims <5 s failover (V)",
+   "vp_better_how": "Durable queue, pause on outage, reconcile unknowns, auto-resume after 10 min green inside the window, outage accounting with 0 double dials, no silent end-date extension",
+   "evidence": "VAP-54 (outage calls not retried) [O]; SYN-05 (failed recipients not retried, 7-day cancel) [O]; BOL-40 (scheduled India calls not placed 2026-10-13) [O]"
+  },
+  {
+   "dimension": "Launch gate",
+   "best_competitor": "Sarvam",
+   "their_best": "Inline 'This version is not committed ... Commit version' gate in the wizard",
+   "vp_better_how": "Every blocker named in priority order with the role needed, a link to the fix and an 'Ask VP to fix' chip; approval bound to an args hash and re-estimated after 2 h",
+   "evidence": "sarvam-26 [O]; vapi 83, retell 24, elevenlabs 33 (no reason or placeholder only) [O]"
+  },
+  {
+   "dimension": "Recurrence",
+   "best_competitor": "None",
+   "their_best": "Exotel and Vapi one absolute window; ElevenLabs one start time",
+   "vp_better_how": "Calendar, due-date-relative cadences that stop on the outcome webhook, and event-triggered runs from API or CRM",
+   "evidence": "EXO-15 (recurring not supported), VAP-46, EL-05 [O]"
+  },
+  {
+   "dimension": "Inbound",
+   "best_competitor": "Bolna",
+   "their_best": "Number to agent, caller lookup from API, CSV or Sheet, spam caps, allowlist",
+   "vp_better_how": "Callback continuity to the campaign that caused the call, reserved inbound capacity, identity confirmation on shared phones, stated after-hours modes",
+   "evidence": "research/2026-10-20/teardown/bolna/report.md section 5 [O]"
+  },
+  {
+   "dimension": "Chat-run campaigns",
+   "best_competitor": "Sarvam (Genie)",
+   "their_best": "Copilot builds, deploys and runs campaigns",
+   "vp_better_how": "Every campaign action is an API and MCP tool under the same auth, import by API key, plans as cards, approvals by tap bound to args; T2-T6 by chat only is the bar",
+   "evidence": "SAR-03 [O]; rejected.2026-10-20.acct-retell-csv-import-by-api-key; W10 in research/2026-10-20/teardown/synthesis/where-we-win.json"
+  },
+  {
+   "dimension": "Test call from the list",
+   "best_competitor": "ElevenLabs",
+   "their_best": "Test call to one recipient from the batch form",
+   "vp_better_how": "Hear-a-row: the row's variables, played to the member's verified phone or browser, never the row's number; a launch sample rendered from a real row",
+   "evidence": "EL-05 [O]; data/blueprint/workspace-tool-registry.json test.ring_member_phone"
+  },
+  {
+   "dimension": "Presets",
+   "best_competitor": "Sarvam (EMI collection template) and Retell (28 templates)",
+   "their_best": "Job templates for appointment, sales discovery, EMI collection; US-shaped templates",
+   "vp_better_how": "India post-sale presets with IRDAI and RBI defaults, required columns, cadence, follow-ups and judges; no cold-outbound preset",
+   "evidence": "sarvam-02/03 [O]; retell 03/06 [O]; RS section 3 job matrix; rejected.2026-10-20.regulation-segment-cold-outbound-lead"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "Rings on suppressed or opted-out numbers, on every dial path",
+   "target": "0",
+   "how": "T2 (rings on N2 from our own inbound logs) and T9b (mid-call opt-out then a second campaign); in production a daily audit joins the dial log with the suppression ledger; any ring is a Sev-1"
+  },
+  {
+   "metric": "Rings out of window or on a holiday",
+   "target": "0",
+   "how": "Dial log checked against the window policy version in force at dial time"
+  },
+  {
+   "metric": "Messy-50 score",
+   "target": ">=48/50 rows as the spec expects in <5 min with 0 manual edits",
+   "how": "T2 with research/2026-10-20/teardown/synthesis/messy-50.spec.json, stopwatch from file drop to launch-ready, fail-closed renderer with our own numbers"
+  },
+  {
+   "metric": "Promotional window refusal (T3)",
+   "target": "Promotional 09:30 and 21:30 refused at form, API (422) and dial gate; service 09:30 allowed when set; promotional across midnight refused",
+   "how": "T3 battery scored refused / warned / accepted silently / bypassable"
+  },
+  {
+   "metric": "Double rings on one number inside its 120-minute slot or above the daily ceiling",
+   "target": "0",
+   "how": "Dial log grouped by E.164 across campaigns and API"
+  },
+  {
+   "metric": "File drop to launch-ready",
+   "target": "Median <=5 min for <=5,000 rows; first 200-row preview p95 <=3 s",
+   "how": "Product events on import and launch-card render"
+  },
+  {
+   "metric": "Manual row fixes on real customer files",
+   "target": "Median <=2% of rows; questions per import <=3 (median 1)",
+   "how": "Receipts from design-partner imports"
+  },
+  {
+   "metric": "Launch blockers fixed via the linked fix without support",
+   "target": ">=90%",
+   "how": "Blocker shown -> fix link clicked -> blocker cleared events, no support ticket in 24 h"
+  },
+  {
+   "metric": "Unknown-outcome attempts",
+   "target": "<0.1% of attempts; 0 auto-retried",
+   "how": "Attempt states after reconciliation"
+  },
+  {
+   "metric": "Resume after outage",
+   "target": "100% of outage pauses resume within 15 min of green health inside the window; 0 double dials",
+   "how": "Fault-injection drills on the carrier and model adapters"
+  },
+  {
+   "metric": "Follow-up delivery latency",
+   "target": "p95 <=2 min from call end to confirmed WhatsApp or SMS",
+   "how": "Outbox timestamps; unknowns never retried"
+  },
+  {
+   "metric": "Hot-callback SLA",
+   "target": ">=90% claimed and called within 2 business hours",
+   "how": "Hand-off queue timers"
+  },
+  {
+   "metric": "Estimate accuracy",
+   "target": "Actual spend inside the p10-p90 estimate on >=80% of runs",
+   "how": "Run close compares invoice lines with the launch-card estimate"
+  },
+  {
+   "metric": "People reached within budget",
+   "target": "Not measured until 3 design partners give a baseline; then rising per policy revision",
+   "how": "Reached / eligible per preset with n, shown as 'not measured' until data exists (HV law 21)"
+  },
+  {
+   "metric": "Chat-run share",
+   "target": "T2-T6 completed by chat only with 0 silent config drops",
+   "how": "W10 task run reading back every object created by the Operator"
+  },
+  {
+   "metric": "Precheck latency",
+   "target": "p95 <=50 ms",
+   "how": "Dial-claim timing so the gate never throttles pacing"
+  },
+  {
+   "metric": "Inbound busy caused by outbound saturation",
+   "target": "0",
+   "how": "Inbound legs rejected for capacity while reserved lines were in use by outbound"
+  }
+ ],
+ "phases": [
+  {
+   "phase": "v1: parity made better, India-native (evidence: 0 of 6 forms carry compliance, WT §2.13; A2P deadline about 2026-11-17/18, RS-08; post-sale first, decision.2026-10-20.synthesis-postsale-first; exit when W1, W2, T3 and T9b pass and 30 days of zero-ring audits at 3 design partners)",
+   "scope": [
+    "Intake: CSV, XLSX, Google Sheets (sync), API push with idempotency; contract before upload; mapping with review; India normaliser with stranger guard; cross-format and cross-script dedupe; per-row codes and counters; failed-rows file with corrective re-upload; per-row language, voice, variables, preferred time; hear-a-row test call",
+    "Campaign object and state machine (draft, ready, scheduled, running, paused, completed, cancelled, recurring) with category first; promotional rows held with reasons",
+    "Windows: multi-range, days, holidays, contact local time, cross-midnight rules, outer band, person-requested times",
+    "Retry ladder by outcome, person/number/network budgets, ring timeout, canary pacing, reserved inbound, sticky compliant CLI pools, predial built in plus customer veto",
+    "Budget estimate and required cap; resume after outage with reconciliation and accounting",
+    "One dial path for campaign, API, single, test, retry and callback with precheck reasons and raw carrier codes",
+    "Follow-ups: WhatsApp utility, DLT SMS, callbacks, warm hand-off and hot callback queue, outcome watches, durable outbox",
+    "Inbound routing with caller lookup, callback continuity, after-hours modes, overflow",
+    "Presets: insurance renewal (IRDAI), lending pre-due (RBI logs), appointment, subscription or utility",
+    "Launch card with real-row sample, blocker list with links, schedule preview, first-campaign review stop; every action on API and MCP"
+   ]
+  },
+  {
+   "phase": "v2: she remembers; consented leads (evidence: owner order memory before learning, req-32 and req-34; 7-day inquiry window RS-12; counsel on feedback and RBI 2027-01-01)",
+   "scope": [
+    "Memory-fed attempts: last summary and open commitment in the next pre-call brief; stated times narrow a person's window; language and channel preferences across campaigns",
+    "Promotional campaigns on the consent ledger (M5) and 140xx, with a carrier DND lookup where available; speed-to-lead API trigger (ring within 60 s inside window)",
+    "Feedback and NPS campaign loop after counsel (req-23): interview, intelligence clusters, team task, follow-up campaign",
+    "CRM write-back connectors when two paying customers need one",
+    "Collections in default after RBI 2027-01-01 and counsel",
+    "Coach proposals on best hour and retry spacing tested with fixed-horizon pre-registered tests"
+   ]
+  },
+  {
+   "phase": "v3: learns at scale (evidence: bandits pay only near 1,000 calls a day on one script, research/2026-10-17/lanes/l6-self-learning/report.md §4.3)",
+   "scope": [
+    "Guarded bandit timing and pacing per tenant at volume, with guardrail auto-stop",
+    "Regional languages and per-segment cadences",
+    "Multi-desk lead routing and prioritisation towards the command centre (req-18)",
+    "Self-hosted option for BFSI residency where the dialer and outbox run in the tenant's region"
+   ]
+  }
+ ],
+ "beyond": [
+  "Hear-a-row: a test call to the member's own verified phone with a chosen row's variables, never the row's number, plus a launch sample rendered from a real row",
+  "Stranger guard in the normaliser: a bare number that is not an Indian mobile is rejected, never given '+' or '+1', so a list can never ring strangers abroad",
+  "One call category compiled into three enforcement points: dial gate, reply door promotion fence and follow-up template category",
+  "Sticky caller ID per person plus callback continuity: the person sees one recognisable number, can call back, and the inbound agent continues the campaign's agenda",
+  "Due-date-relative cadences (T-30, T-15, T-7, T-2) that stop on the outcome webhook instead of one absolute window",
+  "Per-number fairness: a shared family phone rings at most once per 120-minute slot and 3 times a day across all campaigns and the API",
+  "Canary launch with guardrail auto-pause and a review stop after 20 calls on a workspace's first campaign",
+  "Outage accounting: reconciliation of unknown dials, auto-resume only inside policy, 'lost to outage' shown with 0 double dials, and no silent end-date extension",
+  "Schedule preview: the real precheck run as a 7-day dry run over the real audience before any dial",
+  "'Why wasn't she called?' answered from the stored precheck trace with rule versions and the next eligible time",
+  "Outcome watches that wait for the payment or booking webhook and close or gently follow up on a promise",
+  "Hinglish-native intake: Indic digits, Hindi and Hinglish header synonyms, transliteration-aware dedupe across Devanagari, Tamil and Latin, honorific stripping",
+  "Failed-rows file with a fixed_value column that re-merges by original row id"
+ ],
+ "risks": [
+  "Tenants mislabel a selling call as service; the promotion fence and Compliance guard catch offer lines, but the tenant remains the Sender and carries residual liability (RS §2.11)",
+  "VP cannot scrub NCPR (RS-11): promotional rows with unknown DND status stay held, so wave-2 promotional campaigns depend on a carrier DND lookup (Exotel claims one, EXO-44, vendor-claimed) or CRF-registered consent",
+  "1600 pickup rates and AI audio streaming on 1600 are unknown (KC5); if pickup is low the renewal preset's reach falls",
+  "Conservative holds and humane window defaults may frustrate users or cost reach; measure hold override rates and reverse a default if users hand-edit more than 5% of rows",
+  "Sticky caller ID concentrates volume per number; per-CLI caps on declared 10-digit numbers may slow large campaigns",
+  "Without outcome webhooks (common at SMBs) due-date cadences may call people who already renewed; mitigated by stopping at due date + N days and an early 'already renewed?' check in the brief",
+  "ElevenLabs' hidden outbound-campaigns product with suppression and retry queues may ship by 2027-01-31 (risk.2026-10-20.elevenlabs-campaigns-and-price); SquadStack's self-serve is a flag flip (risk.2026-10-20.squadstack-self-serve-entry); either could turn W2 into parity",
+  "Reconciling unknown dials needs a carrier record lookup by our token; unverified for Plivo, Exotel and Vobiz; carrier calls-per-second limits for India are unknown",
+  "WhatsApp opt-in is rare in SMB lists, so most follow-ups fall back to DLT SMS, which needs registered templates with approval lead time",
+  "Row variables are an injection channel into the brief; cell values must enter compile() only as a delimited data block with an instruction detector (HV law 13)",
+  "Auto-resume after an outage could restart into a degraded provider; mitigated by 10 minutes of green health and a canary re-ramp",
+  "No call has crossed an Indian line yet, so estimate priors, ring timeout and retry spacing are product guesses until design-partner data exists"
+ ],
+ "open_questions": [
+  "Do Plivo, Exotel and Vobiz expose a call-record lookup by our token for reconciling unknown dials, and what are their India calls-per-second limits? Closes with a BYO carrier test.",
+  "Is there a lawful DND status lookup for promotional rows through a CPaaS, and can VP display it without marketing NCPR scrubbing (RS-11)?",
+  "Are the humane service window (Mon-Sat 10:00-19:00) and the default holiday list right? Closes with 10-15 buyer interviews and pickup by hour from design partners.",
+  "May a person-requested callback time outside 08:00-21:00 be honoured for service calls, and how does RBI's borrower-request clause apply to pre-due reminders? Counsel.",
+  "Does A2P pre-declaration apply on 1600 numbers (open legal question 11 in the market lane)? It changes the launch checklist.",
+  "How does counsel classify feedback and NPS calls (req-23 depends on it)?",
+  "On self-serve, who staffs the hand-off desk and owns the hot-callback SLA: the tenant only, or an optional VP service?",
+  "Should the first-campaign review stop be on for every first campaign or only above 1,000 rows? Measure friction in usability sessions.",
+  "What per-CLI daily cap keeps declared 10-digit numbers unflagged? TRAI reg 21A thresholds are not public; set from carrier feedback.",
+  "Should VP place a recovery call after a VP-side mid-call drop, or only send an SMS? Test with the listener panel and design partners.",
+  "How should a recurring campaign treat a row removed from a synced Sheet mid-run (stop future attempts only, keep suppression)?"
+ ]
+}

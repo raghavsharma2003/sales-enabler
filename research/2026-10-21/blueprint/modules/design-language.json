@@ -1,0 +1,574 @@
+{
+ "id": "design-language",
+ "screens": [
+  {
+   "name": "Talk to VP (Saarthi thread)",
+   "purpose": "The front door: the client says or types what they want in Hinglish or English, and Saarthi plans, does the A1 work, and brings every external, spend or publish step back as a card with a diff, cost and risk that one tap (or a 1.2 s hold) approves.",
+   "layout": "1280: rail 64 (forest) | thread 760 centred, composer pinned bottom | 'Working on' pane 456 listing the live objects this thread is changing (campaign draft, agent draft, import receipt), each a mini document that updates as cards resolve. 390: full-screen thread; composer with a 56 px round mic in the centre; a 'Working on (3)' pill at top opens a bottom sheet; the tab bar hides while typing.",
+   "elements": [
+    "Header: 'Saarthi · VP's operator' + brain chip 'Brain: GPT-4.1 mini (India) · change' (req-16) + language toggle 'Auto | English | Hinglish'",
+    "Empty greeting (Fraunces 34): 'Namaste Priya. Aaj kya karwana hai?' with job chips 'Renewal reminders', 'EMI pre-due', 'Appointment reminders', 'Onboarding follow-up', plus 'Upload a list' and 'Hold mic to talk'",
+    "User: 'Ye CSV kal se motor renewal reminder ke liye chala do' + attachment chip 'motor_renewals_nov.csv · 1,240 rows'",
+    "Saarthi: 'Maine 1,240 rows padh liye. 37 numbers theek kiye, 12 rows skip ki (har ek ka reason hai), 9 log pehle mana kar chuke hain, unhe call nahi hoga. Ek sawaal:'",
+    "Question card: 'Due date do format mein hai. Main DD/MM maan raha hoon.' [DD/MM · default] [MM/DD]",
+    "Receipt card: 'Import receipt · by Data steward · confirmed · 1,240 in · 1,219 callable · 12 skipped (see reasons) · 9 suppressed · Undo import'",
+    "Plan card, six steps with risk chips: 'Draft agent Asha v1 · Draft · running now'; 'Simulate 6 callers · Test · ₹12 of today's ₹200'; 'Check caller ID · Read'; 'Price range · Read'; 'Launch · External · waits for you'; 'WhatsApp follow-up with your renewal link · External · waits for you'",
+    "Diff card: 'Brief v1 → v2 · from your message: discount mat bolna · Never-say + discounts or offers · reason: service call, no promotion'",
+    "Progress card: 'Simulating 6 callers · 4 of 6 done · about 40 s'",
+    "Launch card inline (see Launch card)",
+    "Page-aware chips when docked on other pages: 'Why is Pune pickup low?', 'Pause this campaign', 'Explain this call'"
+   ],
+   "states": [
+    "Empty first visit: greeting plus job chips",
+    "Thinking: one line naming the work, e.g. 'Reading 1,240 rows…'",
+    "Card waiting for you (terracotta seal); approved (receipt with confirmed / not executed / unknown); rejected; stale ('List changed 4 min ago. Re-check, about 8 s'); expired after 24 h",
+    "Failed: 'PDF page 3 is a scanned image, I couldn't read it. Upload a text PDF or paste the facts.'",
+    "Deep-brain cap reached: 'Today's ₹500 deep-brain cap is used; I'm on the standard brain until midnight' (said, never silent)",
+    "Offline or reconnecting, with unsent text kept",
+    "Voice input: live caption of the client's speech; 'haan launch karo' renders the Launch card and never executes"
+   ],
+   "beats": "Best today: Sarvam Genie docked beside every builder tab (sarvam 03; it builds, deploys and runs campaigns per SAR-03) and Retell Conductor with per-setting diffs and page chips (RET-03, retell 41); ElevenLabs Architect is Alpha (elevenlabs 8-architect); none was exercised, so output is [U]. VP goes further on four points: the whole campaign runs end to end through the same tools as the public API (W10); cards are bound to object versions and an argument hash, with hold-to-confirm and three-outcome receipts (rejected.harvest.04/05); Hinglish voice input; and the Working-on pane keeps chat state as objects with URLs. Hypothesis until W10 and the 5-user sessions."
+  },
+  {
+   "name": "Today",
+   "purpose": "The manager's morning paper: what was earned yesterday, what needs a tap, what is live, what went wrong and what it cost, all with n and as-of.",
+   "layout": "1280: rail 216 expanded | main 704 paper column | Talk dock 360. Main: masthead (serif date + greeting), lead story, then two columns 'Needs you' and 'Live now', then Issues, Hand-offs, Money and 'What she could do better'. 390: compact masthead; 'Needs you' cards first in the thumb zone, then Live now, Issues and Money; Talk is the centre tab.",
+   "elements": [
+    "Masthead (Fraunces 44): 'Tuesday, 21 October · Namaste Priya'",
+    "Lead story with a serif figure: '62 renewals paid after calls yesterday · ₹18.4 lakh premium · verified from your renewals sheet (Measured · n=62 · as of 8:10 am)'",
+    "Needs you (max 3): approval 'Raise Nov wave cap to ₹8,000? 92% of ₹5,600 spent, 410 people left · hold to approve'; diff 'Brief v4: say the due date before the premium (31 calls where people asked kab tak?)'; issue 'Caller ID 1600xx-…12 flagged on Airtel in Pune · paused by Line keeper at 6:12 pm · undo or pick a replacement'",
+    "Live now rows: state pill 'Running', concurrency '6/10 · updated 3 s ago', spend '₹1,284 of ₹5,600', window 'till 7 pm'",
+    "Issue: 'Pickup down in Pune (41% vs 63% 7-day baseline, n=212 dials) · top reason: switched off after 6 pm · Fix: move the Pune window earlier'",
+    "Hand-offs: '3 warm transfers waiting · Rakesh M. wants a person for claim history · brief ready ▶'",
+    "Money: 'Wallet ₹12,480 · about 6 days at last 7 days' pace · spent yesterday ₹2,904 incl. GST · ₹46.8 per renewal (n=62, verified)'",
+    "What she could do better (from the learning inbox, labelled): 'L1 Finding · 23% hang up within 4 s of the policy-number line (n=412; 19-27%) · simulated fix, not proved'"
+   ],
+   "states": [
+    "Day 1, nothing has run: 'Nothing has run yet. 3 steps left before your first call' with the checklist rail",
+    "Quiet day: 'No calls yesterday: you paused Nov wave 1 at 6:12 pm'",
+    "Outcomes not wired: 'Outcomes are not wired yet. Connect the sheet that marks renewals paid and this line fills in. [Connect]'",
+    "Loading: skeleton masthead with 'Gathering yesterday's 1,140 calls, about 5 s'",
+    "Failed block: 'Couldn't load spend: billing service timed out. Retry · Status'",
+    "Stale: freshness stamp on every figure",
+    "Viewer role: amounts and numbers masked, 'Owner and Compliance can see this'"
+   ],
+   "beats": "No incumbent has a business-outcome home: Vapi's 638 endedReason values are engineering codes (VAP-13), there is no business-outcome field at any vendor (AS XS-20), and Retell's home is an onboarding checklist plus Conductor (retell 71). VP's Today leads with outcomes verified from a system of record and with money, puts approvals in the thumb zone, and never shows a number without n and as-of. Hypothesis until the 5-user sessions."
+  },
+  {
+   "name": "Launch card",
+   "purpose": "One card that says who, when, what she says, which checks passed, what it will cost and what to expect, approved with a 1.2 s hold; it appears in the thread, on Today and on the campaign page.",
+   "layout": "1280: a 640 px card with two inner columns (left: Who, When, What she says; right: Checks, Money, Outcome range) and a full-width action bar. 390: a full-height sheet; each section is a one-line summary that expands; 'Hold to launch' is pinned at the bottom above the safe area.",
+   "elements": [
+    "Title: 'Launch · Motor renewals · Nov wave 1' + version pill 'Agent Asha v3 · published 21 Oct'",
+    "Who: '1,219 people · Hinglish 71% · Hindi 18% · English 11% (from your Language column) · 12 skipped, 9 suppressed [see why]'",
+    "When: 'Mon-Sat 10 am-7 pm in each person's local time · starts tomorrow 10 am · 10 at a time · finishes about Thu 4 pm · 3 tries at most, the next one in a different hour band'",
+    "What she says: 20 s sample player with transcript, rendered for row 12 ('Sunita ji, namaste. Aapki car policy ka renewal 5 November ko hai…'), plus 'Hear: call me later' and 'Hear: aap AI ho?' cases",
+    "Checks (seal icons, each linked to its fix): disclosure locked ✓ · window inside the service band ✓ · 9 opted-out people never dialled ✓ · caller ID 1600xx healthy, A2P declared ✓ · 6/6 simulated callers passed ✓ · spend cap set ✓ · service call, no offers in brief ✓",
+    "Money: '₹3,900-₹5,600 incl. GST (p10-p90) · Estimate, no history yet · billed per second at ₹4.12 per connected minute incl. GST · cap ₹5,600'",
+    "Outcome range: 'Connected 35-55% (preset prior, not your data) · renewals: not estimated until 50 calls'",
+    "Actions: [Hold to launch · 1.2 s] [Schedule…] [Edit] [Ask Saarthi why]"
+   ],
+   "states": [
+    "Ready: all green, terracotta hold button",
+    "Blocked: 'Launch is off: number KYC pending (2 of 3 documents). Upload GSTIN →' (opens the Number step)",
+    "Stale: 'List changed 4 min ago. Re-check, about 8 s'; re-estimates automatically after 2 h",
+    "Holding: ring fills over 1.2 s; early release cancels",
+    "Launched: receipt 'Launched 11:42 am by Priya · confirmed'",
+    "Expired after 24 h",
+    "Role-locked: 'Only the Owner, or a manager inside the budget, can launch. Ask Priya (Owner).'",
+    "Over the re-auth threshold (₹50,000 or 10,000 contacts): asks for OTP"
+   ],
+   "beats": "No incumbent has a launch summary. Retell's batch form defaults to Send Now with no agent selector and leaves Send disabled with no reason (retell 24); Vapi's Next is disabled with no reason (vapi 83); ElevenLabs batch takes a start time only (elevenlabs 35); 0 of 6 forms carry consent, DND or DLT (WT §1.1). The closest patterns are ElevenLabs Architect's '0 of 10 ready' checklist (elevenlabs 8-architect) and Sarvam's Review & Launch step (sarvam 26; steps 2-4 unseen). VP adds a money range, a sample rendered per row, predicate checks and a hold bound to the exact arguments. Hypothesis until T2/T3 and the 5-user sessions."
+  },
+  {
+   "name": "Campaign mission control",
+   "purpose": "Watch a running campaign live: who is ringing and talking, what she has covered on each call, where people drop and why, what it is costing, and one-tap pause.",
+   "layout": "1280: rail 64 | main 856 | Talk dock 360 (collapsible). Main: a sticky header strip (name, state pill, window clock, concurrency and spend meters, Pause, Stop); a funnel row; a live grid (2 rows of 4 tiles, more on scroll); a recent-calls table; an issues list; a line-hazard ribbon on the Script tab. 390: header compressed to state, meters and Pause; funnel as a vertical list of bars; live calls as rows with Listen; recent calls as cards.",
+   "elements": [
+    "Header: 'Motor renewals · Nov wave 1' · pill 'Running · dialing' · '10 am-7 pm · now 2:14 pm' · meter '8/10 lines · updated 2 s ago' · spend '₹1,284 of ₹5,600 (23%)' · [Pause] (one tap, undo) · [Stop…]",
+    "Funnel: Rows 1,240 → Valid 1,228 → Callable 1,219 → Dialled 612 → Connected 351 → Agenda done 288 → Outcome 97 (61 promised with a date · 36 paid, verified)",
+    "Drop note: '261 not connected: 148 no answer, 71 switched off, 42 busy · retries scheduled'",
+    "Live tile: 'Sunita V. · ••••12 · 1:48' · two-lane level meter · ledger chips 'Due date ✓ · Link offered ✓ · Payment intent ?' · mood 'calm' · [Listen] [Whisper] [Take over]",
+    "Ringing tile: concentric arc pulse every 1.2 s, 'Ringing · 0:14'",
+    "Supervisor flag: 'Raised voice in the call with R. Sharma (0:52) · Listen?'",
+    "Recent calls table: Time · Contact · Duration · Outcome · Reason · Reply gap p50 · Cost · Version · ▶",
+    "Issue: 'Caller ID 1600xx-…12 flagged on Airtel Pune · paused by Line keeper 1:58 pm · undo'",
+    "Script tab line-hazard ribbon: on the policy-number line, '23% hang up within 4 s after this (n=412; 19-27%)', or 'under-powered: about 180 more calls'"
+   ],
+   "states": [
+    "Waiting for window: 'Next calls at 10 am tomorrow · 607 people left'",
+    "Throttled; draining at the window's end",
+    "Paused by a guard: 'Paused at 3:05 pm: opt-outs at 3x the 7-day baseline (n=140 connected) · Resume / Review'",
+    "Paused by you; spend cap reached; wallet critical",
+    "Monitoring off: 'Monitoring is off for this campaign. We can't tell you it is healthy. [Turn on defaults]'",
+    "No live calls right now; zero connected shown with its reasons",
+    "Reduced motion: static 'Ringing' badges; level meters step at 4 Hz"
+   ],
+   "beats": "Exotel shows the best concurrency meter, with a last-updated time (exotel-25); Retell offers listen and take-over (RET-07); Vapi's Mission Control is flag-gated (VAP-06). None shows live spend, a funnel with reasons at each drop, or what the agent has covered on each live call. VP combines the meters and adds agenda chips, Supervisor flags and a hazard ribbon. Incumbent live screens under traffic are [U], since no calls were placed."
+  },
+  {
+   "name": "Call page",
+   "purpose": "Everything about one call in one place: hear it, read it in three views, see the outcome with its reason and next action, what she remembered, what it cost, why it was allowed, and exactly what ran.",
+   "layout": "1280: rail 64 | main 856, split 520 (player and transcript) / 336 (facts column) | Talk dock collapsed to a tab. Header on top; the two-lane player under it, full width of main; synced transcript on the left; Outcome, Summary, Agenda, Mood path, Objections, Commitments, Used from memory, Billed, Compliance trace and Run manifest on the right; a collapsible turn timeline under the transcript. 390: a compact sticky player (one strip, two colours), the transcript below, segmented tabs Summary · Outcome · Cost · Trace.",
+   "elements": [
+    "Header: 'Sunita Verma · ••••12 · Motor renewals Nov wave 1 · 21 Oct 11:52 am · 2 m 48 s' + version pill 'Asha v3' + [Ask about this call] [Flag] [Export]",
+    "Outcome: 'Promise to pay · by 5 Nov · AI guess, not yet verified' (later 'Paid · verified from renewals sheet') · reason 'Caller ended after goodbye' · carrier 'normal clearing (Q.850 16)' · next action 'WhatsApp renewal link sent 11:55 am · confirmed'",
+    "Player: caller lane (peacock) above, agent lane (terracotta) below; pins 'Disclosure 0:06', 'Objection: premium badh gaya? 1:12', 'Commitment 1:52', 'Goodbye 2:44'; 1x/1.5x/2x; skip silence",
+    "Transcript (native view): 'Asha: Sunita ji, namaste. Aapki car policy ka renewal 5 November ko hai…' / 'Sunita: हाँ, पता है, पर premium बढ़ गया क्या?' with chip 'reply gap 1.3 s'; toggles Native | Romanised | English",
+    "Summary: 60 words, in English and Hinglish",
+    "Agenda: Must: due date told ✓ · renewal link offered ✓ · payment intent ✓ (5 Nov); Nice: nominee check · not reached",
+    "Mood path: 'calm → worried (1:10, price) → calm (1:40) · signals, not diagnosis'",
+    "Used from memory: 'prefers evenings · aap · last call 14 Oct ▶'",
+    "Billed: '168 s at ₹4.12 per connected minute incl. GST = ₹11.53 · WhatsApp utility message ₹0.14 at cost'",
+    "Compliance trace: 'Why this call was allowed: 11:52 am inside 10 am-7 pm, contact's local time ✓ · not suppressed ✓ · basis: existing policy (service call) ✓ · caller ID 1600xx, declared ✓ · attempt 1 of 3 ✓ · AI disclosure spoken at 0:06 ✓'",
+    "Run manifest (mono, collapsible): 'Ran: Natural preset · ears gated · brain gpt-4.1-mini South India · voice Gemini Flash-Lite TTS · turn preset Standard · brief 7f3a… · ledger v2 · leg Plivo Mumbai'",
+    "Turn timeline: stacked bars per turn, e.g. turn 4 'ears 420 · hold 0 · brain 360 · voice 380 · phone leg 300 (estimate) = 1,460 ms'"
+   ],
+   "states": [
+    "Analysis pending: 'Analysing, about 20 s' (audio and transcript already available)",
+    "Never connected: no player; 'Not connected: phone switched off (operator message, Hindi) · next try 5:10 pm · not billed'",
+    "Recording not kept: 'Caller declined recording at 0:09 · transcript only'",
+    "Redacted for Viewer: number and amounts masked, 'Owner and Compliance can see this'",
+    "Invalid test call: 'Test call invalid: voice provider timed out at 0:41. Filed as invalid; no fallback used.'",
+    "Outcome verified vs AI guess, shown as different chips",
+    "Handset reply gap: 'not measured on this call (no handset recording)'"
+   ],
+   "beats": "Retell has the richest call record (13-column history, per-component latency, PCAP: retell 41, RAP-51); Vapi has per-turn latency and 8 typed cost lines (AP-34/35); ElevenLabs has the best termination diagnostics (EL-12). All show engineering codes, not business outcomes (XS-20), none shows a compliance trace, and no incumbent call page with audio was observed [U]. VP joins outcome, reason, carrier code and action (W6 target: found in under 60 s) and makes every quote playable. Hypothesis until T5."
+  },
+  {
+   "name": "Agent builder (brief editor, stack picker, turn-taking panel, docked test)",
+   "purpose": "Build, hear, test and publish a calling agent, seeing at every choice what it costs in INR and how fast it will reply in ms, with nothing published by a click.",
+   "layout": "1280: rail 64 | builder 856 | docked test 360. Builder: a top bar (name, version pill, Save draft, Test, Publish with diff) and a persistent strip (all-in ₹/min incl. GST, plus the predicted reply gap against the measured p50); left vertical tabs 168 (Brief, Voice & stack, Turn-taking, Tools, Knowledge, Tests, Versions); editor 688. 390: a segmented control for the tabs; the strip collapses to two numbers; the docked test becomes a bottom sheet 'Talk to Asha'; the stack table becomes cards; brief sections become accordions; everything stays editable.",
+   "elements": [
+    "Top bar: 'Asha · Motor renewals' · pill 'v4 · Draft · unsaved changes' · [Save draft] [Test] [Publish… (diff v3→v4, tests 6/6)]",
+    "Strip: 'All-in ₹4.12/min incl. GST · Predicted reply gap 1,480 ms (ears 450 · hold 50 · brain 350 · voice 330 · phone 300 est.) · Measured India p50 1,620 ms (n=212 turns, 19 Oct, handset)', or 'not measured'",
+    "Brief, Identity: 'Asha, Saanjh Insurance Brokers' with a locked line 'Discloses once, lightly, after value: AI assistant · can't be removed' and a lock icon",
+    "Brief, Agenda chips: Must [due date] [renewal link] [payment intent] · Nice [nominee check] · Never [discounts or offers] [payment on the call] [OTP]",
+    "Brief, Speaking style: 'words per turn target 20 · question endings at most 30%' · Languages: Hinglish (default) · Hindi · English",
+    "Lint inline: 'This reads like a line she would recite word for word. Write the idea instead (e.g. mention that the premium is unchanged).'",
+    "Budget bar: 'Prompt 6.1 of 9.0 KB · Always last: disclosure, crisis lines, no payment asks'",
+    "Voice & stack presets: Natural · Fast · Indic · Premium Live (locked: 'not offered until the safety gate passes'); rows Ears | Brain | Voice | India p50/p90 (n, date) | ₹/min | Languages | ▶ 5 s Hinglish; vendor figures carry a 'Vendor says' chip",
+    "Voice cards: 'Asha · Warm ▶ / Calm ▶ / Brisk ▶', the same line",
+    "Turn-taking presets Standard · Patient · Brisk; fields in ms: segmentation 500 · unsure hold 600 · incomplete hold 1,400 · barge-in 2 words or 700 ms; 'Listen during opening: On'; silence ladder 6 s · 12 s · close 17 s",
+    "Lexicon chips: backchannel [haan] [haan ji] [achha] [hmm] [theek hai]; stop [ruko] [bas] [ek minute] [wait]; continuation [aur] [matlab] [ki] [toh], each with + add",
+    "Docked test: tabs Browser call · Chat · Phone (verified numbers only); persona chips Busy · Sceptical · Elderly (2.4 s pause) · Noisy street · Angry · Wrong person; live captions with a gap per turn; 'Run 6 personas · ₹12 of today's ₹200 test budget'"
+   ],
+   "states": [
+    "Unsaved: a dot on the pill; leaving asks once",
+    "Publish blocked: 'Publish is off: the Elderly simulation failed (she cut in at the 2.4 s pause). Open the turn → / Switch to the Patient preset'",
+    "Budget overflow: 'Prompt is 9.6 of 9.0 KB. Publish blocked: shorten Situation (2.1 KB).'",
+    "Test invalid with its reason; no silent fallback",
+    "Version conflict: 'Priya published v4 while you edited. Compare / Rebase your changes'",
+    "Stack row not measured: 'India p50: not measured yet'",
+    "Premium Live locked with its reason"
+   ],
+   "beats": "Vapi has the best trade-off display (vapi 33, 51), but its headline leaves out telephony and the 1.5 s wait (1,530 ms shown vs our measured 2,319 ms demo p50, l4b) and its scores have no scale. ElevenLabs explains every setting best (elevenlabs 44) but uses enums and whole seconds. Bolna's cost bar (bolna 16) has no latency, and its 500 + 900 ms sliders have no sum. Sarvam's docked test (sarvam 10) has no ms anywhere. 0 of 6 ship Hindi lexicon lists (WT §1.2). VP adds all-in INR including telephony, ms with a predicted-gap sum, Hindi lexicons, a lint against recitable lines, a throwing budget, and simulated Hinglish personas that gate publish. Hypothesis until the W3/W4 batteries."
+  },
+  {
+   "name": "Contact timeline",
+   "purpose": "One person across every call, message and payment: what was said in their own words, what they prefer, what was promised, what they consented to, and a way to forget them.",
+   "layout": "1280: rail 64 | main 856: a header band; a left column 520 with the timeline; a right column 336 with Preferences, Memory facts (v2), Commitments, Consent ledger and Suppression | Talk dock. 390: header, then tabs Timeline · Memory · Consent; Forget sits in the More menu.",
+   "elements": [
+    "Header: 'Sunita Verma · Mobile ••••12 · Policy ••••4471 · WhatsApp ✓ · Prefers Hindi · aap · evenings 6-8 pm · WhatsApp' + [Call now…] [Suppress] [Forget…]",
+    "Timeline: '14 Oct · Call 2 m 41 s · promised to pay by 5 Nov ▶ 1:52 paanch tareekh tak kar dungi'; '14 Oct · WhatsApp renewal link · delivered'; '4 Nov · Payment webhook · renewal paid ₹14,206 · verified'; '21 Oct · Attempt 2 · not connected · switched off'",
+    "Memory facts (v2): 'prefers evenings (6-8 pm) · from call 14 Oct ▶ shaam ko call karna · auto, undo'; 'objection: price · 14 Oct · kept 90 days'; each with Edit / Forget",
+    "Commitments: 'Customer: pay by 5 Nov · kept (paid 4 Nov)'; 'Company: callback 23 Oct after 6 pm · done'",
+    "Consent ledger (append-only): 'Basis: existing policy (service) · from import 20 Oct · receipt ▶'; 'Recording: allowed on the 14 Oct call'",
+    "Suppression: 'Not suppressed', or 'Asked not to be called · 21 Oct 11:58 am · call ▶ dobara call mat karna · never cleared by import'",
+    "Merge suggestion: 'Looks like the same person as row 381 (same policy number) · Merge? (needs a manager)'"
+   ],
+   "states": [
+    "New contact: 'No calls yet. She'll greet Sunita fresh; nothing is remembered.'",
+    "Memory off for this person (they opted out of memory)",
+    "Forget requested: 'Forgetting · done within 24 h · stays callable'; erase: 'Erasing everything VP holds · within 72 h · sector record holds apply to recordings (counsel question)'",
+    "Redacted for Viewer",
+    "Identity unsure: shown as a suggestion, never merged automatically"
+   ],
+   "beats": "Retell has the only visible contact memory: read ON, save OFF at USD 0.005 per run, one text brief under 2,000 characters per phone number (retell 09, 76; RAP-32). ElevenLabs' Memory tab is Alpha (elevenlabs 7-knowledge-base). Vapi, Bolna, Sarvam and Exotel have no contact memory (VAP-60, BOL-60, SAR-58, EXO-60). VP keys memory to a person, not a number or a browser fingerprint (EL-10), shows each fact with the caller's own words and audio, and puts consent and forget in one place. v2 claim; the recall target is 95%."
+  },
+  {
+   "name": "Learning inbox",
+   "purpose": "Show where calls fail and what would fix it, with honest statistics, so the manager approves changes that can be proved, and sees how she changed over time (req-27, req-34).",
+   "layout": "1280: rail 64 | main 856: a header with the level badge; a card stack (at most 3 new a day); on the right, a collapsible 'How she changed for you' version story | Talk dock. 390: level badge, then stacked cards; buttons, never swipe gestures, for approvals.",
+   "elements": [
+    "Level badge: 'L1 Finding · 412 connected calls on Asha v3 · next level at about 1,200 projected calls in 28 days'",
+    "Moment card: 'Where calls drop · 23% hang up within 4 s after the policy-number line (n=412; 95% interval 19-27%) ▶ 3 examples' · proposed diff 'Say the due date first; read the policy number only if asked' · 'Simulated on 6 callers: 6/6 passed · simulated, not proved' · 'To prove: about 1,100 calls per version, about 9 days at your pace' · [Run a fixed test] [Apply without a test (labelled not randomised)] [Dismiss]",
+    "Fast-lane card: '4 callers said WhatsApp pe bhej do and she offered SMS · fix: offer WhatsApp first · applied to the v4 draft · undo'",
+    "Under-powered card: 'Morning vs evening pickup: under-powered, about 380 more calls per group'",
+    "Version story: 'v1 (14 Oct) → v2 discount mat bolna → v3 shorter opening (words per turn 31 → 19; fixed before/after, not randomised) → v4 draft', each step with before/after audio ▶ and outcome deltas with intervals or 'not measured'"
+   ],
+   "states": [
+    "L0 Listening (under 100 calls): 'Listening. Nothing to propose with confidence yet; 88 more connected calls to the first finding.'",
+    "Test running: 'Day 4 of 9 · no peeking: results at the fixed horizon · guardrails: opt-outs, cut-ins, reply gap (auto-stop on breach)'",
+    "Stopped by a guardrail: 'Stopped: opt-outs on v4 at 2.4x v3 (n=160) · rolled back to v3'",
+    "Result: 'Proved on 2,214 calls: renewal promises +4.1 points (95% interval 1.2-7.0)'",
+    "Expired winner: 'The v3 opening was proved 90 days ago; re-check due'",
+    "Inbox empty for today: 'No new findings today. Next look tomorrow at 7 am.'"
+   ],
+   "beats": "Retell's Conductor turns failed calls into simulation tests and proposes diffs a person accepts, but its A/B is fixed weights with no statistics (RET-08, RET-58). Vapi and ElevenLabs split traffic by hand with no significance test (LRN-09, EL-53). Exotel's evaluator is 'in testing' (EXO-61). 0 of 8 close the loop with honest statistics. VP's inbox shows intervals, under-powered states, guardrail auto-stop and expiry, and its copy never claims 'self-learning' below L4 (learning-module-defaults.json). v2 surface; the A/A false-winner target is 5% or less."
+  },
+  {
+   "name": "Number step",
+   "purpose": "Get from 'I want to hear it on my phone' to a compliant Indian calling number, with series, documents, time and price stated before any credential is asked.",
+   "layout": "1280: rail 216 | main 704 | Talk dock 360. Main: section A 'Ring your own phone now' (trial); section B 'Your calling number', with a recommendation by category and sector, then Rent and Bring-your-own side by side; section C status (KYC timer, A2P declaration, CNAP name, health). 390: A, then B as stacked cards, then C.",
+   "elements": [
+    "A: 'Give a missed call to the VP trial line from your phone. We'll call you back in about 10 s: press 1 to allow test calls, 9 to block them.' · status 'Verified: your number ••••34 · 10 test calls left today'",
+    "Recommendation: 'You told us: IRDAI-registered broker, service calls → 1600xx is required for you, even with consent. Until it is ready, tests and simulations keep running.'",
+    "Series card 1600xx: 'Documents: DLT principal-entity registration, GSTIN, PAN, IRDAI certificate, authorisation · about 7-14 business days · price: quote requested (not published anywhere)'",
+    "Series card declared 10-digit: 'PAN + GSTIN · Plivo ₹200/month + ₹0.38/min · time: not known yet (Plivo); Exotel 1-3 business days'",
+    "Series card 140xx: 'Promotional only · comes in v2 with consented leads'",
+    "Bring your own: Plivo · Exotel · Vobiz, with 'where to find this' under each field (e.g. 'Auth ID: Plivo console, Overview, top right') + [Test call to my phone]",
+    "Status: KYC timer 'Submitted 21 Oct 10:05 am · day 1 of about 7-14 · next: telemarketer registration'; 'A2P declaration: draft ready · due about 17-18 Nov · Download'; 'CNAP name preview: SAANJH INSURANCE'; 'Health: answer rate 58% (n=320, 7 days) · not flagged'"
+   ],
+   "states": [
+    "Trial only",
+    "KYC pending with a timer",
+    "Document rejected, with the reason and the fix",
+    "Number flagged: paused by Line keeper (A3), with undo and a replacement",
+    "Wrong BYO credentials: 'Plivo said 401: the Auth ID or token is wrong. Check the token, not the Auth ID.'",
+    "Price unknown shown as 'quote requested', never estimated as fact"
+   ],
+   "beats": "Sarvam shows rent and seven BYO providers side by side (sarvam 23), and Bolna lists KYC documents before the click (bolna 36-account-Vobiz-KYC). But 0 of 6 show an Indian number price before purchase or the 140/1600/1601 series (WT §2.12); Retell asks for a Persona ID before any country (retell 30); ElevenLabs defaults Region to Singapore under +91 (elevenlabs 34). VP states the series by category and sector, plus documents, time and price, before any credential, and gives a first ring from a trial line (W7 target 15 min or less, unmeasured on every side)."
+  },
+  {
+   "name": "Wallet",
+   "purpose": "Money in rupees, honestly: balance, what is held for live calls, runway, the all-in rate, caps that stop spend safely, cost per outcome, and GST invoices.",
+   "layout": "1280: rail 216 | main 704 | Talk dock 360. Main: a balance band (serif amount, available, reserved, runway, state); a top-up panel; the rate card; caps; spend by campaign with cost per outcome; invoices. 390: balance band and Top up first, then caps, rate card, spend and invoices.",
+   "elements": [
+    "Balance: '₹12,480 · available ₹11,920 (₹560 held for 2 live calls) · about 6 days at last 7 days' pace (n=7 days) · Healthy'",
+    "Top up: UPI QR · UPI ID · UPI Autopay (up to ₹15,000) · card · netbanking · NEFT to your virtual account; amounts show minutes: '₹5,000 ≈ 1,213 connected minutes incl. GST'",
+    "Rate card: '₹3.49/min + GST = ₹4.12 per connected minute · billed per second, no minimum'",
+    "Not billed: unanswered, busy, failed before answer, blocked at precheck, VP faults, browser tests inside ₹200/day",
+    "Pass-through at cost: number rental, WhatsApp (₹0.115 utility), A2P carrier charge (₹0 today on 1600xx)",
+    "Caps: 'This month ₹40,000 (62% used) · Nov wave 1 ₹5,600 · API key crm-sync ₹2,000/day · tests ₹200/day · at 80% we tell you; at 100% calls stop between calls and live calls finish'",
+    "Spend by campaign with cost per outcome: '₹46.8 per renewal (n=62, verified)'",
+    "Invoices: GST invoices with GSTIN and place of supply"
+   ],
+   "states": [
+    "Healthy",
+    "Low: 'About 2 days left · Top up'",
+    "Critical: 'Under 12 h: new launches blocked; running campaigns continue'",
+    "Exhausted: 'No new attempts; live calls finish; scheduled calls wait, they are not cancelled'",
+    "Overdrawn (brick red): '−₹212 · settles on your next top-up · numbers kept 30 days'",
+    "Payment pending; Autopay failed, with the bank's reason"
+   ],
+   "beats": "Sarvam has the clearest INR rate table (sarvam 22) but a 60 s pulse and an overdrawn -36.58 shown in normal type (sarvam 20). Bolna shows INR minutes on recharge (bolna 40) but bills in USD with mixed units. Retell, ElevenLabs and Vapi are USD-only, and no spend cap was seen in any of 6 dashboards (WT §1.6). VP: INR with GST everywhere, per-second billing, reservations shown, five wallet states, and caps per workspace, campaign and API key. W8 invoice target within 1% (unmeasured)."
+  },
+  {
+   "name": "Hear-it-first onboarding",
+   "purpose": "Let a visitor hear and talk to a Hinglish agent before signing up, then carry them from sign-up to their own agent on a browser call in under 3 minutes, and to a ring on their own phone in 15 minutes or less.",
+   "layout": "Public page 1280: a forest band header with the wordmark; a split hero: on the left a serif headline and three job chips, on the right a large round Listen/Talk button with voice cards beneath; below, a one-line honesty strip and 'Make one for my business'. 390: headline, one 120 px round button, job chips as a horizontal scroller, voice cards stacked. After sign-up, the first run continues in Talk with the docked browser call and a collapsible checklist rail.",
+   "elements": [
+    "Headline: 'Sunke dekhiye.' / 'Hear her first.' · sub: 'Renewal reminders, EMI pre-due and appointment calls in Hinglish, with your rules built in.'",
+    "Job chips: Motor renewal · EMI pre-due · Clinic appointment",
+    "Voice cards: 'Asha · Warm ▶ / Calm ▶ / Brisk ▶', the same line; each shows 'first audio 620 ms from India (n=5, 20 Oct, server)' or 'not measured'",
+    "Big button: 'Talk to her (2 min, uses your mic)' · secondary 'Just listen to a sample call'",
+    "Honesty strip: 'She tells people she's an AI, once and lightly. She never asks for payment on the call.'",
+    "After the call: 'Her replies took 1.4 s at the median on this call (n=9 turns, measured in your browser)' · 'Make one for my business →'",
+    "Sign-up: phone OTP or Google · 'Business name' · 'Website (optional): we'll read it and show you what we took'",
+    "First-run checklist rail (collapsible, never overlays content): Hear · Say the job · Pick a voice · Talk to your agent · Bring a list · Ring your phone · Go-live checks"
+   ],
+   "states": [
+    "Mic denied: 'Your mic is blocked. Listen to a sample call instead, or allow the mic in your browser settings.'",
+    "Rate-limited: 'Too many demos from this network right now. Listen to a recorded sample.'",
+    "Slow network: 'Your connection is slow; replies may lag. The measured gap is shown after the call.'",
+    "Demo service down: 'The live demo is down (voice service). Status · recorded sample'",
+    "Returning visitor: 'Welcome back · continue where you left off'",
+    "Reduced motion: the button shows a static 'Talking' state instead of a pulse"
+   ],
+   "beats": "Sarvam's homepage runs an anonymous Hindi EMI persona, but it denied being an AI in 6/6 calls and shows no numbers (R2 §1 [M]). Vapi's demo agent measured p50 2.32 s from the US with 35% collisions (l4b [M]). Retell's checklist and Sarvam's prompt hero are the best signed-in first runs (retell 71, sarvam 02); Exotel's is a 9-10 px banner (exotel-01). VP's first screen is a voice, in three registers, honest about being an AI, showing the reply gap it measured on that very call. Target: sign-up to first browser-call audio under 3 min (T0, unmeasured)."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "Visual identity and vibe",
+   "best_competitor": "Sarvam (India relevance); ElevenLabs (polish)",
+   "their_best": "Sarvam: native-script glyphs and India-vertical chips on the Agents hero; ElevenLabs: calm, explained settings",
+   "vp_better_how": "One warm Indian editorial identity ('Naya bahi-khata') in one shell, with token-only colour, contrast computed at 5:1 or more for every text pair in light and dark, 16 px body, a Devanagari-ready type pairing, and no clipped chrome at 1280 or 390 px. Exotel ships three shells; Bolna's banners take 90 of 720 px; Retell clips its primary button at 1280. Hypothesis until owner review and 5-second preference tests.",
+   "evidence": "sarvam 02, 08; elevenlabs 44; exotel-01, 02; bolna report (banners); retell 02, 75; Relay rejected 3x (DESIGN.md, decision.product-ux-structural-reset-2026-10-01); contrast [C] in data/blueprint/design-language.json"
+  },
+  {
+   "dimension": "First run and time to first voice",
+   "best_competitor": "Retell (checklist); Sarvam (prompt hero and homepage demo)",
+   "their_best": "Retell: 7 locked steps with previews and a browser test with no number; Sarvam: 'What should your voice agent do?' prompt box and an anonymous Hindi demo on the homepage",
+   "vp_better_how": "Hear-it-first before sign-up, in three registers, with a demo that discloses it is an AI (Sarvam's denied it 6/6) and the reply gap measured on that call; sign-up to browser-call audio under 3 min; the checklist rail never overlays content; KYC steps show documents, time and cost first.",
+   "evidence": "retell 71, 41, 76, 80; sarvam 02; R2 §1 (Sarvam demo claimed human 6/6) [M]; WT §2.1"
+  },
+  {
+   "dimension": "Chat operator inside the product",
+   "best_competitor": "Sarvam Genie / Retell Conductor",
+   "their_best": "Genie docked beside every builder tab and able to build, deploy and run campaigns; Conductor proposes per-setting diffs and page-aware chips",
+   "vp_better_how": "Saarthi runs the whole campaign through the same tool registry as the API; cards are bound to object versions and an argument hash; A2 actions need a 1.2 s hold; receipts say confirmed, not executed or unknown; Hinglish voice input; a Working-on pane keeps chat state as objects. Outputs of incumbent copilots are [U] (none exercised), so the win must be shown in W10.",
+   "evidence": "sarvam 03; SAR-03; RET-03; retell 41; elevenlabs 8-architect (Alpha); WT §1.8 (5 of 6 ship a copilot); workspace-tool-registry.json approval_token"
+  },
+  {
+   "dimension": "Stack choice and trade-off display",
+   "best_competitor": "Vapi",
+   "their_best": "Latency, cost and a quality score on every picker row; four presets; stage-coloured headline bars",
+   "vp_better_how": "Every row shows India-measured p50/p90 with n and date, INR per minute and a 5 s Hinglish sample; the headline is all-in INR including telephony, pulse and the turn wait; vendor figures are labelled 'Vendor says'; no unscaled quality scores.",
+   "evidence": "vapi 33, 51; l4b measured Vapi demo p50 2,319 ms vs 1,530 ms shown [M]; elevenlabs 61 (10x latency ranges); decision.2026-10-21.wt-synthesis-must-be-changes item A"
+  },
+  {
+   "dimension": "Turn-taking settings",
+   "best_competitor": "ElevenLabs (explanations); Bolna (ms values)",
+   "their_best": "ElevenLabs: 1-2 sentence descriptions incl. cost and explained locks; Bolna: endpointing 500 ms and delay 900 ms shown in ms",
+   "vp_better_how": "Every timing in ms with a stacked predicted reply gap beside the measured p50; Standard, Patient and Brisk presets; editable Hindi and Hinglish backchannel, stop and continuation lexicons; listen during the opening. 0 of 6 show a predicted gap or a Hindi list. Whether the turn-taking itself wins is unproven (15-42% cut-ins on every VP stack).",
+   "evidence": "elevenlabs 44; bolna 16; vapi 80; WT §1.2; voice-module-defaults.json turn_presets; open.2026-10-19.turn-taking"
+  },
+  {
+   "dimension": "Price while building",
+   "best_competitor": "Bolna",
+   "their_best": "Persistent per-minute cost bar with components on every builder tab",
+   "vp_better_how": "INR incl. GST including telephony, billed per second, with the predicted reply gap in the same strip and a price at every toggle (test runs, memory, premium brain).",
+   "evidence": "bolna 01, 16, 34, 40 (USD with INR overlay, mixed units); retell 5x-settings, 76 (price at toggle)"
+  },
+  {
+   "dimension": "Gates, disabled actions and state integrity",
+   "best_competitor": "Sarvam (inline gate); Exotel (version pill)",
+   "their_best": "'This version is not committed' with Commit in place; a 'Stable / Live' pill with 'Test this version'",
+   "vp_better_how": "A persistent preflight checklist where every red item links to its fix; every disabled primary names its reason; an unsaved marker; no click creates or publishes anything; one version pill in builder and call log; a CI crawler fails the build on any violation.",
+   "evidence": "sarvam 26, 03; exotel-04-rollout; vapi 57, 80, 83; retell 24; WT §4.2"
+  },
+  {
+   "dimension": "Empty, zero, loading and failed states",
+   "best_competitor": "ElevenLabs",
+   "their_best": "'---' and 'No data has been collected' on empty analytics",
+   "vp_better_how": "Thirteen state tokens incl. 'not measured' with why, 'under-powered: about N more calls', SAMPLE watermarks and freshness stamps; no chart on n=0; no 'all good' without live monitors.",
+   "evidence": "elevenlabs 7-analytics; sarvam 29; retell 43, 46; exotel-23; vapi 71; intelligence-module.json states and health_strip_rules"
+  },
+  {
+   "dimension": "Indic and Hinglish display",
+   "best_competitor": "Sarvam",
+   "their_best": "Native-script glyphs in the language picker, 'Output numbers in Indic', 199+ job-tagged voices",
+   "vp_better_how": "A Hinglish (code-mixed) mode; transcripts in native script, romanised and English; Indian money and time formats by default; a type family covering 10 Indian scripts; no companion or romance voices in the catalogue.",
+   "evidence": "sarvam 08; voices.txt (companion and therapist voices); bolna 19, 20; WT §2.5 (0 of 6 offer Hinglish)"
+  },
+  {
+   "dimension": "Voice choice by ear",
+   "best_competitor": "Sarvam (job-tagged catalogue with preview); Vapi (Humanness score)",
+   "their_best": "Sarvam: filterable voices with 'Great for X' tags and preview; Vapi: one score per voice row",
+   "vp_better_how": "Voice cards play the same Hinglish line in three registers (Warm, Calm, Brisk) with India-measured first audio, INR and languages; no 'humanness' number, because metrics alone pick the wrong voice.",
+   "evidence": "sarvam 08, voices.txt; vapi 51; rejected.harvest.09; directive.2026-10-19.hear-before-choose"
+  },
+  {
+   "dimension": "Call review",
+   "best_competitor": "Retell",
+   "their_best": "13-column call history with cost, end reason, sentiment, outcome and e2e latency; per-component latency, recordings and PCAP in the API",
+   "vp_better_how": "Two-lane stereo player with moment pins; transcript synced in three views; business outcome beside engineering reason, carrier code and next action; compliance trace; run manifest; per-turn latency timeline; play-from-here on every quote. Incumbent call pages with audio were not observed [U].",
+   "evidence": "retell 41; RAP-51; AP-34/35; EL-12; XS-20 (no business-outcome field); W6"
+  },
+  {
+   "dimension": "Live operations",
+   "best_competitor": "Exotel (meter); Retell (live monitor)",
+   "their_best": "Concurrency meter with last-updated time; listen, take over and inject context into a live call",
+   "vp_better_how": "Concurrency and spend meters side by side; a funnel with reasons at each drop; live tiles with agenda-ledger chips, mood and listen/whisper/take-over; Supervisor flags; one-tap pause with undo.",
+   "evidence": "exotel-25; RET-07, RAP-40; VAP-06 (Vapi Mission Control flag-gated)"
+  },
+  {
+   "dimension": "Analytics",
+   "best_competitor": "ElevenLabs",
+   "their_best": "12 analytics tabs, UTC+5:30, group-by chips, cost totals, honest empties",
+   "vp_better_how": "Funnel from rows to verified outcome; INR per campaign, contact and outcome; evidence grades in every column; under-powered states instead of daily A/B winners.",
+   "evidence": "elevenlabs 7-analytics; retell 43; AP-37 (no group-by campaign or contact at Vapi); rejected.2026-10-17.k2-dashboards"
+  },
+  {
+   "dimension": "Number step",
+   "best_competitor": "Sarvam",
+   "their_best": "Rent and seven bring-your-own providers side by side",
+   "vp_better_how": "Series recommended by call category and sector (10-digit, 1600xx, 1601xx, 140xx); documents, time and price before any credential; a trial-line ring to your own phone; KYC timer, A2P declaration export and CNAP preview.",
+   "evidence": "sarvam 23; bolna 25, 36-account-Vobiz-KYC; retell 30; elevenlabs 34; vapi 06c; trust-telephony-defaults.json number_step_catalogue"
+  },
+  {
+   "dimension": "Billing and wallet",
+   "best_competitor": "Sarvam (INR table); Bolna (INR recharge)",
+   "their_best": "INR rate table with units per plan and the price of a test run; recharge showing INR minutes",
+   "vp_better_how": "INR with GST everywhere, per-second billing, held amounts shown, five wallet states with overdrawn in red, caps per workspace, campaign and API key, cost per outcome.",
+   "evidence": "sarvam 20, 22; bolna 34, 40; elevenlabs 51; WT §1.6 (no spend cap in 6 dashboards); economics-platform-defaults.json wallet, caps"
+  },
+  {
+   "dimension": "Memory surfaces",
+   "best_competitor": "Retell",
+   "their_best": "Contact memory read ON, save OFF, priced at the toggle (USD 0.005 per run)",
+   "vp_better_how": "Contact timeline keyed to a person, each fact with the caller's quote and audio, consent ledger and forget in one place; 'Used from memory' chips on the call page.",
+   "evidence": "retell 09, 76; RAP-32; elevenlabs 7-knowledge-base (Alpha); rejected.2026-10-20.raw-fact-memory"
+  },
+  {
+   "dimension": "Learning surfaces",
+   "best_competitor": "Retell (Conductor)",
+   "their_best": "Failed calls become simulation tests; diffs a person accepts",
+   "vp_better_how": "Learning inbox with intervals, under-powered states, fixed-horizon tests, guardrail auto-stop and expiry; a level badge; a version story with before/after audio; copy that never claims 'self-learning' below L4.",
+   "evidence": "RET-08, RET-58; LRN-09; EXO-61; learning-module-defaults.json levels_badge, copy_rules"
+  },
+  {
+   "dimension": "Words and tone",
+   "best_competitor": "ElevenLabs (setting descriptions); Retell (plain transfer copy)",
+   "their_best": "Short, plain explanations including billing impact; transfer modes in plain words",
+   "vp_better_how": "Plain warm Indian English, Hinglish when the client writes Hinglish; 'what happened · why · what you can do'; units in ms and INR with n and date; a copy gate against banned phrases; no auditor walls; a named Operator that speaks like a colleague.",
+   "evidence": "elevenlabs 44; retell 08; docs/harvest/se-live.md (Relay warns on every surface)"
+  },
+  {
+   "dimension": "Motion, sound and phone width",
+   "best_competitor": "Unknown",
+   "their_best": "Not observable: the walkthroughs were static captures at 1280x720",
+   "vp_better_how": "A motion catalogue tied to real events with reduced-motion parity and a performance budget; three opt-in sound cues; all 11 key screens specified at 390 px. No comparison is claimed until incumbents are recorded on video and on a phone.",
+   "evidence": "WT §0 scope (static, 1280x720, no calls); research/2026-10-21/walkthroughs/*/report.md"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "Task success, 5 users at 1280 px",
+   "target": "24 of 25 tasks (create and test an agent, number step, launch, find a failed call, approve a diff)",
+   "how": "Moderated sessions with think-aloud; the same users repeat 2 tasks on Retell and Sarvam trial accounts to compare time and errors"
+  },
+  {
+   "metric": "Task success, 5 users at 390 px",
+   "target": "22 of 25 tasks",
+   "how": "Same protocol on a mid-range Android phone"
+  },
+  {
+   "metric": "Failed call found with reason and action (W6)",
+   "target": "Under 60 s each; 5/5 reasons correct; actionable on 4 or more",
+   "how": "T5: five induced failures, screen-recorded and timed"
+  },
+  {
+   "metric": "Hear-it-first: tap to first audio",
+   "target": "2.5 s or less at p75",
+   "how": "RUM events hear_started → hear_first_audio on the public page"
+  },
+  {
+   "metric": "Sign-up to first browser-call audio",
+   "target": "Under 3 min median",
+   "how": "Product events signup_completed → browser_call_first_audio"
+  },
+  {
+   "metric": "State integrity",
+   "target": "0 violations",
+   "how": "CI crawler over every route: 0 server writes from menus or dropdowns, 100% of disabled primaries show a reason, 0 charts at n=0, 0 '0 ms' or '₹0' on empty data, 0 unlabelled sample rows"
+  },
+  {
+   "metric": "Contrast",
+   "target": "100% of text token pairs at 5:1 or more, light and dark; non-text boundaries at 3:1 or more",
+   "how": "CI contrast gate over tokens.css (current values computed in data/blueprint/design-language.json)"
+  },
+  {
+   "metric": "Type floor and targets",
+   "target": "No visible text under 12 px; body 16 px; Devanagari body 16 px or more; 44 px targets at 390 px; no horizontal scroll",
+   "how": "Layout gate at 390, 834 and 1280 px (adapted from asset.hp-gurukul-late.secret-free-signed-in-layout-gate)"
+  },
+  {
+   "metric": "Web performance",
+   "target": "LCP 2.5 s, INP 200 ms, CLS 0.1 at p75",
+   "how": "Lighthouse on a Fast 4G mid-range Android profile in CI, plus RUM in production"
+  },
+  {
+   "metric": "Audio play start",
+   "target": "300 ms or less at p75",
+   "how": "RUM: tap on play to the first decoded sample"
+  },
+  {
+   "metric": "Copy honesty",
+   "target": "0 banned phrases; 0 'self-learning' claims below L4; 0 vendor figures without a 'Vendor says' label",
+   "how": "Copy gate on proven-visible strings (asset.hp-gurukul-early.design-law-copy-contrast-motion-gates-tokens)"
+  },
+  {
+   "metric": "Owner visual review (req-40)",
+   "target": "Direction approved in 2 rounds or fewer (Relay was rejected 3 times); all 11 screens signed at both widths",
+   "how": "A visual review artifact of the 11 screens at 1280 and 390, light and dark"
+  },
+  {
+   "metric": "System Usability Scale",
+   "target": "80 or more",
+   "how": "SUS questionnaire at the end of each 5-user session"
+  },
+  {
+   "metric": "Sound cue mute rate",
+   "target": "30% or less after 7 days among opted-in users",
+   "how": "Product events: cue opt-in, mute, per-cue toggle"
+  },
+  {
+   "metric": "Motion discipline",
+   "target": "0 animations on layout properties; 100% reduced-motion parity",
+   "how": "Motion lint plus a Playwright test comparing final states with prefers-reduced-motion on and off"
+  }
+ ],
+ "phases": [
+  {
+   "phase": "v1: the look, the words and the 11 screens",
+   "scope": [
+    "Tokens in light and dark, contrast-gated at 5:1 for text; forest, terracotta, peacock, leaf, marigold, brick on warm paper",
+    "Type specimen gate, then lock Fraunces + Tiro Devanagari Hindi (display) and Anek Latin + Devanagari (UI), or the Noto fallback",
+    "All 11 key screens at 1280 and 390 px: Talk, Today, Launch card, Mission control, Call page, Agent builder, Contact timeline (v1 without memory facts), Learning inbox (L0/L1 cards and version story), Number step, Wallet, Hear-it-first",
+    "Thread cards (10 types) bound to object versions, hold-to-confirm, three-outcome receipts",
+    "13 state tokens incl. not measured, under-powered, sample and stale",
+    "Two-lane stereo player, transcript synced in three views, play-from-here, voice cards in three registers",
+    "Predicted reply gap and INR readouts with n, date and vantage; compliance trace; run manifest",
+    "Motion catalogue with reduced-motion parity and the performance budget; three opt-in sound cues",
+    "Copy, contrast, layout, motion and state-integrity gates in CI; real-capture marketing site",
+    "English UI with a Hinglish Saarthi; Devanagari rendering for names and transcripts; the Operator named (Saarthi, pending brand check)"
+   ]
+  },
+  {
+   "phase": "v2: she remembers and gets better, visibly",
+   "scope": [
+    "Contact timeline with memory facts, quotes, consent and forget; 'Used from memory' chips on calls",
+    "Learning inbox at full depth: fixed-horizon tests, guardrail auto-stop, expiry, version story with before/after audio",
+    "Mood path calibrated against human labels before it loses its 'signals, not diagnosis' label",
+    "Hindi (Devanagari) UI chrome option",
+    "A spoken or WhatsApp Today brief, with consent",
+    "Wave-2 surfaces: consent ledger views for consented leads and 140xx numbers"
+   ]
+  },
+  {
+   "phase": "v3: every Indian script and the company desk",
+   "scope": [
+    "Regional-script UI and transcripts on the Anek family (Bangla, Gujarati, Gurmukhi, Kannada, Malayalam, Odia, Tamil, Telugu)",
+    "Enterprise brand accents inside the token rules (one accent law kept)",
+    "Command-centre surfaces (req-18) on the same shell",
+    "An AAA high-contrast theme",
+    "Learning surfaces for L4 tenants: guarded ramps shown with their guardrails"
+   ]
+  }
+ ],
+ "beyond": [
+  "Hear it before sign-up: the same Hinglish line in three registers, a live demo that says it is an AI, and the reply gap measured on that very call in the visitor's browser (Sarvam's homepage demo denied being an AI 6/6, R2 §1)",
+  "A predicted reply gap bar in ms (ears + hold + brain + voice + phone leg) beside the measured India p50 with n and date; 0 of 6 dashboards show any gap",
+  "Evidence grades and 'not measured' in the client UI: every number says whether it was measured, computed, estimated or vendor-claimed, with n, date and vantage",
+  "A two-lane stereo player (caller above, agent below) with moment pins, and a transcript synced in native script, romanised and English",
+  "A compliance trace on every call: why this call was allowed (window in local time, suppression, basis, series, attempt count, disclosure spoken at 0:06)",
+  "A line-hazard ribbon over the brief showing where callers hung up, with intervals, labelled under-powered until n is enough",
+  "Agenda-ledger chips on every live call tile, so a manager sees what she has covered without listening",
+  "Approvals bound to an argument hash with a 1.2 s hold; spoken or typed 'haan launch karo' renders the card and never executes",
+  "The Today screen as a morning paper led by outcomes verified from the client's system of record, not call counts",
+  "'How she changed for you': each version as a story with before and after audio and honestly labelled deltas",
+  "The contact timeline as an auditable memory: each fact with the caller's exact words, play-from-here, consent ledger and forget",
+  "Indian money and time by default: lakh grouping, ₹ incl. GST beside every price, per-second billing, IST and the contact's local time",
+  "Three opt-in UI sound cues with an Indian timbre (soft santoor-like pluck), rate-limited and ducked during live listen",
+  "A wallet that shows money held for live calls and never shows a negative balance in normal type",
+  "Real-capture marketing: the public site can only show screens the app actually draws"
+ ],
+ "risks": [
+  "The serif and warm palette may read as traditional or less technical to developer buyers; test with a 5-second preference test against Vapi and Retell captures before locking",
+  "Anek may lack tabular figures or read poorly as Devanagari at 14 px; the specimen gate decides, with Noto Sans as the fallback",
+  "Older Android WebViews may shape Devanagari conjuncts badly; include them in the layout gate's device set",
+  "Sound cues may annoy and get muted; they stay opt-in, rate-limited and measured by mute rate",
+  "Hold-to-confirm may slow power users; it applies only to A2 actions and has a second-tap alternative",
+  "At launch most latency and outcome figures will read 'not measured', which can look empty; that state is designed as a first-class, confident look",
+  "The owner may reject the look a fourth time; show the visual review artifact (11 screens, both widths, both themes) before any build",
+  "'Saarthi' is common in Indian apps and is not trademark-checked; a brand screen may force the 'VP' fallback",
+  "Mission control performance with 50+ live calls on low-end phones is unmeasured; budget is 4 ms of script per frame on one canvas",
+  "Chat and pages can drift apart over time; one tool registry and the parity rule are the defence, checked by W10",
+  "Screens promise numbers that other modules must produce (predicted gap, verified outcomes, compliance trace); if a writer is missing, the screen must show 'not measured', never zero",
+  "Mood path labels may be read as emotion truth; keep 'signals, not diagnosis' until calibrated against human labels"
+ ],
+ "open_questions": [
+  "Operator name: Saarthi (proposed), plain 'VP', or Munim? The owner decides after a brand screen and the 5-user sessions",
+  "Does the owner accept the 'Naya bahi-khata' direction (serif display, warm paper, forest and terracotta), judged on the visual review artifact?",
+  "Fonts: Anek + Fraunces + Tiro Devanagari Hindi, or the Noto family for completeness? Settled by the type specimen gate",
+  "Should a Hindi (Devanagari) UI chrome ship in v1 for owners who prefer it, or wait for v2 as proposed?",
+  "Sound cues: keep default off until the opt-in question, or default on for Owner and Operator roles in mission control only?",
+  "Is a 1.2 s hold right for A2 approvals on phone, or should spend approvals above a threshold also need OTP (the workspace module proposes re-auth above ₹50,000)?",
+  "How much of the agent builder must be fully editable at 390 px in v1 (the proposal: everything editable, with the stack table as cards)?",
+  "Which incumbent tasks should the 5-user sessions repeat for the time comparison (proposal: create-and-test and find-a-failed-call on Retell and Sarvam trials)?",
+  "Do the screen mock-ups for the owner's review get published as a private Artifact, or stay as local files until the owner chooses?"
+ ]
+}

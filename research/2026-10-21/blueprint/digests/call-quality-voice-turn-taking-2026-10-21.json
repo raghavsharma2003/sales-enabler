@@ -1,0 +1,297 @@
+{
+ "key_facts": [
+  {
+   "fact": "Brief v2 cut words per turn from 33.7/32.7 to 20.9/18.7, question endings from 62%/76% to 13%/29%, and stock phrases from 1.8/2.7 to 0.7/0 per call, on the same brains.",
+   "grade": "measured",
+   "evidence": "6 simulated callers x 10 turns per brain per brief, convo_bench.py; research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "fact": "Round-1 robotic signature across 316 agent turns: 53% ended on a question, median 22 words (p90 37), 21% restated being an AI, 19% mentioned the link, callback or advisor.",
+   "grade": "measured",
+   "evidence": "research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "fact": "Round-1 human ratings: Gemini 3.1 Live 7.0/10 (2/2 would pick); Sarvam+gpt-oss+Bulbul, Gemini 3.8 Live and gpt-oss+Gemini voice 6.0; Azure-voice stacks 1.5-4.5 with 0 would-pick. Every stack's content was judged robotic.",
+   "grade": "measured",
+   "evidence": "65 calls, 33 ratings, 4 testers, n=1-4 per stack; graph measure.2026-10-20.round1-ratings"
+  },
+  {
+   "fact": "The hang-up guard (goodbye required, caller not mid-question, 1.5 s beat, stays on if the caller speaks) took abrupt agent hang-ups from 17-40% to 0.",
+   "grade": "measured",
+   "evidence": "text bench, voicelab/evals/convo_bench.py; decision.2026-10-20.agent-hangup-guard"
+  },
+  {
+   "fact": "The India-hosted all-Azure cascade A has a server reply gap of p50 1,004 ms and p90 1,100 ms. The speculative variant E has p50 823 ms.",
+   "grade": "measured",
+   "evidence": "60 turns per config, India VM, no phone leg; research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"
+  },
+  {
+   "fact": "Lowering latency raises cut-ins. On mid-turn 0.9-1.3 s pauses, cascade A cut in on 72% of turns, B (800 ms segmentation) on 17% and E (speculative) on 100%. Every config took the elderly 2.4 s pause (12/12). There were 0/30 cut-ins on turns without a pause of 0.5 s or more.",
+   "grade": "measured",
+   "evidence": "l8 round2 findings section 4"
+  },
+  {
+   "fact": "Across all of VP's stacks, turn-taking is the binding problem: 15-42% cut-ins, and 100% take the elderly 2.4 s pause.",
+   "grade": "measured",
+   "evidence": "research/2026-10-18/SYNTHESIS.md section 3; open.2026-10-19.turn-taking"
+  },
+  {
+   "fact": "A quiet elderly 'hmm' (0.45 s) was never transcribed in any cascade or Voice Live arm, so the agent stayed silent. Voice Live returned empty transcripts on 5/14 short answers.",
+   "grade": "measured",
+   "evidence": "l8 round2; docs/harvest/tx-voice.md"
+  },
+  {
+   "fact": "Round-2 smoke reply gaps from India: v2-live 0.79-1.55 s, v2-flashlite 1.6-2.2 s, v2-54mini 2.0-2.6 s, v2-luna 1.9-3.3 s, v2-38flash 2.9-4.2 s.",
+   "grade": "measured",
+   "evidence": "1 call x about 3 replies per stack (smoke); round1-review-and-v2.md"
+  },
+  {
+   "fact": "Voice first audio from India: MAI-Voice-2.1-Flash 425 ms, Gemini 3.8 Flash-Lite TTS 624 ms, Gemini 3.8 Flash TTS 772 ms, Gemini TTS via the Interactions API 4.7-5.1 s. Gemini TTS also adds 0.14-0.36 s of leading silence.",
+   "grade": "measured",
+   "evidence": "n=5, voice_bench.py; g3 findings"
+  },
+  {
+   "fact": "Brain first token from India on brief v2: gpt-oss@groq 535 ms, GPT-4.1 mini 567, Gemini 3.5 Flash-Lite 699, GPT-5.4 mini 960, GPT-6 Luna (OpenRouter) 1,438, Gemini 3.8 Flash 1,991, DeepSeek V4.1 Flash 2,800. gpt-4.1-mini on a South India Standard deployment measured 304 ms (n=33).",
+   "grade": "measured",
+   "evidence": "round1-review-and-v2.md; l8 round2 section 3.1"
+  },
+  {
+   "fact": "LLM judges ranked Gemini 3.8 Flash best on brief v2 (65/75 win %) and GPT-6 Luna last (28/30). Luna is the owner's pick and has not been confirmed by ear.",
+   "grade": "measured",
+   "evidence": "540 blind pairwise verdicts; open.2026-10-20.luna-by-ear"
+  },
+  {
+   "fact": "Gemini 3.8 Live: p50 1.0 s from India but talks over the caller on 42% of turns. On the paid meter it costs Rs 5.72/min on a 3-minute call and Rs 9-12.7/min on a 10-minute call, because past audio is re-billed every turn.",
+   "grade": "measured",
+   "evidence": "g5 paid key, n=1-2 calls per cost cell; research/2026-10-18/SYNTHESIS.md"
+  },
+  {
+   "fact": "Gemini Live's output transcript arrives with or before first audio on 1,041/1,041 turns, so speech-to-speech can be gated by text. The violation-rate battery has not run.",
+   "grade": "measured",
+   "evidence": "measure.2026-10-18.gemini-live-gate-lag"
+  },
+  {
+   "fact": "Gemini 3.1 flash live, the round-1 winner, shuts down 2026-11-17 and is not on Vertex.",
+   "grade": "vendor-claimed",
+   "evidence": "research/2026-10-18/lanes/g1-gemini-desk/findings.md lifecycle table; risk.2026-10-20.gemini-3.1-live-sunset"
+  },
+  {
+   "fact": "Gemini API Tier 1 caps 3.8 Flash TTS at 100 requests a day per project per model. Four testers exhausted it within an hour, and 6/12 All-Gemini calls went silent.",
+   "grade": "measured",
+   "evidence": "429 error bodies plus lab logs; measure.2026-10-19.gemini-tts-tier1-cap"
+  },
+  {
+   "fact": "Gemini TTS spoke the 'Say in a <style> tone:' prefix aloud on real Hindi calls. Bracketed stage directions are spoken by TTS in general.",
+   "grade": "measured",
+   "evidence": "rejected.2026-10-20.gemini-tts-style-prefix; docs/harvest/tx-voice.md (brackets in 4/4 transcripts)"
+  },
+  {
+   "fact": "Sound tags (<laugh>, <chuckle>, <sigh>, <breath>) are not spoken by Gemini 3.8 TTS, so they are allowed only on Gemini voices and stripped for every other voice.",
+   "grade": "measured",
+   "evidence": "STT check n=6; decision.2026-10-20.sound-tags-gemini-only"
+  },
+  {
+   "fact": "Inherited law: sentence-shaped prompt text gets recited (quotes 4/5 to 0 after removal), and position is mechanism (rule mid-brief 0/8, appended last 8/8; brevity 64 to 25 words per turn when placed last).",
+   "grade": "measured",
+   "evidence": "docs/harvest/SYNTHESIS.md laws 1-2 (hp-main, tx-core, tx-voice)"
+  },
+  {
+   "fact": "Metrics do not pick voices: Azure TTS won 15/15 on pronunciation, speed and cost and was rejected by ear as 'not human, not Indian'. An audio-LLM judge rated an American accent 'native Indian'.",
+   "grade": "measured",
+   "evidence": "docs/harvest/SYNTHESIS.md law 26; rejected.harvest.09"
+  },
+  {
+   "fact": "Competitor demo agents (US vantage) had clean-turn p50 of Ultravox 1.54 s, Vapi 2.32 s and ElevenLabs 3.75 s, with collisions of 18%, 35% and 3%. Vapi answered a Hinglish caller in Gujarati on 17/18 turns; ElevenLabs answered Hindi callers in English 18/20.",
+   "grade": "measured",
+   "evidence": "24 calls, 264 turns, harness bias about 60 ms; research/2026-10-17/lanes/l4b-measured/report.md"
+  },
+  {
+   "fact": "0 of 6 competitor dashboards show a predicted reply gap or ship a Hindi or Hinglish backchannel or interruption list. Defaults: Vapi 1.5 s wait, Retell 0 ms added wait, Bolna 500+900 ms, ElevenLabs eagerness Normal.",
+   "grade": "observed",
+   "evidence": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "fact": "Bolna's code discards short finals spoken over the agent, drops speech during the welcome, and its use_fillers audio path is dead code.",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/SYNTHESIS.md (Bolna code teardown)"
+  },
+  {
+   "fact": "Large human-vs-AI outcome gaps come from commitment and process, not voice warmth: AI collectors got 21 pp fewer promises and were not hung up on more within 10 s. Up-front disclosure cut conversion about 80% in 2017 but showed no effect in 2026 (n=1,337). Anthropomorphism hurts angry customers.",
+   "grade": "measured",
+   "evidence": "third-party studies read in research/2026-10-17/lanes/l5-human-dialect/report.md (Choi NBER, Luo 2019, Habel 2026 abstract only, Crolic)"
+  },
+  {
+   "fact": "No outcome study exists for 'emotional/relational' voice agents in sales. An early-hang-up A/B needs about 686 calls per arm to detect a drop from 15% to 10%.",
+   "grade": "inferred",
+   "evidence": "l5 report H5 and panel-power.json"
+  },
+  {
+   "fact": "The Indian phone leg is estimated to add 0.25-0.45 s to the reply gap. No VP call has been timed at a handset.",
+   "grade": "inferred",
+   "evidence": "l8 round2 section 6 (Twilio, Plivo, Exotel docs)"
+  },
+  {
+   "fact": "Cheapest measured stack C6g (gated Gemini transcribe-live + gpt-oss@Groq + Azure neural) costs Rs 0.94/min AI. The AI budget at Rs 2 ex-GST and 50% margin is Rs 0.54/min. The all-Gemini cascade costs Rs 1.56 (Rs 1.92 from 2027).",
+   "grade": "measured",
+   "evidence": "usage x list price; research/2026-10-18/SYNTHESIS.md sections 1-2"
+  },
+  {
+   "fact": "All-Sarvam stack: reply gap 0.97-1.18 s, Sarvam-105B first token about 100 ms, Rs 1.39-1.51/min.",
+   "grade": "measured",
+   "evidence": "9 replies, sim_caller.py from India VM; measure.2026-10-19.sarvam-india"
+  },
+  {
+   "fact": "Rate limits cause silence: a 50k-TPM deployment returned 429 on 13/35 turns at three concurrent speculative streams. One concurrent call needs about 13-25k TPM.",
+   "grade": "measured",
+   "evidence": "l8 round2 section 8"
+  },
+  {
+   "fact": "Speculative release on string similarity accepted truncated transcripts 3/58 and negation flips 4/4, so it is unsafe without a negation-aware matcher.",
+   "grade": "measured",
+   "evidence": "rejected.2026-10-17.speculative-release (LAT-03)"
+  },
+  {
+   "fact": "The Taxila Voice Live reference-AEC ear-only front end had 0/66 echo false barge-ins and 12/12 true barge-ins (stop p50 80 ms on the phone-echo harness), but an end-of-turn p50 of 1,480 ms against a 900 ms bar.",
+   "grade": "measured",
+   "evidence": "docs/harvest/tx-voice.md"
+  },
+  {
+   "fact": "Open full-duplex models (Moshi, PersonaPlex, Nemotron VoiceChat) list English only. LiveKit's turn detector claims Hindi TPR 99.4%, but Taxila measured Pipecat Smart Turn v3 at chance (34/72) on child Hinglish.",
+   "grade": "vendor-claimed",
+   "evidence": "research/2026-10-17/lanes/l7-tech-frontier/report.md E13, E16"
+  },
+  {
+   "fact": "Round-2 human ratings of brief-v2 stacks have not been collected. The default stack and the brief-v2 confirmation both wait on them, and on the paid Vertex key.",
+   "grade": "unknown",
+   "evidence": "open.2026-10-20.round2-human-ratings; context/DIRECTION.md"
+  }
+ ],
+ "requirements": [
+  {
+   "id": "cq-01",
+   "theme": "conversation engine",
+   "priority": "must",
+   "requirement": "One compile() per agent: shapes not lines, script and identity rules at the top, a code-computed agenda ledger plus counts and goal check appended last every turn, and a budget gate that throws on overflow.",
+   "quote": "persona_v2.py: 'the counts and the goal check go LAST (a rule mid-brief fired 0/8, appended last 8/8)'"
+  },
+  {
+   "id": "cq-02",
+   "theme": "conversation engine",
+   "priority": "must",
+   "requirement": "A lint in the brief editor that flags recitable sentences and bracketed directions before publish.",
+   "quote": "docs/harvest law 2: quotes recited 4/5 to 0 after removal"
+  },
+  {
+   "id": "cq-03",
+   "theme": "safety",
+   "priority": "must",
+   "requirement": "A per-clause code gate before every spoken word. It needs number canonicalisation (lakh, hazaar, Devanagari digits, times), call-level slot memory, a time-aware splitter, and correction of wrong caller figures.",
+   "quote": "l8 round2: trivial gate false positives 0-23% of turns; every brain agreed with the caller's wrong premium until a correction rule"
+  },
+  {
+   "id": "cq-04",
+   "theme": "safety",
+   "priority": "must",
+   "requirement": "Disclose being an AI once, lightly, in the opening. The ledger marks it spent; she re-states it only if asked and never denies it. Crisis lines Tele-MANAS 14416 and 112 stay in the brief.",
+   "quote": "round 1: 21% of turns restated 'I'm an AI assistant'"
+  },
+  {
+   "id": "cq-05",
+   "theme": "turn-taking",
+   "priority": "must",
+   "requirement": "A pause-aware release policy with continuation-word hold, withdraw-if-caller-resumes, and barge-in on words not coughs. Target ≤5% cut-ins at p50 ≤1.2 s, including the elderly 2.4 s pause.",
+   "quote": "open.2026-10-19.turn-taking"
+  },
+  {
+   "id": "cq-06",
+   "theme": "turn-taking",
+   "priority": "must",
+   "requirement": "Ship Hindi and Hinglish backchannel, stop and acknowledgement lists as editable defaults. Short replies (haan, nahi, ruko, bas) are classified, never discarded, and listening stays on during the opening line.",
+   "quote": "walkthroughs SYNTHESIS: 0 of 6 ship an editable Hindi or Hinglish backchannel list"
+  },
+  {
+   "id": "cq-07",
+   "theme": "turn-taking",
+   "priority": "strong",
+   "requirement": "A silence-timer continuer: a gated 'जी?' after about 2 s of VAD speech with no STT final, so quiet elderly backchannels are not met with silence.",
+   "quote": "l8 round2 failure mode 4: 'हम्म…' was missed every time"
+  },
+  {
+   "id": "cq-08",
+   "theme": "latency",
+   "priority": "must",
+   "requirement": "Show a predicted reply gap (endpoint + hold + brain TTFT + voice first audio + phone leg) beside the India-measured p50/p90 for every stack choice. Store the combination that actually ran on each call.",
+   "quote": "walkthroughs must-be A; decision.2026-10-20.combo-identity"
+  },
+  {
+   "id": "cq-09",
+   "theme": "latency",
+   "priority": "must",
+   "requirement": "Use India-region deployments, warm TTS pools, a short opening clause and reasoning effort none. Size quota per concurrent call and treat a 429 as a quality incident.",
+   "quote": "l8 round2: opening clause 19-29 ms; 429 on 13/35 turns"
+  },
+  {
+   "id": "cq-10",
+   "theme": "voice",
+   "priority": "must",
+   "requirement": "Choose voices only through a blind ear test with accent as its own axis and words per turn as a first-class metric; LLM judges only rank. Run a listener panel with human telecaller references before claiming human-like.",
+   "quote": "law 26: Azure TTS won every metric and lost by ear"
+  },
+  {
+   "id": "cq-11",
+   "theme": "voice",
+   "priority": "strong",
+   "requirement": "Expressive control per voice: sound tags only where the engine does not speak them (Gemini TTS), tone notes mapped to styles (MAI), everything else stripped. Add a speaking-rate control and a laugh cap enforced by the ledger.",
+   "quote": "decision.2026-10-20.sound-tags-gemini-only; round 1 bug: 'speak faster' had no effect"
+  },
+  {
+   "id": "cq-12",
+   "theme": "call ending",
+   "priority": "must",
+   "requirement": "The agent ends the call herself with the hang-up guard (goodbye required, not after a caller question, 1.5 s beat, stays on if the caller speaks). Add a silence ladder (nudge in the caller's language, then a polite close) and voicemail detection tuned on Indian operator announcements.",
+   "quote": "directive.2026-10-20.agent-hangup"
+  },
+  {
+   "id": "cq-13",
+   "theme": "stack",
+   "priority": "must",
+   "requirement": "The voice stack is user-selectable with curated defaults. The default is chosen after round-2 human ratings, and a second voice path stays ready in case Google access fails.",
+   "quote": "decision.2026-10-20.product-stack-selectable; risk.2026-10-20.google-dependency"
+  },
+  {
+   "id": "cq-14",
+   "theme": "personalisation",
+   "priority": "strong",
+   "requirement": "Per-contact memory stores preferences only (form of address, language mix, pace, shared context, open promises), never company facts or the agent's own claims. Add an elderly or slow-speech preset and learn pace per contact.",
+   "quote": "decision.2026-10-20.preference-only-memory"
+  },
+  {
+   "id": "cq-15",
+   "theme": "self-learning",
+   "priority": "nice",
+   "requirement": "Tune endpointing per segment from measured cut-in rates and early hang-ups. Never use daily K=2 dashboards (52-62% false winners in A/A).",
+   "quote": "walkthroughs VP layer; rejected.2026-10-17.k2-dashboards"
+  },
+  {
+   "id": "cq-16",
+   "theme": "testing",
+   "priority": "must",
+   "requirement": "Built-in Hinglish caller simulations (busy, skeptic, worried elder with a 2.4 s pause, angry, confused, noisy street) that report reply gap, cut-ins, language hold, words per turn and question endings, and can gate publish.",
+   "quote": "walkthroughs VP design; convo_bench.py"
+  },
+  {
+   "id": "cq-17",
+   "theme": "language",
+   "priority": "must",
+   "requirement": "Lock the reply language to the caller's mix (Hinglish default), with an explicit language setting and no auto-detect drift.",
+   "quote": "l4b: Vapi Gujarati 17/18; S2S drifted to English 5/28 and 7/29"
+  },
+  {
+   "id": "cq-18",
+   "theme": "ASR",
+   "priority": "must",
+   "requirement": "Run a non-speech probe (n≥30) before any ASR writes to the CRM, and never put vocabulary lists in free-text ASR prompts.",
+   "quote": "law 27; open ASR fabricated on 30/30 non-speech clips"
+  }
+ ]
+}

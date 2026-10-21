@@ -49,8 +49,22 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
   - none reached a ring on an Indian line.
 - **What stays unproven:** W3 and W4 (reply gap, Hinglish turn-taking), W2 (CSV) and W7 (first Indian ring). They need
   live calls. The ordered plan is `open.2026-10-21.wt-synthesis-evidence-plan`.
-- **Next: the owner decides what product to build** (`open.2026-10-20.product-decision`). The owner has not yet
-  chosen between writing the full dimension-by-dimension blueprint first and talking through the big forks first.
+- **The blueprint is written (2026-10-21).** The owner chose blueprint-first (`directive.2026-10-21.blueprint-end-to-end`).
+  - The document: `research/2026-10-21/blueprint/BLUEPRINT.md` (`evidence.2026-10-21.vp-blueprint`).
+  - The visual page for the owner: https://claude.ai/artifact/8ChmABjjcftL7ksC9r89yq, source in
+    `research/2026-10-21/blueprint/page/`.
+  - Inputs and working: digests, the spine, 9 modules, the red team and defaults, all in the same folder.
+  - Its 10 defining decisions are proposed, not approved (`decision.2026-10-21.blueprint-defining-decisions`).
+  - It says plainly where VP loses today (`risk.2026-10-21.blueprint-not-better-yet`).
+- **Next: the owner reviews the 16 decisions** (`open.2026-10-21.blueprint-owner-decisions`). The first three
+  (default stack, Base price, first partners) gate the rest. Then the Phase 0 gates run, before about 2026-11-16:
+  - buyer interviews;
+  - the carrier quote round (KC5, rental in the tenant's name);
+  - the turn-manager redesign and the handset battery;
+  - round-2 ear ratings;
+  - counsel (KC8);
+  - VP's own DLT registration and a VP-owned Google organisation.
+  Only then does the v0.5 slice start.
   - **Watch:** parity as a *wedge* was rejected on 2026-10-17. v1 has to win on measured task failures, not on feature
     count (`open.2026-10-20.parity-floor-vs-wedge`). The dashboards confirm chat setup is parity (5 of 6 ship a
     copilot).

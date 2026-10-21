@@ -15357,6 +15357,66 @@
    "date": "2026-10-21",
    "title": "Owner: analyse all the REA research and Instinct's walk-throughs deeply. Understand these players, then design a product better than them in every sense: UI, UX, product design, cost, speed, user flow, convenience, usability, vibe and results. It must carry everything discussed before:\n- self-learning calling voice AI;\n- personalisation;\n- emotional, expressive, relational, human-like voice;\n- meeting every client requirement with great results;\n- omni-channel data and what is useful in it;\n- an LLM-driven application where VP's agents handle everything and the client just talks;\n- campaigns handled end to end, with a full view of each campaign and each call and AI analysis of them.\nDeliver a thoughtful, deep, end-to-end product blueprint, shown visually for fast review (the owner is a visual learner). Keep learning from these companies always.",
    "quote": "analyze the whole rea u did and the instinct too deeply and then we understand these players deeply and create a better product then them in every sense ... make a blue print of the product from start to end, and we need to learn and get the best from all these companies always. create a very thoughtful and deep blue print end to end, show me that blue print in a visual way so i can see it and review it fast(im a visual learner)"
+  },
+  {
+   "id": "evidence.2026-10-21.vp-blueprint",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "The end-to-end VP product blueprint (integrated, for owner review). Workflow wf_1fdbb02a-eb5 ran 26 agents with 0 errors:\n- 12 digests: 7 vendor dossiers, the owner-requirements catalogue (68 requirements, 36 must), voice engine, market/regulation/money, learning/memory/omni-channel, VP assets;\n- a spine and 9 module designs;\n- 2 red teams with 57 findings (7 critical);\n- an integrator that made 46 changes.\nThe blueprint holds 10 defining decisions, an AI workforce of 17 agents and engines with A0-A3 autonomy, India compliance by default, a latency budget of 1.5 s p50 at the handset, Base at INR 3.49-3.99/min ex-GST with a pre-registered ladder to INR 1.99, and a roadmap: Phase 0 gates, a v0.5 slice, then v1, v2 and v3. It is honest that VP loses today on speed, the first production call, raw voice, memory timing and languages.",
+   "path": "research/2026-10-21/blueprint/BLUEPRINT.md"
+  },
+  {
+   "id": "asset.2026-10-21.blueprint-page",
+   "type": "asset",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Visual blueprint page for the owner, who reviews visually. It holds a system map, the 10-step journey, the AI workforce, 8 drawn screens in the proposed 'naya bahi-khata' design language, a sense-by-sense scoreboard, a 12x7 rival heatmap, speed and cost charts, the learning loop, the data flow, the architecture, the roadmap, metrics, risks and the 16 owner decisions. Published as a private artifact at https://claude.ai/artifact/8ChmABjjcftL7ksC9r89yq. Rebuild with node research/2026-10-21/blueprint/page/build.js; the data is embedded from visual.json and integration.json.",
+   "paths": [
+    "research/2026-10-21/blueprint/page/vyakti-blueprint.html",
+    "research/2026-10-21/blueprint/page/build.js",
+    "research/2026-10-21/blueprint/visual.json"
+   ]
+  },
+  {
+   "id": "open.2026-10-21.blueprint-owner-decisions",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "16 owner decisions in the blueprint, each with a recommendation (research/2026-10-21/blueprint/integration.json; BLUEPRINT.md section 14). The first three set the most:\n- (1) the default stack and the speed-versus-voice rule;\n- (2) the Base price and unit, including signing off that v1 launches above INR 2;\n- (3) the first design partners, with at least one non-BFSI.\nThe others: in-product number rental, the self-learning envelope, preference-memory tier, the Operator's name, failover, the runtime split, regional languages, benchmark voices, fixed-cost recovery, spends before 2026-11-14, who builds v0.5, assisted onboarding, and the opening spec.",
+   "closes_when": "The owner answers each decision (or accepts the recommendation); each answer is logged as a decision node with reverse_if."
+  },
+  {
+   "id": "decision.2026-10-21.blueprint-defining-decisions",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed (awaiting owner): the 10 decisions that define VP.\n1. Talk to VP is the front door, and every action is a tool with hash-bound human approval for external, spend, publish and policy steps.\n2. The call is a gated cascade with one reply door, predicates in code.\n3. Conversation is configured as shapes, tracked by an agenda ledger, with one opening spec.\n4. Speed and turn-taking are one gate, judged at the handset.\n5. India's rules are on by default, on one dial path.\n6. Numbers stay in the tenant's name and can be rented inside VP.\n7. Results are earned from systems of record.\n8. Memory is a quoted, permissioned ledger.\n9. Learning is fast where it can be and honest everywhere.\n10. One honest price per connected second.",
+   "rationale": "Integrated from the spine, 9 modules and 2 red teams; each traces to measured evidence or an owner requirement (BLUEPRINT.md sections 1-2, Appendix A).",
+   "reverse_if": "The owner rejects one in review; buyer interviews (KC1-KC3) show buyers want something else; or a Phase 0 gate fails (carrier quotes refuse rental in the tenant's name; no stack passes the joint speed gate; counsel's reading of KC8 blocks service-call presets)."
+  },
+  {
+   "id": "risk.2026-10-21.blueprint-not-better-yet",
+   "type": "risk",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "On the honest scoreboard VP wins on paper in 6 of 17 senses, matches in 4, loses today in 5 (speed, user flow to a first production call, raw voice, memory timing, languages) and is unproven in 2 (UI, results). The owner's requirement is 'better in every sense'.",
+   "mitigation": "Each loss has a gate and a proof in the roadmap: the joint speed gate on handsets; in-product rental asked in the KC5 quote round; whole-call ear ratings including ElevenLabs and Cartesia; preference memory in Base late in v1; five regional betas. No claim is sold before its proof passes."
+  },
+  {
+   "id": "rejected.2026-10-21.agent-chosen-ids-in-workflows",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Looking up workflow agent outputs by an id the agent was asked to set.",
+   "tried": "The blueprint workflow asked each thematic digest agent to return id = '<fixed id>' and later stages fetched digests with D('owner-requirements').",
+   "broke": "Agents chose their own ids (owner-requirements-catalogue, call-quality-voice-turn-taking-2026-10-21 and others), so the lookup returned nothing. The integrator received the fallback text instead of the 68-item requirements catalogue. The spine and red team still saw the catalogue through the all-digests bundle, and the integrator's Appendix A covers the requirements. Fix for future scripts: stamp the id in the script after the agent returns ({...r, id: t.id}), never trust the agent's field."
   }
  ],
  "edges": [
@@ -28070,6 +28130,51 @@
   {
    "from": "directive.2026-10-21.blueprint-end-to-end",
    "to": "directive.2026-10-20.intent-better-product",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-21.blueprint-end-to-end",
+   "to": "evidence.2026-10-21.vp-blueprint",
+   "relation": "answered_by"
+  },
+  {
+   "from": "evidence.2026-10-21.vp-blueprint",
+   "to": "open.2026-10-20.product-decision",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.vp-blueprint",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "applies"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-workflow-run",
+   "to": "evidence.2026-10-21.vp-blueprint",
+   "relation": "informs"
+  },
+  {
+   "from": "asset.2026-10-21.blueprint-page",
+   "to": "evidence.2026-10-21.vp-blueprint",
+   "relation": "presents"
+  },
+  {
+   "from": "evidence.2026-10-21.vp-blueprint",
+   "to": "open.2026-10-21.blueprint-owner-decisions",
+   "relation": "raises"
+  },
+  {
+   "from": "evidence.2026-10-21.vp-blueprint",
+   "to": "decision.2026-10-21.blueprint-defining-decisions",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.vp-blueprint",
+   "to": "risk.2026-10-21.blueprint-not-better-yet",
+   "relation": "raises"
+  },
+  {
+   "from": "decision.2026-10-21.blueprint-defining-decisions",
+   "to": "decision.2026-10-21.wt-synthesis-must-be-changes",
    "relation": "extends"
   }
  ]

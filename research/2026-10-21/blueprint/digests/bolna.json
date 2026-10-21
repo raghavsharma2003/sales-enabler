@@ -1,0 +1,266 @@
+{
+ "adopt": [
+  {
+   "pattern": "Persistent cost-per-minute header with a component bar on every builder tab, plus a price table showing component, cents, pulse and the models inside the flat price",
+   "evidence": "WT report s11, s13, [25][26]; screenshots 01, 16, 34, 35: 3.5 + 0.5 + 2 = 6 cents, 30 s pulse, 38 included chips. Observed.",
+   "why": "Best price transparency of the six dashboards (WS best-in-class). VP extends it to INR, GST, and latency per option (must-be A)."
+  },
+  {
+   "pattern": "Per-language chips that carry their own prompt, voice and transcriber, plus a sectioned prompt canvas with token counter and {{var}} / @ / # insertion",
+   "evidence": "WT s3-s4, [13][15][20]; screenshots 14, 20. Observed.",
+   "why": "Right shape for Hindi, English and regional variants of one agent; the token counter is the visible side of VP's prompt-budget law. Pair with a lint, which Bolna lacks."
+  },
+  {
+   "pattern": "Barge-in recovery set: sequence-id audio gate, history trimmed to what the caller heard (mark echoes), merge of unheard user turns with a 0.7 s settle, duplicate-reply block, barge-in deferred during tool calls",
+   "evidence": "AP report s1.10, s5, s6 (code at bc59921, task_manager.py / interruption_manager.py); AS s3 notes closed vendors likely do the same. Observed in code.",
+   "why": "Prevents the agent from remembering things the caller never heard; cheap to port and independent of the reply-gap policy. VP must still replace the fixed 900 ms hold and the discard rule."
+  },
+  {
+   "pattern": "Language switching by parallel unbiased language-ID stream plus a judge, pre-warmed per-language STT, handoff clip, and the rule that a number readout never triggers a switch",
+   "evidence": "AP s1.4; evidence.2026-10-20.acct-bolna-language-switch; BI-06 and calibration.md. Observed in code.",
+   "why": "Proven recipe for the hard failure that Indian buyers report ('agent not switching language', 20 posts, L4A s6). Use as the in-doubt fallback behind one code-mixed register, not as the default path."
+  },
+  {
+   "pattern": "Auto-created, prompt-tailored, Hinglish-aware outcome judges at agent creation (success / completion), run by a cheap model",
+   "evidence": "AP s1.5, ACB-12/13: two gpt-4.1-mini dispositions appeared 5 s and 25 s after create, free, hidden. Observed via our API.",
+   "why": "Outcome analytics with zero setup is the right default. VP makes them visible, editable in chat, graded against verified keys, and wired to the v2 learning loop."
+  },
+  {
+   "pattern": "Row-level import failure codes (invalid_phone, missing_required_value, duplicate_reference_id, empty_row, invalid_field_type), corrective re-upload, and +91 default for bare numbers",
+   "evidence": "AP s1.7, ACB-19/20 (workflow campaign schema; vendor-claimed grade on ACB-19, dashboard upload not exercised).",
+   "why": "Matches must-be CSV hygiene (W2). VP also dedupes on E.164 and applies opt-out/DND per row, which Bolna lacks."
+  },
+  {
+   "pattern": "Rich typed execution record: cost_breakdown lines, hangup_by/reason/provider_code, ring_duration, post_dial_delay, carrier, raw per-component log, per-turn progression, 12 hangup_detail codes",
+   "evidence": "AP s3, s7, ACB-21/22. Observed in API schema and code.",
+   "why": "Raw material for failure explainability (W6) and learning. VP adds a business-language reason and an action on top of the engineering code."
+  },
+  {
+   "pattern": "Live events API into a running call, and graph event edges that route on those events",
+   "evidence": "AP s7: POST /v1/call/{run_id}/events; graph agents route on event edges. Observed in code and docs.",
+   "why": "Lets CRM, payment or WhatsApp events change a live call, which VP's agenda ledger needs for relational calls."
+  },
+  {
+   "pattern": "UI contract patterns: dependent fields disabled with a reason, workflow nodes whose descriptions state their contract, definitional empty states with one CTA, SIP trunk Health / Active calls / Last call, API and MCP buttons beside every list page, webhook Send test beside config",
+   "evidence": "WT s13 ledger, screenshots 05, 09, 10, 18, 22, 23. Observed.",
+   "why": "Cheap, high-value usability moves VP can match on day one; they feed must-be D (a reason on every disabled action)."
+  },
+  {
+   "pattern": "Developer surface as product: Bearer API, CLI, MCP server listed as a Claude connector, 20 Skills, AGENTS.md and llms.txt, Ask Bolna that reads and writes account state",
+   "evidence": "TD report s1 (BOL-02), WT [41]; AP s11. Observed.",
+   "why": "Chat setup is parity, not a wedge (5 of 6 vendors ship a copilot, WS finding 8). VP matches it and wins on what the chat sets up (compliance, judges, tests)."
+  },
+  {
+   "pattern": "LLM overflow failover and typed component errors that hang up cleanly with a reason code",
+   "evidence": "AP s1.8, s5; hangup_detail list; evidence.2026-10-20.acct-bolna-llm-overflow. Observed in code.",
+   "why": "Good base for VP's disclosed same-voice fallback policy; extend to STT, TTS and carrier with an active breaker."
+  },
+  {
+   "pattern": "Telephony trust surface: Truecaller verification per number, BYO carrier presets via SIP trunk, India-routing label, Indian-numbers-first KYC that states required documents before the click",
+   "evidence": "WT s8, [42][44][45]; ACB-16; BOL-51. Observed.",
+   "why": "Answered-rate and first-ring speed are India-specific differentiators; VP shows the gate as a checklist before any credential is asked (W7)."
+  }
+ ],
+ "beat": [
+  {
+   "gap": "Reply gap is invisible and structurally slow: 500 ms endpointing plus a 900 ms output hold gives a floor of about 1.4 s, with no predicted gap in the UI",
+   "how_vp_beats": "Pause-aware release instead of a fixed hold, a predicted reply gap shown beside the turn controls, plain-language presets. Test: stereo PSTN battery on an Indian handset, 30+ clean turns per vendor. Pass: VP p50 at least 0.3 s below Bolna, p90 2.5 s or less, cut-ins 5% or less (W3). Caveat: Bolna's floor is inferred, not measured, and VP's own turn-taking is unsolved (15-42% cut-ins, open.2026-10-19.turn-taking).",
+   "evidence": "AP s1.2, AS s2, WT [31][32]; TP-016"
+  },
+  {
+   "gap": "Short Hindi replies spoken over the agent are discarded (final of 1 word or fewer not on an English exact-match stop list); speech during the welcome is dropped; stop and filler lists are English-only",
+   "how_vp_beats": "Classify every short reply as acknowledgement, objection or stop with a Hinglish lexicon; never discard; listen during the opening. Test: 4 short Hindi replies (haan, nahi, ruko, bas) said over the agent plus barge turns. Pass: VP 90% or more handled and stops within 600 ms; kill if VP is not above the incumbent median (W4, risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven).",
+   "evidence": "AP s1.3, ACB-35; calibration.md; WT [35][36] (welcome toggle OFF by default needs a condition)"
+  },
+  {
+   "gap": "Compliance is reactive: guardrails off by default and whole-hour only, no NCPR/DND scrub, consent only as proof after a violation report, wrong 9-21 window, no consent/DND/contact objects, no compliance field on the campaign or batch form",
+   "how_vp_beats": "Compliance on by default as campaign and contact fields: category-aware windows (10:00-21:00 promotional), NCPR/DND suppression on every path, consent ledger, AI disclosure, series routing. Test T2: messy CSV with an opt-out row and a DND number, rings on those rows must be 0, opt-out carried to a second campaign (T9b). Pass: VP 0 and 0 against an incumbent median of 1 or more (W1).",
+   "evidence": "BOL-44..48, ACB-20, WT s9 [48][49], TS W1; calibration (0 India compliance lines in the engine)"
+  },
+  {
+   "gap": "Two overlapping outbound systems (Batches report only counts; Campaigns need a published workflow and are Beta); no contact object; dedupe by reference_id, not phone",
+   "how_vp_beats": "One contact-centric campaign from a contact list and an agent, no mandatory workflow, no Beta label; E.164 normalise and dedupe on phone; contacts carry DND status, attempt history and a reserved memory slot (must-be B). Test: 50-row messy CSV, count duplicates dialled, per-row reasons shown, minutes from upload to correct 'valid' count.",
+   "evidence": "ACB-19/20/21, WT s9 [46][47], WS must-be B"
+  },
+  {
+   "gap": "No price or latency in any picker; non-preferred models silently leave the flat rate; USD wallet and invoices with mixed cents/dollars/rupees; 30 s pulse makes a 5 s no-answer cost about INR 2.9; displayed floor INR 4.30 vs VP ambition about INR 2",
+   "how_vp_beats": "INR with GST everywhere; measured India p50 first-audio and rupee cost on every stack option; one all-in INR per connected minute including telephony, pulse and turn wait; per-second or very short stated pulse; pre-launch campaign cost estimate; spend caps. Test: time for a buyer to pick a stack that meets a stated price and gap target; cost of a 5 s voicemail call. Needs a cheaper default stack, since Bolna's COGS is INR 2.0-3.8 and it can follow a discount (rejected.2026-10-17.parity-undercut).",
+   "evidence": "WT s4, s11, [25][26][52]; BOL-36..38; WS must-be A and 19"
+  },
+  {
+   "gap": "Outcome judges are hidden, vendor-owned and not connected to anything; no experiments, no customer learning loop; no cross-call memory or contact entity",
+   "how_vp_beats": "Visible, editable judges set up in chat and graded against verified keys (a model never grades itself), feeding the v2 learning loop with honest statistics; consented, editable contact memory across calls that feeds the agenda ledger (no raw-fact memory, rejected.2026-10-20.raw-fact-memory). Test: judge agreement with human-verified outcomes; share of second calls that correctly use first-call context.",
+   "evidence": "ACB-12/13, BOL-60..62, WT s6 [14]; AS s3"
+  },
+  {
+   "gap": "Failure explainability is thin and carriers are single-homed: 9 of 18 incidents are upstream Indian telephony, no carrier failover, STT/TTS only reconnect, circuit breaker in shadow mode, debugging is an execution-ID search",
+   "how_vp_beats": "Dual-carrier routing with an active breaker, a disclosed same-voice fallback, and a failed-call view that shows a business-language reason, the carrier code and an action. Test T5: five induced failures. Pass: each found in under 60 s, 5 of 5 correct, 4 or more actionable (W6).",
+   "evidence": "BOL-40, AP s1.8, WT s10; ACB-14 (undocumented 'prepared' status)"
+  },
+  {
+   "gap": "Testing is a phone call to a verified number only: no in-builder browser voice or text test, no simulation or eval surface, no unsaved-state marker or version visibility; India number gate shown as an error after country selection",
+   "how_vp_beats": "Docked browser voice and text test needing no KYC, simulated-caller tests in the builder, unsaved marker and version diff, and a pre-flight checklist for the Indian number path (documents, series, price, time). Test T0/W7: minutes from sign-up to first ring on an Indian handset. Pass: VP 15 min or less on a BYO or pre-provisioned number; kill if Bolna or Sarvam does it in 20 min or less (person-KYC makes that more plausible).",
+   "evidence": "WT s2, s7, s8 [40][53], WS must-be D and item 1; TS W7, W10"
+  },
+  {
+   "gap": "Hinglish is handled by a whole-stack language swap with a judge call, 22 language options but no Hinglish or code-mixed mode, an unexplained 'India Multilingual', and a voice list with no language field and romance voices",
+   "how_vp_beats": "A single code-mixed register (code-mixed STT plus TTS that speaks mixed script), the judge only when in doubt; voice picker filtered by language and register with counts, no romance voices in business catalogues. Test (W5): language hold of 80% or more on Hinglish turns and no English replies after a full switch to Hindi (TP-019/020), judged by ear as well as by metric (rejected.harvest.09).",
+   "evidence": "AP s1.4, s12; WT s4 [20][22][23]; TP-019, TP-020"
+  },
+  {
+   "gap": "Voicemail detection is a transcript classifier that waits for 7+ words and checks every 7 s for up to 30 s (billed meanwhile), with no Hindi or regional operator messages",
+   "how_vp_beats": "An Indian operator-message lexicon in about 10 languages with early exit and a reason code, so a switched-off or voicemail call ends in seconds. Test: 5 calls to numbers that play Hindi operator or IVR messages (TP-011); compare detection time and billed seconds. Needs a call lab; not yet run.",
+   "evidence": "ACB-41, AP s12; TP-011"
+  },
+  {
+   "gap": "Trust and operations: 4 of 4 Trustpilot reviews are 1 star about unanswered demos, refunds and refused pilots; webhooks unsigned; docs and server defaults disagree; unknown API fields silently dropped; no published OpenAPI file; fee and pulse confusion",
+   "how_vp_beats": "Human support in Indian business hours with a first-reply target under 2 h, one transparent fee line, HMAC-signed webhooks, a spec-first API that returns 422 on unknown fields and supports idempotency keys, and a tested stored-config equals running-config guarantee. Test T8: one real setup question filed at 11:00 IST on a weekday (Bolna P13 predicts over 24 h); test W10 by diffing an API-created agent against what was sent. Support is an operating promise, not product.",
+   "evidence": "TD s7, R2 s3.2, BOL-14, ACB (api drift), AS s2; TS W9, W10; TP-022"
+  },
+  {
+   "gap": "Warm transfer and live-call context are weak: transfer POSTs no summary after a fixed 2 s sleep, so the human receives a cold call",
+   "how_vp_beats": "Warm hand-off with a spoken-quality summary and the agenda-ledger state delivered to the human before connect; transfer reason recorded as an outcome. Test: listen on the receiving handset in the call battery (TP-013); score completeness of context received.",
+   "evidence": "AP s5.6 (ACB), TP-012, TP-013"
+  }
+ ],
+ "numbers": [
+  {
+   "metric": "PAYG list price per minute (bundled voice 3.5 + telephony 0.5 + platform 2.0)",
+   "value": "6.0 cents (~INR 5.72 displayed), 30 s pulse on each line",
+   "grade": "observed (dashboard display)",
+   "evidence": "WT report s11 [26][28]; BOL-33"
+  },
+  {
+   "metric": "Best published volume rate",
+   "value": "4.51 cents (~INR 4.30) on a $3,000 top-up; Pilot ~4.2-4.6 cents; AWS annual ~4 cents",
+   "grade": "observed (top-up, Pilot); vendor-claimed (AWS)",
+   "evidence": "WT [28]; BOL-33/34"
+  },
+  {
+   "metric": "All-in INR per connected Indian minute, PAYG",
+   "value": "~5.7-6.1 (was 6.1-8.0 before the dashboard put the platform fee inside the 6 cents)",
+   "grade": "inferred (invoice not seen)",
+   "evidence": "WT s11 [27]; BOL-36; open.2026-10-20.bolna-blind-platform-fee"
+  },
+  {
+   "metric": "Minimum charge for a very short call (voicemail / no-answer)",
+   "value": "at least ~3 cents (~INR 2.9) because of the 30 s pulse",
+   "grade": "inferred",
+   "evidence": "WT [52]"
+  },
+  {
+   "metric": "Reconstructed default-stack COGS per connected minute",
+   "value": "INR 2.0-3.8 (mid 2.8) at FX 95",
+   "grade": "inferred",
+   "evidence": "BOL-37; TS s6"
+  },
+  {
+   "metric": "Implied gross margin on the voice bundle",
+   "value": "46-72% PAYG, 22-60% Pilot, 18-58% AWS annual",
+   "grade": "inferred",
+   "evidence": "BOL-38"
+  },
+  {
+   "metric": "Reply-gap floor of the default cascade",
+   "value": "~1.4 s = 500 ms endpointing + 900 ms output hold (+ buffering, transport); not measured",
+   "grade": "inferred (code + stored defaults)",
+   "evidence": "AP report s1.2; AS s2 spot check; TP-016"
+  },
+  {
+   "metric": "Stored vs documented turn defaults",
+   "value": "words to interrupt 1 vs 2; incremental_delay 900 vs 400 ms; hangup_after_silence 20 vs 10 s; call_terminate 90 s; TTS stream false, buffer 40",
+   "grade": "observed (our API read-back; dashboard saved agent matches, creation path unknown)",
+   "evidence": "AP s1.6; WT [31][55]"
+  },
+  {
+   "metric": "Short-reply discard rule",
+   "value": "finals of 1 word or fewer spoken over the agent are dropped unless on an English exact-match stop list",
+   "grade": "observed (code)",
+   "evidence": "AP s1.3; calibration.md"
+  },
+  {
+   "metric": "Blind-inference hit rate vs Bolna code",
+   "value": "0.90 lenient (16/20), 0.75 strict; second rater 0.85 (14/6/0), Brier 0.086-0.089; n=20",
+   "grade": "measured",
+   "evidence": "TD calibration.md; AP blind-scoring.json"
+  },
+  {
+   "metric": "API surface",
+   "value": "128 operations, 96 paths, 183 schemas (rebuilt; no openapi.yml)",
+   "grade": "observed",
+   "evidence": "AP report s0, s4"
+  },
+  {
+   "metric": "Open-source engine size",
+   "value": "43,962 source lines, 120 files, 2,072 test functions; task_manager.py 9,772 lines",
+   "grade": "observed",
+   "evidence": "AP s0; TD calibration.md"
+  },
+  {
+   "metric": "Status incidents, last 6 months",
+   "value": "18 de-duplicated; 9 upstream Indian telephony, 3 model-provider, 2 latency, 2 queue, 1 webhook",
+   "grade": "observed",
+   "evidence": "BOL-40; measure.2026-10-20.bolna-blind-status-incidents"
+  },
+  {
+   "metric": "Changelog velocity",
+   "value": "72 entries May-Oct 2026 vs 36 in Nov 2025-Apr 2026",
+   "grade": "observed",
+   "evidence": "BOL-39"
+  },
+  {
+   "metric": "Trustpilot",
+   "value": "2.6 stars, 4 reviews, all 1 star (support, refund, pilot, demo no-show)",
+   "grade": "observed (n=4, low weight)",
+   "evidence": "TD report s7; R2 s3.2"
+  },
+  {
+   "metric": "Customers and revenue",
+   "value": "1,050+ paying customers, ~INR 50 lakh/month, seed USD 6.3M; call-volume and headcount claims contradict",
+   "grade": "vendor-claimed / secondary",
+   "evidence": "L4A s3 row 104; BOL-42"
+  },
+  {
+   "metric": "Models inside the flat price",
+   "value": "38 (9 ASR, 13 LLM, 16 TTS)",
+   "grade": "observed",
+   "evidence": "WT [35]"
+  },
+  {
+   "metric": "Voice catalogue",
+   "value": "1,280 ElevenLabs Hindi voices via API vs about 100 in the dashboard picker; 16 TTS providers via API vs 8 in the dashboard",
+   "grade": "observed",
+   "evidence": "AP ACB-17; WT s4 [22]"
+  },
+  {
+   "metric": "Campaign upload limits and trial limits",
+   "value": "32 MB / 150,000 rows; trial $5 = 83 min, concurrency 2, verified numbers only; Pilot concurrency 25",
+   "grade": "observed",
+   "evidence": "WT [46][30]; BOL-33"
+  },
+  {
+   "metric": "Voicemail detection timing",
+   "value": "waits for 7+ words, checks every 7 s, 30 s window, 2.5 s detection setting",
+   "grade": "observed (code)",
+   "evidence": "ACB-41; AP s9"
+  },
+  {
+   "metric": "Language-switch judge timing",
+   "value": "duplicate request at 1.8 s, give-up at 6 s, code comment p50 ~1.4 s; default judge claude-haiku-4-5",
+   "grade": "observed (code comment, not measured)",
+   "evidence": "AP s1.4; calibration.md"
+  },
+  {
+   "metric": "Price history at entry tier",
+   "value": "$0.10 > $0.05 (2025-12) > monthly plans 7/6/5c (2026-03) > PAYG 6c: -40% in 6 months",
+   "grade": "observed",
+   "evidence": "L4A s5 pricing history"
+  },
+  {
+   "metric": "Competitor-run latency test of Bolna",
+   "value": "1.5-2.0 s perceived, n=150, conflicted source",
+   "grade": "vendor-claimed (competitor), hypothesis only",
+   "evidence": "TD report s7 item 8"
+  }
+ ]
+}

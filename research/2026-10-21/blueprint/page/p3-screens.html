@@ -1,0 +1,392 @@
+<style>
+.plates { display: grid; gap: var(--s7); }
+.plate { display: grid; gap: var(--s4); min-width: 0; }
+.plate-head { display: grid; gap: 4px; max-width: 80ch; }
+.plate-head h3 { font-family: var(--f-display); font-weight: 600; font-size: 22px; }
+.plate-head p { color: var(--ink-2); }
+.beats { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--ink-2); background: var(--page); border: 1px dashed var(--rule-strong); border-radius: var(--r2); padding: 10px 12px; max-width: 90ch; }
+.beats b { color: var(--win); white-space: nowrap; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding-top: 2px; }
+.pair { display: grid; gap: var(--s5); grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 900px) { .pair { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
+
+/* talk */
+.talk-grid { display: grid; grid-template-columns: 1fr; min-height: 420px; }
+@media (min-width: 860px) { .talk-grid { grid-template-columns: 150px minmax(0, 1fr) 230px; } }
+.rail { display: none; border-right: 1px solid var(--rule); padding: 12px 8px; gap: 2px; font-size: 13px; }
+@media (min-width: 860px) { .rail { display: grid; align-content: start; } }
+.rail span { padding: 6px 10px; border-radius: 8px; color: var(--ink-2); }
+.rail span.on { background: var(--green-soft); color: var(--green); font-weight: 600; }
+.thread { padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.msg { max-width: 86%; padding: 9px 12px; border-radius: 12px; font-size: 14px; }
+.msg.me { justify-self: end; background: var(--ink); color: var(--page); border-bottom-right-radius: 4px; }
+.msg.vp { background: var(--green-soft); border-bottom-left-radius: 4px; }
+.msg .who { display: block; font-size: 11px; opacity: .7; margin-bottom: 2px; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.plan li { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--rule); font-size: 13.5px; }
+.plan li:last-child { border-bottom: 0; }
+.plan .k { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); }
+.risk { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--rule-strong); color: var(--ink-3); white-space: nowrap; }
+.risk.t { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 50%, transparent); }
+.risk.x { color: var(--seal); border-color: color-mix(in oklab, var(--seal) 55%, transparent); background: var(--seal-soft); }
+.composer { display: flex; gap: 8px; align-items: center; border: 1px solid var(--rule-strong); border-radius: 12px; padding: 8px 10px; }
+.mic { width: 30px; height: 30px; border-radius: 50%; background: var(--green); color: var(--page); display: grid; place-items: center; font-size: 13px; flex: none; }
+.working { border-left: 1px solid var(--rule); padding: 14px; display: none; align-content: start; gap: 8px; }
+@media (min-width: 860px) { .working { display: grid; } }
+.ready li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13px; padding: 4px 0; }
+.st { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--rule-strong); margin-top: 3px; }
+.st.done { background: var(--green); border-color: var(--green); }
+.st.half { background: linear-gradient(90deg, var(--green) 50%, transparent 50%); border-color: var(--green); }
+.st.lock { border-radius: 3px; border-color: var(--seal); }
+
+/* voice by ear */
+.vrow { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.vrow .meta { font-size: 12px; color: var(--ink-3); }
+.vrow.pick { background: color-mix(in oklab, var(--green-soft) 60%, transparent); margin: 0 -12px; padding: 10px 12px; border-radius: 8px; border-bottom-color: transparent; }
+.letter { font: 600 13px var(--f-mono); width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; border: 1px solid var(--rule-strong); }
+
+/* import */
+.flowbar { display: flex; height: 22px; border-radius: 6px; overflow: hidden; margin: 10px 0 6px; border: 1px solid var(--rule); }
+.flowbar span { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+table.rows { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.rows th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--rule-strong); }
+table.rows td { padding: 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.rows code { font-family: var(--f-mono); font-size: 11.5px; background: var(--paper); padding: 1px 5px; border-radius: 4px; }
+
+/* launch */
+.launch { display: grid; gap: 10px; padding: 14px; }
+.launch-sec { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); font-size: 13.5px; }
+.launch-sec > b { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3); padding-top: 2px; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.ck { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--green-soft); color: var(--green); }
+.ck.wait { background: var(--gold-soft); color: var(--gold); }
+.holdbtn { display: flex; align-items: center; gap: 12px; }
+.ringp { width: 38px; height: 38px; border-radius: 50%; background: conic-gradient(var(--seal) 0 64%, var(--seal-soft) 64% 100%); display: grid; place-items: center; }
+.ringp::after { content: ""; width: 28px; height: 28px; border-radius: 50%; background: var(--page); }
+
+/* mission control */
+.mc-head { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border-bottom: 1px solid var(--rule); }
+.mc-head > div { background: var(--page); padding: 10px 12px; }
+.mc-head b { display: block; font-size: 16px; }
+.meter { height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; margin-top: 6px; }
+.meter i { display: block; height: 100%; background: var(--green); }
+.mc-body { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 12px; }
+@media (min-width: 860px) { .mc-body { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.tile { border: 1px solid var(--rule); border-radius: 10px; padding: 9px 10px; font-size: 13px; display: grid; gap: 4px; }
+.tile .row { display: flex; justify-content: space-between; gap: 6px; }
+.ledger-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.lc { font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--rule-strong); color: var(--ink-3); }
+.lc.on { background: var(--green-soft); color: var(--green); border-color: transparent; }
+.alerts li { display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.sev { font: 600 10.5px var(--f-mono); padding: 2px 6px; border-radius: 4px; height: fit-content; }
+.sev.c { background: var(--lose); color: var(--page); }
+.sev.w { background: var(--gold-soft); color: var(--gold); }
+.sev.i { background: var(--green-soft); color: var(--green); }
+.funnel { display: grid; gap: 4px; }
+.funnel div { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; align-items: center; font-size: 12.5px; }
+.funnel span.b { height: 10px; border-radius: 3px; background: color-mix(in oklab, var(--green) 70%, var(--page)); }
+
+/* call page */
+.call-head { padding: 12px 14px; border-bottom: 1px solid var(--rule); display: grid; gap: 6px; }
+.lanes { padding: 12px 14px; border-bottom: 1px solid var(--rule); display: grid; gap: 6px; }
+.lane { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-3); }
+.lane .wave { height: 26px; position: relative; }
+.cut { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--lose); }
+.call-body { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .call-body { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+.transcript { padding: 12px 14px; display: grid; gap: 10px; align-content: start; }
+.turn { display: grid; grid-template-columns: 54px 1fr; gap: 8px; font-size: 13.5px; }
+.turn .ts { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); padding-top: 2px; }
+.turn .alt { display: block; color: var(--ink-3); font-size: 12.5px; }
+.adapt { font-size: 12.5px; background: var(--gold-soft); color: var(--ink); border-radius: 8px; padding: 6px 9px; }
+.inspector { border-left: 1px solid var(--rule); padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.tabs span { font-size: 12px; padding: 4px 8px; border-radius: 6px; color: var(--ink-3); }
+.tabs span.on { background: var(--ink); color: var(--page); }
+.why li { display: grid; grid-template-columns: 16px 1fr; gap: 6px; font-size: 13px; padding: 5px 0; border-bottom: 1px dashed var(--rule); }
+.why .ok { color: var(--win); font-weight: 700; }
+
+/* learning */
+.hazard { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; align-items: end; height: 46px; margin: 8px 0 4px; }
+.hazard i { display: block; background: color-mix(in oklab, var(--green) 45%, var(--rule)); border-radius: 2px 2px 0 0; }
+.hazard i.hot { background: var(--seal); }
+
+/* phone screens */
+.phone .scr { padding: 12px 14px 0; display: grid; gap: 10px; font-size: 13.5px; }
+.phone .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; border-top: 1px solid var(--rule); padding: 8px 4px 12px; margin-top: 12px; font-size: 11px; color: var(--ink-3); text-align: center; }
+.phone .tabbar .c { display: grid; justify-items: center; gap: 2px; }
+.phone .tabbar .c .mic { width: 42px; height: 42px; margin-top: -18px; box-shadow: 0 6px 14px -6px var(--green); }
+.needs li { display: grid; grid-template-columns: 10px 1fr; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.needs li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--seal); margin-top: 6px; }
+.needs li.issue::before { background: var(--gold); }
+.needs li.prop::before { background: var(--green); }
+.alarm { background: var(--seal); color: var(--page); border-radius: 14px; padding: 14px; display: grid; gap: 8px; }
+.alarm .btn { background: var(--page); color: var(--seal); border-color: var(--page); }
+.example-tag { font: 500 10.5px var(--f-mono); letter-spacing: .04em; color: var(--ink-3); border: 1px dashed var(--rule-strong); border-radius: 4px; padding: 1px 6px; margin-left: auto; }
+</style>
+
+<section class="entry" id="screens">
+  <div class="entry-head"><span class="tag">५</span><h2>Key screens, drawn</h2>
+    <p class="lede">Eight screens in VP's proposed design language: a modern bahi-khata (ledger) with forest-green ink, ruled paper and a terracotta seal on whatever needs you. The names, numbers and lines are realistic examples, not customer data.</p></div>
+  <div class="plates">
+
+    <!-- A. Talk -->
+    <article class="plate">
+      <div class="plate-head"><span class="eyebrow">Front door · the first conversation</span><h3>Talk to VP: say the job, see the plan</h3>
+        <p>You say the job in one line. VP plans the whole campaign, starts the drafts that touch nobody, and stops at the one step that reaches real people.</p></div>
+      <div class="device ui">
+        <div class="bar"><span class="url">vyakti.ai/talk</span><span>Sharma Insurance · Owner view</span><span class="example-tag">EXAMPLE</span></div>
+        <div class="talk-grid">
+          <nav class="rail" aria-label="App sections (mock)"><span>Today</span><span class="on">Talk</span><span>Campaigns</span><span>Calls</span><span>Contacts</span><span>Agents</span><span>Insights</span><span>Settings</span></nav>
+          <div class="thread">
+            <div class="msg me">motor policy renewal reminders, 1,200 customers</div>
+            <div class="msg vp"><span class="who">VP</span>Theek hai. Renewal reminder service call bana rahi hoon. Sample customer ke saath sun ke dekhiye.</div>
+            <div class="card"><b>Customers zyada Hindi bolte hain ya English?</b> <span class="muted tiny">Default: Hinglish</span>
+              <div class="opts"><span class="btn primary">Use Hinglish</span><span class="btn">Hindi</span><span class="btn">English</span></div></div>
+            <div class="card plan">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><b>Plan · Motor renewal reminders</b><span class="muted tiny">service call</span></div>
+              <ol>
+                <li><span class="k">1</span><span>Set the job and how a renewal is counted</span><span class="risk">Draft</span></li>
+                <li><span class="k">2</span><span>Company facts from sharmainsurance.in, to approve</span><span class="risk">Draft</span></li>
+                <li><span class="k">3</span><span>Pick her voice by ear</span><span class="risk">Draft</span></li>
+                <li><span class="k">4</span><span>Six simulated callers, Hinglish</span><span class="risk t">Test · ₹12</span></li>
+                <li><span class="k">5</span><span>Read your list and clean it</span><span class="risk">Read</span></li>
+                <li><span class="k">6</span><span>Ring your phone as row 1</span><span class="risk t">Test</span></li>
+                <li><span class="k">7</span><span>Launch to 1,182 customers</span><span class="risk x">Reaches people · Spends</span></li>
+              </ol>
+              <p class="muted tiny" style="margin-top:6px">VP will do 1-6 now; 7 waits for you.</p>
+            </div>
+            <div class="composer"><span class="mic">●</span><span class="muted" style="flex:1">Kaunsi calls karwani hain? Bol ke ya likh ke batayein</span><span class="chip" style="font-size:11px">heard as: "kal se chalao"</span></div>
+          </div>
+          <aside class="working"><span class="eyebrow">Working on</span>
+            <ul class="ready">
+              <li><span class="st done"></span><span>Job and outcome</span></li>
+              <li><span class="st half"></span><span>Voice <span class="muted">· in progress</span></span></li>
+              <li><span class="st"></span><span>Test call</span></li>
+              <li><span class="st"></span><span>List</span></li>
+              <li><span class="st"></span><span>Ring my phone</span></li>
+              <li><span class="st lock"></span><span>Number <span class="muted">· needs KYC: PAN + GST certificate, about 1-3 days</span></span></li>
+              <li><span class="st lock"></span><span>Launch</span></li>
+            </ul>
+            <p class="tiny muted">The rail pushes the page aside; it never covers what you are working on.</p>
+          </aside>
+        </div>
+      </div>
+      <p class="beats"><b>Beats</b><span>Sarvam's prompt box builds only the agent, and Retell's checklist covers its own canvas. Here the whole job is planned, the drafts already run, and the one risky step is marked before you reach it.</span></p>
+    </article>
+
+    <!-- B + C -->
+    <div class="pair">
+      <article class="plate">
+        <div class="plate-head"><span class="eyebrow">Data in · any file</span><h3>Every row, with a reason</h3>
+          <p>Drop a messy CSV. VP fixes what it safely can, explains every other row, and never rejects the whole file.</p></div>
+        <div class="device ui">
+          <div class="bar"><span class="url">vyakti.ai/campaigns/renewals-oct/import</span><span class="example-tag">EXAMPLE</span></div>
+          <div style="padding:14px">
+            <b>1,240 rows → 1,191 callable</b>
+            <div class="flowbar" aria-hidden="true"><span style="width:96.05%;background:var(--green)"></span><span style="width:.97%;background:var(--lose)"></span><span style="width:.73%;background:var(--seal)"></span><span style="width:2.25%;background:var(--gold)"></span></div>
+            <div class="legend"><span><i style="background:var(--green)"></i>1,191 callable (37 numbers fixed)</span><span><i style="background:var(--lose)"></i>12 rejected</span><span><i style="background:var(--seal)"></i>9 opted out, kept suppressed</span><span><i style="background:var(--gold)"></i>28 duplicates merged</span></div>
+            <p class="tiny muted" style="margin-top:6px">212 already paid: checked again at dial time and not called.</p>
+            <div class="scroll-x" style="margin-top:10px"><table class="rows">
+              <thead><tr><th>Row</th><th>What happened</th><th>Fix</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">R27</td><td><code>LANDLINE_TRUNCATED</code><br>Mumbai number needs 8 digits after 22</td><td>Correct the number</td></tr>
+                <tr><td class="mono">R30</td><td><code>SCI_NOTATION</code><br>Excel turned this into 9.1E+11</td><td>Export the column as text</td></tr>
+                <tr><td class="mono">R11</td><td><code>OPT_OUT_WINS</code><br>R09 says opted out on 12 Oct</td><td>None: stays suppressed</td></tr>
+              </tbody></table></div>
+            <div class="opts" style="margin-top:10px"><span class="btn">Download failed rows (with fix column)</span><span class="btn">Ring my phone as R01</span><span class="btn primary">Continue to campaign</span></div>
+          </div>
+        </div>
+        <p class="beats"><b>Beats</b><span>Vapi turned a 10-digit mobile into +98 and rejected the file; Retell imported +91 numbers as +1; Exotel drops duplicates silently. Target: 48 of 50 messy rows right in under 5 minutes.</span></p>
+      </article>
+
+      <article class="plate">
+        <div class="plate-head"><span class="eyebrow">Voice · chosen by ear</span><h3>Pick her voice by listening</h3>
+          <p>Blind first, names after. Speed and price sit beside every voice, so the trade-off is visible when you choose.</p></div>
+        <div class="device ui">
+          <div class="bar"><span class="url">…/agents/asha/voice</span><span class="example-tag">EXAMPLE</span></div>
+          <div style="padding:12px 14px">
+            <p class="tiny muted">Same line, three voices: <span style="color:var(--ink)">"Namaste Rahul ji, main Sharma Insurance ki AI assistant bol rahi hoon. Aapki car policy 28 Oct ko renew honi hai..."</span></p>
+            <div class="vrow pick"><span class="letter">A</span><span><b>Ananya</b> <span class="meta">· warm · Hinglish · you rated 8/10</span><span class="wave" data-wave="5"></span></span><span class="meta mono" style="text-align:right">624 ms<br>first audio, lab</span></div>
+            <div class="vrow"><span class="letter">B</span><span><b>Kabir</b> <span class="meta">· crisp · 6/10</span><span class="wave b" data-wave="9"></span></span><span class="meta mono" style="text-align:right">not<br>measured</span></div>
+            <div class="vrow"><span class="letter">C</span><span><b>Sunita</b> <span class="meta">· respectful, slower · 7/10</span><span class="wave" data-wave="13"></span></span><span class="meta mono" style="text-align:right">not<br>measured</span></div>
+            <div class="opts"><span class="chip">Warm</span><span class="chip">Crisp</span><span class="chip">Respectful (elderly pace)</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:10px"><span class="tiny muted">Predicted reply gap +190 ms vs current</span><span class="btn primary">Choose Ananya</span></div>
+          </div>
+        </div>
+        <p class="beats"><b>Beats</b><span>Retell has no Indian voices; Bolna's Hindi list carries romance voices; Sarvam shows no latency or price at the choice. A voice that does not match the language is refused.</span></p>
+      </article>
+    </div>
+
+    <!-- D Launch -->
+    <div class="pair">
+      <article class="plate">
+        <div class="plate-head"><span class="eyebrow">Launch · one approval</span><h3>A launch card that explains itself</h3>
+          <p>Who, when, what she will say, the checks, the money and the expected result, on one card. You hold for 1.2 seconds to launch.</p></div>
+        <div class="device ui">
+          <div class="bar"><span class="url">…/campaigns/renewals-oct</span><span class="example-tag">EXAMPLE</span></div>
+          <div class="launch">
+            <div class="launch-sec"><b>Who</b><span>1,182 callable · 9 opt-outs skipped · 3 held for review</span></div>
+            <div class="launch-sec"><b>When</b><span>22-24 Oct · 10:00-19:00 in each customer's local time · up to 3 attempts · est. finish 24 Oct 16:00</span></div>
+            <div class="launch-sec"><b>She says</b><span><span class="play" style="display:inline-grid;width:22px;height:22px;vertical-align:middle">▶</span> 20 s sample from a real row<br><span class="muted">Must: due date, renewal link on WhatsApp · Never: offers</span></span></div>
+            <div class="launch-sec"><b>Checks</b><div class="checks"><span class="ck">AI line locked</span><span class="ck">Window</span><span class="ck">Suppression</span><span class="ck">6/6 simulations</span><span class="ck">Cap ₹25,000</span><span class="ck">A2P declared</span><span class="ck wait">KYC pending · submitted 21 Oct · usually 1-3 days · tests continue</span></div></div>
+            <div class="launch-sec"><b>Money</b><span class="num">₹14,200-19,600 all-in, incl. telephony and GST (estimate)</span></div>
+            <div class="launch-sec" style="border:0"><b>Result</b><span>No baseline yet: renewals counted from your payment webhook</span></div>
+            <div class="holdbtn"><span class="ringp" aria-hidden="true"></span><span class="btn hold">Hold to launch</span><span class="tiny muted">"haan launch karo" opens this card; the tap is still needed</span></div>
+          </div>
+        </div>
+        <p class="beats"><b>Beats</b><span>0 of 6 rival campaign forms carry consent, DND or DLT; Vapi and Retell grey out Launch with no reason. Here a blocked Launch names each blocker, who can fix it, and a link.</span></p>
+      </article>
+
+      <!-- H Today phone -->
+      <article class="plate">
+        <div class="plate-head"><span class="eyebrow">Daily loop · on the phone</span><h3>Today, at 09:15</h3>
+          <p>Outcomes, money and at most seven approvals. Run the business from a phone, by voice.</p></div>
+        <div class="phone ui">
+          <div class="notch"><span>9:15</span><span>●●● 4G</span></div>
+          <div class="scr">
+            <div><span class="deva" style="font-size:18px">शुभ प्रभात</span>, <b>Priya</b><br><span class="tiny muted">Renewals Oct: 412 connected (n = 1,191 dialled) · <b style="color:var(--ink)">63 renewals confirmed</b> by webhook</span></div>
+            <div><span class="eyebrow" style="color:var(--seal)">Needs you · 4 of max 7</span>
+              <ul class="needs">
+                <li><span><b>Launch Pre-due EMI Nov</b><br><span class="tiny muted">expires in 1 h 40 min</span></span></li>
+                <li><span><b>Publish v4</b>: slower pace, no offers</span></li>
+                <li class="issue"><span>31 calls in Pune ended within 10 s of the opening</span></li>
+                <li class="prop"><span>Shorter opening for elderly callers · needs about 686 calls per arm</span></li>
+              </ul></div>
+            <div class="card" style="display:grid;gap:4px"><span><span class="dot" style="color:var(--win);display:inline-block"></span> Renewals Oct · 12 live · 38/min <span class="btn" style="float:right;padding:3px 8px">Pause</span></span>
+              <span class="num tiny">₹18,240 of ₹25,000 spent</span><div class="meter"><i style="width:73%"></i></div>
+              <span class="num tiny muted">Wallet ₹42,300 · runway 5.2 days</span></div>
+            <div class="card"><span class="eyebrow">Next best action</span><br>Connect your renewal webhook so outcomes are measured</div>
+          </div>
+          <div class="tabbar"><span>Today</span><span>Campaigns</span><span class="c"><span class="mic">●</span>Talk</span><span>Calls</span><span>More</span></div>
+        </div>
+        <p class="beats"><b>Beats</b><span>No rival ships a daily brief or an approval queue. Every number carries n and as-of time.</span></p>
+      </article>
+    </div>
+
+    <!-- E Mission control -->
+    <article class="plate">
+      <div class="plate-head"><span class="eyebrow">Run · live</span><h3>Mission control</h3>
+        <p>Watch live calls, step in safely, and never miss a crisis, a loop or an opt-out. A guard pause names its cause and needs a person to resume.</p></div>
+      <div class="device ui">
+        <div class="bar"><span class="url">…/campaigns/renewals-oct/live</span><span class="example-tag">EXAMPLE</span></div>
+        <div class="mc-head">
+          <div><span class="tiny muted">State</span><b><span class="dot" style="color:var(--win);display:inline-block"></span> Running · dialing</b></div>
+          <div><span class="tiny muted">Lines</span><b class="num">18 of 20</b><span class="tiny muted">2 reserved for inbound</span></div>
+          <div><span class="tiny muted">Spend vs cap</span><b class="num">₹18,240 / ₹25,000</b><div class="meter"><i style="width:73%"></i></div></div>
+          <div><span class="tiny muted">Window (local time)</span><b class="num">10:00-19:00</b><span class="tiny muted">now 11:53 · 7 h left</span></div>
+        </div>
+        <div class="mc-body">
+          <div style="display:grid;gap:10px">
+            <div class="tiles">
+              <div class="tile"><div class="row"><b>Ramesh K.</b><span class="mono muted">01:42</span></div><span class="tiny muted">Hindi · agenda 2/3 · mood: hurried</span><div class="ledger-chips"><span class="lc on">Due date</span><span class="lc on">Link offered</span><span class="lc">Payment intent</span></div></div>
+              <div class="tile"><div class="row"><b>Priya S.</b><span class="mono muted">00:38</span></div><span class="tiny muted">Hinglish · agenda 1/3 · calm</span><div class="ledger-chips"><span class="lc on">Due date</span><span class="lc">Link offered</span><span class="lc">Payment intent</span></div></div>
+              <div class="tile"><div class="row"><b>Mohd. Arif</b><span class="mono muted">02:10</span></div><span class="tiny muted">English · agenda 3/3 · closing</span><div class="ledger-chips"><span class="lc on">Due date</span><span class="lc on">Link offered</span><span class="lc on">Payment intent</span></div></div>
+              <div class="tile"><div class="row"><b>Kavita J.</b><span class="mono muted">00:06</span></div><span class="tiny muted">ringing · attempt 2 of 3</span><div class="ledger-chips"><span class="lc">Due date</span><span class="lc">Link offered</span><span class="lc">Payment intent</span></div></div>
+            </div>
+            <div class="funnel" aria-label="Funnel (example)">
+              <div><span>Dialled</span><span class="b" style="width:100%"></span><span class="num">640</span></div>
+              <div><span>Connected</span><span class="b" style="width:64%"></span><span class="num">412</span></div>
+              <div><span>Agenda done</span><span class="b" style="width:47%"></span><span class="num">301</span></div>
+              <div><span>Renewed (verified)</span><span class="b" style="width:10%"></span><span class="num">63</span></div>
+            </div>
+            <div class="opts"><span class="btn">Listen (audited)</span><span class="btn">Whisper (text, checked first)</span><span class="btn">Take over</span><span class="btn">End politely</span><span class="btn">Pause</span></div>
+          </div>
+          <ul class="alerts">
+            <li><span class="sev c">CRITICAL</span><span><b>11:52 crisis words</b> · Tele-MANAS 14416 and 112 given · goal suspended · <span style="color:var(--green);font-weight:600">Listen now</span></span></li>
+            <li><span class="sev w">LOOP</span><span>Same question asked twice · Ramesh K.</span></li>
+            <li><span class="sev i">OPT-OUT</span><span>"Dobara call mat karna" · suppressed everywhere 11:49</span></li>
+            <li><span class="sev i">AI?</span><span>Asked "aap AI ho?" · answered honestly</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="beats"><b>Beats</b><span>Retell's live controls are API-first; Exotel's alerts live in another product; Vapi's Mission Control is behind a flag. A crisis call here gets the helplines from code and a human alert within 5 seconds.</span></p>
+    </article>
+
+    <!-- F Call page -->
+    <article class="plate">
+      <div class="plate-head"><span class="eyebrow">Results · one call</span><h3>The call page: understand it in 10 seconds, then go deep</h3>
+        <p>The outcome and its source, the business reason, a two-lane recording with talk-over marks, the transcript in three scripts, why the call was allowed, and what it cost by the second.</p></div>
+      <div class="device ui">
+        <div class="bar"><span class="url">…/calls/c_8f2k1</span><span class="example-tag">EXAMPLE</span></div>
+        <div class="call-head">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline"><b style="font-size:16px">Sunita Devi</b><span class="muted tiny">Hindi · Service: renewal reminder · agent Asha v7 · 3:02</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px"><span class="chip match"><span class="dot"></span>Promised to pay by 28 Oct · AI guess (judge calibrating 31/50)</span><span class="chip">Completed · agenda 3 of 3 · she closed after goodbye</span></div>
+        </div>
+        <div class="lanes">
+          <div class="lane"><span>Asha</span><span class="wave" data-wave="21" data-n="90"></span></div>
+          <div class="lane"><span>Caller</span><span class="wave b" data-wave="34" data-n="90" data-cut="38"></span></div>
+        </div>
+        <div class="call-body">
+          <div class="transcript">
+            <div class="turn"><span class="ts">00:02</span><span>Sunita ji? <span class="alt">name check first: no purpose or account detail yet</span></span></div>
+            <div class="turn"><span class="ts">00:04</span><span>Main Asha, Sharma Insurance ki AI assistant. Aapki car policy 28 Oct ko renew honi hai, ₹18,450.</span></div>
+            <div class="turn"><span class="ts">00:11</span><span><span class="deva">हाँ जी, पर इस महीने थोड़ा tight है</span><span class="alt">haan ji, par is mahine thoda tight hai · English on demand</span></span></div>
+            <div class="adapt">She slowed to 0.92x and offered the 28th: the caller sounded worried.</div>
+            <div class="turn"><span class="ts">00:19</span><span>Samajh sakti hoon. 28 tak bhi ho jaye toh policy chalu rahegi. Link WhatsApp pe bhej doon?</span></div>
+          </div>
+          <div class="inspector">
+            <div class="tabs"><span>Summary</span><span>Speed</span><span class="on">Why allowed</span><span>Cost</span><span>Run manifest</span><span>Memory</span></div>
+            <ul class="why">
+              <li><span class="ok">✓</span><span>Inside 10:00-19:00, her local time</span></li>
+              <li><span class="ok">✓</span><span>Not suppressed, no opt-out on file</span></li>
+              <li><span class="ok">✓</span><span>Basis: existing customer, service call</span></li>
+              <li><span class="ok">✓</span><span>Caller ID declared (A2P)</span></li>
+              <li><span class="ok">✓</span><span>AI line heard at 00:04</span></li>
+            </ul>
+            <div class="card" style="font-size:12.5px"><b>Memory proposal</b> · "28 tak ho jayega" <span class="muted">(00:19)</span><div class="opts"><span class="btn">Approve</span><span class="btn">Edit</span><span class="btn">Reject</span></div></div>
+            <p class="tiny muted">Reply gap p50 1.4 s at the server · handset not measured</p>
+          </div>
+        </div>
+      </div>
+      <p class="beats"><b>Beats</b><span>Retell shows cost and latency but only engineering reasons; Vapi shows 638 truncated engineering codes. No rival shows heard-vs-planned text, a run manifest or why a call was allowed. Target: any failed call found, with reason and fix, in under 60 seconds.</span></p>
+    </article>
+
+    <!-- G Learning -->
+    <div class="pair">
+      <article class="plate">
+        <div class="plate-head"><span class="eyebrow">Learn · provably</span><h3>The learning inbox</h3>
+          <p>Findings and drafted fixes, ranked, each with how many calls it takes to prove. A catastrophic line jumps the queue.</p></div>
+        <div class="device ui">
+          <div class="bar"><span class="url">…/learning</span><span>3 new today · 1 urgent</span><span class="example-tag">EXAMPLE</span></div>
+          <div style="padding:12px 14px;display:grid;gap:10px">
+            <span class="chip" style="justify-self:start">Renewal reminder (Hindi) · L2 Proving</span>
+            <div class="card needs"><span class="eyebrow" style="color:var(--seal)">Fast lane</span><br><b>Line 2 pe 11 mein se 10 log call kaat rahe hain</b> <span class="muted">(normal: 1 in 12)</span><br><span class="tiny">VP slowed this script to 25% · <span style="color:var(--green);font-weight:600">Undo</span></span></div>
+            <div class="card">
+              <span class="eyebrow">Proposal</span><br><b>Line 4: the amount comes before the benefit</b>
+              <div class="hazard" aria-hidden="true"><i style="height:30%"></i><i style="height:26%"></i><i style="height:34%"></i><i class="hot" style="height:92%"></i><i style="height:28%"></i><i style="height:24%"></i><i style="height:22%"></i><i style="height:20%"></i><i style="height:18%"></i><i style="height:16%"></i><i style="height:14%"></i><i style="height:12%"></i></div>
+              <p class="tiny">Hang-ups at this moment: 2.1x normal · 95% interval 1.5-2.9x · 640 callers reached</p>
+              <p class="tiny">Simulated: 18 callers x 3 seeds left here 9 → 2</p>
+              <p class="tiny"><b>To prove: about 1,180 calls · about 12 days</b></p>
+              <div class="opts"><span class="btn hold">Approve and test</span><span class="btn">Edit</span><span class="btn">Reject</span><span class="btn">Ask VP</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="beats"><b>Beats</b><span>Retell's Conductor proposes diffs with no statistics; Vapi has a bypass-approvals mode. No rival caps the inbox, pins a catastrophic line or shows calls-to-prove.</span></p>
+      </article>
+
+      <article class="plate">
+        <div class="plate-head"><span class="eyebrow">Learn · the alarm</span><h3>The fix reaches your phone</h3>
+          <p>Around call 13-15, a line that loses 90% of callers is caught. VP throttles it and sends a fix you approve with one hold.</p></div>
+        <div class="phone ui">
+          <div class="notch"><span>11:20</span><span>●●● 4G</span></div>
+          <div class="scr">
+            <div class="alarm">
+              <span class="tiny" style="opacity:.85">VP · Renewals Oct · just now</span>
+              <b style="font-size:16px">Line 2 pe 11 mein se 10 log call kaat rahe hain</b>
+              <span class="tiny">VP ne pacing 25% kar di. Undo any time.</span>
+            </div>
+            <div class="card"><span class="eyebrow">Drafted fix</span><br>Say the useful fact before the amount. Shorter, one breath.<p class="tiny muted" style="margin-top:4px">Passed lint, budget and locked-section checks · 6/6 simulated callers</p></div>
+            <div class="holdbtn"><span class="ringp" aria-hidden="true"></span><span class="btn hold">Hold to approve and test at 10%</span></div>
+            <p class="tiny muted">Disclosure, consent, crisis lines and prices are locked in code. Learning can never change them.</p>
+          </div>
+          <div class="tabbar"><span>Today</span><span>Campaigns</span><span class="c"><span class="mic">●</span>Talk</span><span>Calls</span><span>More</span></div>
+        </div>
+        <p class="beats"><b>Beats</b><span>Your "90 out of 100 dropped after one line" case is fixed long before call 101, and every change is listed later in "How she changed for you", including the ones that did nothing.</span></p>
+      </article>
+    </div>
+
+  </div>
+</section>

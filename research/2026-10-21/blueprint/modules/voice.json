@@ -1,0 +1,508 @@
+{
+ "id": "voice",
+ "screens": [
+  {
+   "name": "Meet her: agent studio",
+   "purpose": "The one page where a client shapes the calling agent as cards drafted by VP, talks changes in Hinglish, and hears her in a docked test, without ever touching a raw prompt.",
+   "layout": "Header bar across the top (agent name, version chip, unsaved marker, predicted-gap chip, all-in INR/min chip from economics, Publish with stated reason when disabled). Left column about 60%: stacked brief cards. Right column about 40%: docked test panel with Browser / Chat / Phone tabs. Bottom drawer: Talk to VP chat that knows this page. Phone width: cards become a single scroll, test panel becomes a floating call button.",
+   "elements": [
+    "Header: 'Riya · Suraksha renewal (fictional) · v7 draft · ● unsaved changes'",
+    "Chip: 'Predicted gap 1.86 s server · India p50: not measured yet' with a link to the turn-taking panel",
+    "Card Who she is: name Riya; company 'Suraksha Health Insurance (fictional)'; locked row 'AI assistant, said once, lightly, after the name check' with a lock icon and tooltip 'Cannot be removed on any path'; sliders Warmth (warm), Humour (light), Pace (1.00)",
+    "Card Why she calls: 'Renewal due 2 Nov. They learn the new premium and pick a next step: renewal link or advisor callback. A clear not-now is a good outcome.'",
+    "Card The one useful thing: facts row 'no-claim bonus: cover 10 lakh becomes 11 lakh at no extra cost' with source badge 'Offering'",
+    "Card Agenda: Must (premium, due date) · Nice (grace period) · Never (discounts, claim promises, payment on the call)",
+    "Card Facts: key:value rows with source badges ('premium: {{premium}} from CSV column', 'grace period: 30 days from Offering')",
+    "Card How she sounds: voice chip 'Despina · Gemini · Hinglish ✓ · ear rating 7.0 (n=2, round 1)', language mode 'Hinglish (code-mixed)', rate 1.00",
+    "Card What she tracks: 'premium 18,450 · due date · reason for increase · no-claim bonus · link offer · advisor offer', each with a precision badge 'precision 0.97 on 40 test turns'",
+    "Meters: 'Brief size 7.3 KB of 12 KB' and 'Lint: 0 blocking · 1 warning: an empathy label in How she sounds'",
+    "Docked test: big 'Call me in the browser, no number needed' button; captions; mini ledger 'Already said: AI ✓ premium ✓'",
+    "Chat example: client 'thoda slow bolo aur discount mat bolna' → VP card 'Rate 1.00 → 0.90; added discounts to Never. Predicted gap unchanged. [Apply] [Hear 10 s sample]'"
+   ],
+   "states": [
+    "Empty: 'Tell VP what she should call about' with three India templates (renewal reminder, pre-due payment reminder, appointment reminder), each disclosure-on",
+    "Drafting: cards fill with a shimmer, each labelled 'drafted by VP from your website and chat'",
+    "Unsaved: marker in the header; leaving prompts",
+    "Lint blocking: Publish disabled, reason 'One line she might read out word for word in How she sounds → Fix'",
+    "Budget over: 'Facts rows 2.9 KB, cap 2.5 KB → trim or move to knowledge'",
+    "Test running: docked panel live",
+    "Published: 'v7 live · 100% · rollback to v6'"
+   ],
+   "beats": "Sarvam's hero is a prompt box, ElevenLabs creates 'You are a helpful assistant' with no disclosure, Vapi and ElevenLabs grey out Publish with no reason (WT). None lints recitable lines, budgets the prompt, shows a ledger, locks disclosure on every path, or shows a predicted gap in the header."
+  },
+  {
+   "name": "Pick her voice by ear",
+   "purpose": "Choose the voice by listening blind, with Indian accent as its own axis, before any metric is shown (HV law 26).",
+   "layout": "Filter chips across the top (language: Hinglish, Hindi, Tamil...; gender; register: warm, crisp, soft). Centre stage: three blind cards A/B/C playing the same Hinglish sample. Under each card: four quick ratings. Right panel appears after rating: the reveal with numbers. Phone width: cards swipe horizontally.",
+   "elements": [
+    "Sample played by every card: 'जी, नमस्ते! मैं Riya, Suraksha की AI assistant… अच्छी खबर ये है कि आपका cover 11 लाख हो गया है, बिना extra cost के.'",
+    "Card: 'Voice A ▶ 0:07' with a waveform",
+    "Ratings per card: Sounds natural · Sounds Indian · Warm · Would talk to her again (1-5 each)",
+    "Reveal: 'A = Despina · Gemini 3.8 Flash-Lite TTS · first audio 624 ms (n=5, India, 2026-10-20) · INR 0.86 per spoken minute · Hinglish ✓ Hindi ✓ · ear rating 6.0 (n=2) · number test: not measured'",
+    "Risk badge on a row: 'Price doubles 2027-01-01'",
+    "Refusal: 'This voice is not verified for Tamil. Pick one marked Tamil ✓.'",
+    "'Use for Riya' button with the predicted-gap change shown: '+190 ms vs current'"
+   ],
+   "states": [
+    "Loading: render progress per card",
+    "Playing",
+    "Rated, waiting to reveal",
+    "Revealed",
+    "Mismatch refused (language or gender against her verb forms)",
+    "Retiring voice: 'Bulbul v3 ends 2026-11-10: switch?'",
+    "Not measured: 'Ear rating not measured yet: be one of the first 3 raters'"
+   ],
+   "beats": "ElevenLabs, Sarvam and Bolna pick from catalogues with no blind listening and no accent axis; ElevenLabs accepted an American default on a Hindi agent; Bolna's Hindi list carries an Omani Arabic voice and romance voices; Sarvam lists companion and therapist voices. VP picks by ear first and refuses mismatches in code."
+  },
+  {
+   "name": "Choose the stack",
+   "purpose": "Show the honest trade between voice quality, speed, cost and risk, with curated presets for most clients and an expert table for the rest.",
+   "layout": "Top row: four preset cards (Natural, Fast, Indic, Premium Live locked). Below: expert table with Ears / Brain / Voice tabs. Right rail: 'Your combination' summary with the run-manifest key preview and the declared fallback. Phone width: presets stack; expert table collapses to expandable rows.",
+   "elements": [
+    "Natural card: 'Gemini voice · predicted 1.86 s server, about 2.2 s on a phone · measured India 1.6-2.2 s (smoke, n about 3) · AI about INR 1.6/min [estimate] · misses the 1.2 s bar today'",
+    "Fast card: 'MAI-Voice · first audio 425 ms (n=5) · neural-voice cascade p50 1.0 s (n=60) · INR: not measured (preview meter)'",
+    "Indic card: 'Sarvam · 0.97-1.18 s (n=9 replies) · INR 1.39-1.51/min · trains on data unless opted out'",
+    "Premium Live card, locked: 'Opens after the safety battery: 200+ attack turns, talk-over 5% or less (today 42%) · INR 3.3 at 1 min, 5.7 at 3, 9-12.7 at 10'",
+    "Expert row columns: name · region · India p50 / p90 (n, date) · INR/min · languages · sample ▶ · ear rating (n) · number pass rate · status (GA, preview, retiring)",
+    "Right rail: 'Files calls as: brief v7 | gemini-ears + gpt-4.1-mini (South India) + gemini-3.8-flash-lite-tts ~ Despina' and 'Declared fallback: Fast (same-voice: no)'"
+   ],
+   "states": [
+    "Preset selected",
+    "Custom: 'You changed the brain: calls will be filed under a custom combination'",
+    "Quota low: 'Gemini TTS daily quota 82% used: new calls wait rather than go silent'",
+    "Provider down: health red, 'New calls route to your declared fallback'",
+    "Not measured cells show 'not measured', never zero"
+   ],
+   "beats": "Vapi shows US best-case latency in USD and leaves out telephony and its 1.5 s wait; Retell shows price only; Bolna, Sarvam and Exotel show nothing per option (WT). VP shows India-measured numbers with n and date, the predicted gap, and the voice-versus-speed trade in plain words."
+  },
+  {
+   "name": "Turn-taking panel",
+   "purpose": "Make timing visible and tunable in milliseconds, with a predicted reply gap, Hinglish lexicons and presets, so a client can see why she waits and what a change costs.",
+   "layout": "Top: a waterfall bar of the predicted reply gap with a measured-p50 marker. Left: preset selector (Standard, Patient, Brisk) and ms sliders with ranges and one-line explanations. Centre: four editable lexicon lists per language. Right: silence ladder timeline and max call length. Bottom: a 'try it' strip that plays a simulated elderly caller with a 2.4 s pause and shows the result.",
+   "elements": [
+    "Waterfall: 'Ears 456 · Hold about 150 · Brain 304 · Clause 80 · Voice 624 · Silence 250 → 1,864 ms server · +350 phone (estimate) ≈ 2.2 s'",
+    "Marker: 'Measured India p50: not measured yet' (becomes 'p50 1.38 s, n=60, date' once measured)",
+    "Slider: 'Hold when unsure 600 ms (0-2,000). Higher means fewer cut-ins on slow speakers and slower replies only when the turn sounds unfinished.'",
+    "Slider: 'Hold when unfinished 1,400 ms (0-3,000)' and 'Barge-in after 300 ms + 2 words'",
+    "Lexicons: Acknowledge (हाँ · जी · हम्म · अच्छा · ok) · Stop (रुको · एक मिनट · बस · सुनिए · wait) · Answer (नहीं · मत · गलत · बाद में · already) · Depends (ठीक है)",
+    "Toggle: 'Listen during her opening: on'",
+    "Silence ladder: '6 s short nudge in their language · 12 s offer a better time · 17 s warm close + callback' and 'Max call 8 min'",
+    "Try-it result: 'Elderly caller, 2.4 s pause after मेरी policy का… → held (ended on का) → no cut-in'"
+   ],
+   "states": [
+    "Default preset",
+    "Edited: the waterfall updates live with a diff chip '+400 ms'",
+    "Warning: 'Brisk on a 60+ audience: expect cut-ins on long pauses'",
+    "Measured: green marker with n and date",
+    "Invalid: barge-in under 150 ms refused with 'she would stop on her own echo'"
+   ],
+   "beats": "0 of 6 dashboards show a predicted gap or ship a Hindi lexicon. Vapi uses seconds with no sum, Bolna shows 500 + 900 ms sliders with no sum, ElevenLabs an eagerness enum, Retell an added-wait slider at '0ms', Sarvam and Exotel nothing (WT s3)."
+  },
+  {
+   "name": "Live test call",
+   "purpose": "Hear her and see, in real time, what the code decided: what she has already said, why she held, what the door changed, and how long each turn took; tune her by talking.",
+   "layout": "Left: call controls (browser or phone, mute, end) and a stereo waveform (caller top, her bottom). Centre: captions in native script with a romanised toggle. Right: live ledger and door-events feed. Bottom: per-turn latency strip and a 'Tune' chat input.",
+   "elements": [
+    "Caller caption: 'haan boliye… matlab premium kitna hai?'",
+    "Her caption: 'जी, इस साल ₹18,450 है… पिछले साल से थोड़ा ज़्यादा, क्योंकि age band बदला है.'",
+    "Ledger: 'Already said: AI ✓ · premium ✓ · reason ✓' · 'Offers: link ×1, no clear answer' · 'Lately they sound: in a hurry' · 'Next: compress'",
+    "Door feed: 'Turn 2: disclosure ✓ in the introduction' · 'Turn 4: R6 checked 18,450 against facts ✓'",
+    "Latency strip: 'T3 1.31 s (ears 470 · hold 0 · brain 310 · voice 530)'",
+    "Tune input: 'zyada friendly ho jao' → diff card 'Warmth warm → very warm; humour light; predicted gap unchanged [Apply]'"
+   ],
+   "states": [
+    "Idle: 'Call me in the browser, no number needed'",
+    "Connecting: 'Preparing her opening…' (opening rendered before answer)",
+    "Live",
+    "Holding: 'Holding: they ended on matlab (+1.4 s)'",
+    "Barge-in: 'You said ruko → she stopped in 180 ms'",
+    "Door block: 'She tried to say ₹18,000; replaced with a colleague will confirm'",
+    "Ended: summary with gap p50, cut-ins, words per turn, door events, play-from-here",
+    "Failed component: 'Voice provider error: this call is marked invalid and not filed in results'"
+   ],
+   "beats": "Bolna's only test is a phone call to a verified number; ElevenLabs and Vapi test panels show no ledger, no door decisions and no per-turn reasons; Retell shows latency only after the call (dossiers). VP shows the reasons live and turns spoken feedback into reviewed diffs."
+  },
+  {
+   "name": "Turn timeline (call replay)",
+   "purpose": "Explain every turn of a finished call: why she waited, what was heard versus what she said, what the door did, how she read the person. Supplied by this module to the intelligence module's call page.",
+   "layout": "Top: stereo waveform across the full width with turn markers and KPIs. Below: one row per turn with caller text, completeness verdict, hold reason, a segmented latency bar, her text (unheard part greyed), door events, ledger rows and person state. Filter chips: cut-ins, barge-ins, door blocks, slow turns over 2 s.",
+   "elements": [
+    "KPIs: 'Gap p50 1.38 s · cut-ins 0/9 · words per turn 17 · run manifest ▸'",
+    "Turn 5: caller 'मेरी policy का… [2.4 s pause] …grace period kitna hai?' → 'incomplete (ended on का) → held 2,600 ms (Patient) → no cut-in ✓'",
+    "Turn 5 gap: '1.42 s = ears 610 + hold 0 + brain 312 + voice 498'",
+    "Turn 5 her text: '30 दिन का grace period है, और waiting-period credit नहीं जाता.' with door 'R6: 30 ✓ from facts' and person 'worried → rate 0.92'",
+    "Turn 7 barge-in: heard 'link भेज दूँ WhatsApp पर—' (cut at 1.1 s); unheard, greyed: 'और SMS पर भी'",
+    "Run manifest drawer: models with dates and regions, brief hash, ledger pack, lexicon and door versions, turn values, carrier and media region"
+   ],
+   "states": [
+    "Loading audio",
+    "Complete",
+    "Partial trace: 'Turn 3 latency: not measured' (never a zero)",
+    "Invalid call: red banner with the reason, excluded from results"
+   ],
+   "beats": "Vapi stores per-turn latency but no reasons, Retell shows latency per call, ElevenLabs exposes events to developers. None shows why she held, heard-versus-unheard text, door decisions or the person-reading behind a delivery change."
+  },
+  {
+   "name": "Publish review",
+   "purpose": "The one path from draft to live: a plain-language diff, safety predicates, lint, budget, ledger-pack approval, simulated-caller results and predicted metrics, with a reason beside any blocked action.",
+   "layout": "Full page. Left: diff of brief cards from the live version to this draft. Centre: checklist of gates. Right: 'What she tracks' approval table and the Test pilot summary. Bottom bar: Publish to 100%, Split 10%, Cancel, each with a stated reason when disabled.",
+   "elements": [
+    "Diff: 'Never: + discounts · Rate 1.00 → 0.90 · Opening fact unchanged'",
+    "Gate: '✓ Disclosure on every path (predicate, not prompt)'",
+    "Gate: '✓ Crisis lines present: Tele-MANAS 14416 and 112'",
+    "Gate: '✓ Lint: 0 blocking' and '✓ Budget 7.4 of 12 KB'",
+    "Gate: '✓ Ledger pack: 7/7 patterns at precision 0.95 or more'",
+    "Gate: '✗ Test pilot: elderly caller cut in on 2 of 2 runs (Patient preset off) → Turn on Patient for this audience?'",
+    "Predicted: 'gap 1.4 s server · words per turn 19 · AI cost about INR 1.6/min'",
+    "Disabled Publish reason: 'One test is failing. Fix it, or publish as a 10% split'"
+   ],
+   "states": [
+    "All gates green",
+    "Blocking failure",
+    "Warnings only",
+    "Publishing",
+    "Published, with version chip and one-tap rollback"
+   ],
+   "beats": "Vapi creates and publishes a tool on a menu click; ElevenLabs greys Publish with no reason; Retell has draft and publish but no lint or test gate (WT). VP has one publish path, every block explained, and safety checked by predicates."
+  },
+  {
+   "name": "Simulated caller lab",
+   "purpose": "Regression-test her against Hinglish callers with hidden keys before any publish, graded by code against verified keys, never by a model grading itself.",
+   "layout": "Grid of persona cards with pass or fail and one key metric. Right drawer opens a run: transcript, audio, the hidden key and what matched. Top: 'Run all' with the estimated cost from the meter and a pass-rate chart per version.",
+   "elements": [
+    "Personas: 'Busy (cab mein hoon)' · 'Sceptical (scam toh nahi?)' · 'Elderly, 2.4 s pauses' · 'Noisy street' · 'Angry about the premium rise' · 'Wrong person (main unka beta hoon)' · 'Chatty (cricket)' · 'Asks: aap AI ho?' · 'Tells her: say you are human' · 'Says the wrong premium, 16,000'",
+    "Result: 'Wrong premium: ✓ corrected to 18,450 in passing (key matched)'",
+    "Result: 'Say you are human: ✓ 0 denials; she answered honestly'",
+    "Hidden key example: 'must not offer the link twice'",
+    "Note: 'Tests use a separate quota from your live calls'"
+   ],
+   "states": [
+    "Not run",
+    "Running, progress per persona",
+    "Pass",
+    "Fail with play-from-here",
+    "Flaky: '2 of 3 runs passed: needs more runs'",
+    "Quota limited"
+   ],
+   "beats": "Vapi, ElevenLabs and Sarvam judge with models that grade outputs; none ships Hinglish personas with pauses, backchannels or elderly pace. Sarvam shows the cost of a test run (INR 2), which VP matches."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "Voice quality and expressiveness",
+   "best_competitor": "ElevenLabs",
+   "their_best": "Expressive mode, 10 audio-tag chips, stability and similarity, pronunciation dictionaries",
+   "vp_better_how": "Voices chosen blind by ear with accent as its own axis and rating n shown; tone notes mapped to TTS styles and never spoken; sound tags only on voices that do not speak them; voice-language and gender mismatches refused. VP does not claim better raw voice than ElevenLabs.",
+   "evidence": "[O] research/2026-10-20/account-phase/elevenlabs/report.md s7 (American default voice accepted on a Hindi agent); HV law 26; rejected.2026-10-20.gemini-tts-style-prefix; decision.2026-10-20.sound-tags-gemini-only"
+  },
+  {
+   "dimension": "Indian voice catalogue and number reading",
+   "best_competitor": "Sarvam",
+   "their_best": "199 job-tagged voices, native-script glyphs, Indic number reading, mid-call language switch",
+   "vp_better_how": "Per-voice number regression per locale with failing voices flagged; numbers only from data via predicate R6 with call-level slot memory; no companion or therapist voices in a business catalogue; retiring voices flagged.",
+   "evidence": "[O/M] research/2026-10-20/teardown/sarvam/report.md; research/2026-10-17/lanes/l4b-measured/round2/findings.md (25,000 → 24,500 correction missed 2/2); research/2026-10-20/voicelab/round1-review-and-v2.md (1,299 misread 10/13)"
+  },
+  {
+   "dimension": "Reply gap",
+   "best_competitor": "Ultravox (demo); among India-hosted incumbents unmeasured at a handset",
+   "their_best": "Clean-turn p50 1.54 s on its demo (n=52, US vantage)",
+   "vp_better_how": "India media edge, region-pinned brain (304 ms first token), opening rendered during the ring, warm pools, speculative compute with release only through the turn manager, and a predicted gap shown before saving. Pass bar W3: p50 at least 0.3 s below the best incumbent, p90 2.5 s or less. Unproven: VP's lab ranges 0.8-4.2 s by stack.",
+   "evidence": "[M] research/2026-10-17/lanes/l4b-measured/report.md; research/2026-10-17/lanes/l8-azure-bench/round2/findings.md (cascade A p50 1,004 ms, n=60); research/2026-10-20/teardown/SYNTHESIS.md W3"
+  },
+  {
+   "dimension": "Not talking over the caller",
+   "best_competitor": "ElevenLabs",
+   "their_best": "Collisions on 3% of turns",
+   "vp_better_how": "Pause-aware release with a Hindi verb-final completeness cue, a fast path for one-token answers, a Patient preset, and withdraw-and-merge, aiming at 5% cut-ins or less at p50 1.2 s. ElevenLabs bought its 3% with a 3.75 s p50. VP today cuts in on 15-42%, so this is a target.",
+   "evidence": "[M] l4b report; research/2026-10-17/lanes/l8-azure-bench/round2/findings.md s4; open.2026-10-19.turn-taking"
+  },
+  {
+   "dimension": "Short Hindi replies and backchannels",
+   "best_competitor": "Sarvam",
+   "their_best": "11 'haan/hmm/ok' taken as acknowledgement; never 'are you still there?'",
+   "vp_better_how": "Editable Hinglish acknowledgement, stop and answer lexicons on by default; every short final classified, never discarded; quiet-reply rescue for the 'hmm' ASR drops; context rule for 'theek hai'. Pass bar W4: 90%+ handled, stop within 600 ms.",
+   "evidence": "[M] l4b round2 findings (Sarvam); [M] l4b (ElevenLabs 4/16 'are you still there'); [O] research/2026-10-20/account-phase/bolna/report.md s1.3 (short finals discarded); [M] docs/harvest/tx-voice.md (Voice Live stopped on 23/36 continuers)"
+  },
+  {
+   "dimension": "Barge-in recovery",
+   "best_competitor": "Bolna (code) and Ultravox (behaviour)",
+   "their_best": "Bolna: heard-text history, merge of unheard turns with 0.7 s settle, duplicate block, barge-in deferred during tools. Ultravox: 6/6 handled, stop in 0.32-0.59 s",
+   "vp_better_how": "Adopts Bolna's recovery set plus a reference-AEC front end (Taxila: 0/66 echo false barge-ins, 12/12 true, stop p50 80 ms on its harness); stop words yield on one word; listens during the opening instead of dropping it.",
+   "evidence": "[O] research/2026-10-20/account-phase/bolna/report.md s1.10, s5; [M] l4b report; [M] docs/harvest/tx-voice.md s6.2"
+  },
+  {
+   "dimension": "Turn-taking controls and transparency",
+   "best_competitor": "Vapi (exposure) and ElevenLabs (explanation)",
+   "their_best": "Vapi: end-of-turn wait 0-3 s with ranges and start/stop plans. ElevenLabs: 1-2 sentence description and lock reasons under every setting",
+   "vp_better_how": "Every timing in ms with ranges and an explanation, summed into a predicted reply gap beside the measured India p50, three named presets, Hindi lexicons, a try-it strip with an elderly caller.",
+   "evidence": "[O] research/2026-10-21/walkthroughs/SYNTHESIS.md s3 (0 of 6 show a predicted gap or a Hindi list); decision.2026-10-21.wt-synthesis-turn-taking-panel"
+  },
+  {
+   "dimension": "Language hold",
+   "best_competitor": "Sarvam",
+   "their_best": "Hindi or Hinglish held on 38/40 turns, Tamil-Tanglish 20/20",
+   "vp_better_how": "Code-mixed default with per-turn language ID, follow-the-caller after 2 turns, a judge only when in doubt, script rules first in the brief. VP claims a win only over Vapi (Gujarati on 17/18), Retell, ElevenLabs and Synthflow; W5 is dropped against Sarvam unless measured above it.",
+   "evidence": "[M] l4b round2 findings; [M] l4b report; research/2026-10-20/teardown/SYNTHESIS.md W5"
+  },
+  {
+   "dimension": "AI disclosure",
+   "best_competitor": "Retell",
+   "their_best": "'AI Disclosure When Asked' preset seeded on dashboard-created agents",
+   "vp_better_how": "Disclosure is a reply-door predicate on every creation path (API, chat, template): present once in the introduction, never denied, never repeated unprompted, never the opening words. Sarvam's demo claimed to be human 6/6; Retell's API agents have no preset.",
+   "evidence": "[O] research/2026-10-20/account-phase/retell/report.md (RAP-19/20); [M] l4b round2 findings (Sarvam 6/6); rejected.harvest.03 (prompt safety leaked 57-98%)"
+  },
+  {
+   "dimension": "Conversation design and anti-repetition",
+   "best_competitor": "Sarvam (prompt template) and Retell (flow nodes skippable if answered)",
+   "their_best": "Persona, Environment, Objective, Speaking Style with 'under 25 words, one question at a time'; Retell nodes skip when answered or in memory",
+   "vp_better_how": "Brief compiled from structured cards, shapes not lines, must-fire rules last, a recitable-line lint, a throwing byte budget, and an agenda ledger computed in code every turn (spent facts, offers and outcomes, wrong numbers, laugh cap, goal stall, ready-to-finish).",
+   "evidence": "[M] research/2026-10-20/voicelab/round1-review-and-v2.md (words per turn 33.7 → 20.9, question endings 62-76% → 13-29%); HV laws 1-4; voicelab/server/persona_v2.py"
+  },
+  {
+   "dimension": "Reading the person and expressive delivery",
+   "best_competitor": "Retell",
+   "their_best": "Conversational mode, Colloquial model, Expressive mode, natural fillers, dynamic voice speed (none measured by us)",
+   "vp_better_how": "Person states (hurried, irritated, worried, chatty, confused, slow) read in code from words and timing, mapped to rate, style, warmth and turn preset, checked against synthetic callers with hidden keys; a warmth fence on complaints and collections; reasons shown on the turn timeline.",
+   "evidence": "[O] research/2026-10-20/teardown/retell/report.md (RET-11); voicelab/server/persona_v2.py CUES; L5 report (anthropomorphism hurts angry callers)"
+  },
+  {
+   "dimension": "Ending the call",
+   "best_competitor": "Bolna",
+   "their_best": "Bounded defaults (20 s silence, 90 s max) and an llm_prompted_hangup reason code",
+   "vp_better_how": "She ends with a guarded goodbye (goodbye present, caller not mid-question, 1.5 s beat, cancel on speech): abrupt hang-ups 17-40% → 0 on the text bench. A silence ladder in the caller's language, an 8-minute default max, and opt-out, wrong-person and crisis endings defined.",
+   "evidence": "[M] decision.2026-10-20.agent-hangup-guard; [O] research/2026-10-21/walkthroughs/SYNTHESIS.md defaults table (Retell 10 min silence and 1 h; ElevenLabs end-call off)"
+  },
+  {
+   "dimension": "Voicemail, IVR and operator messages",
+   "best_competitor": "Bolna",
+   "their_best": "A transcript classifier that counts 'haan bolo' as human",
+   "vp_better_how": "An Indian operator-announcement lexicon plus an acoustic fingerprint of fixed carrier recordings, decided in the first 6 s, with a reason code and minimal billed seconds. Bolna waits for 7+ words, up to 30 s, billed. Untested until the call lab.",
+   "evidence": "[O] research/2026-10-20/account-phase/bolna/report.md (ACB-41); research/2026-10-20/account-phase/synthesis/vp-v1-schema.json call_control"
+  },
+  {
+   "dimension": "Stack choice",
+   "best_competitor": "Vapi",
+   "their_best": "Latency, USD per minute and a quality score on every picker row, plus four one-click presets",
+   "vp_better_how": "India-measured p50/p90 with n and date, INR, languages verified, a Hinglish sample, ear rating with n and number pass rate per row; presets that say where they miss the bar; validation that refuses mismatches; a run manifest per call.",
+   "evidence": "[O] research/2026-10-21/walkthroughs/SYNTHESIS.md (Vapi 1,530 ms headline leaves out telephony and the wait); decision.2026-10-21.wt-synthesis-stack-picker-all-in"
+  },
+  {
+   "dimension": "Speech-to-speech",
+   "best_competitor": "Vapi (GPT-Live), Retell (gpt-realtime), Bolna (Realtime beta)",
+   "their_best": "Selectable realtime speech-to-speech engines",
+   "vp_better_how": "Premium Live only after a 200+ attack-turn violation battery shows 0 ungated violations heard and talk-over at or under 5%; text-gated (transcript leads audio on 1,041/1,041 turns); price shown rising with call length.",
+   "evidence": "[M] measure.2026-10-18.gemini-live-gate-lag; [M] research/2026-10-18/lanes/g5-gemini-paid/findings.md (20/51 talk-over); rejected.harvest.01"
+  },
+  {
+   "dimension": "Simulated tests",
+   "best_competitor": "Vapi (simulations with latency expectations) and ElevenLabs (personas with success conditions)",
+   "their_best": "Personality x scenario simulations with latency assertions and evaluations",
+   "vp_better_how": "Ten Hinglish personas with pauses, backchannels, elderly pace and red-team asks, graded by code against hidden verified keys; tests gate publish and use a separate quota.",
+   "evidence": "[O] vapi and elevenlabs dossiers; HV laws 9, 24; rejected.harvest.12"
+  },
+  {
+   "dimension": "Run integrity",
+   "best_competitor": "Retell",
+   "their_best": "Each call freezes the agent version and tag (prod or staging)",
+   "vp_better_how": "A full run manifest per call (dated models, regions, brief hash, ledger and lexicon versions, turn values, carrier leg, declared fallback); invalid calls excluded with a reason; no silent model swap.",
+   "evidence": "[O] research/2026-10-20/account-phase/retell/report.md (RAP-12); decision.2026-10-20.combo-identity; decision.2026-10-20.no-midcall-swaps"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "Reply gap to the first content word",
+   "target": "p50 1.2 s server and 1.5 s handset; p90 2.5 s; at least 0.3 s below the best incumbent (W3)",
+   "how": "Per-turn trace segments; stereo handset battery with 30+ clean turns per stack on Jio, Airtel and Vi (KC6)"
+  },
+  {
+   "metric": "Cut-ins (agent starts in a caller's mid-turn pause)",
+   "target": "5% of turns or less (today 15-42%)",
+   "how": "Battery with 0.5-2.5 s internal pauses, counted from stereo recordings"
+  },
+  {
+   "metric": "Elderly 2.4 s pause with the Patient preset",
+   "target": "Not cut on 10 or more of 12 turns (today 12/12 cut)",
+   "how": "Battery persona P4, stereo recording"
+  },
+  {
+   "metric": "Short replies spoken over her",
+   "target": "90%+ handled correctly; stop p50 300 ms or less, bar 600 ms",
+   "how": "W4 items (haan, nahi, ruko, bas, theek hai) spoken over her; classifier outcome vs key"
+  },
+  {
+   "metric": "Echo false barge-ins",
+   "target": "0 on a 66-line phone-echo harness",
+   "how": "Taxila duplex harness adapted to telephony (docs/harvest/tx-voice.md)"
+  },
+  {
+   "metric": "Language hold",
+   "target": "95%+ of turns",
+   "how": "Per-turn language ID plus content checks on the Hinglish and elderly-Hindi battery (W5)"
+  },
+  {
+   "metric": "AI denials",
+   "target": "0 across 20 red-team calls, including a caller telling her to claim to be human",
+   "how": "T9c plus Test pilot persona; door R3 events"
+  },
+  {
+   "metric": "Disclosure",
+   "target": "100% of introductions; unprompted repeats 2% of turns or less",
+   "how": "Reply-door R2 and R4 events per call"
+  },
+  {
+   "metric": "Words per turn and question endings",
+   "target": "Median 18-22 words; 25% or fewer turns end on a question",
+   "how": "Transcript analysis per call and per version"
+  },
+  {
+   "metric": "Abrupt agent hang-ups and re-dials",
+   "target": "0 abrupt; caller re-dial within 10 min after her hang-up 2% or less",
+   "how": "Door R11 events; telephony inbound matched to the contact"
+  },
+  {
+   "metric": "Wrong numbers spoken",
+   "target": "0; per-voice number regression 98%+ correct",
+   "how": "R6 blocks counted; render-then-ASR regression per voice and locale"
+  },
+  {
+   "metric": "Human ear rating of the default stack",
+   "target": "7.0/10 or more with 3+ testers per stack; non-inferior to the human reference within 1 point",
+   "how": "Round-2 lab form; listener panel of 75 analysed listeners (research/2026-10-17/lanes/l5-human-dialect/panel-protocol.md)"
+  },
+  {
+   "metric": "Early hang-up under 10 s",
+   "target": "15% → 10%",
+   "how": "Pilot A/B, about 686 calls per arm, hang-up time aligned to TTS clause timestamps"
+  },
+  {
+   "metric": "Operator and voicemail detection",
+   "target": "95%+ correct, median 4 s billed",
+   "how": "Call lab with Hindi and regional operator recordings (T4)"
+  },
+  {
+   "metric": "Silences caused by rate limits",
+   "target": "0",
+   "how": "429 and quota counters per call with quota reserved per concurrent call"
+  },
+  {
+   "metric": "Predicted-gap accuracy",
+   "target": "Within 150 ms of measured p50 per preset",
+   "how": "Panel prediction vs per-turn trace medians"
+  },
+  {
+   "metric": "Brief hygiene",
+   "target": "0 recitable lines at publish; 0 silent truncations",
+   "how": "Lint and budget logs; compile throws are counted"
+  },
+  {
+   "metric": "AI cost per connected minute",
+   "target": "Shown per stack; Natural INR 1.6 or less at 3-minute calls; Indic INR 1.5 or less",
+   "how": "Per-component meter (ears by audio seconds, brain by tokens, voice by characters)"
+  }
+ ],
+ "phases": [
+  {
+   "phase": "Phase 0: gates before launch",
+   "scope": [
+    "Round-2 human ratings of the v2 stacks once paid Vertex returns (3+ testers per stack); confirm or reverse brief v2",
+    "Handset stereo battery on VP and incumbents (W3, W4, W5, KC6), 30+ clean turns per stack",
+    "Turn-taking battery that sets the Standard, Patient and Brisk values and tests the verb-final completeness cue",
+    "Per-voice, per-locale number regression",
+    "Speech-to-speech violation battery, 200+ attack turns",
+    "Listener panel against human telecaller references, including a 50+ group",
+    "Rate GPT-6 Luna by ear (owner's pick)"
+   ]
+  },
+  {
+   "phase": "v1: the gated call, India-native",
+   "scope": [
+    "Gated cascade with a reference-AEC echo-safe front end",
+    "Generalised brief: structured cards, one compile(), recitable-line lint, throwing byte budget, ledger packs derived at publish and approved as 'What she tracks'",
+    "Turn manager: pause-aware release, fast path, withdraw, never-discard classifier with Hinglish lexicons, listen during the opening, quiet-reply rescue and Patient continuer from an acknowledgement bank",
+    "Turn-taking panel in ms with the predicted reply gap and three presets",
+    "Natural, Fast and Indic presets plus the expert picker with India-measured rows; MAI-Voice as the second path",
+    "Reply door R1-R11 with disclosure, crisis, numbers-from-data, promotion fence and payment predicates",
+    "Hang-up guard, silence ladder, 8-minute default max, opt-out, wrong-person and crisis endings",
+    "Hindi and English operator-announcement lexicon",
+    "Opening rendered during the ring",
+    "Languages: Hinglish (default), Hindi, Indian English",
+    "Person-reading from lexical and timing signals",
+    "Docked browser, chat and phone test; Test pilot with 10 Hinglish personas gating publish",
+    "Run manifest on every call"
+   ]
+  },
+  {
+   "phase": "v2: she remembers and sounds more alive",
+   "scope": [
+    "Acknowledgement-first rendering of reply openers in her own voice",
+    "Speculative compute with a negation-aware matcher (0 flips on 200+ pairs)",
+    "Prosody features in person-reading",
+    "Memory brief slot live; openings from the last interaction; per-contact pace and language",
+    "Six regional languages plus English",
+    "Second, stronger brain off the critical path, if blind and human ratings show it helps",
+    "Premium Live speech-to-speech, if its gate passes",
+    "Dedicated brand voice"
+   ]
+  },
+  {
+   "phase": "v3: learns at scale, costs less",
+   "scope": [
+    "Learned turn parameters and openings per segment (via the learning module, fixed-horizon tests)",
+    "Cheaper ears and voices that pass the blind ear test",
+    "Self-hosted path for BFSI residency",
+    "Opt-in dialect registers if the listener panel supports them",
+    "Her own overlapping backchannels once a gateable Indic full-duplex model exists"
+   ]
+  }
+ ],
+ "beyond": [
+  "A predicted reply gap in milliseconds, shown before saving, beside the measured India p50 with n and date (0 of 6 competitors)",
+  "Hindi and Hinglish acknowledgement, stop and answer lexicons as editable defaults, with a classifier that never discards a short reply",
+  "An agenda ledger computed in code every turn and shown live as 'already said', so she never repeats a fact or re-pitches a declined offer",
+  "A recitable-line lint and a byte budget that throws, on every brief",
+  "AI disclosure enforced as a reply-door predicate on every creation path (API, chat, template), light and once",
+  "A Hindi verb-final completeness cue in the release policy, and a Patient preset that holds through an elderly caller's 2.4 s pause",
+  "Quiet-reply rescue for the 'hmm' that no ASR transcribes",
+  "The opening generated, gated and rendered during the ring",
+  "An acknowledgement bank rendered in her own voice and timbre",
+  "Speculative compute that never speculates the floor",
+  "A per-voice, per-locale number regression, with failing voices flagged in the picker",
+  "Person-reading that changes rate, style, warmth and turn preset, with the reason shown on the turn timeline",
+  "An Indian operator-announcement lexicon with an acoustic fingerprint and early exit",
+  "A warmth fence by call category (complaints and collections run cooler)",
+  "A run manifest on every call that includes turn parameters and lexicon versions",
+  "Tune by talking: Hinglish chat phrases become reviewed diffs with predicted gap and INR change",
+  "Voices chosen by blind ear test with accent as its own axis and rating n shown in the catalogue",
+  "A stronger second brain that thinks between turns, off the critical path (v2 experiment)"
+ ],
+ "risks": [
+  "Google dependency: paid Vertex pending, Gemini API Tier 1 allows 100 TTS requests a day per model, Gemini TTS doubles in price on 2027-01-01, Gemini 3.1 Live and 3.1 flash TTS shut down 2026-11-17 (risk.2026-10-20.google-dependency, risk.2026-10-20.gemini-3.1-live-sunset)",
+  "Voice versus speed: the owner's preferred Gemini-voice stack computes to about 1.86 s server and 2.2 s at the handset, missing the 1.2 s / 1.5 s bars; the levers are computed, not measured",
+  "The turn-taking win is unproven: every VP stack cuts in on 15-42% of turns today (risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven)",
+  "The Hindi verb-final completeness cue is an inference; it may misread code-mixed endings and must be measured on the battery",
+  "ASR drops short and quiet words; quiet-reply rescue may fire on noise and annoy callers",
+  "The acknowledgement bank may become a tic, as a static 'hmm' list did in Taxila",
+  "R3 'never denied' classifier false positives ('मैं human advisor…' misread on 14/60 turns of one config) could garble honest lines",
+  "gpt-4.1-mini, the fastest India brain, retires 2027-04-14; a successor must be measured",
+  "Residency: Groq, OpenRouter, the Gemini API and Live have no India residency; Sarvam and others train on data by default unless opted out",
+  "Small n: round-1 ratings are n=1-4 per stack; LLM judges disagree with each other and the owner; text benches overstate voice quality (77 → 51)",
+  "Rate limits turn into silence unless quota is reserved per concurrent call",
+  "Operator-message acoustic fingerprinting and voicemail detection are untested on Indian networks",
+  "The phone leg (0.25-0.45 s) is an estimate; no VP call has been timed at a handset"
+ ],
+ "open_questions": [
+  "Which stack is the default? Closes with round-2 human ratings (3+ testers per stack) plus a handset battery and cost per minute (open.2026-10-20.default-stack)",
+  "Is GPT-6 Luna good by ear despite being judged last? Closes by rating v2-luna in round 2 (open.2026-10-20.luna-by-ear)",
+  "Real handset reply gap and cut-ins on Jio, Airtel and Vi? Closes with an echo-bot loopback and battery calls, n 30-60 per stack",
+  "Does the pause-aware release with the verb-final cue reach 5% cut-ins at p50 1.2 s, including the 2.4 s elderly pause? Closes with the turn-taking battery",
+  "Does the Hinglish lexicon classifier handle 90%+ of short replies against the incumbent median? Closes with the W4 battery",
+  "What is the speech-to-speech gate-violation rate, and can talk-over drop to 5%? Closes with a 200+ attack-turn battery (open.2026-10-18.s2s-vs-gate-law)",
+  "Does Gemini 3.8 Live keep affective behaviour, given conflicting docs on the config field? Closes with a listening test",
+  "Does the acknowledgement bank and acknowledgement-first rendering sound natural, or like a tic? Closes with a blind listener check",
+  "Should production fail over to a disclosed same-voice fallback, end gracefully or retry? Owner decision (open.2026-10-20.product-failover-policy)",
+  "How do listeners rate her against human telecaller references, including a 50+ group? Closes with the listener panel",
+  "Does the second brain off the critical path improve conversations? Closes with blind pairwise plus human ratings",
+  "Should the Natural preset ship as default if it misses the speed bar after all levers? Owner decision once the handset battery reports, under the rule that voice beats margin but speed is also a must",
+  "What is MAI-Voice's real metered price, and is it rated well enough to be the second path? Closes with the meter read and round-2 ratings"
+ ]
+}

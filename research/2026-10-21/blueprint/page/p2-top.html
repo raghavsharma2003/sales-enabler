@@ -1,0 +1,266 @@
+<style>
+/* orb (hear-it-first) */
+.orb-wrap { display: grid; place-items: center; padding: 28px 16px 12px; gap: 14px; }
+.orb { width: 132px; height: 132px; border-radius: 50%; position: relative; background: radial-gradient(circle at 38% 34%, color-mix(in oklab, var(--green) 35%, var(--page)), var(--green) 70%); box-shadow: 0 10px 30px -10px color-mix(in oklab, var(--green) 70%, transparent); display: grid; place-items: center; color: var(--page); font: 600 15px var(--f-ui); }
+.orb::before, .orb::after { content: ""; position: absolute; inset: -10px; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--green) 40%, transparent); animation: ring 2.6s ease-out infinite; }
+.orb::after { animation-delay: 1.3s; }
+@keyframes ring { from { transform: scale(.92); opacity: .9; } to { transform: scale(1.28); opacity: 0; } }
+.caption { font-size: 15px; text-align: center; max-width: 34ch; }
+.caption .who { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
+.voices { display: grid; gap: 8px; padding: 0 14px 14px; }
+.voice-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; border: 1px solid var(--rule); border-radius: 10px; padding: 8px 10px; }
+.play { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--green-soft); color: var(--green); font-size: 11px; }
+.wave { display: flex; align-items: center; gap: 2px; height: 22px; min-width: 0; overflow: hidden; }
+.wave i { display: block; flex: 0 1 3px; min-width: 1px; border-radius: 2px; background: color-mix(in oklab, var(--green) 55%, var(--rule)); }
+.wave.b i { background: color-mix(in oklab, var(--gold) 65%, var(--rule)); }
+
+/* system map */
+.map-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--rule); border-radius: var(--r3); background: var(--page); }
+.map { display: block; min-width: 900px; width: 100%; height: auto; }
+.map .bx { fill: var(--page); stroke: var(--rule-strong); stroke-width: 1.2; }
+.map .bx-g { fill: var(--green-soft); stroke: var(--green); stroke-width: 1.4; }
+.map .bx-ink { fill: var(--ink); stroke: var(--ink); }
+.map .bx-gold { fill: var(--gold-soft); stroke: var(--gold); stroke-width: 1.2; }
+.map text { fill: var(--ink); font-family: var(--f-ui); font-size: 13px; }
+.map .t-h { font-family: var(--f-display); font-weight: 600; font-size: 16px; }
+.map .t-s { fill: var(--ink-2); font-size: 12.5px; }
+.map .t-inv { fill: var(--page); }
+.map .t-inv-s { fill: color-mix(in oklab, var(--page) 78%, transparent); font-size: 12.5px; }
+.map .t-seal { fill: var(--seal); font-weight: 600; font-size: 12px; }
+.map .t-lab { fill: var(--ink-3); font-size: 11.5px; font-family: var(--f-mono); }
+.map .ln { fill: none; stroke: var(--ink-2); stroke-width: 1.5; }
+.map .ln-d { fill: none; stroke: var(--green); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.map .ln-s { fill: none; stroke: var(--seal); stroke-width: 1.6; }
+.map .ah { fill: var(--ink-2); }
+.map .ah-g { fill: var(--green); }
+.map .ah-s { fill: var(--seal); }
+.map .seal-c { fill: var(--seal); }
+
+/* pillars */
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); border-top: 1px solid var(--rule); }
+.pillar { padding: var(--s4) var(--s4) var(--s4) 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 36px 1fr; gap: 0 10px; }
+.pillar .n { font-family: var(--f-deva); color: var(--green); font-size: 22px; line-height: 1.1; }
+.pillar h3 { font-family: var(--f-display); font-weight: 600; font-size: 18px; line-height: 1.2; }
+.pillar p { grid-column: 2; color: var(--ink-2); font-size: 14.5px; margin-top: 4px; }
+
+/* journey */
+.journey { position: relative; display: grid; gap: var(--s4); }
+.journey::before { content: ""; position: absolute; left: 19px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--green), var(--margin)); opacity: .55; }
+.step { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: var(--s3); position: relative; }
+.step .node { width: 40px; height: 40px; border-radius: 50%; background: var(--page); border: 2px solid var(--green); display: grid; place-items: center; font: 600 15px var(--f-mono); color: var(--green); z-index: 1; }
+.step .body { background: var(--page); border: 1px solid var(--rule); border-radius: var(--r2); padding: var(--s4); min-width: 0; }
+.step h3 { font-family: var(--f-display); font-weight: 600; font-size: 19px; }
+.step .facets { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); margin-top: var(--s3); }
+.facet .eyebrow { display: block; margin-bottom: 2px; }
+.facet p { font-size: 14px; color: var(--ink-2); }
+.facet.says p { font-family: var(--f-display); font-size: 15px; color: var(--ink); font-style: italic; }
+.step .wow { margin-top: var(--s3); display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.step .wow > div { border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+.step .wow .w { background: var(--green-soft); color: var(--ink); }
+.step .wow .c { background: color-mix(in oklab, var(--paper) 70%, var(--page)); color: var(--ink-2); border: 1px dashed var(--rule-strong); }
+.step .wow b { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; display: block; color: var(--ink-3); }
+
+/* agents */
+.autonomy { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: var(--s3); margin-bottom: var(--s5); }
+.autonomy div { border-radius: var(--r2); padding: var(--s3) var(--s4); background: var(--page); border: 1px solid var(--rule); }
+.autonomy b { font-family: var(--f-mono); font-size: 18px; display: block; }
+.autonomy span { font-size: 14px; color: var(--ink-2); }
+.autonomy .a2 { border-color: color-mix(in oklab, var(--seal) 50%, var(--rule)); box-shadow: inset 3px 0 0 var(--seal); }
+.crew { display: grid; gap: var(--s4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); }
+.crew-col h3 { font-family: var(--f-display); font-weight: 600; font-size: 18px; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--rule-strong); padding-bottom: 6px; margin-bottom: 8px; }
+.crew-col h3 small { font-family: var(--f-ui); font-weight: 400; font-size: 12px; color: var(--ink-3); }
+.agent { padding: 10px 0; border-bottom: 1px dashed var(--rule); display: grid; gap: 4px; }
+.agent .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.agent b { font-size: 15px; }
+.agent p { font-size: 13.5px; color: var(--ink-2); }
+.agent .appr { font-size: 12.5px; color: var(--seal); }
+.agent.engine b::after { content: " · engine"; font-weight: 400; font-size: 12px; color: var(--ink-3); }
+.lvl { font-family: var(--f-mono); font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--green-soft); color: var(--green); white-space: nowrap; }
+</style>
+
+<div class="shell">
+<nav class="index" aria-label="Sections">
+  <div class="brand">Vyakti <span class="deva">व्यक्ति</span></div>
+  <ol id="index-list">
+    <li><a href="#top">The promise</a></li>
+    <li><a href="#map">Product on one page</a></li>
+    <li><a href="#pillars">Principles</a></li>
+    <li><a href="#journey">The journey</a></li>
+    <li><a href="#crew">The AI workforce</a></li>
+    <li><a href="#screens">Key screens</a></li>
+    <li><a href="#versus">Better than each rival</a></li>
+    <li><a href="#learning">Self-learning</a></li>
+    <li><a href="#data">Data and memory</a></li>
+    <li><a href="#speed">Speed</a></li>
+    <li><a href="#money">Cost and price</a></li>
+    <li><a href="#stack">Architecture</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#metrics">Metrics and risks</a></li>
+    <li><a href="#steal">Learn from everyone</a></li>
+    <li><a href="#decide" class="seal-link">16 decisions for you</a></li>
+  </ol>
+  <p class="small" style="margin-top:16px">Blueprint for owner review · 21 Oct 2026</p>
+</nav>
+
+<main>
+<div class="topnav" aria-label="Sections">
+  <a href="#map">One page</a><a href="#journey">Journey</a><a href="#crew">Workforce</a><a href="#screens">Screens</a><a href="#versus">Vs rivals</a><a href="#learning">Learning</a><a href="#data">Data</a><a href="#speed">Speed</a><a href="#money">Money</a><a href="#roadmap">Roadmap</a><a href="#decide" style="color:var(--seal);border-color:var(--seal)">Decisions</a>
+</div>
+
+<section class="entry hero" id="top">
+  <div>
+    <div class="kicker"><span class="chip">Product blueprint</span><span class="chip">For owner review · 21 Oct 2026</span><span class="chip unproven"><span class="dot"></span>Nothing has run on a live call yet</span></div>
+    <h1>Vyakti <span class="deva">व्यक्ति</span></h1>
+    <p class="promise"><b>Just talk to VP.</b> It builds the agent, cleans your list, gets your number and makes calls your customers are glad to take, in their language and inside the rules. Then it shows you every call, every rupee, and what it will do better next time.</p>
+    <p class="for" id="for-whom"></p>
+    <div class="truth">
+      <span class="eyebrow">What is not true yet, so nobody sells it</span>
+      <p>VP is not faster yet: every stack we tested talks over callers on 15-42% of turns. The raw voice does not beat ElevenLabs, and Hindi hold does not beat Sarvam. Base price is ₹3.49-3.99 a minute at launch, not ₹2. "Learns on its own" is not true below about 1,000 calls a day on one script. No buyer interview has run. Each of these has a gate in the roadmap.</p>
+    </div>
+    <div class="stats" aria-label="Blueprint at a glance">
+      <div><b class="num">10</b><span>journey steps, sign-up to better results</span></div>
+      <div><b class="num">17</b><span>AI agents and engines doing the work</span></div>
+      <div><b class="num">8</b><span>key screens drawn below</span></div>
+      <div><b class="num">6</b><span>rivals scored on 12 dimensions</span></div>
+      <div class="s-seal"><b class="num">16</b><span>decisions waiting for you</span></div>
+    </div>
+  </div>
+
+  <div class="device ui" aria-label="Mock-up: the public hear-it-first page">
+    <div class="bar"><span class="url">vyakti.ai</span><span style="margin-left:auto">Pricing (₹ all-in) · Sign in</span></div>
+    <div class="orb-wrap">
+      <div class="orb">Talk to VP</div>
+      <p class="caption"><span class="who">VP · live caption</span>"Namaste! Main VP hoon, ek AI assistant. Aapka business kaunsi calls karta hai?"</p>
+    </div>
+    <div class="voices">
+      <span class="eyebrow">Hear a renewal reminder as your customer would</span>
+      <div class="voice-row"><span class="play">▶</span><span><b>Ananya</b> <span class="muted tiny">· warm</span><span class="wave" data-wave="7"></span></span><span class="tiny muted mono">624 ms · lab</span></div>
+      <div class="voice-row"><span class="play">▶</span><span><b>Kabir</b> <span class="muted tiny">· crisp</span><span class="wave b" data-wave="11"></span></span><span class="tiny muted mono">not measured</span></div>
+      <div class="voice-row"><span class="play">▶</span><span><b>Sunita</b> <span class="muted tiny">· respectful, slower</span><span class="wave" data-wave="3"></span></span><span class="tiny muted mono">not measured</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:4px">
+        <span class="tiny muted">AI voice · demo · nothing is saved unless you start setup</span>
+        <span class="btn primary">Start my setup with this conversation</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="entry" id="map">
+  <div class="entry-head"><span class="tag">१</span><h2>The product on one page</h2>
+    <p class="lede">You talk. VP's agents plan and draft. Code engines enforce the rules no agent can override. The voice runtime makes the call on your own number. Every call flows back as analysis, alerts and proposals. Anything that reaches a person, spends money or changes a policy waits for your one-tap approval (the seal).</p></div>
+  <div class="map-wrap">
+  <svg class="map" viewBox="0 0 1100 500" role="img" aria-label="System map: you talk to the Operator, which directs build, run and learn agents; engines in code enforce rules; the voice runtime calls the person through your number; calls flow back as analysis to what you see.">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+      <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-g"/></marker>
+      <marker id="ars" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-s"/></marker>
+    </defs>
+    <!-- you -->
+    <rect class="bx" x="20" y="140" width="170" height="130" rx="12"/>
+    <text class="t-h" x="36" y="168">You</text>
+    <text class="t-s" x="36" y="188">owner · campaign manager</text>
+    <text x="36" y="216" font-style="italic">"Ye CSV hai, renewal</text>
+    <text x="36" y="234" font-style="italic">reminders bhej do"</text>
+    <text class="t-lab" x="36" y="258">typed or spoken</text>
+    <!-- what you see -->
+    <rect class="bx" x="20" y="330" width="170" height="150" rx="12"/>
+    <text class="t-h" x="36" y="358">What you see</text>
+    <text class="t-s" x="36" y="382">Today brief at 09:15</text>
+    <text class="t-s" x="36" y="402">Mission control</text>
+    <text class="t-s" x="36" y="422">Call page with every rupee</text>
+    <text class="t-s" x="36" y="442">Learning inbox (≤ 3 a day)</text>
+    <text class="t-s" x="36" y="462">Ask VP anything</text>
+    <!-- operator -->
+    <rect class="bx-ink" x="235" y="140" width="185" height="130" rx="12"/>
+    <text class="t-h t-inv" x="252" y="168">Operator · "VP"</text>
+    <text class="t-inv-s" x="252" y="192">talks Hinglish or English</text>
+    <text class="t-inv-s" x="252" y="212">plans, delegates, explains</text>
+    <text class="t-inv-s" x="252" y="232">acts only through tools</text>
+    <text class="t-inv-s" x="252" y="252">brain chosen by you</text>
+    <!-- data in -->
+    <rect class="bx-gold" x="465" y="12" width="305" height="58" rx="10"/>
+    <text class="t-h" x="481" y="36" font-size="14">Your data in</text>
+    <text class="t-s" x="481" y="56">files · Sheets · CRM · payments · website · WhatsApp (v2)</text>
+    <!-- workforce -->
+    <rect class="bx-g" x="465" y="92" width="305" height="92" rx="10"/>
+    <text class="t-h" x="481" y="116" font-size="15">Build</text>
+    <text class="t-s" x="481" y="138">Strategist · Brief writer · Data steward</text>
+    <text class="t-s" x="481" y="158">Test pilot · Line keeper (numbers, KYC)</text>
+    <rect class="bx-g" x="465" y="196" width="305" height="80" rx="10"/>
+    <text class="t-h" x="481" y="220" font-size="15">Run</text>
+    <text class="t-s" x="481" y="242">Compliance guard · Campaign runner</text>
+    <text class="t-s" x="481" y="262">Supervisor (live) · Treasurer (caps)</text>
+    <rect class="bx-g" x="465" y="288" width="305" height="92" rx="10"/>
+    <text class="t-h" x="481" y="312" font-size="15">Learn</text>
+    <text class="t-s" x="481" y="334">Call analyst · Memory keeper</text>
+    <text class="t-s" x="481" y="354">Coach · Learner (statistics)</text>
+    <!-- engines -->
+    <rect class="bx" x="235" y="410" width="535" height="70" rx="10" stroke-dasharray="0"/>
+    <text class="t-h" x="251" y="436" font-size="15">Engines in code · no agent can override</text>
+    <text class="t-lab" x="251" y="460">compile() · dial gate · reply door · meter · ledgers · statistics</text>
+    <!-- voice runtime -->
+    <rect class="bx-ink" x="815" y="92" width="265" height="150" rx="12"/>
+    <text class="t-h t-inv" x="831" y="118">Voice runtime</text>
+    <text class="t-inv-s" x="831" y="140">Azure Central India · always on</text>
+    <text class="t-inv-s" x="831" y="164">ears → turn manager → brain</text>
+    <text class="t-inv-s" x="831" y="184">→ reply door → her voice</text>
+    <text class="t-inv-s" x="831" y="208">stereo recording · run manifest</text>
+    <text class="t-inv-s" x="831" y="228">per-second cost lines</text>
+    <!-- number -->
+    <rect class="bx" x="815" y="262" width="265" height="58" rx="10"/>
+    <text class="t-h" x="831" y="286" font-size="14">Your number</text>
+    <text class="t-s" x="831" y="306">rented in your name, or your own carrier</text>
+    <!-- person -->
+    <rect class="bx" x="815" y="340" width="265" height="140" rx="12"/>
+    <text class="t-h" x="831" y="366">The person called</text>
+    <text x="831" y="392" font-style="italic">"Sunita ji? Main Asha, Sharma</text>
+    <text x="831" y="410" font-style="italic">Insurance ki AI assistant. Aapki car</text>
+    <text x="831" y="428" font-style="italic">policy 28 Oct ko renew honi hai..."</text>
+    <text class="t-lab" x="831" y="458">disclosed once · stop any time</text>
+    <!-- arrows -->
+    <line class="ln" x1="190" y1="190" x2="232" y2="190" marker-end="url(#ar)"/>
+    <line class="ln-s" x1="235" y1="226" x2="193" y2="226" marker-end="url(#ars)"/>
+    <circle class="seal-c" cx="212" cy="250" r="9"/>
+    <text class="t-seal" x="200" y="290">you approve</text>
+    <path class="ln" d="M420 180 C 442 180, 442 138, 462 138" marker-end="url(#ar)"/>
+    <path class="ln" d="M420 205 C 442 205, 442 236, 462 236" marker-end="url(#ar)"/>
+    <path class="ln" d="M420 230 C 442 230, 442 334, 462 334" marker-end="url(#ar)"/>
+    <line class="ln-d" x1="617" y1="70" x2="617" y2="89" marker-end="url(#arg)"/>
+    <line class="ln" x1="327" y1="270" x2="327" y2="407" marker-end="url(#ar)"/>
+    <text class="t-lab" x="334" y="345">every action</text>
+    <text class="t-lab" x="334" y="360">is a tool</text>
+    <line class="ln" x1="617" y1="380" x2="617" y2="407" marker-end="url(#ar)"/>
+    <path class="ln" d="M770 445 C 795 445, 790 170, 812 170" marker-end="url(#ar)"/>
+    <line class="ln" x1="947" y1="242" x2="947" y2="259" marker-end="url(#ar)"/>
+    <line class="ln" x1="947" y1="320" x2="947" y2="337" marker-end="url(#ar)"/>
+    <path class="ln-d" d="M815 470 C 790 470, 800 352, 773 352" marker-end="url(#arg)"/>
+    <polyline class="ln-d" points="465,368 440,368 440,392 194,392" marker-end="url(#arg)"/>
+    <text class="t-lab" x="214" y="382">analysis · alerts · proposals</text>
+  </svg>
+  </div>
+  <p class="note-under">Solid lines are actions. Dashed lines are information coming back. Reading guide: the dial gate checks window, consent, suppression and caller ID before every ring; the reply door checks every sentence before she says it (disclosure, never denying she is an AI, crisis lines, numbers only from data, no OTP or payment asks).</p>
+</section>
+
+<section class="entry" id="pillars">
+  <div class="entry-head"><span class="tag">२</span><h2>What VP stands on</h2>
+    <p class="lede">Eight principles. Each one came from a measured result or one of your own requirements.</p></div>
+  <div class="pillars" id="pillar-list"></div>
+</section>
+
+<section class="entry" id="journey">
+  <div class="entry-head"><span class="tag">३</span><h2>The journey, sign-up to better results</h2>
+    <p class="lede">What you say, what VP's agents do, what you see, and why it beats what the rivals ship today. Times are targets, not measurements.</p></div>
+  <div class="journey" id="journey-list"></div>
+</section>
+
+<section class="entry" id="crew">
+  <div class="entry-head"><span class="tag">४</span><h2>The AI workforce that does the work</h2>
+    <p class="lede">Agents (models) understand, plan, draft and explain. Engines (code) enforce and execute. Every agent acts only through the same tools a developer gets, and how much it may do on its own is fixed in code.</p></div>
+  <div class="autonomy">
+    <div><b>A0</b><span>Suggests only</span></div>
+    <div><b>A1</b><span>Drafts and runs simulations inside a test budget. Never reaches a real person or spends money.</span></div>
+    <div class="a2"><b style="color:var(--seal)">A2</b><span>A card with the diff, cost and risk. You hold for 1.2 s; the approval is bound to that exact change.</span></div>
+    <div><b>A3</b><span>Acts at once, but only to lower risk or spend: pause, suppress after an opt-out, stop at a cap, revert to the last good version. Then tells you, with undo.</span></div>
+  </div>
+  <div class="crew" id="crew-list"></div>
+</section>

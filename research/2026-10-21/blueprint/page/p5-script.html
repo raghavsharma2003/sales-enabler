@@ -1,0 +1,321 @@
+<script>
+(function () {
+  var D = JSON.parse(document.getElementById('bp-data').textContent);
+  var V = D.visual, I = D.integration;
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var DEV = ['०','१','२','३','४','५','६','७','८','९'];
+  var dev = function (n) { return String(n).split('').map(function (d) { return DEV[+d]; }).join(''); };
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* waveforms: deterministic bars */
+  document.querySelectorAll('[data-wave]').forEach(function (el) {
+    var seed = +el.getAttribute('data-wave'), n = +(el.getAttribute('data-n') || 30), out = '';
+    for (var i = 0; i < n; i++) {
+      var v = Math.abs(Math.sin(i * 0.61 + seed) * 0.6 + Math.sin(i * 1.7 + seed * 2.3) * 0.4);
+      var silent = n > 40 && ((i + seed) % 23 < 4);
+      out += '<i style="height:' + (silent ? 8 : Math.round(18 + v * 82)) + '%"></i>';
+    }
+    el.innerHTML = out;
+    var cut = el.getAttribute('data-cut');
+    if (cut) { var m = document.createElement('span'); m.className = 'cut'; m.style.left = cut + '%'; m.title = 'talk-over'; el.appendChild(m); }
+  });
+
+  $('for-whom').textContent = V.vision.for_whom;
+
+  /* pillars */
+  $('pillar-list').innerHTML = V.pillars.map(function (p, i) {
+    return '<div class="pillar"><span class="n">' + dev(i + 1) + '</span><h3>' + esc(p.name) + '</h3><p>' + esc(p.line) + '</p></div>';
+  }).join('');
+
+  /* journey */
+  $('journey-list').innerHTML = V.journey.map(function (s, i) {
+    var title = s.stage.replace(/^\d+\.\s*/, '');
+    return '<div class="step"><span class="node">' + (i + 1) + '</span><div class="body"><h3>' + esc(title) + '</h3>' +
+      '<div class="facets"><div class="facet says"><span class="eyebrow">You say or do</span><p>' + esc(s.client_says_or_does) + '</p></div>' +
+      '<div class="facet"><span class="eyebrow">VP’s agents do</span><p>' + esc(s.vp_agents_do) + '</p></div>' +
+      '<div class="facet"><span class="eyebrow">You see</span><p>' + esc(s.client_sees) + '</p></div></div>' +
+      '<div class="wow"><div class="w"><b>Why it lands</b>' + esc(s.wow) + '</div><div class="c"><b>What rivals do today</b>' + esc(s.competitor_contrast) + '</div></div></div></div>';
+  }).join('');
+
+  /* crew */
+  var order = ['Front door', 'Build', 'Run', 'Learn', 'Internal', 'Human'];
+  var blurbs = { 'Front door': 'your one partner', 'Build': 'gets it ready', 'Run': 'runs it safely', 'Learn': 'makes it better', 'Internal': 'watches rivals', 'Human': 'when you need a person' };
+  $('crew-list').innerHTML = order.map(function (role) {
+    var list = V.agents.filter(function (a) { return a.role === role; });
+    if (!list.length) return '';
+    return '<div class="crew-col"><h3>' + role + ' <small>' + blurbs[role] + '</small></h3>' + list.map(function (a) {
+      var eng = /\(engine\)/.test(a.name), nm = a.name.replace(/\s*\(engine\)/, '');
+      return '<div class="agent' + (eng ? ' engine' : '') + '"><div class="top"><b>' + esc(nm) + '</b><span class="lvl">' + esc(a.autonomy) + '</span></div><p>' + esc(a.does) + '</p><span class="appr">You approve: ' + esc(a.human_approves) + '</span></div>';
+    }).join('') + '</div>';
+  }).join('');
+
+  /* scoreboard (BLUEPRINT.md section 9) */
+  var SENSES = [
+    ['win', 'Product design', 'Retell flows; Sarvam’s attempt split', 'Beats on India objects; flows unproven', 'W1, W2, T10'],
+    ['win', 'Cost', 'Sarvam Business on whole minutes; SquadStack ₹2-5 (claimed)', 'Beats on 30-90 s calls only', 'T7 invoice audit, W8'],
+    ['win', 'Usability', 'ElevenLabs explanations; Sarvam inline fixes', 'A reason and a fix on every disabled action', 'W6'],
+    ['win', 'Compliance', 'None: 0 of 8 rivals', 'Category first, one dial path, A2P pack, why-allowed', 'W1, T3, T9'],
+    ['win', 'Failure explanation', 'Sarvam structure; Vapi breadth', '34 business reasons, carrier code and next action', 'W6'],
+    ['win', 'Learning', 'Retell Conductor (no statistics)', 'Fast lane, fixed horizons, A/A, expiry', 'Shadow A/A ≤ 5%'],
+    ['match', 'UX', 'Sarvam Genie runs campaigns; Retell Conductor diffs', 'Match; beats on approval safety', 'W10'],
+    ['match', 'Convenience', 'SquadStack’s managed CSMs; Genie with UPI', 'Just talk, daily brief, one-tap approvals, VP Success', '≥ 70% of setup by chat'],
+    ['match', 'Developer breadth', 'Vapi (custom LLM, squads, SIP); Retell 109 API operations', 'Match on API; loses on SIP until v2', 'W10 read-back'],
+    ['match', 'Support', 'Rivals often over 24 h (inferred)', 'Humans in IST hours, first reply under 2 h', 'W9'],
+    ['lose', 'Speed', 'ElevenLabs 3% talk-over at 3.75 s; Ultravox 1.54 s', 'Loses today: 15-42% talk-over on every stack', 'Joint speed gate on real handsets'],
+    ['lose', 'User flow', 'Sarvam and Bolna rent Indian numbers in-product', 'Loses today on the first production call; fixed if carriers agree to rental in your name', 'W7, W7b'],
+    ['lose', 'Vibe', 'ElevenLabs raw voice; Sarvam’s 199 Indic voices', 'Loses on raw voice; beats on honesty', 'Ear rating ≥ 7.0; panel within 1 point of humans'],
+    ['lose', 'Memory', 'Retell ships contact memory today', 'Loses on timing; beats on design', 'Recall ≥ 95% in simulation'],
+    ['lose', 'Languages', 'Sarvam: 11 Indic languages, Hindi held 38/40', 'Loses to Sarvam in v1; 5 regional betas', 'W5'],
+    ['unproven', 'UI', 'ElevenLabs polish; Sarvam’s Indic glyphs', 'One warm Indian shell, audio as hero, 13 states', '5-user sessions; your sign-off'],
+    ['unproven', 'Results', 'SquadStack sells outcomes (claimed)', 'Earned outcomes, including no-developer sources', 'Cost per outcome below 3 partners’ desks']
+  ];
+  var COLS = [['win', 'Wins on paper'], ['match', 'Matches'], ['lose', 'Loses today'], ['unproven', 'Unproven']];
+  $('board').innerHTML = COLS.map(function (c) {
+    var rows = SENSES.filter(function (s) { return s[0] === c[0]; });
+    return '<div class="board-col ' + c[0] + '"><h3><span class="dot"></span>' + c[1] + '<span class="num">' + rows.length + '</span></h3>' + rows.map(function (s) {
+      return '<div class="sense"><b>' + esc(s[1]) + '</b><span class="st-line">' + esc(s[3]) + '</span><span class="best">Best today: ' + esc(s[2]) + '</span><span class="proof">Proof: ' + esc(s[4]) + '</span></div>';
+    }).join('') + '</div>';
+  }).join('');
+
+  /* matrix */
+  var M = V.matrix, pct = { 1: 8, 2: 22, 3: 40, 4: 62, 5: 85 };
+  var head = '<thead><tr><th scope="col">Dimension</th>' + M.vendors.map(function (v) { return '<th scope="col"' + (v === 'VP' ? ' class="vp"' : '') + '>' + v + (v === 'VP' ? ' <span class="small">target</span>' : '') + '</th>'; }).join('') + '</tr></thead>';
+  var body = '<tbody>' + M.dimensions.map(function (d) {
+    return '<tr><td>' + esc(d) + '</td>' + M.vendors.map(function (v) {
+      var c = (M.scores[d] || {})[v] || {}, s = c.score || 0;
+      var bg = 'color-mix(in oklab, var(--green) ' + (pct[s] || 0) + '%, var(--page))';
+      var fg = s >= 4 ? 'var(--page)' : 'var(--ink)';
+      return '<td><span class="cell' + (v === 'VP' ? ' vp' : '') + '" tabindex="0" style="background:' + bg + ';color:' + fg + '" data-tip="' + esc(v + ' · ' + d + ': ' + (c.note || '')) + '">' + (s || '–') + '</span></td>';
+    }).join('') + '</tr>';
+  }).join('') + '</tbody>';
+  $('matrix').innerHTML = head + body;
+  $('matrix-legend').innerHTML = [1, 2, 3, 4, 5].map(function (s) { return '<span><span class="swatch" style="background:color-mix(in oklab, var(--green) ' + pct[s] + '%, var(--page));border:1px solid var(--rule)"></span>' + s + '</span>'; }).join('') +
+    '<span><span class="swatch" style="outline:2px dashed var(--green);outline-offset:-2px"></span>VP = design target, not measured</span><span>5 = best in class</span>';
+  var tip = $('tip');
+  var showTip = function (el) { var r = el.getBoundingClientRect(); tip.textContent = el.getAttribute('data-tip'); tip.hidden = false;
+    var x = Math.min(window.innerWidth - 290, Math.max(8, r.left + r.width / 2 - 140)); var y = r.top - tip.offsetHeight - 8; if (y < 8) y = r.bottom + 8;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px'; };
+  document.querySelectorAll('[data-tip]').forEach(function (el) {
+    el.addEventListener('mouseenter', function () { showTip(el); });
+    el.addEventListener('focus', function () { showTip(el); });
+    el.addEventListener('click', function () { showTip(el); });
+    el.addEventListener('mouseleave', function () { tip.hidden = true; });
+    el.addEventListener('blur', function () { tip.hidden = true; });
+  });
+  window.addEventListener('scroll', function () { tip.hidden = true; }, { passive: true });
+
+  /* learning loop ring */
+  var L = V.learning_loop;
+  var SHORT = ['Watch every call', 'Catch a bad line', 'Throttle, send fix', 'Draft and simulate', 'Gates must pass', 'You approve', 'Fixed-horizon test', 'Promote, then expire'];
+  (function () {
+    var W = 560, H = 470, cx = 280, cy = 232, r = 150, n = SHORT.length, svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Learning loop with 8 steps">';
+    svg += '<defs><marker id="la" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--green)"/></marker></defs>';
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" style="fill:none;stroke:var(--rule)" stroke-width="18"/>';
+    for (var i = 0; i < n; i++) {
+      var a0 = -Math.PI / 2 + i * 2 * Math.PI / n + 0.2, a1 = -Math.PI / 2 + (i + 1) * 2 * Math.PI / n - 0.2;
+      svg += '<path d="M' + (cx + r * Math.cos(a0)).toFixed(1) + ' ' + (cy + r * Math.sin(a0)).toFixed(1) + ' A ' + r + ' ' + r + ' 0 0 1 ' + (cx + r * Math.cos(a1)).toFixed(1) + ' ' + (cy + r * Math.sin(a1)).toFixed(1) + '" style="fill:none;stroke:var(--green)" stroke-width="2" marker-end="url(#la)"/>';
+    }
+    for (var j = 0; j < n; j++) {
+      var a = -Math.PI / 2 + j * 2 * Math.PI / n, x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      var hot = j === 1 || j === 5;
+      svg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="20" style="fill:' + (j === 5 ? 'var(--seal)' : hot ? 'var(--gold)' : 'var(--page)') + ';stroke:' + (j === 5 ? 'var(--seal)' : 'var(--green)') + '" stroke-width="2"/>';
+      svg += '<text x="' + x.toFixed(1) + '" y="' + (y + 5).toFixed(1) + '" text-anchor="middle" style="font:600 14px var(--f-mono);fill:' + (j === 5 ? 'var(--page)' : 'var(--ink)') + '">' + (j + 1) + '</text>';
+      var lx = cx + (r + 38) * Math.cos(a), ly = cy + (r + 38) * Math.sin(a), anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
+      var words = SHORT[j].split(' '), half = Math.ceil(words.length / 2), l1 = words.slice(0, half).join(' '), l2 = words.slice(half).join(' ');
+      if (Math.abs(Math.sin(a)) > 0.9) { ly += Math.sin(a) > 0 ? 6 : -14; }
+      svg += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" style="font-size:13px">' + esc(l1) + '</text>';
+      if (l2) svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 16).toFixed(1) + '" text-anchor="' + anchor + '" style="font-size:13px">' + esc(l2) + '</text>';
+    }
+    svg += '<text x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" style="font-family:var(--f-display);font-size:19px;font-weight:600">From call 1</text>';
+    svg += '<text x="' + cx + '" y="' + (cy + 10) + '" text-anchor="middle" style="font-size:12.5px;fill:var(--ink-2)">fast lane: fix on your phone</text>';
+    svg += '<text x="' + cx + '" y="' + (cy + 27) + '" text-anchor="middle" style="font-size:12.5px;fill:var(--ink-2)">within 15 min (p90)</text>';
+    svg += '</svg>';
+    $('loop-svg').innerHTML = svg;
+  })();
+  $('loop-steps').innerHTML = L.steps.map(function (s, i) { return '<li><span class="k">' + (i + 1) + '</span><span>' + esc(s) + '</span></li>'; }).join('');
+  $('learns').innerHTML = L.what_learns.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+  $('guards').innerHTML = L.guardrails.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+  $('cadence').textContent = L.cadence;
+
+  /* data */
+  $('sources').innerHTML = V.data_flow.sources.map(function (s) {
+    return '<div class="src"><b>' + esc(s.name) + '</b><span>' + esc(s.what_we_take) + '</span><span class="use">→ ' + esc(s.use) + '</span></div>';
+  }).join('');
+  $('consent').innerHTML = V.data_flow.consent.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+
+  /* svg helpers */
+  var el = function (tag, attrs, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; };
+  var svgBox = function (w, h, label) { return el('svg', { viewBox: '0 0 ' + w + ' ' + h, class: 'chart', role: 'img', 'aria-label': label }); };
+
+  /* latency budget */
+  (function () {
+    var B = V.speed.budget, W = 560, H = 132, x0 = 10, x1 = 550, total = 1500, sc = (x1 - x0) / total;
+    var cols = ['var(--green)', 'var(--gold)', 'color-mix(in oklab, var(--green) 55%, var(--page))', 'var(--seal)', 'var(--ink-3)'];
+    var s = svgBox(W, H, 'Stacked latency budget, 1,500 ms at the median');
+    var x = x0;
+    B.forEach(function (b, i) {
+      var w = b.ms * sc;
+      s.appendChild(el('rect', { x: x, y: 28, width: Math.max(w - 2, 2), height: 34, rx: 4, style: 'fill:' + cols[i] }));
+      if (w > 40) s.appendChild(el('text', { x: x + 6, y: 50, style: 'fill:var(--page);font-weight:600;font-size:12.5px' }, b.ms));
+      x += w;
+    });
+    s.appendChild(el('text', { x: x0, y: 18, class: 'lbl' }, 'Median budget at the handset'));
+    s.appendChild(el('text', { x: x1, y: 18, 'text-anchor': 'end', class: 'tgt-t' }, '1,500 ms'));
+    [0, 500, 1000, 1500].forEach(function (t) { var tx = x0 + t * sc; s.appendChild(el('line', { x1: tx, y1: 66, x2: tx, y2: 72, class: 'axis' })); s.appendChild(el('text', { x: tx, y: 86, 'text-anchor': t === 0 ? 'start' : t === 1500 ? 'end' : 'middle' }, t + ' ms')); });
+    var wrap = $('budget'); wrap.appendChild(s);
+    var tbl = '<div class="scroll-x"><table class="rows" style="margin-top:6px"><thead><tr><th>Segment</th><th>p50</th><th>p90</th><th>Best so far</th></tr></thead><tbody>' + B.map(function (b, i) {
+      return '<tr><td><span class="swatch" style="background:' + cols[i] + ';width:12px;height:12px"></span>' + esc(b.segment) + '</td><td class="num">' + b.ms + '</td><td class="num">' + b.p90_ms + '</td><td>' + esc(b.best_measured) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+    wrap.insertAdjacentHTML('beforeend', tbl);
+  })();
+
+  /* presets vs rivals */
+  (function () {
+    var ROWS = [
+      { n: 'Indic (Sarvam stack)', srv: [0.97, 1.18], hs: [1.2, 1.6], note: 'India-hosted' },
+      { n: 'Fast (Azure + MAI voice)', srv: [1.0, 1.0], hs: [1.6, 2.0], note: 'MAI voice unrated' },
+      { n: 'Natural (Gemini voice)', srv: [1.6, 2.2], hs: [2.0, 2.5], note: 'your current leaning' },
+      { n: 'Premium Live (Gemini Live)', srv: [0.8, 1.6], hs: null, note: 'talks over ~40% ungated' }
+    ];
+    var RIV = [
+      { n: 'Bolna (code floor)', v: 1.4 }, { n: 'Ultravox', v: 1.54 }, { n: 'Vapi demo (35% talk-over)', v: 2.319 }, { n: 'ElevenLabs (3% talk-over)', v: 3.75 }
+    ];
+    var W = 560, rowH = 30, rivH = 24, top = 34, lx = 196, x1 = 548, max = 4, sc = (x1 - lx) / max;
+    var y0 = top + ROWS.length * rowH + 6, axisY = y0 + RIV.length * rivH + 12, H = axisY + 22;
+    var s = svgBox(W, H, 'Reply gap ranges by stack and rival values, in seconds, with the 1.5 s target');
+    [0, 1, 2, 3, 4].forEach(function (t) { var x = lx + t * sc; s.appendChild(el('line', { x1: x, y1: top - 8, x2: x, y2: axisY, class: 'grid' })); s.appendChild(el('text', { x: x, y: axisY + 16, 'text-anchor': 'middle' }, t + ' s')); });
+    var xt = lx + 1.5 * sc, xp = lx + 2.5 * sc;
+    s.appendChild(el('line', { x1: xt, y1: top - 14, x2: xt, y2: axisY, class: 'tgt' }));
+    s.appendChild(el('text', { x: xt + 4, y: top - 20, class: 'tgt-t' }, 'target p50 1.5 s'));
+    s.appendChild(el('line', { x1: xp, y1: top - 14, x2: xp, y2: axisY, class: 'tgt2' }));
+    s.appendChild(el('text', { x: xp + 4, y: top - 6, class: 'tgt2-t' }, 'p90 2.5 s'));
+    ROWS.forEach(function (r, i) {
+      var y = top + i * rowH + 8;
+      s.appendChild(el('text', { x: 0, y: y + 10, class: 'lbl' }, r.n));
+      var a = lx + r.srv[0] * sc, b = lx + r.srv[1] * sc;
+      s.appendChild(el('rect', { x: a, y: y, width: Math.max(b - a, 4), height: 7, rx: 3, style: 'fill:var(--ink-3)' }));
+      if (r.hs) { var c = lx + r.hs[0] * sc, d = lx + r.hs[1] * sc; s.appendChild(el('rect', { x: c, y: y + 9, width: d - c, height: 9, rx: 3, style: 'fill:var(--green)' })); }
+      else s.appendChild(el('text', { x: b + 6, y: y + 16, style: 'font-size:11.5px;fill:var(--lose)' }, 'handset not measured'));
+    });
+    s.appendChild(el('line', { x1: 0, y1: y0 - 4, x2: x1, y2: y0 - 4, class: 'grid' }));
+    RIV.forEach(function (r, i) {
+      var y = y0 + i * rivH + 8;
+      s.appendChild(el('text', { x: 0, y: y + 5, style: 'font-size:12.5px' }, r.n));
+      s.appendChild(el('circle', { cx: lx + r.v * sc, cy: y + 1, r: 5, style: 'fill:var(--page);stroke:var(--ink);stroke-width:2' }));
+      s.appendChild(el('text', { x: lx + r.v * sc + 9, y: y + 5, style: 'font-size:11.5px' }, r.v + ' s'));
+    });
+    $('presets').appendChild(s);
+    $('presets').insertAdjacentHTML('beforeend', '<div class="seg-legend"><span><span class="swatch" style="background:var(--ink-3);height:6px"></span>server, measured</span><span><span class="swatch" style="background:var(--green);height:9px"></span>at the handset, predicted</span><span><span class="swatch" style="border:2px solid var(--ink);border-radius:50%;width:10px;height:10px"></span>rival, measured by us or from code</span></div>');
+  })();
+  $('speed-note').textContent = V.speed.note;
+
+  /* cogs and ladder */
+  (function () {
+    var PARTS = [['AI: ears, brain, voice (with memory uplift)', 1.885, 'var(--green)'], ['Telephony', 0.43, 'var(--gold)'], ['Pulse rounding', 0.05, 'var(--seal)'], ['Infra', 0.03, 'var(--ink-3)'], ['Call analysis', 0.06, 'color-mix(in oklab, var(--green) 50%, var(--page))'], ['Memory', 0.035, 'var(--ink-2)']];
+    var W = 560, lx = 150, x1 = 548, max = 4.5, sc = (x1 - lx) / max;
+    var rows = [
+      { n: 'Our cost today', t: 'stack' },
+      { n: 'Base price', t: 'band', a: 3.49, b: 3.99 },
+      { n: 'Step 1: ₹2.99', t: 'step', c: 1.94, p: 2.99 },
+      { n: 'Step 2: ₹2.49', t: 'step', c: 1.62, p: 2.49 },
+      { n: 'Step 3: ₹1.99', t: 'step', c: 1.29, p: 1.99 }
+    ];
+    var rowH = 38, top = 24, H = top + rows.length * rowH + 40;
+    var s = svgBox(W, H, 'Cost of a connected minute, base price band and the price ladder to 2 rupees');
+    [0, 1, 2, 3, 4].forEach(function (t) { var x = lx + t * sc; s.appendChild(el('line', { x1: x, y1: top - 6, x2: x, y2: H - 28, class: 'grid' })); s.appendChild(el('text', { x: x, y: H - 10, 'text-anchor': 'middle' }, '₹' + t)); });
+    var x2 = lx + 2 * sc;
+    s.appendChild(el('line', { x1: x2, y1: top - 14, x2: x2, y2: H - 28, class: 'tgt' }));
+    s.appendChild(el('text', { x: x2 + 4, y: top - 12, class: 'tgt-t' }, 'your ₹2 target'));
+    rows.forEach(function (r, i) {
+      var y = top + i * rowH + 6;
+      s.appendChild(el('text', { x: 0, y: y + 16, class: 'lbl' }, r.n));
+      if (r.t === 'stack') {
+        var x = lx; PARTS.forEach(function (p) { var w = p[1] * sc; s.appendChild(el('rect', { x: x, y: y + 2, width: Math.max(w - 1, 1.5), height: 20, style: 'fill:' + p[2] })); x += w; });
+        s.appendChild(el('text', { x: x + 6, y: y + 17, style: 'font-weight:600;fill:var(--ink)' }, '₹2.35-2.50'));
+      } else if (r.t === 'band') {
+        var a = lx + r.a * sc, b = lx + r.b * sc;
+        s.appendChild(el('rect', { x: a, y: y + 2, width: b - a, height: 20, rx: 4, style: 'fill:var(--ink)' }));
+        s.appendChild(el('text', { x: a - 6, y: y + 17, 'text-anchor': 'end', style: 'font-weight:600;fill:var(--ink)' }, '₹3.49-3.99 + GST'));
+      } else {
+        var c = lx + r.c * sc, p = lx + r.p * sc;
+        s.appendChild(el('rect', { x: lx, y: y + 6, width: c - lx, height: 12, rx: 3, style: 'fill:color-mix(in oklab, var(--green) 35%, var(--page))' }));
+        s.appendChild(el('text', { x: p + 8, y: y + 16, style: 'font-size:11.5px' }, 'when our cost ≤ ₹' + r.c.toFixed(2)));
+        s.appendChild(el('rect', { x: p - 2, y: y, width: 4, height: 24, rx: 1, style: 'fill:var(--ink)' }));
+      }
+    });
+    $('cogs').appendChild(s);
+    $('cogs').insertAdjacentHTML('beforeend', '<div class="seg-legend">' + PARTS.map(function (p) { return '<span><span class="swatch" style="background:' + p[2] + ';width:12px;height:12px"></span>' + p[0] + ' ' + p[1].toFixed(2) + '</span>'; }).join('') + '</div><p class="small" style="margin-top:8px">Each step drops only after measured cost stays under its trigger for two months, reconciled to invoices within 5%, with the voice still passing the listener panel. Payment fees (2% of revenue) are on top.</p>');
+  })();
+
+  /* effective price vs rivals */
+  (function () {
+    var R = [
+      { n: 'VP Base', v: [[3.49, 3.99], [3.49, 3.99], [3.49, 3.99]], vp: true },
+      { n: 'Bolna PAYG', v: [5.72, 7.63, 5.72] },
+      { n: 'Sarvam PAYG', v: [7.40, 5.20, 5.07] },
+      { n: 'ElevenLabs', v: [8.2, 8.2, 8.2], plus: true },
+      { n: 'Retell (own trunk)', v: [8.3, 8.3, 8.3], plus: true },
+      { n: 'Vapi', v: [12.5, 12.5, 12.5], plus: true }
+    ];
+    var W = 560, lx = 140, x1 = 530, max = 14, sc = (x1 - lx) / max, rowH = 30, top = 10, H = top + R.length * rowH + 30;
+    var draw = function (k) {
+      var s = svgBox(W, H, 'Effective rupees per connected minute by vendor');
+      [0, 2, 4, 6, 8, 10, 12, 14].forEach(function (t) { var x = lx + t * sc; s.appendChild(el('line', { x1: x, y1: top, x2: x, y2: H - 24, class: 'grid' })); s.appendChild(el('text', { x: x, y: H - 8, 'text-anchor': 'middle' }, '₹' + t)); });
+      R.forEach(function (r, i) {
+        var y = top + i * rowH + 6, val = r.v[k];
+        s.appendChild(el('text', { x: 0, y: y + 13, class: 'lbl', style: r.vp ? 'font-weight:700' : '' }, r.n));
+        if (r.vp) {
+          s.appendChild(el('rect', { x: lx, y: y + 2, width: val[1] * sc, height: 16, rx: 3, style: 'fill:color-mix(in oklab, var(--green) 30%, var(--page))' }));
+          s.appendChild(el('rect', { x: lx, y: y + 2, width: val[0] * sc, height: 16, rx: 3, style: 'fill:var(--green)' }));
+          s.appendChild(el('text', { x: lx + val[1] * sc + 6, y: y + 14, style: 'font-weight:600;fill:var(--ink)' }, '₹' + val[0] + '-' + val[1]));
+        } else {
+          s.appendChild(el('rect', { x: lx, y: y + 2, width: val * sc, height: 16, rx: 3, style: 'fill:var(--ink-3)' }));
+          s.appendChild(el('text', { x: lx + val * sc + 6, y: y + 14 }, '₹' + val.toFixed(2) + (r.plus ? '+' : '')));
+        }
+      });
+      var box = $('prices'); box.innerHTML = ''; box.appendChild(s);
+      box.insertAdjacentHTML('beforeend', '<p class="small" style="margin-top:6px">Sarvam Business (₹3.00 + ₹0.40) is cheaper on whole-minute calls; SquadStack and Bolna enterprise claim lower floors. VP’s honest claim, only after the invoice audit: the lowest effective price on short calls, per second, with caps.</p>');
+    };
+    draw(0);
+    document.querySelectorAll('.toggle button').forEach(function (b) {
+      b.addEventListener('click', function () { document.querySelectorAll('.toggle button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); }); b.setAttribute('aria-pressed', 'true'); draw(+b.getAttribute('data-len')); });
+    });
+  })();
+  $('tiers').innerHTML = V.economics.tiers.map(function (t, i) {
+    return '<div class="tier' + (i === 0 ? ' base' : '') + '"><b>' + esc(t.name) + '</b><span class="price">' + esc(t.price) + '</span><p>' + esc(t.includes) + '</p></div>';
+  }).join('');
+
+  /* layers */
+  $('layers').innerHTML = V.architecture.map(function (l) {
+    var eng = /^Engines/.test(l.layer);
+    return '<div class="layer' + (eng ? ' engines' : '') + '"><div><h3>' + esc(l.layer) + '</h3><p class="note">' + esc(l.note) + '</p></div><div class="comps">' + l.components.map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('') + '</div></div>';
+  }).join('');
+
+  /* roadmap */
+  $('road').innerHTML = V.roadmap.map(function (p, i) {
+    return '<div class="phase' + (i === 0 ? ' now' : '') + '"><span class="when">' + esc(p.when) + '</span><h3>' + esc(p.phase) + '</h3><ul>' + p.scope.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul><div class="exit"><span class="eyebrow">Exit when</span><ul>' + p.exit.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div></div>';
+  }).join('');
+
+  /* metrics, risks */
+  $('mtiles').innerHTML = V.metrics.filter(function (m) { return !/north star/i.test(m.name); }).map(function (m) { return '<div class="mtile"><span class="n">' + esc(m.name) + '</span><span class="t">' + esc(m.target) + '</span><span class="h">' + esc(m.how) + '</span></div>'; }).join('');
+  $('risks').innerHTML = V.risks.map(function (r) { return '<li><b>' + esc(r.risk) + '</b><span>' + esc(r.mitigation) + '</span></li>'; }).join('');
+
+  /* steal list */
+  var by = {}; V.steal_list.forEach(function (s) { (by[s.from] = by[s.from] || []).push(s.pattern); });
+  $('steal-list').innerHTML = Object.keys(by).map(function (k) { return '<div class="steal-v"><h3>From ' + esc(k) + '</h3><ul>' + by[k].map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul></div>'; }).join('');
+
+  /* decisions */
+  $('decisions').innerHTML = I.open_decisions.map(function (d, i) {
+    return '<article class="dec"><span class="seal-mark" aria-label="Decision ' + (i + 1) + '">' + dev(i + 1) + '</span><div><h3>' + esc(d.question) + '</h3><div class="rec"><b>Recommendation</b>' + esc(d.recommendation) + '</div>' +
+      '<details><summary>Options and reasoning</summary>' + (d.options && d.options.length ? '<ul>' + d.options.map(function (o) { return '<li>' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + (d.why ? '<p class="why">' + esc(d.why) + '</p>' : '') + '</details></div></article>';
+  }).join('');
+
+  /* index highlight */
+  var links = {}; document.querySelectorAll('#index-list a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting && links[e.target.id]) { Object.keys(links).forEach(function (k) { links[k].classList.remove('on'); }); links[e.target.id].classList.add('on'); } }); }, { rootMargin: '-30% 0px -60% 0px' });
+    document.querySelectorAll('section.entry').forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>

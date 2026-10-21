@@ -1,0 +1,655 @@
+{
+ "key_facts": [
+  {
+   "fact": "The owner's single most-repeated requirement is emotional, relational, exactly-human-sounding voice. It appears 7 times across 10-17, 10-18, 10-19, 10-20 (x3) and 10-21, and the owner calls it 'the main thing'.",
+   "grade": "observed",
+   "evidence": "data/blueprint/owner-messages.md lines 38, 114, 179, 488-492, 498, 1023, 1423; graph directive.2026-10-18.voice-core"
+  },
+  {
+   "fact": "The owner explicitly ranks the voice above margin: margin may be compromised, the voice may not.",
+   "grade": "observed",
+   "evidence": "owner-messages.md line 181 (2026-10-19); graph directive.2026-10-19.hear-before-choose"
+  },
+  {
+   "fact": "The owner defines world-class telecalling as: open with something interesting, never waste their time, read the person, talk more if they want, ask clearly, get the agenda done subtly. Opening with 'I am an AI agent' and repeating it makes people hang up.",
+   "grade": "observed",
+   "evidence": "owner-messages.md line 498 (2026-10-20 08:45); graph directive.2026-10-20.world-class-telecalling"
+  },
+  {
+   "fact": "The application must be LLM-native: the client talks to VP's agent, which explains and does the setup and campaign, rather than navigating a fixed structure ('he just have to talk').",
+   "grade": "observed",
+   "evidence": "owner-messages.md lines 1023 (2026-10-20) and 1423 (2026-10-21); graph directive.2026-10-20.llm-native"
+  },
+  {
+   "fact": "Chat-driven setup alone is parity, not a wedge: 5 of 6 walked dashboards ship a copilot, among them ElevenLabs Architect and Bolna Auto Build.",
+   "grade": "observed",
+   "evidence": "context/DIRECTION.md; evidence.2026-10-21.wt-elevenlabs-architect-free-alpha; evidence.2026-10-20.bolna-blind-chat-setup-shipped"
+  },
+  {
+   "fact": "Price target is about Rs 2/min or under, 'missing nothing', repeated 5 times. Measured evidence says Gemini Live cannot hit it (Rs 4.2-5.7/min at 3-minute calls), and per-minute launch pricing modelled at -47% to +1% margin.",
+   "grade": "measured",
+   "evidence": "owner-messages.md line 42; rejected.2026-10-19.gemini-live-at-rs2; rejected.2026-10-17.per-minute-launch"
+  },
+  {
+   "fact": "Self-learning (call 100's drop-off line rewritten on call 101, 'on the go self improvement in every way') is stated 3 times. The owner sequences it after v1, behind memory and personalisation, on harness2 fundamentals.",
+   "grade": "observed",
+   "evidence": "owner-messages.md lines 39, 1023, 1028, 1423; graph directive.2026-10-20.harness2-later"
+  },
+  {
+   "fact": "Naive self-learning is measurably unsafe: daily-checked K=2 A/B dashboards gave 52-62% false winners in A/A by day 90, and cross-tenant pooled learning gave the wrong winner to 48-55% of dissimilar tenants.",
+   "grade": "measured",
+   "evidence": "rejected.2026-10-17.k2-dashboards; rejected.2026-10-17.cross-tenant-pooling (simulation)"
+  },
+  {
+   "fact": "The owner wants users to choose STT, brain and TTS (and the copilot's overall brain), with 4-5 curated combinations. The owner leans to Gemini TTS and Gemini STT.",
+   "grade": "observed",
+   "evidence": "owner-messages.md lines 498, 727, 1023, 490; decision.2026-10-20.product-stack-selectable"
+  },
+  {
+   "fact": "Round 1: every stack's conversation was robotic; the best stack was Gemini 3.1 Live at 7.0/10. Brief v2 cut words per turn from 33 to 20 and abrupt hang-ups from 17-40% to 0, but human round 2 has not run.",
+   "grade": "measured",
+   "evidence": "context/DIRECTION.md 'What we know'; rejected.2026-10-20.brief-v1"
+  },
+  {
+   "fact": "Turn-taking is unsolved across all stacks: 15-42% cut-ins.",
+   "grade": "measured",
+   "evidence": "context/DIRECTION.md; open.2026-10-19.turn-taking"
+  },
+  {
+   "fact": "The owner has rejected the product's look and flow three times: the /prototype (2026-09-22), the whole Relay design and usability (2026-10-01), and the Codex baseline as 'very basic and stale' (2026-10-15).",
+   "grade": "observed",
+   "evidence": "docs/voice-platform-blueprint.md line 3; decision.product-ux-structural-reset-2026-10-01; directive.2026-10-15.codex-baseline-stale; owner-messages.md line 3"
+  },
+  {
+   "fact": "Feature parity plus a price undercut was rejected as a wedge. Incumbents ship 10-12 of 12 headline features; Indian all-in list prices are Rs 3.5-7/min. The owner's 'parity made better' must be a floor, with the wedge on measured task failures.",
+   "grade": "observed",
+   "evidence": "rejected.2026-10-17.parity-undercut; open.2026-10-20.parity-floor-vs-wedge"
+  },
+  {
+   "fact": "All six walked dashboards lack consent, DND and DLT on the campaign form, a predicted reply gap and a Hinglish mode, and none reached a ring on an Indian line.",
+   "grade": "observed",
+   "evidence": "context/DIRECTION.md; research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "fact": "The owner never raised TRAI, DND, DLT or consent. Compliance requirements in the blueprint come from research, not owner messages; disclosure comes from the standing rule and a 2026-09-22 Relay-era user clarification.",
+   "grade": "observed",
+   "evidence": "owner-messages.md (no mentions); constraint.no-ai-identity-deception-v6; decision.2026-10-21.wt-synthesis-must-be-changes"
+  },
+  {
+   "fact": "The owner's regional-dialect wish (Bihari-Hindi mix) conflicts with research: employers ask for a dialect in 1 of 828 Hindi-belt postings, and no dialect TTS locale exists. It fits as a personalisation feature, not a wedge.",
+   "grade": "observed",
+   "evidence": "owner-messages.md line 40; rejected.2026-10-17.dialect-tts-wedge"
+  },
+  {
+   "fact": "The owner wants VP to keep learning from competitors always, including new launches, and to store all knowledge so no effort or tokens are wasted (each stated 3-4 times).",
+   "grade": "observed",
+   "evidence": "owner-messages.md lines 25, 62, 1023, 1032, 1169, 1423"
+  },
+  {
+   "fact": "Onboarding target is 30-60 minutes self-serve: any data in, fire an agent, every recording, overview plus deep analytics.",
+   "grade": "observed",
+   "evidence": "owner-messages.md line 1023; directive.2026-10-20.product-brief"
+  },
+  {
+   "fact": "Pre-sale vs post-sale was demoted by the owner to a go-to-market input. Research separately rejected cold outbound sales as the lead job under TRAI.",
+   "grade": "observed",
+   "evidence": "owner-messages.md line 1199; directive.2026-10-20.intent-better-product; rejected.2026-10-20.regulation-segment-cold-outbound-lead"
+  },
+  {
+   "fact": "data/blueprint/owner-messages.md still contains unredacted password-like strings (around lines 615-704) and a phone number (line 988). The file is gitignored under data/ but must be redacted before it feeds any artifact.",
+   "grade": "observed",
+   "evidence": "line-number grep only; values not reproduced; .gitignore line 7"
+  },
+  {
+   "fact": "Owner-requested free-key rotation across about 40 Gemini keys was declined twice and is a standing rejection. Quota circumvention must not reappear as a product mechanism.",
+   "grade": "observed",
+   "evidence": "rejected.2026-10-20.free-key-rotation; context/DIRECTION.md standing rules"
+  }
+ ],
+ "requirements": [
+  {
+   "id": "req-01",
+   "theme": "voice and conversation",
+   "priority": "must",
+   "date": "2026-10-17..2026-10-21 (x7)",
+   "requirement": "Emotional, relational, exactly-human-sounding voice is THE core product and differentiator.",
+   "quote": "the emotional and relational exactly human like sounding agents are the main thing"
+  },
+  {
+   "id": "req-02",
+   "theme": "voice and conversation",
+   "priority": "must",
+   "date": "2026-10-19",
+   "requirement": "Voice and conversation quality beats margin.",
+   "quote": "margin we can basically compremise with but the voice need to be really good"
+  },
+  {
+   "id": "req-03",
+   "theme": "voice and conversation",
+   "priority": "must",
+   "date": "2026-10-20 (x3)",
+   "requirement": "Real human conversation, not agenda repetition or robotic behaviour; the caller feels comfortable.",
+   "quote": "capable of doing proper conversations like a human would instead of just repeating the agenda again and again"
+  },
+  {
+   "id": "req-04",
+   "theme": "voice and conversation",
+   "priority": "must",
+   "date": "2026-10-20 (x2)",
+   "requirement": "World-class telecalling: open with something useful, never waste time, read the person, talk more if they want, ask clearly, agenda done subtly.",
+   "quote": "You need to do something interesting and nice and talk about it, and then basically certainly ask, right? Even without wasting the user's time also"
+  },
+  {
+   "id": "req-05",
+   "theme": "voice and conversation",
+   "priority": "must",
+   "date": "2026-10-20; 2026-10-21",
+   "requirement": "Expressive voice with emotion, voice modality, reactions and emotional intelligence.",
+   "quote": "We need more expressive and human like"
+  },
+  {
+   "id": "req-06",
+   "theme": "voice and conversation",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "She ends the call herself when it is done.",
+   "quote": "when the call is done or she feels like it's done she should be able to cut it from her end"
+  },
+  {
+   "id": "req-07",
+   "theme": "voice and conversation",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "Persona register: friendly, human, professional, interesting, nice to talk to.",
+   "quote": "she should be friendly and human like still professional but intresting and nice to talk to"
+  },
+  {
+   "id": "req-08",
+   "theme": "voice and conversation",
+   "priority": "must",
+   "date": "2026-10-19; 2026-10-20",
+   "requirement": "A strong brain, better than gpt-oss and the industry standard; track the newest cheap, fast, strong models.",
+   "quote": "we need a better brain then gpt oss because the quality we need to be great ... do better then the industry standards"
+  },
+  {
+   "id": "req-09",
+   "theme": "voice and conversation",
+   "priority": "strong",
+   "date": "2026-10-19; 2026-10-20",
+   "requirement": "Hinglish and Hindi expressiveness; learn from Maya.",
+   "quote": "gemini voice are good in hinglish. maya voice is good and expressive to specially in hindi"
+  },
+  {
+   "id": "req-10",
+   "theme": "personalisation and memory",
+   "priority": "strong",
+   "date": "2026-10-17",
+   "requirement": "Regional language and accent personalisation (South Indian language; Bihari-Hindi mix).",
+   "quote": "calling someone in bihar then it would be better if the voice ai talks in bihari accent and even bihari-hindi mix language"
+  },
+  {
+   "id": "req-11",
+   "theme": "cost and speed",
+   "priority": "must",
+   "date": "2026-10-18; 2026-10-20; 2026-10-21",
+   "requirement": "Low latency and a fast first word; faster than competitors.",
+   "quote": "the latency also has to be good"
+  },
+  {
+   "id": "req-12",
+   "theme": "personalisation and memory",
+   "priority": "must",
+   "date": "2026-10-20; 2026-10-21",
+   "requirement": "Relational continuity across long-running and frequent conversations with the same customer.",
+   "quote": "our voice have this relational thing, emotional thing, in long running conversations, in frequent conversation with same client"
+  },
+  {
+   "id": "req-13",
+   "theme": "LLM-driven, just-talk application",
+   "priority": "must",
+   "date": "2026-10-20; 2026-10-21",
+   "requirement": "The whole application is LLM-native: the client talks to a chat agent instead of navigating a fixed structure.",
+   "quote": "They should be coming and talking to a chatbot only to basically do all these things"
+  },
+  {
+   "id": "req-14",
+   "theme": "agents that do the work",
+   "priority": "must",
+   "date": "2026-10-20; 2026-10-21",
+   "requirement": "VP's agents handle everything; the client just talks.",
+   "quote": "how everything will be handled for him by our agents and he just have to talk"
+  },
+  {
+   "id": "req-15",
+   "theme": "LLM-driven, just-talk application",
+   "priority": "strong",
+   "date": "2026-10-15; 2026-10-17",
+   "requirement": "Every part of the product is AI-driven.",
+   "quote": "every part of it is driven by AI and the whole thing too"
+  },
+  {
+   "id": "req-16",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "The client can choose the overall product brain (the copilot LLM) too.",
+   "quote": "select the TTS, the brains, HTT, the overall brain of the whole product also"
+  },
+  {
+   "id": "req-17",
+   "theme": "agents that do the work",
+   "priority": "must",
+   "date": "2026-10-20",
+   "requirement": "The agent explains and does the work: any file or CSV in, campaign fired.",
+   "quote": "I have this CSV I want to upload ... and fire this, then he will tell how to do it and he will do it themselves"
+  },
+  {
+   "id": "req-18",
+   "theme": "agents that do the work",
+   "priority": "nice",
+   "date": "2026-10-15; 2026-10-17 (deferred 2026-10-18)",
+   "requirement": "Company command centre: AI CRM, AI ERP, lead gen, scraping, WhatsApp agent, email campaigns, SEO/AEO, company brain.",
+   "quote": "its the whole company command centre which is intergrated to every part and channel of the company"
+  },
+  {
+   "id": "req-19",
+   "theme": "campaigns end to end",
+   "priority": "must",
+   "date": "2026-10-17; 2026-10-20",
+   "requirement": "Indian enterprises fire voice agents at customers for pre-sale (selling, surveys, outreach) and post-sale (feedback, surveys, customer success, predictions).",
+   "quote": "Indian enterprises, Indian client basically, which can fire voice agents, voice calling agents to their customers"
+  },
+  {
+   "id": "req-20",
+   "theme": "campaigns end to end",
+   "priority": "must",
+   "date": "2026-10-15; 2026-10-17; 2026-10-21",
+   "requirement": "Campaigns handled end to end: launch, analyse, grow.",
+   "quote": "how we handle the campaign end to end"
+  },
+  {
+   "id": "req-21",
+   "theme": "campaigns end to end",
+   "priority": "must",
+   "date": "2026-10-21",
+   "requirement": "The whole view of the campaign and of each call.",
+   "quote": "give him the whole view of the campign and each call"
+  },
+  {
+   "id": "req-22",
+   "theme": "campaigns end to end",
+   "priority": "must",
+   "date": "2026-10-20",
+   "requirement": "Every call recording is available.",
+   "quote": "they can see the voice, every voice call recording"
+  },
+  {
+   "id": "req-23",
+   "theme": "campaigns end to end",
+   "priority": "strong",
+   "date": "2026-09-21 (Relay era)",
+   "requirement": "A customer-feedback campaign is a full loop: interview, analysis, team improvement, follow-up.",
+   "quote": "(graph requirement.feedback-campaigns, user clarification; no verbatim)"
+  },
+  {
+   "id": "req-24",
+   "theme": "campaigns end to end",
+   "priority": "must",
+   "date": "2026-10-20",
+   "requirement": "Handle every case in data, flow and failure, better than competitors.",
+   "quote": "whole product flow, whole user flow, handling all the cases around it"
+  },
+  {
+   "id": "req-25",
+   "theme": "per-call and campaign AI analysis",
+   "priority": "must",
+   "date": "2026-10-20",
+   "requirement": "Overview analytics plus extremely deep analysis.",
+   "quote": "they can see the overview analytics and extremely depth analysis"
+  },
+  {
+   "id": "req-26",
+   "theme": "per-call and campaign AI analysis",
+   "priority": "must",
+   "date": "2026-10-21",
+   "requirement": "Amazing AI analysis of each call and the campaign.",
+   "quote": "amazing ai analysis of those"
+  },
+  {
+   "id": "req-27",
+   "theme": "per-call and campaign AI analysis",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "Show the client how results improve over time from learning and personalisation.",
+   "quote": "see the how it's changing for them in long running conversations ... how it's recursively self-improving"
+  },
+  {
+   "id": "req-28",
+   "theme": "omni-channel data",
+   "priority": "must",
+   "date": "2026-10-20",
+   "requirement": "Any data type the client brings is taken in and becomes something an agent can be fired on.",
+   "quote": "any type of the data they put on to a product, and the product takes it and give them an option to fire an agent"
+  },
+  {
+   "id": "req-29",
+   "theme": "omni-channel data",
+   "priority": "must",
+   "date": "2026-10-15; 2026-10-17; 2026-10-20; 2026-10-21",
+   "requirement": "Omni-channel data connected and managed; VP extracts what is useful from it.",
+   "quote": "how he will connect onmi channel data how we take usefull from that"
+  },
+  {
+   "id": "req-30",
+   "theme": "omni-channel data",
+   "priority": "strong",
+   "date": "2026-10-17",
+   "requirement": "Company context ingested at onboarding.",
+   "quote": "it will be better if the voice ai have the context of company too(atleast when we onboard company on vp we take some of the context)"
+  },
+  {
+   "id": "req-31",
+   "theme": "personalisation and memory",
+   "priority": "nice",
+   "date": "2026-10-17",
+   "requirement": "Personalise from the customer's other data sources (e.g. in-app behaviour), with consent.",
+   "quote": "other data from various sources lets say what he have done on some app etc"
+  },
+  {
+   "id": "req-32",
+   "theme": "personalisation and memory",
+   "priority": "must",
+   "date": "2026-10-17; 2026-10-20; 2026-10-21",
+   "requirement": "Memory and persistence: extract from past conversations and customer attributes and personalise the next call.",
+   "quote": "extract so much of data from the previous conversation with the customer and the customer attributes by themselves and do personalization there"
+  },
+  {
+   "id": "req-33",
+   "theme": "personalisation and memory",
+   "priority": "strong",
+   "date": "2026-10-17",
+   "requirement": "Learn from individuals and from groups of users (within a tenant).",
+   "quote": "since we are learning from the user and group of users there will be so much to learn from in so many ways"
+  },
+  {
+   "id": "req-34",
+   "theme": "self-learning",
+   "priority": "must",
+   "date": "2026-10-17; 2026-10-20; 2026-10-21",
+   "requirement": "Self-evolving agents: what is learned by call 100 changes call 101 (e.g. the drop-off line is rewritten); continuous improvement in every way.",
+   "quote": "in 100 90 were drop of just after some line inbetween the convo so in the 101 call that line should be modified ... on the go self improvement in every way"
+  },
+  {
+   "id": "req-35",
+   "theme": "self-learning",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "Build self-improvement on google-research/harness2 fundamentals.",
+   "quote": "for self improving agents etc when we build them later we will use the fundamentals from this maybe"
+  },
+  {
+   "id": "req-36",
+   "theme": "cost and speed",
+   "priority": "strong",
+   "date": "2026-10-18",
+   "requirement": "Self-learning and deeper personalisation can be higher-priced tiers; the human voice is in the base.",
+   "quote": "rest thing like self evolving etc we can loose for now and give it as a higher tier pricing"
+  },
+  {
+   "id": "req-37",
+   "theme": "UI, UX and vibe",
+   "priority": "must",
+   "date": "2026-10-20",
+   "requirement": "Extremely great product design, usability, UI/UX, animation, product flow and user flow.",
+   "quote": "extremely good product with extremely great product design and usability, amazing UI UX, animation design, whole product flow, whole user flow"
+  },
+  {
+   "id": "req-38",
+   "theme": "UI, UX and vibe",
+   "priority": "must",
+   "date": "2026-10-20; 2026-10-21",
+   "requirement": "Better than every competitor in every sense: UI, UX, product design, cost, speed, user flow, convenience, usability, vibe, results.",
+   "quote": "create a better product then them in every sense (ui,ux, product design, cost, speed, user flow, convinence , usability, vibe and results"
+  },
+  {
+   "id": "req-39",
+   "theme": "UI, UX and vibe",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "Self-onboarding in 30 to 60 minutes.",
+   "quote": "he can basically onboard themselves in an hour or in a half an hour"
+  },
+  {
+   "id": "req-40",
+   "theme": "UI, UX and vibe",
+   "priority": "strong",
+   "date": "2026-10-15; 2026-10-21",
+   "requirement": "Visual, fast-to-review deliverables for the owner.",
+   "quote": "show me that blue print in a visual way so i can see it and review it fast(im a visual learner)"
+  },
+  {
+   "id": "req-41",
+   "theme": "cost and speed",
+   "priority": "must",
+   "date": "2026-10-17..2026-10-21 (x5)",
+   "requirement": "About Rs 2 per minute or under, while missing nothing.",
+   "quote": "the pricing should be less even after doing all this and missing nothing preferably under 2rs per mint"
+  },
+  {
+   "id": "req-42",
+   "theme": "cost and speed",
+   "priority": "strong",
+   "date": "2026-10-17 (tempered 2026-10-19)",
+   "requirement": "Build parts in-house to cut cost, but no self-hosting before volume.",
+   "quote": "every part i wanna build in house only / self hosting model im not fan rn until we have enough volume and clients"
+  },
+  {
+   "id": "req-43",
+   "theme": "cost and speed",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "Cheaper and higher quality than competitors.",
+   "quote": "a better product than them, a cheaper product than them, a higher quality product than them"
+  },
+  {
+   "id": "req-44",
+   "theme": "cost and speed",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "Charging and pricing handled clearly inside the product.",
+   "quote": "how the charging, pricing will be handled"
+  },
+  {
+   "id": "req-45",
+   "theme": "results for clients",
+   "priority": "must",
+   "date": "2026-10-17",
+   "requirement": "Real-life value for clients, not value on paper.",
+   "quote": "really value adding in real life to our clients and not just be value adding on the paper(theory)"
+  },
+  {
+   "id": "req-46",
+   "theme": "results for clients",
+   "priority": "must",
+   "date": "2026-10-21",
+   "requirement": "Meet every client requirement; clients get amazing results and experience.",
+   "quote": "full filling every requirement of our clients and they have amazing result and experience with the product"
+  },
+  {
+   "id": "req-47",
+   "theme": "compliance and trust",
+   "priority": "must",
+   "date": "2026-09-22 (Relay); standing rule; 2026-10-20",
+   "requirement": "Never deny being an AI; disclose once, lightly, not as a call-killing opener.",
+   "quote": "if you just be call and say you are an AI agent and blah blah blah blah and just keep repeating stuff, they will just cut the call"
+  },
+  {
+   "id": "req-48",
+   "theme": "compliance and trust",
+   "priority": "must",
+   "date": "standing rule",
+   "requirement": "No manipulation; crisis lines (Tele-MANAS 14416, 112) stay; synthetic data only in tests.",
+   "quote": "(project standing rule in CLAUDE.md and DIRECTION.md)"
+  },
+  {
+   "id": "req-49",
+   "theme": "compliance and trust",
+   "priority": "must",
+   "date": "2026-10-20",
+   "requirement": "Test integrity: no model change mid-call; file results under the combination that actually ran; say when quota is out.",
+   "quote": "we don't want the model to change in between of testing since it might make us do wrong judgment"
+  },
+  {
+   "id": "req-50",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "must",
+   "date": "2026-10-18",
+   "requirement": "A self-serve platform like Vapi.",
+   "quote": "make a serve serve like platform like vapi and all"
+  },
+  {
+   "id": "req-51",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "must",
+   "date": "2026-10-17; 2026-10-20",
+   "requirement": "Everything competitors offer, made better (parity as floor).",
+   "quote": "all the rest features what any other player in the market give like bolnaai, vapi, elevenlabs we should have all of them obviously"
+  },
+  {
+   "id": "req-52",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "must",
+   "date": "2026-10-20 (x3)",
+   "requirement": "The client picks STT, brain and TTS, with 4-5 curated best combinations and per-use-case selection.",
+   "quote": "we can basically give the user also an option to select the stack for the voice AI"
+  },
+  {
+   "id": "req-53",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "strong",
+   "date": "2026-10-19; 2026-10-20",
+   "requirement": "Default leaning: Gemini TTS and Gemini STT; final pick after round-2 listening.",
+   "quote": "generally I like the Gemini TTS, but rest we will basically choose once we build the whole product"
+  },
+  {
+   "id": "req-54",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "strong",
+   "date": "2026-10-18; 2026-10-19",
+   "requirement": "Provider-open by measurement (Gemini, Azure/Foundry grant, OpenRouter, Sarvam); avoid Inworld; defer AWS.",
+   "quote": "we can use gemini+azure\\foundery(specially whats under the grant) ... inworld lets avoid ... lets avoid aws now"
+  },
+  {
+   "id": "req-55",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "strong",
+   "date": "2026-10-19",
+   "requirement": "Real Indian phone calls; multiple testers; friends enter their own numbers and get called.",
+   "quote": "give a option to select n enter the number so my friends could send out a call on their phone and test"
+  },
+  {
+   "id": "req-56",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "strong",
+   "date": "2026-10-17",
+   "requirement": "Indian businesses (likely B2C); exclude big consumer-internet firms with in-house tech teams.",
+   "quote": "we cant target really big tech b2c companies like blinkit,swiggy,zepto,zomato since they will have there own tech team"
+  },
+  {
+   "id": "req-57",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "nice",
+   "date": "2026-10-20",
+   "requirement": "Extra product layers around voice, like Bolna's CRM layer.",
+   "quote": "Bolna AI, they have multiple products, they have CRM also, they have their layer also"
+  },
+  {
+   "id": "req-58",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "strong",
+   "date": "2026-10-20",
+   "requirement": "Frontier technology.",
+   "quote": "we need to build frontier product for society we need frontier tech here"
+  },
+  {
+   "id": "req-59",
+   "theme": "learning from competitors",
+   "priority": "must",
+   "date": "2026-10-20; 2026-10-21",
+   "requirement": "Understand competitors to their core (product, tech, offerings) and take the best of each.",
+   "quote": "crack them to there quantas and we will make something best of everything"
+  },
+  {
+   "id": "req-60",
+   "theme": "learning from competitors",
+   "priority": "must",
+   "date": "2026-10-17; 2026-10-20; 2026-10-21",
+   "requirement": "Keep learning from competitors always, including new launches.",
+   "quote": "we need to learn and get the best from all these companies always"
+  },
+  {
+   "id": "req-61",
+   "theme": "learning from competitors",
+   "priority": "must",
+   "date": "2026-10-15; 2026-10-20 (x3)",
+   "requirement": "Store all knowledge so nothing is re-derived and no tokens are wasted.",
+   "quote": "Keep saving and storing all the knowledge and tech and data this is so that we don't loose stuff and our efforts and tokes are not waskted"
+  },
+  {
+   "id": "req-62",
+   "theme": "working method",
+   "priority": "strong",
+   "date": "2026-10-17; 2026-10-18; 2026-10-20",
+   "requirement": "Deeper, not bigger, versions of each task.",
+   "quote": "I want a deeper version of this task, not a bigger one"
+  },
+  {
+   "id": "req-63",
+   "theme": "working method",
+   "priority": "strong",
+   "date": "2026-10-20 (x7)",
+   "requirement": "Model per use case; top model only where judgment needs it.",
+   "quote": "if mixure of the model and efforts will give better performace at lower tokens then why waste more"
+  },
+  {
+   "id": "req-64",
+   "theme": "working method",
+   "priority": "strong",
+   "date": "2026-10-15; 2026-10-20",
+   "requirement": "Work autonomously and in parallel.",
+   "quote": "I'm giving you the access of everything just behave autonomously"
+  },
+  {
+   "id": "req-65",
+   "theme": "compliance and trust",
+   "priority": "strong",
+   "date": "2026-09-22 (Relay)",
+   "requirement": "Pause, stop, retry and failure states keep operator authority.",
+   "quote": "(graph requirement.pause-stop-failure-control-v6; no verbatim)"
+  },
+  {
+   "id": "req-66",
+   "theme": "campaigns end to end",
+   "priority": "nice",
+   "date": "2026-09-22 (Relay)",
+   "requirement": "Each campaign names offering, outcome, audience and evidence; identity and columns reviewed before launch.",
+   "quote": "(graph requirement.explicit-offering-outcome-audience-v6, identity-and-column-review-v6; no verbatim)"
+  },
+  {
+   "id": "req-67",
+   "theme": "platform, self-serve and stack choice",
+   "priority": "nice",
+   "date": "2026-09-27 (Relay)",
+   "requirement": "Company branding and team auth; web, voice, Telegram and WhatsApp deployment.",
+   "quote": "(graph requirement.company-brand-auth-v7, public-channel-deployment-v7; no verbatim)"
+  },
+  {
+   "id": "req-68",
+   "theme": "UI, UX and vibe",
+   "priority": "nice",
+   "date": "2026-09-27 (Relay)",
+   "requirement": "Review-first AI UX that shows provenance, uncertainty and control without adding friction to just-talk.",
+   "quote": "(graph requirement.thoughtful-ai-ux-v7; no verbatim)"
+  }
+ ]
+}

@@ -1,0 +1,129 @@
+{
+ "key_facts": [
+  {
+   "fact": "The voice lab (voicelab/server: app, audio, calls, catalog, persona, persona_v2, phone, providers = about 2,893 lines of Python, plus web client about 640 lines) is the only VP-era runtime code and holds every piece DIRECTION.md lists as 'to port': adapters, combination identity, brief v2 + agenda ledger, hang-up guard, turn-taking, Plivo line, cost meter.",
+   "grade": "observed",
+   "evidence": "voicelab/server/*.py read directly; context/DIRECTION.md 'Port the lab's pieces'; graph asset.voicelab.* (9 nodes, status prototype, effort port/reuse)"
+  },
+  {
+   "fact": "The lab persists everything as local files on one VM (calls/*/meta.json + call.wav, spend.jsonl, memory/*.json) with in-memory call and phone sessions, one shared passcode, no tenants, no database, no contact/campaign/consent objects, and no automated unit tests (tests/ has 4 scripts, one assert).",
+   "grade": "observed",
+   "evidence": "voicelab/server/app.py Lab class and auth_mw; voicelab/server/phone.py Sessions; voicelab/tests/*.py"
+  },
+  {
+   "fact": "Catalog holds 4 STT, 23 brains, 8 TTS entries, 3 S2S engines, 24 presets and 4 scenarios; 19 of 23 brains have a measured India time-to-first-token; 4 brains carry price_note 'unverified' or similar and MAI-Voice is priced 'like HD' until the meter is read.",
+   "grade": "observed",
+   "evidence": "voicelab/server/catalog.py (counts from importing the module)"
+  },
+  {
+   "fact": "Combination identity files every call under 'brief|stt[/ungated]+brain+tts~voice' or 'brief|s2s~voice'; a component failure invalidates the call with the exact reason and invalid or fallback calls are excluded from results. The key omits brief hash, ledger version, region, telephony leg and turn parameters, so it is not a full run manifest.",
+   "grade": "observed",
+   "evidence": "voicelab/server/calls.py Call.combo(), Call.invalidate(); voicelab/server/app.py scoped_calls; decision.2026-10-20.combo-identity, decision.2026-10-20.no-midcall-swaps"
+  },
+  {
+   "fact": "Brief v2 on the same brains cut words per turn from 33.7/32.7 to 20.9/18.7, question-ending turns from 62%/76% to 13%/29%, stock phrases per call from 1.8/2.7 to 0.7/0, and abrupt hang-ups from 17-40% to 0.",
+   "grade": "measured",
+   "evidence": "research/2026-10-20/voicelab/round1-review-and-v2.md and context/DIRECTION.md; text bake-off, 6 simulated callers x 10 turns per brain, 540 blind pairwise verdicts by GPT-4.1 and Gemini 3.8 Flash judges; simulated callers, no human round-2 ratings exist"
+  },
+  {
+   "fact": "Agenda ledger and hang-up guard are regex/lexicon based and written per scenario (told, offers, numbers dicts for renewal/support/follow-up/open) with Hindi-English cue, goodbye and closing lexicons; they must be generalised per client agent and per language before reuse.",
+   "grade": "observed",
+   "evidence": "voicelab/server/persona_v2.py SCEN, ledger(), CUES, CLOSING, GOODBYE, hangup_ok()"
+  },
+  {
+   "fact": "Hang-up is honoured only when the reply contains a goodbye and the caller was not asking a question; audio must finish, then a 1.5 s beat, and it is cancelled if the caller speaks. S2S uses an end_call tool, cascades use an <end_call> marker.",
+   "grade": "observed",
+   "evidence": "voicelab/server/calls.py end_after_playback, _after; persona_v2.py hangup_ok; GeminiLiveCall.setup"
+  },
+  {
+   "fact": "Turn-taking: server-side Silero VAD v5; reply released only after the final for the caller's latest speech segment, held 1.4 s after continuation words, unreleased reply withdrawn if the caller resumes, barge-in needs 2+ words or 700 ms, history truncated to what was heard. Across all stacks 15-42% of replies cut in on the caller and an elderly caller's 2.4 s pause was cut in on 100% of the time; target is at most 5% cut-ins at p50 gap at most 1.2 s.",
+   "grade": "measured",
+   "evidence": "voicelab/server/calls.py CascadeCall._tick, incomplete(); voicelab/server/audio.py VAD; graph open.2026-10-19.turn-taking (lab round-1 data, small n)"
+  },
+  {
+   "fact": "Plivo phone leg ran 11 real calls in round 1 using G.711 mu-law 8 kHz bidirectional stream, 95-tap FIR resampling, clearAudio on barge-in, HMAC path-secret webhooks and missed-call number verification; it is a test rig on one trial number (credit about INR 764 expiring 2026-11-16, INR 80 monthly cap) with no DLT/DND/consent logic or concurrency.",
+   "grade": "observed",
+   "evidence": "voicelab/server/phone.py; voicelab/README.md; context/DIRECTION.md open threads; research round1 review (65 calls: 54 browser, 11 phone)"
+  },
+  {
+   "fact": "Cost meter computes real per-component INR (ears by audio seconds sent, brain by tokens, voice by chars/audio tokens, live by usage metadata, phone by 60 s pulse at INR 95/USD) and streams it every 2 s; Plivo is shown but excluded from the AI spend cap. Pre-lab research stack quoted about INR 0.94/min; measured Gemini Live presets ran INR 4.2-5.7/min at 3-min calls.",
+   "grade": "observed",
+   "evidence": "voicelab/server/calls.py add_cost/meter/cost_loop/summary; voicelab/server/catalog.py presets 'ref' column; rejected.2026-10-19.gemini-live-at-rs2"
+  },
+  {
+   "fact": "Round-1 human ratings: 33 rated calls from 4 testers; best stack Gemini 3.1 Live 7.0/10 (n=2); Azure-voice stacks 1.5-4.5; every stack's content judged robotic and the cause was the brief. No round-2 human ratings exist.",
+   "grade": "measured",
+   "evidence": "research/2026-10-20/voicelab/round1-review-and-v2.md (n per stack 1-4, indicative only); context/DIRECTION.md"
+  },
+  {
+   "fact": "First-audio latency from India: MAI-Voice 2.1 Flash 425 ms, Gemini 3.8 Flash-Lite TTS 624 ms, Gemini 3.8 Flash TTS 772 ms, Gemini TTS via OpenRouter about 2.1 s (non-streaming). Brain first token: Groq gpt-oss 535 ms, GPT-4.1 mini India 567 ms, Gemini 3.5 Flash-Lite 699 ms, GPT-5.4 mini 960 ms, Gemini 3.8 Flash 1,991 ms. Round-2 smoke reply gaps: 3.8 Live 0.8-1.6 s, Flash-Lite cascade 1.6-2.2 s, 3.8 Flash cascade 2.9-4.2 s.",
+   "grade": "measured",
+   "evidence": "research/2026-10-20/voicelab/round1-review-and-v2.md (VM in Central India, n=5 per brain, smoke runs small n); context/DIRECTION.md"
+  },
+  {
+   "fact": "Gemini dependency risk: Vertex on project vp-voice is restricted by Google, paid project voicelab-india is pending, Gemini API Tier 1 allows only 100 requests/day per TTS model, Gemini 3.1 Live shuts down 2026-11-17, and Google credentials may be used only from the India VM.",
+   "grade": "observed",
+   "evidence": "context/DIRECTION.md; rejected.2026-10-20.gemini-tier1-for-volume; decision.2026-10-20.google-from-india-only; component.gcp.vp-voice"
+  },
+  {
+   "fact": "Lab runtime: Python 3.13 with aiohttp, numpy, onnxruntime, azure-cognitiveservices-speech, cryptography on Azure VM vl-vm-cin (Standard_D2as_v5, Central India) behind Caddy; models in Azure accounts vp-lab-ai-sin (South India), vp-research-ai-sea, vp-lab-speech-cin plus Gemini, OpenRouter, Sarvam. Budget guards USD 15/day lab cap and 20 min per call.",
+   "grade": "observed",
+   "evidence": "voicelab/ops/vm_setup.sh; voicelab/README.md; component.azure.vl-vm-cin, component.azure.vp-lab-accounts"
+  },
+  {
+   "fact": "Relay-era app is a Next 16.4.0 / React 19.3.0 / TypeScript 5.9 / Node 24 workspace with pg + SQLite fallback; about 22,008 lines in lib (172 files, voice 7,717), 7,182 TS lines in components, 1,928 TS lines and 72 API routes in app, 145 test files (20,745 lines), Bicep 925 lines; never deployed.",
+   "grade": "observed",
+   "evidence": "package.json; docs/harvest/se-audit.md section 1 (wc counts, 2026-10-15)"
+  },
+  {
+   "fact": "Relay's baseline passed 1,153 unit/contract tests with mocked transports only; no browser e2e, no Postgres, no live evals. In a live local run on SQLite + real Azure gpt-4.1-mini it completed signup to public chat to a campaign launch gate with no 5xx.",
+   "grade": "measured",
+   "evidence": "graph evidence.2026-10-15.baseline-tests; docs/harvest/se-live.md (single run, 2026-10-15)"
+  },
+  {
+   "fact": "Owner judged the Relay baseline basic, stale and messy and rejected its UX; harvest verdict is REBUILD and carry forward about 12-15 mechanisms re-implemented on a tenant-aware schema (decision status proposed, reversal if the owner rejects it).",
+   "grade": "observed",
+   "evidence": "directive.2026-10-15.codex-baseline-stale; decision.2026-10-15.rebuild-verdict; context/DIRECTION.md ('owner judged it stale')"
+  },
+  {
+   "fact": "Relay's structural flaws: single JSON-blob entities table with raw SQL from 44+ files and CAS by full-JSON equality, no migrations, one org per user, hash-routed single page, 72-route action-string API, 7 long-running processes, no CRM objects (CSV Company/Country/Product columns had nowhere to go), customer CSV leaked into company-knowledge extraction, no outbound telephony.",
+   "grade": "observed",
+   "evidence": "docs/harvest/se-audit.md; docs/harvest/se-live.md; rejected.harvest.17"
+  },
+  {
+   "fact": "Relay mechanisms worth re-implementing as concepts: evidence-span intake with exact-quote review, AI-assisted CSV column mapping (AI mapped name/email/phone/stage correctly in about 4.2 s; no heuristic auto-map existed), idempotent AI task router with run ledger and budgets, encrypted connector vault + OAuth + 19-adapter registry (check/read only, no tenant connected), durable delivery with uncertain states, agent version/release/rollback, public deployment boundary, auth and team roles.",
+   "grade": "observed",
+   "evidence": "graph asset.se-audit.* and asset.se-live.*; lib/integrations/catalog.ts (20 items, 19 available, telephone planned); docs/harvest/se-live.md"
+  },
+  {
+   "fact": "Relay's design system is DM Sans, cool white/lilac-gray with indigo #5148ce, 13 px body, 'Quiet Operations Desk'; the /prototype page (serif, warm palette, dark-green sidebar, terracotta; simulated data) was judged the best visual direction in the repo.",
+   "grade": "observed",
+   "evidence": "DESIGN.md; asset.se-live.prototype-visual-concept; docs/harvest/se-live.md"
+  },
+  {
+   "fact": "Safety in the lab is a prompt instruction (AI disclosure once, facts-only, no manipulation, no OTP/card asks, Tele-MANAS 14416 and 112); the inherited rule from earlier products says safety by predicate (prompt-instruction safety leaked 57-98% vs 0 for predicates), so output predicates must be added before shipping.",
+   "grade": "observed",
+   "evidence": "voicelab/server/persona_v2.py SAFETY; rejected.harvest.03 (measured in html-portfolio)"
+  },
+  {
+   "fact": "Lab memory is a per-tester JSON file of preference notes only (v2 namespace) after v1 memory got polluted with brief facts and the agent's own claims; it has no consent, provenance, forget path or contact-id keying.",
+   "grade": "observed",
+   "evidence": "voicelab/server/app.py memory_get/memory_put; persona_v2.MEMORY_PROMPT; research round1 review (bug 3)"
+  },
+  {
+   "fact": "Product-level unknowns that this inventory cannot settle: language of the production voice runtime (Python lab vs TS app), production telephony vendor, product database (Neon permitted, schema not built), hosting, default voice stack, failover policy, and re-priced tiers.",
+   "grade": "unknown",
+   "evidence": "context/DIRECTION.md ('default is picked after Vertex returns'); open.2026-10-20.default-stack; open.2026-10-20.product-failover-policy; open.2026-10-20.reprice-tiers"
+  },
+  {
+   "fact": "The graph already holds a proposed VP v1 schema kit (object model, agent config knobs with Hindi/Hinglish turn-taking lexicons, attempt/conversation state machine, event list, INR cost lines, each item marked parity or beat) built from five vendors' APIs; it is a better starting point for the data model than any Relay table.",
+   "grade": "inferred",
+   "evidence": "asset.2026-10-20.acct-synthesis-v1-schema (paths research/2026-10-20/account-phase/synthesis/vp-v1-schema.json, data-model-matrix.csv, api-surface-matrix.csv); status proposed, not reviewed by owner"
+  },
+  {
+   "fact": "Generalising the ledger by deriving each agent's told/offer/number patterns from its facts and goal at publish time (LLM-assisted, frozen, reviewed) while keeping runtime deterministic would honour the 'model never grades' law; this is a design inference and has not been tested.",
+   "grade": "inferred",
+   "evidence": "persona_v2.py ledger() structure; CLAUDE.md inherited laws"
+  }
+ ]
+}
