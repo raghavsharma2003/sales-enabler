@@ -44,7 +44,7 @@
   },
   {
    "id": "open.2026-10-21.memory-extraction-holds-tx-during-llm",
-   "type": "open",
+   "type": "open-question",
    "status": "open",
    "date": "2026-10-21",
    "source": "memory module builder (parallel build)",

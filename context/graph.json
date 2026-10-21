@@ -15673,6 +15673,66 @@
    "title": "POST /v1/uploads/knowledge takes JSON ({filename, contentBase64} or {text}) and calls the knowledge.ingest tool, so files are limited to about 700 KB by the kernel's 1 MB body limit.",
    "rationale": "The kernel router decodes every body as UTF-8 text and caps it at 1 MB, which corrupts binary uploads; the module may not edit the kernel. One code path through the tool keeps roles and audit.",
    "reverse_if": "The kernel router passes raw bodies to a route (multipart or octet-stream); then accept real file uploads up to the 9 MB tool limit."
+  },
+  {
+   "id": "component.2026-10-21.money-module",
+   "type": "component",
+   "title": "Money module: provider cost card, estimate, wallet states, IST period caps, usage statement, reconciliation; price card empty",
+   "status": "built",
+   "date": "2026-10-21",
+   "source": "agent",
+   "path": "product/server/modules/money/"
+  },
+  {
+   "id": "decision.2026-10-21.cost-card-minute-profile",
+   "type": "decision",
+   "title": "Per-minute provider cost = catalog list prices x an explicit assumed minute profile (50% caller audio gated, 4 replies/min x 2000 in + 60 out tokens, 30 s speech at 15 chars/s, half a 60 s pulse per call)",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "agent",
+   "rationale": "catalog.py prices are per token/char/audio-minute; an estimate needs a usage shape, and labelling it as an assumption keeps the estimate honest",
+   "reverse_if": "the meter has n>=50 real calls per stack: replace the profile with measured per-stack averages",
+   "path": "product/server/modules/money/prices.ts"
+  },
+  {
+   "id": "decision.2026-10-21.fake-gateway-never-default",
+   "type": "decision",
+   "title": "The fake payment gateway is never the default; the real adapter ships disabled until the owner switches on a gateway",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "agent",
+   "rationale": "a fake that captures every charge credits money for nothing if it leaks into production",
+   "reverse_if": "never for the fake; the real adapter is enabled when the owner approves a gateway and keys live outside the repo"
+  },
+  {
+   "id": "measure.2026-10-21.money-cap-concurrency",
+   "type": "measurement",
+   "title": "50 parallel reservations under one \u20b91,000 cap at \u20b927.92 each: exactly 35 held, 0 overrun; 50 parallel against a \u20b9100 wallet at \u20b97: exactly 14",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "agent",
+   "n": 50,
+   "method": "node:test, Promise.all of 50 transactions on a Postgres 16 throwaway cluster, kernel ledger.reserve",
+   "path": "product/tests/money.test.ts"
+  },
+  {
+   "id": "risk.2026-10-21.settle-above-hold-overruns-cap",
+   "type": "risk",
+   "title": "ledger.settle charges the actual cost even above the hold, so a cap can be overrun when a call runs past its reserved maximum",
+   "status": "resolved",
+   "date": "2026-10-21",
+   "source": "agent",
+   "mitigation": "kernel clamps the cap charge to the hold and records the excess; runtime ends calls at the reserved max duration (money STATUS needs_from_others #1; todo test proves it)",
+   "resolution": "Kernel 4b8ccae: settle charges min(actual, held) and records overrun_inr_milli; the money test now asserts the cap holds."
+  },
+  {
+   "id": "open.2026-10-21.minute-profile-measured",
+   "type": "open-question",
+   "title": "What does a real connected minute use per stack (caller audio share, replies, tokens, characters)?",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "agent",
+   "closes_when": "the meter has cost lines from n>=50 real calls per stack and the cost card is recomputed from them"
   }
  ],
  "edges": [
@@ -28537,6 +28597,36 @@
    "from": "decision.2026-10-21.workspace-secret-reveal",
    "to": "risk.2026-10-21.kernel-stores-approval-args-and-results-in-clear",
    "relation": "derived-from"
+  },
+  {
+   "from": "component.2026-10-21.money-module",
+   "to": "decision.2026-10-21.pricing-deferred",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.cost-card-minute-profile",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-21.fake-gateway-never-default",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-21.money-cap-concurrency",
+   "to": "component.2026-10-21.money-module",
+   "relation": "tests"
+  },
+  {
+   "from": "risk.2026-10-21.settle-above-hold-overruns-cap",
+   "to": "component.2026-10-21.money-module",
+   "relation": "informs"
+  },
+  {
+   "from": "component.2026-10-21.money-module",
+   "to": "open.2026-10-21.minute-profile-measured",
+   "relation": "leaves-open"
   }
  ]
 }
