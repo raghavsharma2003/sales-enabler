@@ -16,9 +16,9 @@ import { argsHash, canApprove, isA3, needsHumanApproval, ROLES, type RiskClass, 
 import { ValidationError } from '../../../shared/validate.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
-import { complete, LlmError, type ChatMessage, type LlmReply, type LlmTool } from '../../llm.ts';
+import { LlmError, stream, type ChatMessage, type LlmReply, type LlmTool } from '../../llm.ts';
 import type { Receipt, Registry } from '../../tools.ts';
-import { operatorSettings, type Autonomy } from './tools.ts';
+import { curatedBrains, operatorSettings, type Autonomy } from './tools.ts';
 
 export const CAPS = { llmCalls: 6, toolCalls: 10, tokens: 60_000, replyTokens: 1_200, planSteps: 8, historyMessages: 12, resultChars: 8_000 };
 export type Caps = typeof CAPS;
@@ -62,6 +62,8 @@ export interface TurnInput {
   uploads?: Upload[];
   emit: (e: OperatorEvent) => void;
   caps?: Partial<Caps>;
+  /** Aborts when the client goes away: the turn stops before its next model call. */
+  signal?: AbortSignal;
 }
 
 const RISK_LABEL: Record<RiskClass, string> = {
@@ -150,6 +152,8 @@ export async function runTurn(inp: TurnInput): Promise<void> {
     [threadId, workspaceId, inp.text.slice(0, 80)]);
 
   const settings = await operatorSettings(pool, workspaceId);
+  // The workspace's brain, if it is still on the curated list; otherwise the deployment's configured model.
+  const model = settings.brain && curatedBrains().includes(settings.brain) ? settings.brain : undefined;
   const prefs = await many<{ text: string }>(pool, `SELECT text FROM operator_preference WHERE workspace_id = $1 AND member_id = $2 AND forgotten_at IS NULL
     ORDER BY created_at LIMIT 20`, [workspaceId, member.id]);
 
@@ -213,11 +217,13 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   let stoppedBy: string | undefined;
   try {
     for (;;) {
+      if (inp.signal?.aborted) { stoppedBy = 'client_left'; break; }
       if (llmCalls >= caps.llmCalls) { stoppedBy = 'step_cap'; break; }
       if (usage.input + usage.output >= caps.tokens) { stoppedBy = 'token_cap'; break; }
       let reply: LlmReply;
       try {
-        reply = await complete({ purpose: 'operator', messages, tools, maxTokens: caps.replyTokens, temperature: 0.2 });
+        reply = await stream({ purpose: 'operator', messages, tools, maxTokens: caps.replyTokens, temperature: 0.2, model, signal: inp.signal },
+          text => emit({ type: 'delta', text }));
       } catch (e) {
         const msg = e instanceof LlmError ? e.message : 'the model failed';
         emit({ type: 'error', text: `VP's brain did not answer (${msg}). Nothing was changed by this message; try again or switch brain.` });
@@ -229,10 +235,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
       usage.input += reply.usage.inputTokens; usage.output += reply.usage.outputTokens;
       await costLine(pool, workspaceId, threadId, reply);
 
-      if (reply.text) {
-        emit({ type: 'delta', text: reply.text });
-        await save('vp', { kind: 'text', text: reply.text });
-      }
+      if (reply.text) await save('vp', { kind: 'text', text: reply.text });
       if (!reply.toolCalls.length) break;
 
       messages.push({ role: 'assistant', content: reply.text, toolCalls: reply.toolCalls });
@@ -265,7 +268,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
       if (stoppedBy === 'tool_cap') break;
     }
   } finally {
-    if (stoppedBy && stoppedBy !== 'llm_error') {
+    if (stoppedBy && stoppedBy !== 'llm_error' && stoppedBy !== 'client_left') {
       const text = `I stopped here: this message reached its limit of ${stoppedBy === 'token_cap' ? caps.tokens + ' tokens' : stoppedBy === 'tool_cap' ? caps.toolCalls + ' tool steps' : caps.llmCalls + ' model calls'}. Say "continue" and I will pick up from the cards above.`;
       emit({ type: 'notice', text });
       await save('system', { kind: 'notice', text });

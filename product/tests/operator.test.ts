@@ -356,3 +356,60 @@ test('API keys and signed-out callers get no Operator', { skip }, async () => {
   const res = await fetch(base + '/v1/operator/threads', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
   assert.equal(res.status, 401);
 });
+
+test('frames stream incrementally: the first card arrives while the model is still thinking', { skip }, async () => {
+  const { members: [owner] } = await ws('owner');
+  const t = await thread(owner);
+  let release!: () => void;
+  const gate = new Promise<void>(r => { release = r; });
+  let calls = 0;
+  setFakeLlm(async () => {
+    calls++;
+    if (calls === 1) return { text: '', toolCalls: [callTool('agent_create', { text: 'streamed' })], usage: { inputTokens: 1, outputTokens: 1 }, model: 'scripted', provider: 'fake' };
+    await gate;   // the second model call blocks until the test has seen the first card
+    return { text: 'ho gaya', toolCalls: [], usage: { inputTokens: 1, outputTokens: 1 }, model: 'scripted', provider: 'fake' };
+  });
+  const res = await fetch(base + `/v1/operator/threads/${t}/messages`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-vp-dev-member': owner }, body: JSON.stringify({ text: 'banao' }) });
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type') ?? '', /text\/event-stream/);
+  const reader = res.body!.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  const timeout = setTimeout(() => release(), 5_000);   // never hang the suite
+  while (!buf.includes('event: card')) {
+    const { value, done } = await reader.read();
+    assert.ok(!done, 'the stream ended before the first card');
+    buf += dec.decode(value, { stream: true });
+  }
+  assert.ok(!buf.includes('event: done') && !buf.includes('event: delta'), 'the card arrived before the turn finished');
+  assert.equal(calls, 2, 'the second model call is in flight');
+  release();
+  for (;;) { const { value, done } = await reader.read(); if (done) break; buf += dec.decode(value, { stream: true }); }
+  clearTimeout(timeout);
+  assert.deepEqual(frames(buf).map(x => x.event), ['message', 'step', 'step', 'card', 'delta', 'done']);
+});
+
+test("the workspace's chosen brain is the model the Operator calls, while it stays curated", { skip }, async () => {
+  const { ws: w, members: [owner] } = await ws('owner');
+  const t = await thread(owner);
+  await pool.query("INSERT INTO operator_setting (workspace_id, brain) VALUES ($1,'brain-deep')", [w]);
+  process.env.VP_OPERATOR_BRAINS = 'brain-fast,brain-deep';
+  try {
+    const seen = script([{ text: 'ok' }]);
+    await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'hi' });
+    assert.equal(seen[0].model, 'brain-deep');
+    process.env.VP_OPERATOR_BRAINS = 'brain-fast';
+    const seen2 = script([{ text: 'ok' }]);
+    await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'hi' });
+    assert.equal(seen2[0].model, undefined, 'a brain taken off the list falls back to the configured model');
+  } finally { delete process.env.VP_OPERATOR_BRAINS; }
+});
+
+test('a bad thread or body is refused as JSON before any stream opens', { skip }, async () => {
+  const { members: [owner] } = await ws('owner');
+  const r = await call(owner, 'POST', '/v1/operator/threads/00000000-0000-0000-0000-000000000000/messages', { text: 'x' });
+  assert.equal(r.status, 404);
+  assert.match(r.ct, /application\/json/);
+  const t = await thread(owner);
+  assert.equal((await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: '' })).status, 422);
+});

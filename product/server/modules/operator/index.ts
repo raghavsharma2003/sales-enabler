@@ -45,18 +45,18 @@ export const module: Module = {
       return { body: t };
     });
 
-    // The router answers once, so frames are buffered for the turn and sent as one text/event-stream body.
-    // runTurn emits as it goes; incremental delivery needs a streaming response from the kernel router.
+    // Input and the thread are checked before the stream opens, so those failures are plain JSON errors.
+    // Frames are written as runTurn emits them; the turn stops before its next model call if the client leaves.
     router.add('POST', '/v1/operator/threads/:id/messages', async req => {
       const m = await member(req);
       const b = postMessage(req.body);
       if (!/^[0-9a-f-]{36}$/i.test(req.params.id) || !(await one(pool, 'SELECT 1 FROM thread WHERE id = $1 AND workspace_id = $2', [req.params.id, m.workspaceId]))) {
         throw new HttpError(404, 'not_found', 'no such thread');
       }
-      const frames: string[] = [];
-      await runTurn({ pool, registry, workspaceId: m.workspaceId, member: { id: m.memberId, role: m.role }, threadId: req.params.id,
-        text: b.text, uploads: b.uploads, emit: e => frames.push(sse(e)) });
-      return { status: 200, raw: frames.join(''), headers: { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', 'x-accel-buffering': 'no' } };
+      return {
+        stream: (write, closed) => runTurn({ pool, registry, workspaceId: m.workspaceId, member: { id: m.memberId, role: m.role }, threadId: req.params.id,
+          text: b.text, uploads: b.uploads, emit: e => write(sse(e)), signal: closed }),
+      };
     });
   },
 };
