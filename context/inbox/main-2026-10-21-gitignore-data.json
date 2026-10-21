@@ -1,0 +1,17 @@
+{
+ "nodes": [
+  {
+   "id": "rejected.2026-10-21.test-data-under-data-dir",
+   "type": "rejection",
+   "title": "Putting committed test data in a folder named data/",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop (found by the calls builder)",
+   "tried": "7401e97 wrote the runtime-events fixture to product/voice/tests/data/runtime_events.json and added a TS test that reads it.",
+   "broke": "Root .gitignore line 7 (`data/`) ignores every folder named data, so the fixture was never committed. The branch passed in the builder's working tree and failed on every clean checkout, with no warning at commit time.",
+   "instead": "Test inputs live in folders not named data (63ff384 moved the fixture to tests/vectors/). `data/` stays ignored everywhere, because it keeps private files such as data/blueprint/owner-messages.md out of the repo. Before pushing a new test that reads a file, run it on a clean checkout (git worktree)."
+  }
+ ],
+ "edges": [],
+ "events": []
+}
