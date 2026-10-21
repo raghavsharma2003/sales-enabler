@@ -142,7 +142,8 @@ test('phone edge cases end to end: preview verdicts with reason codes, then the 
   // The later duplicate row wins its name; the earlier spelling stays an alias.
   const asha = await w.contactBy('+919000000001');
   assert.equal(asha?.name, 'Asha again');
-  const aliases = await many<{ raw: string }>(pool, 'SELECT raw FROM contact_identifier WHERE contact_id = $1 ORDER BY raw', [asha!.id]);
+  // COLLATE "C": the order must not depend on the server's locale (en_US sorts '+' after digits; C sorts it first).
+  const aliases = await many<{ raw: string }>(pool, 'SELECT raw FROM contact_identifier WHERE contact_id = $1 ORDER BY raw COLLATE "C"', [asha!.id]);
   assert.deepEqual(aliases.map(a => a.raw), ['+91 90000 00001', '90000 00001']);
   const r = await w.ok('source.receipt', { receiptId: res.receiptId });
   assert.equal(r.rows_total, 11);
