@@ -1,15 +1,16 @@
 // The money module's tools. Risk classes follow the blueprint registry (workspace.md section 5): top-ups, cap
 // raises and plan changes are spend (A2, owner approves); lowering a cap only lowers risk, so it runs at once;
 // reads are A1. A manual credit is VP success's alone, carries a reason, and is audited with it.
-import { randomUUID } from 'node:crypto';
 import { formatInr } from '../../../shared/money.ts';
 import { num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import type { Module } from '../../app.ts';
 import type { Job } from '../../jobs.ts';
 import { appendAudit } from '../../audit.ts';
-import { many, one, type Queryable } from '../../db.ts';
+import type pg from 'pg';
+import { many, one, tx, type Queryable } from '../../db.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
-import { gateway } from './gateway.ts';
+import { prepareTopup, resolveTopups, runTopup, type Prepared } from './topup.ts';
+import { sweepHolds } from './sweep.ts';
 import { caps, costLines, credit, defaultRange, estimate, priceFor, reconcile, rollPeriods, statement, usage, walletView } from './money.ts';
 
 const MAX_TOPUP = 1_000_000_000;          // ₹10 lakh per top-up
@@ -74,23 +75,11 @@ export function register(r: Registry): void {
     run: (ctx, i) => { const d = defaultRange(); return statement(ctx.q, ctx.workspaceId, { from: i.from ?? d.from, to: i.to ?? d.to }); },
   }));
 
-  r.register(tool(obj({ inrMilli: num({ int: true, min: 1000, max: MAX_TOPUP }) }), {
+  r.register(tool(obj({ inrMilli: num({ int: true, min: 1000, max: MAX_TOPUP }), requestId: opt(uuid()) }), {
     name: 'wallet.topup', risk: 'spend', summary: 'add money to the prepaid wallet through the payment gateway',
     describe: i => `Add ${formatInr(i.inrMilli)} to the prepaid wallet`,
-    run: async (ctx, i) => {
-      const gw = gateway();
-      if (!gw.enabled) throw new Error('online top-up is not switched on yet; ask VP success for a manual credit');
-      const key = randomUUID();
-      const res = await gw.charge({ inrMilli: i.inrMilli, workspaceId: ctx.workspaceId, idempotencyKey: key });
-      const ins = await one<{ id: string }>(ctx.q,
-        `INSERT INTO wallet_topup (workspace_id, kind, inr_milli, gateway, gateway_ref, status, actor) VALUES ($1,'payment',$2,$3,$4,$5,$6)
-         ON CONFLICT (gateway, gateway_ref) DO NOTHING RETURNING id`,
-        [ctx.workspaceId, i.inrMilli, gw.name, res.gatewayRef, res.status, ctx.actor.id ?? ctx.actor.type]);
-      if (res.status !== 'captured') return { status: 'failed', reason: res.reason };
-      if (!ins) return { status: 'duplicate', reason: 'this payment was already credited' };
-      const w = await credit(ctx.q, ctx.workspaceId, i.inrMilli);
-      return { status: 'credited', topupId: ins.id, balanceInrMilli: Number(w!.balance), state: w!.state, display: formatInr(Number(w!.balance), { paise: true }) };
-    },
+    prepare: (ctx, i) => prepareTopup(ctx, i),                 // the one gateway call, under the action's own key
+    run: (ctx, _i, p) => runTopup(ctx, p as Prepared | undefined),
   }));
 
   r.register(tool(obj({ inrMilli: num({ int: true, min: 1, max: MAX_TOPUP }), reason: str({ min: 5, max: 400 }) }), {
@@ -139,17 +128,27 @@ export function register(r: Registry): void {
   }));
 }
 
-/** The nightly job (IST midnight): roll period caps everywhere, then reconcile each workspace. */
-export async function runMoneyJobs(q: Queryable, at: Date = new Date()) {
-  const rolled = await rollPeriods(q, null, at);
-  const wss = await many<{ id: string }>(q, "SELECT id FROM workspace WHERE status = 'active'");
+/** The nightly job (IST midnight): roll period caps everywhere, release holds that will never report, resolve
+ *  unconfirmed top-ups, then reconcile each workspace. */
+export async function runMoneyJobs(pool: pg.Pool, at: Date = new Date()) {
+  const rolled = await rollPeriods(pool, null, at);
+  const swept = (await tx(pool, c => sweepHolds(c, null, at))).length;
+  const topups = await resolveTopups(pool, at);
+  const wss = await many<{ id: string }>(pool, "SELECT id FROM workspace WHERE status = 'active'");
   let drift = 0;
-  for (const w of wss) drift += (await reconcile(q, w.id)).drift.length;
-  return { rolled, workspaces: wss.length, drift };
+  for (const w of wss) drift += (await tx(pool, c => reconcile(c, w.id))).drift.length;
+  return { rolled, swept, topups, workspaces: wss.length, drift };
 }
 
-export { caps };
-/** Nightly at IST midnight: roll period caps, then reconcile every workspace (server/jobs.ts runs it, one replica at a time). */
-export const jobs = (): Job[] => [{ name: 'money.nightly', dailyAtIst: '00:00', run: async deps => { await runMoneyJobs(deps.pool); } }];
+/** Every 5 minutes: release leaked holds and resolve unconfirmed top-ups, so a wallet is not stuck until midnight. */
+export async function runMoneySweep(pool: pg.Pool, at: Date = new Date()) {
+  const swept = (await tx(pool, c => sweepHolds(c, null, at))).length;
+  return { swept, topups: await resolveTopups(pool, at) };
+}
+
+export const jobs = (): Job[] => [
+  { name: 'money.nightly', dailyAtIst: '00:00', run: async deps => { await runMoneyJobs(deps.pool); } },
+  { name: 'money.sweep', everyMs: 5 * 60_000, run: async deps => { await runMoneySweep(deps.pool); } },
+];
 
 export const module: Module = { name: 'money', register, jobs };

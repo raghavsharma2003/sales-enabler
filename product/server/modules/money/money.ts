@@ -6,6 +6,7 @@ import { formatInr } from '../../../shared/money.ts';
 import { requireStack } from '../../../shared/stacks.ts';
 import { ValidationError } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
+import { settle } from '../../ledger.ts';
 
 export const TZ = 'Asia/Kolkata';
 export const GST_BP = 1800;
@@ -200,7 +201,7 @@ export async function statement(q: Queryable, ws: string, r: Range) {
 
 // ------------------------------------------------------------------ reconciliation
 
-export interface Drift { attemptId: string; settledInrMilli: number | null; costLinesInrMilli: number; cause: 'mismatch' | 'cost_without_settle' | 'overrun'; overrunInrMilli?: number }
+export interface Drift { attemptId: string; settledInrMilli: number | null; costLinesInrMilli: number; cause: 'mismatch' | 'cost_without_settle' | 'overrun' | 'late_cost'; overrunInrMilli?: number; lateReservationId?: string }
 
 /** Compare each settled reservation with the cost lines metered for its attempt; open one issue per drifting attempt. */
 export async function reconcile(q: Queryable, ws: string): Promise<{ checked: number; drift: Drift[]; issuesOpened: number }> {
@@ -216,7 +217,22 @@ export async function reconcile(q: Queryable, ws: string): Promise<{ checked: nu
   for (const x of rows) {
     if (x.status === 'held') continue;                  // still in flight: the call has not settled yet
     const settled = x.settled === null ? null : Number(x.settled), lines = Number(x.lines);
-    if (settled === null) { if (lines > 0) drift.push({ attemptId: x.attempt_id, settledInrMilli: null, costLinesInrMilli: lines, cause: 'cost_without_settle' }); continue; }
+    if (settled === null) {
+      if (lines <= 0) continue;
+      // The sweep released this attempt's hold and the cost came in afterwards: charge it now under a new hold tagged
+      // to the same caps (late_of), and say so. Without a swept hold it stays a plain drift for a person.
+      const swept = await one<{ id: string; budget_ids: string[] }>(q,
+        `SELECT id, budget_ids FROM reservation WHERE workspace_id = $1 AND attempt_id = $2 AND status = 'released' AND released_reason LIKE 'sweep:%'
+         ORDER BY created_at DESC LIMIT 1`, [ws, x.attempt_id]);
+      if (swept) {
+        const late = await one<{ id: string }>(q,
+          'INSERT INTO reservation (workspace_id, attempt_id, inr_milli, budget_ids, late_of) VALUES ($1,$2,$3,$4,$5) RETURNING id',
+          [ws, x.attempt_id, lines, swept.budget_ids, swept.id]);
+        await settle(q, late!.id, lines);
+        drift.push({ attemptId: x.attempt_id, settledInrMilli: lines, costLinesInrMilli: lines, cause: 'late_cost', lateReservationId: late!.id });
+      } else drift.push({ attemptId: x.attempt_id, settledInrMilli: null, costLinesInrMilli: lines, cause: 'cost_without_settle' });
+      continue;
+    }
     // A call that ran past its hold was charged only the hold (kernel settle); the excess is VP's to absorb or dispute,
     // so settled + overrun should equal the metered cost lines.
     const overrun = Number(x.overrun);
@@ -231,6 +247,8 @@ export async function reconcile(q: Queryable, ws: string): Promise<{ checked: nu
        WHERE NOT EXISTS (SELECT 1 FROM issue WHERE workspace_id = $1 AND category = 'money_drift' AND subject_id = $2 AND status <> 'resolved')`,
       [ws, d.attemptId, { ...d, fix: d.cause === 'overrun'
         ? 'the call ran past the most it reserved; the customer was charged only the hold. Check why the runtime did not end it at the reserved maximum'
+        : d.cause === 'late_cost'
+        ? 'this call reported its cost after its hold was released; the cost was charged now, against the same caps'
         : 'the charge and the metered cost lines disagree; check the call manifest before the next statement' }]);
     opened += r.rowCount ?? 0;
   }

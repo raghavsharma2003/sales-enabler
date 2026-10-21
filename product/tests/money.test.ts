@@ -9,7 +9,10 @@ import { Registry } from '../server/tools.ts';
 import { verifyAudit } from '../server/audit.ts';
 import { jobs, module as moneyModule, register, runMoneyJobs } from '../server/modules/money/index.ts';
 import { computeCard } from '../server/modules/money/prices.ts';
-import { FakeGateway, RazorpayGateway, setGateway } from '../server/modules/money/gateway.ts';
+import { FakeGateway, RazorpayGateway, setGateway, type PaymentGateway } from '../server/modules/money/gateway.ts';
+import { resolveTopups } from '../server/modules/money/topup.ts';
+import { sweepHolds } from '../server/modules/money/sweep.ts';
+import { reconcileStale } from '../server/modules/campaigns/worker.ts';
 import { estimate, margin, marginCheck, reconcile, rollPeriods, setWalletBlocked, walletView } from '../server/modules/money/money.ts';
 
 const URL_ = process.env.DATABASE_URL;
@@ -341,7 +344,7 @@ test('reconciliation: matching charges pass; drift opens one issue per attempt',
   assert.deepEqual(r.drift.map(d => [d.attemptId, d.cause]).sort(), [[bad.attemptId, 'mismatch'], [orphan.attemptId, 'cost_without_settle']].sort());
   assert.equal(r.issuesOpened, 2);
   assert.equal((await run(c => reconcile(c, ws))).issuesOpened, 0, 'a second run does not duplicate issues');
-  const job = await run(c => runMoneyJobs(c));
+  const job = await runMoneyJobs(pool);
   assert.ok(job.drift >= 2);
 });
 
@@ -406,6 +409,124 @@ test('reconcile opens an overrun issue when a call cost more than its hold', { s
 test('the nightly job is returned from jobs(): IST midnight, runs roll + reconcile', { skip }, async () => {
   const js = jobs();
   assert.equal(moneyModule.jobs, jobs);
-  assert.deepEqual(js.map(j => [j.name, j.dailyAtIst, j.everyMs]), [['money.nightly', '00:00', undefined]]);
-  await js[0].run({ pool, registry: reg, auth: async () => { throw new Error('unused'); } });
+  assert.deepEqual(js.map(j => [j.name, j.dailyAtIst, j.everyMs]), [['money.nightly', '00:00', undefined], ['money.sweep', undefined, 300_000]]);
+  for (const j of js) await j.run({ pool, registry: reg, auth: async () => { throw new Error('unused'); } });
+});
+
+// ---------------------------------------------------------------- review MA-08: a top-up reaches the gateway once per approval
+
+test('MA-08: a gateway error after capture never leads to a second charge', { skip }, async () => {
+  const { ws, owner } = await workspace(0);
+  const charges: string[] = [];
+  // captured at the gateway, then the response is lost: the adapter throws, and it cannot be asked afterwards
+  const flaky: PaymentGateway = { name: 'review_flaky', enabled: true, charge: async c => { charges.push(c.idempotencyKey); throw new Error('socket hang up'); } };
+  setGateway(flaky);
+  try {
+    const p = await reg.execute(pool, 'wallet.topup', { inrMilli: 500_000 }, { workspaceId: ws, actor: ownerActor(owner) });
+    if (p.status !== 'needs_approval') return assert.fail('expected a card');
+    const first = await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
+    assert.notEqual(first.status, 'confirmed');
+    const second = await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
+    assert.notEqual(second.status, 'confirmed');
+    assert.equal(charges.length, 1, 'one approval, one charge');
+    assert.equal(charges[0], 'topup:' + p.actionId, 'the key is the action, not a fresh random one');
+    const a = await one<{ status: string }>(pool, 'SELECT status FROM action WHERE id = $1', [p.actionId]);
+    assert.equal(a!.status, 'unknown');
+    const t = await one<{ status: string; credited_at: Date | null }>(pool, 'SELECT status, credited_at FROM wallet_topup WHERE action_id = $1', [p.actionId]);
+    assert.deepEqual([t!.status, t!.credited_at], ['unknown', null]);
+    assert.equal((await bal(ws))!.b, '0', 'nothing credited while the outcome is unknown');
+    // the resolver cannot ask this gateway: it opens one issue, charges nothing
+    const r1 = await resolveTopups(pool); const r2 = await resolveTopups(pool);
+    assert.ok(r1.flagged >= 1); assert.equal(r2.flagged, 0);
+    assert.equal(charges.length, 1);
+  } finally { setGateway(new FakeGateway()); }
+});
+
+test('MA-08: an unknown capture is resolved against the gateway and credited once', { skip }, async () => {
+  const fake = new FakeGateway();
+  setGateway(fake);
+  const { ws, owner } = await workspace(0);
+  fake.loseNextResponse = true;
+  const p = await reg.execute(pool, 'wallet.topup', { inrMilli: 700_000 }, { workspaceId: ws, actor: ownerActor(owner) });
+  if (p.status !== 'needs_approval') return assert.fail('expected a card');
+  const first = await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
+  assert.notEqual(first.status, 'confirmed');
+  assert.equal((await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner })).status, 'not_executed');
+  assert.equal(fake.charges.length, 1);
+  await resolveTopups(pool, new Date(), 0);                  // looks the key up (captured), then credits it
+  await resolveTopups(pool, new Date(), 0);                  // a second pass changes nothing
+  assert.equal((await bal(ws))!.b, '700000');
+  assert.equal(fake.charges.length, 1, 'resolving never re-charges');
+});
+
+test('MA-08: a capture whose credit failed is credited by the resolver, and a re-tap does not charge again', { skip }, async () => {
+  const fake = new FakeGateway();
+  setGateway(fake);
+  const { ws, owner } = await workspace(0);
+  const p = await reg.execute(pool, 'wallet.topup', { inrMilli: 300_000 }, { workspaceId: ws, actor: ownerActor(owner) });
+  if (p.status !== 'needs_approval') return assert.fail('expected a card');
+  // the approval transaction fails after the capture (a later DB error): a registry whose wallet.topup throws after run()
+  const real = reg.get('wallet.topup')!;
+  const broken = new Registry();
+  broken.register({ ...real, run: async (ctx, i, prep) => { await real.run(ctx, i, prep); throw new Error('db: connection lost after credit'); } });
+  const first = await broken.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
+  assert.equal(first.status, 'not_executed');
+  const t = await one<{ status: string; credited_at: Date | null }>(pool, 'SELECT status, credited_at FROM wallet_topup WHERE action_id = $1', [p.actionId]);
+  assert.deepEqual([t!.status, t!.credited_at], ['captured', null], 'the capture is recorded even though the credit rolled back');
+  const again = await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
+  assert.equal(again.status, 'confirmed');
+  assert.equal(fake.charges.length, 1, 'the re-tap reused the recorded capture');
+  assert.equal((await bal(ws))!.b, '300000');
+  assert.equal((await resolveTopups(pool, new Date(), 0)).credited, 0, 'already credited');
+  assert.equal((await bal(ws))!.b, '300000');
+});
+
+// ---------------------------------------------------------------- review MA-09: holds that would never be released
+
+test('MA-09: a hold whose dial was never confirmed is released and flagged once; late cost is charged, not dropped', { skip }, async () => {
+  const { ws } = await workspace(1_000_000);                 // ₹1,000
+  const { attemptId } = await attempt(ws);
+  const b = (await one<{ id: string }>(pool, "INSERT INTO budget (workspace_id, scope_type, period, cap_inr_milli) VALUES ($1,'workspace','total',800000) RETURNING id", [ws]))!.id;
+  const held = await run(c => reserve(c, { workspaceId: ws, inrMilli: 600_000, attemptId }));
+  if (!held.ok) return assert.fail('expected a hold');
+  // the worker claimed it two days ago and died before runtime.start: no call.ended will ever come
+  await pool.query(`UPDATE attempt SET status = 'dialing', claimed_at = now() - interval '2 days', dialed_at = now() - interval '2 days', reservation_id = $2 WHERE id = $1`, [attemptId, held.reservationId]);
+  assert.equal(await reconcileStale({ pool, registry: reg, workspaceId: ws }), 1, 'control: the attempt is now unknown');
+  const swept = await run(c => sweepHolds(c, ws));
+  assert.deepEqual(swept.map(s => [s.attemptId, s.reason]), [[attemptId, 'dispatch_unconfirmed']]);
+  const r = await one<{ status: string; released_reason: string }>(pool, 'SELECT status, released_reason FROM reservation WHERE id = $1', [held.reservationId]);
+  assert.deepEqual([r!.status, r!.released_reason], ['released', 'sweep:dispatch_unconfirmed']);
+  assert.equal((await walletView(pool, ws)).availableInrMilli, 1_000_000, 'the money is usable again');
+  assert.equal((await run(c => sweepHolds(c, ws))).length, 0);
+  const iss = await many(pool, "SELECT 1 FROM issue WHERE workspace_id = $1 AND category = 'money_hold_released' AND subject_id = $2", [ws, attemptId]);
+  assert.equal(iss.length, 1);
+  // the call did happen after all: its cost arrives later and is charged under a new hold against the same cap
+  await pool.query("INSERT INTO cost_line (workspace_id, attempt_id, component, quantity, unit, inr_milli) VALUES ($1,$2,'telephony',60,'second',4200)", [ws, attemptId]);
+  const rec = await run(c => reconcile(c, ws));
+  assert.deepEqual(rec.drift.map(d => d.cause), ['late_cost']);
+  assert.equal((await bal(ws))!.b, String(1_000_000 - 4200));
+  assert.equal((await one<{ s: string }>(pool, 'SELECT spent_inr_milli::text AS s FROM budget WHERE id = $1', [b]))!.s, '4200');
+  assert.equal((await run(c => reconcile(c, ws))).drift.length, 0, 'charged once; the next run is clean');
+});
+
+test('MA-09: a runtime that goes silent past the longest call releases its hold; a live, recent call keeps it', { skip }, async () => {
+  const { ws } = await workspace(5_000_000);
+  const silent = await attempt(ws), live = await attempt(ws);
+  const h1 = await run(c => reserve(c, { workspaceId: ws, inrMilli: 60_000, attemptId: silent.attemptId }));
+  const h2 = await run(c => reserve(c, { workspaceId: ws, inrMilli: 60_000, attemptId: live.attemptId }));
+  if (!h1.ok || !h2.ok) return assert.fail('expected holds');
+  await pool.query("UPDATE attempt SET status = 'connected' WHERE id = ANY($1)", [[silent.attemptId, live.attemptId]]);
+  await pool.query("INSERT INTO conversation (workspace_id, attempt_id, status) VALUES ($1,$2,'live'), ($1,$3,'live')", [ws, silent.attemptId, live.attemptId]);
+  await pool.query("UPDATE reservation SET created_at = now() - interval '2 hours' WHERE id = $1", [h1.reservationId]);
+  const later = new Date();
+  assert.equal((await run(c => sweepHolds(c, ws, later))).length, 1);
+  const st = await many<{ id: string; status: string }>(pool, 'SELECT id, status FROM reservation WHERE id = ANY($1)', [[h1.reservationId, h2.reservationId]]);
+  assert.deepEqual(Object.fromEntries(st.map(x => [x.id, x.status])), { [h1.reservationId]: 'released', [h2.reservationId]: 'held' });
+  // a campaign with a short max duration is judged by its own limit (30 s + 15 min grace)
+  const { attemptId: shortA, campaignId } = await attempt(ws, 'short calls');
+  await pool.query(`UPDATE campaign SET policy = '{"maxDurationS": 30}' WHERE id = $1`, [campaignId]);
+  const h3 = await run(c => reserve(c, { workspaceId: ws, inrMilli: 1_000, attemptId: shortA }));
+  if (!h3.ok) return assert.fail('expected a hold');
+  await pool.query("UPDATE reservation SET created_at = now() - interval '20 minutes' WHERE id = $1", [h3.reservationId]);
+  assert.equal((await run(c => sweepHolds(c, ws))).map(s => s.attemptId).join(), shortA);
 });

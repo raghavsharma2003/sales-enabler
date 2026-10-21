@@ -20,9 +20,6 @@ import type { Req } from '../../server/http.ts';
 import { reserve } from '../../server/ledger.ts';
 import { Registry, tool, type Actor } from '../../server/tools.ts';
 import { register as registerMoney, module as moneyModule } from '../../server/modules/money/index.ts';
-import { setGateway, type PaymentGateway } from '../../server/modules/money/gateway.ts';
-import { reconcile } from '../../server/modules/money/money.ts';
-import { reconcileStale } from '../../server/modules/campaigns/worker.ts';
 import { registerApiKeys } from '../../server/modules/workspace/apikeys.ts';
 import { registerMembers } from '../../server/modules/workspace/members.ts';
 import { checkUrlShape, isPrivateAddress } from '../../server/modules/workspace/webhooks.ts';
@@ -161,38 +158,7 @@ test('MA-07: an API key\'s daily cap is stored but never enforced by the ledger'
   assert.equal(r.ok, false, 'a ₹50 hold passed under a key whose daily cap is ₹1');
 });
 
-test('MA-08: a gateway error after capture leaves the top-up approvable again, so the customer is charged twice', finding('MA-08: wallet.topup charges inside run(); a thrown charge rolls back and re-approval re-charges'), async () => {
-  const { ws, owner } = await workspace();
-  const charges: string[] = [];
-  // The charge is captured at the gateway, then the response is lost (timeout, reset): the adapter throws.
-  const flaky: PaymentGateway = { name: 'review_flaky', enabled: true, charge: async c => { charges.push(c.idempotencyKey); throw new Error('socket hang up'); } };
-  setGateway(flaky);
-  const p = await reg.execute(pool, 'wallet.topup', { inrMilli: 500_000 }, { workspaceId: ws, actor: as(owner, 'owner') });
-  assert.equal(p.status, 'needs_approval');
-  const id = (p as { actionId: string }).actionId;
-  const first = await reg.approve(pool, id, { workspaceId: ws, memberId: owner });
-  assert.notEqual(first.status, 'confirmed');
-  const second = await reg.approve(pool, id, { workspaceId: ws, memberId: owner });
-  assert.notEqual(second.status, 'confirmed');
-  assert.equal(charges.length, 1, `the owner tapped approve twice and the gateway was charged ${charges.length} times, with different idempotency keys`);
-});
-
-test('MA-09: a hold whose dial was never confirmed is never released or flagged', finding('MA-09: reservations of unknown attempts leak; reconcile skips held'), async () => {
-  const { ws } = await workspace(1_000_000);               // ₹1,000
-  const contact = (await one<{ id: string }>(pool, 'INSERT INTO contact (workspace_id, e164) VALUES ($1,$2) RETURNING id', [ws, '+9190000000' + String(Math.floor(Math.random() * 90) + 10)]))!.id;
-  const attemptId = (await one<{ id: string }>(pool, 'INSERT INTO attempt (workspace_id, contact_id) VALUES ($1,$2) RETURNING id', [ws, contact]))!.id;
-  const held = await tx(pool, c => reserve(c, { workspaceId: ws, inrMilli: 600_000, attemptId }));
-  assert.ok(held.ok);
-  const reservationId = (held as { reservationId: string }).reservationId;
-  // The worker claimed it two days ago and died before runtime.start: no call.ended will ever come (worker.ts:250).
-  await pool.query(`UPDATE attempt SET status = 'dialing', claimed_at = now() - interval '2 days', dialed_at = now() - interval '2 days', reservation_id = $2 WHERE id = $1`, [attemptId, reservationId]);
-  const marked = await reconcileStale({ pool, registry: reg, workspaceId: ws });
-  assert.equal(marked, 1, 'control: the attempt is now unknown');
-  const rec = await reconcile(pool, ws);                   // what the nightly money job runs
-  const r = await one<{ status: string }>(pool, 'SELECT status FROM reservation WHERE id = $1', [reservationId]);
-  const flagged = rec.drift.some(d => d.attemptId === attemptId);
-  assert.ok(r!.status !== 'held' || flagged, `₹600 stays held forever against the wallet and every cap, and no issue is opened (status ${r!.status})`);
-});
+// MA-08 and MA-09 are fixed; their tests now live in tests/money.test.ts as passing tests.
 
 // ---------------------------------------------------------------- webhooks
 
