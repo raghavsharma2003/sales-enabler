@@ -20,13 +20,12 @@ process.env.VP_RUNTIME_SECRET = 'e2e-runtime-secret-' + randomBytes(24).toString
 
 import { buildApp } from '../server/app.ts';
 import { createPool, one } from '../server/db.ts';
-import { runOnce, type Job } from '../server/jobs.ts';
+import type { Job } from '../server/jobs.ts';
 import { setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { FakeRuntime, setRuntime, sign } from '../server/runtime-client.ts';
 import type { Registry } from '../server/tools.ts';
-import type { Deps } from '../server/app.ts';
 import { modules } from '../server/modules/index.ts';
-import { analysesSettled } from '../server/modules/calls/analysis.ts';
+import { analysesSettled, sweep } from '../server/modules/calls/analysis.ts';
 import { tick } from '../server/modules/campaigns/worker.ts';
 import { A2P_DUE } from '../server/modules/campaigns/defaults.ts';
 import { FakeTelephony, setTelephony } from '../server/modules/campaigns/telephony.ts';
@@ -119,7 +118,6 @@ function fakeModel(req: LlmRequest) {
 let pool: pg.Pool;
 let base = '';
 let registry: Registry;
-let deps: Deps;
 let jobs: Job[];
 let closeServer: () => Promise<void>;
 const rt = new FakeRuntime();
@@ -128,7 +126,7 @@ before(async () => {
   if (skip) return;
   pool = createPool(DATABASE);
   const app = buildApp(pool, modules);
-  registry = app.registry; deps = app.deps; jobs = app.jobs;
+  registry = app.registry; jobs = app.jobs;
   await new Promise<void>(res => app.server.listen(0, '127.0.0.1', res));
   base = `http://127.0.0.1:${(app.server.address() as { port: number }).port}`;
   closeServer = async () => { app.server.close(); app.server.closeAllConnections?.(); };
@@ -324,7 +322,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     const before = rt.tickets.length;
     const r = await owner.run('call.place_single', { contactId: s.contacts[contactIdx].id, agentVersionId: s.versionId, category: 'service' });
     const attemptId = confirmed(r, 'call.place_single').attemptId;
-    await tick({ pool, registry, now: () => at });
+    await tick({ pool, registry, workspaceId: owner.workspaceId, now: () => at });
     const a = confirmed(await owner.tool('attempt.list', { contactId: s.contacts[contactIdx].id }), 'attempt.list').attempts.find((x: any) => x.id === attemptId);
     if (rt.tickets.length > before) s.probeDialled.add(s.contacts[contactIdx].id);
     return a;
@@ -385,7 +383,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
 
   await step('6', 'one dispatcher tick inside the window dials the audience; each CallTicket obeys the runtime protocol', ['5'], async () => {
     const before = rt.tickets.length;
-    const rep = await tick({ pool, registry, now: () => CLOCK });
+    const rep = await tick({ pool, registry, workspaceId: owner.workspaceId, now: () => CLOCK });
     const tickets = rt.tickets.slice(before);
     const expectC = !s.probeDialled.has(s.contacts[2].id);   // a probe that dialled C would hold C back 120 minutes (G7)
     assert.equal(rep.dispatched, expectC ? 3 : 2, `tick report ${JSON.stringify(rep)}`);
@@ -490,11 +488,13 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
 
   await step('8', 'post-call work runs (analysis, memory.extract, learning.check) and the results show through the tools', ['7'], async () => {
     await analysesSettled();
-    for (const name of ['calls.analysis_sweep', 'learning.check']) {
-      const job = jobs.find(j => j.name === name);
-      assert.ok(job, `${name} is a registered job`);
-      assert.equal(await runOnce(job!, deps), 'ran', `${name} ran`);
-    }
+    // The kernel jobs that own post-call work are wired. Their bodies act on every workspace in the database, so on the
+    // shared suite database they are run here scoped to this workspace (the sweep's own option; learning.check's loop
+    // filtered to this workspace), so this file's scripted model never analyses another suite's calls.
+    for (const name of ['calls.analysis_sweep', 'learning.check']) assert.ok(jobs.find(j => j.name === name), `${name} is a registered job`);
+    assert.deepEqual(await sweep(pool, registry, { olderThanMs: 0, workspaceId: owner.workspaceId }), { analysed: 0 }, 'the in-process queue already analysed every ended call');
+    const running = confirmed(await owner.tool('experiment.list', { agentId: s.agentId }), 'experiment.list').filter((e: any) => e.state === 'running');
+    for (const e of running) confirmed(await registry.execute(pool, 'experiment.check', { experimentId: e.id }, { workspaceId: owner.workspaceId!, actor: { type: 'system', id: 'learning.check' } }) as Receipt, 'experiment.check');
     assert.ok(llmLog.some(l => l.purpose === 'analysis' && l.json), 'the analysis model was asked for JSON');
     assert.ok(llmLog.some(l => l.purpose === 'memory' && l.json), 'the memory model was asked for JSON');
 
@@ -628,7 +628,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     const again = async (idx: number) => confirmed(await owner.run('call.place_single', { contactId: s.contacts[idx].id, agentVersionId: s.versionId, category: 'service' }), 'call.place_single').attemptId;
     const aB = await again(1), aA = await again(0);
     const before = rt.tickets.length;
-    await tick({ pool, registry, now: () => LATER });
+    await tick({ pool, registry, workspaceId: owner.workspaceId, now: () => LATER });
     const list = confirmed(await owner.tool('attempt.list', { limit: 50 }), 'attempt.list').attempts;
     const b = list.find((x: any) => x.id === aB);
     assert.equal(b.status, 'blocked');
