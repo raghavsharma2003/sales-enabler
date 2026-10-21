@@ -38,7 +38,6 @@ export const EARS: Record<string, Ears> = {
 };
 export const BRAINS: Record<string, Brain> = {
   'gemini-3.5-flash-lite': { provider: 'Gemini 3.5 Flash-Lite', inUsd1m: 0.30, outUsd1m: 2.50, src: `${CAT} BRAINS` },
-  'gemini-3.5-flash-lite@or': { provider: 'Gemini 3.5 Flash-Lite via OpenRouter', inUsd1m: 0.30, outUsd1m: 2.50, src: `${CAT} BRAINS` },
   'gpt-5.4-mini': { provider: 'GPT-5.4 mini (Azure)', inUsd1m: 0.75, outUsd1m: 4.50, src: `${CAT} BRAINS: OpenAI list price (2026-10-20 sweep); Azure meter not read` },
   'gemini-3.8-flash': { provider: 'Gemini 3.8 Flash', inUsd1m: 0.75, outUsd1m: 3.75, src: `${CAT} BRAINS` },
   'gpt-6-luna@or': { provider: 'GPT-6 Luna via OpenRouter', inUsd1m: 0.10, outUsd1m: 0.50, src: `${CAT} BRAINS: OpenAI pricing page via the 2026-10-20 sweep` },
@@ -46,7 +45,6 @@ export const BRAINS: Record<string, Brain> = {
 };
 export const VOICES: Record<string, Voice> = {
   'gemini-lite': { provider: 'Gemini 3.8 Flash-Lite TTS', usdAudioMin: 6.0 * 25 * 60 / 1e6, price: '$6/1M audio tokens', src: `${CAT} TTS.gemini-lite: g1` },
-  'gemini-lite-or': { provider: 'Gemini 3.8 Flash-Lite TTS via OpenRouter', usdAudioMin: 6.0 * 25 * 60 / 1e6, price: '$6/1M audio tokens', src: `${CAT} TTS.gemini-lite-or: OpenRouter speech API 2026-10-20` },
   'azure-mai': { provider: 'Azure MAI-Voice-2.1', usd1mChars: 22.0, price: '$22/1M chars (unverified: priced like HD until the meter is read)', src: `${CAT} TTS.azure-mai` },
   sarvam: { provider: 'Sarvam Bulbul v4 Flash', usd1mChars: 20 * 100 / FX, price: '₹20 per 10K chars', src: `${CAT} TTS.sarvam: Sarvam pricing page` },
 };

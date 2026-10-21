@@ -129,7 +129,7 @@
   "untested": [
     "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
     "whether the generalised brief keeps brief v2's measured gains (words per turn, question endings, hang-ups) on jobs other than renewal: not measured",
-    "which voices truly understand sound tags: TAG_SAFE_VOICES = gemini-lite, gemini-lite-or is inferred from the lab note, not verified per voice",
+    "which voices truly understand sound tags: TAG_SAFE_VOICES = gemini-lite is inferred from the lab note, not verified per voice",
     "non-Hindi Indic scripts (Tamil etc.): compiles, never run against a model or voice",
     "the full per-agent ledger pack (told/offer patterns per fact): simulate uses a small generic ledger; the runtime owns the real one",
     "user-supplied regex in passCriteria is length-capped (200) but not ReDoS-proofed",

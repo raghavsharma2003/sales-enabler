@@ -135,7 +135,7 @@ has all of it sounds performed.`;
 }
 
 // Voices that understand inline sound tags (lab: Gemini TTS does; a tag sent to any other voice is read out or garbled).
-const TAG_SAFE_VOICES = new Set(['gemini-lite', 'gemini-lite-or']);
+const TAG_SAFE_VOICES = new Set(['gemini-lite']);
 // Voices with per-reply emotion styles (lab: Azure MAI-Voice), driven by a stripped tone marker.
 const STYLE_VOICES = new Set(['azure-mai']);
 
