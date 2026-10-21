@@ -104,13 +104,14 @@
     "product/db/migrations/0101_intake.sql",
     "product/db/migrations/0102_intake_attr_index.sql",
     "product/db/migrations/0103_intake_retention.sql",
-    "product/db/migrations/0104_intake_suppression_evidence.sql"
+    "product/db/migrations/0104_intake_suppression_evidence.sql",
+    "product/db/migrations/0105_intake_consent_effective.sql"
   ],
   "tests": {
-    "passed": 19,
-    "total": 19,
+    "passed": 20,
+    "total": 20,
     "files": [
-      "product/tests/intake.test.ts (18)",
+      "product/tests/intake.test.ts (19)",
       "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)"
     ],
     "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
@@ -132,7 +133,8 @@
     "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
     "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 18.9-21.7 s alone, re-import 7.7-13.0 s (n=9); 16-81 s inside the full suite (n=8). CI runs the same checks on 5,000 rows; VP_PERF=1 runs 50,000 and asserts 60 s",
     "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept",
-    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json for every registered blueprint tool (contact.suppress external since it joined A3_VERBS)"
+    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json for every registered blueprint tool (contact.suppress external since it joined A3_VERBS)",
+    "Consent ordered by effective_at (stated time, else insert; clamped to insert); an older or undated imported grant after a withdrawal is history only and reported as consent_older_than_latest (review WGC-06)"
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -175,8 +177,12 @@
       "what": "Read policy.retention.get for memory retention (forgetContactMemory is now used by dpdp.request.execute)."
     },
     {
+      "from": "campaigns",
+      "what": "Export cancelContactAttempts(q, ws, contactId, reason) for dpdp.request.execute to call in its transaction (review WGC-07); and order G5 consent by effective_at."
+    },
+    {
       "from": "memory",
-      "what": "Import AGE_KEY_SYNONYMS / canonicalAgeKey from ../intake/index.ts (or just read the three canonical keys date_of_birth, age, is_minor) in minor.ts, so one list governs both."
+      "what": "minor.ts: read birth_year (younger possible age) and age_group (fail closed if any bound < 18 or unreadable), ideally via AGE_KEY_SYNONYMS / canonicalAgeKey from ../intake/index.ts."
     }
   ],
   "jobs": [
@@ -198,7 +204,8 @@
     "record_subjects": "every other key (amount_due, due_date, plan, status, record keys, external_id ...): system 100 > crm 80 > agent 75 > upload 70 > person 40. Amounts and dates may be spoken only from these rows, never from speech.",
     "never_attributes": "Aadhaar, PAN, bank, card, OTP and password columns are dropped at mapping and never stored. Consent, opt-out and DND are ledgers (consent_record, suppression, dnd_status), not attributes; use contact.dial_facts.",
     "freshness_defaults": "upload 30 days, crm and system 24 h, agent and person no expiry; a source can set its own max age.",
-    "age_keys": "date_of_birth (ISO date), age, is_minor are canonical; see AGE_KEY_SYNONYMS / canonicalAgeKey exported from intake/index.ts"
+    "age_keys": "date_of_birth (ISO date), birth_year (number), age, age_group (text such as 13-17), is_minor are canonical; see AGE_KEY_SYNONYMS / canonicalAgeKey exported from intake/index.ts",
+    "consent_order": "latest consent per purpose (or all) = ORDER BY effective_at DESC, created_at DESC, id DESC"
   },
   "notes": [
     "Display ORDER BYs use the database collation on purpose (names read in the locale); the one comparison that decides membership (audience filter gt/lt on text) uses COLLATE \"C\"."

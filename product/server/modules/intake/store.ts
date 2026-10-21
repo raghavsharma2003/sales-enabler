@@ -31,7 +31,7 @@ export interface ApplyOpts {
 }
 
 export type RowCode = 'new' | 'updated' | 'unchanged' | 'duplicate_in_file' | 'tombstoned' | PhoneReason;
-export interface Issue { row: number; code: RowCode | 'suppressed' | 'conflict_review' | 'consent_without_purpose'; detail?: string }
+export interface Issue { row: number; code: RowCode | 'suppressed' | 'conflict_review' | 'consent_without_purpose' | 'consent_older_than_latest'; detail?: string }
 
 export interface ApplyResult {
   counts: Record<string, number>;
@@ -40,6 +40,13 @@ export interface ApplyResult {
 }
 
 const CHUNK = 2000;
+
+/** A stated consent time: an ISO date (taken as the start of that day in India) or date-time; null when absent or unreadable. */
+export function statedTime(v: string | undefined | null): Date | null {
+  if (!v) return null;
+  const t = /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(v + 'T00:00:00+05:30') : new Date(v);
+  return Number.isNaN(t.getTime()) ? null : t;
+}
 const ISSUE_CAP = 1000;
 const MIRROR = ['name', 'language', 'timezone'] as const;
 
@@ -163,18 +170,41 @@ export async function applyRows(q: Queryable, ws: string, rows: InRow[], o: Appl
         [m.map(e => e[0]), m.map(e => e[1].name ?? null), m.map(e => e[1].language ?? null), m.map(e => e[1].timezone ?? null), ws]);
     }
 
-    // 5. Consent is appended with its evidence; a consent value without a purpose is not consent.
-    const cons = { cid: [] as string[], purpose: [] as string[], channel: [] as string[], basis: [] as string[], granted: [] as boolean[], ev: [] as string[] };
+    // 5. Consent is appended with its evidence and its effective time (when it was given or withdrawn, as the source
+    //    says, else now). It never supersedes a newer record for the same purpose or 'all'; an undated grant after a
+    //    withdrawal is kept as history just before that withdrawal, so an old list cannot re-open someone who said no.
+    const latest = new Map<string, { granted: boolean; at: Date }>();
+    for (const r of await many<{ contact_id: string; purpose: string; granted: boolean; effective_at: Date }>(q,
+      `SELECT DISTINCT ON (contact_id, purpose) contact_id, purpose, granted, effective_at FROM consent_record
+        WHERE workspace_id = $1 AND contact_id = ANY($2::uuid[]) ORDER BY contact_id, purpose, effective_at DESC, created_at DESC, id DESC`, [ws, ids])) {
+      latest.set(r.contact_id + '\u0000' + r.purpose, { granted: r.granted, at: r.effective_at });
+    }
+    const newest = (cid: string, purpose: string) => [latest.get(cid + '\u0000' + purpose), latest.get(cid + '\u0000all')]
+      .filter((x): x is { granted: boolean; at: Date } => !!x).sort((a, b) => b.at.getTime() - a.at.getTime())[0];
+    const cons = { cid: [] as string[], purpose: [] as string[], channel: [] as string[], basis: [] as string[], granted: [] as boolean[], ev: [] as string[], at: [] as (string | null)[] };
     for (const m of live) for (const c of m.consent) {
       const purpose = c.purpose ?? o.consentPurpose;
       if (!purpose) { bump('consent_without_purpose'); issue({ row: m.first, code: 'consent_without_purpose' }); continue; }
-      cons.cid.push(idOf.get(m.e164)!); cons.purpose.push(purpose); cons.channel.push(c.channel ?? 'voice'); cons.basis.push(c.basis ?? 'consent');
-      cons.granted.push(c.granted); cons.ev.push(JSON.stringify({ source: o.source.label, receiptId: o.receiptId ?? null, rows: m.rows.slice(0, 5), statedAt: c.at ?? null }));
+      const cid = idOf.get(m.e164)!;
+      const stated = statedTime(c.at);
+      const top = newest(cid, purpose);
+      let at: Date | null = stated;
+      if (top && stated && stated.getTime() < top.at.getTime()) {
+        bump('consent_older_than_latest'); issue({ row: m.first, code: 'consent_older_than_latest', detail: `${purpose}: kept as history` });
+      } else if (top && !stated && c.granted && !top.granted) {
+        at = new Date(top.at.getTime() - 1);
+        bump('consent_older_than_latest'); issue({ row: m.first, code: 'consent_older_than_latest', detail: `${purpose}: an undated yes after a withdrawal is kept as history` });
+      }
+      const eff = at ?? now;
+      if (!top || eff.getTime() >= top.at.getTime()) latest.set(cid + '\u0000' + purpose, { granted: c.granted, at: eff });
+      cons.cid.push(cid); cons.purpose.push(purpose); cons.channel.push(c.channel ?? 'voice'); cons.basis.push(c.basis ?? 'consent');
+      cons.granted.push(c.granted); cons.at.push(at ? at.toISOString() : null);
+      cons.ev.push(JSON.stringify({ source: o.source.label, receiptId: o.receiptId ?? null, rows: m.rows.slice(0, 5), statedAt: c.at ?? null }));
     }
     if (cons.cid.length) {
-      await q.query(`INSERT INTO consent_record (workspace_id, contact_id, purpose, channel, basis, source, evidence, granted)
-          SELECT $1, t.cid, t.p, t.ch, t.b, $2, t.ev, t.g FROM unnest($3::uuid[], $4::text[], $5::text[], $6::text[], $7::jsonb[], $8::boolean[]) AS t(cid, p, ch, b, ev, g)`,
-        [ws, o.source.label, cons.cid, cons.purpose, cons.channel, cons.basis, cons.ev, cons.granted]);
+      await q.query(`INSERT INTO consent_record (workspace_id, contact_id, purpose, channel, basis, source, evidence, granted, effective_at)
+          SELECT $1, t.cid, t.p, t.ch, t.b, $2, t.ev, t.g, t.at FROM unnest($3::uuid[], $4::text[], $5::text[], $6::text[], $7::jsonb[], $8::boolean[], $9::timestamptz[]) AS t(cid, p, ch, b, ev, g, at)`,
+        [ws, o.source.label, cons.cid, cons.purpose, cons.channel, cons.basis, cons.ev, cons.granted, cons.at]);
       bump('consent_rows', cons.cid.length);
     }
 

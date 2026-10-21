@@ -59,8 +59,9 @@ export async function dialFacts(q: Queryable, ws: string, i: { contactId?: strin
   const dnd = r.contact ? await one<{ internal: boolean; ncpr_status: string | null; checked_at: Date | null }>(q, 'SELECT internal, ncpr_status, checked_at FROM dnd_status WHERE contact_id = $1', [r.contact.id]) : null;
   const fresh = !!dnd?.checked_at && Date.now() - dnd.checked_at.getTime() <= DND_FRESH_S * 1000;
   const dndStatus = !dnd || !dnd.ncpr_status ? 'unknown' : fresh ? dnd.ncpr_status : 'unknown';
-  const consent = r.contact && i.purpose ? await one<{ granted: boolean; basis: string; created_at: Date }>(q,
-    'SELECT granted, basis, created_at FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 AND purpose = $3 ORDER BY created_at DESC, id DESC LIMIT 1', [ws, r.contact.id, i.purpose]) : null;
+  const consent = r.contact && i.purpose ? await one<{ granted: boolean; basis: string; purpose: string; effective_at: Date }>(q,
+    `SELECT granted, basis, purpose, effective_at FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 AND purpose IN ($3, 'all')
+      ORDER BY effective_at DESC, created_at DESC, id DESC LIMIT 1`, [ws, r.contact.id, i.purpose]) : null;
   const wsSupp = supp.filter(s => s.scope === 'workspace');
   const base: string[] = [];
   if (tomb || r.contact?.erased_at) base.push('erased');
@@ -75,7 +76,7 @@ export async function dialFacts(q: Queryable, ws: string, i: { contactId?: strin
     contactId: r.contact?.id ?? null, tombstoned: tomb, erased: !!r.contact?.erased_at,
     suppressions: supp.map(s => ({ id: s.id, reason: s.reason, source: s.source, scope: s.scope, scopeId: s.scope_id, at: s.created_at })),
     dnd: { status: dndStatus, recorded: dnd?.ncpr_status ?? null, checkedAt: dnd?.checked_at ?? null, fresh },
-    consent: consent ? { purpose: i.purpose, granted: consent.granted, basis: consent.basis, at: consent.created_at } : null,
+    consent: consent ? { purpose: consent.purpose, granted: consent.granted, basis: consent.basis, at: consent.effective_at } : null,
     service: { allowed: base.length === 0, reasons: base },
     promotional: { allowed: promo.length === 0, reasons: promo },
   };
@@ -116,7 +117,7 @@ export function registerContactTools(reg: Registry): void {
         'SELECT key, value, authority, observed_at, max_age_s, source_id FROM attribute WHERE contact_id = $1 ORDER BY key', [c.id]))
         .map(a => ({ key: a.key, value: ctx.actor.role === 'viewer' ? undefined : a.value, authority: a.authority, observedAt: a.observed_at, sourceId: a.source_id,
           stale: a.max_age_s != null && a.observed_at.getTime() + a.max_age_s * 1000 < now }));
-      const consent = await many(ctx.q, 'SELECT id, purpose, channel, basis, source, granted, evidence, created_at FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 ORDER BY created_at, id', [ctx.workspaceId, c.id]);
+      const consent = await many(ctx.q, 'SELECT id, purpose, channel, basis, source, granted, evidence, effective_at, created_at FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 ORDER BY effective_at, created_at, id', [ctx.workspaceId, c.id]);
       const aliases = ctx.actor.role === 'viewer' ? [] : (await many<{ raw: string; kind: string }>(ctx.q, 'SELECT raw, kind FROM contact_identifier WHERE contact_id = $1 ORDER BY kind, raw', [c.id]));
       const conflicts = await many(ctx.q, "SELECT id, key, kept, incoming, created_at FROM intake_attribute_conflict WHERE workspace_id = $1 AND contact_id = $2 AND status = 'open'", [ctx.workspaceId, c.id]);
       const facts = await dialFacts(ctx.q, ctx.workspaceId, { contactId: c.id });
@@ -165,9 +166,9 @@ export function registerContactTools(reg: Registry): void {
         statedAt = t.toISOString();
       }
       const ev = { ...(i.evidence ?? {}), statedAt, recordedBy: ctx.actor.type + ':' + (ctx.actor.id ?? '') };
-      return one(ctx.q, `INSERT INTO consent_record (workspace_id, contact_id, purpose, channel, basis, source, evidence, granted)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, purpose, channel, basis, granted, created_at`,
-        [ctx.workspaceId, c.id, i.purpose, i.channel ?? 'voice', i.basis, i.source ?? 'manual', JSON.stringify(ev), i.granted]);
+      return one(ctx.q, `INSERT INTO consent_record (workspace_id, contact_id, purpose, channel, basis, source, evidence, granted, effective_at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id, purpose, channel, basis, granted, effective_at, created_at`,
+        [ctx.workspaceId, c.id, i.purpose, i.channel ?? 'voice', i.basis, i.source ?? 'manual', JSON.stringify(ev), i.granted, statedAt]);
     },
   }));
 

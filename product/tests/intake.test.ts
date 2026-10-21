@@ -91,6 +91,10 @@ test('mapping: Hindi and English headers, identity documents ignored by design, 
   const keys = inferMapping([['Customer DOB', 'D.O.B', 'Date of Birth', 'Age (years)', 'Customer Age', 'उम्र', 'Is Minor?', 'Under 18', 'Vehicle Age', 'Policy Age', 'Page Views', 'Mobile'], ['01/02/2010', '', '', '', '', '', '', '', '', '', '', '9000000001']])
     .columns.map(c => c.key ?? c.field);
   assert.deepEqual(keys, ['date_of_birth', 'date_of_birth', 'date_of_birth', 'age', 'age', 'age', 'is_minor', 'is_minor', 'vehicle_age', 'policy_age', 'page_views', 'phone']);
+  // Review WGC-09: year-of-birth and age-group columns get their own canonical keys, person-noun prefix allowed.
+  const more = inferMapping([['Year of Birth', 'Birth Year', 'Customer YoB', 'जन्म वर्ष', 'Age Group', 'Customer Age Band', 'Age Range', 'आयु वर्ग', 'Mobile'], ['2012', '2012', '2012', '२०१२', '13-17', '13-17', '18-25', '13-17', '9000000001']])
+    .columns.map(c => c.key ?? c.field);
+  assert.deepEqual(more, ['birth_year', 'birth_year', 'birth_year', 'birth_year', 'age_group', 'age_group', 'age_group', 'age_group', 'phone']);
 });
 
 test('authority: fresh higher wins, equal from another source goes to review, older and less authoritative never overwrite', () => {
@@ -555,4 +559,39 @@ test('retention: policy.retention.set is policy (Compliance proposes, Owner or C
   assert.equal(r.summary.counts.new, 2, 'counts stay');
   assert.equal((await w.ok('contact.dial_facts', { e164: '9000000141' })).suppressions.length, 1, 'suppression is never subject to retention');
   assert.equal(Number((await one<{ n: string }>(pool, "SELECT count(*) AS n FROM audit_event WHERE workspace_id = $1 AND action = 'intake.retention.applied'", [w.ws]))!.n), 1);
+});
+
+test('consent by effective time (review WGC-06): an old or undated "yes" re-imported after a withdrawal stays history; a newer dated grant re-opens', { skip }, async () => {
+  const w = await workspace();
+  await w.importText('phone,consent,consent date\n9000000151,yes,01/03/2025\n', { consentPurpose: 'service' });
+  const cid = (await w.contactBy('+919000000151'))!.id;
+  assert.equal((await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' })).consent.granted, true);
+  // The person withdraws everything (Compliance records it).
+  await w.approve(await w.call('consent.record', { contactId: cid, purpose: 'all', basis: 'withdrawal', granted: false, source: 'email' }));
+  let f = await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' });
+  assert.equal(f.consent.granted, false);
+  assert.ok(f.promotional.reasons.includes('consent_withdrawn'));
+  // The business re-uploads last year's list (consent yes, 2025-06-01): newer by insert, older by effect.
+  const old = await w.importText('phone,consent,consent date\n9000000151,yes,01/06/2025\n', { consentPurpose: 'service' });
+  assert.equal(old.counts.consent_rows, 1, 'kept as history: consent is append-only');
+  assert.equal(old.counts.consent_older_than_latest, 1);
+  assert.equal((await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' })).consent.granted, false);
+  // A file with consent=yes and no date cannot re-open a withdrawal either.
+  const undated = await w.importText('phone,consent\n9000000151,yes\n', { consentPurpose: 'service' });
+  assert.equal(undated.counts.consent_older_than_latest, 1);
+  assert.equal((await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' })).consent.granted, false);
+  // A source can never post-date its claim: a consent dated in the future takes effect at its insert time.
+  await w.importText('phone,consent,consent date\n9000000152,yes,01/01/2099\n', { consentPurpose: 'service' });
+  const fut = await one<{ ok: boolean }>(pool, "SELECT effective_at <= created_at AS ok FROM consent_record WHERE workspace_id = $1 AND evidence->>'statedAt' = '2099-01-01'", [w.ws]);
+  assert.equal(fut!.ok, true);
+  // A grant given after the withdrawal (dated now) re-opens the person.
+  await w.approve(await w.call('consent.record', { contactId: cid, purpose: 'service', basis: 'consent', granted: true, source: 'call', at: new Date().toISOString() }));
+  f = await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' });
+  assert.equal(f.consent.granted, true);
+  // History is in effect order on the contact page.
+  const g = await w.ok('contact.get', { id: cid });
+  const times = g.consent.map((c: any) => new Date(c.effective_at).getTime());
+  assert.deepEqual(times, [...times].sort((a, b) => a - b));
+  // effective_at is covered by the append-only guard.
+  await assert.rejects(pool.query("UPDATE consent_record SET effective_at = now() WHERE contact_id = $1", [cid]), /append-only/);
 });

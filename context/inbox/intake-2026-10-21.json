@@ -148,6 +148,26 @@
       "title": "Attribute keys built with [^\\p{L}\\p{N}] split Devanagari words",
       "tried": "Snake-casing headers by keeping only Unicode letters and numbers.",
       "broke": "Vowel signs and the virama are marks (\\p{M}), so 'उम्र' became 'उम_र' (caught by the age-key test). Keys now keep \\p{M}."
+    },
+    {
+      "id": "decision.2026-10-21.intake-consent-effective-time",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Consent is ordered by its effective time (when it was given or withdrawn), not insert time; an older or undated imported grant after a withdrawal is history only",
+      "rationale": "Review WGC-06: re-importing an old consent=yes file became the latest record and undid a newer withdrawal. consent_record.effective_at (0105) is the source's stated time, else the insert time, clamped so a source can never post-date its claim; latest = (effective_at DESC, created_at DESC). Undated grants following a withdrawal are stored just before it.",
+      "reverse_if": "Counsel says a tenant's re-assertion of consent (undated) must count as a fresh grant; then require an explicit dated consent.record for it instead."
+    },
+    {
+      "id": "decision.2026-10-21.intake-birth-year-age-group-keys",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Two more canonical age keys: birth_year (Year of Birth, Birth Year, YoB, जन्म वर्ष) and age_group (Age Group/Band/Range/Bracket, आयु वर्ग), person-noun prefix allowed",
+      "rationale": "Review WGC-09: these headers fell through as no age data, so memory ran for a 14-year-old. Memory reads birth_year as the younger possible age and fails closed on an age_group with any bound under 18.",
+      "reverse_if": "The gate moves to typed attributes with a declared meaning."
     }
   ],
   "edges": [
@@ -220,6 +240,16 @@
       "from": "component.2026-10-21.intake-module",
       "to": "decision.2026-10-21.intake-canonical-age-keys",
       "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-consent-effective-time",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-birth-year-age-group-keys",
+      "relation": "implements"
     }
   ],
   "events": [
@@ -252,6 +282,11 @@
       "date": "2026-10-21",
       "event": "intake-age-keys",
       "details": "Canonical age keys (date_of_birth, age, is_minor) at mapping and in webhooks, exported for memory; Devanagari marks kept in attribute keys. 18/18 intake tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-review-wgc-06-09",
+      "details": "WGC-06: consent_record.effective_at (0105), import reports consent_older_than_latest, dial_facts orders by effect; WGC-09: birth_year and age_group canonical keys. 19/19 intake tests; full tree 286 pass, 9 todo (review tests pending campaigns' G5 and memory's minorStatus). WGC-07 (cancel queued attempts on erasure) waits on campaigns exporting a function."
     }
   ]
 }

@@ -53,9 +53,13 @@ export function headerField(h: string): Field | null {
 const rawKey = (h: string) => norm(h).replace(/[^\p{L}\p{M}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'column';
 
 /** Age-like keys are canonicalised so the children's-data gate (memory) reads one name per meaning, whatever the header
- *  said ("Customer DOB", "D.O.B.", "Umar", "Is Minor?"). Token rules over the snake-cased key; exported for memory. */
+ *  said ("Customer DOB", "Year of Birth", "Age Group", "Umar", "Is Minor?"). Token rules over the snake-cased key;
+ *  exported for memory. birth_year gives the younger possible age; age_group fails closed when any bound is under 18. */
+// Order matters: the first key whose rule matches wins (birth_year before date_of_birth, age_group before age).
 export const AGE_KEY_SYNONYMS = {
+  birth_year: { tokens: ['yob', 'birthyear', 'janmvarsh', 'जन्मवर्ष'], pairs: [['year', 'of', 'birth'], ['birth', 'year'], ['janm', 'varsh'], ['janam', 'varsh'], ['जन्म', 'वर्ष'], ['y', 'o', 'b']] },
   date_of_birth: { tokens: ['dob', 'birthday', 'birthdate', 'janmtithi', 'जन्मतिथि'], pairs: [['date', 'birth'], ['birth', 'date'], ['born', 'on'], ['janm', 'tithi'], ['janam', 'tithi'], ['जन्म', 'तिथि'], ['d', 'o', 'b']] },
+  age_group: { tokens: ['agegroup', 'ageband'], pairs: [['age', 'group'], ['age', 'band'], ['age', 'range'], ['age', 'bracket'], ['umar', 'varg'], ['umra', 'varg'], ['आयु', 'वर्ग'], ['उम्र', 'वर्ग']] },
   age: { tokens: ['age', 'umar', 'umra', 'umr', 'उम्र', 'आयु'], pairs: [] },        // only when it names the person (personAge)
   is_minor: { tokens: ['minor', 'under18', 'nabalig', 'नाबालिग'], pairs: [['under', '18'], ['is', 'child']] },
 } as const;
