@@ -1,0 +1,506 @@
+[
+ {
+  "setting": "System prompt",
+  "default": "You are a helpful assistant.",
+  "range": "free text, {{ variables",
+  "evidence": "38-agent-builder.png"
+ },
+ {
+  "setting": "First message",
+  "default": "Hello! How can I help you today? (no AI disclosure)",
+  "range": "free text; empty means the agent waits for the user",
+  "evidence": "38-agent-builder.png"
+ },
+ {
+  "setting": "Interruptible (first message)",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "38-agent-builder.png"
+ },
+ {
+  "setting": "Voice mode",
+  "default": "Custom (Realtime inactive, Now GA badge)",
+  "range": "Realtime | Custom",
+  "evidence": "38-agent-builder.png"
+ },
+ {
+  "setting": "Primary voice",
+  "default": "Eric - Smooth, Trustworthy",
+  "range": "voice library plus additional voices",
+  "evidence": "61-llm-list.png"
+ },
+ {
+  "setting": "Default language",
+  "default": "English (US flag)",
+  "range": "88 languages under 'Compatible with agent config'",
+  "evidence": "62-language-list.png"
+ },
+ {
+  "setting": "LLM",
+  "default": "DeepSeek Flash 4.1 (230 ms - 1.85 s, ~$0.0078/min, vendor-displayed)",
+  "range": "45 models plus Custom LLM",
+  "evidence": "61-llm-list.png"
+ },
+ {
+  "setting": "Agent behavior",
+  "default": "Default personality off",
+  "range": "drawer not opened",
+  "evidence": "38-agent-builder.png"
+ },
+ {
+  "setting": "Timezone chip",
+  "default": "Asia/Calcutta",
+  "range": "not opened",
+  "evidence": "38-agent-builder.png"
+ },
+ {
+  "setting": "TTS model family",
+  "default": "V4 Turbo (Fastest badge)",
+  "range": "dropdown not opened",
+  "evidence": "63-voice-picker.png"
+ },
+ {
+  "setting": "Expressive mode",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "63-voice-picker.png"
+ },
+ {
+  "setting": "Stability",
+  "default": "about 50% of track (API read-back 0.5)",
+  "range": "More expressive to More consistent, no numeric readout",
+  "evidence": "63-voice-picker.png"
+ },
+ {
+  "setting": "Similarity",
+  "default": "about 74% of track (API read-back 0.75)",
+  "range": "Low to High, no numeric readout",
+  "evidence": "63-voice-picker.png"
+ },
+ {
+  "setting": "Suggested audio tags",
+  "default": "10 suggestion chips, none added",
+  "range": "plus Add custom",
+  "evidence": "63-voice-picker.png"
+ },
+ {
+  "setting": "Backup LLM configuration",
+  "default": "not captured (API read-back: default)",
+  "range": "Default | Custom | Disabled",
+  "evidence": "61-llm-list.txt"
+ },
+ {
+  "setting": "Temperature",
+  "default": "not captured (API read-back 0.0)",
+  "range": "More deterministic to More expressive; Don't send temperature",
+  "evidence": "61-llm-list.txt"
+ },
+ {
+  "setting": "Reasoning effort",
+  "default": "not captured (API read-back null)",
+  "range": "Default, High, Max (more not captured)",
+  "evidence": "61-llm-list.txt"
+ },
+ {
+  "setting": "Limit token usage",
+  "default": "not captured (API read-back -1)",
+  "range": "-1 means no limit",
+  "evidence": "61-llm-list.txt"
+ },
+ {
+  "setting": "Soft timeout (LLM filler)",
+  "default": "Disabled",
+  "range": "seconds",
+  "evidence": "61-llm-list.txt"
+ },
+ {
+  "setting": "Parallel tool calling",
+  "default": "not captured (API read-back on)",
+  "range": "toggle",
+  "evidence": "61-llm-list.txt"
+ },
+ {
+  "setting": "Enable chat mode",
+  "default": "OFF",
+  "range": "toggle",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "Allow file attachments",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "Files kept in memory",
+  "default": "10",
+  "range": "max 10",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "Max files per conversation",
+  "default": "10",
+  "range": "-1 = no limit, otherwise at least files kept in memory",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "Enable DTMF input",
+  "default": "OFF",
+  "range": "toggle; out-of-band tones via Telephony, Twilio, Genesys only",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "ASR model",
+  "default": "Scribe v2 Realtime (locked)",
+  "range": "locked because Turn V3 requires it",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "Filter background speech",
+  "default": "OFF",
+  "range": "toggle",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "User input audio format",
+  "default": "PCM 16000 Hz (Recommended)",
+  "range": "dropdown",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "ASR keywords",
+  "default": "0 / 50",
+  "range": "up to 50",
+  "evidence": "44-agent-settings.png"
+ },
+ {
+  "setting": "Eagerness",
+  "default": "Normal",
+  "range": "levels not listed in capture (API schema: patient, normal, eager)",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Spelling patience",
+  "default": "Auto",
+  "range": "not listed in capture",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Interruption ignore terms",
+  "default": "not captured (API read-back: empty)",
+  "range": "term list; toggle seeds defaults for the agent's languages",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Speculative turn",
+  "default": "not captured (API read-back: on)",
+  "range": "toggle; may increase LLM costs",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Re-transcribe audio on turn timeout",
+  "default": "not captured (API read-back: off)",
+  "range": "toggle; disables silence-discount billing while on",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Transcribe user speech on disabled interruptions (Alpha)",
+  "default": "not captured (API read-back: off)",
+  "range": "toggle",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Turn model",
+  "default": "Turn V3",
+  "range": "options not listed",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Take turn after silence",
+  "default": "seconds, value not captured (API read-back 7.0)",
+  "range": "seconds; -1 = wait indefinitely",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "End conversation after silence",
+  "default": "Disabled (API read-back -1)",
+  "range": "seconds; -1 = no fixed cutoff",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Max conversation duration",
+  "default": "seconds, value not captured (API read-back 600)",
+  "range": "seconds",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "LLM cascade timeout",
+  "default": "seconds, value not captured (API read-back 4.0)",
+  "range": "seconds (schema 2-15)",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Client events",
+  "default": "audio, interruption, user_transcript, agent_response, agent_response_correction",
+  "range": "Add event",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Alerting (Alpha)",
+  "default": "no destinations, thresholds unset",
+  "range": "notifications and thresholds",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Zero Retention Mode",
+  "default": "not captured (API read-back: off)",
+  "range": "toggle",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Store Call Audio",
+  "default": "not captured (API read-back: on)",
+  "range": "toggle",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Conversations Retention Period",
+  "default": "Unlimited",
+  "range": "days; -1 = unlimited",
+  "evidence": "44-agent-settings.txt"
+ },
+ {
+  "setting": "Default analysis model",
+  "default": "Gemini 2.5 Flash",
+  "range": "per-criterion override",
+  "evidence": "41-agent-analysis.png"
+ },
+ {
+  "setting": "Topic discovery",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "41-agent-analysis.png"
+ },
+ {
+  "setting": "Sentiment analysis",
+  "default": "ON (Acknowledge notice shown)",
+  "range": "toggle",
+  "evidence": "41-agent-analysis.png"
+ },
+ {
+  "setting": "Analysis Language",
+  "default": "Auto (infer from conversation)",
+  "range": "select",
+  "evidence": "41-agent-analysis.png"
+ },
+ {
+  "setting": "Auto-translate transcript",
+  "default": "OFF",
+  "range": "toggle",
+  "evidence": "41-agent-analysis.png"
+ },
+ {
+  "setting": "Source Attribution",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "41-agent-analysis.png"
+ },
+ {
+  "setting": "Evaluation criteria / Data collection",
+  "default": "0 criteria / 0 data points",
+  "range": "add inline",
+  "evidence": "41-agent-analysis.png"
+ },
+ {
+  "setting": "Guardrails (Focus, Manipulation, Content, Custom)",
+  "default": "all Not enabled",
+  "range": "contents unseen",
+  "evidence": "43-agent-guardrails.png"
+ },
+ {
+  "setting": "System tools (9)",
+  "default": "all OFF, 0 active tools",
+  "range": "toggles",
+  "evidence": "42-agent-tools.png"
+ },
+ {
+  "setting": "Enable authentication",
+  "default": "OFF",
+  "range": "toggle",
+  "evidence": "54-agent-security.png"
+ },
+ {
+  "setting": "Allowlist",
+  "default": "empty (red warning: any host can connect)",
+  "range": "hosts",
+  "evidence": "54-agent-security.png"
+ },
+ {
+  "setting": "Overrides (17 toggles)",
+  "default": "all OFF except Text only ON",
+  "range": "toggles",
+  "evidence": "54-agent-security.png"
+ },
+ {
+  "setting": "Concurrent call limit",
+  "default": "Using subscription limit",
+  "range": "number",
+  "evidence": "54-agent-security.txt"
+ },
+ {
+  "setting": "Enable bursting",
+  "default": "not captured (API read-back: on)",
+  "range": "up to 3x concurrency at double rate",
+  "evidence": "54-agent-security.txt"
+ },
+ {
+  "setting": "Call queuing / max queue wait",
+  "default": "not captured (API read-back: on, 180 s)",
+  "range": "seconds",
+  "evidence": "54-agent-security.txt"
+ },
+ {
+  "setting": "Daily call limit",
+  "default": "not captured (API read-back 100000)",
+  "range": "calls per day",
+  "evidence": "54-agent-security.txt"
+ },
+ {
+  "setting": "Custom hold audio",
+  "default": "Default hold tone (0:15)",
+  "range": "MP3 or WAV, up to 40 MB, max 3 min",
+  "evidence": "54-agent-security.txt"
+ },
+ {
+  "setting": "Workflow: Prevent infinite loops",
+  "default": "OFF",
+  "range": "toggle",
+  "evidence": "45-agent-workflow.png"
+ },
+ {
+  "setting": "Mock tools",
+  "default": "Off",
+  "range": "pill",
+  "evidence": "38-agent-builder.png"
+ },
+ {
+  "setting": "Batch: Batch name",
+  "default": "Untitled Batch",
+  "range": "text",
+  "evidence": "33-batch-telephony-form.png"
+ },
+ {
+  "setting": "Batch: Ringing timeout",
+  "default": "60 seconds",
+  "range": "seconds",
+  "evidence": "33-batch-telephony-form.png"
+ },
+ {
+  "setting": "Batch: Concurrency limit",
+  "default": "Auto (empty)",
+  "range": "optional number",
+  "evidence": "33-batch-telephony-form.png"
+ },
+ {
+  "setting": "Batch: Timing",
+  "default": "Send immediately",
+  "range": "Send immediately | Schedule for later",
+  "evidence": "33-batch-telephony-form.png"
+ },
+ {
+  "setting": "Batch: scheduled start",
+  "default": "Today, 12:44 AM",
+  "range": "date-time picker",
+  "evidence": "35-batch-schedule.png"
+ },
+ {
+  "setting": "Batch: timezone",
+  "default": "Asia/Calcutta",
+  "range": "timezone select",
+  "evidence": "35-batch-schedule.png"
+ },
+ {
+  "setting": "Batch: recipients file",
+  "default": "none; CSV or XLS max 25.0 MB",
+  "range": "required phone_number; optional prompt, first_message, voice_id, language",
+  "evidence": "33-batch-telephony-form.png"
+ },
+ {
+  "setting": "Exotel import: country code",
+  "default": "+91",
+  "range": "country list",
+  "evidence": "34-phone-exotel-form.png"
+ },
+ {
+  "setting": "Exotel import: Region",
+  "default": "Singapore (api.exotel.com)",
+  "range": "Singapore, Mumbai (api.in.exotel.com)",
+  "evidence": "34-phone-exotel-form.png"
+ },
+ {
+  "setting": "Exotel import: Label",
+  "default": "empty, 0/50",
+  "range": "up to 50 characters",
+  "evidence": "34-phone-exotel-form.png"
+ },
+ {
+  "setting": "Dashboards: date range",
+  "default": "Last 7 days, UTC+5:30",
+  "range": "date navigator",
+  "evidence": "7-analytics.png"
+ },
+ {
+  "setting": "Dashboards: granularity",
+  "default": "Hourly",
+  "range": "select",
+  "evidence": "7-analytics.png"
+ },
+ {
+  "setting": "Dashboards: metric tab",
+  "default": "Number of conversations",
+  "range": "6 metric tabs",
+  "evidence": "7-analytics.png"
+ },
+ {
+  "setting": "Triage: status filter and sort",
+  "default": "All, Newest",
+  "range": "select",
+  "evidence": "8-triage.png"
+ },
+ {
+  "setting": "Version Control: Main branch traffic",
+  "default": "100% Live",
+  "range": "traffic split",
+  "evidence": "8-branches.png"
+ },
+ {
+  "setting": "Version Control: status filter",
+  "default": "Active",
+  "range": "select",
+  "evidence": "8-branches.png"
+ },
+ {
+  "setting": "Workspace KB: RAG storage",
+  "default": "0 B / 1.0 MB",
+  "range": "plan cap",
+  "evidence": "12-knowledge-base.png"
+ },
+ {
+  "setting": "Subscription: billing period",
+  "default": "Monthly",
+  "range": "Monthly | Yearly (save 2 months)",
+  "evidence": "51-subscription.png"
+ },
+ {
+  "setting": "Subscription: credits",
+  "default": "0 / 10,000 credits (Free plan, 15 call-minutes)",
+  "range": "plan allowance",
+  "evidence": "51-subscription.png"
+ },
+ {
+  "setting": "Architect: deployment checklist",
+  "default": "0 of 10 ready (0%)",
+  "range": "10 items",
+  "evidence": "8-architect.txt"
+ }
+]

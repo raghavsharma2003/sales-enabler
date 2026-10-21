@@ -1,0 +1,374 @@
+[
+ {
+  "setting": "Agent name (new draft)",
+  "default": "My New Agent",
+  "range": "free text; long names truncate",
+  "evidence": "01-dashboard-agent-studio.png"
+ },
+ {
+  "setting": "Voice engine",
+  "default": "Cascaded",
+  "range": "Cascaded or Realtime (Beta), notes only; select not opened",
+  "evidence": "01-dashboard-agent-studio.png, 12-builder-Agent.png"
+ },
+ {
+  "setting": "Cost per minute (header)",
+  "default": "$0.060 (shows '~ $' while loading)",
+  "range": "derived; not editable",
+  "evidence": "01-dashboard-agent-studio.png, 29-billing.png, 30-team.png"
+ },
+ {
+  "setting": "Agent welcome message",
+  "default": "Hello from Bolna (draft); 'Namaste, yeh ek synthetic test agent hai.' (saved agent)",
+  "range": "free text with {{variable}}",
+  "evidence": "01-dashboard-agent-studio.png, 12-builder-Agent.png"
+ },
+ {
+  "setting": "Ignore user speech before welcome message",
+  "default": "OFF",
+  "range": "on/off",
+  "evidence": "01-dashboard-agent-studio.png, 12-builder-Agent.png"
+ },
+ {
+  "setting": "Welcome message delay (ms)",
+  "default": "0",
+  "range": "slider with number box; unlabelled",
+  "evidence": "12-builder-Agent.png"
+ },
+ {
+  "setting": "Canvas prompt (new draft)",
+  "default": "5-section empty skeleton, 24 tokens",
+  "range": "free text; add sections, modules",
+  "evidence": "01-dashboard-agent-studio.txt"
+ },
+ {
+  "setting": "Prompt language",
+  "default": "Hindi (Default)",
+  "range": "22 more options: English, Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Gujarati, India Multilingual, Punjabi, Odia, Spanish, Assamese, Arabic, Burmese, Dutch, French, German, Indonesian, Italian, Malay, Urdu",
+  "evidence": "20-add-language.png, 20-add-language.txt"
+ },
+ {
+  "setting": "Test-variable timezone",
+  "default": "Asia/Kolkata UTC+05:30",
+  "range": "not opened",
+  "evidence": "01-dashboard-agent-studio.txt"
+ },
+ {
+  "setting": "Hangup using a prompt",
+  "default": "control present; state not captured",
+  "range": "unknown",
+  "evidence": "01-dashboard-agent-studio.txt"
+ },
+ {
+  "setting": "LLM provider",
+  "default": "openai",
+  "range": "azure, openai, google, openrouter, deepseek, anthropic, custom (notes only)",
+  "evidence": "13-builder-Intelligence.png, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "LLM model",
+  "default": "gpt-4.1-mini",
+  "range": "per provider; list not captured (notes: about 21 OpenAI rows)",
+  "evidence": "13-builder-Intelligence.png"
+ },
+ {
+  "setting": "Tokens generated per LLM output",
+  "default": "100",
+  "range": "slider; est. 0 to about 4,000 (from thumb position)",
+  "evidence": "13-builder-Intelligence.png"
+ },
+ {
+  "setting": "Temperature",
+  "default": "0.1",
+  "range": "slider; est. 0 to 1; field clipped by chat bubble",
+  "evidence": "13-builder-Intelligence.png"
+ },
+ {
+  "setting": "Knowledge base attach",
+  "default": "none selected",
+  "range": "multi-select",
+  "evidence": "13-builder-Intelligence.txt"
+ },
+ {
+  "setting": "Voice provider",
+  "default": "ElevenLabs",
+  "range": "Cartesia, ElevenLabs, Maya, Sarvam, Azuretts, Smallest, Kalpa, Soniox (notes only)",
+  "evidence": "14-builder-Languages.png, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "Voice model",
+  "default": "Eleven Turbo v2.5",
+  "range": "ElevenLabs: Multilingual v2, Flash v2.5, Turbo v2.5, v4 Turbo (Beta), v3 Conversational (notes only)",
+  "evidence": "14-builder-Languages.png, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "Voice",
+  "default": "Tripti - Calm and Clear (female)",
+  "range": "about 100 voices; All/Male/Female/Neutral filter; preview",
+  "evidence": "14-builder-Languages.png, 19-voice-library.png, 19-voice-library.txt"
+ },
+ {
+  "setting": "Voice advanced settings",
+  "default": "collapsed; contents not captured",
+  "range": "unknown",
+  "evidence": "14-builder-Languages.png"
+ },
+ {
+  "setting": "Transcriber provider",
+  "default": "deepgram",
+  "range": "assembly, azure, deepgram, elevenlabs, gemini, gladia, google, openai, sarvam, smallest, soniox (notes only)",
+  "evidence": "19-voice-library.png, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "Transcriber model",
+  "default": "nova-3",
+  "range": "Deepgram nova-3, nova-2, Flux Multilingual (notes only)",
+  "evidence": "19-voice-library.png, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "Transcriber keywords / context",
+  "default": "empty",
+  "range": "free text",
+  "evidence": "19-voice-library.png, 14-builder-Languages.txt"
+ },
+ {
+  "setting": "Telephony provider",
+  "default": "Plivo",
+  "range": "Twilio, Exotel, Vobiz connectable via Integrations (notes)",
+  "evidence": "15-builder-Calling.png"
+ },
+ {
+  "setting": "Ambient noise",
+  "default": "None",
+  "range": "select with add and preview buttons; options not captured",
+  "evidence": "15-builder-Calling.png"
+ },
+ {
+  "setting": "Noise cancellation",
+  "default": "OFF; 85 (%) when switched on",
+  "range": "slider; thumb consistent with 60 to 100",
+  "evidence": "15-builder-Calling.png, 21-calling-toggles-on-unsaved.png"
+ },
+ {
+  "setting": "Voicemail detection",
+  "default": "OFF; 2.5 (s) when switched on",
+  "range": "slider; value field greyed; range unlabelled",
+  "evidence": "15-builder-Calling.png, 21-calling-toggles-on-unsaved.png"
+ },
+ {
+  "setting": "Keypad input (DTMF)",
+  "default": "OFF",
+  "range": "on/off",
+  "evidence": "15-builder-Calling.png, 21-calling-toggles-on-unsaved.png"
+ },
+ {
+  "setting": "Auto reschedule",
+  "default": "OFF",
+  "range": "on/off",
+  "evidence": "15-builder-Calling.png, 21-calling-toggles-on-unsaved.png"
+ },
+ {
+  "setting": "Inbound calling",
+  "default": "OFF; no inbound number; no data source",
+  "range": "number select; data-source select",
+  "evidence": "21-calling-toggles-on-unsaved.png, 21-calling-toggles-on-unsaved.txt"
+ },
+ {
+  "setting": "Spam prevention (max calls per number; always-allow list)",
+  "default": "present; values not captured",
+  "range": "unknown",
+  "evidence": "21-calling-toggles-on-unsaved.txt"
+ },
+ {
+  "setting": "Outbound call timing window",
+  "default": "9:00 AM to 9:00 PM; enforcement default not seen",
+  "range": "whole-hour start and end selectors",
+  "evidence": "21-calling-toggles-on-unsaved.txt, 15-builder-Calling.txt"
+ },
+ {
+  "setting": "Response rate",
+  "default": "Custom",
+  "range": "preset select; options not captured",
+  "evidence": "16-builder-Engine.png"
+ },
+ {
+  "setting": "Endpointing (ms)",
+  "default": "500",
+  "range": "slider; est. 0 to about 5,000",
+  "evidence": "16-builder-Engine.png"
+ },
+ {
+  "setting": "Linear delay (ms)",
+  "default": "900",
+  "range": "slider; est. 0 to about 2,500",
+  "evidence": "16-builder-Engine.png"
+ },
+ {
+  "setting": "Number of words to wait for before interrupting",
+  "default": "1",
+  "range": "integer slider; est. 0 to about 10",
+  "evidence": "16-builder-Engine.png"
+ },
+ {
+  "setting": "User online detection message",
+  "default": "Hindi, 24 chars (notes: 'Hey, are you still there')",
+  "range": "per language text",
+  "evidence": "16-builder-Engine.txt, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "User online detection: invoke after (s)",
+  "default": "10 (notes only)",
+  "range": "seconds",
+  "evidence": "16-builder-Engine.txt, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "Final call message",
+  "default": "Hindi, 0 chars (empty)",
+  "range": "per language text",
+  "evidence": "16-builder-Engine.txt"
+ },
+ {
+  "setting": "Allow interruption",
+  "default": "present; state not captured",
+  "range": "toggle",
+  "evidence": "16-builder-Engine.txt"
+ },
+ {
+  "setting": "Hangup on user silence (s)",
+  "default": "20 (notes only)",
+  "range": "seconds",
+  "evidence": "16-builder-Engine.txt, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "Total call timeout (s)",
+  "default": "90 (notes only)",
+  "range": "seconds",
+  "evidence": "16-builder-Engine.txt, 00-NOTES-AND-COVERAGE.md"
+ },
+ {
+  "setting": "Tools added",
+  "default": "none",
+  "range": "4 presets (Calendar Availability, Book Appointment, Transfer Call, Web Search) + custom function (manual or from cURL)",
+  "evidence": "17-builder-Tools.png"
+ },
+ {
+  "setting": "Webhook URL",
+  "default": "empty (placeholder https://your-endpoint.com/webhook)",
+  "range": "URL",
+  "evidence": "18-builder-Extractions.png"
+ },
+ {
+  "setting": "Webhook add headers",
+  "default": "OFF",
+  "range": "toggle",
+  "evidence": "18-builder-Extractions.png"
+ },
+ {
+  "setting": "Webhook trigger on statuses",
+  "default": "All statuses (default)",
+  "range": "options not captured",
+  "evidence": "18-builder-Extractions.png"
+ },
+ {
+  "setting": "Extraction library",
+  "default": "Call Summary listed; on/off not captured",
+  "range": "New Category",
+  "evidence": "18-builder-Extractions.txt"
+ },
+ {
+  "setting": "Add Knowledge Base source",
+  "default": "Upload PDF tab",
+  "range": "Upload PDF or Add URL; .pdf only",
+  "evidence": "39-add-knowledge-base.png"
+ },
+ {
+  "setting": "Knowledge base language support",
+  "default": "English (Default)",
+  "range": "options not captured",
+  "evidence": "39-add-knowledge-base.png"
+ },
+ {
+  "setting": "New campaign inputs",
+  "default": "name empty; workflow none; version disabled until workflow chosen; contacts disabled",
+  "range": "CSV or JSON, up to 32 MB, 150,000 rows",
+  "evidence": "22-new-campaign-dialog.png"
+ },
+ {
+  "setting": "Campaigns list filters",
+  "default": "All workflows / Any status / Any kind",
+  "range": "options not captured",
+  "evidence": "02-campaigns.png"
+ },
+ {
+  "setting": "Call history rows per page",
+  "default": "20",
+  "range": "select; options not captured",
+  "evidence": "06-call-history.png"
+ },
+ {
+  "setting": "Call history search field",
+  "default": "Execution ID",
+  "range": "field-type select; options not captured",
+  "evidence": "06-call-history.png"
+ },
+ {
+  "setting": "Analytics dashboard / agent / date",
+  "default": "Main Dashboard / All agents / Previous 7 days",
+  "range": "options not captured",
+  "evidence": "32-user-menu.png, 07-analytics.txt"
+ },
+ {
+  "setting": "Recharge dialog",
+  "default": "Add Funds tab; $150 tier pre-selected",
+  "range": "$15, $60, $150, $300, $600, $1,500, $3,000, custom $10 to 5,000; Pilot tab",
+  "evidence": "40-recharge-dialog.png"
+ },
+ {
+  "setting": "Buy phone number",
+  "default": "no country; pattern placeholder 615; India gives provider Plivo and region All regions",
+  "range": "United States, India (notes); providers Plivo or Vobiz (notes)",
+  "evidence": "24-buy-number-dialog.png, 25-india-number-options-plivo.png"
+ },
+ {
+  "setting": "Workflow canvas",
+  "default": "name Untitled workflow; Not published; zoom 175%",
+  "range": "node types: Agent, Extraction, Wait, Retry, Condition, API request, Callback, AiSensy WhatsApp, End",
+  "evidence": "23-workflow-builder.png, 23-workflow-builder.txt"
+ },
+ {
+  "setting": "Violations status filter",
+  "default": "Pending",
+  "range": "options not captured",
+  "evidence": "36-account-Violations.png"
+ },
+ {
+  "setting": "Invoices filters",
+  "default": "All Statuses / All Item Types / no date",
+  "range": "options not captured",
+  "evidence": "36-account-Invoices.png"
+ },
+ {
+  "setting": "Billing pulse",
+  "default": "30 s for voice agent, telephony and platform",
+  "range": "not editable",
+  "evidence": "34-account.png"
+ },
+ {
+  "setting": "Concurrency (trial)",
+  "default": "2 total, 0 ongoing",
+  "range": "tiers exist; not shown",
+  "evidence": "34-account.png, 32-user-menu.png"
+ },
+ {
+  "setting": "Wallet and trial minutes",
+  "default": "$5.00; 83 minutes",
+  "range": "derived from $0.06/min",
+  "evidence": "12-builder-Agent.png"
+ },
+ {
+  "setting": "Theme",
+  "default": "toggle present; state unknown",
+  "range": "light/dark",
+  "evidence": "32-user-menu.png"
+ }
+]

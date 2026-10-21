@@ -1,0 +1,236 @@
+[
+ {
+  "setting": "Agent status",
+  "default": "Active",
+  "range": "Active or Archived (list toggle)",
+  "evidence": "exotel-06-agents-list.png; notes.md"
+ },
+ {
+  "setting": "Active version",
+  "default": "v1 Stable, Live",
+  "range": "Versions with traffic split",
+  "evidence": "exotel-04-rollout.png"
+ },
+ {
+  "setting": "Traffic on current version",
+  "default": "100%",
+  "range": "Split across versions (control not seen)",
+  "evidence": "exotel-04-rollout.png"
+ },
+ {
+  "setting": "Agent languages",
+  "default": "English, Hindi",
+  "range": "Picker contents unknown",
+  "evidence": "exotel-06-agents-list.png"
+ },
+ {
+  "setting": "Greeting",
+  "default": "Disabled",
+  "range": "Toggle; text not seen",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Mask Sensitive Data (PII)",
+  "default": "Disabled",
+  "range": "Toggle",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Enable Max Call Duration",
+  "default": "Disabled",
+  "range": "Toggle; value not seen",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "LLM provider",
+  "default": "Google IN",
+  "range": "Not enumerated",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "LLM model",
+  "default": "Gemini 3 Flash (config string gemini-2.5-flash-with-thinking)",
+  "range": "Not enumerated",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "LLM input / output type",
+  "default": "Voice / Text",
+  "range": "Not enumerated",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Speech to Text",
+  "default": "azure in Bot Details; Deepgram India configuration rule in Edit",
+  "range": "STT Engine field; list not seen",
+  "evidence": "exotel-15-system-prompt-view.png; notes.md"
+ },
+ {
+  "setting": "Text to Speech",
+  "default": "ElevenLabs, voice Clyde (en)",
+  "range": "183 voices with tags",
+  "evidence": "exotel-15-system-prompt-view.png; notes.md"
+ },
+ {
+  "setting": "Webhooks",
+  "default": "None configured",
+  "range": "List",
+  "evidence": "exotel-15-system-prompt-view.png"
+ },
+ {
+  "setting": "System Prompt",
+  "default": "Locked platform guardrail description",
+  "range": "Not editable",
+  "evidence": "exotel-15-system-prompt-view.png"
+ },
+ {
+  "setting": "Sub-agent Instruction",
+  "default": "Exo demo persona, markdown with Identity and Objective headings",
+  "range": "Free text",
+  "evidence": "exotel-16-subagent-instruction.png"
+ },
+ {
+  "setting": "Specialization Prompts",
+  "default": "None",
+  "range": "List",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Denoiser",
+  "default": "ON, enhancement level 0.8",
+  "range": "Level range not seen",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "VAD Configuration",
+  "default": "None configured",
+  "range": "Contents unknown",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Conversation Nudges",
+  "default": "Default wording; nudge after 7 s; up to 3 times; then end the call",
+  "range": "Not seen",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Intents",
+  "default": "3: Pricing, BotCapabilities, TechnicalDetails",
+  "range": "Name plus description",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Automated Call Intents / Query Definition",
+  "default": "None / None",
+  "range": "Not seen",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Go Live",
+  "default": "Create appflow or Use existing appflow",
+  "range": "Two paths",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Version description",
+  "default": "Initial version",
+  "range": "Text",
+  "evidence": "exotel-15-system-prompt-view.png"
+ },
+ {
+  "setting": "Knowledge Base filters",
+  "default": "Active; Date Any; Status Any; 10 rows per page",
+  "range": "Active or Archived",
+  "evidence": "exotel-04-knowledge-base.png"
+ },
+ {
+  "setting": "Interactions filters",
+  "default": "Filter type Interaction ID; Date Oct 14 - Oct 21 (7 days); Agent Any; 20 rows per page",
+  "range": "Date and agent filters",
+  "evidence": "exotel-22-interactions.png"
+ },
+ {
+  "setting": "Reports form",
+  "default": "Type Interactions; Oct 01 - Oct 21 (month to date); 10 rows per page",
+  "range": "Other types not seen",
+  "evidence": "exotel-24-reports.png"
+ },
+ {
+  "setting": "Model Configuration filters",
+  "default": "Date Sep 21 - Oct 21 (30 days); Type All; 20 rows per page",
+  "range": "Type options not seen",
+  "evidence": "exotel-26-model-config.png"
+ },
+ {
+  "setting": "Concurrency limit",
+  "default": "5 concurrent calls across all agents",
+  "range": "Increase by email, chargeable",
+  "evidence": "exotel-25-account-limits.png"
+ },
+ {
+  "setting": "Credits (classic top bar)",
+  "default": "150",
+  "range": "Not stated",
+  "evidence": "exotel-01-dashboard-inbox.png"
+ },
+ {
+  "setting": "Custom tool HTTP method",
+  "default": "GET",
+  "range": "Other methods not seen",
+  "evidence": "exotel-17-tool-create.png"
+ },
+ {
+  "setting": "Campaign audience type",
+  "default": "Static",
+  "range": "Static, Dynamic, Dynamic with CSV Upload",
+  "evidence": "exotel-10-campaign-create.png"
+ },
+ {
+  "setting": "Campaign contact lists",
+  "default": "None selected",
+  "range": "Up to 5 lists",
+  "evidence": "exotel-10-campaign-create.png"
+ },
+ {
+  "setting": "Campaign schedule / retries / throttle",
+  "default": "Not captured in pixels",
+  "range": "Notes: Now or Later; retries 0 to 3 with backoff; throttle Auto or Custom CPM",
+  "evidence": "notes.md"
+ },
+ {
+  "setting": "Address Book export permission",
+  "default": "ON (Agents and Supervisors can export)",
+  "range": "Toggle",
+  "evidence": "exotel-12-addressbook.png"
+ },
+ {
+  "setting": "Address Book table size",
+  "default": "Show 10 entries",
+  "range": "Select",
+  "evidence": "exotel-12-addressbook.png"
+ },
+ {
+  "setting": "Engage results per page",
+  "default": "10",
+  "range": "Select",
+  "evidence": "exotel-14-engage.png"
+ },
+ {
+  "setting": "App Bazaar page size",
+  "default": "50",
+  "range": "Select",
+  "evidence": "exotel-13-app-bazaar.png"
+ },
+ {
+  "setting": "Theme",
+  "default": "Light Mode",
+  "range": "Light, Dark, Match Browser",
+  "evidence": "exotel-08-integrations.png"
+ },
+ {
+  "setting": "Top-right toggle (classic console)",
+  "default": "OFF, unlabelled",
+  "range": "Unknown purpose",
+  "evidence": "exotel-01-dashboard-inbox.png"
+ }
+]

@@ -1,0 +1,230 @@
+[
+ {
+  "setting": "Voice",
+  "default": "Shubh",
+  "range": "199+ names in picker (176 role-named v4-style, 23 plain v3-style)",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "Per-language voices",
+  "default": "OFF (badge 'Overrides default voice')",
+  "range": "toggle",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "Speaking speed",
+  "default": "1.15 x",
+  "range": "not shown (no end labels)",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "Pitch",
+  "default": "0.00",
+  "range": "not shown; no unit",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "Volume",
+  "default": "1.0",
+  "range": "not on slider; What's new says 'from 0.7...'",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "Pronunciation dictionary",
+  "default": "none uploaded (Advanced)",
+  "range": "upload only",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "Model temperature",
+  "default": "'Balanced' (middle of 5 ticks), no number",
+  "range": "5 ticks; earlier docs 0.1-0.9 default 0.3",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "LLM / ASR choice",
+  "default": "none visible",
+  "range": "no picker in captures",
+  "evidence": "sarvam-07-settings-speaking.png"
+ },
+ {
+  "setting": "Background sound",
+  "default": "Quiet office",
+  "range": "select with preview; other options not opened",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Background volume",
+  "default": "about one third of track, no number",
+  "range": "not shown",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Switch language during call",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Languages allowed",
+  "default": "11 selected (Hindi, Bengali, +9)",
+  "range": "multi-select; Bengali, English, Gujarati, Hindi seen",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Starting language",
+  "default": "Hindi (locked in dropdown; Test Setup says Hindi)",
+  "range": "select",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Auto-detected language switch",
+  "default": "unknown (hidden behind dropdown)",
+  "range": "unknown",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Switch after",
+  "default": "unknown (hidden behind dropdown)",
+  "range": "unknown",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Output numbers in Indic",
+  "default": "appears ON (partly hidden)",
+  "range": "toggle",
+  "evidence": "sarvam-08-languages-allowed.png"
+ },
+ {
+  "setting": "Idle nudge message 1",
+  "default": "'Hey, are you still on the call?' after 5 seconds",
+  "range": "text; seconds stepper; Add More for more nudges",
+  "evidence": "sarvam-07b-settings-call-actions.png"
+ },
+ {
+  "setting": "Hang up after unanswered nudges",
+  "default": "ON",
+  "range": "toggle; nudge count not shown",
+  "evidence": "sarvam-07b-settings-call-actions.png"
+ },
+ {
+  "setting": "Voicemail",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "sarvam-07b-settings-call-actions.png"
+ },
+ {
+  "setting": "Voicemail message",
+  "default": "Hey, seems like I have reached your voicemail. I shall call you back at a later time",
+  "range": "free text",
+  "evidence": "sarvam-07b-settings-call-actions.png"
+ },
+ {
+  "setting": "Call forwarding",
+  "default": "OFF (greyed; 'Only supported for Vobiz...')",
+  "range": "toggle",
+  "evidence": "sarvam-07b-settings-call-actions.png"
+ },
+ {
+  "setting": "Max call length",
+  "default": "15 (minutes per helper text)",
+  "range": "up to 60",
+  "evidence": "sarvam-07b-settings-call-actions.png"
+ },
+ {
+  "setting": "Greeting",
+  "default": "Hi, I am Shubh calling from Sarvam, how can I help you today?",
+  "range": "free text with Translations",
+  "evidence": "sarvam-03-agent-builder-instructions.png"
+ },
+ {
+  "setting": "Instructions",
+  "default": "empty",
+  "range": "free text, '/' commands, '@' mentions",
+  "evidence": "sarvam-03-agent-builder-instructions.png"
+ },
+ {
+  "setting": "Version",
+  "default": "v1 · Draft",
+  "range": "dropdown not opened",
+  "evidence": "sarvam-03-agent-builder-instructions.png"
+ },
+ {
+  "setting": "Input variable",
+  "default": "user_name = Manan (origin unknown)",
+  "range": "name, default value",
+  "evidence": "sarvam-04b-variables-input.png"
+ },
+ {
+  "setting": "Output variable",
+  "default": "call_summary, string, 'A short 1-2 line description of what happened on the call'",
+  "range": "String or Enum per notes",
+  "evidence": "sarvam-04-variables-output.png"
+ },
+ {
+  "setting": "Call goal",
+  "default": "not set",
+  "range": "one output variable",
+  "evidence": "sarvam-04-variables-output.png"
+ },
+ {
+  "setting": "System tools state",
+  "default": "End Interaction, Handle Voicemail, Change Output Language on; Query Knowledge Base and Call Transfer Off",
+  "range": "Off until KB / Call forwarding enabled",
+  "evidence": "sarvam-05-tools-system.png"
+ },
+ {
+  "setting": "API tool run timing",
+  "default": "During the conversation",
+  "range": "when the call starts / during the conversation / when the call ends",
+  "evidence": "sarvam-06-tool-api-wizard.png"
+ },
+ {
+  "setting": "API tool HTTP method",
+  "default": "POST (as captured; may be evaluator-set)",
+  "range": "select",
+  "evidence": "sarvam-06-tool-api-wizard.png"
+ },
+ {
+  "setting": "Test Agent mode",
+  "default": "Voice",
+  "range": "Voice, Phone, Chat",
+  "evidence": "sarvam-10-test-agent-panel.png"
+ },
+ {
+  "setting": "Test Agent Setup",
+  "default": "Hindi, '{ } 1/1'",
+  "range": "unknown",
+  "evidence": "sarvam-10-test-agent-panel.png"
+ },
+ {
+  "setting": "Campaign phone number selector",
+  "default": "By number",
+  "range": "By number, By group",
+  "evidence": "sarvam-25-campaign-step1.png"
+ },
+ {
+  "setting": "Analytics date range / campaign / view / granularity",
+  "default": "Oct 15-21 2026 / All Campaigns / # / Day",
+  "range": "unknown",
+  "evidence": "sarvam-29-agent-analytics.png"
+ },
+ {
+  "setting": "Call Logs filter",
+  "default": "Connected",
+  "range": "Connected, All",
+  "evidence": "sarvam-30-call-logs.png"
+ },
+ {
+  "setting": "Plan",
+  "default": "Pay as you go, balance -36.58 credits (pre-existing)",
+  "range": "PAYG, Pro, Growth, Business (+ Enterprise per notes)",
+  "evidence": "sarvam-20-billing.png"
+ },
+ {
+  "setting": "Listening: barge-in, eagerness, volume threshold",
+  "default": "unknown (reported in notes, no screenshot)",
+  "range": "unknown",
+  "evidence": "notes.md"
+ }
+]

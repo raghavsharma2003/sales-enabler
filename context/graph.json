@@ -14590,6 +14590,764 @@
    "title": "Sonnet 5.5 at high effort reads the competitor walk-through screenshots. Haiku does not, because it failed the pre-registered quality rule.",
    "rationale": "The owner allowed Haiku only at the best quality. Haiku met the recall bar (98% of Sonnet's) but made 2 clear material errors (the rule allows 1), one of them a value imported from another screenshot. Its errors were spread across strata, so no stratum can be handed to it. It was not cheaper per run either: it wrote more tokens.",
    "reverse_if": "A re-run of the same calibration with a newer Haiku (or with Sonnet at medium effort) shows at most 1 material error and recall at or above 0.90 of the Sonnet-high arm; or screenshot volume grows about 10\u00d7 and a stratum (e.g. plain list pages) is shown error-free for Haiku."
+  },
+  {
+   "id": "measure.2026-10-21.wt-bolna-displayed-price-structure",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "title": "Bolna dashboard price as displayed on 2026-10-21: 3.5 + 0.5 + 2 = 6 cents per minute (voice agent + telephony + platform), 30-second pulse for all three, concurrency 2; recharge tiers imply an effective 6.0 cents at $150 down to 4.51 cents at $3,000 (66,500 minutes), shown as about Rs 5.72 to Rs 4.30 per minute; billing currency USD. Vendor-displayed, not invoiced, not measured on a call.",
+   "n": "1 trial account, 5 captures (34-account, 35-account-show-models, 40-recharge-dialog, 01 and 12 headers) plus 3 text captures",
+   "method": "Read the Pricing Information table, the agent header and the Add Funds modal in Instinct's 2026-10-21 walkthrough; recomputed tier minutes as amount x (1 + bonus) / 0.06 (600 -> 11,500, 1,500 -> 30,000, 3,000 -> 66,500 all match the displayed minutes). No invoice and no call, so the figures are what the product shows, not what it bills.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-bolna-platform-fee-inside-6c",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "title": "Inference from the Bolna dashboard: the 2 cent 'Bolna Platform' line is inside the displayed 6 cents per minute (3.5 + 0.5 + 2 = 6; the header, the 'base price' tile and the '6c/min rate' note all say $0.060). That supports the 'fee included' branch of the open question and makes the INR 8.0 all-in case unlikely at PAYG; it is unproven until an invoice or a billed call shows it. The 30-second pulse on telephony and platform also differs from the earlier 'billed per minute, rounded up' claim.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-bolna-engine-defaults-vs-docs",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Observed in the Bolna dashboard (Engine tab of the saved synthetic agent): Endpointing 500 ms, Linear delay 900 ms, words before interrupting 1, Response Rate 'Custom'. These equal the API lane's stored values (500 / 900 / 1) and not the docs (400 / 2), and contradict the calibration note's 'hosted dashboard defaults' of 300 ms / 2 words / 300 s. Caveat: the agent's creation path is unknown and the New Agent draft's Engine tab was never opened, so what a dashboard-created agent gets is not settled. The UI shows the two sliders without a sum, so the 1.4 s reply floor is invisible to the builder.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-bolna-campaign-no-compliance-fields",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Observed in the Bolna dashboard: the New campaign modal has three inputs (name, workflow plus version, contacts CSV or JSON up to 32 MB and 150,000 rows) and no consent, DND, DLT, retry or schedule field. The only calling-window control is per agent (Calling tab: Start 9:00 AM, End 9:00 PM, whole-hour selectors; enforcement default not seen), and the Violations tab is reactive ('Reports forwarded from telephony providers'). The default 9:00 to 21:00 matches Bolna's docs, not the 10:00 to 21:00 in ledger CMP-27.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-bolna-vobiz-kyc-allows-persons",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Observed in the Bolna dashboard: the Vobiz KYC page says it verifies PAN + Aadhaar (persons) or PAN + GSTIN (companies), and the Compliance Settings table has a Tax ID Number column and no CIN column. This contradicts the earlier 'number KYC needs a CIN and accepts Pvt Ltd companies only'; the CIN rule may belong to the Plivo compliance application, which was not opened. The India number-buy dialog shows no price before Subscribe.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-bolna-workflow-gated-outbound",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "title": "Inference from the Bolna dashboard: outbound has two entry points. Campaigns bind to a published workflow version (the New campaign Version select needs one), while Batches is a separate agent-scoped CSV upload. The shortest route to a first campaign is create agent, create workflow with an Agent node, publish, verify a phone number, then New campaign (about 5 to 7 steps before any dialling); Campaigns itself is Beta. The trial limit to verified numbers blocked it here.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "decision.2026-10-21.wt-bolna-parity-floor",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "title": "Proposed v1 dashboard parity floor taken from Bolna's UI: a persistent per-minute cost header with a component bar; a transparent pricing table with pulse and included models; per-language prompt/voice/transcriber settings; a searchable voice picker with preview; tool presets plus custom function from cURL; webhook config with Send test; a workflow canvas with Wait, Retry, Condition, API, Callback and WhatsApp nodes; an Ask-the-platform chat that can read and act; per-page API and MCP buttons; async reports; SIP-trunk health columns; a Truecaller verification column; invoices and a recharge dialog with INR equivalents.",
+   "rationale": "Each item is observed in the Bolna dashboard on 2026-10-21 and is either a measured-useful pattern or something a buyer coming from Bolna will expect on day one. The parity floor is a floor, not the wedge (open.2026-10-20.parity-floor-vs-wedge).",
+   "reverse_if": "The call battery or buyer interviews show an item is unused or harms task success (for example nobody opens the workflow canvas, or the persistent cost header slows setup), or a later walkthrough shows Bolna removing it.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "decision.2026-10-21.wt-bolna-beat-list",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "title": "Proposed ways VP's dashboard beats Bolna's, each testable: (1) show the predicted reply gap (endpointing + hold + model) next to the turn-taking controls and give plain-language presets; (2) put consent, DND, calling-window and retry fields in the campaign itself, on by default; (3) one outbound system with no mandatory workflow; (4) show per-option latency and price in every model and voice picker; (5) price and bill in INR with GST, with per-number price shown before purchase; (6) editable, visible outcome judges; (7) an unsaved-changes indicator and visible versions; (8) a language-aware voice picker with no romance voices in business catalogues.",
+   "rationale": "Bolna's dashboard hides the 1.4 s reply floor (500 + 900 ms, no sum shown), has compliance only at account and agent level, forces campaigns through workflows, shows no latency or per-option price, bills in USD and hides per-number price. Each gap was seen in a capture and maps to a measurable task (setup time, case handling, reply gap).",
+   "reverse_if": "A live call shows Bolna's default reply gap p50 at or under about 1.0 s (the floor claim fails), or interviews show Indian buyers prefer USD invoices or a single flat price with no per-option detail.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "open.2026-10-21.wt-bolna-dashboard-default-agent",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "title": "What does a freshly dashboard-created Bolna agent store on its Engine, Intelligence, Languages and Calling tabs, and what does the 'India routing' label mean? The saved agent showed Plivo, openai gpt-4.1-mini, ambient None and 500 / 900 / 1, but its creation path is unknown and the New Agent draft's tabs, the Response Rate presets, the Realtime engine option, Auto Build and Graph Agent were not captured.",
+   "closes_when": "Someone opens the New Agent draft in the dashboard, records every tab's defaults and the Response Rate and Voice engine options without saving, reads the 'India routing' tooltip, and opens Graph Agent and Auto Build; then compare with the API-stored defaults.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "rejected.2026-10-21.wt-bolna-filename-as-page-label",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "title": "Using a walkthrough capture's file name as the page it shows.",
+   "tried": "Treating 29-billing, 30-team, 31-settings, 33-org-switcher, 21-calling-toggles-on-unsaved and 00-login-landing as billing, team, settings, org-switcher, unsaved-state and login evidence.",
+   "broke": "29, 30 and 31 are all the Agent Studio New Agent draft (30 and 31 identical), 33 shows no org menu, 21 shows no unsaved marker, and 00 is the logged-in app mid-load. Real billing, team and compliance content is in 34, 35 and the 36-account-* captures. Read the pixels and text capture before relying on the name.",
+   "path": "research/2026-10-21/walkthroughs/bolna/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "measure.2026-10-21.wt-elevenlabs-picker-catalogue-sizes",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "ElevenLabs Agents dashboard catalogue sizes as displayed on 2026-10-21 (Free trial workspace): 45 LLMs plus a Custom LLM (5 hosted by ElevenLabs, 11 Anthropic, 8 Google, 21 OpenAI), 88 languages under the default 'Compatible with agent config' filter of which 14 are South Asian and none is Hinglish, 45 templates (text capture cut mid-entry), 9 system tools, 10 channels, 4 guardrail categories, 17 per-agent override toggles, 12 dashboard tabs, 4 library integrations, 3 import sources for numbers (Twilio, SIP trunk, Exotel). Every LLM row shows a vendor-displayed latency and cost per minute; per-minute cost runs from about $0.0004 to $0.0750.",
+   "n": "11 lists counted from the text captures of one trial workspace (61-llm-list, 62-language-list, 02-after-login, 42-agent-tools, 23-channels, 43-agent-guardrails, 54-agent-security, 7-analytics, 14-integrations, 31-phone-import, 15-voice-library)",
+   "method": "Rows counted from the innerText of each open list or page in Instinct's 2026-10-21 walkthrough, with the 61 and 62 counts re-run by a script over the text capture; no live calls; latency and price values are vendor-displayed, not measured by us; the language list was captured under the default filter only and the template list is truncated, so both are lower bounds.",
+   "path": "research/2026-10-21/walkthroughs/elevenlabs/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-elevenlabs-llm-price-assumption-gap",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Inference: the per-minute LLM costs shown in the ElevenLabs dashboard picker are 1.7x to 2.3x lower than what the free calculator returned through the API on 2026-10-20, at the same implied 5.2-5.3 messages per minute (DeepSeek Flash 4.1 $0.0078 vs $0.0130; Claude Sonnet 4.5 $0.0248 vs $0.0558; GPT-4o $0.0180 vs $0.0415). The dashboard therefore assumes a smaller prompt than the calculator run, and the list does not say what it assumes. A vendor-displayed LLM $/min is assumption-dependent and cannot be compared across vendors without the prompt size.",
+   "path": "research/2026-10-21/walkthroughs/elevenlabs/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-elevenlabs-turn-control-shape",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed in the ElevenLabs dashboard: turn-taking is exposed as an eagerness enum (Normal), a turn model (Turn V3), a silence timeout in seconds and an interruption-ignore-terms list, not as millisecond endpointing or reply-delay constants; a banner says the ASR choice is locked because Turn V3 requires Scribe v2 Realtime, so turn model and ASR are one coupled choice. The read-back of the same agent shows turn_timeout 7 s, speculative_turn on, silence end-call never and an empty ignore-terms list. Help text for the ignore list gives English examples and says it 'seeds safe defaults for the agent's languages'; whether a Hindi preset exists was not shown.",
+   "path": "research/2026-10-21/walkthroughs/elevenlabs/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-elevenlabs-no-india-outbound-controls",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed in the ElevenLabs dashboard: outbound is a single-page batch form of 7 inputs (name, phone number, ringing timeout 60 s, concurrency Auto, agent, CSV or XLS up to 25 MB with phone_number required, send now or schedule with a start time and timezone defaulting to Asia/Calcutta) with no calling window, retry rule, do-not-call, consent, DLT, price estimate or stated reason for a disabled Submit. The phone import menu has Twilio, SIP trunk and Exotel only; the Exotel panel defaults its region to Singapore under a +91 country code, with Mumbai as the other option. The hidden lead-level campaigns surface from the bundle is not visible in a new self-serve workspace.",
+   "path": "research/2026-10-21/walkthroughs/elevenlabs/report.md"
+  },
+  {
+   "id": "measure.2026-10-21.wt-elevenlabs-plan-minutes-are-prepaid-fee",
+   "type": "measurement",
+   "status": "measured",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Arithmetic on the ElevenLabs ElevenAgents plan cards: price over included minutes is $0.0800 on Starter ($6/75), Creator ($22/275) and Business ($990/12,375) and within $0.0001 of it on Pro ($99/1,238) and Scale ($299/3,738), equal to the $0.08/min pay-as-you-go rate, so included minutes are prepaid platform fee and tiers buy concurrency (4, 6, 10, 20, 30, 40), seats and features, not a lower rate. At the default LLM (DeepSeek Flash 4.1, about $0.0078/min displayed) a minute is about $0.0878, about INR 8.3 at FX 95 before telephony; in burst ($0.16) about INR 15.9.",
+   "n": "6 plans (Free to Business) from one subscription page capture",
+   "method": "Division and FX 95 arithmetic on vendor-displayed prices read from 51-subscription.png and its text capture and 61-llm-list.txt; the vendor-displayed LLM figure is assumption-dependent (see evidence.2026-10-21.wt-elevenlabs-llm-price-assumption-gap); no invoice was read and no call was billed.",
+   "path": "research/2026-10-21/walkthroughs/elevenlabs/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-elevenlabs-architect-free-alpha",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed: ElevenLabs Architect, the chat assistant that builds, tests and fixes agents, is offered from the New agent screen (Beta), the sidebar (Alpha) and every agent page, with the note 'free to use during the alpha, through October 2026' and no post-alpha price. Its home page carries a 10-item go-live checklist (agent context, user preferences, guardrails, KB auto-sync, procedures, simulation tests, custom data capture, eval criteria, live on a channel, issue flagging), 0 of 10 done on a new agent. It is the closest incumbent analogue to VP's chat-driven setup.",
+   "path": "research/2026-10-21/walkthroughs/elevenlabs/report.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-elevenlabs-parity-floor",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed parity floor for VP v1 from the ElevenLabs dashboard (match, not beat): a model picker that shows latency range and cost per minute and per message on every row with a detailed-costs panel; a description with billing impact under every setting and an explained lock when one setting forces another; a test panel docked on every config page with a mock-tools switch; templates with a live flow preview; branches with traffic split and a Live badge; an inline CSV column contract (required, optional, custom variable columns) shown before upload; an analytics page with date range, granularity, group-by and branch filters; per-agent allowlist, authentication and per-call overrides; a go-live checklist inside the chat assistant.",
+   "rationale": "These are surfaces an Indian enterprise buyer will expect from a top incumbent and none is a differentiator alone; the owner's v1 is parity made better (directive.2026-10-20.product-brief).",
+   "reverse_if": "Buyer interviews or the call battery show these are not switching factors, or open.2026-10-20.parity-floor-vs-wedge resolves to a narrower floor."
+  },
+  {
+   "id": "decision.2026-10-21.wt-elevenlabs-beat-list",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed places for VP to beat the ElevenLabs dashboard, each with a task: (1) an India-aware batch form with consent, DND/NCPR scrub, category-driven calling windows in IST, retries, a stated reason when Submit is disabled and a cost estimate; (2) a number path that offers India numbers with the KYC time and cost stated up front, instead of import-only with 7 provider fields; (3) turn-taking controls in milliseconds with Hindi and Hinglish back-channel lists on by default and a visible floor; (4) safe call-control defaults: end-call tool on, silence hang-up on, burst opt-in, AI disclosure in the first message, no open allowlist; (5) a Hinglish language option and Indic voice filters in the pickers; (6) an LLM cost strip that states its prompt-size assumption and itemises telephony; (7) a first-class contact object instead of a user-ID string; (8) every dashboard action reachable by chat.",
+   "rationale": "Each item is a gap visible in the dashboard captures or a default the captures show; none is proven to change a buyer's choice.",
+   "reverse_if": "A call battery shows ElevenLabs defaults already hold Hinglish turn-taking and hang up correctly, or ElevenLabs ships India compliance controls and Indian numbers in the self-serve dashboard."
+  },
+  {
+   "id": "rejected.2026-10-21.wt-elevenlabs-walkthrough-outbound-path",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Walking ElevenLabs' number-import and batch-call flows end to end on the Free trial workspace (Phone Numbers then Import number, then Create a batch call with a CSV, then Submit).",
+   "tried": "Instinct opened the Import number menu and the Exotel panel, the Create a batch call menu and both Send immediately and Schedule for later states, without entering credentials, uploading a file or submitting.",
+   "broke": "The batch form's Phone Number select is disabled until a number is imported, so Test call and Submit stayed disabled with no stated reason; the recipients preview, CSV validation, dedupe, number normalisation, retry and export were never seen. The Exotel import needs a live Exotel account SID, key, token and Voicebot Applet ID, so the number path was not walked either. Every list (history, users, tests, analytics) was empty, so no conversation record was seen."
+  },
+  {
+   "id": "open.2026-10-21.wt-elevenlabs-default-agent-live-behaviour",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "What does a default dashboard-created ElevenLabs agent do on a live call to an Indian handset: does it ever hang up (the End conversation tool and silence hang-up are both off), does it burst to 2x price (bursting reads on), does it treat 'haan' and 'hmm' as interruptions (the ignore-terms list is empty), does it hold Hindi or Hinglish, and does it disclose it is an AI (the default first message does not)? The dashboard shows the settings; only a call shows the behaviour.",
+   "closes_when": "A synthetic call battery of at least 30 clean turns plus the short back-channel set, to our own verified numbers over an Exotel or Plivo route, is run on an untouched dashboard-created agent and on the same agent with the ignore list, end-call tool and silence hang-up enabled, and the arms are compared on cut-ins, hang-up, language hold and billed cost (needs a number and an owner go)."
+  },
+  {
+   "id": "evidence.2026-10-21.wt-exotel-builder-surface",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Observed in the Exotel Voice Agents dashboard (trial account, 2026-10-21): the builder is a linear Bot > sub-agent > End graph; the top-level system prompt is locked behind a one-sentence 'strict guardrails' description, and the editable prompt is a raw markdown Instruction on the sub-agent. Rollout gives versions with a traffic split and Test Threads; Knowledge Base is a corpus table; Database is account-level tables; Tools is a custom-API form only; transfer and voicemail live in App Bazaar flows. Settings below the fold (denoiser 0.8, nudges 7 s x 3, PII masking off, greeting off) rest on Instinct's notes, not screenshots.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-exotel-turn-taking-not-tunable",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "title": "Inference from the Exotel dashboard notes: the only conversation-control settings captured are Denoiser, an empty VAD Configuration, Conversation Nudges (7 s, 3 times, then end call) and a disabled max-duration toggle. No endpointing, interruption, backchannel, reply-delay, DTMF or voicemail control was seen, so Exotel's turn-taking is not tunable by the buyer in the captured surfaces, unlike Vapi, Retell and ElevenLabs. Nudge-then-hang-up at 7 s x 3 is the same order as Bolna's 20 s hangup-on-silence. Whether the defaults are English-tuned is unknown until a call battery runs.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "measure.2026-10-21.wt-exotel-displayed-limits-and-credits",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "title": "Exotel trial account as displayed on 2026-10-21: Credits 150 (classic top bar), Voice Agents Credit Usage 0 min, concurrency 0 / 5 across all agents with an increase 'subject to monthly charges' and no price; no per-minute rate, latency or quality figure shown in any Voice Agents capture; plan pricing is gated behind GST details. Vendor-displayed, not billed, not measured on a call.",
+   "n": "1 trial account; 4 screenshots (01, 02, 25 and the headers of the classic pages) plus Instinct notes for the payment gate",
+   "method": "Read the displayed values from Instinct's 2026-10-21 screenshots and notes; no invoice, no call, no payment attempt. The relation between credits (150) and minutes (0 min) is not explained on any capture.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-exotel-campaign-no-compliance-fields",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "title": "Inference from Instinct's enumeration of the Exotel Create Call Campaign form: it has a Transactional vs Promotional call-type choice, schedule Now or Later, retries 0-3 with backoff, a duplicate-numbers toggle, throttle and callbacks, but no per-contact consent field, no DND/NCPR scrub switch and no daily calling-window control. Consistent with the account-free finding that windows and consent are left to the buyer. Fields Instinct did not list cannot be excluded, and the form could not be completed on the unverified account.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "open.2026-10-21.wt-exotel-account-region",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "title": "Is the Exotel trial account India-region or Singapore-region? Instinct's notes record account region Singapore and API subdomain api.exotel.com on my.exotel.com, while the Voice Agents app is on voicebot.in.exotel.com with a flow named mum-prod; the account-free checklist said to sign up on the India console because the region is fixed at sign-up. The API Settings screenshot was withheld, so this is notes-only.",
+   "closes_when": "The API Settings page is re-captured (secrets masked) or Exotel confirms in writing the CPaaS and voicebot regions for the account, and the data-residency of recordings and transcripts is stated.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "rejected.2026-10-21.wt-exotel-campaign-walk-unverified",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "title": "Walking Exotel's campaign wizard end to end on an unverified trial account",
+   "tried": "Opening Tools > Campaigns > Call > Create New on the KYC-pending trial account to capture every field and the review step.",
+   "broke": "Both 'Unable to load Caller ID's' and 'Unable to load Lists' toasts fired on first load, the Address Book had no lists to select, and the Engage app showed 'Complete KYC to use campaigns'. Fields below the fold were only enumerated in notes, the schedule, retry and consent controls were never seen in pixels, and whether KYC fixes the loaders is untested. Do not claim campaign coverage from this account.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "rejected.2026-10-21.wt-exotel-filename-as-page-label",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "title": "Using an Exotel capture's file name as the page it shows",
+   "tried": "Treating exotel-02-voicebot-home as a home page, exotel-08-integrations as the Tools page, exotel-03-voicebot-workflow as workflow evidence and exotel-23-analytics as analytics evidence.",
+   "broke": "02 is the agent Test tab, 08 is Integrations > Database with the theme menu open, 03-workflow is a blurred overlay with no readable settings (the readable builder views are 05, 15 and 16), and 23 is an empty broken-frame panel with no analytics. Read the pixels before relying on the name.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "risk.2026-10-21.wt-exotel-unredacted-phone-in-captures",
+   "type": "risk",
+   "status": "open",
+   "source": "verified",
+   "title": "Three Exotel captures expose the account owner's phone number: exotel-11-coworkers and exotel-12-addressbook show it in clear, and exotel-13-app-bazaar's black box leaves the top of the trial-number digits partly visible. The files sit under gitignored data/walkthroughs/ but must never be published or committed.",
+   "mitigation": "Keep the files out of git and any artifact; re-capture or crop before any sharing; the report refers to the number only as [phone redacted].",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "decision.2026-10-21.wt-exotel-parity-and-beat",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "title": "Proposed from the Exotel dashboard: VP matches Exotel's day-one builder floor (versions with traffic split and test threads, knowledge-base corpora with training status, account-level lookup tables, custom-API tools with a test step, intents as outcomes, an interactions log with version column, emailed reports, a live concurrency meter) and beats it on testable tasks: one console from list to calls with plain-language gate messages, a browser test call and text simulation before any phone call, visible Hinglish turn-taking presets, calling-window and DND enforcement by default, and one contact store.",
+   "rationale": "Each floor item is seen in the Exotel dashboard and a buyer moving from Exotel will expect it. Each beat maps to a gap seen in captures: a three-shell product, campaign loaders that fail with generic toasts, web call 'Coming soon', no endpointing or interruption controls, no consent or window fields, three contact surfaces, an Analytics frame that renders blank. The floor is a floor, not the wedge (open.2026-10-20.parity-floor-vs-wedge): the beats must be won on measured task failures.",
+   "reverse_if": "A live call battery shows Exotel's default turn-taking and reply gap match VP's on the same Hinglish tasks, or buyer interviews show Indian enterprises value Exotel's carrier-grade numbers and KYC plumbing over any console improvement, or the owner decides to ride Exotel rails and not compete on console UX.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "open.2026-10-21.wt-exotel-live-call-questions",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "title": "Questions only live calls and a KYC-verified account can answer for Exotel: reply gap and cut-ins on Indian PSTN with the Deepgram, Gemini and ElevenLabs stack; Hinglish language hold; DTMF, voicemail and transfer through App Bazaar flows around the bot; whether KYC clears the Caller ID and Lists load errors; which STT serves a call (Azure or Deepgram India); the create-agent form and Templates; Test Threads behaviour; what the Analytics frame shows when it loads; real per-minute price after GST.",
+   "closes_when": "A KYC-verified Exotel account runs the PSTN battery (reply gap, cut-ins, language hold, disclosure) with n of at least 30 turns, a campaign is built end to end with a mixed CSV, and the payment page shows a price.",
+   "path": "research/2026-10-21/walkthroughs/exotel/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-retell-dashboard-claims",
+   "type": "evidence",
+   "title": "Retell dashboard walkthrough (Instinct, 2026-10-21, trial account, no calls placed): 60 graded claims from 51 screenshots and 69 text captures (24 screenshots opened directly). Coverage limits: Call settings, the function-add menu and the language list below the fold are text-only; 18 text captures have no PNG; 3 captures are mislabelled; no call, KYC, batch send or KB upload was reached, so nothing about runtime behaviour is observed. Latency and cost figures shown are vendor-displayed.",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "path": "research/2026-10-21/walkthroughs/retell/report.md"
+  },
+  {
+   "id": "measure.2026-10-21.wt-retell-default-turn-taking-and-call-limits",
+   "type": "measurement",
+   "title": "Retell new-agent defaults as the dashboard shows them: Response Wait time 0ms, Interruption Sensitivity 0.9, Reminder 10 s x 1, Dynamic adjust off, Denoising Remove noise, End Call on Silence 10.0 min, Max Call Duration 1.00 h, Ring Duration 30 s (5-300 s), DTMF timeout 2.5 s, Welcome Message User speaks first, contact memory read ON, memory update OFF ($0.005/run). Endpointing in ms is not on the default panel. At the displayed $0.134/min a 10-minute silence hang-up is about $1.34 and a 1-hour cap about $8.04 (arithmetic, inferred). UI defaults only: no call placed.",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "n": "1 Single-Prompt agent plus 1 Conversational Flow agent, each read once",
+   "method": "Read from 1920-px screenshots and the DOM text capture of the Retell dashboard on 2026-10-21 (Call settings values are text-only, toggle states not visible); no call placed, so turn-taking behaviour is untested",
+   "path": "research/2026-10-21/walkthroughs/retell/claims.json"
+  },
+  {
+   "id": "measure.2026-10-21.wt-retell-model-voice-language-catalogues",
+   "type": "measurement",
+   "title": "Retell pickers on 2026-10-21: 39 models (21 versatile, 12 fast, 6 speech-to-speech) each with a per-minute price from $0.0016 to $0.32 (cascaded) and $0.07 to $0.38 (S2S) but no latency or quality column; 21 Platform Voices (15 American, 2 British, 4 Mexican) with an Accent filter of only American, British, Mexican; at least 39 MiniMax and 85 Cartesia voice rows with no Indian trait; 63 languages including Hindi (India), English (India), Kannada, Marathi, Tamil, Urdu and Nepali, and no Telugu, Bengali, Gujarati, Malayalam, Punjabi, Odia or Hinglish option. The displayed $0.134/min reconciles as 0.055 + 0.015 + 0.064 (inferred).",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "n": "1 model list (39 rows), 1 voice picker (21 cards), 2 provider tabs (39 and 85 rows, DOM truncated), 1 language list (63 rows)",
+   "method": "Counted from the DOM text capture and cross-checked against the 1920-px screenshots 09, 10, 10c and 11 on 2026-10-21; Fish Audio, Inworld and ElevenLabs voice tabs were not opened; prices are vendor-displayed",
+   "path": "research/2026-10-21/walkthroughs/retell/claims.json"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-retell-batch-form-no-compliance-fields",
+   "type": "evidence",
+   "title": "Retell create-a-batch-call form (single page): name, From number, CSV up to 50 MB with a template, Send Now or Schedule (timezone defaults to Asia/Calcutta), When Calls Can Run default 00:00-23:59 Mon-Sun with no legal-hours warning, reserved concurrency 5 of a limit of 20 (so 15 for batch), $0.005 per dial. It has no consent, DND or NCPR scrub, DLT header, retry, pacing, per-lead window or agent selector, and Send is disabled without a reason. The flow was blocked before any upload: the From number list is empty and buying a number sits behind a Persona identity-verification modal.",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "path": "research/2026-10-21/walkthroughs/retell/report.md"
+  },
+  {
+   "id": "open.2026-10-21.wt-retell-dnc-skip-claim",
+   "type": "open-question",
+   "title": "Retell dashboard copy says Do-not-contact Handling will confirm a stop request, end the call, mark the contact do-not-call and skip DNC contacts in outbound calls, and the toggle is OFF by default; the earlier docs reading says batch calls do not check do_not_call. Which is true for a batch row flagged do_not_call is unknown.",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "closes_when": "A synthetic batch of at least 3 rows to our own verified numbers, one flagged do_not_call, is run with the toggle on and off (needs a number, KYC and an owner go) and the dialled rows are read from call history; or Retell documents the behaviour."
+  },
+  {
+   "id": "open.2026-10-21.wt-retell-multiselect-language-semantics",
+   "type": "open-question",
+   "title": "What does Retell's Multiselect in the Speech Language dropdown do when Hindi (India) and English (India) are both selected: code-switching, a combined ASR language set, or a prompt hint? The capture shows the control but not its behaviour.",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "closes_when": "A call battery runs Hindi (India) alone, English (India) alone and both under Multiselect on the Hinglish battery (at least 8 turns per arm) and scores language and script hold; or Retell documents the behaviour."
+  },
+  {
+   "id": "evidence.2026-10-21.wt-retell-contradictions-to-prior",
+   "type": "evidence",
+   "title": "Where the dashboard differs from the earlier Retell research: (1) RET-09 said RBAC is Enterprise-only, but the free trial shows three fixed System roles (Admin, Developer, Member) with custom Add Role greyed out and no SSO page; (2) the earlier default timezone was America/Los_Angeles, but the batch Schedule form defaults to Asia/Calcutta; (3) the model picker lists 33 cascaded models where the API enum count was 32; (4) the Call History table has a Session Outcome column, which may partly cover the business-outcome gap; (5) there is no Campaigns screen in the navigation, so the server-side Campaigns object has no visible dashboard surface; (6) the dashboard DNC copy conflicts with the docs on batch DNC. Confirmed: contact memory read ON and update OFF, burst enabled, Persona gate at number purchase, first 10 KBs free, US-centric PII categories, no Indian IDs.",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "path": "research/2026-10-21/walkthroughs/retell/report.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-retell-parity-floor",
+   "type": "decision",
+   "title": "Proposed parity floor for VP v1 from Retell's dashboard (match, not beat): a per-row price in the model picker plus a Cost / Latency / Tokens strip for the current selection; Test Audio and Test LLM panel with a version and environment marker; a Simulation tab of test cases with success criteria; a lifecycle Workflow view with pre-call and post-call function slots; post-call extraction defaulting to summary, success and sentiment; three-mode transfer (cold, warm, agentic warm) explained in plain language; KB sources of web pages, files, text, Google Drive, OneDrive and Notion; per-feature prices shown at the toggle; ops pages for live monitoring, alerts, dashboards with breakdown, AI QA and call history with cost and latency columns; limits, API keys with a webhook-signing badge, and fixed roles.",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "rationale": "These are the surfaces an Indian enterprise team will expect from any Retell-class product and none of them is a differentiator in itself; owner intent is parity made better (directive.2026-10-20.intent-better-product).",
+   "reverse_if": "Buyer interviews or the call battery show these are not switching factors, or open.2026-10-20.parity-floor-vs-wedge resolves to a narrower floor."
+  },
+  {
+   "id": "decision.2026-10-21.wt-retell-beat-list",
+   "type": "decision",
+   "title": "Proposed places for VP to beat Retell's dashboard, each with a task: (1) an India-aware batch form with consent and DND/NCPR scrub, default 09:00-21:00 IST windows with a legal-hours warning, retries, per-lead windows, an agent selector and a stated reason when Send is disabled; (2) Indic discoverability: language filter and Indian-accent and Hinglish tags on voices, Hindi vocabulary sets, a visible language-hold control; (3) PII categories with Aadhaar and PAN and privacy-first defaults; (4) conservative defaults for silence hang-up and max duration with a spend cap, and burst or surcharge options off until chosen; (5) a cost strip that itemises ASR, LLM, voice, telephony and platform; (6) empty states with a call to action, Sample labels on demo data, tours scoped to their page; (7) turn-taking controls in milliseconds with Hindi-aware labels (a hypothesis until a battery measures it); (8) a number path that states KYC time and cost before the user commits.",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "rationale": "Each item is a gap visible in the Retell dashboard captures and matches Indian complaint classes from earlier research; none is proven to be a switching reason.",
+   "reverse_if": "A call battery shows Retell defaults handle Hinglish turn-taking and compliance as well as VP, or the owner narrows v1 scope."
+  },
+  {
+   "id": "rejected.2026-10-21.wt-retell-walkthrough-outbound-path",
+   "type": "rejection",
+   "title": "Walking Retell's buy-number and batch-call flows end to end on the trial account (Phone Numbers then Buy New Number, then Create a batch call with a CSV).",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "tried": "Instinct opened Phone Numbers, the + menu, Buy New Number, and the full Create a batch call form including the time-range popover and Schedule mode, without a purchase or send.",
+   "broke": "Buy New Number stops at a Persona Identity Verification Required modal before any country, number or price; the batch form's From number list is empty so Send stays disabled, so the CSV template, recipient preview, dedupe, number-format, DNC and retry behaviour were never seen. Capture hygiene also failed three times (06-Functions.png, 78-create-dialog-again.png and 10d-accent-minimax.txt show something other than their name)."
+  },
+  {
+   "id": "measure.2026-10-21.wt-sarvam-voice-catalogue-counts",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "title": "Sarvam voice picker text capture (2026-10-21): 199 distinct voice names (176 role-named v4-style + 23 plain-name v3-style); of 196 parseable descriptions 119 female / 77 male; 'Best for' tags: conversation 30, customer support 18, narration 13, e-learning 8, collections 8, outbound sales 7, BFSI 6. Language mix: Hindi 83, English 43, English+Hindi 11, Marathi 9, Kannada 4, Punjabi 4, Telugu 4, Tamil 3, Gujarati 3, Bengali 2, Assamese 2; no Odia voice; Malayalam only as a Hindi+Malayalam mix. Lower bound: the dump is a virtualised list that keeps unique lines only; Instinct reported about 222.",
+   "n": "1 text capture (voices.txt, 439 unique lines from a lazily loaded list, 'Loading more' visible mid-dump); 199 distinct names, 196 with a parseable description",
+   "method": "Parsed voices-raw.json with a script: a voice is a title line followed by a description line containing 'voice in' or 'voice is characterized'; gender from 'female' / 'male' or 'Her' / 'His speech'; language from 'voice in <X>'; job tag from 'Best for <Y>'. Counts are of what the capture contains, not of what the product holds. 176 role-named names equal the 176 the earlier docs read reported; the 222 and the 266 API slugs are not reconciled.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "measure.2026-10-21.wt-sarvam-displayed-price-card",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "title": "Sarvam dashboard price display on 2026-10-21 (vendor-displayed, not invoiced, not measured on a call): Voice Agent (60s) Rs 3.5 / 3.25 / 3.15 / 3 per minute for Pay As You Go / Pro / Growth / Business; Simulate Rs 2 per run at every tier; PSTN forwarding Rs 0.4 per 30 s pulse at every tier; plans Rs 9,999 / 49,999 / 1,99,999 per month with the same number of credits included; PAYG has no monthly fee. This matches the docs reading and not the marketing page's Rs 2,000 / 10,000 / 50,000, and shows Business as purchasable.",
+   "n": "1 trial account, 3 screenshots (sarvam-20-billing, sarvam-21-plans-top, sarvam-22-per-minute-rates)",
+   "method": "Read the plan cards and the per-service rate table from the PNGs and compared them with the 2026-10-20 teardown claims SAR-36 and SAR-37. Telephony rates beyond the first forwarding row (Vobiz Rs 0.2 per 30 s, SIP Rs 0.35) and the Enterprise plan are in the evaluator's notes but not in any screenshot we hold. No debit was observed: usage was zero and the balance is a pre-existing -36.58.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-sarvam-defaults-captured",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Defaults a new Sarvam agent carries, read from the dashboard: voice Shubh; per-language voices OFF; speed 1.15x; pitch 0.00; volume 1.0; background sound 'Quiet office' (volume about one third); switch language during call ON with 11 languages preselected and Hindi as the locked starting language; Output numbers in Indic ON (partly hidden); idle nudge 'Hey, are you still on the call?' after 5 s; hang up after unanswered nudges ON; voicemail ON with a default message that names no company or purpose; call forwarding OFF; max call length 15 min (up to 60); model temperature 'Balanced' (no number); greeting 'Hi, I am Shubh calling from Sarvam...'. Not captured: the Listening defaults and the knowledge-base row.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-sarvam-turn-taking-numbers-hidden",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "title": "Inference from the Sarvam dashboard: no millisecond value for endpointing, hold or interruption appears anywhere in the captured builder (only a 5 s nudge delay and a 15 min call cap), and the Listening section (barge-in, eagerness, volume threshold) has no screenshot, only the evaluator's note. Together with the account-phase finding of three coarse controls over ten VAD parameters, a builder cannot see, sum or tune a reply floor, unlike Bolna's visible 500 ms + 900 ms sliders. Whether Sarvam's defaults are Hindi-tuned or English-tuned is unknown without a live call.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-sarvam-model-trade-offs-hidden",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "title": "Inference from the Sarvam dashboard: the LLM and ASR are not user choices (only a temperature slider and a TTS voice picker appear), the voice minute is one bundled Rs 3-3.5 rate, and no latency, cost or quality figure is shown per voice or per model at the point of choice; the only latency number is an aggregate analytics KPI and an unquantified '40% faster' V4 claim. Vapi and ElevenLabs show per-option latency and cost inline. A visible, curated, per-option trade-off display is open ground for VP.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-sarvam-mimicry-defaults-and-disclosure",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Observed in the Sarvam dashboard: a new agent defaults to 'Quiet office' background sound ON, and the voice catalogue sells 'AI Companion', 'Warm Night Companion' and 'Therapist Voice' personas; no AI-disclosure setting appears on any captured settings screen (bounded negative; the Listening and knowledge-base rows were not captured). Sarvam's own template prompt preview does contain an instruction to say 'a virtual assistant' when asked whether the caller is speaking to an AI, so disclosure sits in the prompt, not in an enforced control, which agrees with the 6 of 6 'claimed human' result on the EMI demo.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-sarvam-campaign-gate-compliance-absent",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "title": "Observed in the Sarvam campaign wizard (4 steps: Agent, Recipients, Schedule, Review & Launch): step 1 asks for campaign name, agent, version and a telephony connection with numbers (By number / By group), and raises an inline 'This version is not committed' gate with a one-click 'Commit version' button. No consent, DND, DLT, calling-window or retry field appears on step 1 or on the empty state; DND appears only as an API recipe card. Steps 2-4 and the Indian number KYC were not captured, so absence beyond step 1 is unknown.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "decision.2026-10-21.wt-sarvam-parity-and-beat",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "title": "Proposed from the Sarvam dashboard: treat as the parity floor a prompt-box agent creator with India-vertical templates, a docked Voice/Phone/Chat test panel, input and output variables with extraction prompts and a call goal, API tools with cURL import and inline Send, Mock API and validator/verifier tools, per-language voices and a pronunciation dictionary, nudge and hang-up and voicemail settings, a 4-step campaign wizard with an inline commit gate, call logs with failure reasons, a one-click MCP install page and API recipe cards, and an INR plan table with per-pulse rates. Beat it by (1) showing predicted reply gap, latency and cost beside every turn-taking, model and voice choice, (2) putting consent, DND and category-aware calling windows inside the campaign steps, (3) a persistent preflight checklist instead of discovering gates at deploy time, (4) a non-removable AI disclosure with no default fake ambience, (5) explicit empty, loading and error states and a visible overdrawn state, (6) a voice catalogue honest about depth per language.",
+   "rationale": "Each parity item is observed on a trial account and is table stakes for an Indian buyer coming from Sarvam; each beat item answers a specific gap in the captures (hidden numbers, blank pages, late gates, unlabelled negative balance). Parity is a floor, not a wedge (rejected.2026-10-17.parity-undercut), so v1 has to win on measured task failures.",
+   "reverse_if": "A live battery shows Sarvam's coarse turn-taking and bundled models match or beat VP's visible controls on reply gap and cut-in rate, so that exposing numbers adds no measured benefit; or the unseen Sarvam steps (campaign steps 2-4, Listening, Policy) turn out to contain the consent, DND and window controls listed as missing.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "rejected.2026-10-21.wt-sarvam-notes-citations-as-evidence",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "title": "Using the evaluator's coverage manifest and [shot N] citations as evidence for what a Sarvam screenshot shows.",
+   "tried": "Treating notes.md lines such as 'Workflows GATED Enterprise-only, explicit upsell message [27]', 'Rent via Vobiz Rs 59/unit (11/79/80 series) [23]', 'Listening: barge-in, eagerness, volume threshold [07b]', 'template gallery names Real Estate Lead Qualification, Cart Recovery, Health Insurance Renewal Reminder [36]' and the Enterprise plan and 21b as captured facts.",
+   "broke": "The PNGs do not show them: 27 is a blank panel, 23 shows only 'Usage-based pricing', 07b is the call-actions screen not Listening, 36 is Recents with no templates, and files 11-19 and 21b are absent from the set. These lines may be true (several match the earlier docs reading) but they are second-hand, so they were graded inferred or unknown, never observed.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "open.2026-10-21.wt-sarvam-live-call-questions",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "title": "What does Sarvam do on a live Indian PSTN call that the dashboard cannot show: handset reply gap and cut-in rate under its Listening defaults, whether the default 'Quiet office' ambience hurts barge-in or ASR, which Bulbul version the default 'Shubh' voice runs and its first-audio time, whether a negative credit balance blocks a test call, whether the default voicemail message is spoken on operator announcements, warm versus blind transfer, what steps 2-4 of the campaign wizard ask (window, retries, DND, upload validation), and what a rented number costs and requires (KYC).",
+   "closes_when": "The call battery runs on a funded Sarvam account (browser, phone and campaign paths, 30 or more clean turns, synthetic data only) and a person opens the unseen Listening, Policy, Inbound calls, Boards, Workflow Analytics and campaign steps 2-4 screens and the Rent from Sarvam flow up to but not past payment.",
+   "path": "research/2026-10-21/walkthroughs/sarvam/report.md",
+   "date": "2026-10-21"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-synthesis-headline",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Cross-vendor dashboard walkthrough synthesis (Vapi, Retell, Bolna, ElevenLabs, Sarvam, Exotel; captured 2026-10-21 by Instinct, no live call, no number bought). Observed in the captures: 0 of 6 campaign or batch forms carry a consent, DND/NCPR or DLT field; 0 of 6 builders show a predicted reply gap; the displayed latency and cost headlines (Vapi, Retell, Bolna) are component sums that leave out telephony and the end-of-turn wait; 0 of 6 walkthroughs reached a ring on an Indian line; 0 of 6 offer a Hinglish or code-mixed language option; 5 of 6 ship an in-dashboard chat assistant (none exercised). The synthesis re-opened 84 screenshots and corrected 9 vendor-analyst claims from the pixels.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "measure.2026-10-21.wt-synthesis-defaults-table",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "n": "6 vendor dashboards; 84 screenshots re-opened by the synthesis plus the vendor analysts' reading of the text captures and Instinct's notes (each cell graded)",
+   "method": "Default values read from the dashboard captures of 2026-10-21 as left by the vendor on a trial account, not configured by us and not exercised on a call. Cells are graded observed-in-pixels, observed-in-text-capture, notes-only, API read-back of 2026-10-20, or unknown.",
+   "title": "Cross-vendor conversation and campaign defaults as captured. End-of-turn: Vapi 1.5 s fixed wait (0-3 s), Intelligent Turn-Taking off; Retell 0 ms added wait, interruption sensitivity 0.9; Bolna endpointing 500 ms + linear delay 900 ms, 1 word to interrupt (saved agent of unknown origin); ElevenLabs eagerness Normal, Turn V3, 7 s take-turn (API read-back); Sarvam and Exotel show no turn-taking numbers. Silence hang-up: Retell 10 min, Bolna 20 s, ElevenLabs disabled, Sarvam after unanswered 5 s nudges, Exotel after 3 nudges at 7 s. Max call: Retell 1 h, Bolna 90 s, ElevenLabs 600 s, Sarvam 15 min, Exotel off. Calling window: Retell 00:00-23:59 Mon-Sun, Bolna 09:00-21:00 per agent, ElevenLabs start time plus Asia/Calcutta only. Burst on by default at Retell (+USD 0.10/min) and ElevenLabs (API read-back).",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-synthesis-compliance-absent-at-dial",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed in the dashboards: none of the six campaign or batch creation surfaces (vapi 83-campaign-create, retell 24/25, bolna 22-new-campaign-dialog, elevenlabs 33/35, sarvam-25/26 step 1, exotel-10) has a consent source, DND/NCPR scrub or DLT field. Default windows are 00:00-23:59 Mon-Sun (Retell) or 09:00-21:00 set per agent in whole hours (Bolna); ElevenLabs has a start time and a timezone only. The only call-category field seen anywhere is Exotel's Transactional vs Promotional call type (Instinct's notes, not in pixels), and it is not shown driving a window. Retell's DNC toggle (13-security-shot) is in-call opt-out capture, off by default; Sarvam's DND list appears only as an API recipe card. Vapi steps 2-3 and Sarvam steps 2-4 were not reached.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-synthesis-reply-gap-invisible",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed: no dashboard shows a predicted reply gap or sums its turn-taking settings, and the units differ by vendor: seconds slider (Vapi End-of-Turn Wait 1.5 s, vapi 80-transcriber-languages), milliseconds with no sum (Bolna 500 + 900 ms, bolna 16-builder-Engine), an enum plus seconds (ElevenLabs eagerness Normal, elevenlabs 44-agent-settings), an added-wait slider whose handle sits at the far right beside 0 ms (Retell, retell 09-model-dropdown), or nothing visible (Sarvam Listening not captured; Exotel VAD empty). No dashboard ships an editable Hindi or Hinglish backchannel or interruption list; Vapi's smart endpointing is labelled English-only and ElevenLabs Turn V3 locks ASR to Scribe v2 Realtime. Whether any of these defaults suit Hinglish is unmeasured.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-synthesis-headline-numbers-are-component-sums",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Inference from displayed numbers: per-minute and latency headlines are component sums. Vapi ~1,530 ms = 410 + 690 + 430 and ~USD 0.09 = 0.05 hosting + components, excluding the 1.5 s wait and telephony (vapi 33-riley-assistant); our measured Vapi demo-agent clean-turn p50 was 2,319 ms (2026-10-17, different agent). Retell USD 0.134 = 0.055 + 0.015 + 0.064, excluding telephony (retell 09). Bolna USD 0.060 = 3.5 + 0.5 + 2 cents with a 30 s pulse on all three lines, displayed as about INR 5.72 (bolna 34-account, 40-recharge-dialog). ElevenLabs shows a latency range and USD/min per LLM row, but ranges span up to about 10x (for example 844 ms to 8.93 s) and the per-minute price is 1.7-2.3x below its own API calculator at the same message rate (elevenlabs 61-llm-list). Bolna, Sarvam and Exotel show no per-option latency or price.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-synthesis-defaults-hold-lines-and-spend",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed defaults that hold lines open or raise spend without a choice by the buyer: Retell burst ON (up to 3x concurrency at +USD 0.10/min, retell 5x-settings), silence hang-up 10 min and max call 1 h (text capture), data kept 'Everything, Keep forever' (retell 13-security-shot); ElevenLabs all 9 system tools OFF including End conversation and Voicemail detection (elevenlabs 42-agent-tools), silence end-call Disabled, bursting on (API read-back), retention Unlimited; Exotel max call duration off (notes); Vapi recording consent gated to Enterprise (vapi 34-builder-Advanced). No spend cap was seen in any dashboard (Retell's Budget Setting was not opened). At Retell's displayed USD 0.134/min a 10-minute silent line is about USD 1.34 and a 1-hour call about USD 8.04 (inferred).",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-synthesis-no-indian-ring",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed: no walkthrough reached a ring on an Indian line, and each stopped at a different gate. Vapi free numbers are US area codes and inbound-only (vapi 06c-free-vapi-number); Retell asks for Persona identity verification before showing any country or price (retell 30-buy-number-shot); ElevenLabs numbers are import-only, and its Exotel import needs 7 fields with Region defaulting to Singapore under +91 (elevenlabs 34-phone-exotel-form); Bolna shows India with Plivo or Vobiz but 'No compliance applications found. Create one' before Subscribe, and its Vobiz KYC accepts PAN + Aadhaar for persons (bolna 25, 36-account-Vobiz-KYC); Sarvam offers Rent (Powered by Vobiz) or bring-your-own with 7 providers, flows not opened (sarvam-23); Exotel needs KYC and payment with GST details (exotel-01, notes). W7 (minutes to first Indian ring) is untested on both sides.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-synthesis-analyst-corrections",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Pixel checks of vendor-analyst claims (2026-10-21): (1) Retell's DNC toggle copy in pixels is in-call opt-out capture, not 'skip DNC contacts' (retell 13); (2) ElevenLabs batch does state why Submit is off, in the phone field placeholder, but gives no link to fix it (elevenlabs 33); (3) Exotel Campaigns has a CREATE NEW button above the empty table (exotel-09); (4) Exotel agent pages carry an unexercised 'Talk to Agent' primary button, so 'phone-only testing' is unproven (exotel-02); (5) Exotel Rollout describes a traffic split but shows no split control (exotel-04-rollout); (6) Bolna's India compliance row names the fix with a 'Create one' link (bolna 25); (7) Retell's analytics tiles show 0, 0s and 0ms on empty data, the same zero/no-data conflation flagged at Sarvam (retell 43, sarvam-29); (8) Retell's persistent checklist and stale tour overlay the flow-builder palette and canvases (retell 76, 80); (9) ElevenLabs LLM latency ranges reach about 10x (elevenlabs 61).",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-synthesis-must-be-changes",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed changes to the 21-item v1 must-be list after the dashboard walkthroughs. Add: (A) price and India-measured latency at every stack choice plus an all-in per-minute headline that includes telephony, pulse and turn wait; (B) contacts with India-default E.164, DND status and attempt history (memory slot reserved for v2); (C) bounded call and spend defaults: end-call on, silence hang-up on, max duration set, burst opt-in, spend cap; (D) state integrity: no click creates or publishes, an unsaved indicator, and a stated reason plus fix beside every disabled primary action. Promote AI disclosure from a VP rule to a must-be on every creation path, templates included. Sharpen: browser and text test with no number; CSV contract shown before upload with per-row overrides; retries and windows on the campaign form, window defaulted from call category; DNC honoured on batch, campaign, API and single call, with in-call opt-out on by default; a Hinglish mode and language-filtered voices; INR rate table with pulse units; fixed roles on every plan. Move India data residency from a self-serve UI must-be to an architecture and contract item (no dashboard exposes it).",
+   "rationale": "Each change is tied to a capture: 6 of 6 campaign forms lack compliance fields; 3 of 6 pickers show price or latency and 3 show none; Retell, ElevenLabs and Exotel defaults leave lines open or spend unbounded; Vapi click-to-publish, Bolna and Sarvam missing unsaved state and silent disabled buttons at Vapi and Retell; 0 of 6 offer Hinglish; 0 of 6 expose residency. Parity items stay parity (open.2026-10-20.parity-floor-vs-wedge); the wedge is still measured task failure.",
+   "reverse_if": "Buyer interviews rank any added item outside the top half of switching reasons, or 5-user usability sessions show buyers complete the same tasks on an incumbent dashboard without the added item at equal time and error rates, or two or more incumbents ship the item by default before VP v1.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-synthesis-turn-taking-panel",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed: VP's turn-taking panel shows every timing in milliseconds with its range, sums them into a predicted reply gap next to the measured India p50 for that preset, ships Hindi and Hinglish backchannel, stop and acknowledgement lists as editable defaults (never discarding short replies), exposes listen-during-opening, and offers three named presets. Defaults come from VP's own battery, not from this document.",
+   "rationale": "No incumbent dashboard shows a predicted gap or a Hindi lexicon; units differ across Vapi (s), Bolna (ms), ElevenLabs (enum) and Retell (added-wait slider), and Sarvam and Exotel hide the controls. VP's own stacks still cut in on 15-42% of turns, so the panel is a design commitment, not a claimed advantage.",
+   "reverse_if": "The stereo Hinglish call battery shows an incumbent's defaults at or below VP on p50 reply gap and cut-in rate, or usability sessions show buyers do not open or understand the panel and presets alone carry the outcome.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-synthesis-stack-picker-all-in",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed: every model, voice and transcriber row in VP shows India-measured p50 and p90 latency (with n and date), INR per minute, supported Indian languages and a sample, and the agent header shows an all-in INR per connected minute that includes telephony, pulse rounding and the turn wait. Vendor-displayed figures, if shown, are labelled as vendor numbers.",
+   "rationale": "Vapi and ElevenLabs show per-row metrics but their headlines omit telephony and the wait, ElevenLabs ranges span about 10x and its price assumption is unstated, Retell shows price only, and Bolna, Sarvam and Exotel show nothing per option. The stack is a user choice in VP (decision.2026-10-20.product-stack-selectable), so the trade-off display carries the choice.",
+   "reverse_if": "Usability sessions show buyers pick from presets and never open per-row data, or measured India latency per option varies so little across the catalogue that one number per preset suffices.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-synthesis-campaign-compliance-form",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed: VP's campaign form takes the call category first (service, transactional, promotional), derives the allowed window and number series from it, and carries consent source, DND/NCPR scrub status, retries by outcome, an attempt cap and a per-contact local-time window as fields with defaults on; the CSV contract and a row-level preview with reasons show before launch; any disabled Launch names the blocking item and links to its fix.",
+   "rationale": "No incumbent campaign form has these fields (6 of 6 observed); windows default to 00:00-23:59 (Retell) or a whole-hour agent setting (Bolna); Bolna needs a published workflow before a campaign; Vapi and Retell disable the primary button with no reason, while Sarvam's inline commit gate and Bolna's 'Create one' link show the pattern that names the fix. Post-sale reminders (decision.2026-10-20.synthesis-postsale-first) depend on these.",
+   "reverse_if": "Counsel holds that service calls need no window or scrub and buyers reject the extra fields in usability sessions, or an incumbent ships category-driven windows and scrub by default before VP v1 (W1 kill bar).",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-synthesis-state-integrity",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed UI rules for VP: no menu or dropdown click creates, saves or publishes anything; drafts show an unsaved marker until saved; publish is explicit with a diff; every disabled primary action shows its reason and a link to the fix; empty, zero, loading and failed states are visually distinct (no fake chart lines, no '0 ms' on empty data); sample data is labelled as sample.",
+   "rationale": "Observed hazards: Vapi published a tool on a menu click and autosaved a draft on a dropdown choice (vapi 57); Bolna shows no unsaved marker (bolna 21) and Sarvam has no save control (sarvam-03); Vapi and Retell disable Next or Send without a reason (vapi 83, retell 24); Exotel shows generic 'Unable to load' toasts (exotel-10); Sarvam draws a wavy line on no data (sarvam-29), Retell and Sarvam show 0 ms latency on empty data, Retell shows unlabelled sample QA data (retell 46). ElevenLabs' '---' plus 'No data has been collected' (elevenlabs 7-analytics) shows the correct pattern.",
+   "reverse_if": "Usability sessions show no task errors attributable to these states on the incumbent dashboards, or the rules measurably slow expert users (for example explicit publish adds more than 10% to build time with no error reduction).",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "open.2026-10-21.wt-synthesis-evidence-plan",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Ordered evidence plan after the walkthroughs: (1) a no-cost second dashboard pass with below-the-fold screenshots and a no-click-to-create rule (Bolna New Agent Engine and Calling tabs, Vapi Advanced slider values, Sarvam Listening, Retell call settings and Agent Handbook disclosure, ElevenLabs Agent behavior and voice language filter, Exotel create form and Talk to Agent, contradiction re-checks); (2) messy-CSV uploads to draft or paused campaigns with the fail-closed renderer; (3) screen-recorded T0 sign-up to first Indian ring per vendor with owner-approved KYC and numbers; (4) the stereo Hinglish call battery, Bolna first, on dashboard-created default agents including T9c disclosure; (5) the T7 billing audit at 30, 45 and 90 s; (6) 5-user human usability sessions on the same tasks.",
+   "closes_when": "Each step has produced its artefact: pass-2 captures with the listed screens; per-vendor CSV outcome scores out of 50; T0 minutes per vendor; battery p50/p90 reply gap, cut-in rate and short-reply handling per vendor with n of 30 or more clean turns; invoice-versus-rate-card deltas; usability task times and error counts.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "risk.2026-10-21.wt-synthesis-capture-hygiene",
+   "type": "risk",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Walkthrough captures and procedure carry hazards: retell 08-call-transfer-form.png shows a full +1 transfer number in clear (origin unknown), Exotel captures 11 and 12 show the owner's phone in clear and 13 is partly redacted, one Bolna screen shows a vendor contact email, and Instinct's notes carry a person's name; clicking menus in Vapi created and published a tool and saved a draft on the vendor account.",
+   "mitigation": "Keep data/walkthroughs out of commits and published pages (data/ is gitignored); quote numbers and emails only as [phone redacted] / [email redacted]; in the next pass, never click Create-type menus and capture option lists from text instead; list every vendor-side object created in the session log.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-vapi-headline-is-component-sum",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Inference from the Vapi dashboard: the headline '~1,530 ms' on the assistant page is exactly the sum of the three component latencies (Soniox 410 + GPT-4.1 690 + Vapi voice 430), so it leaves out the 1.5 s End-of-Turn Wait, telephony transport and the handset side. The '~$0.09/min' headline is about $0.05 hosting plus $0.004 + $0.02 + $0.02 components (= $0.094) and leaves out telephony; the cost bar's teal segment is about 53% of the bar, matching hosting. Both are vendor-displayed numbers, not measured.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "measure.2026-10-21.wt-vapi-picker-catalogue-sizes",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Vapi dashboard catalogue sizes as displayed on 2026-10-21: about 92 LLM rows (about 14 repeated or deprecated), 45 voice-model rows, 40 transcriber rows, 57 transcriber languages plus Automatic, 15 Create Tool types, 52 Integrations tiles, 12 stock voices in the library grid (2 Indian-accented, both 'Indian American'). Every row shows latency, price per minute and one quality score as displayed by the vendor.",
+   "n": "7 lists counted from 7 text captures of one trial org (51-voice-model-dropdown, 52-model-dropdown, 53-transcriber-model-dropdown, 80-transcriber-languages, 56-create-tool-menu-items, 63-integrations, 75-voice-library)",
+   "method": "Rows counted by hand from the innerText of each open dropdown or page in Instinct's 2026-10-21 walkthrough; no live calls; latency, price and score values are vendor-displayed, not measured by us; the voice-library grid may be paginated.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-vapi-indic-dashboard-gap",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed in the Vapi dashboard: the Soniox language picker lists 57 languages but only Hindi, Tamil, Kannada, Marathi, Urdu (and Nepali) from South Asia, with no Bengali, Telugu, Gujarati, Malayalam or Punjabi, although the API enum lists 12 Indic codes for Soniox. No Indian speech vendor appears in any picker or in the 52-tile Integrations catalogue. The voice library shows 12 voices, two Indian-accented and both labelled 'Indian American'. The dashboard picker is narrower than the API, so a dashboard-only buyer sees less Indic coverage than exists.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-vapi-turn-taking-dashboard-surface",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed Vapi dashboard turn-taking surface: Intelligent Turn-Taking is OFF by default with a fixed End-of-Turn Wait of 1.5 s (0-3 s); the Advanced tab exposes Wait Seconds (0-5), Smart Endpointing (Off or LiveKit, English only), punctuation waits (0-3 s each) and three stop-speaking sliders (words 0-10, voice seconds 0-0.5, back-off 0-10) but no editable acknowledgement or interruption phrase lists. The 1.5 s default is the same order as Bolna's inferred 1.4 s reply floor; whether it adds to the 0.4 s start-speaking wait is unknown until a call is placed.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-vapi-displayed-vs-india-latency",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Inference: Vapi's displayed LLM latencies are at or below our India first-token medians. Six unmatched pairs: gpt-oss 500 vs 535 ms, GPT-4.1 Mini 600 vs 567, GPT-5.4 Mini 720 vs 960, Gemini 3.8 Flash 1,500 vs 1,991, GPT-4.1 690 vs 1,765, GPT-6 Luna 940 vs 1,438. Two agree within about 70 ms; four are 240-1,075 ms higher from India. The displayed figures are probably a US vantage with an undisclosed method, so they cannot be used to budget an Indian reply gap.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-vapi-campaign-wizard-blocked",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Observed: the Vapi campaign wizard has three steps (Campaign details, Contacts, Schedule). Step 1 has a name, a phone-number select, a spam-flagging 'Best Practices' callout, an Assistant/Squad choice, Max Concurrency (4 / 4, plan cap) and optional Webhook settings; Next stays disabled with no phone number, and the account has none (free Vapi numbers are US-only and inbound-only). Steps 2 and 3 were not reached. No consent, DND, DLT, calling-window or retry field appears on step 1 or anywhere else in the 64 captures.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "open.2026-10-21.wt-vapi-campaign-steps-2-3",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "What do Vapi's campaign Contacts and Schedule steps accept and show: CSV number handling, duplicates, empty rows, opt-out column, windows, time zone, recurrence, retries? The 2026-10-21 walkthrough could not pass step 1 (no phone number), so only the code and API reading from 2026-10-20 exists.",
+   "closes_when": "A screen capture of steps 2 and 3 on an org that holds an imported or free number, using a synthetic 50-row messy CSV (empty row, 10-digit Indian mobiles, duplicates, an opt-out row), with the resulting rows and ended reasons read back from the API."
+  },
+  {
+   "id": "rejected.2026-10-21.wt-vapi-click-based-capture",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Opening Vapi dropdowns and menus by clicking to capture their options in a dashboard walkthrough.",
+   "tried": "Instinct opened the voice-model dropdown and the Create Tool menu on a live trial org to read their option lists.",
+   "broke": "A stray click in the voice list selected a Cartesia voice and persisted it as a server-side draft on the Riley assistant; after restoring the voice and using Discard Changes the header still showed 'Draft'. Clicking a type in the Create Tool menu created and published a 'transfer_call_tool' immediately with no form. Both are autosave or auto-create behaviours that make click-through capture mutate the account. Capture lists from text dumps or keyboard-only reads, and treat every dropdown selection and menu item as a write.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Proposed: VP's builder UI takes these parity items from the Vapi dashboard and beats it on five specifics. Parity: searchable pickers showing latency, cost and a quality score on every row; one-click trade-off presets; explicit Draft then Publish with versions; starter templates plus describe-to-build; a tool menu covering transfer, hang up, voicemail, DTMF, SMS, SIP, API and MCP; structured outputs, scorecards, monitors, simulations and evals; logs with filters and export; provider integrations with BYOK. Beats: (1) an all-in headline that includes endpointing wait, telephony and platform fee in INR, with measured p50 and p90 from Indian lines next to any vendor number; (2) Hinglish turn-taking controls with editable backchannel and interruption lists and a language lock; (3) a complete Indic language and voice catalogue filtered by language and region; (4) a guided Indian number and compliance flow before the campaign wizard; (5) nothing is created or saved by a menu click.",
+   "rationale": "The dashboard shows the floor a buyer compares against (inline metrics, presets, drafts, observe stack) and the places it is weak for India: headline numbers that omit the wait and telephony, English-only phrase lists not editable in the UI, a narrower Indic list than its API, no India number or compliance step, and auto-create and autosave hazards. These are cheap to match and each beat is testable.",
+   "reverse_if": "Buyer interviews or usability sessions show Indian operations buyers never open the builder (they use chat setup only), or a call battery shows Vapi's defaults match VP on Hinglish reply gap and cut-ins, or Vapi ships Indian number termination and per-contact compliance objects.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-vapi-contradictions-ledger",
+   "type": "evidence",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Contradictions the Vapi dashboard walkthrough raises against earlier readings and against itself: concurrent simulations 1 in billing vs 2 from the API; ZDR 'included in Core and Pro' in Org settings vs 'add-on required' on the assistant Advanced tab; 15 Create Tool types in the capture vs 16 in Instinct's report and 26 in the API; 12 voices in the library vs 22 stock voices from the API; Soniox picker 5 Indic languages vs 12 in the API enum; '$82-$129/mo' on the pricing page matches the No-package row, not Core as Instinct's notes say; the dashboard saves drafts while the API publishes on every PATCH; Composer has no Alpha badge although the 2026-10-20 reading called it alpha. Each needs one targeted re-check before it is quoted.",
+   "path": "research/2026-10-21/walkthroughs/vapi/report.md"
+  },
+  {
+   "id": "measure.2026-10-21.wt-mainloop-pixel-check",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Main-loop pixel check of 3 decision-critical walkthrough-synthesis claims. All 3 hold:\n- Retell batch window default 00:00-23:59 Mon-Sun, with Send Now as the default, no agent selector, and Send disabled with no reason given;\n- Bolna 3.5 + 0.5 + 2 = 6 cents, 30 s pulse on each line, concurrency 2;\n- ElevenLabs 0 of 9 system tools active.\nThe ElevenLabs claim carries a caveat: that agent ('[Eval] Synthetic Clinic Demo') pre-existed from account setup by an unknown path, so it is not a proven default for dashboard-created agents.",
+   "n": "3 claims, 3 screenshots (retell 25-calls-can-run-shot, bolna 34-account, elevenlabs 42-agent-tools)",
+   "method": "Main loop (Opus 5.5 extra-high) opened each PNG and compared it with the SYNTHESIS.md text; agent provenance checked in research/2026-10-20/account-phase/elevenlabs/report.md ('Pre-existing agent ... was only read'). 2026-10-21.",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "evidence.2026-10-21.wt-workflow-run",
+   "type": "evidence",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Dashboard walkthrough analysis complete (wf_fcd977b3-a09, 30/30 agents, 0 errors). Stages: 23 Sonnet screen readers over 207 screenshots; 6 Sonnet vendor analysts that read 219 text captures and opened 141 screenshots directly (344 claims, 346 captured defaults); 1 Opus extra-high synthesis that re-opened 84 screenshots and corrected 9 analyst claims. About 5.0M subagent tokens over 74 min. Outputs are in research/2026-10-21/walkthroughs/ (per-vendor report.md, claims.json, defaults.json; SYNTHESIS.md).",
+   "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
   }
  ],
  "edges": [
@@ -26334,6 +27092,961 @@
    "from": "measure.2026-10-21.walkthrough-fetch",
    "to": "evidence.2026-10-20.account-synthesis",
    "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-bolna-displayed-price-structure",
+   "to": "evidence.2026-10-20.bolna-blind-unit-economics",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-bolna-displayed-price-structure",
+   "to": "directive.2026-10-17.price-target",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-platform-fee-inside-6c",
+   "to": "open.2026-10-20.bolna-blind-platform-fee",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-platform-fee-inside-6c",
+   "to": "evidence.2026-10-20.bolna-blind-unit-economics",
+   "relation": "challenges"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-platform-fee-inside-6c",
+   "to": "measure.2026-10-21.wt-bolna-displayed-price-structure",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-engine-defaults-vs-docs",
+   "to": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-engine-defaults-vs-docs",
+   "to": "evidence.2026-10-20.acct-bolna-api-drift",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-engine-defaults-vs-docs",
+   "to": "open.2026-10-20.acct-bolna-battery-items",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-engine-defaults-vs-docs",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-campaign-no-compliance-fields",
+   "to": "evidence.2026-10-20.bolna-blind-india-plumbing",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-campaign-no-compliance-fields",
+   "to": "decision.2026-10-20.regulation-segment-compliance-core",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-campaign-no-compliance-fields",
+   "to": "open.2026-10-20.bolna-blind-calling-window",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-vobiz-kyc-allows-persons",
+   "to": "evidence.2026-10-20.bolna-blind-india-plumbing",
+   "relation": "challenges"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-bolna-workflow-gated-outbound",
+   "to": "evidence.2026-10-20.acct-bolna-campaign-model",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-bolna-parity-floor",
+   "to": "decision.2026-10-20.acct-synthesis-parity-floor",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-bolna-parity-floor",
+   "to": "directive.2026-10-20.product-brief",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-bolna-parity-floor",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-bolna-beat-list",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-21.wt-bolna-beat-list",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-bolna-beat-list",
+   "to": "evidence.2026-10-21.wt-bolna-engine-defaults-vs-docs",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-bolna-beat-list",
+   "to": "evidence.2026-10-21.wt-bolna-campaign-no-compliance-fields",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-21.wt-bolna-dashboard-default-agent",
+   "to": "evidence.2026-10-21.wt-bolna-engine-defaults-vs-docs",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-21.wt-bolna-dashboard-default-agent",
+   "to": "open.2026-10-20.acct-bolna-battery-items",
+   "relation": "extends"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-bolna-filename-as-page-label",
+   "to": "rejected.2026-10-21.drive-read-for-screenshots",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-elevenlabs-picker-catalogue-sizes",
+   "to": "measure.2026-10-20.acct-elevenlabs-config-surface-size",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-elevenlabs-picker-catalogue-sizes",
+   "to": "evidence.2026-10-20.acct-elevenlabs-hinglish-mode-undocumented",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-llm-price-assumption-gap",
+   "to": "measure.2026-10-20.acct-elevenlabs-default-llm-cost",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-llm-price-assumption-gap",
+   "to": "measure.2026-10-20.elevenlabs-india-all-in-price",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-turn-control-shape",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-turn-control-shape",
+   "to": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-turn-control-shape",
+   "to": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-turn-control-shape",
+   "to": "measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-no-india-outbound-controls",
+   "to": "evidence.2026-10-20.elevenlabs-no-india-compliance",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-no-india-outbound-controls",
+   "to": "evidence.2026-10-20.elevenlabs-hidden-campaigns",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-no-india-outbound-controls",
+   "to": "evidence.2026-10-20.elevenlabs-exotel-native",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-no-india-outbound-controls",
+   "to": "decision.2026-10-20.regulation-segment-compliance-core",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-elevenlabs-plan-minutes-are-prepaid-fee",
+   "to": "measure.2026-10-20.elevenlabs-india-all-in-price",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-elevenlabs-plan-minutes-are-prepaid-fee",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-architect-free-alpha",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-elevenlabs-architect-free-alpha",
+   "to": "risk.2026-10-20.elevenlabs-campaigns-and-price",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-elevenlabs-parity-floor",
+   "to": "decision.2026-10-20.synthesis-parity-floor-kano",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-elevenlabs-parity-floor",
+   "to": "decision.2026-10-20.acct-elevenlabs-parity-floor-items",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-elevenlabs-parity-floor",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-21.wt-elevenlabs-beat-list",
+   "to": "decision.2026-10-20.acct-elevenlabs-beat-list-api-visible",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-elevenlabs-beat-list",
+   "to": "evidence.2026-10-21.wt-elevenlabs-no-india-outbound-controls",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-elevenlabs-beat-list",
+   "to": "evidence.2026-10-21.wt-elevenlabs-turn-control-shape",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-elevenlabs-walkthrough-outbound-path",
+   "to": "open.2026-10-20.elevenlabs-account-phase",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-21.wt-elevenlabs-default-agent-live-behaviour",
+   "to": "open.2026-10-20.acct-elevenlabs-live-behaviour-unmeasured",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-21.wt-elevenlabs-default-agent-live-behaviour",
+   "to": "evidence.2026-10-21.wt-elevenlabs-turn-control-shape",
+   "relation": "derived-from"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-builder-surface",
+   "to": "evidence.2026-10-20.exotel-claims",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-builder-surface",
+   "to": "evidence.2026-10-20.exotel-rails-for-everyone",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-turn-taking-not-tunable",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-turn-taking-not-tunable",
+   "to": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-turn-taking-not-tunable",
+   "to": "evidence.2026-10-21.wt-exotel-builder-surface",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-21.wt-exotel-displayed-limits-and-credits",
+   "to": "measure.2026-10-20.exotel-cogs-and-price",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-exotel-displayed-limits-and-credits",
+   "to": "directive.2026-10-17.price-target",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-campaign-no-compliance-fields",
+   "to": "evidence.2026-10-20.exotel-india-plumbing",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-campaign-no-compliance-fields",
+   "to": "evidence.2026-10-20.synthesis-compliance-left-to-buyer",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-campaign-no-compliance-fields",
+   "to": "decision.2026-10-20.regulation-segment-compliance-core",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-21.wt-exotel-account-region",
+   "to": "evidence.2026-10-20.exotel-india-plumbing",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-exotel-campaign-walk-unverified",
+   "to": "open.2026-10-20.exotel-account-phase",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-exotel-filename-as-page-label",
+   "to": "measure.2026-10-21.walkthrough-fetch",
+   "relation": "informs"
+  },
+  {
+   "from": "risk.2026-10-21.wt-exotel-unredacted-phone-in-captures",
+   "to": "measure.2026-10-21.walkthrough-fetch",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-exotel-parity-and-beat",
+   "to": "decision.2026-10-20.synthesis-parity-floor-kano",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-exotel-parity-and-beat",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-exotel-parity-and-beat",
+   "to": "decision.2026-10-20.exotel-rails-not-rival-in-ux",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-exotel-parity-and-beat",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.wt-exotel-parity-and-beat",
+   "to": "evidence.2026-10-21.wt-exotel-builder-surface",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-21.wt-exotel-live-call-questions",
+   "to": "open.2026-10-20.exotel-account-phase",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-21.wt-exotel-live-call-questions",
+   "to": "open.2026-10-20.acct-synthesis-walkthrough-and-battery",
+   "relation": "part-of"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-exotel-builder-surface",
+   "to": "risk.2026-10-20.vendor-terms",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-dashboard-claims",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-dashboard-claims",
+   "to": "evidence.2026-10-20.retell-lane",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-dashboard-claims",
+   "to": "open.2026-10-20.retell-account-phase",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-dashboard-claims",
+   "to": "evidence.2026-10-20.trial-accounts-report",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-21.wt-retell-default-turn-taking-and-call-limits",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-retell-default-turn-taking-and-call-limits",
+   "to": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-retell-default-turn-taking-and-call-limits",
+   "to": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-retell-model-voice-language-catalogues",
+   "to": "measure.2026-10-20.acct-retell-india-voice-and-language-depth",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-retell-model-voice-language-catalogues",
+   "to": "evidence.2026-10-20.acct-retell-platform-voices-are-relisted",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-21.wt-retell-model-voice-language-catalogues",
+   "to": "measure.2026-10-20.retell-india-allin-price",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-batch-form-no-compliance-fields",
+   "to": "evidence.2026-10-20.retell-surface-outbound",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-batch-form-no-compliance-fields",
+   "to": "evidence.2026-10-20.retell-india-compliance-absent",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-batch-form-no-compliance-fields",
+   "to": "open.2026-10-20.acct-retell-batch-semantics",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-21.wt-retell-dnc-skip-claim",
+   "to": "evidence.2026-10-20.retell-india-compliance-absent",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-21.wt-retell-dnc-skip-claim",
+   "to": "open.2026-10-20.acct-retell-batch-semantics",
+   "relation": "part-of"
+  },
+  {
+   "from": "open.2026-10-21.wt-retell-multiselect-language-semantics",
+   "to": "evidence.2026-10-20.retell-indic-language-gaps",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-contradictions-to-prior",
+   "to": "evidence.2026-10-20.retell-lane",
+   "relation": "challenges"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-retell-contradictions-to-prior",
+   "to": "evidence.2026-10-20.acct-retell-claims",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-retell-parity-floor",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.wt-retell-parity-floor",
+   "to": "directive.2026-10-20.intent-better-product",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-retell-parity-floor",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-retell-beat-list",
+   "to": "decision.2026-10-20.acct-retell-beat-list",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-retell-beat-list",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.wt-retell-beat-list",
+   "to": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "decision.2026-10-21.wt-retell-beat-list",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-retell-walkthrough-outbound-path",
+   "to": "open.2026-10-20.retell-account-phase",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-retell-walkthrough-outbound-path",
+   "to": "evidence.2026-10-20.trial-accounts-report",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-21.wt-sarvam-voice-catalogue-counts",
+   "to": "evidence.2026-10-20.acct-sarvam-voice-persona-catalog",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-sarvam-voice-catalogue-counts",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-sarvam-displayed-price-card",
+   "to": "measure.2026-10-20.sarvam-effective-price-per-connected-min",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-21.wt-sarvam-displayed-price-card",
+   "to": "directive.2026-10-17.price-target",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-defaults-captured",
+   "to": "evidence.2026-10-20.acct-sarvam-claims",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-defaults-captured",
+   "to": "decision.2026-10-20.acct-sarvam-parity-floor-items",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-turn-taking-numbers-hidden",
+   "to": "evidence.2026-10-20.acct-sarvam-stt-vad-knobs",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-turn-taking-numbers-hidden",
+   "to": "evidence.2026-10-20.bolna-check-turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-turn-taking-numbers-hidden",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-turn-taking-numbers-hidden",
+   "to": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-model-trade-offs-hidden",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-model-trade-offs-hidden",
+   "to": "directive.2026-10-19.hear-before-choose",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-mimicry-defaults-and-disclosure",
+   "to": "evidence.2026-10-20.sarvam-lane",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-mimicry-defaults-and-disclosure",
+   "to": "decision.2026-10-20.sarvam-where-vp-wins",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-campaign-gate-compliance-absent",
+   "to": "evidence.2026-10-20.sarvam-compliance-gaps",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-sarvam-campaign-gate-compliance-absent",
+   "to": "open.2026-10-21.wt-sarvam-live-call-questions",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-21.wt-sarvam-parity-and-beat",
+   "to": "decision.2026-10-20.acct-sarvam-parity-floor-items",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-sarvam-parity-and-beat",
+   "to": "decision.2026-10-20.acct-sarvam-beat-where-thin",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-sarvam-parity-and-beat",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.wt-sarvam-parity-and-beat",
+   "to": "rejected.2026-10-17.parity-undercut",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-21.wt-sarvam-parity-and-beat",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "informed-by"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-sarvam-notes-citations-as-evidence",
+   "to": "measure.2026-10-21.walkthrough-fetch",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-21.wt-sarvam-live-call-questions",
+   "to": "open.2026-10-20.acct-synthesis-walkthrough-and-battery",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-21.wt-sarvam-live-call-questions",
+   "to": "open.2026-10-20.sarvam-account-phase",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-headline",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-headline",
+   "to": "open.2026-10-20.acct-synthesis-walkthrough-and-battery",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-headline",
+   "to": "evidence.2026-10-20.synthesis-teardown",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-headline",
+   "to": "directive.2026-10-20.llm-native",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-synthesis-defaults-table",
+   "to": "evidence.2026-10-21.wt-synthesis-headline",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-21.wt-synthesis-defaults-table",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-synthesis-defaults-table",
+   "to": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-compliance-absent-at-dial",
+   "to": "evidence.2026-10-20.synthesis-compliance-left-to-buyer",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-compliance-absent-at-dial",
+   "to": "measure.2026-10-20.acct-synthesis-india-operator-layer",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-compliance-absent-at-dial",
+   "to": "decision.2026-10-20.synthesis-where-we-win",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-reply-gap-invisible",
+   "to": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-reply-gap-invisible",
+   "to": "evidence.2026-10-20.bolna-check-turn-taking",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-reply-gap-invisible",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-headline-numbers-are-component-sums",
+   "to": "measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs",
+   "relation": "informed-by"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-headline-numbers-are-component-sums",
+   "to": "measure.2026-10-20.vapi-india-all-in-price",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-headline-numbers-are-component-sums",
+   "to": "measure.2026-10-20.synthesis-india-allin-prices",
+   "relation": "challenges"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-defaults-hold-lines-and-spend",
+   "to": "measure.2026-10-20.acct-synthesis-billing-surface",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-defaults-hold-lines-and-spend",
+   "to": "directive.2026-10-20.agent-hangup",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-no-indian-ring",
+   "to": "decision.2026-10-20.synthesis-where-we-win",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-no-indian-ring",
+   "to": "open.2026-10-20.synthesis-account-phase-plan",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-synthesis-analyst-corrections",
+   "to": "evidence.2026-10-21.wt-synthesis-headline",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-must-be-changes",
+   "to": "decision.2026-10-20.synthesis-parity-floor-kano",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-must-be-changes",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-must-be-changes",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-must-be-changes",
+   "to": "evidence.2026-10-21.wt-synthesis-headline",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-turn-taking-panel",
+   "to": "evidence.2026-10-21.wt-synthesis-reply-gap-invisible",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-turn-taking-panel",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-turn-taking-panel",
+   "to": "directive.2026-10-18.voice-core",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-stack-picker-all-in",
+   "to": "decision.2026-10-20.product-stack-selectable",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-stack-picker-all-in",
+   "to": "evidence.2026-10-21.wt-synthesis-headline-numbers-are-component-sums",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-stack-picker-all-in",
+   "to": "open.2026-10-20.reprice-tiers",
+   "relation": "requires"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-campaign-compliance-form",
+   "to": "evidence.2026-10-21.wt-synthesis-compliance-absent-at-dial",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-campaign-compliance-form",
+   "to": "decision.2026-10-20.synthesis-postsale-first",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-campaign-compliance-form",
+   "to": "decision.2026-10-20.acct-synthesis-vp-data-model",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-state-integrity",
+   "to": "measure.2026-10-20.acct-synthesis-config-integrity",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-synthesis-state-integrity",
+   "to": "decision.2026-10-20.acct-synthesis-beat-list",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-21.wt-synthesis-evidence-plan",
+   "to": "open.2026-10-20.synthesis-account-phase-plan",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-21.wt-synthesis-evidence-plan",
+   "to": "open.2026-10-20.handset-reply-gap",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-21.wt-synthesis-evidence-plan",
+   "to": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "relation": "tests"
+  },
+  {
+   "from": "risk.2026-10-21.wt-synthesis-capture-hygiene",
+   "to": "risk.2026-10-20.synthesis-test-list-dials-strangers",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-headline-is-component-sum",
+   "to": "measure.2026-10-20.vapi-india-all-in-price",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-headline-is-component-sum",
+   "to": "measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.wt-vapi-picker-catalogue-sizes",
+   "to": "measure.2026-10-20.acct-vapi-indic-stt-matrix",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-indic-dashboard-gap",
+   "to": "measure.2026-10-20.acct-vapi-indic-stt-matrix",
+   "relation": "challenges"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-indic-dashboard-gap",
+   "to": "evidence.2026-10-20.acct-vapi-no-india-objects",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-turn-taking-dashboard-surface",
+   "to": "evidence.2026-10-20.bolna-check-turn-taking",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-turn-taking-dashboard-surface",
+   "to": "evidence.2026-10-20.acct-bolna-reply-floor",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-turn-taking-dashboard-surface",
+   "to": "risk.2026-10-20.acct-synthesis-turn-taking-beat-unproven",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-turn-taking-dashboard-surface",
+   "to": "open.2026-10-19.turn-taking",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-displayed-vs-india-latency",
+   "to": "measure.2026-10-20.brain-ttft-india-v2",
+   "relation": "informed-by"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-displayed-vs-india-latency",
+   "to": "measure.2026-10-19.brain-ttft-india",
+   "relation": "informed-by"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-campaign-wizard-blocked",
+   "to": "evidence.2026-10-20.vapi-campaign-engine-limits",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-campaign-wizard-blocked",
+   "to": "open.2026-10-21.wt-vapi-campaign-steps-2-3",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-21.wt-vapi-click-based-capture",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "to": "evidence.2026-10-21.wt-vapi-headline-is-component-sum",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "to": "evidence.2026-10-21.wt-vapi-indic-dashboard-gap",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "to": "evidence.2026-10-21.wt-vapi-turn-taking-dashboard-surface",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "to": "evidence.2026-10-21.wt-vapi-campaign-wizard-blocked",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "to": "decision.2026-10-20.acct-vapi-parity-floor-items",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "to": "decision.2026-10-20.acct-vapi-contact-compliance-layer",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.wt-vapi-builder-parity-and-beats",
+   "to": "open.2026-10-20.parity-floor-vs-wedge",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-contradictions-ledger",
+   "to": "evidence.2026-10-20.acct-vapi-claims",
+   "relation": "extends"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-vapi-contradictions-ledger",
+   "to": "measure.2026-10-20.acct-vapi-account-limits",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-21.wt-mainloop-pixel-check",
+   "to": "evidence.2026-10-21.wt-synthesis-defaults-hold-lines-and-spend",
+   "relation": "qualifies"
+  },
+  {
+   "from": "measure.2026-10-21.wt-mainloop-pixel-check",
+   "to": "open.2026-10-21.wt-elevenlabs-default-agent-live-behaviour",
+   "relation": "qualifies"
+  },
+  {
+   "from": "measure.2026-10-21.wt-mainloop-pixel-check",
+   "to": "evidence.2026-10-21.wt-synthesis-compliance-absent-at-dial",
+   "relation": "supports"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-workflow-run",
+   "to": "decision.2026-10-21.wt-synthesis-must-be-changes",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-workflow-run",
+   "to": "decision.2026-10-21.sonnet-reads-screenshots",
+   "relation": "applies"
+  },
+  {
+   "from": "evidence.2026-10-21.wt-workflow-run",
+   "to": "open.2026-10-20.product-decision",
+   "relation": "informs"
   }
  ]
 }

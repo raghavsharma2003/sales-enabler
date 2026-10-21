@@ -1,6 +1,6 @@
 # Direction — read this first
 
-_Last rewritten 2026-10-20. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
+_Last rewritten 2026-10-21. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
 
 ## What we are building
 
@@ -27,13 +27,38 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
   - v1: what competitors have, made better on design, usability, case handling and intelligence.
   - Setup is LLM-native and chat-driven (`directive.2026-10-20.llm-native`).
   - v2 brings memory, personalisation and self-learning, built on harness2.
-- **Step 1 is the competitor teardown.** It is deeper, not bigger, and uses REA. Proposed brief:
-  `research/2026-10-20/product/teardown-brief.md`. Nothing launches before the owner says go. It needs trial accounts
-  created by the owner (`open.2026-10-20.trial-accounts`).
+- **Step 1, the competitor teardown, is complete (2026-10-21).** Three passes, all with 0 agent errors and 0 spend:
+  1. Public material: `research/2026-10-20/teardown/SYNTHESIS.md`. Covers 8 vendors; 344 claims verified; 125
+     predictions; W1–W10 hypotheses; 21 must-be items.
+  2. Authorised API/SDK on our own keys: `research/2026-10-20/account-phase/SYNTHESIS.md`.
+  3. Instinct's dashboard walk-throughs of Vapi, Retell, Bolna, ElevenLabs, Sarvam and Exotel:
+     `research/2026-10-21/walkthroughs/SYNTHESIS.md`. Per-vendor `report.md`, `claims.json` (344) and `defaults.json`
+     (346) sit beside it.
+
+  Pass 3 proposes 4 must-be additions (`decision.2026-10-21.wt-synthesis-must-be-changes`):
+  - **A.** Price and India-measured latency at every stack choice, plus an all-in INR per minute.
+  - **B.** Contacts with DND and attempt history.
+  - **C.** Bounded call and spend defaults.
+  - **D.** State integrity: no click-to-publish, unsaved markers, a reason on every disabled action.
+
+  It also promotes AI disclosure to a must-be, and moves India data residency into architecture and contract terms.
+- **What all six dashboards confirm:**
+  - 0 of 6 put consent, DND or DLT on the campaign form;
+  - 0 of 6 show a predicted reply gap;
+  - 0 of 6 offer a Hinglish mode;
+  - none reached a ring on an Indian line.
+- **What stays unproven:** W3 and W4 (reply gap, Hinglish turn-taking), W2 (CSV) and W7 (first Indian ring). They need
+  live calls. The ordered plan is `open.2026-10-21.wt-synthesis-evidence-plan`.
+- **Next: the owner decides what product to build** (`open.2026-10-20.product-decision`). The owner has not yet
+  chosen between writing the full dimension-by-dimension blueprint first and talking through the big forks first.
   - **Watch:** parity as a *wedge* was rejected on 2026-10-17. v1 has to win on measured task failures, not on feature
-    count (`open.2026-10-20.parity-floor-vs-wedge`).
+    count (`open.2026-10-20.parity-floor-vs-wedge`). The dashboards confirm chat setup is parity (5 of 6 ship a
+    copilot).
   - **Watch:** pre-sale vs post-sale is partly a TRAI question (`open.2026-10-20.presale-vs-postsale`). It is a
     go-to-market input, not the organising question (`directive.2026-10-20.intent-better-product`).
+- **Screenshots are read by Sonnet, not Haiku.** Haiku failed a pre-registered calibration
+  (`decision.2026-10-21.sonnet-reads-screenshots`). Drive's read call returns OCR text only, so screenshots are fetched
+  as pixels with `scripts/walkthrough-drive.mjs` (`rejected.2026-10-21.drive-read-for-screenshots`).
 - **The goal of the research:** understand each competitor's product end to end, then design VP to be better in every
   dimension, with VP's own features on top. The final brief is a dimension-by-dimension product blueprint
   (`decision.2026-10-20.blueprint-frame`). For each dimension it gives:
@@ -115,6 +140,7 @@ The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round
 | Credential hygiene | Rotate the pasted secrets: Plivo token, the free keys, mailbox passwords (`risk.2026-10-20.secrets-pasted`). Not confirmed done. |
 | Plivo trial | ₹764 credit expires 2026-11-16, with an ₹80 monthly usage cap. Recharge is the owner's decision. |
 | Round-2 human ratings | After Vertex returns (`open.2026-10-20.round2-human-ratings`). |
+| Teardown account hygiene | Rotate the pasted vendor passwords and keys. Delete the draft objects Instinct left in the vendor accounts (side-effects ledger in Drive `00-FINAL-REPORT.md`). Instinct's Drive captures hold the owner's phone (Exotel 11, 12) and a +1 number (Retell 08); the local copies are gitignored (`risk.2026-10-21.wt-synthesis-capture-hygiene`). |
 
 ## Where things live
 
@@ -122,6 +148,7 @@ The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round
 |---|---|
 | Voice lab | `voicelab/`. README; live at the VM URL in `voicelab/README.md`. |
 | Lab research | `research/2026-10-19/voicelab/`, `research/2026-10-20/voicelab/` |
+| Competitor teardown | `research/2026-10-20/teardown/`, `research/2026-10-20/account-phase/`, `research/2026-10-21/walkthroughs/`; raw captures in `data/walkthroughs/` (gitignored; originals in the owner's Drive folder "Voice-AI Product Evaluation 2026-10-21") |
 | Pricing and stack research | `research/2026-10-18/` (`SYNTHESIS.md`, `model/`) |
 | Next.js product (older "Relay" build) | `app/`, `lib/`, `components/`. The owner judged it stale (`directive.2026-10-15.codex-baseline-stale`). |
 | Inherited laws from Meera/Maya and Taxila | `docs/harvest/` and the `asset.hp-*` / `repo.*` nodes |
