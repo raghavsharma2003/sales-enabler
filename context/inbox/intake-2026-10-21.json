@@ -16,9 +16,9 @@
       "status": "measured",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "A 50,000-row CSV (2.94 MB, 7 columns, 50 Excel-mangled rows) imports in one transaction in 19.4-21.7 s alone (n=7) and re-imports in 7.7-13.0 s; inside the full product suite at concurrency 4 the same commit took 16.1-80.6 s (n=7)",
-      "n": 14,
-      "method": "product/tests/intake-scale.test.ts: upload in 4 parts over HTTP, source.map, then source.commit via registry.execute; throwaway Postgres 16 on the coding sandbox (4 vCPU, 15 GB); wall-clock around the commit call; 7 solo runs, 7 full-suite runs (one of them failed the old 60 s budget at 74.4 s). Sampling pg_stat_activity during a slow full run showed no lock waits.",
+      "title": "A 50,000-row CSV (2.94 MB, 7 columns, 50 Excel-mangled rows) imports in one transaction in 18.9-21.7 s alone (n=9) and re-imports in 7.7-13.0 s; inside the full product suite at concurrency 4 the same commit took 16.1-80.6 s (n=8). A measurement, not a CI gate (VP_PERF=1 asserts 60 s)",
+      "n": 17,
+      "method": "product/tests/intake-scale.test.ts: upload in 4 parts over HTTP, source.map, then source.commit via registry.execute; throwaway Postgres 16 on the coding sandbox (4 vCPU, 15 GB); wall-clock around the commit call; 9 solo runs, 8 full-suite runs (one of them failed the old 60 s budget at 74.4 s). Sampling pg_stat_activity during a slow full run showed no lock waits. Dates: all 2026-10-21.",
       "path": "product/server/modules/intake/STATUS.json"
     },
     {
@@ -77,7 +77,7 @@
       "status": "open",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "Under the full product suite (4 test files at once) the 50k import intermittently runs 3-4x slower (up to 81 s) with Postgres mostly idle and no lock waits; the scale test ceiling is 120 s for that reason, and the first uncaptured failure was most likely the old 60 s budget",
+      "title": "Under the full product suite (4 test files at once) the 50k import intermittently runs 3-4x slower (up to 81 s) with Postgres mostly idle and no lock waits; speed is therefore a measurement, asserted only with VP_PERF=1 (60 s), after it also failed on a loaded 2-core CI runner, and the first uncaptured failure was most likely the old 60 s budget",
       "closes_when": "A profile of a slow full-suite run shows where the time goes (Node CPU, a sibling test, or I/O), or ten full runs stay under 30 s."
     },
     {
@@ -177,6 +177,11 @@
       "date": "2026-10-21",
       "event": "intake-retention-built",
       "details": "policy.retention.set/get and the intake.retention nightly job added (migration 0103); store.ts uses server/identity.ts; 18/18 intake tests. Not verified: calls/memory honouring the recordings/transcripts days."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-scale-test-not-a-gate",
+      "details": "The 50k intake test now always checks correctness (rows, dedupe, verdicts) and asserts the 60 s bound only with VP_PERF=1; requested by the integrator after a 2-core CI runner failed the wall-clock gate. Measurement stays measure.2026-10-21.intake-50k-import."
     }
   ]
 }
