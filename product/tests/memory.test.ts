@@ -407,6 +407,16 @@ test('minorStatus reads age, date of birth and minor flags, and fails closed', (
   assert.equal(v('उम्र', 16), 'minor', 'the real stored Devanagari key, marks intact');
   assert.equal(v('is_minor', 'haan'), 'minor');
   assert.equal(v('child_name', 'Synthetic'), 'unknown', 'a child-name column is not a minor flag');
+  assert.equal(v('birth_year', 2012), 'minor');
+  assert.equal(v('birth_year', '2008'), 'minor', 'a bare year is read as the younger possible age (17 or 18)');
+  assert.equal(v('birth_year', 2007), 'adult');
+  assert.equal(v('birth_year', 'nineties'), 'unclear');
+  assert.equal(v('customer_yob', 2012), 'minor', 'older rows are canonicalised by canonicalAgeKey');
+  assert.equal(v('age_group', '13-17'), 'minor');
+  assert.equal(v('age_group', '18-24'), 'adult');
+  assert.equal(v('age_group', '60+'), 'adult');
+  assert.equal(v('age_group', 'under 18'), 'minor', 'under 18 has no bound below 18 but is a minor');
+  assert.equal(v('age_group', 'young'), 'unclear');
 });
 
 test('imported contacts: age or birth date in attribute rows blocks extraction and the brief', { skip }, async () => {

@@ -26,7 +26,7 @@
   "memory.extract asks the model in prepare() outside any transaction; run() re-reads every gate input under a row lock and commits nothing if the transcript changed since the model saw it (failed runs are retryable)",
   "forgetContactMemory(q, workspaceId, contactId) in server/modules/memory/forget.ts (also re-exported from index.ts): deletes all of a contact's facts on the caller's Queryable, joining its transaction; used by contact.memory.forget",
   "test calls (channel=test or run_manifest.test) skipped before any model call; live calls, agent memory.write=false and opted-out contacts skipped",
-  "children's-data gate (minor.ts): reads attribute rows and contact.custom; intake's canonical keys (date_of_birth, age, is_minor) first, then intake's canonicalAgeKey for any other key, so one list decides ('Customer DOB' counts, 'Vehicle Age' does not); under 18 or any unreadable value blocks extraction (skip minor / age_unclear, model never called) and the brief (status minor / age_unclear)"
+  "children's-data gate (minor.ts): reads attribute rows and contact.custom; intake's canonical keys (date_of_birth, birth_year, age_group, age, is_minor) first; birth_year read as the younger possible age, age_group minor if it says under/below or any bound < 18, unclear if it has no number, then intake's canonicalAgeKey for any other key, so one list decides ('Customer DOB' counts, 'Vehicle Age' does not); under 18 or any unreadable value blocks extraction (skip minor / age_unclear, model never called) and the brief (status minor / age_unclear)"
  ],
  "untested": [
   "real LLM extraction quality",

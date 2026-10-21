@@ -7,7 +7,7 @@ import { canonicalAgeKey, type AgeKey } from '../intake/index.ts';
 
 export type MinorStatus = 'adult' | 'minor' | 'unclear' | 'unknown';   // unknown = no age data at all
 
-const CANONICAL: readonly string[] = ['date_of_birth', 'age', 'is_minor'] satisfies AgeKey[];
+const CANONICAL: readonly string[] = ['date_of_birth', 'birth_year', 'age_group', 'age', 'is_minor'] satisfies AgeKey[];
 const ageKey = (k: string): AgeKey | null => CANONICAL.includes(k) ? k as AgeKey : canonicalAgeKey(k);
 const asciiDigits = (s: string) => s.replace(/[०-९]/g, ch => String('०१२३४५६७८९'.indexOf(ch)));
 const YES = /^(true|yes|y|1|haan|ha|han|हाँ|हां)$/i, NO = /^(false|no|n|0|nahi|nahin|नहीं)$/i;
@@ -36,6 +36,14 @@ export function minorStatus(fields: { key: string; value: unknown }[], now: Date
       // A plain number of years is read; anything else ("17-19", "teen", "approx 30") is a minor if any number is under 18, else unclear.
       const plain = /^(\d{1,3})(?:\.\d+)?\s*(years?|yrs?|y|saal|sal|वर्ष|साल)?$/i.exec(raw);
       verdicts.push(plain ? (+plain[1] < 18 ? 'minor' : 'adult') : [...raw.matchAll(/\d+/g)].some(x => +x[0] < 18) ? 'minor' : 'unclear');
+    } else if (key === 'birth_year') {
+      // A year alone could be either side of a birthday: read it as the younger possible age.
+      const y = /^(\d{4})(?:\.0+)?$/.exec(raw);
+      verdicts.push(!y ? 'unclear' : now.getUTCFullYear() - +y[1] - 1 < 18 ? 'minor' : 'adult');
+    } else if (key === 'age_group') {
+      // "13-17", "18-24", "60+", "under 18": minor if it says under/below or any bound is under 18; no number at all is unclear.
+      const nums = [...raw.matchAll(/\d+/g)].map(x => +x[0]);
+      verdicts.push(/\b(under|below|less than|upto|up to|se kam)\b|<|कम/i.test(raw) || nums.some(n => n < 18) ? 'minor' : nums.length ? 'adult' : 'unclear');
     } else if (key === 'date_of_birth') {
       const age = ageFrom(raw, now);
       verdicts.push(age === null ? 'unclear' : age < 18 ? 'minor' : 'adult');
