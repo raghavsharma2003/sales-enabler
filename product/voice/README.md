@@ -153,6 +153,30 @@ Every cost line is integer milli-rupees at ₹95/$, using `catalog.py`'s list pr
 Lines are deltas, emitted after each reply and at the end, and they always sum to the rounded total. `limits.maxCostInrMilli`
 and `limits.maxDurationS` end the call (`max_cost`, `max_duration`) after a short goodbye.
 
+## Audio-path capacity
+
+`bench/audio_bench.py` runs N concurrent phone calls in one runtime process through the real audio path, with no
+network beyond localhost and no keys. Each call is a Plivo-style mu-law 8 kHz media websocket. The path is:
+decode → resample → Silero VAD → turn-taking → reply door → resample → encode → `playAudio`.
+
+Ears, brain and voice are fakes with realistic timing: final transcript +300 ms, first sentence +700 ms, first audio
++250 ms, then real time. Callers play synthetic speech clips, which need ffmpeg to decode. The runtime runs in its own
+process, so the load generator's CPU is not counted against it.
+
+The bench reports:
+- CPU, total and per call;
+- RSS;
+- event-loop lag;
+- outbound frame jitter and late frames;
+- the runtime's own turn-end → first-audio overhead;
+- the generator's own lag, as a sanity check on the jitter numbers.
+
+```
+cd product/voice
+python bench/audio_bench.py --calls 10 25 50 100 --seconds 120
+python bench/audio_bench.py --calls 50 --seconds 60 --profile     # cProfile the runtime at one N
+```
+
 ## Runtime events and ingest parity
 
 `tests/test_runtime_fixture.py` runs sim calls that produce every RuntimeEvent type and all three judge outcomes, and
