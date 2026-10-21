@@ -24,19 +24,23 @@
    "id": "measurement.2026-10-21.web-bundle-size",
    "type": "measurement",
    "title": "Web bundle: first load 81.4 KB gzip (main JS + CSS), all page chunks 137.5 KB gzip, 431.6 KB raw, built by esbuild with React 19 and lucide-react.",
-   "status": "active",
+   "status": "measured",
    "date": "2026-10-21",
    "source": "node product/web/build.mjs, n=1 build",
-   "rationale": "Budget in the design language is 170 KB gzip JS per route; the test pins 100 KB first load and 200 KB total."
+   "rationale": "Budget in the design language is 170 KB gzip JS per route; the test pins 100 KB first load and 200 KB total.",
+   "n": 1,
+   "method": "node product/web/build.mjs (esbuild, React 19, lucide-react), gzip sizes of the emitted dist files; one build",
+   "value": "81.4 KB gzip first load; 137.5 KB gzip all chunks"
   },
   {
    "id": "open.2026-10-21.web-gaps-on-real-tools",
-   "type": "open",
+   "type": "open-question",
    "title": "Web now runs on the real tools (ui-contract --strict 78/78, held by tests/web.test.ts). Gaps the UI states honestly: no tool lists the workspace's numbers or proves a member's own phone; no saved simulated callers; no stack sample clips, recordings or waveform peaks; the fake model makes practice callers fail every check, so those verdicts mean nothing.",
    "status": "open",
    "date": "2026-10-21",
    "source": "web builder",
-   "rationale": "Verified against the real server with data made through the real tools; calls were seeded through the signed runtime hook because the sandbox has no telephony."
+   "rationale": "Verified against the real server with data made through the real tools; calls were seeded through the signed runtime hook because the sandbox has no telephony.",
+   "closes_when": "a tool lists workspace numbers and verifies a member phone, saved simulated callers exist, and practice callers run against a real model with verdicts that mean something"
   }
  ],
  "edges": []

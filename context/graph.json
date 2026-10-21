@@ -16218,7 +16218,7 @@
   {
    "id": "decision.2026-10-21.intake-suppress-draft-until-a3",
    "type": "decision",
-   "status": "proposed",
+   "status": "superseded",
    "source": "model",
    "date": "2026-10-21",
    "title": "contact.suppress is registered as draft (runs at once), not the registry's external, until the kernel's A3 list carries it",
@@ -16328,6 +16328,139 @@
    "n": 205,
    "method": "node --test --test-name-pattern 'double claim' tests/campaigns.test.ts on a throwaway Postgres 16 in the 4-vCPU sandbox. 15 runs with 4 busy-loop processes saturating the CPU, then 190 runs while intake-scale (50k rows) imported into the same database.",
    "value": "0/205 failures"
+  },
+  {
+   "id": "decision.2026-10-21.calls-outcome-judge-edits-are-draft",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "outcome.define and judge.edit are risk 'draft' (owner, builder, operator; A1, audited, versioned), matching the tool registry, not 'policy'",
+   "rationale": "The tool registry sets the risk class and puts both at draft: defining success is everyday work. Each judge edit is a new pinned version that starts uncalibrated, and an AI guess counts only once its judge is trusted, so a careless edit cannot inflate results. Blueprint F3 described an A2 card for outcome definitions; the registry is the later source.",
+   "reverse_if": "A sector pack or regulator needs sign-off on what counts as a sale or a resolution, or owners report outcome definitions changed without their knowledge; then raise both tools to policy, or add a workspace setting that does."
+  },
+  {
+   "id": "decision.2026-10-21.campaigns-risk-classes-from-registry",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "The campaigns tools now use the risk classes in research/2026-10-21/blueprint/data/workspace-tool-registry.json. Three changed: number.byo.connect policy -> draft, number.kyc.submit external -> policy, number.pause draft -> external. VP's own risk-lowering line pause stays number.pause_flagged (A3).",
+   "rationale": "The registry file landed. One source of risk classes keeps the API, MCP and Operator tool lists consistent.",
+   "reverse_if": "The registry changes these classes, or a measured incident shows a line pause must run at once for a person."
+  },
+  {
+   "id": "decision.2026-10-21.campaigns-carrier-side",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "The carrier side of the number step lives in campaigns:\n- KYC decisions arrive through a signed, idempotent webhook (POST /hooks/telephony/kyc) or number.kyc.sync, which only a system or VP Success actor may run.\n- A2P declaration is number.a2p.declare (policy: owner or compliance approves), with the operator's reference and evidence.\n- No workspace member can mark their own line verified.",
+   "rationale": "The e2e acceptance test (F1, F2) showed that G8 refused every production dial: nothing moved KYC past 'submitted' or A2P to 'declared'. The phone_number table is campaigns', and the gate reads it.",
+   "reverse_if": "A carrier offers only polling (then add a number.kyc.poll job), or counsel wants A2P declaration filed by VP rather than recorded by the tenant."
+  },
+  {
+   "id": "decision.2026-10-21.intake-suppress-external",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "contact.suppress is registered as external, the blueprint registry's class; it runs at once because the kernel added it to A3_VERBS (779068d)",
+   "rationale": "The reverse_if of the draft decision happened. Tested: a member's contact.suppress returns confirmed, mode A3.",
+   "reverse_if": "contact.suppress leaves A3_VERBS; then it must not be external, or members wait for a card to stop calls."
+  },
+  {
+   "id": "decision.2026-10-21.intake-suppression-source-codes",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "suppression.source is a stable code (in_call, manual, upload, crm, api_push, form, whatsapp, dpdp); the ids behind it go in suppression.evidence (0104)",
+   "rationale": "The dial gate reports suppressed:<source>; 'call:<uuid>' made an unstable reason code (e2e finding F6).",
+   "reverse_if": "The gate stops deriving its code from source, or the UI needs per-source codes; then keep codes stable and add a separate field."
+  },
+  {
+   "id": "measure.2026-10-21.safety-door-blind-set5",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Blind set 5 (scored once at commit c213aff, before any tuning on it): benign FP 25/240 (10.4%; agent 24/160, caller 1/80), harmful caught 67/130 (51.5%; agent 28/70, caller 39/60). Devanagari and mixed-script lines and negation-then-request hard negatives were the weak spots",
+   "n": 370,
+   "method": "A separate agent that never saw rules.json, cases.json or sets 1-4 wrote 160 benign agent lines (half hard negatives), 80 benign caller lines (half hard negatives), 70 harmful agent lines (10 per kind, a third keyword-free) and 60 harmful caller lines (10 per signal, a third indirect), about a third each Hinglish, Devanagari and mixed script, with at least a third from clinics, D2C and education. Scored with replyDoor (service call, packs base+insurance_irdai+lending_rbi, one dues fact, disclosed, verified) and callerSignals. The rules were then tuned on its failures (coClause for RD4, Devanagari/mixed patterns), so set 5 is in-sample from commit ada4e26 on and is not reported as blind after that.",
+   "path": "product/shared/safety/cases.json",
+   "detail": {
+    "agent_caught_by_kind": {
+     "deny_ai": "4/10",
+     "sensitive_ask": "5/10",
+     "pay_on_call": "3/10",
+     "scam_framing": "3/10",
+     "harsh_dues": "6/10",
+     "mis_selling": "5/10",
+     "promo_on_service": "2/10"
+    },
+    "caller_caught_by_signal": {
+     "crisis": "5/10",
+     "asks_if_ai": "5/10",
+     "refuses_recording": "7/10",
+     "opt_out": "6/10",
+     "sensitive_digits": "8/10",
+     "wants_human": "8/10"
+    },
+    "not_verified": "the hard-negative split, script mix and keyword-free share were written to spec by the generating agent but not counted by script"
+   }
+  },
+  {
+   "id": "decision.2026-10-21.learning-counts-outcome-calls",
+   "type": "decision",
+   "status": "active",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Learning's success metric uses each business's outcome_definition.goal_values (never a literal) and counts only contacts with a recorded outcome (verified, manager, or a trusted judge's guess); guardrails use catalogue reason codes END_OPTED_OUT, CONV_COMPLAINT, END_CRISIS on every live contact.",
+   "rationale": "The calls builder found the earlier defaults ('success', 'opt_out'/'complaint') matched nothing calls writes, which silently disabled the decision and the hazard stop; untrusted AI guesses must never feed experiments (blueprint F4).",
+   "reverse_if": "Calls changes where outcomes or reason codes live, or a validated leading indicator is approved as a primary metric for a tenant."
+  },
+  {
+   "id": "decision.2026-10-21.web-stack-picker-no-default",
+   "type": "decision",
+   "title": "The agent builder's voice stack picker lists every stack from shared/stacks.ts with nothing preselected and nothing marked recommended; choosing is local until Save draft; Publish is disabled with a reason while no stack is chosen; tests of an agent with no stack come back 'invalid, with the reason', never a pass.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "web builder (product/web)",
+   "rationale": "Owner directive decision.2026-10-21.stack-choice-no-default plus state integrity (no click-to-save). Each figure shows its grade and source; a missing price shows 'not measured', never 0.",
+   "reverse_if": "The owner picks a default stack after round-2 ratings."
+  },
+  {
+   "id": "decision.2026-10-21.web-state-integrity-in-types",
+   "type": "decision",
+   "title": "A disabled primary action must carry a reason: the Btn component's TypeScript type requires `reason` when `disabled` is true. A test fails the build if a dropdown change calls a write tool, if a colour literal appears outside tokens.css, or if any text colour pair is under 5:1 in light or dark.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "web builder (product/web/tests/web.test.ts)",
+   "rationale": "Must-be D (state integrity) and the 5:1 text contrast law from the design language, made mechanical so they cannot drift.",
+   "reverse_if": "A real flow needs a silent disabled control; none was found."
+  },
+  {
+   "id": "measurement.2026-10-21.web-bundle-size",
+   "type": "measurement",
+   "title": "Web bundle: first load 81.4 KB gzip (main JS + CSS), all page chunks 137.5 KB gzip, 431.6 KB raw, built by esbuild with React 19 and lucide-react.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "node product/web/build.mjs, n=1 build",
+   "rationale": "Budget in the design language is 170 KB gzip JS per route; the test pins 100 KB first load and 200 KB total.",
+   "n": 1,
+   "method": "node product/web/build.mjs (esbuild, React 19, lucide-react), gzip sizes of the emitted dist files; one build",
+   "value": "81.4 KB gzip first load; 137.5 KB gzip all chunks"
+  },
+  {
+   "id": "open.2026-10-21.web-gaps-on-real-tools",
+   "type": "open-question",
+   "title": "Web now runs on the real tools (ui-contract --strict 78/78, held by tests/web.test.ts). Gaps the UI states honestly: no tool lists the workspace's numbers or proves a member's own phone; no saved simulated callers; no stack sample clips, recordings or waveform peaks; the fake model makes practice callers fail every check, so those verdicts mean nothing.",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "web builder",
+   "rationale": "Verified against the real server with data made through the real tools; calls were seeded through the signed runtime hook because the sandbox has no telephony.",
+   "closes_when": "a tool lists workspace numbers and verifies a member phone, saved simulated callers exist, and practice callers run against a real model with verdicts that mean something"
   }
  ],
  "edges": [
@@ -29412,6 +29545,41 @@
    "from": "measure.2026-10-21.claim-race-under-load",
    "to": "rejected.2026-10-21.unscoped-dispatcher-in-tests",
    "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-21.campaigns-risk-classes-from-registry",
+   "to": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+   "relation": "supersedes"
+  },
+  {
+   "from": "component.2026-10-21.campaigns-module",
+   "to": "decision.2026-10-21.campaigns-carrier-side",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.intake-suppress-external",
+   "to": "decision.2026-10-21.intake-suppress-draft-until-a3",
+   "relation": "supersedes"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-suppression-source-codes",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-set5",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-set5",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-21.learning-counts-outcome-calls",
+   "to": "component.2026-10-21.learning-module",
+   "relation": "constrains"
   }
  ]
 }
