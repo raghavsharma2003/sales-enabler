@@ -11,7 +11,8 @@
 #     webhook URL it hands out names it;
 #   - the front (this process) takes the control routes: POST /v1/calls goes to the worker with the most free slots and,
 #     on 503 at_capacity (refused before any record, so safe to resend), to the next; a retried ticket goes back to the
-#     worker that accepted it (idempotency is per process); /v1/calls/{id}[/end] go to the owner; /v1/health sums them;
+#     worker that accepted it (idempotency is per process); /v1/calls/{id}[/end|/listen|/whisper|/takeover] go to the
+#     owner; /v1/health sums them;
 #   - /w/<i>/... is proxied to worker i. The front can proxy media sockets itself (development, one-container), but
 #     that puts every audio frame through one more Python process: in production route /w/<i>/ in nginx or the ingress
 #     (--nginx-conf), and point / at the front on VP_FRONT_PORT.
@@ -189,6 +190,7 @@ class Front:
         a = web.Application(client_max_size=2 * 1024 * 1024)
         a.router.add_post('/v1/calls', self.create_call)
         a.router.add_post('/v1/calls/{id}/end', self.call_route)
+        a.router.add_post('/v1/calls/{id}/{action:listen|whisper|takeover}', self.call_route)
         a.router.add_get('/v1/calls/{id}', self.call_route)
         a.router.add_get('/v1/health', self.health_route)
         a.router.add_route('*', r'/w/{i:\d+}/{tail:.*}', self.worker_route)

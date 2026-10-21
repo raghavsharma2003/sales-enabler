@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 157,
-    "passed": 157,
+    "ran": 169,
+    "passed": 169,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -31,7 +31,8 @@
       "test_review.py": "review \"what she says\": all 26 reproductions pass (runtime fixes 55f7a14, shared rules f1e4d3e ported)",
       "test_judge.py": "caller-crisis judge: the 12 TS judge behaviours mirrored, parity guard on judge.json, and the runtime half on sim and cascade calls (raise interrupts before she is heard, shadow changes nothing, timeout falls back, floor hit never waits, no keys no call, no secrets to the judge, judge tokens metered)",
       "test_runtime_fixture.py": "one source, both doors: sim calls covering every RuntimeEvent type and all three judge outcomes; output checked against tests/vectors/runtime_events.json, and live batches run through calls validateRuntimeBatch (product/tests/voice-runtime-events.test.ts runs the committed fixture through it in the TS suite)",
-      "test_launch.py": "multi-process launcher with two real worker processes: tickets spread, overflow on at_capacity, refused only when all are full; retry returns to its owner; /end reaches the owner and frees the slot; health sums workers; media socket via /w/<i>/; workers stop with the front; nginx config"
+      "test_launch.py": "multi-process launcher with two real worker processes: tickets spread, overflow on at_capacity, refused only when all are full; retry returns to its owner; /end reaches the owner and frees the slot; health sums workers; media socket via /w/<i>/; workers stop with the front; nginx config",
+      "test_live.py": "live controls: whisper redacted into the LAST block, spent after one reply, a denial whisper still blocked by RD2, no text in events, capped, refused after takeover; sim takeover (she stops, doored line, member bridged both ways, drop and no-join close the call, crisis call taken over, limits stop); cascade takeover cut at a near sentence end vs at once, member audio to the line and caller audio to the member; listener mix of both legs writing nothing; HTTP refusals (unsigned, replayed body, unknown, unjoined, sim listen, empty whisper), sim takeover end to end, browser listen socket"
     }
   },
   "works": [
@@ -47,6 +48,7 @@
     "Transports: sim (text socket), webrtc (lab-style browser socket), sip (Plivo outbound dial + stream, Plivo/Exotel inbound streams, Plivo transfer for phone hand-off)",
     "Admission cap per process (VP_MAX_CALLS_PER_PROCESS, default 20): 503 at_capacity + Retry-After, placed:false, before anything is created; health shows capacity {admitted, max, free}",
     "python -m vpvoice.launch: one worker per core behind one port (front: least-loaded placement, overflow, owner routing, summed health; /w/<i>/ media prefix; restart with back-off). 4 workers carry 90 calls on the 4-vCPU sandbox at lag p99 8.3 ms (bench/results)",
+    "Live controls: POST /v1/calls/{id}/{listen|whisper|takeover} (signed, body names the call). Whisper = untrusted note in the LAST block, doored reply; listen = receive-only mixed socket, never recorded; takeover = she stops for good (cut at a sentence end within 300 ms), doored hand-off line, hand_off target member:<id>, member bridged both ways, a member drop closes the call",
     "Cascade turn-taking ported from the lab (held replies, 1.4 s hold on unfinished speech, withdraw, barge-in by words, heard-text history); Gemini Live session with a door on its output transcription",
     "Cost meter in integer milli-rupees at 95 INR/USD (ears/brain/voice/telephony; second/token/char), deltas that sum to the total; hard limits end the call; crisis stretches limits to 2x then hands off",
     "Test calls: fallbacksUsed is always []; a failed component ends the call as error with the reason in GET /v1/calls/{id}",
@@ -64,7 +66,8 @@
     "Docker image build (no docker in the sandbox)",
     "Latency and cut-in rates of the ported turn-taking on this runtime (lab figures do not carry over until measured)",
     "nginx (or the Container Apps ingress) routing /w/<i>/ to workers: config generated and unit-checked, never run (no nginx in the sandbox); the Dockerfile still starts one process",
-    "Multi-process capacity on the deploy host and with real providers"
+    "Multi-process capacity on the deploy host and with real providers",
+    "Live controls on a real line or browser (fake lines only), calls live.* tools against the real runtime routes (calls tested against a fake), and all three on v2-live (refused 409 in v1)"
   ],
   "contractGaps": [
     "call.ended has no field for the failure reason when endReason = error; it is logged and in GET /v1/calls/{id} only",
@@ -72,7 +75,8 @@
     "brief.hash is checked as sha256 hex of brief.text (optionally sha256:-prefixed); the control plane must hash the same way",
     "Control-plane brief compiler should use the marker vocabulary in README (<end_call>, <goal:ID>, <tool:NAME>, <handoff:REASON>)",
     "runtime-client.ts treats 503 at_capacity as a failed attempt (provider_error, ladder step); proposed to calls: a retryable not-placed reply",
-    "runtime-client.ts control('end') sends {} but the runtime requires {conversationId}; StartReply.join shape (expiresAt string, url/token) differs from what the runtime returns (expiresAtMs; sip has answerUrl/hangupUrl/streamUrl); whisper/takeover/listen are not implemented"
+    "runtime-client.ts control('end') sends {} but the runtime requires {conversationId}; StartReply.join shape (expiresAt string, url/token) differs from what the runtime returns (expiresAtMs; sip has answerUrl/hangupUrl/streamUrl); whisper/takeover/listen are not implemented",
+    "moment.kind has no live_listen_started/ended, whisper or takeover kinds, so the runtime emits none (ingest would refuse the batch); add them to runtime-protocol.ts and ingest if the call page timeline should show them"
   ],
   "decisions": [
     "In a crisis, ticket limits stretch to 2x; at the ceiling the call is handed off (crisis_handoff); her <end_call> is ignored and a request for a human never ends the call unless a live transfer takes it",

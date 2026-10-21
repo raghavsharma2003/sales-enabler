@@ -22,6 +22,18 @@ def limit_line(gender):
     return f"माफ़ कीजिए, अब मुझे यह कॉल रखनी होगी। आपका समय देने के लिए शुक्रिया।"
 
 
+def takeover_line(gender):
+    return f"Main aapko apne colleague se connect kar {safety.g(gender, 'rahi', 'raha', 'rahi')} hoon, ek pal rukiye."
+
+
+def member_drop_line(gender):
+    return f"Maaf kijiye, hamare colleague se connection toot gaya. Abhi ke liye call rakh {safety.g(gender, 'rahi', 'raha', 'rahi')} hoon, shukriya."
+
+
+WHISPER_MAX = 300
+MEMBER_JOIN_S = 60             # a takeover nobody joins within this is ended like a dropped member
+
+
 class Session:
     transport = 'base'
 
@@ -36,6 +48,9 @@ class Session:
         self.done = asyncio.Event(); self.watchdog_s = watchdog_s; self.tasks = []; self.handed_off = False
         self.recording_uri = None; self.ending = False; self.started = False
         self.telephony = None          # (trunk, direction) on phone calls
+        # live controls (server.py /listen /whisper /takeover): after a takeover she never speaks again, except to close
+        # the call if the member drops; listeners hear, are never heard, never recorded
+        self.taken_over = None; self.member = None; self.member_task = None; self.listeners = set(); self.live_closers = []
 
     # ---------------------------------------------------------------- manifest
     def manifest(self):
@@ -80,6 +95,9 @@ class Session:
 
     async def check_limits(self):
         if self.ended or self.ending: return False
+        if self.taken_over:            # a person holds the call: her limits stop; a runaway guard ends it silently at the ceiling
+            if self.elapsed_s() >= self.t['limits']['maxDurationS'] * CRISIS_CEILING: await self.end('handed_off'); return True
+            return False
         why = self.limit_reached()
         if not why: return False
         if self.conv.state['crisis']:
@@ -106,6 +124,9 @@ class Session:
             await self.close_media()
         except Exception:
             log.exception('close media')
+        for close in list(self.live_closers):          # listen and member sockets end with the call
+            try: await close()
+            except Exception: pass
         self.meter_running(); self.meter_final()
         for ev in self.meter.drain(): self.sink.emit(ev.pop('type'), **ev)
         fields = {'endReason': reason, 'durationS': round(self.elapsed_s(), 1), 'transcript': self.conv.transcript_out(), 'manifest': self.manifest()}
@@ -153,6 +174,7 @@ class Session:
     async def hand_off(self, reason, end_reason='handed_off'):
         """Tell the control plane a human is needed (one hand_off event per call), then bridge or end. In a crisis the
         call is never ended from our side: only a live transfer takes it over, or the crisis ceiling (crisis_handoff)."""
+        if self.taken_over: return                            # a person already holds the call
         kind, value = self.handoff_target()
         if not self.handed_off:
             self.handed_off = True
@@ -177,6 +199,7 @@ class Session:
 
     async def after_caller(self, sig):
         """Act on caller signals before any reply. Returns 'replied' when code answered instead of the brain."""
+        if self.taken_over: return 'replied'                  # she does not answer once a person holds the call
         if sig['crisis'] and self.handoff_allowed('crisis'):
             await self.hand_off('crisis')                 # alerts a human; the call stays up
         if sig['refusesRecording']: self.stop_recording()
@@ -193,7 +216,7 @@ class Session:
 
     async def after_reply(self, marks):
         """Act on her markers and the call state after a reply has been heard."""
-        if self.ended: return
+        if self.ended or self.taken_over: return
         if self.conv.judge_raised:                  # the judge raised a crisis this turn: alert a human, as for a floor hit
             self.conv.judge_raised = False
             if self.handoff_allowed('crisis'): await self.hand_off('crisis')
@@ -214,6 +237,53 @@ class Session:
     async def speak_canned(self, text):
         raise NotImplementedError
 
+    # ---------------------------------------------------------------- live controls
+    def live(self): return self.started and not self.ended and not self.ending
+
+    def whisper(self, text):
+        """A supervisor's note for her next reply. Untrusted: redacted, capped, placed in the LAST block, and whatever she
+        then says still goes through the door. Never spoken verbatim, never in an event. Returns a refusal or None."""
+        if self.taken_over: return 'the call has been taken over'
+        clean = safety.redact(' '.join(str(text).split()))[:WHISPER_MAX]
+        if not clean: return 'empty whisper'
+        self.conv.whisper = clean; self.conv.whisper_used = False
+        return None
+
+    def doored(self, line):
+        """A fixed line from code, put through the reply door like anything she says (None if the door blocks it)."""
+        text, _ = self.conv.check(line, Draft(None))
+        return text
+
+    async def cut_for_takeover(self): pass
+
+    async def takeover(self, member_id):
+        """She stops for good: any reply is cut (at a sentence end when one is near), she says one doored hand-off line,
+        and the member is bridged in. hand_off target member:<id> tells the control plane a person holds the call."""
+        if self.taken_over or not self.live(): return
+        self.taken_over = str(member_id)
+        await self.cut_for_takeover()
+        self.handed_off = True
+        self.sink.emit('hand_off', reason='takeover', target=f'member:{self.taken_over}', summary=self.summary_line())
+        line = self.doored(takeover_line(self.conv.gender))
+        if line: await self.speak_canned(line)
+        self.member_task = asyncio.ensure_future(self._member_deadline()); self.tasks.append(self.member_task)
+
+    async def _member_deadline(self):
+        await asyncio.sleep(MEMBER_JOIN_S)
+        if self.member is None: await self.member_dropped()
+
+    def member_joined(self, send):
+        self.member = send
+        if self.member_task is not None: self.member_task.cancel()
+
+    async def member_dropped(self):
+        """v1: a member who drops is not replaced by her: the call closes with one short doored line."""
+        if self.ended: return
+        self.member = None
+        line = self.doored(member_drop_line(self.conv.gender))
+        if line: await self.speak_canned(line)
+        await self.finish('handed_off')
+
 
 class SimSession(Session):
     """Text-mode simulated caller: turns in, turns out, the same brief, door and events as a real call."""
@@ -221,6 +291,7 @@ class SimSession(Session):
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw); self.outbox = []
+        self.push = None               # set by the sim socket: sends a message to the simulated caller unprompted
 
     async def start(self):
         await super().start()
@@ -243,11 +314,16 @@ class SimSession(Session):
     async def speak_canned(self, text):
         self.conv.say_canned(text)
         self.outbox.append(text)
+        if self.taken_over and self.push: await self.push({'t': 'agent', 'sentences': [text], 'ended': self.ended})   # outside a turn
 
     async def caller_says(self, text):
         """One caller turn in; the agent's sentences out ([] once the call has ended)."""
         if self.ended or not (text or '').strip(): return []
         self.outbox = []
+        if self.taken_over:            # a person holds the call: the caller's turn is recorded and relayed, never answered
+            self.conv.commit_caller(text)
+            if self.member: await self.member({'t': 'caller', 'text': self.conv.transcript[-1]['text']})
+            return []
         sig = self.conv.commit_caller(text)
         gate = self.conv.start_judge(text, self.conv.prev_caller(skip_last=True), floor=sig['crisis'])
         if await self.after_caller(sig) == 'replied':
@@ -261,3 +337,7 @@ class SimSession(Session):
 
     async def hang_up(self):
         await self.end('caller_hung_up')
+
+    async def member_says(self, text):
+        """The member's words reach the simulated caller; they are not transcribed (v1), not doored, not judged."""
+        if self.push and not self.ended and (text or '').strip(): await self.push({'t': 'member', 'text': str(text)[:2000]})

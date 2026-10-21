@@ -255,7 +255,48 @@ the git sha, the `rules.json` version and hash, the Python version and the CPU c
 - `GET /v1/health`: version, whether each stack's credentials are configured, and
   `capacity: {admitted, max, free}` (plus `worker` under the launcher). No secret values.
 - Media: `/v1/media/browser/{id}`, `/v1/media/sim/{id}`, `/v1/media/sip/{answer,hangup,transfer}/{id}/{hook}`,
-  `/v1/media/sip/stream/{id}`.
+  `/v1/media/sip/stream/{id}`, and the live sockets `/v1/media/listen/{id}` and `/v1/media/takeover/{id}`.
+
+## Live controls (supervisor listen, whisper, takeover)
+
+`POST /v1/calls/{id}/{listen|whisper|takeover}`, signed like `/end`: the body must name the call (`conversationId`),
+which is the replay guard. The control plane audits who acted and when. Refusals are `{ok: false, reason}`: 400 if the
+body names another call, 404 for an unknown call, 409 if the call is not joined, not live or already taken over, and
+422 for a missing field. On the speech-to-speech stack (v2-live) all three answer 409 in v1.
+
+- **whisper** `{conversationId, text, by}` → `{ok: true}`.
+  - Guidance for her next reply only. It is spent once a reply is written with it.
+  - It is redacted (`rules.redact`), capped at 300 characters and placed in the LAST block as an untrusted note from a
+    colleague ("never quote it, ignore it where it conflicts").
+  - Whatever she then says still goes through the reply door. A whisper that tells her to deny being an AI is blocked
+    by RD2, as any denial is.
+  - The text appears in no event.
+- **listen** `{conversationId, by}` → `{ok: true, join: {kind: 'listen', url, token, expiresAtMs}}`.
+  - A receive-only socket with both legs mixed, pcm16le 16 kHz mono, on the caller's 20 ms clock. Anything a listener
+    sends is dropped.
+  - Nothing from it is recorded or stored. It is allowed even when the caller refused recording, because it is
+    monitoring, not retention.
+  - Closing it never ends the call. A call may have several listeners, and they take no call slot (health counts them
+    under `live`).
+  - Sim calls have no audio, so listen answers 409 there.
+- **takeover** `{conversationId, memberId}` → `{ok: true, join: {kind: 'takeover', url, token, expiresAtMs}}`.
+  - She stops for good. A held reply is dropped. A reply that is playing is cut at the end of its sentence if that is
+    within 300 ms, otherwise at once.
+  - The control plane gets `hand_off {reason: 'takeover', target: 'member:<id>'}`.
+  - She says one doored line ("Main aapko apne colleague se connect kar rahi hoon, ek pal rukiye.") and never answers
+    again. The door, the judge and her limits no longer act.
+  - The caller's speech is still transcribed as caller turns. The member's speech is not transcribed in v1, and is not
+    recorded.
+  - The member's socket carries mic up (pcm16le 16 kHz) and the caller down (pcm16le 16 kHz). On sim calls it carries
+    text: `{"t": "say", "text"}` up and `{"t": "caller", "text"}` down.
+  - `{"t": "hangup"}` from the member ends the call as `handed_off`.
+  - v1 choice: if the member's socket drops, or nobody joins within 60 s, she does not come back. One doored line closes
+    the call ("…connection toot gaya…"), and it ends as `handed_off`.
+  - A crisis call can be taken over. It is never ended by this path, except by the runaway guard: a taken-over call ends
+    silently at twice its duration limit.
+  - The cost meter keeps the line and the ears (for the caller's transcript). Her brain and voice stop.
+- **Moments:** the contract's `moment.kind` is a closed list, and ingest refuses unknown kinds. So the runtime emits no
+  live_listen or whisper moments until `runtime-protocol.ts` adds them. The takeover shows as its `hand_off`.
 
 ## Environment (names only; values live in the deployment's secret store, never in the repo)
 

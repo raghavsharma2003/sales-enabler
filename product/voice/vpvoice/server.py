@@ -29,6 +29,7 @@ class CallRecord:
         self.t = ticket; self.body_hash = body_hash; self.comp = comp; self.sink = sink; self.token = token; self.join = join
         self.token_used = False; self.created = time.time(); self.session = None; self.ended_at = None
         self.call_uuid = None; self.request_uuid = None; self.transfer_to = None
+        self.live_tokens = {}          # single-use join tokens for listen / takeover sockets: token -> (kind, expires)
 
     def take_token(self, given):
         if self.token_used or self.session is not None or self.ended_at or time.time() - self.created > JOIN_TTL_S: return False
@@ -188,12 +189,108 @@ class Runtime:
                                   'error': s.error if s else None, 'seq': rec.sink.seq, 'undelivered': rec.sink.undelivered,
                                   'costInrMilli': s.meter.total_milli() if s else 0})
 
+    # ---------------------------------------------------------------- live controls (supervisor listen, whisper, takeover)
+    def live_err(self, status, reason):
+        return web.json_response({'ok': False, 'reason': reason}, status=status)
+
+    def live_join(self, rec, kind):
+        token = secrets.token_urlsafe(24); exp = time.time() + JOIN_TTL_S
+        rec.live_tokens = {k: v for k, v in rec.live_tokens.items() if v[1] > time.time()}
+        rec.live_tokens[token] = (kind, exp)
+        return {'kind': kind, 'url': ws_base(self.public or 'ws://localhost') + f"/v1/media/{kind}/{rec.t['conversationId']}", 'token': token,
+                'expiresAtMs': int(exp * 1000)}
+
+    async def live_control(self, req):
+        """Signed like /end; the body names the call (the replay guard). The control plane audits who and when."""
+        body = await self.verified(req)
+        cid = req.match_info['id']; action = req.match_info['action']
+        try: d = json.loads(body or b'')
+        except ValueError: d = None
+        if not isinstance(d, dict) or d.get('conversationId') != cid: return self.live_err(400, 'body must name this call: {"conversationId": ...}')
+        rec = self.calls.get(cid)
+        if rec is None: return self.live_err(404, 'no such call')
+        s = rec.session
+        if s is None or not rec.token_used: return self.live_err(409, 'call is not joined')
+        if not s.live(): return self.live_err(409, 'call is not live')
+        if rec.comp.kind == 's2s' and s.transport != 'sim':
+            return self.live_err(409, 'live controls are not available on the speech-to-speech stack yet')
+        if action == 'listen':
+            if s.transport == 'sim': return self.live_err(409, 'a sim call has no audio to listen to')
+            return web.json_response({'ok': True, 'join': self.live_join(rec, 'listen')})
+        if action == 'whisper':
+            text = d.get('text')
+            if not isinstance(text, str) or not text.strip(): return self.live_err(422, 'text is required')
+            why = s.whisper(text)
+            return self.live_err(409, why) if why else web.json_response({'ok': True})
+        member = d.get('memberId')
+        if not isinstance(member, str) or not member.strip() or len(member) > 100: return self.live_err(422, 'memberId is required')
+        if s.taken_over: return self.live_err(409, 'the call has already been taken over')
+        join = self.live_join(rec, 'takeover')
+        asyncio.ensure_future(s.takeover(member.strip())); await asyncio.sleep(0)     # she is stopped at once; the line plays on
+        return web.json_response({'ok': True, 'join': join})
+
+    def _live_socket(self, req, kind):
+        rec = self.calls.get(req.match_info['id']); tok = req.query.get('token') or ''
+        ent = rec.live_tokens.pop(tok, None) if rec is not None and tok else None
+        if ent is None or ent[0] != kind or time.time() > ent[1] or rec.session is None or not rec.session.live():
+            raise web.HTTPForbidden(text='join refused')
+        return rec.session
+
+    async def media_listen(self, req):
+        """Receive-only: both legs mixed, pcm16le 16 kHz mono. What a listener sends is dropped; nothing is recorded."""
+        s = self._live_socket(req, 'listen')
+        ws = web.WebSocketResponse(heartbeat=20); await ws.prepare(req)
+        async def send(b):
+            if not ws.closed:
+                try: await ws.send_bytes(b)
+                except Exception: pass
+        s.listeners.add(send); s.live_closers.append(ws.close)
+        try:
+            await ws.send_json({'t': 'ready', 'audio': 'pcm16le/16000/mono, both legs mixed'})
+            async for _ in ws: pass
+        finally:
+            s.listeners.discard(send)
+            if ws.close in s.live_closers: s.live_closers.remove(ws.close)
+        return ws
+
+    async def media_takeover(self, req):
+        """The member who took over: mic up (pcm16le 16 kHz), the caller down (pcm16le 16 kHz). Sim calls: text,
+        {"t": "say", "text"} up and {"t": "caller", "text"} down. {"t": "hangup"} ends the call; a drop closes it."""
+        s = self._live_socket(req, 'takeover')
+        ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20); await ws.prepare(req)
+        sim = s.transport == 'sim'
+        async def send(x):
+            if ws.closed: return
+            try: await (ws.send_json(x) if isinstance(x, dict) else ws.send_bytes(x))
+            except Exception: pass
+        s.member_joined(send); s.live_closers.append(ws.close); hung_up = False
+        try:
+            await ws.send_json({'t': 'ready', 'conversationId': s.id,
+                                'audio': None if sim else {'up': 'pcm16le/16000/mono', 'down': 'pcm16le/16000/mono (the caller)'}})
+            async for m in ws:
+                if s.ended: break
+                if m.type == aiohttp.WSMsgType.BINARY and not sim: await s.member_audio(m.data)
+                elif m.type == aiohttp.WSMsgType.TEXT:
+                    d = json.loads(m.data)
+                    if d.get('t') == 'hangup': hung_up = True; break
+                    if d.get('t') == 'say' and sim: await s.member_says(d.get('text'))
+        except Exception:
+            log.exception('takeover media')
+        finally:
+            if ws.close in s.live_closers: s.live_closers.remove(ws.close)
+            if not s.ended:
+                if hung_up: await s.end('handed_off')
+                else: await s.member_dropped()
+        return ws
+
     async def health(self, req):
         st = {sid: {'missing': stacks.missing_credentials(sid, self.env), 'status': s['status']} for sid, s in stacks.STACKS.items()}
         for v in st.values(): v['available'] = not v['missing']
         return web.json_response({'ok': True, 'runtimeVersion': RUNTIME_VERSION, 'signing': bool(self.secret), 'control': bool(self.control),
                                   'stacks': st, 'activeCalls': sum(1 for r in self.calls.values() if r.session and not r.session.ended),
                                   'capacity': {'admitted': (n := self.admitted()), 'max': self.max_calls, 'free': max(0, self.max_calls - n)},
+                                  'live': {'listeners': sum(len(r.session.listeners) for r in self.calls.values() if r.session and not r.session.ended),
+                                           'takeovers': sum(1 for r in self.calls.values() if r.session and not r.session.ended and r.session.taken_over)},
                                   **({'worker': self.worker} if self.worker else {})})
 
     # ---------------------------------------------------------------- media: browser and sim
@@ -228,6 +325,11 @@ class Runtime:
         rec = self._join(req, 'sim')
         ws = web.WebSocketResponse(heartbeat=20); await ws.prepare(req)
         s = self.new_session(rec)
+        async def push(obj):
+            if not ws.closed:
+                try: await ws.send_json(obj)
+                except Exception: pass
+        s.push = push
         try:
             opening = await s.start()
             await ws.send_json({'t': 'agent', 'sentences': opening, 'ended': s.ended})
@@ -336,10 +438,13 @@ class Runtime:
         a = web.Application(client_max_size=2 * 1024 * 1024)
         a.router.add_post('/v1/calls', self.create_call)
         a.router.add_post('/v1/calls/{id}/end', self.end_call)
+        a.router.add_post('/v1/calls/{id}/{action:listen|whisper|takeover}', self.live_control)
         a.router.add_get('/v1/calls/{id}', self.call_status)
         a.router.add_get('/v1/health', self.health)
         a.router.add_get('/v1/media/browser/{id}', self.media_browser)
         a.router.add_get('/v1/media/sim/{id}', self.media_sim)
+        a.router.add_get('/v1/media/listen/{id}', self.media_listen)
+        a.router.add_get('/v1/media/takeover/{id}', self.media_takeover)
         a.router.add_post('/v1/media/sip/answer/{id}/{hook}', self.sip_answer)
         a.router.add_post('/v1/media/sip/hangup/{id}/{hook}', self.sip_hangup)
         a.router.add_post('/v1/media/sip/transfer/{id}/{hook}', self.sip_transfer)

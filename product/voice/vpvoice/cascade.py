@@ -11,6 +11,7 @@
 # Caller turns that carry a safety signal (crisis, digits, AI question, opt-out, human, recording) are never answered
 # speculatively: they are committed first, so the door and the brain see them.
 import asyncio, contextlib, logging, re, time
+import numpy as np
 from . import brief, catalog, safety
 from .audio import FRAME_BYTES, Recorder, Resampler, make_vad
 from .conversation import ComponentError, Draft
@@ -20,6 +21,9 @@ log = logging.getLogger('vp.voice.cascade')
 
 CUES = set('और लेकिन तो कि क्योंकि मतलब जैसे या पर जो अगर फिर यानी वो aur lekin toh to ki kyunki kyonki matlab jaise ya par agar phir '
            'yaani and but so because like or the a an um uh hmm actually basically which that if then with'.split())
+MIX_MAX = 16000 * 2 * 10          # listener mix: at most 10 s of her (or the member's) audio ahead of the caller's clock
+MEMBER_RID = 0                    # reply id 0 on the line: the member who took over (her replies count from 1)
+CUT_WITHIN_S = 0.3                # a takeover waits for her sentence end only if it is this near
 ACTION = ('crisis', 'readingSensitiveDigits', 'asksIfAi', 'optOut', 'wantsHuman', 'refusesRecording')
 
 
@@ -84,7 +88,9 @@ class Reply:
             if n == 0: continue
             if played >= n: out.append(clause); played -= n
             else:
-                w = clause.split(); k = int(len(w) * played / max(n, 1)); out.append(' '.join(w[:k]) + '—'); break
+                w = clause.split(); k = int(len(w) * played / max(n, 1))
+                if k: out.append(' '.join(w[:k]) + '—')         # cut at a clause boundary: nothing of the next was heard
+                break
         return ' '.join(x for x in out if x)
 
     async def run(self):
@@ -159,6 +165,7 @@ class CascadeSession(Session):
         self.seg = 0; self.final_seg = 0; self.eos_t = None; self.last_reply_eos = None; self.stt = None
         self.mic = b''; self.turn_start_ms = None; self.digits_seg = -1; self.end_task = None; self.barge_ins = 0
         self.silence_s = (ticket['agent'].get('limits') or {}).get('maxSilenceS') or 0
+        self.mix = bytearray(); self.member_rs = Resampler(16000, 24000)     # live controls: listener mix, member's voice
 
     def now(self): return self.clock()
     def agent_playing(self): return self.now() < self.rec.play_until
@@ -220,9 +227,46 @@ class CascadeSession(Session):
 
     # ---------------------------------------------------------------- the far end
     async def send_audio(self, rid, pcm24):
-        start = self.rec.add_agent(self.agent_rs(pcm24), self.now())
+        pcm16 = self.agent_rs(pcm24)
+        start = self.rec.add_agent(pcm16, self.now())
+        if self.listeners: self._to_mix(pcm16)
         await self.line.send_audio(rid, pcm24)
         return start
+
+    # ---------------------------------------------------------------- live controls: listen and takeover
+    def _to_mix(self, pcm16):
+        self.mix += pcm16
+        if len(self.mix) > MIX_MAX: del self.mix[:len(self.mix) - MIX_MAX]
+
+    def _listen(self, caller16):
+        """Both legs, mixed on the caller's 20 ms clock, to every listener. Nothing here is recorded or stored."""
+        n = len(caller16) // 2 * 2; other = bytes(self.mix[:n]); del self.mix[:n]
+        x = np.frombuffer(caller16[:n], dtype='<i2').astype(np.int32)
+        if other: x[:len(other) // 2] += np.frombuffer(other, dtype='<i2')
+        out = np.clip(x, -32768, 32767).astype('<i2').tobytes()
+        for send in list(self.listeners): asyncio.ensure_future(send(out))
+
+    async def member_audio(self, pcm16k):
+        """The member's mic, after a takeover, to the caller's line (not transcribed, not doored, not judged: v1)."""
+        if self.ended or not self.taken_over or not pcm16k: return
+        if self.listeners: self._to_mix(pcm16k)
+        await self.line.send_audio(MEMBER_RID, self.member_rs(pcm16k))
+
+    async def cut_for_takeover(self):
+        """Stop her now: a held reply is dropped; one playing is cut at the end of its sentence if that is within 300 ms,
+        else at once (mid-word only when no sentence end is near)."""
+        if self.pending is not None: self.pending.cancel(); self.pending = None
+        a = self.active
+        if a is not None and not a.committed and a.play_start is not None:
+            played = max(0.0, self.now() - a.play_start) * 24000; total = 0
+            for _, n in a.spoken:
+                total += n
+                if total >= played:
+                    wait = (total - played) / 24000
+                    if wait <= CUT_WITHIN_S: await asyncio.sleep(wait)
+                    break
+        if self.active is not None and not self.active.committed: await self.interrupt()
+        elif self.active is not None: self.active.cancel(); self.active = None
 
     def reply_started(self):
         """Latency of the reply now audible: from the caller's last end of speech it answers (None for the opening)."""
@@ -233,6 +277,8 @@ class CascadeSession(Session):
     async def on_mic(self, pcm16k):
         if self.ended: return
         self.rec.add_caller(pcm16k)
+        if self.listeners: self._listen(pcm16k)
+        if self.member: asyncio.ensure_future(self.member(pcm16k))       # the caller's voice to the member who took over
         self.mic += pcm16k
         while len(self.mic) >= FRAME_BYTES:
             fr, self.mic = self.mic[:FRAME_BYTES], self.mic[FRAME_BYTES:]
@@ -253,6 +299,7 @@ class CascadeSession(Session):
     def _partial(self, t):
         self.partial = t
         asyncio.ensure_future(self.line.send_json({'t': 'cap', 'who': 'caller', 'text': ' '.join(self.finals + [t]), 'final': False}))
+        if self.taken_over: return                                      # she no longer speaks; redaction still applies on commit
         if self.digits_seg != self.seg and safety.caller_signals(' '.join(self.finals + [t]))['readingSensitiveDigits']:
             self.digits_seg = self.seg                                  # stop them kindly, mid-number
             asyncio.ensure_future(self._stop_digits())
@@ -277,7 +324,7 @@ class CascadeSession(Session):
         r = self.active
         if r is None: return
         heard = r.heard_text(); r.cancel(); self.barge_ins += 1
-        self.rec.flush(self.now()); await self.line.flush(r.rid)
+        self.rec.flush(self.now()); self.mix.clear(); await self.line.flush(r.rid)
         if not r.committed:
             r.committed = True
             self.conv.commit_agent(r.draft, heard=heard, start_ms=self._ms(r.play_start), interrupted=True, latency_ms=r.latency_ms)
@@ -341,6 +388,12 @@ class CascadeSession(Session):
 
     async def _tick(self):
         v = self.vad; a = self.active
+        if self.taken_over:            # a person holds the call: record the caller's turns, never answer them
+            if a is not None and (a.cancelled or (a.done and a.committed and not self.agent_playing())):
+                self.finals = self.overlap + self.finals; self.overlap = []; self.active = None
+            text = ' '.join(self.finals).strip()
+            if text and not v.speaking and (self.final_seg >= self.seg or v.silence_ms() >= 1200): await self._commit_turn(text)
+            return
         if a is not None:
             if a.cancelled or (a.done and a.committed and not self.agent_playing()):
                 # heard during her turn without a barge-in: a backchannel ("haan", "hmm"), unless it carries a signal

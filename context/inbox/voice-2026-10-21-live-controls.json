@@ -1,0 +1,48 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-21.voice-live-whisper",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "A supervisor whisper is untrusted guidance for her next reply only. It is redacted, capped at 300 characters and placed in the LAST block as a colleague's note (never quoted, ignored where it conflicts). It is spent after one reply and appears in no event. Her reply still goes through the reply door, so a whisper telling her to deny being an AI is blocked by RD2 (tested)",
+   "rationale": "Position is mechanism: the LAST block is where per-turn guidance takes effect. A whisper comes from a person, but it is still free text into the model, so it gets the same redaction and the same door as anything else. Spending it after one reply keeps a stale note from steering later turns.",
+   "reverse_if": "supervisors need standing guidance for the rest of the call (then a separate, still-doored, persistent note), or whisper-driven replies measurably break RD rules the door does not catch"
+  },
+  {
+   "id": "decision.2026-10-21.voice-live-takeover",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "On takeover she stops for good. A held reply is dropped; a playing one is cut at its sentence end if that is within 300 ms, else at once. One doored hand-off line plays and hand_off {reason:'takeover', target:'member:<id>'} is emitted. The member is bridged both ways through the runtime's media socket. Caller speech is still transcribed; the member's is not (v1). Her limits, door and judge stop acting. A member drop, or nobody joining within 60 s, closes the call with one doored line as handed_off; she is never brought back. A crisis call can be taken over and only a runaway guard (2x duration) ends it, silently",
+   "rationale": "Owner-loop constraints of 2026-10-21: the AI never speaks again after a person joins, no misrepresentation in the hand-off line, no silent return of the AI. The bridge runs through the runtime, so it works the same on browser and SIP without a carrier transfer. hand_off.target is a free string, so the contract does not change.",
+   "reverse_if": "members need their speech in the transcript (then transcribe the member leg as a new speaker, which is a contract change); or carrier-side transfer is needed for quality or cost; or the owner prefers that a dropped member returns the caller to her with disclosure instead of ending the call"
+  },
+  {
+   "id": "decision.2026-10-21.voice-live-listen",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "Listen is a receive-only socket of both legs mixed (pcm16le 16 kHz) on the caller's 20 ms clock. It is never recorded or stored, and is allowed even after a recording refusal (monitoring, not retention). Closing it never ends the call; it takes no call slot and is counted in health. No live moments are emitted, because moment.kind in runtime-protocol.ts is a closed list that ingest enforces",
+   "rationale": "A supervisor must hear the call as the caller does, without being heard and without creating a retained copy. Emitting unknown moment kinds would make ingest refuse the whole event batch with a 422 and lose the call's events.",
+   "reverse_if": "runtime-protocol.ts and ingest add live moment kinds (then emit live_listen_started/ended, whisper and takeover moments without text); or a jurisdiction treats live monitoring of a call that refused recording as needing consent"
+  },
+  {
+   "id": "open.2026-10-21.voice-live-moments-contract",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "The call page timeline wants live_listen_started/ended, whisper and takeover moments from the runtime, but moment.kind in shared/runtime-protocol.ts (and ingest's oneOf) does not list them. Add them to the contract and ingest, or let the control plane's own audit rows feed the timeline",
+   "closes_when": "the contract lists the kinds and the runtime emits them, or the timeline reads the control-plane audit instead"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-21.voice-live-listen", "to": "open.2026-10-21.voice-live-moments-contract", "relation": "informs" },
+  { "from": "decision.2026-10-21.voice-live-takeover", "to": "decision.2026-10-21.voice-live-whisper", "relation": "extends" }
+ ],
+ "events": []
+}

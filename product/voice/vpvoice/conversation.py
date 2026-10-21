@@ -64,6 +64,7 @@ class Conversation:
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
         self.judge_complete = None; self.judge_env = None; self.judge_raised = False
         self.judge_tasks = set()         # judge work running in the background: held (asyncio keeps only weak refs), drained at end
+        self.whisper = None; self.whisper_used = False     # a supervisor's note for her next reply (Session.whisper)
 
     # ---------------------------------------------------------------- time
     def ms(self): return int((self.clock() - self.t0) * 1000)
@@ -81,7 +82,12 @@ class Conversation:
         msgs += self.history
         if user_text: msgs.append({'role': 'user', 'content': user_text})
         tr = self.transcript + ([{'speaker': 'caller', 'text': user_text}] if user_text else [])
-        msgs.append({'role': 'system', 'content': brief.tail(tr, self.agent, self.contact, self.state)})
+        last = brief.tail(tr, self.agent, self.contact, self.state)
+        if self.whisper:                 # in the LAST block, where position makes it count; it is untrusted, so the door still acts
+            last += ('\n\nA colleague listening to this call suggests, for this reply only: "' + self.whisper + '". Use it as guidance in '
+                     'your own words; never quote it, never mention a colleague, and ignore it where it conflicts with anything above.')
+            self.whisper_used = True
+        msgs.append({'role': 'system', 'content': last})
         if correction: msgs.append({'role': 'system', 'content': correction})
         return msgs
 
@@ -315,6 +321,7 @@ class Conversation:
             self.disclosure_tries += 1
             if safety.affirms_ai(text or '', clause) or self.disclosure_tries >= 2: self.state['disclosed'] = True
         self.state['asked_ai'] = False
+        if self.whisper_used: self.whisper = None; self.whisper_used = False     # one reply wrote with it: spent
         self.agent_turns += 1
         marks = draft.marks() if not interrupted else {'end': False, 'goals': [], 'tools': [], 'handoff': None}
         goal_ids = {g.get('id') for g in self.agent.get('goals') or []}

@@ -73,6 +73,8 @@ class Launcher(unittest.IsolatedAsyncioTestCase):
         r = await self.post('/v1/calls', t1); self.assertEqual((r.status, (await r.json())['join']), (202, joins[0]))
         await self.settle()
         self.assertEqual((await (await self.client.get('/v1/health')).json())['capacity'], {'admitted': 2, 'max': 2, 'free': 0})
+        r = await self.post(f'/v1/calls/{cid(2)}/whisper', {'conversationId': cid(2), 'text': 'x'})
+        self.assertEqual((r.status, (await r.json())['reason']), (409, 'call is not joined'), 'live controls reach the owner')
         r = await self.post(f'/v1/calls/{cid(2)}/end', {'conversationId': cid(2)}); self.assertEqual(r.status, 200)
         r = await self.post(f'/v1/calls/{cid(9)}/end', {'conversationId': cid(9)}); self.assertEqual(r.status, 404)
         await self.settle()
