@@ -6,7 +6,7 @@
    "status": "active",
    "date": "2026-10-21",
    "source": "safety module builder (parallel build)",
-   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 1,609 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
+   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 1,979 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
    "path": "product/shared/safety/"
   },
   {
@@ -15,7 +15,7 @@
    "status": "measured",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "Reply door + caller signals on 4 blind synthetic sets, each scored before tuning on it: benign FP 0/180, 2/230, 12/230, 13/230; harmful caught 78/110, 96/130, 111/130, 93/130. Regex door alone is a floor, not a classifier",
+   "title": "Reply door + caller signals on blind synthetic sets 1-4, each scored before tuning on it: benign FP 0/180, 2/230, 12/230, 13/230; harmful caught 78/110, 96/130, 111/130, 93/130. Regex door alone is a floor, not a classifier",
    "n": 1370,
    "method": "Blind held-out sets: a separate agent (not shown rules.json or earlier sets) wrote synthetic Hinglish/English/Devanagari agent and caller lines across industries, labelled benign or harmful-by-kind; scored with replyDoor (ctx: service call, packs base+insurance_irdai+lending_rbi, one dues fact, disclosed, identity verified) and callerSignals. FP = benign line not passed or any caller signal raised; catch = harmful line not passed / expected signal raised. Each set was scored BEFORE tuning on it; then the rules were tuned on it.",
    "path": "product/server/modules/safety/STATUS.json",
@@ -48,13 +48,44 @@
    }
   },
   {
+   "id": "measure.2026-10-21.safety-door-blind-set5",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Blind set 5 (scored once at commit c213aff, before any tuning on it): benign FP 25/240 (10.4%; agent 24/160, caller 1/80), harmful caught 67/130 (51.5%; agent 28/70, caller 39/60). Devanagari and mixed-script lines and negation-then-request hard negatives were the weak spots",
+   "n": 370,
+   "method": "A separate agent that never saw rules.json, cases.json or sets 1-4 wrote 160 benign agent lines (half hard negatives), 80 benign caller lines (half hard negatives), 70 harmful agent lines (10 per kind, a third keyword-free) and 60 harmful caller lines (10 per signal, a third indirect), about a third each Hinglish, Devanagari and mixed script, with at least a third from clinics, D2C and education. Scored with replyDoor (service call, packs base+insurance_irdai+lending_rbi, one dues fact, disclosed, verified) and callerSignals. The rules were then tuned on its failures (coClause for RD4, Devanagari/mixed patterns), so set 5 is in-sample from commit ada4e26 on and is not reported as blind after that.",
+   "path": "product/shared/safety/cases.json",
+   "detail": {
+    "agent_caught_by_kind": {
+     "deny_ai": "4/10",
+     "sensitive_ask": "5/10",
+     "pay_on_call": "3/10",
+     "scam_framing": "3/10",
+     "harsh_dues": "6/10",
+     "mis_selling": "5/10",
+     "promo_on_service": "2/10"
+    },
+    "caller_caught_by_signal": {
+     "crisis": "5/10",
+     "asks_if_ai": "5/10",
+     "refuses_recording": "7/10",
+     "opt_out": "6/10",
+     "sensitive_digits": "8/10",
+     "wants_human": "8/10"
+    },
+    "not_verified": "the hard-negative split, script mix and keyword-free share were written to spec by the generating agent but not counted by script"
+   }
+  },
+  {
    "id": "measure.2026-10-21.safety-cases-in-sample",
    "type": "measurement",
    "status": "measured",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "cases.json in-sample: 0/974 benign blocked or flagged, 635/635 harmful caught, 14/14 node:test green; door p50 0.19 ms, p99 0.54 ms (n=3,610), 2,000-char adversarial input 3.3 ms",
-   "n": 1609,
+   "title": "cases.json in-sample: 0/1,214 benign blocked or flagged, 765/765 harmful caught, 14/14 node:test green; door p50 0.30 ms, p99 0.71 ms (n=6,080), 2,000-char adversarial input 6.5 ms",
+   "n": 1979,
    "method": "node --import tsx --test tests/safety.test.ts; latency by process.hrtime over 5 passes of every replyDoor vector on a 4-vCPU sandbox. In-sample: the rules were tuned on these vectors, so this proves only that they hold (a regression gate), not generalisation",
    "path": "product/tests/safety.test.ts"
   },
@@ -145,7 +176,7 @@
    "status": "open",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "The regex door misses unseen harmful phrasings: blind catch rose 71% -> 74% -> 85% -> 72% across four tuning rounds, so roughly one subtle harmful line in 4 still passes",
+   "title": "The regex door misses unseen harmful phrasings: blind catch was 71%, 74%, 85%, 72% and 52% on five successive sets (set 5, a third Devanagari and a third mixed script, after four tuning rounds: 67/130 caught, 25/240 benign flagged), so on unseen phrasing and scripts about half of subtle harmful lines can pass",
    "mitigation": "Keep the door as the deterministic floor; add a second-layer judge on agent lines (small fast model or classifier, measured on fresh blind sets, under the turn latency budget); log every flagged and near-miss line for Supervisor review; grow cases.json from production reviews; prompt rules in the brief remain a help, not the guarantee."
   },
   {
@@ -164,7 +195,7 @@
    "date": "2026-10-21",
    "source": "safety module builder (parallel build)",
    "title": "PROPOSAL for the owner: a model-based judge behind the deterministic door. It may only add a block or a flag, never lift one. It runs per sentence, pipelined with playback, and costs at most 150 ms p95 on a turn's first sentence. Ship it only if fresh blind sets show >= 97% catch at <= 1% benign FP",
-   "rationale": "The regex door is a floor: on the hardest blind set (set 4) it caught 93/130 harmful lines and flagged 13/230 benign ones. The misses are paraphrase and indirection ('kal humare log aapke ghar aa jayenge', 'kisi ko batana nahi hai'), threats split across sentences, and indirect crisis talk ('sab log better off honge agar main nahi rahunga'). More regex buys recall only by spending false positives on warm speech, and warm speech is the product.",
+   "rationale": "The regex door is a floor: on blind set 4 it caught 93/130 harmful lines and flagged 13/230 benign ones; on blind set 5 (a third Devanagari, a third mixed script) it caught 67/130 and flagged 25/240. The misses are paraphrase and indirection ('kal humare log aapke ghar aa jayenge', 'kisi ko batana nahi hai'), threats split across sentences, and indirect crisis talk ('sab log better off honge agar main nahi rahunga'). More regex buys recall only by spending false positives on warm speech, and warm speech is the product.",
    "detail": {
     "adds": [
      "semantic recall on paraphrased and keyword-free harmful lines across all RD kinds",
@@ -235,6 +266,16 @@
    "relation": "tests"
   },
   {
+   "from": "measure.2026-10-21.safety-door-blind-set5",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-set5",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "supports"
+  },
+  {
    "from": "measure.2026-10-21.python-twin-vs-cases",
    "to": "open.2026-10-21.python-door-loads-rules",
    "relation": "informs"
@@ -279,7 +320,7 @@
   {
    "date": "2026-10-21",
    "event": "safety-module-built",
-   "details": "product/shared/safety (rules.json, cases.json 1,609 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/974 benign blocked, 635/635 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
+   "details": "product/shared/safety (rules.json, cases.json 1,979 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/1,214 benign blocked, 765/765 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
   }
  ]
 }
