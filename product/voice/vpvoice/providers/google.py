@@ -91,4 +91,5 @@ def explain(err, what):
     e = err or ''
     if e.startswith(('500', '502', '503', '504')) or 'UNAVAILABLE' in e: return f"{what} was unavailable on the provider's side ({e[:3]})"
     if e.startswith('429') or 'quota' in e.lower() or 'RESOURCE_EXHAUSTED' in e: return f'{what} hit its quota'
-    return f'{what} failed: {re.sub(r"key=[^&\s]+", "key=…", e)[:160]}'
+    clean = re.sub(r'key=[^&\s]+', 'key=…', e)
+    return f'{what} failed: {clean[:160]}'

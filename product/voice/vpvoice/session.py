@@ -33,7 +33,8 @@ class Session:
                                  brain_provider=components.brain_provider, brain_id=components.brain_id)
         self.t0 = self.conv.t0; self.fallbacks = []; self.ended = None; self.error = None
         self.done = asyncio.Event(); self.watchdog_s = watchdog_s; self.tasks = []; self.handed_off = False
-        self.recording_uri = None; self.ending = False
+        self.recording_uri = None; self.ending = False; self.started = False
+        self.telephony = None          # (trunk, direction) on phone calls
 
     # ---------------------------------------------------------------- manifest
     def manifest(self):
@@ -47,6 +48,7 @@ class Session:
 
     # ---------------------------------------------------------------- lifecycle
     async def start(self):
+        self.started = True
         self.sink.start()
         self.sink.emit('call.started', manifest=self.manifest())
         self.tasks.append(asyncio.ensure_future(self._watchdog()))
@@ -63,7 +65,11 @@ class Session:
             log.exception('watchdog')
 
     def meter_running(self):
-        """Transports with running costs (telephony, ears) update the meter here."""
+        """Running costs (telephony here; ears in the cascade) are re-totalled into the meter."""
+        if self.telephony and self.started:
+            trunk, direction = self.telephony
+            inr, billed_s = catalog.telephony_inr(trunk, direction, self.elapsed_s())
+            self.meter.set_total('telephony', trunk, 'second', billed_s, inr, {'pulseS': catalog.TELEPHONY_PULSE_S, 'direction': direction})
 
     def limit_reached(self):
         lim = self.t['limits']; k = CRISIS_CEILING if self.conv.state['crisis'] else 1.0
@@ -79,13 +85,15 @@ class Session:
             await self.hand_off('crisis', end_reason='crisis_handoff')       # she never ends a crisis call herself
             return True
         await self.speak_canned(limit_line(self.conv.gender))
-        await self.end(why)
+        await self.finish(why)
         return True
 
     async def end(self, reason, error=None):
         if self.ended: return
         reason = reason if reason in END_REASONS else 'error'
         self.ended = reason; self.error = error
+        if not self.started:            # a call that never connected still reports what would have run
+            self.started = True; self.sink.emit('call.started', manifest=self.manifest())
         if error: log.warning('call %s ended (%s): %s', self.id, reason, error)
         for tk in self.tasks:
             if tk is not asyncio.current_task(): tk.cancel()
@@ -99,6 +107,11 @@ class Session:
         if self.recording_uri and not self.conv.state['recording_refused']: fields['recordingUri'] = self.recording_uri
         await self.sink.end(**fields)
         self.done.set()
+
+    async def finish(self, reason, cancellable=False):
+        """End after her last line has been heard. Audio transports wait for playback (and, when cancellable, give the
+        caller a beat to keep talking); text ends at once."""
+        await self.end(reason)
 
     async def close_media(self): pass
     def meter_final(self): pass
@@ -141,7 +154,7 @@ class Session:
         if end_reason == 'crisis_handoff' or reason != 'crisis':
             await self.speak_canned(bridge_line(kind, self.conv.gender))
             if await self.transfer(kind, value): return
-            await self.end(end_reason)
+            await self.finish(end_reason)
 
     async def transfer(self, kind, value):
         """Bridge to a human where the transport can (SIP to a phone target). False: the call ends as handed off."""
@@ -169,14 +182,14 @@ class Session:
         self.flush_costs()
         if await self.check_limits(): return
         if self.conv.state['opt_out'] and not self.conv.state['crisis']:
-            await self.end('opt_out'); return
+            await self.finish('opt_out'); return
         if marks.get('handoff') and self.handoff_allowed(marks['handoff']) and not self.conv.state['crisis']:
             await self.hand_off(marks['handoff']); return
         if self.conv.wants_end(marks):
-            await self.end('agent_ended'); return
+            await self.finish('agent_ended', cancellable=True); return
         max_turns = (self.t['agent'].get('limits') or {}).get('maxTurns')
         if max_turns and self.conv.agent_turns >= max_turns and not self.conv.state['crisis']:
-            await self.speak_canned(limit_line(self.conv.gender)); await self.end('agent_ended')
+            await self.speak_canned(limit_line(self.conv.gender)); await self.finish('agent_ended')
 
     def stop_recording(self): pass
 
