@@ -34,6 +34,16 @@ async function liveCall(ctx: ToolCtx, id: string) {
 
 const SYSTEM = { type: 'system' as const, id: 'calls.test_call' };
 
+/** The runtime's admission cap: POST /v1/calls answers 503 {error:'at_capacity', retryAfterS} and places nothing.
+ *  Read from StartReply.retryable/retryAfterS when the kernel client sets them, else from the reason text it carries today. */
+export function atCapacity(rep: { accepted: boolean; reason?: string; retryable?: boolean; retryAfterS?: number }): { retryAfterS: number } | null {
+  if (rep.accepted) return null;
+  if (rep.retryable) return { retryAfterS: Math.max(1, Math.round(rep.retryAfterS ?? 5)) };
+  if (!/\b503\b/.test(rep.reason ?? '') || !/at_capacity/.test(rep.reason ?? '')) return null;
+  const n = Number(/"retryAfterS"\s*:\s*(\d+)/.exec(rep.reason ?? '')?.[1] ?? 5);
+  return { retryAfterS: Math.max(1, n) };
+}
+
 export function registerTools(r: Registry): void {
   // ---- test.browser_call --------------------------------------------------------------------------------
   r.register(tool(obj({ agentId: uuid(), versionId: opt(uuid()), useDraft: opt(bool()) }), {
@@ -89,6 +99,12 @@ export function registerTools(r: Registry): void {
       let rep;
       try { rep = await runtime().start(ticket); } catch (e) { rep = { accepted: false, reason: e instanceof Error ? e.message : String(e) } as const; }
       if (!rep.accepted) {
+        const busy = atCapacity(rep);
+        if (busy) {
+          // Nothing was placed (the runtime creates no call at capacity), so no call record stays behind either.
+          await ctx.pool.query('DELETE FROM conversation WHERE id = $1 AND workspace_id = $2 AND channel = $3', [id, ctx.workspaceId, 'test']);
+          throw new Error(`the voice engine is busy right now; try again in ${busy.retryAfterS} seconds`);
+        }
         await ctx.pool.query(`UPDATE conversation SET status = 'failed', end_reason = 'error', ended_at = now() WHERE id = $1 AND workspace_id = $2`, [id, ctx.workspaceId]);
         throw new Error(`the voice runtime did not start the call: ${rep.reason ?? 'no reason given'}`);
       }

@@ -295,6 +295,13 @@ test('test.browser_call dispatches a test ticket; test calls stay out of outcome
   const lbl = await registry.execute(pool, 'outcome.label', { conversationId: r.result.conversationId, definitionId: def, value: 'will_pay' }, { workspaceId: w.ws, actor: w.member });
   assert.equal(lbl.status, 'not_executed');
 
+  // At capacity the runtime places nothing: the test call says busy, and no call record is left behind.
+  setRuntime({ start: async () => ({ accepted: false, reason: 'runtime returned 503: {"error":"at_capacity","message":"full","retryAfterS":7,"placed":false}' }), control: async () => ({ ok: true }) });
+  const before = (await one<any>(pool, "SELECT count(*)::int AS n FROM conversation WHERE workspace_id = $1 AND channel = 'test'", [w.ws])).n;
+  const busy = await registry.execute(pool, 'test.browser_call', { agentId: w.agent }, { workspaceId: w.ws, actor: w.member });
+  assert.equal(busy.status, 'not_executed');
+  assert.equal(busy.status === 'not_executed' && busy.reason, 'the voice engine is busy right now; try again in 7 seconds');
+  assert.equal((await one<any>(pool, "SELECT count(*)::int AS n FROM conversation WHERE workspace_id = $1 AND channel = 'test'", [w.ws])).n, before);
   setRuntime({ start: async () => ({ accepted: false, reason: 'stack not loaded' }), control: async () => ({ ok: true }) });
   const refused = await registry.execute(pool, 'test.browser_call', { agentId: w.agent }, { workspaceId: w.ws, actor: w.member });
   setRuntime(fakeRuntime);
@@ -782,4 +789,13 @@ test('validateRuntimeBatch is the hook\'s own validator (exported for the voice 
   assert.throws(() => validateRuntimeBatch({ ...ok, events: [{ ...ok.events[0], text: 'x' }] }), /text/, 'no field outside the contract, ever');
   assert.throws(() => validateRuntimeBatch({ ...ok, events: [{ ...ok.events[0], latencyMs: 800.5 }] }), /latencyMs/);
   assert.throws(() => validateRuntimeBatch({ ...ok, conversationId: 'conv_test_1' }), /conversationId/, 'a conversation id is a uuid');
+});
+
+test('atCapacity reads the runtime admission cap from the reply fields or from the reason text', async () => {
+  const { atCapacity } = await import('../server/modules/calls/tools.ts');
+  assert.deepEqual(atCapacity({ accepted: false, retryable: true, retryAfterS: 3 }), { retryAfterS: 3 });
+  assert.deepEqual(atCapacity({ accepted: false, reason: 'runtime returned 503: {"error":"at_capacity","retryAfterS":12}' }), { retryAfterS: 12 });
+  assert.equal(atCapacity({ accepted: false, reason: 'runtime returned 503: upstream down' }), null, 'a 503 that is not the cap is a failure');
+  assert.equal(atCapacity({ accepted: false, reason: 'runtime returned 422: unknown stack' }), null);
+  assert.equal(atCapacity({ accepted: true }), null);
 });

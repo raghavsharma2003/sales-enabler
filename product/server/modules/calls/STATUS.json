@@ -29,8 +29,8 @@
     "db/migrations/0602_call_judge_event.sql"
   ],
   "tests": {
-    "passed": 24,
-    "total": 24,
+    "passed": 25,
+    "total": 25,
     "files": [
       "tests/calls.test.ts"
     ],
@@ -54,7 +54,8 @@
     "No transaction is held across a model or network call. The analysis LLM call runs outside any transaction. test.browser_call, live.listen and live.takeover make their runtime requests in prepare(). test.browser_call commits the conversation first and marks it failed if the runtime refuses. live.whisper (A2) keeps its runtime request in run(), because on the approval path prepare() runs before the approver, hash and version checks.",
     "An outcome guess counts only if its evidence quote is in a CALLER line of the stored transcript; its evidence records {quote, turn, speaker:'caller'}. When the only match is the agent's own words, analysis.outcomeUnclear holds {value, reason}, no outcome row is written and the quote counts as dropped (review M6).",
     "Post-call caller-crisis judge (shared/safety/judge.ts, purpose safety_judge, 5 s per line). It judges each caller line the floor did not flag, with the previous caller line as context. mode raise: an RD3 'flagged' call_safety_event per hit, detail 'judge_raised kind=<k> confidence=<c>' (never the words), which counts as safety. mode shadow: analysis.judge_shadow only, with no event, flag, safety_violation or monitor input. analysis.judge_unavailable and judge_calls are recorded, and a cost_line (component analysis, provider safety_judge, tokens, priced:false) is written whenever the judge was called. No VP_LLM_SAFETY_JUDGE_* or VP_LLM_DEFAULT_* keys means no call.",
-    "RuntimeEvent 'judge' (shared/runtime-protocol.ts) is validated strictly: unknown outcome, mode 'off' or any extra field (text) gives 422. It is stored in call_judge_event with no flag and no call_safety_event. analysis.crisis_judge = {shadow, raised, unavailable, runtime:{...}, postCall:{...}} tells one story across live and post-call."
+    "RuntimeEvent 'judge' (shared/runtime-protocol.ts) is validated strictly: unknown outcome, mode 'off' or any extra field (text) gives 422. It is stored in call_judge_event with no flag and no call_safety_event. analysis.crisis_judge = {shadow, raised, unavailable, runtime:{...}, postCall:{...}} tells one story across live and post-call.",
+    "test.browser_call treats the runtime admission cap (503 at_capacity, from StartReply.retryable/retryAfterS or the reason text) as 'busy, try again in N seconds'. It leaves no conversation row behind, because nothing was placed."
   ],
   "untested": [
     "The real voice runtime end to end (no cross-language signature test). The hook now verifies raw bytes, so any byte-exact signer works.",
@@ -64,7 +65,8 @@
     "report.create date filters, call.search pagination ('before') and the analysis 'failed' path (model error or non-JSON).",
     "Load: search p95 and the time from hang-up to analysis.",
     "The callback retry time: the analysis does not yet extract the stated callback time, so attempt.retry_per_ladder gets no 'at' for callbacks.",
-    "The crisis judge with a real model (tests use setFakeLlm with assumeConfigured)."
+    "The crisis judge with a real model (tests use setFakeLlm with assumeConfigured).",
+    "live.listen, live.whisper and live.takeover against the real runtime: as of 2026-10-21 the runtime does not implement those control actions (they 404), so in production these tools refuse with 'the voice runtime refused …'. The semantics calls expects were sent to the voice builder."
   ],
   "needs_from_others": [
     "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). It is not listed yet.",
@@ -75,7 +77,9 @@
     "integrations module: call outcome.record_verified as the system actor when a payment, booking or CRM webhook arrives.",
     "money module: price 'analysis' token cost lines (written with inr_milli 0 and detail.priced false).",
     "web/runtime: serve the test-call WebRTC offer at /v1/test-calls/:conversationId/offer (the ticket's offerUrl), or tell this module the right URL.",
-    "blueprint: the companion data/blueprint/intelligence-module.json (34 codes, 20 monitors) is not in the repo. taxonomy.ts holds this module's own 34 codes."
+    "blueprint: the companion data/blueprint/intelligence-module.json (34 codes, 20 monitors) is not in the repo. taxonomy.ts holds this module's own 34 codes.",
+    "voice runtime: implement /v1/calls/{id}/listen, /whisper and /takeover. Each body carries conversationId. listen {by}: returns a listen-only join. whisper {text, by}: context for the agent's next turn, never spoken. takeover {memberId}: the agent stops for good, the call is bridged to the person, and it returns their join.",
+    "kernel (runtime-client.ts): StartReply should gain retryable and retryAfterS on 503 at_capacity, and join should be typed to the runtime's real shapes (expiresAtMs; sip has no url/token). control('end') must send {conversationId, endReason?}. campaigns dispatch() should treat at_capacity as not placed: release the hold, requeue after retryAfterS, and spend no ladder step."
   ],
   "jobs": [
     "calls.analysis_sweep (every 60 s): analyses ended calls the in-process queue lost, retries pending opt-outs"
