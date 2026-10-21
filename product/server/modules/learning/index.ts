@@ -4,7 +4,7 @@
 //
 //   learning.propose   (draft)  evidence (issues, moments, judge results, lessons) -> LLM -> gated diffs, calls cited
 //   proposal.probe     (test)   test.simulate_batch on current and proposed, same callers and seeds; any regression rejects
-//   proposal.accept    (A2)     treatment version (agents' version.candidate) + pre-registered design with calls-to-prove
+//   proposal.accept    (A2, external)     treatment version (agents' version.candidate) + pre-registered design with calls-to-prove
 //   experiment.start   (A2)     shadow A/A on the tenant's own history first; launch only if the plumbing holds
 //   experiment.assign  (read)   sticky arm per contact for the dialer
 //   experiment.check   (draft)  guardrails every call (hazard stop + A3 revert); verdict only at the horizon
@@ -455,7 +455,7 @@ export const module: Module = {
 
     r.register(tool(probeIn, { name: 'proposal.probe', risk: 'test', summary: 'simulate the current and proposed versions on the same callers and seeds; reject regressions', run: probe }));
 
-    r.register(tool(acceptIn, { name: 'proposal.accept', risk: 'policy', summary: 'accept a probed proposal into a pre-registered A/B test',
+    r.register(tool(acceptIn, { name: 'proposal.accept', risk: 'external', roles: ['owner', 'builder', 'operator'], summary: 'accept a probed proposal into a pre-registered A/B test',
       describe: i => `Test proposal ${i.proposalId.slice(0, 8)} against the current version on live calls (fixed horizon; calls to prove computed from your own baseline before launch)`,
       version: async (ctx, i) => (await one<{ v: string }>(ctx.q, `SELECT status || ':' || md5(coalesce(simulation::text, '')) AS v FROM proposal WHERE id = $1 AND workspace_id = $2`, [i.proposalId, ctx.workspaceId]))?.v ?? null,
       run: accept }));

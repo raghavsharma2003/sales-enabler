@@ -20,8 +20,13 @@
     },
     {
       "name": "proposal.accept",
-      "risk": "policy",
-      "autonomy": "A2"
+      "risk": "external",
+      "autonomy": "A2",
+      "roles": [
+        "owner",
+        "builder",
+        "operator"
+      ]
     },
     {
       "name": "experiment.start",
