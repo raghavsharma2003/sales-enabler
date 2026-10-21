@@ -8,7 +8,7 @@
 import type { Module } from '../../app.ts';
 import { CALL_CATEGORIES, type CallCategory } from '../../../shared/agent-config.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
-import { arr, bool, num, obj, opt, record, str, uuid, ValidationError } from '../../../shared/validate.ts';
+import { arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { tool, UnknownOutcome, type Registry, type ToolCtx } from '../../tools.ts';
 import {
@@ -105,6 +105,19 @@ function retryAt(step: number | string, from: Date, tz: string, w: WindowPolicy,
   const minutes = step === 'next_day' ? s : local.minutes < mid ? mid : s;   // the other half of the window, next day
   return localToUtc(addDays(local.date, 1), minutes, tz);
 }
+
+/** India-default band check at the API door, so a promotional single call outside 10:00-21:00 IST is a 422 before any
+ *  approval card exists. run() checks again in the contact's own zone (a contact abroad may differ). */
+const promoBandAt = (at: Date, tz: string) => eligibility(at, tz, { category: 'promotional', window: { days: [1, 2, 3, 4, 5, 6, 7], ranges: [PROMOTIONAL_BAND] },
+  outerBand: PROMOTIONAL_BAND, rbiBand: false, holidays: [], cutoffMin: 0 }).ok;
+const PROMO_RULE = `M3.promotional_band: promotional calls only between ${PROMOTIONAL_BAND.start} and ${PROMOTIONAL_BAND.end} in the person's time (RS-15)`;
+const singleCallBase = obj({ contactId: uuid(), agentVersionId: uuid(), category: categoryV, facts: opt(record(str({ max: 500 }), { maxKeys: 40 })),
+  at: opt(iso()), idempotencyKey: opt(str({ min: 8, max: 80 })), via: opt(str({ oneOf: ['single', 'api'] })) });
+const singleCallV: Validator<ReturnType<typeof singleCallBase>> = Object.assign((v: unknown, p?: string) => {
+  const out = singleCallBase(v, p);
+  if (out.category === 'promotional' && !promoBandAt(out.at ? new Date(out.at) : new Date(), 'Asia/Kolkata')) throw new ValidationError('at', PROMO_RULE);
+  return out;
+}, { schema: singleCallBase.schema });
 
 // ---- tools ----
 
@@ -352,8 +365,7 @@ export function registerCampaignTools(registry: Registry): void {
     },
   }));
 
-  reg(tool(obj({ contactId: uuid(), agentVersionId: uuid(), category: categoryV, facts: opt(record(str({ max: 500 }), { maxKeys: 40 })),
-    at: opt(iso()), idempotencyKey: opt(str({ min: 8, max: 80 })), via: opt(str({ oneOf: ['single', 'api'] })) }), {
+  reg(tool(singleCallV, {
     name: 'call.place_single', risk: 'external', summary: 'Call one person now (or at a time), through the same dial gate as campaigns',
     describe: i => `Call contact ${i.contactId} with agent version ${i.agentVersionId} (${i.category})${i.at ? ' at ' + i.at : ''}`,
     run: async (ctx, i) => {
@@ -364,11 +376,7 @@ export function registerCampaignTools(registry: Registry): void {
       if (!v) throw new ValidationError('agentVersionId', 'no such agent version in this workspace');
       if (v.config.agent?.category && v.config.agent.category !== category) throw new ValidationError('category', `M1.category_mismatch: this version is for ${v.config.agent.category} calls`);
       const at = i.at ? new Date(i.at) : new Date();
-      if (category === 'promotional') {
-        const e = eligibility(at, contact.timezone || 'Asia/Kolkata', { category, window: { days: [1, 2, 3, 4, 5, 6, 7], ranges: [PROMOTIONAL_BAND] },
-          outerBand: PROMOTIONAL_BAND, rbiBand: false, holidays: [], cutoffMin: 0 });
-        if (!e.ok) throw new ValidationError('at', `M3.promotional_band: promotional calls only between ${PROMOTIONAL_BAND.start} and ${PROMOTIONAL_BAND.end} in the person's time (RS-15)`);
-      }
+      if (category === 'promotional' && !promoBandAt(at, contact.timezone || 'Asia/Kolkata')) throw new ValidationError('at', PROMO_RULE);
       if (i.idempotencyKey) {
         const prev = await one<{ id: string; status: string }>(ctx.q, 'SELECT id, status FROM attempt WHERE workspace_id = $1 AND idempotency_key = $2', [ctx.workspaceId, i.idempotencyKey]);
         if (prev) return { attemptId: prev.id, status: prev.status, replayed: true };
