@@ -425,7 +425,7 @@ test('MA-08: a gateway error after capture never leads to a second charge', { sk
     const p = await reg.execute(pool, 'wallet.topup', { inrMilli: 500_000 }, { workspaceId: ws, actor: ownerActor(owner) });
     if (p.status !== 'needs_approval') return assert.fail('expected a card');
     const first = await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
-    assert.notEqual(first.status, 'confirmed');
+    assert.equal(first.status, 'unknown', 'the kernel records a lost gateway response as unknown');
     const second = await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
     assert.notEqual(second.status, 'confirmed');
     assert.equal(charges.length, 1, 'one approval, one charge');

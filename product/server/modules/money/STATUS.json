@@ -19,7 +19,7 @@
     "total": 26,
     "file": "product/tests/money.test.ts",
     "db": "vp_shared_money, throwaway cluster, 2026-10-21",
-    "cross_suite": "money+campaigns+calls 91/91 twice; full runner 290 pass / 0 fail / 17 todo (other review findings) twice, one shared database"
+    "cross_suite": "money+campaigns+calls+kernel 124/124; full runner 326 pass / 0 fail / 8 todo, shared database, after 7057eb3"
   },
   "works": [
     "cost_card (0901) seeded by 0902 from prices.ts (catalog.py list prices, FX 95, Plivo ₹0.38/min 60 s pulse); a test fails if seed and code drift",
@@ -54,7 +54,7 @@
     "#4 kernel: reservation has no campaign_id column, so holds cannot be shown per campaign (cost lines are grouped through attempt.campaign_id instead)",
     "#6 calls module: write cost_line rows per component with attempt_id so reconcile() and invoice.get see them; campaigns module: call money.estimate through the registry",
     "DONE by kernel (ab0ed91): ledger #1 #2, module wiring",
-    "#7 kernel tools.ts: pass the action id into PrepareCtx (and ToolCtx) for A2 runs; wallet.topup finds its action by args hash today and refuses two identical pending top-ups. Also: map an UnknownOutcome thrown from prepare() to status 'unknown' (topup.ts marks its own action unknown meanwhile)",
-    "#8 calls: an optional conversation.last_event_at would let the sweep judge 'runtime silent' by silence instead of age"
+    "#8 calls: an optional conversation.last_event_at would let the sweep judge 'runtime silent' by silence instead of age",
+    "DONE by kernel (7057eb3): #7 PrepareCtx.actionId and UnknownOutcome from prepare(); topup key is now topup:${actionId}"
   ]
 }

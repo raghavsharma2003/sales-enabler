@@ -75,7 +75,7 @@ export function register(r: Registry): void {
     run: (ctx, i) => { const d = defaultRange(); return statement(ctx.q, ctx.workspaceId, { from: i.from ?? d.from, to: i.to ?? d.to }); },
   }));
 
-  r.register(tool(obj({ inrMilli: num({ int: true, min: 1000, max: MAX_TOPUP }), requestId: opt(uuid()) }), {
+  r.register(tool(obj({ inrMilli: num({ int: true, min: 1000, max: MAX_TOPUP }) }), {
     name: 'wallet.topup', risk: 'spend', summary: 'add money to the prepaid wallet through the payment gateway',
     describe: i => `Add ${formatInr(i.inrMilli)} to the prepaid wallet`,
     prepare: (ctx, i) => prepareTopup(ctx, i),                 // the one gateway call, under the action's own key

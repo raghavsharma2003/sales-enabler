@@ -2,10 +2,10 @@
 // transaction, under ONE idempotency key per approval ('topup:<action id>'). The intent row is committed before the
 // charge, so a lost response, a crash or a later DB error can never lead to a second charge:
 //   prepare: intent exists? -> reuse its outcome, never charge again; else write it, charge, record the result.
-//            a thrown charge -> intent and action become 'unknown' (never re-approvable), resolved by resolveTopups().
+//            a thrown charge -> intent 'unknown'; the kernel marks the action 'unknown' (never re-approvable);
+//            resolveTopups() settles it against the gateway.
 //   run:     credit a captured intent once (credited_at), inside the approval transaction.
 import type pg from 'pg';
-import { argsHash } from '../../../shared/approval.ts';
 import { formatInr } from '../../../shared/money.ts';
 import { many, one, tx, type Queryable } from '../../db.ts';
 import { appendAudit } from '../../audit.ts';
@@ -13,27 +13,15 @@ import { UnknownOutcome, type PrepareCtx, type ToolCtx } from '../../tools.ts';
 import { gateway } from './gateway.ts';
 import { credit } from './money.ts';
 
-export interface TopupInput { inrMilli: number; requestId?: string }
+export interface TopupInput { inrMilli: number }
 export interface Prepared { topupId: string; status: 'captured' | 'failed'; reason?: string }
-
-/** The approval this prepare() belongs to. The kernel does not pass the action id yet, so it is found by its args hash;
- *  two identical pending top-ups are refused rather than guessed between (a requestId makes each one distinct). */
-async function actionFor(ctx: PrepareCtx, i: TopupInput): Promise<string> {
-  const given = (ctx as PrepareCtx & { actionId?: string }).actionId;
-  if (given) return given;
-  const rows = await many<{ id: string }>(ctx.pool,
-    "SELECT id FROM action WHERE workspace_id = $1 AND tool = 'wallet.topup' AND status = 'proposed' AND args_hash = $2",
-    [ctx.workspaceId, argsHash('wallet.topup', i)]);
-  if (rows.length === 0) throw new Error('a top-up runs only from an approved request');
-  if (rows.length > 1) throw new Error('two identical top-up requests are waiting; decline one, or ask again with a request id');
-  return rows[0].id;
-}
 
 export async function prepareTopup(ctx: PrepareCtx, i: TopupInput): Promise<Prepared> {
   const gw = gateway();
   if (!gw.enabled) throw new Error('online top-up is not switched on yet; ask VP success for a manual credit');
-  const actionId = await actionFor(ctx, i);
-  const key = 'topup:' + actionId;
+  const actionId = ctx.actionId;
+  if (!actionId) throw new Error('a top-up runs only from an approved request');
+  const key = `topup:${actionId}`;
   const prior = await one<{ id: string; status: string; reason: string | null }>(ctx.pool,
     'SELECT id, status, reason FROM wallet_topup WHERE idempotency_key = $1 AND workspace_id = $2', [key, ctx.workspaceId]);
   if (prior) {
@@ -51,14 +39,8 @@ export async function prepareTopup(ctx: PrepareCtx, i: TopupInput): Promise<Prep
   try { res = await gw.charge({ inrMilli: i.inrMilli, workspaceId: ctx.workspaceId, idempotencyKey: key }); }
   catch (e) {
     const why = e instanceof Error ? e.message : String(e);
-    await tx(ctx.pool, async c => {
-      await c.query("UPDATE wallet_topup SET status = 'unknown', reason = $2, updated_at = now() WHERE id = $1", [row.id, why.slice(0, 300)]);
-      // The kernel maps a prepare() error to not_executed and leaves the action proposed; mark it unknown so no
-      // second tap can reach the gateway (the intent would refuse anyway).
-      await c.query("UPDATE action SET status = 'unknown' WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, ctx.workspaceId]);
-      await appendAudit(c, { workspaceId: ctx.workspaceId, actorType: ctx.actor.type, actorId: ctx.actor.id, action: 'wallet.topup',
-        objectType: 'wallet_topup', objectId: row.id, payload: { outcome: 'unknown', reason: why.slice(0, 300) } });
-    });
+    // The kernel marks the action unknown (and audits it) on UnknownOutcome, so no second tap reaches the gateway.
+    await ctx.pool.query("UPDATE wallet_topup SET status = 'unknown', reason = $2, updated_at = now() WHERE id = $1", [row.id, why.slice(0, 300)]);
     throw new UnknownOutcome(`the payment gateway did not confirm the charge (${why}); it will be checked, never charged again`);
   }
   await ctx.pool.query('UPDATE wallet_topup SET status = $2, gateway_ref = $3, reason = $4, updated_at = now() WHERE id = $1',
