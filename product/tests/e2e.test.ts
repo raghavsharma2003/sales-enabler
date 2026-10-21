@@ -587,8 +587,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     assert.deepEqual(audit.body, { intact: true, firstBroken: null });
   });
 
-  await todo('8b', 'the funnel does not count a dial that is still live (no answer reported yet) as connected',
-    'calls/stats.ts campaignFunnel counts end_reason IS NULL as connected, so call B (dispatched, nothing reported yet) is counted connected while it may still be ringing',
+  await step('8b', 'the funnel does not count a dial that is still live (no answer reported yet) as connected',
     ['8'], async () => {
       assert.equal(s.funnel8.total.connected, 1, 'only call A had connected (C did not pick up; B was still live)');
     });
