@@ -15784,6 +15784,307 @@
    "source": "memory module builder (parallel build)",
    "title": "memory.extract calls the LLM inside the registry's tool transaction (holds a pooled connection up to the 60 s LLM timeout). Fine at low volume; at campaign scale run extraction as a two-phase job (read, call model outside tx, commit with transcript re-check).",
    "closes_when": "memory.extract moves its LLM call into the kernel ToolDef.prepare() phase (added 2026-10-21), so no transaction is open during the call; verified by a test."
+  },
+  {
+   "id": "component.product.calls-module",
+   "type": "component",
+   "status": "tested",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Calls module: signed idempotent runtime ingest, settle at real cost, quote-checked post-call analysis, outcome grades, judge calibration, monitors and issues, campaign funnel, test calls and live control",
+   "path": "product/server/modules/calls/"
+  },
+  {
+   "id": "decision.2026-10-21.calls-signature-over-compact-json",
+   "type": "decision",
+   "status": "superseded",
+   "source": "inferred",
+   "date": "2026-10-21",
+   "title": "The runtime hook checks x-vp-signature over the compact JSON serialisation of the parsed body, because the kernel router hands modules a parsed body, not the raw bytes",
+   "rationale": "Modules may not edit the kernel. JSON.stringify of the parsed body equals the raw body whenever the sender signs compact JSON (the kernel's own HttpRuntime does). A whitespace-only change to the body then still verifies, which is harmless: it parses to the same events.",
+   "reverse_if": "The kernel exposes the raw request body to module routes; then verify over the raw bytes and drop the serialisation rule for the Python runtime."
+  },
+  {
+   "id": "decision.2026-10-21.calls-quotes-single-line-substring",
+   "type": "decision",
+   "status": "proposed",
+   "source": "inferred",
+   "date": "2026-10-21",
+   "title": "An analysis quote counts only if it is an exact substring (3+ characters, trimmed) of one stored transcript line. A point, moment or outcome guess whose quote fails is dropped with it, and the drops are counted per call",
+   "rationale": "Blueprint rule 3: quotes are spans, checked in code before display. Requiring one line rules out stitching across turns. Every claim in the call summary is built from points whose quotes passed.",
+   "reverse_if": "Owners find too many true claims dropped because of transcript normalisation (for example matras or romanisation), measured on labelled calls; then match on a normalised form and still cite the original span."
+  },
+  {
+   "id": "decision.2026-10-21.calls-model-refines-only-unknown-reasons",
+   "type": "decision",
+   "status": "proposed",
+   "source": "inferred",
+   "date": "2026-10-21",
+   "title": "Code sets the reason code from the engine's end reason. The analysis model may replace it only for a normally ended call (CONV_INCOMPLETE, or END_HUNG_UP_MID at 10 s or more), and only with a conversation-stage code from the fixed 34-code catalogue",
+   "rationale": "Code first, model second. A model never overrides what the engine knows, such as no answer, max cost, a crisis hand-off or an early hang-up.",
+   "reverse_if": "The blueprint's companion catalogue (data/blueprint/intelligence-module.json, not in the repo) lands with different codes or stages; then replace taxonomy.ts with it."
+  },
+  {
+   "id": "open-question.2026-10-21.calls-reason-catalogue-source",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "The blueprint cites a companion data file with 34 reason codes and 20 default monitors (data/blueprint/intelligence-module.json), but no such file is in the repo. The calls module ships its own 34 codes and 6 default monitors",
+   "closes_when": "The companion JSON is committed and taxonomy.ts and DEFAULT_MONITORS are reconciled with it."
+  },
+  {
+   "id": "risk.2026-10-21.calls-analysis-cost-unpriced",
+   "type": "risk",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Analysis cost lines record tokens with inr_milli 0 (priced:false), because nothing in the control plane holds a rate. Cost per call understates analysis spend until the money module prices it",
+   "mitigation": "The money module rates component 'analysis' token lines, or llm.ts returns a price."
+  },
+  {
+   "id": "decision.2026-10-21.calls-untrusted-guess-never-counts",
+   "type": "decision",
+   "status": "proposed",
+   "source": "inferred",
+   "date": "2026-10-21",
+   "title": "conversation.outcome (what learning and funnels count) takes verified, then manager, then an AI guess only when its judge's latest calibration is trusted. Untrusted guesses stay visible with their grade",
+   "rationale": "Blueprint F4: until a label is trusted it cannot feed experiments, the north star or a winner. Learning reads conversation.outcome.",
+   "reverse_if": "The owner decides untrusted guesses may feed experiments with a stated penalty (calls-needed inflation), or learning starts reading outcome grades itself."
+  },
+  {
+   "id": "decision.2026-10-21.calls-hmac-over-raw-bytes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "The runtime hook verifies the HMAC over the exact raw request bytes (Router rawBody), before parsing",
+   "rationale": "The kernel now gives routes the raw body. Verifying the exact bytes removes the compact-JSON serialisation rule, and a whitespace-only change now fails (tested).",
+   "reverse_if": "Never, short of a protocol change to a signed canonical form."
+  },
+  {
+   "id": "component.2026-10-21.safety-module",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 1,559 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
+   "path": "product/shared/safety/"
+  },
+  {
+   "id": "measure.2026-10-21.safety-door-blind-heldout",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Reply door + caller signals on 4 blind synthetic sets, each scored before tuning on it: benign FP 0/180, 2/230, 12/230, 13/230; harmful caught 78/110, 96/130, 111/130, 93/130. Regex door alone is a floor, not a classifier",
+   "n": 1370,
+   "method": "Blind held-out sets: a separate agent (not shown rules.json or earlier sets) wrote synthetic Hinglish/English/Devanagari agent and caller lines across industries, labelled benign or harmful-by-kind; scored with replyDoor (ctx: service call, packs base+insurance_irdai+lending_rbi, one dues fact, disclosed, identity verified) and callerSignals. FP = benign line not passed or any caller signal raised; catch = harmful line not passed / expected signal raised. Each set was scored BEFORE tuning on it; then the rules were tuned on it.",
+   "path": "product/server/modules/safety/STATUS.json",
+   "detail": {
+    "set1_pre_tune": {
+     "agent_fp": "0/120",
+     "caller_fp": "0/60",
+     "agent_caught": "40/60",
+     "caller_caught": "38/50"
+    },
+    "set2_after_tune_on_1": {
+     "agent_fp": "1/150",
+     "caller_fp": "1/80",
+     "agent_caught": "49/70",
+     "caller_caught": "47/60"
+    },
+    "set3_after_tune_on_1_2_hard_negatives": {
+     "agent_fp": "11/150",
+     "caller_fp": "1/80",
+     "agent_caught": "57/70",
+     "caller_caught": "54/60"
+    },
+    "set4_after_tune_on_1_2_3_hard_negatives": {
+     "agent_fp": "12/150",
+     "caller_fp": "1/80",
+     "agent_caught": "44/70",
+     "caller_caught": "49/60"
+    },
+    "not_verified": "real ASR transcripts, real LLM-generated agent lines, live calls, real customer speech; all lines are synthetic and written by one model family"
+   }
+  },
+  {
+   "id": "measure.2026-10-21.safety-cases-in-sample",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "cases.json in-sample: 0/957 benign blocked or flagged, 602/602 harmful caught, 14/14 node:test green; door p50 0.19 ms, p99 0.54 ms (n=3,610), 2,000-char adversarial input 3.3 ms",
+   "n": 1559,
+   "method": "node --import tsx --test tests/safety.test.ts; latency by process.hrtime over 5 passes of every replyDoor vector on a 4-vCPU sandbox. In-sample: the rules were tuned on these vectors, so this proves only that they hold (a regression gate), not generalisation",
+   "path": "product/tests/safety.test.ts"
+  },
+  {
+   "id": "measure.2026-10-21.python-twin-vs-cases",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "The voice runtime's hand-written Python door (product/voice/vpvoice/safety.py) on cases.json: agent benign 457/469 pass, agent harmful 131/253 caught; caller benign 208/239 clean, caller harmful 145/194 caught. It does not load rules.json yet",
+   "n": 1155,
+   "method": "scratch runner importing vpvoice.safety, ctx = defaults.ctx + case.ctx via DoorContext.from_dict; field semantics may differ (e.g. its own disclosure ledger), so part of the gap may be context mapping rather than patterns",
+   "path": "product/shared/safety/cases.json"
+  },
+  {
+   "id": "decision.2026-10-21.safety-rules-as-data",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "Every door pattern, replacement text, mask and category table lives in product/shared/safety/rules.json in a regex subset common to ECMAScript and Python re; code holds only order, scope and five arithmetic builtins (links, per-contact facts, neverSay, amounts, digit runs)",
+   "rationale": "Two doors (TS for previews/compile, Python on the call path) drift unless they read one file and one vector set; the Python twin measured today shows the drift is real.",
+   "reverse_if": "Python and TS cannot hold parity on the subset (more than 1% of cases.json diverge after the voice runtime loads rules.json), or the call path moves to one language; then run one door as a service."
+  },
+  {
+   "id": "decision.2026-10-21.rd1-agenda-gate",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "RD1 at the door: while the AI clause has not been heard, any agenda sentence (premium, EMI, payment, order, appointment, offer...) without the AI clause is blocked; greetings and the name check pass; a repeated AI admission is never blocked",
+   "rationale": "Reconciles the red team's four disclosure placements (voice turn-2 vs trust first-breath) without choosing one: whatever the opening, the agenda cannot precede disclosure. Honesty beats the once-only ledger, so the door never suppresses an admission.",
+   "reverse_if": "The owner fixes one disclosure spec that allows agenda first, or the disclosure-placement A/B shows the gate costs more than 5 points of hang-ups against a lawful alternative placement."
+  },
+  {
+   "id": "decision.2026-10-21.redaction-context-first",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "Redaction masks a digit run (digits or spoken number words, Latin or Devanagari) when an OTP/PIN/CVV/UPI/card/Aadhaar word is within 40 characters; without context, Luhn (13-19 digits) or Verhoeff (12 digits, not +91 mobile) masks it; 10-digit phones survive",
+   "rationale": "Red team (feasibility-evidence, Redaction): a checksum gate lowers recall on ASR output because a misheard digit fails the checksum and the number leaks.",
+   "reverse_if": "A measurement on real ASR transcripts shows context-first over-masks business identifiers (order IDs, policy numbers) above 2% while checksum-only recall is not lower."
+  },
+  {
+   "id": "decision.2026-10-21.neversay-and-amounts-rule-ids",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "neverSay hits report as RD7 (id rd.never_say) and rupee amounts not in facts report as RD6 (id rd.amount_not_in_facts), because SafetyRuleId has no ids for them; DoorVerdict gains an optional id naming the rules.json rule",
+   "rationale": "Kernel types are out of this module's boundary; the optional id keeps the verdict precise without breaking the RuntimeEvent contract.",
+   "reverse_if": "The kernel adds rule ids for business phrases and unbacked amounts; then map them and drop the borrowing."
+  },
+  {
+   "id": "rejected.2026-10-21.negation-blind-keyword-door",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Keyword rules without negation scope blocked 11 of 150 benign hard-negative agent lines (blind set 3)",
+   "tried": "Single-keyword triggers (court, FIR, recovery agent, personal UPI, shulk) and ask-verb rules with no local negation check.",
+   "broke": "'is call par koi payment nahi liya jayega', 'koi recovery agent ghar nahi bheja ja raha', 'court ke saamne wali branch', 'ya fir aap app se' (Hinglish 'fir' = then) and a fraud warning ('agar koi OTP maange...') were all blocked: 7.3% FP on warm, honest lines. Fixed with verb-bound legal terms and negation-scoped 'none' patterns per rule."
+  },
+  {
+   "id": "rejected.2026-10-21.bare-offer-keyword",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "RD7 on the bare word 'offer' blocked verb-sense service speech ('offer a callback when they are driving'), turning the PR's learning test red",
+   "tried": "\\b(offer|offers)\\b in the promotion fence on service and transactional calls.",
+   "broke": "Verb sense ('offer a callback / help / another slot', 'option offer karti hoon', 'offer to connect you to a human') is everyday service speech. Fixed by a separate rd7.offer_noun rule whose none-patterns exempt the verb sense; 8 verb-sense must-pass and 5 noun-sense must-block vectors added."
+  },
+  {
+   "id": "risk.2026-10-21.regex-door-recall-ceiling",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "The regex door misses unseen harmful phrasings: blind catch was 71%, 74%, 85% and 72% on four successive sets (the last and hardest after three tuning rounds), so about one subtle harmful line in 4 still passes",
+   "mitigation": "Keep the door as the deterministic floor; add a second-layer judge on agent lines (small fast model or classifier, measured on fresh blind sets, under the turn latency budget); log every flagged and near-miss line for Supervisor review; grow cases.json from production reviews; prompt rules in the brief remain a help, not the guarantee."
+  },
+  {
+   "id": "open.2026-10-21.safety-second-layer",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "Should a model-based judge sit behind the regex door on agent lines (and crisis on caller lines), and at what latency?",
+   "closes_when": "A judge measured on a fresh blind set reaches >= 97% harmful catch at <= 1% benign FP with p95 added latency inside the reply-gap budget, or the owner rules it out on cost."
+  },
+  {
+   "id": "open.2026-10-21.rd8-scope-beyond-insurance",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "RD8 (guaranteed returns, doubling, risk-free, churning) runs only in the insurance_irdai pack per the blueprint; the same claims on securities or lending calls pass RD8 (regulator impersonation is caught everywhere by RD6)",
+   "closes_when": "Counsel or the owner says whether the guaranteed-return fence applies in securities_sebi and lending_rbi packs too."
+  },
+  {
+   "id": "open.2026-10-21.python-door-loads-rules",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "The voice runtime's Python door should load product/shared/safety/rules.json and run cases.json green",
+   "closes_when": "product/voice tests run every cases.json vector (replyDoor, callerSignals, redact) and pass, with the same masks."
+  },
+  {
+   "id": "component.2026-10-21.campaigns-module",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Campaigns module v0: 25 tools, the dial gate G1-G12 run inside the claim transaction for every attempt kind, a SKIP LOCKED worker that builds CallTickets, the retry ladder, the series router and a telephony seam (fake for tests; the real adapter is off by default).",
+   "path": "product/server/modules/campaigns/"
+  },
+  {
+   "id": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "The campaigns tools take their risk classes from workspace.md \u00a75, because data/workspace-tool-registry.json is not in the repo. Verbs on the kernel's A3 list (campaign.pause/stop, stop_at_cap, number.pause_flagged, attempt.retry_per_ladder) are 'external': VP runs them at once (A3), and a person's call goes through approval. Risk-lowering verbs not on that list (campaign.window.narrow, number.pause) are 'draft', so they run at once (A1). campaign.window.widen, policy.window.set and policy.category.override are 'policy'. number.rent is 'spend'. number.byo.connect is 'policy'. number.kyc.submit is 'external'. a2p.declaration.export is 'read'.",
+   "rationale": "This keeps A3 receipts for VP's own guard actions without editing the kernel. The cost is that a person's pause needs a second tap: the kernel lets only agent and system actors run A3 verbs directly.",
+   "reverse_if": "The registry file lands with different classes, or the kernel lets a member run an A3 verb at once."
+  },
+  {
+   "id": "decision.2026-10-21.campaigns-gate-semantics",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "How the dial gate behaves, as built:\n- Refusals are either 'blocked' (a terminal attempt status) or 'deferred' (the attempt stays created and is rescheduled to next_eligible_at). The deferred ones are out_of_window, budget_exhausted with a next time, deferred_concurrency, and check_unavailable (+5 min).\n- On a campaign, cap_reached and wallet_low pause the campaign; the attempt itself is not blocked.\n- G9 holds money before the predial I/O. If G10-G12 then refuse, the gate releases the hold.\n- Each check runs inside a savepoint, so a check that throws still leaves the claim able to record check_unavailable.\n- A per-number advisory lock is taken at G2, so two paths cannot both pass G7 for the same phone.\n- Promotional calls with an unknown DND status are held as no_basis.",
+   "rationale": "This follows trust-telephony \u00a76 (fail closed, reason on every refusal) and campaigns.md \u00a77 (a person never spends patience on a carrier fault; VP never cancels for lack of balance).",
+   "reverse_if": "The owner or counsel wants promotional rows with an unknown DND status to dial, or wants money refusals to block the attempt instead of pausing the campaign."
+  },
+  {
+   "id": "decision.2026-10-21.campaigns-a2p-warning-before-due",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "G8 treats an undeclared CLI as a warning before 2026-11-17 (IST) and refuses it with cli_undeclared from that date. Trial lines are exempt, and test calls only.",
+   "rationale": "trust-telephony \u00a74.3: an amber warning before the due date, refusal after. The strict reading of the deadline is 11-18, so the earlier date is the safer one.",
+   "reverse_if": "The Gazette confirms a different date, or the carrier says declarations must exist before any A2P call."
+  },
+  {
+   "id": "measure.2026-10-21.campaigns-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Campaigns test suites: 41 of 41 pass (30 against Postgres 16 on the throwaway cluster, 11 pure). They cover:\n- every gate code;\n- T3 at the form, the HTTP API (422 with the rule id) and the gate;\n- cross-midnight rules;\n- 12 concurrent workers racing for 5 attempts, each claimed exactly once;\n- reservations released on refusal;\n- tenancy isolation;\n- launch approval voided by a policy-version change.\nRun twice on the same database with the kernel suites, 62 of 62 both times.",
+   "n": 41,
+   "method": "node --import tsx --test tests/campaigns.test.ts tests/campaigns-units.test.ts against DATABASE_URL from product/scripts/pg-test.sh vp_mod_campaigns; FakeRuntime and FakeTelephony; synthetic 90000000xx numbers",
+   "path": "product/tests/campaigns.test.ts"
+  },
+  {
+   "id": "open.2026-10-21.campaigns-seams",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Campaigns seams still to close with siblings:\n- How the tombstone hash is salted. The gate checks both sha256(e164) and HMAC(workspace_id, e164).\n- The calls module creating the conversation row from ticket.conversationId, settling or releasing attempt.reservation_id, and calling attempt.retry_per_ladder on call end.\n- Wiring the module into server/modules/index.ts and starting the worker in main.ts.\n- A tool that marks a line A2P-declared and a member phone verified.\n- The JSON defaults files the blueprint cites.",
+   "closes_when": "Every item has a tool name or a merged sibling that implements it, and an end-to-end test drives a campaign from launch to settled cost."
   }
  ],
  "edges": [
@@ -28677,6 +28978,106 @@
   {
    "from": "component.2026-10-21.money-module",
    "to": "open.2026-10-21.minute-profile-measured",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.product.calls-module",
+   "to": "decision.2026-10-21.calls-signature-over-compact-json",
+   "relation": "implements"
+  },
+  {
+   "from": "component.product.calls-module",
+   "to": "decision.2026-10-21.calls-quotes-single-line-substring",
+   "relation": "implements"
+  },
+  {
+   "from": "component.product.calls-module",
+   "to": "decision.2026-10-21.calls-model-refines-only-unknown-reasons",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-21.calls-hmac-over-raw-bytes",
+   "to": "decision.2026-10-21.calls-signature-over-compact-json",
+   "relation": "supersedes"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "decision.2026-10-21.safety-rules-as-data",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "decision.2026-10-21.rd1-agenda-gate",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "decision.2026-10-21.redaction-context-first",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-heldout",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-21.safety-cases-in-sample",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-21.python-twin-vs-cases",
+   "to": "open.2026-10-21.python-door-loads-rules",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-21.negation-blind-keyword-door",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-21.safety-door-blind-heldout",
+   "to": "risk.2026-10-21.regex-door-recall-ceiling",
+   "relation": "supports"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "open.2026-10-21.safety-second-layer",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "open.2026-10-21.rd8-scope-beyond-insurance",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-21.safety-module",
+   "to": "open.2026-10-21.python-door-loads-rules",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-21.campaigns-module",
+   "to": "decision.2026-10-21.campaigns-gate-semantics",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.campaigns-module",
+   "to": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.campaigns-module",
+   "to": "decision.2026-10-21.campaigns-a2p-warning-before-due",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-21.campaigns-tests",
+   "to": "component.2026-10-21.campaigns-module",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-21.campaigns-module",
+   "to": "open.2026-10-21.campaigns-seams",
    "relation": "leaves-open"
   }
  ]
