@@ -149,7 +149,7 @@ export const PAST: Record<string, string> = {
   'experiment.list': 'looked at the tests on real calls', 'experiment.start': 'started a test on real calls', 'experiment.stop': 'stopped a test on real calls',
   'fact.approve': 'approved something remembered about a person', 'fact.forget': 'forgot one remembered fact',
   'integration.connect': 'connected an outside service', 'integration.disconnect': 'disconnected an outside service', 'integration.kinds': 'looked at what can be connected', 'integration.list': 'looked at the connected services', 'integration.stage_secrets': 'handed over credentials for an outside service',
-  'invoice.get': 'looked at the usage statement', 'issue.list': 'looked at the open issues', 'issue.resolve': 'resolved an issue',
+  'insight.get': 'looked at the call insights', 'insight.refresh': 'rebuilt the call insights', 'invoice.get': 'looked at the usage statement', 'issue.list': 'looked at the open issues', 'issue.resolve': 'resolved an issue',
   'judge.calibrate': 'measured how well an outcome judge agrees with people', 'judge.edit': 'changed how an outcome is judged',
   'knowledge.ingest': 'added a knowledge source', 'knowledge.list': 'looked at the knowledge sources', 'knowledge.span.approve': 'decided which passages she may state', 'learning.power': 'worked out how many calls a test needs', 'learning.propose': 'looked for improvements from an agent\'s calls',
   'lesson.list': 'looked at what has been learned', 'live.listen': 'listened to a live call', 'live.takeover': 'took over a live call', 'live.whisper': 'whispered to the agent on a live call',

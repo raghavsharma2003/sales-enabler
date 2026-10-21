@@ -19,21 +19,25 @@
     "report.create",
     "live.listen",
     "live.whisper",
-    "live.takeover"
+    "live.takeover",
+    "insight.get",
+    "insight.refresh"
   ],
   "routes": [
     "POST /hooks/runtime"
   ],
   "migrations": [
     "db/migrations/0601_calls.sql",
-    "db/migrations/0602_call_judge_event.sql"
+    "db/migrations/0602_call_judge_event.sql",
+    "db/migrations/0603_call_insight.sql"
   ],
   "tests": {
-    "passed": 27,
-    "total": 27,
+    "passed": 33,
+    "total": 33,
     "files": [
       "tests/calls.test.ts",
-      "tests/calls-live.test.ts"
+      "tests/calls-live.test.ts",
+      "tests/calls-insight.test.ts"
     ],
     "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, the real agents module for draft test calls, and stubs for the other sibling tools; synthetic data only. The whole product suite (node scripts/test.mjs, concurrency 4) on one shared database passed 355/355 on two consecutive runs. tests/calls-live.test.ts runs calls' live tools across two real processes: this control plane and the voice runtime's dev server (python -m vpvoice.devsim, fake providers, no keys), signed both ways. It skips without a Python that has product/voice/requirements.txt (set VP_VOICE_PYTHON). With one, the full suite passes 372/372."
   },
@@ -58,7 +62,8 @@
     "test.browser_call treats the runtime admission cap (503 at_capacity, from StartReply.retryable/retryAfterS or the reason text) as 'busy, try again in N seconds'. It leaves no conversation row behind, because nothing was placed.",
     "Live control goes through runtime().control. live.listen (A1, audited) returns the person's receive-only join. live.whisper is external (A2) and keeps its runtime request in run(). live.takeover is for a signed-in member only (refused for agents even with a role) and returns the person's two-way join. A refusal (404 unknown, 409 not live) shows the runtime's own reason. The runtime's hand_off {reason:'takeover', target:'member:<id>'} adds the flag human_joined.",
     "Supervisor moments (live_listen_started, live_listen_ended, whisper, takeover) are accepted, stored in call_moment, never a safety signal, and shown by call.explain in plain words. A whisper moment with a non-empty note is refused with 422: it never carries the whisper.",
-    "live.whisper text is capped at 300 characters, the runtime's own limit, so a longer note is refused rather than silently truncated. On v2-live (speech-to-speech) every live control answers 409 'not available yet', and listen on a sim call answers 409 (no audio); calls shows those reasons."
+    "live.whisper text is capped at 300 characters, the runtime's own limit, so a longer note is refused rather than silently truncated. On v2-live (speech-to-speech) every live control answers 409 'not available yet', and listen on a sim call answers 409 (no audio); calls shows those reasons.",
+    "Cross-call insight (insights.ts): one LLM pass (purpose analysis, JSON, temperature 0) over a scope's recent analysed non-test calls names themes of 4 kinds: objection, drop_off, unanswered_question, success_driver. Each kept theme has 2-3 verbatim quotes, each checked against that call's stored transcript. Objections and unanswered questions must quote the caller, and success drivers only goal-reaching calls. A theme with fewer than 2 verified quotes is dropped. A theme's count is the distinct sampled calls it was seen in, not a number the model wrote. Caps: 40 calls, an input budget of 12,000 tokens x 4 characters, 1,500 output tokens, a 30-day window; a run is skipped when no call ended since the last insight. Each run is one cost line (purpose insight, priced:false). A failed run is stored as failed, never as an empty all-good."
   ],
   "untested": [
     "The real voice runtime end to end (no cross-language signature test). The hook now verifies raw bytes, so any byte-exact signer works.",
@@ -69,7 +74,8 @@
     "Load: search p95 and the time from hang-up to analysis.",
     "The callback retry time: the analysis does not yet extract the stated callback time, so attempt.retry_per_ladder gets no 'at' for callbacks.",
     "The crisis judge with a real model (tests use setFakeLlm with assumeConfigured).",
-    "live.listen on a real audio call: the cross-process test uses a sim call, where listen is refused (no audio). The listen socket itself (pcm16le) is tested only in the voice runtime's own suite."
+    "live.listen on a real audio call: the cross-process test uses a sim call, where listen is refused (no audio). The listen socket itself (pcm16le) is tested only in the voice runtime's own suite.",
+    "Cross-call insight with a real model: theme quality and how often a real model's quotes pass the verbatim check are not measured (tests use setFakeLlm)."
   ],
   "needs_from_others": [
     "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). It is not listed yet.",
@@ -84,7 +90,8 @@
     "kernel (runtime-client.ts): StartReply should gain retryable and retryAfterS on 503 at_capacity, and join should be typed to the runtime's real shapes (expiresAtMs; sip has no url/token). control('end') must send {conversationId, endReason?}. campaigns dispatch() should treat at_capacity as not placed: release the hold, requeue after retryAfterS, and spend no ladder step."
   ],
   "jobs": [
-    "calls.analysis_sweep (every 60 s): analyses ended calls the in-process queue lost, retries pending opt-outs"
+    "calls.analysis_sweep (every 60 s): analyses ended calls the in-process queue lost, retries pending opt-outs",
+    "calls.insight_nightly (daily 02:40 IST): cross-call insight for each workspace plus each agent and campaign with calls in the last 7 days, bounded (100 workspaces, 10 scopes each), skipped per scope when nothing is newer"
   ],
   "contracts_for_others": {
     "test_marker": "Test calls carry channel = 'test' AND run_manifest.test = true (both set by calls). Non-test calls have run_manifest.test = false.",
@@ -97,7 +104,8 @@
     "cost_line": "Every runtime cost line carries attempt_id (null on test calls). At call.ended the hold is settled at the summed total; the ledger caps the charge at the hold and records the overrun.",
     "retries": "After analysis of a non-test campaign attempt, calls invokes attempt.retry_per_ladder {attemptId, outcome} as the system actor (A3) for non-final outcomes only. The mapping: no_answer, busy, failed->provider_error, voicemail, error->dropped_by_vp, END_EARLY_HANGUP or CONN_SILENCE->short_call, and CONV_CALLBACK->callback (no 'at' yet; the stated time is not extracted). Final outcomes (completed, opt_out, crisis, hand-off, limits, wrong person) and unknown are never sent.",
     "runtime_end": "calls never calls the runtime's /v1/calls/{id}/end; live.takeover hands the call to a person without ending it. When endReason is 'error', call.ended carries no failure reason; calls records end_reason 'error' and reason code CONN_ENGINE_ERROR, and does not fetch GET /v1/calls/{id}.",
-    "validateRuntimeBatch": "ingest.ts exports validateRuntimeBatch(value), the hook's exact batch validator. An optional field sent as null counts as absent; unknown fields, a non-integer latencyMs and a non-uuid conversationId are refused. It can be run from the command line (see the comment in ingest.ts); the exit code is 0 for valid and 1 for invalid."
+    "validateRuntimeBatch": "ingest.ts exports validateRuntimeBatch(value), the hook's exact batch validator. An optional field sent as null counts as absent; unknown fields, a non-integer latencyMs and a non-uuid conversationId are refused. It can be run from the command line (see the comment in ingest.ts); the exit code is 0 for valid and 1 for invalid.",
+    "insight": "insight.get (read) and insight.refresh (draft) take {agentId?} or {campaignId?} (neither means the whole workspace; both is refused); refresh also takes force?. They return {scope:{type,id}, status:'none'|'done'|'failed', generatedAt, themes:[{kind, title, count, of, quotes:[{conversationId, text, speaker, startMs}]}], callsSampled, callsInScope, newestCallAt, quotesDropped, themesDropped, reason, note}. refresh adds ran:boolean and, when not run, skipped:'skipped'|'not_configured'|'no_calls' plus reason. status 'none' carries only scope and note."
   },
   "final": true,
   "export": "product/server/modules/calls/index.ts exports `module` (name 'calls': tools, POST /hooks/runtime with rawBody and a 5 MB limit, and the job calls.analysis_sweep)."

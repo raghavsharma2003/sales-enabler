@@ -1,7 +1,7 @@
 // The calls module's tools: test calls, the call record, search, explanation, outcomes, judges, issues,
 // reports, the campaign funnel and live control. Every query filters by ctx.workspaceId.
 import { randomUUID } from 'node:crypto';
-import { many, one } from '../../db.ts';
+import { many, one, type Queryable } from '../../db.ts';
 import { runtime } from '../../runtime-client.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import type { AgentConfig } from '../../../shared/agent-config.ts';
@@ -11,6 +11,7 @@ import { arr, bool, num, obj, opt, str, uuid } from '../../../shared/validate.ts
 import { DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
 import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLower } from './stats.ts';
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
+import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
 
 // Test calls run inside a daily test budget (workspace blueprint: ₹200 a day, proposed) and a per-call cap.
 export const TEST_BUDGET_PER_DAY_INR_MILLI = 200_000;
@@ -454,6 +455,40 @@ export function registerTools(r: Registry): void {
       const c = await conversation(ctx, i.conversationId);
       await ctx.q.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{human_joined}'::text[]) ORDER BY 1) WHERE id = $1 AND workspace_id = $2`, [c.id, ctx.workspaceId]);
       return { ok: true, join };
+    },
+  }));
+
+  // ---- cross-call insight (insights.ts) ---------------------------------------------------------------------------
+  const scopeIn = { agentId: opt(uuid()), campaignId: opt(uuid()) };
+  const scopeOf = async (q: Queryable, ws: string, i: { agentId?: string; campaignId?: string }): Promise<Scope> => {
+    if (i.agentId && i.campaignId) throw new Error('give an agent or a campaign, not both');
+    if (i.agentId) {
+      if (!(await one(q, 'SELECT 1 FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ws]))) throw new Error('no such agent in this workspace');
+      return { type: 'agent', id: i.agentId };
+    }
+    if (i.campaignId) {
+      if (!(await one(q, 'SELECT 1 FROM campaign WHERE id = $1 AND workspace_id = $2', [i.campaignId, ws]))) throw new Error('no such campaign in this workspace');
+      return { type: 'campaign', id: i.campaignId };
+    }
+    return { type: 'workspace', id: null };
+  };
+  r.register(tool(obj(scopeIn), {
+    name: 'insight.get', risk: 'read',
+    summary: 'Themes across recent calls (objections, drop-offs, unanswered questions, what came before a reached goal), each with verbatim quotes',
+    run: async (ctx, i) => { const s = await scopeOf(ctx.q, ctx.workspaceId, i); return presentInsight(s, await latestInsight(ctx.q, ctx.workspaceId, s)); },
+  }));
+  r.register(tool(obj({ ...scopeIn, force: opt(bool()) }), {
+    name: 'insight.refresh', risk: 'draft',
+    summary: 'Rebuild the themes across recent calls now (skipped when no call has ended since the last one, unless forced)',
+    // The model call runs in prepare(), outside any transaction; run() only stores.
+    prepare: async (ctx, i) => {
+      const s = await scopeOf(ctx.pool, ctx.workspaceId, i);
+      return { s, c: await computeInsight(ctx.pool, ctx.workspaceId, s, { force: i.force }) };
+    },
+    run: async (ctx, _i, prepared) => {
+      const { s, c } = prepared as { s: Scope; c: Computed };
+      if (c.ran) await storeInsight(ctx.q, ctx.workspaceId, s, c.result);
+      return { ran: c.ran, ...(c.ran ? {} : { reason: c.reason, skipped: c.status }), ...presentInsight(s, await latestInsight(ctx.q, ctx.workspaceId, s)) };
     },
   }));
 }
