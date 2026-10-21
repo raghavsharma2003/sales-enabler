@@ -16,7 +16,7 @@ const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, op
 const SCRYPT = { N: 1 << 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 const SESSION_TTL_MS = 14 * 24 * 3600_000;
 
-export interface Caller { workspaceId: string; actor: Actor; memberId?: string; via: 'key' | 'session' | 'dev' }
+export interface Caller { workspaceId: string; actor: Actor; memberId?: string; apiKeyId?: string; via: 'key' | 'session' | 'dev' }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -71,8 +71,8 @@ export async function resolveCaller(q: Queryable, req: Req): Promise<Caller> {
   const auth = String(req.headers['authorization'] ?? '');
   const m = /^Bearer vp_([0-9a-f]{8})_([A-Za-z0-9_-]+)$/.exec(auth);
   if (m) {
-    const row = await one<{ id: string; workspace_id: string; hash: string; revoked_at: Date | null; expires_at: Date | null }>(
-      q, 'SELECT id, workspace_id, hash, revoked_at, expires_at FROM api_key WHERE prefix = $1', [m[1]]);
+    const row = await one<{ id: string; workspace_id: string; hash: string; revoked_at: Date | null; expires_at: Date | null; scopes: string[] }>(
+      q, 'SELECT id, workspace_id, hash, revoked_at, expires_at, scopes FROM api_key WHERE prefix = $1', [m[1]]);
     const given = Buffer.from(sha(m[2]), 'hex');
     const stored = Buffer.from(row?.hash ?? '0'.repeat(64), 'hex');
     const match = stored.length === given.length && timingSafeEqual(stored, given);
@@ -80,7 +80,8 @@ export async function resolveCaller(q: Queryable, req: Req): Promise<Caller> {
       throw new HttpError(401, 'unauthorised', 'that API key is not valid');
     }
     await q.query('UPDATE api_key SET last_used_at = now() WHERE id = $1', [row.id]);
-    return { workspaceId: row.workspace_id, actor: { type: 'member', id: 'key:' + row.id, role: 'builder' }, via: 'key' };
+    // Spend by a key is capped through budget rows with scope_type 'api_key' (server/ledger.ts reserve with apiKeyId).
+    return { workspaceId: row.workspace_id, actor: { type: 'member', id: 'key:' + row.id, role: 'builder', scopes: row.scopes ?? [] }, apiKeyId: row.id, via: 'key' };
   }
 
   const tok = cookie(req, 'vp_session');

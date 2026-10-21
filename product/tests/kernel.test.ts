@@ -220,3 +220,22 @@ test('jobs: next IST wall-clock time and single-runner locking', { skip }, async
   assert.deepEqual([a, b].sort(), ['locked', 'ran']);
   assert.equal(n, 1);
 });
+
+test('API-key scopes narrow the tools a key may use; redacted results are not persisted', { skip }, async () => {
+  const { inScope } = await import('../server/tools.ts');
+  assert.equal(inScope([], 'campaign.launch'), true);
+  assert.equal(inScope(['campaign'], 'campaign.launch'), true);
+  assert.equal(inScope(['campaign'], 'campaigner.x'), false);
+  assert.equal(inScope(['call.get'], 'call.search'), false);
+  const { ws, member } = await workspace('owner');
+  const r = new Registry();
+  r.register(tool(obj({}), { name: 'secret.mint', risk: 'policy', summary: 'mint', run: async () => ({ token: 'shh' }), redactResult: () => ({ token: '[shown once]' }) }));
+  const scoped = await r.execute(pool, 'secret.mint', {}, { workspaceId: ws, actor: { type: 'member', id: 'key:x', role: 'builder', scopes: ['call'] } });
+  assert.equal(scoped.status, 'not_executed');
+  const p = await r.execute(pool, 'secret.mint', {}, { workspaceId: ws, actor: { type: 'member', id: member, role: 'owner' } });
+  if (p.status !== 'needs_approval') return assert.fail('expected a card');
+  const a = await r.approve(pool, p.actionId, { workspaceId: ws, memberId: member });
+  assert.deepEqual(a.status === 'confirmed' && a.result, { token: 'shh' });
+  const row = await one<{ result: unknown }>(pool, 'SELECT result FROM action WHERE id = $1', [p.actionId]);
+  assert.deepEqual(row!.result, { token: '[shown once]' });
+});

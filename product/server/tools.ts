@@ -19,6 +19,14 @@ export interface Actor {
   type: 'member' | 'agent' | 'vp_success' | 'system';
   id?: string;
   role?: Role;
+  /** API-key scopes: when non-empty the caller may use only tools whose name equals a scope or starts with
+   *  `<scope>.` (e.g. 'campaign' allows campaign.*; 'call.get' allows exactly that). Empty or absent = no narrowing. */
+  scopes?: readonly string[];
+}
+
+export function inScope(scopes: readonly string[] | undefined, tool: string): boolean {
+  if (!scopes || scopes.length === 0) return true;
+  return scopes.some(s => tool === s || tool.startsWith(s + '.'));
 }
 
 export interface ToolCtx {
@@ -40,6 +48,9 @@ export interface ToolDef<I = unknown, O = unknown> {
   describe?(input: I): string;
   /** Roles that may call (or propose) this tool. Defaults by risk class; approval rights are separate (shared/approval.ts). */
   roles?: readonly Role[];
+  /** What to persist in action.result (and so show in /v1/actions) instead of the raw result, when the result holds
+   *  something that must be shown once and never stored (a token, a secret). The live receipt still carries the raw result. */
+  redactResult?(out: O): unknown;
 }
 
 const DEFAULT_ROLES: Record<RiskClass, readonly Role[]> = {
@@ -98,6 +109,7 @@ export class Registry {
       const allowed = t.roles ?? DEFAULT_ROLES[t.risk];
       if (!opts.actor.role || !allowed.includes(opts.actor.role)) return { status: 'not_executed', reason: `a ${opts.actor.role ?? 'caller without a role'} cannot use ${name}` };
     }
+    if (!inScope(opts.actor.scopes, name)) return { status: 'not_executed', reason: `this API key's scopes do not include ${name}` };
 
     let input: unknown;
     try { input = t.input(raw); } catch (e) {
@@ -173,7 +185,8 @@ export class Registry {
         }
         await c.query('INSERT INTO approval_token (action_id, approver_id, args_hash, object_version) VALUES ($1,$2,$3,$4)', [actionId, approver.memberId, h, a.object_version]);
         const out = await t.run(ctx, input);
-        await c.query("UPDATE action SET status = 'executed', result = $2, executed_at = now() WHERE id = $1", [actionId, JSON.stringify(out ?? null)]);
+        const stored = t.redactResult ? t.redactResult(out) : out;
+        await c.query("UPDATE action SET status = 'executed', result = $2, executed_at = now() WHERE id = $1", [actionId, JSON.stringify(stored ?? null)]);
         await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: t.name,
           objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', risk: t.risk, approverRole: m.role } });
         return { status: 'confirmed', mode: 'A2', result: out as O, argsHash: h, actionId } as Receipt<O>;

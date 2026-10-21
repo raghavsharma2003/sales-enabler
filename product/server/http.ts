@@ -25,19 +25,27 @@ export interface Res {
 }
 export type Handler = (req: Req) => Promise<Res>;
 
-interface Route { method: string; parts: string[]; handler: Handler }
+export interface RouteOpts {
+  /** Deliver the body as a Buffer (uploads, multipart, signed webhooks that must verify exact bytes). */
+  rawBody?: boolean;
+  /** Body size limit in bytes (default 1 MB). */
+  limit?: number;
+}
+interface Route { method: string; parts: string[]; handler: Handler; opts: RouteOpts }
 
 const LIMIT = 1_000_000;
 
-async function readBody(req: IncomingMessage): Promise<unknown> {
+async function readBody(req: IncomingMessage, opts: RouteOpts = {}): Promise<unknown> {
   if (req.method === 'GET' || req.method === 'HEAD') return undefined;
+  const limit = opts.limit ?? LIMIT;
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const c of req) {
     size += (c as Buffer).length;
-    if (size > LIMIT) throw new HttpError(413, 'too_large', 'request body is larger than 1 MB');
+    if (size > limit) throw new HttpError(413, 'too_large', `request body is larger than ${Math.round(limit / 1_000_000 * 10) / 10} MB`);
     chunks.push(c as Buffer);
   }
+  if (opts.rawBody) return Buffer.concat(chunks);
   if (!size) return undefined;
   const text = Buffer.concat(chunks).toString('utf8');
   const ct = String(req.headers['content-type'] ?? '');
@@ -50,12 +58,12 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
 export class Router {
   private routes: Route[] = [];
 
-  add(method: string, pattern: string, handler: Handler): this {
-    this.routes.push({ method: method.toUpperCase(), parts: pattern.split('/').filter(Boolean), handler });
+  add(method: string, pattern: string, handler: Handler, opts: RouteOpts = {}): this {
+    this.routes.push({ method: method.toUpperCase(), parts: pattern.split('/').filter(Boolean), handler, opts });
     return this;
   }
 
-  match(method: string, path: string): { handler: Handler; params: Record<string, string> } | null {
+  match(method: string, path: string): { handler: Handler; params: Record<string, string>; opts: RouteOpts } | null {
     const segs = path.split('/').filter(Boolean);
     for (const r of this.routes) {
       if (r.method !== method || r.parts.length !== segs.length) continue;
@@ -66,7 +74,7 @@ export class Router {
         if (p.startsWith(':')) params[p.slice(1)] = decodeURIComponent(segs[i]);
         else if (p !== segs[i]) { ok = false; break; }
       }
-      if (ok) return { handler: r.handler, params };
+      if (ok) return { handler: r.handler, params, opts: r.opts };
     }
     return null;
   }
@@ -80,7 +88,7 @@ export class Router {
     try {
       const m = this.match(req.method ?? 'GET', url.pathname);
       if (!m) return send(404, { error: { code: 'not_found', message: 'no such route' } });
-      const body = await readBody(req);
+      const body = await readBody(req, m.opts);
       const out = await m.handler({ method: req.method ?? 'GET', path: url.pathname, params: m.params, query: url.searchParams, headers: req.headers, body });
       if (out.stream) {
         res.writeHead(out.status ?? 200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', 'x-accel-buffering': 'no', ...(out.headers ?? {}) });
