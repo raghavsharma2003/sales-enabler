@@ -203,10 +203,16 @@ test('Practice callers: the panel lists the server\'s callers and shows one resu
   const riya = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
   const list = (await tool('simcaller.list', { agentId: riya })).result.callers;
   assert.ok(list.length >= 12, 'the server offers the default library');
-  await page.goto(`${BASE}/agents/${riya}`);
-  await page.getByRole('radio', { name: 'Test her' }).click();
-  await page.getByRole('button', { name: /^Run \d+ practice callers?$/ }).click();
-  await page.locator('.simlist > li').first().waitFor({ timeout: 30000 });
+  // The library arrives late on purpose: on a slow runner a click before it loaded ran zero callers ("0 of 0 passed").
+  // The button must wait for the list, so this flow holds the list back and clicks at once.
+  const slow = '**/v1/tools/simcaller.list';
+  await page.route(slow, async r => { await new Promise(ok => setTimeout(ok, 1500)); await r.continue(); });
+  try {
+    await page.goto(`${BASE}/agents/${riya}`);
+    await page.getByRole('radio', { name: 'Test her' }).click();
+    await page.getByRole('button', { name: /^Run \d+ practice callers?$/ }).click();
+    await page.locator('.simlist > li').first().waitFor({ timeout: 30000 });
+  } finally { await page.unroute(slow); }
   assert.equal(await page.locator('.simlist > li').count(), 6, 'six are chosen by default and six results come back');
   const verdicts = await page.locator('.simlist > li summary .chip').allInnerTexts();
   assert.ok(verdicts.every(v => ['Passed', 'Failed', 'Invalid', 'Inconclusive'].includes(v)), verdicts.join());

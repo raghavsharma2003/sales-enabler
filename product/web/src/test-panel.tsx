@@ -1,6 +1,6 @@
 // The docked test panel for an agent: six practice callers (simulate) and a browser call. A test never falls back to another
 // stack: if no stack is chosen, the result says "invalid, with the reason", never a pass.
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp, useData } from './store.tsx';
 import { Btn, Chip } from './ui.tsx';
@@ -15,16 +15,21 @@ export function TestPanel() {
   const { agentCtx: a, act, say, hasTool, toast } = useApp();
   const [sim, setSim] = useState<SimResult[] | null>(null);
   const callers = useData(['callers', a?.id], a ? () => practiceCallers(a.id) : null);
-  const [chosen, setChosen] = useState<string[]>([]);
-  useEffect(() => { if (callers.data && chosen.length === 0) setChosen(callers.data.slice(0, 6).map(c => c.id)); }, [callers.data]); // eslint-disable-line
+  // null until the person changes the selection: the first six of the library, worked out on the same render the list arrives.
+  const [picks, setPicks] = useState<string[] | null>(null);
+  const chosen = picks ?? (callers.data ?? []).slice(0, 6).map(c => c.id);
   const [busy, setBusy] = useState(false);
   const [call, setCall] = useState<{ state: 'idle' | 'asking' | 'unavailable' | 'started'; reason?: string }>({ state: 'idle' });
   if (!a) return <div className="testpanel"><p className="muted">Open an agent to test her here.</p></div>;
   const stack = a.stackId ? getStack(a.stackId) : null;
+  const picked = (callers.data ?? []).filter(c => chosen.includes(c.id));
+  // The count is the callers that will run. Until the list has loaded there is nothing to run, so the button waits.
+  const runLabel = callers.data ? `Run ${picked.length} practice caller${picked.length === 1 ? '' : 's'}` : 'Run practice callers';
 
   const run = async () => {
+    if (!picked.length) return;
     setBusy(true);
-    try { setSim(await simulate(a.id, (callers.data ?? []).filter(c => chosen.includes(c.id)))); } catch { toast('Could not run the practice callers.', 'bad'); }
+    try { setSim(await simulate(a.id, picked)); } catch { toast('Could not run the practice callers.', 'bad'); }
     setBusy(false);
   };
   const browser = async () => {
@@ -49,10 +54,13 @@ export function TestPanel() {
       <section aria-labelledby="sim-h" className="stack-s">
         <h4 id="sim-h">Practice callers</h4>
         <p className="small muted">Made-up callers that each test one thing. They reach no one and cost a few rupees. Graded by code, not by a model.</p>
-        {callers.data && <fieldset className="chipset" style={{ margin: 0 }}><legend className="sr">Practice callers to run</legend>{callers.data.map(c => <label key={c.id} className={`choice${chosen.includes(c.id) ? ' on' : ''}`} title={c.trap}><input type="checkbox" checked={chosen.includes(c.id)} onChange={() => setChosen(chosen.includes(c.id) ? chosen.filter(x => x !== c.id) : [...chosen, c.id])} />{c.label}</label>)}</fieldset>}
+        {callers.data && <fieldset className="chipset" style={{ margin: 0 }}><legend className="sr">Practice callers to run</legend>{callers.data.map(c => <label key={c.id} className={`choice${chosen.includes(c.id) ? ' on' : ''}`} title={c.trap}><input type="checkbox" checked={chosen.includes(c.id)} onChange={() => setPicks(chosen.includes(c.id) ? chosen.filter(x => x !== c.id) : [...chosen, c.id])} />{c.label}</label>)}</fieldset>}
         {!hasTool('test.simulate') ? <p className="small hint-bad">Practice callers are not switched on in this server yet.</p>
-          : !stack ? <Btn disabled reason="Choose a voice stack first. A test never falls back to another one." fix={{ label: 'Choose one', to: `/agents/${a.id}?tab=voice` }} icon={<Play size={16} aria-hidden />}>Run 6 practice callers</Btn>
-          : <Btn kind="primary" busy={busy} icon={<Play size={16} aria-hidden />} onClick={run}>Run 6 practice callers</Btn>}
+          : !stack ? <Btn disabled reason="Choose a voice stack first. A test never falls back to another one." fix={{ label: 'Choose one', to: `/agents/${a.id}?tab=voice` }} icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
+          : callers.error ? <Btn disabled reason="The practice callers could not be loaded. Reload the page to try again." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
+          : !callers.data ? <Btn kind="primary" busy icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
+          : !picked.length ? <Btn kind="primary" disabled reason="Choose at least one practice caller to run." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
+          : <Btn kind="primary" busy={busy} icon={<Play size={16} aria-hidden />} onClick={run}>{runLabel}</Btn>}
         {sim && (
           <div className="stack-s" aria-live="polite">
             <p><strong className="tnum">{sim.filter(r => r.verdict === 'pass').length} of {sim.length}</strong> passed{sim.some(r => r.verdict === 'invalid') && <> · <span className="hint-bad">{sim.filter(r => r.verdict === 'invalid').length} invalid, did not run</span></>}{sim.some(r => r.verdict === 'inconclusive') && <> · {sim.filter(r => r.verdict === 'inconclusive').length} inconclusive</>}</p>

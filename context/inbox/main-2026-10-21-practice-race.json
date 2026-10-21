@@ -1,0 +1,19 @@
+{
+ "nodes": [
+  {
+   "id": "rejected.2026-10-21.run-before-library",
+   "type": "rejection",
+   "title": "A Run practice callers button that is live before the caller library has loaded",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "tried": "test-panel.tsx always rendered an enabled 'Run 6 practice callers' button. The default six were picked in a useEffect only after simcaller.list returned.",
+   "broke": "A click before the list arrived ran zero callers: simulate(agent, []) resolved at once to an empty list. The person saw '0 of 0 passed' under a button that promised 6. CI web-e2e on 5e9253d failed this way, with a 30 s wait for the first result. It passed 13/13 on 4afd749, where the flow took 1.7 s. A 3 s delay on simcaller.list reproduced the failure in the practice flow and in the Copy flow.",
+   "instead": "The default selection is derived on the same render the list arrives. The button reads 'Run N practice callers' with N the callers that will run. It is busy until the list loads, disabled with a reason when the list fails or nothing is picked, and run() refuses an empty pick. The practice flow now holds the list back 1.5 s on every run. That guard fails on the old panel and passes on the fix, and the suite passed 13/13 with it."
+  }
+ ],
+ "edges": [
+  { "from": "rejected.2026-10-21.run-before-library", "to": "rejected.2026-10-21.e2e-fixed-time-holds", "relation": "extends" }
+ ],
+ "events": []
+}
