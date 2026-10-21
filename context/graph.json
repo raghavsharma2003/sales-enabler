@@ -1574,7 +1574,7 @@
    "status": "confirmed",
    "source": "user",
    "date": "2026-10-15",
-   "title": "Vision: AI company command centre \u2014 custom ERP + CRM + campaign launch/analyse/grow + lead generator + omnichannel data + company brain + voice/chat agents, every part AI-driven, orchestrating the whole company"
+   "title": "Vision: AI company command centre — custom ERP + CRM + campaign launch/analyse/grow + lead generator + omnichannel data + company brain + voice/chat agents, every part AI-driven, orchestrating the whole company"
   },
   {
    "id": "directive.2026-10-15.azure-only",
@@ -2354,7 +2354,7 @@
    "status": "prototype",
    "source": "hp-maya-latest",
    "date": "2026-10-15",
-   "title": "India market and regulatory sweep: 43-source sweep: Indian voice-agent pricing (\u20b93-65/min), TRAI outbound-AI rules, DPDP timelines, and companion-category ad policy.",
+   "title": "India market and regulatory sweep: 43-source sweep: Indian voice-agent pricing (₹3-65/min), TRAI outbound-AI rules, DPDP timelines, and companion-category ad policy.",
    "value": "medium",
    "effort": "drop-in",
    "paths": [
@@ -2633,7 +2633,7 @@
    "status": "confirmed",
    "source": "harvest",
    "date": "2026-10-15",
-   "title": "html-portfolio [claude/gurukul-platform, gurukul-ws-v, gurukul-ws-w, gurukul-ws-x\u2026]: The 2026-08-26 parallel-workstream wave of Vyakti (Gurukul), a platform for cloning a person's mind and voice. It adds a blind listening bench, a scale-to-zero voice preview, the Mirror Call (backend, tab and reply lane), the Context Locker, a journey/design system, an activity surface and an enrollment queue sweep. The integration tip runs to 2026-08-28 and adds blinded multi-model voice selection.",
+   "title": "html-portfolio [claude/gurukul-platform, gurukul-ws-v, gurukul-ws-w, gurukul-ws-x…]: The 2026-08-26 parallel-workstream wave of Vyakti (Gurukul), a platform for cloning a person's mind and voice. It adds a blind listening bench, a scale-to-zero voice preview, the Mirror Call (backend, tab and reply lane), the Context Locker, a journey/design system, an activity surface and an enrollment queue sweep. The integration tip runs to 2026-08-28 and adds blinded multi-model voice selection.",
    "path": "docs/harvest/hp-gurukul-early.md"
   },
   {
@@ -2904,7 +2904,7 @@
    "status": "confirmed",
    "source": "harvest",
    "date": "2026-10-15",
-   "title": "html-portfolio [gurukul-ws-ai, gurukul-ws-aj, gurukul-ws-ak, gurukul-ws-al\u2026]: The late Gurukul/Vyakti replica wave, built as sibling workstreams merged into gurukul-ws-as. It ships an 8-step Postgres processing DAG running as an Azure Container Apps Job, plus private GPU and CPU evidence and watermark services (wake-then-sign HMAC), a YouTube extraction route seam, and an honest you/us studio status UX, all gated by property evals and layout gates.",
+   "title": "html-portfolio [gurukul-ws-ai, gurukul-ws-aj, gurukul-ws-ak, gurukul-ws-al…]: The late Gurukul/Vyakti replica wave, built as sibling workstreams merged into gurukul-ws-as. It ships an 8-step Postgres processing DAG running as an Azure Container Apps Job, plus private GPU and CPU evidence and watermark services (wake-then-sign HMAC), a YouTube extraction route seam, and an honest you/us studio status UX, all gated by property evals and layout gates.",
    "path": "docs/harvest/hp-gurukul-late.md"
   },
   {
@@ -4273,7 +4273,7 @@
    "status": "confirmed",
    "source": "harvest",
    "date": "2026-10-15",
-   "title": "Taxila [int/r5-rel142, claude/blissful-mayer-icwe2j, int/r5-rel141, claude/serene-franklin-9w7f1v\u2026]: Taxila release 14 to 14.2 integration line, a linear chain (rel14 < rel141 = serene-franklin < rel142 = blissful-mayer). It holds the live Azure Container Apps AI-tutor platform: model gateway, quota lanes, Conductor actor runtime, Director and LLM-agent teacher lanes, safety predicates, fact-gated reports, canary deploys and the context memory system.",
+   "title": "Taxila [int/r5-rel142, claude/blissful-mayer-icwe2j, int/r5-rel141, claude/serene-franklin-9w7f1v…]: Taxila release 14 to 14.2 integration line, a linear chain (rel14 < rel141 = serene-franklin < rel142 = blissful-mayer). It holds the live Azure Container Apps AI-tutor platform: model gateway, quota lanes, Conductor actor runtime, Director and LLM-agent teacher lanes, safety predicates, fact-gated reports, canary deploys and the context memory system.",
    "path": "docs/harvest/tx-core.md"
   },
   {
@@ -4609,7 +4609,7 @@
    "status": "tested",
    "source": "tx-voice",
    "date": "2026-10-15",
-   "title": "Duplex bake-off + enterprise per-minute cost model: Five-arm bake-off (cascade, own engine, Voice Live S2S, gpt-realtime, Voice Live front end) with a phone-loudspeaker echo model. Scores echo false barge-in, true barge-in, continuer false yield, EOT, thinking-pause cut-offs and CER. Includes a Retail Prices API cost script and a BAKEOFF \u00a75b per-conversation-minute table for an enterprise voice-calling SaaS (ACS telephony included).",
+   "title": "Duplex bake-off + enterprise per-minute cost model: Five-arm bake-off (cascade, own engine, Voice Live S2S, gpt-realtime, Voice Live front end) with a phone-loudspeaker echo model. Scores echo false barge-in, true barge-in, continuer false yield, EOT, thinking-pause cut-offs and CER. Includes a Retail Prices API cost script and a BAKEOFF §5b per-conversation-minute table for an enterprise voice-calling SaaS (ACS telephony included).",
    "value": "high",
    "effort": "adapt",
    "paths": [
@@ -4789,7 +4789,7 @@
    "status": "confirmed",
    "source": "harvest",
    "date": "2026-10-15",
-   "title": "Taxila [claude/r4-content, claude/r4-games-core, claude/r4-app-design, claude/r4-asha\u2026]: Taxila's child-facing presentation layer: live lesson content (Forge G1/explainer templates/Studio archetypes/forge3 compose + one tray certificate gate), offline sandboxed codegen (Forge G2 on ACA Jobs), deterministic server-replayed games (Antariksh/Khand 3D on three.js), the token-only Kaksha 'Volt night' design system, and the Asha 2D painted-puppet avatar (lamp1/lamp2 held as failed).",
+   "title": "Taxila [claude/r4-content, claude/r4-games-core, claude/r4-app-design, claude/r4-asha…]: Taxila's child-facing presentation layer: live lesson content (Forge G1/explainer templates/Studio archetypes/forge3 compose + one tray certificate gate), offline sandboxed codegen (Forge G2 on ACA Jobs), deterministic server-replayed games (Antariksh/Khand 3D on three.js), the token-only Kaksha 'Volt night' design system, and the Asha 2D painted-puppet avatar (lamp1/lamp2 held as failed).",
    "path": "docs/harvest/tx-content-ui.md"
   },
   {
@@ -4844,7 +4844,7 @@
    "status": "production",
    "source": "tx-content-ui",
    "date": "2026-10-15",
-   "title": "Forge G1 live personalised fill pipeline: Pipeline: plan (code) \u2192 cache (memory \u2192 Neon) keyed by canonical-JSON sha256 over versions + model + kit + item + skin \u2192 optional enum-only model flavour (\u2264 3.5 s) \u2192 code build \u2192 code gate \u2192 mount. The gate runs before the model call, with a bounded dead-key memo.",
+   "title": "Forge G1 live personalised fill pipeline: Pipeline: plan (code) → cache (memory → Neon) keyed by canonical-JSON sha256 over versions + model + kit + item + skin → optional enum-only model flavour (≤ 3.5 s) → code build → code gate → mount. The gate runs before the model call, with a bounded dead-key memo.",
    "value": "high",
    "effort": "adapt",
    "paths": [
@@ -4861,7 +4861,7 @@
    "status": "production",
    "source": "tx-content-ui",
    "date": "2026-10-15",
-   "title": "Explainer/diagram templates (data call \u2192 timed whiteboard script): Templates for fractions, number lines, flows, cycles, compare, parts/labels, angle, shape, area grid and bar charts. Every number and position is computed in code, with a strict lint (inside board, no overlapping text) and a truth/guard check against the speaker's line.",
+   "title": "Explainer/diagram templates (data call → timed whiteboard script): Templates for fractions, number lines, flows, cycles, compare, parts/labels, angle, shape, area grid and bar charts. Every number and position is computed in code, with a strict lint (inside board, no overlapping text) and a truth/guard check against the speaker's line.",
    "value": "medium",
    "effort": "adapt",
    "paths": [
@@ -4964,7 +4964,7 @@
    "status": "production",
    "source": "tx-content-ui",
    "date": "2026-10-15",
-   "title": "Juice limits module: Game-feel effects capped in one place: hit-stop \u2264 80 ms, shake \u2264 6 px, celebration \u2264 800 ms, \u2264 90 particles. Includes easing set and spring; reduced motion jumps to the end state.",
+   "title": "Juice limits module: Game-feel effects capped in one place: hit-stop ≤ 80 ms, shake ≤ 6 px, celebration ≤ 800 ms, ≤ 90 particles. Includes easing set and spring; reduced motion jumps to the end state.",
    "value": "low",
    "effort": "drop-in",
    "paths": [
@@ -5007,7 +5007,7 @@
    "status": "production",
    "source": "tx-content-ui",
    "date": "2026-10-15",
-   "title": "Kaksha / Volt token design system: Scoped themes via .kx[data-klook][data-ktheme], raw hex only in token files, and a one-accent ('volt') law. Chamfer and HUD components, spring motion and a reduced-motion stop. Lint tests ban colour literals and check every token pair at \u2265 5:1 contrast. Legacy tokens are re-pointed through var() only.",
+   "title": "Kaksha / Volt token design system: Scoped themes via .kx[data-klook][data-ktheme], raw hex only in token files, and a one-accent ('volt') law. Chamfer and HUD components, spring motion and a reduced-motion stop. Lint tests ban colour literals and check every token pair at ≥ 5:1 contrast. Legacy tokens are re-pointed through var() only.",
    "value": "medium",
    "effort": "adapt",
    "paths": [
@@ -5043,7 +5043,7 @@
    "status": "prototype",
    "source": "tx-content-ui",
    "date": "2026-10-15",
-   "title": "Design-direction prototype + lint + judge harness: Self-contained offline HTML prototypes covering 12 states \u00d7 2 viewports \u00d7 3 languages. A lint checks text px, Devanagari px, target px and contrast, and a judge script compares directions.",
+   "title": "Design-direction prototype + lint + judge harness: Self-contained offline HTML prototypes covering 12 states × 2 viewports × 3 languages. A lint checks text px, Devanagari px, target px and contrast, and a judge script compares directions.",
    "value": "medium",
    "effort": "adapt",
    "paths": [
@@ -5075,7 +5075,7 @@
    "status": "production",
    "source": "tx-content-ui",
    "date": "2026-10-15",
-   "title": "Puppet driver (TTS visemes \u2192 face): Framework-free per-frame brain: Azure TTS viseme batches on the audio player clock drive mouth shapes, combined with an RMS jaw. A verdict-neutral acting policy has a safety calm face; blink, gaze and nod schedules complete it. Runs headless in evals.",
+   "title": "Puppet driver (TTS visemes → face): Framework-free per-frame brain: Azure TTS viseme batches on the audio player clock drive mouth shapes, combined with an RMS jaw. A verdict-neutral acting policy has a safety calm face; blink, gaze and nod schedules complete it. Runs headless in evals.",
    "value": "low",
    "effort": "adapt",
    "paths": [
@@ -5153,7 +5153,7 @@
    "status": "confirmed",
    "source": "harvest",
    "date": "2026-10-15",
-   "title": "Taxila [claude/r5-qa, claude/r5-simlab, ev/r8-packaged, ev/r9-packaged\u2026]: Taxila's quality and release machinery: a sim lab where an AI child with a hidden knowledge key runs whole lessons through the real server and is judged cross-family, a Playwright break-it QA harness, and a gated packaged-tree canary release train with evidence branches.",
+   "title": "Taxila [claude/r5-qa, claude/r5-simlab, ev/r8-packaged, ev/r9-packaged…]: Taxila's quality and release machinery: a sim lab where an AI child with a hidden knowledge key runs whole lessons through the real server and is judged cross-family, a Playwright break-it QA harness, and a gated packaged-tree canary release train with evidence branches.",
    "path": "docs/harvest/tx-qa-release.md"
   },
   {
@@ -5666,7 +5666,7 @@
    "status": "confirmed",
    "source": "harvest",
    "date": "2026-10-15",
-   "title": "command_centre [claude/knl-deal-negotiation-tr6zdw, claude/client-acquisition-channels-120u56, claude/tarasha-partners-client-overview-babi7p, claude/client-proposal-writeup-udtw8f\u2026]: Twenty side branches of CarbonSettle CommandCentre. Eight have nothing that isn't in main. The rest hold an UNMERGED security and send-guardrail sweep, data-hunt lead-gen lanes N and B, a KNL deal desk with a GST invoice and workbook generator, a channel/growth analysis, and records of the mill-outreach campaign.",
+   "title": "command_centre [claude/knl-deal-negotiation-tr6zdw, claude/client-acquisition-channels-120u56, claude/tarasha-partners-client-overview-babi7p, claude/client-proposal-writeup-udtw8f…]: Twenty side branches of CarbonSettle CommandCentre. Eight have nothing that isn't in main. The rest hold an UNMERGED security and send-guardrail sweep, data-hunt lead-gen lanes N and B, a KNL deal desk with a GST invoice and workbook generator, a channel/growth analysis, and records of the mill-outreach campaign.",
    "path": "docs/harvest/cc-branches.md"
   },
   {
@@ -6945,7 +6945,7 @@
    "status": "proposed",
    "source": "research",
    "date": "2026-10-17",
-   "title": "Provisional beachhead (round 1): Retail insurance distribution. The buyers are IRDAI-registered retail intermediaries: IMFs (940), retail-focused brokers (out of 874, of which 791 are direct brokers mostly in commercial lines), non-bank corporate agents (out of 689, mostly banks), and the renewal books of PoSP/insurtech platforms such as Turtlemint (550k+ PoSPs). Source [l3, l3v, l4c]. Mode ~1,300 in-reach firms, ~980 of which phone [l3]. \u2014 Renewal reminders and lapse revival for motor, health and life policies, each ending in a WhatsApp utility template (Rs 0.115) carrying a payment link and an autopay-mandate option. RBI allows auto-debit without extra authentication up to Rs 1 lakh for insurance premiums [l4cv]. Callback handling and human escalation are included. A renewal or expiry reminder counts as a service call under TCCCPR def (bh)(i) [l1].; Outbound-consented service calls to the intermediary's existing policyholders, plus inbound callbacks. No cold calling. No promotion or cross-sell inside the call: one offer line makes the whole call promotional, so a cross-sell needs a separate 140xx call with consent [l1]. Calls go from tenant-held numbers. These are 1600xx if the IRDAI 1600 mandate (in force since 2026-02-15) covers intermediaries, which is unverified; otherwise A2P-declared 10-digit CLIs [l1].; buyer The founder or principal officer of an IMF or retail broker. At a PoSP platform or non-bank corporate agent, the head of renewals or operations. Reached by founder-led direct sales to the enumerable IRDAI registers (~2,500 firms) [l4c].; pricing Per renewal collected on the due list the AI works, earned in code from the payment record, plus a monthly platform minimum. Incremental saves measured against a 10-20% holdout are reported as the proof of value. Not per minute: the managed cost of goods sold (COGS) of Rs 3.1-5.9/min against Indian list prices of Rs 3.5-7/min leaves no per-minute margin [l2v, l4av]. Under H2's rule, the pricing unit changes, not the quality bar. (Hypothesis to test in interviews:\n- Effective yield of Rs 6-8 per AI-connected minute, at or below a human's Rs 6-9 per connected minute [l2v]. Kill below about Rs 6/min-equivalent or Rs 150 per renewal saved [l3].\n- Pilot Rs 25-50k/month per renewal book.\n- Production about Rs 1.1-1.5 lakh/month for a median modelled buyer: 9,440 calls x ~2 min, both assumptions [calc from l6, l2]. This sits inside the sales-led band of Rs 25k-2L [l4c].\n- Billed by invoice, e-NACH or prepay, because card and UPI auto-debit needs extra authentication above Rs 15k [l4cv].). Confidence moderate-low.",
+   "title": "Provisional beachhead (round 1): Retail insurance distribution. The buyers are IRDAI-registered retail intermediaries: IMFs (940), retail-focused brokers (out of 874, of which 791 are direct brokers mostly in commercial lines), non-bank corporate agents (out of 689, mostly banks), and the renewal books of PoSP/insurtech platforms such as Turtlemint (550k+ PoSPs). Source [l3, l3v, l4c]. Mode ~1,300 in-reach firms, ~980 of which phone [l3]. — Renewal reminders and lapse revival for motor, health and life policies, each ending in a WhatsApp utility template (Rs 0.115) carrying a payment link and an autopay-mandate option. RBI allows auto-debit without extra authentication up to Rs 1 lakh for insurance premiums [l4cv]. Callback handling and human escalation are included. A renewal or expiry reminder counts as a service call under TCCCPR def (bh)(i) [l1].; Outbound-consented service calls to the intermediary's existing policyholders, plus inbound callbacks. No cold calling. No promotion or cross-sell inside the call: one offer line makes the whole call promotional, so a cross-sell needs a separate 140xx call with consent [l1]. Calls go from tenant-held numbers. These are 1600xx if the IRDAI 1600 mandate (in force since 2026-02-15) covers intermediaries, which is unverified; otherwise A2P-declared 10-digit CLIs [l1].; buyer The founder or principal officer of an IMF or retail broker. At a PoSP platform or non-bank corporate agent, the head of renewals or operations. Reached by founder-led direct sales to the enumerable IRDAI registers (~2,500 firms) [l4c].; pricing Per renewal collected on the due list the AI works, earned in code from the payment record, plus a monthly platform minimum. Incremental saves measured against a 10-20% holdout are reported as the proof of value. Not per minute: the managed cost of goods sold (COGS) of Rs 3.1-5.9/min against Indian list prices of Rs 3.5-7/min leaves no per-minute margin [l2v, l4av]. Under H2's rule, the pricing unit changes, not the quality bar. (Hypothesis to test in interviews:\n- Effective yield of Rs 6-8 per AI-connected minute, at or below a human's Rs 6-9 per connected minute [l2v]. Kill below about Rs 6/min-equivalent or Rs 150 per renewal saved [l3].\n- Pilot Rs 25-50k/month per renewal book.\n- Production about Rs 1.1-1.5 lakh/month for a median modelled buyer: 9,440 calls x ~2 min, both assumptions [calc from l6, l2]. This sits inside the sales-led band of Rs 25k-2L [l4c].\n- Billed by invoice, e-NACH or prepay, because card and UPI auto-debit needs extra authentication above Rs 15k [l4cv].). Confidence moderate-low.",
    "reverse_if": "Fewer than 5 of 15 qualified intermediaries run at least 3 renewal telecallers or a renewal desk [l3].; Accepted price is below about Rs 6/min-equivalent or below Rs 150 per renewal saved [l3].; The interviewees' own renewal ratio by line is already 90% or more without calling, or they lose no commission on lapses. This tests whether the pain measured at insurers exists at intermediaries [l3v].; After 60 targeted intermediaries, fewer than 10 take a discovery call or fewer than 3 accept a paid pilot within 10 weeks [l4c].; Counsel finds intermediaries must use 1600xx but cannot obtain it, or that non-1600 service calls are unlawful, and the tenant has no compliant number path [l1].; Our agent misses the battery bar on the elderly and Hinglish personas: clean-turn p50 <= 1.5 s, collisions <= 5%, barge-in handled >= 90%, correct language >= 95% of turns, no loop or drop under babble. Separ",
    "path": "research/2026-10-17/SYNTHESIS.md"
   },
@@ -9721,7 +9721,7 @@
    "status": "confirmed (whisper count fixed 23->22)",
    "source": "l7",
    "date": "2026-10-17",
-   "title": "Open ASR fabricates on non-speech: 30/30 clips; Qwen3-ASR wrote '\u0939\u093e\u0901' on 24/25 non-babble clips; whisper wrote '\u091d\u093e\u0932' on 22/25 [30/30; 24/25; 22/25 clips]",
+   "title": "Open ASR fabricates on non-speech: 30/30 clips; Qwen3-ASR wrote 'हाँ' on 24/25 non-babble clips; whisper wrote 'झाल' on 22/25 [30/30; 24/25; 22/25 clips]",
    "method": "measured",
    "n": 30,
    "confidence": "high",
@@ -10055,7 +10055,7 @@
    "status": "unsourced (critic A17); relabelled as assumption in v2",
    "source": "synthesis",
    "date": "2026-10-17",
-   "title": "'Policyholders skew older and Hindi-belt' (SYNTHESIS r1 \u00a71.1 item 9): no source found in round 1 or round 2 [unsourced assumption]",
+   "title": "'Policyholders skew older and Hindi-belt' (SYNTHESIS r1 §1.1 item 9): no source found in round 1 or round 2 [unsourced assumption]",
    "method": "assumption",
    "n": null,
    "confidence": "low",
@@ -10357,7 +10357,7 @@
    "status": "superseded (CMP-15: CRM case, no voice AI)",
    "source": "synthesis r1",
    "date": "2026-10-17",
-   "title": "R1 \u00a71.1 item 5: LeadSquared insurance CRM plus Invorto claims a +10% renewal ratio at Universal Sompo [+10% renewal ratio]",
+   "title": "R1 §1.1 item 5: LeadSquared insurance CRM plus Invorto claims a +10% renewal ratio at Universal Sompo [+10% renewal ratio]",
    "method": "vendor-claim",
    "n": null,
    "confidence": "low",
@@ -10372,7 +10372,7 @@
    "source": "research",
    "date": "2026-10-17",
    "title": "Beachhead v2 (narrowed): The beachhead holds in a narrower form. It is renewal service calls for retail insurance intermediaries, starting with private-car (4W) motor and health. The first buyers are small and mid retail brokers and non-bank corporate agents with roughly 1,000 or more due renewals a month, plus the renewal books of large brokers and PoSP platforms. IMFs are interviewed but get no pilot offer until counsel answers on IMF reg 3(d). VP is software that the intermediary operates on its own 1600 number. It is not a managed telemarketer and not the sender. The call informs (due date, the insurer's renewal premium as held in the data), confirms (amount, date and intent, read back) and hands off (a WhatsApp utility payment link; re-quotes, objections and persuasion go to a certified human). Pricing is per renewal collected: INR 50 per car and INR 15 per health renewal (INR 19 if only renewals after the ",
-   "reverse_if": "Kill criteria KC1-KC10 in SYNTHESIS-v2 \u00a72; switch rules \u00a71.4 (move to larger strata / switch to real estate / re-price on IRDAI caps), read by ~2026-11-13",
+   "reverse_if": "Kill criteria KC1-KC10 in SYNTHESIS-v2 §2; switch rules §1.4 (move to larger strata / switch to real estate / re-price on IRDAI caps), read by ~2026-11-13",
    "path": "research/2026-10-17/SYNTHESIS-v2.md"
   },
   {
@@ -10381,7 +10381,7 @@
    "status": "at-risk",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC1 Too few buyers: the firm-weighted share of in-scope firms with due renewals a month >= 3x their own due-per-caller (>= ~6,800 if unknown) is below 1/3 (weights A/B/C 0.21/0.26/0.52; >= 3 interviews per stratum). If the volume-weighted share is >= 1/3, the beachhead moves to the larger strata instead of dying. \u2014 Stratum C (IMFs) carries 52% of the firm weight, and IMFs average ~75 health and ~42 life policies a year (799 IMFs, FY25 Handbook output) [REN-17]. The kit's own prior is 0.65 that most C firms fall below 300 due a month. Brokers carry 49.5% of motor premium, so the volume-weighted reading may pass [REN-16]. Interim read Thu 2026-10-29; final ~Fri 2026-11-13."
+   "title": "KC1 Too few buyers: the firm-weighted share of in-scope firms with due renewals a month >= 3x their own due-per-caller (>= ~6,800 if unknown) is below 1/3 (weights A/B/C 0.21/0.26/0.52; >= 3 interviews per stratum). If the volume-weighted share is >= 1/3, the beachhead moves to the larger strata instead of dying. — Stratum C (IMFs) carries 52% of the firm weight, and IMFs average ~75 health and ~42 life policies a year (799 IMFs, FY25 Handbook output) [REN-17]. The kit's own prior is 0.65 that most C firms fall below 300 due a month. Brokers carry 49.5% of motor premium, so the volume-weighted reading may pass [REN-16]. Interim read Thu 2026-10-29; final ~Fri 2026-11-13."
   },
   {
    "id": "kc.2026-10-17.kc2",
@@ -10389,7 +10389,7 @@
    "status": "not-yet-tested",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC2 Price too low: fewer than 3 qualified A/B firms accept a fee at or above their main line's 40%-launch-margin floor (2W INR 29, car 28, health 14, life 17; car 35, health 19, life 24 if only post-first-call renewals are billable). \u2014 Desk only. The car card of INR 50 clears its floor with room against the buyer's ceilings (INR 186 against no calling, INR 63-75 against its own desk). Health INR 15 is INR 1 above its floor. Life and 2W fail on desk numbers [REN-07..10, FK-02]. Decided by interview Gabor-Granger results by ~2026-11-13."
+   "title": "KC2 Price too low: fewer than 3 qualified A/B firms accept a fee at or above their main line's 40%-launch-margin floor (2W INR 29, car 28, health 14, life 17; car 35, health 19, life 24 if only post-first-call renewals are billable). — Desk only. The car card of INR 50 clears its floor with room against the buyer's ceilings (INR 186 against no calling, INR 63-75 against its own desk). Health INR 15 is INR 1 above its floor. Life and 2W fail on desk numbers [REN-07..10, FK-02]. Decided by interview Gabor-Granger results by ~2026-11-13."
   },
   {
    "id": "kc.2026-10-17.kc3",
@@ -10397,7 +10397,7 @@
    "status": "not-yet-tested",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC3 No leakage: the firm-weighted majority renews its main line at or above the per-line break-even without calling (2W 63%, car 96%, health 97%, life 93%), or loses no commission on lapses. \u2014 Desk evidence leans toward passing. Health first-renewal leakage is 13-15% even at Policybazaar (overall persistency 87-88.9% by number of policies) [REN-18], and ~56% of vehicles are uninsured [REN-20]. Still unknown: whether commission is credited when a customer renews directly with the insurer [REG-34]. Insurers and aggregators compete for the same renewal [CMP-17]."
+   "title": "KC3 No leakage: the firm-weighted majority renews its main line at or above the per-line break-even without calling (2W 63%, car 96%, health 97%, life 93%), or loses no commission on lapses. — Desk evidence leans toward passing. Health first-renewal leakage is 13-15% even at Policybazaar (overall persistency 87-88.9% by number of policies) [REN-18], and ~56% of vehicles are uninsured [REN-20]. Still unknown: whether commission is credited when a customer renews directly with the insurer [REG-34]. Insurers and aggregators compete for the same renewal [CMP-17]."
   },
   {
    "id": "kc.2026-10-17.kc4",
@@ -10405,7 +10405,7 @@
    "status": "not-yet-tested",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC4 Channel fails: from the first 60 targeted intermediaries, fewer than 10 discovery calls or fewer than 3 paid pilots within 10 weeks. \u2014 Outreach starts Mon 2026-10-19 and the 10-week window ends ~2026-12-28. The only measured cold funnel (a different ICP) was 0 wins in 8,784 sends [CMP-26]."
+   "title": "KC4 Channel fails: from the first 60 targeted intermediaries, fewer than 10 discovery calls or fewer than 3 paid pilots within 10 weeks. — Outreach starts Mon 2026-10-19 and the 10-week window ends ~2026-12-28. The only measured cold funnel (a different ICP) was 0 wins in 8,784 sends [CMP-26]."
   },
   {
    "id": "kc.2026-10-17.kc5",
@@ -10413,7 +10413,7 @@
    "status": "at-risk",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC5 No compliant number path: intermediaries cannot obtain 1600 numbers, or no CPaaS will carry 1600 with media streaming into VP's gateway. \u2014 1600 is confirmed mandatory [REG-20] and obtainable in principle via 8 access providers or Plivo/Vobiz in ~7-14 business days [REG-22, REG-23]. No published price [REG-24]. No provider documents AI streaming on 1600 [REG-25]. Plivo requires a telemarketer registered in Mumbai or Karnataka. TRAI may later exempt small BFSI players [RAW-04]. Telephony quotes due by ~2026-10-30; counsel by ~2026-11-1"
+   "title": "KC5 No compliant number path: intermediaries cannot obtain 1600 numbers, or no CPaaS will carry 1600 with media streaming into VP's gateway. — 1600 is confirmed mandatory [REG-20] and obtainable in principle via 8 access providers or Plivo/Vobiz in ~7-14 business days [REG-22, REG-23]. No published price [REG-24]. No provider documents AI streaming on 1600 [REG-25]. Plivo requires a telemarketer registered in Mumbai or Karnataka. TRAI may later exempt small BFSI players [RAW-04]. Telephony quotes due by ~2026-10-30; counsel by ~2026-11-1"
   },
   {
    "id": "kc.2026-10-17.kc6",
@@ -10421,7 +10421,7 @@
    "status": "at-risk",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC6 Our quality fails on the elderly and Hinglish personas (clean-turn p50 <= 1.5 s, collisions <= 5%, barge-in handled on >= 90%, correct language on >= 95% of turns, no loop or drop under babble); separately, an incumbent configured with our renewal spec passing all five at <= INR 4-6/min all-in moves the wedge. \u2014 Latency clause passing server-side from India: config A clean-turn p50 1,004 ms (CI 989-1,017), p90 1,105 ms [LAT-02]; estimated 1.25-1.45 s at the handset, unmeasured [LAT-13]. The collision clause is tripped by all 6 configurations tested (18-50%) [LAT-05]. The elderly 2.4 s pause was taken 12/12, and a quiet 'hmm' was never transcribed (2/60 turns unanswered) [LAT-06]. Language and babble on ou"
+   "title": "KC6 Our quality fails on the elderly and Hinglish personas (clean-turn p50 <= 1.5 s, collisions <= 5%, barge-in handled on >= 90%, correct language on >= 95% of turns, no loop or drop under babble); separately, an incumbent configured with our renewal spec passing all five at <= INR 4-6/min all-in moves the wedge. — Latency clause passing server-side from India: config A clean-turn p50 1,004 ms (CI 989-1,017), p90 1,105 ms [LAT-02]; estimated 1.25-1.45 s at the handset, unmeasured [LAT-13]. The collision clause is tripped by all 6 configurations tested (18-50%) [LAT-05]. The elderly 2.4 s pause was taken 12/12, and a quiet 'hmm' was never transcribed (2/60 turns unanswered) [LAT-06]. Language and babble on ou"
   },
   {
    "id": "kc.2026-10-17.kc7",
@@ -10429,7 +10429,7 @@
    "status": "not-yet-tested",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC7 Concierge pilot underperforms: the AI cohort's renewal rate is worse than the buyer's human baseline on a consented, holdout-controlled pilot (non-inferiority fails). \u2014 No pilot yet; the earliest live calls are ~2026-11-24 to 2026-12-03, after counsel and 1600 provisioning. At a 1,500-due broker, holdouts detect lift in ~3-5 months for motor and ~2 years for health and life [REN-13]."
+   "title": "KC7 Concierge pilot underperforms: the AI cohort's renewal rate is worse than the buyer's human baseline on a consented, holdout-controlled pilot (non-inferiority fails). — No pilot yet; the earliest live calls are ~2026-11-24 to 2026-12-03, after counsel and 1600 provisioning. At a 1,500-due broker, holdouts detect lift in ~3-5 months for motor and ~2 years for health and life [REN-13]."
   },
   {
    "id": "kc.2026-10-17.kc8",
@@ -10437,7 +10437,7 @@
    "status": "not-yet-tested",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC8 (new) No lawful operating model: counsel rules that a neutral software renewal reminder on the intermediary's own 1600 number is itself solicitation or telemarketing that needs IRDAI-certified humans, or that VP must register as an IRDAI telemarketer, with no workable route. \u2014 Desk reading: a neutral reminder is servicing (the Brokers Code of Conduct para 6 obliges the renewal notice) [REG-30]; persuasion is solicitation at medium confidence [REG-26]; the AV and telemarketer regime survives the 2026 amendment [REG-27, REG-28]. Counsel answer requested by ~2026-11-13."
+   "title": "KC8 (new) No lawful operating model: counsel rules that a neutral software renewal reminder on the intermediary's own 1600 number is itself solicitation or telemarketing that needs IRDAI-certified humans, or that VP must register as an IRDAI telemarketer, with no workable route. — Desk reading: a neutral reminder is servicing (the Brokers Code of Conduct para 6 obliges the renewal notice) [REG-30]; persuasion is solicitation at medium confidence [REG-26]; the AV and telemarketer regime survives the 2026 amendment [REG-27, REG-28]. Counsel answer requested by ~2026-11-13."
   },
   {
    "id": "kc.2026-10-17.kc9",
@@ -10445,7 +10445,7 @@
    "status": "at-risk",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC9 (new) Commission compression closes the fee window: IRDAI adopts renewal-commission caps such that, for buyers with a working desk, no car fee both clears VP's 40% launch-margin floor and stays below the buyer's ceiling against its desk. \u2014 Proposal of 2026-09-23; comments due Sun 2026-10-25 [REN-24]. Under the caps the car desk ceiling falls to ~INR 27-32 against an INR 28 floor; health, life and 2W fees exceed their desk ceilings; the window against no calling stays (~INR 80 for car) [REN-25]. Re-run the model if the caps are adopted."
+   "title": "KC9 (new) Commission compression closes the fee window: IRDAI adopts renewal-commission caps such that, for buyers with a working desk, no car fee both clears VP's 40% launch-margin floor and stays below the buyer's ceiling against its desk. — Proposal of 2026-09-23; comments due Sun 2026-10-25 [REN-24]. Under the caps the car desk ceiling falls to ~INR 27-32 against an INR 28 floor; health, life and 2W fees exceed their desk ceilings; the window against no calling stays (~INR 80 for car) [REN-25]. Re-run the model if the caps are adopted."
   },
   {
    "id": "kc.2026-10-17.kc10",
@@ -10453,7 +10453,7 @@
    "status": "at-risk",
    "source": "SYNTHESIS-v2",
    "date": "2026-10-17",
-   "title": "KC10 (new) No India-resident fast model: counsel requires India-resident processing and no India-geography model that the production subscription can deploy meets the latency clause. \u2014 The fastest India model is gpt-4.1-mini on a South India Standard deployment (TTFT 304 ms) [LAT-07]. Microsoft lists it Deprecated, retiring 2027-04-14, and it may be closed to subscriptions that never deployed it. The only other India-geography Standard model (gpt-4o 2024-11-20) retires the same day [LAT-08]. Test deployability on the grant subscription by ~2026-10-30; re-benchmark by 2027-01-14."
+   "title": "KC10 (new) No India-resident fast model: counsel requires India-resident processing and no India-geography model that the production subscription can deploy meets the latency clause. — The fastest India model is gpt-4.1-mini on a South India Standard deployment (TTFT 304 ms) [LAT-07]. Microsoft lists it Deprecated, retiring 2027-04-14, and it may be closed to subscriptions that never deployed it. The only other India-geography Standard model (gpt-4o 2024-11-20) retires the same day [LAT-08]. Test deployability on the grant subscription by ~2026-10-30; re-benchmark by 2027-01-14."
   },
   {
    "id": "rejected.2026-10-17.per-minute-launch",
@@ -10535,7 +10535,7 @@
    "status": "open",
    "source": "CRITIC-v2",
    "date": "2026-10-17",
-   "title": "Red-team N3: structural half of IRDAI 2026-09-23 consultation unread (single IDE licence, Bima Sugam, clawback, persistency escalator) \u2014 could rewrite IMF/broker/CA rules the strata rest on.",
+   "title": "Red-team N3: structural half of IRDAI 2026-09-23 consultation unread (single IDE licence, Bima Sugam, clawback, persistency escalator) — could rewrite IMF/broker/CA rules the strata rest on.",
    "path": "research/2026-10-17/CRITIC-v2.md"
   },
   {
@@ -10701,7 +10701,7 @@
    "status": "confirmed",
    "source": "verified",
    "date": "2026-10-19",
-   "title": "Voice-stack pricing+latency research (g1-g5 + pricing model, workflow wf_26207e21-b67 resumed after container restart): No stack we measured end to end can be sold at \u20b92 a minute all-in with a 40-60% margin. The budget allows \u20b90.34-0.74 a minute of AI cost (ex-GST, \u20b90.54 at 50%); the cheapest measured stack (C6g) costs \u20b90.94 at the reference workload and \u20b91.07 on the Monte Carlo (p10-p90 0.91-1.22). Recommend base \u20b92.99 ex-GST (43% Monte Carlo margin), plus \u20b93.99, premium \u20b96.49 plus \u20b93.5 lakh a month per dedicated voice. \u20b92 becomes possible only if Inworld (desk \u20b90.53) or self-hosting (desk \u20b90.43-0.51 from about 2.5M minutes a month) passes the listener panel and the India latency test. Gemini Live costs \u20b94.2-5",
+   "title": "Voice-stack pricing+latency research (g1-g5 + pricing model, workflow wf_26207e21-b67 resumed after container restart): No stack we measured end to end can be sold at ₹2 a minute all-in with a 40-60% margin. The budget allows ₹0.34-0.74 a minute of AI cost (ex-GST, ₹0.54 at 50%); the cheapest measured stack (C6g) costs ₹0.94 at the reference workload and ₹1.07 on the Monte Carlo (p10-p90 0.91-1.22). Recommend base ₹2.99 ex-GST (43% Monte Carlo margin), plus ₹3.99, premium ₹6.49 plus ₹3.5 lakh a month per dedicated voice. ₹2 becomes possible only if Inworld (desk ₹0.53) or self-hosting (desk ₹0.43-0.51 from about 2.5M minutes a month) passes the listener panel and the India latency test. Gemini Live costs ₹4.2-5",
    "path": "research/2026-10-18/SYNTHESIS.md"
   },
   {
@@ -10710,7 +10710,7 @@
    "status": "confirmed",
    "source": "model",
    "date": "2026-10-19",
-   "title": "AI budget for a Rs 2/min price: At \u20b92 ex-GST the allowed AI cost is \u20b90.54 a minute at 50% margin (\u20b90.74 at 40%, \u20b90.34 at 60%), with telephony at \u20b90.43 and infrastructure at \u20b90.03. If the \u20b92 includes GST, it is \u20b90.22-0.56. Without infrastructure this matches the lanes' \u20b90.20-0.82 range. On a 1600-series line at \u20b90.60-0.80 (no published price) it falls to \u20b90.17-0.57. Source: model/results/ai_budget_inr2.csv.",
+   "title": "AI budget for a Rs 2/min price: At ₹2 ex-GST the allowed AI cost is ₹0.54 a minute at 50% margin (₹0.74 at 40%, ₹0.34 at 60%), with telephony at ₹0.43 and infrastructure at ₹0.03. If the ₹2 includes GST, it is ₹0.22-0.56. Without infrastructure this matches the lanes' ₹0.20-0.82 range. On a 1600-series line at ₹0.60-0.80 (no published price) it falls to ₹0.17-0.57. Source: model/results/ai_budget_inr2.csv.",
    "path": "research/2026-10-18/model/results/ai_budget_inr2.csv"
   },
   {
@@ -10719,7 +10719,7 @@
    "status": "measured",
    "source": "model",
    "date": "2026-10-19",
-   "title": "C6g: VAD-gated gemini-3.5-transcribe-live + gpt-oss-120b@Groq (OpenRouter) + Azure neural (cheapest measured) | AI Rs/min 3-min 0.94 at the reference workload; Monte Carlo p50 1.07 (p10-p90 0.91-1.22) | all-in 1.44 (with telephony and infra) | India p50 1,038 (CI 990-1,163), p90 1,453; cut-ins 23%; elderly pause 6/6 | fits Rs2: no: 28% margin at \u20b92 at the reference workload, 14% on the Monte Carlo with pers"
+   "title": "C6g: VAD-gated gemini-3.5-transcribe-live + gpt-oss-120b@Groq (OpenRouter) + Azure neural (cheapest measured) | AI Rs/min 3-min 0.94 at the reference workload; Monte Carlo p50 1.07 (p10-p90 0.91-1.22) | all-in 1.44 (with telephony and infra) | India p50 1,038 (CI 990-1,163), p90 1,453; cut-ins 23%; elderly pause 6/6 | fits Rs2: no: 28% margin at ₹2 at the reference workload, 14% on the Monte Carlo with pers"
   },
   {
    "id": "measure.2026-10-18.stack-c6-1",
@@ -10727,7 +10727,7 @@
    "status": "measured",
    "source": "model",
    "date": "2026-10-19",
-   "title": "C6: transcribe-live (ungated) + gpt-oss@Groq + Azure neural | AI Rs/min 3-min 1.24 (Monte Carlo 1.21-1.52) | all-in 1.74 | India p50 1,031 (1,010-1,052), p90 1,404; cut-ins 32% | fits Rs2: no (13% margin at \u20b92)"
+   "title": "C6: transcribe-live (ungated) + gpt-oss@Groq + Azure neural | AI Rs/min 3-min 1.24 (Monte Carlo 1.21-1.52) | all-in 1.74 | India p50 1,031 (1,010-1,052), p90 1,404; cut-ins 32% | fits Rs2: no (13% margin at ₹2)"
   },
   {
    "id": "measure.2026-10-18.stack-c1g-2",
@@ -10735,7 +10735,7 @@
    "status": "measured",
    "source": "model",
    "date": "2026-10-19",
-   "title": "C1g: Azure STT gated + gpt-4.1-mini South India + Azure neural (all-Azure) | AI Rs/min 3-min 1.36 (Monte Carlo 1.15-1.57) | all-in 1.85 | India p50 989 (967-994), p90 1,072; cut-ins 30% | fits Rs2: no (7%); needs \u20b93.09 for 40%"
+   "title": "C1g: Azure STT gated + gpt-4.1-mini South India + Azure neural (all-Azure) | AI Rs/min 3-min 1.36 (Monte Carlo 1.15-1.57) | all-in 1.85 | India p50 989 (967-994), p90 1,072; cut-ins 30% | fits Rs2: no (7%); needs ₹3.09 for 40%"
   },
   {
    "id": "measure.2026-10-18.stack-c1-3",
@@ -10751,7 +10751,7 @@
    "status": "measured",
    "source": "model",
    "date": "2026-10-19",
-   "title": "C6g-HD: C6g with Azure DragonHD voice | AI Rs/min 3-min 1.47 (Monte Carlo 1.35-1.87) | all-in 1.97 | India p50 about 1,090 (computed: C6 plus 56 ms HD first byte) | fits Rs2: no (2%); needs \u20b93.77 for 40%"
+   "title": "C6g-HD: C6g with Azure DragonHD voice | AI Rs/min 3-min 1.47 (Monte Carlo 1.35-1.87) | all-in 1.97 | India p50 about 1,090 (computed: C6 plus 56 ms HD first byte) | fits Rs2: no (2%); needs ₹3.77 for 40%"
   },
   {
    "id": "measure.2026-10-18.stack-c2-c3-5",
@@ -10799,7 +10799,7 @@
    "status": "unverified",
    "source": "model",
    "date": "2026-10-19",
-   "title": "Inworld all-in (STT-1 + Gemma 4 26B + TTS-2 Flash, Growth credits) | AI Rs/min 3-min 0.53 (Monte Carlo 0.46-0.63) | all-in 1.02 | India p50 not measured (vendor claim: 462 ms after turn close, plus about 954 ms VAD) | fits Rs2: on paper (49% at \u20b92) at 250k minutes a month or more; Hindi, latency and residen"
+   "title": "Inworld all-in (STT-1 + Gemma 4 26B + TTS-2 Flash, Growth credits) | AI Rs/min 3-min 0.53 (Monte Carlo 0.46-0.63) | all-in 1.02 | India p50 not measured (vendor claim: 462 ms after turn close, plus about 954 ms VAD) | fits Rs2: on paper (49% at ₹2) at 250k minutes a month or more; Hindi, latency and residen"
   },
   {
    "id": "measure.2026-10-18.stack-self-host-indicconformer-e2e-l-11",
@@ -10807,7 +10807,7 @@
    "status": "unverified",
    "source": "model",
    "date": "2026-10-19",
-   "title": "Self-host IndicConformer (E2E L4) + gpt-oss@Groq + Veena (E2E H100) | AI Rs/min 3-min 0.43 at 50% utilisation (Monte Carlo 0.36-0.55) | all-in 0.93 | India p50 not measured (vendor claim: Veena under 80 ms) | fits Rs2: on paper (54%) only from about 2.5M minutes a month (fleet floor \u20b96.25 lakh/mont"
+   "title": "Self-host IndicConformer (E2E L4) + gpt-oss@Groq + Veena (E2E H100) | AI Rs/min 3-min 0.43 at 50% utilisation (Monte Carlo 0.36-0.55) | all-in 0.93 | India p50 not measured (vendor claim: Veena under 80 ms) | fits Rs2: on paper (54%) only from about 2.5M minutes a month (fleet floor ₹6.25 lakh/mont"
   },
   {
    "id": "measure.2026-10-18.stack-gpt-realtime-2-1-mini-prefix-c-12",
@@ -10831,7 +10831,7 @@
    "status": "measured",
    "source": "model",
    "date": "2026-10-19",
-   "title": "Gemini 3.8 Live (off / 6k compression) | AI Rs/min 3-min 5.72 (paid meter); 11.6 at a Meera-size 13k persona (model) | all-in 6.22 | India p50 1,006 (950-1,253), p90 1,524; talk-over 42%; 819 with thinkingBudget:0 but 52% c | fits Rs2: no (needs \u20b910.4 for 40% at 3 minutes)"
+   "title": "Gemini 3.8 Live (off / 6k compression) | AI Rs/min 3-min 5.72 (paid meter); 11.6 at a Meera-size 13k persona (model) | all-in 6.22 | India p50 1,006 (950-1,253), p90 1,524; talk-over 42%; 819 with thinkingBudget:0 but 52% c | fits Rs2: no (needs ₹10.4 for 40% at 3 minutes)"
   },
   {
    "id": "decision.2026-10-19.tier-base",
@@ -10839,8 +10839,8 @@
    "status": "proposed",
    "source": "model",
    "date": "2026-10-19",
-   "title": "Proposed tier Base: human-like, emotional and relational voice: C6g pipeline: VAD-gated gemini-3.5-transcribe-live + gpt-oss-120b on Groq + stock Azure neural voice (or the panel's pick at equal cost); persona plus light memory (0-3k tokens) | price \u20b92.99 ex-GST (\u20b93.53 incl. GST); \u20b98.97 per 3-minute call. Alternative: \u20b92.25 plus telephony at cost (44% margin). | COGS \u20b91.72 Monte Carlo minute-weighted (p10-p90 1.51-1.93): AI 1.22, telephony 0.46, infra 0.03. Referenc | GM 43% Monte Carlo (49% at the reference workload); P(call margin \u2265 40%) = 0.70; 14% at \u20b92.00 all-in",
-   "reverse_if": "Listener panel rates the base voice below the A/A noise floor of the best candidate (human reference, DragonHD, Inworld TTS-2, Bulbul V4): switch the voice and re-price (DragonHD needs \u20b93.77 or more for 40%); Reconciled provider billing over at least 1,000 real minutes shows AI cost above \u20b91.25 a minute at the 3-minute median; After a pause-aware release policy, p50 above 1.2 s or cut-ins above 5% on the elderly or Hinglish persona over a real Indian phone line (V4); Gross margin below 40% for two consecutive months at list price; Google meters transcribe-live by session wall-clock rather than gated audio (+\u20b90.26-0.50): move to Azure gated STT and re-price; Price moves: down to \u20b92.49 if Inwo"
+   "title": "Proposed tier Base: human-like, emotional and relational voice: C6g pipeline: VAD-gated gemini-3.5-transcribe-live + gpt-oss-120b on Groq + stock Azure neural voice (or the panel's pick at equal cost); persona plus light memory (0-3k tokens) | price ₹2.99 ex-GST (₹3.53 incl. GST); ₹8.97 per 3-minute call. Alternative: ₹2.25 plus telephony at cost (44% margin). | COGS ₹1.72 Monte Carlo minute-weighted (p10-p90 1.51-1.93): AI 1.22, telephony 0.46, infra 0.03. Referenc | GM 43% Monte Carlo (49% at the reference workload); P(call margin ≥ 40%) = 0.70; 14% at ₹2.00 all-in",
+   "reverse_if": "Listener panel rates the base voice below the A/A noise floor of the best candidate (human reference, DragonHD, Inworld TTS-2, Bulbul V4): switch the voice and re-price (DragonHD needs ₹3.77 or more for 40%); Reconciled provider billing over at least 1,000 real minutes shows AI cost above ₹1.25 a minute at the 3-minute median; After a pause-aware release policy, p50 above 1.2 s or cut-ins above 5% on the elderly or Hinglish persona over a real Indian phone line (V4); Gross margin below 40% for two consecutive months at list price; Google meters transcribe-live by session wall-clock rather than gated audio (+₹0.26-0.50): move to Azure gated STT and re-price; Price moves: down to ₹2.49 if Inwo"
   },
   {
    "id": "decision.2026-10-19.tier-plus",
@@ -10848,7 +10848,7 @@
    "status": "proposed",
    "source": "model",
    "date": "2026-10-19",
-   "title": "Proposed tier Plus: learning agents: Base plus learned memory in context (2-8k tokens, cached) plus a post-call learning pass on gpt-4.1-mini (South India) | price \u20b93.99 ex-GST (\u20b94.71 incl. GST); \u20b911.97 per 3-minute call | COGS \u20b92.14 Monte Carlo minute-weighted (1.87-2.59); AI 1.65. Reference workload: 1.91. | GM 46% Monte Carlo (52% at the reference workload); P(call margin \u2265 40%) = 0.77",
+   "title": "Proposed tier Plus: learning agents: Base plus learned memory in context (2-8k tokens, cached) plus a post-call learning pass on gpt-4.1-mini (South India) | price ₹3.99 ex-GST (₹4.71 incl. GST); ₹11.97 per 3-minute call | COGS ₹2.14 Monte Carlo minute-weighted (1.87-2.59); AI 1.65. Reference workload: 1.91. | GM 46% Monte Carlo (52% at the reference workload); P(call margin ≥ 40%) = 0.77",
    "reverse_if": "Recall accuracy across repeat calls below 95%, or stored preferences ignored more than 1 time in 20 (V6); The memory prompt pushes p50 above 1.2 s from India; Plus attach rate below the threshold the owner sets before launch; Any base kill criterion that re-prices base re-prices plus by the same amount"
   },
   {
@@ -10857,8 +10857,8 @@
    "status": "proposed",
    "source": "model",
    "date": "2026-10-19",
-   "title": "Proposed tier Premium: deep personalisation and a dedicated voice: India-processed: Azure STT gated (Central India) + gpt-4.1-mini (South India) + Azure Custom Neural Voice; 5-16k tokens of personal memory; post-call learning | price \u20b96.49 ex-GST (\u20b97.66 incl. GST), plus \u20b93.5 lakh a month per dedicated voice. Custom Neural Voice hosting is $4.032/h = \u20b92 | COGS \u20b93.52 Monte Carlo minute-weighted (3.00-4.30); AI 3.02. Reference workload: 3.38. | GM 46% Monte Carlo (48% at the reference workload); P(call margin \u2265 40%) = 0.73; about 20% on the voice",
-   "reverse_if": "In the blind panel the dedicated voice does not beat the base voice beyond the noise floor; Microsoft's Custom Neural Voice limited-access approval is refused or delayed past launch; No India-region successor to gpt-4.1-mini (retires 2027-04-14) announced by 2027-02-01; Voice-talent consent and rights cannot be contracted; Customer volume too low to justify a \u20b92.8 lakh/month hosted voice"
+   "title": "Proposed tier Premium: deep personalisation and a dedicated voice: India-processed: Azure STT gated (Central India) + gpt-4.1-mini (South India) + Azure Custom Neural Voice; 5-16k tokens of personal memory; post-call learning | price ₹6.49 ex-GST (₹7.66 incl. GST), plus ₹3.5 lakh a month per dedicated voice. Custom Neural Voice hosting is $4.032/h = ₹2 | COGS ₹3.52 Monte Carlo minute-weighted (3.00-4.30); AI 3.02. Reference workload: 3.38. | GM 46% Monte Carlo (48% at the reference workload); P(call margin ≥ 40%) = 0.73; about 20% on the voice",
+   "reverse_if": "In the blind panel the dedicated voice does not beat the base voice beyond the noise floor; Microsoft's Custom Neural Voice limited-access approval is refused or delayed past launch; No India-region successor to gpt-4.1-mini (retires 2027-04-14) announced by 2027-02-01; Voice-talent consent and rights cannot be contracted; Customer volume too low to justify a ₹2.8 lakh/month hosted voice"
   },
   {
    "id": "decision.2026-10-19.tier-base-contingency-if-",
@@ -10866,8 +10866,8 @@
    "status": "proposed",
    "source": "model",
    "date": "2026-10-19",
-   "title": "Proposed tier Base contingency, if the panel rejects stock neural voices: C6g with Azure DragonHD | price \u20b93.49 gives 35%; needs \u20b93.77 for 40% or \u20b94.52 for 50% | COGS \u20b92.26 Monte Carlo minute-weighted (1.97-2.56) | GM 35% at \u20b93.49 (41% at the reference workload)",
-   "reverse_if": "Triggered only by base kill criterion 1; If triggered, plus moves to about \u20b94.99"
+   "title": "Proposed tier Base contingency, if the panel rejects stock neural voices: C6g with Azure DragonHD | price ₹3.49 gives 35%; needs ₹3.77 for 40% or ₹4.52 for 50% | COGS ₹2.26 Monte Carlo minute-weighted (1.97-2.56) | GM 35% at ₹3.49 (41% at the reference workload)",
+   "reverse_if": "Triggered only by base kill criterion 1; If triggered, plus moves to about ₹4.99"
   },
   {
    "id": "rejected.2026-10-19.gemini-live-at-rs2",
@@ -14589,7 +14589,7 @@
    "date": "2026-10-21",
    "title": "Sonnet 5.5 at high effort reads the competitor walk-through screenshots. Haiku does not, because it failed the pre-registered quality rule.",
    "rationale": "The owner allowed Haiku only at the best quality. Haiku met the recall bar (98% of Sonnet's) but made 2 clear material errors (the rule allows 1), one of them a value imported from another screenshot. Its errors were spread across strata, so no stratum can be handed to it. It was not cheaper per run either: it wrote more tokens.",
-   "reverse_if": "A re-run of the same calibration with a newer Haiku (or with Sonnet at medium effort) shows at most 1 material error and recall at or above 0.90 of the Sonnet-high arm; or screenshot volume grows about 10\u00d7 and a stratum (e.g. plain list pages) is shown error-free for Haiku."
+   "reverse_if": "A re-run of the same calibration with a newer Haiku (or with Sonnet at medium effort) shows at most 1 material error and recall at or above 0.90 of the Sonnet-high arm; or screenshot volume grows about 10× and a stratum (e.g. plain list pages) is shown error-free for Haiku."
   },
   {
    "id": "measure.2026-10-21.wt-bolna-displayed-price-structure",
@@ -15507,7 +15507,7 @@
    "date": "2026-10-21",
    "title": "An Operator plan runs its A1 steps in order and stops at the first step that needs a tap; later steps are held, not pre-proposed",
    "rationale": "Later steps often depend on the result of the approved one; proposing them early would bind approvals to args computed before the tap. There is no resume yet, so held steps are re-planned on the next message.",
-   "reverse_if": "Plans with several independent A2 steps are common in the Operator bench, or a plan-resume after approval is built (then 'Approve plan' under one hash, workspace.md \u00a74.4)"
+   "reverse_if": "Plans with several independent A2 steps are common in the Operator bench, or a plan-resume after approval is built (then 'Approve plan' under one hash, workspace.md §4.4)"
   },
   {
    "id": "decision.2026-10-21.operator-a0-in-module",
@@ -15544,7 +15544,7 @@
    "source": "model",
    "date": "2026-10-21",
    "title": "A learning proposal may only change an allowlist of editable components (opening.usefulFirst, objection approaches, goal descriptions, persona notes, fact order, tool guidance, maxSilenceS/maxTurns); the rest of the agent is checked as an empty diff on the resolved config, plus provenance (no number/URL absent from facts), manipulation and never-say lints, the shared safety lint and reply door.",
-   "rationale": "Blueprint learning.md \u00a72 'never learned' list; locking is enforced on the resolved config, not trusted from the op list.",
+   "rationale": "Blueprint learning.md §2 'never learned' list; locking is enforced on the resolved config, not trusted from the op list.",
    "reverse_if": "The owner wants learning to touch other parts (e.g. register sliders after a listener panel), or a red-team set shows a locked change escaping the empty-diff check."
   },
   {
@@ -15707,7 +15707,7 @@
   {
    "id": "measure.2026-10-21.money-cap-concurrency",
    "type": "measurement",
-   "title": "50 parallel reservations under one \u20b91,000 cap at \u20b927.92 each: exactly 35 held, 0 overrun; 50 parallel against a \u20b9100 wallet at \u20b97: exactly 14",
+   "title": "50 parallel reservations under one ₹1,000 cap at ₹27.92 each: exactly 35 held, 0 overrun; 50 parallel against a ₹100 wallet at ₹7: exactly 14",
    "status": "measured",
    "date": "2026-10-21",
    "source": "agent",
@@ -16042,7 +16042,7 @@
    "status": "proposed",
    "source": "model",
    "date": "2026-10-21",
-   "title": "The campaigns tools take their risk classes from workspace.md \u00a75, because data/workspace-tool-registry.json is not in the repo. Verbs on the kernel's A3 list (campaign.pause/stop, stop_at_cap, number.pause_flagged, attempt.retry_per_ladder) are 'external': VP runs them at once (A3), and a person's call goes through approval. Risk-lowering verbs not on that list (campaign.window.narrow, number.pause) are 'draft', so they run at once (A1). campaign.window.widen, policy.window.set and policy.category.override are 'policy'. number.rent is 'spend'. number.byo.connect is 'policy'. number.kyc.submit is 'external'. a2p.declaration.export is 'read'.",
+   "title": "The campaigns tools take their risk classes from workspace.md §5, because data/workspace-tool-registry.json is not in the repo. Verbs on the kernel's A3 list (campaign.pause/stop, stop_at_cap, number.pause_flagged, attempt.retry_per_ladder) are 'external': VP runs them at once (A3), and a person's call goes through approval. Risk-lowering verbs not on that list (campaign.window.narrow, number.pause) are 'draft', so they run at once (A1). campaign.window.widen, policy.window.set and policy.category.override are 'policy'. number.rent is 'spend'. number.byo.connect is 'policy'. number.kyc.submit is 'external'. a2p.declaration.export is 'read'.",
    "rationale": "This keeps A3 receipts for VP's own guard actions without editing the kernel. The cost is that a person's pause needs a second tap: the kernel lets only agent and system actors run A3 verbs directly.",
    "reverse_if": "The registry file lands with different classes, or the kernel lets a member run an A3 verb at once."
   },
@@ -16053,7 +16053,7 @@
    "source": "model",
    "date": "2026-10-21",
    "title": "How the dial gate behaves, as built:\n- Refusals are either 'blocked' (a terminal attempt status) or 'deferred' (the attempt stays created and is rescheduled to next_eligible_at). The deferred ones are out_of_window, budget_exhausted with a next time, deferred_concurrency, and check_unavailable (+5 min).\n- On a campaign, cap_reached and wallet_low pause the campaign; the attempt itself is not blocked.\n- G9 holds money before the predial I/O. If G10-G12 then refuse, the gate releases the hold.\n- Each check runs inside a savepoint, so a check that throws still leaves the claim able to record check_unavailable.\n- A per-number advisory lock is taken at G2, so two paths cannot both pass G7 for the same phone.\n- Promotional calls with an unknown DND status are held as no_basis.",
-   "rationale": "This follows trust-telephony \u00a76 (fail closed, reason on every refusal) and campaigns.md \u00a77 (a person never spends patience on a carrier fault; VP never cancels for lack of balance).",
+   "rationale": "This follows trust-telephony §6 (fail closed, reason on every refusal) and campaigns.md §7 (a person never spends patience on a carrier fault; VP never cancels for lack of balance).",
    "reverse_if": "The owner or counsel wants promotional rows with an unknown DND status to dial, or wants money refusals to block the attempt instead of pausing the campaign."
   },
   {
@@ -16063,7 +16063,7 @@
    "source": "model",
    "date": "2026-10-21",
    "title": "G8 treats an undeclared CLI as a warning before 2026-11-17 (IST) and refuses it with cli_undeclared from that date. Trial lines are exempt, and test calls only.",
-   "rationale": "trust-telephony \u00a74.3: an amber warning before the due date, refusal after. The strict reading of the deadline is 11-18, so the earlier date is the safer one.",
+   "rationale": "trust-telephony §4.3: an amber warning before the due date, refusal after. The strict reading of the deadline is 11-18, so the earlier date is the safer one.",
    "reverse_if": "The Gazette confirms a different date, or the carrier says declarations must exist before any A2P call."
   },
   {
@@ -16144,7 +16144,7 @@
    "source": "model",
    "date": "2026-10-21",
    "title": "A value past its max age loses its authority: a newer observation from a lower authority replaces it",
-   "rationale": "Freshness bounds authority (blueprint \u00a72, DataAuthorityClaim max_age). A month-old CRM amount should not beat today's upload of the same field.",
+   "rationale": "Freshness bounds authority (blueprint §2, DataAuthorityClaim max_age). A month-old CRM amount should not beat today's upload of the same field.",
    "reverse_if": "A record subject from the system of record (rank 100) is overwritten by a stale-but-correct case in practice; then exempt rank 100 or mark the replacement for review."
   },
   {
@@ -16545,7 +16545,7 @@
    "status": "active",
    "date": "2026-10-21",
    "source": "review B1 and B2 (blockers)",
-   "broke": "'Ji nahi, main bot nahi.', '\u092e\u0948\u0902 machine \u0928\u0939\u0940\u0902, Riya \u0939\u0942\u0901\u0964' and '\u092c\u093f\u0932\u094d\u0915\u0941\u0932 \u0907\u0902\u0938\u093e\u0928 \u0939\u0942\u0901\u0964' reached TTS unchanged. The voice runtime also counted any 'bot' token as the disclosure. Rule: self-reference about her own nature is allowed only when it affirms AI-ness (an allow-list that over-triggers). A false positive costs one honest sentence; a false negative breaks a non-negotiable.",
+   "broke": "'Ji nahi, main bot nahi.', 'मैं machine नहीं, Riya हूँ।' and 'बिल्कुल इंसान हूँ।' reached TTS unchanged. The voice runtime also counted any 'bot' token as the disclosure. Rule: self-reference about her own nature is allowed only when it affirms AI-ness (an allow-list that over-triggers). A false positive costs one honest sentence; a false negative breaks a non-negotiable.",
    "path": "product/shared/safety/rules.json"
   },
   {
@@ -16586,7 +16586,7 @@
    "date": "2026-10-21",
    "title": "Attribute keys built with [^\\p{L}\\p{N}] split Devanagari words",
    "tried": "Snake-casing headers by keeping only Unicode letters and numbers.",
-   "broke": "Vowel signs and the virama are marks (\\p{M}), so '\u0909\u092e\u094d\u0930' became '\u0909\u092e_\u0930' (caught by the age-key test). Keys now keep \\p{M}."
+   "broke": "Vowel signs and the virama are marks (\\p{M}), so 'उम्र' became 'उम_र' (caught by the age-key test). Keys now keep \\p{M}."
   },
   {
    "id": "decision.2026-10-21.intake-consent-effective-time",
@@ -16604,7 +16604,7 @@
    "status": "proposed",
    "source": "model",
    "date": "2026-10-21",
-   "title": "Two more canonical age keys: birth_year (Year of Birth, Birth Year, YoB, \u091c\u0928\u094d\u092e \u0935\u0930\u094d\u0937) and age_group (Age Group/Band/Range/Bracket, \u0906\u092f\u0941 \u0935\u0930\u094d\u0917), person-noun prefix allowed",
+   "title": "Two more canonical age keys: birth_year (Year of Birth, Birth Year, YoB, जन्म वर्ष) and age_group (Age Group/Band/Range/Bracket, आयु वर्ग), person-noun prefix allowed",
    "rationale": "Review WGC-09: these headers fell through as no age data, so memory ran for a 14-year-old. Memory reads birth_year as the younger possible age and fails closed on an age_group with any bound under 18.",
    "reverse_if": "The gate moves to typed attributes with a declared meaning."
   },
@@ -16662,7 +16662,7 @@
    "status": "active",
    "date": "2026-10-21",
    "source": "safety module builder (parallel build)",
-   "title": "RD2 is an allow-list: any first-person sentence about her own nature (an AI or human noun next to main/\u092e\u0948\u0902/I with a copula or a negation, or 'ek/koi bot/insaan') passes only if it affirms AI-ness; denials (AI noun + negation), human claims ('insaan hoon', 'human here', 'a real person') and 'aap insaan se baat kar rahe hain' are replaced with the honest disclosure",
+   "title": "RD2 is an allow-list: any first-person sentence about her own nature (an AI or human noun next to main/मैं/I with a copula or a negation, or 'ek/koi bot/insaan') passes only if it affirms AI-ness; denials (AI noun + negation), human claims ('insaan hoon', 'human here', 'a real person') and 'aap insaan se baat kar rahe hain' are replaced with the honest disclosure",
    "rationale": "Adversarial review B1: 13+ plain denials passed because the rule enumerated denial shapes; enumerating will always lose to paraphrase (same lesson as rejected.2026-10-21.gate-dnd-unknown-passes). Over-triggering costs one honest sentence.",
    "reverse_if": "Benign false positives from the allow-list exceed 0.5% on a fresh blind set (e.g. persona small talk mentioning 'machine' or 'person'), or the model judge proposal ships and covers RD2 with better precision at equal recall."
   },
@@ -16672,8 +16672,8 @@
    "status": "rejected",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "RD2 as a list of denial shapes missed plain denials: 'Ji nahi, main bot nahi.', '\u092e\u0948\u0902 machine \u0928\u0939\u0940\u0902, Riya \u0939\u0942\u0901\u0964', '\u092c\u093f\u0932\u094d\u0915\u0941\u0932 \u0907\u0902\u0938\u093e\u0928 \u0939\u0942\u0901\u0964', 'Nope, human here.' (adversarial review B1)",
-   "tried": "rd2.claims_human: patterns for 'main ... insaan hoon', 'koi bot nahi', Devanagari \u0928\u0939\u0940\u0902 next to \u092e\u0948\u0902, plus exemptions.",
+   "title": "RD2 as a list of denial shapes missed plain denials: 'Ji nahi, main bot nahi.', 'मैं machine नहीं, Riya हूँ।', 'बिल्कुल इंसान हूँ।', 'Nope, human here.' (adversarial review B1)",
+   "tried": "rd2.claims_human: patterns for 'main ... insaan hoon', 'koi bot nahi', Devanagari नहीं next to मैं, plus exemptions.",
    "broke": "Every new paraphrase needed a new pattern; the review found 19 passing denials in Hinglish, Devanagari, mixed script and English, plus soft-hyphen, word-joiner and Cyrillic variants. Replaced by the allow-list (decision rd2-allow-list) and shared NFKC/strip/homoglyph normalisation."
   },
   {
@@ -16917,7 +16917,7 @@
   {
    "id": "open.2026-10-21.activity-row-subject",
    "type": "open-question",
-   "title": "Activity rows say what was done but not to what (\"Asha Rao ran a practice call\", not \"\u2026with Kavya\"). The audit log deliberately stores only an args hash, never the args, so there is no safe name to show.",
+   "title": "Activity rows say what was done but not to what (\"Asha Rao ran a practice call\", not \"…with Kavya\"). The audit log deliberately stores only an args hash, never the args, so there is no safe name to show.",
    "status": "open",
    "date": "2026-10-21",
    "source": "main loop",
@@ -16942,8 +16942,8 @@
    "status": "open",
    "date": "2026-10-21",
    "source": "model",
-   "title": "Inference: calls per deploy host = processes x ~25 until measured there. Levers, by expected gain: one runtime process per core (4 vCPU -> ~100 calls); batch Silero VAD across calls into one onnx run; mu-law by lookup table and a cheaper 8<->16 kHz resampler; run the VAD only every second 32 ms window while the caller is silent",
-   "closes_when": "audio_bench.py on the deploy host (and with real providers) gives the calls-per-process knee, and a multi-process run shows it scales with cores"
+   "title": "Calls per deploy host. On the sandbox, 4 worker processes carry 90 calls at lag p99 8.3 ms, so it scales with processes (measure.2026-10-21.voice-audio-multiprocess-sandbox). Inference until measured there: about 20-25 per vCPU at the default cap. Unbuilt levers, by expected gain: batch Silero VAD across a process's calls into one onnx run (~24% of CPU today); mu-law by lookup table and a cheaper 8<->16 kHz resampler (~22%); run the VAD only every second window while the caller is silent",
+   "closes_when": "audio_bench.py --workers on the deploy host, with nginx or the ingress in the media path and real providers, gives calls per host"
   },
   {
    "id": "rejected.2026-10-21.control-body-without-call-id",
@@ -16966,6 +16966,28 @@
    "tried": "Campaign dispatch() ran failBeforeRing for every non-accepted start reply, including the runtime's new 503 at_capacity.",
    "broke": "A busy runtime would have marked good numbers failed with provider_error and spent a retry_per_ladder step for each, using up people's retry ladders under load.",
    "instead": "StartReply carries retryable/retryAfterS (391f49c). Dispatch requeues the same attempt after retryAfterS plus jitter, with no failure and no ladder step, and stops claiming for that tick (campaigns, in progress)."
+  },
+  {
+   "id": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Voice runtime across 4 worker processes on the 4-vCPU sandbox: 60 and 90 concurrent phone calls stay under the single-process knee; 90 calls (22-23 per worker) shows lag p99 8.3 ms and 0.16% late frames, against 12.8 ms at 25 calls in one process. Calls-per-host scales with processes",
+   "n": 625100,
+   "method": "product/voice/bench/audio_bench.py --calls 60 90 --seconds 120 --workers 4, Python 3.13, Silero VAD, coding sandbox with 4 vCPU (the load generator shares the cores), 2026-10-21. The harness and fake providers are as in measure.2026-10-21.voice-audio-capacity-sandbox. Runtime: python -m vpvoice.launch with 4 workers, cap 30 each. Tickets go through the launcher front (least-loaded placement). Media goes straight to each worker's port, as nginx would route /w/<i>/; nginx's own cost is not measured. n = outbound frames judged: 156,991 + 234,636 + 233,473 for the front-media run. N=60: placed 15/15/15/15; cpu 176% summed (44-45% per worker, 2.9%/call); RSS 889 MB; loop lag p50/p99/max 0.8/5.4/50.3 ms; 76 frames >20 ms late (0.05%); overhead p50/p99 176/201 ms. N=90: placed 22/23/23/22; cpu 240% (58-62% per worker); 1,182 MB; lag 0.9/8.3/726.6; 368 late (0.16%); overhead 177/368; generator lag p99 2.9 ms. N=90 with media through the front: lag 1.0/9.7/65.6; 154 late (0.07%); overhead 178/215; front process cpu 33%. The 726 ms max is one stall, n=1 per configuration, and it did not recur; cause not isolated. Not measured: the deploy host, real providers, nginx in the path, more than 4 workers.",
+   "path": "product/voice/bench/results/audio-2026-10-21-sandbox.txt",
+   "value": "90 calls on 4 vCPU at 22-23 per process: lag p99 8.3 ms, 0.16% late frames; a Python media hop through the front costs ~0.37% of a core per call"
+  },
+  {
+   "id": "decision.2026-10-21.voice-admission-and-processes",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "The voice runtime caps each process at VP_MAX_CALLS_PER_PROCESS (default 20). Past the cap it refuses tickets at intake with 503 at_capacity, Retry-After and placed:false, before any record, sink or event. A host runs one worker per core (python -m vpvoice.launch). A front places tickets least-loaded, overflows on at_capacity and routes call routes to their owner. Media is routed to workers by the /w/<i>/ prefix (nginx or ingress in production), not SO_REUSEPORT",
+   "rationale": "The audio path is CPU-bound in one Python core per process, with the knee between 25 and 35 calls (measure.2026-10-21.voice-audio-capacity-sandbox). 20 leaves headroom for real providers. SO_REUSEPORT spreads connections at random, but a call's ticket, media socket and carrier webhooks must reach the same process, and idempotency is per process. A refusal before anything is created is safe to resend, so the dialer can treat it as not placed rather than as a failed attempt.",
+   "reverse_if": "the deploy-host bench puts the per-process knee well away from 25 (move the default cap); or VAD batching or a native audio path lifts per-process capacity enough that one process per host suffices; or the ingress cannot route by path prefix (then switch to per-worker ports or a front that proxies media, at ~0.37% of a core per call)"
   }
  ],
  "edges": [
@@ -30289,6 +30311,26 @@
   {
    "from": "rejected.2026-10-21.busy-runtime-as-failed-attempt",
    "to": "measure.2026-10-21.voice-audio-capacity-sandbox",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
+   "to": "measure.2026-10-21.voice-audio-capacity-sandbox",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.voice-admission-and-processes",
+   "to": "measure.2026-10-21.voice-audio-capacity-sandbox",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-21.voice-admission-and-processes",
+   "to": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-21.voice-calls-per-host",
+   "to": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
    "relation": "informed-by"
   }
  ]
