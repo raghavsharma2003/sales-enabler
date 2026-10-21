@@ -41,7 +41,7 @@ document.querySelectorAll('#rscope button').forEach((b) => b.onclick = () => {
 function renderMeta() {
   const c = S.cat; const g = c.gemini || {};
   $('meta').innerHTML = `${S.name} · lab spend today $${c.spend_today_usd.toFixed(2)} / $${c.daily_cap_usd}<br>` +
-    (g.vertex_on ? `Gemini via Google Cloud credit · ₹${(g.vertex_left_inr ?? 0).toLocaleString('en-IN')} left` : `Gemini paid credit left $${(g.paid_left_usd ?? 0).toFixed(2)}`);
+    (g.vertex_on ? `Gemini via Google Cloud credit · ₹${(g.vertex_left_inr ?? 0).toLocaleString('en-IN')} left${g.live_on ? '' : ' · Gemini Live off'}` : `Gemini unavailable: ${g.vertex_why || 'no Google Cloud route'}`);
 }
 
 // ------------------------------------------------------------------ tabs
@@ -130,7 +130,7 @@ function renderStacks() {
   for (const p of list) {
     const el = document.createElement('div'); el.className = 'stack' + (p.id === S.pick ? ' on' : '') + (p.enabled ? '' : ' off');
     el.innerHTML = `<div><div class="t">${p.label}${p.new ? '<span class="tag">new</span>' : ''}${rated(p.id) ? '<span class="tag done">rated</span>' : ''}</div>
-      <div class="r">report: ${p.ref}${p.enabled ? '' : ' · needs ' + p.needs}</div></div>`;
+      <div class="r">report: ${p.ref}${p.enabled ? '' : ' · ' + (p.why || 'needs ' + p.needs)}</div></div>`;
     if (p.enabled) el.onclick = () => { S.pick = p.id; LS.set('vl_pick', p.id); renderStacks(); fillVoices(); };
     box.appendChild(el);
   }
@@ -222,7 +222,7 @@ function bandpass(ctx, node) {
 }
 async function startCall() {
   const pid = currentPresetId(); const p = preset(pid);
-  if (pid !== 'custom' && (!p || !p.enabled)) { toast('This stack is not available yet'); return; }
+  if (pid !== 'custom' && (!p || !p.enabled)) { toast(p?.why || 'This stack is not available yet'); return; }
   $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true; $('testing').hidden = true; $('testing').textContent = '';
   const phone = $('phone').checked;
   const L = S.live = { pid, caps: [], pend: {}, lat: [], t0: performance.now(), started: false, ended: false, partial: {}, blind: S.mode === 'blind' };
@@ -265,7 +265,7 @@ function callBody(pid) {
 }
 async function startPhone(kind) {
   const pid = currentPresetId(); const p = preset(pid);
-  if (pid !== 'custom' && (!p || !p.enabled)) { toast('This stack is not available yet'); return; }
+  if (pid !== 'custom' && (!p || !p.enabled)) { toast(p?.why || 'This stack is not available yet'); return; }
   const num = $('myphone').value;
   if (!num || num === '__add') { toast('Add and verify your number first'); $('newphone').focus(); return; }
   $('callerr').textContent = ''; $('caps').innerHTML = ''; $('rate').hidden = true; $('reveal').hidden = true; $('testing').hidden = true; $('testing').textContent = '';

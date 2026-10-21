@@ -171,12 +171,12 @@ def get(name, local):
 def secrets():
     out = {'SAS': open(f'{SP}/voicelab/sas.txt').read().strip()}
     out.update(envfile(f'{SP}/voicelab.env'))
-    g = envfile(f'{SP}/vp-gemini-or.env')
-    out.update({'GEMINI_PAID_KEY': g['GEMINI_PAID_KEY'], 'GEMINI_TEST_KEY': g['GEMINI_TEST_KEY'], 'OPENROUTER_API_KEY': g['OPENROUTER_API_KEY']})
+    g = envfile(f'{SP}/vp-gemini-or.env')      # only OpenRouter from here: Gemini runs on Vertex only (no Gemini API keys)
+    out['OPENROUTER_API_KEY'] = g['OPENROUTER_API_KEY']
     sea = envfile(f'{SP}/vp-azure.env'); out.update({'VP_AI_ENDPOINT': sea['VP_AI_ENDPOINT'], 'VP_AI_KEY': sea['VP_AI_KEY']})
     if os.path.exists(f'{SP}/vertex-sa.json'):        # Google Cloud service account for Vertex AI (owner's credit)
         out['VERTEX_SA_B64'] = base64.b64encode(open(f'{SP}/vertex-sa.json', 'rb').read()).decode()
-    extra = f'{SP}/voicelab-extra.env'          # owner-supplied keys (Sarvam, Plivo), if present
+    extra = f'{SP}/voicelab-extra.env'          # owner-supplied keys (Sarvam, Plivo) and Vertex settings (VERTEX_*), if present
     if os.path.exists(extra): out.update(envfile(extra))
     if os.path.exists(f'{SP}/voicelab/lab-pass.txt'): out['LAB_PASSCODE'] = open(f'{SP}/voicelab/lab-pass.txt').read().strip()
     return out

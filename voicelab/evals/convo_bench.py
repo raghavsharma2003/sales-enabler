@@ -173,7 +173,7 @@ async def main():
     arm = {b: (b.split('#')[0], load(b.split('#')[1] if '#' in b else a.persona)) for b in brains}
     os.makedirs(a.out, exist_ok=True)
     async with aiohttp.ClientSession() as http:
-        pv.GKEYS.load(os.path.join(a.out, 'gemini-paid.jsonl')); pv.VERTEX.load(os.path.join(a.out, 'vertex-spend.jsonl'))
+        pv.VERTEX.load(os.path.join(a.out, 'vertex-spend.jsonl'))
         sem = asyncio.Semaphore(6)
         async def one(b, c):
             async with sem:

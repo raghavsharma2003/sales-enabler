@@ -30,9 +30,8 @@ def incomplete(text):
 
 def now(): return time.monotonic()
 def charge_tts_backend(usage, usd):
-    """Gemini TTS spend goes to the Vertex credit ledger when Vertex served it, else to the paid-key ledger."""
+    """Gemini TTS spend goes to the Vertex credit ledger (Vertex is Gemini's only route)."""
     if usage.get('via') == 'vertex': pv.VERTEX.charge(usd)
-    elif usage.get('via') == 'paid': pv.GKEYS.charge('paid', usd)
 
 class Call:
     kind = 'base'
@@ -314,7 +313,7 @@ class Reply:
             seg2 = None; seg2_q = asyncio.Queue()
             async def produce(text, out_q, usage, timing):
                 try:
-                    gen = (pv.or_tts if t['kind'] == 'or_tts' else pv.gemini_tts)(c.http, t['model'], c.voice, text, self.style if c.notes else None, usage, timing)
+                    gen = pv.gemini_tts(c.http, t['model'], c.voice, text, self.style if c.notes else None, usage, timing)
                     async for ch in gen:
                         await out_q.put(ch)
                 finally:
@@ -357,8 +356,8 @@ class Reply:
                 p1.cancel(); rest_task.cancel()
 
     async def voice_fallback(self, text, idx, why):
-        """The stack's Gemini TTS failed (Tier-1 daily cap of 100 requests per model, or a rate limit): speak this part
-        with Gemini Flash-Lite TTS in the same voice, else an Azure voice, so the call never goes silent; say so once."""
+        """The stack's Gemini TTS failed (quota, a rate limit, an outage): with LAB_FALLBACKS=1 speak this part with Gemini
+        Flash-Lite TTS (same Vertex route) in the same voice, else an Azure voice, so the call never goes silent; say so once."""
         c = self.c
         if self.cancelled or not text: return
         if not FALLBACKS:
@@ -373,7 +372,7 @@ class Reply:
             if got:
                 usdf = pv.tts_usd('gemini-lite', audio_s=u.get('audio_s', 0)); c.add_cost('voice', usdf); charge_tts_backend(u, usdf)
                 if c.voice_fallbacks == 1:
-                    await c.send({'t': 'error', 'msg': "Gemini Flash TTS hit Google's daily cap (100 requests per model), so replies use Gemini Flash-Lite TTS, same voice. Rate the voice with that in mind."})
+                    await c.send({'t': 'error', 'msg': "Gemini Flash TTS failed on Google Cloud, so replies use Gemini Flash-Lite TTS, same voice. Rate the voice with that in mind."})
                 return
         if c.voice_fallbacks == 1 or not getattr(c, 'azure_fb_noted', False):
             c.azure_fb_noted = True
@@ -402,9 +401,8 @@ class CascadeCall(Call):
         styles = TTS[self.tts].get('styles') if TTS[self.tts].get('emotion') else None
         if self.v2():
             kind = TTS[self.tts]['kind']
-            # a free-form tone per reply: picks MAI-Voice's style, or becomes the Gemini-via-OpenRouter 'instructions'
-            self.notes = bool(TTS[self.tts].get('emotion')) or kind == 'or_tts'
-            self.sounds = kind in ('gemini', 'or_tts')                 # Gemini 3.8 TTS understands <laugh>/<sigh>/<breath>
+            self.notes = bool(TTS[self.tts].get('emotion'))           # a free-form tone per reply picks MAI-Voice's style
+            self.sounds = kind == 'gemini'                             # Gemini 3.8 TTS understands <laugh>/<sigh>/<breath>
             self.system = persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'], notes=self.notes, sounds=self.sounds)
         else: self.system = compile_prompt(cfg['scenario'], self.memory, notes=self.notes, note_styles=styles)
         self.history = [{'role': 'user', 'content': self.kickoff()}]
@@ -558,6 +556,7 @@ class CascadeCall(Call):
         if self.stt: await self.stt.close()
         if self.bulbul: await self.bulbul.close()
         self.meter()
+        if STT[self.stt_id]['kind'] == 'gemini': pv.VERTEX.charge(self.cost.get('ears', 0.0))     # Live ears spend counts on the Vertex cap
 
 # =====================================================================================================================
 def gemini_usage_usd(um):
@@ -582,13 +581,13 @@ class GeminiLiveCall(Call):
             self.system = (persona_v2.compile_prompt(cfg['scenario'], self.memory, caller=cfg['tester'], end='tool')
                            + '\n\n' + persona_v2.LAST)
         else: self.system = compile_prompt(cfg['scenario'], self.memory)
-        self.up = None; self.reader = None; self.cur = None; self.buf = b''; self.tier = None; self.agent_text = ''; self.user_text = ''
+        self.up = None; self.reader = None; self.cur = None; self.buf = b''; self.agent_text = ''; self.user_text = ''
         self.handle = None
     def components(self): return {'s2s': self.preset['s2s'], 'model': self.spec['model'], 'voice': self.voice}
     def setup(self):
         gen = {'responseModalities': ['AUDIO'], 'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': self.voice}}}}
         if '3.1' in self.spec['model']: gen['speechConfig']['languageCode'] = 'hi-IN'     # Maya's setting; 3.8 auto-detects
-        s = {'model': 'models/' + self.spec['model'], 'generationConfig': gen, 'systemInstruction': {'parts': [{'text': self.system}]},
+        s = {'model': pv.vertex_resource(self.spec['model']), 'generationConfig': gen, 'systemInstruction': {'parts': [{'text': self.system}]},
              'inputAudioTranscription': {}, 'outputAudioTranscription': {},
              'realtimeInputConfig': {'automaticActivityDetection': {'silenceDurationMs': 500, 'prefixPaddingMs': 100}},
              'sessionResumption': ({'handle': self.handle} if self.handle else {})}
@@ -600,22 +599,16 @@ class GeminiLiveCall(Call):
             s['contextWindowCompression'] = {'triggerTokens': trig, 'slidingWindow': {'targetTokens': targ}}
         return {'setup': s}
     async def connect(self):
-        last = None
-        for attempt in range(2):
-            key, tier = pv.GKEYS.pick(); self.tier = tier
-            if not key: raise RuntimeError('no Gemini key with budget left')
-            try:
-                ws = await self.http.ws_connect(pv.GEM_WS, headers={'x-goog-api-key': key}, max_msg_size=0, heartbeat=20)
-                await ws.send_json(self.setup())
-                m = await ws.receive(timeout=20)
-                if pv.ws_text(m) is None or 'setupComplete' not in pv.ws_text(m):
-                    raise RuntimeError(f'setup: {str(getattr(m, "data", m.type))[:200]} {ws.close_code}')
-                return ws
-            except Exception as e:
-                last = e
-                if tier == 'free' and attempt == 0: pv.GKEYS.quota_hit('free', 300); continue
-                raise
-        raise last
+        """The Vertex Live session (the only Gemini route; one route per call, so a resume reconnects to the same one)."""
+        ws = await pv.vertex_live(self.http, self.spec['model'])
+        try:
+            await ws.send_json(self.setup())
+            m = await ws.receive(timeout=20)
+            if pv.ws_text(m) is None or 'setupComplete' not in pv.ws_text(m):
+                raise RuntimeError(f'setup: {str(getattr(m, "data", m.type))[:200]} {ws.close_code}')
+        except Exception:
+            await ws.close(); raise
+        return ws
     async def start(self):
         self.up = await self.connect()
         self.reader = asyncio.ensure_future(self.read())
@@ -626,7 +619,7 @@ class GeminiLiveCall(Call):
         self.buf += pcm
         if len(self.buf) >= 1280:
             b, self.buf = self.buf, b''
-            try: await self.up.send_json({'realtimeInput': {'audio': {'data': base64.b64encode(b).decode(), 'mimeType': 'audio/pcm;rate=16000'}}})
+            try: await self.up.send_json(pv.live_chunk(base64.b64encode(b).decode()))
             except Exception: pass
     async def read(self):
         try:
@@ -671,7 +664,7 @@ class GeminiLiveCall(Call):
                     except Exception: pass
                 um = d.get('usageMetadata')
                 if um:
-                    usd = gemini_usage_usd(um); self.add_cost('live', usd); pv.GKEYS.charge(self.tier, usd)
+                    usd = gemini_usage_usd(um); self.add_cost('live', usd); pv.VERTEX.charge(usd)
                 if 'sessionResumptionUpdate' in d:
                     self.handle = (d['sessionResumptionUpdate'] or {}).get('newHandle') or self.handle
                 if 'goAway' in d and not self.closed:

@@ -8,8 +8,9 @@ A test-call bench for the owner to talk to every candidate voice stack before ch
   the Python server on 127.0.0.1:8080, systemd units `voicelab` and `caddy`.
 - **Models:** AI account `vp-lab-ai-sin` (South India) for GPT-4.1 / 4.1-mini (India-resident Standard) / gpt-chat-latest /
   Llama 4 Maverick / Mistral Medium 3.5 / gpt-oss-120b / gpt-realtime-mini / gpt-4o(-mini)-transcribe; Kimi K2.6 on
-  `vp-research-ai-sea`; Speech account `vp-lab-speech-cin` (Central India); Gemini API (owner's free key first, paid key
-  capped); OpenRouter (gpt-oss-120b on Groq, the report's base brain).
+  `vp-research-ai-sea`; Speech account `vp-lab-speech-cin` (Central India); Gemini on Vertex AI only (project `vp-voice`,
+  called only from India; decision.2026-10-21.gemini-vertex-only, no Gemini API keys, no Gemini via OpenRouter);
+  OpenRouter for non-Gemini brains (gpt-oss-120b on Groq, the report's base brain; GPT-6 / 5.6 pinned to OpenAI).
 
 ## What a call does
 
@@ -60,7 +61,28 @@ python tests/sim_caller.py URL PASSCODE PRESET --turns 3     # one headless call
 ```
 
 Keys live only in the scratchpad env files and in `/opt/voicelab/.env` (mode 600) on the VM. Budget guards: $15/day
-across the lab, 20 minutes per call, Gemini paid key capped at what is left of the owner's $30 (topped up $10 on 2026-10-19).
+across the lab, 20 minutes per call, Vertex spend capped by `VERTEX_CAP_USD` (ledger `data/vertex-spend.jsonl`) and
+stopped after `VERTEX_LAST_DAY`.
+
+### Environment for Gemini (names only; values never committed)
+
+Gemini (Live ears, brains, voices, Live speech-to-speech) runs only on Vertex AI. `GEMINI_TEST_KEY`,
+`GEMINI_PAID_KEY` and `GEMINI_PAID_REMAINING_USD` are gone. A stack Vertex cannot serve shows as unavailable with the
+reason on the page and is refused before the call; it is never rerouted.
+
+- `VERTEX_SA_FILE`: service-account JSON. Required for any Gemini stack.
+- `VP_REGION`: must name an Indian region (`centralindia` on the VM; `vm_setup.sh` writes it). Anything else: no Gemini.
+- `VERTEX_OFF`: `1` switches Vertex (so every Gemini stack) off. `vm_setup.sh` defaults it to `1`.
+- `VERTEX_PROJECT` (default `vp-voice`), `VERTEX_LOCATION`: text and TTS location (default `global`).
+- `VERTEX_LIVE_LOCATION`: regional location for the Live websocket. No default; unset = the Gemini Live ears and Gemini
+  Live speech-to-speech stacks are unavailable.
+- `VERTEX_MODEL_MAP`: JSON `{our id: Vertex id or null}` merged over the default map in `server/providers.py`.
+- `VERTEX_LIVE_AUDIO`: `mediaChunks` (default) or `audio`, the Live audio-chunk field.
+- `VERTEX_CAP_USD`, `VERTEX_LAST_DAY`: the lab's own Vertex spend cap and last day.
+- Test hooks: `LAB_TEST_503=model:N` fails that model's Vertex requests after N; `LAB_TEST_BLOCK_MODELS=a,b` drops
+  models from the Vertex map.
+
+Tests (no network): `cd server && python3 -m unittest discover -s ../tests -p 'test_vertex*.py'`.
 
 ## Not built yet
 

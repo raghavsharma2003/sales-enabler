@@ -1,7 +1,7 @@
 # VP voice lab: latency of the pieces a v2 call is built from, measured from the lab VM (India). Brains: time to first
 # token on the v2 brief with a realistic history. Voices: time to first audio for a short Hinglish reply, for
-#   gemini-stream   Gemini 3.8 TTS via streamGenerateContent (the lab's current path, Vertex first)
-#   gemini-interact Gemini 3.8 TTS via the Interactions API: style in speech_metadata, 8 kHz mu-law, streamed
+#   gemini-stream   Gemini 3.8 TTS via streamGenerateContent on Vertex (the lab's only Gemini route; the Interactions
+#                   API arm was a Gemini API key path and is retired, decision.2026-10-21.gemini-vertex-only)
 #   azure-mai       Azure MAI-Voice-2.1-Flash (hi-IN-Kavya) REST, 8 kHz mu-law, with an express-as style
 # n rounds, interleaved so network drift hits every arm. Usage: python voice_bench.py [rounds] [brains,...]
 import asyncio, sys, os, time, json, base64, statistics
@@ -38,24 +38,6 @@ async def tts_stream(http, model, style, text):
         n += len(pcm)
     return first, n / 48000
 
-async def tts_interact(http, model, style, text):
-    key = os.environ.get('GEMINI_PAID_KEY', '')
-    body = {'model': model, 'stream': True, 'input': [{'type': 'user_input', 'content': [{'type': 'text', 'text': text, 'annotations': [{'type': 'speech_metadata', 'style': style}]}]}],
-            'response_format': {'type': 'audio', 'mime_type': 'audio/mulaw', 'sample_rate': 8000}, 'generation_config': {'speech_config': [{'voice': 'Despina'}]}}
-    t0 = time.perf_counter(); first = None; n = 0
-    async with http.post('https://generativelanguage.googleapis.com/v1beta/interactions?alt=sse', headers={'x-goog-api-key': key}, json=body, timeout=aiohttp.ClientTimeout(total=60)) as r:
-        if r.status != 200: return None, f'{r.status} {(await r.text())[:120]}'
-        async for raw in r.content:
-            line = raw.strip()
-            if not line.startswith(b'data:'): continue
-            try: ev = json.loads(line[5:])
-            except Exception: continue
-            d = ev.get('delta') or {}
-            if d.get('type') == 'audio' and d.get('data'):
-                if first is None: first = time.perf_counter() - t0
-                n += len(base64.b64decode(d['data']))
-    return first, n / 8000
-
 async def tts_mai(http, style, text):
     region = os.environ.get('LAB_SPEECH_REGION', 'centralindia'); key = os.environ.get('LAB_SPEECH_KEY', '')
     mai = {'playful, amused': 'joyful', 'soft, warm': 'softvoice', 'quick, friendly': 'happy'}.get(style, 'neutral')
@@ -74,7 +56,7 @@ async def tts_mai(http, style, text):
 async def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 5
     brains = sys.argv[2].split(',') if len(sys.argv) > 2 else BRAINS
-    pv.VERTEX.load('/tmp/vb-vertex.jsonl'); pv.GKEYS.load('/tmp/vb-gem.jsonl')
+    pv.VERTEX.load('/tmp/vb-vertex.jsonl')
     res = {}
     async with aiohttp.ClientSession() as http:
         for b in brains:
@@ -88,8 +70,6 @@ async def main():
             for j, (style, text) in enumerate(LINES):
                 arms = [('gemini-stream flash', tts_stream(http, 'gemini-3.8-flash-tts', style, text)),
                         ('gemini-stream lite', tts_stream(http, 'gemini-3.8-flash-lite-tts', style, text)),
-                        ('gemini-interact flash', tts_interact(http, 'gemini-3.8-flash-tts', style, text)),
-                        ('gemini-interact lite', tts_interact(http, 'gemini-3.8-flash-lite-tts', style, text)),
                         ('azure-mai flash', tts_mai(http, style, text))]
                 for name, coro in arms:
                     try: first, extra = await coro

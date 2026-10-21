@@ -60,7 +60,8 @@ async def ping(req): return web.json_response({'ok': True})
 
 async def catalog(req):
     return web.json_response({
-        'presets': [{**{k: v for k, v in p.items() if k != 'needs'}, 'enabled': enabled(p), 'needs': p.get('needs')} for p in PRESETS],
+        'presets': [{**{k: v for k, v in p.items() if k != 'needs'}, 'enabled': enabled(p) and not pv.unavailable(p), 'needs': p.get('needs'),
+                     'why': pv.unavailable(p)} for p in PRESETS],
         'brains': {k: {'label': v['label'], 'in': v['in'], 'out': v['out'], 'ttft_ms': v.get('ttft_ms')} for k, v in BRAINS.items()},
         'tts': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['default_voice']} for k, v in TTS.items()},
         's2s': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['voice']} for k, v in S2S.items()},
@@ -68,8 +69,8 @@ async def catalog(req):
         'scenarios': SCENARIOS, 'fx': FX,
         'phone': {'on': phone.on(), 'number': phone.pretty(phone.NUMBER) if phone.NUMBER else None, 'tel': '+' + phone.NUMBER if phone.NUMBER else None},
         'spend_today_usd': round(LAB.spend_today(), 3), 'daily_cap_usd': DAILY_USD,
-        'gemini': {'free_ok': time.time() >= pv.GKEYS.free_blocked_until, 'paid_left_usd': round(pv.GKEYS.paid_cap - pv.GKEYS.paid_spent, 3),
-                   'vertex_on': pv.VERTEX.usable(), 'vertex_left_inr': round((pv.VERTEX_CAP_USD - pv.VERTEX.spent) * FX)}})
+        'gemini': {'vertex_on': pv.VERTEX.usable(), 'vertex_why': pv.VERTEX.why(), 'live_on': bool(pv.VERTEX_LIVE_LOCATION),
+                   'vertex_left_inr': round((pv.VERTEX_CAP_USD - pv.VERTEX.spent) * FX)}})
 
 def load_calls():
     out = []
@@ -257,7 +258,7 @@ def prepare(cfg):
 OR_MIN_USD = 0.30
 def uses_openrouter(p, cfg):
     if p.get('s2s'): return False
-    return BRAINS[cfg.get('brain') or p['brain']]['host'] == 'or' or TTS[p['tts']]['kind'] == 'or_tts'
+    return BRAINS[cfg.get('brain') or p['brain']]['host'] == 'or'
 async def or_check(p, cfg):
     """A stack that runs on OpenRouter needs credit for the whole call: refuse up front rather than die mid-call."""
     if p is None or not uses_openrouter(p, cfg): return None
@@ -267,21 +268,10 @@ async def or_check(p, cfg):
     return None
 
 def preflight(p, cfg):
-    """Refuse a call up front when one of its own models cannot serve it (no swaps mid-call, so check first)."""
-    need = []
-    if p.get('s2s'):
-        if S2S[p['s2s']]['kind'] == 'gemini_live': need.append((S2S[p['s2s']]['model'], S2S[p['s2s']]['label']))
-    else:
-        brain = cfg.get('brain') or p['brain']
-        if STT[p['stt']]['kind'] == 'gemini': need.append((STT[p['stt']]['model'], STT[p['stt']]['label']))
-        if BRAINS[brain]['host'] == 'gm' and not pv.VERTEX.usable(): need.append((BRAINS[brain]['model'], BRAINS[brain]['label']))
-        if TTS[p['tts']]['kind'] == 'gemini' and not pv.VERTEX.usable(): need.append((TTS[p['tts']]['model'], TTS[p['tts']]['label']))
-    for model, label in need:
-        key, tier = pv.GKEYS.pick(model=model)
-        if not key:
-            mins = int(max(0, pv.GKEYS.next_usable(model) - time.time()) // 60)
-            return f"{label} has no Gemini quota left right now (back in about {mins} min). Pick a stack without it, or top up the Gemini key."
-    return None
+    """Refuse a call up front when Vertex cannot serve one of its Gemini parts (Gemini has no other route, and nothing
+    is swapped mid-call, so check first)."""
+    why = pv.unavailable(p, cfg.get('brain'))
+    return f'{why}, so this stack is unavailable right now. Pick a stack without it.' if why else None
 
 def ready_msg(call, preset):
     blind = call.cfg.get('blind')
@@ -504,9 +494,9 @@ async def plivo_stream(req):
 
 async def on_start(app):
     LAB.http = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=64, keepalive_timeout=120))
-    pv.GKEYS.load(f'{DATA}/gemini-paid.jsonl'); pv.VERTEX.load(f'{DATA}/vertex-spend.jsonl'); phone.NUMBERS.load(f'{DATA}/phone-numbers.json')
-    for m in filter(None, os.environ.get('LAB_TEST_BLOCK_MODELS', '').split(',')):   # test hook: pretend a model is out of quota
-        pv.GKEYS.quota_hit('free', 86400, m); pv.GKEYS.quota_hit('paid', 86400, m)
+    pv.VERTEX.load(f'{DATA}/vertex-spend.jsonl'); phone.NUMBERS.load(f'{DATA}/phone-numbers.json')
+    for m in filter(None, os.environ.get('LAB_TEST_BLOCK_MODELS', '').split(',')):   # test hook: pretend Vertex does not offer a model
+        pv.VERTEX_MAP.pop(m, None)
     async def warm():
         loop = asyncio.get_running_loop()
         for v in ('hi-IN-SwaraNeural', 'en-IN-Aarti:DragonHDLatestNeural'):
