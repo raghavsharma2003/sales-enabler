@@ -88,6 +88,26 @@
       "date": "2026-10-21",
       "title": "Webhook HMAC secrets sit in plaintext in intake_source.hook_secret until a vault exists",
       "closes_when": "Secrets move to the workspace vault with a rotate tool, and the column is dropped."
+    },
+    {
+      "id": "decision.2026-10-21.intake-suppress-draft-until-a3",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "contact.suppress is registered as draft (runs at once), not the registry's external, until the kernel's A3 list carries it",
+      "rationale": "The blueprint registry gives contact.suppress class external with an 'A3 (risk-lowering)' override. The kernel turns external into an approval card unless the verb is in shared/approval.ts A3_VERBS, and contact.suppress is not. Registering it as external now would make a member's 'stop calling this person' wait for approval, the opposite of the override's intent.",
+      "reverse_if": "contact.suppress is added to A3_VERBS; then intake registers it as external and it still runs at once."
+    },
+    {
+      "id": "component.2026-10-21.intake-retention",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "policy.retention.set/get (policy, versioned, Owner or Compliance) and the nightly intake.retention job: purges uploaded file text and receipt row issues; consent, suppression and tombstones are never subject to retention",
+      "path": "product/server/modules/intake/retention.ts",
+      "details": "Defaults: upload files 30 d, receipt issues 180 d, recordings 90 d, transcripts 180 d, audit logs 365 d. Intake enforces only the first two; calls and memory read policy.retention.get for theirs (not wired). 1 test (approval roles, version voiding, purge, audit row)."
     }
   ],
   "edges": [
@@ -135,6 +155,16 @@
       "from": "component.2026-10-21.intake-module",
       "to": "evidence.2026-10-21.vp-blueprint",
       "relation": "derived-from"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-suppress-draft-until-a3",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-retention",
+      "to": "component.2026-10-21.intake-module",
+      "relation": "part-of"
     }
   ],
   "events": [
@@ -142,6 +172,11 @@
       "date": "2026-10-21",
       "event": "intake-module-built",
       "details": "Intake module pushed: 21 tools, uploads and a signed contacts webhook, migration 0101; 18/18 intake tests and 233/233 product tests on the rebased head (2 of 3 full runs; the other hit the then 60 s scale budget at 74.4 s) on the throwaway Postgres. Verified: phone edge cases, authority and dedupe, append-only consent, suppression on re-import, DPDP tombstone and suppression, webhook signature and idempotency, tenancy, DND fail-closed, 50k rows in 19.4-21.7 s alone (n=7), 16-74 s under the full suite (n=6). Not verified: XLSX, real NCPR, concurrent overlapping commits, a 20 MB commit, transcript erasure."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-retention-built",
+      "details": "policy.retention.set/get and the intake.retention nightly job added (migration 0103); store.ts uses server/identity.ts; 18/18 intake tests. Not verified: calls/memory honouring the recordings/transcripts days."
     }
   ]
 }

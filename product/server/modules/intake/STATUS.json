@@ -52,7 +52,7 @@
     {
       "id": "contact.suppress",
       "risk": "draft",
-      "note": "registry: external with an A3 override; draft here until the kernel A3 list carries it"
+      "note": "draft until contact.suppress joins A3_VERBS (decision.2026-10-21.intake-suppress-draft-until-a3)"
     },
     {
       "id": "contact.suppress_after_opt_out",
@@ -66,6 +66,14 @@
     {
       "id": "dpdp.request.execute",
       "risk": "destructive"
+    },
+    {
+      "id": "policy.retention.get",
+      "risk": "read"
+    },
+    {
+      "id": "policy.retention.set",
+      "risk": "policy"
     },
     {
       "id": "source.commit",
@@ -94,13 +102,14 @@
   ],
   "migrations": [
     "product/db/migrations/0101_intake.sql",
-    "product/db/migrations/0102_intake_attr_index.sql"
+    "product/db/migrations/0102_intake_attr_index.sql",
+    "product/db/migrations/0103_intake_retention.sql"
   ],
   "tests": {
-    "passed": 18,
-    "total": 18,
+    "passed": 19,
+    "total": 19,
     "files": [
-      "product/tests/intake.test.ts (17)",
+      "product/tests/intake.test.ts (18)",
       "product/tests/intake-scale.test.ts (1)"
     ],
     "full_suite": "241/241 on the rebased head (a078004+); 233/233 in 2 of 3 earlier full runs, the other failed only the then 60 s scale budget (74.4 s). Ceiling now 120 s (open.2026-10-21.intake-scale-contention)"
@@ -121,7 +130,8 @@
     "Viewers get PII scrubbed in reads",
     "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
     "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 19.4-21.7 s alone, re-import 7.7-13.0 s (n=7); 16-81 s inside the full suite (n=7) (measure.2026-10-21.intake-50k-import)",
-    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json (consent.record policy, contact.merge external, export/DPDP Owner+Compliance), except contact.suppress (see needs_from_others)"
+    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json (consent.record policy, contact.merge external, export/DPDP Owner+Compliance), except contact.suppress (see needs_from_others)",
+    "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept"
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -131,16 +141,13 @@
     "Two concurrent commits with overlapping numbers (the ON CONFLICT path is written, not exercised)",
     "Commit time for a full 20 MB file (only the 2.9 MB / 50k-row file was timed)",
     "API-key scopes on the upload route; webhook rate limiting",
-    "Erasure of transcripts and recordings (calls module), CRM delete via an outbox"
+    "Erasure of transcripts and recordings (calls module), CRM delete via an outbox",
+    "Calls and memory honouring recordings_days / transcripts_days from policy.retention.get"
   ],
   "needs_from_others": [
     {
       "from": "kernel",
       "what": "Add contact.suppress to shared/approval.ts A3_VERBS (the registry marks it external with an A3 risk-lowering override); intake will then switch it from draft to external. Likewise dpdp.request.execute's override 'A3 when the person asked on a call' has no kernel path yet."
-    },
-    {
-      "from": "kernel",
-      "what": "A way to call another module's tool inside the caller's transaction (registry.execute opens its own). DPDP erase writes memory_fact directly today instead of calling contact.memory.forget."
     },
     {
       "from": "safety (dial gate)",
@@ -161,6 +168,17 @@
     {
       "from": "shared/phone.ts owner",
       "what": "A truncated landline written with its leading 0 (e.g. 022 2345 67) reports TOO_SHORT, not LANDLINE_TRUNCATED. Fine for the gate; the receipt reason is less precise."
+    },
+    {
+      "from": "memory",
+      "what": "Export one function, e.g. forgetContactMemory(q, workspaceId, contactId), that intake's dpdp.request.execute can call inside its transaction; today intake updates memory_fact directly. Also read policy.retention.get for memory retention."
+    },
+    {
+      "from": "calls",
+      "what": "Read policy.retention.get (recordings_days, transcripts_days) when purging."
     }
+  ],
+  "jobs": [
+    "intake.retention (daily 03:10 IST)"
   ]
 }

@@ -507,3 +507,36 @@ test('viewers see people with PII scrubbed', { skip }, async () => {
   assert.equal(l.contacts[0].name, 'AS.');
   assert.equal((await w.call('contact.suppress', { e164: '9000000131', reason: 'x1' }, w.as('viewer', v))).status, 'not_executed');
 });
+
+test('retention: policy.retention.set is policy (Compliance proposes, Owner or Compliance approves), versioned, and the purge keeps consent and suppression', { skip }, async () => {
+  const w = await workspace();
+  const res = await w.importText('phone,do not call\n9000000141,yes\n9000000142,\n9.1E+11,\n');
+  const g0 = await w.ok('policy.retention.get', {});
+  assert.equal(g0.version, 0);
+  assert.equal(g0.policy.upload_files_days, 30);
+  const op = await w.member('operator');
+  assert.equal((await w.call('policy.retention.set', { upload_files_days: 7, reason: 'tighter for PII' }, w.as('operator', op))).status, 'not_executed');
+  const comp = await w.member('compliance');
+  const prop = await w.call('policy.retention.set', { upload_files_days: 7, receipt_issues_days: 30, reason: 'tighter for PII' }, w.as('compliance', comp));
+  const out = await w.approve(prop, comp);
+  assert.equal(out.version, 1);
+  assert.equal(out.policy.upload_files_days, 7);
+  assert.equal(out.policy.recordings_days, 90);
+  // A stale proposal (made against version 1) is voided once version 2 exists.
+  const p2 = await w.call('policy.retention.set', { recordings_days: 60, reason: 'shorter recordings' }, w.as('compliance', comp));
+  await w.approve(await w.call('policy.retention.set', { transcripts_days: 90, reason: 'shorter transcripts' }, w.as('compliance', comp)), comp);
+  assert.equal((await reg.approve(pool, (p2 as any).actionId, { workspaceId: w.ws, memberId: w.owner })).status, 'not_executed');
+  // Age the import past the policy and run the job.
+  await pool.query("UPDATE intake_upload SET created_at = now() - interval '8 days' WHERE workspace_id = $1", [w.ws]);
+  await pool.query("UPDATE source_receipt SET created_at = now() - interval '31 days' WHERE workspace_id = $1", [w.ws]);
+  const { retentionJob } = await import('../server/modules/intake/retention.ts');
+  await retentionJob.run({ pool } as any);
+  const u = await one<{ content: string }>(pool, 'SELECT content FROM intake_upload WHERE id = $1', [res.uploadId]);
+  assert.equal(u!.content, '');
+  const r = await w.ok('source.receipt', { receiptId: res.receiptId });
+  assert.equal(r.summary.issues, undefined);
+  assert.equal(r.summary.issuesPurged, true);
+  assert.equal(r.summary.counts.new, 2, 'counts stay');
+  assert.equal((await w.ok('contact.dial_facts', { e164: '9000000141' })).suppressions.length, 1, 'suppression is never subject to retention');
+  assert.equal(Number((await one<{ n: string }>(pool, "SELECT count(*) AS n FROM audit_event WHERE workspace_id = $1 AND action = 'intake.retention.applied'", [w.ws]))!.n), 1);
+});
