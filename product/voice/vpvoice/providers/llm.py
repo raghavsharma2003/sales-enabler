@@ -15,10 +15,19 @@ class HttpBrain:
         self.provider = catalog.BRAIN_PROVIDER.get(self.b['host'], 'brain')
 
     async def stream(self, messages, usage, timing, max_tokens=180):
+        got = []
         try:
             async for d in self._stream(messages, usage, timing, max_tokens):
+                got.append(d)
                 yield d
-        finally:          # also when the door stops the stream early: tokens already used are still metered
+        finally:
+            # The door, a withdrawn speculative reply or a barge-in can close the stream before the host's usage chunk
+            # (OpenAI-compatible hosts report usage only at the end). The provider still bills the prompt and what it
+            # generated, so meter an estimate, marked as one (review M4): ~3 UTF-8 bytes per token, Hinglish-weighted.
+            if not usage.get('in') and timing.get('status') == 200:
+                usage['in'] = max(1, sum(len(str(m.get('content', '')).encode('utf-8')) for m in messages) // 3)
+                usage['out'] = max(usage.get('out', 0) or 0, len(''.join(got).encode('utf-8')) // 3)
+                usage['estimated'] = True
             usd = catalog.brain_usd(self.id, usage.get('in', 0), usage.get('out', 0), usage.get('cached', 0))
             usage['usd'] = usage.get('usd_reported', usd) if self.b['host'] == 'or' else usd
 

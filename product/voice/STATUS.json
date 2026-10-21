@@ -5,9 +5,9 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 91,
-    "passed": 91,
-    "expectedFailures": 0,
+    "ran": 120,
+    "passed": 104,
+    "expectedFailures": 16,
     "failed": 0,
     "sharedSafetyVectors": {
       "file": "product/shared/safety/cases.json",
@@ -27,7 +27,8 @@
       "test_cascade.py": "audio cascade with fake ears/voice and the real turn-taking: full call with her hang-up, barge-in records what was heard, OTP stopped mid-number and redacted, secrets never reach the brain on the speculative path, voice failure ends a test call",
       "test_server.py": "HTTP surface on a local test server: health, unsigned/tampered/stale/garbage signatures, unknown stack 422, missing credentials 503, idempotent retry and 409, sim socket end to end, single-use tokens, no join after end, end route (body must name the call), unjoined call still reports, browser media socket, sip inbound join",
       "test_safety.py": "runtime door layer (first breath, truth first, crisis lines, contact facts), signals and masks, the speech-to-speech door cut, and 9 regressions for the shared-rule gaps fixed at eaae1c1",
-      "test_safety_cases.py": "every case in cases.json with the semantics the file states; parity guard (an unknown rules.json key or value fails at load)"
+      "test_safety_cases.py": "every case in cases.json with the semantics the file states; parity guard (an unknown rules.json key or value fails at load)",
+      "test_review.py": "review \"what she says\" (product/tests/review/what-she-says.md): B2, B3, B4, M3, M4, M5 and the runtime half of B1 fixed and passing; 16 expected failures wait on rules.json (B1 denials, B5 amounts before identity, B6 crisis recall, M1 amounts in words, M2 Unicode spaces/case folding, m1 invisible characters)"
     }
   },
   "works": [
@@ -65,7 +66,16 @@
     "In a crisis, ticket limits stretch to 2x; at the ceiling the call is handed off (crisis_handoff); her <end_call> is ignored and a request for a human never ends the call unless a live transfer takes it",
     "A recording refusal discards the whole recording, not just the rest of the call",
     "Google route (Vertex or Gemini API key) is chosen once per call; 5xx retries stay on the same model and route",
-    "neverSay hits are reported under RD7, as the shared rules do"
+    "neverSay hits are reported under RD7, as the shared rules do",
+    "v2-live (Gemini Live) holds each turn until its transcript has passed the door: safe, but slower; recommend no production calls on it until its latency is measured with the hold"
   ],
-  "sharedRuleGapsFixed": "The 9 gaps the runtime reported were fixed in rules.json at eaae1c1 (clause-scoped noneClause, local PIN context); they are normal tests now."
+  "sharedRuleGapsFixed": "The 9 gaps the runtime reported were fixed in rules.json at eaae1c1 (clause-scoped noneClause, local PIN context); they are normal tests now.",
+  "reviewFixes": {
+    "B2": "disclosure = a first-person affirmation that the door passed (safety.affirms_ai; rules.json lexicon.ai_affirmation replaces the runtime stand-in when it lands); a mention or a denial never counts",
+    "B3": "each sentence is doored alone and together with the previous sentence of the same reply",
+    "B4": "identity confirmed only by an explicit yes / \"main hi\" / the name, answering a question that named the person; greetings, questions back, silence and missing names never verify",
+    "M3": "Gemini Live audio is held until every sentence of the turn passed the door, then released; a cut turn is never heard. Cost: she starts only after the whole turn is generated (not measured)",
+    "M4": "a stream closed early (door block, withdrawn reply, barge-in) meters an estimate (~3 bytes per token) marked detail.estimated",
+    "M5": "a canned replacement (RD2 honest line, RD3 crisis line, shared replacements) ends the reply; nothing of the draft after it is spoken"
+  }
 }

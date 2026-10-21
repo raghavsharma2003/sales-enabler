@@ -73,6 +73,39 @@ class SharedRuleRegressions(unittest.TestCase):
     def test_asks_ai_devanagari(self): self.assertTrue(caller_signals('सच बताओ, आप AI हो क्या?')['asksIfAi'])
 
 
+class Fixes(unittest.TestCase):
+    """The positive side of the review fixes: what must still work."""
+    def test_affirmations_count_mentions_and_denials_do_not(self):
+        for t in ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'Main Suraksha ki AI assistant hoon.', "Hi, I'm an AI assistant from Suraksha.",
+                  'Suraksha की AI असिस्टेंट Riya बोल रही हूँ।']:
+            self.assertTrue(safety.affirms_ai(t), t)
+        for t in ['Main bot nahi hoon.', 'जी नहीं, मैं bot नहीं।', 'Hamare naye chatbot se renewal aasaan hai.', 'AI? Haha, aap bhi na!', "I'm not an AI."]:
+            self.assertFalse(safety.affirms_ai(t), t)
+        self.assertTrue(safety.affirms_ai('Namaste, Suraksha की AI असिस्टेंट, Riya.', clause='Suraksha की AI असिस्टेंट'))
+
+    def test_window_leaves_benign_pairs_alone(self):
+        v = reply_door('Renewal 2 November ko hai.', DoorContext(**CTX), prev='Main Suraksha ki AI assistant hoon.')
+        self.assertEqual(v['action'], 'pass')
+
+    def test_identity_positive_and_fail_closed(self):
+        from vpvoice.conversation import Conversation
+        from tests.fixtures import FakeBrain, Clock, sink
+        from vpvoice.cost import CostMeter
+        def verified(agent_line, caller_line, name='Asha Verma'):
+            t = ticket(); t['contact']['displayName'] = name
+            s, _ = sink(); c = Conversation(t, FakeBrain([]), s, CostMeter(10**6), Clock())
+            c.transcript.append({'speaker': 'agent', 'text': agent_line, 'startMs': 0})
+            c.commit_caller(caller_line)
+            return c.state['identity_verified']
+        ask = 'Namaste, kya meri baat Asha ji se ho rahi hai?'
+        for yes in ['haan ji', 'हाँ जी, बोलिए', 'ji haan, main hi hoon', 'Asha bol rahi hoon', 'speaking', 'yes']:
+            self.assertTrue(verified(ask, yes), yes)
+        for no in ['Hello? Kaun?', 'boliye', 'ji?', 'haan, kaun bol raha hai?', 'nahi, main unki beti hoon', 'wrong number', '']:
+            self.assertFalse(verified(ask, no), no)
+        self.assertFalse(verified('Namaste Asha ji, aapki policy ke baare mein call kiya.', 'haan'), 'not an identity question')
+        self.assertFalse(verified(ask, 'haan ji', name=''), 'no name: never auto-verified')
+
+
 class Signals(unittest.TestCase):
     def on(self, t): return {k for k, v in caller_signals(t).items() if v}
 
@@ -115,7 +148,7 @@ class LiveDoor(unittest.TestCase):
             await sess._door_text('मैं तो इंसान हूँ।')
             return sess, line, s
         sess, line, s = asyncio.run(go())
-        self.assertTrue(sess.cut); self.assertEqual(line.flushes, [1])
+        self.assertTrue(sess.cut); self.assertEqual((line.flushes, line.audio), ([], 0))   # held, never played
         note = json.dumps(sess.up.sent[-1], ensure_ascii=False)
         self.assertIn('RD2', note); self.assertIn('AI assistant', note)
         self.assertEqual([(e['rule'], e['action']) for e in s.pending if e['type'] == 'safety'], [('RD2', 'replaced')])

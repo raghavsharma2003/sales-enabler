@@ -104,6 +104,15 @@ transferred; elsewhere it ends as `handed_off`.
 The shared test vectors (`product/shared/safety/cases.json`) run in `tests/test_safety_cases.py` when the file is
 present.
 
+### Door mechanics beyond the shared rules (review "what she says")
+
+- Disclosure is a first-person affirmation the door passed ("main … AI assistant hoon", "I'm an AI"), never a mention.
+- Each sentence is doored alone and with the sentence before it in the same reply.
+- A canned replacement ends the reply.
+- Identity is confirmed only by an explicit yes to a question that named the person.
+- Gemini Live audio is held until its whole turn has passed the door.
+- A brain stream closed early is metered as an estimate (`detail.estimated`).
+
 ### Fallbacks and failures
 
 A model is never swapped mid-call on a test call. A component failure ends the call as `error`; the exact reason is

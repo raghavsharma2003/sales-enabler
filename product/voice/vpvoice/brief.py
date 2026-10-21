@@ -150,7 +150,7 @@ def ledger(transcript, agent, contact, state):
     wrong = sorted(n for n in amounts(last_caller) if n >= 1000 and n not in known)
     if wrong and known: rows.append(f'they just said {wrong[0]:,}: that is not in your facts; if it is about this, give the right figure in passing')
     if any(LAUGH.search(x) for x in her[-3:]): rows.append('you laughed recently: no laugh this turn')
-    told = (['that you are an AI'] if any(AI_SAID.search(x) for x in her) else [])
+    told = (['that you are an AI'] if state.get('disclosed') else [])      # an affirmation the door passed, not a mention
     told += [k for k, v in facts if k and _said(v, her)]
     figures = sorted({n for x in her for n in amounts(x)} - known)
     if told: rows.append('already said (spent): ' + ' · '.join(dict.fromkeys(told)))

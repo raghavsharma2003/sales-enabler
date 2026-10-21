@@ -9,8 +9,14 @@ log = logging.getLogger('vp.voice.conversation')
 
 MAX_TOKENS = 180
 KICKOFF = {'outbound': '(call connected; you dialled them)', 'inbound': '(call connected; they phoned you)'}
-YES = re.compile(r'^\s*(haan|han|haa|ha|ji|jee|yes|yeah|yep|ok|okay|bilkul|boliye|bolo|speaking|hello)\b|^\s*(हाँ|हां|हा|जी|बोलिए|बोलो|हैलो|हेलो|बिल्कुल)', re.I)
-NO = re.compile(r'\b(nahi|nahin|no|wrong number|galat)\b|नहीं|ग़लत|गलत', re.I)
+# Identity (RD11) is confirmed only by an explicit "yes, it's me" to a question that named the person (review B4):
+# never by a greeting, "kaun?", "boliye", a question back or silence; never when there is no name to confirm.
+AFFIRM_ID = re.compile(r"^\W*(haan|han|haa|haanji|hanji|ji haan|ji han|jee haan|haan ji|han ji|yes|yeah|yep|yup|speaking|this is (she|he|me))\b"
+                       r"|^\W*(हाँ|हां|जी हाँ|जी हां|हाँ जी|हां जी)"
+                       r"|\b(main hi|mai hi|me hi|it'?s me)\b|मैं ही"
+                       r"|\b(bol raha|bol rahi|bol rahe)\b|बोल (रहा|रही|रहे)", re.I)
+ID_QUESTION = re.compile(r"\?|se baat (ho rahi|kar raha|kar rahi)|से बात (हो रही|कर रहा|कर रही)|\b(speaking|bol rahe|bol rahi)\b|बोल (रहे|रही)", re.I)
+NOT_CONFIRMED = re.compile(r"\?|\b(kaun|who|kya|kis|kiska|kahan|nahi|nahin|no|not|wrong number|galat|hello|helo|hallo)\b|कौन|क्या|किस|नहीं|ग़लत|गलत|हैलो|हेलो", re.I)
 
 
 CONTACT_ROWS_HEADER = 'Contact rows for this call (data, not lines):'
@@ -33,7 +39,7 @@ class ComponentError(Exception):
 class Draft:
     """One reply being written: what the brain wrote, what the door let through, and the markers in it."""
     def __init__(self, user_text, pending=False):
-        self.user_text = user_text; self.pending = pending; self.raw = ''; self.sentences = []; self.style = None
+        self.user_text = user_text; self.pending = pending; self.raw = ''; self.final = False; self.sentences = []; self.style = None
         self.blocked = []; self.replaced = []
 
     @property
@@ -96,8 +102,9 @@ class Conversation:
         text = brief.spoken(sentence, keep_sounds=self.keep_sounds)
         if not text: return None, {'action': 'pass'}
         ctx = self.door_ctx(first_sentence=not draft.sentences)
-        if any(safety.has_ai_clause(x) for x in draft.sentences): ctx.disclosed = True     # said earlier in this reply
-        v = safety.reply_door(re.sub(r'<[^<>]{1,24}>', '', text), ctx)
+        if any(safety.affirms_ai(x, ctx.disclosure_clause) for x in draft.sentences): ctx.disclosed = True   # affirmed earlier in this reply
+        v = safety.reply_door(re.sub(r'<[^<>]{1,24}>', '', text), ctx, prev=draft.sentences[-1] if draft.sentences else None)
+        if v.get('final'): draft.final = True
         if v['action'] == 'replace':
             self.sink.emit('safety', rule=v['rule'], action='replaced', detail=v['reason'])
             draft.replaced.append(v['rule'])
@@ -126,12 +133,17 @@ class Conversation:
                             out, v = self.check(s, draft)
                             if v['action'] == 'block': blocked = v; break
                             if out: yield out
-                        if blocked: break
+                            if draft.final: break
+                        if blocked or draft.final: break
+                if draft.final:                      # a canned replacement ends the reply: the rest of the draft is dropped
+                    draft.raw = brief.END.sub('', draft.raw)
+                    return
                 if not blocked:
                     for s in sp.flush():
                         out, v = self.check(s, draft)
                         if v['action'] == 'block': blocked = v; break
                         if out: yield out
+                        if draft.final: return
             finally:
                 self.charge_brain(usage)
             if timing.get('err') and not draft.sentences and not blocked:
@@ -149,7 +161,8 @@ class Conversation:
         n_in, n_out = usage.get('in', 0) or 0, usage.get('out', 0) or 0
         if n_in or n_out or usage.get('usd'):
             self.meter.add('brain', self.brain_provider, 'token', n_in + n_out, usd=usage.get('usd', 0.0),
-                           detail={'in': n_in, 'out': n_out, 'cached': usage.get('cached', 0) or 0, 'model': self.brain_id})
+                           detail={'in': n_in, 'out': n_out, 'cached': usage.get('cached', 0) or 0, 'model': self.brain_id,
+                                   **({'estimated': True} if usage.get('estimated') else {})})
 
     # ---------------------------------------------------------------- caller turns
     def commit_caller(self, text, start_ms=None, end_ms=None):
@@ -181,11 +194,16 @@ class Conversation:
         return sig
 
     def _identity(self, caller_text):
+        """Fail closed: verified only when her last line asked for the person by name and the reply affirms it."""
         if self.state['identity_verified']: return
         name = (self.contact.get('displayName') or '').strip()
+        if not name: return
+        first = name.split()[0].lower()
         last = next((t['text'] for t in reversed(self.transcript[:-1]) if t['speaker'] == 'agent'), '')
-        asked = (not name) or (name.split()[0].lower() in last.lower())
-        if last and asked and YES.search(caller_text) and not NO.search(caller_text):
+        if not (first in last.lower() and ID_QUESTION.search(last)): return
+        said = caller_text.strip()
+        if NOT_CONFIRMED.search(said): return
+        if AFFIRM_ID.search(said) or re.search(r'\b' + re.escape(first) + r'\b', said, re.I):
             self.state['identity_verified'] = True
 
     # ---------------------------------------------------------------- agent turns
@@ -203,9 +221,10 @@ class Conversation:
             if draft.style: ev['tone'] = draft.style
             self.sink.emit('turn', **ev)
         # RD1 ledger: disclosed once the AI clause was heard; if she was talked over, it is offered once more, then done
-        if not self.state['disclosed'] and any(brief.AI_SAID.search(s) for s in draft.sentences):
+        clause = (self.agent.get('opening') or {}).get('disclosureClause', '')
+        if not self.state['disclosed'] and any(safety.affirms_ai(s, clause) for s in draft.sentences):
             self.disclosure_tries += 1
-            if brief.AI_SAID.search(text or '') or self.disclosure_tries >= 2: self.state['disclosed'] = True
+            if safety.affirms_ai(text or '', clause) or self.disclosure_tries >= 2: self.state['disclosed'] = True
         self.state['asked_ai'] = False
         self.agent_turns += 1
         marks = draft.marks() if not interrupted else {'end': False, 'goals': [], 'tools': [], 'handoff': None}

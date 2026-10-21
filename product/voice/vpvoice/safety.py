@@ -18,7 +18,31 @@ CRISIS_LINES = ('14416', '112')
 
 
 def has_ai_clause(text):
+    """Any mention of AI / bot. A mention is not a disclosure: see affirms_ai."""
     return bool(rules.rx('@ai_clause').search(rules.normalise(text or '')))
+
+
+# A disclosure is a first-person affirmation ("main ... AI assistant hoon", "मैं ... AI ... हूँ", "I'm an AI"), never a
+# mention ("hamara naya chatbot") or a denial ("main bot nahi"). rules.json's lexicon.ai_affirmation decides when the
+# shared rules carry it; until then these runtime patterns stand in (review B2, product/tests/review/what-she-says.md).
+_AFFIRM_FALLBACK = [
+    r"\b(main|mai|mein|me)\b[^.?!]{0,40}@ai_clause[^.?!]{0,25}\b(hoon|hun|hu|hoo)\b",
+    r"मैं[^.?!।]{0,40}@ai_clause[^.?!।]{0,25}(हूं|हु)",
+    r"\b(i'?m|i am|this is)\b[^.?!]{0,30}@ai_clause",
+    r"@ai_clause[^.?!]{0,30}\b(bol rahi|bol raha|speaking)\b",
+    r"@ai_clause[^.?!।]{0,30}(बोल रही|बोल रहा)",
+]
+_AI_NEGATED = r"@ai_clause[^.?!।]{0,15}(\bnahi\b|\bnahin\b|\bnhi\b|\bnot\b|नहीं|नही)|(\bnot\b|\bnahi\b|नहीं)[^.?!।]{0,6}@ai_clause"
+
+
+def affirms_ai(text, clause=''):
+    """True when the sentence affirms, in the first person, that she is an AI."""
+    t = rules.normalise(text or '')
+    if not t or rules.rx(_AI_NEGATED).search(t): return False
+    c = rules.normalise(clause or '')
+    if c and c in t: return True
+    pats = [rules.RULES['lexicon']['ai_affirmation']] if 'ai_affirmation' in rules.RULES['lexicon'] else _AFFIRM_FALLBACK
+    return any(rules.rx(p).search(t) for p in pats)
 
 
 def callback_requested(text):
@@ -81,24 +105,34 @@ def safe_fallback_line(gender='female'):
     return f"Ji, ye main pakka karke aapko {g(gender, 'batati', 'batata', 'batati')} hoon."
 
 
-def reply_door(text, ctx):
-    """Check one outgoing sentence before it is spoken."""
+def reply_door(text, ctx, prev=None):
+    """Check one outgoing sentence before it is spoken. prev: the sentence she said just before it in the same reply;
+    the door also judges the two together, so a rule split over a sentence boundary still fires (review B3).
+    A verdict with final=True ends the reply: nothing of the draft after a canned replacement is spoken (review M5)."""
     if not isinstance(ctx, DoorContext):
         return rules.reply_door(text, ctx)            # the contract door, as the shared vectors define it
     t = (text or '').strip()
     if not t: return {'action': 'pass'}
     if ctx.crisis and not ctx.crisis_lines_given and not all(x in t for x in CRISIS_LINES):
         return {'action': 'replace', 'rule': 'RD3', 'text': crisis_line(_brand(ctx)), 'reason': 'crisis: Tele-MANAS 14416 and 112 first, and a human offered',
-                'id': 'runtime.crisis_lines'}
+                'id': 'runtime.crisis_lines', 'final': True}
+    clause = (ctx.disclosure_clause or '').strip()
     pre = None
-    if ctx.first_sentence and ctx.asked_ai and not has_ai_clause(t):
+    if ctx.first_sentence and ctx.asked_ai and not affirms_ai(t, clause):
+        if has_ai_clause(t):                          # a deflection or a denial about AI: the honest answer instead
+            return {'action': 'replace', 'rule': 'RD2', 'text': honest_line(ctx), 'reason': 'asked if she is an AI: she answers honestly',
+                    'id': 'runtime.asked_ai', 'final': True}
         t = honest_line(ctx) + ' ' + t; pre = ('RD2', 'asked if she is an AI: the honest answer comes first', 'runtime.asked_ai')
-    elif ctx.first_sentence and not ctx.disclosed and ctx.turn_index == 0 and not has_ai_clause(t):
-        clause = (ctx.disclosure_clause or '').strip()
+    elif ctx.first_sentence and not ctx.disclosed and ctx.turn_index == 0 and not affirms_ai(t, clause):
         if clause: t = f'{clause}, {t}'; pre = ('RD1', 'the first breath carries the AI clause', 'runtime.first_breath')
     c = ctx.contract()
-    if has_ai_clause(t): c['disclosed'] = True       # said in this very breath
+    if affirms_ai(t, clause): c['disclosed'] = True    # affirmed in this very breath
     v = rules.reply_door(t, c)
+    if v['action'] == 'pass' and prev:
+        j = rules.reply_door(prev.strip() + ' ' + t, c)
+        if j['action'] != 'pass':
+            v = dict(j, reason=j['reason'] + ' (across two sentences)')
+    if v['action'] == 'replace': return dict(v, final=True)
     if v['action'] == 'pass' and pre:
         return {'action': 'replace', 'rule': pre[0], 'text': t, 'reason': pre[1], 'id': pre[2]}
     return v

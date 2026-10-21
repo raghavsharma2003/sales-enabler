@@ -89,6 +89,7 @@ class LiveSession(Session):
         self.up = None; self.reader = None; self.buf = b''; self.rid = 0; self.cur = None; self.handle = None
         self.agent_text = ''; self.user_text = ''; self.draft = None; self.cut = False; self.turn_start = None
         self.splitter = brief.Splitter(); self.live = None
+        self.held = []          # this turn's audio, released only once the door has passed all of its transcript
 
     def now(self): return self.clock()
     def agent_playing(self): return self.now() < self.rec.play_until
@@ -124,6 +125,16 @@ class LiveSession(Session):
             try: await self.up.send_json({'realtimeInput': {'audio': {'data': base64.b64encode(b).decode(), 'mimeType': 'audio/pcm;rate=16000'}}})
             except Exception: pass
 
+    async def _door_text_final(self, sent):
+        """The last, unterminated sentence of a turn: door it like the others."""
+        n = len(self.draft.sentences)
+        out, v = self.conv.check(sent, self.draft)
+        if v['action'] == 'pass': return
+        self.cut = True; self.held = []
+        line = v['text'] if v['action'] == 'replace' else safety.safe_fallback_line(self.conv.gender)
+        del self.draft.sentences[n:]
+        await self.note(f'your last line broke a safety rule ({v["rule"]}) and was cut. Say exactly this, then carry on: "{line}"', complete=True)
+
     async def _door_text(self, piece):
         """Door the output transcription sentence by sentence; on a failure cut her off and have her say the safe line."""
         if self.draft is None: self.draft = Draft(None)
@@ -133,7 +144,7 @@ class LiveSession(Session):
             out, v = self.conv.check(sent, self.draft)
             if v['action'] == 'pass': continue
             self.cut = True
-            if self.cur is not None: self.rec.flush(self.now()); await self.line.flush(self.cur)
+            self.held = []                       # nothing of this turn was played: drop its audio, never send it
             line = v['text'] if v['action'] == 'replace' else safety.safe_fallback_line(self.conv.gender)
             del self.draft.sentences[n:]
             await self.note(f'your last line broke a safety rule ({v["rule"]}) and was cut. Say exactly this, then carry on: "{line}"', complete=True)
@@ -152,8 +163,7 @@ class LiveSession(Session):
                             if self.cur is None:
                                 self.rid += 1; self.cur = self.rid; self.turn_start = self.now()
                                 if self.user_text.strip(): await self._caller_turn()
-                            self.rec.add_agent(self.agent_rs(b), self.now())
-                            await self.line.send_audio(self.cur, b)
+                            self.held.append(b)          # held until the door has passed the whole turn (review M3)
                     if 'inputTranscription' in sc:
                         self.user_text += sc['inputTranscription'].get('text', '')
                     if 'outputTranscription' in sc:
@@ -162,8 +172,8 @@ class LiveSession(Session):
                         await self._door_text(t)
                     if sc.get('interrupted'):
                         if self.cur is not None: self.rec.flush(self.now()); await self.line.flush(self.cur)
-                        self._end_turn(interrupted=True)
-                    if sc.get('turnComplete'): self._end_turn()
+                        await self._end_turn(interrupted=True)
+                    if sc.get('turnComplete'): await self._end_turn()
                 tc = d.get('toolCall')
                 if tc:
                     resp = []
@@ -201,10 +211,17 @@ class LiveSession(Session):
         if sig['wantsHuman'] and self.handoff_allowed('asks_for_human'): asyncio.ensure_future(self.hand_off('asks_for_human'))
         if sig['crisis'] and self.handoff_allowed('crisis'): asyncio.ensure_future(self.hand_off('crisis'))
 
-    def _end_turn(self, interrupted=False):
+    async def _end_turn(self, interrupted=False):
         if self.draft is not None:
             for s in self.splitter.flush():
-                if not self.cut: self.conv.check(s, self.draft)
+                if not self.cut: await self._door_text_final(s)
+        held, self.held = self.held, []
+        if held and not interrupted and not self.cut and self.cur is not None:
+            # every sentence of this turn passed the door: now she is heard
+            for b in held:
+                self.rec.add_agent(self.agent_rs(b), self.now())
+                await self.line.send_audio(self.cur, b)
+        if self.draft is not None:
             heard = self.draft.text if not interrupted else None
             self.draft.raw = self.agent_text
             marks = self.conv.commit_agent(self.draft, heard=heard, start_ms=int((self.turn_start - self.t0) * 1000) if self.turn_start else None,

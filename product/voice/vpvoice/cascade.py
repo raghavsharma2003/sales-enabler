@@ -10,7 +10,7 @@
 #  - what goes into history after an interruption is what the caller actually heard, from the playback clock.
 # Caller turns that carry a safety signal (crisis, digits, AI question, opt-out, human, recording) are never answered
 # speculatively: they are committed first, so the door and the brain see them.
-import asyncio, logging, re, time
+import asyncio, contextlib, logging, re, time
 from . import brief, catalog, safety
 from .audio import FRAME_BYTES, Recorder, Resampler, make_vad
 from .conversation import ComponentError, Draft
@@ -91,7 +91,9 @@ class Reply:
             if self.fixed is not None:
                 for line in self.fixed: self.draft.sentences.append(line); self.draft.raw += line + ' '; await q.put(line)
             else:
-                async for sent in self.s.conv.sentences(self.draft): await q.put(sent)
+                # aclosing: a withdrawn or barged-in reply still closes the brain stream, so its tokens are metered
+                async with contextlib.aclosing(self.s.conv.sentences(self.draft)) as gen:
+                    async for sent in gen: await q.put(sent)
         except asyncio.CancelledError:
             tts.cancel(); raise
         except ComponentError as e:
