@@ -161,6 +161,29 @@ async function dial(t: Awaited<ReturnType<typeof workspace>>, contacts: string[]
   return arms;
 }
 
+type Tally = { dialed: Record<string, number>; outcomes: Record<string, number> };
+
+/** Dial fresh contacts one at a time (arm from experiment.assign, i.e. the real sticky hash) until `enough` says both arms
+ *  have what the test needs. Arm sizes are then a fact the test asserts, never a hope about a random split. */
+async function dialUntil(t: Awaited<ReturnType<typeof workspace>>, enough: (s: Tally) => boolean,
+  outcome: (arm: string, i: number) => string | null, reason?: (arm: string, i: number) => string | null, max = 2000): Promise<Tally> {
+  const s: Tally = { dialed: { control: 0, treatment: 0 }, outcomes: { control: 0, treatment: 0 } };
+  for (let n = 0; !enough(s); n++) {
+    assert.ok(n < max, `arms never reached the target after ${max} contacts: ${JSON.stringify(s)}`);
+    const [c] = await newContacts(t.ws, 1);
+    const a = await t.call('experiment.assign', { agentId: t.agentId, contactId: c });
+    assert.equal(a.status, 'confirmed'); assert.ok(a.result, 'the experiment must be running');
+    const arm = a.result.arm as string;
+    const k = s.dialed[arm]!++;
+    const o = outcome(arm, k);
+    if (o !== null) s.outcomes[arm]!++;
+    await pool.query(`INSERT INTO conversation (workspace_id, contact_id, agent_version_id, channel, status, outcome, reason_code) VALUES ($1,$2,$3,'phone','done',$4,$5)`,
+      [t.ws, c, a.result.versionId, o, reason?.(arm, k) ?? null]);
+  }
+  return s;
+}
+const bothReach = (n: number) => (s: Tally) => s.outcomes.control! >= n && s.outcomes.treatment! >= n;
+
 test('gates: locked sections, provenance, manipulation and never-say block a change', () => {
   const base = cfg('00000000-0000-0000-0000-000000000001');
   assert.equal(runGates(base, [{ op: 'set', path: 'opening.usefulFirst', value: 'aapki AC visit 24 October ko hai' }]).passed, true);
@@ -272,8 +295,8 @@ test('sticky arms; no verdict before the horizon (no peeking); a win is proposed
   const a1 = await t.call('experiment.assign', { agentId: t.agentId, contactId: c });
   for (let i = 0; i < 3; i++) assert.deepEqual((await t.call('experiment.assign', { agentId: t.agentId, contactId: c })).result, a1.result);
 
-  const contacts = await newContacts(t.ws, perArm * 3);
-  const half = contacts.slice(0, perArm);
+  // Phase 1: perArm contacts in total cannot fill both arms to perArm, so the horizon is not reached by construction.
+  const half = await newContacts(t.ws, perArm);
   await dial(t, half, (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'confirmed' : 'declined') : (i % 10 < 2 ? 'confirmed' : 'declined')));
   const mid = await t.call('experiment.check', { experimentId });
   assert.equal(mid.result.state, 'running');
@@ -282,12 +305,18 @@ test('sticky arms; no verdict before the horizon (no peeking); a win is proposed
   const view = await t.call('experiment.get', { id: experimentId });
   assert.equal(view.result.result.decision, undefined);
 
-  await dial(t, contacts.slice(perArm), (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'confirmed' : 'declined') : (i % 10 < 2 ? 'confirmed' : 'declined')));
+  // Phase 2: keep dialing (same outcome pattern, continuing each arm's index) until both arms reach the horizon.
+  const already = (await one<{ c: number; t: number }>(pool, `SELECT count(*) FILTER (WHERE agent_version_id = e.control_version_id)::int AS c,
+      count(*) FILTER (WHERE agent_version_id = e.treatment_version_id)::int AS t FROM conversation, experiment e WHERE e.id = $1 AND conversation.workspace_id = $2 AND conversation.started_at >= e.started_at`, [experimentId, t.ws]))!;
+  const offset: Record<string, number> = { control: already.c, treatment: already.t };
+  await dialUntil(t, s => s.outcomes.control! + offset.control! >= perArm && s.outcomes.treatment! + offset.treatment! >= perArm,
+    (arm, i) => { const j = i + offset[arm]!; return arm === 'treatment' ? (j % 10 < 8 ? 'confirmed' : 'declined') : (j % 10 < 2 ? 'confirmed' : 'declined'); });
   // Test calls never count, even a flood of complaints on the treatment arm.
   const tv = (await one<{ id: string }>(pool, 'SELECT treatment_version_id AS id FROM experiment WHERE id = $1', [experimentId]))!.id;
   await calls(t.ws, tv, 10, 0, { channel: 'test', reasonCode: 'CONV_COMPLAINT' });
   const done = await t.call('experiment.check', { experimentId });
   assert.equal(done.result.state, 'decided', JSON.stringify(done.result));
+  assert.ok(done.result.decision.control.n >= perArm && done.result.decision.treatment.n >= perArm, 'both arms reached the horizon');
   assert.equal(done.result.verdict, 'win');
   assert.ok(done.result.decision.ci.lo > 0);
   assert.equal(done.result.publish.status, 'needs_approval');
@@ -302,9 +331,9 @@ test('sticky arms; no verdict before the horizon (no peeking); a win is proposed
 test('hazard stop: complaints on the treatment arm stop it at once and revert through the A3 verb', { skip }, async () => {
   const t = await workspace();
   const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.05, minDays: 0, binding: 'inbound' });
-  const contacts = await newContacts(t.ws, 30);
-  const arms = await dial(t, contacts, () => 'declined', arm => (arm === 'treatment' ? 'END_OPTED_OUT' : null));
-  assert.ok(arms.treatment! >= 3);
+  const arms = await dialUntil(t, s => s.dialed.treatment! >= 5 && s.dialed.control! >= 5, () => 'declined', arm => (arm === 'treatment' ? 'END_OPTED_OUT' : null));
+  assert.ok(arms.dialed.treatment! >= 5);
+  const contacts = await newContacts(t.ws, 1);
   const before = reverts.length;
   const job = jobs.find(j => j.name === 'learning.check')!;
   await job.run({ pool, registry } as any);            // the background job checks every running experiment
@@ -433,20 +462,21 @@ test('cross-module: conversations written the way calls writes them trip the haz
 
   // Decision: treatment pays 80%, control 20%; every fifth contact has no trusted outcome and must not count.
   const perArm = acc.result.perArm as number;
-  const contacts = await newContacts(t.ws, perArm * 3);
-  await dial(t, contacts, (arm, i) => (i % 5 === 4 ? null as unknown as string : (arm === 'treatment' ? i % 10 < 8 : i % 10 < 2) ? 'paid' : 'refused'));
+  const tally = await dialUntil(t, bothReach(perArm), (arm, i) => (i % 5 === 4 ? null : (arm === 'treatment' ? i % 10 < 8 : i % 10 < 2) ? 'paid' : 'refused'));
+  assert.ok(tally.dialed.control! > tally.outcomes.control! && tally.dialed.treatment! > tally.outcomes.treatment!, 'some calls in each arm had no trusted outcome');
   const done = await t.call('experiment.check', { experimentId: acc.result.experimentId });
   assert.equal(done.result.state, 'decided', JSON.stringify(done.result));
   assert.equal(done.result.verdict, 'win');
-  const counted = done.result.decision.control.n + done.result.decision.treatment.n;
-  assert.ok(counted <= Math.ceil(contacts.length * 0.8) + 1, `only calls with an outcome count (${counted} of ${contacts.length})`);
+  // Exactly the calls with an outcome are counted, and each arm reached the horizon.
+  assert.deepEqual([done.result.decision.control.n, done.result.decision.treatment.n], [tally.outcomes.control, tally.outcomes.treatment]);
+  assert.ok(done.result.decision.control.n >= perArm && done.result.decision.treatment.n >= perArm);
   assert.equal(done.result.publish.status, 'needs_approval');
 
   // Hazard: END_OPTED_OUT on the treatment arm stops it at once.
   const h = await setup();
   const acc2 = await h.t.approve((await h.t.call('proposal.accept', { proposalId: h.pid, mdeAbs: 0.05, minDays: 0 })).actionId);
   await h.t.approve((await h.t.call('experiment.start', { experimentId: acc2.result.experimentId })).actionId);
-  await dial(h.t, await newContacts(h.t.ws, 30), () => null as unknown as string, arm => (arm === 'treatment' ? 'END_OPTED_OUT' : null));
+  await dialUntil(h.t, s => s.dialed.treatment! >= 5 && s.dialed.control! >= 5, () => null, arm => (arm === 'treatment' ? 'END_OPTED_OUT' : null));
   const stop = await h.t.call('experiment.check', { experimentId: acc2.result.experimentId });
   assert.equal(stop.result.state, 'stopped_guardrail', JSON.stringify(stop.result));
   assert.match(stop.result.reason, /complaints\/opt-outs/);
