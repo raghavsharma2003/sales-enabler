@@ -10,10 +10,10 @@ import { reserve } from '../server/ledger.ts';
 import { setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { FakeRuntime, setRuntime, sign } from '../server/runtime-client.ts';
 import { tool, type Actor, type Registry } from '../server/tools.ts';
-import { obj, uuid } from '../shared/validate.ts';
+import { obj, opt, uuid } from '../shared/validate.ts';
 import type { RunManifest, RuntimeEvent } from '../shared/runtime-protocol.ts';
 import { module as calls } from '../server/modules/calls/index.ts';
-import { analysesSettled, findQuote } from '../server/modules/calls/analysis.ts';
+import { analysesSettled, findQuote, refreshOutcome, sweep } from '../server/modules/calls/analysis.ts';
 import { wilsonLower, calibrationStatus } from '../server/modules/calls/stats.ts';
 import { REASON_CODES } from '../server/modules/calls/taxonomy.ts';
 
@@ -24,10 +24,15 @@ let pool: pg.Pool, server: Server, registry: Registry, base: string;
 const fakeRuntime = new FakeRuntime();
 
 // A stand-in for the contacts module's A3 verb, registered only in the second app below.
-const suppressed: string[] = [];
-const contactsStub: Module = { name: 'contacts-stub', register: r => r.register(tool(obj({ contactId: uuid(), conversationId: uuid() }), {
-  name: 'contact.suppress_after_opt_out', risk: 'policy', summary: 'suppress after an opt-out',
-  run: async (_ctx, i) => { suppressed.push(i.contactId); return { ok: true }; } })) };
+const suppressed: string[] = [], extracted: string[] = [], checked: string[] = [];
+const experiments = new Map<string, { id: string; state: string }[]>();
+const contactsStub: Module = { name: 'siblings-stub', register: r => {
+  r.register(tool(obj({ contactId: uuid(), conversationId: uuid() }), { name: 'contact.suppress_after_opt_out', risk: 'policy', summary: 'suppress after an opt-out',
+    run: async (_ctx, i) => { suppressed.push(i.contactId); return { ok: true }; } }));
+  r.register(tool(obj({ conversationId: uuid() }), { name: 'memory.extract', risk: 'draft', summary: 'stub', run: async (_ctx, i) => { extracted.push(i.conversationId); return {}; } }));
+  r.register(tool(obj({ agentId: opt(uuid()) }), { name: 'experiment.list', risk: 'read', summary: 'stub', run: async (_ctx, i) => experiments.get(i.agentId ?? '') ?? [] }));
+  r.register(tool(obj({ experimentId: uuid() }), { name: 'experiment.check', risk: 'draft', summary: 'stub', run: async (_ctx, i) => { checked.push(i.experimentId); return {}; } }));
+} };
 let server2: Server, base2: string;
 
 before(async () => {
@@ -112,9 +117,9 @@ const fullCall = (o: { endReason?: string; durationS?: number; costs?: number[];
 const llmReply = (json: unknown) => (_req: LlmRequest) => ({ text: JSON.stringify(json), toolCalls: [], usage: { inputTokens: 100, outputTokens: 20 }, model: 'fake-analyst', provider: 'fake' });
 
 // ---- pure ------------------------------------------------------------------------------------------------------
-test('the reason catalogue has 34 distinct codes; Wilson lower bound matches the trust bar', () => {
-  assert.equal(REASON_CODES.length, 34);
-  assert.equal(new Set(REASON_CODES.map(r => r.code)).size, 34);
+test('the reason catalogue has 35 distinct codes; Wilson lower bound matches the trust bar', () => {
+  assert.equal(REASON_CODES.length, 35);
+  assert.equal(new Set(REASON_CODES.map(r => r.code)).size, 35);
   assert.ok(Math.abs(wilsonLower(46, 50) - 0.8124) < 0.002, String(wilsonLower(46, 50)));
   assert.equal(wilsonLower(0, 0), 0);
   assert.equal(calibrationStatus(46, 0.92, wilsonLower(46, 50)), 'calibrating');
@@ -218,6 +223,9 @@ test('quotes not in the transcript are dropped and counted; the outcome is an AI
   for (const m of moments) assert.ok(lines.some(l => l.text.includes(m.quote)));
   const out = await many<any>(pool, 'SELECT value, grade, evidence FROM outcome WHERE conversation_id = $1', [c.conv]);
   assert.deepEqual(out, [{ value: 'will_pay', grade: 'ai_guess', evidence: { quote: 'Theek hai, main kal payment' } }]);
+  assert.equal((await one<any>(pool, 'SELECT outcome FROM conversation WHERE id = $1', [c.conv])).outcome, null, 'an uncalibrated guess never becomes the outcome that counts');
+  assert.equal(conv.analysis.safety_violation, false);
+  assert.deepEqual(conv.analysis.judge, { judgeVersionId: null, value: 'will_pay', quote: 'Theek hai, main kal payment', calibration: 'uncalibrated' });
   const ac = await one<any>(pool, "SELECT quantity::int AS q FROM cost_line WHERE conversation_id = $1 AND component = 'analysis'", [c.conv]);
   assert.equal(ac.q, 120, 'the analysis tokens are a cost line');
 
@@ -445,4 +453,63 @@ test('live control: listen runs, whisper needs approval, take-over is for a pers
   await post(c.conv, [{ seq: 1, type: 'call.ended', at: now(), endReason: 'agent_ended', durationS: 3, transcript: [], manifest: manifest() }]);
   await analysesSettled();
   assert.equal((await registry.execute(pool, 'live.listen', { conversationId: c.conv }, ctx)).status, 'not_executed', 'an ended call cannot be joined');
+});
+
+// ---- what memory and learning expect -----------------------------------------------------------------------------
+test('after a non-test call: memory.extract, experiment.check on running experiments, the version that ran, forget requests', { skip }, async () => {
+  const w = await workspace();
+  const v2 = (await one<{ id: string }>(pool, "INSERT INTO agent_version (agent_id, number, hash, config) VALUES ($1,2,'h2','{}') RETURNING id", [w.agent]))!.id;
+  const exp = '00000000-0000-4000-8000-0000000000e1';
+  experiments.set(w.agent, [{ id: exp, state: 'running' }, { id: '00000000-0000-4000-8000-0000000000e2', state: 'decided' }]);
+  setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null, forget: { quote: 'Theek hai, main kal payment' } }));
+
+  const c = await call(w);
+  const ev = fullCall();
+  for (const e of ev) if (e.type === 'call.started' || e.type === 'call.ended') e.manifest = manifest({ agentVersionHash: 'h2' });
+  await post(c.conv, ev, { to: base2 });
+  await analysesSettled();
+  const conv = await one<any>(pool, 'SELECT agent_version_id, flags, run_manifest, analysis FROM conversation WHERE id = $1', [c.conv]);
+  assert.equal(conv.agent_version_id, v2, 'filed under the version that actually ran');
+  assert.ok(conv.flags.includes('version_restamped'));
+  assert.equal(conv.run_manifest.test, false);
+  assert.ok(extracted.includes(c.conv));
+  assert.deepEqual(checked, [exp], 'only running experiments are checked');
+  assert.equal(conv.analysis.followups['memory.extract'], 'done');
+  const fr = await many<any>(pool, 'SELECT contact_id, requested_via, evidence FROM forget_request WHERE workspace_id = $1', [w.ws]);
+  assert.deepEqual(fr, [{ contact_id: c.contact, requested_via: 'caller', evidence: { quote: 'Theek hai, main kal payment', conversationId: c.conv } }]);
+
+  // A no-answer call is not extracted as connected and checks no experiment; a test call reaches neither.
+  checked.length = 0;
+  const na = await call(w);
+  await post(na.conv, [{ seq: 1, type: 'call.ended', at: now(), endReason: 'no_answer', durationS: 0, transcript: [], manifest: manifest() }], { to: base2 });
+  await analysesSettled();
+  assert.deepEqual(checked, []);
+  const t = await registry.execute<any>(pool, 'test.browser_call', { agentId: w.agent, versionId: w.version }, { workspaceId: w.ws, actor: w.member });
+  assert.equal(t.status, 'confirmed');
+  if (t.status !== 'confirmed') return;
+  await post(t.result.conversationId, fullCall(), { to: base2 });
+  await analysesSettled();
+  assert.ok(!extracted.includes(t.result.conversationId), 'memory never reads a test call');
+  assert.equal((await one<any>(pool, 'SELECT run_manifest FROM conversation WHERE id = $1', [t.result.conversationId])).run_manifest.test, true);
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM forget_request WHERE workspace_id = $1', [w.ws])).n, 1, 'no forget request from a test call');
+});
+
+test('an AI guess counts only once its judge is trusted; the sweep analyses calls the queue lost', { skip }, async () => {
+  const w = await workspace();
+  const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values) VALUES ($1,'R','Pay?','{yes,no}','{yes}') RETURNING id`, [w.ws]))!.id;
+  const judge = (await one<{ id: string }>(pool, `INSERT INTO judge_version (workspace_id, name, model, config, outcome_definition_id) VALUES ($1,'j','m','{}',$2) RETURNING id`, [w.ws, def]))!.id;
+  const c = await call(w);
+  await pool.query(`INSERT INTO outcome (workspace_id, conversation_id, definition_id, value, grade, judge_version_id) VALUES ($1,$2,$3,'yes','ai_guess',$4)`, [w.ws, c.conv, def, judge]);
+  await refreshOutcome(pool, w.ws, c.conv);
+  assert.equal((await one<any>(pool, 'SELECT outcome FROM conversation WHERE id = $1', [c.conv])).outcome, null);
+  await pool.query(`INSERT INTO calibration (judge_version_id, workspace_id, n, agreement, wilson_lower, status) VALUES ($1,$2,60,0.95,0.86,'trusted')`, [judge, w.ws]);
+  await refreshOutcome(pool, w.ws, c.conv);
+  assert.equal((await one<any>(pool, 'SELECT outcome FROM conversation WHERE id = $1', [c.conv])).outcome, 'yes');
+
+  setFakeLlm(llmReply({ points: [{ claim: 'Will pay.', quote: 'kal payment kar dunga' }], moments: [], reasonCode: null, outcome: null }));
+  const lost = await call(w);
+  await pool.query(`UPDATE conversation SET status = 'ended', ended_at = now() - interval '10 minutes', transcript = $2 WHERE id = $1`, [lost.conv, JSON.stringify(lines)]);
+  const r = await sweep(pool, registry);
+  assert.ok(r.analysed >= 1);
+  assert.equal((await one<any>(pool, 'SELECT analysis FROM conversation WHERE id = $1', [lost.conv])).analysis.status, 'done');
 });

@@ -41,6 +41,7 @@ export const REASON_CODES: readonly ReasonCode[] = [
   { code: 'CONV_LANGUAGE_MISMATCH', stage: 'conversation', label: 'The person could not follow the language', action: 'Add their language to the agent', charged: true },
   { code: 'CONV_CONFUSED', stage: 'conversation', label: 'The person was confused by what she said', action: 'Read the turn where it went wrong', charged: true },
   { code: 'CONV_OBJECTION_UNRESOLVED', stage: 'conversation', label: 'An objection was raised and not resolved', action: 'Add an approach for this objection', charged: true },
+  { code: 'CONV_COMPLAINT', stage: 'conversation', label: 'The person complained about the call or the business', action: 'Read the complaint; a person follows up', charged: true },
   { code: 'CONV_NEEDS_HUMAN', stage: 'conversation', label: 'The person needs a human to finish this', action: 'Route to the team', charged: true },
   { code: 'CONV_INCOMPLETE', stage: 'conversation', label: 'The call ended before the agenda was done', action: 'Read the summary', charged: true },
 ];

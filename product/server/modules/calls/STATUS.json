@@ -28,8 +28,8 @@
     "db/migrations/0601_calls.sql"
   ],
   "tests": {
-    "passed": 12,
-    "total": 12,
+    "passed": 14,
+    "total": 14,
     "files": [
       "tests/calls.test.ts"
     ],
@@ -60,7 +60,8 @@
     "Load: search p95 and the time from hang-up to analysis."
   ],
   "needs_from_others": [
-    "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). This module does not edit the kernel.",
+    "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). It is not listed yet.",
+    "learning: hazardCodes default ['opt_out','complaint','abuse_report'] matches no calls reason code. Use ['END_OPTED_OUT','CONV_COMPLAINT','END_CRISIS'], and pass successValues from outcome_definition.goal_values.",
     "kernel: expose the raw request body to module routes (e.g. Req.rawBody). Until then the hook verifies the signature over JSON.stringify(parsed body). This matches product/voice/vpvoice/events.py, which signs compact JSON (separators=(',', ':'), ensure_ascii=False); it stays safe as long as the runtime sends integers for ms and inrMilli, because JS re-prints floats like 1.0 differently.",
     "contacts/safety module: register contact.suppress_after_opt_out (A3) taking exactly { contactId: uuid, conversationId: uuid }. If the input differs, opt-outs stay 'failed' with the validation reason in call_opt_out.detail.",
     "campaigns module: create the conversation row (attempt_id, contact_id, agent_version_id, channel 'phone') before handing the ticket to the runtime, and reserve on the attempt id. The hook only settles holds tagged with conversation.attempt_id.",
@@ -70,5 +71,18 @@
     "money module: price 'analysis' token cost lines (written with inr_milli 0 and detail.priced false).",
     "web/runtime: serve the test-call WebRTC offer at /v1/test-calls/:conversationId/offer (the ticket's offerUrl), or tell this module the right URL.",
     "blueprint: the companion data/blueprint/intelligence-module.json (34 codes, 20 monitors) is not in the repo. taxonomy.ts holds this module's own 34 codes."
-  ]
+  ],
+  "jobs": [
+    "calls.analysis_sweep (every 60 s): analyses ended calls the in-process queue lost, retries pending opt-outs"
+  ],
+  "contracts_for_others": {
+    "test_marker": "Test calls carry channel = 'test' AND run_manifest.test = true (both set by calls). Non-test calls have run_manifest.test = false.",
+    "version_that_ran": "conversation.agent_version_id is restamped from run_manifest.agentVersionHash at call.started and call.ended (prefers the same agent). A change from the dispatched version adds flag version_restamped.",
+    "after_call": "After each analysed non-test call, calls invokes memory.extract {conversationId} as the system actor. For a connected one it then runs experiment.list {agentId} and experiment.check {experimentId} for every experiment with state 'running'. The results go to conversation.analysis.followups.",
+    "conversation.outcome": "This is the value that counts: verified, then manager, then an ai_guess only if its judge's latest calibration is 'trusted'. Values are the client's outcome_definition.allowed_values, and the success set is outcome_definition.goal_values (not a literal 'success').",
+    "reason_code": "These are catalogue codes from taxonomy.ts (35 of them). The hazards for learning are END_OPTED_OUT, CONV_COMPLAINT and END_CRISIS. There is no separate abuse_report code; abuse complaints are CONV_COMPLAINT.",
+    "analysis": "analysis.safety_violation is true when the reply door intervened at least once on the call (any safety event). analysis.judge is {judgeVersionId, value, quote, calibration} or null.",
+    "forget": "A caller's request to be forgotten, backed by a verified quote of the caller, inserts forget_request (scope forget_memory, requested_via caller, evidence {quote, conversationId}). It is never inserted from a test call.",
+    "cost_line": "Every runtime cost line carries attempt_id (null on test calls). At call.ended the hold is settled at the summed total; the ledger caps the charge at the hold and records the overrun."
+  }
 }

@@ -56,18 +56,45 @@
       "date": "2026-10-21",
       "title": "Analysis cost lines record tokens with inr_milli 0 (priced:false), because nothing in the control plane holds a rate. Cost per call understates analysis spend until the money module prices it",
       "mitigation": "The money module rates component 'analysis' token lines, or llm.ts returns a price."
+    },
+    {
+      "id": "decision.2026-10-21.calls-untrusted-guess-never-counts",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "conversation.outcome (what learning and funnels count) takes verified, then manager, then an AI guess only when its judge's latest calibration is trusted. Untrusted guesses stay visible with their grade",
+      "rationale": "Blueprint F4: until a label is trusted it cannot feed experiments, the north star or a winner. Learning reads conversation.outcome.",
+      "reverse_if": "The owner decides untrusted guesses may feed experiments with a stated penalty (calls-needed inflation), or learning starts reading outcome grades itself."
     }
   ],
   "edges": [
-    { "from": "component.product.calls-module", "to": "decision.2026-10-21.calls-signature-over-compact-json", "relation": "implements" },
-    { "from": "component.product.calls-module", "to": "decision.2026-10-21.calls-quotes-single-line-substring", "relation": "implements" },
-    { "from": "component.product.calls-module", "to": "decision.2026-10-21.calls-model-refines-only-unknown-reasons", "relation": "implements" }
+    {
+      "from": "component.product.calls-module",
+      "to": "decision.2026-10-21.calls-signature-over-compact-json",
+      "relation": "implements"
+    },
+    {
+      "from": "component.product.calls-module",
+      "to": "decision.2026-10-21.calls-quotes-single-line-substring",
+      "relation": "implements"
+    },
+    {
+      "from": "component.product.calls-module",
+      "to": "decision.2026-10-21.calls-model-refines-only-unknown-reasons",
+      "relation": "implements"
+    }
   ],
   "events": [
     {
       "date": "2026-10-21",
       "event": "calls-module-built",
       "details": "Calls module built (product/server/modules/calls, migration 0601). Verified: tsc clean; 12/12 node:test cases pass against a throwaway Postgres 16 with synthetic data and a fake LLM and runtime. The cases cover signature, staleness, tamper and unknown-conversation rejection; idempotent replay; cost before call.ended; settle at real cost; release on no answer; dropped quotes; test-call exclusion; tenancy; opt-out A3; outcome grades; calibration; funnel; monitors; and live control. Not verified: a real voice runtime or Python signer, a real analysis model, load, and the sibling contacts tool's real input shape."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-wired-to-memory-learning",
+      "details": "Calls now restamps agent_version_id from the run manifest, marks test calls in run_manifest.test, calls memory.extract and experiment.check after non-test calls, exposes analysis.safety_violation and analysis.judge, raises forget_request from a verified caller quote, counts AI guesses only from trusted judges, adds CONV_COMPLAINT and a 60 s analysis sweep job. Verified: tsc clean, 14/14 calls tests against stubbed sibling tools. Not verified against the real memory and learning modules."
     }
   ]
 }

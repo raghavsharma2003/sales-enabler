@@ -8,7 +8,7 @@ import type { AgentConfig } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
 import { combinationId, requireStack } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
-import { DEFAULT_MONITORS, ensureDefaultMonitors, type AnalysisRecord } from './analysis.ts';
+import { DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
 import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLower } from './stats.ts';
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
 
@@ -225,6 +225,7 @@ export function registerTools(r: Registry): void {
       await ctx.q.query(`DELETE FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 AND definition_id = $3 AND grade = 'manager'`, [c.id, ctx.workspaceId, i.definitionId]);
       await ctx.q.query(`INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, evidence) VALUES ($1,$2,$3,$4,$5,'manager',$6,$7)`,
         [ctx.workspaceId, c.id, c.contact_id, i.definitionId, i.value, `member:${ctx.actor.id}`, { note: i.note ?? null }]);
+      await refreshOutcome(ctx.q, ctx.workspaceId, c.id);
       return { ok: true, grade: 'manager' };
     },
   }));
@@ -240,7 +241,7 @@ export function registerTools(r: Registry): void {
       if (dup) return { ok: true, duplicate: true };
       await ctx.q.query(`INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, evidence) VALUES ($1,$2,$3,$4,$5,'verified',$6,$7)`,
         [ctx.workspaceId, c.id, c.contact_id, i.definitionId, i.value, i.key.source, { key: i.key }]);
-      await ctx.q.query('UPDATE conversation SET outcome = $3 WHERE id = $1 AND workspace_id = $2', [c.id, ctx.workspaceId, i.value]);
+      await refreshOutcome(ctx.q, ctx.workspaceId, c.id);
       return { ok: true, grade: 'verified' };
     },
   }));
@@ -281,6 +282,10 @@ export function registerTools(r: Registry): void {
       for (const p of pairs) (confusion[p.truth] ??= {})[p.guess] = (confusion[p.truth][p.guess] ?? 0) + 1;
       await ctx.q.query('INSERT INTO calibration (judge_version_id, workspace_id, n, agreement, wilson_lower, status, confusion) VALUES ($1,$2,$3,$4,$5,$6,$7)',
         [j.id, ctx.workspaceId, n, agreement, lower, status, confusion]);
+      // Trust changed, so the outcome that counts may change on every call this judge guessed.
+      for (const r of await many<{ id: string }>(ctx.q, `SELECT DISTINCT conversation_id AS id FROM outcome WHERE workspace_id = $1 AND judge_version_id = $2`, [ctx.workspaceId, j.id])) {
+        await refreshOutcome(ctx.q, ctx.workspaceId, r.id);
+      }
       return { judgeVersionId: j.id, n, agreed: k, agreement, wilsonLower: lower, status, confusion };
     },
   }));

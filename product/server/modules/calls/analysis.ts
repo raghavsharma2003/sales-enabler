@@ -7,6 +7,8 @@
 // and are never evaluated by monitors.
 import type pg from 'pg';
 import { many, one, tx, type Queryable } from '../../db.ts';
+import type { Registry } from '../../tools.ts';
+import { afterCall } from './followups.ts';
 import { complete, llmConfigured, LlmError } from '../../llm.ts';
 import { CONVERSATION_CODES, REASON_CODES, REFINABLE, EARLY_HANGUP_S } from './taxonomy.ts';
 
@@ -25,8 +27,8 @@ export function findQuote(lines: Line[], quote: unknown): Line | null {
 const inflight = new Set<Promise<void>>();
 
 /** Run the analysis in the background after the ingest transaction commits. */
-export function queueAnalysis(pool: pg.Pool, workspaceId: string, conversationId: string): void {
-  const p: Promise<void> = analyse(pool, workspaceId, conversationId)
+export function queueAnalysis(pool: pg.Pool, workspaceId: string, conversationId: string, registry?: Registry): void {
+  const p: Promise<void> = analyse(pool, workspaceId, conversationId, registry)
     .then(() => undefined, e => { console.error('[vp] calls analysis failed', conversationId, e instanceof Error ? e.message : e); })
     .finally(() => inflight.delete(p));
   inflight.add(p);
@@ -51,11 +53,27 @@ export interface AnalysisRecord {
   modelReasonCode?: string | null;
   outcomeGuess?: { value: string; quote: string } | null;
   judgeVersionId?: string | null;
+  // Read by learning: any reply-door intervention on the call, and the judge's guess with its calibration status.
+  safety_violation?: boolean;
+  judge?: { judgeVersionId: string | null; value: string; quote: string; calibration: string } | null;
+  forgetRequested?: { quote: string } | null;
+  followups?: Record<string, string>;
   model?: string;
   reason?: string;
 }
 
-export async function analyse(pool: pg.Pool, workspaceId: string, conversationId: string): Promise<AnalysisRecord> {
+/** The outcome value that counts (conversation.outcome, which learning reads): verified, then a person's label, then an
+ *  AI guess only when the judge that made it is trusted by its latest calibration. An untrusted guess stays visible on
+ *  the call with its grade, but never feeds experiments or the north star (blueprint F4). */
+export async function refreshOutcome(q: Queryable, workspaceId: string, conversationId: string): Promise<void> {
+  await q.query(`UPDATE conversation SET outcome = (SELECT o.value FROM outcome o WHERE o.conversation_id = $1 AND o.workspace_id = $2
+      AND (o.grade IN ('verified','manager') OR (o.grade = 'ai_guess' AND o.judge_version_id IS NOT NULL AND
+           (SELECT k.status FROM calibration k WHERE k.judge_version_id = o.judge_version_id ORDER BY k.created_at DESC LIMIT 1) = 'trusted'))
+      ORDER BY CASE o.grade WHEN 'verified' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END, o.created_at DESC LIMIT 1)
+    WHERE id = $1 AND workspace_id = $2`, [conversationId, workspaceId]);
+}
+
+export async function analyse(pool: pg.Pool, workspaceId: string, conversationId: string, registry?: Registry): Promise<AnalysisRecord> {
   const cv = await one<ConvRow>(pool,
     `SELECT cv.id, cv.channel, cv.transcript, cv.reason_code, cv.end_reason, cv.duration_s, cv.contact_id,
             d.id AS def_id, d.name AS def_name, d.question AS def_question, d.allowed_values
@@ -69,11 +87,21 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   const isTest = cv.channel === 'test';
 
   const store = async (rec: AnalysisRecord, extra?: (c: pg.PoolClient) => Promise<void>) => {
+    const safety = await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2', [conversationId, workspaceId]);
+    rec.safety_violation = safety!.n > 0;
+    rec.judge ??= null;
     await tx(pool, async c => {
       await c.query(`UPDATE conversation SET analysis = $3, status = 'done' WHERE id = $1 AND workspace_id = $2`, [conversationId, workspaceId, rec]);
       if (extra) await extra(c);
     });
-    if (!isTest) await evaluateMonitors(pool, workspaceId);
+    if (!isTest) {
+      await evaluateMonitors(pool, workspaceId);
+      if (registry) {
+        const followups = await afterCall(pool, registry, workspaceId, conversationId);
+        rec.followups = followups;
+        await pool.query(`UPDATE conversation SET analysis = jsonb_set(analysis, '{followups}', $3::jsonb) WHERE id = $1 AND workspace_id = $2`, [conversationId, workspaceId, JSON.stringify(followups)]);
+      }
+    }
     return rec;
   };
 
@@ -87,12 +115,13 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   const system = [
     'You classify one phone call between an AI agent and a person. You never grade; you report what was said.',
     'Reply with one JSON object: {"points":[{"claim":string,"quote":string}],"moments":[{"kind":string,"quote":string,"note":string}],',
-    '"reasonCode":string|null,"outcome":{"value":string,"quote":string}|null}.',
+    '"reasonCode":string|null,"outcome":{"value":string,"quote":string}|null,"forget":{"quote":string}|null}.',
     'Every quote must be copied exactly, character for character, from ONE transcript line (without the speaker label). Claims without such a quote are discarded.',
     `moment kinds: ${MOMENT_KINDS.join(', ')}.`,
     `reasonCode: one of ${CONVERSATION_CODES.join(', ')}, or null if unsure. Meanings: ${REASON_CODES.filter(r => r.stage === 'conversation').map(r => `${r.code} = ${r.label}`).join('; ')}.`,
     cv.def_id ? `outcome: answer "${cv.def_question}" with one of ${JSON.stringify(cv.allowed_values)}, or null when the call does not show it.` : 'outcome: always null.',
     judge?.config?.instructions ? `Client instructions for the outcome: ${judge.config.instructions}` : '',
+    'forget: only when the person asks the business to forget them or delete what it knows about them; quote their words. Otherwise null.',
   ].filter(Boolean).join('\n');
   const user = lines.map(l => `${l.speaker === 'agent' ? 'AGENT' : 'PERSON'}: ${l.text}`).join('\n');
 
@@ -126,6 +155,12 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     if (l && cv.allowed_values?.includes(parsed.outcome.value)) outcomeGuess = { value: parsed.outcome.value, quote: String(parsed.outcome.quote).trim() };
   }
 
+  let forgetRequested: AnalysisRecord['forgetRequested'] = null;
+  if (parsed.forget && typeof parsed.forget === 'object') {
+    const l = check(parsed.forget.quote);
+    if (l && l.speaker === 'caller') forgetRequested = { quote: String(parsed.forget.quote).trim() };
+  }
+
   // The model may only refine a reason the engine could not know, and only with a conversation code.
   const modelCode = typeof parsed.reasonCode === 'string' && CONVERSATION_CODES.includes(parsed.reasonCode) ? parsed.reasonCode : null;
   let reasonCode = cv.reason_code ?? 'CONV_INCOMPLETE';
@@ -135,7 +170,9 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     status: 'done', summary: points.map(p => p.claim).join(' '), points,
     quotes: points.map(p => ({ text: p.quote, startMs: p.startMs, speaker: p.speaker })),
     quotesProposed: proposed, quotesDropped: dropped, reasonCode, modelReasonCode: modelCode, outcomeGuess,
-    judgeVersionId: judge?.id ?? null, model: reply.model,
+    judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested,
+    judge: outcomeGuess ? { judgeVersionId: judge?.id ?? null, value: outcomeGuess.value, quote: outcomeGuess.quote,
+      calibration: judge ? (await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [judge.id]))?.status ?? 'uncalibrated' : 'uncalibrated' } : null,
   };
 
   return store(rec, async c => {
@@ -154,8 +191,12 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
       await c.query(`INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, evidence, judge_version_id)
         VALUES ($1,$2,$3,$4,$5,'ai_guess',$6,$7,$8)`,
         [workspaceId, conversationId, cv.contact_id, cv.def_id, outcomeGuess.value, judge ? `judge:${judge.id}` : 'analysis', { quote: outcomeGuess.quote }, judge?.id ?? null]);
-      await c.query(`UPDATE conversation SET outcome = coalesce((SELECT value FROM outcome WHERE conversation_id = $1 AND workspace_id = $2
-          ORDER BY CASE grade WHEN 'verified' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END, created_at DESC LIMIT 1), outcome) WHERE id = $1`, [conversationId, workspaceId]);
+      await refreshOutcome(c, workspaceId, conversationId);
+    }
+    // A caller's own request to be forgotten goes to memory as a forget_request (memory completes it). Never from a test call.
+    if (forgetRequested && !isTest && cv.contact_id) {
+      await c.query(`INSERT INTO forget_request (workspace_id, contact_id, scope, requested_via, evidence) VALUES ($1,$2,'forget_memory','caller',$3)`,
+        [workspaceId, cv.contact_id, { quote: forgetRequested.quote, conversationId }]);
     }
   });
 }
@@ -221,4 +262,17 @@ export async function evaluateMonitors(pool: pg.Pool, workspaceId: string): Prom
     }
     return { opened };
   });
+}
+
+/** Analyse ended calls the in-process queue lost (a restart between ingest and analysis), and retry pending opt-outs. */
+export async function sweep(pool: pg.Pool, registry: Registry, olderThanMs = 120_000): Promise<{ analysed: number }> {
+  const due = await many<{ id: string; workspace_id: string }>(pool,
+    `SELECT id, workspace_id FROM conversation WHERE status = 'ended' AND analysis IS NULL AND ended_at < now() - make_interval(secs => $1::float / 1000)
+     ORDER BY ended_at LIMIT 20`, [olderThanMs]);
+  for (const d of due) await analyse(pool, d.workspace_id, d.id, registry).catch(e => console.error('[vp] calls sweep', d.id, e instanceof Error ? e.message : e));
+  const { flushOptOuts } = await import('./ingest.ts');
+  for (const w of await many<{ workspace_id: string }>(pool, `SELECT DISTINCT workspace_id FROM call_opt_out WHERE status = 'pending' LIMIT 50`)) {
+    await flushOptOuts(pool, registry, w.workspace_id);
+  }
+  return { analysed: due.length };
 }

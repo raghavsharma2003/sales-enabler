@@ -59,6 +59,21 @@ const batch = obj({ protocol: num({ int: true, min: 1, max: 1 }), conversationId
 
 interface Conv { id: string; workspace_id: string; attempt_id: string | null; contact_id: string | null; channel: string; status: string; run_manifest: RunManifest | Record<string, never>; settlement: unknown }
 
+// Test calls are marked in two places learning and memory read: channel = 'test' and run_manifest.test = true.
+const stamped = (conv: Conv, m: RunManifest) => ({ ...m, test: conv.channel === 'test' });
+
+/** File the call under the agent version that actually ran (manifest.agentVersionHash), preferring the agent the
+ *  conversation was created for. If no version in this workspace has that hash, the conversation keeps what it had. */
+async function stampVersion(c: pg.PoolClient, conv: Conv, m: RunManifest): Promise<void> {
+  const cur = await one<{ v: string | null; agent: string | null }>(c,
+    'SELECT cv.agent_version_id AS v, av.agent_id AS agent FROM conversation cv LEFT JOIN agent_version av ON av.id = cv.agent_version_id WHERE cv.id = $1', [conv.id]);
+  const ran = await one<{ id: string }>(c, `SELECT v.id FROM agent_version v JOIN agent a ON a.id = v.agent_id AND a.workspace_id = $1
+    WHERE v.hash = $2 ORDER BY (v.agent_id = $3) DESC NULLS LAST, v.number DESC LIMIT 1`, [conv.workspace_id, m.agentVersionHash, cur?.agent ?? null]);
+  if (!ran || ran.id === cur?.v) return;
+  await c.query('UPDATE conversation SET agent_version_id = $2 WHERE id = $1', [conv.id, ran.id]);
+  if (cur?.v) await addFlags(c, conv.id, ['version_restamped']);   // the runtime ran another version than the one dispatched
+}
+
 const addFlags = (q: pg.PoolClient, id: string, flags: string[]) => flags.length
   ? q.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || $2::text[]) ORDER BY 1) WHERE id = $1`, [id, flags])
   : Promise.resolve();
@@ -72,7 +87,7 @@ const usage = (q: pg.PoolClient, ws: string, when: string, seconds: number, inrM
 export interface IngestResult { accepted: number; duplicates: number; ended: boolean }
 
 /** Apply one verified batch. Exported for tests and for a future queue consumer. */
-export async function ingest(pool: pg.Pool, b: { conversationId: string; events: RuntimeEvent[] }): Promise<IngestResult & { workspaceId: string }> {
+export async function ingest(pool: pg.Pool, b: { conversationId: string; events: RuntimeEvent[] }, registry?: Registry): Promise<IngestResult & { workspaceId: string }> {
   const conv0 = await one<{ workspace_id: string }>(pool, 'SELECT workspace_id FROM conversation WHERE id = $1', [b.conversationId]);
   if (!conv0) throw new HttpError(404, 'unknown_conversation', 'no such conversation');
   const ws = conv0.workspace_id;
@@ -89,7 +104,7 @@ export async function ingest(pool: pg.Pool, b: { conversationId: string; events:
     }
     return { accepted, duplicates, ended };
   });
-  if (out.ended) queueAnalysis(pool, ws, b.conversationId);
+  if (out.ended) queueAnalysis(pool, ws, b.conversationId, registry);
   return { ...out, workspaceId: ws };
 }
 
@@ -98,7 +113,8 @@ async function apply(c: pg.PoolClient, conv: Conv, e: RuntimeEvent): Promise<boo
   const ws = conv.workspace_id;
   switch (e.type) {
     case 'call.started':
-      await c.query(`UPDATE conversation SET run_manifest = $2 WHERE id = $1 AND status = 'live'`, [conv.id, e.manifest]);
+      await c.query(`UPDATE conversation SET run_manifest = $2 WHERE id = $1 AND status = 'live'`, [conv.id, stamped(conv, e.manifest)]);
+      await stampVersion(c, conv, e.manifest);
       conv.run_manifest = e.manifest;
       return false;
     case 'turn':
@@ -162,7 +178,8 @@ async function endCall(c: pg.PoolClient, conv: Conv, e: Extract<RuntimeEvent, { 
 
   await c.query(`UPDATE conversation SET status = 'ended', end_reason = $2, reason_code = $3, ended_at = $4, duration_s = $5, recording_uri = $6,
       transcript = $7, run_manifest = $8 WHERE id = $1`,
-    [conv.id, e.endReason, reason, e.at, Math.round(e.durationS), e.recordingUri ?? null, JSON.stringify(e.transcript), e.manifest]);
+    [conv.id, e.endReason, reason, e.at, Math.round(e.durationS), e.recordingUri ?? null, JSON.stringify(e.transcript), stamped(conv, e.manifest)]);
+  await stampVersion(c, conv, e.manifest);
   await addFlags(c, conv.id, flags);
 
   const connected = !NOT_CONNECTED.has(e.endReason as EndReason);
@@ -213,7 +230,7 @@ export function hookRoute(deps: Deps) {
       throw new HttpError(401, 'bad_signature', 'the signature is missing, stale or wrong');
     }
     const b = batch(req.body);
-    const r = await ingest(deps.pool, b);
+    const r = await ingest(deps.pool, b, deps.registry);
     await flushOptOuts(deps.pool, deps.registry, r.workspaceId);
     return { body: { accepted: r.accepted, duplicates: r.duplicates } };
   };
