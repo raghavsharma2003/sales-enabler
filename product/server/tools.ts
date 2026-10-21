@@ -35,7 +35,11 @@ export interface ToolCtx {
   actor: Actor;
 }
 
-export interface PrepareCtx { pool: pg.Pool; workspaceId: string; actor: Actor }
+export interface PrepareCtx {
+  pool: pg.Pool; workspaceId: string; actor: Actor;
+  /** The held action being approved, when prepare() runs on the approval path: an idempotency key for a provider. */
+  actionId?: string;
+}
 
 export interface ToolDef<I = unknown, O = unknown> {
   name: string;            // dotted verb, e.g. 'campaign.launch'
@@ -185,8 +189,13 @@ export class Registry {
       if (t.version && (await t.version({ q: pool, workspaceId: approver.workspaceId, actor: actor0 }, input0)) !== a0.object_version) {
         return { status: 'not_executed', reason: 'what you approved has changed since it was proposed; review it again' };
       }
-      try { prepared = await t.prepare({ pool, workspaceId: approver.workspaceId, actor: actor0 }, input0); }
-      catch (e) { return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e) }; }
+      try { prepared = await t.prepare({ pool, workspaceId: approver.workspaceId, actor: actor0, actionId }, input0); }
+      catch (e) {
+        // A provider call whose outcome is unknown (a charge that may have gone through) is recorded as unknown, never
+        // as not run: the action must not look approvable again.
+        if (e instanceof UnknownOutcome) return this.markUnknown(pool, actionId, approver, t.name, argsHash(t.name, input0), e.message);
+        return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e) };
+      }
     }
     try {
       return await tx(pool, async c => {
@@ -233,17 +242,20 @@ export class Registry {
         if (e.persist) await this.persistStatusChange(pool, actionId, approver.workspaceId, e.message);
         return { status: 'not_executed', reason: e.message, argsHash: h || undefined };
       }
-      if (e instanceof UnknownOutcome) {
-        await tx(pool, async c => {
-          await c.query("UPDATE action SET status = 'unknown' WHERE id = $1 AND workspace_id = $2", [actionId, approver.workspaceId]);
-          await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: t.name,
-            objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', outcome: 'unknown', reason: e.message } });
-        });
-        return { status: 'unknown', reason: e.message, argsHash: h, actionId };
-      }
+      if (e instanceof UnknownOutcome) return this.markUnknown(pool, actionId, approver, t.name, h, e.message);
       if (e instanceof ValidationError) return { status: 'not_executed', reason: e.message, path: e.path, argsHash: h || undefined };
       return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e), argsHash: h || undefined };
     }
+  }
+
+  private async markUnknown<O>(pool: pg.Pool, actionId: string, approver: { workspaceId: string; memberId: string }, tool: string, h: string,
+    reason: string): Promise<Receipt<O>> {
+    await tx(pool, async c => {
+      await c.query("UPDATE action SET status = 'unknown' WHERE id = $1 AND workspace_id = $2", [actionId, approver.workspaceId]);
+      await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: tool,
+        objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', outcome: 'unknown', reason } });
+    });
+    return { status: 'unknown', reason, argsHash: h, actionId };
   }
 
   /** Decline a proposed action. Deciding is approving's mirror: only a member who could approve it, or the member who

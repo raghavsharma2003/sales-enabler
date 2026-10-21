@@ -290,3 +290,21 @@ test('approve: prepare() never runs for an approval that will be refused', { ski
   assert.equal(byOperator.status, 'not_executed', 'an operator cannot approve spend');
   assert.equal(prepares, 0, 'and the provider was never reached');
 });
+
+test('approve: prepare() gets the action id, and an unknown outcome there leaves the action unknown, never approvable again', { skip }, async () => {
+  const { ws, member } = await workspace();
+  const r = new Registry();
+  const keys: (string | undefined)[] = [];
+  r.register(tool(obj({ n: num() }), { name: 'provider.charge', risk: 'spend', summary: 'charge',
+    prepare: async ctx => { keys.push(ctx.actionId); throw new UnknownOutcome('the gateway timed out after the request was sent'); },
+    run: async () => ({ ok: true }) }));
+  const p = await r.execute(pool, 'provider.charge', { n: 1 }, { workspaceId: ws, actor: { type: 'agent' } });
+  if (p.status !== 'needs_approval') return assert.fail('expected a card');
+  const first = await r.approve(pool, p.actionId, { workspaceId: ws, memberId: member });
+  assert.equal(first.status, 'unknown');
+  assert.deepEqual(keys, [p.actionId], 'prepare() saw the action id, a stable idempotency key for the provider');
+  assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM action WHERE id = $1', [p.actionId]))!.status, 'unknown');
+  const again = await r.approve(pool, p.actionId, { workspaceId: ws, memberId: member });
+  assert.equal(again.status, 'not_executed', 'a second tap cannot reach the provider again');
+  assert.equal(keys.length, 1);
+});
