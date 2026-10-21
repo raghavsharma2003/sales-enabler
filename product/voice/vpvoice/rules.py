@@ -307,7 +307,6 @@ def spoken_to_digits(t):
     return amount_tables()['spoken'].sub(rep, t)
 
 
-MONEY_TALK = re.compile(r'(premium|emi|amount|payment|pay\b|fee|fees|price|bill|due|kimat|keemat|charge|refund|cashback|bonus|prize|reward|cover|sum assured|salary|income|return|profit|munafa|balance|loan|rent|kiraya|deposit|bhugtan|bakaya|kisht|installment|paise|paisa)', re.I | re.ASCII)
 
 
 def _js_round(x):
@@ -319,7 +318,7 @@ def parse_amounts(s, lenient):
     t = spoken_to_digits(normalise(s)); out = []
     tables = amount_tables(); MULT = tables['mult']; NUM = tables['num']
     cur = rx(RULES['lexicon']['currency'])
-    money_talk = lenient or bool(MONEY_TALK.search(t))
+    money_talk = lenient or bool(rx(RULES['lexicon']['money_talk']).search(t))      # the money-context list lives in rules.json
     parts = []
     for m in NUM.finditer(t):
         try: base = float(m.group(1).replace(',', ''))
