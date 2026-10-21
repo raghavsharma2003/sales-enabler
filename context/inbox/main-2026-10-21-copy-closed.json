@@ -1,0 +1,7 @@
+{
+ "nodes": [],
+ "edges": [],
+ "events": [
+  { "date": "2026-10-21", "event": "UI copy pass closed", "details": "After three main-loop reviews (measure.2026-10-21.ui-review-main-loop, -2, -3) and web commits dd274a3, c257b28, e818ee9, 188226c, f1c1ca4, a0ce0aa, 43f31c6 and 07312ec, no screen shows developer text, and two tests guard it. The e2e text scan flags tool ids, file paths, ISO dates, IANA zones, raw enums and code-like words; label-coverage tests cover every registry tool and every safety rule. Blockers with no page offer 'Ask Saarthi'. A refused plan step offers 'Ask Saarthi to fix it'. 13 browser flows pass. Open: open.2026-10-21.activity-row-subject. Not verified: browser audio, phone verification, number rental end to end, and a real model behind the Ask Saarthi paths." }
+ ]
+}
