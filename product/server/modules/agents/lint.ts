@@ -12,6 +12,7 @@ const GREETING = /^\s*(hi|hello|hey|namaste|namaskar|good (morning|afternoon|eve
 const DIRECTION = /\[[^\]]*\]|<[^>]*>/;
 const DEVANAGARI = /[ऀ-ॿ]/;
 const DIGIT = /\d/;
+const ROMAN_HINDI = /(?<![\p{L}])(hoon|hun|hain|hai|kijiye|kariye|dijiye|bataiye|batayiye|aapka|aapki|aapke|aapko|ji)(?![\p{L}])/iu;
 
 type Check = [RegExp, string];
 const LINE_CHECKS: Check[] = [
@@ -25,6 +26,7 @@ const SHAPE_ONLY: Check[] = [
   [/\?\s*$/, 'a question here becomes the question she asks; describe what she needs to learn instead'],
   [DEVANAGARI, 'shape fields are notes in English; Hindi text here gets recited'],
   [DIGIT, 'numbers belong in facts rows, where they can be checked; not in shapes'],
+  [ROMAN_HINDI, 'romanised Hindi wording reads as a line to say; write it as an English note about what she does'],
 ];
 
 /** Fields that describe behaviour. Everything here must be a note, never a line. */

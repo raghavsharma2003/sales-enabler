@@ -282,9 +282,12 @@ export const TAIL = `Before you write each reply:
 
 // ------------------------------------------------------------------------------------------------ compile
 
-function applyLint(c: AgentConfig): { facts: Fact[]; dropped: string[] } {
+/** Production always uses shared/safety's lint; tests may hand in a stand-in to exercise refuse and drop. */
+export interface CompileOptions { lint?: (c: AgentConfig) => LintFinding[] }
+
+function applyLint(c: AgentConfig, lint: (c: AgentConfig) => LintFinding[]): { facts: Fact[]; dropped: string[] } {
   const shapes = shapeLint(c);
-  const found = lintAgentConfig(c);
+  const found = lint(c);
   const refuse = [...shapes, ...found.filter(f => f.effect === 'refuse')];
   const drops = new Set<number>();
   for (const f of found.filter(f => f.effect === 'drop')) {
@@ -297,8 +300,8 @@ function applyLint(c: AgentConfig): { facts: Fact[]; dropped: string[] } {
 }
 
 /** Compile with the per-section report the brief editor shows (lint and budget meters). Throws on lint or budget. */
-export function compileReport(c: AgentConfig): CompileReport {
-  const linted = applyLint(c);
+export function compileReport(c: AgentConfig, opts: CompileOptions = {}): CompileReport {
+  const linted = applyLint(c, opts.lint ?? lintAgentConfig);
   const facts = factsFor({ ...c, facts: linted.facts });
   const dropped = [...linted.dropped, ...linted.facts.filter(f => !facts.includes(f)).map(f => f.key)];
   const voice = getStack(c.voice.stackId)?.components.voice;
@@ -327,7 +330,7 @@ export function compileReport(c: AgentConfig): CompileReport {
 }
 
 /** The one compile(): same config, same bytes. */
-export function compile(c: AgentConfig): CompiledBrief {
-  const r = compileReport(c);
+export function compile(c: AgentConfig, opts: CompileOptions = {}): CompiledBrief {
+  const r = compileReport(c, opts);
   return { text: r.text, hash: r.hash, bytes: r.bytes };
 }
