@@ -102,6 +102,17 @@ test('Gemini goes only through Vertex: no stack routes a Gemini part through Ope
   }
 });
 
+test('the call page names a built stack from its run manifest, as the runtime writes it', async () => {
+  const { partsRan, voiceStackOf } = await import('../web/src/catalog.ts');
+  // Manifests as product/voice writes them (providers.build, test_cascade.py): `voice` is the voice's name, not a part.
+  const ran = (m: Record<string, string>) => voiceStackOf({ stackId: 'custom', components: partsRan(m) })?.label;
+  const built = (components: Record<string, string>) => { const l = voiceStackOf({ stackId: 'custom', components })?.label; assert.ok(l, JSON.stringify(components)); return l; };
+  assert.equal(ran({ stt: 'azure', llm: 'gemini-3.5-flash-lite', tts: 'gemini-lite', voice: 'Despina' }), built({ ears: 'azure', brain: 'gemini-3.5-flash-lite', voice: 'gemini-lite' }));
+  assert.equal(ran({ stt: 'azure/ungated', llm: 'gpt-4.1', tts: 'azure', voice: 'hi-IN-Kavya' }), built({ ears: 'azure', brain: 'gpt-4.1', voice: 'azure' }), 'ears that ran without the gate');
+  assert.equal(ran({ s2s: 'gemini-3.8-live', voice: 'Kore' }), built({ s2s: 'gemini-3.8-live' }), 'a speech-to-speech run');
+  assert.equal(partsRan(null), null);
+});
+
 test('no page writes from a menu: act() is never called inside an onChange of a select or input', () => {
   for (const f of readdirSync(web + 'src/pages')) {
     const txt = readFileSync(web + 'src/pages/' + f, 'utf8');

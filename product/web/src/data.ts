@@ -2,6 +2,7 @@
 // Pure TypeScript (no JSX). Every read goes through run(), so a tool that is not registered throws ToolMissing and the page
 // shows its "not switched on yet" state. Shapes here follow product/shared/tool-catalog.json and the module code.
 import { run } from './api.ts';
+import { partsRan } from './catalog.ts';
 import type {
   ActivityRow, AgentConfigDraft, AgentDoc, AgentRow, ApiKey, AudienceRow, Blocker, CallDoc, CallExplain, CallRow, CallTurn, CampaignDoc, CampaignRow, ContactDoc, ContactRow,
   Estimate, FunnelStage, ImportPreview, ImportRowVerdict, KnowledgeItem, Member, NumberLine, PracticeCaller, SimResult, Wallet,
@@ -174,7 +175,7 @@ export async function callGet(id: string): Promise<CallDoc> {
   const totalMs = Math.max(1000, (c.durationS ?? 0) * 1000, ...turns.map(t => t.endMs ?? t.startMs ?? 0));
   const a = c.analysis;
   return { id: c.id, contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
-    recordingUri: c.recordingUri, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: c.runManifest?.components ? { ears: c.runManifest.components.stt, brain: c.runManifest.components.llm, voice: c.runManifest.components.tts ?? c.runManifest.components.voice, s2s: c.runManifest.components.s2s } : null, turns,
+    recordingUri: c.recordingUri, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: partsRan(c.runManifest?.components), turns,
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), tools: arr(c.tools), handOffs: arr(c.handOffs),
     outcomes: arr(c.outcomes), costTotal: c.cost?.totalInrMilli ?? 0, costLines: arr(c.cost?.lines), settlement: c.cost?.settlement?.action ?? (typeof c.cost?.settlement === 'string' ? c.cost.settlement : null),
     analysis: a ? { status: a.status, summary: a.summary, reason: a.reason } : null, totalMs };

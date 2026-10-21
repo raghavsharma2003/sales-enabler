@@ -59,7 +59,8 @@ def make_components(sid, voice, t, http, env):
     s = stacks.resolve(t['stack']); c = s['components']                  # curated or 'custom': exactly the ticket's parts
     comp = Components(sid, 'cascade', voice, stacks.combination_id(s, voice), brain=FakeBrain(t), brain_id=c.get('brain', c.get('s2s', '')),
                       brain_provider='devsim', ears_id=c.get('ears', ''), tts_id=c.get('voice', ''),
-                      names={'stt': c.get('ears'), 'llm': c.get('brain') or c.get('s2s'), 'tts': c.get('voice'), 'voice': voice})
+                      names={'s2s': c['s2s'], 'voice': voice} if c.get('s2s') else   # named as the real runtime names it (providers.build)
+                            {'stt': c.get('ears'), 'llm': c.get('brain'), 'tts': c.get('voice'), 'voice': voice})
     comp.voice = FakeVoice(); comp.make_ears = lambda *a, **kw: FakeEars()
     return comp
 
