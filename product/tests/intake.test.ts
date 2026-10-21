@@ -573,7 +573,7 @@ test('consent by effective time (review WGC-06): an old or undated "yes" re-impo
   const cid = (await w.contactBy('+919000000151'))!.id;
   assert.equal((await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' })).consent.granted, true);
   // The person withdraws everything (Compliance records it).
-  await w.approve(await w.call('consent.record', { contactId: cid, purpose: 'all', basis: 'withdrawal', granted: false, source: 'email' }));
+  await w.approve(await w.call('consent.record', { contactId: cid, purpose: 'all', basis: 'withdrawal', granted: false, source: 'email', at: new Date(Date.now() - 10_000).toISOString() }));
   let f = await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' });
   assert.equal(f.consent.granted, false);
   assert.ok(f.promotional.reasons.includes('consent_withdrawn'));
@@ -598,6 +598,9 @@ test('consent by effective time (review WGC-06): an old or undated "yes" re-impo
   const g = await w.ok('contact.get', { id: cid });
   const times = g.consent.map((c: any) => new Date(c.effective_at).getTime());
   assert.deepEqual(times, [...times].sort((a, b) => a - b));
+  // A withdrawal recorded within a second of a grant wins (clock skew between app and database never re-opens).
+  await w.approve(await w.call('consent.record', { contactId: cid, purpose: 'service', basis: 'withdrawal', granted: false, source: 'call', at: new Date(Date.now() - 500).toISOString() }));
+  assert.equal((await w.ok('contact.dial_facts', { contactId: cid, purpose: 'service' })).consent.granted, false);
   // effective_at is covered by the append-only guard.
   await assert.rejects(pool.query("UPDATE consent_record SET effective_at = now() WHERE contact_id = $1", [cid]), /append-only/);
 });

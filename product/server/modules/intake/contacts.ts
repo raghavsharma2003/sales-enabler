@@ -62,8 +62,13 @@ export async function dialFacts(q: Queryable, ws: string, i: { contactId?: strin
   const fresh = !!dnd?.checked_at && Date.now() - dnd.checked_at.getTime() <= DND_FRESH_S * 1000;
   const dndStatus = !dnd || !dnd.ncpr_status ? 'unknown' : fresh ? dnd.ncpr_status : 'unknown';
   const consent = r.contact && i.purpose ? await one<{ granted: boolean; basis: string; purpose: string; effective_at: Date }>(q,
-    `SELECT granted, basis, purpose, effective_at FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 AND purpose IN ($3, 'all')
-      ORDER BY effective_at DESC, created_at DESC, id DESC LIMIT 1`, [ws, r.contact.id, i.purpose]) : null;
+    // Latest by effective time; a withdrawal wins anything within 1 s of it (app and database clocks can disagree by
+    // milliseconds), the same rule as the dial gate's G5.
+    `WITH c AS (SELECT granted, basis, purpose, effective_at, created_at, id FROM consent_record
+                 WHERE workspace_id = $1 AND contact_id = $2 AND purpose IN ($3, 'all'))
+     SELECT granted, basis, purpose, effective_at FROM c
+      WHERE effective_at >= (SELECT max(effective_at) FROM c) - interval '1 second'
+      ORDER BY granted ASC, effective_at DESC, created_at DESC, id DESC LIMIT 1`, [ws, r.contact.id, i.purpose]) : null;
   const wsSupp = supp.filter(s => s.scope === 'workspace');
   const base: string[] = [];
   if (tomb || r.contact?.erased_at) base.push('erased');
