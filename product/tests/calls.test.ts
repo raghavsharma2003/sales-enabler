@@ -772,3 +772,14 @@ test("a live raise is two records: the 'safety' RD3 event drives handling, the '
   assert.equal(conv.analysis.crisis_judge.raised, 1);
   assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_safety_event WHERE conversation_id = $1', [c.conv])).n, 1, 'exactly one safety event: the judge event added none');
 });
+
+test('validateRuntimeBatch is the hook\'s own validator (exported for the voice runtime\'s tests)', async () => {
+  const { validateRuntimeBatch } = await import('../server/modules/calls/ingest.ts');
+  const ok = { protocol: 1, conversationId: '00000000-0000-4000-8000-0000000000aa', events: [
+    { seq: 1, type: 'judge', at: now(), judge: 'caller_crisis', mode: 'shadow', outcome: 'unavailable', reason: 'timeout', latencyMs: 801 }] };
+  assert.equal(validateRuntimeBatch(ok).events.length, 1);
+  assert.equal(validateRuntimeBatch({ ...ok, events: [{ ...ok.events[0], kind: null }] }).events[0].type, 'judge', 'an optional field sent as null counts as absent');
+  assert.throws(() => validateRuntimeBatch({ ...ok, events: [{ ...ok.events[0], text: 'x' }] }), /text/, 'no field outside the contract, ever');
+  assert.throws(() => validateRuntimeBatch({ ...ok, events: [{ ...ok.events[0], latencyMs: 800.5 }] }), /latencyMs/);
+  assert.throws(() => validateRuntimeBatch({ ...ok, conversationId: 'conv_test_1' }), /conversationId/, 'a conversation id is a uuid');
+});

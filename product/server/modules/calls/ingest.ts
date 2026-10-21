@@ -57,6 +57,14 @@ const event: Validator<RuntimeEvent> = (v, p = '') => {
 };
 const batch = obj({ protocol: num({ int: true, min: 1, max: 1 }), conversationId: uuid(), events: arr(event, { min: 1, max: 1000 }) });
 
+/** The exact validator /hooks/runtime applies to a parsed batch (throws ValidationError with the field path; exits 1 from
+ *  the command line). Exported so the voice runtime's tests can run real emitter output through it instead of a mirror.
+ *  An optional field sent as null counts as absent. From product/, outside the test runner (CommonJS interop, hence default):
+ *    node --import tsx --input-type=module -e "const m = await import('./server/modules/calls/ingest.ts'); (m.default ?? m).validateRuntimeBatch(JSON.parse(process.argv[1]))" '<json>'  */
+export function validateRuntimeBatch(value: unknown): { protocol: number; conversationId: string; events: RuntimeEvent[] } {
+  return batch(value);
+}
+
 interface Conv { id: string; workspace_id: string; attempt_id: string | null; contact_id: string | null; channel: string; status: string; run_manifest: RunManifest | Record<string, never>; settlement: unknown }
 
 // Test calls are marked in two places learning and memory read: channel = 'test' and run_manifest.test = true.

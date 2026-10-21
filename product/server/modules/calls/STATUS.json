@@ -29,8 +29,8 @@
     "db/migrations/0602_call_judge_event.sql"
   ],
   "tests": {
-    "passed": 23,
-    "total": 23,
+    "passed": 24,
+    "total": 24,
     "files": [
       "tests/calls.test.ts"
     ],
@@ -90,7 +90,8 @@
     "forget": "A caller's request to be forgotten, backed by a verified quote of the caller, inserts forget_request (scope forget_memory, requested_via caller, evidence {quote, conversationId}). It is never inserted from a test call.",
     "cost_line": "Every runtime cost line carries attempt_id (null on test calls). At call.ended the hold is settled at the summed total; the ledger caps the charge at the hold and records the overrun.",
     "retries": "After analysis of a non-test campaign attempt, calls invokes attempt.retry_per_ladder {attemptId, outcome} as the system actor (A3) for non-final outcomes only. The mapping: no_answer, busy, failed->provider_error, voicemail, error->dropped_by_vp, END_EARLY_HANGUP or CONN_SILENCE->short_call, and CONV_CALLBACK->callback (no 'at' yet; the stated time is not extracted). Final outcomes (completed, opt_out, crisis, hand-off, limits, wrong person) and unknown are never sent.",
-    "runtime_end": "calls never calls the runtime's /v1/calls/{id}/end; live.takeover hands the call to a person without ending it. When endReason is 'error', call.ended carries no failure reason; calls records end_reason 'error' and reason code CONN_ENGINE_ERROR, and does not fetch GET /v1/calls/{id}."
+    "runtime_end": "calls never calls the runtime's /v1/calls/{id}/end; live.takeover hands the call to a person without ending it. When endReason is 'error', call.ended carries no failure reason; calls records end_reason 'error' and reason code CONN_ENGINE_ERROR, and does not fetch GET /v1/calls/{id}.",
+    "validateRuntimeBatch": "ingest.ts exports validateRuntimeBatch(value), the hook's exact batch validator. An optional field sent as null counts as absent; unknown fields, a non-integer latencyMs and a non-uuid conversationId are refused. It can be run from the command line (see the comment in ingest.ts); the exit code is 0 for valid and 1 for invalid."
   },
   "final": true,
   "export": "product/server/modules/calls/index.ts exports `module` (name 'calls': tools, POST /hooks/runtime with rawBody and a 5 MB limit, and the job calls.analysis_sweep)."
