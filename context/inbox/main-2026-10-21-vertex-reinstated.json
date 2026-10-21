@@ -1,0 +1,71 @@
+{
+ "nodes": [
+  {
+   "id": "directive.2026-10-21.vertex-back",
+   "type": "requirement",
+   "title": "Owner: Vertex is back (vp-voice reinstated); use it, and give Instinct a prompt for anything that needs setting up.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "user"
+  },
+  {
+   "id": "evidence.2026-10-21.vp-voice-reinstated",
+   "type": "evidence",
+   "title": "Google Cloud Trust & Safety email to the owner: project vp-voice reinstated 'based on information that you have provided'. It asks us to fix any outstanding issues so the project complies with the GCP Terms of Service and Acceptable Use Policy. The same notice is in Cloud Logging. Seen as phone screenshots at about 00:02 IST on 22 Oct.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "user"
+  },
+  {
+   "id": "decision.2026-10-21.vertex-key-handoff",
+   "type": "decision",
+   "title": "The new vp-voice service-account key goes from the owner's machine straight to the India lab VM by a write-only, one-blob Azure SAS link with a 12 h expiry. It never passes through chat, Drive or the agent's context. The VM pulls it, the blob is deleted, and only client_email and project_id are checked.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "A key pasted in chat was one of the three likely triggers of the 2026-10-20 restriction. The appeal promised that key was deleted and that Agent Platform is called only from the India server. The SAS link was tested: PUT returned 201 and GET returned 403.",
+   "reverse_if": "Google Workload Identity Federation from the Azure VM's managed identity is set up, so no key exists at all, or org policy blocks key creation."
+  },
+  {
+   "id": "decision.2026-10-21.appeal-commitments-binding",
+   "type": "decision",
+   "title": "The vp-voice appeal's statements bind every later use. Agent Platform is called only from India (the lab VM now, and the product's voice runtime when deployed). There is one key, holding Vertex AI User only. Spend is capped at INR 20,000 with alerts. There are no evaluation batches in the first 48 h after the key lands, then at most 1 request/s, from the VM only.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "Google reinstated the project on the information in that appeal. Using it differently would make the appeal untrue and risk a second, harder action.",
+   "reverse_if": "Google confirms a different usage pattern is fine, or traffic moves to a paid project under its own terms."
+  },
+  {
+   "id": "risk.2026-10-21.product-deploy-region-vertex",
+   "type": "risk",
+   "title": "If the product's voice runtime is deployed outside India and routes Gemini through Vertex (product/voice/vpvoice/providers/google.py routes there whenever VERTEX_SA_FILE is set), it breaks the appeal's India-only statement.",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "mitigation": "Deploy the voice runtime in Azure Central India (vp-research-rg) or leave VERTEX_SA_FILE unset outside India. The deploy plan presented to the owner must say which."
+  },
+  {
+   "id": "rejected.2026-10-21.reuse-pasted-vertex-key",
+   "type": "rejection",
+   "title": "Keeping the pasted vp-voice key (id ending a6d78b) in the scratchpad for redeploys",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "tried": "lab_ops.secrets() sends scratchpad vertex-sa.json to the VM as VERTEX_SA_B64 on every deploy.",
+   "broke": "Every redeploy would have pushed back the key the appeal said was deleted. If Google had not deleted it, that key would be live again on the VM.",
+   "instead": "The local copy was deleted on 2026-10-21. vm_setup.sh leaves the VM's key file alone when VERTEX_SA_B64 is empty, so the new key delivered by the hand-off survives redeploys."
+  }
+ ],
+ "edges": [
+  { "from": "directive.2026-10-21.vertex-back", "to": "evidence.2026-10-21.vp-voice-reinstated", "relation": "derived-from" },
+  { "from": "decision.2026-10-21.vertex-key-handoff", "to": "decision.2026-10-20.google-from-india-only", "relation": "implements" },
+  { "from": "decision.2026-10-21.appeal-commitments-binding", "to": "evidence.2026-10-20.google-access", "relation": "derived-from" },
+  { "from": "decision.2026-10-21.appeal-commitments-binding", "to": "decision.2026-10-20.google-from-india-only", "relation": "extends" },
+  { "from": "risk.2026-10-21.product-deploy-region-vertex", "to": "decision.2026-10-21.appeal-commitments-binding", "relation": "constrains" },
+  { "from": "rejected.2026-10-21.reuse-pasted-vertex-key", "to": "decision.2026-10-21.vertex-key-handoff", "relation": "informs" },
+  { "from": "evidence.2026-10-21.vp-voice-reinstated", "to": "open.2026-10-20.paid-vertex", "relation": "informs" },
+  { "from": "evidence.2026-10-21.vp-voice-reinstated", "to": "component.gcp.vp-voice", "relation": "supports" }
+ ],
+ "events": []
+}

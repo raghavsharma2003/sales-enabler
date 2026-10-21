@@ -110,3 +110,29 @@ true on 2026-10-20.
    - Gemini TTS first audio is back to 0.6–0.8 s;
    - the v2-flashlite reply gap is about 1.6–2.2 s (the 2026-10-20 India smoke).
 6. Then collect round-2 human ratings. That is `open.2026-10-20.round2-human-ratings`.
+
+## 2026-10-21: vp-voice reinstated (option 3)
+
+Google Cloud Trust & Safety emailed that vp-voice is reinstated "based on information that you have provided". The
+email asks us to fix any outstanding issues so the project complies with the Terms of Service and the AUP. The appeal's
+statements now bind every use (`decision.2026-10-21.appeal-commitments-binding`):
+- Agent Platform is called only from India;
+- one key, holding Vertex AI User only;
+- spend is capped at INR 20,000;
+- no batches for 48 h after the key lands, then at most 1 request/s, from the VM only.
+
+Changes to the runbook above:
+- **Project:** `VERTEX_PROJECT` stays unset. `providers.py` falls back to `vp-voice`.
+- **Old key:** the scratchpad copy of the pasted key (id ending a6d78b) was deleted, so redeploys can no longer push it
+  back.
+- **Key hand-off, replacing step 1:**
+  - Instinct creates one new JSON key and PUTs it to a write-only, one-blob SAS link
+    (`vl-transfer/inbox/vp-voice-sa.json`, 12 h expiry). It is never pasted in chat or put in Drive.
+  - A VM Run Command pulls the blob to `/opt/voicelab/vertex-sa.json` (mode 600), and the blob is then deleted.
+  - The agent checks only `client_email` and `project_id`, never the key.
+- **Instinct checklist, before the key is made:**
+  - read the Cloud Logging notice;
+  - delete every old key;
+  - vp-voicelab holds Vertex AI User only;
+  - an INR 20,000 budget with alerts at 50/90/100%;
+  - Vertex request metrics after 20 Oct 09:00 UTC (expected zero).
