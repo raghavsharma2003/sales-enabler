@@ -29,7 +29,8 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 interface SourceRow { id: string; workspace_id: string; kind: SourceKind; name: string; authority: Authority; max_age_s: number | null; hook_secret: string | null; status: string }
 
 export function sourceRef(s: SourceRow): SourceRef {
-  return { id: s.id, authority: s.authority, maxAgeS: s.max_age_s ?? DEFAULT_MAX_AGE_S[s.authority], label: `${s.kind}:${s.id}` };
+  return { id: s.id, authority: s.authority, maxAgeS: s.max_age_s ?? DEFAULT_MAX_AGE_S[s.authority], label: `${s.kind}:${s.id}`,
+    code: (FILE_KINDS as readonly string[]).includes(s.kind) ? 'upload' : s.kind };
 }
 
 async function createSource(q: Queryable, ws: string, i: { kind: SourceKind; name: string; authority?: Authority; maxAgeDays?: number }) {

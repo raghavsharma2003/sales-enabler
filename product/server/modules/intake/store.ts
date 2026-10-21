@@ -19,7 +19,8 @@ export interface InRow {
   observedAt?: Date;
 }
 
-export interface SourceRef { id: string; authority: Authority; maxAgeS: number | null; label: string }
+/** label = '<kind>:<id>' for evidence; code = a stable suppression source ('upload' for files, else the kind). */
+export interface SourceRef { id: string; authority: Authority; maxAgeS: number | null; label: string; code: string }
 
 export interface ApplyOpts {
   source: SourceRef;
@@ -180,10 +181,10 @@ export async function applyRows(q: Queryable, ws: string, rows: InRow[], o: Appl
     // 6. Opt-outs add a workspace suppression; nothing here removes one.
     const outs = live.filter(m => m.optOut);
     if (outs.length) {
-      const r = await q.query(`INSERT INTO suppression (workspace_id, contact_id, e164, e164_hash, scope, reason, source)
-          SELECT $1, t.cid, t.e, t.h, 'workspace', 'opt_out', $2 FROM unnest($3::uuid[], $4::text[], $5::text[]) AS t(cid, e, h)
+      const r = await q.query(`INSERT INTO suppression (workspace_id, contact_id, e164, e164_hash, scope, reason, source, evidence)
+          SELECT $1, t.cid, t.e, t.h, 'workspace', 'opt_out', $2, $6 FROM unnest($3::uuid[], $4::text[], $5::text[]) AS t(cid, e, h)
           WHERE NOT EXISTS (SELECT 1 FROM suppression s WHERE s.workspace_id = $1 AND s.scope = 'workspace' AND (s.contact_id = t.cid OR s.e164 = t.e))`,
-        [ws, o.source.label, outs.map(m => idOf.get(m.e164)!), outs.map(m => m.e164), outs.map(m => hashOf.get(m.e164)!)]);
+        [ws, o.source.code, outs.map(m => idOf.get(m.e164)!), outs.map(m => m.e164), outs.map(m => hashOf.get(m.e164)!), JSON.stringify({ source: o.source.label, receiptId: o.receiptId ?? null })]);
       bump('opt_outs', r.rowCount ?? 0);
     }
     const supp = new Set((await many<{ contact_id: string }>(q, `SELECT DISTINCT c.id AS contact_id FROM contact c JOIN suppression s ON s.workspace_id = c.workspace_id

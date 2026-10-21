@@ -172,25 +172,25 @@ export function registerContactTools(reg: Registry): void {
   }));
 
   // ---- suppression ----
-  const addSuppression = async (ctx: ToolCtx, i: { contactId?: string; e164?: string }, reason: string, source: string, scope = 'workspace', scopeId?: string) => {
+  // source is a stable code the dial gate reports (suppressed:<source>); the ids behind it go in evidence.
+  const addSuppression = async (ctx: ToolCtx, i: { contactId?: string; e164?: string }, reason: string, source: 'in_call' | 'manual', evidence: Record<string, unknown>, scope = 'workspace', scopeId?: string) => {
     const r = await resolve(ctx.q, ctx.workspaceId, i);
     const e = r.e164 ?? null;
     const h = e ? await e164Hash(ctx.q, ctx.workspaceId, e) : null;
     const existing = await one<{ id: string }>(ctx.q, `SELECT id FROM suppression WHERE workspace_id = $1 AND scope = $2 AND coalesce(scope_id::text,'') = coalesce($3::text,'')
       AND (($4::uuid IS NOT NULL AND contact_id = $4) OR ($5::text IS NOT NULL AND e164 = $5)) LIMIT 1`, [ctx.workspaceId, scope, scopeId ?? null, r.contact?.id ?? null, e]);
     if (existing) return { suppressionId: existing.id, already: true, contactId: r.contact?.id ?? null };
-    const s = await one<{ id: string }>(ctx.q, `INSERT INTO suppression (workspace_id, contact_id, e164, e164_hash, scope, scope_id, reason, source)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`, [ctx.workspaceId, r.contact?.id ?? null, e, h, scope, scopeId ?? null, reason, source]);
+    const s = await one<{ id: string }>(ctx.q, `INSERT INTO suppression (workspace_id, contact_id, e164, e164_hash, scope, scope_id, reason, source, evidence)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`, [ctx.workspaceId, r.contact?.id ?? null, e, h, scope, scopeId ?? null, reason, source, JSON.stringify(evidence)]);
     return { suppressionId: s!.id, already: false, contactId: r.contact?.id ?? null };
   };
 
   reg.register(tool(obj({ ...target, reason: str({ min: 2, max: 200 }), scope: opt(str({ oneOf: ['workspace', 'campaign'] })), scopeId: opt(uuid()) }), {
-    // The registry lists this as external with an A3 (risk-lowering) override. Until the kernel's A3 list carries it,
-    // it is a draft so that stopping calls to someone never waits for an approval.
-    name: 'contact.suppress', risk: 'draft', roles: ['owner', 'operator', 'compliance'], summary: 'Stop calling a person (workspace-wide or one campaign); works for numbers not on file too. Lowers risk, so it never waits for approval',
+    // External as the registry has it; an A3 verb, so it runs at once for VP and for members (never waits for a card).
+    name: 'contact.suppress', risk: 'external', roles: ['owner', 'operator', 'compliance'], summary: 'Stop calling a person (workspace-wide or one campaign); works for numbers not on file too. Lowers risk, so it never waits for approval',
     run: async (ctx, i) => {
       if (i.scope === 'campaign' && !i.scopeId) throw new Error('a campaign suppression needs scopeId');
-      return addSuppression(ctx, i, i.reason, 'member:' + (ctx.actor.id ?? ctx.actor.type), i.scope ?? 'workspace', i.scopeId);
+      return addSuppression(ctx, i, i.reason, 'manual', { by: ctx.actor.type + ':' + (ctx.actor.id ?? '') }, i.scope ?? 'workspace', i.scopeId);
     },
   }));
 
@@ -198,10 +198,10 @@ export function registerContactTools(reg: Registry): void {
     name: 'contact.suppress_after_opt_out', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'The person said "don\'t call me" on a call: suppress voice workspace-wide at once (A3 for VP itself) and append a consent withdrawal',
     run: async (ctx, i) => {
-      const src = i.conversationId ? 'call:' + i.conversationId : i.campaignId ? 'campaign:' + i.campaignId : 'call';
-      const s = await addSuppression(ctx, i, 'opt_out', src);
+      const evidence = { conversationId: i.conversationId ?? null, campaignId: i.campaignId ?? null, quote: i.quote ?? null };
+      const s = await addSuppression(ctx, i, 'opt_out', 'in_call', evidence);
       if (s.contactId) await ctx.q.query(`INSERT INTO consent_record (workspace_id, contact_id, purpose, channel, basis, source, evidence, granted)
-        VALUES ($1,$2,'all','voice','withdrawal',$3,$4,false)`, [ctx.workspaceId, s.contactId, src, JSON.stringify({ quote: i.quote ?? null, conversationId: i.conversationId ?? null })]);
+        VALUES ($1,$2,'all','voice','withdrawal','in_call',$3,false)`, [ctx.workspaceId, s.contactId, JSON.stringify(evidence)]);
       return s;
     },
   }));
@@ -378,7 +378,8 @@ export function registerContactTools(reg: Registry): void {
         }
         if (i.suppress !== false) {
           const has = await one(ctx.q, `SELECT 1 FROM suppression WHERE workspace_id = $1 AND scope = 'workspace' AND (e164_hash = ANY($2::text[]) OR ($3::uuid IS NOT NULL AND contact_id = $3))`, [ws, hashes, c?.id ?? null]);
-          if (!has) await ctx.q.query(`INSERT INTO suppression (workspace_id, contact_id, e164, e164_hash, scope, reason, source) VALUES ($1,$2,NULL,$3,'workspace','erased','dpdp')`, [ws, c?.id ?? null, hashes[0]]);
+          if (!has) await ctx.q.query(`INSERT INTO suppression (workspace_id, contact_id, e164, e164_hash, scope, reason, source, evidence) VALUES ($1,$2,NULL,$3,'workspace','erased','dpdp',$4)`,
+            [ws, c?.id ?? null, hashes[0], JSON.stringify({ requestedBy: i.requestedBy })]);
         }
         if (c) {
           surfaces.attributes = (await ctx.q.query('DELETE FROM attribute WHERE contact_id = $1', [c.id])).rowCount ?? 0;

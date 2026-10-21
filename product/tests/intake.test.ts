@@ -255,6 +255,14 @@ test('suppression holds on re-import; opt-out columns and the A3 opt-out verb su
   const mem = await w.call('contact.suppress_after_opt_out', { e164: '9000000045' });
   assert.equal(mem.status, 'confirmed');
   assert.equal((mem as any).mode, 'A3');
+  // Stable gate codes: the source is a fixed word; the ids behind it are evidence.
+  const sources = await many<{ source: string; evidence: any }>(pool, 'SELECT source, evidence FROM suppression WHERE workspace_id = $1 ORDER BY created_at', [w.ws]);
+  assert.deepEqual([...new Set(sources.map(x => x.source))].sort(), ['in_call', 'manual', 'upload']);
+  assert.equal(sources.find(x => x.source === 'in_call')!.evidence.quote, 'call mat karna');
+  assert.ok(sources.find(x => x.source === 'upload')!.evidence.source.startsWith('csv:'));
+  // contact.suppress is external (the registry's class) and still runs at once for a member, as an A3 verb.
+  const ext = await w.call('contact.suppress', { e164: '9000000046', reason: 'asked' });
+  assert.equal(ext.status === 'confirmed' && (ext as any).mode, 'A3');
   // Release: a compliance member proposes, an owner approves; a builder cannot.
   const comp = await w.member('compliance');
   assert.equal((await w.call('contact.unsuppress', { suppressionId: s.suppressionId, reason: 'person asked to be called again' }, w.as('builder'))).status, 'not_executed');

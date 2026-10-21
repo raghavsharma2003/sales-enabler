@@ -51,8 +51,8 @@
     },
     {
       "id": "contact.suppress",
-      "risk": "draft",
-      "note": "draft until contact.suppress joins A3_VERBS (decision.2026-10-21.intake-suppress-draft-until-a3)"
+      "risk": "external",
+      "note": "A3 verb: runs at once for VP and members (shared/approval.ts A3_VERBS)"
     },
     {
       "id": "contact.suppress_after_opt_out",
@@ -103,7 +103,8 @@
   "migrations": [
     "product/db/migrations/0101_intake.sql",
     "product/db/migrations/0102_intake_attr_index.sql",
-    "product/db/migrations/0103_intake_retention.sql"
+    "product/db/migrations/0103_intake_retention.sql",
+    "product/db/migrations/0104_intake_suppression_evidence.sql"
   ],
   "tests": {
     "passed": 19,
@@ -130,8 +131,8 @@
     "Viewers get PII scrubbed in reads",
     "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
     "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 18.9-21.7 s alone, re-import 7.7-13.0 s (n=9); 16-81 s inside the full suite (n=8). Correctness always tested; the 60 s speed bound only with VP_PERF=1",
-    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json (consent.record policy, contact.merge external, export/DPDP Owner+Compliance), except contact.suppress (see needs_from_others)",
-    "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept"
+    "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept",
+    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json for every registered blueprint tool (contact.suppress external since it joined A3_VERBS)"
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -145,10 +146,6 @@
     "Calls and memory honouring recordings_days / transcripts_days from policy.retention.get"
   ],
   "needs_from_others": [
-    {
-      "from": "kernel",
-      "what": "Add contact.suppress to shared/approval.ts A3_VERBS (the registry marks it external with an A3 risk-lowering override); intake will then switch it from draft to external. Likewise dpdp.request.execute's override 'A3 when the person asked on a call' has no kernel path yet."
-    },
     {
       "from": "safety (dial gate)",
       "what": "Done by the main loop in a078004 (campaigns gate G3/G4 use server/identity.ts and hash-only suppressions). contact.dial_facts remains available for previews and other paths."
@@ -180,5 +177,25 @@
   ],
   "jobs": [
     "intake.retention (daily 03:10 IST)"
+  ],
+  "cross_module_imports": [
+    "forgetContactMemory from ../memory/index.ts: the one sanctioned data-function import (integrator, 2026-10-21), so DPDP erasure forgets memory inside its own transaction. Everything else goes through the registry."
+  ],
+  "suppression_sources": {
+    "in_call": "contact.suppress_after_opt_out (evidence: conversationId, campaignId, quote)",
+    "manual": "contact.suppress (evidence: by)",
+    "upload": "an opt-out column in a file (evidence: source, receiptId)",
+    "crm|api_push|form|whatsapp": "optOut in a webhook event (evidence: source)",
+    "dpdp": "added by erasure when none existed (evidence: requestedBy)"
+  },
+  "dial_time_attributes": {
+    "rule": "Every attribute row has one current value per (contact_id, key) with authority, observed_at, max_age_s and source_id. A value is usable for dial-time facts only while observed_at + max_age_s > now (max_age_s null = no expiry). Stale values must not be spoken (campaigns reason ATTRIBUTE_STALE); contact.get returns stale per key.",
+    "self_subjects": "name, first_name, last_name, language, timezone, preferred_time, preferred_channel, address_as, pace: person 100 > agent 60 > crm 50 = upload 50 > system 30. name, language and timezone are mirrored onto contact columns; read those.",
+    "record_subjects": "every other key (amount_due, due_date, plan, status, record keys, external_id ...): system 100 > crm 80 > agent 75 > upload 70 > person 40. Amounts and dates may be spoken only from these rows, never from speech.",
+    "never_attributes": "Aadhaar, PAN, bank, card, OTP and password columns are dropped at mapping and never stored. Consent, opt-out and DND are ledgers (consent_record, suppression, dnd_status), not attributes; use contact.dial_facts.",
+    "freshness_defaults": "upload 30 days, crm and system 24 h, agent and person no expiry; a source can set its own max age."
+  },
+  "notes": [
+    "Display ORDER BYs use the database collation on purpose (names read in the locale); the one comparison that decides membership (audience filter gt/lt on text) uses COLLATE \"C\"."
   ]
 }

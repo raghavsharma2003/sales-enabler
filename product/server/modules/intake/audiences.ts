@@ -36,7 +36,8 @@ function condSql(c: Cond, params: unknown[]): string {
     default: {
       const v = need();
       if (typeof v === 'number') return has(`jsonb_typeof(a.value) = 'number' AND (a.value #>> '{}')::numeric ${CMP[c.op]} ${p(v)}::numeric`);
-      if (typeof v === 'string') return has(`jsonb_typeof(a.value) = 'string' AND (a.value #>> '{}') ${CMP[c.op]} ${p(v)}::text`);
+      // Byte order, not the database locale: ISO dates and codes must compare the same on every server.
+      if (typeof v === 'string') return has(`jsonb_typeof(a.value) = 'string' AND (a.value #>> '{}') COLLATE "C" ${CMP[c.op]} ${p(v)}::text COLLATE "C"`);
       throw new Error(`${c.key} ${c.op} needs a number or a date`);
     }
   }

@@ -92,7 +92,7 @@
     {
       "id": "decision.2026-10-21.intake-suppress-draft-until-a3",
       "type": "decision",
-      "status": "proposed",
+      "status": "superseded",
       "source": "model",
       "date": "2026-10-21",
       "title": "contact.suppress is registered as draft (runs at once), not the registry's external, until the kernel's A3 list carries it",
@@ -108,6 +108,26 @@
       "title": "policy.retention.set/get (policy, versioned, Owner or Compliance) and the nightly intake.retention job: purges uploaded file text and receipt row issues; consent, suppression and tombstones are never subject to retention",
       "path": "product/server/modules/intake/retention.ts",
       "details": "Defaults: upload files 30 d, receipt issues 180 d, recordings 90 d, transcripts 180 d, audit logs 365 d. Intake enforces only the first two; calls and memory read policy.retention.get for theirs (not wired). 1 test (approval roles, version voiding, purge, audit row)."
+    },
+    {
+      "id": "decision.2026-10-21.intake-suppress-external",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "contact.suppress is registered as external, the blueprint registry's class; it runs at once because the kernel added it to A3_VERBS (779068d)",
+      "rationale": "The reverse_if of the draft decision happened. Tested: a member's contact.suppress returns confirmed, mode A3.",
+      "reverse_if": "contact.suppress leaves A3_VERBS; then it must not be external, or members wait for a card to stop calls."
+    },
+    {
+      "id": "decision.2026-10-21.intake-suppression-source-codes",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "suppression.source is a stable code (in_call, manual, upload, crm, api_push, form, whatsapp, dpdp); the ids behind it go in suppression.evidence (0104)",
+      "rationale": "The dial gate reports suppressed:<source>; 'call:<uuid>' made an unstable reason code (e2e finding F6).",
+      "reverse_if": "The gate stops deriving its code from source, or the UI needs per-source codes; then keep codes stable and add a separate field."
     }
   ],
   "edges": [
@@ -165,6 +185,16 @@
       "from": "component.2026-10-21.intake-retention",
       "to": "component.2026-10-21.intake-module",
       "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-21.intake-suppress-external",
+      "to": "decision.2026-10-21.intake-suppress-draft-until-a3",
+      "relation": "supersedes"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-suppression-source-codes",
+      "relation": "implements"
     }
   ],
   "events": [
@@ -182,6 +212,11 @@
       "date": "2026-10-21",
       "event": "intake-scale-test-not-a-gate",
       "details": "The 50k intake test now always checks correctness (rows, dedupe, verdicts) and asserts the 60 s bound only with VP_PERF=1; requested by the integrator after a 2-core CI runner failed the wall-clock gate. Measurement stays measure.2026-10-21.intake-50k-import."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-integration-fixes",
+      "details": "contact.suppress external (A3 via A3_VERBS); stable suppression source codes with evidence (0104); audience text comparisons COLLATE \"C\"; DPDP uses memory's forgetContactMemory; STATUS states dial-time attribute authority and freshness. 18/18 intake tests."
     }
   ]
 }
