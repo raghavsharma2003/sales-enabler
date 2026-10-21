@@ -19,7 +19,12 @@ setFakeLlm((req: LlmRequest) => {
   const said = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';
   if (last.role === 'tool') return reply('Maine jo draft aur test ke steps the, chala diye. Jo cheez paise lagati hai, wo aapke tap ka intezaar kar rahi hai.');
   if (said.includes('top up') || said.includes('topup')) return reply('Wallet top-up ka card bana raha hoon.', [{ id: 'c' + ++n, name: 'wallet_topup', args: JSON.stringify({ inrMilli: 500000 }) }]);
-  if (said.includes('for the campaign')) {
+  if (said.includes('plan with a bad step')) {
+    return reply('Plan taiyaar hai.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Spending limit set karna', steps: [
+      { tool: 'cap.raise', args: { scope: 'workspace', period: 'day', capInrMilli: 2000000 }, why: 'din ka kharcha limit' },
+    ] }) }]);
+  }
+  if (said.includes('for the campaign') || said.includes('fix step')) {
     return reply('Limit ka plan taiyaar hai; paise wala step aapke tap par.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Spending limit set karna', steps: [
       { tool: 'cap.raise', args: { scope: 'workspace', period: 'daily', capInrMilli: 2000000 }, why: 'din ka kharcha limit: aapke tap par' },
     ] }) }]);

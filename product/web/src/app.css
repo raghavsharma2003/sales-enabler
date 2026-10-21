@@ -268,6 +268,7 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .ocard.s-approved { border-color: var(--leaf); } .ocard.s-failed, .ocard.s-rejected { border-color: var(--brick); } .ocard.s-stale, .ocard.s-expired { opacity: 0.75; border-style: dashed; }
 .steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .steps li { display: flex; gap: 8px; align-items: flex-start; font-size: 0.9375rem; }
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--terra-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; min-height: 24px; }
 .steps .num { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sunk); font-size: 0.75rem; font-weight: 700; display: grid; place-items: center; }
 .diffrow { display: grid; gap: 2px; font-size: 0.9375rem; padding: 6px 0; border-top: 1px solid var(--line); }
 .diffrow s { color: var(--ink-3); } .diffrow ins { text-decoration: none; background: var(--leaf-bg); color: var(--leaf); padding: 0 4px; border-radius: 4px; }

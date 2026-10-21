@@ -138,7 +138,7 @@ function Msg({ m }: { m: ThreadMsg }) {
 
 // ---------- the ten cards ----------
 export function Card({ c }: { c: OperatorCard }) {
-  const { echo, toast } = useApp();
+  const { echo, toast, say } = useApp();
   const [st, setSt] = useState<{ state: 'idle' | 'running' | 'approved' | 'failed' | 'unknown'; note?: string }>({ state: 'idle' });
   const [picked, setPicked] = useState<string | null>(null);
   const approve = async () => {
@@ -162,7 +162,7 @@ export function Card({ c }: { c: OperatorCard }) {
       {c.body && <p className="small">{c.body}</p>}
       {c.quote && <blockquote className="small" style={{ margin: 0, paddingLeft: 10, borderLeft: '3px solid var(--peacock)' }} lang="hi">“{c.quote}”</blockquote>}
       {c.metric && <Figure m={c.metric} />}
-      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <Chip tone="brick">Can't run</Chip> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? 'Runs now' : 'Waits for your tap'}</Chip>}</span></li>)}</ol>}
+      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <><Chip tone="brick">Can't run</Chip> <span className="small muted">This step can't run as written.</span> <button type="button" className="linkbtn" onClick={() => say(`Fix step ${i + 1} of the plan: ${s.label}`)}>Ask Saarthi to fix it</button></> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? 'Runs now' : 'Waits for your tap'}</Chip>}</span></li>)}</ol>}
       {c.diff && <div>{c.diff.map((d, i) => <div className="diffrow" key={i}><strong>{d.field}</strong><span>{d.before ? <><s>{d.before}</s> → </> : null}<ins>{d.after}</ins></span>{d.reason && <span className="small muted">{d.reason}</span>}</div>)}</div>}
       {c.progress && <div><div className="meter-bar" role="progressbar" aria-label={c.progress.label} aria-valuenow={c.progress.pct ?? undefined}><span className="meter-fill tone-peacock" style={{ transform: `scaleX(${(c.progress.pct ?? 0) / 100})` }} /></div><p className="small muted">{c.progress.label}</p></div>}
       {c.type === 'question' && c.options && (

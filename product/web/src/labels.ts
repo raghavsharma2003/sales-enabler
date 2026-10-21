@@ -48,6 +48,11 @@ export const toolAsk = (tool: string, fallback: string) => TOOL_LABEL[tool]?.ask
 export const toolDone = (tool: string, fallback: string) => TOOL_LABEL[tool]?.done ?? fallback;
 
 const FIELD: Record<string, string> = { inrMilli: 'Amount', capInrMilli: 'Spend cap', e164: 'Phone number', phone: 'Phone number', name: 'Name', email: 'Email', role: 'Role', level: 'Level', note: 'Note', title: 'Title', text: 'Text', brain: 'Brain', enabled: 'Switched on', stackId: 'Voice stack', scope: 'Scope', evidence: 'Where it came from', requestedBy: 'Asked by', suppress: 'Keep the number suppressed', window: 'Calling window', days: 'Days', ranges: 'Hours', start: 'From', end: 'To', concurrency: 'Calls at once', category: 'Kind of call', audienceName: 'Audience name', consentPurpose: 'Consent recorded for', scopes: 'Access', undoMinutes: 'Undo window (minutes)' };
+/** Short enum values an approval card shows, in words. */
+const ENUM_WORDS: Record<string, Record<string, string>> = {
+  scope: { workspace: 'Whole workspace', campaign: 'One campaign', api_key: 'One API key' },
+  period: { daily: 'Per day', monthly: 'Per month', total: 'In total' },
+};
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const words = (k: string) => { const w = k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_.]+/g, ' ').toLowerCase(); return w.charAt(0).toUpperCase() + w.slice(1); };
 export const fieldLabel = (path: string): string => { const last = path.split('.').pop() ?? path; return FIELD[last] ?? words(last); };
@@ -61,6 +66,7 @@ export function fieldValue(path: string, v: unknown): string | null {
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
   if (typeof v === 'string' && /^\+?\d{10,13}$/.test(v.replace(/[\s-]/g, ''))) return fmtPhone(v.replace(/[\s-]/g, ''));
   if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  if (typeof v === 'string' && ENUM_WORDS[last]?.[v]) return ENUM_WORDS[last][v];
   if (typeof v === 'string') return v;
   if (typeof v === 'number') return String(v);
   if (Array.isArray(v)) return v.map(x => (typeof x === 'object' && x ? Object.entries(x as object).map(([k, y]) => `${fieldLabel(k)} ${fieldValue(k, y) ?? ''}`.trim()).join(', ') : String(x))).join('; ');

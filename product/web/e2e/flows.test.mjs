@@ -259,3 +259,24 @@ test('Ask Saarthi on a launch blocker with no page: the dock gets the sentence a
   assert.ok((await actions('proposed')).some(a => a.tool === 'cap.raise'), 'the server holds the spend step for the person\'s tap');
   assert.equal((await actions('executed')).some(a => a.tool === 'cap.raise'), false, 'nothing that spends has run: the plan only waits');
 });
+
+test('A plan step the server refuses says so plainly, offers a fix, and the fixed step holds, approves and executes', async () => {
+  await page.goto(BASE + '/');
+  await page.locator('#dock-input').fill('Make a plan with a bad step');
+  await page.keyboard.press('Enter');
+  const bad = page.locator('.dock article[aria-label^="plan card"]').last();
+  await bad.waitFor({ timeout: 10000 });
+  await bad.getByText("This step can't run as written.").waitFor();
+  assert.ok(!/must be one of|period/i.test(await bad.innerText()), 'the validator text stays hidden');
+  await bad.getByRole('button', { name: 'Ask Saarthi to fix it' }).click();
+  await page.locator('.dock').getByText(/^Fix step 1 of the plan: /).waitFor({ timeout: 8000 });
+  const card = page.locator('.dock article[aria-label^="approval card"]').last();
+  await card.waitFor({ timeout: 10000 });
+  const before = (await actions('executed')).filter(a => a.tool === 'cap.raise').length;
+  assert.ok(!/^(workspace|daily)$/m.test(await card.innerText()), 'the card shows words, not enum values');
+  await card.locator('.hold').scrollIntoViewIfNeeded();
+  await hold(card.locator('.hold'));
+  await card.getByText(/Done\.|Could not finish|Not known yet/).waitFor({ timeout: 8000 });
+  const after = (await actions('executed')).filter(a => a.tool === 'cap.raise').length;
+  assert.equal(after, before + 1, 'the held cap step executed exactly once, after the hold');
+});
