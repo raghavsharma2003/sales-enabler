@@ -15417,6 +15417,45 @@
    "title": "Looking up workflow agent outputs by an id the agent was asked to set.",
    "tried": "The blueprint workflow asked each thematic digest agent to return id = '<fixed id>' and later stages fetched digests with D('owner-requirements').",
    "broke": "Agents chose their own ids (owner-requirements-catalogue, call-quality-voice-turn-taking-2026-10-21 and others), so the lookup returned nothing. The integrator received the fallback text instead of the 68-item requirements catalogue. The spine and red team still saw the catalogue through the all-digests bundle, and the integrator's Appendix A covers the requirements. Fix for future scripts: stamp the id in the script after the agent returns ({...r, id: t.id}), never trust the agent's field."
+  },
+  {
+   "id": "directive.2026-10-21.build-end-to-end",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-21",
+   "title": "Owner: go with the blueprint's recommendations and build the product end to end, using parallel sessions, workflows and agents, each on the model and effort its use case needs.\n- Voice: for now the user selects among the finalised stacks; a default comes later.\n- Launch price: decided later; the product comes first.\n- Market: horizontal, for many kinds of enterprises, not only insurance.\n- Self-learning may use google-research/harness2.",
+   "quote": "go with your recommendations and build the product end to end launch parallel chats, workflows and agents ... 1.rightnow give option to select the voice(there were 5-6 stack that we finalised) later we will make a default 2. launch price we will think about later righnow the product is important 3. understand that we are not building this for just the insurance company we will sell this product to various kind of enterprises and they all should be able to use it. for self learning use google harness2 tech if you want lets get the product end to end ready."
+  },
+  {
+   "id": "decision.2026-10-21.stack-choice-no-default",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-21",
+   "title": "Voice stacks in the product: the user picks from the round-2 curated set (v2-live, v2-flashlite, v2-54mini, v2-38flash, v2-mai, v2-flashlite-or), plus v2-luna as the owner's pick and the Indic Sarvam stack. No default is preselected yet; each option shows its measured latency, cost and status.",
+   "rationale": "Owner directive 2026-10-21; supersedes blueprint open decision 1 (joint-gate default) for now.",
+   "reverse_if": "The owner names a default after round-2 ear ratings and the handset battery, or a stack fails its provider (shutdown, quota) and must be hidden."
+  },
+  {
+   "id": "decision.2026-10-21.pricing-deferred",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-21",
+   "title": "Launch pricing is deferred. The product meters cost per call and per second (INR, all-in) and shows usage, but no rate card or tier price is fixed in this build.",
+   "rationale": "Owner directive 2026-10-21: the product comes first.",
+   "reverse_if": "The owner sets a price, or a design partner needs an invoice."
+  },
+  {
+   "id": "decision.2026-10-21.horizontal-enterprises",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-21",
+   "title": "VP is horizontal: built for many kinds of Indian enterprises (services, lending, insurance, education, healthcare, retail, logistics, real estate and others), not insurance-first. Agent presets and templates are industry-neutral jobs (reminders, follow-ups, feedback, onboarding, collections-in-good-standing, inbound support, lead qualification on consented leads); sector packs add rules on top.",
+   "rationale": "Owner directive 2026-10-21; supersedes the blueprint's BFSI-gated design-partner ordering.",
+   "reverse_if": "Buyer interviews show one segment pays far more and the owner chooses to focus."
   }
  ],
  "edges": [
@@ -28176,6 +28215,31 @@
    "from": "decision.2026-10-21.blueprint-defining-decisions",
    "to": "decision.2026-10-21.wt-synthesis-must-be-changes",
    "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-21.build-end-to-end",
+   "to": "decision.2026-10-21.stack-choice-no-default",
+   "relation": "sets"
+  },
+  {
+   "from": "directive.2026-10-21.build-end-to-end",
+   "to": "decision.2026-10-21.pricing-deferred",
+   "relation": "sets"
+  },
+  {
+   "from": "directive.2026-10-21.build-end-to-end",
+   "to": "decision.2026-10-21.horizontal-enterprises",
+   "relation": "sets"
+  },
+  {
+   "from": "directive.2026-10-21.build-end-to-end",
+   "to": "open.2026-10-21.blueprint-owner-decisions",
+   "relation": "answers"
+  },
+  {
+   "from": "directive.2026-10-21.build-end-to-end",
+   "to": "decision.2026-10-21.blueprint-defining-decisions",
+   "relation": "approves"
   }
  ]
 }
