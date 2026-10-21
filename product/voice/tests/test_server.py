@@ -47,6 +47,7 @@ class Server(Base):
         self.assertEqual(r.status, 200)
         self.assertEqual(len(d['stacks']), 7)
         self.assertEqual(set(d['components']), {'ears', 'brain', 'voice', 's2s'})
+        self.assertIs(d['customStacks'], True, 'the control plane offers built stacks only when the runtime says it runs them')
         self.assertEqual(d['components']['ears']['azure'], {'available': False, 'reason': "Azure Speech isn't set up on this server", 'missing': ['AZURE_SPEECH']})
         self.assertTrue(d['signing'])
         self.assertNotIn(SECRET, json.dumps(d))

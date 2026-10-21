@@ -292,7 +292,9 @@ class Runtime:
             v['available'] = not v['missing'] and not v['reason']
         from .providers import components
         return web.json_response({'ok': True, 'runtimeVersion': RUNTIME_VERSION, 'signing': bool(self.secret), 'control': bool(self.control),
-                                  'stacks': st, 'components': components.health(self.env, route), 'activeCalls': sum(1 for r in self.calls.values() if r.session and not r.session.ended),
+                                  'stacks': st, 'components': components.health(self.env, route),
+                                  'customStacks': True,      # tickets with stack.id 'custom' run their own parts (stacks.resolve)
+                                  'activeCalls': sum(1 for r in self.calls.values() if r.session and not r.session.ended),
                                   'capacity': {'admitted': (n := self.admitted()), 'max': self.max_calls, 'free': max(0, self.max_calls - n)},
                                   'live': {'listeners': sum(len(r.session.listeners) for r in self.calls.values() if r.session and not r.session.ended),
                                            'takeovers': sum(1 for r in self.calls.values() if r.session and not r.session.ended and r.session.taken_over)},

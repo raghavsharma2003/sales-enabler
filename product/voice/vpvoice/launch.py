@@ -155,7 +155,8 @@ class Front:
         cap = {k: sum(h['capacity'][k] for h in up) for k in ('admitted', 'max', 'free')} if up else {'admitted': 0, 'max': 0, 'free': 0}
         first = up[0] if up else {}
         return web.json_response({'ok': len(up) == self.n, 'runtimeVersion': first.get('runtimeVersion'), 'signing': first.get('signing'),
-                                  'control': first.get('control'), 'stacks': first.get('stacks', {}), 'activeCalls': sum(h['activeCalls'] for h in up),
+                                  'control': first.get('control'), 'stacks': first.get('stacks', {}), 'components': first.get('components', {}),
+                                  'customStacks': bool(first.get('customStacks')), 'activeCalls': sum(h['activeCalls'] for h in up),
                                   'capacity': cap, 'workers': [{'worker': f'w{i}', 'up': bool(h), **({'capacity': h['capacity']} if h else {})}
                                                                for i, h in enumerate(self.health)]},
                                  status=200 if up else 503)

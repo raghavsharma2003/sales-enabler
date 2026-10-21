@@ -56,8 +56,8 @@ class FakeEars:
 
 
 def make_components(sid, voice, t, http, env):
-    c = stacks.resolve(t['stack'])['components']
-    comp = Components(sid, 'cascade', voice, stacks.combination_id(sid, voice), brain=FakeBrain(t), brain_id=c.get('brain', c.get('s2s', '')),
+    s = stacks.resolve(t['stack']); c = s['components']                  # curated or 'custom': exactly the ticket's parts
+    comp = Components(sid, 'cascade', voice, stacks.combination_id(s, voice), brain=FakeBrain(t), brain_id=c.get('brain', c.get('s2s', '')),
                       brain_provider='devsim', ears_id=c.get('ears', ''), tts_id=c.get('voice', ''),
                       names={'stt': c.get('ears'), 'llm': c.get('brain') or c.get('s2s'), 'tts': c.get('voice'), 'voice': voice})
     comp.voice = FakeVoice(); comp.make_ears = lambda *a, **kw: FakeEars()

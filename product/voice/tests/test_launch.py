@@ -58,6 +58,9 @@ class Launcher(unittest.IsolatedAsyncioTestCase):
     async def test_spread_overflow_refuse_retry_end(self):
         h = await (await self.client.get('/v1/health')).json()
         self.assertEqual((h['capacity'], [w['worker'] for w in h['workers']]), ({'admitted': 0, 'max': 2, 'free': 2}, ['w0', 'w1']))
+        self.assertIs(h['customStacks'], True, 'forwarded from the workers')
+        self.assertEqual(set(h['components']), {'ears', 'brain', 'voice', 's2s'})
+        self.assertEqual(h['components']['ears']['azure']['missing'], ['AZURE_SPEECH'])
         joins = []
         for i in (1, 2):
             t = ticket(); t['conversationId'] = cid(i)

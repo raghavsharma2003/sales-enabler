@@ -34,6 +34,9 @@ class DevSim(unittest.IsolatedAsyncioTestCase):
                     body = json.dumps(obj).encode()
                     async with http.post(base + path, data=body, headers={signing.HEADER: signing.sign(SECRET, body)}) as r:
                         return r.status, await r.json()
+                built = ticket('custom', parts={'ears': 'sarvam', 'brain': 'kimi-k2.6', 'voice': 'azure-mai', 'gatedEars': True})
+                built['conversationId'] = '0b6f6e1a-1c2d-4e5f-8a9b-0000000000c1'
+                st, d = await post('/v1/calls', built); self.assertEqual(st, 202, f'a built stack runs on devsim too: {d}')
                 t = ticket(); cid = t['conversationId']
                 st, d = await post('/v1/calls', t); self.assertEqual(st, 202, d)
                 caller = await http.ws_connect(base + f"/v1/media/sim/{cid}?token={d['join']['token']}")
