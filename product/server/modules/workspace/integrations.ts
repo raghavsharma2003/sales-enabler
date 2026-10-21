@@ -81,7 +81,8 @@ export function registerIntegrations(r: Registry) {
 
   r.register(tool(obj({ id: uuid() }), {
     name: 'integration.disconnect', risk: 'destructive', summary: 'Disconnect an integration and erase its stored credentials',
-    describe: () => 'Disconnect an integration and erase its stored credentials',
+    describe: i => `Disconnect the integration ${i.id.slice(0, 8)} and erase its stored credentials`,
+    version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT name || '|' || status || '|' || updated_at::text AS v FROM integration WHERE id = $1 AND workspace_id = $2", [i.id, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       const n = await ctx.q.query("UPDATE integration SET status = 'disconnected', secret_ciphertext = NULL, secret_keys = '{}', updated_at = now() WHERE id = $1 AND workspace_id = $2 AND status = 'connected'", [i.id, ctx.workspaceId]);
       if (!n.rowCount) throw new Error('no connected integration with that id in this workspace');

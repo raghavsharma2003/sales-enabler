@@ -72,7 +72,7 @@ test('MA-01: an Operator turn runs attempt.retry_per_ladder at once; a member as
   assert.equal(viaOperator.status, 'needs_approval', `the Operator re-dialled a person without a tap (got ${viaOperator.status})`);
 });
 
-test('MA-02: member.remove runs on a stale card after the target was made an owner', finding('MA-02: member.remove has no version(); approval survives a role change'), async () => {
+test('MA-02: member.remove runs on a stale card after the target was made an owner', {}, async () => {
   const { ws, owner } = await workspace();
   const op = await member(ws, 'operator');
   const target = await member(ws, 'builder');
@@ -145,7 +145,7 @@ test('MA-06: GET /v1/actions ignores API-key scopes', finding('MA-06: /v1/action
 
 // ---------------------------------------------------------------- money
 
-test('MA-07: an API key\'s daily cap is stored but never enforced by the ledger', finding('MA-07: apikey.create dailyCapInrMilli creates no budget row'), async () => {
+test('MA-07: an API key\'s daily cap is stored but never enforced by the ledger', {}, async () => {
   const { ws, owner } = await workspace(10_000_000);        // ₹10,000 in the wallet
   const p = await reg.execute(pool, 'apikey.create', { name: 'capped key', dailyCapInrMilli: 1_000 }, { workspaceId: ws, actor: as(owner, 'owner') });
   assert.equal(p.status, 'needs_approval');
@@ -194,7 +194,7 @@ test('MA-09: a hold whose dial was never confirmed is never released or flagged'
 
 // ---------------------------------------------------------------- webhooks
 
-test('MA-10: an IPv4-mapped IPv6 address passes the webhook private-network check', finding('MA-10: SSRF via [::ffff:a.b.c.d]', false), () => {
+test('MA-10: an IPv4-mapped IPv6 address passes the webhook private-network check', {}, () => {
   // WHATWG URL rewrites [::ffff:169.254.169.254] to [::ffff:a9fe:a9fe]; isPrivateAddress only strips a dotted ::ffff: prefix.
   assert.equal(isPrivateAddress('::ffff:a9fe:a9fe'), true, 'cloud metadata address, IPv4-mapped');
   assert.throws(() => checkUrlShape('https://[::ffff:169.254.169.254]/latest/meta-data/'), /private network/);

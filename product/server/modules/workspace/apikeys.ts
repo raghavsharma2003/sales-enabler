@@ -17,6 +17,9 @@ export function registerApiKeys(r: Registry) {
         `INSERT INTO api_key (workspace_id, name, prefix, hash, scopes, daily_cap_inr_milli, expires_at)
          VALUES ($1,$2,$3,$4,$5, coalesce($6, 2000000), CASE WHEN $7::int IS NULL THEN NULL ELSE now() + ($7::int || ' days')::interval END) RETURNING id, created_at`,
         [ctx.workspaceId, i.name, k.prefix, k.hash, i.scopes ?? [], i.dailyCapInrMilli ?? null, i.expiresInDays ?? null]);
+      // The kernel ledger enforces a key's spend through a budget row: scope_type 'api_key', scope_id = the key id, period 'daily'.
+      await ctx.q.query("INSERT INTO budget (workspace_id, scope_type, scope_id, period, cap_inr_milli) VALUES ($1,'api_key',$2,'daily',$3)",
+        [ctx.workspaceId, row!.id, i.dailyCapInrMilli ?? 2_000_000]);
       const revealId = await holdForReveal(ctx, { token: k.token }, `API key ${i.name}`);
       return { id: row!.id, name: i.name, prefix: k.prefix, revealId, note: 'Read the token once with secret.reveal; it is not stored and cannot be shown again.' };
     },
@@ -41,7 +44,8 @@ export function registerApiKeys(r: Registry) {
 
   r.register(tool(obj({ id: uuid() }), {
     name: 'apikey.revoke', risk: 'external', summary: 'Revoke an API key so it stops working at once',
-    describe: () => 'Revoke an API key; anything using it stops working at once',
+    describe: i => `Revoke the API key ${i.id.slice(0, 8)}; anything using it stops working at once`,
+    version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT name || '|' || prefix || '|' || (revoked_at IS NOT NULL)::text AS v FROM api_key WHERE id = $1 AND workspace_id = $2", [i.id, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       const row = await one<{ revoked_at: Date | null }>(ctx.q, 'SELECT revoked_at FROM api_key WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.id, ctx.workspaceId]);
       if (!row) throw new Error('no such API key in this workspace');

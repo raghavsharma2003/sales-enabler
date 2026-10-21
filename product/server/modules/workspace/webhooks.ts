@@ -1,6 +1,8 @@
 // Outbound webhooks, signed like the runtime seam: x-vp-signature = "t=<unix_ms>,v1=<hex hmac_sha256(secret, t.body)>".
 // Events are queued as deliveries; deliverPending() sends them (the server runs it on a timer), retrying with backoff.
 import { lookup } from 'node:dns/promises';
+import { request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
 import { isIP } from 'node:net';
 import type pg from 'pg';
 import type { Registry } from '../../tools.ts';
@@ -16,13 +18,49 @@ const MAX_ATTEMPTS = 5, MAX_ENDPOINTS = 20, SEND_MS = 8000;
 
 const allowPrivate = () => process.env.VP_WEBHOOK_ALLOW_PRIVATE === '1';
 
+/** An IP literal as bytes: 4 for IPv4, 16 for IPv6 (handles `::`, zero padding, an embedded dotted tail and a zone id). */
+export function ipBytes(ip: string): number[] | null {
+  const addr = ip.replace(/^\[|\]$/g, '').split('%')[0];
+  const kind = isIP(addr);
+  if (kind === 4) return addr.split('.').map(Number);
+  if (kind !== 6) return null;
+  let head = addr, tail: number[] = [];
+  const dotted = /(\d+\.\d+\.\d+\.\d+)$/.exec(addr);
+  if (dotted) { tail = dotted[1].split('.').map(Number); head = addr.slice(0, -dotted[1].length); }
+  const [l, r = null] = head.split('::');
+  const groups = (x: string) => (x ? x.split(':').filter(g => g !== '') : []);
+  const left = groups(l), right = r === null ? [] : groups(r);
+  const want = 8 - (tail.length ? 2 : 0);
+  const mid = r === null ? [] : Array(Math.max(0, want - left.length - right.length)).fill('0');
+  const all = [...left, ...mid, ...right].map(g => parseInt(g, 16));
+  const bytes = all.flatMap(g => [(g >> 8) & 255, g & 255]).concat(tail);
+  return bytes.length === 16 && bytes.every(n => Number.isInteger(n) && n >= 0 && n < 256) ? bytes : null;
+}
+
+function privateV4([a, b, c]: number[]): boolean {
+  return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)
+    || (a === 100 && b >= 64 && b <= 127) || (a === 192 && b === 0 && (c === 0 || c === 2)) || (a === 198 && (b === 18 || b === 19 || (b === 51 && c === 100)))
+    || (a === 203 && b === 0 && c === 113) || a >= 224;
+}
+
+/** True for anything that is not a public unicast address. IPv6 forms that carry an IPv4 address (mapped, compatible,
+ *  NAT64, 6to4) are judged by the IPv4 address inside; unparseable input counts as private. */
 export function isPrivateAddress(ip: string): boolean {
-  const v6 = ip.toLowerCase().replace(/^::ffff:/, '');
-  if (isIP(v6) === 4) {
-    const [a, b] = v6.split('.').map(Number);
-    return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
-  }
-  return v6 === '::' || v6 === '::1' || /^f[cd]/.test(v6) || /^fe[89ab]/.test(v6);
+  const b = ipBytes(ip);
+  if (!b) return true;
+  if (b.length === 4) return privateV4(b);
+  const zeros = (from: number, to: number) => b.slice(from, to).every(x => x === 0);
+  if (zeros(0, 15) && b[15] <= 1) return true;                                          // :: and ::1
+  if (zeros(0, 10) && b[10] === 0xff && b[11] === 0xff) return privateV4(b.slice(12));  // ::ffff:0:0/96
+  if (zeros(0, 8) && b[8] === 0xff && b[9] === 0xff && b[10] === 0 && b[11] === 0) return privateV4(b.slice(12));
+  if (zeros(0, 12)) return privateV4(b.slice(12));                                       // ::/96 IPv4-compatible
+  if (b[0] === 0 && b[1] === 0x64 && b[2] === 0xff && b[3] === 0x9b) return !zeros(4, 12) || privateV4(b.slice(12));  // 64:ff9b::/96; the local-use /48 is refused
+  if (b[0] === 0x20 && b[1] === 0x02) return privateV4(b.slice(2, 6));                   // 6to4
+  if (b[0] === 0x20 && b[1] === 0x01 && b[2] === 0 && b[3] === 0) return true;           // Teredo
+  if ((b[0] & 0xfe) === 0xfc) return true;                                                // fc00::/7
+  if (b[0] === 0xfe && (b[1] & 0xc0) !== 0x40) return true;                               // fe80::/10 and fec0::/10
+  if (b[0] === 0xff) return true;                                                         // multicast
+  return false;
 }
 
 export function checkUrlShape(raw: string): URL {
@@ -35,12 +73,25 @@ export function checkUrlShape(raw: string): URL {
   return u;
 }
 
-/** Resolve the host right before sending and refuse private targets (a hostname can point inside the network). */
-async function assertPublic(u: URL) {
-  if (allowPrivate()) return;
+/** Resolve once, refuse private targets, and return the address to connect to (so a second lookup cannot differ). */
+async function resolvePublic(u: URL): Promise<{ address: string; family: 4 | 6 }> {
   const host = u.hostname.replace(/^\[|\]$/g, '');
-  const addrs = isIP(host) ? [{ address: host }] : await lookup(host, { all: true });
-  if (!addrs.length || addrs.some(a => isPrivateAddress(a.address))) throw new Error('the address resolves to a private network, so nothing was sent');
+  const addrs = isIP(host) ? [{ address: host, family: isIP(host) }] : await lookup(host, { all: true });
+  if (!addrs.length) throw new Error('the address did not resolve');
+  if (!allowPrivate() && addrs.some(a => isPrivateAddress(a.address))) throw new Error('the address resolves to a private network, so nothing was sent');
+  return { address: addrs[0].address, family: addrs[0].family as 4 | 6 };
+}
+
+/** POST to the address we vetted: the socket connects to `ip`, while the Host header and TLS name stay the URL's host. No redirects. */
+function post(u: URL, ip: { address: string; family: 4 | 6 }, body: string, headers: Record<string, string>): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const req = (u.protocol === 'https:' ? httpsRequest : httpRequest)(u, {
+      method: 'POST', headers: { ...headers, 'content-length': String(Buffer.byteLength(body)) }, signal: AbortSignal.timeout(SEND_MS),
+      lookup: ((_h: string, o: { all?: boolean }, cb: (...a: unknown[]) => void) => (o?.all ? cb(null, [{ address: ip.address, family: ip.family }]) : cb(null, ip.address, ip.family))) as never,
+    }, res => { res.resume(); resolve(res.statusCode ?? 0); });
+    req.on('error', reject);
+    req.end(body);
+  });
 }
 
 const matches = (events: string[], event: string) => events.some(e => e === '*' || e === event || (e.endsWith('.*') && event.startsWith(e.slice(0, -1))));
@@ -61,14 +112,11 @@ export async function deliverPending(pool: pg.Pool, o: { limit?: number; workspa
     try {
       if (!ep || ep.status !== 'active') { await pool.query("UPDATE webhook_delivery SET status = 'failed', error = 'endpoint was deleted', locked_until = NULL WHERE id = $1", [d.id]); failed++; return; }
       const u = checkUrlShape(ep.url);
-      await assertPublic(u);
+      const ip = await resolvePublic(u);
       const body = JSON.stringify({ id: d.id, event: d.event, createdAt: d.created_at.toISOString(), data: d.payload });
-      const res = await fetch(u, { method: 'POST', body, redirect: 'manual', signal: AbortSignal.timeout(SEND_MS),
-        headers: { 'content-type': 'application/json', 'user-agent': 'vyakti-webhooks/1', 'x-vp-event': d.event, 'x-vp-delivery': d.id,
-          'x-vp-signature': sign(open(d.workspace_id, 'webhook', ep.secret_ciphertext), body) } });
-      status = res.status;
-      await res.arrayBuffer().catch(() => {});
-      if (res.status < 200 || res.status >= 300) error = `the receiver answered ${res.status}`;
+      status = await post(u, ip, body, { 'content-type': 'application/json', 'user-agent': 'vyakti-webhooks/1', 'x-vp-event': d.event, 'x-vp-delivery': d.id,
+        'x-vp-signature': sign(open(d.workspace_id, 'webhook', ep.secret_ciphertext), body) });
+      if (status < 200 || status >= 300) error = `the receiver answered ${status}`;
     } catch (e) { error = e instanceof Error ? e.message.slice(0, 300) : 'send failed'; }
     if (!error) {
       await pool.query("UPDATE webhook_delivery SET status = 'delivered', response_status = $2, error = NULL, delivered_at = now(), locked_until = NULL WHERE id = $1", [d.id, status]);
@@ -110,7 +158,8 @@ export function registerWebhooks(r: Registry) {
 
   r.register(tool(obj({ id: uuid() }), {
     name: 'webhook.delete', risk: 'destructive', summary: 'Stop sending events to a webhook and forget its secret',
-    describe: () => 'Delete a webhook; events waiting to be sent to it are dropped',
+    describe: i => `Delete the webhook ${i.id.slice(0, 8)}; events waiting to be sent to it are dropped`,
+    version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT status || '|' || url || '|' || array_to_string(events, ',') AS v FROM webhook_endpoint WHERE id = $1 AND workspace_id = $2", [i.id, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       const n = await ctx.q.query("UPDATE webhook_endpoint SET status = 'deleted' WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [i.id, ctx.workspaceId]);
       if (!n.rowCount) throw new Error('no such webhook in this workspace');
