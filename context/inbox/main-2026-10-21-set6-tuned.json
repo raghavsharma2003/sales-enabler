@@ -1,0 +1,43 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-21.safety-door-set6-tuned",
+   "type": "measurement",
+   "title": "After tuning on blind set 6's failures (20a95b0), the safety door scores 0/1,391 benign flagged and 987/987 harmful caught on cases.json. These numbers are in-sample: set 6 is part of cases.json now and is never reported as blind again.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "safety builder",
+   "n": 2378,
+   "method": "TS door over every cases.json vector at 20a95b0, with set 6 folded in. Blind sets 1-5 re-scored with no regressions. Door latency p50 0.57 ms, p99 1.33 ms (n=7,305). The Python door passes all 2,378 after cb60bc3. Not measured: recall on unseen indirect crisis talk or new denial paraphrases. The next blind set is expected to fall back toward set 6's blind numbers in whatever language or phrasing it brings.",
+   "value": "in-sample 0/1,391 FP, 987/987 caught; blind result stays 0/170 FP, 106/160 caught"
+  },
+  {
+   "id": "measure.2026-10-21.voice-door-concurrent-sandbox",
+   "type": "measurement",
+   "title": "With 10 or 50 concurrent simulated calls on one asyncio loop, the voice runtime's per-sentence door check has p99 7.9 ms either way: the door is about 5 ms of CPU per sentence every ~4 s per call, so door cost alone does not limit calls per process.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "voice runtime builder",
+   "n": 1525,
+   "method": "product/voice/bench/door_bench.py --calls 10 50 at 6a2874f (rules.json sha256:dec63ecda78bdfe3), Python 3.13, 4-vCPU sandbox, 120 s per run. Each call doors a sentence, speaks it at about 15 chars/s, then doors the next. Latency runs from sentence due to verdict, including waiting behind other calls. N=10: n=258, p50 3.18 ms, p99 7.87 ms, max 11.0 ms. N=50: n=1,267, p50 2.72 ms, p99 7.83 ms, max 46.0 ms. Not measured: the audio path (VAD, resampling, websockets), providers, or the deployed host.",
+   "value": "p99 7.9 ms at 10 and at 50 concurrent calls"
+  },
+  {
+   "id": "rejected.2026-10-21.rules-before-port",
+   "type": "rejection",
+   "title": "Pushing a rules.json change before the Python door ports it",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "tried": "The safety builder pushed rules.json semantics (f1e4d3e: normalisation and words_to_amounts; 20a95b0: lexicon.money_talk), and the voice builder ported them to vpvoice/rules.py in a later commit (6b25fcb, cb60bc3).",
+   "broke": "The voice-runtime CI job was red on every commit in between (8394e4d, 27b06f1, aeaecc5, 9c9bacf; 20a95b0). In the first window the parity guard refused to load rules.json, so all Python tests failed to import. The guard did its job, but each window put a red head on the PR and blamed the commits of unrelated builders.",
+   "instead": "A rules.json change that needs a Python port lands in the same push as the port. Either safety hands voice the diff before pushing, or safety ports rules.py itself and voice reviews it."
+  }
+ ],
+ "edges": [
+  { "from": "measure.2026-10-21.safety-door-set6-tuned", "to": "measure.2026-10-21.safety-door-blind-set6", "relation": "follows" },
+  { "from": "measure.2026-10-21.safety-door-set6-tuned", "to": "decision.2026-10-21.safety-second-layer-proposal", "relation": "informs" },
+  { "from": "measure.2026-10-21.voice-door-concurrent-sandbox", "to": "measure.2026-10-21.voice-door-latency-sandbox", "relation": "extends" }
+ ],
+ "events": []
+}
