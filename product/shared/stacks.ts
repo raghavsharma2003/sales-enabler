@@ -28,6 +28,8 @@ export interface VoiceStack {
   replyGap: Figure;        // time from caller finishing to her first audio
   note: string;            // the honest one-liner a user sees
   requires?: string[];     // provider credentials this stack needs at runtime
+  /** 'beta' stacks run test calls only: the dial gate refuses them for any call to a real person until their risks
+   *  are cleared and the stack is marked available. */
   status: 'available' | 'beta';
   risks?: string[];        // known dependency risks (shutdowns, quota)
 }
@@ -38,10 +40,11 @@ export const STACKS: readonly VoiceStack[] = [
   {
     id: 'v2-live', label: 'Gemini 3.8 Live (speech-to-speech)', kind: 's2s', brief: 'v2',
     components: { s2s: 'gemini-3.8-live' },
-    replyGap: { value: '~1.2 s', grade: 'measured', source: LAB + ' (smoke 0.8-1.6 s)' },
-    note: 'Judges’ best brain family; talks over callers on about 40% of turns ungated.',
+    replyGap: { value: 'not measured', grade: 'not_measured',
+      source: 'the runtime now holds each turn until the reply door passes every sentence (review M3); the lab smoke of 0.8-1.6 s was without that hold' },
+    note: 'Judges’ best brain family; talks over callers on about 40% of turns ungated. She starts only after the whole turn is generated and checked.',
     requires: ['GEMINI'], status: 'beta',
-    risks: ['speech-to-speech must pass the reply-door attack battery before live calls'],
+    risks: ['speech-to-speech must pass the reply-door attack battery before live calls', 'reply gap with the door hold is unmeasured'],
   },
   {
     id: 'v2-flashlite', label: 'Gemini ears + Gemini 3.5 Flash-Lite + Gemini voice', kind: 'cascade', brief: 'v2',

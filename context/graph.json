@@ -16645,6 +16645,16 @@
    "source": "review what-she-says",
    "title": "Fix the 6 blockers of the what-she-says review before any live call (B1-B6), then M1-M6; promote candidate vectors into cases.json (safety builder decides).",
    "closes_when": "product/voice/tests/test_review.py and product/tests/review/what-she-says.test.ts report unexpected successes for every B and M finding and their markers are dropped"
+  },
+  {
+   "id": "decision.2026-10-21.beta-stacks-test-only",
+   "type": "decision",
+   "title": "A voice stack marked 'beta' runs test calls only; the dial gate refuses it for any call to a real person until its listed risks are cleared and it is marked available.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop, on the voice builder's M3 report",
+   "rationale": "The speech-to-speech stack (v2-live) played audio before the door read it (review M3). The runtime now holds each turn until every sentence passes the door, which makes it safe but slower than its 1.2 s card said, and that gap is unmeasured. Sarvam (also beta) has an unresolved data-training term. Offering a stack whose safety or speed is unverified on real calls breaks the product's honest-number rule.",
+   "reverse_if": "a beta stack passes the reply-door attack battery on its real transport and its reply gap with the hold is measured from India (n>=30 turns); then it is marked available"
   }
  ],
  "edges": [
@@ -29834,6 +29844,16 @@
    "from": "open.2026-10-21.review-what-she-says-fixes",
    "to": "evidence.2026-10-21.review-what-she-says",
    "relation": "follows"
+  },
+  {
+   "from": "decision.2026-10-21.beta-stacks-test-only",
+   "to": "measure.2026-10-21.review-what-she-says",
+   "relation": "derived_from"
+  },
+  {
+   "from": "decision.2026-10-21.beta-stacks-test-only",
+   "to": "decision.2026-10-21.stack-choice-no-default",
+   "relation": "refines"
   }
  ]
 }
