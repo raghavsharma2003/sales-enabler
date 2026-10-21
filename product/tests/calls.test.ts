@@ -517,6 +517,27 @@ test('live control: listen runs, whisper needs approval, take-over is for a pers
   assert.equal((await registry.execute(pool, 'live.takeover', { conversationId: c.conv }, { workspaceId: w.ws, actor: { type: 'agent', id: 'operator', role: 'owner' } })).status, 'not_executed');
   assert.equal((await registry.execute(pool, 'live.takeover', { conversationId: c.conv }, ctx)).status, 'confirmed');
   assert.deepEqual(fakeRuntime.controls.filter(x => x.id === c.conv).map(x => x.action), ['listen', 'takeover']);
+  // The runtime's real replies: a join for the person, a reason on refusal, and hand_off when a person takes over.
+  const live = await call(w);
+  setRuntime({ start: async () => ({ accepted: true }), control: async (_id, action) =>
+    action === 'listen' ? { ok: true, detail: { ok: true, join: { kind: 'listen', url: '/l', token: 't', expiresAtMs: 1 } } }
+    : action === 'takeover' ? { ok: true, detail: { ok: true, join: { kind: 'takeover', url: '/t', token: 't', expiresAtMs: 1 } } }
+    : { ok: false, detail: { ok: false, reason: 'call is not joined' } } });
+  try {
+    const l = await registry.execute<any>(pool, 'live.listen', { conversationId: live.conv }, ctx);
+    assert.equal(l.status === 'confirmed' && l.result.join.kind, 'listen');
+    const t = await registry.execute<any>(pool, 'live.takeover', { conversationId: live.conv }, ctx);
+    assert.equal(t.status === 'confirmed' && t.result.join.kind, 'takeover');
+    const wa = await registry.execute<any>(pool, 'live.whisper', { conversationId: live.conv, text: 'They paid yesterday' }, ctx);
+    if (wa.status !== 'needs_approval') return assert.fail('whisper needs approval');
+    const wr = await registry.approve(pool, wa.actionId, { workspaceId: w.ws, memberId: w.owner });
+    assert.equal(wr.status, 'not_executed');
+    assert.match(wr.status === 'not_executed' ? wr.reason : '', /refused the whisper: call is not joined/, "the runtime's own reason is shown");
+  } finally { setRuntime(fakeRuntime); }
+  await post(live.conv, [{ seq: 1, type: 'hand_off', at: now(), reason: 'takeover', target: `member:${w.owner}`, summary: 'A person joined' }]);
+  const ho = await one<any>(pool, 'SELECT destination, brief FROM hand_off WHERE conversation_id = $1', [live.conv]);
+  assert.equal(ho.destination, `member:${w.owner}`); assert.equal(ho.brief.reason, 'takeover');
+  assert.ok((await one<any>(pool, 'SELECT flags FROM conversation WHERE id = $1', [live.conv])).flags.includes('human_joined'));
   await post(c.conv, [{ seq: 1, type: 'call.ended', at: now(), endReason: 'agent_ended', durationS: 3, transcript: [], manifest: manifest() }]);
   await analysesSettled();
   assert.equal((await registry.execute(pool, 'live.listen', { conversationId: c.conv }, ctx)).status, 'not_executed', 'an ended call cannot be joined');

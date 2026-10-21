@@ -170,7 +170,8 @@ async function apply(c: pg.PoolClient, conv: Conv, e: RuntimeEvent): Promise<boo
     case 'hand_off':
       await c.query(`INSERT INTO hand_off (workspace_id, conversation_id, mode, destination, status, brief) VALUES ($1,$2,'warm',$3,'queued',$4)`,
         [ws, conv.id, e.target, { reason: e.reason, summary: e.summary, seq: e.seq }]);
-      await addFlags(c, conv.id, ['hand_off']);
+      // A take-over by a person (target 'member:<id>') is not a configured hand-off; the call page shows "joined by a person".
+      await addFlags(c, conv.id, e.reason === 'takeover' && e.target.startsWith('member:') ? ['hand_off', 'human_joined'] : ['hand_off']);
       return false;
     case 'judge':
       // Analysis-only: no flag and no call_safety_event (a real raise arrives separately as a 'safety' event).

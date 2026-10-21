@@ -26,6 +26,13 @@ async function conversation(ctx: ToolCtx, id: string) {
   return c;
 }
 
+/** The runtime answers control actions with {ok, join?} on success and {ok:false, reason} (404 unknown, 409 not live). */
+const runtimeReason = (detail: unknown) => {
+  const r = (detail as { reason?: unknown } | null)?.reason;
+  return typeof r === 'string' && r ? `: ${r.slice(0, 200)}` : '';
+};
+const joinOf = (detail: unknown) => (detail as { join?: unknown } | null)?.join ?? null;
+
 async function liveCall(ctx: ToolCtx, id: string) {
   const c = await conversation(ctx, id);
   if (c.status !== 'live') throw new Error('this call is not live');
@@ -404,10 +411,11 @@ export function registerTools(r: Registry): void {
     prepare: async (ctx, i) => {
       await liveCall({ q: ctx.pool, workspaceId: ctx.workspaceId, actor: ctx.actor }, i.conversationId);
       const rep = await runtime().control(i.conversationId, 'listen', { by: ctx.actor.id ?? ctx.actor.type });
-      if (!rep.ok) throw new Error('the voice runtime refused to open a listen session');
-      return rep.detail ?? null;
+      if (!rep.ok) throw new Error(`the voice runtime refused to open a listen session${runtimeReason(rep.detail)}`);
+      return joinOf(rep.detail);
     },
-    run: async (_ctx, _i, detail) => ({ ok: true, detail }),
+    // join: {kind:'listen', url, token, expiresAtMs}, receive-only; closing it never touches the call.
+    run: async (_ctx, _i, join) => ({ ok: true, join }),
   }));
   r.register(tool(obj({ conversationId: uuid(), text: str({ min: 1, max: 500 }) }), {
     name: 'live.whisper', risk: 'external', summary: 'Whisper context to the agent on a live call; the caller does not hear it',
@@ -417,7 +425,7 @@ export function registerTools(r: Registry): void {
     run: async (ctx, i) => {
       const c = await liveCall(ctx, i.conversationId);
       const rep = await runtime().control(c.id, 'whisper', { text: i.text, by: ctx.actor.id ?? ctx.actor.type });
-      if (!rep.ok) throw new Error('the voice runtime refused the whisper');
+      if (!rep.ok) throw new Error(`the voice runtime refused the whisper${runtimeReason(rep.detail)}`);
       return { ok: true };
     },
   }));
@@ -428,13 +436,15 @@ export function registerTools(r: Registry): void {
       if (ctx.actor.type !== 'member' || !ctx.actor.id) throw new Error('only a signed-in person can take over a call');
       await liveCall({ q: ctx.pool, workspaceId: ctx.workspaceId, actor: ctx.actor }, i.conversationId);
       const rep = await runtime().control(i.conversationId, 'takeover', { memberId: ctx.actor.id });
-      if (!rep.ok) throw new Error('the voice runtime refused the take-over');
-      return true;
+      if (!rep.ok) throw new Error(`the voice runtime refused the take-over${runtimeReason(rep.detail)}`);
+      return joinOf(rep.detail);
     },
-    run: async (ctx, i) => {
+    // join: {kind:'takeover', url, token, expiresAtMs}, a two-way socket for the person. The runtime then reports
+    // hand_off {reason:'takeover', target:'member:<id>'}; she never speaks on this call again.
+    run: async (ctx, i, join) => {
       const c = await conversation(ctx, i.conversationId);
       await ctx.q.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{human_joined}'::text[]) ORDER BY 1) WHERE id = $1 AND workspace_id = $2`, [c.id, ctx.workspaceId]);
-      return { ok: true };
+      return { ok: true, join };
     },
   }));
 }
