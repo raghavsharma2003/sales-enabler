@@ -27,7 +27,7 @@ function usePrices(): Record<string, Price> {
   return p;
 }
 
-export function StackPicker({ value, onChange, locked }: { value: string | null; onChange: (id: string | null) => void; locked?: string }) {
+export function StackPicker({ value, onChange, locked, cannotClear }: { value: string | null; onChange: (id: string | null) => void; locked?: string; cannotClear?: boolean }) {
   const [filter, setFilter] = useState<'all' | 'cascade' | 's2s' | 'available'>('all');
   const prices = usePrices();
   const list = useMemo(() => STACKS.filter(s => filter === 'all' || (filter === 'available' ? s.status === 'available' : s.kind === filter)), [filter]);
@@ -41,7 +41,7 @@ export function StackPicker({ value, onChange, locked }: { value: string | null;
         </div>
         <div className="row">
           <Segmented label="Show stacks" value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, { value: 'cascade', label: 'Cascade' }, { value: 's2s', label: 'Speech to speech' }, { value: 'available', label: 'Available now' }]} />
-          {chosen && <Btn size="sm" kind="ghost" onClick={() => onChange(null)}>Clear choice</Btn>}
+          {chosen && !cannotClear && <Btn size="sm" kind="ghost" onClick={() => onChange(null)}>Clear choice</Btn>}
         </div>
       </div>
       {locked && <p className="hint hint-bad">{locked}</p>}
@@ -69,7 +69,7 @@ function StackCard({ s, selected, price, onPick }: { s: VoiceStack; selected: bo
       <p className="small">{s.note}</p>
       <dl className="kv small">
         <div><dt>Reply gap</dt><dd><Figure m={{ value: s.replyGap.value, grade: s.replyGap.grade, source: s.replyGap.source }} /><details className="how"><summary>How we know</summary><p>{s.replyGap.source}</p></details></dd></div>
-        <div><dt>Price per minute</dt><dd>{!price || price.state === 'loading' ? <span className="muted">Checking…</span> : price.perMinuteInrMilli != null ? <><span className="fig-v tnum">{inr(price.perMinuteInrMilli, { paise: true })}</span> <Chip tone="marigold">Estimate</Chip><details className="how"><summary>Basis</summary><p>{price.basis}</p></details></> : <><NotMeasured />{price.basis && <details className="how"><summary>Why</summary><p>{price.basis}</p></details>}</>}</dd></div>
+        <div><dt>Provider cost per minute</dt><dd>{!price || price.state === 'loading' ? <span className="muted">Checking…</span> : price.perMinuteInrMilli != null ? <><span className="fig-v tnum">{inr(price.perMinuteInrMilli, { paise: true })}</span> <Chip tone="peacock">Computed</Chip><details className="how"><summary>Basis</summary><p>{price.basis}</p></details></> : <><NotMeasured />{price.basis && <details className="how"><summary>Why</summary><p>{price.basis}</p></details>}</>}</dd></div>
         <div><dt>Made of</dt><dd>{s.kind === 's2s' ? prettyId(c.s2s) : <>{prettyId(c.ears)} ears · {prettyId(c.brain)} brain · {prettyId(c.voice)} voice{!c.gatedEars && ' · ungated ears'}</>}</dd></div>
         <div><dt>Hear it</dt><dd><span className="dotted nm" title="No sample clip has been recorded for this stack yet"><Volume2 size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> No sample recorded yet</span></dd></div>
       </dl>

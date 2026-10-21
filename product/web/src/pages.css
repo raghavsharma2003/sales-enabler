@@ -98,3 +98,6 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .billing { list-style: none; margin: 0; padding: 0; display: grid; } .billing li { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); flex-wrap: wrap; } .billing li:first-child { border-top: 0; }
 .priceline { display: flex; justify-content: space-between; gap: 12px; padding: 12px; background: var(--sunk); border-radius: 10px; margin-bottom: 8px; }
 .field-mono textarea { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace; font-size: 0.875rem; }
+.funnel-note { margin: 0; }
+.formgrid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; } @media (max-width: 819px) { .formgrid3 { grid-template-columns: 1fr; } }
+.plainlist { margin: 0; padding-left: 20px; display: grid; gap: 6px; }

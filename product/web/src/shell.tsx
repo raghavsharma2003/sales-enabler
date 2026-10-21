@@ -8,8 +8,8 @@ import { ApprovalSheet } from './approval.tsx';
 import { Segmented, SampleRibbon, Sheet } from './ui.tsx';
 import { pageInfo } from './tools.ts';
 import { inr } from './format.ts';
-import { useTool } from './store.tsx';
-import type { Wallet } from './types.ts';
+import { useData } from './store.tsx';
+import { walletGet } from './data.ts';
 
 const NAV = [
   { to: '/', label: 'Today', icon: Newspaper }, { to: '/campaigns', label: 'Campaigns', icon: Megaphone }, { to: '/calls', label: 'Calls', icon: PhoneCall },
@@ -23,7 +23,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const path = usePath();
   const [more, setMore] = useState(false);
   const info = pageInfo(path);
-  const wallet = useTool<Wallet>('wallet.get', {});
+  const wallet = useData('wallet', walletGet);
   const low = wallet.data && wallet.data.runwayDays != null && wallet.data.runwayDays < 2;
   return (
     <div className="app" data-view={view}>

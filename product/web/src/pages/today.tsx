@@ -2,33 +2,35 @@
 // Numbers come from tool results only; a missing source shows "not measured", never 0.
 import { useMemo } from 'react';
 import { ArrowRight, Pause, PhoneCall, ShieldAlert } from 'lucide-react';
-import { useApp, useTool } from '../store.tsx';
+import { useApp, useData, useTool } from '../store.tsx';
+import { campaignList, walletGet } from '../data.ts';
 import { Link } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, Skeleton } from '../ui.tsx';
 import { ago, count, date, inr, plural, time } from '../format.ts';
 import { RISK_WORDS } from '../tools.ts';
-import type { Brief, CampaignRow, Wallet } from '../types.ts';
+import type { Brief, CampaignRow } from '../types.ts';
 
-const ACTION_WORDS: Record<string, string> = { 'agent.update': 'drafts', 'agent.create': 'drafts', 'brief.edit': 'drafts', 'test.simulate': 'tests', 'test.browser_call': 'tests', 'campaign.pause': 'guarded pauses', 'campaign.stop_at_cap': 'guarded pauses', 'contact.suppress_after_opt_out': 'guarded opt-outs' };
+const ACTION_WORDS: Record<string, string> = { 'brief.edit': 'drafts', 'agent.create': 'drafts', 'stack.set': 'drafts', 'audience.create': 'drafts', 'source.commit': 'drafts', 'test.simulate': 'tests', 'test.browser_call': 'tests', 'campaign.pause': 'guarded pauses', 'campaign.stop_at_cap': 'guarded pauses', 'contact.suppress_after_opt_out': 'guarded opt-outs' };
 
 export default function Today() {
   const { me, hasTool, review, act, refresh } = useApp();
   const brief = useTool<Brief>('brief.today', {});
-  const camps = useTool<{ rows: CampaignRow[] }>(hasTool('campaign.list') ? 'campaign.list' : null, {});
-  const wallet = useTool<Wallet>(hasTool('wallet.get') ? 'wallet.get' : null, {});
+  const camps = useData<CampaignRow[]>('camps', hasTool('campaign.list') ? campaignList : null);
+  const wallet = useData('wallet', hasTool('wallet.get') ? walletGet : null);
+  const dayCap = wallet.data?.caps.find(c => c.period === 'day')?.capInrMilli ?? null;
   const first = me?.member?.name.split(' ')[0] ?? '';
   const hour = new Date().toLocaleString('en-IN', { hour: 'numeric', hour12: false, timeZone: 'Asia/Kolkata' });
   const greet = Number(hour) < 12 ? 'Suprabhat' : Number(hour) < 17 ? 'Namaste' : 'Shubh sandhya';
   const dateLine = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' });
-  const live = useMemo(() => (camps.data?.rows ?? []).filter(c => c.status === 'running' || c.status === 'paused'), [camps.data]);
+  const live = useMemo(() => (camps.data ?? []).filter(c => c.state === 'running' || c.state === 'paused'), [camps.data]);
 
   return (
     <div className="page">
       <PageHead title={<>{greet}, {first}</>} sub={<>{dateLine} · {brief.data ? <>updated {time(brief.data.asOf)}</> : 'loading'}</>} />
       <Async q={brief} what="The Today brief" tool="brief.today" rows={6}>{b => {
         const did = summarise(b);
-        const day0 = b.liveCampaigns.n === 0 && (camps.data?.rows?.length ?? 0) === 0 && b.needsTap.n === 0 && b.changed.n === 0;
-        const next = nextAction(b, camps.data?.rows ?? []);
+        const day0 = b.liveCampaigns.n === 0 && (camps.data?.length ?? 0) === 0 && b.needsTap.n === 0 && b.changed.n === 0;
+        const next = nextAction(b, camps.data ?? []);
         return (
           <div className="today">
             <section className="since" aria-labelledby="since-h">
@@ -77,10 +79,10 @@ export default function Today() {
                     : <ul className="livelist">{live.map(c => (
                       <li key={c.id} className="livestrip">
                         <div className="grow">
-                          <div className="row"><Link to={`/campaigns/${c.id}`} className="rowlink">{c.name}</Link><Chip tone={c.status === 'running' ? 'leaf' : 'marigold'}>{c.status === 'running' ? 'Dialling' : 'Paused'}</Chip></div>
-                          <Meter label={`${count(c.dialled)} of ${count(c.contacts)} dialled`} value={c.dialled} max={c.contacts} tone="peacock" note={<>{count(c.connected)} connected · {inr(c.spendMilli)}{c.capMilli ? ` of ${inr(c.capMilli)}` : ''}</>} />
+                          <div className="row"><Link to={`/campaigns/${c.id}`} className="rowlink">{c.name}</Link><Chip tone={c.state === 'running' ? 'leaf' : 'marigold'}>{c.state === 'running' ? 'Dialling' : 'Paused'}</Chip></div>
+                          <p className="small muted tnum">{count(c.attempts)} attempts · {count(c.blocked)} held back by the checks{c.pauseCause ? ` · paused: ${c.pauseCause.replace(/_/g, ' ')}` : ''}</p>
                         </div>
-                        {c.status === 'running' && <Btn size="sm" icon={<Pause size={14} aria-hidden />} onClick={async () => { const r = await act('campaign.pause', { id: c.id }, { describe: `${c.name} paused.` }); if (r.ok) refresh(); }}>Pause</Btn>}
+                        {c.state === 'running' && <Btn size="sm" icon={<Pause size={14} aria-hidden />} onClick={async () => { const r = await act('campaign.pause', { id: c.id }, { describe: `${c.name} paused.` }); if (r.ok) refresh(); }}>Pause</Btn>}
                       </li>))}</ul>}
                 </Card>
               </div>
@@ -89,7 +91,7 @@ export default function Today() {
                 <Card aria-labelledby="money-h">
                   <CardHead id="money-h" title="Money" sub={`Spend today, ${b.spendToday.timezone === 'Asia/Kolkata' ? 'IST day' : b.spendToday.timezone}`} />
                   <p className="bignum serif tnum" aria-label={`Spent today ${inr(b.spendToday.inrMilli)}`}>{inr(b.spendToday.inrMilli)}</p>
-                  {wallet.data?.capTodayMilli ? <Meter label="Today against your cap" value={b.spendToday.inrMilli} max={wallet.data.capTodayMilli} tone={b.spendToday.inrMilli / wallet.data.capTodayMilli > 0.85 ? 'brick' : 'leaf'} note={`${inr(b.spendToday.inrMilli)} of ${inr(wallet.data.capTodayMilli)}`} /> : <p className="small muted">No daily cap set. <Link to="/settings/billing">Set one</Link></p>}
+                  {dayCap ? <Meter label="Today against your cap" value={b.spendToday.inrMilli} max={dayCap} tone={b.spendToday.inrMilli / dayCap > 0.85 ? 'brick' : 'leaf'} note={`${inr(b.spendToday.inrMilli)} of ${inr(dayCap)}`} /> : <p className="small muted">No daily cap is set. <Link to="/settings/billing">See the wallet</Link></p>}
                   <hr className="rule" />
                   {b.wallet ? <dl className="kv"><div><dt>Wallet</dt><dd className="tnum">{inr(b.wallet.balanceInrMilli)} {b.wallet.state !== 'active' && <Chip tone="brick">{b.wallet.state}</Chip>}</dd></div>
                     <div><dt>Runway at today's pace</dt><dd>{wallet.data?.runwayDays != null ? <span className="tnum">{wallet.data.runwayDays} days</span> : <NotMeasured />}</dd></div></dl> : <p className="small muted">No wallet yet.</p>}
@@ -113,7 +115,7 @@ function summarise(b: Brief): string {
 
 function nextAction(b: Brief, camps: CampaignRow[]): { title: string; why: string; label: string; href: string } | null {
   if (b.issues.n > 0) return { title: `Look at ${plural(b.issues.n, 'open issue')}`, why: 'Issues are ranked by calls affected and severity; the top one has a suggested fix.', label: 'Open Insights', href: '/insights' };
-  const draft = camps.find(c => c.status === 'draft');
+  const draft = camps.find(c => c.state === 'draft');
   if (draft) return { title: `Finish "${draft.name}"`, why: 'It is saved as a draft and has not reached anyone. The launch card shows who, when and the cost before you decide.', label: 'Open the draft', href: `/campaigns/${draft.id}` };
   return null;
 }

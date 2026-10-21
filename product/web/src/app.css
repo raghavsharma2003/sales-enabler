@@ -294,3 +294,4 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .composer-row { display: flex; gap: 8px; align-items: center; }
 
 .dock .seg { display: flex; width: 100%; } .dock .seg-o { flex: 1; }
+.field-label { font-weight: 600; font-size: 0.9375rem; margin-bottom: 8px; }

@@ -1,15 +1,16 @@
 // Every tool id the UI calls, grouped by the page that owns it. One page action = exactly one tool (workspace.md §2.2).
 // STATUS.json's tools_used is generated from this list by tests/web.test.ts, so it cannot drift from the code.
 export const TOOLS = {
-  today: ['brief.today', 'activity.list'],
-  agents: ['agent.list', 'agent.get', 'agent.create', 'agent.update', 'version.publish', 'test.simulate', 'test.browser_call', 'money.estimate', 'knowledge.list'],
-  contacts: ['contact.list', 'contact.get', 'contact.import_preview', 'contact.import_commit', 'audience.list', 'audience.create', 'fact.approve', 'fact.forget'],
-  campaigns: ['campaign.list', 'campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.test_row', 'campaign.launch', 'campaign.pause', 'campaign.resume', 'campaign.stop', 'policy.window.set'],
+  today: ['brief.today', 'campaign.list', 'campaign.pause', 'wallet.get'],
+  agents: ['agent.list', 'agent.get', 'agent.create', 'template.list', 'brief.edit', 'stack.set', 'version.publish', 'test.simulate', 'test.browser_call', 'money.estimate'],
+  contacts: ['contact.list', 'contact.search', 'contact.get', 'contact.memory.get', 'attempt.list', 'audience.list', 'audience.get', 'audience.create', 'source.upload', 'source.map', 'source.commit', 'fact.approve', 'fact.forget'],
+  campaigns: ['campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.funnel', 'campaign.launch', 'campaign.resume', 'campaign.stop', 'campaign.window.narrow', 'campaign.window.widen'],
   calls: ['call.search', 'call.get', 'call.explain'],
-  insights: ['insight.funnel', 'insight.issues', 'learning.proposals', 'learning.decide', 'experiment.list'],
-  numbers: ['number.list', 'number.quote', 'number.rent', 'number.verify_start'],
-  settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'brand.get', 'brand.set', 'knowledge.add',
-    'wallet.get', 'wallet.topup', 'billing.summary', 'compliance.get', 'privacy.get', 'dpdp.request.list', 'operator.settings.get', 'operator.brain.set', 'operator.autonomy.lower', 'operator.autonomy.raise'],
+  insights: ['issue.list', 'monitor.list', 'monitor.create', 'proposal.list', 'proposal.probe', 'proposal.accept', 'learning.propose', 'experiment.list'],
+  numbers: ['number.search', 'number.rent', 'test.ring_member_phone'],
+  settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'secret.reveal', 'brand.get', 'brand.update', 'knowledge.list', 'knowledge.ingest', 'knowledge.span.approve',
+    'invoice.get', 'wallet.topup', 'safety.cases', 'policy.window.set', 'memory.policy.get', 'memory.policy.set', 'dpdp.request.execute', 'operator.settings.get', 'operator.brain.set', 'operator.autonomy.lower', 'operator.autonomy.raise',
+    'integration.list', 'integration.kinds', 'activity.list'],
 } as const;
 export const ALL_TOOLS: string[] = [...new Set(Object.values(TOOLS).flat())].sort();
 

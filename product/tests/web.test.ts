@@ -64,6 +64,11 @@ test('every tool id is lower dotted, listed once per page, and STATUS.json agree
   assert.deepEqual([...status.tools_used].sort(), ALL_TOOLS, 'STATUS.json tools_used matches tools.ts');
 });
 
+test('every tool the UI calls is registered by the loaded modules (ui-contract --strict)', () => {
+  const out = execFileSync(process.execPath, ['--import', 'tsx', fileURLToPath(new URL('../scripts/ui-contract.ts', import.meta.url)), '--strict'], { encoding: 'utf8' });
+  assert.match(out, / 0 missing/);
+});
+
 test('no page writes from a menu: act() is never called inside an onChange of a select or input', () => {
   for (const f of readdirSync(web + 'src/pages')) {
     const txt = readFileSync(web + 'src/pages/' + f, 'utf8');

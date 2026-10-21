@@ -30,13 +30,13 @@
    "rationale": "Budget in the design language is 170 KB gzip JS per route; the test pins 100 KB first load and 200 KB total."
   },
   {
-   "id": "open.2026-10-21.web-needs-registry-shapes",
+   "id": "open.2026-10-21.web-gaps-on-real-tools",
    "type": "open",
-   "title": "The workspace tool registry JSON is not in the repo, so web invented tool ids and result shapes (web/src/types.ts, STATUS.json needs_from_others). Real modules must return those shapes or web adapts once told. Also: a person pressing Pause gets an approval request because A3 verbs run at once only for agent/system actors.",
+   "title": "Web now runs on the real tools (ui-contract --strict 78/78, held by tests/web.test.ts). Gaps the UI states honestly: no tool lists the workspace's numbers or proves a member's own phone; no saved simulated callers; no stack sample clips, recordings or waveform peaks; the fake model makes practice callers fail every check, so those verdicts mean nothing.",
    "status": "open",
    "date": "2026-10-21",
    "source": "web builder",
-   "rationale": "Screens were verified only against stand-in tools and the real Operator module with a scripted fake model."
+   "rationale": "Verified against the real server with data made through the real tools; calls were seeded through the signed runtime hook because the sandbox has no telephony."
   }
  ],
  "edges": []

@@ -177,3 +177,28 @@ export function useTool<T>(name: string | null, args: unknown = {}): ToolData<T>
   }, [key, n, bump]);
   return { ...st, reload: () => setN(x => x + 1), setData: (d: T | null) => setSt(s => ({ ...s, data: d })) };
 }
+
+/** Like useTool, for a function that may call several tools and shape the answer (see data.ts). `fn = null` skips it. */
+export function useData<T>(key: unknown, fn: (() => Promise<T>) | null): ToolData<T> {
+  const { markSample, bump } = useApp();
+  const [st, setSt] = useState<{ data: T | null; state: ToolState; error: string | null }>({ data: null, state: fn ? 'loading' : 'ready', error: null });
+  const [n, setN] = useState(0);
+  const k = JSON.stringify(key);
+  const fnRef = useRef(fn); fnRef.current = fn;
+  useEffect(() => {
+    const f = fnRef.current; if (!f) return;
+    let live = true;
+    setSt(s => ({ ...s, state: s.data ? s.state : 'loading', error: null }));
+    f().then(d => {
+      if (!live) return;
+      if ((d as { _sample?: boolean } | null)?._sample) markSample();
+      setSt({ data: d, state: 'ready', error: null });
+    }).catch(e => {
+      if (!live) return;
+      if (e instanceof ToolMissing) setSt({ data: null, state: 'missing', error: e.message });
+      else setSt(s => ({ data: s.data, state: 'error', error: e instanceof ToolRefused ? e.reason : e instanceof ApiError ? e.message : 'Could not load this.' }));
+    });
+    return () => { live = false; };
+  }, [k, n, bump]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { ...st, reload: () => setN(x => x + 1), setData: (d: T | null) => setSt(s => ({ ...s, data: d })) };
+}

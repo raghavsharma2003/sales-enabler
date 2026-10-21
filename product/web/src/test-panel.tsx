@@ -5,16 +5,15 @@ import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp } from './store.tsx';
 import { Btn, Chip } from './ui.tsx';
 import { Link } from './router.tsx';
-import { inr, ms } from './format.ts';
+import { simulate } from './data.ts';
 import { getStack } from '../../shared/stacks.ts';
 import type { SimResult } from './types.ts';
 
-interface Sim { results: SimResult[]; passed: number; total: number }
 const TWEAKS = ['Thoda slow bolo', 'Discount mat bolna', 'Opening chhoti karo', 'Aur warm ho jao'];
 
 export function TestPanel() {
-  const { agentCtx: a, act, say, hasTool } = useApp();
-  const [sim, setSim] = useState<Sim | null>(null);
+  const { agentCtx: a, act, say, hasTool, toast } = useApp();
+  const [sim, setSim] = useState<SimResult[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [call, setCall] = useState<{ state: 'idle' | 'asking' | 'unavailable'; reason?: string }>({ state: 'idle' });
   if (!a) return <div className="testpanel"><p className="muted">Open an agent to test her here.</p></div>;
@@ -22,15 +21,14 @@ export function TestPanel() {
 
   const run = async () => {
     setBusy(true);
-    const r = await act<Sim>('test.simulate', { agentId: a.id }, { quiet: true });
+    try { setSim(await simulate(a.id)); } catch { toast('Could not run the practice callers.', 'bad'); }
     setBusy(false);
-    if (r.ok) setSim(r.result);
   };
   const browser = async () => {
     setCall({ state: 'asking' });
-    const r = await act<{ available: boolean; reason?: string }>('test.browser_call', { agentId: a.id }, { quiet: true });
+    const r = await act<{ available?: boolean; reason?: string }>('test.browser_call', { agentId: a.id, useDraft: true }, { quiet: true });
     if (!r.ok) setCall({ state: 'unavailable', reason: r.reason });
-    else if (!r.result.available) setCall({ state: 'unavailable', reason: r.result.reason });
+    else if (r.result.available === false) setCall({ state: 'unavailable', reason: r.result.reason });
     else setCall({ state: 'idle' });
   };
 
@@ -53,18 +51,18 @@ export function TestPanel() {
           : <Btn kind="primary" busy={busy} icon={<Play size={16} aria-hidden />} onClick={run}>Run 6 practice callers</Btn>}
         {sim && (
           <div className="stack-s" aria-live="polite">
-            <p><strong className="tnum">{sim.passed} of {sim.total}</strong> passed{sim.results.some(r => r.verdict === 'invalid') && <> · <span className="hint-bad">invalid, nothing ran</span></>}</p>
-            <ul className="simlist">{sim.results.map(r => (
+            <p><strong className="tnum">{sim.filter(r => r.verdict === 'pass').length} of {sim.length}</strong> passed{sim.some(r => r.verdict === 'invalid') && <> · <span className="hint-bad">{sim.filter(r => r.verdict === 'invalid').length} invalid, did not run</span></>}</p>
+            <ul className="simlist">{sim.map(r => (
               <li key={r.id}>
                 <details>
                   <summary><span>{r.scenario}</span><Chip tone={r.verdict === 'pass' ? 'leaf' : r.verdict === 'fail' ? 'brick' : 'marigold'}>{r.verdict === 'pass' ? 'Passed' : r.verdict === 'fail' ? 'Failed' : 'Invalid'}</Chip></summary>
                   {r.reason && <p className="small" style={{ margin: '6px 0' }}><AlertTriangle size={13} aria-hidden style={{ verticalAlign: '-2px' }} /> {r.reason}</p>}
-                  {r.turns.map((t, i) => <p key={i} className={`simturn ${t.who}`} lang="hi"><b>{t.who === 'agent' ? a.name : 'Caller'}:</b> {t.text}{t.gapMs ? <span className="small muted"> · reply gap {ms(t.gapMs)}</span> : null}</p>)}
-                  {r.checks.length > 0 && <ul className="checks">{r.checks.map(c => <li key={c.label}>{c.ok ? <span className="ok">Passed</span> : <span className="bad">Failed</span>} {c.label}</li>)}</ul>}
-                  {r.ran && <p className="small muted">Ran on <code>{r.ran}</code> · {inr(r.costMilli, { paise: true })}</p>}
+                  {r.turns.slice(0, 12).map((t, i) => <p key={i} className={`simturn ${t.who}`} lang="hi"><b>{t.who === 'agent' ? a.name : 'Caller'}:</b> {t.text}</p>)}
+                  {r.checks.length > 0 && <ul className="checks">{r.checks.map(c => <li key={c.label}>{c.ok ? <span className="ok">Passed</span> : <span className="bad">Failed</span>} {c.label}{c.detail ? <span className="muted"> · {c.detail}</span> : null}</li>)}</ul>}
+                  {r.endedBy && <p className="small muted">Ended by: {r.endedBy.replace(/_/g, ' ')}. Graded by code, not by a model.</p>}
                 </details>
               </li>))}</ul>
-            {sim.results.some(r => r.verdict === 'fail') && <Btn size="sm" onClick={() => say(`Practice caller failed on ${a.name}. Suggest a fix as a diff.`)}>Ask Saarthi for a fix</Btn>}
+            {sim.some(r => r.verdict === 'fail') && <Btn size="sm" onClick={() => say(`Practice caller failed on ${a.name}. Suggest a fix as a diff.`)}>Ask Saarthi for a fix</Btn>}
           </div>
         )}
       </section>

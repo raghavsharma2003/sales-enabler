@@ -51,3 +51,7 @@ export function prettyId(id: string | undefined): string {
   if (!id) return '';
   return id.replace(/@or$/, ' via OpenRouter').replace(/-/g, ' ').replace(/\b(gemini|gpt|sarvam|azure|mai)\b/gi, m => m[0].toUpperCase() + m.slice(1)).replace(/\bgpt\b/i, 'GPT');
 }
+
+/** Language codes as the server stores them (hi-en, hi, ta ...) next to the agent-config ones. */
+export const LANG_SHORT: Record<string, string> = { 'hi-en': 'Hinglish', hinglish: 'Hinglish', hi: 'Hindi', 'hi-IN': 'Hindi', en: 'English', 'en-IN': 'English', ta: 'Tamil', 'ta-IN': 'Tamil', te: 'Telugu', 'te-IN': 'Telugu', kn: 'Kannada', 'kn-IN': 'Kannada', ml: 'Malayalam', 'ml-IN': 'Malayalam', mr: 'Marathi', 'mr-IN': 'Marathi', gu: 'Gujarati', 'gu-IN': 'Gujarati', bn: 'Bengali', 'bn-IN': 'Bengali', pa: 'Punjabi', 'pa-IN': 'Punjabi', or: 'Odia', 'or-IN': 'Odia' };
+export const langShort = (c: string | null | undefined) => (c ? LANG_SHORT[c] ?? c : '—');

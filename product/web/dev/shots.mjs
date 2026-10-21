@@ -6,21 +6,25 @@ import { mkdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 const require = createRequire('/opt/node-tools/node_modules/');
 const { chromium } = require('playwright');
-const base = process.argv[2] ?? 'http://localhost:8787';
+const base = process.argv[2] ?? 'http://localhost:8788';
 const only = process.argv[3] ?? '';
 const out = fileURLToPath(new URL('../shots/', import.meta.url));
 mkdirSync(out, { recursive: true });
 
 const EMAIL = 'asha@saanjh.example', PASSWORD = 'sample-password-1234';
-const SCREENS = [
+const screens = (id) => [
   ['login', '/login', { anon: true }], ['signup', '/signup', { anon: true }],
-  ['today', '/'], ['agents', '/agents'], ['agent-builder', '/agents/a_renew'], ['agent-stack', '/agents/a_appt?tab=voice'], ['agent-test', '/agents/a_renew', { after: async (p, tag) => { if (tag === 'm') { await p.getByRole('button', { name: 'Test her' }).first().click(); } else { await p.getByRole('radio', { name: 'Test her' }).click(); } await p.getByRole('button', { name: 'Run 6 practice callers' }).click(); await p.waitForTimeout(700); await p.locator('.simlist summary').nth(2).click(); } }],
-  ['operator-plan', '/', { after: async (p, tag) => { if (tag === 'm') await p.getByRole('button', { name: 'Talk' }).click(); await p.locator('#dock-input').fill('Ye CSV import karke renewal reminders bhej do'); await p.keyboard.press('Enter'); await p.waitForTimeout(4500); } }],
+  ['today', '/'], ['agents', '/agents'], ['agent-builder', `/agents/${id.riya}`], ['agent-stack', `/agents/${id.emi}?tab=voice`],
+  ['agent-test', `/agents/${id.riya}`, { after: async (p, tag) => { if (tag === 'm') { await p.getByRole('button', { name: 'Test her' }).first().click(); } else { await p.getByRole('radio', { name: 'Test her' }).click(); } await p.getByRole('button', { name: 'Run 6 practice callers' }).click(); await p.waitForTimeout(2500); await p.locator('.simlist summary').nth(2).click(); } }],
+  ['agent-new', '/agents', { after: async (p) => { await p.getByRole('button', { name: 'New agent' }).click(); await p.waitForTimeout(500); } }],
+  ['operator-plan', '/', { after: async (p, tag) => { if (tag === 'm') await p.getByRole('button', { name: 'Talk' }).click(); await p.locator('#dock-input').fill('Launch the appointment reminders campaign'); await p.keyboard.press('Enter'); await p.waitForTimeout(3500); } }],
   ['approval', '/', { after: async (p) => { await p.getByRole('button', { name: 'Review' }).first().click(); await p.waitForTimeout(600); } }],
-  ['contacts', '/contacts'], ['contacts-import', '/contacts/import', { after: async (p) => { await p.getByRole('button', { name: 'Use a made-up sample' }).click(); await p.getByRole('button', { name: 'Check the file' }).click(); await p.waitForTimeout(600); } }], ['contact', '/contacts/ct_001'], ['audiences', '/audiences'],
-  ['campaigns', '/campaigns'], ['campaign-new', '/campaigns/new'], ['campaign-live', '/campaigns/cmp_renew'], ['campaign-draft', '/campaigns/cmp_appt'],
-  ['calls', '/calls'], ['call', '/calls/k_001'], ['call-optout', '/calls/k_002'], ['insights', '/insights'], ['numbers', '/numbers'],
-  ['settings-team', '/settings/team'], ['settings-keys', '/settings/keys'], ['settings-billing', '/settings/billing'], ['settings-compliance', '/settings/compliance'], ['settings-activity', '/settings/activity'], ['settings-operator', '/settings/operator'],
+  ['contacts', '/contacts'], ['contacts-import', '/contacts/import', { after: async (p) => { await p.getByRole('button', { name: 'Use a made-up sample' }).click(); await p.getByRole('button', { name: 'Check the file' }).click(); await p.waitForTimeout(1200); } }],
+  ['contact', `/contacts/${id.contact}`], ['audiences', '/audiences'],
+  ['campaigns', '/campaigns'], ['campaign-new', '/campaigns/new'], ['campaign-draft', `/campaigns/${id.camp}`], ['campaign-draft2', `/campaigns/${id.camp2}`],
+  ['calls', '/calls'], ['call', `/calls/${id.call}`], ['call-optout', `/calls/${id.call2}`], ['insights', '/insights'], ['numbers', '/numbers'],
+  ['settings-team', '/settings/team'], ['settings-keys', '/settings/keys'], ['settings-brand', '/settings/brand'], ['settings-knowledge', '/settings/knowledge'], ['settings-billing', '/settings/billing'],
+  ['settings-compliance', '/settings/compliance'], ['settings-privacy', '/settings/privacy'], ['settings-activity', '/settings/activity'], ['settings-operator', '/settings/operator'], ['settings-integrations', '/settings/integrations'],
 ];
 const SIZES = [['m', { width: 390, height: 844 }, { isMobile: true, hasTouch: true, deviceScaleFactor: 1 }], ['d', { width: 1440, height: 900 }, { deviceScaleFactor: 1 }]];
 
@@ -35,7 +39,11 @@ for (const [tag, viewport, extra] of SIZES) {
   // sign in (create the workspace the first time)
   let r = await page.request.post(base + '/v1/login', { data: { email: EMAIL, password: PASSWORD } });
   if (!r.ok()) r = await page.request.post(base + '/v1/signup', { data: { workspace: 'Saanjh Services', name: 'Asha Rao', email: EMAIL, password: PASSWORD } });
-  for (const [name, path, o] of SCREENS) {
+  const call = async (t, args = {}) => (await (await page.request.post(base + '/v1/tools/' + t, { data: { args } })).json()).result;
+  const ag = (await call('agent.list')).agents; const cp = (await call('campaign.list')).campaigns; const cl = (await call('call.search', {})).calls; const ct = (await call('contact.list', { limit: 1 })).contacts;
+  const byName = (arr, n) => arr.find(x => x.name.includes(n))?.id;
+  const ids = { riya: byName(ag, 'Renewals'), emi: byName(ag, 'EMI'), camp: byName(cp, 'Renewals'), camp2: byName(cp, 'Appointment'), contact: ct[0]?.id, call: cl[2]?.id ?? cl[0]?.id, call2: cl[1]?.id ?? cl[0]?.id };
+  for (const [name, path, o] of screens(ids)) {
     if (only && !name.includes(only)) continue;
     if (o?.anon) {
       const c2 = await browser.newContext({ viewport, ...extra, reducedMotion: 'reduce' }); const p2 = await c2.newPage();

@@ -2,11 +2,12 @@
 // dropdown or card click ever writes to the server (state integrity, decision.2026-10-21.wt-synthesis-state-integrity).
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link2, Lock, Plus, Trash2 } from 'lucide-react';
-import { useApp, useTool } from '../store.tsx';
+import { useApp, useData } from '../store.tsx';
+import { agentGet, diffOps } from '../data.ts';
 import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
 import { StackPicker } from '../stack-picker.tsx';
-import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel } from '../catalog.ts';
+import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
 import { date } from '../format.ts';
 import { getStack } from '../../../shared/stacks.ts';
 import type { AgentConfigDraft, AgentDoc } from '../types.ts';
@@ -15,12 +16,12 @@ type TabId = 'basics' | 'persona' | 'job' | 'rules' | 'tools' | 'voice' | 'versi
 const TABS: { id: TabId; label: string }[] = [{ id: 'basics', label: 'Basics' }, { id: 'persona', label: 'Persona' }, { id: 'job', label: 'Job and facts' }, { id: 'rules', label: 'Objections, hand-off' }, { id: 'tools', label: 'Tools' }, { id: 'voice', label: 'Voice stack' }, { id: 'versions', label: 'Versions' }];
 
 export default function AgentBuilder({ id }: { id: string }) {
-  const q = useTool<AgentDoc>('agent.get', { id });
-  return <div className="page"><Async q={q} what="This agent" tool="agent.get" rows={6}>{doc => <Builder key={doc.id + ':' + doc.version + ':' + doc.updatedAt} doc={doc} reload={q.reload} />}</Async></div>;
+  const q = useData<AgentDoc>(['agent', id], () => agentGet(id));
+  return <div className="page"><Async q={q} what="This agent" tool="agent.get" rows={6}>{doc => <Builder key={doc.id + ':' + doc.draftHash} doc={doc} reload={q.reload} />}</Async></div>;
 }
 
 function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
-  const { act, setAgentCtx, setDockTab, setView } = useApp();
+  const { act, setAgentCtx, setDockTab, setView, toast } = useApp();
   const [qs, setQs] = useQuery();
   const tab = (TABS.find(t => t.id === qs.get('tab'))?.id ?? 'basics') as TabId;
   const [cfg, setCfg] = useState<AgentConfigDraft>(() => structuredClone(doc.config));
@@ -29,7 +30,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
   const [busy, setBusy] = useState<'save' | 'publish' | null>(null);
   const set = (f: (c: AgentConfigDraft) => void) => setCfg(c => { const n = structuredClone(c); f(n); return n; });
 
-  useEffect(() => { setAgentCtx({ id: doc.id, name: cfg.persona.name, dirty, stackId: cfg.voice.stackId, version: doc.version, saved: !dirty }); }, [cfg, dirty, doc, setAgentCtx]);
+  useEffect(() => { setAgentCtx({ id: doc.id, name: cfg.persona.name, dirty, stackId: cfg.voice.stackId, version: doc.latestVersion ?? 0, saved: !dirty }); }, [cfg, dirty, doc, setAgentCtx]);
   useEffect(() => () => setAgentCtx(null), [setAgentCtx]);
   useEffect(() => {
     if (!dirty) return;
@@ -39,43 +40,46 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
 
   const save = async () => {
     setBusy('save');
-    const r = await act('agent.update', { id: doc.id, patch: cfg }, { describe: 'Draft saved. Nothing has reached anyone.' });
+    const saved: AgentDoc['config'] = JSON.parse(savedJson.current);
+    let ok = true;
+    if (cfg.voice.stackId && cfg.voice.stackId !== saved.voice.stackId) ok = (await act('stack.set', { agentId: doc.id, stackId: cfg.voice.stackId }, { quiet: true })).ok;
+    const ops = diffOps(saved, cfg);
+    if (ok && ops.length) { const r = await act<{ changes: unknown[] }>('brief.edit', { agentId: doc.id, patch: ops }, { quiet: true }); ok = r.ok; }
     setBusy(null);
-    if (r.ok) { savedJson.current = JSON.stringify(cfg); reload(); }
+    if (ok) { toast('Draft saved. Nothing has reached anyone.', 'ok'); reload(); }
   };
   const publish = async () => {
     setBusy('publish');
-    const r = await act('version.publish', { agentId: doc.id, version: doc.version, name: cfg.persona.name }, { describe: 'Published.' });
+    const r = await act('version.publish', { agentId: doc.id, draftHash: doc.draftHash }, { describe: 'Published.' });
     setBusy(null);
     if (r.ok) reload();
   };
   const noStack = !cfg.voice.stackId;
-  const live = doc.publishedVersion === doc.version;
-  const pill = dirty ? <span className="pill pill-draft" role="status">v{doc.version + (live ? 1 : 0)} · Draft · unsaved</span> : live ? <span className="pill pill-live">v{doc.version} · Live 100%</span> : <span className="pill">v{doc.version} · Draft · saved</span>;
+  const pill = dirty ? <span className="pill pill-draft" role="status">Draft · unsaved</span> : doc.latestVersion ? <span className="pill pill-live">Draft saved · latest published v{doc.latestVersion}</span> : <span className="pill">Draft saved · not published</span>;
 
   return (
     <>
       <PageHead crumb={<><Link to="/agents">Agents</Link><span aria-hidden>/</span><span>{cfg.persona.name}</span></>}
         title={<>{doc.name}</>} pill={pill}
-        sub={<>{jobLabel(cfg.job)} · {cfg.persona.name} · {cfg.languages.allowed.map(l => LANG_LABEL[l]?.split(' ')[0] ?? l).join(', ')}</>}
+        sub={<>{jobLabel(cfg.job)} · {cfg.persona.name} · {[...new Set(cfg.languages.allowed.map(langShort))].join(', ')}</>}
         actions={<>
           <Btn onClick={() => { setDockTab('test'); setView('talk'); }}>Test her</Btn>
           {dirty ? <Btn kind="primary" busy={busy === 'save'} onClick={save}>Save draft</Btn> : <Btn disabled reason="No unsaved changes.">Save draft</Btn>}
           {dirty ? <Btn disabled reason="Save your changes first, so what goes live is what you tested.">Publish</Btn>
             : noStack ? <Btn disabled reason="Choose a voice stack first. There is no default." fix={{ label: 'Choose one', to: `/agents/${doc.id}?tab=voice` }}>Publish</Btn>
-            : live ? <Btn disabled reason={`v${doc.version} is already live.`}>Publish</Btn>
+            : !doc.compiles ? <Btn disabled reason="The brief does not compile yet. See the checks below.">Publish</Btn>
             : <Btn kind="primary" busy={busy === 'publish'} onClick={publish}>Publish…</Btn>}
         </>} />
+      {doc.lint.length > 0 && <div className="state state-failed" role="alert" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Checks on the draft</strong><ul style={{ margin: 0, paddingLeft: 20 }}>{doc.lint.map((l, i) => <li key={i}>{l.message}</li>)}</ul></div>}
       <Tabs label="Builder sections" value={tab} onChange={t => setQs({ tab: t === 'basics' ? null : t })} items={TABS} />
       {tab === 'basics' && <Basics cfg={cfg} set={set} />}
       {tab === 'persona' && <Persona cfg={cfg} set={set} />}
       {tab === 'job' && <JobFacts cfg={cfg} set={set} />}
       {tab === 'rules' && <Rules cfg={cfg} set={set} />}
       {tab === 'tools' && <Tools cfg={cfg} set={set} />}
-      {tab === 'voice' && <Card><StackPicker value={cfg.voice.stackId} onChange={s => set(c => { c.voice.stackId = s; })} />
-        <hr className="rule" /><div className="formgrid"><Field label={`Speaking pace: ${(cfg.voice.speed ?? 1).toFixed(2)}×`} hint="1.00× is natural. Slower helps with numbers and older callers.">{p => <input {...p} type="range" min="0.8" max="1.2" step="0.05" value={cfg.voice.speed ?? 1} onChange={e => set(c => { c.voice.speed = Number(e.target.value); })} />}</Field>
-          <div><Toggle checked={cfg.recording.enabled} onChange={v => set(c => { c.recording.enabled = v; if (!v) c.recording.announce = false; })} label="Record calls" hint="Recordings stay in India. Retention is set in Settings, Privacy." />
-            <Toggle checked={cfg.recording.announce} onChange={v => set(c => { c.recording.announce = v; })} label="Say that the call is recorded" hint={cfg.recording.enabled ? undefined : 'Turn recording on first.'} /></div></div></Card>}
+      {tab === 'voice' && <Card><StackPicker value={cfg.voice.stackId} onChange={s => set(c => { c.voice.stackId = s; })} cannotClear={!!JSON.parse(savedJson.current).voice.stackId} />
+        <hr className="rule" /><div className="formgrid"><Toggle checked={cfg.recording.enabled} onChange={v => set(c => { c.recording.enabled = v; if (!v) c.recording.announce = false; })} label="Record calls" hint="Recordings stay in India. Retention is set in Settings, Privacy." />
+            <Toggle checked={cfg.recording.announce} onChange={v => set(c => { c.recording.announce = v; })} label="Say that the call is recorded" hint={cfg.recording.enabled ? undefined : 'Turn recording on first.'} /></div></Card>}
       {tab === 'versions' && <Versions doc={doc} dirty={dirty} />}
     </>
   );
@@ -172,7 +176,7 @@ function JobFacts({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
         <ListEditor items={cfg.goals} onChange={f => set(c => f(c.goals))} blank={() => ({ id: 'goal_' + Date.now().toString(36), description: '', outcome: '', required: true })} addLabel="Add a goal"
           render={(g, _p, i) => <div className="formgrid"><TextField className="span2" label="What counts as done" value={g.description} onChange={e => set(c => { c.goals[i].description = e.target.value; })} /><TextField label="Outcome name" value={g.outcome} onChange={e => set(c => { c.goals[i].outcome = e.target.value.replace(/\s+/g, '_').toLowerCase(); })} hint="Shows in Calls and Insights." /><Toggle checked={g.required} onChange={v => set(c => { c.goals[i].required = v; })} label="Required" hint="She keeps going until this is done or the caller declines." /></div>} /></Card>
       <Card><CardHead title="Facts she may state" sub="Each fact says what it is for. An offer never leaks into a service call." />
-        <ListEditor items={cfg.facts} onChange={f => set(c => f(c.facts))} blank={() => ({ key: '', value: '', purpose: 'service' as const, source: 'agent.form' })} addLabel="Add a fact"
+        <ListEditor items={cfg.facts} onChange={f => set(c => f(c.facts))} blank={() => ({ key: '', value: '', purpose: 'service' as const, source: 'manual' })} addLabel="Add a fact"
           render={(f, _p, i) => <div className="formgrid"><TextField label="Name" value={f.key} onChange={e => set(c => { c.facts[i].key = e.target.value; })} placeholder="clinic_address" /><SelectField label="Purpose" value={f.purpose} onChange={e => set(c => { c.facts[i].purpose = e.target.value as typeof f.purpose; })} hint={PURPOSE_HINT[f.purpose]}>{PURPOSES.map(x => <option key={x} value={x}>{x}</option>)}</SelectField>
             <TextField className="span2" label="Value" value={f.value} onChange={e => set(c => { c.facts[i].value = e.target.value; })} disabled={f.perContact} hint={f.perContact ? 'Filled from each contact at call time.' : undefined} lang="hi" /><p className="small muted span2"><Link2 size={12} aria-hidden style={{ verticalAlign: '-1px' }} /> Source: {f.source}</p></div>} /></Card>
       <Card><CardHead title="Never say" sub="Names and claims she must not use. Safety rules exist whether or not you add any." />
@@ -216,11 +220,13 @@ function Tools({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
 
 function Versions({ doc, dirty }: { doc: AgentDoc; dirty: boolean }) {
   return (
-    <Card><CardHead title="How she changed" sub="Every saved draft is a version. Live means new campaigns use it." />
+    <Card><CardHead title="How she changed" sub="Each published version is fixed. Campaigns pick a published version, never a draft." />
       {dirty && <p className="hint hint-bad">You have changes that are not saved, so they are not in this list yet.</p>}
-      <ol className="versions">{doc.versions.map(v => (
-        <li key={v.version}><span className={`pill ${v.state === 'live' ? 'pill-live' : v.state === 'draft' ? 'pill-draft' : ''}`} style={{ marginLeft: 0 }}>v{v.version} · {v.state === 'live' ? 'Live 100%' : v.state === 'draft' ? 'Draft' : 'Earlier'}</span>
-          <span>{v.note ?? 'Saved'}</span><span className="small muted">{v.by} · {date(v.at, true)}</span></li>))}</ol></Card>
+      {doc.versions.length === 0 ? <p className="muted">Nothing is published yet. Save the draft, choose a voice stack, then publish.</p> :
+        <ol className="versions">{doc.versions.map((v, i) => (
+          <li key={v.id}><span className={`pill ${i === 0 ? 'pill-live' : ''}`} style={{ marginLeft: 0 }}>v{v.number}{i === 0 ? ' · Latest' : ''}</span>
+            <span>{v.note ?? 'Published'}</span><span className="small muted">{v.by} · {date(v.createdAt, true)}</span></li>))}</ol>}
+      {doc.briefBytes != null && <p className="small muted" style={{ marginTop: 12 }}>The compiled brief for this draft is {doc.briefBytes.toLocaleString('en-IN')} bytes.</p>}</Card>
   );
 }
 export { getStack };
