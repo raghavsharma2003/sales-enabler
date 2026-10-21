@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY voicelab/server/models/silero_vad.onnx /app/models/silero_vad.onnx
 COPY product/voice/vpvoice /app/vpvoice
 COPY product/shared/safety/rules.json /app/vpvoice/rules.json
+COPY product/shared/safety/judge.json /app/vpvoice/judge.json
 RUN useradd --system --uid 10001 vp && chown -R vp /app
 USER vp
 EXPOSE 8080

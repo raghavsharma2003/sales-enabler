@@ -31,6 +31,7 @@ class Session:
         self.meter = CostMeter(ticket['limits']['maxCostInrMilli'])
         self.conv = Conversation(ticket, components.brain, sink, self.meter, clock, keep_sounds=components.keep_sounds,
                                  brain_provider=components.brain_provider, brain_id=components.brain_id)
+        self.conv.judge_complete = getattr(components, 'judge_complete', None); self.conv.judge_env = self.env
         self.t0 = self.conv.t0; self.fallbacks = []; self.ended = None; self.error = None
         self.done = asyncio.Event(); self.watchdog_s = watchdog_s; self.tasks = []; self.handed_off = False
         self.recording_uri = None; self.ending = False; self.started = False
@@ -189,6 +190,9 @@ class Session:
     async def after_reply(self, marks):
         """Act on her markers and the call state after a reply has been heard."""
         if self.ended: return
+        if self.conv.judge_raised:                  # the judge raised a crisis this turn: alert a human, as for a floor hit
+            self.conv.judge_raised = False
+            if self.handoff_allowed('crisis'): await self.hand_off('crisis')
         self.flush_costs()
         if await self.check_limits(): return
         if self.conv.state['opt_out'] and not self.conv.state['crisis']:
@@ -218,9 +222,9 @@ class SimSession(Session):
         await super().start()
         return await self._reply()
 
-    async def _reply(self):
+    async def _reply(self, gate=None):
         while True:
-            d = Draft(None); out = []
+            d = Draft(None); d.gate = gate; gate = None; out = []
             try:
                 async for s in self.conv.sentences(d): out.append(s)
             except ComponentError as e:
@@ -241,11 +245,15 @@ class SimSession(Session):
         if self.ended or not (text or '').strip(): return []
         self.outbox = []
         sig = self.conv.commit_caller(text)
+        gate = self.conv.start_judge(text, self.conv.prev_caller(skip_last=True), floor=sig['crisis'])
         if await self.after_caller(sig) == 'replied':
+            if gate is not None: await self.conv.settle_gate(gate)
             if not self.ended: await self.after_reply({'end': False})
             return list(self.outbox)
-        if self.ended: return list(self.outbox)
-        return list(self.outbox) + await self._reply()
+        if self.ended:
+            if gate is not None: gate.cancel()
+            return list(self.outbox)
+        return list(self.outbox) + await self._reply(gate)
 
     async def hang_up(self):
         await self.end('caller_hung_up')

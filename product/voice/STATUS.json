@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 120,
-    "passed": 120,
+    "ran": 141,
+    "passed": 141,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -28,7 +28,8 @@
       "test_server.py": "HTTP surface on a local test server: health, unsigned/tampered/stale/garbage signatures, unknown stack 422, missing credentials 503, idempotent retry and 409, sim socket end to end, single-use tokens, no join after end, end route (body must name the call), unjoined call still reports, browser media socket, sip inbound join",
       "test_safety.py": "runtime door layer (first breath, truth first, crisis lines, contact facts), signals and masks, the speech-to-speech door cut, and 9 regressions for the shared-rule gaps fixed at eaae1c1",
       "test_safety_cases.py": "every case in cases.json with the semantics the file states; parity guard (an unknown rules.json key or value fails at load)",
-      "test_review.py": "review \"what she says\": all 26 reproductions pass (runtime fixes 55f7a14, shared rules f1e4d3e ported)"
+      "test_review.py": "review \"what she says\": all 26 reproductions pass (runtime fixes 55f7a14, shared rules f1e4d3e ported)",
+      "test_judge.py": "caller-crisis judge: the 12 TS judge behaviours mirrored, parity guard on judge.json, and the runtime half on sim and cascade calls (raise interrupts before she is heard, shadow changes nothing, timeout falls back, floor hit never waits, no keys no call, no secrets to the judge, judge tokens metered)"
     }
   },
   "works": [
@@ -37,6 +38,7 @@
     "Per-contact facts reach the model as the contact rows block (after brief and memory, before the LAST block), in compile.ts contactRows() format; the door gets them as perContact facts. product/tests/agents-runtime.test.ts passes 4/4 against this runtime",
     "Brief used verbatim; memory brief only when memoryStatus = loaded; generic data-driven LAST block per turn (spent facts and figures, stray caller figures, goals open/settled, cues, closing, crisis/opt-out/asked-AI state, marker rules)",
     "Parity guard: vpvoice/rules.py refuses at import any rules.json key, builtin, scope or enum it does not implement, so an engine change breaks CI at load, not quietly in a call",
+    "Caller-crisis judge (judge.json): raise-only, default shadow, 800 ms bound, in parallel with the brain; raise interrupts the turn with the crisis path; off unless VP_LLM_SAFETY_JUDGE_* (or DEFAULT) is configured; raise in production only on the owner's go",
     "Reply door = shared rules.json evaluated as index.ts does (all 1186 vectors pass) + runtime layer (first-breath clause, truth first, crisis lines); block -> one rewrite told the rule, then a safe line",
     "Caller signals and redaction from rules.json; redacted text is what reaches transcript, events and the LLM",
     "Transports: sim (text socket), webrtc (lab-style browser socket), sip (Plivo outbound dial + stream, Plivo/Exotel inbound streams, Plivo transfer for phone hand-off)",
@@ -46,6 +48,7 @@
     "Dockerfile for Azure Container Apps (python:3.12-slim, non-root, healthcheck; copies the lab's Silero model and rules.json)"
   ],
   "untested": [
+    "The crisis judge against a real model (latency within 800 ms from India, verdict quality on blind sets): only fake models so far",
     "Every real provider adapter (Gemini text/TTS/Live ears/Live s2s, Vertex route, Azure OpenAI, OpenRouter text and speech, Azure Speech REST, Sarvam ears/brain/voice): ported from the lab, never run from this package; no keys were used from the coding sandbox",
     "Azure voice over REST instead of the lab's pre-warmed SDK socket: first-audio latency not measured",
     "Real browser client against /v1/media/browser (protocol documented in README; no page ships here)",
@@ -60,7 +63,8 @@
     "call.ended has no field for the failure reason when endReason = error; it is logged and in GET /v1/calls/{id} only",
     "The signature does not cover method or path; the runtime closes the replay hole on /end by requiring conversationId in the body",
     "brief.hash is checked as sha256 hex of brief.text (optionally sha256:-prefixed); the control plane must hash the same way",
-    "Control-plane brief compiler should use the marker vocabulary in README (<end_call>, <goal:ID>, <tool:NAME>, <handoff:REASON>)"
+    "Control-plane brief compiler should use the marker vocabulary in README (<end_call>, <goal:ID>, <tool:NAME>, <handoff:REASON>)",
+    "RuntimeEvent safety has no judge vocabulary: judge events go as rule RD3, action flagged (shadow, unavailable) or suspended_goal (raised), event name first in detail"
   ],
   "decisions": [
     "In a crisis, ticket limits stretch to 2x; at the ceiling the call is handed off (crisis_handoff); her <end_call> is ignored and a request for a human never ends the call unless a live transfer takes it",

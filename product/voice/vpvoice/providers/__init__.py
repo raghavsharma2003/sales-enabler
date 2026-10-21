@@ -25,6 +25,7 @@ class Components:
     keep_sounds: bool = False
     names: dict = field(default_factory=dict)   # RunManifest.components
     close: Optional[Callable] = None
+    judge_complete: Optional[Callable] = None   # the caller-crisis judge's model call (judge.py); None = no judge
 
 
 class ProviderUnavailable(Exception):
@@ -42,6 +43,8 @@ def build(stack_id, voice_name, http, env=None, text_only=False):
     from .llm import HttpBrain
     s = stacks.STACKS[stack_id]; c = s['components']
     google = GoogleRoute(env)          # chosen once for this call
+    from .. import judge
+    judge_complete = judge.http_complete(http, env) if judge.configured(env) and judge.mode(env=env) != 'off' else None
     cid = stacks.combination_id(stack_id, voice_name)
     if s['kind'] == 's2s':
         from ..s2s import GeminiLiveText, make_live
@@ -50,11 +53,13 @@ def build(stack_id, voice_name, http, env=None, text_only=False):
                           names={'s2s': c['s2s'], 'voice': voice_name})
         comp.brain = GeminiLiveText(http, google, spec['model'])            # used by the sim transport only
         comp.make_s2s = lambda system, tools=(): make_live(http, google, spec, voice_name, system, tools)
+        comp.judge_complete = judge_complete
         return comp
     brain = HttpBrain(http, c['brain'], env, google)
     comp = Components(stack_id, 'cascade', voice_name, cid, brain=brain, brain_id=c['brain'], brain_provider=brain.provider,
                       make_brain=lambda bid: HttpBrain(http, bid, env, google), ears_id=c['ears'], gated=bool(c.get('gatedEars')),
                       tts_id=c['voice'], names={'stt': c['ears'] + ('' if c.get('gatedEars') else '/ungated'), 'llm': c['brain'], 'tts': c['voice'], 'voice': voice_name})
+    comp.judge_complete = judge_complete
     if text_only: return comp
     from .stt import Gate, GeminiEars, SarvamEars
     from .tts import make_voice

@@ -42,8 +42,9 @@ class Line:
 class Reply:
     """One agent reply: door-approved sentences -> voice -> audio. Audio is held until released and can be cancelled
     at any point (caller kept talking, or barged in)."""
-    def __init__(self, s, rid, user_text, released=False, pending=False, fixed=None):
+    def __init__(self, s, rid, user_text, released=False, pending=False, fixed=None, gate=None):
         self.s = s; self.rid = rid; self.draft = Draft(user_text, pending); self.fixed = fixed; self.released = released
+        self.draft.gate = gate
         self.buf = []; self.cancelled = False; self.done = False; self.first = None; self.play_start = None
         self.spoken = []; self.error = None; self.latency_ms = None; self.committed = False
         self.task = asyncio.ensure_future(self.run())
@@ -71,6 +72,7 @@ class Reply:
     def cancel(self):
         if self.cancelled: return
         self.cancelled = True
+        if self.draft.gate is not None: self.draft.gate.cancel()      # a withdrawn turn's judge verdict is not needed
         if not self.done and self.s.c.voice is not None: self.s.c.voice.reset()
         self.task.cancel()
 
@@ -360,14 +362,18 @@ class CascadeSession(Session):
             if use:
                 sig = safety.caller_signals(use)
                 if any(sig[k] for k in ACTION) or safety.redact(use) != use:      # never speculate on raw secrets
+                    gate = self.conv.start_judge(use, self.conv.prev_caller(), floor=sig['crisis'])
                     await self._commit_turn(use)
                     if self.digits_seg == self.seg and sig['readingSensitiveDigits'] and not any(sig[k] for k in ACTION if k != 'readingSensitiveDigits'):
                         return                                            # already stopped them mid-number
-                    if await self.after_caller(sig) == 'replied' or self.ended: return
-                    self.rid += 1; self.active = Reply(self, self.rid, None, released=True)
+                    if await self.after_caller(sig) == 'replied' or self.ended:
+                        if gate is not None: asyncio.ensure_future(self._settle(gate))
+                        return
+                    self.rid += 1; self.active = Reply(self, self.rid, None, released=True, gate=gate)
                     asyncio.ensure_future(self._after(self.active))
                     return
-                self.rid += 1; self.pending = Reply(self, self.rid, use, pending=True)
+                gate = self.conv.start_judge(use, self.conv.prev_caller(), floor=sig['crisis'])
+                self.rid += 1; self.pending = Reply(self, self.rid, use, pending=True, gate=gate)
                 await self.line.send_json({'t': 'state', 's': 'thinking'})
         if self.pending is not None and not self.pending.released:
             hold = self.LONG_HOLD_MS if incomplete(self.pending.user_text) else 0
@@ -382,6 +388,9 @@ class CascadeSession(Session):
                 and self.now() - quiet_since >= self.silence_s and not self.conv.state['crisis']:
             await self.speak_canned('लगता है आवाज़ नहीं आ रही, मैं बाद में बात करती हूँ। शुक्रिया।'.replace('करती', safety.g(self.conv.gender, 'करती', 'करता')))
             await self.finish('silence_timeout')
+
+    async def _settle(self, gate):
+        if await self.conv.settle_gate(gate) and self.handoff_allowed('crisis'): await self.hand_off('crisis')
 
     async def _commit_turn(self, text):
         end_ms = self._ms(self.eos_t) if self.eos_t else None

@@ -113,6 +113,20 @@ present.
 - Gemini Live audio is held until its whole turn has passed the door.
 - A brain stream closed early is metered as an estimate (`detail.estimated`).
 
+### The caller-crisis judge (`vpvoice/judge.py`, contract `product/shared/safety/judge.json`)
+
+A model reads each final caller turn the floor did not flag, in parallel with the brain. It is raise-only: it can add
+the crisis signal, never remove one.
+- **Before the call:** the text is redacted first and quoted as data under the contract's fixed prompt.
+- **Waiting:** the reply's first sentence waits for the verdict, at most `timeout_ms` (800 ms). A floor hit never waits.
+- **Modes:** `off`, `shadow` (default; logs `judge_shadow`, changes nothing) or `raise`. In `raise`, a verdict
+  interrupts the turn with the crisis path: Tele-MANAS 14416 and 112, agenda dropped, a human offered, no hang-up.
+- **Failure:** a timeout, error or bad output leaves the floor's verdict and logs `judge_unavailable`.
+- **No model configured:** no call and no spend.
+- **Events:** recorded as `safety` events, rule RD3. `flagged` is used for shadow and unavailable, `suspended_goal`
+  for a raise, and the event name leads the detail.
+- **Production:** `raise` only on the owner's go.
+
 ### Fallbacks and failures
 
 A model is never swapped mid-call on a test call. A component failure ends the call as `error`; the exact reason is
@@ -187,6 +201,10 @@ the git sha, the `rules.json` version and hash, the Python version and the CPU c
 | `VP_FALLBACKS` | `1` allows same-model fallbacks on non-test calls |
 | `VP_RECORDINGS_DIR` | Where two-channel WAV recordings are written (`recordingUri` = `file://…`); unset = none |
 | `VP_VAD`, `VP_VAD_MODEL` | `energy` forces the energy VAD; path to `silero_vad.onnx` |
+| `VP_LLM_SAFETY_JUDGE_URL`, `_KEY`, `_MODEL`, `_KEY_HEADER` (falls back to `VP_LLM_DEFAULT_*`) | The crisis judge's OpenAI-compatible model, as `server/llm.ts`; unset = no judge |
+| `VP_LLM_SAFETY_JUDGE_USD_IN_1M`, `_USD_OUT_1M` | Judge prices for the cost meter; unset = tokens metered with `detail.priced = false` |
+| `VP_SAFETY_JUDGE_MODE` | `off`, `shadow` (default), `raise` (owner's go only) |
+| `VP_SAFETY_JUDGE` | Path to `judge.json` (default: next to the package, else `product/shared/safety/judge.json`) |
 | `VP_SAFETY_RULES` | Path to `rules.json` (default: next to the package, else `product/shared/safety/rules.json`) |
 | `VP_LOG_LEVEL` | Logging level |
 

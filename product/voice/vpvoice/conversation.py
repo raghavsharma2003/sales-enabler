@@ -1,8 +1,8 @@
 # One call's conversation, independent of transport: the brief and memory as given, history, the per-turn LAST block,
 # the reply door on every sentence before it is spoken, caller signals on every caller turn, and the events that
 # record it. Sessions (session.py for sim, cascade.py / s2s.py for audio) drive it and own timing and audio.
-import contextlib, logging, re
-from . import brief, safety, ticket as tk
+import asyncio, contextlib, logging, re
+from . import brief, judge, safety, ticket as tk
 from .safety import DoorContext
 
 log = logging.getLogger('vp.voice.conversation')
@@ -39,7 +39,9 @@ class ComponentError(Exception):
 class Draft:
     """One reply being written: what the brain wrote, what the door let through, and the markers in it."""
     def __init__(self, user_text, pending=False):
-        self.user_text = user_text; self.pending = pending; self.raw = ''; self.final = False; self.sentences = []; self.style = None
+        self.user_text = user_text; self.pending = pending; self.raw = ''; self.final = False
+        self.sentences = []; self.style = None
+        self.gate = None          # the crisis judge's task for the caller turn this reply answers (judge.py)
         self.blocked = []; self.replaced = []
 
     @property
@@ -60,6 +62,7 @@ class Conversation:
                       'recording_refused': False, 'goals_done': {}, 'turns_since_goal': 0,
                       'identity_verified': False}
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
+        self.judge_complete = None; self.judge_env = None; self.judge_raised = False
 
     # ---------------------------------------------------------------- time
     def ms(self): return int((self.clock() - self.t0) * 1000)
@@ -117,6 +120,54 @@ class Conversation:
         draft.sentences.append(text)
         return text, v
 
+    # ---------------------------------------------------------------- the crisis judge (raise-only, judge.py)
+    def start_judge(self, text, prev='', floor=False):
+        """Start the judge on a final caller turn, in parallel with the brain. None when off, not configured, or the
+        floor already fired (a floor hit acts at once and never waits for the judge)."""
+        if self.judge_complete is None or floor or self.state['crisis']: return None     # nothing left for it to add
+        if judge.mode(env=self.judge_env) == 'off' or not judge.configured(self.judge_env): return None
+        return asyncio.ensure_future(judge.judge_caller_crisis(text, self.judge_complete, prev=prev, env=self.judge_env, floor=floor))
+
+    def prev_caller(self, skip_last=False):
+        callers = [t['text'] for t in self.transcript if t['speaker'] == 'caller']
+        if skip_last: callers = callers[:-1]
+        return callers[-1] if callers else ''
+
+    async def settle_gate(self, gate):
+        """Wait for a judge verdict (bounded by its own timeout) and act on it. Returns True when it raised a crisis."""
+        if gate is None: return False
+        try:
+            res = await gate
+        except asyncio.CancelledError:
+            return False
+        except Exception as e:                                   # never let the judge break a call
+            res = {'event': {'type': 'judge_unavailable', 'reason': 'error'}, 'crisis': False, 'floor': False, 'usage': None}
+            log.warning('judge task failed: %r', e)
+        return self.apply_judge(res)
+
+    def apply_judge(self, res):
+        u = res.get('usage') or {}
+        if u.get('inputTokens') or u.get('outputTokens'):
+            c = judge.config(self.judge_env)
+            priced = bool(c['usd_in'] and c['usd_out'])
+            usd = (u.get('inputTokens', 0) * float(c['usd_in']) + u.get('outputTokens', 0) * float(c['usd_out'])) / 1e6 if priced else 0.0
+            self.meter.add('brain', 'safety_judge', 'token', u.get('inputTokens', 0) + u.get('outputTokens', 0), usd=usd,
+                           detail={'purpose': 'safety_judge', 'priced': priced})
+        ev = res.get('event')
+        if not ev: return False
+        if ev['type'] == 'judge_unavailable':
+            self.sink.emit('safety', rule='RD3', action='flagged', detail=f"judge_unavailable: {ev['reason']}; the floor's verdict stands")
+            return False
+        note = f"{ev['type']}: kind {ev['kind']}, confidence {ev['confidence']:.2f}"
+        if ev['type'] == 'judge_shadow':
+            self.sink.emit('safety', rule='RD3', action='flagged', detail=note + ' (shadow: nothing changed)')
+            return False
+        if res.get('crisis') and 'crisis' not in self.signalled:     # judge_raised: the crisis path, exactly as a floor hit
+            self.signalled.add('crisis'); self.state['crisis'] = True; self.judge_raised = True
+            self.sink.emit('safety', rule='RD3', action='suspended_goal', detail=note + ': goal suspended, lines given, human offered')
+            return True
+        return False
+
     async def sentences(self, draft):
         """Async generator of door-approved sentences for one reply. A blocked sentence is never said: the brain
         writes the reply again once, told which rule the draft broke; a second block ends with a safe line."""
@@ -130,6 +181,8 @@ class Conversation:
                     async for d in gen:
                         draft.raw += d
                         for s in sp.feed(d):
+                            if draft.gate is not None and not draft.sentences:     # the judge's verdict before she is heard
+                                gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
                             out, v = self.check(s, draft)
                             if v['action'] == 'block': blocked = v; break
                             if out: yield out
@@ -140,12 +193,16 @@ class Conversation:
                     return
                 if not blocked:
                     for s in sp.flush():
+                        if draft.gate is not None and not draft.sentences:
+                            gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
                         out, v = self.check(s, draft)
                         if v['action'] == 'block': blocked = v; break
                         if out: yield out
                         if draft.final: return
             finally:
                 self.charge_brain(usage)
+                if draft.gate is not None and not draft.pending:   # nothing was said: settle the verdict for the next turn
+                    gate, draft.gate = draft.gate, None; asyncio.ensure_future(self.settle_gate(gate))
             if timing.get('err') and not draft.sentences and not blocked:
                 raise ComponentError('brain', self.brain_provider, timing['err'][:200])
             if not blocked: return
