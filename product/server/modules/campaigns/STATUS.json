@@ -2,33 +2,139 @@
   "module": "campaigns",
   "date": "2026-10-21",
   "tools": [
-    { "name": "campaign.draft", "risk": "draft" },
-    { "name": "campaign.estimate", "risk": "read" },
-    { "name": "campaign.launch", "risk": "external", "a2": true, "version": "policy_version:agent_version.hash" },
-    { "name": "campaign.pause", "risk": "external", "a3_when": "system or agent" },
-    { "name": "campaign.resume", "risk": "external", "a2": true },
-    { "name": "campaign.stop", "risk": "external", "a3_when": "system or agent" },
-    { "name": "campaign.stop_at_cap", "risk": "external", "a3_when": "system or agent" },
-    { "name": "campaign.window.narrow", "risk": "draft" },
-    { "name": "campaign.window.widen", "risk": "policy", "a2": true },
-    { "name": "campaign.audience.add", "risk": "external", "a2": true },
-    { "name": "policy.window.set", "risk": "policy", "a2": true, "roles": ["owner", "compliance"] },
-    { "name": "policy.category.override", "risk": "policy", "a2": true, "roles": ["owner", "compliance"] },
-    { "name": "call.place_single", "risk": "external", "a2": true },
-    { "name": "test.ring_member_phone", "risk": "test" },
-    { "name": "number.search", "risk": "read" },
-    { "name": "number.rent", "risk": "spend", "a2": true },
-    { "name": "number.byo.connect", "risk": "policy", "a2": true },
-    { "name": "number.kyc.submit", "risk": "external", "a2": true },
-    { "name": "number.pause", "risk": "draft" },
-    { "name": "number.pause_flagged", "risk": "external", "a3_when": "system or agent" },
-    { "name": "a2p.declaration.export", "risk": "read" },
-    { "name": "campaign.list", "risk": "read" },
-    { "name": "campaign.get", "risk": "read" },
-    { "name": "attempt.list", "risk": "read" },
-    { "name": "attempt.retry_per_ladder", "risk": "external", "a3_when": "system or agent" }
+    {
+      "name": "campaign.draft",
+      "risk": "draft"
+    },
+    {
+      "name": "campaign.estimate",
+      "risk": "read"
+    },
+    {
+      "name": "campaign.launch",
+      "risk": "external",
+      "a2": true,
+      "version": "policy_version:agent_version.hash"
+    },
+    {
+      "name": "campaign.pause",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "campaign.resume",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "campaign.stop",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "campaign.stop_at_cap",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "campaign.window.narrow",
+      "risk": "draft"
+    },
+    {
+      "name": "campaign.window.widen",
+      "risk": "policy",
+      "a2": true
+    },
+    {
+      "name": "campaign.audience.add",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "policy.window.set",
+      "risk": "policy",
+      "a2": true,
+      "roles": [
+        "owner",
+        "compliance"
+      ]
+    },
+    {
+      "name": "policy.category.override",
+      "risk": "policy",
+      "a2": true,
+      "roles": [
+        "owner",
+        "compliance"
+      ]
+    },
+    {
+      "name": "call.place_single",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "test.ring_member_phone",
+      "risk": "test"
+    },
+    {
+      "name": "number.search",
+      "risk": "read"
+    },
+    {
+      "name": "number.rent",
+      "risk": "spend",
+      "a2": true
+    },
+    {
+      "name": "number.byo.connect",
+      "risk": "policy",
+      "a2": true
+    },
+    {
+      "name": "number.kyc.submit",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "number.pause",
+      "risk": "draft"
+    },
+    {
+      "name": "number.pause_flagged",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "a2p.declaration.export",
+      "risk": "read"
+    },
+    {
+      "name": "campaign.list",
+      "risk": "read"
+    },
+    {
+      "name": "campaign.get",
+      "risk": "read"
+    },
+    {
+      "name": "attempt.list",
+      "risk": "read"
+    },
+    {
+      "name": "attempt.retry_per_ladder",
+      "risk": "external",
+      "a3_when": "system or agent"
+    }
   ],
-  "tests": { "passed": 40, "total": 40, "files": ["tests/campaigns.test.ts (29, Postgres)", "tests/campaigns-units.test.ts (11, pure)"] },
+  "tests": {
+    "passed": 40,
+    "total": 40,
+    "files": [
+      "tests/campaigns.test.ts (29, Postgres)",
+      "tests/campaigns-units.test.ts (11, pure)"
+    ]
+  },
   "works": [
     "The dial gate G1-G12 (gate.ts runGate) runs inside the claim transaction for every attempt kind: campaign, api, single, test, retry, callback and transfer. Reason codes match trust-telephony §6. Each check runs in a savepoint and fails closed with check_unavailable.",
     "Calling windows are read in the contact's time zone. The category ceiling applies: promotional is 10:00-21:00, hard. The workspace outer band defaults to 08:00-21:00 and can be set inside 07:00-22:00. Quiet hours 22:00-07:00 hold on every path. The RBI band applies with the lending pack. National holidays plus tenant holidays are off. There is an 8-minute start cutoff. A cross-midnight window is owned by its start date.",
@@ -44,7 +150,8 @@
     "Retry ladder by outcome, from campaigns.md §7. Unknown outcomes are never retried automatically. The ladder is idempotent per attempt and runs at A3 when VP calls it.",
     "Launch is A2 and the approval is bound to policy_version plus the agent version hash. A narrowed window voids a pending approval. A launch with blockers names each one, its fix and the role that can apply it. A workspace's first campaign stops for review after 20 dials. The worker pauses a campaign at its cap (A3 stop_at_cap) or on a low wallet, and never cancels it.",
     "Tenancy: every query filters by workspace_id. A test shows another workspace cannot get, narrow, pause, add to, list or dial these rows.",
-    "Numbers: search, rent (spend; only an owner can approve), bring-your-own, KYC submit, pause, pause_flagged (A3). The A2P declaration pack exports as JSON or CSV."
+    "Numbers: search, rent (spend; only an owner can approve), bring-your-own, KYC submit, pause, pause_flagged (A3). The A2P declaration pack exports as JSON or CSV.",
+    "At claim, the worker creates the conversation row (id = ticket.conversationId, attempt_id, contact_id, agent_version_id, channel 'phone', or 'test' for test calls) in the same transaction, so the calls module's runtime hook can trust it and settle the hold tagged with the attempt. The row is marked failed if the runtime refuses before any ring."
   ],
   "untested": [
     "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired.",
@@ -60,7 +167,7 @@
   ],
   "needs_from_others": [
     "kernel: add `campaigns` to server/modules/index.ts and start startWorker({ pool, registry }) in main.ts. Optionally let a member run an A3 verb (pause, stop) at once instead of approving their own proposal.",
-    "calls module: create the conversation row with id = attempt.conversation_id from ticket.conversationId. On call end, settle(attempt.reservation_id, actual) or release it, set the attempt status and outcome_class, and call registry tool attempt.retry_per_ladder { attemptId, outcome, at? } as system.",
+    "calls module: settles or releases the hold at call.ended (already in calls/ingest.ts). Still needed: set attempt.outcome_class and call registry tool attempt.retry_per_ladder { attemptId, outcome, at? } as system after a non-final outcome (busy, no_answer, voicemail, short_call, callback, ...).",
     "intake/memory-omni: confirm the tombstone e164_hash convention. The gate checks sha256(e164) and HMAC-SHA256(key = workspace_id, e164). Also write dnd_status.ncpr_status and checked_at from a carrier lookup, and use consent_record.purpose values 'service' / 'transactional' / 'promotional' / 'all'.",
     "memory module: register memory.brief { contactId, agentId } -> { text, status } as the architecture contract says.",
     "money module: money.estimate { stackId, minutes, calls } -> { perMinuteInrMilli, basis }. campaign.estimate reads it through the registry when it is registered.",

@@ -14,7 +14,7 @@ import { release } from '../../ledger.ts';
 import { runtime as defaultRuntime, type Runtime } from '../../runtime-client.ts';
 import type { Registry } from '../../tools.ts';
 import { DISPATCH_STALE_MS, MEMORY_BRIEF_TIMEOUT_MS } from './defaults.ts';
-import { runGate, type AttemptRow, type GatePass, type GateVerdict, type PredialFn } from './gate.ts';
+import { LIVE_ATTEMPT, runGate, type AttemptRow, type GatePass, type GateVerdict, type PredialFn } from './gate.ts';
 
 export interface WorkerDeps {
   pool: pg.Pool;
@@ -63,6 +63,11 @@ export async function claimNext(d: WorkerDeps): Promise<ClaimOutcome> {
           reservation_id = $6, agent_version_id = $7, conversation_id = $8, precheck = $9, blocked_by = NULL, next_eligible_at = NULL
         WHERE id = $1 AND status = 'created'`,
         [a.id, now, v.number.id, v.number.e164, v.number.carrier, v.reservationId, v.version.id, conversationId, JSON.stringify(precheck)]);
+      // The calls module's runtime hook trusts only a conversation row the control plane created, and settles the hold
+      // tagged with its attempt_id. A test call is channel 'test' so it never counts toward outcomes or learning.
+      await c.query(`INSERT INTO conversation (id, workspace_id, attempt_id, contact_id, agent_version_id, channel, direction, status)
+        VALUES ($1,$2,$3,$4,$5,$6,'outbound','live')`,
+        [conversationId, a.workspace_id, a.id, a.contact_id, v.version.id, a.kind === 'test' ? 'test' : 'phone']);
       return { kind: 'claimed', attempt: a, verdict: v, conversationId };
     }
     if (v.outcome === 'deferred') {
@@ -166,6 +171,7 @@ async function failBeforeRing(d: WorkerDeps, a: AttemptRow, v: GatePass, reason:
     await c.query(`UPDATE attempt SET status = 'failed', outcome_class = 'provider_error', counts_to_budget = false, carrier_code = $2 WHERE id = $1`,
       [a.id, reason.slice(0, 200)]);
     await release(c, v.reservationId);
+    await c.query("UPDATE conversation SET status = 'failed', end_reason = 'failed', ended_at = now() WHERE attempt_id = $1 AND status = 'live'", [a.id]);
   });
   if (d.registry.get('attempt.retry_per_ladder')) {
     await d.registry.execute(d.pool, 'attempt.retry_per_ladder', { attemptId: a.id, outcome: 'provider_error' }, { workspaceId: a.workspace_id, actor: SYSTEM });
@@ -189,7 +195,7 @@ export async function advanceCampaigns(d: WorkerDeps): Promise<void> {
     [now, d.workspaceId ?? null]);
   await d.pool.query(`UPDATE campaign k SET state = 'completed', updated_at = now()
     WHERE k.state = 'running' AND ($1::uuid IS NULL OR k.workspace_id = $1::uuid)
-      AND NOT EXISTS (SELECT 1 FROM attempt a WHERE a.campaign_id = k.id AND a.status IN ('created','queued','dialing','ringing','connected'))`,
+      AND NOT EXISTS (SELECT 1 FROM attempt a WHERE a.campaign_id = k.id AND (a.status IN ('created','queued') OR (${LIVE_ATTEMPT})))`,
     [d.workspaceId ?? null]);
 }
 

@@ -97,6 +97,11 @@ export async function loadVersion(q: Queryable, ws: string, id: string | null): 
     JOIN agent a ON a.id = v.agent_id WHERE v.id = $1 AND a.workspace_id = $2`, [id, ws]);
 }
 
+/** An attempt holds a line while it is dialling or its call is live. The calls module leaves 'connected' as the final
+ *  status once a call ends, so the conversation row, not the attempt status, says whether the line is still in use. */
+export const LIVE_ATTEMPT = `a.status IN ('dialing','ringing','connected')
+  AND NOT EXISTS (SELECT 1 FROM conversation cv WHERE cv.attempt_id = a.id AND cv.status <> 'live')`;
+
 const DEFERRABLE: GateCode[] = ['out_of_window', 'budget_exhausted', 'deferred_concurrency', 'check_unavailable'];
 
 export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Promise<GateVerdict> {
@@ -281,8 +286,8 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       await q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['conc:' + ws]);
       const inbound = await one(q, 'SELECT 1 FROM inbound_route WHERE workspace_id = $1 LIMIT 1', [ws]);
       const limit = dp.concurrency - (inbound ? Math.max(1, Math.ceil(dp.concurrency * 0.2)) : 0);
-      const live = await one<{ ws: number; camp: number }>(q, `SELECT count(*)::int AS ws, count(*) FILTER (WHERE campaign_id = $2)::int AS camp
-        FROM attempt WHERE workspace_id = $1 AND status IN ('dialing','ringing','connected') AND id <> $3`, [ws, campaign?.id ?? null, a.id]);
+      const live = await one<{ ws: number; camp: number }>(q, `SELECT count(*)::int AS ws, count(*) FILTER (WHERE a.campaign_id = $2)::int AS camp
+        FROM attempt a WHERE a.workspace_id = $1 AND ${LIVE_ATTEMPT} AND a.id <> $3`, [ws, campaign?.id ?? null, a.id]);
       const later = new Date(now.getTime() + 30_000);
       if (live!.ws >= limit) throw new Refuse('deferred_concurrency', `${live!.ws} of ${limit} lines busy${inbound ? ' (some held for inbound)' : ''}`, later);
       if (campaign && policy.concurrency && live!.camp >= policy.concurrency) throw new Refuse('deferred_concurrency', `campaign at its ${policy.concurrency} lines`, later);

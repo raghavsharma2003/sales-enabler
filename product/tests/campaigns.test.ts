@@ -265,6 +265,15 @@ test('G12 deferred_concurrency, with inbound capacity held back', { skip }, asyn
   await pool.query('INSERT INTO inbound_route (workspace_id, number_id) VALUES ($1,$2)', [w.ws, w.numberId]);
   const v = await gate(await attempt(w, { contact: await addContact(w) }));
   assert.equal(code(v), 'deferred_concurrency', 'one of the two lines is held for inbound');
+  // A call that has ended frees its line even though the calls module leaves the attempt 'connected'.
+  const w2 = await world();
+  await pool.query('INSERT INTO dial_policy (workspace_id, concurrency) VALUES ($1, 1)', [w2.ws]);
+  const done = await attempt(w2, { contact: await addContact(w2) });
+  await pool.query("UPDATE attempt SET status = 'connected' WHERE id = $1", [done]);
+  await pool.query("INSERT INTO conversation (workspace_id, attempt_id, status) VALUES ($1,$2,'live')", [w2.ws, done]);
+  assert.equal(code(await gate(await attempt(w2))), 'deferred_concurrency', 'live call holds the only line');
+  await pool.query("UPDATE conversation SET status = 'ended' WHERE attempt_id = $1", [done]);
+  assert.equal(code(await gate(await attempt(w2, { contact: await addContact(w2) }))), 'allowed', 'ended call frees it');
 });
 
 test('a check that cannot run refuses with check_unavailable (fail closed) and releases nothing it did not hold', { skip }, async () => {
@@ -403,6 +412,9 @@ test('worker end to end: ticket from agent_version.config and the contact; offer
   assert.equal(a!.status, 'dialing');
   assert.ok(a!.dispatched_at);
   assert.equal(a!.conversation_id, t.conversationId);
+  const conv = await one<{ attempt_id: string; contact_id: string; agent_version_id: string; channel: string; status: string }>(pool,
+    'SELECT attempt_id, contact_id, agent_version_id, channel, status FROM conversation WHERE id = $1 AND workspace_id = $2', [t.conversationId, w.ws]);
+  assert.deepEqual(conv, { attempt_id: id, contact_id: w.contact, agent_version_id: w.versionId, channel: 'phone', status: 'live' }, 'the calls hook finds the row it trusts');
   assert.equal((await tick(deps(w, NOON))).dispatched, 0, 'it never dials twice');
 
   // memory.brief registered: fast -> loaded (capped at 1200 bytes); slow -> not_loaded_timeout.
@@ -432,6 +444,7 @@ test('runtime refusal releases the hold and the ladder retries the provider erro
   assert.equal(a!.status, 'failed');
   assert.equal(a!.counts_to_budget, false, 'a carrier fault never spends the person\'s patience');
   assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM reservation WHERE id = $1', [a!.reservation_id]))!.status, 'released');
+  assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM conversation WHERE attempt_id = $1', [id]))!.status, 'failed');
   const retry = await one<{ kind: string; scheduled_for: Date }>(pool, 'SELECT kind, scheduled_for FROM attempt WHERE retry_of = $1', [id]);
   assert.equal(retry!.kind, 'retry');
   const audit = await one<{ payload: { mode: string } }>(pool, "SELECT payload FROM audit_event WHERE workspace_id = $1 AND action = 'attempt.retry_per_ladder'", [w.ws]);
