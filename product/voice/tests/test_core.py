@@ -8,7 +8,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 
 
 class Signing(unittest.TestCase):
-    body = b'{"protocol":1,"conversationId":"conv_test_1"}'
+    body = b'{"protocol":1,"conversationId":"0b6f6e1a-1c2d-4e5f-8a9b-000000000001"}'
 
     def test_roundtrip(self):
         h = signing.sign(SECRET, self.body)
@@ -54,6 +54,12 @@ class Tickets(unittest.TestCase):
     def test_valid(self):
         stack, voice = tk.validate(ticket())
         self.assertEqual(voice, 'Despina')
+
+    def test_conversation_id_must_be_a_uuid(self):
+        for bad in ['conv_test_1', '0b6f6e1a-1c2d-4e5f-8a9b-00000000001', 'x' * 36, '../../etc', '']:
+            t = ticket(); t['conversationId'] = bad
+            with self.assertRaises(tk.TicketError, msg=bad): tk.validate(t)
+        t = ticket(); t['conversationId'] = t['conversationId'].upper(); tk.validate(t)
 
     def test_every_stack_is_accepted(self):
         for sid in stacks.STACKS: tk.validate(ticket(sid))

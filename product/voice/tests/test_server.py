@@ -55,6 +55,12 @@ class Server(unittest.IsolatedAsyncioTestCase):
         r = await self.post_ticket(ticket(), t_ms=1_000_000_000_000); self.assertEqual(r.status, 401)
         r = await self.post_ticket(ticket(), secret='wrong'); self.assertEqual(r.status, 401)
 
+    async def test_non_uuid_conversation_id_refused_before_the_call_opens(self):
+        t = ticket(); t['conversationId'] = 'conv_test_1'
+        r = await self.post_ticket(t); d = await r.json()
+        self.assertEqual((r.status, d['error']), (422, 'bad_ticket'))
+        self.assertEqual(self.rt.calls, {}); self.assertEqual(self.posters, [], 'no call, no event sink, no events')
+
     async def test_unknown_stack_refused(self):
         t = ticket(); t['stack']['id'] = 'v0-default'; t['agent']['voice']['stackId'] = 'v0-default'
         r = await self.post_ticket(t); d = await r.json()
@@ -83,15 +89,15 @@ class Server(unittest.IsolatedAsyncioTestCase):
         r = await self.post_ticket(ticket()); d = await r.json()
         self.assertEqual(r.status, 202)
         j = d['join']; self.assertEqual(j['kind'], 'sim')
-        with self.assertRaises(Exception): await self.client.ws_connect('/v1/media/sim/conv_test_1?token=nope')
-        ws = await self.client.ws_connect(f"/v1/media/sim/conv_test_1?token={j['token']}")
+        with self.assertRaises(Exception): await self.client.ws_connect('/v1/media/sim/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token=nope')
+        ws = await self.client.ws_connect(f"/v1/media/sim/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token={j['token']}")
         m = await ws.receive_json(); self.assertIn('AI', m['sentences'][0])
         await ws.send_json({'t': 'say', 'text': 'हाँ जी, बोलिए'}); m = await ws.receive_json()
         self.assertEqual(m['sentences'], ['जी, renewal 2 November को है।'])
         await ws.send_json({'t': 'say', 'text': 'ठीक है, thank you'}); m = await ws.receive_json()
         self.assertEqual(m['ended'], 'agent_ended')
         await ws.close()
-        with self.assertRaises(Exception): await self.client.ws_connect(f"/v1/media/sim/conv_test_1?token={j['token']}")   # single use
+        with self.assertRaises(Exception): await self.client.ws_connect(f"/v1/media/sim/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token={j['token']}")   # single use
         await asyncio.sleep(0.05)
         p = self.posters[0]
         e = p.events()
@@ -101,33 +107,33 @@ class Server(unittest.IsolatedAsyncioTestCase):
 
     async def test_end_route(self):
         r = await self.post_ticket(ticket()); j = (await r.json())['join']
-        ws = await self.client.ws_connect(f"/v1/media/sim/conv_test_1?token={j['token']}")
+        ws = await self.client.ws_connect(f"/v1/media/sim/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token={j['token']}")
         await ws.receive_json()
-        body, hdr = signed({'conversationId': 'conv_test_1', 'endReason': 'completed'})
-        r = await self.client.post('/v1/calls/conv_test_1/end', data=body, headers=hdr)
+        body, hdr = signed({'conversationId': '0b6f6e1a-1c2d-4e5f-8a9b-000000000001', 'endReason': 'completed'})
+        r = await self.client.post('/v1/calls/0b6f6e1a-1c2d-4e5f-8a9b-000000000001/end', data=body, headers=hdr)
         self.assertEqual((r.status, (await r.json())['endReason']), (200, 'completed'))
-        r = await self.client.post('/v1/calls/conv_test_1/end', data=body); self.assertEqual(r.status, 401)
+        r = await self.client.post('/v1/calls/0b6f6e1a-1c2d-4e5f-8a9b-000000000001/end', data=body); self.assertEqual(r.status, 401)
         _, hdr = signed({}); hdr[signing.HEADER] = signing.sign(SECRET, b'')
-        r = await self.client.get('/v1/calls/conv_test_1', headers=hdr); d = await r.json()
+        r = await self.client.get('/v1/calls/0b6f6e1a-1c2d-4e5f-8a9b-000000000001', headers=hdr); d = await r.json()
         self.assertEqual(d['ended'], 'completed')
         await ws.close()
 
     async def test_unjoined_call_still_reports(self):
         r = await self.post_ticket(ticket()); self.assertEqual(r.status, 202)
         token = (await r.json())['join']['token']
-        body, hdr = signed({'conversationId': 'conv_test_1'})
-        await self.client.post('/v1/calls/conv_test_1/end', data=body, headers=hdr)
+        body, hdr = signed({'conversationId': '0b6f6e1a-1c2d-4e5f-8a9b-000000000001'})
+        await self.client.post('/v1/calls/0b6f6e1a-1c2d-4e5f-8a9b-000000000001/end', data=body, headers=hdr)
         await asyncio.sleep(0.05)
         e = self.posters[0].events()
         self.assertEqual([x['type'] for x in e], ['call.started', 'call.ended'])
-        with self.assertRaises(Exception): await self.client.ws_connect(f'/v1/media/sim/conv_test_1?token={token}')   # ended: no join
+        with self.assertRaises(Exception): await self.client.ws_connect(f'/v1/media/sim/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token={token}')   # ended: no join
 
     async def test_end_signature_cannot_be_replayed_onto_another_call(self):
         await self.post_ticket(ticket())
         hdr = {signing.HEADER: signing.sign(SECRET, b'')}                    # e.g. captured from a status GET
-        r = await self.client.post('/v1/calls/conv_test_1/end', data=b'', headers=hdr); self.assertEqual(r.status, 400)
-        body, hdr = signed({'conversationId': 'conv_other'})
-        r = await self.client.post('/v1/calls/conv_test_1/end', data=body, headers=hdr); self.assertEqual(r.status, 400)
+        r = await self.client.post('/v1/calls/0b6f6e1a-1c2d-4e5f-8a9b-000000000001/end', data=b'', headers=hdr); self.assertEqual(r.status, 400)
+        body, hdr = signed({'conversationId': '0b6f6e1a-1c2d-4e5f-8a9b-0000000000ff'})
+        r = await self.client.post('/v1/calls/0b6f6e1a-1c2d-4e5f-8a9b-000000000001/end', data=body, headers=hdr); self.assertEqual(r.status, 400)
 
     async def test_garbage_signature_is_401_not_500(self):
         body = json.dumps(ticket()).encode()
@@ -136,8 +142,8 @@ class Server(unittest.IsolatedAsyncioTestCase):
     async def test_browser_media_socket(self):
         t = ticket(transport={'kind': 'webrtc', 'offerUrl': 'https://control.example.test/join/abc'})
         r = await self.post_ticket(t); j = (await r.json())['join']
-        self.assertEqual(j['url'], 'wss://voice.example.test/v1/media/browser/conv_test_1')
-        ws = await self.client.ws_connect(f"/v1/media/browser/conv_test_1?token={j['token']}")
+        self.assertEqual(j['url'], 'wss://voice.example.test/v1/media/browser/0b6f6e1a-1c2d-4e5f-8a9b-000000000001')
+        ws = await self.client.ws_connect(f"/v1/media/browser/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token={j['token']}")
         ready = json.loads((await ws.receive()).data); self.assertEqual(ready['t'], 'ready')
         got_audio = False
         for _ in range(200):
@@ -155,8 +161,8 @@ class Server(unittest.IsolatedAsyncioTestCase):
         t = ticket(transport={'kind': 'sip', 'to': '+919000000001', 'from': '+919000000002', 'trunk': 'exotel'}, direction='inbound')
         r = await self.post_ticket(t); d = await r.json()
         self.assertEqual(r.status, 202)
-        self.assertTrue(d['join']['streamUrl'].startswith('wss://voice.example.test/v1/media/sip/stream/conv_test_1?token='))
-        t2 = ticket(transport={'kind': 'sip', 'to': '+919000000001', 'from': '+919000000002', 'trunk': 'exotel'}); t2['conversationId'] = 'conv_test_2'
+        self.assertTrue(d['join']['streamUrl'].startswith('wss://voice.example.test/v1/media/sip/stream/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token='))
+        t2 = ticket(transport={'kind': 'sip', 'to': '+919000000001', 'from': '+919000000002', 'trunk': 'exotel'}); t2['conversationId'] = '0b6f6e1a-1c2d-4e5f-8a9b-000000000002'
         r = await self.post_ticket(t2); self.assertEqual((r.status, (await r.json())['error']), (422, 'unsupported_trunk'))
 
 

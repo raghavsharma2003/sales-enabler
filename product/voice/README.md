@@ -18,6 +18,7 @@ docker build -f product/voice/Dockerfile -t vp-voice .   # from the repository r
 
 1. **Intake.** `POST /v1/calls` checks the HMAC signature, then validates the ticket (`vpvoice/ticket.py`). It refuses
    a ticket it cannot run exactly as written:
+   - a conversationId that is not a uuid (ingest refuses those, so every event would be lost);
    - an unknown stack, or no stack (there is no default);
    - a stack that differs from `agent.voice.stackId`;
    - a voice the stack does not offer;

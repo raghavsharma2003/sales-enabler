@@ -7,6 +7,7 @@ BRIEF_MAX_BYTES = 1200       # memory brief limit (agent-config.ts BRIEF_MAX_BYT
 TRANSPORTS = ('webrtc', 'sip', 'sim')
 MEMORY_STATUS = ('loaded', 'none', 'not_loaded_timeout', 'disabled')
 HEX64 = re.compile(r'^(sha256:)?[0-9a-f]{64}$')
+UUID = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', re.I)     # as shared/validate.ts uuid()
 
 
 class TicketError(Exception):
@@ -24,7 +25,9 @@ def validate(t):
     _need(t.get('protocol') == 1, 'bad_protocol', 'protocol must be 1')
     for k in ('conversationId', 'workspaceId'):
         _need(isinstance(t.get(k), str) and 0 < len(t[k]) <= 128, 'bad_ticket', f'{k} is required')
-    _need(re.fullmatch(r'[A-Za-z0-9_.:-]+', t['conversationId']) is not None, 'bad_ticket', 'conversationId has unsafe characters')
+    # the control plane mints it from conversation.id, and ingest refuses any batch whose id is not a uuid: a non-uuid
+    # id is a bug or a forged ticket, refused before the call opens rather than losing every event to a 422
+    _need(UUID.fullmatch(t['conversationId']) is not None, 'bad_ticket', 'conversationId must be a uuid')
     _need(t.get('direction') in ('outbound', 'inbound'), 'bad_ticket', 'direction must be outbound or inbound')
     _need(isinstance(t.get('test'), bool), 'bad_ticket', 'test must be a boolean')
     tr = t.get('transport') or {}

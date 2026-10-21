@@ -37,7 +37,7 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(e[-1]['type'], 'call.ended')
         self.assertEqual(bodies(p)[-1]['events'], [e[-1]], 'call.ended goes alone, last')
         for b, h in zip(p.bodies, p.headers): signing.verify(SECRET, h, b)
-        for b in bodies(p): self.assertEqual((b['protocol'], b['conversationId']), (1, 'conv_test_1'))
+        for b in bodies(p): self.assertEqual((b['protocol'], b['conversationId']), (1, '0b6f6e1a-1c2d-4e5f-8a9b-000000000001'))
         turns = of(p, 'turn')
         self.assertEqual([t['speaker'] for t in turns], ['agent', 'caller', 'agent', 'caller', 'agent', 'caller', 'agent'])
         self.assertNotIn('<', ''.join(t['text'] for t in turns), 'markers are never spoken or recorded')

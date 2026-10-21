@@ -32,7 +32,7 @@ def ticket(stack_id='v2-flashlite', transport=None, test=True, **over):
     a = copy.deepcopy(AGENT); a['voice'] = {'stackId': stack_id}
     voice = stacks.voices(stack_id)[1] if stack_id in stacks.STACKS else None
     raw = BRIEF_TEXT.encode()
-    t = {'protocol': 1, 'conversationId': 'conv_test_1', 'attemptId': None, 'workspaceId': 'ws_demo', 'direction': 'outbound',
+    t = {'protocol': 1, 'conversationId': '0b6f6e1a-1c2d-4e5f-8a9b-000000000001', 'attemptId': None, 'workspaceId': 'ws_demo', 'direction': 'outbound',
          'transport': transport or {'kind': 'sim', 'simCallerId': 'sim_busy_parent'}, 'agent': a,
          'brief': {'text': BRIEF_TEXT, 'hash': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw)},
          'stack': {'id': stack_id, 'combinationId': stacks.combination_id(stack_id, voice) if voice else 'x'},
@@ -69,7 +69,7 @@ def components(stack_id='v2-flashlite', brain=None, voice=None, ears=None, fallb
     return comp
 
 
-def sink(cid='conv_test_1', fail_first=0):
+def sink(cid='0b6f6e1a-1c2d-4e5f-8a9b-000000000001', fail_first=0):
     p = MemoryPoster(SECRET, fail_first=fail_first)
     return EventSink(cid, p, retry_delays=(0, 0, 0), flush_every_s=0.01), p
 
