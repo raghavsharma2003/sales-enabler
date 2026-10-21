@@ -22,6 +22,7 @@ export const A3_VERBS = [
   'campaign.pause',
   'campaign.stop',
   'contact.suppress_after_opt_out',
+  'contact.suppress',                 // a person saying "stop calling this one" never waits for a card
   'call.end_runaway',
   'campaign.stop_at_cap',
   'number.pause_flagged',
