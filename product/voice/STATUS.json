@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 169,
-    "passed": 169,
+    "ran": 171,
+    "passed": 171,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -32,7 +32,8 @@
       "test_judge.py": "caller-crisis judge: the 12 TS judge behaviours mirrored, parity guard on judge.json, and the runtime half on sim and cascade calls (raise interrupts before she is heard, shadow changes nothing, timeout falls back, floor hit never waits, no keys no call, no secrets to the judge, judge tokens metered)",
       "test_runtime_fixture.py": "one source, both doors: sim calls covering every RuntimeEvent type and all three judge outcomes; output checked against tests/vectors/runtime_events.json, and live batches run through calls validateRuntimeBatch (product/tests/voice-runtime-events.test.ts runs the committed fixture through it in the TS suite); a supervisor_live call (listen pair, whisper, takeover) so ingest validates the supervisor moments",
       "test_launch.py": "multi-process launcher with two real worker processes: tickets spread, overflow on at_capacity, refused only when all are full; retry returns to its owner; /end reaches the owner and frees the slot; health sums workers; media socket via /w/<i>/; workers stop with the front; nginx config",
-      "test_live.py": "live controls: whisper redacted into the LAST block, spent after one reply, a denial whisper still blocked by RD2, no text in events, capped, refused after takeover; sim takeover (she stops, doored line, member bridged both ways, drop and no-join close the call, crisis call taken over, limits stop); cascade takeover cut at a near sentence end vs at once, member audio to the line and caller audio to the member; listener mix of both legs writing nothing; HTTP refusals (unsigned, replayed body, unknown, unjoined, sim listen, empty whisper), sim takeover end to end, browser listen socket"
+      "test_live.py": "live controls: whisper redacted into the LAST block, spent after one reply, a denial whisper still blocked by RD2, no text in events, capped, refused after takeover; sim takeover (she stops, doored line, member bridged both ways, drop and no-join close the call, crisis call taken over, limits stop); cascade takeover cut at a near sentence end vs at once, member audio to the line and caller audio to the member; listener mix of both legs writing nothing; HTTP refusals (unsigned, replayed body, unknown, unjoined, sim listen, empty whisper), sim takeover end to end, browser listen socket",
+      "test_devsim.py": "the development runtime as a real process: refuses without VP_DEVSIM=1; a signed sim call with whisper and takeover over HTTP"
     }
   },
   "works": [
@@ -52,7 +53,8 @@
     "Cascade turn-taking ported from the lab (held replies, 1.4 s hold on unfinished speech, withdraw, barge-in by words, heard-text history); Gemini Live session with a door on its output transcription",
     "Cost meter in integer milli-rupees at 95 INR/USD (ears/brain/voice/telephony; second/token/char), deltas that sum to the total; hard limits end the call; crisis stretches limits to 2x then hands off",
     "Test calls: fallbacksUsed is always []; a failed component ends the call as error with the reason in GET /v1/calls/{id}",
-    "Dockerfile for Azure Container Apps (python:3.12-slim, non-root, healthcheck; copies the lab's Silero model and rules.json)"
+    "Dockerfile for Azure Container Apps (python:3.12-slim, non-root, healthcheck; copies the lab's Silero model and rules.json)",
+    "python -m vpvoice.devsim (VP_DEVSIM=1): the real HTTP surface and live controls on fake providers, no keys, for cross-process control-plane tests"
   ],
   "untested": [
     "The crisis judge against a real model (latency within 800 ms from India, verdict quality on blind sets): only fake models so far",

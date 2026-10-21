@@ -11,6 +11,7 @@ says: the agent config, the brief compiled once by the control plane, the stack,
 python -m pip install -r requirements.txt
 python -m vpvoice                  # serves on $PORT (8080), one process
 python -m vpvoice.launch           # one worker per core behind $PORT (see "Admission and processes")
+VP_DEVSIM=1 python -m vpvoice.devsim   # development only: the real HTTP surface on fake ears/brain/voice, no keys
 python -m unittest                 # from product/voice; no network
 docker build -f product/voice/Dockerfile -t vp-voice .   # from the repository root
 ```
@@ -311,6 +312,7 @@ body names another call, 404 for an unknown call, 409 if the call is not joined,
 | `VP_BIND` | Listen address (`0.0.0.0`; the launcher binds workers to `127.0.0.1`) |
 | `VP_MAX_CALLS_PER_PROCESS`, `VP_RETRY_AFTER_S` | Admission cap per process (20) and the `Retry-After` it answers with (5) |
 | `VP_WORKERS`, `VP_WORKER_BASE_PORT`, `VP_FRONT_PORT` | Launcher: worker count (cpu count), first worker port (`PORT+1`), front port when nginx holds `PORT` |
+| `VP_DEVSIM` | `1` lets `python -m vpvoice.devsim` start (fake providers; refuses otherwise so it is never a deploy command) |
 | `VP_WORKER_ID` | Set by the launcher (`w0`…); shown on health |
 | `GEMINI_PAID_KEY` | Gemini API: ears (Live transcription), speech-to-speech, and text/TTS unless Vertex is configured |
 | `VERTEX_SA_FILE`, `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_OFF` | Optional Vertex AI route for Gemini text and TTS; chosen once per call |
