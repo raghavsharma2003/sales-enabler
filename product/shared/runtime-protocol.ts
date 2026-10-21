@@ -23,6 +23,9 @@ export interface CallTicket {
     | { kind: 'sip'; to: string; from: string; trunk: string }
     | { kind: 'sim'; simCallerId: string };          // simulated caller, text or synthesised audio
   agent: AgentConfig;
+  // The static brief, compiled ONCE by the control plane's compile() (inherited law: one compile() for every lane).
+  // The runtime never re-words it; per turn it appends only its generic LAST block (position is mechanism).
+  brief: { text: string; hash: string; bytes: number };
   stack: { id: string; combinationId: string };      // the runtime refuses a stack it does not know; it never substitutes
   contact: {
     displayName: string;                 // what she may call them; may be '' (then no name is used)
