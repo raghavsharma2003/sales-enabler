@@ -3,6 +3,7 @@
 // launch approval bound to the campaign version. Skipped when DATABASE_URL is unset. Synthetic data only.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { randomInt } from 'node:crypto';
 import type pg from 'pg';
 import { buildApp } from '../server/app.ts';
 import { createSession } from '../server/auth.ts';
@@ -779,4 +780,110 @@ test('F4 launch binds the agent\'s campaign deployment; a later split takes effe
   const next = await claimNext(deps(w, NOON));
   assert.ok(next.kind === 'claimed' && next.verdict.allowed && next.verdict.version.id === v2, 'the new split decides the next dial');
   assert.equal((await one<{ deployment_id: string }>(pool, 'SELECT deployment_id FROM campaign WHERE id = $1', [id]))!.deployment_id, d2);
+});
+
+// ---- member phone verification and number.list ----
+
+test('member phone verification: rings the code, stores only a hash, 5 tries, expiry, window, suppression and rate limits', { skip }, async () => {
+  const { setVerifyClock, VERIFY } = await import('../server/modules/campaigns/verify.ts');
+  const fake = new FakeTelephony();
+  setTelephony(fake);
+  let clock = IST(TUE, '12:00');
+  setVerifyClock(() => clock);
+  try {
+    // The per-phone limit spans workspaces and runs, so this test draws fresh synthetic numbers instead of the sequence.
+    const phone = () => `+91900000${String(randomInt(0, 10_000)).padStart(4, '0')}`;
+    const w = await world();
+    const mine = phone();
+    const codeOf = () => /code hai: ([\d ]+)\./.exec(fake.systemCalls.at(-1)!.lines[0])![1].replace(/ /g, '');
+    const start = (p = mine, who: 'owner' | 'viewer' = 'owner') => registry.execute<{ ringing: boolean; verificationId: string }>(pool, 'member.phone.verify_start', { phone: p }, as(w, who));
+
+    const s1 = await start('0' + mine.slice(3));
+    assert.ok(s1.status === 'confirmed' && s1.result.ringing && s1.mode === 'A1', JSON.stringify(s1));
+    const call = fake.systemCalls.at(-1)!;
+    assert.equal(call.to, mine, 'normalised to E.164 before ringing');
+    assert.equal(call.lines.at(-1), 'Agar aapne yeh nahi maanga, ignore kar dijiye.');
+    assert.ok(call.lines.some(l => /^Your Vyakti verification code is/.test(l)), 'Hinglish and English');
+    const code = codeOf();
+    assert.match(code, /^\d{6}$/);
+    assert.equal((call.lines.join(' ').match(new RegExp(code.split('').join(' '), 'g')) ?? []).length, 4, 'spoken twice in each language');
+    const row = await one<{ code_hash: string }>(pool, 'SELECT code_hash FROM phone_verification WHERE id = $1', [s1.status === 'confirmed' ? s1.result.verificationId : '']);
+    assert.ok(row!.code_hash && !row!.code_hash.includes(code), 'only a keyed hash is stored');
+    const audits = await one<{ n: number; leaked: number }>(pool, `SELECT count(*)::int AS n, count(*) FILTER (WHERE payload::text LIKE '%' || $2 || '%')::int AS leaked
+      FROM audit_event WHERE workspace_id = $1 AND action LIKE 'member.phone.%'`, [w.ws, code]);
+    assert.deepEqual(audits, { n: 1, leaked: 0 }, 'audited, and the code is never logged');
+
+    const wrong = code === '000000' ? '111111' : '000000';
+    const bad = await registry.execute<{ verified: boolean; triesLeft: number }>(pool, 'member.phone.verify_confirm', { phone: mine, code: wrong }, as(w));
+    assert.ok(bad.status === 'confirmed' && !bad.result.verified && bad.result.triesLeft === 4, JSON.stringify(bad));
+    const viewerTry = await registry.execute<{ verified: boolean }>(pool, 'member.phone.verify_confirm', { phone: mine, code }, as(w, 'viewer'));
+    assert.ok(viewerTry.status === 'confirmed' && !viewerTry.result.verified, 'the code is bound to the member who asked');
+    const ok = await registry.execute<{ verified: boolean }>(pool, 'member.phone.verify_confirm', { phone: mine, code }, as(w));
+    assert.ok(ok.status === 'confirmed' && ok.result.verified);
+    const v = await one<{ member_id: string; verified_at: Date }>(pool, 'SELECT member_id, verified_at FROM verified_test_phone WHERE workspace_id = $1 AND e164 = $2', [w.ws, mine]);
+    assert.equal(v!.member_id, w.owner);
+    const t = await registry.execute(pool, 'test.ring_member_phone', { agentVersionId: w.versionId }, as(w));
+    assert.equal(t.status, 'confirmed', 'a verified phone can take test calls');
+
+    // Five wrong codes lock it; an expired code fails.
+    const p2 = phone();
+    await start(p2);
+    for (let k = 0; k < VERIFY.maxTries; k++) await registry.execute(pool, 'member.phone.verify_confirm', { phone: p2, code: '999999' === codeOf() ? '999998' : '999999' }, as(w));
+    const locked = await registry.execute<{ verified: boolean; reason: string }>(pool, 'member.phone.verify_confirm', { phone: p2, code: codeOf() }, as(w));
+    assert.ok(locked.status === 'confirmed' && !locked.result.verified, 'locked after 5 wrong codes');
+    const p3 = phone();
+    await start(p3, 'viewer');
+    const c3 = codeOf();
+    clock = new Date(clock.getTime() + 11 * 60_000);
+    const late = await registry.execute<{ verified: boolean; reason: string }>(pool, 'member.phone.verify_confirm', { phone: p3, code: c3 }, as(w, 'viewer'));
+    assert.ok(late.status === 'confirmed' && !late.result.verified && /expired/.test(late.result.reason));
+
+    // 3 per member per hour (owner has used 2: mine and p2).
+    await start(phone());
+    const fourth = await start(phone());
+    assert.ok(fourth.status === 'not_executed' && /an hour/.test(fourth.reason));
+
+    // Window, suppression, landline.
+    clock = IST(TUE, '21:05');
+    const night = await start(phone(), 'viewer');
+    assert.ok(night.status === 'not_executed' && /09:00 and 21:00/.test(night.reason));
+    clock = IST('2026-10-28', '12:00');
+    const sup = phone();
+    await pool.query("INSERT INTO suppression (workspace_id, e164, reason) VALUES ($1,$2,'asked not to be called')", [w.ws, sup]);
+    const s4 = await start(sup);
+    assert.ok(s4.status === 'not_executed' && /asked not to be called/.test(s4.reason));
+    const land = await start('+912000000011');   // landline-shaped, synthetic, never rung
+    assert.ok(land.status === 'not_executed' && /mobile/.test(land.reason));
+
+    // 3 per phone per day across every workspace.
+    const target = phone();
+    for (let k = 0; k < 3; k++) { const o = await world(); const r = await registry.execute(pool, 'member.phone.verify_start', { phone: target }, as(o)); assert.equal(r.status, 'confirmed'); }
+    const w4 = await world();
+    const harass = await registry.execute(pool, 'member.phone.verify_start', { phone: target }, as(w4));
+    assert.ok(harass.status === 'not_executed' && /already got 3/.test(harass.reason), 'a fourth workspace cannot ring the same phone today');
+    const sys = await registry.execute(pool, 'member.phone.verify_start', { phone: phone() }, SYS(w));
+    assert.equal(sys.status, 'not_executed', 'only a signed-in member verifies a phone');
+  } finally { setVerifyClock(null); setTelephony(new FakeTelephony()); }
+});
+
+test('number.list: viewer-safe, campaigns using each line, pause date, paginated', { skip }, async () => {
+  const w = await world();
+  for (let k = 0; k < 2; k++) await pool.query("INSERT INTO phone_number (workspace_id, e164, series, carrier) VALUES ($1,$2,'trial','fake')", [w.ws, phone()]);
+  const camp = await campaignRow(w, 'service', { cliPool: [w.numberId] });
+  const fl = await registry.execute(pool, 'number.pause_flagged', { numberId: w.numberId, flag: 'complaint spike' }, SYS(w));
+  assert.equal(fl.status, 'confirmed');
+  const p1 = await registry.execute<{ numbers: any[]; nextCursor: string }>(pool, 'number.list', { limit: 2 }, as(w, 'viewer'));
+  assert.ok(p1.status === 'confirmed' && p1.result.numbers.length === 2 && p1.result.nextCursor);
+  const p2 = await registry.execute<{ numbers: any[]; nextCursor: string | null }>(pool, 'number.list', { limit: 2, cursor: p1.status === 'confirmed' ? p1.result.nextCursor : '' }, as(w, 'viewer'));
+  assert.ok(p2.status === 'confirmed' && p2.result.numbers.length === 1 && p2.result.nextCursor === null);
+  const all = [...(p1.status === 'confirmed' ? p1.result.numbers : []), ...(p2.status === 'confirmed' ? p2.result.numbers : [])];
+  assert.equal(new Set(all.map(n => n.id)).size, 3);
+  const main = all.find(n => n.id === w.numberId);
+  assert.deepEqual(main.campaigns.map((c: any) => c.id), [camp]);
+  assert.equal(main.status, 'paused');
+  assert.ok(main.paused_at);
+  assert.equal(all.filter(n => n.trial).length, 2);
+  const other = await world();
+  const theirs = await registry.execute<{ numbers: any[] }>(pool, 'number.list', {}, as(other));
+  assert.ok(theirs.status === 'confirmed' && !theirs.result.numbers.some(n => n.id === w.numberId), 'tenancy');
 });

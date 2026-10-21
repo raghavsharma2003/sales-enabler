@@ -35,6 +35,8 @@ export interface TelephonyProvider {
   rent(offerRef: string): Promise<{ e164: string; providerRef: string; series: Series; carrier: string; monthlyRentInrMilli: number | null }>;
   submitKyc(providerRef: string, docs: KycDocument[]): Promise<{ ref: string }>;
   connectByo(input: { e164: string; carrier: string; trunkRef: string }): Promise<{ providerRef: string }>;
+  /** A fixed system announcement (no agent, no model): ring `to` from `from` and speak `lines` in order, then hang up. */
+  systemCall(input: { to: string; from: string; lines: string[] }): Promise<{ ref: string }>;
 }
 
 export class TelephonyDisabled extends Error {
@@ -60,6 +62,8 @@ export class FakeTelephony implements TelephonyProvider {
   }
   async submitKyc(providerRef: string, docs: KycDocument[]) { this.kyc.push({ providerRef, docs }); return { ref: `fake-kyc-${this.kyc.length}` }; }
   async connectByo(i: { e164: string; carrier: string; trunkRef: string }) { return { providerRef: `fake-byo-${i.trunkRef}` }; }
+  systemCalls: { to: string; from: string; lines: string[] }[] = [];
+  async systemCall(i: { to: string; from: string; lines: string[] }) { this.systemCalls.push(i); return { ref: `fake-sys-${randomUUID()}` }; }
 }
 
 /** Plivo India adapter, off by default. Endpoint shapes follow Plivo's public REST API and are NOT verified against a
@@ -92,6 +96,7 @@ export class PlivoTelephony implements TelephonyProvider {
   }
   async submitKyc(): Promise<{ ref: string }> { this.enabled('kyc'); throw new Error('plivo KYC submission is a document upload flow; not wired yet'); }
   async connectByo(): Promise<{ providerRef: string }> { this.enabled('byo'); throw new Error('plivo bring-your-own trunks are not wired yet'); }
+  async systemCall(): Promise<{ ref: string }> { this.enabled('system call'); throw new Error('plivo system announcements (Speak XML) are not wired yet'); }
 }
 
 let current: TelephonyProvider | null = null;

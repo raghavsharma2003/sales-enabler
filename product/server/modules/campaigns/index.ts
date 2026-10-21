@@ -19,6 +19,7 @@ import {
 } from './defaults.ts';
 import { loadDialPolicy, loadVersion, type CampaignPolicy, type CampaignRow } from './gate.ts';
 import { tick } from './worker.ts';
+import { verifyConfirm, verifyStart } from './verify.ts';
 import { routeSeries, SERIES, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
@@ -468,7 +469,7 @@ export function registerCampaignTools(registry: Registry): void {
   reg(tool(obj({ numberId: uuid(), reason: str({ min: 1, max: 200 }) }), {
     name: 'number.pause', risk: 'external', roles: ['owner', 'builder', 'operator', 'compliance'], summary: 'Pause a line; every campaign using it waits (VP itself pauses a flagged line at once with number.pause_flagged)',
     run: async (ctx, i) => {
-      const r = await ctx.q.query("UPDATE phone_number SET status = 'paused', pause_cause = $3 WHERE id = $1 AND workspace_id = $2 AND status <> 'released'", [i.numberId, ctx.workspaceId, 'person:' + i.reason]);
+      const r = await ctx.q.query("UPDATE phone_number SET status = 'paused', pause_cause = $3, paused_at = now() WHERE id = $1 AND workspace_id = $2 AND status <> 'released'", [i.numberId, ctx.workspaceId, 'person:' + i.reason]);
       if (!r.rowCount) throw new ValidationError('numberId', 'no such line in this workspace');
       return { numberId: i.numberId, status: 'paused' };
     },
@@ -478,7 +479,7 @@ export function registerCampaignTools(registry: Registry): void {
     name: 'number.pause_flagged', risk: 'external', summary: 'Pause a flagged line and name it (never silently replaced or rotated)',
     describe: i => `Pause line ${i.numberId}: ${i.flag}`,
     run: async (ctx, i) => {
-      const r = await ctx.q.query(`UPDATE phone_number SET status = 'paused', pause_cause = $3,
+      const r = await ctx.q.query(`UPDATE phone_number SET status = 'paused', pause_cause = $3, paused_at = now(),
           health = health || jsonb_build_object('flag', $3::text, 'flaggedAt', now()) WHERE id = $1 AND workspace_id = $2 AND status <> 'released'`,
         [i.numberId, ctx.workspaceId, 'flagged:' + i.flag]);
       if (!r.rowCount) throw new ValidationError('numberId', 'no such line in this workspace');
@@ -539,6 +540,40 @@ export function registerCampaignTools(registry: Registry): void {
       const head = ['cli', 'series', 'a2pAiVoice', 'category', 'dailyVolume', 'peakVolume', 'operator', 'status'] as const;
       const csv = [head.join(','), ...rows.map(r => head.map(h => `"${String(r[h]).replace(/"/g, '""')}"`).join(','))].join('\n');
       return { ...pack, csv };
+    },
+  }));
+
+  // ---- member phone verification (verify.ts) ----
+
+  const ALL_MEMBERS = ['owner', 'builder', 'operator', 'compliance', 'viewer'] as const;
+  reg(tool(obj({ phone: str({ min: 6, max: 20 }) }), {
+    name: 'member.phone.verify_start', risk: 'test', roles: ALL_MEMBERS,
+    summary: 'Ring your own phone once with a 6-digit code (09:00-21:00 IST; rate-limited), so test calls can reach it',
+    run: (ctx, i) => verifyStart(ctx, i),
+  }));
+  reg(tool(obj({ phone: str({ min: 6, max: 20 }), code: str({ pattern: /^\d{6}$/ }) }), {
+    name: 'member.phone.verify_confirm', risk: 'draft', roles: ALL_MEMBERS,
+    summary: 'Confirm the code you heard; the phone becomes yours to ring with test calls',
+    run: (ctx, i) => verifyConfirm(ctx, i),
+  }));
+
+  reg(tool(obj({ status: opt(str({ oneOf: ['active', 'paused', 'released'] })), limit: opt(num({ int: true, min: 1, max: 200 })), cursor: opt(str({ max: 120 })) }), {
+    name: 'number.list', risk: 'read', summary: 'Your calling lines: series, KYC, A2P, status, dates and the campaigns using each',
+    run: async (ctx, i) => {
+      const limit = i.limit ?? 50;
+      const [cAt, cId] = i.cursor ? i.cursor.split('|') : [null, null];
+      if (i.cursor && (!cAt || !cId || Number.isNaN(Date.parse(cAt)))) throw new ValidationError('cursor', 'use the nextCursor from the previous page');
+      const rows = await many<Record<string, unknown> & { id: string; created_at: Date }>(ctx.q, `SELECT n.id, n.e164, n.series, (n.series = 'trial') AS trial, n.status, n.kyc_status,
+          n.a2p_status, n.a2p_ref, n.carrier, n.byo, n.display_name, n.created_at, n.paused_at, n.pause_cause,
+          coalesce((SELECT json_agg(json_build_object('id', c.id, 'name', c.name, 'state', c.state) ORDER BY c.created_at)
+            FROM campaign c WHERE c.workspace_id = n.workspace_id AND c.state IN ('draft','scheduled','running','paused')
+              AND (c.policy->'cliPool' ? n.id::text OR EXISTS (SELECT 1 FROM attempt a WHERE a.campaign_id = c.id AND a.number_id = n.id))), '[]') AS campaigns
+        FROM phone_number n WHERE n.workspace_id = $1 AND ($2::text IS NULL OR n.status = $2)
+          AND ($3::timestamptz IS NULL OR (n.created_at, n.id) < ($3::timestamptz, $4::uuid))
+        ORDER BY n.created_at DESC, n.id DESC LIMIT $5`, [ctx.workspaceId, i.status ?? null, cAt, cId, limit + 1]);
+      const page = rows.slice(0, limit);
+      const last = page[page.length - 1];
+      return { numbers: page, nextCursor: rows.length > limit && last ? `${last.created_at.toISOString()}|${last.id}` : null };
     },
   }));
 

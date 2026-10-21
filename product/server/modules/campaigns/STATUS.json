@@ -140,13 +140,28 @@
         "owner",
         "compliance"
       ]
+    },
+    {
+      "name": "number.list",
+      "risk": "read",
+      "note": "viewer-safe; cursor pagination (nextCursor)"
+    },
+    {
+      "name": "member.phone.verify_start",
+      "risk": "test",
+      "roles": "all member roles"
+    },
+    {
+      "name": "member.phone.verify_confirm",
+      "risk": "draft",
+      "roles": "all member roles"
     }
   ],
   "tests": {
-    "passed": 47,
-    "total": 47,
+    "passed": 49,
+    "total": 49,
     "files": [
-      "tests/campaigns.test.ts (35, Postgres)",
+      "tests/campaigns.test.ts (37, Postgres)",
       "tests/campaigns-units.test.ts (12, pure)"
     ],
     "e2e": "tests/e2e.test.ts steps 3b, 3c, 3d, 6b, 6c and 9b now pass as normal steps. The two direct-SQL bridges (KYC and A2P) are replaced by the signed webhook and number.a2p.declare. 8b (the calls funnel) is still a todo.",
@@ -177,7 +192,10 @@
     "F2: number.a2p.declare {numberId, a2pRef, evidence} (policy; owner or compliance approves) sets a2p_status 'declared', so a line stays dialable from 2026-11-17.",
     "F3: the ticket's per-contact facts merge the contact's current intake attribute rows, skipping any older than max_age_s. Precedence is per-call variables, then attributes, then contact.custom. Offers stay fenced.",
     "F4: launch binds campaign.deployment_id to the agent's latest 'campaign' deployment. Each claim follows a newer deployment.split, after any running experiment arm.",
-    "G4 codes carry a stable source class: an in-call opt-out recorded as 'call:<conversationId>' reports suppressed:in_call, with the full source in the detail."
+    "G4 codes carry a stable source class: an in-call opt-out recorded as 'call:<conversationId>' reports suppressed:in_call, with the full source in the detail.",
+    "Member phone verification (verify.ts). verify_start normalises the phone (Indian mobile only) and refuses a number this workspace suppressed or erased. It rings only 09:00-21:00 IST, as a fixed system announcement through the telephony seam's systemCall, from a trial line or VP_SYSTEM_CLI. The announcement speaks the 6-digit code twice in Hinglish and twice in English, then 'agar aapne yeh nahi maanga, ignore kar dijiye'.",
+    "Only HMAC(server salt, id + code) is stored. A code lives 10 minutes and allows 5 tries. Limits: 3 calls per member per hour, 20 per workspace per day, and 3 per phone per day across every workspace, keyed by a server-wide salted hash (per-workspace numberHash cannot count across workspaces). verify_confirm sets verified_test_phone.verified_at for the asking member only. Both tools are audited, and the code never appears in the audit log.",
+    "number.list: the workspace's lines with series, trial flag, status, KYC, A2P, carrier, rented and paused dates, and the campaigns using each line (pool or attempts). Keyset-paginated with nextCursor."
   ],
   "untested": [
     "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired.",
@@ -189,13 +207,13 @@
     "Pacing beyond concurrency is not implemented: no canary at 3 starts a minute, no steady starts per minute, no jitter. The canary guardrails (opt-out spike and the like) are also not implemented.",
     "Recurring campaigns and CampaignRun. Outage pause and auto-resume after 10 minutes of green health.",
     "Calls a person has already answered, and 'called by another campaign today' beyond the per-number ceiling.",
-    "Load: precheck p95 latency was not measured (the target is 50 ms or less)."
+    "Load: precheck p95 latency was not measured (the target is 50 ms or less).",
+    "PlivoTelephony.systemCall (Speak XML) is not wired. In production a verification call reports ringing: false until a real adapter exists."
   ],
   "needs_from_others": [
     "calls module: settles or releases the hold at call.ended (already in calls/ingest.ts). Still needed: set attempt.outcome_class and call registry tool attempt.retry_per_ladder { attemptId, outcome, at? } as system after a non-final outcome (busy, no_answer, voicemail, short_call, callback, ...).",
     "agents module: put config.lint = { ok } on agent_version. G10 reads it and also calls shared/safety lintAgentConfig.",
     "kernel tests: 'prepare() runs outside the transaction' counts every idle-in-transaction session in the database, so it fails when run in parallel with suites that legitimately hold a claim transaction open (campaigns G11 predial waits up to 800 ms inside the claim by design). It passes alone (3/3). Scope the count to the test's own backend or connection.",
-    "workspace module: a tool that verifies a member phone (it writes verified_test_phone.verified_at). A2P declaration is now campaigns' number.a2p.declare.",
     "calls module: e2e step 8b. campaignFunnel counts end_reason IS NULL as connected.",
     "runtime/carrier relay: sign KYC events to POST /hooks/telephony/kyc with VP_TELEPHONY_WEBHOOK_SECRET (at least 32 characters), body {provider, eventId, providerRef, status, evidence}."
   ],
