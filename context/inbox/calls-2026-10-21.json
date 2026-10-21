@@ -12,7 +12,7 @@
     {
       "id": "decision.2026-10-21.calls-signature-over-compact-json",
       "type": "decision",
-      "status": "proposed",
+      "status": "superseded",
       "source": "inferred",
       "date": "2026-10-21",
       "title": "The runtime hook checks x-vp-signature over the compact JSON serialisation of the parsed body, because the kernel router hands modules a parsed body, not the raw bytes",
@@ -66,6 +66,16 @@
       "title": "conversation.outcome (what learning and funnels count) takes verified, then manager, then an AI guess only when its judge's latest calibration is trusted. Untrusted guesses stay visible with their grade",
       "rationale": "Blueprint F4: until a label is trusted it cannot feed experiments, the north star or a winner. Learning reads conversation.outcome.",
       "reverse_if": "The owner decides untrusted guesses may feed experiments with a stated penalty (calls-needed inflation), or learning starts reading outcome grades itself."
+    },
+    {
+      "id": "decision.2026-10-21.calls-hmac-over-raw-bytes",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "The runtime hook verifies the HMAC over the exact raw request bytes (Router rawBody), before parsing",
+      "rationale": "The kernel now gives routes the raw body. Verifying the exact bytes removes the compact-JSON serialisation rule, and a whitespace-only change now fails (tested).",
+      "reverse_if": "Never, short of a protocol change to a signed canonical form."
     }
   ],
   "edges": [
@@ -83,6 +93,11 @@
       "from": "component.product.calls-module",
       "to": "decision.2026-10-21.calls-model-refines-only-unknown-reasons",
       "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-21.calls-hmac-over-raw-bytes",
+      "to": "decision.2026-10-21.calls-signature-over-compact-json",
+      "relation": "supersedes"
     }
   ],
   "events": [

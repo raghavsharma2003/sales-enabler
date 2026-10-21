@@ -5,10 +5,7 @@
 // Idempotency: every event is recorded once by (conversation_id, seq) in the same transaction as its effects,
 // so a retried batch changes nothing. Cost lines may arrive before call.ended; money settles at call.ended at
 // the sum of the cost lines (the real cost), or the hold is released when nobody was reached and nothing was spent.
-//
-// The kernel router hands modules the parsed body, so the signature is checked over its compact JSON
-// serialisation. The runtime must sign exactly that: JSON with no spaces, keys in the order sent, UTF-8 kept
-// (Python: json.dumps(obj, separators=(',', ':'), ensure_ascii=False)). See STATUS.json needs_from_others.
+// The route takes the raw body, so the HMAC is checked over the exact bytes the runtime signed, before parsing.
 import type pg from 'pg';
 import type { Deps } from '../../app.ts';
 import { many, one, tx } from '../../db.ts';
@@ -226,10 +223,13 @@ export function hookRoute(deps: Deps) {
     const secret = process.env.VP_RUNTIME_SECRET;
     if (!secret || secret.length < 32) throw new HttpError(503, 'not_configured', 'the runtime hook is not configured');
     const sig = req.headers['x-vp-signature'];
-    if (req.body === undefined || typeof sig !== 'string' || !verify(secret, JSON.stringify(req.body), sig)) {
+    const raw = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : '';
+    if (!raw || typeof sig !== 'string' || !verify(secret, raw, sig)) {
       throw new HttpError(401, 'bad_signature', 'the signature is missing, stale or wrong');
     }
-    const b = batch(req.body);
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { throw new HttpError(400, 'bad_json', 'the request body is not valid JSON'); }
+    const b = batch(parsed);
     const r = await ingest(deps.pool, b, deps.registry);
     await flushOptOuts(deps.pool, deps.registry, r.workspaceId);
     return { body: { accepted: r.accepted, duplicates: r.duplicates } };

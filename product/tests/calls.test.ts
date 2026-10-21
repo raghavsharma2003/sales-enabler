@@ -90,9 +90,9 @@ async function call(w: Awaited<ReturnType<typeof workspace>>, opts: { reserveInr
   return { contact, attempt, conv, reservationId };
 }
 
-async function post(conversationId: string, events: RuntimeEvent[], o: { secret?: string; t?: number; tamper?: boolean; header?: string | null; to?: string } = {}) {
+async function post(conversationId: string, events: RuntimeEvent[], o: { secret?: string; t?: number; tamper?: boolean; respace?: boolean; header?: string | null; to?: string } = {}) {
   const body = JSON.stringify({ protocol: 1, conversationId, events });
-  const sent = o.tamper ? body.replace('"seq":1', '"seq":7') : body;
+  const sent = o.tamper ? body.replace('"seq":1', '"seq":7') : o.respace ? body.replace('"seq":', '"seq": ') : body;
   const headers: Record<string, string> = { 'content-type': 'application/json' };
   if (o.header !== null) headers['x-vp-signature'] = o.header ?? sign(o.secret ?? SECRET, body, o.t);
   const r = await fetch((o.to ?? base) + '/hooks/runtime', { method: 'POST', headers, body: sent });
@@ -139,6 +139,7 @@ test('the hook rejects a missing, wrong, stale or tampered signature and an unkn
   assert.equal((await post(c.conv, ev, { secret: 'another-secret'.padEnd(40, 'y') })).status, 401);
   assert.equal((await post(c.conv, ev, { t: Date.now() - 6 * 60_000 })).status, 401, 'a replay outside the 5-minute window is refused');
   assert.equal((await post(c.conv, ev, { tamper: true })).status, 401, 'the body must be the one that was signed');
+  assert.equal((await post(c.conv, ev, { respace: true })).status, 401, 'the HMAC covers the exact bytes, whitespace included');
   assert.equal((await post('00000000-0000-4000-8000-00000000abcd', ev)).status, 404);
   const seen = await one<{ n: string }>(pool, 'SELECT count(*)::text AS n FROM runtime_event_seen WHERE conversation_id = $1', [c.conv]);
   assert.equal(seen!.n, '0', 'nothing was applied');
@@ -288,6 +289,12 @@ test('test.browser_call dispatches a test ticket; test calls stay out of outcome
   assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM monitor WHERE workspace_id = $1', [w.ws])).n, 0, 'monitors never read test calls');
   const lbl = await registry.execute(pool, 'outcome.label', { conversationId: r.result.conversationId, definitionId: def, value: 'will_pay' }, { workspaceId: w.ws, actor: w.member });
   assert.equal(lbl.status, 'not_executed');
+
+  setRuntime({ start: async () => ({ accepted: false, reason: 'stack not loaded' }), control: async () => ({ ok: true }) });
+  const refused = await registry.execute(pool, 'test.browser_call', { agentId: w.agent }, { workspaceId: w.ws, actor: w.member });
+  setRuntime(fakeRuntime);
+  assert.equal(refused.status, 'not_executed');
+  assert.equal((await one<any>(pool, "SELECT count(*)::int AS n FROM conversation WHERE workspace_id = $1 AND channel = 'test' AND status = 'live'", [w.ws])).n, 0, 'a refused start leaves no live test call behind');
 
   const noVersion = await registry.execute(pool, 'test.browser_call', { agentId: w.agent, useDraft: true }, { workspaceId: w.ws, actor: w.member });
   assert.equal(noVersion.status, 'not_executed', 'a draft with no compiled brief cannot be test-called');

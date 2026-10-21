@@ -37,13 +37,15 @@ export function registerTools(r: Registry): void {
   r.register(tool(obj({ agentId: uuid(), versionId: opt(uuid()), useDraft: opt(bool()) }), {
     name: 'test.browser_call', risk: 'test',
     summary: 'Start a test call in the browser with an agent (its draft or a version); never dials a phone and never counts toward outcomes',
-    run: async (ctx, i) => {
-      const agent = await one<{ id: string; draft: any }>(ctx.q, 'SELECT id, draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
+    // prepare() runs outside any transaction: the conversation row must be committed before the runtime starts,
+    // because the runtime may post events at once, and no transaction is held open across the runtime request.
+    prepare: async (ctx, i) => {
+      const agent = await one<{ id: string; draft: any }>(ctx.pool, 'SELECT id, draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
       if (!agent) throw new Error('no such agent in this workspace');
       let cfg: { agent?: AgentConfig; brief?: CallTicket['brief'] } | null, versionId: string | null = null;
       if (i.useDraft) cfg = agent.draft;
       else {
-        const v = await one<{ id: string; config: any }>(ctx.q,
+        const v = await one<{ id: string; config: any }>(ctx.pool,
           `SELECT v.id, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id AND a.workspace_id = $2
            WHERE v.agent_id = $1 ${i.versionId ? 'AND v.id = $3' : ''} ORDER BY v.number DESC LIMIT 1`,
           i.versionId ? [i.agentId, ctx.workspaceId, i.versionId] : [i.agentId, ctx.workspaceId]);
@@ -53,12 +55,12 @@ export function registerTools(r: Registry): void {
       if (!cfg?.agent || !cfg?.brief?.text || !cfg.brief.hash) throw new Error('this agent has no compiled brief yet; compile the draft first');
       const stack = requireStack(cfg.agent.voice?.stackId);
 
-      const spent = await one<{ s: string }>(ctx.q, `SELECT coalesce(sum(cost_inr_milli), 0)::text AS s FROM conversation
+      const spent = await one<{ s: string }>(ctx.pool, `SELECT coalesce(sum(cost_inr_milli), 0)::text AS s FROM conversation
         WHERE workspace_id = $1 AND channel = 'test' AND started_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata'`, [ctx.workspaceId]);
       if (Number(spent!.s) + TEST_CALL_MAX_COST_INR_MILLI > TEST_BUDGET_PER_DAY_INR_MILLI) throw new Error("today's test budget is used up; it resets at midnight IST");
 
       const id = randomUUID();
-      await ctx.q.query(`INSERT INTO conversation (id, workspace_id, agent_version_id, channel, direction, status) VALUES ($1,$2,$3,'test','outbound','live')`,
+      await ctx.pool.query(`INSERT INTO conversation (id, workspace_id, agent_version_id, channel, direction, status, run_manifest) VALUES ($1,$2,$3,'test','outbound','live','{"test":true}')`,
         [id, ctx.workspaceId, versionId]);
       const ticket: CallTicket = {
         protocol: 1, conversationId: id, attemptId: null, workspaceId: ctx.workspaceId, direction: 'outbound',
@@ -69,10 +71,15 @@ export function registerTools(r: Registry): void {
         limits: { maxDurationS: Math.min(cfg.agent.limits?.maxDurationS ?? 300, 900), maxCostInrMilli: TEST_CALL_MAX_COST_INR_MILLI },
         test: true,
       };
-      const rep = await runtime().start(ticket);
-      if (!rep.accepted) throw new Error(`the voice runtime did not start the call: ${rep.reason ?? 'no reason given'}`);
+      let rep;
+      try { rep = await runtime().start(ticket); } catch (e) { rep = { accepted: false, reason: e instanceof Error ? e.message : String(e) } as const; }
+      if (!rep.accepted) {
+        await ctx.pool.query(`UPDATE conversation SET status = 'failed', end_reason = 'error', ended_at = now() WHERE id = $1 AND workspace_id = $2`, [id, ctx.workspaceId]);
+        throw new Error(`the voice runtime did not start the call: ${rep.reason ?? 'no reason given'}`);
+      }
       return { conversationId: id, source: i.useDraft ? 'draft' : 'version', versionId, combinationId: ticket.stack.combinationId, join: rep.join ?? null };
     },
+    run: async (_ctx, _i, prepared) => prepared as { conversationId: string; source: string; versionId: string | null; combinationId: string; join: unknown },
   }));
 
   // ---- call.get -----------------------------------------------------------------------------------------
@@ -363,16 +370,19 @@ export function registerTools(r: Registry): void {
   // ---- live control (runtime().control) ------------------------------------------------------------------------
   r.register(tool(obj({ conversationId: uuid() }), {
     name: 'live.listen', risk: 'draft', summary: 'Listen to a live call (audited)',
-    run: async (ctx, i) => {
-      const c = await liveCall(ctx, i.conversationId);
-      const rep = await runtime().control(c.id, 'listen', { by: ctx.actor.id ?? ctx.actor.type });
+    prepare: async (ctx, i) => {
+      await liveCall({ q: ctx.pool, workspaceId: ctx.workspaceId, actor: ctx.actor }, i.conversationId);
+      const rep = await runtime().control(i.conversationId, 'listen', { by: ctx.actor.id ?? ctx.actor.type });
       if (!rep.ok) throw new Error('the voice runtime refused to open a listen session');
-      return { ok: true, detail: rep.detail ?? null };
+      return rep.detail ?? null;
     },
+    run: async (_ctx, _i, detail) => ({ ok: true, detail }),
   }));
   r.register(tool(obj({ conversationId: uuid(), text: str({ min: 1, max: 500 }) }), {
     name: 'live.whisper', risk: 'external', summary: 'Whisper context to the agent on a live call; the caller does not hear it',
     describe: i => `Whisper to the agent on call ${i.conversationId.slice(0, 8)}: "${i.text}"`,
+    // The runtime request stays in run(), not prepare(): on the approval path prepare() runs before the approver's role,
+    // the args hash and the object version are checked, and a whisper reaches a live call.
     run: async (ctx, i) => {
       const c = await liveCall(ctx, i.conversationId);
       const rep = await runtime().control(c.id, 'whisper', { text: i.text, by: ctx.actor.id ?? ctx.actor.type });
@@ -383,11 +393,15 @@ export function registerTools(r: Registry): void {
   r.register(tool(obj({ conversationId: uuid() }), {
     name: 'live.takeover', risk: 'draft', roles: ['owner', 'operator', 'compliance'],
     summary: 'A person takes over a live call; the agent leaves for good. Human only, never a model',
-    run: async (ctx, i) => {
+    prepare: async (ctx, i) => {
       if (ctx.actor.type !== 'member' || !ctx.actor.id) throw new Error('only a signed-in person can take over a call');
-      const c = await liveCall(ctx, i.conversationId);
-      const rep = await runtime().control(c.id, 'takeover', { memberId: ctx.actor.id });
+      await liveCall({ q: ctx.pool, workspaceId: ctx.workspaceId, actor: ctx.actor }, i.conversationId);
+      const rep = await runtime().control(i.conversationId, 'takeover', { memberId: ctx.actor.id });
       if (!rep.ok) throw new Error('the voice runtime refused the take-over');
+      return true;
+    },
+    run: async (ctx, i) => {
+      const c = await conversation(ctx, i.conversationId);
       await ctx.q.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{human_joined}'::text[]) ORDER BY 1) WHERE id = $1 AND workspace_id = $2`, [c.id, ctx.workspaceId]);
       return { ok: true };
     },
