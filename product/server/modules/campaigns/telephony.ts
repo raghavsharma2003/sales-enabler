@@ -1,6 +1,7 @@
 // Numbers: the series router (which CLI series a call may present) and the telephony provider seam for search,
 // rent, KYC and bring-your-own lines. Tests use FakeTelephony; the real adapter is off unless VP_TELEPHONY_LIVE=1
 // and its credentials are set, so no test and no dev server can ever reach a paid carrier API.
+import { randomUUID } from 'node:crypto';
 import type { CallCategory, SectorPack } from '../../../shared/agent-config.ts';
 
 export const SERIES = ['ten_digit', '140', '1600', '1601', 'trial'] as const;
@@ -45,7 +46,6 @@ export class FakeTelephony implements TelephonyProvider {
   readonly name = 'fake';
   rented: string[] = [];
   kyc: { providerRef: string; docs: KycDocument[] }[] = [];
-  private n = 0;
   async search(q: { series?: Series; region?: string; limit: number }): Promise<NumberOffer[]> {
     const series = q.series ?? 'ten_digit';
     return Array.from({ length: Math.min(q.limit, 5) }, (_, i) => ({
@@ -56,7 +56,7 @@ export class FakeTelephony implements TelephonyProvider {
   async rent(ref: string) {
     const [, series, i] = ref.split(':');
     this.rented.push(ref);
-    return { e164: `+9190000000${String(10 + Number(i)).padStart(2, '0')}`, providerRef: `fake-num-${++this.n}`, series: (series as Series) ?? 'ten_digit', carrier: 'fake', monthlyRentInrMilli: 59_000 };
+    return { e164: `+9190000000${String(10 + Number(i)).padStart(2, '0')}`, providerRef: `fake-num-${randomUUID()}`, series: (series as Series) ?? 'ten_digit', carrier: 'fake', monthlyRentInrMilli: 59_000 };
   }
   async submitKyc(providerRef: string, docs: KycDocument[]) { this.kyc.push({ providerRef, docs }); return { ref: `fake-kyc-${this.kyc.length}` }; }
   async connectByo(i: { e164: string; carrier: string; trunkRef: string }) { return { providerRef: `fake-byo-${i.trunkRef}` }; }

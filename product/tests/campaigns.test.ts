@@ -701,3 +701,82 @@ test('dial-time seams: experiment arm, deployment split, money.estimate sizes th
   const jobs = campaigns.jobs?.({ pool, registry, auth: async () => { throw new Error('no'); } }) ?? [];
   assert.deepEqual(jobs.map(j => [j.name, j.everyMs]), [['campaigns.dispatch', 2000]]);
 });
+
+// ---- the carrier side of the number step, imported facts, and deployments (e2e findings F1-F4) ----
+
+test('F1 KYC decision: only the carrier webhook or VP Success records it; signed, idempotent, audited; G8 then passes', { skip }, async () => {
+  const w = await world();
+  await pool.query("UPDATE phone_number SET kyc_status = 'submitted', provider = 'fake', provider_ref = $2 WHERE id = $1", [w.numberId, 'ref-' + w.numberId]);
+  assert.equal(code(await gate(await attempt(w))), 'kyc_lapsed');
+  const member = await registry.execute(pool, 'number.kyc.sync', { numberId: w.numberId, status: 'verified', evidence: { ref: 'x' } }, as(w));
+  assert.equal(member.status, 'not_executed', 'a member cannot mark their own KYC verified');
+
+  const secret = 'k'.repeat(40);
+  process.env.VP_TELEPHONY_WEBHOOK_SECRET = secret;
+  const { server } = buildApp(pool, [campaigns]);
+  await new Promise<void>(res => server.listen(0, '127.0.0.1', res));
+  const url = `http://127.0.0.1:${(server.address() as { port: number }).port}/hooks/telephony/kyc`;
+  const { sign } = await import('../server/runtime-client.ts');
+  const send = (body: unknown, sig?: string) => { const raw = JSON.stringify(body); return fetch(url, { method: 'POST', body: raw, headers: { 'content-type': 'application/json', 'x-vp-signature': sig ?? sign(secret, raw) } }); };
+  try {
+    const ev = { provider: 'fake', eventId: 'evt-' + w.numberId, providerRef: 'ref-' + w.numberId, status: 'verified', evidence: { carrierRef: 'KYC-SYN-1' } };
+    assert.equal((await send(ev, 't=1,v1=' + '0'.repeat(64))).status, 401);
+    const ok = await send(ev);
+    assert.equal(ok.status, 200);
+    assert.equal(((await ok.json()) as { applied: boolean }).applied, true);
+    const again = await send(ev);
+    assert.equal(((await again.json()) as { duplicate: boolean }).duplicate, true, 'a retried delivery changes nothing');
+  } finally { server.close(); delete process.env.VP_TELEPHONY_WEBHOOK_SECRET; }
+  const n = await one<{ kyc_status: string; kyc_evidence: Record<string, string> }>(pool, 'SELECT kyc_status, kyc_evidence FROM phone_number WHERE id = $1', [w.numberId]);
+  assert.equal(n!.kyc_status, 'verified');
+  assert.equal(n!.kyc_evidence.carrierRef, 'KYC-SYN-1');
+  assert.ok(await one(pool, "SELECT 1 FROM audit_event WHERE workspace_id = $1 AND action = 'number.kyc.sync' AND actor_type = 'system'", [w.ws]));
+  assert.equal(code(await gate(await attempt(w, { contact: await addContact(w) }))), 'allowed');
+  const vps = await registry.execute(pool, 'number.kyc.sync', { numberId: w.numberId, status: 'rejected', evidence: { ref: 'y' } }, { workspaceId: w.ws, actor: { type: 'vp_success', id: 'ops' } });
+  assert.ok(vps.status === 'not_executed' && /only a submitted KYC/.test(vps.reason), 'a decided KYC is not flipped');
+});
+
+test('F2 number.a2p.declare (policy: owner or compliance approves) keeps a line dialable after the A2P date', { skip }, async () => {
+  const w = await world();
+  await pool.query("UPDATE phone_number SET a2p_status = 'undeclared' WHERE id = $1", [w.numberId]);
+  const after = IST(TUE_AFTER_A2P, '12:00');
+  assert.equal(code(await gate(await attempt(w), after)), 'cli_undeclared');
+  const op = await registry.execute(pool, 'number.a2p.declare', { numberId: w.numberId, a2pRef: 'A2P-SYN-0001', evidence: 'operator portal ref, submitted by compliance' }, as(w, 'viewer'));
+  assert.equal(op.status, 'not_executed', 'a viewer cannot propose it');
+  const p = await registry.execute(pool, 'number.a2p.declare', { numberId: w.numberId, a2pRef: 'A2P-SYN-0001', evidence: 'operator portal ref, submitted by compliance' }, as(w, 'compliance'));
+  assert.equal(p.status, 'needs_approval');
+  const r = await registry.approve<{ a2pStatus: string }>(pool, p.status === 'needs_approval' ? p.actionId : '', { workspaceId: w.ws, memberId: w.compliance });
+  assert.ok(r.status === 'confirmed' && r.result.a2pStatus === 'declared');
+  assert.equal(code(await gate(await attempt(w, { contact: await addContact(w) }), after)), 'allowed');
+});
+
+test('F3 imported attributes reach the ticket: fresh only, per-call variables still win, offers still fenced', { skip }, async () => {
+  const w = await world();
+  await pool.query("UPDATE contact SET custom = '{}' WHERE id = $1", [w.contact]);
+  await pool.query(`INSERT INTO attribute (contact_id, key, value, authority, max_age_s, observed_at) VALUES
+    ($1, 'due_date', '"12 Nov"', 'crm', NULL, now()), ($1, 'upgrade', '"gold"', 'crm', NULL, now())`, [w.contact]);
+  const stale = await addContact(w);
+  await pool.query(`INSERT INTO attribute (contact_id, key, value, authority, max_age_s, observed_at) VALUES ($1, 'due_date', '"1 Jan"', 'upload', 3600, $2)`, [stale, IST('2026-10-20', '09:00')]);
+  const a1 = await attempt(w), a2 = await attempt(w, { contact: stale });
+  await tick(deps(w, NOON));
+  assert.deepEqual(rt.tickets.find(t => t.attemptId === a1)!.contact.facts, { due_date: '12 Nov' });
+  assert.deepEqual(rt.tickets.find(t => t.attemptId === a2)!.contact.facts, {}, 'a value older than its max age is never spoken');
+});
+
+test('F4 launch binds the agent\'s campaign deployment; a later split takes effect on the next claim', { skip }, async () => {
+  const w = await world();
+  const v2 = (await one<{ id: string }>(pool, "INSERT INTO agent_version (agent_id, number, hash, config) SELECT agent_id, 2, 'hash-v2-' || gen_random_uuid(), config FROM agent_version WHERE id = $1 RETURNING id", [w.versionId]))!.id;
+  const d1 = (await one<{ id: string }>(pool, "INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,'campaign',$3) RETURNING id",
+    [w.ws, w.agentId, JSON.stringify([{ version_id: w.versionId, percent: 100 }])]))!.id;
+  const id = await readyCampaign(w);
+  const p = await registry.execute(pool, 'campaign.launch', { id }, as(w));
+  await registry.approve(pool, p.status === 'needs_approval' ? p.actionId : '', { workspaceId: w.ws, memberId: w.owner });
+  assert.equal((await one<{ deployment_id: string }>(pool, 'SELECT deployment_id FROM campaign WHERE id = $1', [id]))!.deployment_id, d1);
+  const first = await claimNext(deps(w, NOON));
+  assert.ok(first.kind === 'claimed' && first.verdict.allowed && first.verdict.version.id === w.versionId);
+  const d2 = (await one<{ id: string }>(pool, "INSERT INTO deployment (workspace_id, agent_id, binding, split, created_at) VALUES ($1,$2,'campaign',$3, now() + interval '1 second') RETURNING id",
+    [w.ws, w.agentId, JSON.stringify([{ version_id: v2, percent: 100 }])]))!.id;
+  const next = await claimNext(deps(w, NOON));
+  assert.ok(next.kind === 'claimed' && next.verdict.allowed && next.verdict.version.id === v2, 'the new split decides the next dial');
+  assert.equal((await one<{ deployment_id: string }>(pool, 'SELECT deployment_id FROM campaign WHERE id = $1', [id]))!.deployment_id, d2);
+});

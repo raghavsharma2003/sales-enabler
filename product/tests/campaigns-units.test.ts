@@ -7,6 +7,7 @@ import { DEFAULT_OUTER_BAND, type WindowPolicy } from '../server/modules/campaig
 import { FakeTelephony, PlivoTelephony, routeSeries, TelephonyDisabled } from '../server/modules/campaigns/telephony.ts';
 import { dayIntervals, eligibility, isNarrowing, localNow, localToUtc, validateWindow, type WindowCtx } from '../server/modules/campaigns/windows.ts';
 import { ticketFacts } from '../server/modules/campaigns/worker.ts';
+import { suppressionSource } from '../server/modules/campaigns/gate.ts';
 
 const IST = (d: string, t: string) => new Date(`${d}T${t}:00+05:30`);
 const TUE = '2026-10-27';
@@ -121,4 +122,11 @@ test('telephony: the fake never charges; the real adapter refuses unless switche
   await assert.rejects(new PlivoTelephony().search({ limit: 1 }), TelephonyDisabled);
   await assert.rejects(new PlivoTelephony().rent('x'), TelephonyDisabled);
   if (saved !== undefined) process.env.VP_TELEPHONY_LIVE = saved;
+});
+
+test('G4 codes carry a stable source class, never an instance id', () => {
+  assert.equal(suppressionSource('call:7f0c2a9e-0000-4000-8000-000000000000'), 'in_call');
+  assert.equal(suppressionSource('in_call'), 'in_call');
+  assert.equal(suppressionSource('import:abc'), 'import');
+  assert.equal(suppressionSource(null), 'workspace');
 });

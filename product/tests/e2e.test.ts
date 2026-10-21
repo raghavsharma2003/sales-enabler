@@ -325,35 +325,37 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     await tick({ pool, registry, workspaceId: owner.workspaceId, now: () => at });
     const a = confirmed(await owner.tool('attempt.list', { contactId: s.contacts[contactIdx].id }), 'attempt.list').attempts.find((x: any) => x.id === attemptId);
     if (rt.tickets.length > before) s.probeDialled.add(s.contacts[contactIdx].id);
+    s.probeHeld = (s.probeHeld ?? 0) + rt.tickets.slice(before).reduce((n, tk) => n + tk.limits.maxCostInrMilli, 0);   // probe calls never end here, so their holds stay
     return a;
   };
 
-  await todo('3b', 'a rented line whose KYC was submitted through the API passes the dial gate (G8)',
-    'no tool or route sets phone_number.kyc_status = \'verified\' (number.kyc.submit stops at \'submitted\'; there is no carrier KYC callback), so G8 refuses every production dial with kyc_lapsed',
-    ['2', '3', '4'], async () => {
-      const a = await probe(2, CLOCK);
-      assert.notEqual(a.status, 'blocked', `the gate blocked the dial: ${a.blocked_by} (${JSON.stringify(a.precheck.trace?.at(-1))})`);
-    });
-
-  await step('3c', 'BRIDGE: stand in for the carrier\'s KYC approval, which VP has no way to receive', ['3'], async () => {
-    // The only direct write in the flow. It replaces an external event (the carrier verifying the documents), not a step
-    // the customer takes; see finding F1.
-    const r = await pool.query("UPDATE phone_number SET kyc_status = 'verified' WHERE id = $1 AND workspace_id = $2 AND kyc_status = 'submitted'", [s.numberId, owner.workspaceId]);
-    assert.equal(r.rowCount, 1);
+  await step('3c', 'the carrier reports KYC verified over the signed telephony webhook; a replay changes nothing', ['3'], async () => {
+    // The carrier's side, not the customer's: it signs the event with the shared webhook secret (F1).
+    const secret = randomBytes(24).toString('hex');
+    process.env.VP_TELEPHONY_WEBHOOK_SECRET = secret;
+    const line = await one<{ provider: string; provider_ref: string }>(pool, 'SELECT provider, provider_ref FROM phone_number WHERE id = $1', [s.numberId]);
+    const raw = JSON.stringify({ provider: line!.provider, eventId: 'kyc-' + s.numberId, providerRef: line!.provider_ref, status: 'verified', evidence: { carrierRef: 'KYC-SYN-E2E-1' } });
+    const post = () => fetch(new URL('/hooks/telephony/kyc', base), { method: 'POST', body: raw, headers: { 'content-type': 'application/json', 'x-vp-signature': sign(secret, raw) } });
+    const r = await post();
+    assert.equal(r.status, 200, await r.clone().text());
+    assert.equal(((await (await post()).json()) as { duplicate?: boolean }).duplicate, true);
+    const bad = await fetch(new URL('/hooks/telephony/kyc', base), { method: 'POST', body: raw, headers: { 'content-type': 'application/json', 'x-vp-signature': 't=1,v1=' + '0'.repeat(64) } });
+    assert.equal(bad.status, 401);
   });
 
-  await todo('3d', `after the A2P deadline (${A2P_DUE.slice(0, 10)}) a line can still be declared through the API and dialled`,
-    'no tool sets phone_number.a2p_status = \'declared\' (a2p.declaration.export only exports the pack); from the deadline G8 refuses every non-trial line with cli_undeclared',
-    ['2', '3c', '4'], async () => {
-      const a = await probe(2, A2P_CLOCK);
-      assert.notEqual(a.status, 'blocked', `the gate blocked the dial on ${A2P_CLOCK.toISOString()}: ${a.blocked_by}`);
-    });
+  await step('3b', 'a rented line whose KYC was verified passes the dial gate (G8)', ['2', '3c', '4'], async () => {
+    const a = await probe(2, CLOCK);
+    assert.notEqual(a.status, 'blocked', `the gate blocked the dial: ${a.blocked_by} (${JSON.stringify(a.precheck.trace?.at(-1))})`);
+  });
 
-  if (CLOCK.getTime() >= new Date(A2P_DUE).getTime()) {
-    await step('3e', 'BRIDGE: stand in for the A2P declaration (the test clock is past the deadline)', ['3c'], async () => {
-      await pool.query("UPDATE phone_number SET a2p_status = 'declared', a2p_ref = 'synthetic-a2p-1' WHERE id = $1", [s.numberId]);
-    });
-  }
+  await step('3d', `the line is declared for A2P through the API (compliance approves) and still dials after ${A2P_DUE.slice(0, 10)}`, ['2', '3c', '4'], async () => {
+    const d = await owner.tool('number.a2p.declare', { numberId: s.numberId, a2pRef: 'A2P-SYN-E2E-0001', evidence: 'operator portal reference, synthetic' });
+    assert.equal(d.status, 'needs_approval', 'declaring is a policy action');
+    const ok = confirmed((await owner.fetch('POST', `/v1/actions/${d.actionId}/decide`, { approve: true })).body, 'number.a2p.declare approve');
+    assert.equal(ok.a2pStatus, 'declared');
+    const a = await probe(2, A2P_CLOCK);
+    assert.notEqual(a.status, 'blocked', `the gate blocked the dial on ${A2P_CLOCK.toISOString()}: ${a.blocked_by}`);
+  });
 
   await step('5', 'draft a service campaign with a window open at the test clock, estimate it, set the cap, launch (approved)', ['2', '3c', '4'], async () => {
     const window = { days: [1, 2, 3, 4, 5, 6], ranges: [{ start: '10:00', end: '19:00' }] };
@@ -416,19 +418,17 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     assert.equal(a0.status, 'dialing');
     assert.equal(a0.conversation_id, s.tickets[0].conversationId);
     assert.ok(a0.precheck.trace.every((c: any) => c.ok), 'every gate passed');
-    if (CLOCK.getTime() < new Date(A2P_DUE).getTime()) assert.ok(a0.precheck.warnings.some((w: string) => /A2P/.test(w)), 'the undeclared-A2P warning is on the precheck');
+    assert.ok(!a0.precheck.warnings.some((w: string) => /A2P/.test(w)), 'the line was declared through the API (3d), so no A2P warning');
     const w = confirmed(await owner.tool('wallet.get'), 'wallet.get');
-    assert.equal(w.heldInrMilli, tickets.reduce((n, tk) => n + tk.limits.maxCostInrMilli, 0), 'one hold per dial');
+    assert.equal(w.heldInrMilli, (s.probeHeld ?? 0) + tickets.reduce((n, tk) => n + tk.limits.maxCostInrMilli, 0), 'one hold per dial (this tick and the probes)');
   });
 
-  await todo('6b', 'per-contact facts from the imported file reach the ticket (template fact "job" is perContact)',
-    'campaigns/worker.ts buildTicket fills ticket.contact.facts from attempt.facts and contact.custom, but intake stores imported columns in the attribute table and never writes contact.custom',
+  await step('6b', 'per-contact facts from the imported file reach the ticket (template fact "job" is perContact)',
     ['6'], async () => {
       assert.equal(s.tickets[0].contact.facts.job, PEOPLE[0].job);
     });
 
-  await todo('6c', 'the campaign dials through its "campaign" deployment (deployment.split decides where a version runs)',
-    'nothing writes campaign.deployment_id, so worker.ts resolveVersion never reads the deployment that deployment.split created; the pinned agentVersionId alone decides',
+  await step('6c', 'the campaign dials through its "campaign" deployment (deployment.split decides where a version runs)',
     ['6'], async () => {
       const c = await one<{ deployment_id: string | null }>(pool, 'SELECT deployment_id FROM campaign WHERE id = $1', [s.campaignId]);
       assert.equal(c!.deployment_id, s.deploymentId);
@@ -552,7 +552,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
 
     const w = confirmed(await owner.tool('wallet.get'), 'wallet.get');
     assert.equal(w.balanceInrMilli, s.balance0 - s.costA, 'A settled at its cost; C released');
-    assert.equal(w.heldInrMilli, s.tickets[1].limits.maxCostInrMilli, 'only call B (still live) holds money');
+    assert.equal(w.heldInrMilli, (s.probeHeld ?? 0) + s.tickets[1].limits.maxCostInrMilli, 'only call B and the never-ended gate probes (3b, 3d) hold money');
     const rec = confirmed(await owner.tool('money.reconcile'), 'money.reconcile');
     assert.deepEqual(rec.drift, [], 'settled charges equal the metered cost lines');
 
@@ -619,7 +619,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     assert.ok(!waiting.body.actions.some((x: any) => x.tool === 'contact.suppress_after_opt_out'), 'no approval card was raised for it');
     const w9 = confirmed(await owner.tool('wallet.get'), 'wallet.get');
     assert.equal(w9.balanceInrMilli, s.balance0 - s.costA - 190, 'B settled at its one cost line');
-    assert.equal(w9.heldInrMilli, 0, 'no call is live, nothing is held');
+    assert.equal(w9.heldInrMilli, s.probeHeld ?? 0, 'no campaign call is live; only the never-ended gate probes (3b, 3d) still hold');
     const f9 = confirmed(await owner.tool('campaign.funnel', { campaignId: s.campaignId }), 'campaign.funnel');
     assert.equal(f9.total.connected, 2, 'A and B connected; C did not pick up');
     assert.equal(f9.total.talked, 2);
@@ -650,8 +650,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     assert.deepEqual(audit2.body, { intact: true, firstBroken: null });
   });
 
-  await todo('9b', 'the G4 code for an in-call opt-out is the stable "suppressed:in_call"',
-    'intake contact.suppress_after_opt_out writes suppression.source = \'call:<conversationId>\', so gate.ts G4 reports suppressed:call:<uuid>, a per-call code instead of a source',
+  await step('9b', 'the G4 code for an in-call opt-out is the stable "suppressed:in_call"',
     ['9'], async () => {
       assert.equal(s.blockedCode, 'suppressed:in_call');
     });

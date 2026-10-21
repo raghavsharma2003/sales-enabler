@@ -9,7 +9,7 @@ import type { Fact } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
 import { combinationId, getStack } from '../../../shared/stacks.ts';
 import { appendAudit } from '../../audit.ts';
-import { one, tx } from '../../db.ts';
+import { many, one, tx } from '../../db.ts';
 import { release } from '../../ledger.ts';
 import { runtime as defaultRuntime, type Runtime } from '../../runtime-client.ts';
 import type { Registry } from '../../tools.ts';
@@ -49,14 +49,22 @@ export async function readTool<T>(registry: Registry, c: pg.PoolClient, ws: stri
  *  attempts keep the version they were created with. */
 export async function resolveVersion(registry: Registry, c: pg.PoolClient, a: AttemptRow): Promise<string | null> {
   if (!a.campaign_id || !a.contact_id || !['campaign', 'retry', 'callback'].includes(a.kind)) return a.agent_version_id;
-  const k = await one<{ agent_version_id: string | null; agent_id: string | null; split: { version_id: string; percent: number }[] | null }>(c,
-    `SELECT k.agent_version_id, coalesce(v.agent_id, d.agent_id) AS agent_id, d.split FROM campaign k
+  const k = await one<{ agent_version_id: string | null; agent_id: string | null; deployment_id: string | null; split: { version_id: string; percent: number }[] | null }>(c,
+    `SELECT k.agent_version_id, coalesce(v.agent_id, d.agent_id) AS agent_id, k.deployment_id, d.split FROM campaign k
      LEFT JOIN agent_version v ON v.id = k.agent_version_id LEFT JOIN deployment d ON d.id = k.deployment_id AND d.workspace_id = k.workspace_id
      WHERE k.id = $1 AND k.workspace_id = $2`, [a.campaign_id, a.workspace_id]);
   if (!k) return a.agent_version_id;
   if (k.agent_id) {
     const arm = await readTool<{ versionId?: string }>(registry, c, a.workspace_id, 'experiment.assign', { agentId: k.agent_id, contactId: a.contact_id });
     if (arm?.versionId) return arm.versionId;
+  }
+  // A later deployment.split for this agent's 'campaign' binding takes effect on the next claim.
+  const latest = k.agent_id ? await one<{ id: string; split: { version_id: string; percent: number }[] }>(c,
+    `SELECT id, split FROM deployment WHERE agent_id = $1 AND workspace_id = $2 AND binding = 'campaign' ORDER BY created_at DESC, id DESC LIMIT 1`,
+    [k.agent_id, a.workspace_id]) : null;
+  if (latest && latest.id !== k.deployment_id) {
+    await c.query('UPDATE campaign SET deployment_id = $2, updated_at = now() WHERE id = $1 AND workspace_id = $3', [a.campaign_id, latest.id, a.workspace_id]);
+    k.split = latest.split;
   }
   if (k.split?.length) {
     const h = createHash('sha256').update(a.campaign_id + ':' + a.contact_id).digest().readUInt32BE(0) % 10_000;
@@ -163,10 +171,26 @@ export async function memoryBrief(d: WorkerDeps, ws: string, contactId: string |
   finally { clearTimeout(timer); }
 }
 
+/** The contact's current attribute values for these keys (intake keeps one current row per key, already decided by
+ *  authority), skipping any older than its max_age_s: a stale value is never spoken. Scalars only. */
+export async function freshAttributes(d: WorkerDeps, contactId: string, keys: string[]): Promise<Record<string, string>> {
+  if (!keys.length) return {};
+  const now = (d.now?.() ?? new Date()).getTime();
+  const rows = await many<{ key: string; value: unknown; observed_at: Date; max_age_s: number | null }>(d.pool,
+    'SELECT key, value, observed_at, max_age_s FROM attribute WHERE contact_id = $1 AND key = ANY($2)', [contactId, keys]);
+  const out: Record<string, string> = {};
+  for (const r of rows) {
+    if (r.max_age_s !== null && r.observed_at.getTime() + r.max_age_s * 1000 < now) continue;
+    if (['string', 'number', 'boolean'].includes(typeof r.value)) out[r.key] = String(r.value);
+  }
+  return out;
+}
+
 export async function buildTicket(d: WorkerDeps, a: AttemptRow, v: GatePass, conversationId: string): Promise<CallTicket> {
   const agent = v.version.config.agent!;
   const stack = getStack(agent.voice.stackId)!;
   const mem = await memoryBrief(d, a.workspace_id, v.contact?.id ?? null, v.version.agent_id, agent.memory?.read !== false);
+  const stored = { ...(v.contact?.custom ?? {}), ...(v.contact ? await freshAttributes(d, v.contact.id, (agent.facts ?? []).filter(f => f.perContact).map(f => f.key)) : {}) };
   return {
     protocol: 1, conversationId, attemptId: a.id, workspaceId: a.workspace_id, direction: 'outbound',
     transport: { kind: 'sip', to: v.target, from: v.number.e164, trunk: v.number.carrier },
@@ -175,7 +199,7 @@ export async function buildTicket(d: WorkerDeps, a: AttemptRow, v: GatePass, con
     contact: {
       displayName: v.contact?.name ?? '', ...(v.contact?.language ? { language: v.contact.language as CallTicket['contact']['language'] } : {}),
       timezone: v.contact?.timezone ?? 'Asia/Kolkata',
-      facts: ticketFacts(agent.facts ?? [], v.category, a.facts ?? {}, v.contact?.custom ?? {}),
+      facts: ticketFacts(agent.facts ?? [], v.category, a.facts ?? {}, stored),
       ...mem,
     },
     consent: v.consent,

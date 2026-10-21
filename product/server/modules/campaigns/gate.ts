@@ -76,6 +76,14 @@ export function tombstoneHashes(workspaceId: string, e164: string): string[] {
   return [createHash('sha256').update(e164).digest('hex'), createHmac('sha256', workspaceId).update(e164).digest('hex')];
 }
 
+/** The stable source class in a G4 code. A source may carry an instance id ('call:<conversationId>', 'import:<receiptId>');
+ *  the code keeps only the class so reports group by it, and the refusal detail keeps the full source. */
+export function suppressionSource(source: string | null): string {
+  if (!source) return 'workspace';
+  const cls = source.split(':')[0].trim().toLowerCase();
+  return cls === 'call' ? 'in_call' : cls || 'workspace';
+}
+
 const DND_REGISTERED = ['registered', 'dnd', 'blocked', 'fully_blocked', 'partially_blocked'];
 const PURPOSE_ALL = ['all', 'voice', 'any'];
 
@@ -167,7 +175,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
         WHERE workspace_id = $1 AND (e164 = $2 OR e164_hash = $5 OR ($3::uuid IS NOT NULL AND contact_id = $3::uuid))
           AND (scope = 'workspace' OR (scope = 'campaign' AND scope_id = $4::uuid)) ORDER BY created_at LIMIT 1`,
         [ws, target, test ? null : contact?.id ?? null, campaign?.id ?? null, targetHash]);
-      if (s) throw new Refuse(`suppressed:${s.scope === 'campaign' ? 'campaign' : (s.source || 'workspace')}`, s.reason);
+      if (s) throw new Refuse(`suppressed:${s.scope === 'campaign' ? 'campaign' : suppressionSource(s.source)}`, `${s.reason}${s.source ? ` (${s.source})` : ''}`);
       if (contact && !test) {
         const d = await one<{ internal: boolean }>(q, 'SELECT internal FROM dnd_status WHERE contact_id = $1', [contact.id]);
         if (d?.internal) throw new Refuse('suppressed:internal_dnd', 'on the business\'s own do-not-call list');

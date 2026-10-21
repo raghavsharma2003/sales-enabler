@@ -125,15 +125,32 @@
       "name": "attempt.retry_per_ladder",
       "risk": "external",
       "a3_when": "system or agent"
+    },
+    {
+      "name": "number.kyc.sync",
+      "risk": "draft",
+      "roles": [],
+      "note": "system or vp_success actor only; also via POST /hooks/telephony/kyc"
+    },
+    {
+      "name": "number.a2p.declare",
+      "risk": "policy",
+      "a2": true,
+      "roles": [
+        "owner",
+        "compliance"
+      ]
     }
   ],
   "tests": {
-    "passed": 42,
-    "total": 42,
+    "passed": 47,
+    "total": 47,
     "files": [
-      "tests/campaigns.test.ts (31, Postgres)",
-      "tests/campaigns-units.test.ts (11, pure)"
-    ]
+      "tests/campaigns.test.ts (35, Postgres)",
+      "tests/campaigns-units.test.ts (12, pure)"
+    ],
+    "e2e": "tests/e2e.test.ts steps 3b, 3c, 3d, 6b, 6c and 9b now pass as normal steps. The two direct-SQL bridges (KYC and A2P) are replaced by the signed webhook and number.a2p.declare. 8b (the calls funnel) is still a todo.",
+    "full_suite": "272 tests on a fresh database 2026-10-21: 271 pass, 0 fail, 1 todo (8b)"
   },
   "works": [
     "The dial gate G1-G12 (gate.ts runGate) runs inside the claim transaction for every attempt kind: campaign, api, single, test, retry, callback and transfer. Reason codes match trust-telephony §6. Each check runs in a savepoint and fails closed with check_unavailable.",
@@ -155,7 +172,12 @@
     "The version is chosen at claim: learning's experiment.assign, sticky per contact, is read through the registry inside the claim transaction. Without it, the campaign deployment's split decides, deterministically per contact; without that, the pinned version. The choice is stamped on the attempt and the conversation.",
     "The G9 hold is sized by money.estimate for the agent's stack (max minutes x per-minute). A campaign's stated perMinuteInrMilli wins; an unknown rate falls back to a ₹6/min ceiling.",
     "memory.brief status 'ok' means loaded. 'off' and 'off_for_agent' mean disabled. Anything else, not_executed or more than 800 ms means the call dials without memory.",
-    "The dispatch loop runs as a kernel job: module.jobs -> campaigns.dispatch every 2 s."
+    "The dispatch loop runs as a kernel job: module.jobs -> campaigns.dispatch every 2 s.",
+    "F1: a line's KYC moves submitted -> verified or rejected only through number.kyc.sync (system or vp_success actor, with evidence, audited) or the signed, idempotent carrier webhook. A decided KYC is never flipped.",
+    "F2: number.a2p.declare {numberId, a2pRef, evidence} (policy; owner or compliance approves) sets a2p_status 'declared', so a line stays dialable from 2026-11-17.",
+    "F3: the ticket's per-contact facts merge the contact's current intake attribute rows, skipping any older than max_age_s. Precedence is per-call variables, then attributes, then contact.custom. Offers stay fenced.",
+    "F4: launch binds campaign.deployment_id to the agent's latest 'campaign' deployment. Each claim follows a newer deployment.split, after any running experiment arm.",
+    "G4 codes carry a stable source class: an in-call opt-out recorded as 'call:<conversationId>' reports suppressed:in_call, with the full source in the detail."
   ],
   "untested": [
     "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired.",
@@ -171,10 +193,15 @@
   ],
   "needs_from_others": [
     "calls module: settles or releases the hold at call.ended (already in calls/ingest.ts). Still needed: set attempt.outcome_class and call registry tool attempt.retry_per_ladder { attemptId, outcome, at? } as system after a non-final outcome (busy, no_answer, voicemail, short_call, callback, ...).",
-    "workspace module: a tool that verifies a member phone (it writes verified_test_phone.verified_at), and one that records an A2P declaration reference (it sets phone_number.a2p_status = 'declared', a2p_ref).",
     "agents module: put config.lint = { ok } on agent_version. G10 reads it and also calls shared/safety lintAgentConfig.",
-    "kernel tests: 'prepare() runs outside the transaction' counts every idle-in-transaction session in the database, so it fails when run in parallel with suites that legitimately hold a claim transaction open (campaigns G11 predial waits up to 800 ms inside the claim by design). It passes alone (3/3). Scope the count to the test's own backend or connection."
+    "kernel tests: 'prepare() runs outside the transaction' counts every idle-in-transaction session in the database, so it fails when run in parallel with suites that legitimately hold a claim transaction open (campaigns G11 predial waits up to 800 ms inside the claim by design). It passes alone (3/3). Scope the count to the test's own backend or connection.",
+    "workspace module: a tool that verifies a member phone (it writes verified_test_phone.verified_at). A2P declaration is now campaigns' number.a2p.declare.",
+    "calls module: e2e step 8b. campaignFunnel counts end_reason IS NULL as connected.",
+    "runtime/carrier relay: sign KYC events to POST /hooks/telephony/kyc with VP_TELEPHONY_WEBHOOK_SECRET (at least 32 characters), body {provider, eventId, providerRef, status, evidence}."
   ],
   "full_suite_note": "On 2026-10-21 the whole product suite (scripts/test.mjs) on this head ran 212 tests: 209 pass, 3 fail, none in campaigns. agents test.simulate and learning gates also fail on the base commit 6610597 without this module, so they predate it. The kernel prepare() test is the parallel-run flake described in needs_from_others.",
-  "risk_classes": "Every campaigns tool listed in research/2026-10-21/blueprint/data/workspace-tool-registry.json uses the registry's class. Not in the registry: campaign.stop_at_cap, number.pause_flagged and attempt.retry_per_ladder (external, A3 when VP acts), and the reads campaign.list, campaign.get and attempt.list."
+  "risk_classes": "Every campaigns tool listed in research/2026-10-21/blueprint/data/workspace-tool-registry.json uses the registry's class. Not in the registry: campaign.stop_at_cap, number.pause_flagged and attempt.retry_per_ladder (external, A3 when VP acts), and the reads campaign.list, campaign.get and attempt.list.",
+  "routes": [
+    "POST /hooks/telephony/kyc: signed (x-vp-signature, VP_TELEPHONY_WEBHOOK_SECRET), recorded once per (provider, eventId), applied through number.kyc.sync as system"
+  ]
 }

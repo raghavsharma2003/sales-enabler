@@ -5,7 +5,9 @@
 // Risk classes: the registry file the blueprint cites (workspace-tool-registry.json) was not in the repo, so classes
 // follow workspace.md §5. Verbs on the kernel's A3 list are 'external' so VP runs them at once (A3) while a person's
 // call goes through approval; risk-lowering verbs not on that list (window.narrow, number.pause) are 'draft' (A1).
-import type { Module } from '../../app.ts';
+import type { Deps, Module } from '../../app.ts';
+import { HttpError, type Req, type Res } from '../../http.ts';
+import { verify } from '../../runtime-client.ts';
 import { CALL_CATEGORIES, type CallCategory } from '../../../shared/agent-config.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
@@ -214,8 +216,12 @@ export function registerCampaignTools(registry: Registry): void {
       const start = c.policy.startAt ? new Date(c.policy.startAt) : new Date();
       const policy = { ...c.policy, ...(first ? { reviewStopAfter: FIRST_CAMPAIGN_REVIEW_STOP } : {}) };
       const state = start.getTime() > Date.now() ? 'scheduled' : 'running';
-      await ctx.q.query('UPDATE campaign SET state = $2, budget_id = $3, launched_at = now(), launched_by = $4, policy = $5, updated_at = now() WHERE id = $1',
-        [c.id, state, budget!.id, actorRef(ctx), JSON.stringify(policy)]);
+      // The campaign dials through its agent's current 'campaign' deployment when one exists (deployment.split decides
+      // which versions run); the worker follows later splits at each claim.
+      const dep = await one<{ id: string }>(ctx.q, `SELECT d.id FROM deployment d JOIN agent_version v ON v.agent_id = d.agent_id
+        WHERE v.id = $1 AND d.workspace_id = $2 AND d.binding = 'campaign' ORDER BY d.created_at DESC, d.id DESC LIMIT 1`, [c.agent_version_id, ctx.workspaceId]);
+      await ctx.q.query('UPDATE campaign SET state = $2, budget_id = $3, launched_at = now(), launched_by = $4, policy = $5, deployment_id = coalesce($6, deployment_id), updated_at = now() WHERE id = $1',
+        [c.id, state, budget!.id, actorRef(ctx), JSON.stringify(policy), dep?.id ?? null]);
       const queued = await enqueueCampaignAttempts(ctx.q, ctx.workspaceId, c, start);
       return { id: c.id, state, queued, firstCampaignReviewStop: first ? FIRST_CAMPAIGN_REVIEW_STOP : null };
     },
@@ -480,6 +486,36 @@ export function registerCampaignTools(registry: Registry): void {
     },
   }));
 
+  reg(tool(obj({ numberId: uuid(), status: str({ oneOf: ['verified', 'rejected'] }), evidence: record(str({ max: 500 }), { maxKeys: 20 }) }), {
+    name: 'number.kyc.sync', risk: 'draft', roles: [],
+    summary: 'Record the carrier\'s KYC decision for a line (carrier webhook or VP Success only; never a workspace member)',
+    run: async (ctx, i) => {
+      if (ctx.actor.type !== 'system' && ctx.actor.type !== 'vp_success') throw new Error('only the carrier webhook or VP Success records a KYC decision');
+      if (!Object.keys(i.evidence).length) throw new ValidationError('evidence', 'say what the carrier sent (e.g. its reference and decision time)');
+      const n = await one<{ id: string; kyc_status: string }>(ctx.q, 'SELECT id, kyc_status FROM phone_number WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.numberId, ctx.workspaceId]);
+      if (!n) throw new ValidationError('numberId', 'no such line in this workspace');
+      if (n.kyc_status === i.status) return { numberId: n.id, kycStatus: n.kyc_status, already: true };
+      if (n.kyc_status !== 'submitted') throw new Error(`the line's KYC is ${n.kyc_status}; only a submitted KYC can be decided`);
+      await ctx.q.query('UPDATE phone_number SET kyc_status = $2, kyc_evidence = $3, kyc_decided_at = now() WHERE id = $1', [n.id, i.status, JSON.stringify(i.evidence)]);
+      return { numberId: n.id, kycStatus: i.status };
+    },
+  }));
+
+  reg(tool(obj({ numberId: uuid(), a2pRef: str({ min: 3, max: 120 }), evidence: str({ min: 3, max: 500, desc: 'what shows the operator accepted it: the portal reference, date, who submitted' }) }), {
+    name: 'number.a2p.declare', risk: 'policy', roles: ['owner', 'compliance'],
+    summary: 'Record that a line is declared for A2P (AI voice) on DLT, with the operator\'s reference',
+    describe: i => `Record line ${i.numberId} as A2P-declared on DLT, reference ${i.a2pRef}`,
+    version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT a2p_status || ':' || coalesce(a2p_ref, '') AS v FROM phone_number WHERE id = $1 AND workspace_id = $2", [i.numberId, ctx.workspaceId]))?.v ?? null,
+    run: async (ctx, i) => {
+      const n = await one<{ id: string; series: string; status: string }>(ctx.q, 'SELECT id, series, status FROM phone_number WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.numberId, ctx.workspaceId]);
+      if (!n) throw new ValidationError('numberId', 'no such line in this workspace');
+      if (n.series === 'trial') throw new ValidationError('numberId', 'a trial line is never declared; it only rings verified member phones');
+      if (n.status === 'released') throw new Error('the line is released');
+      await ctx.q.query("UPDATE phone_number SET a2p_status = 'declared', a2p_ref = $2, a2p_evidence = $3, a2p_declared_at = now() WHERE id = $1", [n.id, i.a2pRef, i.evidence]);
+      return { numberId: n.id, a2pStatus: 'declared', a2pRef: i.a2pRef };
+    },
+  }));
+
   reg(tool(obj({ format: opt(str({ oneOf: ['json', 'csv'] })) }), {
     name: 'a2p.declaration.export', risk: 'read', summary: 'Export the A2P declaration pack for this workspace\'s lines (CSV or JSON)',
     run: async (ctx, i) => {
@@ -585,7 +621,39 @@ export function registerCampaignTools(registry: Registry): void {
 export const module: Module = {
   name: 'campaigns',
   register: registerCampaignTools,
+  routes(router, deps) {
+    router.add('POST', '/hooks/telephony/kyc', kycHook(deps), { rawBody: true, limit: 64_000 });
+  },
   // The dial loop: claim + gate + dispatch. Jobs never overlap and hold a per-name advisory lock, so replicas are safe;
   // SKIP LOCKED makes even concurrent claimers safe.
   jobs: deps => [{ name: 'campaigns.dispatch', everyMs: 2_000, run: async d => { await tick({ pool: d.pool, registry: d.registry }); } }],
 };
+
+const kycEvent = obj({ provider: str({ min: 1, max: 40 }), eventId: str({ min: 1, max: 120 }), providerRef: str({ min: 1, max: 120 }),
+  status: str({ oneOf: ['verified', 'rejected'] }), evidence: opt(record(str({ max: 500 }), { maxKeys: 20 })) });
+
+/** POST /hooks/telephony/kyc: the carrier (or its relay) reports a KYC decision. Signed like the runtime seam
+ *  (x-vp-signature: t=<ms>,v1=hmac_sha256(VP_TELEPHONY_WEBHOOK_SECRET, t + '.' + raw body)), recorded once per
+ *  (provider, eventId), applied through number.kyc.sync as a system actor so the registry audits it. */
+export function kycHook(deps: Deps) {
+  return async (req: Req): Promise<Res> => {
+    const secret = process.env.VP_TELEPHONY_WEBHOOK_SECRET;
+    if (!secret || secret.length < 32) throw new HttpError(503, 'not_configured', 'the telephony webhook is not configured');
+    const raw = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : '';
+    const sig = req.headers['x-vp-signature'];
+    if (!raw || typeof sig !== 'string' || !verify(secret, raw, sig)) throw new HttpError(401, 'bad_signature', 'the signature is missing, stale or wrong');
+    let e;
+    try { e = kycEvent(JSON.parse(raw)); } catch (err) {
+      throw new HttpError(err instanceof ValidationError ? 422 : 400, 'bad_body', err instanceof Error ? err.message : 'the body is not valid JSON');
+    }
+    if (await one(deps.pool, 'SELECT 1 FROM telephony_event WHERE provider = $1 AND event_id = $2', [e.provider, e.eventId])) return { body: { duplicate: true } };
+    const lines = await many<{ id: string; workspace_id: string }>(deps.pool, 'SELECT id, workspace_id FROM phone_number WHERE provider = $1 AND provider_ref = $2', [e.provider, e.providerRef]);
+    if (lines.length !== 1) throw new HttpError(lines.length ? 409 : 404, 'unknown_line', lines.length ? 'that reference matches more than one line' : 'no line with that provider reference');
+    const r = await deps.registry.execute(deps.pool, 'number.kyc.sync', { numberId: lines[0].id, status: e.status, evidence: { ...(e.evidence ?? {}), provider: e.provider, eventId: e.eventId } },
+      { workspaceId: lines[0].workspace_id, actor: { type: 'system', id: 'telephony.kyc_hook' } });
+    if (r.status !== 'confirmed') throw new HttpError(409, 'not_applied', r.status === 'not_executed' || r.status === 'unknown' ? r.reason : 'not applied');
+    await deps.pool.query('INSERT INTO telephony_event (provider, event_id, workspace_id, kind, payload) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING',
+      [e.provider, e.eventId, lines[0].workspace_id, 'kyc', JSON.stringify(e)]);
+    return { body: { applied: true, result: r.result } };
+  };
+}

@@ -45,8 +45,8 @@
       "status": "measured",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "Campaigns test suites: 42 of 42 pass (31 against Postgres 16 on the throwaway cluster, 11 pure). They cover:\n- every gate code;\n- T3 at the form, the HTTP API (422 with the rule id) and the gate;\n- cross-midnight rules;\n- 12 concurrent workers racing for 5 attempts, each claimed exactly once;\n- reservations released on refusal;\n- tenancy isolation;\n- launch approval voided by a policy-version change.\nRun twice on the same database with the kernel suites, 62 of 62 both times.",
-      "n": 42,
+      "title": "Campaigns tests: 47 of 47 pass (35 against Postgres 16, 12 pure). The e2e acceptance steps 3b, 3c, 3d, 6b, 6c and 9b pass as normal steps. The full product suite on a fresh database: 271 of 272 pass, 1 todo (calls 8b).",
+      "n": 47,
       "method": "node --import tsx --test tests/campaigns.test.ts tests/campaigns-units.test.ts against DATABASE_URL from product/scripts/pg-test.sh vp_mod_campaigns; FakeRuntime and FakeTelephony; synthetic 90000000xx numbers",
       "path": "product/tests/campaigns.test.ts"
     },
@@ -68,6 +68,16 @@
       "title": "The campaigns tools now use the risk classes in research/2026-10-21/blueprint/data/workspace-tool-registry.json. Three changed: number.byo.connect policy -> draft, number.kyc.submit external -> policy, number.pause draft -> external. VP's own risk-lowering line pause stays number.pause_flagged (A3).",
       "rationale": "The registry file landed. One source of risk classes keeps the API, MCP and Operator tool lists consistent.",
       "reverse_if": "The registry changes these classes, or a measured incident shows a line pause must run at once for a person."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-carrier-side",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The carrier side of the number step lives in campaigns:\n- KYC decisions arrive through a signed, idempotent webhook (POST /hooks/telephony/kyc) or number.kyc.sync, which only a system or VP Success actor may run.\n- A2P declaration is number.a2p.declare (policy: owner or compliance approves), with the operator's reference and evidence.\n- No workspace member can mark their own line verified.",
+      "rationale": "The e2e acceptance test (F1, F2) showed that G8 refused every production dial: nothing moved KYC past 'submitted' or A2P to 'declared'. The phone_number table is campaigns', and the gate reads it.",
+      "reverse_if": "A carrier offers only polling (then add a number.kyc.poll job), or counsel wants A2P declaration filed by VP rather than recorded by the tenant."
     }
   ],
   "edges": [
@@ -100,6 +110,11 @@
       "from": "decision.2026-10-21.campaigns-risk-classes-from-registry",
       "to": "decision.2026-10-21.campaigns-risk-classes-without-registry",
       "relation": "supersedes"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-carrier-side",
+      "relation": "implements"
     }
   ],
   "events": [
