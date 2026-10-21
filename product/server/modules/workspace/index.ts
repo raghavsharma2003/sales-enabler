@@ -21,11 +21,14 @@ import { tool } from '../../tools.ts';
 const accept = obj({ token: str({ min: 20, max: 200 }), name: str({ min: 1, max: 80 }), password: str({ min: 10, max: 200 }) });
 const upload = obj({ title: opt(str({ min: 1, max: 200 })), filename: opt(str({ max: 200 })), text: opt(str({ max: 2_000_000 })), contentBase64: opt(str({ max: 12_500_000 })) });
 
-const attempts = new Map<string, { n: number; until: number }>();
-function throttle(key: string, max = 20) {
-  const now = Date.now(), a = attempts.get(key);
-  if (a && a.until > now && a.n >= max) throw new HttpError(429, 'slow_down', 'too many attempts; try again in a few minutes');
-  attempts.set(key, a && a.until > now ? { n: a.n + 1, until: a.until } : { n: 1, until: now + 15 * 60_000 });
+// Failed invite attempts per client address (Req.ip: the socket peer or the right-most untrusted forwarded hop, never a raw header).
+// Only failures count, so a team accepting invites from one office address is not locked out.
+const failures = new Map<string, { n: number; until: number }>();
+const WINDOW_MS = 15 * 60_000, MAX_FAILURES = 10;
+const tooMany = (key: string) => { const a = failures.get(key); return !!a && a.until > Date.now() && a.n >= MAX_FAILURES; };
+function fail(key: string) {
+  const now = Date.now(), a = failures.get(key);
+  failures.set(key, a && a.until > now ? { n: a.n + 1, until: a.until } : { n: 1, until: now + WINDOW_MS });
 }
 
 export const module: Module = {
@@ -64,7 +67,8 @@ export const module: Module = {
     // The invitee has no account yet: the invite token is the credential. They set a name and password and are signed in.
     router.add('POST', '/v1/invites/accept', async req => {
       const b = accept(req.body);
-      throttle('invite:' + (req.headers['x-forwarded-for'] ?? 'local'));
+      const key = 'invite:' + (req.ip ?? 'local');
+      if (tooMany(key)) throw new HttpError(429, 'slow_down', 'too many attempts; try again in a few minutes');
       try {
         const out = await tx(pool, async c => {
           const m = await acceptInvite(c, b.token, b.name, b.password);
@@ -73,7 +77,7 @@ export const module: Module = {
         });
         return { status: 201, body: { workspaceId: out.workspaceId, memberId: out.memberId }, headers: { 'set-cookie': sessionCookie(out.s.token, out.s.expiresAt) } };
       } catch (e) {
-        if ((e as { notFound?: boolean }).notFound) throw new HttpError(404, 'invalid_invite', (e as Error).message);
+        if ((e as { notFound?: boolean }).notFound) { fail(key); throw new HttpError(404, 'invalid_invite', (e as Error).message); }
         throw e;
       }
     });
