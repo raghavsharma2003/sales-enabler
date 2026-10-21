@@ -1,0 +1,43 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-21.judge-shadow-never-a-safety-event",
+   "type": "decision",
+   "title": "In post-call analysis, a shadow-mode crisis-judge hit is recorded on the analysis (judge_shadow) and never written as a call_safety_event. Only a judge_raised hit becomes an RD3 'flagged' safety event.",
+   "status": "decided",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "Any call_safety_event row sets analysis.safety_violation (calls/analysis.ts). Learning reads safety_violation as an experiment guardrail (learning/index.ts, probe.ts tolerance 0), and the safety_event_rate monitor reads it too. A shadow hit written there would move experiments and monitors, so shadow would no longer change nothing, which breaks decision.2026-10-21.judge-raise-only-contract.",
+   "reverse_if": "The owner sets mode 'raise' for post-call analysis, so hits are meant to count. Or safety_violation stops being derived from call_safety_event rows, and a separate shadow event type exists that no guardrail or monitor reads."
+  },
+  {
+   "id": "rejected.2026-10-21.first-token-as-reply-gap",
+   "type": "rejection",
+   "title": "Showing a brain's first-token time under the label 'Reply gap'",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "tried": "shared/stacks.ts gave the cascade stacks replyGap values such as '0.70 s first token'. The stack picker showed them under 'Reply gap', and the field is documented as the time from the caller finishing to her first audio.",
+   "broke": "A first-token time leaves out end-of-turn detection, speech-to-text and the voice's first audio. So the picker overstated how fast she answers, for every cascade stack, and showed a person the jargon 'first token'.",
+   "instead": "Each value names what was measured ('0.70 s, reply text starts'; '0.43 s, voice starts after the text'), and each source says the whole reply gap was not measured. A true end-to-end figure per stack waits for the deployed-host measurement. Fixed in d161603."
+  },
+  {
+   "id": "measure.2026-10-21.ui-review-2-main-loop",
+   "type": "measurement",
+   "title": "Second main-loop review of the re-shot screens after the web copy pass (dd274a3): the first review's leaks are gone, but 6 screen groups still showed developer text, the worst being the Settings activity feed.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "n": 7,
+   "method": "Read 7 re-shot screenshots at dd274a3 (approval-d, call-d, operator-plan-d, campaign-draft-d, settings-activity-m, agent-stack-d, contact-d) and checked each against decision.2026-10-21.no-developer-text-in-ui. Leaks found:\n- activity feed: tool ids with the dots turned into spaces ('ran test simulate', 'VP ran attempt retry per ladder');\n- call page: 'did not return JSON' and 'None; they are suppressed';\n- cost basis: a file path and an ISO date;\n- stack card: 'first token', 'bake-off', 'ungated', 'the owner's pick';\n- contact page: 'Asia/Kolkata', 'Dnd unknown', the raw code 'te', ISO dates, 'Fresh: No';\n- campaign header: 'policy v1'.\nThe browser scan missed them because it only matched dotted tool ids. Not reviewed: the other 19 screen pairs.",
+   "value": "first-review leaks fixed; 6 screen groups still leaking; scan gap found"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-21.judge-shadow-never-a-safety-event", "to": "decision.2026-10-21.judge-raise-only-contract", "relation": "refines" },
+  { "from": "rejected.2026-10-21.first-token-as-reply-gap", "to": "decision.2026-10-21.no-developer-text-in-ui", "relation": "informs" },
+  { "from": "measure.2026-10-21.ui-review-2-main-loop", "to": "measure.2026-10-21.ui-review-main-loop", "relation": "follows" },
+  { "from": "measure.2026-10-21.ui-review-2-main-loop", "to": "decision.2026-10-21.no-developer-text-in-ui", "relation": "informs" }
+ ],
+ "events": []
+}
