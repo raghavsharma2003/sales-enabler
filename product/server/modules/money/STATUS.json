@@ -14,7 +14,13 @@
     "plan.change": "spend (A2, version-bound to the current plan)",
     "money.reconcile": "draft (opens money_drift issues)"
   },
-  "tests": { "passed": 17, "total": 17, "todo_ledger_gaps": 2, "file": "product/tests/money.test.ts", "db": "vp_mod_money, throwaway cluster, 2026-10-21" },
+  "tests": {
+    "passed": 21,
+    "total": 21,
+    "file": "product/tests/money.test.ts",
+    "db": "vp_mod_money, throwaway cluster, 2026-10-21",
+    "full_suite": "146/146 on the same database after rebase"
+  },
   "works": [
     "cost_card (0901) seeded by 0902 from prices.ts (catalog.py list prices, FX 95, Plivo ₹0.38/min 60 s pulse); a test fails if seed and code drift",
     "money.estimate {stackId, minutes, calls} -> {perMinuteInrMilli, totalInrMilli, basis, lines, price}; checked against hand-computed values for v2-flashlite, sarvam-india, v2-mai, v2-54mini, v2-live",
@@ -26,22 +32,21 @@
     "wallet.topup via PaymentGateway: FakeGateway (tests/dev only, VP_PAYMENTS=fake) and RazorpayGateway disabled by default; credits only on capture, once per gateway reference",
     "invoice.get usage statement: cost lines by component, campaign and IST day, Indian grouping via shared/money.ts, money in, price 'not set' and 'not a tax invoice'",
     "reconcile(): settled reservation vs cost lines per attempt; mismatch and cost-without-settle open one money_drift issue per attempt (idempotent); runMoneyJobs() = roll + reconcile all",
-    "tenancy: another workspace cannot read wallet/caps/statement, cap another's campaign, or approve another's action"
+    "tenancy: another workspace cannot read wallet/caps/statement, cap another's campaign, or approve another's action",
+    "jobs(): money.nightly at 00:00 IST (server/jobs.ts) runs roll periods + reconcile for every workspace",
+    "reconcile opens a money_drift issue with cause 'overrun' when reservation.overrun_inr_milli > 0 (kernel settle charges only the hold)"
   ],
   "untested": [
     "the minute profile (50% caller audio gated, 4 replies/min x 2000 in + 60 out tokens, 30 s of her speech at 15 chars/s) is an ASSUMPTION, not measured; estimates are only as good as it until the meter feeds per-stack averages",
     "v2-live uses the report's ₹5.72 AI/min, not component prices; azure-mai voice is priced like HD (unverified); gpt-5.4-mini is an OpenAI list price, Azure meter not read",
     "no real payment gateway; no GST invoice (price not set); no re-auth above 2x on cap.raise (the kernel has no re-auth step yet)",
-    "runMoneyJobs is not scheduled by anything yet; no HTTP route beyond the generic tool endpoint",
     "runway uses settled reservations of the last 7 days; untested against real traffic",
-    "data/economics-platform-defaults.json and data/workspace-tool-registry.json named in the brief do not exist in the repo; risk classes taken from blueprint workspace.md section 5"
+    "data/economics-platform-defaults.json and data/workspace-tool-registry.json named in the brief do not exist in the repo; risk classes taken from blueprint workspace.md section 5",
+    "money.nightly has run only in tests, not on a live timer"
   ],
   "needs_from_others": [
-    "#1 kernel ledger.settle: charges actualInrMilli even above the hold, so budget.spent can pass cap_inr_milli (proven by the todo test 'settle above the hold'). Fix: charge the caps min(actual, held) and record the excess on the reservation (e.g. overrun_inr_milli) for VP to absorb or dispute; the runtime should also end calls at the reserved max duration",
-    "#2 kernel ledger.reserve: daily/monthly caps only reset when money_roll_periods runs, so after IST midnight a stale cap refuses (fails safe, never overruns; proven by the todo test). Fix: one line after the lock in reserve(): `await q.query('SELECT money_roll_periods($1, now())', [r.workspaceId])`",
-    "#3 kernel server/modules/index.ts: add `import { module as money } from './money/index.ts'` and include it in modules",
+    "DONE by kernel (ab0ed91): #1 settle clamps to the hold and records overrun_inr_milli; #2 reserve rolls periods; #3 money wired in modules/index.ts",
     "#4 kernel: reservation has no campaign_id column, so holds cannot be shown per campaign (cost lines are grouped through attempt.campaign_id instead)",
-    "#5 scheduler (campaigns/ops): call runMoneyJobs(pool) at 00:00 Asia/Kolkata (18:30 UTC) daily",
     "#6 calls module: write cost_line rows per component with attempt_id so reconcile() and invoice.get see them; campaigns module: call money.estimate through the registry"
   ]
 }

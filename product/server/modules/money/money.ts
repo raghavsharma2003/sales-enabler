@@ -200,15 +200,16 @@ export async function statement(q: Queryable, ws: string, r: Range) {
 
 // ------------------------------------------------------------------ reconciliation
 
-export interface Drift { attemptId: string; settledInrMilli: number | null; costLinesInrMilli: number; cause: 'mismatch' | 'cost_without_settle' }
+export interface Drift { attemptId: string; settledInrMilli: number | null; costLinesInrMilli: number; cause: 'mismatch' | 'cost_without_settle' | 'overrun'; overrunInrMilli?: number }
 
 /** Compare each settled reservation with the cost lines metered for its attempt; open one issue per drifting attempt. */
 export async function reconcile(q: Queryable, ws: string): Promise<{ checked: number; drift: Drift[]; issuesOpened: number }> {
-  const rows = await many<{ attempt_id: string; settled: string | null; lines: string; status: string | null }>(q,
-    `WITH r AS (SELECT attempt_id, sum(settled_inr_milli) AS settled, bool_or(status = 'held') AS held
+  const rows = await many<{ attempt_id: string; settled: string | null; lines: string; overrun: string; status: string | null }>(q,
+    `WITH r AS (SELECT attempt_id, sum(settled_inr_milli) AS settled, bool_or(status = 'held') AS held, sum(overrun_inr_milli) AS overrun
                 FROM reservation WHERE workspace_id = $1 AND attempt_id IS NOT NULL AND status IN ('settled','held') GROUP BY attempt_id),
           l AS (SELECT attempt_id, sum(inr_milli) AS lines FROM cost_line WHERE workspace_id = $1 AND attempt_id IS NOT NULL GROUP BY attempt_id)
      SELECT coalesce(r.attempt_id, l.attempt_id) AS attempt_id, r.settled::text AS settled, coalesce(l.lines, 0)::text AS lines,
+            coalesce(r.overrun, 0)::text AS overrun,
             CASE WHEN r.held THEN 'held' END AS status
      FROM r FULL JOIN l ON l.attempt_id = r.attempt_id`, [ws]);
   const drift: Drift[] = [];
@@ -216,7 +217,11 @@ export async function reconcile(q: Queryable, ws: string): Promise<{ checked: nu
     if (x.status === 'held') continue;                  // still in flight: the call has not settled yet
     const settled = x.settled === null ? null : Number(x.settled), lines = Number(x.lines);
     if (settled === null) { if (lines > 0) drift.push({ attemptId: x.attempt_id, settledInrMilli: null, costLinesInrMilli: lines, cause: 'cost_without_settle' }); continue; }
-    if (settled !== lines) drift.push({ attemptId: x.attempt_id, settledInrMilli: settled, costLinesInrMilli: lines, cause: 'mismatch' });
+    // A call that ran past its hold was charged only the hold (kernel settle); the excess is VP's to absorb or dispute,
+    // so settled + overrun should equal the metered cost lines.
+    const overrun = Number(x.overrun);
+    if (overrun > 0) drift.push({ attemptId: x.attempt_id, settledInrMilli: settled, costLinesInrMilli: lines, cause: 'overrun', overrunInrMilli: overrun });
+    else if (settled !== lines) drift.push({ attemptId: x.attempt_id, settledInrMilli: settled, costLinesInrMilli: lines, cause: 'mismatch' });
   }
   let opened = 0;
   for (const d of drift) {
@@ -224,7 +229,9 @@ export async function reconcile(q: Queryable, ws: string): Promise<{ checked: nu
       `INSERT INTO issue (workspace_id, category, severity, subject_type, subject_id, detail)
        SELECT $1, 'money_drift', 'warning', 'attempt', $2, $3
        WHERE NOT EXISTS (SELECT 1 FROM issue WHERE workspace_id = $1 AND category = 'money_drift' AND subject_id = $2 AND status <> 'resolved')`,
-      [ws, d.attemptId, { ...d, fix: 'the charge and the metered cost lines disagree; check the call manifest before the next statement' }]);
+      [ws, d.attemptId, { ...d, fix: d.cause === 'overrun'
+        ? 'the call ran past the most it reserved; the customer was charged only the hold. Check why the runtime did not end it at the reserved maximum'
+        : 'the charge and the metered cost lines disagree; check the call manifest before the next statement' }]);
     opened += r.rowCount ?? 0;
   }
   return { checked: rows.length, drift, issuesOpened: opened };

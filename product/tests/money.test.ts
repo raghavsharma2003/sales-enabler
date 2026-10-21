@@ -7,7 +7,7 @@ import { createPool, many, one, tx } from '../server/db.ts';
 import { release, reserve, settle } from '../server/ledger.ts';
 import { Registry } from '../server/tools.ts';
 import { verifyAudit } from '../server/audit.ts';
-import { register, runMoneyJobs } from '../server/modules/money/index.ts';
+import { jobs, module as moneyModule, register, runMoneyJobs } from '../server/modules/money/index.ts';
 import { computeCard } from '../server/modules/money/prices.ts';
 import { FakeGateway, RazorpayGateway, setGateway } from '../server/modules/money/gateway.ts';
 import { estimate, margin, marginCheck, reconcile, rollPeriods, setWalletBlocked, walletView } from '../server/modules/money/money.ts';
@@ -386,4 +386,26 @@ test('ledger: reserve sees a daily cap reset at IST midnight without waiting for
   await pool.query("INSERT INTO budget (workspace_id, scope_type, period, cap_inr_milli, spent_inr_milli, period_start) VALUES ($1,'workspace','daily',1000,1000, (now() AT TIME ZONE 'Asia/Kolkata')::date - 1)", [ws]);
   const r = await run(c => reserve(c, { workspaceId: ws, inrMilli: 500 }));
   assert.ok(r.ok, "yesterday's spend still counts against today's cap");
+});
+
+test('reconcile opens an overrun issue when a call cost more than its hold', { skip }, async () => {
+  const { ws } = await workspace(10_000_000);
+  const a = await attempt(ws);
+  const r = await run(c => reserve(c, { workspaceId: ws, inrMilli: 30_000, attemptId: a.attemptId }));
+  if (!r.ok) return assert.fail('expected a hold');
+  await run(c => settle(c, r.reservationId, 40_000));              // charged 30,000; 10,000 is VP's overrun
+  await pool.query("INSERT INTO cost_line (workspace_id, attempt_id, component, quantity, unit, inr_milli) VALUES ($1,$2,'telephony',600,'second',40000)", [ws, a.attemptId]);
+  const out = await run(c => reconcile(c, ws));
+  assert.deepEqual(out.drift.map(d => [d.cause, d.settledInrMilli, d.overrunInrMilli]), [['overrun', 30_000, 10_000]]);
+  const iss = await one<{ detail: { cause: string; fix: string } }>(pool, "SELECT detail FROM issue WHERE workspace_id = $1 AND category = 'money_drift'", [ws]);
+  assert.equal(iss!.detail.cause, 'overrun');
+  assert.match(iss!.detail.fix, /reserved maximum/);
+  assert.equal((await bal(ws))!.b, String(10_000_000 - 30_000), 'the customer pays only the hold');
+});
+
+test('the nightly job is returned from jobs(): IST midnight, runs roll + reconcile', { skip }, async () => {
+  const js = jobs();
+  assert.equal(moneyModule.jobs, jobs);
+  assert.deepEqual(js.map(j => [j.name, j.dailyAtIst, j.everyMs]), [['money.nightly', '00:00', undefined]]);
+  await js[0].run({ pool, registry: reg, auth: async () => { throw new Error('unused'); } });
 });

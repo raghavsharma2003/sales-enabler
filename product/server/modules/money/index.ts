@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { formatInr } from '../../../shared/money.ts';
 import { num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import type { Module } from '../../app.ts';
+import type { Job } from '../../jobs.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
@@ -148,4 +149,7 @@ export async function runMoneyJobs(q: Queryable, at: Date = new Date()) {
 }
 
 export { caps };
-export const module: Module = { name: 'money', register };
+/** Nightly at IST midnight: roll period caps, then reconcile every workspace (server/jobs.ts runs it, one replica at a time). */
+export const jobs = (): Job[] => [{ name: 'money.nightly', dailyAtIst: '00:00', run: async deps => { await runMoneyJobs(deps.pool); } }];
+
+export const module: Module = { name: 'money', register, jobs };
