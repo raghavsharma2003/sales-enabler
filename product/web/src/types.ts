@@ -74,7 +74,7 @@ export interface CallDoc {
   turns: CallTurn[]; moments: { source: string; kind: string; atMs: number | null; note: string | null; quote: string | null }[];
   safety: { seq: number; rule: string; action: string; detail: string }[]; tools: { seq: number; name: string; status: string }[]; handOffs: { destination: string; status: string }[];
   outcomes: { value: string; grade: string; source: string }[]; costTotal: number; costLines: { component: string; provider: string; inr_milli: number; unit: string; quantity: number }[]; settlement: string | null;
-  analysis: { status: string; summary?: string } | null; totalMs: number;
+  analysis: { status: string; summary?: string; reason?: string } | null; totalMs: number;
 }
 export interface CallExplain { headline: string; because: { point: string; evidence: Record<string, unknown> }[]; outcome: { value: string; grade: string; note: string | null } | null; notes: string[] }
 

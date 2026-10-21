@@ -177,7 +177,7 @@ export async function callGet(id: string): Promise<CallDoc> {
     recordingUri: c.recordingUri, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, turns,
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), tools: arr(c.tools), handOffs: arr(c.handOffs),
     outcomes: arr(c.outcomes), costTotal: c.cost?.totalInrMilli ?? 0, costLines: arr(c.cost?.lines), settlement: c.cost?.settlement?.action ?? (typeof c.cost?.settlement === 'string' ? c.cost.settlement : null),
-    analysis: a ? { status: a.status, summary: a.summary } : null, totalMs };
+    analysis: a ? { status: a.status, summary: a.summary, reason: a.reason } : null, totalMs };
 }
 export const callExplain = (id: string) => run<CallExplain>('call.explain', { conversationId: id });
 

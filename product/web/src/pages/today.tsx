@@ -8,9 +8,10 @@ import { Link } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, Skeleton } from '../ui.tsx';
 import { ago, count, date, inr, plural, time } from '../format.ts';
 import { RISK_WORDS } from '../tools.ts';
+import { toolAsk } from '../labels.ts';
 import type { Brief, CampaignRow } from '../types.ts';
 
-const ACTION_WORDS: Record<string, string> = { 'brief.edit': 'drafts', 'agent.create': 'drafts', 'stack.set': 'drafts', 'audience.create': 'drafts', 'source.commit': 'drafts', 'test.simulate': 'tests', 'test.browser_call': 'tests', 'campaign.pause': 'guarded pauses', 'campaign.stop_at_cap': 'guarded pauses', 'contact.suppress_after_opt_out': 'guarded opt-outs' };
+const ACTION_WORDS: Record<string, [string, string]> = { 'brief.edit': ['draft', 'drafts'], 'agent.create': ['draft', 'drafts'], 'stack.set': ['draft', 'drafts'], 'audience.create': ['draft', 'drafts'], 'source.commit': ['draft', 'drafts'], 'test.simulate': ['test', 'tests'], 'test.browser_call': ['test', 'tests'], 'campaign.pause': ['guarded pause', 'guarded pauses'], 'campaign.stop_at_cap': ['guarded pause', 'guarded pauses'], 'contact.suppress_after_opt_out': ['guarded opt-out', 'guarded opt-outs'] };
 
 export default function Today() {
   const { me, hasTool, review, act, refresh } = useApp();
@@ -48,7 +49,7 @@ export default function Today() {
                   <CardHead id="needs-h" title="Needs you" sub={b.needsTap.n ? `${count(b.needsTap.n)} waiting. Safety first, then deadlines, then impact.` : undefined} />
                   {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Kuch pending nahi" body={`VP did ${count(b.changed.n)} ${b.changed.n === 1 ? 'thing' : 'things'} on its own. Nothing is waiting on you.`} action={<Link to="/settings/activity">See activity</Link>} /> : (
                     <ul className="needs">
-                      {b.needsTap.items.map(a => {
+                      {groupNeeds(b.needsTap.items).map(({ a, n }) => {
                         const w = RISK_WORDS[a.risk] ?? { label: a.risk, line: '' };
                         return (
                           <li key={a.id} className="need">
@@ -56,7 +57,7 @@ export default function Today() {
                               <div className="row"><Chip tone={a.risk === 'spend' || a.risk === 'external' ? 'terra' : 'marigold'}>{w.label}</Chip>{a.expires_at && <span className="small muted">expires {date(a.expires_at, true)}</span>}</div>
                               <p className="need-title">{a.summary ?? a.tool}</p>
                             </div>
-                            <Btn kind="primary" size="sm" onClick={() => review({ actionId: a.id, tool: a.tool, summary: a.summary ?? a.tool, risk: a.risk, expiresAt: a.expires_at })}>Review</Btn>
+                            <Btn kind="primary" size="sm" onClick={() => review({ actionId: a.id, tool: a.tool, summary: a.summary ?? toolAsk(a.tool, 'Approve this change'), risk: a.risk, expiresAt: a.expires_at })}>Review</Btn>
                           </li>
                         );
                       })}
@@ -107,10 +108,16 @@ export default function Today() {
   );
 }
 
+function groupNeeds(items: Brief['needsTap']['items']) {
+  const m = new Map<string, { a: Brief['needsTap']['items'][number]; n: number }>();
+  for (const a of items) { const k = a.tool + '|' + a.summary; const g = m.get(k); if (g) g.n++; else m.set(k, { a, n: 1 }); }
+  return [...m.values()];
+}
+
 function summarise(b: Brief): string {
-  const g: Record<string, number> = {};
-  for (const a of b.changed.byAction) g[ACTION_WORDS[a.action] ?? 'other changes'] = (g[ACTION_WORDS[a.action] ?? 'other changes'] ?? 0) + a.n;
-  return Object.entries(g).map(([k, n]) => `${count(n)} ${k}`).join(', ');
+  const g = new Map<string, [number, [string, string]]>();
+  for (const a of b.changed.byAction) { const w = ACTION_WORDS[a.action] ?? ['other change', 'other changes']; const k = w[0]; g.set(k, [(g.get(k)?.[0] ?? 0) + a.n, w]); }
+  return [...g.values()].map(([n, w]) => `${count(n)} ${n === 1 ? w[0] : w[1]}`).join(', ');
 }
 
 function nextAction(b: Brief, camps: CampaignRow[]): { title: string; why: string; label: string; href: string } | null {

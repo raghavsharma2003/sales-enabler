@@ -7,7 +7,7 @@ import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, Table, Tabs, TextField, type Col } from '../ui.tsx';
 import { callExplain, callGet, callSearch } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
-import { prettyId } from '../catalog.ts';
+import { getStack } from '../../../shared/stacks.ts';
 import { clock, date, dur, inr, ms } from '../format.ts';
 import type { CallDoc, CallExplain, CallRow } from '../types.ts';
 
@@ -69,7 +69,7 @@ function Body({ c }: { c: CallDoc }) {
             <CardHead id="player-h" title="Who spoke when" sub={c.recordingUri ? 'A recording exists for this call. Playback is not built into this page yet.' : 'No recording is stored for this call. The bars are drawn from turn timing, not from audio.'} />
             {c.turns.length > 0 ? <Lanes c={c} at={at} onSeek={seek} /> : <Empty title="Nobody spoke" body="There is no transcript. The reason is in the outcome card." />}
           </Card>
-          {c.turns.length > 0 && <Card aria-labelledby="tr-h"><CardHead id="tr-h" title="What was said" sub="Only what the caller actually heard. Click a line to mark it on the timeline." />
+          {c.turns.length > 0 && <Card aria-labelledby="tr-h"><CardHead id="tr-h" title="What was said" sub="Only what the caller actually heard. Select a line to mark it on the timeline." />
             <ol className="turns">{c.turns.map(t => (
               <li key={t.idx} ref={el => { turnRefs.current[t.idx] = el; }} className={`turn ${t.who}${current === t.idx ? ' now' : ''}`}>
                 <button type="button" onClick={() => setAt(t.startMs ?? 0)} aria-label={`${t.who === 'agent' ? 'Agent' : 'Caller'}${t.startMs != null ? ` at ${clock(t.startMs / 1000)}` : ''}: mark here`}>
@@ -84,7 +84,7 @@ function Body({ c }: { c: CallDoc }) {
             {c.reason && <p className="small muted">What you can do: {c.reason.action}.</p>}
             <div style={{ margin: '10px 0' }}>{outcomeChip(best?.value ?? c.outcome, best?.grade ?? null)}</div>
             {best?.grade === 'ai_guess' && <p className="small muted">An AI guess is not verified by your system or a person.</p>}
-            {c.analysis && <p className="small muted">Analysis: {c.analysis.status.replace(/_/g, ' ')}.</p>}
+            {c.analysis && c.analysis.status !== 'done' && <p className="small muted">{c.analysis.status === 'not_configured' ? 'The written summary and outcome guess are off, because no analysis model is set up on this server.' : c.analysis.status === 'failed' ? `The written summary could not be made${c.analysis.reason ? ` (${c.analysis.reason.replace(/\.$/, '')})` : ''}. The words, timing and cost here are not affected.` : 'This call was not analysed.'}</p>}
             <div style={{ marginTop: 12 }}>{why ? <div className="why"><p><strong>{why.headline}</strong></p>{why.because.map((b, i) => { const ev = b.evidence as { quote?: string; atMs?: number | null }; return <p key={i} className="small">{b.point}{ev.quote && <> <button type="button" className="linklike" onClick={() => seek(ev.atMs ?? null)}>{ev.atMs != null ? clock(ev.atMs / 1000) : 'quote'}</button> <span lang="hi">“{ev.quote}”</span></>}</p>; })}{why.notes.map(n => <p key={n} className="small muted">{n}</p>)}</div> : <Btn size="sm" busy={whyBusy} onClick={explain}>Explain this call</Btn>}</div></Card>
           {quotes.length > 0 && <Card><CardHead title="In their words" /><ul className="quotes">{quotes.map((m, i) => <li key={i}><blockquote lang="hi">“{m.quote}”</blockquote><div className="row"><Chip>{prettyCode(m.kind)}</Chip>{m.atMs != null && <button type="button" className="btn btn-sm" onClick={() => seek(m.atMs)}><Play size={12} aria-hidden /><span>Mark {clock(m.atMs / 1000)}</span></button>}</div></li>)}</ul></Card>}
           <Card><CardHead title="Safety rules that acted" sub="Code, not the model, decides these." />
@@ -93,7 +93,7 @@ function Body({ c }: { c: CallDoc }) {
             {c.handOffs.length > 0 && <p className="small" style={{ marginTop: 8 }}>Handed to {c.handOffs.map(h => h.destination).join(', ')}.</p>}
             {c.tools.length > 0 && <p className="small muted">Tools used: {c.tools.map(t => `${t.name} (${t.status})`).join(', ')}.</p>}</Card>
           <Card><CardHead title="What ran and what it cost" />
-            <Kv rows={[['Ran', c.ran ? <span key="r"><code>{c.ran}</code><br /><span className="small muted">{prettyId(c.ran)}</span></span> : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Settlement', c.settlement ? prettyCode(c.settlement) : <NotMeasured key="s" />]]} />
+            <Kv rows={[['Voice stack', c.ran ? (getStack(c.ran)?.label ?? 'A stack that is no longer listed') : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
             {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={c.costLines.map(l => [`${prettyCode(l.component)} · ${l.provider}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
         </div>
       </div>

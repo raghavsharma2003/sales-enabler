@@ -10,6 +10,7 @@ import { agentGet, agentList, audienceList, campaignEstimate, campaignFunnel, ca
 import { count, date, inr } from '../format.ts';
 import { getStack } from '../../../shared/stacks.ts';
 import { prettyCode } from './contacts.tsx';
+import { blockerCopy, pl } from '../labels.ts';
 import type { CampaignDoc, CampaignRow } from '../types.ts';
 
 const STATE: Record<string, [string, 'leaf' | 'marigold' | 'peacock' | 'neutral' | 'brick']> = { running: ['Dialling', 'leaf'], paused: ['Paused', 'marigold'], scheduled: ['Scheduled', 'peacock'], draft: ['Draft', 'marigold'], done: ['Finished', 'neutral'], stopped: ['Stopped', 'neutral'], cancelled: ['Stopped', 'neutral'] };
@@ -90,15 +91,6 @@ function Create() {
 }
 
 // ---------- detail ----------
-function fixTo(fix?: string): { label: string; to: string } | null {
-  if (!fix) return null;
-  if (/number/i.test(fix)) return { label: 'Get a number', to: '/numbers' };
-  if (/wallet|cap\./i.test(fix)) return { label: 'Open the wallet', to: '/settings/billing' };
-  if (/agent|version|publish|stack/i.test(fix)) return { label: 'Open agents', to: '/agents' };
-  if (/consent|source|contact/i.test(fix)) return { label: 'Open contacts', to: '/contacts' };
-  if (/policy|window/i.test(fix)) return { label: 'Open settings', to: '/settings/compliance' };
-  return null;
-}
 function Detail({ id }: { id: string }) {
   const { act, refresh } = useApp();
   const q = useData<CampaignDoc>(['campaign', id], () => campaignGet(id));
@@ -109,7 +101,7 @@ function Detail({ id }: { id: string }) {
   return (
     <div className="page"><Async q={q} what="This campaign" tool="campaign.get" rows={6}>{c => {
       const run = async (tool: string, msg: string) => { const r = await act(tool, { id: c.id }, { describe: msg }); if (r.ok) q.reload(); };
-      const first = c.blockers[0]; const fx = fixTo(first?.fix);
+      const first = c.blockers[0];
       const live = c.state === 'running' || c.state === 'paused';
       return (<>
         <PageHead crumb={<><Link to="/campaigns">Campaigns</Link><span aria-hidden>/</span><span>{c.name}</span></>} title={c.name} pill={<span className={`pill ${c.state === 'running' ? 'pill-live' : c.state === 'draft' ? 'pill-draft' : ''}`}>{STATE[c.state]?.[0] ?? prettyCode(c.state)} · policy v{c.policyVersion}</span>}
@@ -118,13 +110,13 @@ function Detail({ id }: { id: string }) {
             {c.state === 'running' && <Btn icon={<Pause size={16} aria-hidden />} onClick={() => run('campaign.pause', 'Paused. Calls already placed stay as they are.')}>Pause</Btn>}
             {c.state === 'paused' && <Btn icon={<Play size={16} aria-hidden />} onClick={() => run('campaign.resume', 'Resumed.')}>Resume</Btn>}
             {live && <Btn kind="danger" icon={<Square size={14} aria-hidden />} onClick={() => run('campaign.stop', 'Stopped.')}>Stop</Btn>}
-            {c.state === 'draft' && (first ? <Btn disabled reason={first.message} fix={fx ? { label: fx.label, to: fx.to } : undefined}>Launch…</Btn> : <Btn kind="primary" onClick={() => run('campaign.launch', 'Launched.')}>Launch…</Btn>)}
+            {c.state === 'draft' && (first ? <Btn disabled reason={`Fix ${c.blockers.length === 1 ? 'the one check' : `the ${c.blockers.length} checks`} below first.`}>Launch…</Btn> : <Btn kind="primary" onClick={() => run('campaign.launch', 'Launched.')}>Launch…</Btn>)}
           </>} />
         <div className="cols-main">
           <div className="stack">
-            {c.state === 'draft' && <Card><CardHead title="Before you launch" sub={c.blockers.length ? `${c.blockers.length} thing${c.blockers.length === 1 ? '' : 's'} to fix` : 'Nothing is blocking launch'} />
+            {c.state === 'draft' && <Card><CardHead title="Before you launch" sub={c.blockers.length ? `${pl(c.blockers.length, 'thing')} to fix` : 'Nothing is blocking launch'} />
               {c.blockers.length === 0 ? <ul className="checklist"><li className="check check-ok"><CheckCircle2 size={20} aria-hidden /><div className="grow"><strong>Every launch check passed</strong><p className="small muted">Window, line, wallet, cap, agent version and audience were all checked by the server just now.</p></div></li></ul> :
-                <ul className="checklist">{c.blockers.map(b => { const x = fixTo(b.fix); return <li key={b.code} className="check check-fail"><XCircle size={20} aria-hidden /><div className="grow"><strong>{b.message}</strong><span className="sr"> (blocks launch)</span>{b.fix && <p className="small muted">To fix: {b.fix}{b.role ? `, by an ${b.role}` : ''}</p>}</div>{x && <Link to={x.to} className="btn btn-sm" style={{ textDecoration: 'none' }}><span>{x.label}</span></Link>}</li>; })}</ul>}</Card>}
+                <ul className="checklist">{c.blockers.map(b => { const x = blockerCopy(b); return <li key={b.code} className="check check-fail"><XCircle size={20} aria-hidden /><div className="grow"><strong>{x.text}</strong><span className="sr"> (blocks launch)</span>{b.role && <p className="small muted">Needs {/^[aeiou]/.test(b.role) ? 'an' : 'a'} {b.role} to do it.</p>}</div>{x.to && <Link to={x.to.href} className="btn btn-sm" style={{ textDecoration: 'none' }}><span>{x.to.label}</span></Link>}</li>; })}</ul>}</Card>}
             <Card><CardHead title="What it will cost" sub="Provider cost, including GST. No customer price is set." />
               <Async q={est} what="The estimate" tool="campaign.estimate" rows={3}>{e => <dl className="kv">
                 <div><dt>People</dt><dd className="tnum">{count(e.people)} people, about {count(e.attempts)} attempts</dd></div>

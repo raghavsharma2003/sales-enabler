@@ -11,6 +11,7 @@ import { Link } from './router.tsx';
 import { Btn, Chip, Figure, HoldButton, Segmented } from './ui.tsx';
 import { TestPanel } from './test-panel.tsx';
 import { pageInfo, RISK_WORDS } from './tools.ts';
+import { fieldLabel, fieldValue, toolAsk, toolDone } from './labels.ts';
 import type { OperatorCard } from './types.ts';
 
 const GREETING = 'Namaste, main Saarthi hoon, VP ka operator (AI). Aap bataiye kya karwana hai, main plan banaunga aur draft aur test khud kar lunga. Jo cheez logon tak pahunchti hai ya paise lagati hai, wo aapke tap ke baad hi hoti hai.';
@@ -118,9 +119,10 @@ export function Dock() {
 
 /** Map the server's card shapes onto the display card. Cards carry the server's message id so a re-emitted plan updates in place. */
 function fromApi(id: string, c: ApiCard): OperatorCard {
-  if (c.type === 'approval') return { id, type: 'approval', title: c.summary, actionId: c.actionId, risk: c.risk.risk, summary: c.risk.label, state: 'waiting', mode: c.mode, approvers: c.approvers, expiresAt: c.expiresAt, diff: c.diff.map(d => ({ field: d.field, before: '', after: typeof d.to === 'string' ? d.to : JSON.stringify(d.to) })), by: c.tool };
-  if (c.type === 'receipt') return { id, type: 'receipt', title: c.text, outcome: c.status, by: c.tool, state: c.status === 'confirmed' ? 'approved' : c.status === 'unknown' ? 'stale' : 'failed' };
-  return { id, type: 'plan', title: c.goal, body: c.footer, steps: c.steps.map(s => ({ label: `${s.tool}${s.why ? ': ' + s.why : ''}${s.reason ? ` (${s.reason})` : ''}`, risk: s.risk ?? 'draft', when: s.runs === 'now' ? 'now' : 'waits', done: s.status === 'done', refused: s.runs === 'refused' })) };
+  if (c.type === 'approval') return { id, type: 'approval', title: toolAsk(c.tool, 'Approve this change'), actionId: c.actionId, risk: c.risk.risk, summary: c.risk.label, state: 'waiting', mode: c.mode, approvers: c.approvers, expiresAt: c.expiresAt,
+    diff: c.diff.map(d => ({ field: fieldLabel(d.field), after: fieldValue(d.field, d.to) })).filter((d): d is { field: string; after: string } => !!d.after), body: undefined };
+  if (c.type === 'receipt') return { id, type: 'receipt', title: c.status === 'confirmed' ? toolDone(c.tool, 'Done') : c.status === 'not_executed' ? `${toolAsk(c.tool, 'That')} did not run` : 'The result is not known', body: c.status === 'confirmed' ? undefined : c.text.replace(/^Not done: /, ''), outcome: c.status, state: c.status === 'confirmed' ? 'approved' : c.status === 'unknown' ? 'stale' : 'failed' };
+  return { id, type: 'plan', title: c.goal, body: c.footer, steps: c.steps.map(s => ({ label: `${toolAsk(s.tool, 'A step')}${s.why ? ': ' + s.why : ''}${s.reason ? ` (${s.reason})` : ''}`, risk: s.risk ?? 'draft', when: s.runs === 'now' ? 'now' : 'waits', done: s.status === 'done', refused: s.runs === 'refused' })) };
 }
 
 function Msg({ m }: { m: ThreadMsg }) {
@@ -160,7 +162,7 @@ export function Card({ c }: { c: OperatorCard }) {
       {c.body && <p className="small">{c.body}</p>}
       {c.quote && <blockquote className="small" style={{ margin: 0, paddingLeft: 10, borderLeft: '3px solid var(--peacock)' }} lang="hi">“{c.quote}”</blockquote>}
       {c.metric && <Figure m={c.metric} />}
-      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <Chip tone="brick">refused</Chip> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? `${s.risk}, runs now` : `${s.risk}, waits for you`}</Chip>}</span></li>)}</ol>}
+      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <Chip tone="brick">refused</Chip> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? 'Runs now' : 'Waits for your tap'}</Chip>}</span></li>)}</ol>}
       {c.diff && <div>{c.diff.map((d, i) => <div className="diffrow" key={i}><strong>{d.field}</strong><span>{d.before ? <><s>{d.before}</s> → </> : null}<ins>{d.after}</ins></span>{d.reason && <span className="small muted">{d.reason}</span>}</div>)}</div>}
       {c.progress && <div><div className="meter-bar" role="progressbar" aria-label={c.progress.label} aria-valuenow={c.progress.pct ?? undefined}><span className="meter-fill tone-peacock" style={{ transform: `scaleX(${(c.progress.pct ?? 0) / 100})` }} /></div><p className="small muted">{c.progress.label}</p></div>}
       {c.type === 'question' && c.options && (
@@ -178,7 +180,7 @@ export function Card({ c }: { c: OperatorCard }) {
       {st.state === 'failed' && <p className="hint hint-bad" role="alert">Not executed: {st.note}. Nothing was changed.</p>}
       {st.state === 'unknown' && <p className="hint hint-bad" role="alert">Result unknown: {st.note}. VP did not retry.</p>}
       {c.href && <Link to={c.href} className="small">Open the page</Link>}
-      <p className="ocard-foot">{[c.by && `by ${c.by}`, c.provenance].filter(Boolean).join(' · ')}</p>
+      {c.provenance && <p className="ocard-foot">{c.provenance}</p>}
     </article>
   );
 }

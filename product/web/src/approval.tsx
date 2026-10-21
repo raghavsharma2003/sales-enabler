@@ -1,5 +1,7 @@
 // The approval sheet: what, why, impact, who, expiry. Only a deliberate hold (or two presses) approves; model text never does.
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { listActions } from './api.ts';
+import { fieldLabel, fieldValue, toolAsk } from './labels.ts';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { useApp, undoLine } from './store.tsx';
 import { Btn, Chip, HoldButton, Sheet } from './ui.tsx';
@@ -8,6 +10,14 @@ import { date } from './format.ts';
 
 export function ApprovalSheet() {
   const { pending: p, decide, closePending, me } = useApp();
+  const [args, setArgs] = useState<[string, string][]>([]);
+  const pid = p?.actionId;
+  useEffect(() => {
+    if (!pid) { setArgs([]); return; }
+    let live = true;
+    listActions('proposed').then(rows => { const a = rows.find(r => r.id === pid); if (live && a && a.args && typeof a.args === 'object') setArgs(Object.entries(a.args as Record<string, unknown>).map(([k, v]) => [fieldLabel(k), fieldValue(k, v)] as [string, string | null]).filter((x): x is [string, string] => !!x[1])); }).catch(() => {});
+    return () => { live = false; };
+  }, [pid]);
   const confirmed = p?.state === 'done' && p.outcome && 'status' in p.outcome && p.outcome.status === 'confirmed';
   // A confirmed approval closes itself shortly after saying so, so what it produced (a secret, a page change) is not hidden behind it.
   useEffect(() => { if (!confirmed) return; const t = setTimeout(closePending, 900); return () => clearTimeout(t); }, [confirmed, closePending]);
@@ -21,7 +31,8 @@ export function ApprovalSheet() {
     <Sheet title={done ? 'Result' : 'Approve to continue'} onClose={closePending}>
       <div className="stack-s">
         <div className="row"><Chip tone={p.risk === 'spend' || p.risk === 'external' ? 'terra' : 'marigold'} icon={<ShieldCheck size={13} aria-hidden />}>{w.label}</Chip><span className="small muted">Asked by VP · expires {date(p.expiresAt, true)}</span></div>
-        <p style={{ fontSize: '1.0625rem', fontWeight: 600 }}>{p.summary}</p>
+        <p style={{ fontSize: '1.0625rem', fontWeight: 600 }}>{toolAsk(p.tool, p.summary)}</p>
+        {args.length > 0 && <dl className="kv small">{args.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <p className="muted">{w.line} {undoLine(p.risk)}</p>
       </div>
       {!done && !allowed && (

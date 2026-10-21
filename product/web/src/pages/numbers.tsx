@@ -46,7 +46,7 @@ export default function Numbers() {
     setBusy(false);
     if (!r.ok) return;
     if (r.result.verified) setV({ stage: 'verified', phone: v.phone, note: 'This phone is verified as yours.' });
-    else setV({ ...v, note: `${r.result.reason ?? 'That code is not right.'}${r.result.triesLeft != null ? ` ${r.result.triesLeft} tries left.` : ''}` });
+    else setV({ ...v, note: `${r.result.reason ?? 'That code is not right.'}${r.result.triesLeft != null ? ` ${r.result.triesLeft} ${r.result.triesLeft === 1 ? 'try' : 'tries'} left.` : ''}` });
   };
   const tryRing = async () => {
     setBusy(true);

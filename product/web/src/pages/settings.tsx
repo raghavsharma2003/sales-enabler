@@ -225,7 +225,7 @@ function Integrations() {
 
 function Activity() {
   const q = useData<ActivityRow[]>('activity', activityList);
-  const cols: Col<ActivityRow>[] = [{ key: 't', label: 'When', render: a => date(a.at, true) }, { key: 's', label: 'What', primary: true, render: a => <>{a.line}<br /><code className="small">{a.action}</code></> }];
+  const cols: Col<ActivityRow>[] = [{ key: 't', label: 'When', render: a => date(a.at, true) }, { key: 's', label: 'What', primary: true, render: a => a.line }];
   return <Card><CardHead title="What VP did" sub="Every draft, test and approved action, with who did it." />
     <Async q={q} what="Activity" tool="activity.list" empty={d => d.length === 0 ? <Empty title="Nothing yet" body="Everything that changes something is written here." /> : null}>{d => <Table caption="Activity ledger" cols={cols} rows={d} rowKey={r => r.id} />}</Async></Card>;
 }
