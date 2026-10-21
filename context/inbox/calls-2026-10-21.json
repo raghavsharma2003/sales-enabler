@@ -96,6 +96,16 @@
       "title": "An outcome guess counts only if its quote is in a caller line of the stored transcript (by line index). If the only match is the agent's own words, the outcome is 'unclear' and not recorded",
       "rationale": "Review M6: the agent saying 'aap kal payment kar denge' while the person said 'Abhi nahi' was recorded as will_pay. An outcome is what the person said or did, so evidence must come from the person, as memory already requires.",
       "reverse_if": "An outcome definition is about the agent's own action (e.g. 'disclosure given'); then let that definition name the speaker its evidence must come from."
+    },
+    {
+      "id": "decision.2026-10-21.calls-crisis-judge-shadow-counts-nothing",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Post-call crisis judge in calls: a raise hit is an RD3 'flagged' call_safety_event (counts as a safety event); a shadow hit lives only in analysis.judge_shadow and changes no event, flag, safety_violation, monitor or experiment",
+      "rationale": "Keeps the shadow semantics of decision.2026-10-21.judge-raise-only-contract. learning and the safety_event_rate monitor read safety events, so a shadow row there would change outcomes. Calls loops over caller lines with safety's judgeCallerCrisis rather than judgeTranscriptCrisis, so it also sees judge_unavailable and the usage of every call, hit or not.",
+      "reverse_if": "The owner moves the judge to raise in production (set VP_SAFETY_JUDGE_MODE=raise; the code path already exists), or safety extends judgeTranscriptCrisis to return unavailable counts and per-call usage; then call that instead of the local loop."
     }
   ],
   "edges": [
@@ -150,6 +160,11 @@
       "date": "2026-10-21",
       "event": "calls-m6-fixed",
       "details": "Fixed review M6: outcome evidence must be a caller line, checked by index. Agent-only evidence gives analysis.outcomeUnclear with the reason, writes no outcome row and counts as a dropped quote. The review test moved into calls.test.ts as a normal test, without the todo. Verified: calls+review+e2e 44 pass and 0 fail (10 todos, none of them calls'); full suite 324 pass, 0 fail, 8 todos, twice on one shared database."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-crisis-judge-wired",
+      "details": "Calls analysis now runs the post-call caller-crisis judge with a 5 s timeout per line. Raise hits give RD3 flagged safety events; shadow hits go to analysis.judge_shadow only; judge_unavailable and judge_calls are recorded; a cost line with purpose safety_judge is written whenever the judge was called. Verified: calls 21/21 (shadow, raise, no keys, judge throws, floor line never sent); full suite 353/353 twice on one fresh shared database. Not verified: a real judge model."
     }
   ]
 }

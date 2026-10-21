@@ -9,6 +9,7 @@ import type pg from 'pg';
 import { many, one, tx, type Queryable } from '../../db.ts';
 import type { Registry } from '../../tools.ts';
 import { afterCall } from './followups.ts';
+import { judgeCallerCrisis, type CrisisJudgeCtx } from '../../../shared/safety/judge.ts';
 import { complete, llmConfigured, LlmError } from '../../llm.ts';
 import { CONVERSATION_CODES, REASON_CODES, REFINABLE, EARLY_HANGUP_S } from './taxonomy.ts';
 
@@ -23,6 +24,41 @@ export function findQuote(lines: Line[], quote: unknown, speaker?: Line['speaker
   if (q.length < 3) return null;
   return lines.find(l => (!speaker || l.speaker === speaker) && l.text.includes(q)) ?? null;
 }
+
+// Post-call analysis is not latency-bound; the live door's judge budget (judge.json timeout_ms) is far tighter.
+export const POST_CALL_JUDGE_TIMEOUT_MS = 5000;
+
+export interface CrisisPass {
+  raised: { index: number; kind: string; confidence: number }[];
+  shadow: { index: number; kind: string; confidence: number }[];
+  unavailable: number; calls: number; usage: { inputTokens: number; outputTokens: number };
+}
+
+/** Judge every caller line the floor did not flag, in order, with the previous caller line as context. This is
+ *  judgeTranscriptCrisis's loop, kept here so calls also sees judge_unavailable and the usage of every call, hit or
+ *  not (both are needed for the outage rate and for cost lines). The per-line rules (floor first, raise-only, skip when
+ *  the floor fires, no keys means no call) stay in safety's judgeCallerCrisis. */
+export async function crisisPass(lines: Line[], ctx: Omit<CrisisJudgeCtx, 'prev'> = {}): Promise<CrisisPass> {
+  const out: CrisisPass = { raised: [], shadow: [], unavailable: 0, calls: 0, usage: { inputTokens: 0, outputTokens: 0 } };
+  let prev = '';
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].speaker !== 'caller') continue;
+    const r = await judgeCallerCrisis(lines[i].text, { timeoutMs: POST_CALL_JUDGE_TIMEOUT_MS, ...ctx, prev });
+    prev = lines[i].text;
+    if (!r.called) continue;
+    out.calls++;
+    if (r.usage) { out.usage.inputTokens += r.usage.inputTokens; out.usage.outputTokens += r.usage.outputTokens; }
+    const ev = r.event;
+    if (ev?.type === 'judge_unavailable') out.unavailable++;
+    else if (ev?.type === 'judge_raised') out.raised.push({ index: i, kind: ev.kind, confidence: ev.confidence });
+    else if (ev?.type === 'judge_shadow') out.shadow.push({ index: i, kind: ev.kind, confidence: ev.confidence });
+  }
+  return out;
+}
+
+/** Tests: pass judge options (e.g. assumeConfigured with setFakeLlm). Production leaves it unset. */
+let judgeOpts: Omit<CrisisJudgeCtx, 'prev'> = {};
+export function setCrisisJudgeOptions(o: Omit<CrisisJudgeCtx, 'prev'>): void { judgeOpts = o; }
 
 const inflight = new Set<Promise<void>>();
 
@@ -59,6 +95,12 @@ export interface AnalysisRecord {
   safety_violation?: boolean;
   judge?: { judgeVersionId: string | null; value: string; quote: string; calibration: string } | null;
   forgetRequested?: { quote: string } | null;
+  // The post-call caller-crisis judge (shared/safety/judge.ts). Shadow hits are recorded here ONLY: they are never a
+  // call_safety_event, a flag, safety_violation or a monitor input. Raise hits become RD3 'flagged' safety events.
+  judge_shadow?: { index: number; kind: string; confidence: number }[];
+  judge_raised?: { index: number; kind: string; confidence: number }[];
+  judge_unavailable?: number;
+  judge_calls?: number;
   followups?: Record<string, string>;
   model?: string;
   reason?: string;
@@ -88,7 +130,24 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   const lines = cv.transcript ?? [];
   const isTest = cv.channel === 'test';
 
+  // The crisis judge reads what the caller said, whatever the analysis model does (it has its own purpose and keys).
+  const crisis = lines.some(l => l.speaker === 'caller') ? await crisisPass(lines, judgeOpts) : null;
+
   const store = async (rec: AnalysisRecord, extra?: (c: pg.PoolClient) => Promise<void>) => {
+    if (crisis) {
+      rec.judge_shadow = crisis.shadow; rec.judge_raised = crisis.raised; rec.judge_unavailable = crisis.unavailable; rec.judge_calls = crisis.calls;
+      if (crisis.raised.length || crisis.calls) await tx(pool, async c => {
+        // Raise only: an RD3 'flagged' safety event per raised line. The detail never carries the caller's words.
+        for (const h of crisis.raised) {
+          await c.query(`INSERT INTO call_safety_event (workspace_id, conversation_id, seq, rule, action, detail, at) VALUES ($1,$2,$3,'RD3','flagged',$4,now())`,
+            [workspaceId, conversationId, -1 - h.index, `judge_raised kind=${h.kind} confidence=${h.confidence}`]);
+        }
+        if (crisis.raised.length) await c.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{safety}'::text[]) ORDER BY 1) WHERE id = $1 AND workspace_id = $2`, [conversationId, workspaceId]);
+        // Every judge call costs; nothing here guesses a price (priced:false), as with the analysis line.
+        if (crisis.calls) await c.query(`INSERT INTO cost_line (workspace_id, conversation_id, component, provider, quantity, unit, inr_milli, detail) VALUES ($1,$2,'analysis','safety_judge',$3,'token',0,$4)`,
+          [workspaceId, conversationId, crisis.usage.inputTokens + crisis.usage.outputTokens, { ...crisis.usage, purpose: 'safety_judge', calls: crisis.calls, priced: false }]);
+      });
+    }
     const safety = await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2', [conversationId, workspaceId]);
     rec.safety_violation = safety!.n > 0;
     rec.judge ??= null;

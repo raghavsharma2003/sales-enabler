@@ -14,7 +14,8 @@ import { obj, opt, str, uuid } from '../shared/validate.ts';
 import type { RunManifest, RuntimeEvent } from '../shared/runtime-protocol.ts';
 import { module as calls } from '../server/modules/calls/index.ts';
 import { module as agents } from '../server/modules/agents/index.ts';
-import { analysesSettled, findQuote, refreshOutcome, sweep } from '../server/modules/calls/analysis.ts';
+import { analysesSettled, findQuote, refreshOutcome, setCrisisJudgeOptions, sweep } from '../server/modules/calls/analysis.ts';
+import { CRISIS_JUDGE } from '../shared/safety/judge.ts';
 import { wilsonLower, calibrationStatus } from '../server/modules/calls/stats.ts';
 import { REASON_CODES } from '../server/modules/calls/taxonomy.ts';
 
@@ -634,4 +635,90 @@ test("an outcome guess is evidenced only by the person, never by the agent's own
   const rows = await many<any>(pool, 'SELECT value, grade, evidence FROM outcome WHERE conversation_id = $1', [personsWords]);
   assert.deepEqual(rows, [{ value: 'not_now', grade: 'ai_guess', evidence: { quote: 'Abhi nahi', turn: 3, speaker: 'caller' } }]);
   assert.equal(said[3].speaker, 'caller');
+});
+
+// ---- the post-call caller-crisis judge (shared/safety/judge.ts) -------------------------------------------------------
+const INDIRECT = 'sab khatam ho gaya, ab kuch matlab nahi';   // the floor misses this; a judge may not
+const FLOOR = 'I want to kill myself';                         // the floor catches this; it is never sent to a judge
+const crisisLines = [
+  { speaker: 'agent' as const, text: 'Namaste, main Asha, Example Co. ki AI assistant.', startMs: 0 },
+  { speaker: 'caller' as const, text: 'Haan boliye.', startMs: 3000 },
+  { speaker: 'agent' as const, text: 'Aapki renewal ke baare mein call kiya tha.', startMs: 6000 },
+  { speaker: 'caller' as const, text: INDIRECT, startMs: 9000 },
+  { speaker: 'caller' as const, text: FLOOR, startMs: 12000 },
+];
+
+async function crisisCall(mode: 'shadow' | 'raise' | 'off', judge: (user: string) => string | Error, opts: { configured?: boolean } = {}) {
+  const w = await workspace();
+  const sent: string[] = [];
+  process.env[CRISIS_JUDGE.mode_env] = mode;
+  setCrisisJudgeOptions(opts.configured === false ? {} : { assumeConfigured: true });
+  setFakeLlm(req => {
+    if (req.purpose === 'safety_judge') {
+      const user = req.messages[req.messages.length - 1].content;
+      sent.push(user);
+      const r = judge(user);
+      if (r instanceof Error) throw r;
+      return { text: r, toolCalls: [], usage: { inputTokens: 40, outputTokens: 10 }, model: 'fake-judge', provider: 'fake' };
+    }
+    return llmReply({ points: [], moments: [], reasonCode: null, outcome: null })(req);
+  });
+  try {
+    const c = await call(w);
+    const ev: RuntimeEvent[] = [{ seq: 1, type: 'call.started', at: now(), manifest: manifest() },
+      { seq: 2, type: 'call.ended', at: now(), endReason: 'completed', durationS: 20, transcript: crisisLines, manifest: manifest() }];
+    await post(c.conv, ev);
+    await analysesSettled();
+    const conv = await one<any>(pool, 'SELECT analysis, flags FROM conversation WHERE id = $1', [c.conv]);
+    const safety = await many<any>(pool, 'SELECT rule, action, detail FROM call_safety_event WHERE conversation_id = $1', [c.conv]);
+    const cost = await one<any>(pool, "SELECT quantity::int AS q, detail FROM cost_line WHERE conversation_id = $1 AND detail->>'purpose' = 'safety_judge'", [c.conv]);
+    return { w, conv, safety, cost, sent };
+  } finally {
+    delete process.env[CRISIS_JUDGE.mode_env];
+    setCrisisJudgeOptions({});
+  }
+}
+const says = (u: string) => u.includes(INDIRECT) ? '{"crisis":true,"confidence":0.9,"kind":"indirect"}' : '{"crisis":false,"confidence":0.1,"kind":"none"}';
+
+test('crisis judge, shadow: recorded on the analysis only; no safety event, flag, violation or monitor input', { skip }, async () => {
+  const r = await crisisCall('shadow', says);
+  assert.deepEqual(r.safety, [], 'a shadow hit is never a call_safety_event');
+  assert.equal(r.conv.analysis.safety_violation, false);
+  assert.ok(!r.conv.flags.includes('safety'));
+  assert.deepEqual(r.conv.analysis.judge_shadow, [{ index: 3, kind: 'indirect', confidence: 0.9 }]);
+  assert.deepEqual(r.conv.analysis.judge_raised, []);
+  assert.equal(r.conv.analysis.judge_calls, 2, 'two caller lines judged; the floor line was not');
+  assert.deepEqual({ q: r.cost.q, calls: r.cost.detail.calls }, { q: 100, calls: 2 }, 'every judge call is a cost line');
+  const mon = await one<any>(pool, `SELECT count(*)::int AS n FROM conversation cv WHERE cv.workspace_id = $1 AND 'safety' = ANY(cv.flags)`, [r.w.ws]);
+  assert.equal(mon.n, 0, 'the safety_event_rate monitor sees nothing');
+});
+
+test('crisis judge, raise: one RD3 flagged safety event without the words; safety_violation true', { skip }, async () => {
+  const r = await crisisCall('raise', says);
+  assert.deepEqual(r.safety, [{ rule: 'RD3', action: 'flagged', detail: 'judge_raised kind=indirect confidence=0.9' }]);
+  assert.ok(!r.safety[0].detail.includes('khatam'), 'the detail never carries what the caller said');
+  assert.equal(r.conv.analysis.safety_violation, true);
+  assert.ok(r.conv.flags.includes('safety'));
+  assert.deepEqual(r.conv.analysis.judge_raised, [{ index: 3, kind: 'indirect', confidence: 0.9 }]);
+  assert.deepEqual(r.conv.analysis.judge_shadow, []);
+});
+
+test('crisis judge: no keys means no call; a throwing judge leaves the analysis complete and counts judge_unavailable', { skip }, async () => {
+  const none = await crisisCall('raise', says, { configured: false });
+  assert.equal(none.sent.length, 0, 'no VP_LLM_SAFETY_JUDGE_* or VP_LLM_DEFAULT_* keys: the judge is never called');
+  assert.equal(none.conv.analysis.judge_calls, 0);
+  assert.equal(none.cost, null, 'no call, no cost line');
+
+  const down = await crisisCall('raise', () => new Error('model down'));
+  assert.equal(down.conv.analysis.status, 'done', 'the analysis still completes');
+  assert.equal(down.conv.analysis.judge_unavailable, 2);
+  assert.deepEqual(down.safety, [], 'an unavailable judge changes nothing');
+  assert.equal(down.conv.analysis.safety_violation, false);
+});
+
+test('crisis judge: a line the floor already flags is never sent to the judge', { skip }, async () => {
+  const r = await crisisCall('shadow', says);
+  assert.equal(r.sent.length, 2);
+  assert.ok(r.sent.every(u => !u.includes(FLOOR)), 'the floor-flagged line never reaches a model');
+  assert.ok(r.sent.some(u => u.includes(INDIRECT)));
 });
