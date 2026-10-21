@@ -37,13 +37,13 @@ export type DoorVerdict =
 type Scope = { packs?: SectorPack[]; categories?: CallCategory[]; when?: 'crisis' | 'undisclosed' | 'unverified' | 'recordingRefused' | 'dues'; join?: 'and' | 'or' };
 interface ReplyRule {
   id: string; rule: SafetyRuleId; kind: string; action: 'block' | 'replace'; replacement?: string; reason: string;
-  scope?: Scope; any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; anchor?: number; check?: string;
+  scope?: Scope; any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; anchor?: number; coClause?: boolean; check?: string;
 }
 interface CallerRule { id: string; signal: keyof CallerSignals; any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; builtin?: string; context?: string }
 interface RedactKind { kind: keyof Rules['masks']; context: string; minDigits: number; maxDigits: number }
 interface Rules {
   schema: number; version: string;
-  regex: { clause_split: string };
+  regex: { clause_split: string; back_reference: string };
   texts: Record<string, string>;
   masks: { otp: string; card: string; cvv: string; upi_pin: string; aadhaar: string };
   lexicon: Record<string, string>;
@@ -90,20 +90,28 @@ export function normalise(text: string): string {
     .replace(/\s+/g, ' ').trim();
 }
 
-type Matchable = { any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; anchor?: number };
+type Matchable = { any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; anchor?: number; coClause?: boolean };
 
 function fires(r: Matchable, t: string, brand = ''): boolean {
   if (r.all && !r.all.every(p => re(p, brand).test(t))) return false;
   if (r.any && !r.any.some(p => re(p, brand).test(t))) return false;
   if (!r.all && !r.any) return false;
   if (r.none && r.none.some(p => re(p, brand).test(t))) return false;      // sentence-wide: a fraud warning, a factual frame
-  if (!r.noneClause) return true;
+  if (!r.noneClause && !r.coClause) return true;
   // Clause-scoped exemptions (negations) shield only the clause that holds the anchor match, so
   // "OTP nahi maangungi, bas card number bata dijiye" still fires on its second clause.
-  const shielded = (s: string) => r.noneClause!.some(p => re(p, brand).test(s));
+  const shielded = (s: string) => (r.noneClause ?? []).some(p => re(p, brand).test(s));
   const anchors = r.all ? [r.all[r.anchor ?? r.all.length - 1]] : r.any!;
   for (const p of anchors) for (const m of t.matchAll(re(p, brand, 'giu'))) {
-    if (!shielded(clauseAt(t, m.index!, m.index! + m[0].length))) return true;
+    const clause = clauseAt(t, m.index!, m.index! + m[0].length);
+    if (r.noneClause && shielded(clause)) continue;
+    // coClause: every all-group must sit in the anchor's clause ("OTP ki zaroorat nahi, bas time confirm kar dijiye"
+    // is not an OTP ask). A pronoun pointing back ("jo OTP aaya hai, woh bata dijiye") lets the previous clause count.
+    if (r.coClause && r.all && !r.all.every(q => re(q, brand).test(clause))) {
+      const back = re(RULES.regex.back_reference).test(clause) ? clauseBefore(t, m.index!) : '';
+      if (!back || (r.noneClause && shielded(back)) || !r.all.every(q => re(q, brand).test(back + ' ' + clause))) continue;
+    }
+    return true;
   }
   return false;
 }
@@ -118,6 +126,17 @@ function clauseAt(t: string, start: number, end: number): string {
   if (before.length && t.slice(prev, before[before.length - 1][0]).trim().length < 12) from = prev;
   const after = cuts.find(([s]) => s >= end);
   return t.slice(from, after ? after[0] : t.length);
+}
+
+/** The clause just before the one holding index i (for back-references). */
+function clauseBefore(t: string, i: number): string {
+  const cuts = [...t.matchAll(re(RULES.regex.clause_split, '', 'giu'))].map(m => [m.index!, m.index! + m[0].length] as const).filter(([, e]) => e <= i);
+  // Walk back over empty or tiny segments (", bas", ", aur") to the last real clause.
+  for (let k = cuts.length - 1; k >= 0; k--) {
+    const seg = t.slice(k > 0 ? cuts[k - 1][1] : 0, cuts[k][0]);
+    if (seg.trim().length >= 12 || k === 0) return seg;
+  }
+  return '';
 }
 
 /** Up to n characters before index i, cut after the last run of 3+ digits so another number's context
