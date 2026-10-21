@@ -54,7 +54,7 @@ function agentConfig(category: CallCategory, o: Partial<AgentConfig> = {}): Agen
     opening: { disclosureClause: 'shape: one light AI clause', usefulFirst: 'shape: the due date' },
     handOff: { when: ['asks_for_human'], target: { kind: 'callback' }, warmSummary: true },
     memory: { read: true, write: false, briefMaxBytes: 1200 }, limits: { maxDurationS: 300, maxSilenceS: 10, maxTurns: 40 },
-    voice: { stackId: 'v2-live' }, recording: { enabled: false, announce: false }, ...o,
+    voice: { stackId: 'v2-flashlite' }, recording: { enabled: false, announce: false }, ...o,
   };
 }
 
@@ -418,7 +418,7 @@ test('worker end to end: ticket from agent_version.config and the contact; offer
   assert.deepEqual(t.contact.facts, { due_date: '5 Nov' }, 'the offer fact never rides a service call');
   assert.equal(t.contact.memoryStatus, 'none', 'memory.brief is not registered: degrade, never crash');
   assert.equal(t.brief.text, 'compiled brief');
-  assert.equal(t.stack.id, 'v2-live');
+  assert.equal(t.stack.id, 'v2-flashlite');
   assert.equal(t.limits.maxCostInrMilli, 30_000);
   assert.equal(t.test, false);
   const a = await one<{ status: string; dispatched_at: Date | null; conversation_id: string }>(pool, 'SELECT status, dispatched_at, conversation_id FROM attempt WHERE id = $1', [id]);
@@ -886,4 +886,25 @@ test('number.list: viewer-safe, campaigns using each line, pause date, paginated
   const other = await world();
   const theirs = await registry.execute<{ numbers: any[] }>(pool, 'number.list', {}, as(other));
   assert.ok(theirs.status === 'confirmed' && !theirs.result.numbers.some(n => n.id === w.numberId), 'tenancy');
+});
+
+test('beta stacks take test calls only: G10 refuses a production dial and lets a member test through', { skip }, async () => {
+  const w = await world();
+  const beta = (await one<{ id: string }>(pool, `INSERT INTO agent_version (agent_id, number, hash, config)
+    SELECT agent_id, 9, 'hash-beta-' || gen_random_uuid(), jsonb_set(config, '{agent,voice,stackId}', '"v2-live"') FROM agent_version WHERE id = $1 RETURNING id`, [w.versionId]))!.id;
+  for (const kind of ['single', 'campaign', 'api', 'retry']) {
+    const v = await gate(await attempt(w, { version: beta, kind, contact: await addContact(w) }));
+    assert.ok(!v.allowed && v.gate === 'G10' && v.code === 'version_not_publishable' && /in beta: test calls only/.test(v.detail ?? ''), `${kind}: ${JSON.stringify(v.allowed ? 'allowed' : [v.gate, v.code, v.detail])}`);
+  }
+  const mine = phone();
+  await pool.query('INSERT INTO verified_test_phone (workspace_id, member_id, e164, verified_at) VALUES ($1,$2,$3, now())', [w.ws, w.owner, mine]);
+  const t = await gate(await attempt(w, { version: beta, kind: 'test', contact: null, toE164: mine }));
+  assert.equal(code(t), 'allowed', 'a test call to the member\'s verified phone still runs on a beta stack');
+  const sarvam = (await one<{ id: string }>(pool, `INSERT INTO agent_version (agent_id, number, hash, config)
+    SELECT agent_id, 10, 'hash-sarvam-' || gen_random_uuid(), jsonb_set(config, '{agent,voice,stackId}', '"sarvam-india"') FROM agent_version WHERE id = $1 RETURNING id`, [w.versionId]))!.id;
+  assert.equal(code(await gate(await attempt(w, { version: sarvam, contact: await addContact(w) }))), 'version_not_publishable');
+  // The launch card says so before anything dials.
+  const d = await registry.execute<{ id: string }>(pool, 'campaign.draft', { name: 'beta', category: 'service', agentVersionId: beta, capInrMilli: 100_000 }, as(w));
+  const g = await registry.execute<{ blockers: { code: string }[] }>(pool, 'campaign.get', { id: d.status === 'confirmed' ? d.result.id : '' }, as(w));
+  assert.ok(g.status === 'confirmed' && g.result.blockers.some(b => b.code === 'beta_stack'));
 });

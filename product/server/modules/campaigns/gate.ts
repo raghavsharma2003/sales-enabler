@@ -346,7 +346,10 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       if (version.config.lint && version.config.lint.ok === false) throw new Refuse('version_not_publishable', 'the version failed its lint for this category');
       const lint = lintAgentConfig(agent).filter(f => f.effect === 'refuse');
       if (lint.length) throw new Refuse('version_not_publishable', lint.map(f => f.rule).join(','));
-      if (!getStack(agent.voice?.stackId ?? '')) throw new Refuse('version_not_publishable', `unknown voice stack "${agent.voice?.stackId ?? ''}"`);
+      const stack = getStack(agent.voice?.stackId ?? '');
+      if (!stack) throw new Refuse('version_not_publishable', `unknown voice stack "${agent.voice?.stackId ?? ''}"`);
+      // decision.2026-10-21.beta-stacks-test-only: a beta stack takes test calls to a member's verified phone, nothing else.
+      if (stack.status === 'beta' && !test) throw new Refuse('version_not_publishable', `the ${stack.label} stack is in beta: test calls only`);
       const missing = (agent.sectorPacks ?? []).filter(p => p !== 'base' && !dp.sector_packs.includes(p));
       if (missing.length) throw new Refuse('pack_missing', `sector pack not active: ${missing.join(', ')}`);
     }],

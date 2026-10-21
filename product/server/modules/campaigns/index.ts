@@ -10,6 +10,7 @@ import { HttpError, type Req, type Res } from '../../http.ts';
 import { verify } from '../../runtime-client.ts';
 import { CALL_CATEGORIES, type CallCategory } from '../../../shared/agent-config.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
+import { getStack } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { tool, UnknownOutcome, type Registry, type ToolCtx } from '../../tools.ts';
@@ -76,6 +77,7 @@ export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): 
   const agent = v?.config?.agent;
   if (!v) out.push({ code: 'no_version', message: 'no published agent version is pinned', fix: 'campaign.draft agentVersionId', role: 'builder' });
   else if (!agent || !v.config.brief?.text) out.push({ code: 'version_not_publishable', message: 'the pinned version has no compiled brief', fix: 'publish the agent', role: 'builder' });
+  else if (getStack(agent.voice?.stackId ?? '')?.status === 'beta') out.push({ code: 'beta_stack', message: `the ${getStack(agent.voice.stackId)!.label} stack is in beta: test calls only`, fix: 'choose an available stack (stack.set) and publish', role: 'builder' });
   else if (agent.category !== c.call_category) out.push({ code: 'category_mismatch', message: `the agent version is for ${agent.category} calls; this campaign is ${c.call_category}`, fix: 'pin a matching version', role: 'builder' });
   if (!c.policy.capInrMilli) out.push({ code: 'no_cap', message: 'no budget cap', fix: 'campaign.draft capInrMilli (default: the estimate\'s p90)', role: 'owner' });
   try { await checkWindow(q, ws, c.call_category, c.policy.window ?? DEFAULT_WINDOWS[c.call_category], true); }

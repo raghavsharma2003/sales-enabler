@@ -48,7 +48,7 @@ function agentConfig(category: CallCategory): AgentConfig {
     opening: { disclosureClause: 'shape: one light AI clause', usefulFirst: 'shape: the due date' },
     handOff: { when: ['asks_for_human'], target: { kind: 'callback' }, warmSummary: true },
     memory: { read: true, write: false, briefMaxBytes: 1200 }, limits: { maxDurationS: 300, maxSilenceS: 10, maxTurns: 40 },
-    voice: { stackId: 'v2-live' }, recording: { enabled: false, announce: false },
+    voice: { stackId: 'v2-flashlite' }, recording: { enabled: false, announce: false },
   };
 }
 
