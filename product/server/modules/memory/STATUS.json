@@ -1,0 +1,44 @@
+{
+ "tools": [
+  "memory.extract",
+  "memory.brief",
+  "contact.memory.get",
+  "fact.approve",
+  "fact.forget",
+  "contact.memory.forget",
+  "memory.policy.get",
+  "memory.policy.set"
+ ],
+ "tests": {
+  "passed": 13,
+  "total": 13
+ },
+ "works": [
+  "write gates in code: exact caller-turn quote (dropped+counted otherwise), closed kind/key vocabulary, 60-char value lint and instruction fence, purpose must equal the call's category, lawful basis required (consent needs a granted consent_record), refused categories (health, religion, caste, politics, sex_life, biometrics, financial_account, children) by model label or code detector unless policy allows that category under the same basis",
+  "retention tiers: ephemeral never stored, call_to_call 30 d, durable 365 d (expires_at)",
+  "write tiers: auto facts unused until the per-workspace undo window passes (default 60 min); commitments wait for a member's fact.approve",
+  "contradictions: newest statement from equal/higher authority supersedes; late extraction of an older call never overrides a newer one",
+  "test calls (channel=test or run_manifest.test) skipped before any model call; live calls, minors (contact.custom.minor), agent memory.write=false, opted-out contacts skipped",
+  "idempotent per conversation (memory_extraction row with drop counts and token usage)",
+  "memory.brief: purpose-matched key=value shapes with ages, prefs > open > heard > context, <= 1200 bytes, throws BriefTooLarge (tool returns not_executed) instead of truncating; statuses ok/empty/off/off_for_agent/no_purpose/unknown_contact/unknown_agent",
+  "fact.forget and contact.memory.forget are destructive (A2), delete rows, no resurrection; DPDP forget_request recorded or completed by requestId with a counts-only receipt; optional stop-remembering gate",
+  "memory.policy.set (policy, A2): workspace switch, undo window, sensitive-category allowances (consent or legal_obligation only)",
+  "tenancy isolation tested on every tool"
+ ],
+ "untested": [
+  "real LLM extraction quality",
+  "refused-category detector precision/recall on real Hinglish/Devanagari speech",
+  "brief prefetch latency at dial time",
+  "erase_me reach beyond memory_fact (recordings, transcripts, attributes, CRM belong to other modules)",
+  "retention sweeps (expired facts are excluded from the brief but not yet deleted by a job)",
+  "14-day expiry of unreviewed proposed facts"
+ ],
+ "needs_from_others": [
+  "kernel/main: add `import { module as memory } from './memory/index.ts'` to server/modules/index.ts",
+  "calls: call registry 'memory.extract' {conversationId} after a non-test call ends (system actor); write caller turns to `turn` with speaker='caller'; mark test calls channel='test' or run_manifest.test=true; insert forget_request rows when a caller asks to be forgotten (memory completes them via contact.memory.forget {requestId})",
+  "campaigns: call 'memory.brief' {contactId, agentId} at dial time; treat not_executed or status != 'ok' as memory=not_loaded and dial without memory",
+  "agents: agent_version.config.agent.category and config.agent.memory.{read,write} are what memory reads for purpose and switches",
+  "money: price memory LLM tokens (usage is recorded on memory_extraction.usage; no cost_line is written because the LLM door does not price)",
+  "workspace/compliance UI: pages for contact.memory.get, fact.approve queue, memory.policy.get/set"
+ ]
+}

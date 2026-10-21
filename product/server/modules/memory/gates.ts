@@ -46,7 +46,7 @@ const DETECT: Record<Refused, RegExp> = {
   sex_life: /\b(sex\w*|girlfriend|boyfriend|affair|gay|lesbian|lgbt\w*|dating)\b/i,
   biometrics: /\b(fingerprint|thumb ?print|face ?id|iris|retina|biometric\w*|voice ?print|angootha)\b/i,
   financial_account: /\b(account (number|no)|a\/c|ifsc|card (number|no)|cvv|otp|upi pin|atm pin|aadhaa?r|pan (card|number|no))\b|\d(?:\s?\d){8,}|आधार|खाता संख्या/i,
-  children: /\b(beta|beti|bachch?[aeo]|bachche|bachhe|kids?|child(ren)?|son|daughter|school|baby|munna|munni)\b|बच्च|बेटा|बेटी/i,
+  children: /\b(beta|beti|bete|bachch?[aeo]|bachche|bachhe|kids?|child(ren)?|son|daughter|school|baby|munna|munni)\b|बच्च|बेटा|बेटी/i,
 };
 
 export function detectRefused(...texts: string[]): Refused[] {
