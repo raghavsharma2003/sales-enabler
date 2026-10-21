@@ -89,6 +89,19 @@ test('every reply rule in rules.json has a person-facing line on the compliance 
   for (const [k, v] of Object.entries(RULE_LABEL)) assert.ok(!/[_]|\b[a-z]+[A-Z]|\bRD\d|\(.*:/.test(v), `rule line for ${k} reads like a code: ${v}`);
 });
 
+test('Gemini goes only through Vertex: no stack routes a Gemini part through OpenRouter, and the picker never says so', async () => {
+  const { STACKS } = await import('../shared/stacks.ts');
+  const { prettyId } = await import('../web/src/catalog.ts');
+  for (const s of STACKS) {
+    const parts = Object.values(s.components as Record<string, unknown>).filter((v): v is string => typeof v === 'string');
+    for (const id of parts) {
+      assert.ok(!(/gemini/i.test(id) && /@or$/.test(id)), `${s.id}: Gemini part "${id}" goes through OpenRouter`);
+      if (/gemini/i.test(id)) assert.ok(!/openrouter/i.test(prettyId(id)), `${s.id}: "${prettyId(id)}" mentions OpenRouter`);
+    }
+    assert.ok(!/openrouter/i.test(s.label) || !/gemini/i.test(s.label.replace(/Gemini ears|Gemini voice/g, '')) , `${s.id}: label ties Gemini to OpenRouter: ${s.label}`);
+  }
+});
+
 test('no page writes from a menu: act() is never called inside an onChange of a select or input', () => {
   for (const f of readdirSync(web + 'src/pages')) {
     const txt = readFileSync(web + 'src/pages/' + f, 'utf8');
