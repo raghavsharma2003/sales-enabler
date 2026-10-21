@@ -10,8 +10,8 @@
   "memory.policy.set"
  ],
  "tests": {
-  "passed": 14,
-  "total": 14
+  "passed": 15,
+  "total": 15
  },
  "works": [
   "write gates in code: exact caller-turn quote (dropped+counted otherwise), closed kind/key vocabulary, 60-char value lint and instruction fence, purpose must equal the call's category, lawful basis required (consent needs a granted consent_record), refused categories (health, religion, caste, politics, sex_life, biometrics, financial_account, children) by model label or code detector unless policy allows that category under the same basis",
@@ -24,7 +24,8 @@
   "fact.forget and contact.memory.forget are destructive (A2), delete rows, no resurrection; DPDP forget_request recorded or completed by requestId with a counts-only receipt; optional stop-remembering gate",
   "memory.policy.set (policy, A2): workspace switch, undo window, sensitive-category allowances (consent or legal_obligation only)",
   "tenancy isolation tested on every tool",
-  "memory.extract asks the model in prepare() outside any transaction; run() re-reads every gate input under a row lock and commits nothing if the transcript changed since the model saw it (failed runs are retryable)"
+  "memory.extract asks the model in prepare() outside any transaction; run() re-reads every gate input under a row lock and commits nothing if the transcript changed since the model saw it (failed runs are retryable)",
+  "forgetContactMemory(q, workspaceId, contactId) in server/modules/memory/forget.ts (also re-exported from index.ts): deletes all of a contact's facts on the caller's Queryable, joining its transaction; used by contact.memory.forget"
  ],
  "untested": [
   "real LLM extraction quality",

@@ -3,10 +3,11 @@
 import { test, before, after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import type pg from 'pg';
-import { createPool, one } from '../server/db.ts';
+import { createPool, one, tx } from '../server/db.ts';
 import { setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { Registry, type Actor } from '../server/tools.ts';
 import { module as memory, compileBrief, BriefTooLarge, detectRefused } from '../server/modules/memory/index.ts';
+import { forgetContactMemory } from '../server/modules/memory/forget.ts';
 import { BRIEF_MAX_BYTES } from '../shared/agent-config.ts';
 
 const URL_ = process.env.DATABASE_URL;
@@ -355,4 +356,24 @@ test('the model is asked outside any transaction; a transcript changed meanwhile
   assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM memory_fact WHERE conversation_id = $1', [conv2]))!.n, '0');
   llmSays([TIME]);
   assert.equal((await extract(w, conv2)).status, 'done', 'a failed run can be retried');
+});
+
+test('forgetContactMemory joins the caller transaction: rollback keeps facts, commit removes them for good', { skip }, async () => {
+  const w = await world({ undoMinutes: 0 });
+  llmSays([{ ...LANG, value: 'en' }]);
+  await extract(w, await call(w, [['caller', 'mujhe Hindi mein baat karna pasand hai']], { startedAt: new Date(Date.now() - 86_400_000) }));
+  llmSays([LANG, TIME]);
+  await extract(w, await call(w, TURNS));
+  const other = await world({ undoMinutes: 0 });
+  llmSays([LANG]);
+  await extract(other, await call(other, TURNS));
+
+  await assert.rejects(tx(pool, async c => { assert.equal((await forgetContactMemory(c, w.ws, w.contact)).facts, 3); throw new Error('caller rolls back'); }));
+  assert.match((await briefText(w)).text, /language=hi/, 'a rolled-back caller transaction forgets nothing');
+
+  assert.equal((await tx(pool, c => forgetContactMemory(c, other.ws, w.contact))).facts, 0, 'another workspace cannot forget your contact');
+  assert.equal((await tx(pool, c => forgetContactMemory(c, w.ws, w.contact))).facts, 3);
+  assert.equal((await briefText(w)).status, 'empty');
+  assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM memory_fact WHERE contact_id = $1', [w.contact]))!.n, '0');
+  assert.match((await briefText(other)).text, /language=hi/, 'other contacts are untouched');
 });

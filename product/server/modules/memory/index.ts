@@ -11,6 +11,7 @@ import { complete } from '../../llm.ts';
 import { tool, type PrepareCtx, type Registry, type ToolCtx } from '../../tools.ts';
 import { bool, num, obj, opt, record, str, uuid } from '../../../shared/validate.ts';
 import { compileBrief, type BriefFact } from './brief.ts';
+import { forgetContactMemory } from './forget.ts';
 import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
 
 interface Policy { enabled: boolean; undoMinutes: number; allowedCategories: Record<string, string> }
@@ -212,10 +213,10 @@ async function forgetContact(ctx: ToolCtx, i: { contactId: string; requestId?: s
     reqId = (await one<{ id: string }>(q, `INSERT INTO forget_request (workspace_id, contact_id, scope, requested_via, evidence) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
       [ws, i.contactId, i.scope, i.via, i.evidence ? JSON.stringify({ note: i.evidence }) : null]))!.id;
   }
-  const del = await q.query('DELETE FROM memory_fact WHERE workspace_id = $1 AND contact_id = $2', [ws, i.contactId]);
+  const del = await forgetContactMemory(q, ws, i.contactId);
   if (i.stopRemembering) await q.query('INSERT INTO memory_optout (workspace_id, contact_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [ws, i.contactId]);
   // Reach of this module: memory facts. Recordings, transcripts, attributes and CRM are other modules' surfaces.
-  const receipt = { factsRemoved: del.rowCount ?? 0, surfaces: { memory_fact: 'removed' }, stopRemembering: i.stopRemembering,
+  const receipt = { factsRemoved: del.facts, surfaces: { memory_fact: 'removed' }, stopRemembering: i.stopRemembering,
     notReachedHere: i.scope === 'erase_me' ? ['recordings', 'transcripts', 'attributes', 'crm'] : [] };
   await q.query("UPDATE forget_request SET status = 'done', done_at = now(), receipt = $3 WHERE id = $1 AND workspace_id = $2", [reqId, ws, JSON.stringify(receipt)]);
   return { requestId: reqId, ...receipt };
@@ -318,3 +319,4 @@ export const module: Module = {
 
 export { compileBrief, BriefTooLarge } from './brief.ts';
 export { gate, detectRefused } from './gates.ts';
+export { forgetContactMemory } from './forget.ts';
