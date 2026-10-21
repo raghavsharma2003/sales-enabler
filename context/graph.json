@@ -15348,6 +15348,15 @@
    "date": "2026-10-21",
    "title": "Dashboard walkthrough analysis complete (wf_fcd977b3-a09, 30/30 agents, 0 errors). Stages: 23 Sonnet screen readers over 207 screenshots; 6 Sonnet vendor analysts that read 219 text captures and opened 141 screenshots directly (344 claims, 346 captured defaults); 1 Opus extra-high synthesis that re-opened 84 screenshots and corrected 9 analyst claims. About 5.0M subagent tokens over 74 min. Outputs are in research/2026-10-21/walkthroughs/ (per-vendor report.md, claims.json, defaults.json; SYNTHESIS.md).",
    "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"
+  },
+  {
+   "id": "directive.2026-10-21.blueprint-end-to-end",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-21",
+   "title": "Owner: analyse all the REA research and Instinct's walk-throughs deeply. Understand these players, then design a product better than them in every sense: UI, UX, product design, cost, speed, user flow, convenience, usability, vibe and results. It must carry everything discussed before:\n- self-learning calling voice AI;\n- personalisation;\n- emotional, expressive, relational, human-like voice;\n- meeting every client requirement with great results;\n- omni-channel data and what is useful in it;\n- an LLM-driven application where VP's agents handle everything and the client just talks;\n- campaigns handled end to end, with a full view of each campaign and each call and AI analysis of them.\nDeliver a thoughtful, deep, end-to-end product blueprint, shown visually for fast review (the owner is a visual learner). Keep learning from these companies always.",
+   "quote": "analyze the whole rea u did and the instinct too deeply and then we understand these players deeply and create a better product then them in every sense ... make a blue print of the product from start to end, and we need to learn and get the best from all these companies always. create a very thoughtful and deep blue print end to end, show me that blue print in a visual way so i can see it and review it fast(im a visual learner)"
   }
  ],
  "edges": [
@@ -28047,6 +28056,21 @@
    "from": "evidence.2026-10-21.wt-workflow-run",
    "to": "open.2026-10-20.product-decision",
    "relation": "informs"
+  },
+  {
+   "from": "directive.2026-10-21.blueprint-end-to-end",
+   "to": "decision.2026-10-20.blueprint-frame",
+   "relation": "confirms"
+  },
+  {
+   "from": "directive.2026-10-21.blueprint-end-to-end",
+   "to": "open.2026-10-20.product-decision",
+   "relation": "advances"
+  },
+  {
+   "from": "directive.2026-10-21.blueprint-end-to-end",
+   "to": "directive.2026-10-20.intent-better-product",
+   "relation": "extends"
   }
  ]
 }
