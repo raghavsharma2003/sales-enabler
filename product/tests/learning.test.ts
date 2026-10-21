@@ -11,7 +11,7 @@ import { tool, type Actor, type Registry } from '../server/tools.ts';
 import { any, obj, str, uuid } from '../shared/validate.ts';
 import type { Job } from '../server/jobs.ts';
 import type { AgentConfig } from '../shared/agent-config.ts';
-import { bindLearning, module as learning } from '../server/modules/learning/index.ts';
+import { bindLearning, checkRunning, module as learning } from '../server/modules/learning/index.ts';
 import { runGates } from '../server/modules/learning/gates.ts';
 import { powerPlan } from '../server/modules/learning/stats.ts';
 
@@ -143,6 +143,7 @@ async function runningExperiment(t: Awaited<ReturnType<typeof workspace>>, desig
   const st = await t.call('experiment.start', { experimentId: accepted.result.experimentId });
   const started = await t.approve(st.actionId);
   assert.equal(started.status, 'confirmed', JSON.stringify(started));
+  assert.equal(started.result.state, 'running', JSON.stringify(started.result));
   return { pid, accepted: accepted.result, started: started.result, experimentId: accepted.result.experimentId as string };
 }
 
@@ -335,8 +336,9 @@ test('hazard stop: complaints on the treatment arm stop it at once and revert th
   assert.ok(arms.dialed.treatment! >= 5);
   const contacts = await newContacts(t.ws, 1);
   const before = reverts.length;
-  const job = jobs.find(j => j.name === 'learning.check')!;
-  await job.run({ pool, registry } as any);            // the background job checks every running experiment
+  assert.ok(jobs.find(j => j.name === 'learning.check'), 'learning.check is a registered job');
+  // The job body, scoped to this workspace: unscoped it would check every suite's experiments on the shared database.
+  assert.deepEqual(await checkRunning({ pool, registry }, { workspaceId: t.ws }), { checked: 1 });
   const r = await t.call('experiment.check', { experimentId });
   assert.equal(r.result.state, 'stopped_guardrail', JSON.stringify(r.result));
   const stored = await one<{ result: any }>(pool, 'SELECT result FROM experiment WHERE id = $1', [experimentId]);
@@ -475,7 +477,8 @@ test('cross-module: conversations written the way calls writes them trip the haz
   // Hazard: END_OPTED_OUT on the treatment arm stops it at once.
   const h = await setup();
   const acc2 = await h.t.approve((await h.t.call('proposal.accept', { proposalId: h.pid, mdeAbs: 0.05, minDays: 0 })).actionId);
-  await h.t.approve((await h.t.call('experiment.start', { experimentId: acc2.result.experimentId })).actionId);
+  const st2 = await h.t.approve((await h.t.call('experiment.start', { experimentId: acc2.result.experimentId })).actionId);
+  assert.equal(st2.result.state, 'running', JSON.stringify(st2.result));
   await dialUntil(h.t, s => s.dialed.treatment! >= 5 && s.dialed.control! >= 5, () => null, arm => (arm === 'treatment' ? 'END_OPTED_OUT' : null));
   const stop = await h.t.call('experiment.check', { experimentId: acc2.result.experimentId });
   assert.equal(stop.result.state, 'stopped_guardrail', JSON.stringify(stop.result));

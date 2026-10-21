@@ -72,7 +72,7 @@
       "tests/learning.stats.test.ts",
       "tests/learning.test.ts"
     ],
-    "method": "node --import tsx --test tests/learning*.test.ts against vp_mod_learning, 2 consecutive green runs; tsc clean"
+    "method": "learning.test.ts 30/30 in a loop on vp_mod_learning; full suite tests/*.test.ts 284/284 twice on one shared database (vp_suite_shared); tsc clean"
   },
   "works": [
     "Propose: evidence = open issues, moments (by hazard), recent live calls with judge results, and the workspace's lessons; the LLM (purpose 'learning', JSON) returns ops on the latest version's config; every cited id is checked against this workspace's own rows; uncited proposals are gated out",
@@ -108,7 +108,7 @@
     {
       "name": "learning.check",
       "everyMs": 60000,
-      "does": "experiment.check on every running experiment, each in its own workspace (guardrails, expiry, horizon)"
+      "does": "checkRunning(deps, {workspaceId?}): experiment.check on every running experiment, each in its own workspace; tests pass workspaceId"
     }
   ]
 }

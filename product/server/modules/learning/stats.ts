@@ -135,8 +135,8 @@ export interface AaResult {
 
 /** Shadow A/A: re-randomise the tenant's own units into two shadow arms `runs` times and run the production test on
  *  each split. Both arms ran the same version, so every "winner" is false; the rate estimates the procedure's real
- *  false-winner rate on this tenant's data. The plumbing check fails when outcomes are missing too often or unevenly
- *  (an outcome writer that writes for some calls only). The rate is judged by its one-sided 99% Wilson lower bound:
+ *  false-winner rate on this tenant's data. The plumbing check fails when outcomes are missing too often
+ *  (an outcome writer that writes for few calls). The rate is judged by its one-sided 99% Wilson lower bound:
  *  with 1,000 re-randomisations the point estimate alone breached 6.5% on 2-6% of clean iid datasets (measured,
  *  100 salts each at n = 120 / 300 / 1,000), which would block healthy tenants for Monte Carlo noise. */
 export function shadowAA(units: AaUnit[], o: { runs?: number; alpha?: number; salt?: string; minUnits?: number; maxFalseRate?: number; minCoverage?: number } = {}): AaResult {
@@ -161,8 +161,9 @@ export function shadowAA(units: AaUnit[], o: { runs?: number; alpha?: number; sa
   const falseWinnerRateLower = runs ? wilson(falseWinners, runs, 2.326347874040841).lo : 0;
   if (scored.length < minUnits) reasons.push(`only ${scored.length} contacts with a recorded outcome; the shadow A/A needs ${minUnits}`);
   if (coverage < minCoverage) reasons.push(`outcomes recorded for ${(coverage * 100).toFixed(1)}% of calls (need ${minCoverage * 100}%): check the outcome writer`);
-  if (coverageImbalanceP < 0.01) reasons.push('outcomes are recorded unevenly across shadow arms: check the outcome writer');
   if (falseWinnerRateLower > maxFalse) reasons.push(`false-winner rate ${(falseWinnerRate * 100).toFixed(1)}% (99% lower bound ${(falseWinnerRateLower * 100).toFixed(1)}%) exceeds ${maxFalse * 100}%`);
-  const plumbingOk = coverage >= minCoverage && coverageImbalanceP >= 0.01;
+  // coverageImbalanceP is reported, never gated on: both shadow arms come from a hash of the contact id, so an outcome
+  // writer bug cannot correlate with them, and a p < 0.01 gate only fired by chance (13 of 2,000 healthy datasets).
+  const plumbingOk = coverage >= minCoverage;
   return { units: scored.length, runs, falseWinners, falseWinnerRate, falseWinnerRateLower, coverage, coverageImbalanceP, plumbingOk, passed: reasons.length === 0, reasons };
 }

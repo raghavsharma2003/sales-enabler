@@ -463,6 +463,17 @@ function publicExperiment(e: ExperimentRow) {
   return { ...rest, result: shown, callsToProve: e.design?.plan?.total };
 }
 
+// ---------- the background job ----------
+
+/** The learning.check job body: experiment.check on every running experiment, each inside its own workspace.
+ *  Pass workspaceId to sweep one workspace only (tests on the shared suite database must). */
+export async function checkRunning(deps: { pool: pg.Pool; registry: Registry }, opts: { workspaceId?: string } = {}): Promise<{ checked: number }> {
+  const running = await many<{ id: string; workspace_id: string }>(deps.pool,
+    `SELECT id, workspace_id FROM experiment WHERE state = 'running' AND ($1::uuid IS NULL OR workspace_id = $1) ORDER BY started_at LIMIT 500`, [opts.workspaceId ?? null]);
+  for (const e of running) await deps.registry.execute(deps.pool, 'experiment.check', { experimentId: e.id }, { workspaceId: e.workspace_id, actor: SYSTEM });
+  return { checked: running.length };
+}
+
 // ---------- the module ----------
 
 export const module: Module = {
@@ -510,14 +521,7 @@ export const module: Module = {
   routes(_router, deps) { bound = { pool: deps.pool, registry: deps.registry }; },
   jobs(deps) {
     bound = { pool: deps.pool, registry: deps.registry };
-    return [{
-      name: 'learning.check', everyMs: 60_000,
-      // Guardrails and horizons for every running experiment, each checked inside its own workspace.
-      run: async d => {
-        const running = await many<{ id: string; workspace_id: string }>(d.pool, "SELECT id, workspace_id FROM experiment WHERE state = 'running' ORDER BY started_at LIMIT 500");
-        for (const e of running) await d.registry.execute(d.pool, 'experiment.check', { experimentId: e.id }, { workspaceId: e.workspace_id, actor: SYSTEM });
-      },
-    }];
+    return [{ name: 'learning.check', everyMs: 60_000, run: async d => { await checkRunning(d); } }];
   },
 };
 

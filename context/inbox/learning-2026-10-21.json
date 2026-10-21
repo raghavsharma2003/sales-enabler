@@ -68,6 +68,26 @@
       "title": "Learning's success metric uses each business's outcome_definition.goal_values (never a literal) and counts only contacts with a recorded outcome (verified, manager, or a trusted judge's guess); guardrails use catalogue reason codes END_OPTED_OUT, CONV_COMPLAINT, END_CRISIS on every live contact.",
       "rationale": "The calls builder found the earlier defaults ('success', 'opt_out'/'complaint') matched nothing calls writes, which silently disabled the decision and the hazard stop; untrusted AI guesses must never feed experiments (blueprint F4).",
       "reverse_if": "Calls changes where outcomes or reason codes live, or a validated leading indicator is approved as a primary metric for a tenant."
+    },
+    {
+      "id": "rejected.2026-10-21.aa-coverage-imbalance-gate",
+      "type": "rejection",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Rejected: gating the shadow A/A on outcome-coverage imbalance across the shadow split (two-proportion p < 0.01).",
+      "tried": "shadowAA() failed the plumbing check when the share of calls with an outcome differed between the two hash-split shadow arms at p < 0.01.",
+      "broke": "The shadow arms are a hash of the contact id, so a real outcome-writer bug cannot correlate with them. The gate fired only by chance: 13 of 2,000 healthy datasets (150 contacts, 20 without an outcome). Each firing left the experiment unlaunched (aa_failed plus an issue), and it was the likely cause of the learning CI flake at 7bec779. The overall coverage floor is kept; the imbalance p is still reported."
+    },
+    {
+      "id": "measure.2026-10-21.aa-imbalance-false-fail",
+      "type": "measurement",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Shadow A/A on healthy synthetic history (150 contacts, 30 successes, 20 without an outcome, random ids and salts): the coverage-imbalance gate fired 13/2,000 (runs 200) and 6/1,000 (runs 1,000). With the gate removed, 0/1,000 shadow A/A runs failed. Afterwards learning.test.ts passed 30/30 in a loop and the full suite passed 284/284 twice on one shared database.",
+      "n": 3000,
+      "method": "shadowAA() in product/server/modules/learning/stats.ts, scratch script in the coding sandbox; node --test loops"
     }
   ],
   "edges": [
@@ -100,6 +120,16 @@
       "from": "decision.2026-10-21.learning-counts-outcome-calls",
       "to": "component.2026-10-21.learning-module",
       "relation": "constrains"
+    },
+    {
+      "from": "rejected.2026-10-21.aa-coverage-imbalance-gate",
+      "to": "measure.2026-10-21.aa-imbalance-false-fail",
+      "relation": "derived-from"
+    },
+    {
+      "from": "rejected.2026-10-21.aa-coverage-imbalance-gate",
+      "to": "component.2026-10-21.learning-module",
+      "relation": "informs"
     }
   ],
   "events": [
