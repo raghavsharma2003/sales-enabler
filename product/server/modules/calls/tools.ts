@@ -182,7 +182,7 @@ export function registerTools(r: Registry): void {
     },
   }));
 
-  // ---- outcome.define (A2: changes how every call is scored) ------------------------------------------------
+  // ---- outcome.define (draft per the tool registry: everyday work, kept in version history) ----------------------
   const defineIn = obj({
     id: opt(uuid()), name: str({ min: 1, max: 80 }), question: str({ min: 3, max: 300 }),
     allowedValues: arr(str({ min: 1, max: 60, pattern: /^[a-z0-9_]+$/ }), { min: 2, max: 20 }),
@@ -191,7 +191,7 @@ export function registerTools(r: Registry): void {
     campaignId: opt(uuid()),
   });
   r.register(tool(defineIn, {
-    name: 'outcome.define', risk: 'policy', summary: 'Define (or change) what counts as an outcome and which values reach the goal',
+    name: 'outcome.define', risk: 'draft', summary: 'Define (or change) what counts as an outcome and which values reach the goal',
     describe: i => `${i.id ? 'Change' : 'Create'} the outcome "${i.name}": ${i.allowedValues.join(', ')}; goal = ${i.goalValues.join(', ')}; verified by ${i.verifiedBy ?? 'nothing yet (outcomes stay AI guesses)'}`,
     version: async (ctx, i) => i.id ? String((await one<{ version: number }>(ctx.q, 'SELECT version FROM outcome_definition WHERE id = $1 AND workspace_id = $2', [i.id, ctx.workspaceId]))?.version ?? 'missing') : 'new',
     run: async (ctx, i) => {
@@ -253,13 +253,13 @@ export function registerTools(r: Registry): void {
     },
   }));
 
-  // ---- judge.edit (A2) and judge.calibrate ------------------------------------------------------------------
+  // ---- judge.edit (draft per the tool registry; each edit is a new pinned version) and judge.calibrate ---------------
   const judgeIn = obj({ outcomeDefinitionId: uuid(), name: str({ min: 1, max: 80 }), model: str({ min: 1, max: 120, desc: 'dated model id the judge is pinned to' }),
     instructions: str({ max: 2000 }) });
   const judgeNumber = async (ctx: ToolCtx, def: string) => (await one<{ n: number }>(ctx.q,
     'SELECT coalesce(max(number), 0) AS n FROM judge_version WHERE workspace_id = $1 AND outcome_definition_id = $2', [ctx.workspaceId, def]))!.n;
   r.register(tool(judgeIn, {
-    name: 'judge.edit', risk: 'policy', summary: 'Create a new pinned version of the judge that guesses an outcome; it starts uncalibrated',
+    name: 'judge.edit', risk: 'draft', summary: 'Create a new pinned version of the judge that guesses an outcome; it starts uncalibrated',
     describe: i => `New version of judge "${i.name}" pinned to ${i.model}, temperature 0. It is uncalibrated until it agrees with verified or human labels.`,
     version: async (ctx, i) => String(await judgeNumber(ctx, i.outcomeDefinitionId)),
     run: async (ctx, i) => {

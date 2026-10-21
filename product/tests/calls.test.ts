@@ -336,23 +336,24 @@ test('an opt_out moment reaches contact.suppress_after_opt_out as A3, or stays p
 });
 
 // ---- outcomes, judges, calibration, funnel -------------------------------------------------------------------------
-test('outcome.define needs approval; verified outcomes only from a system key; judges calibrate on human labels; funnel counts by grade', { skip }, async () => {
+test('outcome.define and judge.edit run as drafts and are audited; verified outcomes only from a system key; judges calibrate on human labels; funnel counts by grade', { skip }, async () => {
   const w = await workspace();
-  const p = await registry.execute<any>(pool, 'outcome.define', { name: 'Renewal', question: 'Did they renew?', allowedValues: ['renewed', 'later', 'no'], goalValues: ['renewed'], verifiedBy: 'payment_webhook', campaignId: w.campaign },
+  const a = await registry.execute<any>(pool, 'outcome.define', { name: 'Renewal', question: 'Did they renew?', allowedValues: ['renewed', 'later', 'no'], goalValues: ['renewed'], verifiedBy: 'payment_webhook', campaignId: w.campaign },
     { workspaceId: w.ws, actor: w.member });
-  assert.equal(p.status, 'needs_approval');
-  if (p.status !== 'needs_approval') return;
-  const a = await registry.approve<any>(pool, p.actionId, { workspaceId: w.ws, memberId: w.owner });
   assert.equal(a.status, 'confirmed', JSON.stringify(a));
   if (a.status !== 'confirmed') return;
+  assert.equal(a.mode, 'A1', 'defining success is everyday work (draft), kept in version history');
   const def = a.result.outcomeDefinitionId;
+  const viewer = await one<{ id: string }>(pool, "INSERT INTO member (workspace_id, email, role) VALUES ($1,$2,'viewer') RETURNING id", [w.ws, `v${Math.random()}@example.test`]);
+  const byViewer = await registry.execute(pool, 'outcome.define', { name: 'X', question: 'Did they?', allowedValues: ['a', 'b'], goalValues: ['a'] },
+    { workspaceId: w.ws, actor: { type: 'member', id: viewer!.id, role: 'viewer' } });
+  assert.equal(byViewer.status, 'not_executed', 'a viewer cannot define outcomes');
 
-  const j = await registry.execute<any>(pool, 'judge.edit', { outcomeDefinitionId: def, name: 'Renewal judge', model: 'analyst-2026-10-01', instructions: 'Renewed only if they say they paid.' }, { workspaceId: w.ws, actor: w.member });
-  assert.equal(j.status, 'needs_approval');
-  if (j.status !== 'needs_approval') return;
-  const ja = await registry.approve<any>(pool, j.actionId, { workspaceId: w.ws, memberId: w.owner });
+  const ja = await registry.execute<any>(pool, 'judge.edit', { outcomeDefinitionId: def, name: 'Renewal judge', model: 'analyst-2026-10-01', instructions: 'Renewed only if they say they paid.' }, { workspaceId: w.ws, actor: w.member });
   assert.equal(ja.status, 'confirmed');
   const judgeId = ja.status === 'confirmed' ? ja.result.judgeVersionId : '';
+  const audited = await one<any>(pool, "SELECT count(*)::int AS n FROM audit_event WHERE workspace_id = $1 AND action IN ('outcome.define','judge.edit')", [w.ws]);
+  assert.equal(audited.n, 2, 'both changes are in the audit trail');
 
   // Four calls: the judge guesses each; a webhook verifies two, a manager labels one, one stays a guess.
   const guesses = ['renewed', 'renewed', 'later', 'no'];

@@ -76,6 +76,16 @@
       "title": "The runtime hook verifies the HMAC over the exact raw request bytes (Router rawBody), before parsing",
       "rationale": "The kernel now gives routes the raw body. Verifying the exact bytes removes the compact-JSON serialisation rule, and a whitespace-only change now fails (tested).",
       "reverse_if": "Never, short of a protocol change to a signed canonical form."
+    },
+    {
+      "id": "decision.2026-10-21.calls-outcome-judge-edits-are-draft",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "outcome.define and judge.edit are risk 'draft' (owner, builder, operator; A1, audited, versioned), matching the tool registry, not 'policy'",
+      "rationale": "The tool registry sets the risk class and puts both at draft: defining success is everyday work. Each judge edit is a new pinned version that starts uncalibrated, and an AI guess counts only once its judge is trusted, so a careless edit cannot inflate results. Blueprint F3 described an A2 card for outcome definitions; the registry is the later source.",
+      "reverse_if": "A sector pack or regulator needs sign-off on what counts as a sale or a resolution, or owners report outcome definitions changed without their knowledge; then raise both tools to policy, or add a workspace setting that does."
     }
   ],
   "edges": [
