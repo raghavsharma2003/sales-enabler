@@ -1,0 +1,33 @@
+{
+  "module": "operator",
+  "tools": ["brief.today", "thread.list", "thread.get", "operator.settings.get", "operator.brain.set", "operator.autonomy.lower", "operator.autonomy.raise", "operator.preference.list", "operator.preference.remember", "operator.preference.forget"],
+  "routes": ["POST /v1/operator/threads", "GET /v1/operator/threads/:id", "POST /v1/operator/threads/:id/messages (text/event-stream: message, delta, step, card, notice, error, done)"],
+  "migrations": ["0500_operator.sql"],
+  "tests": { "passed": 16, "total": 16, "file": "tests/operator.test.ts", "db": "vp_mod_operator on the throwaway cluster" },
+  "works": [
+    "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
+    "Receipts become cards stored as thread messages: needs_approval -> approval card (action id, plain summary, risk chip, args diff, roles that may approve, expiry); confirmed -> receipt (reads are not receipted); not_executed -> receipt with the reason in plain words; unknown -> receipt that says it will not be retried",
+    "Plans: operator_plan validates every step first, shows a plan card (which run now, which wait for a tap, which are refused), runs A1 steps, proposes the first step that needs a tap and holds the rest; the card is updated in place",
+    "A0: operator.autonomy.lower holds every draft and test the Operator makes for a tap (wrapping execute: a kernel action row, approved through /v1/actions/:id/decide); lowering and forgetting are exempt; raising back is a policy A2",
+    "Caps per turn: 6 model calls, 10 tool calls, 60k tokens, 8 plan steps; a cap ends the turn with a plain notice",
+    "Every model call writes a cost_line (component platform, tokens, priced from VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_IN/OUT; inr 0 and detail.priced=false when unset)",
+    "Injection: tool results and uploads are wrapped in <data trust=untrusted> blocks, instruction-like text is flagged, a closing tag inside data is defused; a test with a maximally obedient fake model shows a malicious tool result cannot run an A2, invent an approve tool or smuggle actor/approval fields",
+    "Tenancy: thread, message, preference and brief queries filter by workspace_id; tested across two workspaces",
+    "brief.today: needs-a-tap (top 7 by risk), live campaigns, spend today in IST by component, wallet, open issues, audit changes since a time"
+  ],
+  "untested": [
+    "Against a real model: only setFakeLlm scripts were run; no Operator bench (300 keyed + 50 adversarial) exists yet",
+    "Incremental streaming: frames are produced as the turn runs but the kernel router sends one buffered body",
+    "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",
+    "Thread summary recompaction beyond the last 12 messages; the 24k compile budget",
+    "operator.brain.set stores the choice but the LLM door has no per-request model selection, so it does not change which model runs yet",
+    "Concurrent turns in one thread"
+  ],
+  "needs_from_others": [
+    "kernel (server/http.ts): a streaming response (e.g. Res.stream(write) or access to ServerResponse) so POST /v1/operator/threads/:id/messages can flush SSE frames as runTurn emits them",
+    "kernel (server/llm.ts): a streaming completion (text deltas) and a per-request brain/model override so operator.brain.set takes effect",
+    "kernel (server/tools.ts approve): check canApprove for every risk class, not only A2 ones; today any active member, a viewer included, could approve an A0-held draft",
+    "kernel (server/modules/index.ts): add `import { module as operator } from './operator/index.ts'` to the modules list",
+    "web: render cards (approval hold-to-confirm, receipt, plan) from the SSE frames and the thread GET"
+  ]
+}

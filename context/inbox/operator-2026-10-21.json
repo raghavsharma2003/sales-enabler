@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-21.operator-module",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Operator module: threads, SSE turn, tool loop with role-filtered tools, approval/receipt/plan cards, A0 wrap, per-turn caps, cost lines (16/16 tests with a scripted model; no real-model run)",
+      "path": "product/server/modules/operator/"
+    },
+    {
+      "id": "decision.2026-10-21.operator-plan-stops-at-first-tap",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "An Operator plan runs its A1 steps in order and stops at the first step that needs a tap; later steps are held, not pre-proposed",
+      "rationale": "Later steps often depend on the result of the approved one; proposing them early would bind approvals to args computed before the tap. There is no resume yet, so held steps are re-planned on the next message.",
+      "reverse_if": "Plans with several independent A2 steps are common in the Operator bench, or a plan-resume after approval is built (then 'Approve plan' under one hash, workspace.md §4.4)"
+    },
+    {
+      "id": "decision.2026-10-21.operator-a0-in-module",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "A0 ('ask before drafts') is enforced in the Operator module by writing a kernel action row for draft/test calls; lowering autonomy and forgetting a preference are exempt; raising back to A1 is a policy A2",
+      "rationale": "The owner's brief says enforce by wrapping execute for Operator calls; the kernel's approve path then runs the action once, hash-bound.",
+      "reverse_if": "A0 must also bind non-Operator callers (API, UI), in which case it moves into Registry.execute"
+    },
+    {
+      "id": "risk.2026-10-21.kernel-approve-draft-any-member",
+      "type": "risk",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Registry.approve checks approver roles only for A2 risk classes, so any active member (a viewer too) can approve an A0-held draft",
+      "mitigation": "Kernel: check canApprove(role, risk) for every class in approve(); listed in operator STATUS.json needs_from_others"
+    }
+  ],
+  "edges": [
+    { "from": "component.2026-10-21.operator-module", "to": "evidence.2026-10-21.vp-blueprint", "relation": "implements" },
+    { "from": "decision.2026-10-21.operator-plan-stops-at-first-tap", "to": "component.2026-10-21.operator-module", "relation": "part-of" },
+    { "from": "decision.2026-10-21.operator-a0-in-module", "to": "component.2026-10-21.operator-module", "relation": "part-of" },
+    { "from": "risk.2026-10-21.kernel-approve-draft-any-member", "to": "component.2026-10-21.operator-module", "relation": "informs" }
+  ],
+  "events": [
+    { "date": "2026-10-21", "event": "operator-module-built", "details": "Operator module (threads, SSE turn, tool loop, cards, A0, caps, cost lines, brief.today and 9 more tools) built; tsc clean; 16/16 node tests green against vp_mod_operator with a scripted model. Not verified: any real model, incremental streaming (kernel router buffers), conduct predicates." }
+  ]
+}
