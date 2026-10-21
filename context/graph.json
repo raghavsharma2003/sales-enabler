@@ -16851,6 +16851,26 @@
    "n": 7,
    "method": "Read 7 re-shot screenshots at dd274a3 (approval-d, call-d, operator-plan-d, campaign-draft-d, settings-activity-m, agent-stack-d, contact-d) and checked each against decision.2026-10-21.no-developer-text-in-ui. Leaks found:\n- activity feed: tool ids with the dots turned into spaces ('ran test simulate', 'VP ran attempt retry per ladder');\n- call page: 'did not return JSON' and 'None; they are suppressed';\n- cost basis: a file path and an ISO date;\n- stack card: 'first token', 'bake-off', 'ungated', 'the owner's pick';\n- contact page: 'Asia/Kolkata', 'Dnd unknown', the raw code 'te', ISO dates, 'Fresh: No';\n- campaign header: 'policy v1'.\nThe browser scan missed them because it only matched dotted tool ids. Not reviewed: the other 19 screen pairs.",
    "value": "first-review leaks fixed; 6 screen groups still leaking; scan gap found"
+  },
+  {
+   "id": "rejected.2026-10-21.shadow-judge-as-safety-event",
+   "type": "rejection",
+   "title": "A runtime shadow judge that waits before speaking and logs its guesses as safety events",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop review of 776b195",
+   "tried": "The voice runtime attached the crisis judge's task to every reply whenever its mode was not 'off', and awaited it before the first sentence. It emitted judge_shadow and judge_unavailable as `safety` RD3 'flagged' events.",
+   "broke": "Two things, both caught in review before any keys were set:\n- In shadow mode every turn could wait up to 800 ms for a verdict that cannot change anything.\n- calls/ingest.ts turns every `safety` event into a call_safety_event row and the 'safety' flag. That drives analysis.safety_violation (learning's guardrail) and the safety_event_rate monitor. So every judge timeout and every shadow guess would have marked a call unsafe and moved experiments.",
+   "instead": "Only mode 'raise' gates the reply; shadow runs fire-and-forget. Only judge_raised becomes a `safety` event (RD3 suspended_goal). Shadow and unavailable outcomes go to a separate `judge` runtime event, stored in call_judge_event, which nothing counts as safety (decision.2026-10-21.judge-shadow-never-a-safety-event)."
+  },
+  {
+   "id": "risk.2026-10-21.raise-mode-reply-wait",
+   "type": "risk",
+   "title": "In raise mode, each reply's first sentence waits for the crisis judge, up to its 800 ms timeout, so the judge's latency beyond the brain's first sentence adds to the reply gap on every turn.",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "mitigation": "Measure it before the owner decides on raise. Run judge-eval on the lab VM for judge p50/p95, and compare against each stack's first-sentence time. The alternative is to speak first and cut into the crisis path when a raise lands, accepting about one sentence of normal reply before help is offered. Present both options with numbers."
   }
  ],
  "edges": [
@@ -30139,6 +30159,16 @@
   {
    "from": "measure.2026-10-21.ui-review-2-main-loop",
    "to": "decision.2026-10-21.no-developer-text-in-ui",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-21.shadow-judge-as-safety-event",
+   "to": "decision.2026-10-21.judge-shadow-never-a-safety-event",
+   "relation": "informs"
+  },
+  {
+   "from": "risk.2026-10-21.raise-mode-reply-wait",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
    "relation": "informs"
   }
  ]
