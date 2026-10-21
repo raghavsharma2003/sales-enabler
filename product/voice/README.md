@@ -134,6 +134,22 @@ Every cost line is integer milli-rupees at ₹95/$, using `catalog.py`'s list pr
 Lines are deltas, emitted after each reply and at the end, and they always sum to the rounded total. `limits.maxCostInrMilli`
 and `limits.maxDurationS` end the call (`max_cost`, `max_duration`) after a short goodbye.
 
+## Door timing
+
+`bench/door_bench.py` times the reply door with no network, so the number can be reproduced on the deployed host:
+
+```
+cd product/voice
+python bench/door_bench.py                       # single-call table
+python bench/door_bench.py --calls 10 50         # plus N concurrent simulated calls on one process
+```
+
+The single-call run uses every `replyDoor` input in `cases.json`, 5 passes, each with the previous input as the prev
+sentence, so the cross-sentence join always runs. In the concurrent run, N calls share one asyncio loop. Each call
+doors a sentence, speaks it (about 15 characters a second), then doors the next. Its latency runs from the moment a
+sentence is due to the moment its verdict is back, so it includes waiting behind the other calls. Every run prints
+the git sha, the `rules.json` version and hash, the Python version and the CPU count.
+
 ## Transports
 
 | kind | join | media |
