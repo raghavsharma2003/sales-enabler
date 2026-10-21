@@ -128,10 +128,10 @@
     }
   ],
   "tests": {
-    "passed": 40,
-    "total": 40,
+    "passed": 41,
+    "total": 41,
     "files": [
-      "tests/campaigns.test.ts (29, Postgres)",
+      "tests/campaigns.test.ts (30, Postgres)",
       "tests/campaigns-units.test.ts (11, pure)"
     ]
   },
@@ -151,7 +151,11 @@
     "Launch is A2 and the approval is bound to policy_version plus the agent version hash. A narrowed window voids a pending approval. A launch with blockers names each one, its fix and the role that can apply it. A workspace's first campaign stops for review after 20 dials. The worker pauses a campaign at its cap (A3 stop_at_cap) or on a low wallet, and never cancels it.",
     "Tenancy: every query filters by workspace_id. A test shows another workspace cannot get, narrow, pause, add to, list or dial these rows.",
     "Numbers: search, rent (spend; only an owner can approve), bring-your-own, KYC submit, pause, pause_flagged (A3). The A2P declaration pack exports as JSON or CSV.",
-    "At claim, the worker creates the conversation row (id = ticket.conversationId, attempt_id, contact_id, agent_version_id, channel 'phone', or 'test' for test calls) in the same transaction, so the calls module's runtime hook can trust it and settle the hold tagged with the attempt. The row is marked failed if the runtime refuses before any ring."
+    "At claim, the worker creates the conversation row (id = ticket.conversationId, attempt_id, contact_id, agent_version_id, channel 'phone', or 'test' for test calls) in the same transaction, so the calls module's runtime hook can trust it and settle the hold tagged with the attempt. The row is marked failed if the runtime refuses before any ring.",
+    "The version is chosen at claim: learning's experiment.assign, sticky per contact, is read through the registry inside the claim transaction. Without it, the campaign deployment's split decides, deterministically per contact; without that, the pinned version. The choice is stamped on the attempt and the conversation.",
+    "The G9 hold is sized by money.estimate for the agent's stack (max minutes x per-minute). A campaign's stated perMinuteInrMilli wins; an unknown rate falls back to a ₹6/min ceiling.",
+    "memory.brief status 'ok' means loaded. 'off' and 'off_for_agent' mean disabled. Anything else, not_executed or more than 800 ms means the call dials without memory.",
+    "The dispatch loop runs as a kernel job: module.jobs -> campaigns.dispatch every 2 s."
   ],
   "untested": [
     "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired.",
@@ -166,11 +170,9 @@
     "Load: precheck p95 latency was not measured (the target is 50 ms or less)."
   ],
   "needs_from_others": [
-    "kernel: add `campaigns` to server/modules/index.ts and start startWorker({ pool, registry }) in main.ts. Optionally let a member run an A3 verb (pause, stop) at once instead of approving their own proposal.",
+    "kernel/integrator: add `campaigns` to server/modules/index.ts. Its dispatch job then starts through startJobs. Optionally let a member run an A3 verb (pause, stop) at once.",
     "calls module: settles or releases the hold at call.ended (already in calls/ingest.ts). Still needed: set attempt.outcome_class and call registry tool attempt.retry_per_ladder { attemptId, outcome, at? } as system after a non-final outcome (busy, no_answer, voicemail, short_call, callback, ...).",
     "intake/memory-omni: confirm the tombstone e164_hash convention. The gate checks sha256(e164) and HMAC-SHA256(key = workspace_id, e164). Also write dnd_status.ncpr_status and checked_at from a carrier lookup, and use consent_record.purpose values 'service' / 'transactional' / 'promotional' / 'all'.",
-    "memory module: register memory.brief { contactId, agentId } -> { text, status } as the architecture contract says.",
-    "money module: money.estimate { stackId, minutes, calls } -> { perMinuteInrMilli, basis }. campaign.estimate reads it through the registry when it is registered.",
     "workspace module: a tool that verifies a member phone (it writes verified_test_phone.verified_at), and one that records an A2P declaration reference (it sets phone_number.a2p_status = 'declared', a2p_ref).",
     "agents module: put config.lint = { ok } on agent_version. G10 reads it and also calls shared/safety lintAgentConfig.",
     "blueprint data: research/2026-10-21/blueprint/data/{campaigns-module-defaults,trust-telephony-defaults,workspace-tool-registry}.json are not in the repo. The defaults in defaults.ts were transcribed from the module markdown.",

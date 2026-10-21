@@ -16,6 +16,7 @@ import {
   PROMOTIONAL_BAND, RETRY_LADDER, type OutcomeClass, type WindowPolicy,
 } from './defaults.ts';
 import { loadDialPolicy, loadVersion, type CampaignPolicy, type CampaignRow } from './gate.ts';
+import { tick } from './worker.ts';
 import { routeSeries, SERIES, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
@@ -584,4 +585,7 @@ export function registerCampaignTools(registry: Registry): void {
 export const module: Module = {
   name: 'campaigns',
   register: registerCampaignTools,
+  // The dial loop: claim + gate + dispatch. Jobs never overlap and hold a per-name advisory lock, so replicas are safe;
+  // SKIP LOCKED makes even concurrent claimers safe.
+  jobs: deps => [{ name: 'campaigns.dispatch', everyMs: 2_000, run: async d => { await tick({ pool: d.pool, registry: d.registry }); } }],
 };

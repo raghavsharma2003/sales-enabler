@@ -3,7 +3,7 @@
 // brief, build the CallTicket and hand it to the runtime. An attempt moves created -> dialing exactly once, under its
 // row lock, so two workers can never dial it twice. A ticket whose dispatch was never confirmed becomes 'unknown'
 // and is never retried automatically (HV law 17).
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import type { Fact } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
@@ -27,6 +27,45 @@ export interface WorkerDeps {
 
 const SYSTEM = { type: 'system' as const, id: 'campaigns.worker' };
 const ATTEMPT_COLS = 'a.id, a.workspace_id, a.campaign_id, a.contact_id, a.to_e164, a.kind, a.agent_version_id, a.call_category, a.facts, a.api_key_id, a.scheduled_for';
+
+/** Call another module's read tool inside the caller's transaction (by registry name, as a system actor). A missing
+ *  tool, a validation error or a throw returns null; a savepoint keeps a failure from aborting the claim. */
+export async function readTool<T>(registry: Registry, c: pg.PoolClient, ws: string, name: string, input: unknown): Promise<T | null> {
+  const t = registry.get(name);
+  if (!t || t.risk !== 'read') return null;
+  await c.query('SAVEPOINT vp_read_tool');
+  try {
+    const out = await t.run({ q: c, workspaceId: ws, actor: SYSTEM }, t.input(input)) as T;
+    await c.query('RELEASE SAVEPOINT vp_read_tool');
+    return out ?? null;
+  } catch {
+    await c.query('ROLLBACK TO SAVEPOINT vp_read_tool');
+    return null;
+  }
+}
+
+/** Which agent version a campaign attempt meets: a running experiment's sticky arm (learning's experiment.assign), else
+ *  the campaign deployment's split (deterministic per contact), else the campaign's pinned version. Single, API and test
+ *  attempts keep the version they were created with. */
+export async function resolveVersion(registry: Registry, c: pg.PoolClient, a: AttemptRow): Promise<string | null> {
+  if (!a.campaign_id || !a.contact_id || !['campaign', 'retry', 'callback'].includes(a.kind)) return a.agent_version_id;
+  const k = await one<{ agent_version_id: string | null; agent_id: string | null; split: { version_id: string; percent: number }[] | null }>(c,
+    `SELECT k.agent_version_id, coalesce(v.agent_id, d.agent_id) AS agent_id, d.split FROM campaign k
+     LEFT JOIN agent_version v ON v.id = k.agent_version_id LEFT JOIN deployment d ON d.id = k.deployment_id AND d.workspace_id = k.workspace_id
+     WHERE k.id = $1 AND k.workspace_id = $2`, [a.campaign_id, a.workspace_id]);
+  if (!k) return a.agent_version_id;
+  if (k.agent_id) {
+    const arm = await readTool<{ versionId?: string }>(registry, c, a.workspace_id, 'experiment.assign', { agentId: k.agent_id, contactId: a.contact_id });
+    if (arm?.versionId) return arm.versionId;
+  }
+  if (k.split?.length) {
+    const h = createHash('sha256').update(a.campaign_id + ':' + a.contact_id).digest().readUInt32BE(0) % 10_000;
+    let acc = 0;
+    for (const s of k.split) { acc += s.percent * 100; if (h < acc) return s.version_id; }
+    return k.split[k.split.length - 1].version_id;
+  }
+  return k.agent_version_id ?? a.agent_version_id;
+}
 
 export type ClaimOutcome =
   | { kind: 'none' }
@@ -54,7 +93,10 @@ export async function claimNext(d: WorkerDeps): Promise<ClaimOutcome> {
       }
     }
 
-    const v = await runGate(c, a, { now, predial: d.predial });
+    a.agent_version_id = await resolveVersion(d.registry, c, a);
+    const rate = async (q: unknown, ws: string, stackId: string, minutes: number) =>
+      (await readTool<{ perMinuteInrMilli?: number }>(d.registry, c, ws, 'money.estimate', { stackId, minutes, calls: 1 }))?.perMinuteInrMilli ?? null;
+    const v = await runGate(c, a, { now, predial: d.predial, rate });
     const precheck = { gateVersion: v.gateVersion, at: now.toISOString(), allowed: v.allowed, trace: v.trace, warnings: v.warnings,
       ...(v.allowed ? {} : { outcome: v.outcome, code: v.code, gate: v.gate, detail: v.detail, nextEligibleAt: v.nextEligibleAt?.toISOString() ?? null }) };
     if (v.allowed) {
@@ -111,7 +153,11 @@ export async function memoryBrief(d: WorkerDeps, ws: string, contactId: string |
       new Promise<'timeout'>(res => { timer = setTimeout(() => res('timeout'), MEMORY_BRIEF_TIMEOUT_MS); }),
     ]);
     if (r === 'timeout') return { memoryBrief: '', memoryStatus: 'not_loaded_timeout' };
-    if (r.status !== 'confirmed' || !r.result?.text) return { memoryBrief: '', memoryStatus: 'none' };
+    // memory.brief answers { text, status }: 'ok' is usable; 'off' / 'off_for_agent' mean memory is switched off; anything
+    // else (empty, unknown_contact, not_executed) dials without memory.
+    if (r.status !== 'confirmed') return { memoryBrief: '', memoryStatus: 'none' };
+    if (r.result?.status === 'off' || r.result?.status === 'off_for_agent') return { memoryBrief: '', memoryStatus: 'disabled' };
+    if (r.result?.status !== 'ok' || !r.result.text) return { memoryBrief: '', memoryStatus: 'none' };
     return { memoryBrief: truncBytes(r.result.text, 1200), memoryStatus: 'loaded' };
   } catch { return { memoryBrief: '', memoryStatus: 'none' }; }
   finally { clearTimeout(timer); }

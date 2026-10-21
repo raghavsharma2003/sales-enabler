@@ -13,7 +13,7 @@ import { module as campaigns } from '../server/modules/campaigns/index.ts';
 import { runGate, tombstoneHashes, type AttemptRow, type GateVerdict, type PredialFn } from '../server/modules/campaigns/gate.ts';
 import { FakeTelephony, setTelephony } from '../server/modules/campaigns/telephony.ts';
 import { claimNext, tick, type WorkerDeps } from '../server/modules/campaigns/worker.ts';
-import { obj, str, uuid } from '../shared/validate.ts';
+import { num, obj, str, uuid } from '../shared/validate.ts';
 import type { AgentConfig, CallCategory } from '../shared/agent-config.ts';
 
 const URL_ = process.env.DATABASE_URL;
@@ -422,7 +422,7 @@ test('worker end to end: ticket from agent_version.config and the contact; offer
   const r2 = new Registry();
   campaigns.register(r2);
   r2.register(tool(obj({ contactId: uuid(), agentId: uuid() }), { name: 'memory.brief', risk: 'read', summary: 'brief',
-    run: async () => { await new Promise(res => setTimeout(res, delay)); return { text: 'x'.repeat(1500), status: 'loaded' }; } }));
+    run: async () => { await new Promise(res => setTimeout(res, delay)); return { text: 'x'.repeat(1500), status: 'ok' }; } }));
   const fast = await attempt(w, { contact: await addContact(w) });
   await tick(deps(w, NOON, { registry: r2 }));
   const tf = rt.tickets.find(x => x.attemptId === fast)!;
@@ -649,4 +649,40 @@ test('call.place_single queues for the gate; idempotency key replays; worker dia
   const mine = rt.tickets.slice(n0).filter(t => t.attemptId === (r.status === 'confirmed' ? r.result.attemptId : ''));
   assert.equal(mine.length, 1);
   assert.deepEqual(mine[0].contact.facts, { due_date: '9 Nov' }, 'per-call variables win over the stored attribute');
+});
+
+test('dial-time seams: experiment arm, deployment split, money.estimate sizes the hold, memory off, the dispatch job', { skip }, async () => {
+  const w = await world();
+  const v2 = (await one<{ id: string }>(pool, "INSERT INTO agent_version (agent_id, number, hash, config) SELECT agent_id, 2, 'hash-v2-' || gen_random_uuid(), config FROM agent_version WHERE id = $1 RETURNING id", [w.versionId]))!.id;
+  const camp = await campaignRow(w, 'service');
+  const r2 = new Registry();
+  campaigns.register(r2);
+  let arm: string | null = v2;
+  r2.register(tool(obj({ agentId: uuid(), contactId: uuid() }), { name: 'experiment.assign', risk: 'read', summary: 'arm',
+    run: async () => (arm ? { experimentId: 'e', arm: 'treatment', versionId: arm } : null) }));
+  r2.register(tool(obj({ stackId: str(), minutes: num(), calls: num() }), { name: 'money.estimate', risk: 'read', summary: 'rate',
+    run: async () => ({ perMinuteInrMilli: 2_000, totalInrMilli: 0, basis: 'test card' }) }));
+  r2.register(tool(obj({ contactId: uuid(), agentId: uuid() }), { name: 'memory.brief', risk: 'read', summary: 'off',
+    run: async () => ({ text: '', status: 'off' }) }));
+
+  const a1 = await attempt(w, { campaign: camp, kind: 'campaign' });
+  await tick(deps(w, NOON, { registry: r2 }));
+  const t1 = rt.tickets.find(t => t.attemptId === a1)!;
+  const row = await one<{ agent_version_id: string }>(pool, 'SELECT agent_version_id FROM attempt WHERE id = $1', [a1]);
+  assert.equal(row!.agent_version_id, v2, 'the experiment arm decides the version and is stamped on the attempt');
+  assert.equal((await one<{ agent_version_id: string }>(pool, 'SELECT agent_version_id FROM conversation WHERE id = $1', [t1.conversationId]))!.agent_version_id, v2);
+  assert.equal(t1.limits.maxCostInrMilli, 5 * 2_000, 'hold sized from money.estimate: 5 min at Rs 2/min');
+  assert.equal(t1.contact.memoryStatus, 'disabled');
+
+  // No experiment: the campaign deployment's split decides, deterministically per contact.
+  arm = null;
+  const dep = (await one<{ id: string }>(pool, `INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,'campaign',$3) RETURNING id`,
+    [w.ws, w.agentId, JSON.stringify([{ version_id: v2, percent: 100 }])]))!.id;
+  await pool.query('UPDATE campaign SET deployment_id = $2 WHERE id = $1', [camp, dep]);
+  const a2 = await attempt(w, { campaign: camp, kind: 'campaign', contact: await addContact(w) });
+  await tick(deps(w, NOON, { registry: r2 }));
+  assert.equal((await one<{ agent_version_id: string }>(pool, 'SELECT agent_version_id FROM attempt WHERE id = $1', [a2]))!.agent_version_id, v2);
+
+  const jobs = campaigns.jobs?.({ pool, registry, auth: async () => { throw new Error('no'); } }) ?? [];
+  assert.deepEqual(jobs.map(j => [j.name, j.everyMs]), [['campaigns.dispatch', 2000]]);
 });

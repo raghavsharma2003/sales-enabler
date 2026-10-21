@@ -45,8 +45,8 @@
       "status": "measured",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "Campaigns test suites: 40 of 40 pass (29 against Postgres 16 on the throwaway cluster, 11 pure). They cover:\n- every gate code;\n- T3 at the form, the HTTP API (422 with the rule id) and the gate;\n- cross-midnight rules;\n- 12 concurrent workers racing for 5 attempts, each claimed exactly once;\n- reservations released on refusal;\n- tenancy isolation;\n- launch approval voided by a policy-version change.\nRun twice on the same database with the kernel suites, 62 of 62 both times.",
-      "n": 40,
+      "title": "Campaigns test suites: 41 of 41 pass (30 against Postgres 16 on the throwaway cluster, 11 pure). They cover:\n- every gate code;\n- T3 at the form, the HTTP API (422 with the rule id) and the gate;\n- cross-midnight rules;\n- 12 concurrent workers racing for 5 attempts, each claimed exactly once;\n- reservations released on refusal;\n- tenancy isolation;\n- launch approval voided by a policy-version change.\nRun twice on the same database with the kernel suites, 62 of 62 both times.",
+      "n": 41,
       "method": "node --import tsx --test tests/campaigns.test.ts tests/campaigns-units.test.ts against DATABASE_URL from product/scripts/pg-test.sh vp_mod_campaigns; FakeRuntime and FakeTelephony; synthetic 90000000xx numbers",
       "path": "product/tests/campaigns.test.ts"
     },
