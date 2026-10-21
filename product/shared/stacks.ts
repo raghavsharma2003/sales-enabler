@@ -52,33 +52,33 @@ export const STACKS: readonly VoiceStack[] = [
     risks: ['Must pass the full safety attack test before calls to real people', 'Reply gap not measured since the safety check was added'],
   },
   {
-    id: 'v2-flashlite', label: 'Azure ears + Gemini 3.5 Flash-Lite + Gemini voice', kind: 'cascade', brief: 'v2',
+    id: 'v2-flashlite', label: 'Azure speech recognition + Gemini 3.5 Flash-Lite + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gemini-3.5-flash-lite', voice: 'gemini-lite', gatedEars: true },
     replyGap: { value: '0.70 s, reply text starts', grade: 'measured', source: LAB },
     note: 'The fastest of the well-judged models in our tests.', requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
     risks: ['Google’s voice price doubles on 1 Jan 2027'],
   },
   {
-    id: 'v2-54mini', label: 'Azure ears + GPT-5.4 mini + Gemini voice', kind: 'cascade', brief: 'v2',
+    id: 'v2-54mini', label: 'Azure speech recognition + GPT-5.4 mini + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gpt-5.4-mini', voice: 'gemini-lite', gatedEars: true },
     replyGap: { value: '0.96 s, reply text starts', grade: 'measured', source: LAB },
     note: 'OpenAI’s fast model.', requires: ['GEMINI', 'AZURE_SPEECH', 'AZURE_OPENAI'], status: 'available',
   },
   {
-    id: 'v2-38flash', label: 'Azure ears + Gemini 3.8 Flash + Gemini voice', kind: 'cascade', brief: 'v2',
+    id: 'v2-38flash', label: 'Azure speech recognition + Gemini 3.8 Flash + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gemini-3.8-flash', voice: 'gemini-lite', gatedEars: true },
     replyGap: { value: '2.0 s, reply text starts', grade: 'measured', source: LAB },
     note: 'The best-judged model, but slow to answer from India.', requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
   },
   {
-    id: 'v2-mai', label: 'Azure ears + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', kind: 'cascade', brief: 'v2',
+    id: 'v2-mai', label: 'Azure speech recognition + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gemini-3.5-flash-lite', voice: 'azure-mai', gatedEars: true },
     replyGap: { value: '0.43 s, voice starts after the text', grade: 'measured', source: 'Measured in our voice lab from a server in India, 20 Oct 2026. This is how soon the voice starts once the reply text is ready; the whole reply gap was not measured for this stack.' },
     note: 'The fastest voice to start, with an emotion style for each reply. Its price has not been checked against a real bill yet.',
     requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
   },
   {
-    id: 'v2-luna', label: 'Azure ears + GPT-6 Luna + Gemini voice', kind: 'cascade', brief: 'v2',
+    id: 'v2-luna', label: 'Azure speech recognition + GPT-6 Luna + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gpt-6-luna@or', voice: 'gemini-lite', gatedEars: true },
     replyGap: { value: '1.4 s, reply text starts', grade: 'measured', source: LAB },
     note: 'Judged last of these in our written tests; not yet tried on a call.', requires: ['GEMINI', 'AZURE_SPEECH', 'OPENROUTER'], status: 'available',
@@ -103,7 +103,7 @@ export function getStack(id: string): VoiceStack | undefined {
 /** A curated stack id is valid for an agent only if it is in the catalog. Nothing is ever substituted. */
 export function requireStack(id: string | undefined | null): VoiceStack {
   if (!id) throw new StackError('choose a voice stack');
-  if (id === CUSTOM_STACK_ID) throw new StackError('a stack you build yourself needs its parts: ears, brain and voice, or one speech-to-speech engine');
+  if (id === CUSTOM_STACK_ID) throw new StackError('a stack you build yourself needs its parts: speech recognition, a language model and a voice, or one speech-to-speech model');
   const s = getStack(id);
   if (!s) throw new StackError(`unknown voice stack "${id}"`);
   return s;
@@ -117,7 +117,7 @@ export function resolveStack(voice: { stackId?: string | null; components?: Stac
     return requireStack(voice?.stackId);
   }
   const c = voice.components;
-  if (!c) throw new StackError('a stack you build yourself needs its parts: ears, brain and voice, or one speech-to-speech engine');
+  if (!c) throw new StackError('a stack you build yourself needs its parts: speech recognition, a language model and a voice, or one speech-to-speech model');
   const need = (part: Part, id: string | undefined): Component => {
     if (!id) throw new StackError(`choose the ${PART_WORD[part]}`);
     const x = getComponent(part, id);
@@ -126,7 +126,7 @@ export function resolveStack(voice: { stackId?: string | null; components?: Stac
   };
   let parts: Component[]; let components: StackComponents; let kind: VoiceStack['kind'];
   if (c.s2s) {
-    if (c.ears || c.brain || c.voice) throw new StackError('a speech-to-speech engine hears, thinks and speaks by itself: choose it alone, or choose ears, brain and voice');
+    if (c.ears || c.brain || c.voice) throw new StackError('a speech-to-speech model hears, thinks and speaks by itself: choose it alone, or choose speech recognition, a language model and a voice');
     parts = [need('s2s', c.s2s)]; components = { s2s: c.s2s }; kind = 's2s';
   } else {
     parts = [need('ears', c.ears), need('brain', c.brain), need('voice', c.voice)];
@@ -148,7 +148,7 @@ export function stackOf(voice: Parameters<typeof resolveStack>[0]): VoiceStack |
   try { return resolveStack(voice); } catch (e) { if (e instanceof StackError) return undefined; throw e; }
 }
 
-const PART_WORD: Record<Part, string> = { ears: 'ears (speech to text)', brain: 'brain (language model)', voice: 'voice', s2s: 'speech-to-speech engine' };
+const PART_WORD: Record<Part, string> = { ears: 'speech recognition', brain: 'language model', voice: 'voice', s2s: 'speech-to-speech model' };
 
 export class StackError extends Error {
   constructor(message: string) { super(message); this.name = 'StackError'; }

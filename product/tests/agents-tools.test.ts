@@ -400,7 +400,7 @@ test('build your own: stack.list offers the parts; stack.set takes ears, brain a
   assert.equal(engine.stack.kind, 's2s');
   refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom' }), /needs its parts/);
   refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { s2s: 'gemini-3.8-live', ears: 'azure' } }), /choose it alone/);
-  refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { ears: 'azure', brain: 'gpt-99', voice: 'azure' } }), /not a brain .* we offer/);
+  refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { ears: 'azure', brain: 'gpt-99', voice: 'azure' } }), /not a language model we offer/);
   refused(await call('stack.set', { agentId: c.agentId, stackId: 'custom', components: { ears: 'azure', brain: 'gpt-5.4-mini' } }), /choose the voice/);
   refused(await call('stack.set', { agentId: c.agentId, stackId: 'v2-flashlite', components: { ears: 'azure' } }), /fixed parts/);
   // Going back to a curated stack drops the parts.
