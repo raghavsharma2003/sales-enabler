@@ -173,6 +173,10 @@
     {
       "from": "memory",
       "what": "Read policy.retention.get for memory retention (forgetContactMemory is now used by dpdp.request.execute)."
+    },
+    {
+      "from": "memory",
+      "what": "Import AGE_KEY_SYNONYMS / canonicalAgeKey from ../intake/index.ts (or just read the three canonical keys date_of_birth, age, is_minor) in minor.ts, so one list governs both."
     }
   ],
   "jobs": [
@@ -193,7 +197,8 @@
     "self_subjects": "name, first_name, last_name, language, timezone, preferred_time, preferred_channel, address_as, pace: person 100 > agent 60 > crm 50 = upload 50 > system 30. name, language and timezone are mirrored onto contact columns; read those.",
     "record_subjects": "every other key (amount_due, due_date, plan, status, record keys, external_id ...): system 100 > crm 80 > agent 75 > upload 70 > person 40. Amounts and dates may be spoken only from these rows, never from speech.",
     "never_attributes": "Aadhaar, PAN, bank, card, OTP and password columns are dropped at mapping and never stored. Consent, opt-out and DND are ledgers (consent_record, suppression, dnd_status), not attributes; use contact.dial_facts.",
-    "freshness_defaults": "upload 30 days, crm and system 24 h, agent and person no expiry; a source can set its own max age."
+    "freshness_defaults": "upload 30 days, crm and system 24 h, agent and person no expiry; a source can set its own max age.",
+    "age_keys": "date_of_birth (ISO date), age, is_minor are canonical; see AGE_KEY_SYNONYMS / canonicalAgeKey exported from intake/index.ts"
   },
   "notes": [
     "Display ORDER BYs use the database collation on purpose (names read in the locale); the one comparison that decides membership (audience filter gt/lt on text) uses COLLATE \"C\"."

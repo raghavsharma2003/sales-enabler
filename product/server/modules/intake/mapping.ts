@@ -50,7 +50,41 @@ export function headerField(h: string): Field | null {
   return null;
 }
 
-export const attrKey = (h: string) => norm(h).replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'column';
+const rawKey = (h: string) => norm(h).replace(/[^\p{L}\p{M}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'column';
+
+/** Age-like keys are canonicalised so the children's-data gate (memory) reads one name per meaning, whatever the header
+ *  said ("Customer DOB", "D.O.B.", "Umar", "Is Minor?"). Token rules over the snake-cased key; exported for memory. */
+export const AGE_KEY_SYNONYMS = {
+  date_of_birth: { tokens: ['dob', 'birthday', 'birthdate', 'janmtithi', 'जन्मतिथि'], pairs: [['date', 'birth'], ['birth', 'date'], ['born', 'on'], ['janm', 'tithi'], ['janam', 'tithi'], ['जन्म', 'तिथि'], ['d', 'o', 'b']] },
+  age: { tokens: ['age', 'umar', 'umra', 'umr', 'उम्र', 'आयु'], pairs: [] },        // only when it names the person (personAge)
+  is_minor: { tokens: ['minor', 'under18', 'nabalig', 'नाबालिग'], pairs: [['under', '18'], ['is', 'child']] },
+} as const;
+export type AgeKey = keyof typeof AGE_KEY_SYNONYMS;
+
+/** The canonical age key for a snake-cased attribute key, or null when it is not age-like. */
+export function canonicalAgeKey(key: string): AgeKey | null {
+  const t = key.normalize('NFKC').toLowerCase().split('_').filter(Boolean);
+  const has = (seq: readonly string[]) => t.some((_, i) => seq.every((w, j) => t[i + j] === w));
+  for (const k of Object.keys(AGE_KEY_SYNONYMS) as AgeKey[]) {
+    const s = AGE_KEY_SYNONYMS[k];
+    if (s.pairs.some(p => has(p))) return k;
+    if (k === 'age') { if (personAge(t)) return k; continue; }
+    if ((s.tokens as readonly string[]).some(w => t.includes(w))) return k;
+  }
+  return null;
+}
+
+// "Age", "Customer Age", "Age (years)", "Umar" are the person's age; "Vehicle Age" or "Policy Age" are not.
+const PERSON = ['customer', 'client', 'lead', 'contact', 'person', 'member', 'patient', 'student', 'applicant', 'borrower', 'policyholder', 'insured', 'caller', 'user'];
+const UNITS = ['years', 'year', 'yrs', 'yr', 'in', 'y', 'saal', 'sal'];
+function personAge(t: string[]): boolean {
+  const i = t.findIndex(w => (AGE_KEY_SYNONYMS.age.tokens as readonly string[]).includes(w));
+  if (i < 0) return false;
+  const before = t.slice(0, i), after = t.slice(i + 1);
+  return before.every(w => PERSON.includes(w)) && before.length <= 1 && after.every(w => UNITS.includes(w));
+}
+
+export const attrKey = (h: string) => { const k = rawKey(h); return canonicalAgeKey(k) ?? k; };
 
 const looksPhone = (v: string) => normaliseIndianPhone(v).ok;
 const looksNumber = (v: string) => /^-?\d{1,3}(,\d{2,3})*(\.\d+)?$|^-?\d+(\.\d+)?$/.test(v.trim()) && !/^0\d/.test(v.trim());

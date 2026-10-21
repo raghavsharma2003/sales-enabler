@@ -89,7 +89,7 @@ export async function receivePart(q: Queryable, ws: string, p: { uploadId?: stri
 // ---- mapping and preview -------------------------------------------------------------------------
 
 const override = obj({ field: str({ oneOf: ['phone', 'name', 'first_name', 'last_name', 'language', 'timezone', 'consent', 'consent_at', 'opt_out', 'observed_at', 'attribute', 'ignore'] }),
-  key: opt(str({ pattern: /^[\p{L}\p{N}_]{1,60}$/u })), type: opt(str({ oneOf: ['text', 'number', 'date', 'boolean'] })) });
+  key: opt(str({ pattern: /^[\p{L}\p{M}\p{N}_]{1,60}$/u })), type: opt(str({ oneOf: ['text', 'number', 'date', 'boolean'] })) });
 const overrides = opt(record(override, { maxKeys: 200 })) as Validator<Record<string, Partial<ColumnMap>> | undefined>;
 
 interface Table { rows: string[][]; delimiter: Delimiter; mapping: Mapping }

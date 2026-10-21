@@ -27,3 +27,5 @@ export const module: Module = {
 
 export { setDndProvider, FakeDndProvider, DisabledDndProvider, type DndProvider } from './dnd.ts';
 export { signHook } from './sources.ts';
+// For memory's children's-data gate: the canonical age keys intake writes, and the rule that produces them.
+export { AGE_KEY_SYNONYMS, canonicalAgeKey, type AgeKey } from './mapping.ts';

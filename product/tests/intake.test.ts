@@ -87,6 +87,10 @@ test('mapping: Hindi and English headers, identity documents ignored by design, 
   assert.equal(v.columns[1].why, 'values');
   assert.equal(parseDate('05/11/2026'), '2026-11-05');
   assert.equal(parseDate('2026-13-01'), null);
+  // Age-like headers land on one canonical key each, so memory's minor gate reads them; non-person ages do not.
+  const keys = inferMapping([['Customer DOB', 'D.O.B', 'Date of Birth', 'Age (years)', 'Customer Age', 'उम्र', 'Is Minor?', 'Under 18', 'Vehicle Age', 'Policy Age', 'Page Views', 'Mobile'], ['01/02/2010', '', '', '', '', '', '', '', '', '', '', '9000000001']])
+    .columns.map(c => c.key ?? c.field);
+  assert.deepEqual(keys, ['date_of_birth', 'date_of_birth', 'date_of_birth', 'age', 'age', 'age', 'is_minor', 'is_minor', 'vehicle_age', 'policy_age', 'page_views', 'phone']);
 });
 
 test('authority: fresh higher wins, equal from another source goes to review, older and less authoritative never overwrite', () => {

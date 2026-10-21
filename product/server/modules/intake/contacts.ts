@@ -311,7 +311,7 @@ export function registerContactTools(reg: Registry): void {
   }));
 
   // ---- export (policy: PII leaves VP) ----
-  reg.register(tool(obj({ audienceId: opt(uuid()), keys: opt(arr(str({ pattern: /^[\p{L}\p{N}_]{1,60}$/u }), { max: 50 })), includeSuppressed: opt(bool()) }), {
+  reg.register(tool(obj({ audienceId: opt(uuid()), keys: opt(arr(str({ pattern: /^[\p{L}\p{M}\p{N}_]{1,60}$/u }), { max: 50 })), includeSuppressed: opt(bool()) }), {
     name: 'contact.export', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'Export people as CSV (personal data leaves VP; approved by Compliance or Owner, audited)',
     describe: i => `Export ${i.audienceId ? 'audience ' + i.audienceId.slice(0, 8) : 'every contact'} as CSV${i.keys?.length ? ' with ' + i.keys.join(', ') : ''}${i.includeSuppressed ? ', including suppressed people' : ''}. Personal data leaves VP.`,

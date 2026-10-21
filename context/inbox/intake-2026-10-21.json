@@ -77,7 +77,7 @@
       "status": "open",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "Under the full product suite (4 test files at once) the 50k import intermittently runs 3-4x slower (up to 81 s) with Postgres mostly idle and no lock waits; speed is therefore a measurement, asserted only with VP_PERF=1 (60 s), after it also failed on a loaded 2-core CI runner, and the first uncaptured failure was most likely the old 60 s budget",
+      "title": "Under the full product suite the 50k import intermittently runs 3-4x slower (up to 81 s) with Postgres mostly idle and no lock waits; cause unknown. It did NOT cause the campaigns/e2e failures seen alongside it (those were an unscoped dispatcher in a WIP e2e test, rejected.2026-10-21.unscoped-dispatcher-in-tests). CI now runs 5,000 rows; 50k only with VP_PERF=1",
       "closes_when": "A profile of a slow full-suite run shows where the time goes (Node CPU, a sibling test, or I/O), or ten full runs stay under 30 s."
     },
     {
@@ -128,6 +128,26 @@
       "title": "suppression.source is a stable code (in_call, manual, upload, crm, api_push, form, whatsapp, dpdp); the ids behind it go in suppression.evidence (0104)",
       "rationale": "The dial gate reports suppressed:<source>; 'call:<uuid>' made an unstable reason code (e2e finding F6).",
       "reverse_if": "The gate stops deriving its code from source, or the UI needs per-source codes; then keep codes stable and add a separate field."
+    },
+    {
+      "id": "decision.2026-10-21.intake-canonical-age-keys",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Intake writes age-like columns under three canonical keys (date_of_birth, age, is_minor) and exports the rule (AGE_KEY_SYNONYMS, canonicalAgeKey) for memory's children's-data gate",
+      "rationale": "Memory's gate matched whole keys, so 'Customer DOB' -> customer_dob slipped past. One list, owned where headers are mapped, cannot drift. 'age' maps only when it names the person (Age, Customer Age, Age (years), Umar), so Vehicle Age or Policy Age keep their own keys.",
+      "reverse_if": "A tenant needs two different person-age columns kept apart, or the gate moves to typed attributes with a declared meaning."
+    },
+    {
+      "id": "rejected.2026-10-21.intake-keys-drop-devanagari-marks",
+      "type": "rejection",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Attribute keys built with [^\\p{L}\\p{N}] split Devanagari words",
+      "tried": "Snake-casing headers by keeping only Unicode letters and numbers.",
+      "broke": "Vowel signs and the virama are marks (\\p{M}), so 'उम्र' became 'उम_र' (caught by the age-key test). Keys now keep \\p{M}."
     }
   ],
   "edges": [
@@ -195,6 +215,11 @@
       "from": "component.2026-10-21.intake-module",
       "to": "decision.2026-10-21.intake-suppression-source-codes",
       "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-canonical-age-keys",
+      "relation": "implements"
     }
   ],
   "events": [
@@ -222,6 +247,11 @@
       "date": "2026-10-21",
       "event": "intake-scale-default-5k",
       "details": "intake-scale defaults to 5,000 rows (same correctness checks, ~2 s commit) so it no longer loads a shared CI database during timing-sensitive worker tests; VP_PERF=1 runs 50,000 rows with the 60 s bound (passed at 17.8 s alone). measure.2026-10-21.intake-50k-import (n=17) stays the record."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-age-keys",
+      "details": "Canonical age keys (date_of_birth, age, is_minor) at mapping and in webhooks, exported for memory; Devanagari marks kept in attribute keys. 18/18 intake tests."
     }
   ]
 }
