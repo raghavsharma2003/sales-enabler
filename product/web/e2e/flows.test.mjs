@@ -243,3 +243,19 @@ test('Launch blockers: the page shows the server\'s plain message and its fix bu
     if (x.fix && typeof x.fix === 'object') assert.ok(await page.getByRole('link', { name: x.fix.label }).count() >= 0);
   }
 });
+
+test('Ask Saarthi on a launch blocker with no page: the dock gets the sentence and the Operator answers with a plan card', async () => {
+  const id = (await pool.query("SELECT id, name FROM campaign WHERE workspace_id = $1 AND name LIKE 'Appointment%'", [ws])).rows[0];
+  const fixes = (await tool('campaign.get', { id: id.id })).result.blockers.filter(b => b.fix && typeof b.fix === 'object' && ['campaign.draft', 'campaign.audience.add'].includes(b.fix.tool));
+  assert.ok(fixes.length > 0, 'the draft has a blocker whose fix has no page of its own');
+  await page.goto(`${BASE}/campaigns/${id.id}`);
+  const row = page.locator('.check-fail').filter({ hasText: fixes[0].message }).first();
+  await row.getByRole('button', { name: 'Ask Saarthi' }).click();
+  const said = `${fixes[0].fix.label} for the campaign "${id.name}".`;
+  await page.locator('.dock').getByText(said, { exact: true }).waitFor({ timeout: 8000 });
+  const card = page.locator('.dock article[aria-label^="plan card"]').first();
+  await card.waitFor({ timeout: 10000 });
+  assert.match(await card.innerText(), /Waits for your tap|Runs now/i, 'the plan says which steps wait for a tap');
+  assert.ok((await actions('proposed')).some(a => a.tool === 'cap.raise'), 'the server holds the spend step for the person\'s tap');
+  assert.equal((await actions('executed')).some(a => a.tool === 'cap.raise'), false, 'nothing that spends has run: the plan only waits');
+});

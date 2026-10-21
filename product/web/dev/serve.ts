@@ -19,6 +19,11 @@ setFakeLlm((req: LlmRequest) => {
   const said = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';
   if (last.role === 'tool') return reply('Maine jo draft aur test ke steps the, chala diye. Jo cheez paise lagati hai, wo aapke tap ka intezaar kar rahi hai.');
   if (said.includes('top up') || said.includes('topup')) return reply('Wallet top-up ka card bana raha hoon.', [{ id: 'c' + ++n, name: 'wallet_topup', args: JSON.stringify({ inrMilli: 500000 }) }]);
+  if (said.includes('for the campaign')) {
+    return reply('Limit ka plan taiyaar hai; paise wala step aapke tap par.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Spending limit set karna', steps: [
+      { tool: 'cap.raise', args: { scope: 'workspace', period: 'daily', capInrMilli: 2000000 }, why: 'din ka kharcha limit: aapke tap par' },
+    ] }) }]);
+  }
   if (said.includes('plan') || said.includes('csv') || said.includes('launch')) {
     return reply('Plan taiyaar hai: audience main abhi banata hoon; paise wala step aapke tap par.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Pune ke liye audience banana aur wallet bharna', steps: [
       { tool: 'audience.create', args: { name: 'Pune renewals', filter: { all: [{ key: 'city', op: 'eq', value: 'Pune' }] } }, why: 'sirf Pune ke log' },

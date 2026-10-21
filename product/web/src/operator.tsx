@@ -122,7 +122,7 @@ function fromApi(id: string, c: ApiCard): OperatorCard {
   if (c.type === 'approval') return { id, type: 'approval', title: toolAsk(c.tool, 'Approve this change'), actionId: c.actionId, risk: c.risk.risk, summary: c.risk.label, state: 'waiting', mode: c.mode, approvers: c.approvers, expiresAt: c.expiresAt,
     diff: c.diff.map(d => ({ field: fieldLabel(d.field), after: fieldValue(d.field, d.to) })).filter((d): d is { field: string; after: string } => !!d.after), body: undefined };
   if (c.type === 'receipt') return { id, type: 'receipt', title: c.status === 'confirmed' ? toolDone(c.tool, 'Done') : c.status === 'not_executed' ? `${toolAsk(c.tool, 'That')} did not run` : 'The result is not known', body: c.status === 'confirmed' ? undefined : c.text.replace(/^Not done: /, ''), outcome: c.status, state: c.status === 'confirmed' ? 'approved' : c.status === 'unknown' ? 'stale' : 'failed' };
-  return { id, type: 'plan', title: c.goal, body: c.footer, steps: c.steps.map(s => ({ label: `${toolAsk(s.tool, 'A step')}${s.why ? ': ' + s.why : ''}${s.reason ? ` (${s.reason})` : ''}`, risk: s.risk ?? 'draft', when: s.runs === 'now' ? 'now' : 'waits', done: s.status === 'done', refused: s.runs === 'refused' })) };
+  return { id, type: 'plan', title: c.goal, body: c.footer, steps: c.steps.map(s => ({ label: `${toolAsk(s.tool, 'A step')}${s.why ? ': ' + s.why : ''}`, risk: s.risk ?? 'draft', when: s.runs === 'now' ? 'now' : 'waits', done: s.status === 'done', refused: s.runs === 'refused' })) };
 }
 
 function Msg({ m }: { m: ThreadMsg }) {
@@ -162,7 +162,7 @@ export function Card({ c }: { c: OperatorCard }) {
       {c.body && <p className="small">{c.body}</p>}
       {c.quote && <blockquote className="small" style={{ margin: 0, paddingLeft: 10, borderLeft: '3px solid var(--peacock)' }} lang="hi">“{c.quote}”</blockquote>}
       {c.metric && <Figure m={c.metric} />}
-      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <Chip tone="brick">refused</Chip> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? 'Runs now' : 'Waits for your tap'}</Chip>}</span></li>)}</ol>}
+      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <Chip tone="brick">Can't run</Chip> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? 'Runs now' : 'Waits for your tap'}</Chip>}</span></li>)}</ol>}
       {c.diff && <div>{c.diff.map((d, i) => <div className="diffrow" key={i}><strong>{d.field}</strong><span>{d.before ? <><s>{d.before}</s> → </> : null}<ins>{d.after}</ins></span>{d.reason && <span className="small muted">{d.reason}</span>}</div>)}</div>}
       {c.progress && <div><div className="meter-bar" role="progressbar" aria-label={c.progress.label} aria-valuenow={c.progress.pct ?? undefined}><span className="meter-fill tone-peacock" style={{ transform: `scaleX(${(c.progress.pct ?? 0) / 100})` }} /></div><p className="small muted">{c.progress.label}</p></div>}
       {c.type === 'question' && c.options && (
