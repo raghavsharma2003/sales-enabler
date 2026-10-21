@@ -39,9 +39,12 @@ export async function estimate(q: Queryable, i: { stackId: string; minutes: numb
   const perMinuteInrMilli = Math.round(perMinMicro / 1000);
   const totalInrMilli = Math.round(totalMicro / 1000);
   const asOf = lines.map(l => l.asOf).sort().at(-1);
-  const grades = [...new Set(lines.map(l => l.grade))].join('+');
-  const basis = `provider cost only (${grades}), cost card as of ${asOf}: list prices from voicelab/server/catalog.py at ₹95/$ with an assumed `
-    + `minute profile, plus half a carrier pulse per call; not a measured average and not a customer price (price not set)`;
+  // Shown to people as it is (no file names, codes or ISO dates). Provenance: the cost_card rows come from the voice lab's
+  // list prices (voicelab/server/catalog.py) at ₹95/$, an assumed minute profile, and half a carrier pulse per call.
+  const day = asOf ? new Date(`${asOf}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'an unknown date';
+  const basis = `What VP pays its providers, not a customer price (no price is set yet). Worked out from the providers' list prices `
+    + `as of ${day} at ₹95 to the US dollar, for a typical minute of talk, plus the phone company's rounding on each call. `
+    + `An estimate, not an average of real calls.`;
   return { stackId: i.stackId, perMinuteInrMilli, totalInrMilli, basis, lines, price: await priceFor(q, null, i.stackId),
     display: { perMinute: formatInr(perMinuteInrMilli, { paise: true }) + '/min', total: formatInr(totalInrMilli, { paise: true }) } };
 }

@@ -34,61 +34,63 @@ export interface VoiceStack {
   risks?: string[];        // known dependency risks (shutdowns, quota)
 }
 
-const LAB = 'voicelab/server/catalog.py round-2 presets, India VM, 2026-10-20';
+// Provenance for engineers: voicelab/server/catalog.py round-2 presets, India VM, 2026-10-20. The strings below are
+// shown to people as they are, so they stay in plain words (decision.2026-10-21.no-developer-text-in-ui).
+const LAB = 'Measured in our voice lab from a server in India, 20 Oct 2026. This is how soon the reply text starts; the time until she is heard also includes listening and the voice, and was not measured for this stack.';
 
 export const STACKS: readonly VoiceStack[] = [
   {
     id: 'v2-live', label: 'Gemini 3.8 Live (speech-to-speech)', kind: 's2s', brief: 'v2',
     components: { s2s: 'gemini-3.8-live' },
     replyGap: { value: 'not measured', grade: 'not_measured',
-      source: 'the runtime now holds each turn until the reply door passes every sentence (review M3); the lab smoke of 0.8-1.6 s was without that hold' },
-    note: 'Judges’ best brain family; talks over callers on about 40% of turns ungated. She starts only after the whole turn is generated and checked.',
+      source: 'Not measured yet. She now waits until every sentence of a reply has passed the safety check, and the lab figure of 0.8 to 1.6 s was taken before that.' },
+    note: 'The best-judged model family. She speaks only after the whole reply is written and checked. In the lab she talked over callers on about 40% of turns.',
     requires: ['GEMINI'], status: 'beta',
-    risks: ['speech-to-speech must pass the reply-door attack battery before live calls', 'reply gap with the door hold is unmeasured'],
+    risks: ['Must pass the full safety attack test before calls to real people', 'Reply gap not measured since the safety check was added'],
   },
   {
     id: 'v2-flashlite', label: 'Gemini ears + Gemini 3.5 Flash-Lite + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'gemini', brain: 'gemini-3.5-flash-lite', voice: 'gemini-lite', gatedEars: true },
-    replyGap: { value: '0.70 s first token', grade: 'measured', source: LAB },
-    note: 'Fastest good brain in the bake-off.', requires: ['GEMINI'], status: 'available',
-    risks: ['Gemini TTS price doubles 2027-01-01'],
+    replyGap: { value: '0.70 s, reply text starts', grade: 'measured', source: LAB },
+    note: 'The fastest of the well-judged models in our tests.', requires: ['GEMINI'], status: 'available',
+    risks: ['Google’s voice price doubles on 1 Jan 2027'],
   },
   {
     id: 'v2-54mini', label: 'Gemini ears + GPT-5.4 mini + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'gemini', brain: 'gpt-5.4-mini', voice: 'gemini-lite', gatedEars: true },
-    replyGap: { value: '0.96 s first token', grade: 'measured', source: LAB },
-    note: 'OpenAI fast tier.', requires: ['GEMINI', 'AZURE_OPENAI'], status: 'available',
+    replyGap: { value: '0.96 s, reply text starts', grade: 'measured', source: LAB },
+    note: 'OpenAI’s fast model.', requires: ['GEMINI', 'AZURE_OPENAI'], status: 'available',
   },
   {
     id: 'v2-38flash', label: 'Gemini ears + Gemini 3.8 Flash + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'gemini', brain: 'gemini-3.8-flash', voice: 'gemini-lite', gatedEars: true },
-    replyGap: { value: '2.0 s first token', grade: 'measured', source: LAB },
-    note: 'Best judged brain, but slow from India.', requires: ['GEMINI'], status: 'available',
+    replyGap: { value: '2.0 s, reply text starts', grade: 'measured', source: LAB },
+    note: 'The best-judged model, but slow to answer from India.', requires: ['GEMINI'], status: 'available',
   },
   {
     id: 'v2-mai', label: 'Gemini ears + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', kind: 'cascade', brief: 'v2',
     components: { ears: 'gemini', brain: 'gemini-3.5-flash-lite', voice: 'azure-mai', gatedEars: true },
-    replyGap: { value: '0.43 s voice first audio', grade: 'measured', source: LAB },
-    note: 'Fastest voice; emotion styles per reply. Voice price not yet read from the meter.',
+    replyGap: { value: '0.43 s, voice starts after the text', grade: 'measured', source: 'Measured in our voice lab from a server in India, 20 Oct 2026. This is how soon the voice starts once the reply text is ready; the whole reply gap was not measured for this stack.' },
+    note: 'The fastest voice to start, with an emotion style for each reply. Its price has not been checked against a real bill yet.',
     requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
   },
   {
     id: 'v2-flashlite-or', label: 'Gemini ears + Flash-Lite + Gemini voice, via OpenRouter', kind: 'cascade', brief: 'v2',
     components: { ears: 'gemini', brain: 'gemini-3.5-flash-lite@or', voice: 'gemini-lite-or', gatedEars: true },
-    replyGap: { value: '~1.5 s later start', grade: 'measured', source: LAB },
-    note: 'Styled voice; the clip arrives whole, so she starts about 1.5 s later.', requires: ['GEMINI', 'OPENROUTER'], status: 'available',
+    replyGap: { value: 'about 1.5 s slower to start', grade: 'measured', source: 'Measured in our voice lab from a server in India, 20 Oct 2026. The voice clip arrives whole instead of streaming, so she starts later.' },
+    note: 'A more expressive voice, but each clip arrives whole, so she starts about 1.5 s later.', requires: ['GEMINI', 'OPENROUTER'], status: 'available',
   },
   {
     id: 'v2-luna', label: 'Gemini ears + GPT-6 Luna + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'gemini', brain: 'gpt-6-luna@or', voice: 'gemini-lite', gatedEars: true },
-    replyGap: { value: '1.4 s first token', grade: 'measured', source: LAB },
-    note: 'The owner’s pick; judged last in the text bake-off, not yet confirmed by ear.', requires: ['GEMINI', 'OPENROUTER'], status: 'available',
+    replyGap: { value: '1.4 s, reply text starts', grade: 'measured', source: LAB },
+    note: 'Judged last of these in our written tests; not yet tried on a call.', requires: ['GEMINI', 'OPENROUTER'], status: 'available',
   },
   {
     id: 'sarvam-india', label: 'All-Sarvam: Saaras + Sarvam-105B + Bulbul (Indian stack)', kind: 'cascade', brief: 'v2',
     components: { ears: 'sarvam', brain: 'sarvam-105b', voice: 'sarvam', gatedEars: true },
-    replyGap: { value: '0.97-1.18 s server', grade: 'measured', source: 'blueprint section 8.2, n=9 replies' },
-    note: 'India-hosted end to end; Sarvam trains on data unless opted out.', requires: ['SARVAM'], status: 'beta',
+    replyGap: { value: '0.97 to 1.18 s on Sarvam’s servers', grade: 'measured', source: 'Measured on 9 replies in an earlier test, on Sarvam’s servers, before the phone line.' },
+    note: 'Runs in India end to end. Sarvam may train on your call data unless you opt out with them.', requires: ['SARVAM'], status: 'beta',
   },
 ];
 
