@@ -50,37 +50,26 @@ class RuntimeDoor(unittest.TestCase):
         self.assertEqual(v['rule'], 'RD4')
 
 
-class SharedRuleGaps(unittest.TestCase):
-    """Inputs the shared rules (rules.json) let through that a realistic call can produce. Reported to the safety
-    module; the runtime keeps the shared semantics exactly, so these are expected failures until rules.json changes.
-    When one starts passing, unittest reports an unexpected success: move it into the passing tests."""
-    @unittest.expectedFailure
+class SharedRuleRegressions(unittest.TestCase):
+    """Realistic inputs the shared rules once let through (found by the runtime tests, fixed in rules.json at eaae1c1)."""
     def test_staff_claim_devanagari(self): self.assertEqual(door('मैं यहाँ काम करती हूँ।').get('rule'), 'RD2')
 
-    @unittest.expectedFailure
     def test_secret_ask_after_a_negated_clause(self): self.assertEqual(door('Main OTP nahi maangungi, bas card number bata dijiye.').get('rule'), 'RD4')
 
-    @unittest.expectedFailure
     def test_password_send(self): self.assertEqual(door('password type karke bhej do').get('rule'), 'RD4')
 
-    @unittest.expectedFailure
     def test_take_payment_myself(self): self.assertEqual(door('Main payment abhi le leti hoon.').get('rule'), 'RD5')
 
-    @unittest.expectedFailure
     def test_pay_on_call_devanagari(self): self.assertEqual(door('आप अभी call पर ही payment कर दीजिए, UPI ID बताती हूँ।').get('rule'), 'RD5')
 
-    @unittest.expectedFailure
     def test_irdai_new_plan(self):
         self.assertEqual(door('Aap naya plan le lijiye, better hai.', sector_packs=['insurance_irdai'], category='promotional').get('rule'), 'RD8')
 
-    @unittest.expectedFailure
     def test_pin_after_a_pincode_is_still_masked(self):
         self.assertNotIn('4321', redact('mera pincode 110001 hai aur ATM pin 4321 hai'))
 
-    @unittest.expectedFailure
     def test_opt_out_devanagari(self): self.assertTrue(caller_signals('आगे से कॉल मत करना')['optOut'])
 
-    @unittest.expectedFailure
     def test_asks_ai_devanagari(self): self.assertTrue(caller_signals('सच बताओ, आप AI हो क्या?')['asksIfAi'])
 
 

@@ -54,8 +54,37 @@ def fires(r, t, brand=''):
     if r.get('all') and not all(rx(p, brand).search(t) for p in r['all']): return False
     if r.get('any') and not any(rx(p, brand).search(t) for p in r['any']): return False
     if not r.get('all') and not r.get('any'): return False
-    if r.get('none') and any(rx(p, brand).search(t) for p in r['none']): return False
-    return True
+    if r.get('none') and any(rx(p, brand).search(t) for p in r['none']): return False     # sentence-wide exemptions
+    if not r.get('noneClause'): return True
+    # clause-scoped exemptions (negations) shield only the clause that holds the anchor match
+    def shielded(c): return any(rx(p, brand).search(c) for p in r['noneClause'])
+    anchors = [r['all'][r['anchor'] if r.get('anchor') is not None else len(r['all']) - 1]] if r.get('all') else r['any']
+    for p in anchors:
+        for m in rx(p, brand).finditer(t):
+            if not shielded(clause_at(t, m.start(), m.end())): return True
+    return False
+
+
+def clause_at(t, start, end):
+    """The clause around [start, end), bounded by regex.clause_split; a segment under 12 characters just before it
+    ("never,", "kabhi bhi,") binds to the clause it introduces."""
+    cuts = [(m.start(), m.end()) for m in rx(RULES['regex']['clause_split']).finditer(t)]
+    before = [c for c in cuts if c[1] <= start]
+    frm = before[-1][1] if before else 0
+    prev = before[-2][1] if len(before) >= 2 else 0
+    if before and len(t[prev:before[-1][0]].strip()) < 12: frm = prev
+    after = next((c for c in cuts if c[0] >= end), None)
+    return t[frm:after[0] if after else len(t)]
+
+
+_RUN3 = re.compile(r'[0-9\u0966-\u096F](?:[\s-]?[0-9\u0966-\u096F]){2,}')
+
+
+def local_prefix(lower, i, n=30):
+    """Up to n characters before i, cut after the last run of 3+ digits, so another number's context does not leak."""
+    pre = lower[max(0, i - n):i]
+    ms = list(_RUN3.finditer(pre))
+    return pre[ms[-1].end():] if ms else pre
 
 
 # ---------------------------------------------------------------- reply door
@@ -202,11 +231,14 @@ def caller_signals(text):
 
 
 def sensitive_digits(raw, t, r):
-    if r.get('none') and any(rx(p).search(t) for p in r['none']): return False
-    ctx_hit = bool(rx(r['context']).search(t)) if r.get('context') else False
+    lower = raw.lower()
     for run in digit_runs(raw):
         n = len(run['digits'])
-        if ctx_hit and n >= 3: return True
+        # context and exemptions are read next to this run only, so a pin code elsewhere cannot hide a PIN
+        local = normalise(local_prefix(lower, run['start']) + lower[run['start']:min(len(lower), run['end'] + 25)])
+        if r.get('none') and any(rx(p).search(local) for p in r['none']): continue
+        if r.get('context') and n >= 3 and rx(r['context']).search(
+                normalise(local_prefix(lower, run['start'], 60) + ' ' + lower[run['end']:run['end'] + 25])): return True
         if n >= 12 and not looks_like_phone(run['digits']): return True
         if 13 <= n <= 19 and luhn(run['digits']): return True
     return False
@@ -244,8 +276,8 @@ def redact(text):
     not_secret = rx(RULES['redact']['not_secret_code'])
     for run in digit_runs(text):
         n = len(run['digits'])
-        near = lower[max(0, run['start'] - w):min(len(lower), run['end'] + w)]
-        before = lower[max(0, run['start'] - w):run['start']]
+        near = local_prefix(lower, run['start'], w) + lower[run['start']:min(len(lower), run['end'] + w)]
+        before = local_prefix(lower, run['start'], 20)
         kind = None
         for k in RULES['redact']['kinds']:
             if n < k['minDigits'] or n > k['maxDigits']: continue
