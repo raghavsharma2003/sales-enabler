@@ -7,13 +7,14 @@ import { requireStack, STACKS, StackError, type VoiceStack } from '../../../shar
 import { lintAgentConfig } from '../../../shared/safety/index.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import type { Module } from '../../app.ts';
+import { appendAudit } from '../../audit.ts';
 import { many, one } from '../../db.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import { BriefBudgetError, BriefLintError, compile, compileReport } from './compile.ts';
 import { draftHash, validateConfig, versionHashOf } from './config.ts';
 import { DraftError, draftFromDescription } from './draft.ts';
 import { shapeLint } from './lint.ts';
-import { passCriteriaV, simulate, type SimCaller } from './simulate.ts';
+import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
 
 interface AgentRow { id: string; name: string; job: string | null; status: string; draft: AgentConfig; updated_at: Date }
@@ -106,6 +107,46 @@ function diff(a: unknown, b: unknown, path = '', out: Change[] = []): Change[] {
   return out;
 }
 const comparable = (c: AgentConfig) => { const { agentId: _a, version: _v, versionHash: _h, ...rest } = c; return rest; };
+
+// ------------------------------------------------------------------------------------------------ shared paths
+
+type SimCallerRow = { id: string; persona: string; scenario: string; hidden_keys: Record<string, string>; contact: Record<string, string>; pass_criteria: unknown };
+async function loadSimCaller(ctx: ToolCtx, agentId: string, id: string): Promise<SimCaller> {
+  const row = await one<SimCallerRow>(ctx.q, 'SELECT id, persona, scenario, hidden_keys, contact, pass_criteria FROM sim_caller WHERE id = $1 AND workspace_id = $2 AND (agent_id = $3 OR agent_id IS NULL)',
+    [id, ctx.workspaceId, agentId]);
+  if (!row) throw new ValidationError('simCallerId', `no such simulated caller for this agent (${id})`);
+  return { persona: row.persona, scenario: row.scenario, hiddenKeys: row.hidden_keys, contact: row.contact, passCriteria: passCriteriaV(row.pass_criteria) };
+}
+
+async function storeRun(ctx: ToolCtx, agentId: string, scId: string, cfg: AgentConfig, briefHash: string, res: SimResult, seed: number | null) {
+  return (await one<{ id: string }>(ctx.q, `INSERT INTO agent_test_run (workspace_id, agent_id, sim_caller_id, draft_hash, brief_hash, transcript, door, grades, passed, ended_by, usage, seed)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+    [ctx.workspaceId, agentId, scId, draftHash(cfg), briefHash, JSON.stringify(res.transcript), JSON.stringify(res.door), JSON.stringify(res.grades), res.passed, res.endedBy, JSON.stringify(res.usage), seed]))!.id;
+}
+
+/** The one path that creates an immutable version: validate, require a chosen stack, number it, hash it, compile ONCE. */
+async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null) {
+  try { requireStack(cfg.voice.stackId); } catch (e) { if (e instanceof StackError) throw new ValidationError('voice.stackId', e.message); throw e; }
+  await ctx.q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['agent_version:' + agentId]);
+  const n = await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [agentId]);
+  const agent: AgentConfig = validateConfig({ ...cfg, agentId, version: n!.n, versionHash: '' });
+  agent.versionHash = versionHashOf(agent);
+  const brief = compile(agent);                  // the brief is compiled ONCE, here; tickets copy it
+  const actor = ctx.actor.type === 'vp_success' ? 'system' : ctx.actor.type;
+  const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, author_id, note, config)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+    [agentId, n!.n, agent.versionHash, parentId, actor, ctx.actor.id ?? null, note, JSON.stringify({ agent, brief })]);
+  return { versionId: v!.id, number: n!.n, versionHash: agent.versionHash, parentId, brief: { hash: brief.hash, bytes: brief.bytes } };
+}
+
+/** Compile errors as tool refusals: the reason names the lint finding or the section to cut. */
+function compileOrRefuse(cfg: AgentConfig) {
+  try { return compile(cfg); } catch (e) {
+    if (e instanceof BriefBudgetError) throw new ValidationError(`brief.${e.section}`, e.message);
+    if (e instanceof BriefLintError) throw new ValidationError(e.findings[0]?.path ?? 'config', e.message);
+    throw e;
+  }
+}
 
 // ------------------------------------------------------------------------------------------------ tools
 
@@ -235,21 +276,16 @@ export function registerAgentTools(r: Registry): void {
       const brief = compile(a.draft);                 // throws on lint or budget: an untestable draft is said so, not run
       let sc: SimCaller, scId: string;
       if (i.simCallerId) {
-        const row = await one<{ id: string; persona: string; scenario: string; hidden_keys: Record<string, string>; contact: Record<string, string>; pass_criteria: unknown }>(ctx.q,
-          'SELECT id, persona, scenario, hidden_keys, contact, pass_criteria FROM sim_caller WHERE id = $1 AND workspace_id = $2 AND (agent_id = $3 OR agent_id IS NULL)', [i.simCallerId, ctx.workspaceId, a.id]);
-        if (!row) throw new ValidationError('simCallerId', 'no such simulated caller for this agent');
-        sc = { persona: row.persona, scenario: row.scenario, hiddenKeys: row.hidden_keys, contact: row.contact, passCriteria: passCriteriaV(row.pass_criteria) };
-        scId = row.id;
+        sc = await loadSimCaller(ctx, a.id, i.simCallerId);
+        scId = i.simCallerId;
       } else {
         sc = { ...i.simCaller!, contact: i.simCaller!.contact ?? {} };
         scId = (await one<{ id: string }>(ctx.q, 'INSERT INTO sim_caller (workspace_id, agent_id, persona, scenario, hidden_keys, contact, pass_criteria) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
           [ctx.workspaceId, a.id, sc.persona, sc.scenario, JSON.stringify(sc.hiddenKeys), JSON.stringify(sc.contact), JSON.stringify(sc.passCriteria)]))!.id;
       }
       const res = await simulate(a.draft, brief, sc, i.maxTurns ?? 12);
-      const run = await one<{ id: string }>(ctx.q, `INSERT INTO agent_test_run (workspace_id, agent_id, sim_caller_id, draft_hash, brief_hash, transcript, door, grades, passed, ended_by, usage)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
-        [ctx.workspaceId, a.id, scId, draftHash(a.draft), brief.hash, JSON.stringify(res.transcript), JSON.stringify(res.door), JSON.stringify(res.grades), res.passed, res.endedBy, JSON.stringify(res.usage)]);
-      return { runId: run!.id, simCallerId: scId, briefHash: brief.hash, ...res };
+      const runId = await storeRun(ctx, a.id, scId, a.draft, brief.hash, res, null);
+      return { runId, simCallerId: scId, briefHash: brief.hash, ...res };
     },
   }));
 
@@ -263,17 +299,8 @@ export function registerAgentTools(r: Registry): void {
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
       if (draftHash(a.draft) !== i.draftHash) throw new ValidationError('draftHash', 'the draft changed since it was shown; review the new draft and publish again');
-      try { requireStack(a.draft.voice.stackId); } catch (e) { if (e instanceof StackError) throw new ValidationError('voice.stackId', e.message); throw e; }
-      const prev = await one<{ id: string; number: number }>(ctx.q, 'SELECT id, number FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [a.id]);
-      const number = (prev?.number ?? 0) + 1;
-      const agent: AgentConfig = validateConfig({ ...a.draft, agentId: a.id, version: number, versionHash: '' });
-      agent.versionHash = versionHashOf(agent);
-      const brief = compile(agent);                  // the brief is compiled ONCE, here; tickets copy it
-      const actor = ctx.actor.type === 'vp_success' ? 'system' : ctx.actor.type;
-      const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, author_id, note, config)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-        [a.id, number, agent.versionHash, prev?.id ?? null, actor, ctx.actor.id ?? null, i.note ?? null, JSON.stringify({ agent, brief })]);
-      return { versionId: v!.id, number, versionHash: agent.versionHash, parentId: prev?.id ?? null, brief: { hash: brief.hash, bytes: brief.bytes } };
+      const prev = await one<{ id: string }>(ctx.q, 'SELECT id FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [a.id]);
+      return createVersion(ctx, a.id, a.draft, prev?.id ?? null, i.note ?? null);
     },
   }));
 
@@ -298,6 +325,70 @@ export function registerAgentTools(r: Registry): void {
         [ctx.workspaceId, a.id, i.binding, JSON.stringify(i.split.map(s => ({ version_id: s.versionId, percent: s.percent })))]);
       if (i.binding !== 'test' && a.status === 'draft') await ctx.q.query("UPDATE agent SET status = 'live', updated_at = now() WHERE id = $1 AND workspace_id = $2", [a.id, ctx.workspaceId]);
       return { deploymentId: d!.id, binding: i.binding, split: i.split.map(s => ({ ...s, number: found.find(f => f.id === s.versionId)!.number })) };
+    },
+  }));
+
+  r.register(tool(obj({ config: any('an AgentConfig') }), {
+    name: 'brief.compile', risk: 'read', summary: 'Compile an agent config into its brief (the one compile(), for previews and other modules)',
+    run: async (_ctx, i) => compileOrRefuse(validateConfig(i.config)),
+  }));
+
+  r.register(tool(obj({ agentId: uuid(), config: any('an AgentConfig'), parentVersionId: uuid(), note: str({ min: 1, max: 300 }) }), {
+    name: 'version.candidate', risk: 'draft', summary: 'Create an immutable, undeployed candidate version (e.g. an experiment arm) without touching the draft',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId);
+      const parent = await one<{ id: string }>(ctx.q, 'SELECT id FROM agent_version WHERE id = $1 AND agent_id = $2', [i.parentVersionId, a.id]);
+      if (!parent) throw new ValidationError('parentVersionId', 'must be a published version of this agent');
+      const cfg = validateConfig(i.config);
+      compileOrRefuse({ ...cfg, agentId: a.id });   // refuse with the lint or budget reason before numbering anything
+      return createVersion(ctx, a.id, cfg, parent.id, i.note);
+    },
+  }));
+
+  r.register(tool(obj({
+    agentId: uuid(), config: opt(any('an AgentConfig; defaults to the draft')),
+    simCallerIds: arr(uuid(), { min: 1, max: 12 }), seeds: arr(num({ int: true, min: 0, max: 1_000_000 }), { min: 1, max: 5 }),
+    maxTurns: opt(num({ int: true, min: 2, max: 30 })),
+  }), {
+    name: 'test.simulate_batch', risk: 'test', summary: 'Run seeded text simulations of a config against saved simulated callers, graded by code',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId);
+      const cfg = i.config === undefined ? a.draft : validateConfig(i.config);
+      const brief = compileOrRefuse(cfg);
+      const callers = await Promise.all([...new Set(i.simCallerIds)].map(async id => [id, await loadSimCaller(ctx, a.id, id)] as const));
+      const runs = [];
+      for (const [id, sc] of callers) for (const seed of [...new Set(i.seeds)]) {
+        const res = await simulate(cfg, brief, sc, i.maxTurns ?? 12, { seed });
+        const runId = await storeRun(ctx, a.id, id, cfg, brief.hash, res, seed);
+        // Only what a text simulation measures. Cut-ins and reply gaps need audio timing, so they are omitted, never 0.
+        runs.push({ runId, simCallerId: id, seed, passed: res.passed, endedBy: res.endedBy,
+          metrics: { hung_up: res.endedBy === 'caller', safety_violations: res.door.length, disclosure_missed: !res.grades.find(g => g.check === 'disclosure')?.pass },
+          grades: res.grades });
+      }
+      return { briefHash: brief.hash, configHash: draftHash(cfg), runs };
+    },
+  }));
+
+  r.register(tool(obj({ agentId: uuid(), binding: opt(str({ oneOf: ['campaign', 'inbound', 'web', 'test'] })), reason: opt(str({ max: 300 })) }), {
+    name: 'deployment.revert_to_last_good', risk: 'external', summary: 'Put the previous deployment for a binding back in place',
+    describe: i => `Revert agent ${i.agentId.slice(0, 8)}${i.binding ? ' on ' + i.binding : ''} to its previous deployment` + (i.reason ? `: ${i.reason}` : ''),
+    version: async (ctx, i) => {
+      const b = i.binding ?? (await one<{ binding: string }>(ctx.q, 'SELECT binding FROM deployment WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC, id DESC LIMIT 1', [i.agentId, ctx.workspaceId]))?.binding;
+      return b ? currentSplit(ctx, i.agentId, b) : 'none';
+    },
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId, true);
+      // No binding given: the one most recently deployed (what a guardrail stop means by "the agent's traffic").
+      const binding = i.binding ?? (await one<{ binding: string }>(ctx.q, 'SELECT binding FROM deployment WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC, id DESC LIMIT 1', [a.id, ctx.workspaceId]))?.binding;
+      if (!binding) throw new ValidationError('agentId', 'this agent has never been deployed; there is nothing to revert to');
+      const rows = await many<{ id: string; split: unknown }>(ctx.q, 'SELECT id, split FROM deployment WHERE agent_id = $1 AND workspace_id = $2 AND binding = $3 ORDER BY created_at DESC, id DESC LIMIT 2', [a.id, ctx.workspaceId, binding]);
+      if (rows.length < 2) throw new ValidationError('binding', `there is no earlier deployment on ${binding} to revert to`);
+      const [current, previous] = rows;
+      const d = await one<{ id: string }>(ctx.q, 'INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,$3,$4) RETURNING id', [ctx.workspaceId, a.id, binding, JSON.stringify(previous.split)]);
+      const why = i.reason ?? (ctx.actor.type === 'member' ? 'reverted by a member' : `reverted by ${ctx.actor.id ?? ctx.actor.type}`);
+      await appendAudit(ctx.q, { workspaceId: ctx.workspaceId, actorType: ctx.actor.type, actorId: ctx.actor.id, action: 'deployment.reverted', objectType: 'deployment', objectId: d!.id,
+        payload: { agentId: a.id, binding, from: current.id, restored: previous.id, reason: why } });
+      return { deploymentId: d!.id, binding, restoredFrom: previous.id, replaced: current.id, split: previous.split, reason: why };
     },
   }));
 

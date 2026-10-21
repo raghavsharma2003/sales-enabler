@@ -2,22 +2,104 @@
   "module": "agents",
   "date": "2026-10-21",
   "tools": [
-    { "name": "template.list", "risk": "read" },
-    { "name": "agent.create", "risk": "draft", "note": "from a template id or a plain-words description (llm purpose 'compile'); always a draft, linted" },
-    { "name": "agent.list", "risk": "read" },
-    { "name": "agent.get", "risk": "read", "note": "draft, draftHash, lint, budget meters, compiled brief preview, stack card, versions, tests" },
-    { "name": "brief.edit", "risk": "draft", "note": "validated patch (set/remove/append by path); voice/tools/ids locked; optional expectDraftHash" },
-    { "name": "stack.list", "risk": "read", "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured" },
-    { "name": "stack.set", "risk": "draft", "note": "only finalised stacks from shared/stacks.ts; changing stack clears the voice" },
-    { "name": "voice.set", "risk": "draft", "note": "refuses until a stack is chosen" },
-    { "name": "tool.attach", "risk": "draft", "note": "catalogue tools by name with fixed risk, or workspace tool rows by id; remove: true detaches" },
-    { "name": "test.simulate", "risk": "test", "note": "LLM caller (purpose 'simulate') from sim_caller; every agent sentence through replyDoor; graded by code; stored in agent_test_run" },
-    { "name": "version.publish", "risk": "external", "note": "A2; version() = draft hash; stores agent_version.config = { agent, brief } with versionHash and parent" },
-    { "name": "deployment.split", "risk": "external", "note": "A2; version() = latest deployment id for (agent, binding); versions must belong to the agent; sums to 100" },
-    { "name": "version.list", "risk": "read" },
-    { "name": "version.diff", "risk": "read", "note": "default: latest version vs draft; path-level changes plus brief hash/bytes" }
+    {
+      "name": "template.list",
+      "risk": "read"
+    },
+    {
+      "name": "agent.create",
+      "risk": "draft",
+      "note": "from a template id or a plain-words description (llm purpose 'compile'); always a draft, linted"
+    },
+    {
+      "name": "agent.list",
+      "risk": "read"
+    },
+    {
+      "name": "agent.get",
+      "risk": "read",
+      "note": "draft, draftHash, lint, budget meters, compiled brief preview, stack card, versions, tests"
+    },
+    {
+      "name": "brief.edit",
+      "risk": "draft",
+      "note": "validated patch (set/remove/append by path); voice/tools/ids locked; optional expectDraftHash"
+    },
+    {
+      "name": "stack.list",
+      "risk": "read",
+      "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured"
+    },
+    {
+      "name": "stack.set",
+      "risk": "draft",
+      "note": "only finalised stacks from shared/stacks.ts; changing stack clears the voice"
+    },
+    {
+      "name": "voice.set",
+      "risk": "draft",
+      "note": "refuses until a stack is chosen"
+    },
+    {
+      "name": "tool.attach",
+      "risk": "draft",
+      "note": "catalogue tools by name with fixed risk, or workspace tool rows by id; remove: true detaches"
+    },
+    {
+      "name": "test.simulate",
+      "risk": "test",
+      "note": "LLM caller (purpose 'simulate') from sim_caller; every agent sentence through replyDoor; graded by code; stored in agent_test_run"
+    },
+    {
+      "name": "version.publish",
+      "risk": "external",
+      "note": "A2; version() = draft hash; stores agent_version.config = { agent, brief } with versionHash and parent"
+    },
+    {
+      "name": "deployment.split",
+      "risk": "external",
+      "note": "A2; version() = latest deployment id for (agent, binding); versions must belong to the agent; sums to 100"
+    },
+    {
+      "name": "version.list",
+      "risk": "read"
+    },
+    {
+      "name": "version.diff",
+      "risk": "read",
+      "note": "default: latest version vs draft; path-level changes plus brief hash/bytes"
+    },
+    {
+      "name": "brief.compile",
+      "risk": "read",
+      "note": "{config} -> {text,hash,bytes} via compile(); lint/budget failures are not_executed with the path and reason"
+    },
+    {
+      "name": "test.simulate_batch",
+      "risk": "test",
+      "note": "{agentId, config?, simCallerIds 1-12, seeds 1-5} -> runs with metrics {hung_up, safety_violations, disclosure_missed}; cut_ins and reply_gap_ms omitted (need audio timing); seed varies the caller prompt and sets temperature 0"
+    },
+    {
+      "name": "version.candidate",
+      "risk": "draft",
+      "note": "immutable, undeployed version through the same createVersion path as version.publish; draft untouched; parent must belong to the agent"
+    },
+    {
+      "name": "deployment.revert_to_last_good",
+      "risk": "external",
+      "note": "A3 for system/agent actors, approval card for members; binding optional (defaults to the most recently deployed); refuses with no earlier deployment; audits deployment.reverted with the reason"
+    }
   ],
-  "tests": { "passed": 21, "total": 21, "files": ["product/tests/agents.test.ts", "product/tests/agents-tools.test.ts"], "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm" },
+  "tests": {
+    "passed": 25,
+    "total": 25,
+    "files": [
+      "product/tests/agents.test.ts",
+      "product/tests/agents-tools.test.ts",
+      "product/tests/agents-contracts.test.ts"
+    ],
+    "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
+  },
   "works": [
     "compile(config) -> { text, hash, bytes }: persona v2 generalised to every JOB, Hinglish/Hindi/English/9 other Indic scripts, 4 registers, energy, humour, honorific, gender; inbound vs outbound openings; sector-pack rules; end_call as marker or tool; SOUNDS only for tag-safe voices, DELIVERY only for style voices",
     "deterministic: same config (any key order, JSON round trip) gives identical bytes and sha256",
@@ -36,7 +118,8 @@
     "non-Hindi Indic scripts (Tamil etc.): compiles, never run against a model or voice",
     "the full per-agent ledger pack (told/offer patterns per fact): simulate uses a small generic ledger; the runtime owns the real one",
     "user-supplied regex in passCriteria is length-capped (200) but not ReDoS-proofed",
-    "test.simulate holds a DB transaction across model calls (fine for tests; long for real models)"
+    "test.simulate holds a DB transaction across model calls (fine for tests; long for real models)",
+    "seeded determinism with a hosted model: LlmRequest has no seed field, so repeatability relies on temperature 0 plus the seed in the caller prompt; verified only with the scripted fake"
   ],
   "needs_from_others": [
     "kernel: add `module` from server/modules/agents/index.ts to server/modules/index.ts (outside this module's write boundary)",
@@ -45,6 +128,8 @@
     "money/kernel: test.simulate does not reserve against the ₹200/day test budget yet (no ledger reserve for LLM tokens); usage tokens are stored per run",
     "voice runtime: append the per-turn ledger then compile.ts TAIL after the stored brief, and fill per-contact facts from ticket.contact.facts (brief rows read '(per contact; see the contact rows)')",
     "blueprint data files named in the brief (data/voice-module-defaults.json, data/workspace-tool-registry.json) are not in the repo; tool names and risks were taken from blueprint/modules/workspace.md section 5",
-    "web: brief cards, lint and budget meters, stack picker and publish card can be built from agent.get / brief.edit / stack.list / version.diff results"
+    "web: brief cards, lint and budget meters, stack picker and publish card can be built from agent.get / brief.edit / stack.list / version.diff results",
+    "kernel: an optional `seed` on LlmRequest passed to providers that support it, for stronger test.simulate_batch repeatability",
+    "learning: createTreatmentVersion can now call version.candidate instead of inserting agent_version rows itself"
   ]
 }

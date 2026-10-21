@@ -79,17 +79,21 @@ function contactRows(sc: SimCaller): string {
   return 'Contact rows for this call (data, not lines):\n' + (e.length ? e.map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join('\n') : 'none');
 }
 
-function callerSystem(sc: SimCaller): string {
+function callerSystem(sc: SimCaller, seed?: number): string {
   const hidden = Object.entries(sc.hiddenKeys).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join('\n');
   return `You are role-playing a person on a phone call, for a test. Stay in character; never mention the test.
 Who you are: ${sc.persona}
 Situation: ${sc.scenario}
 Private facts only you know (reveal them only when it is natural):
 ${hidden || 'none'}
-Reply with only what you say next: short, natural, spoken. When you want the call to end, end your reply with <hangup>.`;
+Reply with only what you say next: short, natural, spoken. When you want the call to end, end your reply with <hangup>.` +
+    (seed === undefined ? '' : `\nRun ${seed}: keep your wording and choices consistent with run ${seed} of this role.`);
 }
 
-export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCaller, maxTurns: number): Promise<SimResult> {
+/** seed: a seeded run varies the caller by seed and runs both sides at temperature 0, so the same seed and config give
+ *  the same run on a deterministic model (the scripted fake always; a hosted model only as far as it honours temperature 0). */
+export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCaller, maxTurns: number, opts: { seed?: number } = {}): Promise<SimResult> {
+  const seeded = opts.seed !== undefined;
   const t: Turn[] = [];
   const door: DoorEvent[] = [];
   const usage = { inputTokens: 0, outputTokens: 0 };
@@ -98,9 +102,9 @@ export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCa
   let crisis = false;
 
   const callerTurn = async () => {
-    const msgs: ChatMessage[] = [{ role: 'system', content: callerSystem(sc) },
+    const msgs: ChatMessage[] = [{ role: 'system', content: callerSystem(sc, opts.seed) },
       ...(t.length ? t.map(x => ({ role: x.who === 'agent' ? 'user' : 'assistant', content: x.text }) as ChatMessage) : [{ role: 'user', content: '(your phone rings; you answer)' } as ChatMessage])];
-    const r = await complete({ purpose: 'simulate', messages: msgs, maxTokens: 200, temperature: 0.8 });
+    const r = await complete({ purpose: 'simulate', messages: msgs, maxTokens: 200, temperature: seeded ? 0 : 0.8 });
     usage.inputTokens += r.usage.inputTokens; usage.outputTokens += r.usage.outputTokens;
     const text = r.text.trim();
     t.push({ who: 'caller', text: text.replace(HANGUP, '').trim() });
@@ -112,7 +116,7 @@ export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCa
     const system = brief.text + '\n\n' + contactRows(sc) + '\n\n' + ledger(t) + '\n\n' + TAIL;
     const history: ChatMessage[] = t.map(x => ({ role: x.who === 'agent' ? 'assistant' : 'user', content: x.text }));
     if (!history.length) history.push({ role: 'user', content: '(call connected; you dialled them)' });
-    const r = await complete({ purpose: 'simulate', messages: [{ role: 'system', content: system }, ...history], maxTokens: 300, temperature: 0.7 });
+    const r = await complete({ purpose: 'simulate', messages: [{ role: 'system', content: system }, ...history], maxTokens: 300, temperature: seeded ? 0 : 0.7 });
     usage.inputTokens += r.usage.inputTokens; usage.outputTokens += r.usage.outputTokens;
     const ends = END.test(r.text);
     const said = t.filter(x => x.who === 'agent').map(x => x.text);
