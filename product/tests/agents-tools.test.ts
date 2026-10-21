@@ -143,6 +143,21 @@ test('stack.list carries each stack\'s availability from the runtime\'s health, 
   } finally { setRuntime(null); forgetRuntimeHealth(); }
 });
 
+test('stack.list prices each curated stack with money\'s own estimate, the figure the picker shows', { skip }, async () => {
+  const { register: registerMoney } = await import('../server/modules/money/index.ts');
+  const both = new Registry(); module.register(both); registerMoney(both);
+  const ws = (await one<{ id: string }>(pool, "INSERT INTO workspace (name) VALUES ('stack price test') RETURNING id"))!.id;
+  const m = (await one<{ id: string }>(pool, 'INSERT INTO member (workspace_id, email, role) VALUES ($1, $2, $3) RETURNING id', [ws, `p${Math.random()}@example.test`, 'owner']))!.id;
+  const ctx = { workspaceId: ws, actor: { type: 'member', id: m, role: 'owner' } as Actor };
+  const list = ok<any>(await both.execute(pool, 'stack.list', {}, ctx));
+  for (const st of list.stacks) {
+    const e = ok<any>(await both.execute(pool, 'money.estimate', { stackId: st.id, minutes: 1, calls: 0 }, ctx));
+    assert.equal(st.pricePerMinute.grade, 'computed', st.id);
+    assert.equal(st.pricePerMinute.value, `${e.display.perMinute}, provider cost`, st.id + ': the same figure as money.estimate');
+    assert.ok(e.perMinuteInrMilli > 0, st.id + ' is never priced at zero');
+  }
+});
+
 test('new agents start on the provisional default stack; a draft with no stack cannot publish; voice.set needs a stack', { skip }, async () => {
   const { call, ws, member } = await workspace();
   const s = ok<any>(await call('stack.list', {}));

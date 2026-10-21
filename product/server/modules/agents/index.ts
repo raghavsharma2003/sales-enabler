@@ -3,7 +3,7 @@
 // showed into an immutable agent_version holding { agent, brief }, and deployment.split (A2) decides where it runs.
 import type { AgentConfig, ToolGrant } from '../../../shared/agent-config.ts';
 import { RISK_CLASSES } from '../../../shared/approval.ts';
-import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackOf, STACKS, StackError, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
+import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackOf, STACKS, StackError, type Figure, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
 import { COMPONENTS, getComponent, type Component } from '../../../shared/components.ts';
 import { lintAgentConfig } from '../../../shared/safety/index.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError } from '../../../shared/validate.ts';
@@ -90,7 +90,20 @@ function componentCard(c: Component, h: RuntimeHealth | null) {
     status: c.status, note: c.note ?? null, voices: c.voices ?? [], defaultVoice: c.defaultVoice ?? null, availability };
 }
 
-function stackCard(s: VoiceStack, h: RuntimeHealth | null = null) {
+const NOT_PRICED: Figure = { value: 'not measured', grade: 'not_measured', source: 'No provider cost has been worked out for this stack yet.' };
+
+/** What VP pays its providers per minute on a stack: money's own estimate, the figure the picker shows. Without the money
+ *  module, or with no cost lines for the stack, it reads "not measured", never zero. */
+async function priceOf(r: Registry, ctx: ToolCtx, s: VoiceStack): Promise<Figure> {
+  const est = r.get('money.estimate');
+  if (est?.risk !== 'read') return NOT_PRICED;
+  try {
+    const e = await est.run(ctx, est.input({ stackId: s.id, minutes: 1, calls: 0 })) as { lines: unknown[]; basis: string; display: { perMinute: string } };
+    return e.lines.length ? { value: `${e.display.perMinute}, provider cost`, grade: 'computed', source: e.basis } : NOT_PRICED;
+  } catch { return NOT_PRICED; }
+}
+
+function stackCard(s: VoiceStack, h: RuntimeHealth | null = null, pricePerMinute: Figure = NOT_PRICED) {
   return { id: s.id, label: s.label, kind: s.kind, status: s.status, note: s.note, replyGap: s.replyGap, requires: s.requires ?? [], risks: s.risks ?? [],
     availability: availabilityOf(s.id, h, s.components),
     components: s.components,
@@ -99,8 +112,7 @@ function stackCard(s: VoiceStack, h: RuntimeHealth | null = null) {
       const c = s.components[part] ? getComponent(part, s.components[part]!) : undefined;
       return c ? [{ part, id: c.id, label: c.label, maker: c.maker, route: c.route, processedIn: c.processedIn }] : [];
     }),
-    // money.estimate is not reachable from inside a tool yet (see STATUS.json); a missing figure reads "not measured", never zero.
-    pricePerMinute: { value: 'not measured', grade: 'not_measured' as const, source: 'money.estimate not wired into the picker yet' } };
+    pricePerMinute };
 }
 
 /** In-call tools an agent may be granted by name, with the risk class each carries (workspace tools attach by id). */
@@ -297,10 +309,12 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({}), {
     name: 'stack.list', risk: 'read', summary: 'The curated voice stacks with their figures and grades, the default, and the parts a stack can be built from',
-    run: async () => {
+    run: async ctx => {
       const h = await runtimeHealth();
+      const stacks = [];
+      for (const s of STACKS) stacks.push(stackCard(s, h, await priceOf(r, ctx, s)));
       return { default: DEFAULT_STACK_ID, note: 'New agents start on the default stack. Choose another, or build your own from the parts below.',
-        stacks: STACKS.map(s => stackCard(s, h)), components: COMPONENTS.map(c => componentCard(c, h)) };
+        stacks, components: COMPONENTS.map(c => componentCard(c, h)) };
     },
   }));
 

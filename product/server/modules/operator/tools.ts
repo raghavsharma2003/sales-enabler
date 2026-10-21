@@ -138,7 +138,7 @@ export function registerOperatorTools(r: Registry): void {
     }),
   }));
 
-  r.register(tool(obj({ text: str({ min: 2, max: 200, desc: 'a presentation preference, e.g. "reports in Hinglish"; never a setting or permission' }),
+  r.register(tool(obj({ text: str({ min: 2, max: 200, desc: 'a presentation preference, e.g. "reports as a table"; never a setting or permission' }),
     sourceMessageId: opt(uuid()) }), {
     name: 'operator.preference.remember', risk: 'draft', roles: ALL_ROLES,
     summary: 'Remember how you like VP to present things (language, length, report day). Settings and permissions are never kept here',

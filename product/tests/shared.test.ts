@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normaliseIndianPhone } from '../shared/phone.ts';
 import { authorise, argsHash, canonicalJson, isA3, needsHumanApproval, canApprove } from '../shared/approval.ts';
-import { STACKS, requireStack, getStack, combinationId, StackError } from '../shared/stacks.ts';
+import { STACKS, requireStack, getStack, combinationId, StackError, DEFAULT_STACK_ID } from '../shared/stacks.ts';
 import { formatInr, inrToMilli, perMinute } from '../shared/money.ts';
 
 test('phone: Indian mobiles normalise from every common shape', () => {
@@ -88,6 +88,14 @@ test('stacks: the finalised set is present and there is no default', () => {
   assert.throws(() => requireStack('made-up'), StackError);
   for (const s of STACKS) assert.ok(s.replyGap.grade && s.replyGap.source, s.id + ' figure must carry a grade and source');
   assert.equal(getStack('v2-flashlite-or'), undefined, 'Gemini through OpenRouter is retired (decision.2026-10-21.gemini-vertex-only)');
+});
+
+test('stacks: a reply gap shows the whole gap or "not measured", never one part of it as the whole', () => {
+  for (const s of STACKS) {
+    assert.doesNotMatch(s.replyGap.value, /text starts|voice starts|after the text/, `${s.id}: a part of the gap headlined as the reply gap`);
+    if (s.replyGap.grade === 'not_measured') assert.equal(s.replyGap.value, 'not measured', s.id);
+  }
+  assert.equal(requireStack(DEFAULT_STACK_ID).replyGap.grade, 'measured', 'the default stack has a measured whole gap');
 });
 
 test('stacks: combination identity names what actually ran', () => {
