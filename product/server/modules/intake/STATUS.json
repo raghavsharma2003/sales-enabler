@@ -121,7 +121,7 @@
     "One write path for files and webhooks: exact E.164 dedupe (plus merged phone identifiers), attribute authority by subject (self vs record) with max_age; stale values lose authority; equal authority from different systems goes to an intake_attribute_conflict review row; a tenant's own uploads are one lineage",
     "Consent appended with evidence and purpose; a DB trigger refuses UPDATE (except a merge re-pointing contact_id) and direct DELETE",
     "Suppression never cleared by import; opt-out columns and webhook optOut add one; contact.suppress works for numbers not on file; contact.suppress_after_opt_out runs at once as A3 for system/agent and waits for approval for members",
-    "DPDP erase_me: tombstone (HMAC with a per-workspace salt), suppression kept and re-keyed to the hash, attributes/aliases/audiences/memory facts removed, contact kept as a husk so consent history survives; re-import, webhook and dial_facts all refuse the person; forget_memory scope",
+    "DPDP erase_me: tombstone (HMAC with a per-workspace salt), suppression kept and re-keyed to the hash, attributes/aliases/audiences removed, memory facts deleted through memory's forgetContactMemory, contact kept as a husk so consent history survives; re-import, webhook and dial_facts all refuse the person; forget_memory scope",
     "contact.dial_facts for the dial gate: tombstone, suppressions, DND (unknown or older than 7 days fails closed for promotional), latest consent per purpose, service/promotional verdicts with reasons",
     "DND provider seam: FakeDndProvider for tests, DisabledDndProvider (always unknown) as the production default",
     "contact.merge (external, A2): attributes by authority, every FK to contact re-pointed (found from pg_constraint), merged number kept as an identifier, 30-day snapshot",
@@ -170,12 +170,12 @@
       "what": "A truncated landline written with its leading 0 (e.g. 022 2345 67) reports TOO_SHORT, not LANDLINE_TRUNCATED. Fine for the gate; the receipt reason is less precise."
     },
     {
-      "from": "memory",
-      "what": "Export one function, e.g. forgetContactMemory(q, workspaceId, contactId), that intake's dpdp.request.execute can call inside its transaction; today intake updates memory_fact directly. Also read policy.retention.get for memory retention."
-    },
-    {
       "from": "calls",
       "what": "Read policy.retention.get (recordings_days, transcripts_days) when purging."
+    },
+    {
+      "from": "memory",
+      "what": "Read policy.retention.get for memory retention (forgetContactMemory is now used by dpdp.request.execute)."
     }
   ],
   "jobs": [

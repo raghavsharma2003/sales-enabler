@@ -10,6 +10,8 @@ import { decide, type Authority, type Claim } from './authority.ts';
 import { csvCell } from './csv.ts';
 import { asciiDigits } from './mapping.ts';
 import { dndProvider } from './dnd.ts';
+// The memory module's one export for erasure inside another module's transaction (agreed with the integrator).
+import { forgetContactMemory } from '../memory/index.ts';
 import { audienceWhere } from './audiences.ts';
 import { e164Hash, hashWith, workspaceSalt } from './store.ts';
 
@@ -356,9 +358,7 @@ export function registerContactTools(reg: Registry): void {
       const now = new Date();
       if (i.scope === 'forget_memory') {
         if (!r.contact) throw new Error('no such person on file');
-        const f = await ctx.q.query(`UPDATE memory_fact SET status = 'forgotten', value = 'null'::jsonb, quote = '', span = NULL, forgotten_at = now()
-          WHERE workspace_id = $1 AND contact_id = $2 AND status <> 'forgotten'`, [ws, r.contact.id]);
-        surfaces.memory_facts = f.rowCount ?? 0;
+        surfaces.memory_facts = (await forgetContactMemory(ctx.q, ws, r.contact.id)).facts;
       } else {
         const c = r.contact;
         const numbers = new Set<string>();
@@ -385,8 +385,7 @@ export function registerContactTools(reg: Registry): void {
           surfaces.identifiers = (await ctx.q.query('DELETE FROM contact_identifier WHERE contact_id = $1', [c.id])).rowCount ?? 0;
           surfaces.audiences = (await ctx.q.query('DELETE FROM audience_member WHERE contact_id = $1', [c.id])).rowCount ?? 0;
           surfaces.conflicts = (await ctx.q.query('DELETE FROM intake_attribute_conflict WHERE contact_id = $1', [c.id])).rowCount ?? 0;
-          surfaces.memory_facts = (await ctx.q.query(`UPDATE memory_fact SET status = 'forgotten', value = 'null'::jsonb, quote = '', span = NULL, forgotten_at = now()
-            WHERE workspace_id = $1 AND contact_id = $2 AND status <> 'forgotten'`, [ws, c.id])).rowCount ?? 0;
+          surfaces.memory_facts = (await forgetContactMemory(ctx.q, ws, c.id)).facts;
           surfaces.merge_snapshots = (await ctx.q.query('DELETE FROM intake_merge WHERE workspace_id = $1 AND kept_id = $2', [ws, c.id])).rowCount ?? 0;
           await ctx.q.query('DELETE FROM dnd_status WHERE contact_id = $1', [c.id]);
           await ctx.q.query(`UPDATE contact SET e164 = 'erased:' || id::text, name = NULL, language = NULL, custom = '{}'::jsonb, erased_at = now(), updated_at = now()
