@@ -1,0 +1,102 @@
+{
+ "nodes": [
+  {
+   "id": "evidence.2026-10-22.launch-readiness-audit",
+   "type": "evidence",
+   "title": "Launch-readiness audit of product/ against the blueprint's must-bes and the owner's 2026-10-22 bar (read-only, code and tests, not context claims). DONE: bounded call and spend defaults, state integrity, AI disclosure, horizontal (17 templates, 12 industries, 9 sector packs), stack part by part plus a default, English UI (apart from leftovers). PARTIAL: price and latency at every choice, contacts DND, chat-driven setup, LLM analytics, learning loop. MISSING: a customer price. First-week blockers: (1) a tenant cannot fund calls (top-up off, no trial credit, no member can credit); (2) no carrier KYC path, so no real call dials; (3) the Operator offers 166 tools (~21k tokens) per model call against a 60k-token turn cap; (4) no customer price; (5) DND provider off and no suppress/export UI; (6) integrations dead loop (assistant refuses credentials, Settings has no form); (7) cross-call analytics are counters only; (8) reply-gap labels oversold.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "verified",
+   "n": "1 audit; tsc clean; 181 tests across e2e, operator, learning, agents-tools, web, campaigns, money and intake passed",
+   "method": "Read-only subagent at high effort over product/ at 54ebd67, with file:line evidence; the main loop re-checked the operator tool count, the reply-gap figures and the stack.list price before acting."
+  },
+  {
+   "id": "rejected.2026-10-22.text-start-as-reply-gap",
+   "type": "rejection",
+   "title": "Headlining time-to-first-reply-text as a stack's reply gap",
+   "status": "rejected",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "tried": "shared/stacks.ts showed '0.70 s, reply text starts' (v2-flashlite, the default), '0.96 s' (v2-54mini) and '0.43 s, voice starts after the text' (v2-mai) under the 'Reply gap' heading. The picker's footnote defines reply gap as caller-finishes to first audio.",
+   "broke": "The default stack read 0.70 s while its measured whole gap from India is 2.0-2.7 s (measure.2026-10-22.round2-smoke-vertex). Stacks measured on different bases sat side by side, so a buyer would rank them wrongly.",
+   "instead": "Whole measured gaps headline (v2-flashlite 2.0-2.7 s, v2-mai 1.8-2.1 s, v2-38flash 2.6-2.7 s; one call of 2-3 replies each). Stacks without a whole gap on their current parts read 'not measured', with the partial figures in the source. tests/shared.test.ts refuses a partial figure in the headline (5d9bca0)."
+  },
+  {
+   "id": "rejected.2026-10-22.stack-list-unpriced",
+   "type": "rejection",
+   "title": "stack.list returning price 'not measured' while the picker computes it",
+   "status": "rejected",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "tried": "agents stackCard hard-coded pricePerMinute 'not measured' ('money.estimate not wired into the picker yet').",
+   "broke": "The picker had since been wired to money.estimate, so the Operator (which reads stack.list) and the screen disagreed on price. The source string was developer text that would have reached a person.",
+   "instead": "stack.list calls money.estimate through the registry. It reads 'not measured' only when money is absent or has no lines. A test asserts parity with money.estimate for every curated stack (5d9bca0)."
+  },
+  {
+   "id": "decision.2026-10-22.operator-english",
+   "type": "decision",
+   "title": "The Operator replies in professional English by default. A client's saved presentation preference may change that; the default never mirrors Hinglish.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "rationale": "directive.2026-10-22.enterprise-english-ui: product copy is never Hindi or Hinglish, and the Operator's replies are product copy. Before, loop.ts told it to mirror Hinglish.",
+   "reverse_if": "The owner rules that the assistant should mirror the client's language."
+  },
+  {
+   "id": "open.2026-10-22.trial-credit-amount",
+   "type": "open-question",
+   "title": "Owner: the trial credit for a new workspace. The blueprint recommends ₹500; the mechanism is built with the amount in config, default 0, because price is deferred.",
+   "status": "open",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "closes_when": "The owner names the trial credit amount (or confirms none)."
+  },
+  {
+   "id": "open.2026-10-22.dnd-provider",
+   "type": "open-question",
+   "title": "Owner: the DND (NCPR) lookup. Contract an NCPR lookup, or rely on carrier scrubbing. Until then every number reads 'DND not checked' and promotional calls stay blocked.",
+   "status": "open",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "closes_when": "The owner picks an NCPR lookup provider or confirms carrier scrubbing."
+  }
+ ],
+ "edges": [
+  {
+   "from": "rejected.2026-10-22.text-start-as-reply-gap",
+   "to": "measure.2026-10-22.round2-smoke-vertex",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-22.text-start-as-reply-gap",
+   "to": "evidence.2026-10-22.launch-readiness-audit",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-22.stack-list-unpriced",
+   "to": "evidence.2026-10-22.launch-readiness-audit",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-22.operator-english",
+   "to": "directive.2026-10-22.enterprise-english-ui",
+   "relation": "implements"
+  },
+  {
+   "from": "evidence.2026-10-22.launch-readiness-audit",
+   "to": "directive.2026-10-22.product-bar",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-22.trial-credit-amount",
+   "to": "evidence.2026-10-22.launch-readiness-audit",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-22.dnd-provider",
+   "to": "evidence.2026-10-22.launch-readiness-audit",
+   "relation": "derived-from"
+  }
+ ],
+ "events": []
+}

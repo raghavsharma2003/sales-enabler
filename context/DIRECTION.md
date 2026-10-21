@@ -190,6 +190,16 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
 
 The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round 1 contradicts that, so **re-price after the default stack is chosen** (`open.2026-10-20.reprice-tiers`).
 
+## Launch-readiness work in flight (2026-10-22)
+
+The audit `evidence.2026-10-22.launch-readiness-audit` ranked the first-week gaps. Routed:
+- **learning:** the Operator offers at most 40 tools per call, plus a find-tools step; tested on real modules. Also auto-propose from monitor issues.
+- **calls:** cross-call LLM insights, quote-verified and cost-bounded.
+- **campaigns:** the Plivo KYC adapter; a staff credit path and a trial credit (amount in config).
+- **web:** DND and suppression actions; the Integrations connect form; the Activity undo claim; a generic sample CSV.
+
+Fixed by the main loop (5d9bca0): stack cards headline whole measured reply gaps; stack.list is priced by money.estimate; the Operator replies in English.
+
 ## Open threads with the owner
 
 | Thread | Status |
@@ -199,6 +209,8 @@ The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round
 | Plivo trial | ₹764 credit expires 2026-11-16, with an ₹80 monthly usage cap. Recharge is the owner's decision. |
 | Round-2 human ratings | **Ready now.** The lab's round-2 stacks run on Vertex from India (`open.2026-10-20.round2-human-ratings`). |
 | Safety second layer | Waiting on the owner (`decision.2026-10-21.safety-second-layer-proposal`). Blind set 6 (n=330, scored once after the review fixes, `measure.2026-10-21.safety-door-blind-set6`):<br>• benign false positives 0/170;<br>• harmful caught 106/160;<br>• indirect crisis talk 4/30 (Tamil-English 0/7, Bengali-English 0/7);<br>• paraphrased AI denials 14/25.<br>Recommendation: start with a raise-only caller-crisis judge. It runs in parallel with the brain, adds no playback delay, and can only add the crisis line. The agent-side judge comes after it.<br>**Built (2026-10-21):** contract plus TS judge (df4436c), voice runtime half (776b195), and an eval harness (`product/scripts/judge-eval.mjs`). The default is shadow mode, raise-only by construction (`decision.2026-10-21.judge-raise-only-contract`). Post-call shadow hits never count as safety events (`decision.2026-10-21.judge-shadow-never-a-safety-event`).<br>**Owner decisions:**<br>• go to run judge-eval on the lab VM (2-3 models, real prices);<br>• production 'raise', once eval numbers exist.<br>Note: with VP_LLM_DEFAULT_* keys set, shadow mode calls the judge on every caller turn, and pays for it, from the first deploy.<br>Not measured: any real model's recall or false-positive rate. |
+| Trial credit | The amount a new workspace starts with. The blueprint recommends ₹500. The mechanism is being built with the amount in config, default 0, because price is deferred (`open.2026-10-22.trial-credit-amount`). |
+| DND lookup | Contract an NCPR lookup, or rely on carrier scrubbing. Until then every number reads 'DND not checked' and promotional calls stay blocked (`open.2026-10-22.dnd-provider`). |
 | First deploy | Needs the owner's go (it costs money) and real keys: LLM, TTS/STT for the chosen stacks, telephony (Plivo trial line), VP_SECRET_KEY. |
 | Teardown account hygiene | Rotate the pasted vendor passwords and keys. Delete the draft objects Instinct left in the vendor accounts (side-effects ledger in Drive `00-FINAL-REPORT.md`). Instinct's Drive captures hold the owner's phone (Exotel 11, 12) and a +1 number (Retell 08); the local copies are gitignored (`risk.2026-10-21.wt-synthesis-capture-hygiene`). |
 
