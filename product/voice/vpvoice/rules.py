@@ -28,7 +28,10 @@ VERSION = RULES.get('version')
 # Every key and enum value this port understands. A rules.json carrying anything else means index.ts has new
 # semantics this file does not have yet: refuse to load (CI breaks at import), never evaluate it partially.
 KNOWN = {
-    'top': {'schema', 'version', 'about', 'regex', 'texts', 'masks', 'lexicon', 'reply', 'caller', 'redact', 'lint', 'links'},
+    'top': {'schema', 'version', 'about', 'regex', 'texts', 'masks', 'lexicon', 'reply', 'caller', 'redact', 'lint', 'links',
+            'normalisation', 'words_to_amounts'},
+    'normalisation': {'about', 'steps', 'form', 'strip', 'fold', 'drop', 'space'},
+    'words_to_amounts': {'about', 'units', 'multipliers'},
     'regex': {'dialect', 'normalise', 'clause_split', 'clause_scope', 'back_reference'},
     'reply': {'id', 'rule', 'kind', 'action', 'replacement', 'reason', 'scope', 'any', 'all', 'none', 'noneClause', 'anchor', 'coClause', 'check', 'about', 'note'},
     'caller': {'id', 'signal', 'any', 'all', 'none', 'noneClause', 'builtin', 'context', 'about', 'note'},
@@ -62,6 +65,8 @@ def check_schema(r):
         if extra: bad.append(f'{where}: {sorted(extra)}')
     if r.get('schema') != 1: bad.append(f"schema {r.get('schema')!r} (this port reads 1)")
     keys(r, 'top', 'rules.json'); keys(r.get('regex', {}), 'regex', 'regex'); keys(r.get('masks', {}), 'masks', 'masks')
+    keys(r.get('normalisation', {}), 'normalisation', 'normalisation'); keys(r.get('words_to_amounts', {}), 'words_to_amounts', 'words_to_amounts')
+    if r.get('normalisation', {}).get('form') not in (None, 'NFC', 'NFD', 'NFKC', 'NFKD'): bad.append(f"normalisation.form {r['normalisation']['form']!r}")
     keys(r.get('redact', {}), 'redact', 'redact'); keys(r.get('lint', {}), 'lint', 'lint'); keys(r.get('links', {}), 'links', 'links')
     for k in (r.get('redact', {}).get('kinds') or []):
         keys(k, 'redact_kind', f"redact.kinds[{k.get('kind')}]")
@@ -92,13 +97,44 @@ def fold_devanagari(s):
     return unicodedata.normalize('NFC', s).replace('ँ', 'ं').replace('़', '')
 
 
+_NORM = None
+
+
+def _norm():
+    """rules.json normalisation compiled once: code-point ranges become character classes."""
+    global _NORM
+    if _NORM is None:
+        N = RULES['normalisation']
+        def cls(ranges):
+            return re.compile('[' + ''.join('-'.join(chr(int(h, 16)) for h in r.split('-')) for r in ranges).replace('\\', '\\\\').replace(']', '\\]').replace('^', '\\^') + ']')
+        keys = ''.join(re.escape(k) for k in N['fold'])
+        _NORM = {'form': N['form'], 'strip': cls(N['strip']), 'fold': N['fold'], 'fold_re': re.compile('[' + keys + ']'),
+                 'drop': cls(N['drop']), 'space': cls(N['space'])}
+    return _NORM
+
+
 def normalise(text):
-    t = unicodedata.normalize('NFC', text or '').lower()
-    t = re.sub('[​-‍﻿]', '', t)
-    t = t.replace('ँ', 'ं').replace('़', '')
-    t = re.sub('[०-९]', lambda m: str(ord(m.group(0)) - 0x0966), t)
-    t = re.sub('[‘’ʼ]', "'", t); t = re.sub('[“”]', '"', t)
-    return re.sub(r'\s+', ' ', t).strip()
+    """The one normalisation both doors apply (rules.json normalisation): form, strip, lower, fold, drop, digits, space."""
+    n = _norm()
+    t = n['strip'].sub('', unicodedata.normalize(n['form'], text or '')).lower()
+    t = n['drop'].sub('', n['fold_re'].sub(lambda m: n['fold'][m.group(0)], t))
+    t = re.sub('[\u0966-\u096F]', lambda m: str(ord(m.group(0)) - 0x0966), t)
+    return re.sub(' {2,}', ' ', n['space'].sub(' ', t)).strip()
+
+
+def fold_for_digits(text):
+    """The case-preserving part (form, strip, spaces as U+0020): digit runs and redaction read this, so fullwidth digits,
+    no-break or thin spaces and invisible characters cannot split or hide a number."""
+    n = _norm()
+    return n['space'].sub(' ', n['strip'].sub('', unicodedata.normalize(n['form'], text or '')))
+
+
+def expand_lexicon(p):
+    """'@name' expands to the lexicon entry, recursively, up to 5 levels (as index.ts expandLexicon)."""
+    for _ in range(5):
+        if not re.search('@[a-z_]+', p): break
+        p = re.sub('@([a-z_]+)', lambda m: RULES['lexicon'].get(m.group(1), m.group(0)), p)
+    return p
 
 
 _CACHE = {}
@@ -108,7 +144,7 @@ def rx(pattern, brand=''):
     key = (brand, pattern)
     r = _CACHE.get(key)
     if r is None:
-        src = re.sub(r'@([a-z_]+)', lambda m: RULES['lexicon'].get(m.group(1), m.group(0)), fold_devanagari(pattern))
+        src = fold_devanagari(expand_lexicon(pattern))
         src = src.replace('{brand}', re.escape(normalise(brand)) if brand else '(?!x)x')
         r = re.compile(src, FLAGS); _CACHE[key] = r
     return r
@@ -195,13 +231,15 @@ def safety_text(key, brand):
     return t.replace('{brand}', brand)
 
 
-def reply_door(text, ctx):
+def reply_door(text, ctx, only=None):
     """ctx uses the TS field names (category, sectorPacks, brand, facts, neverSay, disclosed, identityVerified,
-    recordingRefused, crisis, turnIndex, job)."""
+    recordingRefused, crisis, turnIndex, job). only: evaluate just these rule ids (e.g. {'RD2'}); the runtime uses it to
+    ask "is this a denial?" without other rules answering first. None = the contract door."""
     t = normalise(text)
     if not t: return {'action': 'pass'}
     brand = (_get(ctx, 'brand') or {}).get('name', '')
     for r in RULES['reply']:
+        if only is not None and r['rule'] not in only: continue
         if not in_scope(r.get('scope'), ctx): continue
         hit = builtin(r['kind'][8:], text, t, ctx) if r['kind'].startswith('builtin:') else fires(r, t, brand)
         if not hit: continue
@@ -222,8 +260,11 @@ def builtin(name, raw, t, ctx):
             v = normalise(str(f.get('value', '')))
             if len(v) < 3: continue
             if v in t: return f"fact {f.get('key')}"
+            # compare digits, not spellings: "₹18,450" in the facts and "18450" or "18,450" in speech are the same figure
+            digits = re.sub('[\u0966-\u096F]', lambda m: str(ord(m.group(0)) - 0x0966), re.sub('[^0-9\u0966-\u096F]', '', str(f.get('value', ''))))
+            if len(digits) >= 3 and any(r['digits'] == digits or r['digits'].lstrip('0') == digits for r in digit_runs(raw)): return f"fact {f.get('key')}"
             amt = parse_amounts(str(f.get('value', '')), True)
-            if amt and any(a in amt for a in amounts_in(raw)): return f"fact {f.get('key')}"
+            if amt and any(a in amt for a in parse_amounts(raw, True)): return f"fact {f.get('key')}"
         return False
     if name == 'never_say':
         for p in _get(ctx, 'neverSay') or []:
@@ -239,9 +280,33 @@ def builtin(name, raw, t, ctx):
     raise ValueError(f'unknown builtin {name}')
 
 
-MULT = {'k': 1e3, 'hazar': 1e3, 'hazaar': 1e3, 'thousand': 1e3, 'हज़ार': 1e3, 'हजार': 1e3, 'lakh': 1e5, 'lac': 1e5, 'lakhs': 1e5, 'लाख': 1e5,
-        'crore': 1e7, 'crores': 1e7, 'करोड़': 1e7}
-NUM = re.compile(r'(\d[\d,]*(?:\.\d+)?)(?:\s*(k|hazaa?r|thousand|lakhs?|lac|crores?|हज़ार|हजार|लाख|करोड़)(?![a-z]))?', re.I | re.ASCII)
+_AMOUNT = None
+
+
+def amount_tables():
+    """Multipliers and spoken number words from rules.json words_to_amounts (shared with index.ts)."""
+    global _AMOUNT
+    if _AMOUNT is None:
+        W = RULES['words_to_amounts']
+        def alt(keys):
+            return '|'.join((r'\b' + k + r'\b') if re.fullmatch('[a-z]+', k) else ('(?<![\u0900-\u097F])' + k + '(?![\u0900-\u097F])')
+                            for k in sorted(keys, key=len, reverse=True))
+        m, u = alt(W['multipliers']), alt(W['units'])
+        _AMOUNT = {'mult': W['multipliers'],
+                   'num': re.compile(r'(\d[\d,]*(?:\.\d+)?)(?:\s*(' + m + '))?', FLAGS),
+                   'spoken': re.compile(r'((?:' + u + r')(?:\s+(?:' + u + r'))*)\s*(?=(?:' + m + '))', FLAGS)}
+    return _AMOUNT
+
+
+def spoken_to_digits(t):
+    """'paanch hazaar' -> '5 hazaar': number words before a multiplier become digits (the multiplier stays)."""
+    units = RULES['words_to_amounts']['units']
+    def rep(mm):
+        run = mm.group(0); v = sum(units.get(w, 0) for w in run.strip().split())
+        return f'{v} ' if v else run
+    return amount_tables()['spoken'].sub(rep, t)
+
+
 MONEY_TALK = re.compile(r'(premium|emi|amount|payment|pay\b|fee|fees|price|bill|due|kimat|keemat|charge|refund|cashback|bonus|prize|reward|cover|sum assured|salary|income|return|profit|munafa|balance|loan|rent|kiraya|deposit|bhugtan|bakaya|kisht|installment|paise|paisa)', re.I | re.ASCII)
 
 
@@ -251,7 +316,8 @@ def _js_round(x):
 
 
 def parse_amounts(s, lenient):
-    t = normalise(s); out = []
+    t = spoken_to_digits(normalise(s)); out = []
+    tables = amount_tables(); MULT = tables['mult']; NUM = tables['num']
     cur = rx(RULES['lexicon']['currency'])
     money_talk = lenient or bool(MONEY_TALK.search(t))
     parts = []
@@ -259,7 +325,7 @@ def parse_amounts(s, lenient):
         try: base = float(m.group(1).replace(',', ''))
         except ValueError: continue
         u = m.group(2)
-        unit = (MULT.get(u) or (1e3 if u.startswith('haza') else 1e5 if u.startswith('lakh') else 1e7 if u.startswith('crore') else 1)) if u else 1
+        unit = (MULT.get(u, 1) or 1) if u else 1
         start = m.start(); value = base * unit
         prev = parts[-1] if parts else None
         if prev and prev['unit'] > 1 and value < prev['unit'] and re.fullmatch(r'\s*(aur |and )?', t[prev['end']:start]):
@@ -306,7 +372,7 @@ def caller_signals(text):
     if not t: return s
     for r in RULES['caller']:
         if s[r['signal']]: continue
-        s[r['signal']] = sensitive_digits(text, t, r) if r.get('builtin') == 'sensitive_digits' else fires(r, t)
+        s[r['signal']] = sensitive_digits(fold_for_digits(text), t, r) if r.get('builtin') == 'sensitive_digits' else fires(r, t)
     return s
 
 
@@ -352,6 +418,7 @@ def digit_runs(text):
 
 def redact(text):
     if not text: return text
+    text = fold_for_digits(text)
     w = RULES['redact']['context_window_chars']; lower = text.lower(); spans = []
     not_secret = rx(RULES['redact']['not_secret_code'])
     for run in digit_runs(text):

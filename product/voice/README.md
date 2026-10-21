@@ -73,7 +73,7 @@ The control plane's brief compiler can rely on this vocabulary. The LAST block r
 The rules are the shared ones. `vpvoice/rules.py` loads `product/shared/safety/rules.json` (the image copies it next to
 the package; `VP_SAFETY_RULES` overrides the path) and evaluates it line for line as `product/shared/safety/index.ts`
 does: first rule that fires decides, the same scopes, the same five builtins, the same masks (`[OTP]`, `[CARD]`, …).
-All 1,979 vectors in `cases.json` pass (`tests/test_safety_cases.py`).
+All 2,048 vectors in `cases.json` pass (`tests/test_safety_cases.py`).
 
 `vpvoice/safety.py` adds only what needs call state the shared door lacks:
 - the first-breath clause prefix (RD1);
@@ -106,7 +106,7 @@ present.
 
 ### Door mechanics beyond the shared rules (review "what she says")
 
-- Disclosure is a first-person affirmation the door passed ("main … AI assistant hoon", "I'm an AI"), never a mention.
+- Disclosure is the shared `lexicon.ai_affirm` (or the agent's disclosure clause verbatim) with no RD2 rule firing on the sentence; a mention or a denial never counts.
 - Each sentence is doored alone and with the sentence before it in the same reply.
 - A canned replacement ends the reply.
 - Identity is confirmed only by an explicit yes to a question that named the person.

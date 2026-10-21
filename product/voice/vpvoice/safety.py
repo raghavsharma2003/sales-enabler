@@ -22,27 +22,19 @@ def has_ai_clause(text):
     return bool(rules.rx('@ai_clause').search(rules.normalise(text or '')))
 
 
-# A disclosure is a first-person affirmation ("main ... AI assistant hoon", "मैं ... AI ... हूँ", "I'm an AI"), never a
-# mention ("hamara naya chatbot") or a denial ("main bot nahi"). rules.json's lexicon.ai_affirmation decides when the
-# shared rules carry it; until then these runtime patterns stand in (review B2, product/tests/review/what-she-says.md).
-_AFFIRM_FALLBACK = [
-    r"\b(main|mai|mein|me)\b[^.?!]{0,40}@ai_clause[^.?!]{0,25}\b(hoon|hun|hu|hoo)\b",
-    r"मैं[^.?!।]{0,40}@ai_clause[^.?!।]{0,25}(हूं|हु)",
-    r"\b(i'?m|i am|this is)\b[^.?!]{0,30}@ai_clause",
-    r"@ai_clause[^.?!]{0,30}\b(bol rahi|bol raha|speaking)\b",
-    r"@ai_clause[^.?!।]{0,30}(बोल रही|बोल रहा)",
-]
-_AI_NEGATED = r"@ai_clause[^.?!।]{0,15}(\bnahi\b|\bnahin\b|\bnhi\b|\bnot\b|नहीं|नही)|(\bnot\b|\bnahi\b|नहीं)[^.?!।]{0,6}@ai_clause"
-
-
 def affirms_ai(text, clause=''):
-    """True when the sentence affirms, in the first person, that she is an AI."""
+    """A disclosure is a first-person affirmation that she is an AI, judged by the shared rules only: the sentence
+    carries lexicon.ai_affirm (or the agent's own disclosure clause, verbatim) and no RD2 rule fires on it. A mention
+    ("hamara naya chatbot") or a denial ("main bot nahi hoon") never counts (review B2)."""
     t = rules.normalise(text or '')
-    if not t or rules.rx(_AI_NEGATED).search(t): return False
+    if not t: return False
+    if rules.reply_door(text, _NEUTRAL, only={'RD2'})['action'] != 'pass': return False
     c = rules.normalise(clause or '')
-    if c and c in t: return True
-    pats = [rules.RULES['lexicon']['ai_affirmation']] if 'ai_affirmation' in rules.RULES['lexicon'] else _AFFIRM_FALLBACK
-    return any(rules.rx(p).search(t) for p in pats)
+    return bool((c and c in t) or rules.rx('@ai_affirm').search(t))
+
+
+_NEUTRAL = {'category': 'service', 'sectorPacks': ['base'], 'brand': {'name': '', 'verifiedDomains': []}, 'facts': [], 'neverSay': [],
+            'disclosed': True, 'identityVerified': True, 'recordingRefused': False, 'crisis': False, 'turnIndex': 1}
 
 
 def callback_requested(text):
