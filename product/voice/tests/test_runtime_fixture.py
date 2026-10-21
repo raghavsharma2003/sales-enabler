@@ -1,5 +1,5 @@
 # One source, both doors (as rules.json / cases.json): representative sim calls produce every RuntimeEvent type the
-# runtime sends, including all three judge outcomes. The batches are written to tests/data/runtime_events.json and
+# runtime sends, including all three judge outcomes. The batches are written to tests/vectors/runtime_events.json and
 #   - product/tests/voice-runtime-events.test.ts runs the committed fixture through calls' real validateRuntimeBatch;
 #   - this file checks the runtime still produces what the fixture holds, and (when node + tsx are installed) runs the
 #     live batches through the same validator.
@@ -9,7 +9,7 @@ from tests.fixtures import FakeBrain, components, sink, ticket
 from tests.test_judge import DISCLOSED, ENV_ON, INDIRECT, fake, verdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIXTURE = os.path.join(HERE, 'data', 'runtime_events.json')     # tests/fixtures.py is the helpers module
+FIXTURE = os.path.join(HERE, 'vectors', 'runtime_events.json')     # tests/fixtures.py is the helpers module
 PRODUCT = os.path.abspath(os.path.join(HERE, '..', '..'))
 AT = '2026-10-21T00:00:00.000Z'
 CALLS = [

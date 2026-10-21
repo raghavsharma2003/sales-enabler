@@ -1,5 +1,5 @@
 // One source, both doors: product/voice writes the RuntimeEvent batches its sim calls produce to
-// product/voice/tests/data/runtime_events.json (tests/test_runtime_fixture.py keeps it current), and this test runs
+// product/voice/tests/vectors/runtime_events.json (tests/test_runtime_fixture.py keeps it current), and this test runs
 // them through calls' own hook validator. A runtime change that ingest would refuse with 422 fails here, not on a call.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import * as ingest from '../server/modules/calls/ingest.ts';
 
 const { validateRuntimeBatch } = ((ingest as unknown as { default?: typeof ingest }).default ?? ingest);
-const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), '..', 'voice', 'tests', 'data', 'runtime_events.json');
+const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), '..', 'voice', 'tests', 'vectors', 'runtime_events.json');
 const calls = JSON.parse(readFileSync(FIXTURE, 'utf8')) as Record<string, { protocol: number; conversationId: string; events: { type: string; outcome?: string }[] }[]>;
 
 test('voice runtime fixture: every batch passes the hook validator', () => {

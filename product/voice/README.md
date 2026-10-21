@@ -156,7 +156,7 @@ and `limits.maxDurationS` end the call (`max_cost`, `max_duration`) after a shor
 ## Runtime events and ingest parity
 
 `tests/test_runtime_fixture.py` runs sim calls that produce every RuntimeEvent type and all three judge outcomes, and
-checks them against `tests/data/runtime_events.json`. When node and tsx are installed, it also runs the live batches
+checks them against `tests/vectors/runtime_events.json`. When node and tsx are installed, it also runs the live batches
 through calls' own `validateRuntimeBatch`. `product/tests/voice-runtime-events.test.ts` runs the committed fixture
 through that validator in the TypeScript suite. After an intended change to what the runtime sends, regenerate the
 fixture and commit it:

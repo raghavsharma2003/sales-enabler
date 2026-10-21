@@ -30,7 +30,7 @@
       "test_safety_cases.py": "every case in cases.json with the semantics the file states; parity guard (an unknown rules.json key or value fails at load)",
       "test_review.py": "review \"what she says\": all 26 reproductions pass (runtime fixes 55f7a14, shared rules f1e4d3e ported)",
       "test_judge.py": "caller-crisis judge: the 12 TS judge behaviours mirrored, parity guard on judge.json, and the runtime half on sim and cascade calls (raise interrupts before she is heard, shadow changes nothing, timeout falls back, floor hit never waits, no keys no call, no secrets to the judge, judge tokens metered)",
-      "test_runtime_fixture.py": "one source, both doors: sim calls covering every RuntimeEvent type and all three judge outcomes; output checked against tests/data/runtime_events.json, and live batches run through calls validateRuntimeBatch (product/tests/voice-runtime-events.test.ts runs the committed fixture through it in the TS suite)"
+      "test_runtime_fixture.py": "one source, both doors: sim calls covering every RuntimeEvent type and all three judge outcomes; output checked against tests/vectors/runtime_events.json, and live batches run through calls validateRuntimeBatch (product/tests/voice-runtime-events.test.ts runs the committed fixture through it in the TS suite)"
     }
   },
   "works": [
