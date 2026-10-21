@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "updatedAt": "2026-10-20",
+ "updatedAt": "2026-10-21",
  "nodes": [
   {
    "id": "product.general",
@@ -14540,6 +14540,56 @@
    "date": "2026-10-20",
    "title": "Public-material teardown complete (wf_560edf6c-5d6, 19/19 agents, 0 errors): 8 vendors + regulation/segment + radar, 614 lane claims; adversarial verifiers checked 344 claims (confirmed 208, downgraded 38, refuted 24); Bolna blind inferences calibrated against its open code; 125 consolidated pre-registered predictions; cross-vendor synthesis.",
    "path": "research/2026-10-20/teardown/SYNTHESIS.md"
+  },
+  {
+   "id": "directive.2026-10-21.haiku-images-if-quality",
+   "type": "requirement",
+   "status": "confirmed",
+   "source": "user",
+   "date": "2026-10-21",
+   "title": "Owner: use cheaper Haiku subagents or a Haiku workflow to analyse the walk-through screenshots, but only if Haiku can do it at the best quality.",
+   "quote": "launch a cheaper sub agents n workflow of haiku to analyse the images if haiku would be able to do it in the best qualoity"
+  },
+  {
+   "id": "rejected.2026-10-21.drive-read-for-screenshots",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Reading walk-through screenshots through the Google Drive connector's read_file_content.",
+   "tried": "read_file_content on vapi 84-campaign-phone-dropdown.png (Drive folder 'Voice-AI Product Evaluation 2026-10-21').",
+   "broke": "It returns Google's OCR text plus image labels ('Computer program; Software; ...'), not pixels. Every model would read the same OCR string, so a Haiku-vs-Sonnet comparison would be meaningless, and toggle states, slider positions, selection, layout and clipping cannot be seen. Fix: download_file_content saves a too-large result to a file; scripts/walkthrough-drive.mjs decode turns it into the PNG with no model re-typing bytes."
+  },
+  {
+   "id": "measure.2026-10-21.walkthrough-fetch",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Instinct's walk-through captures fetched from Drive to data/walkthroughs/ (gitignored): 207 of 209 unique screenshots on disk, each equal in bytes to its Drive size. Bolna 44/44, Vapi 56/56, Retell 51/51, ElevenLabs 39/41, Sarvam 33/33, Exotel 24/24. Plus 107 .txt page captures, 4 notes .md files, and 2 eval-artifact zips (Sarvam: notes + 222-voice catalogue). Missing: ElevenLabs 01-landing and 37-blank-step1, which came back inline (small files) instead of to a file. Two ElevenLabs titles were uploaded twice, byte-identical.",
+   "n": "6 vendor folders, 211 PNG entries (209 unique), 6 Haiku fetch agents",
+   "method": "Drive search_files by parentId + download_file_content per PNG; saved results decoded by scripts/walkthrough-drive.mjs; on-disk size compared with Drive fileSize for every file; stray-file check per folder. 2026-10-21."
+  },
+  {
+   "id": "measure.2026-10-21.image-model-calibration",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Screenshot-reading calibration, Haiku 5.5 medium vs Sonnet 5.5 high, same prompt, same 8 screenshots (2 traps):\n- recall: Haiku 76.5/78 (98%), Sonnet 78/78;\n- material errors: Haiku 2 clear + 2 borderline, Sonnet 0. Haiku claimed both banners were absent on a screen that shows them, and copied Model-card numbers from a previous screenshot into one where they are cut off;\n- tokens and time: Haiku 107k in 148 s, Sonnet 88k in 111 s.\nBoth caught the two traps: a capture named 'billing' that shows the agent builder, and an analytics page that was still loading.",
+   "n": "8 screenshots (5 Bolna, 3 Vapi), 78 reference facts, 1 run per arm",
+   "method": "Pre-registered rule in research/2026-10-21/walkthroughs/image-model-calibration.md; reference facts written by the main loop (Opus 5.5 extra-high) from the pixels before either arm's output was read; each arm output scored fact by fact. 2026-10-21.",
+   "path": "research/2026-10-21/walkthroughs/image-model-calibration.md"
+  },
+  {
+   "id": "decision.2026-10-21.sonnet-reads-screenshots",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Sonnet 5.5 at high effort reads the competitor walk-through screenshots. Haiku does not, because it failed the pre-registered quality rule.",
+   "rationale": "The owner allowed Haiku only at the best quality. Haiku met the recall bar (98% of Sonnet's) but made 2 clear material errors (the rule allows 1), one of them a value imported from another screenshot. Its errors were spread across strata, so no stratum can be handed to it. It was not cheaper per run either: it wrote more tokens.",
+   "reverse_if": "A re-run of the same calibration with a newer Haiku (or with Sonnet at medium effort) shows at most 1 material error and recall at or above 0.90 of the Sonnet-high arm; or screenshot volume grows about 10\u00d7 and a stratum (e.g. plain list pages) is shown error-free for Haiku."
   }
  ],
  "edges": [
@@ -26257,6 +26307,31 @@
   },
   {
    "from": "evidence.2026-10-20.teardown-synthesis",
+   "to": "evidence.2026-10-20.account-synthesis",
+   "relation": "extends"
+  },
+  {
+   "from": "directive.2026-10-21.haiku-images-if-quality",
+   "to": "measure.2026-10-21.image-model-calibration",
+   "relation": "motivates"
+  },
+  {
+   "from": "measure.2026-10-21.image-model-calibration",
+   "to": "decision.2026-10-21.sonnet-reads-screenshots",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-21.sonnet-reads-screenshots",
+   "to": "decision.2026-10-20.model-selection",
+   "relation": "applies"
+  },
+  {
+   "from": "rejected.2026-10-21.drive-read-for-screenshots",
+   "to": "measure.2026-10-21.image-model-calibration",
+   "relation": "enables"
+  },
+  {
+   "from": "measure.2026-10-21.walkthrough-fetch",
    "to": "evidence.2026-10-20.account-synthesis",
    "relation": "extends"
   }
