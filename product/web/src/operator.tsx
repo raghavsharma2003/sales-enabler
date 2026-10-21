@@ -62,14 +62,14 @@ export function Dock() {
         else if (e.type === 'step') patch(mid, m => ({ ...m, step: e.status === 'running' ? e.tool : undefined }));
         else if (e.type === 'notice') patch(mid, m => ({ ...m, notice: e.text }));
         else if (e.type === 'error') patch(mid, m => ({ ...m, notice: e.text }));
-      }, ac.signal);
+      }, ac.signal, path);
       while (queue.buf) await new Promise(r => setTimeout(r, 30));
     } catch (e) {
       const notFound = e instanceof ApiError && (e.status === 404 || e.code === 'not_found');
       queue.buf = '';
       if ((e as Error).name !== 'AbortError') patch(mid, m => ({ ...m, notice: notFound ? 'The assistant is not switched on in this server yet, so I cannot plan or act. Every page still works on its own.' : (e instanceof ApiError ? e.message : 'I could not finish that. Nothing was changed.') }));
     } finally { window.clearInterval(timer); patch(mid, m => ({ ...m, streaming: false, step: undefined })); setBusy(false); abort.current = null; }
-  }, [busy, patch, setThread, tools]);
+  }, [busy, patch, setThread, tools, path]);
 
   const stop = () => { abort.current?.abort(); };
   const toggleMic = () => {

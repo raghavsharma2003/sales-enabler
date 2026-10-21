@@ -11,6 +11,7 @@ import { getThread, registerOperatorTools } from './tools.ts';
 const newThread = obj({ title: opt(str({ min: 1, max: 120 })) });
 const postMessage = obj({
   text: str({ min: 1, max: 4_000 }),
+  page: opt(str({ max: 200, pattern: /^\/[A-Za-z0-9/_-]*$/, desc: 'the web path the member is on; picks the tools offered first' })),
   uploads: opt(arr(obj({ name: str({ min: 1, max: 120 }), content: str({ max: 20_000 }) }), { max: 3 })),
 });
 
@@ -55,7 +56,7 @@ export const module: Module = {
       }
       return {
         stream: (write, closed) => runTurn({ pool, registry, workspaceId: m.workspaceId, member: { id: m.memberId, role: m.role }, threadId: req.params.id,
-          text: b.text, uploads: b.uploads, emit: e => write(sse(e)), signal: closed }),
+          text: b.text, page: b.page, uploads: b.uploads, emit: e => write(sse(e)), signal: closed }),
       };
     });
   },

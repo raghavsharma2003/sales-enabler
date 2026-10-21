@@ -111,10 +111,10 @@ export async function createThread(): Promise<string> {
 }
 
 /** Send one message to a thread and hand every frame to onEvent as it is parsed. */
-export async function sendOperator(threadId: string, text: string, onEvent: (e: OperatorFrame) => void, signal?: AbortSignal): Promise<void> {
+export async function sendOperator(threadId: string, text: string, onEvent: (e: OperatorFrame) => void, signal?: AbortSignal, page?: string): Promise<void> {
   let res: Response;
   try {
-    res = await fetch(`/v1/operator/threads/${encodeURIComponent(threadId)}/messages`, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text }), signal });
+    res = await fetch(`/v1/operator/threads/${encodeURIComponent(threadId)}/messages`, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify(page ? { text, page } : { text }), signal });
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw e;
     throw new ApiError(0, 'offline', 'Could not reach the server. Check your connection and try again.');
