@@ -16276,6 +16276,37 @@
     "cost_note": "Not yet measured. The encoder phase is near-zero marginal cost per sentence; the shadow LLM phase costs tokens per sentence for a bounded labelling window only."
    },
    "reverse_if": "Blind measurement shows the judge adds less than 5 points of catch over the floor, or cannot hold <= 1% benign FP, or cannot meet 150 ms p95 on the production stack; or the owner prefers the floor plus human review of flagged calls."
+  },
+  {
+   "id": "measure.2026-10-21.e2e-acceptance-first-run",
+   "type": "measurement",
+   "title": "First end-to-end acceptance run through the real HTTP API (sign-up, brand, wallet top-up, template agent, stack choice with no default, publish and deploy via approvals, number rent and KYC, contact import with consent, campaign launch, dispatcher tick, signed runtime events, analysis, memory, funnel, invoice, opt-out): 11 of 17 steps pass, 0 fail, 6 marked todo with their exact cause.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "integration verifier agent (main loop)",
+   "n": 17,
+   "method": "node:test product/tests/e2e.test.ts against a throwaway Postgres 16; FakeRuntime and scripted LLM; 3 identical runs; full suite 261/267 with the 6 todos",
+   "path": "product/tests/e2e.test.ts",
+   "value": "11 pass / 0 fail / 6 todo"
+  },
+  {
+   "id": "risk.2026-10-21.no-production-dial-path",
+   "type": "risk",
+   "title": "No business can make a production call through the API yet: KYC never becomes verified (G8 kyc_lapsed) and, from 2026-11-17, no tool can declare A2P (G8 cli_undeclared).",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "e2e findings F1, F2",
+   "closes_when": "campaigns ships a carrier KYC status path (system/vp_success only) and number.a2p.declare (policy), and the e2e steps 3b/3d pass without the direct database write",
+   "mitigation": "Campaigns builder asked (2026-10-21) for a carrier KYC status webhook/sync tool limited to system or vp_success actors, and a policy-class number.a2p.declare tool; until then no production dial is possible, which fails safe."
+  },
+  {
+   "id": "open.2026-10-21.e2e-findings-f3-f7",
+   "type": "open-question",
+   "title": "E2E findings F3-F7 routed to owners: per-contact attributes never reach the ticket (campaigns); deployment.split ignored by running campaigns (campaigns); funnel counts live dials as connected (calls); unstable opt-out suppression code (intake); parallel queries on one client (calls); memory's minor check reads contact.custom only (memory).",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "integration verifier",
+   "closes_when": "every e2e todo step is a normal passing step and the full suite is green on CI"
   }
  ],
  "edges": [
@@ -29345,6 +29376,16 @@
    "from": "decision.2026-10-21.safety-second-layer-proposal",
    "to": "risk.2026-10-21.regex-door-recall-ceiling",
    "relation": "informed-by"
+  },
+  {
+   "from": "risk.2026-10-21.no-production-dial-path",
+   "to": "measure.2026-10-21.e2e-acceptance-first-run",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-21.e2e-findings-f3-f7",
+   "to": "measure.2026-10-21.e2e-acceptance-first-run",
+   "relation": "derived-from"
   }
  ]
 }

@@ -19,7 +19,8 @@
    "status": "open",
    "date": "2026-10-21",
    "source": "e2e findings F1, F2",
-   "closes_when": "campaigns ships a carrier KYC status path (system/vp_success only) and number.a2p.declare (policy), and the e2e steps 3b/3d pass without the direct database write"
+   "closes_when": "campaigns ships a carrier KYC status path (system/vp_success only) and number.a2p.declare (policy), and the e2e steps 3b/3d pass without the direct database write",
+   "mitigation": "Campaigns builder asked (2026-10-21) for a carrier KYC status webhook/sync tool limited to system or vp_success actors, and a policy-class number.a2p.declare tool; until then no production dial is possible, which fails safe."
   },
   {
    "id": "open.2026-10-21.e2e-findings-f3-f7",
