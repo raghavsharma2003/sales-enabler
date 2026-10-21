@@ -330,3 +330,17 @@ test('A plan step the server refuses says so plainly, offers a fix, and the fixe
   const after = (await actions('executed')).filter(a => a.tool === 'cap.raise').length;
   assert.equal(after, before + 1, 'the held cap step executed exactly once, after the hold');
 });
+
+test('Approval sheet: the hold is not offered until the details of the change have loaded', async () => {
+  // Hold the details request back; a person must not be able to approve an amount they cannot see.
+  await page.route('**/v1/actions?status=proposed*', async route => { await new Promise(r => setTimeout(r, 1500)); await route.continue(); });
+  try {
+    await page.goto(BASE + '/');
+    await page.getByRole('button', { name: 'Review' }).first().click();
+    await sheet().waitFor();
+    assert.equal(await sheet().locator('.hold').count(), 0, 'no hold button while the details are still loading');
+    await sheet().getByText('Loading the details of this change').waitFor();
+    await sheet().locator('.hold').waitFor({ timeout: 10000 });
+    assert.ok(await sheet().locator('dl.kv').count() > 0, 'the details are on screen by the time the hold is offered');
+  } finally { await page.unroute('**/v1/actions?status=proposed*'); }
+});
