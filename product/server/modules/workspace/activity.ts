@@ -4,20 +4,27 @@ import { tool } from '../../tools.ts';
 import { many } from '../../db.ts';
 import { num, obj, opt, str } from '../../../shared/validate.ts';
 
-const PHRASE: Record<string, string> = {
-  'workspace.create': 'created the workspace',
-  'member.invite': 'invited a teammate', 'member.role.set': 'changed a teammate\'s role', 'member.remove': 'removed a teammate', 'member.accept_invite': 'joined the workspace',
-  'apikey.create': 'created an API key', 'apikey.revoke': 'revoked an API key', 'secret.reveal': 'looked at a new secret (it can be shown only once)',
-  'brand.update': 'edited the brand details', 'brand.cnap_name.set': 'changed the caller name shown on calls',
-  'knowledge.ingest': 'added a document to the knowledge base', 'knowledge.span.approve': 'reviewed passages of the knowledge base',
-  'offering.edit': 'edited an offering', 'action.undo': 'undid a change',
-  'integration.stage_secrets': 'handed over credentials for an integration', 'integration.connect': 'connected an integration', 'integration.disconnect': 'disconnected an integration',
-  'webhook.create': 'added a webhook', 'webhook.delete': 'deleted a webhook', 'webhook.replay': 'sent a webhook event again',
-  'share.link.create': 'made a share link', 'share.link.revoke': 'turned off a share link',
-  'action.decline': 'declined a proposed change',
+// [what happened, what was asked for]. Anything not listed falls back to the tool's own words.
+const PHRASE: Record<string, [string, string]> = {
+  'workspace.create': ['created the workspace', 'create the workspace'],
+  'member.invite': ['invited a teammate', 'invite a teammate'], 'member.role.set': ['changed a teammate\'s role', 'change a teammate\'s role'],
+  'member.remove': ['removed a teammate', 'remove a teammate'], 'member.accept_invite': ['joined the workspace', 'join the workspace'],
+  'apikey.create': ['created an API key', 'create an API key'], 'apikey.revoke': ['revoked an API key', 'revoke an API key'],
+  'secret.reveal': ['looked at a new secret (it can be shown only once)', 'look at a new secret'],
+  'brand.update': ['edited the brand details', 'edit the brand details'], 'brand.cnap_name.set': ['changed the caller name shown on calls', 'change the caller name shown on calls'],
+  'knowledge.ingest': ['added a document to the knowledge base', 'add a document to the knowledge base'],
+  'knowledge.span.approve': ['reviewed passages of the knowledge base', 'review passages of the knowledge base'],
+  'offering.edit': ['edited an offering', 'edit an offering'], 'action.undo': ['undid a change', 'undo a change'],
+  'integration.stage_secrets': ['handed over credentials for an integration', 'hand over credentials for an integration'],
+  'integration.connect': ['connected an integration', 'connect an integration'], 'integration.disconnect': ['disconnected an integration', 'disconnect an integration'],
+  'webhook.create': ['added a webhook', 'add a webhook'], 'webhook.delete': ['deleted a webhook', 'delete a webhook'], 'webhook.replay': ['sent a webhook event again', 'send a webhook event again'],
+  'share.link.create': ['made a share link', 'make a share link'], 'share.link.revoke': ['turned off a share link', 'turn off a share link'],
+  'action.decline': ['declined a proposed change', 'decline a proposed change'],
 };
 
-const humanise = (a: string) => PHRASE[a] ?? `ran ${a.replace(/[._]/g, ' ')}`;
+const words = (a: string) => a.replace(/[._]/g, ' ');
+const happened = (a: string) => PHRASE[a]?.[0] ?? `ran ${words(a)}`;
+const asked = (a: string) => PHRASE[a]?.[1] ?? `run ${words(a)}`;
 
 type Row = { id: string; actor_type: string; actor_id: string | null; action: string; object_type: string | null; object_id: string | null; payload: Record<string, unknown>; at: string; t: string };
 
@@ -49,8 +56,8 @@ export function registerActivity(r: Registry) {
         : r.actor_type === 'agent' ? 'An agent' : r.actor_type === 'vp_success' ? 'The VP team' : 'VP';
       const items = page.map(r => {
         const proposed = r.action === 'action.propose' ? String(r.payload.tool ?? '') : '';
-        const line = proposed ? `${who(r)} asked to ${humanise(proposed).replace(/^ran /, 'run ')} and is waiting for approval`
-          : `${who(r)} ${humanise(r.action)}${r.payload.mode === 'A2' ? ' (approved)' : ''}${r.payload.outcome === 'unknown' ? ' (outcome not confirmed)' : ''}`;
+        const line = proposed ? `${who(r)} asked to ${asked(proposed)} and is waiting for approval`
+          : `${who(r)} ${happened(r.action)}${r.payload.mode === 'A2' ? ' (approved)' : ''}${r.payload.outcome === 'unknown' ? ' (outcome not confirmed)' : ''}`;
         return { id: r.id, at: r.at, line, action: r.action, actor: { type: r.actor_type, id: r.actor_id }, object: r.object_type ? { type: r.object_type, id: r.object_id } : null };
       });
       const last = page[page.length - 1];

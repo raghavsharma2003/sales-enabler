@@ -8,14 +8,15 @@ import { addMember, boot, skip, signup, type Booted } from './workspace-helpers.
 let b: Booted;
 before(async () => { if (!skip) b = await boot(); });
 after(async () => { await b?.close(); });
+const uniq = (p: string) => `${p}-${Math.random().toString(36).slice(2, 8)}@example.test`;
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
 test('invite flow end to end: approve, read the link once, accept, sign in', { skip }, async () => {
   const owner = await signup(b);
-  const email = 'priya@example.test';
+  const email = uniq('priya');
   const prop = await owner.tool('member.invite', { email, role: 'operator' });
   assert.equal(prop.status, 'needs_approval', 'an invite changes who can act, so it waits for an owner');
-  assert.match(prop.summary, /Invite priya@example.test as operator/);
+  assert.match(prop.summary, new RegExp(`Invite ${email.replace('.', '\\.')} as operator`));
   const done = (await owner.fetch('POST', `/v1/actions/${prop.actionId}/decide`, { approve: true })).body;
   assert.equal(done.status, 'confirmed');
   assert.ok(!JSON.stringify(done).includes('vpi_'), 'the invite token is not in the approval receipt');
@@ -55,11 +56,12 @@ test('invite flow end to end: approve, read the link once, accept, sign in', { s
 
 test('invites expire, and an address that already has a workspace is refused', { skip }, async () => {
   const owner = await signup(b), other = await signup(b);
-  const inv = await owner.run('member.invite', { email: 'late@example.test', role: 'viewer' });
+  const lateEmail = uniq('late');
+  const inv = await owner.run('member.invite', { email: lateEmail, role: 'viewer' });
   const token = (await owner.tool('secret.reveal', { revealId: inv.result.revealId })).result.token;
   await b.pool.query("UPDATE member SET invite_expires_at = now() - interval '1 minute' WHERE id = $1", [inv.result.memberId]);
   assert.equal((await owner.fetch('POST', '/v1/invites/accept', { token, name: 'Late', password: 'a long password!' })).status, 404);
-  const reinvite = await owner.run('member.invite', { email: 'late@example.test', role: 'viewer' });
+  const reinvite = await owner.run('member.invite', { email: lateEmail, role: 'viewer' });
   assert.equal(reinvite.status, 'confirmed', 'an expired invite can be sent again');
   assert.equal(reinvite.result.memberId, inv.result.memberId);
 
@@ -71,8 +73,8 @@ test('invites expire, and an address that already has a workspace is refused', {
 test('roles gate who may invite and approve', { skip }, async () => {
   const owner = await signup(b);
   const viewer = await addMember(b, owner, 'viewer'), builder = await addMember(b, owner, 'builder'), compliance = await addMember(b, owner, 'compliance');
-  assert.match((await viewer.tool('member.invite', { email: 'x@example.test', role: 'viewer' })).reason, /cannot use member.invite/);
-  const prop = await builder.tool('member.invite', { email: 'y@example.test', role: 'viewer' });
+  assert.match((await viewer.tool('member.invite', { email: uniq('x'), role: 'viewer' })).reason, /cannot use member.invite/);
+  const prop = await builder.tool('member.invite', { email: uniq('y'), role: 'viewer' });
   assert.equal(prop.status, 'needs_approval');
   const byBuilder = (await builder.fetch('POST', `/v1/actions/${prop.actionId}/decide`, { approve: true })).body;
   assert.equal(byBuilder.status, 'not_executed', 'a builder cannot approve policy changes');
@@ -81,7 +83,7 @@ test('roles gate who may invite and approve', { skip }, async () => {
   const toOwner = await builder.run('member.role.set', { memberId: viewer.memberId, role: 'owner' }, compliance);
   assert.equal(toOwner.status, 'not_executed');
   assert.match(toOwner.reason, /only an owner/);
-  const inviteOwner = await builder.run('member.invite', { email: 'z@example.test', role: 'owner' }, compliance);
+  const inviteOwner = await builder.run('member.invite', { email: uniq('z'), role: 'owner' }, compliance);
   assert.match(inviteOwner.reason, /only an owner/);
 });
 

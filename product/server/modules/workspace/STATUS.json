@@ -1,0 +1,200 @@
+{
+  "module": "workspace",
+  "tools": [
+    {
+      "id": "action.undo",
+      "risk": "draft"
+    },
+    {
+      "id": "activity.list",
+      "risk": "read"
+    },
+    {
+      "id": "apikey.create",
+      "risk": "policy"
+    },
+    {
+      "id": "apikey.list",
+      "risk": "read"
+    },
+    {
+      "id": "apikey.revoke",
+      "risk": "draft"
+    },
+    {
+      "id": "brand.cnap_name.set",
+      "risk": "policy"
+    },
+    {
+      "id": "brand.get",
+      "risk": "read"
+    },
+    {
+      "id": "brand.update",
+      "risk": "draft"
+    },
+    {
+      "id": "integration.connect",
+      "risk": "policy"
+    },
+    {
+      "id": "integration.disconnect",
+      "risk": "destructive"
+    },
+    {
+      "id": "integration.kinds",
+      "risk": "read"
+    },
+    {
+      "id": "integration.list",
+      "risk": "read"
+    },
+    {
+      "id": "integration.stage_secrets",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.ingest",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.list",
+      "risk": "read"
+    },
+    {
+      "id": "knowledge.span.approve",
+      "risk": "draft"
+    },
+    {
+      "id": "member.invite",
+      "risk": "policy"
+    },
+    {
+      "id": "member.list",
+      "risk": "read"
+    },
+    {
+      "id": "member.remove",
+      "risk": "destructive"
+    },
+    {
+      "id": "member.role.set",
+      "risk": "policy"
+    },
+    {
+      "id": "offering.edit",
+      "risk": "draft"
+    },
+    {
+      "id": "offering.list",
+      "risk": "read"
+    },
+    {
+      "id": "revision.list",
+      "risk": "read"
+    },
+    {
+      "id": "search.global",
+      "risk": "read"
+    },
+    {
+      "id": "secret.reveal",
+      "risk": "draft"
+    },
+    {
+      "id": "share.link.create",
+      "risk": "policy"
+    },
+    {
+      "id": "share.link.list",
+      "risk": "read"
+    },
+    {
+      "id": "share.link.revoke",
+      "risk": "draft"
+    },
+    {
+      "id": "webhook.create",
+      "risk": "policy"
+    },
+    {
+      "id": "webhook.delete",
+      "risk": "destructive"
+    },
+    {
+      "id": "webhook.deliveries",
+      "risk": "read"
+    },
+    {
+      "id": "webhook.emit",
+      "risk": "draft"
+    },
+    {
+      "id": "webhook.list",
+      "risk": "read"
+    },
+    {
+      "id": "webhook.replay",
+      "risk": "external"
+    },
+    {
+      "id": "workspace.get",
+      "risk": "read"
+    }
+  ],
+  "routes": [
+    "POST /v1/invites/accept",
+    "POST /v1/uploads/knowledge",
+    "GET /v1/share/:token"
+  ],
+  "tests": {
+    "passed": 20,
+    "total": 20,
+    "files": [
+      "workspace-team",
+      "workspace-knowledge",
+      "workspace-integrations",
+      "workspace-tenancy"
+    ],
+    "database": "vp_mod_workspace on the throwaway Postgres 16; run twice, files in parallel, both green"
+  },
+  "gates": {
+    "tsc": "npx tsc -p tsconfig.json clean",
+    "tests": "node --import tsx --test tests/workspace*.test.ts green"
+  },
+  "works": [
+    "Invite flow end to end: policy approval, one-time link via secret.reveal, only sha256 stored, accept route sets name and password and signs in, expiry, re-invite",
+    "Last-owner protection on role change and removal, including two owners demoting each other at the same moment (advisory lock); only an owner can grant or take ownership",
+    "API keys: token read once by the approver, only the hash stored, works as Bearer, refused after revoke",
+    "Knowledge ingest of text, a generated PDF (pdf-parse, page locations) and a generated DOCX (mammoth, paragraph locations); spans start pending; only approved spans back offering facts; never_say lint; API keys and agents cannot approve spans",
+    "Offering and brand edits keep revisions; action.undo restores them and refuses everything else with a reason",
+    "Integration credentials staged and stored AES-256-GCM bound to the workspace; never in args, results, lists, activity or action rows",
+    "Outbound webhooks signed with the runtime seam sign(); delivered, replayed (approval), retried with backoff, scoped per workspace; private addresses refused",
+    "activity.list in plain words with stable pagination and filters; audit chain verifies afterwards",
+    "search.global over contacts, agents, campaigns and calls by name or number, wildcards literal",
+    "Share links: signed, expiring, revocable, read-only, bound to one object in one workspace",
+    "Tenancy: another workspace cannot read or change any of the above (one test touches every tool family)"
+  ],
+  "untested": [
+    "The tool registry JSON data/workspace-tool-registry.json was not in the repo (also not at research/2026-10-21/blueprint/data/); tool ids and risk classes come from the brief and are my reading of it. Compare my risk classes with the registry when it lands: webhook.replay=external, apikey.revoke=draft, share.link.revoke=draft, knowledge.span.approve=draft, member.remove / integration.disconnect / webhook.delete=destructive",
+    "Large or hostile PDFs and DOCX (zip bombs, decompression ratios): only size (9 MB), page (300), passage (600) and 30 s caps; parsing runs in-process",
+    "Scanned PDFs (no text) are refused as unreadable; no OCR",
+    "Webhook DNS rebinding between the address check and the send; delivery from several server processes at once (claim uses SKIP LOCKED but was run from one)",
+    "The 5-second delivery timer inside routes() (switched off under NODE_ENV=test)",
+    "API key scopes: stored on api_key.scopes but the kernel resolveCaller gives every key the builder role and ignores scopes",
+    "Browser or phone use; nothing here has a UI",
+    "Share link view of a call includes the transcript: shown only after a policy approval, but there is no redaction step"
+  ],
+  "needs_from_others": [
+    "Kernel owner: add the workspace module to server/modules/index.ts (modules.push / list entry); I may not edit it. Until then main.ts does not serve these tools or routes",
+    "Kernel owner: Registry.approve() stores args and result in clear in action.args / action.result and GET /v1/actions returns them. Workspace works around it (secret.reveal, integration.stage_secrets); a redaction hook would let other modules hold secrets safely. Logged as risk.2026-10-21.kernel-stores-approval-args-and-results-in-clear in the inbox",
+    "Kernel owner: Router.readBody decodes every body as UTF-8 with a 1 MB cap, so uploads are JSON base64 (about 700 KB). Raw or multipart bodies for routes would allow real file uploads up to the 9 MB tool limit",
+    "Kernel owner: resolveCaller ignores api_key.scopes and daily_cap_inr_milli",
+    "Deployment: set VP_SECRET_KEY (32 bytes as 64 hex characters or base64). Without it integration.connect, webhook.create, secret holds and share links fail with a clear error. Never set VP_WEBHOOK_ALLOW_PRIVATE or VP_WEBHOOK_ALLOW_HTTP in production",
+    "Other modules: announce events by calling the webhook.emit tool with a system actor (registry.execute(pool, \"webhook.emit\", {event, data}, {workspaceId, actor: {type: \"system\"}})); server code that needs an integration credential can import integrationSecrets from the workspace module"
+  ],
+  "notes": [
+    "Migration: product/db/migrations/1001_workspace.sql (ALTERs member, brand, offering, knowledge_source; new knowledge_span, workspace_revision, secret_box, integration, webhook_endpoint, webhook_delivery, share_link)",
+    "Context proposals: context/inbox/workspace-2026-10-21.json"
+  ]
+}

@@ -52,7 +52,7 @@ export function registerBrand(r: Registry) {
   r.register(tool(obj({ cnapName: str({ pattern: CNAP, desc: 'Up to 30 characters: letters, digits, spaces, & . \' -' }) }), {
     name: 'brand.cnap_name.set', risk: 'policy', summary: 'Set the name that shows on the phone of the person we call',
     describe: i => `Show "${i.cnapName}" as the caller name on calls`,
-    version: async ctx => (await primaryBrand(ctx)) ? String((await primaryBrand(ctx))!.cnap_name ?? '') : null,
+    version: async ctx => { const b = await primaryBrand(ctx); return b ? String(b.cnap_name ?? '') : null; },
     run: async (ctx, i) => {
       const b = await primaryBrand(ctx, true);
       if (!b) throw new Error('set up the brand first (brand.update), then choose its caller name');

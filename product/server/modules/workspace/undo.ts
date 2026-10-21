@@ -32,8 +32,9 @@ export function registerUndo(r: Registry) {
       if (!rev) throw new Error('no such change in this workspace');
       if (rev.undone_at) throw new Error('that change was already undone');
       const newer = await one<{ summary: string }>(ctx.q,
-        `SELECT summary FROM workspace_revision WHERE workspace_id = $1 AND object_type = $2 AND object_id = $3 AND undone_at IS NULL AND created_at > $4 ORDER BY created_at LIMIT 1`,
-        [ctx.workspaceId, rev.object_type, rev.object_id, rev.created_at]);
+        `SELECT summary FROM workspace_revision WHERE workspace_id = $1 AND object_type = $2 AND object_id = $3 AND undone_at IS NULL
+           AND created_at > (SELECT created_at FROM workspace_revision WHERE id = $4) ORDER BY created_at LIMIT 1`,
+        [ctx.workspaceId, rev.object_type, rev.object_id, rev.id]);
       if (newer) throw new Error(`a newer change was made after this one ("${newer.summary}"); undo that first`);
 
       if (rev.object_type === 'brand') {
