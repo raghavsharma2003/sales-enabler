@@ -26,7 +26,7 @@
   "memory.extract asks the model in prepare() outside any transaction; run() re-reads every gate input under a row lock and commits nothing if the transcript changed since the model saw it (failed runs are retryable)",
   "forgetContactMemory(q, workspaceId, contactId) in server/modules/memory/forget.ts (also re-exported from index.ts): deletes all of a contact's facts on the caller's Queryable, joining its transaction; used by contact.memory.forget",
   "test calls (channel=test or run_manifest.test) skipped before any model call; live calls, agent memory.write=false and opted-out contacts skipped",
-  "children's-data gate (minor.ts): reads the contact's attribute rows and contact.custom for age (age, umar, \u0909\u092e\u094d\u0930...), date of birth (dob, date_of_birth, birth_date..., ISO or DD/MM/YYYY or a bare year) and minor flags (minor, is_minor, under_18, nabalig...); under 18 or any unreadable value blocks extraction (skip minor / age_unclear, model never called) and the brief (status minor / age_unclear)"
+  "children's-data gate (minor.ts): reads attribute rows and contact.custom; intake's canonical keys (date_of_birth, age, is_minor) first, then intake's canonicalAgeKey for any other key, so one list decides ('Customer DOB' counts, 'Vehicle Age' does not); under 18 or any unreadable value blocks extraction (skip minor / age_unclear, model never called) and the brief (status minor / age_unclear)"
  ],
  "untested": [
   "real LLM extraction quality",
@@ -35,7 +35,7 @@
   "erase_me reach beyond memory_fact (recordings, transcripts, attributes, CRM belong to other modules)",
   "retention sweeps (expired facts are excluded from the brief but not yet deleted by a job)",
   "14-day expiry of unreviewed proposed facts",
-  "age keys intake might produce from headers not in the list (e.g. a header in another Indian language); such a contact reads as 'unknown' age and memory proceeds"
+  "an age header neither intake's list nor canonicalAgeKey recognises reads as no age data, and memory proceeds"
  ],
  "needs_from_others": [
   "calls: call registry 'memory.extract' {conversationId} after a non-test call ends (system actor); write caller turns to `turn` with speaker='caller'; mark test calls channel='test' or run_manifest.test=true; insert forget_request rows when a caller asks to be forgotten (memory completes them via contact.memory.forget {requestId})",

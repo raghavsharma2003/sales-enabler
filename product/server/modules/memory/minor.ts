@@ -1,13 +1,14 @@
-// Children's-data gate: is this contact possibly under 18? Reads the contact's imported attribute rows (intake writes
-// columns there, keyed by the normalised header: "Age" -> age, "Date of Birth" -> date_of_birth) and contact.custom.
+// Children's-data gate: is this contact possibly under 18? Reads the contact's imported attribute rows and contact.custom.
+// Intake owns the one list of age keys: it canonicalises headers to date_of_birth, age and is_minor at import, and
+// canonicalAgeKey maps any other key the same way, so "Customer DOB" counts and "Vehicle Age" does not.
 // Fails closed: any age-like value that cannot be read with certainty counts as unclear, and unclear blocks memory.
 import { many, one, type Queryable } from '../../db.ts';
+import { canonicalAgeKey, type AgeKey } from '../intake/index.ts';
 
 export type MinorStatus = 'adult' | 'minor' | 'unclear' | 'unknown';   // unknown = no age data at all
 
-const AGE = /^(age|age_years|age_in_years|customer_age|client_age|lead_age|umar|umra|umr|उम्र|आयु)$/;
-const DOB = /^(dob|d_o_b|date_of_birth|birth_date|birthdate|birthday|born_on|janm_tithi|janam_tithi|जन्म_तिथि|जन्मतिथि)$/;
-const FLAG = /^(minor|is_minor|under_18|under18|is_under_18|child|is_child|nabalig|नाबालिग)$/;
+const CANONICAL: readonly string[] = ['date_of_birth', 'age', 'is_minor'] satisfies AgeKey[];
+const ageKey = (k: string): AgeKey | null => CANONICAL.includes(k) ? k as AgeKey : canonicalAgeKey(k);
 const asciiDigits = (s: string) => s.replace(/[०-९]/g, ch => String('०१२३४५६७८९'.indexOf(ch)));
 const YES = /^(true|yes|y|1|haan|ha|han|हाँ|हां)$/i, NO = /^(false|no|n|0|nahi|nahin|नहीं)$/i;
 
@@ -28,14 +29,14 @@ function ageFrom(dob: string, now: Date): number | null {
 export function minorStatus(fields: { key: string; value: unknown }[], now: Date = new Date()): MinorStatus {
   const verdicts: MinorStatus[] = [];
   for (const f of fields) {
-    const key = f.key.normalize('NFKC').toLowerCase().trim();
+    const key = ageKey(f.key.normalize('NFKC').toLowerCase().trim());
     const raw = asciiDigits(f.value === null || f.value === undefined ? '' : String(f.value).trim());
-    if (FLAG.test(key)) verdicts.push(f.value === true || YES.test(raw) ? 'minor' : f.value === false || NO.test(raw) ? 'adult' : 'unclear');
-    else if (AGE.test(key)) {
+    if (key === 'is_minor') verdicts.push(f.value === true || YES.test(raw) ? 'minor' : f.value === false || NO.test(raw) ? 'adult' : 'unclear');
+    else if (key === 'age') {
       // A plain number of years is read; anything else ("17-19", "teen", "approx 30") is a minor if any number is under 18, else unclear.
       const plain = /^(\d{1,3})(?:\.\d+)?\s*(years?|yrs?|y|saal|sal|वर्ष|साल)?$/i.exec(raw);
       verdicts.push(plain ? (+plain[1] < 18 ? 'minor' : 'adult') : [...raw.matchAll(/\d+/g)].some(x => +x[0] < 18) ? 'minor' : 'unclear');
-    } else if (DOB.test(key)) {
+    } else if (key === 'date_of_birth') {
       const age = ageFrom(raw, now);
       verdicts.push(age === null ? 'unclear' : age < 18 ? 'minor' : 'adult');
     }

@@ -400,6 +400,13 @@ test('minorStatus reads age, date of birth and minor flags, and fails closed', (
   assert.equal(minorStatus([{ key: 'age', value: 34 }, { key: 'dob', value: '2011-01-01' }], now), 'minor', 'any minor wins');
   assert.equal(minorStatus([{ key: 'age', value: 34 }, { key: 'dob', value: '??' }], now), 'unclear');
   assert.equal(v('city', 'Pune'), 'unknown', 'unrelated keys do not count');
+  assert.equal(v('vehicle_age', 3), 'unknown', 'a vehicle\'s age is not the person\'s');
+  assert.equal(v('policy_age', '2 years'), 'unknown');
+  assert.equal(v('customer_dob', '2011-05-05'), 'minor', 'any prefix on a birth date counts');
+  assert.equal(v('customer_age', 15), 'minor');
+  assert.equal(v('उम्र', 16), 'minor', 'the real stored Devanagari key, marks intact');
+  assert.equal(v('is_minor', 'haan'), 'minor');
+  assert.equal(v('child_name', 'Synthetic'), 'unknown', 'a child-name column is not a minor flag');
 });
 
 test('imported contacts: age or birth date in attribute rows blocks extraction and the brief', { skip }, async () => {
@@ -419,6 +426,7 @@ test('imported contacts: age or birth date in attribute rows blocks extraction a
   }
   const adult = await world({ undoMinutes: 0 });
   await attr(adult.contact, 'age', '42');
+  await attr(adult.contact, 'vehicle_age', 2);              // "Vehicle Age" must never block memory
   llmSays([LANG]);
   assert.equal((await extract(adult, await call(adult, TURNS))).status, 'done');
   assert.equal((await briefText(adult)).status, 'ok');
