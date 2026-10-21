@@ -29,12 +29,13 @@
     "db/migrations/0602_call_judge_event.sql"
   ],
   "tests": {
-    "passed": 26,
-    "total": 26,
+    "passed": 27,
+    "total": 27,
     "files": [
-      "tests/calls.test.ts"
+      "tests/calls.test.ts",
+      "tests/calls-live.test.ts"
     ],
-    "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, the real agents module for draft test calls, and stubs for the other sibling tools; synthetic data only. The whole product suite (node scripts/test.mjs, concurrency 4) on one shared database passed 355/355 on two consecutive runs."
+    "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, the real agents module for draft test calls, and stubs for the other sibling tools; synthetic data only. The whole product suite (node scripts/test.mjs, concurrency 4) on one shared database passed 355/355 on two consecutive runs. tests/calls-live.test.ts runs calls' live tools across two real processes: this control plane and the voice runtime's dev server (python -m vpvoice.devsim, fake providers, no keys), signed both ways. It skips without a Python that has product/voice/requirements.txt (set VP_VOICE_PYTHON). With one, the full suite passes 372/372."
   },
   "works": [
     "POST /hooks/runtime checks x-vp-signature with VP_RUNTIME_SECRET over the exact raw request bytes (Router rawBody) before parsing. A missing, wrong, stale (>5 min) or tampered signature, including a whitespace-only change, gets 401. Unknown fields get 422 and an unknown conversation 404. The workspace comes from the conversation row, never from the request.",
@@ -68,7 +69,7 @@
     "Load: search p95 and the time from hang-up to analysis.",
     "The callback retry time: the analysis does not yet extract the stated callback time, so attempt.retry_per_ladder gets no 'at' for callbacks.",
     "The crisis judge with a real model (tests use setFakeLlm with assumeConfigured).",
-    "live.listen, live.whisper and live.takeover end to end against the real runtime (4ad75e4). Their reply shapes were checked by reading voice/vpvoice/server.py live_control: join for listen and takeover, ok for whisper, {ok:false, reason} with 404/409/422. Not run across the two processes."
+    "live.listen on a real audio call: the cross-process test uses a sim call, where listen is refused (no audio). The listen socket itself (pcm16le) is tested only in the voice runtime's own suite."
   ],
   "needs_from_others": [
     "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). It is not listed yet.",

@@ -175,6 +175,11 @@
       "date": "2026-10-21",
       "event": "calls-crisis-judge-wired",
       "details": "Calls analysis now runs the post-call caller-crisis judge with a 5 s timeout per line. Raise hits give RD3 flagged safety events; shadow hits go to analysis.judge_shadow only; judge_unavailable and judge_calls are recorded; a cost line with purpose safety_judge is written whenever the judge was called. Verified: calls 21/21 (shadow, raise, no keys, judge throws, floor line never sent); full suite 353/353 twice on one fresh shared database. Not verified: a real judge model."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-live-tools-cross-process",
+      "details": "Verified calls' live tools across two real processes against the voice runtime's dev server (cc20956). The test covers: a sim call placed through HttpRuntime; controls refused before the call is joined; listen refused on sim; a whisper approved (A2) and accepted; a person's take-over with a join and socket, then their hang-up; and the runtime's signed batches ingested (handed_off, END_HANDED_OFF, human_joined, a whisper moment without text, a takeover moment, the hand_off row). n=4 runs, all green, about 5 s each. Full suite 372/372 with the runtime's Python, 371 plus 1 skipped without it. Not verified: listen audio on a real call."
     }
   ]
 }
