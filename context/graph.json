@@ -17332,6 +17332,25 @@
    "date": "2026-10-22",
    "source": "main loop",
    "mitigation": "The voice builder is porting the lab's Azure Speech ears, with a fake-based test. Until then, Azure-ears stacks must show unavailable at the runtime, never fall into SarvamEars."
+  },
+  {
+   "id": "evidence.2026-10-22.built-stack-review",
+   "type": "evidence",
+   "title": "Independent review of the built-stack contract (d6b1d97 + 0c5997a). Found clean: no path for a built stack to dial a real person (always beta, refused at G10); voiceId kept or cleared correctly; no draft-hash drift; built and curated stacks with the same parts price identically for all 7. Found and fixed: (1) availability read 'available' while the runtime refused 'custom'; (2) compile.ts dropped SOUNDS and DELIVERY for built stacks; (3) campaign rate and estimate ignored a built stack's parts; (4) money.estimate silently priced a curated stack that was sent with parts. Handed on: the web client reads getStack(stackId) in 4 places (test panel, beta warnings, call label); the launcher's /v1/health drops components and customStacks.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "verified",
+   "path": "product/server/modules/agents/compile.ts"
+  },
+  {
+   "id": "decision.2026-10-22.custom-needs-runtime-flag",
+   "type": "decision",
+   "title": "A built stack is available only when the runtime's health says customStacks: true and every part is available. Healthy parts alone are not enough.",
+   "status": "confirmed",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "rationale": "The review found the parts reading healthy while the runtime refused stack 'custom'. The person would have picked a stack that could never ring.",
+   "reverse_if": "Every runtime in service runs built stacks and the flag is retired by a protocol version bump."
   }
  ],
  "edges": [
@@ -30856,6 +30875,16 @@
    "from": "decision.2026-10-22.default-stack",
    "to": "decision.2026-10-21.stack-choice-no-default",
    "relation": "supersedes"
+  },
+  {
+   "from": "evidence.2026-10-22.built-stack-review",
+   "to": "decision.2026-10-22.custom-stack-contract",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-22.custom-needs-runtime-flag",
+   "to": "evidence.2026-10-22.built-stack-review",
+   "relation": "derived-from"
   }
  ]
 }
