@@ -15,6 +15,32 @@ export interface Req {
   query: URLSearchParams;
   headers: IncomingMessage['headers'];
   body: unknown;
+  /** The caller's address for throttling (clientIp); absent when a Req is built by hand. */
+  ip?: string;
+}
+
+/** True for loopback, private, link-local and CGNAT addresses (IPv4, IPv6, and IPv4-mapped IPv6). */
+export function isPrivateIp(addr: string): boolean {
+  const a = addr.toLowerCase().replace(/^\[|\]$/g, '').replace(/%.*$/, '');
+  const v4 = /^(?:::ffff:)?(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(a);
+  if (v4) {
+    const [p, q] = [Number(v4[1]), Number(v4[2])];
+    return p === 10 || p === 127 || (p === 172 && q >= 16 && q <= 31) || (p === 192 && q === 168) || (p === 169 && q === 254) || (p === 100 && q >= 64 && q <= 127);
+  }
+  return a === '::1' || /^f[cd][0-9a-f]{2}:/.test(a) || /^fe[89ab][0-9a-f]:/.test(a);
+}
+
+/** The address to throttle on. The socket peer is the client unless it is a trusted proxy (loopback or private by
+ *  default; VP_TRUSTED_PROXIES=none trusts nothing). Behind trusted proxies it is the right-most X-Forwarded-For hop
+ *  that is not itself a trusted proxy: hops a client adds sit to the left of the one its proxy appended, so a spoofed
+ *  header never changes the result. */
+export function clientIp(peer: string | undefined, xff: string | string[] | undefined): string {
+  const trust = process.env.VP_TRUSTED_PROXIES === 'none' ? () => false : isPrivateIp;
+  const me = peer ?? 'unknown';
+  if (!trust(me)) return me;
+  const hops = (Array.isArray(xff) ? xff.join(',') : xff ?? '').split(',').map(s => s.trim()).filter(Boolean);
+  for (let i = hops.length - 1; i >= 0; i--) if (!trust(hops[i])) return hops[i];
+  return hops[0] ?? me;
 }
 
 export interface Res {
@@ -89,7 +115,8 @@ export class Router {
       const m = this.match(req.method ?? 'GET', url.pathname);
       if (!m) return send(404, { error: { code: 'not_found', message: 'no such route' } });
       const body = await readBody(req, m.opts);
-      const out = await m.handler({ method: req.method ?? 'GET', path: url.pathname, params: m.params, query: url.searchParams, headers: req.headers, body });
+      const out = await m.handler({ method: req.method ?? 'GET', path: url.pathname, params: m.params, query: url.searchParams, headers: req.headers, body,
+        ip: clientIp(req.socket.remoteAddress, req.headers['x-forwarded-for']) });
       if (out.stream) {
         res.writeHead(out.status ?? 200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', 'x-accel-buffering': 'no', ...(out.headers ?? {}) });
         const ac = new AbortController();

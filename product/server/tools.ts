@@ -88,6 +88,18 @@ export class UnknownOutcome extends Error {
 const APPROVAL_TTL_MS = 24 * 3600_000;
 const actorId = (a: Actor) => a.id ?? a.type;
 
+/** Whether a call waits for a member's tap. A3 verbs only lower risk or spend (pause, stop, suppress after opt-out,
+ *  revert to last good), so they run at once for VP itself and for any member whose role may call the tool: nobody waits
+ *  to make things safer. The exception is attempt.retry_per_ladder, which re-dials someone: only VP itself (system, or
+ *  an agent with no member behind it) runs it at once. An agent acting for a member, like the Operator, carries that
+ *  member's role and is held exactly as the member would be, so no chat turn can talk its way past a card. */
+export function heldForApproval(name: string, risk: RiskClass, actor: Actor): boolean {
+  if (!needsHumanApproval(risk)) return false;
+  if (!isA3(name)) return true;
+  const autonomous = actor.type === 'system' || (actor.type === 'agent' && !actor.role);
+  return name === 'attempt.retry_per_ladder' && !autonomous;
+}
+
 export class Registry {
   private tools = new Map<string, ToolDef<any, any>>();
 
@@ -124,11 +136,7 @@ export class Registry {
     const h = argsHash(name, input);
     const ctxFor = (q: Queryable): ToolCtx => ({ q, workspaceId: opts.workspaceId, actor: opts.actor });
 
-    // A3 verbs only lower risk or spend (pause, stop, suppress after opt-out, revert to last good): they run at once for
-    // VP itself and for any member whose role may call the tool. Nobody waits for approval to make things safer.
-    // The exception is attempt.retry_per_ladder, which re-dials someone: a member asking for it gets a card.
-    const selfA3 = isA3(name) && (opts.actor.type === 'agent' || opts.actor.type === 'system' || name !== 'attempt.retry_per_ladder');
-    if (needsHumanApproval(t.risk) && !selfA3) {
+    if (heldForApproval(name, t.risk, opts.actor)) {
       const summary = t.describe ? t.describe(input) : t.summary;
       const row = await tx(pool, async c => {
         const version = t.version ? await t.version(ctxFor(c), input) : null;
@@ -143,7 +151,7 @@ export class Registry {
       return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: t.risk, summary, expiresAt: row.expires_at.toISOString() };
     }
 
-    const mode: 'A1' | 'A3' = selfA3 ? 'A3' : 'A1';
+    const mode: 'A1' | 'A3' = isA3(name) ? 'A3' : 'A1';     // not held: an A3 verb here ran at once
     return this.run<O>(pool, t, input, h, mode, opts.workspaceId, opts.actor, async (c, out) => {
       if (t.risk === 'read') return out;     // reads change nothing; auditing them would bury the changes
       await appendAudit(c,{ workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: name, argsHash: h, payload: { mode, risk: t.risk } });
@@ -238,9 +246,15 @@ export class Registry {
     }
   }
 
-  /** Decline a proposed action. */
+  /** Decline a proposed action. Deciding is approving's mirror: only a member who could approve it, or the member who
+   *  proposed it (withdrawing their own request), may decline it. */
   async decline(pool: pg.Pool, actionId: string, by: { workspaceId: string; memberId: string }): Promise<boolean> {
     return tx(pool, async c => {
+      const m = await one<{ role: Role }>(c, "SELECT role FROM member WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [by.memberId, by.workspaceId]);
+      const a = await one<{ risk_class: RiskClass; proposed_by: string }>(c,
+        "SELECT risk_class, proposed_by FROM action WHERE id = $1 AND workspace_id = $2 AND status = 'proposed' FOR UPDATE", [actionId, by.workspaceId]);
+      if (!m || !a) return false;
+      if (!canApprove(m.role, a.risk_class) && a.proposed_by !== by.memberId) return false;
       const r = await c.query("UPDATE action SET status = 'cancelled' WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, by.workspaceId]);
       if (!r.rowCount) return false;
       await appendAudit(c, { workspaceId: by.workspaceId, actorType: 'member', actorId: by.memberId, action: 'action.decline', objectType: 'action', objectId: actionId });

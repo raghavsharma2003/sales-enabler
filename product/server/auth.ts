@@ -90,8 +90,14 @@ export async function resolveCaller(q: Queryable, req: Req): Promise<Caller> {
       `SELECT s.member_id, m.workspace_id, m.role FROM session s JOIN member m ON m.id = s.member_id
        WHERE s.token_hash = $1 AND s.expires_at > now() AND m.status = 'active'`, [sha(tok)]);
     if (s) {
-      if (req.method !== 'GET' && req.method !== 'HEAD' && !String(req.headers['content-type'] ?? '').includes('application/json')) {
-        throw new HttpError(415, 'json_only', 'send application/json');
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
+        // A cookie rides along on requests other sites make, so a cookie mutation must be one a browser preflights:
+        // the media type's essence must be exactly application/json ('text/plain; x=application/json' is not), and a
+        // browser that says the request came from another site is refused outright.
+        const essence = String(req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase();
+        if (essence !== 'application/json') throw new HttpError(415, 'json_only', 'send application/json');
+        const site = String(req.headers['sec-fetch-site'] ?? '');
+        if (site === 'cross-site' || site === 'same-site') throw new HttpError(403, 'cross_site', 'this request came from another site');
       }
       await q.query('UPDATE session SET last_seen_at = now() WHERE token_hash = $1', [sha(tok)]);
       return { workspaceId: s.workspace_id, actor: { type: 'member', id: s.member_id, role: s.role }, memberId: s.member_id, via: 'session' };

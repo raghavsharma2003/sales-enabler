@@ -1,0 +1,43 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-21.review-money-auth",
+   "type": "measurement",
+   "title": "Adversarial review 'money, approvals and auth': 10 reproduced defects (1 blocker, 5 major, 4 minor), each a failing test on the code reviewed; the ledger, approval replay/binding/expiry, wallet credit and IST boundaries checked sound.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "independent reviewer session (89873d5)",
+   "n": 10,
+   "method": "Reviewer read the kernel, money and workspace. Each claim became a todo test in product/tests/review/money-auth.test.ts on a throwaway Postgres 16. Details in money-auth.md.",
+   "value": "1 blocker / 5 major / 4 minor; kernel MA-01, 03, 04, 05, 06 fixed by the main loop the same day",
+   "path": "product/tests/review/money-auth.md"
+  },
+  {
+   "id": "rejected.2026-10-21.a3-by-actor-type",
+   "type": "rejection",
+   "title": "The kernel granted A3 (run at once) by actor type: any 'agent' ran attempt.retry_per_ladder, which re-dials a person, without a tap, though members asking for it got a card.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "review MA-01 (blocker)",
+   "broke": "The Operator acts for a member as an 'agent' carrying that member's role, so a chat turn, or text injected into an upload, could re-dial anyone with no human tap. Rule: approval follows the principal, not the actor type. An agent with a member's role is held exactly as that member. Only system and role-less agents are autonomous. One function, heldForApproval in server/tools.ts, decides for both the registry and the Operator's plan view.",
+   "path": "product/server/tools.ts"
+  },
+  {
+   "id": "rejected.2026-10-21.throttle-on-client-header",
+   "type": "rejection",
+   "title": "Login and sign-up throttles were keyed on the raw X-Forwarded-For header, which the client controls.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "review MA-05 (major)",
+   "broke": "Rotating the header gave unlimited password guesses: 12 wrong passwords, 12 times 401, no 429. Rule: throttle per account, counting failures only, and per client address. The address comes from clientIp() in server/http.ts: the socket peer, or the right-most X-Forwarded-For hop that is not a trusted proxy (loopback and private ranges by default; VP_TRUSTED_PROXIES=none to trust none).",
+   "path": "product/server/http.ts"
+  }
+ ],
+ "edges": [
+  { "from": "measure.2026-10-21.review-money-auth", "to": "rejected.2026-10-21.a3-by-actor-type", "relation": "supports" },
+  { "from": "measure.2026-10-21.review-money-auth", "to": "rejected.2026-10-21.throttle-on-client-header", "relation": "supports" }
+ ],
+ "events": [
+  { "date": "2026-10-21", "event": "Kernel fixes for the money/auth review: MA-01, 03, 04, 05, 06", "details": "heldForApproval (agents with a member's role are held like the member; the Operator plan view uses the same rule). decline() requires canApprove or the proposer. Cookie mutations need a media-type essence of exactly application/json, and Sec-Fetch-Site cross-site or same-site is refused. Login throttles per account (failures) and per clientIp. /v1/actions and /v1/audit/verify are scope-checked for API keys. Suite: 304 tests, 290 pass, 0 fail, 14 todo. MA-02, 07, 10 routed to workspace; MA-08, 09 to money." }
+ ]
+}

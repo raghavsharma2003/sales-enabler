@@ -10,7 +10,7 @@ import { checkPassword, createSession, endSession, hashPassword, resolveCaller, 
 import { verifyAudit, appendAudit } from './audit.ts';
 import { many, one, tx } from './db.ts';
 import { HttpError, Router, type Req } from './http.ts';
-import { Registry } from './tools.ts';
+import { Registry, inScope } from './tools.ts';
 import type { Job } from './jobs.ts';
 
 export interface Deps { pool: pg.Pool; registry: Registry; auth: (req: Req) => Promise<Caller> }
@@ -29,13 +29,26 @@ const login = obj({ email: str({ max: 200 }), password: str({ max: 200 }) });
 const callBody = obj({ args: opt((v: unknown) => v), threadId: opt(str({ max: 40 })) });
 const decideBody = obj({ approve: bool() });
 
-// Login attempts per email+ip: 10 per 15 minutes. In-process is enough for one replica; move to Postgres when scaled out.
+// Counters over 15-minute windows, keyed on an account or on clientIp() (never on a raw client header). In-process is
+// enough for one replica; move to Postgres when scaled out.
 const attempts = new Map<string, { n: number; until: number }>();
-function throttle(key: string) {
-  const now = Date.now(), a = attempts.get(key);
-  if (a && a.until > now && a.n >= 10) throw new HttpError(429, 'slow_down', 'too many sign-in attempts; try again in a few minutes');
-  attempts.set(key, a && a.until > now ? { n: a.n + 1, until: a.until } : { n: 1, until: now + 15 * 60_000 });
+const WINDOW_MS = 15 * 60_000;
+function throttled(key: string, max: number): boolean {
+  const a = attempts.get(key);
+  return !!a && a.until > Date.now() && a.n >= max;
 }
+function count(key: string) {
+  const now = Date.now(), a = attempts.get(key);
+  attempts.set(key, a && a.until > now ? { n: a.n + 1, until: a.until } : { n: 1, until: now + WINDOW_MS });
+}
+function throttle(key: string, max = 10) {
+  if (throttled(key, max)) throw new HttpError(429, 'slow_down', 'too many attempts; try again in a few minutes');
+  count(key);
+}
+/** Wrong passwords per account: 10 per window from any address, so rotating addresses never buys more guesses. */
+const LOGIN_FAILS_PER_ACCOUNT = 10;
+/** Sign-in requests per address: generous, it only slows one source spraying many accounts. */
+const LOGIN_PER_IP = 50;
 
 const MIME: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json', '.wav': 'audio/wav', '.mp3': 'audio/mpeg' };
@@ -51,7 +64,7 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
 
   router.add('POST', '/v1/signup', async req => {
     const b = signup(req.body);
-    throttle('signup:' + (req.headers['x-forwarded-for'] ?? 'local'));
+    throttle('signup:' + (req.ip ?? 'local'));
     const pw = await hashPassword(b.password);
     const out = await tx(pool, async c => {
       if (await one(c, 'SELECT 1 FROM member WHERE lower(email) = lower($1)', [b.email])) throw new HttpError(409, 'exists', 'that email already has a workspace; sign in instead');
@@ -67,9 +80,14 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
 
   router.add('POST', '/v1/login', async req => {
     const b = login(req.body);
-    throttle('login:' + b.email.toLowerCase() + ':' + (req.headers['x-forwarded-for'] ?? 'local'));
+    const acct = 'login-fail:' + b.email.toLowerCase();
+    if (throttled(acct, LOGIN_FAILS_PER_ACCOUNT)) throw new HttpError(429, 'slow_down', 'too many sign-in attempts; try again in a few minutes');
+    throttle('login-ip:' + (req.ip ?? 'local'), LOGIN_PER_IP);
     const m = await one<{ id: string; password_hash: string | null }>(pool, "SELECT id, password_hash FROM member WHERE lower(email) = lower($1) AND status = 'active' LIMIT 1", [b.email]);
-    if (!(await checkPassword(b.password, m?.password_hash ?? null)) || !m) throw new HttpError(401, 'unauthorised', 'that email and password do not match');
+    if (!(await checkPassword(b.password, m?.password_hash ?? null)) || !m) {
+      count(acct);
+      throw new HttpError(401, 'unauthorised', 'that email and password do not match');
+    }
     const s = await createSession(pool, m.id);
     return { body: { memberId: m.id }, headers: { 'set-cookie': sessionCookie(s.token, s.expiresAt) } };
   });
@@ -97,8 +115,14 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
     return { status, body: r };
   });
 
+  // Kernel routes that are not tools are scope-checked like tools: a narrowed key reads them only with that scope.
+  const needScope = (c: Caller, scope: string) => {
+    if (!inScope(c.actor.scopes, scope)) throw new HttpError(403, 'out_of_scope', `this API key's scopes do not include ${scope}`);
+  };
+
   router.add('GET', '/v1/actions', async req => {
     const c = await auth(req);
+    needScope(c, 'action.list');
     const st = req.query.get('status') ?? 'proposed';
     const rows = await many(pool, `SELECT id, tool, args, risk_class, status, summary, proposed_by, created_at, expires_at, executed_at, result
       FROM action WHERE workspace_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT 100`, [c.workspaceId, st]);
@@ -116,6 +140,7 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
 
   router.add('GET', '/v1/audit/verify', async req => {
     const c = await auth(req);
+    needScope(c, 'audit.verify');
     const broken = await verifyAudit(pool, c.workspaceId);
     return { body: { intact: broken === null, firstBroken: broken } };
   });

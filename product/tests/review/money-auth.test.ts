@@ -31,6 +31,8 @@ const DB = process.env.DATABASE_URL;
 const noDb = !DB ? 'DATABASE_URL not set' : false;
 /** A finding's test: skipped without Postgres when it needs it, else a todo that names the finding. */
 const finding = (todo: string, needsDb = true) => (needsDb && noDb ? { skip: noDb } : { todo });
+/** A fixed finding: an ordinary test now, so the defect cannot come back. */
+const fixed = (needsDb = true) => (needsDb && noDb ? { skip: noDb } : {});
 
 let pool: pg.Pool;
 let reg: Registry;
@@ -62,7 +64,7 @@ const as = (id: string, role: Actor['role']): Actor => ({ type: 'member', id, ro
 
 // ---------------------------------------------------------------- A2
 
-test('MA-01: an Operator turn runs attempt.retry_per_ladder at once; a member asking directly gets an approval card', finding('MA-01: agent actor with a member role gets A3 on retry_per_ladder'), async () => {
+test('MA-01: an Operator turn runs attempt.retry_per_ladder at once; a member asking directly gets an approval card', fixed(), async () => {
   const { ws } = await workspace();
   const builder = await member(ws, 'builder');
   const direct = await reg.execute(pool, 'attempt.retry_per_ladder', {}, { workspaceId: ws, actor: as(builder, 'builder') });
@@ -86,7 +88,7 @@ test('MA-02: member.remove runs on a stale card after the target was made an own
   assert.equal(r.status, 'not_executed', 'what was approved changed since it was proposed; the approval must be void');
 });
 
-test('MA-03: a viewer can cancel any pending approval, including an owner-only spend', finding('MA-03: decline has no role check'), async () => {
+test('MA-03: a viewer can cancel any pending approval, including an owner-only spend', fixed(), async () => {
   const { ws, owner } = await workspace();
   const viewer = await member(ws, 'viewer');
   const p = await reg.execute(pool, 'plan.change', { planId: 'plus' }, { workspaceId: ws, actor: as(owner, 'owner') });
@@ -97,7 +99,7 @@ test('MA-03: a viewer can cancel any pending approval, including an owner-only s
 
 // ---------------------------------------------------------------- auth
 
-test('MA-04: a session cookie accepts a CORS-safelisted text/plain body as JSON', finding('MA-04: json-only check is includes(), passes text/plain; x=application/json'), async () => {
+test('MA-04: a session cookie accepts a CORS-safelisted text/plain body as JSON', fixed(), async () => {
   const { ws, owner } = await workspace();
   const s = await createSession(pool, owner);
   // A browser sends this content type from another origin with no preflight: its essence is text/plain.
@@ -106,7 +108,7 @@ test('MA-04: a session cookie accepts a CORS-safelisted text/plain body as JSON'
   await assert.rejects(resolveCaller(pool, req), (e: { status?: number }) => e.status === 415, `a cookie mutation passed with a text/plain body (workspace ${ws.slice(0, 8)})`);
 });
 
-test('MA-05: login throttling is keyed on the client-supplied x-forwarded-for, so rotating it never throttles', finding('MA-05: login throttle bypass by rotating x-forwarded-for'), async () => {
+test('MA-05: login throttling is keyed on the client-supplied x-forwarded-for, so rotating it never throttles', fixed(), async () => {
   const { server } = buildApp(pool, []);
   await new Promise<void>(res => server.listen(0, '127.0.0.1', res));
   const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
@@ -126,7 +128,7 @@ test('MA-05: login throttling is keyed on the client-supplied x-forwarded-for, s
   } finally { await closeServer(server); }
 });
 
-test('MA-06: GET /v1/actions ignores API-key scopes', finding('MA-06: /v1/actions readable by any key regardless of scopes'), async () => {
+test('MA-06: GET /v1/actions ignores API-key scopes', fixed(), async () => {
   const { ws, owner } = await workspace();
   const p = await reg.execute(pool, 'plan.change', { planId: 'premium' }, { workspaceId: ws, actor: as(owner, 'owner') });
   assert.equal(p.status, 'needs_approval');

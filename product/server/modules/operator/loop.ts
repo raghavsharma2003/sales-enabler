@@ -17,7 +17,7 @@ import { ValidationError } from '../../../shared/validate.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
 import { LlmError, stream, type ChatMessage, type LlmReply, type LlmTool } from '../../llm.ts';
-import type { Receipt, Registry } from '../../tools.ts';
+import { heldForApproval, type Receipt, type Registry } from '../../tools.ts';
 import { curatedBrains, operatorSettings, type Autonomy } from './tools.ts';
 
 export const CAPS = { llmCalls: 6, toolCalls: 10, tokens: 60_000, replyTokens: 1_200, planSteps: 8, historyMessages: 12, resultChars: 8_000 };
@@ -291,7 +291,8 @@ export async function runTurn(inp: TurnInput): Promise<void> {
         if (e instanceof ValidationError) return { n: i + 1, tool: name, why, risk: def.risk, runs: 'refused', status: 'refused', reason: e.message, args: s?.args };
         throw e;
       }
-      const tap = (needsHumanApproval(def.risk) && !isA3(name)) || (settings.autonomy === 'A0' && (def.risk === 'draft' || def.risk === 'test') && !A0_EXEMPT.has(name));
+      // The plan shows exactly what the kernel will do for this member's Operator (server/tools.ts heldForApproval).
+      const tap = heldForApproval(name, def.risk, { type: 'agent', id: 'operator:' + member.id, role: member.role }) || (settings.autonomy === 'A0' && (def.risk === 'draft' || def.risk === 'test') && !A0_EXEMPT.has(name));
       return { n: i + 1, tool: name, why, risk: def.risk, runs: tap ? 'tap' : 'now', status: 'planned', args: s?.args };
     });
     if (!steps.length) return { status: 'not_executed', reason: 'the plan had no steps' };
