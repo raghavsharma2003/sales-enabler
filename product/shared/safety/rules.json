@@ -33,7 +33,7 @@
     "human_noun": "(\\b(insaan|insan|human|manushya|real person|real human|asli insaan|zinda insaan|ladki|ladka|aadmi|aurat|person)\\b|इंसान|इन्सान|मनुष्य|असली इंसान|लडकी|लडका|आदमी|औरत)",
     "neg": "(\\b(nahi|nahin|nhi|nai|na|not|thodi|thode)\\b|नहीं|नही|थोडी)",
     "copula_first": "(\\b(hoon|hun|hu|hoo|am)\\b|हूं|हु|हूँ)",
-    "ai_affirm": "((\\b(ai|a\\.i\\.|artificial intelligence|virtual assistant|digital assistant|ai assistant|ai agent|automated assistant|bot)\\b|एआई)[^.?!।]{0,30}(\\b(hoon|hun|hu|am)\\b|हूं|हु)|\\b(i'?m|i am) (an? )?(ai|virtual|digital|automated)\\b|\\b(main|mai)\\b[^.?!।]{0,25}\\b(ai|bot)\\b(?! ?(nahi|nahin|nhi|na|not)\\b)|मैं[^।?!.]{0,25}(एआई|\\bai\\b)(?! ?(नहीं|नही))|\\bjust an ai\\b)",
+    "ai_affirm": "((\\b(ai|a\\.i\\.|artificial intelligence|virtual assistant|digital assistant|ai assistant|ai agent|automated assistant|bot)\\b|एआई)(?:(?!\\b(nahi|nahin|nhi|nai|na|not)\\b|नहीं|नही)[^.?!।]){0,30}(\\b(hoon|hun|hu|am)\\b|हूं|हु)|\\b(i'?m|i am) (an? )?(ai|virtual|digital|automated)\\b|\\b(main|mai)\\b[^.?!।]{0,25}\\b(ai|bot)\\b(?! ?(nahi|nahin|nhi|na|not)\\b)|मैं[^।?!.]{0,25}(एआई|\\bai\\b)(?! ?(नहीं|नही))|\\bjust an ai\\b)",
     "self_ref": "(\\b(main|mai|mein|me|i|i'?m|myself)\\b|मैं)",
     "neg_pred": "@neg(?! ?((ho|hoga|hogi|hai|hain|kar|karti|karte|chal|ki|ka|ke|issue|problem|related)\\b|होग|हो |है|कर|चल|की|का|के))"
   },
