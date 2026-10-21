@@ -153,6 +153,18 @@ Every cost line is integer milli-rupees at ₹95/$, using `catalog.py`'s list pr
 Lines are deltas, emitted after each reply and at the end, and they always sum to the rounded total. `limits.maxCostInrMilli`
 and `limits.maxDurationS` end the call (`max_cost`, `max_duration`) after a short goodbye.
 
+## Runtime events and ingest parity
+
+`tests/test_runtime_fixture.py` runs sim calls that produce every RuntimeEvent type and all three judge outcomes, and
+checks them against `tests/data/runtime_events.json`. When node and tsx are installed, it also runs the live batches
+through calls' own `validateRuntimeBatch`. `product/tests/voice-runtime-events.test.ts` runs the committed fixture
+through that validator in the TypeScript suite. After an intended change to what the runtime sends, regenerate the
+fixture and commit it:
+
+```
+VP_WRITE_FIXTURES=1 python -m unittest tests.test_runtime_fixture
+```
+
 ## Door timing
 
 `bench/door_bench.py` times the reply door with no network, so the number can be reproduced on the deployed host:
