@@ -11,6 +11,7 @@ import { verifyAudit, appendAudit } from './audit.ts';
 import { many, one, tx } from './db.ts';
 import { HttpError, Router, type Req } from './http.ts';
 import { Registry } from './tools.ts';
+import type { Job } from './jobs.ts';
 
 export interface Deps { pool: pg.Pool; registry: Registry; auth: (req: Req) => Promise<Caller> }
 
@@ -19,6 +20,8 @@ export interface Module {
   name: string;
   register(registry: Registry): void;
   routes?(router: Router, deps: Deps): void;
+  /** Background work (dispatch loops, nightly rollups, analysis queues). See server/jobs.ts. */
+  jobs?(deps: Deps): Job[];
 }
 
 const signup = obj({ workspace: str({ min: 2, max: 80 }), name: str({ min: 1, max: 80 }), email: str({ pattern: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, max: 200 }), password: str({ min: 10, max: 200 }) });
@@ -37,7 +40,7 @@ function throttle(key: string) {
 const MIME: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json', '.wav': 'audio/wav', '.mp3': 'audio/mpeg' };
 
-export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: string } = {}): { router: Router; registry: Registry; server: Server } {
+export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: string } = {}): { router: Router; registry: Registry; server: Server; deps: Deps; jobs: Job[] } {
   const registry = new Registry();
   for (const m of modules) m.register(registry);
   const router = new Router();
@@ -136,5 +139,6 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
     }
     await router.handle(req, res);
   });
-  return { router, registry, server };
+  const jobs = modules.flatMap(m => m.jobs?.(deps) ?? []);
+  return { router, registry, server, deps, jobs };
 }

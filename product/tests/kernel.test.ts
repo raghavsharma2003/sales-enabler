@@ -207,3 +207,16 @@ test('a held draft (A0) cannot be approved by a role that may not approve drafts
   const v = await r.approve(pool, a!.id, { workspaceId: ws, memberId: viewer!.id });
   assert.equal(v.status, 'not_executed');
 });
+
+test('jobs: next IST wall-clock time and single-runner locking', { skip }, async () => {
+  const { msUntilIst, runOnce } = await import('../server/jobs.ts');
+  const now = Date.UTC(2026, 9, 21, 18, 0);               // 23:30 IST
+  assert.equal(msUntilIst('00:00', now), 30 * 60_000);
+  assert.equal(msUntilIst('23:00', now), 23.5 * 3600_000);
+  let n = 0;
+  const job = { name: 'test.lock', run: async () => { n++; await new Promise(r => setTimeout(r, 50)); } };
+  const deps = { pool, registry: new Registry(), auth: async () => { throw new Error('x'); } };
+  const [a, b] = await Promise.all([runOnce(job, deps), runOnce(job, deps)]);
+  assert.deepEqual([a, b].sort(), ['locked', 'ran']);
+  assert.equal(n, 1);
+});

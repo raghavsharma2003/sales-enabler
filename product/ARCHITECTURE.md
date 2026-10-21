@@ -55,3 +55,8 @@ Layout:
   - `money.estimate` (read, money module): `{ stackId, minutes, calls }` -> `{ perMinuteInrMilli, totalInrMilli, basis }`.
   - `safety.check` (read, safety module): `{ text, ctx }` -> DoorVerdict, for previews.
   - Runtime seam: `server/runtime-client.ts` (`runtime()`, `sign`, `verify`; FakeRuntime when VP_RUNTIME_URL is unset).
+- **Background work:** a module returns jobs from `jobs(deps)` (`server/jobs.ts`): `{ name, everyMs | dailyAtIst: 'HH:MM', run }`.
+  Jobs never overlap themselves and hold an advisory lock per name, so replicas are safe. main.ts runs them; `VP_JOBS=0`
+  makes an API-only replica.
+- **Streaming:** a handler may return `{ stream: async (write, closed) => ... }` for Server-Sent Events; `server/llm.ts`
+  has `stream(req, onDelta)` and a per-request `model` override.
