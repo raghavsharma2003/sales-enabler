@@ -45,6 +45,7 @@ export function customLines(components: StackComponents | undefined): EstimateLi
 
 /** Provider cost for `minutes` connected minutes across `calls` calls on a stack. Integer milli-rupees. */
 export async function estimate(q: Queryable, i: { stackId: string; minutes: number; calls: number; components?: StackComponents }): Promise<Estimate> {
+  if (i.stackId !== CUSTOM_STACK_ID && i.components) throw new ValidationError('components', 'a curated stack has fixed parts: use stackId "custom" to price parts you chose');
   const lines = i.stackId === CUSTOM_STACK_ID ? customLines(i.components) : await costLines(q, i.stackId);
   const perMinMicro = lines.reduce((s, l) => s + l.inrMicroPerMin, 0);
   const perCallMicro = lines.reduce((s, l) => s + l.inrMicroPerCall, 0);

@@ -7,7 +7,7 @@ import type { AgentConfig, CallCategory } from '../../../shared/agent-config.ts'
 import { numberHash } from '../../identity.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { lintAgentConfig } from '../../../shared/safety/index.ts';
-import { stackOf } from '../../../shared/stacks.ts';
+import { stackOf, type StackComponents } from '../../../shared/stacks.ts';
 import type { Queryable } from '../../db.ts';
 import { many, one } from '../../db.ts';
 import { release, reserve } from '../../ledger.ts';
@@ -52,7 +52,7 @@ export interface DialPolicy { outer_band: TimeRange; concurrency: number; sector
 
 export type PredialFn = (url: string, payload: Record<string, unknown>, timeoutMs: number) => Promise<{ allow: boolean; reason?: string }>;
 /** Provider cost per connected minute for a stack (the money module's money.estimate), or null when unknown. */
-export type RateFn = (q: Queryable, ws: string, stackId: string, minutes: number) => Promise<number | null>;
+export type RateFn = (q: Queryable, ws: string, stackId: string, minutes: number, components?: StackComponents) => Promise<number | null>;
 export interface GateDeps { now: Date; predial?: PredialFn; rate?: RateFn }
 
 export type ConsentBasis = 'consent' | 'contract' | 'legitimate_use' | 'inbound';
@@ -332,7 +332,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       maxDurationS = Math.min(agent?.limits?.maxDurationS ?? DEFAULT_MAX_DURATION_S, policy.maxDurationS ?? Infinity);
       // The hold is the most this call can cost: a campaign's own stated rate, else the money module's rate for the
       // stack, else a conservative ceiling. Never zero for an unknown rate.
-      const quoted = policy.perMinuteInrMilli ? null : agent?.voice?.stackId && deps.rate ? await deps.rate(q, ws, agent.voice.stackId, Math.ceil(maxDurationS / 60)) : null;
+      const quoted = policy.perMinuteInrMilli ? null : agent?.voice?.stackId && deps.rate ? await deps.rate(q, ws, agent.voice.stackId, Math.ceil(maxDurationS / 60), agent.voice.components) : null;
       const per = policy.perMinuteInrMilli ?? (quoted && quoted > 0 ? quoted : DEFAULT_PER_MINUTE_INR_MILLI);
       reserved = Math.ceil(maxDurationS / 60) * per;
       const r = await reserve(q, { workspaceId: ws, inrMilli: reserved, attemptId: a.id, campaignId: campaign?.id, apiKeyId: a.api_key_id ?? undefined });

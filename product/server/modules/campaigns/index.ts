@@ -208,7 +208,8 @@ export function registerCampaignTools(registry: Registry): void {
       if (money && v?.config.agent?.voice?.stackId) {
         try {
           const r = await money.run({ q: ctx.q, workspaceId: ctx.workspaceId, actor: { type: 'system', id: 'campaigns' } },
-            money.input({ stackId: v.config.agent.voice.stackId, minutes: Math.max(1, Math.round(minutes)), calls: Math.max(1, Math.round(attempts)) })) as { perMinuteInrMilli?: number; basis?: string };
+            money.input({ stackId: v.config.agent.voice.stackId, ...(v.config.agent.voice.components ? { components: v.config.agent.voice.components } : {}),
+              minutes: Math.max(1, Math.round(minutes)), calls: Math.max(1, Math.round(attempts)) })) as { perMinuteInrMilli?: number; basis?: string };
           if (r?.perMinuteInrMilli) { perMinute = r.perMinuteInrMilli; basis = r.basis ?? 'money.estimate'; }
         } catch { /* keep the prior; the basis says so */ }
       }

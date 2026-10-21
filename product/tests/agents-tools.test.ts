@@ -417,6 +417,9 @@ test('a built stack is available only when the runtime reports every one of its 
   const ok1: StackHealth = { available: true, reason: null, missing: [] };
   const h: RuntimeHealth & { components: Record<string, Record<string, StackHealth>> } = { stacks: {}, components: { ears: { azure: ok1 }, brain: { 'gpt-5.4-mini': ok1 },
     voice: { 'azure-mai': { available: false, reason: 'This voice is in preview and not connected yet.', missing: [] } } } };
+  assert.deepEqual(availabilityOf('custom', h, parts), { state: 'unavailable', reason: "Our voice engine can't run a stack you build yourself yet." },
+    'every part healthy is not enough: the runtime must say it runs built stacks');
+  h.customStacks = true;
   assert.deepEqual(availabilityOf('custom', h, parts), { state: 'unavailable', reason: 'This voice is in preview and not connected yet.' });
   h.components.voice['azure-mai'] = ok1;
   assert.deepEqual(availabilityOf('custom', h, parts), { state: 'available', reason: null });

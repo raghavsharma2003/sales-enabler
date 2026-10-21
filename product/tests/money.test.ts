@@ -545,4 +545,6 @@ test('a stack built from parts is priced from the same list prices: the default 
   }
   for (const s2s of pick('s2s')) assert.doesNotThrow(() => customLines({ s2s }), `${s2s} must have a price`);
   assert.throws(() => customLines({ ears: 'azure', brain: 'nope', voice: 'azure' }), /not a brain .* we offer/);
+  await assert.rejects(estimate(pool, { stackId: DEFAULT_STACK_ID, minutes: 1, calls: 0, components: { voice: 'azure-mai' } }), /fixed parts/,
+    'a curated stack with parts is refused, never priced as the curated stack');
 });

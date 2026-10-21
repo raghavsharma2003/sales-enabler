@@ -42,7 +42,9 @@ export interface StartReply { accepted: boolean; join?: Join; reason?: string; r
 export interface StackHealth { available: boolean; reason: string | null; missing: unknown[] }
 /** components: per part ('ears' | 'brain' | 'voice' | 's2s') and part id, the same shape as a stack's. Absent from a runtime
  *  that does not report parts yet, which reads as unknown, never unavailable. */
-export interface RuntimeHealth { stacks: Record<string, StackHealth>; components?: Record<string, Record<string, StackHealth>> }
+export interface RuntimeHealth { stacks: Record<string, StackHealth>; components?: Record<string, Record<string, StackHealth>>;
+  /** true once the runtime runs tickets whose stack.id is 'custom' (built from parts); absent or false means it does not. */
+  customStacks?: boolean }
 
 export interface Runtime {
   start(ticket: CallTicket): Promise<StartReply>;
@@ -92,14 +94,15 @@ export class HttpRuntime implements Runtime {
       const stacks: Record<string, StackHealth> = {};
       for (const [id, v] of Object.entries(j.stacks)) stacks[id] = one(v);
       const raw = (j as { components?: unknown }).components;
-      if (!raw || typeof raw !== 'object') return { stacks };
+      const customStacks = (j as { customStacks?: unknown }).customStacks === true;
+      if (!raw || typeof raw !== 'object') return { stacks, ...(customStacks ? { customStacks } : {}) };
       const components: Record<string, Record<string, StackHealth>> = {};
       for (const [part, ids] of Object.entries(raw as Record<string, unknown>)) {
         if (!ids || typeof ids !== 'object') continue;
         components[part] = {};
         for (const [id, v] of Object.entries(ids as Record<string, never>)) components[part][id] = one(v);
       }
-      return { stacks, components };
+      return { stacks, components, ...(customStacks ? { customStacks } : {}) };
     } catch { return null; }
   }
 }

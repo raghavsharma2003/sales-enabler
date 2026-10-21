@@ -8,7 +8,7 @@
 //  - deterministic: the same config gives the same bytes (and so the same hash), so caches hit and approvals bind.
 import { createHash } from 'node:crypto';
 import type { AgentConfig, Fact, Job, Language, SectorPack } from '../../../shared/agent-config.ts';
-import { getStack } from '../../../shared/stacks.ts';
+import { stackOf } from '../../../shared/stacks.ts';
 import { lintAgentConfig, type LintFinding } from '../../../shared/safety/index.ts';
 import { shapeLint, type ShapeFinding } from './lint.ts';
 
@@ -325,7 +325,7 @@ export function compileReport(c: AgentConfig, opts: CompileOptions = {}): Compil
   const linted = applyLint(c, opts.lint ?? lintAgentConfig);
   const facts = factsFor({ ...c, facts: linted.facts });
   const dropped = [...linted.dropped, ...linted.facts.filter(f => !facts.includes(f)).map(f => f.key)];
-  const voice = getStack(c.voice.stackId)?.components.voice;
+  const voice = stackOf(c.voice)?.components.voice;     // curated or built: the part that speaks decides SOUNDS and DELIVERY
   const parts: [SectionName, string | null][] = [
     ['SCRIPT', script(c)], ['IDENTITY', identity(c)], ['GOVERNOR', GOVERNOR], ['MEDIUM', medium(c)],
     ['SOUNDS', voice && TAG_SAFE_VOICES.has(voice) ? SOUNDS : null], ['CORE', core(c)], ['SITUATION_GOAL', situation(c)],

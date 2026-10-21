@@ -6,7 +6,7 @@ import { BUDGET, BriefBudgetError, BriefLintError, compile, compileReport, TAIL 
 import { draftHash, validateConfig, versionHashOf } from '../server/modules/agents/config.ts';
 import { shapeFields, shapeLint } from '../server/modules/agents/lint.ts';
 import { TEMPLATES } from '../server/modules/agents/templates.ts';
-import { DEFAULT_STACK_ID } from '../shared/stacks.ts';
+import { DEFAULT_STACK_ID, requireStack } from '../shared/stacks.ts';
 
 const base = () => structuredClone(TEMPLATES.find(t => t.id === 'insurance-renewal')!.config);
 const bytes = (s: string) => Buffer.byteLength(s, 'utf8');
@@ -165,4 +165,14 @@ test('config validation rejects unknown fields, duplicate keys and unannounced r
   assert.throws(() => validateConfig(dup), /appears twice/);
   assert.throws(() => validateConfig({ ...base(), recording: { enabled: true, announce: false } }), /announce/);
   assert.throws(() => validateConfig({ ...base(), goals: base().goals.map(g => ({ ...g, required: false })) }), /required/);
+});
+
+test('a stack built from parts compiles exactly like the curated stack with the same parts: the speaking part decides SOUNDS and DELIVERY', () => {
+  for (const id of ['v2-flashlite', 'v2-mai']) {
+    const curated = compileReport({ ...base(), voice: { stackId: id } });
+    const built = compileReport({ ...base(), voice: { stackId: 'custom', components: requireStack(id).components } });
+    assert.deepEqual(built.sections.map(x => x.name), curated.sections.map(x => x.name), `${id}: same sections`);
+    assert.equal(built.text, curated.text, `${id}: same brief text`);
+  }
+  assert.ok(compileReport({ ...base(), voice: { stackId: 'custom', components: requireStack('v2-mai').components } }).sections.some(x => x.name === 'DELIVERY'));
 });

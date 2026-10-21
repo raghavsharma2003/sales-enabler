@@ -52,6 +52,7 @@ export function availabilityOf(id: string, h: RuntimeHealth | null, components?:
   if (!h) return { state: 'unknown', reason: null };
   if (id === CUSTOM_STACK_ID && components) {     // a built stack runs if each of its parts does; the first part that cannot says why
     if (!h.components) return { state: 'unknown', reason: null };
+    if (!h.customStacks) return { state: 'unavailable', reason: "Our voice engine can't run a stack you build yourself yet." };
     const parts = components.s2s ? [['s2s', components.s2s]] : [['ears', components.ears], ['brain', components.brain], ['voice', components.voice]];
     for (const [part, pid] of parts) {
       const v = pid ? h.components[part as string]?.[pid] : undefined;

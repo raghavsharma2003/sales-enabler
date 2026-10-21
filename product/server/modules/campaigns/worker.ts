@@ -7,7 +7,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import type { Fact } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
-import { combinationId, resolveStack } from '../../../shared/stacks.ts';
+import { combinationId, resolveStack, type StackComponents } from '../../../shared/stacks.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
 import { release } from '../../ledger.ts';
@@ -111,8 +111,8 @@ export async function claimNext(d: WorkerDeps): Promise<ClaimOutcome> {
     }
 
     a.agent_version_id = await resolveVersion(d.registry, c, a);
-    const rate = async (q: unknown, ws: string, stackId: string, minutes: number) =>
-      (await readTool<{ perMinuteInrMilli?: number }>(d.registry, c, ws, 'money.estimate', { stackId, minutes, calls: 1 }))?.perMinuteInrMilli ?? null;
+    const rate = async (q: unknown, ws: string, stackId: string, minutes: number, components?: StackComponents) =>
+      (await readTool<{ perMinuteInrMilli?: number }>(d.registry, c, ws, 'money.estimate', { stackId, minutes, calls: 1, ...(components ? { components } : {}) }))?.perMinuteInrMilli ?? null;
     const v = await runGate(c, a, { now, predial: d.predial, rate });
     const precheck = { gateVersion: v.gateVersion, at: now.toISOString(), allowed: v.allowed, trace: v.trace, warnings: v.warnings,
       ...(v.allowed ? {} : { outcome: v.outcome, code: v.code, gate: v.gate, detail: v.detail, nextEligibleAt: v.nextEligibleAt?.toISOString() ?? null,
