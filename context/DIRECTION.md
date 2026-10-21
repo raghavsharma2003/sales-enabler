@@ -56,15 +56,39 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
   - Inputs and working: digests, the spine, 9 modules, the red team and defaults, all in the same folder.
   - Its 10 defining decisions are proposed, not approved (`decision.2026-10-21.blueprint-defining-decisions`).
   - It says plainly where VP loses today (`risk.2026-10-21.blueprint-not-better-yet`).
-- **Next: the owner reviews the 16 decisions** (`open.2026-10-21.blueprint-owner-decisions`). The first three
-  (default stack, Base price, first partners) gate the rest. Then the Phase 0 gates run, before about 2026-11-16:
+- **Building now (`directive.2026-10-21.build-end-to-end`).** The owner said to go with the blueprint's recommendations
+  and build the product end to end. Rules for this build:
+  - stack choice offers the finalised stacks with **no default yet**;
+  - price is deferred and shows as "not set";
+  - the product is **horizontal**, for every kind of enterprise, not just insurance;
+  - self-learning is harness2-style.
+
+  The code is in `product/`; read `product/ARCHITECTURE.md` first. What is in it:
+  - a TS control plane: kernel plus 10 modules, about 165 tools, the approval classes A1/A2/A3;
+  - the Python voice runtime `product/voice`;
+  - the React web app `product/web`;
+  - the e2e acceptance test `product/tests/e2e.test.ts`.
+
+  State on 2026-10-21 at 3059bde: tsc clean, 274/275 pass, 0 fail, 1 todo on a fresh Postgres 16. The voice runtime
+  passes 91/91 with rules parity against `shared/safety`.
+
+  Next:
+  - three adversarial reviews are running (money and auth; who gets called; what she says);
+  - the remaining web gaps;
+  - the owner decides the safety second layer (`decision.2026-10-21.safety-second-layer-proposal`; the regex door
+    caught 51.5% of blind harmful lines);
+  - the owner OKs a deploy;
+  - real keys and a real phone line.
+
+  The blueprint's 16 owner decisions (`open.2026-10-21.blueprint-owner-decisions`) and the Phase 0 gates still stand:
   - buyer interviews;
-  - the carrier quote round (KC5, rental in the tenant's name);
-  - the turn-manager redesign and the handset battery;
-  - round-2 ear ratings;
+  - the carrier quote round (KC5);
+  - the turn-manager redesign;
+  - round-2 ratings;
   - counsel (KC8);
-  - VP's own DLT registration and a VP-owned Google organisation.
-  Only then does the v0.5 slice start.
+  - DLT registration and a VP-owned Google organisation.
+
+  They now run alongside the build, not ahead of it.
   - **Watch:** parity as a *wedge* was rejected on 2026-10-17. v1 has to win on measured task failures, not on feature
     count (`open.2026-10-20.parity-floor-vs-wedge`). The dashboards confirm chat setup is parity (5 of 6 ship a
     copilot).
@@ -154,6 +178,8 @@ The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round
 | Credential hygiene | Rotate the pasted secrets: Plivo token, the free keys, mailbox passwords (`risk.2026-10-20.secrets-pasted`). Not confirmed done. |
 | Plivo trial | ₹764 credit expires 2026-11-16, with an ₹80 monthly usage cap. Recharge is the owner's decision. |
 | Round-2 human ratings | After Vertex returns (`open.2026-10-20.round2-human-ratings`). |
+| Safety second layer | Proposal waiting on the owner. The regex door caught 67/130 harmful blind-set lines with 25/240 benign false positives before tuning. Add a model classifier behind the regex door, or keep regex only (`decision.2026-10-21.safety-second-layer-proposal`). |
+| First deploy | Needs the owner's go (it costs money) and real keys: LLM, TTS/STT for the chosen stacks, telephony (Plivo trial line), VP_SECRET_KEY. |
 | Teardown account hygiene | Rotate the pasted vendor passwords and keys. Delete the draft objects Instinct left in the vendor accounts (side-effects ledger in Drive `00-FINAL-REPORT.md`). Instinct's Drive captures hold the owner's phone (Exotel 11, 12) and a +1 number (Retell 08); the local copies are gitignored (`risk.2026-10-21.wt-synthesis-capture-hygiene`). |
 
 ## Where things live
