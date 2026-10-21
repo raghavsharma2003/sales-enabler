@@ -3,14 +3,13 @@
 export const TOOLS = {
   today: ['brief.today', 'activity.list'],
   agents: ['agent.list', 'agent.get', 'agent.create', 'agent.update', 'version.publish', 'test.simulate', 'test.browser_call', 'money.estimate', 'knowledge.list'],
-  contacts: ['contact.list', 'contact.get', 'contact.import_preview', 'contact.import_commit', 'audience.list', 'audience.create', 'fact.approve', 'fact.forget', 'contact.consent_set'],
+  contacts: ['contact.list', 'contact.get', 'contact.import_preview', 'contact.import_commit', 'audience.list', 'audience.create', 'fact.approve', 'fact.forget'],
   campaigns: ['campaign.list', 'campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.test_row', 'campaign.launch', 'campaign.pause', 'campaign.resume', 'campaign.stop', 'policy.window.set'],
   calls: ['call.search', 'call.get', 'call.explain'],
   insights: ['insight.funnel', 'insight.issues', 'learning.proposals', 'learning.decide', 'experiment.list'],
   numbers: ['number.list', 'number.quote', 'number.rent', 'number.verify_start'],
   settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'brand.get', 'brand.set', 'knowledge.add',
-    'wallet.get', 'wallet.topup', 'billing.summary', 'compliance.get', 'privacy.get', 'dpdp.request.list', 'operator.settings', 'operator.brain.set'],
-  operator: ['operator.say'],
+    'wallet.get', 'wallet.topup', 'billing.summary', 'compliance.get', 'privacy.get', 'dpdp.request.list', 'operator.settings.get', 'operator.brain.set', 'operator.autonomy.lower', 'operator.autonomy.raise'],
 } as const;
 export const ALL_TOOLS: string[] = [...new Set(Object.values(TOOLS).flat())].sort();
 

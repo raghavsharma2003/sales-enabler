@@ -14,8 +14,10 @@ mkdirSync(out, { recursive: true });
 const EMAIL = 'asha@saanjh.example', PASSWORD = 'sample-password-1234';
 const SCREENS = [
   ['login', '/login', { anon: true }], ['signup', '/signup', { anon: true }],
-  ['today', '/'], ['agents', '/agents'], ['agent-builder', '/agents/a_renew'], ['agent-stack', '/agents/a_appt?tab=voice'], ['agent-test', '/agents/a_renew?tab=test'],
-  ['contacts', '/contacts'], ['contacts-import', '/contacts/import'], ['contact', '/contacts/ct_001'], ['audiences', '/audiences'],
+  ['today', '/'], ['agents', '/agents'], ['agent-builder', '/agents/a_renew'], ['agent-stack', '/agents/a_appt?tab=voice'], ['agent-test', '/agents/a_renew', { after: async (p, tag) => { if (tag === 'm') { await p.getByRole('button', { name: 'Test her' }).first().click(); } else { await p.getByRole('radio', { name: 'Test her' }).click(); } await p.getByRole('button', { name: 'Run 6 practice callers' }).click(); await p.waitForTimeout(700); await p.locator('.simlist summary').nth(2).click(); } }],
+  ['operator-plan', '/', { after: async (p, tag) => { if (tag === 'm') await p.getByRole('button', { name: 'Talk' }).click(); await p.locator('#dock-input').fill('Ye CSV import karke renewal reminders bhej do'); await p.keyboard.press('Enter'); await p.waitForTimeout(4500); } }],
+  ['approval', '/', { after: async (p) => { await p.getByRole('button', { name: 'Review' }).first().click(); await p.waitForTimeout(600); } }],
+  ['contacts', '/contacts'], ['contacts-import', '/contacts/import', { after: async (p) => { await p.getByRole('button', { name: 'Use a made-up sample' }).click(); await p.getByRole('button', { name: 'Check the file' }).click(); await p.waitForTimeout(600); } }], ['contact', '/contacts/ct_001'], ['audiences', '/audiences'],
   ['campaigns', '/campaigns'], ['campaign-new', '/campaigns/new'], ['campaign-live', '/campaigns/cmp_renew'], ['campaign-draft', '/campaigns/cmp_appt'],
   ['calls', '/calls'], ['call', '/calls/k_001'], ['call-optout', '/calls/k_002'], ['insights', '/insights'], ['numbers', '/numbers'],
   ['settings-team', '/settings/team'], ['settings-keys', '/settings/keys'], ['settings-billing', '/settings/billing'], ['settings-compliance', '/settings/compliance'], ['settings-activity', '/settings/activity'], ['settings-operator', '/settings/operator'],
@@ -42,6 +44,7 @@ for (const [tag, viewport, extra] of SIZES) {
     errors.length = 0;
     await page.goto(base + path, { waitUntil: 'networkidle' });
     await page.waitForTimeout(450);
+    if (o?.after) await o.after(page, tag);
     const file = `${out}${name}-${tag}.png`;
     if (tag === 'm') await page.addStyleTag({ content: '.bottombar{position:static!important}' });
     await page.screenshot({ path: file, fullPage: tag === 'm' ? true : false });

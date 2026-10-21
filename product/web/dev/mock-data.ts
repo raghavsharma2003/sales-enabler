@@ -128,7 +128,7 @@ function checks(ok: boolean): Check[] {
     { id: 'dnd', label: 'DND and opt-outs checked before every attempt', state: 'ok', detail: '9 suppressed in this list' },
     { id: 'limits', label: 'Call and spend limits set', state: ok ? 'ok' : 'warn', detail: ok ? 'Cap ₹5,600, 8 calls at once' : 'No spend cap yet. Set one before launch.', fix: ok ? undefined : { label: 'Set a cap', href: '/campaigns/cmp_appt' } },
     { id: 'sims', label: 'Six practice callers passed', state: ok ? 'ok' : 'fail', detail: ok ? '6 of 6 passed on Oct 19' : 'Not run yet', fix: ok ? undefined : { label: 'Run the practice callers', href: '/agents/a_appt' } },
-    { id: 'outcome', label: 'Outcome wired to your system', state: ok ? 'ok' : 'warn', detail: ok ? 'Renewal webhook received 63 confirmations' : 'Outcomes will be read from the call only', fix: ok ? undefined : { label: 'Connect', href: '/settings/integrations' } },
+    { id: 'outcome', label: 'Outcome wired to your system', state: ok ? 'ok' : 'warn', detail: ok ? 'Renewal webhook received 63 confirmations' : 'Outcomes will be read from the call only', fix: ok ? undefined : { label: 'Connect', href: '/settings/keys' } },
   ];
 }
 function funnel(rows: number, dialled: number, connected: number, done: number): FunnelStage[] {

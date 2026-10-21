@@ -1,0 +1,43 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-21.web-stack-picker-no-default",
+   "type": "decision",
+   "title": "The agent builder's voice stack picker lists every stack from shared/stacks.ts with nothing preselected and nothing marked recommended; choosing is local until Save draft; Publish is disabled with a reason while no stack is chosen; tests of an agent with no stack come back 'invalid, with the reason', never a pass.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "web builder (product/web)",
+   "rationale": "Owner directive decision.2026-10-21.stack-choice-no-default plus state integrity (no click-to-save). Each figure shows its grade and source; a missing price shows 'not measured', never 0.",
+   "reverse_if": "The owner picks a default stack after round-2 ratings."
+  },
+  {
+   "id": "decision.2026-10-21.web-state-integrity-in-types",
+   "type": "decision",
+   "title": "A disabled primary action must carry a reason: the Btn component's TypeScript type requires `reason` when `disabled` is true. A test fails the build if a dropdown change calls a write tool, if a colour literal appears outside tokens.css, or if any text colour pair is under 5:1 in light or dark.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "web builder (product/web/tests/web.test.ts)",
+   "rationale": "Must-be D (state integrity) and the 5:1 text contrast law from the design language, made mechanical so they cannot drift.",
+   "reverse_if": "A real flow needs a silent disabled control; none was found."
+  },
+  {
+   "id": "measurement.2026-10-21.web-bundle-size",
+   "type": "measurement",
+   "title": "Web bundle: first load 81.4 KB gzip (main JS + CSS), all page chunks 137.5 KB gzip, 431.6 KB raw, built by esbuild with React 19 and lucide-react.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "node product/web/build.mjs, n=1 build",
+   "rationale": "Budget in the design language is 170 KB gzip JS per route; the test pins 100 KB first load and 200 KB total."
+  },
+  {
+   "id": "open.2026-10-21.web-needs-registry-shapes",
+   "type": "open",
+   "title": "The workspace tool registry JSON is not in the repo, so web invented tool ids and result shapes (web/src/types.ts, STATUS.json needs_from_others). Real modules must return those shapes or web adapts once told. Also: a person pressing Pause gets an approval request because A3 verbs run at once only for agent/system actors.",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "web builder",
+   "rationale": "Screens were verified only against stand-in tools and the real Operator module with a scripted fake model."
+  }
+ ],
+ "edges": []
+}
