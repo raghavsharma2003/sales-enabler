@@ -5,21 +5,20 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 89,
-    "passed": 89,
+    "ran": 91,
+    "passed": 91,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
       "file": "product/shared/safety/cases.json",
-      "rulesVersion": "2026-10-21.1",
-      "cases": 1609,
-      "passed": 1609,
-      "sweep-2026-10-21": 50,
+      "engine": "index.ts at ada4e26 (coClause, back_reference)",
+      "cases": 1979,
+      "passed": 1979,
       "byFn": {
-        "replyDoor": 986,
-        "callerSignals": 590,
-        "lintAgentConfig": 17,
-        "redact": 16
+        "replyDoor": 1216,
+        "callerSignals": 730,
+        "redact": 16,
+        "lintAgentConfig": 17
       }
     },
     "files": {
@@ -28,7 +27,7 @@
       "test_cascade.py": "audio cascade with fake ears/voice and the real turn-taking: full call with her hang-up, barge-in records what was heard, OTP stopped mid-number and redacted, secrets never reach the brain on the speculative path, voice failure ends a test call",
       "test_server.py": "HTTP surface on a local test server: health, unsigned/tampered/stale/garbage signatures, unknown stack 422, missing credentials 503, idempotent retry and 409, sim socket end to end, single-use tokens, no join after end, end route (body must name the call), unjoined call still reports, browser media socket, sip inbound join",
       "test_safety.py": "runtime door layer (first breath, truth first, crisis lines, contact facts), signals and masks, the speech-to-speech door cut, and 9 regressions for the shared-rule gaps fixed at eaae1c1",
-      "test_safety_cases.py": "every case in cases.json with the semantics the file states"
+      "test_safety_cases.py": "every case in cases.json with the semantics the file states; parity guard (an unknown rules.json key or value fails at load)"
     }
   },
   "works": [
@@ -36,6 +35,7 @@
     "No default stack: unknown or missing stack refused (422), missing credentials refused (503 with the names), voice and combinationId checked, never substituted",
     "Per-contact facts reach the model as the contact rows block (after brief and memory, before the LAST block), in compile.ts contactRows() format; the door gets them as perContact facts. product/tests/agents-runtime.test.ts passes 4/4 against this runtime",
     "Brief used verbatim; memory brief only when memoryStatus = loaded; generic data-driven LAST block per turn (spent facts and figures, stray caller figures, goals open/settled, cues, closing, crisis/opt-out/asked-AI state, marker rules)",
+    "Parity guard: vpvoice/rules.py refuses at import any rules.json key, builtin, scope or enum it does not implement, so an engine change breaks CI at load, not quietly in a call",
     "Reply door = shared rules.json evaluated as index.ts does (all 1186 vectors pass) + runtime layer (first-breath clause, truth first, crisis lines); block -> one rewrite told the rule, then a safe line",
     "Caller signals and redaction from rules.json; redacted text is what reaches transcript, events and the LLM",
     "Transports: sim (text socket), webrtc (lab-style browser socket), sip (Plivo outbound dial + stream, Plivo/Exotel inbound streams, Plivo transfer for phone hand-off)",

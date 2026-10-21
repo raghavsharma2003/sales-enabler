@@ -73,14 +73,14 @@ The control plane's brief compiler can rely on this vocabulary. The LAST block r
 The rules are the shared ones. `vpvoice/rules.py` loads `product/shared/safety/rules.json` (the image copies it next to
 the package; `VP_SAFETY_RULES` overrides the path) and evaluates it line for line as `product/shared/safety/index.ts`
 does: first rule that fires decides, the same scopes, the same five builtins, the same masks (`[OTP]`, `[CARD]`, …).
-All 1,609 vectors in `cases.json` pass (`tests/test_safety_cases.py`).
+All 1,979 vectors in `cases.json` pass (`tests/test_safety_cases.py`).
 
 `vpvoice/safety.py` adds only what needs call state the shared door lacks:
 - the first-breath clause prefix (RD1);
 - truth-first after "aap AI ho?" (RD2);
 - the crisis-support line until 14416 and 112 have been said (RD3).
 
-Exemptions follow the shared semantics: `none` on the whole sentence, `noneClause` only on the clause around the anchor match (`regex.clause_split`). The gaps this runtime found are regression tests in `tests/test_safety.py`. What the runtime does
+Exemptions follow the shared semantics: `none` on the whole sentence, `noneClause` only on the clause around the anchor match (`regex.clause_split`); `coClause` rules need every `all` group in that clause, or in it plus the clause before when it holds a `regex.back_reference`. A key, builtin, scope or enum in `rules.json` that `rules.py` does not implement makes the import fail (`RulesSchemaError`): port the engine change from `index.ts` first. The gaps this runtime found are regression tests in `tests/test_safety.py`. What the runtime does
 with each rule:
 
 | Rule | What the runtime does |

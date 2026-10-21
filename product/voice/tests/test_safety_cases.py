@@ -56,6 +56,30 @@ class SharedVectors(unittest.TestCase):
             why = run_case(c, d)
             if why: fails.append(f"{c['id']}: {why} | {str(c['input'])[:90]}")
         self.assertEqual(fails, [], f'{len(fails)} of {len(d["cases"])} shared vectors fail:\n' + '\n'.join(fails[:40]))
+        self.assertGreaterEqual(len(d['cases']), 1979)
+
+
+class ParityGuard(unittest.TestCase):
+    """An engine change in rules.json that this port does not know must fail at load, never be half-evaluated."""
+    def test_current_rules_load(self):
+        rules.check_schema(rules.RULES)
+
+    def test_unknown_semantics_refused(self):
+        import copy
+        mutations = [
+            lambda r: r.__setitem__('newSection', {}),
+            lambda r: r['regex'].__setitem__('word_split', 'x'),
+            lambda r: r['reply'][0].__setitem__('coSentence', True),
+            lambda r: r['caller'][0].__setitem__('window', 3),
+            lambda r: r['reply'][0].__setitem__('kind', 'builtin:telepathy'),
+            lambda r: r['reply'][0].__setitem__('scope', {'when': 'tuesday'}),
+            lambda r: r['reply'][0].__setitem__('action', 'warn'),
+            lambda r: r['redact']['kinds'][0].__setitem__('checksum', 'luhn'),
+            lambda r: r.__setitem__('schema', 2),
+        ]
+        for i, mut in enumerate(mutations):
+            r = copy.deepcopy(rules.RULES); mut(r)
+            with self.assertRaises(rules.RulesSchemaError, msg=f'mutation {i}'): rules.check_schema(r)
 
 
 if __name__ == '__main__':

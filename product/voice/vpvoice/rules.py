@@ -24,6 +24,70 @@ with open(_rules_path(), encoding='utf-8') as _f:
 VERSION = RULES.get('version')
 
 
+# ---------------------------------------------------------------- parity guard
+# Every key and enum value this port understands. A rules.json carrying anything else means index.ts has new
+# semantics this file does not have yet: refuse to load (CI breaks at import), never evaluate it partially.
+KNOWN = {
+    'top': {'schema', 'version', 'about', 'regex', 'texts', 'masks', 'lexicon', 'reply', 'caller', 'redact', 'lint', 'links'},
+    'regex': {'dialect', 'normalise', 'clause_split', 'clause_scope', 'back_reference'},
+    'reply': {'id', 'rule', 'kind', 'action', 'replacement', 'reason', 'scope', 'any', 'all', 'none', 'noneClause', 'anchor', 'coClause', 'check', 'about', 'note'},
+    'caller': {'id', 'signal', 'any', 'all', 'none', 'noneClause', 'builtin', 'context', 'about', 'note'},
+    'scope': {'packs', 'categories', 'when', 'join'},
+    'when': {'crisis', 'undisclosed', 'unverified', 'recordingRefused', 'dues'},
+    'action': {'block', 'replace'},
+    'builtin': {'links', 'per_contact_facts', 'never_say', 'amounts'},
+    'caller_builtin': {'sensitive_digits'},
+    'signal': {'crisis', 'asksIfAi', 'refusesRecording', 'optOut', 'readingSensitiveDigits', 'wantsHuman'},
+    'redact': {'about', 'digit_token', 'words_to_digits', 'context_window_chars', 'kinds', 'not_secret_code'},
+    'redact_kind': {'kind', 'context', 'minDigits', 'maxDigits', 'about'},
+    'masks': {'otp', 'card', 'cvv', 'upi_pin', 'aadhaar'},
+    'lint': {'T-L1', 'T-L2', 'T-L3', 'T-L4'},
+    'T-L1': {'about', 'any', 'none', 'never_say_hides_ai', 'disclosure_clause_requires'},
+    'T-L2': {'about', 'categories', 'dropPurposes'},
+    'T-L3': {'about', 'allowedPurposes', 'offerLanguage'},
+    'T-L4': {'about', 'shorteners'},
+    'links': {'pattern', 'about'},
+}
+
+
+class RulesSchemaError(Exception):
+    pass
+
+
+def check_schema(r):
+    """Raise on any key or value this port does not understand (see KNOWN)."""
+    bad = []
+    def keys(obj, kind, where):
+        extra = set(obj) - KNOWN[kind]
+        if extra: bad.append(f'{where}: {sorted(extra)}')
+    if r.get('schema') != 1: bad.append(f"schema {r.get('schema')!r} (this port reads 1)")
+    keys(r, 'top', 'rules.json'); keys(r.get('regex', {}), 'regex', 'regex'); keys(r.get('masks', {}), 'masks', 'masks')
+    keys(r.get('redact', {}), 'redact', 'redact'); keys(r.get('lint', {}), 'lint', 'lint'); keys(r.get('links', {}), 'links', 'links')
+    for k in (r.get('redact', {}).get('kinds') or []):
+        keys(k, 'redact_kind', f"redact.kinds[{k.get('kind')}]")
+        if k.get('kind') not in KNOWN['masks']: bad.append(f"redact kind {k.get('kind')!r}")
+    for name in KNOWN['lint'] & set(r.get('lint', {})): keys(r['lint'][name], name, f'lint.{name}')
+    for x in r.get('reply') or []:
+        keys(x, 'reply', f"reply[{x.get('id')}]")
+        if x.get('action') not in KNOWN['action']: bad.append(f"reply[{x.get('id')}].action {x.get('action')!r}")
+        if str(x.get('kind', '')).startswith('builtin:') and x['kind'][8:] not in KNOWN['builtin']: bad.append(f"reply[{x.get('id')}] {x['kind']}")
+        if x.get('replacement') and x['replacement'] not in (r.get('texts') or {}): bad.append(f"reply[{x.get('id')}] replacement {x['replacement']!r}")
+        sc = x.get('scope') or {}
+        keys(sc, 'scope', f"reply[{x.get('id')}].scope")
+        if sc.get('when') and sc['when'] not in KNOWN['when']: bad.append(f"reply[{x.get('id')}].scope.when {sc['when']!r}")
+        if sc.get('join') not in (None, 'and', 'or'): bad.append(f"reply[{x.get('id')}].scope.join {sc['join']!r}")
+    for x in r.get('caller') or []:
+        keys(x, 'caller', f"caller[{x.get('id')}]")
+        if x.get('signal') not in KNOWN['signal']: bad.append(f"caller[{x.get('id')}].signal {x.get('signal')!r}")
+        if x.get('builtin') and x['builtin'] not in KNOWN['caller_builtin']: bad.append(f"caller[{x.get('id')}].builtin {x['builtin']!r}")
+    if bad:
+        raise RulesSchemaError('rules.json has semantics vpvoice/rules.py does not implement (port them from '
+                               'product/shared/safety/index.ts first): ' + '; '.join(bad))
+
+
+check_schema(RULES)
+
+
 def fold_devanagari(s):
     return unicodedata.normalize('NFC', s).replace('ँ', 'ं').replace('़', '')
 
@@ -55,14 +119,30 @@ def fires(r, t, brand=''):
     if r.get('any') and not any(rx(p, brand).search(t) for p in r['any']): return False
     if not r.get('all') and not r.get('any'): return False
     if r.get('none') and any(rx(p, brand).search(t) for p in r['none']): return False     # sentence-wide exemptions
-    if not r.get('noneClause'): return True
+    if not r.get('noneClause') and not r.get('coClause'): return True
     # clause-scoped exemptions (negations) shield only the clause that holds the anchor match
-    def shielded(c): return any(rx(p, brand).search(c) for p in r['noneClause'])
+    def shielded(c): return any(rx(p, brand).search(c) for p in r.get('noneClause') or [])
     anchors = [r['all'][r['anchor'] if r.get('anchor') is not None else len(r['all']) - 1]] if r.get('all') else r['any']
     for p in anchors:
         for m in rx(p, brand).finditer(t):
-            if not shielded(clause_at(t, m.start(), m.end())): return True
+            clause = clause_at(t, m.start(), m.end())
+            if r.get('noneClause') and shielded(clause): continue
+            # coClause: every all-group must sit in the anchor's clause; a back-reference lets the previous clause count
+            if r.get('coClause') and r.get('all') and not all(rx(q, brand).search(clause) for q in r['all']):
+                back = clause_before(t, m.start()) if rx(RULES['regex']['back_reference']).search(clause) else ''
+                if not back or (r.get('noneClause') and shielded(back)) or not all(rx(q, brand).search(back + ' ' + clause) for q in r['all']):
+                    continue
+            return True
     return False
+
+
+def clause_before(t, i):
+    """The clause just before the one holding index i, walking back over tiny segments (", bas", ", aur")."""
+    cuts = [(m.start(), m.end()) for m in rx(RULES['regex']['clause_split']).finditer(t) if m.end() <= i]
+    for k in range(len(cuts) - 1, -1, -1):
+        seg = t[cuts[k - 1][1] if k > 0 else 0:cuts[k][0]]
+        if len(seg.strip()) >= 12 or k == 0: return seg
+    return ''
 
 
 def clause_at(t, start, end):
