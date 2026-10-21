@@ -71,6 +71,11 @@
       "date": "2026-10-21",
       "event": "operator-streaming",
       "details": "Operator turn now streams over the kernel's Res.stream and llm.stream, passes the curated workspace brain as the per-request model; 19/19 operator tests green (incremental-frame test included). Not verified: a real provider's delta stream."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "operator-ma01-aligned",
+      "details": "Operator tool list and plan view use the kernel's heldForApproval (MA-01); test shows a plan with attempt.retry_per_ladder stops at a tap and nobody is re-dialled, while campaign.pause runs at A3. 20/20 operator tests."
     }
   ]
 }

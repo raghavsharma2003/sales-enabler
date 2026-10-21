@@ -12,7 +12,7 @@
 //   5. Hard caps per turn on model calls, tool calls and tokens. Every model call writes a cost_line
 //      (component 'platform').
 import type pg from 'pg';
-import { argsHash, canApprove, isA3, needsHumanApproval, ROLES, type RiskClass, type Role } from '../../../shared/approval.ts';
+import { argsHash, canApprove, ROLES, type RiskClass, type Role } from '../../../shared/approval.ts';
 import { ValidationError } from '../../../shared/validate.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
@@ -165,7 +165,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   const tools: LlmTool[] = allowed.map(t => {
     const fn = fnName(t.name);
     const def = registry.get(t.name)!;
-    const tap = t.needsApproval || (settings.autonomy === 'A0' && (t.risk === 'draft' || t.risk === 'test') && !A0_EXEMPT.has(t.name));
+    const tap = heldForApproval(t.name, t.risk, actor) || (settings.autonomy === 'A0' && (t.risk === 'draft' || t.risk === 'test') && !A0_EXEMPT.has(t.name));
     return { name: fn, description: `${t.summary}. [${RISK_LABEL[t.risk]}${tap ? '; waits for a human tap' : ''}]`, parameters: def.input.schema ?? { type: 'object' } };
   });
   tools.push(planTool(allowed.map(t => t.name), caps.planSteps));
@@ -292,7 +292,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
         throw e;
       }
       // The plan shows exactly what the kernel will do for this member's Operator (server/tools.ts heldForApproval).
-      const tap = heldForApproval(name, def.risk, { type: 'agent', id: 'operator:' + member.id, role: member.role }) || (settings.autonomy === 'A0' && (def.risk === 'draft' || def.risk === 'test') && !A0_EXEMPT.has(name));
+      const tap = heldForApproval(name, def.risk, actor) || (settings.autonomy === 'A0' && (def.risk === 'draft' || def.risk === 'test') && !A0_EXEMPT.has(name));
       return { n: i + 1, tool: name, why, risk: def.risk, runs: tap ? 'tap' : 'now', status: 'planned', args: s?.args };
     });
     if (!steps.length) return { status: 'not_executed', reason: 'the plan had no steps' };

@@ -21,8 +21,8 @@
     "0500_operator.sql"
   ],
   "tests": {
-    "passed": 19,
-    "total": 19,
+    "passed": 20,
+    "total": 20,
     "file": "tests/operator.test.ts",
     "db": "vp_mod_operator on the throwaway cluster"
   },
@@ -37,7 +37,8 @@
     "Tenancy: thread, message, preference and brief queries filter by workspace_id; tested across two workspaces",
     "brief.today: needs-a-tap (top 7 by risk), live campaigns, spend today in IST by component, wallet, open issues, audit changes since a time",
     "Real streaming via Res.stream: frames are written as the turn runs (tested: the first card arrives while the next model call is still blocked); model text streams as deltas through llm.stream; the turn stops before its next model call when the client leaves",
-    "The workspace's brain is passed as the per-request model while it is on the curated list (VP_OPERATOR_BRAINS ids are the model names on the operator endpoint); a brain taken off the list falls back to the configured model"
+    "The workspace's brain is passed as the per-request model while it is on the curated list (VP_OPERATOR_BRAINS ids are the model names on the operator endpoint); a brain taken off the list falls back to the configured model",
+    "MA-01: the plan view and the model's tool list both use the kernel's heldForApproval with the Operator's actor, so attempt.retry_per_ladder shows and runs as a tap (plan stops there) while risk-lowering A3 verbs such as campaign.pause run at once; tested"
   ],
   "untested": [
     "Against a real model: only setFakeLlm scripts were run; no Operator bench (300 keyed + 50 adversarial) exists yet",
