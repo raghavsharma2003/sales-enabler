@@ -101,6 +101,10 @@ export interface AnalysisRecord {
   judge_raised?: { index: number; kind: string; confidence: number }[];
   judge_unavailable?: number;
   judge_calls?: number;
+  // One story for the caller-crisis judge: live (runtime 'judge' events) plus post-call. Not 'judge', which is the
+  // outcome judge's guess that learning reads.
+  crisis_judge?: { shadow: number; raised: number; unavailable: number;
+    runtime: { shadow: number; raised: number; unavailable: number }; postCall: { shadow: number; raised: number; unavailable: number } };
   followups?: Record<string, string>;
   model?: string;
   reason?: string;
@@ -148,6 +152,11 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
           [workspaceId, conversationId, crisis.usage.inputTokens + crisis.usage.outputTokens, { ...crisis.usage, purpose: 'safety_judge', calls: crisis.calls, priced: false }]);
       });
     }
+    const live = await one<{ shadow: number; raised: number; unavailable: number }>(pool,
+      `SELECT count(*) FILTER (WHERE outcome = 'shadow')::int AS shadow, count(*) FILTER (WHERE outcome = 'raised')::int AS raised,
+              count(*) FILTER (WHERE outcome = 'unavailable')::int AS unavailable FROM call_judge_event WHERE conversation_id = $1 AND workspace_id = $2`, [conversationId, workspaceId]);
+    const post = { shadow: crisis?.shadow.length ?? 0, raised: crisis?.raised.length ?? 0, unavailable: crisis?.unavailable ?? 0 };
+    rec.crisis_judge = { shadow: live!.shadow + post.shadow, raised: live!.raised + post.raised, unavailable: live!.unavailable + post.unavailable, runtime: live!, postCall: post };
     const safety = await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2', [conversationId, workspaceId]);
     rec.safety_violation = safety!.n > 0;
     rec.judge ??= null;

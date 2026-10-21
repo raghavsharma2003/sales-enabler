@@ -25,15 +25,16 @@
     "POST /hooks/runtime"
   ],
   "migrations": [
-    "db/migrations/0601_calls.sql"
+    "db/migrations/0601_calls.sql",
+    "db/migrations/0602_call_judge_event.sql"
   ],
   "tests": {
-    "passed": 21,
-    "total": 21,
+    "passed": 23,
+    "total": 23,
     "files": [
       "tests/calls.test.ts"
     ],
-    "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, the real agents module for draft test calls, and stubs for the other sibling tools; synthetic data only. The whole product suite (node scripts/test.mjs, concurrency 4) on one shared database passed 353/353 on two consecutive runs."
+    "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, the real agents module for draft test calls, and stubs for the other sibling tools; synthetic data only. The whole product suite (node scripts/test.mjs, concurrency 4) on one shared database passed 355/355 on two consecutive runs."
   },
   "works": [
     "POST /hooks/runtime checks x-vp-signature with VP_RUNTIME_SECRET over the exact raw request bytes (Router rawBody) before parsing. A missing, wrong, stale (>5 min) or tampered signature, including a whitespace-only change, gets 401. Unknown fields get 422 and an unknown conversation 404. The workspace comes from the conversation row, never from the request.",
@@ -52,7 +53,8 @@
     "Tenancy: every query filters by workspace_id. A test shows another workspace cannot read, label, explain, listen to, funnel or resolve this workspace's rows.",
     "No transaction is held across a model or network call. The analysis LLM call runs outside any transaction. test.browser_call, live.listen and live.takeover make their runtime requests in prepare(). test.browser_call commits the conversation first and marks it failed if the runtime refuses. live.whisper (A2) keeps its runtime request in run(), because on the approval path prepare() runs before the approver, hash and version checks.",
     "An outcome guess counts only if its evidence quote is in a CALLER line of the stored transcript; its evidence records {quote, turn, speaker:'caller'}. When the only match is the agent's own words, analysis.outcomeUnclear holds {value, reason}, no outcome row is written and the quote counts as dropped (review M6).",
-    "Post-call caller-crisis judge (shared/safety/judge.ts, purpose safety_judge, 5 s per line). It judges each caller line the floor did not flag, with the previous caller line as context. mode raise: an RD3 'flagged' call_safety_event per hit, detail 'judge_raised kind=<k> confidence=<c>' (never the words), which counts as safety. mode shadow: analysis.judge_shadow only, with no event, flag, safety_violation or monitor input. analysis.judge_unavailable and judge_calls are recorded, and a cost_line (component analysis, provider safety_judge, tokens, priced:false) is written whenever the judge was called. No VP_LLM_SAFETY_JUDGE_* or VP_LLM_DEFAULT_* keys means no call."
+    "Post-call caller-crisis judge (shared/safety/judge.ts, purpose safety_judge, 5 s per line). It judges each caller line the floor did not flag, with the previous caller line as context. mode raise: an RD3 'flagged' call_safety_event per hit, detail 'judge_raised kind=<k> confidence=<c>' (never the words), which counts as safety. mode shadow: analysis.judge_shadow only, with no event, flag, safety_violation or monitor input. analysis.judge_unavailable and judge_calls are recorded, and a cost_line (component analysis, provider safety_judge, tokens, priced:false) is written whenever the judge was called. No VP_LLM_SAFETY_JUDGE_* or VP_LLM_DEFAULT_* keys means no call.",
+    "RuntimeEvent 'judge' (shared/runtime-protocol.ts) is validated strictly: unknown outcome, mode 'off' or any extra field (text) gives 422. It is stored in call_judge_event with no flag and no call_safety_event. analysis.crisis_judge = {shadow, raised, unavailable, runtime:{...}, postCall:{...}} tells one story across live and post-call."
   ],
   "untested": [
     "The real voice runtime end to end (no cross-language signature test). The hook now verifies raw bytes, so any byte-exact signer works.",

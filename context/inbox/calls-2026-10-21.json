@@ -106,6 +106,16 @@
       "title": "Post-call crisis judge in calls: a raise hit is an RD3 'flagged' call_safety_event (counts as a safety event); a shadow hit lives only in analysis.judge_shadow and changes no event, flag, safety_violation, monitor or experiment",
       "rationale": "Keeps the shadow semantics of decision.2026-10-21.judge-raise-only-contract. learning and the safety_event_rate monitor read safety events, so a shadow row there would change outcomes. Calls loops over caller lines with safety's judgeCallerCrisis rather than judgeTranscriptCrisis, so it also sees judge_unavailable and the usage of every call, hit or not.",
       "reverse_if": "The owner moves the judge to raise in production (set VP_SAFETY_JUDGE_MODE=raise; the code path already exists), or safety extends judgeTranscriptCrisis to return unavailable counts and per-call usage; then call that instead of the local loop."
+    },
+    {
+      "id": "decision.2026-10-21.runtime-judge-event-counts-nothing",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "RuntimeEvent 'judge' (caller_crisis: mode shadow|raise, outcome raised|shadow|unavailable, kind, confidence, reason, latencyMs; never text) is stored in call_judge_event for analysis only. A live raise is two records: the 'safety' RD3 event (handling, flag, violation) and the 'judge' event (the judge's record)",
+      "rationale": "The live runtime needs the same 'shadow counts nothing' rule as post-call analysis. Ingest writes no flag and no call_safety_event for a judge event. analysis.crisis_judge sums the runtime and post-call counts. It is not analysis.judge, which learning reads as the outcome judge.",
+      "reverse_if": "The owner wants judge-unavailable outages to open an issue; then add a monitor on call_judge_event (outages only, never shadow hits)."
     }
   ],
   "edges": [

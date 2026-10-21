@@ -42,6 +42,9 @@ const EVENTS: Record<RuntimeEvent['type'], Validator<unknown>> = {
   moment: obj({ seq, type: str(), at, kind: str({ oneOf: ['objection', 'question', 'commitment', 'opt_out', 'callback_request', 'confusion', 'laughter'] }), atMs: ms, note: str({ max: 2000 }) }),
   tool: obj({ seq, type: str(), at, name: str({ max: 100 }), args: record(any()), status: str({ oneOf: ['requested', 'done', 'failed'] }) }),
   hand_off: obj({ seq, type: str(), at, reason: str({ max: 500 }), target: str({ max: 200 }), summary: str({ max: 2000 }) }),
+  judge: obj({ seq, type: str(), at, judge: str({ oneOf: ['caller_crisis'] }), mode: str({ oneOf: ['shadow', 'raise'] }),
+    outcome: str({ oneOf: ['raised', 'shadow', 'unavailable'] }), kind: opt(str({ oneOf: ['direct', 'indirect'] })),
+    confidence: opt(num({ min: 0, max: 1 })), reason: opt(str({ oneOf: ['timeout', 'error', 'bad_output'] })), latencyMs: ms }),
   'call.ended': obj({ seq, type: str(), at, endReason: str({ oneOf: END_REASONS }), durationS: num({ min: 0 }), recordingUri: opt(str({ max: 2000 })),
     transcript: arr(obj({ speaker, text: str({ max: 20_000 }), startMs: ms }), { max: 5000 }), manifest }),
 };
@@ -160,6 +163,12 @@ async function apply(c: pg.PoolClient, conv: Conv, e: RuntimeEvent): Promise<boo
       await c.query(`INSERT INTO hand_off (workspace_id, conversation_id, mode, destination, status, brief) VALUES ($1,$2,'warm',$3,'queued',$4)`,
         [ws, conv.id, e.target, { reason: e.reason, summary: e.summary, seq: e.seq }]);
       await addFlags(c, conv.id, ['hand_off']);
+      return false;
+    case 'judge':
+      // Analysis-only: no flag and no call_safety_event (a real raise arrives separately as a 'safety' event).
+      await c.query(`INSERT INTO call_judge_event (workspace_id, conversation_id, seq, judge, mode, outcome, kind, confidence, reason, latency_ms, at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [ws, conv.id, e.seq, e.judge, e.mode, e.outcome, e.kind ?? null, e.confidence ?? null, e.reason ?? null, Math.round(e.latencyMs), e.at]);
       return false;
     case 'call.ended':
       return endCall(c, conv, e);

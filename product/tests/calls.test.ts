@@ -722,3 +722,53 @@ test('crisis judge: a line the floor already flags is never sent to the judge', 
   assert.ok(r.sent.every(u => !u.includes(FLOOR)), 'the floor-flagged line never reaches a model');
   assert.ok(r.sent.some(u => u.includes(INDIRECT)));
 });
+
+// ---- runtime 'judge' events: the live judge's record, which counts nothing -------------------------------------------
+test("runtime 'judge' events are stored for analysis only: no flag, no safety event, no violation; one story with post-call", { skip }, async () => {
+  const w = await workspace();
+  setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null }));
+  const c = await call(w);
+  const j = (seq: number, outcome: 'raised' | 'shadow' | 'unavailable', extra: Record<string, unknown> = {}): RuntimeEvent =>
+    ({ seq, type: 'judge', at: now(), judge: 'caller_crisis', mode: 'shadow', outcome, latencyMs: 412, ...extra } as RuntimeEvent);
+  const ev = fullCall({ startSeq: 1 });
+  ev.splice(ev.length - 1, 0, j(50, 'shadow', { kind: 'indirect', confidence: 0.82 }), j(51, 'unavailable', { reason: 'timeout' }), j(52, 'shadow', { kind: 'direct', confidence: 0.6 }));
+  const r = await post(c.conv, ev);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  await analysesSettled();
+  const rows = await many<any>(pool, 'SELECT seq, mode, outcome, kind, confidence::float AS confidence, reason, latency_ms FROM call_judge_event WHERE conversation_id = $1 ORDER BY seq', [c.conv]);
+  assert.deepEqual(rows, [
+    { seq: 50, mode: 'shadow', outcome: 'shadow', kind: 'indirect', confidence: 0.82, reason: null, latency_ms: 412 },
+    { seq: 51, mode: 'shadow', outcome: 'unavailable', kind: null, confidence: null, reason: 'timeout', latency_ms: 412 },
+    { seq: 52, mode: 'shadow', outcome: 'shadow', kind: 'direct', confidence: 0.6, reason: null, latency_ms: 412 }]);
+  const conv = await one<any>(pool, 'SELECT flags, flagged, analysis FROM conversation WHERE id = $1', [c.conv]);
+  assert.ok(!conv.flags.includes('safety'), 'a judge event never sets the safety flag');
+  assert.equal(conv.flagged, false);
+  assert.equal(conv.analysis.safety_violation, false, 'nor safety_violation');
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_safety_event WHERE conversation_id = $1', [c.conv])).n, 0);
+  assert.deepEqual(conv.analysis.crisis_judge, { shadow: 2, raised: 0, unavailable: 1,
+    runtime: { shadow: 2, raised: 0, unavailable: 1 }, postCall: { shadow: 0, raised: 0, unavailable: 0 } });
+
+  // A refused shape changes nothing: an unknown outcome, and any field that could carry caller text.
+  const c2 = await call(w);
+  assert.equal((await post(c2.conv, [j(1, 'maybe' as any)])).status, 422, 'an unknown outcome is refused');
+  assert.equal((await post(c2.conv, [j(1, 'shadow', { text: 'sab khatam' })])).status, 422, 'a judge event never carries text');
+  assert.equal((await post(c2.conv, [j(1, 'shadow', { mode: 'off' })])).status, 422, "mode 'off' never emits");
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_judge_event WHERE conversation_id = $1', [c2.conv])).n, 0);
+});
+
+test("a live raise is two records: the 'safety' RD3 event drives handling, the 'judge' event is the judge's record", { skip }, async () => {
+  const w = await workspace();
+  setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null }));
+  const c = await call(w);
+  const ev = fullCall();
+  ev.splice(ev.length - 1, 0,
+    { seq: 60, type: 'safety', at: now(), rule: 'RD3', action: 'suspended_goal', detail: 'judge_raised kind=indirect confidence=0.91' },
+    { seq: 61, type: 'judge', at: now(), judge: 'caller_crisis', mode: 'raise', outcome: 'raised', kind: 'indirect', confidence: 0.91, latencyMs: 380 });
+  await post(c.conv, ev);
+  await analysesSettled();
+  const conv = await one<any>(pool, 'SELECT flags, analysis FROM conversation WHERE id = $1', [c.conv]);
+  assert.ok(conv.flags.includes('safety'), 'the safety event, not the judge event, raises the flag');
+  assert.equal(conv.analysis.safety_violation, true);
+  assert.equal(conv.analysis.crisis_judge.raised, 1);
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_safety_event WHERE conversation_id = $1', [c.conv])).n, 1, 'exactly one safety event: the judge event added none');
+});
