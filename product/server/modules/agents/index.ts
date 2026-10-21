@@ -16,6 +16,7 @@ import { DraftError, draftFromDescription } from './draft.ts';
 import { shapeLint } from './lint.ts';
 import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
+import { LIBRARY, libraryCaller, toSimCaller, type CallerShape, type LibraryCaller } from './library.ts';
 
 interface AgentRow { id: string; name: string; job: string | null; status: string; draft: AgentConfig; updated_at: Date }
 
@@ -110,19 +111,41 @@ const comparable = (c: AgentConfig) => { const { agentId: _a, version: _v, versi
 
 // ------------------------------------------------------------------------------------------------ shared paths
 
-type SimCallerRow = { id: string; persona: string; scenario: string; hidden_keys: Record<string, string>; contact: Record<string, string>; pass_criteria: unknown };
-async function loadSimCaller(ctx: ToolCtx, agentId: string, id: string): Promise<SimCaller> {
-  const row = await one<SimCallerRow>(ctx.q, 'SELECT id, persona, scenario, hidden_keys, contact, pass_criteria FROM sim_caller WHERE id = $1 AND workspace_id = $2 AND (agent_id = $3 OR agent_id IS NULL)',
-    [id, ctx.workspaceId, agentId]);
-  if (!row) throw new ValidationError('simCallerId', `no such simulated caller for this agent (${id})`);
+type SimCallerRow = { id: string; agent_id: string | null; persona: string; scenario: string; hidden_keys: Record<string, string>; contact: Record<string, string>;
+  pass_criteria: unknown; shape: CallerShape | null; created_at: Date };
+
+/** A practice caller reference: a library default ('default:<slug>') or a workspace caller's uuid. */
+const UUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const callerRef = () => str({ min: 1, max: 60, pattern: /^(default:[a-z0-9_]{1,40}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/,
+  desc: "a practice caller: 'default:<slug>' from simcaller.list, or a saved caller's id" });
+
+async function loadSimCaller(ctx: ToolCtx, agentId: string, ref: string): Promise<SimCaller> {
+  if (ref.startsWith('default:')) {
+    const d = libraryCaller(ref);
+    if (!d) throw new ValidationError('simCallerId', `no practice caller "${ref}"; see simcaller.list`);
+    return toSimCaller(d);
+  }
+  if (!UUID_RX.test(ref)) throw new ValidationError('simCallerId', 'must be a practice caller id');
+  const row = await one<SimCallerRow>(ctx.q, 'SELECT * FROM sim_caller WHERE id = $1 AND workspace_id = $2 AND (agent_id = $3 OR agent_id IS NULL)',
+    [ref.toLowerCase(), ctx.workspaceId, agentId]);
+  if (!row) throw new ValidationError('simCallerId', `no such simulated caller for this agent (${ref})`);
   return { persona: row.persona, scenario: row.scenario, hiddenKeys: row.hidden_keys, contact: row.contact, passCriteria: passCriteriaV(row.pass_criteria) };
 }
 
-async function storeRun(ctx: ToolCtx, agentId: string, scId: string, cfg: AgentConfig, briefHash: string, res: SimResult, seed: number | null) {
-  return (await one<{ id: string }>(ctx.q, `INSERT INTO agent_test_run (workspace_id, agent_id, sim_caller_id, draft_hash, brief_hash, transcript, door, grades, passed, ended_by, usage, seed)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
-    [ctx.workspaceId, agentId, scId, draftHash(cfg), briefHash, JSON.stringify(res.transcript), JSON.stringify(res.door), JSON.stringify(res.grades), res.passed, res.endedBy, JSON.stringify(res.usage), seed]))!.id;
+async function storeRun(ctx: ToolCtx, agentId: string, ref: string, cfg: AgentConfig, briefHash: string, res: SimResult, seed: number | null) {
+  const rowId = UUID_RX.test(ref) ? ref.toLowerCase() : null;
+  return (await one<{ id: string }>(ctx.q, `INSERT INTO agent_test_run (workspace_id, agent_id, sim_caller_id, sim_caller_key, draft_hash, brief_hash, transcript, door, grades, passed, ended_by, usage, seed)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`,
+    [ctx.workspaceId, agentId, rowId, rowId ? null : ref, draftHash(cfg), briefHash, JSON.stringify(res.transcript), JSON.stringify(res.door), JSON.stringify(res.grades), res.passed, res.endedBy, JSON.stringify(res.usage), seed]))!.id;
 }
+
+const SHAPE_LINE = /["“”«»]|\[[^\]]*\]|<[^>]*>/;
+const callerShapeV = obj({
+  label: str({ min: 1, max: 80 }), persona: str({ min: 1, max: 400 }), goal: str({ min: 1, max: 300 }), temperament: str({ min: 1, max: 200 }),
+  languageMix: str({ min: 1, max: 120 }), trap: str({ min: 1, max: 400 }),
+});
+const libraryRow = (c: LibraryCaller) => ({ id: c.id, source: 'default' as const, label: c.label, persona: c.persona, goal: c.goal, temperament: c.temperament,
+  languageMix: c.languageMix, trap: c.trap, hiddenKeys: c.hiddenKeys, checks: c.passCriteria });
 
 /** The one path that creates an immutable version: validate, require a chosen stack, number it, hash it, compile ONCE. */
 async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null) {
@@ -271,7 +294,36 @@ export function registerAgentTools(r: Registry): void {
     },
   }));
 
-  r.register(tool(obj({ agentId: uuid(), simCallerId: opt(uuid()), simCaller: opt(simCallerV), maxTurns: opt(num({ int: true, min: 2, max: 30 })) }), {
+  r.register(tool(obj({ agentId: opt(uuid()) }), {
+    name: 'simcaller.list', risk: 'read', summary: "The practice callers: VP's industry-neutral defaults plus this workspace's own",
+    run: async (ctx, i) => {
+      if (i.agentId) await loadAgent(ctx, i.agentId);
+      const rows = await many<SimCallerRow>(ctx.q, `SELECT * FROM sim_caller WHERE workspace_id = $1 AND shape IS NOT NULL AND (agent_id IS NULL${i.agentId ? ' OR agent_id = $2' : ''})
+        ORDER BY created_at DESC LIMIT 200`, i.agentId ? [ctx.workspaceId, i.agentId] : [ctx.workspaceId]);
+      return { callers: [...LIBRARY.map(libraryRow), ...rows.map(r => ({ id: r.id, source: 'workspace' as const, agentId: r.agent_id, ...r.shape!, hiddenKeys: r.hidden_keys,
+        contact: r.contact, checks: r.pass_criteria }))] };
+    },
+  }));
+
+  r.register(tool(obj({ id: opt(uuid()), agentId: opt(uuid()), shape: callerShapeV, hiddenKeys: record(str({ max: 200 }), { maxKeys: 20 }),
+    contact: opt(record(str({ max: 200 }), { maxKeys: 20 })), checks: passCriteriaV }), {
+    name: 'simcaller.save', risk: 'draft', summary: "Save one of this workspace's practice callers (a shape with the checks it should trigger)",
+    run: async (ctx, i) => {
+      for (const [k, v] of Object.entries(i.shape)) if (k !== 'label' && SHAPE_LINE.test(v)) throw new ValidationError(`shape.${k}`, 'describe the caller as notes, not quoted lines or bracketed directions');
+      if (i.agentId) await loadAgent(ctx, i.agentId);
+      const sc = toSimCaller({ ...i.shape, hiddenKeys: i.hiddenKeys, passCriteria: i.checks }, i.contact ?? {});
+      const vals = [ctx.workspaceId, i.agentId ?? null, sc.persona, sc.scenario, JSON.stringify(sc.hiddenKeys), JSON.stringify(sc.contact), JSON.stringify(i.checks), JSON.stringify(i.shape)];
+      const row = i.id
+        ? await one<{ id: string }>(ctx.q, `UPDATE sim_caller SET agent_id = $2, persona = $3, scenario = $4, hidden_keys = $5, contact = $6, pass_criteria = $7, shape = $8
+            WHERE id = $9 AND workspace_id = $1 RETURNING id`, [...vals, i.id])
+        : await one<{ id: string }>(ctx.q, `INSERT INTO sim_caller (workspace_id, agent_id, persona, scenario, hidden_keys, contact, pass_criteria, shape)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`, vals);
+      if (!row) throw new ValidationError('id', 'no such practice caller in this workspace');
+      return { id: row.id, source: 'workspace', agentId: i.agentId ?? null, ...i.shape };
+    },
+  }));
+
+  r.register(tool(obj({ agentId: uuid(), simCallerId: opt(callerRef()), simCaller: opt(simCallerV), maxTurns: opt(num({ int: true, min: 2, max: 30 })) }), {
     name: 'test.simulate', risk: 'test', summary: 'Run a text simulation of the draft against a simulated caller, graded by code',
     run: async (ctx, i) => {
       if (!!i.simCallerId === !!i.simCaller) throw new ValidationError('simCallerId', 'give either a simCallerId or an inline simCaller');
@@ -350,7 +402,7 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({
     agentId: uuid(), config: opt(any('an AgentConfig; defaults to the draft')),
-    simCallerIds: arr(uuid(), { min: 1, max: 12 }), seeds: arr(num({ int: true, min: 0, max: 1_000_000 }), { min: 1, max: 5 }),
+    simCallerIds: arr(callerRef(), { min: 1, max: 12 }), seeds: arr(num({ int: true, min: 0, max: 1_000_000 }), { min: 1, max: 5 }),
     maxTurns: opt(num({ int: true, min: 2, max: 30 })),
   }), {
     name: 'test.simulate_batch', risk: 'test', summary: 'Run seeded text simulations of a config against saved simulated callers, graded by code',

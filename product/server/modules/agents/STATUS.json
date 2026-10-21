@@ -48,7 +48,7 @@
     {
       "name": "test.simulate",
       "risk": "test",
-      "note": "LLM caller (purpose 'simulate') from sim_caller; every agent sentence through replyDoor; graded by code; stored in agent_test_run"
+      "note": "LLM caller (purpose 'simulate') from sim_caller; every agent sentence through replyDoor; graded by code; stored in agent_test_run; simCallerId(s) accept 'default:<slug>' library ids or saved caller uuids"
     },
     {
       "name": "version.publish",
@@ -77,7 +77,7 @@
     {
       "name": "test.simulate_batch",
       "risk": "test",
-      "note": "{agentId, config?, simCallerIds 1-12, seeds 1-5} -> runs with metrics {hung_up, safety_violations, disclosure_missed}; cut_ins and reply_gap_ms omitted (need audio timing); seed varies the caller prompt and sets temperature 0"
+      "note": "{agentId, config?, simCallerIds 1-12, seeds 1-5} -> runs with metrics {hung_up, safety_violations, disclosure_missed}; cut_ins and reply_gap_ms omitted (need audio timing); seed varies the caller prompt and sets temperature 0; simCallerId(s) accept 'default:<slug>' library ids or saved caller uuids"
     },
     {
       "name": "version.candidate",
@@ -88,16 +88,27 @@
       "name": "deployment.revert_to_last_good",
       "risk": "external",
       "note": "A3 for system/agent actors, approval card for members; binding optional (defaults to the most recently deployed); refuses with no earlier deployment; audits deployment.reverted with the reason"
+    },
+    {
+      "name": "simcaller.list",
+      "risk": "read",
+      "note": "{agentId?} -> callers: 12 industry-neutral defaults ('default:<slug>', source 'default') plus the workspace's saved callers (and the agent's own when agentId is given); each with shape fields, hiddenKeys and checks"
+    },
+    {
+      "name": "simcaller.save",
+      "risk": "draft",
+      "note": "{id?, agentId?, shape: {label, persona, goal, temperament, languageMix, trap}, hiddenKeys, contact?, checks} -> saved caller; shape fields refuse quoted lines and bracketed directions; tenant-scoped update"
     }
   ],
   "tests": {
-    "passed": 29,
-    "total": 29,
+    "passed": 35,
+    "total": 35,
     "files": [
       "product/tests/agents.test.ts",
       "product/tests/agents-tools.test.ts",
       "product/tests/agents-contracts.test.ts",
-      "product/tests/agents-runtime.test.ts"
+      "product/tests/agents-runtime.test.ts",
+      "product/tests/agents-library.test.ts"
     ],
     "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
   },
@@ -111,7 +122,8 @@
     "no default stack anywhere: templates, LLM drafts and stack.list; publish refuses without one",
     "publish needs approval, is bound to the draft it showed (draft edit voids the card; stale draftHash refused), single-use, viewer cannot approve; stored brief equals compile(stored agent)",
     "tenancy: a second workspace cannot read, edit, set stack, attach tools, simulate, list/diff versions, publish or deploy; cross-workspace tool ids refused",
-    "runtime contract: the brief teaches only <end_call> (goal/tool/handoff markers come from the per-turn marker rules; compile.ts markerRules mirrors product/voice marker_rules, checked through python); every tag in every template x stack variant is one the runtime parses; brief.hash = sha256 hex of brief.text; agent_version.config.lint = { ok, findings, dropped } stored by publish and version.candidate"
+    "runtime contract: the brief teaches only <end_call> (goal/tool/handoff markers come from the per-turn marker rules; compile.ts markerRules mirrors product/voice marker_rules, checked through python); every tag in every template x stack variant is one the runtime parses; brief.hash = sha256 hex of brief.text; agent_version.config.lint = { ok, findings, dropped } stored by publish and version.candidate",
+    "practice-caller library: busy_20s, sceptic_bot, confused_elder, angry_rude, opt_out_midcall, out_of_scope, push_for_promise, wrong_person, crisis, sounds_minor, tamil_english, bhojpuri_mix; each carries code checks (new: maxAgentTurns, optOutStops, mustNotEnd, scopeAfter); a trap the simulated caller never springs grades as inconclusive (trap_reached fails), never as a pass"
   ],
   "untested": [
     "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
@@ -121,7 +133,8 @@
     "the full per-agent ledger pack (told/offer patterns per fact): simulate uses a small generic ledger; the runtime owns the real one",
     "user-supplied regex in passCriteria is length-capped (200) but not ReDoS-proofed",
     "test.simulate holds a DB transaction across model calls (fine for tests; long for real models)",
-    "seeded determinism with a hosted model: LlmRequest has no seed field, so repeatability relies on temperature 0 plus the seed in the caller prompt; verified only with the scripted fake"
+    "seeded determinism with a hosted model: LlmRequest has no seed field, so repeatability relies on temperature 0 plus the seed in the caller prompt; verified only with the scripted fake",
+    "whether real caller models spring each trap with words the scopeAfter / opt-out patterns catch: only scripted transcripts were graded"
   ],
   "needs_from_others": [
     "kernel: add `module` from server/modules/agents/index.ts to server/modules/index.ts (outside this module's write boundary)",
