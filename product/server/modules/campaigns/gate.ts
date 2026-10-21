@@ -90,20 +90,19 @@ const parseTime = (v: unknown): number | null => {
   const t = Date.parse(v);
   return Number.isNaN(t) ? null : t;
 };
-/** When consent was given or withdrawn: evidence.statedAt (what the source says) when readable, else when it was recorded.
- *  A grant whose stated time is unreadable counts as the oldest record, so it can never outrank a withdrawal. */
+/** When consent was given or withdrawn, on the database clock only: intake's effective_at (the source's stated time,
+ *  clamped by a trigger to the insert time), else created_at. An app-clock time (evidence.statedAt) is never compared with a
+ *  database-clock time: a fast app server would make an earlier grant look newer than a later withdrawal. */
 function effectiveAt(r: ConsentRow): number {
-  // intake's consent_record.effective_at (migration 0105) is authoritative when present: it is clamped to the insert
-  // time, and undated grants arriving after a withdrawal are placed just before it.
   if (r.effective_at) { const t = Date.parse(r.effective_at); if (!Number.isNaN(t)) return t; }
-  const raw = r.evidence?.statedAt;
-  if (raw === undefined || raw === null || raw === '') return r.created_at.getTime();
-  const t = parseTime(raw);
-  return t ?? (r.granted ? -Infinity : r.created_at.getTime());
+  return r.created_at.getTime();
 }
+/** A grant must be this much newer than the latest withdrawal to count: on a tie or near-tie, the withdrawal wins. */
+const WITHDRAWAL_MARGIN_MS = 1000;
+
 /** A present but unreadable expiry fails closed: the consent counts as expired. */
 function expiry(r: ConsentRow, now: Date): 'live' | 'expired' | 'unreadable' {
-  const given = Number.isFinite(effectiveAt(r)) ? effectiveAt(r) : r.created_at.getTime();
+  const given = effectiveAt(r);
   let ex: number | null = null;
   if (r.evidence?.expiresAt !== undefined && r.evidence?.expiresAt !== null && r.evidence?.expiresAt !== '') {
     ex = parseTime(r.evidence.expiresAt);
@@ -222,11 +221,17 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       // relationship purpose. The newest record across them decides (by when it was given, not when it was inserted), so
       // a newer withdrawal on any covering purpose beats every older grant, and re-importing an old "yes" cannot re-open.
       const covers = (p: string) => PURPOSE_ALL.includes(p) || (category === 'promotional' ? p === 'promotional' : p !== 'promotional');
-      const ordered = recs.filter(r => covers(r.purpose)).sort((x, y) => effectiveAt(y) - effectiveAt(x) || y.created_at.getTime() - x.created_at.getTime() || (y.id < x.id ? -1 : y.id > x.id ? 1 : 0));
-      const cut = ordered.findIndex(r => !r.granted);
-      if (cut === 0) throw new Refuse('no_basis', `consent withdrawn (${ordered[0].purpose})`);
-      const grants = (cut < 0 ? ordered : ordered.slice(0, cut))
-        .filter(r => category !== 'promotional' || r.basis === 'consent');
+      const covering = recs.filter(r => covers(r.purpose));
+      const withdrawals = covering.filter(r => !r.granted);
+      const lastWithdrawal = withdrawals.length ? Math.max(...withdrawals.map(effectiveAt)) : -Infinity;
+      const grants = covering
+        .filter(r => r.granted && effectiveAt(r) > lastWithdrawal + WITHDRAWAL_MARGIN_MS)
+        .filter(r => category !== 'promotional' || r.basis === 'consent')
+        .sort((x, y) => effectiveAt(y) - effectiveAt(x) || y.created_at.getTime() - x.created_at.getTime() || (y.id < x.id ? -1 : y.id > x.id ? 1 : 0));
+      if (withdrawals.length && !grants.length) {
+        const w = withdrawals.reduce((p, r) => (effectiveAt(r) > effectiveAt(p) ? r : p));
+        throw new Refuse('no_basis', `consent withdrawn (${w.purpose})`);
+      }
       const live = grants.filter(r => expiry(r, now) === 'live');
       if (!live.length) {
         const unreadable = grants.some(r => expiry(r, now) === 'unreadable');

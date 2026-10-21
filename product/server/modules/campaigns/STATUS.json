@@ -164,8 +164,8 @@
     }
   ],
   "tests": {
-    "passed": 64,
-    "total": 64,
+    "passed": 65,
+    "total": 65,
     "files": [
       "tests/campaigns.test.ts (37, Postgres)",
       "tests/campaigns-review.test.ts (13, Postgres: WGC-01..08 and control)",
@@ -206,7 +206,8 @@
     "WGC review fixes in G5. Consent is decided by the newest record across every purpose that covers the call (by evidence.statedAt when readable, else created_at), so a newer withdrawal beats an older grant and an old re-imported 'yes' cannot re-open a person.",
     "More G5 fixes: an unparseable expiresAt (non-ISO) fails closed as consent_expired, 'consent expiry unreadable'. Promotional calls need an explicit not_registered NCPR answer (or registered plus CRF consent), and an answer older than DND_FRESH_S (7 days, same as intake) defers with no_basis 'DND lookup stale'.",
     "G6: for a +91 number the outer band, quiet hours and promotional band also hold in IST. A foreign contact.timezone can only narrow the window.",
-    "G2: refuses 'erased' when contact.erased_at is set or e164 is an 'erased:' husk. attempt.cancel_for_contact (system only) cancels a person's queued attempts. G12 counts an 'unknown' attempt whose conversation is still live."
+    "G2: refuses 'erased' when contact.erased_at is set or e164 is an 'erased:' husk. attempt.cancel_for_contact (system only) cancels a person's queued attempts. G12 counts an 'unknown' attempt whose conversation is still live.",
+    "G5 orders consent only by database-clock time: intake's effective_at (clamped to the insert time), else created_at; never the app-clock evidence.statedAt. A grant must be more than 1 s newer than the latest covering withdrawal to count, so a tie goes to the withdrawal. A 30-run deterministic test covers a fast app clock."
   ],
   "untested": [
     "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired.",

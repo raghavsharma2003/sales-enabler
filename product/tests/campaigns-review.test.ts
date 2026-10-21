@@ -279,3 +279,24 @@ test('consent ordering honours consent_record.effective_at when intake provides 
   await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, created_at, effective_at) VALUES ($1,$2,'service','contract',$3,$4)", [w.ws, c.id, IST('2026-10-20', '10:00'), IST('2026-10-10', '09:59')]);
   assert.equal(code(await gate(await attempt(w, c.id))), 'no_basis');
 });
+
+test('G5 never compares an app-clock time with a database-clock time; a withdrawal wins a near-tie (30 runs)', { skip }, async () => {
+  for (let k = 0; k < 30; k++) {
+    const w = await world('service');
+    const c = await contact(w, { serviceConsent: false });
+    // A fast app server stamps the grant 5 s in the future; the withdrawal is inserted after it.
+    await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, evidence) VALUES ($1,$2,'service','contract',$3)",
+      [w.ws, c.id, JSON.stringify({ statedAt: new Date(Date.now() + 5000).toISOString() })]);
+    await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, granted) VALUES ($1,$2,'all','withdrawal',false)", [w.ws, c.id]);
+    const v = await gate(await attempt(w, c.id));
+    assert.equal(code(v), 'no_basis', `run ${k}: ${said(v)}`);
+  }
+  // A grant inside the 1 s margin after a withdrawal does not re-open; one clearly later does.
+  const w = await world('service');
+  const c = await contact(w, { serviceConsent: false });
+  await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, granted, created_at) VALUES ($1,$2,'all','withdrawal',false,$3)", [w.ws, c.id, IST('2026-10-20', '10:00')]);
+  await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, created_at) VALUES ($1,$2,'service','contract',$3)", [w.ws, c.id, new Date(IST('2026-10-20', '10:00').getTime() + 500)]);
+  assert.equal(code(await gate(await attempt(w, c.id))), 'no_basis', 'a near-tie goes to the withdrawal');
+  await pool.query("INSERT INTO consent_record (workspace_id, contact_id, purpose, basis, created_at) VALUES ($1,$2,'service','contract',$3)", [w.ws, c.id, IST('2026-10-21', '10:00')]);
+  assert.equal(code(await gate(await attempt(w, c.id))), 'allowed');
+});
