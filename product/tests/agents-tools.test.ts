@@ -293,7 +293,9 @@ test('test.simulate runs the compiled brief against a simulated caller and grade
   const f = ok<any>(await call('test.simulate', { agentId: c.agentId, simCallerId: r.simCallerId }));
   assert.equal(f.passed, false);
   const failed = f.grades.filter((g: { pass: boolean }) => !g.pass).map((g: { check: string }) => g.check).sort();
-  assert.deepEqual(failed, ['capture:callback_time', 'disclosure', 'never:discount']);
+  // With the real reply door (safety module) the discount line on a service call is blocked before it is said (RD7),
+  // so never:discount passes, the premium it carried is never mentioned, and the door's intervention fails the run.
+  assert.deepEqual(failed, ['capture:callback_time', 'disclosure', 'mention:premium', 'reply_door']);
 });
 
 test('test.simulate refuses a draft that does not compile, and grading never asks a model', { skip }, async () => {

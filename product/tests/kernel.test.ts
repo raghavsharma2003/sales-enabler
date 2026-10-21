@@ -247,8 +247,9 @@ test('prepare() runs outside the transaction and feeds run()', { skip }, async (
   r.register(tool(obj({ n: num() }), {
     name: 'slow.thing', risk: 'draft', summary: 'x',
     prepare: async (ctx, i) => {
-      const s = await one<{ s: string }>(ctx.pool, "SELECT count(*)::text AS s FROM pg_stat_activity WHERE state = 'idle in transaction' AND datname = current_database()");
-      inTx = Number(s!.s) > 0;
+      // Tests in this file run one at a time on this pool, so any checked-out client would be execute()'s own
+      // transaction. (pg_stat_activity would also see other test files running in parallel.)
+      inTx = ctx.pool.totalCount - ctx.pool.idleCount > 0;
       return i.n * 2;
     },
     run: async (_c, _i, prepared) => ({ doubled: prepared }),
