@@ -1,5 +1,5 @@
 // Learning module tests against a real Postgres (skipped when DATABASE_URL is unset). Sibling tools the module calls
-// by name (test.simulate, brief.compile, deployment.revert_to_last_good, version.publish) are faked here. Synthetic
+// by name (test.simulate_batch, version.candidate, deployment.revert_to_last_good, deployment.split) are faked here. Synthetic
 // data only; every run uses fresh workspaces.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,9 +8,10 @@ import { buildApp, type Module } from '../server/app.ts';
 import { createPool, many, one } from '../server/db.ts';
 import { setFakeLlm } from '../server/llm.ts';
 import { tool, type Actor, type Registry } from '../server/tools.ts';
-import { any, obj, uuid } from '../shared/validate.ts';
+import { any, obj, str, uuid } from '../shared/validate.ts';
+import type { Job } from '../server/jobs.ts';
 import type { AgentConfig } from '../shared/agent-config.ts';
-import { module as learning } from '../server/modules/learning/index.ts';
+import { bindLearning, module as learning } from '../server/modules/learning/index.ts';
 import { runGates } from '../server/modules/learning/gates.ts';
 import { powerPlan } from '../server/modules/learning/stats.ts';
 
@@ -18,7 +19,7 @@ const URL_ = process.env.DATABASE_URL;
 const skip = !URL_ ? 'DATABASE_URL not set' : false;
 let pool: pg.Pool;
 let registry: Registry;
-const reverts: { ws: string; agentId: string }[] = [];
+const reverts: { ws: string; agentId: string; binding: string }[] = [];
 
 function cfg(agentId: string): AgentConfig {
   return {
@@ -44,29 +45,40 @@ function cfg(agentId: string): AgentConfig {
   };
 }
 
-// Fake siblings. test.simulate: a usefulFirst containing "slowly" makes simulated callers hang up (a regression).
+// Fake siblings (the agents module's contract). test.simulate_batch: a usefulFirst containing "slowly" makes simulated callers hang up (a regression).
 const siblings: Module = {
   name: 'fake-siblings',
   register(r) {
-    r.register(tool(obj({ agentId: uuid(), config: any(), simCallerIds: any(), seeds: any() }), { name: 'test.simulate', risk: 'test', summary: 'fake simulator',
+    r.register(tool(obj({ agentId: uuid(), config: any(), simCallerIds: any(), seeds: any() }), { name: 'test.simulate_batch', risk: 'test', summary: 'fake simulator',
       run: async (_ctx, i) => {
         const bad = String((i.config as AgentConfig).opening.usefulFirst).includes('slowly');
         const runs = (i.simCallerIds as string[]).flatMap(id => (i.seeds as number[]).map(seed => ({ simCallerId: id, seed, passed: !bad, metrics: { hung_up: bad ? 1 : 0, safety_violations: 0 } })));
         return { runs };
       } }));
-    r.register(tool(obj({ config: any() }), { name: 'brief.compile', risk: 'read', summary: 'fake compile',
-      run: async () => ({ text: 'compiled brief', hash: 'bh', bytes: 14 }) }));
-    r.register(tool(obj({ agentId: uuid() }), { name: 'deployment.revert_to_last_good', risk: 'external', summary: 'fake revert',
-      run: async (ctx, i) => { reverts.push({ ws: ctx.workspaceId, agentId: i.agentId }); return { reverted: true }; } }));
-    r.register(tool(obj({ agentId: uuid(), versionId: uuid() }), { name: 'version.publish', risk: 'external', summary: 'fake publish',
-      run: async () => ({ published: true }) }));
+    r.register(tool(versionCandidateIn, { name: 'version.candidate', risk: 'draft', summary: 'fake candidate version', run: versionCandidate }));
+    r.register(tool(obj({ agentId: uuid(), binding: str() }), { name: 'deployment.revert_to_last_good', risk: 'external', summary: 'fake revert',
+      run: async (ctx, i) => { reverts.push({ ws: ctx.workspaceId, agentId: i.agentId, binding: i.binding }); return { reverted: true }; } }));
+    r.register(tool(obj({ agentId: uuid(), binding: str(), split: any() }), { name: 'deployment.split', risk: 'external', summary: 'fake split',
+      run: async () => ({ deployed: true }) }));
   },
 };
 
+const versionCandidateIn = obj({ agentId: uuid(), config: any(), parentVersionId: uuid(), note: str() });
+async function versionCandidate(ctx: { q: pg.PoolClient | pg.Pool; workspaceId: string }, i: ReturnType<typeof versionCandidateIn>) {
+  const a = await one(ctx.q, 'SELECT 1 FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
+  if (!a) throw new Error('no such agent');
+  const n = (await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [i.agentId]))!.n;
+  const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, note, config) VALUES ($1,$2,'hc',$3,'system',$4,$5) RETURNING id`,
+    [i.agentId, n, i.parentVersionId, i.note, JSON.stringify({ agent: i.config, brief: { text: 'compiled', hash: 'bh', bytes: 8 } })]);
+  return { versionId: v!.id, number: n, versionHash: 'hc', brief: { hash: 'bh', bytes: 8 } };
+}
+
+let jobs: Job[] = [];
 before(async () => {
   if (skip) return;
   pool = createPool(URL_);
-  registry = buildApp(pool, [learning, siblings]).registry;
+  const app = buildApp(pool, [learning, siblings]);
+  registry = app.registry; jobs = app.jobs;
 });
 after(async () => { setFakeLlm(null); await pool?.end(); });
 
@@ -276,8 +288,9 @@ test('sticky arms; no verdict before the horizon (no peeking); a win is proposed
   assert.equal(done.result.verdict, 'win');
   assert.ok(done.result.decision.ci.lo > 0);
   assert.equal(done.result.publish.status, 'needs_approval');
-  const action = await one<{ status: string; tool: string }>(pool, 'SELECT status, tool FROM action WHERE id = $1', [done.result.publish.actionId]);
-  assert.deepEqual([action!.tool, action!.status], ['version.publish', 'proposed']);
+  const action = await one<{ status: string; tool: string; args: any }>(pool, 'SELECT status, tool, args FROM action WHERE id = $1', [done.result.publish.actionId]);
+  assert.deepEqual([action!.tool, action!.status], ['deployment.split', 'proposed']);
+  assert.deepEqual(action!.args, { agentId: t.agentId, binding: 'campaign', split: [{ versionId: tv, percent: 100 }] });
   const lessons = await t.call('lesson.list', { agentId: t.agentId });
   assert.ok(lessons.result.some((l: any) => l.status === 'won' && /proved on \d+ calls/.test(l.text)));
   assert.equal((await t.call('experiment.assign', { agentId: t.agentId, contactId: c })).result, null, 'a decided experiment sends no more traffic');
@@ -285,15 +298,18 @@ test('sticky arms; no verdict before the horizon (no peeking); a win is proposed
 
 test('hazard stop: complaints on the treatment arm stop it at once and revert through the A3 verb', { skip }, async () => {
   const t = await workspace();
-  const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.05, minDays: 0 });
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.05, minDays: 0, binding: 'inbound' });
   const contacts = await newContacts(t.ws, 30);
   const arms = await dial(t, contacts, () => 'no', arm => (arm === 'treatment' ? 'complaint' : null));
   assert.ok(arms.treatment! >= 3);
   const before = reverts.length;
+  const job = jobs.find(j => j.name === 'learning.check')!;
+  await job.run({ pool, registry } as any);            // the background job checks every running experiment
   const r = await t.call('experiment.check', { experimentId });
   assert.equal(r.result.state, 'stopped_guardrail', JSON.stringify(r.result));
-  assert.equal(r.result.revert, 'confirmed');
-  assert.deepEqual(reverts.slice(before), [{ ws: t.ws, agentId: t.agentId }]);
+  const stored = await one<{ result: any }>(pool, 'SELECT result FROM experiment WHERE id = $1', [experimentId]);
+  assert.equal(stored!.result.revert.status, 'confirmed');
+  assert.deepEqual(reverts.slice(before), [{ ws: t.ws, agentId: t.agentId, binding: 'inbound' }]);
   const audit = await one<{ payload: any }>(pool, "SELECT payload FROM audit_event WHERE workspace_id = $1 AND action = 'deployment.revert_to_last_good'", [t.ws]);
   assert.equal(audit!.payload.mode, 'A3');
   assert.ok(await one(pool, "SELECT 1 FROM issue WHERE workspace_id = $1 AND category = 'learning.guardrail_stop' AND severity = 'critical'", [t.ws]));
@@ -358,4 +374,26 @@ test('propose degrades when the model is unavailable', { skip }, async () => {
   setFakeLlm(() => { throw new LlmError('no model is configured for learning', false); });
   const r = await t.call('learning.propose', { agentId: t.agentId });
   assert.equal(r.result.status, 'llm_unavailable');
+});
+
+test('without version.candidate the experiment is pre-registered but start refuses with a plain reason', { skip }, async () => {
+  const t = await workspace();
+  const [evidence] = await calls(t.ws, t.versionId, 150, 30);
+  const bare = buildApp(pool, [learning, { name: 'no-candidate', register(r) {
+    r.register(tool(obj({ agentId: uuid(), config: any(), simCallerIds: any(), seeds: any() }), { name: 'test.simulate_batch', risk: 'test', summary: 'fake',
+      run: async (_c, i) => ({ runs: (i.simCallerIds as string[]).flatMap(id => (i.seeds as number[]).map(seed => ({ simCallerId: id, seed, passed: true }))) }) }));
+  } }]);
+  try {
+    const call = (n: string, a: unknown): Promise<any> => bare.registry.execute(pool, n, a, { workspaceId: t.ws, actor: { type: 'member', id: t.member, role: 'owner' } });
+    const approve = (id: string): Promise<any> => bare.registry.approve(pool, id, { workspaceId: t.ws, memberId: t.member });
+    fakeProposals(evidence!);
+    const pid = (await call('learning.propose', { agentId: t.agentId, max: 1 })).result.proposals[0].id;
+    assert.equal((await call('proposal.probe', { proposalId: pid })).result.status, 'awaiting_approval');
+    const acc = await approve((await call('proposal.accept', { proposalId: pid, baselineRate: 0.2, mdeAbs: 0.1 })).actionId);
+    assert.equal(acc.status, 'confirmed'); assert.equal(acc.result.treatmentVersionId, null); assert.match(acc.result.treatmentPending, /version.candidate/);
+    const st = await approve((await call('experiment.start', { experimentId: acc.result.experimentId })).actionId);
+    assert.equal(st.result.launched, false); assert.match(st.result.reason, /version.candidate is not registered/);
+    const n = await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM agent_version WHERE agent_id = $1', [t.agentId]);
+    assert.equal(n!.n, '1', 'learning never writes agent_version itself');
+  } finally { bindLearning({ pool, registry }); }
 });

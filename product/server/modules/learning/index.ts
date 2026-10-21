@@ -3,13 +3,14 @@
 // workspace, baselines come from the workspace's own calls, and nothing is pooled across workspaces.
 //
 //   learning.propose   (draft)  evidence (issues, moments, judge results, lessons) -> LLM -> gated diffs, calls cited
-//   proposal.probe     (test)   test.simulate on current and proposed, same callers and seeds; any regression rejects
-//   proposal.accept    (A2)     treatment version + pre-registered fixed-horizon design with calls-to-prove
+//   proposal.probe     (test)   test.simulate_batch on current and proposed, same callers and seeds; any regression rejects
+//   proposal.accept    (A2)     treatment version (agents' version.candidate) + pre-registered design with calls-to-prove
 //   experiment.start   (A2)     shadow A/A on the tenant's own history first; launch only if the plumbing holds
 //   experiment.assign  (read)   sticky arm per contact for the dialer
 //   experiment.check   (draft)  guardrails every call (hazard stop + A3 revert); verdict only at the horizon
 //   experiment.stop    (draft)  a person stops a test; control keeps all traffic
-// A win is proposed for publish through version.publish (A2), never published here.
+// A win is proposed as deployment.split at 100% treatment on the experiment's binding (A2), never applied here.
+// Background: jobs() runs experiment.check on every running experiment each minute (calls also call it per call).
 import type pg from 'pg';
 import { createHash } from 'node:crypto';
 import type { Module } from '../../app.ts';
@@ -27,7 +28,7 @@ const SYSTEM: Actor = { type: 'system', id: 'learning' };
 let bound: { pool: pg.Pool; registry: Registry } | null = null;
 let reg: Registry | null = null;
 
-/** Workers that load the module without the HTTP app bind it here; buildApp binds it through routes(). */
+/** Workers that load the module without the HTTP app bind it here; buildApp binds it through routes() and jobs(). */
 export function bindLearning(deps: { pool: pg.Pool; registry: Registry }): void { bound = deps; reg = deps.registry; }
 
 type Cross<O> = Receipt<O> | { status: 'not_loaded'; reason: string };
@@ -207,7 +208,7 @@ async function probe(ctx: ToolCtx, i: { proposalId: string; simCallerIds?: strin
   if (!callers.length) return { status: 'no_sim_callers', reason: 'add simulated callers for this agent before probing' };
   const seeds = i.seeds ?? [1, 2, 3];
 
-  const sim = async (config: AgentConfig) => cross<{ runs: SimRun[] }>(ws, 'test.simulate', { agentId: p.agent_id, config, simCallerIds: callers, seeds });
+  const sim = async (config: AgentConfig) => cross<{ runs: SimRun[] }>(ws, 'test.simulate_batch', { agentId: p.agent_id, config, simCallerIds: callers, seeds });
   const current = await sim(agentOf(base));
   if (current.status !== 'confirmed') return { status: 'simulator_unavailable', reason: 'reason' in current ? current.reason : current.status };
   const proposed = await sim(gates.proposed!);
@@ -231,6 +232,7 @@ const acceptIn = obj({
   minDays: opt(num({ int: true, min: 0, max: 28 })),
   maxDays: opt(num({ int: true, min: 1, max: 90 })),
   hazardCodes: opt(arr(str({ min: 1, max: 60 }), { max: 10 })),
+  binding: opt(str({ oneOf: ['campaign', 'inbound', 'web'] })),
 });
 type AcceptIn = ReturnType<typeof acceptIn>;
 
@@ -260,9 +262,9 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
   const plan = powerPlan(baseline, mde);
 
   const treatmentCfg = applyOps(agentOf(base), parseOps(p.change));
-  const treatment = await createTreatmentVersion(ctx, base, treatmentCfg, p.id);
+  const treatment = await treatmentVersion(ws, base, treatmentCfg, p.id);
   const design = {
-    metric: 'outcome_success', unit: 'contact', successValues, hazardCodes, baselineSource, plan,
+    binding: i.binding ?? 'campaign', treatmentConfig: treatmentCfg, metric: 'outcome_success', unit: 'contact', successValues, hazardCodes, baselineSource, plan,
     horizonPerArm: plan.perArm, treatmentShare: 0.5, alpha: 0.05, power: 0.8, minDays: i.minDays ?? 7, maxDays: i.maxDays ?? 28,
     test: 'two-proportion z, two-sided, fixed horizon', stop: 'verdict only at the horizon; guardrails stop at once',
     guardrails: { safetyViolations: 'any in the treatment arm', events: { codes: hazardCodes, minEvents: 3, ratio: 2, alwaysValid: 'mSPRT alpha 0.05' } },
@@ -271,26 +273,20 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
   const e = await one<{ id: string }>(ctx.q, `INSERT INTO experiment (workspace_id, agent_id, proposal_id, control_version_id, treatment_version_id, design, state)
     VALUES ($1,$2,$3,$4,$5,$6,'aa_pending') RETURNING id`, [ws, p.agent_id, p.id, base.id, treatment.id, JSON.stringify({ ...design, preregistrationHash: prereg })]);
   await ctx.q.query(`UPDATE proposal SET status = 'testing', calls_to_prove = $2 WHERE id = $1`, [p.id, plan.total]);
-  return { experimentId: e!.id, treatmentVersionId: treatment.id, callsToProve: plan.total, perArm: plan.perArm, baseline, mdeAbs: mde, briefCompiled: treatment.compiled,
+  return { experimentId: e!.id, treatmentVersionId: treatment.id, ...(treatment.reason ? { treatmentPending: treatment.reason } : {}), callsToProve: plan.total, perArm: plan.perArm, baseline, mdeAbs: mde,
     note: `about ${plan.total} live calls (${plan.perArm} per arm) to prove ${(baseline * 100).toFixed(1)}% -> ${((baseline + mde) * 100).toFixed(1)}%` };
 }
 
-/** The treatment arm is an immutable version (never published to the agent's main traffic). Its brief is compiled
- *  by the agents module through brief.compile; without it the experiment cannot start. */
-async function createTreatmentVersion(ctx: ToolCtx, base: VersionRow, cfg: AgentConfig, proposalId: string) {
-  const n = await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [base.agent_id]);
-  const agent = { ...cfg, version: n!.n, versionHash: '' } as AgentConfig;
-  const { versionHash: _vh, ...rest } = agent;
-  agent.versionHash = sha(canonicalJson(rest));
-  const compiled = await cross<{ text: string; hash: string; bytes: number }>(ctx.workspaceId, 'brief.compile', { config: agent });
-  const brief = compiled.status === 'confirmed' ? compiled.result : null;
-  const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, author_id, note, config)
-    VALUES ($1,$2,$3,$4,'system','learning',$5,$6) RETURNING id`,
-    [base.agent_id, n!.n, agent.versionHash, base.id, `learning treatment for proposal ${proposalId}`, JSON.stringify({ agent, brief })]);
-  return { id: v!.id, compiled: Boolean(brief) };
+/** The treatment arm is an immutable version made by the agents module (version.candidate compiles its brief once and
+ *  never publishes it). Learning never writes agent_version itself. If the tool is missing, the experiment is still
+ *  pre-registered and experiment.start retries, then refuses with a plain reason. */
+async function treatmentVersion(ws: string, base: VersionRow, cfg: AgentConfig, proposalId: string): Promise<{ id: string | null; reason?: string }> {
+  const r = await cross<{ versionId: string }>(ws, 'version.candidate', { agentId: base.agent_id, config: cfg, parentVersionId: base.id, note: `learning treatment for proposal ${proposalId}` });
+  if (r.status === 'confirmed') return { id: r.result.versionId };
+  return { id: null, reason: `the treatment version could not be made: ${'reason' in r ? r.reason : r.status}` };
 }
 
-interface ExperimentRow { id: string; agent_id: string; proposal_id: string | null; control_version_id: string; treatment_version_id: string; design: any; state: string; result: any; started_at: Date; expires_at: Date | null }
+interface ExperimentRow { id: string; agent_id: string; proposal_id: string | null; control_version_id: string; treatment_version_id: string | null; design: any; state: string; result: any; started_at: Date; expires_at: Date | null }
 
 async function experimentFor(q: Queryable, ws: string, id: string, lock = false): Promise<ExperimentRow> {
   const e = await one<ExperimentRow>(q, `SELECT id, agent_id, proposal_id, control_version_id, treatment_version_id, design, state, result, started_at, expires_at
@@ -306,8 +302,15 @@ async function start(ctx: ToolCtx, i: { experimentId: string; aaRuns?: number })
   const ws = ctx.workspaceId;
   const e = await experimentFor(ctx.q, ws, i.experimentId, true);
   if (e.state !== 'aa_pending') throw new Error(`this experiment is ${e.state}`);
+  if (!e.treatment_version_id) {
+    const base = await versionById(ctx.q, ws, e.control_version_id);
+    const made = base ? await treatmentVersion(ws, base, e.design.treatmentConfig, e.proposal_id ?? e.id) : { id: null, reason: 'the control version is gone' };
+    if (!made.id) return { state: e.state, launched: false, reason: made.reason };
+    await ctx.q.query('UPDATE experiment SET treatment_version_id = $2 WHERE id = $1', [e.id, made.id]);
+    e.treatment_version_id = made.id;
+  }
   const t = await versionById(ctx.q, ws, e.treatment_version_id);
-  if (!t?.config?.brief?.text) return { state: e.state, launched: false, reason: 'the treatment brief is not compiled yet (brief.compile)' };
+  if (!t?.config?.brief) return { state: e.state, launched: false, reason: 'the treatment version has no compiled brief' };
 
   const hist = await units(ctx.q, ws, [e.control_version_id], null, e.design.successValues, e.design.hazardCodes);
   const aa = shadowAA(hist.map(u => ({ id: u.unit, success: u.success, hasOutcome: u.has_outcome })), { runs: i.aaRuns ?? 1000, salt: e.id });
@@ -359,14 +362,15 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const e = await experimentFor(ctx.q, ws, i.experimentId, true);
   if (e.state !== 'running') return { state: e.state, result: e.state === 'decided' ? e.result?.decision : undefined };
   const d = e.design;
-  const rows = await units(ctx.q, ws, [e.control_version_id, e.treatment_version_id], e.started_at, d.successValues, d.hazardCodes);
-  const c = tally(rows, e.control_version_id), t = tally(rows, e.treatment_version_id);
+  const tv = e.treatment_version_id!;               // a running experiment always has its treatment version
+  const rows = await units(ctx.q, ws, [e.control_version_id, tv], e.started_at, d.successValues, d.hazardCodes);
+  const c = tally(rows, e.control_version_id), t = tally(rows, tv);
   const progress = { control: c.n, treatment: t.n, horizonPerArm: d.horizonPerArm };
 
   // Fast lane: a harmful arm stops at once, whatever the horizon.
   const trip = hazardTrip(c, t, d.guardrails.events);
   if (trip) {
-    const revert = await cross(ws, 'deployment.revert_to_last_good', { agentId: e.agent_id });
+    const revert = await cross(ws, 'deployment.revert_to_last_good', { agentId: e.agent_id, binding: d.binding });
     const result = { ...e.result, guardrail: { reason: trip, control: c, treatment: t, at: new Date().toISOString() }, revert: { status: revert.status, ...('reason' in revert ? { reason: revert.reason } : {}) } };
     await ctx.q.query(`UPDATE experiment SET state = 'stopped_guardrail', result = $2, decided_at = now() WHERE id = $1`, [e.id, JSON.stringify(result)]);
     await openIssue(ctx.q, ws, 'learning.guardrail_stop', 'critical', e.id, { agentId: e.agent_id, reason: trip, revert: revert.status });
@@ -403,12 +407,13 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
 
 const pts = (x: number) => (x * 100).toFixed(1);
 
-/** A win is proposed through version.publish, which must be an approval-gated tool: never published here. */
+/** A win is proposed as deployment.split at 100% treatment on the experiment's binding. That tool must be
+ *  approval-gated: learning never applies a deployment on its own. */
 async function proposePublish(ws: string, e: ExperimentRow) {
-  const t = (bound?.registry ?? reg)?.get('version.publish');
-  if (!t) return { status: 'not_loaded', reason: 'version.publish is not registered yet; publish the winner by hand' };
-  if (!needsHumanApproval(t.risk)) return { status: 'not_sent', reason: 'version.publish does not require approval; learning never publishes on its own' };
-  const r = await cross<unknown>(ws, 'version.publish', { agentId: e.agent_id, versionId: e.treatment_version_id });
+  const t = (bound?.registry ?? reg)?.get('deployment.split');
+  if (!t) return { status: 'not_loaded', reason: 'deployment.split is not registered yet; roll the winner out by hand' };
+  if (!needsHumanApproval(t.risk)) return { status: 'not_sent', reason: 'deployment.split does not require approval; learning never deploys on its own' };
+  const r = await cross<unknown>(ws, 'deployment.split', { agentId: e.agent_id, binding: e.design.binding, split: [{ versionId: e.treatment_version_id, percent: 100 }] });
   return { status: r.status, ...(r.status === 'needs_approval' ? { actionId: r.actionId } : {}), ...('reason' in r ? { reason: r.reason } : {}) };
 }
 
@@ -479,5 +484,16 @@ export const module: Module = {
         run: async (_ctx, i) => { if (i.baseline + i.mdeAbs >= 1) throw new Error('the target rate must stay below 100%'); return powerPlan(i.baseline, i.mdeAbs, i.alpha, i.power); } }));
   },
   routes(_router, deps) { bound = { pool: deps.pool, registry: deps.registry }; },
+  jobs(deps) {
+    bound = { pool: deps.pool, registry: deps.registry };
+    return [{
+      name: 'learning.check', everyMs: 60_000,
+      // Guardrails and horizons for every running experiment, each checked inside its own workspace.
+      run: async d => {
+        const running = await many<{ id: string; workspace_id: string }>(d.pool, "SELECT id, workspace_id FROM experiment WHERE state = 'running' ORDER BY started_at LIMIT 500");
+        for (const e of running) await d.registry.execute(d.pool, 'experiment.check', { experimentId: e.id }, { workspaceId: e.workspace_id, actor: SYSTEM });
+      },
+    }];
+  },
 };
 
