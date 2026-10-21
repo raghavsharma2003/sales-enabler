@@ -78,6 +78,16 @@
       "title": "The carrier side of the number step lives in campaigns:\n- KYC decisions arrive through a signed, idempotent webhook (POST /hooks/telephony/kyc) or number.kyc.sync, which only a system or VP Success actor may run.\n- A2P declaration is number.a2p.declare (policy: owner or compliance approves), with the operator's reference and evidence.\n- No workspace member can mark their own line verified.",
       "rationale": "The e2e acceptance test (F1, F2) showed that G8 refused every production dial: nothing moved KYC past 'submitted' or A2P to 'declared'. The phone_number table is campaigns', and the gate reads it.",
       "reverse_if": "A carrier offers only polling (then add a number.kyc.poll job), or counsel wants A2P declaration filed by VP rather than recorded by the tenant."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-gate-wgc-fixes",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Dial gate after the 'who gets called' review (WGC-01..08), each fix fail-closed:\n- consent is decided by the newest record across the purposes covering the call, ordered by evidence.statedAt when it is ISO;\n- an unreadable expiry counts as expired;\n- promotional calls need an explicit fresh not_registered (7 days), or registered plus CRF;\n- a +91 number keeps the IST quiet hours and bands whatever zone was imported;\n- an erased contact is refused at G2;\n- an unknown dial with a live call holds a line.",
+      "rationale": "Each finding had a reproducing test against the real gate. The two blockers (WGC-01, WGC-03) made DND-registered or withdrawn people dialable.",
+      "reverse_if": "Counsel rules that NCPR does not bind a consented promotional call, or intake supplies a structured consent effective-time column that should replace evidence.statedAt."
     }
   ],
   "edges": [
@@ -114,6 +124,11 @@
     {
       "from": "component.2026-10-21.campaigns-module",
       "to": "decision.2026-10-21.campaigns-carrier-side",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-gate-wgc-fixes",
       "relation": "implements"
     }
   ],

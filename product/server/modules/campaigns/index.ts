@@ -543,6 +543,17 @@ export function registerCampaignTools(registry: Registry): void {
     },
   }));
 
+  reg(tool(obj({ contactId: uuid(), reason: str({ min: 3, max: 120 }) }), {
+    name: 'attempt.cancel_for_contact', risk: 'draft', roles: [],
+    summary: 'Cancel every attempt still queued for a person (erasure and other system paths only)',
+    run: async (ctx, i) => {
+      if (ctx.actor.type !== 'system' && ctx.actor.type !== 'vp_success') throw new Error('only a system path cancels a person\'s queued attempts');
+      const r = await ctx.q.query(`UPDATE attempt SET status = 'cancelled', blocked_by = $3 WHERE workspace_id = $1 AND contact_id = $2 AND status = 'created'`,
+        [ctx.workspaceId, i.contactId, i.reason]);
+      return { cancelled: r.rowCount ?? 0 };
+    },
+  }));
+
   // ---- member phone verification (verify.ts) ----
 
   const ALL_MEMBERS = ['owner', 'builder', 'operator', 'compliance', 'viewer'] as const;

@@ -12,7 +12,7 @@ import type { Queryable } from '../../db.ts';
 import { many, one } from '../../db.ts';
 import { release, reserve } from '../../ledger.ts';
 import {
-  A2P_DUE, DEFAULT_CONCURRENCY, DEFAULT_MAX_DURATION_S, DEFAULT_OUTER_BAND, DEFAULT_PER_MINUTE_INR_MILLI, DEFAULT_PERSON_BUDGET,
+  A2P_DUE, DEFAULT_CONCURRENCY, DND_FRESH_S, DEFAULT_MAX_DURATION_S, DEFAULT_OUTER_BAND, DEFAULT_PER_MINUTE_INR_MILLI, DEFAULT_PERSON_BUDGET,
   DEFAULT_WINDOWS, GATE_VERSION, NUMBER_DAILY_CEILING, NUMBER_GAP_MIN, OUTER_BAND_LIMIT, PREDIAL_TIMEOUT_MS, TEN_DIGIT_CLI_DAILY_CAP,
   type PersonBudget, type TimeRange, type WindowPolicy,
 } from './defaults.ts';
@@ -46,7 +46,7 @@ export interface CampaignPolicy {
 }
 
 export interface VersionRow { id: string; hash: string; config: { agent?: AgentConfig; brief?: { text: string; hash: string; bytes: number }; lint?: { ok: boolean } }; agent_status: string; agent_id: string }
-export interface ContactRow { id: string; e164: string; name: string | null; language: string | null; timezone: string; custom: Record<string, unknown> }
+export interface ContactRow { id: string; e164: string; name: string | null; language: string | null; timezone: string; custom: Record<string, unknown>; erased_at?: Date | null }
 export interface NumberRow { id: string; e164: string; series: Series; carrier: string; status: string; kyc_status: string; a2p_status: string }
 export interface DialPolicy { outer_band: TimeRange; concurrency: number; sector: string | null; sector_packs: string[]; holidays: string[] }
 
@@ -68,7 +68,7 @@ export interface GateRefusal {
 }
 export type GateVerdict = GatePass | GateRefusal;
 
-class Refuse { constructor(public code: GateCode, public detail?: string, public next?: Date | null) {} }
+class Refuse { constructor(public code: GateCode, public detail?: string, public next?: Date | null, public defer = false) {} }
 
 /** Hashes a tombstone may carry for a number: plain sha256 and HMAC with the workspace id as salt (memory-omni:
  *  "HMAC of identifiers with a tenant salt"). The intake module's exact salt is a seam (STATUS.json needs_from_others). */
@@ -82,6 +82,32 @@ export function suppressionSource(source: string | null): string {
   if (!source) return 'workspace';
   const cls = source.split(':')[0].trim().toLowerCase();
   return cls === 'call' ? 'in_call' : cls || 'workspace';
+}
+
+interface ConsentRow { id: string; purpose: string; basis: string; granted: boolean; evidence: Record<string, unknown> | null; created_at: Date }
+const parseTime = (v: unknown): number | null => {
+  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(v)) return null;   // ISO only: '31/12/2025' is unreadable, never a guess
+  const t = Date.parse(v);
+  return Number.isNaN(t) ? null : t;
+};
+/** When consent was given or withdrawn: evidence.statedAt (what the source says) when readable, else when it was recorded.
+ *  A grant whose stated time is unreadable counts as the oldest record, so it can never outrank a withdrawal. */
+function effectiveAt(r: ConsentRow): number {
+  const raw = r.evidence?.statedAt;
+  if (raw === undefined || raw === null || raw === '') return r.created_at.getTime();
+  const t = parseTime(raw);
+  return t ?? (r.granted ? -Infinity : r.created_at.getTime());
+}
+/** A present but unreadable expiry fails closed: the consent counts as expired. */
+function expiry(r: ConsentRow, now: Date): 'live' | 'expired' | 'unreadable' {
+  const given = Number.isFinite(effectiveAt(r)) ? effectiveAt(r) : r.created_at.getTime();
+  let ex: number | null = null;
+  if (r.evidence?.expiresAt !== undefined && r.evidence?.expiresAt !== null && r.evidence?.expiresAt !== '') {
+    ex = parseTime(r.evidence.expiresAt);
+    if (ex === null) return 'unreadable';
+  } else if (r.basis === 'inquiry') ex = given + 7 * 864e5;
+  else if (r.basis === 'application') ex = given + 90 * 864e5;
+  return ex !== null && ex <= now.getTime() ? 'expired' : 'live';
 }
 
 const DND_REGISTERED = ['registered', 'dnd', 'blocked', 'fully_blocked', 'partially_blocked'];
@@ -110,8 +136,9 @@ export async function loadVersion(q: Queryable, ws: string, id: string | null): 
 
 /** An attempt holds a line while it is dialling or its call is live. The calls module leaves 'connected' as the final
  *  status once a call ends, so the conversation row, not the attempt status, says whether the line is still in use. */
-export const LIVE_ATTEMPT = `a.status IN ('dialing','ringing','connected')
-  AND NOT EXISTS (SELECT 1 FROM conversation cv WHERE cv.attempt_id = a.id AND cv.status <> 'live')`;
+export const LIVE_ATTEMPT = `((a.status IN ('dialing','ringing','connected')
+    AND NOT EXISTS (SELECT 1 FROM conversation cv WHERE cv.attempt_id = a.id AND cv.status <> 'live'))
+  OR (a.status = 'unknown' AND EXISTS (SELECT 1 FROM conversation cv WHERE cv.attempt_id = a.id AND cv.status = 'live')))`;
 
 const DEFERRABLE: GateCode[] = ['out_of_window', 'budget_exhausted', 'deferred_concurrency', 'check_unavailable'];
 
@@ -126,7 +153,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
   // Data the checks read. A row from another workspace is never loaded: every query filters by workspace_id.
   const campaign = a.campaign_id ? await one<CampaignRow>(q, `SELECT id, workspace_id, name, call_category, policy, policy_version, state, agent_version_id, audience_id, budget_id
     FROM campaign WHERE id = $1 AND workspace_id = $2`, [a.campaign_id, ws]) : null;
-  const contact = a.contact_id ? await one<ContactRow>(q, 'SELECT id, e164, name, language, timezone, custom FROM contact WHERE id = $1 AND workspace_id = $2', [a.contact_id, ws]) : null;
+  const contact = a.contact_id ? await one<ContactRow>(q, 'SELECT id, e164, name, language, timezone, custom, erased_at FROM contact WHERE id = $1 AND workspace_id = $2', [a.contact_id, ws]) : null;
   const version = await loadVersion(q, ws, a.agent_version_id ?? campaign?.agent_version_id ?? null);
   const agent = version?.config?.agent;
   const category: CallCategory = campaign?.call_category ?? a.call_category ?? agent?.category ?? 'promotional';
@@ -151,6 +178,9 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
     }],
     ['G2', async () => {
       if (!test && !contact) throw new Refuse('identifier_invalid', 'no such contact in this workspace');
+      // An erased person is never dialled, whatever else is left behind: the husk's e164 ('erased:<uuid>') must never
+      // be normalised into somebody else's number.
+      if (!test && (contact!.erased_at || /^erased:/i.test(contact!.e164))) throw new Refuse('erased', 'this person was erased');
       const raw = test ? a.to_e164 : contact!.e164;
       const n = normaliseIndianPhone(raw);
       if (!n.ok) throw new Refuse(n.reason === 'NON_INDIAN' ? 'destination_blocked' : 'identifier_invalid', n.reason);
@@ -183,38 +213,59 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
     }],
     ['G5', async () => {
       if (test) { consent = { basis: 'consent' }; return; }   // a member's own verified phone
-      const recs = await many<{ id: string; purpose: string; basis: string; granted: boolean; evidence: Record<string, unknown> | null; created_at: Date }>(q,
-        `SELECT id, purpose, basis, granted, evidence, created_at FROM consent_record
-         WHERE workspace_id = $1 AND contact_id = $2 AND channel = 'voice' ORDER BY created_at DESC, id`, [ws, contact!.id]);
-      const latest = new Map<string, (typeof recs)[number]>();
-      for (const r of recs) if (!latest.has(r.purpose)) latest.set(r.purpose, r);
-      for (const p of PURPOSE_ALL) if (latest.get(p) && !latest.get(p)!.granted) throw new Refuse('no_basis', `consent withdrawn (${p})`);
-      const expired = (r: (typeof recs)[number]) => {
-        const ex = r.evidence?.expiresAt ? new Date(String(r.evidence.expiresAt)) : r.basis === 'inquiry' ? new Date(r.created_at.getTime() + 7 * 864e5)
-          : r.basis === 'application' ? new Date(r.created_at.getTime() + 90 * 864e5) : null;
-        return !!ex && ex.getTime() <= now.getTime();
-      };
-      const fit = [...latest.values()].filter(r => r.granted && (category === 'promotional'
-        ? (r.purpose === 'promotional' || PURPOSE_ALL.includes(r.purpose)) && r.basis === 'consent'
-        : r.purpose !== 'promotional'));
-      const live = fit.filter(r => !expired(r));
-      if (!live.length) throw new Refuse(fit.length ? 'consent_expired' : 'no_basis', category === 'promotional' ? 'promotional calls need explicit consent in date' : 'no relationship or consent record for this person');
+      const recs = await many<ConsentRow>(q, `SELECT id, purpose, basis, granted, evidence, created_at FROM consent_record
+         WHERE workspace_id = $1 AND contact_id = $2 AND channel = 'voice'`, [ws, contact!.id]);
+      // Every purpose that covers this call: the category's own, the general ones, and for service/transactional any
+      // relationship purpose. The newest record across them decides (by when it was given, not when it was inserted), so
+      // a newer withdrawal on any covering purpose beats every older grant, and re-importing an old "yes" cannot re-open.
+      const covers = (p: string) => PURPOSE_ALL.includes(p) || (category === 'promotional' ? p === 'promotional' : p !== 'promotional');
+      const ordered = recs.filter(r => covers(r.purpose)).sort((x, y) => effectiveAt(y) - effectiveAt(x) || y.created_at.getTime() - x.created_at.getTime());
+      const cut = ordered.findIndex(r => !r.granted);
+      if (cut === 0) throw new Refuse('no_basis', `consent withdrawn (${ordered[0].purpose})`);
+      const grants = (cut < 0 ? ordered : ordered.slice(0, cut))
+        .filter(r => category !== 'promotional' || r.basis === 'consent');
+      const live = grants.filter(r => expiry(r, now) === 'live');
+      if (!live.length) {
+        const unreadable = grants.some(r => expiry(r, now) === 'unreadable');
+        throw new Refuse(grants.length ? 'consent_expired' : 'no_basis', unreadable ? 'consent expiry unreadable'
+          : category === 'promotional' ? 'promotional calls need explicit consent in date' : 'no relationship or consent record for this person');
+      }
       const r = live[0];
       consent = { basis: r.basis === 'contract' || r.basis === 'relationship' ? 'contract' : r.basis === 'legitimate_use' ? 'legitimate_use' : 'consent', recordId: r.id };
       if (category === 'promotional') {
+        // Allow-list: only an explicit "not registered", or registered with CRF-registered consent. Anything else
+        // (unknown, a provider that is switched off, a value we do not know) holds the row.
         const d = await one<{ ncpr_status: string | null; checked_at: Date | null }>(q, 'SELECT ncpr_status, checked_at FROM dnd_status WHERE contact_id = $1', [contact!.id]);
-        if (!d || !d.ncpr_status || !d.checked_at) throw new Refuse('no_basis', 'DND status unknown: promotional rows are held until a carrier DND lookup exists');
-        if (DND_REGISTERED.includes(d.ncpr_status.toLowerCase()) && r.evidence?.crf !== true) throw new Refuse('dnd_blocked_by_operator', 'DND-registered number without CRF-registered consent (RS-13)');
+        const st = (d?.ncpr_status ?? '').toLowerCase().replace(/[\s-]+/g, '_');
+        if (!d?.checked_at || !(st === 'not_registered' || DND_REGISTERED.includes(st)))
+          throw new Refuse('no_basis', `DND status ${st || 'unknown'}: promotional rows are held until a carrier DND lookup says not registered`);
+        if (DND_REGISTERED.includes(st) && r.evidence?.crf !== true) throw new Refuse('dnd_blocked_by_operator', 'DND-registered number without CRF-registered consent (RS-13)');
+        if (now.getTime() - d.checked_at.getTime() > DND_FRESH_S * 1000)
+          throw new Refuse('no_basis', `DND lookup stale (older than ${DND_FRESH_S / 86400} days); refresh it`, new Date(now.getTime() + 6 * 3600_000), true);
       }
     }],
     ['G6', async () => {
       const window = test ? { days: [1, 2, 3, 4, 5, 6, 7], ranges: [OUTER_BAND_LIMIT], nationalHolidaysOff: false }
         : policy.window ?? DEFAULT_WINDOWS[category];
-      const e = eligibility(now, tz, {
-        category: test ? 'service' : category, window, outerBand: test ? OUTER_BAND_LIMIT : dp.outer_band,
+      const ctxLocal = {
+        category: test ? 'service' as const : category, window, outerBand: test ? OUTER_BAND_LIMIT : dp.outer_band,
         rbiBand: !test && !!agent?.sectorPacks?.includes('lending_rbi'), holidays: test ? [] : dp.holidays,
-      });
-      if (!e.ok) throw new Refuse('out_of_window', `outside the calling window in ${tz}`, e.nextEligibleAt);
+      };
+      // TRAI's hours are IST. For an Indian number the quiet hours, the promotional band and the outer band also hold in
+      // IST, whatever zone was imported: a foreign zone can narrow the window, never move it outside IST.
+      const floors: [string, Parameters<typeof eligibility>[2]][] = [[tz, ctxLocal]];
+      if (tz !== 'Asia/Kolkata' && target.startsWith('+91'))
+        floors.push(['Asia/Kolkata', { ...ctxLocal, window: { days: [1, 2, 3, 4, 5, 6, 7], ranges: [{ start: '00:00', end: '23:59' }], nationalHolidaysOff: false }, holidays: [] }]);
+      let t = now, nextAt: Date | null = null, inside = false;
+      for (let k = 0; k < 20; k++) {
+        const es = floors.map(([z, c]) => eligibility(t, z, c));
+        if (es.every(e => e.ok)) { inside = true; break; }
+        const nx = es.map(e => (e.ok ? t : e.nextEligibleAt));
+        if (nx.some(x => x === null)) break;
+        t = new Date(Math.max(...nx.map(x => x!.getTime())));
+        nextAt = t;
+      }
+      if (!inside || nextAt) throw new Refuse('out_of_window', `outside the calling window in ${floors.map(f => f[0]).join(' and ')}`, inside ? nextAt : null);
     }],
     ['G7', async () => {
       if (test) return;
@@ -325,7 +376,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       if (reservationId) { await release(q, reservationId); reservationId = null; }
       trace.push({ gate, ok: false, code: r.code, detail: r.detail, nextEligibleAt: r.next?.toISOString() });
       const moneyDefers = (r.code === 'cap_reached' || r.code === 'wallet_low') && !!campaign;   // the campaign pauses; the person still waits
-      const deferred = moneyDefers || (DEFERRABLE.includes(r.code) && r.next !== null && r.next !== undefined);
+      const deferred = moneyDefers || ((r.defer || DEFERRABLE.includes(r.code)) && r.next !== null && r.next !== undefined);
       return { allowed: false, outcome: deferred ? 'deferred' : 'blocked', gate, code: r.code, detail: r.detail, nextEligibleAt: r.next ?? null,
         trace, warnings, gateVersion: GATE_VERSION, campaign,
         capScope: r.code === 'cap_reached' ? /the (\w+) cap/.exec(r.detail ?? '')?.[1] : undefined };

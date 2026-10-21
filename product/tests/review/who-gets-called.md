@@ -17,6 +17,9 @@ suppression, tombstones, erasure, merge, DND, imports, the CRM webhook); `memory
 **Note:** `scripts/test.mjs` runs only `tests/*.test.ts`, not `tests/review/`. CI therefore does not run this file.
 That is harmless while the tests are `todo`, but the file has to be listed or moved before they are expected to pass.
 
+**Status (2026-10-21):** WGC-01 to WGC-08 are fixed in the campaigns gate. Their tests run as normal tests in
+`tests/campaigns-review.test.ts`. WGC-09 (intake and memory) is still open here.
+
 ## Counts
 
 | Severity | Count | Findings |

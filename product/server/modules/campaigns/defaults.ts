@@ -86,6 +86,10 @@ export const NUMBER_GAP_MIN = 120;
 /** A declared 10-digit CLI gets 200 dials a day (operators flag short, many-recipient, low-incoming lines). */
 export const TEN_DIGIT_CLI_DAILY_CAP = 200;
 
+/** An NCPR answer older than this is unknown for a promotional call. Same value as intake's DND_FRESH_S (contacts.ts);
+ *  a test asserts they match, since modules do not import each other. */
+export const DND_FRESH_S = 7 * 86400;
+
 export const RING_TIMEOUT_S = 40;
 /** Most a call may cost per connected minute when the campaign has no measured rate (a conservative ceiling for the hold). */
 export const DEFAULT_PER_MINUTE_INR_MILLI = 6_000;
