@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 142,
-    "passed": 142,
+    "ran": 144,
+    "passed": 144,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {

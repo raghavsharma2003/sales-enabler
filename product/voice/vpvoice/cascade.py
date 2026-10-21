@@ -367,7 +367,7 @@ class CascadeSession(Session):
                     if self.digits_seg == self.seg and sig['readingSensitiveDigits'] and not any(sig[k] for k in ACTION if k != 'readingSensitiveDigits'):
                         return                                            # already stopped them mid-number
                     if await self.after_caller(sig) == 'replied' or self.ended:
-                        if gate is not None: asyncio.ensure_future(self._settle(gate))
+                        if gate is not None: self.conv.track(self._settle(gate))
                         return
                     self.rid += 1; self.active = Reply(self, self.rid, None, released=True, gate=gate)
                     asyncio.ensure_future(self._after(self.active))
@@ -390,7 +390,7 @@ class CascadeSession(Session):
             await self.finish('silence_timeout')
 
     async def _settle(self, gate):
-        if await self.conv.settle_gate(gate) and self.handoff_allowed('crisis'): await self.hand_off('crisis')
+        if await self.conv.settle_gate(gate) and self.handoff_allowed('crisis') and not self.ended: await self.hand_off('crisis')
 
     async def _commit_turn(self, text):
         end_ms = self._ms(self.eos_t) if self.eos_t else None

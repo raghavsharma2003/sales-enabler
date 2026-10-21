@@ -99,6 +99,10 @@ class Session:
         for tk in self.tasks:
             if tk is not asyncio.current_task(): tk.cancel()
         try:
+            await self.conv.drain_judges()          # judge meter lines land before call.ended, never after
+        except Exception:
+            log.exception('drain judges')
+        try:
             await self.close_media()
         except Exception:
             log.exception('close media')

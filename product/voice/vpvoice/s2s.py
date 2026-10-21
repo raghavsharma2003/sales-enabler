@@ -203,7 +203,7 @@ class LiveSession(Session):
         prev = self.conv.prev_caller()
         sig = self.conv.commit_caller(text)
         gate = self.conv.start_judge(text, prev, floor=sig['crisis'])
-        if gate is not None: asyncio.ensure_future(self._live_judge(gate))
+        if gate is not None: self.conv.track(self._live_judge(gate))
         if sig['crisis']:
             await self.note('CRISIS: drop the goal. Give Tele-MANAS 14416 (free, 24x7) and 112 for danger; offer a human; never end the call.')
         if sig['readingSensitiveDigits']:
@@ -216,7 +216,7 @@ class LiveSession(Session):
 
     async def _live_judge(self, gate):
         """Live speaks on its own; a judge raise lands as the crisis note, as a floor hit does, and alerts a human."""
-        if await self.conv.settle_gate(gate):
+        if await self.conv.settle_gate(gate) and not self.ended:
             self.conv.judge_raised = False
             self.held = []; self.cut = True                   # nothing of the reply in progress is released
             await self.note('CRISIS: drop the goal. Give Tele-MANAS 14416 (free, 24x7) and 112 for danger; offer a human; never end the call.', complete=True)

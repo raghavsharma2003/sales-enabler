@@ -63,6 +63,7 @@ class Conversation:
                       'identity_verified': False}
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
         self.judge_complete = None; self.judge_env = None; self.judge_raised = False
+        self.judge_tasks = set()         # judge work running in the background: held (asyncio keeps only weak refs), drained at end
 
     # ---------------------------------------------------------------- time
     def ms(self): return int((self.clock() - self.t0) * 1000)
@@ -132,8 +133,22 @@ class Conversation:
         if m == 'off' or not judge.configured(self.judge_env): return None
         task = asyncio.ensure_future(judge.judge_caller_crisis(text, self.judge_complete, prev=prev, env=self.judge_env, floor=floor))
         if m != 'raise':
-            asyncio.ensure_future(self.settle_gate(task)); return None
+            self.track(self.settle_gate(task)); return None
         return task
+
+    def track(self, coro):
+        t = asyncio.ensure_future(coro)
+        self.judge_tasks.add(t); t.add_done_callback(self.judge_tasks.discard)
+        return t
+
+    async def drain_judges(self):
+        """Before call.ended: let background judge work finish within its own timeout, so its meter line is not late;
+        cancel whatever is still running after that (a cancelled judge meters nothing)."""
+        pending = [t for t in self.judge_tasks if not t.done()]
+        if not pending: return
+        done, still = await asyncio.wait(pending, timeout=judge.SPEC['timeout_ms'] / 1000 + 0.05)
+        for t in still: t.cancel()
+        if still: await asyncio.gather(*still, return_exceptions=True)
 
     def prev_caller(self, skip_last=False):
         callers = [t['text'] for t in self.transcript if t['speaker'] == 'caller']
@@ -212,7 +227,7 @@ class Conversation:
             finally:
                 self.charge_brain(usage)
                 if draft.gate is not None and not draft.pending:   # nothing was said: settle the verdict for the next turn
-                    gate, draft.gate = draft.gate, None; asyncio.ensure_future(self.settle_gate(gate))
+                    gate, draft.gate = draft.gate, None; self.track(self.settle_gate(gate))
             if timing.get('err') and not draft.sentences and not blocked:
                 raise ComponentError('brain', self.brain_provider, timing['err'][:200])
             if not blocked: return

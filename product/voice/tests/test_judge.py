@@ -216,6 +216,43 @@ class Runtime(unittest.TestCase):
         self.assertEqual(sum(x['quantity'] for x in lines), 132)
         self.assertFalse(lines[0]['detail']['priced'])
 
+    def _end_right_after(self, delay, timeout_ms=None):
+        import time
+        c, seen = fake(verdict(False, 0.1, 'none'), delay=delay)
+        t = ticket(); s, p = sink(t['conversationId'])
+        comp = components(brain=FakeBrain([DISCLOSED, self.AGENDA])); comp.judge_complete = c
+        from vpvoice.session import SimSession
+        old = judge.SPEC['timeout_ms']
+        if timeout_ms: judge.SPEC['timeout_ms'] = timeout_ms
+        async def go():
+            sess = SimSession(t, comp, s, env={**ENV_ON, 'VP_SAFETY_JUDGE_MODE': 'shadow'}, watchdog_s=0.01)
+            await sess.start(); await sess.caller_says('theek hai, bye')
+            t0 = time.perf_counter(); await sess.hang_up(); dt = time.perf_counter() - t0
+            await asyncio.sleep(0.1)
+            return sess, dt
+        try:
+            sess, dt = asyncio.run(go())
+        finally:
+            judge.SPEC['timeout_ms'] = old
+        return sess, p, dt, seen
+
+    def test_shadow_judge_in_flight_at_the_end_is_metered_before_call_ended(self):
+        sess, p, dt, seen = self._end_right_after(0.3)
+        e = p.events()
+        end = [x['seq'] for x in e if x['type'] == 'call.ended'][0]
+        judge_lines = [x for x in e if x['type'] == 'cost' and x['provider'] == 'safety_judge']
+        self.assertEqual(len(seen), 1)
+        self.assertTrue(judge_lines and all(x['seq'] < end for x in judge_lines), 'metered before call.ended')
+        self.assertEqual(e[-1]['type'], 'call.ended', 'nothing after call.ended')
+        self.assertFalse(sess.conv.judge_tasks)
+
+    def test_a_hung_judge_is_cancelled_at_the_end_and_meters_nothing(self):
+        sess, p, dt, seen = self._end_right_after(5.0, timeout_ms=200)
+        e = p.events()
+        self.assertLess(dt, 1.0, f'the end waited {dt:.2f} s')
+        self.assertEqual([x for x in e if x['type'] == 'cost' and x['provider'] == 'safety_judge'], [])
+        self.assertEqual(e[-1]['type'], 'call.ended')
+
     def test_cascade_raise_before_she_is_heard(self):
         os.environ['VP_VAD'] = 'energy'
         from tests.test_cascade import QUIET, feed, make, wait_until
