@@ -158,6 +158,38 @@
    "closes_when": "A judge measured on a fresh blind set reaches >= 97% harmful catch at <= 1% benign FP with p95 added latency inside the reply-gap budget, or the owner rules it out on cost."
   },
   {
+   "id": "decision.2026-10-21.safety-second-layer-proposal",
+   "type": "decision",
+   "status": "proposed",
+   "date": "2026-10-21",
+   "source": "safety module builder (parallel build)",
+   "title": "PROPOSAL for the owner: a model-based judge behind the deterministic door. It may only add a block or a flag, never lift one. It runs per sentence, pipelined with playback, and costs at most 150 ms p95 on a turn's first sentence. Ship it only if fresh blind sets show >= 97% catch at <= 1% benign FP",
+   "rationale": "The regex door is a floor: on the hardest blind set (set 4) it caught 93/130 harmful lines and flagged 13/230 benign ones. The misses are paraphrase and indirection ('kal humare log aapke ghar aa jayenge', 'kisi ko batana nahi hai'), threats split across sentences, and indirect crisis talk ('sab log better off honge agar main nahi rahunga'). More regex buys recall only by spending false positives on warm speech, and warm speech is the product.",
+   "detail": {
+    "adds": [
+     "semantic recall on paraphrased and keyword-free harmful lines across all RD kinds",
+     "context: it reads the last 3-4 turns, so a threat or an ask split across sentences is seen",
+     "indirect crisis and asks-if-AI on caller turns (RD3, RD2)",
+     "a confidence score per verdict, which feeds Supervisor review and grows cases.json"
+    ],
+    "never_alone": "The floor runs first on every sentence, and its block or replace is final. The judge can turn a pass into a block or flag; it can never turn a block into a pass. If the judge times out or errors, the floor verdict stands and a safety event 'judge_unavailable' is logged. A call never waits on a judge to stop a floor hit.",
+    "pipeline": {
+     "agent_side": "brain drafts sentence -> floor door (0.2 ms) -> TTS starts -> judge runs in parallel with synthesis. Playback of sentence k is gated on the judge verdict for sentence k. Sentences after the first are judged while sentence k-1 plays, so they add no gap. Only the first sentence of a turn can add latency, capped at 150 ms p95. On a judge block the sentence is dropped and the brain regenerates (or a rules.json replacement text plays).",
+     "caller_side": "Each final caller transcript goes to the floor signals at once (they act immediately) and to the judge in parallel with the brain's first token. A judge-raised crisis or asks-if-AI interrupts the turn before the reply is spoken."
+    },
+    "latency": "Budget: <= 150 ms p95 added on a turn's first sentence, measured from the India region on the production stack; 0 ms on later sentences. A hosted LLM judge (about 0.3-0.7 s first token from India, per this project's brain measurements) does not fit serially. So: phase A runs a hosted small-LLM judge in SHADOW (no effect on calls) to label data. Phase B distils those labels plus cases.json into a local multilingual encoder classifier (Indic-capable, CPU or a small GPU, target p95 <= 30 ms), which is what gates playback.",
+    "data_and_residency": "The judge sees redacted text only (redact() first), in-region, with no cross-tenant training on raw transcripts. Labels come from synthetic blind sets, cases.json, and Supervisor-reviewed flags.",
+    "measurement": [
+     "Fresh blind sets, written by an agent that never saw the rules or the judge's training data, scored once before any tuning. Report per-kind catch, benign FP (half hard negatives), and per-sector and per-script (Hinglish, Devanagari, mixed) splits, with n, method and date.",
+     "Ship gate, for floor + judge combined: >= 97% harmful catch, <= 1% benign FP, p95 added latency <= 150 ms on first sentences, and judge availability >= 99.5% (it must fail to the floor, not to silence).",
+     "Shadow on live calls for 2 weeks before gating: every floor/judge disagreement is reviewed by a human, and the disagreement rate is reported.",
+     "Cost per minute is measured against the INR 2/min target; the judge is not enabled if it moves the per-minute price by more than the owner allows."
+    ],
+    "cost_note": "Not yet measured. The encoder phase is near-zero marginal cost per sentence; the shadow LLM phase costs tokens per sentence for a bounded labelling window only."
+   },
+   "reverse_if": "Blind measurement shows the judge adds less than 5 points of catch over the floor, or cannot hold <= 1% benign FP, or cannot meet 150 ms p95 on the production stack; or the owner prefers the floor plus human review of flagged calls."
+  },
+  {
    "id": "open.2026-10-21.rd8-scope-beyond-insurance",
    "type": "open-question",
    "status": "open",
@@ -226,6 +258,16 @@
    "from": "component.2026-10-21.safety-module",
    "to": "open.2026-10-21.rd8-scope-beyond-insurance",
    "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-21.safety-second-layer-proposal",
+   "to": "open.2026-10-21.safety-second-layer",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-21.safety-second-layer-proposal",
+   "to": "risk.2026-10-21.regex-door-recall-ceiling",
+   "relation": "informed-by"
   },
   {
    "from": "component.2026-10-21.safety-module",
