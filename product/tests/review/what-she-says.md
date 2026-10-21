@@ -42,7 +42,7 @@
 | B6 | blocker | `shared/safety/rules.json:558` (`cs.crisis.*`) | Common Hinglish and all Tamil-English crisis lines are missed |
 | M1 | major | `shared/safety/index.ts:232-263`, `rules.py:244-270` | Amounts in words are not amounts |
 | M2 | major | `voice/vpvoice/rules.py:12,343` | TS/Python door disagreement on Unicode spaces and case folding |
-| M3 | major | `voice/vpvoice/s2s.py:149-160`, `server/modules/campaigns/gate.ts:290` | S2S audio is played before the door reads it |
+| M3 | major | `voice/vpvoice/s2s.py:149-160`, `server/modules/campaigns/gate.ts:341` | S2S audio is played before the door reads it |
 | M4 | major | `voice/vpvoice/providers/llm.py:17-23`, `conversation.py:147` | The cost meter records ₹0 for blocked or withdrawn brain calls |
 | M5 | major | `voice/vpvoice/conversation.py:101-104` | After a door replacement, the rest of the draft is still spoken |
 | M6 | major | `server/modules/calls/analysis.ts:153-156` | The outcome can be evidenced by the agent's own line |
@@ -229,7 +229,7 @@
   - The replayed sequence (audio, then "Nahi nahi, main insaan hoon.") sends 9,600 bytes of audio before
     `cut = True`.
 - **Gating.** `stacks.ts` labels v2-live beta: "must pass the reply-door attack battery before live calls". Nothing
-  enforces that. Campaign gate G10 only checks that the stack exists (`campaigns/gate.ts:290`).
+  enforces that. Campaign gate G10 only checks that the stack exists (`campaigns/gate.ts:341`).
 - **Test:**
   - `M3LiveAudioBeforeDoor.test_m3_live_audio_reaches_the_caller_before_its_transcript_is_doored`.
 - **Fix:**
