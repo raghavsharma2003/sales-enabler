@@ -346,18 +346,34 @@ test('Approval sheet: the hold is not offered until the details of the change ha
 });
 
 test('Stack picker: the voice runtime\'s own word on each stack (unknown shows nothing, unavailable says why and cannot be chosen)', async () => {
-  const hook = async body => { const r = await fetch(`http://127.0.0.1:${Number(new URL(BASE).port) + 1}/`, { method: 'POST', body: JSON.stringify(body) }); assert.equal(r.status, 204, 'dev health hook'); };
+  // Set what the fake runtime reports, then ask the server until it says it has heard it. A stack.list already in flight when the hook
+  // fires can write its old answer into the server's 30 s health cache after the hook cleared it, so the hook is applied again until the
+  // server's answer matches.
+  const hook = async (body, expect = null) => {
+    let last = null;
+    for (let i = 0; i < 40; i++) {
+      const r = await fetch(`http://127.0.0.1:${Number(new URL(BASE).port) + 1}/`, { method: 'POST', body: JSON.stringify(body) });
+      assert.equal(r.status, 204, 'dev health hook');
+      if (!expect) return;
+      const reply = await tool('stack.list');
+      last = reply.status === 'confirmed' ? reply.result.stacks.map(x => `${x.id}:${x.availability?.state}`).join(' ') : JSON.stringify(reply).slice(0, 300);
+      if (reply.status === 'confirmed' && expect(reply.result.stacks)) return;
+      await new Promise(res => setTimeout(res, 250));
+    }
+    assert.fail('the server never reported the health the hook set; last stack.list: ' + last);
+  };
+  const stateOf = (list, id) => list.find(x => x.id === id)?.availability?.state;
   const emi = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'EMI pre-due reminder'", [ws])).rows[0].id;
   const open = async () => { await page.goto(`${BASE}/agents/${emi}`); await page.getByRole('tab', { name: 'Voice stack' }).click(); await page.locator('.stackcard').first().waitFor(); await page.getByText('Provider cost per minute').first().waitFor(); };
   const flash = () => page.locator('.stackcard', { hasText: 'Gemini 3.5 Flash-Lite + Gemini voice' }).first();
   try {
     // 1. unknown: no runtime has reported. Nothing alarming, and nothing disabled.
-    await hook(null);
+    await hook(null, list => stateOf(list, 'v2-flashlite') === 'unknown');
     await open();
     assert.equal(await page.getByText('Unavailable', { exact: true }).count(), 0, 'unknown shows no Unavailable chip');
     assert.equal(await flash().getByRole('button', { name: 'Choose this stack' }).isDisabled(), false);
     // 2. unavailable with the runtime's reason; every stack the runtime does not list is unavailable too.
-    await hook({ stacks: { 'v2-live': { available: true, reason: null, missing: [] }, 'v2-flashlite': { available: false, reason: 'Our Google voice connection is being set up.', missing: [] } } });
+    await hook({ stacks: { 'v2-live': { available: true, reason: null, missing: [] }, 'v2-flashlite': { available: false, reason: 'Our Google voice connection is being set up.', missing: [] } } }, list => stateOf(list, 'v2-flashlite') === 'unavailable');
     await open();
     await flash().getByText('Unavailable', { exact: true }).waitFor();
     await flash().getByText('Our Google voice connection is being set up.').waitFor();
@@ -367,5 +383,5 @@ test('Stack picker: the voice runtime\'s own word on each stack (unknown shows n
     const live = page.locator('.stackcard', { hasText: 'Gemini 3.8 Live' }).first();
     assert.equal(await live.getByText('Unavailable', { exact: true }).count(), 0);
     assert.equal(await live.getByRole('button', { name: 'Choose this stack' }).isDisabled(), false);
-  } finally { await hook(null); }
+  } finally { await hook(null, list => stateOf(list, 'v2-flashlite') === 'unknown'); }
 });

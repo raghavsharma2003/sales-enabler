@@ -55,3 +55,4 @@ const hook = createServer((req, res) => {
 });
 hook.on('error', e => console.error('health hook not listening:', (e as Error).message));   // never take the dev server down
 hook.listen(Number(process.env.HEALTH_HOOK_PORT ?? Number(process.env.PORT ?? 8799) + 1), '127.0.0.1');
+hook.unref();   // the hook must never keep the process alive: the server's own shutdown waits for the event loop to empty

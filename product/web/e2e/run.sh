@@ -18,6 +18,8 @@ VP_RUNTIME_SECRET=rt-$(node -e "console.log(require('crypto').randomBytes(24).to
 PORT=${PORT:-8799}
 export VP_SECRET_KEY VP_RUNTIME_SECRET PORT DATABASE_URL
 node product/web/build.mjs > /dev/null || exit 1
+# A server already answering on this port (a previous run still shutting down) would be tested instead of ours, against a database we just dropped.
+curl -sf "http://localhost:$PORT/v1/health" > /dev/null && { echo "port $PORT is already serving: a previous run is still shutting down; wait a few seconds and run again"; exit 1; }
 node --import tsx product/web/dev/serve.ts > /tmp/vp-e2e-server.log 2>&1 &
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null' EXIT INT TERM
