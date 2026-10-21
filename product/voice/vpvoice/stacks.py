@@ -12,8 +12,6 @@ STACKS = {
                         'requires': ['GEMINI'], 'status': 'available'},
     'v2-mai':          {'kind': 'cascade', 'components': {'ears': 'gemini', 'brain': 'gemini-3.5-flash-lite', 'voice': 'azure-mai', 'gatedEars': True},
                         'requires': ['GEMINI', 'AZURE_SPEECH'], 'status': 'available'},
-    'v2-flashlite-or': {'kind': 'cascade', 'components': {'ears': 'gemini', 'brain': 'gemini-3.5-flash-lite@or', 'voice': 'gemini-lite-or', 'gatedEars': True},
-                        'requires': ['GEMINI', 'OPENROUTER'], 'status': 'available'},
     'v2-luna':         {'kind': 'cascade', 'components': {'ears': 'gemini', 'brain': 'gpt-6-luna@or', 'voice': 'gemini-lite', 'gatedEars': True},
                         'requires': ['GEMINI', 'OPENROUTER'], 'status': 'available'},
     'sarvam-india':    {'kind': 'cascade', 'components': {'ears': 'sarvam', 'brain': 'sarvam-105b', 'voice': 'sarvam', 'gatedEars': True},
@@ -23,7 +21,7 @@ BRIEF = 'v2'
 
 # A stack's "requires" names map to the environment variables that satisfy them (names only; values never logged).
 REQUIRES_ENV = {
-    'GEMINI': [['GEMINI_PAID_KEY']],     # the Live ears and speech-to-speech need the key; VERTEX_SA_FILE optionally routes text and TTS
+    'GEMINI': [['VERTEX_SA_FILE']],      # Gemini runs on Vertex only; providers/google.py also requires an Indian VP_REGION
     'AZURE_OPENAI': [['LAB_AI_ENDPOINT', 'LAB_AI_KEY']],
     'AZURE_SPEECH': [['LAB_SPEECH_KEY']],
     'OPENROUTER': [['OPENROUTER_API_KEY']],

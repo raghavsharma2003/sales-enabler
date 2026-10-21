@@ -15,10 +15,11 @@ END_TOOL = {'name': 'end_call', 'description': 'Hang up the phone. Use it only r
             'conversation is over; never while they are still talking or asking.'}
 
 
-def setup_msg(spec, voice, system, tools=(), modality='AUDIO', handle=None):
+def setup_msg(spec, voice, system, tools=(), modality='AUDIO', handle=None, model=None):
+    """model: the Vertex resource name (GoogleRoute.resource); the field names are the Live API's camelCase JSON."""
     gen = {'responseModalities': [modality]}
     if modality == 'AUDIO': gen['speechConfig'] = {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': voice}}}
-    s = {'model': 'models/' + spec['model'], 'generationConfig': gen, 'systemInstruction': {'parts': [{'text': system}]},
+    s = {'model': model or spec['model'], 'generationConfig': gen, 'systemInstruction': {'parts': [{'text': system}]},
          'realtimeInputConfig': {'automaticActivityDetection': {'silenceDurationMs': 500, 'prefixPaddingMs': 100}},
          'sessionResumption': ({'handle': handle} if handle else {})}
     if modality == 'AUDIO': s.update({'inputAudioTranscription': {}, 'outputAudioTranscription': {}})
@@ -30,8 +31,8 @@ def setup_msg(spec, voice, system, tools=(), modality='AUDIO', handle=None):
     return {'setup': s}
 
 
-async def connect(http, google, setup):
-    ws = await google.live(http)
+async def connect(http, google, setup, model):
+    ws = await google.live(http, model)
     await ws.send_json(setup)
     m = await ws.receive(timeout=20)
     if ws_text(m) is None or 'setupComplete' not in ws_text(m):
@@ -54,7 +55,7 @@ class GeminiLiveText:
         try:
             if self.ws is None or self.ws.closed:
                 system = '\n\n'.join(m['content'] for m in messages if m['role'] == 'system' and not m['content'].startswith('Ledger'))
-                self.ws = await connect(self.http, self.google, setup_msg(self.spec, None, system, modality='TEXT'))
+                self.ws = await connect(self.http, self.google, setup_msg(self.spec, None, system, modality='TEXT', model=self.google.resource(self.spec['model'])), self.spec['model'])
             convo = [m for m in messages if m['role'] != 'system']
             tail = [m['content'] for m in messages if m['role'] == 'system' and m['content'].startswith(('Ledger', 'Your last draft'))]
             turns = [{'role': 'model' if m['role'] == 'assistant' else 'user', 'parts': [{'text': m['content']}]} for m in convo[self.sent:]]
@@ -101,7 +102,8 @@ class LiveSession(Session):
                  for t in self.t['agent'].get('tools') or [] if t.get('name') not in ('end_call', 'transfer')]
         self.live = self.c.make_s2s(system, tools)
         try:
-            self.up = await connect(self.live['http'], self.live['google'], setup_msg(self.live['spec'], self.live['voice'], system, tools))
+            g = self.live['google']; m = self.live['spec']['model']
+            self.up = await connect(self.live['http'], g, setup_msg(self.live['spec'], self.live['voice'], system, tools, model=g.resource(m)), m)
         except Exception as e:
             await self.component_failed(ComponentError('s2s', 'gemini', repr(e)[:200])); return
         self.reader = asyncio.ensure_future(self.read()); self.tasks.append(self.reader)
@@ -122,7 +124,7 @@ class LiveSession(Session):
         self.buf += pcm16k
         if len(self.buf) >= 1280:
             b, self.buf = self.buf, b''
-            try: await self.up.send_json({'realtimeInput': {'audio': {'data': base64.b64encode(b).decode(), 'mimeType': 'audio/pcm;rate=16000'}}})
+            try: await self.up.send_json(self.live['google'].audio_chunk(base64.b64encode(b).decode()))
             except Exception: pass
 
     async def _door_text_final(self, sent):

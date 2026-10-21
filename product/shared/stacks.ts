@@ -75,12 +75,6 @@ export const STACKS: readonly VoiceStack[] = [
     requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
   },
   {
-    id: 'v2-flashlite-or', label: 'Gemini ears + Flash-Lite + Gemini voice, via OpenRouter', kind: 'cascade', brief: 'v2',
-    components: { ears: 'gemini', brain: 'gemini-3.5-flash-lite@or', voice: 'gemini-lite-or', gatedEars: true },
-    replyGap: { value: 'about 1.5 s slower to start', grade: 'measured', source: 'Measured in our voice lab from a server in India, 20 Oct 2026. The voice clip arrives whole instead of streaming, so she starts later.' },
-    note: 'A more expressive voice, but each clip arrives whole, so she starts about 1.5 s later.', requires: ['GEMINI', 'OPENROUTER'], status: 'available',
-  },
-  {
     id: 'v2-luna', label: 'Gemini ears + GPT-6 Luna + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'gemini', brain: 'gpt-6-luna@or', voice: 'gemini-lite', gatedEars: true },
     replyGap: { value: '1.4 s, reply text starts', grade: 'measured', source: LAB },

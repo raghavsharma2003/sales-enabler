@@ -97,28 +97,6 @@ class GeminiVoice(BaseVoice):
             r.release()
 
 
-class OpenRouterVoice(BaseVoice):
-    """Gemini TTS through OpenRouter's speech endpoint: the clip arrives whole; 'instructions' carries the style."""
-    whole_reply = True; styled = True
-
-    async def speak(self, text, style, usage, timing):
-        import aiohttp
-        timing.setdefault('req', time.perf_counter())
-        body = {'model': self.spec['model'], 'input': text, 'voice': self.voice, 'response_format': 'pcm'}
-        if style: body['instructions'] = style
-        usage['chars'] = usage.get('chars', 0) + len(text)
-        pcm = _Pcm()
-        async with self.http.post('https://openrouter.ai/api/v1/audio/speech', json=body, timeout=aiohttp.ClientTimeout(total=60, sock_read=30),
-                                  headers={'Authorization': 'Bearer ' + self.env.get('OPENROUTER_API_KEY', ''), 'X-Title': 'vp-voice'}) as r:
-            if r.status != 200: raise VoiceError(f'{r.status} {(await r.text())[:300]}')
-            async for ch in r.content.iter_any():
-                ch = pcm(ch)
-                if not ch: continue
-                timing.setdefault('first', time.perf_counter())
-                usage['audio_s'] = usage.get('audio_s', 0) + len(ch) / 48000
-                yield ch
-
-
 class AzureVoice(BaseVoice):
     """Azure neural / MAI voices over the REST synthesis endpoint, streamed as raw 24 kHz PCM. (The lab used a pre-warmed
     SDK websocket; REST keeps the runtime free of the Speech SDK, at some first-audio cost not yet measured.)"""
@@ -210,7 +188,7 @@ class SarvamVoice(BaseVoice):
         if ws is not None and not ws.closed: await ws.close()
 
 
-KINDS = {'gemini': GeminiVoice, 'or_tts': OpenRouterVoice, 'azure': AzureVoice, 'sarvam': SarvamVoice}
+KINDS = {'gemini': GeminiVoice, 'azure': AzureVoice, 'sarvam': SarvamVoice}
 
 
 def make_voice(http, tts_id, voice, env=None, google=None):

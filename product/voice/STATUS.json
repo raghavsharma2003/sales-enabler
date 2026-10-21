@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 174,
-    "passed": 174,
+    "ran": 185,
+    "passed": 185,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -34,7 +34,7 @@
       "test_launch.py": "multi-process launcher with two real worker processes: tickets spread, overflow on at_capacity, refused only when all are full; retry returns to its owner; /end reaches the owner and frees the slot; health sums workers; media socket via /w/<i>/; workers stop with the front; nginx config",
       "test_live.py": "live controls: whisper redacted into the LAST block, spent after one reply, a denial whisper still blocked by RD2, no text in events, capped, refused after takeover; sim takeover (she stops, doored line, member bridged both ways, drop and no-join close the call, crisis call taken over, limits stop); cascade takeover cut at a near sentence end vs at once, member audio to the line and caller audio to the member; listener mix of both legs writing nothing; HTTP refusals (unsigned, replayed body, unknown, unjoined, sim listen, empty whisper), sim takeover end to end, browser listen socket",
       "test_devsim.py": "the development runtime as a real process: refuses without VP_DEVSIM=1; a signed sim call with whisper and takeover over HTTP",
-      "test_google_route.py": "Vertex route only when VP_REGION names an Indian region (else the Gemini API key, one logged reason per cause); VERTEX_OFF still wins"
+      "test_google_route.py": "Gemini on Vertex only, from India only: no route outside an Indian VP_REGION (one reason per cause), VERTEX_OFF; a Gemini API key or OpenRouter never stands in; Live without VERTEX_LIVE_LOCATION or a model missing from the Vertex map makes the stack unavailable with a plain per-component reason; text URL and bearer token; a fake Vertex Live websocket checks the path, the bearer header (no API key), the ears setup (model resource name, TEXT, inputAudioTranscription), mediaChunks audio and transcripts; the speech-to-speech setup shape"
     }
   },
   "works": [
@@ -58,8 +58,8 @@
     "python -m vpvoice.devsim (VP_DEVSIM=1): the real HTTP surface and live controls on fake providers, no keys, for cross-process control-plane tests"
   ],
   "untested": [
+    "Every Vertex call (text, TTS, Live ears, Live speech-to-speech) against real Vertex: only fakes; the Live message keys (camelCase acceptance, mediaChunks vs audio, interimInputTranscription, audioStreamEnd) are from the Gemini API and partly unconfirmed in the Vertex docs",
     "The crisis judge against a real model (latency within 800 ms from India, verdict quality on blind sets): only fake models so far",
-    "Every real provider adapter (Gemini text/TTS/Live ears/Live s2s, Vertex route, Azure OpenAI, OpenRouter text and speech, Azure Speech REST, Sarvam ears/brain/voice): ported from the lab, never run from this package; no keys were used from the coding sandbox",
     "Azure voice over REST instead of the lab's pre-warmed SDK socket: first-audio latency not measured",
     "Real browser client against /v1/media/browser (protocol documented in README; no page ships here)",
     "Plivo dial, answer/hangup webhooks, stream, transfer and carrier hang-up against a live line; Exotel stream protocol (from docs only, no live line); Exotel outbound dialling is not implemented (refused 422)",
@@ -70,7 +70,8 @@
     "Latency and cut-in rates of the ported turn-taking on this runtime (lab figures do not carry over until measured)",
     "nginx (or the Container Apps ingress) routing /w/<i>/ to workers: config generated and unit-checked, never run (no nginx in the sandbox); the Dockerfile still starts one process",
     "Multi-process capacity on the deploy host and with real providers",
-    "Live controls on a real line or browser (fake lines only) and on v2-live (refused 409 in v1); listen on a real audio call. Calls live.* tools against the real routes are verified by calls in product/tests/calls-live.test.ts (1187448, against python -m vpvoice.devsim, 4 runs green)"
+    "Live controls on a real line or browser (fake lines only) and on v2-live (refused 409 in v1); listen on a real audio call. Calls live.* tools against the real routes are verified by calls in product/tests/calls-live.test.ts (1187448, against python -m vpvoice.devsim, 4 runs green)",
+    "Every real non-Google provider adapter (Azure OpenAI, OpenRouter text, Azure Speech REST, Sarvam ears/brain/voice): ported from the lab, never run from this package"
   ],
   "contractGaps": [
     "call.ended has no field for the failure reason when endReason = error; it is logged and in GET /v1/calls/{id} only",
@@ -83,10 +84,10 @@
   "decisions": [
     "In a crisis, ticket limits stretch to 2x; at the ceiling the call is handed off (crisis_handoff); her <end_call> is ignored and a request for a human never ends the call unless a live transfer takes it",
     "A recording refusal discards the whole recording, not just the rest of the call",
-    "Google route (Vertex or Gemini API key) is chosen once per call; 5xx retries stay on the same model and route",
+    "Vertex is chosen once per call; 5xx retries stay on the same model and route",
     "neverSay hits are reported under RD7, as the shared rules do",
     "v2-live (Gemini Live) holds each turn until its transcript has passed the door: safe, but slower; recommend no production calls on it until its latency is measured with the hold",
-    "Vertex (Agent Platform) is picked only when VP_REGION is an Indian region (centralindia, asia-south1, ...); unset or elsewhere uses the Gemini API key and logs one reason (appeal commitment 2026-10-21). The lab VM needs VP_REGION=centralindia for Vertex too"
+    "Gemini runs on Vertex only (decision.2026-10-21.gemini-vertex-only): no Gemini API key, no OpenRouter Gemini; a model or Live feature Vertex does not offer makes the stack unavailable with a plain reason, never a reroute. Only from an Indian VP_REGION. Live needs VERTEX_LIVE_LOCATION (no default: the docs list gemini-3.8-live in us/eu/us-central1 only)"
   ],
   "sharedRuleGapsFixed": "The 9 gaps the runtime reported were fixed in rules.json at eaae1c1 (clause-scoped noneClause, local PIN context); they are normal tests now.",
   "reviewFixes": {

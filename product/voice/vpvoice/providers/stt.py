@@ -7,15 +7,16 @@ from .google import ws_text
 
 
 class GeminiEars:
-    """gemini-3.5-transcribe-live over the Live websocket: audio in 40 ms chunks, plus an explicit audioStreamEnd when
+    """gemini-3.5-transcribe-live over the Vertex Live websocket: audio in 40 ms chunks, plus an explicit audioStreamEnd when
     our VAD sees the caller stop (hybrid endpointing, as measured in the lab)."""
     def __init__(self, http, google, on_partial, on_final, on_error, lang='hi-IN'):
         self.http = http; self.google = google; self.on_partial = on_partial; self.on_final = on_final; self.on_error = on_error
         self.lang = lang; self.ws = None; self.buf = b''; self.audio_s = 0.0; self.reader = None; self.ended = True; self.closed = False
 
     async def start(self):
-        self.ws = await self.google.live(self.http)
-        await self.ws.send_json({'setup': {'model': 'models/' + catalog.STT['gemini']['model'], 'generationConfig': {'responseModalities': ['TEXT']},
+        model = catalog.STT['gemini']['model']
+        self.ws = await self.google.live(self.http, model)
+        await self.ws.send_json({'setup': {'model': self.google.resource(model), 'generationConfig': {'responseModalities': ['TEXT']},
                                            'inputAudioTranscription': {'languageCodes': [self.lang]}}})
         m = await self.ws.receive(timeout=15)
         if ws_text(m) is None or 'setupComplete' not in ws_text(m):
@@ -38,7 +39,7 @@ class GeminiEars:
 
     def _send(self, b):
         self.audio_s += len(b) / 32000
-        asyncio.ensure_future(self.ws.send_json({'realtimeInput': {'audio': {'data': base64.b64encode(b).decode(), 'mimeType': 'audio/pcm;rate=16000'}}}))
+        asyncio.ensure_future(self.ws.send_json(self.google.audio_chunk(base64.b64encode(b).decode())))
 
     def write(self, pcm, is_speech):
         if self.ws is None or self.ws.closed: return

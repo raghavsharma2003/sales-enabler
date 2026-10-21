@@ -138,7 +138,8 @@ class StackParity(unittest.TestCase):
     def test_credentials(self):
         self.assertEqual(stacks.missing_credentials('sarvam-india', {}), ['SARVAM'])
         self.assertEqual(stacks.missing_credentials('sarvam-india', {'SARVAM_API_KEY': 'x'}), [])
-        self.assertEqual(stacks.missing_credentials('v2-54mini', {'GEMINI_PAID_KEY': 'x'}), ['AZURE_OPENAI'])
+        self.assertEqual(stacks.missing_credentials('v2-54mini', {'VERTEX_SA_FILE': 'x'}), ['AZURE_OPENAI'])
+        self.assertEqual(stacks.missing_credentials('v2-flashlite', {'GEMINI_PAID_KEY': 'x'}), ['GEMINI'], 'a Gemini API key no longer counts')
 
 
 class Cost(unittest.TestCase):

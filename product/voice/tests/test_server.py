@@ -45,7 +45,7 @@ class Server(Base):
     async def test_health(self):
         r = await self.client.get('/v1/health'); d = await r.json()
         self.assertEqual(r.status, 200)
-        self.assertEqual(len(d['stacks']), 8)
+        self.assertEqual(len(d['stacks']), 7)
         self.assertTrue(d['signing'])
         self.assertNotIn(SECRET, json.dumps(d))
 

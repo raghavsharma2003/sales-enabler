@@ -18,7 +18,7 @@ STT = {
 
 # ---------------------------------------------------------------- brains (LLM)
 # ttft_ms: median time to first token from the lab VM (Central India), n=6, renewal brief, 2026-10-19 (tests/brain_bench.py)
-# host: sin = vp-lab-ai-sin (South India account), sea = vp-research-ai-sea, or = OpenRouter, gm = Gemini API
+# host: sin = vp-lab-ai-sin (South India account), sea = vp-research-ai-sea, or = OpenRouter, gm = Google Vertex AI
 BRAINS = {
     'gpt-oss-120b@groq': {'ttft_ms': 483, 'label': 'gpt-oss-120b on Groq (report baseline)', 'host': 'or', 'model': 'openai/gpt-oss-120b', 'provider': 'groq',
                           'in': 0.15, 'out': 0.60, 'extra': {'reasoning': {'effort': 'low', 'exclude': True}}, 'out_pad': 400},
@@ -51,14 +51,7 @@ BRAINS = {
                           'in': 4.0, 'out': 20.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
     'gpt-5.6-terra@or':  {'ttft_ms': 1604, 'label': 'GPT-5.6 Terra (OpenAI via OpenRouter)', 'host': 'or', 'model': 'openai/gpt-5.6-terra', 'provider': 'openai',
                           'in': 2.0, 'out': 12.0, 'no_temp': True, 'extra': {'reasoning': {'effort': 'none'}}},
-    # Gemini through OpenRouter (pinned to its Google Vertex route), for while the lab's own Gemini keys are capped and
-    # vp-voice's Vertex access is under appeal (2026-10-20). India first token: Flash-Lite 0.91 s, 3.8 Flash 2.18 s (n=4).
-    'gemini-3.5-flash-lite@or': {'ttft_ms': 910, 'label': 'Gemini 3.5 Flash-Lite via OpenRouter', 'host': 'or', 'model': 'google/gemini-3.5-flash-lite',
-                          'provider': 'google-vertex', 'in': 0.30, 'out': 2.50, 'extra': {'reasoning': {'effort': 'minimal', 'exclude': True}}},
-    'gemini-3.6-flash@or': {'label': 'Gemini 3.6 Flash via OpenRouter', 'host': 'or', 'model': 'google/gemini-3.6-flash',
-                          'provider': 'google-vertex', 'in': 0.75, 'out': 3.75, 'extra': {'reasoning': {'effort': 'minimal', 'exclude': True}}},
-    'gemini-3.8-flash@or': {'ttft_ms': 2180, 'label': 'Gemini 3.8 Flash via OpenRouter', 'host': 'or', 'model': 'google/gemini-3.8-flash',
-                          'provider': 'google-vertex', 'in': 0.825, 'out': 4.125, 'extra': {'reasoning': {'effort': 'low', 'exclude': True}}, 'out_pad': 400},
+    # Gemini through OpenRouter was retired 2026-10-21 (decision.2026-10-21.gemini-vertex-only): Gemini runs on Vertex only.
     'gemini-3.1-flash-lite': {'ttft_ms': 2843, 'label': 'Gemini 3.1 Flash-Lite', 'host': 'gm', 'model': 'gemini-3.1-flash-lite', 'in': 0.25, 'out': 1.50, 'thinking': {'thinkingLevel': 'minimal'}},
 }
 
@@ -86,14 +79,6 @@ TTS = {
     'gemini': {'label': 'Gemini 3.8 Flash TTS', 'kind': 'gemini', 'model': 'gemini-3.8-flash-tts', 'default_voice': 'Despina',
                'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
                'usd_audio_min': 9.0 * 25 * 60 / 1e6, 'src': 'g1: $9/1M audio tokens (doubles 2027-01-01)'},
-    # the same Gemini voices through OpenRouter: no streaming (the clip arrives whole, ~2.1 s first audio from India vs
-    # 0.6-0.8 s direct), but a real per-reply style instruction ('instructions'), so her tone can follow the moment
-    'gemini-lite-or': {'label': 'Gemini 3.8 Flash-Lite TTS via OpenRouter (styled, ~2 s start)', 'kind': 'or_tts', 'model': 'google/gemini-3.8-flash-lite-tts',
-               'default_voice': 'Despina', 'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
-               'usd_audio_min': 6.0 * 25 * 60 / 1e6, 'src': 'OpenRouter speech models API 2026-10-20: $0.5 in / $6 out per 1M (same as Google)'},
-    'gemini-or': {'label': 'Gemini 3.8 Flash TTS via OpenRouter (styled, ~2 s start)', 'kind': 'or_tts', 'model': 'google/gemini-3.8-flash-tts',
-               'default_voice': 'Despina', 'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
-               'usd_audio_min': 9.0 * 25 * 60 / 1e6, 'src': 'OpenRouter speech models API 2026-10-20: $0.5 in / $9 out per 1M'},
     'gemini-lite': {'label': 'Gemini 3.8 Flash-Lite TTS', 'kind': 'gemini', 'model': 'gemini-3.8-flash-lite-tts', 'default_voice': 'Despina',
                'voices': ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'],
                'usd_audio_min': 6.0 * 25 * 60 / 1e6, 'src': 'g1: $6/1M audio tokens'},
@@ -121,8 +106,7 @@ TELEPHONY_PULSE_S = 60
 
 # Brain fallbacks for non-test calls only, and only when VP_FALLBACKS=1 (production failover policy is still open,
 # open.2026-10-20.product-failover-policy): the same model on another host, never a different model.
-BRAIN_FALLBACK = {'gemini-3.5-flash-lite': 'gemini-3.5-flash-lite@or', 'gemini-3.5-flash-lite@or': 'gemini-3.5-flash-lite',
-                  'gemini-3.8-flash': 'gemini-3.8-flash@or', 'gemini-3.6-flash': 'gemini-3.6-flash@or'}
+BRAIN_FALLBACK = {}   # the Gemini -> OpenRouter fallbacks were retired with OpenRouter Gemini (Vertex only); none today
 
 BRAIN_PROVIDER = {'gm': 'gemini', 'or': 'openrouter', 'sin': 'azure-openai', 'sea': 'azure-openai', 'sv': 'sarvam'}
 

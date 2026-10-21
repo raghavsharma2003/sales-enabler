@@ -261,11 +261,20 @@ class Fallbacks(unittest.TestCase):
         self.assertIn('brain', sess.error)
 
     def test_live_call_falls_back_only_when_enabled_and_records_it(self):
+        # no same-model pair exists since OpenRouter Gemini was retired; the mechanism is held by a fictional one
+        from unittest import mock
+        from vpvoice import catalog
+        alt = 'gemini-3.5-flash-lite@other-host'
+        with mock.patch.dict(catalog.BRAIN_FALLBACK, {'gemini-3.5-flash-lite': alt}), \
+             mock.patch.dict(catalog.BRAINS, {alt: dict(catalog.BRAINS['gemini-3.5-flash-lite'])}):
+            self._falls_back(alt)
+
+    def _falls_back(self, alt):
         t = ticket(test=False)
         sess, p, replies = run(call(None, ['हाँ'], t=t, brain=FakeBrain(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।'], fail_at=1),
                                     env={'VP_FALLBACKS': '1'}, fallback_brain=FakeBrain(['जी, बताइए।'])))
         fb = of(p, 'call.ended')[0]['manifest']['fallbacksUsed']
-        self.assertEqual([(f['component'], f['from'], f['to']) for f in fb], [('brain', 'gemini-3.5-flash-lite', 'gemini-3.5-flash-lite@or')])
+        self.assertEqual([(f['component'], f['from'], f['to']) for f in fb], [('brain', 'gemini-3.5-flash-lite', alt)])
         self.assertEqual(replies[1], ['जी, बताइए।'])
         sess, p, _ = run(call(None, ['हाँ'], t=ticket(test=False), brain=FakeBrain(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।'], fail_at=1),
                               env={}, fallback_brain=FakeBrain(['जी।'])))

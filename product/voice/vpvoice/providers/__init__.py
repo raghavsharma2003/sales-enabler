@@ -29,8 +29,9 @@ class Components:
 
 
 class ProviderUnavailable(Exception):
-    def __init__(self, missing):
-        super().__init__('stack needs credentials that are not configured: ' + ', '.join(missing)); self.missing = missing
+    def __init__(self, missing, reason=None):
+        super().__init__(reason or 'stack needs credentials that are not configured: ' + ', '.join(missing))
+        self.missing = missing; self.reason = reason
 
 
 def build(stack_id, voice_name, http, env=None, text_only=False):
@@ -39,10 +40,12 @@ def build(stack_id, voice_name, http, env=None, text_only=False):
     env = os.environ if env is None else env
     missing = stacks.missing_credentials(stack_id, env)
     if missing: raise ProviderUnavailable(missing)
-    from .google import GoogleRoute
+    from .google import GoogleRoute, unavailable
     from .llm import HttpBrain
     s = stacks.STACKS[stack_id]; c = s['components']
     google = GoogleRoute(env)          # chosen once for this call
+    why = unavailable(stack_id, google)
+    if why: raise ProviderUnavailable([], why)              # what Vertex does not offer is unavailable, never rerouted
     from .. import judge
     judge_complete = judge.http_complete(http, env) if judge.configured(env) and judge.mode(env=env) != 'off' else None
     cid = stacks.combination_id(stack_id, voice_name)

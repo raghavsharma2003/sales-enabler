@@ -284,8 +284,12 @@ class Runtime:
         return ws
 
     async def health(self, req):
+        from .providers.google import GoogleRoute, unavailable
+        route = GoogleRoute(self.env)
         st = {sid: {'missing': stacks.missing_credentials(sid, self.env), 'status': s['status']} for sid, s in stacks.STACKS.items()}
-        for v in st.values(): v['available'] = not v['missing']
+        for sid, v in st.items():
+            v['reason'] = None if v['missing'] else unavailable(sid, route)
+            v['available'] = not v['missing'] and not v['reason']
         return web.json_response({'ok': True, 'runtimeVersion': RUNTIME_VERSION, 'signing': bool(self.secret), 'control': bool(self.control),
                                   'stacks': st, 'activeCalls': sum(1 for r in self.calls.values() if r.session and not r.session.ended),
                                   'capacity': {'admitted': (n := self.admitted()), 'max': self.max_calls, 'free': max(0, self.max_calls - n)},

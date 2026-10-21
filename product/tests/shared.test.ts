@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normaliseIndianPhone } from '../shared/phone.ts';
 import { authorise, argsHash, canonicalJson, isA3, needsHumanApproval, canApprove } from '../shared/approval.ts';
-import { STACKS, requireStack, combinationId, StackError } from '../shared/stacks.ts';
+import { STACKS, requireStack, getStack, combinationId, StackError } from '../shared/stacks.ts';
 import { formatInr, inrToMilli, perMinute } from '../shared/money.ts';
 
 test('phone: Indian mobiles normalise from every common shape', () => {
@@ -83,10 +83,11 @@ test('approval: only risk-lowering verbs are A3', () => {
 
 test('stacks: the finalised set is present and there is no default', () => {
   const ids = STACKS.map(s => s.id);
-  for (const id of ['v2-live', 'v2-flashlite', 'v2-54mini', 'v2-38flash', 'v2-mai', 'v2-flashlite-or', 'v2-luna', 'sarvam-india']) assert.ok(ids.includes(id), id);
+  for (const id of ['v2-live', 'v2-flashlite', 'v2-54mini', 'v2-38flash', 'v2-mai', 'v2-luna', 'sarvam-india']) assert.ok(ids.includes(id), id);
   assert.throws(() => requireStack(undefined), StackError);
   assert.throws(() => requireStack('made-up'), StackError);
   for (const s of STACKS) assert.ok(s.replyGap.grade && s.replyGap.source, s.id + ' figure must carry a grade and source');
+  assert.equal(getStack('v2-flashlite-or'), undefined, 'Gemini through OpenRouter is retired (decision.2026-10-21.gemini-vertex-only)');
 });
 
 test('stacks: combination identity names what actually ran', () => {

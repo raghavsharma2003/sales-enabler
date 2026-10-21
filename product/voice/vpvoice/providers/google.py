@@ -1,11 +1,35 @@
-# Google access for Gemini models. One route per call, chosen when the call starts and never switched mid-call
-# (directive.2026-10-20.no-midcall-swap): Vertex AI when a service account is configured (VERTEX_SA_FILE), else the
-# Gemini API key (GEMINI_PAID_KEY). The Live websocket (ears, speech-to-speech) uses the Gemini API key.
+# Google access for Gemini models: Vertex AI only (decision.2026-10-21.gemini-vertex-only), called only from India
+# (decision.2026-10-21.appeal-commitments-binding). Text, TTS, the Live ears and speech-to-speech all go to
+# aiplatform.googleapis.com with the service account's bearer token. Nothing falls back to a Gemini API key or to
+# OpenRouter: what Vertex does not offer (a model, or Live without a configured location) makes the stack unavailable
+# with a plain reason, before the call starts. One route per call, never switched mid-call (no-midcall-swap).
+#
+# Model ids and locations are configuration, because what Vertex offers changes (docs read 2026-10-21, context inbox
+# voice-2026-10-21-vertex-docs.json):
+#   VERTEX_PROJECT          project id (default: the service account's project_id)
+#   VERTEX_LOCATION         text and TTS (default 'global')
+#   VERTEX_LIVE_LOCATION    the Live websocket; regional only. No default: unset = the Live ears and speech-to-speech
+#                           are unavailable (the docs list gemini-3.8-live in us/eu/us-central1, not India)
+#   VERTEX_MODEL_MAP        JSON {our model id: Vertex model id or null}, merged over DEFAULT_MODELS (null removes one)
+#   VERTEX_LIVE_AUDIO       'mediaChunks' (the Vertex sample's form, default) or 'audio' (the Gemini API form)
 import asyncio, base64, json, logging, os, re, time
 
-GEM = 'https://generativelanguage.googleapis.com/v1beta'
-GEM_WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
-VERTEX_MODELS = {'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'}
+log = logging.getLogger('vp.voice.google')
+LIVE_PATH = '/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent'
+# Our model id -> Vertex model id. Text and TTS: the set the lab routed to Vertex before the 2026-10-20 restriction.
+# Live: as the Live API page names them (2026-10-21). Anything absent is not offered on our Google route.
+DEFAULT_MODELS = {
+    'gemini-3.5-flash-lite': 'gemini-3.5-flash-lite', 'gemini-3.6-flash': 'gemini-3.6-flash', 'gemini-3.8-flash': 'gemini-3.8-flash',
+    'gemini-3.8-flash-tts': 'gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts': 'gemini-3.8-flash-lite-tts',
+    'gemini-3.8-live': 'gemini-3.8-live', 'gemini-3.5-transcribe-live': 'gemini-3.5-transcribe-live-preview',
+}
+LIVE_MODELS = {'gemini-3.8-live', 'gemini-3.5-transcribe-live', 'gemini-3.1-flash-live-preview'}
+# The plain reason a person sees when a stack cannot run on our Google route (never a developer string).
+NOT_OFFERED = {'brain': "This model isn't offered on our Google Cloud route yet",
+               'voice': "This voice isn't offered on our Google Cloud route yet",
+               'ears': "Gemini listening isn't offered on our Google Cloud route yet",
+               's2s': "This speech-to-speech model isn't offered on our Google Cloud route yet"}
+NO_ROUTE = "Our Google Cloud route isn't set up on this server"
 
 
 def ws_text(m):
@@ -43,49 +67,82 @@ class VertexToken:
 
 
 _VERTEX = {}
-# Agent Platform (Vertex) is called only from India (appeal commitment, decision.2026-10-21.appeal-commitments-binding):
-# a runtime picks the Vertex route only when VP_REGION names an Indian region; anywhere else it uses the Gemini API key.
+# Agent Platform (Vertex) is called only from India (appeal commitment): the route exists only when VP_REGION names an
+# Indian region; anywhere else every Gemini stack is unavailable, with one logged reason.
 INDIA_REGIONS = {'centralindia', 'southindia', 'westindia', 'jioindiacentral', 'jioindiawest', 'india', 'in', 'asia-south1', 'asia-south2'}
 _REFUSED = set()
+
+
+def _refuse(why):
+    if why not in _REFUSED:
+        _REFUSED.add(why); log.warning(why)
+    return False
 
 
 def vertex_region_ok(env):
     """True when VP_REGION says this runtime runs in India. Logs the refusal once per reason per process."""
     region = (env.get('VP_REGION') or '').strip().lower()
     if region in INDIA_REGIONS: return True
-    why = f'Vertex route refused: VP_REGION={region or "(unset)"} is not an Indian region; Agent Platform is called only from India'
-    if why not in _REFUSED:
-        _REFUSED.add(why); logging.getLogger('vp.voice.google').warning(why)
-    return False
+    return _refuse(f'Vertex route refused: VP_REGION={region or "(unset)"} is not an Indian region; Agent Platform is called only from India')
+
+
+def model_map(env):
+    m = dict(DEFAULT_MODELS)
+    raw = env.get('VERTEX_MODEL_MAP')
+    if raw:
+        try:
+            extra = json.loads(raw)
+            if not isinstance(extra, dict): raise ValueError('not an object')
+            for k, v in extra.items():
+                if v: m[str(k)] = str(v)
+                else: m.pop(str(k), None)
+        except ValueError as e:
+            _refuse(f'VERTEX_MODEL_MAP ignored: {e}')
+    return m
 
 
 class GoogleRoute:
+    """Vertex AI for one call. usable is False (with why) when there is no route on this server at all."""
+    name = 'vertex'
+
     def __init__(self, env=None):
         env = os.environ if env is None else env
-        self.key = env.get('GEMINI_PAID_KEY') or None
-        self.project = env.get('VERTEX_PROJECT', ''); self.location = env.get('VERTEX_LOCATION', 'global')
+        self.models = model_map(env); self.vertex = None; self.why = NO_ROUTE
+        self.project = env.get('VERTEX_PROJECT', ''); self.location = env.get('VERTEX_LOCATION') or 'global'
+        self.live_location = (env.get('VERTEX_LIVE_LOCATION') or '').strip()
+        self.live_audio = 'audio' if env.get('VERTEX_LIVE_AUDIO') == 'audio' else 'mediaChunks'
         sa_path = env.get('VERTEX_SA_FILE')
-        self.vertex = None
-        if sa_path and os.path.exists(sa_path) and env.get('VERTEX_OFF') != '1' and vertex_region_ok(env):
-            if sa_path not in _VERTEX:
-                with open(sa_path) as f: _VERTEX[sa_path] = VertexToken(json.load(f))
-            self.vertex = _VERTEX[sa_path]
-            self.project = self.project or _VERTEX[sa_path].sa.get('project_id', '')
-        self.name = 'vertex' if self.vertex else 'gemini_api'
+        if not sa_path or not os.path.exists(sa_path): return
+        if env.get('VERTEX_OFF') == '1': _refuse('Vertex route off: VERTEX_OFF=1'); return
+        if not vertex_region_ok(env): return
+        if sa_path not in _VERTEX:
+            with open(sa_path) as f: _VERTEX[sa_path] = VertexToken(json.load(f))
+        self.vertex = _VERTEX[sa_path]; self.why = None
+        self.project = self.project or self.vertex.sa.get('project_id', '')
 
-    def uses_vertex(self, model): return self.vertex is not None and model in VERTEX_MODELS
+    @property
+    def usable(self): return self.vertex is not None
+
+    def offers(self, model):
+        """Vertex offers this model on our route (a Live model also needs VERTEX_LIVE_LOCATION)."""
+        if not self.usable or model not in self.models: return False
+        return bool(self.live_location) if model in LIVE_MODELS else True
+
+    def uses_vertex(self, model): return self.offers(model)
+
+    def resource(self, model):
+        loc = self.live_location if model in LIVE_MODELS else self.location
+        return f'projects/{self.project}/locations/{loc}/publishers/google/models/{self.models[model]}'
+
+    def host(self, loc): return 'aiplatform.googleapis.com' if loc == 'global' else f'{loc}-aiplatform.googleapis.com'
 
     async def stream(self, http, model, body, timing, **kw):
         """streamGenerateContent (SSE). Returns an open response (the caller releases it) or None with timing['err']."""
+        if not self.offers(model):
+            timing['err'] = f'not offered on Vertex: {model}'; return None
         for c in body.get('contents', []): c.setdefault('role', 'user')
-        if self.uses_vertex(model):
-            host = 'aiplatform.googleapis.com' if self.location == 'global' else f'{self.location}-aiplatform.googleapis.com'
-            url = f'https://{host}/v1/projects/{self.project}/locations/{self.location}/publishers/google/models/{model}:streamGenerateContent?alt=sse'
-            hdr = {'Authorization': 'Bearer ' + await self.vertex.get(http)}
-        else:
-            if not self.key:
-                timing['err'] = 'no Gemini API key configured'; return None
-            url = f'{GEM}/models/{model}:streamGenerateContent?alt=sse'; hdr = {'x-goog-api-key': self.key}
+        url = f'https://{self.host(self.location)}/v1/{self.resource(model)}:streamGenerateContent?alt=sse'
+        hdr = {'Authorization': 'Bearer ' + await self.vertex.get(http)}
         r = await http.post(url, headers=hdr, json=body, **kw)
         for _ in range(2):          # Google's own 5xx: retry the same model on the same route (not a swap)
             if r.status < 500: break
@@ -95,9 +152,41 @@ class GoogleRoute:
         timing['err'] = f'{r.status} {(await r.text())[:300]}'; r.release()
         return None
 
-    async def live(self, http):
-        if not self.key: raise RuntimeError('no Gemini API key configured for the Live websocket')
-        return await http.ws_connect(GEM_WS, headers={'x-goog-api-key': self.key}, max_msg_size=0, heartbeat=20)
+    def live_url(self): return f'wss://{self.host(self.live_location)}{LIVE_PATH}'
+
+    async def live(self, http, model):
+        """The Vertex Live websocket for a Live model, with the service account's bearer token on the upgrade."""
+        if not self.offers(model): raise RuntimeError(f'not offered on Vertex: {model}')
+        tok = await self.vertex.get(http)
+        return await http.ws_connect(self.live_url(), headers={'Authorization': 'Bearer ' + tok}, max_msg_size=0, heartbeat=20)
+
+    def audio_chunk(self, b64, rate=16000):
+        mime = f'audio/pcm;rate={rate}'
+        if self.live_audio == 'audio': return {'realtimeInput': {'audio': {'data': b64, 'mimeType': mime}}}
+        return {'realtimeInput': {'mediaChunks': [{'data': b64, 'mimeType': mime}]}}
+
+
+def google_models(stack_id):
+    """(component, our model id) pairs a stack needs from Google."""
+    from .. import catalog, stacks
+    s = stacks.STACKS[stack_id]; c = s['components']; out = []
+    if s['kind'] == 's2s':
+        if catalog.S2S[c['s2s']]['kind'] == 'gemini_live': out.append(('s2s', catalog.S2S[c['s2s']]['model']))
+        return out
+    if catalog.STT[c['ears']]['kind'] == 'gemini': out.append(('ears', catalog.STT[c['ears']]['model']))
+    if catalog.BRAINS[c['brain']]['host'] == 'gm': out.append(('brain', catalog.BRAINS[c['brain']]['model']))
+    if catalog.TTS[c['voice']]['kind'] == 'gemini': out.append(('voice', catalog.TTS[c['voice']]['model']))
+    return out
+
+
+def unavailable(stack_id, route):
+    """The plain reason a stack cannot run on our Google route, or None. Never a reroute."""
+    needs = google_models(stack_id)
+    if not needs: return None
+    if not route.usable: return NO_ROUTE
+    for comp, model in needs:
+        if not route.offers(model): return NOT_OFFERED[comp]
+    return None
 
 
 def explain(err, what):
