@@ -104,7 +104,7 @@ function Detail({ id }: { id: string }) {
       const first = c.blockers[0];
       const live = c.state === 'running' || c.state === 'paused';
       return (<>
-        <PageHead crumb={<><Link to="/campaigns">Campaigns</Link><span aria-hidden>/</span><span>{c.name}</span></>} title={c.name} pill={<span className={`pill ${c.state === 'running' ? 'pill-live' : c.state === 'draft' ? 'pill-draft' : ''}`}>{STATE[c.state]?.[0] ?? prettyCode(c.state)} · policy v{c.policyVersion}</span>}
+        <PageHead crumb={<><Link to="/campaigns">Campaigns</Link><span aria-hidden>/</span><span>{c.name}</span></>} title={c.name} pill={<span className={`pill ${c.state === 'running' ? 'pill-live' : c.state === 'draft' ? 'pill-draft' : ''}`}>{STATE[c.state]?.[0] ?? prettyCode(c.state)}</span>}
           sub={<>{CATEGORY_INFO[c.category]?.label ?? c.category} calls</>}
           actions={<>
             {c.state === 'running' && <Btn icon={<Pause size={16} aria-hidden />} onClick={() => run('campaign.pause', 'Paused. Calls already placed stay as they are.')}>Pause</Btn>}
@@ -131,7 +131,7 @@ function Detail({ id }: { id: string }) {
             {live && <Card><CardHead title="Live" /><Meter label="Allowed at once" value={c.counts.filter(x => x.status === 'dialing' || x.status === 'in_progress').reduce((a, b) => a + b.n, 0)} max={c.concurrency ?? 1} tone="peacock" note={`${c.concurrency ?? '?'} allowed`} />
               <ul className="billing" style={{ marginTop: 8 }}>{c.counts.map((k, i) => <li key={i}><span>{prettyCode(k.status)}{k.code ? ` · ${prettyCode(k.code)}` : ''}</span><strong className="tnum">{count(k.n)}</strong></li>)}</ul></Card>}
             <Card><CardHead title="Window and policy" actions={c.state !== 'done' ? <Btn size="sm" onClick={() => setEdit(true)}>Change window</Btn> : undefined} />
-              <dl className="kv"><div><dt>Hours</dt><dd className="tnum">{c.window.ranges.map(r => `${r.start} to ${r.end}`).join(', ') || '—'}</dd></div><div><dt>Days</dt><dd>{dayList(c.window.days) || '—'}</dd></div>
+              <dl className="kv"><div><dt>Version</dt><dd className="tnum">Calling rules, version {c.policyVersion}</dd></div><div><dt>Hours</dt><dd className="tnum">{c.window.ranges.map(r => `${r.start} to ${r.end}`).join(', ') || '—'}</dd></div><div><dt>Days</dt><dd>{dayList(c.window.days) || '—'}</dd></div>
                 <div><dt>At once</dt><dd className="tnum">{c.concurrency ?? '—'}</dd></div><div><dt>Spend cap</dt><dd className="tnum">{c.capInrMilli ? inr(c.capInrMilli) : <NotMeasured>No cap set</NotMeasured>}</dd></div></dl></Card>
             <Card><CardHead title="Calls" /><p className="small muted">Every call with its words, its reason and its cost.</p><Link to={`/calls?campaign=${c.id}`}>Open this campaign's calls</Link></Card>
           </div>

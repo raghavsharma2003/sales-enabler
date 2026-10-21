@@ -7,6 +7,10 @@ import { Async, Btn, Card, CardHead, Chip, Empty, Kv, PageHead, SelectField, Tab
 import { langShort } from '../catalog.ts';
 import { audienceList, contactGet, contactList, importMap, importUpload, overridesFrom } from '../data.ts';
 import { count, date, phone as fmtPhone } from '../format.ts';
+const REASON: Record<string, string> = { dnd_unknown: 'Do Not Disturb has not been checked yet', dnd_registered: 'The person is on the Do Not Disturb list', suppressed: 'The person asked not to be called', no_consent: 'No consent is on file', no_basis: 'There is no basis on file to call this person', tombstoned: 'The person asked to be erased' };
+const reasonText = (r: string) => REASON[r] ?? prettyCode(r).replace(/^Dnd/, 'Do Not Disturb');
+const zoneName = (z: string) => (z === 'Asia/Kolkata' ? 'India time (IST)' : z.split('/').pop()!.replace(/_/g, ' '));
+const isoDay = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(v + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : null);
 import type { AudienceRow, ContactRow, ImportPreview } from '../types.ts';
 
 const dndChip = (d: string) => <Chip tone={d === 'clear' ? 'leaf' : d === 'registered' || d === 'listed' ? 'brick' : 'neutral'}>{d === 'clear' ? 'DND clear' : d === 'registered' || d === 'listed' ? 'On the DND list' : 'DND not checked'}</Chip>;
@@ -173,13 +177,13 @@ function ContactPage({ id }: { id: string }) {
   return (
     <div className="page"><Async q={q} what="This contact" tool="contact.get" rows={5}>{c => (
       <>
-        <PageHead crumb={<><Link to="/contacts">Contacts</Link><span aria-hidden>/</span><span>{c.name}</span></>} title={c.name} sub={<span className="tnum">{fmtPhone(c.phone)} · {langShort(c.language)} · {c.timezone}</span>} actions={<>{dndChip(c.dnd.status)}</>} />
+        <PageHead crumb={<><Link to="/contacts">Contacts</Link><span aria-hidden>/</span><span>{c.name}</span></>} title={c.name} sub={<span className="tnum">{fmtPhone(c.phone)} · {langShort(c.language)} · {zoneName(c.timezone)}</span>} actions={<>{dndChip(c.dnd.status)}</>} />
         {c.suppressions.length > 0 && <p className="state state-failed" role="note" style={{ marginBottom: 16 }}>She will not call this number. Reason: {c.suppressions.map(s => s.reason.replace(/_/g, ' ')).join(', ')}.</p>}
         <div className="cols-main">
           <div className="stack">
             <Card><CardHead title="Can she call?" />
-              <dl className="kv"><div><dt>Service calls</dt><dd><Chip tone={c.service.allowed ? 'leaf' : 'brick'}>{c.service.allowed ? 'Allowed' : 'Not allowed'}</Chip> {c.service.reasons.length > 0 && <span className="small muted">{c.service.reasons.map(prettyCode).join(', ')}</span>}</dd></div>
-                <div><dt>Promotional calls</dt><dd><Chip tone={c.promotional.allowed ? 'leaf' : 'brick'}>{c.promotional.allowed ? 'Allowed' : 'Not allowed'}</Chip> {c.promotional.reasons.length > 0 && <span className="small muted">{c.promotional.reasons.map(prettyCode).join(', ')}</span>}</dd></div></dl></Card>
+              <dl className="kv"><div><dt>Service calls</dt><dd><Chip tone={c.service.allowed ? 'leaf' : 'brick'}>{c.service.allowed ? 'Allowed' : 'Not allowed'}</Chip> {c.service.reasons.length > 0 && <span className="small muted">{c.service.reasons.map(reasonText).join('. ')}</span>}</dd></div>
+                <div><dt>Promotional calls</dt><dd><Chip tone={c.promotional.allowed ? 'leaf' : 'brick'}>{c.promotional.allowed ? 'Allowed' : 'Not allowed'}</Chip> {c.promotional.reasons.length > 0 && <span className="small muted">{c.promotional.reasons.map(reasonText).join('. ')}</span>}</dd></div></dl></Card>
             <Card><CardHead title="Memory" sub="Only what they said, with the exact words. Approve to let the next call use it." />
               {!c.memory ? <p className="muted">Memory is not switched on in this server yet.</p> : c.memory.optedOut ? <p className="muted">This person opted out of memory. Nothing is kept.</p>
                 : c.memory.facts.length === 0 ? <Empty title="Nothing remembered yet" body="After a real call, anything useful they said shows here for you to approve. Practice calls never write memory." />
@@ -196,8 +200,8 @@ function ContactPage({ id }: { id: string }) {
           <div className="stack">
             <Card><CardHead title="Consent" />{c.consent.length === 0 ? <p className="muted">No consent is recorded for this person. Service and transactional calls to existing customers do not need one; promotional calls do.</p> :
               <ul className="facts">{c.consent.map(k => <li key={k.id}><div className="row" style={{ justifyContent: 'space-between' }}><strong>{k.purpose}</strong><Chip tone={k.granted ? 'leaf' : 'brick'}>{k.granted ? 'Granted' : 'Withdrawn'}</Chip></div><p className="small muted">{k.basis.replace(/_/g, ' ')} · {k.channel} · {date(k.created_at)}</p></li>)}</ul>}</Card>
-            <Card><CardHead title="Do Not Disturb" /><Kv rows={[['Status', dndChip(c.dnd.status)], ['Last checked', c.dnd.checkedAt ? date(c.dnd.checkedAt, true) : 'Not yet'], ['Fresh', c.dnd.fresh ? 'Yes' : 'No']]} /></Card>
-            <Card><CardHead title="Details from your lists" /><Kv rows={c.attributes.filter(a => a.key !== 'name').map(a => [a.key.replace(/_/g, ' '), <span key={a.key}>{String(a.value)}{a.stale && <span className="muted"> · stale</span>}</span>] as [string, React.ReactNode])} /></Card>
+            <Card><CardHead title="Do Not Disturb" /><Kv rows={[['Status', dndChip(c.dnd.status)], ['Last checked', c.dnd.checkedAt ? date(c.dnd.checkedAt, true) : 'Not yet'], [ 'Check', c.dnd.fresh ? 'Recent enough for promotional calls' : 'Needs a fresh check before promotional calls']]} /></Card>
+            <Card><CardHead title="Details from your lists" /><Kv rows={c.attributes.filter(a => a.key !== 'name').map(a => [a.key.replace(/_/g, ' '), <span key={a.key}>{a.key === 'language' ? langShort(String(a.value)) : isoDay(a.value) ?? String(a.value)}{a.stale && <span className="muted"> · stale</span>}</span>] as [string, React.ReactNode])} /></Card>
           </div>
         </div>
       </>)}</Async></div>

@@ -110,7 +110,7 @@ test('A3: Pause, Resume and Stop run at once with no approval card, and the pill
   const state = async () => (await tool('campaign.get', { id })).result.campaign.state;
   await page.goto(`${BASE}/campaigns/${id}`);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  await page.getByText(/Paused · policy/).waitFor({ timeout: 8000 });
+  await page.locator('.pill', { hasText: /^Paused$/ }).waitFor({ timeout: 8000 });
   assert.equal(await sheet().count(), 0, 'no approval card for a pause');
   assert.equal(await state(), 'paused');
   // Resume starts dialling real people again, so unlike Pause it is an A2 action: a card, a hold, then the server runs it.
@@ -212,7 +212,12 @@ test('Copy: no tool id, raw argument name, internal code or milli-unit reaches a
     let text = await page.locator('body').innerText();
     text = text.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, ' ').replace(/https?:\/\/\S+/g, ' ').replace(/\b[\w-]+\.(csv|txt|pdf|json|example)\b/g, ' ');
     for (const t of tools) if (new RegExp(`(^|[^\\w.])${t.replace(/\./g, '\\.')}($|[^\\w])`).test(text)) bad.push(`${label}: tool id ${t}`);
-    for (const re of [/inrMilli|capInrMilli|Milli\b/, /\b(REG|RS|RD)-\d+/, /\[object|undefined|\bNaN\b/, /\b[a-z]+_[a-z_]+\b/]) { const m = re.exec(text); if (m) bad.push(`${label}: "${m[0]}"`); }
+    // A tool id with its dots turned into spaces ("test simulate") is still a tool id.
+    // These tool names are also ordinary English phrases we use on purpose.
+    const PLAIN = new Set(['safety check', 'campaign draft', 'contact list']);
+    for (const t of tools) { const w = t.replace(/[._]/g, ' '); if (PLAIN.has(w)) continue; if (new RegExp(`\\b${w}\\b`, 'i').test(text)) bad.push(`${label}: tool id as words "${w}"`); }
+    for (const re of [/inrMilli|capInrMilli|Milli\b/, /\b(REG|RS|RD)-\d+/, /\[object|\bundefined\b|\bNaN\b|\bnull\b|\bNone\b|\bJSON\b|Traceback/, /\b[a-z]+_[a-z_]+\b/,
+      /[\w-]+\/[\w./-]+\.(py|ts|tsx|js|json|md)\b/, /\b20\d\d-\d\d-\d\d\b/, /\b(Asia|Europe|America|Africa|Australia)\/[A-Z]/, /\n\s+at \S+ \(/]) { const m = re.exec(text); if (m) bad.push(`${label}: "${m[0]}"`); }
   };
   for (const r of routes) {
     await page.goto(BASE + r, { waitUntil: 'networkidle' });

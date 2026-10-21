@@ -6,9 +6,11 @@ import { useApp, useData } from '../store.tsx';
 import { useNav } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Locked, Meter, NotMeasured, PageHead, SelectField, Sheet, Table, Tabs, TextArea, TextField, Toggle, type Col } from '../ui.tsx';
 import { activityList, keyList, knowledgeList, memberList, walletGet } from '../data.ts';
-import { ago, count, date, inr } from '../format.ts';
+import { ago, count, date, inr, time } from '../format.ts';
 import { prettyId } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
+import { Link } from '../router.tsx';
+import { activitySentence, pageFor } from '../labels.ts';
 import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
 
 const TABS = ['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'operator', 'integrations', 'activity'] as const;
@@ -174,7 +176,7 @@ function Compliance() {
   return (
     <div className="stack">
       <Card><CardHead title="Rules every call follows" sub="Enforced in code at one dial gate and one reply door, not in a prompt. They cannot be switched off." />
-        <Async q={q} what="Safety rules" tool="safety.cases">{d => <><ul className="billing">{d.rules.reply.map(r => <li key={r.id}><div><strong>{r.reason.charAt(0).toUpperCase() + r.reason.slice(1)}</strong><span className="small muted"> · {r.action === 'block' ? 'blocked' : 'replaced'} before it is said</span></div><Chip tone="leaf">Always on</Chip></li>)}</ul><p className="small muted">Rule set {d.rules.version}. Also always on: DND and opt-out checks before every attempt, and the AI disclosure, spoken once and lightly.</p></>}</Async></Card>
+        <Async q={q} what="Safety rules" tool="safety.cases">{d => <><ul className="billing">{d.rules.reply.map(r => <li key={r.id}><div><strong>{r.reason.charAt(0).toUpperCase() + r.reason.slice(1)}</strong><span className="small muted"> · {r.action === 'block' ? 'blocked' : 'replaced'} before it is said</span></div><Chip tone="leaf">Always on</Chip></li>)}</ul><p className="small muted">Rules last updated {(() => { const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.rules.version); return m ? new Date(m[1] + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'recently'; })()}. Also always on: DND and opt-out checks before every attempt, and the AI disclosure, spoken once and lightly.</p></>}</Async></Card>
       <Card><CardHead title="Workspace calling hours" sub="The outer band every campaign window must sit inside. Widening it is a policy change." />
         {policy ? <><div className="formgrid"><TextField label="From" type="time" value={band.start} onChange={e => setBand({ ...band, start: e.target.value })} /><TextField label="To" type="time" value={band.end} onChange={e => setBand({ ...band, end: e.target.value })} /></div>
           <div style={{ marginTop: 12 }}>{band.start < band.end ? <Btn kind="primary" onClick={() => void act('policy.window.set', { outerBand: band }, { describe: 'Calling hours changed.' })}>Ask to set</Btn> : <Btn disabled reason="The band must end after it starts.">Ask to set</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
@@ -211,7 +213,7 @@ function OperatorTab() {
       <Toggle checked={d.autonomy === 'A0'} onChange={async on => { const r = await act(on ? 'operator.autonomy.lower' : 'operator.autonomy.raise', { level: on ? 'A0' : 'A1' }, { describe: on ? 'Saarthi will now ask before every draft and test.' : 'Saarthi can draft and test on its own again.' }); if (r.ok) q.reload(); else refresh(); }}
         label="Ask before drafts and tests too" hint="Lowering this takes effect at once. Raising it back is a policy change and asks for approval." /></Card>
     <Card><CardHead title="Brain" sub="The model behind Saarthi. It changes speed and what each turn costs, never what is allowed." />
-      <p>Current: {d.brain ? <strong>{prettyId(d.brain)}</strong> : <NotMeasured>None chosen</NotMeasured>}</p>
+      <p>Current: {d.brain ? <strong>{prettyId(d.brain)}</strong> : <NotMeasured>Not chosen yet</NotMeasured>}</p>
       {d.brains.length === 0 ? <p className="small muted">No curated brains are configured on this server yet.</p> : <><div className="formgrid" style={{ marginTop: 12 }}><SelectField label="Choose a brain" value={pick} onChange={e => setPick(e.target.value)} hint="Nothing is recommended by default. Switching changes the cost of every Operator turn."><option value="">Choose one</option>{d.brains.map(b => <option key={b} value={b}>{prettyId(b)}</option>)}</SelectField></div>
         <div style={{ marginTop: 12 }}>{pick && pick !== d.brain ? <Btn kind="primary" onClick={async () => { const r = await act('operator.brain.set', { brain: pick }, { describe: 'Brain changed.' }); if (r.ok) q.reload(); }}>Ask to switch…</Btn> : <Btn disabled reason={pick ? 'That brain is already in use.' : 'Choose a brain first.'}>Ask to switch</Btn>}</div></>}</Card></div>}</Async>;
 }
@@ -223,10 +225,19 @@ function Integrations() {
     <Card><CardHead title="What can be connected" sub="Credentials are encrypted and never shown again. Connecting is a policy change." /><ul className="billing">{d.kinds.map(k => <li key={k.id}><strong>{k.label}</strong><span className="small muted">needs {k.secrets.map(s => s.replace(/_/g, ' ')).join(', ')}</span></li>)}</ul><p className="small muted" style={{ marginTop: 8 }}>Connecting is done with Saarthi or the API for now, so credentials never pass through a page.</p></Card></div>}</Async>;
 }
 
+function dayLabel(iso: string): string {
+  const d = new Date(iso); const ist = (x: Date) => x.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  const today = ist(new Date()), y = ist(new Date(Date.now() - 86400000));
+  return ist(d) === today ? 'Today' : ist(d) === y ? 'Yesterday' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
+}
 function Activity() {
   const q = useData<ActivityRow[]>('activity', activityList);
-  const cols: Col<ActivityRow>[] = [{ key: 't', label: 'When', render: a => date(a.at, true) }, { key: 's', label: 'What', primary: true, render: a => a.line }];
   return <Card><CardHead title="What VP did" sub="Every draft, test and approved action, with who did it." />
-    <Async q={q} what="Activity" tool="activity.list" empty={d => d.length === 0 ? <Empty title="Nothing yet" body="Everything that changes something is written here." /> : null}>{d => <Table caption="Activity ledger" cols={cols} rows={d} rowKey={r => r.id} />}</Async></Card>;
+    <Async q={q} what="Activity" tool="activity.list" empty={d => d.length === 0 ? <Empty title="Nothing yet" body="Everything that changes something is written here." /> : null}>{d => {
+      const groups: [string, ActivityRow[]][] = [];
+      for (const r of d) { const k = dayLabel(r.at); const g = groups[groups.length - 1]; if (g && g[0] === k) g[1].push(r); else groups.push([k, [r]]); }
+      return <div className="stack">{groups.map(([day, rows]) => <section key={day} aria-label={day}><h3 className="dayhead">{day}</h3>
+        <ul className="billing">{rows.map(r => { const to = pageFor(r.action); return <li key={r.id}><div><span className="tnum muted">{time(r.at).replace(' IST', '')}</span> &nbsp;{activitySentence(r.line, r.action)}</div>{to && <Link to={to} className="small">Open</Link>}</li>; })}</ul></section>)}</div>;
+    }}</Async></Card>;
 }
 export { count, Lock };

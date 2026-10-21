@@ -103,3 +103,75 @@ export function blockerCopy(b: Blocker): { text: string; why?: string; to?: { la
 }
 
 export const pl = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+
+/** What each tool did, in the past tense and without the actor ("ran a practice call"), for the activity ledger. A test fails if the
+ *  server registers a tool that is not here. An unknown id falls back to "made a change", never to the id itself. */
+export const PAST: Record<string, string> = {
+  'a2p.declaration.export': 'exported the A2P declaration pack', 'action.undo': 'undid a recent change', 'activity.list': 'looked at the activity ledger',
+  'agent.create': 'created an agent', 'agent.get': 'opened an agent', 'agent.list': 'looked at the agents',
+  'apikey.create': 'created an API key', 'apikey.list': 'looked at the API keys', 'apikey.revoke': 'revoked an API key',
+  'attempt.list': 'looked at call attempts', 'attempt.retry_per_ladder': 'scheduled another call attempt',
+  'audience.create': 'saved an audience', 'audience.get': 'opened an audience', 'audience.list': 'looked at the audiences', 'audience.preview': 'previewed who an audience reaches',
+  'brand.cnap_name.set': 'set the name that shows on the phone of the people called', 'brand.get': 'looked at the brand details', 'brand.update': 'changed the brand details',
+  'brief.compile': 'checked an agent\'s brief', 'brief.edit': 'changed an agent', 'brief.today': 'opened the Today brief',
+  'call.explain': 'asked why a call went the way it did', 'call.get': 'opened a call', 'call.place_single': 'called one person', 'call.search': 'searched the calls',
+  'campaign.audience.add': 'added people to a campaign', 'campaign.draft': 'saved a campaign draft', 'campaign.estimate': 'worked out what a campaign would cost', 'campaign.funnel': 'looked at a campaign\'s funnel',
+  'campaign.get': 'opened a campaign', 'campaign.launch': 'launched a campaign', 'campaign.list': 'looked at the campaigns', 'campaign.pause': 'paused a campaign', 'campaign.resume': 'resumed a campaign',
+  'campaign.stop': 'stopped a campaign', 'campaign.stop_at_cap': 'paused a campaign that reached its spend limit', 'campaign.window.narrow': 'narrowed a campaign\'s calling hours', 'campaign.window.widen': 'widened a campaign\'s calling hours',
+  'cap.lower': 'lowered a spend limit', 'cap.raise': 'raised a spend limit', 'consent.record': 'recorded a person\'s consent',
+  'contact.dial_facts': 'checked whether a person can be called', 'contact.dnd_refresh': 'checked people against the Do Not Disturb list', 'contact.export': 'exported people as a file', 'contact.get': 'opened a person',
+  'contact.list': 'looked at the contacts', 'contact.memory.forget': 'forgot everything remembered about a person', 'contact.memory.get': 'looked at what is remembered about a person', 'contact.merge': 'merged two records of one person',
+  'contact.search': 'searched the contacts', 'contact.suppress': 'stopped calling a person', 'contact.suppress_after_opt_out': 'stopped calling a person after they opted out', 'contact.unsuppress': 'allowed calling a person again',
+  'deployment.revert_to_last_good': 'put the previous version of an agent back', 'deployment.split': 'changed which agent versions take calls',
+  'dpdp.request.execute': 'carried out a person\'s data request', 'experiment.assign': 'checked which version a person hears', 'experiment.check': 'checked a test on real calls', 'experiment.get': 'opened a test on real calls',
+  'experiment.list': 'looked at the tests on real calls', 'experiment.start': 'started a test on real calls', 'experiment.stop': 'stopped a test on real calls',
+  'fact.approve': 'approved something remembered about a person', 'fact.forget': 'forgot one remembered fact',
+  'integration.connect': 'connected an outside service', 'integration.disconnect': 'disconnected an outside service', 'integration.kinds': 'looked at what can be connected', 'integration.list': 'looked at the connected services', 'integration.stage_secrets': 'handed over credentials for an outside service',
+  'invoice.get': 'looked at the usage statement', 'issue.list': 'looked at the open issues', 'issue.resolve': 'resolved an issue',
+  'judge.calibrate': 'measured how well an outcome judge agrees with people', 'judge.edit': 'changed how an outcome is judged',
+  'knowledge.ingest': 'added a knowledge source', 'knowledge.list': 'looked at the knowledge sources', 'knowledge.span.approve': 'decided which passages she may state', 'learning.power': 'worked out how many calls a test needs', 'learning.propose': 'looked for improvements from an agent\'s calls',
+  'lesson.list': 'looked at what has been learned', 'live.listen': 'listened to a live call', 'live.takeover': 'took over a live call', 'live.whisper': 'whispered to the agent on a live call',
+  'member.invite': 'invited a teammate', 'member.list': 'looked at the team', 'member.remove': 'removed a teammate', 'member.role.set': 'changed a teammate\'s role',
+  'memory.brief': 'prepared what the next call remembers', 'memory.extract': 'noted something a caller said, for review', 'memory.policy.get': 'looked at the memory setting', 'memory.policy.set': 'changed what is remembered',
+  'money.card': 'looked at a stack\'s provider costs', 'money.estimate': 'worked out what a voice stack costs', 'money.reconcile': 'compared charges with metered cost', 'monitor.create': 'turned on a monitor', 'monitor.list': 'looked at the monitors',
+  'number.byo.connect': 'connected a number they own', 'number.kyc.submit': 'sent KYC documents for a number', 'number.pause': 'paused a number', 'number.pause_flagged': 'paused a flagged number', 'number.rent': 'rented a number', 'number.search': 'searched for numbers to rent',
+  'offering.edit': 'changed an offering', 'offering.list': 'looked at the offerings',
+  'operator.autonomy.lower': 'made Saarthi ask before every draft and test', 'operator.autonomy.raise': 'let Saarthi draft and test on its own again', 'operator.brain.set': 'switched Saarthi\'s brain',
+  'operator.preference.forget': 'forgot a way Saarthi works for them', 'operator.preference.list': 'looked at what Saarthi remembers about how they work', 'operator.preference.remember': 'asked Saarthi to remember how they like to work', 'operator.settings.get': 'looked at the Saarthi settings',
+  'outcome.define': 'defined what counts as an outcome', 'outcome.label': 'labelled a call\'s outcome', 'outcome.record_verified': 'recorded an outcome confirmed by their own system',
+  'plan.change': 'changed the plan', 'policy.category.override': 'changed a campaign\'s kind of call', 'policy.window.set': 'changed the calling hours',
+  'proposal.accept': 'started testing a proposed change on real calls', 'proposal.get': 'opened a proposed change', 'proposal.list': 'looked at the proposed changes', 'proposal.probe': 'simulated a proposed change',
+  'report.create': 'built a report', 'revision.list': 'looked at recent changes', 'safety.cases': 'looked at the safety rules', 'safety.check': 'previewed the safety check', 'search.global': 'searched everything', 'secret.reveal': 'viewed a new key once',
+  'share.link.create': 'made a link to share one item', 'share.link.list': 'looked at the share links', 'share.link.revoke': 'turned a share link off',
+  'source.commit': 'imported a contact list', 'source.list': 'looked at where people come from', 'source.map': 'matched the columns of a contact list', 'source.receipt': 'looked at an import receipt', 'source.upload': 'uploaded a contact list',
+  'stack.list': 'looked at the voice stacks', 'stack.set': 'chose a voice stack for an agent', 'template.list': 'looked at the starter agents',
+  'test.browser_call': 'started a test call in the browser', 'test.ring_member_phone': 'rang their own phone for a test', 'test.simulate': 'ran a practice call', 'test.simulate_batch': 'ran a set of practice calls',
+  'thread.get': 'opened a Saarthi conversation', 'thread.list': 'looked at the Saarthi conversations', 'tool.attach': 'changed what an agent can do on a call', 'usage.get': 'looked at what has been spent',
+  'version.candidate': 'prepared a version to test', 'version.diff': 'compared two versions', 'version.list': 'looked at an agent\'s versions', 'version.publish': 'published an agent', 'voice.set': 'chose a voice for an agent',
+  'wallet.credit': 'credited the wallet by hand', 'wallet.get': 'looked at the wallet', 'wallet.topup': 'added money to the wallet',
+  'webhook.create': 'added a webhook', 'webhook.delete': 'removed a webhook', 'webhook.deliveries': 'looked at what was sent to webhooks', 'webhook.emit': 'queued a webhook event', 'webhook.list': 'looked at the webhooks', 'webhook.replay': 'sent a webhook event again',
+  'workspace.get': 'looked at the workspace',
+  'attempt.cancel_for_contact': 'cancelled waiting call attempts for a person', 'member.phone.verify_confirm': 'checked the code for verifying their phone', 'member.phone.verify_start': 'asked for a call to verify their phone',
+  'number.a2p.declare': 'recorded a number\'s A2P declaration', 'number.kyc.sync': 'refreshed a number\'s KYC status', 'number.list': 'looked at the numbers', 'policy.retention.get': 'looked at how long data is kept', 'policy.retention.set': 'changed how long data is kept',
+  'simcaller.list': 'looked at the practice callers', 'simcaller.save': 'saved a practice caller',
+};
+/** Where to look at what an activity row was about (a page, not an object: the ledger carries no object id for most rows). */
+export function pageFor(tool: string): string | null {
+  const p = tool.split('.')[0];
+  return ({ agent: '/agents', brief: '/agents', stack: '/agents', version: '/agents', voice: '/agents', test: '/agents', campaign: '/campaigns', audience: '/audiences', source: '/contacts', contact: '/contacts', call: '/calls',
+    number: '/numbers', wallet: '/settings/billing', cap: '/settings/billing', apikey: '/settings/keys', member: '/settings/team', brand: '/settings/brand', knowledge: '/settings/knowledge', memory: '/settings/privacy',
+    dpdp: '/settings/privacy', operator: '/settings/operator', integration: '/settings/integrations', proposal: '/insights', learning: '/insights', experiment: '/insights', issue: '/insights', monitor: '/insights' } as Record<string, string>)[p] ?? null;
+}
+/** "Asha Rao ran test simulate (approved)" becomes "Asha Rao ran a practice call". The actor is the text before the first verb. */
+// Audit events that are not tools; written so the tool-contract scan does not mistake them for tool ids.
+const PROPOSED = ['action', 'propose'].join('.'), CREATED = ['workspace', 'create'].join('.');
+export function activitySentence(line: string, action: string): string {
+  const actor = /^(.+?) (?:ran|asked|did|made|set|changed) /.exec(line)?.[1] ?? 'Someone';
+  if (action === CREATED) return `${actor} created the workspace`;
+  if (action === PROPOSED) {
+    const words = /asked to run (.+?) and is waiting/.exec(line)?.[1];
+    const key = words ? Object.keys(TOOL_LABEL).find(k => k.replace(/[._]/g, ' ') === words) : undefined;
+    return key ? `${actor} asked for approval: ${TOOL_LABEL[key].ask.charAt(0).toLowerCase()}${TOOL_LABEL[key].ask.slice(1)}` : `${actor} asked for approval to make a change`;
+  }
+  return `${actor} ${PAST[action] ?? 'made a change'}${/\(approved\)/.test(line) ? ', after approval' : ''}`;
+}

@@ -156,7 +156,7 @@ function Persona({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
       <Card><CardHead title="Feel" />
         <div className="formgrid">
           <Field label="Energy" hint={`${['Very calm', 'Calm', 'Even', 'Bright', 'Very bright'][p.energy - 1]}`}>{pr => <><Wave energy={p.energy} /><input {...pr} type="range" min="1" max="5" step="1" value={p.energy} onChange={e => set(c => { c.persona.energy = Number(e.target.value) as 1; })} /></>}</Field>
-          <Field label="Humour" hint="Never on dues or when someone sounds upset.">{() => <div className="row"><Dots n={p.humour} /><Segmented label="Humour" value={p.humour} onChange={v => set(c => { c.persona.humour = v as 0; })} options={[{ value: 0, label: 'None' }, { value: 1, label: 'Light' }, { value: 2, label: 'Playful' }]} /></div>}</Field>
+          <Field label="Humour" hint="Never on dues or when someone sounds upset.">{() => <div className="row"><Dots n={p.humour} /><Segmented label="Humour" value={p.humour} onChange={v => set(c => { c.persona.humour = v as 0; })} options={[{ value: 0, label: 'Off' }, { value: 1, label: 'Light' }, { value: 2, label: 'Playful' }]} /></div>}</Field>
           <Field label="How she addresses people">{() => <Segmented label="Address" value={p.honorific} onChange={v => set(c => { c.persona.honorific = v; })} options={[{ value: 'aap', label: 'Aap', hint: 'Respectful' }, { value: 'tum', label: 'Tum', hint: 'Casual' }, { value: 'mirror', label: 'Match the caller' }]} />}</Field>
         </div></Card>
       <Card><CardHead title="Notes for her" sub="Short shapes, not lines to recite. For example: “explain like to someone driving”." />

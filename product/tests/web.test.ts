@@ -69,6 +69,17 @@ test('every tool the UI calls is registered by the loaded modules (ui-contract -
   assert.match(out, / 0 missing/);
 });
 
+test('every tool the server registers has a person-facing past-tense label for the activity ledger', async () => {
+  const { default: pg } = await import('pg');
+  const { buildApp } = await import('../server/app.ts');
+  const { modules } = await import('../server/modules/index.ts');
+  const { PAST } = await import('../web/src/labels.ts');
+  const { registry } = buildApp(new pg.Pool({ connectionString: 'postgresql://unused@/unused' }), modules);
+  const missing = registry.list().map(t => t.name).filter(n => !PAST[n]);
+  assert.deepEqual(missing, [], 'tools with no activity label: ' + missing.join(', '));
+  for (const [k, v] of Object.entries(PAST)) assert.ok(!/[_]|\b\w+\.\w+\b/.test(v) && !/\b[a-z]+[A-Z]/.test(v), `label for ${k} reads like a code: ${v}`);
+});
+
 test('no page writes from a menu: act() is never called inside an onChange of a select or input', () => {
   for (const f of readdirSync(web + 'src/pages')) {
     const txt = readFileSync(web + 'src/pages/' + f, 'utf8');
