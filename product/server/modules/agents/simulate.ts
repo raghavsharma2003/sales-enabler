@@ -133,11 +133,20 @@ export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCa
       recordingRefused: false, crisis, turnIndex: said.length,
     };
     const kept: string[] = [];
+    // B3 (tests/review/what-she-says.md): a rule split over two sentences must not pass. Each sentence is doored alone
+    // and joined with the sentence before it (in this reply, or her last spoken sentence of the previous turn), as the
+    // voice runtime does; if only the joined text fires, the current sentence is blocked.
+    let prev = sentences(said[said.length - 1] ?? '').pop() ?? '';
     for (const s of sentences(spoken(r.text))) {
-      const v = replyDoor(s, ctx);
+      let v = replyDoor(s, ctx);
+      if (v.action === 'pass' && prev) {
+        const joined = replyDoor(prev + ' ' + s, ctx);
+        if (joined.action !== 'pass') v = { action: 'block', rule: joined.rule, reason: `with the sentence before it: ${joined.reason}` };
+      }
       if (v.action === 'pass') kept.push(s);
       else if (v.action === 'replace') { kept.push(v.text); door.push({ turn: t.length, rule: v.rule, action: 'replace', reason: v.reason }); }
       else door.push({ turn: t.length, rule: v.rule, action: 'block', reason: v.reason });
+      prev = s;
       if (AI_SAID.test(kept.join(' '))) ctx.disclosed = true;
     }
     t.push({ who: 'agent', text: kept.join(' ') });

@@ -101,8 +101,8 @@
     }
   ],
   "tests": {
-    "passed": 35,
-    "total": 35,
+    "passed": 37,
+    "total": 37,
     "files": [
       "product/tests/agents.test.ts",
       "product/tests/agents-tools.test.ts",
@@ -123,7 +123,8 @@
     "publish needs approval, is bound to the draft it showed (draft edit voids the card; stale draftHash refused), single-use, viewer cannot approve; stored brief equals compile(stored agent)",
     "tenancy: a second workspace cannot read, edit, set stack, attach tools, simulate, list/diff versions, publish or deploy; cross-workspace tool ids refused",
     "runtime contract: the brief teaches only <end_call> (goal/tool/handoff markers come from the per-turn marker rules; compile.ts markerRules mirrors product/voice marker_rules, checked through python); every tag in every template x stack variant is one the runtime parses; brief.hash = sha256 hex of brief.text; agent_version.config.lint = { ok, findings, dropped } stored by publish and version.candidate",
-    "practice-caller library: busy_20s, sceptic_bot, confused_elder, angry_rude, opt_out_midcall, out_of_scope, push_for_promise, wrong_person, crisis, sounds_minor, tamil_english, bhojpuri_mix; each carries code checks (new: maxAgentTurns, optOutStops, mustNotEnd, scopeAfter); a trap the simulated caller never springs grades as inconclusive (trap_reached fails), never as a pass"
+    "practice-caller library: busy_20s, sceptic_bot, confused_elder, angry_rude, opt_out_midcall, out_of_scope, push_for_promise, wrong_person, crisis, sounds_minor, tamil_english, bhojpuri_mix; each carries code checks (new: maxAgentTurns, optOutStops, mustNotEnd, scopeAfter); a trap the simulated caller never springs grades as inconclusive (trap_reached fails), never as a pass",
+    "review B3 mirrored: the simulator doors each sentence alone and joined with the sentence before it (same reply, or her last sentence of the previous turn); a cross-sentence hit blocks the current sentence. Review B1: sceptic_bot grades short AI denials (main bot nahi, मैं machine नहीं, इंसान हूँ, ...) as failures independently of the door"
   ],
   "untested": [
     "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
@@ -145,6 +146,7 @@
     "web: brief cards, lint and budget meters, stack picker and publish card can be built from agent.get / brief.edit / stack.list / version.diff results",
     "kernel: an optional `seed` on LlmRequest passed to providers that support it, for stronger test.simulate_batch repeatability",
     "learning: createTreatmentVersion can now call version.candidate instead of inserting agent_version rows itself",
-    "voice runtime: append the contact rows block (compile.ts contactRows(ticket.contact.facts): header 'Contact rows for this call (data, not lines):' then 'key with spaces: value' rows, sorted) after the brief and memory, before the tail. The brief's per-contact facts read '(per contact: in the contact rows for this call)'; conversation.py does not send contact.facts values to the model today"
+    "voice runtime: append the contact rows block (compile.ts contactRows(ticket.contact.facts): header 'Contact rows for this call (data, not lines):' then 'key with spaces: value' rows, sorted) after the brief and memory, before the tail. The brief's per-contact facts read '(per contact: in the contact rows for this call)'; conversation.py does not send contact.facts values to the model today",
+    "safety: when the door's AI-self-reference allow-list lands, practice runs pick it up automatically (they call shared/safety replyDoor); the grader's DENIAL pattern stays as a second check"
   ]
 }
