@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 185,
-    "passed": 185,
+    "ran": 193,
+    "passed": 193,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -34,10 +34,13 @@
       "test_launch.py": "multi-process launcher with two real worker processes: tickets spread, overflow on at_capacity, refused only when all are full; retry returns to its owner; /end reaches the owner and frees the slot; health sums workers; media socket via /w/<i>/; workers stop with the front; nginx config",
       "test_live.py": "live controls: whisper redacted into the LAST block, spent after one reply, a denial whisper still blocked by RD2, no text in events, capped, refused after takeover; sim takeover (she stops, doored line, member bridged both ways, drop and no-join close the call, crisis call taken over, limits stop); cascade takeover cut at a near sentence end vs at once, member audio to the line and caller audio to the member; listener mix of both legs writing nothing; HTTP refusals (unsigned, replayed body, unknown, unjoined, sim listen, empty whisper), sim takeover end to end, browser listen socket",
       "test_devsim.py": "the development runtime as a real process: refuses without VP_DEVSIM=1; a signed sim call with whisper and takeover over HTTP",
-      "test_google_route.py": "Gemini on Vertex only, from India only: no route outside an Indian VP_REGION (one reason per cause), VERTEX_OFF; a Gemini API key or OpenRouter never stands in; Live without VERTEX_LIVE_LOCATION or a model missing from the Vertex map makes the stack unavailable with a plain per-component reason; text URL and bearer token; a fake Vertex Live websocket checks the path, the bearer header (no API key), the ears setup (model resource name, TEXT, inputAudioTranscription), mediaChunks audio and transcripts; the speech-to-speech setup shape"
+      "test_google_route.py": "Gemini on Vertex only, from India only: no route outside an Indian VP_REGION (one reason per cause), VERTEX_OFF; a Gemini API key or OpenRouter never stands in; Live without VERTEX_LIVE_LOCATION or a model missing from the Vertex map makes the stack unavailable with a plain per-component reason; text URL and bearer token; a fake Vertex Live websocket checks the path, the bearer header (no API key), the ears setup (model resource name, TEXT, inputAudioTranscription), mediaChunks audio and transcripts; the speech-to-speech setup shape",
+      "test_azure_ears.py": "Azure Speech ears with a fake Speech SDK (no Azure host): hi-IN, Central India, 500 ms segmentation, partials/finals from SDK threads, the error path, the Gate (pre-roll, tail, only gated audio metered); build() gives AzureEars to Azure-ears stacks and Sarvam ears only to Sarvam",
+      "test_components.py": "GET /v1/health components: every catalog ears/brain/voice/s2s has an availability and a plain reason (not set up, not offered on Google Cloud, not built), never a reroute; every brain carries its route (vertex, azure-foundry, openrouter, sarvam); gpt-oss-120b@groq not offered"
     }
   },
   "works": [
+    "Curated cascade stacks listen with Azure Speech ears (hi-IN, Central India, through the VAD gate); Vertex has no Gemini transcription model (decision.2026-10-22.ears-azure-not-gemini). Per-component health on GET /v1/health. Every brain carries a route per directive.2026-10-22.provider-routing",
     "Signed intake (HMAC t.body, 5 min skew, constant-time) on POST /v1/calls, POST /v1/calls/{id}/end, GET /v1/calls/{id}; signed event batches to {VP_CONTROL_URL}/hooks/runtime with per-call seq, in-order delivery, same-batch retries, call.ended alone and last",
     "No default stack: unknown or missing stack refused (422), missing credentials refused (503 with the names), voice and combinationId checked, never substituted",
     "Per-contact facts reach the model as the contact rows block (after brief and memory, before the LAST block), in compile.ts contactRows() format; the door gets them as perContact facts. product/tests/agents-runtime.test.ts passes 4/4 against this runtime",
@@ -58,6 +61,7 @@
     "python -m vpvoice.devsim (VP_DEVSIM=1): the real HTTP surface and live controls on fake providers, no keys, for cross-process control-plane tests"
   ],
   "untested": [
+    "Azure Speech ears against the real service from this package (fake SDK only; the lab measured the same SDK path); the Docker image with the Speech SDK (libssl3, libasound2) not built",
     "Every Vertex call (text, TTS, Live ears, Live speech-to-speech) against real Vertex: only fakes; the Live message keys (camelCase acceptance, mediaChunks vs audio, interimInputTranscription, audioStreamEnd) are from the Gemini API and partly unconfirmed in the Vertex docs",
     "The crisis judge against a real model (latency within 800 ms from India, verdict quality on blind sets): only fake models so far",
     "Azure voice over REST instead of the lab's pre-warmed SDK socket: first-audio latency not measured",

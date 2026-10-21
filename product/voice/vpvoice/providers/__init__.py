@@ -44,7 +44,7 @@ def build(stack_id, voice_name, http, env=None, text_only=False):
     from .llm import HttpBrain
     s = stacks.STACKS[stack_id]; c = s['components']
     google = GoogleRoute(env)          # chosen once for this call
-    why = unavailable(stack_id, google)
+    why = unavailable(stack_id, google, text_only=text_only)
     if why: raise ProviderUnavailable([], why)              # what Vertex does not offer is unavailable, never rerouted
     from .. import judge
     judge_complete = judge.http_complete(http, env) if judge.configured(env) and judge.mode(env=env) != 'off' else None
@@ -64,12 +64,15 @@ def build(stack_id, voice_name, http, env=None, text_only=False):
                       tts_id=c['voice'], names={'stt': c['ears'] + ('' if c.get('gatedEars') else '/ungated'), 'llm': c['brain'], 'tts': c['voice'], 'voice': voice_name})
     comp.judge_complete = judge_complete
     if text_only: return comp
-    from .stt import Gate, GeminiEars, SarvamEars
+    from .stt import AzureEars, Gate, GeminiEars, SarvamEars
     from .tts import make_voice
     ek = catalog.STT[c['ears']]['kind']
+    if ek not in ('gemini', 'azure', 'sarvam'): raise ProviderUnavailable([], f"ears {c['ears']!r} are not built into this runtime")
 
     def make_ears(on_p, on_f, on_e, lang='hi-IN'):
-        inner = GeminiEars(http, google, on_p, on_f, on_e, lang) if ek == 'gemini' else SarvamEars(http, catalog.STT[c['ears']]['model'], on_p, on_f, on_e, lang, env=env)
+        if ek == 'gemini': inner = GeminiEars(http, google, on_p, on_f, on_e, lang)
+        elif ek == 'azure': inner = AzureEars(on_p, on_f, on_e, lang, env=env)
+        else: inner = SarvamEars(http, catalog.STT[c['ears']]['model'], on_p, on_f, on_e, lang, env=env)
         return Gate(inner) if c.get('gatedEars') else inner
     comp.make_ears = make_ears
     comp.voice = make_voice(http, c['voice'], voice_name, env, google)

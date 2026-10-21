@@ -5,6 +5,8 @@
 FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=8080 VP_VAD_MODEL=/app/models/silero_vad.onnx
 WORKDIR /app
+# the Azure Speech SDK (the ears) needs OpenSSL and ALSA's shared library on Linux, even with no sound device
+RUN apt-get update && apt-get install -y --no-install-recommends libssl3 libasound2 ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY product/voice/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY voicelab/server/models/silero_vad.onnx /app/models/silero_vad.onnx

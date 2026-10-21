@@ -20,8 +20,8 @@ STT = {
 # ttft_ms: median time to first token from the lab VM (Central India), n=6, renewal brief, 2026-10-19 (tests/brain_bench.py)
 # host: sin = vp-lab-ai-sin (South India account), sea = vp-research-ai-sea, or = OpenRouter, gm = Google Vertex AI
 BRAINS = {
-    'gpt-oss-120b@groq': {'ttft_ms': 483, 'label': 'gpt-oss-120b on Groq (report baseline)', 'host': 'or', 'model': 'openai/gpt-oss-120b', 'provider': 'groq',
-                          'in': 0.15, 'out': 0.60, 'extra': {'reasoning': {'effort': 'low', 'exclude': True}}, 'out_pad': 400},
+    # gpt-oss-120b@groq is not offered: gpt-oss-120b is on our Azure Foundry (routing, directive.2026-10-22.provider-routing),
+    # at a first-token cost (Groq 0.48 s vs Azure 1.47 s, n=6, 2026-10-19) logged for the owner to reverse.
     'gpt-oss-120b':      {'ttft_ms': 1466, 'label': 'gpt-oss-120b (Azure)', 'host': 'sin', 'model': 'lab-gptoss120b', 'in': 0.15, 'out': 0.60,
                           'extra': {'reasoning_effort': 'low'}, 'out_pad': 400},
     'gpt-4.1-mini-in':   {'ttft_ms': 641, 'label': 'GPT-4.1 mini (Azure, India-resident)', 'host': 'sin', 'model': 'lab-gpt41mini-in', 'in': 0.44, 'out': 1.76},
@@ -107,6 +107,11 @@ TELEPHONY_PULSE_S = 60
 # Brain fallbacks for non-test calls only, and only when VP_FALLBACKS=1 (production failover policy is still open,
 # open.2026-10-20.product-failover-policy): the same model on another host, never a different model.
 BRAIN_FALLBACK = {}   # the Gemini -> OpenRouter fallbacks were retired with OpenRouter Gemini (Vertex only); none today
+
+# Routing policy (directive.2026-10-22.provider-routing): Gemini through Vertex; whatever our Azure Foundry hosts through
+# Azure; OpenRouter only for what is in neither (the GPT-6 / GPT-5.6 tiers: our Foundry quota for them is Taxila's).
+ROUTE_OF_HOST = {'gm': 'vertex', 'sin': 'azure-foundry', 'sea': 'azure-foundry', 'or': 'openrouter', 'sv': 'sarvam'}
+for _b in BRAINS.values(): _b['route'] = ROUTE_OF_HOST[_b['host']]
 
 BRAIN_PROVIDER = {'gm': 'gemini', 'or': 'openrouter', 'sin': 'azure-openai', 'sea': 'azure-openai', 'sv': 'sarvam'}
 

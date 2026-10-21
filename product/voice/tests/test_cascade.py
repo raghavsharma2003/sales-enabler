@@ -103,7 +103,7 @@ class Cascade(unittest.TestCase):
         self.assertIsInstance(turns[2].get('latencyMs'), int)
         comps = {(c['component'], c['unit']) for c in e if c['type'] == 'cost'}
         self.assertIn(('brain', 'token'), comps); self.assertIn(('voice', 'second'), comps); self.assertIn(('ears', 'second'), comps)
-        self.assertEqual(e[-1]['manifest']['components'], {'stt': 'gemini', 'llm': 'gemini-3.5-flash-lite', 'tts': 'gemini-lite', 'voice': 'Despina'})
+        self.assertEqual(e[-1]['manifest']['components'], {'stt': 'azure', 'llm': 'gemini-3.5-flash-lite', 'tts': 'gemini-lite', 'voice': 'Despina'})
         self.assertGreater(line.audio, 0); self.assertTrue(line.closed)
         self.assertEqual(comp.voice.said[-1], 'बहुत शुक्रिया, अपना ख्याल रखिए, bye!')
 

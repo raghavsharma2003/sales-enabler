@@ -46,6 +46,8 @@ class Server(Base):
         r = await self.client.get('/v1/health'); d = await r.json()
         self.assertEqual(r.status, 200)
         self.assertEqual(len(d['stacks']), 7)
+        self.assertEqual(set(d['components']), {'ears', 'brain', 'voice', 's2s'})
+        self.assertEqual(d['components']['ears']['azure'], {'available': False, 'reason': "Azure Speech isn't set up on this server"})
         self.assertTrue(d['signing'])
         self.assertNotIn(SECRET, json.dumps(d))
 

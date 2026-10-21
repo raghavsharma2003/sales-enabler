@@ -60,12 +60,12 @@ test('the seeded cost card equals the code that generated it (no drift)', { skip
 });
 
 test('estimate matches hand-computed values from catalog prices', { skip }, async () => {
-  // v2-flashlite, by hand (INR/min): ears 0.0055 $/min x 0.5 gated x 95 = 0.26125; brain 4 x (2000 x 0.30 + 60 x 2.50)/1e6 $ x 95 = 0.285;
-  // voice 6 $/1M x 25 tok/s x 30 s / 1e6 x 95 = 0.4275; telephony 0.38; platform 0.03; analysis 0.06  =>  1.44375/min.
-  // Per call: half a 60 s pulse at 0.38 = 0.19.  100 min over 50 calls = 144.375 + 9.50 = 153.875 => 153875 milli.
+  // v2-flashlite, by hand (INR/min): ears (Azure Speech) $1/60 per min x 0.5 gated x 95 = 0.791667; brain 4 x (2000 x 0.30 + 60 x 2.50)/1e6 $ x 95 = 0.285;
+  // voice 6 $/1M x 25 tok/s x 30 s / 1e6 x 95 = 0.4275; telephony 0.38; platform 0.03; analysis 0.06  =>  1.974167/min.
+  // Per call: half a 60 s pulse at 0.38 = 0.19.  100 min over 50 calls = 197.4167 + 9.50 = 206.9167 => 206917 milli.
   const e = await estimate(pool, { stackId: 'v2-flashlite', minutes: 100, calls: 50 });
-  assert.equal(e.perMinuteInrMilli, 1444);
-  assert.equal(e.totalInrMilli, 153875);
+  assert.equal(e.perMinuteInrMilli, 1974);
+  assert.equal(e.totalInrMilli, 206917);
   assert.equal(e.price.status, 'not_set');
   assert.match(e.basis, /not a customer price/);
   // sarvam-india: ears 0.5 x 0.5 = 0.25; brain 4 x (2000 x 15 + 60 x 60)/1e6 = 0.1344; voice 450 chars x ₹2000/1M = 0.90;
@@ -73,8 +73,8 @@ test('estimate matches hand-computed values from catalog prices', { skip }, asyn
   const s = await estimate(pool, { stackId: 'sarvam-india', minutes: 10, calls: 0 });
   assert.equal(s.perMinuteInrMilli, 1754);
   assert.equal(s.totalInrMilli, 17544);
-  // v2-mai voice: 450 chars x $22/1M x 95 = 0.9405; total 0.26125 + 0.285 + 0.9405 + 0.47 = 1.95675 => 1957 milli/min.
-  assert.equal((await estimate(pool, { stackId: 'v2-mai', minutes: 1, calls: 0 })).perMinuteInrMilli, 1957);
+  // v2-mai voice: 450 chars x $22/1M x 95 = 0.9405; total 0.791667 + 0.285 + 0.9405 + 0.47 = 2.487167 => 2487 milli/min.
+  assert.equal((await estimate(pool, { stackId: 'v2-mai', minutes: 1, calls: 0 })).perMinuteInrMilli, 2487);
   // v2-live: the report's 5.72 AI/min + 0.47 = 6.19/min.
   assert.equal((await estimate(pool, { stackId: 'v2-live', minutes: 1, calls: 0 })).perMinuteInrMilli, 6190);
 });
@@ -83,8 +83,8 @@ test('money.estimate as a tool: read, unknown stacks refused, no default stack',
   const { ws, owner } = await workspace();
   const ok = await reg.execute(pool, 'money.estimate', { stackId: 'v2-54mini', minutes: 3, calls: 1 }, { workspaceId: ws, actor: ownerActor(owner) });
   assert.equal(ok.status, 'confirmed');
-  // by hand: 0.26125 + 4 x (1500 + 270)/1e6 x 95 = 0.6726 + 0.4275 + 0.47 = 1.83135/min; x3 + 0.19 = 5.68405 => 5684 milli
-  assert.equal(ok.status === 'confirmed' && (ok.result as { totalInrMilli: number }).totalInrMilli, 5684);
+  // by hand: 0.791667 + 4 x (1500 + 270)/1e6 x 95 = 0.6726 + 0.4275 + 0.47 = 2.361767/min; x3 + 0.19 = 7.275301 => 7275 milli
+  assert.equal(ok.status === 'confirmed' && (ok.result as { totalInrMilli: number }).totalInrMilli, 7275);
   const bad = await reg.execute(pool, 'money.estimate', { stackId: 'nope', minutes: 1, calls: 1 }, { workspaceId: ws, actor: ownerActor(owner) });
   assert.equal(bad.status, 'not_executed');
   const none = await reg.execute(pool, 'money.estimate', { stackId: '', minutes: 1, calls: 1 }, { workspaceId: ws, actor: ownerActor(owner) });

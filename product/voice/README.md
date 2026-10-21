@@ -314,15 +314,15 @@ body names another call, 404 for an unknown call, 409 if the call is not joined,
 | `VP_WORKERS`, `VP_WORKER_BASE_PORT`, `VP_FRONT_PORT` | Launcher: worker count (cpu count), first worker port (`PORT+1`), front port when nginx holds `PORT` |
 | `VP_DEVSIM` | `1` lets `python -m vpvoice.devsim` start (fake providers; refuses otherwise so it is never a deploy command) |
 | `VP_WORKER_ID` | Set by the launcher (`w0`…); shown on health |
-| `VERTEX_SA_FILE`, `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_OFF` | Vertex AI, the only route for every Gemini component: brains, voices, the Live ears and speech-to-speech. No Gemini API key and no OpenRouter fallback. Text and TTS use `VERTEX_LOCATION` (`global`) |
-| `VERTEX_LIVE_LOCATION` | Region of the Vertex Live websocket (`wss://{loc}-aiplatform.googleapis.com/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent`). Unset: the Live ears and speech-to-speech are unavailable, so every stack with Gemini ears is too |
+| `VERTEX_SA_FILE`, `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_OFF` | Vertex AI, the only route for every Gemini component: brains, voices and speech-to-speech (Vertex has no Gemini transcription model, so no Gemini ears). No Gemini API key and no OpenRouter fallback. Text and TTS use `VERTEX_LOCATION` (`global`) |
+| `VERTEX_LIVE_LOCATION` | Region of the Vertex Live websocket (`wss://{loc}-aiplatform.googleapis.com/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent`). Default `us-central1`, the only region where gemini-3.8-live set up from the India VM (2026-10-22) |
 | `VERTEX_MODEL_MAP` | JSON `{our model id: Vertex model id, or null}` over the defaults in `providers/google.py`. A model with no Vertex id makes its stack unavailable with a plain reason |
 | `VERTEX_LIVE_AUDIO` | `mediaChunks` (default, the Vertex sample's form) or `audio` for realtime input |
 | `VP_REGION` | Where this runtime runs. The Vertex route is used only for an Indian region (`centralindia`, `southindia`, `westindia`, `asia-south1`, …); otherwise every Gemini stack is unavailable and one reason is logged |
 | `LAB_AI_ENDPOINT`, `LAB_AI_KEY` | Azure OpenAI (GPT-5.4 mini) |
 | `VP_AI_ENDPOINT`, `VP_AI_KEY` | Second Azure OpenAI account (brains hosted there) |
 | `OPENROUTER_API_KEY` | OpenRouter brains (GPT-6 Luna); Gemini never runs through OpenRouter |
-| `LAB_SPEECH_KEY`, `LAB_SPEECH_REGION` | Azure Speech (MAI-Voice) |
+| `LAB_SPEECH_KEY`, `LAB_SPEECH_REGION` | Azure Speech: the ears (real-time STT, hi-IN) and the Azure / MAI voices; region `centralindia` by default |
 | `SARVAM_API_KEY` | Sarvam ears, brain and voice |
 | `PLIVO_AUTH_ID`, `PLIVO_AUTH_TOKEN` | Plivo dial, hang-up and transfer |
 | `VP_FALLBACKS` | `1` allows same-model fallbacks on non-test calls |

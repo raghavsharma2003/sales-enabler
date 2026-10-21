@@ -49,23 +49,35 @@ class IndiaOnly(Base):
 
 class NotRerouted(Base):
     def test_a_gemini_api_key_or_openrouter_never_stands_in(self):
-        other = {'GEMINI_PAID_KEY': 'k', 'OPENROUTER_API_KEY': 'k'}
+        other = {'GEMINI_PAID_KEY': 'k', 'OPENROUTER_API_KEY': 'k', 'LAB_SPEECH_KEY': 'k'}
         self.assertEqual(stacks.missing_credentials('v2-flashlite', other), ['GEMINI'])
         with self.assertRaises(ProviderUnavailable) as e: build('v2-flashlite', 'Despina', None, {**other, 'VERTEX_SA_FILE': self.sa, 'VP_REGION': 'eastus'})
         self.assertEqual(e.exception.reason, google.NO_ROUTE)
 
-    def test_live_without_a_location_makes_ears_and_s2s_unavailable(self):
+    def test_live_defaults_to_us_central1_as_measured(self):
         env = self.env(); env.pop('VERTEX_LIVE_LOCATION')
         r = google.GoogleRoute(env)
-        self.assertEqual(google.unavailable('v2-flashlite', r), google.NOT_OFFERED['ears'])
-        self.assertEqual(google.unavailable('v2-live', r), google.NOT_OFFERED['s2s'])
+        self.assertEqual(r.live_url(), 'wss://us-central1-aiplatform.googleapis.com/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent')
+        self.assertIsNone(google.unavailable('v2-live', r))
         self.assertIsNone(google.unavailable('sarvam-india', r), 'a stack with no Google part does not care')
+
+    def test_no_gemini_ears_on_vertex(self):
+        r = google.GoogleRoute(self.env())
+        self.assertFalse(r.offers('gemini-3.5-transcribe-live'))
+        self.assertEqual(google.NOT_OFFERED['ears'], "Gemini listening isn't offered on Google Cloud")
+
+    def test_text_mode_speech_to_speech_is_refused_not_rerouted(self):
+        r = google.GoogleRoute(self.env())
+        self.assertEqual(google.unavailable('v2-live', r, text_only=True), google.TEXT_S2S)
+        with self.assertRaises(ProviderUnavailable) as e: build('v2-live', 'Despina', None, self.env(), text_only=True)
+        self.assertEqual(e.exception.reason, google.TEXT_S2S)
 
     def test_a_model_vertex_does_not_offer_names_its_component(self):
         r = google.GoogleRoute(self.env(VERTEX_MODEL_MAP=json.dumps({'gemini-3.8-flash-lite-tts': None})))
         self.assertEqual(google.unavailable('v2-flashlite', r), "This voice isn't offered on our Google Cloud route yet")
         self.assertIsNone(google.unavailable('v2-mai', r), 'the Azure voice stack still runs')
-        with self.assertRaises(ProviderUnavailable) as e: build('v2-flashlite', 'Despina', None, self.env(VERTEX_MODEL_MAP=json.dumps({'gemini-3.8-flash-lite-tts': None})))
+        self.assertIsNone(google.unavailable('v2-flashlite', google.GoogleRoute(self.env())), 'Azure ears need nothing from Google')
+        with self.assertRaises(ProviderUnavailable) as e: build('v2-flashlite', 'Despina', None, self.env(LAB_SPEECH_KEY='k', VERTEX_MODEL_MAP=json.dumps({'gemini-3.8-flash-lite-tts': None})))
         self.assertEqual(str(e.exception), google.NOT_OFFERED['voice'])
 
     def test_every_gemini_stack_runs_when_vertex_offers_it(self):
@@ -136,7 +148,9 @@ class LiveRoute(Base):
         async def go():
             import aiohttp
             async with FakeVertexLive() as fake, aiohttp.ClientSession() as http:
-                r = google.GoogleRoute(self.env()); r.live_url = fake.url
+                # Vertex has no transcription model today; the adapter is held working against a mapped one
+                r = google.GoogleRoute(self.env(VERTEX_MODEL_MAP=json.dumps({'gemini-3.5-transcribe-live': 'gemini-3.5-transcribe-live-preview'})))
+                r.live_url = fake.url
                 finals = []
                 ears = GeminiEars(http, r, lambda t: None, finals.append, lambda e: finals.append(('error', e)))
                 await ears.start()

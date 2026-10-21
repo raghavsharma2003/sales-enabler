@@ -9,11 +9,11 @@
      "type": "call.started",
      "at": "2026-10-21T00:00:00.000Z",
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -254,11 +254,11 @@
       }
      ],
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -281,11 +281,11 @@
      "type": "call.started",
      "at": "2026-10-21T00:00:00.000Z",
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -477,11 +477,11 @@
       }
      ],
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -504,11 +504,11 @@
      "type": "call.started",
      "at": "2026-10-21T00:00:00.000Z",
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -632,11 +632,11 @@
       }
      ],
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -659,11 +659,11 @@
      "type": "call.started",
      "at": "2026-10-21T00:00:00.000Z",
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -786,11 +786,11 @@
       }
      ],
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -813,11 +813,11 @@
      "type": "call.started",
      "at": "2026-10-21T00:00:00.000Z",
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -916,11 +916,11 @@
       }
      ],
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -943,11 +943,11 @@
      "type": "call.started",
      "at": "2026-10-21T00:00:00.000Z",
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"
@@ -1113,11 +1113,11 @@
       }
      ],
      "manifest": {
-      "combinationId": "v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
       "stackId": "v2-flashlite",
       "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "components": {
-       "stt": "gemini",
+       "stt": "azure",
        "llm": "gemini-3.5-flash-lite",
        "tts": "gemini-lite",
        "voice": "Despina"

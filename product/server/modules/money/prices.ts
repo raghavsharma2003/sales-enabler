@@ -34,6 +34,7 @@ type Voice = { provider: string; usd1mChars?: number; usdAudioMin?: number; pric
 // Copied from catalog.py; keep the source text so the card shows where every number came from.
 export const EARS: Record<string, Ears> = {
   gemini: { provider: 'Gemini 3.5 transcribe-live', usdMin: 0.005 + 0.0005, price: '$0.0055/audio min', src: `${CAT} STT.gemini: audio in $3.5/1M (25 tok/s) + text out` },
+  azure: { provider: 'Azure Speech hi-IN (Central India)', usdMin: 1.0 / 60, price: '$1.00/audio hour', src: `${CAT} STT.azure: Azure S1 real-time STT $1.00/audio hour` },
   sarvam: { provider: 'Sarvam Saaras v4', usdMin: 0.5 / FX, price: '₹30/audio hour', src: `${CAT} STT.sarvam: Sarvam docs, billed per second` },
 };
 export const BRAINS: Record<string, Brain> = {

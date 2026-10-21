@@ -91,7 +91,7 @@ test('stacks: the finalised set is present and there is no default', () => {
 });
 
 test('stacks: combination identity names what actually ran', () => {
-  assert.equal(combinationId(requireStack('v2-flashlite'), 'Despina'), 'v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina');
+  assert.equal(combinationId(requireStack('v2-flashlite'), 'Despina'), 'v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina');
   assert.equal(combinationId(requireStack('v2-live')), 'v2|gemini-3.8-live');
 });
 

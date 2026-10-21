@@ -64,6 +64,49 @@ class GeminiEars:
         if self.reader: self.reader.cancel()
 
 
+class AzureEars:
+    """Azure Speech real-time STT (Central India, hi-IN), ported from voicelab/server/providers.py AzureSTT: a 16 kHz
+    push stream into the Speech SDK's continuous recogniser; partials on 'recognizing', finals on 'recognized'; the
+    service's own segmentation (500 ms silence) endpoints each utterance. The SDK runs its own threads, so callbacks
+    hop back to the event loop. The SDK is imported at start() (tests inject a fake; never a network call in tests)."""
+    def __init__(self, on_partial, on_final, on_error, lang='hi-IN', env=None, seg_ms=500, sdk=None):
+        self.on_partial = on_partial; self.on_final = on_final; self.on_error = on_error; self.lang = lang; self.seg_ms = seg_ms
+        self.env = os.environ if env is None else env; self.sdk = sdk; self.stream = None; self.rec = None
+        self.audio_s = 0.0; self.closed = False
+
+    async def start(self):
+        sp = self.sdk
+        if sp is None:
+            import azure.cognitiveservices.speech as sp           # azure-cognitiveservices-speech (requirements.txt)
+        loop = asyncio.get_running_loop()
+        c = sp.SpeechConfig(subscription=self.env.get('LAB_SPEECH_KEY', ''), region=self.env.get('LAB_SPEECH_REGION') or 'centralindia')
+        c.speech_recognition_language = self.lang
+        c.set_property(sp.PropertyId.Speech_SegmentationSilenceTimeoutMs, str(self.seg_ms))
+        self.stream = sp.audio.PushAudioInputStream(stream_format=sp.audio.AudioStreamFormat(samples_per_second=16000, bits_per_sample=16, channels=1))
+        self.rec = sp.SpeechRecognizer(speech_config=c, audio_config=sp.audio.AudioConfig(stream=self.stream))
+        hop = lambda f, *a: None if self.closed else loop.call_soon_threadsafe(f, *a)
+        self.rec.recognizing.connect(lambda e: hop(self.on_partial, e.result.text))
+        self.rec.recognized.connect(lambda e: hop(self.on_final, e.result.text)
+                                    if e.result.reason == sp.ResultReason.RecognizedSpeech and e.result.text else None)
+        self.rec.canceled.connect(lambda e: hop(self.on_error, str(e.cancellation_details.error_details)[:200])
+                                  if e.cancellation_details.reason == sp.CancellationReason.Error else None)
+        await loop.run_in_executor(None, lambda: self.rec.start_continuous_recognition_async().get())
+
+    def write(self, pcm, is_speech):
+        if self.stream is None or self.closed: return
+        self.stream.write(pcm); self.audio_s += len(pcm) / 32000
+
+    def end_of_speech(self): pass                                  # Azure endpoints on its own silence timeout
+
+    async def close(self):
+        if self.closed: return
+        self.closed = True
+        if self.stream is not None: self.stream.close()
+        if self.rec is not None:
+            try: await asyncio.get_running_loop().run_in_executor(None, lambda: self.rec.stop_continuous_recognition_async().get())
+            except Exception: pass
+
+
 SARVAM_STT_WS = 'wss://api.sarvam.ai/speech-to-text-realtime/ws'
 
 

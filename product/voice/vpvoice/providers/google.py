@@ -4,32 +4,36 @@
 # OpenRouter: what Vertex does not offer (a model, or Live without a configured location) makes the stack unavailable
 # with a plain reason, before the call starts. One route per call, never switched mid-call (no-midcall-swap).
 #
-# Model ids and locations are configuration, because what Vertex offers changes (docs read 2026-10-21, context inbox
-# voice-2026-10-21-vertex-docs.json):
+# Model ids and locations are configuration, because what Vertex offers changes. Defaults are what the India VM probe
+# measured (measure.2026-10-22.vertex-availability-probe), not the docs:
 #   VERTEX_PROJECT          project id (default: the service account's project_id)
 #   VERTEX_LOCATION         text and TTS (default 'global')
-#   VERTEX_LIVE_LOCATION    the Live websocket; regional only. No default: unset = the Live ears and speech-to-speech
-#                           are unavailable (the docs list gemini-3.8-live in us/eu/us-central1, not India)
+#   VERTEX_LIVE_LOCATION    the Live websocket; regional only (default us-central1: gemini-3.8-live set up only there;
+#                           europe-west4/-west1 and asia-south1 said not found; processing anywhere is accepted,
+#                           directive.2026-10-22.processing-anywhere)
 #   VERTEX_MODEL_MAP        JSON {our model id: Vertex model id or null}, merged over DEFAULT_MODELS (null removes one)
 #   VERTEX_LIVE_AUDIO       'mediaChunks' (the Vertex sample's form, default) or 'audio' (the Gemini API form)
 import asyncio, base64, json, logging, os, re, time
 
 log = logging.getLogger('vp.voice.google')
 LIVE_PATH = '/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent'
-# Our model id -> Vertex model id. Text and TTS: the set the lab routed to Vertex before the 2026-10-20 restriction.
-# Live: as the Live API page names them (2026-10-21). Anything absent is not offered on our Google route.
+# Our model id -> Vertex model id: each answered 200 (text, TTS) or set up (Live) from the India VM, 2026-10-22. Not
+# offered there, so absent: gemini-3.5-transcribe-live(-preview) and gemini-3.1-flash-live-preview ("publisher model not
+# found"), hence no Gemini ears on Vertex (decision.2026-10-22.ears-azure-not-gemini). Absent = not offered.
 DEFAULT_MODELS = {
     'gemini-3.5-flash-lite': 'gemini-3.5-flash-lite', 'gemini-3.6-flash': 'gemini-3.6-flash', 'gemini-3.8-flash': 'gemini-3.8-flash',
     'gemini-3.8-flash-tts': 'gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts': 'gemini-3.8-flash-lite-tts',
-    'gemini-3.8-live': 'gemini-3.8-live', 'gemini-3.5-transcribe-live': 'gemini-3.5-transcribe-live-preview',
+    'gemini-3.8-live': 'gemini-3.8-live',
 }
+TEXT_LIVE_OFF = {'gemini-3.8-live'}    # Vertex Live refused TEXT output for it ("Unsupported modality for Vertex Live API")
 LIVE_MODELS = {'gemini-3.8-live', 'gemini-3.5-transcribe-live', 'gemini-3.1-flash-live-preview'}
 # The plain reason a person sees when a stack cannot run on our Google route (never a developer string).
 NOT_OFFERED = {'brain': "This model isn't offered on our Google Cloud route yet",
                'voice': "This voice isn't offered on our Google Cloud route yet",
-               'ears': "Gemini listening isn't offered on our Google Cloud route yet",
+               'ears': "Gemini listening isn't offered on Google Cloud",
                's2s': "This speech-to-speech model isn't offered on our Google Cloud route yet"}
 NO_ROUTE = "Our Google Cloud route isn't set up on this server"
+TEXT_S2S = "Text test calls aren't offered on this speech-to-speech engine on Google Cloud; test it on a voice call"
 
 
 def ws_text(m):
@@ -109,7 +113,7 @@ class GoogleRoute:
         env = os.environ if env is None else env
         self.models = model_map(env); self.vertex = None; self.why = NO_ROUTE
         self.project = env.get('VERTEX_PROJECT', ''); self.location = env.get('VERTEX_LOCATION') or 'global'
-        self.live_location = (env.get('VERTEX_LIVE_LOCATION') or '').strip()
+        self.live_location = (env.get('VERTEX_LIVE_LOCATION') or 'us-central1').strip()
         self.live_audio = 'audio' if env.get('VERTEX_LIVE_AUDIO') == 'audio' else 'mediaChunks'
         sa_path = env.get('VERTEX_SA_FILE')
         if not sa_path or not os.path.exists(sa_path): return
@@ -179,13 +183,15 @@ def google_models(stack_id):
     return out
 
 
-def unavailable(stack_id, route):
-    """The plain reason a stack cannot run on our Google route, or None. Never a reroute."""
+def unavailable(stack_id, route, text_only=False):
+    """The plain reason a stack cannot run on our Google route, or None. Never a reroute. text_only: a sim (text) call,
+    which runs a speech-to-speech model in text mode, which Vertex Live refuses for some models."""
     needs = google_models(stack_id)
     if not needs: return None
     if not route.usable: return NO_ROUTE
     for comp, model in needs:
         if not route.offers(model): return NOT_OFFERED[comp]
+        if text_only and comp == 's2s' and model in TEXT_LIVE_OFF: return TEXT_S2S
     return None
 
 

@@ -48,7 +48,7 @@ class EndToEnd(unittest.TestCase):
         end = e[-1]
         self.assertEqual(end['endReason'], 'agent_ended')
         self.assertEqual(end['manifest']['fallbacksUsed'], [])
-        self.assertEqual(end['manifest']['combinationId'], 'v2|gemini+gemini-3.5-flash-lite+gemini-lite~Despina')
+        self.assertEqual(end['manifest']['combinationId'], 'v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina')
         self.assertEqual(end['manifest']['agentVersionHash'], 'a' * 64)
         self.assertEqual(len(end['transcript']), 7)
         self.assertNotIn('recordingUri', end)
