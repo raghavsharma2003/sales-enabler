@@ -3,6 +3,8 @@
 #   - product/tests/voice-runtime-events.test.ts runs the committed fixture through calls' real validateRuntimeBatch;
 #   - this file checks the runtime still produces what the fixture holds, and (when node + tsx are installed) runs the
 #     live batches through the same validator.
+# The fixture lives in tests/vectors/, not tests/data/: the root .gitignore ignores every data/ (it protects private
+# files such as data/blueprint/), which once kept this file out of a commit.
 # Regenerate after an intended change: VP_WRITE_FIXTURES=1 python -m unittest tests.test_runtime_fixture
 import asyncio, json, os, shutil, subprocess, unittest
 from tests.fixtures import FakeBrain, components, sink, ticket
