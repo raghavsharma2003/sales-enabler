@@ -10,14 +10,16 @@
 # mu-law encode -> playAudio frames. Providers are fakes with realistic timing:
 #   ears:  final transcript 300 ms after the VAD's end of speech
 #   brain: first sentence at 700 ms, then ~30 tokens/s
-#   voice: first audio 250 ms after a sentence, then audio in real time (40 ms chunks)
+#   voice: first audio 250 ms after a sentence, then audio at 2x real time in 40 ms chunks (streaming TTS runs ahead
+#          of playback; the runtime forwards chunks as they come and the carrier buffers them)
 # Callers play synthetic speech (the Azure TTS phone-band stimuli in research/, decoded with ffmpeg), about 2 s of
 # speech then 4-6 s of silence, over and over.
 #
 # Measured per N (after a 10 s warm-up): runtime process CPU % and per call, RSS, event-loop lag (a 10 ms sampler in
-# the runtime), outbound frame gaps (a gap over 60 ms between 40 ms frames of one reply is a late frame: an audible
-# glitch without a far-end buffer), turn end -> first audio inside the runtime (the runtime's own latencyMs minus the
-# 1,250 ms of fake provider delay), and frames the runtime never sent.
+# the runtime), outbound frame lateness against each reply's playback clock (frame i is due at the reply's first frame
+# + the audio before it; arriving more than 20 ms after that is an underrun, i.e. an audible glitch), turn end -> first
+# audio inside the runtime (the runtime's own latencyMs minus the 1,250 ms of fake provider delay), and the load
+# generator's own lag (if that is high, its numbers are suspect).
 import argparse, asyncio, base64, glob, json, os, random, statistics, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -85,7 +87,7 @@ def serve(port, profile):
             for i in range(n):
                 usage['audio_s'] = usage.get('audio_s', 0) + CHUNK_S
                 yield self.TONE
-                await asyncio.sleep(max(0.0, t0 + (i + 1) * CHUNK_S - time.perf_counter()))     # real time
+                await asyncio.sleep(max(0.0, t0 + (i + 1) * CHUNK_S / 2 - time.perf_counter()))     # 2x real time
 
     def make_components(sid, voice, t, http, env):
         s = stacks.STACKS[sid]; c = s['components']
@@ -179,7 +181,7 @@ async def one_call(http, port, k, clips, seconds, out):
             if m.type.name != 'TEXT': continue
             d = json.loads(m.data)
             if d.get('event') == 'playAudio':
-                now = time.perf_counter(); arrivals.append(now)
+                now = time.perf_counter(); arrivals.append((now, len(d['media']['payload']) * 3 // 4 / 8000, len(speech_ends)))
                 if speech_ends and (not first_audio or first_audio[-1][0] < speech_ends[-1]): first_audio.append((speech_ends[-1], now))
     rd = asyncio.ensure_future(reader())
     SIL = b'\xff' * 160
@@ -202,8 +204,14 @@ async def one_call(http, port, k, clips, seconds, out):
         i += 1
     await ws.send_str(json.dumps({'event': 'stop'})); await asyncio.sleep(0.2)
     await ws.close(); rd.cancel()
-    gaps = [b - a for a, b in zip(arrivals, arrivals[1:]) if b - a < 0.5]          # within one reply
-    out.append({'gaps_ms': [g * 1000 for g in gaps], 'frames': len(arrivals), 'client_latency_ms': [(b - a) * 1000 for a, b in first_audio]})
+    # lateness against each reply's playback clock: a reply is the frames that came after the same speech end
+    late = []; by_reply = {}
+    for now, dur, r in arrivals: by_reply.setdefault(r, []).append((now, dur))
+    for frames in by_reply.values():
+        start = frames[0][0]; played = 0.0
+        for now, dur in frames:                  # frame i is due when the audio before it has played out
+            late.append(max(0.0, now - (start + played)) * 1000); played += dur
+    out.append({'late_ms': late, 'frames': len(arrivals), 'client_latency_ms': [(b - a) * 1000 for a, b in first_audio]})
 
 
 async def run_n(n, seconds, clips, profile):
@@ -242,12 +250,11 @@ async def run_n(n, seconds, clips, profile):
         try: srv.wait(10)
         except Exception: srv.kill()
     cpu = (c1 - c0) / (w1 - w0) * 100
-    gaps = [g for o in out for g in o['gaps_ms']]
-    late = sum(1 for g in gaps if g > CHUNK_S * 1000 + 20)
-    jitter = [abs(g - CHUNK_S * 1000) for g in gaps]
+    lateness = [x for o in out for x in o['late_ms']]
+    late = sum(1 for x in lateness if x > 20)
     overhead = [x - PROVIDER_MS for x in st['latency_ms']]
-    return {'n': n, 'cpu_pct': cpu, 'cpu_per_call': cpu / n, 'rss_mb': rss, 'hwm_mb': hwm, 'lag': st['lag_ms'], 'jitter': jitter, 'late': late,
-            'frames': sum(o['frames'] for o in out), 'gaps': len(gaps), 'overhead': overhead, 'replies': st['replies'],
+    return {'n': n, 'cpu_pct': cpu, 'cpu_per_call': cpu / n, 'rss_mb': rss, 'hwm_mb': hwm, 'lag': st['lag_ms'], 'lateness': lateness, 'late': late,
+            'frames': sum(o['frames'] for o in out), 'overhead': overhead, 'replies': st['replies'],
             'client_latency': [x for o in out for x in o['client_latency_ms']], 'client_lag': client_lag, 'profile': prof_txt}
 
 
@@ -264,15 +271,15 @@ def main():
     print(f'git {sha} · python {sys.version.split()[0]} · {os.cpu_count()} cpu · rules {rules.VERSION} · VAD {vad}')
     print(f'line: G.711 mu-law 8 kHz, 20 ms frames in; runtime 16 kHz internal; voice 24 kHz PCM16 in 40 ms chunks -> 8 kHz mu-law out')
     print(f'callers: {len(clips)} synthetic speech clips (Azure TTS phone stimuli) ~2 s talk / 4-6 s quiet; fake providers {PROVIDER_MS:.0f} ms per reply')
-    print(f'{"N":>4} {"cpu%":>6} {"cpu%/call":>9} {"rss MB":>7} {"lag p50":>8} {"lag p99":>8} {"lag max":>8} {"jit p99":>8} {"late fr":>8} '
+    print(f'{"N":>4} {"cpu%":>6} {"cpu%/call":>9} {"rss MB":>7} {"lag p50":>8} {"lag p99":>8} {"lag max":>8} {"late p99":>8} {"late>20ms":>12} '
           f'{"overhd p50":>10} {"overhd p99":>10} {"replies":>7} {"gen lag p99":>11}')
     for n in a.calls:
         r = asyncio.run(run_n(n, a.seconds, clips, a.profile))
         print(f'{n:>4} {r["cpu_pct"]:>6.0f} {r["cpu_per_call"]:>9.2f} {r["rss_mb"]:>7.0f} {q(r["lag"], .5):>8.1f} {q(r["lag"], .99):>8.1f} '
-              f'{max(r["lag"] or [0]):>8.1f} {q(r["jitter"], .99):>8.1f} {r["late"]:>4}/{r["gaps"]:<5} {q(r["overhead"], .5):>10.0f} '
+              f'{max(r["lag"] or [0]):>8.1f} {q(r["lateness"], .99):>8.1f} {r["late"]:>5}/{r["frames"]:<6} {q(r["overhead"], .5):>10.0f} '
               f'{q(r["overhead"], .99):>10.0f} {r["replies"]:>7} {q(r["client_lag"], .99):>11.1f}', flush=True)
         if r['profile']: print(r['profile'])
-        if q(r['lag'], .99) > 200 or q(r['jitter'], .99) > 200: print('stopping: the process is saturated'); break
+        if q(r['lag'], .99) > 200 or q(r['lateness'], .99) > 200: print('stopping: the process is saturated'); break
 
 
 if __name__ == '__main__':
