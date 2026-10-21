@@ -16461,6 +16461,38 @@
    "source": "web builder",
    "rationale": "Verified against the real server with data made through the real tools; calls were seeded through the signed runtime hook because the sandbox has no telephony.",
    "closes_when": "a tool lists workspace numbers and verifies a member phone, saved simulated callers exist, and practice callers run against a real model with verdicts that mean something"
+  },
+  {
+   "id": "measure.2026-10-21.review-who-gets-called",
+   "type": "measurement",
+   "title": "Adversarial review 'who gets called' (dial gate, consent, DPDP, minors): 9 confirmed defects (2 blocker, 5 major, 2 minor), each with a test that fails on bd7d8dd; 11 suspected classes could not be reproduced and were discarded.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "independent reviewer session (main loop's review phase)",
+   "n": 9,
+   "method": "Reviewer read campaigns/gate.ts, worker, intake and memory/minor.ts. Each claim became a todo test through the real runGate or tool bodies on a throwaway Postgres 16; tests in product/tests/review/who-gets-called.test.ts, details in .md (c937ebf).",
+   "value": "2 blocker / 5 major / 2 minor; discarded: double dial, review-stop overshoot, hold leak, mid-call opt-out, merge, number formats, Devanagari digits, salt, retry vs G7, future dials, test ring, tenancy",
+   "path": "product/tests/review/who-gets-called.md"
+  },
+  {
+   "id": "rejected.2026-10-21.gate-dnd-unknown-passes",
+   "type": "rejection",
+   "title": "G5 treated any NCPR status outside the registered list as 'not registered', so 'unknown' passed promotional dials.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "review WGC-01 (blocker), confirmed by reading gate.ts",
+   "broke": "In production the DND provider is disabled and contact.dnd_refresh stamps checked_at with status 'unknown'. Every consented promotional row became dialable, including DND-registered numbers. Rule: an allow list ('not_registered' only), never a block list, for any fact that permits a call.",
+   "path": "product/server/modules/campaigns/gate.ts"
+  },
+  {
+   "id": "rejected.2026-10-21.consent-latest-per-purpose",
+   "type": "rejection",
+   "title": "G5 took the latest consent record per purpose and accepted any granted covering purpose, so an older 'all' grant outranked a newer 'promotional' or 'service' withdrawal.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "review WGC-03 (blocker), confirmed by reading gate.ts; WGC-06 adds that order was insert time, not consent time",
+   "broke": "A person who withdrew from promotional calls was still called promotionally because an older 'all' grant counted as a basis. Re-importing an old consent=yes file also became the latest record. Rule: the newest record by effective time across every purpose covering the call's category decides; withdrawals win ties.",
+   "path": "product/server/modules/campaigns/gate.ts"
   }
  ],
  "edges": [
@@ -29580,6 +29612,16 @@
    "from": "decision.2026-10-21.learning-counts-outcome-calls",
    "to": "component.2026-10-21.learning-module",
    "relation": "constrains"
+  },
+  {
+   "from": "measure.2026-10-21.review-who-gets-called",
+   "to": "rejected.2026-10-21.gate-dnd-unknown-passes",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-21.review-who-gets-called",
+   "to": "rejected.2026-10-21.consent-latest-per-purpose",
+   "relation": "supports"
   }
  ]
 }
