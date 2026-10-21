@@ -27,7 +27,15 @@ export function runtimeSecret(): string {
   return s;
 }
 
-export interface StartReply { accepted: boolean; join?: { url: string; token: string; expiresAt: string }; reason?: string }
+/** How to join the call, as the runtime returns it. sim and webrtc carry url + token (webrtc adds offerUrl and audio);
+ *  sip carries the trunk and the carrier answer/hangup URLs and no url or token. */
+export type Join =
+  | { kind: 'sim' | 'webrtc'; url: string; token: string; expiresAtMs: number; offerUrl?: string; audio?: unknown }
+  | { kind: 'sip'; trunk: unknown; expiresAtMs: number; answerUrl: string; hangupUrl: string; [k: string]: unknown };
+
+/** retryable: the runtime placed nothing and asks to be tried again after retryAfterS (its admission cap, 503 at_capacity).
+ *  The caller must not count that as a failed attempt. */
+export interface StartReply { accepted: boolean; join?: Join; reason?: string; retryable?: boolean; retryAfterS?: number }
 
 export interface Runtime {
   start(ticket: CallTicket): Promise<StartReply>;
@@ -46,10 +54,20 @@ export class HttpRuntime implements Runtime {
   async start(ticket: CallTicket): Promise<StartReply> {
     const r = await this.post('/v1/calls', ticket);
     if (r.status === 202 || r.ok) return { accepted: true, ...(await r.json() as object) };
-    return { accepted: false, reason: `runtime returned ${r.status}: ${(await r.text()).slice(0, 200)}` };
+    const text = (await r.text()).slice(0, 500);
+    if (r.status === 503) {
+      let j: { error?: unknown; retryAfterS?: unknown } | null = null;
+      try { j = JSON.parse(text); } catch { /* not JSON: an ordinary refusal */ }
+      if (j?.error === 'at_capacity') {
+        const s = Number(j.retryAfterS);
+        return { accepted: false, retryable: true, retryAfterS: Number.isFinite(s) && s > 0 ? Math.round(s) : 5, reason: 'the voice engine is at capacity' };
+      }
+    }
+    return { accepted: false, reason: `runtime returned ${r.status}: ${text.slice(0, 200)}` };
   }
+  /** The body always carries conversationId: the signature covers only the body, so the id there is the runtime's replay guard. */
   async control(id: string, action: string, body: Record<string, unknown> = {}) {
-    const r = await this.post(`/v1/calls/${encodeURIComponent(id)}/${action}`, body);
+    const r = await this.post(`/v1/calls/${encodeURIComponent(id)}/${action}`, { ...body, conversationId: id });
     return { ok: r.ok, detail: await r.json().catch(() => null) };
   }
 }
@@ -60,7 +78,7 @@ export class FakeRuntime implements Runtime {
   controls: { id: string; action: string; body?: Record<string, unknown> }[] = [];
   async start(ticket: CallTicket): Promise<StartReply> {
     this.tickets.push(ticket);
-    return { accepted: true, join: { url: `/dev/call/${ticket.conversationId}`, token: 'fake', expiresAt: new Date(Date.now() + 600_000).toISOString() } };
+    return { accepted: true, join: { kind: 'sim', url: `/dev/call/${ticket.conversationId}`, token: 'fake', expiresAtMs: Date.now() + 600_000 } };
   }
   async control(id: string, action: string, body?: Record<string, unknown>) { this.controls.push({ id, action, body }); return { ok: true }; }
 }
