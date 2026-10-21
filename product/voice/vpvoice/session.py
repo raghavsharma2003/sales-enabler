@@ -124,6 +124,7 @@ class Session:
             await self.close_media()
         except Exception:
             log.exception('close media')
+        for send in list(self.listeners): self.listener_removed(send)     # each listen pair closes before call.ended
         for close in list(self.live_closers):          # listen and member sockets end with the call
             try: await close()
             except Exception: pass
@@ -247,7 +248,17 @@ class Session:
         clean = safety.redact(' '.join(str(text).split()))[:WHISPER_MAX]
         if not clean: return 'empty whisper'
         self.conv.whisper = clean; self.conv.whisper_used = False
+        self.sink.emit('moment', kind='whisper', atMs=self.conv.ms())          # that a note was sent; never what it said
         return None
+
+    def listener_added(self, send):
+        self.listeners.add(send)
+        self.sink.emit('moment', kind='live_listen_started', atMs=self.conv.ms(), note='a supervisor started listening')
+
+    def listener_removed(self, send):
+        if send not in self.listeners: return
+        self.listeners.discard(send)
+        self.sink.emit('moment', kind='live_listen_ended', atMs=self.conv.ms(), note='a supervisor stopped listening')
 
     def doored(self, line):
         """A fixed line from code, put through the reply door like anything she says (None if the door blocks it)."""
@@ -263,6 +274,7 @@ class Session:
         self.taken_over = str(member_id)
         await self.cut_for_takeover()
         self.handed_off = True
+        self.sink.emit('moment', kind='takeover', atMs=self.conv.ms(), note='a person took over the call')
         self.sink.emit('hand_off', reason='takeover', target=f'member:{self.taken_over}', summary=self.summary_line())
         line = self.doored(takeover_line(self.conv.gender))
         if line: await self.speak_canned(line)

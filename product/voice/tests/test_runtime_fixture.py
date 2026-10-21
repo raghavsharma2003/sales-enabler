@@ -26,6 +26,7 @@ CALLS = [
     ('judge_unavailable', 'raise', 'I think the caller may be sad.', [DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [INDIRECT]),
     ('human_hand_off', 'off', None, [DISCLOSED], ['mujhe dobara call mat karna, kisi insaan se baat karao']),
 ]
+LIVE = ('supervisor_live', [DISCLOSED, 'Ji, aapka renewal 2 November ko hai.'], ['haan ji, boliye', 'achha'])
 
 
 def run_calls():
@@ -47,7 +48,29 @@ def run_calls():
             if not sess.ended: await sess.hang_up()
         asyncio.run(go())
         out[name] = [json.loads(b) for b in p.bodies]
+    out[LIVE[0]] = live_call(len(CALLS) + 1)
     return out
+
+
+def live_call(i):
+    """A supervisor listens, whispers, then takes over; the member hangs up."""
+    from vpvoice.session import SimSession
+    name, script, lines = LIVE
+    t = ticket(); t['conversationId'] = f'0b6f6e1a-1c2d-4e5f-8a9b-{i:012d}'
+    s, p = sink(t['conversationId'])
+    async def go():
+        sess = SimSession(t, components(brain=FakeBrain(script)), s, env={}, watchdog_s=0.01)
+        await sess.start()
+        async def listener(b): pass
+        sess.listener_added(listener)
+        sess.whisper('renewal date pehle batao')
+        await sess.caller_says(lines[0])
+        sess.listener_removed(listener)
+        await sess.takeover('0b6f6e1a-1c2d-4e5f-8a9b-0000000000aa')
+        await sess.caller_says(lines[1])
+        await sess.end('handed_off')
+    asyncio.run(go())
+    return [json.loads(b) for b in p.bodies]
 
 
 ZERO = {'latencyMs': 0, 'startMs': 0, 'endMs': 0, 'atMs': 0, 'durationS': 0.0, 'at_ms': 0}
@@ -87,6 +110,9 @@ class RuntimeEventsFixture(unittest.TestCase):
         events = [e for batches in self.calls.values() for b in batches for e in b['events']]
         self.assertEqual({e['type'] for e in events}, {'call.started', 'turn', 'cost', 'safety', 'moment', 'tool', 'hand_off', 'judge', 'call.ended'})
         self.assertEqual({e['outcome'] for e in events if e['type'] == 'judge'}, {'raised', 'shadow', 'unavailable'})
+        live = {e['kind'] for e in events if e['type'] == 'moment'} & {'live_listen_started', 'live_listen_ended', 'whisper', 'takeover'}
+        self.assertEqual(live, {'live_listen_started', 'live_listen_ended', 'whisper', 'takeover'})
+        self.assertTrue(all(not e.get('note') for e in events if e['type'] == 'moment' and e['kind'] == 'whisper'), 'a whisper moment never carries it')
 
     def test_runtime_still_produces_the_committed_fixture(self):
         with open(FIXTURE, encoding='utf-8') as f: committed = json.load(f)

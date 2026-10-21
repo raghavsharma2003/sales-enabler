@@ -295,8 +295,10 @@ body names another call, 404 for an unknown call, 409 if the call is not joined,
   - A crisis call can be taken over. It is never ended by this path, except by the runaway guard: a taken-over call ends
     silently at twice its duration limit.
   - The cost meter keeps the line and the ears (for the caller's transcript). Her brain and voice stop.
-- **Moments:** the contract's `moment.kind` is a closed list, and ingest refuses unknown kinds. So the runtime emits no
-  live_listen or whisper moments until `runtime-protocol.ts` adds them. The takeover shows as its `hand_off`.
+- **Moments** (contract at 3a84688), for the call page timeline:
+  - `live_listen_started` / `live_listen_ended`: one pair per listener. Any open pair is closed before `call.ended`.
+  - `whisper`: one per accepted whisper, with no note. The text is never sent.
+  - `takeover`: emitted alongside the `hand_off`.
 
 ## Environment (names only; values live in the deployment's secret store, never in the repo)
 

@@ -244,12 +244,12 @@ class Runtime:
             if not ws.closed:
                 try: await ws.send_bytes(b)
                 except Exception: pass
-        s.listeners.add(send); s.live_closers.append(ws.close)
+        s.listener_added(send); s.live_closers.append(ws.close)
         try:
             await ws.send_json({'t': 'ready', 'audio': 'pcm16le/16000/mono, both legs mixed'})
             async for _ in ws: pass
         finally:
-            s.listeners.discard(send)
+            s.listener_removed(send)
             if ws.close in s.live_closers: s.live_closers.remove(ws.close)
         return ws
 

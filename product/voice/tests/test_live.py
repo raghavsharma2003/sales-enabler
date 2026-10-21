@@ -46,6 +46,8 @@ class Whisper(unittest.TestCase):
         self.assertIn('RD2', {e['rule'] for e in types(p, 'safety')})
         self.assertNotIn('colleague listening', b.calls[2][-1]['content'], 'spent after one reply')
         self.assertNotIn("you're a human", json.dumps(evs(p), ensure_ascii=False), 'whisper text is in no event')
+        w = [e for e in types(p, 'moment') if e['kind'] == 'whisper']
+        self.assertEqual(len(w), 1); self.assertFalse(w[0].get('note'), 'the whisper moment says that, never what')
 
     def test_whisper_is_capped_and_refused_after_takeover(self):
         async def go():
@@ -179,8 +181,8 @@ class CascadeListen(unittest.TestCase):
                 sess.env = {'VP_RECORDINGS_DIR': d}
                 got = []
                 async def listener(b): got.append(b)
-                sess.listeners.add(listener)
                 await sess.start()
+                sess.listener_added(listener)
                 await wait_until(lambda: sess.active is not None and sess.active.play_start is not None)
                 await feed(sess, 10, QUIET); await asyncio.sleep(0.02)
                 await sess.end('completed')
@@ -190,7 +192,8 @@ class CascadeListen(unittest.TestCase):
         self.assertEqual(len(got), 10); self.assertEqual({len(b) for b in got}, {len(QUIET)})
         mixed = np.frombuffer(b''.join(got), dtype='<i2')
         self.assertTrue((mixed != 0).any(), "her audio is in the mix though the caller was quiet")
-        self.assertNotIn('listen', json.dumps(evs(p)))
+        self.assertEqual([e['kind'] for e in types(p, 'moment')], ['live_listen_started', 'live_listen_ended'],
+                         'the pair is closed before call.ended; no event carries audio or a listener id')
 
 
 class LiveHttp(Base):
@@ -254,7 +257,11 @@ class LiveHttp(Base):
         await lis.close(); await asyncio.sleep(0.05)
         self.assertEqual((await (await self.client.get('/v1/health')).json())['live']['listeners'], 0)
         self.assertFalse(self.rt.calls[cid].session.ended, 'closing listen never ends the call')
-        await ws.send_str(json.dumps({'t': 'hangup'})); await ws.close()
+        await ws.send_str(json.dumps({'t': 'hangup'})); await ws.close(); await asyncio.sleep(0.1)
+        e = self.posters[0].events()
+        kinds = [x['kind'] for x in e if x['type'] == 'moment']
+        self.assertEqual([k for k in kinds if k.startswith('live_')], ['live_listen_started', 'live_listen_ended'])
+        self.assertEqual(e[-1]['type'], 'call.ended')
 
 
 if __name__ == '__main__':
