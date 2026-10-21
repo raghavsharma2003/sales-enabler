@@ -62,12 +62,16 @@
         "\\b(sitting|seated) (at|in) (our|the|my)\\b[^.?!]{0,15}\\b(office|branch|desk|cent(er|re))\\b",
         "\\b(hoon|hun|hu|am)\\b,? (koi |a |an )?(machine|software|bot|robot|computer|recording|program)\\b ?(nahi|nahin|nhi|not)\\b",
         "\\b(bot|ai|robot|machine|computer)\\b[^.?!]{0,15}\\b(afwah|afwaah|galat fehmi|galatfehmi|jhooth|jhoot|bakwas|rumou?r|myth)\\b",
-        "\\b(ai|bot|robot|machine)\\b ?(wagairah|wagaira|vagairah|vagaira|vagera|wala|wali)? ?(kuch nahi|koi nahi) (hai|hoon|hun)\\b"
+        "\\b(ai|bot|robot|machine)\\b ?(wagairah|wagaira|vagairah|vagaira|vagera|wala|wali)? ?(kuch nahi|koi nahi) (hai|hoon|hun)\\b",
+        "\\b(recorded|ai|bot|robot|machine|computer)\\b[^.?!]{0,15}\\b(wali|wala)? ?call nahi (hai|h)\\b",
+        "\\b(main|mai) (khud )?live baat kar rahi\\b",
+        "\\b(main|mai) (ek |senior |junior )*(executive|officer|agent|advisor|representative) (hoon|hun|hu)\\b"
       ],
       "none": [
         "\\b(main|mai|i'?m|i am)\\b[^.?!]{0,25}\\b(ai|artificial intelligence|virtual assistant|digital assistant|ai assistant)\\b[^.?!]{0,20}\\b(hoon|hun|hu|am)\\b[^.?!]{0,30}\\b(insaan|human) (nahi|nahin|nhi|not)\\b",
         "\\bnot a human\\b",
-        "\\b(insaan|insan|human) (nahi|nahin|nhi)\\b"
+        "\\b(insaan|insan|human) (nahi|nahin|nhi)\\b",
+        "\\b(cannot|can'?t|can not|nahi) (say|claim|keh|bol)[a-z ]{0,20}(human|insaan)\\b"
       ]
     },
     {
@@ -92,7 +96,7 @@
       "action": "block",
       "reason": "asks for an OTP, PIN, CVV, card number, UPI PIN, password or full Aadhaar",
       "all": [
-        "(\\botp\\b|one[- ]time password|\\bpin\\b|\\bm-?pin\\b|\\bcvv\\b|\\bcvc\\b|card (number|no|ke number|ka number|details)|card ke (peeche|piche)|\\bpassword\\b|\\bpasscode\\b|net ?banking|\\bupi pin\\b|\\baadhaa?r (number|no|card number)|\\baadhaa?r ka (pura|poora) number|\\bverification code\\b|ओटीपी|पिन|सीवीवी|पासवर्ड|आधार नंबर|कार्ड नंबर|(aaya|aayega|aaega|received|sms|message|bheja)[^.?!]{0,30}\\bcode\\b|\\bcode\\b[^.?!]{0,30}\\b(aaya|aayega|sms|message)|\\baadhaa?r\\b[^.?!]{0,20}\\b(saare|sare|pura|poora|full|complete|barah|12|twelve)\\b|\\b(4|6|four|six|char|chhe)[- ]digit (code|number|otp)\\b|\\bcode\\b[^.?!]{0,25}\\b(came|arrived|on your phone|phone par|phone pe))",
+        "(\\botp\\b|one[- ]time password|\\bpin\\b|\\bm-?pin\\b|\\bcvv\\b|\\bcvc\\b|card (number|no|ke number|ka number|details)|card ke (peeche|piche)|\\bpassword\\b|\\bpasscode\\b|net ?banking|\\bupi pin\\b|\\baadhaa?r (number|no|card number)|\\baadhaa?r ka (pura|poora) number|\\bverification code\\b|ओटीपी|पिन|सीवीवी|पासवर्ड|आधार नंबर|कार्ड नंबर|(aaya|aayega|aaega|received|sms|message|bheja)[^.?!]{0,30}\\bcode\\b|\\bcode\\b[^.?!]{0,30}\\b(aaya|aayega|sms|message)|\\baadhaa?r\\b[^.?!]{0,20}\\b(saare|sare|pura|poora|full|complete|barah|12|twelve)\\b|\\b(4|6|four|six|char|chhe)[- ]digit (code|number|otp)\\b|\\bcode\\b[^.?!]{0,25}\\b(came|arrived|on your phone|phone par|phone pe)|\\bsixteen digit|\\b16 digit|saare (16|sixteen|solah) (digit|ank)|\\bexpiry\\b|sms\\b[^.?!]{0,25}\\bnumber)",
         "(\\bbata ?(o|iye|yiye|ye|ein|aiye|dijiye|deejiye|do|dena|na|sakte|sakti|payenge|denge)\\b|\\bbol ?(o|iye|ein|dijiye|deejiye|do|dena|sakte)\\b|\\bnote kar(a|wa)\\b|\\bshare\\b|\\btell me\\b|\\bread (out|it|me)\\b|\\bconfirm\\b|\\bgive me\\b|\\bprovide\\b|\\bspell\\b|\\bsend me\\b|\\bnote kar\\b|\\bdictate\\b|\\bwhat is (your|the)\\b|\\bwhat'?s your\\b|\\bkya hai\\b|\\bbhej(o|iye|dijiye| dijiye)\\b|\\bpadh(o|iye|kar)\\b|बताइए|बताइये|बताओ|बोलिए|बताएं|\\bpadh ?(o|iye|kar|ke|dijiye|do)\\b|\\bsuna ?(o|iye|dijiye|do|dena|denge)\\b|बता (दीजिए|दीजिये|दो|देना|दें)|बोल (दीजिए|दो)|भेज (दीजिए|दो)|शेयर|सुना (दीजिए|दो))"
       ],
       "none": [
@@ -134,11 +138,15 @@
         "\\b(account number|account no|upi id|upi|qr code|gpay number|phonepe number|paytm number|id|number)\\b[^.?!]{0,20}\\b(deti|dungi|de rahi|bhej rahi|bhejti|note kar|likh|bolti|bol rahi|bata rahi|batati|bataungi)[a-z]*\\b[^.?!]{0,40}\\b(transfer|pay|bhej|jama|send)",
         "\\b(meri|mere|my|hamare|humare|our)\\b[^.?!]{0,20}\\b(account|khata|khate|upi|wallet)\\b ?(mein|me|par|pe|in|to|into)\\b[^.?!]{0,15}\\b(jama|transfer|bhej|pay|send|daal|deposit)",
         "\\b(bhabhi|bhai|behen|bahan|dost|friend|colleague|sir|madam|manager|uncle|cousin)[a-z]* (ke|ki|ka|'s) (account|upi|number|khata|khate|wallet|gpay|phonepe|paytm)\\b",
-        "\\b(mere saamne|line par|line pe|call par|call pe) hi\\b[^.?!]{0,10}\\b(karna|kar|pay|bhej|transfer)"
+        "\\b(mere saamne|line par|line pe|call par|call pe) hi\\b[^.?!]{0,10}\\b(karna|kar|pay|bhej|transfer)",
+        "\\b(line par|line pe|call ke dauran|during the call|call kaatne se pehle|before (we )?(hang|end|disconnect))\\b[^.?!]{0,30}\\b(pay|gpay|phonepe|paytm|transfer|bhej|amount)",
+        "\\b(rehte hue|rehte rehte)\\b[^.?!]{0,10}\\b(pay|gpay|phonepe|paytm|transfer)"
       ],
       "none": [
         "\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)[^.?!]{0,15}\\b(maang|leti|lete|lungi|liya|lena|dena|denge|karti|karte|kiya|hoga|lenge)",
-        "\\b(kuch bhi|kisi bhi tarah ka|kisi bhi prakar ka|koi bhi|koi)\\b[^.?!]{0,30}\\b(nahi|nahin|never|not)\\b(?! ?(toh|to|tho)\\b)"
+        "\\b(kuch bhi|kisi bhi tarah ka|kisi bhi prakar ka|koi bhi|koi)\\b[^.?!]{0,30}\\b(nahi|nahin|never|not)\\b(?! ?(toh|to|tho)\\b)",
+        "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b",
+        "\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)[^.?!]{0,6}\\b(mang|maang)"
       ]
     },
     {
@@ -150,7 +158,12 @@
       "any": [
         "\\b(irdai|irda|rbi|sebi|trai|uidai|government|sarkar|sarkaari|ministry|income tax department|cyber cell|police department)\\b[^.?!]{0,25}\\b(se bol|ki taraf se|ki or se|from|calling|department se|officer|se call|ke office|office se|se phone|ka official|ki official|ki guarantee|guaranteed|approved scheme|ki scheme|ka scheme)",
         "(आरबीआई|सरकार|सरकारी|इरडा)[^।?!]{0,20}(से बोल|की तरफ से|की ओर से|ऑफिस से|की गारंटी|की स्कीम)",
-        "\\b(calling|call kar rah[ei]|bol rah[ei]|speaking) (from|on behalf of)\\b ?(the )?(irdai|irda|rbi|sebi|trai|uidai|government|police|cyber cell|income tax)\\b"
+        "\\b(calling|call kar rah[ei]|bol rah[ei]|speaking) (from|on behalf of)\\b ?(the )?(irdai|irda|rbi|sebi|trai|uidai|government|police|cyber cell|income tax)\\b",
+        "\\b(main|hum) (irdai|irda|rbi|sebi|trai|uidai|sarkar|government) se (hoon|hun|hain|bol)\\b",
+        "\\bsarkari yojana\\b[^.?!]{0,30}\\b(hamare through|sirf hum|humse hi)\\b"
+      ],
+      "none": [
+        "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b"
       ]
     },
     {
@@ -178,11 +191,15 @@
         "(परिवार|घरवाल|घर वाल|रिश्तेदार|पड़ोसी|बॉस|ऑफिस)[^।?!]{0,30}(बता देंगे|बताएंगे|बता दूंगी|फोन कर|फ़ोन कर)",
         "\\b(send|sending)\\b[^.?!]{0,10}\\b(people|someone|agents|our team|recovery|our (men|boys|guys))\\b[^.?!]{0,25}\\b(home|house|office|workplace)",
         "\\btell your (relatives|family|boss|employer|neighbou?rs|colleagues|friends)\\b",
-        "\\b(humare|hamare|apne) (log|aadmi|ladke|bande) (aake|aa ke|aayenge|bhejenge)"
+        "\\b(humare|hamare|apne) (log|aadmi|ladke|bande) (aake|aa ke|aayenge|bhejenge)",
+        "\\b(humare|hamare) (log|aadmi|ladke|bande)\\b[^.?!]{0,20}\\b(ghar|office)\\b[^.?!]{0,10}\\b(aa|pahunch)",
+        "\\b(rishtedaar|rishtedaaron|family|parivaar|ghar walon|padosiyon)\\b[^.?!]{0,30}\\b(bata diya jayega|baat karenge|se baat karenge|ko batayenge)",
+        "\\b(aise log|aap jaise log|bahane)\\b[^.?!]{0,30}\\b(bharose|layak|sharam|jhoothe|jhooth)"
       ],
       "none": [
         "\\b(koi|no|nobody|kisi ko)\\b ?(recovery agent|recovery team|police|legal action|court case|case|visit|agent|aadmi)\\b[^.?!]{0,40}\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)",
-        "\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)[^.?!]{0,12}\\b(aayega|aayenge|aaega|bheja|bhejenge|bhejega|visit|come|hoga|hogi|karenge|karega|batayenge|bataenge)"
+        "\\b(nahi|nahin|nhi|never|not|won'?t|will not)\\b(?! ?(toh|to|tho)\\b)[^.?!]{0,12}\\b(aayega|aayenge|aaega|bheja|bhejenge|bhejega|visit|come|hoga|hogi|karenge|karega|batayenge|bataenge)",
+        "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b"
       ]
     },
     {
@@ -193,13 +210,14 @@
       "reason": "pay-to-receive framing (refund, bonus, prize or fund value released against a fee)",
       "all": [
         "\\b(refund|bonus|cashback|reward|prize|inaam|lottery|jackpot|lucky draw|fund value|maturity|claim amount|claim ka paisa|surrender value|gift|jeeta|jeeti|won|winner|loan pass|loan approve|loan sanction|disburse|pass ho gaya|approve ho gaya|sanction ho gaya)\\b",
-        "\\b(fee|fees|charge|charges|processing|gst|tax|token amount|registration amount|shulk|rakam|deposit)\\b",
+        "\\b(fee|fees|charge|charges|processing|gst|tax|token amount|registration amount|shulk|rakam|deposit|amount|paisa|paise)\\b",
         "\\b(bhej|bhar|bhariye|bharna|pay|jama|transfer|send|de do|dena (hoga|padega)|kara|deposit|pehle|pahle|first)"
       ],
       "none": [
         "\\b(koi|no|bina|without|zero|kuch bhi nahi|kuch nahi)\\b[^.?!]{0,8}\\b(fee|charge|charges|payment|processing|pay)\\b",
         "\\b(fee|charge|charges|payment)\\b[^.?!]{0,10}\\b(nahi|nahin|not|free)\\b",
-        "\\b(kabhi|never)\\b[^.?!]{0,30}\\b(fee|charge|pay)"
+        "\\b(kabhi|never)\\b[^.?!]{0,30}\\b(fee|charge|pay)",
+        "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b"
       ]
     },
     {
@@ -244,7 +262,27 @@
         "\\b(band|block|suspend|cut|disconnect|freeze)[a-z ]{0,30}\\b(bachne ke liye|bachna hai toh|to avoid (this|it|that))\\b",
         "\\b(will be|is going to be) (cut|disconnected|blocked|suspended|frozen|deactivated) (tonight|today|in \\d|within|by)\\b",
         "\\b(act|pay|clear|respond)\\b[^.?!]{0,15}\\bwithin (the next )?(one|an|1|two|2|few) (hour|hours|minutes)\\b",
-        "\\b(drugs|narcotics|digital arrest|money laundering|hawala)\\b"
+        "\\b(drugs|narcotics|digital arrest|money laundering|hawala)\\b",
+        "\\b(aaj shaam tak|shaam tak|kuch ghanton mein|kuch ghante mein|few hours|aaj raat tak)\\b[^.?!]{0,50}\\b(kaat|band|block|suspend|disconnect)[a-z]*\\b",
+        "\\b(kaat|band|block|suspend|disconnect)[a-z]* (diya|kar diya|ho) (jayega|jaayega|jayegi)\\b[^.?!]{0,10}$",
+        "\\b(disconnect|phone kaat|call kaat)[a-z ]{0,10}\\b(mat|na) (kijiye|karein|karo)\\b[^.?!]{0,60}\\b(warna|nahi toh|case|police|arrest)",
+        "\\b(parcel|courier)\\b[^.?!]{0,20}\\b(pakda|seized|customs|police)\\b"
+      ],
+      "none": [
+        "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b"
+      ]
+    },
+    {
+      "id": "rd6.secrecy",
+      "rule": "RD6",
+      "kind": "scam_framing",
+      "action": "block",
+      "reason": "tells the caller to keep the call secret (digital-arrest pattern)",
+      "any": [
+        "\\b(kisi ko|anyone|kisi se)\\b[^.?!]{0,10}\\b(batana nahi|mat batana|don'?t tell|na batayein)\\b"
+      ],
+      "none": [
+        "(\\botp\\b|\\bpin\\b|\\bcvv\\b|password|card|ओटीपी)"
       ]
     },
     {
@@ -273,7 +311,9 @@
         "\\bguarantee (dete|deti|deta|de rahe|de rahi|dete hain)\\b",
         "\\b(loss|nuksan|nuksaan|ghata)\\b[^.?!]{0,15}\\b(koi chance (hi )?nahi|nahi hoga|ho hi nahi sakta|impossible)\\b",
         "\\b(can ?not|can'?t|won'?t) lose\\b",
-        "\\bone hundred percent (sure|safe|guaranteed)\\b"
+        "\\bone hundred percent (sure|safe|guaranteed)\\b",
+        "\\b(kabhi|koi) loss nahi\\b",
+        "\\b(lapse hone (dijiye|do)|band hone (dijiye|do))\\b[^.?!]{0,30}\\b(nayi|naya|new)\\b"
       ],
       "none": [
         "\\b(guarantee|guaranteed|pakka|fixed)\\b ?(nahi|nahin|nhi|not|no)\\b|\\b(no|koi) (guarantee|guaranteed)\\b|\\bmarket risk (hota|hai|hain|hoga)\\b|\\bnot guaranteed\\b"
@@ -292,7 +332,7 @@
       "action": "block",
       "reason": "promotion on a service or transactional call",
       "any": [
-        "\\b(offer|offers|discount|discounts|cashback|special deal|deal hai|exclusive|limited[- ]period|limited time|pre-?approved|free gift|coupon|promo code|sale chal|festive (offer|sale)|best price|special price|sirf aapke liye|only for you|just for you|specially for you|on sale|special rate|sasta pad ?(ega|jayega|jaayega)|saste mein)\\b",
+        "\\b(discount|discounts|cashback|special deal|deal hai|exclusive|limited[- ]period|limited time|pre-?approved|free gift|coupon|promo code|sale chal|festive (offer|sale)|best price|special price|sirf aapke liye|only for you|just for you|specially for you|on sale|special rate|sasta pad ?(ega|jayega|jaayega)|saste mein)\\b",
         "\\b\\d{1,2} ?(%|percent|pratishat) (off|discount|chhoot|ki chhoot|kam)\\b",
         "\\b(upgrade|top-?up|add-?on|naya plan|new plan|better plan|bada plan|premium plan)\\b[^.?!]{0,40}\\b(karna chahenge|kar lijiye|karwa lijiye|karwa dein|le lijiye|lena chahenge|would you like|interested|should take|try kariye)",
         "\\b(interested|dilchaspi|lena chahenge|would you like)\\b[^.?!]{0,30}\\b(new|naya|nayi|another|ek aur|extra|additional)\\b[^.?!]{0,15}\\b(policy|loan|card|plan|product|scheme|course|package|flat)\\b",
@@ -302,11 +342,38 @@
         "\\b(naya|nayi|naye|new|better|upgraded)\\b[^.?!]{0,10}\\b(plan|pack|policy|card|cover|product|connection|package|scheme|membership)\\b[^.?!]{0,30}\\b(lena chahiye|le lijiye|lijiye|le lo|try kar|switch kar|lena chahenge|kaisa rahega)",
         "\\b(shall|should|can|may) i add (it|this|that|one)\\b",
         "\\b(naya|nayi|naye|new|hamare|humare|our)\\b[^.?!]{0,25}\\b(plan|membership|card|policy|scheme|product|package|course|service)\\b[^.?!]{0,20}\\b(ke baare mein (sunna|jaanna)|sunna chahenge|jaanna chahenge|hear about|tell you about)",
-        "\\bupgrade (karne|kar ne|karwane) ka (mauka|chance|option)\\b"
+        "\\bupgrade (karne|kar ne|karwane) ka (mauka|chance|option)\\b",
+        "\\b(naya|nayi|naye|new)\\b[^.?!]{0,20}\\b(card|membership|pack|data pack|plan|cover|loan|combo|policy)\\b[^.?!]{0,30}\\b(available|bataungi|batati hoon|jaana chahenge|add|le lijiye|mil sakta)\\b",
+        "\\b(top ?up loan|accessories combo|combo bhi)\\b",
+        "\\bplan upgrade kar (deti|dun|doon|dungi)\\b"
       ],
       "none": [
         "\\b(koi|no|nahi)\\b[^.?!]{0,10}\\b(offer|discount)\\b[^.?!]{0,20}\\b(nahi|not|bech|sell|push)",
-        "\\b(sell|bechne|bechna|push|offer)\\b[^.?!]{0,20}\\b(nahi|not)\\b"
+        "\\b(sell|bechne|bechna|push|offer)\\b[^.?!]{0,20}\\b(nahi|not)\\b",
+        "\\b(agar koi|if (anyone|someone|somebody)|aisa (call|koi|message)|aisa bole|scam|fraud|farzi|fake|thagi|dhokha|report kijiye|report karein|1930|hota hi nahi|nahi bheja|nahi bheji|humne nahi|hum nahi|jaisi koi baat nahi|jaankari ke liye|normal process|alag process|verification form|police verification|challan|fir ki copy|fir copy|court fee)\\b"
+      ]
+    },
+    {
+      "id": "rd7.offer_noun",
+      "rule": "RD7",
+      "kind": "promotion",
+      "scope": {
+        "categories": [
+          "service",
+          "transactional"
+        ]
+      },
+      "action": "block",
+      "reason": "promotion on a service or transactional call ('offer' as a noun)",
+      "any": [
+        "\\boffers?\\b",
+        "(ऑफ़र|ऑफर)"
+      ],
+      "none": [
+        "\\b(offer|offers|offered|offering) (a |an |to |you |aapko |help|madad|another|ek |the option|the choice|a slot|a callback|kar|karti|karta|karte|karna|karungi|karunga|kiya|kiye|de|di|dena)",
+        "\\b(i|we|can|could|to|will|let me|'ll|should|main|hum|she|he|agent|always)\\b[^.?!]{0,12}\\boffer(ed|ing)?\\b(?! ?(hai|hain|chal|mil|valid|is|ends|khatam|code|price))",
+        "\\b(koi|no|nahi)\\b[^.?!]{0,10}\\boffers?\\b[^.?!]{0,20}\\b(nahi|not|bech|sell|push)",
+        "\\boffers?\\b[^.?!]{0,10}\\b(nahi|not)\\b"
       ]
     },
     {
@@ -410,7 +477,12 @@
         "(सुसाइड|ज़हर खा|जहर खा)",
         "\\b(so jaun|so jaaun|so jau|sota rahun|soti rahun)\\b[^.?!]{0,15}\\b(kabhi )?(na|nahi) (uthun|uthu|uthoon|jaagun|uthna)\\b",
         "\\b(never wake up|kabhi na uthun|kabhi nahi uthna)\\b",
-        "\\b(goliyan|pills|tablets)\\b[^.?!]{0,10}\\bjama kar (li|liya|li hain|rakhi|rakhi hain)\\b"
+        "\\b(goliyan|pills|tablets)\\b[^.?!]{0,10}\\bjama kar (li|liya|li hain|rakhi|rakhi hain)\\b",
+        "\\b(better off|behtar)\\b[^.?!]{0,20}\\b(main nahi rahunga|main nahi rahungi|without me|mere bina)\\b",
+        "\\bzindagi (hi )?khatam kar (loon|lun|lu|lungi|lunga)\\b",
+        "\\b(rail|train|truck)\\b[^.?!]{0,10}\\b(aage|neeche)\\b[^.?!]{0,5}\\b(kood|kud|lete)",
+        "हमेशा के लिए[^।?!]{0,10}(चला जाऊं|चली जाऊं|चला जाऊँ)",
+        "(चला जाऊं|चली जाऊं)[^।?!]{0,10}हमेशा के लिए"
       ],
       "none": [
         "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne)\\b[^.?!]{0,15}\\b(mar|die|dying|killing)"
@@ -439,7 +511,10 @@
         "\\b(real person|human|insaan|asli insaan) (hai|hain|ho) (ya|or) (machine|robot|ai|bot|recording)\\b",
         "\\b(machine|robot|ai|bot|recording) (hai|ho|hain) (ya|or) (real|insaan|human|asli)\\b",
         "\\b(koi insaan|koi human|real person) (hai|bhi hai)\\b",
-        "(क्या आप|आप)[^।?!]{0,10}(रोबोट|मशीन|एआई|बॉट|इंसान)[^।?!]{0,6}(हो|हैं|है)"
+        "(क्या आप|आप)[^।?!]{0,10}(रोबोट|मशीन|एआई|बॉट|इंसान)[^।?!]{0,6}(हो|हैं|है)",
+        "\\b(asli|real)\\b[^.?!]{0,10}\\b(hai|ho) ya (computer|machine|robot|bot|ai)",
+        "\\bpakka (bot|robot|ai|machine) (hoga|ho|hai)\\b",
+        "\\bcomputer generated\\b"
       ]
     },
     {
@@ -455,7 +530,9 @@
         "\\b(record|recording)\\b[^.?!]{0,30}\\b(haan|consent|permission|ijazat|anumati|allow)\\b[^.?!]{0,10}\\b(nahi|nahin|not)\\b",
         "\\b(record|recording)\\b[^.?!]{0,40}\\b(rok|band kar|bandh kar|stop kar)\\s?(do|dijiye|dein|o)\\b",
         "\\b(mat|na) (karo|kijiye|karna|karein)\\b ?record",
-        "\\b(don'?t|do not) want\\b[^.?!]{0,20}\\brecord(ed|ing)?\\b"
+        "\\b(don'?t|do not) want\\b[^.?!]{0,20}\\brecord(ed|ing)?\\b",
+        "\\brecord karna hai (toh|to)\\b[^.?!]{0,30}\\bnahi\\b",
+        "\\brecording\\b[^.?!]{0,20}\\b(store|save|rakh)[a-z]* (mat|na)\\b"
       ],
       "none": [
         "\\b(record|recording)\\b[^.?!]{0,20}\\b(theek|thik|ok|okay|fine|chalega|koi baat nahi|no problem|no issue)\\b",
@@ -500,7 +577,8 @@
         "\\b(baar baar|bar bar|roz roz|har din|daily)\\b[^.?!]{0,20}\\b(call|phone)\\b[^.?!]{0,25}\\b(band karo|band kijiye|mat karo|bas karo|band kar do)",
         "\\b(call|calls|phone)\\b ?(nahi|nahin) chahiye\\b",
         "\\b(band karo|band kijiye|bas karo)\\b ?(ye|yeh|yah)? ?(call|calls) (karna|karne)\\b",
-        "\\b(call|calls) (karna|karne) band\\b"
+        "\\b(call|calls) (karna|karne) band\\b",
+        "\\b(ye|yeh) calls\\b[^.?!]{0,30}\\b(band kijiye|band karo|band kar do)\\b"
       ]
     },
     {
@@ -522,7 +600,8 @@
       "context": "(\\botp\\b|\\bo t p\\b|one[- ]time|\\bpin\\b|\\bm-?pin\\b|\\bcvv\\b|\\bcvc\\b|\\bcard\\b|\\bupi\\b|\\baadhaa?r\\b|\\baadhar\\b|\\bpassword\\b|\\bcode\\b|ओटीपी|पिन|कार्ड|आधार|सीवीवी)",
       "none": [
         "\\b(last|aakhri|akhri|antim) (4|four|char|chaar)\\b[^.?!]{0,15}\\b(aadhaa?r|aadhar|mobile|phone|number)\\b",
-        "(\\b(pin ?code|pincode|area code|std code|zip code|postal code)\\b|पिन ?कोड|पिनकोड)"
+        "(\\b(pin ?code|pincode|area code|std code|zip code|postal code)\\b|पिन ?कोड|पिनकोड)",
+        "\\bpin\\b[^.?!]{0,12}\\b(\\d{6})\\b[^.?!]{0,15}\\b(address|area|pincode|wohi address)"
       ]
     },
     {
@@ -542,7 +621,9 @@
         "\\b(unse|usse|unke saath|kisi aur se|kisi se)\\b ?baat (karwao|karao|karwaiye|karaiye|karwa do|kara do|karwa dijiye)\\b",
         "(मैनेजर|सीनियर|इंसान|किसी)[^।?!]{0,10}को (फोन|फ़ोन|लाइन)[^।?!]{0,6}(दीजिए|दो|दें)",
         "\\b(koi aur|kisi aur)\\b[^.?!]{0,25}\\b(baat kar sake|baat karega|baat kare|live)\\b",
-        "\\blive (baat|person|agent|insaan)\\b"
+        "\\blive (baat|person|agent|insaan)\\b",
+        "\\b(manager|senior|supervisor)\\b ?ko line (pe|par) (lo|lao|laiye)\\b",
+        "\\b(senior|manager|supervisor)\\b[^.?!]{0,15}\\b(number do|ka number|contact do)\\b"
       ],
       "none": [
         "\\b(baat (karke|kar ke|kar lunga|kar lungi|karke batata|karke bataungi)|poochh ?(ke|kar)|puchh ?(ke|kar)|discuss kar)\\b"
