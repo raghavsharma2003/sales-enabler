@@ -2,7 +2,7 @@
 // colour literals live only in tokens.css, the UI's approver map matches the kernel's, and every tool the UI calls is listed once.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { canApprove, RISK_CLASSES, ROLES } from '../shared/approval.ts';
@@ -74,4 +74,12 @@ test('no page writes from a menu: act() is never called inside an onChange of a 
     const txt = readFileSync(web + 'src/pages/' + f, 'utf8');
     assert.ok(!/<select[^>]*onChange=\{[^}]*\bact\(/.test(txt), `${f}: a dropdown change calls act()`);
   }
+});
+
+// The browser flows need Chromium and Postgres 16; without them they skip with the reason (CI has no browser cache).
+const pre = spawnSync(process.execPath, [web + 'e2e/precheck.mjs'], { encoding: 'utf8' });
+test('browser flows against the real server (web/e2e/run.sh)', { skip: pre.status === 0 ? false : (pre.stdout || pre.stderr).trim() || 'precheck failed' }, () => {
+  const r = spawnSync('sh', [web + 'e2e/run.sh'], { encoding: 'utf8', timeout: 240_000, env: { ...process.env, NODE_TEST_CONTEXT: undefined } });   // a nested node --test must not think it is a child of this run
+  assert.equal(r.status, 0, (r.stdout + r.stderr).slice(-3000));
+  assert.match(r.stdout, /# fail 0/);
 });

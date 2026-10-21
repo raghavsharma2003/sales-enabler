@@ -28,6 +28,8 @@ export default function Insights() {
   const exps = useData('experiments', () => run<ExperimentRow[]>('experiment.list', {}));
   const agents = useData('agents', agentList);
   const [busy, setBusy] = useState(false);
+  const [learnAgent, setLearnAgent] = useState('');
+  const [learnNote, setLearnNote] = useState<string | null>(null);
   const published = (agents.data ?? []).filter(a => a.latestVersion);
   return (
     <div className="page">
@@ -53,13 +55,16 @@ export default function Insights() {
                 <Btn size="sm" onClick={async () => { const r = await act('monitor.create', { name: x.name, ...x.config }, { describe: 'Monitor added.' }); if (r.ok) monitors.reload(); }}>Turn on</Btn></li>))}</ul></>}</>; }}</Async></Card>
 
         <Card aria-labelledby="ln-h"><CardHead id="ln-h" title="Proposed changes" sub="VP drafts these from an agent's own calls. Nothing changes without your tap, and each is tested before it reaches callers."
-          actions={published.length > 0 ? <Btn size="sm" busy={busy} onClick={async () => { setBusy(true); const r = await act('learning.propose', { agentId: published[0].id, max: 2 }, { describe: 'Looked for improvements.' }); setBusy(false); if (r.ok) props.reload(); }}>Look for improvements</Btn> : undefined} />
+          actions={published.length > 0 ? <div className="row"><SelectField label="Agent" value={learnAgent || published[0].id} onChange={e => setLearnAgent(e.target.value)}>{published.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>
+            <Btn size="sm" busy={busy} onClick={async () => { setBusy(true); setLearnNote(null); const r = await act<{ status: string; reason?: string; proposals: { status: string }[] }>('learning.propose', { agentId: learnAgent || published[0].id, max: 2 }, { quiet: true }); setBusy(false);
+              if (r.ok) { props.reload(); const st = r.result.status; setLearnNote(st === 'no_evidence' ? 'That agent has no real calls yet to learn from, so nothing was proposed.' : st === 'llm_unavailable' ? `The model is not available: ${r.result.reason ?? ''}` : st === 'ok' ? `${r.result.proposals.filter(p => p.status === 'drafted').length} drafted, ${r.result.proposals.filter(p => p.status !== 'drafted').length} stopped or skipped.` : st.replace(/_/g, ' ')); } }}>Look for improvements</Btn></div> : undefined} />
+          {learnNote && <p className="small" role="status" style={{ margin: '0 0 12px' }}>{learnNote}</p>}
           <Async q={props} what="Learning proposals" tool="proposal.list" empty={d => d.length === 0 ? <Empty title="No proposals yet" body="Proposals need enough calls on a published agent to cite as evidence." /> : null}>
             {d => <ul className="issues">{d.map(p => (
-              <li key={p.id}><div className="row"><Chip tone={p.status === 'accepted' ? 'leaf' : p.status === 'rejected' ? 'brick' : 'marigold'}>{prettyCode(p.status)}</Chip><Chip>{prettyCode(p.kind)}</Chip>{p.gates_passed === false && <Chip tone="brick">Failed a safety gate</Chip>}</div>
+              <li key={p.id}><div className="row"><Chip tone={p.status === 'accepted' ? 'leaf' : p.status === 'rejected' || p.status === 'gated_out' ? 'brick' : 'marigold'}>{({ drafted: 'Drafted', awaiting_approval: 'Simulated, waiting for your tap', gated_out: 'Stopped by a safety gate', accepted: 'Being tested', rejected: 'Rejected' } as Record<string, string>)[p.status] ?? prettyCode(p.status)}</Chip><Chip>{prettyCode(p.kind)}</Chip>{p.gates_passed === false && <Chip tone="brick">Failed a safety gate</Chip>}</div>
                 <p>{p.rationale ?? 'No rationale recorded.'}</p><p className="small muted">{p.calls_to_prove != null ? `Needs about ${count(p.calls_to_prove)} calls to prove.` : 'Calls needed: not worked out yet.'} Drafted {date(p.created_at)}.</p>
-                {p.status === 'probed' || p.status === 'passed' ? <div><Btn kind="primary" size="sm" onClick={async () => { const r = await act('proposal.accept', { proposalId: p.id }, { describe: 'Test started.' }); if (r.ok) refresh(); }}>Test this on real calls…</Btn></div>
-                  : p.status === 'proposed' || p.status === 'draft' ? <div><Btn size="sm" onClick={async () => { const r = await act('proposal.probe', { proposalId: p.id }, { describe: 'Simulated both versions.' }); if (r.ok) props.reload(); }}>Simulate first</Btn></div> : null}</li>))}</ul>}</Async></Card>
+                {p.status === 'awaiting_approval' ? <div><Btn kind="primary" size="sm" onClick={async () => { const r = await act('proposal.accept', { proposalId: p.id }, { describe: 'Test started.' }); if (r.ok) refresh(); }}>Test this on real calls…</Btn></div>
+                  : p.status === 'drafted' ? <div><Btn size="sm" onClick={async () => { const r = await act('proposal.probe', { proposalId: p.id }, { describe: 'Simulated both versions.' }); if (r.ok) props.reload(); }}>Simulate first</Btn></div> : null}</li>))}</ul>}</Async></Card>
 
         <Card aria-labelledby="ex-h"><CardHead id="ex-h" title="Tests running" sub="A test has no winner until it has enough calls." />
           <Async q={exps} what="Experiments" tool="experiment.list" empty={d => d.length === 0 ? <Empty title="Nothing is being tested" body="Accept a proposal above to start one." /> : null}>

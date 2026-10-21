@@ -107,16 +107,17 @@
   "Campaign page shows the server's launch blockers as the checklist, campaign.estimate (computed, incl. GST), campaign.funnel; window changes use window.narrow (at once) or window.widen (A2)",
   "Call page draws who spoke when from turn timing, the words, moments, safety events, outcome grades (verified, manager, AI guess), call.explain, cost lines",
   "Today uses the real brief.today; Settings covers team, keys, brand, knowledge passages, wallet and usage, compliance rules, memory policy, operator, integrations, activity",
-  "Colour tokens pass 5:1 in light and dark; screenshots of every screen at 390x844 and 1440x900 in web/shots/ with no horizontal scroll and no console errors in the real-server run"
+  "Colour tokens pass 5:1 in light and dark; screenshots of every screen at 390x844 and 1440x900 in web/shots/ with no horizontal scroll and no console errors in the real-server run",
+  "Browser flows (web/e2e, Playwright against the real server and a fresh database; skip with a message when there is no Chromium or Postgres): API key create, approve, reveal once, second reveal refused; learning propose, simulate, accept card; DPDP erase; A3 pause and stop with no card, resume as an A2 card; an A2 card from the Operator chat. Each asserts the screen and the server. They found and fixed two real bugs: the secret came back as `token` not `secret`, and a confirmed approval sheet hid what it produced"
  ],
  "untested": [
   "Calls were seeded through the runtime hook because the sandbox has no telephony and the fake model gives no outcomes or analysis; no real call, number rental, KYC, payment or WhatsApp was exercised",
   "Browser call: test.browser_call returns the server's reason (no compiled brief in the draft yet in this run); no microphone or audio path was tested",
   "Practice callers ran against a fake model, so they fail every check; the UI path is real but the verdicts mean nothing",
   "The call page has no audio playback and no waveform: the server stores no peaks, so lanes are drawn from turn timing",
-  "apikey.create secret reveal (needs the approved result's revealId), proposal.probe and proposal.accept, learning.propose and dpdp.request.execute were wired from the catalog and not run end to end",
   "Fonts: Anek and Fraunces are named first with Inter/Noto fallbacks; no font files are shipped, so the type specimen gate has not run",
-  "Dark theme checked by contrast numbers only; no real-device, screen-reader, touch, speech-input or Lighthouse run"
+  "Dark theme checked by contrast numbers only; no real-device, screen-reader, touch, speech-input or Lighthouse run",
+  "The e2e fixtures that no tool can make yet are made in SQL and named in the test: a simulated caller (agents is adding simcaller.save) and a campaign set to running (launch needs a rented line, which the sandbox cannot rent)"
  ],
  "needs_from_others": [
   "A tool that lists the workspace's numbers (the Numbers page says so honestly), and one that verifies a member's own phone by missed call: test.ring_member_phone needs a published version and takes a phone, but nothing proves the phone is the member's",
@@ -140,6 +141,7 @@
   "run": "eval $(sh product/scripts/pg-test.sh vp_web_real); export VP_SECRET_KEY=$(openssl rand -hex 32) VP_RUNTIME_SECRET=rt-$(openssl rand -hex 24); node product/web/build.mjs; PORT=8788 VP_LLM_FAKE=1 node --import tsx product/server/main.ts   (or product/web/dev/serve.ts for a scripted Operator model)",
   "seed": "node --import tsx product/web/dev/seed.ts",
   "shots": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node product/web/dev/shots.mjs",
-  "note": "There is no mock any more: web/dev/serve.ts differs from server/main.ts only by scripting the Operator's model"
+  "note": "There is no mock any more: web/dev/serve.ts differs from server/main.ts only by scripting the Operator's model",
+  "e2e": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers sh product/web/e2e/run.sh"
  }
 }

@@ -1,4 +1,5 @@
 // The approval sheet: what, why, impact, who, expiry. Only a deliberate hold (or two presses) approves; model text never does.
+import { useEffect } from 'react';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { useApp, undoLine } from './store.tsx';
 import { Btn, Chip, HoldButton, Sheet } from './ui.tsx';
@@ -7,6 +8,9 @@ import { date } from './format.ts';
 
 export function ApprovalSheet() {
   const { pending: p, decide, closePending, me } = useApp();
+  const confirmed = p?.state === 'done' && p.outcome && 'status' in p.outcome && p.outcome.status === 'confirmed';
+  // A confirmed approval closes itself shortly after saying so, so what it produced (a secret, a page change) is not hidden behind it.
+  useEffect(() => { if (!confirmed) return; const t = setTimeout(closePending, 900); return () => clearTimeout(t); }, [confirmed, closePending]);
   if (!p) return null;
   const role = me?.member?.role ?? 'viewer';
   const allowed = (APPROVERS[p.risk] ?? []).includes(role);

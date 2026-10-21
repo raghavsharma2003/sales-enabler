@@ -9,6 +9,12 @@ process.env.VP_OPERATOR_BRAINS ??= 'gemini-3.5-flash-lite,gpt-5.4-mini';
 const reply = (text: string, toolCalls: LlmReply['toolCalls'] = []): LlmReply => ({ text, toolCalls, usage: { inputTokens: 220, outputTokens: 40 }, model: 'dev-script', provider: 'dev-script' });
 let n = 0;
 setFakeLlm((req: LlmRequest) => {
+  if (req.purpose === 'learning') {
+    // Proposes one change that cites a real call from the evidence the server sent (it refuses changes that cite nothing of its own).
+    let ids: string[] = [];
+    try { ids = (JSON.parse(req.messages[req.messages.length - 1].content).evidence?.calls ?? []).map((c: { id: string }) => c.id).slice(0, 1); } catch { /* no evidence */ }
+    return reply(JSON.stringify({ proposals: [{ kind: 'opening', rationale: 'Callers who are asked about timing first stay on longer. Open by asking if it is a good time.', change: [{ op: 'set', path: 'opening.usefulFirst', value: 'Ask if it is a good time for two minutes before anything else' }], evidenceIds: ids }] }));
+  }
   const last = req.messages[req.messages.length - 1];
   const said = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';
   if (last.role === 'tool') return reply('Maine jo draft aur test ke steps the, chala diye. Jo cheez paise lagati hai, wo aapke tap ka intezaar kar rahi hai.');

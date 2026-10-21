@@ -1,0 +1,147 @@
+// Each flow drives the UI and then asks the server what is true. Fixtures that no tool can make yet are made in SQL and said so.
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import pg from 'pg';
+
+let pw = null;
+for (const base of [import.meta.url, 'file:///opt/node-tools/node_modules/']) { try { pw = createRequire(base)('playwright'); break; } catch { /* next */ } }
+const BASE = process.env.BASE ?? 'http://localhost:8799';
+const EMAIL = 'asha@saanjh.example', PASSWORD = 'sample-password-1234';
+let browser, ctx, page, pool, ws;
+
+before(async () => {
+  browser = await pw.chromium.launch({ executablePath: process.env.CHROME || undefined });
+  ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const r = await ctx.request.post(BASE + '/v1/login', { data: { email: EMAIL, password: PASSWORD } });
+  assert.ok(r.ok(), 'sign in');
+  page = await ctx.newPage();
+  pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  ws = (await pool.query("SELECT id FROM workspace WHERE name = 'Saanjh Services' ORDER BY created_at DESC LIMIT 1")).rows[0].id;
+});
+after(async () => { await browser?.close(); await pool?.end(); });
+
+const tool = async (name, args = {}) => (await (await ctx.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
+const actions = async status => (await (await ctx.request.get(`${BASE}/v1/actions?status=${status}`)).json()).actions;
+async function hold(locator) {
+  const b = await locator.boundingBox();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.waitForTimeout(1500); await page.mouse.up();
+}
+const sheet = () => page.getByRole('dialog');
+
+test('API key: create, approve by holding, the secret shows once, a second reveal is refused', async () => {
+  await page.goto(BASE + '/settings/keys');
+  await page.getByLabel('Name').fill('e2e key');
+  await page.getByRole('button', { name: 'Ask to create' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  await hold(sheet().locator('.hold'));
+  await page.getByRole('heading', { name: 'Copy your key now' }).waitFor({ timeout: 8000 });
+  const shown = (await page.locator('.secret').innerText()).trim();
+  assert.match(shown, /^vp_/, 'the screen shows a key once');
+  await page.getByRole('button', { name: 'I have saved it' }).click();
+  const keys = (await tool('apikey.list')).result.keys;
+  assert.ok(keys.some(k => (k.name ?? k.label) === 'e2e key'), 'the server holds the key');
+  assert.ok(!JSON.stringify(keys).includes(shown), 'the list never contains the secret');
+  const done = (await actions('executed')).find(a => a.tool === 'apikey.create');
+  assert.ok(done, 'the approval executed');
+  const reveal = done.result?.revealId;
+  if (reveal) { const again = await tool('secret.reveal', { revealId: reveal }); assert.equal(again.status, 'not_executed', 'a second reveal is refused'); }
+  else assert.ok(!JSON.stringify(done.result ?? {}).includes(shown), 'the executed action did not keep the secret');
+});
+
+test('Learning: propose, simulate, accept shows an approval card, and the screen matches the server', async t => {
+  // Fixture: simulated callers have no tool yet (agents is adding simcaller.save); made in SQL.
+  const agent = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
+  await pool.query("INSERT INTO sim_caller (workspace_id, agent_id, persona, scenario) VALUES ($1,$2,'A hurried driver','You can talk for thirty seconds.')", [ws, agent]);
+  await page.goto(BASE + '/insights');
+  await page.getByLabel('Agent').selectOption({ label: 'Renewals, Pune' });
+  await page.getByRole('button', { name: 'Look for improvements' }).click();
+  await page.getByText('Callers who are asked about timing first stay on longer').waitFor({ timeout: 10000 });
+  let props = (await tool('proposal.list')).result;
+  assert.ok(props.some(p => p.status === 'drafted'), 'the server holds a drafted proposal');
+  await page.getByRole('button', { name: 'Simulate first' }).first().click();
+  await page.waitForTimeout(2500);
+  props = (await tool('proposal.list')).result;
+  const probed = props[0];
+  await page.reload();
+  t.diagnostic('proposal status after simulating: ' + probed.status);
+  if (probed.status === 'awaiting_approval') {
+    await page.getByText('Simulated, waiting for your tap').first().waitFor();
+    await page.getByRole('button', { name: 'Test this on real calls…' }).first().click();
+    await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+    await hold(sheet().locator('.hold'));
+    await sheet().getByText(/Done\.|Not executed/).waitFor({ timeout: 8000 });
+    const executed = (await actions('executed')).some(a => a.tool === 'proposal.accept');
+    const shownDone = await sheet().getByText(/Done\./).count();
+    assert.equal(!!shownDone, executed, 'the sheet says done exactly when the server executed it');
+  } else {
+    // Honest outcome: the screen must show the server's status in words, and offer no accept button.
+    const words = { gated_out: 'Stopped by a safety gate', rejected: 'Rejected', drafted: 'Drafted' }[probed.status];
+    assert.ok(words, 'unexpected proposal status ' + probed.status);
+    await page.getByText(words).first().waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Test this on real calls…' }).count(), 0);
+  }
+});
+
+test('DPDP: erase request needs a hold, then the person is gone from search and the number stays suppressed', async () => {
+  await page.goto(BASE + '/settings/privacy');
+  await page.getByLabel('Their phone number').fill('+919000000012');
+  await page.getByLabel('What they asked for').selectOption('erase_me');
+  await page.getByLabel('Where it was asked').fill('email from the person, 21 Oct');
+  await page.getByRole('button', { name: 'Ask to carry out…' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  assert.match(await sheet().innerText(), /Deletes|removes/i, 'the card says this deletes');
+  await hold(sheet().locator('.hold'));
+  await sheet().getByText(/Done\.|Not executed/).waitFor({ timeout: 8000 });
+  const ok = (await sheet().getByText(/Done\./).count()) > 0;
+  const executed = (await actions('executed')).some(a => a.tool === 'dpdp.request.execute');
+  assert.equal(ok, executed, 'the screen matches the server');
+  assert.ok(executed, 'the erase ran');
+  const found = (await tool('contact.search', { q: '9000000012' })).result.contacts;
+  assert.ok(!found.some(c => c.name === 'Imran Qureshi'), 'the person is no longer findable by name');
+  const facts = (await tool('contact.dial_facts', { e164: '+919000000012' })).result;
+  assert.ok(JSON.stringify(facts).match(/tombstone|suppress/i), 'the number is tombstoned or suppressed so nobody calls it by mistake');
+});
+
+test('A3: Pause, Resume and Stop run at once with no approval card, and the pill matches the server', async t => {
+  // Fixture: launching needs a rented line, which the sandbox cannot rent; the state is set in SQL so the live buttons exist.
+  const id = (await pool.query("UPDATE campaign SET state = 'running' WHERE workspace_id = $1 AND name = 'Renewals Oct' RETURNING id", [ws])).rows[0].id;
+  const state = async () => (await tool('campaign.get', { id })).result.campaign.state;
+  await page.goto(`${BASE}/campaigns/${id}`);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByText(/Paused · policy/).waitFor({ timeout: 8000 });
+  assert.equal(await sheet().count(), 0, 'no approval card for a pause');
+  assert.equal(await state(), 'paused');
+  // Resume starts dialling real people again, so unlike Pause it is an A2 action: a card, a hold, then the server runs it.
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  assert.equal(await state(), 'paused', 'nothing changes before the hold');
+  await hold(sheet().locator('.hold'));
+  await sheet().getByText(/Done\.|Not executed/).waitFor({ timeout: 8000 });
+  const afterResume = await state();
+  t.diagnostic('state after resume: ' + afterResume);
+  assert.equal((await sheet().getByText(/Done\./).count()) > 0, afterResume === 'running', 'the sheet agrees with the server');
+  await sheet().waitFor({ state: 'detached', timeout: 5000 });   // a confirmed approval closes itself
+  // Stop is offered whatever state it is in and, like Pause, lowers risk, so it runs at once.
+  await page.getByRole('button', { name: 'Stop', exact: true }).click();
+  await page.waitForTimeout(1500);
+  assert.equal(await sheet().count(), 0, 'no approval card for a stop');
+  const s = await state();
+  assert.ok(['stopped', 'done', 'cancelled'].includes(s), 'the server stopped it: ' + s);
+});
+
+test('Operator: an A2 approval card from the chat holds, then the card and the server agree', async () => {
+  await page.goto(BASE + '/');
+  await page.locator('#dock-input').fill('Please top up my wallet');
+  await page.keyboard.press('Enter');
+  const card = page.locator('.dock article[aria-label^="approval card"]').first();
+  await card.waitFor({ timeout: 10000 });
+  assert.match(await card.innerText(), /Spends money|Add/i);
+  const before = (await actions('proposed')).filter(a => a.tool === 'wallet.topup').length;
+  assert.ok(before >= 1, 'the server holds the proposal; nothing happened yet');
+  await hold(card.locator('.hold'));
+  await card.getByText(/Confirmed by the server|Not executed|Result unknown/).waitFor({ timeout: 8000 });
+  const confirmed = (await card.getByText(/Confirmed by the server/).count()) > 0;
+  const executed = (await actions('executed')).some(a => a.tool === 'wallet.topup');
+  assert.equal(confirmed, executed, 'the card says confirmed exactly when the server executed it');
+});

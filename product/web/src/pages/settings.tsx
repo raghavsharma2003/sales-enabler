@@ -67,11 +67,11 @@ function Keys() {
     { key: 's', label: 'State', render: k => <Chip tone={k.revoked ? 'brick' : 'leaf'}>{k.revoked ? 'Revoked' : 'Active'}</Chip> },
     { key: 'x', label: '', render: k => k.revoked ? null : <Btn size="sm" kind="danger" onClick={async () => { const r = await act('apikey.revoke', { id: k.id }, { describe: 'Key revoked.' }); if (r.ok) refresh(); }}>Revoke…</Btn> }];
   const create = async () => {
-    const r = await act<{ revealId?: string; secret?: string }>('apikey.create', { name: name.trim() }, { quiet: true });
+    const r = await act<{ revealId?: string; token?: string }>('apikey.create', { name: name.trim() }, { quiet: true });
     if (!r.ok) return;
     setName(''); refresh();
-    if (r.result.secret) setSecret(r.result.secret);
-    else if (r.result.revealId) { try { const s = await run<{ secret: string }>('secret.reveal', { revealId: r.result.revealId }); setSecret(s.secret); } catch (e) { toast(e instanceof Error ? e.message : 'Could not show the key.', 'bad'); } }
+    if (r.result.token) setSecret(r.result.token);
+    else if (r.result.revealId) { try { const s = await run<{ token: string }>('secret.reveal', { revealId: r.result.revealId }); setSecret(s.token); } catch (e) { toast(e instanceof Error ? e.message : 'Could not show the key.', 'bad'); } }
   };
   return (
     <div className="stack">

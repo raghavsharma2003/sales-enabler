@@ -7,6 +7,8 @@ import pg from 'pg';
 import { sign } from '../../server/runtime-client.ts';
 import type { RuntimeEvent, RunManifest } from '../../shared/runtime-protocol.ts';
 
+// The SERVER needs VP_SECRET_KEY (a generated dev value, e.g. `openssl rand -hex 32`) and the same VP_RUNTIME_SECRET as this script; see web/README.md.
+if (!process.env.VP_RUNTIME_SECRET) console.warn('VP_RUNTIME_SECRET is not set here: the four sample calls will be skipped.');
 const base = process.argv[2] ?? 'http://localhost:8788';
 const SECRET = process.env.VP_RUNTIME_SECRET ?? '';
 const EMAIL = 'asha@saanjh.example', PASSWORD = 'sample-password-1234';
