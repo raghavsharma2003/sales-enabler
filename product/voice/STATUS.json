@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 141,
-    "passed": 141,
+    "ran": 142,
+    "passed": 142,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -64,7 +64,7 @@
     "The signature does not cover method or path; the runtime closes the replay hole on /end by requiring conversationId in the body",
     "brief.hash is checked as sha256 hex of brief.text (optionally sha256:-prefixed); the control plane must hash the same way",
     "Control-plane brief compiler should use the marker vocabulary in README (<end_call>, <goal:ID>, <tool:NAME>, <handoff:REASON>)",
-    "RuntimeEvent safety has no judge vocabulary: judge events go as rule RD3, action flagged (shadow, unavailable) or suspended_goal (raised), event name first in detail"
+    "Judge shadow and unavailable outcomes are logged only, until calls adds the 'judge' RuntimeEvent to shared/runtime-protocol.ts; only judge_raised is a safety event (RD3 suspended_goal)"
   ],
   "decisions": [
     "In a crisis, ticket limits stretch to 2x; at the ceiling the call is handed off (crisis_handoff); her <end_call> is ignored and a request for a human never ends the call unless a live transfer takes it",

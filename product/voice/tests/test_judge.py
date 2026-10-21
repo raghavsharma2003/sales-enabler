@@ -143,17 +143,38 @@ class Runtime(unittest.TestCase):
         sess, p, replies = sim_call([DISCLOSED, self.AGENDA, 'Main yahin hoon.'], [INDIRECT, 'pata nahi'], c, 'raise')
         said = ' '.join(replies[1])
         self.assertIn('14416', said); self.assertIn('112', said); self.assertNotIn('renewal', said)
-        self.assertIn(('RD3', 'suspended_goal', 'judge_raised'), safety_details(p))
+        self.assertEqual([x for x in safety_details(p) if x[1] == 'suspended_goal'], [('RD3', 'suspended_goal', 'judge_raised')], 'exactly one')
+        self.assertEqual([x for x in safety_details(p) if 'judge' in x[2]], [('RD3', 'suspended_goal', 'judge_raised')], 'no other judge event')
         self.assertEqual([h['reason'] for h in of(p, 'hand_off')], ['crisis'])
         self.assertEqual(sess.ended, 'caller_hung_up', 'no hang-up from her side')
         self.assertEqual(len(seen), 1, 'judged once; with the call already in crisis there is nothing left to add')
 
-    def test_shadow_logs_and_changes_nothing(self):
-        c, _ = fake(verdict(True, 0.9, 'indirect'))
-        sess, p, replies = sim_call([DISCLOSED, self.AGENDA], [INDIRECT], c, 'shadow')
+    def test_shadow_changes_nothing_and_is_not_a_safety_event(self):
+        c, seen = fake(verdict(True, 0.9, 'indirect'))
+        with self.assertLogs('vp.voice.conversation', level='INFO') as logs:
+            sess, p, replies = sim_call([DISCLOSED, self.AGENDA], [INDIRECT], c, 'shadow')
         self.assertEqual(replies[1], [self.AGENDA])
-        self.assertIn(('RD3', 'flagged', 'judge_shadow'), safety_details(p))
+        self.assertEqual(of(p, 'safety'), [], 'a shadow guess never marks the call unsafe')
+        self.assertTrue(any('judge_shadow' in m for m in logs.output))
+        self.assertEqual(len(seen), 1)
         self.assertFalse(sess.conv.state['crisis']); self.assertEqual(of(p, 'hand_off'), [])
+
+    def test_shadow_never_delays_the_reply(self):
+        import time
+        c, seen = fake(verdict(True, 0.9, 'indirect'), delay=0.7)
+        t = ticket(); s, p = sink(t['conversationId'])
+        comp = components(brain=FakeBrain([DISCLOSED, self.AGENDA])); comp.judge_complete = c
+        from vpvoice.session import SimSession
+        async def go():
+            sess = SimSession(t, comp, s, env={**ENV_ON, 'VP_SAFETY_JUDGE_MODE': 'shadow'}, watchdog_s=0.01)
+            await sess.start()
+            t0 = time.perf_counter(); out = await sess.caller_says(INDIRECT); dt = time.perf_counter() - t0
+            await asyncio.sleep(0.8); await sess.hang_up()
+            return out, dt
+        out, dt = asyncio.run(go())
+        self.assertEqual(out, [self.AGENDA])
+        self.assertLess(dt, 0.2, f'the reply waited {dt:.2f} s on a shadow judge that takes 0.7 s')
+        self.assertEqual(len(seen), 1, 'the shadow judge still ran')
 
     def test_timeout_falls_back_to_the_floor_and_logs_it(self):
         c, _ = fake(verdict(True, 0.9, 'indirect'), delay=2.0)
@@ -163,7 +184,7 @@ class Runtime(unittest.TestCase):
         finally:
             judge.SPEC['timeout_ms'] = old
         self.assertEqual(replies[1], [self.AGENDA])
-        self.assertIn(('RD3', 'flagged', 'judge_unavailable'), safety_details(p))
+        self.assertEqual(of(p, 'safety'), [], 'a judge timeout is not a safety event')
 
     def test_floor_hit_acts_at_once_and_the_judge_is_not_asked(self):
         c, seen = fake(verdict(False, 0.99, 'none'), delay=5.0)
@@ -190,7 +211,7 @@ class Runtime(unittest.TestCase):
     def test_judge_tokens_are_metered(self):
         c, _ = fake(verdict(False, 0.1, 'none'))
         t = ticket()
-        sess, p, _ = sim_call([DISCLOSED, self.AGENDA], [INDIRECT], c, 'shadow', t=t)
+        sess, p, _ = sim_call([DISCLOSED, self.AGENDA], [INDIRECT], c, 'raise', t=t)
         lines = [x for x in of(p, 'cost') if x['provider'] == 'safety_judge']
         self.assertEqual(sum(x['quantity'] for x in lines), 132)
         self.assertFalse(lines[0]['detail']['priced'])

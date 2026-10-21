@@ -122,11 +122,18 @@ class Conversation:
 
     # ---------------------------------------------------------------- the crisis judge (raise-only, judge.py)
     def start_judge(self, text, prev='', floor=False):
-        """Start the judge on a final caller turn, in parallel with the brain. None when off, not configured, or the
-        floor already fired (a floor hit acts at once and never waits for the judge)."""
+        """Start the judge on a final caller turn, in parallel with the brain. Returns a gate the reply must wait for
+        only in 'raise' mode. In 'shadow' the verdict cannot change anything, so it runs fire-and-forget and the reply
+        never waits on it. None when off, not configured, the floor already fired (a floor hit acts at once and never
+        waits) or the call is already in crisis.
+        Trade-off for the owner: in 'raise' the first sentence waits for the verdict, up to timeout_ms (800 ms)."""
         if self.judge_complete is None or floor or self.state['crisis']: return None     # nothing left for it to add
-        if judge.mode(env=self.judge_env) == 'off' or not judge.configured(self.judge_env): return None
-        return asyncio.ensure_future(judge.judge_caller_crisis(text, self.judge_complete, prev=prev, env=self.judge_env, floor=floor))
+        m = judge.mode(env=self.judge_env)
+        if m == 'off' or not judge.configured(self.judge_env): return None
+        task = asyncio.ensure_future(judge.judge_caller_crisis(text, self.judge_complete, prev=prev, env=self.judge_env, floor=floor))
+        if m != 'raise':
+            asyncio.ensure_future(self.settle_gate(task)); return None
+        return task
 
     def prev_caller(self, skip_last=False):
         callers = [t['text'] for t in self.transcript if t['speaker'] == 'caller']
@@ -155,12 +162,15 @@ class Conversation:
                            detail={'purpose': 'safety_judge', 'priced': priced})
         ev = res.get('event')
         if not ev: return False
+        # A shadow guess or a judge timeout is not a safety event: calls/ingest.ts turns every 'safety' event into a
+        # safety flag on the call (decision.2026-10-21.judge-shadow-never-a-safety-event). They go to the runtime log
+        # here, and to the 'judge' runtime event once calls adds it to shared/runtime-protocol.ts.
         if ev['type'] == 'judge_unavailable':
-            self.sink.emit('safety', rule='RD3', action='flagged', detail=f"judge_unavailable: {ev['reason']}; the floor's verdict stands")
+            log.info('judge caller_crisis %s: unavailable (%s), floor stands, %.0f ms', self.t['conversationId'], ev['reason'], res.get('latencyMs', 0))
             return False
         note = f"{ev['type']}: kind {ev['kind']}, confidence {ev['confidence']:.2f}"
         if ev['type'] == 'judge_shadow':
-            self.sink.emit('safety', rule='RD3', action='flagged', detail=note + ' (shadow: nothing changed)')
+            log.info('judge caller_crisis %s: %s (shadow: nothing changed), %.0f ms', self.t['conversationId'], note, res.get('latencyMs', 0))
             return False
         if res.get('crisis') and 'crisis' not in self.signalled:     # judge_raised: the crisis path, exactly as a floor hit
             self.signalled.add('crisis'); self.state['crisis'] = True; self.judge_raised = True

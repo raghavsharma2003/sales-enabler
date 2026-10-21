@@ -118,13 +118,17 @@ present.
 A model reads each final caller turn the floor did not flag, in parallel with the brain. It is raise-only: it can add
 the crisis signal, never remove one.
 - **Before the call:** the text is redacted first and quoted as data under the contract's fixed prompt.
-- **Waiting:** the reply's first sentence waits for the verdict, at most `timeout_ms` (800 ms). A floor hit never waits.
-- **Modes:** `off`, `shadow` (default; logs `judge_shadow`, changes nothing) or `raise`. In `raise`, a verdict
-  interrupts the turn with the crisis path: Tele-MANAS 14416 and 112, agenda dropped, a human offered, no hang-up.
-- **Failure:** a timeout, error or bad output leaves the floor's verdict and logs `judge_unavailable`.
+- **Waiting:** only in `raise` mode does the reply's first sentence wait for the verdict, at most `timeout_ms`
+  (800 ms). A floor hit never waits. That wait is a trade-off for the owner to decide with measured numbers.
+- **Modes:** `off`, `shadow` (default) or `raise`. In `shadow` the judge runs fire-and-forget: the reply never waits
+  and nothing changes. In `raise`, a verdict interrupts the turn with the crisis path: Tele-MANAS 14416 and 112,
+  agenda dropped, a human offered, no hang-up.
+- **Failure:** a timeout, error or bad output leaves the floor's verdict.
 - **No model configured:** no call and no spend.
-- **Events:** recorded as `safety` events, rule RD3. `flagged` is used for shadow and unavailable, `suspended_goal`
-  for a raise, and the event name leads the detail.
+- **Events:** only a raise is a `safety` event (rule RD3, action `suspended_goal`, detail starting `judge_raised`).
+  Shadow guesses and unavailable verdicts are never safety events, because calls turns every safety event into a
+  safety flag on the call. They go to the runtime log until the `judge` runtime event lands in
+  `shared/runtime-protocol.ts`.
 - **Production:** `raise` only on the owner's go.
 
 ### Fallbacks and failures
