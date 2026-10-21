@@ -17432,6 +17432,44 @@
    "date": "2026-10-22",
    "source": "main loop",
    "closes_when": "The owner picks an NCPR lookup provider or confirms carrier scrubbing."
+  },
+  {
+   "id": "component.product.calls-cross-call-insight",
+   "type": "component",
+   "status": "tested",
+   "source": "verified",
+   "date": "2026-10-22",
+   "title": "Cross-call insight in calls: themes (objections, drop-offs, unanswered questions, what preceded a reached goal) across a scope's recent analysed calls, every quote verbatim and verified, through insight.get / insight.refresh and a nightly job",
+   "path": "product/server/modules/calls/insights.ts"
+  },
+  {
+   "id": "decision.2026-10-22.insight-themes-grounded-like-call-analysis",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-22",
+   "title": "A cross-call theme is kept only with 2+ quotes that are exact substrings of one line of the cited call's stored transcript. Objections and unanswered questions must quote the person, and success drivers only calls whose best outcome is a goal value. Its count is the distinct sampled calls it was seen in, never the model's own number",
+   "rationale": "The owner's bar for LLM-driven analytics the business can trust: every claim about calls must be backed by what was said, the same law as per-call analysis. A test proves the guard is what stops a fabricated quote: with a trusting grounder the quote survives.",
+   "reverse_if": "Labelled review shows true themes are dropped too often because of transcript normalisation (matras, romanisation); then match on a normalised form and still cite the original span."
+  },
+  {
+   "id": "decision.2026-10-22.insight-cost-bounds",
+   "type": "decision",
+   "status": "proposed",
+   "source": "inferred",
+   "date": "2026-10-22",
+   "title": "Insight runs are bounded: 40 most recent calls, an input budget of 12,000 tokens x 4 characters (whole calls only), 1,500 output tokens, a 30-day window, and no run when no call ended since the last insight. Nightly covers at most 100 workspaces with 10 agent or campaign scopes each",
+   "rationale": "The owner wants cost-bounded analytics. These caps keep a nightly run to about one small LLM call per active scope; the numbers are untuned guesses.",
+   "reverse_if": "Measured cost per run or theme quality on real calls says the caps are too tight or too loose; tune them from that measurement."
+  },
+  {
+   "id": "risk.2026-10-22.insight-quality-unmeasured",
+   "type": "risk",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-22",
+   "title": "Theme quality and the quote pass rate with a real model are not measured; tests use a scripted fake",
+   "mitigation": "Run insight.refresh on a design partner's real calls, then read the stored quotesDropped and themesDropped against quotesProposed and review the themes by hand."
   }
  ],
  "edges": [
@@ -31011,6 +31049,16 @@
    "from": "open.2026-10-22.dnd-provider",
    "to": "evidence.2026-10-22.launch-readiness-audit",
    "relation": "derived-from"
+  },
+  {
+   "from": "component.product.calls-cross-call-insight",
+   "to": "decision.2026-10-22.insight-themes-grounded-like-call-analysis",
+   "relation": "implements"
+  },
+  {
+   "from": "component.product.calls-cross-call-insight",
+   "to": "decision.2026-10-22.insight-cost-bounds",
+   "relation": "implements"
   }
  ]
 }
