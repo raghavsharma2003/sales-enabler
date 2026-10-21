@@ -66,15 +66,17 @@ export function availabilityOf(id: string, h: RuntimeHealth | null, components?:
   return { state: 'unavailable', reason: v.reason ?? "This stack's providers aren't connected on our voice engine yet." };
 }
 let healthCache: { at: number; h: RuntimeHealth | null; rt: unknown } | null = null;
+let healthGen = 0;   // bumped by forgetRuntimeHealth: a read that started before the bump must not write its answer back
 async function runtimeHealth(): Promise<RuntimeHealth | null> {
   const rt = runtime();
   if (healthCache && healthCache.rt === rt && Date.now() - healthCache.at < 30_000) return healthCache.h;
+  const gen = healthGen;
   const h = rt.health ? await rt.health().catch(() => null) : null;
-  healthCache = { at: Date.now(), h, rt };
+  if (gen === healthGen) healthCache = { at: Date.now(), h, rt };
   return h;
 }
 /** Tests that swap the runtime's health call this so the next stack.list asks again. */
-export function forgetRuntimeHealth(): void { healthCache = null; }
+export function forgetRuntimeHealth(): void { healthCache = null; healthGen++; }
 
 /** A part a stack can be built from, with the runtime's word on whether it can run here (unknown until it reports). */
 function componentCard(c: Component, h: RuntimeHealth | null) {

@@ -102,3 +102,25 @@ test('availabilityOf: no report is unknown, never available; a missing stack or 
   assert.doesNotMatch(availabilityOf('c', h).reason ?? '', /SARVAM|_KEY/, 'a credential name never reaches a person');
   assert.equal(availabilityOf('zz', h).state, 'unavailable');
 });
+
+test('a health read that started before forgetRuntimeHealth() does not write its stale answer back into the cache', async () => {
+  const { forgetRuntimeHealth, module } = await import('../server/modules/agents/index.ts');
+  const { FakeRuntime, setRuntime } = await import('../server/runtime-client.ts');
+  const { Registry } = await import('../server/tools.ts');
+  const reg = new Registry(); module.register(reg);
+  const listTool = reg.get('stack.list') as unknown as { run: (ctx: unknown, i: unknown) => Promise<any> };
+  assert.ok(listTool, 'stack.list is registered');
+  // One runtime object throughout: a slow read starts, the report changes and the cache is forgotten, then the slow read lands.
+  let release!: () => void;
+  const rt = new FakeRuntime();
+  rt.health = () => new Promise(ok => { release = () => ok({ stacks: {} }); });     // the old report: every stack unlisted
+  setRuntime(rt); forgetRuntimeHealth();
+  try {
+    const inflight = listTool.run({}, {});
+    rt.health = async () => null;                                                      // the new report: unknown
+    forgetRuntimeHealth();
+    release(); await inflight;
+    const after = await listTool.run({}, {});
+    assert.ok(after.stacks.every((s: any) => s.availability.state === 'unknown'), 'the stale report that landed after the reset was not cached');
+  } finally { setRuntime(null); forgetRuntimeHealth(); }
+});
