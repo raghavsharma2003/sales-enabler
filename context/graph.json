@@ -17361,6 +17361,17 @@
    "title": "The member-phone verification call (campaigns verify.ts announcement()) is spoken in English. It is a fixed system announcement to the business's own staff, so the enterprise-English directive applies. Hinglish stays for agents talking to customers.",
    "rationale": "Integrator ruling on directive.2026-10-22.enterprise-english-ui after the web builder changed the script in 1187a05. The campaigns test checks the script through announcement(), not its wording (840ae68).",
    "reverse_if": "The owner wants staff-facing system calls in the member's chosen language, or Hinglish for this call."
+  },
+  {
+   "id": "rejected.2026-10-21.manifest-names-as-parts",
+   "type": "rejection",
+   "title": "Reading a call's run-manifest components one-to-one as stack parts",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "tried": "web data.ts mapped manifest {stt, llm, tts ?? voice, s2s} straight onto {ears, brain, voice, s2s} and resolved it with stackOf.",
+   "broke": "The manifest's `voice` is the voice's name (Kore, hi-IN-Kavya), not a part, and `stt` ends in '/ungated' when the ears ran ungated. On the real runtime, a built speech-to-speech stack and ungated ears both showed 'A stack that is no longer listed' on the call page (2 of 3 manifest shapes unresolved). Devsim named an s2s run as 'llm', so the browser flows could not see it.",
+   "instead": "web/src/catalog.ts partsRan() maps the manifest to parts (s2s alone, or ears without the suffix + brain + tts). Devsim names an s2s run as the real runtime does. A unit test in tests/web.test.ts covers the three shapes and fails on the old mapping (95f1799)."
   }
  ],
  "edges": [
@@ -30900,6 +30911,11 @@
    "from": "decision.2026-10-21.verification-call-english",
    "to": "directive.2026-10-22.enterprise-english-ui",
    "relation": "implements"
+  },
+  {
+   "from": "rejected.2026-10-21.manifest-names-as-parts",
+   "to": "evidence.2026-10-22.built-stack-review",
+   "relation": "informs"
   }
  ]
 }
