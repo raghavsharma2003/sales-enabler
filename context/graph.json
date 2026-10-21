@@ -17116,6 +17116,24 @@
    "tried": "test-panel.tsx always rendered an enabled 'Run 6 practice callers' button. The default six were picked in a useEffect only after simcaller.list returned.",
    "broke": "A click before the list arrived ran zero callers: simulate(agent, []) resolved at once to an empty list. The person saw '0 of 0 passed' under a button that promised 6. CI web-e2e on 5e9253d failed this way, with a 30 s wait for the first result. It passed 13/13 on 4afd749, where the flow took 1.7 s. A 3 s delay on simcaller.list reproduced the failure in the practice flow and in the Copy flow.",
    "instead": "The default selection is derived on the same render the list arrives. The button reads 'Run N practice callers' with N the callers that will run. It is busy until the list loads, disabled with a reason when the list fails or nothing is picked, and run() refuses an empty pick. The practice flow now holds the list back 1.5 s on every run. That guard fails on the old panel and passes on the fix, and the suite passed 13/13 with it."
+  },
+  {
+   "id": "directive.2026-10-21.vertex-for-everything",
+   "type": "requirement",
+   "title": "Owner: use Vertex AI for everything Google/Gemini (text brains, TTS voices, Live ears and speech-to-speech), in the product and the lab.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "user"
+  },
+  {
+   "id": "decision.2026-10-21.gemini-vertex-only",
+   "type": "decision",
+   "title": "Gemini runs only through Vertex (project vp-voice, from India). The Gemini API key route and the OpenRouter Gemini route are retired from the product and the lab. A Gemini model or feature that Vertex does not offer makes its stack unavailable, with a plain reason. It is never rerouted to the API key or OpenRouter.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "Owner directive. It also leaves one credential, one project and one data-terms regime for Google, which is what the reinstatement appeal described. The OpenRouter and API-key routes existed only as workarounds while Vertex was restricted and the keys were capped.",
+   "reverse_if": "A model the owner wants is only on the Gemini API (e.g. a Live model with no Vertex release), or Vertex quota in India cannot carry the product's concurrent calls."
   }
  ],
  "edges": [
@@ -30515,6 +30533,26 @@
    "from": "rejected.2026-10-21.run-before-library",
    "to": "rejected.2026-10-21.e2e-fixed-time-holds",
    "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.gemini-vertex-only",
+   "to": "directive.2026-10-21.vertex-for-everything",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.gemini-vertex-only",
+   "to": "decision.2026-10-20.openrouter-explicit",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-21.gemini-vertex-only",
+   "to": "decision.2026-10-21.appeal-commitments-binding",
+   "relation": "extends"
+  },
+  {
+   "from": "risk.2026-10-20.gemini-3.1-live-sunset",
+   "to": "decision.2026-10-21.gemini-vertex-only",
+   "relation": "informs"
   }
  ]
 }

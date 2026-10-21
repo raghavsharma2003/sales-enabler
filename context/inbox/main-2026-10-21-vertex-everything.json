@@ -1,0 +1,29 @@
+{
+ "nodes": [
+  {
+   "id": "directive.2026-10-21.vertex-for-everything",
+   "type": "requirement",
+   "title": "Owner: use Vertex AI for everything Google/Gemini (text brains, TTS voices, Live ears and speech-to-speech), in the product and the lab.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "user"
+  },
+  {
+   "id": "decision.2026-10-21.gemini-vertex-only",
+   "type": "decision",
+   "title": "Gemini runs only through Vertex (project vp-voice, from India). The Gemini API key route and the OpenRouter Gemini route are retired from the product and the lab. A Gemini model or feature that Vertex does not offer makes its stack unavailable, with a plain reason. It is never rerouted to the API key or OpenRouter.",
+   "status": "confirmed",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "Owner directive. It also leaves one credential, one project and one data-terms regime for Google, which is what the reinstatement appeal described. The OpenRouter and API-key routes existed only as workarounds while Vertex was restricted and the keys were capped.",
+   "reverse_if": "A model the owner wants is only on the Gemini API (e.g. a Live model with no Vertex release), or Vertex quota in India cannot carry the product's concurrent calls."
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-21.gemini-vertex-only", "to": "directive.2026-10-21.vertex-for-everything", "relation": "derived-from" },
+  { "from": "decision.2026-10-21.gemini-vertex-only", "to": "decision.2026-10-20.openrouter-explicit", "relation": "supersedes" },
+  { "from": "decision.2026-10-21.gemini-vertex-only", "to": "decision.2026-10-21.appeal-commitments-binding", "relation": "extends" },
+  { "from": "risk.2026-10-20.gemini-3.1-live-sunset", "to": "decision.2026-10-21.gemini-vertex-only", "relation": "informs" }
+ ],
+ "events": []
+}
