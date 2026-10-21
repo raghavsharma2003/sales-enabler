@@ -471,3 +471,30 @@ test('credentials never pass through the Operator: no action row, audit payload,
     assert.equal((await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM action WHERE workspace_id = $1', [w]))!.n, 0, `${autonomy}: nothing was proposed`);
   }
 });
+
+test('a credential pasted into chat is masked before it is stored, echoed or sent to the model', { skip }, async () => {
+  const { maskCredentials, CREDENTIAL_MASK } = await import('../server/modules/operator/secrets.ts');
+  // Synthetic, credential-shaped strings only.
+  const keys = ['sk-SYNTHETICabcdef0123456789XYZ', 'AKIAABCDEFGHIJKLMNOP', 'AIzaSyFAKE0123456789abcdefghijklmnopqrs', 'ghp_FAKEabcdefghijklmnopqrstuvwxyz0123', 'xoxb-1234-FAKE-abcdefghij'];
+  for (const k of keys) assert.equal(maskCredentials(`yeh lo ${k} ok`).text, `yeh lo ${CREDENTIAL_MASK} ok`, k);
+  assert.equal(maskCredentials('password: hunter2pass').text, `password: ${CREDENTIAL_MASK}`);
+  assert.equal(maskCredentials('mera token hai Zq8!longvalue').text, `mera token hai ${CREDENTIAL_MASK}`);
+  assert.equal(maskCredentials('opaque Xk9_qW2-pL7mZr4TbV8nY3cJ6hF1sD0a end').hidden, 1);
+  // Not secrets: ids, words, hex hashes, sentences about passwords.
+  for (const ok of ['thread 3f1c2a9e-1b2c-4d5e-8f90-0a1b2c3d4e5f', 'renewal reminders kal 11 baje', 'hash 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'password reset wala flow banao'])
+    assert.equal(maskCredentials(ok).hidden, 0, ok);
+  if (skip) return;
+  const SECRET = 'sk-SYNTHETICleak0123456789abcdefXYZ';
+  const { ws: w, members: [owner] } = await ws('owner');
+  const t = await thread(owner);
+  const seen = script([{ text: 'Theek hai.' }]);
+  const r = await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: `CRM key ${SECRET} hai, aur password: Hunter2-synthetic`, uploads: [{ name: 'keys.txt', content: `api_key=${SECRET}` }] });
+  assert.ok(!r.text.includes(SECRET) && !r.text.includes('Hunter2-synthetic'), 'no SSE frame carries it');
+  assert.ok(frames(r.text).some(x => x.event === 'notice' && /Settings → Integrations/.test(x.data.text)), 'the person is told once, plainly');
+  const sent = JSON.stringify(seen[0].messages);
+  assert.ok(!sent.includes(SECRET) && !sent.includes('Hunter2-synthetic'), 'the model never sees it');
+  const stored = await one<{ n: number }>(pool, "SELECT count(*)::int AS n FROM message WHERE workspace_id = $1 AND (content::text LIKE $2 OR content::text LIKE '%Hunter2-synthetic%')", [w, `%${SECRET}%`]);
+  assert.equal(stored!.n, 0, 'no stored message holds it');
+  const title = await one<{ title: string }>(pool, 'SELECT title FROM thread WHERE id = $1', [t]);
+  assert.ok(!title!.title.includes(SECRET));
+});

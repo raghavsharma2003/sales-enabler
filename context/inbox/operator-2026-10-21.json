@@ -96,6 +96,11 @@
       "date": "2026-10-21",
       "event": "operator-no-credentials",
       "details": "Review item verified (A0 would have stored stage_secrets plaintext in action.args and the card diff) and fixed by making the tool screen-only for the Operator; test checks action, audit_event, message and SSE at A1 and A0; 21/21 operator tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "operator-chat-secrets-masked",
+      "details": "Operator masks digit secrets (shared/safety redact) and credential-shaped strings in every incoming message and upload before storage, SSE echo, thread title and model input; one notice to use Settings \u2192 Integrations. 22/22 operator tests. Not verified: detector precision on real chat (synthetic strings only)."
     }
   ]
 }

@@ -18,6 +18,7 @@ import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
 import { LlmError, stream, type ChatMessage, type LlmReply, type LlmTool } from '../../llm.ts';
 import { heldForApproval, type Receipt, type Registry } from '../../tools.ts';
+import { cleanIncoming, HID_NOTICE } from './secrets.ts';
 import { curatedBrains, operatorSettings, type Autonomy } from './tools.ts';
 
 export const CAPS = { llmCalls: 6, toolCalls: 10, tokens: 60_000, replyTokens: 1_200, planSteps: 8, historyMessages: 12, resultChars: 8_000 };
@@ -152,10 +153,15 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   const history = await many<{ role: string; content: any }>(pool, `SELECT role, content FROM (
       SELECT role, content, created_at, id FROM message WHERE thread_id = $1 AND workspace_id = $2 ORDER BY created_at DESC, id DESC LIMIT $3
     ) m ORDER BY created_at, id`, [threadId, workspaceId, caps.historyMessages]);
-  const userId = await save('user', { kind: 'text', text: inp.text, uploads: (inp.uploads ?? []).map(u => ({ name: u.name, bytes: Buffer.byteLength(u.content) })) });
-  emit({ type: 'message', id: userId, role: 'user', text: inp.text });
+  // Credentials and digit secrets are masked before anything is stored, echoed or sent to the model.
+  const clean = cleanIncoming(inp.text);
+  const uploads = (inp.uploads ?? []).map(u => { const c = cleanIncoming(u.content); return { name: u.name, content: c.text, hidden: c.hidden }; });
+  const hidden = clean.hidden + uploads.reduce((a, u) => a + u.hidden, 0);
+  const userId = await save('user', { kind: 'text', text: clean.text, uploads: uploads.map(u => ({ name: u.name, bytes: Buffer.byteLength(u.content) })) });
+  emit({ type: 'message', id: userId, role: 'user', text: clean.text });
+  if (hidden) { emit({ type: 'notice', text: HID_NOTICE }); await save('system', { kind: 'notice', text: HID_NOTICE }); }
   await pool.query('UPDATE thread SET updated_at = now(), title = coalesce(title, $3) WHERE id = $1 AND workspace_id = $2',
-    [threadId, workspaceId, inp.text.slice(0, 80)]);
+    [threadId, workspaceId, clean.text.slice(0, 80)]);
 
   const settings = await operatorSettings(pool, workspaceId);
   // The workspace's brain, if it is still on the curated list; otherwise the deployment's configured model.
@@ -185,7 +191,8 @@ export async function runTurn(inp: TurnInput): Promise<void> {
     else if (c.kind === 'text') messages.push({ role: 'assistant', content: String(c.text ?? '') });
     else if (c.kind === 'card') messages.push({ role: 'assistant', content: cardLine(c.card) });
   }
-  messages.push({ role: 'user', content: inp.text + (inp.uploads ?? []).map(u => '\n\n' + asData('upload:' + u.name, u.content)).join('') });
+  messages.push({ role: 'user', content: clean.text + uploads.map(u => '\n\n' + asData('upload:' + u.name, u.content)).join('')
+    + (hidden ? '\n\n(VP hid what looked like a password or key in this message; the person has been told to use Settings → Integrations.)' : '') });
 
   // 3. Call one tool for the Operator: A0 wrap, then the registry.
   const execute = async (name: string, args: unknown): Promise<OpReceipt> => {
