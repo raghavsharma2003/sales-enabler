@@ -521,11 +521,21 @@ test('a draft with blockers cannot launch, and says why', { skip }, async () => 
   const w = await world();
   const d = await registry.execute<{ id: string }>(pool, 'campaign.draft', { name: 'x', category: 'service' }, as(w));
   const id = d.status === 'confirmed' ? d.result.id : '';
-  const g = await registry.execute<{ blockers: { code: string }[] }>(pool, 'campaign.get', { id }, as(w));
+  const g = await registry.execute<{ blockers: { code: string; message: string; why?: string; fix: { tool: string; label: string; role: string } }[] }>(pool, 'campaign.get', { id }, as(w));
   assert.deepEqual(g.status === 'confirmed' && g.result.blockers.map(b => b.code), ['no_version', 'no_cap', 'no_audience']);
+  for (const b of g.status === 'confirmed' ? g.result.blockers : []) {
+    assert.ok(!/[a-z]+_[a-z]+|\.[a-z]+\b.*\(|M3\./.test(b.message), `plain words: ${b.message}`);
+    assert.ok(b.fix.tool && b.fix.label && b.fix.role, JSON.stringify(b));
+  }
+  // A missing line names the series in plain words.
+  await pool.query("UPDATE phone_number SET series = 'trial' WHERE workspace_id = $1", [w.ws]);
+  const g2 = await registry.execute<{ blockers: { code: string; message: string; fix: { label: string } }[] }>(pool, 'campaign.get', { id }, as(w));
+  const line = g2.status === 'confirmed' ? g2.result.blockers.find(b => b.code === 'no_line') : undefined;
+  assert.equal(line?.message, 'You need a phone number to call from.');
+  assert.equal(line?.fix.label, 'Get a number');
   const p = await registry.execute(pool, 'campaign.launch', { id }, as(w));
   const r = await registry.approve(pool, p.status === 'needs_approval' ? p.actionId : '', { workspaceId: w.ws, memberId: w.owner });
-  assert.ok(r.status === 'not_executed' && /launch blocked: no published agent version/.test(r.reason));
+  assert.ok(r.status === 'not_executed' && /launch blocked: Choose which version of your agent/.test(r.reason));
 });
 
 test('pause and stop: A3 whether VP or a person acts; resume needs a person; stop cancels what has not dialled', { skip }, async () => {
@@ -788,7 +798,9 @@ test('member phone verification: rings the code, stores only a hash, 5 tries, ex
   const { setVerifyClock, VERIFY } = await import('../server/modules/campaigns/verify.ts');
   const fake = new FakeTelephony();
   setTelephony(fake);
-  let clock = IST(TUE, '12:00');
+  // A day of its own per run: the per-phone limit counts every workspace and every earlier run on a shared database.
+  const DAY = new Date(Date.UTC(2030, 0, 1) + randomInt(0, 20_000) * 864e5).toISOString().slice(0, 10);
+  let clock = IST(DAY, '12:00');
   setVerifyClock(() => clock);
   try {
     // The per-phone limit spans workspaces and runs, so this test draws fresh synthetic numbers instead of the sequence.
@@ -844,10 +856,10 @@ test('member phone verification: rings the code, stores only a hash, 5 tries, ex
     assert.ok(fourth.status === 'not_executed' && /an hour/.test(fourth.reason));
 
     // Window, suppression, landline.
-    clock = IST(TUE, '21:05');
+    clock = IST(DAY, '21:05');
     const night = await start(phone(), 'viewer');
     assert.ok(night.status === 'not_executed' && /09:00 and 21:00/.test(night.reason));
-    clock = IST('2026-10-28', '12:00');
+    clock = new Date(IST(DAY, '12:00').getTime() + 864e5 + 3600_000);
     const sup = phone();
     await pool.query("INSERT INTO suppression (workspace_id, e164, reason) VALUES ($1,$2,'asked not to be called')", [w.ws, sup]);
     const s4 = await start(sup);
@@ -907,4 +919,15 @@ test('beta stacks take test calls only: G10 refuses a production dial and lets a
   const d = await registry.execute<{ id: string }>(pool, 'campaign.draft', { name: 'beta', category: 'service', agentVersionId: beta, capInrMilli: 100_000 }, as(w));
   const g = await registry.execute<{ blockers: { code: string }[] }>(pool, 'campaign.get', { id: d.status === 'confirmed' ? d.result.id : '' }, as(w));
   assert.ok(g.status === 'confirmed' && g.result.blockers.some(b => b.code === 'beta_stack'));
+});
+
+test('a refused attempt carries plain words for people beside the developer detail', { skip }, async () => {
+  const w = await world();
+  const id = await attempt(w);
+  await tick(deps(w, IST(TUE, '07:30')));
+  const a = await one<{ precheck: { code: string; detail: string; explain: { code: string; message: string; why?: string } } }>(pool, 'SELECT precheck FROM attempt WHERE id = $1', [id]);
+  assert.equal(a!.precheck.code, 'out_of_window');
+  assert.equal(a!.precheck.explain.code, 'out_of_window');
+  assert.match(a!.precheck.explain.message, /^It is outside calling hours for this person\. We will try again Tue,? 10:00/);
+  assert.match(a!.precheck.detail, /Asia\/Kolkata/, 'the developer detail is kept');
 });

@@ -130,3 +130,23 @@ test('G4 codes carry a stable source class, never an instance id', () => {
   assert.equal(suppressionSource('import:abc'), 'import');
   assert.equal(suppressionSource(null), 'workspace');
 });
+
+test('every gate refusal and window rule reads as a plain sentence: no rule ids, tool ids or snake_case', async () => {
+  const { explainRefusal, windowProblem, lineNeeded } = await import('../server/modules/campaigns/explain.ts');
+  const codes = ['workspace_not_verified', 'identifier_invalid', 'destination_blocked', 'erased', 'suppressed:in_call', 'suppressed:campaign', 'no_basis',
+    'consent_expired', 'dnd_blocked_by_operator', 'out_of_window', 'budget_exhausted', 'cli_wrong_series', 'cli_undeclared', 'cli_paused', 'kyc_lapsed',
+    'cap_reached', 'wallet_low', 'version_not_publishable', 'pack_missing', 'predial_veto', 'predial_timeout', 'deferred_concurrency', 'check_unavailable'] as const;
+  const details = ['', 'consent withdrawn (all)', 'DND lookup stale (older than 7 days)', 'DND status unknown: held', 'consent expiry unreadable',
+    'the Gemini 3.8 Live stack is in beta: test calls only', 'this version is built for service calls, not promotional', 'test calls ring only a member phone verified in this workspace'];
+  const plain = (s: string) => !/[a-z]+_[a-z]+|\bM3\.|\bRS-\d|\bREG-\d|\b[a-z]+\.[a-z_]+\(|\b(?:number|campaign|policy|stack|version)\.[a-z]/.test(s);
+  for (const c of codes) for (const d of details) {
+    const e = explainRefusal(c, d, { next: new Date('2026-10-28T04:30:00Z'), tz: 'Asia/Kolkata', category: 'promotional', series: '1600' });
+    assert.equal(e.code, c);
+    assert.ok(e.message.length > 10 && /[.!]$/.test(e.message) && plain(e.message), `${c}/${d}: ${e.message}`);
+    if (e.why) assert.ok(plain(e.why), `${c} why: ${e.why}`);
+    if (e.fix) assert.ok(e.fix.tool && e.fix.label && !e.fix.label.includes('.') && e.fix.role, `${c} fix`);
+  }
+  assert.match(explainRefusal('out_of_window', '', { next: new Date('2026-10-28T04:30:00Z'), tz: 'Asia/Kolkata' }).message, /Wed.*10:00/);
+  assert.equal(lineNeeded('1600').message, 'You need a 1600-series number. Regulated businesses must call customers from one.');
+  for (const r of ['window.ranges[0]: M3.promotional_band: x', 'M3.cross_midnight_role: x', 'M3.outer_band: x', 'other']) assert.ok(plain(windowProblem(r).message));
+});

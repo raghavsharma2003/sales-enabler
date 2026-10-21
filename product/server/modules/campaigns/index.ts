@@ -20,6 +20,7 @@ import {
 } from './defaults.ts';
 import { loadDialPolicy, loadVersion, type CampaignPolicy, type CampaignRow } from './gate.ts';
 import { tick } from './worker.ts';
+import { categoryWord, lineNeeded, windowProblem, type Explained } from './explain.ts';
 import { verifyConfirm, verifyStart } from './verify.ts';
 import { routeSeries, SERIES, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
@@ -71,24 +72,30 @@ async function checkWindow(q: Queryable, ws: string, category: CallCategory, w: 
 }
 
 /** Everything that stops a launch, in priority order, each with the fix and who can do it (campaigns.md §12). */
-export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): Promise<{ code: string; message: string; fix: string; role: string }[]> {
-  const out: { code: string; message: string; fix: string; role: string }[] = [];
+export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): Promise<Explained[]> {
+  const out: Explained[] = [];
   const v = await loadVersion(q, ws, c.agent_version_id);
   const agent = v?.config?.agent;
-  if (!v) out.push({ code: 'no_version', message: 'no published agent version is pinned', fix: 'campaign.draft agentVersionId', role: 'builder' });
-  else if (!agent || !v.config.brief?.text) out.push({ code: 'version_not_publishable', message: 'the pinned version has no compiled brief', fix: 'publish the agent', role: 'builder' });
-  else if (getStack(agent.voice?.stackId ?? '')?.status === 'beta') out.push({ code: 'beta_stack', message: `the ${getStack(agent.voice.stackId)!.label} stack is in beta: test calls only`, fix: 'choose an available stack (stack.set) and publish', role: 'builder' });
-  else if (agent.category !== c.call_category) out.push({ code: 'category_mismatch', message: `the agent version is for ${agent.category} calls; this campaign is ${c.call_category}`, fix: 'pin a matching version', role: 'builder' });
-  if (!c.policy.capInrMilli) out.push({ code: 'no_cap', message: 'no budget cap', fix: 'campaign.draft capInrMilli (default: the estimate\'s p90)', role: 'owner' });
+  if (!v) out.push({ code: 'no_version', message: 'Choose which version of your agent this campaign uses.',
+    why: 'Calls run only on a published version, so you know exactly what people will hear.', fix: { tool: 'campaign.draft', label: 'Pick the agent', role: 'builder' } });
+  else if (!agent || !v.config.brief?.text) out.push({ code: 'version_not_publishable', message: 'This agent version is not ready to call people yet.',
+    fix: { tool: 'version.publish', label: 'Publish the agent', role: 'builder' } });
+  else if (getStack(agent.voice?.stackId ?? '')?.status === 'beta') out.push({ code: 'beta_stack', message: 'The voice this agent uses is still in beta, so it can only make test calls.',
+    why: 'Choose an available voice for calls to customers.', fix: { tool: 'stack.set', label: 'Choose a voice', role: 'builder' } });
+  else if (agent.category !== c.call_category) out.push({ code: 'category_mismatch',
+    message: `This agent was built for ${categoryWord(agent.category)} calls, but the campaign is set up for ${categoryWord(c.call_category)} calls.`,
+    why: 'The kind of call decides what she may say and when she may call.', fix: { tool: 'campaign.draft', label: 'Pick a matching agent', role: 'builder' } });
+  if (!c.policy.capInrMilli) out.push({ code: 'no_cap', message: 'Set a spending limit for this campaign.',
+    why: 'Calls stop at the limit, so the bill never surprises you.', fix: { tool: 'campaign.draft', label: 'Set a limit', role: 'owner' } });
   try { await checkWindow(q, ws, c.call_category, c.policy.window ?? DEFAULT_WINDOWS[c.call_category], true); }
-  catch (e) { out.push({ code: 'window_invalid', message: e instanceof Error ? e.message : String(e), fix: 'campaign.window.narrow', role: 'compliance' }); }
+  catch (e) { out.push({ code: 'window_invalid', ...windowProblem(e instanceof Error ? e.message : String(e)), fix: { tool: 'campaign.window.narrow', label: 'Change calling hours', role: 'compliance' } }); }
   const n = c.audience_id ? await one<{ n: number }>(q, `SELECT count(*)::int AS n FROM audience_member m JOIN audience a ON a.id = m.audience_id
     WHERE a.id = $1 AND a.workspace_id = $2`, [c.audience_id, ws]) : null;
-  if (!n?.n) out.push({ code: 'no_audience', message: 'nobody to call', fix: 'campaign.audience.add', role: 'operator' });
+  if (!n?.n) out.push({ code: 'no_audience', message: 'Add the people you want to call.', fix: { tool: 'campaign.audience.add', label: 'Add people', role: 'operator' } });
   const dp = await loadDialPolicy(q, ws);
   const route = routeSeries({ category: c.call_category, sectorPacks: agent?.sectorPacks ?? [], workspaceSector: dp.sector });
   const line = await one(q, "SELECT 1 FROM phone_number WHERE workspace_id = $1 AND series = $2 AND status = 'active' LIMIT 1", [ws, route.series]);
-  if (!line) out.push({ code: 'no_line', message: `no active ${route.series} line (${route.rule})`, fix: 'number.search then number.rent', role: 'owner' });
+  if (!line) out.push({ code: 'no_line', ...lineNeeded(route.series), fix: { tool: 'number.search', label: 'Get a number', role: 'owner' } });
   return out;
 }
 

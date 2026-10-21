@@ -13,6 +13,8 @@ import { many, one, tx } from '../../db.ts';
 import { release } from '../../ledger.ts';
 import { runtime as defaultRuntime, type Runtime } from '../../runtime-client.ts';
 import type { Registry } from '../../tools.ts';
+import { explainRefusal, type Explained } from './explain.ts';
+import type { Series } from './telephony.ts';
 import { DISPATCH_STALE_MS, MEMORY_BRIEF_TIMEOUT_MS } from './defaults.ts';
 import { LIVE_ATTEMPT, runGate, type AttemptRow, type GatePass, type GateVerdict, type PredialFn } from './gate.ts';
 
@@ -80,6 +82,13 @@ export type ClaimOutcome =
   | { kind: 'review_stop'; campaignId: string; workspaceId: string }
   | { kind: 'claimed'; attempt: AttemptRow; verdict: GateVerdict; conversationId?: string };
 
+/** A refusal in plain words, with the contact's zone for the next time and the series a wrong-line refusal needs. */
+async function explainFor(c: pg.PoolClient, a: AttemptRow, v: Exclude<GateVerdict, { allowed: true }>): Promise<Explained> {
+  const tz = a.contact_id ? (await one<{ timezone: string }>(c, 'SELECT timezone FROM contact WHERE id = $1', [a.contact_id]))?.timezone : undefined;
+  const series = /use (ten_digit|140|1600|1601|trial)\b/.exec(v.detail ?? '')?.[1] as Series | undefined;
+  return explainRefusal(v.code, v.detail, { next: v.nextEligibleAt, tz: tz ?? 'Asia/Kolkata', category: v.campaign?.call_category ?? a.call_category ?? undefined, series });
+}
+
 /** Claim one due attempt and run the gate on it, in one transaction. */
 export async function claimNext(d: WorkerDeps): Promise<ClaimOutcome> {
   const now = d.now?.() ?? new Date();
@@ -106,7 +115,9 @@ export async function claimNext(d: WorkerDeps): Promise<ClaimOutcome> {
       (await readTool<{ perMinuteInrMilli?: number }>(d.registry, c, ws, 'money.estimate', { stackId, minutes, calls: 1 }))?.perMinuteInrMilli ?? null;
     const v = await runGate(c, a, { now, predial: d.predial, rate });
     const precheck = { gateVersion: v.gateVersion, at: now.toISOString(), allowed: v.allowed, trace: v.trace, warnings: v.warnings,
-      ...(v.allowed ? {} : { outcome: v.outcome, code: v.code, gate: v.gate, detail: v.detail, nextEligibleAt: v.nextEligibleAt?.toISOString() ?? null }) };
+      ...(v.allowed ? {} : { outcome: v.outcome, code: v.code, gate: v.gate, detail: v.detail, nextEligibleAt: v.nextEligibleAt?.toISOString() ?? null,
+        // What a person sees: plain words, no rule ids. detail above stays for developers.
+        explain: await explainFor(c, a, v) }) };
     if (v.allowed) {
       const conversationId = randomUUID();
       await c.query(`UPDATE attempt SET status = 'dialing', claimed_at = $2, dialed_at = $2, number_id = $3, cli_e164 = $4, carrier = $5,
