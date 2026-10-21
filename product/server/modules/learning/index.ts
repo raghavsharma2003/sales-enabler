@@ -10,7 +10,8 @@
 //   experiment.check   (draft)  guardrails every call (hazard stop + A3 revert); verdict only at the horizon
 //   experiment.stop    (draft)  a person stops a test; control keeps all traffic
 // A win is proposed as deployment.split at 100% treatment on the experiment's binding (A2), never applied here.
-// Background: jobs() runs experiment.check on every running experiment each minute (calls also call it per call).
+// Background: jobs() runs experiment.check on every running experiment each minute (calls also call it per call), and
+// learning.propose_from_issues drafts one proposal per new content monitor issue (3 a day per workspace; drafts only).
 import type pg from 'pg';
 import { createHash } from 'node:crypto';
 import type { Module } from '../../app.ts';
@@ -100,11 +101,13 @@ date, percentage or link that is not already one of the facts. No urgency, scarc
 Cite the evidence each change answers by its id (call ids, moment ids, issue ids) — only ids present in the evidence.
 Reply as JSON: {"proposals":[{"kind": one of ${PROPOSAL_KINDS.join('|')}, "rationale": "...", "change":[{"op":"set","path":"...","value":...}], "evidenceIds":["..."]}]}`;
 
-async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: VersionRow) {
+async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: VersionRow, issueId?: string) {
   const versions = (await many<{ id: string }>(q, `SELECT v.id FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE a.workspace_id = $1 AND a.id = $2`, [ws, agentId])).map(r => r.id);
+  // The issue that triggered this run (a monitor's), first; then the agent's own open issues.
   const issues = await many<{ id: string; category: string; severity: string; detail: unknown }>(q,
     `SELECT id, category, severity, detail FROM issue WHERE workspace_id = $1 AND status <> 'resolved'
-       AND (subject_id = $2 OR subject_id = ANY($3::uuid[]) OR detail->>'agentId' = $2::text) ORDER BY created_at DESC LIMIT 20`, [ws, agentId, versions]);
+       AND (id = $4 OR subject_id = $2 OR subject_id = ANY($3::uuid[]) OR detail->>'agentId' = $2::text)
+     ORDER BY (id = $4) DESC NULLS LAST, created_at DESC LIMIT 20`, [ws, agentId, versions, issueId ?? null]);
   const moments = await many<{ id: string; locus: string; reached: number; left_here: number; hazard: unknown; flagged: boolean }>(q,
     `SELECT id, locus, reached, left_here, hazard, flagged FROM moment WHERE workspace_id = $1 AND agent_version_id = $2
        ORDER BY flagged DESC, (left_here::float / greatest(reached, 1)) DESC LIMIT 10`, [ws, base.id]);
@@ -127,13 +130,14 @@ async function ownEvidence(q: Queryable, ws: string, known: Set<string>, ids: un
   return strs.filter(x => known.has(x) || calls.has(x));
 }
 
-const proposeIn = obj({ agentId: uuid(), max: opt(num({ int: true, min: 1, max: 3 })) });
+const proposeIn = obj({ agentId: uuid(), max: opt(num({ int: true, min: 1, max: 3 })), issueId: opt(uuid()) });
 
-async function propose(ctx: ToolCtx, i: { agentId: string; max?: number }) {
+async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId?: string }) {
   const ws = ctx.workspaceId;
   const base = await latestVersion(ctx.q, ws, i.agentId);
   if (!base) throw new Error('this agent has no published version yet; learning starts from what has run');
-  const ev = await gatherEvidence(ctx.q, ws, i.agentId, base);
+  if (i.issueId && !(await one(ctx.q, 'SELECT 1 FROM issue WHERE id = $1 AND workspace_id = $2', [i.issueId, ws]))) throw new Error('no such issue');
+  const ev = await gatherEvidence(ctx.q, ws, i.agentId, base, i.issueId);
   if (!ev.issues.length && !ev.moments.length && !ev.calls.length) return { status: 'no_evidence', proposals: [] };
   const cfg = agentOf(base);
   const known = new Set([...ev.issues.map(x => x.id), ...ev.moments.map(x => x.id), ...ev.calls.map(x => x.id)]);
@@ -170,7 +174,7 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number }) {
     const status = failures.length ? 'gated_out' : 'drafted';
     const row = await one<{ id: string }>(ctx.q, `INSERT INTO proposal (workspace_id, agent_id, base_version_id, kind, change, evidence, gates, status, change_hash, rationale)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
-      [ws, i.agentId, base.id, kind ?? 'unknown', JSON.stringify(ops ?? p?.change ?? null), JSON.stringify({ cited, usage: reply.usage }),
+      [ws, i.agentId, base.id, kind ?? 'unknown', JSON.stringify(ops ?? p?.change ?? null), JSON.stringify({ cited, usage: reply.usage, ...(i.issueId ? { issueId: i.issueId } : {}) }),
        JSON.stringify({ passed: !failures.length, failures, checked: gates.checked }), status, hash, typeof p?.rationale === 'string' ? p.rationale.slice(0, 1000) : null]);
     out.push({ id: row!.id, status, kind, failures, cited });
   }
@@ -474,6 +478,56 @@ export async function checkRunning(deps: { pool: pg.Pool; registry: Registry }, 
   return { checked: running.length };
 }
 
+// ---------- issue-triggered proposals ----------
+
+/** Monitor signals whose cause can be in what the agent says. Tool failures, engine errors and dropped quotes are
+ *  engineering causes (blueprint learning.md §3.3: triage before content) and never become a script proposal. */
+export const CONTENT_SIGNALS = ['early_hangup_rate', 'opt_out_rate', 'safety_event_rate'];
+/** Automatic proposal runs per workspace per IST day (each run is one LLM call). */
+export const DAILY_ISSUE_PROPOSALS = 3;
+
+/** For each new open monitor issue: pick the agent its evidence calls ran, and run learning.propose once (max one
+ *  proposal), citing the issue. At most once per issue (learning_issue_run's key) and DAILY_ISSUE_PROPOSALS a day per
+ *  workspace. Nothing launches: a proposal still needs probe, accept (A2) and start (A2). Pass workspaceId to sweep
+ *  one workspace only (tests on the shared suite database must). */
+export async function proposeFromIssues(deps: { pool: pg.Pool; registry: Registry }, opts: { workspaceId?: string } = {}): Promise<{ ran: { issueId: string; status: string; proposalId?: string }[] }> {
+  const { pool, registry } = deps;
+  const issues = await many<{ id: string; workspace_id: string; detail: any }>(pool,
+    `SELECT i.id, i.workspace_id, i.detail FROM issue i
+      WHERE i.monitor_id IS NOT NULL AND i.status = 'open' AND i.created_at > now() - interval '7 days'
+        AND ($1::uuid IS NULL OR i.workspace_id = $1)
+        AND NOT EXISTS (SELECT 1 FROM learning_issue_run r WHERE r.issue_id = i.id)
+      ORDER BY i.created_at LIMIT 50`, [opts.workspaceId ?? null]);
+  const ran: { issueId: string; status: string; proposalId?: string }[] = [];
+  for (const i of issues) {
+    const ws = i.workspace_id;
+    const mark = (status: string, extra: { agentId?: string | null; proposalId?: string | null; detail?: unknown } = {}) =>
+      pool.query(`INSERT INTO learning_issue_run (issue_id, workspace_id, agent_id, status, proposal_id, detail) VALUES ($1,$2,$3,$4,$5,$6)
+        ON CONFLICT (issue_id) DO UPDATE SET status = EXCLUDED.status, agent_id = EXCLUDED.agent_id, proposal_id = EXCLUDED.proposal_id, detail = EXCLUDED.detail`,
+        [i.id, ws, extra.agentId ?? null, status, extra.proposalId ?? null, JSON.stringify(extra.detail ?? {})]);
+    if (!CONTENT_SIGNALS.includes(i.detail?.signal)) { await mark('skipped_engineering', { detail: { signal: i.detail?.signal } }); ran.push({ issueId: i.id, status: 'skipped_engineering' }); continue; }
+    const calls: string[] = Array.isArray(i.detail?.evidenceCalls) ? i.detail.evidenceCalls.filter((x: unknown) => typeof x === 'string') : [];
+    const agent = calls.length ? await one<{ id: string }>(pool, `SELECT v.agent_id AS id FROM conversation c JOIN agent_version v ON v.id = c.agent_version_id
+        JOIN agent a ON a.id = v.agent_id AND a.workspace_id = c.workspace_id
+      WHERE c.workspace_id = $1 AND c.id = ANY($2::uuid[]) GROUP BY v.agent_id ORDER BY count(*) DESC, v.agent_id LIMIT 1`, [ws, calls]) : null;
+    if (!agent) { await mark('skipped_no_agent'); ran.push({ issueId: i.id, status: 'skipped_no_agent' }); continue; }
+    // The daily cap counts runs that reached the model; an issue over the cap waits for tomorrow (no row is written).
+    const today = await one<{ n: number }>(pool, `SELECT count(*)::int AS n FROM learning_issue_run WHERE workspace_id = $1 AND status IN ('proposed','no_proposal','failed')
+      AND (created_at AT TIME ZONE 'Asia/Kolkata')::date = (now() AT TIME ZONE 'Asia/Kolkata')::date`, [ws]);
+    if (today!.n >= DAILY_ISSUE_PROPOSALS) { ran.push({ issueId: i.id, status: 'skipped_daily_cap' }); continue; }
+    // Claim the issue before the model call, so two replicas never both run it.
+    const claimed = await pool.query(`INSERT INTO learning_issue_run (issue_id, workspace_id, agent_id, status, detail) VALUES ($1,$2,$3,'failed','{"pending":true}')
+      ON CONFLICT (issue_id) DO NOTHING`, [i.id, ws, agent.id]);
+    if (!claimed.rowCount) continue;
+    const r = await registry.execute<any>(pool, 'learning.propose', { agentId: agent.id, issueId: i.id, max: 1 }, { workspaceId: ws, actor: SYSTEM });
+    const p = r.status === 'confirmed' ? (r.result.proposals ?? []).find((x: any) => x.id) : null;
+    const status = r.status !== 'confirmed' ? 'failed' : p ? 'proposed' : 'no_proposal';
+    await mark(status, { agentId: agent.id, proposalId: p?.id ?? null, detail: r.status === 'confirmed' ? { result: r.result.status, proposalStatus: p?.status } : { reason: 'reason' in r ? r.reason : r.status } });
+    ran.push({ issueId: i.id, status, ...(p ? { proposalId: p.id } : {}) });
+  }
+  return { ran };
+}
+
 // ---------- the module ----------
 
 export const module: Module = {
@@ -521,7 +575,10 @@ export const module: Module = {
   routes(_router, deps) { bound = { pool: deps.pool, registry: deps.registry }; },
   jobs(deps) {
     bound = { pool: deps.pool, registry: deps.registry };
-    return [{ name: 'learning.check', everyMs: 60_000, run: async d => { await checkRunning(d); } }];
+    return [
+      { name: 'learning.check', everyMs: 60_000, run: async d => { await checkRunning(d); } },
+      { name: 'learning.propose_from_issues', everyMs: 60_000, run: async d => { await proposeFromIssues(d); } },
+    ];
   },
 };
 

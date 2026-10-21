@@ -63,16 +63,18 @@
     }
   ],
   "migrations": [
-    "db/migrations/0801_learning.sql"
+    "db/migrations/0801_learning.sql",
+    "db/migrations/0802_learning_issue_runs.sql"
   ],
   "tests": {
-    "passed": 21,
-    "total": 21,
+    "passed": 23,
+    "total": 23,
     "files": [
       "tests/learning.stats.test.ts",
-      "tests/learning.test.ts"
+      "tests/learning.test.ts",
+      "tests/learning-issues.test.ts"
     ],
-    "method": "learning.test.ts 30/30 in a loop on vp_mod_learning; full suite tests/*.test.ts 284/284 twice on one shared database (vp_suite_shared); tsc clean"
+    "method": "learning-issues on the real modules (calls' evaluateMonitors opens the issues); each of its three guards (once per issue, engineering triage, daily cap) shown to fail with the guard removed; full suite on a fresh database 388/389 (1 skip: voice runtime Python); tsc clean"
   },
   "works": [
     "Propose: evidence = open issues, moments (by hazard), recent live calls with judge results, and the workspace's lessons; the LLM (purpose 'learning', JSON) returns ops on the latest version's config; every cited id is checked against this workspace's own rows; uncited proposals are gated out",
@@ -85,7 +87,8 @@
     "Check: test calls excluded; any treatment safety violation, 3+ complaints/opt-outs at 2x control, or the always-valid mSPRT harm test stops the arm at once, calls deployment.revert_to_last_good {agentId, binding} (A3), opens a critical issue and records a lesson",
     "No peeking: effect is neither computed nor shown before the horizon and the minimum days; at the horizon one two-sided two-proportion z test; a win is proposed as deployment.split at 100% treatment on the experiment's binding, only if that tool is approval-gated, so it becomes an A2 card",
     "No pooling: every query filters by workspace; rows in another workspace that point at this workspace's versions are ignored (tested)",
-    "Calls contract: success values are the business's outcome_definition.goal_values (via the campaign that runs the agent, else the goal's outcome key, or outcomeDefinitionId); hazard codes default to catalogue END_OPTED_OUT / CONV_COMPLAINT / END_CRISIS; baseline, power, horizon, verdict and the shadow A/A count only contacts with a recorded outcome (NULL = untrusted AI guess), and the card says so; guardrails count every live contact. Cross-module test writes conversations the way calls does"
+    "Calls contract: success values are the business's outcome_definition.goal_values (via the campaign that runs the agent, else the goal's outcome key, or outcomeDefinitionId); hazard codes default to catalogue END_OPTED_OUT / CONV_COMPLAINT / END_CRISIS; baseline, power, horizon, verdict and the shadow A/A count only contacts with a recorded outcome (NULL = untrusted AI guess), and the card says so; guardrails count every live contact. Cross-module test writes conversations the way calls does",
+    "Issue trigger: a calls monitor issue (content signal) drafts one proposal citing the issue for the agent its evidence calls ran; engineering issues are skipped and recorded; the daily cap leaves the issue for a later day; nothing launches without probe, accept (A2) and start (A2)"
   ],
   "untested": [
     "Against real sibling modules (all four sibling tools are fakes in tests)",
@@ -109,6 +112,11 @@
       "name": "learning.check",
       "everyMs": 60000,
       "does": "checkRunning(deps, {workspaceId?}): experiment.check on every running experiment, each in its own workspace; tests pass workspaceId"
+    },
+    {
+      "name": "learning.propose_from_issues",
+      "everyMs": 60000,
+      "does": "proposeFromIssues(deps, {workspaceId?}): for each open monitor issue from the last 7 days, once per issue (learning_issue_run key), content signals only (early_hangup_rate, opt_out_rate, safety_event_rate), at most 3 runs per workspace per IST day: learning.propose {agentId from the issue's evidence calls, issueId, max 1}; drafts only"
     }
   ]
 }

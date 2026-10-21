@@ -21,10 +21,13 @@
     "0500_operator.sql"
   ],
   "tests": {
-    "passed": 22,
-    "total": 22,
-    "file": "tests/operator.test.ts",
-    "db": "vp_mod_operator on the throwaway cluster"
+    "passed": 24,
+    "total": 24,
+    "files": [
+      "tests/operator.test.ts",
+      "tests/operator-toolset.test.ts"
+    ],
+    "db": "throwaway cluster; full suite on a fresh database 388/389 (1 skip: voice runtime Python), browser flows 22/22"
   },
   "works": [
     "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
@@ -40,7 +43,8 @@
     "The workspace's brain is passed as the per-request model while it is on the curated list (VP_OPERATOR_BRAINS ids are the model names on the operator endpoint); a brain taken off the list falls back to the configured model",
     "MA-01: the plan view and the model's tool list both use the kernel's heldForApproval with the Operator's actor, so attempt.retry_per_ladder shows and runs as a tap (plan stops there) while risk-lowering A3 verbs such as campaign.pause run at once; tested",
     "Credentials never pass through the Operator: integration.stage_secrets is screen-only (not offered, refused directly and in plans with a pointer to the Integrations screen), so no secret reaches the model's tool args, an A0 action row, a card diff, the audit or SSE; tested at A1 and A0 (the test fails on the previous loop)",
-    "Chat secrets: every incoming message and upload goes through shared/safety redact() (digit secrets) and a credential detector (key prefixes sk-/AKIA/AIza/ghp_/xox and others, 'password: ...'/'token hai ...' pairs, high-entropy tokens of 24+ chars; UUIDs and hex hashes excluded) before it is stored, echoed, used as the thread title or sent to the model; one plain notice points to Settings → Integrations; tested"
+    "Chat secrets: every incoming message and upload goes through shared/safety redact() (digit secrets) and a credential detector (key prefixes sk-/AKIA/AIza/ghp_/xox and others, 'password: ...'/'token hai ...' pairs, high-entropy tokens of 24+ chars; UUIDs and hex hashes excluded) before it is stored, echoed, used as the thread title or sent to the model; one plain notice points to Settings → Integrations; tested",
+    "Tool selection (toolset.ts): at most 40 tools per model call — page tools (the web client sends `page`), tools the member's words point at, tools used earlier in the thread, a core read set, plus operator_plan and operator_find_tools. find_tools adds tools to the next model call of the same turn (max 4 lookups, no tool step). The role filter and SCREEN_ONLY are unchanged. Measured on the real modules for an owner: 166 tools / 80,361 schema chars per request before; 29-40 tools / 14,489-22,421 after (n=11). CAPS.llmCalls 6 -> 8, tokens unchanged at 60k"
   ],
   "untested": [
     "Against a real model: only setFakeLlm scripts were run; no Operator bench (300 keyed + 50 adversarial) exists yet",
@@ -48,7 +52,10 @@
     "Thread summary recompaction beyond the last 12 messages; the 24k compile budget",
     "Concurrent turns in one thread",
     "Delta streaming from a real provider: the fake emits each reply as one delta",
-    "Credential detector precision on real chat: tuned on synthetic strings only; a short password without a 'password:' label is not caught"
+    "Credential detector precision on real chat: tuned on synthetic strings only; a short password without a 'password:' label is not caught",
+    "A real model choosing tools from the reduced set and calling operator_find_tools on its own (only a scripted model was tested)",
+    "Whether a real endpoint enforces a 128-tool limit (not checked; no longer reachable at 40)",
+    "Tool results over resultChars (8,000) reach the model clipped mid-JSON (e.g. agent.create with its draft): a real model may misread them"
   ],
   "needs_from_others": [
     "web: render cards (approval hold-to-confirm, receipt, plan) from the SSE frames and the thread GET"
