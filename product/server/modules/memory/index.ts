@@ -4,10 +4,11 @@
 //
 // Tools: memory.extract (after a call), memory.brief (dial time), contact.memory.get, fact.approve, fact.forget,
 // contact.memory.forget (DPDP forget request), memory.policy.get, memory.policy.set.
+import { createHash } from 'node:crypto';
 import type { Module } from '../../app.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { complete } from '../../llm.ts';
-import { tool, type Registry, type ToolCtx } from '../../tools.ts';
+import { tool, type PrepareCtx, type Registry, type ToolCtx } from '../../tools.ts';
 import { bool, num, obj, opt, record, str, uuid } from '../../../shared/validate.ts';
 import { compileBrief, type BriefFact } from './brief.ts';
 import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
@@ -52,17 +53,68 @@ At most 8 facts. None is a fine answer.`;
 
 type Counts = Partial<Record<Drop | 'proposed' | 'stored' | 'superseded' | 'review', number>>;
 
-async function extract(ctx: ToolCtx, conversationId: string) {
-  const { q, workspaceId: ws } = ctx;
+interface Loaded { contactId: string; purpose: Purpose; pol: Policy; callerTurns: string[]; transcript: string; digest: string; startedAt: Date; hasConsent: boolean }
+type Load = { skip: string } | { prior: { status: string; reason: string | null; counts: Counts } } | Loaded;
+
+/** Read everything extraction needs and every skip condition. Runs twice: through the pool in prepare() (before the
+ *  model call) and inside the transaction in run() (before any write), so a gate can never rely on a stale read. */
+async function load(q: Queryable, ws: string, conversationId: string, lock: boolean): Promise<Load> {
   const conv = await one<{ id: string; contact_id: string | null; channel: string; status: string; run_manifest: any; transcript: any; started_at: Date; cfg: any; minor: string | null }>(q,
     `SELECT c.id, c.contact_id, c.channel, c.status, c.run_manifest, c.transcript, c.started_at, v.config AS cfg, ct.custom->>'minor' AS minor
      FROM conversation c LEFT JOIN agent_version v ON v.id = c.agent_version_id LEFT JOIN contact ct ON ct.id = c.contact_id AND ct.workspace_id = c.workspace_id
-     WHERE c.id = $1 AND c.workspace_id = $2 FOR UPDATE OF c`, [conversationId, ws]);
+     WHERE c.id = $1 AND c.workspace_id = $2${lock ? ' FOR UPDATE OF c' : ''}`, [conversationId, ws]);
   if (!conv) throw new Error('no such conversation in this workspace');
 
   const prior = await one<{ status: string; reason: string | null; counts: Counts }>(q, 'SELECT status, reason, counts FROM memory_extraction WHERE workspace_id = $1 AND conversation_id = $2', [ws, conversationId]);
-  if (prior && prior.status !== 'failed') return { status: prior.status, reason: prior.reason, counts: prior.counts, repeated: true };
+  if (prior && prior.status !== 'failed') return { prior };
 
+  // Test calls never produce facts: checked before anything is read or sent to a model.
+  if (conv.channel === 'test' || conv.run_manifest?.test === true) return { skip: 'test_call' };
+  if (!conv.contact_id) return { skip: 'no_contact' };
+  if (conv.status === 'live') return { skip: 'call_not_ended' };
+  const pol = await policy(q, ws);
+  if (!pol.enabled) return { skip: 'memory_off' };
+  if (conv.minor === 'true') return { skip: 'minor' };
+  const am = fromConfig(conv.cfg?.agent);
+  if (!am.write) return { skip: 'agent_memory_write_off' };
+  if (!am.purpose) return { skip: 'no_purpose' };
+  if (await one(q, 'SELECT 1 FROM memory_optout WHERE workspace_id = $1 AND contact_id = $2', [ws, conv.contact_id])) return { skip: 'contact_opted_out' };
+
+  // The transcript of record: turns if the calls module wrote them, else the conversation's transcript.
+  const turns = await many<{ speaker: string; text: string }>(q, 'SELECT speaker, text FROM turn WHERE conversation_id = $1 ORDER BY idx', [conversationId]);
+  const lines = turns.length ? turns : (Array.isArray(conv.transcript) ? conv.transcript : [])
+    .map((t: any) => ({ speaker: t?.speaker ?? t?.role, text: typeof t?.text === 'string' ? t.text : '' }));
+  const callerTurns = lines.filter((t: any) => isCaller(t.speaker) && t.text).map((t: any) => t.text as string);
+  if (!callerTurns.length) return { skip: 'no_caller_speech' };
+
+  const consent = await one<{ granted: boolean }>(q, `SELECT granted FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 AND purpose IN ($3, 'memory')
+    ORDER BY created_at DESC LIMIT 1`, [ws, conv.contact_id, am.purpose]);
+  const transcript = lines.map((t: any) => `${isCaller(t.speaker) ? 'CALLER' : 'ASSISTANT'}: ${t.text}`).join('\n');
+  return { contactId: conv.contact_id, purpose: am.purpose, pol, callerTurns, transcript, digest: createHash('sha256').update(transcript).digest('hex'),
+    startedAt: conv.started_at, hasConsent: consent?.granted === true };
+}
+
+type Prepared = { load: 'skip' | 'prior' } | { load: 'ok'; digest: string; llm: { text: string; usage: unknown } | { error: string } };
+
+/** Outside any transaction: read through the pool and ask the model. Nothing is written here. */
+async function prepareExtract(ctx: PrepareCtx, conversationId: string): Promise<Prepared> {
+  const l = await load(ctx.pool, ctx.workspaceId, conversationId, false);
+  if ('skip' in l) return { load: 'skip' };
+  if ('prior' in l) return { load: 'prior' };
+  try {
+    const reply = await complete({ purpose: 'memory', json: true, temperature: 0, maxTokens: 800, messages: [
+      { role: 'system', content: EXTRACT_PROMPT },
+      { role: 'user', content: `Call purpose: ${l.purpose}\n<transcript>\n${l.transcript}\n</transcript>` },
+    ] });
+    return { load: 'ok', digest: l.digest, llm: { text: reply.text, usage: reply.usage } };
+  } catch (e) {
+    return { load: 'ok', digest: l.digest, llm: { error: (e instanceof Error ? e.message : String(e)).slice(0, 200) } };
+  }
+}
+
+/** Inside the transaction: re-read every gate input, check the transcript is the one the model saw, then write. */
+async function extract(ctx: ToolCtx, conversationId: string, prepared: Prepared | undefined) {
+  const { q, workspaceId: ws } = ctx;
   const record = async (status: 'done' | 'skipped' | 'failed', reason: string | null, counts: Counts = {}, usage: unknown = null) => {
     await q.query(`INSERT INTO memory_extraction (workspace_id, conversation_id, status, reason, counts, usage) VALUES ($1,$2,$3,$4,$5,$6)
       ON CONFLICT (workspace_id, conversation_id) DO UPDATE SET status = EXCLUDED.status, reason = EXCLUDED.reason, counts = EXCLUDED.counts, usage = EXCLUDED.usage, created_at = now()`,
@@ -70,38 +122,15 @@ async function extract(ctx: ToolCtx, conversationId: string) {
     return { status, reason, counts, repeated: false };
   };
 
-  // Test calls never produce facts: checked before anything is read or sent to a model.
-  if (conv.channel === 'test' || conv.run_manifest?.test === true) return record('skipped', 'test_call');
-  if (!conv.contact_id) return record('skipped', 'no_contact');
-  if (conv.status === 'live') return record('skipped', 'call_not_ended');
-  const pol = await policy(q, ws);
-  if (!pol.enabled) return record('skipped', 'memory_off');
-  if (conv.minor === 'true') return record('skipped', 'minor');
-  const am = fromConfig(conv.cfg?.agent);
-  if (!am.write) return record('skipped', 'agent_memory_write_off');
-  if (!am.purpose) return record('skipped', 'no_purpose');
-  if (await one(q, 'SELECT 1 FROM memory_optout WHERE workspace_id = $1 AND contact_id = $2', [ws, conv.contact_id])) return record('skipped', 'contact_opted_out');
+  const l = await load(q, ws, conversationId, true);
+  if ('prior' in l) return { status: l.prior.status, reason: l.prior.reason, counts: l.prior.counts, repeated: true };
+  if ('skip' in l) return record('skipped', l.skip);
+  // Anything that changed between the model call and now voids this run; it can be retried.
+  if (!prepared || prepared.load !== 'ok') return record('failed', 'state_changed_during_extraction');
+  if (prepared.digest !== l.digest) return record('failed', 'transcript_changed');
+  if ('error' in prepared.llm) return record('failed', 'llm_error: ' + prepared.llm.error);
+  const reply = prepared.llm;
 
-  // The transcript of record: turns if the calls module wrote them, else the conversation's transcript.
-  const turns = await many<{ speaker: string; text: string }>(q, 'SELECT speaker, text FROM turn WHERE conversation_id = $1 ORDER BY idx', [conversationId]);
-  const lines = turns.length ? turns : (Array.isArray(conv.transcript) ? conv.transcript : [])
-    .map((t: any) => ({ speaker: t?.speaker ?? t?.role, text: typeof t?.text === 'string' ? t.text : '' }));
-  const callerTurns = lines.filter((t: any) => isCaller(t.speaker) && t.text).map((t: any) => t.text as string);
-  if (!callerTurns.length) return record('skipped', 'no_caller_speech');
-
-  const consent = await one<{ granted: boolean }>(q, `SELECT granted FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 AND purpose IN ($3, 'memory')
-    ORDER BY created_at DESC LIMIT 1`, [ws, conv.contact_id, am.purpose]);
-
-  const transcript = lines.map((t: any) => `${isCaller(t.speaker) ? 'CALLER' : 'ASSISTANT'}: ${t.text}`).join('\n');
-  let reply;
-  try {
-    reply = await complete({ purpose: 'memory', json: true, temperature: 0, maxTokens: 800, messages: [
-      { role: 'system', content: EXTRACT_PROMPT },
-      { role: 'user', content: `Call purpose: ${am.purpose}\n<transcript>\n${transcript}\n</transcript>` },
-    ] });
-  } catch (e) {
-    return record('failed', 'llm_error: ' + (e instanceof Error ? e.message : String(e)).slice(0, 200));
-  }
   let proposed: unknown[];
   try {
     const j = JSON.parse(reply.text);
@@ -112,32 +141,32 @@ async function extract(ctx: ToolCtx, conversationId: string) {
   const bump = (k: keyof Counts) => { counts[k] = (counts[k] ?? 0) + 1; };
   const accepted = [];
   for (const p of proposed) {
-    const g = gate(p, { callerTurns, purpose: am.purpose, allowedCategories: pol.allowedCategories, hasConsent: consent?.granted === true });
+    const g = gate(p, { callerTurns: l.callerTurns, purpose: l.purpose, allowedCategories: l.pol.allowedCategories, hasConsent: l.hasConsent });
     if (g.ok) accepted.push(g.fact); else bump(g.drop);
   }
   // Later in the call wins within one call: write in the order the caller said them.
   accepted.sort((a, b) => a.quoteAt - b.quoteAt);
-  const saidAt = conv.started_at;
-  const undoUntil = new Date(Date.now() + pol.undoMinutes * 60_000);
+  const saidAt = l.startedAt;
+  const undoUntil = new Date(Date.now() + l.pol.undoMinutes * 60_000);
   for (const f of accepted) {
     const expires = new Date(saidAt.getTime() + RETENTION_DAYS[f.retention] * 86_400_000);
     const row = await one<{ id: string }>(q, `INSERT INTO memory_fact (workspace_id, contact_id, conversation_id, kind, key, value, quote, purpose, basis, tier, status,
         undo_until, retention, category, source, authority, said_at, expires_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'caller',$15,$16,$17) RETURNING id`,
-      [ws, conv.contact_id, conversationId, f.kind, f.key, JSON.stringify(f.value), f.quote, f.purpose, f.basis, f.tier,
+      [ws, l.contactId, conversationId, f.kind, f.key, JSON.stringify(f.value), f.quote, f.purpose, f.basis, f.tier,
         f.tier === 'review' ? 'proposed' : 'active', f.tier === 'review' ? null : undoUntil, f.retention, f.category, AUTHORITY.caller, saidAt, expires]);
     bump('stored');
     if (f.tier === 'review') bump('review');
     // Contradictions: the newest statement from an equal or higher authority supersedes; a lower one loses at once.
     const older = await many<{ id: string; authority: number }>(q, `SELECT id, authority FROM memory_fact WHERE workspace_id = $1 AND contact_id = $2 AND kind = $3 AND key = $4
-      AND purpose = $5 AND id <> $6 AND superseded_by IS NULL AND status IN ('active','proposed') AND said_at <= $7`, [ws, conv.contact_id, f.kind, f.key, f.purpose, row!.id, saidAt]);
+      AND purpose = $5 AND id <> $6 AND superseded_by IS NULL AND status IN ('active','proposed') AND said_at <= $7`, [ws, l.contactId, f.kind, f.key, f.purpose, row!.id, saidAt]);
     for (const o of older) {
       if (AUTHORITY.caller >= o.authority) { await q.query('UPDATE memory_fact SET superseded_by = $2 WHERE id = $1', [o.id, row!.id]); bump('superseded'); }
       else await q.query('UPDATE memory_fact SET superseded_by = $2 WHERE id = $1', [row!.id, o.id]);
     }
     // A late extraction of an older call never overrides what the person said since.
     const newer = await one<{ id: string }>(q, `SELECT id FROM memory_fact WHERE workspace_id = $1 AND contact_id = $2 AND kind = $3 AND key = $4 AND purpose = $5
-      AND superseded_by IS NULL AND status IN ('active','proposed') AND said_at > $6 ORDER BY said_at DESC LIMIT 1`, [ws, conv.contact_id, f.kind, f.key, f.purpose, saidAt]);
+      AND superseded_by IS NULL AND status IN ('active','proposed') AND said_at > $6 ORDER BY said_at DESC LIMIT 1`, [ws, l.contactId, f.kind, f.key, f.purpose, saidAt]);
     if (newer) await q.query('UPDATE memory_fact SET superseded_by = $2 WHERE id = $1', [row!.id, newer.id]);
   }
   return record('done', null, counts, reply.usage);
@@ -205,7 +234,8 @@ export const module: Module = {
   register(r: Registry) {
     r.register(tool(obj({ conversationId: uuid() }), {
       name: 'memory.extract', risk: 'draft', summary: 'remember what the caller said that matters for the next call (gated; never from test calls)',
-      run: (ctx, i) => extract(ctx, i.conversationId),
+      prepare: (ctx, i) => prepareExtract(ctx, i.conversationId),
+      run: (ctx, i, prepared) => extract(ctx, i.conversationId, prepared as Prepared | undefined),
     }));
 
     r.register(tool(obj({ contactId: uuid(), agentId: uuid() }), {

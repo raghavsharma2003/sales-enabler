@@ -329,3 +329,29 @@ test('the extraction prompt treats the transcript as data and asks for notes, no
   assert.match(seen[0].messages[1].content, /CALLER: Haan ji/);
   assert.match(seen[0].messages[1].content, /ASSISTANT: Namaste/);
 });
+
+test('the model is asked outside any transaction; a transcript changed meanwhile commits nothing', { skip }, async () => {
+  const w = await world({ undoMinutes: 0 });
+  const conv = await call(w, TURNS);
+  let idleInTx: number | null = null;
+  setFakeLlm(async () => {
+    const s = await one<{ n: string }>(pool, "SELECT count(*)::text AS n FROM pg_stat_activity WHERE state LIKE 'idle in transaction%' AND datname = current_database()");
+    idleInTx = Number(s!.n);
+    return { text: JSON.stringify({ facts: [LANG] }), toolCalls: [], usage: { inputTokens: 1, outputTokens: 1 }, model: 'fake', provider: 'fake' };
+  });
+  const out = await extract(w, conv);
+  assert.equal(idleInTx, 0, 'no transaction is held open while the model runs');
+  assert.equal(out.counts.stored, 1);
+
+  const conv2 = await call(w, TURNS);
+  setFakeLlm(async () => {
+    await pool.query("UPDATE turn SET text = 'kuch aur' WHERE conversation_id = $1 AND idx = 1", [conv2]);
+    return { text: JSON.stringify({ facts: [TIME] }), toolCalls: [], usage: { inputTokens: 1, outputTokens: 1 }, model: 'fake', provider: 'fake' };
+  });
+  const out2 = await extract(w, conv2);
+  assert.equal(out2.status, 'failed');
+  assert.equal(out2.reason, 'transcript_changed');
+  assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM memory_fact WHERE conversation_id = $1', [conv2]))!.n, '0');
+  llmSays([TIME]);
+  assert.equal((await extract(w, conv2)).status, 'done', 'a failed run can be retried');
+});

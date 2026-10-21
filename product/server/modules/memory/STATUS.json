@@ -10,8 +10,8 @@
   "memory.policy.set"
  ],
  "tests": {
-  "passed": 13,
-  "total": 13
+  "passed": 14,
+  "total": 14
  },
  "works": [
   "write gates in code: exact caller-turn quote (dropped+counted otherwise), closed kind/key vocabulary, 60-char value lint and instruction fence, purpose must equal the call's category, lawful basis required (consent needs a granted consent_record), refused categories (health, religion, caste, politics, sex_life, biometrics, financial_account, children) by model label or code detector unless policy allows that category under the same basis",
@@ -23,7 +23,8 @@
   "memory.brief: purpose-matched key=value shapes with ages, prefs > open > heard > context, <= 1200 bytes, throws BriefTooLarge (tool returns not_executed) instead of truncating; statuses ok/empty/off/off_for_agent/no_purpose/unknown_contact/unknown_agent",
   "fact.forget and contact.memory.forget are destructive (A2), delete rows, no resurrection; DPDP forget_request recorded or completed by requestId with a counts-only receipt; optional stop-remembering gate",
   "memory.policy.set (policy, A2): workspace switch, undo window, sensitive-category allowances (consent or legal_obligation only)",
-  "tenancy isolation tested on every tool"
+  "tenancy isolation tested on every tool",
+  "memory.extract asks the model in prepare() outside any transaction; run() re-reads every gate input under a row lock and commits nothing if the transcript changed since the model saw it (failed runs are retryable)"
  ],
  "untested": [
   "real LLM extraction quality",
@@ -34,7 +35,6 @@
   "14-day expiry of unreviewed proposed facts"
  ],
  "needs_from_others": [
-  "kernel/main: add `import { module as memory } from './memory/index.ts'` to server/modules/index.ts",
   "calls: call registry 'memory.extract' {conversationId} after a non-test call ends (system actor); write caller turns to `turn` with speaker='caller'; mark test calls channel='test' or run_manifest.test=true; insert forget_request rows when a caller asks to be forgotten (memory completes them via contact.memory.forget {requestId})",
   "campaigns: call 'memory.brief' {contactId, agentId} at dial time; treat not_executed or status != 'ok' as memory=not_loaded and dial without memory",
   "agents: agent_version.config.agent.category and config.agent.memory.{read,write} are what memory reads for purpose and switches",
