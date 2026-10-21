@@ -62,7 +62,9 @@ class EventSink:
         self.task = None; self.undelivered = 0
 
     def emit(self, type_, **fields):
-        if self.ended: raise RuntimeError('event after call.ended')
+        if self.ended:                     # a reply still finishing after the call ended: nothing more is reported
+            log.info('dropped a %s event after call.ended for %s', type_, self.cid)
+            return None
         self.seq += 1
         ev = {'seq': self.seq, 'type': type_, 'at': iso_now(), **fields}
         self.pending.append(ev)

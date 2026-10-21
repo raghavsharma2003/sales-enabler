@@ -194,7 +194,7 @@ class LiveSession(Session):
         if sig['crisis']:
             await self.note('CRISIS: drop the goal. Give Tele-MANAS 14416 (free, 24x7) and 112 for danger; offer a human; never end the call.')
         if sig['readingSensitiveDigits']:
-            await self.note(f'stop them kindly now and say: "{safety.stop_digits_line((self.t["agent"].get("brand") or {}).get("spokenName", ""), self.conv.gender)}"', complete=True)
+            await self.note(f'stop them kindly now and say: "{safety.stop_digits_line((self.t["agent"].get("brand") or {}).get("spokenName", ""))}"', complete=True)
         if sig['asksIfAi']:
             await self.note('they asked if you are an AI: say yes plainly first, lightly.')
         if sig['refusesRecording']: self.rec.stop()

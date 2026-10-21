@@ -146,15 +146,22 @@ class Session:
         return f"{c.get('displayName') or 'Caller'}; goals settled: {done}; last said: {last[:140]}"
 
     async def hand_off(self, reason, end_reason='handed_off'):
-        if self.handed_off and end_reason != 'crisis_handoff': return
+        """Tell the control plane a human is needed (one hand_off event per call), then bridge or end. In a crisis the
+        call is never ended from our side: only a live transfer takes it over, or the crisis ceiling (crisis_handoff)."""
         kind, value = self.handoff_target()
         if not self.handed_off:
             self.handed_off = True
             self.sink.emit('hand_off', reason=reason, target=f'{kind}:{value}' if value else kind, summary=self.summary_line())
-        if end_reason == 'crisis_handoff' or reason != 'crisis':
-            await self.speak_canned(bridge_line(kind, self.conv.gender))
-            if await self.transfer(kind, value): return
-            await self.finish(end_reason)
+        elif end_reason != 'crisis_handoff' and not self.conv.state['crisis']:
+            return
+        if self.conv.state['crisis'] and end_reason != 'crisis_handoff':
+            if kind == 'phone' and value and reason == 'asks_for_human':
+                await self.speak_canned(bridge_line(kind, self.conv.gender))
+                if await self.transfer(kind, value): return
+            return                                          # alert raised; she stays with them
+        await self.speak_canned(bridge_line(kind, self.conv.gender))
+        if await self.transfer(kind, value): return
+        await self.finish(end_reason)
 
     async def transfer(self, kind, value):
         """Bridge to a human where the transport can (SIP to a phone target). False: the call ends as handed off."""
@@ -165,13 +172,16 @@ class Session:
 
     async def after_caller(self, sig):
         """Act on caller signals before any reply. Returns 'replied' when code answered instead of the brain."""
-        if sig['readingSensitiveDigits']:
-            await self.speak_canned(safety.stop_digits_line((self.t['agent'].get('brand') or {}).get('spokenName', ''), self.conv.gender))
-            return 'replied'
         if sig['crisis'] and self.handoff_allowed('crisis'):
             await self.hand_off('crisis')                 # alerts a human; the call stays up
         if sig['refusesRecording']: self.stop_recording()
-        if sig['wantsHuman'] and not sig['crisis'] and self.handoff_allowed('asks_for_human'):
+        if sig['readingSensitiveDigits']:
+            await self.speak_canned(safety.stop_digits_line((self.t['agent'].get('brand') or {}).get("spokenName", "")))
+            return 'replied'
+        if sig['wantsHuman'] and self.conv.state['crisis']:
+            await self.hand_off('asks_for_human')          # a transfer if the line can; otherwise she stays and answers
+            return None if not self.ended else 'replied'
+        if sig['wantsHuman'] and self.handoff_allowed('asks_for_human'):
             await self.hand_off('asks_for_human')
             return 'replied'
         return None

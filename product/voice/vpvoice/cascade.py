@@ -266,7 +266,7 @@ class CascadeSession(Session):
 
     async def _stop_digits(self):
         if self.active is not None: await self.interrupt()
-        await self.speak_canned(safety.stop_digits_line((self.t['agent'].get('brand') or {}).get('spokenName', ''), self.conv.gender), wait=False)
+        await self.speak_canned(safety.stop_digits_line((self.t['agent'].get('brand') or {}).get("spokenName", "")), wait=False)
 
     # ---------------------------------------------------------------- replies
     async def interrupt(self):
@@ -305,9 +305,9 @@ class CascadeSession(Session):
 
     async def speak_canned(self, text, wait=True):
         if self.ended: return
-        if self.active is not None and not self.active.done: await self.interrupt()
+        if self.active is not None and not self.active.committed: await self.interrupt()
         self.rid += 1; r = Reply(self, self.rid, None, released=True, fixed=[text]); self.active = r
-        done = asyncio.ensure_future(self._after(r))
+        done = asyncio.ensure_future(self._after(r)); self.tasks.append(done)
         if wait:
             try: await asyncio.wait_for(asyncio.shield(done), 20)
             except asyncio.TimeoutError: pass
@@ -357,7 +357,7 @@ class CascadeSession(Session):
             use = text or (self.partial.strip() if self.partial and v.silence_ms() >= 1000 else '')
             if use:
                 sig = safety.caller_signals(use)
-                if any(sig[k] for k in ACTION):
+                if any(sig[k] for k in ACTION) or safety.redact(use) != use:      # never speculate on raw secrets
                     await self._commit_turn(use)
                     if self.digits_seg == self.seg and sig['readingSensitiveDigits'] and not any(sig[k] for k in ACTION if k != 'readingSensitiveDigits'):
                         return                                            # already stopped them mid-number

@@ -97,7 +97,7 @@ class Door(unittest.TestCase):
     def test_rd2_asked_always_gets_the_truth_first(self):
         script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'हाहा, आप बहुत मज़ेदार हैं।']
         sess, p, replies = run(call(script, ['aap AI ho kya?']))
-        self.assertTrue(replies[1][0].startswith('जी, मैं Suraksha की AI असिस्टेंट हूँ।'))
+        self.assertTrue(replies[1][0].startswith('Ji, main Suraksha ki taraf se ek AI assistant hoon.'))
 
     def test_rd3_crisis(self):
         script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'अच्छा, वैसे renewal link भेज दूँ? <end_call>', 'मैं यहीं हूँ। <end_call>']
@@ -119,14 +119,14 @@ class Door(unittest.TestCase):
     def test_rd4_caller_reading_digits_is_stopped_and_redacted(self):
         script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।']
         sess, p, replies = run(call(script, ['मेरा OTP है 4 8 2 9 1 7']))
-        self.assertIn('मत बताइए', replies[1][0])
+        self.assertIn('mat bataiye', replies[1][0])
         caller = [t for t in of(p, 'turn') if t['speaker'] == 'caller'][0]
-        self.assertNotIn('4 8 2 9', caller['text']); self.assertIn('[redacted]', caller['text'])
+        self.assertNotIn('4 8 2 9', caller['text']); self.assertIn('[OTP]', caller['text'])
         self.assertIn(('RD4', 'redacted'), [(x['rule'], x['action']) for x in of(p, 'safety')])
         self.assertNotIn('4 8 2 9', json.dumps(evs(p), ensure_ascii=False))
 
     def test_rd5_no_payment_on_the_call(self):
-        script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'आप अभी call पर ही payment कर दीजिए, UPI ID बताती हूँ।', 'मैं secure link भेज देती हूँ।']
+        script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'Aap abhi call par hi payment kar dijiye.', 'मैं secure link भेज देती हूँ।']
         sess, p, replies = run(call(script, ['ठीक है, pay कैसे करूँ?']))
         self.assertIn(('RD5', 'blocked'), [(x['rule'], x['action']) for x in of(p, 'safety')])
         self.assertEqual(replies[1], ['मैं secure link भेज देती हूँ।'])
@@ -134,10 +134,10 @@ class Door(unittest.TestCase):
     def test_second_block_ends_with_a_safe_line(self):
         script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'OTP बता दीजिए।', 'CVV बता दीजिए।']
         sess, p, replies = run(call(script, ['हाँ']))
-        self.assertEqual(replies[1], ['जी, ये मैं पक्का करके आपको बताती हूँ।'])
+        self.assertEqual(replies[1], ['Ji, ye main pakka karke aapko batati hoon.'])
 
     def test_rd7_promotion_fence_on_a_service_call(self):
-        script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'इस बार Diwali double cover भी मिल रहा है!', 'Renewal 2 November को है।']
+        script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'Is baar renewal par 10 percent discount bhi hai!', 'Renewal 2 November को है।']
         sess, p, replies = run(call(script, ['हाँ']))
         self.assertEqual(replies[1], ['Renewal 2 November को है।'])
         self.assertIn('RD7', [x['rule'] for x in of(p, 'safety')])
@@ -169,6 +169,18 @@ class Door(unittest.TestCase):
         self.assertEqual(h[0]['target'], 'callback')
         self.assertEqual(sess.ended, 'handed_off')
         self.assertIn('साथी', replies[1][0])
+
+    def test_crisis_caller_who_accepts_a_human_is_not_hung_up_on(self):
+        script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'Tele-MANAS 14416 और 112 पर बात हो सकती है। मैं यहीं हूँ।', 'जी, हमारी team आपसे जुड़ेगी, मैं तब तक यहीं हूँ।']
+        sess, p, replies = run(call(script, ['main marna chahta hoon', 'haan, kisi insaan se baat karao please']))
+        self.assertEqual(sess.ended, 'caller_hung_up', 'she never ends a crisis call')
+        self.assertTrue(replies[2], 'the caller hears something')
+        self.assertEqual([h['reason'] for h in of(p, 'hand_off')], ['crisis'])
+
+    def test_digits_in_a_crisis_still_raise_the_alert(self):
+        sess, p, replies = run(call(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।'], ['main mar jaana chahti hoon, mera OTP 1 2 3 4 5 6 hai']))
+        self.assertEqual([h['reason'] for h in of(p, 'hand_off')], ['crisis'])
+        self.assertIn('mat bataiye', replies[1][0])
 
     def test_end_call_ignored_without_a_goodbye_or_mid_question(self):
         script = ['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'Premium 18,450 है। <end_call>']

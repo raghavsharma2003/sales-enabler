@@ -83,7 +83,9 @@ class Conversation:
             if m: draft.style = m.group(1).strip().lower()
         text = brief.spoken(sentence, keep_sounds=self.keep_sounds)
         if not text: return None, {'action': 'pass'}
-        v = safety.reply_door(re.sub(r'<[^<>]{1,24}>', '', text), self.door_ctx(first_sentence=not draft.sentences))
+        ctx = self.door_ctx(first_sentence=not draft.sentences)
+        if any(safety.has_ai_clause(x) for x in draft.sentences): ctx.disclosed = True     # said earlier in this reply
+        v = safety.reply_door(re.sub(r'<[^<>]{1,24}>', '', text), ctx)
         if v['action'] == 'replace':
             self.sink.emit('safety', rule=v['rule'], action='replaced', detail=v['reason'])
             draft.replaced.append(v['rule'])

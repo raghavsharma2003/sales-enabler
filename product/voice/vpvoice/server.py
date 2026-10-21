@@ -31,7 +31,7 @@ class CallRecord:
         self.call_uuid = None; self.request_uuid = None; self.transfer_to = None
 
     def take_token(self, given):
-        if self.token_used or time.time() - self.created > JOIN_TTL_S: return False
+        if self.token_used or self.session is not None or self.ended_at or time.time() - self.created > JOIN_TTL_S: return False
         if not given or not hmac.compare_digest(given.encode(), self.token.encode()): return False
         self.token_used = True
         return True
@@ -91,7 +91,8 @@ class Runtime:
         await rec.session.done.wait(); rec.ended_at = time.time()
 
     async def _end_unjoined(self, rec, reason):
-        if rec.ended_at: return
+        rec.token_used = True                          # nobody may join a call that has ended
+        if rec.ended_at or (rec.session is not None and rec.session.ended): return
         if rec.session is None: self.new_session(rec, line=_NullLine())
         await rec.session.end(reason)
 
@@ -149,15 +150,20 @@ class Runtime:
 
     async def end_call(self, req):
         body = await self.verified(req)
-        rec = self.calls.get(req.match_info['id'])
+        cid = req.match_info['id']
+        try: d = json.loads(body or b'')
+        except ValueError: d = None
+        # the body names the call, so a signature captured for another request or call cannot end this one
+        if not isinstance(d, dict) or d.get('conversationId') != cid:
+            return self.err(400, 'bad_request', 'body must be {"conversationId": <this call>, "endReason"?}')
+        rec = self.calls.get(cid)
         if rec is None: return self.err(404, 'not_found', 'no such call')
-        try: d = json.loads(body or b'{}')
-        except ValueError: d = {}
         reason = d.get('endReason') if d.get('endReason') in ('completed', 'max_duration', 'max_cost', 'error', 'handed_off') else 'completed'
-        if rec.session is None: await self._end_unjoined(rec, reason)
-        else: await rec.session.end(reason)
+        if rec.session is None: task = asyncio.ensure_future(self._end_unjoined(rec, reason))
+        else: task = asyncio.ensure_future(rec.session.end(reason))
+        await asyncio.sleep(0)                         # the end reason is set at once; delivery of call.ended continues
         if rec.call_uuid or rec.request_uuid: asyncio.ensure_future(self.carrier_hangup(rec))
-        return web.json_response({'ok': True, 'endReason': rec.session.ended})
+        return web.json_response({'ok': True, 'endReason': rec.session.ended if rec.session else reason})
 
     async def call_status(self, req):
         await self.verified(req)

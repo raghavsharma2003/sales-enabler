@@ -45,7 +45,7 @@ class Signing(unittest.TestCase):
                 signing.verify(SECRET, signing.sign(SECRET, self.body, t_ms=now - skew), self.body, now_ms=now)
 
     def test_rejects_missing_malformed_and_unconfigured(self):
-        for h in (None, '', 'v1=abc', 't=abc,v1=00', 't=1'):
+        for h in (None, '', 'v1=abc', 't=abc,v1=00', 't=1', 't=1,v1=' + 'é' * 64, 't=١٢٣,v1=' + '0' * 64):
             with self.assertRaises(signing.SignatureError): signing.verify(SECRET, h, self.body)
         with self.assertRaises(signing.SignatureError): signing.verify('', signing.sign(SECRET, self.body), self.body)
 
@@ -182,8 +182,11 @@ class Events(unittest.TestCase):
         async def go():
             s, p = sink()
             await s.end(endReason='completed', durationS=0, transcript=[], manifest={})
-            with self.assertRaises(RuntimeError): s.emit('turn')
-        asyncio.run(go())
+            self.assertIsNone(s.emit('turn', speaker='agent', text='late'))
+            await s.flush()
+            return p
+        p = asyncio.run(go())
+        self.assertEqual([e['type'] for e in p.events()], ['call.ended'])
 
 
 if __name__ == '__main__':

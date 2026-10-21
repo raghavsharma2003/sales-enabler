@@ -1,6 +1,6 @@
 # The audio cascade with fake ears and a fake voice: real VAD state machine (energy VAD), real turn-taking, real
 # playback clock. No network.
-import asyncio, os, unittest
+import asyncio, json, os, unittest
 import numpy as np
 from tests.fixtures import FakeBrain, components, sink, ticket, bodies
 
@@ -131,15 +131,27 @@ class Cascade(unittest.TestCase):
             await sess.start()
             await wait_until(lambda: sess.conv.agent_turns == 1)
             await feed(sess, 10); ears['e'].on_p('मेरा OTP है 4 8 2 9')
-            await wait_until(lambda: any('मत बताइए' in x for x in comp.voice.said))
+            await wait_until(lambda: any('mat bataiye' in x for x in comp.voice.said))
             ears['e'].on_f('मेरा OTP है 4 8 2 9 1 7'); await feed(sess, 30, QUIET)
             await wait_until(lambda: any(t['speaker'] == 'caller' for t in sess.conv.transcript))
             await sess.end('caller_hung_up')
             return p, comp
         p, comp = asyncio.run(go())
         caller = [x for x in evs(p) if x['type'] == 'turn' and x['speaker'] == 'caller']
-        self.assertIn('[redacted]', caller[0]['text'])
-        self.assertEqual(sum('मत बताइए' in x for x in comp.voice.said), 1, 'stopped once, not twice')
+        self.assertIn('[OTP]', caller[0]['text'])
+        self.assertEqual(sum('mat bataiye' in x for x in comp.voice.said), 1, 'stopped once, not twice')
+
+    def test_secrets_never_reach_the_brain_on_the_speculative_path(self):
+        async def go():
+            sess, p, line, ears, comp = make(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'जी।'])
+            await sess.start()
+            await wait_until(lambda: sess.conv.agent_turns == 1)
+            await feed(sess, 20); ears['e'].on_f('mera ATM pin 4321 hai yaar'); await feed(sess, 30, QUIET)
+            await wait_until(lambda: sess.conv.agent_turns >= 2)
+            await sess.end('caller_hung_up')
+            return comp
+        comp = asyncio.run(go())
+        self.assertNotIn('4321', json.dumps(comp.brain.calls, ensure_ascii=False))
 
     def test_voice_failure_on_a_test_call_ends_it(self):
         class Broken(FakeVoice):

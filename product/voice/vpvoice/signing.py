@@ -30,7 +30,8 @@ def verify(secret: str, header: str | None, body: bytes, now_ms: int | None = No
         k, _, v = p.strip().partition('=')
         if k and v: parts.setdefault(k, v)
     t, v1 = parts.get('t'), parts.get('v1')
-    if not t or not v1 or not t.isdigit(): raise SignatureError('malformed signature')
+    if not t or not v1 or not t.isascii() or not t.isdigit() or len(v1) != 64 or not all(c in '0123456789abcdefABCDEF' for c in v1):
+        raise SignatureError('malformed signature')
     now = int(time.time() * 1000) if now_ms is None else now_ms
     if abs(now - int(t)) > max_skew_ms: raise SignatureError('signature timestamp outside the 5 minute window')
     if not hmac.compare_digest(_mac(secret, t, body), v1.lower()): raise SignatureError('signature mismatch')
