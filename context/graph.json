@@ -16718,6 +16718,17 @@
    "source": "main loop UI review",
    "rationale": "The product promise is world-class and usable by any business owner. Text like 'To fix: number.search then number.rent' or 'inrMilli 500000' reads as broken software and hides what the person must do. The structural fix is server blockers and refusals carrying {code, message, why, fix:{tool,label}}, plus a rendered-text test that fails on tool-id patterns.",
    "reverse_if": "never for end-user screens; a developer or API-console view may show codes behind an explicit 'details' toggle"
+  },
+  {
+   "id": "measure.2026-10-21.voice-door-latency-sandbox",
+   "type": "measurement",
+   "title": "The voice runtime's full per-sentence safety check (AI-affirmation check, reply door, and the join with the previous sentence) takes p50 2.21 ms, p95 4.67 ms, p99 5.64 ms and max 17.7 ms on the coding sandbox; a 2,000-character adversarial line takes 35-47 ms.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "voice runtime builder",
+   "n": 6255,
+   "method": "Python 3.13 on the 4-vCPU coding sandbox; rules.json at 70a661c; every cases.json replyDoor input x5, each with the previous input as the prev sentence so the join always runs; the contract door alone is p50 0.57 / p99 1.47 ms. Not measured: the deployed host, or many calls on one process.",
+   "value": "p99 5.64 ms per sentence (negligible against 0.7-2 s reply gaps)"
   }
  ],
  "edges": [
@@ -29942,6 +29953,11 @@
    "from": "decision.2026-10-21.no-developer-text-in-ui",
    "to": "measure.2026-10-21.ui-review-main-loop",
    "relation": "derived_from"
+  },
+  {
+   "from": "measure.2026-10-21.voice-door-latency-sandbox",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "informs"
   }
  ]
 }
