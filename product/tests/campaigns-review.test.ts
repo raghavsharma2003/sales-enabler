@@ -191,7 +191,11 @@ test('WGC-07 an erased person (suppress:false) is still dialled: the gate never 
     assert.equal(member.status, 'not_executed', 'a member cannot cancel by contact');
     const pending2 = await attempt(w, c.id);
     const r2 = await registry.execute<{ cancelled: number }>(pool, 'attempt.cancel_for_contact', { contactId: c.id, reason: 'erased' }, { workspaceId: w.ws, actor: { type: 'system', id: 'intake.erase' } });
-    assert.ok(r2.status === 'confirmed' && r2.result.cancelled === 2, 'the one queued before the erasure and one queued after');
+    // Erasure (intake's dpdp.request.execute) cancels what was queued before it, through cancelContactAttempts; this tool
+    // catches anything queued after. Counted from the receipt, so the test holds before and after intake wires it.
+    const byErasure = Number((r.surfaces as Record<string, unknown>).attempts_cancelled ?? 0);
+    assert.ok(byErasure === 0 || byErasure === 1);
+    assert.ok(r2.status === 'confirmed' && r2.result.cancelled === 2 - byErasure, JSON.stringify({ byErasure, r2 }));
     for (const id of [pending, pending2]) assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM attempt WHERE id = $1', [id]))!.status, 'cancelled');
   });
 
