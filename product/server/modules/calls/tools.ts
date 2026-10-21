@@ -39,6 +39,7 @@ async function liveCall(ctx: ToolCtx, id: string) {
   return c;
 }
 
+export const WHISPER_MAX_CHARS = 300;
 const SYSTEM = { type: 'system' as const, id: 'calls.test_call' };
 
 // What a person did on the live call (runtime moments). Never what a whisper said: the runtime never sends it.
@@ -424,7 +425,8 @@ export function registerTools(r: Registry): void {
     // join: {kind:'listen', url, token, expiresAtMs}, receive-only; closing it never touches the call.
     run: async (_ctx, _i, join) => ({ ok: true, join }),
   }));
-  r.register(tool(obj({ conversationId: uuid(), text: str({ min: 1, max: 500 }) }), {
+  // 300 characters: the runtime's own cap (it would truncate silently), so a longer note is refused here, in words.
+  r.register(tool(obj({ conversationId: uuid(), text: str({ min: 1, max: WHISPER_MAX_CHARS, desc: `at most ${WHISPER_MAX_CHARS} characters` }) }), {
     name: 'live.whisper', risk: 'external', summary: 'Whisper context to the agent on a live call; the caller does not hear it',
     describe: i => `Whisper to the agent on call ${i.conversationId.slice(0, 8)}: "${i.text}"`,
     // The runtime request stays in run(), not prepare(): on the approval path prepare() runs before the approver's role,

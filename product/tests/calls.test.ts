@@ -513,6 +513,8 @@ test('live control: listen runs, whisper needs approval, take-over is for a pers
   const ctx = { workspaceId: w.ws, actor: w.member };
   assert.equal((await registry.execute(pool, 'live.listen', { conversationId: c.conv }, ctx)).status, 'confirmed');
   assert.equal((await registry.execute(pool, 'live.whisper', { conversationId: c.conv, text: 'They paid yesterday' }, ctx)).status, 'needs_approval');
+  const long = await registry.execute(pool, 'live.whisper', { conversationId: c.conv, text: 'x'.repeat(301) }, ctx);
+  assert.equal(long.status, 'not_executed', "a whisper over the runtime's 300-character cap is refused, never truncated");
   assert.equal((await registry.execute(pool, 'live.takeover', { conversationId: c.conv }, { workspaceId: w.ws, actor: { type: 'agent', id: 'operator' } })).status, 'not_executed');
   assert.equal((await registry.execute(pool, 'live.takeover', { conversationId: c.conv }, { workspaceId: w.ws, actor: { type: 'agent', id: 'operator', role: 'owner' } })).status, 'not_executed');
   assert.equal((await registry.execute(pool, 'live.takeover', { conversationId: c.conv }, ctx)).status, 'confirmed');
