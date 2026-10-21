@@ -181,3 +181,16 @@ test('Browser call on a draft that compiles: the server prepares a session and t
   await page.getByRole('button', { name: 'Call me in the browser' }).click();
   await page.getByText('A call session was prepared for the saved draft').waitFor({ timeout: 8000 });
 });
+
+test('Stack picker: beta stacks say "test calls only", and an unmeasured reply gap shows no number', async () => {
+  const emi = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'EMI pre-due reminder'", [ws])).rows[0].id;
+  await page.goto(`${BASE}/agents/${emi}?tab=voice`);
+  const live = page.locator('.stackcard', { hasText: 'Gemini 3.8 Live' });
+  await live.waitFor();
+  await live.getByText('Beta: test calls only').waitFor();
+  const gap = live.locator('.fig').first();
+  assert.match(await gap.innerText(), /Not measured/);
+  assert.ok(!/\d ?s\b/.test(await gap.locator('.fig-v').innerText()), 'the visible figure carries no seconds number');
+  assert.ok((await gap.locator('.fig-v').getAttribute('title')).length > 10, 'the source is on hover');
+  assert.equal(await page.locator('.stackcard[aria-pressed], .pickbtn.on').count(), 0, 'nothing is preselected');
+});

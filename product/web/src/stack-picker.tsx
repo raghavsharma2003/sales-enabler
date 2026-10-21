@@ -9,6 +9,7 @@ import { inr } from './format.ts';
 import { prettyId } from './catalog.ts';
 import { useApp } from './store.tsx';
 
+export const BETA_REASON = 'Beta stacks run test calls only: the dial gate refuses them for any call to a real person until their risks are cleared and the stack is marked available.';
 interface Price { perMinuteInrMilli: number | null; basis: string; state: 'loading' | 'ready' | 'missing' }
 
 function usePrices(): Record<string, Price> {
@@ -61,7 +62,7 @@ function StackCard({ s, selected, price, onPick }: { s: VoiceStack; selected: bo
         <div className="grow"><h4>{s.label}</h4>
           <div className="row" style={{ gap: 6, marginTop: 6 }}>
             <Chip tone="peacock">{s.kind === 's2s' ? 'Speech to speech' : 'Cascade'}</Chip>
-            <Chip tone={s.status === 'available' ? 'leaf' : 'marigold'}>{s.status === 'available' ? 'Available' : 'Beta'}</Chip>
+            <Chip tone={s.status === 'available' ? 'leaf' : 'marigold'} title={s.status === 'beta' ? BETA_REASON : undefined}>{s.status === 'available' ? 'Available' : 'Beta: test calls only'}</Chip>
             {s.requires?.map(r => <Chip key={r} icon={<KeyRound size={11} aria-hidden />} title={`Needs the ${r} credential on the voice runtime`}>{r.toLowerCase()}</Chip>)}
           </div>
         </div>

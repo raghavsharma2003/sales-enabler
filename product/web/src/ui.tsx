@@ -43,6 +43,7 @@ export function Grade({ g }: { g: string }) { const [l, t] = GRADE[g] ?? [g, 'ne
 /** A number with how we know it: value, grade, n, date, source. Vendor and measured figures never share a style. */
 export function Figure({ m, label }: { m: Metric | null | undefined; label?: string }) {
   if (!m) return <span className="fig"><span className="fig-v dotted">Not measured yet</span></span>;
+  if (m.grade === 'not_measured') return <span className="fig">{label && <span className="fig-l">{label}</span>}<span className="fig-v dotted nm" tabIndex={0} title={m.source ?? 'No measurement exists yet'}>Not measured</span><Grade g="not_measured" />{m.source && <span className="sr">{m.source}</span>}</span>;
   return (
     <span className="fig">
       {label && <span className="fig-l">{label}</span>}

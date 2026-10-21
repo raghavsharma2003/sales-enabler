@@ -6,7 +6,7 @@ import { useApp, useData } from '../store.tsx';
 import { agentGet, diffOps } from '../data.ts';
 import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
-import { StackPicker } from '../stack-picker.tsx';
+import { StackPicker, BETA_REASON } from '../stack-picker.tsx';
 import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
 import { date } from '../format.ts';
 import { getStack } from '../../../shared/stacks.ts';
@@ -70,6 +70,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
             : !doc.compiles ? <Btn disabled reason="The brief does not compile yet. See the checks below.">Publish</Btn>
             : <Btn kind="primary" busy={busy === 'publish'} onClick={publish}>Publish…</Btn>}
         </>} />
+      {getStack(cfg.voice.stackId ?? '')?.status === 'beta' && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
       {doc.lint.length > 0 && <div className="state state-failed" role="alert" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Checks on the draft</strong><ul style={{ margin: 0, paddingLeft: 20 }}>{doc.lint.map((l, i) => <li key={i}>{l.message}</li>)}</ul></div>}
       <Tabs label="Builder sections" value={tab} onChange={t => setQs({ tab: t === 'basics' ? null : t })} items={TABS} />
       {tab === 'basics' && <Basics cfg={cfg} set={set} />}
