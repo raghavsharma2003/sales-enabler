@@ -57,7 +57,11 @@ const batch = obj({ protocol: num({ int: true, min: 1, max: 1 }), conversationId
 interface Conv { id: string; workspace_id: string; attempt_id: string | null; contact_id: string | null; channel: string; status: string; run_manifest: RunManifest | Record<string, never>; settlement: unknown }
 
 // Test calls are marked in two places learning and memory read: channel = 'test' and run_manifest.test = true.
-const stamped = (conv: Conv, m: RunManifest) => ({ ...m, test: conv.channel === 'test' });
+// A draft test call also keeps the draft hash it was dispatched with (set by test.browser_call).
+const stamped = (conv: Conv, m: RunManifest) => {
+  const draftHash = (conv.run_manifest as { draftHash?: string }).draftHash;
+  return { ...m, test: conv.channel === 'test', ...(draftHash ? { draftHash } : {}) };
+};
 
 /** File the call under the agent version that actually ran (manifest.agentVersionHash), preferring the agent the
  *  conversation was created for. If no version in this workspace has that hash, the conversation keeps what it had. */
@@ -110,9 +114,10 @@ async function apply(c: pg.PoolClient, conv: Conv, e: RuntimeEvent): Promise<boo
   const ws = conv.workspace_id;
   switch (e.type) {
     case 'call.started':
-      await c.query(`UPDATE conversation SET run_manifest = $2 WHERE id = $1 AND status = 'live'`, [conv.id, stamped(conv, e.manifest)]);
-      await stampVersion(c, conv, e.manifest);
-      conv.run_manifest = e.manifest;
+      { const m = stamped(conv, e.manifest);
+        await c.query(`UPDATE conversation SET run_manifest = $2 WHERE id = $1 AND status = 'live'`, [conv.id, m]);
+        await stampVersion(c, conv, e.manifest);
+        conv.run_manifest = m as RunManifest; }
       return false;
     case 'turn':
       await c.query(`INSERT INTO turn (conversation_id, idx, speaker, text, latency, interrupted, started_ms, ended_ms) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)

@@ -130,6 +130,11 @@
       "date": "2026-10-21",
       "event": "calls-e2e-fixes",
       "details": "Fixed two e2e findings. F5: the funnel no longer counts a call as connected or talked until it reports call.ended (a live or silent dispatch is dialled only). F7: call.get reads one query at a time on its transaction client, which removes pg's deprecation warning. Verified: calls 15/15 with no deprecation warning; the full suite on one shared database passed 261/261 on one run and 260 with 1 failure on the other (learning's own 'hazard stop' fixture test, which imports no calls code)."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-draft-test-call-fix",
+      "details": "Fixed a cross-module bug the web builder found against the real server: test.browser_call with useDraft read agent.draft as {agent, brief}, but agents stores a bare AgentConfig and compiles only at publish, so every draft test call was refused. It now compiles through agents' brief.compile via the registry and files the call under the draft hash. The test now builds the agent with agents' own agent.create, stack.set and brief.edit. Verified: calls+agents+e2e 62/62; full suite 276/276 twice on one shared database."
     }
   ]
 }

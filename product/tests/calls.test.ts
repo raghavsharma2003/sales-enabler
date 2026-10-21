@@ -13,6 +13,7 @@ import { tool, type Actor, type Registry } from '../server/tools.ts';
 import { obj, opt, str, uuid } from '../shared/validate.ts';
 import type { RunManifest, RuntimeEvent } from '../shared/runtime-protocol.ts';
 import { module as calls } from '../server/modules/calls/index.ts';
+import { module as agents } from '../server/modules/agents/index.ts';
 import { analysesSettled, findQuote, refreshOutcome, sweep } from '../server/modules/calls/analysis.ts';
 import { wilsonLower, calibrationStatus } from '../server/modules/calls/stats.ts';
 import { REASON_CODES } from '../server/modules/calls/taxonomy.ts';
@@ -44,11 +45,11 @@ before(async () => {
   delete process.env.VP_LLM_FAKE;
   pool = createPool(URL_);
   setRuntime(fakeRuntime);
-  const app = buildApp(pool, [calls]);
+  const app = buildApp(pool, [calls, agents]);
   registry = app.registry; server = app.server;
   await new Promise<void>(r => server.listen(0, '127.0.0.1', r));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  const app2 = buildApp(pool, [calls, contactsStub]);
+  const app2 = buildApp(pool, [calls, agents, contactsStub]);
   server2 = app2.server;
   await new Promise<void>(r => server2.listen(0, '127.0.0.1', r));
   base2 = `http://127.0.0.1:${(server2.address() as AddressInfo).port}`;
@@ -299,8 +300,48 @@ test('test.browser_call dispatches a test ticket; test calls stay out of outcome
   assert.equal(refused.status, 'not_executed');
   assert.equal((await one<any>(pool, "SELECT count(*)::int AS n FROM conversation WHERE workspace_id = $1 AND channel = 'test' AND status = 'live'", [w.ws])).n, 0, 'a refused start leaves no live test call behind');
 
-  const noVersion = await registry.execute(pool, 'test.browser_call', { agentId: w.agent, useDraft: true }, { workspaceId: w.ws, actor: w.member });
-  assert.equal(noVersion.status, 'not_executed', 'a draft with no compiled brief cannot be test-called');
+});
+
+test('a draft test call compiles the real agents draft through brief.compile and is filed under the draft hash', { skip }, async () => {
+  const w = await workspace();
+  const ctx = { workspaceId: w.ws, actor: w.member };
+  const made = await registry.execute<any>(pool, 'agent.create', { name: 'Renewals draft', templateId: 'insurance-renewal' }, ctx);
+  assert.equal(made.status, 'confirmed', JSON.stringify(made));
+  if (made.status !== 'confirmed') return;
+  const agentId = made.result.agentId;
+  const raw = await one<any>(pool, 'SELECT draft FROM agent WHERE id = $1', [agentId]);
+  assert.ok(raw.draft.schema && !raw.draft.brief, 'agents stores the draft as a bare AgentConfig');
+
+  const noStack = await registry.execute<any>(pool, 'test.browser_call', { agentId, useDraft: true }, ctx);
+  assert.equal(noStack.status, 'not_executed');
+  assert.match(noStack.status === 'not_executed' ? noStack.reason : '', /stack/i, 'the refusal says what is missing, in plain words');
+
+  const st = await registry.execute<any>(pool, 'stack.set', { agentId, stackId: 'v2-flashlite' }, ctx);
+  assert.equal(st.status, 'confirmed', JSON.stringify(st));
+  const ed = await registry.execute<any>(pool, 'brief.edit', { agentId, patch: [{ op: 'append', path: 'neverSay', value: 'Example Rival Co.' }] }, ctx);
+  assert.equal(ed.status, 'confirmed', JSON.stringify(ed));
+  if (ed.status !== 'confirmed') return;
+  const t = await registry.execute<any>(pool, 'test.browser_call', { agentId, useDraft: true }, ctx);
+  assert.equal(t.status, 'confirmed', JSON.stringify(t));
+  if (t.status !== 'confirmed') return;
+  assert.equal(t.result.source, 'draft'); assert.equal(t.result.versionId, null);
+  assert.equal(t.result.draftHash, ed.result.draftHash);
+  const ticket = fakeRuntime.tickets.find(x => x.conversationId === t.result.conversationId)!;
+  assert.equal(ticket.agent.versionHash, ed.result.draftHash, 'the ticket says which draft ran');
+  const compiled = await registry.execute<any>(pool, 'brief.compile', { config: (await one<any>(pool, 'SELECT draft FROM agent WHERE id = $1', [agentId])).draft }, ctx);
+  assert.equal(compiled.status === 'confirmed' && compiled.result.hash, ticket.brief.hash, 'the one compile() made the brief');
+  assert.ok(ticket.brief.text.length > 0 && ticket.test);
+
+  const ev = fullCall();
+  for (const e of ev) if (e.type === 'call.started' || e.type === 'call.ended') e.manifest = manifest({ agentVersionHash: ed.result.draftHash });
+  setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null }));
+  await post(t.result.conversationId, ev);
+  await analysesSettled();
+  const conv = await one<any>(pool, 'SELECT agent_version_id, run_manifest FROM conversation WHERE id = $1', [t.result.conversationId]);
+  assert.equal(conv.agent_version_id, null, 'a draft has no version');
+  assert.equal(conv.run_manifest.draftHash, ed.result.draftHash);
+  assert.equal(conv.run_manifest.agentVersionHash, ed.result.draftHash);
+  assert.equal(conv.run_manifest.test, true);
 });
 
 // ---- tenancy -------------------------------------------------------------------------------------------------------

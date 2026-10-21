@@ -28,12 +28,12 @@
     "db/migrations/0601_calls.sql"
   ],
   "tests": {
-    "passed": 15,
-    "total": 15,
+    "passed": 16,
+    "total": 16,
     "files": [
       "tests/calls.test.ts"
     ],
-    "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, stubbed sibling tools; synthetic data only. Also the whole product suite (node scripts/test.mjs, concurrency 4) on one shared database: 242/242 on two consecutive runs."
+    "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, the real agents module for draft test calls, and stubs for the other sibling tools; synthetic data only. The whole product suite (node scripts/test.mjs, concurrency 4) on one shared database passed 276/276 on two consecutive runs."
   },
   "works": [
     "POST /hooks/runtime checks x-vp-signature with VP_RUNTIME_SECRET over the exact raw request bytes (Router rawBody) before parsing. A missing, wrong, stale (>5 min) or tampered signature, including a whitespace-only change, gets 401. Unknown fields get 422 and an unknown conversation 404. The workspace comes from the conversation row, never from the request.",
@@ -47,7 +47,7 @@
     "judge.edit (A2) creates a pinned, numbered judge version per outcome definition. judge.calibrate pairs its guesses with verified or manager labels and records n, agreement, the Wilson 95% lower bound, the confusion matrix and a status. The status is trusted at n >= 50, agreement >= 0.90 and lower bound >= 0.80.",
     "Monitors (6 defaults, seeded on the first non-test call) evaluate after each analysed non-test call. One open issue per monitor carries up to 10 evidence call ids. issue.resolve and monitor.create are available, and monitor.list says 'not_monitored_yet' until a monitor has been read.",
     "campaign.funnel gives dialled, connected, talked (10 s+ and a caller turn) and goal reached (best outcome in goal_values), per agent version, with goal counts by grade. report.create saves reasons, outcomes by grade, cost and the funnel.",
-    "Test calls: test.browser_call builds a CallTicket (test:true, attemptId null, webrtc) from the latest version, a named version or a compiled draft. It dispatches via runtime(), returns join info and enforces a Rs 200/day test budget. Test calls are analysed but write no outcome, are hidden from call.search unless includeTest, and never enter funnels, reports, calibration or monitors. A fallback on a test call is flagged.",
+    "Test calls: test.browser_call builds a CallTicket (test:true, attemptId null, webrtc) from the latest version or a named one. For useDraft it reads the bare AgentConfig draft via agent.get, compiles it through agents' brief.compile (a refusal comes back with its own reason) and tags the ticket and the run manifest with the draft hash. It dispatches via runtime(), returns join info and enforces a Rs 200/day test budget. Test calls are analysed but write no outcome, are hidden from call.search unless includeTest, and never enter funnels, reports, calibration or monitors. A fallback on a test call is flagged.",
     "Live control goes through runtime().control. live.listen is A1 and audited. live.whisper is external (A2). live.takeover can be called only by a signed-in member, and is refused for agents even when they carry a role.",
     "Tenancy: every query filters by workspace_id. A test shows another workspace cannot read, label, explain, listen to, funnel or resolve this workspace's rows.",
     "No transaction is held across a model or network call. The analysis LLM call runs outside any transaction. test.browser_call, live.listen and live.takeover make their runtime requests in prepare(). test.browser_call commits the conversation first and marks it failed if the runtime refuses. live.whisper (A2) keeps its runtime request in run(), because on the approval path prepare() runs before the approver, hash and version checks."
@@ -67,7 +67,6 @@
     "contacts/safety module: register contact.suppress_after_opt_out (A3) taking exactly { contactId: uuid, conversationId: uuid }. If the input differs, opt-outs stay 'failed' with the validation reason in call_opt_out.detail.",
     "campaigns module: create the conversation row (attempt_id, contact_id, agent_version_id, channel 'phone') before handing the ticket to the runtime, and reserve on the attempt id. The hook only settles holds tagged with conversation.attempt_id.",
     "campaigns module: outcome.define with campaignId writes campaign.outcome_definition_id. Say if you would rather own that write (e.g. a campaign.set_outcome tool).",
-    "agents module: test.browser_call reads agent_version.config {agent, brief} and, for useDraft, agent.draft shaped the same way with a compiled brief.",
     "integrations module: call outcome.record_verified as the system actor when a payment, booking or CRM webhook arrives.",
     "money module: price 'analysis' token cost lines (written with inr_milli 0 and detail.priced false).",
     "web/runtime: serve the test-call WebRTC offer at /v1/test-calls/:conversationId/offer (the ticket's offerUrl), or tell this module the right URL.",

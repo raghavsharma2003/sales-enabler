@@ -32,6 +32,8 @@ async function liveCall(ctx: ToolCtx, id: string) {
   return c;
 }
 
+const SYSTEM = { type: 'system' as const, id: 'calls.test_call' };
+
 export function registerTools(r: Registry): void {
   // ---- test.browser_call --------------------------------------------------------------------------------
   r.register(tool(obj({ agentId: uuid(), versionId: opt(uuid()), useDraft: opt(bool()) }), {
@@ -42,9 +44,22 @@ export function registerTools(r: Registry): void {
     prepare: async (ctx, i) => {
       const agent = await one<{ id: string; draft: any }>(ctx.pool, 'SELECT id, draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
       if (!agent) throw new Error('no such agent in this workspace');
-      let cfg: { agent?: AgentConfig; brief?: CallTicket['brief'] } | null, versionId: string | null = null;
-      if (i.useDraft) cfg = agent.draft;
-      else {
+      let cfg: { agent?: AgentConfig; brief?: CallTicket['brief'] } | null, versionId: string | null = null, draftHash: string | null = null;
+      if (i.useDraft) {
+        // The agents module stores the draft as a bare AgentConfig and compiles only at publish; a draft test call
+        // compiles it through the one compile() (agents' brief.compile) and is filed under the draft's hash.
+        if (!r.get('agent.get') || !r.get('brief.compile')) throw new Error('the agents module is not loaded, so a draft cannot be compiled for a test call');
+        const sys = { workspaceId: ctx.workspaceId, actor: SYSTEM };
+        const got = await r.execute<{ draft: AgentConfig; draftHash: string }>(ctx.pool, 'agent.get', { agentId: i.agentId }, sys);
+        if (got.status !== 'confirmed') throw new Error(`could not read the draft: ${'reason' in got ? got.reason : got.status}`);
+        const compiled = await r.execute<CallTicket['brief']>(ctx.pool, 'brief.compile', { config: got.result.draft }, sys);
+        if (compiled.status !== 'confirmed') {
+          const why = compiled.status === 'not_executed' ? `${compiled.reason}` : compiled.status;
+          throw new Error(`the draft does not compile yet: ${why}`);
+        }
+        draftHash = got.result.draftHash;
+        cfg = { agent: { ...got.result.draft, versionHash: draftHash }, brief: compiled.result };
+      } else {
         const v = await one<{ id: string; config: any }>(ctx.pool,
           `SELECT v.id, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id AND a.workspace_id = $2
            WHERE v.agent_id = $1 ${i.versionId ? 'AND v.id = $3' : ''} ORDER BY v.number DESC LIMIT 1`,
@@ -60,8 +75,8 @@ export function registerTools(r: Registry): void {
       if (Number(spent!.s) + TEST_CALL_MAX_COST_INR_MILLI > TEST_BUDGET_PER_DAY_INR_MILLI) throw new Error("today's test budget is used up; it resets at midnight IST");
 
       const id = randomUUID();
-      await ctx.pool.query(`INSERT INTO conversation (id, workspace_id, agent_version_id, channel, direction, status, run_manifest) VALUES ($1,$2,$3,'test','outbound','live','{"test":true}')`,
-        [id, ctx.workspaceId, versionId]);
+      await ctx.pool.query(`INSERT INTO conversation (id, workspace_id, agent_version_id, channel, direction, status, run_manifest) VALUES ($1,$2,$3,'test','outbound','live',$4)`,
+        [id, ctx.workspaceId, versionId, { test: true, ...(draftHash ? { draftHash } : {}) }]);
       const ticket: CallTicket = {
         protocol: 1, conversationId: id, attemptId: null, workspaceId: ctx.workspaceId, direction: 'outbound',
         transport: { kind: 'webrtc', offerUrl: `/v1/test-calls/${id}/offer` },
@@ -77,9 +92,9 @@ export function registerTools(r: Registry): void {
         await ctx.pool.query(`UPDATE conversation SET status = 'failed', end_reason = 'error', ended_at = now() WHERE id = $1 AND workspace_id = $2`, [id, ctx.workspaceId]);
         throw new Error(`the voice runtime did not start the call: ${rep.reason ?? 'no reason given'}`);
       }
-      return { conversationId: id, source: i.useDraft ? 'draft' : 'version', versionId, combinationId: ticket.stack.combinationId, join: rep.join ?? null };
+      return { conversationId: id, source: i.useDraft ? 'draft' : 'version', versionId, draftHash, combinationId: ticket.stack.combinationId, join: rep.join ?? null };
     },
-    run: async (_ctx, _i, prepared) => prepared as { conversationId: string; source: string; versionId: string | null; combinationId: string; join: unknown },
+    run: async (_ctx, _i, prepared) => prepared as { conversationId: string; source: string; versionId: string | null; draftHash: string | null; combinationId: string; join: unknown },
   }));
 
   // ---- call.get -----------------------------------------------------------------------------------------
