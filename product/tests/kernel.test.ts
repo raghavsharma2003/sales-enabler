@@ -260,3 +260,19 @@ test('prepare() runs outside the transaction and feeds run()', { skip }, async (
   assert.deepEqual(out.status === 'confirmed' && out.result, { doubled: 42 });
   assert.equal(inTx, false, 'no transaction is held open while prepare runs');
 });
+
+test('HTTP: an oversized body is refused with 413 and the connection is closed', { skip }, async () => {
+  const { Router } = await import('../server/http.ts');
+  const { createServer } = await import('node:http');
+  const router = new Router().add('POST', '/x', async () => ({ body: { ok: true } }), { limit: 10 });
+  const server = createServer((q, s) => void router.handle(q, s));
+  await new Promise<void>(res => server.listen(0, res));
+  try {
+    const port = (server.address() as { port: number }).port;
+    const r = await fetch(`http://127.0.0.1:${port}/x`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ big: 'x'.repeat(100) }) });
+    assert.equal(r.status, 413);
+    assert.equal(r.headers.get('connection'), 'close');
+    const ok = await fetch(`http://127.0.0.1:${port}/x`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    assert.equal(ok.status, 200, 'the next request works');
+  } finally { server.close(); }
+});

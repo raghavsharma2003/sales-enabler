@@ -107,7 +107,9 @@ export class Router {
       send(out.status ?? 200, out.body ?? {}, out.headers);
     } catch (e) {
       if (e instanceof ValidationError) return send(422, { error: { code: 'invalid', path: e.path, message: e.message } });
-      if (e instanceof HttpError) return send(e.status, { error: { code: e.code, message: e.message } });
+      // After a 413 the rest of the body is still unread on the socket; close it so a keep-alive client's next
+      // request is not parsed out of the leftover bytes.
+      if (e instanceof HttpError) return send(e.status, { error: { code: e.code, message: e.message } }, e.status === 413 ? { connection: 'close' } : {});
       console.error('[vp] unhandled', e);
       send(500, { error: { code: 'internal', message: 'something went wrong on our side' } });
     }

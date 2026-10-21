@@ -1,0 +1,6203 @@
+{
+ "generated_by": "product/scripts/tool-catalog.ts",
+ "modules": [
+  "safety",
+  "workspace",
+  "intake",
+  "money",
+  "agents",
+  "campaigns",
+  "calls",
+  "memory",
+  "learning",
+  "operator"
+ ],
+ "tools": [
+  {
+   "name": "a2p.declaration.export",
+   "risk": "read",
+   "summary": "Export the A2P declaration pack for this workspace's lines (CSV or JSON)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "format": {
+      "type": "string",
+      "enum": [
+       "json",
+       "csv"
+      ]
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "action.undo",
+   "risk": "draft",
+   "summary": "Undo a recent brand or offering change by restoring how it was before",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "revisionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "auditEventId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "activity.list",
+   "risk": "read",
+   "summary": "See who did what in this workspace, in plain words",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     },
+     "cursor": {
+      "type": "string",
+      "maxLength": 200
+     },
+     "actionPrefix": {
+      "type": "string",
+      "maxLength": 60,
+      "pattern": "^[a-z0-9_.]+$"
+     },
+     "actorId": {
+      "type": "string",
+      "maxLength": 80
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "agent.create",
+   "risk": "draft",
+   "summary": "Create a draft agent from a template or from a plain-words description",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "templateId": {
+      "type": "string",
+      "maxLength": 60
+     },
+     "description": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 4000
+     }
+    },
+    "required": [
+     "name"
+    ]
+   }
+  },
+  {
+   "name": "agent.get",
+   "risk": "read",
+   "summary": "Read one agent: its draft, lint, brief preview and versions",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "agent.list",
+   "risk": "read",
+   "summary": "List this workspace's agents",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "apikey.create",
+   "risk": "policy",
+   "summary": "Create an API key that can act on this workspace",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "scopes": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 60
+      },
+      "maxItems": 20
+     },
+     "dailyCapInrMilli": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000
+     },
+     "expiresInDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 730
+     }
+    },
+    "required": [
+     "name"
+    ]
+   }
+  },
+  {
+   "name": "apikey.list",
+   "risk": "read",
+   "summary": "List API keys (never the secret)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "apikey.revoke",
+   "risk": "external",
+   "summary": "Revoke an API key so it stops working at once",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "attempt.list",
+   "risk": "read",
+   "summary": "Attempts with their precheck: why someone was or was not called, and when they next can be",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "status": {
+      "type": "string",
+      "maxLength": 30
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "attempt.retry_per_ladder",
+   "risk": "external",
+   "summary": "Schedule the next attempt by the retry ladder for this outcome (unknown outcomes are never retried)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "attemptId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "outcome": {
+      "type": "string",
+      "enum": [
+       "busy",
+       "no_answer",
+       "switched_off",
+       "voicemail",
+       "short_call",
+       "provider_error",
+       "dropped_by_vp",
+       "callback",
+       "relative_answered",
+       "unknown",
+       "opt_out",
+       "wrong_party",
+       "invalid",
+       "operator_block",
+       "completed"
+      ]
+     },
+     "at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 time with offset"
+     }
+    },
+    "required": [
+     "attemptId",
+     "outcome"
+    ]
+   }
+  },
+  {
+   "name": "audience.create",
+   "risk": "draft",
+   "summary": "Save an audience: a filter over attributes (re-evaluated each time) or a fixed list of people",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     },
+     "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "all": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "key": {
+           "type": "string",
+           "pattern": "^[\\p{L}\\p{N}_]{1,60}$"
+          },
+          "op": {
+           "type": "string",
+           "enum": [
+            "eq",
+            "neq",
+            "in",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "exists",
+            "missing",
+            "contains"
+           ]
+          },
+          "value": {}
+         },
+         "required": [
+          "key",
+          "op"
+         ]
+        },
+        "maxItems": 30
+       },
+       "any": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "key": {
+           "type": "string",
+           "pattern": "^[\\p{L}\\p{N}_]{1,60}$"
+          },
+          "op": {
+           "type": "string",
+           "enum": [
+            "eq",
+            "neq",
+            "in",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "exists",
+            "missing",
+            "contains"
+           ]
+          },
+          "value": {}
+         },
+         "required": [
+          "key",
+          "op"
+         ]
+        },
+        "maxItems": 30
+       }
+      },
+      "required": []
+     },
+     "contactIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 50000
+     }
+    },
+    "required": [
+     "name"
+    ]
+   }
+  },
+  {
+   "name": "audience.get",
+   "risk": "read",
+   "summary": "One audience with its definition and current counts",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "audience.list",
+   "risk": "read",
+   "summary": "List saved audiences",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "audience.preview",
+   "risk": "read",
+   "summary": "Who an audience or a draft filter reaches now: matched, suppressed, callable, DND unknown, and a sample",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "audienceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "all": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "key": {
+           "type": "string",
+           "pattern": "^[\\p{L}\\p{N}_]{1,60}$"
+          },
+          "op": {
+           "type": "string",
+           "enum": [
+            "eq",
+            "neq",
+            "in",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "exists",
+            "missing",
+            "contains"
+           ]
+          },
+          "value": {}
+         },
+         "required": [
+          "key",
+          "op"
+         ]
+        },
+        "maxItems": 30
+       },
+       "any": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "key": {
+           "type": "string",
+           "pattern": "^[\\p{L}\\p{N}_]{1,60}$"
+          },
+          "op": {
+           "type": "string",
+           "enum": [
+            "eq",
+            "neq",
+            "in",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "exists",
+            "missing",
+            "contains"
+           ]
+          },
+          "value": {}
+         },
+         "required": [
+          "key",
+          "op"
+         ]
+        },
+        "maxItems": 30
+       }
+      },
+      "required": []
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "brand.cnap_name.set",
+   "risk": "policy",
+   "summary": "Set the name that shows on the phone of the person we call",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "cnapName": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9 &.'-]{0,29}$",
+      "description": "Up to 30 characters: letters, digits, spaces, & . ' -"
+     }
+    },
+    "required": [
+     "cnapName"
+    ]
+   }
+  },
+  {
+   "name": "brand.get",
+   "risk": "read",
+   "summary": "Read the brand details",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "brand.update",
+   "risk": "draft",
+   "summary": "Edit the business name, sector, tone and other brand details",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "legalName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     },
+     "sector": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "dltEntityId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+     },
+     "website": {
+      "type": "string",
+      "maxLength": 300,
+      "pattern": "^https?:\\/\\/[^\\s]+$"
+     },
+     "tone": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "How the business likes to sound, in plain words"
+     },
+     "logoUri": {
+      "type": "string",
+      "maxLength": 300,
+      "pattern": "^https?:\\/\\/[^\\s]+$"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "brief.compile",
+   "risk": "read",
+   "summary": "Compile an agent config into its brief (the one compile(), for previews and other modules)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "config": {
+      "description": "an AgentConfig"
+     }
+    },
+    "required": [
+     "config"
+    ]
+   }
+  },
+  {
+   "name": "brief.edit",
+   "risk": "draft",
+   "summary": "Edit an agent's draft brief with a validated patch (never publishes)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "expectDraftHash": {
+      "type": "string",
+      "maxLength": 64
+     },
+     "patch": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "op": {
+         "type": "string",
+         "enum": [
+          "set",
+          "remove",
+          "append"
+         ]
+        },
+        "path": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 120
+        },
+        "value": {
+         "description": "the new value"
+        }
+       },
+       "required": [
+        "op",
+        "path"
+       ]
+      },
+      "minItems": 1,
+      "maxItems": 30
+     }
+    },
+    "required": [
+     "agentId",
+     "patch"
+    ]
+   }
+  },
+  {
+   "name": "brief.today",
+   "risk": "read",
+   "summary": "Today's brief: what changed, what needs a tap, live campaigns, spend today (IST), wallet and open issues",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "since": {
+      "type": "string",
+      "maxLength": 40,
+      "description": "ISO time; default 24 hours ago"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "call.explain",
+   "risk": "read",
+   "summary": "Why this call went the way it did, in plain words, each point backed by an event or an exact quote",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
+   }
+  },
+  {
+   "name": "call.get",
+   "risk": "read",
+   "summary": "Everything about one call: transcript, turns, moments, safety, tools, hand-offs, cost lines, outcomes and analysis",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
+   }
+  },
+  {
+   "name": "call.place_single",
+   "risk": "external",
+   "summary": "Call one person now (or at a time), through the same dial gate as campaigns",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "agentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "category": {
+      "type": "string",
+      "enum": [
+       "service",
+       "transactional",
+       "promotional"
+      ],
+      "description": "service, transactional or promotional: asked first; it sets the window, series and consent rule"
+     },
+     "facts": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string",
+       "maxLength": 500
+      }
+     },
+     "at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 time with offset"
+     },
+     "idempotencyKey": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 80
+     },
+     "via": {
+      "type": "string",
+      "enum": [
+       "single",
+       "api"
+      ]
+     }
+    },
+    "required": [
+     "contactId",
+     "agentVersionId",
+     "category"
+    ]
+   }
+  },
+  {
+   "name": "call.search",
+   "risk": "read",
+   "summary": "Find calls by campaign, outcome, reason code, date or flag; test calls only when asked",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "agentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "outcome": {
+      "type": "string",
+      "maxLength": 80
+     },
+     "reasonCode": {
+      "type": "string",
+      "enum": [
+       "PRE_NUMBER_INVALID",
+       "PRE_DND",
+       "PRE_SUPPRESSED",
+       "PRE_WINDOW",
+       "PRE_NO_CONSENT",
+       "PRE_WALLET_LOW",
+       "PRE_CAP_REACHED",
+       "PRE_ATTEMPTS_EXHAUSTED",
+       "DIAL_NO_ANSWER",
+       "DIAL_BUSY",
+       "DIAL_SWITCHED_OFF",
+       "DIAL_CARRIER_REJECTED",
+       "DIAL_OPERATOR_ANNOUNCEMENT",
+       "DIAL_FAILED",
+       "CONN_VOICEMAIL",
+       "CONN_SILENCE",
+       "CONN_ENGINE_ERROR",
+       "CONN_MAX_DURATION",
+       "CONN_MAX_COST",
+       "END_EARLY_HANGUP",
+       "END_HUNG_UP_MID",
+       "END_TOOL_ERROR",
+       "END_HANDED_OFF",
+       "END_CRISIS",
+       "END_OPTED_OUT",
+       "CONV_GOAL_DONE",
+       "CONV_CALLBACK",
+       "CONV_NOT_INTERESTED",
+       "CONV_WRONG_PERSON",
+       "CONV_LANGUAGE_MISMATCH",
+       "CONV_CONFUSED",
+       "CONV_OBJECTION_UNRESOLVED",
+       "CONV_COMPLAINT",
+       "CONV_NEEDS_HUMAN",
+       "CONV_INCOMPLETE"
+      ]
+     },
+     "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T[\\d:.]+(Z|[+-]\\d{2}:\\d{2})?)?$"
+     },
+     "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T[\\d:.]+(Z|[+-]\\d{2}:\\d{2})?)?$"
+     },
+     "flagged": {
+      "type": "boolean"
+     },
+     "includeTest": {
+      "type": "boolean"
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     },
+     "before": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T[\\d:.]+(Z|[+-]\\d{2}:\\d{2})?)?$"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "campaign.audience.add",
+   "risk": "external",
+   "summary": "Add people to a campaign; a live campaign queues them for the dial gate",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "contactIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 1000
+     }
+    },
+    "required": [
+     "id",
+     "contactIds"
+    ]
+   }
+  },
+  {
+   "name": "campaign.draft",
+   "risk": "draft",
+   "summary": "Create or edit a draft campaign: category first, then window, retries, budget and cap",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     },
+     "category": {
+      "type": "string",
+      "enum": [
+       "service",
+       "transactional",
+       "promotional"
+      ],
+      "description": "service, transactional or promotional: asked first; it sets the window, series and consent rule"
+     },
+     "agentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "audienceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "preset": {
+      "type": "string",
+      "enum": [
+       "renewal",
+       "lending",
+       "subscription",
+       "promotional"
+      ]
+     },
+     "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "days": {
+        "type": "array",
+        "items": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 7
+        },
+        "minItems": 1,
+        "maxItems": 7
+       },
+       "ranges": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "start": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          },
+          "end": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          }
+         },
+         "required": [
+          "start",
+          "end"
+         ]
+        },
+        "minItems": 1,
+        "maxItems": 6
+       },
+       "crossMidnightReason": {
+        "type": "string",
+        "maxLength": 300
+       },
+       "nationalHolidaysOff": {
+        "type": "boolean"
+       },
+       "holidays": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "maxItems": 60
+       }
+      },
+      "required": [
+       "days",
+       "ranges"
+      ],
+      "description": "calling window: days 1 (Mon) - 7 (Sun), ranges in the contact's local time"
+     },
+     "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "perDay": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+       },
+       "perWeek": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30
+       },
+       "perRun": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30
+       }
+      },
+      "required": [
+       "perDay",
+       "perWeek",
+       "perRun"
+      ]
+     },
+     "concurrency": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+     },
+     "cliPool": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "maxItems": 50
+     },
+     "perMinuteInrMilli": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000
+     },
+     "maxDurationS": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 3600
+     },
+     "capInrMilli": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "startAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 time with offset"
+     },
+     "endAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 time with offset"
+     },
+     "predialUrl": {
+      "type": "string",
+      "maxLength": 500,
+      "pattern": "^https:\\/\\/"
+     }
+    },
+    "required": [
+     "name",
+     "category"
+    ]
+   }
+  },
+  {
+   "name": "campaign.estimate",
+   "risk": "read",
+   "summary": "Estimate people, attempts, minutes and money (p10-p90 incl. GST) for a campaign",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "campaign.funnel",
+   "risk": "read",
+   "summary": "Dialled, connected, talked and goal reached for a campaign, per agent version, with outcome grades",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "campaignId"
+    ]
+   }
+  },
+  {
+   "name": "campaign.get",
+   "risk": "read",
+   "summary": "One campaign: policy, state, attempt counts by status and code, and every launch blocker",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "campaign.launch",
+   "risk": "external",
+   "summary": "Launch a campaign: VP starts dialling its audience inside the window, budget and cap",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "campaign.list",
+   "risk": "read",
+   "summary": "List campaigns with their state and attempt counts",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "state": {
+      "type": "string",
+      "enum": [
+       "draft",
+       "scheduled",
+       "running",
+       "paused",
+       "completed",
+       "cancelled"
+      ]
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "campaign.pause",
+   "risk": "external",
+   "summary": "Pause a campaign at the next call boundary; calls in progress finish",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "cause": {
+      "type": "string",
+      "maxLength": 80
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "campaign.resume",
+   "risk": "external",
+   "summary": "Resume a paused campaign (a person decides; guard pauses never resume on their own)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "campaign.stop",
+   "risk": "external",
+   "summary": "Stop a campaign for good: nothing new dials; calls in progress finish",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "reason": {
+      "type": "string",
+      "maxLength": 200
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "campaign.stop_at_cap",
+   "risk": "external",
+   "summary": "Pause a campaign whose spend cap or wallet is reached (never cancels it, never releases numbers)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "scope": {
+      "type": "string",
+      "maxLength": 40
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "campaign.window.narrow",
+   "risk": "draft",
+   "summary": "Narrow a campaign's calling window (risk-lowering: runs at once, even while live)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "days": {
+        "type": "array",
+        "items": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 7
+        },
+        "minItems": 1,
+        "maxItems": 7
+       },
+       "ranges": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "start": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          },
+          "end": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          }
+         },
+         "required": [
+          "start",
+          "end"
+         ]
+        },
+        "minItems": 1,
+        "maxItems": 6
+       },
+       "crossMidnightReason": {
+        "type": "string",
+        "maxLength": 300
+       },
+       "nationalHolidaysOff": {
+        "type": "boolean"
+       },
+       "holidays": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "maxItems": 60
+       }
+      },
+      "required": [
+       "days",
+       "ranges"
+      ],
+      "description": "calling window: days 1 (Mon) - 7 (Sun), ranges in the contact's local time"
+     }
+    },
+    "required": [
+     "id",
+     "window"
+    ]
+   }
+  },
+  {
+   "name": "campaign.window.widen",
+   "risk": "policy",
+   "summary": "Widen a campaign's calling window inside the category ceiling and the workspace band",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "days": {
+        "type": "array",
+        "items": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 7
+        },
+        "minItems": 1,
+        "maxItems": 7
+       },
+       "ranges": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "start": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          },
+          "end": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          }
+         },
+         "required": [
+          "start",
+          "end"
+         ]
+        },
+        "minItems": 1,
+        "maxItems": 6
+       },
+       "crossMidnightReason": {
+        "type": "string",
+        "maxLength": 300
+       },
+       "nationalHolidaysOff": {
+        "type": "boolean"
+       },
+       "holidays": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "maxItems": 60
+       }
+      },
+      "required": [
+       "days",
+       "ranges"
+      ],
+      "description": "calling window: days 1 (Mon) - 7 (Sun), ranges in the contact's local time"
+     }
+    },
+    "required": [
+     "id",
+     "window"
+    ]
+   }
+  },
+  {
+   "name": "cap.lower",
+   "risk": "draft",
+   "summary": "lower (or add) a spend cap; only ever reduces what can be spent",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "scope": {
+      "type": "string",
+      "enum": [
+       "workspace",
+       "campaign",
+       "api_key"
+      ]
+     },
+     "scopeId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "period": {
+      "type": "string",
+      "enum": [
+       "total",
+       "daily",
+       "monthly"
+      ]
+     },
+     "capInrMilli": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000000
+     }
+    },
+    "required": [
+     "scope",
+     "period",
+     "capInrMilli"
+    ]
+   }
+  },
+  {
+   "name": "cap.raise",
+   "risk": "spend",
+   "summary": "raise (or set) a spend cap",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "scope": {
+      "type": "string",
+      "enum": [
+       "workspace",
+       "campaign",
+       "api_key"
+      ]
+     },
+     "scopeId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "period": {
+      "type": "string",
+      "enum": [
+       "total",
+       "daily",
+       "monthly"
+      ]
+     },
+     "capInrMilli": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000000
+     }
+    },
+    "required": [
+     "scope",
+     "period",
+     "capInrMilli"
+    ]
+   }
+  },
+  {
+   "name": "consent.record",
+   "risk": "draft",
+   "summary": "Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "purpose": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     },
+     "channel": {
+      "type": "string",
+      "enum": [
+       "voice",
+       "sms",
+       "whatsapp",
+       "email"
+      ]
+     },
+     "basis": {
+      "type": "string",
+      "enum": [
+       "consent",
+       "contract",
+       "legitimate_use",
+       "legal_obligation",
+       "withdrawal"
+      ]
+     },
+     "granted": {
+      "type": "boolean"
+     },
+     "source": {
+      "type": "string",
+      "maxLength": 120
+     },
+     "at": {
+      "type": "string",
+      "maxLength": 40
+     },
+     "evidence": {
+      "type": "object",
+      "additionalProperties": {}
+     }
+    },
+    "required": [
+     "contactId",
+     "purpose",
+     "basis",
+     "granted"
+    ]
+   }
+  },
+  {
+   "name": "contact.dial_facts",
+   "risk": "read",
+   "summary": "What the dial gate needs about one person: tombstone, suppressions, DND (unknown fails closed for promotional), consent for a purpose",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "e164": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 40
+     },
+     "purpose": {
+      "type": "string",
+      "maxLength": 80
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "contact.dnd_refresh",
+   "risk": "draft",
+   "summary": "Look up DND (NCPR) status for people and record it with the time checked; unknown answers stay unknown",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 5000
+     },
+     "audienceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "olderThanHours": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 8760
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "contact.export",
+   "risk": "policy",
+   "summary": "Export people as CSV (personal data leaves VP; approved by Compliance or Owner, audited)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "compliance",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "audienceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "keys": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "pattern": "^[\\p{L}\\p{N}_]{1,60}$"
+      },
+      "maxItems": 50
+     },
+     "includeSuppressed": {
+      "type": "boolean"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "contact.get",
+   "risk": "read",
+   "summary": "One person: attributes with authority and freshness, consent history, suppressions, DND, aliases, open conflicts",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "contact.list",
+   "risk": "read",
+   "summary": "List people, with suppression and DND state; page with after",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     },
+     "after": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "audienceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "suppressed": {
+      "type": "boolean"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "contact.memory.forget",
+   "risk": "destructive",
+   "summary": "DPDP forget request: remove everything remembered about a contact and record the request",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "requestId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "via": {
+      "type": "string",
+      "enum": [
+       "caller",
+       "operator",
+       "my_data",
+       "compliance"
+      ]
+     },
+     "scope": {
+      "type": "string",
+      "enum": [
+       "forget_memory",
+       "erase_me"
+      ]
+     },
+     "stopRemembering": {
+      "type": "boolean"
+     },
+     "evidence": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "contactId"
+    ]
+   }
+  },
+  {
+   "name": "contact.memory.get",
+   "risk": "read",
+   "summary": "everything remembered about a contact, with the exact quote, purpose, basis and status",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "contactId"
+    ]
+   }
+  },
+  {
+   "name": "contact.merge",
+   "risk": "destructive",
+   "summary": "Merge two records of the same person into one; the merged number becomes an identifier of the kept one (reversible for 30 days from the snapshot)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "keepId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "mergeId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "keepId",
+     "mergeId"
+    ]
+   }
+  },
+  {
+   "name": "contact.search",
+   "risk": "read",
+   "summary": "Find people by part of a number (any format, Devanagari digits too) or by name",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "q": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     }
+    },
+    "required": [
+     "q"
+    ]
+   }
+  },
+  {
+   "name": "contact.suppress",
+   "risk": "draft",
+   "summary": "Stop calling a person (workspace-wide or one campaign); works for numbers not on file too. Lowers risk, so it never waits for approval",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "e164": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 40
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200
+     },
+     "scope": {
+      "type": "string",
+      "enum": [
+       "workspace",
+       "campaign"
+      ]
+     },
+     "scopeId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "reason"
+    ]
+   }
+  },
+  {
+   "name": "contact.suppress_after_opt_out",
+   "risk": "policy",
+   "summary": "The person said \"don't call me\" on a call: suppress voice workspace-wide at once (A3 for VP itself) and append a consent withdrawal",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "e164": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 40
+     },
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "quote": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "contact.unsuppress",
+   "risk": "policy",
+   "summary": "Release a suppression so the person can be called again (Compliance or Owner approves)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "suppressionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "suppressionId",
+     "reason"
+    ]
+   }
+  },
+  {
+   "name": "deployment.revert_to_last_good",
+   "risk": "external",
+   "summary": "Put the previous deployment for a binding back in place",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "binding": {
+      "type": "string",
+      "enum": [
+       "campaign",
+       "inbound",
+       "web",
+       "test"
+      ]
+     },
+     "reason": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "deployment.split",
+   "risk": "external",
+   "summary": "Set which published versions run, and how traffic splits between them",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "binding": {
+      "type": "string",
+      "enum": [
+       "campaign",
+       "inbound",
+       "web",
+       "test"
+      ]
+     },
+     "split": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "versionId": {
+         "type": "string",
+         "format": "uuid"
+        },
+        "percent": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 100
+        }
+       },
+       "required": [
+        "versionId",
+        "percent"
+       ]
+      },
+      "minItems": 1,
+      "maxItems": 4
+     }
+    },
+    "required": [
+     "agentId",
+     "binding",
+     "split"
+    ]
+   }
+  },
+  {
+   "name": "dpdp.request.execute",
+   "risk": "destructive",
+   "summary": "Carry out a DPDP request: erase a person (data gone, tombstone and suppression kept so nothing can call them again) or forget their memory",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "e164": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 40
+     },
+     "scope": {
+      "type": "string",
+      "enum": [
+       "erase_me",
+       "forget_memory"
+      ]
+     },
+     "requestedBy": {
+      "type": "string",
+      "enum": [
+       "person",
+       "compliance",
+       "tenant"
+      ]
+     },
+     "evidence": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500
+     },
+     "suppress": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "scope",
+     "requestedBy",
+     "evidence"
+    ]
+   }
+  },
+  {
+   "name": "experiment.assign",
+   "risk": "read",
+   "summary": "which version this contact meets (sticky per experiment)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "agentId",
+     "contactId"
+    ]
+   }
+  },
+  {
+   "name": "experiment.check",
+   "risk": "draft",
+   "summary": "check guardrails (stop at once on harm) and decide at the horizon",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "experimentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "experimentId"
+    ]
+   }
+  },
+  {
+   "name": "experiment.get",
+   "risk": "read",
+   "summary": "one experiment: meter, guardrails, and the verdict once decided",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "experiment.list",
+   "risk": "read",
+   "summary": "list experiments",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "experiment.start",
+   "risk": "external",
+   "summary": "run the shadow A/A, then send live calls to both arms",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "experimentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "aaRuns": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 5000
+     }
+    },
+    "required": [
+     "experimentId"
+    ]
+   }
+  },
+  {
+   "name": "experiment.stop",
+   "risk": "draft",
+   "summary": "stop an experiment; the current version keeps all calls",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "experimentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "experimentId",
+     "reason"
+    ]
+   }
+  },
+  {
+   "name": "fact.approve",
+   "risk": "draft",
+   "summary": "approve a remembered fact so the next call may use it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "factId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "value": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+     }
+    },
+    "required": [
+     "factId"
+    ]
+   }
+  },
+  {
+   "name": "fact.forget",
+   "risk": "destructive",
+   "summary": "forget one remembered fact (removed, not hidden)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "factId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "factId"
+    ]
+   }
+  },
+  {
+   "name": "integration.connect",
+   "risk": "policy",
+   "summary": "Connect an outside service so agents and campaigns can use it",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "hubspot",
+       "zoho_crm",
+       "salesforce",
+       "google_workspace",
+       "whatsapp_cloud",
+       "exotel",
+       "slack",
+       "custom_http"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "config": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string",
+       "maxLength": 300
+      }
+     },
+     "stashId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "kind",
+     "name",
+     "stashId"
+    ]
+   }
+  },
+  {
+   "name": "integration.disconnect",
+   "risk": "destructive",
+   "summary": "Disconnect an integration and erase its stored credentials",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "integration.kinds",
+   "risk": "read",
+   "summary": "List the kinds of integration that can be connected and what each needs",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "integration.list",
+   "risk": "read",
+   "summary": "List connected integrations (never their credentials)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "integration.stage_secrets",
+   "risk": "draft",
+   "summary": "Hand over credentials for an integration; they are encrypted and held until you connect it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "hubspot",
+       "zoho_crm",
+       "salesforce",
+       "google_workspace",
+       "whatsapp_cloud",
+       "exotel",
+       "slack",
+       "custom_http"
+      ]
+     },
+     "secrets": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 8000
+      }
+     }
+    },
+    "required": [
+     "kind",
+     "secrets"
+    ]
+   }
+  },
+  {
+   "name": "invoice.get",
+   "risk": "read",
+   "summary": "show the usage statement for a period (customer price not set yet)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "IST date, YYYY-MM-DD"
+     },
+     "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "IST date, YYYY-MM-DD"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "issue.list",
+   "risk": "read",
+   "summary": "List issues opened by monitors, with their evidence calls",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "open",
+       "acknowledged",
+       "resolved"
+      ]
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "issue.resolve",
+   "risk": "draft",
+   "summary": "Mark an issue resolved, saying what fixed it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "issueId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "resolution": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 1000
+     }
+    },
+    "required": [
+     "issueId",
+     "resolution"
+    ]
+   }
+  },
+  {
+   "name": "judge.calibrate",
+   "risk": "draft",
+   "summary": "Measure a judge's agreement with verified and human labels (Wilson 95% lower bound) and record it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "judgeVersionId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "judgeVersionId"
+    ]
+   }
+  },
+  {
+   "name": "judge.edit",
+   "risk": "draft",
+   "summary": "Create a new pinned version of the judge that guesses an outcome; it starts uncalibrated",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "outcomeDefinitionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "dated model id the judge is pinned to"
+     },
+     "instructions": {
+      "type": "string",
+      "maxLength": 2000
+     }
+    },
+    "required": [
+     "outcomeDefinitionId",
+     "name",
+     "model",
+     "instructions"
+    ]
+   }
+  },
+  {
+   "name": "knowledge.ingest",
+   "risk": "draft",
+   "summary": "Add a document (text, PDF or Word) to the knowledge base; its passages wait for your approval",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     },
+     "filename": {
+      "type": "string",
+      "maxLength": 200
+     },
+     "text": {
+      "type": "string",
+      "maxLength": 2000000
+     },
+     "contentBase64": {
+      "type": "string",
+      "maxLength": 12500000
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "knowledge.list",
+   "risk": "read",
+   "summary": "List knowledge sources, or the passages of one source",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "pending",
+       "approved",
+       "rejected"
+      ]
+     },
+     "after": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "knowledge.span.approve",
+   "risk": "draft",
+   "summary": "Approve (or strike) passages so the agent may (or may not) state them as facts",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "spanIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 200
+     },
+     "decision": {
+      "type": "string",
+      "enum": [
+       "approved",
+       "rejected"
+      ]
+     }
+    },
+    "required": [
+     "spanIds"
+    ]
+   }
+  },
+  {
+   "name": "learning.power",
+   "risk": "read",
+   "summary": "calls needed to prove a change, before launch",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "baseline": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 0.99
+     },
+     "mdeAbs": {
+      "type": "number",
+      "minimum": 0.005,
+      "maximum": 0.5
+     },
+     "alpha": {
+      "type": "number",
+      "minimum": 0.001,
+      "maximum": 0.2
+     },
+     "power": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 0.99
+     }
+    },
+    "required": [
+     "baseline",
+     "mdeAbs"
+    ]
+   }
+  },
+  {
+   "name": "learning.propose",
+   "risk": "draft",
+   "summary": "draft changes to an agent from its own call evidence, gated and with evidence cited",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "max": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "lesson.list",
+   "risk": "read",
+   "summary": "what this workspace has learned, with evidence",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "live.listen",
+   "risk": "draft",
+   "summary": "Listen to a live call (audited)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
+   }
+  },
+  {
+   "name": "live.takeover",
+   "risk": "draft",
+   "summary": "A person takes over a live call; the agent leaves for good. Human only, never a model",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
+   }
+  },
+  {
+   "name": "live.whisper",
+   "risk": "external",
+   "summary": "Whisper context to the agent on a live call; the caller does not hear it",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+     }
+    },
+    "required": [
+     "conversationId",
+     "text"
+    ]
+   }
+  },
+  {
+   "name": "member.invite",
+   "risk": "policy",
+   "summary": "Invite a person to this workspace with a role",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "email": {
+      "type": "string",
+      "maxLength": 200,
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+     },
+     "role": {
+      "type": "string",
+      "enum": [
+       "owner",
+       "builder",
+       "operator",
+       "compliance",
+       "viewer"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     }
+    },
+    "required": [
+     "email",
+     "role"
+    ]
+   }
+  },
+  {
+   "name": "member.list",
+   "risk": "read",
+   "summary": "List the people in this workspace and their roles",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "member.remove",
+   "risk": "destructive",
+   "summary": "Remove a person from this workspace",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "memberId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "memberId"
+    ]
+   }
+  },
+  {
+   "name": "member.role.set",
+   "risk": "policy",
+   "summary": "Change what a person can do in this workspace",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "memberId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "role": {
+      "type": "string",
+      "enum": [
+       "owner",
+       "builder",
+       "operator",
+       "compliance",
+       "viewer"
+      ]
+     }
+    },
+    "required": [
+     "memberId",
+     "role"
+    ]
+   }
+  },
+  {
+   "name": "memory.brief",
+   "risk": "read",
+   "summary": "the contact's usable memory for this agent's purpose, as notes of at most 1200 bytes",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "contactId",
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "memory.extract",
+   "risk": "draft",
+   "summary": "remember what the caller said that matters for the next call (gated; never from test calls)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
+   }
+  },
+  {
+   "name": "memory.policy.get",
+   "risk": "read",
+   "summary": "the workspace's memory switch, undo window and allowed sensitive categories",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "memory.policy.set",
+   "risk": "policy",
+   "summary": "turn memory on or off, set the undo window, or allow a sensitive category under a named basis",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "enabled": {
+      "type": "boolean"
+     },
+     "undoMinutes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10080
+     },
+     "allowedCategories": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string",
+       "enum": [
+        "consent",
+        "legal_obligation"
+       ]
+      }
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "money.card",
+   "risk": "read",
+   "summary": "show the provider cost card for a stack, with sources and dates",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "stackId": {
+      "type": "string",
+      "maxLength": 60
+     }
+    },
+    "required": [
+     "stackId"
+    ]
+   }
+  },
+  {
+   "name": "money.estimate",
+   "risk": "read",
+   "summary": "estimate what VP pays providers for minutes and calls on a stack",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "stackId": {
+      "type": "string",
+      "maxLength": 60
+     },
+     "minutes": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000000
+     },
+     "calls": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000
+     }
+    },
+    "required": [
+     "stackId",
+     "minutes",
+     "calls"
+    ]
+   }
+  },
+  {
+   "name": "money.reconcile",
+   "risk": "draft",
+   "summary": "compare settled charges with metered cost lines; open an issue on drift",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "monitor.create",
+   "risk": "draft",
+   "summary": "Add a monitor: a signal over the last N calls that opens an issue when it crosses a threshold",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "signal": {
+      "type": "string",
+      "enum": [
+       "early_hangup_rate",
+       "tool_failure_rate",
+       "safety_event_rate",
+       "opt_out_rate",
+       "engine_error_rate",
+       "quotes_dropped_rate"
+      ]
+     },
+     "threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+     },
+     "windowCalls": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+     },
+     "minCalls": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+     },
+     "severity": {
+      "type": "string",
+      "enum": [
+       "critical",
+       "warning",
+       "info"
+      ]
+     },
+     "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+     }
+    },
+    "required": [
+     "name",
+     "signal",
+     "threshold",
+     "windowCalls",
+     "minCalls",
+     "severity",
+     "category"
+    ]
+   }
+  },
+  {
+   "name": "monitor.list",
+   "risk": "read",
+   "summary": "List monitors and when each was last read; \"not read yet\" is never shown as all good",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "number.byo.connect",
+   "risk": "policy",
+   "summary": "Connect a number the business already owns, on its own carrier",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "e164": {
+      "type": "string",
+      "maxLength": 20
+     },
+     "series": {
+      "type": "string",
+      "enum": [
+       "ten_digit",
+       "140",
+       "1600",
+       "1601",
+       "trial"
+      ]
+     },
+     "carrier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+     },
+     "trunkRef": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     }
+    },
+    "required": [
+     "e164",
+     "series",
+     "carrier",
+     "trunkRef"
+    ]
+   }
+  },
+  {
+   "name": "number.kyc.submit",
+   "risk": "external",
+   "summary": "Send the KYC documents for a line to its carrier",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "numberId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "documents": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "kind": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 40
+        },
+        "ref": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 200
+        }
+       },
+       "required": [
+        "kind",
+        "ref"
+       ]
+      },
+      "minItems": 1,
+      "maxItems": 10
+     }
+    },
+    "required": [
+     "numberId",
+     "documents"
+    ]
+   }
+  },
+  {
+   "name": "number.pause",
+   "risk": "draft",
+   "summary": "Pause a line; every campaign using it waits (risk-lowering, runs at once)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "numberId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     }
+    },
+    "required": [
+     "numberId",
+     "reason"
+    ]
+   }
+  },
+  {
+   "name": "number.pause_flagged",
+   "risk": "external",
+   "summary": "Pause a flagged line and name it (never silently replaced or rotated)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "numberId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "flag": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     }
+    },
+    "required": [
+     "numberId",
+     "flag"
+    ]
+   }
+  },
+  {
+   "name": "number.rent",
+   "risk": "spend",
+   "summary": "Rent a number in the workspace's name (monthly rent at carrier cost)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "offerRef": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     },
+     "displayName": {
+      "type": "string",
+      "maxLength": 40
+     }
+    },
+    "required": [
+     "offerRef"
+    ]
+   }
+  },
+  {
+   "name": "number.search",
+   "risk": "read",
+   "summary": "Search numbers to rent in a series",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "series": {
+      "type": "string",
+      "enum": [
+       "ten_digit",
+       "140",
+       "1600",
+       "1601",
+       "trial"
+      ]
+     },
+     "region": {
+      "type": "string",
+      "maxLength": 40
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "offering.edit",
+   "risk": "draft",
+   "summary": "Create or edit an offering: its facts (each from an approved source), their purposes and what must never be said",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "offeringId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+     },
+     "facts": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "type": "string",
+         "format": "uuid"
+        },
+        "text": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 600
+        },
+        "spanId": {
+         "type": "string",
+         "format": "uuid"
+        },
+        "purposes": {
+         "type": "array",
+         "items": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{1,23}$",
+          "description": "purpose tag, e.g. opening, explain, objection, price, eligibility, next_step"
+         },
+         "minItems": 1,
+         "maxItems": 6
+        }
+       },
+       "required": [
+        "text",
+        "spanId",
+        "purposes"
+       ]
+      },
+      "maxItems": 200
+     },
+     "neverSay": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 200
+      },
+      "maxItems": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "offering.list",
+   "risk": "read",
+   "summary": "List offerings with their facts and never-say lists",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "operator.autonomy.lower",
+   "risk": "draft",
+   "summary": "Ask before drafts: from now on every draft and test VP makes waits for a human tap (A0)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "level": {
+      "type": "string",
+      "enum": [
+       "A0"
+      ],
+      "description": "A0: every draft and test waits for a tap too"
+     }
+    },
+    "required": [
+     "level"
+    ]
+   }
+  },
+  {
+   "name": "operator.autonomy.raise",
+   "risk": "policy",
+   "summary": "Let VP make drafts and run tests on its own again (A1); anything that reaches people, spends, deletes or changes policy still waits for a tap",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "level": {
+      "type": "string",
+      "enum": [
+       "A1"
+      ]
+     }
+    },
+    "required": [
+     "level"
+    ]
+   }
+  },
+  {
+   "name": "operator.brain.set",
+   "risk": "spend",
+   "summary": "Change VP's brain (the model behind the Operator); it changes what each Operator turn costs, never what is allowed",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "brain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "description": "a curated brain id from operator.settings.get"
+     }
+    },
+    "required": [
+     "brain"
+    ]
+   }
+  },
+  {
+   "name": "operator.preference.forget",
+   "risk": "draft",
+   "summary": "Forget one thing VP remembers about how you work",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "operator.preference.list",
+   "risk": "read",
+   "summary": "What VP remembers about how you like to work (presentation only), each with its source message",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "operator.preference.remember",
+   "risk": "draft",
+   "summary": "Remember how you like VP to present things (language, length, report day). Settings and permissions are never kept here",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "text": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "a presentation preference, e.g. \"reports in Hinglish\"; never a setting or permission"
+     },
+     "sourceMessageId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "text"
+    ]
+   }
+  },
+  {
+   "name": "operator.settings.get",
+   "risk": "read",
+   "summary": "VP's autonomy level in this workspace (A1, or A0 when drafts also wait for a tap) and its brain",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "outcome.define",
+   "risk": "draft",
+   "summary": "Define (or change) what counts as an outcome and which values reach the goal",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "question": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+     },
+     "allowedValues": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 60,
+       "pattern": "^[a-z0-9_]+$"
+      },
+      "minItems": 2,
+      "maxItems": 20
+     },
+     "goalValues": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 60
+      },
+      "minItems": 1,
+      "maxItems": 20
+     },
+     "verifiedBy": {
+      "type": "string",
+      "maxLength": 60,
+      "description": "the system of record that verifies it, e.g. payment_webhook, crm_field, booking"
+     },
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "name",
+     "question",
+     "allowedValues",
+     "goalValues"
+    ]
+   }
+  },
+  {
+   "name": "outcome.label",
+   "risk": "draft",
+   "summary": "Record a manager's outcome label for a call (used to calibrate judges)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "definitionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "value": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "conversationId",
+     "definitionId",
+     "value"
+    ]
+   }
+  },
+  {
+   "name": "outcome.record_verified",
+   "risk": "draft",
+   "summary": "Record an outcome verified by a system of record (payment, booking or CRM webhook). Called by integrations, never by a person or model",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "definitionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "value": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+     },
+     "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "source": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 60
+       },
+       "ref": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+       }
+      },
+      "required": [
+       "source",
+       "ref"
+      ]
+     }
+    },
+    "required": [
+     "conversationId",
+     "definitionId",
+     "value",
+     "key"
+    ]
+   }
+  },
+  {
+   "name": "plan.change",
+   "risk": "spend",
+   "summary": "change the workspace plan",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "planId": {
+      "type": "string",
+      "enum": [
+       "base",
+       "plus",
+       "premium"
+      ]
+     }
+    },
+    "required": [
+     "planId"
+    ]
+   }
+  },
+  {
+   "name": "policy.category.override",
+   "risk": "policy",
+   "summary": "Change a campaign's call category, with a reason (a looser category is a Compliance decision)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "category": {
+      "type": "string",
+      "enum": [
+       "service",
+       "transactional",
+       "promotional"
+      ],
+      "description": "service, transactional or promotional: asked first; it sets the window, series and consent rule"
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500
+     }
+    },
+    "required": [
+     "campaignId",
+     "category",
+     "reason"
+    ]
+   }
+  },
+  {
+   "name": "policy.window.set",
+   "risk": "policy",
+   "summary": "Set the workspace outer band and holidays, or a campaign window incl. across midnight (Compliance, with a reason)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "outerBand": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "start": {
+        "type": "string",
+        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+        "description": "HH:MM, 24-hour, in the contact's local time"
+       },
+       "end": {
+        "type": "string",
+        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+        "description": "HH:MM, 24-hour, in the contact's local time"
+       }
+      },
+      "required": [
+       "start",
+       "end"
+      ]
+     },
+     "holidays": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "maxItems": 60
+     },
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "days": {
+        "type": "array",
+        "items": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 7
+        },
+        "minItems": 1,
+        "maxItems": 7
+       },
+       "ranges": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "start": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          },
+          "end": {
+           "type": "string",
+           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+           "description": "HH:MM, 24-hour, in the contact's local time"
+          }
+         },
+         "required": [
+          "start",
+          "end"
+         ]
+        },
+        "minItems": 1,
+        "maxItems": 6
+       },
+       "crossMidnightReason": {
+        "type": "string",
+        "maxLength": 300
+       },
+       "nationalHolidaysOff": {
+        "type": "boolean"
+       },
+       "holidays": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "maxItems": 60
+       }
+      },
+      "required": [
+       "days",
+       "ranges"
+      ],
+      "description": "calling window: days 1 (Mon) - 7 (Sun), ranges in the contact's local time"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "proposal.accept",
+   "risk": "external",
+   "summary": "accept a probed proposal into a pre-registered A/B test",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "proposalId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "successValues": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 60
+      },
+      "minItems": 1,
+      "maxItems": 10
+     },
+     "baselineRate": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 0.99
+     },
+     "mdeAbs": {
+      "type": "number",
+      "minimum": 0.005,
+      "maximum": 0.5
+     },
+     "minDays": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 28
+     },
+     "maxDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90
+     },
+     "hazardCodes": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 60
+      },
+      "maxItems": 10
+     },
+     "binding": {
+      "type": "string",
+      "enum": [
+       "campaign",
+       "inbound",
+       "web"
+      ]
+     }
+    },
+    "required": [
+     "proposalId"
+    ]
+   }
+  },
+  {
+   "name": "proposal.get",
+   "risk": "read",
+   "summary": "one learning proposal with its diff, gates and simulation",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "proposal.list",
+   "risk": "read",
+   "summary": "list learning proposals",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "status": {
+      "type": "string",
+      "maxLength": 30
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "proposal.probe",
+   "risk": "test",
+   "summary": "simulate the current and proposed versions on the same callers and seeds; reject regressions",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "proposalId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "simCallerIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 12
+     },
+     "seeds": {
+      "type": "array",
+      "items": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "minItems": 1,
+      "maxItems": 5
+     }
+    },
+    "required": [
+     "proposalId"
+    ]
+   }
+  },
+  {
+   "name": "report.create",
+   "risk": "draft",
+   "summary": "Build and save a report of calls: reasons, outcomes by grade, cost and the funnel; test calls excluded",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     },
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T[\\d:.]+(Z|[+-]\\d{2}:\\d{2})?)?$"
+     },
+     "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T[\\d:.]+(Z|[+-]\\d{2}:\\d{2})?)?$"
+     }
+    },
+    "required": [
+     "title"
+    ]
+   }
+  },
+  {
+   "name": "revision.list",
+   "risk": "read",
+   "summary": "List recent changes that can be undone",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "safety.cases",
+   "risk": "read",
+   "summary": "List the safety rules and the counts of test vectors that hold them",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "safety.check",
+   "risk": "read",
+   "summary": "Preview the safety door: what it does to one agent sentence (pass, replace, block) or which signals one caller line raises",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "one sentence the agent would say, or (speaker = caller) one caller utterance"
+     },
+     "speaker": {
+      "type": "string",
+      "enum": [
+       "agent",
+       "caller"
+      ]
+     },
+     "ctx": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "category": {
+        "type": "string",
+        "enum": [
+         "service",
+         "transactional",
+         "promotional"
+        ]
+       },
+       "sectorPacks": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "enum": [
+          "base",
+          "insurance_irdai",
+          "lending_rbi",
+          "securities_sebi",
+          "healthcare",
+          "education",
+          "ecommerce",
+          "real_estate",
+          "telecom",
+          "travel"
+         ]
+        },
+        "maxItems": 10
+       },
+       "brand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "name": {
+          "type": "string",
+          "maxLength": 120
+         },
+         "verifiedDomains": {
+          "type": "array",
+          "items": {
+           "type": "string",
+           "maxLength": 253
+          },
+          "maxItems": 20
+         }
+        },
+        "required": [
+         "name",
+         "verifiedDomains"
+        ]
+       },
+       "facts": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "key": {
+           "type": "string",
+           "minLength": 1,
+           "maxLength": 80
+          },
+          "value": {
+           "type": "string",
+           "maxLength": 500
+          },
+          "purpose": {
+           "type": "string",
+           "enum": [
+            "service",
+            "offer",
+            "identity",
+            "logistics"
+           ]
+          },
+          "source": {
+           "type": "string",
+           "maxLength": 200
+          },
+          "perContact": {
+           "type": "boolean"
+          }
+         },
+         "required": [
+          "key",
+          "value",
+          "purpose",
+          "source"
+         ]
+        },
+        "maxItems": 100
+       },
+       "neverSay": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "maxLength": 200
+        },
+        "maxItems": 100
+       },
+       "disclosed": {
+        "type": "boolean"
+       },
+       "identityVerified": {
+        "type": "boolean"
+       },
+       "recordingRefused": {
+        "type": "boolean"
+       },
+       "crisis": {
+        "type": "boolean"
+       },
+       "turnIndex": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10000
+       },
+       "job": {
+        "type": "string",
+        "enum": [
+         "renewal_reminder",
+         "payment_reminder",
+         "lead_qualification",
+         "appointment_confirmation",
+         "appointment_booking",
+         "order_verification",
+         "delivery_coordination",
+         "feedback_survey",
+         "onboarding_welcome",
+         "win_back",
+         "event_invitation",
+         "document_collection",
+         "service_follow_up",
+         "inbound_support",
+         "custom"
+        ]
+       }
+      },
+      "required": []
+     }
+    },
+    "required": [
+     "text"
+    ]
+   }
+  },
+  {
+   "name": "search.global",
+   "risk": "read",
+   "summary": "Find contacts, agents, campaigns and calls by name or phone number",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "q": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     },
+     "types": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "contact",
+        "agent",
+        "campaign",
+        "call"
+       ]
+      },
+      "minItems": 1,
+      "maxItems": 4
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 25
+     }
+    },
+    "required": [
+     "q"
+    ]
+   }
+  },
+  {
+   "name": "secret.reveal",
+   "risk": "draft",
+   "summary": "Show a newly created secret once, to the person who approved it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "revealId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "revealId"
+    ]
+   }
+  },
+  {
+   "name": "share.link.create",
+   "risk": "policy",
+   "summary": "Make a link that lets anyone who has it read one item, until it expires",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "objectType": {
+      "type": "string",
+      "enum": [
+       "agent",
+       "campaign",
+       "call",
+       "offering"
+      ]
+     },
+     "objectId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "ttlHours": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 720
+     }
+    },
+    "required": [
+     "objectType",
+     "objectId"
+    ]
+   }
+  },
+  {
+   "name": "share.link.list",
+   "risk": "read",
+   "summary": "List share links and when they expire (not the links themselves)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "share.link.revoke",
+   "risk": "draft",
+   "summary": "Turn a share link off at once",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "source.commit",
+   "risk": "draft",
+   "summary": "Import a mapped file: dedupe on the number, merge by authority and freshness, append consent, keep every suppression and tombstone",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "uploadId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "overrides": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "field": {
+         "type": "string",
+         "enum": [
+          "phone",
+          "name",
+          "first_name",
+          "last_name",
+          "language",
+          "timezone",
+          "consent",
+          "consent_at",
+          "opt_out",
+          "observed_at",
+          "attribute",
+          "ignore"
+         ]
+        },
+        "key": {
+         "type": "string",
+         "pattern": "^[\\p{L}\\p{N}_]{1,60}$"
+        },
+        "type": {
+         "type": "string",
+         "enum": [
+          "text",
+          "number",
+          "date",
+          "boolean"
+         ]
+        }
+       },
+       "required": [
+        "field"
+       ]
+      }
+     },
+     "consentPurpose": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     },
+     "audienceName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     }
+    },
+    "required": [
+     "uploadId"
+    ]
+   }
+  },
+  {
+   "name": "source.list",
+   "risk": "read",
+   "summary": "List the sources people come from, with their authority and last receipt",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "source.map",
+   "risk": "draft",
+   "summary": "Detect the columns of an uploaded file and preview what each row would do, with a reason for every row that will not be called",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "uploadId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "overrides": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "field": {
+         "type": "string",
+         "enum": [
+          "phone",
+          "name",
+          "first_name",
+          "last_name",
+          "language",
+          "timezone",
+          "consent",
+          "consent_at",
+          "opt_out",
+          "observed_at",
+          "attribute",
+          "ignore"
+         ]
+        },
+        "key": {
+         "type": "string",
+         "pattern": "^[\\p{L}\\p{N}_]{1,60}$"
+        },
+        "type": {
+         "type": "string",
+         "enum": [
+          "text",
+          "number",
+          "date",
+          "boolean"
+         ]
+        }
+       },
+       "required": [
+        "field"
+       ]
+      }
+     },
+     "previewRows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     }
+    },
+    "required": [
+     "uploadId"
+    ]
+   }
+  },
+  {
+   "name": "source.receipt",
+   "risk": "read",
+   "summary": "Read an import receipt: counts and the reason for every row not imported or not callable",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "receiptId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "receiptId"
+    ]
+   }
+  },
+  {
+   "name": "source.upload",
+   "risk": "draft",
+   "summary": "Register a source of people: a file (text inline, or parts via POST /v1/uploads/contacts) or a signed webhook for a CRM, form or opt-in",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "csv",
+       "tsv",
+       "sheet",
+       "api_push",
+       "crm",
+       "form",
+       "whatsapp"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+     },
+     "authority": {
+      "type": "string",
+      "enum": [
+       "system",
+       "crm",
+       "upload",
+       "agent",
+       "person"
+      ]
+     },
+     "maxAgeDays": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 3650
+     },
+     "text": {
+      "type": "string",
+      "maxLength": 950000
+     },
+     "filename": {
+      "type": "string",
+      "maxLength": 200
+     }
+    },
+    "required": [
+     "kind",
+     "name"
+    ]
+   }
+  },
+  {
+   "name": "stack.list",
+   "risk": "read",
+   "summary": "The finalised voice stacks with their figures and grades; there is no default",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "stack.set",
+   "risk": "draft",
+   "summary": "Choose an agent's voice stack from the finalised stacks",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "stackId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+     }
+    },
+    "required": [
+     "agentId",
+     "stackId"
+    ]
+   }
+  },
+  {
+   "name": "template.list",
+   "risk": "read",
+   "summary": "List the starter agents by industry and job",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "test.browser_call",
+   "risk": "test",
+   "summary": "Start a test call in the browser with an agent (its draft or a version); never dials a phone and never counts toward outcomes",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "versionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "useDraft": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "test.ring_member_phone",
+   "risk": "test",
+   "summary": "Ring your own verified phone with this agent (optionally as a real row), so you hear what they will hear",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "phone": {
+      "type": "string",
+      "maxLength": 20
+     },
+     "asContactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "facts": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string",
+       "maxLength": 500
+      }
+     }
+    },
+    "required": [
+     "agentVersionId"
+    ]
+   }
+  },
+  {
+   "name": "test.simulate",
+   "risk": "test",
+   "summary": "Run a text simulation of the draft against a simulated caller, graded by code",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "simCallerId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "simCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "persona": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 600
+       },
+       "scenario": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1200
+       },
+       "hiddenKeys": {
+        "type": "object",
+        "additionalProperties": {
+         "type": "string",
+         "maxLength": 200
+        }
+       },
+       "contact": {
+        "type": "object",
+        "additionalProperties": {
+         "type": "string",
+         "maxLength": 200
+        }
+       },
+       "passCriteria": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "mustCapture": {
+          "type": "array",
+          "items": {
+           "type": "string",
+           "maxLength": 60
+          },
+          "maxItems": 10
+         },
+         "mustMention": {
+          "type": "array",
+          "items": {
+           "type": "object",
+           "additionalProperties": false,
+           "properties": {
+            "label": {
+             "type": "string",
+             "minLength": 1,
+             "maxLength": 80
+            },
+            "pattern": {
+             "type": "string",
+             "minLength": 1,
+             "maxLength": 200
+            }
+           },
+           "required": [
+            "label",
+            "pattern"
+           ]
+          },
+          "maxItems": 10
+         },
+         "mustNotMention": {
+          "type": "array",
+          "items": {
+           "type": "object",
+           "additionalProperties": false,
+           "properties": {
+            "label": {
+             "type": "string",
+             "minLength": 1,
+             "maxLength": 80
+            },
+            "pattern": {
+             "type": "string",
+             "minLength": 1,
+             "maxLength": 200
+            }
+           },
+           "required": [
+            "label",
+            "pattern"
+           ]
+          },
+          "maxItems": 10
+         },
+         "maxMeanWordsPerTurn": {
+          "type": "number",
+          "minimum": 5,
+          "maximum": 200
+         },
+         "maxQuestionStreak": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+         },
+         "requireDisclosure": {
+          "type": "boolean"
+         },
+         "requireEnd": {
+          "type": "boolean"
+         },
+         "maxDoorBlocks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+         }
+        },
+        "required": []
+       }
+      },
+      "required": [
+       "persona",
+       "scenario",
+       "hiddenKeys",
+       "passCriteria"
+      ]
+     },
+     "maxTurns": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 30
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "test.simulate_batch",
+   "risk": "test",
+   "summary": "Run seeded text simulations of a config against saved simulated callers, graded by code",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "config": {
+      "description": "an AgentConfig; defaults to the draft"
+     },
+     "simCallerIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 12
+     },
+     "seeds": {
+      "type": "array",
+      "items": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 1000000
+      },
+      "minItems": 1,
+      "maxItems": 5
+     },
+     "maxTurns": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 30
+     }
+    },
+    "required": [
+     "agentId",
+     "simCallerIds",
+     "seeds"
+    ]
+   }
+  },
+  {
+   "name": "thread.get",
+   "risk": "read",
+   "summary": "Read one Operator thread with its messages and cards",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "thread.list",
+   "risk": "read",
+   "summary": "List the Operator threads in this workspace, newest first",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "tool.attach",
+   "risk": "draft",
+   "summary": "Grant an agent an in-call tool (or remove one)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "maxLength": 60
+     },
+     "toolId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "config": {
+      "type": "object",
+      "additionalProperties": {}
+     },
+     "remove": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "usage.get",
+   "risk": "read",
+   "summary": "show metered provider cost grouped by component, campaign or day",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "groupBy": {
+      "type": "string",
+      "enum": [
+       "component",
+       "campaign",
+       "day"
+      ]
+     },
+     "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "IST date, YYYY-MM-DD"
+     },
+     "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "IST date, YYYY-MM-DD"
+     }
+    },
+    "required": [
+     "groupBy"
+    ]
+   }
+  },
+  {
+   "name": "version.candidate",
+   "risk": "draft",
+   "summary": "Create an immutable, undeployed candidate version (e.g. an experiment arm) without touching the draft",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "config": {
+      "description": "an AgentConfig"
+     },
+     "parentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "agentId",
+     "config",
+     "parentVersionId",
+     "note"
+    ]
+   }
+  },
+  {
+   "name": "version.diff",
+   "risk": "read",
+   "summary": "Compare two versions, or the draft with the latest version",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "from": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "to": {
+      "type": "string",
+      "maxLength": 40
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "version.list",
+   "risk": "read",
+   "summary": "List an agent's published versions",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "version.publish",
+   "risk": "external",
+   "summary": "Publish the reviewed draft as a new immutable agent version",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "draftHash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "agentId",
+     "draftHash"
+    ]
+   }
+  },
+  {
+   "name": "voice.set",
+   "risk": "draft",
+   "summary": "Choose the agent's voice and speed within its chosen stack",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "voiceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "speed": {
+      "type": "number",
+      "minimum": 0.7,
+      "maximum": 1.3
+     }
+    },
+    "required": [
+     "agentId",
+     "voiceId"
+    ]
+   }
+  },
+  {
+   "name": "wallet.credit",
+   "risk": "draft",
+   "summary": "VP success: credit the wallet by hand, with a reason (audited)",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "inrMilli": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000000
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 400
+     }
+    },
+    "required": [
+     "inrMilli",
+     "reason"
+    ]
+   }
+  },
+  {
+   "name": "wallet.get",
+   "risk": "read",
+   "summary": "show the wallet: balance, holds, state, runway and caps",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "wallet.topup",
+   "risk": "spend",
+   "summary": "add money to the prepaid wallet through the payment gateway",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "inrMilli": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 1000000000
+     }
+    },
+    "required": [
+     "inrMilli"
+    ]
+   }
+  },
+  {
+   "name": "webhook.create",
+   "risk": "policy",
+   "summary": "Send events from this workspace to your own web address, signed",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "url": {
+      "type": "string",
+      "maxLength": 500
+     },
+     "events": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 80,
+       "pattern": "^(\\*|[a-z][a-z0-9_]*(\\.[a-z0-9_]+)*(\\.\\*)?)$"
+      },
+      "minItems": 1,
+      "maxItems": 30
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 200
+     }
+    },
+    "required": [
+     "url"
+    ]
+   }
+  },
+  {
+   "name": "webhook.delete",
+   "risk": "destructive",
+   "summary": "Stop sending events to a webhook and forget its secret",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "webhook.deliveries",
+   "risk": "read",
+   "summary": "See what was sent to webhooks and how the receiver answered",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "endpointId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "pending",
+       "delivered",
+       "failed"
+      ]
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "webhook.emit",
+   "risk": "draft",
+   "summary": "Queue an event for every webhook that listens for it",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "event": {
+      "type": "string",
+      "maxLength": 80,
+      "pattern": "^(\\*|[a-z][a-z0-9_]*(\\.[a-z0-9_]+)*(\\.\\*)?)$"
+     },
+     "data": {
+      "description": "event data"
+     }
+    },
+    "required": [
+     "event"
+    ]
+   }
+  },
+  {
+   "name": "webhook.list",
+   "risk": "read",
+   "summary": "List webhooks (never the signing secret)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "webhook.replay",
+   "risk": "external",
+   "summary": "Send an earlier webhook event to its receiver again",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "deliveryId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "deliveryId"
+    ]
+   }
+  },
+  {
+   "name": "workspace.get",
+   "risk": "read",
+   "summary": "Read this workspace: its name, plan, brand and who is in it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  }
+ ]
+}
