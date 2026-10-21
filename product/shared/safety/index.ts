@@ -37,12 +37,13 @@ export type DoorVerdict =
 type Scope = { packs?: SectorPack[]; categories?: CallCategory[]; when?: 'crisis' | 'undisclosed' | 'unverified' | 'recordingRefused' | 'dues'; join?: 'and' | 'or' };
 interface ReplyRule {
   id: string; rule: SafetyRuleId; kind: string; action: 'block' | 'replace'; replacement?: string; reason: string;
-  scope?: Scope; any?: string[]; all?: string[]; none?: string[]; check?: string;
+  scope?: Scope; any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; anchor?: number; check?: string;
 }
-interface CallerRule { id: string; signal: keyof CallerSignals; any?: string[]; none?: string[]; builtin?: string; context?: string }
+interface CallerRule { id: string; signal: keyof CallerSignals; any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; builtin?: string; context?: string }
 interface RedactKind { kind: keyof Rules['masks']; context: string; minDigits: number; maxDigits: number }
 interface Rules {
   schema: number; version: string;
+  regex: { clause_split: string };
   texts: Record<string, string>;
   masks: { otp: string; card: string; cvv: string; upi_pin: string; aadhaar: string };
   lexicon: Record<string, string>;
@@ -89,12 +90,42 @@ export function normalise(text: string): string {
     .replace(/\s+/g, ' ').trim();
 }
 
-function fires(r: { any?: string[]; all?: string[]; none?: string[] }, t: string, brand = ''): boolean {
+type Matchable = { any?: string[]; all?: string[]; none?: string[]; noneClause?: string[]; anchor?: number };
+
+function fires(r: Matchable, t: string, brand = ''): boolean {
   if (r.all && !r.all.every(p => re(p, brand).test(t))) return false;
   if (r.any && !r.any.some(p => re(p, brand).test(t))) return false;
   if (!r.all && !r.any) return false;
-  if (r.none && r.none.some(p => re(p, brand).test(t))) return false;
-  return true;
+  if (r.none && r.none.some(p => re(p, brand).test(t))) return false;      // sentence-wide: a fraud warning, a factual frame
+  if (!r.noneClause) return true;
+  // Clause-scoped exemptions (negations) shield only the clause that holds the anchor match, so
+  // "OTP nahi maangungi, bas card number bata dijiye" still fires on its second clause.
+  const shielded = (s: string) => r.noneClause!.some(p => re(p, brand).test(s));
+  const anchors = r.all ? [r.all[r.anchor ?? r.all.length - 1]] : r.any!;
+  for (const p of anchors) for (const m of t.matchAll(re(p, brand, 'giu'))) {
+    if (!shielded(clauseAt(t, m.index!, m.index! + m[0].length))) return true;
+  }
+  return false;
+}
+
+/** The clause around [start, end): bounded by rules.json regex.clause_split. A very short segment just before
+ *  ("never,", "kabhi bhi,") binds to the clause it introduces. */
+function clauseAt(t: string, start: number, end: number): string {
+  const cuts: [number, number][] = [...t.matchAll(re(RULES.regex.clause_split, '', 'giu'))].map(m => [m.index!, m.index! + m[0].length]);
+  const before = cuts.filter(([, e]) => e <= start);
+  let from = before.length ? before[before.length - 1][1] : 0;
+  const prev = before.length >= 2 ? before[before.length - 2][1] : 0;
+  if (before.length && t.slice(prev, before[before.length - 1][0]).trim().length < 12) from = prev;
+  const after = cuts.find(([s]) => s >= end);
+  return t.slice(from, after ? after[0] : t.length);
+}
+
+/** Up to n characters before index i, cut after the last run of 3+ digits so another number's context
+ *  ("pincode 110001 hai aur ATM pin 4321") does not leak into this one. */
+function localPrefix(lower: string, i: number, n = 30): string {
+  const pre = lower.slice(Math.max(0, i - n), i);
+  const m = [...pre.matchAll(/[0-9\u0966-\u096F](?:[\s-]?[0-9\u0966-\u096F]){2,}/gu)].pop();
+  return m ? pre.slice(m.index! + m[0].length) : pre;
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -257,13 +288,14 @@ export function callerSignals(text: string): CallerSignals {
   return s;
 }
 
-function sensitiveDigits(raw: string, t: string, r: CallerRule): boolean {
-  if (r.none?.some(p => re(p).test(t))) return false;
-  const runs = digitRuns(raw);
-  const ctxHit = r.context ? re(r.context).test(t) : false;
-  for (const run of runs) {
+function sensitiveDigits(raw: string, _t: string, r: CallerRule): boolean {
+  const lower = raw.toLowerCase();
+  for (const run of digitRuns(raw)) {
     const n = run.digits.length;
-    if (ctxHit && n >= 3) return true;
+    // Context and exemptions are read next to this run only, so a pin code elsewhere in the line cannot hide a PIN.
+    const local = normalise(localPrefix(lower, run.start) + lower.slice(run.start, Math.min(lower.length, run.end + 25)));
+    if (r.none?.some(p => re(p).test(local))) continue;
+    if (r.context && n >= 3 && re(r.context).test(normalise(localPrefix(lower, run.start, 60) + ' ' + lower.slice(run.end, run.end + 25)))) return true;
     if (n >= 12 && !looksLikePhone(run.digits)) return true;
     if (n >= 13 && n <= 19 && luhn(run.digits)) return true;
   }
@@ -310,8 +342,8 @@ export function redact(text: string): string {
   const spans: { start: number; end: number; mask: string }[] = [];
   for (const run of digitRuns(text)) {
     const n = run.digits.length;
-    const near = lower.slice(Math.max(0, run.start - w), Math.min(lower.length, run.end + w));
-    const before = lower.slice(Math.max(0, run.start - w), run.start);
+    const near = localPrefix(lower, run.start, w) + lower.slice(run.start, Math.min(lower.length, run.end + w));
+    const before = localPrefix(lower, run.start, 20);
     let kind: keyof Rules['masks'] | null = null;
     for (const k of RULES.redact.kinds) {
       if (n < k.minDigits || n > k.maxDigits) continue;

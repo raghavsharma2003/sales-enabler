@@ -6,7 +6,7 @@
    "status": "active",
    "date": "2026-10-21",
    "source": "safety module builder (parallel build)",
-   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 1,559 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
+   "title": "Safety module: reply door RD1-RD11 + neverSay + amounts-not-in-facts, caller signals, context-first redaction (Luhn/Verhoeff raise confidence), compile lints T-L1..T-L4; rules and 1,609 vectors as data for the TS and Python doors; read tools safety.check and safety.cases",
    "path": "product/shared/safety/"
   },
   {
@@ -53,8 +53,8 @@
    "status": "measured",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "cases.json in-sample: 0/957 benign blocked or flagged, 602/602 harmful caught, 14/14 node:test green; door p50 0.19 ms, p99 0.54 ms (n=3,610), 2,000-char adversarial input 3.3 ms",
-   "n": 1559,
+   "title": "cases.json in-sample: 0/974 benign blocked or flagged, 635/635 harmful caught, 14/14 node:test green; door p50 0.19 ms, p99 0.54 ms (n=3,610), 2,000-char adversarial input 3.3 ms",
+   "n": 1609,
    "method": "node --import tsx --test tests/safety.test.ts; latency by process.hrtime over 5 passes of every replyDoor vector on a 4-vCPU sandbox. In-sample: the rules were tuned on these vectors, so this proves only that they hold (a regression gate), not generalisation",
    "path": "product/tests/safety.test.ts"
   },
@@ -130,12 +130,22 @@
    "broke": "Verb sense ('offer a callback / help / another slot', 'option offer karti hoon', 'offer to connect you to a human') is everyday service speech. Fixed by a separate rd7.offer_noun rule whose none-patterns exempt the verb sense; 8 verb-sense must-pass and 5 noun-sense must-block vectors added."
   },
   {
+   "id": "rejected.2026-10-21.sentence-wide-negation-shield",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "A negation anywhere in the sentence shielded a later ask: 'Main OTP nahi maangungi, bas card number bata dijiye' passed RD4 (found by the voice builder running rules.json in Python, with 8 other gaps)",
+   "tried": "One none-list per rule, tested on the whole sentence.",
+   "broke": "Negations shield only the clause they sit in. Fixed by splitting exemptions: none (sentence-wide: fraud warnings, factual frames) and noneClause (negations, tested only on the clause holding the anchor match; clauses cut by regex.clause_split). The 9 gaps (Devanagari staff claim, negation scope, 'type karke bhej do', 'payment abhi le leti hoon', mixed-script pay-on-call, IRDAI superiority push, pincode ending PIN context, Devanagari opt-out and asks-if-AI) plus a 41-line Devanagari/negation sweep are now cases.json vectors."
+  },
+  {
    "id": "risk.2026-10-21.regex-door-recall-ceiling",
    "type": "risk",
    "status": "open",
    "date": "2026-10-21",
    "source": "verified",
-   "title": "The regex door misses unseen harmful phrasings: blind catch was 71%, 74%, 85% and 72% on four successive sets (the last and hardest after three tuning rounds), so about one subtle harmful line in 4 still passes",
+   "title": "The regex door misses unseen harmful phrasings: blind catch rose 71% -> 74% -> 85% -> 72% across four tuning rounds, so roughly one subtle harmful line in 4 still passes",
    "mitigation": "Keep the door as the deterministic floor; add a second-layer judge on agent lines (small fast model or classifier, measured on fresh blind sets, under the turn latency budget); log every flagged and near-miss line for Supervisor review; grow cases.json from production reviews; prompt rules in the brief remain a help, not the guarantee."
   },
   {
@@ -227,7 +237,7 @@
   {
    "date": "2026-10-21",
    "event": "safety-module-built",
-   "details": "product/shared/safety (rules.json, cases.json 1,559 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/957 benign blocked, 602/602 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
+   "details": "product/shared/safety (rules.json, cases.json 1,609 vectors, index.ts) and product/server/modules/safety (safety.check, safety.cases). Verified: tsc clean; 14/14 node:test in tests/safety.test.ts; in-sample 0/974 benign blocked, 635/635 caught; blind set 4 (scored before tuning on it): benign FP 13/230, harmful caught 93/130. Not verified: real ASR or LLM output, live calls, Python door parity (it does not load rules.json yet), Hindi number words in amounts."
   }
  ]
 }
