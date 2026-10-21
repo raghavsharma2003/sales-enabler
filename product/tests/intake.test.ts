@@ -170,7 +170,7 @@ test('dedupe and authority across uploads and a CRM webhook', { skip }, async ()
   const cid = (await w.contactBy('+919000000021'))!.id;
   const crm = await w.ok('source.upload', { kind: 'crm', name: 'CRM' });
   const ev = { eventId: 'e1', contacts: [{ phone: '+91 90000 00021', attributes: { amount_due: 200 }, language: 'English' }] };
-  const r1 = await fetch(`${base}/hooks/contacts/${crm.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook(crm.secret, ev) }, body: JSON.stringify(ev) });
+  const r1 = await fetch(`${base}/hooks/contacts/${crm.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook(crm.secret, JSON.stringify(ev)) }, body: JSON.stringify(ev) });
   assert.equal(r1.status, 200);
   const b1 = await r1.json() as any;
   assert.equal(b1.result.counts.updated, 1);
@@ -188,7 +188,7 @@ test('dedupe and authority across uploads and a CRM webhook', { skip }, async ()
   assert.equal((await w.attr(cid, 'plan'))!.value, 'silver');
   // An older CRM event cannot overwrite a newer value.
   const old = { eventId: 'e2', occurredAt: '2020-01-01T00:00:00Z', contacts: [{ phone: '9000000021', attributes: { amount_due: 50 } }] };
-  const r2 = await fetch(`${base}/hooks/contacts/${crm.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook(crm.secret, old) }, body: JSON.stringify(old) });
+  const r2 = await fetch(`${base}/hooks/contacts/${crm.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook(crm.secret, JSON.stringify(old)) }, body: JSON.stringify(old) });
   assert.equal(((await r2.json()) as any).result.counts.kept_newer, 1);
   // Once the CRM value is past its max age, a fresh upload replaces it.
   await pool.query("UPDATE attribute SET observed_at = now() - interval '3 days' WHERE contact_id = $1 AND key = 'amount_due'", [cid]);
@@ -282,7 +282,7 @@ test('DPDP erase leaves a tombstone and the suppression; re-import, webhook and 
   assert.equal(await w.contactBy('+919000000051'), null);
   const crm = await w.ok('source.upload', { kind: 'form', name: 'Website form' });
   const ev = { eventId: 'f1', contacts: [{ phone: '9000000051', name: 'Asha' }] };
-  const r = await fetch(`${base}/hooks/contacts/${crm.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook(crm.secret, ev) }, body: JSON.stringify(ev) });
+  const r = await fetch(`${base}/hooks/contacts/${crm.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook(crm.secret, JSON.stringify(ev)) }, body: JSON.stringify(ev) });
   assert.equal(((await r.json()) as any).result.counts.tombstoned, 1);
   const f = await w.ok('contact.dial_facts', { e164: '09000000051' });
   assert.equal(f.tombstoned, true);
@@ -303,19 +303,19 @@ test('webhook: HMAC per source, stale or wrong signatures refused, idempotent on
   const src = await w.ok('source.upload', { kind: 'whatsapp', name: 'WA opt-ins' });
   assert.ok(src.secret && src.hookUrl);
   const ev = { eventId: 'wa-1', contacts: [{ phone: '9000000061', name: 'Asha', consent: { purpose: 'order_updates', granted: true, channel: 'whatsapp' } }] };
-  const post = (body: unknown, headers: Record<string, string>) => fetch(`${base}/hooks/contacts/${src.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
-  assert.equal((await post(ev, signHook('wrong-secret', ev))).status, 401);
-  assert.equal((await post(ev, signHook(src.secret, ev, Math.floor(Date.now() / 1000) - 3600))).status, 401);
-  assert.equal((await post(ev, {})).status, 401);
-  assert.equal((await post({ ...ev, eventId: 'tampered' }, signHook(src.secret, ev))).status, 401);
-  const r1 = await post(ev, signHook(src.secret, ev));
+  const post = (body: string, headers: Record<string, string>) => fetch(`${base}/hooks/contacts/${src.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body });
+  const body = JSON.stringify(ev);
+  assert.equal((await post(body, signHook('wrong-secret', body))).status, 401);
+  assert.equal((await post(body, signHook(src.secret, body, Math.floor(Date.now() / 1000) - 3600))).status, 401);
+  assert.equal((await post(body, {})).status, 401);
+  assert.equal((await post(body.replace('wa-1', 'wa-2'), signHook(src.secret, body))).status, 401, 'a changed byte breaks the signature');
+  assert.equal((await post(JSON.stringify(ev, null, 2), signHook(src.secret, body))).status, 401, 'signatures cover the exact bytes');
+  const r1 = await post(body, signHook(src.secret, body));
   assert.equal(r1.status, 200);
   assert.equal(((await r1.json()) as any).duplicate, false);
-  // The same event again (sender retry), signed over compact JSON this time: applied once.
-  const ts = Math.floor(Date.now() / 1000);
-  const { createHmac } = await import('node:crypto');
-  const sig = 'sha256=' + createHmac('sha256', src.secret).update(`${ts}.${JSON.stringify(ev)}`).digest('hex');
-  const r2 = await post(ev, { 'x-vp-timestamp': String(ts), 'x-vp-signature': sig });
+  // The same event again (a sender retry, pretty-printed and freshly signed): applied once.
+  const pretty = JSON.stringify(ev, null, 2);
+  const r2 = await post(pretty, signHook(src.secret, pretty));
   assert.equal(r2.status, 200);
   const b2 = await r2.json() as any;
   assert.equal(b2.duplicate, true);
@@ -329,7 +329,7 @@ test('webhook: HMAC per source, stale or wrong signatures refused, idempotent on
   assert.equal(audit!.n, '1');
   // A file source has no webhook.
   const file = await w.ok('source.upload', { kind: 'csv', name: 'f', text: 'phone\n9000000062\n' });
-  assert.equal((await fetch(`${base}/hooks/contacts/${file.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook('x', ev) }, body: JSON.stringify(ev) })).status, 404);
+  assert.equal((await fetch(`${base}/hooks/contacts/${file.sourceId}`, { method: 'POST', headers: { 'content-type': 'application/json', ...signHook('x', JSON.stringify(ev)) }, body: JSON.stringify(ev) })).status, 404);
 });
 
 test('tenancy: another workspace cannot read or change these people, uploads, audiences or suppressions', { skip }, async () => {
@@ -449,6 +449,8 @@ test('export: needs approval, escapes formulas, leaves out suppressed and erased
   assert.equal(lines[0], 'phone,name,language,suppressed,plan');
   assert.ok(lines.some((l: string) => l.startsWith('+919000000111,"\'=HYPERLINK(')));
   assert.ok(!out.csv.includes('Bilal'));
+  const stored = await one<{ result: any }>(pool, 'SELECT result FROM action WHERE id = $1', [(p as any).actionId]);
+  assert.equal(stored!.result.csv, '[delivered to the approver]', 'personal data is not kept in the action log');
 });
 
 test('upload route: parts in order up to 20 MB, retries are no-ops, out-of-order refused, viewers cannot upload', { skip }, async () => {
@@ -466,19 +468,26 @@ test('upload route: parts in order up to 20 MB, retries are no-ops, out-of-order
   const map = await w.ok('source.map', { uploadId });
   assert.equal(map.delimiter, 'tab');
   assert.equal((await w.ok('source.commit', { uploadId })).counts.new, 2);
-  assert.equal((await post({ text: 'x'.repeat(960_000) })).status, 422, 'a part over the limit is refused');
+  // One request may carry a whole file over 1 MB (raw text/csv), and the 20 MB ceiling holds for one request too.
+  const rows = ['phone,name']; for (let i = 0; i < 60_000; i++) rows.push(`9001${String(i).padStart(6, '0')},Person ${i}`);
+  const oneShot = await fetch(base + '/v1/uploads/contacts?filename=big.csv&final=1', { method: 'POST', headers: { 'content-type': 'text/csv', 'x-vp-dev-member': w.owner }, body: rows.join('\n') });
+  assert.equal(oneShot.status, 201);
+  assert.ok(((await oneShot.json()) as any).bytes > 1_000_000);
   const viewer = await w.member('viewer');
   assert.equal((await post({ text: 'phone\n9000000124\n' }, viewer)).status, 403);
   // Raw text/csv with an API-key-style client (dev auth here): fields in the query string.
   const raw = await fetch(base + '/v1/uploads/contacts?filename=r.csv&final=1', { method: 'POST', headers: { 'content-type': 'text/csv', 'x-vp-dev-member': w.owner }, body: 'phone\n9000000125\n' });
   assert.equal(raw.status, 201);
-  // The 20 MB ceiling: the 22nd ~950 kB part is refused.
-  const big = 'x'.repeat(949_000);
+  // The 20 MB ceiling across parts: the part that crosses it is refused.
+  const big = 'x'.repeat(4_000_000);
   const s1 = await post({ text: big });
   const id = ((await s1.json()) as any).uploadId;
   let last = 0;
-  for (let i = 2; i <= 23; i++) { last = (await post({ uploadId: id, part: i, text: big })).status; if (last !== 202) break; }
+  for (let i = 2; i <= 7; i++) { last = (await post({ uploadId: id, part: i, text: big })).status; if (last !== 202) break; }
   assert.equal(last, 413);
+  // Last, because the server answers 413 without draining the body and that connection is then unusable.
+  const tooBig = await fetch(base + '/v1/uploads/contacts?final=1', { method: 'POST', headers: { 'content-type': 'text/csv', 'x-vp-dev-member': w.owner }, body: 'x'.repeat(21 * 1024 * 1024) }).catch(() => null);
+  assert.ok(!tooBig || tooBig.status === 413);
 });
 
 test('viewers see people with PII scrubbed', { skip }, async () => {

@@ -7,7 +7,7 @@ import { any, arr, bool, num, obj, opt, record, str, uuid, type Validator } from
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx, type Queryable } from '../../db.ts';
 import { HttpError, type Req, type Router } from '../../http.ts';
-import { tool, type Registry } from '../../tools.ts';
+import { inScope, tool, type Registry } from '../../tools.ts';
 import type { Deps } from '../../app.ts';
 import { DEFAULT_MAX_AGE_S, type Authority } from './authority.ts';
 import { detectDelimiter, parseDelimited, type Delimiter } from './csv.ts';
@@ -15,7 +15,7 @@ import { attrKey, inferMapping, normLanguage, normTimezone, parseDate, truthy, t
 import { applyRows, hashWith, workspaceSalt, type InRow, type SourceRef } from './store.ts';
 
 export const MAX_FILE_BYTES = 20 * 1024 * 1024;
-const MAX_PART_CHARS = 950_000;                 // under the kernel's 1 MB body limit, with JSON overhead
+const MAX_PART_CHARS = 950_000;                 // inline text in a tool call, under the tool endpoint's 1 MB body limit
 const HOOK_SKEW_S = 300;
 const FILE_KINDS = ['csv', 'tsv', 'sheet'] as const;
 const HOOK_KINDS = ['api_push', 'crm', 'form', 'whatsapp'] as const;
@@ -50,7 +50,7 @@ async function getSource(q: Queryable, ws: string, id: string): Promise<SourceRo
 
 /** Receive one part of a file. Parts arrive in order; re-sending the last part is a no-op. */
 export async function receivePart(q: Queryable, ws: string, p: { uploadId?: string; sourceId?: string; filename?: string; text: string; part?: number; final?: boolean }) {
-  if (p.text.length > MAX_PART_CHARS) throw new HttpError(413, 'too_large', `send the file in parts of at most ${MAX_PART_CHARS} characters`);
+  if (Buffer.byteLength(p.text) > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
   let up: { id: string; parts: number; bytes: number; last_part_sha: string | null; status: string; source_id: string | null } | null;
   if (!p.uploadId) {
     const kind: SourceKind = /\.tsv$/i.test(p.filename ?? '') || detectDelimiter(p.text) === '\t' ? 'tsv' : 'csv';
@@ -161,7 +161,9 @@ export function registerSourceTools(reg: Registry): void {
   }), {
     name: 'source.upload', risk: 'draft',
     summary: 'Register a source of people: a file (text inline, or parts via POST /v1/uploads/contacts) or a signed webhook for a CRM, form or opt-in',
-    run: async (ctx, i) => {
+    // The webhook secret is shown once to the caller and never stored in action.result (A0 workspaces approve drafts).
+    redactResult: (out: Record<string, unknown>) => (out.secret ? { ...out, secret: '[shown once]' } : out),
+    run: async (ctx, i): Promise<Record<string, unknown>> => {
       const { source, secret } = await createSource(ctx.q, ctx.workspaceId, { kind: i.kind as SourceKind, name: i.name, authority: i.authority as Authority | undefined, maxAgeDays: i.maxAgeDays });
       const out: Record<string, unknown> = { sourceId: source.id, kind: source.kind, authority: source.authority };
       if (secret) Object.assign(out, { hookUrl: `/hooks/contacts/${source.id}`, secret, signing: 'x-vp-timestamp: unix seconds; x-vp-signature: sha256=hex(HMAC-SHA256(secret, timestamp + "." + body))', shownOnce: true });
@@ -278,7 +280,7 @@ export function registerSourceTools(reg: Registry): void {
 
 // ---- raw routes: file parts and signed webhooks -------------------------------------------------
 
-const partBody = obj({ text: str({ max: MAX_PART_CHARS }), filename: opt(str({ max: 200 })), sourceId: opt(uuid()), uploadId: opt(uuid()),
+const partBody = obj({ text: str({ max: MAX_FILE_BYTES }), filename: opt(str({ max: 200 })), sourceId: opt(uuid()), uploadId: opt(uuid()),
   part: opt(num({ int: true, min: 1, max: 1000 })), final: opt(bool()) });
 
 const hookContact = obj({
@@ -291,36 +293,39 @@ const hookContact = obj({
 });
 const hookBody = obj({ eventId: str({ min: 1, max: 200 }), occurredAt: opt(str({ max: 40 })), contacts: arr(hookContact, { min: 1, max: 500 }) });
 
-function signatureOk(secret: string, ts: string, raws: string[], given: string): boolean {
+/** HMAC-SHA256(secret, timestamp + "." + exact body bytes), compared in constant time. */
+function signatureOk(secret: string, ts: string, raw: Buffer, given: string): boolean {
   const m = /^sha256=([0-9a-f]{64})$/.exec(given.trim());
   if (!m) return false;
-  const g = Buffer.from(m[1], 'hex');
-  let ok = false;
-  for (const raw of raws) {
-    const want = createHmac('sha256', secret).update(`${ts}.${raw}`).digest();
-    if (timingSafeEqual(want, g)) ok = true;
-  }
-  return ok;
+  const want = createHmac('sha256', secret).update(ts + '.').update(raw).digest();
+  return timingSafeEqual(want, Buffer.from(m[1], 'hex'));
 }
 
-/** Sign a webhook body the way /hooks/contacts expects (for senders and tests). */
-export function signHook(secret: string, body: unknown, ts = Math.floor(Date.now() / 1000)): { 'x-vp-timestamp': string; 'x-vp-signature': string } {
-  const raw = typeof body === 'string' ? body : canonicalJson(body);
-  return { 'x-vp-timestamp': String(ts), 'x-vp-signature': 'sha256=' + createHmac('sha256', secret).update(`${ts}.${raw}`).digest('hex') };
+/** Sign a webhook body the way /hooks/contacts expects (for senders and tests). Send exactly `body`. */
+export function signHook(secret: string, body: string, ts = Math.floor(Date.now() / 1000)): { 'x-vp-timestamp': string; 'x-vp-signature': string } {
+  return { 'x-vp-timestamp': String(ts), 'x-vp-signature': 'sha256=' + createHmac('sha256', secret).update(`${ts}.${body}`).digest('hex') };
 }
 
 const DRAFT_ROLES = ['owner', 'builder', 'operator'];
 
 export function registerSourceRoutes(router: Router, deps: Deps): void {
-  // File parts: JSON {text, filename?, sourceId?, uploadId?, part?, final?}, or text/csv with the same fields in the query.
+  // A whole file (up to 20 MB) or parts of one. JSON {text, filename?, sourceId?, uploadId?, part?, final?} (required over a
+  // session cookie), or raw text/csv or text/tab-separated-values with the same fields in the query string (API keys).
   router.add('POST', '/v1/uploads/contacts', async (req: Req) => {
     const c = await deps.auth(req);
     if (!c.actor.role || !DRAFT_ROLES.includes(c.actor.role)) throw new HttpError(403, 'forbidden', `a ${c.actor.role ?? 'caller without a role'} cannot upload people`);
+    if (!inScope(c.actor.scopes, 'source.upload')) throw new HttpError(403, 'forbidden', "this API key's scopes do not include source.upload");
     const qp = req.query;
-    const b = typeof req.body === 'string'
-      ? partBody({ text: req.body, filename: qp.get('filename') ?? undefined, sourceId: qp.get('sourceId') ?? undefined, uploadId: qp.get('uploadId') ?? undefined,
-          part: qp.get('part') ? Number(qp.get('part')) : undefined, final: qp.get('final') ? qp.get('final') === '1' || qp.get('final') === 'true' : undefined })
-      : partBody(req.body ?? {});
+    const raw = (req.body as Buffer | undefined) ?? Buffer.alloc(0);
+    let b: ReturnType<typeof partBody>;
+    if (String(req.headers['content-type'] ?? '').includes('application/json')) {
+      let j: unknown;
+      try { j = JSON.parse(raw.toString('utf8')); } catch { throw new HttpError(400, 'bad_json', 'the request body is not valid JSON'); }
+      b = partBody(j ?? {});
+    } else {
+      b = partBody({ text: raw.toString('utf8'), filename: qp.get('filename') ?? undefined, sourceId: qp.get('sourceId') ?? undefined, uploadId: qp.get('uploadId') ?? undefined,
+        part: qp.get('part') ? Number(qp.get('part')) : undefined, final: qp.get('final') ? qp.get('final') === '1' || qp.get('final') === 'true' : undefined });
+    }
     const out = await tx(deps.pool, async q => {
       const r = await receivePart(q, c.workspaceId, b);
       await appendAudit(q, { workspaceId: c.workspaceId, actorType: c.actor.type, actorId: c.actor.id, action: 'source.upload_part', objectType: 'intake_upload', objectId: r.uploadId,
@@ -328,7 +333,7 @@ export function registerSourceRoutes(router: Router, deps: Deps): void {
       return r;
     });
     return { status: out.status === 'received' ? 201 : 202, body: out };
-  });
+  }, { rawBody: true, limit: MAX_FILE_BYTES + 64 * 1024 });
 
   router.add('POST', '/hooks/contacts/:sourceId', async (req: Req) => {
     if (!/^[0-9a-f-]{36}$/i.test(req.params.sourceId)) throw new HttpError(404, 'not_found', 'no such source');
@@ -337,11 +342,12 @@ export function registerSourceRoutes(router: Router, deps: Deps): void {
     const ts = String(req.headers['x-vp-timestamp'] ?? '');
     const sig = String(req.headers['x-vp-signature'] ?? '');
     if (!/^\d{9,11}$/.test(ts) || Math.abs(Date.now() / 1000 - Number(ts)) > HOOK_SKEW_S) throw new HttpError(401, 'bad_signature', 'missing or stale x-vp-timestamp');
-    // The kernel hands routes a parsed body; senders sign the canonical JSON (sorted keys) or the compact JSON.
-    const raws = typeof req.body === 'string' ? [req.body] : [canonicalJson(req.body), JSON.stringify(req.body)];
-    if (!signatureOk(src.hook_secret, ts, raws, sig)) throw new HttpError(401, 'bad_signature', 'the signature does not match');
+    const raw = (req.body as Buffer | undefined) ?? Buffer.alloc(0);
+    if (!signatureOk(src.hook_secret, ts, raw, sig)) throw new HttpError(401, 'bad_signature', 'the signature does not match');
     if (src.status !== 'active') throw new HttpError(423, 'paused', 'this source is paused');
-    const b = hookBody(typeof req.body === 'string' ? (() => { try { return JSON.parse(req.body as string); } catch { throw new HttpError(400, 'bad_json', 'the body is not JSON'); } })() : req.body);
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw.toString('utf8')); } catch { throw new HttpError(400, 'bad_json', 'the body is not JSON'); }
+    const b = hookBody(parsed);
     const ws = src.workspace_id;
     const occurred = b.occurredAt ? new Date(b.occurredAt) : new Date();
     const observedAt = Number.isNaN(occurred.getTime()) || occurred.getTime() > Date.now() + 60_000 ? new Date() : occurred;
@@ -368,8 +374,8 @@ export function registerSourceRoutes(router: Router, deps: Deps): void {
       const result = { counts: res.counts, issues: res.issues.slice(0, 100) };
       await q.query('UPDATE intake_hook_event SET result = $3 WHERE source_id = $1 AND event_id = $2', [src.id, b.eventId, JSON.stringify(result)]);
       await appendAudit(q, { workspaceId: ws, actorType: 'system', actorId: 'hook:' + src.id, action: 'contact.webhook', objectType: 'intake_source', objectId: src.id,
-        argsHash: sha(canonicalJson(b)), payload: { eventId: b.eventId, counts: res.counts } });
+        argsHash: sha(raw.toString('utf8')), payload: { eventId: b.eventId, counts: res.counts } });
       return { status: 200, body: { duplicate: false, eventId: b.eventId, result } };
     });
-  });
+  }, { rawBody: true });
 }

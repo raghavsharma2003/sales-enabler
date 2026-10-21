@@ -1,0 +1,167 @@
+{
+  "module": "intake",
+  "tools": [
+    {
+      "id": "audience.create",
+      "risk": "draft"
+    },
+    {
+      "id": "audience.get",
+      "risk": "read"
+    },
+    {
+      "id": "audience.list",
+      "risk": "read"
+    },
+    {
+      "id": "audience.preview",
+      "risk": "read"
+    },
+    {
+      "id": "consent.record",
+      "risk": "draft"
+    },
+    {
+      "id": "contact.dial_facts",
+      "risk": "read"
+    },
+    {
+      "id": "contact.dnd_refresh",
+      "risk": "draft"
+    },
+    {
+      "id": "contact.export",
+      "risk": "policy"
+    },
+    {
+      "id": "contact.get",
+      "risk": "read"
+    },
+    {
+      "id": "contact.list",
+      "risk": "read"
+    },
+    {
+      "id": "contact.merge",
+      "risk": "destructive"
+    },
+    {
+      "id": "contact.search",
+      "risk": "read"
+    },
+    {
+      "id": "contact.suppress",
+      "risk": "draft"
+    },
+    {
+      "id": "contact.suppress_after_opt_out",
+      "risk": "policy",
+      "autonomy": "A3 for system/agent actors"
+    },
+    {
+      "id": "contact.unsuppress",
+      "risk": "policy"
+    },
+    {
+      "id": "dpdp.request.execute",
+      "risk": "destructive"
+    },
+    {
+      "id": "source.commit",
+      "risk": "draft"
+    },
+    {
+      "id": "source.list",
+      "risk": "read"
+    },
+    {
+      "id": "source.map",
+      "risk": "draft"
+    },
+    {
+      "id": "source.receipt",
+      "risk": "read"
+    },
+    {
+      "id": "source.upload",
+      "risk": "draft"
+    }
+  ],
+  "routes": [
+    "POST /v1/uploads/contacts (rawBody, 20 MB: one request or ordered parts; JSON over a cookie, text/csv for API keys)",
+    "POST /hooks/contacts/:sourceId (HMAC-SHA256 over timestamp + '.' + exact body bytes, 300 s skew, idempotent on eventId)"
+  ],
+  "migrations": [
+    "product/db/migrations/0101_intake.sql"
+  ],
+  "tests": {
+    "passed": 18,
+    "total": 18,
+    "files": [
+      "product/tests/intake.test.ts (17)",
+      "product/tests/intake-scale.test.ts (1)"
+    ],
+    "full_suite": "173/173 in 3 of 4 runs of all product tests at concurrency 4; the first run had 1 failure in intake-scale whose reason was not captured (open.2026-10-21.intake-scale-unexplained-failure)"
+  },
+  "works": [
+    "CSV/TSV/semicolon/pipe with RFC 4180 quoting, BOM, CRLF; delimiter detection",
+    "Column mapping by Hindi/English header synonyms, then value shapes; Aadhaar/PAN/bank/OTP columns ignored by design and never stored",
+    "Per-row preview with shared/phone.ts reason codes (SCI_NOTATION, NON_INDIAN, TOO_SHORT, LANDLINE_TRUNCATED, EMPTY, INVALID_PREFIX), Devanagari digits, duplicate-in-file, existing/suppressed/tombstoned flags, at most 3 questions",
+    "One write path for files and webhooks: exact E.164 dedupe (plus merged phone identifiers), attribute authority by subject (self vs record) with max_age; stale values lose authority; equal authority from different systems goes to an intake_attribute_conflict review row; a tenant's own uploads are one lineage",
+    "Consent appended with evidence and purpose; a DB trigger refuses UPDATE (except a merge re-pointing contact_id) and direct DELETE",
+    "Suppression never cleared by import; opt-out columns and webhook optOut add one; contact.suppress works for numbers not on file; contact.suppress_after_opt_out runs at once as A3 for system/agent and waits for approval for members",
+    "DPDP erase_me: tombstone (HMAC with a per-workspace salt), suppression kept and re-keyed to the hash, attributes/aliases/audiences/memory facts removed, contact kept as a husk so consent history survives; re-import, webhook and dial_facts all refuse the person; forget_memory scope",
+    "contact.dial_facts for the dial gate: tombstone, suppressions, DND (unknown or older than 7 days fails closed for promotional), latest consent per purpose, service/promotional verdicts with reasons",
+    "DND provider seam: FakeDndProvider for tests, DisabledDndProvider (always unknown) as the production default",
+    "contact.merge (A2): attributes by authority, every FK to contact re-pointed (found from pg_constraint), merged number kept as an identifier, 30-day snapshot",
+    "contact.export (A2): formula-escaped CSV, suppressed and erased excluded by default, the file is redacted from action.result",
+    "Audiences: saved attribute filters compiled to parameterised SQL (all/any; eq, neq, in, gt/gte/lt/lte on numbers or ISO dates, exists, missing, contains), list audiences from an import, preview with matched/suppressed/callable/DND-unknown",
+    "Viewers get PII scrubbed in reads",
+    "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
+    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 19.4-21.7 s, re-import 11.7-14.5 s (n=8, measure.2026-10-21.intake-50k-import)"
+  ],
+  "untested": [
+    "XLSX and Google Sheets (no parser: the build adds no new packages)",
+    "Unmerge (the 30-day snapshot is stored; there is no tool yet)",
+    "Resolving an attribute conflict (rows are written; no resolve tool yet)",
+    "A real NCPR/DND lookup (adapter disabled by design)",
+    "Two concurrent commits with overlapping numbers (the ON CONFLICT path is written, not exercised)",
+    "Commit time for a full 20 MB file (only the 2.9 MB / 50k-row file was timed)",
+    "API-key scopes on the upload route; webhook rate limiting",
+    "Erasure of transcripts and recordings (calls module), CRM delete via an outbox"
+  ],
+  "needs_from_others": [
+    {
+      "from": "kernel",
+      "what": "Add `module as intake` from ./intake/index.ts to server/modules/index.ts (builders may not edit it)."
+    },
+    {
+      "from": "kernel",
+      "what": "http.ts: after a 413 the request body is not drained, so a keep-alive client's next request on that socket fails (seen in the upload test). Send Connection: close or drain on 413."
+    },
+    {
+      "from": "kernel",
+      "what": "A way to call another module's tool inside the caller's transaction (registry.execute opens its own). DPDP erase writes memory_fact directly today instead of calling contact.memory.forget."
+    },
+    {
+      "from": "safety (dial gate)",
+      "what": "Use contact.dial_facts {contactId|e164, purpose}. Tombstones are HMACs with a per-workspace salt only intake holds, so do not hash numbers yourself. Erased people's suppression rows have e164 NULL; match by contact_id or e164_hash."
+    },
+    {
+      "from": "calls",
+      "what": "On forget_request rows (status done, receipt.surfaces.pending) erase transcripts and recordings for contact_id, or expose a tool intake can call."
+    },
+    {
+      "from": "workspace",
+      "what": "A vault for intake_source.hook_secret (plaintext column today) and a rotate-secret tool."
+    },
+    {
+      "from": "campaigns",
+      "what": "Audience membership via audience.preview / contact.list {audienceId}; contact.get returns stale per attribute for ATTRIBUTE_STALE."
+    },
+    {
+      "from": "shared/phone.ts owner",
+      "what": "A truncated landline written with its leading 0 (e.g. 022 2345 67) reports TOO_SHORT, not LANDLINE_TRUNCATED. Fine for the gate; the receipt reason is less precise."
+    }
+  ]
+}

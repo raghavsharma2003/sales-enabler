@@ -310,7 +310,9 @@ export function registerContactTools(reg: Registry): void {
     summary: 'Export people as CSV (personal data leaves VP; approved by Compliance or Owner, audited)',
     describe: i => `Export ${i.audienceId ? 'audience ' + i.audienceId.slice(0, 8) : 'every contact'} as CSV${i.keys?.length ? ' with ' + i.keys.join(', ') : ''}${i.includeSuppressed ? ', including suppressed people' : ''}. Personal data leaves VP.`,
     version: async (ctx, i) => i.audienceId ? (await one<{ v: string }>(ctx.q, 'SELECT md5(definition::text) AS v FROM audience WHERE id = $1 AND workspace_id = $2', [i.audienceId, ctx.workspaceId]))?.v ?? null : null,
-    run: async (ctx, i) => {
+    // The file goes to the approver's receipt only; the stored action keeps the count, not the personal data.
+    redactResult: (out: { rows: number; csv: string }) => ({ rows: out.rows, csvBytes: Buffer.byteLength(out.csv), csv: '[delivered to the approver]' }),
+    run: async (ctx, i): Promise<{ rows: number; csv: string }> => {
       const params: unknown[] = [ctx.workspaceId];
       let where = 'c.workspace_id = $1 AND c.erased_at IS NULL';
       if (i.audienceId) where += ' AND ' + await audienceWhere(ctx.q, ctx.workspaceId, { audienceId: i.audienceId }, params);
