@@ -1,0 +1,50 @@
+{
+  "module": "agents",
+  "date": "2026-10-21",
+  "tools": [
+    { "name": "template.list", "risk": "read" },
+    { "name": "agent.create", "risk": "draft", "note": "from a template id or a plain-words description (llm purpose 'compile'); always a draft, linted" },
+    { "name": "agent.list", "risk": "read" },
+    { "name": "agent.get", "risk": "read", "note": "draft, draftHash, lint, budget meters, compiled brief preview, stack card, versions, tests" },
+    { "name": "brief.edit", "risk": "draft", "note": "validated patch (set/remove/append by path); voice/tools/ids locked; optional expectDraftHash" },
+    { "name": "stack.list", "risk": "read", "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured" },
+    { "name": "stack.set", "risk": "draft", "note": "only finalised stacks from shared/stacks.ts; changing stack clears the voice" },
+    { "name": "voice.set", "risk": "draft", "note": "refuses until a stack is chosen" },
+    { "name": "tool.attach", "risk": "draft", "note": "catalogue tools by name with fixed risk, or workspace tool rows by id; remove: true detaches" },
+    { "name": "test.simulate", "risk": "test", "note": "LLM caller (purpose 'simulate') from sim_caller; every agent sentence through replyDoor; graded by code; stored in agent_test_run" },
+    { "name": "version.publish", "risk": "external", "note": "A2; version() = draft hash; stores agent_version.config = { agent, brief } with versionHash and parent" },
+    { "name": "deployment.split", "risk": "external", "note": "A2; version() = latest deployment id for (agent, binding); versions must belong to the agent; sums to 100" },
+    { "name": "version.list", "risk": "read" },
+    { "name": "version.diff", "risk": "read", "note": "default: latest version vs draft; path-level changes plus brief hash/bytes" }
+  ],
+  "tests": { "passed": 21, "total": 21, "files": ["product/tests/agents.test.ts", "product/tests/agents-tools.test.ts"], "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm" },
+  "works": [
+    "compile(config) -> { text, hash, bytes }: persona v2 generalised to every JOB, Hinglish/Hindi/English/9 other Indic scripts, 4 registers, energy, humour, honorific, gender; inbound vs outbound openings; sector-pack rules; end_call as marker or tool; SOUNDS only for tag-safe voices, DELIVERY only for style voices",
+    "deterministic: same config (any key order, JSON round trip) gives identical bytes and sha256",
+    "budget throws BriefBudgetError naming the section: per-section caps and a 12,000-byte core cap (voice blueprint 2.3); TAIL is 708 bytes against a 1,900 cap; nothing is truncated",
+    "lints enforced at compile: shared/safety lintAgentConfig refuse blocks, drop removes the fact (tested with an injected stand-in, since the shared lint is still a stub); recitable-line lint (quotes, first person in English and Hindi, greetings, questions, Devanagari, romanised Hindi, digits, bracketed directions in shapes; scripted facts) refuses with the field path",
+    "offer facts never reach a service or transactional brief (T-L3 by construction)",
+    "16 templates across 12 industries and 14 jobs; all validate, compile at 6.9-8.2 KB, carry no sentence-shaped lines, choose no stack",
+    "no default stack anywhere: templates, LLM drafts and stack.list; publish refuses without one",
+    "publish needs approval, is bound to the draft it showed (draft edit voids the card; stale draftHash refused), single-use, viewer cannot approve; stored brief equals compile(stored agent)",
+    "tenancy: a second workspace cannot read, edit, set stack, attach tools, simulate, list/diff versions, publish or deploy; cross-workspace tool ids refused"
+  ],
+  "untested": [
+    "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
+    "whether the generalised brief keeps brief v2's measured gains (words per turn, question endings, hang-ups) on jobs other than renewal: not measured",
+    "which voices truly understand sound tags: TAG_SAFE_VOICES = gemini-lite, gemini-lite-or is inferred from the lab note, not verified per voice",
+    "non-Hindi Indic scripts (Tamil etc.): compiles, never run against a model or voice",
+    "the full per-agent ledger pack (told/offer patterns per fact): simulate uses a small generic ledger; the runtime owns the real one",
+    "user-supplied regex in passCriteria is length-capped (200) but not ReDoS-proofed",
+    "test.simulate holds a DB transaction across model calls (fine for tests; long for real models)"
+  ],
+  "needs_from_others": [
+    "kernel: add `module` from server/modules/agents/index.ts to server/modules/index.ts (outside this module's write boundary)",
+    "safety: real lintAgentConfig (T-L1..T-L4) and replyDoor; compile() already refuses on 'refuse' and drops facts on 'drop' (drop paths must look like facts[i])",
+    "money: a way for a tool to call money.estimate (ToolCtx has no pool/registry handle), so stack.list/stack.set can show all-in INR per minute; until then price reads not_measured",
+    "money/kernel: test.simulate does not reserve against the ₹200/day test budget yet (no ledger reserve for LLM tokens); usage tokens are stored per run",
+    "voice runtime: append the per-turn ledger then compile.ts TAIL after the stored brief, and fill per-contact facts from ticket.contact.facts (brief rows read '(per contact; see the contact rows)')",
+    "blueprint data files named in the brief (data/voice-module-defaults.json, data/workspace-tool-registry.json) are not in the repo; tool names and risks were taken from blueprint/modules/workspace.md section 5",
+    "web: brief cards, lint and budget meters, stack picker and publish card can be built from agent.get / brief.edit / stack.list / version.diff results"
+  ]
+}
