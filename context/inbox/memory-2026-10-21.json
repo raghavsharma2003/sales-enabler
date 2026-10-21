@@ -48,7 +48,8 @@
    "status": "open",
    "date": "2026-10-21",
    "source": "memory module builder (parallel build)",
-   "title": "memory.extract calls the LLM inside the registry's tool transaction (holds a pooled connection up to the 60 s LLM timeout). Fine at low volume; at campaign scale run extraction as a two-phase job (read, call model outside tx, commit with transcript re-check)."
+   "title": "memory.extract calls the LLM inside the registry's tool transaction (holds a pooled connection up to the 60 s LLM timeout). Fine at low volume; at campaign scale run extraction as a two-phase job (read, call model outside tx, commit with transcript re-check).",
+   "closes_when": "memory.extract moves its LLM call into the kernel ToolDef.prepare() phase (added 2026-10-21), so no transaction is open during the call; verified by a test."
   }
  ],
  "edges": [],

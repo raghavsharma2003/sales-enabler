@@ -239,3 +239,21 @@ test('API-key scopes narrow the tools a key may use; redacted results are not pe
   const row = await one<{ result: unknown }>(pool, 'SELECT result FROM action WHERE id = $1', [p.actionId]);
   assert.deepEqual(row!.result, { token: '[shown once]' });
 });
+
+test('prepare() runs outside the transaction and feeds run()', { skip }, async () => {
+  const { ws } = await workspace();
+  const r = new Registry();
+  let inTx: boolean | null = null;
+  r.register(tool(obj({ n: num() }), {
+    name: 'slow.thing', risk: 'draft', summary: 'x',
+    prepare: async (ctx, i) => {
+      const s = await one<{ s: string }>(ctx.pool, "SELECT count(*)::text AS s FROM pg_stat_activity WHERE state = 'idle in transaction' AND datname = current_database()");
+      inTx = Number(s!.s) > 0;
+      return i.n * 2;
+    },
+    run: async (_c, _i, prepared) => ({ doubled: prepared }),
+  }));
+  const out = await r.execute(pool, 'slow.thing', { n: 21 }, { workspaceId: ws, actor: { type: 'system' } });
+  assert.deepEqual(out.status === 'confirmed' && out.result, { doubled: 42 });
+  assert.equal(inTx, false, 'no transaction is held open while prepare runs');
+});

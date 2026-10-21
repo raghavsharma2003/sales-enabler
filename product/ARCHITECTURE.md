@@ -60,3 +60,6 @@ Layout:
   makes an API-only replica.
 - **Streaming:** a handler may return `{ stream: async (write, closed) => ... }` for Server-Sent Events; `server/llm.ts`
   has `stream(req, onDelta)` and a per-request `model` override.
+- **Slow work outside transactions:** a tool that calls an LLM or a provider puts that call in `prepare(ctx, input)`
+  (runs first, outside any transaction, reads through `ctx.pool`) and does its writes in `run(ctx, input, prepared)`.
+  `redactResult(out)` keeps one-time secrets out of the stored action result. API-key scopes narrow tools by prefix.

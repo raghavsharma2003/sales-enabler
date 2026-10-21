@@ -35,12 +35,17 @@ export interface ToolCtx {
   actor: Actor;
 }
 
+export interface PrepareCtx { pool: pg.Pool; workspaceId: string; actor: Actor }
+
 export interface ToolDef<I = unknown, O = unknown> {
   name: string;            // dotted verb, e.g. 'campaign.launch'
   risk: RiskClass;
   summary: string;         // plain words for approval cards: what it does
   input: Validator<I>;
-  run(ctx: ToolCtx, input: I): Promise<O>;
+  /** Slow work that must NOT hold a transaction open (an LLM call, a provider request): runs first, outside the
+   *  transaction, reading through the pool; its result is handed to run() as `prepared`. Writes belong in run(). */
+  prepare?(ctx: PrepareCtx, input: I): Promise<unknown>;
+  run(ctx: ToolCtx, input: I, prepared?: unknown): Promise<O>;
   /** For A2 tools: the version of the object the approval is about (e.g. agent_version hash, campaign policy_version).
    *  Read at proposal and again at execution; a mismatch voids the approval. */
   version?(ctx: ToolCtx, input: I): Promise<string | null>;
@@ -151,6 +156,13 @@ export class Registry {
     if (!t) return { status: 'not_executed', reason: `unknown tool "${pre.tool}"` };
 
     let h = '';
+    let prepared: unknown;
+    if (t.prepare) {
+      const a0 = await one<{ args: unknown }>(pool, "SELECT args FROM action WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, approver.workspaceId]);
+      if (!a0) return { status: 'not_executed', reason: 'this action is no longer waiting for approval' };
+      try { prepared = await t.prepare({ pool, workspaceId: approver.workspaceId, actor: { type: 'member', id: approver.memberId } }, t.input(a0.args)); }
+      catch (e) { return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e) }; }
+    }
     try {
       return await tx(pool, async c => {
         const a = await one<{ args: unknown; args_hash: string; status: string; risk_class: RiskClass; expires_at: Date | null; object_version: string | null }>(c,
@@ -184,7 +196,7 @@ export class Registry {
           }
         }
         await c.query('INSERT INTO approval_token (action_id, approver_id, args_hash, object_version) VALUES ($1,$2,$3,$4)', [actionId, approver.memberId, h, a.object_version]);
-        const out = await t.run(ctx, input);
+        const out = await t.run(ctx, input, prepared);
         const stored = t.redactResult ? t.redactResult(out) : out;
         await c.query("UPDATE action SET status = 'executed', result = $2, executed_at = now() WHERE id = $1", [actionId, JSON.stringify(stored ?? null)]);
         await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: t.name,
@@ -228,7 +240,8 @@ export class Registry {
   private async run<O>(pool: pg.Pool, t: ToolDef, input: unknown, h: string, mode: 'A1' | 'A3', ws: string, actor: Actor,
     finish: (c: pg.PoolClient, out: unknown) => Promise<unknown>): Promise<Receipt<O>> {
     try {
-      const result = await tx(pool, async c => finish(c, await t.run({ q: c, workspaceId: ws, actor }, input)));
+      const prepared = t.prepare ? await t.prepare({ pool, workspaceId: ws, actor }, input) : undefined;
+      const result = await tx(pool, async c => finish(c, await t.run({ q: c, workspaceId: ws, actor }, input, prepared)));
       return { status: 'confirmed', mode, result: result as O, argsHash: h };
     } catch (e) {
       if (e instanceof UnknownOutcome) {
