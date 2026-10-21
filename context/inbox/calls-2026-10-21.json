@@ -120,6 +120,11 @@
       "date": "2026-10-21",
       "event": "calls-wired-to-memory-learning",
       "details": "Calls now restamps agent_version_id from the run manifest, marks test calls in run_manifest.test, calls memory.extract and experiment.check after non-test calls, exposes analysis.safety_violation and analysis.judge, raises forget_request from a verified caller quote, counts AI guesses only from trusted judges, adds CONV_COMPLAINT and a 60 s analysis sweep job. Verified: tsc clean, 14/14 calls tests against stubbed sibling tools. Not verified against the real memory and learning modules."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-retries-and-shared-db",
+      "details": "Calls now calls attempt.retry_per_ladder (A3) after each non-final campaign outcome, after analysis so callbacks are known. The test sweep is scoped to its own workspace; it had flaked when all suites shared one database. Verified: calls 15/15, and the whole product suite 242/242 twice on one shared database at concurrency 4. Not verified: the callback time (not extracted yet) and the real campaigns ladder end to end."
     }
   ]
 }

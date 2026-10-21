@@ -28,12 +28,12 @@
     "db/migrations/0601_calls.sql"
   ],
   "tests": {
-    "passed": 14,
-    "total": 14,
+    "passed": 15,
+    "total": 15,
     "files": [
       "tests/calls.test.ts"
     ],
-    "method": "node:test against a throwaway Postgres 16 (vp_mod_calls), FakeRuntime, setFakeLlm; synthetic data only"
+    "method": "node:test against Postgres 16, FakeRuntime, setFakeLlm, stubbed sibling tools; synthetic data only. Also the whole product suite (node scripts/test.mjs, concurrency 4) on one shared database: 242/242 on two consecutive runs."
   },
   "works": [
     "POST /hooks/runtime checks x-vp-signature with VP_RUNTIME_SECRET over the exact raw request bytes (Router rawBody) before parsing. A missing, wrong, stale (>5 min) or tampered signature, including a whitespace-only change, gets 401. Unknown fields get 422 and an unknown conversation 404. The workspace comes from the conversation row, never from the request.",
@@ -58,7 +58,8 @@
     "Concurrent batches for one conversation. They are serialised by SELECT ... FOR UPDATE on the conversation row, but no test races them.",
     "Late cost after settlement (the code path exists, with no test). Multiple holds per attempt.",
     "report.create date filters, call.search pagination ('before') and the analysis 'failed' path (model error or non-JSON).",
-    "Load: search p95 and the time from hang-up to analysis."
+    "Load: search p95 and the time from hang-up to analysis.",
+    "The callback retry time: the analysis does not yet extract the stated callback time, so attempt.retry_per_ladder gets no 'at' for callbacks."
   ],
   "needs_from_others": [
     "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). It is not listed yet.",
@@ -83,7 +84,9 @@
     "reason_code": "These are catalogue codes from taxonomy.ts (35 of them). The hazards for learning are END_OPTED_OUT, CONV_COMPLAINT and END_CRISIS. There is no separate abuse_report code; abuse complaints are CONV_COMPLAINT.",
     "analysis": "analysis.safety_violation is true when the reply door intervened at least once on the call (any safety event). analysis.judge is {judgeVersionId, value, quote, calibration} or null.",
     "forget": "A caller's request to be forgotten, backed by a verified quote of the caller, inserts forget_request (scope forget_memory, requested_via caller, evidence {quote, conversationId}). It is never inserted from a test call.",
-    "cost_line": "Every runtime cost line carries attempt_id (null on test calls). At call.ended the hold is settled at the summed total; the ledger caps the charge at the hold and records the overrun."
+    "cost_line": "Every runtime cost line carries attempt_id (null on test calls). At call.ended the hold is settled at the summed total; the ledger caps the charge at the hold and records the overrun.",
+    "retries": "After analysis of a non-test campaign attempt, calls invokes attempt.retry_per_ladder {attemptId, outcome} as the system actor (A3) for non-final outcomes only. The mapping: no_answer, busy, failed->provider_error, voicemail, error->dropped_by_vp, END_EARLY_HANGUP or CONN_SILENCE->short_call, and CONV_CALLBACK->callback (no 'at' yet; the stated time is not extracted). Final outcomes (completed, opt_out, crisis, hand-off, limits, wrong person) and unknown are never sent.",
+    "runtime_end": "calls never calls the runtime's /v1/calls/{id}/end; live.takeover hands the call to a person without ending it. When endReason is 'error', call.ended carries no failure reason; calls records end_reason 'error' and reason code CONN_ENGINE_ERROR, and does not fetch GET /v1/calls/{id}."
   },
   "final": true,
   "export": "product/server/modules/calls/index.ts exports `module` (name 'calls': tools, POST /hooks/runtime with rawBody and a 5 MB limit, and the job calls.analysis_sweep)."

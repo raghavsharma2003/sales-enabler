@@ -10,7 +10,7 @@ import { reserve } from '../server/ledger.ts';
 import { setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { FakeRuntime, setRuntime, sign } from '../server/runtime-client.ts';
 import { tool, type Actor, type Registry } from '../server/tools.ts';
-import { obj, opt, uuid } from '../shared/validate.ts';
+import { obj, opt, str, uuid } from '../shared/validate.ts';
 import type { RunManifest, RuntimeEvent } from '../shared/runtime-protocol.ts';
 import { module as calls } from '../server/modules/calls/index.ts';
 import { analysesSettled, findQuote, refreshOutcome, sweep } from '../server/modules/calls/analysis.ts';
@@ -25,12 +25,15 @@ const fakeRuntime = new FakeRuntime();
 
 // A stand-in for the contacts module's A3 verb, registered only in the second app below.
 const suppressed: string[] = [], extracted: string[] = [], checked: string[] = [];
+const retried: { attemptId: string; outcome: string }[] = [];
 const experiments = new Map<string, { id: string; state: string }[]>();
 const contactsStub: Module = { name: 'siblings-stub', register: r => {
   r.register(tool(obj({ contactId: uuid(), conversationId: uuid() }), { name: 'contact.suppress_after_opt_out', risk: 'policy', summary: 'suppress after an opt-out',
     run: async (_ctx, i) => { suppressed.push(i.contactId); return { ok: true }; } }));
   r.register(tool(obj({ conversationId: uuid() }), { name: 'memory.extract', risk: 'draft', summary: 'stub', run: async (_ctx, i) => { extracted.push(i.conversationId); return {}; } }));
   r.register(tool(obj({ agentId: opt(uuid()) }), { name: 'experiment.list', risk: 'read', summary: 'stub', run: async (_ctx, i) => experiments.get(i.agentId ?? '') ?? [] }));
+  r.register(tool(obj({ attemptId: uuid(), outcome: str(), at: opt(str()) }), { name: 'attempt.retry_per_ladder', risk: 'external', summary: 'stub',
+    run: async (_ctx, i) => { retried.push({ attemptId: i.attemptId, outcome: i.outcome }); return {}; } }));
   r.register(tool(obj({ experimentId: uuid() }), { name: 'experiment.check', risk: 'draft', summary: 'stub', run: async (_ctx, i) => { checked.push(i.experimentId); return {}; } }));
 } };
 let server2: Server, base2: string;
@@ -517,7 +520,33 @@ test('an AI guess counts only once its judge is trusted; the sweep analyses call
   setFakeLlm(llmReply({ points: [{ claim: 'Will pay.', quote: 'kal payment kar dunga' }], moments: [], reasonCode: null, outcome: null }));
   const lost = await call(w);
   await pool.query(`UPDATE conversation SET status = 'ended', ended_at = now() - interval '10 minutes', transcript = $2 WHERE id = $1`, [lost.conv, JSON.stringify(lines)]);
-  const r = await sweep(pool, registry);
-  assert.ok(r.analysed >= 1);
+  const r = await sweep(pool, registry, { workspaceId: w.ws });
+  assert.equal(r.analysed, 1, 'only this workspace is swept');
   assert.equal((await one<any>(pool, 'SELECT analysis FROM conversation WHERE id = $1', [lost.conv])).analysis.status, 'done');
+});
+
+test('non-final campaign outcomes go to attempt.retry_per_ladder as A3; final ones and test calls never do', { skip }, async () => {
+  const w = await workspace();
+  const send = async (end: string, durationS: number, llm: Record<string, unknown> = {}) => {
+    setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null, ...llm }));
+    const c = await call(w);
+    const ev: RuntimeEvent[] = end === 'busy' || end === 'no_answer'
+      ? [{ seq: 1, type: 'call.ended', at: now(), endReason: end as any, durationS: 0, transcript: [], manifest: manifest() }]
+      : fullCall({ endReason: end, durationS });
+    await post(c.conv, ev, { to: base2 });
+    await analysesSettled();
+    return c.attempt;
+  };
+  const busy = await send('busy', 0), noAnswer = await send('no_answer', 0), early = await send('caller_hung_up', 4);
+  const callback = await send('completed', 40, { reasonCode: 'CONV_CALLBACK' });
+  const done = await send('completed', 60, { reasonCode: 'CONV_GOAL_DONE' }), optedOut = await send('opt_out', 30);
+  const mine = (id: string) => retried.filter(x => x.attemptId === id).map(x => x.outcome);
+  assert.deepEqual(mine(busy), ['busy']); assert.deepEqual(mine(noAnswer), ['no_answer']);
+  assert.deepEqual(mine(early), ['short_call']); assert.deepEqual(mine(callback), ['callback']);
+  assert.deepEqual(mine(done), [], 'a completed call is final');
+  assert.deepEqual(mine(optedOut), [], 'an opt-out is never retried');
+  const followups = (await one<any>(pool, 'SELECT analysis FROM conversation WHERE attempt_id = $1', [busy])).analysis.followups;
+  assert.equal(followups['attempt.retry_per_ladder'], 'done');
+  const ac = await one<any>(pool, "SELECT payload FROM audit_event WHERE workspace_id = $1 AND action = 'attempt.retry_per_ladder' LIMIT 1", [w.ws]);
+  assert.equal(ac.payload.mode, 'A3', 'VP retries on its own only through the A3 verb');
 });

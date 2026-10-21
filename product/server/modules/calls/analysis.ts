@@ -265,13 +265,14 @@ export async function evaluateMonitors(pool: pg.Pool, workspaceId: string): Prom
 }
 
 /** Analyse ended calls the in-process queue lost (a restart between ingest and analysis), and retry pending opt-outs. */
-export async function sweep(pool: pg.Pool, registry: Registry, olderThanMs = 120_000): Promise<{ analysed: number }> {
+export async function sweep(pool: pg.Pool, registry: Registry, opts: { olderThanMs?: number; workspaceId?: string } = {}): Promise<{ analysed: number }> {
   const due = await many<{ id: string; workspace_id: string }>(pool,
     `SELECT id, workspace_id FROM conversation WHERE status = 'ended' AND analysis IS NULL AND ended_at < now() - make_interval(secs => $1::float / 1000)
-     ORDER BY ended_at LIMIT 20`, [olderThanMs]);
+       AND ($2::uuid IS NULL OR workspace_id = $2::uuid)
+     ORDER BY ended_at LIMIT 20`, [opts.olderThanMs ?? 120_000, opts.workspaceId ?? null]);
   for (const d of due) await analyse(pool, d.workspace_id, d.id, registry).catch(e => console.error('[vp] calls sweep', d.id, e instanceof Error ? e.message : e));
   const { flushOptOuts } = await import('./ingest.ts');
-  for (const w of await many<{ workspace_id: string }>(pool, `SELECT DISTINCT workspace_id FROM call_opt_out WHERE status = 'pending' LIMIT 50`)) {
+  for (const w of await many<{ workspace_id: string }>(pool, `SELECT DISTINCT workspace_id FROM call_opt_out WHERE status = 'pending' AND ($1::uuid IS NULL OR workspace_id = $1::uuid) LIMIT 50`, [opts.workspaceId ?? null])) {
     await flushOptOuts(pool, registry, w.workspace_id);
   }
   return { analysed: due.length };

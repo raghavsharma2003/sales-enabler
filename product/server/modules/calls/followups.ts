@@ -2,6 +2,9 @@
 //   memory.extract {conversationId}         (memory: remembers what the caller said)
 //   experiment.check {experimentId}         (learning: guardrails on every connected call, for each running experiment
 //                                            on the agent whose version actually ran)
+//   attempt.retry_per_ladder {attemptId, outcome}  (campaigns, A3: after every non-final outcome of a campaign attempt;
+//                                            runs after analysis so a callback request is known; final outcomes and
+//                                            unknown are never sent, so nothing here can start an automatic retry of them)
 // A tool that is not registered (a sibling not loaded) is reported as 'not_loaded', never an error.
 import type pg from 'pg';
 import { one } from '../../db.ts';
@@ -19,9 +22,25 @@ async function call(pool: pg.Pool, r: Registry, ws: string, name: string, args: 
   } catch (e) { return `error: ${e instanceof Error ? e.message : String(e)}`.slice(0, 200); }
 }
 
+/** The campaigns ladder class for a non-final ending, or null when the outcome is final (completed, opted out, crisis,
+ *  hand-off, limits reached, wrong person) or unknown. Short calls are early hang-ups and silent connections. */
+export function retryClass(end: EndReason | null, reasonCode: string | null): string | null {
+  if (reasonCode === 'CONV_CALLBACK') return 'callback';
+  switch (end) {
+    case 'no_answer': return 'no_answer';
+    case 'busy': return 'busy';
+    case 'failed': return 'provider_error';
+    case 'voicemail': return 'voicemail';
+    case 'error': return 'dropped_by_vp';
+    default: break;
+  }
+  if (reasonCode === 'END_EARLY_HANGUP' || reasonCode === 'CONN_SILENCE') return 'short_call';
+  return null;
+}
+
 export async function afterCall(pool: pg.Pool, r: Registry, ws: string, conversationId: string): Promise<Record<string, string>> {
-  const cv = await one<{ channel: string; end_reason: EndReason | null; agent_id: string | null; test: boolean }>(pool,
-    `SELECT cv.channel, cv.end_reason, v.agent_id, coalesce(cv.run_manifest->>'test', 'false') = 'true' AS test
+  const cv = await one<{ channel: string; end_reason: EndReason | null; reason_code: string | null; attempt_id: string | null; agent_id: string | null; test: boolean }>(pool,
+    `SELECT cv.channel, cv.end_reason, cv.reason_code, cv.attempt_id, v.agent_id, coalesce(cv.run_manifest->>'test', 'false') = 'true' AS test
      FROM conversation cv LEFT JOIN agent_version v ON v.id = cv.agent_version_id
      WHERE cv.id = $1 AND cv.workspace_id = $2`, [conversationId, ws]);
   if (!cv || cv.channel === 'test' || cv.test) return { skipped: 'test call' };
@@ -35,5 +54,7 @@ export async function afterCall(pool: pg.Pool, r: Registry, ws: string, conversa
       if (!running.length) out['experiment.check'] = 'no running experiment';
     }
   }
+  const cls = cv.attempt_id ? retryClass(cv.end_reason, cv.reason_code) : null;
+  if (cls) out['attempt.retry_per_ladder'] = await call(pool, r, ws, 'attempt.retry_per_ladder', { attemptId: cv.attempt_id, outcome: cls });
   return out;
 }
