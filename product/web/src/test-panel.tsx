@@ -9,7 +9,7 @@ import { practiceCallers, simulate } from './data.ts';
 import { getStack } from '../../shared/stacks.ts';
 import type { SimResult } from './types.ts';
 
-const TWEAKS = ['Thoda slow bolo', 'Discount mat bolna', 'Opening chhoti karo', 'Aur warm ho jao'];
+const TWEAKS = ['Speak a little slower', 'Do not mention discounts', 'Shorter opening', 'Warmer tone'];
 
 export function TestPanel() {
   const { agentCtx: a, act, say, hasTool, toast } = useApp();
@@ -74,7 +74,7 @@ export function TestPanel() {
                   {r.endedBy && <p className="small muted">Ended by: {r.endedBy.replace(/_/g, ' ')}. Graded by code, not by a model.</p>}
                 </details>
               </li>))}</ul>
-            {sim.some(r => r.verdict === 'fail') && <Btn size="sm" onClick={() => say(`Practice caller failed on ${a.name}. Suggest a fix as a diff.`)}>Ask Saarthi for a fix</Btn>}
+            {sim.some(r => r.verdict === 'fail') && <Btn size="sm" onClick={() => say(`Practice caller failed on ${a.name}. Suggest a fix as a diff.`)}>Ask the assistant for a fix</Btn>}
           </div>
         )}
       </section>

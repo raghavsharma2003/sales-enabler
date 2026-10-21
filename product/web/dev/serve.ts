@@ -17,25 +17,25 @@ setFakeLlm((req: LlmRequest) => {
   }
   const last = req.messages[req.messages.length - 1];
   const said = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';
-  if (last.role === 'tool') return reply('Maine jo draft aur test ke steps the, chala diye. Jo cheez paise lagati hai, wo aapke tap ka intezaar kar rahi hai.');
-  if (said.includes('top up') || said.includes('topup')) return reply('Wallet top-up ka card bana raha hoon.', [{ id: 'c' + ++n, name: 'wallet_topup', args: JSON.stringify({ inrMilli: 500000 }) }]);
+  if (last.role === 'tool') return reply('I ran the draft and test steps myself. The step that spends money is waiting for your approval.');
+  if (said.includes('top up') || said.includes('topup')) return reply('I have prepared the wallet top-up for your approval.', [{ id: 'c' + ++n, name: 'wallet_topup', args: JSON.stringify({ inrMilli: 500000 }) }]);
   if (said.includes('plan with a bad step')) {
-    return reply('Plan taiyaar hai.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Spending limit set karna', steps: [
-      { tool: 'cap.raise', args: { scope: 'workspace', period: 'day', capInrMilli: 2000000 }, why: 'din ka kharcha limit' },
+    return reply('The plan is ready.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Set a spending limit', steps: [
+      { tool: 'cap.raise', args: { scope: 'workspace', period: 'day', capInrMilli: 2000000 }, why: 'daily spending limit' },
     ] }) }]);
   }
   if (said.includes('for the campaign') || said.includes('fix step')) {
-    return reply('Limit ka plan taiyaar hai; paise wala step aapke tap par.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Spending limit set karna', steps: [
-      { tool: 'cap.raise', args: { scope: 'workspace', period: 'daily', capInrMilli: 2000000 }, why: 'din ka kharcha limit: aapke tap par' },
+    return reply('The plan is ready. The step that spends money waits for your approval.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Set a spending limit', steps: [
+      { tool: 'cap.raise', args: { scope: 'workspace', period: 'daily', capInrMilli: 2000000 }, why: 'daily spending limit, waits for your approval' },
     ] }) }]);
   }
   if (said.includes('plan') || said.includes('csv') || said.includes('launch')) {
-    return reply('Plan taiyaar hai: audience main abhi banata hoon; paise wala step aapke tap par.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Pune ke liye audience banana aur wallet bharna', steps: [
-      { tool: 'audience.create', args: { name: 'Pune renewals', filter: { all: [{ key: 'city', op: 'eq', value: 'Pune' }] } }, why: 'sirf Pune ke log' },
-      { tool: 'wallet.topup', args: { inrMilli: 500000 }, why: 'campaign ke liye paise: aapke tap par' },
+    return reply('The plan is ready. I will create the audience now; the step that spends money waits for your approval.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Create a Pune audience and top up the wallet', steps: [
+      { tool: 'audience.create', args: { name: 'Pune renewals', filter: { all: [{ key: 'city', op: 'eq', value: 'Pune' }] } }, why: 'only people in Pune' },
+      { tool: 'wallet.topup', args: { inrMilli: 500000 }, why: 'funds for the campaign, waits for your approval' },
     ] }) }]);
   }
-  return reply('Namaste. Main yahan hoon. Aap bataiye: kaunsi calls karwani hain, ya kisi page ka kaam karna hai? Drafts aur tests main khud kar leta hoon; jo logon tak pahunchta hai ya paise lagata hai, wo aapke tap ke baad.');
+  return reply('I can help with this page or with anything else you need done. I prepare drafts and tests myself; anything that reaches people or spends money waits for your approval.');
 });
 import('../../server/main.ts');
 

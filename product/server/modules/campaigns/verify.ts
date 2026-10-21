@@ -1,5 +1,5 @@
 // Member phone verification for test calls (verified_test_phone). A member claims a phone; VP rings it once with a fixed
-// system announcement (no agent, no model) that speaks a 6-digit code twice, in Hinglish and English. Only a keyed hash
+// system announcement (no agent, no model) that speaks a 6-digit code twice, in English. Only a keyed hash
 // of the code is stored, for 10 minutes and 5 tries. Rate limits keep it from being used to ring a third party:
 // 3 per member per hour, 20 per workspace per day, 3 per phone per day across every workspace.
 //
@@ -33,10 +33,9 @@ const spaced = (code: string) => code.split('').join(' ');
 export function announcement(code: string): string[] {
   const c = spaced(code);
   return [
-    `Namaste. Yeh Vyakti ki taraf se ek automated call hai. Aapka verification code hai: ${c}.`,
-    `Phir se: ${c}.`,
-    `Your Vyakti verification code is: ${c}. Again: ${c}.`,
-    'Agar aapne yeh nahi maanga, ignore kar dijiye.',
+    `This is an automated call from Vyakti. Your verification code is: ${c}.`,
+    `Once more: ${c}.`,
+    'If you did not request this code, you can ignore this call.',
   ];
 }
 

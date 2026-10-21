@@ -24,7 +24,7 @@ export default function Auth({ mode }: { mode: 'login' | 'signup' }) {
     try {
       if (mode === 'signup') await api.signup(f); else await api.login({ email: f.email, password: f.password });
       await refreshMe(); go('/', true);
-      if (mode === 'signup') toast('Your workspace is ready. Start by hearing an agent, or tell Saarthi the job.', 'ok');
+      if (mode === 'signup') toast('Your workspace is ready. Start by hearing an agent, or tell the assistant the job.', 'ok');
     } catch (x) {
       const a = x as ApiError;
       setErr({ path: a.path, message: a instanceof ApiError ? (a.status === 429 ? 'Too many tries. Wait a few minutes and try again.' : a.message) : 'Something went wrong.' });
@@ -34,12 +34,11 @@ export default function Auth({ mode }: { mode: 'login' | 'signup' }) {
   return (
     <div className="auth">
       <div className="auth-side">
-        <div className="row" style={{ color: 'var(--nav-ink)' }}><Mark size={40} /><div><b className="serif" style={{ fontSize: '1.375rem' }}>Vyakti</b> <span className="deva-big" lang="hi">व्यक्ति</span></div></div>
+        <div className="row" style={{ color: 'var(--nav-ink)' }}><Mark size={40} /><div><b className="serif" style={{ fontSize: '1.375rem' }}>Vyakti</b></div></div>
         <div className="stack">
-          <h1 className="serif">Calls that sound like a person who listens.</h1>
-          <p lang="hi">आपके ग्राहकों से बात करने वाला एजेंट, जो हिंदी, अंग्रेज़ी और हिंग्लिश में सहज है। आप बस बोलिए, बाकी Saarthi संभालता है।</p>
+          <h1 className="serif">Voice agents for your customer calls.</h1>
           <ul className="auth-points">
-            {['Setup by talking: tell Saarthi the job in Hinglish or English.', 'You pick the voice by ear, with measured speed and price on every choice.', 'Nothing reaches a customer, and no money is spent, without your tap.'].map(t => <li key={t}><Check size={16} aria-hidden style={{ flex: 'none', marginTop: 4 }} /> {t}</li>)}
+            {['Set up by describing the job in plain words to the assistant.', 'You pick the voice by ear, with measured speed and price on every choice.', 'Nothing reaches a customer, and no money is spent, without your approval.'].map(t => <li key={t}><Check size={16} aria-hidden style={{ flex: 'none', marginTop: 4 }} /> {t}</li>)}
           </ul>
         </div>
         <p className="hide-m small">Every Vyakti agent says, once and lightly, that it is an AI. That cannot be switched off.</p>

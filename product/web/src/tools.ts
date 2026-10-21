@@ -32,9 +32,9 @@ export interface PageInfo { key: string; label: string; chips: string[] }
 export function pageInfo(path: string): PageInfo {
   const p = path.split('/').filter(Boolean);
   switch (p[0]) {
-    case undefined: return { key: 'today', label: 'Today', chips: ['What needs me today?', 'Kal ka kharcha kitna hua?', 'Naya campaign shuru karo'] };
-    case 'agents': return p[1] ? { key: 'agent', label: 'Agent', chips: ['Make her slower', 'Discount mat bolna', 'Test this agent'] } : { key: 'agents', label: 'Agents', chips: ['Naya agent banao', 'Which agent is live?'] };
-    case 'contacts': return { key: 'contacts', label: p[1] ? 'Contact' : 'Contacts', chips: ['Ye CSV import karo', 'Who has opted out?', 'Show people with no consent'] };
+    case undefined: return { key: 'today', label: 'Today', chips: ['What needs me today?', 'What did we spend yesterday?', 'Start a new campaign'] };
+    case 'agents': return p[1] ? { key: 'agent', label: 'Agent', chips: ['Make her slower', 'Do not mention discounts', 'Test this agent'] } : { key: 'agents', label: 'Agents', chips: ['Create a new agent', 'Which agent is live?'] };
+    case 'contacts': return { key: 'contacts', label: p[1] ? 'Contact' : 'Contacts', chips: ['Import a CSV file', 'Who has opted out?', 'Show people with no consent'] };
     case 'campaigns': return { key: 'campaigns', label: p[1] ? 'Campaign' : 'Campaigns', chips: ['Why is pickup low?', 'Move the window to 11 am - 7 pm', 'Pause this campaign'] };
     case 'calls': return { key: 'calls', label: p[1] ? 'Call' : 'Calls', chips: p[1] ? ['Make a test from this call', 'Why did she hang up?'] : ['Show failed calls', 'Calls where they objected'] };
     case 'insights': return { key: 'insights', label: 'Insights', chips: ['Where do we lose people?', 'Summarise this week'] };

@@ -1,4 +1,4 @@
-// The app shell: rail (desktop) / bottom bar (phone), top bar with the Page | Saarthi switch, the docked operator.
+// The app shell: rail (desktop) / bottom bar (phone), top bar with the Page | Assistant switch, the docked operator.
 import { useState, type ReactNode } from 'react';
 import { BarChart3, Bot, Hash, Megaphone, MessageCircle, MoreHorizontal, Newspaper, PhoneCall, Settings, Users } from 'lucide-react';
 import { Link, usePath } from './router.tsx';
@@ -28,7 +28,7 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="app" data-view={view}>
       <nav className="rail" aria-label="Main">
-        <Link to="/" className="brand" aria-label="Vyakti, home"><Mark /><span className="brand-word"><b>Vyakti</b><span lang="hi">व्यक्ति</span></span></Link>
+        <Link to="/" className="brand" aria-label="Vyakti, home"><Mark /><span className="brand-word"><b>Vyakti</b></span></Link>
         <div className="nav">
           {NAV.map(n => <Link key={n.to} to={n.to} aria-current={isActive(n.to, path) ? 'page' : undefined}><n.icon size={20} aria-hidden /><span>{n.label}</span></Link>)}
         </div>
@@ -42,7 +42,7 @@ export function Shell({ children }: { children: ReactNode }) {
           {sample && <SampleRibbon />}
           <div className="topbar">
             <span className="grow">{info.label}</span>
-            <span className="viewswitch"><Segmented label="Show page or Saarthi" value={view} onChange={setView} options={[{ value: 'page' as const, label: 'Page' }, { value: 'talk' as const, label: 'Saarthi' }]} /></span>
+            <span className="viewswitch"><Segmented label="Show page or assistant" value={view} onChange={setView} options={[{ value: 'page' as const, label: 'Page' }, { value: 'talk' as const, label: 'Assistant' }]} /></span>
           </div>
           <main id="main" tabIndex={-1}>{children}</main>
         </div>
@@ -51,7 +51,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <nav className="bottombar" aria-label="Main">
         <Link to="/" aria-current={path === '/' && view === 'page' ? 'page' : undefined} onClick={() => setView('page')}><Newspaper size={20} aria-hidden />Today</Link>
         <Link to="/campaigns" aria-current={isActive('/campaigns', path) && view === 'page' ? 'page' : undefined} onClick={() => setView('page')}><Megaphone size={20} aria-hidden />Campaigns</Link>
-        <button type="button" className="talkbtn" aria-pressed={view === 'talk'} onClick={() => setView(view === 'talk' ? 'page' : 'talk')}><span className="talkdot"><MessageCircle size={20} aria-hidden /></span>Talk</button>
+        <button type="button" className="talkbtn" aria-pressed={view === 'talk'} onClick={() => setView(view === 'talk' ? 'page' : 'talk')}><span className="talkdot"><MessageCircle size={20} aria-hidden /></span>Assistant</button>
         <Link to="/calls" aria-current={isActive('/calls', path) && view === 'page' ? 'page' : undefined} onClick={() => setView('page')}><PhoneCall size={20} aria-hidden />Calls</Link>
         <button type="button" onClick={() => setMore(true)}><MoreHorizontal size={20} aria-hidden />More</button>
       </nav>

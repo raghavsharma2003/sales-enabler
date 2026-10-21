@@ -19,15 +19,12 @@ export default function Today() {
   const camps = useData<CampaignRow[]>('camps', hasTool('campaign.list') ? campaignList : null);
   const wallet = useData('wallet', hasTool('wallet.get') ? walletGet : null);
   const dayCap = wallet.data?.caps.find(c => c.period === 'day')?.capInrMilli ?? null;
-  const first = me?.member?.name.split(' ')[0] ?? '';
-  const hour = new Date().toLocaleString('en-IN', { hour: 'numeric', hour12: false, timeZone: 'Asia/Kolkata' });
-  const greet = Number(hour) < 12 ? 'Suprabhat' : Number(hour) < 17 ? 'Namaste' : 'Shubh sandhya';
   const dateLine = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' });
   const live = useMemo(() => (camps.data ?? []).filter(c => c.state === 'running' || c.state === 'paused'), [camps.data]);
 
   return (
     <div className="page">
-      <PageHead title={<>{greet}, {first}</>} sub={<>{dateLine} · {brief.data ? <>updated {time(brief.data.asOf)}</> : 'loading'}</>} />
+      <PageHead title="Today" sub={<>{dateLine} · {brief.data ? <>updated {time(brief.data.asOf)}</> : 'loading'}</>} />
       <Async q={brief} what="The Today brief" tool="brief.today" rows={6}>{b => {
         const did = summarise(b);
         const day0 = b.liveCampaigns.n === 0 && (camps.data?.length ?? 0) === 0 && b.needsTap.n === 0 && b.changed.n === 0;
@@ -41,13 +38,13 @@ export default function Today() {
                 : <p className="lead">Nothing has changed since {time(b.since)}. <span className="muted">That is a measured zero from the activity ledger, not a missing number.</span></p>}
             </section>
 
-            {day0 && <Card><Empty title="Abhi koi campaign nahi hai" body="The quickest way to start is to hear an agent. It takes about three minutes, and nothing reaches anyone." action={<Link to="/agents" className="btn btn-primary" style={{ textDecoration: 'none' }}><PhoneCall size={16} aria-hidden /><span>Hear an agent</span></Link>} /></Card>}
+            {day0 && <Card><Empty title="No campaigns yet" body="The quickest way to start is to hear an agent. It takes about three minutes, and nothing reaches anyone." action={<Link to="/agents" className="btn btn-primary" style={{ textDecoration: 'none' }}><PhoneCall size={16} aria-hidden /><span>Hear an agent</span></Link>} /></Card>}
 
             <div className="cols-main">
               <div className="stack">
                 <Card aria-labelledby="needs-h">
                   <CardHead id="needs-h" title="Needs you" sub={b.needsTap.n ? `${count(b.needsTap.n)} waiting. Safety first, then deadlines, then impact.` : undefined} />
-                  {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Kuch pending nahi" body={`VP did ${count(b.changed.n)} ${b.changed.n === 1 ? 'thing' : 'things'} on its own. Nothing is waiting on you.`} action={<Link to="/settings/activity">See activity</Link>} /> : (
+                  {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Nothing is waiting for you" body={`VP did ${count(b.changed.n)} ${b.changed.n === 1 ? 'thing' : 'things'} on its own. Nothing is waiting on you.`} action={<Link to="/settings/activity">See activity</Link>} /> : (
                     <ul className="needs">
                       {groupNeeds(b.needsTap.items).map(({ a, n }) => {
                         const w = RISK_WORDS[a.risk] ?? { label: a.risk, line: '' };
@@ -76,7 +73,7 @@ export default function Today() {
                   <CardHead id="live-h" title="Live now" sub="Counts and pace as of the last update" />
                   {camps.state === 'missing' ? <p className="muted small">Campaign details are not switched on in this server yet. {b.liveCampaigns.n} campaign{b.liveCampaigns.n === 1 ? ' is' : 's are'} active.</p>
                     : camps.state === 'loading' ? <Skeleton rows={2} />
-                    : live.length === 0 ? <Empty title="No campaign is dialling" body="When one is live you see its pace, pickups and a one-tap pause here." action={<Link to="/campaigns/new">Start a campaign</Link>} />
+                    : live.length === 0 ? <Empty title="No campaign is dialling" body="When one is live you see its pace, pickups and a pause control here." action={<Link to="/campaigns/new">Start a campaign</Link>} />
                     : <ul className="livelist">{live.map(c => (
                       <li key={c.id} className="livestrip">
                         <div className="grow">

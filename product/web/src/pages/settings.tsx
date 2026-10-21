@@ -15,7 +15,7 @@ import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
 
 const TABS = ['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'operator', 'integrations', 'activity'] as const;
 type Tab = (typeof TABS)[number];
-const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Knowledge', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', operator: 'Operator', integrations: 'Integrations', activity: 'Activity' };
+const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Knowledge', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', operator: 'Assistant', integrations: 'Integrations', activity: 'Activity' };
 
 export default function Settings({ tab }: { tab?: string }) {
   const go = useNav();
@@ -208,13 +208,13 @@ function OperatorTab() {
   const { act, refresh } = useApp();
   const q = useData('opset', () => run<{ autonomy: 'A0' | 'A1'; brain: string | null; brains: string[] }>('operator.settings.get', {}));
   const [pick, setPick] = useState('');
-  return <Async q={q} what="Operator settings" tool="operator.settings.get">{d => <div className="stack">
-    <Card><CardHead title="Saarthi, VP's operator" sub="Saarthi plans and does drafts and tests itself. Anything that reaches people, spends, deletes or changes policy always waits for your tap." />
-      <Toggle checked={d.autonomy === 'A0'} onChange={async on => { const r = await act(on ? 'operator.autonomy.lower' : 'operator.autonomy.raise', { level: on ? 'A0' : 'A1' }, { describe: on ? 'Saarthi will now ask before every draft and test.' : 'Saarthi can draft and test on its own again.' }); if (r.ok) q.reload(); else refresh(); }}
+  return <Async q={q} what="Assistant settings" tool="operator.settings.get">{d => <div className="stack">
+    <Card><CardHead title="Assistant" sub="The assistant plans and does drafts and tests itself. Anything that reaches people, spends, deletes or changes policy always waits for your approval." />
+      <Toggle checked={d.autonomy === 'A0'} onChange={async on => { const r = await act(on ? 'operator.autonomy.lower' : 'operator.autonomy.raise', { level: on ? 'A0' : 'A1' }, { describe: on ? 'The assistant will now ask before every draft and test.' : 'The assistant can draft and test on its own again.' }); if (r.ok) q.reload(); else refresh(); }}
         label="Ask before drafts and tests too" hint="Lowering this takes effect at once. Raising it back is a policy change and asks for approval." /></Card>
-    <Card><CardHead title="Brain" sub="The model behind Saarthi. It changes speed and what each turn costs, never what is allowed." />
+    <Card><CardHead title="Brain" sub="The model behind the assistant. It changes speed and what each turn costs, never what is allowed." />
       <p>Current: {d.brain ? <strong>{prettyId(d.brain)}</strong> : <NotMeasured>Not chosen yet</NotMeasured>}</p>
-      {d.brains.length === 0 ? <p className="small muted">No curated brains are configured on this server yet.</p> : <><div className="formgrid" style={{ marginTop: 12 }}><SelectField label="Choose a brain" value={pick} onChange={e => setPick(e.target.value)} hint="Nothing is recommended by default. Switching changes the cost of every Operator turn."><option value="">Choose one</option>{d.brains.map(b => <option key={b} value={b}>{prettyId(b)}</option>)}</SelectField></div>
+      {d.brains.length === 0 ? <p className="small muted">No curated brains are configured on this server yet.</p> : <><div className="formgrid" style={{ marginTop: 12 }}><SelectField label="Choose a brain" value={pick} onChange={e => setPick(e.target.value)} hint="Nothing is recommended by default. Switching changes the cost of every assistant reply."><option value="">Choose one</option>{d.brains.map(b => <option key={b} value={b}>{prettyId(b)}</option>)}</SelectField></div>
         <div style={{ marginTop: 12 }}>{pick && pick !== d.brain ? <Btn kind="primary" onClick={async () => { const r = await act('operator.brain.set', { brain: pick }, { describe: 'Brain changed.' }); if (r.ok) q.reload(); }}>Ask to switch…</Btn> : <Btn disabled reason={pick ? 'That brain is already in use.' : 'Choose a brain first.'}>Ask to switch</Btn>}</div></>}</Card></div>}</Async>;
 }
 
@@ -222,7 +222,7 @@ function Integrations() {
   const q = useData('integrations', async () => ({ list: (await run<{ integrations: { id: string; kind: string; name: string }[] }>('integration.list', {})).integrations, kinds: (await run<{ kinds: { id: string; label: string; secrets: string[] }[] }>('integration.kinds', {})).kinds }));
   return <Async q={q} what="Integrations" tool="integration.list">{d => <div className="stack">
     <Card><CardHead title="Connected" />{d.list.length === 0 ? <Empty title="Nothing connected" body="Connect your CRM or calendar so outcomes come from your own system, which is how a result earns the grade “confirmed by your system”." /> : <ul className="billing">{d.list.map(i => <li key={i.id}><strong>{i.name}</strong><Chip>{i.kind}</Chip></li>)}</ul>}</Card>
-    <Card><CardHead title="What can be connected" sub="Credentials are encrypted and never shown again. Connecting is a policy change." /><ul className="billing">{d.kinds.map(k => <li key={k.id}><strong>{k.label}</strong><span className="small muted">needs {k.secrets.map(secretWords).join(', ')}</span></li>)}</ul><p className="small muted" style={{ marginTop: 8 }}>Connecting is done with Saarthi or the API for now, so credentials never pass through a page.</p></Card></div>}</Async>;
+    <Card><CardHead title="What can be connected" sub="Credentials are encrypted and never shown again. Connecting is a policy change." /><ul className="billing">{d.kinds.map(k => <li key={k.id}><strong>{k.label}</strong><span className="small muted">needs {k.secrets.map(secretWords).join(', ')}</span></li>)}</ul><p className="small muted" style={{ marginTop: 8 }}>Connecting is done with the assistant or the API for now, so credentials never pass through a page.</p></Card></div>}</Async>;
 }
 
 function dayLabel(iso: string): string {

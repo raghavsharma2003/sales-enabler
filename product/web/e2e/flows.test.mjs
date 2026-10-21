@@ -109,7 +109,7 @@ test('Learning: propose, simulate, accept shows an approval card, and the screen
   await page.reload();
   t.diagnostic('proposal status after simulating: ' + probed.status);
   if (probed.status === 'awaiting_approval') {
-    await page.getByText('Simulated, waiting for your tap').first().waitFor();
+    await page.getByText('Simulated, waiting for your approval').first().waitFor();
     await page.getByRole('button', { name: 'Test this on real calls…' }).first().click();
     await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
     await hold(sheet().locator('.hold'));
@@ -256,7 +256,18 @@ test('Copy: no tool id, raw argument name, internal code or milli-unit reaches a
     '/contacts', '/contacts/import', `/contacts/${ids.contact}`, '/audiences', '/campaigns', '/campaigns/new', `/campaigns/${ids.camp}`, `/campaigns/${ids.camp2}`, '/calls', `/calls/${ids.call}`, '/insights', '/numbers',
     ...['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'operator', 'integrations', 'activity'].map(t => `/settings/${t}`)];
   const bad = [];
+  // Owner rule (2026-10-22): the product UI is never written in Hindi or Hinglish. What agents say on calls is the product's voice and
+  // stays, so anything inside [lang="hi"] (transcripts, call content) is exempt; everything else must be English.
+  const HINGLISH = /\b(suprabhat|namaste|shubh|sandhya|bolo|bolna|karo|mat|banao|aap|kaunsi|bataiye|hoon|thoda|chhoti|jao|ji|naya|kharcha|kitna|abhi|nahi|taiyaar|karna|paise|kya|hain)\b/i;
+  const DEVANAGARI = /[\u0900-\u097F]/;
+  const scanLanguage = async label => {
+    const ui = await page.evaluate(() => { const c = document.body.cloneNode(true); c.querySelectorAll('[lang="hi"]').forEach(e => e.remove()); c.querySelectorAll('textarea,input,script,style').forEach(e => e.remove()); const out = []; const w = document.createTreeWalker(c, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) out.push(n.nodeValue); return out.join(' ').replace(/\s+/g, ' '); });
+    const d = DEVANAGARI.exec(ui); if (d) bad.push(`${label}: Devanagari in the interface near "${ui.slice(Math.max(0, d.index - 20), d.index + 20)}"`);
+    const h = HINGLISH.exec(ui); if (h) bad.push(`${label}: Hinglish word "${h[0]}" near "${ui.slice(Math.max(0, h.index - 25), h.index + 25)}"`);
+    for (const ph of await page.locator('[placeholder]').evaluateAll(els => els.map(e => e.getAttribute('placeholder')))) { if (HINGLISH.test(ph) || DEVANAGARI.test(ph)) bad.push(`${label}: placeholder "${ph}"`); }
+  };
   const scan = async label => {
+    await scanLanguage(label);
     let text = await page.locator('body').innerText();
     text = text.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, ' ').replace(/https?:\/\/\S+/g, ' ').replace(/\b[\w-]+\.(csv|txt|pdf|json|example)\b/g, ' ');
     for (const t of tools) if (new RegExp(`(^|[^\\w.])${t.replace(/\./g, '\\.')}($|[^\\w])`).test(text)) bad.push(`${label}: tool id ${t}`);
@@ -292,18 +303,18 @@ test('Launch blockers: the page shows the server\'s plain message and its fix bu
   }
 });
 
-test('Ask Saarthi on a launch blocker with no page: the dock gets the sentence and the Operator answers with a plan card', async () => {
+test('Ask the assistant on a launch blocker with no page: the dock gets the sentence and the Operator answers with a plan card', async () => {
   const id = (await pool.query("SELECT id, name FROM campaign WHERE workspace_id = $1 AND name LIKE 'Appointment%'", [ws])).rows[0];
   const fixes = (await tool('campaign.get', { id: id.id })).result.blockers.filter(b => b.fix && typeof b.fix === 'object' && ['campaign.draft', 'campaign.audience.add'].includes(b.fix.tool));
   assert.ok(fixes.length > 0, 'the draft has a blocker whose fix has no page of its own');
   await page.goto(`${BASE}/campaigns/${id.id}`);
   const row = page.locator('.check-fail').filter({ hasText: fixes[0].message }).first();
-  await row.getByRole('button', { name: 'Ask Saarthi' }).click();
+  await row.getByRole('button', { name: 'Ask the assistant' }).click();
   const said = `${fixes[0].fix.label} for the campaign "${id.name}".`;
   await page.locator('.dock').getByText(said, { exact: true }).waitFor({ timeout: 8000 });
   const card = page.locator('.dock article[aria-label^="plan card"]').first();
   await card.waitFor({ timeout: 10000 });
-  assert.match(await card.innerText(), /Waits for your tap|Runs now/i, 'the plan says which steps wait for a tap');
+  assert.match(await card.innerText(), /Waits for your approval|Runs now/i, 'the plan says which steps wait for a tap');
   // The plan card is shown before the server has filed the step's proposal, so wait for the proposal instead of reading it at once.
   const held = await page.waitForFunction(async () => (await (await fetch('/v1/actions?status=proposed')).json()).actions.some(a => a.tool === 'cap.raise'), null, { timeout: 15000 }).then(() => true, () => false);
   assert.ok(held, 'the server holds the spend step for the person\'s tap');
@@ -318,7 +329,7 @@ test('A plan step the server refuses says so plainly, offers a fix, and the fixe
   await bad.waitFor({ timeout: 10000 });
   await bad.getByText("This step can't run as written.").waitFor();
   assert.ok(!/must be one of|period/i.test(await bad.innerText()), 'the validator text stays hidden');
-  await bad.getByRole('button', { name: 'Ask Saarthi to fix it' }).click();
+  await bad.getByRole('button', { name: 'Ask the assistant to fix it' }).click();
   await page.locator('.dock').getByText(/^Fix step 1 of the plan: /).waitFor({ timeout: 8000 });
   const card = page.locator('.dock article[aria-label^="approval card"]').last();
   await card.waitFor({ timeout: 10000 });

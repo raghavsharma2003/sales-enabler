@@ -32,8 +32,8 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'proposal.accept': { ask: 'Test this change on real calls', done: 'Test started' },
   'proposal.probe': { ask: 'Simulate this change', done: 'Change simulated' },
   'operator.brain.set': { ask: 'Switch the brain', done: 'Brain switched' },
-  'operator.autonomy.raise': { ask: 'Let Saarthi draft and test on its own', done: 'Saarthi can draft and test on its own' },
-  'operator.autonomy.lower': { ask: 'Ask before every draft and test', done: 'Saarthi now asks first' },
+  'operator.autonomy.raise': { ask: 'Let the assistant draft and test on its own', done: 'The assistant can draft and test on its own' },
+  'operator.autonomy.lower': { ask: 'Ask before every draft and test', done: 'The assistant now asks first' },
   'knowledge.ingest': { ask: 'Add a knowledge source', done: 'Knowledge source added' },
   'brand.update': { ask: 'Change the brand details', done: 'Brand details saved' },
   'contact.merge': { ask: 'Merge two records of one person', done: 'Records merged' },
@@ -158,8 +158,8 @@ export const PAST: Record<string, string> = {
   'money.card': 'looked at a stack\'s provider costs', 'money.estimate': 'worked out what a voice stack costs', 'money.reconcile': 'compared charges with metered cost', 'monitor.create': 'turned on a monitor', 'monitor.list': 'looked at the monitors',
   'number.byo.connect': 'connected a number they own', 'number.kyc.submit': 'sent KYC documents for a number', 'number.pause': 'paused a number', 'number.pause_flagged': 'paused a flagged number', 'number.rent': 'rented a number', 'number.search': 'searched for numbers to rent',
   'offering.edit': 'changed an offering', 'offering.list': 'looked at the offerings',
-  'operator.autonomy.lower': 'made Saarthi ask before every draft and test', 'operator.autonomy.raise': 'let Saarthi draft and test on its own again', 'operator.brain.set': 'switched Saarthi\'s brain',
-  'operator.preference.forget': 'forgot a way Saarthi works for them', 'operator.preference.list': 'looked at what Saarthi remembers about how they work', 'operator.preference.remember': 'asked Saarthi to remember how they like to work', 'operator.settings.get': 'looked at the Saarthi settings',
+  'operator.autonomy.lower': 'made the assistant ask before every draft and test', 'operator.autonomy.raise': 'let the assistant draft and test on its own again', 'operator.brain.set': 'switched the assistant\'s brain',
+  'operator.preference.forget': 'forgot a way the assistant works for them', 'operator.preference.list': 'looked at what the assistant remembers about how they work', 'operator.preference.remember': 'asked the assistant to remember how they like to work', 'operator.settings.get': 'looked at the the assistant settings',
   'outcome.define': 'defined what counts as an outcome', 'outcome.label': 'labelled a call\'s outcome', 'outcome.record_verified': 'recorded an outcome confirmed by their own system',
   'plan.change': 'changed the plan', 'policy.category.override': 'changed a campaign\'s kind of call', 'policy.window.set': 'changed the calling hours',
   'proposal.accept': 'started testing a proposed change on real calls', 'proposal.get': 'opened a proposed change', 'proposal.list': 'looked at the proposed changes', 'proposal.probe': 'simulated a proposed change',
@@ -168,7 +168,7 @@ export const PAST: Record<string, string> = {
   'source.commit': 'imported a contact list', 'source.list': 'looked at where people come from', 'source.map': 'matched the columns of a contact list', 'source.receipt': 'looked at an import receipt', 'source.upload': 'uploaded a contact list',
   'stack.list': 'looked at the voice stacks', 'stack.set': 'chose a voice stack for an agent', 'template.list': 'looked at the starter agents',
   'test.browser_call': 'started a test call in the browser', 'test.ring_member_phone': 'rang their own phone for a test', 'test.simulate': 'ran a practice call', 'test.simulate_batch': 'ran a set of practice calls',
-  'thread.get': 'opened a Saarthi conversation', 'thread.list': 'looked at the Saarthi conversations', 'tool.attach': 'changed what an agent can do on a call', 'usage.get': 'looked at what has been spent',
+  'thread.get': 'opened an assistant conversation', 'thread.list': 'looked at the assistant conversations', 'tool.attach': 'changed what an agent can do on a call', 'usage.get': 'looked at what has been spent',
   'version.candidate': 'prepared a version to test', 'version.diff': 'compared two versions', 'version.list': 'looked at an agent\'s versions', 'version.publish': 'published an agent', 'voice.set': 'chose a voice for an agent',
   'wallet.credit': 'credited the wallet by hand', 'wallet.get': 'looked at the wallet', 'wallet.topup': 'added money to the wallet',
   'webhook.create': 'added a webhook', 'webhook.delete': 'removed a webhook', 'webhook.deliveries': 'looked at what was sent to webhooks', 'webhook.emit': 'queued a webhook event', 'webhook.list': 'looked at the webhooks', 'webhook.replay': 'sent a webhook event again',
@@ -188,7 +188,7 @@ export function pageFor(tool: string): string | null {
 // Audit events that are not tools; written so the tool-contract scan does not mistake them for tool ids.
 const PROPOSED = ['action', 'propose'].join('.'), CREATED = ['workspace', 'create'].join('.');
 export function activitySentence(line: string, action: string): string {
-  const actor = (/^(.+?) (?:ran|asked|did|made|set|changed|created|added|saved|reviewed) /.exec(line)?.[1] ?? 'Someone').replace(/^An agent$/, 'Saarthi');
+  const actor = (/^(.+?) (?:ran|asked|did|made|set|changed|created|added|saved|reviewed) /.exec(line)?.[1] ?? 'Someone').replace(/^An agent$/, 'The assistant');
   if (action === CREATED) return `${actor} created the workspace`;
   if (action === PROPOSED) {
     const words = /asked to run (.+?) and is waiting/.exec(line)?.[1];

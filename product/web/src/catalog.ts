@@ -27,7 +27,7 @@ export const CATEGORY_INFO: Record<string, { label: string; blurb: string }> = {
   transactional: { label: 'Transactional', blurb: 'Orders, appointments and payments they asked for.' },
   promotional: { label: 'Promotional', blurb: 'Offers. Needs a recorded consent for every person.' },
 };
-export const LANG_LABEL: Record<string, string> = { hinglish: 'Hinglish', 'hi-IN': 'Hindi (हिन्दी)', 'en-IN': 'English (India)', 'ta-IN': 'Tamil (தமிழ்)', 'te-IN': 'Telugu (తెలుగు)', 'kn-IN': 'Kannada (ಕನ್ನಡ)', 'ml-IN': 'Malayalam (മലയാളം)', 'mr-IN': 'Marathi (मराठी)', 'gu-IN': 'Gujarati (ગુજરાતી)', 'bn-IN': 'Bengali (বাংলা)', 'pa-IN': 'Punjabi (ਪੰਜਾਬੀ)', 'or-IN': 'Odia (ଓଡ଼ିଆ)' };
+export const LANG_LABEL: Record<string, string> = { hinglish: 'Hinglish', 'hi-IN': 'Hindi', 'en-IN': 'English (India)', 'ta-IN': 'Tamil', 'te-IN': 'Telugu', 'kn-IN': 'Kannada', 'ml-IN': 'Malayalam', 'mr-IN': 'Marathi', 'gu-IN': 'Gujarati', 'bn-IN': 'Bengali', 'pa-IN': 'Punjabi', 'or-IN': 'Odia' };
 export const SECTOR_LABEL: Record<string, string> = { base: 'Generic business', insurance_irdai: 'Insurance (IRDAI)', lending_rbi: 'Lending (RBI)', securities_sebi: 'Securities (SEBI)', healthcare: 'Healthcare', education: 'Education', ecommerce: 'E-commerce', real_estate: 'Real estate', telecom: 'Telecom', travel: 'Travel' };
 export const REGISTER_INFO: Record<string, { label: string; blurb: string }> = {
   warm_peer: { label: 'Friendly professional', blurb: 'Warm and light, like a helpful colleague. The default for service calls.' },

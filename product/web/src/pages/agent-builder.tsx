@@ -111,7 +111,7 @@ function Basics({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
         <div className="formgrid">
           <TextField label="Her name" value={cfg.persona.name} onChange={e => set(c => { c.persona.name = e.target.value; })} hint="The name callers hear." />
           <TextField label="Your business name" value={cfg.brand.name} onChange={e => set(c => { c.brand.name = e.target.value; })} />
-          <TextField label="How she says your name aloud" value={cfg.brand.spokenName} onChange={e => set(c => { c.brand.spokenName = e.target.value; })} hint="Spell it the way it should sound, in Devanagari if that is clearer: सांझ." lang="hi" />
+          <TextField label="How she says your name aloud" value={cfg.brand.spokenName} onChange={e => set(c => { c.brand.spokenName = e.target.value; })} hint="Spell it the way it should sound, in Hindi script if that is clearer." lang="hi" />
           <Field label="Voice">{p => <Segmented label="Voice gender" value={cfg.persona.gender} onChange={v => set(c => { c.persona.gender = v; })} options={[{ value: 'female', label: 'Female' }, { value: 'male', label: 'Male' }, { value: 'neutral', label: 'Neutral' }]} />}</Field>
         </div></Card>
       <Card><CardHead title="What the calls are for" sub="A job is a shape of conversation. Pick the nearest one; the rest is in the next tabs." />
@@ -157,7 +157,7 @@ function Persona({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
         <div className="formgrid">
           <Field label="Energy" hint={`${['Very calm', 'Calm', 'Even', 'Bright', 'Very bright'][p.energy - 1]}`}>{pr => <><Wave energy={p.energy} /><input {...pr} type="range" min="1" max="5" step="1" value={p.energy} onChange={e => set(c => { c.persona.energy = Number(e.target.value) as 1; })} /></>}</Field>
           <Field label="Humour" hint="Never on dues or when someone sounds upset.">{() => <div className="row"><Dots n={p.humour} /><Segmented label="Humour" value={p.humour} onChange={v => set(c => { c.persona.humour = v as 0; })} options={[{ value: 0, label: 'Off' }, { value: 1, label: 'Light' }, { value: 2, label: 'Playful' }]} /></div>}</Field>
-          <Field label="How she addresses people">{() => <Segmented label="Address" value={p.honorific} onChange={v => set(c => { c.persona.honorific = v; })} options={[{ value: 'aap', label: 'Aap', hint: 'Respectful' }, { value: 'tum', label: 'Tum', hint: 'Casual' }, { value: 'mirror', label: 'Match the caller' }]} />}</Field>
+          <Field label="How she addresses people">{() => <Segmented label="Address" value={p.honorific} onChange={v => set(c => { c.persona.honorific = v; })} options={[{ value: 'aap', label: 'Formal', hint: 'Respectful form of address' }, { value: 'tum', label: 'Informal', hint: 'Casual form of address' }, { value: 'mirror', label: 'Match the caller' }]} />}</Field>
         </div></Card>
       <Card><CardHead title="Notes for her" sub="Short shapes, not lines to recite. For example: “explain like to someone driving”." />
         <ListEditor items={p.notes} onChange={f => set(c => f(c.persona.notes))} blank={() => ''} addLabel="Add a note" empty="No notes yet."

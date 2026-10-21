@@ -1,4 +1,4 @@
-// Saarthi, VP's operator, docked on every page. Streaming replies, ten card types, hold-to-confirm for A2, receipts.
+// The assistant (VP's operator), docked on every page. Streaming replies, ten card types, hold-to-confirm for A2, receipts.
 // Rules shown in the UI because code enforces them server-side: it never asks for approval in words (only a hold approves),
 // it never says "done" before a receipt, and numbers come from queries, not from the model.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -14,7 +14,7 @@ import { pageInfo, RISK_WORDS } from './tools.ts';
 import { fieldLabel, fieldValue, toolAsk, toolDone } from './labels.ts';
 import type { OperatorCard } from './types.ts';
 
-const GREETING = 'Namaste, main Saarthi hoon, VP ka operator (AI). Aap bataiye kya karwana hai, main plan banaunga aur draft aur test khud kar lunga. Jo cheez logon tak pahunchti hai ya paise lagati hai, wo aapke tap ke baad hi hoti hai.';
+const GREETING = 'I am the VP assistant (an AI). Tell me what you need done and I will plan it and prepare drafts and tests myself. Anything that reaches people or spends money waits for your approval.';
 
 type SR = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void; onresult: ((e: any) => void) | null; onend: (() => void) | null; onerror: ((e: any) => void) | null };
 const SpeechCtor: (new () => SR) | undefined = typeof window !== 'undefined' ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition) : undefined;
@@ -67,7 +67,7 @@ export function Dock() {
     } catch (e) {
       const notFound = e instanceof ApiError && (e.status === 404 || e.code === 'not_found');
       queue.buf = '';
-      if ((e as Error).name !== 'AbortError') patch(mid, m => ({ ...m, notice: notFound ? 'The Operator is not switched on in this server yet, so I cannot plan or act. Every page still works on its own.' : (e instanceof ApiError ? e.message : 'I could not finish that. Nothing was changed.') }));
+      if ((e as Error).name !== 'AbortError') patch(mid, m => ({ ...m, notice: notFound ? 'The assistant is not switched on in this server yet, so I cannot plan or act. Every page still works on its own.' : (e instanceof ApiError ? e.message : 'I could not finish that. Nothing was changed.') }));
     } finally { window.clearInterval(timer); patch(mid, m => ({ ...m, streaming: false, step: undefined })); setBusy(false); abort.current = null; }
   }, [busy, patch, setThread, tools]);
 
@@ -84,15 +84,15 @@ export function Dock() {
 
   const testing = showTest && dockTab === 'test';
   return (
-    <aside className="dock" aria-label="Saarthi, VP's operator">
+    <aside className="dock" aria-label="Assistant">
       <div className="dock-head">
-        <div className="dock-title"><Sparkles size={18} aria-hidden /> <span>Saarthi</span> <span className="deva" lang="hi">सारथी</span> <Chip tone="peacock" title="Saarthi is an AI">AI</Chip></div>
-        {showTest && <Segmented label="Dock panel" value={testing ? 'test' : 'talk'} onChange={setDockTab} options={[{ value: 'talk' as const, label: 'Talk' }, { value: 'test' as const, label: 'Test her' }]} />}
-        {!testing && <p className="dock-sub">VP's operator. Plans and does drafts and tests itself; waits for your tap on anything that reaches people or spends.</p>}
+        <div className="dock-title"><Sparkles size={18} aria-hidden /> <span>Assistant</span> <Chip tone="peacock" title="The assistant is an AI">AI</Chip></div>
+        {showTest && <Segmented label="Dock panel" value={testing ? 'test' : 'talk'} onChange={setDockTab} options={[{ value: 'talk' as const, label: 'Assistant' }, { value: 'test' as const, label: 'Test her' }]} />}
+        {!testing && <p className="dock-sub">Plans, drafts and tests on its own. Anything that reaches people or spends money waits for your approval.</p>}
         <span className="seeing"><Eye size={13} aria-hidden /> Seeing: {testing ? `${agentCtx?.name} · v${agentCtx?.version}${agentCtx?.dirty ? ' · unsaved' : ''}` : info.label}</span>
       </div>
       {testing ? <div className="thread"><TestPanel /></div> : <>
-        <div className="thread" ref={scroller} role="log" aria-live="polite" aria-label="Conversation with Saarthi">
+        <div className="thread" ref={scroller} role="log" aria-live="polite" aria-label="Conversation with the assistant">
           <div className="msg msg-vp"><div className="bubble" lang="en-IN">{GREETING}</div></div>
           {thread.map(m => <Msg key={m.id} m={m} />)}
         </div>
@@ -101,8 +101,8 @@ export function Dock() {
         )}
         <form className="composer" onSubmit={e => { e.preventDefault(); void send(text); }}>
           {heard && <p className="heard">Heard as: “{heard}”. Fix it below if it is wrong.</p>}
-          <label className="sr" htmlFor="dock-input">Message to Saarthi</label>
-          <textarea id="dock-input" className="input" rows={2} value={text} placeholder="Kaunsi calls karwani hain?" lang="hi"
+          <label className="sr" htmlFor="dock-input">Message to the assistant</label>
+          <textarea id="dock-input" className="input" rows={2} value={text} placeholder="Describe what you need done"
             onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text); } }} />
           <div className="composer-row">
             {SpeechCtor
@@ -128,7 +128,7 @@ function fromApi(id: string, c: ApiCard): OperatorCard {
 function Msg({ m }: { m: ThreadMsg }) {
   return (
     <div className={`msg msg-${m.role} rise`}>
-      {(m.text || m.streaming) && <div className="bubble" lang="en-IN">{m.text}{m.streaming && <span className="caret" aria-hidden />}{m.streaming && !m.text && <span className="sr">Saarthi is typing</span>}</div>}
+      {(m.text || m.streaming) && <div className="bubble" lang="en-IN">{m.text}{m.streaming && <span className="caret" aria-hidden />}{m.streaming && !m.text && <span className="sr">The assistant is typing</span>}</div>}
       {m.step && <p className="small muted" role="status">Working on <code>{m.step}</code>…</p>}
       {m.cards?.map(c => <Card key={c.id} c={c} />)}
       {m.notice && <p className="small muted" role="status">{m.notice}</p>}
@@ -162,7 +162,7 @@ export function Card({ c }: { c: OperatorCard }) {
       {c.body && <p className="small">{c.body}</p>}
       {c.quote && <blockquote className="small" style={{ margin: 0, paddingLeft: 10, borderLeft: '3px solid var(--peacock)' }} lang="hi">“{c.quote}”</blockquote>}
       {c.metric && <Figure m={c.metric} />}
-      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <><Chip tone="brick">Can't run</Chip> <span className="small muted">This step can't run as written.</span> <button type="button" className="linkbtn" onClick={() => say(`Fix step ${i + 1} of the plan: ${s.label}`)}>Ask Saarthi to fix it</button></> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? 'Runs now' : 'Waits for your tap'}</Chip>}</span></li>)}</ol>}
+      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <><Chip tone="brick">Can't run</Chip> <span className="small muted">This step can't run as written.</span> <button type="button" className="linkbtn" onClick={() => say(`Fix step ${i + 1} of the plan: ${s.label}`)}>Ask the assistant to fix it</button></> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? 'Runs now' : 'Waits for your approval'}</Chip>}</span></li>)}</ol>}
       {c.diff && <div>{c.diff.map((d, i) => <div className="diffrow" key={i}><strong>{d.field}</strong><span>{d.before ? <><s>{d.before}</s> → </> : null}<ins>{d.after}</ins></span>{d.reason && <span className="small muted">{d.reason}</span>}</div>)}</div>}
       {c.progress && <div><div className="meter-bar" role="progressbar" aria-label={c.progress.label} aria-valuenow={c.progress.pct ?? undefined}><span className="meter-fill tone-peacock" style={{ transform: `scaleX(${(c.progress.pct ?? 0) / 100})` }} /></div><p className="small muted">{c.progress.label}</p></div>}
       {c.type === 'question' && c.options && (
