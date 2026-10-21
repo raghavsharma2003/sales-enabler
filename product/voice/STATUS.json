@@ -69,7 +69,7 @@
     "Latency and cut-in rates of the ported turn-taking on this runtime (lab figures do not carry over until measured)",
     "nginx (or the Container Apps ingress) routing /w/<i>/ to workers: config generated and unit-checked, never run (no nginx in the sandbox); the Dockerfile still starts one process",
     "Multi-process capacity on the deploy host and with real providers",
-    "Live controls on a real line or browser (fake lines only), calls live.* tools against the real runtime routes (calls tested against a fake), and all three on v2-live (refused 409 in v1)"
+    "Live controls on a real line or browser (fake lines only) and on v2-live (refused 409 in v1); listen on a real audio call. Calls live.* tools against the real routes are verified by calls in product/tests/calls-live.test.ts (1187448, against python -m vpvoice.devsim, 4 runs green)"
   ],
   "contractGaps": [
     "call.ended has no field for the failure reason when endReason = error; it is logged and in GET /v1/calls/{id} only",
