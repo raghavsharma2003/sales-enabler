@@ -42,7 +42,7 @@ export async function campaignFunnel(q: Queryable, workspaceId: string, campaign
     `WITH def AS (SELECT d.goal_values FROM campaign c JOIN outcome_definition d ON d.id = c.outcome_definition_id AND d.workspace_id = c.workspace_id
                   WHERE c.id = $2 AND c.workspace_id = $1),
      a AS (
-       SELECT at.id, cv.id AS conv, cv.agent_version_id AS v, cv.duration_s, cv.end_reason, at.status,
+       SELECT at.id, cv.id AS conv, cv.agent_version_id AS v, cv.duration_s, cv.end_reason, cv.status AS conv_status, at.status,
               (SELECT count(*) FROM turn t WHERE t.conversation_id = cv.id AND t.speaker = 'caller') AS caller_turns,
               ${BEST_OUTCOME} AS best, ${BEST_GRADE} AS grade
        FROM attempt at
@@ -51,9 +51,10 @@ export async function campaignFunnel(q: Queryable, workspaceId: string, campaign
        WHERE at.workspace_id = $1 AND at.campaign_id = $2 AND at.status NOT IN ('created','blocked','queued'))
      SELECT v,
        count(*) AS dialled,
-       count(*) FILTER (WHERE conv IS NOT NULL AND (end_reason IS NULL OR end_reason NOT IN ('no_answer','busy','failed'))
+       -- A call that has not reported its end (still live, or dispatched and silent) is not counted as connected yet.
+       count(*) FILTER (WHERE conv IS NOT NULL AND conv_status <> 'live' AND end_reason IS NOT NULL AND end_reason NOT IN ('no_answer','busy','failed')
                               OR (conv IS NULL AND status = 'connected')) AS connected,
-       count(*) FILTER (WHERE duration_s >= ${EARLY_HANGUP_S} AND caller_turns > 0) AS talked,
+       count(*) FILTER (WHERE conv_status <> 'live' AND duration_s >= ${EARLY_HANGUP_S} AND caller_turns > 0) AS talked,
        count(*) FILTER (WHERE best = ANY(coalesce((SELECT goal_values FROM def), '{}'::text[])) AND grade = 'verified') AS goal_verified,
        count(*) FILTER (WHERE best = ANY(coalesce((SELECT goal_values FROM def), '{}'::text[])) AND grade = 'manager') AS goal_manager,
        count(*) FILTER (WHERE best = ANY(coalesce((SELECT goal_values FROM def), '{}'::text[])) AND grade = 'ai_guess') AS goal_ai,

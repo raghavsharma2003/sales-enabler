@@ -125,6 +125,11 @@
       "date": "2026-10-21",
       "event": "calls-retries-and-shared-db",
       "details": "Calls now calls attempt.retry_per_ladder (A3) after each non-final campaign outcome, after analysis so callbacks are known. The test sweep is scoped to its own workspace; it had flaked when all suites shared one database. Verified: calls 15/15, and the whole product suite 242/242 twice on one shared database at concurrency 4. Not verified: the callback time (not extracted yet) and the real campaigns ladder end to end."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-e2e-fixes",
+      "details": "Fixed two e2e findings. F5: the funnel no longer counts a call as connected or talked until it reports call.ended (a live or silent dispatch is dialled only). F7: call.get reads one query at a time on its transaction client, which removes pg's deprecation warning. Verified: calls 15/15 with no deprecation warning; the full suite on one shared database passed 261/261 on one run and 260 with 1 failure on the other (learning's own 'hazard stop' fixture test, which imports no calls code)."
     }
   ]
 }

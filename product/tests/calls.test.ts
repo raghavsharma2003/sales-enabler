@@ -398,22 +398,29 @@ test('outcome.define and judge.edit run as drafts and are audited; verified outc
   await post(na.conv, [{ seq: 1, type: 'call.ended', at: now(), endReason: 'no_answer', durationS: 0, transcript: [], manifest: manifest() }]);
   const contact = (await one<{ id: string }>(pool, "INSERT INTO contact (workspace_id, e164) VALUES ($1,$2) RETURNING id", [w.ws, `+91${phone++}`]))!.id;
   await pool.query("INSERT INTO attempt (workspace_id, campaign_id, contact_id, status, blocked_by) VALUES ($1,$2,$3,'blocked','PRE_WINDOW')", [w.ws, w.campaign, contact]);
+  // A dispatched call that has reported nothing yet (and one that is still live mid-call) is dialled, not connected.
+  await call(w);
+  const midCall = await call(w);
+  await post(midCall.conv, fullCall().filter(e => e.type !== 'call.ended'));
   await analysesSettled();
   const f = await registry.execute<any>(pool, 'campaign.funnel', { campaignId: w.campaign }, { workspaceId: w.ws, actor: w.member });
   assert.equal(f.status, 'confirmed', JSON.stringify(f));
   if (f.status !== 'confirmed') return;
   // ids[0]: verified renewed (goal); ids[1]: verified later; ids[2]: manager later; ids[3]: guess no.
-  assert.deepEqual({ ...f.result.total, agentVersionId: undefined }, { agentVersionId: undefined, dialled: 5, connected: 4, talked: 4, goalReached: 1, goalByGrade: { verified: 1, manager: 0, ai_guess: 0 } });
+  assert.deepEqual({ ...f.result.total, agentVersionId: undefined }, { agentVersionId: undefined, dialled: 7, connected: 4, talked: 4, goalReached: 1, goalByGrade: { verified: 1, manager: 0, ai_guess: 0 } });
   assert.equal(f.result.byVersion[0].agentVersionId, w.version);
 
   const rep = await registry.execute<any>(pool, 'report.create', { title: 'Week 1', campaignId: w.campaign }, { workspaceId: w.ws, actor: w.member });
   assert.equal(rep.status, 'confirmed');
   if (rep.status === 'confirmed') {
-    assert.equal(rep.result.content.calls, 5);
+    assert.equal(rep.result.content.calls, 7);
     assert.deepEqual(rep.result.content.outcomes.find((o: any) => o.value === 'renewed'), { value: 'renewed', grade: 'verified', n: 1 });
   }
   const srch = await registry.execute<any>(pool, 'call.search', { campaignId: w.campaign, outcome: 'later' }, { workspaceId: w.ws, actor: w.member });
   assert.equal(srch.status === 'confirmed' && srch.result.calls.length, 2);
+  const got = await registry.execute<any>(pool, 'call.get', { conversationId: midCall.conv }, { workspaceId: w.ws, actor: w.member });
+  assert.equal(got.status === 'confirmed' && got.result.turns.length, 4);
+  assert.equal(got.status === 'confirmed' && got.result.cost.lines.length, 2);
   const byReason = await registry.execute<any>(pool, 'call.search', { reasonCode: 'DIAL_NO_ANSWER' }, { workspaceId: w.ws, actor: w.member });
   assert.equal(byReason.status === 'confirmed' && byReason.result.calls[0].id, na.conv);
 });

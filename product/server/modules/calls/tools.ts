@@ -87,15 +87,15 @@ export function registerTools(r: Registry): void {
     name: 'call.get', risk: 'read', summary: 'Everything about one call: transcript, turns, moments, safety, tools, hand-offs, cost lines, outcomes and analysis',
     run: async (ctx, i) => {
       const c = await conversation(ctx, i.conversationId);
-      const [turns, moments, safety, tools, handOffs, costs, outcomes] = await Promise.all([
-        many(ctx.q, 'SELECT idx, speaker, text, latency, interrupted, started_ms, ended_ms FROM turn WHERE conversation_id = $1 ORDER BY idx', [c.id]),
-        many(ctx.q, 'SELECT source, kind, at_ms, note, quote FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY at_ms NULLS LAST', [c.id, ctx.workspaceId]),
-        many(ctx.q, 'SELECT seq, rule, action, detail, at FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]),
-        many(ctx.q, 'SELECT seq, name, args, status, at FROM call_tool_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]),
-        many(ctx.q, 'SELECT mode, destination, status, brief, created_at FROM hand_off WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]),
-        many(ctx.q, 'SELECT component, provider, quantity::float AS quantity, unit, inr_milli::int AS inr_milli, detail FROM cost_line WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]),
-        many(ctx.q, 'SELECT value, grade, source, evidence, definition_id, created_at FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]),
-      ]);
+      // One after another: a transaction client runs one query at a time (pg deprecates queued parallel queries on a client).
+      const read = (sql: string, params: unknown[]) => many(ctx.q, sql, params);
+      const turns = await read('SELECT idx, speaker, text, latency, interrupted, started_ms, ended_ms FROM turn WHERE conversation_id = $1 ORDER BY idx', [c.id]);
+      const moments = await read('SELECT source, kind, at_ms, note, quote FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY at_ms NULLS LAST', [c.id, ctx.workspaceId]);
+      const safety = await read('SELECT seq, rule, action, detail, at FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
+      const tools = await read('SELECT seq, name, args, status, at FROM call_tool_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
+      const handOffs = await read('SELECT mode, destination, status, brief, created_at FROM hand_off WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
+      const costs = await read('SELECT component, provider, quantity::float AS quantity, unit, inr_milli::int AS inr_milli, detail FROM cost_line WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
+      const outcomes = await read('SELECT value, grade, source, evidence, definition_id, created_at FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
       const rc = reasonFor(c.reason_code);
       return {
         id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
