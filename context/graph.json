@@ -16525,6 +16525,28 @@
    "source": "review MA-05 (major)",
    "broke": "Rotating the header gave unlimited password guesses: 12 wrong passwords, 12 times 401, no 429. Rule: throttle per account, counting failures only, and per client address. The address comes from clientIp() in server/http.ts: the socket peer, or the right-most X-Forwarded-For hop that is not a trusted proxy (loopback and private ranges by default; VP_TRUSTED_PROXIES=none to trust none).",
    "path": "product/server/http.ts"
+  },
+  {
+   "id": "measure.2026-10-21.review-what-she-says",
+   "type": "measurement",
+   "title": "Adversarial review 'what she says' (safety door TS and Python, voice runtime, agents compile and simulate, calls analysis, operator): 13 reproduced defects (6 blocker, 6 major, 1 minor), each a failing test.",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "independent reviewer session (8b0ee53)",
+   "n": 13,
+   "method": "Reviewer fuzzed both doors (mixed script, Devanagari, Hinglish spellings, zero-width characters, homoglyphs, number words) and traced the voice turn loop, S2S path, identity gate and analysis. TS tests are in product/tests/review/what-she-says.test.ts (todo); Python tests in product/voice/tests/test_review.py (expectedFailure).",
+   "value": "B1 plain AI denials pass; B2 any 'bot' token counts as disclosure; B3 rule split over two sentences passes; B4 'Hello? Kaun?' confirms identity; B5 per-contact amount before identity; B6 Hinglish and Tamil-English crisis lines missed; M1-M6; m1",
+   "path": "product/tests/review/what-she-says.md"
+  },
+  {
+   "id": "rejected.2026-10-21.denial-blocklist",
+   "type": "rejection",
+   "title": "The never-deny-being-an-AI rule was a block list of denial shapes (RD2 claims_human); short natural denials matched none of them.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "review B1 and B2 (blockers)",
+   "broke": "'Ji nahi, main bot nahi.', '\u092e\u0948\u0902 machine \u0928\u0939\u0940\u0902, Riya \u0939\u0942\u0901\u0964' and '\u092c\u093f\u0932\u094d\u0915\u0941\u0932 \u0907\u0902\u0938\u093e\u0928 \u0939\u0942\u0901\u0964' reached TTS unchanged. The voice runtime also counted any 'bot' token as the disclosure. Rule: self-reference about her own nature is allowed only when it affirms AI-ness (an allow-list that over-triggers). A false positive costs one honest sentence; a false negative breaks a non-negotiable.",
+   "path": "product/shared/safety/rules.json"
   }
  ],
  "edges": [
@@ -29663,6 +29685,16 @@
   {
    "from": "measure.2026-10-21.review-money-auth",
    "to": "rejected.2026-10-21.throttle-on-client-header",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-21.review-what-she-says",
+   "to": "rejected.2026-10-21.denial-blocklist",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-21.review-what-she-says",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
    "relation": "supports"
   }
  ]
