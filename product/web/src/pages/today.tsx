@@ -1,0 +1,119 @@
+// Today: the morning paper. Since-you-left, what needs a tap (fixed priority, at most 7), live campaigns, money, one next action.
+// Numbers come from tool results only; a missing source shows "not measured", never 0.
+import { useMemo } from 'react';
+import { ArrowRight, Pause, PhoneCall, ShieldAlert } from 'lucide-react';
+import { useApp, useTool } from '../store.tsx';
+import { Link } from '../router.tsx';
+import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, Skeleton } from '../ui.tsx';
+import { ago, count, date, inr, plural, time } from '../format.ts';
+import { RISK_WORDS } from '../tools.ts';
+import type { Brief, CampaignRow, Wallet } from '../types.ts';
+
+const ACTION_WORDS: Record<string, string> = { 'agent.update': 'drafts', 'agent.create': 'drafts', 'brief.edit': 'drafts', 'test.simulate': 'tests', 'test.browser_call': 'tests', 'campaign.pause': 'guarded pauses', 'campaign.stop_at_cap': 'guarded pauses', 'contact.suppress_after_opt_out': 'guarded opt-outs' };
+
+export default function Today() {
+  const { me, hasTool, review, act, refresh } = useApp();
+  const brief = useTool<Brief>('brief.today', {});
+  const camps = useTool<{ rows: CampaignRow[] }>(hasTool('campaign.list') ? 'campaign.list' : null, {});
+  const wallet = useTool<Wallet>(hasTool('wallet.get') ? 'wallet.get' : null, {});
+  const first = me?.member?.name.split(' ')[0] ?? '';
+  const hour = new Date().toLocaleString('en-IN', { hour: 'numeric', hour12: false, timeZone: 'Asia/Kolkata' });
+  const greet = Number(hour) < 12 ? 'Suprabhat' : Number(hour) < 17 ? 'Namaste' : 'Shubh sandhya';
+  const dateLine = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' });
+  const live = useMemo(() => (camps.data?.rows ?? []).filter(c => c.status === 'running' || c.status === 'paused'), [camps.data]);
+
+  return (
+    <div className="page">
+      <PageHead title={<>{greet}, {first}</>} sub={<>{dateLine} · {brief.data ? <>updated {time(brief.data.asOf)}</> : 'loading'}</>} />
+      <Async q={brief} what="The Today brief" tool="brief.today" rows={6}>{b => {
+        const did = summarise(b);
+        const day0 = b.liveCampaigns.n === 0 && (camps.data?.rows?.length ?? 0) === 0 && b.needsTap.n === 0 && b.changed.n === 0;
+        const next = nextAction(b, camps.data?.rows ?? []);
+        return (
+          <div className="today">
+            <section className="since" aria-labelledby="since-h">
+              <h2 id="since-h" className="serif">Since you left</h2>
+              {b.changed.n > 0
+                ? <p className="lead">VP did <strong className="tnum">{count(b.changed.n)}</strong> {b.changed.n === 1 ? 'thing' : 'things'}{did ? <>: {did}</> : ''}. <Link to="/settings/activity">See the ledger</Link></p>
+                : <p className="lead">Nothing has changed since {time(b.since)}. <span className="muted">That is a measured zero from the activity ledger, not a missing number.</span></p>}
+            </section>
+
+            {day0 && <Card><Empty title="Abhi koi campaign nahi hai" body="The quickest way to start is to hear an agent. It takes about three minutes, and nothing reaches anyone." action={<Link to="/agents" className="btn btn-primary" style={{ textDecoration: 'none' }}><PhoneCall size={16} aria-hidden /><span>Hear an agent</span></Link>} /></Card>}
+
+            <div className="cols-main">
+              <div className="stack">
+                <Card aria-labelledby="needs-h">
+                  <CardHead id="needs-h" title="Needs you" sub={b.needsTap.n ? `${count(b.needsTap.n)} waiting. Safety first, then deadlines, then impact.` : undefined} />
+                  {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Kuch pending nahi" body={`VP did ${count(b.changed.n)} ${b.changed.n === 1 ? 'thing' : 'things'} on its own. Nothing is waiting on you.`} action={<Link to="/settings/activity">See activity</Link>} /> : (
+                    <ul className="needs">
+                      {b.needsTap.items.map(a => {
+                        const w = RISK_WORDS[a.risk] ?? { label: a.risk, line: '' };
+                        return (
+                          <li key={a.id} className="need">
+                            <div className="need-text">
+                              <div className="row"><Chip tone={a.risk === 'spend' || a.risk === 'external' ? 'terra' : 'marigold'}>{w.label}</Chip>{a.expires_at && <span className="small muted">expires {date(a.expires_at, true)}</span>}</div>
+                              <p className="need-title">{a.summary ?? a.tool}</p>
+                            </div>
+                            <Btn kind="primary" size="sm" onClick={() => review({ actionId: a.id, tool: a.tool, summary: a.summary ?? a.tool, risk: a.risk, expiresAt: a.expires_at })}>Review</Btn>
+                          </li>
+                        );
+                      })}
+                      {b.needsTap.n > b.needsTap.items.length && <li className="small muted">{count(b.needsTap.n - b.needsTap.items.length)} more waiting. They appear here as the first ones are handled.</li>}
+                      {b.issues.items.map(i => (
+                        <li key={i.id} className="need">
+                          <div className="need-text"><div className="row"><Chip tone={i.severity === 'critical' ? 'brick' : 'marigold'} icon={<ShieldAlert size={12} aria-hidden />}>{i.severity === 'critical' ? 'Critical issue' : 'Issue'}</Chip><span className="small muted">{ago(i.created_at)}</span></div><p className="need-title">{i.category.replace(/_/g, ' ')}</p></div>
+                          <Link to="/insights" className="btn btn-sm" style={{ textDecoration: 'none' }}><span>Open</span></Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Card>
+
+                <Card aria-labelledby="live-h">
+                  <CardHead id="live-h" title="Live now" sub="Counts and pace as of the last update" />
+                  {camps.state === 'missing' ? <p className="muted small">Campaign details are not switched on in this server yet. {b.liveCampaigns.n} campaign{b.liveCampaigns.n === 1 ? ' is' : 's are'} active.</p>
+                    : camps.state === 'loading' ? <Skeleton rows={2} />
+                    : live.length === 0 ? <Empty title="No campaign is dialling" body="When one is live you see its pace, pickups and a one-tap pause here." action={<Link to="/campaigns/new">Start a campaign</Link>} />
+                    : <ul className="livelist">{live.map(c => (
+                      <li key={c.id} className="livestrip">
+                        <div className="grow">
+                          <div className="row"><Link to={`/campaigns/${c.id}`} className="rowlink">{c.name}</Link><Chip tone={c.status === 'running' ? 'leaf' : 'marigold'}>{c.status === 'running' ? 'Dialling' : 'Paused'}</Chip></div>
+                          <Meter label={`${count(c.dialled)} of ${count(c.contacts)} dialled`} value={c.dialled} max={c.contacts} tone="peacock" note={<>{count(c.connected)} connected · {inr(c.spendMilli)}{c.capMilli ? ` of ${inr(c.capMilli)}` : ''}</>} />
+                        </div>
+                        {c.status === 'running' && <Btn size="sm" icon={<Pause size={14} aria-hidden />} onClick={async () => { const r = await act('campaign.pause', { id: c.id }, { describe: `${c.name} paused.` }); if (r.ok) refresh(); }}>Pause</Btn>}
+                      </li>))}</ul>}
+                </Card>
+              </div>
+
+              <div className="stack">
+                <Card aria-labelledby="money-h">
+                  <CardHead id="money-h" title="Money" sub={`Spend today, ${b.spendToday.timezone === 'Asia/Kolkata' ? 'IST day' : b.spendToday.timezone}`} />
+                  <p className="bignum serif tnum" aria-label={`Spent today ${inr(b.spendToday.inrMilli)}`}>{inr(b.spendToday.inrMilli)}</p>
+                  {wallet.data?.capTodayMilli ? <Meter label="Today against your cap" value={b.spendToday.inrMilli} max={wallet.data.capTodayMilli} tone={b.spendToday.inrMilli / wallet.data.capTodayMilli > 0.85 ? 'brick' : 'leaf'} note={`${inr(b.spendToday.inrMilli)} of ${inr(wallet.data.capTodayMilli)}`} /> : <p className="small muted">No daily cap set. <Link to="/settings/billing">Set one</Link></p>}
+                  <hr className="rule" />
+                  {b.wallet ? <dl className="kv"><div><dt>Wallet</dt><dd className="tnum">{inr(b.wallet.balanceInrMilli)} {b.wallet.state !== 'active' && <Chip tone="brick">{b.wallet.state}</Chip>}</dd></div>
+                    <div><dt>Runway at today's pace</dt><dd>{wallet.data?.runwayDays != null ? <span className="tnum">{wallet.data.runwayDays} days</span> : <NotMeasured />}</dd></div></dl> : <p className="small muted">No wallet yet.</p>}
+                </Card>
+
+                {next && <Card aria-labelledby="next-h"><CardHead id="next-h" title="Next best step" /><p><strong>{next.title}</strong></p><p className="muted small" style={{ margin: '4px 0 12px' }}>{next.why}</p><Link to={next.href} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>{next.label}</span><ArrowRight size={16} aria-hidden /></Link></Card>}
+              </div>
+            </div>
+          </div>
+        );
+      }}</Async>
+    </div>
+  );
+}
+
+function summarise(b: Brief): string {
+  const g: Record<string, number> = {};
+  for (const a of b.changed.byAction) g[ACTION_WORDS[a.action] ?? 'other changes'] = (g[ACTION_WORDS[a.action] ?? 'other changes'] ?? 0) + a.n;
+  return Object.entries(g).map(([k, n]) => `${count(n)} ${k}`).join(', ');
+}
+
+function nextAction(b: Brief, camps: CampaignRow[]): { title: string; why: string; label: string; href: string } | null {
+  if (b.issues.n > 0) return { title: `Look at ${plural(b.issues.n, 'open issue')}`, why: 'Issues are ranked by calls affected and severity; the top one has a suggested fix.', label: 'Open Insights', href: '/insights' };
+  const draft = camps.find(c => c.status === 'draft');
+  if (draft) return { title: `Finish "${draft.name}"`, why: 'It is saved as a draft and has not reached anyone. The launch card shows who, when and the cost before you decide.', label: 'Open the draft', href: `/campaigns/${draft.id}` };
+  return null;
+}

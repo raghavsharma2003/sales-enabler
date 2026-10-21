@@ -89,31 +89,50 @@ export async function decide(actionId: string, approve: boolean): Promise<Receip
   fail(r);
 }
 
-/** Stream the Operator's reply. Prefers POST /v1/operator/stream (NDJSON); falls back to the operator.say tool. */
-export type OperatorEvent = { t: 'delta'; text: string } | { t: 'card'; card: unknown } | { t: 'done'; threadId?: string } | { t: 'error'; message: string };
-export async function streamOperator(body: unknown, onEvent: (e: OperatorEvent) => void, signal?: AbortSignal): Promise<'stream' | 'fallback'> {
-  let res: Response | null = null;
+/** The Operator (server/modules/operator): POST /v1/operator/threads, then POST .../messages answers as text/event-stream
+ *  with frames message, delta, step, card, notice, error, done. The body may arrive buffered or incrementally; both parse. */
+export type OperatorFrame =
+  | { type: 'message'; id: string; role: 'user'; text: string }
+  | { type: 'delta'; text: string }
+  | { type: 'step'; tool: string; status: 'running' | 'done'; outcome?: string }
+  | { type: 'card'; id: string; card: ApiCard }
+  | { type: 'notice'; text: string }
+  | { type: 'error'; text: string }
+  | { type: 'done'; llmCalls: number; toolCalls: number; stoppedBy?: string };
+export type ApiCard =
+  | { type: 'approval'; actionId: string; tool: string; summary: string; risk: { risk: Risk; label: string }; mode: 'A2' | 'A0'; diff: { field: string; to: unknown }[]; approvers: string[]; expiresAt: string; status: 'proposed' }
+  | { type: 'receipt'; tool: string; status: 'confirmed' | 'not_executed' | 'unknown'; mode?: string; text: string; result?: unknown; actionId?: string }
+  | { type: 'plan'; goal: string; steps: { n: number; tool: string; why?: string; risk?: Risk; runs: 'now' | 'tap' | 'refused'; status: string; reason?: string; actionId?: string }[]; footer: string };
+
+export async function createThread(): Promise<string> {
+  const r = await http('POST', '/v1/operator/threads', {});
+  if (r.status >= 300) fail(r);
+  return r.json.thread.id;
+}
+
+/** Send one message to a thread and hand every frame to onEvent as it is parsed. */
+export async function sendOperator(threadId: string, text: string, onEvent: (e: OperatorFrame) => void, signal?: AbortSignal): Promise<void> {
+  let res: Response;
   try {
-    res = await fetch('/v1/operator/stream', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal });
+    res = await fetch(`/v1/operator/threads/${encodeURIComponent(threadId)}/messages`, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text }), signal });
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw e;
     throw new ApiError(0, 'offline', 'Could not reach the server. Check your connection and try again.');
   }
   if (res.status === 401) { onUnauth(); throw new ApiError(401, 'unauthorised', 'Please sign in again.'); }
-  const ct = res.headers.get('content-type') ?? '';
-  if (res.ok && res.body && ct.includes('ndjson')) {
-    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      let i: number;
-      while ((i = buf.indexOf('\n')) >= 0) {
-        const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
-        if (line) { try { onEvent(JSON.parse(line)); } catch { /* ignore a torn line */ } }
-      }
-    }
-    return 'stream';
+  if (!res.ok) { let j: any = null; try { j = await res.json(); } catch { /* none */ } throw new ApiError(res.status, j?.error?.code ?? 'error', j?.error?.message ?? `The server answered ${res.status}.`); }
+  if (!res.body) return;
+  const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
+  const flush = (block: string) => {
+    const data = block.split('\n').filter(l => l.startsWith('data:')).map(l => l.slice(5).trim()).join('');
+    if (data) { try { onEvent(JSON.parse(data)); } catch { /* ignore a torn frame */ } }
+  };
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i: number;
+    while ((i = buf.indexOf('\n\n')) >= 0) { flush(buf.slice(0, i)); buf = buf.slice(i + 2); }
   }
-  return 'fallback';
+  if (buf.trim()) flush(buf);
 }

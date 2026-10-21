@@ -5,19 +5,15 @@ export type { Grade };
 
 export interface Metric { value: string; n?: number; asOf?: string; grade: Grade | 'estimate'; source?: string }
 
+/** brief.today as the Operator module returns it (server/modules/operator/tools.ts). */
 export interface Brief {
-  asOf: string; sinceLabel: string;
-  bullets: { id: string; text: string; metric?: Metric; spark?: number[] }[];
-  needsYou: Need[]; moreNeeds?: number;
-  live: { campaignId: string; name: string; live: number; connected: number; paceLabel: string; status: string }[];
-  money: { todayMilli: number; budgetMilli: number | null; walletMilli: number; runwayDays: number | null };
-  next: { title: string; why: string; label: string; href: string } | null;
-  did: { drafts: number; tests: number; guards: number };
-  day0?: boolean;
-}
-export interface Need {
-  id: string; priority: 'P0' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5'; kind: 'safety' | 'approval' | 'issue' | 'proposal' | 'fyi';
-  title: string; why: string; href?: string; actionId?: string; deadline?: string;
+  asOf: string; since: string;
+  needsTap: { n: number; items: { id: string; tool: string; summary: string | null; risk: string; created_at: string; expires_at: string | null }[] };
+  liveCampaigns: { n: number; items: { id: string; name: string; state: string; pause_cause: string | null; updated_at: string }[] };
+  spendToday: { inrMilli: number; byComponent: Record<string, number>; timezone: string };
+  wallet: { balanceInrMilli: number; state: string } | null;
+  issues: { n: number; items: { id: string; category: string; severity: string; subject_type: string; subject_id: string; created_at: string }[] };
+  changed: { n: number; byAction: { action: string; n: number }[] };
 }
 
 export interface AgentRow { id: string; name: string; job: string; category: string; status: 'draft' | 'testing' | 'live'; version: number; publishedVersion: number | null; stackId: string | null; languages: string[]; updatedAt: string; calls7d?: number | null }
@@ -61,7 +57,7 @@ export interface CampaignDoc extends CampaignRow {
   funnel: FunnelStage[]; versionPill: string;
 }
 export interface CampaignDraftInput { name: string; agentId: string; audienceId: string; category: 'service' | 'transactional' | 'promotional'; window: { start: string; end: string; days: string[] }; pace: { concurrency: number }; retries: { max: number; gapMin: number }; capMilli: number }
-export interface Estimate { contacts: number; callable: number; minutesRange: [number, number]; costRangeMilli: [number, number]; perMinuteMilli: number | null; gstNote: string; outcomeRange: [number, number] | null; basis: string; finishBy: string; sampleOpening?: { row: number; text: string; language: string } | null; checks: Check[] }
+export interface Estimate { contacts: number; callable: number; minutesRange: [number, number]; costRangeMilli: [number, number] | null; perMinuteMilli: number | null; gstNote: string; outcomeRange: [number, number] | null; basis: string; finishBy: string; sampleOpening?: { row: number; text: string; language: string } | null; checks: Check[] }
 
 export interface CallRow { id: string; contactName: string; phone: string; campaign: string; agent: string; version: string; startedAt: string; durationS: number; outcome: string; outcomeReason?: string; costMilli: number | null; gapMs: number | null; ran: string }
 export interface CallTurn { i: number; who: 'caller' | 'agent'; t0: number; t1: number; text: string; roman?: string; en?: string; gapMs?: number; cutIn?: boolean }
@@ -87,8 +83,9 @@ export interface ActivityRow { id: string; at: string; who: string; tool: string
 export interface OperatorCard {
   id: string; type: 'plan' | 'diff' | 'launch' | 'call' | 'chart' | 'approval' | 'issue' | 'receipt' | 'question' | 'progress';
   title: string; body?: string; state?: 'fresh' | 'waiting' | 'approved' | 'rejected' | 'stale' | 'expired' | 'failed';
-  steps?: { label: string; risk: string; when: 'now' | 'waits'; done?: boolean }[];
-  diff?: { field: string; before: string; after: string; reason?: string }[];
+  steps?: { label: string; risk: string; when: 'now' | 'waits'; done?: boolean; refused?: boolean }[];
+  mode?: 'A2' | 'A0'; approvers?: string[]; expiresAt?: string;
+  diff?: { field: string; before?: string; after: string; reason?: string }[];
   actionId?: string; summary?: string; risk?: string; costLabel?: string; provenance?: string; by?: string;
   outcome?: 'confirmed' | 'not_executed' | 'unknown'; undo?: string; href?: string; options?: { label: string; value: string }[]; defaultValue?: string;
   progress?: { label: string; pct: number | null }; quote?: string; metric?: Metric;

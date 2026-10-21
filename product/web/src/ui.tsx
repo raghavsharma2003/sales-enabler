@@ -98,24 +98,24 @@ export function Segmented<T extends string | number>({ value, onChange, options,
 }
 
 // ---------- form fields ----------
-export function Field({ label, hint, error, children, id }: { label: string; hint?: ReactNode; error?: string | null; children: (p: { id: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean }) => ReactNode; id?: string }) {
+export function Field({ label, hint, error, children, id, className }: { className?: string; label: string; hint?: ReactNode; error?: string | null; children: (p: { id: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean }) => ReactNode; id?: string }) {
   const g = useId(); const fid = id ?? g; const hid = fid + '-h';
   return (
-    <div className={cx('field', error && 'field-bad')}>
+    <div className={cx('field', error && 'field-bad', className)}>
       <label htmlFor={fid}>{label}</label>
       {children({ id: fid, 'aria-describedby': hint || error ? hid : undefined, 'aria-invalid': error ? true : undefined })}
       {(error || hint) && <p id={hid} className={cx('hint', error && 'hint-bad')}>{error ?? hint}</p>}
     </div>
   );
 }
-export function TextField({ label, hint, error, ...r }: { label: string; hint?: ReactNode; error?: string | null } & InputHTMLAttributes<HTMLInputElement>) {
-  return <Field label={label} hint={hint} error={error} id={r.id}>{p => <input className="input" {...r} {...p} />}</Field>;
+export function TextField({ label, hint, error, className, ...r }: { label: string; hint?: ReactNode; error?: string | null } & InputHTMLAttributes<HTMLInputElement>) {
+  return <Field label={label} hint={hint} error={error} id={r.id} className={className}>{p => <input className="input" {...r} {...p} />}</Field>;
 }
-export function TextArea({ label, hint, error, ...r }: { label: string; hint?: ReactNode; error?: string | null } & TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <Field label={label} hint={hint} error={error} id={r.id}>{p => <textarea className="input" {...r} {...p} />}</Field>;
+export function TextArea({ label, hint, error, className, ...r }: { label: string; hint?: ReactNode; error?: string | null } & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <Field label={label} hint={hint} error={error} id={r.id} className={className}>{p => <textarea className="input" {...r} {...p} />}</Field>;
 }
-export function SelectField({ label, hint, error, children, ...r }: { label: string; hint?: ReactNode; error?: string | null; children: ReactNode } & SelectHTMLAttributes<HTMLSelectElement>) {
-  return <Field label={label} hint={hint} error={error} id={r.id}>{p => <select className="input" {...r} {...p}>{children}</select>}</Field>;
+export function SelectField({ label, hint, error, children, className, ...r }: { label: string; hint?: ReactNode; error?: string | null; children: ReactNode } & SelectHTMLAttributes<HTMLSelectElement>) {
+  return <Field label={label} hint={hint} error={error} id={r.id} className={className}>{p => <select className="input" {...r} {...p}>{children}</select>}</Field>;
 }
 export function Toggle({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: string; hint?: ReactNode }) {
   const id = useId();

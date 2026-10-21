@@ -4,11 +4,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUp, Check, Eye, Mic, MicOff, Square, Sparkles } from 'lucide-react';
 import * as api from './api.ts';
-import { ApiError } from './api.ts';
+import { ApiError, type ApiCard } from './api.ts';
 import { nid, useApp, undoLine, type ThreadMsg } from './store.tsx';
 import { usePath } from './router.tsx';
 import { Link } from './router.tsx';
-import { Btn, Chip, Figure, HoldButton } from './ui.tsx';
+import { Btn, Chip, Figure, HoldButton, Segmented } from './ui.tsx';
+import { TestPanel } from './test-panel.tsx';
 import { pageInfo, RISK_WORDS } from './tools.ts';
 import type { OperatorCard } from './types.ts';
 
@@ -18,7 +19,7 @@ type SR = { lang: string; interimResults: boolean; continuous: boolean; start():
 const SpeechCtor: (new () => SR) | undefined = typeof window !== 'undefined' ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition) : undefined;
 
 export function Dock() {
-  const { thread, setThread, tools, toast } = useApp();
+  const { thread, setThread, tools, toast, agentCtx, dockTab, setDockTab, pendingSay, clearSay } = useApp();
   const path = usePath();
   const info = useMemo(() => pageInfo(path), [path]);
   const [text, setText] = useState('');
@@ -30,6 +31,8 @@ export function Dock() {
   const rec = useRef<SR | null>(null);
   const threadId = useRef<string | undefined>(undefined);
 
+  const showTest = !!agentCtx && path.startsWith('/agents/');
+  useEffect(() => { if (pendingSay && !busy) { const t = pendingSay; clearSay(); void send(t); } });
   useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [thread]);
   useEffect(() => () => { abort.current?.abort(); rec.current?.stop(); }, []);
 
@@ -37,34 +40,35 @@ export function Dock() {
 
   const send = useCallback(async (raw: string) => {
     const q = raw.trim(); if (!q || busy) return;
+    if (tools && !tools.has('operator.brain.set')) { /* the Operator module registers brief.today and operator.* together */ }
     setText(''); setHeard(null); setBusy(true);
     const mid = nid('vp');
     setThread(t => [...t, { id: nid('u'), role: 'user', text: q }, { id: mid, role: 'vp', text: '', streaming: true, cards: [] }]);
-    const body = { text: q, threadId: threadId.current, page: { path: location.pathname, label: info.label } };
     const ac = new AbortController(); abort.current = ac;
+    const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const queue = { buf: '' };
+    const timer = window.setInterval(() => {
+      if (!queue.buf) return;
+      const n = calm ? queue.buf.length : Math.max(2, Math.ceil(queue.buf.length / 18));
+      const piece = queue.buf.slice(0, n); queue.buf = queue.buf.slice(n);
+      patch(mid, m => ({ ...m, text: m.text + piece }));
+    }, 22);
     try {
-      const how = await api.streamOperator(body, e => {
-        if (e.t === 'delta') patch(mid, m => ({ ...m, text: m.text + e.text }));
-        else if (e.t === 'card') patch(mid, m => ({ ...m, cards: [...(m.cards ?? []), e.card as OperatorCard] }));
-        else if (e.t === 'done') { if (e.threadId) threadId.current = e.threadId; }
-        else if (e.t === 'error') patch(mid, m => ({ ...m, text: m.text || e.message }));
+      if (!threadId.current) threadId.current = await api.createThread();
+      await api.sendOperator(threadId.current, q, e => {
+        if (e.type === 'delta') queue.buf += e.text;
+        else if (e.type === 'card') patch(mid, m => { const c = fromApi(e.id, e.card); const cs = m.cards ?? []; return { ...m, cards: cs.some(x => x.id === c.id) ? cs.map(x => (x.id === c.id ? c : x)) : [...cs, c] }; });
+        else if (e.type === 'step') patch(mid, m => ({ ...m, step: e.status === 'running' ? e.tool : undefined }));
+        else if (e.type === 'notice') patch(mid, m => ({ ...m, notice: e.text }));
+        else if (e.type === 'error') patch(mid, m => ({ ...m, notice: e.text }));
       }, ac.signal);
-      if (how === 'fallback') {
-        if (tools && !tools.has('operator.say')) {
-          patch(mid, m => ({ ...m, streaming: false, text: 'The Operator is not switched on in this server yet, so I cannot plan or act. You can still do everything from the pages.' }));
-        } else {
-          const r = await api.callTool<{ reply: string; cards?: OperatorCard[]; threadId?: string }>('operator.say', body);
-          if (r.status === 'confirmed') {
-            if (r.result.threadId) threadId.current = r.result.threadId;
-            await reveal(r.result.reply, s => patch(mid, m => ({ ...m, text: s })), ac.signal);
-            patch(mid, m => ({ ...m, cards: r.result.cards ?? [] }));
-          } else patch(mid, m => ({ ...m, text: r.status === 'not_executed' ? (/^unknown tool/.test(r.reason) ? 'The Operator is not switched on in this server yet.' : r.reason) : 'The result is unknown.' }));
-        }
-      }
+      while (queue.buf) await new Promise(r => setTimeout(r, 30));
     } catch (e) {
-      if ((e as Error).name !== 'AbortError') patch(mid, m => ({ ...m, text: m.text || (e instanceof ApiError ? e.message : 'I could not finish that. Nothing was changed.') }));
-    } finally { patch(mid, m => ({ ...m, streaming: false })); setBusy(false); abort.current = null; }
-  }, [busy, info.label, patch, setThread, tools]);
+      const notFound = e instanceof ApiError && (e.status === 404 || e.code === 'not_found');
+      queue.buf = '';
+      if ((e as Error).name !== 'AbortError') patch(mid, m => ({ ...m, notice: notFound ? 'The Operator is not switched on in this server yet, so I cannot plan or act. Every page still works on its own.' : (e instanceof ApiError ? e.message : 'I could not finish that. Nothing was changed.') }));
+    } finally { window.clearInterval(timer); patch(mid, m => ({ ...m, streaming: false, step: undefined })); setBusy(false); abort.current = null; }
+  }, [busy, patch, setThread, tools]);
 
   const stop = () => { abort.current?.abort(); };
   const toggleMic = () => {
@@ -77,53 +81,55 @@ export function Dock() {
     rec.current = r; setListening(true); r.start();
   };
 
+  const testing = showTest && dockTab === 'test';
   return (
     <aside className="dock" aria-label="Saarthi, VP's operator">
       <div className="dock-head">
         <div className="dock-title"><Sparkles size={18} aria-hidden /> <span>Saarthi</span> <span className="deva" lang="hi">सारथी</span> <Chip tone="peacock" title="Saarthi is an AI">AI</Chip></div>
-        <p className="dock-sub">VP's operator. Plans and does drafts and tests itself; waits for your tap on anything that reaches people or spends.</p>
-        <span className="seeing"><Eye size={13} aria-hidden /> Seeing: {info.label}</span>
+        {showTest && <Segmented label="Dock panel" value={testing ? 'test' : 'talk'} onChange={setDockTab} options={[{ value: 'talk' as const, label: 'Talk' }, { value: 'test' as const, label: 'Test her' }]} />}
+        {!testing && <p className="dock-sub">VP's operator. Plans and does drafts and tests itself; waits for your tap on anything that reaches people or spends.</p>}
+        <span className="seeing"><Eye size={13} aria-hidden /> Seeing: {testing ? `${agentCtx?.name} · v${agentCtx?.version}${agentCtx?.dirty ? ' · unsaved' : ''}` : info.label}</span>
       </div>
-      <div className="thread" ref={scroller} role="log" aria-live="polite" aria-label="Conversation with Saarthi">
-        <div className="msg msg-vp"><div className="bubble" lang="en-IN">{GREETING}</div></div>
-        {thread.map(m => <Msg key={m.id} m={m} />)}
-      </div>
-      {info.chips.length > 0 && !busy && (
-        <div className="chips" aria-label="Suggestions for this page">{info.chips.map(c => <button key={c} type="button" className="sugg" onClick={() => void send(c)}>{c}</button>)}</div>
-      )}
-      <form className="composer" onSubmit={e => { e.preventDefault(); void send(text); }}>
-        {heard && <p className="heard">Heard as: “{heard}”. Fix it below if it is wrong.</p>}
-        <div className="composer-row">
-          <label className="sr" htmlFor="dock-input">Message to Saarthi</label>
-          <textarea id="dock-input" className="input" rows={1} value={text} placeholder="Kaunsi calls karwani hain?" lang="hi"
-            onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text); } }} />
-          {SpeechCtor
-            ? <button type="button" className="iconbtn" aria-pressed={listening} aria-label={listening ? 'Stop listening' : 'Speak in Hindi or English'} onClick={toggleMic}>{listening ? <MicOff size={20} aria-hidden /> : <Mic size={20} aria-hidden />}</button>
-            : <span title="Voice input needs Chrome or Safari"><button type="button" className="iconbtn" aria-disabled="true" aria-label="Voice input needs Chrome or Safari" onClick={e => e.preventDefault()}><Mic size={20} aria-hidden /></button></span>}
-          {busy ? <Btn kind="secondary" icon={<Square size={14} aria-hidden />} onClick={stop} aria-label="Stop">Stop</Btn> : <Btn kind="primary" icon={<ArrowUp size={16} aria-hidden />} type="submit" aria-label="Send">Send</Btn>}
+      {testing ? <div className="thread"><TestPanel /></div> : <>
+        <div className="thread" ref={scroller} role="log" aria-live="polite" aria-label="Conversation with Saarthi">
+          <div className="msg msg-vp"><div className="bubble" lang="en-IN">{GREETING}</div></div>
+          {thread.map(m => <Msg key={m.id} m={m} />)}
         </div>
-      </form>
+        {info.chips.length > 0 && !busy && (
+          <div className="chips" aria-label="Suggestions for this page">{info.chips.map(c => <button key={c} type="button" className="sugg" onClick={() => void send(c)}>{c}</button>)}</div>
+        )}
+        <form className="composer" onSubmit={e => { e.preventDefault(); void send(text); }}>
+          {heard && <p className="heard">Heard as: “{heard}”. Fix it below if it is wrong.</p>}
+          <label className="sr" htmlFor="dock-input">Message to Saarthi</label>
+          <textarea id="dock-input" className="input" rows={2} value={text} placeholder="Kaunsi calls karwani hain?" lang="hi"
+            onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text); } }} />
+          <div className="composer-row">
+            {SpeechCtor
+              ? <button type="button" className="iconbtn" aria-pressed={listening} aria-label={listening ? 'Stop listening' : 'Speak in Hindi or English'} onClick={toggleMic}>{listening ? <MicOff size={20} aria-hidden /> : <Mic size={20} aria-hidden />}</button>
+              : <button type="button" className="iconbtn" aria-disabled="true" title="Voice input needs Chrome or Safari" aria-label="Voice input needs Chrome or Safari" onClick={e => e.preventDefault()}><Mic size={20} aria-hidden style={{ opacity: 0.45 }} /></button>}
+            <span className="small muted grow">{SpeechCtor ? (listening ? 'Listening…' : 'Type or speak') : 'Voice input needs Chrome or Safari'}</span>
+            {busy ? <Btn kind="secondary" icon={<Square size={14} aria-hidden />} onClick={stop} aria-label="Stop">Stop</Btn> : <Btn kind="primary" icon={<ArrowUp size={16} aria-hidden />} type="submit" aria-label="Send">Send</Btn>}
+          </div>
+        </form>
+      </>}
     </aside>
   );
 }
 
-/** Present an already-received reply progressively. Used only when the server answered in one piece. */
-async function reveal(full: string, set: (s: string) => void, signal: AbortSignal) {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { set(full); return; }
-  const parts = full.split(/(\s+)/); let acc = '';
-  for (let i = 0; i < parts.length; i++) {
-    if (signal.aborted) { set(full); return; }
-    acc += parts[i]; if (i % 2 === 0 || i === parts.length - 1) set(acc);
-    if (i % 2 === 0) await new Promise(r => setTimeout(r, 18));
-  }
-  set(full);
+/** Map the server's card shapes onto the display card. Cards carry the server's message id so a re-emitted plan updates in place. */
+function fromApi(id: string, c: ApiCard): OperatorCard {
+  if (c.type === 'approval') return { id, type: 'approval', title: c.summary, actionId: c.actionId, risk: c.risk.risk, summary: c.risk.label, state: 'waiting', mode: c.mode, approvers: c.approvers, expiresAt: c.expiresAt, diff: c.diff.map(d => ({ field: d.field, before: '', after: typeof d.to === 'string' ? d.to : JSON.stringify(d.to) })), by: c.tool };
+  if (c.type === 'receipt') return { id, type: 'receipt', title: c.text, outcome: c.status, by: c.tool, state: c.status === 'confirmed' ? 'approved' : c.status === 'unknown' ? 'stale' : 'failed' };
+  return { id, type: 'plan', title: c.goal, body: c.footer, steps: c.steps.map(s => ({ label: `${s.tool}${s.why ? ': ' + s.why : ''}${s.reason ? ` (${s.reason})` : ''}`, risk: s.risk ?? 'draft', when: s.runs === 'now' ? 'now' : 'waits', done: s.status === 'done', refused: s.runs === 'refused' })) };
 }
 
 function Msg({ m }: { m: ThreadMsg }) {
   return (
     <div className={`msg msg-${m.role} rise`}>
       {(m.text || m.streaming) && <div className="bubble" lang="en-IN">{m.text}{m.streaming && <span className="caret" aria-hidden />}{m.streaming && !m.text && <span className="sr">Saarthi is typing</span>}</div>}
+      {m.step && <p className="small muted" role="status">Working on <code>{m.step}</code>…</p>}
       {m.cards?.map(c => <Card key={c.id} c={c} />)}
+      {m.notice && <p className="small muted" role="status">{m.notice}</p>}
     </div>
   );
 }
@@ -154,8 +160,8 @@ export function Card({ c }: { c: OperatorCard }) {
       {c.body && <p className="small">{c.body}</p>}
       {c.quote && <blockquote className="small" style={{ margin: 0, paddingLeft: 10, borderLeft: '3px solid var(--peacock)' }} lang="hi">“{c.quote}”</blockquote>}
       {c.metric && <Figure m={c.metric} />}
-      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? `${s.risk}, runs now` : `${s.risk}, waits for you`}</Chip></span></li>)}</ol>}
-      {c.diff && <div>{c.diff.map((d, i) => <div className="diffrow" key={i}><strong>{d.field}</strong><span><s>{d.before}</s> → <ins>{d.after}</ins></span>{d.reason && <span className="small muted">{d.reason}</span>}</div>)}</div>}
+      {c.steps && <ol className="steps">{c.steps.map((s, i) => <li key={i}><span className="num">{s.done ? <Check size={13} aria-hidden /> : i + 1}</span><span>{s.label} {s.refused ? <Chip tone="brick">refused</Chip> : <Chip tone={s.when === 'now' ? 'leaf' : 'terra'}>{s.when === 'now' ? `${s.risk}, runs now` : `${s.risk}, waits for you`}</Chip>}</span></li>)}</ol>}
+      {c.diff && <div>{c.diff.map((d, i) => <div className="diffrow" key={i}><strong>{d.field}</strong><span>{d.before ? <><s>{d.before}</s> → </> : null}<ins>{d.after}</ins></span>{d.reason && <span className="small muted">{d.reason}</span>}</div>)}</div>}
       {c.progress && <div><div className="meter-bar" role="progressbar" aria-label={c.progress.label} aria-valuenow={c.progress.pct ?? undefined}><span className="meter-fill tone-peacock" style={{ transform: `scaleX(${(c.progress.pct ?? 0) / 100})` }} /></div><p className="small muted">{c.progress.label}</p></div>}
       {c.type === 'question' && c.options && (
         <div className="row">{c.options.map(o => <Btn key={o.value} size="sm" kind={o.value === c.defaultValue ? 'primary' : 'secondary'} onClick={() => { setPicked(o.value); toast(`Noted: ${o.label}.`, 'ok'); }}>{o.label}{o.value === c.defaultValue ? ' (default)' : ''}</Btn>)}{picked && <span className="small muted">You picked {picked}.</span>}</div>

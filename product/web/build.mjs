@@ -31,7 +31,7 @@ const result = await build({
 });
 
 const outputs = Object.entries(result.metafile.outputs);
-const js = outputs.find(([p, o]) => o.entryPoint && p.endsWith('.js'))?.[0].split('/').pop();
+const js = outputs.find(([p, o]) => o.entryPoint?.endsWith("src/main.tsx") && p.endsWith(".js"))?.[0].split('/').pop();
 const css = outputs.find(([p]) => p.endsWith('.css'))?.[0].split('/').pop();
 if (!js || !css) throw new Error('build produced no js/css');
 

@@ -33,7 +33,7 @@ export function pageInfo(path: string): PageInfo {
   const p = path.split('/').filter(Boolean);
   switch (p[0]) {
     case undefined: return { key: 'today', label: 'Today', chips: ['What needs me today?', 'Kal ka kharcha kitna hua?', 'Naya campaign shuru karo'] };
-    case 'agents': return p[1] ? { key: 'agent', label: 'Agent · ' + p[1], chips: ['Make her slower', 'Discount mat bolna', 'Test this agent'] } : { key: 'agents', label: 'Agents', chips: ['Naya agent banao', 'Which agent is live?'] };
+    case 'agents': return p[1] ? { key: 'agent', label: 'Agent', chips: ['Make her slower', 'Discount mat bolna', 'Test this agent'] } : { key: 'agents', label: 'Agents', chips: ['Naya agent banao', 'Which agent is live?'] };
     case 'contacts': return { key: 'contacts', label: p[1] ? 'Contact' : 'Contacts', chips: ['Ye CSV import karo', 'Who has opted out?', 'Show people with no consent'] };
     case 'campaigns': return { key: 'campaigns', label: p[1] ? 'Campaign' : 'Campaigns', chips: ['Why is pickup low?', 'Move the window to 11 am - 7 pm', 'Pause this campaign'] };
     case 'calls': return { key: 'calls', label: p[1] ? 'Call' : 'Calls', chips: p[1] ? ['Make a test from this call', 'Why did she hang up?'] : ['Show failed calls', 'Calls where they objected'] };

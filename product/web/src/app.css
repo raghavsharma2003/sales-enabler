@@ -85,7 +85,7 @@ button { font: inherit; color: inherit; }
 .rule { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
 
 /* ---------- forms ---------- */
-.field { display: grid; gap: 4px; min-width: 0; }
+.field { display: grid; gap: 4px; min-width: 0; align-content: start; }
 .field label { font-weight: 600; font-size: 0.9375rem; }
 .input { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; }
 textarea.input { min-height: 88px; resize: vertical; line-height: 1.5; }
@@ -282,3 +282,15 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .auth-points { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .auth-points li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.9375rem; color: var(--nav-ink); }
 @media (max-width: 819px) { .auth { grid-template-columns: 1fr; } .auth-side { padding: 24px 16px; } .auth-side h1 { font-size: 1.75rem; } .auth-form { padding: 24px 16px 48px; } .auth-points, .auth-side .hide-m { display: none; } }
+.testpanel { display: grid; gap: 20px; align-content: start; }
+.testpanel h4 { font-size: 1rem; }
+.simlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.simlist li { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.simlist summary { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 12px; cursor: pointer; min-height: 44px; font-weight: 600; font-size: 0.9375rem; }
+.simlist details > :not(summary) { margin-inline: 12px; } .simlist details > :last-child { margin-bottom: 12px; }
+.simturn { font-size: 0.9375rem; margin: 4px 12px; }
+.checks { margin: 8px 12px; padding: 0; list-style: none; font-size: 0.875rem; display: grid; gap: 2px; } .checks .ok { color: var(--leaf); font-weight: 700; } .checks .bad { color: var(--brick); font-weight: 700; }
+.composer textarea { min-height: 60px; }
+.composer-row { display: flex; gap: 8px; align-items: center; }
+
+.dock .seg { display: flex; width: 100%; } .dock .seg-o { flex: 1; }

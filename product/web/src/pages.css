@@ -1,0 +1,48 @@
+/* ---------- Today ---------- */
+.today { display: grid; gap: 24px; }
+.since h2 { font-size: 1.25rem; margin-bottom: 4px; }
+.lead { font-size: 1.125rem; max-width: 62ch; }
+.needs { list-style: none; margin: 0; padding: 0; display: grid; }
+.need { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 14px 0; border-top: 1px solid var(--line); }
+.need:first-child { border-top: 0; padding-top: 0; }
+.need-text { min-width: 0; display: grid; gap: 4px; }
+.need-title { font-weight: 600; overflow-wrap: anywhere; }
+.livelist { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.livestrip { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.bignum { font-size: 2.5rem; line-height: 1.1; margin-bottom: 12px; }
+@media (max-width: 819px) { .need { flex-direction: column; align-items: stretch; } .bignum { font-size: 2rem; } }
+/* ---------- stack picker ---------- */
+.stackbar { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+.stacks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+.stackcard { border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); padding: 16px; display: grid; gap: 10px; align-content: start; }
+.stackcard.sel { border: 2px solid var(--terra); padding: 15px; background: var(--terra-bg); }
+.stackcard h4 { margin: 0; font-size: 1rem; line-height: 1.35; }
+.stackcard .kv > div { grid-template-columns: 96px 1fr; padding: 6px 0; }
+.stackcard-foot { margin-top: auto; }
+.pickbtn { width: 100%; min-height: 44px; border-radius: 6px; border: 1px solid var(--terra); background: var(--surface); color: var(--terra-ink); font-weight: 700; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
+.pickbtn.on { background: var(--terra); color: var(--on-terra); }
+.risk { display: flex; gap: 6px; align-items: flex-start; color: var(--marigold-ink); }
+.risk svg { flex: none; margin-top: 3px; }
+.how { margin-top: 4px; font-size: 0.8125rem; color: var(--ink-2); } .how summary { cursor: pointer; color: var(--terra-ink); } .how p { margin-top: 4px; }
+/* ---------- builder ---------- */
+.editrow { display: flex; gap: 8px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+.editrow .iconbtn { margin-top: 22px; }
+.jobgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 10px; }
+.jobcard { text-align: left; display: grid; gap: 2px; padding: 12px; min-height: 64px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); cursor: pointer; align-content: start; }
+.jobcard span { color: var(--ink-2); font-size: 0.875rem; }
+.jobcard.on { border: 2px solid var(--terra); padding: 11px; background: var(--terra-bg); }
+.chipset { border: 0; padding: 0; margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 8px; } .chipset legend { font-weight: 600; font-size: 0.9375rem; margin-bottom: 8px; padding: 0; }
+.choice { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); cursor: pointer; font-size: 0.9375rem; }
+.choice.on { background: var(--forest); color: var(--nav-ink); border-color: var(--forest); }
+.choice input { accent-color: var(--terra); width: 16px; height: 16px; }
+.shape { color: var(--peacock); display: block; margin-bottom: 4px; }
+.locked-card { background: var(--sunk); }
+.toollist { list-style: none; margin: 0; padding: 0; display: grid; }
+.toollist li { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; } .toollist li:first-child { border-top: 0; }
+.versions { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.versions li { display: grid; grid-template-columns: 150px 1fr auto; gap: 12px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+@media (max-width: 819px) { .versions li { grid-template-columns: 1fr; gap: 4px; } .editrow { flex-direction: column; } .editrow .iconbtn { margin-top: 0; align-self: flex-end; } }
+/* ---------- agents list ---------- */
+.agentgrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.agentcard { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; }
+.agentcard:hover { border-color: var(--line-strong); }

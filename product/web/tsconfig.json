@@ -1,5 +1,5 @@
 {
   "extends": "../tsconfig.json",
-  "compilerOptions": { "jsx": "react-jsx", "allowImportingTsExtensions": true },
+  "compilerOptions": { "lib": ["ES2023", "DOM", "DOM.Iterable"], "jsx": "react-jsx", "allowImportingTsExtensions": true },
   "include": ["src/**/*.ts", "src/**/*.tsx", "../shared/stacks.ts", "../shared/agent-config.ts", "src/*.d.ts"]
 }

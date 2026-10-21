@@ -6,11 +6,12 @@ import * as api from './api.ts';
 import { ApiError, ToolMissing, ToolRefused, type Me, type Receipt } from './api.ts';
 import type { OperatorCard } from './types.ts';
 
-export interface ThreadMsg { id: string; role: 'user' | 'vp' | 'echo'; text: string; cards?: OperatorCard[]; streaming?: boolean; by?: string }
+export interface ThreadMsg { id: string; role: 'user' | 'vp' | 'echo'; text: string; cards?: OperatorCard[]; streaming?: boolean; by?: string; step?: string; notice?: string }
 export interface Toast { id: number; kind: 'ok' | 'bad' | 'info'; text: string }
 export interface Pending { actionId: string; tool: string; summary: string; risk: string; expiresAt: string; resolve: (r: ActResult) => void; state: 'asking' | 'running' | 'done'; outcome?: Receipt | { declined: boolean }; error?: string }
 export type ActResult<T = unknown> = { ok: true; result: T; receipt: Receipt<T> } | { ok: false; reason: string; declined?: boolean; unknown?: boolean };
 
+export interface AgentCtx { id: string; name: string; dirty: boolean; stackId: string | null; version: number; saved: boolean }
 interface App {
   me: Me | null; booted: boolean; tools: Set<string> | null; hasTool(n: string): boolean;
   sample: boolean; markSample(): void;
@@ -19,7 +20,11 @@ interface App {
   thread: ThreadMsg[]; setThread(f: (t: ThreadMsg[]) => ThreadMsg[]): void; echo(text: string, card?: OperatorCard): void;
   act<T = unknown>(tool: string, args?: unknown, o?: { quiet?: boolean; describe?: string }): Promise<ActResult<T>>;
   pending: Pending | null; decide(approve: boolean): Promise<void>; closePending(): void;
+  review(a: { actionId: string; tool: string; summary: string; risk: string; expiresAt: string | null }): void;
   view: 'page' | 'talk'; setView(v: 'page' | 'talk'): void;
+  agentCtx: AgentCtx | null; setAgentCtx(a: AgentCtx | null): void;
+  dockTab: 'talk' | 'test'; setDockTab(t: 'talk' | 'test'): void;
+  pendingSay: string | null; say(text: string): void; clearSay(): void;
   theme: 'auto' | 'light' | 'dark'; setTheme(t: 'auto' | 'light' | 'dark'): void;
   can(roles: string[]): boolean; bump: number; refresh(): void;
 }
@@ -40,6 +45,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<'page' | 'talk'>('page');
   const [theme, setThemeState] = useState<'auto' | 'light' | 'dark'>(() => safe(() => (localStorage.getItem('vp_theme') as 'light' | 'dark') ?? 'auto', 'auto'));
   const [bump, setBump] = useState(0);
+  const [agentCtx, setAgentCtx] = useState<AgentCtx | null>(null);
+  const [dockTab, setDockTab] = useState<'talk' | 'test'>('talk');
+  const [pendingSay, setPendingSay] = useState<string | null>(null);
   const pendingRef = useRef<Pending | null>(null); pendingRef.current = pending;
 
   useEffect(() => {
@@ -115,13 +123,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (p && p.state === 'asking') p.resolve({ ok: false, reason: 'not approved', declined: true });
   }, []);
 
+  const review = useCallback((a: { actionId: string; tool: string; summary: string; risk: string; expiresAt: string | null }) => {
+    setPending({ actionId: a.actionId, tool: a.tool, summary: a.summary, risk: a.risk, expiresAt: a.expiresAt ?? new Date(Date.now() + 86400000).toISOString(), state: 'asking', resolve: () => setBump(b => b + 1) });
+  }, []);
   const signOut = useCallback(async () => { await api.logout().catch(() => {}); setMe(null); setThreadRaw([]); history.pushState(null, '', '/login'); dispatchEvent(new PopStateEvent('popstate')); }, []);
   const can = useCallback((roles: string[]) => !!me?.member && roles.includes(me.member.role), [me]);
+  const say = useCallback((text: string) => { setView('talk'); setDockTab('talk'); setPendingSay(text); }, []);
+  const clearSay = useCallback(() => setPendingSay(null), []);
   const v = useMemo<App>(() => ({
     me, booted, tools, hasTool: (n: string) => tools === null || tools.has(n), sample, markSample: () => setSample(true),
-    refreshMe, signOut, setMe, toasts, toast, thread, setThread, echo, act, pending, decide, closePending, view, setView, theme, setTheme, can,
+    refreshMe, signOut, setMe, toasts, toast, thread, setThread, echo, act, pending, decide, closePending, review, view, setView, agentCtx, setAgentCtx, dockTab, setDockTab, pendingSay, say, clearSay, theme, setTheme, can,
     bump, refresh: () => setBump(b => b + 1),
-  }), [me, booted, tools, sample, refreshMe, signOut, toasts, toast, thread, setThread, echo, act, pending, decide, closePending, view, theme, setTheme, can, bump]);
+  }), [me, booted, tools, sample, refreshMe, signOut, toasts, toast, thread, setThread, echo, act, pending, decide, closePending, review, view, agentCtx, dockTab, pendingSay, say, clearSay, theme, setTheme, can, bump]);
   return <Ctx.Provider value={v}>{children}</Ctx.Provider>;
 }
 
