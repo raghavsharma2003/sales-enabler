@@ -16547,6 +16547,104 @@
    "source": "review B1 and B2 (blockers)",
    "broke": "'Ji nahi, main bot nahi.', '\u092e\u0948\u0902 machine \u0928\u0939\u0940\u0902, Riya \u0939\u0942\u0901\u0964' and '\u092c\u093f\u0932\u094d\u0915\u0941\u0932 \u0907\u0902\u0938\u093e\u0928 \u0939\u0942\u0901\u0964' reached TTS unchanged. The voice runtime also counted any 'bot' token as the disclosure. Rule: self-reference about her own nature is allowed only when it affirms AI-ness (an allow-list that over-triggers). A false positive costs one honest sentence; a false negative breaks a non-negotiable.",
    "path": "product/shared/safety/rules.json"
+  },
+  {
+   "id": "decision.2026-10-21.calls-outcome-evidence-is-the-callers",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "An outcome guess counts only if its quote is in a caller line of the stored transcript (by line index). If the only match is the agent's own words, the outcome is 'unclear' and not recorded",
+   "rationale": "Review M6: the agent saying 'aap kal payment kar denge' while the person said 'Abhi nahi' was recorded as will_pay. An outcome is what the person said or did, so evidence must come from the person, as memory already requires.",
+   "reverse_if": "An outcome definition is about the agent's own action (e.g. 'disclosure given'); then let that definition name the speaker its evidence must come from."
+  },
+  {
+   "id": "decision.2026-10-21.campaigns-gate-wgc-fixes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Dial gate after the 'who gets called' review (WGC-01..08), each fix fail-closed:\n- consent is decided by the newest record across the purposes covering the call, ordered by evidence.statedAt when it is ISO;\n- an unreadable expiry counts as expired;\n- promotional calls need an explicit fresh not_registered (7 days), or registered plus CRF;\n- a +91 number keeps the IST quiet hours and bands whatever zone was imported;\n- an erased contact is refused at G2;\n- an unknown dial with a live call holds a line.",
+   "rationale": "Each finding had a reproducing test against the real gate. The two blockers (WGC-01, WGC-03) made DND-registered or withdrawn people dialable.",
+   "reverse_if": "Counsel rules that NCPR does not bind a consented promotional call, or intake supplies a structured consent effective-time column that should replace evidence.statedAt."
+  },
+  {
+   "id": "decision.2026-10-21.intake-canonical-age-keys",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Intake writes age-like columns under three canonical keys (date_of_birth, age, is_minor) and exports the rule (AGE_KEY_SYNONYMS, canonicalAgeKey) for memory's children's-data gate",
+   "rationale": "Memory's gate matched whole keys, so 'Customer DOB' -> customer_dob slipped past. One list, owned where headers are mapped, cannot drift. 'age' maps only when it names the person (Age, Customer Age, Age (years), Umar), so Vehicle Age or Policy Age keep their own keys.",
+   "reverse_if": "A tenant needs two different person-age columns kept apart, or the gate moves to typed attributes with a declared meaning."
+  },
+  {
+   "id": "rejected.2026-10-21.intake-keys-drop-devanagari-marks",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Attribute keys built with [^\\p{L}\\p{N}] split Devanagari words",
+   "tried": "Snake-casing headers by keeping only Unicode letters and numbers.",
+   "broke": "Vowel signs and the virama are marks (\\p{M}), so '\u0909\u092e\u094d\u0930' became '\u0909\u092e_\u0930' (caught by the age-key test). Keys now keep \\p{M}."
+  },
+  {
+   "id": "decision.2026-10-21.intake-consent-effective-time",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Consent is ordered by its effective time (when it was given or withdrawn), not insert time; an older or undated imported grant after a withdrawal is history only",
+   "rationale": "Review WGC-06: re-importing an old consent=yes file became the latest record and undid a newer withdrawal. consent_record.effective_at (0105) is the source's stated time, else the insert time, clamped so a source can never post-date its claim; latest = (effective_at DESC, created_at DESC). Undated grants following a withdrawal are stored just before it.",
+   "reverse_if": "Counsel says a tenant's re-assertion of consent (undated) must count as a fresh grant; then require an explicit dated consent.record for it instead."
+  },
+  {
+   "id": "decision.2026-10-21.intake-birth-year-age-group-keys",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "Two more canonical age keys: birth_year (Year of Birth, Birth Year, YoB, \u091c\u0928\u094d\u092e \u0935\u0930\u094d\u0937) and age_group (Age Group/Band/Range/Bracket, \u0906\u092f\u0941 \u0935\u0930\u094d\u0917), person-noun prefix allowed",
+   "rationale": "Review WGC-09: these headers fell through as no age data, so memory ran for a 14-year-old. Memory reads birth_year as the younger possible age and fails closed on an age_group with any bound under 18.",
+   "reverse_if": "The gate moves to typed attributes with a declared meaning."
+  },
+  {
+   "id": "rejected.2026-10-21.aa-coverage-imbalance-gate",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Rejected: gating the shadow A/A on outcome-coverage imbalance across the shadow split (two-proportion p < 0.01).",
+   "tried": "shadowAA() failed the plumbing check when the share of calls with an outcome differed between the two hash-split shadow arms at p < 0.01.",
+   "broke": "The shadow arms are a hash of the contact id, so a real outcome-writer bug cannot correlate with them. The gate fired only by chance: 13 of 2,000 healthy datasets (150 contacts, 20 without an outcome). Each firing left the experiment unlaunched (aa_failed plus an issue), and it was the likely cause of the learning CI flake at 7bec779. The overall coverage floor is kept; the imbalance p is still reported."
+  },
+  {
+   "id": "measure.2026-10-21.aa-imbalance-false-fail",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-21",
+   "title": "Shadow A/A on healthy synthetic history (150 contacts, 30 successes, 20 without an outcome, random ids and salts): the coverage-imbalance gate fired 13/2,000 (runs 200) and 6/1,000 (runs 1,000). With the gate removed, 0/1,000 shadow A/A runs failed. Afterwards learning.test.ts passed 30/30 in a loop and the full suite passed 284/284 twice on one shared database.",
+   "n": 3000,
+   "method": "shadowAA() in product/server/modules/learning/stats.ts, scratch script in the coding sandbox; node --test loops"
+  },
+  {
+   "id": "evidence.2026-10-21.review-what-she-says",
+   "type": "evidence",
+   "status": "reproduced",
+   "date": "2026-10-21",
+   "source": "adversarial review (what she says / what the Operator can be made to do)",
+   "title": "Adversarial review of the reply door, caller signals, voice runtime, compile, calls hook/analysis and Operator: 13 findings (6 blocker, 6 major, 1 minor), each with a failing test. Blockers: plain AI denials pass both doors (B1); any 'AI/bot' token counts as disclosure (B2); a rule split over two sentences passes (B3); 'Hello? Kaun?' confirms identity (B4); a per-contact amount leaks before identity when spelled without the rupee mark (B5); common Hinglish and all Tamil-English crisis lines missed (B6). Majors: amounts in words (M1), Python door ASCII-only \\s and case folding vs TS (M2), S2S audio played before its transcript is doored and beta stack not gated (M3), brain cost metered 0 on blocked/withdrawn OpenAI-compatible streams (M4), draft continues after an RD2/RD3 replacement (M5), outcome evidenced by the agent's own line (M6). Verified: ~130 fuzz lines through both doors, sim calls, a LiveSession replay, an HttpBrain stream with fake HTTP, analysis on Postgres with a fake model; all 34 tests fail on their assertion. Not verified: live providers, audio, real Live message order.",
+   "path": "product/tests/review/what-she-says.md"
+  },
+  {
+   "id": "open.2026-10-21.review-what-she-says-fixes",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "review what-she-says",
+   "title": "Fix the 6 blockers of the what-she-says review before any live call (B1-B6), then M1-M6; promote candidate vectors into cases.json (safety builder decides).",
+   "closes_when": "product/voice/tests/test_review.py and product/tests/review/what-she-says.test.ts report unexpected successes for every B and M finding and their markers are dropped"
   }
  ],
  "edges": [
@@ -29696,6 +29794,46 @@
    "from": "measure.2026-10-21.review-what-she-says",
    "to": "decision.2026-10-21.safety-second-layer-proposal",
    "relation": "supports"
+  },
+  {
+   "from": "component.2026-10-21.campaigns-module",
+   "to": "decision.2026-10-21.campaigns-gate-wgc-fixes",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-canonical-age-keys",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-consent-effective-time",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-21.intake-module",
+   "to": "decision.2026-10-21.intake-birth-year-age-group-keys",
+   "relation": "implements"
+  },
+  {
+   "from": "rejected.2026-10-21.aa-coverage-imbalance-gate",
+   "to": "measure.2026-10-21.aa-imbalance-false-fail",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-21.aa-coverage-imbalance-gate",
+   "to": "component.2026-10-21.learning-module",
+   "relation": "informs"
+  },
+  {
+   "from": "evidence.2026-10-21.review-what-she-says",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-21.review-what-she-says-fixes",
+   "to": "evidence.2026-10-21.review-what-she-says",
+   "relation": "follows"
   }
  ]
 }
