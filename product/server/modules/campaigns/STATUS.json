@@ -88,17 +88,17 @@
     },
     {
       "name": "number.byo.connect",
+      "risk": "draft"
+    },
+    {
+      "name": "number.kyc.submit",
       "risk": "policy",
       "a2": true
     },
     {
-      "name": "number.kyc.submit",
+      "name": "number.pause",
       "risk": "external",
       "a2": true
-    },
-    {
-      "name": "number.pause",
-      "risk": "draft"
     },
     {
       "name": "number.pause_flagged",
@@ -128,10 +128,10 @@
     }
   ],
   "tests": {
-    "passed": 41,
-    "total": 41,
+    "passed": 42,
+    "total": 42,
     "files": [
-      "tests/campaigns.test.ts (30, Postgres)",
+      "tests/campaigns.test.ts (31, Postgres)",
       "tests/campaigns-units.test.ts (11, pure)"
     ]
   },
@@ -170,13 +170,11 @@
     "Load: precheck p95 latency was not measured (the target is 50 ms or less)."
   ],
   "needs_from_others": [
-    "kernel/integrator: add `campaigns` to server/modules/index.ts. Its dispatch job then starts through startJobs. Optionally let a member run an A3 verb (pause, stop) at once.",
     "calls module: settles or releases the hold at call.ended (already in calls/ingest.ts). Still needed: set attempt.outcome_class and call registry tool attempt.retry_per_ladder { attemptId, outcome, at? } as system after a non-final outcome (busy, no_answer, voicemail, short_call, callback, ...).",
-    "intake/memory-omni: confirm the tombstone e164_hash convention. The gate checks sha256(e164) and HMAC-SHA256(key = workspace_id, e164). Also write dnd_status.ncpr_status and checked_at from a carrier lookup, and use consent_record.purpose values 'service' / 'transactional' / 'promotional' / 'all'.",
     "workspace module: a tool that verifies a member phone (it writes verified_test_phone.verified_at), and one that records an A2P declaration reference (it sets phone_number.a2p_status = 'declared', a2p_ref).",
     "agents module: put config.lint = { ok } on agent_version. G10 reads it and also calls shared/safety lintAgentConfig.",
-    "blueprint data: research/2026-10-21/blueprint/data/{campaigns-module-defaults,trust-telephony-defaults,workspace-tool-registry}.json are not in the repo. The defaults in defaults.ts were transcribed from the module markdown.",
     "kernel tests: 'prepare() runs outside the transaction' counts every idle-in-transaction session in the database, so it fails when run in parallel with suites that legitimately hold a claim transaction open (campaigns G11 predial waits up to 800 ms inside the claim by design). It passes alone (3/3). Scope the count to the test's own backend or connection."
   ],
-  "full_suite_note": "On 2026-10-21 the whole product suite (scripts/test.mjs) on this head ran 212 tests: 209 pass, 3 fail, none in campaigns. agents test.simulate and learning gates also fail on the base commit 6610597 without this module, so they predate it. The kernel prepare() test is the parallel-run flake described in needs_from_others."
+  "full_suite_note": "On 2026-10-21 the whole product suite (scripts/test.mjs) on this head ran 212 tests: 209 pass, 3 fail, none in campaigns. agents test.simulate and learning gates also fail on the base commit 6610597 without this module, so they predate it. The kernel prepare() test is the parallel-run flake described in needs_from_others.",
+  "risk_classes": "Every campaigns tool listed in research/2026-10-21/blueprint/data/workspace-tool-registry.json uses the registry's class. Not in the registry: campaign.stop_at_cap, number.pause_flagged and attempt.retry_per_ladder (external, A3 when VP acts), and the reads campaign.list, campaign.get and attempt.list."
 }

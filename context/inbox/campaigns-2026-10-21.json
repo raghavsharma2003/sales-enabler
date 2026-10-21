@@ -12,7 +12,7 @@
     {
       "id": "decision.2026-10-21.campaigns-risk-classes-without-registry",
       "type": "decision",
-      "status": "proposed",
+      "status": "superseded",
       "source": "model",
       "date": "2026-10-21",
       "title": "The campaigns tools take their risk classes from workspace.md §5, because data/workspace-tool-registry.json is not in the repo. Verbs on the kernel's A3 list (campaign.pause/stop, stop_at_cap, number.pause_flagged, attempt.retry_per_ladder) are 'external': VP runs them at once (A3), and a person's call goes through approval. Risk-lowering verbs not on that list (campaign.window.narrow, number.pause) are 'draft', so they run at once (A1). campaign.window.widen, policy.window.set and policy.category.override are 'policy'. number.rent is 'spend'. number.byo.connect is 'policy'. number.kyc.submit is 'external'. a2p.declaration.export is 'read'.",
@@ -45,8 +45,8 @@
       "status": "measured",
       "source": "verified",
       "date": "2026-10-21",
-      "title": "Campaigns test suites: 41 of 41 pass (30 against Postgres 16 on the throwaway cluster, 11 pure). They cover:\n- every gate code;\n- T3 at the form, the HTTP API (422 with the rule id) and the gate;\n- cross-midnight rules;\n- 12 concurrent workers racing for 5 attempts, each claimed exactly once;\n- reservations released on refusal;\n- tenancy isolation;\n- launch approval voided by a policy-version change.\nRun twice on the same database with the kernel suites, 62 of 62 both times.",
-      "n": 41,
+      "title": "Campaigns test suites: 42 of 42 pass (31 against Postgres 16 on the throwaway cluster, 11 pure). They cover:\n- every gate code;\n- T3 at the form, the HTTP API (422 with the rule id) and the gate;\n- cross-midnight rules;\n- 12 concurrent workers racing for 5 attempts, each claimed exactly once;\n- reservations released on refusal;\n- tenancy isolation;\n- launch approval voided by a policy-version change.\nRun twice on the same database with the kernel suites, 62 of 62 both times.",
+      "n": 42,
       "method": "node --import tsx --test tests/campaigns.test.ts tests/campaigns-units.test.ts against DATABASE_URL from product/scripts/pg-test.sh vp_mod_campaigns; FakeRuntime and FakeTelephony; synthetic 90000000xx numbers",
       "path": "product/tests/campaigns.test.ts"
     },
@@ -58,16 +58,55 @@
       "date": "2026-10-21",
       "title": "Campaigns seams still to close with siblings:\n- How the tombstone hash is salted. The gate checks both sha256(e164) and HMAC(workspace_id, e164).\n- The calls module creating the conversation row from ticket.conversationId, settling or releasing attempt.reservation_id, and calling attempt.retry_per_ladder on call end.\n- Wiring the module into server/modules/index.ts and starting the worker in main.ts.\n- A tool that marks a line A2P-declared and a member phone verified.\n- The JSON defaults files the blueprint cites.",
       "closes_when": "Every item has a tool name or a merged sibling that implements it, and an end-to-end test drives a campaign from launch to settled cost."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-risk-classes-from-registry",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The campaigns tools now use the risk classes in research/2026-10-21/blueprint/data/workspace-tool-registry.json. Three changed: number.byo.connect policy -> draft, number.kyc.submit external -> policy, number.pause draft -> external. VP's own risk-lowering line pause stays number.pause_flagged (A3).",
+      "rationale": "The registry file landed. One source of risk classes keeps the API, MCP and Operator tool lists consistent.",
+      "reverse_if": "The registry changes these classes, or a measured incident shows a line pause must run at once for a person."
     }
   ],
   "edges": [
-    { "from": "component.2026-10-21.campaigns-module", "to": "decision.2026-10-21.campaigns-gate-semantics", "relation": "implements" },
-    { "from": "component.2026-10-21.campaigns-module", "to": "decision.2026-10-21.campaigns-risk-classes-without-registry", "relation": "implements" },
-    { "from": "component.2026-10-21.campaigns-module", "to": "decision.2026-10-21.campaigns-a2p-warning-before-due", "relation": "implements" },
-    { "from": "measure.2026-10-21.campaigns-tests", "to": "component.2026-10-21.campaigns-module", "relation": "tests" },
-    { "from": "component.2026-10-21.campaigns-module", "to": "open.2026-10-21.campaigns-seams", "relation": "leaves-open" }
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-gate-semantics",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-a2p-warning-before-due",
+      "relation": "implements"
+    },
+    {
+      "from": "measure.2026-10-21.campaigns-tests",
+      "to": "component.2026-10-21.campaigns-module",
+      "relation": "tests"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "open.2026-10-21.campaigns-seams",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-21.campaigns-risk-classes-from-registry",
+      "to": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+      "relation": "supersedes"
+    }
   ],
   "events": [
-    { "date": "2026-10-21", "event": "campaigns-module-built", "details": "Campaigns module built: dial gate G1-G12 in the claim, worker, 25 tools, migration 0301. 40/40 tests green on vp_mod_campaigns." }
+    {
+      "date": "2026-10-21",
+      "event": "campaigns-module-built",
+      "details": "Campaigns module built: dial gate G1-G12 in the claim, worker, 25 tools, migration 0301. 40/40 tests green on vp_mod_campaigns."
+    }
   ]
 }

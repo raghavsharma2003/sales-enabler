@@ -434,7 +434,7 @@ export function registerCampaignTools(registry: Registry): void {
   }));
 
   reg(tool(obj({ e164: str({ max: 20 }), series: seriesV, carrier: str({ min: 1, max: 60 }), trunkRef: str({ min: 1, max: 120 }) }), {
-    name: 'number.byo.connect', risk: 'policy', summary: 'Connect a number the business already owns, on its own carrier',
+    name: 'number.byo.connect', risk: 'draft', summary: 'Connect a number the business already owns, on its own carrier',
     describe: i => `Connect your own ${i.series} line on ${i.carrier}`,
     run: async (ctx, i) => {
       const p = normaliseIndianPhone(i.e164);
@@ -447,7 +447,7 @@ export function registerCampaignTools(registry: Registry): void {
   }));
 
   reg(tool(obj({ numberId: uuid(), documents: arr(obj({ kind: str({ min: 1, max: 40 }), ref: str({ min: 1, max: 200 }) }), { min: 1, max: 10 }) }), {
-    name: 'number.kyc.submit', risk: 'external', summary: 'Send the KYC documents for a line to its carrier',
+    name: 'number.kyc.submit', risk: 'policy', summary: 'Send the KYC documents for a line to its carrier',
     describe: i => `Send ${i.documents.length} KYC documents for line ${i.numberId} to its carrier`,
     run: async (ctx, i) => {
       const n = await one<{ id: string; provider_ref: string | null; kyc_status: string }>(ctx.q, 'SELECT id, provider_ref, kyc_status FROM phone_number WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.numberId, ctx.workspaceId]);
@@ -460,7 +460,7 @@ export function registerCampaignTools(registry: Registry): void {
   }));
 
   reg(tool(obj({ numberId: uuid(), reason: str({ min: 1, max: 200 }) }), {
-    name: 'number.pause', risk: 'draft', roles: ['owner', 'builder', 'operator', 'compliance'], summary: 'Pause a line; every campaign using it waits (risk-lowering, runs at once)',
+    name: 'number.pause', risk: 'external', roles: ['owner', 'builder', 'operator', 'compliance'], summary: 'Pause a line; every campaign using it waits (VP itself pauses a flagged line at once with number.pause_flagged)',
     run: async (ctx, i) => {
       const r = await ctx.q.query("UPDATE phone_number SET status = 'paused', pause_cause = $3 WHERE id = $1 AND workspace_id = $2 AND status <> 'released'", [i.numberId, ctx.workspaceId, 'person:' + i.reason]);
       if (!r.rowCount) throw new ValidationError('numberId', 'no such line in this workspace');

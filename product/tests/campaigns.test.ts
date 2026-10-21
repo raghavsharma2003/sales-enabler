@@ -629,7 +629,9 @@ test('numbers: search, rent (spend, owner approves), KYC, pause; A2P pack export
   const kr = await registry.approve<{ kycStatus: string }>(pool, k.status === 'needs_approval' ? k.actionId : '', { workspaceId: w.ws, memberId: w.owner });
   assert.ok(kr.status === 'confirmed' && kr.result.kycStatus === 'submitted');
   const pz = await registry.execute(pool, 'number.pause', { numberId: nid, reason: 'testing' }, as(w, 'compliance'));
-  assert.equal(pz.status, 'confirmed');
+  assert.equal(pz.status, 'needs_approval', 'registry class external: a person\'s pause is approved');
+  const pzr = await registry.approve<{ status: string }>(pool, pz.status === 'needs_approval' ? pz.actionId : '', { workspaceId: w.ws, memberId: w.owner });
+  assert.ok(pzr.status === 'confirmed' && pzr.result.status === 'paused');
   const fl = await registry.execute(pool, 'number.pause_flagged', { numberId: w.numberId, flag: 'suspected UCC notice' }, SYS(w));
   assert.ok(fl.status === 'confirmed' && fl.mode === 'A3');
   const pack = await registry.execute<{ csv: string; lines: { status: string }[] }>(pool, 'a2p.declaration.export', { format: 'csv' }, as(w, 'compliance'));
