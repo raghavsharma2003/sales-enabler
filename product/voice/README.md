@@ -125,10 +125,10 @@ the crisis signal, never remove one.
   agenda dropped, a human offered, no hang-up.
 - **Failure:** a timeout, error or bad output leaves the floor's verdict.
 - **No model configured:** no call and no spend.
-- **Events:** only a raise is a `safety` event (rule RD3, action `suspended_goal`, detail starting `judge_raised`).
-  Shadow guesses and unavailable verdicts are never safety events, because calls turns every safety event into a
-  safety flag on the call. They go to the runtime log until the `judge` runtime event lands in
-  `shared/runtime-protocol.ts`.
+- **Events:** every judged turn with an outcome emits a `judge` runtime event (`outcome` raised, shadow or
+  unavailable; `kind`/`confidence` on a hit, `reason` when unavailable; integer `latencyMs`; never caller text). Only
+  a raise is also a `safety` event (rule RD3, `suspended_goal`), because calls turns every safety event into a safety
+  flag on the call. A judge that says "no crisis" emits nothing.
 - **Production:** `raise` only on the owner's go.
 
 ### Fallbacks and failures

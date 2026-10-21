@@ -132,6 +132,21 @@ def sim_call(script, lines, complete, mode, t=None):
     return sess, p, replies
 
 
+def judge_events(p):
+    """The runtime's 'judge' events, each checked against calls/ingest.ts's strict validator (unknown fields -> 422)."""
+    out = of(p, 'judge')
+    for e in out:
+        assert set(e) <= {'seq', 'type', 'at', 'judge', 'mode', 'outcome', 'kind', 'confidence', 'reason', 'latencyMs'}, e
+        assert e['judge'] == 'caller_crisis' and e['mode'] in ('shadow', 'raise') and e['outcome'] in ('raised', 'shadow', 'unavailable'), e
+        assert isinstance(e['latencyMs'], int) and e['latencyMs'] >= 0, e
+        assert all(v is not None for v in e.values()), e
+        if 'kind' in e: assert e['kind'] in ('direct', 'indirect'), e
+        if 'confidence' in e: assert isinstance(e['confidence'], (int, float)) and 0 <= e['confidence'] <= 1, e
+        if 'reason' in e: assert e['reason'] in ('timeout', 'error', 'bad_output'), e
+        assert ('reason' in e) == (e['outcome'] == 'unavailable') and ('kind' in e) == (e['outcome'] != 'unavailable'), e
+    return [(e['mode'], e['outcome'], e.get('kind'), e.get('reason')) for e in out]
+
+
 def safety_details(p): return [(x['rule'], x['action'], x['detail'].split(':')[0]) for x in of(p, 'safety')]
 
 
@@ -146,6 +161,7 @@ class Runtime(unittest.TestCase):
         self.assertEqual([x for x in safety_details(p) if x[1] == 'suspended_goal'], [('RD3', 'suspended_goal', 'judge_raised')], 'exactly one')
         self.assertEqual([x for x in safety_details(p) if 'judge' in x[2]], [('RD3', 'suspended_goal', 'judge_raised')], 'no other judge event')
         self.assertEqual([h['reason'] for h in of(p, 'hand_off')], ['crisis'])
+        self.assertEqual(judge_events(p), [('raise', 'raised', 'indirect', None)], 'the judge record, alongside the one safety event')
         self.assertEqual(sess.ended, 'caller_hung_up', 'no hang-up from her side')
         self.assertEqual(len(seen), 1, 'judged once; with the call already in crisis there is nothing left to add')
 
@@ -156,6 +172,8 @@ class Runtime(unittest.TestCase):
         self.assertEqual(replies[1], [self.AGENDA])
         self.assertEqual(of(p, 'safety'), [], 'a shadow guess never marks the call unsafe')
         self.assertTrue(any('judge_shadow' in m for m in logs.output))
+        self.assertEqual(judge_events(p), [('shadow', 'shadow', 'indirect', None)])
+        self.assertNotIn(INDIRECT[:20], json.dumps(of(p, 'judge'), ensure_ascii=False), 'never caller text')
         self.assertEqual(len(seen), 1)
         self.assertFalse(sess.conv.state['crisis']); self.assertEqual(of(p, 'hand_off'), [])
 
@@ -185,12 +203,24 @@ class Runtime(unittest.TestCase):
             judge.SPEC['timeout_ms'] = old
         self.assertEqual(replies[1], [self.AGENDA])
         self.assertEqual(of(p, 'safety'), [], 'a judge timeout is not a safety event')
+        self.assertEqual(judge_events(p), [('raise', 'unavailable', None, 'timeout')])
 
     def test_floor_hit_acts_at_once_and_the_judge_is_not_asked(self):
         c, seen = fake(verdict(False, 0.99, 'none'), delay=5.0)
         sess, p, replies = sim_call([DISCLOSED, self.AGENDA], ['main marna chahta hoon'], c, 'raise')
         self.assertIn('14416', ' '.join(replies[1]))
         self.assertEqual(seen, [])
+
+    def test_a_no_from_the_judge_emits_nothing(self):
+        c, seen = fake(verdict(False, 0.1, 'none'))
+        sess, p, replies = sim_call([DISCLOSED, self.AGENDA], [INDIRECT], c, 'shadow')
+        self.assertEqual((len(seen), judge_events(p), of(p, 'safety')), (1, [], []))
+
+    def test_bad_output_is_unavailable(self):
+        c, _ = fake('I think the caller may be sad.')
+        sess, p, replies = sim_call([DISCLOSED, self.AGENDA], [INDIRECT], c, 'raise')
+        self.assertEqual(judge_events(p), [('raise', 'unavailable', None, 'bad_output')])
+        self.assertEqual(replies[1], [self.AGENDA])
 
     def test_no_keys_no_call(self):
         c, seen = fake(verdict(True, 0.9, 'indirect'))

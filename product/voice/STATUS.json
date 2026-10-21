@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 144,
-    "passed": 144,
+    "ran": 146,
+    "passed": 146,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -39,6 +39,7 @@
     "Brief used verbatim; memory brief only when memoryStatus = loaded; generic data-driven LAST block per turn (spent facts and figures, stray caller figures, goals open/settled, cues, closing, crisis/opt-out/asked-AI state, marker rules)",
     "Parity guard: vpvoice/rules.py refuses at import any rules.json key, builtin, scope or enum it does not implement, so an engine change breaks CI at load, not quietly in a call",
     "Caller-crisis judge (judge.json): raise-only, default shadow, 800 ms bound, in parallel with the brain; raise interrupts the turn with the crisis path; off unless VP_LLM_SAFETY_JUDGE_* (or DEFAULT) is configured; raise in production only on the owner's go",
+    "Judge runtime events (shared/runtime-protocol.ts 'judge', 8ece232): one per judged turn with an outcome (raised / shadow / unavailable), never caller text; only a raise is also a safety event",
     "Reply door = shared rules.json evaluated as index.ts does (all 1186 vectors pass) + runtime layer (first-breath clause, truth first, crisis lines); block -> one rewrite told the rule, then a safe line",
     "Caller signals and redaction from rules.json; redacted text is what reaches transcript, events and the LLM",
     "Transports: sim (text socket), webrtc (lab-style browser socket), sip (Plivo outbound dial + stream, Plivo/Exotel inbound streams, Plivo transfer for phone hand-off)",
@@ -63,8 +64,7 @@
     "call.ended has no field for the failure reason when endReason = error; it is logged and in GET /v1/calls/{id} only",
     "The signature does not cover method or path; the runtime closes the replay hole on /end by requiring conversationId in the body",
     "brief.hash is checked as sha256 hex of brief.text (optionally sha256:-prefixed); the control plane must hash the same way",
-    "Control-plane brief compiler should use the marker vocabulary in README (<end_call>, <goal:ID>, <tool:NAME>, <handoff:REASON>)",
-    "Judge shadow and unavailable outcomes are logged only, until calls adds the 'judge' RuntimeEvent to shared/runtime-protocol.ts; only judge_raised is a safety event (RD3 suspended_goal)"
+    "Control-plane brief compiler should use the marker vocabulary in README (<end_call>, <goal:ID>, <tool:NAME>, <handoff:REASON>)"
   ],
   "decisions": [
     "In a crisis, ticket limits stretch to 2x; at the ceiling the call is handed off (crisis_handoff); her <end_call> is ignored and a request for a human never ends the call unless a live transfer takes it",

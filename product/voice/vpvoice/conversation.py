@@ -163,7 +163,8 @@ class Conversation:
         except asyncio.CancelledError:
             return False
         except Exception as e:                                   # never let the judge break a call
-            res = {'event': {'type': 'judge_unavailable', 'reason': 'error'}, 'crisis': False, 'floor': False, 'usage': None}
+            res = {'event': {'type': 'judge_unavailable', 'reason': 'error'}, 'crisis': False, 'floor': False, 'usage': None,
+                   'mode': judge.mode(env=self.judge_env), 'latencyMs': 0}
             log.warning('judge task failed: %r', e)
         return self.apply_judge(res)
 
@@ -177,15 +178,21 @@ class Conversation:
                            detail={'purpose': 'safety_judge', 'priced': priced})
         ev = res.get('event')
         if not ev: return False
-        # A shadow guess or a judge timeout is not a safety event: calls/ingest.ts turns every 'safety' event into a
-        # safety flag on the call (decision.2026-10-21.judge-shadow-never-a-safety-event). They go to the runtime log
-        # here, and to the 'judge' runtime event once calls adds it to shared/runtime-protocol.ts.
+        # The judge's own record is the 'judge' runtime event (shared/runtime-protocol.ts): analysis only, never caller
+        # text. A shadow guess or a judge timeout is NEVER a 'safety' event, because calls turns every safety event into
+        # a safety flag on the call (decision.2026-10-21.judge-shadow-never-a-safety-event); only a raise is one too.
+        outcome = {'judge_unavailable': 'unavailable', 'judge_shadow': 'shadow', 'judge_raised': 'raised'}[ev['type']]
+        rec = {'judge': 'caller_crisis', 'mode': res.get('mode') if res.get('mode') in ('shadow', 'raise') else 'shadow', 'outcome': outcome,
+               'latencyMs': max(0, int(round(res.get('latencyMs') or 0)))}
+        if outcome == 'unavailable': rec['reason'] = ev['reason']
+        else: rec['kind'] = ev['kind']; rec['confidence'] = float(ev['confidence'])
+        self.sink.emit('judge', **rec)
         if ev['type'] == 'judge_unavailable':
-            log.info('judge caller_crisis %s: unavailable (%s), floor stands, %.0f ms', self.t['conversationId'], ev['reason'], res.get('latencyMs', 0))
+            log.info('judge caller_crisis %s: unavailable (%s), floor stands, %d ms', self.t['conversationId'], ev['reason'], rec['latencyMs'])
             return False
         note = f"{ev['type']}: kind {ev['kind']}, confidence {ev['confidence']:.2f}"
         if ev['type'] == 'judge_shadow':
-            log.info('judge caller_crisis %s: %s (shadow: nothing changed), %.0f ms', self.t['conversationId'], note, res.get('latencyMs', 0))
+            log.info('judge caller_crisis %s: %s (shadow: nothing changed), %d ms', self.t['conversationId'], note, rec['latencyMs'])
             return False
         if res.get('crisis') and 'crisis' not in self.signalled:     # judge_raised: the crisis path, exactly as a floor hit
             self.signalled.add('crisis'); self.state['crisis'] = True; self.judge_raised = True
