@@ -17,11 +17,11 @@ const MOMENT_KINDS = ['objection', 'question', 'commitment', 'opt_out', 'callbac
 type Line = { speaker: 'agent' | 'caller'; text: string; startMs: number };
 
 /** A quote counts only as an exact substring of one stored transcript line (no paraphrase, no stitching across turns). */
-export function findQuote(lines: Line[], quote: unknown): Line | null {
+export function findQuote(lines: Line[], quote: unknown, speaker?: Line['speaker']): Line | null {
   if (typeof quote !== 'string') return null;
   const q = quote.trim();
   if (q.length < 3) return null;
-  return lines.find(l => l.text.includes(q)) ?? null;
+  return lines.find(l => (!speaker || l.speaker === speaker) && l.text.includes(q)) ?? null;
 }
 
 const inflight = new Set<Promise<void>>();
@@ -52,6 +52,8 @@ export interface AnalysisRecord {
   reasonCode?: string;
   modelReasonCode?: string | null;
   outcomeGuess?: { value: string; quote: string } | null;
+  // An outcome the model proposed but the person never evidenced (no caller line holds its quote): not recorded.
+  outcomeUnclear?: { value: string; reason: string } | null;
   judgeVersionId?: string | null;
   // Read by learning: any reply-door intervention on the call, and the judge's guess with its calibration status.
   safety_violation?: boolean;
@@ -149,10 +151,19 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     const l = check(m?.quote);
     if (l && MOMENT_KINDS.includes(m.kind)) moments.push({ kind: m.kind, quote: String(m.quote).trim(), note: typeof m.note === 'string' ? m.note.slice(0, 300) : '', atMs: l.startMs });
   }
-  let outcomeGuess: AnalysisRecord['outcomeGuess'] = null;
-  if (parsed.outcome && typeof parsed.outcome === 'object') {
-    const l = check(parsed.outcome.quote);
-    if (l && cv.allowed_values?.includes(parsed.outcome.value)) outcomeGuess = { value: parsed.outcome.value, quote: String(parsed.outcome.quote).trim() };
+  // An outcome is what the PERSON said or did: its quote must be in a caller line (checked by the line's index in the
+  // stored transcript). If the only match is the agent's own words, the outcome is unclear and is not recorded.
+  let outcomeGuess: AnalysisRecord['outcomeGuess'] = null, outcomeUnclear: AnalysisRecord['outcomeUnclear'] = null, outcomeTurn = -1;
+  if (parsed.outcome && typeof parsed.outcome === 'object' && cv.allowed_values?.includes(parsed.outcome.value)) {
+    proposed++;
+    const l = findQuote(lines, parsed.outcome.quote, 'caller');
+    if (l) { outcomeGuess = { value: parsed.outcome.value, quote: String(parsed.outcome.quote).trim() }; outcomeTurn = lines.indexOf(l); }
+    else {
+      dropped++;
+      outcomeUnclear = { value: parsed.outcome.value, reason: findQuote(lines, parsed.outcome.quote)
+        ? "unclear: the only evidence is the agent's own words, not the person's"
+        : 'unclear: the quoted evidence is not in the transcript' };
+    }
   }
 
   let forgetRequested: AnalysisRecord['forgetRequested'] = null;
@@ -170,7 +181,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     status: 'done', summary: points.map(p => p.claim).join(' '), points,
     quotes: points.map(p => ({ text: p.quote, startMs: p.startMs, speaker: p.speaker })),
     quotesProposed: proposed, quotesDropped: dropped, reasonCode, modelReasonCode: modelCode, outcomeGuess,
-    judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested,
+    judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested, outcomeUnclear,
     judge: outcomeGuess ? { judgeVersionId: judge?.id ?? null, value: outcomeGuess.value, quote: outcomeGuess.quote,
       calibration: judge ? (await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [judge.id]))?.status ?? 'uncalibrated' : 'uncalibrated' } : null,
   };
@@ -190,7 +201,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
       await c.query(`DELETE FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 AND grade = 'ai_guess'`, [conversationId, workspaceId]);
       await c.query(`INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, evidence, judge_version_id)
         VALUES ($1,$2,$3,$4,$5,'ai_guess',$6,$7,$8)`,
-        [workspaceId, conversationId, cv.contact_id, cv.def_id, outcomeGuess.value, judge ? `judge:${judge.id}` : 'analysis', { quote: outcomeGuess.quote }, judge?.id ?? null]);
+        [workspaceId, conversationId, cv.contact_id, cv.def_id, outcomeGuess.value, judge ? `judge:${judge.id}` : 'analysis', { quote: outcomeGuess.quote, turn: outcomeTurn, speaker: 'caller' }, judge?.id ?? null]);
       await refreshOutcome(c, workspaceId, conversationId);
     }
     // A caller's own request to be forgotten goes to memory as a forget_request (memory completes it). Never from a test call.

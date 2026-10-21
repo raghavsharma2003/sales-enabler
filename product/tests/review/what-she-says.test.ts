@@ -2,17 +2,12 @@
 // code as it stood at review time: it fails today and node:test reports it as a todo, not a failure. When a fix lands
 // the test passes; then drop the todo. Synthetic, fictional data only. The analysis test needs DATABASE_URL
 // (sh product/scripts/pg-test.sh vp_review_say) and skips without it.
-import { test, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type pg from 'pg';
 import { callerSignals, redact, replyDoor, type DoorContext } from '../../shared/safety/index.ts';
 import casesDoc from '../../shared/safety/cases.json' with { type: 'json' };
 import { sentences } from '../../server/modules/agents/simulate.ts';
-import { createPool, one } from '../../server/db.ts';
-import { setFakeLlm } from '../../server/llm.ts';
-import { ingest } from '../../server/modules/calls/ingest.ts';
-import { analysesSettled } from '../../server/modules/calls/analysis.ts';
-import type { RunManifest, RuntimeEvent } from '../../shared/runtime-protocol.ts';
 
 const CTX = (casesDoc as unknown as { defaults: { ctx: DoorContext } }).defaults.ctx;   // disclosed, identity verified, service
 const door = (text: string, over: Partial<DoorContext> = {}) => replyDoor(text, { ...CTX, ...over });
@@ -77,44 +72,4 @@ test('m1: a soft hyphen, a word joiner or a Cyrillic letter does not hide a deni
   assert.deepEqual(passing(['Main in­saan hoon.', 'Main in⁠saan hoon.', 'Main іnsaan hoon.']), []);
 });
 
-// ---- M6: the analysis takes an outcome from the agent's own words --------------------------------------------------
-const URL_ = process.env.DATABASE_URL;
-let pool: pg.Pool | undefined;
-after(async () => { setFakeLlm(null); await analysesSettled(); await pool?.end(); });
-
-test('M6: an outcome guess is only evidenced by the person, never by the agent\'s own line', {
-  skip: !URL_ ? 'DATABASE_URL not set' : false,
-  todo: 'M6: outcome quote "aap kal payment kar denge" from an AGENT line is recorded as the ai_guess will_pay',
-}, async () => {
-  pool = createPool(URL_);
-  const ws = (await one<{ id: string }>(pool, "INSERT INTO workspace (name) VALUES ('review: what she says') RETURNING id"))!.id;
-  const agent = (await one<{ id: string }>(pool, "INSERT INTO agent (workspace_id, name) VALUES ($1,'Asha') RETURNING id", [ws]))!.id;
-  const version = (await one<{ id: string }>(pool, 'INSERT INTO agent_version (agent_id, number, hash, config) VALUES ($1,1,$2,$3) RETURNING id',
-    [agent, 'h-review', { agent: { schema: 1 }, brief: { text: 'synthetic', hash: 'b', bytes: 9 } }]))!.id;
-  const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values)
-    VALUES ($1,'Pay','Did they agree to pay?','{will_pay,not_now}','{will_pay}') RETURNING id`, [ws]))!.id;
-  const campaign = (await one<{ id: string }>(pool, "INSERT INTO campaign (workspace_id, name, call_category, outcome_definition_id) VALUES ($1,'Dues','service',$2) RETURNING id", [ws, def]))!.id;
-  const contact = (await one<{ id: string }>(pool, "INSERT INTO contact (workspace_id, e164, name) VALUES ($1,'+919000000777','Test Person') RETURNING id", [ws]))!.id;
-  const attempt = (await one<{ id: string }>(pool, "INSERT INTO attempt (workspace_id, campaign_id, contact_id, status) VALUES ($1,$2,$3,'dialing') RETURNING id", [ws, campaign, contact]))!.id;
-  const conv = (await one<{ id: string }>(pool, "INSERT INTO conversation (workspace_id, attempt_id, contact_id, agent_version_id, channel) VALUES ($1,$2,$3,$4,'phone') RETURNING id",
-    [ws, attempt, contact, version]))!.id;
-
-  const lines = [
-    { speaker: 'agent' as const, text: 'Namaste, main Asha, Example Co. ki AI assistant.', startMs: 0 },
-    { speaker: 'caller' as const, text: 'Haan boliye.', startMs: 3000 },
-    { speaker: 'agent' as const, text: 'Toh aap kal payment kar denge, bahut badhiya.', startMs: 6000 },
-    { speaker: 'caller' as const, text: 'Abhi nahi, baad mein dekhenge.', startMs: 10000 },
-  ];
-  const m: RunManifest = { combinationId: 'v2|e+b+v', stackId: 'v2-flashlite', agentVersionHash: 'h-review', components: {}, fallbacksUsed: [], memory: 'none', runtimeVersion: 't' };
-  const at = new Date().toISOString();
-  const events: RuntimeEvent[] = [{ seq: 1, type: 'call.started', at, manifest: m },
-    ...lines.map((l, i) => ({ seq: 2 + i, type: 'turn' as const, at, speaker: l.speaker, text: l.text, startMs: l.startMs, endMs: l.startMs + 2000 })),
-    { seq: 9, type: 'call.ended', at, endReason: 'completed', durationS: 14, transcript: lines, manifest: m }];
-  // The analyst (a model) picks the agent's line as its evidence; nothing in code checks who said it.
-  setFakeLlm(() => ({ text: JSON.stringify({ points: [], moments: [], reasonCode: null, outcome: { value: 'will_pay', quote: 'aap kal payment kar denge' }, forget: null }),
-    toolCalls: [], usage: { inputTokens: 100, outputTokens: 20 }, model: 'fake-analyst', provider: 'fake' }));
-  await ingest(pool, { conversationId: conv, events });
-  await analysesSettled();
-  const n = (await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM outcome WHERE conversation_id = $1', [conv]))!.n;
-  assert.equal(n, 0, 'the caller said "Abhi nahi"; the only evidence of will_pay is the agent\'s own words');
-});
+// M6 (an outcome evidenced by the agent's own line) is fixed; its test lives in tests/calls.test.ts.

@@ -227,7 +227,7 @@ test('quotes not in the transcript are dropped and counted; the outcome is an AI
   assert.deepEqual(moments, [{ kind: 'commitment', quote: 'kal payment kar dunga', at_ms: 12000 }]);
   for (const m of moments) assert.ok(lines.some(l => l.text.includes(m.quote)));
   const out = await many<any>(pool, 'SELECT value, grade, evidence FROM outcome WHERE conversation_id = $1', [c.conv]);
-  assert.deepEqual(out, [{ value: 'will_pay', grade: 'ai_guess', evidence: { quote: 'Theek hai, main kal payment' } }]);
+  assert.deepEqual(out, [{ value: 'will_pay', grade: 'ai_guess', evidence: { quote: 'Theek hai, main kal payment', turn: 3, speaker: 'caller' } }]);
   assert.equal((await one<any>(pool, 'SELECT outcome FROM conversation WHERE id = $1', [c.conv])).outcome, null, 'an uncalibrated guess never becomes the outcome that counts');
   assert.equal(conv.analysis.safety_violation, false);
   assert.deepEqual(conv.analysis.judge, { judgeVersionId: null, value: 'will_pay', quote: 'Theek hai, main kal payment', calibration: 'uncalibrated' });
@@ -597,4 +597,41 @@ test('non-final campaign outcomes go to attempt.retry_per_ladder as A3; final on
   assert.equal(followups['attempt.retry_per_ladder'], 'done');
   const ac = await one<any>(pool, "SELECT payload FROM audit_event WHERE workspace_id = $1 AND action = 'attempt.retry_per_ladder' LIMIT 1", [w.ws]);
   assert.equal(ac.payload.mode, 'A3', 'VP retries on its own only through the A3 verb');
+});
+
+// ---- review M6: an outcome is what the person said, never the agent's own line ----------------------------------------
+test("an outcome guess is evidenced only by the person, never by the agent's own line", { skip }, async () => {
+  const w = await workspace();
+  const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values)
+    VALUES ($1,'Pay','Did they agree to pay?','{will_pay,not_now}','{will_pay}') RETURNING id`, [w.ws]))!.id;
+  await pool.query('UPDATE campaign SET outcome_definition_id = $2 WHERE id = $1', [w.campaign, def]);
+  const said = [
+    { speaker: 'agent' as const, text: 'Namaste, main Asha, Example Co. ki AI assistant.', startMs: 0 },
+    { speaker: 'caller' as const, text: 'Haan boliye.', startMs: 3000 },
+    { speaker: 'agent' as const, text: 'Toh aap kal payment kar denge, bahut badhiya.', startMs: 6000 },
+    { speaker: 'caller' as const, text: 'Abhi nahi, baad mein dekhenge.', startMs: 10000 },
+  ];
+  const run = async (outcome: { value: string; quote: string }) => {
+    const c = await call(w);
+    const ev: RuntimeEvent[] = [{ seq: 1, type: 'call.started', at: now(), manifest: manifest() },
+      ...said.map((l, i) => ({ seq: 2 + i, type: 'turn' as const, at: now(), speaker: l.speaker, text: l.text, startMs: l.startMs, endMs: l.startMs + 2000 })),
+      { seq: 9, type: 'call.ended', at: now(), endReason: 'completed', durationS: 14, transcript: said, manifest: manifest() }];
+    // The analyst (a model) picks its evidence; code checks who said it.
+    setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome, forget: null }));
+    await post(c.conv, ev);
+    await analysesSettled();
+    return c.conv;
+  };
+
+  const agentsWords = await run({ value: 'will_pay', quote: 'aap kal payment kar denge' });
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM outcome WHERE conversation_id = $1', [agentsWords])).n, 0,
+    'the person said "Abhi nahi"; the only evidence of will_pay is the agent\'s own words');
+  const a = (await one<any>(pool, 'SELECT analysis FROM conversation WHERE id = $1', [agentsWords])).analysis;
+  assert.deepEqual(a.outcomeUnclear, { value: 'will_pay', reason: "unclear: the only evidence is the agent's own words, not the person's" });
+  assert.equal(a.outcomeGuess, null); assert.equal(a.judge, null); assert.equal(a.quotesDropped, 1);
+
+  const personsWords = await run({ value: 'not_now', quote: 'Abhi nahi' });
+  const rows = await many<any>(pool, 'SELECT value, grade, evidence FROM outcome WHERE conversation_id = $1', [personsWords]);
+  assert.deepEqual(rows, [{ value: 'not_now', grade: 'ai_guess', evidence: { quote: 'Abhi nahi', turn: 3, speaker: 'caller' } }]);
+  assert.equal(said[3].speaker, 'caller');
 });

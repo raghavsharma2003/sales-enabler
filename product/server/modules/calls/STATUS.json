@@ -28,8 +28,8 @@
     "db/migrations/0601_calls.sql"
   ],
   "tests": {
-    "passed": 16,
-    "total": 16,
+    "passed": 17,
+    "total": 17,
     "files": [
       "tests/calls.test.ts"
     ],
@@ -50,7 +50,8 @@
     "Test calls: test.browser_call builds a CallTicket (test:true, attemptId null, webrtc) from the latest version or a named one. For useDraft it reads the bare AgentConfig draft via agent.get, compiles it through agents' brief.compile (a refusal comes back with its own reason) and tags the ticket and the run manifest with the draft hash. It dispatches via runtime(), returns join info and enforces a Rs 200/day test budget. Test calls are analysed but write no outcome, are hidden from call.search unless includeTest, and never enter funnels, reports, calibration or monitors. A fallback on a test call is flagged.",
     "Live control goes through runtime().control. live.listen is A1 and audited. live.whisper is external (A2). live.takeover can be called only by a signed-in member, and is refused for agents even when they carry a role.",
     "Tenancy: every query filters by workspace_id. A test shows another workspace cannot read, label, explain, listen to, funnel or resolve this workspace's rows.",
-    "No transaction is held across a model or network call. The analysis LLM call runs outside any transaction. test.browser_call, live.listen and live.takeover make their runtime requests in prepare(). test.browser_call commits the conversation first and marks it failed if the runtime refuses. live.whisper (A2) keeps its runtime request in run(), because on the approval path prepare() runs before the approver, hash and version checks."
+    "No transaction is held across a model or network call. The analysis LLM call runs outside any transaction. test.browser_call, live.listen and live.takeover make their runtime requests in prepare(). test.browser_call commits the conversation first and marks it failed if the runtime refuses. live.whisper (A2) keeps its runtime request in run(), because on the approval path prepare() runs before the approver, hash and version checks.",
+    "An outcome guess counts only if its evidence quote is in a CALLER line of the stored transcript; its evidence records {quote, turn, speaker:'caller'}. When the only match is the agent's own words, analysis.outcomeUnclear holds {value, reason}, no outcome row is written and the quote counts as dropped (review M6)."
   ],
   "untested": [
     "The real voice runtime end to end (no cross-language signature test). The hook now verifies raw bytes, so any byte-exact signer works.",
