@@ -88,6 +88,16 @@
       "title": "Dial gate after the 'who gets called' review (WGC-01..08), each fix fail-closed:\n- consent is decided by the newest record across the purposes covering the call, ordered by evidence.statedAt when it is ISO;\n- an unreadable expiry counts as expired;\n- promotional calls need an explicit fresh not_registered (7 days), or registered plus CRF;\n- a +91 number keeps the IST quiet hours and bands whatever zone was imported;\n- an erased contact is refused at G2;\n- an unknown dial with a live call holds a line.",
       "rationale": "Each finding had a reproducing test against the real gate. The two blockers (WGC-01, WGC-03) made DND-registered or withdrawn people dialable.",
       "reverse_if": "Counsel rules that NCPR does not bind a consented promotional call, or intake supplies a structured consent effective-time column that should replace evidence.statedAt."
+    },
+    {
+      "id": "decision.2026-10-21.verification-call-english",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The member-phone verification call (campaigns verify.ts announcement()) is spoken in English. It is a fixed system announcement to the business's own staff, so the enterprise-English directive applies. Hinglish stays for agents talking to customers.",
+      "rationale": "Integrator ruling on directive.2026-10-22.enterprise-english-ui after the web builder changed the script in 1187a05. The campaigns test checks the script through announcement(), not its wording (840ae68).",
+      "reverse_if": "The owner wants staff-facing system calls in the member's chosen language, or Hinglish for this call."
     }
   ],
   "edges": [
@@ -129,6 +139,11 @@
     {
       "from": "component.2026-10-21.campaigns-module",
       "to": "decision.2026-10-21.campaigns-gate-wgc-fixes",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-21.verification-call-english",
+      "to": "directive.2026-10-22.enterprise-english-ui",
       "relation": "implements"
     }
   ],
