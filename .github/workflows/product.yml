@@ -31,6 +31,35 @@ jobs:
         run: node product/scripts/test.mjs
       - name: web build
         run: if [ -f product/web/build.mjs ]; then node product/web/build.mjs; fi
+  # The browser flows (product/web/e2e): the real UI against the real server, a throwaway Postgres 16 and a scripted
+  # Operator. control-plane skips them for want of a browser; here a skip is a failure, so CI green covers them.
+  web-e2e:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: npm ci
+      - name: browser and Postgres 16
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+          [ -x /usr/lib/postgresql/16/bin/initdb ] || { sudo apt-get update && sudo apt-get install -y postgresql-16; }
+      - name: precheck (must not skip)
+        run: node product/web/e2e/precheck.mjs
+      - name: browser flows
+        env:
+          E2E_DIAG_DIR: ${{ runner.temp }}/vp-e2e-diag
+        run: sh product/web/e2e/run.sh
+      - name: keep the failing flows' screenshots and logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-diag
+          path: |
+            ${{ runner.temp }}/vp-e2e-diag
+            /tmp/vp-e2e-server.log
+          if-no-files-found: ignore
   voice-runtime:
     runs-on: ubuntu-latest
     steps:
