@@ -5,7 +5,7 @@
 // Keys come from the environment only. VP_LLM_FAKE=1 swaps in a scripted fake so tests never reach a network.
 // Every call returns its token usage so the caller can write a cost_line; nothing here guesses prices.
 
-export type Purpose = 'operator' | 'memory' | 'judge' | 'learning' | 'analysis' | 'compile' | 'simulate';
+export type Purpose = 'operator' | 'memory' | 'judge' | 'learning' | 'analysis' | 'compile' | 'simulate' | 'safety_judge';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';

@@ -12,9 +12,9 @@ interface CrisisJudgeSpec {
   system_prompt: string; user_template: string;
 }
 export const CRISIS_JUDGE = (judgeData as unknown as { judges: { caller_crisis: CrisisJudgeSpec } }).judges.caller_crisis;
-// The kernel's Purpose union does not list 'safety_judge' yet; the door reads VP_LLM_<PURPOSE>_* by name, so the
-// purpose works at runtime. Narrowed here so the env name stays the contract's.
+// judge.json names the purpose so the env name (VP_LLM_SAFETY_JUDGE_*) stays the contract's; it must be a kernel Purpose.
 const PURPOSE = CRISIS_JUDGE.llm_purpose as Purpose;
+if (PURPOSE !== ('safety_judge' satisfies Purpose)) throw new Error(`judge.json llm_purpose ${PURPOSE} is not the kernel's 'safety_judge'`);
 
 export interface JudgeVerdict { crisis: boolean; confidence: number; kind: 'direct' | 'indirect' | 'none' }
 export type JudgeEvent =
