@@ -10,7 +10,7 @@ import { ago, count, date, inr, time } from '../format.ts';
 import { prettyId } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
 import { Link } from '../router.tsx';
-import { activitySentence, pageFor } from '../labels.ts';
+import { activitySentence, pageFor, RULE_LABEL } from '../labels.ts';
 import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
 
 const TABS = ['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'operator', 'integrations', 'activity'] as const;
@@ -176,7 +176,7 @@ function Compliance() {
   return (
     <div className="stack">
       <Card><CardHead title="Rules every call follows" sub="Enforced in code at one dial gate and one reply door, not in a prompt. They cannot be switched off." />
-        <Async q={q} what="Safety rules" tool="safety.cases">{d => <><ul className="billing">{d.rules.reply.map(r => <li key={r.id}><div><strong>{ruleWords(r.reason)}</strong><span className="small muted"> · {r.action === 'block' ? 'blocked' : 'replaced'} before it is said</span></div><Chip tone="leaf">Always on</Chip></li>)}</ul><p className="small muted">Rules last updated {(() => { const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.rules.version); return m ? new Date(m[1] + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'recently'; })()}. Also always on: DND and opt-out checks before every attempt, and the AI disclosure, spoken once and lightly.</p></>}</Async></Card>
+        <Async q={q} what="Safety rules" tool="safety.cases">{d => <><ul className="billing">{byRule(d.rules.reply).map(r => <li key={r.rule}><div><strong>{RULE_LABEL[r.rule] ?? ruleWords(r.reason)}</strong><span className="small muted"> · a reply that breaks it is {r.action === 'block' ? 'blocked' : r.action === 'replace' ? 'replaced' : 'stopped'} before it is said</span></div><Chip tone="leaf">Always on</Chip></li>)}</ul><p className="small muted">Rules last updated {(() => { const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.rules.version); return m ? new Date(m[1] + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'recently'; })()}. Also always on: DND and opt-out checks before every attempt, and the AI disclosure, spoken once and lightly.</p></>}</Async></Card>
       <Card><CardHead title="Workspace calling hours" sub="The outer band every campaign window must sit inside. Widening it is a policy change." />
         {policy ? <><div className="formgrid"><TextField label="From" type="time" value={band.start} onChange={e => setBand({ ...band, start: e.target.value })} /><TextField label="To" type="time" value={band.end} onChange={e => setBand({ ...band, end: e.target.value })} /></div>
           <div style={{ marginTop: 12 }}>{band.start < band.end ? <Btn kind="primary" onClick={() => void act('policy.window.set', { outerBand: band }, { describe: 'Calling hours changed.' })}>Ask to set</Btn> : <Btn disabled reason="The band must end after it starts.">Ask to set</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
@@ -244,6 +244,16 @@ export { count, Lock };
 
 const SECRET_WORDS: Record<string, string> = { service_account_json: 'service account file', api_key: 'API key', api_token: 'API token', webhook_url: 'webhook address', client_id: 'client ID' };
 const secretWords = (s: string) => SECRET_WORDS[s] ?? s.replace(/_/g, ' ').replace(/\bjson\b/gi, 'file').replace(/\burl\b/gi, 'address');
+/** rules.json lists each pattern; a person sees one row per rule, in rule order, with 'mixed' when its patterns differ in action. */
+const byRule = (reply: Rules['rules']['reply']) => {
+  const m = new Map<string, { rule: string; reason: string; action: string }>();
+  for (const r of reply) {
+    const g = m.get(r.rule);
+    if (!g) m.set(r.rule, { rule: r.rule, reason: r.reason, action: r.action });
+    else if (g.action !== r.action) g.action = 'mixed';
+  }
+  return [...m.values()].sort((a, b) => Number(a.rule.replace(/\D/g, '')) - Number(b.rule.replace(/\D/g, '')));
+};
 const ruleWords = (r: string) => { const t = r.replace(/\s*\(allow-list:[^)]*\)/, '. She may only mention her own nature to say she is an AI').replace(/neverSay/g, 'never-say list').replace(/([a-z])([A-Z])/g, '$1 $2'); return t.charAt(0).toUpperCase() + t.slice(1); };
 
 const walletNote = (x: string) => /^no money available/i.test(x) ? 'There is no money to spend. New attempts wait; calls already live always finish.' : x.charAt(0).toUpperCase() + x.slice(1);

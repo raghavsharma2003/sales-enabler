@@ -104,6 +104,22 @@ export function blockerCopy(b: Blocker): { text: string; why?: string; to?: { la
 
 export const pl = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? one : many}`;
 
+/** One line per safety rule for the compliance tab, in what she does. rules.json `reason` stays the engineer and log text.
+ *  A test fails if rules.json has a reply rule with no line here. */
+export const RULE_LABEL: Record<string, string> = {
+  RD1: 'Says she is an AI before anything else on the call',
+  RD2: 'Never denies being an AI or claims to be human; she mentions her own nature only to say she is an AI',
+  RD3: 'In a crisis, drops the agenda, gives the helplines and offers a person',
+  RD4: 'Never asks for an OTP, PIN, CVV, card number, UPI PIN, password or full Aadhaar',
+  RD5: 'Takes no payment on the call and shares only your verified links; payment goes by link or autopay after the call',
+  RD6: 'Never uses scam patterns: posing as a regulator, pay-to-receive offers, false deadlines, asking for secrecy, or amounts not in your facts',
+  RD7: 'No promotion on service calls, and never says a phrase on your never-say list',
+  RD8: 'For insurance: no guaranteed returns, no unbacked "better" or "best plan" claims, no pressure to switch or bundle',
+  RD9: 'On dues calls: no threats, shaming, or pressure through family and friends',
+  RD10: 'If the person refuses recording, she accepts it and does not insist',
+  RD11: 'Shares account details only after the person\'s identity is verified',
+};
+
 /** What each tool did, in the past tense and without the actor ("ran a practice call"), for the activity ledger. A test fails if the
  *  server registers a tool that is not here. An unknown id falls back to "made a change", never to the id itself. */
 export const PAST: Record<string, string> = {

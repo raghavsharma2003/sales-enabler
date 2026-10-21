@@ -80,6 +80,15 @@ test('every tool the server registers has a person-facing past-tense label for t
   for (const [k, v] of Object.entries(PAST)) assert.ok(!/[_]|\b\w+\.\w+\b/.test(v) && !/\b[a-z]+[A-Z]/.test(v), `label for ${k} reads like a code: ${v}`);
 });
 
+test('every reply rule in rules.json has a person-facing line on the compliance tab', async () => {
+  const { rulesSummary } = await import('../shared/safety/index.ts');
+  const { RULE_LABEL } = await import('../web/src/labels.ts');
+  const ids = [...new Set(rulesSummary().reply.map(r => r.rule))];
+  const missing = ids.filter(id => !RULE_LABEL[id]);
+  assert.deepEqual(missing, [], 'reply rules with no compliance-tab line: ' + missing.join(', '));
+  for (const [k, v] of Object.entries(RULE_LABEL)) assert.ok(!/[_]|\b[a-z]+[A-Z]|\bRD\d|\(.*:/.test(v), `rule line for ${k} reads like a code: ${v}`);
+});
+
 test('no page writes from a menu: act() is never called inside an onChange of a select or input', () => {
   for (const f of readdirSync(web + 'src/pages')) {
     const txt = readFileSync(web + 'src/pages/' + f, 'utf8');

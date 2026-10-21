@@ -16913,6 +16913,16 @@
    "tried": "7401e97 wrote the runtime-events fixture to product/voice/tests/data/runtime_events.json and added a TS test that reads it.",
    "broke": "Root .gitignore line 7 (`data/`) ignores every folder named data, so the fixture was never committed. The branch passed in the builder's working tree and failed on every clean checkout, with no warning at commit time.",
    "instead": "Test inputs live in folders not named data (63ff384 moved the fixture to tests/vectors/). `data/` stays ignored everywhere, because it keeps private files such as data/blueprint/owner-messages.md out of the repo. Before pushing a new test that reads a file, run it on a clean checkout (git worktree)."
+  },
+  {
+   "id": "open.2026-10-21.activity-row-subject",
+   "type": "open-question",
+   "title": "Activity rows say what was done but not to what (\"Asha Rao ran a practice call\", not \"\u2026with Kavya\"). The audit log deliberately stores only an args hash, never the args, so there is no safe name to show.",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "question": "Should each tool declare a non-personal subject label (an agent, audience, list or campaign name, never a contact's name or number), stored in the audit payload at write time, so activity.list can name the object?",
+   "closes_when": "Either: the kernel gains a per-tool subject(args, result) that returns only non-personal names, the audit payload carries it, activity.list returns it and the web renders it, with a test that no contact name or phone number ever reaches a subject. Or: the owner says the current sentences are enough."
   }
  ],
  "edges": [
@@ -30217,6 +30227,11 @@
    "from": "measure.2026-10-21.ui-review-3-main-loop",
    "to": "measure.2026-10-21.ui-review-2-main-loop",
    "relation": "follows"
+  },
+  {
+   "from": "open.2026-10-21.activity-row-subject",
+   "to": "decision.2026-10-21.no-developer-text-in-ui",
+   "relation": "relates_to"
   }
  ]
 }
