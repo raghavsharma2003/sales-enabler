@@ -2,16 +2,39 @@
   "module": "calls",
   "date": "2026-10-21",
   "tools": [
-    "test.browser_call", "call.get", "call.search", "call.explain",
-    "outcome.define", "outcome.label", "outcome.record_verified",
-    "judge.edit", "judge.calibrate",
-    "issue.list", "issue.resolve", "monitor.list", "monitor.create",
-    "campaign.funnel", "report.create",
-    "live.listen", "live.whisper", "live.takeover"
+    "test.browser_call",
+    "call.get",
+    "call.search",
+    "call.explain",
+    "outcome.define",
+    "outcome.label",
+    "outcome.record_verified",
+    "judge.edit",
+    "judge.calibrate",
+    "issue.list",
+    "issue.resolve",
+    "monitor.list",
+    "monitor.create",
+    "campaign.funnel",
+    "report.create",
+    "live.listen",
+    "live.whisper",
+    "live.takeover"
   ],
-  "routes": ["POST /hooks/runtime"],
-  "migrations": ["db/migrations/0601_calls.sql"],
-  "tests": { "passed": 12, "total": 12, "files": ["tests/calls.test.ts"], "method": "node:test against a throwaway Postgres 16 (vp_mod_calls), FakeRuntime, setFakeLlm; synthetic data only" },
+  "routes": [
+    "POST /hooks/runtime"
+  ],
+  "migrations": [
+    "db/migrations/0601_calls.sql"
+  ],
+  "tests": {
+    "passed": 12,
+    "total": 12,
+    "files": [
+      "tests/calls.test.ts"
+    ],
+    "method": "node:test against a throwaway Postgres 16 (vp_mod_calls), FakeRuntime, setFakeLlm; synthetic data only"
+  },
   "works": [
     "POST /hooks/runtime checks x-vp-signature with VP_RUNTIME_SECRET and refuses a missing, wrong, stale (>5 min) or tampered signature with 401. It refuses unknown fields with 422 and an unknown conversation with 404. The workspace comes from the conversation row, never from the request.",
     "Each event is applied once, by (conversation_id, seq), in runtime_event_seen and in the same transaction. A retried batch reports duplicates and changes nothing.",
@@ -29,7 +52,7 @@
     "Tenancy: every query filters by workspace_id. A test shows another workspace cannot read, label, explain, listen to, funnel or resolve this workspace's rows."
   ],
   "untested": [
-    "A real voice runtime (HttpRuntime) and a Python signer. The serialisation rule below is not exercised end to end.",
+    "The real voice runtime end to end. Its signer (vpvoice/events.py) uses the matching compact serialisation by code reading only; no cross-language test was run.",
     "A real analysis model: prompt quality and Hinglish or Devanagari quote matching on real transcripts.",
     "Concurrent batches for one conversation. They are serialised by SELECT ... FOR UPDATE on the conversation row, but no test races them.",
     "Late cost after settlement (the code path exists, with no test). Multiple holds per attempt.",
@@ -38,7 +61,7 @@
   ],
   "needs_from_others": [
     "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). This module does not edit the kernel.",
-    "kernel: expose the raw request body to module routes (e.g. Req.rawBody). Until then the hook verifies the signature over JSON.stringify(parsed body). The voice runtime must sign compact JSON: Python json.dumps(obj, separators=(',', ':'), ensure_ascii=False), with no floats that JS re-prints differently (send integers for ms and inrMilli).",
+    "kernel: expose the raw request body to module routes (e.g. Req.rawBody). Until then the hook verifies the signature over JSON.stringify(parsed body). This matches product/voice/vpvoice/events.py, which signs compact JSON (separators=(',', ':'), ensure_ascii=False); it stays safe as long as the runtime sends integers for ms and inrMilli, because JS re-prints floats like 1.0 differently.",
     "contacts/safety module: register contact.suppress_after_opt_out (A3) taking exactly { contactId: uuid, conversationId: uuid }. If the input differs, opt-outs stay 'failed' with the validation reason in call_opt_out.detail.",
     "campaigns module: create the conversation row (attempt_id, contact_id, agent_version_id, channel 'phone') before handing the ticket to the runtime, and reserve on the attempt id. The hook only settles holds tagged with conversation.attempt_id.",
     "campaigns module: outcome.define with campaignId writes campaign.outcome_definition_id. Say if you would rather own that write (e.g. a campaign.set_outcome tool).",
