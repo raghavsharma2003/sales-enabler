@@ -1,0 +1,51 @@
+{
+  "module": "calls",
+  "date": "2026-10-21",
+  "tools": [
+    "test.browser_call", "call.get", "call.search", "call.explain",
+    "outcome.define", "outcome.label", "outcome.record_verified",
+    "judge.edit", "judge.calibrate",
+    "issue.list", "issue.resolve", "monitor.list", "monitor.create",
+    "campaign.funnel", "report.create",
+    "live.listen", "live.whisper", "live.takeover"
+  ],
+  "routes": ["POST /hooks/runtime"],
+  "migrations": ["db/migrations/0601_calls.sql"],
+  "tests": { "passed": 12, "total": 12, "files": ["tests/calls.test.ts"], "method": "node:test against a throwaway Postgres 16 (vp_mod_calls), FakeRuntime, setFakeLlm; synthetic data only" },
+  "works": [
+    "POST /hooks/runtime checks x-vp-signature with VP_RUNTIME_SECRET and refuses a missing, wrong, stale (>5 min) or tampered signature with 401. It refuses unknown fields with 422 and an unknown conversation with 404. The workspace comes from the conversation row, never from the request.",
+    "Each event is applied once, by (conversation_id, seq), in runtime_event_seen and in the same transaction. A retried batch reports duplicates and changes nothing.",
+    "The hook persists turns (idx = seq), cost_line rows, safety events, runtime moments, tool events (a failure flags the call) and hand-offs (hand_off rows). call.ended stores the transcript, end reason, duration, recording uri and run manifest.",
+    "Cost lines may arrive before call.ended. At call.ended the attempt's hold is settled at the sum of cost lines (ledger.settle), or released when nobody was reached and nothing was spent. usage_period (IST month) gains the connected seconds and the cost, and attempt.status is updated.",
+    "A cost that arrives after settlement is recorded as late_cost_inr_milli, counted in usage and flagged 'cost_after_end'.",
+    "An opt_out moment is queued in call_opt_out and sent to contact.suppress_after_opt_out as the system actor (A3) after commit. It stays pending, and is retried on the next hook call, while that tool is not registered.",
+    "The reason code is set by code from the end reason (34-code catalogue). The post-call analysis (llm purpose 'analysis', JSON, temperature 0) yields points, moments, a reason refinement and an outcome guess. Every quote must be an exact substring of one transcript line; failures are dropped and counted (quotesProposed / quotesDropped, flag 'quotes_dropped').",
+    "Outcome grades: 'ai_guess' (analysis or a pinned judge, with its quote as evidence), 'manager' (outcome.label, people only), 'verified' (outcome.record_verified, system actor only, deduplicated on the key {source, ref}). The best grade wins everywhere.",
+    "judge.edit (A2) creates a pinned, numbered judge version per outcome definition. judge.calibrate pairs its guesses with verified or manager labels and records n, agreement, the Wilson 95% lower bound, the confusion matrix and a status. The status is trusted at n >= 50, agreement >= 0.90 and lower bound >= 0.80.",
+    "Monitors (6 defaults, seeded on the first non-test call) evaluate after each analysed non-test call. One open issue per monitor carries up to 10 evidence call ids. issue.resolve and monitor.create are available, and monitor.list says 'not_monitored_yet' until a monitor has been read.",
+    "campaign.funnel gives dialled, connected, talked (10 s+ and a caller turn) and goal reached (best outcome in goal_values), per agent version, with goal counts by grade. report.create saves reasons, outcomes by grade, cost and the funnel.",
+    "Test calls: test.browser_call builds a CallTicket (test:true, attemptId null, webrtc) from the latest version, a named version or a compiled draft. It dispatches via runtime(), returns join info and enforces a Rs 200/day test budget. Test calls are analysed but write no outcome, are hidden from call.search unless includeTest, and never enter funnels, reports, calibration or monitors. A fallback on a test call is flagged.",
+    "Live control goes through runtime().control. live.listen is A1 and audited. live.whisper is external (A2). live.takeover can be called only by a signed-in member, and is refused for agents even when they carry a role.",
+    "Tenancy: every query filters by workspace_id. A test shows another workspace cannot read, label, explain, listen to, funnel or resolve this workspace's rows."
+  ],
+  "untested": [
+    "A real voice runtime (HttpRuntime) and a Python signer. The serialisation rule below is not exercised end to end.",
+    "A real analysis model: prompt quality and Hinglish or Devanagari quote matching on real transcripts.",
+    "Concurrent batches for one conversation. They are serialised by SELECT ... FOR UPDATE on the conversation row, but no test races them.",
+    "Late cost after settlement (the code path exists, with no test). Multiple holds per attempt.",
+    "report.create date filters, call.search pagination ('before') and the analysis 'failed' path (model error or non-JSON).",
+    "Load: search p95 and the time from hang-up to analysis."
+  ],
+  "needs_from_others": [
+    "kernel: add `calls` to server/modules/index.ts (import { module as calls } from './calls/index.ts'). This module does not edit the kernel.",
+    "kernel: expose the raw request body to module routes (e.g. Req.rawBody). Until then the hook verifies the signature over JSON.stringify(parsed body). The voice runtime must sign compact JSON: Python json.dumps(obj, separators=(',', ':'), ensure_ascii=False), with no floats that JS re-prints differently (send integers for ms and inrMilli).",
+    "contacts/safety module: register contact.suppress_after_opt_out (A3) taking exactly { contactId: uuid, conversationId: uuid }. If the input differs, opt-outs stay 'failed' with the validation reason in call_opt_out.detail.",
+    "campaigns module: create the conversation row (attempt_id, contact_id, agent_version_id, channel 'phone') before handing the ticket to the runtime, and reserve on the attempt id. The hook only settles holds tagged with conversation.attempt_id.",
+    "campaigns module: outcome.define with campaignId writes campaign.outcome_definition_id. Say if you would rather own that write (e.g. a campaign.set_outcome tool).",
+    "agents module: test.browser_call reads agent_version.config {agent, brief} and, for useDraft, agent.draft shaped the same way with a compiled brief.",
+    "integrations module: call outcome.record_verified as the system actor when a payment, booking or CRM webhook arrives.",
+    "money module: price 'analysis' token cost lines (written with inr_milli 0 and detail.priced false).",
+    "web/runtime: serve the test-call WebRTC offer at /v1/test-calls/:conversationId/offer (the ticket's offerUrl), or tell this module the right URL.",
+    "blueprint: the companion data/blueprint/intelligence-module.json (34 codes, 20 monitors) is not in the repo. taxonomy.ts holds this module's own 34 codes."
+  ]
+}

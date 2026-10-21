@@ -1,0 +1,73 @@
+{
+  "nodes": [
+    {
+      "id": "component.product.calls-module",
+      "type": "component",
+      "status": "tested",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Calls module: signed idempotent runtime ingest, settle at real cost, quote-checked post-call analysis, outcome grades, judge calibration, monitors and issues, campaign funnel, test calls and live control",
+      "path": "product/server/modules/calls/"
+    },
+    {
+      "id": "decision.2026-10-21.calls-signature-over-compact-json",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "The runtime hook checks x-vp-signature over the compact JSON serialisation of the parsed body, because the kernel router hands modules a parsed body, not the raw bytes",
+      "rationale": "Modules may not edit the kernel. JSON.stringify of the parsed body equals the raw body whenever the sender signs compact JSON (the kernel's own HttpRuntime does). A whitespace-only change to the body then still verifies, which is harmless: it parses to the same events.",
+      "reverse_if": "The kernel exposes the raw request body to module routes; then verify over the raw bytes and drop the serialisation rule for the Python runtime."
+    },
+    {
+      "id": "decision.2026-10-21.calls-quotes-single-line-substring",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "An analysis quote counts only if it is an exact substring (3+ characters, trimmed) of one stored transcript line. A point, moment or outcome guess whose quote fails is dropped with it, and the drops are counted per call",
+      "rationale": "Blueprint rule 3: quotes are spans, checked in code before display. Requiring one line rules out stitching across turns. Every claim in the call summary is built from points whose quotes passed.",
+      "reverse_if": "Owners find too many true claims dropped because of transcript normalisation (for example matras or romanisation), measured on labelled calls; then match on a normalised form and still cite the original span."
+    },
+    {
+      "id": "decision.2026-10-21.calls-model-refines-only-unknown-reasons",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "Code sets the reason code from the engine's end reason. The analysis model may replace it only for a normally ended call (CONV_INCOMPLETE, or END_HUNG_UP_MID at 10 s or more), and only with a conversation-stage code from the fixed 34-code catalogue",
+      "rationale": "Code first, model second. A model never overrides what the engine knows, such as no answer, max cost, a crisis hand-off or an early hang-up.",
+      "reverse_if": "The blueprint's companion catalogue (data/blueprint/intelligence-module.json, not in the repo) lands with different codes or stages; then replace taxonomy.ts with it."
+    },
+    {
+      "id": "open-question.2026-10-21.calls-reason-catalogue-source",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "The blueprint cites a companion data file with 34 reason codes and 20 default monitors (data/blueprint/intelligence-module.json), but no such file is in the repo. The calls module ships its own 34 codes and 6 default monitors",
+      "closes_when": "The companion JSON is committed and taxonomy.ts and DEFAULT_MONITORS are reconciled with it."
+    },
+    {
+      "id": "risk.2026-10-21.calls-analysis-cost-unpriced",
+      "type": "risk",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Analysis cost lines record tokens with inr_milli 0 (priced:false), because nothing in the control plane holds a rate. Cost per call understates analysis spend until the money module prices it",
+      "mitigation": "The money module rates component 'analysis' token lines, or llm.ts returns a price."
+    }
+  ],
+  "edges": [
+    { "from": "component.product.calls-module", "to": "decision.2026-10-21.calls-signature-over-compact-json", "relation": "implements" },
+    { "from": "component.product.calls-module", "to": "decision.2026-10-21.calls-quotes-single-line-substring", "relation": "implements" },
+    { "from": "component.product.calls-module", "to": "decision.2026-10-21.calls-model-refines-only-unknown-reasons", "relation": "implements" }
+  ],
+  "events": [
+    {
+      "date": "2026-10-21",
+      "event": "calls-module-built",
+      "details": "Calls module built (product/server/modules/calls, migration 0601). Verified: tsc clean; 12/12 node:test cases pass against a throwaway Postgres 16 with synthetic data and a fake LLM and runtime. The cases cover signature, staleness, tamper and unknown-conversation rejection; idempotent replay; cost before call.ended; settle at real cost; release on no answer; dropped quotes; test-call exclusion; tenancy; opt-out A3; outcome grades; calibration; funnel; monitors; and live control. Not verified: a real voice runtime or Python signer, a real analysis model, load, and the sibling contacts tool's real input shape."
+    }
+  ]
+}
