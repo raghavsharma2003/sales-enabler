@@ -38,17 +38,18 @@ def build(stack_id, voice_name, http, env=None, text_only=False):
     """Real adapters for a stack. text_only: the sim transport needs only the brain (an s2s stack runs its Live model
     in text mode there)."""
     env = os.environ if env is None else env
-    missing = stacks.missing_credentials(stack_id, env)
+    s = stacks.spec(stack_id); stack_id = s['id']          # a curated id, or a resolved (possibly custom) spec
+    missing = stacks.missing_credentials(s, env)
     if missing: raise ProviderUnavailable(missing)
     from .google import GoogleRoute, unavailable
     from .llm import HttpBrain
-    s = stacks.STACKS[stack_id]; c = s['components']
+    c = s['components']
     google = GoogleRoute(env)          # chosen once for this call
-    why = unavailable(stack_id, google, text_only=text_only)
+    why = unavailable(s, google, text_only=text_only)
     if why: raise ProviderUnavailable([], why)              # what Vertex does not offer is unavailable, never rerouted
     from .. import judge
     judge_complete = judge.http_complete(http, env) if judge.configured(env) and judge.mode(env=env) != 'off' else None
-    cid = stacks.combination_id(stack_id, voice_name)
+    cid = stacks.combination_id(s, voice_name)
     if s['kind'] == 's2s':
         from ..s2s import GeminiLiveText, make_live
         spec = catalog.S2S[c['s2s']]

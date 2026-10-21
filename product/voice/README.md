@@ -22,6 +22,10 @@ docker build -f product/voice/Dockerfile -t vp-voice .   # from the repository r
    a ticket it cannot run exactly as written:
    - a conversationId that is not a uuid (ingest refuses those, so every event would be lost);
    - an unknown stack, or no stack (there is no default);
+   - a ticket without `stack.components`, or a curated stack id whose components differ from the runtime's own table;
+   - a `custom` stack (one a person built from parts, `shared/components.ts`) whose parts are unknown, incomplete (a
+     cascade needs ears, a brain and a voice; an engine stack has only `s2s`), or differ from `agent.voice.components`.
+     A built stack runs exactly its parts and files under the same `combinationId` algorithm over them;
    - a stack that differs from `agent.voice.stackId`;
    - a voice the stack does not offer;
    - a `combinationId` that is not what this stack and voice run;
@@ -253,7 +257,9 @@ the git sha, the `rules.json` version and hash, the Python version and the CPU c
 - `GET /v1/calls/{id}`: signed (over an empty body); the runtime's view of the call: ended, error, seq, undelivered, cost.
 - `POST /v1/calls` past the process's cap: `503 {"error": "at_capacity", "retryAfterS", "placed": false}` with a
   `Retry-After` header. Nothing was created: no call record, no event sink, no events. Safe to resend, here or elsewhere.
-- `GET /v1/health`: version, whether each stack's credentials are configured, and
+- `GET /v1/health`: version, whether each stack's credentials are configured, `components: {ears|brain|voice|s2s: {id:
+  {available, reason, missing}}}` for "Build your own" (plain reasons: not set up on this server, not offered on Google
+  Cloud, not built into the engine), and
   `capacity: {admitted, max, free}` (plus `worker` under the launcher). No secret values.
 - Media: `/v1/media/browser/{id}`, `/v1/media/sim/{id}`, `/v1/media/sip/{answer,hangup,transfer}/{id}/{hook}`,
   `/v1/media/sip/stream/{id}`, and the live sockets `/v1/media/listen/{id}` and `/v1/media/takeover/{id}`.

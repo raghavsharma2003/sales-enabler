@@ -18,7 +18,11 @@ class Components(unittest.TestCase):
         h = self.h()
         for part, table in components.PARTS.items():
             self.assertEqual(set(h[part]), set(table), part)
-            for cid, v in h[part].items(): self.assertEqual(v['available'], v['reason'] is None, (part, cid))
+            for cid, v in h[part].items():
+                self.assertEqual(v['available'], v['reason'] is None, (part, cid))
+                if v['missing']: self.assertFalse(v['available'], (part, cid))
+        self.assertEqual(h['brain']['kimi-k2.6']['missing'], ['AZURE_OPENAI_SEA'])
+        self.assertEqual(self.h(VP_AI_ENDPOINT='https://fictional.test', VP_AI_KEY='k')['brain']['kimi-k2.6'], {'available': True, 'reason': None, 'missing': []})
 
     def test_plain_reasons_and_no_reroute(self):
         none = self.h()

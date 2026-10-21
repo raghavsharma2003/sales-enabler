@@ -39,18 +39,22 @@ def validate(t):
 
     st = t.get('stack') or {}
     try:
-        stack = stacks.require_stack(st.get('id'))
+        stack = stacks.resolve(st)                 # a curated id with its exact parts, or 'custom' built from its parts
     except stacks.StackError as e:
         raise TicketError(e.code, str(e))
     agent = t.get('agent') or {}
     _need(agent.get('schema') == 1, 'bad_agent', 'agent.schema must be 1')
-    _need((agent.get('voice') or {}).get('stackId') == st['id'], 'stack_mismatch', 'agent.voice.stackId differs from ticket.stack.id')
+    av = agent.get('voice') or {}
+    _need(av.get('stackId') == st['id'], 'stack_mismatch', 'agent.voice.stackId differs from ticket.stack.id')
+    if st['id'] == stacks.CUSTOM:
+        _need(isinstance(av.get('components'), dict) and stacks.parts(av['components']) == stacks.parts(stack['components']),
+              'stack_mismatch', "agent.voice.components differ from ticket.stack.components")
     try:
-        voice = stacks.resolve_voice(st['id'], (agent.get('voice') or {}).get('voiceId'))
+        voice = stacks.resolve_voice(stack, av.get('voiceId'))
     except stacks.StackError as e:
         raise TicketError(e.code, str(e))
     cid = st.get('combinationId')
-    _need(cid in (stacks.combination_id(st['id']), stacks.combination_id(st['id'], voice)), 'combination_mismatch',
+    _need(cid in (stacks.combination_id(stack), stacks.combination_id(stack, voice)), 'combination_mismatch',
           'ticket.stack.combinationId is not the combination this stack and voice run')
 
     b = t.get('brief') or {}

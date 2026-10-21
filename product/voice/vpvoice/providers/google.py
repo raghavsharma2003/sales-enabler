@@ -173,7 +173,7 @@ class GoogleRoute:
 def google_models(stack_id):
     """(component, our model id) pairs a stack needs from Google."""
     from .. import catalog, stacks
-    s = stacks.STACKS[stack_id]; c = s['components']; out = []
+    s = stacks.spec(stack_id); c = s['components']; out = []
     if s['kind'] == 's2s':
         if catalog.S2S[c['s2s']]['kind'] == 'gemini_live': out.append(('s2s', catalog.S2S[c['s2s']]['model']))
         return out

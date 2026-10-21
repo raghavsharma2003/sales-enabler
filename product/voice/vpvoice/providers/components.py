@@ -40,11 +40,20 @@ def reason(part, cid, env, route):
     return NOT_BUILT                                       # e.g. the realtime-transcribe ears, Azure realtime s2s
 
 
+def missing(part, cid, env):
+    """The credential names (shared/components.ts requires) this component needs and the server does not have."""
+    from .. import stacks
+    spec = PARTS[part][cid]
+    need = stacks.BRAIN_REQUIRES.get(spec['host']) if part == 'brain' else stacks.KIND_REQUIRES.get(spec.get('kind'))
+    if not need: return []
+    return [] if any(all(env.get(k) for k in group) for group in stacks.REQUIRES_ENV[need]) else [need]
+
+
 def health(env, route):
     out = {}
     for part, table in PARTS.items():
         out[part] = {}
         for cid in table:
             why = reason(part, cid, env, route)
-            out[part][cid] = {'available': why is None, 'reason': why}
+            out[part][cid] = {'available': why is None, 'reason': why, 'missing': missing(part, cid, env)}
     return out

@@ -112,6 +112,9 @@ BRAIN_FALLBACK = {}   # the Gemini -> OpenRouter fallbacks were retired with Ope
 # Azure; OpenRouter only for what is in neither (the GPT-6 / GPT-5.6 tiers: our Foundry quota for them is Taxila's).
 ROUTE_OF_HOST = {'gm': 'vertex', 'sin': 'azure-foundry', 'sea': 'azure-foundry', 'or': 'openrouter', 'sv': 'sarvam'}
 for _b in BRAINS.values(): _b['route'] = ROUTE_OF_HOST[_b['host']]
+ROUTE_OF_KIND = {'gemini': 'vertex', 'gemini_live': 'vertex', 'azure': 'azure-speech', 'sarvam': 'sarvam', 'oai_rt_tx': 'azure-foundry', 'azure_rt': 'azure-foundry'}
+for _t in (STT, TTS, S2S):
+    for _x in _t.values(): _x['route'] = ROUTE_OF_KIND[_x['kind']]
 
 BRAIN_PROVIDER = {'gm': 'gemini', 'or': 'openrouter', 'sin': 'azure-openai', 'sea': 'azure-openai', 'sv': 'sarvam'}
 

@@ -28,14 +28,18 @@ AGENT = {
 BRIEF_TEXT = 'You are Riya, an AI voice assistant phoning on behalf of Suraksha Demo Insurance (fictional). [compiled brief]'
 
 
-def ticket(stack_id='v2-flashlite', transport=None, test=True, **over):
+def ticket(stack_id='v2-flashlite', transport=None, test=True, parts=None, **over):
+    """parts: the components of a 'custom' stack (else the curated stack's own)."""
     a = copy.deepcopy(AGENT); a['voice'] = {'stackId': stack_id}
-    voice = stacks.voices(stack_id)[1] if stack_id in stacks.STACKS else None
+    comps = dict(parts) if parts is not None else dict(stacks.STACKS[stack_id]['components']) if stack_id in stacks.STACKS else {}
+    if parts is not None: a['voice']['components'] = dict(parts)
+    try: sp = stacks.resolve({'id': stack_id, 'components': comps}); voice = stacks.voices(sp)[1]
+    except Exception: sp = voice = None
     raw = BRIEF_TEXT.encode()
     t = {'protocol': 1, 'conversationId': '0b6f6e1a-1c2d-4e5f-8a9b-000000000001', 'attemptId': None, 'workspaceId': 'ws_demo', 'direction': 'outbound',
          'transport': transport or {'kind': 'sim', 'simCallerId': 'sim_busy_parent'}, 'agent': a,
          'brief': {'text': BRIEF_TEXT, 'hash': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw)},
-         'stack': {'id': stack_id, 'combinationId': stacks.combination_id(stack_id, voice) if voice else 'x'},
+         'stack': {'id': stack_id, 'combinationId': stacks.combination_id(sp, voice) if voice else 'x', 'components': comps},
          'contact': {'displayName': 'Asha', 'language': 'hinglish', 'timezone': 'Asia/Kolkata', 'facts': {'policy_no': 'SH-DEMO-0042'},
                      'memoryBrief': '', 'memoryStatus': 'none'},
          'consent': {'basis': 'contract'}, 'limits': {'maxDurationS': 600, 'maxCostInrMilli': 50000}, 'test': test}
@@ -59,8 +63,8 @@ class FakeBrain:
 
 
 def components(stack_id='v2-flashlite', brain=None, voice=None, ears=None, fallback_brain=None):
-    s = stacks.STACKS[stack_id]; c = s['components']; vname = stacks.voices(stack_id)[1]
-    comp = Components(stack_id, s['kind'], vname, stacks.combination_id(stack_id, vname), brain=brain or FakeBrain(['नमस्ते']),
+    s = stacks.spec(stack_id); c = s['components']; vname = stacks.voices(s)[1]; stack_id = s['id']
+    comp = Components(stack_id, s['kind'], vname, stacks.combination_id(s, vname), brain=brain or FakeBrain(['नमस्ते']),
                       brain_id=c.get('brain', c.get('s2s', '')), brain_provider='gemini',
                       make_brain=(lambda bid: fallback_brain) if fallback_brain else None,
                       ears_id=c.get('ears', ''), gated=bool(c.get('gatedEars')), tts_id=c.get('voice', ''),

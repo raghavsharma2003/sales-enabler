@@ -44,7 +44,7 @@ class Runtime:
         self.secret = self.env.get('VP_RUNTIME_SECRET', '')
         self.public = (self.env.get('VP_PUBLIC_URL') or '').rstrip('/')
         self.control = (self.env.get('VP_CONTROL_URL') or '').rstrip('/')
-        self.make_components = make_components or (lambda sid, voice, t, http, env: build(sid, voice, http, env, text_only=t['transport']['kind'] == 'sim'))
+        self.make_components = make_components or (lambda sid, voice, t, http, env: build(stacks.resolve(t['stack']), voice, http, env, text_only=t['transport']['kind'] == 'sim'))
         self.make_poster = make_poster or (lambda http: HttpPoster(http, self.control, self.secret))
         self.clock = clock; self.watchdog_s = watchdog_s
         self.calls = {}; self.http = None
