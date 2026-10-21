@@ -1,0 +1,28 @@
+{
+ "nodes": [
+  {
+   "id": "rejected.2026-10-21.e2e-only-in-sandboxes",
+   "type": "rejection",
+   "title": "Browser flows that only ever ran in builder sandboxes",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "tried": "tests/web.test.ts runs the 13 browser flows when a precheck finds Chromium and Postgres 16 binaries, and skips with a reason otherwise. The CI control-plane job has neither.",
+   "broke": "Every CI run skipped all 13 flows, so CI green never covered the approval hold, the Ask Saarthi paths, the developer-text scan or the plan-card refusals. A load-sensitive race in those flows was found only because one builder ran the suite in parallel by chance.",
+   "instead": "A web-e2e CI job (5e9253d) installs Chromium and Postgres 16, requires the precheck to pass (a skip is a failure), runs product/web/e2e/run.sh, and uploads the failing flows' screenshots and logs."
+  },
+  {
+   "id": "rejected.2026-10-21.e2e-fixed-time-holds",
+   "type": "rejection",
+   "title": "Browser tests that hold a button, or read server state, on wall-clock time",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "web builder (d4871c4)",
+   "tried": "The e2e hold() pressed for a fixed 1,500 ms against the button's 1,200 ms timer. One flow read the server's proposals as soon as the plan card appeared.",
+   "broke": "Under CPU load (6 busy loops on 4 cores) 1 in 4 runs failed. The browser could deliver the press late and the release right after it, so the hold never completed. The plan card renders before the server has filed the proposal. Neither was a product bug.",
+   "instead": "Wait on the condition the flow needs: the button's holding/finished state, the proposal row existing, or polling instead of fixed sleeps. 12 of 12 runs passed under the same load after the fix, and the full suite passed 372 of 372 three times on a fresh database."
+  }
+ ],
+ "edges": [],
+ "events": []
+}
