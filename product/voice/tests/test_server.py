@@ -17,7 +17,7 @@ def signed(obj, t_ms=None, secret=SECRET):
     return body, {'content-type': 'application/json', signing.HEADER: signing.sign(secret, body, t_ms)}
 
 
-class Server(unittest.IsolatedAsyncioTestCase):
+class Base(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.posters = []; self.brains = []
 
@@ -40,6 +40,8 @@ class Server(unittest.IsolatedAsyncioTestCase):
         body, hdr = signed(t, **kw)
         return await self.client.post('/v1/calls', data=body, headers=hdr)
 
+
+class Server(Base):
     async def test_health(self):
         r = await self.client.get('/v1/health'); d = await r.json()
         self.assertEqual(r.status, 200)
@@ -164,6 +166,55 @@ class Server(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(d['join']['streamUrl'].startswith('wss://voice.example.test/v1/media/sip/stream/0b6f6e1a-1c2d-4e5f-8a9b-000000000001?token='))
         t2 = ticket(transport={'kind': 'sip', 'to': '+919000000001', 'from': '+919000000002', 'trunk': 'exotel'}); t2['conversationId'] = '0b6f6e1a-1c2d-4e5f-8a9b-000000000002'
         r = await self.post_ticket(t2); self.assertEqual((r.status, (await r.json())['error']), (422, 'unsupported_trunk'))
+
+
+
+def cid(i): return f'0b6f6e1a-1c2d-4e5f-8a9b-{i:012d}'
+
+
+class Admission(Base):
+    """VP_MAX_CALLS_PER_PROCESS: past the cap a ticket is refused at intake, before any record, sink or event."""
+    async def asyncSetUp(self):
+        ENV['VP_MAX_CALLS_PER_PROCESS'] = '2'; ENV['VP_WORKER_ID'] = 'w3'
+        try: await super().asyncSetUp()
+        finally: del ENV['VP_MAX_CALLS_PER_PROCESS'], ENV['VP_WORKER_ID']
+
+    async def ticket_for(self, i):
+        t = ticket(); t['conversationId'] = cid(i); return t
+
+    async def capacity(self):
+        return (await (await self.client.get('/v1/health')).json())
+
+    async def test_cap_refuses_before_any_record_sink_or_event(self):
+        for i in (1, 2): self.assertEqual((await self.post_ticket(await self.ticket_for(i))).status, 202)
+        h = await self.capacity()
+        self.assertEqual((h['capacity'], h['worker']), ({'admitted': 2, 'max': 2, 'free': 0}, 'w3'))
+        r = await self.post_ticket(await self.ticket_for(3)); d = await r.json()
+        self.assertEqual((r.status, d['error'], d['placed'], r.headers['Retry-After']), (503, 'at_capacity', False, str(d['retryAfterS'])))
+        self.assertNotIn(cid(3), self.rt.calls)
+        self.assertEqual((len(self.posters), len(self.brains)), (2, 2), 'no sink and no components for the refused call')
+        self.assertEqual(sum(len(p.bodies) for p in self.posters), 0, 'unjoined calls have posted nothing yet; the refusal posted nothing')
+        # a retry of an accepted ticket is not a new call: it still gets its join, cap or no cap
+        self.assertEqual((await self.post_ticket(await self.ticket_for(1))).status, 202)
+
+    async def test_slot_frees_when_a_call_ends(self):
+        r = await self.post_ticket(await self.ticket_for(1)); j = (await r.json())['join']
+        await self.post_ticket(await self.ticket_for(2))
+        self.assertEqual((await self.post_ticket(await self.ticket_for(3))).status, 503)
+        ws = await self.client.ws_connect(f"/v1/media/sim/{cid(1)}?token={j['token']}")
+        await ws.receive_json()
+        self.assertEqual((await self.capacity())['capacity']['admitted'], 2, 'a joined call still holds its slot')
+        await ws.send_json({'t': 'hangup'}); await ws.close(); await asyncio.sleep(0.05)
+        self.assertEqual((await self.capacity())['capacity'], {'admitted': 1, 'max': 2, 'free': 1})
+        self.assertEqual((await self.post_ticket(await self.ticket_for(3))).status, 202)
+        # an unjoined call ended by the control plane frees its slot too
+        body, hdr = signed({'conversationId': cid(2)})
+        await self.client.post(f'/v1/calls/{cid(2)}/end', data=body, headers=hdr); await asyncio.sleep(0.05)
+        self.assertEqual((await self.capacity())['capacity']['admitted'], 1)
+        self.assertEqual((await self.post_ticket(await self.ticket_for(4))).status, 202)
+
+    async def test_default_cap_is_20(self):
+        self.assertEqual(Runtime(env=dict(ENV)).max_calls, 20)
 
 
 if __name__ == '__main__':

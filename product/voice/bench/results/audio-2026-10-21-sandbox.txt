@@ -48,3 +48,21 @@ callers: 8 synthetic speech clips (Azure TTS phone stimuli) ~2 s talk / 4-6 s qu
 
 
 
+
+# Multi-process (python -m vpvoice.launch, 4 workers, own cap each), same box, 2026-10-21. --calls 60 90 --seconds 120 --workers 4 (media straight to the workers, as nginx would route; nginx's own cost not included)
+git 29e3cdc · python 3.13.16 · 4 cpu · rules 2026-10-21.1 · VAD SileroVAD
+line: G.711 mu-law 8 kHz, 20 ms frames in; runtime 16 kHz internal; voice 24 kHz PCM16 in 40 ms chunks -> 8 kHz mu-law out
+processes: launcher front + 4 workers (cap 30 each), media direct; cpu% = sum of workers (100 = one core), lag = all workers pooled
+callers: 8 synthetic speech clips (Azure TTS phone stimuli) ~2 s talk / 4-6 s quiet; fake providers 1250 ms per reply
+   N   cpu% cpu%/call  rss MB  lag p50  lag p99  lag max late p99    late>20ms overhd p50 overhd p99 replies gen lag p99
+  60    176      2.94     889      0.8      5.4     50.3      0.0    76/156991        176        201     961         2.0
+      per worker: calls [15, 15, 15, 15], cpu% [44, 45, 44, 44]; front cpu% 0
+  90    240      2.66    1182      0.9      8.3    726.6      0.0   368/234636        177        368    1444         2.9
+      per worker: calls [22, 23, 23, 22], cpu% [59, 61, 62, 58]; front cpu% 0
+
+# Same at N=90 with media through the launcher front (one more Python hop per frame)
+processes: launcher front + 4 workers (cap 30 each), media front; cpu% = sum of workers (100 = one core), lag = all workers pooled
+   N   cpu% cpu%/call  rss MB  lag p50  lag p99  lag max late p99    late>20ms overhd p50 overhd p99 replies gen lag p99
+  90    226      2.51    1186      1.0      9.7     65.6      0.0   154/234473        178        215    1441         3.6
+      per worker: calls [22, 23, 23, 22], cpu% [55, 57, 58, 56]; front cpu% 33
+# Read: the knee scales with processes. 90 calls over 4 workers (22-23 each) has lower lag p99 (8.3 ms) than 25 in one process (12.8 ms); late frames 0.16%. The 726 ms lag max in the direct N=90 run did not recur in the front run (65.6 ms): one stall, n=1 each, cause not isolated (the load generator shares the 4 cores). Through the front costs it 33% of a core at 90 calls: fine for development, route /w/<i>/ in nginx/ingress in production.

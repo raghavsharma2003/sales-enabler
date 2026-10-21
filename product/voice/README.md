@@ -9,7 +9,8 @@ says: the agent config, the brief compiled once by the control plane, the stack,
 
 ```
 python -m pip install -r requirements.txt
-python -m vpvoice                  # serves on $PORT (8080)
+python -m vpvoice                  # serves on $PORT (8080), one process
+python -m vpvoice.launch           # one worker per core behind $PORT (see "Admission and processes")
 python -m unittest                 # from product/voice; no network
 docker build -f product/voice/Dockerfile -t vp-voice .   # from the repository root
 ```
@@ -177,6 +178,36 @@ python bench/audio_bench.py --calls 10 25 50 100 --seconds 120
 python bench/audio_bench.py --calls 50 --seconds 60 --profile     # cProfile the runtime at one N
 ```
 
+## Admission and processes
+
+**One process carries at most `VP_MAX_CALLS_PER_PROCESS` calls (default 20).** The audio path is CPU-bound and Python
+runs one core per process. The bench above puts the knee between 25 and 35 calls per process on a 4-vCPU host, so
+20 leaves headroom for real providers' extra work. A call holds its slot from the accepted ticket (joined or not)
+until it ends. Past the cap a ticket is refused at intake with `503 at_capacity` before anything is created. The
+dialer should read it as "not placed, retry after `Retry-After`", not as a failed attempt.
+
+**A host carries more calls with more processes.** `python -m vpvoice.launch` runs `VP_WORKERS` (default
+`os.cpu_count()`) workers, each with its own cap, and a front on `$PORT`. It does not use `SO_REUSEPORT`: the kernel
+spreads connections at random, but a call is a ticket POST, then a media socket and carrier webhooks that must reach
+the same process.
+- **Workers.** Worker *i* listens on `127.0.0.1:VP_WORKER_BASE_PORT+i` (default `PORT+1+i`). Its
+  `VP_PUBLIC_URL` is `<public>/w/<i>`, so every join and webhook URL it hands out names it.
+- **`POST /v1/calls`.** The front sends it to the worker with the most free slots. On `at_capacity` it tries the
+  next; this is safe because nothing was created. Only when every worker is full does the dialer get the 503.
+- **Retries.** A retried ticket goes back to the worker that accepted it, because idempotency is per process.
+- **Call routes.** `/v1/calls/{id}` and `/v1/calls/{id}/end` go to the call's worker.
+- **Health.** `/v1/health` sums the workers and lists each one's capacity.
+- **Media.** `/w/<i>/…` reaches worker *i*. The front can proxy media sockets itself, which is fine for one
+  container in development. In production, route `/w/<i>/` straight to the workers in nginx or the ingress, and point
+  `/` at the front on `VP_FRONT_PORT`. `python -m vpvoice.launch --nginx-conf` prints that config.
+- **Restarts.** A worker that exits is restarted with back-off; its calls are lost, as with a single process.
+  SIGTERM stops all workers, and each ends its calls with `call.ended`.
+
+```
+python bench/audio_bench.py --calls 60 90 --seconds 120 --workers 4               # media straight to the workers
+python bench/audio_bench.py --calls 90 --seconds 120 --workers 4 --media front    # media through the front
+```
+
 ## Runtime events and ingest parity
 
 `tests/test_runtime_fixture.py` runs sim calls that produce every RuntimeEvent type and all three judge outcomes, and
@@ -219,7 +250,10 @@ the git sha, the `rules.json` version and hash, the Python version and the CPU c
   answer; a different ticket under the same id gets a 409.
 - `POST /v1/calls/{id}/end`: signed; body `{"conversationId": "<the same id>", "endReason"?: "completed" | "max_duration" | "max_cost" | "error" | "handed_off"}`. The id in the body is required, so a captured signature cannot end another call. It answers at once; `call.ended` delivery continues in the background.
 - `GET /v1/calls/{id}`: signed (over an empty body); the runtime's view of the call: ended, error, seq, undelivered, cost.
-- `GET /v1/health`: version, and whether each stack's credentials are configured. No secret values.
+- `POST /v1/calls` past the process's cap: `503 {"error": "at_capacity", "retryAfterS", "placed": false}` with a
+  `Retry-After` header. Nothing was created: no call record, no event sink, no events. Safe to resend, here or elsewhere.
+- `GET /v1/health`: version, whether each stack's credentials are configured, and
+  `capacity: {admitted, max, free}` (plus `worker` under the launcher). No secret values.
 - Media: `/v1/media/browser/{id}`, `/v1/media/sim/{id}`, `/v1/media/sip/{answer,hangup,transfer}/{id}/{hook}`,
   `/v1/media/sip/stream/{id}`.
 
@@ -231,6 +265,10 @@ the git sha, the `rules.json` version and hash, the Python version and the CPU c
 | `VP_CONTROL_URL` | Control plane base; events go to `{VP_CONTROL_URL}/hooks/runtime` |
 | `VP_PUBLIC_URL` | This runtime's public https base, used to build media and webhook URLs (required for webrtc/sip) |
 | `PORT` | Listen port (8080) |
+| `VP_BIND` | Listen address (`0.0.0.0`; the launcher binds workers to `127.0.0.1`) |
+| `VP_MAX_CALLS_PER_PROCESS`, `VP_RETRY_AFTER_S` | Admission cap per process (20) and the `Retry-After` it answers with (5) |
+| `VP_WORKERS`, `VP_WORKER_BASE_PORT`, `VP_FRONT_PORT` | Launcher: worker count (cpu count), first worker port (`PORT+1`), front port when nginx holds `PORT` |
+| `VP_WORKER_ID` | Set by the launcher (`w0`…); shown on health |
 | `GEMINI_PAID_KEY` | Gemini API: ears (Live transcription), speech-to-speech, and text/TTS unless Vertex is configured |
 | `VERTEX_SA_FILE`, `VERTEX_PROJECT`, `VERTEX_LOCATION`, `VERTEX_OFF` | Optional Vertex AI route for Gemini text and TTS; chosen once per call |
 | `LAB_AI_ENDPOINT`, `LAB_AI_KEY` | Azure OpenAI (GPT-5.4 mini) |

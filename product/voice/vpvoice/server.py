@@ -47,6 +47,11 @@ class Runtime:
         self.make_poster = make_poster or (lambda http: HttpPoster(http, self.control, self.secret))
         self.clock = clock; self.watchdog_s = watchdog_s
         self.calls = {}; self.http = None
+        # admission: one process carries at most this many calls (measured knee ~25 on a 4-vCPU host, bench/results/);
+        # past it a ticket is refused before any record, sink or event, so the dialer can place it elsewhere or later
+        self.max_calls = max(1, int(self.env.get('VP_MAX_CALLS_PER_PROCESS') or 20))
+        self.retry_after_s = max(1, int(self.env.get('VP_RETRY_AFTER_S') or 5))
+        self.worker = self.env.get('VP_WORKER_ID') or None
 
     # ---------------------------------------------------------------- helpers
     def hook(self, cid, what):
@@ -62,6 +67,10 @@ class Runtime:
 
     def err(self, status, code, message, **extra):
         return web.json_response({'error': code, 'message': message, **extra}, status=status)
+
+    def admitted(self):
+        """Calls holding a slot: accepted and not yet ended (an unjoined call holds one until it joins or expires)."""
+        return sum(1 for r in self.calls.values() if r.ended_at is None and not (r.session is not None and r.session.ended))
 
     def gc(self):
         for cid, r in list(self.calls.items()):
@@ -119,6 +128,11 @@ class Runtime:
             return self.err(422, 'unsupported_trunk', 'outbound dialling is implemented for plivo only; exotel streams inbound')
         if tr['kind'] != 'sim' and not self.public:
             return self.err(503, 'not_configured', 'VP_PUBLIC_URL is not set, so no media URL can be offered')
+        self.gc()
+        if self.admitted() >= self.max_calls:     # nothing below may await before the record is stored, so the count holds
+            return web.json_response({'error': 'at_capacity', 'message': f'this runtime process carries {self.max_calls} calls; retry later',
+                                      'retryAfterS': self.retry_after_s, 'placed': False},
+                                     status=503, headers={'Retry-After': str(self.retry_after_s)})
         try:
             comp = self.make_components(t['stack']['id'], voice, t, self.http, self.env)
         except ProviderUnavailable as e:
@@ -138,7 +152,7 @@ class Runtime:
                     'hangupUrl': f'{self.public}/v1/media/sip/hangup/{cid}/{self.hook(cid, "hangup")}'}
             if t['direction'] == 'inbound': join['streamUrl'] = stream
         rec = CallRecord(t, bh, comp, sink, token, join)
-        self.calls[cid] = rec; self.gc()
+        self.calls[cid] = rec
         if tr['kind'] == 'sip' and t['direction'] == 'outbound':
             from .transports import plivo_dial
             ru, e = await plivo_dial(self.http, self.env, tr['to'], tr['from'], join['answerUrl'], join['hangupUrl'], t['limits']['maxDurationS'])
@@ -178,7 +192,9 @@ class Runtime:
         st = {sid: {'missing': stacks.missing_credentials(sid, self.env), 'status': s['status']} for sid, s in stacks.STACKS.items()}
         for v in st.values(): v['available'] = not v['missing']
         return web.json_response({'ok': True, 'runtimeVersion': RUNTIME_VERSION, 'signing': bool(self.secret), 'control': bool(self.control),
-                                  'stacks': st, 'activeCalls': sum(1 for r in self.calls.values() if r.session and not r.session.ended)})
+                                  'stacks': st, 'activeCalls': sum(1 for r in self.calls.values() if r.session and not r.session.ended),
+                                  'capacity': {'admitted': (n := self.admitted()), 'max': self.max_calls, 'free': max(0, self.max_calls - n)},
+                                  **({'worker': self.worker} if self.worker else {})})
 
     # ---------------------------------------------------------------- media: browser and sim
     def _join(self, req, kind):
@@ -352,4 +368,4 @@ class _NullLine:
 def main():
     logging.basicConfig(level=os.environ.get('VP_LOG_LEVEL', 'INFO'), format='%(asctime)s %(levelname)s %(name)s %(message)s')
     rt = Runtime()
-    web.run_app(rt.app(), host='0.0.0.0', port=int(os.environ.get('PORT', '8080')))
+    web.run_app(rt.app(), host=os.environ.get('VP_BIND') or '0.0.0.0', port=int(os.environ.get('PORT', '8080')))

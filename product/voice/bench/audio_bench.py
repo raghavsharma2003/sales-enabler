@@ -104,7 +104,9 @@ def serve(port, profile):
                     stats['latency_ms'].append(e['latencyMs']); stats['replies'] += 1
             return True
 
-    env = {'VP_RUNTIME_SECRET': SECRET, 'VP_PUBLIC_URL': f'http://127.0.0.1:{port}', 'VP_CONTROL_URL': 'http://127.0.0.1:9'}
+    # under the launcher (--workers) these come from it: the worker's public base (/w/<i>), its id and its cap
+    env = {'VP_RUNTIME_SECRET': SECRET, 'VP_PUBLIC_URL': os.environ.get('VP_PUBLIC_URL') or f'http://127.0.0.1:{port}', 'VP_CONTROL_URL': 'http://127.0.0.1:9',
+           'VP_MAX_CALLS_PER_PROCESS': os.environ.get('VP_MAX_CALLS_PER_PROCESS') or str(10 ** 6), 'VP_WORKER_ID': os.environ.get('VP_WORKER_ID') or ''}
     rt = Runtime(env=env, make_components=make_components, make_poster=lambda http: Poster())
     app = rt.app()
     prof = None
@@ -159,7 +161,7 @@ def proc_rss_mb(pid):
     return int(d['VmRSS'].split()[0]) / 1024, int(d['VmHWM'].split()[0]) / 1024
 
 
-async def one_call(http, port, k, clips, seconds, out):
+async def one_call(http, port, k, clips, seconds, out, direct=None):
     from vpvoice import signing
     from tests.fixtures import ticket
     t = ticket(transport={'kind': 'sip', 'to': '+919000000001', 'from': f'+9190000{k:05d}', 'trunk': 'plivo'}, direction='inbound')
@@ -171,6 +173,9 @@ async def one_call(http, port, k, clips, seconds, out):
         j = await r.json()
         if r.status != 202: raise RuntimeError(f'ticket refused: {r.status} {j}')
     url = j['join']['streamUrl']
+    if direct:                                   # what nginx does: /w/<i>/ straight to worker i, not through the front
+        head, tail = url.split('/w/', 1); i, rest = tail.split('/', 1)
+        url = f'ws://127.0.0.1:{direct + int(i)}/{rest}'
     rng = random.Random(k); clip = clips[k % len(clips)] if clips else None
     arrivals = []; speech_ends = []; first_audio = []
     ws = await http.ws_connect(url, max_msg_size=0)
@@ -214,54 +219,82 @@ async def one_call(http, port, k, clips, seconds, out):
     out.append({'late_ms': late, 'frames': len(arrivals), 'client_latency_ms': [(b - a) * 1000 for a, b in first_audio]})
 
 
-async def run_n(n, seconds, clips, profile):
+def children(pid):
+    try:
+        with open(f'/proc/{pid}/task/{pid}/children') as f: return [int(x) for x in f.read().split()]
+    except OSError: return []
+
+
+async def run_n(n, seconds, clips, profile, workers=1, media='direct', cap=None):
     import aiohttp
     port = 18800 + n
-    srv = subprocess.Popen([sys.executable, os.path.abspath(__file__), '--serve', str(port)] + (['--profile'] if profile else []),
-                           cwd=VOICE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    if workers > 1:          # the launcher: front on port, workers on port+1.. with their own caps
+        base = port + 1
+        env = {**os.environ, 'PORT': str(port), 'VP_WORKERS': str(workers), 'VP_WORKER_BASE_PORT': str(base),
+               'VP_PUBLIC_URL': f'http://127.0.0.1:{port}', 'VP_MAX_CALLS_PER_PROCESS': str(cap or 30), 'VP_LOG_LEVEL': 'WARNING'}
+        srv = subprocess.Popen([sys.executable, '-m', 'vpvoice.launch', '--', sys.executable, os.path.abspath(__file__), '--serve', '{port}'],
+                               cwd=VOICE, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        stat_ports = [base + i for i in range(workers)]
+    else:
+        srv = subprocess.Popen([sys.executable, os.path.abspath(__file__), '--serve', str(port)] + (['--profile'] if profile else []),
+                               cwd=VOICE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        stat_ports = [port]
+    direct = port + 1 if workers > 1 and media == 'direct' else None
     try:
         async with aiohttp.ClientSession() as http:
-            for _ in range(100):
+            for _ in range(300):
                 try:
                     async with http.get(f'http://127.0.0.1:{port}/v1/health') as r:
-                        if r.status == 200: break
+                        if r.status == 200 and (await r.json()).get('ok'): break
                 except Exception: pass
                 await asyncio.sleep(0.1)
+            pids = children(srv.pid) if workers > 1 else [srv.pid]
             out = []; client_lag = []
             async def sampler():          # the load generator's own lag: if it is high, its jitter numbers are suspect
                 while True:
                     t = time.perf_counter(); await asyncio.sleep(0.01); client_lag.append((time.perf_counter() - t - 0.01) * 1000)
             smp = asyncio.ensure_future(sampler())
-            calls = asyncio.gather(*(one_call(http, port, k, clips, seconds, out) for k in range(n)))
+            calls = asyncio.gather(*(one_call(http, port, k, clips, seconds, out, direct) for k in range(n)))
             warm = min(10.0, seconds / 4)
             await asyncio.sleep(warm)
-            async with http.get(f'http://127.0.0.1:{port}/bench/stats?reset=1') as r: await r.json()
-            c0 = proc_cpu_s(srv.pid); w0 = time.perf_counter()
+            for sp in stat_ports:
+                async with http.get(f'http://127.0.0.1:{sp}/bench/stats?reset=1') as r: await r.json()
+            c0 = [proc_cpu_s(p) for p in pids]; f0 = proc_cpu_s(srv.pid) if workers > 1 else 0; w0 = time.perf_counter()
             await calls
             smp.cancel()
-            c1 = proc_cpu_s(srv.pid); w1 = time.perf_counter()
-            rss, hwm = proc_rss_mb(srv.pid)
-            async with http.get(f'http://127.0.0.1:{port}/bench/stats') as r: st = await r.json()
+            c1 = [proc_cpu_s(p) for p in pids]; f1 = proc_cpu_s(srv.pid) if workers > 1 else 0; w1 = time.perf_counter()
+            rss = sum(proc_rss_mb(p)[0] for p in pids); hwm = sum(proc_rss_mb(p)[1] for p in pids)
+            st = {'lag_ms': [], 'latency_ms': [], 'replies': 0, 'calls': []}
+            for sp in stat_ports:
+                async with http.get(f'http://127.0.0.1:{sp}/bench/stats') as r: one = await r.json()
+                st['lag_ms'] += one['lag_ms']; st['latency_ms'] += one['latency_ms']; st['replies'] += one['replies']; st['calls'].append(one['calls'])
             prof_txt = None
-            if profile:
+            if profile and workers == 1:
                 async with http.get(f'http://127.0.0.1:{port}/bench/profile') as r: prof_txt = await r.text()
     finally:
         srv.terminate()
-        try: srv.wait(10)
+        try: srv.wait(30)
         except Exception: srv.kill()
+    per_worker = [(b - a) / (w1 - w0) * 100 for a, b in zip(c0, c1)]
+    front_cpu = (f1 - f0) / (w1 - w0) * 100
+    c0, c1 = sum(c0), sum(c1)
     cpu = (c1 - c0) / (w1 - w0) * 100
     lateness = [x for o in out for x in o['late_ms']]
     late = sum(1 for x in lateness if x > 20)
     overhead = [x - PROVIDER_MS for x in st['latency_ms']]
     return {'n': n, 'cpu_pct': cpu, 'cpu_per_call': cpu / n, 'rss_mb': rss, 'hwm_mb': hwm, 'lag': st['lag_ms'], 'lateness': lateness, 'late': late,
             'frames': sum(o['frames'] for o in out), 'overhead': overhead, 'replies': st['replies'],
-            'client_latency': [x for o in out for x in o['client_latency_ms']], 'client_lag': client_lag, 'profile': prof_txt}
+            'client_latency': [x for o in out for x in o['client_latency_ms']], 'client_lag': client_lag, 'profile': prof_txt,
+            'per_worker_cpu': per_worker, 'front_cpu': front_cpu, 'per_worker_calls': st['calls']}
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--serve', type=int); ap.add_argument('--profile', action='store_true')
     ap.add_argument('--calls', type=int, nargs='*', default=[10, 25, 50, 100]); ap.add_argument('--seconds', type=float, default=120.0)
+    ap.add_argument('--workers', type=int, default=1, help='>1: run the launcher (python -m vpvoice.launch) with this many workers')
+    ap.add_argument('--media', choices=['direct', 'front'], default='direct', help='with --workers: media straight to the worker (as nginx) or through the front')
+    ap.add_argument('--cap', type=int, help='with --workers: VP_MAX_CALLS_PER_PROCESS (default 30)')
     a = ap.parse_args()
     if a.serve: return serve(a.serve, a.profile)
     from vpvoice import audio, rules
@@ -270,14 +303,17 @@ def main():
     vad = type(audio.make_vad()).__name__
     print(f'git {sha} · python {sys.version.split()[0]} · {os.cpu_count()} cpu · rules {rules.VERSION} · VAD {vad}')
     print(f'line: G.711 mu-law 8 kHz, 20 ms frames in; runtime 16 kHz internal; voice 24 kHz PCM16 in 40 ms chunks -> 8 kHz mu-law out')
+    if a.workers > 1: print(f'processes: launcher front + {a.workers} workers (cap {a.cap or 30} each), media {a.media}; cpu% = sum of workers (100 = one core), lag = all workers pooled')
     print(f'callers: {len(clips)} synthetic speech clips (Azure TTS phone stimuli) ~2 s talk / 4-6 s quiet; fake providers {PROVIDER_MS:.0f} ms per reply')
     print(f'{"N":>4} {"cpu%":>6} {"cpu%/call":>9} {"rss MB":>7} {"lag p50":>8} {"lag p99":>8} {"lag max":>8} {"late p99":>8} {"late>20ms":>12} '
           f'{"overhd p50":>10} {"overhd p99":>10} {"replies":>7} {"gen lag p99":>11}')
     for n in a.calls:
-        r = asyncio.run(run_n(n, a.seconds, clips, a.profile))
+        r = asyncio.run(run_n(n, a.seconds, clips, a.profile, a.workers, a.media, a.cap))
         print(f'{n:>4} {r["cpu_pct"]:>6.0f} {r["cpu_per_call"]:>9.2f} {r["rss_mb"]:>7.0f} {q(r["lag"], .5):>8.1f} {q(r["lag"], .99):>8.1f} '
               f'{max(r["lag"] or [0]):>8.1f} {q(r["lateness"], .99):>8.1f} {r["late"]:>5}/{r["frames"]:<6} {q(r["overhead"], .5):>10.0f} '
               f'{q(r["overhead"], .99):>10.0f} {r["replies"]:>7} {q(r["client_lag"], .99):>11.1f}', flush=True)
+        if a.workers > 1:
+            print(f'      per worker: calls {r["per_worker_calls"]}, cpu% {[round(x) for x in r["per_worker_cpu"]]}; front cpu% {r["front_cpu"]:.0f}', flush=True)
         if r['profile']: print(r['profile'])
         if q(r['lag'], .99) > 200 or q(r['lateness'], .99) > 200: print('stopping: the process is saturated'); break
 

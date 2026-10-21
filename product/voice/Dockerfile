@@ -15,4 +15,7 @@ RUN useradd --system --uid 10001 vp && chown -R vp /app
 USER vp
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request,os; urllib.request.urlopen(f'http://127.0.0.1:{os.environ[\"PORT\"]}/v1/health', timeout=2)"
+# One process, capped at VP_MAX_CALLS_PER_PROCESS (20). On a multi-core replica run one worker per core instead:
+#   CMD ["python", "-m", "vpvoice.launch"]  with nginx (python -m vpvoice.launch --nginx-conf) routing /w/<i>/ to the
+#   workers; without nginx the launcher's front proxies media itself, at ~0.37% of a core per call (README).
 CMD ["python", "-m", "vpvoice"]
