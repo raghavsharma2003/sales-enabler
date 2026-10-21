@@ -145,6 +145,9 @@ test('version.candidate creates an immutable, undeployed version compiled once, 
   assert.equal(row!.config.agent.version, 2);
   assert.equal(row!.config.agent.versionHash, row!.hash);
   assert.deepEqual(row!.config.brief, compile(row!.config.agent));
+  assert.deepEqual((row!.config as any).lint, { ok: true, findings: [], dropped: [] }, "campaigns' G10 reads config.lint.ok");
+  const pub = await one<{ lint: { ok: boolean } }>(pool, "SELECT config->'lint' AS lint FROM agent_version WHERE id = $1", [v1.versionId]);
+  assert.equal(pub!.lint.ok, true, 'version.publish stores it too');
   assert.deepEqual(cand.brief, { hash: compile(row!.config.agent).hash, bytes: compile(row!.config.agent).bytes });
   assert.equal(ok<any>(await w.call('agent.get', { agentId })).draftHash, draftBefore, 'the draft is untouched');
   assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM deployment WHERE agent_id = $1', [agentId]))!.n, '0', 'not deployed');

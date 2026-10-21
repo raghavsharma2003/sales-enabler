@@ -8,7 +8,7 @@ import { createPool, one } from '../server/db.ts';
 import { setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { Registry, type Actor, type Receipt } from '../server/tools.ts';
 import { verifyAudit } from '../server/audit.ts';
-import { compile } from '../server/modules/agents/compile.ts';
+import { compile, markerRules, TAIL } from '../server/modules/agents/compile.ts';
 import { versionHashOf } from '../server/modules/agents/config.ts';
 import { module } from '../server/modules/agents/index.ts';
 
@@ -235,7 +235,7 @@ test('tool.attach grants catalogue and workspace tools with their risk class', {
   const c = await fromTemplate(call);
   const r = ok<any>(await call('tool.attach', { agentId: c.agentId, name: 'end_call' }));
   assert.ok(r.tools.some((t: { name: string; risk: string }) => t.name === 'end_call' && t.risk === 'read'));
-  assert.match(ok<any>(await call('agent.get', { agentId: c.agentId })).brief.text, /end_call tool/);
+  assert.match(ok<any>(await call('agent.get', { agentId: c.agentId })).brief.text, /writing <end_call>/, 'one marker spelling, whatever the grants');
   refused(await call('tool.attach', { agentId: c.agentId, name: 'wire_money' }), /unknown in-call tool/);
   const t = await one<{ id: string }>(pool, "INSERT INTO tool (workspace_id, name, kind, risk_class) VALUES ($1, 'crm_lookup', 'http', 'read') RETURNING id", [ws]);
   const r2 = ok<any>(await call('tool.attach', { agentId: c.agentId, toolId: t!.id }));
@@ -282,7 +282,8 @@ test('test.simulate runs the compiled brief against a simulated caller and grade
   assert.ok(!r.transcript.some((t: { text: string }) => /<end_call>/.test(t.text)), 'markers are not part of what she said');
   const agentSystem = systems.find(s => !s.startsWith('You are role-playing'))!;
   assert.ok(agentSystem.startsWith(compile(c.draft).text), 'the agent runs on exactly the compiled brief');
-  assert.ok(agentSystem.trimEnd().endsWith('two turns running. Anything marked spent in the ledger stays spent.'), 'the tail goes last');
+  assert.ok(agentSystem.includes(TAIL + '\n\n' + markerRules(c.draft)), 'the tail and the marker rules go last, as in the runtime');
+  assert.ok(agentSystem.trimEnd().endsWith(markerRules(c.draft)));
   assert.ok(agentSystem.includes('premium: 18,450 rupees'), 'contact rows are given');
   assert.ok(!systems.filter(s => !s.startsWith('You are role-playing')).some(s => s.includes('7 pm')), 'hidden keys never reach the agent');
   const stored = await one<{ passed: boolean; brief_hash: string; draft_hash: string }>(pool, 'SELECT passed, brief_hash, draft_hash FROM agent_test_run WHERE id = $1', [r.runId]);

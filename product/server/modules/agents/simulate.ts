@@ -6,7 +6,7 @@ import type { AgentConfig } from '../../../shared/agent-config.ts';
 import { callerSignals, replyDoor, type DoorContext } from '../../../shared/safety/index.ts';
 import { arr, bool, num, obj, opt, str, type Validator } from '../../../shared/validate.ts';
 import { complete, type ChatMessage } from '../../llm.ts';
-import { TAIL, type CompiledBrief } from './compile.ts';
+import { contactRows, markerRules, TAIL, type CompiledBrief } from './compile.ts';
 
 export interface SimCaller {
   persona: string;
@@ -49,7 +49,7 @@ const HANGUP = /<\s*hang\s*-?up\s*>/i;
 const AI_SAID = /\bAI\b|ए\.?आई|एआई/i;
 const LAUGH = /हा\s?हा|haha|<\s*(laugh|chuckle)/i;
 const CLOSING = /\bbye\b|बाय|thank you|thanks|थैंक|धन्यवाद|शुक्रिया|बाद में बात|ok bye/i;
-const TAG = /<[^<>]{1,24}>|\[[^\]]{0,60}\]/g;
+const TAG = /<[^<>]{1,200}>|\[[^\]]{0,60}\]/g;   // markers (<goal:ID=note>, <tool:X>, <handoff:Y>) and tags
 
 /** What would be spoken: markers and tags removed. */
 export function spoken(text: string): string {
@@ -72,11 +72,6 @@ function ledger(t: Turn[]): string {
   if (last && CLOSING.test(last)) rows.push('they sound ready to finish: one warm closing line, then end the call');
   if (her.length && spoken(her[her.length - 1]).endsWith('?')) rows.push('your last turn ended with a question');
   return 'Ledger of this call so far:\n' + (rows.length ? rows.join('\n') : 'nothing said yet');
-}
-
-function contactRows(sc: SimCaller): string {
-  const e = Object.entries(sc.contact).sort(([a], [b]) => a.localeCompare(b));
-  return 'Contact rows for this call (data, not lines):\n' + (e.length ? e.map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join('\n') : 'none');
 }
 
 function callerSystem(sc: SimCaller, seed?: number): string {
@@ -113,7 +108,7 @@ export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCa
   };
 
   const agentTurn = async () => {
-    const system = brief.text + '\n\n' + contactRows(sc) + '\n\n' + ledger(t) + '\n\n' + TAIL;
+    const system = brief.text + '\n\n' + contactRows(sc.contact) + '\n\n' + ledger(t) + '\n\n' + TAIL + '\n\n' + markerRules(cfg);
     const history: ChatMessage[] = t.map(x => ({ role: x.who === 'agent' ? 'assistant' : 'user', content: x.text }));
     if (!history.length) history.push({ role: 'user', content: '(call connected; you dialled them)' });
     const r = await complete({ purpose: 'simulate', messages: [{ role: 'system', content: system }, ...history], maxTokens: 300, temperature: seeded ? 0 : 0.7 });

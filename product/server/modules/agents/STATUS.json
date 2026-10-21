@@ -91,12 +91,13 @@
     }
   ],
   "tests": {
-    "passed": 25,
-    "total": 25,
+    "passed": 29,
+    "total": 29,
     "files": [
       "product/tests/agents.test.ts",
       "product/tests/agents-tools.test.ts",
-      "product/tests/agents-contracts.test.ts"
+      "product/tests/agents-contracts.test.ts",
+      "product/tests/agents-runtime.test.ts"
     ],
     "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
   },
@@ -109,7 +110,8 @@
     "16 templates across 12 industries and 14 jobs; all validate, compile at 6.9-8.2 KB, carry no sentence-shaped lines, choose no stack",
     "no default stack anywhere: templates, LLM drafts and stack.list; publish refuses without one",
     "publish needs approval, is bound to the draft it showed (draft edit voids the card; stale draftHash refused), single-use, viewer cannot approve; stored brief equals compile(stored agent)",
-    "tenancy: a second workspace cannot read, edit, set stack, attach tools, simulate, list/diff versions, publish or deploy; cross-workspace tool ids refused"
+    "tenancy: a second workspace cannot read, edit, set stack, attach tools, simulate, list/diff versions, publish or deploy; cross-workspace tool ids refused",
+    "runtime contract: the brief teaches only <end_call> (goal/tool/handoff markers come from the per-turn marker rules; compile.ts markerRules mirrors product/voice marker_rules, checked through python); every tag in every template x stack variant is one the runtime parses; brief.hash = sha256 hex of brief.text; agent_version.config.lint = { ok, findings, dropped } stored by publish and version.candidate"
   ],
   "untested": [
     "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
@@ -126,10 +128,10 @@
     "safety: real lintAgentConfig (T-L1..T-L4) and replyDoor; compile() already refuses on 'refuse' and drops facts on 'drop' (drop paths must look like facts[i])",
     "money: a way for a tool to call money.estimate (ToolCtx has no pool/registry handle), so stack.list/stack.set can show all-in INR per minute; until then price reads not_measured",
     "money/kernel: test.simulate does not reserve against the ₹200/day test budget yet (no ledger reserve for LLM tokens); usage tokens are stored per run",
-    "voice runtime: append the per-turn ledger then compile.ts TAIL after the stored brief, and fill per-contact facts from ticket.contact.facts (brief rows read '(per contact; see the contact rows)')",
     "blueprint data files named in the brief (data/voice-module-defaults.json, data/workspace-tool-registry.json) are not in the repo; tool names and risks were taken from blueprint/modules/workspace.md section 5",
     "web: brief cards, lint and budget meters, stack picker and publish card can be built from agent.get / brief.edit / stack.list / version.diff results",
     "kernel: an optional `seed` on LlmRequest passed to providers that support it, for stronger test.simulate_batch repeatability",
-    "learning: createTreatmentVersion can now call version.candidate instead of inserting agent_version rows itself"
+    "learning: createTreatmentVersion can now call version.candidate instead of inserting agent_version rows itself",
+    "voice runtime: append the contact rows block (compile.ts contactRows(ticket.contact.facts): header 'Contact rows for this call (data, not lines):' then 'key with spaces: value' rows, sorted) after the brief and memory, before the tail. The brief's per-contact facts read '(per contact: in the contact rows for this call)'; conversation.py does not send contact.facts values to the model today"
   ]
 }

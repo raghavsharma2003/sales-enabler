@@ -66,8 +66,8 @@ test('generalises across languages, registers and jobs', () => {
   assert.match(compile(custom).text, /gym whose plan lapsed/);
   assert.throws(() => validateConfig({ ...base(), job: 'custom' }), /jobDescription/);
   const tool = compile({ ...base(), tools: [{ name: 'end_call', risk: 'read' }] }).text;
-  assert.match(tool, /end_call tool/);
-  assert.doesNotMatch(tool, /<end_call>/);
+  assert.match(tool, /writing <end_call>/, 'the runtime parses one spelling, so the brief teaches only <end_call>');
+  assert.doesNotMatch(tool, /end_call tool/);
 });
 
 test('budget THROWS and names the section to cut; nothing is truncated', () => {

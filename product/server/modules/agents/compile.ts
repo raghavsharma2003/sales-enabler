@@ -145,11 +145,12 @@ const SOUNDS = `Sounds: where you would genuinely laugh, chuckle, sigh or take a
 const DELIVERY = `Delivery: begin each reply with [tone: 3-6 words on exactly how this line should sound, e.g. its pace, warmth
 and mood]. It is stripped before speaking and never heard.`;
 
-function endsWithTool(c: AgentConfig) { return c.tools.some(t => t.name === 'end_call'); }
-
-function core(c: AgentConfig): string {
-  const endHow = endsWithTool(c) ? 'end the call by using the end_call tool after that reply' : 'end the call by writing <end_call> at the very end of that reply';
-  const endThen = endsWithTool(c) ? 'then end_call' : 'then <end_call>';
+// The runtime's in-band markers (product/voice/vpvoice/brief.py) are the only spellings the brief may teach:
+// <end_call>, <goal:ID>, <tool:NAME>, <handoff:REASON>. The brief teaches <end_call>; the per-turn marker rules after the
+// ledger teach the rest (markerRules below mirrors the runtime's marker_rules, so the simulation runs the same tail).
+function core(_c: AgentConfig): string {
+  const endHow = 'end the call by writing <end_call> at the very end of that reply';
+  const endThen = 'then <end_call>';
   return `How you talk with them:
 - React to the exact thing they just said before anything else, the way a person would: surprise, agreement, sympathy
   or a tease. Something of yours comes before any question: a reaction, a view, a useful fact.
@@ -265,8 +266,28 @@ function factsFor(c: AgentConfig): Fact[] {
   return c.facts.filter(f => f.purpose !== 'offer' || c.category === 'promotional');
 }
 
+/** Per-contact values never enter the compiled brief (it is compiled once per version). The lane that dials appends
+ *  them as their own block, formatted by contactRows(), after the brief and before the per-turn tail. */
+export const CONTACT_ROWS_HEADER = 'Contact rows for this call (data, not lines):';
+export function contactRows(facts: Record<string, string>): string {
+  const e = Object.entries(facts).sort(([a], [b]) => a.localeCompare(b));
+  return CONTACT_ROWS_HEADER + '\n' + (e.length ? e.map(([k, v]) => `${human(k)}: ${v}`).join('\n') : 'none');
+}
+export const PER_CONTACT = '(per contact: in the contact rows for this call)';
+
+/** Mirrors product/voice marker_rules(): appended after TAIL in every lane. */
+export function markerRules(c: AgentConfig): string {
+  const lines = ['Markers (written, never spoken): end your goodbye reply with <end_call>.'];
+  const goals = c.goals.map(g => g.id);
+  if (goals.length) lines.push('When a goal is settled, add <goal:ID> at the end of that reply (IDs: ' + goals.join(', ') + ').');
+  const tools = c.tools.map(t => t.name).filter(n => n !== 'end_call' && n !== 'transfer');
+  if (tools.length) lines.push('To use a tool you were given, add <tool:NAME> (' + tools.join(', ') + '); it runs after the call turn.');
+  if (c.handOff.when.length) lines.push('If the conversation needs a human (' + c.handOff.when.join(', ') + '), add <handoff:REASON>.');
+  return lines.join(' ');
+}
+
 function factsRows(c: AgentConfig, facts: Fact[]): string {
-  const rows = facts.map(f => `${human(f.key)}: ${f.perContact ? '(per contact; see the contact rows)' : f.value}`);
+  const rows = facts.map(f => `${human(f.key)}: ${f.perContact ? PER_CONTACT : f.value}`);
   return 'Facts rows (available, not to be recited; use what fits the moment):\n' + (rows.length ? rows.join('\n') : 'none beyond what they tell you');
 }
 

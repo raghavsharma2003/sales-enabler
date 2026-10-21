@@ -131,11 +131,14 @@ async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, pa
   const n = await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [agentId]);
   const agent: AgentConfig = validateConfig({ ...cfg, agentId, version: n!.n, versionHash: '' });
   agent.versionHash = versionHashOf(agent);
-  const brief = compile(agent);                  // the brief is compiled ONCE, here; tickets copy it
+  const report = compileReport(agent);           // the brief is compiled ONCE, here; tickets copy it
+  const brief = { text: report.text, hash: report.hash, bytes: report.bytes };
+  // Campaigns' launch gate (G10) reads config.lint.ok; a version only exists if it compiled, so ok is true by construction.
+  const lint = { ok: true, findings: [...shapeLint(agent), ...lintAgentConfig(agent)], dropped: report.dropped };
   const actor = ctx.actor.type === 'vp_success' ? 'system' : ctx.actor.type;
   const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, author_id, note, config)
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-    [agentId, n!.n, agent.versionHash, parentId, actor, ctx.actor.id ?? null, note, JSON.stringify({ agent, brief })]);
+    [agentId, n!.n, agent.versionHash, parentId, actor, ctx.actor.id ?? null, note, JSON.stringify({ agent, brief, lint })]);
   return { versionId: v!.id, number: n!.n, versionHash: agent.versionHash, parentId, brief: { hash: brief.hash, bytes: brief.bytes } };
 }
 
