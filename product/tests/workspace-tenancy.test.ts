@@ -53,7 +53,7 @@ test('another workspace can neither read nor change what is yours', { skip }, as
   assert.deepEqual((await z.tool('knowledge.list', { sourceId: A.source })).result.spans, []);
 
   // changes aimed at your ids fail
-  refused(await z.tool('apikey.revoke', { id: A.key.id }));
+  refused(await z.run('apikey.revoke', { id: A.key.id }));
   assert.equal((await one<{ revoked_at: Date | null }>(b.pool, 'SELECT revoked_at FROM api_key WHERE id = $1', [A.key.id]))!.revoked_at, null);
   refused(await z.run('member.role.set', { memberId: A.member.memberId, role: 'viewer' }));
   refused(await z.run('member.remove', { memberId: A.member.memberId }));

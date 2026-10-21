@@ -78,12 +78,21 @@ export const module: Module = {
       }
     });
 
-    // Files arrive as JSON ({filename, contentBase64} or {text}) because the kernel's body reader decodes bodies as UTF-8 and caps them at 1 MB.
+    // The file is the request body (application/pdf, the DOCX type, text/plain or application/octet-stream) up to 9 MB, with
+    // ?filename= and ?title=. A JSON body ({filename, contentBase64} or {text}) still works. Multipart forms are not parsed.
     router.add('POST', '/v1/uploads/knowledge', async req => {
       const c = await auth(req);
-      const r = await registry.execute(pool, 'knowledge.ingest', upload(req.body), { workspaceId: c.workspaceId, actor: c.actor });
+      let input: ReturnType<typeof upload>;
+      const raw = req.body as Buffer;
+      if (String(req.headers['content-type'] ?? '').includes('application/json')) {
+        try { input = upload(JSON.parse(raw.toString('utf8'))); } catch (e) { if (e instanceof SyntaxError) throw new HttpError(400, 'bad_json', 'the request body is not valid JSON'); throw e; }
+      } else {
+        if (!raw?.length) throw new HttpError(422, 'empty', 'send the file as the request body');
+        input = upload({ filename: req.query.get('filename') ?? undefined, title: req.query.get('title') ?? undefined, contentBase64: raw.toString('base64') });
+      }
+      const r = await registry.execute(pool, 'knowledge.ingest', input, { workspaceId: c.workspaceId, actor: c.actor });
       return { status: r.status === 'confirmed' ? 201 : r.status === 'not_executed' ? 422 : 409, body: r };
-    });
+    }, { rawBody: true, limit: 9_500_000 });
 
     // Public, read-only, signed. Every failure looks the same.
     router.add('GET', '/v1/share/:token', async req => {

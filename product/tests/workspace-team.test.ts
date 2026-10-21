@@ -162,7 +162,7 @@ test('API key: shown once, works as a Bearer token, only its hash is stored, ref
   assert.equal((await key.tool('workspace.get')).result.workspace.id, owner.workspaceId);
   assert.equal((await key.tool('secret.reveal', { revealId: done.result.revealId })).status, 'not_executed');
 
-  assert.equal((await owner.tool('apikey.revoke', { id: done.result.id })).status, 'confirmed');
+  assert.equal((await owner.run('apikey.revoke', { id: done.result.id })).status, 'confirmed');
   assert.equal((await key.fetch('GET', '/v1/me')).status, 401, 'refused after revoke');
   const wrong = new (owner.constructor as any)(b.base, { bearer: token.slice(0, -2) + 'xx' }, undefined, owner.workspaceId);
   assert.equal((await wrong.fetch('GET', '/v1/me')).status, 401);

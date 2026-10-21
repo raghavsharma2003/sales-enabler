@@ -40,7 +40,8 @@ export function registerApiKeys(r: Registry) {
   }));
 
   r.register(tool(obj({ id: uuid() }), {
-    name: 'apikey.revoke', risk: 'draft', summary: 'Revoke an API key so it stops working at once',
+    name: 'apikey.revoke', risk: 'external', summary: 'Revoke an API key so it stops working at once',
+    describe: () => 'Revoke an API key; anything using it stops working at once',
     run: async (ctx, i) => {
       const row = await one<{ revoked_at: Date | null }>(ctx.q, 'SELECT revoked_at FROM api_key WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.id, ctx.workspaceId]);
       if (!row) throw new Error('no such API key in this workspace');

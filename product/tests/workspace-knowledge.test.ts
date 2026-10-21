@@ -31,6 +31,22 @@ test('a small synthetic PDF becomes spans with page locations', { skip }, async 
   assert.equal(again.body.result.sourceId, r.sourceId);
 });
 
+test('a raw binary upload works with an API key (a session cookie must send JSON), ', { skip }, async () => {
+  const owner = await signup(b);
+  const k = await owner.run('apikey.create', { name: 'uploader' });
+  const bearer = `Bearer ${(await owner.tool('secret.reveal', { revealId: k.result.revealId })).result.token}`;
+  const post = (body?: Uint8Array, type = 'application/pdf', auth = bearer) =>
+    fetch(b.base + '/v1/uploads/knowledge?filename=raw.pdf', { method: 'POST', headers: { authorization: auth, 'content-type': type }, body: body as any });
+  const r = await post(new Uint8Array(makePdf([PAGE1])));
+  const out = await r.json() as any;
+  assert.equal(r.status, 201, JSON.stringify(out));
+  assert.equal(out.result.format, 'pdf');
+  assert.equal((await post()).status, 422, 'an empty body is refused');
+  assert.equal((await post(new Uint8Array(makePdf([PAGE1])), 'application/pdf', 'Bearer vp_00000000_nope')).status, 401);
+  const viaCookie = await fetch(b.base + '/v1/uploads/knowledge', { method: 'POST', headers: { cookie: owner.auth.cookie!, 'content-type': 'application/pdf' }, body: new Uint8Array(makePdf([PAGE1])) as any });
+  assert.equal(viaCookie.status, 415, 'the kernel keeps cookie sessions to JSON bodies');
+});
+
 test('a small synthetic DOCX becomes spans with paragraph locations', { skip }, async () => {
   const owner = await signup(b);
   const paras = ['Plan A covers day-care procedures and hospital stays of more than a day.', 'Plan B adds maternity cover after a waiting period of nine months.', 'Claims are settled within fifteen days of the final bill.'];
