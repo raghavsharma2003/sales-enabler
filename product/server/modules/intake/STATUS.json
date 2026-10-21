@@ -103,7 +103,7 @@
       "product/tests/intake.test.ts (17)",
       "product/tests/intake-scale.test.ts (1)"
     ],
-    "full_suite": "233/233 on the rebased head in 2 of 3 full runs at concurrency 4; the other failed only the then 60 s scale budget (74.4 s). Ceiling now 120 s (open.2026-10-21.intake-scale-contention)"
+    "full_suite": "241/241 on the rebased head (a078004+); 233/233 in 2 of 3 earlier full runs, the other failed only the then 60 s scale budget (74.4 s). Ceiling now 120 s (open.2026-10-21.intake-scale-contention)"
   },
   "works": [
     "CSV/TSV/semicolon/pipe with RFC 4180 quoting, BOM, CRLF; delimiter detection",
@@ -120,7 +120,7 @@
     "Audiences: saved attribute filters compiled to parameterised SQL (all/any; eq, neq, in, gt/gte/lt/lte on numbers or ISO dates, exists, missing, contains), list audiences from an import, preview with matched/suppressed/callable/DND-unknown",
     "Viewers get PII scrubbed in reads",
     "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
-    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 19.4-21.7 s alone, re-import 7.7-13.0 s (n=7); 16-74 s inside the full suite (n=6) (measure.2026-10-21.intake-50k-import)",
+    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 19.4-21.7 s alone, re-import 7.7-13.0 s (n=7); 16-81 s inside the full suite (n=7) (measure.2026-10-21.intake-50k-import)",
     "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json (consent.record policy, contact.merge external, export/DPDP Owner+Compliance), except contact.suppress (see needs_from_others)"
   ],
   "untested": [
@@ -136,15 +136,7 @@
   "needs_from_others": [
     {
       "from": "kernel",
-      "what": "Add `module as intake` from ./intake/index.ts to server/modules/index.ts (builders may not edit it)."
-    },
-    {
-      "from": "kernel",
       "what": "Add contact.suppress to shared/approval.ts A3_VERBS (the registry marks it external with an A3 risk-lowering override); intake will then switch it from draft to external. Likewise dpdp.request.execute's override 'A3 when the person asked on a call' has no kernel path yet."
-    },
-    {
-      "from": "kernel",
-      "what": "http.ts: after a 413 the request body is not drained, so a keep-alive client's next request on that socket fails (seen in the upload test). Send Connection: close or drain on 413."
     },
     {
       "from": "kernel",
@@ -152,7 +144,7 @@
     },
     {
       "from": "safety (dial gate)",
-      "what": "Use contact.dial_facts {contactId|e164, purpose}. Tombstones are HMACs with a per-workspace salt only intake holds, so do not hash numbers yourself. Erased people's suppression rows have e164 NULL; match by contact_id or e164_hash."
+      "what": "Done by the main loop in a078004 (campaigns gate G3/G4 use server/identity.ts and hash-only suppressions). contact.dial_facts remains available for previews and other paths."
     },
     {
       "from": "calls",

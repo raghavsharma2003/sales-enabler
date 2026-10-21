@@ -5,10 +5,10 @@
 //   suppression:  never cleared here; an opt-out column or event adds one
 //   attributes:   decide() per key by authority and freshness; equal authority from another source -> review
 //   consent:      appended, never updated
-import { createHmac, randomBytes } from 'node:crypto';
 import { normaliseIndianPhone, type PhoneReason } from '../../../shared/phone.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { decide, type Authority, type Claim } from './authority.ts';
+import { hashWith, workspaceSalt } from '../../identity.ts';
 
 export interface InRow {
   row: number;                                  // 1-based position in the file or event
@@ -42,16 +42,8 @@ const CHUNK = 2000;
 const ISSUE_CAP = 1000;
 const MIRROR = ['name', 'language', 'timezone'] as const;
 
-export async function workspaceSalt(q: Queryable, ws: string): Promise<string> {
-  await q.query('INSERT INTO intake_salt (workspace_id, salt) VALUES ($1,$2) ON CONFLICT DO NOTHING', [ws, randomBytes(32).toString('hex')]);
-  return (await one<{ salt: string }>(q, 'SELECT salt FROM intake_salt WHERE workspace_id = $1', [ws]))!.salt;
-}
-
-export const hashWith = (salt: string, e164: string) => createHmac('sha256', salt).update(e164).digest('hex');
-
-export async function e164Hash(q: Queryable, ws: string, e164: string): Promise<string> {
-  return hashWith(await workspaceSalt(q, ws), e164);
-}
+// One fingerprint for numbers everywhere (tombstones, hash-only suppressions): the kernel's server/identity.ts.
+export { workspaceSalt, hashWith, numberHash as e164Hash } from '../../identity.ts';
 
 interface Merged { e164: string; raws: Set<string>; first: number; rows: number[]; attrs: Record<string, unknown>; consent: NonNullable<InRow['consent']>; optOut: boolean; observedAt?: Date }
 
