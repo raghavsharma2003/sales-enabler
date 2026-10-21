@@ -7,6 +7,7 @@ import { Async, Btn, Card, CardHead, Chip, Empty, Kv, PageHead, SelectField, Tab
 import { langShort } from '../catalog.ts';
 import { audienceList, contactGet, contactList, importMap, importUpload, overridesFrom } from '../data.ts';
 import { count, date, phone as fmtPhone } from '../format.ts';
+import { BulkDnd, DndButton, DndExplain, ExportButton, StopCard, SuppressionNote } from './contact-actions.tsx';
 const REASON: Record<string, string> = { dnd_unknown: 'Do Not Disturb has not been checked yet', dnd_registered: 'The person is on the Do Not Disturb list', suppressed: 'The person asked not to be called', no_consent: 'No consent is on file', no_basis: 'There is no basis on file to call this person', tombstoned: 'The person asked to be erased' };
 const reasonText = (r: string) => REASON[r] ?? prettyCode(r).replace(/^Dnd/, 'Do Not Disturb');
 const zoneName = (z: string) => (z === 'Asia/Kolkata' ? 'India time (IST)' : z.split('/').pop()!.replace(/_/g, ' '));
@@ -31,6 +32,7 @@ export default function Contacts({ id, tab }: { id?: string; tab?: string }) {
 }
 
 function People() {
+  const { me } = useApp();
   const [qs, setQs] = useQuery();
   const [text, setText] = useState(qs.get('q') ?? '');
   const supp = qs.get('suppressed') === '1';
@@ -47,8 +49,9 @@ function People() {
         <TextField label="Search" type="search" value={text} onChange={e => setText(e.target.value)} placeholder="Name, or part of a number" />
         <SelectField label="Show" value={supp ? '1' : ''} onChange={e => setQs({ suppressed: e.target.value || null })}><option value="">Everyone</option><option value="1">Only people we must not call</option></SelectField>
       </div>
+      <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 8 }}><ExportButton me={me} /></div>
       <Async q={q} what="Contacts" tool="contact.list" empty={d => d.rows.length === 0 ? <Empty title={qs.get('q') || supp ? 'No one matches' : 'No contacts yet'} body={qs.get('q') || supp ? 'Try a shorter search or clear the filter.' : 'Import a CSV or Excel export. You see a verdict for every row before anything is saved.'} action={<Link to="/contacts/import">Import a list</Link>} /> : null}>
-        {d => <><p className="small muted" style={{ marginBottom: 8 }}>{count(d.rows.length)} shown{d.more ? ', more not shown. Narrow the search.' : ''}</p><Table caption="Contacts" cols={cols} rows={d.rows} rowKey={r => r.id} onRow={r => `/contacts/${r.id}`} /></>}
+        {d => <><BulkDnd ids={d.rows.map(r => r.id)} allUnchecked={d.rows.length > 0 && d.rows.every(r => r.dnd !== 'clear' && r.dnd !== 'registered' && r.dnd !== 'listed')} onDone={q.reload} /><p className="small muted" style={{ marginBottom: 8 }}>{count(d.rows.length)} shown{d.more ? ', more not shown. Narrow the search.' : ''}</p><Table caption="Contacts" cols={cols} rows={d.rows} rowKey={r => r.id} onRow={r => `/contacts/${r.id}`} /></>}
       </Async>
     </Card>
   );
@@ -85,15 +88,15 @@ function Audiences() {
 }
 
 // ---------- import wizard ----------
-const SAMPLE = `Name,Mobile,Language,City,Due date,Premium
-Sunita Verma,90000 00011,Hindi,Pune,03/11/2025,12450
-Imran Qureshi,+91 9000000012,Hinglish,Lucknow,05/11/2025,9800
-Lakshmi Iyer,9000000013,Tamil,Chennai,07/11/2025,15200
-Gurpreet Singh,9.0E+11,Punjabi,Jaipur,09/11/2025,7600
-Anita Deshmukh,90000 0014,Marathi,Nagpur,11/11/2025,11000
-Rohan Mehta,+91 90000 00011,Hinglish,Indore,12/11/2025,8800
-Farah Sheikh,,Hinglish,Kochi,14/11/2025,6400
-Vikram Rao,९००००००००१५,Telugu,Patna,15/11/2025,13300
+const SAMPLE = `Name,Mobile,Language,City,Next review,Reference
+Sunita Verma,90000 00011,Hindi,Pune,12/01/2027,A-10231
+Imran Qureshi,+91 9000000012,Hinglish,Lucknow,14/01/2027,A-10232
+Lakshmi Iyer,9000000013,Tamil,Chennai,18/01/2027,A-10233
+Gurpreet Singh,9.0E+11,Punjabi,Jaipur,20/01/2027,A-10234
+Anita Deshmukh,90000 0014,Marathi,Nagpur,25/01/2027,A-10235
+Rohan Mehta,+91 90000 00011,Hinglish,Indore,27/01/2027,A-10236
+Farah Sheikh,,Hinglish,Kochi,01/02/2027,A-10237
+Vikram Rao,9000000015,Telugu,Patna,03/02/2027,A-10238
 `;
 const FIELDS: [string, string][] = [['name', 'Name'], ['first_name', 'First name'], ['last_name', 'Last name'], ['phone', 'Phone (needed)'], ['language', 'Language'], ['timezone', 'Time zone'], ['consent', 'Consent (yes or no)'], ['consent_at', 'Consent date'], ['opt_out', 'Opted out (yes or no)'], ['attribute', 'Keep as a detail'], ['ignore', 'Ignore this column']];
 
@@ -172,13 +175,13 @@ function Import() {
 
 // ---------- one person ----------
 function ContactPage({ id }: { id: string }) {
-  const { act, refresh } = useApp();
+  const { act, refresh, me } = useApp();
   const q = useData(['contact', id], () => contactGet(id));
   return (
     <div className="page"><Async q={q} what="This contact" tool="contact.get" rows={5}>{c => (
       <>
         <PageHead crumb={<><Link to="/contacts">Contacts</Link><span aria-hidden>/</span><span>{c.name}</span></>} title={c.name} sub={<span className="tnum">{fmtPhone(c.phone)} · {langShort(c.language)} · {zoneName(c.timezone)}</span>} actions={<>{dndChip(c.dnd.status)}</>} />
-        {c.suppressions.length > 0 && <p className="state state-failed" role="note" style={{ marginBottom: 16 }}>She will not call this number. Reason: {c.suppressions.map(s => s.reason.replace(/_/g, ' ')).join(', ')}.</p>}
+        <SuppressionNote suppressions={c.suppressions} me={me} onDone={q.reload} reasonText={r => reasonText(r).replace(/_/g, ' ')} />
         <div className="cols-main">
           <div className="stack">
             <Card><CardHead title="Can she call?" />
@@ -200,7 +203,8 @@ function ContactPage({ id }: { id: string }) {
           <div className="stack">
             <Card><CardHead title="Consent" />{c.consent.length === 0 ? <p className="muted">No consent is recorded for this person. Service and transactional calls to existing customers do not need one; promotional calls do.</p> :
               <ul className="facts">{c.consent.map(k => <li key={k.id}><div className="row" style={{ justifyContent: 'space-between' }}><strong>{CONSENT_FOR[k.purpose] ?? prettyCode(k.purpose)}</strong><Chip tone={k.granted ? 'leaf' : 'brick'}>{k.granted ? 'Granted' : 'Withdrawn'}</Chip></div><p className="small muted">{CONSENT_BASIS[k.basis] ?? prettyCode(k.basis)} · {k.channel === 'voice' ? 'phone calls' : prettyCode(k.channel).toLowerCase()} · {date(k.created_at)}</p></li>)}</ul>}</Card>
-            <Card><CardHead title="Do Not Disturb" /><Kv rows={[['Status', dndChip(c.dnd.status)], ['Last checked', c.dnd.checkedAt ? date(c.dnd.checkedAt, true) : 'Not yet'], [ 'Check', c.dnd.fresh ? 'Recent enough for promotional calls' : 'Needs a fresh check before promotional calls']]} /></Card>
+            <Card><CardHead title="Do Not Disturb" /><Kv rows={[['Status', dndChip(c.dnd.status)], ['Last checked', c.dnd.checkedAt ? date(c.dnd.checkedAt, true) : 'Not yet'], [ 'Check', c.dnd.fresh ? 'Recent enough for promotional calls' : 'Needs a fresh check before promotional calls']]} /><DndExplain checkedAt={c.dnd.checkedAt} status={c.dnd.status} /><DndButton contactId={c.id} onDone={q.reload} /></Card>
+            <StopCard contactId={c.id} me={me} onDone={q.reload} />
             <Card><CardHead title="Details from your lists" /><Kv rows={c.attributes.filter(a => a.key !== 'name').map(a => [a.key.replace(/_/g, ' '), <span key={a.key}>{a.key === 'language' ? langShort(String(a.value)) : isoDay(a.value) ?? String(a.value)}{a.stale && <span className="muted"> · stale</span>}</span>] as [string, React.ReactNode])} /></Card>
           </div>
         </div>

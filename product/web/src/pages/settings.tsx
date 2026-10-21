@@ -10,6 +10,7 @@ import { ago, count, date, inr, time } from '../format.ts';
 import { prettyId } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
 import { Link } from '../router.tsx';
+import Integrations from './integrations.tsx';
 import { activitySentence, pageFor, RULE_LABEL } from '../labels.ts';
 import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
 
@@ -218,32 +219,36 @@ function OperatorTab() {
         <div style={{ marginTop: 12 }}>{pick && pick !== d.brain ? <Btn kind="primary" onClick={async () => { const r = await act('operator.brain.set', { brain: pick }, { describe: 'Model changed.' }); if (r.ok) q.reload(); }}>Ask to switch…</Btn> : <Btn disabled reason={pick ? 'That brain is already in use.' : 'Choose a model first.'}>Ask to switch</Btn>}</div></>}</Card></div>}</Async>;
 }
 
-function Integrations() {
-  const q = useData('integrations', async () => ({ list: (await run<{ integrations: { id: string; kind: string; name: string }[] }>('integration.list', {})).integrations, kinds: (await run<{ kinds: { id: string; label: string; secrets: string[] }[] }>('integration.kinds', {})).kinds }));
-  return <Async q={q} what="Integrations" tool="integration.list">{d => <div className="stack">
-    <Card><CardHead title="Connected" />{d.list.length === 0 ? <Empty title="Nothing connected" body="Connect your CRM or calendar so outcomes come from your own system, which is how a result earns the grade “confirmed by your system”." /> : <ul className="billing">{d.list.map(i => <li key={i.id}><strong>{i.name}</strong><Chip>{i.kind}</Chip></li>)}</ul>}</Card>
-    <Card><CardHead title="What can be connected" sub="Credentials are encrypted and never shown again. Connecting is a policy change." /><ul className="billing">{d.kinds.map(k => <li key={k.id}><strong>{k.label}</strong><span className="small muted">needs {k.secrets.map(secretWords).join(', ')}</span></li>)}</ul><p className="small muted" style={{ marginTop: 8 }}>Connecting is done with the assistant or the API for now, so credentials never pass through a page.</p></Card></div>}</Async>;
-}
 
 function dayLabel(iso: string): string {
   const d = new Date(iso); const ist = (x: Date) => x.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   const today = ist(new Date()), y = ist(new Date(Date.now() - 86400000));
   return ist(d) === today ? 'Today' : ist(d) === y ? 'Yesterday' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
 }
+/** Brand and offering changes keep a version, so they can be put back. The server decides what is allowed (a newer change must be undone first). */
+function Undoable() {
+  const { act } = useApp();
+  const q = useData('revisions', () => run<{ revisions: { id: string; objectType: string; summary: string; undoneAt: string | null; createdAt: string }[] }>('revision.list', { limit: 30 }));
+  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  return <Card><CardHead title="Changes you can undo" sub="Brand and offering changes keep their earlier version. Undoing puts it back and is recorded here." />
+    <Async q={q} what="Changes you can undo" tool="revision.list" empty={d => d.revisions.filter(r => !r.undoneAt && ['brand', 'offering'].includes(r.objectType)).length === 0 ? <Empty title="Nothing to undo" body="Changes to your brand and offerings appear here." /> : null}>{d => <>
+      <ul className="billing">{d.revisions.filter(r => !r.undoneAt && ['brand', 'offering'].includes(r.objectType)).map(r => <li key={r.id}><div><span className="tnum muted">{date(r.createdAt, true)}</span> &nbsp;{r.summary}</div>
+        <Btn size="sm" busy={busy === r.id} onClick={async () => { setBusy(r.id); setNote(null); const x = await act<{ undone: string }>('action.undo', { revisionId: r.id }, { quiet: true }); setBusy(null); setNote(x.ok ? { ok: true, text: `Undone: ${x.result?.undone ?? r.summary}` } : { ok: false, text: x.reason ?? 'That change could not be undone.' }); if (x.ok) { q.reload(); } }}>Undo</Btn></li>)}</ul>
+      {note && <p className={note.ok ? 'small' : 'hint hint-bad'} role={note.ok ? 'status' : 'alert'}>{note.text}</p>}</>}</Async></Card>;
+}
 function Activity() {
   const q = useData<ActivityRow[]>('activity', activityList);
-  return <Card><CardHead title="What VP did" sub="Every draft, test and approved action, with who did it." />
+  return <div className="stack"><Undoable /><Card><CardHead title="What VP did" sub="Every draft, test and approved action, with who did it." />
     <Async q={q} what="Activity" tool="activity.list" empty={d => d.length === 0 ? <Empty title="Nothing yet" body="Everything that changes something is written here." /> : null}>{d => {
       const groups: [string, ActivityRow[]][] = [];
       for (const r of d) { const k = dayLabel(r.at); const g = groups[groups.length - 1]; if (g && g[0] === k) g[1].push(r); else groups.push([k, [r]]); }
       return <div className="stack">{groups.map(([day, rows]) => <section key={day} aria-label={day}><h3 className="dayhead">{day}</h3>
         <ul className="billing">{rows.map(r => { const to = pageFor(r.action); return <li key={r.id}><div><span className="tnum muted">{time(r.at).replace(' IST', '')}</span> &nbsp;{activitySentence(r.line, r.action)}</div>{to && <Link to={to} className="small">Open</Link>}</li>; })}</ul></section>)}</div>;
-    }}</Async></Card>;
+    }}</Async></Card></div>;
 }
 export { count, Lock };
 
-const SECRET_WORDS: Record<string, string> = { service_account_json: 'service account file', api_key: 'API key', api_token: 'API token', webhook_url: 'webhook address', client_id: 'client ID' };
-const secretWords = (s: string) => SECRET_WORDS[s] ?? s.replace(/_/g, ' ').replace(/\bjson\b/gi, 'file').replace(/\burl\b/gi, 'address');
 /** rules.json lists each pattern; a person sees one row per rule, in rule order, with 'mixed' when its patterns differ in action. */
 const byRule = (reply: Rules['rules']['reply']) => {
   const m = new Map<string, { rule: string; reason: string; action: string }>();

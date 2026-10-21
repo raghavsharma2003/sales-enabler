@@ -525,3 +525,87 @@ test('A built stack is treated as a stack: practice callers run, the test-calls-
   const back = await tool('stack.set', { agentId: stackAgent, stackId: 'v2-flashlite' });
   assert.equal(back.status, 'confirmed');
 });
+
+// ---- Launch-readiness: contacts compliance actions, the integration connect form, undo on Activity ----
+const contactId = async name => (await pool.query("SELECT id FROM contact WHERE workspace_id = $1 AND name = $2", [ws, name])).rows[0].id;
+
+test('Contact: DND can be checked, a person can be stopped with a reason, and released again with a reason and an approval', async () => {
+  const id = await contactId('Meenal Joshi');
+  await page.goto(`${BASE}/contacts/${id}`);
+  await page.getByText('Nothing has looked this number up on the national Do Not Disturb register yet', { exact: false }).waitFor();
+  await page.getByRole('button', { name: 'Check DND now' }).click();
+  await page.getByText(/Checked 1 number/).waitFor({ timeout: 10000 });
+  const dnd = (await tool('contact.get', { id })).result.dnd;
+  assert.ok(dnd.checkedAt, 'the server recorded when the number was checked');
+  // Stop calling: a reason is required, then it runs at once.
+  const stop = page.getByRole('button', { name: 'Stop calling this person' });
+  assert.equal(await stop.getAttribute('aria-disabled'), 'true', 'no reason, no button');
+  await page.getByLabel('Reason').fill('Asked by email not to be called');
+  await stop.click();
+  await page.getByText('She will not call this number', { exact: false }).waitFor({ timeout: 10000 });
+  const supp = (await tool('contact.get', { id })).result.suppressions;
+  assert.equal(supp.length, 1, 'the server holds the suppression');
+  // Release: a reason, then an approval (a policy change).
+  await page.getByRole('button', { name: 'Allow calls again…' }).click();
+  await sheet().getByLabel('Reason').fill('Person asked us to resume calls');
+  await sheet().getByRole('button', { name: 'Ask to allow calls' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  await hold(sheet().locator('.hold'));
+  await page.getByText('She will not call this number', { exact: false }).waitFor({ state: 'detached', timeout: 10000 });
+  assert.equal((await tool('contact.get', { id })).result.suppressions.length, 0, 'the suppression is gone on the server');
+});
+
+test('Contacts list: check DND for the people shown, and export them as a CSV through an approval', async () => {
+  await page.goto(`${BASE}/contacts`);
+  await page.getByText('has not been checked', { exact: false }).first().waitFor();
+  await page.getByRole('button', { name: /^Check DND for the \d+ people shown$/ }).click();
+  await page.getByText(/Checked \d+ numbers?/).waitFor({ timeout: 15000 });
+  const before = (await actions('executed')).filter(a => a.tool === 'contact.export').length;
+  await page.getByRole('button', { name: 'Export as CSV…' }).click();
+  await sheet().getByRole('button', { name: 'Ask to export' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  const download = page.waitForEvent('download', { timeout: 15000 });
+  await hold(sheet().locator('.hold'));
+  const file = await download;
+  assert.match(file.suggestedFilename(), /\.csv$/);
+  const text = fs.readFileSync(await file.path(), 'utf8');
+  assert.match(text.split(/\r?\n/)[0], /^phone,name,language/, 'the file has the header the server wrote');
+  assert.ok((await actions('executed')).filter(a => a.tool === 'contact.export').length === before + 1, 'the export ran once, after approval');
+});
+
+test('Integrations: a service can be connected from Settings, and the credentials never come back', async () => {
+  const SECRET = 'hs-test-token-4f9a1c7e';
+  await page.goto(`${BASE}/settings/integrations`);
+  await page.getByRole('button', { name: 'Connect HubSpot CRM' }).click();
+  await sheet().getByLabel('Connection name').fill('Sales CRM');
+  await sheet().getByLabel('Access token').fill(SECRET);
+  await sheet().getByLabel('Portal ID').fill('1234567');
+  assert.equal(await sheet().getByLabel('Access token').getAttribute('type'), 'password', 'the token is masked while typing');
+  await sheet().getByRole('button', { name: 'Connect', exact: true }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  const body = await page.locator('body').innerText();
+  assert.ok(!body.includes(SECRET), 'the approval does not show the credential');
+  await hold(sheet().locator('.hold'));
+  await page.getByText('Sales CRM', { exact: false }).first().waitFor({ timeout: 10000 });
+  const list = JSON.stringify((await tool('integration.list')).result);
+  assert.ok(list.includes('Sales CRM') && !list.includes(SECRET), 'the server lists the connection and never the credential');
+  assert.ok(!(await page.locator('body').innerText()).includes(SECRET), 'the credential is nowhere on the page after saving');
+  const executed = JSON.stringify((await actions('executed')).filter(a => a.tool === 'integration.connect'));
+  assert.ok(!executed.includes(SECRET), 'the approved action never held the credential');
+});
+
+test('Activity: a brand change can be undone from the ledger', async () => {
+  const named = await tool('brand.update', { legalName: 'Saanjh Services Private Limited' });
+  assert.equal(named.status, 'confirmed', JSON.stringify(named));
+  const before = (await tool('brand.get')).result;
+  const changed = await tool('brand.update', { tone: 'precise and formal, for undo test' });
+  assert.equal(changed.status, 'confirmed', JSON.stringify(changed));
+  await page.goto(`${BASE}/settings/activity`);
+  const card = page.locator('section, .card').filter({ hasText: 'Changes you can undo' }).first();
+  await card.waitFor();
+  const row = card.locator('li').filter({ hasText: /brand/i }).first();
+  await row.getByRole('button', { name: 'Undo' }).click();
+  await page.getByText('Undone', { exact: false }).first().waitFor({ timeout: 10000 });
+  const after = (await tool('brand.get')).result;
+  assert.equal(after.tone ?? null, before.tone ?? null, 'the server restored the tone');
+});
