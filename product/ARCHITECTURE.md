@@ -25,3 +25,24 @@ Layout:
 - `db/migrations/` schema · `shared/` contracts (TS types + validation + tool registry)
 - `server/` control plane (router, modules, tools) · `voice/` Python voice runtime
 - `web/` UI · `scripts/` migrate + test runners · `tests/` node:test suites
+
+## Building a module (the contract every parallel builder follows)
+
+- **Where:** `server/modules/<name>/` (code), `tests/<name>.test.ts` (tests), `db/migrations/<range>_<name>*.sql`.
+  Migration ranges: intake 01xx, agents 02xx, campaigns 03xx, safety 04xx, operator 05xx, calls 06xx, memory 07xx,
+  learning 08xx, money 09xx, workspace 10xx. Never edit 0001-0008 or another module's files; ALTER in your own range.
+- **Shape:** `server/modules/<name>/index.ts` exports `module: Module` (see `server/app.ts`). `register(registry)` adds
+  tools with `tool(validator, def)` from `server/tools.ts`. Raw routes only for webhooks, uploads or streams.
+- **Tools are the API.** Tool names come from `research/2026-10-21/blueprint/data/workspace-tool-registry.json` (80 ids)
+  plus the reads a page needs (`<object>.list`, `<object>.get`). Risk class from that file. A2 tools add `describe()` and,
+  when an approval is about a versioned object, `version()`.
+- **Kernel pieces to use, not re-invent:** `server/db.ts` (tx/one/many), `server/audit.ts` (the registry audits tool runs;
+  call appendAudit yourself only for non-tool writes), `server/ledger.ts` (reserve/settle/release before any paid I/O),
+  `server/llm.ts` (the one LLM door; tests use `setFakeLlm`), `shared/safety` (reply door, caller signals, lints),
+  `shared/stacks.ts` (no default stack), `shared/agent-config.ts`, `shared/runtime-protocol.ts`, `shared/money.ts`,
+  `shared/phone.ts`, `shared/validate.ts`.
+- **Tenancy:** every query filters by `workspace_id = ctx.workspaceId`. A test must show another workspace cannot read
+  or change your rows.
+- **Industry-neutral:** no insurance assumptions in code. Sector rules live in sector packs.
+- **Gates:** `npx tsc -p tsconfig.json` clean, `node --import tsx --test tests/<name>.test.ts` green against your own
+  database (`vp_mod_<name>` on the throwaway cluster).

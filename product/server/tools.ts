@@ -38,7 +38,19 @@ export interface ToolDef<I = unknown, O = unknown> {
   version?(ctx: ToolCtx, input: I): Promise<string | null>;
   /** For A2 tools: one plain sentence describing exactly this call, shown on the approval card. */
   describe?(input: I): string;
+  /** Roles that may call (or propose) this tool. Defaults by risk class; approval rights are separate (shared/approval.ts). */
+  roles?: readonly Role[];
 }
+
+const DEFAULT_ROLES: Record<RiskClass, readonly Role[]> = {
+  read: ['owner', 'builder', 'operator', 'compliance', 'viewer'],
+  draft: ['owner', 'builder', 'operator'],
+  test: ['owner', 'builder', 'operator'],
+  external: ['owner', 'builder', 'operator'],
+  spend: ['owner', 'builder', 'operator'],        // anyone working may PROPOSE spend; only an owner approves it
+  destructive: ['owner', 'operator', 'compliance'],
+  policy: ['owner', 'builder', 'operator', 'compliance'],
+};
 
 /** Define a tool. Takes the validator first so the input type is inferred for run/describe/version
  *  (an inline generic validator inside one object literal is not inferred by TypeScript). */
@@ -70,9 +82,9 @@ export class Registry {
 
   get(name: string): ToolDef | undefined { return this.tools.get(name); }
 
-  list(): { name: string; risk: RiskClass; summary: string; needsApproval: boolean }[] {
+  list(): { name: string; risk: RiskClass; summary: string; needsApproval: boolean; roles: readonly Role[] }[] {
     return [...this.tools.values()]
-      .map(t => ({ name: t.name, risk: t.risk, summary: t.summary, needsApproval: needsHumanApproval(t.risk) }))
+      .map(t => ({ name: t.name, risk: t.risk, summary: t.summary, needsApproval: needsHumanApproval(t.risk), roles: t.roles ?? DEFAULT_ROLES[t.risk] }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -80,6 +92,12 @@ export class Registry {
   async execute<O = unknown>(pool: pg.Pool, name: string, raw: unknown, opts: { workspaceId: string; actor: Actor; threadId?: string }): Promise<Receipt<O>> {
     const t = this.tools.get(name);
     if (!t) return { status: 'not_executed', reason: `unknown tool "${name}"` };
+    // Members (and agents acting for one, which carry that member's role) are held to the tool's roles.
+    // Internal workers (system, or an agent with no role) are trusted code paths.
+    if (opts.actor.type === 'member' || opts.actor.role) {
+      const allowed = t.roles ?? DEFAULT_ROLES[t.risk];
+      if (!opts.actor.role || !allowed.includes(opts.actor.role)) return { status: 'not_executed', reason: `a ${opts.actor.role ?? 'caller without a role'} cannot use ${name}` };
+    }
 
     let input: unknown;
     try { input = t.input(raw); } catch (e) {

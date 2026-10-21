@@ -57,8 +57,10 @@ export type RuntimeEvent =
   | { seq: number; type: 'call.started'; at: string; manifest: RunManifest }
   | { seq: number; type: 'turn'; at: string; speaker: 'agent' | 'caller'; text: string; startMs: number; endMs: number;
       interrupted?: boolean; latencyMs?: number; tone?: string }
-  | { seq: number; type: 'cost'; at: string; component: 'stt' | 'llm' | 'tts' | 's2s' | 'telephony' | 'other'; provider: string;
-      quantity: number; unit: 'audio_s' | 'tokens_in' | 'tokens_out' | 'chars' | 'minutes' | 'requests'; inrMilli: number }
+  // component uses the cost_line vocabulary: ears = speech-to-text, brain = LLM (a speech-to-speech model reports as
+  // brain with detail.s2s = true), voice = text-to-speech.
+  | { seq: number; type: 'cost'; at: string; component: 'telephony' | 'ears' | 'brain' | 'voice' | 'platform'; provider: string;
+      quantity: number; unit: 'second' | 'token' | 'char' | 'call' | 'request'; inrMilli: number; detail?: Record<string, unknown> }
   | { seq: number; type: 'safety'; at: string; rule: SafetyRuleId; action: 'blocked' | 'replaced' | 'flagged' | 'redacted' | 'suspended_goal';
       detail: string }                                    // detail never contains the blocked text verbatim if it held secrets
   | { seq: number; type: 'moment'; at: string; kind: 'objection' | 'question' | 'commitment' | 'opt_out' | 'callback_request' | 'confusion' | 'laughter'; atMs: number; note: string }

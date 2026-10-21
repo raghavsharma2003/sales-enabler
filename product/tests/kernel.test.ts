@@ -51,7 +51,7 @@ test('A1 runs, rejects unknown fields, audits the change', { skip }, async () =>
   const r = registry();
   const ok = await r.execute(pool, 'note.add', { text: 'hi' }, { workspaceId: ws, actor: { type: 'member', id: member, role: 'operator' } });
   assert.equal(ok.status, 'confirmed');
-  const bad = await r.execute(pool, 'note.add', { text: 'hi', extra: 1 }, { workspaceId: ws, actor: { type: 'member', id: member } });
+  const bad = await r.execute(pool, 'note.add', { text: 'hi', extra: 1 }, { workspaceId: ws, actor: { type: 'member', id: member, role: 'operator' } });
   assert.equal(bad.status, 'not_executed');
   assert.equal(bad.status === 'not_executed' && bad.path, 'extra');
   const n = await one<{ n: string }>(pool, "SELECT count(*) AS n FROM audit_event WHERE workspace_id = $1 AND action = 'note.add'", [ws]);
@@ -106,11 +106,20 @@ test('A2 refuses a role that cannot approve, a tampered action, and a changed ob
 test('A3 verbs run at once only for VP itself; a member still needs approval', { skip }, async () => {
   const { ws, member } = await workspace();
   const r = registry();
-  const id = '00000000-0000-4000-8000-000000000001';
+  const id = '00000000-0000-4000-8000-000000000001';  // campaign.pause here is 'external', so a member gets a card
   const sys = await r.execute(pool, 'campaign.pause', { id }, { workspaceId: ws, actor: { type: 'system' } });
   assert.equal(sys.status === 'confirmed' && sys.mode, 'A3');
   const mem = await r.execute(pool, 'campaign.pause', { id }, { workspaceId: ws, actor: { type: 'member', id: member, role: 'owner' } });
   assert.equal(mem.status, 'needs_approval');
+});
+
+test('roles gate who may call a tool', { skip }, async () => {
+  const { ws, member } = await workspace('viewer');
+  const r = registry();
+  const v = await r.execute(pool, 'note.add', { text: 'x' }, { workspaceId: ws, actor: { type: 'member', id: member, role: 'viewer' } });
+  assert.equal(v.status, 'not_executed');
+  const noRole = await r.execute(pool, 'note.add', { text: 'x' }, { workspaceId: ws, actor: { type: 'member', id: member } });
+  assert.equal(noRole.status, 'not_executed');
 });
 
 test('an unknown outcome is reported as unknown and still audited', { skip }, async () => {
@@ -158,4 +167,31 @@ test('HTTP: signup, session, tool call, approval card, decide', { skip }, async 
     const anon = await fetch(base + '/v1/tools');
     assert.equal(anon.status, 401);
   } finally { server.close(); }
+});
+
+test('ledger: holds count against the wallet and caps; settle spends once', { skip }, async () => {
+  const { reserve, settle, release } = await import('../server/ledger.ts');
+  const { ws } = await workspace();
+  await pool.query('INSERT INTO wallet (workspace_id, balance_inr_milli, state) VALUES ($1, 10000, $2)', [ws, 'ok']);
+  const camp = '00000000-0000-4000-8000-0000000000c1';
+  await pool.query("INSERT INTO budget (workspace_id, scope_type, scope_id, cap_inr_milli) VALUES ($1,'campaign',$2,5000)", [ws, camp]);
+  const c = await pool.connect();
+  try {
+    await c.query('BEGIN');
+    const a = await reserve(c, { workspaceId: ws, inrMilli: 4000, campaignId: camp });
+    assert.equal(a.ok, true);
+    const b = await reserve(c, { workspaceId: ws, inrMilli: 2000, campaignId: camp });
+    assert.deepEqual(b, { ok: false, cause: 'cap_reached', scope: 'campaign' });
+    const d = await reserve(c, { workspaceId: ws, inrMilli: 7000 });
+    assert.deepEqual(d, { ok: false, cause: 'wallet_low' }, 'held 4000 of 10000 leaves 6000');
+    if (!a.ok) return;
+    await settle(c, a.reservationId, 3000);
+    await settle(c, a.reservationId, 3000);
+    const e = await reserve(c, { workspaceId: ws, inrMilli: 2000, campaignId: camp });
+    assert.equal(e.ok, true, 'cap 5000 - spent 3000 leaves 2000');
+    if (e.ok) await release(c, e.reservationId);
+    await c.query('COMMIT');
+  } finally { c.release(); }
+  const w = await one<{ b: string }>(pool, 'SELECT balance_inr_milli::text AS b FROM wallet WHERE workspace_id = $1', [ws]);
+  assert.equal(w!.b, '7000');
 });

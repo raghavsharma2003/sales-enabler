@@ -100,3 +100,13 @@ test('money: Indian grouping and per-minute', () => {
   assert.equal(formatInr(inrToMilli(5)), '₹5');
   assert.equal(perMinute(inrToMilli(10.59), 182), inrToMilli(3.491));
 });
+
+test('validate: every validator carries a JSON Schema for the LLM tool list', async () => {
+  const { obj, str, num, opt, arr } = await import('../shared/validate.ts');
+  const v = obj({ name: str({ max: 10 }), n: opt(num({ int: true })), tags: arr(str()) });
+  assert.deepEqual(v.schema, {
+    type: 'object', additionalProperties: false,
+    properties: { name: { type: 'string', maxLength: 10 }, n: { type: 'integer' }, tags: { type: 'array', items: { type: 'string' } } },
+    required: ['name', 'tags'],
+  });
+});

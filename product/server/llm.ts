@@ -1,0 +1,101 @@
+// One LLM door for the control plane (Operator chat, memory extraction, judges, learning proposals).
+// Provider-open (directive.2026-10-18.provider-open): any OpenAI-compatible chat-completions endpoint —
+// Azure OpenAI / Foundry, OpenRouter, Gemini's OpenAI-compatible endpoint — chosen per PURPOSE by env:
+//   VP_LLM_<PURPOSE>_URL, VP_LLM_<PURPOSE>_KEY, VP_LLM_<PURPOSE>_MODEL   (falls back to VP_LLM_DEFAULT_*)
+// Keys come from the environment only. VP_LLM_FAKE=1 swaps in a scripted fake so tests never reach a network.
+// Every call returns its token usage so the caller can write a cost_line; nothing here guesses prices.
+
+export type Purpose = 'operator' | 'memory' | 'judge' | 'learning' | 'analysis' | 'compile';
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string;
+  toolCallId?: string;                                   // for role 'tool'
+  toolCalls?: { id: string; name: string; args: string }[];  // for role 'assistant'
+}
+
+export interface LlmTool { name: string; description: string; parameters: Record<string, unknown> }
+
+export interface LlmRequest {
+  purpose: Purpose;
+  messages: ChatMessage[];
+  tools?: LlmTool[];
+  json?: boolean;              // ask for a JSON object reply
+  maxTokens?: number;
+  temperature?: number;
+  signal?: AbortSignal;
+}
+
+export interface LlmReply {
+  text: string;
+  toolCalls: { id: string; name: string; args: string }[];
+  usage: { inputTokens: number; outputTokens: number };
+  model: string;
+  provider: string;
+}
+
+export class LlmError extends Error {
+  constructor(message: string, public retriable: boolean) { super(message); this.name = 'LlmError'; }
+}
+
+type FakeFn = (req: LlmRequest) => LlmReply | Promise<LlmReply>;
+let fake: FakeFn | null = null;
+
+/** Tests: script the model. Pass null to restore. */
+export function setFakeLlm(fn: FakeFn | null): void { fake = fn; }
+
+function cfg(purpose: Purpose) {
+  const P = purpose.toUpperCase();
+  const get = (k: string) => process.env[`VP_LLM_${P}_${k}`] ?? process.env[`VP_LLM_DEFAULT_${k}`];
+  return { url: get('URL'), key: get('KEY'), model: get('MODEL'), header: get('KEY_HEADER') ?? 'authorization' };
+}
+
+export function llmConfigured(purpose: Purpose): boolean {
+  if (fake || process.env.VP_LLM_FAKE === '1') return true;
+  const c = cfg(purpose);
+  return Boolean(c.url && c.key && c.model);
+}
+
+export async function complete(req: LlmRequest): Promise<LlmReply> {
+  if (fake) return fake(req);
+  if (process.env.VP_LLM_FAKE === '1') {
+    return { text: req.json ? '{}' : 'ok', toolCalls: [], usage: { inputTokens: 0, outputTokens: 0 }, model: 'fake', provider: 'fake' };
+  }
+  const c = cfg(req.purpose);
+  if (!c.url || !c.key || !c.model) throw new LlmError(`no model is configured for ${req.purpose}; set VP_LLM_${req.purpose.toUpperCase()}_URL/KEY/MODEL`, false);
+
+  const body: Record<string, unknown> = {
+    model: c.model,
+    messages: req.messages.map(m => m.role === 'tool'
+      ? { role: 'tool', tool_call_id: m.toolCallId, content: m.content }
+      : m.toolCalls?.length
+        ? { role: 'assistant', content: m.content || null, tool_calls: m.toolCalls.map(t => ({ id: t.id, type: 'function', function: { name: t.name, arguments: t.args } })) }
+        : { role: m.role, content: m.content }),
+    ...(req.maxTokens ? { max_completion_tokens: req.maxTokens } : {}),
+    ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+    ...(req.json ? { response_format: { type: 'json_object' } } : {}),
+    ...(req.tools?.length ? { tools: req.tools.map(t => ({ type: 'function', function: t })) } : {}),
+  };
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  headers[c.header] = c.header === 'authorization' ? `Bearer ${c.key}` : c.key!;
+
+  let res: Response;
+  try {
+    res = await fetch(c.url, { method: 'POST', headers, body: JSON.stringify(body), signal: req.signal ?? AbortSignal.timeout(60_000) });
+  } catch (e) {
+    throw new LlmError(`could not reach the model: ${e instanceof Error ? e.message : String(e)}`, true);
+  }
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => '')).slice(0, 300);
+    throw new LlmError(`model returned ${res.status}: ${detail}`, res.status === 429 || res.status >= 500);
+  }
+  const j = await res.json() as any;
+  const msg = j.choices?.[0]?.message ?? {};
+  return {
+    text: typeof msg.content === 'string' ? msg.content : '',
+    toolCalls: (msg.tool_calls ?? []).map((t: any) => ({ id: t.id, name: t.function?.name, args: t.function?.arguments ?? '{}' })),
+    usage: { inputTokens: j.usage?.prompt_tokens ?? 0, outputTokens: j.usage?.completion_tokens ?? 0 },
+    model: j.model ?? c.model!,
+    provider: new URL(c.url).hostname,
+  };
+}
