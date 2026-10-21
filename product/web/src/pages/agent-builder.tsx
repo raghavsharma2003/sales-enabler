@@ -6,7 +6,7 @@ import { useApp, useData } from '../store.tsx';
 import { agentGet, diffOps } from '../data.ts';
 import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
-import { StackPicker, BETA_REASON } from '../stack-picker.tsx';
+import { StackPicker, BETA_REASON, type StackChange } from '../stack-picker.tsx';
 import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
 import { date } from '../format.ts';
 import { getStack } from '../../../shared/stacks.ts';
@@ -42,7 +42,6 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
     setBusy('save');
     const saved: AgentDoc['config'] = JSON.parse(savedJson.current);
     let ok = true;
-    if (cfg.voice.stackId && cfg.voice.stackId !== saved.voice.stackId) ok = (await act('stack.set', { agentId: doc.id, stackId: cfg.voice.stackId }, { quiet: true })).ok;
     const ops = diffOps(saved, cfg);
     if (ok && ops.length) { const r = await act<{ changes: unknown[] }>('brief.edit', { agentId: doc.id, patch: ops }, { quiet: true }); ok = r.ok; }
     setBusy(null);
@@ -53,6 +52,12 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
     const r = await act('version.publish', { agentId: doc.id, draftHash: doc.draftHash }, { describe: 'Published.' });
     setBusy(null);
     if (r.ok) reload();
+  };
+  // Stack and voice choices are saved to the draft by the server the moment they are made; this tab has no unsaved state of its own.
+  const onVoiceChanged = (c: StackChange) => {
+    const apply = (x: AgentConfigDraft) => { x.voice = { ...x.voice, stackId: c.stackId, components: c.components, voiceId: c.voiceId ?? undefined }; if (!x.voice.components) delete x.voice.components; if (x.voice.voiceId === undefined) delete x.voice.voiceId; };
+    if (dirty) { set(apply); const base = JSON.parse(savedJson.current); apply(base); savedJson.current = JSON.stringify(base); toast('Saved to the draft. Your other edits are still unsaved.', 'ok'); }
+    else { toast('Saved to the draft.', 'ok'); reload(); }
   };
   const noStack = !cfg.voice.stackId;
   const pill = dirty ? <span className="pill pill-draft" role="status">Draft · unsaved</span> : doc.latestVersion ? <span className="pill pill-live">Draft saved · latest published v{doc.latestVersion}</span> : <span className="pill">Draft saved · not published</span>;
@@ -66,11 +71,11 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
           <Btn onClick={() => { setDockTab('test'); setView('talk'); }}>Test her</Btn>
           {dirty ? <Btn kind="primary" busy={busy === 'save'} onClick={save}>Save draft</Btn> : <Btn disabled reason="No unsaved changes.">Save draft</Btn>}
           {dirty ? <Btn disabled reason="Save your changes first, so what goes live is what you tested.">Publish</Btn>
-            : noStack ? <Btn disabled reason="Choose a voice stack first. There is no default." fix={{ label: 'Choose one', to: `/agents/${doc.id}?tab=voice` }}>Publish</Btn>
+            : noStack ? <Btn disabled reason="Choose a voice stack first." fix={{ label: 'Choose one', to: `/agents/${doc.id}?tab=voice` }}>Publish</Btn>
             : !doc.compiles ? <Btn disabled reason="The brief does not compile yet. See the checks below.">Publish</Btn>
             : <Btn kind="primary" busy={busy === 'publish'} onClick={publish}>Publish…</Btn>}
         </>} />
-      {getStack(cfg.voice.stackId ?? '')?.status === 'beta' && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
+      {(cfg.voice.stackId === 'custom' || getStack(cfg.voice.stackId ?? '')?.status === 'beta') && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
       {doc.lint.length > 0 && <div className="state state-failed" role="alert" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Checks on the draft</strong><ul style={{ margin: 0, paddingLeft: 20 }}>{doc.lint.map((l, i) => <li key={i}>{l.message}</li>)}</ul></div>}
       <Tabs label="Builder sections" value={tab} onChange={t => setQs({ tab: t === 'basics' ? null : t })} items={TABS} />
       {tab === 'basics' && <Basics cfg={cfg} set={set} />}
@@ -78,7 +83,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
       {tab === 'job' && <JobFacts cfg={cfg} set={set} />}
       {tab === 'rules' && <Rules cfg={cfg} set={set} />}
       {tab === 'tools' && <Tools cfg={cfg} set={set} />}
-      {tab === 'voice' && <Card><StackPicker value={cfg.voice.stackId} onChange={s => set(c => { c.voice.stackId = s; })} cannotClear={!!JSON.parse(savedJson.current).voice.stackId} />
+      {tab === 'voice' && <Card><StackPicker agentId={doc.id} stackId={cfg.voice.stackId} components={cfg.voice.components} voiceId={cfg.voice.voiceId ?? null} onChanged={onVoiceChanged} />
         <hr className="rule" /><div className="formgrid"><Toggle checked={cfg.recording.enabled} onChange={v => set(c => { c.recording.enabled = v; if (!v) c.recording.announce = false; })} label="Record calls" hint="Recordings stay in India. Retention is set in Settings, Privacy." />
             <Toggle checked={cfg.recording.announce} onChange={v => set(c => { c.recording.announce = v; })} label="Say that the call is recorded" hint={cfg.recording.enabled ? undefined : 'Turn recording on first.'} /></div></Card>}
       {tab === 'versions' && <Versions doc={doc} dirty={dirty} />}

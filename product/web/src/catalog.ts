@@ -57,3 +57,6 @@ export function prettyId(id: string | undefined): string {
 /** Language codes as the server stores them (hi-en, hi, ta ...) next to the agent-config ones. */
 export const LANG_SHORT: Record<string, string> = { 'hi-en': 'Hinglish', hinglish: 'Hinglish', hi: 'Hindi', 'hi-IN': 'Hindi', en: 'English', 'en-IN': 'English', ta: 'Tamil', 'ta-IN': 'Tamil', te: 'Telugu', 'te-IN': 'Telugu', kn: 'Kannada', 'kn-IN': 'Kannada', ml: 'Malayalam', 'ml-IN': 'Malayalam', mr: 'Marathi', 'mr-IN': 'Marathi', gu: 'Gujarati', 'gu-IN': 'Gujarati', bn: 'Bengali', 'bn-IN': 'Bengali', pa: 'Punjabi', 'pa-IN': 'Punjabi', or: 'Odia', 'or-IN': 'Odia' };
 export const langShort = (c: string | null | undefined) => (c ? LANG_SHORT[c] ?? c : '—');
+
+/** Stack labels come from the server with the part names of the API in them; a person reads the plain words. */
+export const stackLabel = (label: string) => label.replace(/\bears\b/g, 'speech recognition');

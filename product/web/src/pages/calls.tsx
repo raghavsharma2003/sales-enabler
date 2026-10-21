@@ -7,6 +7,7 @@ import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, Table, Tabs, TextField, type Col } from '../ui.tsx';
 import { callExplain, callGet, callSearch } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
+import { stackLabel } from '../catalog.ts';
 import { getStack } from '../../../shared/stacks.ts';
 import { clock, date, dur, inr, ms } from '../format.ts';
 import type { CallDoc, CallExplain, CallRow } from '../types.ts';
@@ -93,7 +94,7 @@ function Body({ c }: { c: CallDoc }) {
             {c.handOffs.length > 0 && <p className="small" style={{ marginTop: 8 }}>Handed to {c.handOffs.map(h => h.destination).join(', ')}.</p>}
             {c.tools.length > 0 && <p className="small muted">Tools used: {c.tools.map(t => `${t.name} (${t.status})`).join(', ')}.</p>}</Card>
           <Card><CardHead title="What ran and what it cost" />
-            <Kv rows={[['Voice stack', c.ran ? (getStack(c.ran)?.label ?? 'A stack that is no longer listed') : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
+            <Kv rows={[['Voice stack', c.ran ? (c.ran === 'custom' ? 'Your own stack' : stackLabel(getStack(c.ran)?.label ?? '') || 'A stack that is no longer listed') : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
             {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={c.costLines.map(l => [`${prettyCode(l.component)} · ${prettyCode(l.provider)}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
         </div>
       </div>

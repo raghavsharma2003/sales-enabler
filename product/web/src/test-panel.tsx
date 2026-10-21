@@ -1,5 +1,6 @@
 // The docked test panel for an agent: six practice callers (simulate) and a browser call. A test never falls back to another
 // stack: if no stack is chosen, the result says "invalid, with the reason", never a pass.
+import { stackLabel } from './catalog.ts';
 import { useState } from 'react';
 import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp, useData } from './store.tsx';
@@ -46,7 +47,7 @@ export function TestPanel() {
         <h3 className="serif" style={{ fontSize: '1.25rem' }}>Test {a.name}</h3>
         <div className="row" style={{ gap: 6 }}>
           <Chip tone={a.dirty ? 'marigold' : 'leaf'}>{a.dirty ? 'Unsaved changes' : `Saved draft v${a.version}`}</Chip>
-          {stack ? <Chip tone="peacock" title="The stack a test runs on">{stack.label.split(' (')[0]}</Chip> : <Chip tone="brick">No voice stack</Chip>}
+          {stack || a.stackId === 'custom' ? <span className="chip chip-peacock chip-wrap" title="The stack a test runs on">{stack ? stackLabel(stack.label.split(' (')[0]) : 'Your own stack'}</span> : <Chip tone="brick">No voice stack</Chip>}
         </div>
         {a.dirty && <p className="small muted">Tests run the saved draft. Save your changes to test them.</p>}
       </div>

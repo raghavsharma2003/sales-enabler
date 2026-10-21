@@ -284,7 +284,7 @@ test('Copy: no tool id, raw argument name, internal code or milli-unit reaches a
     const PLAIN = new Set(['safety check', 'campaign draft', 'contact list']);
     for (const t of tools) { const w = t.replace(/[._]/g, ' '); if (PLAIN.has(w)) continue; if (new RegExp(`\\b${w}\\b`, 'i').test(text)) bad.push(`${label}: tool id as words "${w}"`); }
     for (const re of [/inrMilli|capInrMilli|Milli\b/, /\b(REG|RS|RD)-\d+/, /\[object|\bundefined\b|\bNaN\b|\bnull\b|\bNone\b|\bJSON\b|Traceback/, /\b[a-z]+_[a-z_]+\b/,
-      /[\w-]+\/[\w./-]+\.(py|ts|tsx|js|json|md)\b/, /\b20\d\d-\d\d-\d\d\b/, /\b(Asia|Europe|America|Africa|Australia)\/[A-Z]/, /\n\s+at \S+ \(/]) { const m = re.exec(text); if (m) bad.push(`${label}: "${m[0]}"`); }
+      /\b(ears|brain|s2s)\b/i, /[\w-]+\/[\w./-]+\.(py|ts|tsx|js|json|md)\b/, /\b20\d\d-\d\d-\d\d\b/, /\b(Asia|Europe|America|Africa|Australia)\/[A-Z]/, /\n\s+at \S+ \(/]) { const m = re.exec(text); if (m) bad.push(`${label}: "${m[0]}"`); }
   };
   for (const r of routes) {
     await page.goto(BASE + r, { waitUntil: 'networkidle' });
@@ -403,4 +403,105 @@ test('Stack picker: the voice runtime\'s own word on each stack (unknown shows n
     assert.equal(await live.getByText('Unavailable', { exact: true }).count(), 0);
     assert.equal(await live.getByRole('button', { name: 'Choose this stack' }).isDisabled(), false);
   } finally { await hook(null, list => stateOf(list, 'v2-flashlite') === 'unknown'); }
+});
+
+// ---- Voice stack: the whole stack is chosen part by part, and there is a default (owner directive 2026-10-22) ----
+const draftVoice = async agentId => (await tool('agent.get', { agentId })).result.draft.voice;
+const opt = (group, label) => page.getByRole('radiogroup', { name: group }).locator('.partopt', { has: page.locator('strong', { hasText: new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) });
+const openVoiceTab = async agentId => { await page.goto(`${BASE}/agents/${agentId}?tab=voice`); await page.getByRole('heading', { name: 'Build your own' }).waitFor(); };
+let stackAgent;
+
+test('Voice stack: a new agent starts on the default and the summary says so, in plain part names', async () => {
+  const made = await tool('agent.create', { name: 'Stack builder agent', templateId: 'insurance-renewal' });
+  assert.equal(made.status, 'confirmed', JSON.stringify(made));
+  stackAgent = made.result.agentId;
+  const list = (await tool('stack.list')).result;
+  assert.equal((await draftVoice(stackAgent)).stackId, list.default, 'the server put the new agent on the default');
+  await openVoiceTab(stackAgent);
+  const sum = page.locator('.stacksum');
+  await sum.getByText('Default', { exact: true }).waitFor();
+  const text = await sum.innerText();
+  assert.match(text, /Speech recognition/); assert.match(text, /Language model/); assert.match(text, /Voice/);
+  assert.ok(!/\b(ears|brain|s2s)\b/i.test(await page.locator('main, .page').first().innerText()), 'the API part names never reach the screen');
+});
+
+test('Voice stack: build a cascade from three parts; the server agrees and the screen says it is beta', async () => {
+  await openVoiceTab(stackAgent);
+  await opt('Speech recognition', 'Azure Speech, Hindi and English').click();
+  await opt('Language model', 'GPT-4.1 mini').click();
+  await opt('Voice', 'Azure neural voice').click();
+  await page.getByRole('button', { name: 'Use these parts' }).click();
+  await page.locator('.stacksum').getByText('Your own stack').waitFor({ timeout: 10000 });
+  await page.locator('.stacksum').getByText('Beta: test calls only').waitFor();
+  const v = await draftVoice(stackAgent);
+  assert.equal(v.stackId, 'custom');
+  assert.deepEqual({ ears: v.components.ears, brain: v.components.brain, voice: v.components.voice }, { ears: 'azure', brain: 'gpt-4.1-mini-in', voice: 'azure' });
+  await page.getByText('A stack you build runs test calls only until it has been measured.').waitFor();
+});
+
+test('Voice stack: the voice is kept when only the language model changes, and a voice can be picked from the speaking part', async () => {
+  await openVoiceTab(stackAgent);
+  const group = page.getByRole('radiogroup', { name: 'Voice', exact: true }).last();
+  const pickable = page.locator('[role="radiogroup"][aria-label="Voice"] button[role="radio"]');
+  await pickable.nth(1).waitFor();
+  const name = (await pickable.nth(1).innerText()).trim();
+  await pickable.nth(1).click();
+  await page.locator('[role="radiogroup"][aria-label="Voice"] button[aria-checked="true"]').filter({ hasText: name.split(' (')[0] }).waitFor({ timeout: 10000 });
+  const chosen = (await draftVoice(stackAgent)).voiceId;
+  assert.ok(chosen, 'the server holds the chosen voice');
+  await openVoiceTab(stackAgent);
+  await opt('Language model', 'GPT-4.1').click();
+  await page.getByRole('button', { name: 'Use these parts' }).click();
+  await page.locator('.stacksum').getByText('GPT-4.1 ·', { exact: false }).waitFor({ timeout: 10000 });
+  assert.equal((await draftVoice(stackAgent)).voiceId, chosen, 'changing only the language model kept the voice');
+  assert.ok(group, 'voice group present');
+});
+
+test('Voice stack: an incomplete build shows the server\'s own refusal, word for word', async () => {
+  await openVoiceTab(stackAgent);
+  const before = await draftVoice(stackAgent);
+  // Start from a different mode so nothing is chosen: speech-to-speech with no model picked.
+  await page.getByRole('radio', { name: 'One speech-to-speech model' }).click();
+  const server = await tool('stack.set', { agentId: stackAgent, stackId: 'custom', components: {} });
+  assert.equal(server.status, 'not_executed', 'the server refuses an empty build');
+  await page.getByRole('button', { name: 'Use these parts' }).click();
+  await page.locator('p[role="alert"]').filter({ hasText: server.reason }).first().waitFor({ timeout: 8000 });
+  assert.deepEqual(await draftVoice(stackAgent), before, 'a refused build changed nothing');
+});
+
+test('Voice stack: switching back to a recommended stack drops the parts', async () => {
+  await openVoiceTab(stackAgent);
+  const card = page.locator('.stackcard', { hasText: 'Gemini 3.5 Flash-Lite + Gemini voice' }).first();
+  await card.getByRole('button', { name: 'Choose this stack' }).click();
+  await page.locator('.stacksum').getByText('Default', { exact: true }).waitFor({ timeout: 10000 });
+  const v = await draftVoice(stackAgent);
+  assert.equal(v.stackId, 'v2-flashlite');
+  assert.equal(v.components, undefined, 'the custom parts are gone');
+});
+
+test('Voice stack: a part the runtime says is unavailable cannot be picked, and says why', async () => {
+  const hook = async body => { const r = await fetch(`http://127.0.0.1:${Number(new URL(BASE).port) + 1}/`, { method: 'POST', body: JSON.stringify(body) }); assert.equal(r.status, 204); };
+  const comps = (await tool('stack.list')).result.components;
+  const ok = id => ({ available: true, reason: null });
+  const health = { stacks: {}, components: {} };
+  for (const c of comps) { (health.components[c.part] ??= {})[c.id] = c.part === 'brain' && c.id === 'gpt-4.1' ? { available: false, reason: 'This model is not connected on our voice engine yet.' } : ok(c.id); }
+  const t0 = Date.now();
+  try {
+    for (;;) {
+      await hook(health);
+      const l = (await tool('stack.list')).result.components.find(c => c.part === 'brain' && c.id === 'gpt-4.1');
+      if (l.availability.state === 'unavailable') break;
+      if (Date.now() - t0 > 10000) assert.fail('the server never reported the part as unavailable');
+      await new Promise(r => setTimeout(r, 250));
+    }
+    await openVoiceTab(stackAgent);
+    const o = opt('Language model', 'GPT-4.1');
+    await o.getByText('Unavailable', { exact: true }).waitFor();
+    await o.getByText('This model is not connected on our voice engine yet.').waitFor();
+    assert.equal(await o.locator('input').isDisabled(), true, 'an unavailable part cannot be picked');
+    assert.equal(await opt('Language model', 'GPT-4.1 mini').locator('input').isDisabled(), false, 'its neighbour still can');
+  } finally {
+    const t1 = Date.now();
+    for (;;) { await hook(null); const l = (await tool('stack.list')).result.components.find(c => c.part === 'brain'); if (l.availability.state === 'unknown' || Date.now() - t1 > 10000) break; await new Promise(r => setTimeout(r, 250)); }
+  }
 });

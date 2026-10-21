@@ -56,6 +56,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- chips and figures ---------- */
 .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; min-height: 22px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; line-height: 1.3; white-space: nowrap; border: 1px solid transparent; background: var(--sunk); color: var(--ink-2); }
+.chip-wrap { white-space: normal; max-width: 100%; }
 .chip-leaf { background: var(--leaf-bg); color: var(--leaf); } .chip-brick { background: var(--brick-bg); color: var(--brick); }
 .chip-marigold { background: var(--marigold-bg); color: var(--marigold-ink); } .chip-peacock { background: var(--peacock-bg); color: var(--peacock); }
 .chip-terra { background: var(--terra-bg); color: var(--terra-ink); }

@@ -35,7 +35,7 @@ export interface AgentConfigDraft {
   tools: { name: string; risk: string }[];
   handOff: { when: string[]; target: { kind: 'phone' | 'queue' | 'callback'; value?: string }; warmSummary: boolean };
   limits: { maxDurationS: number; maxSilenceS: number; maxTurns: number };
-  voice: { stackId: string | null; voiceId?: string; speed?: number };
+  voice: { stackId: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string }; voiceId?: string; speed?: number };
   recording: { enabled: boolean; announce: boolean };
 }
 export interface PracticeCaller { id: string; label: string; persona: string; trap: string; source: 'default' | 'workspace' }
