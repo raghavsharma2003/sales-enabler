@@ -92,7 +92,7 @@ function Create() {
 
 // ---------- detail ----------
 function Detail({ id }: { id: string }) {
-  const { act, refresh } = useApp();
+  const { act, refresh, say } = useApp();
   const q = useData<CampaignDoc>(['campaign', id], () => campaignGet(id));
   const est = useData(['estimate', id, q.data?.policyVersion], q.data ? () => campaignEstimate(id) : null);
   const fun = useData(['funnel', id, q.data?.audienceId], q.data ? () => campaignFunnel(id, q.data!.audienceId) : null);
@@ -116,7 +116,7 @@ function Detail({ id }: { id: string }) {
           <div className="stack">
             {c.state === 'draft' && <Card><CardHead title="Before you launch" sub={c.blockers.length ? `${pl(c.blockers.length, 'thing')} to fix` : 'Nothing is blocking launch'} />
               {c.blockers.length === 0 ? <ul className="checklist"><li className="check check-ok"><CheckCircle2 size={20} aria-hidden /><div className="grow"><strong>Every launch check passed</strong><p className="small muted">Window, line, wallet, cap, agent version and audience were all checked by the server just now.</p></div></li></ul> :
-                <ul className="checklist">{c.blockers.map(b => { const x = blockerCopy(b); return <li key={b.code} className="check check-fail"><XCircle size={20} aria-hidden /><div className="grow"><strong>{x.text}</strong><span className="sr"> (blocks launch)</span>{x.why && <p className="small muted">{x.why}</p>}{(typeof b.fix === 'object' ? b.fix.role : b.role) && <p className="small muted">Needs {(() => { const r = (typeof b.fix === 'object' ? b.fix.role : b.role) as string; return `${/^[aeiou]/.test(r) ? 'an' : 'a'} ${r}`; })()} to do it.</p>}</div>{!x.to && typeof b.fix === 'object' && b.fix.tool === 'campaign.window.narrow' && <Btn size="sm" onClick={() => setEdit(true)}>{b.fix.label}</Btn>}{x.to && <Link to={x.to.href} className="btn btn-sm" style={{ textDecoration: 'none' }}><span>{x.to.label}</span></Link>}</li>; })}</ul>}</Card>}
+                <ul className="checklist">{c.blockers.map(b => { const x = blockerCopy(b); return <li key={b.code} className="check check-fail"><XCircle size={20} aria-hidden /><div className="grow"><strong>{x.text}</strong><span className="sr"> (blocks launch)</span>{x.why && <p className="small muted">{x.why}</p>}{(typeof b.fix === 'object' ? b.fix.role : b.role) && <p className="small muted">Needs {(() => { const r = (typeof b.fix === 'object' ? b.fix.role : b.role) as string; return `${/^[aeiou]/.test(r) ? 'an' : 'a'} ${r}`; })()} to do it.</p>}</div>{!x.to && typeof b.fix === 'object' && b.fix.tool !== 'campaign.window.narrow' && SAARTHI_FIX.has(b.fix.tool) && <Btn size="sm" onClick={() => say(`${(b.fix as { label: string }).label} for the campaign "${c.name}".`)}>Ask Saarthi</Btn>}{!x.to && typeof b.fix === 'object' && b.fix.tool === 'campaign.window.narrow' && <Btn size="sm" onClick={() => setEdit(true)}>{b.fix.label}</Btn>}{x.to && <Link to={x.to.href} className="btn btn-sm" style={{ textDecoration: 'none' }}><span>{x.to.label}</span></Link>}</li>; })}</ul>}</Card>}
             <Card><CardHead title="What it will cost" sub="Provider cost, including GST. No customer price is set." />
               <Async q={est} what="The estimate" tool="campaign.estimate" rows={3}>{e => <dl className="kv">
                 <div><dt>People</dt><dd className="tnum">{count(e.people)} people, about {count(e.attempts)} attempts</dd></div>
@@ -160,3 +160,6 @@ function WindowEdit({ c, onClose, onDone }: { c: CampaignDoc; onClose: () => voi
     </div></div>
   );
 }
+
+// Fixes with no page of their own: one tap hands the sentence to Saarthi, who plans the change and asks for approval.
+const SAARTHI_FIX = new Set(['campaign.draft', 'campaign.audience.add']);
