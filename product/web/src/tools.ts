@@ -1,0 +1,45 @@
+// Every tool id the UI calls, grouped by the page that owns it. One page action = exactly one tool (workspace.md §2.2).
+// STATUS.json's tools_used is generated from this list by tests/web.test.ts, so it cannot drift from the code.
+export const TOOLS = {
+  today: ['brief.today', 'activity.list'],
+  agents: ['agent.list', 'agent.get', 'agent.create', 'agent.update', 'version.publish', 'test.simulate', 'test.browser_call', 'money.estimate', 'knowledge.list'],
+  contacts: ['contact.list', 'contact.get', 'contact.import_preview', 'contact.import_commit', 'audience.list', 'audience.create', 'fact.approve', 'fact.forget', 'contact.consent_set'],
+  campaigns: ['campaign.list', 'campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.test_row', 'campaign.launch', 'campaign.pause', 'campaign.resume', 'campaign.stop', 'policy.window.set'],
+  calls: ['call.search', 'call.get', 'call.explain'],
+  insights: ['insight.funnel', 'insight.issues', 'learning.proposals', 'learning.decide', 'experiment.list'],
+  numbers: ['number.list', 'number.quote', 'number.rent', 'number.verify_start'],
+  settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'brand.get', 'brand.set', 'knowledge.add',
+    'wallet.get', 'wallet.topup', 'billing.summary', 'compliance.get', 'privacy.get', 'dpdp.request.list', 'operator.settings', 'operator.brain.set'],
+  operator: ['operator.say'],
+} as const;
+export const ALL_TOOLS: string[] = [...new Set(Object.values(TOOLS).flat())].sort();
+
+/** Mirrors shared/approval.ts APPROVERS (that file imports node:crypto so the browser cannot import it; a test pins the two). */
+export const APPROVERS: Record<string, string[]> = {
+  read: ['owner', 'builder', 'operator', 'compliance', 'viewer'], draft: ['owner', 'builder', 'operator'], test: ['owner', 'builder', 'operator'],
+  external: ['owner', 'builder', 'operator'], spend: ['owner'], destructive: ['owner'], policy: ['owner', 'compliance'],
+};
+
+export const RISK_WORDS: Record<string, { label: string; line: string }> = {
+  external: { label: 'Reaches people', line: 'This can call or message real people.' },
+  spend: { label: 'Spends money', line: 'This spends from your wallet.' },
+  destructive: { label: 'Deletes', line: 'This removes something.' },
+  policy: { label: 'Changes a policy', line: 'This changes rules that apply to every call.' },
+  draft: { label: 'Draft', line: 'Nothing reaches anyone.' }, test: { label: 'Test', line: 'A test. It costs a little and reaches only you.' }, read: { label: 'Read', line: '' },
+};
+
+export interface PageInfo { key: string; label: string; chips: string[] }
+export function pageInfo(path: string): PageInfo {
+  const p = path.split('/').filter(Boolean);
+  switch (p[0]) {
+    case undefined: return { key: 'today', label: 'Today', chips: ['What needs me today?', 'Kal ka kharcha kitna hua?', 'Naya campaign shuru karo'] };
+    case 'agents': return p[1] ? { key: 'agent', label: 'Agent · ' + p[1], chips: ['Make her slower', 'Discount mat bolna', 'Test this agent'] } : { key: 'agents', label: 'Agents', chips: ['Naya agent banao', 'Which agent is live?'] };
+    case 'contacts': return { key: 'contacts', label: p[1] ? 'Contact' : 'Contacts', chips: ['Ye CSV import karo', 'Who has opted out?', 'Show people with no consent'] };
+    case 'campaigns': return { key: 'campaigns', label: p[1] ? 'Campaign' : 'Campaigns', chips: ['Why is pickup low?', 'Move the window to 11 am - 7 pm', 'Pause this campaign'] };
+    case 'calls': return { key: 'calls', label: p[1] ? 'Call' : 'Calls', chips: p[1] ? ['Make a test from this call', 'Why did she hang up?'] : ['Show failed calls', 'Calls where they objected'] };
+    case 'insights': return { key: 'insights', label: 'Insights', chips: ['Where do we lose people?', 'Summarise this week'] };
+    case 'numbers': return { key: 'numbers', label: 'Numbers', chips: ['Ring my phone', 'How long does KYC take?'] };
+    case 'settings': return { key: 'settings', label: 'Settings', chips: ['What did VP do this week?', 'Set a daily spend cap'] };
+    default: return { key: 'other', label: 'VP', chips: [] };
+  }
+}

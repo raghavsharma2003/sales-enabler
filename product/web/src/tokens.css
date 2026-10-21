@@ -1,0 +1,45 @@
+/* Design tokens: the ONLY place colour literals live (design-language.md §2). Text pairs target 5:1 or more. */
+:root {
+  --paper: #FBF8F2; --surface: #FFFDF8; --sunk: #F2EDE3;
+  --ink: #1D2A24; --ink-2: #4F5A53; --ink-3: #5A635C;
+  --forest: #1F3B30; --forest-2: #2B4C3F; --nav-ink: #D9DED6; --nav-ink-dim: #B7C0B7;
+  --terra: #A9472A; --terra-ink: #8E3A21; --on-terra: #FFFFFF; --terra-bg: #F6E5DD;
+  --peacock: #1C5F70; --peacock-bg: #E0EEF1;
+  --leaf: #2D6A45; --leaf-bg: #E6F0E8;
+  --marigold: #C98A1B; --marigold-ink: #7A5200; --marigold-bg: #F8EBD0;
+  --brick: #A12F27; --brick-bg: #F7E4E1;
+  --line: #E2DBCD; --line-strong: #857E70;
+  --scrim: rgb(20 28 24 / 0.45);
+  --shadow: 0 8px 28px rgb(29 42 36 / 0.16), 0 1px 3px rgb(29 42 36 / 0.1);
+  --focus: #1C5F70;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121915; --surface: #18211C; --sunk: #0E1411;
+    --ink: #EEE8DC; --ink-2: #C3BEB1; --ink-3: #ADA89B;
+    --forest: #0B120F; --forest-2: #17251E; --nav-ink: #D9DED6; --nav-ink-dim: #A4AEA4;
+    --terra: #E28B66; --terra-ink: #EE9C79; --on-terra: #1A0F0A; --terra-bg: #35211A;
+    --peacock: #6CB8CB; --peacock-bg: #16313A;
+    --leaf: #7FC79A; --leaf-bg: #1B3326;
+    --marigold: #E5B25C; --marigold-ink: #EBBF73; --marigold-bg: #3A2D12;
+    --brick: #F08A80; --brick-bg: #3B1E1B;
+    --line: #2B3830; --line-strong: #7B867C;
+    --scrim: rgb(0 0 0 / 0.6);
+    --shadow: 0 8px 28px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4);
+    --focus: #6CB8CB;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #121915; --surface: #18211C; --sunk: #0E1411;
+  --ink: #EEE8DC; --ink-2: #C3BEB1; --ink-3: #ADA89B;
+  --forest: #0B120F; --forest-2: #17251E; --nav-ink: #D9DED6; --nav-ink-dim: #A4AEA4;
+  --terra: #E28B66; --terra-ink: #EE9C79; --on-terra: #1A0F0A; --terra-bg: #35211A;
+  --peacock: #6CB8CB; --peacock-bg: #16313A;
+  --leaf: #7FC79A; --leaf-bg: #1B3326;
+  --marigold: #E5B25C; --marigold-ink: #EBBF73; --marigold-bg: #3A2D12;
+  --brick: #F08A80; --brick-bg: #3B1E1B;
+  --line: #2B3830; --line-strong: #7B867C;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow: 0 8px 28px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4);
+  --focus: #6CB8CB;
+}
