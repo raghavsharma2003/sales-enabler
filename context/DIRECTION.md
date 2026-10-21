@@ -1,6 +1,6 @@
 # Direction — read this first
 
-_Last rewritten 2026-10-21. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
+_Last rewritten 2026-10-22. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
 
 ## What we are building
 
@@ -8,6 +8,10 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
 
 **What it is**
 - A **self-serve voice-agent platform, Vapi-like**, for Indian businesses (`directive.2026-10-18.self-serve`).
+  It is aimed at **medium-to-large enterprises** first, and small ones only by use case (`directive.2026-10-22.enterprise-english-ui`).
+- **The UI is professional English, never Hindi or Hinglish.** Hinglish is how the agent speaks on calls, not product copy.
+  The bar (`directive.2026-10-22.product-bar`): beat every competitor on quality, value and price; run the product through
+  LLM agents; build LLM-driven analytics and learning; nothing gimmicky.
 - The core product is **emotional, relational, exactly-human-sounding Hinglish voice** (`directive.2026-10-18.voice-core`).
 
 **What "world-class telecalling" means** (`directive.2026-10-20.world-class-telecalling`):
@@ -58,7 +62,13 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
   - It says plainly where VP loses today (`risk.2026-10-21.blueprint-not-better-yet`).
 - **Building now (`directive.2026-10-21.build-end-to-end`).** The owner said to go with the blueprint's recommendations
   and build the product end to end. Rules for this build:
-  - stack choice offers the finalised stacks with **no default yet**;
+  - stack choice: a **provisional default** (`v2-flashlite`, `decision.2026-10-22.default-stack`), the curated stacks,
+    or **build your own** from parts. Parts are ears, brain and voice, or one speech-to-speech engine
+    (`directive.2026-10-22.full-stack-selection`, `decision.2026-10-22.custom-stack-contract`). A built stack is
+    test-calls-only until it is measured;
+  - provider routing: Gemini through Vertex; whatever is on Azure Foundry through Azure; OpenRouter only for the rest
+    (`directive.2026-10-22.provider-routing`). Gemini ears are retired, because Vertex has no Gemini transcription. Ears
+    are Azure Speech (`decision.2026-10-22.ears-azure-not-gemini`);
   - price is deferred and shows as "not set";
   - the product is **horizontal**, for every kind of enterprise, not just insurance;
   - self-learning is harness2-style.
@@ -69,8 +79,9 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
   - the React web app `product/web`;
   - the e2e acceptance test `product/tests/e2e.test.ts`.
 
-  State on 2026-10-21 at 3059bde: tsc clean, 274/275 pass, 0 fail, 1 todo on a fresh Postgres 16. The voice runtime
-  passes 91/91 with rules parity against `shared/safety`.
+  State on 2026-10-22 at d6b1d97:
+  - tsc clean; 379/379 on a fresh Postgres 16, including the browser flows;
+  - the voice runtime suite is OK; CI has three jobs (control-plane, web-e2e, voice-runtime).
 
   Next:
   - three adversarial reviews are running (money and auth; who gets called; what she says);
@@ -104,11 +115,16 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
   - where each one falls short;
   - VP's better design;
   - where emotional voice, memory, personalisation and later self-learning sit.
-- **The voice stack is a user choice** in the product, with curated defaults (`decision.2026-10-20.product-stack-selectable`).
-  The default is picked after Vertex returns and round-2 ratings are in. The owner leans towards **Gemini TTS**.
-- **The voice lab is paused** (`decision.2026-10-20.pause-lab`):
-  - no more re-routing or fixes;
-  - resume only when the paid Vertex key arrives (runbook: `research/2026-10-20/voicelab/google-access.md`).
+- **The voice stack is a user choice** in the product. The default is provisional, and the owner leans towards
+  **Gemini TTS**. The default is confirmed or changed by round-2 ratings and the first real use-case calls.
+- **The voice lab is live on Vertex again** (2026-10-22). vp-voice was reinstated, and the owner made a new key.
+  - The round-2 stacks listen with Azure Speech. Live runs at us-central1, the only region that serves 3.8 Live.
+  - Smoke results are in `measure.2026-10-22.round2-smoke-vertex`. All 4 stacks completed with 0 errors:
+    - v2-live: 1.1–1.5 s;
+    - v2-mai: 1.8–2.1 s;
+    - v2-flashlite: 2.0–2.7 s.
+  - **No Vertex batches until 2026-10-23 20:00 UTC; after that at most 1 request/s, from the VM only**
+    (`decision.2026-10-21.appeal-commitments-binding`).
 - **Port the lab's pieces into the product.** Don't run two voice stacks. Ported:
   - adapters, combination identity, brief v2 + agenda ledger;
   - hang-up guard, turn-taking, Plivo line, cost meter.
@@ -118,6 +134,11 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
 
 | id | in one line |
 |---|---|
+| `directive.2026-10-22.enterprise-english-ui` | No Hindi or Hinglish anywhere in the UI; enterprise-grade for medium-to-large companies first. |
+| `directive.2026-10-22.full-stack-selection` | The user picks the whole stack, part by part, plus a default. |
+| `directive.2026-10-22.provider-routing` | Gemini through Vertex; Azure Foundry if available there; OpenRouter only for the rest. |
+| `directive.2026-10-22.processing-anywhere` | Gemini may process audio wherever Google does (US, EU, global). |
+| `directive.2026-10-21.vertex-for-everything` | Every Google/Gemini call goes through Vertex (project vp-voice, team@vyakti.ai). |
 | `directive.2026-10-20.human-conversation` | Human conversation, not agenda repetition; expressive; learn from Maya. |
 | `directive.2026-10-20.agent-hangup` | She ends the call herself when it is done; friendly, professional, interesting. |
 | `directive.2026-10-20.no-midcall-swap` | A test never changes a model mid-call. Results are filed under the combination that actually ran. |
@@ -173,11 +194,10 @@ The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round
 
 | Thread | Status |
 |---|---|
-| Paid Vertex project `voicelab-india` on compliance@carbonsettle.com, via Instinct | Pending. The owner sends the SA JSON. |
-| vp-voice appeal | Submission not confirmed. The pasted SA key must be deleted first. |
-| Credential hygiene | Rotate the pasted secrets: Plivo token, the free keys, mailbox passwords (`risk.2026-10-20.secrets-pasted`). Not confirmed done. |
+| Vertex | **Resolved 2026-10-22.** vp-voice was reinstated, and no carbonsettle project was made. The new key (id ending 4589e6) was pasted in chat with the owner's OK (`risk.2026-10-22.vertex-key-in-chat`); offer a rotation once the lab is stable. |
+| Credential hygiene | Rotate the pasted secrets: the Plivo token, the free Gemini keys (now unused, since Gemini is Vertex only) and the mailbox passwords (`risk.2026-10-20.secrets-pasted`). Not confirmed done. |
 | Plivo trial | ₹764 credit expires 2026-11-16, with an ₹80 monthly usage cap. Recharge is the owner's decision. |
-| Round-2 human ratings | After Vertex returns (`open.2026-10-20.round2-human-ratings`). |
+| Round-2 human ratings | **Ready now.** The lab's round-2 stacks run on Vertex from India (`open.2026-10-20.round2-human-ratings`). |
 | Safety second layer | Waiting on the owner (`decision.2026-10-21.safety-second-layer-proposal`). Blind set 6 (n=330, scored once after the review fixes, `measure.2026-10-21.safety-door-blind-set6`):<br>• benign false positives 0/170;<br>• harmful caught 106/160;<br>• indirect crisis talk 4/30 (Tamil-English 0/7, Bengali-English 0/7);<br>• paraphrased AI denials 14/25.<br>Recommendation: start with a raise-only caller-crisis judge. It runs in parallel with the brain, adds no playback delay, and can only add the crisis line. The agent-side judge comes after it.<br>**Built (2026-10-21):** contract plus TS judge (df4436c), voice runtime half (776b195), and an eval harness (`product/scripts/judge-eval.mjs`). The default is shadow mode, raise-only by construction (`decision.2026-10-21.judge-raise-only-contract`). Post-call shadow hits never count as safety events (`decision.2026-10-21.judge-shadow-never-a-safety-event`).<br>**Owner decisions:**<br>• go to run judge-eval on the lab VM (2-3 models, real prices);<br>• production 'raise', once eval numbers exist.<br>Note: with VP_LLM_DEFAULT_* keys set, shadow mode calls the judge on every caller turn, and pays for it, from the first deploy.<br>Not measured: any real model's recall or false-positive rate. |
 | First deploy | Needs the owner's go (it costs money) and real keys: LLM, TTS/STT for the chosen stacks, telephony (Plivo trial line), VP_SECRET_KEY. |
 | Teardown account hygiene | Rotate the pasted vendor passwords and keys. Delete the draft objects Instinct left in the vendor accounts (side-effects ledger in Drive `00-FINAL-REPORT.md`). Instinct's Drive captures hold the owner's phone (Exotel 11, 12) and a +1 number (Retell 08); the local copies are gitignored (`risk.2026-10-21.wt-synthesis-capture-hygiene`). |
