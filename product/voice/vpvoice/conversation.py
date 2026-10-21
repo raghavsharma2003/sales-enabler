@@ -13,6 +13,17 @@ YES = re.compile(r'^\s*(haan|han|haa|ha|ji|jee|yes|yeah|yep|ok|okay|bilkul|boliy
 NO = re.compile(r'\b(nahi|nahin|no|wrong number|galat)\b|नहीं|ग़लत|गलत', re.I)
 
 
+CONTACT_ROWS_HEADER = 'Contact rows for this call (data, not lines):'
+
+
+def contact_rows(facts):
+    """The per-contact facts as data rows, exactly as compile.ts contactRows() writes them (the brief points here with
+    "(per contact: in the contact rows for this call)"). The door gets the same facts as perContact facts: they are the
+    amounts she may state, and they wait for identity (RD11)."""
+    rows = [f"{k.replace('_', ' ')}: {v}" for k, v in sorted(facts.items())]
+    return CONTACT_ROWS_HEADER + '\n' + ('\n'.join(rows) if rows else 'none')
+
+
 class ComponentError(Exception):
     def __init__(self, component, provider, reason):
         super().__init__(f'{component} ({provider}) failed: {reason}')
@@ -52,6 +63,7 @@ class Conversation:
         out = [{'role': 'system', 'content': self.t['brief']['text']}]
         mem = tk.memory_block(self.t)
         if mem: out.append({'role': 'system', 'content': 'Memory brief for this person (from earlier calls):\n' + mem})
+        out.append({'role': 'system', 'content': contact_rows(self.contact.get('facts') or {})})
         return out
 
     def messages_for(self, user_text, correction=None):

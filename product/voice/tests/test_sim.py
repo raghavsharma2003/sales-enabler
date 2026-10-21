@@ -68,6 +68,32 @@ class EndToEnd(unittest.TestCase):
         self.assertIn('<end_call>', last)
         self.assertEqual(sum(1 for m in msgs if m['content'] == t['brief']['text']), 1)
 
+    def test_contact_rows_reach_the_model_after_brief_and_memory_before_the_tail(self):
+        brain = FakeBrain(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ, क्या Asha जी बोल रही हैं?', 'जी, आपकी EMI 4,200 rupaye 5 November ko due hai.'])
+        t = ticket(); t['contact']['memoryBrief'] = 'prefers short calls'; t['contact']['memoryStatus'] = 'loaded'
+        t['contact']['facts'] = {'policy_no': 'SH-DEMO-0042', 'emi_due_date': '5 November', 'emi_amount': '₹4,200'}
+        sess, p, replies = run(call(None, ['हाँ जी, बोलिए'], t=t, brain=brain))
+        msgs = brain.calls[-1]
+        self.assertEqual([m['role'] for m in msgs[:3]], ['system', 'system', 'system'])
+        self.assertEqual(msgs[0]['content'], t['brief']['text'])
+        self.assertIn('prefers short calls', msgs[1]['content'])
+        self.assertEqual(msgs[2]['content'], 'Contact rows for this call (data, not lines):\n'
+                         'emi amount: ₹4,200\nemi due date: 5 November\npolicy no: SH-DEMO-0042')
+        self.assertTrue(msgs[-1]['content'].startswith('Ledger of this call so far'))
+        # the amount is in the contact facts, so once identity is confirmed she may say it
+        self.assertEqual(replies[1], ['जी, आपकी EMI 4,200 rupaye 5 November ko due hai.'])
+
+    def test_contact_rows_none(self):
+        brain = FakeBrain(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।'])
+        t = ticket(); t['contact']['facts'] = {}
+        run(call(None, [], t=t, brain=brain))
+        self.assertEqual(brain.calls[0][1]['content'], 'Contact rows for this call (data, not lines):\nnone')
+
+    def test_contact_amounts_wait_for_identity(self):
+        t = ticket(); t['contact']['facts'] = {'emi_amount': '₹4,200'}
+        sess, p, replies = run(call(['नमस्ते, Suraksha की AI असिस्टेंट बोल रही हूँ, आपकी EMI 4,200 rupaye due hai.'], [], t=t))
+        self.assertIn('RD11', [x['rule'] for x in of(p, 'safety')])
+
     def test_memory_not_used_unless_loaded(self):
         brain = FakeBrain(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।'])
         t = ticket(); t['contact']['memoryBrief'] = 'secret-ish note'; t['contact']['memoryStatus'] = 'not_loaded_timeout'

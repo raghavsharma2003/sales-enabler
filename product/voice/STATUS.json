@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 86,
-    "passed": 86,
+    "ran": 89,
+    "passed": 89,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -34,6 +34,7 @@
   "works": [
     "Signed intake (HMAC t.body, 5 min skew, constant-time) on POST /v1/calls, POST /v1/calls/{id}/end, GET /v1/calls/{id}; signed event batches to {VP_CONTROL_URL}/hooks/runtime with per-call seq, in-order delivery, same-batch retries, call.ended alone and last",
     "No default stack: unknown or missing stack refused (422), missing credentials refused (503 with the names), voice and combinationId checked, never substituted",
+    "Per-contact facts reach the model as the contact rows block (after brief and memory, before the LAST block), in compile.ts contactRows() format; the door gets them as perContact facts. product/tests/agents-runtime.test.ts passes 4/4 against this runtime",
     "Brief used verbatim; memory brief only when memoryStatus = loaded; generic data-driven LAST block per turn (spent facts and figures, stray caller figures, goals open/settled, cues, closing, crisis/opt-out/asked-AI state, marker rules)",
     "Reply door = shared rules.json evaluated as index.ts does (all 1186 vectors pass) + runtime layer (first-breath clause, truth first, crisis lines); block -> one rewrite told the rule, then a safe line",
     "Caller signals and redaction from rules.json; redacted text is what reaches transcript, events and the LLM",

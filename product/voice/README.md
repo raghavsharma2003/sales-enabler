@@ -33,8 +33,11 @@ docker build -f product/voice/Dockerfile -t vp-voice .   # from the repository r
 3. **Prompt.** The prompt is built in this order:
    1. `brief.text`, verbatim;
    2. the memory brief, verbatim, only when `memoryStatus` is `loaded`;
-   3. the history;
-   4. a **LAST block** per turn (`vpvoice/brief.py`).
+   3. the contact rows: `Contact rows for this call (data, not lines):`, then one `key with spaces: value` line per
+      `contact.facts` entry sorted by key, or `none` (the same format as `compile.ts` `contactRows()`; the brief points
+      at it). The same facts go to the door as `perContact` facts: amounts she may state, after identity (RD11);
+   4. the history;
+   5. a **LAST block** per turn (`vpvoice/brief.py`).
 
    The LAST block is generic and data-driven. It holds:
    - a ledger of the facts and figures she has already said;
