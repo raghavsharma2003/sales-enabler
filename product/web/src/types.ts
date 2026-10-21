@@ -16,7 +16,7 @@ export interface Brief {
   changed: { n: number; byAction: { action: string; n: number }[] };
 }
 
-export interface AgentRow { id: string; name: string; job: string; status: 'draft' | 'published'; latestVersion: number | null; updatedAt: string; category: string; stackId: string | null; languages: string[] }
+export interface AgentRow { id: string; name: string; job: string; status: 'draft' | 'published'; latestVersion: number | null; updatedAt: string; category: string; stackId: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string }; languages: string[] }
 export interface LintItem { message: string; severity?: string }
 export interface AgentDoc {
   id: string; name: string; updatedAt: string; draftHash: string; config: AgentConfigDraft; compiles: boolean; lint: LintItem[]; briefBytes: number | null;
@@ -70,7 +70,7 @@ export interface CallRow { id: string; contactName: string; startedAt: string; d
 export interface CallTurn { idx: number; who: 'caller' | 'agent'; text: string; startMs: number | null; endMs: number | null; latencyMs: number | null; interrupted: boolean }
 export interface CallDoc {
   id: string; contactId: string | null; contactName: string; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
-  reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; ran: string | null;
+  reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
   turns: CallTurn[]; moments: { source: string; kind: string; atMs: number | null; note: string | null; quote: string | null }[];
   safety: { seq: number; rule: string; action: string; detail: string }[]; tools: { seq: number; name: string; status: string }[]; handOffs: { destination: string; status: string }[];
   outcomes: { value: string; grade: string; source: string }[]; costTotal: number; costLines: { component: string; provider: string; inr_milli: number; unit: string; quantity: number }[]; settlement: string | null;

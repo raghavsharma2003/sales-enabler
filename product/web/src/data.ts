@@ -33,7 +33,7 @@ export async function agentList(): Promise<AgentRow[]> {
   return Promise.all(r.agents.map(async a => {
     let cfg: AgentConfigDraft | null = null;
     try { cfg = normaliseConfig((await run<any>('agent.get', { agentId: a.id })).draft); } catch { /* keep the row without detail */ }
-    return { id: a.id, name: a.name, job: a.job, status: a.latest_version ? 'published' : 'draft', latestVersion: a.latest_version, updatedAt: a.updated_at, category: cfg?.category ?? '', stackId: cfg?.voice.stackId ?? null, languages: cfg?.languages.allowed ?? [] } as AgentRow;
+    return { id: a.id, name: a.name, job: a.job, status: a.latest_version ? 'published' : 'draft', latestVersion: a.latest_version, updatedAt: a.updated_at, category: cfg?.category ?? '', stackId: cfg?.voice.stackId ?? null, components: cfg?.voice.components, languages: cfg?.languages.allowed ?? [] } as AgentRow;
   }));
 }
 export interface PatchOp { op: 'set'; path: string; value: unknown }
@@ -174,7 +174,7 @@ export async function callGet(id: string): Promise<CallDoc> {
   const totalMs = Math.max(1000, (c.durationS ?? 0) * 1000, ...turns.map(t => t.endMs ?? t.startMs ?? 0));
   const a = c.analysis;
   return { id: c.id, contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
-    recordingUri: c.recordingUri, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, turns,
+    recordingUri: c.recordingUri, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: c.runManifest?.components ? { ears: c.runManifest.components.stt, brain: c.runManifest.components.llm, voice: c.runManifest.components.tts ?? c.runManifest.components.voice, s2s: c.runManifest.components.s2s } : null, turns,
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), tools: arr(c.tools), handOffs: arr(c.handOffs),
     outcomes: arr(c.outcomes), costTotal: c.cost?.totalInrMilli ?? 0, costLines: arr(c.cost?.lines), settlement: c.cost?.settlement?.action ?? (typeof c.cost?.settlement === 'string' ? c.cost.settlement : null),
     analysis: a ? { status: a.status, summary: a.summary, reason: a.reason } : null, totalMs };

@@ -429,7 +429,13 @@ test('Voice stack: build a cascade from three parts; the server agrees and the s
   await openVoiceTab(stackAgent);
   await opt('Speech recognition', 'Azure Speech, Hindi and English').click();
   await opt('Language model', 'GPT-4.1 mini').click();
+  await page.getByText('Choose every part to see the cost.').waitFor();
   await opt('Voice', 'Azure neural voice').click();
+  // The cost of the parts chosen is the server's own figure for that combination.
+  const est = await tool('money.estimate', { stackId: 'custom', components: { ears: 'azure', brain: 'gpt-4.1-mini-in', voice: 'azure' }, minutes: 1, calls: 0 });
+  assert.equal(est.status, 'confirmed', JSON.stringify(est));
+  const rupees = '₹' + (est.result.perMinuteInrMilli / 1000).toFixed(2);
+  await page.locator('.buildprice').getByText(rupees, { exact: false }).waitFor({ timeout: 10000 });
   await page.getByRole('button', { name: 'Use these parts' }).click();
   await page.locator('.stacksum').getByText('Your own stack').waitFor({ timeout: 10000 });
   await page.locator('.stacksum').getByText('Beta: test calls only').waitFor();
@@ -441,12 +447,11 @@ test('Voice stack: build a cascade from three parts; the server agrees and the s
 
 test('Voice stack: the voice is kept when only the language model changes, and a voice can be picked from the speaking part', async () => {
   await openVoiceTab(stackAgent);
-  const group = page.getByRole('radiogroup', { name: 'Voice', exact: true }).last();
-  const pickable = page.locator('[role="radiogroup"][aria-label="Voice"] button[role="radio"]');
+  const pickable = page.locator('[role="radiogroup"][aria-label="Voices"] button[role="radio"]');
   await pickable.nth(1).waitFor();
   const name = (await pickable.nth(1).innerText()).trim();
   await pickable.nth(1).click();
-  await page.locator('[role="radiogroup"][aria-label="Voice"] button[aria-checked="true"]').filter({ hasText: name.split(' (')[0] }).waitFor({ timeout: 10000 });
+  await page.locator('[role="radiogroup"][aria-label="Voices"] button[aria-checked="true"]').filter({ hasText: name.split(' (')[0] }).waitFor({ timeout: 10000 });
   const chosen = (await draftVoice(stackAgent)).voiceId;
   assert.ok(chosen, 'the server holds the chosen voice');
   await openVoiceTab(stackAgent);
@@ -454,7 +459,6 @@ test('Voice stack: the voice is kept when only the language model changes, and a
   await page.getByRole('button', { name: 'Use these parts' }).click();
   await page.locator('.stacksum').getByText('GPT-4.1 ·', { exact: false }).waitFor({ timeout: 10000 });
   assert.equal((await draftVoice(stackAgent)).voiceId, chosen, 'changing only the language model kept the voice');
-  assert.ok(group, 'voice group present');
 });
 
 test('Voice stack: an incomplete build shows the server\'s own refusal, word for word', async () => {
@@ -504,4 +508,20 @@ test('Voice stack: a part the runtime says is unavailable cannot be picked, and 
     const t1 = Date.now();
     for (;;) { await hook(null); const l = (await tool('stack.list')).result.components.find(c => c.part === 'brain'); if (l.availability.state === 'unknown' || Date.now() - t1 > 10000) break; await new Promise(r => setTimeout(r, 250)); }
   }
+});
+
+test('A built stack is treated as a stack: practice callers run, the test-calls-only warning shows, and the panel names its parts', async () => {
+  // stackAgent was built on the previous flows and is now back on a recommended stack; build one again for this check.
+  const set = await tool('stack.set', { agentId: stackAgent, stackId: 'custom', components: { ears: 'azure', brain: 'gpt-4.1-mini-in', voice: 'azure' } });
+  assert.equal(set.status, 'confirmed', JSON.stringify(set));
+  await page.goto(`${BASE}/agents/${stackAgent}`);
+  await page.getByRole('radio', { name: 'Test her' }).click();
+  const run = page.getByRole('button', { name: /^Run \d+ practice callers?$/ });
+  await run.waitFor();
+  assert.equal(await run.getAttribute('aria-disabled'), null, 'practice callers are not blocked for a built stack');
+  assert.equal(await page.getByText('Choose a voice stack first').count(), 0);
+  await page.getByText('Test calls only').first().waitFor();
+  await page.locator('.testpanel .chip-wrap').getByText('Azure Speech, Hindi and English + GPT-4.1 mini + Azure neural voice').waitFor();
+  const back = await tool('stack.set', { agentId: stackAgent, stackId: 'v2-flashlite' });
+  assert.equal(back.status, 'confirmed');
 });

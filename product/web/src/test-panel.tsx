@@ -1,13 +1,12 @@
 // The docked test panel for an agent: six practice callers (simulate) and a browser call. A test never falls back to another
 // stack: if no stack is chosen, the result says "invalid, with the reason", never a pass.
-import { stackLabel } from './catalog.ts';
+import { stackLabel, voiceStackOf } from './catalog.ts';
 import { useState } from 'react';
 import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp, useData } from './store.tsx';
 import { Btn, Chip } from './ui.tsx';
 import { Link } from './router.tsx';
 import { practiceCallers, simulate } from './data.ts';
-import { getStack } from '../../shared/stacks.ts';
 import type { SimResult } from './types.ts';
 
 const TWEAKS = ['Speak a little slower', 'Do not mention discounts', 'Shorter opening', 'Warmer tone'];
@@ -22,7 +21,7 @@ export function TestPanel() {
   const [busy, setBusy] = useState(false);
   const [call, setCall] = useState<{ state: 'idle' | 'asking' | 'unavailable' | 'started'; reason?: string }>({ state: 'idle' });
   if (!a) return <div className="testpanel"><p className="muted">Open an agent to test her here.</p></div>;
-  const stack = a.stackId ? getStack(a.stackId) : null;
+  const stack = voiceStackOf(a) ?? null;
   const picked = (callers.data ?? []).filter(c => chosen.includes(c.id));
   // The count is the callers that will run. Until the list has loaded there is nothing to run, so the button waits.
   const runLabel = callers.data ? `Run ${picked.length} practice caller${picked.length === 1 ? '' : 's'}` : 'Run practice callers';
@@ -47,7 +46,7 @@ export function TestPanel() {
         <h3 className="serif" style={{ fontSize: '1.25rem' }}>Test {a.name}</h3>
         <div className="row" style={{ gap: 6 }}>
           <Chip tone={a.dirty ? 'marigold' : 'leaf'}>{a.dirty ? 'Unsaved changes' : `Saved draft v${a.version}`}</Chip>
-          {stack || a.stackId === 'custom' ? <span className="chip chip-peacock chip-wrap" title="The stack a test runs on">{stack ? stackLabel(stack.label.split(' (')[0]) : 'Your own stack'}</span> : <Chip tone="brick">No voice stack</Chip>}
+          {stack ? <span className="chip chip-peacock chip-wrap" title="The stack a test runs on">{stackLabel(stack.label.split(' (')[0])}</span> : <Chip tone="brick">No voice stack</Chip>}
         </div>
         {a.dirty && <p className="small muted">Tests run the saved draft. Save your changes to test them.</p>}
       </div>

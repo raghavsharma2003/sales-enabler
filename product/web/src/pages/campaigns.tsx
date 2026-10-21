@@ -8,7 +8,7 @@ import { Funnel } from '../funnel.tsx';
 import { CATEGORY_INFO } from '../catalog.ts';
 import { agentGet, agentList, audienceList, campaignEstimate, campaignFunnel, campaignGet, campaignList } from '../data.ts';
 import { count, date, inr } from '../format.ts';
-import { getStack } from '../../../shared/stacks.ts';
+import { voiceStackOf } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
 import { blockerCopy, pl } from '../labels.ts';
 import type { CampaignDoc, CampaignRow } from '../types.ts';
@@ -71,7 +71,7 @@ function Create() {
             {f.category === 'promotional' && <p className="hint hint-bad" style={{ marginTop: 12 }}>Promotional calls only go to people with a recorded consent whose DND status is known. Others are held back and counted.</p>}</Card>
           <Card><CardHead title="2. Who and which agent" />
             <div className="formgrid"><TextField label="Campaign name" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="e.g. Renewals November" />
-              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField label="Agent" value={f.agentId} onChange={e => setF({ ...f, agentId: e.target.value })} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : getStack(published.find(a => a.id === f.agentId)?.stackId ?? '')?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
+              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField label="Agent" value={f.agentId} onChange={e => setF({ ...f, agentId: e.target.value })} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : voiceStackOf(published.find(a => a.id === f.agentId))?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
               <Async q={auds} what="Audiences" tool="audience.list">{d => <SelectField label="Who to call" value={f.audienceId} onChange={e => setF({ ...f, audienceId: e.target.value })} hint={(() => { const a = d.find(x => x.id === f.audienceId); return a ? `${a.callable == null ? '?' : count(a.callable)} callable of ${a.matched == null ? '?' : count(a.matched)}` : <Link to="/contacts/import">Import a list</Link>; })()}><option value="">Choose an audience</option>{d.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>}</Async>
               <SelectField label="Retry pattern" value={f.preset} onChange={e => setF({ ...f, preset: e.target.value })} hint="How many days apart and at what hours she tries again.">{PRESETS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</SelectField></div></Card>
           <Card><CardHead title="3. When and how fast" sub="Times are in each contact's local time. The dial gate enforces the legal hours again at every attempt." />

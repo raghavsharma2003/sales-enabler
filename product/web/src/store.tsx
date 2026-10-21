@@ -11,7 +11,7 @@ export interface Toast { id: number; kind: 'ok' | 'bad' | 'info'; text: string }
 export interface Pending { actionId: string; tool: string; summary: string; risk: string; expiresAt: string; resolve: (r: ActResult) => void; state: 'asking' | 'running' | 'done'; outcome?: Receipt | { declined: boolean }; error?: string }
 export type ActResult<T = unknown> = { ok: true; result: T; receipt: Receipt<T> } | { ok: false; reason: string; declined?: boolean; unknown?: boolean };
 
-export interface AgentCtx { id: string; name: string; dirty: boolean; stackId: string | null; version: number; saved: boolean }
+export interface AgentCtx { id: string; name: string; dirty: boolean; stackId: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string }; version: number; saved: boolean }
 interface App {
   me: Me | null; booted: boolean; tools: Set<string> | null; hasTool(n: string): boolean;
   sample: boolean; markSample(): void;

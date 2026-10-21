@@ -80,6 +80,9 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
     if (!r.ok) { setRefusal(r.reason ?? 'The server did not accept that choice.'); return; }
     onChanged({ stackId: id, components: comps, voiceId: r.result?.voiceCleared ? null : voiceId });
   };
+  const buildParts: Parts = build.mode === 's2s' ? { s2s: build.s2s || undefined } : { ears: build.ears || undefined, brain: build.brain || undefined, voice: build.voice || undefined };
+  const complete = build.mode === 's2s' ? !!build.s2s : !!(build.ears && build.brain && build.voice);
+  const buildPrice = useBuildPrice(complete ? buildParts : null);
   const useParts = () => choose(CUSTOM, build.mode === 's2s' ? { s2s: build.s2s || undefined } : { ears: build.ears || undefined, brain: build.brain || undefined, voice: build.voice || undefined });
 
   const speaker = find(d.components, parts.s2s ? 's2s' : 'voice', parts.s2s ?? parts.voice);
@@ -114,15 +117,16 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
             <PartPicker key={part} part={part} options={d.components.filter(c => c.part === part)} value={build[part]} onChange={v => setBuild(b => ({ ...b, [part]: v }))} />
           ))}
         </div>
+        <dl className="kv small buildprice"><div><dt>Provider cost per minute</dt><dd>{!buildPrice ? <span className="muted">Choose every part to see the cost.</span> : buildPrice.refused ? <span className="risk">{buildPrice.refused}</span> : <PriceView price={buildPrice} />}</dd></div></dl>
         <div className="row" style={{ marginTop: 12 }}><Btn kind="primary" busy={busy === CUSTOM} onClick={() => void useParts()}>Use these parts</Btn></div>
         <p className="small muted">A stack you build runs test calls only until it has been measured.</p>
       </section>
 
       {speaker && speaker.voices.length > 0 && (
         <section aria-labelledby="voice-h">
-          <h3 id="voice-h">Voice</h3>
+          <h3 id="voice-h">Choose the voice</h3>
           <p className="sub">The voices of {speaker.label}. The chosen voice stays when you change only the language model.</p>
-          <div role="radiogroup" aria-label="Voice" className="chipset" style={{ marginTop: 8 }}>
+          <div role="radiogroup" aria-label="Voices" className="chipset" style={{ marginTop: 8 }}>
             {speaker.voices.map(v => { const on = (voiceId ?? speaker.defaultVoice) === v;
               return <button key={v} type="button" role="radio" aria-checked={on} className={`choice${on ? ' on' : ''}`} onClick={() => { if (!on) void pickVoice(v); }}>{voiceName(v)}{v === speaker.defaultVoice && !voiceId && ' (default)'}</button>; })}
           </div>
@@ -191,6 +195,29 @@ function PartPicker({ part, options, value, onChange }: { part: Part; options: C
   );
 }
 
+function PriceView({ price }: { price?: Price }) {
+  if (!price || price.state === 'loading') return <span className="muted">Checking…</span>;
+  if (price.perMinuteInrMilli != null) return <><span className="fig-v tnum">{inr(price.perMinuteInrMilli, { paise: true })}</span> <Chip tone="peacock">Computed</Chip><details className="how"><summary>Basis</summary><p>{price.basis}</p></details></>;
+  return <><NotMeasured />{price.basis && <details className="how"><summary>Why</summary><p>{price.basis}</p></details>}</>;
+}
+
+/** The provider cost per minute of the parts chosen so far, asked of the server each time the choice changes. A refused combination
+ *  shows the server's reason in place of a number. */
+function useBuildPrice(parts: Parts | null): (Price & { refused?: string }) | null {
+  const key = parts ? JSON.stringify(parts) : '';
+  const [p, setP] = useState<{ key: string; v: Price & { refused?: string } } | null>(null);
+  useEffect(() => {
+    if (!parts) return;
+    let live = true;
+    api.run<{ perMinuteInrMilli: number | null; basis: string }>('money.estimate', { stackId: CUSTOM, components: parts, minutes: 1, calls: 0 })
+      .then(r => { if (live) setP({ key, v: { perMinuteInrMilli: r.perMinuteInrMilli ?? null, basis: r.basis ?? '', state: 'ready' } }); })
+      .catch(e => { if (live) setP({ key, v: { perMinuteInrMilli: null, basis: '', state: 'missing', refused: e instanceof api.ToolRefused ? e.reason : 'The price could not be worked out.' } }); });
+    return () => { live = false; };
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!parts) return null;
+  return p && p.key === key ? p.v : { perMinuteInrMilli: null, basis: '', state: 'loading' };
+}
+
 function StackCard({ s, selected, isDefault, price, busy, onPick }: { s: StackRow; selected: boolean; isDefault: boolean; price?: Price; busy: boolean; onPick: () => void }) {
   const down = s.availability.state === 'unavailable';
   return (
@@ -206,7 +233,7 @@ function StackCard({ s, selected, isDefault, price, busy, onPick }: { s: StackRo
       <p className="small">{s.note}</p>
       <dl className="kv small">
         <div><dt>Reply gap</dt><dd><Figure m={s.replyGap} /><details className="how"><summary>How we know</summary><p>{s.replyGap.source}</p></details></dd></div>
-        <div><dt>Provider cost per minute</dt><dd>{!price || price.state === 'loading' ? <span className="muted">Checking…</span> : price.perMinuteInrMilli != null ? <><span className="fig-v tnum">{inr(price.perMinuteInrMilli, { paise: true })}</span> <Chip tone="peacock">Computed</Chip><details className="how"><summary>Basis</summary><p>{price.basis}</p></details></> : <><NotMeasured />{price.basis && <details className="how"><summary>Why</summary><p>{price.basis}</p></details>}</>}</dd></div>
+        <div><dt>Provider cost per minute</dt><dd><PriceView price={price} /></dd></div>
         {s.parts.map(c => <div key={c.part}><dt>{PART_WORD[c.part]}</dt><dd>{c.label}<span className="small muted"> · {c.processedIn}</span></dd></div>)}
         <div><dt>Hear it</dt><dd><span className="dotted nm" title="No sample clip has been recorded for this stack yet"><Volume2 size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> No sample recorded yet</span></dd></div>
       </dl>
