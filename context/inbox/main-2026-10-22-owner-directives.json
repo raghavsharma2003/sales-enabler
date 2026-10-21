@@ -1,0 +1,55 @@
+{
+ "nodes": [
+  {
+   "id": "directive.2026-10-22.processing-anywhere",
+   "type": "requirement",
+   "title": "Owner: Gemini (Vertex) may process call audio and text wherever Google processes it: the US, EU or global endpoints are acceptable.",
+   "status": "confirmed", "date": "2026-10-22", "source": "user"
+  },
+  {
+   "id": "directive.2026-10-22.vertex-team-account-only",
+   "type": "requirement",
+   "title": "Owner: no Google Cloud project was created on compliance@carbonsettle.com. VP uses Vertex only from team@vyakti.ai, project vp-voice. The owner made the new key and checked the console personally; Instinct was not used.",
+   "status": "confirmed", "date": "2026-10-22", "source": "user"
+  },
+  {
+   "id": "directive.2026-10-22.enterprise-english-ui",
+   "type": "requirement",
+   "title": "Owner: the product UI is never written in Hindi or Hinglish (e.g. a 'Suprabhat, Asha' greeting is unacceptable). VP is a world-class product for medium-to-large Indian enterprises first; small businesses only by use case. Every screen must read as professional enterprise software. The agents' spoken Hinglish on calls is the product's voice, not UI copy.",
+   "status": "confirmed", "date": "2026-10-22", "source": "user"
+  },
+  {
+   "id": "directive.2026-10-22.full-stack-selection",
+   "type": "requirement",
+   "title": "Owner: the user selects the whole voice stack, component by component (ears/STT, brain, voice/TTS, or a speech-to-speech engine), at least for testing. A default stack is also offered. Which components work best is decided later, from real use-case calls on the finished product.",
+   "status": "confirmed", "date": "2026-10-22", "source": "user"
+  },
+  {
+   "id": "directive.2026-10-22.provider-routing",
+   "type": "requirement",
+   "title": "Owner: route every model by availability. Gemini goes through Vertex. Anything available in Azure AI Foundry goes through Azure Foundry. Only what is in neither goes through OpenRouter.",
+   "status": "confirmed", "date": "2026-10-22", "source": "user"
+  },
+  {
+   "id": "directive.2026-10-22.product-bar",
+   "type": "requirement",
+   "title": "Owner restated the bar. VP must beat every competitor on quality, value and price: emotional, relational, expressive agents that are self-learning and personalised, deliver better conversions and metrics, offer world-class UI/UX and product journeys, and are run through LLM agents so the user does less and makes fewer mistakes. The analytics and the learning are LLM-driven. Nothing gimmicky.",
+   "status": "confirmed", "date": "2026-10-22", "source": "user"
+  },
+  {
+   "id": "risk.2026-10-22.vertex-key-in-chat",
+   "type": "risk",
+   "title": "The new vp-voice service-account key (id ending 4589e6) was pasted in chat by the owner, who said that is acceptable. A pasted key was one of the three suspected triggers of the 2026-10-20 restriction.",
+   "status": "open", "date": "2026-10-22", "source": "main loop",
+   "mitigation": "Use it only from the India VM and keep the ramp (no batches for 48 h, then at most 1 request/s). Once the lab is stable, offer the owner a rotation through the write-only upload path, so the live key has never been in chat."
+  }
+ ],
+ "edges": [
+  { "from": "directive.2026-10-22.processing-anywhere", "to": "open.2026-10-21.vertex-live-in-india", "relation": "resolves" },
+  { "from": "directive.2026-10-22.vertex-team-account-only", "to": "open.2026-10-20.paid-vertex", "relation": "resolves" },
+  { "from": "directive.2026-10-22.full-stack-selection", "to": "decision.2026-10-20.product-stack-selectable", "relation": "extends" },
+  { "from": "directive.2026-10-22.provider-routing", "to": "directive.2026-10-21.vertex-for-everything", "relation": "extends" },
+  { "from": "risk.2026-10-22.vertex-key-in-chat", "to": "decision.2026-10-21.vertex-key-handoff", "relation": "constrains" }
+ ],
+ "events": []
+}
