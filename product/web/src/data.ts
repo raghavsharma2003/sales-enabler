@@ -4,7 +4,7 @@
 import { run } from './api.ts';
 import type {
   ActivityRow, AgentConfigDraft, AgentDoc, AgentRow, ApiKey, AudienceRow, Blocker, CallDoc, CallExplain, CallRow, CallTurn, CampaignDoc, CampaignRow, ContactDoc, ContactRow,
-  Estimate, FunnelStage, ImportPreview, ImportRowVerdict, KnowledgeItem, Member, SimResult, Wallet,
+  Estimate, FunnelStage, ImportPreview, ImportRowVerdict, KnowledgeItem, Member, NumberLine, PracticeCaller, SimResult, Wallet,
 } from './types.ts';
 
 const arr = <T,>(v: T[] | undefined | null): T[] => (Array.isArray(v) ? v : []);
@@ -51,22 +51,23 @@ export function diffOps(a: any, b: any, prefix = ''): PatchOp[] {
   return out;
 }
 
-export const SIM_CALLERS: { label: string; persona: string; scenario: string }[] = [
-  { label: 'Hurried driver', persona: 'A busy person who answers in very short Hinglish sentences', scenario: 'You are driving and can talk for thirty seconds. You will agree to a next step only if it is easy to do later.' },
-  { label: 'Suspicious of the call', persona: 'Wary of unknown callers; asks who is calling and why', scenario: 'You doubt this is a real company call. You relax only if she says plainly who she is and does not ask for money or an OTP.' },
-  { label: 'Hard of hearing', persona: 'An older person who often says "kya? phir se bolo"', scenario: 'You cannot hear well. Ask her to repeat twice. You are willing to continue if she slows down.' },
-  { label: 'Asks for a person', persona: 'Impatient, wants a human', scenario: 'After the greeting, say you want to talk to a real person about your account.' },
-  { label: 'Says the price is high', persona: 'Price-sensitive, polite', scenario: 'You think the amount is too high and say so. Listen to her answer and decide whether to continue.' },
-  { label: 'Says stop calling', persona: 'Annoyed by calls', scenario: 'Early in the call say: do not call me again.' },
-];
-export async function simulate(agentId: string): Promise<SimResult[]> {
-  const out = await Promise.allSettled(SIM_CALLERS.map(c => run<any>('test.simulate', { agentId, simCaller: { persona: c.persona, scenario: c.scenario, hiddenKeys: {}, contact: {}, passCriteria: { requireDisclosure: true } } })));
+export async function practiceCallers(agentId?: string): Promise<PracticeCaller[]> {
+  const r = await run<{ callers: any[] }>('simcaller.list', agentId ? { agentId } : {});
+  return r.callers.map(c => ({ id: c.id, label: c.label, persona: c.persona, trap: c.trap, source: c.source }));
+}
+const CHECK_WORDS: Record<string, string> = { trap_reached: 'the simulated caller sprang its trap', opt_out_respected: 'stopped when asked not to be called', stays_on_the_line: 'kept the caller on the line', agent_turns: 'kept to a sensible number of turns', words_per_turn: 'short turns', question_streak: 'not a run of questions', no_repeats: 'no sentence said twice', reply_door: 'safety door' };
+export async function simulate(agentId: string, callers: PracticeCaller[]): Promise<SimResult[]> {
+  const out = await Promise.allSettled(callers.map(c => run<any>('test.simulate', { agentId, simCallerId: c.id })));
   return out.map((o, i) => {
-    const label = SIM_CALLERS[i].label;
+    const label = callers[i].label;
     if (o.status === 'rejected') return { id: 'sim' + i, scenario: label, verdict: 'invalid', reason: (o.reason as Error).message, turns: [], checks: [] } as SimResult;
-    const r = o.value;
-    return { id: r.runId, scenario: label, verdict: r.passed ? 'pass' : 'fail', turns: arr<any>(r.transcript).map(t => ({ who: t.who, text: t.text })), endedBy: r.endedBy,
-      checks: arr<any>(r.grades).map(g => ({ label: String(g.check).replace(/_/g, ' '), ok: !!g.pass, detail: g.detail })) } as SimResult;
+    const r = o.value; const grades = arr<any>(r.grades);
+    const failed = grades.filter(g => !g.pass);
+    // A trap that was never sprung says nothing about the agent: inconclusive, not a failure.
+    const verdict = !failed.length ? 'pass' : failed.every(g => g.check === 'trap_reached') ? 'inconclusive' : 'fail';
+    return { id: r.runId, scenario: label, verdict, turns: arr<any>(r.transcript).map(t => ({ who: t.who, text: t.text })), endedBy: r.endedBy,
+      reason: verdict === 'inconclusive' ? 'The simulated caller never sprang its trap, so this run says nothing about the agent. Run it again.' : undefined,
+      checks: grades.map(g => ({ label: CHECK_WORDS[g.check] ?? String(g.check).replace(/_/g, ' '), ok: !!g.pass, detail: g.detail })) } as SimResult;
   });
 }
 
@@ -194,4 +195,9 @@ export async function knowledgeList(): Promise<KnowledgeItem[]> {
 }
 export async function activityList(): Promise<ActivityRow[]> {
   return arr<any>((await run<any>('activity.list', { limit: 50 })).items).map(i => ({ id: i.id, at: i.at, line: i.line, action: i.action, who: i.actor?.type === 'member' ? 'A teammate' : i.actor?.type ?? 'VP' }));
+}
+
+export async function numberList(): Promise<NumberLine[]> {
+  const r = await run<{ numbers: any[] }>('number.list', { limit: 100 });
+  return r.numbers.map(n => ({ id: n.id, e164: n.e164, series: n.series, trial: !!n.trial, status: n.status, kycStatus: n.kyc_status ?? null, a2pStatus: n.a2p_status ?? null, carrier: n.carrier ?? null, byo: !!n.byo, displayName: n.display_name ?? null, pauseCause: n.pause_cause ?? null, campaigns: arr(n.campaigns) }));
 }

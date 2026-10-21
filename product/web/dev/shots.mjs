@@ -15,7 +15,7 @@ const EMAIL = 'asha@saanjh.example', PASSWORD = 'sample-password-1234';
 const screens = (id) => [
   ['login', '/login', { anon: true }], ['signup', '/signup', { anon: true }],
   ['today', '/'], ['agents', '/agents'], ['agent-builder', `/agents/${id.riya}`], ['agent-stack', `/agents/${id.emi}?tab=voice`],
-  ['agent-test', `/agents/${id.riya}`, { after: async (p, tag) => { if (tag === 'm') { await p.getByRole('button', { name: 'Test her' }).first().click(); } else { await p.getByRole('radio', { name: 'Test her' }).click(); } await p.getByRole('button', { name: 'Run 6 practice callers' }).click(); await p.waitForTimeout(2500); await p.locator('.simlist summary').nth(2).click(); } }],
+  ['agent-test', `/agents/${id.riya}`, { after: async (p, tag) => { if (tag === 'm') { await p.getByRole('button', { name: 'Test her' }).first().click(); } else { await p.getByRole('radio', { name: 'Test her' }).click(); } await p.getByRole('button', { name: /Run \d+ practice callers/ }).click(); await p.waitForTimeout(3500); await p.locator('.simlist summary').nth(2).click(); } }],
   ['agent-new', '/agents', { after: async (p) => { await p.getByRole('button', { name: 'New agent' }).click(); await p.waitForTimeout(500); } }],
   ['operator-plan', '/', { after: async (p, tag) => { if (tag === 'm') await p.getByRole('button', { name: 'Talk' }).click(); await p.locator('#dock-input').fill('Launch the appointment reminders campaign'); await p.keyboard.press('Enter'); await p.waitForTimeout(3500); } }],
   ['approval', '/', { after: async (p) => { await p.getByRole('button', { name: 'Review' }).first().click(); await p.waitForTimeout(600); } }],

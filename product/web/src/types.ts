@@ -38,7 +38,8 @@ export interface AgentConfigDraft {
   voice: { stackId: string | null; voiceId?: string; speed?: number };
   recording: { enabled: boolean; announce: boolean };
 }
-export interface SimResult { id: string; scenario: string; verdict: 'pass' | 'fail' | 'invalid'; reason?: string; turns: { who: string; text: string }[]; checks: { label: string; ok: boolean; detail?: string }[]; endedBy?: string }
+export interface PracticeCaller { id: string; label: string; persona: string; trap: string; source: 'default' | 'workspace' }
+export interface SimResult { id: string; scenario: string; verdict: 'pass' | 'fail' | 'invalid' | 'inconclusive'; reason?: string; turns: { who: string; text: string }[]; checks: { label: string; ok: boolean; detail?: string }[]; endedBy?: string }
 
 export interface ContactRow { id: string; name: string; phone: string; language: string; suppressed: boolean; dnd: string; dndCheckedAt: string | null }
 export interface ContactDoc {
@@ -93,3 +94,5 @@ export interface OperatorCard {
   outcome?: 'confirmed' | 'not_executed' | 'unknown'; undo?: string; href?: string; options?: { label: string; value: string }[]; defaultValue?: string;
   progress?: { label: string; pct: number | null }; quote?: string; metric?: Metric;
 }
+
+export interface NumberLine { id: string; e164: string; series: string; trial: boolean; status: string; kycStatus: string | null; a2pStatus: string | null; carrier: string | null; byo: boolean; displayName: string | null; pauseCause: string | null; campaigns: { id: string; name: string; state: string }[] }

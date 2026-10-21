@@ -50,9 +50,10 @@ test('API key: create, approve by holding, the secret shows once, a second revea
 });
 
 test('Learning: propose, simulate, accept shows an approval card, and the screen matches the server', async t => {
-  // Fixture: simulated callers have no tool yet (agents is adding simcaller.save); made in SQL.
   const agent = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
-  await pool.query("INSERT INTO sim_caller (workspace_id, agent_id, persona, scenario) VALUES ($1,$2,'A hurried driver','You can talk for thirty seconds.')", [ws, agent]);
+  // The probe needs a saved practice caller for this agent; simcaller.save makes one.
+  const saved = await tool('simcaller.save', { agentId: agent, shape: { label: 'Hurried driver', persona: 'a driver on the move', goal: 'learn the next step quickly', temperament: 'short, impatient', languageMix: 'fast Hinglish', trap: 'any long turn' }, hiddenKeys: {}, checks: {} });
+  assert.equal(saved.status, 'confirmed', JSON.stringify(saved));
   await page.goto(BASE + '/insights');
   await page.getByLabel('Agent').selectOption({ label: 'Renewals, Pune' });
   await page.getByRole('button', { name: 'Look for improvements' }).click();
@@ -144,4 +145,39 @@ test('Operator: an A2 approval card from the chat holds, then the card and the s
   const confirmed = (await card.getByText(/Confirmed by the server/).count()) > 0;
   const executed = (await actions('executed')).some(a => a.tool === 'wallet.topup');
   assert.equal(confirmed, executed, 'the card says confirmed exactly when the server executed it');
+});
+
+test('Browser call on a draft with no voice stack shows the server\'s own refusal, word for word', async () => {
+  const emi = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'EMI pre-due reminder'", [ws])).rows[0].id;
+  const server = await tool('test.browser_call', { agentId: emi, useDraft: true });
+  assert.equal(server.status, 'not_executed', 'a draft with no stack is refused');
+  await page.goto(`${BASE}/agents/${emi}`);
+  await page.getByRole('radio', { name: 'Test her' }).click();
+  await page.getByRole('button', { name: 'Call me in the browser' }).click();
+  await page.getByText(server.reason, { exact: false }).first().waitFor({ timeout: 8000 });
+});
+
+test('Practice callers: the panel lists the server\'s callers and shows one result per caller it ran', async () => {
+  const riya = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
+  const list = (await tool('simcaller.list', { agentId: riya })).result.callers;
+  assert.ok(list.length >= 12, 'the server offers the default library');
+  await page.goto(`${BASE}/agents/${riya}`);
+  await page.getByRole('radio', { name: 'Test her' }).click();
+  await page.getByRole('button', { name: /^Run \d+ practice callers?$/ }).click();
+  await page.locator('.simlist > li').first().waitFor({ timeout: 30000 });
+  assert.equal(await page.locator('.simlist > li').count(), 6, 'six are chosen by default and six results come back');
+  const verdicts = await page.locator('.simlist > li summary .chip').allInnerTexts();
+  assert.ok(verdicts.every(v => ['Passed', 'Failed', 'Invalid', 'Inconclusive'].includes(v)), verdicts.join());
+});
+
+test('Browser call on a draft that compiles: the server prepares a session and the UI says so without claiming audio', async () => {
+  const riya = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
+  const server = await tool('test.browser_call', { agentId: riya, useDraft: true });
+  assert.equal(server.status, 'confirmed', JSON.stringify(server));
+  assert.equal(server.result.versionId ?? null, null, 'a draft run has no version id');
+  assert.ok(server.result.draftHash, 'the run is tied to the draft hash');
+  await page.goto(`${BASE}/agents/${riya}`);
+  await page.getByRole('radio', { name: 'Test her' }).click();
+  await page.getByRole('button', { name: 'Call me in the browser' }).click();
+  await page.getByText('A call session was prepared for the saved draft').waitFor({ timeout: 8000 });
 });
