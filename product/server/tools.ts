@@ -161,9 +161,23 @@ export class Registry {
     let h = '';
     let prepared: unknown;
     if (t.prepare) {
-      const a0 = await one<{ args: unknown }>(pool, "SELECT args FROM action WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, approver.workspaceId]);
+      // prepare() may reach a provider, so every check that can refuse runs BEFORE it, read-only; the transaction
+      // below repeats them under lock, so a race between here and there still cannot run a refused action.
+      const a0 = await one<{ args: unknown; args_hash: string; expires_at: Date | null; object_version: string | null }>(pool,
+        "SELECT args, args_hash, expires_at, object_version FROM action WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, approver.workspaceId]);
       if (!a0) return { status: 'not_executed', reason: 'this action is no longer waiting for approval' };
-      try { prepared = await t.prepare({ pool, workspaceId: approver.workspaceId, actor: { type: 'member', id: approver.memberId } }, t.input(a0.args)); }
+      if (a0.expires_at && a0.expires_at.getTime() < Date.now()) return { status: 'not_executed', reason: 'this approval request expired; ask again' };
+      const m0 = await one<{ role: Role }>(pool, "SELECT role FROM member WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [approver.memberId, approver.workspaceId]);
+      if (!m0) return { status: 'not_executed', reason: 'only an active member of this workspace can approve' };
+      if (!canApprove(m0.role, t.risk)) return { status: 'not_executed', reason: `a ${m0.role} cannot approve ${t.risk} actions` };
+      let input0: unknown;
+      try { input0 = t.input(a0.args); } catch (e) { return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e) }; }
+      if (argsHash(t.name, input0) !== a0.args_hash) return { status: 'not_executed', reason: 'the stored action does not match its hash; it was not run' };
+      const actor0: Actor = { type: 'member', id: approver.memberId, role: m0.role };
+      if (t.version && (await t.version({ q: pool, workspaceId: approver.workspaceId, actor: actor0 }, input0)) !== a0.object_version) {
+        return { status: 'not_executed', reason: 'what you approved has changed since it was proposed; review it again' };
+      }
+      try { prepared = await t.prepare({ pool, workspaceId: approver.workspaceId, actor: actor0 }, input0); }
       catch (e) { return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e) }; }
     }
     try {

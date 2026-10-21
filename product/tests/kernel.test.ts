@@ -276,3 +276,17 @@ test('HTTP: an oversized body is refused with 413 and the connection is closed',
     assert.equal(ok.status, 200, 'the next request works');
   } finally { server.close(); }
 });
+
+test('approve: prepare() never runs for an approval that will be refused', { skip }, async () => {
+  const { ws } = await workspace();
+  const op = await one<{ id: string }>(pool, "INSERT INTO member (workspace_id, email, role) VALUES ($1,'op2@example.test','operator') RETURNING id", [ws]);
+  const r = new Registry();
+  let prepares = 0;
+  r.register(tool(obj({ n: num() }), { name: 'provider.charge', risk: 'spend', summary: 'charge',
+    prepare: async () => { prepares++; return null; }, run: async () => ({ ok: true }) }));
+  const p = await r.execute(pool, 'provider.charge', { n: 1 }, { workspaceId: ws, actor: { type: 'agent' } });
+  if (p.status !== 'needs_approval') return assert.fail('expected a card');
+  const byOperator = await r.approve(pool, p.actionId, { workspaceId: ws, memberId: op!.id });
+  assert.equal(byOperator.status, 'not_executed', 'an operator cannot approve spend');
+  assert.equal(prepares, 0, 'and the provider was never reached');
+});
