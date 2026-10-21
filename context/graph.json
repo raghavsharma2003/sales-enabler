@@ -17351,6 +17351,16 @@
    "source": "main loop",
    "rationale": "The review found the parts reading healthy while the runtime refused stack 'custom'. The person would have picked a stack that could never ring.",
    "reverse_if": "Every runtime in service runs built stacks and the flag is retired by a protocol version bump."
+  },
+  {
+   "id": "decision.2026-10-21.verification-call-english",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "model",
+   "date": "2026-10-21",
+   "title": "The member-phone verification call (campaigns verify.ts announcement()) is spoken in English. It is a fixed system announcement to the business's own staff, so the enterprise-English directive applies. Hinglish stays for agents talking to customers.",
+   "rationale": "Integrator ruling on directive.2026-10-22.enterprise-english-ui after the web builder changed the script in 1187a05. The campaigns test checks the script through announcement(), not its wording (840ae68).",
+   "reverse_if": "The owner wants staff-facing system calls in the member's chosen language, or Hinglish for this call."
   }
  ],
  "edges": [
@@ -30885,6 +30895,11 @@
    "from": "decision.2026-10-22.custom-needs-runtime-flag",
    "to": "evidence.2026-10-22.built-stack-review",
    "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-21.verification-call-english",
+   "to": "directive.2026-10-22.enterprise-english-ui",
+   "relation": "implements"
   }
  ]
 }
