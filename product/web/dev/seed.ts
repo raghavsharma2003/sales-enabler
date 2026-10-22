@@ -99,6 +99,7 @@ async function main() {
       { who: 3, end: 'no_answer', secs: 0, cost: 220, moments: [], turns: [] },
     ];
     let phone = 0;
+    const convs: string[] = [];
     for (const c of calls) {
       const contact = people[c.who];
       const attempt = (await pool.query("INSERT INTO attempt (workspace_id, campaign_id, contact_id, status) VALUES ($1,$2,$3,'dialing') RETURNING id", [ws, camp.id, contact])).rows[0].id;
@@ -109,10 +110,21 @@ async function main() {
       for (const m of c.moments) ev.push({ seq: s++, type: 'moment', at: now(), kind: m.kind, atMs: m.atMs, note: m.note });
       ev.push({ seq: s++, type: 'cost', at: now(), component: 'telephony', provider: 'exotel', quantity: Math.max(1, c.secs), unit: 'second', inrMilli: c.cost });
       ev.push({ seq: s++, type: 'call.ended', at: now(), endReason: c.end, durationS: c.secs, transcript: c.turns.map(t => ({ speaker: t.speaker, text: t.text, startMs: t.startMs })), manifest } as RuntimeEvent);
+      convs.push(conv);
       const body = JSON.stringify({ protocol: 1, conversationId: conv, events: ev });
       const res = await fetch(base + '/hooks/runtime', { method: 'POST', headers: { 'content-type': 'application/json', 'x-vp-signature': sign(SECRET, body) }, body });
       if (!res.ok) throw new Error('runtime hook: ' + res.status + ' ' + (await res.text()));
     }
+    // A workspace insight, written the way insight.refresh stores one (its model call needs an analysis model the dev server does not have).
+    // Every quote is a real turn of a seeded call.
+    const q = (i: number, t: number) => ({ conversationId: convs[i], text: calls[i].turns[t].text, speaker: calls[i].turns[t].speaker, startMs: calls[i].turns[t].startMs });
+    const themes = [
+      { kind: 'objection', title: 'The price is higher than last time', count: 2, of: 4, quotes: [q(2, 1)] },
+      { kind: 'objection', title: 'Asks to be called at a better time', count: 3, of: 4, quotes: [q(0, 1), q(2, 3)] },
+      { kind: 'drop_off', title: 'Asks not to be called again', count: 1, of: 4, quotes: [q(1, 1)] },
+      { kind: 'success_driver', title: 'Agrees once the next step is a message they can read later', count: 2, of: 4, quotes: [q(0, 3)] },
+    ];
+    await pool.query("INSERT INTO call_insight (workspace_id, scope_type, status, themes, calls_sampled, calls_in_scope, newest_call_at, detail) VALUES ($1,'workspace','done',$2,4,4, now(), $3)", [ws, JSON.stringify(themes), { reason: null, model: 'seed' }]);
     await pool.end();
   } else console.log('VP_RUNTIME_SECRET not set: skipped the four sample calls');
   console.log('seeded');

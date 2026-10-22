@@ -9,6 +9,7 @@ import { Funnel } from '../funnel.tsx';
 import { agentList, campaignFunnel, campaignGet, campaignList } from '../data.ts';
 import { ago, count, date } from '../format.ts';
 import { prettyCode } from './contacts.tsx';
+import CallThemes from './insight-themes.tsx';
 
 interface IssueRow { id: string; category: string; severity: string; status: string; detail: unknown; created_at: string }
 interface ProposalRow { id: string; agent_id: string; kind: string; status: string; rationale: string | null; calls_to_prove: number | null; gates_passed: boolean | null; created_at: string }
@@ -35,6 +36,7 @@ export default function Insights() {
     <div className="page">
       <PageHead title="Insights" sub="What happened, why, and what you can do. Every number says how many calls it rests on." />
       <div className="stack">
+        <CallThemes agents={agents.data ?? []} campaigns={camps.data ?? []} />
         <Card aria-labelledby="fn-h"><CardHead id="fn-h" title="Where people drop out"
           actions={camps.data && camps.data.length > 0 ? <SelectField label="Campaign" value={pick} onChange={e => setCid(e.target.value)}>{camps.data.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</SelectField> : undefined} />
           {camps.state === 'ready' && (camps.data?.length ?? 0) === 0 ? <Empty title="No campaign to measure yet" body="The funnel fills in as a campaign dials. Until then there is nothing to draw, and nothing is shown as zero." />

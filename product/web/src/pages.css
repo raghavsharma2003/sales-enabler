@@ -114,3 +114,8 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .partopt.off { opacity: 0.7; cursor: not-allowed; }
 .partopt input { accent-color: var(--terra); width: 18px; height: 18px; margin-top: 2px; flex: none; }
 .partopt-body { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+
+.themes, .quotes { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 14px; }
+.themes > li { border-top: 1px solid var(--line); padding-top: 12px; }
+.quotes { gap: 8px; margin: 8px 0 0 12px; }
+.quotes blockquote { margin: 0; padding-left: 10px; border-left: 3px solid var(--peacock); }

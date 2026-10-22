@@ -609,3 +609,54 @@ test('Activity: a brand change can be undone from the ledger', async () => {
   const after = (await tool('brand.get')).result;
   assert.equal(after.tone ?? null, before.tone ?? null, 'the server restored the tone');
 });
+
+// ---- Insights: themes across calls ----
+test('Insights: themes show grouped by kind, most common first, as the model grouped them, with verbatim quotes that open their call', async () => {
+  const row = (await pool.query("SELECT themes, calls_sampled, calls_in_scope FROM call_insight WHERE workspace_id = $1 AND scope_type = 'workspace' ORDER BY created_at DESC LIMIT 1", [ws])).rows[0];
+  assert.ok(row, 'the seed holds a workspace insight (written in SQL: insight.refresh needs an analysis model the dev server does not have)');
+  await page.goto(`${BASE}/insights`);
+  const card = page.locator('section, .card').filter({ has: page.getByRole('heading', { name: 'Themes across calls' }) }).first();
+  await card.getByRole('heading', { name: 'Objections people raised' }).waitFor({ timeout: 10000 });
+  await card.getByRole('heading', { name: 'Where people dropped off' }).waitFor();
+  await card.getByRole('heading', { name: 'What came before a reached goal' }).waitFor();
+  const text = await card.innerText();
+  assert.ok(text.indexOf('Asks to be called at a better time') < text.indexOf('The price is higher than last time'), 'the more common theme comes first');
+  assert.match(text, /in 3 of 4 sampled calls \(as grouped by the model\)/);
+  assert.ok(!/verified/i.test(text.replace(/word for word/gi, '')), 'the count is never called verified');
+  assert.match(text, new RegExp(`Built .* from ${row.calls_sampled} of ${row.calls_in_scope} calls`));
+  assert.match(text, /Every quote is word for word from a call/, 'the server note is shown as given');
+  // Each quote is verbatim and links to its call at its moment.
+  const quote = row.themes.find(t => t.title === 'Asks not to be called again').quotes[0];
+  await card.getByText(quote.text, { exact: false }).first().waitFor();
+  const hrefs = await card.locator('a[href^="/calls/"]').evaluateAll(as => as.map(a => a.getAttribute('href')));
+  assert.ok(hrefs.includes(`/calls/${quote.conversationId}?t=${Math.round(quote.startMs)}`), 'the quote links to its call at its moment: ' + hrefs.join(' '));
+  await card.locator(`a[href="/calls/${quote.conversationId}?t=${Math.round(quote.startMs)}"]`).click();
+  await page.waitForURL(`**/calls/${quote.conversationId}?t=*`);
+  await page.getByText(quote.text, { exact: false }).first().waitFor({ timeout: 10000 });
+});
+
+test('Insights: scopes with no insight, a failed build and an unconfigured model each say what happens next; Refresh says why it did not rebuild', async () => {
+  const agent = (await pool.query("SELECT id, name FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0];
+  const camp = (await pool.query("SELECT id, name FROM campaign WHERE workspace_id = $1 AND name LIKE 'Renewals%'", [ws])).rows[0];
+  const emi = (await pool.query("SELECT id, name FROM agent WHERE workspace_id = $1 AND name = 'Clinic appointments'", [ws])).rows[0];
+  await pool.query("INSERT INTO call_insight (workspace_id, scope_type, scope_id, status, detail) VALUES ($1,'campaign',$2,'failed', $3)", [ws, camp.id, { reason: 'The analysis model returned something that could not be read.' }]);
+  await pool.query("INSERT INTO call_insight (workspace_id, scope_type, scope_id, status, detail) VALUES ($1,'agent',$2,'not_configured', '{}')", [ws, emi.id]);
+  await page.goto(`${BASE}/insights`);
+  const card = () => page.locator('section, .card').filter({ has: page.getByRole('heading', { name: 'Themes across calls' }) }).first();
+  await card().getByRole('heading', { name: 'Objections people raised' }).waitFor({ timeout: 10000 });
+  await card().getByLabel('Scope').selectOption({ label: `Campaign: ${camp.name}` });
+  await card().getByText('The last build did not finish').waitFor();
+  await card().getByText('The analysis model returned something that could not be read.', { exact: false }).waitFor();
+  await card().getByLabel('Scope').selectOption({ label: `Agent: ${emi.name}` });
+  await card().getByText('Insights are not switched on for this server').waitFor();
+  await card().getByLabel('Scope').selectOption({ label: `Agent: ${agent.name}` });
+  await card().getByText('No insight has been built yet').waitFor();
+  // Refresh on the workspace scope: nothing has ended since the stored insight, so the server skips and says why.
+  await card().getByLabel('Scope').selectOption({ label: 'The whole workspace' });
+  await card().getByRole('heading', { name: 'Objections people raised' }).waitFor();
+  const server = await tool('insight.refresh', {});
+  await card().getByRole('button', { name: 'Refresh' }).click();
+  await card().getByText(/^Not rebuilt: /).waitFor({ timeout: 15000 });
+  assert.equal(server.status, 'confirmed', JSON.stringify(server));
+  if (server.result?.reason) await card().getByText(server.result.reason, { exact: false }).waitFor();
+});
