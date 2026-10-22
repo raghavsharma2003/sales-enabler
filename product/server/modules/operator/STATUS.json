@@ -28,7 +28,7 @@
       "tests/operator-toolset.test.ts",
       "tests/operator.test.ts"
     ],
-    "db": "throwaway cluster; full suite on a fresh database 388/389 (1 skip: voice runtime Python), browser flows 22/22"
+    "db": "throwaway cluster; full suite on a fresh database 399/400 at 2eb7144 (1 skip: voice runtime Python), browser flows 26/26"
   },
   "works": [
     "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
