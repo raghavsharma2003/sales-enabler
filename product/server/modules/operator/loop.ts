@@ -22,6 +22,7 @@ import { heldForApproval, type Receipt, type Registry } from '../../tools.ts';
 import { cleanIncoming, HID_NOTICE } from './secrets.ts';
 import { curatedBrains, operatorSettings, type Autonomy } from './tools.ts';
 import { findTools, MAX_OFFERED, selectTools } from './toolset.ts';
+import { compactJson } from './compact.ts';
 
 // Tool payload per model call (tests/operator-toolset.test.ts, real modules, owner): 166 tools / 80,361 schema chars
 // (~23k tokens) on every call before toolset.ts, so 60k tokens allowed 2 calls; 29-40 tools / 14.5k-22.4k chars
@@ -249,7 +250,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
       : r.status === 'needs_approval' ? { status: r.status, actionId: r.actionId, summary: r.summary, note: 'An approval card is shown. Nothing has happened yet; a person must tap approve.' }
       : r.status === 'not_executed' ? { status: r.status, reason: r.reason, path: r.path }
       : { status: r.status, reason: r.reason, note: 'Outcome unknown. Do not retry; tell the client.' };
-    return asData('tool:' + name, JSON.stringify(view).slice(0, caps.resultChars));
+    return asData('tool:' + name, compactJson(view, caps.resultChars));
   };
 
   let stoppedBy: string | undefined;
@@ -303,7 +304,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
         }
         if (name === PLAN_TOOL) {
           const out = await runPlan(args as any);
-          messages.push({ role: 'tool', toolCallId: call.id, content: asData('tool:' + PLAN_TOOL, JSON.stringify(out).slice(0, caps.resultChars)) });
+          messages.push({ role: 'tool', toolCallId: call.id, content: asData('tool:' + PLAN_TOOL, compactJson(out, caps.resultChars)) });
           continue;
         }
         toolCalls++;
