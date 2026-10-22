@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "updatedAt": "2026-10-21",
+ "updatedAt": "2026-10-22",
  "nodes": [
   {
    "id": "product.general",
@@ -17519,6 +17519,17 @@
    "date": "2026-10-22",
    "title": "Operator tool results longer than resultChars (8,000) reach the model cut mid-JSON (seen with agent.create, whose result carries the whole draft). A real model may misread or miss ids at the end.",
    "closes_when": "Large tool results are summarised to their ids and key fields (or the clip keeps valid JSON) and a test shows the model still gets every id it needs."
+  },
+  {
+   "id": "rejected.2026-10-22.builder-reports-by-send-message",
+   "type": "rejection",
+   "title": "Builder sessions reporting to the integrator by send_message",
+   "status": "rejected",
+   "date": "2026-10-22",
+   "source": "main loop",
+   "tried": "The web and campaigns builders ended their turns by calling claude-code-remote send_message to report to the main loop.",
+   "broke": "In those sessions the tool needed a human permission prompt, which nobody was there to approve. Both sat blocked from about 21:39-21:53 UTC to 03:30 UTC on 2026-10-22, about 5-6 hours. Campaigns' question (whether to take the money credit work) never arrived, so the funding work did not start.",
+   "instead": "Builders report in commit messages and context/inbox files. The main loop reads git on every push and on each check-in. A check-in finds a builder in REQUIRES_ACTION on send_message, interrupts it, and sends the answer."
   }
  ],
  "edges": [
@@ -31123,6 +31134,11 @@
    "from": "decision.2026-10-22.learning-issue-trigger",
    "to": "component.2026-10-21.learning-module",
    "relation": "extends"
+  },
+  {
+   "from": "rejected.2026-10-22.builder-reports-by-send-message",
+   "to": "evidence.2026-10-22.launch-readiness-audit",
+   "relation": "informs"
   }
  ]
 }
