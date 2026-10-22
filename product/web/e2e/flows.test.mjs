@@ -621,7 +621,8 @@ test('Insights: themes show grouped by kind, most common first, as the model gro
   await card.getByRole('heading', { name: 'What came before a reached goal' }).waitFor();
   const text = await card.innerText();
   assert.ok(text.indexOf('Asks to be called at a better time') < text.indexOf('The price is higher than last time'), 'the more common theme comes first');
-  assert.match(text, /in 3 of 4 sampled calls \(as grouped by the model\)/);
+  assert.match(text, /Quoted from 2 calls · the model grouped 3 of 4 sampled calls here/);
+  assert.match(text, /Quoted from 1 call · the model grouped 2 of 4 sampled calls here/);
   assert.ok(!/verified/i.test(text.replace(/word for word/gi, '')), 'the count is never called verified');
   assert.match(text, new RegExp(`Built .* from ${row.calls_sampled} of ${row.calls_in_scope} calls`));
   assert.match(text, /Every quote is word for word from a call/, 'the server note is shown as given');

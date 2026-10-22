@@ -11,7 +11,7 @@ import type { AgentRow, CampaignRow } from '../types.ts';
 
 type Kind = 'objection' | 'drop_off' | 'unanswered_question' | 'success_driver';
 interface Quote { conversationId: string; text: string; speaker: string; startMs: number | null }
-interface Theme { kind: Kind; title: string; count: number; of: number; quotes: Quote[] }
+interface Theme { kind: Kind; title: string; count: number; of: number; quotedCalls?: number; quotes: Quote[] }
 interface Insight { status: 'none' | 'done' | 'failed' | 'not_configured' | 'no_calls'; generatedAt?: string; themes?: Theme[]; callsSampled?: number; callsInScope?: number; reason?: string | null; note?: string; quotesDropped?: number; themesDropped?: number }
 interface Refreshed extends Insight { ran: boolean; skipped?: string }
 
@@ -66,10 +66,10 @@ function Body({ d }: { d: Insight }) {
   return (
     <div className="stack">
       {built}
-      {ORDER.map(k => { const list = themes.filter(t => t.kind === k).sort((a, b) => b.count - a.count); if (!list.length) return null;
+      {ORDER.map(k => { const list = themes.filter(t => t.kind === k).sort((a, b) => (b.quotedCalls ?? 0) - (a.quotedCalls ?? 0) || b.count - a.count); if (!list.length) return null;
         return <section key={k} aria-label={KIND[k][0]}><h3 className="dayhead">{KIND[k][0]}</h3><p className="small muted">{KIND[k][1]}</p>
           <ul className="themes">{list.map((t, i) => <li key={i}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}><strong>{t.title}</strong><span className="small muted tnum">in {t.count} of {t.of} sampled calls (as grouped by the model)</span></div>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}><strong>{t.title}</strong><span className="small muted tnum">{t.quotedCalls != null ? `Quoted from ${t.quotedCalls} ${t.quotedCalls === 1 ? 'call' : 'calls'} · ` : ''}the model grouped {t.count} of {t.of} sampled calls here</span></div>
             <ul className="quotes">{t.quotes.map((q, j) => <li key={j}><blockquote lang="hi">“{q.text}”</blockquote>
               <span className="small muted">{q.speaker === 'agent' ? 'Agent' : 'Caller'} · </span><Link to={`/calls/${q.conversationId}${q.startMs != null ? `?t=${Math.round(q.startMs)}` : ''}`} className="small">Open the call{q.startMs != null ? ` at ${clock(q.startMs)}` : ''}</Link></li>)}</ul></li>)}</ul></section>; })}
       {((d.quotesDropped ?? 0) > 0 || (d.themesDropped ?? 0) > 0) && <p className="small muted">{d.quotesDropped ?? 0} quote{(d.quotesDropped ?? 0) === 1 ? '' : 's'} and {d.themesDropped ?? 0} theme{(d.themesDropped ?? 0) === 1 ? '' : 's'} were left out because the words could not be found in a stored transcript.</p>}
