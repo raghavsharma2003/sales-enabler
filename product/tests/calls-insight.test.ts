@@ -76,7 +76,8 @@ test('grounding: only verbatim quotes from that call survive; agent lines never 
     'the invented theme, the unanswered question that leans on her own line, and a success driver from a call that did not renew all fall');
   const price = byTitle['Price feels too high'];
   assert.deepEqual(price.quotes.map(q => [q.conversationId, q.text, q.speaker]), [[ids.c3, 'Yeh bahut mehenga hai', 'caller'], [ids.c2, 'Premium itna zyada kyun hai?', 'caller']]);
-  assert.equal(price.count, 3, 'counted from the cited calls that exist (C9 does not), not from a number the model wrote');
+  assert.equal(price.count, 3, "the model's grouping, filtered to calls that exist (C9 does not)");
+  assert.equal(price.quotedCalls, 2, 'two calls carry a verified quote');
   assert.equal(price.of, 5);
   for (const t of r.themes) for (const q of t.quotes) {
     const row = await one<{ transcript: { text: string }[] }>(pool, 'SELECT transcript FROM conversation WHERE id = $1', [q.conversationId]);
@@ -93,7 +94,7 @@ test('the grounding guard is what stops invented evidence: without it the fabric
   setFakeLlm(reply(modelSays));
   // A grounder that trusts the model (what the code would do with the check removed).
   const trusting: typeof groundThemes = (raw, sampled) => {
-    const themes = ((raw as { themes: any[] }).themes).map((t): Theme => ({ kind: t.kind, title: t.title, count: t.calls.length, of: sampled.length,
+    const themes = ((raw as { themes: any[] }).themes).map((t): Theme => ({ kind: t.kind, title: t.title, count: t.calls.length, quotedCalls: t.quotes.length, of: sampled.length,
       quotes: t.quotes.map((q: any) => ({ conversationId: sampled.find(s => s.label === q.call)?.id ?? 'unknown', text: q.text, speaker: 'caller', startMs: 0 })) }));
     return { themes, quotesProposed: 0, quotesDropped: 0, themesDropped: 0 };
   };
@@ -165,7 +166,7 @@ test('insight.get is the read the Insights page and the Operator use; another wo
   assert.deepEqual(Object.keys(g).sort(), ['callsInScope', 'callsSampled', 'generatedAt', 'newestCallAt', 'note', 'quotesDropped', 'reason', 'scope', 'status', 'themesDropped', 'themes'].sort());
   assert.deepEqual(g.scope, { type: 'campaign', id: w.campaign });
   assert.equal(g.themes[0].title, 'Price feels too high');
-  assert.deepEqual(Object.keys(g.themes[0]).sort(), ['count', 'kind', 'of', 'quotes', 'title']);
+  assert.deepEqual(Object.keys(g.themes[0]).sort(), ['count', 'kind', 'of', 'quotedCalls', 'quotes', 'title']);
   assert.match(g.note, /Observed, not causal/);
 
   const theirs = await registry.execute(pool, 'insight.get', { campaignId: w.campaign }, { workspaceId: other.ws, actor: other.member });
@@ -194,4 +195,43 @@ test('the nightly job builds each scope once and then skips until a call is newe
   if (c.ran) await tx(pool, q => storeInsight(q, w.ws, { type: 'workspace', id: null }, c.result));
   const got = await registry.execute<any>(pool, 'insight.get', {}, { workspaceId: w.ws, actor: w.member });
   assert.equal(got.status === 'confirmed' && got.result.status, 'failed');
+});
+
+test('a theme reports both counts: the model grouping (count) and the calls with a verified quote (quotedCalls); quotedCalls ranks first', { skip }, async () => {
+  const w = await workspace();
+  await fiveCalls(w);
+  setFakeLlm(reply({ themes: [
+    // Grouped widely by the model (5 calls), but only 2 of them carry a verified quote.
+    { kind: 'drop_off', title: 'Left at the premium', calls: ['C1', 'C2', 'C3', 'C4', 'C5'],
+      quotes: [{ call: 'C3', text: 'Renewal premium 12,400 hai.' }, { call: 'C2', text: 'Renewal ka time aa gaya hai.' }] },
+    // Grouped narrowly (3 calls), all 3 with a verified quote.
+    { kind: 'objection', title: 'Price feels too high', calls: ['C1', 'C2', 'C3'],
+      quotes: [{ call: 'C3', text: 'Yeh bahut mehenga hai' }, { call: 'C2', text: 'Premium itna zyada kyun hai?' }, { call: 'C1', text: 'Dusri company sasti de rahi hai.' }] },
+  ] }));
+  const c = await computeInsight(pool, w.ws, { type: 'agent', id: w.agent });
+  assert.ok(c.ran);
+  if (!c.ran) return;
+  const [first, second] = c.result.themes;
+  assert.equal(first.title, 'Price feels too high', 'more calls with verified quotes ranks first, whatever the model grouped');
+  assert.deepEqual({ count: first.count, quotedCalls: first.quotedCalls }, { count: 3, quotedCalls: 3 });
+  assert.deepEqual({ count: second.count, quotedCalls: second.quotedCalls }, { count: 5, quotedCalls: 2 }, 'count is the model grouping; quotedCalls is what was verified');
+});
+
+test('insight quotes must be evidence, not a filler word: at least 12 characters or 3 words; short ones are dropped and counted', { skip }, async () => {
+  const w = await workspace();
+  await analysedCall(w, [{ speaker: 'agent', text: 'Renewal karna hai?' }, { speaker: 'caller', text: 'nahi' }]);
+  await analysedCall(w, [{ speaker: 'agent', text: 'Main details bhej doon?' }, { speaker: 'caller', text: 'ok ok' }]);
+  await analysedCall(w, [{ speaker: 'agent', text: 'Kya main madad kar sakti hoon?' }, { speaker: 'caller', text: 'nahi chahiye abhi' }]);
+  await analysedCall(w, [{ speaker: 'agent', text: 'Aapko yaad dilana tha.' }, { speaker: 'caller', text: 'Bilkul zaroorat nahi hai' }]);
+  setFakeLlm(reply({ themes: [
+    { kind: 'objection', title: 'Short refusals', calls: ['C3', 'C4'], quotes: [{ call: 'C4', text: 'nahi' }, { call: 'C3', text: 'ok ok' }] },
+    { kind: 'objection', title: 'Not needed now', calls: ['C1', 'C2'], quotes: [{ call: 'C2', text: 'nahi chahiye abhi' }, { call: 'C1', text: 'Bilkul zaroorat nahi hai' }] },
+  ] }));
+  const c = await computeInsight(pool, w.ws, { type: 'agent', id: w.agent });
+  assert.ok(c.ran);
+  if (!c.ran) return;
+  assert.deepEqual(c.result.themes.map(t => t.title), ['Not needed now'], 'a theme backed only by "nahi" and "ok ok" is grounded but not evidence');
+  assert.deepEqual(c.result.themes[0].quotes.map(q => q.text), ['nahi chahiye abhi', 'Bilkul zaroorat nahi hai'], '3 words, or 12+ characters, is enough');
+  assert.equal(c.result.quotesDropped, 2);
+  assert.equal(c.result.themesDropped, 1);
 });

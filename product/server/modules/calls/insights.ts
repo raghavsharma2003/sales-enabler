@@ -2,8 +2,10 @@
 // that names themes: top objections, why people dropped off, questions she could not answer, and what preceded a
 // reached goal. The same law as per-call analysis: a model never invents evidence. Every quote a theme keeps is an
 // exact substring of one line of THAT call's stored transcript (caller lines only for objections and unanswered
-// questions; goal-reaching calls only for success drivers). A theme with fewer than two verified quotes is dropped, and
-// a theme's count is the number of distinct sampled calls it was really seen in, not a number the model wrote.
+// questions; goal-reaching calls only for success drivers), and long enough to be evidence (12+ characters or 3+ words;
+// per-call analysis keeps findQuote's own 3-character floor). A theme with fewer than two verified quotes is dropped.
+// Two counts, never one number the model typed: count is the set of calls the model grouped into the theme, filtered to
+// calls that exist in the sample; quotedCalls is the distinct calls with a verified quote. Themes rank by quotedCalls.
 // Bounded: a sample cap, a character budget for the model's input, a completion cap, and no run when nothing is newer
 // than the last insight. Test calls never enter. The model's tokens are a cost line, like the analysis lines.
 import type pg from 'pg';
@@ -30,7 +32,8 @@ interface SampledCall { id: string; label: string; ended_at: Date; transcript: L
 
 export interface Theme {
   kind: ThemeKind; title: string;
-  count: number;                          // distinct sampled calls the theme was seen in (labels the model cited that exist)
+  count: number;                          // the model's grouping: distinct cited calls that exist in the sample (plus the quoted ones)
+  quotedCalls: number;                    // distinct calls with a verified quote: what was checked
   of: number;                             // calls sampled
   quotes: { conversationId: string; text: string; speaker: 'agent' | 'caller'; startMs: number }[];
 }
@@ -43,6 +46,13 @@ export interface InsightResult {
   reason?: string;
   model?: string; provider?: string; usage?: { inputTokens: number; outputTokens: number };
 }
+
+/** A cross-call quote must be evidence, not a filler word ("nahi", "ok ok"). */
+export const MIN_QUOTE_CHARS = 12, MIN_QUOTE_WORDS = 3;
+export const isEvidence = (text: unknown) => {
+  const t = typeof text === 'string' ? text.trim() : '';
+  return t.length >= MIN_QUOTE_CHARS || t.split(/\s+/).filter(Boolean).length >= MIN_QUOTE_WORDS;
+};
 
 export type Computed = { ran: false; reason: string; status: 'skipped' | 'not_configured' | 'no_calls' } | { ran: true; result: InsightResult };
 
@@ -63,7 +73,7 @@ export function groundThemes(raw: unknown, calls: SampledCall[], o = INSIGHT_DEF
     for (const q of quotes) {
       const c = byLabel.get(String(q?.call ?? ''));
       const needCaller = kind === 'objection' || kind === 'unanswered_question';
-      const line = c && (kind !== 'success_driver' || c.goal) ? findQuote(c.transcript, q?.text, needCaller ? 'caller' : undefined) : null;
+      const line = c && (kind !== 'success_driver' || c.goal) && isEvidence(q?.text) ? findQuote(c.transcript, q?.text, needCaller ? 'caller' : undefined) : null;
       if (!c || !line || kept.length >= o.quotesPerTheme || kept.some(k => k.conversationId === c.id && k.text === String(q.text).trim())) { quotesDropped++; continue; }
       kept.push({ conversationId: c.id, text: String(q.text).trim(), speaker: line.speaker, startMs: line.startMs });
     }
@@ -73,9 +83,9 @@ export function groundThemes(raw: unknown, calls: SampledCall[], o = INSIGHT_DEF
       const c = byLabel.get(String(l));
       if (c && (kind !== 'success_driver' || c.goal)) seen.add(c.id);
     }
-    themes.push({ kind, title, count: seen.size, of: calls.length, quotes: kept });
+    themes.push({ kind, title, count: seen.size, quotedCalls: new Set(kept.map(k => k.conversationId)).size, of: calls.length, quotes: kept });
   }
-  themes.sort((a, b) => b.count - a.count);
+  themes.sort((a, b) => b.quotedCalls - a.quotedCalls || b.count - a.count);
   return { themes, quotesProposed, quotesDropped, themesDropped };
 }
 
