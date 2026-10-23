@@ -18162,6 +18162,117 @@
    "source": "main loop",
    "rationale": "FP 4/90 (4.4%) per benign caller turn would add a crisis line to roughly a third of ordinary 10-turn calls. On held-out set 6 the floor already catches 30/30, so the judge's added recall is not measured there. The set that matters is BLIND 7, where the floor catches 37/100.",
    "reverse_if": "On BLIND 7 the judge lifts crisis recall well above the floor's 37/100, with FP at or below 1% on benign turns (n large enough that the upper CI bound is at or below 2%), and the owner approves raise mode."
+  },
+  {
+   "id": "measure.2026-10-23.optout-dev-tuning",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Opt-out DEV set (code-mixed), door before -> after tuning: opt-outs caught 59/150 -> 150/150, benign look-alikes flagged 10/110 -> 0/110. In-sample by construction",
+   "n": 260,
+   "method": "A separate agent, blind to rules.json and every other set, wrote 150 opt-out requests (16 each Tamil-, Telugu-, Bengali-, Marathi-, Gujarati-, Kannada-, Malayalam-English; 20 Hinglish, 6 Hindi, 12 English; direct and indirect, polite and angry, some buried in long utterances) and 110 hard look-alikes (deferrals, 'don't cut the call', 'call my other number', 'don't call my wife's number, call mine', DND questions). Scored with callerSignals(text).optOut before and after tuning; the rules were tuned on these lines only.",
+   "path": "product/shared/safety/sets/optout-dev.json",
+   "detail": {
+    "before": {
+     "caught": "59/150 (39.3%, CI 31.9-47.3); every regional language 5-7/16",
+     "benign_flagged": "10/110 (8 were 'DND is on my phone, how did you call?' questions)"
+    },
+    "after": {
+     "caught": "150/150 (CI 97.5-100)",
+     "benign_flagged": "0/110 (CI 0-3.4)"
+    },
+    "commit": "87ebb00"
+   }
+  },
+  {
+   "id": "measure.2026-10-23.optout-blind",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Opt-out BLIND set, scored once at commit 87ebb00 after tuning on DEV only: opt-outs caught 92/160 (57.5%, Wilson 95% CI 49.8-64.9); benign look-alikes flagged 9/140 (6.4%, CI 3.4-11.8)",
+   "n": 300,
+   "method": "A separate agent, blind to rules.json, every earlier set and optout-dev, wrote 160 opt-out requests (18 each Tamil-, Telugu-, Bengali-, Marathi-, Gujarati-, Kannada-, Malayalam-English; 20 Hinglish, 6 Hindi, 8 English; direct, indirect, polite, angry, sarcastic, buried) and 140 hard look-alikes. Scored exactly once with callerSignals(text).optOut at 87ebb00. Wilson 95% intervals. Kept in product/shared/safety/sets/heldout-optout.json, out of cases.json, so it is never tuned on.",
+   "path": "product/shared/safety/sets/heldout-optout.json",
+   "detail": {
+    "caught_by_language": {
+     "ta-en": "8/18 (44.4%, CI 24.6-66.3)",
+     "te-en": "9/18 (50.0%, CI 29.0-71.0)",
+     "bn-en": "13/18 (72.2%, CI 49.1-87.5)",
+     "mr-en": "10/18 (55.6%)",
+     "gu-en": "10/18 (55.6%)",
+     "kn-en": "9/18 (50.0%)",
+     "ml-en": "8/18 (44.4%)",
+     "hinglish": "15/20 (75.0%, CI 53.1-88.8)",
+     "hi-deva": "4/6",
+     "en": "6/8"
+    },
+    "missed_classes": "conditional threats ('if you call again I will complain to TRAI / consumer court / police', 'last warning'); 'no call should come from your company'; polite negative imperatives on verbs DEV did not use ('phone panna vendaam', 'kaluhisabedi', 'call cheyyalle'); sarcasm ('wow, so dedicated, now remove my number'); requests buried in long rambles",
+    "benign_flagged": "8 of 9 are one redirect class absent from DEV ('don't call my father, he is unwell, call me instead', in every language); 1 is 'what is DND and does it stop your calls'. Logged, not tuned (the set is spent).",
+    "reading": "As with crisis talk (blind set 7), DEV-tuned patterns reach 100% on DEV and about 58% on fresh phrasings. Opt-out is a hard legal line (TCCCPR), so a missed opt-out means calling someone who said stop."
+   }
+  },
+  {
+   "id": "open.2026-10-23.optout-judge",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "Should opt-out get the same raise-only model judge as crisis (judge.json judges.caller_opt_out, default shadow), given that the regex floor reaches 57.5% on fresh code-mixed phrasings and a miss is a TCCCPR breach?",
+   "closes_when": "The owner decides; if yes, a judge measured with judge-eval on sets/heldout-optout.json plus a fresh blind set reaches >= 97% opt-out recall at <= 3% look-alike false positives within the turn budget. Until then, post-call analysis (which reads opt_out moments from the transcript) is the second net."
+  },
+  {
+   "id": "component.2026-10-23.optout-e2e-test",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "End-to-end opt-out test across processes and modules: voice runtime (devsim) -> signed hook -> calls ingest -> intake contact.suppress_after_opt_out. It proves the agent confirms, the call ends with end_reason opt_out, call_opt_out is applied, a workspace in_call suppression and a consent withdrawal exist, and that the same check FAILS when the suppression tool is missing (the opt-out stays pending)",
+   "path": "product/tests/safety-optout-e2e.test.ts"
+  },
+  {
+   "id": "measure.2026-10-23.turn-taking-product-runtime-baseline",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Product runtime turn-taking, held-out TEST split, before the fix: she cut in during a caller's mid-thought pause on 32.7% of turns (18/55, 95% CI 0.22-0.46) and talked over the caller on 25.5% (14/55, 0.16-0.38). End of turn to her first audio: median 1000 ms, including 450 ms of fixed fake provider time. Barge-in: 2/55 missed, she yields in a median 725 ms. Backchannel and noise false barge-ins: 0/55 each",
+   "n": 55,
+   "method": "product/voice/bench/turn_bench.py --split test --set STATEMENT_HOLD_MS=0, 2026-10-23, Python 3.13, Silero VAD, in real time.\n- Clips: 102 synthetic Hinglish caller clips (research/2026-10-17/lanes/l8-azure-bench/stimuli, phone band, with their text), split DEV/TEST by a hash of the clip id (47 DEV / 55 TEST).\n- Labels: speech regions from each clip's energy envelope (-38 dBFS, gaps under 150 ms bridged); internal pauses of 250 ms or more count as mid-thought pauses.\n- Runtime: the real cascade turn logic (VAD, held and withdrawn replies, barge-in).\n- Fakes, fixed timing: the final arrives 250 ms after the VAD's end of speech, with words snapped to punctuation at pauses; brain 300 ms; voice 150 ms to first audio; no echo.\n- Scenarios: turn (a whole clip, which always ends in a question); statement (the clip cut after its last full stop, 50 turns); barge (the caller starts 2 s into her long opening); backchannel (a 300 ms vocal burst, and separately a 300 ms burst of noise at -30 dBFS).\n- CIs: Wilson for proportions, bootstrap for medians.\n- Not measured: real ASR finals, real providers, echo, real callers, telephone jitter.",
+   "path": "product/voice/bench/results/turn-2026-10-23-test-before.md",
+   "value": "premature cut-in 32.7% of turns, talk-over 25.5% (TEST, n=55)"
+  },
+  {
+   "id": "measure.2026-10-23.turn-taking-statement-hold",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "A 1200 ms hold after a caller's statement (chosen on DEV) cuts premature cut-ins on held-out TEST from 32.7% to 3.6% of turns (2/55, 95% CI 0.01-0.12) and talk-over from 25.5% to 3.6%. The cost: turns that end in a statement get her first audio at a median 1314 ms instead of 986 ms (+328 ms, n=49/41). Question-ended turns are unchanged (998 ms). Barge-in, backchannel and noise handling are unchanged",
+   "n": 55,
+   "method": "Same bench, --split test, defaults after the change (STATEMENT_HOLD_MS=1200), 2026-10-23.\n- DEV sweep over 0/600/1000/1200/1400 (bench/results/turn-2026-10-23-dev-sweep.md): premature cut-ins 40% / 38% / 19% / 2% / 2%; statement latency 977 / 979 / 1116 / 1308 / 1493 ms. 1200 was chosen on DEV and is reported on TEST only.\n- Cause, traced on a DEV clip: the hold is counted from the end of the caller's speech, but the transcript lands about 410 ms later, so a 0 ms hold after a sentence that reads complete releases her reply inside 0.3-1.4 s mid-thought pauses.\n- The speculative reply is generated while she waits, so with real providers (slower than the fakes) more of the hold hides behind generation. Not measured.\n- Caveat: the stimuli end every whole turn in a question, so the question fast path (HOLD_MS=0) is favoured by this set; the statement scenario exists to show the cost.",
+   "path": "product/voice/bench/results/turn-2026-10-23-test-after.md",
+   "value": "premature cut-in 3.6%, talk-over 3.6% (TEST, n=55); +328 ms after statements"
+  },
+  {
+   "id": "decision.2026-10-23.voice-statement-hold",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "The cascade's held reply waits by how the caller's words end: no hold after a question (it hands her the turn); 1200 ms of silence after a statement; 1400 ms after an unfinished turn (a trailing comma or connective)",
+   "rationale": "measure.2026-10-23.turn-taking-statement-hold: cut-ins and talk-over fall from about 1 in 3 turns to about 1 in 28 on held-out clips, at +328 ms only after statements.",
+   "reverse_if": "on real calls (the India VM bench with real ASR, or live test calls) the statement wait is felt as slow, or cut-ins stay low with a shorter hold because real ASR finals arrive at a different time; or a semantic end-of-turn model beats punctuation"
+  },
+  {
+   "id": "open.2026-10-23.voice-barge-in-speed",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "She yields to a caller who talks over her in a median 725 ms (TEST, n=55, 95% CI 708-739), and missed 2/55 barge-ins within 1.5 s. People yield in about 200-400 ms. Lowering BARGE_MS / BARGE_LONG_MS speeds this up but risks false barge-ins on backchannels and noise (0/55 each today). Next lever to bench on DEV",
+   "closes_when": "a DEV-tuned barge-in rule lowers the yield time on TEST without raising false barge-ins, or the real-provider bench shows 725 ms is not felt"
   }
  ],
  "edges": [
@@ -32146,6 +32257,46 @@
    "from": "decision.2026-10-23.judge-model-shadow",
    "to": "decision.2026-10-21.safety-second-layer-proposal",
    "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.optout-blind",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.optout-dev-tuning",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.optout-blind",
+   "to": "open.2026-10-23.optout-judge",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.optout-blind",
+   "to": "rejected.2026-10-23.dev-tuned-patterns-for-code-mixed-recall",
+   "relation": "supports"
+  },
+  {
+   "from": "component.2026-10-23.optout-e2e-test",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.turn-taking-statement-hold",
+   "to": "measure.2026-10-23.turn-taking-product-runtime-baseline",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-23.voice-statement-hold",
+   "to": "measure.2026-10-23.turn-taking-statement-hold",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-23.voice-barge-in-speed",
+   "to": "measure.2026-10-23.turn-taking-product-runtime-baseline",
+   "relation": "informed-by"
   }
  ]
 }
