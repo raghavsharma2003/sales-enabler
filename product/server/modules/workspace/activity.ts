@@ -53,7 +53,7 @@ export function registerActivity(r: Registry) {
 
       const who = (r: Row) => r.actor_id?.startsWith('key:') ? `The API key "${keys.get(r.actor_id.slice(4)) ?? 'unknown'}"`
         : r.actor_type === 'member' ? (members.get(r.actor_id ?? '') ?? 'A teammate')
-        : r.actor_type === 'agent' ? 'An agent' : r.actor_type === 'vp_success' ? 'The VP team' : 'VP';
+        : r.actor_type === 'agent' ? 'An agent' : r.actor_type === 'vp_success' ? 'The Vyakti team' : 'Vyakti';
       const items = page.map(r => {
         const proposed = r.action === 'action.propose' ? String(r.payload.tool ?? '') : '';
         const line = proposed ? `${who(r)} asked to ${asked(proposed)} and is waiting for approval`

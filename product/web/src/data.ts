@@ -21,7 +21,7 @@ export function normaliseConfig(d: any): AgentConfigDraft {
 }
 export async function agentGet(id: string): Promise<AgentDoc> {
   const r = await run<any>('agent.get', { agentId: id });
-  const versions = arr<any>(r.versions).map(v => ({ id: v.id, number: v.number, note: v.note ?? null, createdAt: v.created_at ?? v.createdAt, by: v.author_type === 'member' ? 'A teammate' : v.author_type === 'operator' ? 'Assistant' : 'VP' }))
+  const versions = arr<any>(r.versions).map(v => ({ id: v.id, number: v.number, note: v.note ?? null, createdAt: v.created_at ?? v.createdAt, by: v.author_type === 'member' ? 'A teammate' : v.author_type === 'operator' ? 'Assistant' : 'Vyakti' }))
     .sort((a, b) => b.number - a.number);
   return {
     id, name: r.agent.name, updatedAt: r.agent.updatedAt, draftHash: r.draftHash, config: normaliseConfig(r.draft), compiles: !!r.compiles,
@@ -195,7 +195,7 @@ export async function knowledgeList(): Promise<KnowledgeItem[]> {
   return arr<any>((await run<any>('knowledge.list', {})).sources).map(s => ({ id: s.id, title: s.title, status: s.status, passages: s.spans ?? 0, createdAt: s.createdAt, approved: s.approved, pending: s.pending }) as KnowledgeItem);
 }
 export async function activityList(): Promise<ActivityRow[]> {
-  return arr<any>((await run<any>('activity.list', { limit: 50 })).items).map(i => ({ id: i.id, at: i.at, line: i.line, action: i.action, who: i.actor?.type === 'member' ? 'A teammate' : i.actor?.type ?? 'VP' }));
+  return arr<any>((await run<any>('activity.list', { limit: 50 })).items).map(i => ({ id: i.id, at: i.at, line: i.line, action: i.action, who: i.actor?.type === 'member' ? 'A teammate' : i.actor?.type ?? 'Vyakti' }));
 }
 
 export async function numberList(): Promise<NumberLine[]> {

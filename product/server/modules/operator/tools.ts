@@ -87,14 +87,14 @@ export function registerOperatorTools(r: Registry): void {
 
   r.register(tool(obj({}), {
     name: 'operator.settings.get', risk: 'read', roles: ALL_ROLES,
-    summary: "VP's autonomy level in this workspace (A1, or A0 when drafts also wait for a tap) and its brain",
+    summary: "The assistant's autonomy level in this workspace (A1, or A0 when drafts also wait for a tap) and its brain",
     run: async ctx => ({ ...(await operatorSettings(ctx.q, ctx.workspaceId)), brains: curatedBrains() }),
   }));
 
   r.register(tool(obj({ brain: str({ min: 1, max: 60, pattern: /^[a-z0-9][a-z0-9._-]*$/, desc: 'a curated brain id from operator.settings.get' }) }), {
     name: 'operator.brain.set', risk: 'spend',
-    summary: "Change VP's brain (the model behind the Operator); it changes what each Operator turn costs, never what is allowed",
-    describe: i => `Switch VP's brain to "${i.brain}". Each Operator turn is then billed at that brain's rate.`,
+    summary: "Change the assistant's brain (the model behind the Operator); it changes what each Operator turn costs, never what is allowed",
+    describe: i => `Switch the assistant's brain to "${i.brain}". Each Operator turn is then billed at that brain's rate.`,
     version: async (ctx) => (await operatorSettings(ctx.q, ctx.workspaceId)).brain ?? 'none',
     run: async (ctx, i) => {
       if (!curatedBrains().includes(i.brain)) throw new Error(`"${i.brain}" is not one of the curated brains`);
@@ -107,7 +107,7 @@ export function registerOperatorTools(r: Registry): void {
   // Lowering autonomy only lowers risk, so any working member (or their Operator) may do it at once.
   r.register(tool(obj({ level: str({ oneOf: ['A0'], desc: 'A0: every draft and test waits for a tap too' }) }), {
     name: 'operator.autonomy.lower', risk: 'draft', roles: ACTIVE_ROLES,
-    summary: 'Ask before drafts: from now on every draft and test VP makes waits for a human tap (A0)',
+    summary: 'Ask before drafts: from now on every draft and test the assistant makes waits for a human tap (A0)',
     run: async (ctx, i) => {
       await ctx.q.query(`INSERT INTO operator_setting (workspace_id, autonomy) VALUES ($1,$2)
         ON CONFLICT (workspace_id) DO UPDATE SET autonomy = $2, updated_at = now()`, [ctx.workspaceId, i.level]);
@@ -118,8 +118,8 @@ export function registerOperatorTools(r: Registry): void {
   // Raising it back is a policy change: it needs an owner's or compliance member's tap.
   r.register(tool(obj({ level: str({ oneOf: ['A1'] }) }), {
     name: 'operator.autonomy.raise', risk: 'policy',
-    summary: 'Let VP make drafts and run tests on its own again (A1); anything that reaches people, spends, deletes or changes policy still waits for a tap',
-    describe: () => 'Let VP make drafts and run tests on its own again (A1). Launches, spend, deletes and policy changes still wait for a tap.',
+    summary: 'Let the assistant make drafts and run tests on its own again (A1); anything that reaches people, spends, deletes or changes policy still waits for a tap',
+    describe: () => 'Let the assistant make drafts and run tests on its own again (A1). Launches, spend, deletes and policy changes still wait for a tap.',
     version: async ctx => (await operatorSettings(ctx.q, ctx.workspaceId)).autonomy,
     run: async (ctx, i) => {
       await ctx.q.query(`INSERT INTO operator_setting (workspace_id, autonomy) VALUES ($1,$2)
@@ -130,7 +130,7 @@ export function registerOperatorTools(r: Registry): void {
 
   r.register(tool(obj({ limit: opt(num({ int: true, min: 1, max: 100 })) }), {
     name: 'operator.preference.list', risk: 'read', roles: ALL_ROLES,
-    summary: 'What VP remembers about how you like to work (presentation only), each with its source message',
+    summary: 'What the assistant remembers about how you like to work (presentation only), each with its source message',
     run: async (ctx, i) => ({
       preferences: await many(ctx.q, `SELECT id, text, source_message_id, created_at FROM operator_preference
         WHERE workspace_id = $1 AND member_id = $2 AND forgotten_at IS NULL ORDER BY created_at DESC LIMIT $3`,
@@ -141,7 +141,7 @@ export function registerOperatorTools(r: Registry): void {
   r.register(tool(obj({ text: str({ min: 2, max: 200, desc: 'a presentation preference, e.g. "reports as a table"; never a setting or permission' }),
     sourceMessageId: opt(uuid()) }), {
     name: 'operator.preference.remember', risk: 'draft', roles: ALL_ROLES,
-    summary: 'Remember how you like VP to present things (language, length, report day). Settings and permissions are never kept here',
+    summary: 'Remember how you like the assistant to present things (language, length, report day). Settings and permissions are never kept here',
     run: async (ctx, i) => {
       const me = memberOf(ctx.actor);
       if (!me) throw new Error('only a member (or their Operator) has preferences');
@@ -155,7 +155,7 @@ export function registerOperatorTools(r: Registry): void {
 
   r.register(tool(obj({ id: uuid() }), {
     name: 'operator.preference.forget', risk: 'draft', roles: ALL_ROLES,
-    summary: 'Forget one thing VP remembers about how you work',
+    summary: 'Forget one thing the assistant remembers about how you work',
     run: async (ctx, i) => {
       const me = memberOf(ctx.actor);
       const r2 = await ctx.q.query(`UPDATE operator_preference SET forgotten_at = now()

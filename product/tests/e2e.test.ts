@@ -360,7 +360,7 @@ test('e2e: a home-services business goes from sign-up to an analysed call throug
     const est = confirmed(await owner.tool('campaign.estimate', { id: s.campaignId }), 'campaign.estimate');
     assert.equal(est.people, 3);
     assert.ok(est.perMinuteInrMilli > 0 && est.suggestedCapInrMilli > 0);
-    assert.notEqual(est.basis, 'assumption, no history: VP preset priors', 'the per-minute rate comes from money.estimate for the chosen stack');
+    assert.notEqual(est.basis, 'assumption, no history: Vyakti preset priors', 'the per-minute rate comes from money.estimate for the chosen stack');
     s.estimate = est;
     const blocked = confirmed(await owner.tool('campaign.get', { id: s.campaignId }), 'campaign.get');
     assert.deepEqual(blocked.blockers.map((b: any) => b.code), ['no_cap'], 'only the cap is missing before launch');

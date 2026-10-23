@@ -40,6 +40,6 @@ export function pageInfo(path: string): PageInfo {
     case 'insights': return { key: 'insights', label: 'Insights', chips: ['Where do we lose people?', 'Summarise this week'] };
     case 'numbers': return { key: 'numbers', label: 'Numbers', chips: ['Ring my phone', 'How long does KYC take?'] };
     case 'settings': return { key: 'settings', label: 'Settings', chips: ['What did VP do this week?', 'Set a daily spend cap'] };
-    default: return { key: 'other', label: 'VP', chips: [] };
+    default: return { key: 'other', label: 'Vyakti', chips: [] };
   }
 }

@@ -25,7 +25,7 @@ export const REASON_CODES: readonly ReasonCode[] = [
   { code: 'DIAL_FAILED', stage: 'dial', label: 'The call could not be placed', action: 'Look at the carrier code; retried once', charged: false },
   { code: 'CONN_VOICEMAIL', stage: 'connected', label: 'Voicemail or an answering machine picked up', action: 'Retried per the ladder', charged: true },
   { code: 'CONN_SILENCE', stage: 'connected', label: 'Connected, but nobody spoke', action: 'Retried later', charged: true },
-  { code: 'CONN_ENGINE_ERROR', stage: 'connected', label: 'Our voice engine failed during the call', action: 'VP investigates; the call is not charged as an outcome', charged: true },
+  { code: 'CONN_ENGINE_ERROR', stage: 'connected', label: 'Our voice engine failed during the call', action: 'Vyakti investigates; the call is not charged as an outcome', charged: true },
   { code: 'CONN_MAX_DURATION', stage: 'connected', label: 'The call reached its time limit', action: 'Raise the limit or shorten the agenda', charged: true },
   { code: 'CONN_MAX_COST', stage: 'connected', label: 'The call reached its cost limit', action: 'Raise the per-call cost limit', charged: true },
   { code: 'END_EARLY_HANGUP', stage: 'conversation', label: 'The person hung up in the first seconds', action: 'Listen to the opening; consider a test of a new opener', charged: true },

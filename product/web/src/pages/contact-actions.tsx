@@ -93,7 +93,7 @@ export function ExportButton({ me }: { me: ReturnType<typeof useApp>['me'] }) {
   return <>
     <Btn size="sm" icon={<Download size={14} aria-hidden />} onClick={() => setOpen(true)}>Export as CSV…</Btn>
     {open && <Sheet title="Export people as a CSV file" onClose={() => setOpen(false)}>
-      <p className="muted">Personal data leaves VP in this file, so the owner or compliance lead approves it and it is recorded. The file is built when you approve and is not kept.</p>
+      <p className="muted">Personal data leaves Vyakti in this file, so the owner or compliance lead approves it and it is recorded. The file is built when you approve and is not kept.</p>
       <SelectField label="Who" value={aud} onChange={e => setAud(e.target.value)}><option value="">Everyone</option>{(audiences.data ?? []).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>
       <Toggle checked={withSupp} onChange={setWithSupp} label="Include people we must not call" hint="They are marked as suppressed in the file." />
       <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}><Btn kind="ghost" onClick={() => setOpen(false)}>Cancel</Btn><Btn kind="primary" busy={busy} onClick={() => void go()}>Ask to export</Btn></div>

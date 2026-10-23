@@ -374,7 +374,7 @@ export function registerAgentTools(r: Registry): void {
   }));
 
   r.register(tool(obj({ agentId: opt(uuid()) }), {
-    name: 'simcaller.list', risk: 'read', summary: "The practice callers: VP's industry-neutral defaults plus this workspace's own",
+    name: 'simcaller.list', risk: 'read', summary: "The practice callers: Vyakti's industry-neutral defaults plus this workspace's own",
     run: async (ctx, i) => {
       if (i.agentId) await loadAgent(ctx, i.agentId);
       const rows = await many<SimCallerRow>(ctx.q, `SELECT * FROM sim_caller WHERE workspace_id = $1 AND shape IS NOT NULL AND (agent_id IS NULL${i.agentId ? ' OR agent_id = $2' : ''})

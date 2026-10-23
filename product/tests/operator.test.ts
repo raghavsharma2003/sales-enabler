@@ -239,7 +239,7 @@ test('a plan runs its drafts, stops at the first tap and holds the rest', { skip
   const plans = f.filter(x => x.event === 'card' && x.data.card.type === 'plan');
   assert.equal(plans.length, 2, 'shown, then updated in place');
   assert.equal(plans[0].data.id, plans[1].data.id);
-  assert.equal(plans[0].data.card.footer, 'VP will do 1 now; 2 waits for you.');
+  assert.equal(plans[0].data.card.footer, 'The assistant will do 1 now; 2 waits for you.');
   assert.deepEqual(plans[0].data.card.steps.map((s: any) => s.runs), ['now', 'tap', 'now']);
   assert.deepEqual(plans[1].data.card.steps.map((s: any) => s.status), ['done', 'waiting_for_tap', 'held']);
   assert.deepEqual((await many<{ text: string }>(pool, 'SELECT text FROM lesson WHERE workspace_id = $1', [w])).map(r => r.text), ['p1']);

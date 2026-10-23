@@ -1360,7 +1360,7 @@
   {
    "name": "campaign.launch",
    "risk": "external",
-   "summary": "Launch a campaign: VP starts dialling its audience inside the window, budget and cap",
+   "summary": "Launch a campaign: Vyakti starts dialling its audience inside the window, budget and cap",
    "needsApproval": true,
    "roles": [
     "owner",
@@ -1931,7 +1931,7 @@
   {
    "name": "contact.export",
    "risk": "policy",
-   "summary": "Export people as CSV (personal data leaves VP; approved by Compliance or Owner, audited)",
+   "summary": "Export people as CSV (personal data leaves Vyakti; approved by Compliance or Owner, audited)",
    "needsApproval": true,
    "roles": [
     "owner",
@@ -2208,7 +2208,7 @@
   {
    "name": "contact.suppress_after_opt_out",
    "risk": "policy",
-   "summary": "The person said \"don't call me\" on a call: suppress voice workspace-wide at once (A3 for VP itself) and append a consent withdrawal",
+   "summary": "The person said \"don't call me\" on a call: suppress voice workspace-wide at once (A3 for Vyakti itself) and append a consent withdrawal",
    "needsApproval": true,
    "roles": [
     "owner",
@@ -3183,6 +3183,10 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 3
+     },
+     "issueId": {
+      "type": "string",
+      "format": "uuid"
      }
     },
     "required": [
@@ -3917,7 +3921,7 @@
   {
    "name": "number.kyc.sync",
    "risk": "draft",
-   "summary": "Record the carrier's KYC decision for a line (carrier webhook or VP Success only; never a workspace member)",
+   "summary": "Record the carrier's KYC decision for a line (carrier webhook or Vyakti Success only; never a workspace member)",
    "needsApproval": false,
    "roles": [],
    "input": {
@@ -3990,7 +3994,7 @@
   {
    "name": "number.pause",
    "risk": "external",
-   "summary": "Pause a line; every campaign using it waits (VP itself pauses a flagged line at once with number.pause_flagged)",
+   "summary": "Pause a line; every campaign using it waits (Vyakti itself pauses a flagged line at once with number.pause_flagged)",
    "needsApproval": true,
    "roles": [
     "owner",
@@ -4217,7 +4221,7 @@
   {
    "name": "operator.autonomy.lower",
    "risk": "draft",
-   "summary": "Ask before drafts: from now on every draft and test VP makes waits for a human tap (A0)",
+   "summary": "Ask before drafts: from now on every draft and test the assistant makes waits for a human tap (A0)",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -4245,7 +4249,7 @@
   {
    "name": "operator.autonomy.raise",
    "risk": "policy",
-   "summary": "Let VP make drafts and run tests on its own again (A1); anything that reaches people, spends, deletes or changes policy still waits for a tap",
+   "summary": "Let the assistant make drafts and run tests on its own again (A1); anything that reaches people, spends, deletes or changes policy still waits for a tap",
    "needsApproval": true,
    "roles": [
     "owner",
@@ -4272,7 +4276,7 @@
   {
    "name": "operator.brain.set",
    "risk": "spend",
-   "summary": "Change VP's brain (the model behind the Operator); it changes what each Operator turn costs, never what is allowed",
+   "summary": "Change the assistant's brain (the model behind the Operator); it changes what each Operator turn costs, never what is allowed",
    "needsApproval": true,
    "roles": [
     "owner",
@@ -4299,7 +4303,7 @@
   {
    "name": "operator.preference.forget",
    "risk": "draft",
-   "summary": "Forget one thing VP remembers about how you work",
+   "summary": "Forget one thing the assistant remembers about how you work",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -4325,7 +4329,7 @@
   {
    "name": "operator.preference.list",
    "risk": "read",
-   "summary": "What VP remembers about how you like to work (presentation only), each with its source message",
+   "summary": "What the assistant remembers about how you like to work (presentation only), each with its source message",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -4350,7 +4354,7 @@
   {
    "name": "operator.preference.remember",
    "risk": "draft",
-   "summary": "Remember how you like VP to present things (language, length, report day). Settings and permissions are never kept here",
+   "summary": "Remember how you like the assistant to present things (language, length, report day). Settings and permissions are never kept here",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -4382,7 +4386,7 @@
   {
    "name": "operator.settings.get",
    "risk": "read",
-   "summary": "VP's autonomy level in this workspace (A1, or A0 when drafts also wait for a tap) and its brain",
+   "summary": "The assistant's autonomy level in this workspace (A1, or A0 when drafts also wait for a tap) and its brain",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -5387,7 +5391,7 @@
   {
    "name": "simcaller.list",
    "risk": "read",
-   "summary": "The practice callers: VP's industry-neutral defaults plus this workspace's own",
+   "summary": "The practice callers: Vyakti's industry-neutral defaults plus this workspace's own",
    "needsApproval": false,
    "roles": [
     "owner",

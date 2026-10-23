@@ -202,7 +202,7 @@ export function registerCampaignTools(registry: Registry): void {
       const people = n!.total - n!.held;
       const attempts = people * ESTIMATE_PRIORS.attemptsPerPerson;
       const minutes = people * ESTIMATE_PRIORS.pConnect * ESTIMATE_PRIORS.minutesPerConnect;
-      let perMinute = c.policy.perMinuteInrMilli ?? DEFAULT_PER_MINUTE_INR_MILLI, basis = 'assumption, no history: VP preset priors';
+      let perMinute = c.policy.perMinuteInrMilli ?? DEFAULT_PER_MINUTE_INR_MILLI, basis = 'assumption, no history: Vyakti preset priors';
       const v = await loadVersion(ctx.q, ctx.workspaceId, c.agent_version_id);
       const money = registry.get('money.estimate');            // the money module's rate, read through the registry
       if (money && v?.config.agent?.voice?.stackId) {
@@ -221,7 +221,7 @@ export function registerCampaignTools(registry: Registry): void {
   }));
 
   reg(tool(obj({ id: uuid() }), {
-    name: 'campaign.launch', risk: 'external', summary: 'Launch a campaign: VP starts dialling its audience inside the window, budget and cap',
+    name: 'campaign.launch', risk: 'external', summary: 'Launch a campaign: Vyakti starts dialling its audience inside the window, budget and cap',
     describe: i => `Launch campaign ${i.id}: dial its audience under the approved policy and agent version`,
     version: (ctx, i) => campaignVersion(ctx.q, ctx.workspaceId, i.id),
     run: async (ctx, i) => {
@@ -485,7 +485,7 @@ export function registerCampaignTools(registry: Registry): void {
   }));
 
   reg(tool(obj({ numberId: uuid(), reason: str({ min: 1, max: 200 }) }), {
-    name: 'number.pause', risk: 'external', roles: ['owner', 'builder', 'operator', 'compliance'], summary: 'Pause a line; every campaign using it waits (VP itself pauses a flagged line at once with number.pause_flagged)',
+    name: 'number.pause', risk: 'external', roles: ['owner', 'builder', 'operator', 'compliance'], summary: 'Pause a line; every campaign using it waits (Vyakti itself pauses a flagged line at once with number.pause_flagged)',
     run: async (ctx, i) => {
       const r = await ctx.q.query("UPDATE phone_number SET status = 'paused', pause_cause = $3, paused_at = now() WHERE id = $1 AND workspace_id = $2 AND status <> 'released'", [i.numberId, ctx.workspaceId, 'person:' + i.reason]);
       if (!r.rowCount) throw new ValidationError('numberId', 'no such line in this workspace');
@@ -507,9 +507,9 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ numberId: uuid(), status: str({ oneOf: ['verified', 'rejected'] }), evidence: record(str({ max: 500 }), { maxKeys: 20 }) }), {
     name: 'number.kyc.sync', risk: 'draft', roles: [],
-    summary: 'Record the carrier\'s KYC decision for a line (carrier webhook or VP Success only; never a workspace member)',
+    summary: 'Record the carrier\'s KYC decision for a line (carrier webhook or Vyakti Success only; never a workspace member)',
     run: async (ctx, i) => {
-      if (ctx.actor.type !== 'system' && ctx.actor.type !== 'vp_success') throw new Error('only the carrier webhook or VP Success records a KYC decision');
+      if (ctx.actor.type !== 'system' && ctx.actor.type !== 'vp_success') throw new Error('only the carrier webhook or Vyakti Success records a KYC decision');
       if (!Object.keys(i.evidence).length) throw new ValidationError('evidence', 'say what the carrier sent (e.g. its reference and decision time)');
       const n = await one<{ id: string; kyc_status: string }>(ctx.q, 'SELECT id, kyc_status FROM phone_number WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.numberId, ctx.workspaceId]);
       if (!n) throw new ValidationError('numberId', 'no such line in this workspace');
