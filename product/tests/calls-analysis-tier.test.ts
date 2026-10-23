@@ -63,7 +63,8 @@ test('the contract is written as shapes; the model may name CONV_* codes only an
   const p = analysisPrompt({ question: 'What did the person decide?', values: ['agreed', 'wrong_person'] });
   assert.match(p, /^TASK: /);
   assert.match(p, /- commitment: PERSON agrees to do something/);
-  assert.match(p, /null only when no PERSON line bears on the question/);
+  assert.match(p, /null when the PERSON never took a stance: they could not follow the language, hung up before the question, or spoke of distress/);
+  assert.doesNotMatch(p, /null only when no PERSON line bears/, 'the rejected rule is gone (rejected.2026-10-23.analysis-outcome-null-only-rule)');
   assert.match(p, /"not the right person"/);
   assert.match(p, /"confidence":number/);
   assert.ok(MODEL_CODES.length > 0 && MODEL_CODES.every(c => c.startsWith('CONV_')));

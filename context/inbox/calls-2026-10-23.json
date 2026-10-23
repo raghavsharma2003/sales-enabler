@@ -108,6 +108,46 @@
    "title": "The runtime 'judge' event carries the judge's opt-out verdicts as label 'opt_out' (raised or shadow, with a confidence; no kind, no reason), beside the crisis ones (label absent means crisis). One contract, product/shared/judge-event.json, is read by calls' ingest validator and by vpvoice/judge_event.py. calls stores the label (call_judge_event.label, migration 0605), counts it apart (analysis.opt_out_judge; crisis_judge now counts crisis rows only), and call.get returns plain-English judgeMarks that the call page shows. Shadow stays log-only: only the 'moment' opt_out of a raise suppresses",
    "rationale": "Closes open.2026-10-23.judge-event-opt-out-fields. Before, a shadow opt-out verdict was only a runtime log line, so the shadow trial could not be measured or shown. 'raised' means this verdict acted (the moment was sent). A raise-mode verdict that did not act (a crisis in progress, an opt-out already signalled) is sent as outcome 'shadow' with mode 'raise', so the page never claims an action that did not happen. An outage is reported once, as crisis, because one model call reads both labels. A post-call opt-out verdict is counted only, never acted on after the call.",
    "reverse_if": "The owner wants a post-call opt-out raise to suppress the contact (today only the live raise does), or the judge gains a label whose outage must be reported separately."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-no-decision-codes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "No outcome is recorded on a call whose reason is END_CRISIS, END_EARLY_HANGUP or CONV_LANGUAGE_MISMATCH, whatever the model guessed (calls/analysis.ts NO_DECISION; the guess shows as outcomeUnclear 'not recorded: ...'). The prompt's outcome rule is rewritten: decided only when the PERSON takes a stance; null when they could not follow the language, hung up before the question, or spoke of distress (distress is not a request for a human)",
+   "rationale": "Answers rejected.2026-10-23.analysis-outcome-null-only-rule: every round-2 outcome miss on all three designs was a non-null outcome on these call types. The code guard makes them right regardless of model; the prompt rewrite keeps the commitment and complaint gains of 8a4a508 (those lines are unchanged). The prompt rewrite is NOT measured on a real model (no keys in the sandbox): it was written from the DEV templates only, TEST not consulted again.",
+   "reverse_if": "A real deployment shows calls where the person decided before a crisis or a language switch and that decision is needed (then keep the guess for crisis calls as needs-review instead of dropping it)."
+  },
+  {
+   "id": "decision.2026-10-23.tiered-skips-engine-decided",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Tiered analysis never escalates a call whose reason the engine decided (any code outside REFINABLE: END_CRISIS, END_OPTED_OUT, END_EARLY_HANGUP, END_HANDED_OFF, CONN_*, ...), including when the first pass failed; analysis.tier.why says so. END_HUNG_UP_MID and CONV_INCOMPLETE, which the engine leaves open, may still escalate",
+   "rationale": "Answers rejected.2026-10-23.tiered-escalate-on-no-outcome: tiered escalated exactly the calls where no outcome is correct and turned 4 right answers wrong.",
+   "reverse_if": "A failed first pass on engine-decided calls leaves too many calls unanalysed (then retry the same model instead of escalating)."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-default-mini-in-code",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "The product default analysis setting is single, gpt-4.1-mini, when the deployment's curated list (VP_ANALYSIS_MODELS) has it; VP_ANALYSIS_DEFAULT_MODEL renames it; otherwise the deployment's VP_LLM_ANALYSIS_MODEL. A workspace that set tiered without a first model also starts on it",
+   "rationale": "Implements decision.2026-10-23.analysis-default-mini-single.",
+   "reverse_if": "That decision is reversed."
+  },
+  {
+   "id": "decision.2026-10-23.call-search-outcome-validated",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "call.search: outcome must be one of the workspace's defined outcome values (the campaign's when campaignId is given); any other value is refused with the valid values listed, and a reason code passed as outcome is named as one ('pass it as reasonCode'). reasonCode is a separate enum filter. The result carries total, the count of every match regardless of page",
+   "rationale": "Answers rejected.2026-10-23.call-search-free-text-outcome: both models passed a reason code as the outcome, got 0 rows and answered 'no calls'. The values differ per workspace, so they cannot be a static enum in the tool schema; the refusal carries them instead.",
+   "reverse_if": "The operator's tool schemas become per-workspace; then put the values in the schema as an enum."
   }
  ],
  "edges": [
@@ -135,6 +175,26 @@
    "from": "decision.2026-10-23.judge-event-opt-out-label",
    "to": "open.2026-10-23.judge-event-opt-out-fields",
    "relation": "resolves"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-no-decision-codes",
+   "to": "rejected.2026-10-23.analysis-outcome-null-only-rule",
+   "relation": "answers"
+  },
+  {
+   "from": "decision.2026-10-23.tiered-skips-engine-decided",
+   "to": "rejected.2026-10-23.tiered-escalate-on-no-outcome",
+   "relation": "answers"
+  },
+  {
+   "from": "decision.2026-10-23.call-search-outcome-validated",
+   "to": "rejected.2026-10-23.call-search-free-text-outcome",
+   "relation": "answers"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-default-mini-in-code",
+   "to": "decision.2026-10-23.analysis-default-mini-single",
+   "relation": "implements"
   }
  ],
  "events": [
@@ -162,6 +222,11 @@
    "date": "2026-10-23",
    "event": "judge-event-opt-out-label",
    "details": "Gates on a fresh database: node scripts/test.mjs 454/454 pass (VP_VOICE_PYTHON set, so the cross-process live tests ran); ui-contract --strict 173/173; tsc server and web clean; voice python -m unittest OK (test_judge 36, incl. 3 new). The runtime fixture gained opt_out_raised and opt_out_shadow calls; its live batches pass calls' real validator via node. This run also covers the full gates owed for a9c44d5 (one goal definition). Not verified: a real-model judge on a real call (no keys in the sandbox)."
+  },
+  {
+   "date": "2026-10-23",
+   "event": "analysis-round2-fixes",
+   "details": "tests/calls-analysis-rules.test.ts (4 tests) failed 4/4 on the code before (stash run) and pass now. Gates on a fresh database: node scripts/test.mjs 458/458 (VP_VOICE_PYTHON set); ui-contract --strict 173/173; tsc server and web clean. analysis-bench --fake --split dev runs 42/42 (plumbing only: the fake oracle is not a measurement). Not verified: the rewritten prompt on any real model. Ask: run DEV before TEST on the VM."
   }
  ]
 }

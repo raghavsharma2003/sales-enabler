@@ -8,7 +8,7 @@ import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import type { AgentConfig } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
 import { combinationId, resolveStack } from '../../../shared/stacks.ts';
-import { arr, bool, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
+import { arr, bool, num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import { analysisSetting, curatedAnalysisModels, DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
 import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLower } from './stats.ts';
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
@@ -176,11 +176,25 @@ export function registerTools(r: Registry): void {
 
   // ---- call.search --------------------------------------------------------------------------------------
   r.register(tool(obj({
-    campaignId: opt(uuid()), agentVersionId: opt(uuid()), outcome: opt(str({ max: 80 })), reasonCode: opt(reasonCode),
+    campaignId: opt(uuid()), agentVersionId: opt(uuid()),
+    outcome: opt(str({ max: 80, desc: "one of this workspace's outcome values (an outcome definition's allowed values, e.g. 'agreed'); never a reason code" })),
+    reasonCode: opt(str({ oneOf: REASON_CODES.map(r => r.code), desc: 'why the call ended the way it did, e.g. CONV_GOAL_DONE or END_CRISIS; a separate filter from outcome' })),
     from: opt(date), to: opt(date), flagged: opt(bool()), includeTest: opt(bool()), limit: opt(num({ int: true, min: 1, max: 200 })), before: opt(date),
   }), {
-    name: 'call.search', risk: 'read', summary: 'Find calls by campaign, outcome, reason code, date or flag; test calls only when asked',
+    name: 'call.search', risk: 'read', summary: 'Find calls by campaign, outcome value, reason code, date or flag, with the total that match; test calls only when asked',
     run: async (ctx, i) => {
+      // An outcome is one of the workspace's defined values. A wrong one is refused with the valid values (a model once
+      // passed a reason code as the outcome, got 0 rows and answered "no calls": rejected.2026-10-23.call-search-free-text-outcome).
+      if (i.outcome !== undefined) {
+        const defs = await many<{ v: string }>(ctx.q, `SELECT DISTINCT unnest(d.allowed_values) AS v FROM outcome_definition d
+          WHERE d.workspace_id = $1 AND ($2::uuid IS NULL OR d.id = (SELECT outcome_definition_id FROM campaign WHERE id = $2 AND workspace_id = $1)) ORDER BY 1`,
+          [ctx.workspaceId, i.campaignId ?? null]);
+        const valid = defs.map(d => d.v);
+        if (!valid.includes(i.outcome)) {
+          const asCode = REASON_CODES.some(r => r.code === i.outcome) ? ` "${i.outcome}" is a reason code: pass it as reasonCode.` : '';
+          throw new ValidationError('outcome', `"${i.outcome}" is not an outcome value here.${asCode} ${valid.length ? `Valid outcome values${i.campaignId ? ' for this campaign' : ''}: ${valid.join(', ')}.` : 'No outcome is defined in this workspace yet.'}`);
+        }
+      }
       const where = ['cv.workspace_id = $1'], p: unknown[] = [ctx.workspaceId];
       const add = (sql: string, v: unknown) => { p.push(v); where.push(sql.replace('?', '$' + p.length)); };
       if (!i.includeTest) where.push(`cv.channel <> 'test'`);
@@ -190,15 +204,17 @@ export function registerTools(r: Registry): void {
       if (i.outcome) add(`${BEST_OUTCOME} = ?`, i.outcome);
       if (i.from) add('cv.started_at >= ?::timestamptz', i.from);
       if (i.to) add('cv.started_at < ?::timestamptz', i.to);
-      if (i.before) add('cv.started_at < ?::timestamptz', i.before);
       if (i.flagged !== undefined) add('cv.flagged = ?', i.flagged);
+      const FROM = `FROM conversation cv LEFT JOIN attempt a ON a.id = cv.attempt_id AND a.workspace_id = cv.workspace_id`;
+      // The total counts every match, whatever page this is ("how many" has one answer).
+      const total = (await one<{ n: number }>(ctx.q, `SELECT count(*)::int AS n ${FROM} WHERE ${where.join(' AND ')}`, [...p]))!.n;
+      if (i.before) add('cv.started_at < ?::timestamptz', i.before);
       p.push(i.limit ?? 50);
       const rows = await many<Record<string, any>>(ctx.q,
         `SELECT cv.id, cv.channel, cv.status, cv.started_at, cv.ended_at, cv.duration_s, cv.end_reason, cv.reason_code, cv.flagged, cv.flags,
                 cv.cost_inr_milli::int AS cost_inr_milli, cv.contact_id, cv.agent_version_id, a.campaign_id, ${BEST_OUTCOME} AS outcome, ${BEST_GRADE} AS grade
-         FROM conversation cv LEFT JOIN attempt a ON a.id = cv.attempt_id AND a.workspace_id = cv.workspace_id
-         WHERE ${where.join(' AND ')} ORDER BY cv.started_at DESC LIMIT $${p.length}`, p);
-      return { calls: rows.map(x => ({ ...x, reasonLabel: reasonFor(x.reason_code)?.label ?? null })), next: rows.length === (i.limit ?? 50) ? rows[rows.length - 1].started_at : null };
+         ${FROM} WHERE ${where.join(' AND ')} ORDER BY cv.started_at DESC LIMIT $${p.length}`, p);
+      return { total, calls: rows.map(x => ({ ...x, reasonLabel: reasonFor(x.reason_code)?.label ?? null })), next: rows.length === (i.limit ?? 50) ? rows[rows.length - 1].started_at : null };
     },
   }));
 

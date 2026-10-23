@@ -43,8 +43,8 @@ export function analysisPrompt(o: { question: string | null; values: string[]; i
     ...(o.question ? [
       `OUTCOME: question "${o.question}"; VALUE one of ${JSON.stringify(o.values)}`,
       '- decided by the PERSON\'s words; quote the PERSON line that decides it',
-      '- agreeing, refusing, asking to stop calls, complaining, asking for a human, "not the right person", "call later": each decides it when a VALUE fits',
-      '- null only when no PERSON line bears on the question',
+      '- decided only when the PERSON takes a stance on the question: agreeing, refusing, asking to stop calls, asking for a human about it, "not the right person", "call later". Each decides it when a VALUE fits',
+      '- null when the PERSON never took a stance: they could not follow the language, hung up before the question, or spoke of distress or crisis (distress is not a request for a human)',
       '- confidence: 0..1, how clearly that line decides it',
     ] : ['OUTCOME: always null.']),
     ...(o.instructions ? [`OUTCOME, client rule: ${o.instructions}`] : []),
@@ -57,11 +57,19 @@ export interface AnalysisSetting { mode: 'single' | 'tiered'; model?: string; es
 /** Curated analysis model ids, set per deployment (VP_ANALYSIS_MODELS, comma-separated). No model is chosen in code: without a
  *  setting, analysis uses the deployment's VP_LLM_ANALYSIS_MODEL. */
 export const curatedAnalysisModels = () => (process.env.VP_ANALYSIS_MODELS ?? '').split(',').map(s => s.trim()).filter(Boolean);
+/** The product default (decision.2026-10-23.analysis-default-mini-single): one pass, gpt-4.1-mini, when the deployment curates
+ *  it. VP_ANALYSIS_DEFAULT_MODEL overrides the id (a deployment may name it differently). When the default is not curated
+ *  here, analysis uses the deployment's VP_LLM_ANALYSIS_MODEL. Tiered stays available per workspace, never the default. */
+export const DEFAULT_ANALYSIS_MODEL = 'gpt-4.1-mini';
+export function defaultAnalysisModel(): string | undefined {
+  const id = process.env.VP_ANALYSIS_DEFAULT_MODEL?.trim() || DEFAULT_ANALYSIS_MODEL;
+  return curatedAnalysisModels().includes(id) ? id : undefined;
+}
 export async function analysisSetting(q: Queryable, ws: string): Promise<AnalysisSetting> {
   const r = await one<{ mode: 'single' | 'tiered'; model: string | null; escalate_model: string | null; threshold: string }>(q,
     'SELECT mode, model, escalate_model, threshold::text FROM call_analysis_setting WHERE workspace_id = $1', [ws]);
-  return r ? { mode: r.mode, model: r.model ?? undefined, escalateModel: r.escalate_model ?? undefined, threshold: Number(r.threshold) }
-    : { mode: 'single', threshold: 0.6 };
+  return r ? { mode: r.mode, model: r.model ?? defaultAnalysisModel(), escalateModel: r.escalate_model ?? undefined, threshold: Number(r.threshold) }
+    : { mode: 'single', model: defaultAnalysisModel(), threshold: 0.6 };
 }
 
 const MOMENT_KINDS = ['objection', 'question', 'commitment', 'opt_out', 'callback_request', 'confusion', 'laughter'] as const;
@@ -75,6 +83,13 @@ export function findQuote(lines: Line[], quote: unknown, speaker?: Line['speaker
   if (q.length < 3) return null;
   return lines.find(l => (!speaker || l.speaker === speaker) && l.text.includes(q)) ?? null;
 }
+
+/** Reason codes on which no outcome is recorded, with why (shown on the call as outcomeUnclear). */
+export const NO_DECISION: ReadonlyMap<string, string> = new Map([
+  ['END_CRISIS', 'the call turned to a crisis and the goal was suspended'],
+  ['END_EARLY_HANGUP', 'the person hung up in the first seconds'],
+  ['CONV_LANGUAGE_MISMATCH', 'the person could not follow the language'],
+]);
 
 // Post-call analysis is not latency-bound; the live door's judge budget (judge.json timeout_ms) is far tighter.
 export const POST_CALL_JUDGE_TIMEOUT_MS = 5000;
@@ -308,7 +323,10 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
 
   const passes: Pass[] = [await runPass(setting.model)];
   let tier: AnalysisRecord['tier'] = null;
-  if (setting.mode === 'tiered' && setting.escalateModel) {
+  // Never escalate a call whose reason the engine already decided (crisis, opt-out, early hang-up, hand-off, ...): there the
+  // right answer is usually "no outcome", and a second model only finds one (rejected.2026-10-23.tiered-escalate-on-no-outcome).
+  const engineDecided = !REFINABLE.has(cv.reason_code ?? 'CONV_INCOMPLETE');
+  if (setting.mode === 'tiered' && setting.escalateModel && !engineDecided) {
     const first = passes[0];
     const why = 'error' in first ? 'the first pass failed'
       : cv.def_id && callerSpoke && !first.outcomeGuess ? 'no outcome'
@@ -317,6 +335,8 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     if (why) passes.push(await runPass(setting.escalateModel));
     tier = { escalated: Boolean(why), why, firstModel: passes[0].model ?? null, secondModel: passes[1]?.model ?? null,
       secondFailed: passes[1] ? 'error' in passes[1] : false };
+  } else if (setting.mode === 'tiered' && setting.escalateModel) {
+    tier = { escalated: false, why: 'the engine decided this call\'s reason; it is never escalated', firstModel: passes[0].model ?? null, secondModel: null, secondFailed: false };
   }
   // The pass that counts: the escalated one when it succeeded, else the first.
   const done = [...passes].reverse().find((x): x is Ok => !('error' in x));
@@ -332,10 +352,17 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     const err = passes[passes.length - 1] as Extract<Pass, { error: string }>;
     return store({ status: 'failed', reason: err.error, reasonCode: cv.reason_code ?? undefined, model: err.model, tier }, costLines);
   }
-  const { points, moments, outcomeGuess, outcomeUnclear, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped } = done;
+  const { points, moments, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped } = done;
+  let { outcomeGuess, outcomeUnclear } = done;
   const reply = done.reply;
   let reasonCode = cv.reason_code ?? 'CONV_INCOMPLETE';
   if (modelCode && REFINABLE.has(reasonCode) && !(reasonCode === 'END_HUNG_UP_MID' && (cv.duration_s ?? 0) < EARLY_HANGUP_S)) reasonCode = modelCode;
+  // Calls on which the person cannot have decided anything get no outcome, whatever the model guessed: a crisis (the goal
+  // was suspended), an early hang-up, a language they could not follow (rejected.2026-10-23.analysis-outcome-null-only-rule).
+  if (outcomeGuess && NO_DECISION.has(reasonCode)) {
+    outcomeUnclear = { value: outcomeGuess.value, reason: `not recorded: ${NO_DECISION.get(reasonCode)}` };
+    outcomeGuess = null;
+  }
 
   const rec: AnalysisRecord = {
     status: 'done', summary: points.map(p => p.claim).join(' '), points,

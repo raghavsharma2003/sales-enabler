@@ -1035,7 +1035,7 @@
   {
    "name": "call.search",
    "risk": "read",
-   "summary": "Find calls by campaign, outcome, reason code, date or flag; test calls only when asked",
+   "summary": "Find calls by campaign, outcome value, reason code, date or flag, with the total that match; test calls only when asked",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -1058,7 +1058,8 @@
      },
      "outcome": {
       "type": "string",
-      "maxLength": 80
+      "maxLength": 80,
+      "description": "one of this workspace's outcome values (an outcome definition's allowed values, e.g. 'agreed'); never a reason code"
      },
      "reasonCode": {
       "type": "string",
@@ -1098,7 +1099,8 @@
        "CONV_COMPLAINT",
        "CONV_NEEDS_HUMAN",
        "CONV_INCOMPLETE"
-      ]
+      ],
+      "description": "why the call ended the way it did, e.g. CONV_GOAL_DONE or END_CRISIS; a separate filter from outcome"
      },
      "from": {
       "type": "string",

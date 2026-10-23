@@ -86,6 +86,7 @@ Run `node product/web/build.mjs` once. Then `node --import tsx product/server/ma
 |---|---|
 | `VP_LLM_<PURPOSE>_URL`, `_KEY`, `_MODEL`, `_KEY_HEADER` | Purposes: `OPERATOR`, `COMPILE`, `SIMULATE`, `ANALYSIS`, `INSIGHT`, `LEARNING`, `MEMORY`, `SAFETY_JUDGE` |
 | `VP_OPERATOR_BRAINS` | The assistant's model choices |
+| `VP_ANALYSIS_MODELS`, `VP_ANALYSIS_DEFAULT_MODEL` | Curated call-analysis models. The default is one pass on `gpt-4.1-mini` when it is in the list (`VP_ANALYSIS_DEFAULT_MODEL` names it if the deployment id differs); otherwise `VP_LLM_ANALYSIS_MODEL` |
 | `VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_IN`, `_OUT` | The assistant's model prices |
 
 **Keep off on a private staging**

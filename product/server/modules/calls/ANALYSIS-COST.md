@@ -60,7 +60,8 @@ e, and nothing has measured them yet.
 - **Tools.**
   - `analysis.settings.get` (read).
   - `analysis.model.set` (spend: an owner approves it, because it changes what each call costs).
-  - Models come only from the deployment's curated list, `VP_ANALYSIS_MODELS`. No model is chosen in code.
+  - Models come only from the deployment's curated list, `VP_ANALYSIS_MODELS`. The default is one pass on `gpt-4.1-mini` when the list has it
+    (decision.2026-10-23.analysis-default-mini-single); tiered is opt-in per workspace and never escalates a call whose reason the engine decided.
 
 ## What decides the default
 
