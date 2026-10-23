@@ -1,6 +1,6 @@
 # Direction — read this first
 
-_Last rewritten 2026-10-22. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
+_Last rewritten 2026-10-23. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
 
 ## What we are building
 
@@ -190,15 +190,23 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
 
 The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round 1 contradicts that, so **re-price after the default stack is chosen** (`open.2026-10-20.reprice-tiers`).
 
-## Launch-readiness work in flight (2026-10-22)
+## Now: proving quality on real models (since 2026-10-23)
 
-The audit `evidence.2026-10-22.launch-readiness-audit` ranked the first-week gaps. Routed:
-- **learning:** the Operator offers at most 40 tools per call, plus a find-tools step; tested on real modules. Also auto-propose from monitor issues.
-- **calls:** cross-call LLM insights, quote-verified and cost-bounded.
-- **campaigns:** the Plivo KYC adapter; a staff credit path and a trial credit (amount in config).
-- **web:** DND and suppression actions; the Integrations connect form; the Activity undo claim; a generic sample CSV.
+The owner restored the usage limit and asked for full autonomy (`directive.2026-10-23.full-autonomy`). The scope is in
+`decision.2026-10-23.autonomy-scope`: spend and legal exposure still wait for the owner. Since 2026-10-22, these are done:
+- the Operator offers at most 40 tools per call and gives the model compact results;
+- learning proposes from monitor issues;
+- cross-call insight (quote-verified) and the Insights page;
+- contact compliance actions, the integrations form, and undo.
 
-Fixed by the main loop (5d9bca0): stack cards headline whole measured reply gaps; stack.list is priced by money.estimate; the Operator replies in English.
+Now running:
+- **voice:** "Call me in the browser" end to end, the top product gap: nobody can hear their agent inside the product yet.
+- **web:** the "VP" to Vyakti copy sweep and Insights fixes, then the first-run guided start for an empty workspace.
+- **campaigns:** the Plivo KYC adapter; then a staff credit, a trial credit (config, default 0) and the money copy.
+- **learning:** the server "VP" sweep; then `operator-bench.ts` (40-60 code-graded tasks) to measure the assistant on a real model.
+- **calls:** `analysis-bench.ts`, analysis and insight quality against hand-written keys.
+- **safety:** a DEV set and a new BLIND set 7 for the door's weak slices; get judge-eval ready to run.
+- **main loop (VM worker):** a private product staging on the existing India VM (no new resources), then the product runtime's own reply gap per stack. The main loop's subagents run the real-model benches: they need keys only this session holds. Vertex from the VM only, at most 1 request/s after 2026-10-23 20:00 UTC.
 
 ## Open threads with the owner
 
