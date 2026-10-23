@@ -126,8 +126,17 @@ test('Learning: propose, simulate, accept shows an approval card, and the screen
   await page.reload();
   t.diagnostic('proposal status after simulating: ' + probed.status);
   if (probed.status === 'awaiting_approval') {
-    await page.getByText('Simulated, waiting for your approval').first().waitFor();
+    await page.getByText('Simulated, waiting for you').first().waitFor();
+    // The button asks the server first whether the test can start; a blocker is shown in words and no approval is asked.
+    const ready = (await tool('proposal.readiness', { proposalId: probed.id })).result;
+    t.diagnostic('readiness: ' + JSON.stringify(ready));
     await page.getByRole('button', { name: 'Test this on real calls…' }).first().click();
+    if (!ready.ready) {
+      await page.getByRole('status').filter({ hasText: 'Not yet: ' + ready.reason }).first().waitFor();
+      assert.equal(await sheet().count(), 0, 'no approval card for a test that cannot start');
+      assert.ok(!(await actions('proposed')).some(a => a.tool === 'proposal.accept'), 'the server holds no accept waiting');
+      return;
+    }
     await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
     await hold(sheet().locator('.hold'));
     await sheet().getByText(/Done\.|Could not finish/).waitFor({ timeout: 8000 });

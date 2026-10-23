@@ -1,0 +1,132 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-23.experiment-assignment-readout",
+      "type": "decision",
+      "status": "active",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "An experiment's readout counts only the contacts it assigned (experiment_assignment, one arm per contact, stored at first assignment), on their own arm's version since assignment. A contact seen on both versions is a crossover: counted in neither arm and reported.",
+      "rationale": "rejected.2026-10-23.readout-all-calls-on-versions. Measured on the dev walk, n=1 run: the control arm held 752 contacts where 642 were assigned.",
+      "reverse_if": "Never for one-arm-per-contact. Revisit counting only if a binding (e.g. inbound) cannot assign before the call; then it needs its own unit of randomisation."
+    },
+    {
+      "id": "rejected.2026-10-23.readout-all-calls-on-versions",
+      "type": "rejection",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Rejected: reading an experiment out from every live call on the control and treatment versions since its start.",
+      "tried": "learning experiment.check before 8069484.",
+      "broke": "Calls the experiment never placed (another campaign on the same version, inbound, history) entered the arms; nothing stopped a contact from being counted on both versions."
+    },
+    {
+      "id": "decision.2026-10-23.adoption-into-draft",
+      "type": "decision",
+      "status": "active",
+      "source": "model",
+      "date": "2026-10-23",
+      "title": "A winning test is adopted only when its 100% rollout card is approved (the binding's latest deployment runs the treatment at 100%). Then the same edits go into the agent draft through brief.edit, the proposal becomes promoted, and an 'Adopted' lesson is written. A declined or expired card writes 'won but not adopted'. Nothing auto-publishes.",
+      "rationale": "On the walk a win produced only a rollout card; the draft kept the old text, so the next published version silently dropped the learned change.",
+      "reverse_if": "Agents gains first-class version branching where a published candidate can be promoted directly; then adoption should promote the version instead of re-applying edits."
+    },
+    {
+      "id": "decision.2026-10-23.goal-regression-stop",
+      "type": "decision",
+      "status": "active",
+      "source": "model",
+      "date": "2026-10-23",
+      "title": "A running test also stops when the goal rate is worse: an always-valid mSPRT (alpha 0.05) on 'did not reach the goal', with 30 or more outcomes per side. It reverts through the A3 verb, opens an issue and records a lesson, like the harm-code stop. The pre-registered design names this guardrail.",
+      "rationale": "Before, only harm codes and safety violations stopped a test; a change that did worse on the goal ran to its horizon.",
+      "reverse_if": "Shadow A/A runs show this stop firing on equal arms more often than alpha allows."
+    },
+    {
+      "id": "decision.2026-10-23.readiness-before-approval",
+      "type": "decision",
+      "status": "active",
+      "source": "model",
+      "date": "2026-10-23",
+      "title": "Before an approval is asked, proposal.readiness (and the proposal.accept card) plan the test without writing anything. They state the calls needed ('about N calls with a recorded outcome, M on each version, to prove X% -> Y%') or the first blocker in words with a fix kind (probe, wait, outcome, outcomes).",
+      "rationale": "On the walk a person held to approve and only then saw 'no success values'; the 1,208 calls needed were shown only after approval.",
+      "reverse_if": "Never: an approval card must say what it commits to."
+    },
+    {
+      "id": "measure.2026-10-23.learning-loop-walk",
+      "type": "measurement",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Learning loop walked end to end on the dev server (fake model, synthetic data), n=1 run: 30 calls (14 early hang-ups) -> the monitor fired at 8/20 (40% > 35%) -> 1 proposal from the issue -> probe on 12 library pairs -> test approved (about 1,208 outcomes to prove 40% -> 48%) -> A/A passed at 110 contacts -> split 545/555, 0 contacts in both arms -> win +20.3 points (95% CI 15.1 to 25.4) -> rollout approved -> adopted into the draft -> version 3's brief carries the change.",
+      "method": "product/web/dev/learning-walk.mts against web/dev/serve.ts. The 7-day minimum was simulated by backdating started_at. Automated as product/tests/learning-loop-e2e.test.ts on the real modules (minDays 0, mdeAbs 0.25).",
+      "not_verified": "Real-model simulation quality (both versions scored 0 of 12 in dev); real dialler placement; real outcome sources.",
+      "n": 1,
+      "path": "research/2026-10-23/walkthrough/LEARNING-LOOP.md"
+    },
+    {
+      "id": "open.2026-10-23.agents-candidate-version-latest",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "agent.get lists an experiment's candidate version first; anything reading 'latest' as live picks the candidate. Agents module to mark candidates or order by live. (owner: agents)",
+      "closes_when": "agent.get marks candidate versions or orders by the live version, with a test."
+    },
+    {
+      "id": "open.2026-10-23.probe-inconclusive",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "A probe where the current version passes nothing should read 'inconclusive', not 'passed'. (owner: learning)",
+      "closes_when": "proposal.probe returns inconclusive when the current version passes no simulated caller, with a test."
+    },
+    {
+      "id": "open.2026-10-23.issue-after-adoption",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Link an adopted change to the issue that started it; annotate and let the monitor close it when the rate falls. (owner: learning/calls)",
+      "closes_when": "An adopted change is linked to its issue and the monitor closes the issue once the rate falls, with a test."
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-23.experiment-assignment-readout",
+      "to": "rejected.2026-10-23.readout-all-calls-on-versions",
+      "relation": "derived-from"
+    },
+    {
+      "from": "measure.2026-10-23.learning-loop-walk",
+      "to": "decision.2026-10-23.adoption-into-draft",
+      "relation": "supports"
+    },
+    {
+      "from": "measure.2026-10-23.learning-loop-walk",
+      "to": "decision.2026-10-23.readiness-before-approval",
+      "relation": "supports"
+    },
+    {
+      "from": "measure.2026-10-23.learning-loop-walk",
+      "to": "open.2026-10-23.agents-candidate-version-latest",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "measure.2026-10-23.learning-loop-walk",
+      "to": "open.2026-10-23.probe-inconclusive",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "measure.2026-10-23.learning-loop-walk",
+      "to": "open.2026-10-23.issue-after-adoption",
+      "relation": "leaves-open"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-23",
+      "event": "learning-loop-walk",
+      "details": "The self-learning loop was walked end to end on the dev server. Seven fixes landed, each with a failing-first test: library practice callers, boolean sim metrics, goal values via agent_version_id, assignment-based readout, adoption into the draft, readiness before approval, and a goal-regression stop. Insights now shows the loop in words. There is one e2e test, from finished calls to an adopted change. Open items are listed in research/2026-10-23/walkthrough/LEARNING-LOOP.md."
+    }
+  ]
+}
