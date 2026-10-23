@@ -22,32 +22,38 @@ passed as quoted data under a fixed instruction prompt.
 
 ## Judge eval (run on the lab VM)
 
-`product/scripts/judge-eval.mjs` scores the crisis judge on every crisis line in `cases.json` (Hinglish, Hindi,
-Tamil-English, Bengali-English, including blind set 6's indirect lines) against every non-crisis caller line. It
-reports recall and false positives for the floor, the judge and the two combined, p50/p95 latency, tokens per turn
-and cost per 1,000 turns.
+`product/scripts/judge-eval.mjs` scores the crisis judge on caller vectors from `cases.json` (choose them with
+`--source`, e.g. `heldout-6` for blind set 6). It always asks the model, so the judge's own recall is measured even on
+lines the floor already catches. It reports recall and false positives for the floor, the judge and the two combined,
+with Wilson 95% intervals per slice (overall, per source set, per language), p50/p95 latency, tokens per turn and cost.
 
-What it needs:
+Environment (names only; values come from `/opt/voicelab/.env`, mode 600, never the repo or shell history):
 
-1. Node 22 and the repo with `npm ci` at the root (it uses `tsx`).
-2. An OpenAI-compatible chat-completions endpoint and key for the model under test, in the environment only (for
-   example from `/opt/voicelab/.env`, mode 600; never in the repo or the shell history):
-   - `VP_LLM_SAFETY_JUDGE_URL`: the full chat-completions URL (Azure OpenAI / Foundry, OpenRouter, Gemini's
-     OpenAI-compatible endpoint);
-   - `VP_LLM_SAFETY_JUDGE_KEY`;
-   - `VP_LLM_SAFETY_JUDGE_KEY_HEADER=api-key` for Azure (default is `authorization: Bearer`).
-3. Prices, if you want the cost line: INR per 1M input and output tokens for that model, from the provider's price
-   page on the day you run it.
+| Name | What |
+|---|---|
+| `VP_LLM_SAFETY_JUDGE_URL` | Full OpenAI-compatible chat-completions URL (Azure Foundry deployment, Vertex OpenAI-compatible endpoint, OpenRouter). |
+| `VP_LLM_SAFETY_JUDGE_KEY` | Key or bearer token (for Vertex, a fresh `gcloud auth print-access-token`; it expires in about an hour). |
+| `VP_LLM_SAFETY_JUDGE_KEY_HEADER` | `api-key` for Azure; leave unset for `authorization: Bearer`. |
+| `VP_LLM_SAFETY_JUDGE_MODEL` | Model or deployment id (or pass it as the first argument). |
+
+One model per run:
 
 ```
-set -a; . /opt/voicelab/.env; set +a
-node product/scripts/judge-eval.mjs <model-id> --price-in <INR/1M in> --price-out <INR/1M out> \
-  --concurrency 2 --out /tmp/judge-<model-id>.json
+set -a; . /opt/voicelab/.env; set +a        # then export the four names above for this model
+node product/scripts/judge-eval.mjs --source heldout-6 --rps 1 --concurrency 1 \
+  --price-in <INR per 1M input tokens> --price-out <INR per 1M output tokens> \
+  --max-cost-inr 50 --max-requests 400 --label <short-label> --out-dir /tmp/judge-eval/<short-label>
 ```
 
-- Run it from the India lab VM so latency is what a call sees. Google credentials are used only from that VM and
-  rate-limited (keep `--concurrency` at 2 or lower for Google endpoints). No paid upgrade without the owner's go.
-- `--limit N` takes the first N crisis and N non-crisis lines, for a quick smoke run.
-- Report the result as a measurement node (model, n, method, date, recall, FP, p50/p95, cost per 1k turns). The floor
-  is in-sample on these vectors; the judge was not tuned on them. A fresh blind set is still the honest test.
-- Dry run without a network: `VP_JUDGE_EVAL_FAKE=<module exporting a fake LLM fn>` with any URL/KEY values.
+- **Budget.** `--rps` is a hard rate shared by all workers (default 1/s). `--max-requests` (default 2000) and
+  `--max-cost-inr` (needs both prices) stop the run; the report says if it stopped early. Lines are interleaved
+  crisis / non-crisis so a capped run still covers both sides.
+- **Outputs** in `--out-dir`: `report.json` (all slices with k, n, rate, Wilson CI), `results.json` (one row per line:
+  floor, judge, confidence, kind, latency, failure reason) and `summary.md` (the table). The markdown also prints to
+  stdout. No key or URL is ever written.
+- **Where.** Run from the India lab VM so latency is what a call sees. Google credentials only from that VM,
+  rate-limited (≤ 1 req/s). No paid upgrade without the owner's go.
+- **Reading it.** Report a measurement node per model: n, method, date, recall and FP with CIs per slice, p50/p95,
+  ₹ per 1,000 turns. The floor is in-sample on the sets it has seen; the judge prompt was not tuned on any set.
+  Language tags on sets 1-6 are heuristic; dev-7 and heldout-7 carry the writer's tags.
+- **Dry run** without a network: `VP_JUDGE_EVAL_FAKE=<module exporting a fake LLM fn>` with any URL/KEY values.
