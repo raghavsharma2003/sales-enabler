@@ -53,6 +53,44 @@ class Disclosure(unittest.TestCase):
         self.assertTrue(out[0].startswith('Main Suraksha ki AI assistant hoon.'), 'no clause still discloses')
 
 
+    def test_opening_vectors(self):
+        self.assertEqual(sum(1 for v in D['opening_vectors'] if v['note'].startswith('staging')), 6)
+        for v in D['opening_vectors']:
+            self.assertEqual(safety.opening_discloses(v['sentences']), v['discloses'], v['note'])
+
+
+class WholeOpening(unittest.TestCase):
+    """rejected.2026-10-23.rd1-first-sentence-window-double-disclosure: RD1 judged her first sentence only, so a
+    disclosure after a greeting, a question or a "..." got the fixed line prefixed and she disclosed twice (3/6 staging
+    calls). The runtime now holds the opening until a sentence discloses or the reply ends."""
+    STAGING = [v for v in D['opening_vectors'] if v['note'].startswith('staging')]
+
+    def test_the_six_staging_openings_are_said_as_written_with_one_disclosure(self):
+        for v in self.STAGING:
+            out = opening(' '.join(v['sentences']), clause='')
+            said = ' '.join(out)
+            self.assertTrue(said.endswith(v['sentences'][0][-12:]) or v['sentences'][0][-12:] in out[0], (v['note'], out))   # her own words first (names.repair may fix a wrong name)
+            self.assertNotIn('Suraksha', said, (v['note'], out))                          # and no fixed line anywhere
+
+    def test_a_disclosure_after_a_greeting_is_not_doubled(self):
+        out = opening('Hello Asha ji! Main Suraksha ki AI assistant hoon, Riya. Aapki policy ka renewal agle hafte hai.')
+        self.assertEqual(out[0], 'Hello Asha ji!', out)
+        self.assertEqual(sum(1 for s in out if 'AI assistant' in s), 1, out)
+
+    def test_an_opening_that_never_discloses_still_gets_the_line_first(self):
+        out = opening('Hello Asha ji! Main Riya hoon. Aapki policy ka renewal agle hafte hai.')
+        self.assertTrue(out[0].startswith('Main Suraksha ki AI assistant hoon. Hello Asha ji!'), out)
+
+    def test_only_the_opening_is_held(self):
+        from vpvoice.conversation import Conversation, Draft
+        t = ticket(); s, _ = sink(t['conversationId'])
+        c = Conversation(t, FakeBrain([]), s, meter=None, clock=lambda: 0.0)
+        self.assertTrue(c.holds_opening(Draft('x')))
+        c.agent_turns = 1
+        self.assertFalse(c.holds_opening(Draft('x')))
+        c.agent_turns = 0; c.state['disclosed'] = True
+        self.assertFalse(c.holds_opening(Draft('x')))
+
 
 class NameSlot(unittest.TestCase):
     """Staging bug 2026-10-23: test calls carry no contact name and she said "क्या मैं ___ से बात कर रही हूँ?"."""

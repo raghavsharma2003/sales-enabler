@@ -59,6 +59,21 @@ def affirms_ai(text, clause=''):
     return bool((c and c in t) or rules.rx('@ai_affirm').search(t))
 
 
+def opening_discloses(sentences, clause=''):
+    """RD1 decides on the whole opening turn, not its first sentence: the fixed line is prefixed only when no sentence of
+    the opening affirms she is an AI. Deciding on the first sentence alone made her disclose twice whenever her own
+    disclosure came after a greeting, a question or a "..." (3/6 staging calls,
+    rejected.2026-10-23.rd1-first-sentence-window-double-disclosure). Vectors: disclosure.json opening_vectors.
+    The joined opening is judged too, with an ellipsis that ends a sentence read as the pause it is ("मैं रिया हूँ, सांझ
+    सर्विसेज से... आपकी AI असिस्टेंट"); a full stop, question or exclamation still ends the clause."""
+    sentences = [x.strip() for x in sentences if x and x.strip()]
+    joined = ' '.join(_ELLIPSIS_END.sub(',', x) for x in sentences)
+    return any(affirms_ai(x, clause) for x in sentences) or affirms_ai(joined, clause)
+
+
+_ELLIPSIS_END = re.compile(r'(\.{2,}|…)$')
+
+
 _NEUTRAL = {'category': 'service', 'sectorPacks': ['base'], 'brand': {'name': '', 'verifiedDomains': []}, 'facts': [], 'neverSay': [],
             'disclosed': True, 'identityVerified': True, 'recordingRefused': False, 'crisis': False, 'turnIndex': 1}
 
@@ -89,6 +104,7 @@ class DoorContext:
     contact_facts: dict = field(default_factory=dict)
     gender: str = 'female'
     first_sentence: bool = True
+    opening_discloses: bool = False   # some sentence of this opening turn affirms she is an AI (opening_discloses())
 
     def contract(self):
         """The TS DoorContext: per-contact facts join the facts with perContact = true."""
@@ -142,7 +158,7 @@ def reply_door(text, ctx, prev=None):
             return {'action': 'replace', 'rule': 'RD2', 'text': honest_line(ctx), 'reason': 'asked if she is an AI: she answers honestly',
                     'id': 'runtime.asked_ai', 'final': True}
         t = honest_line(ctx) + ' ' + t; pre = ('RD2', 'asked if she is an AI: the honest answer comes first', 'runtime.asked_ai')
-    elif ctx.first_sentence and not ctx.disclosed and ctx.turn_index == 0 and not affirms_ai(t, clause):
+    elif ctx.first_sentence and not ctx.disclosed and ctx.turn_index == 0 and not ctx.opening_discloses and not affirms_ai(t, clause):
         # never the clause itself: it is guidance for the brief ("that you are its AI assistant, mentioned in passing")
         t = f'{disclosure_line(_brand(ctx), script_language(t, ctx.language))} {t}'; pre = ('RD1', 'the first breath carries the AI disclosure', 'runtime.first_breath')
     c = ctx.contract()

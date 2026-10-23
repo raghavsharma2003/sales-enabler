@@ -1,0 +1,49 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-23.rd1-whole-opening",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "RD1 decides on the whole opening turn: the runtime holds her first reply until a sentence affirms she is an AI (then it is said as written) or the reply ends without one (then the first sentence gets the fixed disclosure.json line). The opening is judged sentence by sentence and joined, with an ellipsis that ends a sentence read as a pause; a full stop, question or exclamation still ends the clause. Shared decision: TS disclosure.ts openingDiscloses / Python safety.opening_discloses, vectors disclosure.json opening_vectors (6 staging openings + 6 synthetic)",
+   "rationale": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure: RD1 judged only the first sentence, so 3/6 staging calls disclosed twice. All 6 staging openings disclose within their first two sentences, so the hold costs one sentence of brain output in the common case.",
+   "reverse_if": "Time to first audio on the opening rises noticeably on staging (the hold waits for the disclosing sentence, or for the whole opening when she never discloses); then cap the hold at two sentences."
+  },
+  {
+   "id": "measure.2026-10-23.rd1-whole-opening-vectors",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Whole-opening RD1 on the 6 verbatim staging openings (prefix removed): 6/6 judged disclosed by both doors, so none would get the fixed line (before: 3/6 prefixed). Runtime (SimSession + FakeBrain): the 6 openings are said with no fixed line; a disclosure after a greeting is said once; an opening that never discloses still starts with the fixed line. These runtime tests fail on the previous code (2 failures + 2 errors) and pass after.",
+   "n": "12 opening vectors (6 staging, 6 synthetic) in both doors; 4 runtime tests",
+   "method": "node:test tests/safety-disclosure.test.ts; python -m unittest tests.test_disclosure; staging verbatims from research/2026-10-23/staging/redeploy-calls.jsonl",
+   "not_verified": "Not run on staging; time to first audio with the hold not measured. The practice-run simulator (agents/simulate.ts) has no RD1 prefix and still grades whether the brief discloses on its own; left unchanged."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-23.rd1-whole-opening",
+   "to": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.rd1-whole-opening-vectors",
+   "to": "decision.2026-10-23.rd1-whole-opening",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-23.rd1-whole-opening",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "part-of"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "safety-rd1-whole-opening",
+   "details": "RD1 decides on the whole opening turn in TS (disclosure.ts openingDiscloses, replyDoor only=) and Python (safety.opening_discloses, conversation holds the opening). The 6 staging openings would now get no fixed line (3/6 did). Gates: tsc clean, fresh-DB 458/458, ui-contract strict 173/173, voice unittest OK."
+  }
+ ]
+}

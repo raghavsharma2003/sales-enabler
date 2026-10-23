@@ -199,11 +199,13 @@ export function safetyText(key: string, brand: string): string {
   return t.replace(/\{brand\}/g, brand);
 }
 
-/** Check one outgoing sentence before it is spoken. */
-export function replyDoor(text: string, ctx: DoorContext): DoorVerdict {
+/** Check one outgoing sentence before it is spoken. only: evaluate just these rules (e.g. new Set(['RD2']), to ask "is
+ *  this a denial?" without another rule answering first), as the Python door's reply_door(only=...). */
+export function replyDoor(text: string, ctx: DoorContext, only?: ReadonlySet<string>): DoorVerdict {
   const t = normalise(text);
   if (!t) return { action: 'pass' };
   for (const r of RULES.reply) {
+    if (only && !only.has(r.rule)) continue;
     if (!inScope(r.scope, ctx)) continue;
     const hit = r.kind.startsWith('builtin:') ? builtin(r.kind.slice(8), text, t, ctx) : fires(r, t, ctx.brand.name);
     if (!hit) continue;

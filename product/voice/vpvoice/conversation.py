@@ -45,6 +45,8 @@ class Draft:
         self.blocked = []; self.replaced = []
         self.t = {}               # stage clock marks for the latency breakdown (cascade.Reply.timing)
         self.first_clause_at = None   # CascadeSession.FIRST_CLAUSE: voice the first clause of a reply on its own
+        self.hold = None          # the opening turn's sentences, held until one affirms she is an AI or the turn ends
+        self.opening_discloses = False
 
     @property
     def text(self): return ' '.join(self.sentences)
@@ -122,6 +124,7 @@ class Conversation:
                            detail=f"addressed the person by {len(wrong)} name(s) not the contact's; " + ("repaired to the contact's name" if self.contact.get('displayName') else 'name dropped (no contact name)'))
             draft.replaced.append('RD11')
         ctx = self.door_ctx(first_sentence=not draft.sentences)
+        ctx.opening_discloses = draft.opening_discloses
         if any(safety.affirms_ai(x, ctx.disclosure_clause) for x in draft.sentences): ctx.disclosed = True   # affirmed earlier in this reply
         v = safety.reply_door(re.sub(r'<[^<>]{1,24}>', '', text), ctx, prev=draft.sentences[-1] if draft.sentences else None)
         if v.get('final'): draft.final = True
@@ -258,13 +261,14 @@ class Conversation:
             msgs = self.messages_for(draft.user_text if draft.pending else None, correction)
             sp = brief.Splitter(first_clause_at=draft.first_clause_at if attempt == 0 else None); usage = {}; timing = {}; blocked = None
             draft.t.setdefault('brain_req', self.clock())
+            draft.hold = [] if self.holds_opening(draft) else None; draft.opening_discloses = False
             gen = self.brain.stream(msgs, usage, timing, max_tokens=MAX_TOKENS)
             try:
                 async with contextlib.aclosing(gen):
                     async for d in gen:
                         draft.t.setdefault('brain_first', self.clock())
                         draft.raw += d
-                        for s in sp.feed(d):
+                        for s in self.release(sp.feed(d), draft):
                             if draft.gate is not None and not draft.sentences:     # the judge's verdict before she is heard
                                 gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
                                 confirm = self.confirm_opt_out(draft)
@@ -278,7 +282,7 @@ class Conversation:
                     draft.raw = brief.END.sub('', draft.raw)
                     return
                 if not blocked:
-                    for s in sp.flush():
+                    for s in self.release(sp.flush(), draft, end=True):
                         if draft.gate is not None and not draft.sentences:
                             gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
                             confirm = self.confirm_opt_out(draft)
@@ -300,6 +304,24 @@ class Conversation:
         line = safety.safe_fallback_line(self.gender)
         draft.sentences.append(line)
         yield line
+
+    def holds_opening(self, draft):
+        """RD1 decides on the whole opening turn: while she has not disclosed, her first reply is held until a sentence
+        affirms she is an AI (then all of it goes out as written) or the reply ends without one (then the first
+        sentence gets the fixed line). rejected.2026-10-23.rd1-first-sentence-window-double-disclosure. Cost: the first
+        audio waits for the disclosing sentence, or for the whole opening when she never discloses."""
+        return not draft.sentences and self.agent_turns == 0 and not self.state['disclosed'] and not self.state['asked_ai']
+
+    def release(self, new, draft, end=False):
+        """The sentences ready for the door now. Outside the opening hold, all of them."""
+        if draft.hold is None: return list(new)
+        clause = (self.agent.get('opening') or {}).get('disclosureClause', '')
+        draft.hold.extend(new)
+        said = [re.sub(r'<[^<>]{1,24}>', '', brief.spoken(s, keep_sounds=self.keep_sounds) or '') for s in draft.hold]
+        if safety.opening_discloses(said, clause): draft.opening_discloses = True
+        if not (draft.opening_discloses or end): return []
+        out, draft.hold = draft.hold, None
+        return out
 
     def charge_brain(self, usage):
         if not usage: return
