@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-23",
+      "event": "integrator-gates-f2b27d4",
+      "details": "Integrator re-ran every gate on f2b27d4 (walkthrough S1/S2/S4/S5/S7, safety opt-out judge 2afd7b6, voice staging fixes aab9fe6): tsc clean; fresh Postgres 16 scripts/test.mjs 449/449 pass, 0 skip (the browser call ran on devsim); ui-contract --strict inside web.test; product/voice unittest 221 OK. CI green on 02ef5ff. Merged six inbox files that had unmerged nodes (voice 10-22 azure-ears-routing and stack-selection, calls 10-23, learning 10-23b, safety 10-23c, voice 10-23 staging-fixes). Next assignments: voice -> reply-gap reduction to <1.5 s p50 with a stage breakdown first, plus barge-in speed; calls -> judge-event opt-out fields and one goal-reached definition; learning -> prove the harness2 loop end to end on the dev server; campaigns -> money/KYC/series plan (relayed go)."
+    }
+  ]
+}

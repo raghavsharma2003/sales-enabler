@@ -18273,6 +18273,179 @@
    "source": "model",
    "title": "She yields to a caller who talks over her in a median 725 ms (TEST, n=55, 95% CI 708-739), and missed 2/55 barge-ins within 1.5 s. People yield in about 200-400 ms. Lowering BARGE_MS / BARGE_LONG_MS speeds this up but risks false barge-ins on backchannels and noise (0/55 each today). Next lever to bench on DEV",
    "closes_when": "a DEV-tuned barge-in rule lowers the yield time on TEST without raising false barge-ins, or the real-provider bench shows 725 ms is not felt"
+  },
+  {
+   "id": "decision.2026-10-22.voice-runtime-azure-ears",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-22",
+   "source": "model",
+   "title": "The product runtime's ears for the curated cascade stacks (v2-flashlite, v2-54mini, v2-38flash, v2-mai, v2-luna) are Azure Speech real-time STT (hi-IN, Central India, LAB_SPEECH_KEY/REGION) through the VAD gate, ported from the lab's measured AzureSTT via the Speech SDK (azure-cognitiveservices-speech 1.52.0). Gemini ears stay in the catalog, unavailable with \"Gemini listening isn't offered on Google Cloud\"; never rerouted",
+   "rationale": "decision.2026-10-22.ears-azure-not-gemini: Vertex has no Gemini transcription model (measure.2026-10-22.vertex-availability-probe). The SDK path is what the lab runs and measured; a hand-rolled websocket protocol would be new, unmeasured code on the hottest path.",
+   "reverse_if": "Vertex offers a Gemini transcription model and it beats Azure on Hinglish accuracy or latency in the lab; or the Speech SDK cannot run in the deploy image (then the REST/websocket protocol or Sarvam ears)"
+  },
+  {
+   "id": "decision.2026-10-22.voice-groq-not-offered",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-22",
+   "source": "model",
+   "title": "The product runtime does not offer gpt-oss-120b@groq: gpt-oss-120b runs on our Azure Foundry (routing Vertex > Foundry > OpenRouter). The cost is first-token latency: Groq 0.48 s against Azure 1.47 s (n=6, India VM, 2026-10-19, tests/brain_bench.py)",
+   "rationale": "directive.2026-10-22.provider-routing: OpenRouter only for what is in neither Vertex nor our Foundry.",
+   "reverse_if": "the owner judges the extra ~1 s of first-token latency worth an OpenRouter route for gpt-oss-120b"
+  },
+  {
+   "id": "decision.2026-10-22.voice-runtime-built-stacks",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-22",
+   "source": "model",
+   "title": "The voice runtime runs the parts a ticket names (stack.components). A curated id must carry exactly the parts of the runtime's own table, else 422 stack_mismatch. 'custom' is built from catalog parts: a cascade needs ears, brain and voice; an engine stack has s2s only. Unknown parts, incomplete sets and parts that differ from agent.voice.components are refused. Missing credentials are named per part (503 stack_unavailable with missing), and so are parts Vertex does not serve. combination_id uses the same algorithm over the parts, so a built copy of a curated stack files under the same combination",
+   "rationale": "directive.2026-10-22.full-stack-selection: users pick every component, with a default stack. Never substituting a part, and filing under what actually ran, keep test integrity.",
+   "reverse_if": "built stacks need settings beyond parts and the gate (e.g. per-part regions or speeds); then the ticket carries them and the combination id must include them"
+  },
+  {
+   "id": "measure.2026-10-22.components-parity",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-22",
+   "source": "verified",
+   "title": "shared/components.ts matches the voice runtime catalog on every listed part: id, part, route, requires, and voices as a subset with the same default. All 7 curated stacks are built from offered parts. Known difference: components.ts offers 6 of the catalog's 12 Sarvam voices",
+   "n": 21,
+   "method": "product/voice/tests/test_stack_select.py ComponentsParity parses components.ts and compares it with vpvoice/catalog.py and stacks.py, 2026-10-22. Python 3.13 and 3.12, clean clone.",
+   "path": "product/voice/tests/test_stack_select.py",
+   "value": "parity green; Sarvam voices are a subset by choice in components.ts"
+  },
+  {
+   "id": "decision.2026-10-23.analysis-contract-shapes-conv-codes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "The analysis contract is written as shapes: the model may name CONV_* codes only, null outcome only when no PERSON line bears on the question, every agreeing PERSON line is a commitment, and the outcome carries a confidence",
+   "rationale": "The real-model bench showed three miss classes. Mini gave null outcomes on wrong-person, complaint and opt-out calls; found 7 of 21 commitments; and named END_HANDED_OFF, an engine code, on 2 complaint calls. The changes are class-level, from the template pattern of the misses, not tuned item by item. A mutation test proves the CONV_* guard is what stops an engine code.",
+   "reverse_if": "The TEST split on a real model shows no gain over the old contract on outcome and commitment recall, or a loss elsewhere."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "type": "decision",
+   "status": "proposed",
+   "source": "inferred",
+   "date": "2026-10-23",
+   "title": "The analysis model is chosen per workspace from a curated list: single, or tiered (a cheaper first pass that escalates failed, outcome-less or low-confidence calls to a stronger model). No default model is chosen in code",
+   "rationale": "Computed for a 3-minute call: mini about \u20b90.073, GPT-4.1 about \u20b90.38, against a \u20b90.17 budget. Tiered costs \u20b90.073 plus e x \u20b90.38, so it stays under budget while the escalation rate e is below 26%. The bench's no-outcome rate for mini was 16.7%.",
+   "reverse_if": "The TEST split shows tiered accuracy significantly below GPT-4.1-only, or a real-traffic escalation rate of 26% or more."
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-real-models",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Analysis bench on real models (integrator's run, older contract): outcome 70/84 (mini) vs 84/84 (GPT-4.1); moment recall 57/72 vs 67/72; quotes grounded 230/230 and 277/277; cross-call themes 3/3 on both; \u20b90.048 vs \u20b90.263 per call",
+   "n": 84,
+   "method": "product/scripts/analysis-bench.ts at 1 request a second on Azure models; scored by code against hand-written keys",
+   "path": "research/2026-10-23/benches"
+  },
+  {
+   "id": "decision.2026-10-23.activity-subject-ids-only",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Every audited tool run records its subject as {type, id} only (from its input, or for a create from what its result made). activity.list resolves the name at read time inside the workspace, and a contact without a name shows as 'a contact', never a number",
+   "rationale": "Closes open.2026-10-21.activity-row-subject (walkthrough S4). Storing ids, not names, keeps the hash-chained audit free of personal data and lets a renamed or deleted thing read correctly. A guard test makes every new *Id argument either a subject key or an explicitly internal id.",
+   "reverse_if": "The activity ledger must show the name as it was at the time of the change (for example for a compliance export); then store a name snapshot beside the id, with redaction."
+  },
+  {
+   "id": "decision.2026-10-23.portable-schema-patterns",
+   "type": "decision",
+   "status": "active",
+   "source": "model",
+   "date": "2026-10-23",
+   "title": "Tool schemas carry only portable regex patterns: no flags, no \\p{\u2026}, lookbehind, named groups or \\u{\u2026}. A non-portable pattern stays a server-side check and the schema describes it in words. tests/tool-schemas-portable.test.ts walks every registered tool.",
+   "rationale": "rejected.2026-10-23.unicode-regex-in-tool-schemas.",
+   "reverse_if": "Every provider the product supports accepts Unicode property classes in function schemas, verified by a request to each."
+  },
+  {
+   "id": "decision.2026-10-23.operator-outcome-first",
+   "type": "decision",
+   "status": "active",
+   "source": "model",
+   "date": "2026-10-23",
+   "title": "Every tool and plan result reaches the Operator's model with an outcome first (DONE / NOT DONE / WAITING FOR APPROVAL / UNKNOWN; plans say n of m steps ran plus a notDone list), the compactor always keeps it, and the conduct rules say NOT DONE means nothing changed.",
+   "rationale": "On the 2026-10-23 bench a reply claimed an edit that had been refused; plan results began with status 'planned' even when every step was refused.",
+   "reverse_if": "A real-model re-run shows false success claims persist at the same rate; then the cause is elsewhere (e.g. the model ignores tool results) and needs a code-level check on the reply."
+  },
+  {
+   "id": "decision.2026-10-23.draft-one-repair-turn",
+   "type": "decision",
+   "status": "active",
+   "source": "model",
+   "date": "2026-10-23",
+   "title": "agent.create from a description: the drafting prompt states field types (mirrorCaller true or false), and a draft that fails validation gets exactly one repair turn carrying the validator's message; a second failure is refused naming the field and the accepted form. Code never guesses a value.",
+   "rationale": "Both gpt-4.1 and gpt-4.1-mini returned mirrorCaller as a language code; strict validation refused every draft (bench bug 2).",
+   "reverse_if": "Repair turns rarely succeed in bench re-runs (cost without benefit), or a structured-output mode makes invalid drafts impossible."
+  },
+  {
+   "id": "decision.2026-10-23.bench-model-error-is-fail",
+   "type": "decision",
+   "status": "active",
+   "source": "model",
+   "date": "2026-10-23",
+   "title": "The Operator bench counts a turn that ended in a model error as a fail and reports 'reached the model' separately (count and pass rate with CI); a clarifying request counts as asking with or without a question mark.",
+   "rationale": "On 2026-10-23, 5 refusal and injection tasks per model scored PASS only because the provider refused the request and nothing changed; imperative clarifications were scored as no question.",
+   "reverse_if": "Never for the model-error rule; widen the clarification detector if real replies show other phrasings."
+  },
+  {
+   "id": "decision.2026-10-23.judge-opt-out-label",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "The caller judge reads two labels in one call, crisis and opt_out (judge id caller_crisis kept for the runtime protocol). Opt-out is raise-only, threshold 0.6, never raised while a call is in crisis. A raise replaces the reply about to be spoken with rules.json texts.opt_out_confirm, emits the opt_out moment (calls then suppresses the contact) and ends the call with end reason opt_out",
+   "rationale": "The opt-out floor reaches 57.5% on fresh code-mixed phrasings (measure.2026-10-23.optout-blind), and a missed opt-out is a TCCCPR breach. A second label on the call already made for crisis costs no extra latency. Using the floor's existing opt-out path keeps one suppression mechanism.",
+   "reverse_if": "Shadow data or a blind eval shows the opt-out label's false positives above 3% on look-alikes (ending calls people did not ask to end), or the owner prefers post-call review for opt-outs; then keep the label in shadow or drop it."
+  },
+  {
+   "id": "open.2026-10-23.judge-event-opt-out-fields",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "The runtime protocol's 'judge' event and calls' call_judge_event table only know crisis (judge 'caller_crisis', kind direct|indirect). Opt-out shadow verdicts are therefore logged by the runtime but not recorded for analysis",
+   "closes_when": "The kernel adds an opt-out record to RuntimeEvent 'judge' (e.g. label 'opt_out' with confidence) and calls stores it; then the runtime emits it for shadow and raise, and shadow opt-out precision can be read from live calls."
+  },
+  {
+   "id": "component.2026-10-23.judge-eval-two-tasks",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "judge-eval scores both labels: --task crisis|opt_out|both (default crisis), cases.json rows by expectation, --set files by shape (sets/heldout-7.json crisis, sets/heldout-optout.json opt-out); per-task slices with Wilson CIs, floor/judge/combined recall and false positives",
+   "path": "product/scripts/judge-eval.mjs"
+  },
+  {
+   "id": "decision.2026-10-23.voice-fixed-disclosure-line",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "When her first sentence does not say she is an AI, the runtime's RD1 fallback prefixes a fixed, speakable line from shared/safety/disclosure.json, built from the brand's spoken name, in the call's language and her script. agent.opening.disclosureClause is guidance for the brief compiler and is never spoken. lexicon.ai_affirm recognises first-person disclosure in Roman, Devanagari, English, Tamil and Bengali, and refuses mentions ('about the assistant') and denials. Shared vectors keep the Python and TS sides in parity",
+   "rationale": "Staging 2026-10-23: 17 of 18 openings read the template guidance 'that you are its AI assistant, mentioned in passing' aloud, because the fallback prefixed the clause verbatim and affirms_ai missed the brain's Devanagari disclosure.",
+   "reverse_if": "agent configs start carrying a speakable, owner-approved disclosure sentence (then the fallback may use it, after a lint that it affirms); or a language is added that has no checked line (then add one rather than use the Hinglish fallback)"
+  },
+  {
+   "id": "measure.2026-10-23.ingest-refuses-whole-batch-for-one-field",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Confirmed: calls' validateRuntimeBatch refuses a whole event batch when one turn's tone exceeds 50 characters ('events[0].tone: must be at most 50 characters'), and the runtime accepted tone notes up to 80. This explains the 2 dropped v2-mai batches on staging. The runtime now trims every limited field to ingest's limits before sending",
+   "n": 1,
+   "method": "A batch of two turns, one with a 79-character tone, through product/server/modules/calls/ingest.ts validateRuntimeBatch, 2026-10-23. Regression: product/voice/tests/test_event_limits.py, which runs the runtime's real batches through the same validator when node and tsx are present.",
+   "path": "product/voice/vpvoice/events.py",
+   "value": "one over-long field drops the whole batch; runtime trims to fit"
   }
  ],
  "edges": [
@@ -32297,6 +32470,66 @@
    "from": "open.2026-10-23.voice-barge-in-speed",
    "to": "measure.2026-10-23.turn-taking-product-runtime-baseline",
    "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-22.voice-runtime-azure-ears",
+   "to": "decision.2026-10-22.ears-azure-not-gemini",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-22.voice-groq-not-offered",
+   "to": "directive.2026-10-22.provider-routing",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-22.voice-runtime-built-stacks",
+   "to": "directive.2026-10-22.full-stack-selection",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-22.components-parity",
+   "to": "decision.2026-10-22.voice-runtime-built-stacks",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-real-models",
+   "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "relation": "evidences"
+  },
+  {
+   "from": "decision.2026-10-23.portable-schema-patterns",
+   "to": "rejected.2026-10-23.unicode-regex-in-tool-schemas",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-23.bench-model-error-is-fail",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "constrains"
+  },
+  {
+   "from": "decision.2026-10-23.operator-outcome-first",
+   "to": "decision.2026-10-22.operator-result-projection",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-23.judge-opt-out-label",
+   "to": "decision.2026-10-21.judge-raise-only-contract",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-23.judge-opt-out-label",
+   "to": "open.2026-10-23.optout-judge",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-23.judge-opt-out-label",
+   "to": "open.2026-10-23.judge-event-opt-out-fields",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-23.judge-eval-two-tasks",
+   "to": "component.2026-10-21.caller-crisis-judge",
+   "relation": "tests"
   }
  ]
 }
