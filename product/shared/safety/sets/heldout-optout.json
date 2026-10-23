@@ -1,0 +1,1207 @@
+{
+ "about": "Opt-out BLIND set: written 2026-10-23 by a separate agent blind to the rules and to optout-dev; scored ONCE at commit 87ebb00 (opt-outs caught 92/160, benign flagged 9/140). Never tune on it. Kept out of cases.json on purpose.",
+ "opt_out": [
+  {
+   "text": "ennaku inime call pannadheenga please number ah list la irundhu eduthudunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "naan sonnen illa interest illa inime phone panna vendaam",
+   "lang": "ta-en"
+  },
+  {
+   "text": "unga company la irundhu oru call kooda vara koodathu ippove en number ah block pannunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "thirumba thirumba call panringa romba tholla ah irukku inime call pannina complaint kudupen",
+   "lang": "ta-en"
+  },
+  {
+   "text": "ennaku therinjidum ellam vendaam da innoru thadava ennai disturb pannadheenga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "sir en name ah ungal database la irundhu delete pannidunga naan unga customer ah irukka virumbala",
+   "lang": "ta-en"
+  },
+  {
+   "text": "ok ok super nalla call dhaan aana inime enakku messages um calls um venam stop pannunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "ayyo ennada daily call pandringa last warning solren inime call vandha police la sollren",
+   "lang": "ta-en"
+  },
+  {
+   "text": "interest illa sir thanks inime call pannaadheenga number delete pannidunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "unga calls ah niruthunga enaku theva illa",
+   "lang": "ta-en"
+  },
+  {
+   "text": "dnd la irundhum call pandreenga en number ah remove pannunga inime vara kudathu",
+   "lang": "ta-en"
+  },
+  {
+   "text": "oru visayam sollanum romba nalla pesuringa aana inime enna call panna vendaam nu company kitta sollidunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "wow neenga romba dedicated ah irukkeenga dhinam call pannitu irukeenga super ippo number ah list la irundhu thookunga please",
+   "lang": "ta-en"
+  },
+  {
+   "text": "unsubscribe pannunga ennai",
+   "lang": "ta-en"
+  },
+  {
+   "text": "hello hello naan ippo sollitu irukken unga calls enaku vendaam mudhal la number ah vittudunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "ennoda number ah un calling list la irundhu neekkidu inime naan receive pannamaaten",
+   "lang": "ta-en"
+  },
+  {
+   "text": "sir naan innaiku oru kalyanam ku vandhirukken traffic vera irukku pazhaiya loan pathi ellam ennaku theriyum romba sonnaanga summa inime enna call pannaama irunga number ah mark pannidunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "stop calling me da ennaku inime call vendaam",
+   "lang": "ta-en"
+  },
+  {
+   "text": "inka naaku call cheyyakandi please naa number list nundi teesey andi",
+   "lang": "te-en"
+  },
+  {
+   "text": "naaku interest ledu inkaa call cheyyaddu",
+   "lang": "te-en"
+  },
+  {
+   "text": "mee calls valla chala disturb avtundi inkosari call chesthe complaint istanu",
+   "lang": "te-en"
+  },
+  {
+   "text": "naa number block cheyyandi mee database nundi delete chesey andi",
+   "lang": "te-en"
+  },
+  {
+   "text": "enni sarlu cheppali nenu cheppanu kada inka phone cheyyakandi last warning idi",
+   "lang": "te-en"
+  },
+  {
+   "text": "ayyo meeru malli call chesara naaku vaddu antunna kada number remove chesi pettandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "mee offers anni baagunnayi kani naaku vaddu inka messages kuda pampakandi calls kuda cheyyakandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "ra babu daily daily call chestunnav naa peru teesey ra list lo nunchi",
+   "lang": "te-en"
+  },
+  {
+   "text": "sir dnd lo undi kuda call chestunnaru idi correct kaadu inka cheyyakunda chudandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "inka ee number ki mee company nundi ye call raakudadu",
+   "lang": "te-en"
+  },
+  {
+   "text": "chala thanks andi kani maaku avasaram ledu inkoka sari phone cheyyaku number delete chey",
+   "lang": "te-en"
+  },
+  {
+   "text": "wah meeru entha hardworking andi roju call chestaaru ippudaina aapandi naa number teesey",
+   "lang": "te-en"
+  },
+  {
+   "text": "naaku emi vaddu ee calls aapandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "naa number ni do not call list lo pettandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "ledu andi mee scheme gurinchi naaku telusu maa friend kuda cheppadu ayina kani nenu emi teesukoledu so please inkaa naaku call cheyyakandi eppudu kuda",
+   "lang": "te-en"
+  },
+  {
+   "text": "stop calling nenu cheppanu inka call cheyyaku",
+   "lang": "te-en"
+  },
+  {
+   "text": "mee company ki cheppandi na number ni vaddu ani malli call vachindante consumer court ki veltanu",
+   "lang": "te-en"
+  },
+  {
+   "text": "unsubscribe cheyyandi naa number nundi",
+   "lang": "te-en"
+  },
+  {
+   "text": "amake ar call korben na please amar number ta list theke bad din",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ami interested na ar phone korben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "bar bar call korchen birokto hoye gechi ar ekbar korle complaint korbo",
+   "lang": "bn-en"
+  },
+  {
+   "text": "amar number ta block kore din apnader database theke delete korun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ami to bolechi ar dorkar nei tobuo abar phone eta last warning",
+   "lang": "bn-en"
+  },
+  {
+   "text": "dada amar naam ta list theke tule din ar kokhono call korben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "apnader offer bhalo kintu amar lagbe na ar message o pathaben na call o korben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ei toh dnd e ache tarpor o call korchen number ta remove korun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ar ekbar call korle consumer forum e jabo ar call korben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "bhai ar phone korish na amake",
+   "lang": "bn-en"
+  },
+  {
+   "text": "wah ki dedication roj roj call ekhon dayakore bondho korun ar number ta mushe din",
+   "lang": "bn-en"
+  },
+  {
+   "text": "amar number ta apnader calling list theke soriye din please",
+   "lang": "bn-en"
+  },
+  {
+   "text": "dhonnobad kintu ar amake bother korben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "amake unsubscribe kore din",
+   "lang": "bn-en"
+  },
+  {
+   "text": "dekhun ami ekhon office theke ferar por onek kichu bhabi apnara protidin ek e jinish bolen ami bujhe gechi ami lagbe na ar tai daya kore ar call korben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "stop calling me ar kokhono ei number e phone korben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "amar number ta do not call list e rakhun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ami to age bolechilam na ar call nei number ta delete korun na hole legal action nebo",
+   "lang": "bn-en"
+  },
+  {
+   "text": "mala parat call karu naka please maza number list madhun kadhun taka",
+   "lang": "mr-en"
+  },
+  {
+   "text": "mala interest nahi ani parat phone karu nakos",
+   "lang": "mr-en"
+  },
+  {
+   "text": "tumhi vaarvaar call karta mala tras hoto parat kela tar takrar karin",
+   "lang": "mr-en"
+  },
+  {
+   "text": "maza number block kara ani database madhun delete kara",
+   "lang": "mr-en"
+  },
+  {
+   "text": "kitida sangu mi sangitla na parat call karu naka hi shevatchi warning",
+   "lang": "mr-en"
+  },
+  {
+   "text": "ho ho kalale pan mala nako ahe parat phone yeu det nako",
+   "lang": "mr-en"
+  },
+  {
+   "text": "tumchya offers chhan ahet pan mala nako message pan pathvu naka call pan karu naka",
+   "lang": "mr-en"
+  },
+  {
+   "text": "dnd madhe asun pan call karta maze naav kadha list madhun",
+   "lang": "mr-en"
+  },
+  {
+   "text": "aho saheb ata purn thamba ya number var parat call karaycha nahi",
+   "lang": "mr-en"
+  },
+  {
+   "text": "ya company kadun mala konatahi call nako",
+   "lang": "mr-en"
+  },
+  {
+   "text": "wah kiti mehnat tumhi roj call karta ata please maza number kadhun taka",
+   "lang": "mr-en"
+  },
+  {
+   "text": "unsubscribe kara mala",
+   "lang": "mr-en"
+  },
+  {
+   "text": "maza number do not call list madhe taka",
+   "lang": "mr-en"
+  },
+  {
+   "text": "mi sangitle ahe na mala nako parat phone kelat tar police madhe jain",
+   "lang": "mr-en"
+  },
+  {
+   "text": "arre mi gavala challo hoto mhanun nit bolu shakat nahi ani tumche loan baddal sagla mahit ahe ase asel tari mala nako tevha parat kadhi call karu naka",
+   "lang": "mr-en"
+  },
+  {
+   "text": "bas zala ata call karu naka",
+   "lang": "mr-en"
+  },
+  {
+   "text": "dhanyavad pan amhala garaj nahi number delete kara",
+   "lang": "mr-en"
+  },
+  {
+   "text": "ata nantar maza number var call kela tar complaint karnar",
+   "lang": "mr-en"
+  },
+  {
+   "text": "mane have call na karsho please maro number list maanthi kadhi nakho",
+   "lang": "gu-en"
+  },
+  {
+   "text": "mane interest nathi have phone na karta",
+   "lang": "gu-en"
+  },
+  {
+   "text": "tame vaarvaar call karo cho bahu pareshaan thaai gayo hu pachhi call karyo to complaint karish",
+   "lang": "gu-en"
+  },
+  {
+   "text": "maro number block kari do ane database maanthi delete kari do",
+   "lang": "gu-en"
+  },
+  {
+   "text": "kitni var kahevu maine kahyu ne have call nahi karvo aa last warning chhe",
+   "lang": "gu-en"
+  },
+  {
+   "text": "bhai have mane disturb na karo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "tamara offers saras chhe pan mane nathi joitu message pan na moklo ane call pan na karo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "dnd chalu chhe chhata call karo cho maru naam kadhi nakho",
+   "lang": "gu-en"
+  },
+  {
+   "text": "aa company ma thi koi call mane have na aavvo joiye",
+   "lang": "gu-en"
+  },
+  {
+   "text": "saheb mane aa badhu nathi joitu have number delete kari do",
+   "lang": "gu-en"
+  },
+  {
+   "text": "waah tame to roj call karo cho have mehrbani kari ne maro number kadhi nakho",
+   "lang": "gu-en"
+  },
+  {
+   "text": "unsubscribe kari do mane",
+   "lang": "gu-en"
+  },
+  {
+   "text": "maro number do not call list ma muki do",
+   "lang": "gu-en"
+  },
+  {
+   "text": "ek var kahyu have nahi karvanu bas pachhi call avse to legal notice mokalish",
+   "lang": "gu-en"
+  },
+  {
+   "text": "juo ben hu ahiya lagan ma avyo chhu ane badha relatives chhe ane tame loan ni vaat kari rahya cho mane badhu khabar chhe pan mane nathi joitu to have kadi pan call na karsho",
+   "lang": "gu-en"
+  },
+  {
+   "text": "stop calling me have aa number par phone nahi",
+   "lang": "gu-en"
+  },
+  {
+   "text": "dhanyavaad pan have mane aa calls nathi joita bandh karo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "mara number ne tamari list ma thi hataavi do",
+   "lang": "gu-en"
+  },
+  {
+   "text": "nange innu call maadbedi please nanna number list inda tegiri",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nange interest illa innu phone maadbedi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "tumba sala call maadtira tumba tondre aagide innomme maadidre complaint kodtini",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nanna number block maadi database inda delete maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "eshtu sala heloke nanu helide alva innu call maadbedi idu last warning",
+   "lang": "kn-en"
+  },
+  {
+   "text": "sir nanna hesaru list inda tegedhaki",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nimma offers chennagide aadre nange beda message kooda kaluhisabedi call kooda maadbedi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "dnd alli iddaru call maadtira nanna number remove maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "ee company inda yaavude call nange barabaaradu",
+   "lang": "kn-en"
+  },
+  {
+   "text": "ayyo mathe call maadidira nange beda anta helidini alva",
+   "lang": "kn-en"
+  },
+  {
+   "text": "waah nimma dedication super prati dina call maadtira ega dayavittu number tegedhaki",
+   "lang": "kn-en"
+  },
+  {
+   "text": "unsubscribe maadi nannannu",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nanna number do not call list ge haaki",
+   "lang": "kn-en"
+  },
+  {
+   "text": "innomme call maadidre consumer court ge hogtini idu kone warning",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nodi sir nanu ega oorige hogta iddini maduve ide mane ella full busy nimma loan bagge ella gottu aadre nange beda so dayavittu innu yaavagalu call maadbedi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "stop calling me da nange call beda",
+   "lang": "kn-en"
+  },
+  {
+   "text": "dhanyavada aadre nange beda number delete maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nanage tondre kodbedi innu phone maadbedi bas",
+   "lang": "kn-en"
+  },
+  {
+   "text": "enikku ini call cheyyalle please ente number list il ninnu maattiyedukku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "enikku interest illa ini vilikkanda",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ningal ellaa divasavum vilikkunnu shalyam aayi ini vilichal complaint kodukkum",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ente number block cheyyu database il ninnu delete cheyyu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ethra thavana parayanam njan paranjille ini call cheyyaruthu ithu avasaana warning aanu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "chetta ente peru list il ninnu ozhivaakku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ningalude offers kollaam pakshe enikku venda message um ayakkanda call um cheyyanda",
+   "lang": "ml-en"
+  },
+  {
+   "text": "dnd il undu enkilum vilikkunnu number remove cheyyu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ee company il ninnu oru call um ini varaan paadilla",
+   "lang": "ml-en"
+  },
+  {
+   "text": "aiyo veendum vilichu enikku venda ennu paranjathalle",
+   "lang": "ml-en"
+  },
+  {
+   "text": "oho ningal valare dedicated aanallo daily vilikkunnu ippo dayavu cheythu number ozhivaakku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "unsubscribe cheyyu ennae",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ente number do not call list il idu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "oru praavashyam koodi vilichaal consumer forum il pokum ithu last aanu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "nokku chetta njan ippo naattil poyi vannathe ullu ellaarum ivide und ningalude loan kaaryam ellam ariyam pakshe enikku venda athu kondu ini ennum vilikkaruthu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "stop calling me ini ee numberil vilikkanda",
+   "lang": "ml-en"
+  },
+  {
+   "text": "nanni pakshe enikku ithonnum venda number delete cheyyu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "mathi ini call cheyyalle",
+   "lang": "ml-en"
+  },
+  {
+   "text": "mujhe dobara call mat karna please mera number list se hata do",
+   "lang": "hinglish"
+  },
+  {
+   "text": "interest nahi hai aur dobara phone mat karna",
+   "lang": "hinglish"
+  },
+  {
+   "text": "bhai kitni baar bolu mat karo call last warning hai ye",
+   "lang": "hinglish"
+  },
+  {
+   "text": "mera number block kar do aur database se delete bhi",
+   "lang": "hinglish"
+  },
+  {
+   "text": "agle baar call kiya toh complaint kar dunga consumer court mein",
+   "lang": "hinglish"
+  },
+  {
+   "text": "dnd pe hoon phir bhi call kar rahe ho number remove karo",
+   "lang": "hinglish"
+  },
+  {
+   "text": "aapki offers achi hain par mujhe nahi chahiye call aur message dono band kar do",
+   "lang": "hinglish"
+  },
+  {
+   "text": "arre yaar roz roz phone karte ho dimaag kharab kar diya ab bas",
+   "lang": "hinglish"
+  },
+  {
+   "text": "wah kya dedication hai roz call karte ho ab meherbani karke number hata do",
+   "lang": "hinglish"
+  },
+  {
+   "text": "mera naam list se nikal do",
+   "lang": "hinglish"
+  },
+  {
+   "text": "unsubscribe kar do mujhe",
+   "lang": "hinglish"
+  },
+  {
+   "text": "aap logon ka call mujhe nahi aana chahiye kabhi bhi",
+   "lang": "hinglish"
+  },
+  {
+   "text": "main mana kar chuka hoon fir bhi call aa raha hai number do not call list mein daalo",
+   "lang": "hinglish"
+  },
+  {
+   "text": "dekho beta main abhi shaadi mein aaya hoon aur tum log har hafte loan ke baare mein bolte ho mujhe sab pata hai maine nahi lena toh please ab kabhi phone mat karna",
+   "lang": "hinglish"
+  },
+  {
+   "text": "stop calling me",
+   "lang": "hinglish"
+  },
+  {
+   "text": "thanks but humein koi zaroorat nahi hai number delete kar do aur dobara mat karna",
+   "lang": "hinglish"
+  },
+  {
+   "text": "bahut ho gaya ab ek bhi call aaya toh police mein jaunga",
+   "lang": "hinglish"
+  },
+  {
+   "text": "mujhe tang mat karo ab",
+   "lang": "hinglish"
+  },
+  {
+   "text": "please apni calling list se mera number kaat do",
+   "lang": "hinglish"
+  },
+  {
+   "text": "nahi chahiye kuch bhi aur is number pe dobara kabhi phone nahi aana chahiye",
+   "lang": "hinglish"
+  },
+  {
+   "text": "मुझे दोबारा कॉल मत करना मेरा नंबर लिस्ट से हटा दो",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "मुझे कोई दिलचस्पी नहीं है आगे से फोन मत करना",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "बार बार फोन करके परेशान मत करो अगली बार शिकायत करूंगा",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "मेरा नंबर ब्लॉक कर दीजिए और डेटाबेस से डिलीट कर दीजिए",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "मेरा नाम अपनी लिस्ट से निकाल दो और कभी कॉल मत करना",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "आप लोगों के कॉल अब बंद कर दीजिए बहुत हो गया",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "please do not call me again and remove my number from your list",
+   "lang": "en"
+  },
+  {
+   "text": "i am not interested so stop calling me this is my last warning",
+   "lang": "en"
+  },
+  {
+   "text": "take my name off your calling list right now",
+   "lang": "en"
+  },
+  {
+   "text": "if you people call me one more time i will file a complaint with trai",
+   "lang": "en"
+  },
+  {
+   "text": "delete my number from your database and block it",
+   "lang": "en"
+  },
+  {
+   "text": "no more calls from you people i mean it",
+   "lang": "en"
+  },
+  {
+   "text": "well isn't it lovely that you phone me every single day anyway please unsubscribe me",
+   "lang": "en"
+  },
+  {
+   "text": "look i have been polite for weeks but my family is tired of the calls so please never contact me on this number again",
+   "lang": "en"
+  }
+ ],
+ "benign": [
+  {
+   "text": "ippo konjam busy ah irukken naalaiku kaalaila call pannunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "indha number la vendaam en wife number 9000000012 ku call pannunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "hello hello line la irukkeengala phone vachudaadheenga oru nimisham",
+   "lang": "ta-en"
+  },
+  {
+   "text": "en phone la irundha andha old app ah delete pannanum epdi pannradhu",
+   "lang": "ta-en"
+  },
+  {
+   "text": "indha insurance policy enakku vendaam aana vera loan scheme irundha sollunga kekkuren",
+   "lang": "ta-en"
+  },
+  {
+   "text": "en bill la thappa charge pottu irukkeenga idhu romba mosam complaint pannanum",
+   "lang": "ta-en"
+  },
+  {
+   "text": "dnd na enna sir adhu activate panna evlo naal aagum",
+   "lang": "ta-en"
+  },
+  {
+   "text": "konjam nillunga naan sollren neenga pesaadheenga oru second",
+   "lang": "ta-en"
+  },
+  {
+   "text": "en appa ku call pannaadheenga avarukku udambu sari illa enna call pannunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "inniku mudiyaathu sunday call pannunga sir",
+   "lang": "ta-en"
+  },
+  {
+   "text": "my card number ah screen la irundhu delete pannitten adhu sari ah",
+   "lang": "ta-en"
+  },
+  {
+   "text": "ungala yaaru number kuduthaanga enga irundhu kedaichadhu number",
+   "lang": "ta-en"
+  },
+  {
+   "text": "oru nimisham wait pannunga en pasanga kitta kekkuren",
+   "lang": "ta-en"
+  },
+  {
+   "text": "nalla offer dhaan aana ippo cash illa next month call pannunga",
+   "lang": "ta-en"
+  },
+  {
+   "text": "unga agent romba rude ah pesinaanga adha pathi complaint sollanum",
+   "lang": "ta-en"
+  },
+  {
+   "text": "ippudu konchem busy ga unna repu udayam call cheyyandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "ee number ki kaadu naa second number 9000000013 ki cheyyandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "hello phone pettakandi oka nimisham unna",
+   "lang": "te-en"
+  },
+  {
+   "text": "naa phone lo unna old messages anni delete cheyyala ela cheyyali",
+   "lang": "te-en"
+  },
+  {
+   "text": "ee loan naaku vaddu kani vere insurance plans unte cheppandi vinta",
+   "lang": "te-en"
+  },
+  {
+   "text": "mee branch lo nannu chala wait cheyinchaaru idi complaint cheyyali",
+   "lang": "te-en"
+  },
+  {
+   "text": "dnd ante emiti andi adi ela pettukovali",
+   "lang": "te-en"
+  },
+  {
+   "text": "oka second aagandi meeru matladakandi nenu aalochistha",
+   "lang": "te-en"
+  },
+  {
+   "text": "naanna ki call cheyyakandi aayanaki health bagaaledu naaku cheyyandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "ee roju kudaradu weekend call cheyyandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "naa email id lo old address teesi kotha address add cheyyandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "naa number meeku ela vachindi adi cheppandi",
+   "lang": "te-en"
+  },
+  {
+   "text": "oka nimishaniki ma bharya tho matladi chebuta",
+   "lang": "te-en"
+  },
+  {
+   "text": "idi baagundi kani next month lo call cheyyandi appudu chustanu",
+   "lang": "te-en"
+  },
+  {
+   "text": "mee customer care naaku sariga cheppaledu chala disappointing",
+   "lang": "te-en"
+  },
+  {
+   "text": "ekhon ektu byasto achi kal sokale call korun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ei number e na amar onno number 9000000014 e call korun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "hello line ta kete debenna ektu dhorun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "amar phone theke purano app ta delete korte hobe kibhabe korbo",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ei policy ta amar lagbe na kintu onno scheme thakle bolun shunbo",
+   "lang": "bn-en"
+  },
+  {
+   "text": "apnader service khub kharap complaint korte chai",
+   "lang": "bn-en"
+  },
+  {
+   "text": "dnd ta ki ar kibhabe activate kore",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ektu thamun ami bhabi ekta minute kotha bolben na",
+   "lang": "bn-en"
+  },
+  {
+   "text": "amar babake call korben na tar sharir bhalo nei amake call korun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "aaj hobe na robibar call korun",
+   "lang": "bn-en"
+  },
+  {
+   "text": "amar form theke bhul address ta muche notun ta likhte hobe",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ei number ta kothay peyechen seta ektu bolben",
+   "lang": "bn-en"
+  },
+  {
+   "text": "ektu opekkha korun ami bou ke jigges kori",
+   "lang": "bn-en"
+  },
+  {
+   "text": "offer ta bhalo kintu ei mashe taka nei porer mashe call korben",
+   "lang": "bn-en"
+  },
+  {
+   "text": "gotokal apnader executive amar sathe khub khoroop byabohar korse",
+   "lang": "bn-en"
+  },
+  {
+   "text": "mi ata thoda busy ahe udya sakali call kara",
+   "lang": "mr-en"
+  },
+  {
+   "text": "ya number var nahi maza dusra number 9000000015 var call kara",
+   "lang": "mr-en"
+  },
+  {
+   "text": "hello phone thevu naka ek minute thamba",
+   "lang": "mr-en"
+  },
+  {
+   "text": "maza phone madhla juna app delete karaycha ahe kasa karu",
+   "lang": "mr-en"
+  },
+  {
+   "text": "he insurance mala nako pan dusre loan plans astil tar sanga aikto",
+   "lang": "mr-en"
+  },
+  {
+   "text": "tumchya branch madhe khup wait karavla tyachi takrar karaychi ahe",
+   "lang": "mr-en"
+  },
+  {
+   "text": "dnd mhanje kay ani te kase activate karaycha",
+   "lang": "mr-en"
+  },
+  {
+   "text": "ek second thamba tumhi bolu naka mi vichar karto",
+   "lang": "mr-en"
+  },
+  {
+   "text": "maazya vadilanna call karu naka tyanchi tabyet theek nahi mala call kara",
+   "lang": "mr-en"
+  },
+  {
+   "text": "aaj nahi jamnar ravivari call kara",
+   "lang": "mr-en"
+  },
+  {
+   "text": "maza chukicha address kadhun navin taka",
+   "lang": "mr-en"
+  },
+  {
+   "text": "tumhala maza number kuthun milala te sanga",
+   "lang": "mr-en"
+  },
+  {
+   "text": "ek minute thamba mi bayko la vicharto",
+   "lang": "mr-en"
+  },
+  {
+   "text": "offer chhan ahe pan pudhchya mahinyat call kara",
+   "lang": "mr-en"
+  },
+  {
+   "text": "tumcha agent khup uddhat bolla tyachi complaint karaychi ahe",
+   "lang": "mr-en"
+  },
+  {
+   "text": "hu atyare thodo busy chhu kaale savare call karo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "aa number par nahi maro biju number 9000000016 par call karo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "hello phone mukta nahi ek minute ubho raho",
+   "lang": "gu-en"
+  },
+  {
+   "text": "mara phone ma thi juni app delete karvi chhe kevi rite",
+   "lang": "gu-en"
+  },
+  {
+   "text": "aa insurance mane nathi joitu pan biji loan scheme hoy to kaho hu sambhalis",
+   "lang": "gu-en"
+  },
+  {
+   "text": "tamari branch ma bahu wait karavyo eni complaint karvi chhe",
+   "lang": "gu-en"
+  },
+  {
+   "text": "dnd etle shu ane te kevi rite chalu karvu",
+   "lang": "gu-en"
+  },
+  {
+   "text": "ek second ubho raho tame bolta nahi hu vichari lav",
+   "lang": "gu-en"
+  },
+  {
+   "text": "mara pappa ne call na karsho teni tabiyat sari nathi mane call karo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "aaje nahi shakay ravivare call karjo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "mara form ma khotu address kadhi ne navu nakho",
+   "lang": "gu-en"
+  },
+  {
+   "text": "tamne maro number kya thi malyo e kaho",
+   "lang": "gu-en"
+  },
+  {
+   "text": "ek minute ma patni ne puchhi lav",
+   "lang": "gu-en"
+  },
+  {
+   "text": "offer saras chhe pan aavta mahine call karjo",
+   "lang": "gu-en"
+  },
+  {
+   "text": "tamara executive e bahu kharab vartan karyu eni fariyad karvi chhe",
+   "lang": "gu-en"
+  },
+  {
+   "text": "nanu ega swalpa busy iddini naale beligge call maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "ee number ge alla nanna inna number 9000000017 ge call maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "hello phone ittbedi ondu nimisha",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nanna phone inda haleya app delete maadbeku hege maadodu",
+   "lang": "kn-en"
+  },
+  {
+   "text": "ee insurance nange beda aadre bere loan plans idre heli keltini",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nimma branch alli tumba hottu kaayisidru adara bagge complaint maadbeku",
+   "lang": "kn-en"
+  },
+  {
+   "text": "dnd andre enu hege activate maadodu",
+   "lang": "kn-en"
+  },
+  {
+   "text": "ondu second nillisi neevu matadabedi nanu yochane maadtini",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nanna appanige call maadbedi avarige aarogya sari illa nange call maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "ivattu aagalla bhanuvaara call maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nanna form alli tappu address tegedhu hosadu haaki",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nimage nanna number yelli sikku antha heli",
+   "lang": "kn-en"
+  },
+  {
+   "text": "ondu nimisha hendatige keltini",
+   "lang": "kn-en"
+  },
+  {
+   "text": "offer chennagide aadre mundina tingalu call maadi",
+   "lang": "kn-en"
+  },
+  {
+   "text": "nimma agent tumba rude aagi matadidru adara bagge complaint beku",
+   "lang": "kn-en"
+  },
+  {
+   "text": "njan ippol alpam busy aanu naale raavile vilikku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ee numberil alla ente mattoru number 9000000018 il vilikku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "hello phone vekkalle oru minute",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ente phone il ninnu pazhaya app delete cheyyanam engane cheyyum",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ee insurance enikku venda pakshe vere loan plans undenkil parayu kelkkaam",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ningalude branch il valare neram kaathirikkendi vannu athinte complaint kodukkanam",
+   "lang": "ml-en"
+  },
+  {
+   "text": "dnd ennu paranjaal entha athu engane activate cheyyum",
+   "lang": "ml-en"
+  },
+  {
+   "text": "oru second nilkku ningal samsarikkalle njan aalochikkatte",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ente achane vilikkalle avarkku sughamilla ennodu vilikku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "innu pattilla njayarazhcha vilikku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ente form il thettaaya address maattaan undu",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ente number engane kittiyathu ennu parayamo",
+   "lang": "ml-en"
+  },
+  {
+   "text": "oru minute bharyayodu chodikkatte",
+   "lang": "ml-en"
+  },
+  {
+   "text": "offer nannayittundu pakshe adutha maasam vilikku",
+   "lang": "ml-en"
+  },
+  {
+   "text": "ningalude executive valare mosham aayi samsarichu athine kurichu parayanam",
+   "lang": "ml-en"
+  },
+  {
+   "text": "abhi busy hoon kal subah call karna",
+   "lang": "hinglish"
+  },
+  {
+   "text": "is number pe nahi mere dusre number 9000000019 pe call karo",
+   "lang": "hinglish"
+  },
+  {
+   "text": "hello hello line pe ho na phone mat kaatna ek minute",
+   "lang": "hinglish"
+  },
+  {
+   "text": "mujhe phone se purana app delete karna hai kaise karun",
+   "lang": "hinglish"
+  },
+  {
+   "text": "ye policy nahi chahiye lekin koi aur loan scheme ho toh batao sunta hoon",
+   "lang": "hinglish"
+  },
+  {
+   "text": "aapke agent ne bahut badtameezi se baat ki complaint karni hai",
+   "lang": "hinglish"
+  },
+  {
+   "text": "ye dnd kya hota hai aur kaise activate karte hain",
+   "lang": "hinglish"
+  },
+  {
+   "text": "ek second ruko tum chup raho zara main soch raha hoon",
+   "lang": "hinglish"
+  },
+  {
+   "text": "mere papa ko call mat karo unki tabiyat theek nahi mujhe call karo",
+   "lang": "hinglish"
+  },
+  {
+   "text": "aaj nahi ho payega sunday ko call karna",
+   "lang": "hinglish"
+  },
+  {
+   "text": "form mein galat address hai usko hata ke naya daal do",
+   "lang": "hinglish"
+  },
+  {
+   "text": "mera number aapko kahan se mila ye batao",
+   "lang": "hinglish"
+  },
+  {
+   "text": "ek minute wife se puch leta hoon",
+   "lang": "hinglish"
+  },
+  {
+   "text": "offer achi hai par agle mahine call karna",
+   "lang": "hinglish"
+  },
+  {
+   "text": "mera email id bhi update kar do purana wala hata do",
+   "lang": "hinglish"
+  },
+  {
+   "text": "bhai thoda dheere bolo samajh nahi aa raha phir se batao",
+   "lang": "hinglish"
+  },
+  {
+   "text": "अभी मैं व्यस्त हूं कल सुबह फोन करना",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "इस नंबर पर नहीं मेरे दूसरे नंबर 9000000020 पर कॉल करो",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "हैलो फोन मत काटना एक मिनट रुको",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "मेरे फोन से पुराना ऐप डिलीट करना है कैसे करूं",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "ये पॉलिसी नहीं चाहिए लेकिन कोई और स्कीम हो तो बताओ",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "आपके एजेंट ने बदतमीजी से बात की शिकायत करनी है",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "डीएनडी क्या होता है और कैसे चालू करते हैं",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "एक सेकंड रुको आप चुप रहो मैं सोच रहा हूं",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "मेरे पिताजी को फोन मत करना उनकी तबीयत ठीक नहीं मुझे कॉल करो",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "रविवार को कॉल करना आज नहीं हो पाएगा",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "फॉर्म में गलत पता है उसे हटाकर नया डाल दो",
+   "lang": "hi-deva"
+  },
+  {
+   "text": "i am in a meeting right now can you call me back after six",
+   "lang": "en"
+  },
+  {
+   "text": "please call my other number 9000000021 instead of this one",
+   "lang": "en"
+  },
+  {
+   "text": "wait do not hang up i need to find my policy number",
+   "lang": "en"
+  },
+  {
+   "text": "i would like to delete the old address from my profile",
+   "lang": "en"
+  },
+  {
+   "text": "i am not interested in the credit card but do tell me about your personal loans",
+   "lang": "en"
+  },
+  {
+   "text": "i want to complain about the last statement it was wrong",
+   "lang": "en"
+  },
+  {
+   "text": "what is dnd and does it stop your calls i just want to know",
+   "lang": "en"
+  },
+  {
+   "text": "please do not call my mother she is unwell call me instead",
+   "lang": "en"
+  }
+ ]
+}
