@@ -18446,6 +18446,16 @@
    "method": "A batch of two turns, one with a 79-character tone, through product/server/modules/calls/ingest.ts validateRuntimeBatch, 2026-10-23. Regression: product/voice/tests/test_event_limits.py, which runs the runtime's real batches through the same validator when node and tsx are present.",
    "path": "product/voice/vpvoice/events.py",
    "value": "one over-long field drops the whole batch; runtime trims to fit"
+  },
+  {
+   "id": "decision.2026-10-23.one-goal-definition",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Goal reached, defined once (calls/goal.ts): a call's best outcome (verified, then manager, then AI guess) is one of its own definition's goal values. The funnel and insight use that predicate, and the reason code follows it: CONV_GOAL_DONE exactly when the goal is reached, wherever the goal is knowable. Engine-decided codes are never rewritten",
+   "rationale": "Closes open.2026-10-23.q-goal-key-vs-goal-semantics. Before, the model's CONV_GOAL_DONE could contradict the outcome (goal done on a 'not now' call), and a later verified payment did not move the reason. The funnel read the campaign's definition while insight read the outcome's. Grade travels beside the answer: the funnel shows goals by grade, and learning still requires a trusted grade (conversation.outcome).",
+   "reverse_if": "The owner wants 'agenda completed' (the conversation went to plan) shown separately from 'goal reached' (the business result); then add a separate agenda-done signal instead of overloading the reason code."
   }
  ],
  "edges": [
@@ -32530,6 +32540,11 @@
    "from": "component.2026-10-23.judge-eval-two-tasks",
    "to": "component.2026-10-21.caller-crisis-judge",
    "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-23.one-goal-definition",
+   "to": "open.2026-10-23.q-goal-key-vs-goal-semantics",
+   "relation": "resolves"
   }
  ]
 }
