@@ -199,27 +199,37 @@ The owner restored the usage limit and asked for full autonomy (`directive.2026-
 - cross-call insight (quote-verified) and the Insights page;
 - contact compliance actions, the integrations form, and undo.
 
+Done since: the browser test call, the guided start, the Vyakti sweep, the Operator and analysis benches, the private
+India staging, the opening fixes (verified on staging), the opt-out judge, and walkthrough fixes S1-S7 except S3/S6.
+
 Now running:
-- **voice:** "Call me in the browser" end to end, the top product gap: nobody can hear their agent inside the product yet.
-- **web:** the "VP" to Vyakti copy sweep and Insights fixes, then the first-run guided start for an empty workspace.
-- **campaigns:** the Plivo KYC adapter; then a staff credit, a trial credit (config, default 0) and the money copy.
-- **learning:** the server "VP" sweep; then `operator-bench.ts` (40-60 code-graded tasks) to measure the assistant on a real model.
-- **calls:** `analysis-bench.ts`, analysis and insight quality against hand-written keys.
-- **safety:** a DEV set and a new BLIND set 7 for the door's weak slices; get judge-eval ready to run.
-- **main loop (VM worker):** a private product staging on the existing India VM (no new resources), then the product runtime's own reply gap per stack. The main loop's subagents run the real-model benches: they need keys only this session holds. Vertex from the VM only, at most 1 request/s after 2026-10-23 20:00 UTC.
+- **voice:** a wrong-name guard for the opening, then reply-gap reduction to under 1.5 s p50 (stage breakdown first),
+  then barge-in speed.
+- **web:** the call page's latency strip, transcript and recording sync, and inline safety marks.
+- **campaigns:** money (staff credit, trial credit default 0, Vyakti copy, wallet-aware blockers), then the Plivo KYC
+  adapter, then the A2P checklist, BYO refusal for India and number-series rules in the dial gate.
+- **learning:** the harness2 loop end to end on the dev server (analysis, proposal, experiment, adopt or roll back).
+- **calls:** judge-event opt-out fields; the outcome rule rewrite on DEV; call.search outcome enum and count.
+- **safety:** the CSV upload newline bug; RD1 double disclosure; the judge non-blocking with a soft check-in behind config.
+- **operator:** page context reaches the model; exclusive arguments in the schema; refusals that name the fix.
+- **main loop:** reviews, gates, context; real-model runs through its own VM subagents (keys live only in this session).
+  Vertex from the VM only, at most 1 request/s.
 
 ### Measured on 2026-10-23 (real models, India VM staging)
-- **Product reply gap, median:**
-  - v2-flashlite 2.5 s (n=21);
-  - v2-mai 2.2 s (24);
-  - v2-54mini 3.0 s (23);
-  - v2-38flash failed on Vertex.
-
-  Stack cards now show these. Latency is the main voice gap.
-- **Opening bug:** every opening read the disclosure *guidance* aloud. RD1 prefixes `disclosureClause` verbatim. Routed to voice as top priority.
-- **Operator:** 21/48 tasks were blocked by a non-portable schema regex. On the tasks that reached the model: gpt-4.1-mini 12/27, gpt-4.1 18/27. Fixes routed to learning, then a re-run.
-- **Analysis outcome accuracy:** gpt-4.1-mini 70/84, gpt-4.1 84/84. Quotes are 100% grounded. DEV/TEST split, prompt fixes and a tiered model routed to calls.
-- **Judge:** gpt-4.1-mini (South India) is the only model inside 800 ms. It stays in shadow (`decision.2026-10-23.judge-model-shadow`); next is BLIND 7.
+- **Product reply gap, median:** v2-flashlite 2.5 s (n=21), v2-mai 2.2 s (24), v2-54mini 3.0 s (23); v2-38flash failed
+  on Vertex. Stack cards show these. Latency is the main voice gap.
+- **Openings after the fix (f2b27d4, 6 calls):** guidance read aloud 0/6 (was 17/18); AI disclosure in turn one 6/6; blank
+  name 0/6; rejected event batches 0. New: double disclosure 3/6 (`rejected.2026-10-23.rd1-first-sentence-window-double-disclosure`)
+  and one wrong name ("Akshara" for Asha), both routed.
+- **Operator, round 2 (48 tasks):** gpt-4.1-mini 26/48, gpt-4.1 28/48 (no measurable difference, p=0.73); schema
+  rejections 42 -> 0. Worst failures: CSV uploads import 0 rows; call.search takes any text as an outcome; the page never
+  reaches the model.
+- **Analysis, round 2 (TEST, 42 calls):** gpt-4.1-mini outcome 38/42, gpt-4.1 36/42, tiered 34/42; quotes 100% grounded.
+  Default is gpt-4.1-mini single, tiered off (`decision.2026-10-23.analysis-default-mini-single`).
+- **Crisis judge, BLIND 7 (100 crisis / 100 look-alike benign):** floor alone 37/100. Floor or judge: Flash-Lite 99/100,
+  FP 10/100, p95 1.1 s; gpt-4.1-mini 87/100, FP 23/100. The judge moves to Flash-Lite, non-blocking, still shadow
+  (`decision.2026-10-23.judge-flashlite-nonblocking`); raise mode with a soft check-in is an owner call
+  (`open.2026-10-23.judge-raise-soft-checkin`).
 
 ## Open threads with the owner
 

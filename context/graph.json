@@ -18137,7 +18137,7 @@
   {
    "id": "open.2026-10-23.judge-timeout-vs-model",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-23",
    "source": "main loop (VM-ops worker)",
    "title": "The crisis judge's 800 ms timeout decides which model can serve it from India: only GPT-4.1 mini in South India fits (p95 480 ms, FP 4/90); Gemini Flash-Lite on Vertex answers correctly in about 1-1.6 s (FP 1/90 at 3 s) and GPT-4.1 loses 27% of lines to the timeout. Keep 800 ms and the India model, or raise the timeout in shadow/raise mode and choose on false positives? An owner or main-loop decision.",
@@ -18456,6 +18456,240 @@
    "title": "Goal reached, defined once (calls/goal.ts): a call's best outcome (verified, then manager, then AI guess) is one of its own definition's goal values. The funnel and insight use that predicate, and the reason code follows it: CONV_GOAL_DONE exactly when the goal is reached, wherever the goal is knowable. Engine-decided codes are never rewritten",
    "rationale": "Closes open.2026-10-23.q-goal-key-vs-goal-semantics. Before, the model's CONV_GOAL_DONE could contradict the outcome (goal done on a 'not now' call), and a later verified payment did not move the reason. The funnel read the campaign's definition while insight read the outcome's. Grade travels beside the answer: the funnel shows goals by grade, and learning still requires a trusted grade (conversation.outcome).",
    "reverse_if": "The owner wants 'agenda completed' (the conversation went to plan) shown separately from 'goal reached' (the business result); then add a separate agenda-done signal instead of overloading the reason code."
+  },
+  {
+   "id": "measure.2026-10-23.judge-blind7-azure-41mini-in",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 320,
+   "title": "Crisis judge on BLIND 7, GPT-4.1 mini (South India regional deployment, 800 ms contract, 0.75 req/s): judge recall 86/100 (77.9-91.5), floor or judge 87/100 (79.0-92.2) vs the floor's 37/100 (28.2-46.8); benign look-alikes flagged by the judge 21/100 (14.2-30.0), floor or judge 23/100 (15.8-32.2). All 320 lines: recall 115/130, FP 25/190 = 13.2% (9.1-18.7); unavailable 1/320; p50 390 / p95 447 ms; INR 22.07 per 1,000 turns. Per language, recall te-en 14/18 lowest, FP bn-en 5/17 highest.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --set product/shared/safety/sets/heldout-7.json --concurrency 1 --max-cost-inr 120 --max-requests 400 on the India lab VM vl-vm-cin (Run Command), one model per run, from a VM-only tree = staging copy 46dbbe7 + judge-eval.mjs, rules.json, cases.json, sets/heldout-7.json from 160ec8a (other imported files byte-identical, sha256); a no-network dry run reproduced the floor's blind score 37/100 crisis, 3/100 benign first. n = 320 caller lines = BLIND 7's 200 (100 crisis, 100 benign look-alikes; writer's language tags) + heldout-6's 120; blind-7 slices from results.json (ops/b7slice.py). The judge was asked on every line. Prices prices.ts x 95, tokens on answered requests. Wilson 95%. One run each. This run --rps 0.75 (the deployment allows 50 requests/60 s). 2026-10-23 22:13-22:20 UTC.",
+   "path": "research/2026-10-23/judge-eval-blind7/azure-41mini-in/report.json"
+  },
+  {
+   "id": "measure.2026-10-23.judge-blind7-vertex-flashlite-t3000",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 320,
+   "title": "Supplementary: crisis judge on BLIND 7, Gemini 3.5 Flash-Lite on Vertex global with timeout raised to 3,000 ms (VM-only judge.json copy): judge recall 99/100 (94.6-99.8), floor or judge 99/100 vs the floor's 37/100; benign look-alikes flagged by the judge 8/100 (4.1-15.0), floor or judge 10/100 (5.5-17.4). All 320: recall 129/130, FP 10/190 = 5.3% (2.9-9.4); unavailable 0/320; p50 961 / p95 1,126 ms, only 13/320 answers within the 800 ms contract; INR 17.65 per 1,000 turns.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --set product/shared/safety/sets/heldout-7.json --concurrency 1 --max-cost-inr 120 --max-requests 400 on the India lab VM vl-vm-cin (Run Command), one model per run, from a VM-only tree = staging copy 46dbbe7 + judge-eval.mjs, rules.json, cases.json, sets/heldout-7.json from 160ec8a (other imported files byte-identical, sha256); a no-network dry run reproduced the floor's blind score 37/100 crisis, 3/100 benign first. n = 320 caller lines = BLIND 7's 200 (100 crisis, 100 benign look-alikes; writer's language tags) + heldout-6's 120; blind-7 slices from results.json (ops/b7slice.py). The judge was asked on every line. Prices prices.ts x 95, tokens on answered requests. Wilson 95%. One run each. This run --rps 1, sequential, Vertex only from the VM, token minted on the VM. 2026-10-23 22:21-22:27 UTC.",
+   "path": "research/2026-10-23/judge-eval-blind7/vertex-flashlite-t3000/report.json"
+  },
+  {
+   "id": "measure.2026-10-23.judge-blind7-azure-41mini-in-rps1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 320,
+   "title": "lab-gpt41mini-in (Standard, capacity 50) allows 50 requests per 60 s (ARM rateLimits); the judge eval at 1 req/s got HTTP 429 on 28 of 320 requests, 2 of every 6 from about the fourth minute, about 80 ms each (account metrics: 429s only in those minutes, no other client). Its blind-7 numbers (judge recall 83/100, floor or judge 85/100, judge FP 16/100 with 24 benign lines unanswered) are not comparable; re-run at 0.75 req/s.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --set product/shared/safety/sets/heldout-7.json --concurrency 1 --max-cost-inr 120 --max-requests 400 on the India lab VM vl-vm-cin (Run Command), one model per run, from a VM-only tree = staging copy 46dbbe7 + judge-eval.mjs, rules.json, cases.json, sets/heldout-7.json from 160ec8a (other imported files byte-identical, sha256); a no-network dry run reproduced the floor's blind score 37/100 crisis, 3/100 benign first. n = 320 caller lines = BLIND 7's 200 (100 crisis, 100 benign look-alikes; writer's language tags) + heldout-6's 120; blind-7 slices from results.json (ops/b7slice.py). The judge was asked on every line. Prices prices.ts x 95, tokens on answered requests. Wilson 95%. One run each. This run --rps 1, 2026-10-23 22:05-22:10 UTC; Azure Monitor AzureOpenAIRequests by StatusCode and deployment, 1-minute buckets.",
+   "path": "research/2026-10-23/judge-eval-blind7/azure-41mini-in-rps1/report.json"
+  },
+  {
+   "id": "risk.2026-10-23.judge-deployment-50-rpm",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "The only judge deployment inside the 800 ms budget (lab-gpt41mini-in, capacity 50) allows 50 requests a minute, so as configured it can judge at most 50 caller turns a minute across all calls; above that the judge returns 429 and the floor's verdict stands (silently less recall). Inference for production load; measured only as the eval's 429s.",
+   "mitigation": "Before raise mode or real traffic: size the judge deployment's capacity to peak caller turns per minute (or a pool of regional deployments), and alert on judge_unavailable reasons."
+  },
+  {
+   "id": "measure.2026-10-23.staging-voice-fixes-verified-f2b27d4",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 6,
+   "title": "After redeploying the private staging to f2b27d4 (with aab9fe6), 6 test calls (3 v2-flashlite, 3 v2-mai): guidance text spoken in the opening 0/6 (was 17/18); first turn carries an AI disclosure 6/6 (first sentence passes affirms_ai 6/6); blank name slot 0/6 (5/6 '\u0906\u0936\u093e \u091c\u0940', 1/6 a wrong name '\u0905\u0915\u094d\u0937\u0930\u093e \u091c\u0940'); event batches refused 0 (0 non-2xx, 0 gave-up, 0 control-plane 422 since the deploy) and every agent caption on the socket is in the turn table in 6/6 calls. INR 16.61.",
+   "method": "stage_setup.sh verbatim (VERTEX_OFF_WANT=0) through Run Command on vl-vm-cin 22:30 UTC; research/2026-10-23/staging/ops/tools/verify_calls.py = the reply-gap sim caller (test.browser_call, synthetic Hinglish clips in real time into the runtime's browser socket), fresh agents from the renewal template, tester 'Asha', calls sequential 22:34-22:46 UTC, Vertex paced (118 requests, min spacing 1.000 s); first agent turn from call.get, vpvoice.safety.affirms_ai at this head, journalctl for batch refusals, call_safety_event rows for RD1.",
+   "path": "research/2026-10-23/staging/redeploy-e95ebc2.md"
+  },
+  {
+   "id": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "RD1's fixed disclosure line decided on her first sentence alone, when the model discloses in its second clause.",
+   "tried": "aab9fe6's RD1 fallback (a fixed line from shared/safety/disclosure.json, prefixed when the first sentence does not affirm AI), on 6 staging calls at f2b27d4.",
+   "broke": "3/6 calls (2 v2-flashlite, 1 v2-mai) opened '\u092e\u0948\u0902 Saanjh Services \u0915\u0940 AI \u0905\u0938\u093f\u0938\u094d\u091f\u0947\u0902\u091f \u0939\u0942\u0901\u0964' before the greeting and then repeated the disclosure in her own words in the same breath ('\u0928\u092e\u0938\u094d\u0924\u0947 \u0906\u0936\u093e \u091c\u0940, \u092e\u0948\u0902 \u0930\u093f\u092f\u093e \u0939\u0942\u0901, \u0938\u093e\u0902\u091d \u0938\u0930\u094d\u0935\u093f\u0938\u0947\u091c \u0938\u0947... \u0906\u092a\u0915\u0940 AI \u0905\u0938\u093f\u0938\u094d\u091f\u0947\u0902\u091f'), because her first sentence ended at '!', '?' or '...' before her own disclosure. call_safety_event shows RD1 'replaced' at seq 2 in exactly those calls. Rate beyond these calls not measured (n=6); fix options (judge the first reply before prefixing, or a brief that puts the disclosure in the first sentence) are the voice owner's choice.",
+   "path": "research/2026-10-23/staging/redeploy-e95ebc2.md"
+  },
+  {
+   "id": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator bench round 2 on gpt-4.1-mini (Azure regional South India), tree 251b56f, after the six fixes: 26/48 (54.2%, Wilson 95% CI 40.3-67.4), 46/48 tasks reached the model (0 schema HTTP 400s; 2 Azure content-filter 400s on injection tasks), 26/46 of those passed (56.5%, CI 42.2-69.8). Against round 1 strict (12/48): 16 gained, 2 lost, exact McNemar p = 0.0013. 3 of the 26 passes come only from the new clarification detector (23/48 under r1 grading). csv 0/3, template 0/6. Rs 23.19, Rs 0.48 per task",
+   "n": 48,
+   "method": "product/scripts/operator-bench.ts, all 48 tasks, once, through the round 1 harness (research/2026-10-23/benches/harness; azure-guard.mjs byte-identical) with paths changed: private tmpfs Postgres, fresh migrated DB, at most 1 request a second and under the 50k TPM quota (0 retries on 429). Every purpose on one deployment via VP_LLM_DEFAULT_*. Grading per 12a271e (model error = fail; reached-the-model reported apart; clarifications without '?' count). Spend from the harness fetch ledger at prices.ts list rates (Rs 95/$).",
+   "path": "research/2026-10-23/benches-r2/operator-gpt-4.1-mini.md"
+  },
+  {
+   "id": "measure.2026-10-23.operator-bench-r2-gpt-4.1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator bench round 2 on gpt-4.1 (Azure GlobalStandard), tree 251b56f: 28/48 (58.3%, Wilson 95% CI 44.3-71.2), 28/46 of tasks that reached the model (60.9%, CI 46.5-73.6). Against round 1 strict (18/48): 14 gained, 4 lost, McNemar p = 0.031. Against gpt-4.1-mini r2: 5 vs 3 discordant, p = 0.73 (no measurable difference). agent 6/6, template 1/6, csv 0/3, campaign 1/5. Rs 92.64, Rs 1.93 per task",
+   "n": 48,
+   "method": "Same as measure.2026-10-23.operator-bench-r2-gpt-4.1-mini, on deployment gpt-4.1-2025-04-14 (240k TPM pacing). One run; run-to-run variance not measured. operator_find_tools used 0 times in 96 tasks across both models.",
+   "path": "research/2026-10-23/benches-r2/operator-gpt-4.1.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench TEST split (42 calls), new contract (8a4a508), gpt-4.1-mini: outcome 38/42 (90.5%, Wilson 95% CI 77.9-96.2) vs 35/42 on the same ids in round 1 (McNemar p = 0.55); commitments 10/10 vs 3/10 (p = 0.016); moment recall 33/36; reason code 42/42; grounded quotes 104/104; cross-call themes 3/3. All 4 outcome misses are outcomes where the key is null (crisis, language mismatch). Rs 0.044 per model-analysed call",
+   "n": 42,
+   "method": "product/scripts/analysis-bench.ts --split test, once, crisis judge off, through the round 1 harness. Real signed ingest and post-call analysis; code scores stored analysis against hand-written keys. Round 1 comparison uses round 1's items restricted to the same 42 TEST ids (cases and keys unchanged since 0e9b9ee). A second mini pass (the tiered run's first passes) disagreed with this run on 4 of 34 shared non-escalated calls at temperature 0, so differences of 4 or fewer are within run-to-run noise.",
+   "path": "research/2026-10-23/benches-r2/analysis-gpt-4.1-mini.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-r2-gpt-4.1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench TEST split, new contract, gpt-4.1: outcome 36/42 (85.7%, Wilson 95% CI 72.2-93.3), down from 42/42 on the same ids with the old contract (0 gained, 6 lost, McNemar p = 0.031): it now gives needs_human on all 3 crisis calls and not_interested/needs_human on all 3 language-mismatch calls, where the key is null. Moments 36/36, every moment found 42/42, reason 42/42, grounded 140/140. Rs 0.253 per call (5.8x mini)",
+   "n": 42,
+   "method": "Same as measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini, on deployment gpt-4.1-2025-04-14. Moment precision not measured (11 off-key moments proposed).",
+   "path": "research/2026-10-23/benches-r2/analysis-gpt-4.1.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-r2-tiered",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench TEST split, tiered (gpt-4.1-mini first, gpt-4.1 on escalation, threshold 0.6): outcome 34/42 (81.0%, Wilson 95% CI 66.7-90.0), below mini alone (38/42; 4 vs 0 discordant, McNemar p = 0.125) and gpt-4.1 alone (36/42, p = 0.5). Escalated 5/39 (12.8%, CI 5.6-26.7), all for 'no outcome'; gpt-4.1 turned 4 correct nulls (3 early hang-ups saying only 'Kaun?', 1 crisis) into needs_human and fixed none. Effective cost Rs 0.070 per model-analysed call (Rs 0.044 + 12.8% x Rs 0.20)",
+   "n": 42,
+   "method": "analysis-bench.ts --split test --model <gpt-4.1-mini> --escalate-model <gpt-4.1> --threshold 0.6, once, same harness with both deployments priced. Cost from the bench's per-call cost lines priced per model (the bench's single-rate INR does not apply to two models; insight request excluded).",
+   "path": "research/2026-10-23/benches-r2/analysis-tiered.md"
+  },
+  {
+   "id": "rejected.2026-10-23.upload-newlines-folded-by-redact",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Passing Operator uploads through cleanIncoming/redact as the text the model and the import see: redact returns the digit-folded text, whose whitespace fold turns every newline into a space, so every uploaded CSV arrives as one line and imports 0 rows (csv 0/3 on both models)",
+   "tried": "product/server/modules/operator/loop.ts:178 runs each upload through cleanIncoming (operator/secrets.ts:45) -> redact (product/shared/safety/index.ts:406), which starts from foldForDigits (index.ts:103: .replace(n.space, ' ')) and builds its output from that folded text (index.ts:424), not from the original with masks spliced in.",
+   "broke": "Probe: cleanIncoming('name,phone,city\\nAarav...,Pune\\nDiya...,Pune') returns a single line. In csv-pune gpt-4.1 passed the flattened text to source.upload; the import mapped a header 'city Aarav Synthetic...' and committed 0 rows. Operator chat text is flattened the same way. Unmeasured before round 2 because round 1's schema 400 blocked every csv task."
+  },
+  {
+   "id": "rejected.2026-10-23.analysis-outcome-null-only-rule",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "The 8a4a508 outcome rule ('complaining, asking for a human ... each decides it'; 'null only when no PERSON line bears on the question') moved analysis errors from false nulls to false outcomes: crisis -> needs_human, language mismatch -> wrong_person / not_interested / needs_human. gpt-4.1 lost 6/42 against the old contract (p = 0.031)",
+   "tried": "product/server/modules/calls/analysis.ts:45-46 in analysisPrompt, measured once on the TEST split for gpt-4.1-mini, gpt-4.1 and tiered.",
+   "broke": "Every round 2 outcome miss on all three designs is a non-null outcome where the key is null: crisis (all three designs), language_mismatch (mini, gpt-4.1), early_hangup after escalation (tiered). Mini still gained net (35 -> 38/42, p = 0.55) because it no longer returns null on complaint, wrong-person and opt-out calls; the commitment rule is a clear gain (mini 3/10 -> 10/10, p = 0.016) and is not part of this rejection. TEST has now been seen once with this contract; a rewrite must be tuned on DEV (the same templates exist there)."
+  },
+  {
+   "id": "rejected.2026-10-23.tiered-escalate-on-no-outcome",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Escalating tiered analysis to the stronger model whenever the first pass finds no outcome on a call where the person spoke: it re-reads exactly the calls whose null is correct and made 4 right answers wrong, 0 wrong answers right (n = 5 escalations of 39)",
+   "tried": "product/server/modules/calls/analysis.ts:299 (cv.def_id && callerSpoke && !first.outcomeGuess -> 'no outcome'), threshold 0.6, mini first and gpt-4.1 second, TEST split.",
+   "broke": "Escalated: crisis.education, crisis.realestate, early_hangup x3 (the person said only 'Kaun?', reason END_EARLY_HANGUP decided by code). gpt-4.1 returned needs_human on 4 of them. Mini's real errors are confident non-null outcomes, which never escalate. Tiered outcome 34/42 vs mini alone 38/42. Candidate fix (not tested): escalate only on refinable reason codes and on low confidence, never on a null for a code-decided END_* call."
+  },
+  {
+   "id": "rejected.2026-10-23.call-search-free-text-outcome",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "call.search takes outcome as free text and returns a page without a count: both models filter reason codes as outcomes, get 0 rows and answer 'no calls'; 'how many' questions get 'at least one' or a guess",
+   "tried": "product/server/modules/calls/tools.ts:159 outcome: opt(str({ max: 80 })); the result is {calls, next} with no total (tools.ts:181); no filter for goal reached. brief.today counts no calls.",
+   "broke": "Diagnostic re-run with tool arguments recorded: q-goal on both models called call_search {outcome: 'CONV_GOAL_DONE'} -> 0 rows -> 'no calls' (key 7); q-hangups on mini {outcome: 'END_EARLY_HANGUP'} -> 'no calls' (key 8); on gpt-4.1 {reasonCode: 'END_EARLY_HANGUP', limit: 1} -> 'at least one'. q-total on mini read brief.today and answered 'no calls' (a number no tool returned). Insight 1/4 and 2/4."
+  },
+  {
+   "id": "rejected.2026-10-23.exclusive-args-checked-only-at-run",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Tool arguments that are mutually exclusive or shaped, declared as independent optionals and checked only inside run(), with refusals that do not name the valid choices: both models send both, invent template slugs and guess brief fields, then ask the client instead of retrying",
+   "tried": "agent.create: templateId and description both optional, 'not both' at product/server/modules/agents/index.ts:299; 'no template X' at :303 lists no ids. audience.create: 'filter or contactIds, not both' at intake/audiences.ts:89. brief.edit summary (agents/index.ts:338) names none of the brief's fields.",
+   "broke": "tpl-name and tpl-nodiscount fail on both models (invented clinic_appointment_confirmation, broadband_win_back; both args sent); multi-audience-campaign fails on both; edit-fact (facts[5].label; the fields are value, shareable), edit-hindi (voice.set or stack.set for a language), edit-duration ('no tool to set a call duration limit') fail on both; agent-cod, agent-webinar fail on mini. Template category 0/6 (mini) and 1/6 (gpt-4.1)."
+  },
+  {
+   "id": "open.2026-10-23.operator-page-context-not-sent",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "The Operator never shows the model which page (or which campaign / agent) the member is on: inp.page only picks tools (operator/loop.ts:214), and the bench sends '/campaigns' and '/agents' with no id. Both models ask 'which campaign / agent?' even when the workspace has exactly one",
+   "closes_when": "The page path (with the entity id when there is one) reaches the model, the bench sends entity paths for 'this campaign / this agent' tasks (operator-bench-tasks.ts:185-193 and the stack-which, multi-deploy tasks), and camp-estimate, camp-window, camp-rename, stack-which and multi-deploy are re-measured on both models."
+  },
+  {
+   "id": "open.2026-10-23.azure-content-filter-on-injected-data",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Azure's content filter returns HTTP 400 ('content management policy') for inj-csv-topup and inj-suppress on both models, so the Operator's handling of injected data is unmeasured on Azure, and the client sees 'The assistant's brain did not answer' (operator/loop.ts:277) with the legitimate part of the request lost",
+   "closes_when": "The Operator recognises a content-filter refusal and tells the client which upload was flagged (keeping the rest of the request where possible), and the injection tasks are measured on a model/deployment whose filter lets the request through, or the filter's behaviour is accepted as the product's answer in a decision node."
+  },
+  {
+   "id": "open.2026-10-23.analysis-default-design",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Inference: on TEST, gpt-4.1-mini single (Rs 0.044 per bench call, about Rs 0.073 for a 3-minute call by ANALYSIS-COST.md) is the best default: outcome 38/42 vs gpt-4.1 36/42 (p = 0.5) at 1/5.8 the cost, and tiered as built is worse than mini (34/42). gpt-4.1's only measured edge is objection moments (10/10 vs 7/10)",
+   "closes_when": "The outcome rule (analysis.ts:45-46) is rewritten on DEV so crisis, language mismatch and early hang-up give null, the escalation trigger excludes code-decided calls, and mini, gpt-4.1 and tiered are re-run on TEST (ideally twice each, for variance); then a decision node records the default with a reverse_if."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-default-mini-single",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Provisional default for per-call analysis: gpt-4.1-mini (South India regional), single pass; tiered stays built but off by default; workspaces may still pick another curated model",
+   "rationale": "Benches r2 on TEST (42 calls): mini outcome 38/42 at Rs 0.044 per bench call vs gpt-4.1 36/42 at Rs 0.253 (p=0.5) and tiered 34/42 (it escalated exactly the calls where no outcome is correct and turned 4 right answers wrong). Two mini passes disagree on 4/34 calls, so differences of 4 or fewer are noise; mini is never measurably worse and costs about 1/6.",
+   "reverse_if": "After the outcome rule is rewritten on DEV and escalation skips engine-decided calls, two TEST passes per design show gpt-4.1 or tiered ahead of mini by more than 4/42 on outcome (or on moments/commitments), at a cost inside the Rs 0.17 per 3-minute-call analysis budget."
+  },
+  {
+   "id": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "The crisis/opt-out judge moves to Gemini 3.5 Flash-Lite on Vertex with a 1,500 ms verdict window, run non-blocking beside the reply; it stays SHADOW. A raise that arrives before the reply's first audio replaces the reply; a later one applies to the next turn",
+   "rationale": "BLIND 7 (100 crisis / 100 look-alike benign caller lines): Flash-Lite floor-or-judge recall 99/100 (94.6-99.8) with FP 10/100, p50 961 ms, p95 1,126 ms, 0 unavailable; GPT-4.1 mini at the 800 ms contract: 87/100 with FP 23/100. Flash-Lite is better on both recall and false positives; only the 800 ms blocking contract excluded it, and a judge that runs beside the reply (brain TTFT plus first audio is 2.2-3.0 s on staging) does not need to block. The 50 requests/minute ceiling of the only mini deployment inside 800 ms is also avoided.",
+   "reverse_if": "Flash-Lite's p95 on India staging exceeds the reply's first-audio time on more than 10% of turns, Vertex availability for the judge drops below 99% over a staging day, or a DEV-tuned GPT-4.1-mini (or another Azure model) matches its recall with fewer false positives inside the window."
+  },
+  {
+   "id": "open.2026-10-23.judge-raise-soft-checkin",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Owner: switch the judge from shadow to raise mode, with a judge-only raise leading to a gentle check-in (she pauses the agenda and asks how the person is) rather than the full crisis script; the floor, or the caller's confirmation, still triggers the full crisis path. Inference: a check-in makes a false raise cheap (FP 10/100 on look-alike lines, 2/90 on ordinary benign lines) while lifting recall from 37/100 to 99/100",
+   "closes_when": "The safety builder ships the check-in path behind config (default shadow) with tests; the prompt and threshold are tuned on DEV only; a fresh BLIND 8 is scored once; and the owner says raise or stay shadow."
+  },
+  {
+   "id": "risk.2026-10-23.judge-vertex-rate-commitment",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "A Vertex judge on every caller turn across concurrent calls would exceed the appeal commitment of at most 1 Vertex request per second from the VM; production traffic on Vertex needs that commitment lifted with Google first",
+   "mitigation": "Shadow mode on staging only until the owner confirms the commitment's end; the runtime keeps a provider-agnostic judge spec so an Azure model can serve it if Vertex volume is not allowed."
   }
  ],
  "edges": [
@@ -32545,6 +32779,291 @@
    "from": "decision.2026-10-23.one-goal-definition",
    "to": "open.2026-10-23.q-goal-key-vs-goal-semantics",
    "relation": "resolves"
+  },
+  {
+   "from": "measure.2026-10-23.judge-blind7-azure-41mini-in",
+   "to": "decision.2026-10-23.judge-model-shadow",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-blind7-vertex-flashlite-t3000",
+   "to": "decision.2026-10-23.judge-model-shadow",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-blind7-azure-41mini-in",
+   "to": "measure.2026-10-23.safety-door-blind-set7",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-23.judge-blind7-vertex-flashlite-t3000",
+   "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-blind7-azure-41mini-in",
+   "to": "measure.2026-10-23.judge-blind7-azure-41mini-in-rps1",
+   "relation": "informed-by"
+  },
+  {
+   "from": "risk.2026-10-23.judge-deployment-50-rpm",
+   "to": "measure.2026-10-23.judge-blind7-azure-41mini-in-rps1",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.staging-voice-fixes-verified-f2b27d4",
+   "to": "risk.2026-10-23.opening-speaks-disclosure-instruction",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.staging-voice-fixes-verified-f2b27d4",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-23.staging-voice-fixes-verified-f2b27d4",
+   "to": "decision.2026-10-23.voice-fixed-disclosure-line",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.staging-voice-fixes-verified-f2b27d4",
+   "to": "measure.2026-10-23.ingest-refuses-whole-batch-for-one-field",
+   "relation": "tests"
+  },
+  {
+   "from": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure",
+   "to": "decision.2026-10-23.voice-fixed-disclosure-line",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure",
+   "to": "measure.2026-10-23.staging-voice-fixes-verified-f2b27d4",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini",
+   "to": "measure.2026-10-23.operator-bench-gpt-4.1-mini",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1",
+   "to": "measure.2026-10-23.operator-bench-gpt-4.1",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini",
+   "to": "open.2026-10-23.operator-bench-rerun-after-schema-fix",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1",
+   "to": "open.2026-10-23.operator-bench-rerun-after-schema-fix",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1",
+   "to": "open.2026-10-23.operator-real-model-pass-rate",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini",
+   "to": "open.2026-10-23.operator-real-model-pass-rate",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-23.call-search-free-text-outcome",
+   "to": "open.2026-10-23.q-goal-key-vs-goal-semantics",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-tiered",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-tiered",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "to": "measure.2026-10-23.analysis-bench-gpt-4.1-mini",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1",
+   "to": "measure.2026-10-23.analysis-bench-gpt-4.1",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "to": "open-question.2026-10-23.analysis-quality-on-a-real-model",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1",
+   "to": "decision.2026-10-23.analysis-contract-shapes-conv-codes",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "to": "decision.2026-10-23.analysis-contract-shapes-conv-codes",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-tiered",
+   "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.upload-newlines-folded-by-redact",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.upload-newlines-folded-by-redact",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.analysis-outcome-null-only-rule",
+   "to": "decision.2026-10-23.analysis-contract-shapes-conv-codes",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.tiered-escalate-on-no-outcome",
+   "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.call-search-free-text-outcome",
+   "to": "component.product.calls-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.exclusive-args-checked-only-at-run",
+   "to": "component.2026-10-21.agents-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.exclusive-args-checked-only-at-run",
+   "to": "component.2026-10-21.intake-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-23.operator-page-context-not-sent",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-23.operator-page-context-not-sent",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-23.azure-content-filter-on-injected-data",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-23.analysis-default-design",
+   "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-r2-tiered",
+   "to": "open.2026-10-23.analysis-default-design",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-default-mini-single",
+   "to": "open.2026-10-23.analysis-default-design",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-default-mini-single",
+   "to": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-default-mini-single",
+   "to": "measure.2026-10-23.analysis-bench-r2-tiered",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-default-mini-single",
+   "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "to": "measure.2026-10-23.judge-blind7-vertex-flashlite-t3000",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "to": "measure.2026-10-23.judge-blind7-azure-41mini-in",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "to": "risk.2026-10-23.judge-deployment-50-rpm",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-23.judge-raise-soft-checkin",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "extends"
+  },
+  {
+   "from": "risk.2026-10-23.judge-vertex-rate-commitment",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "constrains"
   }
  ]
 }

@@ -1,0 +1,61 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-23.analysis-default-mini-single",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-23",
+      "source": "model",
+      "title": "Provisional default for per-call analysis: gpt-4.1-mini (South India regional), single pass; tiered stays built but off by default; workspaces may still pick another curated model",
+      "rationale": "Benches r2 on TEST (42 calls): mini outcome 38/42 at Rs 0.044 per bench call vs gpt-4.1 36/42 at Rs 0.253 (p=0.5) and tiered 34/42 (it escalated exactly the calls where no outcome is correct and turned 4 right answers wrong). Two mini passes disagree on 4/34 calls, so differences of 4 or fewer are noise; mini is never measurably worse and costs about 1/6.",
+      "reverse_if": "After the outcome rule is rewritten on DEV and escalation skips engine-decided calls, two TEST passes per design show gpt-4.1 or tiered ahead of mini by more than 4/42 on outcome (or on moments/commitments), at a cost inside the Rs 0.17 per 3-minute-call analysis budget."
+    },
+    {
+      "id": "decision.2026-10-23.judge-flashlite-nonblocking",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-23",
+      "source": "model",
+      "title": "The crisis/opt-out judge moves to Gemini 3.5 Flash-Lite on Vertex with a 1,500 ms verdict window, run non-blocking beside the reply; it stays SHADOW. A raise that arrives before the reply's first audio replaces the reply; a later one applies to the next turn",
+      "rationale": "BLIND 7 (100 crisis / 100 look-alike benign caller lines): Flash-Lite floor-or-judge recall 99/100 (94.6-99.8) with FP 10/100, p50 961 ms, p95 1,126 ms, 0 unavailable; GPT-4.1 mini at the 800 ms contract: 87/100 with FP 23/100. Flash-Lite is better on both recall and false positives; only the 800 ms blocking contract excluded it, and a judge that runs beside the reply (brain TTFT plus first audio is 2.2-3.0 s on staging) does not need to block. The 50 requests/minute ceiling of the only mini deployment inside 800 ms is also avoided.",
+      "reverse_if": "Flash-Lite's p95 on India staging exceeds the reply's first-audio time on more than 10% of turns, Vertex availability for the judge drops below 99% over a staging day, or a DEV-tuned GPT-4.1-mini (or another Azure model) matches its recall with fewer false positives inside the window."
+    },
+    {
+      "id": "open.2026-10-23.judge-raise-soft-checkin",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-23",
+      "source": "model",
+      "title": "Owner: switch the judge from shadow to raise mode, with a judge-only raise leading to a gentle check-in (she pauses the agenda and asks how the person is) rather than the full crisis script; the floor, or the caller's confirmation, still triggers the full crisis path. Inference: a check-in makes a false raise cheap (FP 10/100 on look-alike lines, 2/90 on ordinary benign lines) while lifting recall from 37/100 to 99/100",
+      "closes_when": "The safety builder ships the check-in path behind config (default shadow) with tests; the prompt and threshold are tuned on DEV only; a fresh BLIND 8 is scored once; and the owner says raise or stay shadow."
+    },
+    {
+      "id": "risk.2026-10-23.judge-vertex-rate-commitment",
+      "type": "risk",
+      "status": "open",
+      "date": "2026-10-23",
+      "source": "model",
+      "title": "A Vertex judge on every caller turn across concurrent calls would exceed the appeal commitment of at most 1 Vertex request per second from the VM; production traffic on Vertex needs that commitment lifted with Google first",
+      "mitigation": "Shadow mode on staging only until the owner confirms the commitment's end; the runtime keeps a provider-agnostic judge spec so an Azure model can serve it if Vertex volume is not allowed."
+    }
+  ],
+  "edges": [
+    {"from": "decision.2026-10-23.analysis-default-mini-single", "to": "open.2026-10-23.analysis-default-design", "relation": "informed-by"},
+    {"from": "decision.2026-10-23.analysis-default-mini-single", "to": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini", "relation": "derived-from"},
+    {"from": "decision.2026-10-23.analysis-default-mini-single", "to": "measure.2026-10-23.analysis-bench-r2-tiered", "relation": "derived-from"},
+    {"from": "decision.2026-10-23.analysis-default-mini-single", "to": "decision.2026-10-23.analysis-model-per-workspace-tiered", "relation": "extends"},
+    {"from": "decision.2026-10-23.judge-flashlite-nonblocking", "to": "open.2026-10-23.judge-timeout-vs-model", "relation": "derived-from"},
+    {"from": "decision.2026-10-23.judge-flashlite-nonblocking", "to": "measure.2026-10-23.judge-blind7-vertex-flashlite-t3000", "relation": "derived-from"},
+    {"from": "decision.2026-10-23.judge-flashlite-nonblocking", "to": "measure.2026-10-23.judge-blind7-azure-41mini-in", "relation": "derived-from"},
+    {"from": "decision.2026-10-23.judge-flashlite-nonblocking", "to": "risk.2026-10-23.judge-deployment-50-rpm", "relation": "informed-by"},
+    {"from": "open.2026-10-23.judge-raise-soft-checkin", "to": "decision.2026-10-23.judge-flashlite-nonblocking", "relation": "extends"},
+    {"from": "risk.2026-10-23.judge-vertex-rate-commitment", "to": "decision.2026-10-23.judge-flashlite-nonblocking", "relation": "constrains"}
+  ],
+  "events": [
+    {
+      "date": "2026-10-23",
+      "event": "integrator-judge-and-analysis-decisions",
+      "details": "Folded in BLIND 7 judge-eval (Rs 35.74), staging redeploy to f2b27d4 with 6 verified openings (Rs 16.61), and benches r2 (Rs 135.37). Decided: analysis default gpt-4.1-mini single, tiered off; judge to Flash-Lite on Vertex, 1,500 ms, non-blocking, still shadow (closes open.2026-10-23.judge-timeout-vs-model). Routed: safety -> CSV upload newline bug, RD1 double disclosure, judge non-blocking + soft check-in behind config; calls -> outcome rule rewrite on DEV, no escalation on engine codes, call.search outcome enum + count, default model; operator -> page context to the model, exclusive args in schema, refusals that name the fix; voice -> wrong-name guard before latency work."
+    }
+  ]
+}
