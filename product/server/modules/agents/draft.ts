@@ -3,7 +3,7 @@
 // draft: it is shown with its lint findings, and publishing still needs a clean compile and a human approval.
 import { CALL_CATEGORIES, JOBS, LANGUAGES, SECTOR_PACKS, type AgentConfig } from '../../../shared/agent-config.ts';
 import { ValidationError } from '../../../shared/validate.ts';
-import { complete } from '../../llm.ts';
+import { complete, type ChatMessage } from '../../llm.ts';
 import { validateConfig } from './config.ts';
 import { DEFAULT_STACK_ID } from '../../../shared/stacks.ts';
 
@@ -11,7 +11,8 @@ const SYSTEM = `You draft the configuration of a phone agent for an Indian busin
 Answer with one JSON object with exactly these fields:
 brand {name, spokenName, verifiedDomains: []}, job (one of: ${JOBS.join(', ')}), jobDescription (only when job is custom),
 category (one of: ${CALL_CATEGORIES.join(', ')}), sectorPacks (from: ${SECTOR_PACKS.join(', ')}),
-languages {primary, allowed, mirrorCaller} (from: ${LANGUAGES.join(', ')}),
+languages {primary (one of: ${LANGUAGES.join(', ')}), allowed (a list from the same codes), mirrorCaller (true or false:
+whether she switches to the caller's language)},
 persona {name, gender (female|male|neutral), register (warm_peer|polite_professional|crisp_efficient|gentle_elder_respect),
 energy 1-5, humour 0-2, honorific (aap|tum|mirror), notes: []},
 goals [{id (snake_case), description, outcome (snake_case), required}], facts [{key (snake_case), value, purpose
@@ -36,15 +37,28 @@ const STRUCTURE = {
 const DRAFTED = ['brand', 'job', 'jobDescription', 'category', 'sectorPacks', 'languages', 'persona', 'goals', 'facts', 'neverSay', 'opening', 'objections', 'handOff'] as const;
 
 export class DraftError extends Error {
-  constructor(message: string, public path?: string) { super(message); this.name = 'DraftError'; }
+  constructor(message: string, public path?: string, public detail: string = message) { super(message); this.name = 'DraftError'; }
 }
 
+/** Draft once; if the draft fails validation, send the exact error back for one repair turn. A second failure is
+ *  refused with the field and the accepted form named. Code never guesses a value the model got wrong. */
 export async function draftFromDescription(description: string): Promise<{ config: AgentConfig; usage: { inputTokens: number; outputTokens: number } }> {
-  const r = await complete({ purpose: 'compile', json: true, maxTokens: 2500, temperature: 0.2,
-    messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: description }] });
+  const messages: ChatMessage[] = [{ role: 'system', content: SYSTEM }, { role: 'user', content: description }];
+  const usage = { inputTokens: 0, outputTokens: 0 };
+  for (let attempt = 0; ; attempt++) {
+    const r = await complete({ purpose: 'compile', json: true, maxTokens: 2500, temperature: 0.2, messages });
+    usage.inputTokens += r.usage.inputTokens; usage.outputTokens += r.usage.outputTokens;
+    try { return { config: parseDraft(r.text), usage }; } catch (e) {
+      if (!(e instanceof DraftError) || attempt >= 1) throw e;
+      messages.push({ role: 'assistant', content: r.text }, { role: 'user', content: `That draft was refused: ${e.detail}. Return the whole corrected JSON object.` });
+    }
+  }
+}
+
+function parseDraft(text: string): AgentConfig {
   let j: Record<string, unknown>;
-  try { j = JSON.parse(r.text); } catch { throw new DraftError('the drafting model did not return JSON; try again or start from a template'); }
-  if (typeof j !== 'object' || j === null || Array.isArray(j)) throw new DraftError('the drafting model did not return an object');
+  try { j = JSON.parse(text); } catch { throw new DraftError('the drafting model did not return JSON; try again or start from a template', undefined, 'the reply was not valid JSON'); }
+  if (typeof j !== 'object' || j === null || Array.isArray(j)) throw new DraftError('the drafting model did not return an object', undefined, 'the reply was not one JSON object');
   const picked: Record<string, unknown> = {};
   for (const k of DRAFTED) if (j[k] !== undefined) picked[k] = j[k];
   // Code owns provenance and structure: every drafted fact is marked as drafted, and no stack is ever chosen here.
@@ -53,9 +67,12 @@ export async function draftFromDescription(description: string): Promise<{ confi
   picked.objections ??= [];
   picked.sectorPacks ??= [];
   try {
-    return { config: validateConfig({ ...structuredClone(STRUCTURE), ...picked }), usage: r.usage };
+    return validateConfig({ ...structuredClone(STRUCTURE), ...picked });
   } catch (e) {
-    if (e instanceof ValidationError) throw new DraftError(`the drafted agent did not validate (${e.message}); try again with more detail or start from a template`, e.path);
+    if (e instanceof ValidationError) {
+      const detail = e.message;                       // "path: what is wrong", e.g. languages.mirrorCaller: must be true or false
+      throw new DraftError(`the drafted agent did not validate (${detail}); try again with more detail or start from a template`, e.path, detail);
+    }
     throw e;
   }
 }
