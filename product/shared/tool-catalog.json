@@ -184,6 +184,71 @@
    }
   },
   {
+   "name": "analysis.model.set",
+   "risk": "spend",
+   "summary": "Choose the model that analyses calls, or a tiered pair; it changes what each call's analysis costs, never what is checked",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "mode": {
+      "type": "string",
+      "enum": [
+       "single",
+       "tiered"
+      ]
+     },
+     "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "description": "a curated model id from analysis.settings.get"
+     },
+     "escalateModel": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "description": "a curated model id from analysis.settings.get"
+     },
+     "threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+     }
+    },
+    "required": [
+     "mode"
+    ]
+   }
+  },
+  {
+   "name": "analysis.settings.get",
+   "risk": "read",
+   "summary": "Which model analyses calls in this workspace (one model, or a cheaper first pass that escalates unclear calls) and the models to choose from",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
    "name": "apikey.create",
    "risk": "policy",
    "summary": "Create an API key that can act on this workspace",

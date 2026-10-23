@@ -29,6 +29,15 @@ test('the bench set: 84 keyed calls across 12 templates, 6 industries and 4 lang
     if (c.key.outcome) assert.ok(c.lines[c.key.outcomeLine!]?.speaker === 'caller', `${c.id}: the outcome is evidenced by the person`);
   }
   assert.equal(crossCallCases().length, 36);
+  // DEV/TEST: half and half, stratified so every template and every language appears on both sides.
+  const dev = cases.filter(c => c.split === 'dev'), testSet = cases.filter(c => c.split === 'test');
+  assert.equal(dev.length, 42); assert.equal(testSet.length, 42);
+  for (const t of new Set(cases.map(c => c.template))) {
+    assert.ok(dev.some(c => c.template === t) && testSet.some(c => c.template === t), `template ${t} on both sides`);
+  }
+  for (const l of new Set(cases.map(c => c.language))) {
+    assert.ok(dev.some(c => c.language === l) && testSet.some(c => c.language === l), `language ${l} on both sides`);
+  }
   const [lo, hi] = wilson(46, 50);
   assert.ok(Math.abs(lo - 0.8124) < 0.002 && hi > 0.96 && hi < 0.98);
 });
@@ -49,6 +58,7 @@ test('smoke: the oracle run scores every field, counts the invented quotes it pl
   const md = readFileSync(join(out, 'analysis-bench.md'), 'utf8');
   assert.match(md, /\| Outcome \| 100\.0% \(3\/3; 95% CI/);
   assert.match(md, /model never grades/);
+  assert.equal(cross.funnel.goalByGrade.ai_guess, 2, 'cross calls are seeded as the product writes them: goals come from graded outcomes');
 });
 
 test('the scoring catches a wrong model: a model that always says "agreed" and quotes nothing real scores low', { skip, timeout: 120_000 }, async () => {
@@ -59,4 +69,17 @@ test('the scoring catches a wrong model: a model that always says "agreed" and q
   assert.ok(r.fields.outcome.rate! < 1, 'an invented outcome quote is dropped, so the outcome is not recorded; and "agreed" is wrong for most keys');
   assert.ok(r.fields.momentRecall.rate! < 1);
   assert.equal(r.grounding.k, 0, 'none of its quotes is real');
+});
+
+test('the bench runs one split at a time and passes a tiered setting through to analysis', { skip, timeout: 180_000 }, async () => {
+  pool ??= createPool(process.env.DATABASE_URL);
+  const seen: string[] = [];
+  const llm = (req: any) => { seen.push(req.model ?? 'default');
+    return { text: JSON.stringify({ points: [], moments: [], reasonCode: null, outcome: null, forget: null, themes: [] }), toolCalls: [], usage: { inputTokens: 10, outputTokens: 5 }, model: req.model ?? 'default', provider: 'fake' }; };
+  const r = await runBench({ pool, llm, split: 'test', limit: 4, cross: false, model: 'small', escalateModel: 'big' });
+  assert.equal(r.split, 'test');
+  assert.ok((r.items as any[]).every(x => x.split === 'test'));
+  assert.ok(seen.includes('small') && seen.includes('big'), 'no outcome from the first model escalates to the second');
+  assert.ok(r.tier && r.tier.escalated.k > 0);
+  assert.deepEqual(r.tier!.byModel.map((m: any) => m.model).sort(), ['big', 'small']);
 });

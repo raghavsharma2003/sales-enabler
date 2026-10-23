@@ -21,7 +21,8 @@ export interface Key {
   moments: { kind: MomentKind; line: number }[];
   crisis: boolean; optOut: boolean; followUps: ('callback' | 'human')[];
 }
-export interface Case { id: string; template: string; industry: string; language: string; lines: Line[]; endReason: EndReason; durationS: number; key: Key }
+export type Split = 'dev' | 'test';
+export interface Case { id: string; split: Split; template: string; industry: string; language: string; lines: Line[]; endReason: EndReason; durationS: number; key: Key }
 
 interface Industry { id: string; brand: string; about: string; ask: string; agree: string }
 export const INDUSTRIES: Industry[] = [
@@ -76,11 +77,13 @@ const REGIONAL: Record<string, { agree: string; callback: string; notInterested:
     notInterested: 'Nako, mala he nako, khup mahag aahe.', optOut: 'Mala parat call karu naka, maza number list madhun kadha.' },
 };
 
-function regional(lang: string, i: Industry): Case[] {
+function regional(lang: string, i: Industry, langIndex: number): Case[] {
   const r = REGIONAL[lang];
   const opening = open(i);
+  let n = 0;
+  // Stratified: each regional template is DEV in some languages and TEST in others, and each language has 2 of each.
   const base = (template: string, lines: Line[], key: Key, endReason: EndReason = 'completed'): Case =>
-    ({ id: `${template}.${i.id}.${lang}`, template, industry: i.id, language: lang, lines, endReason, durationS: 40, key });
+    ({ id: `${template}.${i.id}.${lang}`, split: (n++ + langIndex) % 2 === 0 ? 'dev' : 'test', template, industry: i.id, language: lang, lines, endReason, durationS: 40, key });
   return [
     base('agreed', [opening, C('Yes, sollunga / boliye.'), A(`${i.ask} (Can you confirm?)`), C(r.agree), A('Thank you, I will send the confirmation.')],
       { outcome: 'agreed', outcomeLine: 3, reasonCode: 'CONV_GOAL_DONE', moments: [{ kind: 'commitment', line: 3 }], crisis: false, optOut: false, followUps: [] }),
@@ -93,16 +96,18 @@ function regional(lang: string, i: Industry): Case[] {
   ];
 }
 
-/** 72 Hinglish cases (12 templates x 6 industries) plus 12 regional ones (4 templates x 3 languages). */
+/** 72 Hinglish cases (12 templates x 6 industries) plus 12 regional ones (4 templates x 3 languages), split DEV/TEST
+ *  half and half, stratified by call type and language: each Hinglish template has 3 industries in DEV and 3 in TEST.
+ *  Tune prompts on DEV only; TEST is for the number you report. */
 export function perCallCases(): Case[] {
   const out: Case[] = [];
-  for (const t of TEMPLATES) for (const i of INDUSTRIES) {
+  for (const t of TEMPLATES) for (const [k, i] of INDUSTRIES.entries()) {
     const b = t.build(i);
-    out.push({ id: `${t.id}.${i.id}.hinglish`, template: t.id, industry: i.id, language: 'hinglish', lines: b.lines,
+    out.push({ id: `${t.id}.${i.id}.hinglish`, split: k % 2 === 0 ? 'dev' : 'test', template: t.id, industry: i.id, language: 'hinglish', lines: b.lines,
       endReason: b.endReason ?? 'completed', durationS: b.durationS ?? 40, key: b.key });
   }
   const langs = Object.keys(REGIONAL);
-  langs.forEach((lang, n) => out.push(...regional(lang, INDUSTRIES[(n * 2) % INDUSTRIES.length])));
+  langs.forEach((lang, n) => out.push(...regional(lang, INDUSTRIES[(n * 2) % INDUSTRIES.length], n)));
   return out;
 }
 
@@ -113,7 +118,7 @@ export const PLANTED = {
   trust: ['Mujhe kaise pata aap asli company se ho? Fraud lagta hai.', 'Aajkal bahut scam calls aati hain, main bharosa nahi kar sakta.', 'Pehle apni company ki website bhejo, phone pe kuch confirm nahi karunga.'],
 } as const;
 export type PlantedTheme = keyof typeof PLANTED;
-export interface CrossCall { id: string; theme: PlantedTheme | null; lines: Line[]; outcome: string | null }
+export interface CrossCall { id: string; split: Split; theme: PlantedTheme | null; lines: Line[]; outcome: string | null; outcomeLine: number }
 
 /** perTheme calls for each planted objection theme, plus perTheme neutral calls that agree. 36 by default. */
 export function crossCallCases(perTheme = 9): CrossCall[] {
@@ -121,13 +126,13 @@ export function crossCallCases(perTheme = 9): CrossCall[] {
   for (const theme of Object.keys(PLANTED) as PlantedTheme[]) {
     for (let k = 0; k < perTheme; k++) {
       const i = INDUSTRIES[k % INDUSTRIES.length];
-      out.push({ id: `${theme}.${k}`, theme, outcome: 'not_interested',
+      out.push({ id: `${theme}.${k}`, split: k % 2 === 0 ? 'dev' : 'test', theme, outcome: 'not_interested', outcomeLine: 3,
         lines: [open(i), C('Haan boliye.'), A(i.ask), C(PLANTED[theme][k % 3]), A('Samajh gayi, aapka samay dene ke liye dhanyavaad.')] });
     }
   }
   for (let k = 0; k < perTheme; k++) {
     const i = INDUSTRIES[k % INDUSTRIES.length];
-    out.push({ id: `neutral.${k}`, theme: null, outcome: 'agreed', lines: [open(i), C('Haan boliye.'), A(i.ask), C(i.agree), A('Dhanyavaad.')] });
+    out.push({ id: `neutral.${k}`, split: k % 2 === 0 ? 'dev' : 'test', theme: null, outcome: 'agreed', outcomeLine: 3, lines: [open(i), C('Haan boliye.'), A(i.ask), C(i.agree), A('Dhanyavaad.')] });
   }
   return out;
 }

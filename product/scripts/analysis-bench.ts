@@ -7,7 +7,9 @@
 //   node --import tsx product/scripts/analysis-bench.ts --fake --smoke          # CI smoke: scripted oracle, 3 calls
 //   VP_LLM_ANALYSIS_URL=... VP_LLM_ANALYSIS_KEY=... VP_LLM_ANALYSIS_MODEL=... \
 //     node --import tsx product/scripts/analysis-bench.ts --out ./bench-out    # a real model, chosen by env
-// Options: --limit N (per-call cases), --rps 1 (model requests per second), --max-tokens 400000 (stop when spent),
+// Options: --split dev|test|all (default all; tune prompts on dev, report test), --limit N (per-call cases),
+//   --model ID (analysis model for this run's workspace), --escalate-model ID with --threshold 0.6 (tiered: the second
+//   model re-reads calls with no outcome or low confidence), --rps 1 (model requests per second), --max-tokens 400000 (stop when spent),
 //   --judge (also run the post-call crisis judge; VP_LLM_SAFETY_JUDGE_*; one request per caller line, not throttled),
 //   --no-cross (skip the cross-call slice), --out DIR (default ./analysis-bench-out). Prices for the INR estimate:
 //   VP_BENCH_INR_PER_1K_INPUT and VP_BENCH_INR_PER_1K_OUTPUT (rupees per 1,000 tokens); without them only tokens are shown.
@@ -15,17 +17,18 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type pg from 'pg';
-import { createPool, many, one } from '../server/db.ts';
+import { createPool, many, one, tx } from '../server/db.ts';
+import { campaignFunnel } from '../server/modules/calls/stats.ts';
 import { llmConfigured, setFakeLlm, type LlmRequest, type LlmReply } from '../server/llm.ts';
 import type { RuntimeEvent, RunManifest } from '../shared/runtime-protocol.ts';
 import { callerSignals } from '../shared/safety/index.ts';
 import { ingest } from '../server/modules/calls/ingest.ts';
-import { analysesSettled } from '../server/modules/calls/analysis.ts';
+import { analysesSettled, refreshOutcome } from '../server/modules/calls/analysis.ts';
 import { computeInsight } from '../server/modules/calls/insights.ts';
 import { CONVERSATION_CODES, REFINABLE, codeReason } from '../server/modules/calls/taxonomy.ts';
 import { crossCallCases, GOAL_VALUES, OUTCOME_VALUES, perCallCases, PLANTED, type Case, type CrossCall, type PlantedTheme } from './analysis-bench/cases.ts';
 
-export interface BenchOpts { llm?: (req: LlmRequest) => LlmReply; fake?: boolean; smoke?: boolean; limit?: number; rps?: number; maxTokens?: number; judge?: boolean; cross?: boolean; out?: string; pool?: pg.Pool }
+export interface BenchOpts { llm?: (req: LlmRequest) => LlmReply; split?: 'dev' | 'test' | 'all'; model?: string; escalateModel?: string; threshold?: number; fake?: boolean; smoke?: boolean; limit?: number; rps?: number; maxTokens?: number; judge?: boolean; cross?: boolean; out?: string; pool?: pg.Pool }
 
 /** Wilson score interval, 95%. */
 export function wilson(k: number, n: number, z = 1.959964): [number, number] {
@@ -67,13 +70,16 @@ function oracle(cases: Case[], cross: CrossCall[]) {
   };
 }
 
-async function setup(pool: pg.Pool) {
+async function setup(pool: pg.Pool, o: BenchOpts = {}) {
   const ws = (await one<{ id: string }>(pool, "INSERT INTO workspace (name) VALUES ('analysis bench (synthetic)') RETURNING id"))!.id;
   const agent = (await one<{ id: string }>(pool, "INSERT INTO agent (workspace_id, name) VALUES ($1,'Bench agent') RETURNING id", [ws]))!.id;
   const version = (await one<{ id: string }>(pool, "INSERT INTO agent_version (agent_id, number, hash, config) VALUES ($1,1,'bench','{}') RETURNING id", [agent]))!.id;
   const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values)
     VALUES ($1,'Call result','What did the person decide on this call?',$2,$3) RETURNING id`, [ws, [...OUTCOME_VALUES], GOAL_VALUES]))!.id;
   const campaign = (await one<{ id: string }>(pool, "INSERT INTO campaign (workspace_id, name, call_category, outcome_definition_id) VALUES ($1,'Bench','service',$2) RETURNING id", [ws, def]))!.id;
+  // The analysis model for this workspace, the way analysis.model.set stores it (curation is the tool's job, not the bench's).
+  if (o.model || o.escalateModel) await pool.query(`INSERT INTO call_analysis_setting (workspace_id, mode, model, escalate_model, threshold) VALUES ($1,$2,$3,$4,$5)`,
+    [ws, o.escalateModel ? 'tiered' : 'single', o.model ?? null, o.escalateModel ?? null, o.threshold ?? 0.6]);
   return { ws, version, campaign, def };
 }
 
@@ -89,8 +95,10 @@ const tokensSpent = async (pool: pg.Pool, ws: string) => Number((await one<{ t: 
 export async function runBench(o: BenchOpts = {}) {
   const pool = o.pool ?? createPool();
   const allCases = perCallCases();
-  const cases = o.smoke ? [allCases[0], allCases[24], allCases[allCases.length - 2]] : allCases.slice(0, o.limit ?? allCases.length);
-  const cross = crossCallCases(o.smoke ? 2 : 9);
+  const split = o.split ?? 'all';
+  const inSplit = <T extends { split: string }>(x: T) => split === 'all' || x.split === split;
+  const cases = o.smoke ? [allCases[0], allCases[24], allCases[allCases.length - 2]] : allCases.filter(inSplit).slice(0, o.limit ?? allCases.length);
+  const cross = o.smoke ? crossCallCases(2) : crossCallCases(9).filter(inSplit);
   const fake = Boolean(o.fake || o.smoke || o.llm);
   if (o.llm) setFakeLlm(o.llm);
   else if (fake) setFakeLlm(oracle(cases, cross));
@@ -100,7 +108,7 @@ export async function runBench(o: BenchOpts = {}) {
   const gap = 1000 / Math.max(0.01, o.rps ?? 1), maxTokens = o.maxTokens ?? 400_000;
 
   try {
-    const s = await setup(pool);
+    const s = await setup(pool, o);
     const items: Record<string, unknown>[] = [];
     let truncated = false;
     for (const c of cases) {
@@ -128,7 +136,7 @@ export async function runBench(o: BenchOpts = {}) {
           ...(['CONV_NEEDS_HUMAN', 'CONV_COMPLAINT', 'END_CRISIS', 'END_HANDED_OFF'].includes(row.reason_code) ? ['human'] : [])],
       };
       const refinable = REFINABLE.has(codeReason(c.endReason, c.durationS, callerLines.length));
-      items.push({ id: c.id, template: c.template, industry: c.industry, language: c.language, refinable, key: c.key, predicted,
+      items.push({ id: c.id, split: c.split, tier: row.analysis?.tier ?? null, template: c.template, industry: c.industry, language: c.language, refinable, key: c.key, predicted,
         analysisStatus: row.analysis?.status ?? 'none', quotesProposed: row.analysis?.quotesProposed ?? 0, quotesDropped: row.analysis?.quotesDropped ?? 0 });
       if (!fake && row.analysis?.status === 'done') await sleep(gap);
     }
@@ -166,15 +174,33 @@ export async function runBench(o: BenchOpts = {}) {
     // ---- cross-call slice ------------------------------------------------------------------------------------------
     let crossReport: Record<string, unknown> | null = null;
     if (o.cross !== false && !truncated) {
-      const x = await setup(pool);
+      const x = await setup(pool, o);
       const idOf = new Map<string, CrossCall>();
       let minutes = 500;
+      // Seeded the way the product writes a finished, analysed call: turns, the transcript, an end reason and duration,
+      // the analysis's ai_guess outcome with its caller-line evidence, and the attempt marked connected. The funnel and
+      // insight then read goals from graded outcomes, as they do in production.
       for (const cc of cross) {
         const conv = await newConversation(pool, x);
-        await pool.query(`UPDATE conversation SET status = 'done', ended_at = now() - make_interval(mins => $2), transcript = $3, analysis = '{"status":"done"}', reason_code = 'CONV_INCOMPLETE' WHERE id = $1`,
-          [conv, minutes--, JSON.stringify(cc.lines.map((l, i) => ({ ...l, startMs: i * 3000 })))]);
+        const transcript = cc.lines.map((l, i) => ({ ...l, startMs: i * 3000 }));
+        await tx(pool, async c => {
+          for (const [i, l] of transcript.entries()) {
+            await c.query('INSERT INTO turn (conversation_id, idx, speaker, text, started_ms, ended_ms) VALUES ($1,$2,$3,$4,$5,$6)', [conv, i + 1, l.speaker, l.text, l.startMs, l.startMs + 2500]);
+          }
+          await c.query(`UPDATE conversation SET status = 'done', end_reason = 'completed', duration_s = 40, ended_at = now() - make_interval(mins => $2), transcript = $3,
+            analysis = $4, reason_code = $5 WHERE id = $1`,
+            [conv, minutes--, JSON.stringify(transcript), { status: 'done', outcomeGuess: cc.outcome ? { value: cc.outcome, quote: cc.lines[cc.outcomeLine].text } : null },
+              cc.theme ? 'CONV_NOT_INTERESTED' : 'CONV_GOAL_DONE']);
+          await c.query(`UPDATE attempt SET status = 'connected' WHERE id = (SELECT attempt_id FROM conversation WHERE id = $1)`, [conv]);
+          if (cc.outcome) {
+            await c.query(`INSERT INTO outcome (workspace_id, conversation_id, definition_id, value, grade, source, evidence) VALUES ($1,$2,$3,$4,'ai_guess','analysis',$5)`,
+              [x.ws, conv, x.def, cc.outcome, { quote: cc.lines[cc.outcomeLine].text, turn: cc.outcomeLine, speaker: 'caller' }]);
+            await refreshOutcome(c, x.ws, conv);
+          }
+        });
         idOf.set(conv, cc);
       }
+      const funnel = await campaignFunnel(pool, x.ws, x.campaign);
       const r = await computeInsight(pool, x.ws, { type: 'workspace', id: null }, { force: true, caps: { sampleCalls: cross.length, inputTokens: 40_000 } });
       if (r.ran && r.result.status === 'done') {
         const themes = r.result.themes;
@@ -190,13 +216,25 @@ export async function runBench(o: BenchOpts = {}) {
           quotesVerbatim: metric(r.result.quotesProposed - r.result.quotesDropped, r.result.quotesProposed),
           themesDropped: r.result.themesDropped,
           usage: r.result.usage ?? null,
+          funnel: funnel.total,
         };
       } else crossReport = { status: r.ran ? r.result.status : r.status, reason: r.ran ? r.result.reason : r.reason };
     }
 
+    const tiered = it.filter(x => x.tier);
+    const tierReport = tiered.length ? {
+      calls: tiered.length, escalated: metric(tiered.filter(x => x.tier.escalated).length, tiered.length),
+      why: tiered.filter(x => x.tier.escalated).reduce((a: Record<string, number>, x) => ({ ...a, [x.tier.why]: (a[x.tier.why] ?? 0) + 1 }), {}),
+      secondFailed: tiered.filter(x => x.tier.secondFailed).length,
+      byModel: Object.values(perCallCost.reduce((a: Record<string, { model: string; calls: number; input: number; output: number }>, r) => {
+        const m = r.detail?.model ?? 'unknown'; a[m] ??= { model: m, calls: 0, input: 0, output: 0 };
+        a[m].calls++; a[m].input += r.detail?.inputTokens ?? 0; a[m].output += r.detail?.outputTokens ?? 0; return a; }, {})),
+    } : null;
     const model = fake ? 'scripted oracle (CI)' : (cost.find(c => c.detail?.model)?.detail?.model ?? 'unknown');
     const report = {
-      generatedAt: new Date().toISOString(), mode: fake ? 'fake' : 'real', model, judge: Boolean(o.judge), truncated,
+      generatedAt: new Date().toISOString(), mode: fake ? 'fake' : 'real', model, split, judge: Boolean(o.judge), truncated,
+      analysisSetting: o.model || o.escalateModel ? { mode: o.escalateModel ? 'tiered' : 'single', model: o.model ?? null, escalateModel: o.escalateModel ?? null, threshold: o.threshold ?? 0.6 } : null,
+      tier: tierReport,
       cases: { run: items.length, planned: cases.length, templates: new Set(it.map(x => x.template)).size, languages: [...new Set(it.map(x => x.language))] },
       fields,
       grounding: metric(proposed - dropped, proposed),
@@ -228,7 +266,7 @@ export function writeReport(dir: string, r: Awaited<ReturnType<typeof runBench>>
   const c = r.cross as any;
   const md = [
     `# Analysis-quality bench`, '',
-    `${r.generatedAt} · mode **${r.mode}** · model: ${r.model} · crisis judge ${r.judge ? 'on' : 'off'}${r.truncated ? ' · **stopped at the token cap**' : ''}`, '',
+    `${r.generatedAt} · mode **${r.mode}** · split **${r.split}** · model: ${r.model}${r.analysisSetting ? ` · setting ${JSON.stringify(r.analysisSetting)}` : ''} · crisis judge ${r.judge ? 'on' : 'off'}${r.truncated ? ' · **stopped at the token cap**' : ''}`, '',
     `${r.cases.run} of ${r.cases.planned} synthetic calls, ${r.cases.templates} templates, languages: ${r.cases.languages.join(', ')}. Scored by code against hand-written keys; the model never grades.`, '',
     '| Field | Accuracy |', '|---|---|',
     ...rows.map(([label, k]) => `| ${label} | ${pct(r.fields[k])} |`),
@@ -236,13 +274,16 @@ export function writeReport(dir: string, r: Awaited<ReturnType<typeof runBench>>
     `**Cost:** ${r.cost.modelCalls} model calls, ${r.cost.inputTokens} input and ${r.cost.outputTokens} output tokens, ` +
       `${r.cost.tokensPerCall === null ? 'n/a' : Math.round(r.cost.tokensPerCall)} tokens per call` +
       (r.cost.priced ? `, about ₹${r.cost.inrPerCall!.toFixed(3)} per call.` : ' (no price set: VP_BENCH_INR_PER_1K_INPUT/OUTPUT).'), '',
+    ...(r.tier ? ['## Tiered analysis', '', `Escalated: ${pct(r.tier.escalated)}; why: ${JSON.stringify(r.tier.why)}; second pass failed: ${r.tier.secondFailed}.`, '',
+      '| Model | Calls | Input tokens | Output tokens |', '|---|---|---|---|', ...r.tier.byModel.map(m => `| ${m.model} | ${m.calls} | ${m.input} | ${m.output} |`), ''] : []),
     '## Cross-call slice', '',
     !c ? 'Not run.' : c.themeRecall ? [
       `${c.calls} calls with ${Object.keys(PLANTED).length} planted objection themes; ${c.callsSampled} sampled; ${c.themesReturned} themes returned.`, '',
       '| Measure | Result |', '|---|---|',
       `| Planted themes recalled (2+ quotes, all from that theme's calls) | ${pct(c.themeRecall)} |`,
       `| Themes whose quotes all come from one planted theme | ${pct(c.pureThemes)} |`,
-      `| Model quotes that were verbatim | ${pct(c.quotesVerbatim)} |`,
+      `| Model quotes that were verbatim | ${pct(c.quotesVerbatim)} |`, '',
+      `Funnel over the seeded slice: dialled ${c.funnel.dialled}, connected ${c.funnel.connected}, talked ${c.funnel.talked}, goal reached ${c.funnel.goalReached} (${JSON.stringify(c.funnel.goalByGrade)}).`,
     ].join('\n') : `Did not run: ${c.status} (${c.reason ?? ''}).`, '',
     '## Misses', '',
     ...((r.items as any[]).filter(x => x.predicted.outcome !== x.key.outcome || ![x.key.reasonCode, ...(x.key.reasonAlt ?? [])].includes(x.predicted.reasonCode)
@@ -254,7 +295,9 @@ export function writeReport(dir: string, r: Awaited<ReturnType<typeof runBench>>
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const a = process.argv.slice(2), has = (f: string) => a.includes(f), val = (f: string) => { const i = a.indexOf(f); return i >= 0 ? a[i + 1] : undefined; };
-  runBench({ fake: has('--fake'), smoke: has('--smoke'), judge: has('--judge'), cross: !has('--no-cross'),
+  const sp = val('--split');
+  runBench({ split: sp === 'dev' || sp === 'test' ? sp : 'all', model: val('--model'), escalateModel: val('--escalate-model'),
+    threshold: val('--threshold') ? Number(val('--threshold')) : undefined, fake: has('--fake'), smoke: has('--smoke'), judge: has('--judge'), cross: !has('--no-cross'),
     limit: val('--limit') ? Number(val('--limit')) : undefined, rps: val('--rps') ? Number(val('--rps')) : undefined,
     maxTokens: val('--max-tokens') ? Number(val('--max-tokens')) : undefined, out: val('--out') ?? './analysis-bench-out' })
     .then(r => { console.log(`analysis bench (${r.mode}): ${r.cases.run} calls; outcome ${pct(r.fields.outcome)}; reason ${pct(r.fields.reasonCode)}; grounded ${pct(r.grounding)}`); })

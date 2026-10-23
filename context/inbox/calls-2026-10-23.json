@@ -47,6 +47,37 @@
       "date": "2026-10-23",
       "title": "How accurate are per-call analysis and cross-call insight on a real model? The bench has only run with the scripted oracle (CI)",
       "closes_when": "The integrator runs `node --import tsx product/scripts/analysis-bench.ts` with VP_LLM_ANALYSIS_* set (1 request a second, token cap) and files the analysis-bench.json numbers as measure.* nodes."
+    },
+    {
+      "id": "decision.2026-10-23.analysis-contract-shapes-conv-codes",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "The analysis contract is written as shapes: the model may name CONV_* codes only, null outcome only when no PERSON line bears on the question, every agreeing PERSON line is a commitment, and the outcome carries a confidence",
+      "rationale": "The real-model bench showed three miss classes. Mini gave null outcomes on wrong-person, complaint and opt-out calls; found 7 of 21 commitments; and named END_HANDED_OFF, an engine code, on 2 complaint calls. The changes are class-level, from the template pattern of the misses, not tuned item by item. A mutation test proves the CONV_* guard is what stops an engine code.",
+      "reverse_if": "The TEST split on a real model shows no gain over the old contract on outcome and commitment recall, or a loss elsewhere."
+    },
+    {
+      "id": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-23",
+      "title": "The analysis model is chosen per workspace from a curated list: single, or tiered (a cheaper first pass that escalates failed, outcome-less or low-confidence calls to a stronger model). No default model is chosen in code",
+      "rationale": "Computed for a 3-minute call: mini about ₹0.073, GPT-4.1 about ₹0.38, against a ₹0.17 budget. Tiered costs ₹0.073 plus e x ₹0.38, so it stays under budget while the escalation rate e is below 26%. The bench's no-outcome rate for mini was 16.7%.",
+      "reverse_if": "The TEST split shows tiered accuracy significantly below GPT-4.1-only, or a real-traffic escalation rate of 26% or more."
+    },
+    {
+      "id": "measure.2026-10-23.analysis-bench-real-models",
+      "type": "measurement",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Analysis bench on real models (integrator's run, older contract): outcome 70/84 (mini) vs 84/84 (GPT-4.1); moment recall 57/72 vs 67/72; quotes grounded 230/230 and 277/277; cross-call themes 3/3 on both; ₹0.048 vs ₹0.263 per call",
+      "n": 84,
+      "method": "product/scripts/analysis-bench.ts at 1 request a second on Azure models; scored by code against hand-written keys",
+      "path": "research/2026-10-23/benches"
     }
   ],
   "edges": [
@@ -59,6 +90,11 @@
       "from": "measure.2026-10-23.floor-opt-out-recall-regional",
       "to": "risk.2026-10-23.regional-opt-out-missed-live",
       "relation": "evidences"
+    },
+    {
+      "from": "measure.2026-10-23.analysis-bench-real-models",
+      "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+      "relation": "evidences"
     }
   ],
   "events": [
@@ -66,6 +102,11 @@
       "date": "2026-10-23",
       "event": "analysis-bench-built",
       "details": "Built the analysis-quality bench (product/scripts/analysis-bench.ts, cases in product/scripts/analysis-bench/cases.ts) and its CI test (product/tests/calls-bench.test.ts, 3 tests: set integrity, oracle smoke, and a wrong model scoring low). With the oracle over all 84 calls, every model-driven field is 100% (as expected for an oracle), the grounding check drops each planted invented quote (210/288 kept), and cross-call recall is 3/3. One model-independent finding: the floor's opt-out recall is 6/9, missing all regional phrasings. Gates: tsc clean, ui-contract 0 missing, full suite 403/403 on a fresh database. Not run: a real model."
+    },
+    {
+      "date": "2026-10-23",
+      "event": "analysis-contract-and-tiering",
+      "details": "Calls changes:\n- The bench is split DEV/TEST, 42/42, stratified so every template and language is on both sides.\n- The analysis contract is rewritten as shapes. Engine codes are refused from the model (mutation-checked). Outcome null is allowed only when no PERSON line bears on the question. Commitments are every agreeing PERSON line. The outcome carries a confidence.\n- Per-workspace single or tiered analysis model (migration 0604, analysis.settings.get / analysis.model.set). Escalation on a failed pass, no outcome, or low confidence; a cost line per pass.\n- The bench's cross-call slice is seeded as the product writes calls (turns, outcome rows, end reason), so goals come from graded outcomes.\n- Cost model in product/server/modules/calls/ANALYSIS-COST.md.\nVerified: 6 tier tests, 4 bench tests; full suite 418/418 on a fresh database.\nNot verified: the new contract on a real model (no keys in this sandbox); the integrator runs TEST."
     }
   ]
 }

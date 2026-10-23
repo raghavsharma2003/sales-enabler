@@ -10,8 +10,58 @@ import { many, one, tx, type Queryable } from '../../db.ts';
 import type { Registry } from '../../tools.ts';
 import { afterCall } from './followups.ts';
 import { judgeCallerCrisis, type CrisisJudgeCtx } from '../../../shared/safety/judge.ts';
-import { complete, llmConfigured, LlmError } from '../../llm.ts';
+import { complete, llmConfigured, LlmError, type LlmReply } from '../../llm.ts';
 import { CONVERSATION_CODES, REASON_CODES, REFINABLE, EARLY_HANGUP_S } from './taxonomy.ts';
+
+/** Codes the model may name: conversation codes only (CONV_*). END_* codes are the engine's (hang-up, hand-off, crisis, opt-out). */
+export const MODEL_CODES = CONVERSATION_CODES.filter(c => c.startsWith('CONV_'));
+
+type Ok = { reply: LlmReply; model: string; points: NonNullable<AnalysisRecord['points']>; moments: { kind: string; quote: string; note: string; atMs: number }[];
+  outcomeGuess: AnalysisRecord['outcomeGuess']; outcomeUnclear: AnalysisRecord['outcomeUnclear']; outcomeTurn: number; outcomeConfidence: number | null;
+  forgetRequested: AnalysisRecord['forgetRequested']; modelCode: string | null; proposed: number; dropped: number };
+type Pass = Ok | { error: string; model?: string; reply?: LlmReply };
+
+/** The analysis contract, written as shapes (fields, allowed values, one rule per line), not as prose to recite. */
+export function analysisPrompt(o: { question: string | null; values: string[]; instructions?: string }): string {
+  const codes = REASON_CODES.filter(r => MODEL_CODES.includes(r.code));
+  return [
+    'TASK: classify one phone call between an AI agent (AGENT) and a person (PERSON). Report what was said. Never grade.',
+    'OUTPUT: one JSON object:',
+    '{"points":[{"claim":string,"quote":string}],"moments":[{"kind":KIND,"quote":string,"note":string}],"reasonCode":CODE|null,',
+    ' "outcome":{"value":VALUE,"quote":string,"confidence":number}|null,"forget":{"quote":string}|null}',
+    'QUOTE: copied character for character from ONE transcript line, without the speaker label. Anything without such a quote is discarded.',
+    'KIND (one entry per line that shows it):',
+    '- commitment: PERSON agrees to do something (pay, come, confirm, buy, renew, fill, send). Every agreeing PERSON line is a commitment.',
+    '- objection: PERSON gives a reason against, or a complaint',
+    '- question: PERSON asks something',
+    '- opt_out: PERSON asks not to be called again',
+    '- callback_request: PERSON asks to be called at another time',
+    '- confusion: PERSON does not understand or cannot follow the language',
+    '- laughter: PERSON laughs',
+    `CODE (or null): ${codes.map(r => `${r.code} = ${r.label}`).join('; ')}`,
+    ...(o.question ? [
+      `OUTCOME: question "${o.question}"; VALUE one of ${JSON.stringify(o.values)}`,
+      '- decided by the PERSON\'s words; quote the PERSON line that decides it',
+      '- agreeing, refusing, asking to stop calls, complaining, asking for a human, "not the right person", "call later": each decides it when a VALUE fits',
+      '- null only when no PERSON line bears on the question',
+      '- confidence: 0..1, how clearly that line decides it',
+    ] : ['OUTCOME: always null.']),
+    ...(o.instructions ? [`OUTCOME, client rule: ${o.instructions}`] : []),
+    'FORGET: PERSON asks the business to forget or delete what it knows about them: quote that line. Otherwise null.',
+  ].join('\n');
+}
+
+// ---- which model analyses this workspace's calls (call_analysis_setting) ------------------------------------------
+export interface AnalysisSetting { mode: 'single' | 'tiered'; model?: string; escalateModel?: string; threshold: number }
+/** Curated analysis model ids, set per deployment (VP_ANALYSIS_MODELS, comma-separated). No model is chosen in code: without a
+ *  setting, analysis uses the deployment's VP_LLM_ANALYSIS_MODEL. */
+export const curatedAnalysisModels = () => (process.env.VP_ANALYSIS_MODELS ?? '').split(',').map(s => s.trim()).filter(Boolean);
+export async function analysisSetting(q: Queryable, ws: string): Promise<AnalysisSetting> {
+  const r = await one<{ mode: 'single' | 'tiered'; model: string | null; escalate_model: string | null; threshold: string }>(q,
+    'SELECT mode, model, escalate_model, threshold::text FROM call_analysis_setting WHERE workspace_id = $1', [ws]);
+  return r ? { mode: r.mode, model: r.model ?? undefined, escalateModel: r.escalate_model ?? undefined, threshold: Number(r.threshold) }
+    : { mode: 'single', threshold: 0.6 };
+}
 
 const MOMENT_KINDS = ['objection', 'question', 'commitment', 'opt_out', 'callback_request', 'confusion', 'laughter'] as const;
 
@@ -90,6 +140,9 @@ export interface AnalysisRecord {
   outcomeGuess?: { value: string; quote: string } | null;
   // An outcome the model proposed but the person never evidenced (no caller line holds its quote): not recorded.
   outcomeUnclear?: { value: string; reason: string } | null;
+  outcomeConfidence?: number | null;          // the model's own 0..1 for its outcome; used only to decide escalation
+  // Tiered analysis: whether a second, stronger model ran and why. null when the workspace runs one model.
+  tier?: { escalated: boolean; why: string | null; firstModel: string | null; secondModel: string | null; secondFailed: boolean } | null;
   judgeVersionId?: string | null;
   // Read by learning: any reply-door intervention on the call, and the judge's guess with its calibration status.
   safety_violation?: boolean;
@@ -182,66 +235,90 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   const judge = cv.def_id ? await one<{ id: string; model: string; config: { instructions?: string } }>(pool,
     `SELECT id, model, config FROM judge_version WHERE workspace_id = $1 AND outcome_definition_id = $2 ORDER BY number DESC LIMIT 1`, [workspaceId, cv.def_id]) : null;
 
-  const system = [
-    'You classify one phone call between an AI agent and a person. You never grade; you report what was said.',
-    'Reply with one JSON object: {"points":[{"claim":string,"quote":string}],"moments":[{"kind":string,"quote":string,"note":string}],',
-    '"reasonCode":string|null,"outcome":{"value":string,"quote":string}|null,"forget":{"quote":string}|null}.',
-    'Every quote must be copied exactly, character for character, from ONE transcript line (without the speaker label). Claims without such a quote are discarded.',
-    `moment kinds: ${MOMENT_KINDS.join(', ')}.`,
-    `reasonCode: one of ${CONVERSATION_CODES.join(', ')}, or null if unsure. Meanings: ${REASON_CODES.filter(r => r.stage === 'conversation').map(r => `${r.code} = ${r.label}`).join('; ')}.`,
-    cv.def_id ? `outcome: answer "${cv.def_question}" with one of ${JSON.stringify(cv.allowed_values)}, or null when the call does not show it.` : 'outcome: always null.',
-    judge?.config?.instructions ? `Client instructions for the outcome: ${judge.config.instructions}` : '',
-    'forget: only when the person asks the business to forget them or delete what it knows about them; quote their words. Otherwise null.',
-  ].filter(Boolean).join('\n');
+  const setting = await analysisSetting(pool, workspaceId);
+  const system = analysisPrompt({ question: cv.def_id ? cv.def_question : null, values: cv.allowed_values ?? [], instructions: judge?.config?.instructions });
   const user = lines.map(l => `${l.speaker === 'agent' ? 'AGENT' : 'PERSON'}: ${l.text}`).join('\n');
+  const callerSpoke = lines.some(l => l.speaker === 'caller');
 
-  let reply;
-  try {
-    reply = await complete({ purpose: 'analysis', json: true, temperature: 0, maxTokens: 1200, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] });
-  } catch (e) {
-    return store({ status: 'failed', reason: e instanceof LlmError ? e.message : 'the analysis model failed', reasonCode: cv.reason_code ?? undefined });
-  }
-
-  let parsed: any;
-  try { parsed = JSON.parse(reply.text); } catch { parsed = null; }
-  if (!parsed || typeof parsed !== 'object') return store({ status: 'failed', reason: 'the analysis model did not return JSON', reasonCode: cv.reason_code ?? undefined, model: reply.model });
-
-  let proposed = 0, dropped = 0;
-  const check = (q: unknown) => { proposed++; const l = findQuote(lines, q); if (!l) dropped++; return l; };
-
-  const points: NonNullable<AnalysisRecord['points']> = [];
-  for (const p of Array.isArray(parsed.points) ? parsed.points.slice(0, 12) : []) {
-    const l = check(p?.quote);
-    if (l && typeof p.claim === 'string' && p.claim.trim()) points.push({ claim: p.claim.trim().slice(0, 300), quote: String(p.quote).trim(), startMs: l.startMs, speaker: l.speaker });
-  }
-  const moments: { kind: string; quote: string; note: string; atMs: number }[] = [];
-  for (const m of Array.isArray(parsed.moments) ? parsed.moments.slice(0, 20) : []) {
-    const l = check(m?.quote);
-    if (l && MOMENT_KINDS.includes(m.kind)) moments.push({ kind: m.kind, quote: String(m.quote).trim(), note: typeof m.note === 'string' ? m.note.slice(0, 300) : '', atMs: l.startMs });
-  }
-  // An outcome is what the PERSON said or did: its quote must be in a caller line (checked by the line's index in the
-  // stored transcript). If the only match is the agent's own words, the outcome is unclear and is not recorded.
-  let outcomeGuess: AnalysisRecord['outcomeGuess'] = null, outcomeUnclear: AnalysisRecord['outcomeUnclear'] = null, outcomeTurn = -1;
-  if (parsed.outcome && typeof parsed.outcome === 'object' && cv.allowed_values?.includes(parsed.outcome.value)) {
-    proposed++;
-    const l = findQuote(lines, parsed.outcome.quote, 'caller');
-    if (l) { outcomeGuess = { value: parsed.outcome.value, quote: String(parsed.outcome.quote).trim() }; outcomeTurn = lines.indexOf(l); }
-    else {
-      dropped++;
-      outcomeUnclear = { value: parsed.outcome.value, reason: findQuote(lines, parsed.outcome.quote)
-        ? "unclear: the only evidence is the agent's own words, not the person's"
-        : 'unclear: the quoted evidence is not in the transcript' };
+  // One pass: a model call, then code grounds everything it said. Run once, or twice when the workspace is tiered.
+  const runPass = async (model: string | undefined): Promise<Pass> => {
+    let reply: LlmReply;
+    try {
+      reply = await complete({ purpose: 'analysis', model, json: true, temperature: 0, maxTokens: 1200, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] });
+    } catch (e) {
+      return { error: e instanceof LlmError ? e.message : 'the analysis model failed', model };
     }
-  }
+    let parsed: any;
+    try { parsed = JSON.parse(reply.text); } catch { parsed = null; }
+    if (!parsed || typeof parsed !== 'object') return { error: 'the analysis model did not return JSON', model: reply.model, reply };
 
-  let forgetRequested: AnalysisRecord['forgetRequested'] = null;
-  if (parsed.forget && typeof parsed.forget === 'object') {
-    const l = check(parsed.forget.quote);
-    if (l && l.speaker === 'caller') forgetRequested = { quote: String(parsed.forget.quote).trim() };
-  }
+    let proposed = 0, dropped = 0;
+    const check = (q: unknown) => { proposed++; const l = findQuote(lines, q); if (!l) dropped++; return l; };
+    const points: NonNullable<AnalysisRecord['points']> = [];
+    for (const p of Array.isArray(parsed.points) ? parsed.points.slice(0, 12) : []) {
+      const l = check(p?.quote);
+      if (l && typeof p.claim === 'string' && p.claim.trim()) points.push({ claim: p.claim.trim().slice(0, 300), quote: String(p.quote).trim(), startMs: l.startMs, speaker: l.speaker });
+    }
+    const moments: Ok['moments'] = [];
+    for (const m of Array.isArray(parsed.moments) ? parsed.moments.slice(0, 20) : []) {
+      const l = check(m?.quote);
+      if (l && MOMENT_KINDS.includes(m.kind)) moments.push({ kind: m.kind, quote: String(m.quote).trim(), note: typeof m.note === 'string' ? m.note.slice(0, 300) : '', atMs: l.startMs });
+    }
+    // An outcome is what the PERSON said or did: its quote must be in a caller line (checked by the line's index in the
+    // stored transcript). If the only match is the agent's own words, the outcome is unclear and is not recorded.
+    let outcomeGuess: AnalysisRecord['outcomeGuess'] = null, outcomeUnclear: AnalysisRecord['outcomeUnclear'] = null, outcomeTurn = -1;
+    let outcomeConfidence: number | null = null;
+    if (parsed.outcome && typeof parsed.outcome === 'object' && cv.allowed_values?.includes(parsed.outcome.value)) {
+      proposed++;
+      const c = parsed.outcome.confidence;
+      outcomeConfidence = typeof c === 'number' && Number.isFinite(c) && c >= 0 && c <= 1 ? c : null;
+      const l = findQuote(lines, parsed.outcome.quote, 'caller');
+      if (l) { outcomeGuess = { value: parsed.outcome.value, quote: String(parsed.outcome.quote).trim() }; outcomeTurn = lines.indexOf(l); }
+      else {
+        dropped++;
+        outcomeUnclear = { value: parsed.outcome.value, reason: findQuote(lines, parsed.outcome.quote)
+          ? "unclear: the only evidence is the agent's own words, not the person's"
+          : 'unclear: the quoted evidence is not in the transcript' };
+      }
+    }
+    let forgetRequested: AnalysisRecord['forgetRequested'] = null;
+    if (parsed.forget && typeof parsed.forget === 'object') {
+      const l = check(parsed.forget.quote);
+      if (l && l.speaker === 'caller') forgetRequested = { quote: String(parsed.forget.quote).trim() };
+    }
+    // The model may only name a conversation code (CONV_*); codes the engine decides are never the model's to pick.
+    const modelCode = typeof parsed.reasonCode === 'string' && MODEL_CODES.includes(parsed.reasonCode) ? parsed.reasonCode : null;
+    return { reply, model: reply.model, points, moments, outcomeGuess, outcomeUnclear, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped };
+  };
 
-  // The model may only refine a reason the engine could not know, and only with a conversation code.
-  const modelCode = typeof parsed.reasonCode === 'string' && CONVERSATION_CODES.includes(parsed.reasonCode) ? parsed.reasonCode : null;
+  const passes: Pass[] = [await runPass(setting.model)];
+  let tier: AnalysisRecord['tier'] = null;
+  if (setting.mode === 'tiered' && setting.escalateModel) {
+    const first = passes[0];
+    const why = 'error' in first ? 'the first pass failed'
+      : cv.def_id && callerSpoke && !first.outcomeGuess ? 'no outcome'
+      : first.outcomeConfidence !== null && first.outcomeConfidence < setting.threshold ? 'low confidence'
+      : null;
+    if (why) passes.push(await runPass(setting.escalateModel));
+    tier = { escalated: Boolean(why), why, firstModel: passes[0].model ?? null, secondModel: passes[1]?.model ?? null,
+      secondFailed: passes[1] ? 'error' in passes[1] : false };
+  }
+  // The pass that counts: the escalated one when it succeeded, else the first.
+  const done = [...passes].reverse().find((x): x is Ok => !('error' in x));
+  const costLines = async (c: pg.PoolClient) => {
+    for (const [n, x] of passes.entries()) if (x.reply) {
+      // The model's token use is a cost line; nothing here guesses a price, so inr_milli is 0 until the money module rates it.
+      await c.query(`INSERT INTO cost_line (workspace_id, conversation_id, component, provider, quantity, unit, inr_milli, detail) VALUES ($1,$2,'analysis',$3,$4,'token',0,$5)`,
+        [workspaceId, conversationId, x.reply.provider, x.reply.usage.inputTokens + x.reply.usage.outputTokens,
+          { ...x.reply.usage, model: x.reply.model, priced: false, ...(passes.length > 1 ? { tier: n === 0 ? 'first' : 'escalated' } : {}) }]);
+    }
+  };
+  if (!done) {
+    const err = passes[passes.length - 1] as Extract<Pass, { error: string }>;
+    return store({ status: 'failed', reason: err.error, reasonCode: cv.reason_code ?? undefined, model: err.model, tier }, costLines);
+  }
+  const { points, moments, outcomeGuess, outcomeUnclear, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped } = done;
+  const reply = done.reply;
   let reasonCode = cv.reason_code ?? 'CONV_INCOMPLETE';
   if (modelCode && REFINABLE.has(reasonCode) && !(reasonCode === 'END_HUNG_UP_MID' && (cv.duration_s ?? 0) < EARLY_HANGUP_S)) reasonCode = modelCode;
 
@@ -249,7 +326,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     status: 'done', summary: points.map(p => p.claim).join(' '), points,
     quotes: points.map(p => ({ text: p.quote, startMs: p.startMs, speaker: p.speaker })),
     quotesProposed: proposed, quotesDropped: dropped, reasonCode, modelReasonCode: modelCode, outcomeGuess,
-    judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested, outcomeUnclear,
+    judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested, outcomeUnclear, outcomeConfidence, tier,
     judge: outcomeGuess ? { judgeVersionId: judge?.id ?? null, value: outcomeGuess.value, quote: outcomeGuess.quote,
       calibration: judge ? (await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [judge.id]))?.status ?? 'uncalibrated' : 'uncalibrated' } : null,
   };
@@ -262,9 +339,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
       await c.query(`INSERT INTO call_moment (workspace_id, conversation_id, source, kind, at_ms, note, quote) VALUES ($1,$2,'analysis',$3,$4,$5,$6)`,
         [workspaceId, conversationId, m.kind, m.atMs, m.note, m.quote]);
     }
-    // The model's token use is a cost line; nothing here guesses a price, so inr_milli is 0 until the money module rates it.
-    await c.query(`INSERT INTO cost_line (workspace_id, conversation_id, component, provider, quantity, unit, inr_milli, detail) VALUES ($1,$2,'analysis',$3,$4,'token',0,$5)`,
-      [workspaceId, conversationId, reply.provider, reply.usage.inputTokens + reply.usage.outputTokens, { ...reply.usage, model: reply.model, priced: false }]);
+    await costLines(c);
     if (outcomeGuess && !isTest && cv.def_id) {
       await c.query(`DELETE FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 AND grade = 'ai_guess'`, [conversationId, workspaceId]);
       await c.query(`INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, evidence, judge_version_id)
