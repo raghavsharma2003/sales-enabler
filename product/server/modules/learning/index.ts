@@ -422,7 +422,8 @@ export function hazardTrip(control: { n: number; hazard: number }, treatment: { 
 async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const ws = ctx.workspaceId;
   const e = await experimentFor(ctx.q, ws, i.experimentId, true);
-  if (e.state !== 'running') return { state: e.state, result: e.state === 'decided' ? e.result?.decision : undefined };
+  if (e.state === 'decided') return adoptionCheck(ctx, e);
+  if (e.state !== 'running') return { state: e.state, result: undefined };
   const d = e.design;
   const tv = e.treatment_version_id!;               // a running experiment always has its treatment version
   const { rows, crossovers } = await experimentUnits(ctx.q, ws, e);
@@ -469,6 +470,38 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
 
 const pts = (x: number) => (x * 100).toFixed(1);
 
+/** After a win: adopted once the binding's latest deployment runs the treatment at 100% (the person approved the
+ *  rollout card); then the agent's draft takes the change too, so the next published version carries it, and a lesson
+ *  records it. A declined or expired rollout card is recorded as "won, not adopted". Until then: waiting. */
+async function adoptionCheck(ctx: ToolCtx, e: ExperimentRow) {
+  const ws = ctx.workspaceId;
+  const decision = e.result?.decision;
+  if (decision?.verdict !== 'win' || e.result?.adoption) return { state: e.state, decision, adoption: e.result?.adoption };
+  const dep = await one<{ id: string; split: { version_id: string; percent: number }[] }>(ctx.q,
+    `SELECT id, split FROM deployment WHERE workspace_id = $1 AND agent_id = $2 AND binding = $3 ORDER BY created_at DESC, id DESC LIMIT 1`, [ws, e.agent_id, e.design.binding]);
+  const rolledOut = !!dep && dep.split.length === 1 && dep.split[0]!.version_id === e.treatment_version_id && dep.split[0]!.percent === 100;
+  const card = e.result?.publish?.actionId ? await one<{ status: string }>(ctx.q, 'SELECT status FROM action WHERE id = $1 AND workspace_id = $2', [e.result.publish.actionId, ws]) : null;
+  const p = e.proposal_id ? await one<{ change: ChangeOp[]; change_hash: string | null; kind: string }>(ctx.q, 'SELECT change, change_hash, kind FROM proposal WHERE id = $1', [e.proposal_id]) : null;
+  let adoption: Record<string, unknown>;
+  if (rolledOut) {
+    // The draft takes the same edits (facts order as a whole list), through the agents module's own validated editor.
+    const treatment = await versionById(ctx.q, ws, e.treatment_version_id!);
+    const patch = (p?.change ?? []).map(o => o.op === 'set' ? { op: 'set', path: o.path, value: o.value } : { op: 'set', path: 'facts', value: agentOf(treatment!).facts });
+    const edit = patch.length ? await cross(ws, 'brief.edit', { agentId: e.agent_id, patch }) : { status: 'not_executed', reason: 'no change recorded' } as const;
+    adoption = { status: 'adopted', at: new Date().toISOString(), deploymentId: dep!.id, draft: edit.status === 'confirmed' ? 'updated' : `not updated: ${'reason' in edit ? edit.reason : edit.status}` };
+    if (e.proposal_id) await ctx.q.query(`UPDATE proposal SET status = 'promoted' WHERE id = $1`, [e.proposal_id]);
+    await addLesson(ctx.q, ws, e.agent_id, `Adopted: the ${p?.kind ?? ''} change now runs on every ${e.design.binding} call (${decision.label}). `
+      + (edit.status === 'confirmed' ? 'The agent\'s draft carries it, so the next published version keeps it.' : `The draft could not take it (${adoption.draft}); edit it before the next publish.`),
+      'won', e.proposal_id, p?.change_hash ?? null, { experimentId: e.id, deploymentId: dep!.id });
+  } else if (card && ['cancelled', 'expired'].includes(card.status)) {
+    adoption = { status: 'declined', at: new Date().toISOString() };
+    await addLesson(ctx.q, ws, e.agent_id, `Won but not adopted: the rollout was ${card.status === 'expired' ? 'left to expire' : 'declined'} (${decision.label}). The current version keeps every call.`,
+      'won', e.proposal_id, null, { experimentId: e.id });
+  } else return { state: e.state, decision, adoption: { status: 'waiting', actionId: e.result?.publish?.actionId ?? null } };
+  await ctx.q.query(`UPDATE experiment SET result = coalesce(result, '{}'::jsonb) || $2 WHERE id = $1`, [e.id, JSON.stringify({ adoption })]);
+  return { state: e.state, decision, adoption };
+}
+
 /** A win is proposed as deployment.split at 100% treatment on the experiment's binding. That tool must be
  *  approval-gated: learning never applies a deployment on its own. */
 async function proposePublish(ws: string, e: ExperimentRow) {
@@ -507,7 +540,9 @@ function publicExperiment(e: ExperimentRow) {
  *  Pass workspaceId to sweep one workspace only (tests on the shared suite database must). */
 export async function checkRunning(deps: { pool: pg.Pool; registry: Registry }, opts: { workspaceId?: string } = {}): Promise<{ checked: number }> {
   const running = await many<{ id: string; workspace_id: string }>(deps.pool,
-    `SELECT id, workspace_id FROM experiment WHERE state = 'running' AND ($1::uuid IS NULL OR workspace_id = $1) ORDER BY started_at LIMIT 500`, [opts.workspaceId ?? null]);
+    `SELECT id, workspace_id FROM experiment WHERE (state = 'running'
+        OR (state = 'decided' AND result->'decision'->>'verdict' = 'win' AND result->'adoption' IS NULL))   -- a win waiting to be adopted
+      AND ($1::uuid IS NULL OR workspace_id = $1) ORDER BY started_at LIMIT 500`, [opts.workspaceId ?? null]);
   for (const e of running) await deps.registry.execute(deps.pool, 'experiment.check', { experimentId: e.id }, { workspaceId: e.workspace_id, actor: SYSTEM });
   return { checked: running.length };
 }

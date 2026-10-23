@@ -65,7 +65,22 @@ const siblings: Module = {
     r.register(tool(obj({ agentId: uuid(), binding: str() }), { name: 'deployment.revert_to_last_good', risk: 'external', summary: 'fake revert',
       run: async (ctx, i) => { reverts.push({ ws: ctx.workspaceId, agentId: i.agentId, binding: i.binding }); return { reverted: true }; } }));
     r.register(tool(obj({ agentId: uuid(), binding: str(), split: any() }), { name: 'deployment.split', risk: 'external', summary: 'fake split',
-      run: async () => ({ deployed: true }) }));
+      run: async (ctx, i) => {   // as the agents module does: a new deployment row for the binding
+        await ctx.q.query('INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,$3,$4)', [ctx.workspaceId, i.agentId, i.binding,
+          JSON.stringify((i.split as { versionId: string; percent: number }[]).map(x => ({ version_id: x.versionId, percent: x.percent })))]);
+        return { deployed: true };
+      } }));
+    // A minimal brief.edit: 'set' ops on the agent's draft (the real one validates and lints; tests/e2e covers it).
+    r.register(tool(obj({ agentId: uuid(), patch: any() }), { name: 'brief.edit', risk: 'draft', summary: 'fake brief edit',
+      run: async (ctx, i) => {
+        const a = (await ctx.q.query('SELECT draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId])).rows[0];
+        const draft = Object.keys(a.draft ?? {}).length ? a.draft : (await ctx.q.query('SELECT config FROM agent_version WHERE agent_id = $1 ORDER BY number LIMIT 1', [i.agentId])).rows[0].config.agent;
+        for (const o of i.patch as { op: string; path: string; value: unknown }[]) {
+          const keys = o.path.split('.'); let node = draft; for (const k of keys.slice(0, -1)) node = node[k]; node[keys.at(-1)!] = o.value;
+        }
+        await ctx.q.query('UPDATE agent SET draft = $2 WHERE id = $1', [i.agentId, JSON.stringify(draft)]);
+        return { agentId: i.agentId };
+      } }));
   },
 };
 
@@ -548,4 +563,30 @@ test('a contact is never in two arms: the arm is stored at first assignment, and
   assert.deepEqual([r.result.progress.control, r.result.progress.treatment, r.result.progress.crossovers], [0, 0, 1]);
   const n = await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM experiment_assignment WHERE experiment_id = $1 AND contact_id = $2', [experimentId, c]);
   assert.equal(n!.n, 1, 'one stored arm per contact');
+});
+
+test('adopting a winner: once its 100% split is approved, the agent draft carries the change and a lesson says so; declining records it too', { skip }, async () => {
+  for (const decision of ['approve', 'decline'] as const) {
+    const t = await workspace();
+    const { experimentId, accepted } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.3, minDays: 0 });
+    const perArm = accepted.perArm as number;
+    await dialUntil(t, bothReach(perArm), (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'confirmed' : 'declined') : (i % 10 < 2 ? 'confirmed' : 'declined')));
+    const won = await t.call('experiment.check', { experimentId });
+    assert.equal(won.result.verdict, 'win');
+    const actionId = won.result.publish.actionId as string;
+    if (decision === 'approve') assert.equal((await t.approve(actionId)).status, 'confirmed');
+    else assert.equal(await registry.decline(pool, actionId, { workspaceId: t.ws, memberId: t.member }), true);
+    const r = await t.call('experiment.check', { experimentId });
+    const draft = (await one<{ draft: any }>(pool, 'SELECT draft FROM agent WHERE id = $1', [t.agentId]))!.draft;
+    const lessons = (await t.call('lesson.list', { agentId: t.agentId })).result.map((l: any) => l.text).join(' | ');
+    if (decision === 'approve') {
+      assert.equal(r.result.adoption.status, 'adopted', JSON.stringify(r.result));
+      assert.equal(draft.opening.usefulFirst, 'your AC visit on 24 October is ready to confirm', 'the next version is published from a draft that carries the change');
+      assert.match(lessons, /Adopted/);
+    } else {
+      assert.equal(r.result.adoption.status, 'declined', JSON.stringify(r.result));
+      assert.notEqual(draft.opening?.usefulFirst, 'your AC visit on 24 October is ready to confirm');
+      assert.match(lessons, /not adopted/);
+    }
+  }
 });
