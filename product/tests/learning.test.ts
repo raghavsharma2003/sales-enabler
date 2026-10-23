@@ -590,3 +590,28 @@ test('adopting a winner: once its 100% split is approved, the agent draft carrie
     }
   }
 });
+
+test('before anyone approves: readiness says what is missing, and the approval card says how many calls the test needs', { skip }, async () => {
+  const t = await workspace();
+  const [ev] = await calls(t.ws, t.versionId, 40, 10);
+  fakeProposals(ev!);
+  const pid = (await t.call('learning.propose', { agentId: t.agentId, max: 1 })).result.proposals[0].id;
+  const r0 = await t.call('proposal.readiness', { proposalId: pid });
+  assert.deepEqual([r0.result.ready, r0.result.fix], [false, 'probe']);
+  await t.call('proposal.probe', { proposalId: pid });
+  const r1 = await t.call('proposal.readiness', { proposalId: pid });
+  assert.equal(r1.result.ready, true, JSON.stringify(r1.result));
+  assert.match(r1.result.note, /starts once 100 calls have a recorded outcome \(60 more\)/);
+  const card = await t.call('proposal.accept', { proposalId: pid });
+  assert.match(card.summary, /needs about [\d,]+ calls with a recorded outcome \([\d,]+ on each version\) to prove 25\.0% -> 30\.0%/);
+  // No outcome definition with goal values: the reason is given up front, in words.
+  const u = await workspace();
+  await pool.query('DELETE FROM outcome_definition WHERE workspace_id = $1', [u.ws]);
+  const [ev2] = await calls(u.ws, u.versionId, 5, 1);
+  fakeProposals(ev2!);
+  const pid2 = (await u.call('learning.propose', { agentId: u.agentId, max: 1 })).result.proposals[0].id;
+  await u.call('proposal.probe', { proposalId: pid2 });
+  const r2 = await u.call('proposal.readiness', { proposalId: pid2 });
+  assert.deepEqual([r2.result.ready, r2.result.fix], [false, 'outcome']);
+  assert.match((await u.call('proposal.accept', { proposalId: pid2 })).summary, /cannot start yet: Say what counts as success/);
+});

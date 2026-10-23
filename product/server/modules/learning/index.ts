@@ -272,29 +272,49 @@ async function goalValues(q: Queryable, ws: string, agentId: string, cfg: AgentC
 
 const COUNTING = 'counts only calls with a recorded outcome (verified, a person\'s label, or a trusted judge\'s guess); calls without one are not in the test';
 
-async function accept(ctx: ToolCtx, i: AcceptIn) {
-  const ws = ctx.workspaceId;
-  const p = await proposalFor(ctx.q, ws, i.proposalId, true);
-  if (p.status !== 'awaiting_approval') throw new Error(`only a probed proposal can be tested; this one is ${p.status}`);
-  const busy = await one(ctx.q, `SELECT id FROM experiment WHERE workspace_id = $1 AND agent_id = $2 AND state IN ('aa_pending','running')`, [ws, p.agent_id]);
-  if (busy) throw new Error('this agent already has an experiment; one confirmatory test at a time');
-  const base = p.base_version_id ? await versionById(ctx.q, ws, p.base_version_id) : null;
-  if (!base) throw new Error('the version this proposal was drafted against is gone');
+/** Why a proposal cannot be tested yet, in words a person can act on. */
+class NotReady extends Error { constructor(message: string, public fix: 'probe' | 'wait' | 'outcome' | 'outcomes' | null = null) { super(message); this.name = 'NotReady'; } }
 
-  const goal = i.successValues ? { values: i.successValues, definitionId: i.outcomeDefinitionId ?? null } : await goalValues(ctx.q, ws, p.agent_id, agentOf(base), i.outcomeDefinitionId);
+const AA_MIN_UNITS = 100;
+
+/** Everything accept needs, worked out without writing anything. Throws NotReady with the first blocker. */
+async function planTest(ctx: ToolCtx, i: AcceptIn, lock = false) {
+  const ws = ctx.workspaceId;
+  const p = await proposalFor(ctx.q, ws, i.proposalId, lock);
+  if (p.status === 'drafted') throw new NotReady('Simulate this change first: it is tested on practice callers before it reaches real ones.', 'probe');
+  if (p.status !== 'awaiting_approval') throw new NotReady(`This change is ${p.status.replace(/_/g, ' ')}, so it cannot be tested again.`);
+  const busy = await one(ctx.q, `SELECT id FROM experiment WHERE workspace_id = $1 AND agent_id = $2 AND state IN ('aa_pending','running')`, [ws, p.agent_id]);
+  if (busy) throw new NotReady('Another change to this agent is being tested. One test runs at a time, so results stay clean.', 'wait');
+  const base = p.base_version_id ? await versionById(ctx.q, ws, p.base_version_id) : null;
+  if (!base) throw new NotReady('The version this change was drafted against is gone; look for improvements again.');
+  let goal: { values: string[]; definitionId: string | null };
+  try { goal = i.successValues ? { values: i.successValues, definitionId: i.outcomeDefinitionId ?? null } : await goalValues(ctx.q, ws, p.agent_id, agentOf(base), i.outcomeDefinitionId); }
+  catch (e) { throw new NotReady('Say what counts as success first: give the campaign this agent runs an outcome, and mark which answers reach the goal.', 'outcome'); }
   const successValues = goal.values;
   const hazardCodes = i.hazardCodes ?? DEFAULT_HAZARD_CODES;
   // Baseline from this workspace's own calls on the control version: no other tenant's data, ever.
-  let baseline = i.baselineRate, baselineSource = 'given';
+  let baseline = i.baselineRate, baselineSource = 'given', withOutcome = 0;
   if (baseline === undefined) {
     const hist = (await units(ctx.q, ws, [base.id], new Date(Date.now() - 90 * 86_400_000), successValues, hazardCodes)).filter(u => u.has_outcome);
-    if (hist.length < 30) throw new Error(`only ${hist.length} live contacts with a recorded outcome on the control version; give baselineRate to plan the test`);
+    withOutcome = hist.length;
+    if (hist.length < 30) throw new NotReady(`The test is planned from this agent's own results: it needs 30 calls with a recorded outcome and has ${hist.length}. Outcomes come from your own system or a person's label; an AI guess counts only once its judge is calibrated.`, 'outcomes');
     baseline = Math.min(0.95, Math.max(0.02, hist.filter(u => u.success).length / hist.length));
     baselineSource = `own calls with an outcome, n=${hist.length}`;
   }
   const mde = i.mdeAbs ?? Math.max(0.02, Math.round(baseline * 0.2 * 1000) / 1000);
-  if (baseline + mde >= 1) throw new Error('the target rate must stay below 100%');
-  const plan = powerPlan(baseline, mde);
+  if (baseline + mde >= 1) throw new NotReady('This agent already reaches its goal on nearly every call; there is no room to prove a gain.');
+  return { p, base, goal, successValues, hazardCodes, baseline, baselineSource, mde, plan: powerPlan(baseline, mde), withOutcome };
+}
+
+const pct1 = (x: number) => `${(x * 100).toFixed(1)}%`;
+const planLine = (t: { plan: { total: number; perArm: number }; baseline: number; mde: number }) =>
+  `about ${t.plan.total.toLocaleString('en-IN')} calls with a recorded outcome (${t.plan.perArm.toLocaleString('en-IN')} on each version) to prove ${pct1(t.baseline)} -> ${pct1(t.baseline + t.mde)}`;
+
+async function accept(ctx: ToolCtx, i: AcceptIn) {
+  const ws = ctx.workspaceId;
+  let planned;
+  try { planned = await planTest(ctx, i, true); } catch (e) { throw e instanceof NotReady ? new Error(e.message) : e; }
+  const { p, base, goal, successValues, hazardCodes, baseline, baselineSource, mde, plan } = planned;
 
   const treatmentCfg = applyOps(agentOf(base), parseOps(p.change));
   const treatment = await treatmentVersion(ws, base, treatmentCfg, p.id);
@@ -614,9 +634,23 @@ export const module: Module = {
     r.register(tool(probeIn, { name: 'proposal.probe', risk: 'test', summary: 'simulate the current and proposed versions on the same callers and seeds; reject regressions', run: probe }));
 
     r.register(tool(acceptIn, { name: 'proposal.accept', risk: 'external', roles: ['owner', 'builder', 'operator'], summary: 'accept a probed proposal into a pre-registered A/B test',
-      describe: async (i, ctx) => `Test ${await label(ctx, 'proposal', i.proposalId)} against the current version on live calls (fixed horizon; calls to prove computed from your own baseline before launch)`,
+      describe: async (i, ctx) => {
+        const what = `Test ${await label(ctx, 'proposal', i.proposalId)} against the current version on live calls`;
+        try { return `${what}: needs ${planLine(await planTest(ctx, i))}. No winner is shown before then.`; }
+        catch (e) { return e instanceof NotReady ? `${what}. It cannot start yet: ${e.message}` : what; }
+      },
       version: async (ctx, i) => (await one<{ v: string }>(ctx.q, `SELECT status || ':' || md5(coalesce(simulation::text, '')) AS v FROM proposal WHERE id = $1 AND workspace_id = $2`, [i.proposalId, ctx.workspaceId]))?.v ?? null,
       run: accept }));
+
+    r.register(tool(obj({ proposalId: uuid() }), { name: 'proposal.readiness', risk: 'read', summary: 'whether a proposed change can be tested on real calls yet, and what it needs',
+      run: async (ctx, i) => {
+        try {
+          const t = await planTest(ctx, { proposalId: i.proposalId } as AcceptIn);
+          const aaShort = t.withOutcome && t.withOutcome < AA_MIN_UNITS ? AA_MIN_UNITS - t.withOutcome : 0;
+          return { ready: true, callsToProve: t.plan.total, perArm: t.plan.perArm, baseline: t.baseline, target: t.baseline + t.mde, plan: planLine(t),
+            ...(aaShort ? { note: `The test starts once ${AA_MIN_UNITS} calls have a recorded outcome (${aaShort} more); until then it waits, safely.` } : {}) };
+        } catch (e) { if (e instanceof NotReady) return { ready: false, reason: e.message, fix: e.fix }; throw e; }
+      } }));
 
     r.register(tool(startIn, { name: 'experiment.start', risk: 'external', summary: 'run the shadow A/A, then send live calls to both arms',
       describe: async (i, ctx) => `Start ${await label(ctx, 'experiment', i.experimentId)}: live calls split between the current and the proposed version`,
