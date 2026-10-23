@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2026-10-21.1",
+  "version": "2026-10-23.1",
   "about": "Reply-door, caller-signal, redaction and compile-lint rules as data. The TypeScript door (product/shared/safety/index.ts) and the Python door (product/voice) load this one file and are held to cases.json. Rules are evaluated in array order; the first reply rule that fires decides. Industry-neutral rules have scope.packs absent; sector rules name their pack.",
   "regex": {
     "dialect": "Common subset of ECMAScript (flags 'iu') and Python re (flags re.I). No named groups, no \\p{...}, no variable-width lookbehind. \\b is used only next to Latin letters. Patterns run on the NORMALISED text.",
@@ -33,7 +33,7 @@
     "human_noun": "(\\b(insaan|insan|human|manushya|real person|real human|asli insaan|zinda insaan|ladki|ladka|aadmi|aurat|person)\\b|इंसान|इन्सान|मनुष्य|असली इंसान|लडकी|लडका|आदमी|औरत)",
     "neg": "(\\b(nahi|nahin|nhi|nai|na|not|thodi|thode)\\b|नहीं|नही|थोडी)",
     "copula_first": "(\\b(hoon|hun|hu|hoo|am)\\b|हूं|हु|हूँ)",
-    "ai_affirm": "((\\b(ai|a\\.i\\.|artificial intelligence|virtual assistant|digital assistant|ai assistant|ai agent|automated assistant|bot)\\b|एआई)(?:(?!\\b(nahi|nahin|nhi|nai|na|not)\\b|नहीं|नही)[^.?!।]){0,30}(\\b(hoon|hun|hu|am)\\b|हूं|हु)|\\b(i'?m|i am) (an? )?(ai|virtual|digital|automated)\\b|\\b(main|mai)\\b[^.?!।]{0,25}\\b(ai|bot)\\b(?! ?(nahi|nahin|nhi|na|not)\\b)|मैं[^।?!.]{0,25}(एआई|\\bai\\b)(?! ?(नहीं|नही))|\\bjust an ai\\b)",
+    "ai_affirm": "((\\b(ai|a\\.i\\.|artificial intelligence|virtual assistant|digital assistant|ai assistant|ai agent|automated assistant|bot)\\b|एआई)(?! ?(असिस्टेंट|सहायक|एजेंट|assistant|agent|sahayak)? ?(के बारे|के बार|ke baare\\b|ke bare\\b|about\\b))(?:(?!\\b(nahi|nahin|nhi|nai|na|not)\\b|नहीं|नही)[^.?!।]){0,30}(\\b(hoon|hun|hu|am)\\b|हूं|हु)|\\b(i'?m|i am) (an? )?(ai|virtual|digital|automated)\\b|\\b(main|mai)\\b[^.?!।]{0,25}\\b(ai|bot)\\b(?! ?(nahi|nahin|nhi|na|not)\\b)(?! ?(assistant|agent|sahayak)? ?(ke baare|ke bare)\\b)|मैं[^।?!.]{0,25}(एआई|\\bai\\b)(?! ?(नहीं|नही))(?! ?(असिस्टेंट|सहायक|एजेंट)? ?(के बारे|के बार))|\\bjust an ai\\b|\\b(main|mai)\\b[^.?!।]{0,60}\\b(ki|ka|ke)\\s(ai|a\\.i\\.)\\s?(assistant|agent|sahayak|sahayika)\\b(?!\\s?(ke baare|ke bare|nahi|nahin|nhi|na|not)\\b)|मैं[^।?!.]{0,60}(की|का|के)\\s(एआई|\\bai\\b)\\s?(असिस्टेंट|सहायक|सहायिका|एजेंट)(?!\\s?(के बारे|के बार|नहीं|नही))|\\b(i'?m|i am)\\b[^.?!]{0,40}'s (ai|virtual|digital) (assistant|agent)\\b|நான்[^.?!।]{0,60}(\\bai\\b|ஏஐ)\\s?(உதவியாளர்|அசிஸ்டன்ட்|அசிஸ்டென்ட்)|আমি[^.?!।]{0,60}(\\bai\\b|এআই)\\s?(সহকারী|অ্যাসিস্ট্যান্ট))",
     "self_ref": "(\\b(main|mai|mein|me|i|i'?m|myself)\\b|मैं)",
     "neg_pred": "@neg(?! ?((ho|hoga|hogi|hai|hain|kar|karti|karte|chal|ki|ka|ke|issue|problem|related)\\b|होग|हो |है|कर|चल|की|का|के))",
     "money_talk": "(premium|emi|amount|payment|\\bpay\\b|fee|fees|price|bill|due|kimat|keemat|charge|refund|cashback|bonus|prize|reward|scholarship|stipend|grant|subsidy|compensation|incentive|commission|cover|sum assured|salary|income|return|profit|munafa|balance|loan|rent|kiraya|deposit|bhugtan|bakaya|kisht|installment|paise|paisa)"

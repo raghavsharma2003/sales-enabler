@@ -5,8 +5,8 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 206,
-    "passed": 206,
+    "ran": 214,
+    "passed": 214,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
@@ -38,7 +38,9 @@
       "test_azure_ears.py": "Azure Speech ears with a fake Speech SDK (no Azure host): hi-IN, Central India, 500 ms segmentation, partials/finals from SDK threads, the error path, the Gate (pre-roll, tail, only gated audio metered); build() gives AzureEars to Azure-ears stacks and Sarvam ears only to Sarvam",
       "test_components.py": "GET /v1/health components: every catalog ears/brain/voice/s2s has an availability and a plain reason (not set up, not offered on Google Cloud, not built), never a reroute; every brain carries its route (vertex, azure-foundry, openrouter, sarvam); gpt-oss-120b@groq not offered",
       "test_stack_select.py": "stack selection: a curated id must carry its own parts; 'custom' built from catalog parts (unknown, incomplete, engine-plus-parts and agent mismatch refused; voices from the chosen voice part); requires by part (AZURE_OPENAI_SEA for host sea); a custom sim call files its manifest and combinationId under what ran; missing credentials named per part; parity with shared/components.ts (ids, part, route, requires, voices a subset with the same default) and every curated stack built from offered parts",
-      "test_turn_bench.py": "the turn-taking bench scoring (cut-in, talk-over, end-of-turn, barge-in, backchannel), its labels (pauses, punctuation snapping, statement cut) and Wilson CIs on synthetic timelines; the hold rule by how the caller ends (question, statement, unfinished)"
+      "test_turn_bench.py": "the turn-taking bench scoring (cut-in, talk-over, end-of-turn, barge-in, backchannel), its labels (pauses, punctuation snapping, statement cut) and Wilson CIs on synthetic timelines; the hold rule by how the caller ends (question, statement, unfinished)",
+      "test_disclosure.py": "staging bugs 2026-10-23: the shared affirm vectors (Devanagari, Tamil, Bengali first-person disclosures; mentions and denials refused); the staging opening passes with no prefix; an opening with no disclosure gets the fixed line from shared/safety/disclosure.json in her script, never the disclosureClause guidance; no name means a phrasing that needs none, and a name reaches her",
+      "test_event_limits.py": "staging bug 2026-10-23: a 79-character tone round-trips (trimmed to ingest's 50, and the batch passes calls' validateRuntimeBatch); every limited field is trimmed"
     }
   },
   "works": [
@@ -95,7 +97,8 @@
     "Vertex is chosen once per call; 5xx retries stay on the same model and route",
     "neverSay hits are reported under RD7, as the shared rules do",
     "v2-live (Gemini Live) holds each turn until its transcript has passed the door: safe, but slower; recommend no production calls on it until its latency is measured with the hold",
-    "Gemini runs on Vertex only (decision.2026-10-21.gemini-vertex-only): no Gemini API key, no OpenRouter Gemini; a model or Live feature Vertex does not offer makes the stack unavailable with a plain reason, never a reroute. Only from an Indian VP_REGION. Live needs VERTEX_LIVE_LOCATION (no default: the docs list gemini-3.8-live in us/eu/us-central1 only)"
+    "Gemini runs on Vertex only (decision.2026-10-21.gemini-vertex-only): no Gemini API key, no OpenRouter Gemini; a model or Live feature Vertex does not offer makes the stack unavailable with a plain reason, never a reroute. Only from an Indian VP_REGION. Live needs VERTEX_LIVE_LOCATION (no default: the docs list gemini-3.8-live in us/eu/us-central1 only)",
+    "RD1 first-breath fallback says a fixed, speakable disclosure (shared/safety/disclosure.json) in the call's language and her script; agent.opening.disclosureClause is guidance for the brief and is never spoken"
   ],
   "sharedRuleGapsFixed": "The 9 gaps the runtime reported were fixed in rules.json at eaae1c1 (clause-scoped noneClause, local PIN context); they are normal tests now.",
   "reviewFixes": {

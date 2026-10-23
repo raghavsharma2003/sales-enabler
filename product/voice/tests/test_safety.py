@@ -17,7 +17,7 @@ class RuntimeDoor(unittest.TestCase):
     def test_first_breath_gets_the_clause_and_counts_as_disclosed(self):
         v = door('Namaste, kya meri baat Asha ji se ho rahi hai?', disclosed=False, turn_index=0)
         self.assertEqual((v['action'], v['rule']), ('replace', 'RD1'))
-        self.assertTrue(v['text'].startswith('Suraksha की AI असिस्टेंट, '))
+        self.assertTrue(v['text'].startswith('Main Suraksha ki AI assistant hoon. '), v['text'])   # the fixed line, never the clause
         self.assertEqual(door('Doosri baat.', disclosed=False, turn_index=0, first_sentence=False)['action'], 'pass')
 
     def test_agenda_before_disclosure_is_blocked_after_the_first_breath(self):

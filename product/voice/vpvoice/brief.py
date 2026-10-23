@@ -134,6 +134,11 @@ def ledger(transcript, agent, contact, state):
     if state.get('crisis'):
         rows.append('CRISIS: the goal of this call is suspended. Stay with them, slow and warm; Tele-MANAS 14416 and 112 '
                     'are the numbers; offer a human; never end the call yourself')
+    name = (contact.get('displayName') or '').strip()
+    if not state.get('identity_verified'):
+        # the brief asks for the person by name; with no name she must never say a blank ("क्या मैं ___ से…")
+        rows.append(f'the person you are calling: {name}' if name else
+                    'their name is not known: never ask for anyone by name and never leave a blank for a name; greet them and ask if now is a good time')
     if not state.get('disclosed'):
         clause = ((agent.get('opening') or {}).get('disclosureClause') or '').strip()
         rows.append('this breath must carry the brand and your one AI clause' + (f' ({clause})' if clause else '') + ', lightly, in passing')

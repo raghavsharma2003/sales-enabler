@@ -53,6 +53,29 @@ class MemoryPoster:
         return [seen[k] for k in sorted(seen)]
 
 
+# String limits as calls/ingest.ts validates them: a field over its limit made ingest refuse the WHOLE batch (422), and
+# every event in it was lost (staging 2026-10-23: a 79-character tone note). The runtime trims to fit before sending.
+FIELD_MAX = {'turn': {'text': 20_000, 'tone': 50}, 'safety': {'detail': 2000}, 'moment': {'note': 2000}, 'tool': {'name': 100},
+             'hand_off': {'reason': 500, 'target': 200, 'summary': 2000}, 'cost': {'provider': 100}, 'call.ended': {'recordingUri': 2000}}
+TRANSCRIPT_MAX = 5000
+
+
+def fit(text, n):
+    """text cut to at most n characters, at a word boundary when one is near, never mid-way through a code point."""
+    if not isinstance(text, str) or len(text) <= n: return text
+    cut = text[:n - 1]; sp = cut.rfind(' ')
+    return (cut[:sp] if sp > n * 0.6 else cut).rstrip(' ,;:') + '…'
+
+
+def sanitise(type_, fields):
+    for k, n in FIELD_MAX.get(type_, {}).items():
+        if k in fields: fields[k] = fit(fields[k], n)
+    if type_ == 'call.ended' and isinstance(fields.get('transcript'), list):
+        tr = fields['transcript'][:TRANSCRIPT_MAX]
+        fields['transcript'] = [dict(x, text=fit(x.get('text', ''), 20_000)) for x in tr]
+    return fields
+
+
 class EventSink:
     MAX_BATCH = 50
 
@@ -66,7 +89,7 @@ class EventSink:
             log.info('dropped a %s event after call.ended for %s', type_, self.cid)
             return None
         self.seq += 1
-        ev = {'seq': self.seq, 'type': type_, 'at': iso_now(), **fields}
+        ev = {'seq': self.seq, 'type': type_, 'at': iso_now(), **sanitise(type_, fields)}
         self.pending.append(ev)
         return ev
 

@@ -99,6 +99,9 @@ export function registerTools(r: Registry): void {
         WHERE workspace_id = $1 AND channel = 'test' AND started_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata'`, [ctx.workspaceId]);
       if (Number(spent!.s) + TEST_CALL_MAX_COST_INR_MILLI > TEST_BUDGET_PER_DAY_INR_MILLI) throw new Error("today's test budget is used up; it resets at midnight IST");
 
+      const member = ctx.actor.type === 'member' && ctx.actor.id
+        ? await one<{ name: string | null }>(ctx.pool, 'SELECT name FROM member WHERE id = $1 AND workspace_id = $2', [ctx.actor.id, ctx.workspaceId]) : null;
+      const tester = (member?.name ?? '').trim().split(/\s+/)[0] ?? '';
       const id = randomUUID();
       await ctx.pool.query(`INSERT INTO conversation (id, workspace_id, agent_version_id, channel, direction, status, run_manifest) VALUES ($1,$2,$3,'test','outbound','live',$4)`,
         [id, ctx.workspaceId, versionId, { test: true, ...(draftHash ? { draftHash } : {}) }]);
@@ -106,7 +109,9 @@ export function registerTools(r: Registry): void {
         protocol: 1, conversationId: id, attemptId: null, workspaceId: ctx.workspaceId, direction: 'outbound',
         transport: { kind: 'webrtc', offerUrl: `/v1/test-calls/${id}/offer` },
         agent: cfg.agent, brief: cfg.brief, stack: { id: stack.id, combinationId: combinationId(stack, cfg.agent.voice.voiceId), components: stack.components },
-        contact: { displayName: '', timezone: 'Asia/Kolkata', facts: {}, memoryBrief: '', memoryStatus: 'disabled' },
+        // The person testing is the caller: their first name lets her open as she would on a real call (staging
+        // 2026-10-23: with no name she said "क्या मैं ___ से…"). No member name: '' and the runtime opens without one.
+        contact: { displayName: tester, timezone: 'Asia/Kolkata', facts: {}, memoryBrief: '', memoryStatus: 'disabled' },
         consent: { basis: 'consent' },
         limits: { maxDurationS: Math.min(cfg.agent.limits?.maxDurationS ?? 300, 900), maxCostInrMilli: TEST_CALL_MAX_COST_INR_MILLI },
         test: true,

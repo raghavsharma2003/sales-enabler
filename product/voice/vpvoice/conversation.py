@@ -100,6 +100,7 @@ class Conversation:
                            identity_verified=self.state['identity_verified'], recording_refused=self.state['recording_refused'],
                            crisis=self.state['crisis'], turn_index=self.agent_turns,
                            disclosure_clause=(a.get('opening') or {}).get('disclosureClause', ''), asked_ai=self.state['asked_ai'],
+                           language=self.contact.get('language') or (a.get('languages') or {}).get('primary') or '',
                            crisis_lines_given=self.state['crisis_lines_given'], contact_facts=self.contact.get('facts') or {},
                            job=a.get('job', ''), gender=self.gender, first_sentence=first_sentence)
 

@@ -22,7 +22,7 @@ REPLIES = ['Ji, main aapki baat samajh gayi.', 'Achha, theek hai. Main aapko det
 
 
 class FakeBrain:
-    """The opening is the agent's own disclosure clause (so RD1 passes); then short fixed replies in turn."""
+    """The opening is the shared fixed disclosure line (so RD1 passes) and a short ask; then short fixed replies in turn."""
     def __init__(self, ticket): self.t = ticket; self.n = 0
 
     async def stream(self, messages, usage, timing, max_tokens=180):
@@ -32,8 +32,9 @@ class FakeBrain:
         if any('asked not to be called again' in (m.get('content') or '') for m in messages if m.get('role') == 'system'):
             text = OPT_OUT_CONFIRM
         elif i == 0:
-            clause = (a.get('opening') or {}).get('disclosureClause') or f"Main {(a.get('brand') or {}).get('spokenName', 'company')} ki AI assistant hoon."
-            text = clause
+            # the fixed, speakable disclosure (the agent's disclosureClause is guidance for the brief, never spoken)
+            from .safety import disclosure_line
+            text = disclosure_line((a.get('brand') or {}).get('spokenName', ''), (self.t.get('contact') or {}).get('language')) + ' Aapse do minute baat ho sakti hai?'
         else:
             text = REPLIES[(i - 1) % len(REPLIES)]
         usage.update({'in': 100, 'out': 20, 'cached': 0, 'usd': 0.0})

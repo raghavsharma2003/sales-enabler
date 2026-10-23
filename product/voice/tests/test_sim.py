@@ -104,7 +104,7 @@ class EndToEnd(unittest.TestCase):
 class Door(unittest.TestCase):
     def test_rd1_first_breath_gets_the_ai_clause(self):
         sess, p, replies = run(call(['नमस्ते, क्या मेरी बात Asha जी से हो रही है?'], []))
-        self.assertTrue(replies[0][0].startswith('Suraksha की AI असिस्टेंट'))
+        self.assertTrue(replies[0][0].startswith('मैं Suraksha की AI असिस्टेंट हूँ।'), replies[0])   # the fixed line, in her script
         self.assertEqual(of(p, 'safety')[0]['rule'], 'RD1')
         self.assertTrue(sess.conv.state['disclosed'])
 

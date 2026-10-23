@@ -266,6 +266,14 @@ test('analysis degrades without a model: not_configured, never a crash', { skip 
 });
 
 // ---- test calls ----------------------------------------------------------------------------------------------------
+test('test.browser_call: the person testing is the caller, by first name (staging 2026-10-23: no name made her say a blank)', { skip }, async () => {
+  const w = await workspace();
+  await pool.query("UPDATE member SET name = 'Asha Kulkarni' WHERE id = $1", [w.member.id]);
+  const r = await registry.execute<any>(pool, 'test.browser_call', { agentId: w.agent }, { workspaceId: w.ws, actor: w.member });
+  assert.equal(r.status, 'confirmed', JSON.stringify(r));
+  if (r.status === 'confirmed') assert.equal(fakeRuntime.tickets.find(t => t.conversationId === r.result.conversationId)!.contact.displayName, 'Asha');
+});
+
 test('test.browser_call dispatches a test ticket; test calls stay out of outcomes, search, funnels and monitors', { skip }, async () => {
   const w = await workspace();
   const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values) VALUES ($1,'R','Pay?','{will_pay,no}','{will_pay}') RETURNING id`, [w.ws]))!.id;
@@ -277,6 +285,7 @@ test('test.browser_call dispatches a test ticket; test calls stay out of outcome
   const ticket = fakeRuntime.tickets.find(t => t.conversationId === r.result.conversationId)!;
   assert.equal(ticket.test, true); assert.equal(ticket.attemptId, null); assert.equal(ticket.transport.kind, 'webrtc');
   assert.equal(ticket.brief.hash, 'b1'); assert.equal(ticket.stack.id, 'v2-flashlite');
+  assert.equal(ticket.contact.displayName, '', 'a member with no name on record: no contact name (the runtime opens without one)');
 
   setFakeLlm(llmReply({ points: [{ claim: 'Will pay.', quote: 'kal payment kar dunga' }], moments: [], reasonCode: 'CONV_GOAL_DONE', outcome: { value: 'will_pay', quote: 'kal payment kar dunga' } }));
   const ev = fullCall();

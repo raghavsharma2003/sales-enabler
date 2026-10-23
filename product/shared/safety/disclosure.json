@@ -1,0 +1,36 @@
+{
+  "about": "The speakable AI disclosure the runtime's RD1 first-breath fallback says when her first sentence does not already say she is an AI. agent.opening.disclosureClause is GUIDANCE for the brief compiler (e.g. 'that you are its AI assistant, mentioned in passing') and is never spoken. One fixed line per language, built from the brand's spoken name; a language with no checked line uses the fallback. Both doors read this file: product/voice/vpvoice/safety.py disclosure_line() and product/tests/safety-disclosure.test.ts. Every line must pass lexicon.ai_affirm in rules.json (tested on both sides).",
+  "version": "2026-10-23.1",
+  "fallback": "hinglish",
+  "lines": {
+    "hinglish": { "brand": "Main {brand} ki AI assistant hoon.", "nobrand": "Main ek AI assistant hoon." },
+    "en-IN": { "brand": "I'm {brand}'s AI assistant.", "nobrand": "I'm an AI assistant." },
+    "hi-IN": { "brand": "मैं {brand} की AI असिस्टेंट हूँ।", "nobrand": "मैं एक AI असिस्टेंट हूँ।" },
+    "ta-IN": { "brand": "நான் {brand} AI உதவியாளர்.", "nobrand": "நான் ஒரு AI உதவியாளர்." },
+    "bn-IN": { "brand": "আমি {brand}-এর AI সহকারী।", "nobrand": "আমি একজন AI সহকারী।" }
+  },
+  "render_vectors": [
+    { "brand": "Suraksha Health", "language": "hinglish", "line": "Main Suraksha Health ki AI assistant hoon." },
+    { "brand": "Suraksha Health", "language": "en-IN", "line": "I'm Suraksha Health's AI assistant." },
+    { "brand": "Suraksha Health", "language": "hi-IN", "line": "मैं Suraksha Health की AI असिस्टेंट हूँ।" },
+    { "brand": "", "language": "hinglish", "line": "Main ek AI assistant hoon." },
+    { "brand": "Suraksha Health", "language": "mr-IN", "line": "Main Suraksha Health ki AI assistant hoon." },
+    { "brand": "Suraksha Health", "language": null, "line": "Main Suraksha Health ki AI assistant hoon." }
+  ],
+  "affirm_vectors": [
+    { "text": "नमस्ते, मैं रिया हूँ — सुरक्षा हेल्थ की AI असिस्टेंट।", "affirms": true, "note": "the staging opening (2026-10-23, research/2026-10-23/staging)" },
+    { "text": "नमस्ते, मैं रिया हूँ, सुरक्षा हेल्थ की एआई असिस्टेंट।", "affirms": true },
+    { "text": "मैं सुरक्षा हेल्थ की AI सहायक हूँ।", "affirms": true },
+    { "text": "Riya, Suraksha Health ki AI assistant bol rahi hoon.", "affirms": true },
+    { "text": "Namaste, main Riya, Suraksha Health ki AI assistant.", "affirms": true },
+    { "text": "I'm Suraksha Health's AI assistant.", "affirms": true },
+    { "text": "நான் ரியா, சுரக்ஷா ஹெல்த் AI உதவியாளர்.", "affirms": true },
+    { "text": "আমি রিয়া, সুরক্ষা হেলথের AI সহকারী।", "affirms": true },
+    { "text": "हमारा नया AI असिस्टेंट ऐप है।", "affirms": false, "note": "a mention, not a first-person disclosure" },
+    { "text": "मैं आपको कंपनी की AI असिस्टेंट के बारे में बताती हूँ।", "affirms": false, "note": "about the assistant, not being it" },
+    { "text": "Main aapko company ki AI assistant ke baare mein batati hoon.", "affirms": false },
+    { "text": "मैं AI असिस्टेंट नहीं हूँ, इंसान हूँ।", "affirms": false, "note": "a denial" },
+    { "text": "Main AI assistant nahi hoon.", "affirms": false },
+    { "text": "Our new AI assistant app is live.", "affirms": false }
+  ]
+}

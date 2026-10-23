@@ -358,6 +358,7 @@ body names another call, 404 for an unknown call, 409 if the call is not joined,
 | `VP_LLM_SAFETY_JUDGE_USD_IN_1M`, `_USD_OUT_1M` | Judge prices for the cost meter; unset = tokens metered with `detail.priced = false` |
 | `VP_SAFETY_JUDGE_MODE` | `off`, `shadow` (default), `raise` (owner's go only) |
 | `VP_SAFETY_JUDGE` | Path to `judge.json` (default: next to the package, else `product/shared/safety/judge.json`) |
+| `VP_SAFETY_DISCLOSURE` | Path to `disclosure.json`, the fixed spoken AI disclosure lines (default: next to the package, else `product/shared/safety/disclosure.json`) |
 | `VP_SAFETY_RULES` | Path to `rules.json` (default: next to the package, else `product/shared/safety/rules.json`) |
 | `VP_LOG_LEVEL` | Logging level |
 

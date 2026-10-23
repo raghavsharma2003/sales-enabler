@@ -59,7 +59,7 @@ class B2MentionIsNotDisclosure(unittest.TestCase):
         """B2: her first sentence mentions a chatbot ("hamara naya chatbot") — the first-breath AI clause is skipped and
         the call is marked as if she had disclosed."""
         sess, p, replies = run(call(['Namaste Asha ji, hamare naye chatbot se ab renewal aur aasaan hai.'], []))
-        self.assertTrue(replies[0][0].startswith('Suraksha की AI असिस्टेंट'), replies[0])
+        self.assertTrue(replies[0][0].startswith('Main Suraksha ki AI assistant hoon.'), replies[0])
 
 
 # ------------------------------------------------------------------------------------------------ B3: rules split across sentences

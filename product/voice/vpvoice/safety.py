@@ -8,9 +8,35 @@
 #   reply_door(text, ctx)  ctx = DoorContext (runtime, with the extras) or a dict in the TS shape (the contract door)
 #   caller_signals(text)   {'crisis', 'asksIfAi', 'refusesRecording', 'optOut', 'readingSensitiveDigits', 'wantsHuman'}
 #   redact(text)           masks OTP / card / CVV / UPI PIN / Aadhaar spans ([OTP], [CARD], ...)
-import re
+import json, os, re
 from dataclasses import dataclass, field
 from . import rules
+
+
+def _disclosure():
+    for p in (os.environ.get('VP_SAFETY_DISCLOSURE'), os.path.join(rules.HERE, 'disclosure.json'),
+              os.path.join(rules.HERE, '..', '..', 'shared', 'safety', 'disclosure.json')):
+        if p and os.path.exists(p):
+            with open(p, encoding='utf-8') as f: return json.load(f)
+    raise FileNotFoundError('product/shared/safety/disclosure.json not found (set VP_SAFETY_DISCLOSURE)')
+
+
+DISCLOSURE = _disclosure()
+
+
+def script_language(text, language):
+    """Hinglish written mostly in Devanagari reads best with the Devanagari line: match the script she is writing in."""
+    if language not in (None, '', 'hinglish'): return language
+    deva = sum(1 for ch in text or '' if '\u0900' <= ch <= '\u097f'); latin = sum(1 for ch in text or '' if ch.isascii() and ch.isalpha())
+    return 'hi-IN' if deva > latin else (language or 'hinglish')
+
+
+def disclosure_line(brand='', language=None):
+    """The fixed, speakable AI disclosure (shared/safety/disclosure.json), in the call's language, with the brand's
+    spoken name. agent.opening.disclosureClause is guidance for the brief, never this line."""
+    lines = DISCLOSURE['lines'].get(language or '') or DISCLOSURE['lines'][DISCLOSURE['fallback']]
+    brand = (brand or '').strip()
+    return lines['brand'].replace('{brand}', brand) if brand else lines['nobrand']
 
 caller_signals = rules.caller_signals
 redact = rules.redact
@@ -57,6 +83,7 @@ class DoorContext:
     job: str = ''
     # runtime-only state
     disclosure_clause: str = ''
+    language: str = ''                # the call's language: the fixed disclosure line is said in it
     asked_ai: bool = False
     crisis_lines_given: bool = False
     contact_facts: dict = field(default_factory=dict)
@@ -116,7 +143,8 @@ def reply_door(text, ctx, prev=None):
                     'id': 'runtime.asked_ai', 'final': True}
         t = honest_line(ctx) + ' ' + t; pre = ('RD2', 'asked if she is an AI: the honest answer comes first', 'runtime.asked_ai')
     elif ctx.first_sentence and not ctx.disclosed and ctx.turn_index == 0 and not affirms_ai(t, clause):
-        if clause: t = f'{clause}, {t}'; pre = ('RD1', 'the first breath carries the AI clause', 'runtime.first_breath')
+        # never the clause itself: it is guidance for the brief ("that you are its AI assistant, mentioned in passing")
+        t = f'{disclosure_line(_brand(ctx), script_language(t, ctx.language))} {t}'; pre = ('RD1', 'the first breath carries the AI disclosure', 'runtime.first_breath')
     c = ctx.contract()
     if affirms_ai(t, clause): c['disclosed'] = True    # affirmed in this very breath
     v = rules.reply_door(t, c)
