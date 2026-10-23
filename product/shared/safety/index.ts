@@ -402,8 +402,16 @@ function digitRuns(text: string): Run[] {
 const notSecretCode = () => re((RULES.redact as unknown as { not_secret_code: string }).not_secret_code);
 
 /** Mask spans that must never be stored (OTP, card, CVV, UPI PIN, full Aadhaar). */
+/** Layout characters (tab, line and paragraph breaks) inside rules.json normalisation.space. Redaction finds secrets
+ *  on the folded text, where they are spaces as everywhere else, but writes its output from a fold that keeps them:
+ *  both folds map one code point to one, so offsets agree, and a pasted CSV keeps its rows
+ *  (rejected.2026-10-23.upload-newlines-folded-by-redact). The Python door does the same. */
+const LAYOUT = /[\t\n\v\f\r\u0085\u2028\u2029]/u;
+
 export function redact(input: string): string {
-  const text = foldForDigits(input);
+  const n = norm();
+  const kept = input.normalize(n.form as 'NFKC').replace(n.strip, '').replace(n.space, ch => (LAYOUT.test(ch) ? ch : ' '));
+  const text = kept.replace(new RegExp(LAYOUT.source, 'gu'), ' ');
   const w = RULES.redact.context_window_chars;
   const lower = text.toLowerCase();
   const spans: { start: number; end: number; mask: string }[] = [];
@@ -421,7 +429,7 @@ export function redact(input: string): string {
     if (!kind && n === 12 && !looksLikePhone(run.digits) && /^[2-9]/.test(run.digits) && verhoeff(run.digits)) kind = 'aadhaar';
     if (kind) spans.push({ start: run.start, end: run.end, mask: RULES.masks[kind] });
   }
-  let out = text;
+  let out = kept;
   for (const s of spans.sort((a, b) => b.start - a.start)) out = out.slice(0, s.start) + s.mask + out.slice(s.end);
   return out;
 }

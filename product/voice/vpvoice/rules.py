@@ -415,9 +415,17 @@ def digit_runs(text):
     return out
 
 
+# Layout characters (tab, line and paragraph breaks) inside normalisation.space: secrets are found on the folded text,
+# where they are spaces, but the output is written from a fold that keeps them (one code point maps to one, so offsets
+# agree), and a pasted CSV keeps its rows. Same as the TS door (rejected.2026-10-23.upload-newlines-folded-by-redact).
+_LAYOUT = re.compile('[\t\n\v\f\r\u0085\u2028\u2029]')
+
+
 def redact(text):
     if not text: return text
-    text = fold_for_digits(text)
+    n = _norm()
+    kept = n['space'].sub(lambda m: m.group(0) if _LAYOUT.match(m.group(0)) else ' ', n['strip'].sub('', unicodedata.normalize(n['form'], text)))
+    text = _LAYOUT.sub(' ', kept)
     w = RULES['redact']['context_window_chars']; lower = text.lower(); spans = []
     not_secret = rx(RULES['redact']['not_secret_code'])
     for run in digit_runs(text):
@@ -432,7 +440,7 @@ def redact(text):
         if not kind and 13 <= n <= 19 and luhn(run['digits']): kind = 'card'
         if not kind and n == 12 and not looks_like_phone(run['digits']) and re.match('[2-9]', run['digits']) and verhoeff(run['digits']): kind = 'aadhaar'
         if kind: spans.append((run['start'], run['end'], RULES['masks'][kind]))
-    out = text
+    out = kept
     for s, e, mask in sorted(spans, reverse=True): out = out[:s] + mask + out[e:]
     return out
 

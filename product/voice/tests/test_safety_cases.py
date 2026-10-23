@@ -84,3 +84,15 @@ class ParityGuard(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class RedactKeepsLayout(unittest.TestCase):
+    """A pasted CSV keeps its rows through the door (rejected.2026-10-23.upload-newlines-folded-by-redact)."""
+    def test_rows_survive_and_secrets_are_masked(self):
+        from vpvoice import rules
+        csv = 'name,phone,city\r\nAsha Verma,9000000041,Pune\r\nRavi Kumar,9000000042,Indore\nMeera Shah,9000000043,Surat\n'
+        self.assertEqual(rules.redact(csv), csv)
+        masked = rules.redact('name\tnote\nAsha\tOTP 482913 hai\nRavi\tcard 4111 1111 1111 1111\n')
+        self.assertEqual(len(masked.split('\n')), 4)
+        self.assertNotRegex(masked, '482913|4111')
+        self.assertTrue(masked.startswith('name\tnote\nAsha\t'))
