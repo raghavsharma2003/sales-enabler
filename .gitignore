@@ -19,3 +19,6 @@ infrastructure/azure/*.parameters.json
 __pycache__/
 # Blueprint data is shared design input (defaults, tool registry), not private data: keep it in the repo.
 !research/2026-10-21/blueprint/data/
+
+# analysis-bench default output (product/scripts/analysis-bench.ts --out); results worth keeping go to research/
+product/analysis-bench-out/
