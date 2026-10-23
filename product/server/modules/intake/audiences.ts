@@ -9,7 +9,7 @@ type Op = (typeof OPS)[number];
 export interface Cond { key: string; op: Op; value?: unknown }
 export interface Filter { all?: Cond[]; any?: Cond[] }
 
-const cond = obj({ key: str({ pattern: /^[\p{L}\p{M}\p{N}_]{1,60}$/u }), op: str({ oneOf: OPS }), value: opt(any()) }) as Validator<Cond>;
+const cond = obj({ key: str({ pattern: /^[\p{L}\p{M}\p{N}_]{1,60}$/u, desc: 'a contact field key: letters, digits or underscore in any script, 1-60 characters' }), op: str({ oneOf: OPS }), value: opt(any()) }) as Validator<Cond>;
 export const filterV = obj({ all: opt(arr(cond, { max: 30 })), any: opt(arr(cond, { max: 30 })) }) as Validator<Filter>;
 
 const CMP: Record<string, string> = { gt: '>', gte: '>=', lt: '<', lte: '<=' };

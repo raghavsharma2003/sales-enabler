@@ -13,6 +13,13 @@ export type Validator<T> = ((value: unknown, path?: string) => T) & { schema?: J
 const withSchema = <T>(fn: (value: unknown, path?: string) => T, schema: JsonSchema, optional = false): Validator<T> =>
   Object.assign(fn, { schema, optional });
 
+/** True when a regex can be published in a JSON Schema: no flags and no syntax beyond flagless ECMA-262 (no \\p{…},
+ *  lookbehind, named groups, \\u{…}). Providers reject the whole request otherwise (Azure: "is not a 'regex'"). */
+export function portablePattern(re: RegExp): boolean {
+  if (re.flags.replace(/[gy]/g, '')) return false;
+  return !/\\[pP]\{|\(\?<[=!A-Za-z]|\\k<|\\u\{/.test(re.source);
+}
+
 export const str = (o: { min?: number; max?: number; oneOf?: readonly string[]; pattern?: RegExp; desc?: string } = {}): Validator<string> => withSchema((v, p = '') => {
   if (typeof v !== 'string') throw new ValidationError(p, 'must be text');
   if (o.min !== undefined && v.length < o.min) throw new ValidationError(p, `must be at least ${o.min} characters`);
@@ -21,7 +28,10 @@ export const str = (o: { min?: number; max?: number; oneOf?: readonly string[]; 
   if (o.pattern && !o.pattern.test(v)) throw new ValidationError(p, 'has the wrong format');
   return v;
 }, { type: 'string', ...(o.oneOf ? { enum: [...o.oneOf] } : {}), ...(o.min !== undefined ? { minLength: o.min } : {}),
-     ...(o.max !== undefined ? { maxLength: o.max } : {}), ...(o.pattern ? { pattern: o.pattern.source } : {}), ...(o.desc ? { description: o.desc } : {}) });
+     ...(o.max !== undefined ? { maxLength: o.max } : {}), ...(o.pattern && portablePattern(o.pattern) ? { pattern: o.pattern.source } : {}),
+     // A pattern no provider can parse stays a server-side check; the schema says so in words instead.
+     ...(o.desc || (o.pattern && !portablePattern(o.pattern))
+       ? { description: [o.desc, o.pattern && !portablePattern(o.pattern) ? 'format checked by the server' : ''].filter(Boolean).join('; ') } : {}) });
 
 export const num = (o: { min?: number; max?: number; int?: boolean; desc?: string } = {}): Validator<number> => withSchema((v, p = '') => {
   if (typeof v !== 'number' || !Number.isFinite(v)) throw new ValidationError(p, 'must be a number');
