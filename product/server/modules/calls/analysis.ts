@@ -9,6 +9,7 @@ import type pg from 'pg';
 import { many, one, tx, type Queryable } from '../../db.ts';
 import type { Registry } from '../../tools.ts';
 import { afterCall } from './followups.ts';
+import { syncGoalReason } from './goal.ts';
 import { judgeCallerCrisis, type CrisisJudgeCtx } from '../../../shared/safety/judge.ts';
 import { complete, llmConfigured, LlmError, type LlmReply } from '../../llm.ts';
 import { CONVERSATION_CODES, REASON_CODES, REFINABLE, EARLY_HANGUP_S } from './taxonomy.ts';
@@ -172,6 +173,7 @@ export async function refreshOutcome(q: Queryable, workspaceId: string, conversa
            (SELECT k.status FROM calibration k WHERE k.judge_version_id = o.judge_version_id ORDER BY k.created_at DESC LIMIT 1) = 'trusted'))
       ORDER BY CASE o.grade WHEN 'verified' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END, o.created_at DESC LIMIT 1)
     WHERE id = $1 AND workspace_id = $2`, [conversationId, workspaceId]);
+  await syncGoalReason(q, workspaceId, conversationId);   // one definition of "goal reached": the reason code follows the outcome
 }
 
 export async function analyse(pool: pg.Pool, workspaceId: string, conversationId: string, registry?: Registry): Promise<AnalysisRecord> {
@@ -333,6 +335,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
 
   return store(rec, async c => {
     await c.query('UPDATE conversation SET reason_code = $3 WHERE id = $1 AND workspace_id = $2', [conversationId, workspaceId, reasonCode]);
+    await syncGoalReason(c, workspaceId, conversationId);
     if (dropped) await c.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{quotes_dropped}'::text[]) ORDER BY 1) WHERE id = $1`, [conversationId]);
     await c.query(`DELETE FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 AND source = 'analysis'`, [conversationId, workspaceId]);
     for (const m of moments) {

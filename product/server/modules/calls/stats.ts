@@ -3,6 +3,7 @@
 import type { Queryable } from '../../db.ts';
 import { many } from '../../db.ts';
 import { EARLY_HANGUP_S } from './taxonomy.ts';
+import { GOAL_GRADE_SQL, GOAL_SQL } from './goal.ts';
 
 /** Lower bound of the Wilson score interval for k successes in n trials (95% by default). */
 export function wilsonLower(k: number, n: number, z = 1.959964): number {
@@ -44,7 +45,7 @@ export async function campaignFunnel(q: Queryable, workspaceId: string, campaign
      a AS (
        SELECT at.id, cv.id AS conv, cv.agent_version_id AS v, cv.duration_s, cv.end_reason, cv.status AS conv_status, at.status,
               (SELECT count(*) FROM turn t WHERE t.conversation_id = cv.id AND t.speaker = 'caller') AS caller_turns,
-              ${BEST_OUTCOME} AS best, ${BEST_GRADE} AS grade
+              ${GOAL_SQL('cv')} AS goal, ${GOAL_GRADE_SQL('cv')} AS grade
        FROM attempt at
        LEFT JOIN LATERAL (SELECT * FROM conversation x WHERE x.attempt_id = at.id AND x.workspace_id = at.workspace_id AND x.channel <> 'test'
                           ORDER BY x.started_at DESC LIMIT 1) cv ON true
@@ -55,9 +56,10 @@ export async function campaignFunnel(q: Queryable, workspaceId: string, campaign
        count(*) FILTER (WHERE conv IS NOT NULL AND conv_status <> 'live' AND end_reason IS NOT NULL AND end_reason NOT IN ('no_answer','busy','failed')
                               OR (conv IS NULL AND status = 'connected')) AS connected,
        count(*) FILTER (WHERE conv_status <> 'live' AND duration_s >= ${EARLY_HANGUP_S} AND caller_turns > 0) AS talked,
-       count(*) FILTER (WHERE best = ANY(coalesce((SELECT goal_values FROM def), '{}'::text[])) AND grade = 'verified') AS goal_verified,
-       count(*) FILTER (WHERE best = ANY(coalesce((SELECT goal_values FROM def), '{}'::text[])) AND grade = 'manager') AS goal_manager,
-       count(*) FILTER (WHERE best = ANY(coalesce((SELECT goal_values FROM def), '{}'::text[])) AND grade = 'ai_guess') AS goal_ai,
+       -- Goal reached: calls/goal.ts, the one definition (best outcome in its own definition's goal values), by grade.
+       count(*) FILTER (WHERE goal AND grade = 'verified') AS goal_verified,
+       count(*) FILTER (WHERE goal AND grade = 'manager') AS goal_manager,
+       count(*) FILTER (WHERE goal AND grade = 'ai_guess') AS goal_ai,
        (SELECT goal_values FROM def) AS goals
      FROM a GROUP BY v ORDER BY v NULLS LAST`, [workspaceId, campaignId]);
   const toRow = (r: typeof rows[number]): FunnelRow => {

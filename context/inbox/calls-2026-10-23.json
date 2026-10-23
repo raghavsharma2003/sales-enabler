@@ -88,6 +88,16 @@
       "title": "Every audited tool run records its subject as {type, id} only (from its input, or for a create from what its result made). activity.list resolves the name at read time inside the workspace, and a contact without a name shows as 'a contact', never a number",
       "rationale": "Closes open.2026-10-21.activity-row-subject (walkthrough S4). Storing ids, not names, keeps the hash-chained audit free of personal data and lets a renamed or deleted thing read correctly. A guard test makes every new *Id argument either a subject key or an explicitly internal id.",
       "reverse_if": "The activity ledger must show the name as it was at the time of the change (for example for a compliance export); then store a name snapshot beside the id, with redaction."
+    },
+    {
+      "id": "decision.2026-10-23.one-goal-definition",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Goal reached, defined once (calls/goal.ts): a call's best outcome (verified, then manager, then AI guess) is one of its own definition's goal values. The funnel and insight use that predicate, and the reason code follows it: CONV_GOAL_DONE exactly when the goal is reached, wherever the goal is knowable. Engine-decided codes are never rewritten",
+      "rationale": "Closes open.2026-10-23.q-goal-key-vs-goal-semantics. Before, the model's CONV_GOAL_DONE could contradict the outcome (goal done on a 'not now' call), and a later verified payment did not move the reason. The funnel read the campaign's definition while insight read the outcome's. Grade travels beside the answer: the funnel shows goals by grade, and learning still requires a trusted grade (conversation.outcome).",
+      "reverse_if": "The owner wants 'agenda completed' (the conversation went to plan) shown separately from 'goal reached' (the business result); then add a separate agenda-done signal instead of overloading the reason code."
     }
   ],
   "edges": [
@@ -105,6 +115,11 @@
       "from": "measure.2026-10-23.analysis-bench-real-models",
       "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
       "relation": "evidences"
+    },
+    {
+      "from": "decision.2026-10-23.one-goal-definition",
+      "to": "open.2026-10-23.q-goal-key-vs-goal-semantics",
+      "relation": "resolves"
     }
   ],
   "events": [
@@ -122,6 +137,11 @@
       "date": "2026-10-23",
       "event": "walkthrough-s4-s5-s7",
       "details": "Three walkthrough fixes. S4: every activity row names its subject (kernel subject.ts, registry audit payload, workspace activity.list, web activitySentence), with a guard test over all registered tools. S5: contact.dnd_refresh returns source {id, label, standIn, registerConnected}, and the UI says who answered and that a stand-in is not the national register. S7: the dev server uses a canned sample analysis, marked 'Sample analysis (dev only)' and grounded by the real checks, which refuses to load with NODE_ENV=production (tested by spawning both files). Verified: full suite 439/439 on a fresh database; tsc clean for server and web; ui-contract 0 missing."
+    },
+    {
+      "date": "2026-10-23",
+      "event": "one-goal-definition",
+      "details": "calls/goal.ts: GOAL_SQL, GOAL_GRADE_SQL, GOAL_KNOWN_SQL and syncGoalReason. Analysis, refreshOutcome (and so outcome.label, outcome.record_verified and the analysis outcome), the funnel and insight all use it. tests/calls-goal.test.ts (3) failed on the old code and pass now. Calls, e2e and learning: 77 pass."
     }
   ]
 }

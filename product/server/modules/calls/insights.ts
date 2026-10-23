@@ -12,6 +12,7 @@ import type pg from 'pg';
 import { many, one, tx, type Queryable } from '../../db.ts';
 import { complete, llmConfigured, LlmError } from '../../llm.ts';
 import { findQuote } from './analysis.ts';
+import { GOAL_SQL } from './goal.ts';
 
 export const THEME_KINDS = ['objection', 'drop_off', 'unanswered_question', 'success_driver'] as const;
 export type ThemeKind = (typeof THEME_KINDS)[number];
@@ -122,8 +123,7 @@ export async function computeInsight(pool: pg.Pool, ws: string, s: Scope,
     `SELECT cv.id, cv.ended_at, cv.transcript, cv.reason_code,
             (SELECT o.value FROM outcome o WHERE o.conversation_id = cv.id AND o.workspace_id = cv.workspace_id
                ORDER BY CASE o.grade WHEN 'verified' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END, o.created_at DESC LIMIT 1) AS outcome,
-            coalesce((SELECT o.value FROM outcome o WHERE o.conversation_id = cv.id AND o.workspace_id = cv.workspace_id
-               ORDER BY CASE o.grade WHEN 'verified' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END, o.created_at DESC LIMIT 1) = ANY(d.goal_values), false) AS goal
+            ${GOAL_SQL('cv')} AS goal
      ${FROM} ${scopeSql(s, 3)} ORDER BY cv.ended_at DESC LIMIT $${params.length + 1}`, [...params, o.sampleCalls]);
 
   // Fill the character budget newest first; a call that does not fit whole is left out (no half transcripts).
