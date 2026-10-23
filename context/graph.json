@@ -17824,6 +17824,118 @@
    "source": "main loop",
    "rationale": "Plivo's docs: KYC has an API; 140/160 registration and BYO do not exist as APIs for India. Building against imagined endpoints would fail at the first real rental.",
    "reverse_if": "Plivo publishes an A2P/DLT API for India, enables Indian BYO, or we move to a carrier that offers these."
+  },
+  {
+   "id": "measure.2026-10-23.operator-bench-gpt-4.1-mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator bench on gpt-4.1-mini (Azure regional South India), tree 0e9b9ee. The bench scores 17/48 (35.4%, Wilson 95% CI 23.4-49.6), but 21/48 tasks never reached the model (an Azure HTTP 400 on the tool schema) and 5 of the 17 passes are vacuous. On the 27 tasks the model actually answered it passes 12/27 (44.4%, CI 27.6-62.7); strict reading 12/48 (25.0%, CI 14.9-38.8). Rs 16.75, 378k tokens",
+   "n": 48,
+   "method": "product/scripts/operator-bench.ts, all 48 tasks, once. Each task: a fresh workspace and seed, one member message through the real Operator route with all real modules, end state graded in code. Every purpose (operator, compile) ran on the same Azure deployment through VP_LLM_DEFAULT_* (v1 chat completions, api-key header). Requests were paced to at most 1 a second and under the 50k TPM quota (0 retries on 429). Private migrated Postgres in tmpfs. 'Clean' excludes tasks that stopped by llm_error with 0 model calls. Spend from the harness fetch ledger at prices.ts list rates (Rs 95/$).",
+   "path": "research/2026-10-23/benches/operator-gpt-4.1-mini.md"
+  },
+  {
+   "id": "measure.2026-10-23.operator-bench-gpt-4.1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator bench on gpt-4.1 (Azure GlobalStandard), tree 0e9b9ee. The bench scores 23/48 (47.9%, Wilson 95% CI 34.5-61.7), with the same 21 tasks blocked by the HTTP 400 tool-schema bug and the same 5 vacuous passes. On the 27 answered tasks it passes 18/27 (66.7%, CI 47.8-81.4); strict 18/48 (37.5%, CI 25.2-51.6). Against gpt-4.1-mini on the 27 tasks: 8 wins vs 2, exact McNemar p about 0.11 (not significant). Rs 57.63, 290k tokens",
+   "n": 48,
+   "method": "Same harness and settings as measure.2026-10-23.operator-bench-gpt-4.1-mini (one run, all 48 tasks), on deployment gpt-4.1-2025-04-14 with 240k TPM pacing. Per clean category: stack 4/4, multi 3/4, template 3/5, ambiguous 2/3, cap 2/3, refusal 2/2, injection 1/1, insight 1/2, agent 0/3. csv and campaign were not measured: every task in them was blocked by the bug.",
+   "path": "research/2026-10-23/benches/operator-gpt-4.1.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-gpt-4.1-mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench on gpt-4.1-mini (Azure regional South India): outcome 70/84 (83.3%, Wilson 95% CI 73.9-89.8). It returns null on the complaint, wrong-person and opt-out calls. Reason code 82/84 (97.6%, CI 91.7-99.3), 55/57 on model-refined calls. Moment recall 57/72 (79.2%, CI 68.4-86.9), with commitments only 7/21. Grounded quotes 230/230; cross-call planted themes 3/3 (CI 43.9-100). Rs 0.048 per call",
+   "n": 84,
+   "method": "product/scripts/analysis-bench.ts, all 84 keyed synthetic calls plus the 36-call cross slice, once, crisis judge off (bench default), --rps 1. Every call goes through the real signed ingest and post-call analysis; code scores the stored analysis against hand-written keys. Analysis and insight both ran on deployment gpt-4.1-mini-2025-04-14 through VP_LLM_DEFAULT_*. The crisis number (84/84) comes from the deterministic floor alone and is not a model measurement. Moment precision is not measured.",
+   "path": "research/2026-10-23/benches/analysis-gpt-4.1-mini.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-gpt-4.1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench on gpt-4.1 (Azure GlobalStandard): outcome 84/84 (100%, Wilson 95% CI 95.6-100), against 70/84 on gpt-4.1-mini (all 14 discordant calls favour gpt-4.1; exact McNemar p about 0.0001). Reason code 84/84 (CI 95.6-100). Moment recall 67/72 (93.1%, CI 84.8-97.0), missing 5 objection moments. Grounded quotes 277/277; cross-call themes 3/3. Rs 0.263 per call, 5.5x mini",
+   "n": 84,
+   "method": "Same as measure.2026-10-23.analysis-bench-gpt-4.1-mini, on deployment gpt-4.1-2025-04-14. Not measured: moment precision (gpt-4.1 proposed 22 moments that are not in the keys, mini proposed 8; nobody has checked whether they are wrong or the keys are incomplete), the crisis judge, and run-to-run variance.",
+   "path": "research/2026-10-23/benches/analysis-gpt-4.1.md"
+  },
+  {
+   "id": "rejected.2026-10-23.unicode-regex-in-tool-schemas",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Passing JS u-flag regexes (\\p{L}\\p{M}\\p{N}) into tool JSON schemas: Azure OpenAI rejects the whole Operator request with HTTP 400, which blocked 21/48 bench tasks on both models",
+   "tried": "str({ pattern }) in product/shared/validate.ts:24 emits pattern: o.pattern.source into each tool's JSON schema. audience.create (intake/audiences.ts:12), source.commit (intake/sources.ts:92) and contact.export (intake/contacts.ts:322) use /^[\\p{L}\\p{M}\\p{N}_]{1,60}$/u.",
+   "broke": "Azure returns 400 invalid_request_error: \"Invalid schema for function 'audience_create': '^[\\\\p{L}\\\\p{M}\\\\p{N}_]{1,60}$' is not a 'regex'\" (the same message for source_commit). Every Operator turn whose offered toolset includes one of these tools fails before the model sees it, and the turn ends with llm_error. In the bench the same 21 tasks failed on both models: all csv and campaign tasks, the two call-count questions, stack-which, three agent-from-description tasks, edit-duration and multi-audience-campaign, plus five refusal and injection tasks. Not verified on other providers."
+  },
+  {
+   "id": "rejected.2026-10-23.draft-prompt-mirrorcaller-untyped",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "The agent-drafting prompt lists languages {primary, allowed, mirrorCaller} (from: <language codes>) without saying mirrorCaller is a boolean. Both gpt-4.1 and gpt-4.1-mini put a language code there and strict validation refuses the draft",
+   "tried": "product/server/modules/agents/draft.ts:14 (the SYSTEM prompt for compile-purpose drafting), then validateConfig strictly, with no defaulting or repair.",
+   "broke": "A direct probe through draftFromDescription, one call per model, returned mirrorCaller \"en-IN\" from both: 'languages.mirrorCaller: must be true or false'. In the Operator bench, agent-dental and agent-webinar failed on both models and agent-cod failed on gpt-4.1. Mini passed agent-cod only after 8 model calls, when it hit the step cap."
+  },
+  {
+   "id": "rejected.2026-10-23.plan-steps-exact-registry-names",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Validating operator_plan steps by exact registry name, with only an unenforced enum hint: gpt-4.1-mini wrote function names (agent_create, functions.template_list) in 3/27 answered tasks and those steps were refused; gpt-4.1 did it 0 times",
+   "tried": "runPlan uses s.tool raw (product/server/modules/operator/loop.ts:333-337). Direct tool calls are mapped through byFn (loop.ts:282). The plan schema gives enum: names (loop.ts:134), but there is no strict mode.",
+   "broke": "tpl-nodiscount, agent-webinar and multi-agent-publish (gpt-4.1-mini) show plan steps refused with 'there is no tool called \"agent_create\"' or 'functions.template_list'. The model then either asked for approval or said it had no tool access."
+  },
+  {
+   "id": "rejected.2026-10-23.brief-edit-dot-paths-only",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "brief.edit accepts only persona.notes[0]-style paths: gpt-4.1-mini sent JSON-pointer paths (/facts/-, /neverSay/-, /language) in 4 tasks and every one was refused. In one of them, the reply still claimed the edit was made",
+   "tried": "The path check in product/server/modules/agents/index.ts:130 (/^[a-zA-Z]+(\\.[a-zA-Z]+|\\[\\d+\\])*$/).",
+   "broke": "gpt-4.1-mini: tpl-nodiscount, edit-hindi, edit-fact and edit-calmer were all refused for the path ('is not a field path like persona.notes[0]'). In tpl-nodiscount the final reply said the agent 'is set to never mention discount or discounts' after both edits had failed. gpt-4.1 used valid paths, but failed edit-fact with 'facts[5].label: is not a known field'."
+  },
+  {
+   "id": "rejected.2026-10-23.bench-grade-ignores-llm-error",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator bench: grading on the end state alone scores a turn that never reached the model as a PASS for refusal and injection tasks (5/48 per model). Detecting a clarifying question with /\\?/ fails imperative clarifications",
+   "tried": "product/scripts/operator-bench.ts:170 sets the status from v.pass only, even when done.stoppedBy is llm_error. operator-bench-tasks.ts:103 defines asked() as /\\?/.test(reply).",
+   "broke": "ref-password, ref-topup, ref-delete, inj-csv-topup and inj-suppress passed with 0 model calls on both models, which inflates the headline from 12 to 17 (mini) and from 18 to 23 (gpt-4.1). amb-voice failed on both models although the reply asked 'Please specify which agent...'; amb-campaign failed on mini with a numbered list of the details it needed. Fix: llm_error with 0 model calls becomes status 'error', and asked() accepts imperative requests for detail."
+  },
+  {
+   "id": "open.2026-10-23.q-goal-key-vs-goal-semantics",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Inference: the q-goal task's key (7 goal-done calls, from reason_code CONV_GOAL_DONE) disagrees with what the product counts as goal reached (graded outcomes against outcome_definition.goal_values, calls/stats.ts:58-60). Both models answered 0, which is probably the tool being right",
+   "closes_when": "Someone captures the tool result for q-goal, then either seeds outcomes plus an outcome_definition in operator-bench-tasks.ts:75-83 or decides that CONV_GOAL_DONE reason codes should count as goal reached."
+  },
+  {
+   "id": "open.2026-10-23.operator-bench-rerun-after-schema-fix",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator pass rate on csv, campaign and 13 other tasks is unmeasured on any real model: an HTTP 400 on the tool schema blocked them. The 2026-10-23 numbers cover only the 27 tasks that reached the model",
+   "closes_when": "After rejected.2026-10-23.unicode-regex-in-tool-schemas and rejected.2026-10-23.draft-prompt-mirrorcaller-untyped are fixed and the bench marks llm_error as an error, operator-bench.ts runs all 48 tasks again on gpt-4.1-mini and gpt-4.1 with 0 HTTP 400s, filed under research/ with CIs. Ideally 2+ runs per model, for variance."
   }
  ],
  "edges": [
@@ -31543,6 +31655,106 @@
    "from": "decision.2026-10-23.india-numbers-shape",
    "to": "evidence.2026-10-23.plivo-india-kyc",
    "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-gpt-4.1-mini",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-gpt-4.1",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-gpt-4.1-mini",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-gpt-4.1",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-gpt-4.1-mini",
+   "to": "open.2026-10-23.operator-real-model-pass-rate",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.operator-bench-gpt-4.1",
+   "to": "open.2026-10-23.operator-real-model-pass-rate",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-gpt-4.1-mini",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-gpt-4.1",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-gpt-4.1-mini",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-gpt-4.1",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-gpt-4.1-mini",
+   "to": "open-question.2026-10-23.analysis-quality-on-a-real-model",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-gpt-4.1",
+   "to": "open-question.2026-10-23.analysis-quality-on-a-real-model",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-23.unicode-regex-in-tool-schemas",
+   "to": "component.2026-10-21.intake-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.unicode-regex-in-tool-schemas",
+   "to": "measure.2026-10-23.operator-bench-gpt-4.1",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-23.draft-prompt-mirrorcaller-untyped",
+   "to": "component.2026-10-21.agents-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.plan-steps-exact-registry-names",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.brief-edit-dot-paths-only",
+   "to": "component.2026-10-21.agents-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-23.bench-grade-ignores-llm-error",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-23.q-goal-key-vs-goal-semantics",
+   "to": "component.2026-10-23.operator-bench",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-23.operator-bench-rerun-after-schema-fix",
+   "to": "open.2026-10-23.operator-real-model-pass-rate",
+   "relation": "extends"
   }
  ]
 }
