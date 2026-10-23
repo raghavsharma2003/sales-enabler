@@ -17805,6 +17805,25 @@
    "tried": "bdd8446 changed the guided-start flow to wait for the browser call view. It was checked with product/web/e2e/run.sh locally, where a Python with the runtime's packages starts devsim.",
    "broke": "CI has no devsim. Without a voice runtime the test panel shows a status line instead of the call view, so CI web-e2e stayed red for one more push (bdd8446) after 54b4312.",
    "instead": "7713d8d accepts both outcomes. A browser-flow change is now run both ways before pushing: `VP_VOICE_PYTHON=/bin/false sh product/web/e2e/run.sh` (no runtime, as in CI) and the default (devsim)."
+  },
+  {
+   "id": "evidence.2026-10-23.plivo-india-kyc",
+   "type": "evidence",
+   "title": "Plivo for India outbound voice (docs read 2026-10-23; research/2026-10-23/plivo-kyc/api-notes.md).\n- Who can rent: only an India-registered business on an India data-region org (INR only, Indian cards only, India-only calling, no SMS).\n- KYC: every number needs an accepted Compliance API application before rent or calls. A Requirements endpoint gives the document types and fields; one multipart POST auto-submits; status comes by signed webhook; the buy call takes compliance_application_id.\n- Number series: landlines carry service and transactional calls only; 140 is for promotional calls; 160 is for banks and financial firms only.\n- 140/160 registration: no API. Tata DLT registration plus a declaration to Plivo, about 5-14 business days.\n- Rules: cold calling is prohibited; repeated UCC complaints can blacklist a business for a year.\n- Bring-your-own: no BYO Indian caller ID and no India porting. A SIP trunk works only if SIP and media terminate in India (otherwise hangup 4590).\n- Open: the docs contradict each other on how many documents are required (21 UNVERIFIED items in the notes).",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "verified",
+   "method": "Main loop subagent read Plivo's public docs (plivo.com/docs .md pages and llms-full.txt). No logins and no API calls. Each claim cites a source URL with its read date."
+  },
+  {
+   "id": "decision.2026-10-23.india-numbers-shape",
+   "type": "decision",
+   "title": "India number tools, from Plivo's real surface.\n- number.kyc.submit: built on the Compliance API, with the form generated from the live Requirements endpoint (never hard-coded documents).\n- a2p.declare: a guided manual flow (DLT checklist, declaration, status kept by Vyakti support), not an API call.\n- byo.connect: refuses for India with the reason (no Indian BYO caller ID or porting). A SIP trunk is considered only if the voice runtime terminates SIP in India.\n- Campaign categories map to series: service and transactional calls on landlines; promotional calls only on a 140 number.",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop",
+   "rationale": "Plivo's docs: KYC has an API; 140/160 registration and BYO do not exist as APIs for India. Building against imagined endpoints would fail at the first real rental.",
+   "reverse_if": "Plivo publishes an A2P/DLT API for India, enables Indian BYO, or we move to a carrier that offers these."
   }
  ],
  "edges": [
@@ -31519,6 +31538,11 @@
    "from": "rejected.2026-10-23.e2e-verified-with-devsim-only",
    "to": "evidence.2026-10-22.launch-readiness-audit",
    "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-23.india-numbers-shape",
+   "to": "evidence.2026-10-23.plivo-india-kyc",
+   "relation": "derived-from"
   }
  ]
 }
