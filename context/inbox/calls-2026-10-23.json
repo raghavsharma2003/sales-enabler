@@ -1,0 +1,71 @@
+{
+  "nodes": [
+    {
+      "id": "component.product.analysis-bench",
+      "type": "component",
+      "status": "tested",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Analysis-quality bench: 84 synthetic keyed calls (12 templates x 6 industries, plus Tamil-, Bengali- and Marathi-English) and a 36-call cross-call slice with 3 planted objection themes, scored by code with Wilson 95% intervals",
+      "path": "product/scripts/analysis-bench.ts"
+    },
+    {
+      "id": "decision.2026-10-23.bench-scored-by-code-against-keys",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Analytics quality is measured by a bench whose keys are hand-written per template and whose scoring is code only, through the real path (signed ingest, then post-call analysis or insight). Reason-code accuracy is split into model-refined calls and calls decided by code",
+      "rationale": "Inherited law: a model never grades. Splitting the reason code stops code-decided calls (no answer, opt-out, crisis) from inflating the model's number.",
+      "reverse_if": "A human review of real calls finds the template keys miss how people actually talk; then add keyed real (consented, de-identified) transcripts beside the synthetic ones."
+    },
+    {
+      "id": "measure.2026-10-23.floor-opt-out-recall-regional",
+      "type": "measurement",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "The deterministic caller-signal floor (shared/safety callerSignals) catches 6 of 9 opt-outs in the bench. It misses all 3 regional phrasings (Tamil-, Bengali- and Marathi-English 'do not call me again, remove my number')",
+      "n": 9,
+      "method": "analysis bench (fake oracle, so the result is independent of any model): callerSignals(text).optOut over the caller lines of the 9 opt-out keyed calls",
+      "path": "product/scripts/analysis-bench.ts"
+    },
+    {
+      "id": "risk.2026-10-23.regional-opt-out-missed-live",
+      "type": "risk",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "A Tamil-, Bengali- or Marathi-English caller's 'do not call me again' is not caught by the live floor, so the runtime may emit no opt_out moment. Suppression then depends on post-call analysis catching it",
+      "mitigation": "Safety module: add regional opt-out phrasings to the floor lexicon (cases.json), with the bench's 3 lines as cases; the post-call analysis opt_out moment remains the second check."
+    },
+    {
+      "id": "open-question.2026-10-23.analysis-quality-on-a-real-model",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "How accurate are per-call analysis and cross-call insight on a real model? The bench has only run with the scripted oracle (CI)",
+      "closes_when": "The integrator runs `node --import tsx product/scripts/analysis-bench.ts` with VP_LLM_ANALYSIS_* set (1 request a second, token cap) and files the analysis-bench.json numbers as measure.* nodes."
+    }
+  ],
+  "edges": [
+    {
+      "from": "component.product.analysis-bench",
+      "to": "decision.2026-10-23.bench-scored-by-code-against-keys",
+      "relation": "implements"
+    },
+    {
+      "from": "measure.2026-10-23.floor-opt-out-recall-regional",
+      "to": "risk.2026-10-23.regional-opt-out-missed-live",
+      "relation": "evidences"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-23",
+      "event": "analysis-bench-built",
+      "details": "Built the analysis-quality bench (product/scripts/analysis-bench.ts, cases in product/scripts/analysis-bench/cases.ts) and its CI test (product/tests/calls-bench.test.ts, 3 tests: set integrity, oracle smoke, and a wrong model scoring low). With the oracle over all 84 calls, every model-driven field is 100% (as expected for an oracle), the grounding check drops each planted invented quote (210/288 kept), and cross-call recall is 3/3. One model-independent finding: the floor's opt-out recall is 6/9, missing all regional phrasings. Gates: tsc clean, ui-contract 0 missing, full suite 403/403 on a fresh database. Not run: a real model."
+    }
+  ]
+}
