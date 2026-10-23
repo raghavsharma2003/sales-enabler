@@ -55,7 +55,7 @@ export interface ToolDef<I = unknown, O = unknown> {
    *  Read at proposal and again at execution; a mismatch voids the approval. */
   version?(ctx: ToolCtx, input: I): Promise<string | null>;
   /** For A2 tools: one plain sentence describing exactly this call, shown on the approval card. */
-  describe?(input: I): string;
+  describe?(input: I, ctx: ToolCtx): string | Promise<string>;
   /** Roles that may call (or propose) this tool. Defaults by risk class; approval rights are separate (shared/approval.ts). */
   roles?: readonly Role[];
   /** What to persist in action.result (and so show in /v1/actions) instead of the raw result, when the result holds
@@ -142,8 +142,9 @@ export class Registry {
     const ctxFor = (q: Queryable): ToolCtx => ({ q, workspaceId: opts.workspaceId, actor: opts.actor });
 
     if (heldForApproval(name, t.risk, opts.actor)) {
-      const summary = t.describe ? t.describe(input) : t.summary;
       const row = await tx(pool, async c => {
+        // describe() may look up names (an approval card shows names, never ids), so it runs inside the transaction.
+        const summary = t.describe ? await t.describe(input, ctxFor(c)) : t.summary;
         const version = t.version ? await t.version(ctxFor(c), input) : null;
         const a = await one<{ id: string; expires_at: Date }>(c,
           `INSERT INTO action (workspace_id, thread_id, tool, args, args_hash, risk_class, status, proposed_by, object_version, summary, expires_at)
@@ -151,9 +152,9 @@ export class Registry {
           [opts.workspaceId, opts.threadId ?? null, name, JSON.stringify(input), h, t.risk, actorId(opts.actor), version, summary, new Date(Date.now() + APPROVAL_TTL_MS)]);
         await appendAudit(c, { workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: 'action.propose',
           objectType: 'action', objectId: a!.id, argsHash: h, payload: { tool: name, risk: t.risk, subject: subjectOf(input) } });
-        return a!;
+        return { ...a!, summary };
       });
-      return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: t.risk, summary, expiresAt: row.expires_at.toISOString() };
+      return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: t.risk, summary: row.summary, expiresAt: row.expires_at.toISOString() };
     }
 
     const mode: 'A1' | 'A3' = isA3(name) ? 'A3' : 'A1';     // not held: an A3 verb here ran at once

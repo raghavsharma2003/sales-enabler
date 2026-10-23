@@ -4,6 +4,7 @@
 //
 // Tools: memory.extract (after a call), memory.brief (dial time), contact.memory.get, fact.approve, fact.forget,
 // contact.memory.forget (DPDP forget request), memory.policy.get, memory.policy.set.
+import { label } from '../../labels.ts';
 import { createHash } from 'node:crypto';
 import type { Module } from '../../app.ts';
 import { many, one, type Queryable } from '../../db.ts';
@@ -280,7 +281,7 @@ export const module: Module = {
 
     r.register(tool(obj({ factId: uuid() }), {
       name: 'fact.forget', risk: 'destructive', summary: 'forget one remembered fact (removed, not hidden)',
-      describe: i => `Forget remembered fact ${i.factId.slice(0, 8)}; it is deleted and never used again`,
+      describe: async (i, ctx) => `Forget ${await label(ctx, 'fact', i.factId)}; it is deleted and never used again`,
       run: async (ctx, i) => {
         const f = await one<{ contact_id: string }>(ctx.q, 'DELETE FROM memory_fact WHERE id = $1 AND workspace_id = $2 RETURNING contact_id', [i.factId, ctx.workspaceId]);
         if (!f) throw new Error('no such fact in this workspace');
@@ -291,7 +292,7 @@ export const module: Module = {
 
     r.register(tool(forgetInput, {
       name: 'contact.memory.forget', risk: 'destructive', summary: 'DPDP forget request: remove everything remembered about a contact and record the request',
-      describe: i => `Forget everything remembered about contact ${i.contactId.slice(0, 8)}${i.stopRemembering ? ' and stop remembering them' : ''} (${i.scope ?? 'forget_memory'})`,
+      describe: async (i, ctx) => `Forget everything remembered about ${await label(ctx, 'contact', i.contactId)}${i.stopRemembering ? ' and stop remembering them' : ''} (${i.scope ?? 'forget_memory'})`,
       run: (ctx, i) => forgetContact(ctx, { contactId: i.contactId, requestId: i.requestId, via: i.via ?? 'operator', scope: (i.scope ?? 'forget_memory') as 'forget_memory' | 'erase_me',
         stopRemembering: i.stopRemembering ?? false, evidence: i.evidence }),
     }));

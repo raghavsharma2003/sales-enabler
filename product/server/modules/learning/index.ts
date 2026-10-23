@@ -12,6 +12,7 @@
 // A win is proposed as deployment.split at 100% treatment on the experiment's binding (A2), never applied here.
 // Background: jobs() runs experiment.check on every running experiment each minute (calls also call it per call), and
 // learning.propose_from_issues drafts one proposal per new content monitor issue (3 a day per workspace; drafts only).
+import { label } from '../../labels.ts';
 import type pg from 'pg';
 import { createHash } from 'node:crypto';
 import type { Module } from '../../app.ts';
@@ -545,12 +546,12 @@ export const module: Module = {
     r.register(tool(probeIn, { name: 'proposal.probe', risk: 'test', summary: 'simulate the current and proposed versions on the same callers and seeds; reject regressions', run: probe }));
 
     r.register(tool(acceptIn, { name: 'proposal.accept', risk: 'external', roles: ['owner', 'builder', 'operator'], summary: 'accept a probed proposal into a pre-registered A/B test',
-      describe: i => `Test proposal ${i.proposalId.slice(0, 8)} against the current version on live calls (fixed horizon; calls to prove computed from your own baseline before launch)`,
+      describe: async (i, ctx) => `Test ${await label(ctx, 'proposal', i.proposalId)} against the current version on live calls (fixed horizon; calls to prove computed from your own baseline before launch)`,
       version: async (ctx, i) => (await one<{ v: string }>(ctx.q, `SELECT status || ':' || md5(coalesce(simulation::text, '')) AS v FROM proposal WHERE id = $1 AND workspace_id = $2`, [i.proposalId, ctx.workspaceId]))?.v ?? null,
       run: accept }));
 
     r.register(tool(startIn, { name: 'experiment.start', risk: 'external', summary: 'run the shadow A/A, then send live calls to both arms',
-      describe: i => `Start experiment ${i.experimentId.slice(0, 8)}: live calls split between the current and the proposed version`,
+      describe: async (i, ctx) => `Start ${await label(ctx, 'experiment', i.experimentId)}: live calls split between the current and the proposed version`,
       version: async (ctx, i) => (await one<{ v: string }>(ctx.q, `SELECT state || ':' || md5(design::text) AS v FROM experiment WHERE id = $1 AND workspace_id = $2`, [i.experimentId, ctx.workspaceId]))?.v ?? null,
       run: start }));
 

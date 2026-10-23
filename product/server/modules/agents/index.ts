@@ -1,6 +1,7 @@
 // The agents module: templates, drafts, the brief, the voice stack choice, tools, text simulations, versions and splits.
 // Edits never publish: every edit changes agent.draft; version.publish (A2) compiles the exact draft the approval card
 // showed into an immutable agent_version holding { agent, brief }, and deployment.split (A2) decides where it runs.
+import { label } from '../../labels.ts';
 import type { AgentConfig, ToolGrant } from '../../../shared/agent-config.ts';
 import { RISK_CLASSES } from '../../../shared/approval.ts';
 import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackOf, STACKS, StackError, type Figure, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
@@ -120,6 +121,31 @@ const IN_CALL_TOOLS: Record<string, ToolGrant['risk']> = {
   end_call: 'read', lookup_order: 'read', kb_query: 'read', mark_callback: 'draft', book_slot: 'draft',
   transfer: 'external', send_whatsapp_link: 'external', send_sms: 'external',
 };
+
+// ------------------------------------------------------------------------------------------------ template brand
+
+/** The business's names for a new agent: the workspace brand (legal name; the caller-ID name as the spoken name), else
+ *  the workspace name. A template's placeholder business must never reach a customer's agent. */
+async function businessNames(ctx: ToolCtx): Promise<{ name: string; spokenName: string }> {
+  const b = await one<{ legal_name: string; cnap_name: string | null }>(ctx.q, 'SELECT legal_name, cnap_name FROM brand WHERE workspace_id = $1 ORDER BY created_at, id LIMIT 1', [ctx.workspaceId]);
+  if (b?.legal_name) return { name: b.legal_name, spokenName: b.cnap_name || b.legal_name };
+  const w = await one<{ name: string }>(ctx.q, 'SELECT name FROM workspace WHERE id = $1', [ctx.workspaceId]);
+  return { name: w!.name, spokenName: w!.name };
+}
+
+/** Put the business's names on a template draft, everywhere the template's own names appear (opening, notes, facts…). */
+function withWorkspaceBrand(draft: AgentConfig, names: { name: string; spokenName: string }): AgentConfig {
+  const from = [[draft.brand.name, names.name], [draft.brand.spokenName, names.spokenName]].sort((a, b) => b[0]!.length - a[0]!.length);   // longer first
+  const swap = (v: unknown): unknown => {
+    if (typeof v === 'string') return from.reduce((t, [a, b]) => (a ? t.split(a).join(b) : t), v);
+    if (Array.isArray(v)) return v.map(swap);
+    if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x)]));
+    return v;
+  };
+  const out = swap(draft) as AgentConfig;
+  out.brand = { ...out.brand, name: names.name, spokenName: names.spokenName };
+  return out;
+}
 
 // ------------------------------------------------------------------------------------------------ brief.edit patches
 
@@ -301,7 +327,7 @@ export function registerAgentTools(r: Registry): void {
       if (i.templateId) {
         const t = getTemplate(i.templateId);
         if (!t) throw new ValidationError('templateId', `no template "${i.templateId}"`);
-        draft = structuredClone(t.config); from = 'template:' + t.id;
+        draft = withWorkspaceBrand(structuredClone(t.config), await businessNames(ctx)); from = 'template:' + t.id;
       } else {
         try { const d = await draftFromDescription(i.description!); draft = d.config; usage = d.usage; from = 'description'; }
         catch (e) { if (e instanceof DraftError) throw new ValidationError(e.path ?? 'description', e.message); throw e; }
@@ -465,7 +491,10 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({ agentId: uuid(), draftHash: str({ min: 64, max: 64 }), note: opt(str({ max: 300 })) }), {
     name: 'version.publish', risk: 'external', summary: 'Publish the reviewed draft as a new immutable agent version',
-    describe: i => `Publish agent ${i.agentId.slice(0, 8)} from the draft you reviewed (${i.draftHash.slice(0, 12)})` + (i.note ? `: ${i.note}` : ''),
+    describe: async (i, ctx) => {
+      const next = (await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(v.number), 0) + 1 AS n FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE v.agent_id = $1 AND a.workspace_id = $2', [i.agentId, ctx.workspaceId]))?.n ?? 1;
+      return `Publish ${await label(ctx, 'agent', i.agentId)}, version ${next}` + (i.note ? `: ${i.note}` : '');
+    },
     version: async (ctx, i) => {
       const a = await one<{ draft: AgentConfig }>(ctx.q, 'SELECT draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
       return a ? draftHash(a.draft) : null;
@@ -486,7 +515,11 @@ export function registerAgentTools(r: Registry): void {
     (await one<{ id: string }>(ctx.q, 'SELECT id FROM deployment WHERE agent_id = $1 AND workspace_id = $2 AND binding = $3 ORDER BY created_at DESC, id DESC LIMIT 1', [agentId, ctx.workspaceId, binding]))?.id ?? 'none';
   r.register(tool(splitV, {
     name: 'deployment.split', risk: 'external', summary: 'Set which published versions run, and how traffic splits between them',
-    describe: i => `Run agent ${i.agentId.slice(0, 8)} on ${i.binding} as ` + i.split.map(s => `${s.percent}% version ${s.versionId.slice(0, 8)}`).join(' + '),
+    describe: async (i, ctx) => {
+      const parts = [];
+      for (const s of i.split) parts.push(`${s.percent}% ${await label(ctx, 'agent_version', s.versionId)}`);
+      return `Run ${await label(ctx, 'agent', i.agentId)} on ${i.binding} as ${parts.join(' + ')}`;
+    },
     version: async (ctx, i) => currentSplit(ctx, i.agentId, i.binding),
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
@@ -545,7 +578,7 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({ agentId: uuid(), binding: opt(str({ oneOf: ['campaign', 'inbound', 'web', 'test'] })), reason: opt(str({ max: 300 })) }), {
     name: 'deployment.revert_to_last_good', risk: 'external', summary: 'Put the previous deployment for a binding back in place',
-    describe: i => `Revert agent ${i.agentId.slice(0, 8)}${i.binding ? ' on ' + i.binding : ''} to its previous deployment` + (i.reason ? `: ${i.reason}` : ''),
+    describe: async (i, ctx) => `Revert ${await label(ctx, 'agent', i.agentId)}${i.binding ? ' on ' + i.binding : ''} to its previous deployment` + (i.reason ? `: ${i.reason}` : ''),
     version: async (ctx, i) => {
       const b = i.binding ?? (await one<{ binding: string }>(ctx.q, 'SELECT binding FROM deployment WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC, id DESC LIMIT 1', [i.agentId, ctx.workspaceId]))?.binding;
       return b ? currentSplit(ctx, i.agentId, b) : 'none';

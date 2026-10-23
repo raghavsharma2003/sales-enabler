@@ -1,5 +1,6 @@
 // API keys: the token is built once, only sha256(secret) is stored (kernel newApiKey), and the token reaches
 // the approving person once through secret.reveal. Bearer auth itself is the kernel's resolveCaller.
+import { label } from '../../labels.ts';
 import type { Registry } from '../../tools.ts';
 import { tool } from '../../tools.ts';
 import { many, one } from '../../db.ts';
@@ -44,7 +45,7 @@ export function registerApiKeys(r: Registry) {
 
   r.register(tool(obj({ id: uuid() }), {
     name: 'apikey.revoke', risk: 'external', summary: 'Revoke an API key so it stops working at once',
-    describe: i => `Revoke the API key ${i.id.slice(0, 8)}; anything using it stops working at once`,
+    describe: async (i, ctx) => `Revoke the API key ${await label(ctx, 'api_key', i.id)}; anything using it stops working at once`,
     version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT name || '|' || prefix || '|' || (revoked_at IS NOT NULL)::text AS v FROM api_key WHERE id = $1 AND workspace_id = $2", [i.id, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       const row = await one<{ revoked_at: Date | null }>(ctx.q, 'SELECT revoked_at FROM api_key WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.id, ctx.workspaceId]);

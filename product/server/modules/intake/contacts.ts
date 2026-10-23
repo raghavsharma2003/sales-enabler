@@ -1,6 +1,7 @@
 // People: read, search, merge, suppress and release, consent, DND, export, and DPDP erasure.
 // Suppression and consent are typed ledgers, never model memory. Erasure keeps the row as a husk so the
 // consent history, the suppression and the tombstone outlive the person's data.
+import { label } from '../../labels.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid } from '../../../shared/validate.ts';
 import { appendAudit } from '../../audit.ts';
@@ -217,7 +218,7 @@ export function registerContactTools(reg: Registry): void {
   reg.register(tool(obj({ suppressionId: uuid(), reason: str({ min: 5, max: 300 }) }), {
     name: 'contact.unsuppress', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'Release a suppression so the person can be called again (Compliance or Owner approves)',
-    describe: i => `Release suppression ${i.suppressionId.slice(0, 8)} so this person can be called again. Reason: ${i.reason}`,
+    describe: async (i, ctx) => `Release the suppression of ${await label(ctx, 'suppression', i.suppressionId)} so this person can be called again. Reason: ${i.reason}`,
     version: (ctx, i) => suppressionVersion(ctx.q, ctx.workspaceId, i.suppressionId),
     run: async (ctx, i) => {
       const s = await one<{ id: string; contact_id: string | null; e164_hash: string | null; reason: string; source: string | null; scope: string; created_at: Date }>(ctx.q,
@@ -263,7 +264,7 @@ export function registerContactTools(reg: Registry): void {
   reg.register(tool(obj({ keepId: uuid(), mergeId: uuid() }), {
     name: 'contact.merge', risk: 'external', roles: ['owner', 'operator', 'compliance'],
     summary: 'Merge two records of the same person into one; the merged number becomes an identifier of the kept one (reversible for 30 days from the snapshot)',
-    describe: i => `Merge contact ${i.mergeId.slice(0, 8)} into ${i.keepId.slice(0, 8)}: one person, both numbers, the stronger value per field`,
+    describe: async (i, ctx) => `Merge ${await label(ctx, 'contact', i.mergeId)} into ${await label(ctx, 'contact', i.keepId)}: one person, both numbers, the stronger value per field`,
     version: async (ctx, i) => {
       const r = await many<{ id: string; updated_at: Date }>(ctx.q, 'SELECT id, updated_at FROM contact WHERE workspace_id = $1 AND id = ANY($2::uuid[]) ORDER BY id', [ctx.workspaceId, [i.keepId, i.mergeId]]);
       return r.map(x => `${x.id}:${x.updated_at.toISOString()}`).join('|') || null;
@@ -323,7 +324,7 @@ export function registerContactTools(reg: Registry): void {
   reg.register(tool(obj({ audienceId: opt(uuid()), keys: opt(arr(str({ pattern: /^[\p{L}\p{M}\p{N}_]{1,60}$/u, desc: 'a contact field key: letters, digits or underscore in any script, 1-60 characters' }), { max: 50 })), includeSuppressed: opt(bool()) }), {
     name: 'contact.export', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'Export people as CSV (personal data leaves Vyakti; approved by Compliance or Owner, audited)',
-    describe: i => `Export ${i.audienceId ? 'audience ' + i.audienceId.slice(0, 8) : 'every contact'} as CSV${i.keys?.length ? ' with ' + i.keys.join(', ') : ''}${i.includeSuppressed ? ', including suppressed people' : ''}. Personal data leaves Vyakti.`,
+    describe: async (i, ctx) => `Export ${i.audienceId ? 'the audience ' + ((await one<{ name: string }>(ctx.q, 'SELECT name FROM audience WHERE id = $1 AND workspace_id = $2', [i.audienceId, ctx.workspaceId]))?.name ?? 'this audience') : 'every contact'} as CSV${i.keys?.length ? ' with ' + i.keys.join(', ') : ''}${i.includeSuppressed ? ', including suppressed people' : ''}. Personal data leaves Vyakti.`,
     version: async (ctx, i) => i.audienceId ? (await one<{ v: string }>(ctx.q, 'SELECT md5(definition::text) AS v FROM audience WHERE id = $1 AND workspace_id = $2', [i.audienceId, ctx.workspaceId]))?.v ?? null : null,
     // The file goes to the approver's receipt only; the stored action keeps the count, not the personal data.
     redactResult: (out: { rows: number; csv: string }) => ({ rows: out.rows, csvBytes: Buffer.byteLength(out.csv), csv: '[delivered to the approver]' }),
@@ -353,9 +354,9 @@ export function registerContactTools(reg: Registry): void {
   }), {
     name: 'dpdp.request.execute', risk: 'destructive', roles: ['owner', 'compliance'],
     summary: 'Carry out a DPDP request: erase a person (data gone, tombstone and suppression kept so nothing can call them again) or forget their memory',
-    describe: i => i.scope === 'erase_me'
-      ? `Erase ${i.contactId ? 'contact ' + i.contactId.slice(0, 8) : 'the person with this number'}: personal data, attributes, aliases and memory are deleted; a tombstone and ${i.suppress === false ? 'existing' : 'a'} suppression stay. Cannot be undone.`
-      : `Forget the memory Vyakti holds about ${i.contactId ? 'contact ' + i.contactId.slice(0, 8) : 'this person'}. Their record and consent history stay.`,
+    describe: async (i, ctx) => i.scope === 'erase_me'
+      ? `Erase ${i.contactId ? await label(ctx, 'contact', i.contactId) : 'the person with this number'}: personal data, attributes, aliases and memory are deleted; a tombstone and ${i.suppress === false ? 'existing' : 'a'} suppression stay. Cannot be undone.`
+      : `Forget the memory Vyakti holds about ${i.contactId ? await label(ctx, 'contact', i.contactId) : 'this person'}. Their record and consent history stay.`,
     version: async (ctx, i) => {
       const r = await resolve(ctx.q, ctx.workspaceId, i).catch(() => null);
       return r?.contact ? `${r.contact.id}:${r.contact.updated_at.toISOString()}` : null;

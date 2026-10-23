@@ -199,7 +199,9 @@ test('version.publish needs approval, is bound to the draft it showed, and store
   // Proposed, not run.
   const p = await call('version.publish', { agentId: c.agentId, draftHash: shown.draftHash, note: 'first' });
   assert.equal(p.status, 'needs_approval');
-  assert.match((p as { summary: string }).summary, new RegExp(shown.draftHash.slice(0, 12)));
+  // The card names the agent and the version it will become, in words; the draft hash binds the approval, not the card text.
+  assert.match((p as { summary: string }).summary, /^Publish .+, version 1/);
+  assert.doesNotMatch((p as { summary: string }).summary, /[0-9a-f]{8}/i);
   assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM agent_version WHERE agent_id = $1', [c.agentId]))!.n, '0');
 
   // The draft changes after the card was shown: the approval is void.

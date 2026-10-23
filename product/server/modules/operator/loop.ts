@@ -400,8 +400,8 @@ async function proposeA0(pool: pg.Pool, def: NonNullable<ReturnType<Registry['ge
     throw e;
   }
   const h = argsHash(def.name, input);
-  const summary = def.describe ? def.describe(input) : def.summary;
   const row = await tx(pool, async c => {
+    const summary = def.describe ? await def.describe(input, { q: c, workspaceId, actor }) : def.summary;
     const version = def.version ? await def.version({ q: c, workspaceId, actor }, input) : null;
     const a = await one<{ id: string; expires_at: Date }>(c,
       `INSERT INTO action (workspace_id, thread_id, tool, args, args_hash, risk_class, status, proposed_by, object_version, summary, expires_at)
@@ -409,9 +409,9 @@ async function proposeA0(pool: pg.Pool, def: NonNullable<ReturnType<Registry['ge
       [workspaceId, threadId, def.name, JSON.stringify(input), h, def.risk, actor.id, version, summary]);
     await appendAudit(c, { workspaceId, actorType: actor.type, actorId: actor.id, action: 'action.propose', objectType: 'action', objectId: a!.id,
       argsHash: h, payload: { tool: def.name, risk: def.risk, autonomy: 'A0' } });
-    return a!;
+    return { ...a!, summary };
   });
-  return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: def.risk, summary, expiresAt: row.expires_at.toISOString() };
+  return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: def.risk, summary: row.summary, expiresAt: row.expires_at.toISOString() };
 }
 
 /** Prices come from the deployment (milli-INR per million tokens); nothing here guesses a price. */

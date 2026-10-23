@@ -1,5 +1,6 @@
 // The calls module's tools: test calls, the call record, search, explanation, outcomes, judges, issues,
 // reports, the campaign funnel and live control. Every query filters by ctx.workspaceId.
+import { label } from '../../labels.ts';
 import { randomUUID } from 'node:crypto';
 import { many, one, type Queryable } from '../../db.ts';
 import { runtime } from '../../runtime-client.ts';
@@ -434,7 +435,7 @@ export function registerTools(r: Registry): void {
   // 300 characters: the runtime's own cap (it would truncate silently), so a longer note is refused here, in words.
   r.register(tool(obj({ conversationId: uuid(), text: str({ min: 1, max: WHISPER_MAX_CHARS, desc: `at most ${WHISPER_MAX_CHARS} characters` }) }), {
     name: 'live.whisper', risk: 'external', summary: 'Whisper context to the agent on a live call; the caller does not hear it',
-    describe: i => `Whisper to the agent on call ${i.conversationId.slice(0, 8)}: "${i.text}"`,
+    describe: async (i, ctx) => `Whisper to the agent on ${await label(ctx, 'call', i.conversationId)}: "${i.text}"`,
     // The runtime request stays in run(), not prepare(): on the approval path prepare() runs before the approver's role,
     // the args hash and the object version are checked, and a whisper reaches a live call.
     run: async (ctx, i) => {

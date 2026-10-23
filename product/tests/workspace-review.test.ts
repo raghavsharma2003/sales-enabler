@@ -61,7 +61,8 @@ test('MA-02: cards for removing a member, revoking a key, disconnecting and dele
   const stale = async (name: string, args: unknown, change: () => Promise<unknown>) => {
     const p = await owner.tool(name, args);
     assert.equal(p.status, 'needs_approval', name);
-    assert.match(p.summary, /[0-9a-f]{8}/, 'the card names its target');
+    assert.doesNotMatch(p.summary, /[0-9a-f]{8}/i, 'the card never shows an id');
+    assert.doesNotMatch(p.summary, /this (member|API key|integration|webhook)\b/, 'the card names its target by name');
     await change();
     const r = (await owner.fetch('POST', `/v1/actions/${p.actionId}/decide`, { approve: true })).body;
     assert.equal(r.status, 'not_executed', `${name}: ${JSON.stringify(r)}`);

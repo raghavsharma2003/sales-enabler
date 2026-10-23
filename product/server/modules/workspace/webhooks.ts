@@ -1,5 +1,6 @@
 // Outbound webhooks, signed like the runtime seam: x-vp-signature = "t=<unix_ms>,v1=<hex hmac_sha256(secret, t.body)>".
 // Events are queued as deliveries; deliverPending() sends them (the server runs it on a timer), retrying with backoff.
+import { label } from '../../labels.ts';
 import { lookup } from 'node:dns/promises';
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
@@ -158,7 +159,7 @@ export function registerWebhooks(r: Registry) {
 
   r.register(tool(obj({ id: uuid() }), {
     name: 'webhook.delete', risk: 'destructive', summary: 'Stop sending events to a webhook and forget its secret',
-    describe: i => `Delete the webhook ${i.id.slice(0, 8)}; events waiting to be sent to it are dropped`,
+    describe: async (i, ctx) => `Delete ${await label(ctx, 'webhook', i.id)}; events waiting to be sent to it are dropped`,
     version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT status || '|' || url || '|' || array_to_string(events, ',') AS v FROM webhook_endpoint WHERE id = $1 AND workspace_id = $2", [i.id, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       const n = await ctx.q.query("UPDATE webhook_endpoint SET status = 'deleted' WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [i.id, ctx.workspaceId]);

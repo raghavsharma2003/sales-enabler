@@ -5,6 +5,7 @@
 // Risk classes: the registry file the blueprint cites (workspace-tool-registry.json) was not in the repo, so classes
 // follow workspace.md §5. Verbs on the kernel's A3 list are 'external' so VP runs them at once (A3) while a person's
 // call goes through approval; risk-lowering verbs not on that list (window.narrow, number.pause) are 'draft' (A1).
+import { label } from '../../labels.ts';
 import type { Deps, Module } from '../../app.ts';
 import { HttpError, type Req, type Res } from '../../http.ts';
 import { verify } from '../../runtime-client.ts';
@@ -222,7 +223,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ id: uuid() }), {
     name: 'campaign.launch', risk: 'external', summary: 'Launch a campaign: Vyakti starts dialling its audience inside the window, budget and cap',
-    describe: i => `Launch campaign ${i.id}: dial its audience under the approved policy and agent version`,
+    describe: async (i, ctx) => `Launch the campaign ${await label(ctx, 'campaign', i.id)}: dial its audience under the approved policy and agent version`,
     version: (ctx, i) => campaignVersion(ctx.q, ctx.workspaceId, i.id),
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id, true);
@@ -248,7 +249,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ id: uuid(), cause: opt(str({ max: 80 })) }), {
     name: 'campaign.pause', risk: 'external', summary: 'Pause a campaign at the next call boundary; calls in progress finish',
-    describe: i => `Pause campaign ${i.id}`,
+    describe: async (i, ctx) => `Pause the campaign ${await label(ctx, 'campaign', i.id)}`,
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id, true);
       if (c.state === 'paused') return { id: c.id, state: 'paused', already: true };
@@ -261,7 +262,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ id: uuid() }), {
     name: 'campaign.resume', risk: 'external', summary: 'Resume a paused campaign (a person decides; guard pauses never resume on their own)',
-    describe: i => `Resume campaign ${i.id}`,
+    describe: async (i, ctx) => `Resume the campaign ${await label(ctx, 'campaign', i.id)}`,
     version: (ctx, i) => campaignVersion(ctx.q, ctx.workspaceId, i.id),
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id, true);
@@ -273,7 +274,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ id: uuid(), reason: opt(str({ max: 200 })) }), {
     name: 'campaign.stop', risk: 'external', summary: 'Stop a campaign for good: nothing new dials; calls in progress finish',
-    describe: i => `Stop campaign ${i.id} for good`,
+    describe: async (i, ctx) => `Stop the campaign ${await label(ctx, 'campaign', i.id)} for good`,
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id, true);
       if (['completed', 'cancelled'].includes(c.state)) return { id: c.id, state: c.state, already: true };
@@ -285,7 +286,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ id: uuid(), scope: opt(str({ max: 40 })) }), {
     name: 'campaign.stop_at_cap', risk: 'external', summary: 'Pause a campaign whose spend cap or wallet is reached (never cancels it, never releases numbers)',
-    describe: i => `Pause campaign ${i.id}: its ${i.scope ?? 'campaign'} cap is reached`,
+    describe: async (i, ctx) => `Pause the campaign ${await label(ctx, 'campaign', i.id)}: its ${i.scope ?? 'campaign'} cap is reached`,
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id, true);
       if (!['running', 'scheduled'].includes(c.state)) return { id: c.id, state: c.state, already: true };
@@ -310,7 +311,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ id: uuid(), window: windowV }), {
     name: 'campaign.window.widen', risk: 'policy', summary: 'Widen a campaign\'s calling window inside the category ceiling and the workspace band',
-    describe: i => `Widen campaign ${i.id}'s window to ${describeWindow(i.window as WindowPolicy)}`,
+    describe: async (i, ctx) => `Widen the window of the campaign ${await label(ctx, 'campaign', i.id)} to ${describeWindow(i.window as WindowPolicy)}`,
     version: (ctx, i) => campaignVersion(ctx.q, ctx.workspaceId, i.id),
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id, true);
@@ -322,7 +323,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ id: uuid(), contactIds: arr(uuid(), { min: 1, max: 1000 }) }), {
     name: 'campaign.audience.add', risk: 'external', summary: 'Add people to a campaign; a live campaign queues them for the dial gate',
-    describe: i => `Add ${i.contactIds.length} people to campaign ${i.id}`,
+    describe: async (i, ctx) => `Add ${i.contactIds.length} people to the campaign ${await label(ctx, 'campaign', i.id)}`,
     version: (ctx, i) => campaignVersion(ctx.q, ctx.workspaceId, i.id),
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id, true);
@@ -346,8 +347,8 @@ export function registerCampaignTools(registry: Registry): void {
     campaignId: opt(uuid()), window: opt(windowV) }), {
     name: 'policy.window.set', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'Set the workspace outer band and holidays, or a campaign window incl. across midnight (Compliance, with a reason)',
-    describe: i => [i.outerBand ? `outer band ${i.outerBand.start}-${i.outerBand.end}` : '', i.holidays ? `${i.holidays.length} holidays` : '',
-      i.campaignId && i.window ? `campaign ${i.campaignId} window ${describeWindow(i.window as WindowPolicy)}` : ''].filter(Boolean).join('; ') || 'no change',
+    describe: async (i, ctx) => [i.outerBand ? `outer band ${i.outerBand.start}-${i.outerBand.end}` : '', i.holidays ? `${i.holidays.length} holidays` : '',
+      i.campaignId && i.window ? `the window of the campaign ${await label(ctx, 'campaign', i.campaignId)}: ${describeWindow(i.window as WindowPolicy)}` : ''].filter(Boolean).join('; ') || 'no change',
     version: async (ctx, i) => {
       const p = await one<{ version: number }>(ctx.q, 'SELECT version FROM dial_policy WHERE workspace_id = $1', [ctx.workspaceId]);
       return `${p?.version ?? 0}:${i.campaignId ? await campaignVersion(ctx.q, ctx.workspaceId, i.campaignId) : '-'}`;
@@ -377,7 +378,7 @@ export function registerCampaignTools(registry: Registry): void {
   reg(tool(obj({ campaignId: uuid(), category: categoryV, reason: str({ min: 10, max: 500 }) }), {
     name: 'policy.category.override', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'Change a campaign\'s call category, with a reason (a looser category is a Compliance decision)',
-    describe: i => `Set campaign ${i.campaignId} to ${i.category} calls: "${i.reason}"`,
+    describe: async (i, ctx) => `Set the campaign ${await label(ctx, 'campaign', i.campaignId)} to ${i.category} calls: "${i.reason}"`,
     version: (ctx, i) => campaignVersion(ctx.q, ctx.workspaceId, i.campaignId),
     run: async (ctx, i) => {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.campaignId, true);
@@ -393,7 +394,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(singleCallV, {
     name: 'call.place_single', risk: 'external', summary: 'Call one person now (or at a time), through the same dial gate as campaigns',
-    describe: i => `Call contact ${i.contactId} with agent version ${i.agentVersionId} (${i.category})${i.at ? ' at ' + i.at : ''}`,
+    describe: async (i, ctx) => `Call ${await label(ctx, 'contact', i.contactId)} with ${await label(ctx, 'agent_version', i.agentVersionId)} (${i.category})${i.at ? ' at ' + i.at : ''}`,
     run: async (ctx, i) => {
       const category = i.category as CallCategory;
       const contact = await one<{ id: string; timezone: string }>(ctx.q, 'SELECT id, timezone FROM contact WHERE id = $1 AND workspace_id = $2', [i.contactId, ctx.workspaceId]);
@@ -473,7 +474,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ numberId: uuid(), documents: arr(obj({ kind: str({ min: 1, max: 40 }), ref: str({ min: 1, max: 200 }) }), { min: 1, max: 10 }) }), {
     name: 'number.kyc.submit', risk: 'policy', summary: 'Send the KYC documents for a line to its carrier',
-    describe: i => `Send ${i.documents.length} KYC documents for line ${i.numberId} to its carrier`,
+    describe: async (i, ctx) => `Send ${i.documents.length} KYC documents for ${await label(ctx, 'number', i.numberId)} to its carrier`,
     run: async (ctx, i) => {
       const n = await one<{ id: string; provider_ref: string | null; kyc_status: string }>(ctx.q, 'SELECT id, provider_ref, kyc_status FROM phone_number WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.numberId, ctx.workspaceId]);
       if (!n) throw new ValidationError('numberId', 'no such line in this workspace');
@@ -495,7 +496,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ numberId: uuid(), flag: str({ min: 1, max: 120 }) }), {
     name: 'number.pause_flagged', risk: 'external', summary: 'Pause a flagged line and name it (never silently replaced or rotated)',
-    describe: i => `Pause line ${i.numberId}: ${i.flag}`,
+    describe: async (i, ctx) => `Pause ${await label(ctx, 'number', i.numberId)}: ${i.flag}`,
     run: async (ctx, i) => {
       const r = await ctx.q.query(`UPDATE phone_number SET status = 'paused', pause_cause = $3, paused_at = now(),
           health = health || jsonb_build_object('flag', $3::text, 'flaggedAt', now()) WHERE id = $1 AND workspace_id = $2 AND status <> 'released'`,
@@ -523,7 +524,7 @@ export function registerCampaignTools(registry: Registry): void {
   reg(tool(obj({ numberId: uuid(), a2pRef: str({ min: 3, max: 120 }), evidence: str({ min: 3, max: 500, desc: 'what shows the operator accepted it: the portal reference, date, who submitted' }) }), {
     name: 'number.a2p.declare', risk: 'policy', roles: ['owner', 'compliance'],
     summary: 'Record that a line is declared for A2P (AI voice) on DLT, with the operator\'s reference',
-    describe: i => `Record line ${i.numberId} as A2P-declared on DLT, reference ${i.a2pRef}`,
+    describe: async (i, ctx) => `Record ${await label(ctx, 'number', i.numberId)} as A2P-declared on DLT, reference ${i.a2pRef}`,
     version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT a2p_status || ':' || coalesce(a2p_ref, '') AS v FROM phone_number WHERE id = $1 AND workspace_id = $2", [i.numberId, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       const n = await one<{ id: string; series: string; status: string }>(ctx.q, 'SELECT id, series, status FROM phone_number WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.numberId, ctx.workspaceId]);
@@ -642,7 +643,7 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ attemptId: uuid(), outcome: str({ oneOf: OUTCOME_CLASSES }), at: opt(iso()) }), {
     name: 'attempt.retry_per_ladder', risk: 'external', summary: 'Schedule the next attempt by the retry ladder for this outcome (unknown outcomes are never retried)',
-    describe: i => `Retry attempt ${i.attemptId} after a ${i.outcome} outcome`,
+    describe: async (i, ctx) => `Retry ${await label(ctx, 'attempt', i.attemptId)} after a ${i.outcome} outcome`,
     run: async (ctx, i) => {
       const outcome = i.outcome as OutcomeClass;
       const a = await one<{ id: string; campaign_id: string | null; contact_id: string | null; to_e164: string | null; kind: string; agent_version_id: string | null;

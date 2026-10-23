@@ -1,5 +1,6 @@
 // Team: list, invite (token hashed, accept route sets name + password), role changes that can never
 // leave a workspace without an owner.
+import { label } from '../../labels.ts';
 import type { Registry, ToolCtx } from '../../tools.ts';
 import { tool } from '../../tools.ts';
 import { many, one } from '../../db.ts';
@@ -65,7 +66,7 @@ export function registerMembers(r: Registry) {
 
   r.register(tool(obj({ memberId: uuid(), role }), {
     name: 'member.role.set', risk: 'policy', summary: 'Change what a person can do in this workspace',
-    describe: i => `Change the role of member ${i.memberId.slice(0, 8)} to ${i.role}`,
+    describe: async (i, ctx) => `Change the role of ${await label(ctx, 'member', i.memberId)} to ${i.role}`,
     version: async (ctx, i) => (await one<{ v: string }>(ctx.q, 'SELECT role || \':\' || status AS v FROM member WHERE id = $1 AND workspace_id = $2', [i.memberId, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       await lockOwners(ctx);
@@ -84,7 +85,7 @@ export function registerMembers(r: Registry) {
 
   r.register(tool(obj({ memberId: uuid() }), {
     name: 'member.remove', risk: 'destructive', summary: 'Remove a person from this workspace',
-    describe: i => `Remove the member ${i.memberId.slice(0, 8)} from this workspace and end their sessions`,
+    describe: async (i, ctx) => `Remove ${await label(ctx, 'member', i.memberId)} from this workspace and end their sessions`,
     version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT role || ':' || status AS v FROM member WHERE id = $1 AND workspace_id = $2", [i.memberId, ctx.workspaceId]))?.v ?? null,
     run: async (ctx, i) => {
       await lockOwners(ctx);
