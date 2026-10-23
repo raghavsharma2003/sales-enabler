@@ -39,12 +39,13 @@ export interface VoiceStack {
 
 // Provenance for engineers: voicelab/server/catalog.py round-2 presets, India VM, 2026-10-20. The strings below are
 // shown to people as they are, so they stay in plain words (decision.2026-10-21.no-developer-text-in-ui).
-// Whole reply gaps: measure.2026-10-22.round2-smoke-vertex (voice lab on Vertex, India VM, one call per stack). Text-start
-// times: the 2026-10-20 lab presets. Whole gaps taken with the earlier speech recognition: measure.2026-10-20.round2-smoke.
-const WHOLE = (replies: number, extra: string) => `Measured in our voice lab from a server in India on 22 Oct 2026, on one test call of ${replies} replies, `
-  + `from the caller finishing to her first audio. A small sample; it has not been timed on a phone line yet. ${extra}`;
+// Text-start times: the 2026-10-20 lab presets. Whole gaps taken with the earlier speech recognition: measure.2026-10-20.round2-smoke.
 const UNTIMED = (textStarts: string, earlier: string) => `Not measured with these parts yet. In our voice lab (a server in India, 20 Oct 2026) `
   + `the reply text started after about ${textStarts}; with the earlier speech recognition the whole gap was ${earlier}.`;
+// Product runtime (not the lab): measure.2026-10-23.product-reply-gap-* (private staging on the India VM, research/2026-10-23/staging).
+const PRODUCT = (replies: number, calls: number, p90: string) => `Measured on our own voice engine from a server in India on 23 Oct 2026: `
+  + `the median of ${replies} replies over ${calls} test calls, from the caller finishing to her first audio; 9 in 10 replies came within ${p90}. `
+  + `Not yet timed on a phone line.`;
 
 export const STACKS: readonly VoiceStack[] = [
   {
@@ -59,26 +60,27 @@ export const STACKS: readonly VoiceStack[] = [
   {
     id: 'v2-flashlite', label: 'Azure speech recognition + Gemini 3.5 Flash-Lite + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gemini-3.5-flash-lite', voice: 'gemini-lite', gatedEars: true },
-    replyGap: { value: '2.0 to 2.7 s', grade: 'measured', source: WHOLE(3, 'The reply text itself starts after about 0.70 s.') },
+    replyGap: { value: '2.5 s', grade: 'measured', source: PRODUCT(21, 4, '2.7 s') },
     note: 'The fastest of the well-judged models in our tests.', requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
     risks: ['Google’s voice price doubles on 1 Jan 2027'],
   },
   {
     id: 'v2-54mini', label: 'Azure speech recognition + GPT-5.4 mini + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gpt-5.4-mini', voice: 'gemini-lite', gatedEars: true },
-    replyGap: { value: 'not measured', grade: 'not_measured', source: UNTIMED('0.96 s', '2.0 to 2.6 s') },
+    replyGap: { value: '3.0 s', grade: 'measured', source: PRODUCT(23, 4, '3.6 s') },
     note: 'OpenAI’s fast model.', requires: ['GEMINI', 'AZURE_SPEECH', 'AZURE_OPENAI'], status: 'available',
   },
   {
     id: 'v2-38flash', label: 'Azure speech recognition + Gemini 3.8 Flash + Gemini voice', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gemini-3.8-flash', voice: 'gemini-lite', gatedEars: true },
-    replyGap: { value: '2.6 to 2.7 s', grade: 'measured', source: WHOLE(2, 'The reply text itself starts after about 2.0 s.') },
+    replyGap: { value: 'not measured', grade: 'not_measured', source: 'Not measured on our own voice engine: on 23 Oct 2026 its model did not answer on our Google Cloud route (8 of 8 test calls failed). Our voice lab measured 2.6 to 2.7 s on 2 replies on 22 Oct.' },
     note: 'The best-judged model, but slow to answer from India.', requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
+    risks: ['Its model did not answer on our Google Cloud route on 23 Oct 2026 (8 of 8 test calls failed); not yet re-checked'],
   },
   {
     id: 'v2-mai', label: 'Azure speech recognition + Gemini 3.5 Flash-Lite + Azure MAI-Voice (emotion styles)', kind: 'cascade', brief: 'v2',
     components: { ears: 'azure', brain: 'gemini-3.5-flash-lite', voice: 'azure-mai', gatedEars: true },
-    replyGap: { value: '1.8 to 2.1 s', grade: 'measured', source: WHOLE(3, 'The voice starts about 0.43 s after the reply text is ready.') },
+    replyGap: { value: '2.2 s', grade: 'measured', source: PRODUCT(24, 5, '2.7 s') },
     note: 'The fastest voice to start, with an emotion style for each reply. Its price has not been checked against a real bill yet.',
     requires: ['GEMINI', 'AZURE_SPEECH'], status: 'available',
   },
