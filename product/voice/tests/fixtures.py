@@ -1,5 +1,5 @@
 # Synthetic, fictional test data only. No network: fake adapters stand in for every provider.
-import copy, hashlib, json
+import asyncio, copy, hashlib, json
 from vpvoice import catalog, stacks
 from vpvoice.events import EventSink, MemoryPoster
 from vpvoice.providers import Components
@@ -49,8 +49,9 @@ def ticket(stack_id='v2-flashlite', transport=None, test=True, parts=None, **ove
 
 class FakeBrain:
     """Replies from a script: a list of strings (one per reply) or a callable(messages) -> str. 100 tokens in, 20 out."""
-    def __init__(self, script, fail_at=None, chunk=7):
+    def __init__(self, script, fail_at=None, chunk=7, first_token_s=0.0):
         self.script = script; self.n = 0; self.calls = []; self.fail_at = fail_at; self.chunk = chunk
+        self.first_token_s = first_token_s     # the brain's time to first token (the judge runs beside it)
 
     async def stream(self, messages, usage, timing, max_tokens=180):
         self.calls.append(messages); i = self.n; self.n += 1
@@ -58,6 +59,7 @@ class FakeBrain:
             timing['err'] = '503 {"error": "UNAVAILABLE"} (fake)'; return
         text = self.script(messages) if callable(self.script) else (self.script[i] if i < len(self.script) else 'जी।')
         usage.update({'in': 100, 'out': 20, 'cached': 0, 'usd': catalog.brain_usd('gemini-3.5-flash-lite', 100, 20)})
+        if self.first_token_s: await asyncio.sleep(self.first_token_s)
         for k in range(0, len(text), self.chunk):
             yield text[k:k + self.chunk]
 

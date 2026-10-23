@@ -144,11 +144,11 @@ class Conversation:
 
     # ---------------------------------------------------------------- the crisis judge (raise-only, judge.py)
     def start_judge(self, text, prev='', floor=False):
-        """Start the judge on a final caller turn, in parallel with the brain. Returns a gate the reply must wait for
-        only in 'raise' mode. In 'shadow' the verdict cannot change anything, so it runs fire-and-forget and the reply
-        never waits on it. None when off, not configured, the floor already fired (a floor hit acts at once and never
-        waits) or the call is already in crisis.
-        Trade-off for the owner: in 'raise' the first sentence waits for the verdict, up to timeout_ms (800 ms)."""
+        """Start the judge on a final caller turn, in parallel with the brain. Returns the gate the reply checks in
+        'raise' mode. In 'shadow' the verdict cannot change anything, so it runs fire-and-forget. None when off, not
+        configured, the floor already fired (a floor hit acts at once) or the call is already in crisis.
+        Neither mode waits: in 'raise' a verdict that is in before her first sentence acts on this reply, a later one
+        from her next sentence or turn (judge_checkpoint)."""
         if self.judge_complete is None or floor or self.state['crisis']: return None     # nothing left for it to add
         m = judge.mode(env=self.judge_env)
         if m == 'off' or not judge.configured(self.judge_env): return None
@@ -157,6 +157,18 @@ class Conversation:
         if m != 'raise':
             self.track(self.settle_gate(task)); return None
         return task
+
+    async def judge_checkpoint(self, draft):
+        """Before the first sentence of a reply leaves the door. The judge runs beside the brain and the reply never
+        waits for it (decision.2026-10-23.judge-flashlite-nonblocking): a verdict already in acts now and can replace
+        this reply (the crisis lines, or the opt-out confirmation); a later one settles in the background and acts from
+        her next sentence (the door sees the crisis) or her next turn (the opt-out confirmation). Returns the
+        confirmation to say instead of the reply, if one is due."""
+        if draft.gate is not None:
+            gate, draft.gate = draft.gate, None
+            if gate.done(): await self.settle_gate(gate)
+            else: self.track(self.settle_gate(gate))
+        return self.confirm_opt_out(draft)
 
     def track(self, coro):
         t = asyncio.ensure_future(coro)
@@ -269,9 +281,8 @@ class Conversation:
                         draft.t.setdefault('brain_first', self.clock())
                         draft.raw += d
                         for s in self.release(sp.feed(d), draft):
-                            if draft.gate is not None and not draft.sentences:     # the judge's verdict before she is heard
-                                gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
-                                confirm = self.confirm_opt_out(draft)
+                            if not draft.sentences:                 # the judge's verdict, if it is in before she is heard
+                                confirm = await self.judge_checkpoint(draft)
                                 if confirm: yield confirm; break
                             out, v = self.check(s, draft)
                             if v['action'] == 'block': blocked = v; break
@@ -283,9 +294,8 @@ class Conversation:
                     return
                 if not blocked:
                     for s in self.release(sp.flush(), draft, end=True):
-                        if draft.gate is not None and not draft.sentences:
-                            gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
-                            confirm = self.confirm_opt_out(draft)
+                        if not draft.sentences:
+                            confirm = await self.judge_checkpoint(draft)
                             if confirm: yield confirm; return
                         out, v = self.check(s, draft)
                         if v['action'] == 'block': blocked = v; break

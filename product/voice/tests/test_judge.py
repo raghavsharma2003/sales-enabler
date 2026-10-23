@@ -117,10 +117,12 @@ class Contract(unittest.TestCase):
         judge.check_schema(judge.JUDGES)
 
 
-def sim_call(script, lines, complete, mode, t=None):
+def sim_call(script, lines, complete, mode, t=None, brain_s=0.05):
+    """brain_s: the fake brain's time to first token. The judge runs beside the brain and the reply never waits for
+    it, so a fake judge that answers at once is in before her first sentence (the usual case on staging)."""
     t = t or ticket()
     s, p = sink(t['conversationId'])
-    comp = components(t['stack']['id'], brain=FakeBrain(script)); comp.judge_complete = complete
+    comp = components(t['stack']['id'], brain=FakeBrain(script, first_token_s=brain_s)); comp.judge_complete = complete
     from vpvoice.session import SimSession
     async def go():
         sess = SimSession(t, comp, s, env={**ENV_ON, 'VP_SAFETY_JUDGE_MODE': mode}, watchdog_s=0.01)
@@ -193,6 +195,34 @@ class Runtime(unittest.TestCase):
         self.assertEqual(out, [self.AGENDA])
         self.assertLess(dt, 0.2, f'the reply waited {dt:.2f} s on a shadow judge that takes 0.7 s')
         self.assertEqual(len(seen), 1, 'the shadow judge still ran')
+
+    def late_call(self, verdict_text, lines, delay=0.3):
+        """The judge answers after her reply has gone out: the reply never waits, the verdict acts later."""
+        import time
+        c, seen = fake(verdict_text, delay=delay)
+        t = ticket(); s, p = sink(t['conversationId'])
+        comp = components(brain=FakeBrain([DISCLOSED, self.AGENDA, 'Main yahin hoon.', 'Kuch aur?'])); comp.judge_complete = c
+        from vpvoice.session import SimSession
+        async def go():
+            sess = SimSession(t, comp, s, env={**ENV_ON, 'VP_SAFETY_JUDGE_MODE': 'raise'}, watchdog_s=0.01)
+            await sess.start(); out = []
+            t0 = time.perf_counter(); out.append(await sess.caller_says(lines[0])); dt = time.perf_counter() - t0
+            await asyncio.sleep(delay + 0.1)                       # the verdict lands while she waits for the caller
+            for line in lines[1:]: out.append(await sess.caller_says(line))
+            if not sess.ended: await sess.hang_up()
+            return sess, out, dt
+        sess, out, dt = asyncio.run(go())
+        return sess, p, out, dt, seen
+
+    def test_raise_never_delays_the_reply_and_a_late_crisis_acts_on_her_next_turn(self):
+        sess, p, out, dt, seen = self.late_call(verdict(True, 0.8, 'indirect'), [INDIRECT, 'pata nahi'])
+        self.assertEqual(out[0], [self.AGENDA], 'the reply went out as written: the verdict was not in yet')
+        self.assertLess(dt, 0.2, f'the reply waited {dt:.2f} s on a judge that takes 0.3 s')
+        said = ' '.join(out[1])
+        self.assertIn('14416', said); self.assertIn('112', said)
+        self.assertEqual(judge_events(p), [('raise', 'raised', 'indirect', None)])
+        self.assertEqual([x for x in safety_details(p) if x[1] == 'suspended_goal'], [('RD3', 'suspended_goal', 'judge_raised')])
+        self.assertEqual(len(seen), 1, 'the call is in crisis: the next turn is not judged again')
 
     def test_timeout_falls_back_to_the_floor_and_logs_it(self):
         c, _ = fake(verdict(True, 0.9, 'indirect'), delay=2.0)
@@ -353,6 +383,14 @@ class OptOutRuntime(unittest.TestCase):
         self.assertEqual([m['kind'] for m in of(p, 'moment') if m['kind'] == 'opt_out'], ['opt_out'], 'exactly one opt_out moment (calls suppresses on it)')
         self.assertEqual(of(p, 'safety'), [], 'an opt-out is not a safety event')
         self.assertEqual(len(seen), 1)
+
+    def test_a_late_raise_confirms_on_her_next_turn(self):
+        sess, p, out, dt, _ = Runtime.late_call(self, both(False, 0.05, 'none', True, 0.9), [OPTOUT_MISSED, 'haan'])
+        self.assertEqual(out[0], [self.AGENDA], 'the reply went out as written: the verdict was not in yet')
+        self.assertLess(dt, 0.2)
+        self.assertEqual(out[1], [rules.safety_text('opt_out_confirm', '')], 'the confirmation is her next reply')
+        self.assertEqual(sess.ended, 'opt_out')
+        self.assertEqual([m['kind'] for m in of(p, 'moment') if m['kind'] == 'opt_out'], ['opt_out'])
 
     def test_shadow_changes_nothing(self):
         c, _ = fake(both(False, 0.05, 'none', True, 0.9))

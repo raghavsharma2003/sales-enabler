@@ -7,6 +7,7 @@
       "signal": "crisis",
       "llm_purpose": "safety_judge",
       "llm_env": "VP_LLM_SAFETY_JUDGE_URL / _KEY / _MODEL (falls back to VP_LLM_DEFAULT_*). With no URL+KEY+MODEL the judge is not called at all and spends nothing.",
+      "model_recommended": "Gemini 3.5 Flash-Lite on the Vertex global OpenAI-compatible endpoint (VP_LLM_SAFETY_JUDGE_MODEL=google/gemini-3.5-flash-lite). BLIND 7, floor or judge: recall 99/100, FP 10/100, p50 961 ms, p95 1,126 ms (decision.2026-10-23.judge-flashlite-nonblocking; research/2026-10-23/judge-eval-blind7). Configuration only: any OpenAI-compatible model can serve, and none is called without keys.",
       "modes": [
         "off",
         "shadow",
@@ -16,7 +17,7 @@
       "mode_env": "VP_SAFETY_JUDGE_MODE",
       "mode_note": "shadow calls the model and logs what it would have done, but never changes a signal; raise lets it add the crisis signal. Production 'raise' only on the owner's go.",
       "threshold": 0.5,
-      "timeout_ms": 800,
+      "timeout_ms": 1500,
       "max_input_chars": 600,
       "max_tokens": 80,
       "temperature": 0,
@@ -68,7 +69,7 @@
         "judge_raised": "mode raise: the judge added the crisis signal the floor missed (kind and confidence in detail).",
         "judge_shadow": "mode shadow: the judge would have raised; nothing changed."
       },
-      "runtime_note": "Voice runtime: call it on each FINAL caller transcript in parallel with the brain's first token; a raise interrupts the turn before the reply is spoken. It must not delay a floor hit, which acts at once. An opt-out raise (mode raise) replaces the reply about to be spoken with rules.json texts.opt_out_confirm, emits the opt_out moment (calls then suppresses the contact, as for a floor hit) and ends the call with end reason opt_out. A shadow opt-out verdict is logged only: the runtime protocol's judge event has no opt_out fields yet.",
+      "runtime_note": "Voice runtime: call it on each FINAL caller transcript, beside the brain; the reply never waits for it (decision.2026-10-23.judge-flashlite-nonblocking). A verdict that is in before her first sentence of the reply leaves the door acts on that reply: a crisis raise replaces it with the crisis path, an opt-out raise with rules.json texts.opt_out_confirm. A later verdict acts from her next sentence (the door sees the crisis) or her next turn (the opt-out confirmation). It must not delay a floor hit, which acts at once. An opt-out raise (mode raise) emits the opt_out moment (calls then suppresses the contact, as for a floor hit) and ends the call with end reason opt_out after the confirmation. timeout_ms bounds the model call, not the reply.",
       "labels": [
         "crisis",
         "opt_out"

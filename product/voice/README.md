@@ -125,11 +125,12 @@ present.
 A model reads each final caller turn the floor did not flag, in parallel with the brain. It is raise-only: it can add
 the crisis signal, never remove one.
 - **Before the call:** the text is redacted first and quoted as data under the contract's fixed prompt.
-- **Waiting:** only in `raise` mode does the reply's first sentence wait for the verdict, at most `timeout_ms`
-  (800 ms). A floor hit never waits. That wait is a trade-off for the owner to decide with measured numbers.
-- **Modes:** `off`, `shadow` (default) or `raise`. In `shadow` the judge runs fire-and-forget: the reply never waits
-  and nothing changes. In `raise`, a verdict interrupts the turn with the crisis path: Tele-MANAS 14416 and 112,
-  agenda dropped, a human offered, no hang-up.
+- **No waiting** (decision.2026-10-23.judge-flashlite-nonblocking): the reply never waits for the verdict. The
+  model call is bounded by `timeout_ms` (1,500 ms). A floor hit acts at once.
+- **Modes:** `off`, `shadow` (default) or `raise`. In `shadow` the judge runs fire-and-forget and nothing changes.
+  In `raise`, a verdict that is in before her first sentence of the reply leaves the door replaces that reply with the
+  crisis path (Tele-MANAS 14416 and 112, agenda dropped, a human offered, no hang-up) or the opt-out confirmation. A
+  later verdict acts from her next sentence (crisis) or her next turn (opt-out).
 - **Failure:** a timeout, error or bad output leaves the floor's verdict.
 - **No model configured:** no call and no spend.
 - **Events:** every judged turn with an outcome emits a `judge` runtime event (`outcome` raised, shadow or

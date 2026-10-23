@@ -52,7 +52,7 @@
     "Per-contact facts reach the model as the contact rows block (after brief and memory, before the LAST block), in compile.ts contactRows() format; the door gets them as perContact facts. product/tests/agents-runtime.test.ts passes 4/4 against this runtime",
     "Brief used verbatim; memory brief only when memoryStatus = loaded; generic data-driven LAST block per turn (spent facts and figures, stray caller figures, goals open/settled, cues, closing, crisis/opt-out/asked-AI state, marker rules)",
     "Parity guard: vpvoice/rules.py refuses at import any rules.json key, builtin, scope or enum it does not implement, so an engine change breaks CI at load, not quietly in a call",
-    "Caller-crisis judge (judge.json): raise-only, default shadow, 800 ms bound, in parallel with the brain; raise interrupts the turn with the crisis path; off unless VP_LLM_SAFETY_JUDGE_* (or DEFAULT) is configured; raise in production only on the owner's go",
+    "Caller-crisis judge (judge.json): raise-only, default shadow, 1,500 ms bound, beside the brain and never waited for; in raise a verdict in before her first sentence replaces the reply (crisis path or opt-out confirmation), a later one acts from her next sentence or turn; off unless VP_LLM_SAFETY_JUDGE_* (or DEFAULT) is configured; raise in production only on the owner's go",
     "Judge runtime events (shared/runtime-protocol.ts 'judge', 8ece232): one per judged turn with an outcome (raised / shadow / unavailable), never caller text; only a raise is also a safety event",
     "Reply door = shared rules.json evaluated as index.ts does (all 1186 vectors pass) + runtime layer (first-breath clause, truth first, crisis lines); block -> one rewrite told the rule, then a safe line",
     "Caller signals and redaction from rules.json; redacted text is what reaches transcript, events and the LLM",
@@ -69,7 +69,7 @@
   "untested": [
     "Azure Speech ears against the real service from this package (fake SDK only; the lab measured the same SDK path); the Docker image with the Speech SDK (libssl3, libasound2) not built",
     "Every Vertex call (text, TTS, Live ears, Live speech-to-speech) against real Vertex: only fakes; the Live message keys (camelCase acceptance, mediaChunks vs audio, interimInputTranscription, audioStreamEnd) are from the Gemini API and partly unconfirmed in the Vertex docs",
-    "The crisis judge against a real model (latency within 800 ms from India, verdict quality on blind sets): only fake models so far",
+    "The crisis judge against a real model (non-blocking timing on staging: how often the verdict lands before her first sentence): only fake models in the runtime so far",
     "Azure voice over REST instead of the lab's pre-warmed SDK socket: first-audio latency not measured",
     "Real browser client against /v1/media/browser (protocol documented in README; no page ships here)",
     "Plivo dial, answer/hangup webhooks, stream, transfer and carrier hang-up against a live line; Exotel stream protocol (from docs only, no live line); Exotel outbound dialling is not implemented (refused 422)",

@@ -37,7 +37,7 @@ def run_calls():
     for i, (name, mode, reply, script, lines) in enumerate(CALLS):
         t = ticket(); t['conversationId'] = f'0b6f6e1a-1c2d-4e5f-8a9b-{i + 1:012d}'
         s, p = sink(t['conversationId'])
-        comp = components(brain=FakeBrain(script))
+        comp = components(brain=FakeBrain(script, first_token_s=0.05 if reply is not None else 0.0))   # the judge is in before her first sentence
         env = {}
         if reply is not None:
             comp.judge_complete, _ = fake(reply); env = {**ENV_ON, 'VP_SAFETY_JUDGE_MODE': mode}

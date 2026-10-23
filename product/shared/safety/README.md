@@ -17,9 +17,11 @@ One model call reads two labels, crisis and opt_out (judge id `caller_crisis`, k
 A judge can only ADD a signal, never remove one; an opt-out is never raised while a call is in crisis. The floor runs first and its verdict stands. With no model
 configured (`VP_LLM_SAFETY_JUDGE_URL/KEY/MODEL`, or `VP_LLM_DEFAULT_*`) the judge is never called and spends nothing.
 Modes are `off`, `shadow` (default: asks the model, logs `judge_shadow`, changes nothing) and `raise` (adds the crisis
-signal; production only on the owner's go), set by `VP_SAFETY_JUDGE_MODE`. A timeout (800 ms), an error or bad
+signal; production only on the owner's go), set by `VP_SAFETY_JUDGE_MODE`. A timeout (1,500 ms), an error or bad
 output logs `judge_unavailable` and leaves the floor's verdict. The caller's text is redacted before it leaves and is
-passed as quoted data under a fixed instruction prompt.
+passed as quoted data under a fixed instruction prompt. In a call it runs beside the brain and the reply never waits
+for it: a verdict in before her first sentence acts on that reply, a later one from her next sentence or turn
+(decision.2026-10-23.judge-flashlite-nonblocking). Recommended model: judge.json `model_recommended`.
 
 ## Judge eval (run on the lab VM)
 

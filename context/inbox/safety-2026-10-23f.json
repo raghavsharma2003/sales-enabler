@@ -1,0 +1,34 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-23.judge-nonblocking-runtime",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "decision.2026-10-23.judge-flashlite-nonblocking implemented in the voice runtime: judge.json timeout_ms 800 -> 1,500, model_recommended (Flash-Lite, Vertex global), mode default stays shadow. The reply never waits for the judge: a verdict in before her first sentence leaves the door acts on that reply (crisis path or opt-out confirmation); a later one settles in the background and acts from her next sentence (crisis) or turn (opt-out). Sim: a 0.3 s judge in raise mode delays the reply < 0.2 s, and its crisis raise gives the lines on her next turn; a late opt-out raise confirms on her next turn and ends opt_out; a judge that is in first still replaces the reply.",
+   "n": "41 judge + runtime-fixture unit tests (2 new late-verdict tests); voice suite OK; fresh-DB 468/468",
+   "method": "python -m unittest with FakeBrain first_token_s (brain time to first token) against a fake judge with a delay",
+   "not_verified": "No real model in the runtime yet. Not measured: how often the verdict lands before her first sentence on staging (Flash-Lite p95 1,126 ms vs brain first sentence). The window ends when her first sentence leaves the door, not at first audio (TTS time to first byte later), so a verdict landing in that gap acts from her next sentence. Speculative replies stay off in raise mode (cascade.judge_raises, unchanged)."
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-23.judge-nonblocking-runtime",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-23.judge-nonblocking-runtime",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "supports"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "safety-judge-nonblocking",
+   "details": "Judge to 1,500 ms, Flash-Lite recommended in judge.json, run non-blocking beside the brain (voice conversation.judge_checkpoint); shadow default unchanged. Gates: tsc clean, fresh-DB 468/468, ui-contract strict 173/173, voice unittest OK."
+  }
+ ]
+}
