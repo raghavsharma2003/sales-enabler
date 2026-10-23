@@ -37,11 +37,30 @@ setFakeLlm((req: LlmRequest) => {
   }
   return reply('I can help with this page or with anything else you need done. I prepare drafts and tests myself; anything that reaches people or spends money waits for your approval.');
 });
+// DEV ONLY: with VP_DEVSIM_URL (python -m vpvoice.devsim: the real voice runtime on fake providers), browser test calls go
+// to that runtime, so "Call me in the browser" runs end to end; every other ticket and the stack health stay on the fake
+// runtime (the stack-health flows set what it reports through the hook below).
+if (process.env.VP_DEVSIM_URL) {
+  const devsim = new HttpRuntime(process.env.VP_DEVSIM_URL);
+  class DevRuntime extends FakeRuntime {
+    private viaDevsim = new Set<string>();
+    async start(ticket: CallTicket) {
+      if (ticket.transport.kind !== 'webrtc') return super.start(ticket);
+      this.viaDevsim.add(ticket.conversationId);
+      return devsim.start(ticket);
+    }
+    async control(id: string, action: string, body?: Record<string, unknown>) {
+      return this.viaDevsim.has(id) ? devsim.control(id, action, body) : super.control(id, action, body);
+    }
+  }
+  setRuntime(new DevRuntime());
+}
 import('../../server/main.ts');
 
 // DEV ONLY: a tiny control port so an e2e flow can set what the fake voice runtime reports about stacks (POST a JSON health body, or null).
 import { createServer } from 'node:http';
-import { runtime, FakeRuntime } from '../../server/runtime-client.ts';
+import { runtime, FakeRuntime, HttpRuntime, setRuntime } from '../../server/runtime-client.ts';
+import type { CallTicket } from '../../shared/runtime-protocol.ts';
 import { forgetRuntimeHealth } from '../../server/modules/agents/index.ts';
 const hook = createServer((req, res) => {
   let body = '';

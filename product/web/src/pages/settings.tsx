@@ -9,6 +9,7 @@ import { activityList, keyList, knowledgeList, memberList, walletGet } from '../
 import { ago, count, date, inr, time } from '../format.ts';
 import { prettyId } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
+import { costPart } from '../labels.ts';
 import { Link } from '../router.tsx';
 import Integrations from './integrations.tsx';
 import { activitySentence, pageFor, RULE_LABEL } from '../labels.ts';
@@ -162,7 +163,7 @@ function Billing() {
         <p className="small muted">{d.price.text}</p>
         <p className="bignum serif tnum" style={{ marginTop: 8 }}>{inr(d.costInrMilli, { paise: true })}</p>
         {d.byComponent.length === 0 ? <p className="small muted">Nothing has been spent in this period. That is a measured zero from the usage lines.</p> :
-          <ul className="billing">{d.byComponent.map((l, i) => <li key={i}><strong>{prettyCode(l.component ?? l.key ?? '')}</strong><span className="tnum">{inr(l.inrMilli ?? l.inr_milli ?? 0, { paise: true })}</span></li>)}</ul>}
+          <ul className="billing">{d.byComponent.map((l, i) => <li key={i}><strong>{costPart(l.component ?? l.key ?? '', prettyCode)}</strong><span className="tnum">{inr(l.inrMilli ?? l.inr_milli ?? 0, { paise: true })}</span></li>)}</ul>}
         <p className="small muted">{d.note}</p></>}</Async></Card>
     </div>
   );

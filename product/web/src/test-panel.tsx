@@ -8,6 +8,8 @@ import { Btn, Chip } from './ui.tsx';
 import { Link } from './router.tsx';
 import { practiceCallers, simulate } from './data.ts';
 import type { SimResult } from './types.ts';
+import { BrowserCallView } from './browser-call-view.tsx';
+import type { Join } from './browser-call.ts';
 
 const TWEAKS = ['Speak a little slower', 'Do not mention discounts', 'Shorter opening', 'Warmer tone'];
 
@@ -19,7 +21,7 @@ export function TestPanel() {
   const [picks, setPicks] = useState<string[] | null>(null);
   const chosen = picks ?? (callers.data ?? []).slice(0, 6).map(c => c.id);
   const [busy, setBusy] = useState(false);
-  const [call, setCall] = useState<{ state: 'idle' | 'asking' | 'unavailable' | 'started'; reason?: string }>({ state: 'idle' });
+  const [call, setCall] = useState<{ state: 'idle' | 'asking' | 'unavailable' | 'live'; reason?: string; join?: Join; conversationId?: string }>({ state: 'idle' });
   if (!a) return <div className="testpanel"><p className="muted">Open an agent to test her here.</p></div>;
   const stack = voiceStackOf(a) ?? null;
   const picked = (callers.data ?? []).filter(c => chosen.includes(c.id));
@@ -34,10 +36,12 @@ export function TestPanel() {
   };
   const browser = async () => {
     setCall({ state: 'asking' });
-    const r = await act<{ available?: boolean; reason?: string }>('test.browser_call', { agentId: a.id, useDraft: true }, { quiet: true });
+    // Tests run the saved draft: the server compiles it and the runtime runs exactly the stack it names.
+    const r = await act<{ available?: boolean; reason?: string; conversationId?: string; join?: Join | null }>('test.browser_call', { agentId: a.id, useDraft: true }, { quiet: true });
     if (!r.ok) setCall({ state: 'unavailable', reason: r.reason });
     else if (r.result.available === false) setCall({ state: 'unavailable', reason: r.result.reason });
-    else setCall({ state: 'started', reason: 'A call session was prepared for the saved draft. Browser audio is not connected to this page yet, so nothing can be heard from here.' });
+    else if (!r.result.join || r.result.join.kind !== 'webrtc' || !r.result.conversationId) setCall({ state: 'unavailable', reason: 'The voice engine on this server cannot take browser calls yet.' });
+    else setCall({ state: 'live', join: r.result.join, conversationId: r.result.conversationId });
   };
 
   return (
@@ -82,8 +86,10 @@ export function TestPanel() {
       <section aria-labelledby="bc-h" className="stack-s">
         <h4 id="bc-h">Hear her yourself</h4>
         <p className="small muted">She calls you in the browser as a made-up customer, with live captions. She says once that she is an AI.</p>
-        <Btn icon={<Mic size={16} aria-hidden />} busy={call.state === 'asking'} onClick={browser}>Call me in the browser</Btn>
-        {(call.state === 'unavailable' || call.state === 'started') && <p className="state state-missing small" role="status">{call.reason ?? 'Browser calls are not available yet.'}</p>}
+        {call.state === 'live' && call.join && call.conversationId
+          ? <BrowserCallView join={call.join} conversationId={call.conversationId} agentName={a.name} onClose={() => setCall({ state: 'idle' })} />
+          : <Btn icon={<Mic size={16} aria-hidden />} busy={call.state === 'asking'} onClick={browser}>Call me in the browser</Btn>}
+        {call.state === 'unavailable' && <p className="state state-missing small" role="status">{call.reason ?? 'Browser calls are not available yet.'}</p>}
       </section>
 
       <section aria-labelledby="tw-h" className="stack-s">

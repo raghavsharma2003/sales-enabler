@@ -35,8 +35,11 @@ const test = (name, optsOrFn, maybeFn) => {
 };
 
 before(async () => {
-  browser = await pw.chromium.launch({ executablePath: process.env.CHROME || undefined });
-  ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  // A fake microphone for the browser call flow: Chromium plays this file, on a loop, as the microphone (no device needed).
+  const wav = path.join(os.tmpdir(), 'vp-e2e-caller.wav'); fs.writeFileSync(wav, callerWav());
+  browser = await pw.chromium.launch({ executablePath: process.env.CHROME || undefined,
+    args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-audio-capture=${wav}`, '--autoplay-policy=no-user-gesture-required'] });
+  ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce', permissions: ['microphone'] });
   const r = await ctx.request.post(BASE + '/v1/login', { data: { email: EMAIL, password: PASSWORD } });
   assert.ok(r.ok(), 'sign in');
   page = await ctx.newPage();
@@ -48,6 +51,20 @@ before(async () => {
   ws = (await pool.query("SELECT id FROM workspace WHERE name = 'Saanjh Services' ORDER BY created_at DESC LIMIT 1")).rows[0].id;
 });
 after(async () => { await browser?.close(); await pool?.end(); });
+
+// 16 kHz mono WAV: 1 s of a voiced, speech-loud sound, then 3 s of quiet, twice. Synthetic; no person's voice.
+function callerWav() {
+  const rate = 16000, secs = 8, n = rate * secs, data = Buffer.alloc(n * 2);
+  for (let i = 0; i < n; i++) {
+    const t = i / rate, on = (t % 4) < 1;
+    const v = on ? 0.35 * (Math.sin(2 * Math.PI * 140 * t) + 0.5 * Math.sin(2 * Math.PI * 280 * t) + 0.25 * Math.sin(2 * Math.PI * 560 * t)) * (0.6 + 0.4 * Math.sin(2 * Math.PI * 4 * t)) : 0;
+    data.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(v * 20000))), i * 2);
+  }
+  const h = Buffer.alloc(44);
+  h.write('RIFF', 0); h.writeUInt32LE(36 + data.length, 4); h.write('WAVE', 8); h.write('fmt ', 12); h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22);
+  h.writeUInt32LE(rate, 24); h.writeUInt32LE(rate * 2, 28); h.writeUInt16LE(2, 32); h.writeUInt16LE(16, 34); h.write('data', 36); h.writeUInt32LE(data.length, 40);
+  return Buffer.concat([h, data]);
+}
 
 const tool = async (name, args = {}) => (await (await ctx.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
 const actions = async status => (await (await ctx.request.get(`${BASE}/v1/actions?status=${status}`)).json()).actions;
@@ -226,16 +243,38 @@ test('Practice callers: the panel lists the server\'s callers and shows one resu
   assert.ok(verdicts.every(v => ['Passed', 'Failed', 'Invalid', 'Inconclusive'].includes(v)), verdicts.join());
 });
 
-test('Browser call on a draft that compiles: the server prepares a session and the UI says so without claiming audio', async () => {
-  const riya = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
-  const server = await tool('test.browser_call', { agentId: riya, useDraft: true });
-  assert.equal(server.status, 'confirmed', JSON.stringify(server));
-  assert.equal(server.result.versionId ?? null, null, 'a draft run has no version id');
-  assert.ok(server.result.draftHash, 'the run is tied to the draft hash');
-  await page.goto(`${BASE}/agents/${riya}`);
+test('Browser call: she calls you in the browser, captions from both sides, hang up, filed as a test call under what ran', { skip: process.env.VP_DEVSIM_URL ? false : 'no voice runtime (devsim) for browser calls on this machine' }, async () => {
+  const riya = (await pool.query("SELECT id, draft FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0];
+  await page.goto(`${BASE}/agents/${riya.id}`);
   await page.getByRole('radio', { name: 'Test her' }).click();
   await page.getByRole('button', { name: 'Call me in the browser' }).click();
-  await page.getByText('A call session was prepared for the saved draft').waitFor({ timeout: 8000 });
+  const call = page.locator('.bcall');
+  await call.waitFor({ timeout: 10000 });
+  await call.getByText('AI agent').waitFor();                                   // the disclosure is always on screen
+  await call.locator('.bcap.agent').first().waitFor({ timeout: 20000 });        // her opening, from the runtime
+  await call.locator('.bcap.caller:not(.partial)').first().waitFor({ timeout: 30000 });   // the fake microphone, heard and transcribed
+  await call.locator('.bcap.agent').nth(1).waitFor({ timeout: 20000 });         // and answered
+  fs.mkdirSync(path.join(process.cwd(), 'product/web/shots'), { recursive: true });
+  await call.screenshot({ path: path.join(process.cwd(), 'product/web/shots/browser-call-live.png') });
+  const href = await call.getByRole('button', { name: 'Hang up' }).click().then(async () => {
+    await call.getByText('You hung up.').waitFor({ timeout: 8000 });
+    return call.getByRole('link', { name: 'See this call' }).getAttribute('href');
+  });
+  const id = href.split('/').pop();
+  // The runtime's signed events reach ingest: the call is a test call, ended, with both sides' turns, under what ran.
+  let row, turns = [];
+  for (const t0 = Date.now(); Date.now() - t0 < 15000; await new Promise(r => setTimeout(r, 300))) {
+    row = (await pool.query('SELECT channel, status, end_reason, run_manifest FROM conversation WHERE id = $1', [id])).rows[0];
+    turns = (await pool.query('SELECT speaker FROM turn WHERE conversation_id = $1', [id])).rows.map(r => r.speaker);
+    if (row?.end_reason && row.run_manifest?.combinationId) break;
+  }
+  assert.equal(row.channel, 'test');
+  assert.equal(row.end_reason, 'caller_hung_up', JSON.stringify(row));
+  assert.equal(row.run_manifest.stackId, riya.draft.voice.stackId, 'filed under the stack the saved draft names');
+  assert.match(row.run_manifest.combinationId, /^v2\|/);
+  assert.ok(turns.includes('agent') && turns.includes('caller'), 'both sides are in the transcript: ' + turns.join());
+  await page.goto(`${BASE}/calls/${id}`);
+  await page.getByText('Haan ji, boliye.').first().waitFor({ timeout: 10000 });
 });
 
 test('Stack picker: beta stacks say "test calls only", and an unmeasured reply gap shows no number', async () => {

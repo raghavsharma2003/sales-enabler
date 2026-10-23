@@ -292,6 +292,13 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .simlist summary { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 12px; cursor: pointer; min-height: 44px; font-weight: 600; font-size: 0.9375rem; }
 .simlist details > :not(summary) { margin-inline: 12px; } .simlist details > :last-child { margin-bottom: 12px; }
 .simturn { font-size: 0.9375rem; margin: 4px 12px; }
+.bcall { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 12px; }
+.bcall-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.bcall-head .chip svg { vertical-align: -2px; }
+.bcall-state { font-weight: 600; font-size: 0.9375rem; } .bcall-state.s-speaking { color: var(--peacock); } .bcall-state.s-ended { color: var(--ink-2); }
+.bcall-caps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow-y: auto; }
+.bcap { font-size: 0.9375rem; padding: 6px 10px; border-radius: 8px; background: var(--sunk); } .bcap.agent { background: var(--peacock-bg); }
+.bcap.partial { color: var(--ink-2); font-style: italic; }
 .checks { margin: 8px 12px; padding: 0; list-style: none; font-size: 0.875rem; display: grid; gap: 2px; } .checks .ok { color: var(--leaf); font-weight: 700; } .checks .bad { color: var(--brick); font-weight: 700; }
 .composer textarea { min-height: 60px; }
 .composer-row { display: flex; gap: 8px; align-items: center; }

@@ -3,6 +3,11 @@
 import { inr, phone as fmtPhone } from './format.ts';
 import type { Blocker } from './types.ts';
 
+/** A cost line's part, as the stack picker names parts (the runtime reports ears / brain / voice / telephony / platform). */
+export const COST_PART: Record<string, string> = { ears: 'Speech recognition', brain: 'Language model', voice: 'Voice', s2s: 'Speech-to-speech model',
+  telephony: 'Phone line', platform: 'Platform', analysis: 'Call analysis' };
+export const costPart = (component: string, fallback: (c: string) => string) => COST_PART[component] ?? fallback(component);
+
 /** A short human title per tool, for approval cards and receipts. `ask` = what the card asks, `done` = what the receipt says. */
 export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'wallet.topup': { ask: 'Add money to the wallet', done: 'Money added to the wallet' },
