@@ -17922,7 +17922,7 @@
   {
    "id": "open.2026-10-23.q-goal-key-vs-goal-semantics",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-23",
    "source": "model",
    "title": "Inference: the q-goal task's key (7 goal-done calls, from reason_code CONV_GOAL_DONE) disagrees with what the product counts as goal reached (graded outcomes against outcome_definition.goal_values, calls/stats.ts:58-60). Both models answered 0, which is probably the tool being right",
