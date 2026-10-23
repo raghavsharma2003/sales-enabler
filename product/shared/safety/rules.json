@@ -80,7 +80,9 @@
       "none": [
         "@ai_affirm[^.?!।]{0,40}@human_noun ?@neg",
         "\\b(cannot|can'?t|can not|nahi|won'?t)\\b ?(say|claim|keh|bol|pretend)[a-z]*\\b[^.?!।]{0,20}@human_noun",
-        "\\b(rbi|irdai|irda|sebi|trai|uidai|government|sarkar|sarkari|police|cyber cell|income tax)\\b[^.?!]{0,12}\\boffice\\b"
+        "\\b(rbi|irdai|irda|sebi|trai|uidai|government|sarkar|sarkari|police|cyber cell|income tax)\\b[^.?!]{0,12}\\boffice\\b",
+        "\\b(manushi|manushan|manush|manus|manoos|manishi|manishini|manas)\\b,? ?(illa|illai|alla|noi|nai|nahi|nahiye|kaadu|ledu|nathi|na)\\b",
+        "\\b(connect|transfer|kotha bol(ie|iye)|kitta pesa|kitta transfer|sathe matlad|jodi dau|jodi aapu|jodun deto|jodun dete)\\w*"
       ]
     },
     {

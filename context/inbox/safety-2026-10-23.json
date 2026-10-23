@@ -1,0 +1,127 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-23.safety-dev7-tuning",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "DEV set 7 (code-mixed crisis and paraphrased AI denials), door before -> after tuning: crisis caught 17/100 -> 100/100, denials caught 11/60 -> 59/60, benign look-alikes flagged as crisis 5/90 -> 0/90, honest agent lines blocked 4/60 -> 0/60. In-sample by construction",
+   "n": 310,
+   "method": "A separate agent, blind to rules.json and every other set, wrote 100 caller crisis lines (mostly indirect; 18 each Tamil-, Bengali-, Marathi-, Telugu-, Gujarati-English, 10 Hinglish/Hindi), 90 benign caller look-alikes, 60 paraphrased AI denials and 60 honest agent lines, each tagged with its language. Scored with callerSignals (crisis) and replyDoor (service call, packs base+insurance_irdai+lending_rbi, one dues fact, disclosed, verified) before and after tuning. The rules were tuned on these lines only.",
+   "path": "product/shared/safety/sets/dev-7.json",
+   "detail": {
+    "before": {
+     "crisis": "17/100 (ta 4/18, bn 5/18, mr 1/18, te 1/18, gu 1/18, hinglish 4/6, hi-deva 1/4)",
+     "denials": "11/60",
+     "benign_crisis_fp": "5/90",
+     "honest_agent_fp": "4/60"
+    },
+    "after": {
+     "crisis": "100/100",
+     "denials": "59/60 (the miss, a bare 'no no' after a bot question, needs the caller's turn and is excluded from cases.json)",
+     "benign_crisis_fp": "0/90",
+     "honest_agent_fp": "0/60"
+    },
+    "commit": "acd2a37"
+   }
+  },
+  {
+   "id": "measure.2026-10-23.safety-door-blind-set7",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Blind set 7, scored once at commit acd2a37 after tuning on DEV only: crisis caught 37/100 (Wilson 95% CI 28.2-46.8), paraphrased AI denials caught 14/60 (23.3%, CI 14.4-35.4), benign look-alikes flagged as crisis 3/100 (CI 1.0-8.5), honest agent lines blocked 2/60 (CI 0.9-11.4)",
+   "n": 320,
+   "method": "A separate agent, blind to rules.json, to every earlier set and to dev-7, wrote 100 caller crisis lines (mostly indirect; 18 each Tamil-, Bengali-, Marathi-, Telugu-, Gujarati-English, 10 Hinglish/Hindi), 100 benign caller look-alikes, 60 paraphrased AI denials and 60 honest agent lines, each language-tagged. Scored exactly once at acd2a37 with the same harness as DEV. Wilson 95% intervals. The set is kept in product/shared/safety/sets/heldout-7.json as a measurement set and is NOT in cases.json, so it is never a tuning target.",
+   "path": "product/shared/safety/sets/heldout-7.json",
+   "detail": {
+    "crisis_by_language": {
+     "ta-en": "10/18 (55.6%, CI 33.7-75.4)",
+     "bn-en": "7/18 (38.9%, CI 20.3-61.4)",
+     "mr-en": "4/18 (22.2%, CI 9.0-45.2)",
+     "te-en": "7/18 (38.9%, CI 20.3-61.4)",
+     "gu-en": "3/18 (16.7%, CI 5.8-39.2)",
+     "hinglish": "4/6 (66.7%, CI 30.0-90.3)",
+     "hi-deva": "2/4 (50.0%, CI 15.0-85.0)"
+    },
+    "denials_by_language": {
+     "ta-en": "1/10",
+     "bn-en": "2/10",
+     "mr-en": "2/10",
+     "te-en": "2/10",
+     "gu-en": "1/10",
+     "hinglish": "4/7",
+     "en": "2/3"
+    },
+    "benign_crisis_fp": "ta-en 2/17 (a term-plan planning question; a cricket idiom), hinglish 1/10 (a reported 'tension se mar jaunga' joke)",
+    "honest_agent_fp": "2/60: 'naan oru AI assistant manushi illa ...' and 'ami ekjon manush colleague er sathe ... connect' were replaced by RD2. Both were honesty bugs from the new DEV patterns (a negated human noun, an offer of a human). Fixed after scoring with authored regression vectors; the blind numbers above stand as recorded.",
+    "reading": "Patterns tuned to DEV reached 100% there and 37% on fresh phrasings of the same ideas in the same languages. The regex floor cannot carry indirect crisis talk or paraphrased denials across code-mixed languages; that recall is the model judge's job (decision.2026-10-21.safety-second-layer-proposal)."
+   }
+  },
+  {
+   "id": "rejected.2026-10-23.dev-tuned-patterns-for-code-mixed-recall",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Closing code-mixed crisis and denial recall with more regex patterns: DEV went to 100% but blind set 7 stayed at 37% (crisis) and 23% (denials)",
+   "tried": "Tuning rules.json on a 310-line DEV set (Tamil-, Bengali-, Marathi-, Telugu-, Gujarati-English), with per-language crisis rules and first-person human-claim, bot-negation, office, team, home and shift patterns for denials.",
+   "broke": "On a fresh blind set in the same five languages, scored once: crisis 37/100 (Gujarati-English 3/18, Marathi-English 4/18), denials 14/60, and two honest lines blocked ('AI assistant, manushi illa'; an offer of a human colleague). Paraphrase and indirection vary faster than patterns. The patterns stay as a floor (they cost nothing and raise recall), but recall on these slices must come from the model judge, measured with judge-eval on heldout-6 and sets/heldout-7.json."
+  },
+  {
+   "id": "component.2026-10-23.judge-eval-harness",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "judge-eval harness for the lab VM: one model per run from VP_LLM_SAFETY_JUDGE_URL/KEY/KEY_HEADER/MODEL, --source (cases.json sets) and --set (measurement files such as sets/heldout-7.json), shared rate limit (--rps, default 1), --max-requests and --max-cost-inr caps, interleaved crisis/non-crisis lines, report.json + results.json + summary.md with Wilson 95% CIs per source and per language",
+   "path": "product/scripts/judge-eval.mjs"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-23.safety-door-blind-set7",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.safety-dev7-tuning",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.safety-door-blind-set7",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-23.safety-door-blind-set7",
+   "to": "rejected.2026-10-23.dev-tuned-patterns-for-code-mixed-recall",
+   "relation": "supports"
+  },
+  {
+   "from": "rejected.2026-10-23.dev-tuned-patterns-for-code-mixed-recall",
+   "to": "risk.2026-10-21.regex-door-recall-ceiling",
+   "relation": "supports"
+  },
+  {
+   "from": "component.2026-10-23.judge-eval-harness",
+   "to": "component.2026-10-21.caller-crisis-judge",
+   "relation": "tests"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "safety-judge-eval-ready",
+   "details": "product/scripts/judge-eval.mjs (786b951, then --set): env VP_LLM_SAFETY_JUDGE_URL/KEY/KEY_HEADER/MODEL; --rps 1, --max-requests, --max-cost-inr; JSON + markdown with Wilson CIs per slice. Verified with a fake model only: caps stop exactly, 5 requests at 1 req/s took 4 s. No real model run yet."
+  },
+  {
+   "date": "2026-10-23",
+   "event": "safety-blind-set7-scored",
+   "details": "Door tuned on DEV-7 (acd2a37); blind set 7 scored once: crisis 37/100, denials 14/60, benign crisis FP 3/100, honest-agent FP 2/60 (two honesty bugs, fixed after scoring with authored vectors). Python door agrees on every cases.json vector; product/voice unittest OK."
+  }
+ ]
+}

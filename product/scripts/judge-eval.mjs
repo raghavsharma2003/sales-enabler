@@ -34,7 +34,7 @@ for (let i = 0; i < argv.length; i++) {
   else positional.push(argv[i]);
 }
 const opt = (name, dflt) => flags.get(name) ?? dflt;
-const usage = 'usage: node product/scripts/judge-eval.mjs [model] [--source heldout-6[,heldout-7]] [--rps 1] [--concurrency 2] [--price-in N --price-out N] [--max-cost-inr N] [--max-requests N] [--limit N] [--out-dir DIR] [--label NAME]';
+const usage = 'usage: node product/scripts/judge-eval.mjs [model] [--source heldout-6] [--set product/shared/safety/sets/heldout-7.json] [--rps 1] [--concurrency 2] [--price-in N --price-out N] [--max-cost-inr N] [--max-requests N] [--limit N] [--out-dir DIR] [--label NAME]';
 if (flags.has('help')) { console.log(usage); process.exit(0); }
 if (positional[0]) process.env.VP_LLM_SAFETY_JUDGE_MODEL = positional[0];
 
@@ -52,9 +52,18 @@ if (!judgeConfigured()) {
 // ---- data
 const doc = JSON.parse(readFileSync(fileURLToPath(new URL('../shared/safety/cases.json', import.meta.url)), 'utf8'));
 const sources = opt('source') ? new Set(opt('source').split(',')) : null;
-let rows = doc.cases.filter(c => c.fn === 'callerSignals' && (!sources || sources.has(c.source)))
+let rows = doc.cases.filter(c => c.fn === 'callerSignals' && (sources ? sources.has(c.source) : !opt('set')))
   .map(c => ({ id: c.id, source: c.source, lang: c.lang ?? 'unknown', text: c.input, crisis: c.expect?.signals?.crisis === true }));
+// --set <file>[,<file>]: add a set-7-shaped file (caller_crisis / caller_benign lists of {text, lang}), e.g.
+// shared/safety/sets/heldout-7.json, which is a measurement set kept out of cases.json on purpose.
+for (const f of (opt('set') ? opt('set').split(',') : [])) {
+  const s = JSON.parse(readFileSync(f, 'utf8'));
+  const tag = f.split('/').pop().replace(/\.json$/, '');
+  rows.push(...(s.caller_crisis ?? []).map((x, i) => ({ id: `${tag}.crisis.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, crisis: true })));
+  rows.push(...(s.caller_benign ?? []).map((x, i) => ({ id: `${tag}.benign.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, crisis: false })));
+}
 const limit = Number(opt('limit', '0'));
+if (!rows.length) { console.error(`no caller lines: check --source ${opt('source') ?? ''} / --set ${opt('set') ?? ''}`); process.exit(2); }
 { // interleave crisis and non-crisis lines, so a run stopped by a cap still covers both sides
   const pos = rows.filter(r => r.crisis), neg = rows.filter(r => !r.crisis);
   const P = limit ? pos.slice(0, limit) : pos, N = limit ? neg.slice(0, limit) : neg;
@@ -64,7 +73,7 @@ const limit = Number(opt('limit', '0'));
     if (j < N.length && (i >= P.length || j * P.length <= i * N.length)) rows.push(N[j++]);
   }
 }
-if (!rows.length) { console.error(`no caller vectors match --source ${opt('source')}`); process.exit(2); }
+
 
 // ---- budget: a rate limit shared by all workers, a request cap, and a cost cap (needs prices)
 const rps = Number(opt('rps', '1'));
@@ -140,7 +149,7 @@ const tin = results.reduce((s, r) => s + (r.usage?.inputTokens ?? 0), 0), tout =
 const label = opt('label', 'judge');
 const report = {
   date: new Date().toISOString().slice(0, 10), label, threshold: CRISIS_JUDGE.threshold, timeout_ms: CRISIS_JUDGE.timeout_ms,
-  model_env: 'VP_LLM_SAFETY_JUDGE_MODEL', sources: sources ? [...sources] : 'all', rps, wall_s: Math.round((Date.now() - t0) / 1000),
+  model_env: 'VP_LLM_SAFETY_JUDGE_MODEL', sources: [...(sources ?? []), ...(opt('set') ? opt('set').split(',').map(f => f.split('/').pop()) : [])], rps, wall_s: Math.round((Date.now() - t0) / 1000),
   n: { judged: results.length, planned: rows.length, crisis: results.filter(r => r.crisis).length, non_crisis: results.filter(r => !r.crisis).length },
   stopped_early: stopped,
   overall: slice(results), by_source: groupBy('source'), by_lang: groupBy('lang'),

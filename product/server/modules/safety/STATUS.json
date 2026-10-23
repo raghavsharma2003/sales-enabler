@@ -4,12 +4,12 @@
   "safety.check (read)",
   "safety.cases (read)"
  ],
- "judge": "shared/safety/judge.json + judge.ts: raise-only caller-crisis judge (default shadow, no call without VP_LLM_SAFETY_JUDGE_* keys); eval: node product/scripts/judge-eval.mjs <model> on the lab VM (README)",
+ "judge": "shared/safety/judge.json + judge.ts: raise-only caller-crisis judge (default shadow, no call without VP_LLM_SAFETY_JUDGE_* keys). Eval: node product/scripts/judge-eval.mjs --source heldout-6 --set product/shared/safety/sets/heldout-7.json --rps 1 ... on the lab VM (README)",
  "tests": {
   "passed": 26,
   "total": 26,
   "file": "product/tests/safety.test.ts (14) + product/tests/safety-judge.test.ts (12)",
-  "vectors": 2378
+  "vectors": 2695
  },
  "works": [
   "replyDoor: RD1 agenda-before-disclosure gate, RD2 denial -> honest replacement from rules.json texts, RD3 crisis (no agenda, no ending; replacement carries Tele-MANAS 14416 and 112), RD4 sensitive asks with negation/warning exemptions, RD5 pay-on-call and links outside verified domains (shorteners never verified), RD6 pay-to-receive / lapsed-revive / threats and false urgency / regulator impersonation, RD7 promotion fence on service+transactional, RD8 IRDAI fence (insurance pack), RD9 harsh practice (lending pack or any dues call), RD10 recording after refusal, RD11 per-contact facts and account details before identity, neverSay, rupee amounts not in facts (incl. '18 hazaar 450', '1.5 lakh')",
@@ -21,10 +21,11 @@
  "untested": [
   "real ASR transcripts and real LLM-generated agent lines (all vectors are synthetic)",
   "Hindi number words inside rupee amounts ('athaarah hazaar')",
-  "regional languages beyond Hindi/English (ta, te, kn, ml, mr, gu, bn, pa, or)",
   "multi-sentence context: the door sees one sentence, so a threat split across sentences can pass",
   "Python door parity (it does not load rules.json yet)",
-  "T-L5 (ambience warning) is not implemented: AgentConfig has no ambience field"
+  "T-L5 (ambience warning) is not implemented: AgentConfig has no ambience field",
+  "code-mixed recall beyond Tamil/Bengali/Marathi/Telugu/Gujarati-English; blind set 7 shows the regex floor reaches 37% crisis recall on fresh code-mixed phrasings",
+  "the crisis judge on a real model (judge-eval not yet run)"
  ],
  "needs_from_others": [
   "voice runtime: rules.json gained normalisation (executable contract: NFKC, strip, fold, drop, space), words_to_amounts, lexicon entries that reference other entries (expand @name recursively), rd2.denial / rd2.real_person_claim / rd2.self_nature_unaffirmed, cs.crisis.recall / cs.crisis.tamil; per_contact_facts compares digits; redaction and digit signals read foldForDigits(text)",
@@ -38,20 +39,22 @@
   "owner/counsel: RD8 scope beyond insurance (open.2026-10-21.rd8-scope-beyond-insurance)"
  ],
  "fp_rate": {
-  "in_sample": "0/1391 (0.00%)",
+  "in_sample": "0/1549 (0.00%)",
   "blind_set4": "13/230 (5.65%)",
   "blind_set5": "25/240 (10.42%), scored once at c213aff before tuning on it",
   "blind_set6": "0/170 (0.00%), scored once at 70a661c before tuning on it",
   "blind_history": "0/180, 2/230, 12/230 on sets 1-3, each before tuning on it; set 4 was half hard negatives and a third keyword-free harmful lines",
   "method": "see context/inbox/safety-2026-10-21.json measure.2026-10-21.safety-door-blind-heldout",
-  "date": "2026-10-21"
+  "date": "2026-10-21",
+  "blind_set7": "benign look-alikes flagged as crisis 3/100 (CI 1.0-8.5); honest agent lines blocked 2/60 (CI 0.9-11.4); scored once at acd2a37"
  },
  "catch_rate": {
-  "in_sample": "987/987 (100.00%)",
+  "in_sample": "1146/1146 (100.00%)",
   "blind_set4": "93/130 (71.54%)",
   "blind_set5": "67/130 (51.54%), scored once at c213aff before tuning on it",
   "blind_set6": "106/160 (66.25%): agent 78/100, caller 28/60, indirect crisis 4/30; scored once at 70a661c before tuning on it",
   "blind_history": "78/110, 96/130, 111/130 on sets 1-3",
-  "date": "2026-10-21"
+  "date": "2026-10-21",
+  "blind_set7": "crisis 37/100 (CI 28.2-46.8; gu-en 3/18, mr-en 4/18); paraphrased denials 14/60 (CI 14.4-35.4); scored once at acd2a37"
  }
 }
