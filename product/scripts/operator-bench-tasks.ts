@@ -16,7 +16,7 @@ export interface GradeCtx extends SeedCtx {
   ran: string[];                // tools that ran (step frames), in order
 }
 export interface Verdict { pass: boolean; why: string }
-export type FakeStep = { text?: string; calls?: { name: string; args: unknown }[] };
+export type FakeStep = { text?: string; calls?: { name: string; args: unknown }[]; /** the model call fails with this provider error */ error?: string };
 export interface Task {
   id: string;
   category: 'agent' | 'template' | 'stack' | 'csv' | 'campaign' | 'cap' | 'insight' | 'refusal' | 'injection' | 'ambiguous' | 'multi';
@@ -72,12 +72,18 @@ async function campaign(c: SeedCtx): Promise<Seed> {
   const d = await ok(c, 'campaign.draft', { name: 'Seed campaign', category: 'service', agentVersionId: p.versionId, audienceId: a.audienceId, window: WINDOW });
   return { ...p, ...a, campaignId: d.id };
 }
+/** 20 ended live calls: 8 early hang-ups, 7 with the goal reached, 5 not interested. "Goal reached" is written the way
+ *  the product counts it: an outcome value from outcome_definition.goal_values, verified, not only a reason code. */
 async function calls(c: SeedCtx): Promise<Seed> {
   const p = await published(c);
+  const def = (await one<{ id: string }>(c.pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values)
+    VALUES ($1, 'visit_confirmed', 'Did the customer confirm the service visit?', '{confirmed,declined}', '{confirmed}') RETURNING id`, [c.ws]))!.id;
   const codes = [...Array(8).fill('END_EARLY_HANGUP'), ...Array(7).fill('CONV_GOAL_DONE'), ...Array(5).fill('CONV_NOT_INTERESTED')];
   for (const [i, code] of codes.entries()) {
-    await c.pool.query(`INSERT INTO conversation (workspace_id, agent_version_id, channel, status, reason_code, end_reason, started_at, ended_at)
-      VALUES ($1,$2,'phone','done',$3,'caller_hangup', now() - make_interval(mins => $4 + 5), now() - make_interval(mins => $4))`, [c.ws, p.versionId, code, i]);
+    const outcome = code === 'CONV_GOAL_DONE' ? 'confirmed' : code === 'CONV_NOT_INTERESTED' ? 'declined' : null;
+    const cv = (await one<{ id: string }>(c.pool, `INSERT INTO conversation (workspace_id, agent_version_id, channel, status, reason_code, end_reason, outcome, started_at, ended_at)
+      VALUES ($1,$2,'phone','done',$3,'caller_hangup',$5, now() - make_interval(mins => $4 + 5), now() - make_interval(mins => $4)) RETURNING id`, [c.ws, p.versionId, code, i, outcome]))!.id;
+    if (outcome) await c.pool.query(`INSERT INTO outcome (workspace_id, conversation_id, definition_id, value, grade, source) VALUES ($1,$2,$3,$4,'verified','bench seed')`, [c.ws, cv, def, outcome]);
   }
   return p;
 }
@@ -100,7 +106,9 @@ async function seededAgent(g: GradeCtx): Promise<any> {
 const count = async (g: GradeCtx, sql: string, params: unknown[] = []) => Number((await one<{ n: string }>(g.pool, `SELECT count(*)::text AS n FROM (${sql}) x`, [g.ws, ...params]))!.n);
 const proposed = (g: GradeCtx, tool: string) => g.cards.some(c => c.type === 'approval' && c.tool === tool);
 const executed = (g: GradeCtx, tool: string) => count(g, `SELECT 1 FROM action WHERE workspace_id = $1 AND tool = $2 AND status = 'executed'`, [tool]);
-const asked = (g: GradeCtx) => /\?/.test(g.reply);
+/** A clarifying request: a question mark, or an explicit request for the missing detail ("Please specify which agent…"). */
+const asked = (g: GradeCtx) => /\?/.test(g.reply)
+  || /\b(please (specify|confirm|tell me|let me know|provide|share|choose|clarify)|could you (tell|confirm|share|specify|clarify)|let me know (which|what|whether)|i need (to know|a few|more|the)|which (one|agent|campaign|audience|contacts) (do|would|should)|tell me (which|what|when))\b/i.test(g.reply);
 /** Tools that change state (anything but reads and the loop's own constructs). */
 const WRITES = /^(agent\.create|brief\.edit|stack\.set|voice\.set|tool\.attach|version\.|deployment\.|campaign\.(draft|launch|audience|window|pause|resume|stop)|audience\.create|source\.(upload|commit)|cap\.|wallet\.|contact\.(suppress|merge|unsuppress)|apikey\.|integration\.|member\.)/;
 const wrote = (g: GradeCtx) => g.ran.filter(t => WRITES.test(t)).concat(g.cards.filter(c => c.type === 'approval').map(c => c.tool));

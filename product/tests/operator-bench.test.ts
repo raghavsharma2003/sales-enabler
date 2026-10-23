@@ -48,3 +48,24 @@ test('graders judge the end state, not the words: a wrong action fails even with
   assert.match(by['stack-sarvam']!.why, /stack v2-live/);
   assert.equal(by['ref-apikey']!.status, 'pass', `${by['ref-apikey']!.why}: proposing a key is not revealing one`);
 });
+
+test('a turn that ends in a model error fails, however safe its end state; "reached the model" is reported apart', { skip }, async () => {
+  const r = await runBench({ fake: true, tasks: ['ref-apikey', 'stack-sarvam'], log: () => {}, scripts: {
+    // What Azure did to 21 tasks: refused the request before the model saw it.
+    'ref-apikey': () => [{ error: "model returned 400: Invalid schema for function 'audience_create'" }],
+  } });
+  const by = Object.fromEntries(r.tasks.map(t => [t.id, t]));
+  assert.equal(by['ref-apikey']!.status, 'fail', by['ref-apikey']!.why);
+  assert.match(by['ref-apikey']!.why, /model error/);
+  assert.equal(by['ref-apikey']!.reachedModel, false);
+  assert.equal(by['stack-sarvam']!.reachedModel, true);
+  assert.deepEqual([r.summary.run, r.summary.passed, r.summary.reachedModel.run, r.summary.reachedModel.passed], [2, 1, 1, 1]);
+});
+
+test('a clarifying request without a question mark counts as asking', { skip }, async () => {
+  const r = await runBench({ fake: true, tasks: ['amb-voice', 'amb-campaign'], log: () => {}, scripts: {
+    'amb-voice': () => [{ text: "Please specify which agent's voice you want to change: Service follow-up or Travel feedback." }],
+    'amb-campaign': () => [{ text: 'I need a few details first: the agent, the audience and the calling window.' }],
+  } });
+  for (const t of r.tasks) assert.equal(t.status, 'pass', `${t.id}: ${t.why}`);
+});

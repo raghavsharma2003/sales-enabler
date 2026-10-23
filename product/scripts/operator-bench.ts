@@ -20,7 +20,7 @@ import { writeFileSync } from 'node:fs';
 import type pg from 'pg';
 import { buildApp } from '../server/app.ts';
 import { createPool, one } from '../server/db.ts';
-import { llmConfigured, setFakeLlm, type LlmRequest } from '../server/llm.ts';
+import { LlmError, llmConfigured, setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { modules } from '../server/modules/index.ts';
 import { CAPS } from '../server/modules/operator/loop.ts';
 import { wilson } from '../server/modules/learning/stats.ts';
@@ -28,6 +28,8 @@ import { TASKS, type Frame, type Task } from './operator-bench-tasks.ts';
 
 export interface TaskResult {
   id: string; category: string; status: 'pass' | 'fail' | 'error' | 'not_run'; why: string;
+  /** False when no model call succeeded (e.g. the provider refused the request): such a task is a fail, never a pass. */
+  reachedModel: boolean;
   llmCalls: number; toolCalls: number; tokens: { input: number; output: number }; stoppedBy?: string;
   requests: number; toolsOffered: { min: number; max: number }; schemaChars: { mean: number; max: number };
   findTools: number; wallMs: number; inrMilli: number | null;
@@ -35,7 +37,9 @@ export interface TaskResult {
 export interface BenchReport {
   startedAt: string; mode: 'fake' | 'model'; model: string | null; endpoint: string | null;
   caps: { rps: number; maxTokens: number; maxInr: number | null };
-  summary: { run: number; passed: number; passRate: number; ci95: { lo: number; hi: number }; tokens: number; inrMilli: number | null; wallMs: number;
+  summary: { run: number; passed: number; passRate: number; ci95: { lo: number; hi: number };
+    reachedModel: { run: number; passed: number; passRate: number; ci95: { lo: number; hi: number } };
+    tokens: number; inrMilli: number | null; wallMs: number;
     byCategory: Record<string, { run: number; passed: number; ci95: { lo: number; hi: number } }>; stoppedEarly?: string };
   tasks: TaskResult[];
 }
@@ -92,10 +96,11 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
       return realFetch(input, init);
     }) as typeof fetch;
   }
-  let script: ((req: LlmRequest) => { text?: string; calls?: { name: string; args: unknown }[] }) | null = null;
+  let script: ((req: LlmRequest) => { text?: string; calls?: { name: string; args: unknown }[]; error?: string }) | null = null;
   if (fake) setFakeLlm(req => {
     if (req.tools) stats.push({ tools: req.tools.length, chars: JSON.stringify(req.tools).length, finds: findsIn(req.messages) });
     const step = script?.(req) ?? { text: 'No scripted reply.' };
+    if (step.error) throw new LlmError(step.error, false);
     return { text: step.text ?? '', toolCalls: (step.calls ?? []).map((c, i) => ({ id: `f${stats.length}-${i}`, name: c.name, args: JSON.stringify(c.args) })),
       usage: { inputTokens: 100, outputTokens: 20 }, model: 'scripted', provider: 'fake' };
   });
@@ -131,10 +136,14 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
   }
   for (const c of Object.values(byCategory)) { const w = wilson(c.passed, c.run); c.ci95 = { lo: round(w.lo), hi: round(w.hi) }; }
   const w = wilson(passed, ran.length);
+  const reached = ran.filter(r => r.reachedModel), reachedPassed = reached.filter(r => r.status === 'pass').length;
+  const wr = wilson(reachedPassed, reached.length);
   const report: BenchReport = {
     startedAt: started.toISOString(), mode: fake ? 'fake' : 'model', model, endpoint: endpoint ? new URL(endpoint).hostname : null,
     caps: { rps, maxTokens, maxInr: maxInrMilli === null ? null : maxInrMilli / 1000 },
-    summary: { run: ran.length, passed, passRate: ran.length ? round(passed / ran.length) : 0, ci95: { lo: round(w.lo), hi: round(w.hi) }, tokens: tokensSpent,
+    summary: { run: ran.length, passed, passRate: ran.length ? round(passed / ran.length) : 0, ci95: { lo: round(w.lo), hi: round(w.hi) },
+      reachedModel: { run: reached.length, passed: reachedPassed, passRate: reached.length ? round(reachedPassed / reached.length) : 0, ci95: { lo: round(wr.lo), hi: round(wr.hi) } },
+      tokens: tokensSpent,
       inrMilli: priced ? inrSpent : null, wallMs: ran.reduce((a, r) => a + r.wallMs, 0), byCategory, ...(stoppedEarly ? { stoppedEarly } : {}) },
     tasks: results,
   };
@@ -164,10 +173,14 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
       const cards = frames.filter(f => f.event === 'card').map(f => f.data.card);
       const reply = frames.filter(f => f.event === 'delta').map(f => f.data.text).join('');
       const ran = frames.filter(f => f.event === 'step' && f.data.status === 'done').map(f => f.data.tool as string);
-      const v = await t.grade({ ...ctx, seed, frames, cards, reply, ran });
+      const graded = await t.grade({ ...ctx, seed, frames, cards, reply, ran });
+      // A turn that ended in a model error passes nothing, however harmless its end state looks.
+      const modelError = done.stoppedBy === 'llm_error' ? (frames.find(f => f.event === 'error')?.data?.text ?? 'the model call failed') : null;
+      const reachedModel = done.llmCalls > 0;
+      const v = modelError ? { pass: false, why: `model error: ${String(modelError).slice(0, 200)}` } : graded;
       const cost = priced ? Number((await one<{ s: string }>(pool, `SELECT coalesce(sum(inr_milli), 0)::text AS s FROM cost_line WHERE workspace_id = $1`, [ws]))!.s) : null;
       return {
-        id: t.id, category: t.category, status: v.pass ? 'pass' : 'fail', why: v.why + (done.stoppedBy ? ` [stopped by ${done.stoppedBy}]` : ''),
+        id: t.id, category: t.category, status: v.pass ? 'pass' : 'fail', why: v.why + (done.stoppedBy ? ` [stopped by ${done.stoppedBy}]` : ''), reachedModel,
         llmCalls: done.llmCalls, toolCalls: done.toolCalls, tokens: done.tokens, ...(done.stoppedBy ? { stoppedBy: done.stoppedBy } : {}),
         ...reqStats(), wallMs: Date.now() - t0, inrMilli: cost,
       };
@@ -184,7 +197,7 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
 }
 
 function empty(t: Task, status: TaskResult['status'], why: string): TaskResult {
-  return { id: t.id, category: t.category, status, why, llmCalls: 0, toolCalls: 0, tokens: { input: 0, output: 0 }, requests: 0, toolsOffered: { min: 0, max: 0 }, schemaChars: { mean: 0, max: 0 }, findTools: 0, wallMs: 0, inrMilli: null };
+  return { id: t.id, category: t.category, status, why, reachedModel: false, llmCalls: 0, toolCalls: 0, tokens: { input: 0, output: 0 }, requests: 0, toolsOffered: { min: 0, max: 0 }, schemaChars: { mean: 0, max: 0 }, findTools: 0, wallMs: 0, inrMilli: null };
 }
 const round = (x: number) => Math.round(x * 1000) / 1000;
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
@@ -193,11 +206,13 @@ export function markdown(r: BenchReport): string {
   const s = r.summary;
   const lines = [
     `# Operator bench, ${r.startedAt.slice(0, 16).replace('T', ' ')} UTC (${r.mode}${r.endpoint ? `, ${r.endpoint}` : ''})`, '',
-    `Passed ${s.passed} of ${s.run}: ${pct(s.passRate)} (95% CI ${pct(s.ci95.lo)}-${pct(s.ci95.hi)}). Tokens ${s.tokens}${s.inrMilli !== null ? `, ₹${(s.inrMilli / 1000).toFixed(2)}` : ''}, wall ${(s.wallMs / 1000).toFixed(0)} s.${s.stoppedEarly ? ` Stopped early: ${s.stoppedEarly}.` : ''}`, '',
+    `Passed ${s.passed} of ${s.run}: ${pct(s.passRate)} (95% CI ${pct(s.ci95.lo)}-${pct(s.ci95.hi)}); a model error counts as a fail.`,
+    `Reached the model: ${s.reachedModel.run} of ${s.run}; of those, passed ${s.reachedModel.passed}: ${pct(s.reachedModel.passRate)} (95% CI ${pct(s.reachedModel.ci95.lo)}-${pct(s.reachedModel.ci95.hi)}).`,
+    `Tokens ${s.tokens}${s.inrMilli !== null ? `, ₹${(s.inrMilli / 1000).toFixed(2)}` : ''}, wall ${(s.wallMs / 1000).toFixed(0)} s.${s.stoppedEarly ? ` Stopped early: ${s.stoppedEarly}.` : ''}`, '',
     '| Category | Passed | 95% CI |', '|---|---|---|',
     ...Object.entries(s.byCategory).map(([k, c]) => `| ${k} | ${c.passed}/${c.run} | ${pct(c.ci95.lo)}-${pct(c.ci95.hi)} |`), '',
-    '| Task | Result | Model calls | Tool calls | Tokens | Tools offered | Schema chars (mean) | find_tools | ms | Why |', '|---|---|---|---|---|---|---|---|---|---|',
-    ...r.tasks.map(t => `| ${t.id} | ${t.status} | ${t.llmCalls} | ${t.toolCalls} | ${t.tokens.input + t.tokens.output} | ${t.toolsOffered.min}-${t.toolsOffered.max} | ${t.schemaChars.mean} | ${t.findTools} | ${t.wallMs} | ${t.why.replace(/\|/g, '/').slice(0, 120)} |`),
+    '| Task | Result | Reached model | Model calls | Tool calls | Tokens | Tools offered | Schema chars (mean) | find_tools | ms | Why |', '|---|---|---|---|---|---|---|---|---|---|---|',
+    ...r.tasks.map(t => `| ${t.id} | ${t.status} | ${t.reachedModel ? 'yes' : 'no'} | ${t.llmCalls} | ${t.toolCalls} | ${t.tokens.input + t.tokens.output} | ${t.toolsOffered.min}-${t.toolsOffered.max} | ${t.schemaChars.mean} | ${t.findTools} | ${t.wallMs} | ${t.why.replace(/\|/g, '/').slice(0, 120)} |`),
   ];
   return lines.join('\n') + '\n';
 }

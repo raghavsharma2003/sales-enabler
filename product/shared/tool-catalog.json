@@ -479,7 +479,7 @@
          "properties": {
           "key": {
            "type": "string",
-           "pattern": "^[\\p{L}\\p{M}\\p{N}_]{1,60}$"
+           "description": "a contact field key: letters, digits or underscore in any script, 1-60 characters; format checked by the server"
           },
           "op": {
            "type": "string",
@@ -513,7 +513,7 @@
          "properties": {
           "key": {
            "type": "string",
-           "pattern": "^[\\p{L}\\p{M}\\p{N}_]{1,60}$"
+           "description": "a contact field key: letters, digits or underscore in any script, 1-60 characters; format checked by the server"
           },
           "op": {
            "type": "string",
@@ -640,7 +640,7 @@
          "properties": {
           "key": {
            "type": "string",
-           "pattern": "^[\\p{L}\\p{M}\\p{N}_]{1,60}$"
+           "description": "a contact field key: letters, digits or underscore in any script, 1-60 characters; format checked by the server"
           },
           "op": {
            "type": "string",
@@ -674,7 +674,7 @@
          "properties": {
           "key": {
            "type": "string",
-           "pattern": "^[\\p{L}\\p{M}\\p{N}_]{1,60}$"
+           "description": "a contact field key: letters, digits or underscore in any script, 1-60 characters; format checked by the server"
           },
           "op": {
            "type": "string",
@@ -863,7 +863,9 @@
          "enum": [
           "set",
           "remove",
-          "append"
+          "append",
+          "add",
+          "replace"
          ]
         },
         "path": {
@@ -2014,7 +2016,7 @@
       "type": "array",
       "items": {
        "type": "string",
-       "pattern": "^[\\p{L}\\p{M}\\p{N}_]{1,60}$"
+       "description": "a contact field key: letters, digits or underscore in any script, 1-60 characters; format checked by the server"
       },
       "maxItems": 50
      },
@@ -5708,7 +5710,7 @@
         },
         "key": {
          "type": "string",
-         "pattern": "^[\\p{L}\\p{M}\\p{N}_]{1,60}$"
+         "description": "the attribute key to store: letters, digits or underscore in any script, 1-60 characters; format checked by the server"
         },
         "type": {
          "type": "string",
@@ -5809,7 +5811,7 @@
         },
         "key": {
          "type": "string",
-         "pattern": "^[\\p{L}\\p{M}\\p{N}_]{1,60}$"
+         "description": "the attribute key to store: letters, digits or underscore in any script, 1-60 characters; format checked by the server"
         },
         "type": {
          "type": "string",

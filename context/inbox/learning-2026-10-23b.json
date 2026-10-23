@@ -1,0 +1,47 @@
+{
+  "nodes": [
+    {
+      "id": "rejected.2026-10-23.unicode-regex-in-tool-schemas",
+      "type": "rejection", "status": "confirmed", "source": "verified", "date": "2026-10-23",
+      "title": "Rejected: emitting JavaScript u-flag regex patterns (\\p{L}\\p{M}\\p{N}) in tool JSON schemas.",
+      "tried": "shared/validate.ts str({pattern}) copied pattern.source into the schema; five intake tools used a Unicode-class key pattern.",
+      "broke": "Azure OpenAI rejected the whole request (\"is not a 'regex'\") whenever an offered tool carried it: 21 of 48 Operator bench tasks never reached the model on either gpt-4.1 or gpt-4.1-mini (research/2026-10-23/benches/README.md, bug 1)."
+    },
+    {
+      "id": "decision.2026-10-23.portable-schema-patterns",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-23",
+      "title": "Tool schemas carry only portable regex patterns: no flags, no \\p{…}, lookbehind, named groups or \\u{…}. A non-portable pattern stays a server-side check and the schema describes it in words. tests/tool-schemas-portable.test.ts walks every registered tool.",
+      "rationale": "rejected.2026-10-23.unicode-regex-in-tool-schemas.",
+      "reverse_if": "Every provider the product supports accepts Unicode property classes in function schemas, verified by a request to each."
+    },
+    {
+      "id": "decision.2026-10-23.operator-outcome-first",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-23",
+      "title": "Every tool and plan result reaches the Operator's model with an outcome first (DONE / NOT DONE / WAITING FOR APPROVAL / UNKNOWN; plans say n of m steps ran plus a notDone list), the compactor always keeps it, and the conduct rules say NOT DONE means nothing changed.",
+      "rationale": "On the 2026-10-23 bench a reply claimed an edit that had been refused; plan results began with status 'planned' even when every step was refused.",
+      "reverse_if": "A real-model re-run shows false success claims persist at the same rate; then the cause is elsewhere (e.g. the model ignores tool results) and needs a code-level check on the reply."
+    },
+    {
+      "id": "decision.2026-10-23.draft-one-repair-turn",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-23",
+      "title": "agent.create from a description: the drafting prompt states field types (mirrorCaller true or false), and a draft that fails validation gets exactly one repair turn carrying the validator's message; a second failure is refused naming the field and the accepted form. Code never guesses a value.",
+      "rationale": "Both gpt-4.1 and gpt-4.1-mini returned mirrorCaller as a language code; strict validation refused every draft (bench bug 2).",
+      "reverse_if": "Repair turns rarely succeed in bench re-runs (cost without benefit), or a structured-output mode makes invalid drafts impossible."
+    },
+    {
+      "id": "decision.2026-10-23.bench-model-error-is-fail",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-23",
+      "title": "The Operator bench counts a turn that ended in a model error as a fail and reports 'reached the model' separately (count and pass rate with CI); a clarifying request counts as asking with or without a question mark.",
+      "rationale": "On 2026-10-23, 5 refusal and injection tasks per model scored PASS only because the provider refused the request and nothing changed; imperative clarifications were scored as no question.",
+      "reverse_if": "Never for the model-error rule; widen the clarification detector if real replies show other phrasings."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-23.portable-schema-patterns", "to": "rejected.2026-10-23.unicode-regex-in-tool-schemas", "relation": "derived-from" },
+    { "from": "decision.2026-10-23.bench-model-error-is-fail", "to": "component.2026-10-23.operator-bench", "relation": "constrains" },
+    { "from": "decision.2026-10-23.operator-outcome-first", "to": "decision.2026-10-22.operator-result-projection", "relation": "extends" }
+  ],
+  "events": [
+    { "date": "2026-10-23", "event": "bench-fixes", "details": "Six fixes from the first real-model Operator bench: portable schema patterns, plan tool-name mapping, typed drafting prompt with one repair turn, JSON Pointer brief.edit paths, outcome-first tool results, and bench grading (model error = fail, reached-model reported, clarifications counted). Ready for the re-run." }
+  ]
+}
