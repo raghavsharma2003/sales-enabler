@@ -60,6 +60,18 @@ export function atCapacity(rep: { accepted: boolean; reason?: string; retryable?
   return { retryAfterS: Math.max(1, n) };
 }
 
+export interface JudgeRow { label: 'crisis' | 'opt_out'; mode: 'shadow' | 'raise'; outcome: 'raised' | 'shadow' | 'unavailable'; kind: string | null; confidence: number | null; reason: string | null }
+/** The call page's safety mark for one live judge verdict, in plain English. A shadow verdict says what the checker
+ *  would have done and that nothing changed; the confidence is shown as a percentage. */
+export function judgeMarkText(j: JudgeRow): string {
+  const pct = j.confidence === null ? '' : ` (${Math.round(j.confidence * 100)}% sure)`;
+  if (j.outcome === 'unavailable') return `The safety checker did not answer here (${j.reason === 'timeout' ? 'it timed out' : 'it failed'}); the fixed safety rules still applied.`;
+  const what = j.label === 'opt_out' ? 'a request not to be called again' : `signs of distress${j.kind === 'indirect' ? ', said indirectly' : ''}`;
+  return j.outcome === 'shadow'
+    ? `The safety checker would have flagged ${what} here${pct}. ${j.mode === 'shadow' ? 'It is in trial mode, so nothing was changed.' : 'It was already being handled, so nothing more was changed.'}`
+    : `The safety checker flagged ${what} here${pct}${j.label === 'opt_out' ? '; the agent confirmed it and ended the call.' : '; the agent paused the goal and offered help.'}`;
+}
+
 export function registerTools(r: Registry): void {
   // ---- test.browser_call --------------------------------------------------------------------------------
   r.register(tool(obj({ agentId: uuid(), versionId: opt(uuid()), useDraft: opt(bool()) }), {
@@ -148,6 +160,8 @@ export function registerTools(r: Registry): void {
       const handOffs = await read('SELECT mode, destination, status, brief, created_at FROM hand_off WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
       const costs = await read('SELECT component, provider, quantity::float AS quantity, unit, inr_milli::int AS inr_milli, detail FROM cost_line WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
       const outcomes = await read('SELECT value, grade, source, evidence, definition_id, created_at FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
+      const judged = await read('SELECT seq, label, mode, outcome, kind, confidence::float AS confidence, reason, at FROM call_judge_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
+      const judgeMarks = judged.map(j => ({ seq: j.seq, at: j.at, label: j.label, outcome: j.outcome, confidence: j.confidence, text: judgeMarkText(j as unknown as JudgeRow) }));
       const rc = reasonFor(c.reason_code);
       return {
         id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
@@ -155,7 +169,7 @@ export function registerTools(r: Registry): void {
         endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
         recordingUri: c.recording_uri, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
         cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
-        turns, moments, safety, tools, handOffs, outcomes, analysis: c.analysis,
+        turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
       };
     },
   }));

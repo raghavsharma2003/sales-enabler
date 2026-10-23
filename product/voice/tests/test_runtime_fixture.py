@@ -8,7 +8,7 @@
 # Regenerate after an intended change: VP_WRITE_FIXTURES=1 python -m unittest tests.test_runtime_fixture
 import asyncio, json, os, shutil, subprocess, unittest
 from tests.fixtures import FakeBrain, components, sink, ticket
-from tests.test_judge import DISCLOSED, ENV_ON, INDIRECT, fake, verdict
+from tests.test_judge import DISCLOSED, ENV_ON, INDIRECT, OPTOUT_MISSED, both, fake, verdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIXTURE = os.path.join(HERE, 'vectors', 'runtime_events.json')     # tests/fixtures.py is the helpers module
@@ -24,6 +24,8 @@ CALLS = [
      [INDIRECT, 'pata nahi']),
     ('judge_shadow', 'shadow', verdict(True, 0.9, 'indirect'), [DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [INDIRECT]),
     ('judge_unavailable', 'raise', 'I think the caller may be sad.', [DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [INDIRECT]),
+    ('opt_out_raised', 'raise', both(False, 0.05, 'none', True, 0.9), [DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [OPTOUT_MISSED]),
+    ('opt_out_shadow', 'shadow', both(False, 0.05, 'none', True, 0.9), [DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [OPTOUT_MISSED]),
     ('human_hand_off', 'off', None, [DISCLOSED], ['mujhe dobara call mat karna, kisi insaan se baat karao']),
 ]
 LIVE = ('supervisor_live', [DISCLOSED, 'Ji, aapka renewal 2 November ko hai.'], ['haan ji, boliye', 'achha'])
@@ -110,6 +112,7 @@ class RuntimeEventsFixture(unittest.TestCase):
         events = [e for batches in self.calls.values() for b in batches for e in b['events']]
         self.assertEqual({e['type'] for e in events}, {'call.started', 'turn', 'cost', 'safety', 'moment', 'tool', 'hand_off', 'judge', 'call.ended'})
         self.assertEqual({e['outcome'] for e in events if e['type'] == 'judge'}, {'raised', 'shadow', 'unavailable'})
+        self.assertEqual({e['outcome'] for e in events if e['type'] == 'judge' and e.get('label') == 'opt_out'}, {'raised', 'shadow'})
         live = {e['kind'] for e in events if e['type'] == 'moment'} & {'live_listen_started', 'live_listen_ended', 'whisper', 'takeover'}
         self.assertEqual(live, {'live_listen_started', 'live_listen_ended', 'whisper', 'takeover'})
         self.assertTrue(all(not e.get('note') for e in events if e['type'] == 'moment' and e['kind'] == 'whisper'), 'a whisper moment never carries it')

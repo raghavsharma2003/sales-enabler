@@ -803,10 +803,328 @@
    ]
   }
  ],
- "human_hand_off": [
+ "opt_out_raised": [
   {
    "protocol": 1,
    "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000005",
+   "events": [
+    {
+     "seq": 1,
+     "type": "call.started",
+     "at": "2026-10-21T00:00:00.000Z",
+     "manifest": {
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "stackId": "v2-flashlite",
+      "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "fallbacksUsed": [],
+      "memory": "none",
+      "runtimeVersion": "vp-voice/0.1.0"
+     }
+    },
+    {
+     "seq": 2,
+     "type": "turn",
+     "at": "2026-10-21T00:00:00.000Z",
+     "speaker": "agent",
+     "text": "नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।",
+     "startMs": 0,
+     "endMs": 0
+    },
+    {
+     "seq": 3,
+     "type": "cost",
+     "at": "2026-10-21T00:00:00.000Z",
+     "component": "brain",
+     "provider": "gemini",
+     "quantity": 120.0,
+     "unit": "token",
+     "inrMilli": 8,
+     "detail": {
+      "in": 100,
+      "out": 20,
+      "cached": 0,
+      "model": "gemini-3.5-flash-lite"
+     }
+    },
+    {
+     "seq": 4,
+     "type": "turn",
+     "at": "2026-10-21T00:00:00.000Z",
+     "speaker": "caller",
+     "text": "bas karo bhai, aap logon se ab koi rishta nahi rakhna mujhe",
+     "startMs": 0,
+     "endMs": 0
+    },
+    {
+     "seq": 5,
+     "type": "judge",
+     "at": "2026-10-21T00:00:00.000Z",
+     "judge": "caller_crisis",
+     "label": "opt_out",
+     "mode": "raise",
+     "outcome": "raised",
+     "latencyMs": 0,
+     "confidence": 0.9
+    },
+    {
+     "seq": 6,
+     "type": "moment",
+     "at": "2026-10-21T00:00:00.000Z",
+     "kind": "opt_out",
+     "atMs": 0,
+     "note": "caller asked not to be called again (judge)"
+    },
+    {
+     "seq": 7,
+     "type": "turn",
+     "at": "2026-10-21T00:00:00.000Z",
+     "speaker": "agent",
+     "text": "Ji bilkul, aapka number hamari list se hata diya jayega aur aapko dobara call nahi aayega. Pareshani ke liye maafi, dhanyavaad.",
+     "startMs": 0,
+     "endMs": 0
+    },
+    {
+     "seq": 8,
+     "type": "cost",
+     "at": "2026-10-21T00:00:00.000Z",
+     "component": "brain",
+     "provider": "gemini",
+     "quantity": 120.0,
+     "unit": "token",
+     "inrMilli": 7,
+     "detail": {
+      "in": 200,
+      "out": 40,
+      "cached": 0,
+      "model": "gemini-3.5-flash-lite"
+     }
+    },
+    {
+     "seq": 9,
+     "type": "cost",
+     "at": "2026-10-21T00:00:00.000Z",
+     "component": "brain",
+     "provider": "safety_judge",
+     "quantity": 132.0,
+     "unit": "token",
+     "inrMilli": 0,
+     "detail": {
+      "purpose": "safety_judge",
+      "priced": false
+     }
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000005",
+   "events": [
+    {
+     "seq": 10,
+     "type": "call.ended",
+     "at": "2026-10-21T00:00:00.000Z",
+     "endReason": "opt_out",
+     "durationS": 0.0,
+     "transcript": [
+      {
+       "speaker": "agent",
+       "text": "नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।",
+       "startMs": 0
+      },
+      {
+       "speaker": "caller",
+       "text": "bas karo bhai, aap logon se ab koi rishta nahi rakhna mujhe",
+       "startMs": 0
+      },
+      {
+       "speaker": "agent",
+       "text": "Ji bilkul, aapka number hamari list se hata diya jayega aur aapko dobara call nahi aayega. Pareshani ke liye maafi, dhanyavaad.",
+       "startMs": 0
+      }
+     ],
+     "manifest": {
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "stackId": "v2-flashlite",
+      "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "fallbacksUsed": [],
+      "memory": "none",
+      "runtimeVersion": "vp-voice/0.1.0"
+     }
+    }
+   ]
+  }
+ ],
+ "opt_out_shadow": [
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000006",
+   "events": [
+    {
+     "seq": 1,
+     "type": "call.started",
+     "at": "2026-10-21T00:00:00.000Z",
+     "manifest": {
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "stackId": "v2-flashlite",
+      "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "fallbacksUsed": [],
+      "memory": "none",
+      "runtimeVersion": "vp-voice/0.1.0"
+     }
+    },
+    {
+     "seq": 2,
+     "type": "turn",
+     "at": "2026-10-21T00:00:00.000Z",
+     "speaker": "agent",
+     "text": "नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।",
+     "startMs": 0,
+     "endMs": 0
+    },
+    {
+     "seq": 3,
+     "type": "cost",
+     "at": "2026-10-21T00:00:00.000Z",
+     "component": "brain",
+     "provider": "gemini",
+     "quantity": 120.0,
+     "unit": "token",
+     "inrMilli": 8,
+     "detail": {
+      "in": 100,
+      "out": 20,
+      "cached": 0,
+      "model": "gemini-3.5-flash-lite"
+     }
+    },
+    {
+     "seq": 4,
+     "type": "turn",
+     "at": "2026-10-21T00:00:00.000Z",
+     "speaker": "caller",
+     "text": "bas karo bhai, aap logon se ab koi rishta nahi rakhna mujhe",
+     "startMs": 0,
+     "endMs": 0
+    },
+    {
+     "seq": 5,
+     "type": "turn",
+     "at": "2026-10-21T00:00:00.000Z",
+     "speaker": "agent",
+     "text": "Achha, waise aapka renewal 2 November ko hai.",
+     "startMs": 0,
+     "endMs": 0
+    },
+    {
+     "seq": 6,
+     "type": "cost",
+     "at": "2026-10-21T00:00:00.000Z",
+     "component": "brain",
+     "provider": "gemini",
+     "quantity": 120.0,
+     "unit": "token",
+     "inrMilli": 7,
+     "detail": {
+      "in": 200,
+      "out": 40,
+      "cached": 0,
+      "model": "gemini-3.5-flash-lite"
+     }
+    },
+    {
+     "seq": 7,
+     "type": "judge",
+     "at": "2026-10-21T00:00:00.000Z",
+     "judge": "caller_crisis",
+     "label": "opt_out",
+     "mode": "shadow",
+     "outcome": "shadow",
+     "latencyMs": 0,
+     "confidence": 0.9
+    },
+    {
+     "seq": 8,
+     "type": "cost",
+     "at": "2026-10-21T00:00:00.000Z",
+     "component": "brain",
+     "provider": "safety_judge",
+     "quantity": 132.0,
+     "unit": "token",
+     "inrMilli": 0,
+     "detail": {
+      "purpose": "safety_judge",
+      "priced": false
+     }
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000006",
+   "events": [
+    {
+     "seq": 9,
+     "type": "call.ended",
+     "at": "2026-10-21T00:00:00.000Z",
+     "endReason": "caller_hung_up",
+     "durationS": 0.0,
+     "transcript": [
+      {
+       "speaker": "agent",
+       "text": "नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।",
+       "startMs": 0
+      },
+      {
+       "speaker": "caller",
+       "text": "bas karo bhai, aap logon se ab koi rishta nahi rakhna mujhe",
+       "startMs": 0
+      },
+      {
+       "speaker": "agent",
+       "text": "Achha, waise aapka renewal 2 November ko hai.",
+       "startMs": 0
+      }
+     ],
+     "manifest": {
+      "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
+      "stackId": "v2-flashlite",
+      "agentVersionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "fallbacksUsed": [],
+      "memory": "none",
+      "runtimeVersion": "vp-voice/0.1.0"
+     }
+    }
+   ]
+  }
+ ],
+ "human_hand_off": [
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000007",
    "events": [
     {
      "seq": 1,
@@ -890,7 +1208,7 @@
   },
   {
    "protocol": 1,
-   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000005",
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000007",
    "events": [
     {
      "seq": 8,
@@ -936,7 +1254,7 @@
  "supervisor_live": [
   {
    "protocol": 1,
-   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000006",
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000008",
    "events": [
     {
      "seq": 1,
@@ -1077,7 +1395,7 @@
   },
   {
    "protocol": 1,
-   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000006",
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000008",
    "events": [
     {
      "seq": 14,

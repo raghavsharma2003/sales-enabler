@@ -17,6 +17,7 @@ import type { EndReason, RunManifest, RuntimeEvent } from '../../../shared/runti
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 import { queueAnalysis } from './analysis.ts';
 import { codeReason, NOT_CONNECTED } from './taxonomy.ts';
+import JUDGE_EVENT from '../../../shared/judge-event.json' with { type: 'json' };
 
 const END_REASONS = ['completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy', 'failed', 'voicemail', 'max_duration', 'max_cost',
   'silence_timeout', 'handed_off', 'crisis_handoff', 'opt_out', 'error'] as const;
@@ -42,6 +43,33 @@ function noWhisperText(v: Validator<{ kind: string; note?: string }>): Validator
   };
 }
 
+/** The 'judge' event, from the one contract both runtimes read (shared/judge-event.json). One model call reads two labels,
+ *  crisis and opt_out; each verdict is its own event. Beyond the field values, the shape rules hold: an outage
+ *  ('unavailable') is reported once, as crisis, with a reason; a crisis verdict carries kind and confidence; an opt-out
+ *  verdict carries confidence only. */
+function judgeEvent(): Validator<unknown> {
+  const V = JUDGE_EVENT.values;
+  const shape = obj({ seq, type: str(), at, judge: str({ oneOf: V.judge }), label: opt(str({ oneOf: V.label })), mode: str({ oneOf: V.mode }),
+    outcome: str({ oneOf: V.outcome }), kind: opt(str({ oneOf: V.kind })), confidence: opt(num({ min: 0, max: 1 })),
+    reason: opt(str({ oneOf: V.reason })), latencyMs: ms });
+  return (value, p = '') => {
+    const e = shape(value, p);
+    const fail = (field: string, why: string) => { throw new ValidationError(p ? `${p}.${field}` : field, why); };
+    const label = e.label ?? JUDGE_EVENT.rules.label_default;
+    if (e.outcome === 'unavailable') {
+      if (label !== 'crisis') fail('outcome', 'an outage is reported once, as the crisis label');
+      if (e.reason === undefined) fail('reason', 'required when the judge was unavailable');
+      if (e.kind !== undefined || e.confidence !== undefined) fail(e.kind !== undefined ? 'kind' : 'confidence', 'an unavailable judge gave no verdict');
+    } else {
+      if (e.reason !== undefined) fail('reason', 'only an unavailable judge has a reason');
+      if (e.confidence === undefined) fail('confidence', 'required on a verdict');
+      if (label === 'crisis' && e.kind === undefined) fail('kind', 'required on a crisis verdict');
+      if (label === 'opt_out' && e.kind !== undefined) fail('kind', 'an opt-out verdict has no kind');
+    }
+    return e;
+  };
+}
+
 const EVENTS: Record<RuntimeEvent['type'], Validator<unknown>> = {
   'call.started': obj({ seq, type: str(), at, manifest }),
   turn: obj({ seq, type: str(), at, speaker, text: str({ max: 20_000 }), startMs: ms, endMs: ms, interrupted: opt(bool()), latencyMs: opt(ms), tone: opt(str({ max: 50 })) }),
@@ -52,9 +80,7 @@ const EVENTS: Record<RuntimeEvent['type'], Validator<unknown>> = {
     'live_listen_started', 'live_listen_ended', 'whisper', 'takeover'] }), atMs: ms, note: opt(str({ max: 2000 })) })),
   tool: obj({ seq, type: str(), at, name: str({ max: 100 }), args: record(any()), status: str({ oneOf: ['requested', 'done', 'failed'] }) }),
   hand_off: obj({ seq, type: str(), at, reason: str({ max: 500 }), target: str({ max: 200 }), summary: str({ max: 2000 }) }),
-  judge: obj({ seq, type: str(), at, judge: str({ oneOf: ['caller_crisis'] }), mode: str({ oneOf: ['shadow', 'raise'] }),
-    outcome: str({ oneOf: ['raised', 'shadow', 'unavailable'] }), kind: opt(str({ oneOf: ['direct', 'indirect'] })),
-    confidence: opt(num({ min: 0, max: 1 })), reason: opt(str({ oneOf: ['timeout', 'error', 'bad_output'] })), latencyMs: ms }),
+  judge: judgeEvent(),
   'call.ended': obj({ seq, type: str(), at, endReason: str({ oneOf: END_REASONS }), durationS: num({ min: 0 }), recordingUri: opt(str({ max: 2000 })),
     transcript: arr(obj({ speaker, text: str({ max: 20_000 }), startMs: ms }), { max: 5000 }), manifest }),
 };
@@ -185,9 +211,10 @@ async function apply(c: pg.PoolClient, conv: Conv, e: RuntimeEvent): Promise<boo
       return false;
     case 'judge':
       // Analysis-only: no flag and no call_safety_event (a real raise arrives separately as a 'safety' event).
-      await c.query(`INSERT INTO call_judge_event (workspace_id, conversation_id, seq, judge, mode, outcome, kind, confidence, reason, latency_ms, at)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-        [ws, conv.id, e.seq, e.judge, e.mode, e.outcome, e.kind ?? null, e.confidence ?? null, e.reason ?? null, Math.round(e.latencyMs), e.at]);
+      // A shadow opt-out is a row here and nothing else: no flag, no suppression (only the 'moment' opt_out of a raise does that).
+      await c.query(`INSERT INTO call_judge_event (workspace_id, conversation_id, seq, judge, label, mode, outcome, kind, confidence, reason, latency_ms, at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [ws, conv.id, e.seq, e.judge, e.label ?? 'crisis', e.mode, e.outcome, e.kind ?? null, e.confidence ?? null, e.reason ?? null, Math.round(e.latencyMs), e.at]);
       return false;
     case 'call.ended':
       return endCall(c, conv, e);

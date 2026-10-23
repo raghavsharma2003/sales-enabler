@@ -82,6 +82,8 @@ export const POST_CALL_JUDGE_TIMEOUT_MS = 5000;
 export interface CrisisPass {
   raised: { index: number; kind: string; confidence: number }[];
   shadow: { index: number; kind: string; confidence: number }[];
+  // The same model call's second label. Post-call these are recorded only: the live door owns the opt-out path.
+  optOut: { raised: { index: number; confidence: number }[]; shadow: { index: number; confidence: number }[] };
   unavailable: number; calls: number; usage: { inputTokens: number; outputTokens: number };
 }
 
@@ -90,7 +92,7 @@ export interface CrisisPass {
  *  not (both are needed for the outage rate and for cost lines). The per-line rules (floor first, raise-only, skip when
  *  the floor fires, no keys means no call) stay in safety's judgeCallerCrisis. */
 export async function crisisPass(lines: Line[], ctx: Omit<CrisisJudgeCtx, 'prev'> = {}): Promise<CrisisPass> {
-  const out: CrisisPass = { raised: [], shadow: [], unavailable: 0, calls: 0, usage: { inputTokens: 0, outputTokens: 0 } };
+  const out: CrisisPass = { raised: [], shadow: [], optOut: { raised: [], shadow: [] }, unavailable: 0, calls: 0, usage: { inputTokens: 0, outputTokens: 0 } };
   let prev = '';
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].speaker !== 'caller') continue;
@@ -103,6 +105,8 @@ export async function crisisPass(lines: Line[], ctx: Omit<CrisisJudgeCtx, 'prev'
     if (ev?.type === 'judge_unavailable') out.unavailable++;
     else if (ev?.type === 'judge_raised') out.raised.push({ index: i, kind: ev.kind, confidence: ev.confidence });
     else if (ev?.type === 'judge_shadow') out.shadow.push({ index: i, kind: ev.kind, confidence: ev.confidence });
+    const o = r.optOutEvent;
+    if (o) (o.type === 'judge_raised' ? out.optOut.raised : out.optOut.shadow).push({ index: i, confidence: o.confidence });
   }
   return out;
 }
@@ -159,6 +163,9 @@ export interface AnalysisRecord {
   // outcome judge's guess that learning reads.
   crisis_judge?: { shadow: number; raised: number; unavailable: number;
     runtime: { shadow: number; raised: number; unavailable: number }; postCall: { shadow: number; raised: number; unavailable: number } };
+  // The same story for the judge's opt-out label. Counts only: a shadow opt-out never suppresses, flags or monitors; a live
+  // raise suppresses through its own 'moment' opt_out; a post-call raise is recorded, never acted on after the call.
+  opt_out_judge?: { shadow: number; raised: number; runtime: { shadow: number; raised: number }; postCall: { shadow: number; raised: number } };
   followups?: Record<string, string>;
   model?: string;
   reason?: string;
@@ -207,11 +214,17 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
           [workspaceId, conversationId, crisis.usage.inputTokens + crisis.usage.outputTokens, { ...crisis.usage, purpose: 'safety_judge', calls: crisis.calls, priced: false }]);
       });
     }
-    const live = await one<{ shadow: number; raised: number; unavailable: number }>(pool,
-      `SELECT count(*) FILTER (WHERE outcome = 'shadow')::int AS shadow, count(*) FILTER (WHERE outcome = 'raised')::int AS raised,
-              count(*) FILTER (WHERE outcome = 'unavailable')::int AS unavailable FROM call_judge_event WHERE conversation_id = $1 AND workspace_id = $2`, [conversationId, workspaceId]);
+    const byLabel = await many<{ label: string; shadow: number; raised: number; unavailable: number }>(pool,
+      `SELECT label, count(*) FILTER (WHERE outcome = 'shadow')::int AS shadow, count(*) FILTER (WHERE outcome = 'raised')::int AS raised,
+              count(*) FILTER (WHERE outcome = 'unavailable')::int AS unavailable FROM call_judge_event WHERE conversation_id = $1 AND workspace_id = $2 GROUP BY label`, [conversationId, workspaceId]);
+    const count = (label: string) => byLabel.find(r => r.label === label) ?? { shadow: 0, raised: 0, unavailable: 0 };
+    const live = count('crisis'), liveOpt = count('opt_out');
     const post = { shadow: crisis?.shadow.length ?? 0, raised: crisis?.raised.length ?? 0, unavailable: crisis?.unavailable ?? 0 };
-    rec.crisis_judge = { shadow: live!.shadow + post.shadow, raised: live!.raised + post.raised, unavailable: live!.unavailable + post.unavailable, runtime: live!, postCall: post };
+    rec.crisis_judge = { shadow: live.shadow + post.shadow, raised: live.raised + post.raised, unavailable: live.unavailable + post.unavailable,
+      runtime: { shadow: live.shadow, raised: live.raised, unavailable: live.unavailable }, postCall: post };
+    const postOpt = { shadow: crisis?.optOut.shadow.length ?? 0, raised: crisis?.optOut.raised.length ?? 0 };
+    rec.opt_out_judge = { shadow: liveOpt.shadow + postOpt.shadow, raised: liveOpt.raised + postOpt.raised,
+      runtime: { shadow: liveOpt.shadow, raised: liveOpt.raised }, postCall: postOpt };
     const safety = await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2', [conversationId, workspaceId]);
     rec.safety_violation = safety!.n > 0;
     rec.judge ??= null;

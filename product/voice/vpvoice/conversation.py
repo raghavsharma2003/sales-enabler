@@ -2,7 +2,7 @@
 # the reply door on every sentence before it is spoken, caller signals on every caller turn, and the events that
 # record it. Sessions (session.py for sim, cascade.py / s2s.py for audio) drive it and own timing and audio.
 import asyncio, contextlib, logging, re
-from . import brief, judge, rules, safety, ticket as tk
+from . import brief, judge, judge_event, rules, safety, ticket as tk
 from .safety import DoorContext
 
 log = logging.getLogger('vp.voice.conversation')
@@ -191,10 +191,7 @@ class Conversation:
         # text. A shadow guess or a judge timeout is NEVER a 'safety' event, because calls turns every safety event into
         # a safety flag on the call (decision.2026-10-21.judge-shadow-never-a-safety-event); only a raise is one too.
         outcome = {'judge_unavailable': 'unavailable', 'judge_shadow': 'shadow', 'judge_raised': 'raised'}[ev['type']]
-        rec = {'judge': 'caller_crisis', 'mode': res.get('mode') if res.get('mode') in ('shadow', 'raise') else 'shadow', 'outcome': outcome,
-               'latencyMs': max(0, int(round(res.get('latencyMs') or 0)))}
-        if outcome == 'unavailable': rec['reason'] = ev['reason']
-        else: rec['kind'] = ev['kind']; rec['confidence'] = float(ev['confidence'])
+        rec = judge_event.crisis(self.judge_mode(res), outcome, self.judge_latency(res), kind=ev.get('kind'), confidence=ev.get('confidence'), reason=ev.get('reason'))
         self.sink.emit('judge', **rec)
         if ev['type'] == 'judge_unavailable':
             log.info('judge caller_crisis %s: unavailable (%s), floor stands, %d ms', self.t['conversationId'], ev['reason'], rec['latencyMs'])
@@ -209,16 +206,27 @@ class Conversation:
             return True
         return False
 
+    @staticmethod
+    def judge_mode(res):
+        return res.get('mode') if res.get('mode') in ('shadow', 'raise') else 'shadow'
+
+    @staticmethod
+    def judge_latency(res):
+        return max(0, int(round(res.get('latencyMs') or 0)))
+
     def apply_opt_out(self, res):
-        """The judge's second label. A shadow verdict is logged only: the runtime protocol's judge event has no opt-out
-        fields yet. A raise is the floor's opt-out path: the opt_out moment (calls then suppresses the contact), the
-        state the session ends on, and a confirmation line in place of the reply about to be spoken. Never in a crisis."""
+        """The judge's second label. Every verdict is a 'judge' event with label opt_out (product/shared/judge-event.json),
+        a record for analysis and the call page. outcome 'raised' means THIS verdict acted: the opt_out moment (calls then
+        suppresses the contact), the state the session ends on, and a confirmation line in place of the reply about to be
+        spoken. Anything that did not act is 'shadow' and log-only: shadow mode, a crisis in progress, or an opt-out
+        already signalled. Never a suppression unless raised."""
         ev = res.get('optOutEvent')
         if not ev: return
         note = f"judge {ev['type']} opt_out, confidence {ev['confidence']:.2f}"
-        if ev['type'] == 'judge_shadow' or self.state['crisis'] or not res.get('optOut'):
+        acts = ev['type'] == 'judge_raised' and not self.state['crisis'] and bool(res.get('optOut')) and 'opt_out' not in self.signalled
+        self.sink.emit('judge', **judge_event.opt_out(self.judge_mode(res), 'raised' if acts else 'shadow', self.judge_latency(res), ev['confidence']))
+        if not acts:
             log.info('judge opt_out %s: %s (nothing changed)', self.t['conversationId'], note); return
-        if 'opt_out' in self.signalled: return
         self.signalled.add('opt_out'); self.state['opt_out'] = True; self.opt_out_confirm_due = True
         self.sink.emit('moment', kind='opt_out', atMs=self.ms(), note='caller asked not to be called again (judge)')
         log.info('judge opt_out %s: %s (raised)', self.t['conversationId'], note)

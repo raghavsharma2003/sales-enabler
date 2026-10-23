@@ -1,7 +1,7 @@
 // Calls: search, and the call page: who spoke when (drawn from turn timing), the words you can click, what happened and why,
 // the safety rules that acted, and what it cost. Outcomes carry their grade: confirmed by your system, by a person, or an AI guess.
 import { useMemo, useRef, useState } from 'react';
-import { Check, CircleX, Play } from 'lucide-react';
+import { Check, CircleX, Info, Play } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, Table, Tabs, TextField, type Col } from '../ui.tsx';
@@ -91,6 +91,7 @@ function Body({ c }: { c: CallDoc }) {
           <Card><CardHead title="Safety rules that acted" sub="Code, not the model, decides these." />
             {c.safety.length === 0 ? <p className="small"><Check size={16} aria-hidden style={{ verticalAlign: '-3px', color: 'var(--leaf)' }} /> No safety rule needed to act on this call.</p> :
               <ul className="trace">{c.safety.map(s => <li key={s.seq}><CircleX size={18} aria-hidden className="bad" /><div><strong>{prettyCode(s.rule)} {s.action.replace(/_/g, ' ')}</strong><p className="small muted">{s.detail}</p></div></li>)}</ul>}
+            {c.judgeMarks.length > 0 && <ul className="trace" aria-label="What the safety checker noticed">{c.judgeMarks.map(j => <li key={j.seq}>{j.outcome === 'raised' ? <CircleX size={18} aria-hidden className="bad" /> : <Info size={18} aria-hidden className="muted" />}<p className="small">{j.text}</p></li>)}</ul>}
             {c.handOffs.length > 0 && <p className="small" style={{ marginTop: 8 }}>Handed to {c.handOffs.map(h => h.destination).join(', ')}.</p>}
             {c.tools.length > 0 && <p className="small muted">Tools used: {c.tools.map(t => `${t.name} (${t.status})`).join(', ')}.</p>}</Card>
           <Card><CardHead title="What ran and what it cost" />

@@ -80,8 +80,10 @@ export type RuntimeEvent =
   // What a model judge did on a caller turn, for analysis only: never caller text, never a safety signal. A real raise
   // ALSO arrives as its own 'safety' event (RD3 suspended_goal), which is what drives crisis handling; this event is the
   // judge's record. Shadow and unavailable are counted nowhere that affects a call, a flag, a monitor or an experiment.
-  | { seq: number; type: 'judge'; at: string; judge: 'caller_crisis'; mode: 'shadow' | 'raise'; outcome: 'raised' | 'shadow' | 'unavailable';
-      kind?: 'direct' | 'indirect'; confidence?: number; reason?: 'timeout' | 'error' | 'bad_output'; latencyMs: number }
+  // One verdict of the live judge (shared/judge-event.json is the contract, rules included). label: what it judged; absent
+  // means 'crisis'. An 'opt_out' verdict is raised or shadow with a confidence; a shadow one is log-only, never a suppression.
+  | { seq: number; type: 'judge'; at: string; judge: 'caller_crisis'; label?: 'crisis' | 'opt_out'; mode: 'shadow' | 'raise';
+      outcome: 'raised' | 'shadow' | 'unavailable'; kind?: 'direct' | 'indirect'; confidence?: number; reason?: 'timeout' | 'error' | 'bad_output'; latencyMs: number }
   | { seq: number; type: 'call.ended'; at: string; endReason: EndReason; durationS: number; recordingUri?: string;
       transcript: { speaker: 'agent' | 'caller'; text: string; startMs: number }[]; manifest: RunManifest };
 

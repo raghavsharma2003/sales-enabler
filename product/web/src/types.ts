@@ -72,7 +72,8 @@ export interface CallDoc {
   id: string; contactId: string | null; contactName: string; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
   reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
   turns: CallTurn[]; moments: { source: string; kind: string; atMs: number | null; note: string | null; quote: string | null }[];
-  safety: { seq: number; rule: string; action: string; detail: string }[]; tools: { seq: number; name: string; status: string }[]; handOffs: { destination: string; status: string }[];
+  safety: { seq: number; rule: string; action: string; detail: string }[];
+  judgeMarks: { seq: number; label: string; outcome: 'raised' | 'shadow' | 'unavailable'; text: string }[]; tools: { seq: number; name: string; status: string }[]; handOffs: { destination: string; status: string }[];
   outcomes: { value: string; grade: string; source: string }[]; costTotal: number; costLines: { component: string; provider: string; inr_milli: number; unit: string; quantity: number }[]; settlement: string | null;
   analysis: { status: string; summary?: string; reason?: string } | null; totalMs: number;
 }

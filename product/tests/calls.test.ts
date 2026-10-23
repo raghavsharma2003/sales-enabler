@@ -799,6 +799,57 @@ test("runtime 'judge' events are stored for analysis only: no flag, no safety ev
   assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_judge_event WHERE conversation_id = $1', [c2.conv])).n, 0);
 });
 
+test('opt-out verdicts of the live judge: stored with their label, a shadow one changes nothing, the call page says so in plain English', { skip }, async () => {
+  const w = await workspace();
+  setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null }));
+  const c = await call(w);
+  const o = (seq: number, mode: 'shadow' | 'raise', outcome: 'raised' | 'shadow', extra: Record<string, unknown> = {}): RuntimeEvent =>
+    ({ seq, type: 'judge', at: now(), judge: 'caller_crisis', label: 'opt_out', mode, outcome, confidence: 0.84, latencyMs: 300, ...extra } as RuntimeEvent);
+  const ev = fullCall({ startSeq: 1 });
+  ev.splice(ev.length - 1, 0, o(70, 'shadow', 'shadow'),
+    { seq: 71, type: 'judge', at: now(), judge: 'caller_crisis', mode: 'shadow', outcome: 'shadow', kind: 'direct', confidence: 0.7, latencyMs: 300 });
+  const r = await post(c.conv, ev);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  await analysesSettled();
+  const rows = await many<any>(pool, 'SELECT seq, label, mode, outcome, kind, confidence::float AS confidence FROM call_judge_event WHERE conversation_id = $1 ORDER BY seq', [c.conv]);
+  assert.deepEqual(rows, [{ seq: 70, label: 'opt_out', mode: 'shadow', outcome: 'shadow', kind: null, confidence: 0.84 },
+    { seq: 71, label: 'crisis', mode: 'shadow', outcome: 'shadow', kind: 'direct', confidence: 0.7 }], 'an event without a label is a crisis verdict');
+  const conv = await one<any>(pool, 'SELECT flags, flagged, reason_code, analysis FROM conversation WHERE id = $1', [c.conv]);
+  assert.equal(conv.flagged, false); assert.ok(!conv.flags.includes('safety')); assert.equal(conv.analysis.safety_violation, false);
+  assert.notEqual(conv.reason_code, 'END_OPTED_OUT', 'a shadow opt-out never ends as an opt-out');
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_opt_out WHERE conversation_id = $1', [c.conv])).n, 0, 'no suppression unless raised');
+  assert.equal((await one<any>(pool, "SELECT count(*)::int AS n FROM call_moment WHERE conversation_id = $1 AND kind = 'opt_out'", [c.conv])).n, 0);
+  assert.deepEqual(conv.analysis.opt_out_judge, { shadow: 1, raised: 0, runtime: { shadow: 1, raised: 0 }, postCall: { shadow: 0, raised: 0 } });
+  assert.deepEqual(conv.analysis.crisis_judge.runtime, { shadow: 1, raised: 0, unavailable: 0 }, 'crisis counts never include opt-out rows');
+
+  const g = await registry.execute<any>(pool, 'call.get', { conversationId: c.conv }, { workspaceId: w.ws, actor: w.member });
+  assert.equal(g.status, 'confirmed');
+  const marks = g.status === 'confirmed' ? g.result.judgeMarks : [];
+  assert.equal(marks[0].text, 'The safety checker would have flagged a request not to be called again here (84% sure). It is in trial mode, so nothing was changed.');
+  assert.match(marks[1].text, /would have flagged signs of distress here \(70% sure\)/);
+  assert.ok(marks.every((m: { text: string }) => !/[_{}]|opt_out|caller_crisis/.test(m.text)), 'plain English, no codes');
+
+  // The contract's shape rules (shared/judge-event.json): refused, and nothing stored.
+  const c2 = await call(w);
+  for (const [bad, why] of [[o(1, 'raise', 'raised', { kind: 'direct' }), 'an opt-out verdict has no kind'], [o(1, 'raise', 'raised', { confidence: undefined }), 'confidence required'],
+    [o(1, 'shadow', 'unavailable' as any, { confidence: undefined, reason: 'timeout' }), 'an outage is reported once, as crisis'],
+    [o(1, 'raise', 'raised', { reason: 'error' }), 'a verdict has no reason'], [o(1, 'raise', 'raised', { label: 'maybe' }), 'unknown label'],
+    [{ seq: 1, type: 'judge', at: now(), judge: 'caller_crisis', mode: 'shadow', outcome: 'shadow', confidence: 0.7, latencyMs: 1 } as RuntimeEvent, 'a crisis verdict has a kind']] as const) {
+    assert.equal((await post(c2.conv, [bad])).status, 422, why);
+  }
+  assert.equal((await one<any>(pool, 'SELECT count(*)::int AS n FROM call_judge_event WHERE conversation_id = $1', [c2.conv])).n, 0);
+});
+
+test('judge marks read plainly for every verdict', async () => {
+  const { judgeMarkText } = await import('../server/modules/calls/tools.ts');
+  assert.equal(judgeMarkText({ label: 'opt_out', mode: 'raise', outcome: 'raised', kind: null, confidence: 0.9, reason: null }),
+    'The safety checker flagged a request not to be called again here (90% sure); the agent confirmed it and ended the call.');
+  assert.equal(judgeMarkText({ label: 'crisis', mode: 'shadow', outcome: 'unavailable', kind: null, confidence: null, reason: 'timeout' }),
+    'The safety checker did not answer here (it timed out); the fixed safety rules still applied.');
+  assert.match(judgeMarkText({ label: 'opt_out', mode: 'raise', outcome: 'shadow', kind: null, confidence: 0.7, reason: null }), /nothing more was changed/,
+    'a raise-mode verdict that did not act (a crisis in progress, or already handled) does not claim trial mode');
+});
+
 test("a live raise is two records: the 'safety' RD3 event drives handling, the 'judge' event is the judge's record", { skip }, async () => {
   const w = await workspace();
   setFakeLlm(llmReply({ points: [], moments: [], reasonCode: null, outcome: null }));

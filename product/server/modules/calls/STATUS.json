@@ -31,6 +31,7 @@
   "migrations": [
     "db/migrations/0601_calls.sql",
     "db/migrations/0602_call_judge_event.sql",
+    "db/migrations/0605_call_judge_label.sql",
     "db/migrations/0603_call_insight.sql",
     "db/migrations/0604_call_analysis_setting.sql"
   ],
@@ -70,7 +71,8 @@
     "live.whisper text is capped at 300 characters, the runtime's own limit, so a longer note is refused rather than silently truncated. On v2-live (speech-to-speech) every live control answers 409 'not available yet', and listen on a sim call answers 409 (no audio); calls shows those reasons.",
     "Cross-call insight (insights.ts): one LLM pass (purpose analysis, JSON, temperature 0) over a scope's recent analysed non-test calls names themes of 4 kinds: objection, drop_off, unanswered_question, success_driver. Each kept theme has 2-3 verbatim quotes, each checked against that call's stored transcript. Objections and unanswered questions must quote the caller, and success drivers only goal-reaching calls. A theme with fewer than 2 verified quotes is dropped. Quotes must be 12+ characters or 3+ words. Two counts per theme: count is the model's grouping (cited calls that exist), and quotedCalls is the distinct calls with a verified quote; themes rank by quotedCalls, then count. Caps: 40 calls, an input budget of 12,000 tokens x 4 characters, 1,500 output tokens, a 30-day window; a run is skipped when no call ended since the last insight. Each run is one cost line (purpose insight, priced:false). A failed run is stored as failed, never as an empty all-good.",
     "The analysis contract is written as shapes (analysisPrompt). The model may name CONV_* reason codes only: END_* codes are the engine's. Outcome null is allowed only when no PERSON line bears on the question. Every agreeing PERSON line is a commitment moment. The outcome carries a 0..1 confidence.",
-    "Per-workspace analysis model (call_analysis_setting). single: one model, or the deployment default. tiered: a first model, with escalation to a second when the first pass fails, gives no outcome, or gives one below the confidence threshold. analysis.tier records why; each pass that answered is a cost line tagged first or escalated. Tools: analysis.settings.get (read) and analysis.model.set (spend, A2; curated list VP_ANALYSIS_MODELS; no model chosen in code). The cost model is in ANALYSIS-COST.md."
+    "Per-workspace analysis model (call_analysis_setting). single: one model, or the deployment default. tiered: a first model, with escalation to a second when the first pass fails, gives no outcome, or gives one below the confidence threshold. analysis.tier records why; each pass that answered is a cost line tagged first or escalated. Tools: analysis.settings.get (read) and analysis.model.set (spend, A2; curated list VP_ANALYSIS_MODELS; no model chosen in code). The cost model is in ANALYSIS-COST.md.",
+    "Runtime 'judge' events carry label crisis or opt_out (shared/judge-event.json, one contract with vpvoice/judge_event.py). A shadow opt-out is stored and shown on the call page (call.get judgeMarks, plain English) and changes nothing else; only a raise's 'moment' opt_out suppresses. analysis.opt_out_judge counts live and post-call opt-out verdicts apart from crisis_judge."
   ],
   "untested": [
     "The real voice runtime end to end (no cross-language signature test). The hook now verifies raw bytes, so any byte-exact signer works.",

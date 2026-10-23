@@ -4,7 +4,7 @@
 import asyncio, copy, json, os, unittest
 from tests.fixtures import FakeBrain, components, sink, ticket
 from tests.test_sim import call, of, run
-from vpvoice import judge, rules
+from vpvoice import judge, judge_event, rules
 
 ENV_ON = {'VP_LLM_SAFETY_JUDGE_URL': 'https://judge.example.test/v1/chat/completions', 'VP_LLM_SAFETY_JUDGE_KEY': 'not-a-key',
           'VP_LLM_SAFETY_JUDGE_MODEL': 'fake-judge'}
@@ -360,6 +360,33 @@ class OptOutRuntime(unittest.TestCase):
         self.assertEqual(replies[1], [self.AGENDA])
         self.assertEqual([m for m in of(p, 'moment') if m['kind'] == 'opt_out'], [])
         self.assertNotEqual(sess.ended, 'opt_out')
+
+    def test_every_verdict_is_a_judge_event_with_the_opt_out_label(self):
+        c, _ = fake(both(False, 0.05, 'none', True, 0.9))
+        _, p, _ = sim_call([DISCLOSED, self.AGENDA, 'Kuch aur?'], [OPTOUT_MISSED], c, 'raise')
+        opt = [j for j in of(p, 'judge') if j.get('label') == 'opt_out']
+        self.assertEqual([(j['mode'], j['outcome'], j['confidence']) for j in opt], [('raise', 'raised', 0.9)])
+        self.assertTrue(set(opt[0]) <= set(judge_event.CONTRACT['fields']), 'only contract fields')
+        self.assertNotIn('kind', opt[0]); self.assertNotIn('reason', opt[0])
+        crisis = [j for j in of(p, 'judge') if j.get('label', 'crisis') == 'crisis']
+        self.assertTrue(all('label' not in j for j in crisis), 'crisis events stay as they were (absent label means crisis)')
+
+    def test_shadow_is_a_record_only(self):
+        c, _ = fake(both(False, 0.05, 'none', True, 0.9))
+        sess, p, _ = sim_call([DISCLOSED, self.AGENDA], [OPTOUT_MISSED], c, 'shadow')
+        opt = [j for j in of(p, 'judge') if j.get('label') == 'opt_out']
+        self.assertEqual([(j['mode'], j['outcome']) for j in opt], [('shadow', 'shadow')])
+        self.assertEqual([m for m in of(p, 'moment') if m['kind'] == 'opt_out'], [], 'no suppression unless raised')
+        self.assertNotEqual(sess.ended, 'opt_out')
+
+    def test_contract_rules_refuse_what_ingest_refuses(self):
+        ok = judge_event.opt_out('raise', 'raised', 300, 0.8)
+        self.assertEqual(ok['label'], 'opt_out')
+        for bad in ({**ok, 'kind': 'direct'}, {**ok, 'outcome': 'unavailable'}, {k: v for k, v in ok.items() if k != 'confidence'},
+                    {**ok, 'reason': 'timeout'}, {**ok, 'label': 'maybe'}, {**ok, 'text': 'x'}):
+            with self.assertRaises(ValueError, msg=bad): judge_event.check(bad)
+        self.assertEqual(judge_event.crisis('shadow', 'unavailable', 801, reason='timeout')['reason'], 'timeout')
+        with self.assertRaises(ValueError): judge_event.check({'judge': 'caller_crisis', 'mode': 'shadow', 'outcome': 'shadow', 'confidence': 0.7, 'latencyMs': 1})
 
     def test_floor_opt_out_still_ends_without_the_judge(self):
         c, seen = fake(both(False, 0.05, 'none', False, 0.99))
