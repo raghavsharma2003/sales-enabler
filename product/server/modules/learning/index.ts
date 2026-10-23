@@ -373,8 +373,33 @@ async function assign(ctx: ToolCtx, i: { agentId: string; contactId: string }) {
     `SELECT id, control_version_id, treatment_version_id, design FROM experiment WHERE workspace_id = $1 AND agent_id = $2 AND state = 'running'
       AND (expires_at IS NULL OR expires_at > now()) ORDER BY started_at DESC LIMIT 1`, [ctx.workspaceId, i.agentId]);
   if (!e) return null;
-  const arm = armFor(e.id, i.contactId, e.design.treatmentShare ?? 0.5);
-  return { experimentId: e.id, arm, versionId: arm === 'treatment' ? e.treatment_version_id : e.control_version_id };
+  const contact = await one(ctx.q, 'SELECT 1 FROM contact WHERE id = $1 AND workspace_id = $2', [i.contactId, ctx.workspaceId]);
+  if (!contact) return null;
+  // The arm is stored at first assignment and never recomputed, so a contact stays in one arm for the whole test.
+  const hashed = armFor(e.id, i.contactId, e.design.treatmentShare ?? 0.5);
+  await ctx.q.query(`INSERT INTO experiment_assignment (experiment_id, workspace_id, contact_id, arm, version_id) VALUES ($1,$2,$3,$4,$5)
+    ON CONFLICT (experiment_id, contact_id) DO NOTHING`, [e.id, ctx.workspaceId, i.contactId, hashed, hashed === 'treatment' ? e.treatment_version_id : e.control_version_id]);
+  const a = (await one<{ arm: 'control' | 'treatment'; version_id: string }>(ctx.q, 'SELECT arm, version_id FROM experiment_assignment WHERE experiment_id = $1 AND contact_id = $2', [e.id, i.contactId]))!;
+  return { experimentId: e.id, arm: a.arm, versionId: a.version_id };
+}
+
+/** The experiment's units: one row per assigned contact, from its live calls on its own arm's version since assignment.
+ *  A contact that also had a live call on the other arm's version is a crossover: counted in neither arm. */
+async function experimentUnits(q: Queryable, ws: string, e: ExperimentRow): Promise<{ rows: UnitRow[]; crossovers: number }> {
+  const d = e.design;
+  const rows = await many<UnitRow & { crossed: boolean }>(q, `SELECT x.version_id, x.contact_id::text AS unit,
+      coalesce(bool_or(c.outcome = ANY($3::text[])) FILTER (WHERE c.agent_version_id = x.version_id), false) AS success,
+      coalesce(bool_or(c.outcome IS NOT NULL) FILTER (WHERE c.agent_version_id = x.version_id), false) AS has_outcome,
+      coalesce(bool_or(c.reason_code = ANY($4::text[])) FILTER (WHERE c.agent_version_id = x.version_id), false) AS hazard,
+      coalesce(bool_or(coalesce(c.analysis->>'safety_violation', 'false') = 'true') FILTER (WHERE c.agent_version_id = x.version_id), false) AS safety,
+      bool_or(c.agent_version_id IS NOT NULL AND c.agent_version_id <> x.version_id) AS crossed,
+      bool_or(c.agent_version_id = x.version_id) AS reached
+    FROM experiment_assignment x
+    JOIN conversation c ON c.contact_id = x.contact_id AND c.workspace_id = x.workspace_id AND c.agent_version_id = ANY($5::uuid[])
+      AND c.started_at >= x.assigned_at - interval '1 minute' AND ${LIVE}
+    WHERE x.experiment_id = $1 AND x.workspace_id = $2
+    GROUP BY x.version_id, x.contact_id`, [e.id, ws, d.successValues, d.hazardCodes, [e.control_version_id, e.treatment_version_id]]);
+  return { rows: rows.filter(r => !r.crossed && (r as any).reached), crossovers: rows.filter(r => r.crossed).length };
 }
 
 function tally(rows: UnitRow[], versionId: string) {
@@ -400,9 +425,9 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   if (e.state !== 'running') return { state: e.state, result: e.state === 'decided' ? e.result?.decision : undefined };
   const d = e.design;
   const tv = e.treatment_version_id!;               // a running experiment always has its treatment version
-  const rows = await units(ctx.q, ws, [e.control_version_id, tv], e.started_at, d.successValues, d.hazardCodes);
+  const { rows, crossovers } = await experimentUnits(ctx.q, ws, e);
   const c = tally(rows, e.control_version_id), t = tally(rows, tv);
-  const progress = { control: c.m, treatment: t.m, withoutOutcome: c.n - c.m + t.n - t.m, horizonPerArm: d.horizonPerArm, counting: COUNTING };
+  const progress = { control: c.m, treatment: t.m, withoutOutcome: c.n - c.m + t.n - t.m, crossovers, horizonPerArm: d.horizonPerArm, counting: COUNTING };
 
   // Fast lane: a harmful arm stops at once, whatever the horizon.
   const trip = hazardTrip(c, t, d.guardrails.events);

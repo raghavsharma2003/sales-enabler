@@ -362,8 +362,8 @@ test('a safety violation in the treatment arm stops it; a person can stop a test
   const t = await workspace();
   const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.05, minDays: 0 });
   const tv = (await one<{ id: string }>(pool, 'SELECT treatment_version_id AS id FROM experiment WHERE id = $1', [experimentId]))!.id;
-  const [conv] = await calls(t.ws, tv, 1, 0);
-  await pool.query(`UPDATE conversation SET analysis = '{"safety_violation": true}' WHERE id = $1`, [conv]);
+  await dialUntil(t, x => x.dialed.treatment! >= 1, () => 'declined');          // a contact the experiment placed in the treatment arm
+  await pool.query(`UPDATE conversation SET analysis = '{"safety_violation": true}' WHERE id = (SELECT id FROM conversation WHERE workspace_id = $1 AND agent_version_id = $2 ORDER BY started_at DESC LIMIT 1)`, [t.ws, tv]);
   const r = await t.call('experiment.check', { experimentId });
   assert.equal(r.result.state, 'stopped_guardrail'); assert.match(r.result.reason, /safety/);
 
@@ -517,4 +517,35 @@ test('success values are found through a campaign that names the agent version (
   const ok = await t.approve((await t.call('proposal.accept', { proposalId: pid, mdeAbs: 0.2 })).actionId);
   assert.equal(ok.status, 'confirmed', JSON.stringify(ok));
   assert.equal(ok.result.baseline, 0.25);
+});
+
+test('only contacts the experiment assigned are counted: other calls on the same versions never enter the readout', { skip }, async () => {
+  const t = await workspace();
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.3, minDays: 0 });
+  const e = (await one<{ c: string; tr: string }>(pool, 'SELECT control_version_id AS c, treatment_version_id AS tr FROM experiment WHERE id = $1', [experimentId]))!;
+  // Calls on the control and treatment versions that experiment.assign never placed (another campaign, inbound, a backdated start).
+  await calls(t.ws, e.c, 40, 40);
+  await calls(t.ws, e.tr, 10, 0, { reasonCode: 'CONV_COMPLAINT' });
+  const tally = await dialUntil(t, s => s.dialed.control! >= 5 && s.dialed.treatment! >= 5, () => 'confirmed');
+  const r = await t.call('experiment.check', { experimentId });
+  assert.equal(r.result.state, 'running', JSON.stringify(r.result));
+  assert.deepEqual([r.result.progress.control, r.result.progress.treatment], [tally.outcomes.control, tally.outcomes.treatment]);
+});
+
+test('a contact is never in two arms: the arm is stored at first assignment, and a contact seen on both versions is left out', { skip }, async () => {
+  const t = await workspace();
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.3, minDays: 0 });
+  const e = (await one<{ c: string; tr: string }>(pool, 'SELECT control_version_id AS c, treatment_version_id AS tr FROM experiment WHERE id = $1', [experimentId]))!;
+  const [c] = await newContacts(t.ws, 1);
+  const first = (await t.call('experiment.assign', { agentId: t.agentId, contactId: c })).result;
+  // Even if the split were changed later, the stored arm wins.
+  await pool.query(`UPDATE experiment SET design = jsonb_set(design, '{treatmentShare}', $2::jsonb) WHERE id = $1`, [experimentId, first.arm === 'treatment' ? '0' : '1']);
+  for (let i = 0; i < 3; i++) assert.deepEqual((await t.call('experiment.assign', { agentId: t.agentId, contactId: c })).result, first);
+  // The contact reaches the other arm's version some other way (a second campaign): it is counted in neither arm.
+  await calls(t.ws, first.arm === 'treatment' ? e.tr : e.c, 1, 1, { contactIds: [c!] });
+  await calls(t.ws, first.arm === 'treatment' ? e.c : e.tr, 1, 1, { contactIds: [c!] });
+  const r = await t.call('experiment.check', { experimentId });
+  assert.deepEqual([r.result.progress.control, r.result.progress.treatment, r.result.progress.crossovers], [0, 0, 1]);
+  const n = await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM experiment_assignment WHERE experiment_id = $1 AND contact_id = $2', [experimentId, c]);
+  assert.equal(n!.n, 1, 'one stored arm per contact');
 });
