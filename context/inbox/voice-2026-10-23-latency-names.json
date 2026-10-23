@@ -1,0 +1,50 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-23.voice-contact-name-guard",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "She addresses the person only by the contact's name. The brief gives it in Roman and Devanagari (vpvoice/names.py), and every sentence is checked before the door: a name she uses (before ji/जी, in 'kya main X se baat', after a greeting) that matches no word of the contact's name, her persona or the brand is repaired to the contact's first name in the sentence's script, or dropped when there is no name. Logged as safety RD11 'replaced', without names. String matching on a script-neutral skeleton, no model call. Identity now recognises a Devanagari question that named the person",
+   "rationale": "Staging redeploy 2026-10-23 (integrator, research/2026-10-23/staging/redeploy-e95ebc2.md): 1 of 6 openings asked for 'अक्षरा जी' when the contact was Asha. A 'haan' to that question would have verified the wrong person under RD11. Separately, identity compared the Roman first name as a substring, so a Devanagari question never verified.",
+   "reverse_if": "the guard repairs a correct name on real calls (a nickname, a name the rules transliterate badly): then widen the match or carry a contact-supplied Devanagari name in the ticket; or ingest gains a dedicated quality event type, then move the log off RD11"
+  },
+  {
+   "id": "decision.2026-10-23.voice-latency-flags",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Reply-gap cuts on the cascade, each behind a flag: VP_SPECULATE_PARTIAL (default on: the reply starts on the caller's partial at end of speech; kept only if the final has the same words, else discarded unheard; never on digits/secrets, ACTION signals or a raising judge), VP_PREWARM (on: Vertex token refresh plus one HEAD per brain/voice host when the caller starts speaking, at most one per host per 8 s), VP_FIRST_CLAUSE (off: voices the first clause at a comma after 24+ characters, never on the opening), VP_BARGE_NOD (on: nods do not count toward BARGE_WORDS; speech heard only as nods stops her after 1500 ms). No acknowledgement filler: the turn bench has no case where one would be honest content",
+   "rationale": "Staging 2026-10-23 breakdown: the brain request started ~600 ms after end of speech (waiting for the final), and the voice request started ~1.7 s after it. Per-stage timing is now in each call's status ('timing') so staging can show which stage each flag moves.",
+   "reverse_if": "staging shows a discarded-speculation rate high enough that its extra brain/voice requests cost more than the gap gain, or the Vertex pacer puts the extra requests on the critical path; FIRST_CLAUSE stays off until a listening check shows the split does not hurt prosody"
+  },
+  {
+   "id": "measure.2026-10-23.voice-barge-nod-dev",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Turn bench DEV (n=47 clips, Silero VAD, fake partials 300 ms behind speech): with nods counting as words, a 500 ms 'haan ji' stopped her in 37/47 and a 700 ms 'achha haan ji' in 44/47; nod-aware (VP_BARGE_NOD) 0/47 and 0/47. Barge-in latency median 733 vs 742 ms; missed barge-ins 0/47 vs 1/47. 300 ms 'haan' and noise 0/47 both",
+   "n": 47,
+   "method": "bench/turn_bench.py --split dev --only barge backchannel --partial-ms 300, defaults (BARGE_MS 300, BARGE_WORDS 2, BARGE_LONG_MS 700), A: --set BARGE_NOD=0, B: defaults; fakes, real VAD and turn logic, 2026-10-23. TEST not yet run; faster thresholds still to sweep.",
+   "path": "product/voice/bench/turn_bench.py",
+   "value": "false barge on 500/700 ms nods 79%/94% -> 0%/0%"
+  },
+  {
+   "id": "measure.2026-10-23.voice-barge-unit",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Barge-in, unit (deterministic energy VAD, fake partial 60 ms into speech): caller speech onset to her audio flushed = 340 ms with 2+ non-nod words (BARGE_MS 300 + VAD onset), 740 ms with one word (BARGE_LONG_MS), 1580 ms with only nods; 340 ms for 'haan ji' with VP_BARGE_NOD=0",
+   "n": 1,
+   "method": "tests/test_latency.py BargeIn.talk_over, 20 ms frames fed through CascadeSession.on_mic, 2026-10-23",
+   "path": "product/voice/tests/test_latency.py",
+   "value": "340 ms onset -> flush on words"
+  }
+ ],
+ "edges": [],
+ "events": []
+}
