@@ -18410,7 +18410,7 @@
   {
    "id": "open.2026-10-23.judge-event-opt-out-fields",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-23",
    "source": "safety module builder",
    "title": "The runtime protocol's 'judge' event and calls' call_judge_event table only know crisis (judge 'caller_crisis', kind direct|indirect). Opt-out shadow verdicts are therefore logged by the runtime but not recorded for analysis",
@@ -18690,6 +18690,16 @@
    "source": "model",
    "title": "A Vertex judge on every caller turn across concurrent calls would exceed the appeal commitment of at most 1 Vertex request per second from the VM; production traffic on Vertex needs that commitment lifted with Google first",
    "mitigation": "Shadow mode on staging only until the owner confirms the commitment's end; the runtime keeps a provider-agnostic judge spec so an Azure model can serve it if Vertex volume is not allowed."
+  },
+  {
+   "id": "decision.2026-10-23.judge-event-opt-out-label",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "The runtime 'judge' event carries the judge's opt-out verdicts as label 'opt_out' (raised or shadow, with a confidence; no kind, no reason), beside the crisis ones (label absent means crisis). One contract, product/shared/judge-event.json, is read by calls' ingest validator and by vpvoice/judge_event.py. calls stores the label (call_judge_event.label, migration 0605), counts it apart (analysis.opt_out_judge; crisis_judge now counts crisis rows only), and call.get returns plain-English judgeMarks that the call page shows. Shadow stays log-only: only the 'moment' opt_out of a raise suppresses",
+   "rationale": "Closes open.2026-10-23.judge-event-opt-out-fields. Before, a shadow opt-out verdict was only a runtime log line, so the shadow trial could not be measured or shown. 'raised' means this verdict acted (the moment was sent). A raise-mode verdict that did not act (a crisis in progress, an opt-out already signalled) is sent as outcome 'shadow' with mode 'raise', so the page never claims an action that did not happen. An outage is reported once, as crisis, because one model call reads both labels. A post-call opt-out verdict is counted only, never acted on after the call.",
+   "reverse_if": "The owner wants a post-call opt-out raise to suppress the contact (today only the live raise does), or the judge gains a label whose outage must be reported separately."
   }
  ],
  "edges": [
@@ -33064,6 +33074,11 @@
    "from": "risk.2026-10-23.judge-vertex-rate-commitment",
    "to": "decision.2026-10-23.judge-flashlite-nonblocking",
    "relation": "constrains"
+  },
+  {
+   "from": "decision.2026-10-23.judge-event-opt-out-label",
+   "to": "open.2026-10-23.judge-event-opt-out-fields",
+   "relation": "resolves"
   }
  ]
 }
