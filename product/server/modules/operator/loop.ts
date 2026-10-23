@@ -193,6 +193,12 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   const fnName = (name: string) => name.replace(/[^a-zA-Z0-9_-]/g, '_');
   const all = registry.list();
   const byFn = new Map(all.map(t => [fnName(t.name), t.name]));   // every tool, so a refusal can name the role
+  /** The registry name for whatever the model wrote: a function name (agent_create), a dotted name, or either with a
+   *  "functions." prefix. Direct calls and plan steps use this one mapping. */
+  const toolName = (raw: string): string => {
+    const n = raw.trim().replace(/^functions\./, '');
+    return n === PLAN_TOOL || n === FIND_TOOL ? n : byFn.get(n) ?? byFn.get(fnName(n)) ?? n;
+  };
   const allowed = all.filter(t => t.roles.includes(member.role) && !SCREEN_ONLY.has(t.name));
   const allowedNames = new Set(allowed.map(t => t.name));
   const toolDef = (name: string): LlmTool => {
@@ -279,7 +285,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
 
       messages.push({ role: 'assistant', content: reply.text, toolCalls: reply.toolCalls });
       for (const call of reply.toolCalls) {
-        const name = call.name === PLAN_TOOL || call.name === FIND_TOOL ? call.name : byFn.get(call.name) ?? call.name;
+        const name = toolName(call.name);
         let args: unknown;
         try { args = JSON.parse(call.args || '{}'); } catch { args = undefined; }
         if (toolCalls >= caps.toolCalls) {
@@ -330,7 +336,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   async function runPlan(p: { goal?: unknown; steps?: unknown }) {
     const raw = Array.isArray(p.steps) ? p.steps.slice(0, caps.planSteps) : [];
     const steps: (PlanStep & { args: unknown })[] = raw.map((s: any, i: number) => {
-      const name = typeof s?.tool === 'string' ? s.tool : '';
+      const name = typeof s?.tool === 'string' ? toolName(s.tool) : '';
       const why = typeof s?.why === 'string' ? s.why.slice(0, 200) : undefined;
       const def = registry.get(name);
       if (!def || !allowedNames.has(name)) {

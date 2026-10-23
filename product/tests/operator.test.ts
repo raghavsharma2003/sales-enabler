@@ -498,3 +498,21 @@ test('a credential pasted into chat is masked before it is stored, echoed or sen
   const title = await one<{ title: string }>(pool, 'SELECT title FROM thread WHERE id = $1', [t]);
   assert.ok(!title!.title.includes(SECRET));
 });
+
+test('a plan may name tools as function names or with a "functions." prefix, as direct calls may', { skip }, async () => {
+  const { ws: w, members: [owner] } = await ws('owner');
+  const t = await thread(owner);
+  script([
+    { toolCalls: [callTool('operator_plan', { goal: 'two notes', steps: [
+      { tool: 'agent_create', args: { text: 'by function name' } },
+      { tool: 'functions.agent.create', args: { text: 'with a functions. prefix' } },
+    ] })] },
+    { toolCalls: [callTool('functions.agent_create', { text: 'direct, prefixed' })] },
+    { text: 'ok' },
+  ]);
+  const f = frames((await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'make two notes' })).text);
+  const plans = f.filter(x => x.event === 'card' && x.data.card.type === 'plan');
+  assert.deepEqual(plans.at(-1)!.data.card.steps.map((s: any) => `${s.tool}:${s.status}`), ['agent.create:done', 'agent.create:done']);
+  assert.deepEqual((await many<{ text: string }>(pool, 'SELECT text FROM lesson WHERE workspace_id = $1 ORDER BY created_at', [w])).map(r => r.text),
+    ['by function name', 'with a functions. prefix', 'direct, prefixed']);
+});
