@@ -78,6 +78,16 @@
       "n": 84,
       "method": "product/scripts/analysis-bench.ts at 1 request a second on Azure models; scored by code against hand-written keys",
       "path": "research/2026-10-23/benches"
+    },
+    {
+      "id": "decision.2026-10-23.activity-subject-ids-only",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-23",
+      "title": "Every audited tool run records its subject as {type, id} only (from its input, or for a create from what its result made). activity.list resolves the name at read time inside the workspace, and a contact without a name shows as 'a contact', never a number",
+      "rationale": "Closes open.2026-10-21.activity-row-subject (walkthrough S4). Storing ids, not names, keeps the hash-chained audit free of personal data and lets a renamed or deleted thing read correctly. A guard test makes every new *Id argument either a subject key or an explicitly internal id.",
+      "reverse_if": "The activity ledger must show the name as it was at the time of the change (for example for a compliance export); then store a name snapshot beside the id, with redaction."
     }
   ],
   "edges": [
@@ -107,6 +117,11 @@
       "date": "2026-10-23",
       "event": "analysis-contract-and-tiering",
       "details": "Calls changes:\n- The bench is split DEV/TEST, 42/42, stratified so every template and language is on both sides.\n- The analysis contract is rewritten as shapes. Engine codes are refused from the model (mutation-checked). Outcome null is allowed only when no PERSON line bears on the question. Commitments are every agreeing PERSON line. The outcome carries a confidence.\n- Per-workspace single or tiered analysis model (migration 0604, analysis.settings.get / analysis.model.set). Escalation on a failed pass, no outcome, or low confidence; a cost line per pass.\n- The bench's cross-call slice is seeded as the product writes calls (turns, outcome rows, end reason), so goals come from graded outcomes.\n- Cost model in product/server/modules/calls/ANALYSIS-COST.md.\nVerified: 6 tier tests, 4 bench tests; full suite 418/418 on a fresh database.\nNot verified: the new contract on a real model (no keys in this sandbox); the integrator runs TEST."
+    },
+    {
+      "date": "2026-10-23",
+      "event": "walkthrough-s4-s5-s7",
+      "details": "Three walkthrough fixes. S4: every activity row names its subject (kernel subject.ts, registry audit payload, workspace activity.list, web activitySentence), with a guard test over all registered tools. S5: contact.dnd_refresh returns source {id, label, standIn, registerConnected}, and the UI says who answered and that a stand-in is not the national register. S7: the dev server uses a canned sample analysis, marked 'Sample analysis (dev only)' and grounded by the real checks, which refuses to load with NODE_ENV=production (tested by spawning both files). Verified: full suite 439/439 on a fresh database; tsc clean for server and web; ui-contract 0 missing."
     }
   ]
 }

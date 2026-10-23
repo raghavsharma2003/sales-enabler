@@ -51,14 +51,54 @@ export function registerActivity(r: Registry) {
       const members = new Map((await many<{ id: string; label: string }>(ctx.q, "SELECT id, coalesce(name, email) AS label FROM member WHERE workspace_id = $1 AND id = ANY($2::uuid[])", [ctx.workspaceId, memberIds])).map(m => [m.id, m.label]));
       const keys = new Map((await many<{ id: string; name: string }>(ctx.q, 'SELECT id, name FROM api_key WHERE workspace_id = $1 AND id = ANY($2::uuid[])', [ctx.workspaceId, keyIds])).map(k => [k.id, k.name]));
 
+      // Each row's subject (stored as {type, id} only) gets its name here, inside this workspace; a deleted thing has none.
+      const subj = page.map(r => r.payload?.subject as { type: string; id: string } | undefined).filter((x): x is { type: string; id: string } => !!x?.id && /^[0-9a-f-]{36}$/i.test(x.id));
+      const ids = (t: string) => [...new Set(subj.filter(x => x.type === t).map(x => x.id))];
+      const NAMES: Record<string, string> = {
+        agent: 'SELECT id, name FROM agent WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        campaign: 'SELECT id, name FROM campaign WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        audience: 'SELECT id, name FROM audience WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        contact: "SELECT id, coalesce(nullif(name, ''), 'a contact') AS name FROM contact WHERE workspace_id = $1 AND id = ANY($2::uuid[])",
+        call: `SELECT cv.id, 'a call' || coalesce(' with ' || nullif(c.name, ''), '') AS name FROM conversation cv LEFT JOIN contact c ON c.id = cv.contact_id AND c.workspace_id = cv.workspace_id
+               WHERE cv.workspace_id = $1 AND cv.id = ANY($2::uuid[])`,
+        outcome: 'SELECT id, name FROM outcome_definition WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        judge: 'SELECT id, name FROM judge_version WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        member: 'SELECT id, coalesce(name, email) AS name FROM member WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        issue: "SELECT id, category || ' issue' AS name FROM issue WHERE workspace_id = $1 AND id = ANY($2::uuid[])",
+        attempt: `SELECT a.id, 'a call to ' || coalesce(nullif(c.name, ''), 'a contact') AS name FROM attempt a LEFT JOIN contact c ON c.id = a.contact_id AND c.workspace_id = a.workspace_id
+                  WHERE a.workspace_id = $1 AND a.id = ANY($2::uuid[])`,
+        version: `SELECT v.id, a.name || ' (version ' || v.number || ')' AS name FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE a.workspace_id = $1 AND v.id = ANY($2::uuid[])`,
+        offering: 'SELECT id, name FROM offering WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        source: "SELECT id, coalesce(nullif(title, ''), 'a document') AS name FROM knowledge_source WHERE workspace_id = $1 AND id = ANY($2::uuid[])",
+        tool: 'SELECT id, name FROM tool WHERE workspace_id = $1 AND id = ANY($2::uuid[])',
+        fact: `SELECT f.id, 'a memory about ' || coalesce(nullif(c.name, ''), 'a contact') AS name FROM memory_fact f LEFT JOIN contact c ON c.id = f.contact_id AND c.workspace_id = f.workspace_id
+               WHERE f.workspace_id = $1 AND f.id = ANY($2::uuid[])`,
+        number: "SELECT id, 'the line ending ' || right(e164, 4) AS name FROM phone_number WHERE workspace_id = $1 AND id = ANY($2::uuid[])",
+        experiment: "SELECT e.id, 'a test on ' || a.name AS name FROM experiment e JOIN agent a ON a.id = e.agent_id WHERE e.workspace_id = $1 AND e.id = ANY($2::uuid[])",
+        proposal: "SELECT p.id, 'a suggested change to ' || a.name AS name FROM proposal p JOIN agent a ON a.id = p.agent_id WHERE p.workspace_id = $1 AND p.id = ANY($2::uuid[])",
+      };
+      const names = new Map<string, string>();
+      for (const [type, sql] of Object.entries(NAMES)) {
+        const want = ids(type);
+        if (want.length) for (const x of await many<{ id: string; name: string }>(ctx.q, sql, [ctx.workspaceId, want])) names.set(`${type}:${x.id}`, x.name);
+      }
+      const subjectFor = (r: Row) => {
+        const s = r.payload?.subject as { type: string; id: string } | undefined;
+        if (!s?.id) return null;
+        const name = names.get(`${s.type}:${s.id}`);
+        return { type: s.type, id: s.id, name: name ?? null };
+      };
       const who = (r: Row) => r.actor_id?.startsWith('key:') ? `The API key "${keys.get(r.actor_id.slice(4)) ?? 'unknown'}"`
         : r.actor_type === 'member' ? (members.get(r.actor_id ?? '') ?? 'A teammate')
         : r.actor_type === 'agent' ? 'An agent' : r.actor_type === 'vp_success' ? 'The Vyakti team' : 'Vyakti';
       const items = page.map(r => {
         const proposed = r.action === 'action.propose' ? String(r.payload.tool ?? '') : '';
-        const line = proposed ? `${who(r)} asked to ${asked(proposed)} and is waiting for approval`
-          : `${who(r)} ${happened(r.action)}${r.payload.mode === 'A2' ? ' (approved)' : ''}${r.payload.outcome === 'unknown' ? ' (outcome not confirmed)' : ''}`;
-        return { id: r.id, at: r.at, line, action: r.action, actor: { type: r.actor_type, id: r.actor_id }, object: r.object_type ? { type: r.object_type, id: r.object_id } : null };
+        const subject = subjectFor(r);
+        const about = subject?.name ? ` (${subject.name})` : '';
+        const line = proposed ? `${who(r)} asked to ${asked(proposed)}${about} and is waiting for approval`
+          : `${who(r)} ${happened(r.action)}${about}${r.payload.mode === 'A2' ? ' (approved)' : ''}${r.payload.outcome === 'unknown' ? ' (outcome not confirmed)' : ''}`;
+        return { id: r.id, at: r.at, line, action: r.action, actor: { type: r.actor_type, id: r.actor_id },
+          object: r.object_type ? { type: r.object_type, id: r.object_id } : null, subject };
       });
       const last = page[page.length - 1];
       return { items, nextCursor: rows.length > limit && last ? Buffer.from(JSON.stringify({ t: last.t, id: last.id })).toString('base64url') : null };

@@ -9,7 +9,7 @@ import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import { decide, type Authority, type Claim } from './authority.ts';
 import { csvCell } from './csv.ts';
 import { asciiDigits } from './mapping.ts';
-import { dndProvider } from './dnd.ts';
+import { dndProvider, dndSource } from './dnd.ts';
 // The memory module's one export for erasure inside another module's transaction (agreed with the integrator).
 import { forgetContactMemory } from '../memory/index.ts';
 // And campaigns' one export for erasure: cancel the person's queued attempts in this same transaction (review WGC-07).
@@ -254,7 +254,8 @@ export function registerContactTools(reg: Registry): void {
         await ctx.q.query(`INSERT INTO dnd_status (contact_id, ncpr_status, checked_at) SELECT t.id, t.s, now() FROM unnest($1::uuid[], $2::text[]) AS t(id, s)
           ON CONFLICT (contact_id) DO UPDATE SET ncpr_status = EXCLUDED.ncpr_status, checked_at = EXCLUDED.checked_at`, [chunk.map(r => r.id), st]);
       }
-      return { provider: p.name, checked: rows.length, ...tally };
+      // provider stays the id (older callers read it); source says in plain words who answered and whether it is the real register.
+      return { provider: p.name, source: dndSource(p), checked: rows.length, ...tally };
     },
   }));
 

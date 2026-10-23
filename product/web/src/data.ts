@@ -195,7 +195,7 @@ export async function knowledgeList(): Promise<KnowledgeItem[]> {
   return arr<any>((await run<any>('knowledge.list', {})).sources).map(s => ({ id: s.id, title: s.title, status: s.status, passages: s.spans ?? 0, createdAt: s.createdAt, approved: s.approved, pending: s.pending }) as KnowledgeItem);
 }
 export async function activityList(): Promise<ActivityRow[]> {
-  return arr<any>((await run<any>('activity.list', { limit: 50 })).items).map(i => ({ id: i.id, at: i.at, line: i.line, action: i.action, who: i.actor?.type === 'member' ? 'A teammate' : i.actor?.type ?? 'Vyakti' }));
+  return arr<any>((await run<any>('activity.list', { limit: 50 })).items).map(i => ({ id: i.id, at: i.at, line: i.line, action: i.action, subject: i.subject?.name ?? null, who: i.actor?.type === 'member' ? 'A teammate' : i.actor?.type ?? 'Vyakti' }));
 }
 
 export async function numberList(): Promise<NumberLine[]> {

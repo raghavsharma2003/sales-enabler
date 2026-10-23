@@ -13,6 +13,7 @@ import type pg from 'pg';
 import { argsHash, authorise, canApprove, isA3, needsHumanApproval, type RiskClass, type Role } from '../shared/approval.ts';
 import { ValidationError, type Validator } from '../shared/validate.ts';
 import { appendAudit } from './audit.ts';
+import { subjectOf } from './subject.ts';
 import { one, tx, type Queryable } from './db.ts';
 
 export interface Actor {
@@ -149,7 +150,7 @@ export class Registry {
            VALUES ($1,$2,$3,$4,$5,$6,'proposed',$7,$8,$9,$10) RETURNING id, expires_at`,
           [opts.workspaceId, opts.threadId ?? null, name, JSON.stringify(input), h, t.risk, actorId(opts.actor), version, summary, new Date(Date.now() + APPROVAL_TTL_MS)]);
         await appendAudit(c, { workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: 'action.propose',
-          objectType: 'action', objectId: a!.id, argsHash: h, payload: { tool: name, risk: t.risk } });
+          objectType: 'action', objectId: a!.id, argsHash: h, payload: { tool: name, risk: t.risk, subject: subjectOf(input) } });
         return a!;
       });
       return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: t.risk, summary, expiresAt: row.expires_at.toISOString() };
@@ -158,7 +159,7 @@ export class Registry {
     const mode: 'A1' | 'A3' = isA3(name) ? 'A3' : 'A1';     // not held: an A3 verb here ran at once
     return this.run<O>(pool, t, input, h, mode, opts.workspaceId, opts.actor, async (c, out) => {
       if (t.risk === 'read') return out;     // reads change nothing; auditing them would bury the changes
-      await appendAudit(c,{ workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: name, argsHash: h, payload: { mode, risk: t.risk } });
+      await appendAudit(c,{ workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: name, argsHash: h, payload: { mode, risk: t.risk, subject: subjectOf(input, out) } });
       return out;
     });
   }
@@ -234,7 +235,7 @@ export class Registry {
         const stored = t.redactResult ? t.redactResult(out) : out;
         await c.query("UPDATE action SET status = 'executed', result = $2, executed_at = now() WHERE id = $1", [actionId, JSON.stringify(stored ?? null)]);
         await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: t.name,
-          objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', risk: t.risk, approverRole: m.role } });
+          objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', risk: t.risk, approverRole: m.role, subject: subjectOf(input, out) } });
         return { status: 'confirmed', mode: 'A2', result: out as O, argsHash: h, actionId } as Receipt<O>;
       });
     } catch (e) {

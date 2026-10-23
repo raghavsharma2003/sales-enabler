@@ -428,6 +428,8 @@ test('DND: unknown by default and fail-closed for promotional; provider fills st
   // The disabled real adapter never claims a number is callable.
   const d = await w.ok('contact.dnd_refresh', { contactIds: [c1!.id] });
   assert.equal(d.provider, 'ncpr_disabled');
+  assert.deepEqual(d.source, { id: 'ncpr_disabled', label: 'none: the national Do Not Disturb register is not connected yet', standIn: true, registerConnected: false },
+    'the result says which register answered and that it is not the real one');
   assert.equal(d.unknown, 1);
 });
 

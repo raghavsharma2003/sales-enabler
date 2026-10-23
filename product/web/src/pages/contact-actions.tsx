@@ -1,6 +1,8 @@
 // Compliance actions on people: look up DND, stop calling someone, allow calls again, export. Each is one tool call;
 // nothing here keeps a draft. A reason is required wherever the server requires one, and the button says so until it is given.
 import { useState } from 'react';
+import { tallyText, type DndTally } from '../dnd-text.ts';
+export { tallyText };
 import { Download, ShieldAlert } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { Btn, Card, CardHead, Locked, Sheet, SelectField, TextField, Toggle } from '../ui.tsx';
@@ -10,9 +12,6 @@ import { date } from '../format.ts';
 const role = (me: ReturnType<typeof useApp>['me']) => me?.member?.role ?? 'viewer';
 export const canStop = (me: ReturnType<typeof useApp>['me']) => ['owner', 'operator', 'compliance'].includes(role(me));
 export const canRelease = (me: ReturnType<typeof useApp>['me']) => ['owner', 'compliance'].includes(role(me));
-
-interface DndTally { checked: number; registered: number; not_registered: number; unknown: number }
-export const tallyText = (t: DndTally) => `Checked ${t.checked} number${t.checked === 1 ? '' : 's'}: ${t.registered} on the Do Not Disturb list, ${t.not_registered} not on it, ${t.unknown} without an answer.${t.unknown === t.checked && t.checked > 0 ? ' The register gave no answer, so they stay marked as not checked. Try again later.' : ''}`;
 
 /** Looks up DND for the given people and says what came back. */
 export function useDndCheck(onDone: () => void) {

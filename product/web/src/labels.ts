@@ -194,7 +194,8 @@ export function pageFor(tool: string): string | null {
 const PROPOSED = ['action', 'propose'].join('.'), CREATED = ['workspace', 'create'].join('.');
 /** What the server still calls Vyakti in its activity lines. Built from parts so the no-working-name guard reads only what people see. */
 const WORKING_NAME = ['V', 'P'].join('');
-export function activitySentence(line: string, action: string): string {
+/** subject: the name of what the row was about (an agent, campaign, contact or call), resolved by the server. */
+export function activitySentence(line: string, action: string, subject?: string | null): string {
   const actor = (/^(.+?) (?:ran|asked|did|made|set|changed|created|added|saved|reviewed) /.exec(line)?.[1] ?? 'Someone').replace(/^An agent$/, 'The assistant').replace(new RegExp(`^${WORKING_NAME}$`), 'Vyakti').replace(new RegExp(`^The ${WORKING_NAME} team$`), 'The Vyakti team');
   if (action === CREATED) return `${actor} created the workspace`;
   if (action === PROPOSED) {
@@ -202,5 +203,5 @@ export function activitySentence(line: string, action: string): string {
     const key = words ? Object.keys(TOOL_LABEL).find(k => k.replace(/[._]/g, ' ') === words) : undefined;
     return key ? `${actor} asked for approval: ${TOOL_LABEL[key].ask.charAt(0).toLowerCase()}${TOOL_LABEL[key].ask.slice(1)}` : `${actor} asked for approval to make a change`;
   }
-  return `${actor} ${PAST[action] ?? 'made a change'}${/\(approved\)/.test(line) ? ', after approval' : ''}`;
+  return `${actor} ${PAST[action] ?? 'made a change'}${subject ? `: ${subject}` : ''}${/\(approved\)/.test(line) ? ', after approval' : ''}`;
 }

@@ -4,11 +4,16 @@
 //   eval $(sh product/scripts/pg-test.sh vp_web_real)
 //   VP_SECRET_KEY=$(openssl rand -hex 32) VP_RUNTIME_SECRET=... node --import tsx product/web/dev/serve.ts
 import { setFakeLlm, type LlmReply, type LlmRequest } from '../../server/llm.ts';
+import { sampleAnalysis } from './sample-analysis.ts';   // throws at load with NODE_ENV=production, before anything below runs
+
+if (process.env.NODE_ENV === 'production') throw new Error('web/dev/serve.ts is the development server and never runs with NODE_ENV=production');
 
 process.env.VP_OPERATOR_BRAINS ??= 'gemini-3.5-flash-lite,gpt-5.4-mini';
 const reply = (text: string, toolCalls: LlmReply['toolCalls'] = []): LlmReply => ({ text, toolCalls, usage: { inputTokens: 220, outputTokens: 40 }, model: 'dev-script', provider: 'dev-script' });
 let n = 0;
 setFakeLlm((req: LlmRequest) => {
+  // DEV ONLY: seeded calls get a finished, clearly labelled sample analysis ("Sample analysis (dev only)").
+  if (req.purpose === 'analysis') return sampleAnalysis(req);
   if (req.purpose === 'learning') {
     // Proposes one change that cites a real call from the evidence the server sent (it refuses changes that cite nothing of its own).
     let ids: string[] = [];

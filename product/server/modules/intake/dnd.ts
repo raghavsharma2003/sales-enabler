@@ -6,12 +6,18 @@ export type DndAnswer = { status: 'registered' | 'not_registered' | 'unknown'; r
 
 export interface DndProvider {
   name: string;
+  /** What a buyer sees: which register answered, in plain words. */
+  label: string;
+  /** true unless this provider is the real national register (NCPR). A stand-in's answers never clear anyone for promotional calls. */
+  standIn: boolean;
   check(e164s: string[]): Promise<Map<string, DndAnswer>>;
 }
 
 /** Registered when the number is in `registered`; everything else is not_registered. `unknown` forces unknown. */
 export class FakeDndProvider implements DndProvider {
   name = 'fake';
+  label = 'a test stand-in, not the national Do Not Disturb register';
+  standIn = true;
   constructor(private registered = new Set<string>(), private unknown = new Set<string>()) {}
   async check(e164s: string[]) {
     return new Map(e164s.map(e => [e, this.unknown.has(e) ? { status: 'unknown', reason: 'fake_unknown' } :
@@ -22,6 +28,8 @@ export class FakeDndProvider implements DndProvider {
 /** Placeholder for a contracted NCPR lookup. Always answers unknown, so nothing is assumed callable. */
 export class DisabledDndProvider implements DndProvider {
   name = 'ncpr_disabled';
+  label = 'none: the national Do Not Disturb register is not connected yet';
+  standIn = true;
   async check(e164s: string[]) {
     return new Map(e164s.map(e => [e, { status: 'unknown', reason: 'provider_not_configured' }] as [string, DndAnswer]));
   }
@@ -29,5 +37,7 @@ export class DisabledDndProvider implements DndProvider {
 
 let provider: DndProvider = new DisabledDndProvider();
 export const dndProvider = () => provider;
+/** Which register answers DND lookups, for the tool result and the UI. */
+export const dndSource = (p: DndProvider = provider) => ({ id: p.name, label: p.label, standIn: p.standIn, registerConnected: !p.standIn });
 /** Tests and the composition root set the provider; production stays disabled until a lookup is contracted. */
 export function setDndProvider(p: DndProvider): void { provider = p; }
