@@ -87,9 +87,9 @@ class Cascade(unittest.TestCase):
             await wait_until(lambda: sess.conv.agent_turns == 1)
             await feed(sess, 25)                              # 0.5 s of speech
             ears['e'].on_f('हाँ जी, बोलिए')
-            await feed(sess, 20, QUIET)
+            await feed(sess, 80, QUIET)                       # a statement waits CascadeSession.STATEMENT_HOLD_MS of silence
             await wait_until(lambda: sess.conv.agent_turns == 2)
-            await feed(sess, 25); ears['e'].on_f('ठीक है, thank you'); await feed(sess, 20, QUIET)
+            await feed(sess, 25); ears['e'].on_f('ठीक है, thank you'); await feed(sess, 80, QUIET)
             await asyncio.wait_for(sess.done.wait(), 8)
             return sess, p, line, comp
         sess, p, line, comp = asyncio.run(go())

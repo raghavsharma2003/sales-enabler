@@ -154,7 +154,16 @@ class Reply:
 
 
 class CascadeSession(Session):
+    # Turn-taking thresholds (bench/turn_bench.py measures them): a held reply waits HOLD_MS of silence after a turn that
+    # ends in a question (it hands the turn to her), STATEMENT_HOLD_MS after a statement, LONG_HOLD_MS after one that
+    # reads unfinished; she yields to the caller after BARGE_MS of speech with at least BARGE_WORDS words, or after
+    # BARGE_LONG_MS of speech whatever the words.
+    HOLD_MS = 0
+    STATEMENT_HOLD_MS = 1200          # chosen on the bench DEV split (bench/results/turn-2026-10-23-*), reported on TEST
     LONG_HOLD_MS = 1400
+    BARGE_MS = 300
+    BARGE_WORDS = 2
+    BARGE_LONG_MS = 700
 
     def __init__(self, ticket, components, sink, line, clock=time.monotonic, env=None, watchdog_s=0.25, transport='webrtc', tick_s=0.03):
         super().__init__(ticket, components, sink, clock=clock, env=env, watchdog_s=watchdog_s)
@@ -168,6 +177,11 @@ class CascadeSession(Session):
         self.mix = bytearray(); self.member_rs = Resampler(16000, 24000)     # live controls: listener mix, member's voice
 
     def now(self): return self.clock()
+
+    def hold_ms(self, text):
+        """How long a held reply waits in silence before she speaks, by how the caller's words end."""
+        if incomplete(text): return self.LONG_HOLD_MS
+        return self.HOLD_MS if text.strip().endswith('?') else self.STATEMENT_HOLD_MS
     def agent_playing(self): return self.now() < self.rec.play_until
 
     # ---------------------------------------------------------------- lifecycle
@@ -405,7 +419,7 @@ class CascadeSession(Session):
                 if a.first is None and v.speech_ms() >= 250 and a.user_text is not None:
                     a.cancel(); self.active = a = None                   # withdraw: not audible yet, caller still going
                     self.finals = [self._uncommit_last_caller()] + self.finals
-                elif self.agent_playing() and v.speech_ms() >= 300 and (words >= 2 or v.speech_ms() >= 700):
+                elif self.agent_playing() and v.speech_ms() >= self.BARGE_MS and (words >= self.BARGE_WORDS or v.speech_ms() >= self.BARGE_LONG_MS):
                     await self.interrupt(); a = None                     # barge-in: words, not a cough
         if self.ending or self.ended: return
         text = ' '.join(self.finals).strip()
@@ -429,7 +443,7 @@ class CascadeSession(Session):
                 self.rid += 1; self.pending = Reply(self, self.rid, use, pending=True, gate=gate)
                 await self.line.send_json({'t': 'state', 's': 'thinking'})
         if self.pending is not None and not self.pending.released:
-            hold = self.LONG_HOLD_MS if incomplete(self.pending.user_text) else 0
+            hold = self.hold_ms(self.pending.user_text)
             if not v.speaking and v.silence_ms() >= hold:
                 r = self.pending; self.pending = None
                 await self._commit_turn(r.user_text)

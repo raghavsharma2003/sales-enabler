@@ -5,15 +5,15 @@
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
     "verified": "Python 3.12.3 in a clean venv with only requirements.txt installed, and Python 3.13; no outside network",
-    "ran": 200,
-    "passed": 200,
+    "ran": 206,
+    "passed": 206,
     "expectedFailures": 0,
     "failed": 0,
     "sharedSafetyVectors": {
       "file": "product/shared/safety/cases.json",
       "engine": "index.ts at f1e4d3e (normalisation, words_to_amounts, recursive lexicon, digit-compared contact facts)",
       "cases": 2048,
-      "passed": 2048,
+      "passed": 206,
       "byFn": {
         "replyDoor": 1251,
         "callerSignals": 758,
@@ -37,12 +37,14 @@
       "test_google_route.py": "Gemini on Vertex only, from India only: no route outside an Indian VP_REGION (one reason per cause), VERTEX_OFF; a Gemini API key or OpenRouter never stands in; Live without VERTEX_LIVE_LOCATION or a model missing from the Vertex map makes the stack unavailable with a plain per-component reason; text URL and bearer token; a fake Vertex Live websocket checks the path, the bearer header (no API key), the ears setup (model resource name, TEXT, inputAudioTranscription), mediaChunks audio and transcripts; the speech-to-speech setup shape",
       "test_azure_ears.py": "Azure Speech ears with a fake Speech SDK (no Azure host): hi-IN, Central India, 500 ms segmentation, partials/finals from SDK threads, the error path, the Gate (pre-roll, tail, only gated audio metered); build() gives AzureEars to Azure-ears stacks and Sarvam ears only to Sarvam",
       "test_components.py": "GET /v1/health components: every catalog ears/brain/voice/s2s has an availability and a plain reason (not set up, not offered on Google Cloud, not built), never a reroute; every brain carries its route (vertex, azure-foundry, openrouter, sarvam); gpt-oss-120b@groq not offered",
-      "test_stack_select.py": "stack selection: a curated id must carry its own parts; 'custom' built from catalog parts (unknown, incomplete, engine-plus-parts and agent mismatch refused; voices from the chosen voice part); requires by part (AZURE_OPENAI_SEA for host sea); a custom sim call files its manifest and combinationId under what ran; missing credentials named per part; parity with shared/components.ts (ids, part, route, requires, voices a subset with the same default) and every curated stack built from offered parts"
+      "test_stack_select.py": "stack selection: a curated id must carry its own parts; 'custom' built from catalog parts (unknown, incomplete, engine-plus-parts and agent mismatch refused; voices from the chosen voice part); requires by part (AZURE_OPENAI_SEA for host sea); a custom sim call files its manifest and combinationId under what ran; missing credentials named per part; parity with shared/components.ts (ids, part, route, requires, voices a subset with the same default) and every curated stack built from offered parts",
+      "test_turn_bench.py": "the turn-taking bench scoring (cut-in, talk-over, end-of-turn, barge-in, backchannel), its labels (pauses, punctuation snapping, statement cut) and Wilson CIs on synthetic timelines; the hold rule by how the caller ends (question, statement, unfinished)"
     }
   },
   "works": [
     "Curated cascade stacks listen with Azure Speech ears (hi-IN, Central India, through the VAD gate); Vertex has no Gemini transcription model (decision.2026-10-22.ears-azure-not-gemini). Per-component health on GET /v1/health. Every brain carries a route per directive.2026-10-22.provider-routing",
     "Tickets carry stack.components; a 'custom' stack is built from its parts (checked against the catalog, never substituted); per-part credentials (AZURE_OPENAI_SEA for the second Foundry account); ears/voice/s2s parts carry a route like the brains",
+    "Turn-taking bench (bench/turn_bench.py) on the real cascade logic with fixed-timing fakes, DEV/TEST split: a 1200 ms hold after statements cut premature cut-ins on TEST from 32.7% to 3.6% of turns and talk-over from 25.5% to 3.6% (n=55), +328 ms after statements",
     "Signed intake (HMAC t.body, 5 min skew, constant-time) on POST /v1/calls, POST /v1/calls/{id}/end, GET /v1/calls/{id}; signed event batches to {VP_CONTROL_URL}/hooks/runtime with per-call seq, in-order delivery, same-batch retries, call.ended alone and last",
     "No default stack: unknown or missing stack refused (422), missing credentials refused (503 with the names), voice and combinationId checked, never substituted",
     "Per-contact facts reach the model as the contact rows block (after brief and memory, before the LAST block), in compile.ts contactRows() format; the door gets them as perContact facts. product/tests/agents-runtime.test.ts passes 4/4 against this runtime",

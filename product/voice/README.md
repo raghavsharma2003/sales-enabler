@@ -183,6 +183,26 @@ python bench/audio_bench.py --calls 10 25 50 100 --seconds 120
 python bench/audio_bench.py --calls 50 --seconds 60 --profile     # cProfile the runtime at one N
 ```
 
+## Turn-taking
+
+`bench/turn_bench.py` measures when she talks. It feeds 102 synthetic Hinglish caller clips through the real VAD,
+endpointing, held replies and barge-in logic, with fixed-timing fakes for ears, brain and voice. The clips are split
+DEV/TEST, and tuning happens on DEV only.
+
+It reports, with n and 95% CIs:
+- end-of-turn latency;
+- premature cut-ins in mid-thought pauses;
+- talk-over;
+- missed and false barge-ins (backchannels and noise).
+
+After a question she answers at once. After a statement she waits `STATEMENT_HOLD_MS` (1200) of silence. After an
+unfinished turn she waits `LONG_HOLD_MS` (1400). Results are in `bench/results/turn-*`.
+
+```
+python bench/turn_bench.py --split dev                        # tune here
+python bench/turn_bench.py --split test --out bench/results/turn-<date>-test
+```
+
 ## Admission and processes
 
 **One process carries at most `VP_MAX_CALLS_PER_PROCESS` calls (default 20).** The audio path is CPU-bound and Python

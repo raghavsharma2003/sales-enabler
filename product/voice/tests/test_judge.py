@@ -292,7 +292,7 @@ class Runtime(unittest.TestCase):
             comp.judge_complete = c; sess.conv.judge_complete = c; sess.conv.judge_env = {**ENV_ON, 'VP_SAFETY_JUDGE_MODE': 'raise'}
             await sess.start()
             await wait_until(lambda: sess.conv.agent_turns == 1)
-            await feed(sess, 20); ears['e'].on_f(INDIRECT); await feed(sess, 30, QUIET)
+            await feed(sess, 20); ears['e'].on_f(INDIRECT); await feed(sess, 80, QUIET)     # past the statement hold
             await wait_until(lambda: sess.conv.agent_turns >= 2)
             await sess.end('caller_hung_up')
             return comp, p
