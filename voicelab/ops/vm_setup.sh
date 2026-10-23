@@ -69,6 +69,8 @@ $FQDN {
   reverse_proxy 127.0.0.1:8080
 }
 CADDY
+# The product's private staging (research/2026-10-23/staging) adds its own site on :8443; keep it across lab redeploys.
+if [ -f /etc/caddy/vp-stage.caddy ]; then echo 'import /etc/caddy/vp-stage.caddy' >> /etc/caddy/Caddyfile; fi
 cat > /etc/systemd/system/caddy.service <<UNIT
 [Unit]
 Description=Caddy
