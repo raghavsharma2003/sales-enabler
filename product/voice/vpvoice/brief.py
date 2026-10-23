@@ -141,7 +141,9 @@ def ledger(transcript, agent, contact, state):
     name = (contact.get('displayName') or '').strip()
     if not state.get('identity_verified'):
         # the brief asks for the person by name; with no name she must never say a blank ("क्या मैं ___ से…")
-        rows.append(f'the person you are calling: {name}' if name else
+        from .names import forms
+        roman, deva = forms(name)
+        rows.append(f'the person you are calling: {roman} (in Devanagari: {deva}); call them by this name only, never another' if name else
                     'their name is not known: never ask for anyone by name and never leave a blank for a name; greet them and ask if now is a good time')
     if not state.get('disclosed'):
         clause = ((agent.get('opening') or {}).get('disclosureClause') or '').strip()

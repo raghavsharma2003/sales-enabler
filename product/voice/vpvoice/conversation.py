@@ -2,7 +2,7 @@
 # the reply door on every sentence before it is spoken, caller signals on every caller turn, and the events that
 # record it. Sessions (session.py for sim, cascade.py / s2s.py for audio) drive it and own timing and audio.
 import asyncio, contextlib, logging, re
-from . import brief, judge, judge_event, rules, safety, ticket as tk
+from . import brief, judge, judge_event, names, rules, safety, ticket as tk
 from .safety import DoorContext
 
 log = logging.getLogger('vp.voice.conversation')
@@ -60,6 +60,8 @@ class Conversation:
         self.history = [{'role': 'user', 'content': KICKOFF.get(ticket.get('direction'), KICKOFF['outbound'])}]
         self.transcript = []; self.agent_turns = 0; self.disclosure_tries = 0
         self.gender = (self.agent.get('persona') or {}).get('gender', 'female')
+        b = self.agent.get('brand') or {}
+        self.own_names = [(self.agent.get('persona') or {}).get('name', ''), b.get('spokenName', ''), b.get('name', '')]
         self.state = {'disclosed': False, 'asked_ai': False, 'crisis': False, 'crisis_lines_given': False, 'opt_out': False,
                       'recording_refused': False, 'goals_done': {}, 'turns_since_goal': 0,
                       'identity_verified': False}
@@ -114,6 +116,11 @@ class Conversation:
             if m: draft.style = m.group(1).strip().lower()
         text = brief.spoken(sentence, keep_sounds=self.keep_sounds)
         if not text: return None, {'action': 'pass'}
+        text, wrong = names.repair(text, self.contact.get('displayName', ''), own=self.own_names)
+        if wrong:                # a wrong name in a question would let a "haan" verify the wrong person (RD11)
+            self.sink.emit('safety', rule='RD11', action='replaced',
+                           detail=f"addressed the person by {len(wrong)} name(s) not the contact's; " + ("repaired to the contact's name" if self.contact.get('displayName') else 'name dropped (no contact name)'))
+            draft.replaced.append('RD11')
         ctx = self.door_ctx(first_sentence=not draft.sentences)
         if any(safety.affirms_ai(x, ctx.disclosure_clause) for x in draft.sentences): ctx.disclosed = True   # affirmed earlier in this reply
         v = safety.reply_door(re.sub(r'<[^<>]{1,24}>', '', text), ctx, prev=draft.sentences[-1] if draft.sentences else None)
@@ -126,6 +133,8 @@ class Conversation:
             self.sink.emit('safety', rule=v['rule'], action='blocked', detail=v['reason'])
             draft.blocked.append(v['rule'])
             return None, v
+        if wrong and v['action'] == 'pass':          # s2s speaks the model's own audio: it must cut and say the repaired line
+            v = {'action': 'replace', 'rule': 'RD11', 'reason': "a name that is not the contact's", 'text': text}
         if '14416' in text and '112' in text: self.state['crisis_lines_given'] = True
         draft.sentences.append(text)
         return text, v
@@ -334,9 +343,10 @@ class Conversation:
         if self.state['identity_verified']: return
         name = (self.contact.get('displayName') or '').strip()
         if not name: return
-        first = name.split()[0].lower()
+        first = name.split()[0].lower(); fk = names.key(first)
         last = next((t['text'] for t in reversed(self.transcript[:-1]) if t['speaker'] == 'agent'), '')
-        if not (first in last.lower() and ID_QUESTION.search(last)): return
+        asked = any(names.key(re.sub(r'(?i)(?<=.)(जी|ji)$', '', w)) == fk for w in re.findall(r'[A-Za-z]+|[\u0900-\u0963\u0966-\u097f]+', last))
+        if not (asked and ID_QUESTION.search(last)): return              # her question named them, in either script
         said = caller_text.strip()
         if NOT_CONFIRMED.search(said): return
         if AFFIRM_ID.search(said) or re.search(r'\b' + re.escape(first) + r'\b', said, re.I):
