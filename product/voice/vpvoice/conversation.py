@@ -36,6 +36,9 @@ class ComponentError(Exception):
         self.component = component; self.provider = provider; self.reason = reason
 
 
+RESTART = object()      # judge_checkpoint: write this reply again (a check-in became due before she said anything)
+
+
 class Draft:
     """One reply being written: what the brain wrote, what the door let through, and the markers in it."""
     def __init__(self, user_text, pending=False):
@@ -46,6 +49,7 @@ class Draft:
         self.t = {}               # stage clock marks for the latency breakdown (cascade.Reply.timing)
         self.first_clause_at = None   # CascadeSession.FIRST_CLAUSE: voice the first clause of a reply on its own
         self.hold = None          # the opening turn's sentences, held until one affirms she is an AI or the turn ends
+        self.checkin = False      # written with the check-in shapes (rules.json checkin)
         self.opening_discloses = False
 
     @property
@@ -66,7 +70,8 @@ class Conversation:
         self.own_names = [(self.agent.get('persona') or {}).get('name', ''), b.get('spokenName', ''), b.get('name', '')]
         self.state = {'disclosed': False, 'asked_ai': False, 'crisis': False, 'crisis_lines_given': False, 'opt_out': False,
                       'recording_refused': False, 'goals_done': {}, 'turns_since_goal': 0,
-                      'identity_verified': False}
+                      'identity_verified': False,
+                      'checkin': None}   # judge-only crisis check-in: None -> 'due' -> 'asked' -> 'answer' -> None
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
         self.judge_complete = None; self.judge_env = None; self.judge_raised = False; self.opt_out_confirm_due = False
         self.judge_tasks = set()         # judge work running in the background: held (asyncio keeps only weak refs), drained at end
@@ -163,11 +168,14 @@ class Conversation:
         waits for it (decision.2026-10-23.judge-flashlite-nonblocking): a verdict already in acts now and can replace
         this reply (the crisis lines, or the opt-out confirmation); a later one settles in the background and acts from
         her next sentence (the door sees the crisis) or her next turn (the opt-out confirmation). Returns the
-        confirmation to say instead of the reply, if one is due."""
+        confirmation to say instead of the reply, if one is due, or RESTART when a check-in became due before she
+        said anything (the reply is written again with the check-in shapes)."""
         if draft.gate is not None:
             gate, draft.gate = draft.gate, None
             if gate.done(): await self.settle_gate(gate)
             else: self.track(self.settle_gate(gate))
+        if self.state['checkin'] == 'due' and not draft.checkin and not self.state['crisis']:
+            return RESTART                 # nothing said yet: write this reply again, as the check-in
         return self.confirm_opt_out(draft)
 
     def track(self, coro):
@@ -226,11 +234,18 @@ class Conversation:
         if ev['type'] == 'judge_shadow':
             log.info('judge caller_crisis %s: %s (shadow: nothing changed), %d ms', self.t['conversationId'], note, rec['latencyMs'])
             return False
-        if res.get('crisis') and 'crisis' not in self.signalled:     # judge_raised: the crisis path, exactly as a floor hit
-            self.signalled.add('crisis'); self.state['crisis'] = True; self.judge_raised = True
-            self.sink.emit('safety', rule='RD3', action='suspended_goal', detail=note + ': goal suspended, lines given, human offered')
-            return True
-        return False
+        if not res.get('crisis') or 'crisis' in self.signalled: return False
+        if judge.checkin_enabled(self.judge_env) and self.state['checkin'] not in ('asked', 'answer'):
+            # Check-in on (judge.json checkin): a raise by the judge alone first pauses the agenda and checks in, in her
+            # own words (rules.json checkin shapes). A crisis verdict on the caller's answer, or the floor, is the full path.
+            if self.state['checkin'] is None:
+                self.state['checkin'] = 'due'
+                self.sink.emit('safety', rule='RD3', action='flagged', detail=note + ': judge check-in, agenda paused')
+            return False
+        # judge_raised: the crisis path, exactly as a floor hit
+        self.signalled.add('crisis'); self.state['crisis'] = True; self.state['checkin'] = None; self.judge_raised = True
+        self.sink.emit('safety', rule='RD3', action='suspended_goal', detail=note + ': goal suspended, lines given, human offered')
+        return True
 
     @staticmethod
     def judge_mode(res):
@@ -268,10 +283,12 @@ class Conversation:
     async def sentences(self, draft):
         """Async generator of door-approved sentences for one reply. A blocked sentence is never said: the brain
         writes the reply again once, told which rule the draft broke; a second block ends with a safe line."""
-        correction = None
-        for attempt in range(2):
+        correction = None; attempt = 0; restarted = False
+        while attempt < 2:
+            draft.checkin = self.state['checkin'] == 'due' and not self.state['crisis']
             msgs = self.messages_for(draft.user_text if draft.pending else None, correction)
             sp = brief.Splitter(first_clause_at=draft.first_clause_at if attempt == 0 else None); usage = {}; timing = {}; blocked = None
+            restart = False
             draft.t.setdefault('brain_req', self.clock())
             draft.hold = [] if self.holds_opening(draft) else None; draft.opening_discloses = False
             gen = self.brain.stream(msgs, usage, timing, max_tokens=MAX_TOKENS)
@@ -283,12 +300,15 @@ class Conversation:
                         for s in self.release(sp.feed(d), draft):
                             if not draft.sentences:                 # the judge's verdict, if it is in before she is heard
                                 confirm = await self.judge_checkpoint(draft)
+                                if confirm is RESTART: restart = True; break
                                 if confirm: yield confirm; break
                             out, v = self.check(s, draft)
                             if v['action'] == 'block': blocked = v; break
                             if out: draft.t.setdefault('sentence', self.clock()); yield out
                             if draft.final: break
-                        if blocked or draft.final: break
+                        if blocked or draft.final or restart: break
+                if restart and not restarted:        # a check-in became due before she said anything: write it afresh
+                    restarted = True; draft.raw = ''; continue
                 if draft.final:                      # a canned replacement ends the reply: the rest of the draft is dropped
                     draft.raw = brief.END.sub('', draft.raw)
                     return
@@ -296,6 +316,9 @@ class Conversation:
                     for s in self.release(sp.flush(), draft, end=True):
                         if not draft.sentences:
                             confirm = await self.judge_checkpoint(draft)
+                            if confirm is RESTART:
+                                if restarted: confirm = None
+                                else: restart = True; break
                             if confirm: yield confirm; return
                         out, v = self.check(s, draft)
                         if v['action'] == 'block': blocked = v; break
@@ -305,12 +328,14 @@ class Conversation:
                 self.charge_brain(usage)
                 if draft.gate is not None and not draft.pending:   # nothing was said: settle the verdict for the next turn
                     gate, draft.gate = draft.gate, None; self.track(self.settle_gate(gate))
+            if restart and not restarted:
+                restarted = True; draft.raw = ''; continue
             if timing.get('err') and not draft.sentences and not blocked:
                 raise ComponentError('brain', self.brain_provider, timing['err'][:200])
             if not blocked: return
             correction = (f'Your last draft broke a safety rule ({blocked["rule"]}: {blocked["reason"]}) and was not said. '
                           'Write the reply again, without it. Continue from what you already said, if anything.')
-            draft.raw = brief.END.sub('', draft.raw)
+            draft.raw = brief.END.sub('', draft.raw); attempt += 1
         line = safety.safe_fallback_line(self.gender)
         draft.sentences.append(line)
         yield line
@@ -354,8 +379,9 @@ class Conversation:
         self.history.append({'role': 'user', 'content': clean})
         self.sink.emit('turn', speaker='caller', text=clean, startMs=s_ms, endMs=e_ms)
         self._identity(clean)
-        if sig['crisis'] and 'crisis' not in self.signalled:
-            self.signalled.add('crisis'); self.state['crisis'] = True
+        if self.state['checkin'] == 'asked': self.state['checkin'] = 'answer'   # their answer: the judge on it can confirm
+        if sig['crisis'] and 'crisis' not in self.signalled:                     # the floor: always the full crisis path
+            self.signalled.add('crisis'); self.state['crisis'] = True; self.state['checkin'] = None
             self.sink.emit('safety', rule='RD3', action='suspended_goal', detail='crisis language from the caller: goal suspended, lines given, human offered')
         if sig['refusesRecording'] and 'rec' not in self.signalled:
             self.signalled.add('rec'); self.state['recording_refused'] = True
@@ -403,6 +429,8 @@ class Conversation:
         if not self.state['disclosed'] and any(safety.affirms_ai(s, clause) for s in draft.sentences):
             self.disclosure_tries += 1
             if safety.affirms_ai(text or '', clause) or self.disclosure_tries >= 2: self.state['disclosed'] = True
+        if self.state['checkin'] == 'answer': self.state['checkin'] = None        # the check-in round is over
+        elif self.state['checkin'] == 'due' and draft.checkin and text: self.state['checkin'] = 'asked'
         self.state['asked_ai'] = False
         if self.whisper_used: self.whisper = None; self.whisper_used = False     # one reply wrote with it: spent
         self.agent_turns += 1

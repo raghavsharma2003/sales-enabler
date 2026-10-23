@@ -431,3 +431,88 @@ class OptOutRuntime(unittest.TestCase):
         sess, p, replies = sim_call([DISCLOSED, 'Ji bilkul, ab aapko call nahi aayega.'], ['dobara call mat karna, mera number hata do'], c, 'raise')
         self.assertEqual(sess.ended, 'opt_out')
         self.assertEqual(len([m for m in of(p, 'moment') if m['kind'] == 'opt_out']), 1)
+
+
+def seq_fake(texts):
+    """A judge that answers each call with the next verdict in texts (the last one repeats)."""
+    seen = []
+    async def complete(msgs):
+        seen.append(msgs)
+        return {'text': texts[min(len(seen), len(texts)) - 1], 'usage': {'inputTokens': 120, 'outputTokens': 12}}
+    return complete, seen
+
+
+class CheckIn(unittest.TestCase):
+    """judge.json checkin (open.2026-10-23.judge-raise-soft-checkin), off by default: a judge-only crisis raise makes her
+    pause the agenda and check in, in her own words; the floor, or a crisis verdict on the answer, is the full path."""
+    AGENDA = 'Achha, waise aapka renewal 2 November ko hai.'
+    CHECK = 'Ek minute, renewal chhodiye. Aap abhi kaisa mehsoos kar rahe hain?'
+    ANSWER_LOW = 'pata nahi, sab bekaar lagta hai, kisi ko farak nahi padega'
+    ANSWER_OK = 'nahi nahi main theek hoon, bas thoda thak gaya tha kaam se'
+
+    def call(self, judge_texts, lines, script=None, checkin='1'):
+        c, seen = seq_fake(judge_texts)
+        t = ticket(); s, p = sink(t['conversationId'])
+        brain = FakeBrain(script or [DISCLOSED, self.AGENDA, self.CHECK, 'Main yahin hoon.', 'Ji.'], first_token_s=0.05)
+        comp = components(brain=brain); comp.judge_complete = c
+        from vpvoice.session import SimSession
+        env = {**ENV_ON, 'VP_SAFETY_JUDGE_MODE': 'raise', **({'VP_SAFETY_JUDGE_CHECKIN': checkin} if checkin else {})}
+        async def go():
+            sess = SimSession(t, comp, s, env=env, watchdog_s=0.01)
+            out = [await sess.start()]
+            for line in lines:
+                if sess.ended: break
+                out.append(await sess.caller_says(line))
+            if not sess.ended: await sess.hang_up()
+            return sess, out
+        sess, out = asyncio.run(go())
+        return sess, p, out, brain, seen
+
+    def test_off_by_default(self):
+        self.assertFalse(judge.checkin_enabled({}))
+        sess, p, out, _, _ = self.call([verdict(True, 0.8, 'indirect')], [INDIRECT], checkin=None)
+        self.assertIn('14416', ' '.join(out[1]), 'check-in off: a judge raise is the full crisis path, as before')
+
+    def test_a_judge_only_raise_checks_in_instead_of_the_script(self):
+        sess, p, out, brain, _ = self.call([verdict(True, 0.8, 'indirect')], [INDIRECT])
+        self.assertEqual(' '.join(out[1]), self.CHECK, 'the reply was written again as the check-in; the agenda draft was never said')
+        said = ' '.join(out[1])
+        self.assertNotIn('14416', said); self.assertNotIn('renewal 2 November', said)
+        last = brain.calls[2][-1]['content']
+        self.assertIn('CHECK-IN: ' + rules.RULES['checkin']['shapes'][0], last, 'the brain got the shapes')
+        self.assertNotIn('CHECK-IN', brain.calls[1][-1]['content'])
+        self.assertNotIn('goals still open', last, 'the agenda is paused')
+        self.assertEqual(safety_details(p), [('RD3', 'flagged', 'judge_raised')], 'one flag; not suspended_goal')
+        self.assertEqual(of(p, 'hand_off'), [])
+        self.assertEqual(judge_events(p), [('raise', 'raised', 'indirect', None)])
+        self.assertFalse(sess.conv.state['crisis'])
+        self.assertEqual(sess.conv.state['checkin'], 'asked')
+
+    def test_a_crisis_verdict_on_the_answer_takes_the_full_path(self):
+        sess, p, out, _, seen = self.call([verdict(True, 0.8, 'indirect'), verdict(True, 0.7, 'indirect')], [INDIRECT, self.ANSWER_LOW])
+        said = ' '.join(out[2])
+        self.assertIn('14416', said); self.assertIn('112', said)
+        self.assertEqual([x[1] for x in safety_details(p)], ['flagged', 'suspended_goal', 'replaced'], 'flag, then the full path: goal suspended and the lines in place of her reply')
+        self.assertEqual([h['reason'] for h in of(p, 'hand_off')], ['crisis'])
+        self.assertTrue(sess.conv.state['crisis']); self.assertIsNone(sess.conv.state['checkin'])
+        self.assertEqual(len(seen), 2)
+
+    def test_the_floor_during_a_check_in_is_the_full_path_at_once(self):
+        sess, p, out, _, _ = self.call([verdict(True, 0.8, 'indirect'), verdict(False, 0.1, 'none')], [INDIRECT, 'main marna chahta hoon'])
+        self.assertIn('14416', ' '.join(out[2]))
+        self.assertTrue(sess.conv.state['crisis'])
+
+    def test_a_calm_answer_ends_the_check_in_and_the_agenda_may_return(self):
+        script = [DISCLOSED, self.AGENDA, self.CHECK, 'Achha, sun kar achha laga. Kya abhi do minute baat karna theek rahega?', 'Ji.']
+        sess, p, out, brain, _ = self.call([verdict(True, 0.8, 'indirect'), verdict(False, 0.1, 'none')], [INDIRECT, self.ANSWER_OK, 'haan boliye'], script=script)
+        self.assertNotIn('14416', ' '.join(sum(out, [])))
+        self.assertIn('CHECK-IN: ' + rules.RULES['checkin']['answer_shapes'][0], brain.calls[3][-1]['content'], 'her reply to the answer follows the answer shapes')
+        self.assertIsNone(sess.conv.state['checkin'])
+        self.assertIn('goals still open', brain.calls[4][-1]['content'], 'after the round, the agenda may return')
+        self.assertEqual([x[1] for x in safety_details(p)], ['flagged'])
+
+    def test_shapes_are_instructions_never_lines_to_recite(self):
+        c = rules.RULES['checkin']
+        for x in c['shapes'] + c['answer_shapes']:
+            self.assertNotRegex(x, r'["“”]', x)
+            self.assertNotRegex(x, r'[ऀ-ॿ]|\b(aap|kaise|kaisa|theek|haan)\b', 'no Hinglish she could parrot: ' + x)

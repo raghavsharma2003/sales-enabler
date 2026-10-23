@@ -138,6 +138,11 @@ def ledger(transcript, agent, contact, state):
     if state.get('crisis'):
         rows.append('CRISIS: the goal of this call is suspended. Stay with them, slow and warm; Tele-MANAS 14416 and 112 '
                     'are the numbers; offer a human; never end the call yourself')
+    checkin = None if state.get('crisis') else state.get('checkin')
+    if checkin in ('due', 'answer'):     # a judge-only crisis raise, check-in on: shapes from rules.json, never lines
+        from . import rules
+        rows.append('CHECK-IN: ' + ' '.join((rules.RULES.get('checkin') or {}).get('shapes' if checkin == 'due' else 'answer_shapes') or []))
+    paused = state.get('crisis') or checkin in ('due', 'answer')
     name = (contact.get('displayName') or '').strip()
     if not state.get('identity_verified'):
         # the brief asks for the person by name; with no name she must never say a blank ("क्या मैं ___ से…")
@@ -168,14 +173,14 @@ def ledger(transcript, agent, contact, state):
     if figures: rows.append('other figures you said: ' + ' · '.join(f'{n:,}' for n in figures[:6]))
     goals = agent.get('goals') or []
     done = state.get('goals_done') or {}
-    if goals and not state.get('crisis'):
+    if goals and not paused:
         open_ = [g for g in goals if g.get('id') not in done]
         if done: rows.append('goals settled: ' + ' · '.join(done))
         if open_: rows.append('goals still open: ' + ' · '.join(f"{g['id']} ({g.get('description', '')[:90]})" for g in open_))
     read = [name for name, rx in CUES if any(rx.search(c) for c in callers[-3:])]
     if read: rows.append('lately they sound: ' + ', '.join(read))
     since = state.get('turns_since_goal', 0)
-    if goals and not state.get('crisis') and len(her) >= 3 and since >= 3 and 'irritated' not in read and 'worried' not in read:
+    if goals and not paused and len(her) >= 3 and since >= 3 and 'irritated' not in read and 'worried' not in read:
         rows.append(f'the goal has not moved for {since} of your turns: when there is a natural bridge, take it')
     if callers and CLOSING.search(callers[-1]) and not state.get('crisis'):
         rows.append('they sound ready to finish: one warm closing line, then <end_call>')

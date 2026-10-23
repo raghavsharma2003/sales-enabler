@@ -4,7 +4,7 @@
   "safety.check (read)",
   "safety.cases (read)"
  ],
- "judge": "shared/safety/judge.json + judge.ts (+ voice judge.py): one call, two labels (crisis, opt_out), raise-only, default shadow, never called without VP_LLM_SAFETY_JUDGE_* keys; an opt-out raise confirms, emits the opt_out moment and ends the call. Eval: node product/scripts/judge-eval.mjs --task both ... (README).",
+ "judge": "shared/safety/judge.json + judge.ts (+ voice judge.py): one call, two labels (crisis, opt_out), raise-only, default shadow, never called without VP_LLM_SAFETY_JUDGE_* keys; an opt-out raise confirms, emits the opt_out moment and ends the call. Eval: node product/scripts/judge-eval.mjs --task both ... (README). Since 2026-10-23: 1,500 ms, Flash-Lite recommended (judge.json model_recommended), non-blocking in the voice runtime; optional judge-only check-in (judge.json checkin, VP_SAFETY_JUDGE_CHECKIN, default off; rules.json checkin shapes). Blind set 8 (sets/heldout-8.json) is unscored and unread by the builder.",
  "tests": {
   "passed": 34,
   "total": 34,
@@ -26,7 +26,8 @@
   "Python door parity (it does not load rules.json yet)",
   "T-L5 (ambience warning) is not implemented: AgentConfig has no ambience field",
   "code-mixed recall beyond Tamil/Bengali/Marathi/Telugu/Gujarati-English; blind set 7 shows the regex floor reaches 37% crisis recall on fresh code-mixed phrasings",
-  "the crisis judge on a real model (judge-eval not yet run)"
+  "the crisis judge inside the voice runtime against a real model (offline judge-eval has run on the VM: BLIND 7, research/2026-10-23/judge-eval-blind7)",
+  "The check-in threshold and prompt are not tuned: no DEV run of Flash-Lite exists yet (needs the lab VM); judge-eval prints the threshold sweep and takes --prompt-file for it."
  ],
  "needs_from_others": [
   "voice runtime: rules.json gained normalisation (executable contract: NFKC, strip, fold, drop, space), words_to_amounts, lexicon entries that reference other entries (expand @name recursively), rd2.denial / rd2.real_person_claim / rd2.self_nature_unaffirmed, cs.crisis.recall / cs.crisis.tamil; per_contact_facts compares digits; redaction and digit signals read foldForDigits(text)",

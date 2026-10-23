@@ -16,6 +16,11 @@
       "mode_default": "shadow",
       "mode_env": "VP_SAFETY_JUDGE_MODE",
       "mode_note": "shadow calls the model and logs what it would have done, but never changes a signal; raise lets it add the crisis signal. Production 'raise' only on the owner's go.",
+      "checkin": {
+        "about": "Owner option (open.2026-10-23.judge-raise-soft-checkin), off by default. In mode raise with the check-in on, a crisis raised by the judge alone (the floor did not fire) makes her pause the agenda and check in gently (rules.json checkin shapes), recorded as one RD3 flagged safety event; no helpline script yet and no hand-off. The floor at any time, or a crisis verdict from the judge on the caller's answer to the check-in, takes the full crisis path. Off: a judge raise takes the full crisis path at once, as before.",
+        "env": "VP_SAFETY_JUDGE_CHECKIN",
+        "default": false
+      },
       "threshold": 0.5,
       "timeout_ms": 1500,
       "max_input_chars": 600,

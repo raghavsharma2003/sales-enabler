@@ -55,11 +55,35 @@ node product/scripts/judge-eval.mjs --task both --source dev-7,optout-dev --rps 
   --price-in <...> --price-out <...> --max-cost-inr 50 --max-requests 600 --label <short-label>-dev --out-dir /tmp/judge-eval/<short-label>-dev
 ```
 
+### Check-in and DEV tuning (open.2026-10-23.judge-raise-soft-checkin)
+
+- **The check-in** (judge.json `checkin`, env `VP_SAFETY_JUDGE_CHECKIN=1`, off by default, only in mode `raise`).
+  - A crisis raised by the judge alone (the floor did not fire) makes her pause the agenda and check in, in her own
+    words, from the shapes in rules.json `checkin`. They are never lines she could recite.
+  - The event record is one `safety` RD3 `flagged`, with no hand-off yet.
+  - The floor at any time, or a crisis verdict from the judge on the caller's answer, takes the full crisis path:
+    14416 and 112, goal suspended, a human offered.
+  - A calm answer ends the round, and the agenda may return when they invite it.
+- **Tune on DEV only.** One DEV run gives the whole threshold curve. The summary's threshold sweep reads recall and
+  FP at 0.3–0.9 from the recorded confidences.
+  - `--prompt-file <file>` tries a prompt variant. It refuses any heldout set, so a prompt is never shaped on a
+    blind line.
+  - Pick the threshold and prompt on `dev-7,optout-dev`.
+  - Then score `sets/heldout-8.json` (BLIND 8: written by a separate agent, unread by the builder) once, at the
+    threshold in judge.json:
+
+```
+node product/scripts/judge-eval.mjs --task crisis --source dev-7 --rps 1 --concurrency 1 --price-in <...> --price-out <...> \
+  --max-cost-inr 30 --label flashlite-dev7 --out-dir /tmp/judge-eval/flashlite-dev7            # baseline + sweep
+node product/scripts/judge-eval.mjs --task crisis --source dev-7 --prompt-file /tmp/candidate.txt ... --label flashlite-dev7-p2
+node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/sets/heldout-8.json ... --label flashlite-blind8   # ONCE
+```
+
 - **Budget.** `--rps` is a hard rate shared by all workers (default 1/s). `--max-requests` (default 2000) and
   `--max-cost-inr` (needs both prices) stop the run; the report says if it stopped early. Lines are interleaved
   crisis / non-crisis so a capped run still covers both sides.
-- **Outputs** in `--out-dir`: `report.json` (all slices with k, n, rate, Wilson CI), `results.json` (one row per line:
-  floor, judge, confidence, kind, latency, failure reason) and `summary.md` (the table). The markdown also prints to
+- **Outputs** in `--out-dir`: `report.json` (all slices with k, n, rate, Wilson CI, the threshold sweep and the prompt
+  used), `results.json` (one row per line: floor, judge, confidence, kind, opt-out value, latency, failure reason) and `summary.md` (the table). The markdown also prints to
   stdout. No key or URL is ever written.
 - **Where.** Run from the India lab VM so latency is what a call sees. Google credentials only from that VM,
   rate-limited (≤ 1 req/s). No paid upgrade without the owner's go.

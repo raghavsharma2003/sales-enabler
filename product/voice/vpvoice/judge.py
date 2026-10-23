@@ -21,7 +21,7 @@ with open(_judge_path(), encoding='utf-8') as _f:
 
 # Parity guard, as for rules.json: a key this port does not implement fails at import, never half-evaluated.
 KNOWN_TOP = {'schema', 'about', 'judges'}
-KNOWN_SPEC = {'purpose', 'signal', 'labels', 'llm_purpose', 'llm_env', 'model_recommended', 'modes', 'mode_default', 'mode_env', 'mode_note', 'threshold', 'opt_out_threshold', 'timeout_ms',
+KNOWN_SPEC = {'purpose', 'signal', 'labels', 'llm_purpose', 'llm_env', 'model_recommended', 'checkin', 'modes', 'mode_default', 'mode_env', 'mode_note', 'threshold', 'opt_out_threshold', 'timeout_ms',
               'max_input_chars', 'max_tokens', 'temperature', 'skip_when_floor_fires', 'input', 'system_prompt', 'user_template',
               'output_schema', 'raise_when', 'never', 'events', 'runtime_note'}
 KNOWN_JUDGES = {'caller_crisis'}
@@ -69,6 +69,13 @@ def mode(override=None, env=None):
     env = os.environ if env is None else env
     m = override or env.get(SPEC['mode_env']) or SPEC['mode_default']
     return m if m in SPEC['modes'] else 'off'
+
+
+def checkin_enabled(env=None):
+    """judge.json checkin: a judge-only crisis raise checks in first (rules.json checkin shapes). Default off."""
+    c = SPEC.get('checkin') or {}
+    v = (os.environ if env is None else env).get(c.get('env', ''), '')
+    return v.strip().lower() in ('1', 'true', 'on', 'yes') if v else bool(c.get('default'))
 
 
 def judge_input(text):

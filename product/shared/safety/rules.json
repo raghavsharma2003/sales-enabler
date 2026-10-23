@@ -18,6 +18,21 @@
     "stop_digits": "Ek second, please koi bhi OTP, PIN ya card number mujhe mat bataiye. Main kabhi nahi poochhungi, aapki suraksha ke liye.",
     "opt_out_confirm": "Ji bilkul, aapka number hamari list se hata diya jayega aur aapko dobara call nahi aayega. Pareshani ke liye maafi, dhanyavaad."
   },
+  "checkin": {
+    "about": "The judge-only crisis check-in (judge.json checkin, default off; open.2026-10-23.judge-raise-soft-checkin). When the model judge alone raises a crisis (the floor did not fire) and the check-in is on, she does not give the full crisis script at once: she pauses the agenda and checks in, in her own words. These are SHAPES for the brain, never lines to recite. The floor, or a crisis verdict on the caller's answer to the check-in, takes the full crisis path (Tele-MANAS 14416 and 112, goal suspended, a human offered).",
+    "shapes": [
+      "Set the reason for the call aside completely in this reply: no product, payment, date, offer or request.",
+      "Respond first to what they just said, briefly and in your own words; do not repeat their words back and do not name a diagnosis.",
+      "Ask one gentle, open question about how they are doing right now, in the language and register they are using.",
+      "Make room: there is no hurry and you are listening. Keep the reply short so they can speak.",
+      "Do not argue, cheer them up, advise or end the call. If they are in danger, the crisis lines come first."
+    ],
+    "answer_shapes": [
+      "They have just answered your check-in. Keep the reason for the call aside in this reply.",
+      "If they say they are fine, accept it warmly and ask whether it is a good moment to go on; return to the call's purpose only if they say yes.",
+      "If they sound low or unsure, stay with them and listen; do not push the call's purpose."
+    ]
+  },
   "masks": {
     "otp": "[OTP]",
     "card": "[CARD]",

@@ -28,7 +28,7 @@ VERSION = RULES.get('version')
 # Every key and enum value this port understands. A rules.json carrying anything else means index.ts has new
 # semantics this file does not have yet: refuse to load (CI breaks at import), never evaluate it partially.
 KNOWN = {
-    'top': {'schema', 'version', 'about', 'regex', 'texts', 'masks', 'lexicon', 'reply', 'caller', 'redact', 'lint', 'links',
+    'top': {'schema', 'version', 'about', 'regex', 'texts', 'checkin', 'masks', 'lexicon', 'reply', 'caller', 'redact', 'lint', 'links',
             'normalisation', 'words_to_amounts'},
     'normalisation': {'about', 'steps', 'form', 'strip', 'fold', 'drop', 'space'},
     'words_to_amounts': {'about', 'units', 'multipliers'},
@@ -50,6 +50,7 @@ KNOWN = {
     'T-L3': {'about', 'allowedPurposes', 'offerLanguage'},
     'T-L4': {'about', 'shorteners'},
     'links': {'pattern', 'about'},
+    'checkin': {'about', 'shapes', 'answer_shapes'},
 }
 
 
@@ -67,6 +68,7 @@ def check_schema(r):
     keys(r, 'top', 'rules.json'); keys(r.get('regex', {}), 'regex', 'regex'); keys(r.get('masks', {}), 'masks', 'masks')
     keys(r.get('normalisation', {}), 'normalisation', 'normalisation'); keys(r.get('words_to_amounts', {}), 'words_to_amounts', 'words_to_amounts')
     if r.get('normalisation', {}).get('form') not in (None, 'NFC', 'NFD', 'NFKC', 'NFKD'): bad.append(f"normalisation.form {r['normalisation']['form']!r}")
+    keys(r.get('checkin', {}), 'checkin', 'checkin')
     keys(r.get('redact', {}), 'redact', 'redact'); keys(r.get('lint', {}), 'lint', 'lint'); keys(r.get('links', {}), 'links', 'links')
     for k in (r.get('redact', {}).get('kinds') or []):
         keys(k, 'redact_kind', f"redact.kinds[{k.get('kind')}]")
