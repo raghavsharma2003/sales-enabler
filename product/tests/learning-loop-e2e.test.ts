@@ -115,7 +115,7 @@ test('the learning loop runs from finished calls to an adopted change carried by
 
   // ---- 4. the learning job drafts a proposal from the issue; nothing launches
   const ran = await proposeFromIssues({ pool, registry }, { workspaceId: ws });
-  assert.deepEqual(ran.ran.map(r => r.status), ['proposed']);
+  assert.deepEqual(ran.ran.map(r => r.status), ['proposed'], JSON.stringify(ran));
   let [p] = ok(await admin.tool('proposal.list'), 'proposal.list') as any[];
   assert.equal(p.status, 'drafted');
   assert.equal(p.from_issue != null, true, 'the proposal names the issue it came from');
@@ -123,7 +123,7 @@ test('the learning loop runs from finished calls to an adopted change carried by
   // ---- 5. simulate on practice callers (library defaults; the workspace has none of its own)
   ok(await admin.tool('proposal.probe', { proposalId: p.id }), 'proposal.probe');
   [p] = ok(await admin.tool('proposal.list'), 'proposal.list') as any[];
-  assert.equal(p.status, 'awaiting_approval', 'the simulation passed');
+  assert.equal(p.status, 'awaiting_approval', 'the simulation passed: ' + JSON.stringify(p).slice(0, 600));
 
   // ---- 6. readiness says what is missing, in order: an outcome, then 100 outcomes for the A/A check
   let ready = ok(await admin.tool('proposal.readiness', { proposalId: p.id }), 'readiness');
@@ -152,7 +152,7 @@ test('the learning loop runs from finished calls to an adopted change carried by
   const started = ok(await admin.run('experiment.start', { experimentId }), 'experiment.start');
   t.diagnostic('started: ' + JSON.stringify(started).slice(0, 300));
   const [e0] = ok(await admin.tool('experiment.list'), 'experiment.list') as any[];
-  assert.equal(e0.state, 'running');
+  assert.equal(e0.state, 'running', 'started: ' + JSON.stringify(started).slice(0, 800));
   const perArm = e0.design.horizonPerArm as number;
   t.diagnostic(`horizon: ${perArm} outcomes per version`);
 
@@ -177,9 +177,9 @@ test('the learning loop runs from finished calls to an adopted change carried by
 
   // ---- 10. the verdict is a win with its interval, and a 100% rollout card waits for the admin (A2)
   const [e1] = ok(await admin.tool('experiment.list'), 'experiment.list') as any[];
-  assert.equal(e1.state, 'decided');
+  assert.equal(e1.state, 'decided', JSON.stringify({ state: e1.state, result: e1.result, progress: e1.progress, arms }).slice(0, 800));
   const d = e1.result.decision;
-  assert.equal(d.verdict, 'win');
+  assert.equal(d.verdict, 'win', d.label);
   assert.ok(d.ci.lo > 0, 'the whole 95% interval is above zero: ' + d.label);
   const pending = (await admin.fetch('GET', '/v1/actions?status=proposed')).body.actions as any[];
   const rollout = pending.find(a => a.tool === 'deployment.split');
