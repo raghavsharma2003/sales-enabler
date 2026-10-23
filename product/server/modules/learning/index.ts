@@ -184,7 +184,7 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
 
 // ---------- probe ----------
 
-const probeIn = obj({ proposalId: uuid(), simCallerIds: opt(arr(uuid(), { min: 1, max: 12 })), seeds: opt(arr(num({ int: true, min: 0 }), { min: 1, max: 5 })) });
+const probeIn = obj({ proposalId: uuid(), simCallerIds: opt(arr(str({ min: 1, max: 80 }), { min: 1, max: 12 })), seeds: opt(arr(num({ int: true, min: 0 }), { min: 1, max: 5 })) });
 
 interface ProposalRow { id: string; agent_id: string; base_version_id: string | null; kind: string; change: any; status: string; simulation: any; calls_to_prove: number | null; change_hash: string | null; rationale: string | null }
 
@@ -207,11 +207,15 @@ async function probe(ctx: ToolCtx, i: { proposalId: string; simCallerIds?: strin
     await ctx.q.query(`UPDATE proposal SET status = 'gated_out', gates = $2 WHERE id = $1`, [p.id, JSON.stringify(gates)]);
     return { status: 'gated_out', failures: gates.failures };
   }
-  const callers = i.simCallerIds
-    ? (await many<{ id: string }>(ctx.q, `SELECT id FROM sim_caller WHERE workspace_id = $1 AND id = ANY($2::uuid[])`, [ws, i.simCallerIds])).map(r => r.id)
-    : (await many<{ id: string }>(ctx.q, `SELECT id FROM sim_caller WHERE workspace_id = $1 AND (agent_id = $2 OR agent_id IS NULL) ORDER BY created_at LIMIT 12`, [ws, p.agent_id])).map(r => r.id);
-  if (!callers.length) return { status: 'no_sim_callers', reason: 'add simulated callers for this agent before probing' };
-  const seeds = i.seeds ?? [1, 2, 3];
+  // The practice callers this agent can meet: the workspace's own first, else the agents module's library defaults.
+  const listed = await cross<{ callers: { id: string; source: string }[] }>(ws, 'simcaller.list', { agentId: p.agent_id });
+  const available = listed.status === 'confirmed' ? listed.result.callers
+    : (await many<{ id: string }>(ctx.q, `SELECT id FROM sim_caller WHERE workspace_id = $1 AND (agent_id = $2 OR agent_id IS NULL) ORDER BY created_at LIMIT 12`, [ws, p.agent_id])).map(r => ({ id: r.id, source: 'workspace' }));
+  const own = available.filter(c => c.source === 'workspace');
+  const callers = i.simCallerIds ? i.simCallerIds.filter(id => available.some(c => c.id === id))
+    : (own.length ? own : available).slice(0, 6).map(c => c.id);
+  if (!callers.length) return { status: 'no_sim_callers', reason: 'no practice callers are available for this agent' };
+  const seeds = i.seeds ?? [1, 2];
 
   const sim = async (config: AgentConfig) => cross<{ runs: SimRun[] }>(ws, 'test.simulate_batch', { agentId: p.agent_id, config, simCallerIds: callers, seeds });
   const current = await sim(agentOf(base));
@@ -245,6 +249,11 @@ type AcceptIn = ReturnType<typeof acceptIn>;
 /** Catalogue reason codes (conversation.reason_code, written by calls) that mean harm to the person called. */
 const DEFAULT_HAZARD_CODES = ['END_OPTED_OUT', 'CONV_COMPLAINT', 'END_CRISIS'];
 
+/** A campaign runs agent $2 when it names one of its versions (campaign.agent_version_id, how campaigns store it) or its
+ *  deployment does. */
+const CAMPAIGN_RUNS_AGENT = `(c.agent_version_id IN (SELECT v.id FROM agent_version v WHERE v.agent_id = $2)
+  OR c.deployment_id IN (SELECT dp.id FROM deployment dp WHERE dp.agent_id = $2 AND dp.workspace_id = $1))`;
+
 /** The success values for this agent's outcome: the business's own outcome_definition.goal_values, never a literal.
  *  Found through the campaigns that run this agent, or by the goal's outcome key; an explicit definition id wins. */
 async function goalValues(q: Queryable, ws: string, agentId: string, cfg: AgentConfig, definitionId?: string): Promise<{ values: string[]; definitionId: string }> {
@@ -252,9 +261,8 @@ async function goalValues(q: Queryable, ws: string, agentId: string, cfg: AgentC
     ? await many<{ id: string; goal_values: string[] }>(q, 'SELECT id, goal_values FROM outcome_definition WHERE workspace_id = $1 AND id = $2', [ws, definitionId])
     : await many<{ id: string; goal_values: string[] }>(q, `SELECT DISTINCT d.id, d.goal_values FROM outcome_definition d
         WHERE d.workspace_id = $1 AND cardinality(d.goal_values) > 0 AND (
-          d.id IN (SELECT c.outcome_definition_id FROM campaign c JOIN deployment dp ON dp.id = c.deployment_id AND dp.workspace_id = c.workspace_id
-                   WHERE c.workspace_id = $1 AND dp.agent_id = $2)
-          OR (NOT EXISTS (SELECT 1 FROM campaign c JOIN deployment dp ON dp.id = c.deployment_id WHERE c.workspace_id = $1 AND dp.agent_id = $2 AND c.outcome_definition_id IS NOT NULL)
+          d.id IN (SELECT c.outcome_definition_id FROM campaign c WHERE c.workspace_id = $1 AND ${CAMPAIGN_RUNS_AGENT})
+          OR (NOT EXISTS (SELECT 1 FROM campaign c WHERE c.workspace_id = $1 AND ${CAMPAIGN_RUNS_AGENT} AND c.outcome_definition_id IS NOT NULL)
               AND d.name = ANY($3::text[])))`, [ws, agentId, (cfg.goals ?? []).map(g => g.outcome)]);
   if (definitionId && !rows.length) throw new Error('no such outcome definition in this workspace');
   if (rows.length > 1) throw new Error('this agent records more than one outcome; pass outcomeDefinitionId to choose the one to test');

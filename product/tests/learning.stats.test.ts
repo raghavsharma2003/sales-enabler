@@ -97,3 +97,12 @@ test('probe verdict: a regression on any guarded metric rejects; unmatched runs 
   assert.equal(compareProbe(cur, [run('a', 2, true, 0), run('b', 1, true, 0)]).verdict, 'invalid');
   assert.ok(compareProbe(cur, [run('a', 1, true, 0), run('b', 1, true, 0)]).notReported.includes('reply_gap_ms'));
 });
+
+test('probe: boolean metrics from the simulator (hung_up, safety_violations, disclosure_missed) are guarded, not skipped', () => {
+  // test.simulate_batch reports these as booleans; reading only numbers silently switched the guardrails off.
+  const run = (id: string, hung: boolean, safety: boolean): SimRun => ({ simCallerId: id, seed: 1, passed: true, metrics: { hung_up: hung, safety_violations: safety, disclosure_missed: false } as any });
+  const v = compareProbe([run('a', false, false), run('b', false, false)], [run('a', false, true), run('b', false, false)]);
+  assert.equal(v.verdict, 'regressed', JSON.stringify(v));
+  assert.ok(!v.notReported.includes('safety_violations'));
+  assert.match(v.regressions.join(' '), /safety_violations/);
+});

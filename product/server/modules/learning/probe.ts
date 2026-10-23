@@ -1,7 +1,9 @@
 // Probe verdict: the current and proposed versions ran against the same simulated callers and seeds. Pure, so the
 // rule "a regression on any guarded metric rejects the proposal" can be tested without a simulator.
 
-export interface SimRun { simCallerId: string; seed: number; passed: boolean; metrics?: Record<string, number> }
+/** metrics may be numbers or booleans (test.simulate_batch reports hung_up, safety_violations, disclosure_missed as
+ *  booleans); a boolean counts as 0 or 1. */
+export interface SimRun { simCallerId: string; seed: number; passed: boolean; metrics?: Record<string, number | boolean> }
 
 export interface GuardedMetric { name: string; worse: 'higher' | 'lower'; tolerance: number }
 
@@ -39,9 +41,9 @@ export function compareProbe(current: SimRun[], proposed: SimRun[], guarded: Gua
   for (const k of cur.keys()) { if (cur.get(k)!.passed) out.passes.current++; if (prop.get(k)!.passed) out.passes.proposed++; }
   if (out.passes.proposed < out.passes.current) out.regressions.push(`simulated pass count fell ${out.passes.current} -> ${out.passes.proposed}`);
   for (const g of guarded) {
-    const has = (r: SimRun) => typeof r.metrics?.[g.name] === 'number';
+    const has = (r: SimRun) => typeof r.metrics?.[g.name] === 'number' || typeof r.metrics?.[g.name] === 'boolean';
     if (!current.every(has) || !proposed.every(has)) { out.notReported.push(g.name); continue; }
-    const c = mean(current.map(r => r.metrics![g.name]!)), p = mean(proposed.map(r => r.metrics![g.name]!));
+    const c = mean(current.map(r => Number(r.metrics![g.name]))), p = mean(proposed.map(r => Number(r.metrics![g.name])));
     const regressed = g.worse === 'higher' ? p > c + g.tolerance : p < c - g.tolerance;
     out.metrics[g.name] = { current: c, proposed: p, regressed };
     if (regressed) out.regressions.push(`${g.name} worsened ${round(c)} -> ${round(p)}`);

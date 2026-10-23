@@ -8,7 +8,7 @@ import { buildApp, type Module } from '../server/app.ts';
 import { createPool, many, one } from '../server/db.ts';
 import { setFakeLlm } from '../server/llm.ts';
 import { tool, type Actor, type Registry } from '../server/tools.ts';
-import { any, obj, str, uuid } from '../shared/validate.ts';
+import { any, obj, opt, str, uuid } from '../shared/validate.ts';
 import type { Job } from '../server/jobs.ts';
 import type { AgentConfig } from '../shared/agent-config.ts';
 import { bindLearning, checkRunning, module as learning } from '../server/modules/learning/index.ts';
@@ -20,6 +20,7 @@ const skip = !URL_ ? 'DATABASE_URL not set' : false;
 let pool: pg.Pool;
 let registry: Registry;
 const reverts: { ws: string; agentId: string; binding: string }[] = [];
+const simulated: { simCallerIds: string[] }[] = [];
 
 function cfg(agentId: string): AgentConfig {
   return {
@@ -52,9 +53,14 @@ const siblings: Module = {
     r.register(tool(obj({ agentId: uuid(), config: any(), simCallerIds: any(), seeds: any() }), { name: 'test.simulate_batch', risk: 'test', summary: 'fake simulator',
       run: async (_ctx, i) => {
         const bad = String((i.config as AgentConfig).opening.usefulFirst).includes('slowly');
+        simulated.push({ simCallerIds: i.simCallerIds as string[] });
         const runs = (i.simCallerIds as string[]).flatMap(id => (i.seeds as number[]).map(seed => ({ simCallerId: id, seed, passed: !bad, metrics: { hung_up: bad ? 1 : 0, safety_violations: 0 } })));
         return { runs };
       } }));
+    // Like the agents module: the library's defaults first, then this workspace's own callers.
+    r.register(tool(obj({ agentId: opt(uuid()) }), { name: 'simcaller.list', risk: 'read', summary: 'fake practice callers',
+      run: async ctx => ({ callers: [...['default:busy', 'default:sceptical', 'default:elderly'].map(id => ({ id, source: 'library' })),
+        ...(await pool.query('SELECT id FROM sim_caller WHERE workspace_id = $1', [ctx.workspaceId])).rows.map(r => ({ id: r.id, source: 'workspace' }))] }) }));
     r.register(tool(versionCandidateIn, { name: 'version.candidate', risk: 'draft', summary: 'fake candidate version', run: versionCandidate }));
     r.register(tool(obj({ agentId: uuid(), binding: str() }), { name: 'deployment.revert_to_last_good', risk: 'external', summary: 'fake revert',
       run: async (ctx, i) => { reverts.push({ ws: ctx.workspaceId, agentId: i.agentId, binding: i.binding }); return { reverted: true }; } }));
@@ -483,4 +489,32 @@ test('cross-module: conversations written the way calls writes them trip the haz
   const stop = await h.t.call('experiment.check', { experimentId: acc2.result.experimentId });
   assert.equal(stop.result.state, 'stopped_guardrail', JSON.stringify(stop.result));
   assert.match(stop.result.reason, /complaints\/opt-outs/);
+});
+
+test('probe falls back to the practice-caller library when the workspace has none of its own', { skip }, async () => {
+  const t = await workspace();
+  await pool.query('DELETE FROM sim_caller WHERE workspace_id = $1', [t.ws]);
+  const [evidence] = await calls(t.ws, t.versionId, 5, 1);
+  fakeProposals(evidence!);
+  const pid = (await t.call('learning.propose', { agentId: t.agentId, max: 1 })).result.proposals[0].id;
+  const before = simulated.length;
+  const r = await t.call('proposal.probe', { proposalId: pid });
+  assert.equal(r.result.status, 'awaiting_approval', JSON.stringify(r.result));
+  assert.ok(r.result.verdict.pairs >= 2);
+  assert.ok(simulated.length > before && simulated.slice(before).every(s => s.simCallerIds.every((id: string) => id.startsWith('default:'))), 'library callers were used');
+});
+
+test('success values are found through a campaign that names the agent version (campaign.agent_version_id), as campaigns store it', { skip }, async () => {
+  const t = await workspace();
+  await pool.query("DELETE FROM outcome_definition WHERE workspace_id = $1", [t.ws]);   // only the campaign's definition
+  const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values)
+    VALUES ($1, 'renewal', 'Did they renew?', '{renewed,not_renewed}', '{renewed}') RETURNING id`, [t.ws]))!.id;
+  await pool.query(`INSERT INTO campaign (workspace_id, name, call_category, outcome_definition_id, agent_version_id) VALUES ($1,'Renewals','service',$2,$3)`, [t.ws, def, t.versionId]);
+  const [ev] = await calls(t.ws, t.versionId, 40, 0, { outcome: i => (i < 10 ? 'renewed' : 'not_renewed') });
+  fakeProposals(ev!);
+  const pid = (await t.call('learning.propose', { agentId: t.agentId, max: 1 })).result.proposals[0].id;
+  await t.call('proposal.probe', { proposalId: pid });
+  const ok = await t.approve((await t.call('proposal.accept', { proposalId: pid, mdeAbs: 0.2 })).actionId);
+  assert.equal(ok.status, 'confirmed', JSON.stringify(ok));
+  assert.equal(ok.result.baseline, 0.25);
 });
