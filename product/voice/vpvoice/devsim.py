@@ -16,6 +16,7 @@ from .providers import Components
 from .server import Runtime
 
 HEARD = ['Haan ji, boliye.', 'Achha, aur batayiye.', 'Theek hai, thank you.']     # what the fake ears "hear", in turn
+OPT_OUT_CONFIRM = 'Ji bilkul, ab aapko hamari taraf se call nahi aayega. Dhanyavaad.'
 REPLIES = ['Ji, main aapki baat samajh gayi.', 'Achha, theek hai. Main aapko details message par bhej deti hoon.',
            'Ji bilkul, aur kuch poochna ho to batayiye.']
 
@@ -26,7 +27,11 @@ class FakeBrain:
 
     async def stream(self, messages, usage, timing, max_tokens=180):
         a = self.t['agent']; i = self.n; self.n += 1
-        if i == 0:
+        # Like an obedient model, follow the brief's opt-out row (brief.py): confirm in one warm line, no pitch. The
+        # runtime itself ends the call with end reason opt_out after this reply is heard (session.after_reply).
+        if any('asked not to be called again' in (m.get('content') or '') for m in messages if m.get('role') == 'system'):
+            text = OPT_OUT_CONFIRM
+        elif i == 0:
             clause = (a.get('opening') or {}).get('disclosureClause') or f"Main {(a.get('brand') or {}).get('spokenName', 'company')} ki AI assistant hoon."
             text = clause
         else:

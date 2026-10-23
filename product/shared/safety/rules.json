@@ -931,7 +931,7 @@
         "\\bstop calling\\b",
         "\\b(remove|delete|hata|hatao|hata do|hata dijiye|nikal|nikalo|nikaal do)\\b[^.?!]{0,15}\\b(my number|mera number|number|list)\\b",
         "\\b(my number|mera number|number)\\b[^.?!]{0,15}\\b(remove|delete|hata|hatao|hata do|hata dijiye|nikal|nikalo|nikaal do)\\b",
-        "\\b(unsubscribe|opt out|opt-out|dnd)\\b",
+        "\\b(unsubscribe|opt ?out)\\b",
         "\\b(ye|yeh|aise|aisi|in|inn)\\b[^.?!]{0,5}\\b(calls?)\\b[^.?!]{0,10}\\b(band karo|band kijiye|band kar do|bandh karo|stop karo|nahi chahiye)\\b",
         "\\b(not interested|interest nahi hai)\\b[^.?!]{0,20}\\b(call|phone)\\b[^.?!]{0,10}\\b(mat|don'?t|never|nahi)\\b",
         "(दोबारा|दुबारा|फिर से|कभी|आगे से|अब से|कभी भी)[^।?!]{0,10}(कॉल|फोन|call|phone)[^।?!]{0,6}(?<![\\u0900-\\u097F])(मत|न|नहीं)(?![\\u0900-\\u097F])",
@@ -947,7 +947,10 @@
         "\\bnumber (block|band) kar (do|dijiye)\\b",
         "(फोन|कॉल|call|calls)[^।?!]{0,5}नहीं चाहिए",
         "\\b(calls?)\\b[^.?!]{0,10}\\b(nahi|nahin) chahiye\\b",
-        "(फोन|कॉल|call)[^।?!]{0,5}नहीं (आना|आनी|आने) चाहिए"
+        "(फोन|कॉल|call)[^।?!]{0,5}नहीं (आना|आनी|आने) चाहिए",
+        "\\b(dnd|do not (call|disturb))\\b ?(list)?\\b[^.?!]{0,12}\\b(mein|me|ma|madhe|la|lo|il|e|ge)?\\b ?(daal|dalo|daalo|dal do|kar do|put|add|register|rakhun|muko|thevaa|thevo|poodunga|podunga|veyandi|haaki|idu|activate)",
+        "\\b(put|add|register)\\b[^.?!]{0,15}\\b(me|my number)\\b[^.?!]{0,6}\\b(on|in|to)\\b ?(the|your)? ?(dnd|do not call|do not disturb)",
+        "(डीएनडी|डू नॉट कॉल)[^।?!]{0,10}(में|मे) (डाल|कर)"
       ]
     },
     {
@@ -960,7 +963,66 @@
       ],
       "none": [
         "\\b(abhi|aaj|kal|baad mein|baad me|thodi der|shaam|subah|raat|dopahar|later|right now|now|today|tomorrow|this week|next week|agle hafte|weekend|meeting|busy|drive|office time|working hours|\\d ?baje|before|after|ke baad|se pehle)\\b",
-        "(अभी|आज|कल|बाद में|शाम|सुबह|रात|मीटिंग|बिजी|ड्राइव)"
+        "(अभी|आज|कल|बाद में|शाम|सुबह|रात|मीटिंग|बिजी|ड्राइव)",
+        "\\b(wife|husband|papa|father|mother|mummy|beta|beti|bhai|behen)\\w*\\b[^.?!]{0,10}\\b(ke )?number\\b|\\bmere (number )?pe karo\\b|\\bcall me instead\\b|\\bmujhe karo\\b"
+      ]
+    },
+    {
+      "id": "cs.opt_out.en_more",
+      "signal": "optOut",
+      "any": [
+        "\\bblock my number\\b",
+        "\\bno more (calls|messages|sms)\\b",
+        "\\b(don'?t|do not|never) disturb me\\b",
+        "\\bstop (these|the|your|all) (calls|messages)\\b",
+        "\\btake (me|my (name|number)) off (your|the|this) list\\b",
+        "\\b(this is|it'?s|that'?s) the last time you call",
+        "\\bif you call (me )?again\\b",
+        "\\bdo not call list\\b",
+        "\\b(remove|delete) (me|my (name|number|details)) from (your|the) (list|database|records|system)\\b"
+      ],
+      "noneClause": [
+        "\\b(abhi|aaj|kal|baad mein|later|tomorrow|evening|morning|right now|now|busy|driving|meeting|ippo|ippodhu|saayangalam|naalaiku|aprom|apuram|ekhon|bikele|sondhey|sondhya|udya|sandhyakali|kale|saanje|ippudu|repu|saayantram|sayantram|ivattu|naale|sanje|ippol|vaikittu|after|nantar|thodya velane|office time|office hours|vaikunneram|raathri|raatri|night|\\d ?(baje|mani|o'?clock|pm|am))\\b(?![^.?!]{0,20}\\b(again|anymore|any more|ever)\\b)"
+      ]
+    },
+    {
+      "id": "cs.opt_out.hinglish_more",
+      "signal": "optOut",
+      "any": [
+        "\\b(disturb|pareshan|tang)\\b ?(mat|na|nahi) (karo|karna|kijiye|karein)\\b",
+        "\\bab (call|phone) (nahi|mat) (karna|karo|kijiye)\\b",
+        "\\bkitni baar (bolu|bolun|kahun|bataun)\\b",
+        "\\b(list|database|record)\\w* (se|me se|mein se)\\b[^.?!]{0,15}\\b(hata|hatao|nikal|nikalo|nikaal|delete|remove)",
+        "\\b(calls?|sms|messages?)\\b[^.?!]{0,15}\\b(dono )?band (karo|karwao|kar do|kijiye)\\b",
+        "\\bdo not call list\\b",
+        "\\blast time hai jab\\b",
+        "\\b(trai|complaint)\\b[^.?!]{0,20}\\b(warna|nahi toh|agar)\\b|\\b(warna|nahi toh)\\b[^.?!]{0,20}\\b(trai|complaint)\\b",
+        "(लिस्ट|सूची)[^।?!]{0,8}से[^।?!]{0,10}(हटा|निकाल)|परेशान मत|(रोज|बार बार)[^।?!]{0,15}(फोन|कॉल)[^।?!]{0,20}बंद करो"
+      ],
+      "noneClause": [
+        "\\b(abhi|aaj|kal|baad mein|later|tomorrow|evening|morning|right now|now|busy|driving|meeting|ippo|ippodhu|saayangalam|naalaiku|aprom|apuram|ekhon|bikele|sondhey|sondhya|udya|sandhyakali|kale|saanje|ippudu|repu|saayantram|sayantram|ivattu|naale|sanje|ippol|vaikittu|after|nantar|thodya velane|office time|office hours|vaikunneram|raathri|raatri|night|\\d ?(baje|mani|o'?clock|pm|am))\\b"
+      ]
+    },
+    {
+      "id": "cs.opt_out.regional",
+      "signal": "optOut",
+      "about": "Code-mixed opt-out requests (Tamil-, Telugu-, Kannada-, Malayalam-, Bengali-, Marathi-, Gujarati-English). Time-deferral words exempt only their own clause.",
+      "any": [
+        "\\b(call|calls|phone)\\s+(pann?aa?dh?eenga|pann?aa?dh?inga|panna koodathu|panna koodadhu)\\b|\\b(call|calls)\\s?um varakoodadhu\\b|\\bthollai pann?aa?dh?eenga\\b|\\bkadaisi thadava\\b",
+        "\\b(database|list)\\s?(la|il) irundhu\\b[^.?!]{0,15}\\b(neekidunga|neekkunga|eduthidunga|edunga|remove pannunga|thookidunga)\\b|\\bnumber\\s?(ah|a)? block pannidunga\\b|\\b(calls?|messages?)\\s?(um)?[^.?!]{0,15}\\b(niruthunga|nirutthunga|stop pannunga|vendaam|vendam|thevai illa)\\b|\\bdo not disturb list la\\b",
+        "\\b(call|calls)\\s+(cheyyakandi|cheyakandi|cheyyoddu|cheyodhu|cheyyodhu)\\b|\\bdisturb cheyy?akandi\\b|\\bchivari saari\\b|\\b(database|list) nundi\\b[^.?!]{0,15}\\b(teeseyandi|tholagimchandi|tholaginchandi|remove cheyyandi)\\b|\\b(calls?) (vaddu|avasaram ledu)\\b|\\bnumber block cheyyandi\\b|\\bdo not call list lo\\b|\\b(call|calls)\\b[^.?!]{0,20}\\baapandi\\b",
+        "\\b(call|calls)\\s+(maadabedi|maadbedi|madabedi|maadbeda)\\b|\\b(disturb|kalisa)\\s?(maadabedi|bedi)\\b|\\bkalisabedi\\b|\\b(list|database)\\s?inda\\b[^.?!]{0,15}\\b(tegeyiri|tegedu haaki|tegedu hako)\\b|\\b(calls?)\\b[^.?!]{0,20}\\b(beda|nillisi)\\b|\\bnumber block maadi\\b|\\bdo not call list ge\\b|\\bkone sala\\b|\\binmele call\\b",
+        "\\b(call|calls)\\s+(cheyyaruthu|cheyyenda)\\b|\\b(vilikkaruthu|vilikkenda|ayakkaruthu)\\b|\\bshalyam cheyyaruthu\\b|\\b(list|database)\\s?il ninnu\\b[^.?!]{0,15}\\b(ozhivaakku|maattu|kalayu|neekku)\\b|\\b(calls?)\\b[^.?!]{0,10}\\b(venda|nirthu|nirthuka)\\b|\\bnumber (block cheyyu|kalayu|maattu)\\b|\\bdo not call list il\\b|\\bavasana thavana\\b",
+        "\\b(ar|abar)\\b ?(disturb|phone|call) korben na\\b|\\b(call|phone)\\s?(gulo)?\\s?(lagbe na|korben na)\\b|\\bbondho korun\\b|\\bdo not call list e\\b|\\bnumber\\s?(ta)? (block kore din|muche din|bad din)\\b|\\blist theke bad din\\b|\\bshesh bar apni\\b|\\bpathaben na\\b",
+        "\\b(call|calls)\\s+karu naka\\b|\\btras deu naka\\b|\\bpathavu naka\\b|\\bband kara\\b|\\bnumber block kara\\b|\\bshevtcha vela\\b|\\b(database|list) madhun\\b[^.?!]{0,15}\\b(kadhun taka|kadha|kadhun tak)\\b|\\bnumber kadhun taka\\b|\\bdo not call list madhe\\b|\\b(calls?)\\b[^.?!]{0,10}\\bnako\\b",
+        "\\b(call|calls)\\s+(na karsho|nahi karvano|na karta|nahi karta)\\b|\\bdisturb na karsho\\b|\\bchhelli vaar\\b|\\bnumber (block kari do|hatavi do|kadhi nakho)\\b|\\b(list|database) ?mathi\\b[^.?!]{0,15}\\b(kadhi do|kadhi nakho|kadho)\\b|\\b(calls?)\\b[^.?!]{0,10}\\b(nathi joita|bandh karo)\\b|\\bbandh karo\\b|\\bdo not call list ma\\b|\\bmokalsho nahi\\b",
+        "\\b(vilikkunnu|vilikunnu|call)\\b[^.?!]{0,20}\\b(nirthu|nirthuka)\\b|\\bsaaku nillisi\\b"
+      ],
+      "noneClause": [
+        "\\b(abhi|aaj|kal|baad mein|later|tomorrow|evening|morning|right now|now|busy|driving|meeting|ippo|ippodhu|saayangalam|naalaiku|aprom|apuram|ekhon|bikele|sondhey|sondhya|udya|sandhyakali|kale|saanje|ippudu|repu|saayantram|sayantram|ivattu|naale|sanje|ippol|vaikittu|after|nantar|thodya velane|office time|office hours|vaikunneram|raathri|raatri|night|\\d ?(baje|mani|o'?clock|pm|am))\\b"
+      ],
+      "none": [
+        "\\b(bou|patni|hendathi|bharyayude|bharya|bayko|manaivi|wife|husband|amma|appa|father|mother|papa|baba)\\w*\\b[^.?!]{0,15}\\bnumber"
       ]
     },
     {
