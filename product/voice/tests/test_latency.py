@@ -239,6 +239,18 @@ class BargeIn(unittest.TestCase):
         self.assertIsNone(self.talk_over('haan ji', frames=50))              # 1 s of "haan ji" over her
         self.assertIsNotNone(self.talk_over('haan ji', frames=50, env={'VP_BARGE_NOD': '0'}), 'old rule: two words stop her')
 
+    def test_partial_lag_and_threshold_override(self):
+        async def go():
+            sess, ears, comp = make([OPEN, 'जी।'], env={'VP_BARGE_LONG_MS': '500'})
+            await sess.start(); await wait_until(lambda: sess.conv.agent_turns == 1)
+            await feed(sess, 20); ears['e'].on_p('ek minute'); await feed(sess, 5); ears['e'].on_p('ek minute ruko')
+            await sess.end('caller_hung_up')
+            return sess
+        sess = asyncio.run(go()); summ = sess.timing_summary()
+        self.assertEqual(summ['partialLagN'], 1, 'one lag per stretch of speech, at its first partial')
+        self.assertGreater(summ['partialLagMs'], 0); self.assertEqual(summ['bargeLongMs'], 500)
+        self.assertEqual(CascadeSession.BARGE_LONG_MS, 700, 'the override is per call, never the class default')
+
     def test_a_long_nod_still_stops_her_eventually(self):
         ms = self.talk_over('haan ji', frames=100)
         self.assertIsNotNone(ms); self.assertGreaterEqual(ms, CascadeSession.BARGE_NOD_LONG_MS - 40)

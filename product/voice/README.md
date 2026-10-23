@@ -204,6 +204,26 @@ python bench/turn_bench.py --split dev                        # tune here
 python bench/turn_bench.py --split test --out bench/results/turn-<date>-test
 ```
 
+## Reply gap and barge-in
+
+Each reply's gap (caller end of speech to her first audio) is split into stages in the call's status
+(`GET /v1/calls/{id}` → `timing`): `ears` (end of speech to the recogniser's final), `turn`, `brain` (request to
+first data), `sentence`, `voice` (request to first audio), `hold` and `out`. A stage is negative when work started
+early. `partialLagMs` is how long after speech starts the recogniser's first words arrive.
+
+The cuts, each behind a flag (`'1'`/`'0'` in the env override the default):
+
+| Flag | Default | What it does |
+|---|---|---|
+| `VP_SPECULATE_PARTIAL` | on | Starts the reply on the caller's partial at end of speech; kept only if the final has the same words, else discarded unheard. Never on digits, secrets, action signals or a raising judge. |
+| `VP_PREWARM` | on | When the caller starts speaking: refreshes the Vertex token and sends one HEAD to each brain and voice host (at most one per host per 8 s), so requests skip the TLS handshake. |
+| `VP_FIRST_CLAUSE` | off | Voices a reply's first clause on its own (at a comma, 24+ characters). Never the opening. Off until a listening check. |
+| `VP_BARGE_NOD` | on | Nods ("haan ji", "achha") never count toward a barge-in's words; speech heard only as nods stops her after 1.5 s. |
+
+`VP_BARGE_LONG_MS` (default 700) sets how much speech stops her whatever the words. On the bench, 500 cuts the
+barge-in time from about 730 to 535 ms with no false stops while partials lag 300 ms, but stops her on most nods at
+a 500 ms lag (`bench/results/turn-2026-10-23-dev-barge-sweep.md`). Read `partialLagMs` before lowering it.
+
 ## Admission and processes
 
 **One process carries at most `VP_MAX_CALLS_PER_PROCESS` calls (default 20).** The audio path is CPU-bound and Python

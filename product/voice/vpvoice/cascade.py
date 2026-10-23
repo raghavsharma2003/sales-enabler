@@ -208,6 +208,9 @@ class CascadeSession(Session):
         self.rid = 0; self.finals = []; self.partial = ''; self.pending = None; self.active = None; self.overlap = []
         self.seg = 0; self.final_seg = 0; self.eos_t = None; self.last_reply_eos = None; self.stt = None
         self.last_final_t = None; self.timing = []        # latency breakdown per reply (timing_summary)
+        self.seg_t0 = None; self.lag_seg = 0; self.partial_lags = []   # speech onset -> the recogniser's first partial
+        try: self.BARGE_LONG_MS = int(self.env.get('VP_BARGE_LONG_MS') or self.BARGE_LONG_MS)      # staging trials
+        except ValueError: pass
         self.mic = b''; self.turn_start_ms = None; self.digits_seg = -1; self.end_task = None; self.barge_ins = 0
         self.silence_s = (ticket['agent'].get('limits') or {}).get('maxSilenceS') or 0
         flag = lambda name, d: (self.env.get(name) == '1') if self.env.get(name) in ('0', '1') else d
@@ -240,7 +243,10 @@ class CascadeSession(Session):
         import statistics
         med = lambda xs: int(statistics.median(xs)) if xs else None
         rows = self.timing
+        # partialLagMs: how long after speech starts the first words arrive. Barge-in by words cannot beat it, and
+        # BARGE_LONG_MS below it stops her on nods (bench: 500 ms is safe at a 300 ms lag, not at 500)
         return {'replies': rows, 'n': len(rows), 'gapMs': med([r['gapMs'] for r in rows]),
+                'partialLagMs': med(self.partial_lags), 'partialLagN': len(self.partial_lags), 'bargeLongMs': self.BARGE_LONG_MS,
                 'stagesMs': {name: med([r['stages'][name] for r in rows if r['stages'][name] is not None]) for name, _, _ in self.STAGES}}
 
     def judge_raises(self):
@@ -377,7 +383,7 @@ class CascadeSession(Session):
             self.vad.strict = self.agent_playing()
             for ev, idx in self.vad.feed(fr):
                 if ev == 'start':
-                    self.seg += 1
+                    self.seg += 1; self.seg_t0 = self.now() - (self.vad.n - idx) / 16000.0
                     if self.prewarm and self.warmed_seg != self.seg: self.warmed_seg = self.seg; asyncio.ensure_future(self._prewarm())
                     if self.turn_start_ms is None: self.turn_start_ms = int(idx / 16)
                     if self.pending is not None and not self.pending.released:
@@ -391,6 +397,8 @@ class CascadeSession(Session):
     # ---------------------------------------------------------------- ears callbacks
     def _partial(self, t):
         self.partial = t
+        if self.lag_seg != self.seg and self.seg_t0 is not None:
+            self.lag_seg = self.seg; self.partial_lags.append(int(round((self.now() - self.seg_t0) * 1000)))
         asyncio.ensure_future(self.line.send_json({'t': 'cap', 'who': 'caller', 'text': ' '.join(self.finals + [t]), 'final': False}))
         if self.taken_over: return                                      # she no longer speaks; redaction still applies on commit
         if self.digits_seg != self.seg and safety.caller_signals(' '.join(self.finals + [t]))['readingSensitiveDigits']:
