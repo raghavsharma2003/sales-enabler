@@ -126,15 +126,31 @@ const IN_CALL_TOOLS: Record<string, ToolGrant['risk']> = {
 const LOCKED = new Set(['schema', 'agentId', 'version', 'versionHash', 'voice', 'tools']);
 const LOCK_REASON: Record<string, string> = { voice: 'use stack.set or voice.set', tools: 'use tool.attach' };
 
-function parsePath(p: string): (string | number)[] {
-  if (!/^[a-zA-Z]+(\.[a-zA-Z]+|\[\d+\])*$/.test(p)) throw new ValidationError('patch.path', `"${p}" is not a field path like persona.notes[0]`);
-  return [...p.matchAll(/([a-zA-Z]+)|\[(\d+)\]/g)].map(m => (m[1] !== undefined ? m[1] : Number(m[2])));
+const PATH_FORMS = 'use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-]';
+
+/** A patch path in any of the forms models send, as keys plus whether it ends in an append ("-"):
+ *  persona.notes[0], persona.notes.0, JSON Pointer /persona/notes/0, /facts/-, facts[-], with an optional draft prefix. */
+export function parsePath(p: string): { keys: (string | number)[]; append: boolean } {
+  let segs: string[];
+  if (p.startsWith('/')) segs = p.slice(1).split('/').map(x => x.replace(/~1/g, '/').replace(/~0/g, '~'));
+  else {
+    if (!/^[a-zA-Z]+(\.([a-zA-Z]+|\d+|-)|\[(\d+|-)\])*$/.test(p)) throw new ValidationError('patch.path', `"${p}" is not a field path: ${PATH_FORMS}`);
+    segs = [...p.matchAll(/([a-zA-Z]+|\d+|-)/g)].map(m => m[1]!);
+  }
+  if (segs[0] === 'draft') segs = segs.slice(1);
+  const append = segs[segs.length - 1] === '-';
+  if (append) segs = segs.slice(0, -1);
+  if (!segs.length || segs.some(x => !/^([a-zA-Z]+|\d+)$/.test(x))) throw new ValidationError('patch.path', `"${p}" is not a field path: ${PATH_FORMS}`);
+  return { keys: segs.map(x => (/^\d+$/.test(x) ? Number(x) : x)), append };
 }
 
 function applyPatch(draft: AgentConfig, ops: { op: string; path: string; value?: unknown }[]): unknown {
   const doc = structuredClone(draft) as unknown as Record<string, unknown>;
   for (const [i, o] of ops.entries()) {
-    const keys = parsePath(o.path);
+    const { keys, append } = parsePath(o.path);
+    // RFC 6902 names: replace is set; add, or any op on a path ending in "-", appends to that list.
+    const op = append || o.op === 'add' && Array.isArray(getIn(doc, keys)) ? 'append' : o.op === 'replace' || o.op === 'add' ? 'set' : o.op;
+    if (append && o.op === 'remove') throw new ValidationError(`patch[${i}].path`, `"${o.path}" ends in "-": remove needs an index`);
     if (LOCKED.has(String(keys[0]))) throw new ValidationError(`patch[${i}].path`, `${keys[0]} cannot be edited here` + (LOCK_REASON[String(keys[0])] ? `; ${LOCK_REASON[String(keys[0])]}` : ''));
     let parent: any = doc;
     for (const k of keys.slice(0, -1)) {
@@ -142,20 +158,42 @@ function applyPatch(draft: AgentConfig, ops: { op: string; path: string; value?:
       if (parent === undefined || parent === null || typeof parent !== 'object') throw new ValidationError(`patch[${i}].path`, `${o.path} does not exist`);
     }
     const last = keys[keys.length - 1];
-    if (o.op === 'set') {
+    if (o.op === 'add' && Array.isArray(parent) && typeof last === 'number') {        // RFC 6902: add at an index inserts
+      if (o.value === undefined) throw new ValidationError(`patch[${i}].value`, 'add needs a value');
+      if (last > parent.length) throw new ValidationError(`patch[${i}].path`, `${o.path} is past the end of the list`);
+      parent.splice(last, 0, o.value);
+    } else if (op === 'set') {
       if (o.value === undefined) throw new ValidationError(`patch[${i}].value`, 'set needs a value');
       if (Array.isArray(parent) && (typeof last !== 'number' || last >= parent.length)) throw new ValidationError(`patch[${i}].path`, `${o.path} is past the end of the list; use append`);
       parent[last] = o.value;
-    } else if (o.op === 'remove') {
+    } else if (op === 'remove') {
       if (Array.isArray(parent) && typeof last === 'number') { if (last >= parent.length) throw new ValidationError(`patch[${i}].path`, `${o.path} does not exist`); parent.splice(last, 1); }
       else delete parent[last];
     } else {
+      if (o.value === undefined) throw new ValidationError(`patch[${i}].value`, 'append needs a value');
       const list = parent[last];
       if (!Array.isArray(list)) throw new ValidationError(`patch[${i}].path`, `${o.path} is not a list`);
       list.push(o.value);
     }
   }
   return doc;
+}
+
+function getIn(doc: unknown, keys: (string | number)[]): unknown {
+  let v: any = doc;
+  for (const k of keys) { if (v === null || typeof v !== 'object') return undefined; v = v[k]; }
+  return v;
+}
+
+/** On "is not a known field", say which fields exist there, so the next patch can name one of them. */
+function withKnownFields(e: ValidationError, doc: unknown): ValidationError {
+  if (!/is not a known field/.test(e.message) || !e.path) return e;
+  let keys: (string | number)[];
+  try { keys = parsePath(e.path).keys; } catch { return e; }
+  const parent = getIn(doc, keys.slice(0, -1));
+  if (!parent || typeof parent !== 'object' || Array.isArray(parent)) return e;
+  const known = Object.keys(parent).filter(k => k !== keys[keys.length - 1]);
+  return known.length ? new ValidationError(e.path, `is not a known field; the fields there are: ${known.join(', ')}`) : e;
 }
 
 // ------------------------------------------------------------------------------------------------ diff
@@ -295,13 +333,15 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({
     agentId: uuid(), expectDraftHash: opt(str({ max: 64 })),
-    patch: arr(obj({ op: str({ oneOf: ['set', 'remove', 'append'] }), path: str({ min: 1, max: 120 }), value: opt(any('the new value')) }), { min: 1, max: 30 }),
+    patch: arr(obj({ op: str({ oneOf: ['set', 'remove', 'append', 'add', 'replace'] }), path: str({ min: 1, max: 120 }), value: opt(any('the new value')) }), { min: 1, max: 30 }),
   }), {
     name: 'brief.edit', risk: 'draft', summary: "Edit an agent's draft brief with a validated patch (never publishes)",
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
       if (i.expectDraftHash && i.expectDraftHash !== draftHash(a.draft)) throw new ValidationError('expectDraftHash', 'the draft changed since you last read it; reload and edit again');
-      const next = validateConfig(applyPatch(a.draft, i.patch));
+      const patched = applyPatch(a.draft, i.patch);
+      let next: AgentConfig;
+      try { next = validateConfig(patched); } catch (e) { throw e instanceof ValidationError ? withKnownFields(e, patched) : e; }
       await saveDraft(ctx, a.id, next);
       return { agentId: a.id, draftHash: draftHash(next), changes: diff(comparable(a.draft), comparable(next)), ...preview(next) };
     },
