@@ -1,6 +1,6 @@
 // Audiences: a saved filter over attributes (kind 'query') or a fixed list (kind 'list'). A filter is data,
 // compiled here into parameterised SQL; keys and operators come from closed sets, values are always bound.
-import { any, arr, num, obj, opt, str, uuid, type Validator } from '../../../shared/validate.ts';
+import { any, arr, num, obj, opt, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { tool, type Registry } from '../../tools.ts';
 
@@ -83,10 +83,13 @@ async function preview(q: Queryable, ws: string, i: { audienceId?: string; filte
 }
 
 export function registerAudienceTools(reg: Registry): void {
-  reg.register(tool(obj({ name: str({ min: 1, max: 120 }), filter: opt(filterV), contactIds: opt(arr(uuid(), { min: 1, max: 50000 })) }), {
+  // Either-or is stated in the description, not as a JSON Schema oneOf: not every provider's tool endpoint accepts oneOf.
+  reg.register(tool(obj({ name: str({ min: 1, max: 120 }), filter: opt(filterV), contactIds: opt(arr(uuid(), { min: 1, max: 50000 })) },
+    'Give exactly one of filter (a rule over contact fields, e.g. {"all":[{"key":"city","op":"eq","value":"Pune"}]}) or contactIds (ids from contact.list), never both.'), {
     name: 'audience.create', risk: 'draft', summary: 'Save an audience: a filter over attributes (re-evaluated each time) or a fixed list of people',
     run: async (ctx, i) => {
-      if (!!i.filter === !!i.contactIds) throw new Error('give a filter or a list of contactIds, not both');
+      if (!!i.filter === !!i.contactIds) throw new ValidationError(i.filter ? 'contactIds' : 'filter',
+        `give exactly one of filter (e.g. {"all":[{"key":"city","op":"eq","value":"Pune"}]}; ops: ${OPS.join(', ')}) or contactIds (ids from contact.list), ${i.filter ? 'not both' : 'not neither'}`);
       if (i.filter) {
         filterSql(i.filter, []);              // reject a bad filter now, not at launch
         const a = await one<{ id: string }>(ctx.q, "INSERT INTO audience (workspace_id, name, kind, definition) VALUES ($1,$2,'query',$3) RETURNING id",

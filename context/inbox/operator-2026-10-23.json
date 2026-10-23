@@ -1,0 +1,73 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-23.operator-page-note",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-23",
+      "title": "The Operator sends the model a short page note as untrusted data: the page, the named entity (by name, via the registry), and the only entity of a kind when the workspace has exactly one",
+      "rationale": "The page only picked tools, so the model asked 'which campaign?' while the member was looking at one or when only one existed. Names are tenant data, so the note is a data block; reads use the Operator's own actor, so roles and tenancy hold.",
+      "reverse_if": "The bench shows the note makes the model act on the wrong entity, or the extra reads cost more than they save (each turn adds at most 1 get plus up to 3 small list reads)"
+    },
+    {
+      "id": "decision.2026-10-23.refusals-carry-schema-fix",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-23",
+      "title": "Every Operator NOT DONE with a field path carries a 'fix' read from the tool's schema; either-or arguments are stated in tool descriptions and enums, not JSON Schema oneOf",
+      "rationale": "Models invented template ids and guessed brief fields after bare refusals (bench r2). oneOf is not accepted by every target endpoint, so the either-or rule goes in the description and run() refusals name both fields and the next step.",
+      "reverse_if": "Every target endpoint is shown to accept oneOf/anyOf in tool parameters, in which case declare it in the schema"
+    },
+    {
+      "id": "decision.2026-10-23.provider-refusal-outcome",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-23",
+      "title": "A provider content-filter refusal is its own Operator outcome (provider_refused): said plainly, never retried, no attempt to get past the filter",
+      "rationale": "Azure returned 400 content_filter on 2 of 3 injection tasks; it surfaced as 'the brain did not answer', which reads like an outage.",
+      "reverse_if": "A provider offers a documented, permitted way to mark untrusted data so its filter does not refuse the whole request"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-23.operator-page-note",
+      "to": "open.2026-10-23.operator-page-context-not-sent",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-23.refusals-carry-schema-fix",
+      "to": "rejected.2026-10-23.exclusive-args-checked-only-at-run",
+      "relation": "informed-by"
+    },
+    {
+      "from": "decision.2026-10-23.provider-refusal-outcome",
+      "to": "open.2026-10-23.azure-content-filter-on-injected-data",
+      "relation": "informs"
+    },
+    {
+      "from": "decision.2026-10-23.operator-page-note",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-23.refusals-carry-schema-fix",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-23.provider-refusal-outcome",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-23",
+      "event": "operator-bench-r2-fixes",
+      "details": "Operator fixes for bench r2: page note to the model, schema-derived fix on every NOT DONE (agent.create template enum and either-or; audience.create either-or; brief.edit editable fields), operator_find_tools description and system note, content-filter 400 as provider_refused. 6 new tests in tests/operator-bench-fixes.test.ts, each failing on the previous code; gates on a fresh DB: tsc clean, 457/460 pass, 0 fail, 3 skipped; ui-contract strict 173/173. Not verified: effect on real models (bench re-run pending). open.2026-10-23.operator-page-context-not-sent and open.2026-10-23.azure-content-filter-on-injected-data should close only after the re-run."
+    }
+  ]
+}

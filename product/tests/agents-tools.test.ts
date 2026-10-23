@@ -62,8 +62,8 @@ test('agent.create from a template starts on the default stack; list and get rea
   assert.deepEqual(l.agents.map((a: { id: string }) => a.id), [c.agentId]);
   const t = ok<any>(await call('template.list', {}));
   assert.ok(t.templates.length >= 14);
-  refused(await call('agent.create', { name: 'x', templateId: 'nope' }), /no template/);
-  refused(await call('agent.create', { name: 'x' }), /either a templateId or a description/);
+  refused(await call('agent.create', { name: 'x', templateId: 'nope' }), /templateId: must be one of: insurance-renewal/);   // the schema lists the ids
+  refused(await call('agent.create', { name: 'x' }), /exactly one of templateId \(one of: .*template\.list\) or description.*not neither/);
 });
 
 test('agent.create from plain words drafts through the compile model, validates, lints and shows a draft', { skip }, async () => {

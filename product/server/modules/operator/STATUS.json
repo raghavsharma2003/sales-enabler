@@ -21,14 +21,16 @@
     "0500_operator.sql"
   ],
   "tests": {
-    "passed": 27,
-    "total": 27,
+    "passed": 40,
+    "total": 40,
     "files": [
+      "tests/operator-bench-fixes.test.ts",
+      "tests/operator-bench.test.ts",
       "tests/operator-results.test.ts",
       "tests/operator-toolset.test.ts",
       "tests/operator.test.ts"
     ],
-    "db": "throwaway cluster; full suite on a fresh database 399/400 at 2eb7144 (1 skip: voice runtime Python), browser flows 26/26"
+    "db": "throwaway cluster; full suite on a fresh database 457/460 (0 fail, 3 skipped) at the 2026-10-23 bench-fix commit; ui-contract --strict 173/173"
   },
   "works": [
     "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
@@ -46,17 +48,22 @@
     "Credentials never pass through the Operator: integration.stage_secrets is screen-only (not offered, refused directly and in plans with a pointer to the Integrations screen), so no secret reaches the model's tool args, an A0 action row, a card diff, the audit or SSE; tested at A1 and A0 (the test fails on the previous loop)",
     "Chat secrets: every incoming message and upload goes through shared/safety redact() (digit secrets) and a credential detector (key prefixes sk-/AKIA/AIza/ghp_/xox and others, 'password: ...'/'token hai ...' pairs, high-entropy tokens of 24+ chars; UUIDs and hex hashes excluded) before it is stored, echoed, used as the thread title or sent to the model; one plain notice points to Settings → Integrations; tested",
     "Tool selection (toolset.ts): at most 40 tools per model call — page tools (the web client sends `page`), tools the member's words point at, tools used earlier in the thread, a core read set, plus operator_plan and operator_find_tools. find_tools adds tools to the next model call of the same turn (max 4 lookups, no tool step). The role filter and SCREEN_ONLY are unchanged. Measured on the real modules for an owner: 166 tools / 80,361 schema chars per request before; 29-40 tools / 14,489-22,421 after (n=11). CAPS.llmCalls 6 -> 8, tokens unchanged at 60k",
-    "Tool results over CAPS.resultChars reach the model as a compact, valid JSON projection (compact.ts): ids, hashes, statuses, names, counts, errors and receipt fields kept at any depth; long strings shortened; arrays keep their first items plus the ids of the rest; large objects (drafts, briefs, configs) become a note carrying their own ids; a `truncated: {omitted, totalChars}` marker. Measured on real results: stack.list 21,484 -> 5,296 chars, agent.get 13,687 -> 5,149, agent.create 12,244 -> 3,750, stack.set 10,488 -> 1,974 (template.list 4,478 is under the cap and unchanged). The web still gets the full result"
+    "Tool results over CAPS.resultChars reach the model as a compact, valid JSON projection (compact.ts): ids, hashes, statuses, names, counts, errors and receipt fields kept at any depth; long strings shortened; arrays keep their first items plus the ids of the rest; large objects (drafts, briefs, configs) become a note carrying their own ids; a `truncated: {omitted, totalChars}` marker. Measured on real results: stack.list 21,484 -> 5,296 chars, agent.get 13,687 -> 5,149, agent.create 12,244 -> 3,750, stack.set 10,488 -> 1,974 (template.list 4,478 is under the cap and unchanged). The web still gets the full result",
+    "Page context reaches the model (open.2026-10-23.operator-page-context-not-sent): a short note, wrapped as untrusted data, names the page, the entity a /<section>/<id> path points at (by name, read through the registry with the Operator's own actor), and, for /campaigns, /agents or /audiences with no id or when the member's words name the kind, the only one when the workspace has exactly one; tested, including two campaigns (no guess) and another workspace's campaign (no leak)",
+    "Refusals name the fix: every NOT DONE with a field path reaches the model with a 'fix' read from the tool's own schema (allowed values, the fields that exist, the field's description, the tool's either-or note); plan steps carry it to the model but not onto the card. agent.create lists template ids as an enum and states templateId-or-description in its description (no oneOf: not every endpoint accepts it); audience.create states filter-or-contactIds with an example; brief.edit lists its editable fields and path forms",
+    "operator_find_tools: offered on every model call; its description and the system note say to call it when the needed tool is not offered and before saying something cannot be done; tested that a missed real tool is offered on the next call",
+    "A provider content-filter refusal (Azure 400 content_filter and similar) ends the turn with one plain 'the model provider refused this content' error, stoppedBy provider_refused, a system row, no retry and no attempt to get past the filter"
   ],
   "untested": [
-    "Against a real model: only setFakeLlm scripts were run; no Operator bench (300 keyed + 50 adversarial) exists yet",
     "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",
     "Thread summary recompaction beyond the last 12 messages; the 24k compile budget",
     "Concurrent turns in one thread",
     "Delta streaming from a real provider: the fake emits each reply as one delta",
     "Credential detector precision on real chat: tuned on synthetic strings only; a short password without a 'password:' label is not caught",
     "A real model choosing tools from the reduced set and calling operator_find_tools on its own (only a scripted model was tested)",
-    "Whether a real endpoint enforces a 128-tool limit (not checked; no longer reachable at 40)"
+    "Whether a real endpoint enforces a 128-tool limit (not checked; no longer reachable at 40)",
+    "The four 2026-10-23 bench fixes are verified with a scripted model only; their effect on real models waits for the bench re-run",
+    "Page notes resolve agents, campaigns, audiences, contacts and calls by id; other pages give the path only"
   ],
   "needs_from_others": [
     "web: render cards (approval hold-to-confirm, receipt, plan) from the SSE frames and the thread GET"

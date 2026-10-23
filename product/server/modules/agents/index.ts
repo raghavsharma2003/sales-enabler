@@ -152,6 +152,9 @@ function withWorkspaceBrand(draft: AgentConfig, names: { name: string; spokenNam
 const LOCKED = new Set(['schema', 'agentId', 'version', 'versionHash', 'voice', 'tools']);
 const LOCK_REASON: Record<string, string> = { voice: 'use stack.set or voice.set', tools: 'use tool.attach' };
 
+/** The draft's top-level fields a patch may touch (AgentConfig minus LOCKED). */
+const EDITABLE = ['brand', 'job', 'jobDescription', 'category', 'sectorPacks', 'languages', 'persona', 'goals', 'facts', 'neverSay', 'opening', 'objections', 'handOff', 'memory', 'limits', 'recording'];
+
 const PATH_FORMS = 'use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-]';
 
 /** A patch path in any of the forms models send, as keys plus whether it ends in an append ("-"):
@@ -319,14 +322,19 @@ export function registerAgentTools(r: Registry): void {
       languages: t.config.languages.allowed, summary: t.summary })) }),
   }));
 
-  r.register(tool(obj({ name: str({ min: 1, max: 80 }), templateId: opt(str({ max: 60 })), description: opt(str({ min: 20, max: 4000 })) }), {
+  // Either-or is stated in the description, not as a JSON Schema oneOf: not every provider's tool endpoint accepts oneOf.
+  r.register(tool(obj({ name: str({ min: 1, max: 80 }),
+    templateId: opt(str({ max: 60, oneOf: TEMPLATES.map(t => t.id), desc: 'a starter agent id from template.list; leave out when giving a description' })),
+    description: opt(str({ min: 20, max: 4000, desc: 'the job in plain words (who is called, why, what counts as done); leave out when giving a templateId' })) },
+    'Give exactly one of templateId (from template.list) or description, never both.'), {
     name: 'agent.create', risk: 'draft', summary: 'Create a draft agent from a template or from a plain-words description',
     run: async (ctx, i) => {
-      if (!!i.templateId === !!i.description) throw new ValidationError('templateId', 'give either a templateId or a description, not both');
+      if (!!i.templateId === !!i.description) throw new ValidationError(i.templateId ? 'description' : 'templateId',
+        `give exactly one of templateId (one of: ${TEMPLATES.map(t => t.id).join(', ')}; see template.list) or description (the job in plain words), ${i.templateId ? 'not both' : 'not neither'}`);
       let draft: AgentConfig, from: string, usage: unknown = undefined;
       if (i.templateId) {
         const t = getTemplate(i.templateId);
-        if (!t) throw new ValidationError('templateId', `no template "${i.templateId}"`);
+        if (!t) throw new ValidationError('templateId', `no template "${i.templateId}"; use one of: ${TEMPLATES.map(x => x.id).join(', ')} (template.list)`);
         draft = withWorkspaceBrand(structuredClone(t.config), await businessNames(ctx)); from = 'template:' + t.id;
       } else {
         try { const d = await draftFromDescription(i.description!); draft = d.config; usage = d.usage; from = 'description'; }
@@ -359,8 +367,9 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({
     agentId: uuid(), expectDraftHash: opt(str({ max: 64 })),
-    patch: arr(obj({ op: str({ oneOf: ['set', 'remove', 'append', 'add', 'replace'] }), path: str({ min: 1, max: 120 }), value: opt(any('the new value')) }), { min: 1, max: 30 }),
-  }), {
+    patch: arr(obj({ op: str({ oneOf: ['set', 'remove', 'append', 'add', 'replace'] }),
+      path: str({ min: 1, max: 120, desc: `a draft field: ${EDITABLE.join(', ')}; ${PATH_FORMS}` }), value: opt(any('the new value')) }), { min: 1, max: 30 }),
+  }, `Read the draft with agent.get first and patch only fields it has. Editable top-level fields: ${EDITABLE.join(', ')}. voice: use stack.set or voice.set; tools: use tool.attach.`), {
     name: 'brief.edit', risk: 'draft', summary: "Edit an agent's draft brief with a validated patch (never publishes)",
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
