@@ -18152,6 +18152,16 @@
    "source": "verified",
    "title": "test.browser_call sends contact.displayName '' while the brief asks for the person by name, so on test calls she says '\u0915\u094d\u092f\u093e \u092e\u0948\u0902 ___ \u0938\u0947 \u092c\u093e\u0924 \u0915\u0930 \u0930\u0939\u0940 \u0939\u0942\u0901?' with a hole (seen on v2-54mini and v2-38flash staging calls).",
    "mitigation": "Give test calls a synthetic name or have the brief skip the name check when the contact has none."
+  },
+  {
+   "id": "decision.2026-10-23.judge-model-shadow",
+   "type": "decision",
+   "title": "Safety judge candidate: GPT-4.1 mini on the regional South India deployment, the only model measured inside the 800 ms judge budget (recall 29/30, FP 4/90, p95 480 ms, INR 21.6 per 1k turns). It stays in shadow mode.",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop",
+   "rationale": "FP 4/90 (4.4%) per benign caller turn would add a crisis line to roughly a third of ordinary 10-turn calls. On held-out set 6 the floor already catches 30/30, so the judge's added recall is not measured there. The set that matters is BLIND 7, where the floor catches 37/100.",
+   "reverse_if": "On BLIND 7 the judge lifts crisis recall well above the floor's 37/100, with FP at or below 1% on benign turns (n large enough that the upper CI bound is at or below 2%), and the owner approves raise mode."
   }
  ],
  "edges": [
@@ -32130,6 +32140,11 @@
   {
    "from": "measure.2026-10-23.judge-eval-azure-41-t3000",
    "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-23.judge-model-shadow",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
    "relation": "informs"
   }
  ]

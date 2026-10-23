@@ -208,6 +208,19 @@ Now running:
 - **safety:** a DEV set and a new BLIND set 7 for the door's weak slices; get judge-eval ready to run.
 - **main loop (VM worker):** a private product staging on the existing India VM (no new resources), then the product runtime's own reply gap per stack. The main loop's subagents run the real-model benches: they need keys only this session holds. Vertex from the VM only, at most 1 request/s after 2026-10-23 20:00 UTC.
 
+### Measured on 2026-10-23 (real models, India VM staging)
+- **Product reply gap, median:**
+  - v2-flashlite 2.5 s (n=21);
+  - v2-mai 2.2 s (24);
+  - v2-54mini 3.0 s (23);
+  - v2-38flash failed on Vertex.
+
+  Stack cards now show these. Latency is the main voice gap.
+- **Opening bug:** every opening read the disclosure *guidance* aloud. RD1 prefixes `disclosureClause` verbatim. Routed to voice as top priority.
+- **Operator:** 21/48 tasks were blocked by a non-portable schema regex. On the tasks that reached the model: gpt-4.1-mini 12/27, gpt-4.1 18/27. Fixes routed to learning, then a re-run.
+- **Analysis outcome accuracy:** gpt-4.1-mini 70/84, gpt-4.1 84/84. Quotes are 100% grounded. DEV/TEST split, prompt fixes and a tiered model routed to calls.
+- **Judge:** gpt-4.1-mini (South India) is the only model inside 800 ms. It stays in shadow (`decision.2026-10-23.judge-model-shadow`); next is BLIND 7.
+
 ## Open threads with the owner
 
 | Thread | Status |
