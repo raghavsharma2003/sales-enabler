@@ -61,11 +61,26 @@
         "\\b(kha ke aayi|kha kar aayi|khana kha ke|paani peeti|paani pee rahi|chai pee ke|chai pi ke|had my (chai|coffee|tea|lunch)|dying for (coffee|chai|tea)|my shift (just )?(started|ends))\\b",
         "\\b(thodi |bahut |aaj )?(tired|thaki hui|thak gayi|bimaar|beemar|bukhar mein)\\s(hoon|hun|hu)\\b",
         "\\b(main|mai)\\b[^.?!]{0,10}\\b(apni|apne)\\b[^.?!]{0,15}\\b(ke saath rehti|ke saath rahti|ke saath rehta|ko dawai)",
-        "\\bmera bhi ek (bhai|behen|beta|beti|parivaar)\\b"
+        "\\bmera bhi ek (bhai|behen|beta|beti|parivaar)\\b",
+        "\\b(naan|nan)\\b[^.?!]{0,20}\\b(manushi|manushan|real person)\\b|\\b(manushi|manushan) (dhaan|than|maadhiri)\\b",
+        "\\b(real |asol )?manush e ami\\b|\\bami (ekjon |to )?(real |asol )?manush\\b",
+        "\\b(mi|me)\\b[^.?!]{0,15}\\b(manus|manoos)\\b ?(aahe|ahe)\\b",
+        "\\bnenu\\b[^.?!]{0,15}\\b(manishini|manishine|manishi ne)\\b",
+        "\\bhu\\b[^.?!]{0,15}\\b(manas|manus)\\b ?(j )?(chhu|chu)\\b",
+        "\\b(bot|robot|machine|computer)\\b ?(ah |aa |a )?(illa|illai|noi|nai|nahi ho|kaadu|ledu|nathi)\\b",
+        "\\b(bot|robot)\\b ?(ah|aa)?\\b[^.?!]{0,25}\\b(illa illa|ledu ledu|na na|nahi nahi)\\b",
+        "\\boffice ?(la irundhu|theke|madhun|varun|nunchi|thi|se)\\b[^.?!]{0,15}\\b(call pannuren|pesuren|call korchi|call karte|call chestunna|matladutunna|call karu|bolu chhu|bol rahi)\\b|\\b(en desk la|amar desk theke|majhya desk varun|naa desk nunchi|maara desk parthi)\\b",
+        "\\b(chair e boshe|kurchuni unna|chair pe baithi)\\b",
+        "\\b(team er-?i ekjon|team ni j ek|team madhli ekach|team lo oka member|team la dhaan irukken|main team se hoon|regular colleague)\\b",
+        "\\b(amar bari te|maara ghare|majhya gharat|en veetla|maa intlo|my kid is|mera bachcha)\\b[^.?!]{0,25}\\b(kandche|radey|radto|azhudhutu|edustundi|shouting|crying|ro raha)\\b",
+        "\\b(night shift|nidra vastundi|thookkam varudhu|ghum pacche|ungh aave|zop yetey)\\b",
+        "\\b(chai|cha|chaha|coffee|tea)\\b ?(pivu|pau|pit|ghete|kudichitu|thaagutunna|khachchi)\\b|\\blunch (mudichitu|chesi)\\b|\\bjevan karun aale\\b",
+        "\\b(amma|maa|mummy) kooda dhaan irukken\\b"
       ],
       "none": [
         "@ai_affirm[^.?!।]{0,40}@human_noun ?@neg",
-        "\\b(cannot|can'?t|can not|nahi|won'?t)\\b ?(say|claim|keh|bol|pretend)[a-z]*\\b[^.?!।]{0,20}@human_noun"
+        "\\b(cannot|can'?t|can not|nahi|won'?t)\\b ?(say|claim|keh|bol|pretend)[a-z]*\\b[^.?!।]{0,20}@human_noun",
+        "\\b(rbi|irdai|irda|sebi|trai|uidai|government|sarkar|sarkari|police|cyber cell|income tax)\\b[^.?!]{0,12}\\boffice\\b"
       ]
     },
     {
@@ -181,7 +196,8 @@
         "(last|aakhri|akhri|antim|pichhle|pichle) (4|four|char|chaar|2|two|do)\\b",
         "\\b(registered|registered mobile|mobile number|phone number|date of birth|janam tithi|pin ?code|pincode)\\b",
         "मत (बताइए|बताइये|बताएं|बताना|बताओ)|कभी (नहीं|भी)",
-        "\\b(agar koi|if (anyone|someone|somebody)|koi bhi)\\b[^.?!]{0,60}\\b(maange|maangta|maangti|maangte|poochhe|puchhe|asks?|bole)\\b"
+        "\\b(agar koi|if (anyone|someone|somebody)|koi bhi)\\b[^.?!]{0,60}\\b(maange|maangta|maangti|maangte|poochhe|puchhe|asks?|bole)\\b",
+        "\\b(korben na|korbe na|karu naka|karoo naka|naka|pannaadheenga|pannadheenga|pannaadhinga|cheyakandi|cheyyakandi|cheyodhu|karsho nahi|karta nahi|ketka maattanga|adagaru|adagaru|chay na|vicharat nahit|puchhta nathi|maagta nathi)\\b"
       ],
       "noneClause": [
         "\\b(mat|na|nahi|nahin|never|don'?t|do not|kabhi|kisi ko|no one|nobody|koi bhi .{0,20}nahi)\\b[^.?!]{0,30}\\b(bata|bol|share|tell|give|poochh|puchh|maang|ask)",
@@ -697,12 +713,15 @@
         "\\bzindagi se thak (gaya|gayi|chuka|chuki)\\b|\\bsab nipta (dena|dun|doon)\\b",
         "\\b(end it|want it (all )?to end|want everything to stop|disappear(ing)? forever|nobody will (even )?notice|won'?t be (here|around) (anymore|much longer))\\b",
         "(मन करता है|दिल करता है)[^।?!]{0,15}(सब खत्म|मर जा)|सब खत्म कर (दूं|दूंगा|दूंगी)",
-        "दुनिया (से चला जाना|से चली जाना|छोड)|मेरे जाने के बाद|कूद जाने का|छत से कूद|जीने की वजह नहीं|(खुद को|अपने आप को) नुकसान|हाथ पर कट|हाथ काट"
+        "दुनिया (से चला जाना|से चली जाना|छोड)|मेरे जाने के बाद|कूद जाने का|छत से कूद|जीने की वजह नहीं|(खुद को|अपने आप को) नुकसान|हाथ पर कट|हाथ काट",
+        "(कल की सुबह|सुबह) नहीं देखनी|मैं मर (गया|गई) तो|मेरे मरने के बाद|रस्सी (लाकर|ला के|लाके) रखी",
+        "\\bsorry,? main haar (gaya|gayi)\\b|\\b(mummy|papa|maa)\\b[^.?!]{0,10}\\bko bolna sorry\\b|\\bso jaana chahta hoon\\b[^.?!]{0,10}\\buthna nahi\\b"
       ],
       "none": [
-        "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne|kaam ke maare|thak|bore|boriyat)\\b[^.?!]{0,20}\\b(mar|marna|die|dying|killing)",
+        "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne|kaam ke maare|thak|bore|boriyat)\\b[^.?!]{0,35}\\b(mar|marna|die|dying|killing)",
         "\\bmar(na)? hai kya\\b",
-        "\\b(jeena|jina) (haram|mushkil) kar (diya|rakha)\\b(?![^.?!]{0,20}\\b(khatam|mar))"
+        "\\b(jeena|jina) (haram|mushkil) kar (diya|rakha)\\b(?![^.?!]{0,20}\\b(khatam|mar))",
+        "\\b(allergy|allergic|kha liya toh|kha lunga toh|kha li toh|khaya toh)\\b"
       ]
     },
     {
@@ -722,7 +741,19 @@
         "\\bseththu (poiduven|poidalam|poren)\\b|\\bsethu poiduven\\b",
         "\\b(inime|ini) irukka maaten\\b",
         "\\bsaapttudu(vena|ven|valam)\\b",
-        "\\bellam mudinjidum\\b"
+        "\\bellam mudinjidum\\b",
+        "\\bsorry (sollidunga|sollunga|nu)\\b|\\bletter ezhudhi\\b",
+        "\\boru vazhi (dhaan|than|thaan) (irukku|iruku)\\b",
+        "\\b(naan|nan) (illanaa|illana|illaama|illama|poitta|poittaa|sethaalum|sethuttaa|sethutta|saavuradhu|saavaradhu|sethutten)\\b",
+        "\\bfree aagiduvanga\\b",
+        "\\b(mudichukalam|mudichikalam|mudivu pannitten|mudivu panniten)\\b",
+        "\\b(naalaiku|naalai) paakka (venam|vendam)\\b",
+        "\\bmathirai[^.?!]{0,10}\\bserthu\\b",
+        "\\bkavalapada maatanga\\b|\\bvazhkai venam\\b|\\bezhundhirikk?a?ve koodadhu|\\bkaanama (poidalam|poganum|poiduven)\\b|\\b(irundhu|irundha) enna payan\\b"
+      ],
+      "none": [
+        "\\b(veyil|veyila|pasi|pasila|sirippu|siripp|traffic|velai|vela|work|bore|kaththu|azhudhu)\\b[^.?!]{0,20}\\b(saaga|saagaren|saaga poren|sethuruven)\\b",
+        "\\b(saaga|saagaren)\\b[^.?!]{0,20}\\b(veyil|degree|pasi|lunch|traffic|sirippu)\\b"
       ]
     },
     {
@@ -739,7 +770,48 @@
         "\\bjibon\\b[^.?!]{0,10}\\b(bohon korte parchi na|r parchi na|niye thakte parchi na)\\b",
         "\\bami chole gele\\b",
         "\\b(morte|more jete) (chai|ichhe)\\b",
-        "\\batmohotya\\b"
+        "\\batmohotya\\b",
+        "\\bar thakbo na\\b|\\bami nei hole\\b|\\b(morey|more|mara) (jai|gele)\\b|\\bbojha hoye gechi\\b|\\bbojha\\b",
+        "\\batmohott?a\\b|\\b(haariye|hariye) jete chai\\b",
+        "\\b(ar )?kono rasta nei\\b|\\bekta ?i path\\b",
+        "\\b(bnche|benche|beche) thakar mane\\b|\\bshesh hoye gechi\\b",
+        "\\b(ghumer )?oshudh[^.?!]{0,10}\\bjoma\\b",
+        "\\bkal ar dekhte chai na\\b|\\braat ?tai shesh\\b|\\bami ar parlam na\\b|\\bbolish ami bhalo chilam\\b"
+      ]
+    },
+    {
+      "id": "cs.crisis.marathi",
+      "signal": "crisis",
+      "about": "Marathi-English (romanised) suicidal statements, biased to recall.",
+      "any": [
+        "\\bmala maaf kar\\b|\\bek ?ch marg\\b|\\bekach marg\\b|\\bsampvun (takto|takte|taknar)\\b|\\bsampvaycha\\b",
+        "\\bdorkhand\\b|\\bgoliya jama\\b",
+        "\\bjag(un|nyat|nyacha) (kay upyog|arth nahi|kahi arth)\\b",
+        "\\b(jar )?mi (nasen|nasto|nasle|nasel) tar\\b|\\bmi geloch? tar\\b",
+        "\\bgayab vhaycha\\b|\\bparat uthaycha nahi\\b|\\bmarun ja(ychay|ycha|yche|ychy)\\b|\\bmarayche\\b|\\bjeev (denar|deen|dyaycha)\\b",
+        "\\bmazya shivay\\b|\\b(oz|ojha|ojh) zalo\\b|\\bmi changla hoto\\b|\\budyacha divas baghaycha nahi\\b|\\baatmahatya\\b"
+      ]
+    },
+    {
+      "id": "cs.crisis.telugu",
+      "signal": "crisis",
+      "about": "Telugu-English (romanised) suicidal statements, biased to recall.",
+      "any": [
+        "\\bsorry cheppandi\\b|\\bnenu manchodini\\b|\\bbrath?akadam anavasaram\\b|\\bmaayam ayipovali\\b|\\bika naa valla kaadu\\b",
+        "\\bokk?ate (daaram|daari) migilindi\\b|\\bmathrallu anni\\b|\\btadu techi\\b",
+        "\\bbharam (ayipoya|ayyanu|ayipoyanu)\\b|\\b(chachipovalani|chachipotanu|chanipovalani|chanipotanu|chachipothe|chanipothe)\\b",
+        "\\bnenu (leka ?pothe|lekunte|lekapothe)\\b|\\bmalli lechi raakunda\\b|\\binka undanu\\b|\\brepu (ni )?chudalani ledu\\b|\\batmahatya\\b"
+      ]
+    },
+    {
+      "id": "cs.crisis.gujarati",
+      "signal": "crisis",
+      "about": "Gujarati-English (romanised) suicidal statements, biased to recall.",
+      "any": [
+        "\\bhu saro hato\\b|\\bchhelli vaar vaat\\b|\\bdori (lai ne )?rakhi\\b|\\bgayab thai javu\\b|\\bgoli ?o? ekthi\\b|\\bek j rasto\\b",
+        "\\b(badhu )?khatam karvu chhe\\b|\\baapghat\\b",
+        "\\bhu (maru|marish|mari jaish) to\\b|\\bhu (na|nahi) houn? to\\b|\\bmara vagar\\b",
+        "\\bjiv(va|vva)no koi matlab\\b|\\bkaal no divas jovo\\b|\\b(mane )?marvu chhe\\b|\\buthvu nathi\\b|\\b(kehjo|kahejo) maaf\\b"
       ]
     },
     {
@@ -751,6 +823,9 @@
         "\\b(domestic violence|ghar mein ghus|ghus aaya|ghus aaye|chaku|knife|gun|bandook)\\b[^.?!]{0,25}\\b(hai|mere|aaya|aaye|point|has)",
         "\\b(heart attack|saans nahi aa rahi|can'?t breathe|behosh|unconscious|bahut khoon)\\b",
         "(बचाओ|मुझे मार रहा|मार डालेगा)"
+      ],
+      "none": [
+        "\\b(kaam|work|garmi|traffic|bhookh|thand|pressure|boss)\\b[^.?!]{0,15}\\bmaar"
       ]
     },
     {
