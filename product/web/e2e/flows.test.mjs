@@ -743,7 +743,9 @@ test('Guided start: from an empty workspace to a first campaign, each step done 
     // Step 2: hear her. The link opens the test panel, and a browser call is a test call on the server.
     await step(2).getByRole('link', { name: /^Hear / }).click();
     await p.getByRole('button', { name: 'Call me in the browser' }).click();
-    await p.getByText('A call session was prepared', { exact: false }).waitFor({ timeout: 10000 });
+    // The call view opens (it connects when a voice runtime is present; CI has none), and the disclosure is on screen.
+    await p.locator('.bcall').waitFor({ timeout: 10000 });
+    await p.locator('.bcall').getByText('AI agent').waitFor();
     await p.goto(BASE + '/'); await p.getByRole('heading', { name: 'Get started' }).waitFor();
     assert.equal(await state(2), 'done', 'a test call exists on the server');
     // Publish the agent (approval by holding), then add contacts through the import.
