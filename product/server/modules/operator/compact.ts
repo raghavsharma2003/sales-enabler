@@ -6,7 +6,7 @@
 // left out. The web gets the full result; this only changes what the model reads.
 
 /** Keys whose values are worth keeping at any depth: identity, state, counts and what went wrong. */
-const KEEP = /(^id$|Id$|Ids$|^ids$|hash$|Hash$|^status$|^state$|^name$|^title$|^label$|^kind$|^type$|^tool$|^mode$|^risk$|^actionId$|^reason$|^error|^errors$|^code$|^message$|^summary$|^note$|count$|Count$|^total|^n$|^number$|^version$|^compiles$|^ok$|^lint$|^blockers$|^warnings$|^path$|^at$|Inr|^percent$)/;
+const KEEP = /(^outcome$|^notDone$|^id$|Id$|Ids$|^ids$|hash$|Hash$|^status$|^state$|^name$|^title$|^label$|^kind$|^type$|^tool$|^mode$|^risk$|^actionId$|^reason$|^error|^errors$|^code$|^message$|^summary$|^note$|count$|Count$|^total|^n$|^number$|^version$|^compiles$|^ok$|^lint$|^blockers$|^warnings$|^path$|^at$|Inr|^percent$)/;
 
 interface Stage { maxString: number; maxItems: number; bigValue: number; depth: number }
 const STAGES: Stage[] = [

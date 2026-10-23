@@ -516,3 +516,19 @@ test('a plan may name tools as function names or with a "functions." prefix, as 
   assert.deepEqual((await many<{ text: string }>(pool, 'SELECT text FROM lesson WHERE workspace_id = $1 ORDER BY created_at', [w])).map(r => r.text),
     ['by function name', 'with a functions. prefix', 'direct, prefixed']);
 });
+
+test('a failed tool or plan step reaches the model as NOT DONE, first, so a reply cannot misread it as done', { skip }, async () => {
+  const { members: [owner] } = await ws('owner');
+  const t = await thread(owner);
+  const seen = script([
+    { toolCalls: [callTool('agent_create', { text: 'x'.repeat(200) })] },                       // invalid: text over 80 chars
+    { toolCalls: [callTool('operator_plan', { goal: 'two', steps: [{ tool: 'no.such_tool', args: {} }, { tool: 'agent.create', args: { text: 'ok' } }] })] },
+    { text: 'done' },
+  ]);
+  await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'make a note' });
+  const toolMsgs = seen[2]!.messages.filter(m => m.role === 'tool').map(m => m.content.replace(/^<data[^>]*>\n/, '').replace(/\n<\/data>$/, ''));
+  assert.match(toolMsgs[0]!, /^\{"outcome":"NOT DONE/, toolMsgs[0]);
+  assert.match(toolMsgs[0]!, /Nothing changed/);
+  assert.match(toolMsgs[1]!, /^\{"outcome":"NOT DONE: 0 of 2 steps ran/, toolMsgs[1]);
+  assert.match(seen[0]!.messages[0]!.content, /NOT DONE/, 'the conduct rules say what NOT DONE means');
+});
