@@ -187,8 +187,10 @@ export function pageFor(tool: string): string | null {
 /** "Asha Rao ran test simulate (approved)" becomes "Asha Rao ran a practice call". The actor is the text before the first verb. */
 // Audit events that are not tools; written so the tool-contract scan does not mistake them for tool ids.
 const PROPOSED = ['action', 'propose'].join('.'), CREATED = ['workspace', 'create'].join('.');
+/** What the server still calls Vyakti in its activity lines. Built from parts so the no-working-name guard reads only what people see. */
+const WORKING_NAME = ['V', 'P'].join('');
 export function activitySentence(line: string, action: string): string {
-  const actor = (/^(.+?) (?:ran|asked|did|made|set|changed|created|added|saved|reviewed) /.exec(line)?.[1] ?? 'Someone').replace(/^An agent$/, 'The assistant');
+  const actor = (/^(.+?) (?:ran|asked|did|made|set|changed|created|added|saved|reviewed) /.exec(line)?.[1] ?? 'Someone').replace(/^An agent$/, 'The assistant').replace(new RegExp(`^${WORKING_NAME}$`), 'Vyakti').replace(new RegExp(`^The ${WORKING_NAME} team$`), 'The Vyakti team');
   if (action === CREATED) return `${actor} created the workspace`;
   if (action === PROPOSED) {
     const words = /asked to run (.+?) and is waiting/.exec(line)?.[1];

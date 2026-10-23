@@ -93,7 +93,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const reason = missing ? `${tool} is not available on this server yet.` : r.reason;
       toast(reason, 'bad'); return { ok: false, reason };
     }
-    toast('The result is unknown. VP did not retry it. Check Activity before trying again.', 'bad');
+    toast('The result is unknown. Vyakti did not retry it. Check Activity before trying again.', 'bad');
     return { ok: false, reason: r.reason, unknown: true };
   }, [toast]);
 

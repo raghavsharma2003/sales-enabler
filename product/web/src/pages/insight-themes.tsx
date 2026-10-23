@@ -58,10 +58,10 @@ export default function CallThemes({ agents, campaigns }: { agents: AgentRow[]; 
 function Body({ d }: { d: Insight }) {
   if (d.status === 'none') return <Empty title="No insight has been built yet" body="Insights are built every night from analysed calls, or right now with Refresh. Until a real call has been analysed there is nothing to build from." />;
   if (d.status === 'no_calls') return <Empty title="No analysed calls to learn from yet" body="Insights need real calls that have been analysed. Once some have ended and been analysed, they are built overnight, or on request with Refresh." />;
-  if (d.status === 'not_configured') return <Empty title="Insights are not switched on for this server" body="No analysis model is configured here, so themes cannot be built. Calls and their words are unaffected. Ask whoever runs your VP server to configure analysis, then use Refresh." />;
+  if (d.status === 'not_configured') return <Empty title="Insights are not switched on for this server" body="No analysis model is configured here, so themes cannot be built. Calls and their words are unaffected. Ask whoever runs your Vyakti server to configure analysis, then use Refresh." />;
   if (d.status === 'failed') return <Empty title="The last build did not finish" body={`${d.reason ? d.reason + ' ' : ''}Nothing was lost and the calls are untouched. Use Refresh to try again.`} />;
   const themes = d.themes ?? [];
-  const built = <p className="small muted">Built {d.generatedAt ? date(d.generatedAt, true) : 'recently'} from {d.callsSampled ?? 0} of {d.callsInScope ?? 0} calls. {d.note}</p>;
+  const built = <p className="small muted">Built {d.generatedAt ? date(d.generatedAt, true) : 'recently'}. {d.note}</p>;
   if (themes.length === 0) return <>{built}<Empty title="No themes found" body="The calls looked at did not share anything often enough to report. This is a result, not an error." /></>;
   return (
     <div className="stack">
@@ -70,7 +70,7 @@ function Body({ d }: { d: Insight }) {
         return <section key={k} aria-label={KIND[k][0]}><h3 className="dayhead">{KIND[k][0]}</h3><p className="small muted">{KIND[k][1]}</p>
           <ul className="themes">{list.map((t, i) => <li key={i}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}><strong>{t.title}</strong><span className="small muted tnum">{t.quotedCalls != null ? `Quoted from ${t.quotedCalls} ${t.quotedCalls === 1 ? 'call' : 'calls'} · ` : ''}the model grouped {t.count} of {t.of} sampled calls here</span></div>
-            <ul className="quotes">{t.quotes.map((q, j) => <li key={j}><blockquote lang="hi">“{q.text}”</blockquote>
+            <ul className="quotes">{t.quotes.map((q, j) => <li key={j}><blockquote lang={/[\u0900-\u097F]/.test(q.text) ? 'hi' : 'en-IN'}>“{q.text}”</blockquote>
               <span className="small muted">{q.speaker === 'agent' ? 'Agent' : 'Caller'} · </span><Link to={`/calls/${q.conversationId}${q.startMs != null ? `?t=${Math.round(q.startMs)}` : ''}`} className="small">Open the call{q.startMs != null ? ` at ${clock(q.startMs)}` : ''}</Link></li>)}</ul></li>)}</ul></section>; })}
       {((d.quotesDropped ?? 0) > 0 || (d.themesDropped ?? 0) > 0) && <p className="small muted">{d.quotesDropped ?? 0} quote{(d.quotesDropped ?? 0) === 1 ? '' : 's'} and {d.themesDropped ?? 0} theme{(d.themesDropped ?? 0) === 1 ? '' : 's'} were left out because the words could not be found in a stored transcript.</p>}
     </div>

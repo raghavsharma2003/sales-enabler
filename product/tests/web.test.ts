@@ -113,6 +113,18 @@ test('the call page names a built stack from its run manifest, as the runtime wr
   assert.equal(partsRan(null), null);
 });
 
+test('the product is called Vyakti: no user-facing string in web/src says "VP" (the internal working name)', () => {
+  const bad: string[] = [];
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(d + '/' + e.name) : /\.(tsx?|)$/.test(e.name) && /\.tsx?$/.test(e.name) ? [d + '/' + e.name] : []);
+  for (const f of walk(web + 'src')) {
+    readFileSync(f, 'utf8').split('\n').forEach((line, n) => {
+      const code = line.replace(/^\s*(\/\/|\*|\/\*).*$/, '').replace(/\s\/\/ .*$/, '');
+      if (/\bVP\b/.test(code)) bad.push(`${f.replace(web, 'web/')}:${n + 1}: ${code.trim().slice(0, 100)}`);
+    });
+  }
+  assert.deepEqual(bad, [], 'say Vyakti, not VP:\n' + bad.join('\n'));
+});
+
 test('no page writes from a menu: act() is never called inside an onChange of a select or input', () => {
   for (const f of readdirSync(web + 'src/pages')) {
     const txt = readFileSync(web + 'src/pages/' + f, 'utf8');

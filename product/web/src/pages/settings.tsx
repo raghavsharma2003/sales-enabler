@@ -239,7 +239,7 @@ function Undoable() {
 }
 function Activity() {
   const q = useData<ActivityRow[]>('activity', activityList);
-  return <div className="stack"><Undoable /><Card><CardHead title="What VP did" sub="Every draft, test and approved action, with who did it." />
+  return <div className="stack"><Undoable /><Card><CardHead title="What was done" sub="Every draft, test and approved action, with who did it." />
     <Async q={q} what="Activity" tool="activity.list" empty={d => d.length === 0 ? <Empty title="Nothing yet" body="Everything that changes something is written here." /> : null}>{d => {
       const groups: [string, ActivityRow[]][] = [];
       for (const r of d) { const k = dayLabel(r.at); const g = groups[groups.length - 1]; if (g && g[0] === k) g[1].push(r); else groups.push([k, [r]]); }

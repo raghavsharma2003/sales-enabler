@@ -624,10 +624,13 @@ test('Insights: themes show grouped by kind, most common first, as the model gro
   assert.match(text, /Quoted from 2 calls · the model grouped 3 of 4 sampled calls here/);
   assert.match(text, /Quoted from 1 call · the model grouped 2 of 4 sampled calls here/);
   assert.ok(!/verified/i.test(text.replace(/word for word/gi, '')), 'the count is never called verified');
-  assert.match(text, new RegExp(`Built .* from ${row.calls_sampled} of ${row.calls_in_scope} calls`));
+  assert.match(text, new RegExp(`Seen across ${row.calls_sampled} of ${row.calls_in_scope} recent calls`));
+  assert.ok(!/from \d+ of \d+ calls/.test(text), 'the sampled-calls sentence is said once');
   assert.match(text, /Every quote is word for word from a call/, 'the server note is shown as given');
   // Each quote is verbatim and links to its call at its moment.
+  assert.ok(row.themes.every(t => t.quotes.length >= 2), 'every seeded theme has at least two quotes, as the server requires');
   const quote = row.themes.find(t => t.title === 'Asks not to be called again').quotes[0];
+  assert.equal(await card.locator('blockquote[lang="hi"]').count() > 0, true, 'quotes are marked with their language');
   await card.getByText(quote.text, { exact: false }).first().waitFor();
   const hrefs = await card.locator('a[href^="/calls/"]').evaluateAll(as => as.map(a => a.getAttribute('href')));
   assert.ok(hrefs.includes(`/calls/${quote.conversationId}?t=${Math.round(quote.startMs)}`), 'the quote links to its call at its moment: ' + hrefs.join(' '));

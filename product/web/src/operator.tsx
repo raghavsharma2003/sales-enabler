@@ -14,7 +14,7 @@ import { pageInfo, RISK_WORDS } from './tools.ts';
 import { fieldLabel, fieldValue, toolAsk, toolDone } from './labels.ts';
 import type { OperatorCard } from './types.ts';
 
-const GREETING = 'I am the VP assistant (an AI). Tell me what you need done and I will plan it and prepare drafts and tests myself. Anything that reaches people or spends money waits for your approval.';
+const GREETING = 'I am the Vyakti assistant (an AI). Tell me what you need done and I will plan it and prepare drafts and tests myself. Anything that reaches people or spends money waits for your approval.';
 
 type SR = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void; onresult: ((e: any) => void) | null; onend: (() => void) | null; onerror: ((e: any) => void) | null };
 const SpeechCtor: (new () => SR) | undefined = typeof window !== 'undefined' ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition) : undefined;
@@ -178,7 +178,7 @@ export function Card({ c }: { c: OperatorCard }) {
       {needsHold && (st.state === 'idle' || st.state === 'running') && <HoldButton label={c.type === 'launch' ? 'Hold to launch' : 'Hold to approve'} onConfirm={() => void approve()} busy={st.state === 'running'} />}
       {st.state === 'approved' && <p className="donetxt"><Check size={15} aria-hidden /> Done.</p>}
       {st.state === 'failed' && <p className="hint hint-bad" role="alert">Could not finish: {st.note}. Nothing was changed.</p>}
-      {st.state === 'unknown' && <p className="hint hint-bad" role="alert">Not known yet: {st.note}. VP did not retry.</p>}
+      {st.state === 'unknown' && <p className="hint hint-bad" role="alert">Not known yet: {st.note}. Vyakti did not retry.</p>}
       {c.href && <Link to={c.href} className="small">Open the page</Link>}
       {c.provenance && <p className="ocard-foot">{c.provenance}</p>}
     </article>

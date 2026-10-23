@@ -119,10 +119,10 @@ async function main() {
     // Every quote is a real turn of a seeded call.
     const q = (i: number, t: number) => ({ conversationId: convs[i], text: calls[i].turns[t].text, speaker: calls[i].turns[t].speaker, startMs: calls[i].turns[t].startMs });
     const themes = [
-      { kind: 'objection', title: 'The price is higher than last time', count: 2, of: 4, quotedCalls: 1, quotes: [q(2, 1)] },
+      { kind: 'objection', title: 'The price is higher than last time', count: 2, of: 4, quotedCalls: 1, quotes: [q(2, 1), q(2, 2)] },
       { kind: 'objection', title: 'Asks to be called at a better time', count: 3, of: 4, quotedCalls: 2, quotes: [q(0, 1), q(2, 3)] },
-      { kind: 'drop_off', title: 'Asks not to be called again', count: 1, of: 4, quotedCalls: 1, quotes: [q(1, 1)] },
-      { kind: 'success_driver', title: 'Agrees once the next step is a message they can read later', count: 2, of: 4, quotedCalls: 1, quotes: [q(0, 3)] },
+      { kind: 'drop_off', title: 'Asks not to be called again', count: 1, of: 4, quotedCalls: 1, quotes: [q(1, 1), q(1, 2)] },
+      { kind: 'success_driver', title: 'Agrees once the next step is a message they can read later', count: 2, of: 4, quotedCalls: 1, quotes: [q(0, 3), q(0, 4)] },
     ];
     await pool.query("INSERT INTO call_insight (workspace_id, scope_type, status, themes, calls_sampled, calls_in_scope, newest_call_at, detail) VALUES ($1,'workspace','done',$2,4,4, now(), $3)", [ws, JSON.stringify(themes), { reason: null, model: 'seed' }]);
     await pool.end();

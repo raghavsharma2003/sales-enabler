@@ -39,7 +39,7 @@ export function pageInfo(path: string): PageInfo {
     case 'calls': return { key: 'calls', label: p[1] ? 'Call' : 'Calls', chips: p[1] ? ['Make a test from this call', 'Why did she hang up?'] : ['Show failed calls', 'Calls where they objected'] };
     case 'insights': return { key: 'insights', label: 'Insights', chips: ['Where do we lose people?', 'Summarise this week'] };
     case 'numbers': return { key: 'numbers', label: 'Numbers', chips: ['Ring my phone', 'How long does KYC take?'] };
-    case 'settings': return { key: 'settings', label: 'Settings', chips: ['What did VP do this week?', 'Set a daily spend cap'] };
+    case 'settings': return { key: 'settings', label: 'Settings', chips: ['What was done this week?', 'Set a daily spend cap'] };
     default: return { key: 'other', label: 'Vyakti', chips: [] };
   }
 }

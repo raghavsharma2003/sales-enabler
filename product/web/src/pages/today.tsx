@@ -34,7 +34,7 @@ export default function Today() {
             <section className="since" aria-labelledby="since-h">
               <h2 id="since-h" className="serif">Since you left</h2>
               {b.changed.n > 0
-                ? <p className="lead">VP did <strong className="tnum">{count(b.changed.n)}</strong> {b.changed.n === 1 ? 'thing' : 'things'}{did ? <>: {did}</> : ''}. <Link to="/settings/activity">See the ledger</Link></p>
+                ? <p className="lead">Vyakti did <strong className="tnum">{count(b.changed.n)}</strong> {b.changed.n === 1 ? 'thing' : 'things'}{did ? <>: {did}</> : ''}. <Link to="/settings/activity">See the ledger</Link></p>
                 : <p className="lead">Nothing has changed since {time(b.since)}. <span className="muted">That is a measured zero from the activity ledger, not a missing number.</span></p>}
             </section>
 
@@ -44,7 +44,7 @@ export default function Today() {
               <div className="stack">
                 <Card aria-labelledby="needs-h">
                   <CardHead id="needs-h" title="Needs you" sub={b.needsTap.n ? `${count(b.needsTap.n)} waiting. Safety first, then deadlines, then impact.` : undefined} />
-                  {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Nothing is waiting for you" body={`VP did ${count(b.changed.n)} ${b.changed.n === 1 ? 'thing' : 'things'} on its own. Nothing is waiting on you.`} action={<Link to="/settings/activity">See activity</Link>} /> : (
+                  {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Nothing is waiting for you" body={`Vyakti did ${count(b.changed.n)} ${b.changed.n === 1 ? 'thing' : 'things'} on its own. Nothing is waiting on you.`} action={<Link to="/settings/activity">See activity</Link>} /> : (
                     <ul className="needs">
                       {groupNeeds(b.needsTap.items).map(({ a, n }) => {
                         const w = RISK_WORDS[a.risk] ?? { label: a.risk, line: '' };

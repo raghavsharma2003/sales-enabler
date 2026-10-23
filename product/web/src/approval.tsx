@@ -33,7 +33,7 @@ export function ApprovalSheet() {
   return (
     <Sheet title={done ? 'Result' : 'Approve to continue'} onClose={closePending}>
       <div className="stack-s">
-        <div className="row"><Chip tone={p.risk === 'spend' || p.risk === 'external' ? 'terra' : 'marigold'} icon={<ShieldCheck size={13} aria-hidden />}>{w.label}</Chip><span className="small muted">Asked by VP · expires {date(p.expiresAt, true)}</span></div>
+        <div className="row"><Chip tone={p.risk === 'spend' || p.risk === 'external' ? 'terra' : 'marigold'} icon={<ShieldCheck size={13} aria-hidden />}>{w.label}</Chip><span className="small muted">Asked by Vyakti · expires {date(p.expiresAt, true)}</span></div>
         <p style={{ fontSize: '1.0625rem', fontWeight: 600 }}>{toolAsk(p.tool, p.summary)}</p>
         {args.length > 0 && <dl className="kv small">{args.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <p className="muted">{w.line} {undoLine(p.risk)}</p>
@@ -46,7 +46,7 @@ export function ApprovalSheet() {
       {!done && allowed && details === 'ready' && <HoldButton label="Hold to approve" onConfirm={() => void decide(true)} busy={p.state === 'running'} />}
       {done && rc?.status === 'confirmed' && <p className="donetxt">Done. Confirmed by the server, not assumed.</p>}
       {done && rc?.status === 'not_executed' && <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> Could not finish: {rc.reason}. Nothing was changed.</p>}
-      {done && rc?.status === 'unknown' && <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> The result is unknown: {rc.reason}. VP did not retry. Check Activity before trying again.</p>}
+      {done && rc?.status === 'unknown' && <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> The result is unknown: {rc.reason}. Vyakti did not retry. Check Activity before trying again.</p>}
       {done && p.error && <p className="state state-failed" role="alert">{p.error}</p>}
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         {done ? <Btn kind="primary" onClick={closePending}>Close</Btn> : <Btn kind="ghost" onClick={() => void decide(false)}>Decline</Btn>}

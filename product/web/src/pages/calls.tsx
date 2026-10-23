@@ -81,7 +81,7 @@ function Body({ c }: { c: CallDoc }) {
         <div className="stack">
           <Card><CardHead title="What happened" />
             <p style={{ marginBottom: 8 }}>{c.reason?.label ?? (c.status === 'live' ? 'The call is still live.' : 'No reason has been recorded.')}</p>
-            {c.reason && <p className="small muted">{c.reason.code === 'END_OPTED_OUT' ? 'Nothing to do. VP will not call this number again.' : /^none\b/i.test(c.reason.action) ? `Nothing to do.${c.reason.action.replace(/^none;?\s*/i, '') ? ' ' + c.reason.action.replace(/^none;?\s*/i, '').replace(/^./, x => x.toUpperCase()).replace(/\.?$/, '.') : ''}` : `What you can do: ${c.reason.action.replace(/\.$/, '')}.`}</p>}
+            {c.reason && <p className="small muted">{c.reason.code === 'END_OPTED_OUT' ? 'Nothing to do. Vyakti will not call this number again.' : /^none\b/i.test(c.reason.action) ? `Nothing to do.${c.reason.action.replace(/^none;?\s*/i, '') ? ' ' + c.reason.action.replace(/^none;?\s*/i, '').replace(/^./, x => x.toUpperCase()).replace(/\.?$/, '.') : ''}` : `What you can do: ${c.reason.action.replace(/\.$/, '')}.`}</p>}
             <div style={{ margin: '10px 0' }}>{outcomeChip(best?.value ?? c.outcome, best?.grade ?? null)}</div>
             {best?.grade === 'ai_guess' && <p className="small muted">An AI guess is not verified by your system or a person.</p>}
             {c.analysis && c.analysis.status !== 'done' && <p className="small muted">{c.analysis.status === 'not_configured' ? 'The written summary and outcome guess are off, because no analysis model is set up on this server.' : c.analysis.status === 'failed' ? 'The written summary could not be made this time. The words, timing and cost here are not affected.' : 'This call was not analysed.'}</p>}
