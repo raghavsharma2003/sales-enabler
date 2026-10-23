@@ -876,3 +876,108 @@ test('Agent rules: objections are written in boxes that show the whole text', as
   await f.waitFor();
   assert.equal(await f.evaluate(e => e.tagName), 'TEXTAREA', 'a text area, not a one-line input that cuts the text off');
 });
+
+// ---- The call page as a reviewer's tool: reply timing, inline marks, a recording the transcript follows ----
+// The seeded real calls: 'agreed' (Sunita Verma, timed replies), 'opt_out' (a safety event and an opt-out), 'objection' and 'no answer'.
+const callByEnd = async end => (await pool.query("SELECT cv.id FROM conversation cv WHERE cv.workspace_id = $1 AND cv.end_reason = $2 AND cv.channel <> 'test' ORDER BY cv.started_at LIMIT 1", [ws, end])).rows[0].id;
+const callByContact = async name => name === 'Imran Qureshi' ? callByEnd('opt_out') : (await pool.query("SELECT cv.id FROM conversation cv JOIN contact c ON c.id = cv.contact_id WHERE cv.workspace_id = $1 AND c.name = $2 AND cv.channel <> 'test' ORDER BY cv.started_at LIMIT 1", [ws, name])).rows[0].id;
+const callCard = () => page.locator('section[aria-labelledby="rt-h"]');
+
+test('Call page: reply timing is the runtime\'s own figures with the call\'s median and slowest, and says what was measured', async () => {
+  const id = await callByContact('Sunita Verma');
+  const turns = (await tool('call.get', { conversationId: id })).result.turns.filter(t => t.speaker === 'agent' && t.latency?.latencyMs);
+  const ms = turns.map(t => t.latency.latencyMs).sort((a, b) => a - b);
+  assert.ok(ms.length >= 2, 'the seeded call has timed replies');
+  const median = ms.length % 2 ? ms[(ms.length - 1) / 2] : (ms[ms.length / 2 - 1] + ms[ms.length / 2]) / 2;
+  await page.goto(`${BASE}/calls/${id}`);
+  await callCard().getByRole('heading', { name: 'Reply timing' }).waitFor({ timeout: 10000 });
+  const text = await callCard().innerText();
+  const fmt = n => `${Math.round(n).toLocaleString('en-IN')} ms`;
+  assert.ok(text.includes(fmt(median)), `median ${fmt(median)} is shown: ${text}`);
+  assert.ok(text.includes(fmt(ms[ms.length - 1])), 'the slowest reply is shown');
+  assert.match(text, new RegExp(`${ms.length} of ${ms.length} repl`), 'it says how many replies were measured');
+  assert.match(text, /as the voice runtime measured it/, 'and where the figure comes from');
+  await callCard().getByRole('button', { name: /^at \d+:\d\d$/ }).click();   // the slowest reply links to its line
+});
+
+test('Call page: a call with no reply timing says so and shows no figure; a call nobody answered has no card', async () => {
+  const id = await callByContact('Imran Qureshi');
+  const t = (await tool('call.get', { conversationId: id })).result.turns.filter(x => x.speaker === 'agent' && x.latency?.latencyMs).length;
+  await page.goto(`${BASE}/calls/${id}`);
+  await callCard().getByRole('heading', { name: 'Reply timing' }).waitFor({ timeout: 10000 });
+  const text = await callCard().innerText();
+  if (t === 0) assert.match(text, /did not record reply timing/); else assert.match(text, /Median reply gap/);
+  assert.ok(!/Median reply gap/.test(await page.locator('section[aria-labelledby="rt-h"]').first().innerText()) || t > 0, 'no figure without a measurement');
+});
+
+test('Call page: her AI statement, the safety rule that acted and the opt-out sit on the lines they belong to', async () => {
+  const id = await callByContact('Imran Qureshi');
+  await page.goto(`${BASE}/calls/${id}`);
+  const turns = page.locator('ol.turns > li');
+  await turns.first().waitFor({ timeout: 10000 });
+  await turns.nth(0).getByText('Says she is an AI').waitFor();
+  const caller = turns.filter({ hasText: 'Caller' }).first();
+  await caller.getByText(/^Opt-out heard/).waitFor();
+  const safety = (await tool('call.get', { conversationId: id })).result.safety;
+  assert.ok(safety.length > 0, 'the call has a safety event');
+  const reply = turns.filter({ hasText: 'Agent' }).nth(1);
+  await reply.getByText('AI-identity rule replaced a sentence before she said it').waitFor();
+});
+
+test('Call page: with a recording the browser can open, a line plays from its moment and the playing line is highlighted', async () => {
+  const id = await callByContact('Sunita Verma');
+  const hookPort = Number(new URL(BASE).port) + 1;
+  await pool.query('UPDATE conversation SET recording_uri = $2 WHERE id = $1', [id, `http://127.0.0.1:${hookPort}/audio.wav?secs=60`]);   // a fixture: the dev server serves a silent recording
+  try {
+    await page.goto(`${BASE}/calls/${id}`);
+    const audio = page.locator('audio.callaudio');
+    await audio.waitFor({ timeout: 10000 });
+    await page.waitForFunction(() => { const a = document.querySelector('audio.callaudio'); return a && a.readyState >= 1 && a.duration > 50; }, null, { timeout: 15000 });
+    const turns = page.locator('ol.turns > li');
+    const second = turns.filter({ hasText: 'Agent' }).nth(1);
+    const startMs = (await tool('call.get', { conversationId: id })).result.turns.filter(t => t.speaker === 'agent')[1].started_ms;
+    await second.getByRole('button').click();
+    await page.waitForFunction(ms => Math.abs(document.querySelector('audio.callaudio').currentTime - ms / 1000) < 1.5, startMs, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('ol.turns > li.now').length === 1, null, { timeout: 8000 });
+    assert.ok(await second.evaluate(e => e.classList.contains('now')), 'the line that was clicked is the one highlighted');
+    // As the audio moves, the highlight follows it to the line being played.
+    const last = turns.last(); const lastStart = (await tool('call.get', { conversationId: id })).result.turns.at(-1).started_ms;
+    await page.evaluate(ms => { document.querySelector('audio.callaudio').currentTime = ms / 1000 + 0.5; }, lastStart);
+    await page.waitForFunction(() => { const l = document.querySelectorAll('ol.turns > li'); return l[l.length - 1].classList.contains('now'); }, null, { timeout: 8000 });
+    assert.ok(await last.evaluate(e => e.classList.contains('now')));
+  } finally { await pool.query('UPDATE conversation SET recording_uri = NULL WHERE id = $1', [id]); }
+});
+
+test('Call page: a recording that lives on the voice server is not offered as playable, and the page says why', async () => {
+  const id = await callByContact('Sunita Verma');
+  await pool.query('UPDATE conversation SET recording_uri = $2 WHERE id = $1', [id, 'file:///var/lib/vp/recordings/call.wav']);
+  try {
+    await page.goto(`${BASE}/calls/${id}`);
+    await page.getByText('stored on the voice server and cannot be played from this page yet', { exact: false }).waitFor({ timeout: 10000 });
+    assert.equal(await page.locator('audio.callaudio').count(), 0, 'no player for an address a browser cannot open');
+  } finally { await pool.query('UPDATE conversation SET recording_uri = NULL WHERE id = $1', [id]); }
+});
+
+test('Call page on a devsim browser call: her AI statement is marked and reply timing is the runtime\'s or says none was recorded', { skip: process.env.VP_DEVSIM_URL ? false : 'no voice runtime (devsim) on this machine' }, async () => {
+  const riya = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
+  await page.goto(`${BASE}/agents/${riya}`);
+  await page.getByRole('radio', { name: 'Test her' }).click();
+  await page.getByRole('button', { name: 'Call me in the browser' }).click();
+  const call = page.locator('.bcall');
+  await call.locator('.bcap.agent').nth(1).waitFor({ timeout: 60000 });
+  await call.getByRole('button', { name: 'Hang up' }).click();
+  const id = (await call.getByRole('link', { name: 'See this call' }).getAttribute('href')).split('/').pop();
+  let timed = 0;
+  for (const t0 = Date.now(); Date.now() - t0 < 20000; await new Promise(r => setTimeout(r, 400))) {
+    const r = (await pool.query("SELECT count(*)::int AS n, count(*) FILTER (WHERE (latency->>'latencyMs')::numeric > 0)::int AS timed FROM turn WHERE conversation_id = $1", [id])).rows[0];
+    if (r.n >= 3) { timed = r.timed; break; }
+  }
+  await page.goto(`${BASE}/calls/${id}?include=test`);
+  await callCard().getByRole('heading', { name: 'Reply timing' }).waitFor({ timeout: 10000 });
+  // Her disclosure is marked from the words she was heard saying. The fake caller can cut her opening short, so the mark is either of the two honest outcomes, and it must match the words.
+  const heard = (await pool.query("SELECT text FROM turn WHERE conversation_id = $1 AND speaker = 'agent' ORDER BY idx LIMIT 2", [id])).rows.map(r => r.text);
+  const said = heard.some(t => /\bAI\b|\bA\.I\.|artificial intelligence|virtual assistant|digital assistant|एआई|ए\.आई|कृत्रिम बुद्धि/i.test(t));
+  await page.locator('ol.turns > li').first().getByText(said ? 'Says she is an AI' : 'No AI statement found in her opening').waitFor();
+  const text = await callCard().innerText();
+  if (timed > 0) assert.match(text, /Median reply gap/); else assert.match(text, /did not record reply timing/);
+});

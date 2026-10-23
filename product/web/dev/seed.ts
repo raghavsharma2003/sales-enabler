@@ -79,14 +79,14 @@ async function main() {
     const people = (await pool.query('SELECT id FROM contact WHERE workspace_id = $1 ORDER BY e164 LIMIT 6', [ws])).rows.map(x => x.id as string);
     const manifest: RunManifest = { combinationId: 'v2|gemini+gemini-3.5-flash-lite+gemini-lite', stackId: 'v2-flashlite', agentVersionHash: 'seed', components: { stt: 'gemini', llm: 'gemini-3.5-flash-lite', tts: 'gemini-lite' }, fallbacksUsed: [], memory: 'none', runtimeVersion: 'seed' };
     const T = (speaker: 'agent' | 'caller', text: string, startMs: number, endMs: number, latencyMs?: number, interrupted?: boolean) => ({ speaker, text, startMs, endMs, latencyMs, interrupted });
-    const calls: { who: number; end: any; secs: number; turns: ReturnType<typeof T>[]; moments: { kind: any; atMs: number; note: string }[]; cost: number }[] = [
+    const calls: { who: number; end: any; secs: number; turns: ReturnType<typeof T>[]; moments: { kind: any; atMs: number; note: string }[]; cost: number; safety?: { after: number; rule: string; action: string; detail: string } }[] = [
       { who: 0, end: 'agent_ended', secs: 41, cost: 4200, moments: [{ kind: 'commitment', atMs: 28000, note: 'will look at the WhatsApp link this evening' }], turns: [
         T('agent', 'नमस्ते सुनीता जी, मैं रिया बोल रही हूँ, सुरक्षा हेल्थ की तरफ़ से एक AI असिस्टेंट। आपकी policy की renewal के बारे में एक छोटी बात थी, दो मिनट हैं?', 0, 9500),
         T('caller', 'हाँ बोलिए, पर जल्दी, मैं गाड़ी चला रहा हूँ।', 10800, 14200),
         T('agent', 'ठीक है, सिर्फ़ तीस सेकंड। आपकी renewal 28 तारीख़ को है, और online करने पर no-claim bonus मिलेगा। मैं link WhatsApp पर भेज दूँ?', 15300, 25400, 1100),
         T('caller', 'अच्छा... हाँ भेज दो, मैं शाम को देख लूँगा।', 26200, 31500, undefined, true),
         T('agent', 'बिल्कुल, भेज रही हूँ। गाड़ी ध्यान से चलाइएगा, नमस्ते!', 32900, 38600, 1400)] },
-      { who: 1, end: 'opt_out', secs: 25, cost: 2600, moments: [{ kind: 'opt_out', atMs: 10400, note: 'asked not to be called again' }], turns: [
+      { who: 1, end: 'opt_out', secs: 25, cost: 2600, safety: { after: 1, rule: 'RD2', action: 'replaced', detail: 'a sentence that did not say she is an AI was replaced with the honest one' }, moments: [{ kind: 'opt_out', atMs: 10400, note: 'asked not to be called again' }], turns: [
         T('agent', 'नमस्ते इमरान जी, मैं रिया बोल रही हूँ, सुरक्षा हेल्थ की AI असिस्टेंट। आपकी renewal के बारे में एक छोटी बात थी।', 0, 9200),
         T('caller', 'मुझे बार-बार फ़ोन मत करो, बंद करो ये सब।', 10400, 15100),
         T('agent', 'जी, माफ़ कीजिए। मैंने आपका नंबर अभी हटा दिया है, आगे से हमारी तरफ़ से कोई कॉल नहीं आएगी। धन्यवाद।', 15900, 25000, 800)] },
@@ -106,7 +106,7 @@ async function main() {
       const conv = (await pool.query("INSERT INTO conversation (workspace_id, attempt_id, contact_id, agent_version_id, channel) VALUES ($1,$2,$3,$4,'phone') RETURNING id", [ws, attempt, contact, vRiya])).rows[0].id as string;
       const now = () => new Date(Date.now() - (50 - phone++ * 12) * 60_000).toISOString();
       let s = 1; const ev: RuntimeEvent[] = [{ seq: s++, type: 'call.started', at: now(), manifest }];
-      for (const t of c.turns) ev.push({ seq: s++, type: 'turn', at: now(), ...t } as RuntimeEvent);
+      c.turns.forEach((t, k) => { ev.push({ seq: s++, type: 'turn', at: now(), ...t } as RuntimeEvent); if (c.safety && c.safety.after === k) ev.push({ seq: s++, type: 'safety', at: now(), rule: c.safety.rule, action: c.safety.action, detail: c.safety.detail } as RuntimeEvent); });
       for (const m of c.moments) ev.push({ seq: s++, type: 'moment', at: now(), kind: m.kind, atMs: m.atMs, note: m.note });
       ev.push({ seq: s++, type: 'cost', at: now(), component: 'telephony', provider: 'exotel', quantity: Math.max(1, c.secs), unit: 'second', inrMilli: c.cost });
       ev.push({ seq: s++, type: 'call.ended', at: now(), endReason: c.end, durationS: c.secs, transcript: c.turns.map(t => ({ speaker: t.speaker, text: t.text, startMs: t.startMs })), manifest } as RuntimeEvent);

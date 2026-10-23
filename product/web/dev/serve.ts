@@ -67,7 +67,21 @@ import { createServer } from 'node:http';
 import { runtime, FakeRuntime, HttpRuntime, setRuntime } from '../../server/runtime-client.ts';
 import type { CallTicket } from '../../shared/runtime-protocol.ts';
 import { forgetRuntimeHealth } from '../../server/modules/agents/index.ts';
+// DEV ONLY: a silent WAV the call page can play and seek (a recording address the browser can open), at GET /audio.wav?secs=60.
+function silentWav(secs: number): Buffer {
+  const rate = 8000, n = rate * secs, b = Buffer.alloc(44 + n * 2);
+  b.write('RIFF', 0); b.writeUInt32LE(36 + n * 2, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
+  b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(n * 2, 40);
+  return b;
+}
 const hook = createServer((req, res) => {
+  if (req.method === 'GET' && req.url?.startsWith('/audio.wav')) {
+    const secs = Math.min(300, Math.max(1, Number(new URL(req.url, 'http://x').searchParams.get('secs') ?? 60)));
+    const wav = silentWav(secs); const range = /bytes=(\d*)-(\d*)/.exec(req.headers.range ?? '');
+    const start = range && range[1] ? Number(range[1]) : 0, end = range && range[2] ? Math.min(Number(range[2]), wav.length - 1) : wav.length - 1;
+    res.writeHead(range ? 206 : 200, { 'content-type': 'audio/wav', 'accept-ranges': 'bytes', 'content-length': end - start + 1, ...(range ? { 'content-range': `bytes ${start}-${end}/${wav.length}` } : {}) });
+    res.end(wav.subarray(start, end + 1)); return;
+  }
   let body = '';
   req.on('data', c => { body += c; });
   req.on('end', () => {

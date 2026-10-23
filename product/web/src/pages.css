@@ -126,3 +126,7 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .gstep.done .gnum { background: var(--leaf-bg); color: var(--leaf); }
 .gstep > div { min-width: 0; flex: 1; }
 .gs-wrap { margin-bottom: 20px; } .gs-wrap:empty { display: none; }
+
+.callaudio { width: 100%; margin: 4px 0 12px; }
+.reviewbox h3 { margin: 0 0 8px; font-size: 1.0625rem; }
+.turn-meta .chip { white-space: normal; max-width: 100%; }

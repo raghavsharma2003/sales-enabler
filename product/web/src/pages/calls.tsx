@@ -7,8 +7,9 @@ import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, Table, Tabs, TextField, type Col } from '../ui.tsx';
 import { callExplain, callGet, callSearch } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
-import { costPart } from '../labels.ts';
+import { costPart, RULE_LABEL } from '../labels.ts';
 import { voiceStackOf } from '../catalog.ts';
+import { DID, SHORT, TimingCard, marksFor, playable } from './call-review.tsx';
 import { clock, date, dur, inr, ms } from '../format.ts';
 import type { CallDoc, CallExplain, CallRow } from '../types.ts';
 
@@ -51,8 +52,11 @@ function Body({ c }: { c: CallDoc }) {
   const t0 = Number(qs.get('t') ?? NaN);
   const [at, setAt] = useState<number>(Number.isFinite(t0) ? t0 * 1000 : 0);
   const turnRefs = useRef<Record<number, HTMLLIElement | null>>({});
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const marks = useMemo(() => marksFor(c), [c]);
+  const canPlay = playable(c.recordingUri);
   const current = c.turns.find(t => t.startMs != null && at >= t.startMs && at <= (t.endMs ?? t.startMs + 1))?.idx;
-  const seek = (msv: number | null) => { if (msv == null) return; setAt(msv); const t = c.turns.find(x => x.startMs != null && msv >= x.startMs && msv <= (x.endMs ?? x.startMs + 1)); if (t) turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+  const seek = (msv: number | null) => { if (msv == null) return; setAt(msv); if (audio.current) audio.current.currentTime = msv / 1000; const t = c.turns.find(x => x.startMs != null && msv >= x.startMs && msv <= (x.endMs ?? x.startMs + 1)); if (t) turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
   const [why, setWhy] = useState<CallExplain | null>(null); const [whyBusy, setWhyBusy] = useState(false);
   const { toast } = useApp();
   const explain = async () => { setWhyBusy(true); try { setWhy(await callExplain(c.id)); } catch (e) { toast(e instanceof Error ? e.message : 'Could not explain.', 'bad'); } setWhyBusy(false); };
@@ -67,16 +71,18 @@ function Body({ c }: { c: CallDoc }) {
       <div className="cols-main">
         <div className="stack">
           <Card aria-labelledby="player-h">
-            <CardHead id="player-h" title="Who spoke when" sub={c.recordingUri ? 'A recording exists for this call. Playback is not built into this page yet.' : 'No recording is stored for this call. The bars are drawn from turn timing, not from audio.'} />
+            <CardHead id="player-h" title="Who spoke when" sub={canPlay ? 'Play the recording, or select a line below to jump to it. The line being played is highlighted.' : c.recordingUri ? 'A recording exists, but it is stored on the voice server and cannot be played from this page yet. The bars are drawn from turn timing.' : 'No recording is stored for this call. The bars are drawn from turn timing, not from audio.'} />
+            {canPlay && <audio ref={audio} className="callaudio" controls preload="metadata" src={c.recordingUri!} aria-label="Call recording" onTimeUpdate={e => setAt(e.currentTarget.currentTime * 1000)} onSeeked={e => setAt(e.currentTarget.currentTime * 1000)} />}
             {c.turns.length > 0 ? <Lanes c={c} at={at} onSeek={seek} /> : <Empty title="Nobody spoke" body="There is no transcript. The reason is in the outcome card." />}
           </Card>
+          {c.turns.length > 0 && <Card><TimingCard c={c} onSeek={t => { setAt(t.startMs ?? 0); turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }} /></Card>}
           {c.turns.length > 0 && <Card aria-labelledby="tr-h"><CardHead id="tr-h" title="What was said" sub="Only what the caller actually heard. Select a line to mark it on the timeline." />
             <ol className="turns">{c.turns.map(t => (
               <li key={t.idx} ref={el => { turnRefs.current[t.idx] = el; }} className={`turn ${t.who}${current === t.idx ? ' now' : ''}`}>
-                <button type="button" onClick={() => setAt(t.startMs ?? 0)} aria-label={`${t.who === 'agent' ? 'Agent' : 'Caller'}${t.startMs != null ? ` at ${clock(t.startMs / 1000)}` : ''}: mark here`}>
+                <button type="button" onClick={() => { setAt(t.startMs ?? 0); if (audio.current && t.startMs != null) { audio.current.currentTime = t.startMs / 1000; void audio.current.play().catch(() => {}); } }} aria-label={`${t.who === 'agent' ? 'Agent' : 'Caller'}${t.startMs != null ? ` at ${clock(t.startMs / 1000)}` : ''}: ${canPlay ? 'play from here' : 'mark here'}`}>
                   <span className="turn-who">{t.who === 'agent' ? 'Agent' : 'Caller'} {t.startMs != null && <span className="tnum muted">{clock(t.startMs / 1000)}</span>}</span>
                   <span className="turn-text" lang="hi">{t.text}</span>
-                  <span className="turn-meta">{t.latencyMs ? <Chip title="Time from the caller finishing to her first audio">reply gap {ms(t.latencyMs)}</Chip> : null}{t.interrupted ? <Chip tone="marigold" title="Someone spoke over the other">cut-in</Chip> : null}</span>
+                  <span className="turn-meta">{t.latencyMs ? <Chip title="Time from the caller finishing to her first audio, as the voice runtime measured it">reply gap {ms(t.latencyMs)}</Chip> : t.who === 'agent' && c.turns.slice(0, c.turns.indexOf(t)).some(x => x.who === 'caller') ? <Chip title="The voice runtime recorded no timing for this reply">gap not recorded</Chip> : null}{t.interrupted ? <Chip tone="marigold" title="Someone spoke over the other">cut-in</Chip> : null}{(marks.get(t.idx) ?? []).map((m, k) => <Chip key={k} tone={m.kind === 'disclosure' ? 'leaf' : m.kind === 'no-disclosure' ? 'marigold' : m.kind === 'optout' ? 'brick' : 'peacock'} title={m.title}>{m.text}</Chip>)}</span>
                 </button></li>))}</ol></Card>}
         </div>
         <div className="stack">
@@ -90,7 +96,7 @@ function Body({ c }: { c: CallDoc }) {
           {quotes.length > 0 && <Card><CardHead title="In their words" /><ul className="quotes">{quotes.map((m, i) => <li key={i}><blockquote lang="hi">“{m.quote}”</blockquote><div className="row"><Chip>{prettyCode(m.kind)}</Chip>{m.atMs != null && <button type="button" className="btn btn-sm" onClick={() => seek(m.atMs)}><Play size={12} aria-hidden /><span>Mark {clock(m.atMs / 1000)}</span></button>}</div></li>)}</ul></Card>}
           <Card><CardHead title="Safety rules that acted" sub="Code, not the model, decides these." />
             {c.safety.length === 0 ? <p className="small"><Check size={16} aria-hidden style={{ verticalAlign: '-3px', color: 'var(--leaf)' }} /> No safety rule needed to act on this call.</p> :
-              <ul className="trace">{c.safety.map(s => <li key={s.seq}><CircleX size={18} aria-hidden className="bad" /><div><strong>{prettyCode(s.rule)} {s.action.replace(/_/g, ' ')}</strong><p className="small muted">{s.detail}</p></div></li>)}</ul>}
+              <ul className="trace">{c.safety.map(s => <li key={s.seq}><CircleX size={18} aria-hidden className="bad" /><div><strong>{SHORT[s.rule] ?? 'Safety rule'} {DID[s.action] ?? 'acted'}</strong><p className="small muted">{RULE_LABEL[s.rule] ?? ''}</p><p className="small muted">{s.detail}</p></div></li>)}</ul>}
             {c.judgeMarks.length > 0 && <ul className="trace" aria-label="What the safety checker noticed">{c.judgeMarks.map(j => <li key={j.seq}>{j.outcome === 'raised' ? <CircleX size={18} aria-hidden className="bad" /> : <Info size={18} aria-hidden className="muted" />}<p className="small">{j.text}</p></li>)}</ul>}
             {c.handOffs.length > 0 && <p className="small" style={{ marginTop: 8 }}>Handed to {c.handOffs.map(h => h.destination).join(', ')}.</p>}
             {c.tools.length > 0 && <p className="small muted">Tools used: {c.tools.map(t => `${t.name} (${t.status})`).join(', ')}.</p>}</Card>

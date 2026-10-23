@@ -22,7 +22,7 @@ const screens = (id) => [
   ['contacts', '/contacts'], ['contacts-import', '/contacts/import', { after: async (p) => { await p.getByRole('button', { name: 'Use a made-up sample' }).click(); await p.getByRole('button', { name: 'Check the file' }).click(); await p.waitForTimeout(1200); } }],
   ['contact', `/contacts/${id.contact}`], ['contact-suppressed', `/contacts/${id.suppressed}`], ['contacts-export', '/contacts', { after: async (p) => { await p.getByRole('button', { name: 'Export as CSV…' }).click(); await p.waitForTimeout(500); } }], ['audiences', '/audiences'],
   ['campaigns', '/campaigns'], ['campaign-new', '/campaigns/new'], ['campaign-draft', `/campaigns/${id.camp}`], ['campaign-draft2', `/campaigns/${id.camp2}`], ['campaign-cap', `/campaigns/${id.camp2}`, { after: async (p) => { await p.getByRole('button', { name: /^(Set|Change) spend cap$/ }).click(); await p.waitForTimeout(900); } }],
-  ['calls', '/calls'], ['call', `/calls/${id.call}`], ['call-optout', `/calls/${id.call2}`], ['insights', '/insights'], ['numbers', '/numbers'],
+  ['calls', '/calls'], ['call', `/calls/${id.call}`], ['call-optout', `/calls/${id.optout}`], ['insights', '/insights'], ['numbers', '/numbers'],
   ['settings-team', '/settings/team'], ['settings-keys', '/settings/keys'], ['settings-brand', '/settings/brand'], ['settings-knowledge', '/settings/knowledge'], ['settings-billing', '/settings/billing'],
   ['settings-compliance', '/settings/compliance'], ['settings-privacy', '/settings/privacy'], ['settings-activity', '/settings/activity'], ['settings-operator', '/settings/operator'], ['settings-integrations', '/settings/integrations'],
   ['integrations-connect', '/settings/integrations', { after: async (p) => { await p.getByRole('button', { name: 'Connect HubSpot CRM' }).click(); await p.waitForTimeout(500); } }],
@@ -43,7 +43,7 @@ for (const [tag, viewport, extra] of SIZES) {
   const call = async (t, args = {}) => (await (await page.request.post(base + '/v1/tools/' + t, { data: { args } })).json()).result;
   const ag = (await call('agent.list')).agents; const cp = (await call('campaign.list')).campaigns; const cl = (await call('call.search', {})).calls; const ct = (await call('contact.list', { limit: 1 })).contacts; const sup = (await call('contact.list', { limit: 5, suppressed: true })).contacts;
   const byName = (arr, n) => arr.find(x => x.name.includes(n))?.id;
-  const ids = { riya: byName(ag, 'Renewals'), emi: byName(ag, 'EMI'), camp: byName(cp, 'Renewals'), camp2: byName(cp, 'Appointment'), contact: ct[0]?.id, suppressed: sup[0]?.id, call: cl[2]?.id ?? cl[0]?.id, call2: cl[1]?.id ?? cl[0]?.id };
+  const ids = { riya: byName(ag, 'Renewals'), emi: byName(ag, 'EMI'), camp: byName(cp, 'Renewals'), camp2: byName(cp, 'Appointment'), contact: ct[0]?.id, suppressed: sup[0]?.id, call: cl[2]?.id ?? cl[0]?.id, call2: cl[1]?.id ?? cl[0]?.id, optout: cl.find(x => x.end_reason === 'opt_out')?.id ?? cl[0]?.id };
   for (const [name, path, o] of screens(ids)) {
     if (only && !name.includes(only)) continue;
     if (o?.anon) {
