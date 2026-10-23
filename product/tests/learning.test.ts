@@ -615,3 +615,35 @@ test('before anyone approves: readiness says what is missing, and the approval c
   assert.deepEqual([r2.result.ready, r2.result.fix], [false, 'outcome']);
   assert.match((await u.call('proposal.accept', { proposalId: pid2 })).summary, /cannot start yet: Say what counts as success/);
 });
+
+test('a change that does clearly worse on the goal is stopped before the horizon (always-valid test) and callers go back', { skip }, async () => {
+  const t = await workspace();
+  const { experimentId, accepted } = await runningExperiment(t, { baselineRate: 0.5, mdeAbs: 0.05, minDays: 0 });
+  const perArm = accepted.perArm as number;
+  // The change collapses the goal rate: 50% -> 5%. Far fewer calls than the horizon are enough to stop it.
+  await dialUntil(t, bothReach(80), (arm, i) => (arm === 'treatment' ? (i % 20 === 0 ? 'confirmed' : 'declined') : (i % 2 === 0 ? 'confirmed' : 'declined')));
+  assert.ok(80 < perArm);
+  const before = reverts.length;
+  const r = await t.call('experiment.check', { experimentId });
+  assert.equal(r.result.state, 'stopped_guardrail', JSON.stringify(r.result));
+  assert.match(r.result.reason, /doing worse on the goal/);
+  assert.equal(reverts.length, before + 1, 'the A3 revert ran');
+  assert.equal((await t.call('experiment.assign', { agentId: t.agentId, contactId: (await newContacts(t.ws, 1))[0] })).result, null);
+});
+
+test('an experiment never changes safety rules, the disclosure, hand-off or recording: only the editable parts differ', { skip }, async () => {
+  const t = await workspace();
+  const [ev] = await calls(t.ws, t.versionId, 5, 1);
+  // Every attempt on a locked part is stopped by a gate before it can be tested.
+  for (const path of ['opening.disclosureClause', 'handOff.when', 'recording.announce', 'neverSay', 'sectorPacks', 'category']) {
+    setFakeLlm(() => ({ text: JSON.stringify({ proposals: [{ kind: 'opening', rationale: 'x', change: [{ op: 'set', path, value: path === 'recording.announce' ? false : [] }], evidenceIds: [ev] }] }), toolCalls: [], usage: { inputTokens: 1, outputTokens: 1 }, model: 'fake', provider: 'fake' }));
+    const p = (await t.call('learning.propose', { agentId: t.agentId, max: 1 })).result.proposals[0];
+    assert.equal(p.status, 'gated_out', path);
+  }
+  // And a test that does start runs a treatment whose locked parts equal the current version's.
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.3, minDays: 0 });
+  const v = await one<{ c: any; tr: any }>(pool, `SELECT c.config->'agent' AS c, tr.config->'agent' AS tr FROM experiment e JOIN agent_version c ON c.id = e.control_version_id JOIN agent_version tr ON tr.id = e.treatment_version_id WHERE e.id = $1`, [experimentId]);
+  for (const k of ['brand', 'category', 'sectorPacks', 'neverSay', 'handOff', 'recording', 'memory', 'voice', 'tools']) assert.deepEqual(v!.tr[k], v!.c[k], k);
+  assert.equal(v!.tr.opening.disclosureClause, v!.c.opening.disclosureClause);
+  assert.deepEqual([...v!.tr.facts].sort((a: any, b: any) => a.key.localeCompare(b.key)), [...v!.c.facts].sort((a: any, b: any) => a.key.localeCompare(b.key)));
+});

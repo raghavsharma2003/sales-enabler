@@ -158,3 +158,25 @@ export function runGates(base: AgentConfig, ops: ChangeOp[]): GateResult & { pro
   }
   return { passed: failures.length === 0, failures, checked, proposed };
 }
+
+/** A change in words, for the page: which part of the agent, what it says now, what it would say. */
+export function describeChange(base: AgentConfig | null, ops: ChangeOp[]): { part: string; before: string | null; after: string }[] {
+  const text = (v: unknown): string => (typeof v === 'string' ? v : Array.isArray(v) ? v.map(x => (typeof x === 'object' && x ? Object.values(x).join(': ') : String(x))).join('; ') : v == null ? '' : String(v));
+  const at = (path: string): unknown => path.split('.').reduce<any>((n, k) => (n == null ? undefined : n[k]), base);
+  return ops.map(o => {
+    if (o.op === 'reorder_facts') return { part: 'The order of the facts she can share', before: base ? base.facts.map(f => f.key.replace(/_/g, ' ')).join(', ') : null, after: o.order.map(k => k.replace(/_/g, ' ')).join(', ') };
+    const m = /^(\w+)(?:\.(\d+))?(?:\.(.+))?$/.exec(o.path)!;
+    const idx = m[2] !== undefined ? Number(m[2]) : -1;
+    const part = o.path === 'opening.usefulFirst' ? 'What she says first, after saying she is an AI assistant'
+      : o.path === 'objections' ? 'How she answers objections'
+      : m[1] === 'objections' ? `How she answers "${base?.objections[idx]?.trigger ?? 'an objection'}"`
+      : m[1] === 'goals' ? 'What counts as done'
+      : o.path === 'persona.notes' ? 'Notes on how she speaks'
+      : m[1] === 'tools' ? `When she uses ${(base?.tools[idx]?.name ?? 'a tool').replace(/_/g, ' ')}`
+      : o.path === 'limits.maxSilenceS' ? 'How long she waits in silence (seconds)'
+      : o.path === 'limits.maxTurns' ? 'The most turns in one call'
+      : 'Another part of her brief';
+    const before = base ? at(o.path) : undefined;
+    return { part, before: before === undefined ? null : text(before), after: text(o.value) };
+  });
+}

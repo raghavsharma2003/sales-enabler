@@ -1,10 +1,11 @@
 // Insights: the funnel, issues in "what happened, why, what you can do", the monitors that watch for them, and learning proposals
 // and experiments with the calls needed to prove them. Under-powered is a designed state: there are no daily winner badges.
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { run } from '../api.ts';
 import { useApp, useData } from '../store.tsx';
-import { Async, Btn, Card, CardHead, Chip, Empty, NotMeasured, PageHead, SelectField } from '../ui.tsx';
+import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, SelectField } from '../ui.tsx';
+import { Link } from '../router.tsx';
 import { Funnel } from '../funnel.tsx';
 import { agentList, campaignFunnel, campaignGet, campaignList } from '../data.ts';
 import { ago, count, date } from '../format.ts';
@@ -12,8 +13,34 @@ import { prettyCode } from './contacts.tsx';
 import CallThemes from './insight-themes.tsx';
 
 interface IssueRow { id: string; category: string; severity: string; status: string; detail: unknown; created_at: string }
-interface ProposalRow { id: string; agent_id: string; kind: string; status: string; rationale: string | null; calls_to_prove: number | null; gates_passed: boolean | null; created_at: string }
-interface ExperimentRow { id: string; state: string; callsToProve?: number; started_at: string; expires_at: string | null; result?: { verdict?: string; reasons?: string[]; shadowAA?: { passed: boolean } } | null }
+interface ProposalRow { id: string; agent_id: string; agent_name: string; kind: string; status: string; rationale: string | null; calls_to_prove: number | null; gates_passed: boolean | null; created_at: string;
+  simulated: string | null; from_issue: string | null; changes: { part: string; before: string | null; after: string }[] }
+interface Decision { verdict: 'win' | 'loss' | 'inconclusive'; diff: number; ci: { lo: number; hi: number }; control: { n: number }; treatment: { n: number } }
+interface ExperimentRow { id: string; agent_name: string; state: string; callsToProve?: number; started_at: string; expires_at: string | null; progress?: { control: number; treatment: number; perVersion: number };
+  result?: { decision?: Decision; adoption?: { status: string; draft?: string }; guardrail?: { reason: string }; shadowAA?: { passed: boolean; reasons?: string[] }; stopped?: { reason: string } } | null }
+interface Readiness { ready: boolean; reason?: string; fix?: string | null; plan?: string; note?: string }
+interface LessonRow { id: string; text: string; status: string; created_at: string }
+
+/** A monitor's issue as a sentence: how many of how many calls, against which line. Other issues give their own reason. */
+const SIGNAL_WORDS: Record<string, string> = {
+  early_hangup_rate: 'ended in an early hang-up (under 10 seconds)', tool_failure_rate: 'had a tool fail', safety_event_rate: 'needed a safety intervention',
+  opt_out_rate: 'ended with the person asking not to be called again', engine_error_rate: 'had a voice engine error', quotes_dropped_rate: 'had a quote that could not be checked',
+};
+function issueText(d: any): string {
+  if (d && typeof d === 'object' && typeof d.signal === 'string' && typeof d.calls === 'number') {
+    return `${d.hits} of the last ${d.calls} calls (${Math.round(d.value * 100)}%) ${SIGNAL_WORDS[d.signal] ?? 'matched this monitor'}. This monitor flags it above ${Math.round(d.threshold * 100)}%.`;
+  }
+  return detailText(d);
+}
+const pts = (x: number) => `${(x * 100).toFixed(1)} points`;
+/** Why a test is waiting to start, in words (the server speaks of a shadow A/A check). */
+function waitingText(e: ExperimentRow): string {
+  const r = e.result?.shadowAA?.reasons ?? [];
+  const m = r.map(x => /only (\d+) contacts with a recorded outcome; the shadow A\/A needs (\d+)/.exec(x)).find(Boolean);
+  if (m) return `It starts once ${count(Number(m[2]))} calls have a recorded outcome (${count(Number(m[1]))} so far), so it can first check that results are recorded evenly. Start it again then.`;
+  if (r.length) return r.join(' ');
+  return 'Ready to start. Before any caller hears the change, Vyakti checks on past calls that results are recorded evenly.';
+}
 interface MonitorInfo { monitors: { id: string; name: string; last_read_at?: string | null; config?: unknown }[]; defaults: { name: string; config: { signal: string; threshold: number; windowCalls: number; minCalls: number; severity: string; category: string } }[] }
 const detailText = (d: unknown): string => (typeof d === 'string' ? d : d && typeof d === 'object' ? ((d as any).message ?? (d as any).summary ?? (d as any).reason ?? JSON.stringify(d)) : '');
 
@@ -27,6 +54,7 @@ export default function Insights() {
   const monitors = useData('monitors', () => run<MonitorInfo>('monitor.list', {}));
   const props = useData('proposals', () => run<ProposalRow[]>('proposal.list', {}));
   const exps = useData('experiments', () => run<ExperimentRow[]>('experiment.list', {}));
+  const lessons = useData('lessons', () => run<LessonRow[]>('lesson.list', {}));
   const agents = useData('agents', agentList);
   const [busy, setBusy] = useState(false);
   const [learnAgent, setLearnAgent] = useState('');
@@ -46,8 +74,8 @@ export default function Insights() {
           <Async q={issues} what="Issues" tool="issue.list" empty={d => d.issues.length === 0 ? <Empty title="No open issues" body={monitors.data && monitors.data.monitors.length === 0 ? 'No monitor is switched on yet, so this is not an all-clear. Turn some on below.' : 'Monitors have been reading calls and none has crossed its line.'} /> : null}>
             {d => <ul className="issues">{d.issues.map(i => (
               <li key={i.id}><div className="row"><Chip tone={i.severity === 'critical' ? 'brick' : i.severity === 'warning' ? 'marigold' : 'neutral'} icon={<AlertTriangle size={12} aria-hidden />}>{prettyCode(i.severity)}</Chip><span className="small muted">first seen {ago(i.created_at)}</span></div>
-                <h3>{prettyCode(i.category)}</h3><p className="small">{detailText(i.detail)}</p>
-                <div><Btn size="sm" onClick={() => say(`Issue ${i.category}: ${detailText(i.detail)}. What should I change? Prepare it as a change I can accept.`)}>Ask the assistant what to change</Btn></div></li>))}</ul>}</Async></Card>
+                <h3>{prettyCode(i.category)}</h3><p className="small">{issueText(i.detail)}</p>
+                <div><Btn size="sm" onClick={() => say(`Issue ${i.category}: ${issueText(i.detail)} What should I change? Prepare it as a change I can accept.`)}>Ask the assistant what to change</Btn></div></li>))}</ul>}</Async></Card>
 
         <Card aria-labelledby="mo-h"><CardHead id="mo-h" title="What is being watched" sub="A monitor that has not read any calls yet is shown as not read, never as all good." />
           <Async q={monitors} what="Monitors" tool="monitor.list">{d0 => { const d = { monitors: d0.monitors ?? [], defaults: d0.defaults ?? [] }; return <>
@@ -62,17 +90,78 @@ export default function Insights() {
               if (r.ok) { props.reload(); const st = r.result.status; setLearnNote(st === 'no_evidence' ? 'That agent has no real calls yet to learn from, so nothing was proposed.' : st === 'llm_unavailable' ? `The model is not available: ${r.result.reason ?? ''}` : st === 'ok' ? `${r.result.proposals.filter(p => p.status === 'drafted').length} drafted, ${r.result.proposals.filter(p => p.status !== 'drafted').length} stopped or skipped.` : st.replace(/_/g, ' ')); } }}>Look for improvements</Btn></div> : undefined} />
           {learnNote && <p className="small" role="status" style={{ margin: '0 0 12px' }}>{learnNote}</p>}
           <Async q={props} what="Learning proposals" tool="proposal.list" empty={d => d.length === 0 ? <Empty title="No proposals yet" body="Proposals need enough calls on a published agent to cite as evidence." /> : null}>
-            {d => <ul className="issues">{d.map(p => (
-              <li key={p.id}><div className="row"><Chip tone={p.status === 'accepted' ? 'leaf' : p.status === 'rejected' || p.status === 'gated_out' ? 'brick' : 'marigold'}>{({ drafted: 'Drafted', awaiting_approval: 'Simulated, waiting for your approval', gated_out: 'Stopped by a safety gate', accepted: 'Being tested', rejected: 'Rejected' } as Record<string, string>)[p.status] ?? prettyCode(p.status)}</Chip><Chip>{prettyCode(p.kind)}</Chip>{p.gates_passed === false && <Chip tone="brick">Failed a safety gate</Chip>}</div>
-                <p>{p.rationale ?? 'No rationale recorded.'}</p><p className="small muted">{p.calls_to_prove != null ? `Needs about ${count(p.calls_to_prove)} calls to prove.` : 'Calls needed: not worked out yet.'} Drafted {date(p.created_at)}.</p>
-                {p.status === 'awaiting_approval' ? <div><Btn kind="primary" size="sm" onClick={async () => { const r = await act('proposal.accept', { proposalId: p.id }, { describe: 'Test started.' }); if (r.ok) refresh(); }}>Test this on real calls…</Btn></div>
-                  : p.status === 'drafted' ? <div><Btn size="sm" onClick={async () => { const r = await act('proposal.probe', { proposalId: p.id }, { describe: 'Simulated both versions.' }); if (r.ok) props.reload(); }}>Simulate first</Btn></div> : null}</li>))}</ul>}</Async></Card>
+            {d => <ul className="issues">{d.map(p => <ProposalItem key={p.id} p={p} onChange={() => { props.reload(); exps.reload(); }} />)}</ul>}</Async></Card>
 
-        <Card aria-labelledby="ex-h"><CardHead id="ex-h" title="Tests running" sub="A test has no winner until it has enough calls." />
-          <Async q={exps} what="Experiments" tool="experiment.list" empty={d => d.length === 0 ? <Empty title="Nothing is being tested" body="Accept a proposal above to start one." /> : null}>
-            {d => <ul className="issues">{d.map(e => <li key={e.id}><div className="row"><Chip tone="peacock">{prettyCode(e.state)}</Chip>{e.callsToProve != null && <span className="small muted tnum">{count(e.callsToProve)} calls to prove</span>}</div>
-              <p className="small">{e.result?.verdict ? `Verdict: ${e.result.verdict}` : <><Chip tone="marigold">Under-powered</Chip> No winner can be shown yet.</>}</p>{e.expires_at && <p className="small muted">Decides by {date(e.expires_at)}.</p>}</li>)}</ul>}</Async></Card>
+        <Card aria-labelledby="ex-h"><CardHead id="ex-h" title="Tests on real calls" sub="Half the people hear the change, half the current version. Each person stays on one side. There is no winner until both sides have enough calls." />
+          <Async q={exps} what="Experiments" tool="experiment.list" empty={d => d.length === 0 ? <Empty title="Nothing is being tested" body="Test a proposal above to start one." /> : null}>
+            {d => <ul className="issues">{d.map(e => <ExperimentItem key={e.id} e={e} onChange={() => { exps.reload(); props.reload(); lessons.reload(); }} />)}</ul>}</Async></Card>
+
+        <Card aria-labelledby="le-h"><CardHead id="le-h" title="What has been learned" sub="Every test ends in a lesson, including changes that made no difference or were stopped." />
+          <Async q={lessons} what="Lessons" tool="lesson.list" empty={d => d.length === 0 ? <Empty title="Nothing learned yet" body="A lesson is written when a change is simulated, tested, stopped or adopted." /> : null}>
+            {d => <ul className="billing">{d.slice(0, 12).map(l => <li key={l.id}><span>{l.text}</span><span className="small muted">{date(l.created_at)}</span></li>)}</ul>}</Async></Card>
       </div>
     </div>
   );
+}
+
+const PROPOSAL_STATUS: Record<string, [string, 'leaf' | 'brick' | 'marigold' | 'peacock' | 'neutral']> = {
+  drafted: ['Drafted', 'marigold'], awaiting_approval: ['Simulated, waiting for you', 'marigold'], gated_out: ['Stopped by a safety gate', 'brick'],
+  testing: ['Being tested on real calls', 'peacock'], promoted: ['Adopted', 'leaf'], rejected: ['Not adopted', 'neutral'], expired: ['Expired', 'neutral'],
+};
+
+function ProposalItem({ p, onChange }: { p: ProposalRow; onChange: () => void }) {
+  const { act } = useApp();
+  const [ready, setReady] = useState<Readiness | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [label, tone] = PROPOSAL_STATUS[p.status] ?? [prettyCode(p.status), 'neutral'];
+  return (
+    <li>
+      <div className="row"><Chip tone={tone}>{label}</Chip><Chip>{p.agent_name}</Chip>{p.from_issue && <span className="small muted">from the {p.from_issue} issue</span>}{p.gates_passed === false && <Chip tone="brick">Failed a safety gate</Chip>}</div>
+      {p.changes.map((c, k) => <div key={k} className="small" style={{ margin: '6px 0' }}><strong>{c.part}</strong>
+        {c.before !== null && <div className="muted">{p.status === 'promoted' ? 'Before' : 'Now'}: {c.before || 'nothing set'}</div>}<div>{p.status === 'promoted' ? 'Now' : 'Would be'}: {c.after}</div></div>)}
+      <p>{p.rationale ?? 'No rationale recorded.'}</p>
+      <p className="small muted">{p.simulated === 'pass' ? 'Simulated on practice callers: no worse on any measure that is checked. A simulation, not proof. ' : ''}
+        {p.calls_to_prove != null ? `Needs about ${count(p.calls_to_prove)} calls to prove. ` : ''}Drafted {date(p.created_at)}.</p>
+      {ready && !ready.ready && <p className="small" role="status">Not yet: {ready.reason}{ready.fix === 'outcome' && <> <Link to="/campaigns">Set what counts as success on the campaign</Link></>}</p>}
+      {ready?.ready && ready.note && <p className="small" role="status">{ready.note}</p>}
+      {p.status === 'awaiting_approval' ? <div><Btn kind="primary" size="sm" busy={busy} onClick={async () => {
+          setBusy(true);
+          const r = await act<Readiness>('proposal.readiness', { proposalId: p.id }, { quiet: true });
+          if (r.ok) { setReady(r.result); if (r.result.ready) { const a = await act('proposal.accept', { proposalId: p.id }, { describe: 'The test is set up. Start it below.' }); if (a.ok) onChange(); } }
+          setBusy(false);
+        }}>Test this on real calls…</Btn></div>
+        : p.status === 'drafted' ? <div><Btn size="sm" onClick={async () => { const r = await act('proposal.probe', { proposalId: p.id }, { describe: 'Simulated both versions.' }); if (r.ok) onChange(); }}>Simulate first</Btn></div> : null}
+    </li>
+  );
+}
+
+function ExperimentItem({ e, onChange }: { e: ExperimentRow; onChange: () => void }) {
+  const { act } = useApp();
+  const d = e.result?.decision, ad = e.result?.adoption;
+  const title = `${e.agent_name}: testing a change`;
+  let body: ReactNode;
+  if (e.state === 'aa_pending') body = <><p className="small">{waitingText(e)}</p>
+    <Btn kind="primary" size="sm" onClick={async () => { const r = await act<{ launched: boolean }>('experiment.start', { experimentId: e.id }, { quiet: true }); if (r.ok) onChange(); }}>Start the test…</Btn></>;
+  else if (e.state === 'aa_failed') body = <p className="small">Could not start: results are not being recorded reliably enough to compare. {(e.result?.shadowAA?.reasons ?? []).join(' ')}</p>;
+  else if (e.state === 'running') body = e.progress ? <>
+      <Meter label="Current version" value={e.progress.control} max={e.progress.perVersion} note={`${count(e.progress.control)} of ${count(e.progress.perVersion)} calls with an outcome`} tone="peacock" />
+      <Meter label="With the change" value={e.progress.treatment} max={e.progress.perVersion} note={`${count(e.progress.treatment)} of ${count(e.progress.perVersion)}`} tone="peacock" />
+      <p className="small muted">No winner is shown until both reach {count(e.progress.perVersion)}, and for at least a week{e.expires_at ? `, by ${date(e.expires_at)}` : ''}.</p></> : <p className="small">Running.</p>;
+  else if (e.state === 'decided' && d) body = <>
+      <p className="small">{d.verdict === 'win' ? `The change won: the goal was reached ${pts(d.diff)} more often (95% interval ${pts(d.ci.lo)} to ${pts(d.ci.hi)}), on ${count(d.control.n + d.treatment.n)} calls with an outcome.`
+        : d.verdict === 'loss' ? `The change did worse: ${pts(-d.diff)} fewer reached the goal (95% interval ${pts(-d.ci.hi)} to ${pts(-d.ci.lo)}). The current version stays.`
+        : `No difference could be shown on ${count(d.control.n + d.treatment.n)} calls (95% interval ${pts(d.ci.lo)} to ${pts(d.ci.hi)}). The current version stays.`}</p>
+      {d.verdict === 'win' && <p className="small">{ad?.status === 'adopted' ? `Adopted: every call now hears the change. ${ad.draft === 'updated' ? "The agent's draft carries it, so the next published version keeps it." : `The draft could not take it (${ad.draft}); edit it before the next publish.`}`
+        : ad?.status === 'declined' ? 'Not adopted: the rollout was declined. The current version keeps every call.'
+        : <>Rolling it out to every call waits for your approval. <Link to="/">Review it in Needs you</Link></>}</p>}</>;
+  else if (e.state === 'stopped_guardrail') body = <p className="small">Stopped to protect callers: {e.result?.guardrail?.reason}. Every call is back on the current version.</p>;
+  else if (e.state === 'stopped_manual') body = <p className="small">Stopped by a person{e.result?.stopped?.reason ? `: ${e.result.stopped.reason}` : ''}. No claim either way.</p>;
+  else body = <p className="small">Expired before it had enough calls. No claim either way.</p>;
+  const STATE: Record<string, [string, 'leaf' | 'brick' | 'marigold' | 'peacock' | 'neutral']> = {
+    aa_pending: ['Waiting to start', 'marigold'], aa_failed: ['Could not start', 'brick'], running: ['Running', 'peacock'],
+    decided: [d?.verdict === 'win' ? (ad?.status === 'adopted' ? 'Adopted' : 'Won') : d?.verdict === 'loss' ? 'Lost' : 'No difference', d?.verdict === 'win' ? 'leaf' : 'neutral'],
+    stopped_guardrail: ['Stopped to protect callers', 'brick'], stopped_manual: ['Stopped', 'neutral'], expired: ['Expired', 'neutral'],
+  };
+  const [st, tone] = STATE[e.state] ?? [prettyCode(e.state), 'neutral'];
+  return <li><div className="row"><Chip tone={tone}>{st}</Chip>{e.callsToProve != null && <span className="small muted tnum">{count(e.callsToProve)} calls to prove</span>}</div><h3>{title}</h3>{body}</li>;
 }

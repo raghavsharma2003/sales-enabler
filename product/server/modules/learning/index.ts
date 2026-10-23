@@ -22,7 +22,7 @@ import { tool, type Actor, type Receipt, type Registry, type ToolCtx } from '../
 import { canonicalJson, needsHumanApproval } from '../../../shared/approval.ts';
 import type { AgentConfig } from '../../../shared/agent-config.ts';
 import { arr, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
-import { applyOps, parseOps, PROPOSAL_KINDS, runGates, type ChangeOp } from './gates.ts';
+import { applyOps, describeChange, parseOps, PROPOSAL_KINDS, runGates, type ChangeOp } from './gates.ts';
 import { compareProbe, type SimRun } from './probe.ts';
 import { armFor, decide, harmSprt, powerPlan, sequentialGuard, shadowAA, type Arm } from './stats.ts';
 
@@ -322,7 +322,7 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
     binding: i.binding ?? 'campaign', treatmentConfig: treatmentCfg, metric: 'outcome_success', unit: 'contact', outcomeDefinitionId: goal.definitionId, successValues, counting: COUNTING, hazardCodes, baselineSource, plan,
     horizonPerArm: plan.perArm, treatmentShare: 0.5, alpha: 0.05, power: 0.8, minDays: i.minDays ?? 7, maxDays: i.maxDays ?? 28,
     test: 'two-proportion z, two-sided, fixed horizon', stop: 'verdict only at the horizon; guardrails stop at once',
-    guardrails: { safetyViolations: 'any in the treatment arm', events: { codes: hazardCodes, minEvents: 3, ratio: 2, alwaysValid: 'mSPRT alpha 0.05' } },
+    guardrails: { safetyViolations: 'any in the treatment arm', events: { codes: hazardCodes, minEvents: 3, ratio: 2, alwaysValid: 'mSPRT alpha 0.05' }, goal: 'stop when the goal rate is worse: mSPRT alpha 0.05, 30+ outcomes per side' },
   };
   const prereg = sha(canonicalJson(design));
   const e = await one<{ id: string }>(ctx.q, `INSERT INTO experiment (workspace_id, agent_id, proposal_id, control_version_id, treatment_version_id, design, state)
@@ -451,7 +451,11 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const progress = { control: c.m, treatment: t.m, withoutOutcome: c.n - c.m + t.n - t.m, crossovers, horizonPerArm: d.horizonPerArm, counting: COUNTING };
 
   // Fast lane: a harmful arm stops at once, whatever the horizon.
-  const trip = hazardTrip(c, t, d.guardrails.events);
+  // A regression on the goal itself also stops at once: the same always-valid test, with "did not reach the goal" as
+  // the bad event, so checking after every call cannot raise false alarms. 30+ outcomes per side first.
+  const goalWorse = c.m >= 30 && t.m >= 30 && harmSprt({ k: c.m - c.success, n: c.m }, { k: t.m - t.success, n: t.m }).harmful
+    ? `the change is doing worse on the goal: ${t.success} of ${t.m} reached it, against ${c.success} of ${c.m} on the current version (always-valid test)` : null;
+  const trip = hazardTrip(c, t, d.guardrails.events) ?? goalWorse;
   if (trip) {
     const revert = await cross(ws, 'deployment.revert_to_last_good', { agentId: e.agent_id, binding: d.binding });
     const result = { ...e.result, guardrail: { reason: trip, control: c, treatment: t, at: new Date().toISOString() }, revert: { status: revert.status, ...('reason' in revert ? { reason: revert.reason } : {}) } };
@@ -475,7 +479,7 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
 
   const controlArm: Arm = { k: c.success, n: c.m }, treatmentArm: Arm = { k: t.success, n: t.m };
   const decision = decide(controlArm, treatmentArm, d.alpha);
-  const result = { ...e.result, decision: { ...decision, control: controlArm, treatment: treatmentArm, label: `proved on ${c.m + t.m} calls with a recorded outcome, 95% interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points` } };
+  const result = { ...e.result, decision: { ...decision, control: controlArm, treatment: treatmentArm, label: `proved on ${(c.m + t.m).toLocaleString('en-IN')} calls with a recorded outcome, 95% interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points` } };
   let publish: { status: string; actionId?: string; reason?: string } | null = null;
   if (decision.verdict === 'win') publish = await proposePublish(ws, e);
   await ctx.q.query(`UPDATE experiment SET state = 'decided', result = $2, decided_at = now() WHERE id = $1`, [e.id, JSON.stringify({ ...result, publish })]);
@@ -626,8 +630,18 @@ export const module: Module = {
     r.register(tool(proposeIn, { name: 'learning.propose', risk: 'draft', summary: 'draft changes to an agent from its own call evidence, gated and with evidence cited', run: propose }));
 
     r.register(tool(obj({ agentId: opt(uuid()), status: opt(str({ max: 30 })) }), { name: 'proposal.list', risk: 'read', summary: 'list learning proposals',
-      run: (ctx, i) => many(ctx.q, `SELECT id, agent_id, kind, status, rationale, calls_to_prove, gates->'passed' AS gates_passed, created_at FROM proposal
-        WHERE workspace_id = $1 AND ($2::uuid IS NULL OR agent_id = $2) AND ($3::text IS NULL OR status = $3) ORDER BY created_at DESC LIMIT 100`, [ctx.workspaceId, i.agentId ?? null, i.status ?? null]) }));
+      run: async (ctx, i) => {
+        const rows = await many<any>(ctx.q, `SELECT p.id, p.agent_id, a.name AS agent_name, p.kind, p.status, p.rationale, p.calls_to_prove, p.gates->'passed' AS gates_passed,
+            p.created_at, p.change, v.config AS base_config, p.simulation->'verdict'->>'verdict' AS simulated,
+            (SELECT detail->>'monitor' FROM issue WHERE id = (p.evidence->>'issueId')::uuid AND workspace_id = p.workspace_id) AS from_issue
+          FROM proposal p JOIN agent a ON a.id = p.agent_id LEFT JOIN agent_version v ON v.id = p.base_version_id
+          WHERE p.workspace_id = $1 AND ($2::uuid IS NULL OR p.agent_id = $2) AND ($3::text IS NULL OR p.status = $3) ORDER BY p.created_at DESC LIMIT 100`, [ctx.workspaceId, i.agentId ?? null, i.status ?? null]);
+        return rows.map(({ change, base_config, ...r }) => {
+          let changes: ReturnType<typeof describeChange> = [];
+          try { changes = describeChange(base_config ? agentOf({ config: base_config } as VersionRow) : null, parseOps(change)); } catch { /* a gated-out shape */ }
+          return { ...r, changes };
+        });
+      } }));
     r.register(tool(obj({ id: uuid() }), { name: 'proposal.get', risk: 'read', summary: 'one learning proposal with its diff, gates and simulation',
       run: (ctx, i) => one(ctx.q, 'SELECT * FROM proposal WHERE id = $1 AND workspace_id = $2', [i.id, ctx.workspaceId]) }));
 
@@ -662,8 +676,22 @@ export const module: Module = {
     r.register(tool(assignIn, { name: 'experiment.assign', risk: 'read', summary: 'which version this contact meets (sticky per experiment)', run: assign }));
 
     r.register(tool(obj({ agentId: opt(uuid()) }), { name: 'experiment.list', risk: 'read', summary: 'list experiments',
-      run: async (ctx, i) => (await many<ExperimentRow>(ctx.q, `SELECT id, agent_id, proposal_id, control_version_id, treatment_version_id, design, state, result, started_at, expires_at
-        FROM experiment WHERE workspace_id = $1 AND ($2::uuid IS NULL OR agent_id = $2) ORDER BY started_at DESC LIMIT 100`, [ctx.workspaceId, i.agentId ?? null])).map(publicExperiment) }));
+      run: async (ctx, i) => {
+        const rows = await many<ExperimentRow & { agent_name: string }>(ctx.q, `SELECT e.id, e.agent_id, a.name AS agent_name, e.proposal_id, e.control_version_id, e.treatment_version_id, e.design, e.state, e.result, e.started_at, e.expires_at
+          FROM experiment e JOIN agent a ON a.id = e.agent_id WHERE e.workspace_id = $1 AND ($2::uuid IS NULL OR e.agent_id = $2) ORDER BY e.started_at DESC LIMIT 100`, [ctx.workspaceId, i.agentId ?? null]);
+        const out = [];
+        for (const e of rows) {
+          // The meter only (calls with an outcome per version), never the effect: no peeking while it runs.
+          let progress: { control: number; treatment: number; perVersion: number } | undefined;
+          if (e.state === 'running') {
+            const { rows: u } = await experimentUnits(ctx.q, ctx.workspaceId, e);
+            const c = tally(u, e.control_version_id), t = tally(u, e.treatment_version_id!);
+            progress = { control: c.m, treatment: t.m, perVersion: e.design.horizonPerArm };
+          }
+          out.push({ ...publicExperiment(e), agent_name: e.agent_name, ...(progress ? { progress } : {}) });
+        }
+        return out;
+      } }));
     r.register(tool(obj({ id: uuid() }), { name: 'experiment.get', risk: 'read', summary: 'one experiment: meter, guardrails, and the verdict once decided',
       run: async (ctx, i) => publicExperiment(await experimentFor(ctx.q, ctx.workspaceId, i.id)) }));
 
