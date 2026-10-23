@@ -4,11 +4,11 @@
   "safety.check (read)",
   "safety.cases (read)"
  ],
- "judge": "shared/safety/judge.json + judge.ts: raise-only caller-crisis judge (default shadow, no call without VP_LLM_SAFETY_JUDGE_* keys). Eval: node product/scripts/judge-eval.mjs --source heldout-6 --set product/shared/safety/sets/heldout-7.json --rps 1 ... on the lab VM (README)",
+ "judge": "shared/safety/judge.json + judge.ts (+ voice judge.py): one call, two labels (crisis, opt_out), raise-only, default shadow, never called without VP_LLM_SAFETY_JUDGE_* keys; an opt-out raise confirms, emits the opt_out moment and ends the call. Eval: node product/scripts/judge-eval.mjs --task both ... (README).",
  "tests": {
-  "passed": 28,
-  "total": 28,
-  "file": "safety.test.ts (14) + safety-judge.test.ts (12) + safety-optout-e2e.test.ts (2, needs DATABASE_URL and the voice runtime's Python)",
+  "passed": 34,
+  "total": 34,
+  "file": "safety.test.ts (14) + safety-judge.test.ts (18) + safety-optout-e2e.test.ts (2, needs DATABASE_URL and the voice runtime's Python)",
   "vectors": 2955
  },
  "works": [
@@ -37,7 +37,8 @@
   "kernel: SafetyRuleId has no ids for neverSay and unbacked amounts (borrowed RD7 and RD6; verdict.id names the real rule)",
   "agents module: call lintAgentConfig on every creation path and compile the brief from lintedFacts()",
   "campaigns/calls: pass job and per-contact facts into DoorContext so RD9 and RD11 see dues calls and account details",
-  "owner/counsel: RD8 scope beyond insurance (open.2026-10-21.rd8-scope-beyond-insurance)"
+  "owner/counsel: RD8 scope beyond insurance (open.2026-10-21.rd8-scope-beyond-insurance)",
+  "kernel + calls: a 'judge' runtime event field for the opt_out label (open.2026-10-23.judge-event-opt-out-fields), so shadow opt-out verdicts are recorded"
  ],
  "fp_rate": {
   "in_sample": "0/1659 (0.00%)",

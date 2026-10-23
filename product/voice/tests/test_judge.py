@@ -304,3 +304,65 @@ class Runtime(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+# ---- the second label: opt-out (judge.json labels; raise-only, never in a crisis) -------------------------------------
+OPTOUT_MISSED = 'bas karo bhai, aap logon se ab koi rishta nahi rakhna mujhe'     # the floor does not fire on this
+
+
+def both(crisis, confidence, kind, opt_out, opt_conf):
+    return json.dumps({'crisis': crisis, 'confidence': confidence, 'kind': kind, 'opt_out': opt_out, 'opt_out_confidence': opt_conf})
+
+
+class OptOutLabel(unittest.TestCase):
+    def test_precondition_floor_misses_it(self):
+        s = rules.caller_signals(OPTOUT_MISSED); self.assertFalse(s['optOut']); self.assertFalse(s['crisis'])
+
+    def test_raise_adds_shadow_records(self):
+        c, _ = fake(both(False, 0.05, 'none', True, 0.9))
+        r = judged(OPTOUT_MISSED, c, 'raise')
+        self.assertTrue(r['optOut']); self.assertEqual(r['optOutEvent'], {'type': 'judge_raised', 'confidence': 0.9}); self.assertFalse(r['crisis'])
+        s = judged(OPTOUT_MISSED, c, 'shadow')
+        self.assertFalse(s['optOut']); self.assertEqual(s['optOutEvent'], {'type': 'judge_shadow', 'confidence': 0.9})
+
+    def test_threshold_and_malformed_pairs(self):
+        c, _ = fake(both(False, 0.05, 'none', True, judge.SPEC['opt_out_threshold'] - 0.01))
+        self.assertFalse(judged(OPTOUT_MISSED, c, 'raise')['optOut'])
+        for o, conf in (('yes', 0.9), (True, 1.5), (True, 'high'), (True, None), (True, True)):
+            c, _ = fake(both(True, 0.8, 'indirect', o, conf))
+            r = judged(INDIRECT, c, 'raise')
+            self.assertFalse(r['optOut'], (o, conf)); self.assertTrue(r['crisis'], 'the crisis label still counts')
+
+    def test_never_in_a_crisis_and_floor_stands(self):
+        c, _ = fake(both(True, 0.8, 'indirect', True, 0.95))
+        r = judged(INDIRECT, c, 'raise'); self.assertTrue(r['crisis']); self.assertFalse(r['optOut']); self.assertIsNone(r['optOutEvent'])
+        c, _ = fake(both(False, 0.1, 'none', False, 0.99))
+        r = judged('dobara call mat karna, mera number hata do', c, 'raise')
+        self.assertTrue(r['floorOptOut']); self.assertTrue(r['optOut']); self.assertIsNone(r['optOutEvent'])
+
+
+class OptOutRuntime(unittest.TestCase):
+    AGENDA = 'Achha, waise aapka renewal 2 November ko hai.'
+
+    def test_raise_confirms_ends_and_emits_the_moment(self):
+        c, seen = fake(both(False, 0.05, 'none', True, 0.9))
+        sess, p, replies = sim_call([DISCLOSED, self.AGENDA, 'Kuch aur?'], [OPTOUT_MISSED], c, 'raise')
+        confirm = rules.safety_text('opt_out_confirm', '')
+        self.assertEqual(replies[1], [confirm], 'the confirmation replaces the reply about to be spoken')
+        self.assertEqual(sess.ended, 'opt_out', 'the runtime ends the call itself')
+        self.assertEqual([m['kind'] for m in of(p, 'moment') if m['kind'] == 'opt_out'], ['opt_out'], 'exactly one opt_out moment (calls suppresses on it)')
+        self.assertEqual(of(p, 'safety'), [], 'an opt-out is not a safety event')
+        self.assertEqual(len(seen), 1)
+
+    def test_shadow_changes_nothing(self):
+        c, _ = fake(both(False, 0.05, 'none', True, 0.9))
+        sess, p, replies = sim_call([DISCLOSED, self.AGENDA], [OPTOUT_MISSED], c, 'shadow')
+        self.assertEqual(replies[1], [self.AGENDA])
+        self.assertEqual([m for m in of(p, 'moment') if m['kind'] == 'opt_out'], [])
+        self.assertNotEqual(sess.ended, 'opt_out')
+
+    def test_floor_opt_out_still_ends_without_the_judge(self):
+        c, seen = fake(both(False, 0.05, 'none', False, 0.99))
+        sess, p, replies = sim_call([DISCLOSED, 'Ji bilkul, ab aapko call nahi aayega.'], ['dobara call mat karna, mera number hata do'], c, 'raise')
+        self.assertEqual(sess.ended, 'opt_out')
+        self.assertEqual(len([m for m in of(p, 'moment') if m['kind'] == 'opt_out']), 1)

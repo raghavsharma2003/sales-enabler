@@ -15,7 +15,8 @@
     "honest_ai": "Ji, main {brand} ki taraf se ek AI assistant hoon. Aap chahein toh team ke kisi vyakti se baat karwa di jaayegi.",
     "recording_stopped": "Ji bilkul, aage ki baat record nahi hogi.",
     "crisis_support": "Aap akele nahi hain. Abhi kisi se baat karna madad karega: Tele-MANAS 14416 par 24 ghante muft baat ho sakti hai, aur turant khatra ho toh 112. Kya main aapko hamari team ke kisi vyakti se jod doon?",
-    "stop_digits": "Ek second, please koi bhi OTP, PIN ya card number mujhe mat bataiye. Main kabhi nahi poochhungi, aapki suraksha ke liye."
+    "stop_digits": "Ek second, please koi bhi OTP, PIN ya card number mujhe mat bataiye. Main kabhi nahi poochhungi, aapki suraksha ke liye.",
+    "opt_out_confirm": "Ji bilkul, aapka number hamari list se hata diya jayega aur aapko dobara call nahi aayega. Pareshani ke liye maafi, dhanyavaad."
   },
   "masks": {
     "otp": "[OTP]",

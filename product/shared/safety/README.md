@@ -13,7 +13,8 @@ previews) and the Python door (`product/voice`) read the same data:
 
 ## The judge in one paragraph
 
-A judge can only ADD a signal, never remove one. The floor runs first and its verdict stands. With no model
+One model call reads two labels, crisis and opt_out (judge id `caller_crisis`, kept for the runtime protocol).
+A judge can only ADD a signal, never remove one; an opt-out is never raised while a call is in crisis. The floor runs first and its verdict stands. With no model
 configured (`VP_LLM_SAFETY_JUDGE_URL/KEY/MODEL`, or `VP_LLM_DEFAULT_*`) the judge is never called and spends nothing.
 Modes are `off`, `shadow` (default: asks the model, logs `judge_shadow`, changes nothing) and `raise` (adds the crisis
 signal; production only on the owner's go), set by `VP_SAFETY_JUDGE_MODE`. A timeout (800 ms), an error or bad
@@ -36,13 +37,20 @@ Environment (names only; values come from `/opt/voicelab/.env`, mode 600, never 
 | `VP_LLM_SAFETY_JUDGE_KEY_HEADER` | `api-key` for Azure; leave unset for `authorization: Bearer`. |
 | `VP_LLM_SAFETY_JUDGE_MODEL` | Model or deployment id (or pass it as the first argument). |
 
-One model per run:
+One model per run. `--task` picks the label scored: `crisis` (default), `opt_out` or `both`; each line is judged
+once and both labels come from that one call. `--set` takes the measurement files kept out of `cases.json`
+(`sets/heldout-7.json` for crisis, `sets/heldout-optout.json` for opt-out; the task follows the file's shape).
 
 ```
 set -a; . /opt/voicelab/.env; set +a        # then export the four names above for this model
-node product/scripts/judge-eval.mjs --source heldout-6 --rps 1 --concurrency 1 \
-  --price-in <INR per 1M input tokens> --price-out <INR per 1M output tokens> \
-  --max-cost-inr 50 --max-requests 400 --label <short-label> --out-dir /tmp/judge-eval/<short-label>
+# BLIND: crisis (set 6 + set 7) and opt-out (the opt-out blind set), one call per line
+node product/scripts/judge-eval.mjs --task both --source heldout-6 \
+  --set product/shared/safety/sets/heldout-7.json,product/shared/safety/sets/heldout-optout.json \
+  --rps 1 --concurrency 1 --price-in <INR per 1M input tokens> --price-out <INR per 1M output tokens> \
+  --max-cost-inr 80 --max-requests 700 --label <short-label> --out-dir /tmp/judge-eval/<short-label>
+# DEV only (for prompt work): the DEV sets in cases.json
+node product/scripts/judge-eval.mjs --task both --source dev-7,optout-dev --rps 1 --concurrency 1 \
+  --price-in <...> --price-out <...> --max-cost-inr 50 --max-requests 600 --label <short-label>-dev --out-dir /tmp/judge-eval/<short-label>-dev
 ```
 
 - **Budget.** `--rps` is a hard rate shared by all workers (default 1/s). `--max-requests` (default 2000) and

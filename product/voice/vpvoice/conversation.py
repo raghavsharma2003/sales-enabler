@@ -2,7 +2,7 @@
 # the reply door on every sentence before it is spoken, caller signals on every caller turn, and the events that
 # record it. Sessions (session.py for sim, cascade.py / s2s.py for audio) drive it and own timing and audio.
 import asyncio, contextlib, logging, re
-from . import brief, judge, safety, ticket as tk
+from . import brief, judge, rules, safety, ticket as tk
 from .safety import DoorContext
 
 log = logging.getLogger('vp.voice.conversation')
@@ -62,7 +62,7 @@ class Conversation:
                       'recording_refused': False, 'goals_done': {}, 'turns_since_goal': 0,
                       'identity_verified': False}
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
-        self.judge_complete = None; self.judge_env = None; self.judge_raised = False
+        self.judge_complete = None; self.judge_env = None; self.judge_raised = False; self.opt_out_confirm_due = False
         self.judge_tasks = set()         # judge work running in the background: held (asyncio keeps only weak refs), drained at end
         self.whisper = None; self.whisper_used = False     # a supervisor's note for her next reply (Session.whisper)
 
@@ -138,7 +138,8 @@ class Conversation:
         if self.judge_complete is None or floor or self.state['crisis']: return None     # nothing left for it to add
         m = judge.mode(env=self.judge_env)
         if m == 'off' or not judge.configured(self.judge_env): return None
-        task = asyncio.ensure_future(judge.judge_caller_crisis(text, self.judge_complete, prev=prev, env=self.judge_env, floor=floor))
+        task = asyncio.ensure_future(judge.judge_caller_crisis(text, self.judge_complete, prev=prev, env=self.judge_env, floor=floor,
+                                                               floor_opt_out=self.state['opt_out']))
         if m != 'raise':
             self.track(self.settle_gate(task)); return None
         return task
@@ -183,6 +184,7 @@ class Conversation:
             usd = (u.get('inputTokens', 0) * float(c['usd_in']) + u.get('outputTokens', 0) * float(c['usd_out'])) / 1e6 if priced else 0.0
             self.meter.add('brain', 'safety_judge', 'token', u.get('inputTokens', 0) + u.get('outputTokens', 0), usd=usd,
                            detail={'purpose': 'safety_judge', 'priced': priced})
+        self.apply_opt_out(res)
         ev = res.get('event')
         if not ev: return False
         # The judge's own record is the 'judge' runtime event (shared/runtime-protocol.ts): analysis only, never caller
@@ -207,6 +209,28 @@ class Conversation:
             return True
         return False
 
+    def apply_opt_out(self, res):
+        """The judge's second label. A shadow verdict is logged only: the runtime protocol's judge event has no opt-out
+        fields yet. A raise is the floor's opt-out path: the opt_out moment (calls then suppresses the contact), the
+        state the session ends on, and a confirmation line in place of the reply about to be spoken. Never in a crisis."""
+        ev = res.get('optOutEvent')
+        if not ev: return
+        note = f"judge {ev['type']} opt_out, confidence {ev['confidence']:.2f}"
+        if ev['type'] == 'judge_shadow' or self.state['crisis'] or not res.get('optOut'):
+            log.info('judge opt_out %s: %s (nothing changed)', self.t['conversationId'], note); return
+        if 'opt_out' in self.signalled: return
+        self.signalled.add('opt_out'); self.state['opt_out'] = True; self.opt_out_confirm_due = True
+        self.sink.emit('moment', kind='opt_out', atMs=self.ms(), note='caller asked not to be called again (judge)')
+        log.info('judge opt_out %s: %s (raised)', self.t['conversationId'], note)
+
+    def confirm_opt_out(self, draft):
+        """After a judge opt-out raise, before she is heard: the fixed confirmation replaces the reply, which ends."""
+        if not self.opt_out_confirm_due or draft.sentences: return None
+        self.opt_out_confirm_due = False
+        text = rules.safety_text('opt_out_confirm', (self.agent.get('brand') or {}).get('spokenName', ''))
+        draft.sentences.append(text); draft.raw = text; draft.final = True
+        return text
+
     async def sentences(self, draft):
         """Async generator of door-approved sentences for one reply. A blocked sentence is never said: the brain
         writes the reply again once, told which rule the draft broke; a second block ends with a safe line."""
@@ -222,6 +246,8 @@ class Conversation:
                         for s in sp.feed(d):
                             if draft.gate is not None and not draft.sentences:     # the judge's verdict before she is heard
                                 gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
+                                confirm = self.confirm_opt_out(draft)
+                                if confirm: yield confirm; break
                             out, v = self.check(s, draft)
                             if v['action'] == 'block': blocked = v; break
                             if out: yield out
@@ -234,6 +260,8 @@ class Conversation:
                     for s in sp.flush():
                         if draft.gate is not None and not draft.sentences:
                             gate, draft.gate = draft.gate, None; await self.settle_gate(gate)
+                            confirm = self.confirm_opt_out(draft)
+                            if confirm: yield confirm; return
                         out, v = self.check(s, draft)
                         if v['action'] == 'block': blocked = v; break
                         if out: yield out

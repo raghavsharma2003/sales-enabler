@@ -1,0 +1,61 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-23.judge-opt-out-label",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "The caller judge reads two labels in one call, crisis and opt_out (judge id caller_crisis kept for the runtime protocol). Opt-out is raise-only, threshold 0.6, never raised while a call is in crisis. A raise replaces the reply about to be spoken with rules.json texts.opt_out_confirm, emits the opt_out moment (calls then suppresses the contact) and ends the call with end reason opt_out",
+   "rationale": "The opt-out floor reaches 57.5% on fresh code-mixed phrasings (measure.2026-10-23.optout-blind), and a missed opt-out is a TCCCPR breach. A second label on the call already made for crisis costs no extra latency. Using the floor's existing opt-out path keeps one suppression mechanism.",
+   "reverse_if": "Shadow data or a blind eval shows the opt-out label's false positives above 3% on look-alikes (ending calls people did not ask to end), or the owner prefers post-call review for opt-outs; then keep the label in shadow or drop it."
+  },
+  {
+   "id": "open.2026-10-23.judge-event-opt-out-fields",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "The runtime protocol's 'judge' event and calls' call_judge_event table only know crisis (judge 'caller_crisis', kind direct|indirect). Opt-out shadow verdicts are therefore logged by the runtime but not recorded for analysis",
+   "closes_when": "The kernel adds an opt-out record to RuntimeEvent 'judge' (e.g. label 'opt_out' with confidence) and calls stores it; then the runtime emits it for shadow and raise, and shadow opt-out precision can be read from live calls."
+  },
+  {
+   "id": "component.2026-10-23.judge-eval-two-tasks",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "judge-eval scores both labels: --task crisis|opt_out|both (default crisis), cases.json rows by expectation, --set files by shape (sets/heldout-7.json crisis, sets/heldout-optout.json opt-out); per-task slices with Wilson CIs, floor/judge/combined recall and false positives",
+   "path": "product/scripts/judge-eval.mjs"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-23.judge-opt-out-label",
+   "to": "decision.2026-10-21.judge-raise-only-contract",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-23.judge-opt-out-label",
+   "to": "open.2026-10-23.optout-judge",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-23.judge-opt-out-label",
+   "to": "open.2026-10-23.judge-event-opt-out-fields",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-23.judge-eval-two-tasks",
+   "to": "component.2026-10-21.caller-crisis-judge",
+   "relation": "tests"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "safety-judge-opt-out-label",
+   "details": "judge.json gains the opt_out label (raise-only, threshold 0.6, never in crisis), the prompt gains FP shapes from the DEV sets only, TS judge.ts and Python judge.py + conversation.py implement it (a raise confirms with texts.opt_out_confirm, emits the opt_out moment, ends with opt_out). judge-eval gains --task. Not measured on a real model yet: the integrator runs DEV and BLIND evals on the India VM. Gates: tsc clean; safety/judge/review 38/38; opt-out e2e + agents + calls 94/94 on Postgres; product/voice unittest OK; Python door 0 disagreements."
+  }
+ ]
+}

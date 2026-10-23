@@ -21,7 +21,7 @@ with open(_judge_path(), encoding='utf-8') as _f:
 
 # Parity guard, as for rules.json: a key this port does not implement fails at import, never half-evaluated.
 KNOWN_TOP = {'schema', 'about', 'judges'}
-KNOWN_SPEC = {'purpose', 'signal', 'llm_purpose', 'llm_env', 'modes', 'mode_default', 'mode_env', 'mode_note', 'threshold', 'timeout_ms',
+KNOWN_SPEC = {'purpose', 'signal', 'labels', 'llm_purpose', 'llm_env', 'modes', 'mode_default', 'mode_env', 'mode_note', 'threshold', 'opt_out_threshold', 'timeout_ms',
               'max_input_chars', 'max_tokens', 'temperature', 'skip_when_floor_fires', 'input', 'system_prompt', 'user_template',
               'output_schema', 'raise_when', 'never', 'events', 'runtime_note'}
 KNOWN_JUDGES = {'caller_crisis'}
@@ -85,7 +85,12 @@ def parse_verdict(raw):
     if not isinstance(c, bool) or isinstance(conf, bool) or not isinstance(conf, (int, float)) or conf != conf or conf in (float('inf'), float('-inf')): return None
     if conf < 0 or conf > 1 or kind not in ('direct', 'indirect', 'none'): return None
     if (kind == 'none') == c: return None                       # crisis and kind must agree
-    return {'crisis': c, 'confidence': conf, 'kind': kind}
+    v = {'crisis': c, 'confidence': conf, 'kind': kind}
+    # opt_out is optional: a malformed or half pair is ignored (it can never raise); the crisis label still counts.
+    oo, oc = o.get('opt_out'), o.get('opt_out_confidence')
+    if isinstance(oo, bool) and not isinstance(oc, bool) and isinstance(oc, (int, float)) and oc == oc and 0 <= oc <= 1:
+        v['optOut'] = {'value': oo, 'confidence': oc}
+    return v
 
 
 def messages(text, prev=''):
@@ -110,12 +115,16 @@ def http_complete(http, env=None):
     return complete
 
 
-async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, env=None, timeout_ms=None, assume_configured=False, floor=None):
-    """Read one caller utterance with the floor and, when configured and on, the crisis judge. Raise-only by
-    construction: crisis = floor or raised, and nothing here can set it false once the floor said true."""
-    floor = rules.caller_signals(text)['crisis'] if floor is None else floor
+async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, env=None, timeout_ms=None, assume_configured=False, floor=None, floor_opt_out=None):
+    """Read one caller utterance with the floor and, when configured and on, the judge's two labels (crisis, opt_out).
+    Raise-only by construction: crisis = floor or raised, opt_out = floor or raised (never in a crisis), and nothing
+    here can set either false once the floor said true."""
+    sig = rules.caller_signals(text) if floor is None or floor_opt_out is None else None
+    floor = sig['crisis'] if floor is None else floor
+    floor_opt_out = sig['optOut'] if floor_opt_out is None else floor_opt_out
     m = mode(mode_override, env)
-    base = {'crisis': floor, 'floor': floor, 'mode': m, 'called': False, 'judge': None, 'event': None, 'latencyMs': 0, 'usage': None}
+    base = {'crisis': floor, 'floor': floor, 'optOut': floor_opt_out, 'floorOptOut': floor_opt_out, 'optOutEvent': None,
+            'mode': m, 'called': False, 'judge': None, 'event': None, 'latencyMs': 0, 'usage': None}
     if m == 'off' or complete is None or not (assume_configured or configured(env)): return base
     if floor and SPEC['skip_when_floor_fires']: return base
     t0 = time.perf_counter()
@@ -134,4 +143,11 @@ async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, 
     says = v['crisis'] and v['kind'] != 'none' and v['confidence'] >= SPEC['threshold']
     raised = says and m == 'raise' and not floor
     event = None if (not says or floor) else {'type': 'judge_raised' if m == 'raise' else 'judge_shadow', 'kind': v['kind'], 'confidence': v['confidence']}
-    return {**base, 'crisis': floor or raised, 'called': True, 'judge': v, 'event': event, 'latencyMs': latency, 'usage': reply.get('usage')}
+    # Opt-out, the second label: raise-only too, and never while the call is in crisis (a crisis call is never ended).
+    crisis_now = floor or raised
+    oo = v.get('optOut') or {}
+    opt_says = bool(oo.get('value')) and oo.get('confidence', 0) >= SPEC['opt_out_threshold'] and not crisis_now and not says
+    opt_raised = opt_says and m == 'raise' and not floor_opt_out
+    opt_event = None if (not opt_says or floor_opt_out) else {'type': 'judge_raised' if m == 'raise' else 'judge_shadow', 'confidence': oo['confidence']}
+    return {**base, 'crisis': crisis_now, 'optOut': floor_opt_out or opt_raised, 'optOutEvent': opt_event, 'called': True, 'judge': v,
+            'event': event, 'latencyMs': latency, 'usage': reply.get('usage')}

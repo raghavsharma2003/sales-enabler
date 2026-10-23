@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Eval harness for the caller-crisis judge (shared/safety/judge.json). Scores the judge on the crisis lines in
-// shared/safety/cases.json against the non-crisis caller lines (benign idioms and the other signals). It reports
-// recall and false positives for the floor alone, the judge alone and the two combined (raise-only), with Wilson 95%
-// intervals per slice (overall, per source set, per language), p50/p95 latency, tokens, and cost per 1,000 judged
-// turns at the prices you pass in. Nothing here guesses a price.
+// Eval harness for the caller judge (shared/safety/judge.json: one call, two labels, crisis and opt_out). Each line is
+// scored for one task: crisis lines against non-crisis lines, and opt-out requests against opt-out look-alikes. It
+// reports recall and false positives for the floor alone, the judge alone and the two combined (raise-only), with
+// Wilson 95% intervals per slice (overall, per source set, per language), p50/p95 latency, tokens, and cost per 1,000
+// judged turns at the prices you pass in. Nothing here guesses a price.
 //
 // One model per run; the endpoint, key and model come from the environment (names only, never values in logs):
 //   VP_LLM_SAFETY_JUDGE_URL         full OpenAI-compatible chat-completions URL
@@ -34,7 +34,7 @@ for (let i = 0; i < argv.length; i++) {
   else positional.push(argv[i]);
 }
 const opt = (name, dflt) => flags.get(name) ?? dflt;
-const usage = 'usage: node product/scripts/judge-eval.mjs [model] [--source heldout-6] [--set product/shared/safety/sets/heldout-7.json] [--rps 1] [--concurrency 2] [--price-in N --price-out N] [--max-cost-inr N] [--max-requests N] [--limit N] [--out-dir DIR] [--label NAME]';
+const usage = 'usage: node product/scripts/judge-eval.mjs [model] [--task crisis|opt_out|both] [--source heldout-6] [--set product/shared/safety/sets/heldout-7.json,product/shared/safety/sets/heldout-optout.json] [--rps 1] [--concurrency 2] [--price-in N --price-out N] [--max-cost-inr N] [--max-requests N] [--limit N] [--out-dir DIR] [--label NAME]';
 if (flags.has('help')) { console.log(usage); process.exit(0); }
 if (positional[0]) process.env.VP_LLM_SAFETY_JUDGE_MODEL = positional[0];
 
@@ -50,22 +50,36 @@ if (!judgeConfigured()) {
 }
 
 // ---- data
+// Every row is scored for one task: 'crisis' (truth: is it a crisis line) or 'opt_out' (truth: is it an opt-out request).
+// --task picks which (default crisis, the original harness); a --set file brings its own task by its shape.
+const task = opt('task', 'crisis');
+if (!['crisis', 'opt_out', 'both'].includes(task)) { console.error(`--task must be crisis, opt_out or both`); process.exit(2); }
+const wants = t => task === 'both' || task === t;
 const doc = JSON.parse(readFileSync(fileURLToPath(new URL('../shared/safety/cases.json', import.meta.url)), 'utf8'));
 const sources = opt('source') ? new Set(opt('source').split(',')) : null;
-let rows = doc.cases.filter(c => c.fn === 'callerSignals' && (sources ? sources.has(c.source) : !opt('set')))
-  .map(c => ({ id: c.id, source: c.source, lang: c.lang ?? 'unknown', text: c.input, crisis: c.expect?.signals?.crisis === true }));
-// --set <file>[,<file>]: add a set-7-shaped file (caller_crisis / caller_benign lists of {text, lang}), e.g.
-// shared/safety/sets/heldout-7.json, which is a measurement set kept out of cases.json on purpose.
+let rows = [];
+for (const c of doc.cases) {
+  if (c.fn !== 'callerSignals' || !(sources ? sources.has(c.source) : !opt('set'))) continue;
+  const sig = c.expect?.signals ?? {};
+  const base = { id: c.id, source: c.source, lang: c.lang ?? 'unknown', text: c.input };
+  // crisis: crisis lines vs every caller line not marked crisis (as before)
+  if (wants('crisis')) rows.push({ ...base, task: 'crisis', truth: sig.crisis === true });
+  // opt-out: lines whose expectation names optOut (true = a request, false = a look-alike)
+  if (wants('opt_out') && typeof sig.optOut === 'boolean') rows.push({ ...base, task: 'opt_out', truth: sig.optOut });
+}
+// --set <file>[,<file>]: measurement files kept out of cases.json on purpose. A crisis set has caller_crisis /
+// caller_benign lists (sets/heldout-7.json); an opt-out set has opt_out / benign lists (sets/heldout-optout.json).
 for (const f of (opt('set') ? opt('set').split(',') : [])) {
-  const s = JSON.parse(readFileSync(f, 'utf8'));
+  const set = JSON.parse(readFileSync(f, 'utf8'));
   const tag = f.split('/').pop().replace(/\.json$/, '');
-  rows.push(...(s.caller_crisis ?? []).map((x, i) => ({ id: `${tag}.crisis.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, crisis: true })));
-  rows.push(...(s.caller_benign ?? []).map((x, i) => ({ id: `${tag}.benign.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, crisis: false })));
+  const add = (list, t, truth, kind) => { if (wants(t)) rows.push(...(list ?? []).map((x, i) => ({ id: `${tag}.${kind}.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, task: t, truth }))); };
+  add(set.caller_crisis, 'crisis', true, 'crisis'); add(set.caller_benign, 'crisis', false, 'benign');
+  add(set.opt_out, 'opt_out', true, 'opt_out'); add(set.benign, 'opt_out', false, 'benign');
 }
 const limit = Number(opt('limit', '0'));
-if (!rows.length) { console.error(`no caller lines: check --source ${opt('source') ?? ''} / --set ${opt('set') ?? ''}`); process.exit(2); }
-{ // interleave crisis and non-crisis lines, so a run stopped by a cap still covers both sides
-  const pos = rows.filter(r => r.crisis), neg = rows.filter(r => !r.crisis);
+if (!rows.length) { console.error(`no caller lines: check --task ${task} / --source ${opt('source') ?? ''} / --set ${opt('set') ?? ''}`); process.exit(2); }
+{ // interleave positives and negatives, so a run stopped by a cap still covers both sides
+  const pos = rows.filter(r => r.truth), neg = rows.filter(r => !r.truth);
   const P = limit ? pos.slice(0, limit) : pos, N = limit ? neg.slice(0, limit) : neg;
   rows = [];
   for (let i = 0, j = 0; i < P.length || j < N.length;) {
@@ -73,7 +87,6 @@ if (!rows.length) { console.error(`no caller lines: check --source ${opt('source
     if (j < N.length && (i >= P.length || j * P.length <= i * N.length)) rows.push(N[j++]);
   }
 }
-
 
 // ---- budget: a rate limit shared by all workers, a request cap, and a cost cap (needs prices)
 const rps = Number(opt('rps', '1'));
@@ -112,8 +125,13 @@ async function worker() {
     await slot();
     const res = await ask(r.text);
     spentInr += costOf(res.usage);
-    const says = res.judge ? res.judge.crisis && res.judge.kind !== 'none' && res.judge.confidence >= CRISIS_JUDGE.threshold : null;
-    results.push({ ...r, floor: res.floor, judge: says, confidence: res.judge?.confidence ?? null, kind: res.judge?.kind ?? null,
+    const v = res.judge;
+    // The label for this row's task, as the judge read it (its own recall; the raise-time precedence rules are not applied).
+    const says = !v ? null : r.task === 'crisis'
+      ? v.crisis && v.kind !== 'none' && v.confidence >= CRISIS_JUDGE.threshold
+      : Boolean(v.optOut?.value) && v.optOut.confidence >= CRISIS_JUDGE.opt_out_threshold;
+    results.push({ ...r, floor: r.task === 'crisis' ? res.floor : res.floorOptOut, judge: says,
+      confidence: r.task === 'crisis' ? (v?.confidence ?? null) : (v?.optOut?.confidence ?? null), kind: v?.kind ?? null,
       failed: res.event?.type === 'judge_unavailable' ? res.event.reason : null, latencyMs: Math.round(res.latencyMs), usage: res.usage });
     if (results.length % 25 === 0) process.stderr.write(`${results.length}/${rows.length} requests=${requests} spent=₹${spentInr.toFixed(2)}\n`);
   }
@@ -132,7 +150,7 @@ function wilson(k, n) {
 const stat = (k, n) => { const [lo, hi] = wilson(k, n); return { k, n, rate: n ? k / n : 0, ci95: [lo, hi] }; };
 const fmt = s => s.n ? `${s.k}/${s.n} (${(100 * s.rate).toFixed(1)}%, CI ${(100 * s.ci95[0]).toFixed(1)}-${(100 * s.ci95[1]).toFixed(1)})` : '-';
 function slice(rs) {
-  const pos = rs.filter(r => r.crisis), neg = rs.filter(r => !r.crisis);
+  const pos = rs.filter(r => r.truth), neg = rs.filter(r => !r.truth);
   const judged = r => r.judge === true;
   return {
     recall: { floor: stat(pos.filter(r => r.floor).length, pos.length), judge: stat(pos.filter(judged).length, pos.length),
@@ -141,7 +159,10 @@ function slice(rs) {
                        floor_or_judge: stat(neg.filter(r => r.floor || judged(r)).length, neg.length) },
   };
 }
-const groupBy = (key) => Object.fromEntries([...new Set(results.map(r => r[key]))].sort().map(v => [v, slice(results.filter(r => r[key] === v))]));
+const tasks = [...new Set(results.map(r => r.task))].sort();
+const groupBy = (rs, key) => Object.fromEntries([...new Set(rs.map(r => r[key]))].sort().map(v => [v, slice(rs.filter(r => r[key] === v))]));
+const perTask = Object.fromEntries(tasks.map(t => { const rs = results.filter(r => r.task === t);
+  return [t, { n: { positive: rs.filter(r => r.truth).length, negative: rs.filter(r => !r.truth).length }, overall: slice(rs), by_source: groupBy(rs, 'source'), by_lang: groupBy(rs, 'lang') }]; }));
 const ok = results.filter(r => !r.failed);
 const lat = ok.map(r => r.latencyMs).sort((a, b) => a - b);
 const q = p => lat.length ? lat[Math.min(lat.length - 1, Math.floor(p * lat.length))] : null;
@@ -150,28 +171,29 @@ const label = opt('label', 'judge');
 const report = {
   date: new Date().toISOString().slice(0, 10), label, threshold: CRISIS_JUDGE.threshold, timeout_ms: CRISIS_JUDGE.timeout_ms,
   model_env: 'VP_LLM_SAFETY_JUDGE_MODEL', sources: [...(sources ?? []), ...(opt('set') ? opt('set').split(',').map(f => f.split('/').pop()) : [])], rps, wall_s: Math.round((Date.now() - t0) / 1000),
-  n: { judged: results.length, planned: rows.length, crisis: results.filter(r => r.crisis).length, non_crisis: results.filter(r => !r.crisis).length },
+  task, opt_out_threshold: CRISIS_JUDGE.opt_out_threshold,
+  n: { judged: results.length, planned: rows.length },
   stopped_early: stopped,
-  overall: slice(results), by_source: groupBy('source'), by_lang: groupBy('lang'),
+  tasks: perTask,
   judge_unavailable: stat(results.filter(r => r.failed).length, results.length),
   unavailable_reasons: results.filter(r => r.failed).reduce((m, r) => ({ ...m, [r.failed]: (m[r.failed] ?? 0) + 1 }), {}),
   latency_ms: { p50: q(0.5), p95: q(0.95), max: lat.at(-1) ?? null, note: 'successful calls only; timeouts count as unavailable' },
   tokens_per_turn: { input: results.length ? tin / results.length : 0, output: results.length ? tout / results.length : 0 },
   cost_inr: priceIn === null ? null : { spent: spentInr, per_1k_turns: results.length ? 1000 * spentInr / results.length : 0, price_in_per_1m: priceIn, price_out_per_1m: priceOut },
-  misses: results.filter(r => r.crisis && !r.floor && r.judge !== true).map(r => r.id),
-  false_alarms: results.filter(r => !r.crisis && r.judge === true).map(r => r.id),
-  caveat: 'The floor was tuned on the sets it has seen (in-sample for the floor); the judge prompt was not tuned on any set. Language tags on sets 1-6 are heuristic; sets dev-7 and heldout-7 carry the writer\'s tags.',
+  misses: results.filter(r => r.truth && !r.floor && r.judge !== true).map(r => `${r.task}:${r.id}`),
+  false_alarms: results.filter(r => !r.truth && r.judge === true).map(r => `${r.task}:${r.id}`),
+  caveat: 'The floor was tuned on the sets it has seen (in-sample for the floor); the judge prompt\'s shapes come from the DEV sets only, never from a blind line. Language tags on sets 1-6 are heuristic; dev-7, heldout-7, optout-dev and heldout-optout carry the writer\'s tags.',
 };
 
 const md = [
-  `# Crisis judge eval: ${label} (${report.date})`, '',
-  `Sources: ${Array.isArray(report.sources) ? report.sources.join(', ') : 'all'}. Judged ${report.n.judged}/${report.n.planned} lines (${report.n.crisis} crisis, ${report.n.non_crisis} non-crisis) at ≤${rps} req/s.${stopped ? ` Stopped early: ${stopped}.` : ''}`,
-  `Threshold ${report.threshold}, timeout ${report.timeout_ms} ms. Unavailable: ${fmt(report.judge_unavailable)} ${JSON.stringify(report.unavailable_reasons)}.`,
+  `# Caller judge eval: ${label} (${report.date})`, '',
+  `Sources: ${Array.isArray(report.sources) ? report.sources.join(', ') : 'all'}. Task ${task}. Judged ${report.n.judged}/${report.n.planned} lines (${tasks.map(t => `${t}: ${perTask[t].n.positive} positive, ${perTask[t].n.negative} negative`).join('; ')}) at ≤${rps} req/s.${stopped ? ` Stopped early: ${stopped}.` : ''}`,
+  `Thresholds: crisis ${report.threshold}, opt_out ${report.opt_out_threshold}; timeout ${report.timeout_ms} ms. Unavailable: ${fmt(report.judge_unavailable)} ${JSON.stringify(report.unavailable_reasons)}.`,
   `Latency p50 ${report.latency_ms.p50} ms, p95 ${report.latency_ms.p95} ms. Tokens per turn ${report.tokens_per_turn.input.toFixed(0)} in / ${report.tokens_per_turn.output.toFixed(1)} out.` +
     (report.cost_inr ? ` Cost ₹${report.cost_inr.spent.toFixed(2)} total, ₹${report.cost_inr.per_1k_turns.toFixed(2)} per 1,000 turns.` : ' Cost: pass --price-in/--price-out.'),
-  '', '| Slice | Recall: floor | Recall: judge | Recall: floor or judge | FP: judge | FP: floor or judge |', '|---|---|---|---|---|---|',
-  ...[['overall', report.overall], ...Object.entries(report.by_source).map(([k, v]) => [`source ${k}`, v]), ...Object.entries(report.by_lang).map(([k, v]) => [`lang ${k}`, v])]
-    .map(([name, s]) => `| ${name} | ${fmt(s.recall.floor)} | ${fmt(s.recall.judge)} | ${fmt(s.recall.floor_or_judge)} | ${fmt(s.false_positives.judge)} | ${fmt(s.false_positives.floor_or_judge)} |`),
+  ...tasks.flatMap(t => ['', `## Task: ${t}`, '', '| Slice | Recall: floor | Recall: judge | Recall: floor or judge | FP: floor | FP: judge | FP: floor or judge |', '|---|---|---|---|---|---|---|',
+    ...[['overall', perTask[t].overall], ...Object.entries(perTask[t].by_source).map(([k, v]) => [`source ${k}`, v]), ...Object.entries(perTask[t].by_lang).map(([k, v]) => [`lang ${k}`, v])]
+      .map(([name, s]) => `| ${name} | ${fmt(s.recall.floor)} | ${fmt(s.recall.judge)} | ${fmt(s.recall.floor_or_judge)} | ${fmt(s.false_positives.floor)} | ${fmt(s.false_positives.judge)} | ${fmt(s.false_positives.floor_or_judge)} |`)]),
   '', `Intervals are Wilson 95%. ${report.caveat}`, '',
 ].join('\n');
 

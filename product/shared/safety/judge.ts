@@ -7,7 +7,7 @@ import judgeData from './judge.json' with { type: 'json' };
 
 export type JudgeMode = 'off' | 'shadow' | 'raise';
 interface CrisisJudgeSpec {
-  llm_purpose: string; modes: JudgeMode[]; mode_default: JudgeMode; mode_env: string; threshold: number; timeout_ms: number;
+  llm_purpose: string; modes: JudgeMode[]; mode_default: JudgeMode; mode_env: string; threshold: number; opt_out_threshold: number; timeout_ms: number;
   max_input_chars: number; max_tokens: number; temperature: number; skip_when_floor_fires: boolean;
   system_prompt: string; user_template: string;
 }
@@ -16,7 +16,8 @@ export const CRISIS_JUDGE = (judgeData as unknown as { judges: { caller_crisis: 
 const PURPOSE = CRISIS_JUDGE.llm_purpose as Purpose;
 if (PURPOSE !== ('safety_judge' satisfies Purpose)) throw new Error(`judge.json llm_purpose ${PURPOSE} is not the kernel's 'safety_judge'`);
 
-export interface JudgeVerdict { crisis: boolean; confidence: number; kind: 'direct' | 'indirect' | 'none' }
+/** The model's verdict. optOut is present only when the reply carried a well-formed opt_out pair (it is optional). */
+export interface JudgeVerdict { crisis: boolean; confidence: number; kind: 'direct' | 'indirect' | 'none'; optOut?: { value: boolean; confidence: number } }
 export type JudgeEvent =
   | { type: 'judge_unavailable'; reason: 'timeout' | 'error' | 'bad_output' }
   | { type: 'judge_raised'; kind: JudgeVerdict['kind']; confidence: number }
@@ -25,6 +26,9 @@ export type JudgeEvent =
 export interface CrisisJudgeResult {
   crisis: boolean;               // the signal to act on: floor OR (mode raise AND the judge says so)
   floor: boolean;                // what the deterministic floor said
+  optOut: boolean;               // the same for opt-out: floor OR (mode raise AND the judge says so AND no crisis)
+  floorOptOut: boolean;
+  optOutEvent: { type: 'judge_raised' | 'judge_shadow'; confidence: number } | null;
   mode: JudgeMode;
   called: boolean;               // false when off, not configured, or skipped because the floor already fired
   judge: JudgeVerdict | null;
@@ -67,15 +71,20 @@ export function parseVerdict(raw: string): JudgeVerdict | null {
   if (typeof o.crisis !== 'boolean' || typeof o.confidence !== 'number' || !Number.isFinite(o.confidence)) return null;
   if (o.confidence < 0 || o.confidence > 1 || !['direct', 'indirect', 'none'].includes(o.kind as string)) return null;
   if ((o.kind === 'none') === o.crisis) return null;           // crisis and kind must agree
-  return { crisis: o.crisis, confidence: o.confidence, kind: o.kind as JudgeVerdict['kind'] };
+  const v: JudgeVerdict = { crisis: o.crisis, confidence: o.confidence, kind: o.kind as JudgeVerdict['kind'] };
+  // opt_out is optional: a malformed or half pair is ignored (it can never raise), the crisis label still counts.
+  const oc = o.opt_out_confidence;
+  if (typeof o.opt_out === 'boolean' && typeof oc === 'number' && Number.isFinite(oc) && oc >= 0 && oc <= 1) v.optOut = { value: o.opt_out, confidence: oc };
+  return v;
 }
 
 /** Read one caller utterance with the floor and, when configured and on, the crisis judge. Raise-only by construction:
  *  the result's crisis is floor || raised, and nothing in this function can set it false once the floor said true. */
 export async function judgeCallerCrisis(text: string, ctx: CrisisJudgeCtx = {}): Promise<CrisisJudgeResult> {
-  const floor = callerSignals(text).crisis;
+  const sig = callerSignals(text);
+  const floor = sig.crisis, floorOptOut = sig.optOut;
   const mode = judgeMode(ctx.mode);
-  const base: CrisisJudgeResult = { crisis: floor, floor, mode, called: false, judge: null, event: null, latencyMs: 0, usage: null };
+  const base: CrisisJudgeResult = { crisis: floor, floor, optOut: floorOptOut, floorOptOut, optOutEvent: null, mode, called: false, judge: null, event: null, latencyMs: 0, usage: null };
   if (mode === 'off' || !(ctx.assumeConfigured || judgeConfigured())) return base;
   if (floor && CRISIS_JUDGE.skip_when_floor_fires) return base;
 
@@ -98,7 +107,12 @@ export async function judgeCallerCrisis(text: string, ctx: CrisisJudgeCtx = {}):
     const event: JudgeEvent | null = !says || floor ? null
       : mode === 'raise' ? { type: 'judge_raised', kind: v.kind, confidence: v.confidence }
       : { type: 'judge_shadow', kind: v.kind, confidence: v.confidence };
-    return { ...base, crisis: floor || raised, called: true, judge: v, event, latencyMs, usage: reply.usage };
+    // Opt-out, the second label: raise-only too, and never while the call is in crisis (a crisis call is never ended).
+    const crisisNow = floor || raised;
+    const optSays = Boolean(v.optOut?.value) && (v.optOut?.confidence ?? 0) >= CRISIS_JUDGE.opt_out_threshold && !crisisNow && !says;
+    const optRaised = optSays && mode === 'raise' && !floorOptOut;
+    const optOutEvent = !optSays || floorOptOut ? null : { type: mode === 'raise' ? 'judge_raised' as const : 'judge_shadow' as const, confidence: v.optOut!.confidence };
+    return { ...base, crisis: crisisNow, optOut: floorOptOut || optRaised, optOutEvent, called: true, judge: v, event, latencyMs, usage: reply.usage };
   } catch (e) {
     return { ...base, called: true, latencyMs: performance.now() - t0, event: { type: 'judge_unavailable', reason: e instanceof JudgeTimeout ? 'timeout' : 'error' } };
   } finally {
@@ -109,7 +123,8 @@ export async function judgeCallerCrisis(text: string, ctx: CrisisJudgeCtx = {}):
 class JudgeTimeout extends Error { constructor() { super('judge timed out'); this.name = 'JudgeTimeout'; } }
 
 /** Post-call use (calls analysis): judge every caller line of a stored transcript that the floor did not flag, in
- *  order, with the previous caller line as context. Returns only the lines where the judge would add the signal. */
+ *  order, with the previous caller line as context. Returns only the lines where the judge would add a signal
+ *  (crisis or opt-out). */
 export async function judgeTranscriptCrisis(lines: { speaker: 'agent' | 'caller'; text: string }[], ctx: Omit<CrisisJudgeCtx, 'prev'> = {}):
   Promise<{ index: number; result: CrisisJudgeResult }[]> {
   const out: { index: number; result: CrisisJudgeResult }[] = [];
@@ -117,7 +132,7 @@ export async function judgeTranscriptCrisis(lines: { speaker: 'agent' | 'caller'
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].speaker !== 'caller') continue;
     const result = await judgeCallerCrisis(lines[i].text, { ...ctx, prev });
-    if (result.event && result.event.type !== 'judge_unavailable') out.push({ index: i, result });
+    if ((result.event && result.event.type !== 'judge_unavailable') || result.optOutEvent) out.push({ index: i, result });
     prev = lines[i].text;
   }
   return out;

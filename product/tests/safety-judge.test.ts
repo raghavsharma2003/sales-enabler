@@ -127,3 +127,62 @@ test('judge: transcripts are judged caller line by caller line with the previous
   assert.deepEqual(hits.map(h => h.index), [1, 3]);
   assert.equal(hits.every(h => h.result.crisis === false), true, 'shadow never changes the signal');
 });
+
+// ---- the second label: opt-out (judge.json labels; raise-only, never in a crisis) ----------------------------------
+const OPTOUT_MISSED = 'bas karo bhai, aap logon se ab koi rishta nahi rakhna mujhe';   // the floor does not fire on this
+const both = (crisis: boolean, confidence: number, kind: string, optOut: unknown, optConf: unknown) =>
+  JSON.stringify({ crisis, confidence, kind, opt_out: optOut, opt_out_confidence: optConf });
+
+test('judge: opt-out precondition: the floor misses the line used below', async () => {
+  const r = await judgeCallerCrisis(OPTOUT_MISSED, { mode: 'off' });
+  assert.equal(r.floorOptOut, false);
+  assert.equal(r.floor, false);
+});
+
+test('judge: raise mode adds the opt-out signal the floor missed; shadow only records it', async () => {
+  fakeJudge(both(false, 0.05, 'none', true, 0.9));
+  const r = await judgeCallerCrisis(OPTOUT_MISSED, { ...ON, mode: 'raise' });
+  assert.equal(r.optOut, true);
+  assert.deepEqual(r.optOutEvent, { type: 'judge_raised', confidence: 0.9 });
+  assert.equal(r.crisis, false);
+  const s = await judgeCallerCrisis(OPTOUT_MISSED, { ...ON, mode: 'shadow' });
+  assert.equal(s.optOut, false, 'shadow never changes a signal');
+  assert.deepEqual(s.optOutEvent, { type: 'judge_shadow', confidence: 0.9 });
+});
+
+test('judge: opt-out below its threshold, or with a malformed pair, does not raise (the crisis label still counts)', async () => {
+  fakeJudge(both(false, 0.05, 'none', true, CRISIS_JUDGE.opt_out_threshold - 0.01));
+  assert.equal((await judgeCallerCrisis(OPTOUT_MISSED, { ...ON, mode: 'raise' })).optOut, false);
+  for (const [o, c] of [['yes', 0.9], [true, 1.5], [true, 'high'], [true, undefined]] as const) {
+    fakeJudge(both(true, 0.8, 'indirect', o, c));
+    const r = await judgeCallerCrisis(INDIRECT, { ...ON, mode: 'raise' });
+    assert.equal(r.optOut, false, JSON.stringify([o, c]));
+    assert.equal(r.crisis, true, 'the crisis label is read even when the opt-out pair is malformed');
+  }
+});
+
+test('judge: an opt-out never fires in a crisis (a crisis call is never ended)', async () => {
+  fakeJudge(both(true, 0.8, 'indirect', true, 0.95));
+  const r = await judgeCallerCrisis(INDIRECT, { ...ON, mode: 'raise' });
+  assert.equal(r.crisis, true);
+  assert.equal(r.optOut, false);
+  assert.equal(r.optOutEvent, null);
+  const seen = fakeJudge(both(false, 0.1, 'none', true, 0.95));
+  const f = await judgeCallerCrisis('main marna chahta hoon, aur call mat karna', { ...ON, mode: 'raise' });
+  assert.equal(f.crisis, true);
+  assert.equal(seen.length, 0, 'a floor crisis skips the model; the crisis path takes over');
+});
+
+test('judge: a floor opt-out always stands, whatever the model says', async () => {
+  fakeJudge(both(false, 0.1, 'none', false, 0.99));
+  const r = await judgeCallerCrisis('dobara call mat karna, mera number hata do', { ...ON, mode: 'raise' });
+  assert.equal(r.floorOptOut, true);
+  assert.equal(r.optOut, true);
+  assert.equal(r.optOutEvent, null, 'nothing to add');
+});
+
+test('judge: the prompt names both labels and the opt-out exclusions as shapes', () => {
+  assert.deepEqual((CRISIS_JUDGE as unknown as { labels: string[] }).labels, ['crisis', 'opt_out']);
+  assert.match(CRISIS_JUDGE.system_prompt, /opt_out/);
+  assert.match(CRISIS_JUDGE.system_prompt, /call me later|another number/);
+});
