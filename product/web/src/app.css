@@ -305,3 +305,7 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 
 .dock .seg { display: flex; width: 100%; } .dock .seg-o { flex: 1; }
 .field-label { font-weight: 600; font-size: 0.9375rem; margin-bottom: 8px; }
+
+.table tr.clickrow { cursor: pointer; }
+.table tr.clickrow:hover td { background: var(--sunk); }
+.walletadd { display: block; font-size: 0.75rem; text-decoration: underline; text-underline-offset: 3px; margin-top: 2px; }

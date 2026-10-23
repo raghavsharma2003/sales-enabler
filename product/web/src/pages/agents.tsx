@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useApp, useData, useTool } from '../store.tsx';
-import { agentList } from '../data.ts';
+import { agentList, adoptBusinessName } from '../data.ts';
 import { Link, useNav } from '../router.tsx';
 import { Async, Btn, Card, Chip, Empty, PageHead, Sheet, TextArea, TextField } from '../ui.tsx';
 import { jobLabel, langShort, voiceStackOf } from '../catalog.ts';
@@ -45,7 +45,7 @@ function AgentCard({ a }: { a: AgentRow }) {
 
 interface Template { id: string; label: string; industry: string; job: string; category: string; summary: string }
 function NewAgent({ onClose }: { onClose: () => void }) {
-  const { act } = useApp(); const go = useNav();
+  const { act, me } = useApp(); const go = useNav();
   const tpl = useTool<{ templates: Template[] }>('template.list', {});
   const [pick, setPick] = useState<string>(''); const [name, setName] = useState(''); const [desc, setDesc] = useState(''); const [busy, setBusy] = useState(false);
   const chosen = tpl.data?.templates.find(t => t.id === pick);
@@ -53,7 +53,7 @@ function NewAgent({ onClose }: { onClose: () => void }) {
     setBusy(true);
     const r = await act<{ agentId: string }>('agent.create', pick ? { name: name.trim(), templateId: pick } : { name: name.trim(), description: desc.trim() }, { describe: 'Draft created. Nothing has reached anyone.' });
     setBusy(false);
-    if (r.ok) { onClose(); go(`/agents/${r.result.agentId}`); }
+    if (r.ok) { if (pick) await adoptBusinessName(act, r.result.agentId, me?.workspace.name ?? ''); onClose(); go(`/agents/${r.result.agentId}`); }
   };
   const reason = !name.trim() ? 'Give the agent a name first.' : !pick && desc.trim().length < 10 ? 'Pick a starter above, or describe the job in a sentence or two.' : '';
   return (

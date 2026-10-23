@@ -66,7 +66,7 @@ export const fieldLabel = (path: string): string => { const last = path.split('.
 export function fieldValue(path: string, v: unknown): string | null {
   const last = path.split('.').pop() ?? path;
   if (v == null) return null;
-  if (typeof v === 'string' && UUID.test(v)) return null;           // an internal id says nothing to a person
+  if (typeof v === 'string' && (UUID.test(v) || /^[0-9a-f]{24,}$/i.test(v))) return null;           // an internal id or hash says nothing to a person
   if (typeof v === 'number' && /Milli$/.test(last)) return inr(v);
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
   if (typeof v === 'string' && /^\+?\d{10,13}$/.test(v.replace(/[\s-]/g, ''))) return fmtPhone(v.replace(/[\s-]/g, ''));

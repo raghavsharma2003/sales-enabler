@@ -33,7 +33,7 @@ export function Shell({ children }: { children: ReactNode }) {
           {NAV.map(n => <Link key={n.to} to={n.to} aria-current={isActive(n.to, path) ? 'page' : undefined}><n.icon size={20} aria-hidden /><span>{n.label}</span></Link>)}
         </div>
         <div className="rail-foot">
-          {wallet.data && <Link to="/settings/billing" className={`walletchip${low ? ' low' : ''}`} aria-label={`Wallet ${inr(wallet.data.balanceMilli)}${low ? ', under 2 days of runway' : ''}`}><span>Wallet</span><b className="tnum">{inr(wallet.data.balanceMilli)}</b></Link>}
+          {wallet.data && <Link to="/settings/billing" className={`walletchip${low ? ' low' : ''}`} aria-label={`Wallet ${inr(wallet.data.balanceMilli)}${low ? ', under 2 days of runway' : ''}`}><span>Wallet</span><b className="tnum">{inr(wallet.data.balanceMilli)}</b>{wallet.data.balanceMilli <= 0 && <span className="walletadd">Add money</span>}</Link>}
           <div className="walletchip" style={{ textAlign: 'left' }}><span>{me?.workspace.name}</span><span style={{ opacity: 0.8 }}>{me?.member?.name} · {me?.member?.role}</span></div>
         </div>
       </nav>

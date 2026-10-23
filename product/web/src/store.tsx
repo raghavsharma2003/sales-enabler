@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import * as api from './api.ts';
 import { ApiError, ToolMissing, ToolRefused, type Me, type Receipt } from './api.ts';
 import type { OperatorCard } from './types.ts';
+import { toolAsk, toolDone } from './labels.ts';
 
 export interface ThreadMsg { id: string; role: 'user' | 'vp' | 'echo'; text: string; cards?: OperatorCard[]; streaming?: boolean; by?: string; step?: string; notice?: string }
 export interface Toast { id: number; kind: 'ok' | 'bad' | 'info'; text: string }
@@ -103,12 +104,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const out = await api.decide(p.actionId, approve);
       if ('declined' in out) {
-        setPending(null); echo(`Declined: ${p.summary}`); p.resolve({ ok: false, reason: 'declined', declined: true }); return;
+        setPending(null); echo(`Declined: ${plainSummary(p.tool, p.summary)}`); p.resolve({ ok: false, reason: 'declined', declined: true }); return;
       }
       const rc = out as Receipt;
       setPending({ ...p, state: 'done', outcome: rc });
       if (rc.status === 'confirmed') {
-        echo(p.summary, { id: nid('c'), type: 'receipt', title: p.summary, outcome: 'confirmed', by: 'You', state: 'approved', undo: undoLine(p.risk) });
+        echo(plainSummary(p.tool, p.summary), { id: nid('c'), type: 'receipt', title: toolDone(p.tool, plainSummary(p.tool, p.summary)), outcome: 'confirmed', by: 'You', state: 'approved', undo: undoLine(p.risk) });
         p.resolve({ ok: true, result: rc.result, receipt: rc });
       } else if (rc.status === 'unknown') {
         p.resolve({ ok: false, reason: rc.reason, unknown: true });
@@ -201,4 +202,11 @@ export function useData<T>(key: unknown, fn: (() => Promise<T>) | null): ToolDat
     return () => { live = false; };
   }, [k, n, bump]); // eslint-disable-line react-hooks/exhaustive-deps
   return { ...st, reload: () => setN(x => x + 1), setData: (d: T | null) => setSt(s => ({ ...s, data: d })) };
+}
+
+/** The server's summary can carry ids and hashes ("Publish agent 1ab031a3 from the draft you reviewed (204816021e3e)"). A person reads the plain words for the action, else the summary with any id or hash taken out. */
+function plainSummary(tool: string, summary: string): string {
+  const ask = toolAsk(tool, '');
+  if (ask) return ask;
+  return summary.replace(/\s*\(?\b[0-9a-f]{8,}\b\)?/gi, '').replace(/\s{2,}/g, ' ').trim();
 }

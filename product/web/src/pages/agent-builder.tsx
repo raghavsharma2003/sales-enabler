@@ -199,7 +199,7 @@ function Rules({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
     <div className="stack">
       <Card><CardHead title="When people push back" sub="A trigger and an approach, as a note. She finds her own words." />
         <ListEditor items={cfg.objections} onChange={f => set(c => f(c.objections))} blank={() => ({ trigger: '', approach: '' })} addLabel="Add an objection"
-          render={(o, _p, i) => <div className="formgrid"><TextField label="When they say or feel" value={o.trigger} onChange={e => set(c => { c.objections[i].trigger = e.target.value; })} /><TextField label="Her approach" value={o.approach} onChange={e => set(c => { c.objections[i].approach = e.target.value; })} /></div>} /></Card>
+          render={(o, _p, i) => <div className="formgrid"><TextArea label="When they say or feel" rows={2} value={o.trigger} onChange={e => set(c => { c.objections[i].trigger = e.target.value; })} /><TextArea label="Her approach" rows={3} value={o.approach} onChange={e => set(c => { c.objections[i].approach = e.target.value; })} /></div>} /></Card>
       <Card><CardHead title="Hand-off to a person" sub="She hands over warmly and says so. Crisis lines (Tele-MANAS 14416, 112) are always available to her." />
         <fieldset className="chipset"><legend>Hand over when the caller</legend>{Object.entries(HANDOFF_WHEN).map(([k, v]) => <label key={k} className={`choice${cfg.handOff.when.includes(k) ? ' on' : ''}`}><input type="checkbox" checked={cfg.handOff.when.includes(k)} disabled={k === 'crisis'} onChange={() => set(c => { c.handOff.when = c.handOff.when.includes(k) ? c.handOff.when.filter(x => x !== k) : [...c.handOff.when, k]; })} />{v}</label>)}</fieldset>
         <div className="formgrid" style={{ marginTop: 16 }}>

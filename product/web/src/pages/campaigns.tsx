@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle2, Pause, Play, Plus, Square, XCircle } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { Link, useNav } from '../router.tsx';
-import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, SelectField, Table, TextField, type Col } from '../ui.tsx';
+import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, SelectField, Table, TextField, type Col, Sheet } from '../ui.tsx';
 import { Funnel } from '../funnel.tsx';
 import { CATEGORY_INFO } from '../catalog.ts';
 import { agentGet, agentList, audienceList, campaignEstimate, campaignFunnel, campaignGet, campaignList } from '../data.ts';
@@ -50,7 +50,9 @@ function Create() {
   const [f, setF] = useState({ name: '', category: '' as '' | 'service' | 'transactional' | 'promotional', agentId: '', audienceId: '', start: '10:00', end: '19:00', days: [1, 2, 3, 4, 5, 6], concurrency: 4, perDay: 2, perWeek: 5, cap: '', preset: '' });
   const [busy, setBusy] = useState(false);
   const published = (agents.data ?? []).filter(a => a.latestVersion);
-  const reason = !f.category ? 'Choose the kind of call first.' : !f.name.trim() ? 'Name the campaign.' : !f.agentId ? 'Choose an agent that has a published version.' : !f.audienceId ? 'Choose who to call.' : f.start >= f.end ? 'The window must end after it starts.' : f.days.length === 0 ? 'Choose at least one day.' : '';
+  const agentCat = published.find(a => a.id === f.agentId)?.category;
+  const mismatch = f.agentId && f.category && agentCat && ['service', 'transactional', 'promotional'].includes(agentCat) && agentCat !== f.category ? agentCat : '';
+  const reason = !f.category ? 'Choose the kind of call first.' : !f.name.trim() ? 'Name the campaign.' : !f.agentId ? 'Choose an agent that has a published version.' : mismatch ? `The agent is set up for ${mismatch} calls. Make the campaign ${mismatch}, or pick another agent.` : !f.audienceId ? 'Choose who to call.' : f.start >= f.end ? 'The window must end after it starts.' : f.days.length === 0 ? 'Choose at least one day.' : '';
   const save = async () => {
     setBusy(true);
     let versionId: string | null = null;
@@ -71,7 +73,7 @@ function Create() {
             {f.category === 'promotional' && <p className="hint hint-bad" style={{ marginTop: 12 }}>Promotional calls only go to people with a recorded consent whose DND status is known. Others are held back and counted.</p>}</Card>
           <Card><CardHead title="2. Who and which agent" />
             <div className="formgrid"><TextField label="Campaign name" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="e.g. Renewals November" />
-              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField label="Agent" value={f.agentId} onChange={e => setF({ ...f, agentId: e.target.value })} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : voiceStackOf(published.find(a => a.id === f.agentId))?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
+              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField label="Agent" value={f.agentId} onChange={e => { const a = published.find(x => x.id === e.target.value); setF({ ...f, agentId: e.target.value, category: (['service', 'transactional', 'promotional'].includes(a?.category ?? '') ? a!.category : f.category) as typeof f.category }); }} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : mismatch ? `This agent is set up for ${mismatch} calls and the campaign is set to ${f.category}. Choose ${mismatch} in step 1, or pick another agent.` : voiceStackOf(published.find(a => a.id === f.agentId))?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
               <Async q={auds} what="Audiences" tool="audience.list">{d => <SelectField label="Who to call" value={f.audienceId} onChange={e => setF({ ...f, audienceId: e.target.value })} hint={(() => { const a = d.find(x => x.id === f.audienceId); return a ? `${a.callable == null ? '?' : count(a.callable)} callable of ${a.matched == null ? '?' : count(a.matched)}` : <Link to="/contacts/import">Import a list</Link>; })()}><option value="">Choose an audience</option>{d.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>}</Async>
               <SelectField label="Retry pattern" value={f.preset} onChange={e => setF({ ...f, preset: e.target.value })} hint="How many days apart and at what hours she tries again.">{PRESETS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</SelectField></div></Card>
           <Card><CardHead title="3. When and how fast" sub="Times are in each contact's local time. The dial gate enforces the legal hours again at every attempt." />
@@ -97,6 +99,7 @@ function Detail({ id }: { id: string }) {
   const est = useData(['estimate', id, q.data?.policyVersion], q.data ? () => campaignEstimate(id) : null);
   const fun = useData(['funnel', id, q.data?.audienceId], q.data ? () => campaignFunnel(id, q.data!.audienceId) : null);
   const [edit, setEdit] = useState(false);
+  const [capOpen, setCapOpen] = useState(false);
   useEffect(() => { if (q.data?.state !== 'running') return; const t = setInterval(q.reload, 8000); return () => clearInterval(t); }, [q.data?.state]); // eslint-disable-line
   return (
     <div className="page"><Async q={q} what="This campaign" tool="campaign.get" rows={6}>{c => {
@@ -116,7 +119,7 @@ function Detail({ id }: { id: string }) {
           <div className="stack">
             {c.state === 'draft' && <Card><CardHead title="Before you launch" sub={c.blockers.length ? `${pl(c.blockers.length, 'thing')} to fix` : 'Nothing is blocking launch'} />
               {c.blockers.length === 0 ? <ul className="checklist"><li className="check check-ok"><CheckCircle2 size={20} aria-hidden /><div className="grow"><strong>Every launch check passed</strong><p className="small muted">Window, line, wallet, cap, agent version and audience were all checked by the server just now.</p></div></li></ul> :
-                <ul className="checklist">{c.blockers.map(b => { const x = blockerCopy(b); return <li key={b.code} className="check check-fail"><XCircle size={20} aria-hidden /><div className="grow"><strong>{x.text}</strong><span className="sr"> (blocks launch)</span>{x.why && <p className="small muted">{x.why}</p>}{(typeof b.fix === 'object' ? b.fix.role : b.role) && <p className="small muted">Needs {(() => { const r = (typeof b.fix === 'object' ? b.fix.role : b.role) as string; return `${/^[aeiou]/.test(r) ? 'an' : 'a'} ${r}`; })()} to do it.</p>}</div>{!x.to && typeof b.fix === 'object' && b.fix.tool !== 'campaign.window.narrow' && SAARTHI_FIX.has(b.fix.tool) && <Btn size="sm" onClick={() => say(`${(b.fix as { label: string }).label} for the campaign "${c.name}".`)}>Ask the assistant</Btn>}{!x.to && typeof b.fix === 'object' && b.fix.tool === 'campaign.window.narrow' && <Btn size="sm" onClick={() => setEdit(true)}>{b.fix.label}</Btn>}{x.to && <Link to={x.to.href} className="btn btn-sm" style={{ textDecoration: 'none' }}><span>{x.to.label}</span></Link>}</li>; })}</ul>}</Card>}
+                <ul className="checklist">{c.blockers.map(b => { const x = blockerCopy(b); return <li key={b.code} className="check check-fail"><XCircle size={20} aria-hidden /><div className="grow"><strong>{x.text}</strong><span className="sr"> (blocks launch)</span>{x.why && <p className="small muted">{x.why}</p>}{(typeof b.fix === 'object' ? b.fix.role : b.role) && <p className="small muted">Needs {(() => { const r = (typeof b.fix === 'object' ? b.fix.role : b.role) as string; return `${/^[aeiou]/.test(r) ? 'an' : 'a'} ${r}`; })()} to do it.</p>}</div>{!x.to && typeof b.fix === 'object' && b.fix.tool === 'campaign.draft' && /limit|cap/i.test((b.fix as { label: string }).label) && <Btn size="sm" onClick={() => setCapOpen(true)}>{(b.fix as { label: string }).label}</Btn>}{!x.to && typeof b.fix === 'object' && b.fix.tool !== 'campaign.window.narrow' && SAARTHI_FIX.has(b.fix.tool) && !(b.fix.tool === 'campaign.draft' && /limit|cap/i.test((b.fix as { label: string }).label)) && <Btn size="sm" onClick={() => say(`${(b.fix as { label: string }).label} for the campaign "${c.name}".`)}>Ask the assistant</Btn>}{!x.to && typeof b.fix === 'object' && b.fix.tool === 'campaign.window.narrow' && <Btn size="sm" onClick={() => setEdit(true)}>{b.fix.label}</Btn>}{x.to && <Link to={x.to.href} className="btn btn-sm" style={{ textDecoration: 'none' }}><span>{x.to.label}</span></Link>}</li>; })}</ul>}</Card>}
             <Card><CardHead title="What it will cost" sub="Provider cost, including GST. No customer price is set." />
               <Async q={est} what="The estimate" tool="campaign.estimate" rows={3}>{e => <dl className="kv">
                 <div><dt>People</dt><dd className="tnum">{count(e.people)} people, about {count(e.attempts)} attempts</dd></div>
@@ -130,12 +133,13 @@ function Detail({ id }: { id: string }) {
           <div className="stack">
             {live && <Card><CardHead title="Live" /><Meter label="Allowed at once" value={c.counts.filter(x => x.status === 'dialing' || x.status === 'in_progress').reduce((a, b) => a + b.n, 0)} max={c.concurrency ?? 1} tone="peacock" note={`${c.concurrency ?? '?'} allowed`} />
               <ul className="billing" style={{ marginTop: 8 }}>{c.counts.map((k, i) => <li key={i}><span>{prettyCode(k.status)}{k.code ? ` · ${prettyCode(k.code)}` : ''}</span><strong className="tnum">{count(k.n)}</strong></li>)}</ul></Card>}
-            <Card><CardHead title="Window and policy" actions={c.state !== 'done' ? <Btn size="sm" onClick={() => setEdit(true)}>Change window</Btn> : undefined} />
+            <Card><CardHead title="Window and policy" actions={c.state !== 'done' ? <div className="row">{c.state === 'draft' && <Btn size="sm" onClick={() => setCapOpen(true)}>{c.capInrMilli ? 'Change spend cap' : 'Set spend cap'}</Btn>}<Btn size="sm" onClick={() => setEdit(true)}>Change window</Btn></div> : undefined} />
               <dl className="kv"><div><dt>Version</dt><dd className="tnum">Calling rules, version {c.policyVersion}</dd></div><div><dt>Hours</dt><dd className="tnum">{c.window.ranges.map(r => `${r.start} to ${r.end}`).join(', ') || '—'}</dd></div><div><dt>Days</dt><dd>{dayList(c.window.days) || '—'}</dd></div>
                 <div><dt>At once</dt><dd className="tnum">{c.concurrency ?? '—'}</dd></div><div><dt>Spend cap</dt><dd className="tnum">{c.capInrMilli ? inr(c.capInrMilli) : <NotMeasured>No cap set</NotMeasured>}</dd></div></dl></Card>
             <Card><CardHead title="Calls" /><p className="small muted">Every call with its words, its reason and its cost.</p><Link to={`/calls?campaign=${c.id}`}>Open this campaign's calls</Link></Card>
           </div>
         </div>
+        {capOpen && <CapEdit c={c} suggested={est.data?.suggestedCapInrMilli ?? null} onClose={() => setCapOpen(false)} onDone={() => { setCapOpen(false); q.reload(); refresh(); }} />}
         {edit && <WindowEdit c={c} onClose={() => setEdit(false)} onDone={() => { setEdit(false); q.reload(); refresh(); }} />}
       </>);
     }}</Async></div>
@@ -143,6 +147,27 @@ function Detail({ id }: { id: string }) {
 }
 
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+/** The spend cap on a draft campaign. The estimate's suggested cap is one tap away; the server decides what is allowed (a cap never goes below what is held). */
+function CapEdit({ c, suggested, onClose, onDone }: { c: CampaignDoc; suggested: number | null; onClose: () => void; onDone: () => void }) {
+  const { act } = useApp();
+  const [v, setV] = useState(c.capInrMilli ? String(c.capInrMilli / 1000) : suggested ? String(Math.ceil(suggested / 1000)) : '');
+  const [busy, setBusy] = useState(false);
+  const [touched, setTouched] = useState(false);
+  // The estimate can arrive after the sheet opens; until the person types, the field follows its suggestion.
+  useEffect(() => { if (!touched && !c.capInrMilli && suggested) setV(String(Math.ceil(suggested / 1000))); }, [suggested]); // eslint-disable-line react-hooks/exhaustive-deps
+  const n = Number(v);
+  const bad = !v.trim() || !Number.isFinite(n) || n <= 0 ? 'Enter an amount in rupees.' : '';
+  return (
+    <Sheet title="Set the spend cap" onClose={onClose}>
+      <p className="muted">Dialling pauses by itself when the campaign has spent this much, including GST. You can change it while the campaign is a draft.</p>
+      <TextField label="Spend cap (₹)" type="number" inputMode="decimal" min={0} value={v} onChange={e => { setTouched(true); setV(e.target.value); }} data-autofocus
+        hint={suggested ? <>The estimate suggests ₹{Math.ceil(suggested / 1000).toLocaleString('en-IN')}. <button type="button" className="linkbtn" onClick={() => { setTouched(true); setV(String(Math.ceil(suggested / 1000))); }}>Use that amount</button></> : 'The estimate has no suggestion yet.'} />
+      <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>
+        {bad ? <Btn disabled reason={bad}>Save the cap</Btn> : <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act('campaign.draft', { id: c.id, name: c.name, category: c.category, capInrMilli: Math.round(n * 1000) }, { describe: 'Spend cap saved.' }); setBusy(false); if (r.ok) onDone(); }}>Save the cap</Btn>}</div>
+    </Sheet>
+  );
+}
+
 function WindowEdit({ c, onClose, onDone }: { c: CampaignDoc; onClose: () => void; onDone: () => void }) {
   const { act } = useApp();
   const r0 = c.window.ranges[0] ?? { start: '10:00', end: '19:00' };

@@ -351,8 +351,15 @@ test('Launch blockers: the page shows the server\'s plain message and its fix bu
 });
 
 test('Ask the assistant on a launch blocker with no page: the dock gets the sentence and the Operator answers with a plan card', async () => {
-  const id = (await pool.query("SELECT id, name FROM campaign WHERE workspace_id = $1 AND name LIKE 'Appointment%'", [ws])).rows[0];
-  const fixes = (await tool('campaign.get', { id: id.id })).result.blockers.filter(b => b.fix && typeof b.fix === 'object' && ['campaign.draft', 'campaign.audience.add'].includes(b.fix.tool));
+  // A draft whose category does not match its agent: the fix ("Pick a matching agent") has no page of its own, so the assistant takes it.
+  const ag = (await tool('agent.list')).result.agents.find(x => x.latest_version);
+  const agv = (await tool('agent.get', { agentId: ag.id })).result;
+  const wrong = ['service', 'transactional', 'promotional'].find(c => c !== agv.draft.category);
+  const audId = (await tool('audience.list')).result.audiences[0].id;
+  const mk = await tool('campaign.draft', { name: 'Assistant fix check', category: wrong, agentVersionId: agv.versions[0].id, audienceId: audId });
+  assert.equal(mk.status, 'confirmed', JSON.stringify(mk));
+  const id = { id: mk.result.id, name: 'Assistant fix check' };
+  const fixes = (await tool('campaign.get', { id: id.id })).result.blockers.filter(b => b.fix && typeof b.fix === 'object' && b.fix.tool === 'campaign.draft' && !/limit|cap/i.test(b.fix.label));
   assert.ok(fixes.length > 0, 'the draft has a blocker whose fix has no page of its own');
   await page.goto(`${BASE}/campaigns/${id.id}`);
   const row = page.locator('.check-fail').filter({ hasText: fixes[0].message }).first();
@@ -730,11 +737,21 @@ test('Guided start: from an empty workspace to a first campaign, each step done 
     assert.equal(await step(1).getByRole('button', { name: 'Ask the assistant to build it' }).getAttribute('aria-disabled'), 'true', 'no description, no button');
     await p.getByRole('radio', { name: 'Start from a template' }).click();
     await step(1).getByRole('heading', { name: 'Insurance' }).waitFor();
+    await step(1).getByRole('heading', { name: 'Lending' }).waitFor();
+    // The industry filter narrows the long list.
+    await step(1).getByRole('radio', { name: 'Insurance', exact: true }).click();
+    assert.equal(await step(1).getByRole('heading', { name: 'Lending' }).count(), 0, 'other industries are filtered out');
+    await step(1).getByRole('radio', { name: 'All industries' }).click();
+    await step(1).getByRole('heading', { name: 'Lending' }).waitFor();
     await step(1).getByRole('radio', { name: /Health insurance renewal reminder/ }).click();
     await step(1).getByLabel('Agent name').fill('First agent');
     await step(1).getByRole('button', { name: 'Create draft' }).click();
     await p.waitForURL('**/agents/*');
     assert.equal((await srv('agent.list')).result.agents.length, 1, 'the server holds the agent');
+    // The agent says the buyer's own business name, not the template's example one.
+    const made = (await srv('agent.get', { agentId: (await srv('agent.list')).result.agents[0].id })).result.draft;
+    assert.equal(made.brand.name, 'Guided Start Test', 'the agent carries the workspace name');
+    assert.equal(made.brand.spokenName, 'Guided Start Test');
     // Back on Today: step 1 is done because the server has an agent. Reloading changes nothing.
     await p.goto(BASE + '/'); await p.getByRole('heading', { name: 'Get started' }).waitFor();
     await p.reload(); await p.getByRole('heading', { name: 'Get started' }).waitFor();
@@ -755,8 +772,11 @@ test('Guided start: from an empty workspace to a first campaign, each step done 
     await p.goto(`${BASE}/agents/${agentId}`);
     await p.getByRole('button', { name: 'Publish…' }).click();
     await p.getByRole('dialog').getByRole('heading', { name: 'Approve to continue' }).waitFor();
+    assert.ok(!/[0-9a-f]{16,}/i.test(await p.getByRole('dialog').innerText()), 'the approval sheet shows no hash or id');
     await hold2(p.getByRole('dialog').locator('.hold'));
     await p.getByRole('dialog').waitFor({ state: 'detached', timeout: 15000 });
+    await p.getByRole('button', { name: 'Assistant' }).first().click().catch(() => {});
+    assert.ok(!/[0-9a-f]{8,}/i.test(await p.locator('.dock .thread').innerText().catch(() => '')), 'the assistant\'s receipt shows no id or hash');
     await p.goto(BASE + '/'); await p.getByRole('heading', { name: 'Get started' }).waitFor();
     await step(4).getByText('Add contacts first', { exact: false }).waitFor();
     await step(3).getByRole('link', { name: 'Add contacts' }).click();
@@ -777,8 +797,82 @@ test('Guided start: from an empty workspace to a first campaign, each step done 
     await p.getByRole('button', { name: 'Save draft' }).click();
     await p.waitForURL(u => /\/campaigns\/[0-9a-f-]{36}/.test(u.pathname), { timeout: 15000 });
     assert.equal((await srv('campaign.list')).result.campaigns.length, 1, 'the server holds the campaign');
+    // A saved draft is not a launched campaign: the guide stays, and says what is left.
     await p.goto(BASE + '/');
-    await p.getByRole('heading', { name: 'Today' }).waitFor();
-    assert.equal(await p.getByRole('heading', { name: 'Get started' }).count(), 0, 'with every step done the guide steps aside');
+    await p.getByRole('heading', { name: 'Get started' }).waitFor();
+    assert.equal(await state(4), 'not done', 'a draft campaign does not complete the last step');
+    await step(4).getByRole('link', { name: 'Finish your campaign' }).waitFor();
   } finally { await ctx2.close(); }
+});
+
+// ---- Buyer walkthrough fixes (research/2026-10-23/walkthrough/FRICTION.md) ----
+test('Campaign form: choosing the agent sets its call category, and a mismatch is stopped before saving, with the reason', async () => {
+  const agents = (await tool('agent.list')).result.agents.filter(a => a.latest_version);
+  let chosen = null;
+  for (const a of agents) { const cat = (await tool('agent.get', { agentId: a.id })).result.draft.category; if (cat) { chosen = { ...a, cat }; break; } }
+  assert.ok(chosen, 'a published agent with a call category exists');
+  await page.goto(`${BASE}/campaigns/new`);
+  await page.getByLabel('Agent').selectOption({ value: chosen.id });
+  const radio = name => page.getByRole('radio', { name: new RegExp(`^${name}`, 'i') }).first();
+  assert.equal(await radio(chosen.cat).getAttribute('aria-checked'), 'true', `the category follows the agent (${chosen.cat})`);
+  const other = ['service', 'transactional', 'promotional'].find(c => c !== chosen.cat);
+  await radio(other).click();
+  await page.getByLabel('Campaign name').fill('Mismatch check');
+  await page.getByText(`This agent is set up for ${chosen.cat} calls and the campaign is set to ${other}.`, { exact: false }).waitFor();
+  const save = page.getByRole('button', { name: 'Save draft' });
+  assert.equal(await save.getAttribute('aria-disabled'), 'true', 'saving is stopped');
+  await page.getByText(`The agent is set up for ${chosen.cat} calls.`, { exact: false }).waitFor();
+});
+
+test('Campaign draft: the spend cap is set from the page, with the estimate\'s suggestion one tap away, and the launch check clears', async () => {
+  const a = (await tool('agent.list')).result.agents.find(x => x.latest_version);
+  const ver = (await tool('agent.get', { agentId: a.id })).result;
+  const cat = ver.draft.category;
+  // An audience with callable people, so the estimate has something to price and suggests a cap.
+  const aud = (await tool('audience.list')).result.audiences.find(x => x.kind === 'list');
+  const made = await tool('campaign.draft', { name: 'Cap check', category: cat, agentVersionId: ver.versions[0].id, audienceId: aud.id });
+  assert.equal(made.status, 'confirmed', JSON.stringify(made));
+  const id = made.result.id;
+  await page.goto(`${BASE}/campaigns/${id}`);
+  const limit = (await tool('campaign.get', { id })).result.blockers.find(b => b.fix && typeof b.fix === 'object' && /limit|cap/i.test(b.fix.label));
+  assert.ok(limit, 'the draft has a spend-limit blocker: ' + JSON.stringify((await tool('campaign.get', { id })).result.blockers.map(b => b.code)));
+  await page.locator('.check-fail').filter({ hasText: limit.message }).getByRole('button', { name: limit.fix.label }).click();
+  await sheet().getByRole('heading', { name: 'Set the spend cap' }).waitFor();
+  await page.waitForFunction(() => { const i = document.querySelector('[role="dialog"] input[type="number"]'); return i && Number(i.value) > 0; }, null, { timeout: 15000 });   // the estimate's suggestion fills the field once it arrives
+  assert.equal(await sheet().getByRole('button', { name: 'Save the cap' }).getAttribute('aria-disabled'), null, 'the suggested amount is filled in');
+  await sheet().getByLabel('Spend cap (₹)').fill('');
+  assert.equal(await sheet().getByRole('button', { name: 'Save the cap' }).getAttribute('aria-disabled'), 'true', 'no amount, no button');
+  await sheet().getByRole('button', { name: 'Use that amount' }).click();
+  await sheet().getByRole('button', { name: 'Save the cap' }).click();
+  await sheet().waitFor({ state: 'detached', timeout: 10000 });
+  const after = (await tool('campaign.get', { id })).result;
+  assert.ok(after.campaign.policy.capInrMilli > 0, 'the server holds the cap');
+  assert.ok(!after.blockers.some(b => b.message === limit.message), 'the spend-limit check cleared');
+});
+
+test('Contacts list: the whole row opens the person, not only the name', async () => {
+  await page.goto(`${BASE}/contacts`);
+  const row = page.locator('table tbody tr').first();
+  await row.waitFor();
+  await row.locator('td').nth(1).click();
+  await page.waitForURL(u => /\/contacts\/[0-9a-f-]{36}$/.test(u.pathname), { timeout: 8000 });
+  await page.getByText('Can she call?').waitFor();
+});
+
+test('Wallet: an empty wallet says how to add money, on Today and in the sidebar', async () => {
+  await page.goto(`${BASE}/`);
+  await page.getByRole('heading', { name: 'Today' }).waitFor();
+  const w = (await tool('wallet.get')).result;
+  if ((w.balanceInrMilli ?? w.balanceMilli ?? 0) > 0) return;   // only an empty wallet shows the prompt
+  await page.locator('.walletchip').getByText('Add money').waitFor();
+  await page.getByRole('link', { name: 'Add money' }).first().click();
+  await page.waitForURL('**/settings/billing');
+});
+
+test('Agent rules: objections are written in boxes that show the whole text', async () => {
+  const id = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
+  await page.goto(`${BASE}/agents/${id}?tab=rules`);
+  const f = page.getByLabel('Her approach').first();
+  await f.waitFor();
+  assert.equal(await f.evaluate(e => e.tagName), 'TEXTAREA', 'a text area, not a one-line input that cuts the text off');
 });

@@ -5,14 +5,14 @@ import { useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 import { run } from '../api.ts';
 import { useApp, useData } from '../store.tsx';
-import { agentList, campaignList } from '../data.ts';
+import { adoptBusinessName, agentList, campaignList } from '../data.ts';
 import { Async, Btn, Card, CardHead, TextArea, TextField } from '../ui.tsx';
 import { Link, useNav } from '../router.tsx';
 
 interface Template { id: string; label: string; industry: string; job: string; category: string; summary: string }
 const INDUSTRY = (s: string) => s.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
 
-interface Progress { agents: { id: string; name: string; published: boolean }[]; heard: boolean; contacts: number; campaigns: number }
+interface Progress { agents: { id: string; name: string; published: boolean }[]; heard: boolean; contacts: number; campaigns: number; launched: number; draft: { id: string; name: string } | null }
 async function progress(): Promise<Progress> {
   const [agents, calls, contacts, camps] = await Promise.all([
     agentList(),
@@ -20,14 +20,15 @@ async function progress(): Promise<Progress> {
     run<{ contacts: unknown[] }>('contact.list', { limit: 1 }).catch(() => ({ contacts: [] })),
     campaignList(),
   ]);
-  return { agents: agents.map(a => ({ id: a.id, name: a.name, published: !!a.latestVersion })), heard: calls.calls.some(c => c.channel === 'test'), contacts: contacts.contacts.length, campaigns: camps.length };
+  const draft = camps.find(c => c.state === 'draft');
+  return { agents: agents.map(a => ({ id: a.id, name: a.name, published: !!a.latestVersion })), heard: calls.calls.some(c => c.channel === 'test'), contacts: contacts.contacts.length, campaigns: camps.length, launched: camps.filter(c => c.state !== 'draft').length, draft: draft ? { id: draft.id, name: draft.name } : null };
 }
 
 export default function GettingStarted() {
   const q = useData<Progress>('getting-started', progress);
   if (!q.data) return q.state === 'loading' ? null : <Async q={q} what="Getting started" tool="agent.list">{() => null}</Async>;
   const p = q.data;
-  const done = p.agents.length > 0 && p.heard && p.contacts > 0 && p.campaigns > 0;
+  const done = p.agents.length > 0 && p.heard && p.contacts > 0 && p.launched > 0;
   if (done) return null;
   const first = p.agents[0];
   const published = p.agents.find(a => a.published);
@@ -39,14 +40,14 @@ export default function GettingStarted() {
         </Step>
         <Step n={2} done={p.heard} title="Hear her" doneText="You have run a test call.">
           {!p.heard && (first
-            ? <><p className="small muted">Call yourself in the browser, or run practice callers. Nothing reaches anyone.</p><div><Link to={`/agents/${first.id}?test=1`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Hear {first.name}</span></Link></div></>
+            ? <><p className="small muted">Call yourself in the browser, or run practice callers. Nothing reaches anyone.</p><div><Link to={`/agents/${first.id}?test=1`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Hear her now</span></Link></div></>
             : <Btn disabled reason="Create an agent first.">Hear her</Btn>)}
         </Step>
         <Step n={3} done={p.contacts > 0} title="Add contacts" doneText="Contacts are saved.">
           {p.contacts === 0 && <><p className="small muted">Paste a CSV or choose a file. You see a verdict for every row before anything is saved.</p><div><Link to="/contacts/import" className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Add contacts</span></Link></div></>}
         </Step>
-        <Step n={4} done={p.campaigns > 0} title="Launch a test campaign" doneText="A campaign exists.">
-          {p.campaigns === 0 && (!published ? <Btn disabled reason={first ? 'Publish an agent first. A campaign uses a published version.' : 'Create an agent first.'} fix={first ? { label: 'Open the agent', to: `/agents/${first.id}` } : undefined}>Start a campaign</Btn>
+        <Step n={4} done={p.launched > 0} title="Launch a test campaign" doneText="A campaign has been launched.">
+          {p.draft ? <><p className="small muted">“{p.draft.name}” is saved as a draft. Nothing is dialled until you hold the launch button, and the launch checks list what is left to do.</p><div><Link to={`/campaigns/${p.draft.id}`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Finish your campaign</span></Link></div></> : p.launched === 0 && (!published ? <Btn disabled reason={first ? 'Publish an agent first. A campaign uses a published version.' : 'Create an agent first.'} fix={first ? { label: 'Open the agent', to: `/agents/${first.id}` } : undefined}>Start a campaign</Btn>
             : p.contacts === 0 ? <Btn disabled reason="Add contacts first, so there is someone to call." fix={{ label: 'Add contacts', to: '/contacts/import' }}>Start a campaign</Btn>
             : <div><Link to="/campaigns/new" className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Start a campaign</span></Link></div>)}
         </Step>
@@ -65,11 +66,13 @@ function Step({ n, done, title, doneText, children }: { n: number; done: boolean
 }
 
 function CreateAgent({ onCreated }: { onCreated: () => void }) {
-  const { act, say } = useApp(); const go = useNav();
+  const { act, say, me } = useApp(); const go = useNav();
   const [mode, setMode] = useState<'describe' | 'template'>('describe');
   const [desc, setDesc] = useState('');
   const tpl = useData<{ templates: Template[] }>('start-templates', () => run<{ templates: Template[] }>('template.list', {}));
-  const groups = useMemo(() => { const m = new Map<string, Template[]>(); for (const t of tpl.data?.templates ?? []) m.set(t.industry, [...(m.get(t.industry) ?? []), t]); return [...m.entries()].sort(([a], [b]) => a.localeCompare(b)); }, [tpl.data]);
+  const [ind, setInd] = useState('');
+  const groups = useMemo(() => { const m = new Map<string, Template[]>(); for (const t of tpl.data?.templates ?? []) if (!ind || t.industry === ind) m.set(t.industry, [...(m.get(t.industry) ?? []), t]); return [...m.entries()].sort(([a], [b]) => a.localeCompare(b)); }, [tpl.data, ind]);
+  const industries = useMemo(() => [...new Set((tpl.data?.templates ?? []).map(t => t.industry))].sort(), [tpl.data]);
   const [pick, setPick] = useState<Template | null>(null); const [name, setName] = useState(''); const [busy, setBusy] = useState(false);
   return (
     <div className="stack-s">
@@ -84,11 +87,12 @@ function CreateAgent({ onCreated }: { onCreated: () => void }) {
           : <Btn disabled reason="Describe the job in at least a sentence.">Ask the assistant to build it</Btn>}</div>
         <p className="small muted">The assistant opens beside this page. When the agent exists, this step turns to done.</p>
       </> : <>
+        {industries.length > 1 && <div role="radiogroup" aria-label="Industry" className="chipset" style={{ marginTop: 0 }}>{['', ...industries].map(i => <button key={i || 'all'} type="button" role="radio" aria-checked={ind === i} className={`choice${ind === i ? ' on' : ''}`} onClick={() => setInd(i)}>{i ? INDUSTRY(i) : 'All industries'}</button>)}</div>}
         {tpl.state === 'missing' ? <p className="small muted">Templates are not switched on in this server yet. Describe the job instead.</p> : !tpl.data ? <p className="small muted">Loading templates…</p> :
           groups.map(([ind, list]) => <section key={ind} aria-label={INDUSTRY(ind)}><h3 className="dayhead">{INDUSTRY(ind)}</h3>
             <div role="radiogroup" aria-label={`${INDUSTRY(ind)} templates`} className="jobgrid">{list.map(t => <button key={t.id} type="button" role="radio" aria-checked={pick?.id === t.id} className={`jobcard${pick?.id === t.id ? ' on' : ''}`} onClick={() => { setPick(t); setName(n => n || t.label); }}><strong>{t.label}</strong><span className="small muted">{t.summary}</span></button>)}</div></section>)}
         {pick && <><TextField label="Agent name" value={name} onChange={e => setName(e.target.value)} hint="Your own label. You can rename it later." />
-          <div>{name.trim() ? <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act<{ agentId: string }>('agent.create', { name: name.trim(), templateId: pick.id }, { describe: 'Draft created. Nothing has reached anyone.' }); setBusy(false); if (r.ok) { onCreated(); go(`/agents/${r.result!.agentId}`); } }}>Create draft</Btn> : <Btn disabled reason="Give the agent a name first.">Create draft</Btn>}</div></>}
+          <div>{name.trim() ? <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act<{ agentId: string }>('agent.create', { name: name.trim(), templateId: pick.id }, { describe: 'Draft created. Nothing has reached anyone.' }); setBusy(false); if (r.ok) { await adoptBusinessName(act, r.result!.agentId, me?.workspace.name ?? ''); onCreated(); go(`/agents/${r.result!.agentId}`); } }}>Create draft</Btn> : <Btn disabled reason="Give the agent a name first.">Create draft</Btn>}</div></>}
       </>}
     </div>
   );

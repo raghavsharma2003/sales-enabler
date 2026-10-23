@@ -202,3 +202,11 @@ export async function numberList(): Promise<NumberLine[]> {
   const r = await run<{ numbers: any[] }>('number.list', { limit: 100 });
   return r.numbers.map(n => ({ id: n.id, e164: n.e164, series: n.series, trial: !!n.trial, status: n.status, kycStatus: n.kyc_status ?? null, a2pStatus: n.a2p_status ?? null, carrier: n.carrier ?? null, byo: !!n.byo, displayName: n.display_name ?? null, pauseCause: n.pause_cause ?? null, campaigns: arr(n.campaigns) }));
 }
+
+/** A template agent is made with the template's example business name. Put the workspace's own name there instead, as an ordinary draft edit
+ *  the person can see and change on the agent's first tab. (The server could default it; this keeps the screen right either way.) */
+export async function adoptBusinessName(act: (tool: string, args: unknown, o?: { quiet?: boolean }) => Promise<{ ok: boolean }>, agentId: string, businessName: string): Promise<boolean> {
+  if (!businessName.trim()) return false;
+  const r = await act('brief.edit', { agentId, patch: [{ op: 'set', path: ['brand', 'name'].join('.'), value: businessName.trim() }, { op: 'set', path: ['brand', 'spokenName'].join('.'), value: businessName.trim() }] }, { quiet: true });
+  return r.ok;
+}

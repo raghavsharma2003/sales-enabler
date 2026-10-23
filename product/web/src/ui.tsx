@@ -2,7 +2,7 @@
 // failed, not measured, under-powered, sample, stale, locked-by-role) has its own component so they never look alike.
 import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react';
 import { AlertTriangle, Check, CircleDashed, Lock, PlugZap, RefreshCw, X } from 'lucide-react';
-import { Link } from './router.tsx';
+import { Link, useNav } from './router.tsx';
 import type { ToolData } from './store.tsx';
 import type { Metric } from './types.ts';
 
@@ -188,6 +188,9 @@ export function Kv({ rows }: { rows: [ReactNode, ReactNode][] }) {
 // ---------- table that becomes cards on a phone ----------
 export interface Col<R> { key: string; label: string; render: (r: R) => ReactNode; num?: boolean; primary?: boolean; hideMobile?: boolean }
 export function Table<R>({ cols, rows, rowKey, onRow, caption }: { cols: Col<R>[]; rows: R[]; rowKey: (r: R) => string; onRow?: (r: R) => string; caption: string }) {
+  const go = useNav();
+  // The whole row opens the record, not only its name: a click anywhere on the row that is not itself a link or a button.
+  const open = (e: React.MouseEvent, r: R) => { if (!onRow || e.defaultPrevented || (e.target as HTMLElement).closest('a,button,input,select,textarea,label')) return; go(onRow(r)); };
   return (
     <div className="tablewrap">
       <table className="table">
@@ -195,7 +198,7 @@ export function Table<R>({ cols, rows, rowKey, onRow, caption }: { cols: Col<R>[
         <thead><tr>{cols.map(c => <th key={c.key} scope="col" className={cx(c.num && 'num', c.hideMobile && 'hm')}>{c.label}</th>)}</tr></thead>
         <tbody>
           {rows.map(r => (
-            <tr key={rowKey(r)}>
+            <tr key={rowKey(r)} className={onRow ? 'clickrow' : undefined} onClick={onRow ? e => open(e, r) : undefined}>
               {cols.map(c => (
                 <td key={c.key} data-label={c.label} className={cx(c.num && 'num tnum', c.primary && 'primary', c.hideMobile && 'hm')}>
                   {c.primary && onRow ? <Link to={onRow(r)} className="rowlink">{c.render(r)}</Link> : c.render(r)}
