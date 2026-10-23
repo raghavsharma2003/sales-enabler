@@ -1,5 +1,6 @@
 // Today: the morning paper. Since-you-left, what needs a tap (fixed priority, at most 7), live campaigns, money, one next action.
 // Numbers come from tool results only; a missing source shows "not measured", never 0.
+import GettingStarted from './start.tsx';
 import { useMemo } from 'react';
 import { ArrowRight, Pause, PhoneCall, ShieldAlert } from 'lucide-react';
 import { useApp, useData, useTool } from '../store.tsx';
@@ -25,6 +26,7 @@ export default function Today() {
   return (
     <div className="page">
       <PageHead title="Today" sub={<>{dateLine} · {brief.data ? <>updated {time(brief.data.asOf)}</> : 'loading'}</>} />
+      <div className="gs-wrap"><GettingStarted /></div>
       <Async q={brief} what="The Today brief" tool="brief.today" rows={6}>{b => {
         const did = summarise(b);
         const day0 = b.liveCampaigns.n === 0 && (camps.data?.length ?? 0) === 0 && b.needsTap.n === 0 && b.changed.n === 0;

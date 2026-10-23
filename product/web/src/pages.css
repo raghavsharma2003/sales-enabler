@@ -119,3 +119,10 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .themes > li { border-top: 1px solid var(--line); padding-top: 12px; }
 .quotes { gap: 8px; margin: 8px 0 0 12px; }
 .quotes blockquote { margin: 0; padding-left: 10px; border-left: 3px solid var(--peacock); }
+
+.gsteps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.gstep { display: flex; gap: 12px; align-items: flex-start; }
+.gnum { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--sunk); font-weight: 700; font-size: 0.875rem; display: grid; place-items: center; }
+.gstep.done .gnum { background: var(--leaf-bg); color: var(--leaf); }
+.gstep > div { min-width: 0; flex: 1; }
+.gs-wrap { margin-bottom: 20px; } .gs-wrap:empty { display: none; }

@@ -24,6 +24,8 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
   const { act, setAgentCtx, setDockTab, setView, toast } = useApp();
   const [qs, setQs] = useQuery();
   const tab = (TABS.find(t => t.id === qs.get('tab'))?.id ?? 'basics') as TabId;
+  // ?test=1 opens the test panel beside the agent: the guided start sends people here to hear her.
+  useEffect(() => { if (qs.get('test') === '1') { setDockTab('test'); setView('talk'); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [cfg, setCfg] = useState<AgentConfigDraft>(() => structuredClone(doc.config));
   const savedJson = useRef(JSON.stringify(doc.config));
   const dirty = useMemo(() => JSON.stringify(cfg) !== savedJson.current, [cfg]);

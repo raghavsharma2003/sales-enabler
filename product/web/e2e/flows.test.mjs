@@ -703,3 +703,78 @@ test('Insights: scopes with no insight, a failed build and an unconfigured model
   assert.equal(server.status, 'confirmed', JSON.stringify(server));
   if (server.result?.reason) await card().getByText(server.result.reason, { exact: false }).waitFor();
 });
+
+// ---- First run: a brand-new workspace is guided from nothing to a first campaign, every step done from server state ----
+test('Guided start: from an empty workspace to a first campaign, each step done only when the server says so', async () => {
+  const email = `first-run-${Date.now()}@guided.example`;
+  const ctx2 = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const su = await ctx2.request.post(BASE + '/v1/signup', { data: { workspace: 'Guided Start Test', name: 'Neha Kapoor', email, password: 'sample-password-1234' } });
+  assert.ok(su.ok(), 'sign up a new workspace: ' + su.status());
+  const p = await ctx2.newPage();
+  const srv = async (name, args = {}) => (await (await ctx2.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
+  const step = n => p.locator(`li.gstep[aria-label^="Step ${n}:"]`);
+  const state = async n => ((await step(n).getAttribute('aria-label')) ?? '').endsWith('not done') ? 'not done' : 'done';
+  const hold2 = async loc => { await loc.scrollIntoViewIfNeeded(); const b = await loc.boundingBox(); const el = await loc.elementHandle(); await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await p.mouse.down();
+    try { await p.waitForFunction(e => e.classList.contains('holding'), el, { timeout: 5000 }); await p.waitForFunction(e => !e.classList.contains('holding'), el, { timeout: 10000 }); } finally { await p.mouse.up(); } };
+  try {
+    // An empty workspace lands on the guided start, and nothing is done.
+    assert.equal((await srv('agent.list')).result.agents.length, 0, 'the workspace is empty');
+    await p.goto(BASE + '/');
+    await p.getByRole('heading', { name: 'Get started' }).waitFor({ timeout: 10000 });
+    for (const n of [1, 2, 3, 4]) assert.equal(await state(n), 'not done', `step ${n} starts not done`);
+    // Later steps wait, and say what for.
+    await step(2).getByText('Create an agent first.').waitFor();
+    await step(4).getByText('Create an agent first.').waitFor();
+    // Step 1: both ways in are offered; the template way is grouped by industry.
+    await p.getByRole('radio', { name: 'Describe your calling job' }).waitFor();
+    assert.equal(await step(1).getByRole('button', { name: 'Ask the assistant to build it' }).getAttribute('aria-disabled'), 'true', 'no description, no button');
+    await p.getByRole('radio', { name: 'Start from a template' }).click();
+    await step(1).getByRole('heading', { name: 'Insurance' }).waitFor();
+    await step(1).getByRole('radio', { name: /Health insurance renewal reminder/ }).click();
+    await step(1).getByLabel('Agent name').fill('First agent');
+    await step(1).getByRole('button', { name: 'Create draft' }).click();
+    await p.waitForURL('**/agents/*');
+    assert.equal((await srv('agent.list')).result.agents.length, 1, 'the server holds the agent');
+    // Back on Today: step 1 is done because the server has an agent. Reloading changes nothing.
+    await p.goto(BASE + '/'); await p.getByRole('heading', { name: 'Get started' }).waitFor();
+    await p.reload(); await p.getByRole('heading', { name: 'Get started' }).waitFor();
+    assert.equal(await state(1), 'done'); assert.equal(await state(2), 'not done');
+    await step(4).getByText('Publish an agent first.', { exact: false }).waitFor();
+    // Step 2: hear her. The link opens the test panel, and a browser call is a test call on the server.
+    await step(2).getByRole('link', { name: /^Hear / }).click();
+    await p.getByRole('button', { name: 'Call me in the browser' }).click();
+    await p.getByText('A call session was prepared', { exact: false }).waitFor({ timeout: 10000 });
+    await p.goto(BASE + '/'); await p.getByRole('heading', { name: 'Get started' }).waitFor();
+    assert.equal(await state(2), 'done', 'a test call exists on the server');
+    // Publish the agent (approval by holding), then add contacts through the import.
+    const agentId = (await srv('agent.list')).result.agents[0].id;
+    await p.goto(`${BASE}/agents/${agentId}`);
+    await p.getByRole('button', { name: 'Publish…' }).click();
+    await p.getByRole('dialog').getByRole('heading', { name: 'Approve to continue' }).waitFor();
+    await hold2(p.getByRole('dialog').locator('.hold'));
+    await p.getByRole('dialog').waitFor({ state: 'detached', timeout: 15000 });
+    await p.goto(BASE + '/'); await p.getByRole('heading', { name: 'Get started' }).waitFor();
+    await step(4).getByText('Add contacts first', { exact: false }).waitFor();
+    await step(3).getByRole('link', { name: 'Add contacts' }).click();
+    await p.getByRole('button', { name: 'Use a made-up sample' }).click();
+    await p.getByRole('button', { name: 'Check the file' }).click();
+    await p.getByRole('button', { name: /^Save \d+ contacts?$/ }).click();
+    await p.getByText('List imported', { exact: false }).first().waitFor({ timeout: 15000 });
+    assert.ok((await srv('contact.list', { limit: 1 })).result.contacts.length > 0, 'the server holds contacts');
+    await p.goto(BASE + '/'); await p.getByRole('heading', { name: 'Get started' }).waitFor();
+    assert.equal(await state(3), 'done');
+    // Step 4: the campaign form opens, and saving a draft makes the step done.
+    await step(4).getByRole('link', { name: 'Start a campaign' }).click();
+    await p.waitForURL('**/campaigns/new');
+    await p.getByRole('radio', { name: /Service/ }).first().click();
+    await p.getByLabel('Campaign name').fill('First test campaign');
+    await p.getByLabel('Agent').selectOption({ index: 1 });
+    await p.getByLabel('Who to call').selectOption({ index: 1 });
+    await p.getByRole('button', { name: 'Save draft' }).click();
+    await p.waitForURL(u => /\/campaigns\/[0-9a-f-]{36}/.test(u.pathname), { timeout: 15000 });
+    assert.equal((await srv('campaign.list')).result.campaigns.length, 1, 'the server holds the campaign');
+    await p.goto(BASE + '/');
+    await p.getByRole('heading', { name: 'Today' }).waitFor();
+    assert.equal(await p.getByRole('heading', { name: 'Get started' }).count(), 0, 'with every step done the guide steps aside');
+  } finally { await ctx2.close(); }
+});
