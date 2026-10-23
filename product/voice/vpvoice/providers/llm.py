@@ -14,6 +14,21 @@ class HttpBrain:
         self.google = google or (GoogleRoute(self.env) if self.b['host'] == 'gm' else None)
         self.provider = catalog.BRAIN_PROVIDER.get(self.b['host'], 'brain')
 
+    def host(self):
+        h = self.b['host']; env = self.env
+        if h == 'sv': return 'api.sarvam.ai'
+        if h == 'or': return 'openrouter.ai'
+        if h in ('sin', 'sea'):
+            ep = env.get('LAB_AI_ENDPOINT' if h == 'sin' else 'VP_AI_ENDPOINT', '')
+            return az_host(ep) if ep else None
+        return None
+
+    async def warm(self):
+        """PREWARM (CascadeSession): open the brain host's connection before the request needs it."""
+        if self.google is not None: await self.google.warm(self.http); return
+        from .warm import warm_hosts
+        warm_hosts(self.http, [self.host()])
+
     async def stream(self, messages, usage, timing, max_tokens=180):
         got = []
         try:

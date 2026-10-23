@@ -19,10 +19,12 @@
 #              ends in a question): end-of-turn latency there is the cost of holding longer after statements.
 #   barge      2 s into her long opening, the caller starts the clip. missed barge-in = she has not stopped (flush)
 #              1.5 s after the caller's speech onset; barge-in latency = onset -> flush.
-#   backchannel 2 s into her long opening, a 300 ms vocal burst cut from the clip (heard as "haan") and, separately, a
-#              300 ms burst of white noise at -30 dBFS. false barge-in = she stops within 2.5 s of the burst.
+#   backchannel 2 s into her long opening, vocal bursts cut from the clip's first speech, heard as nods: 300 ms "haan",
+#              500 ms "haan ji", 700 ms "achha haan ji"; and, separately, a 300 ms burst of white noise at -30 dBFS.
+#              false barge-in = she stops within 2.5 s of the burst. A nod's words reach the runtime as a partial once
+#              --partial-ms of it has been heard, as a streaming recogniser's would.
 # Fakes: ears give partials while the VAD hears speech and the final words 250 ms after the VAD's end of speech (words
-# allocated to the clip's speech time); brain: first sentence 300 ms after the request; voice: first audio 150 ms after
+# allocated to the clip's speech time, each --partial-ms after it is spoken, default 0); brain: first sentence 300 ms after the request; voice: first audio 150 ms after
 # a sentence, 75 ms of audio per character, streamed at twice real time. No echo of her voice into the microphone.
 import argparse, asyncio, hashlib, json, math, os, random, re, statistics, subprocess, sys, time
 
@@ -34,6 +36,8 @@ SHORT_OPENING = 'Namaste, main Riya, AI assistant.'
 LONG_OPENING = ('Namaste, main Suraksha ki AI assistant Riya bol rahi hoon. Aapki policy ka renewal agle hafte hai, aur main aapko '
                 'do teen cheezein batana chahti thi jo is baar badli hain, taaki aapko koi pareshani na ho.')
 REPLY = 'Ji, samajh gayi. Main abhi aapko details bhejti hoon.'
+PARTIAL_LAG = 0.0      # --partial-ms / 1000: how long after a word is spoken the recogniser's partial carries it
+NODS = [(0.3, 'haan'), (0.5, 'haan ji'), (0.7, 'achha haan ji')]
 
 
 # ------------------------------------------------------------------------------------------------ clips and labels
@@ -125,12 +129,16 @@ class Line:
 class Ears:
     def __init__(self, on_p, on_f, on_e, lang='hi-IN', clip=None, pos=None):
         self.on_p = on_p; self.on_f = on_f; self.clip = clip; self.pos = pos; self.sent = 0; self.audio_s = 0.0; self.text = None
+        self.heard_s = 0.0
     async def start(self): pass
     def write(self, pcm, is_speech):
         if is_speech: self.audio_s += len(pcm) / 32000
         if is_speech and self.clip is not None:
-            w = words_until(self.clip, self.pos())[self.sent:]
+            w = words_until(self.clip, self.pos() - PARTIAL_LAG)[self.sent:]
             if w: self.on_p(' '.join(w))
+        if is_speech and self.text:                    # a nod: its words arrive as a partial, PARTIAL_LAG after it starts
+            self.heard_s += len(pcm) / 32000
+            if self.heard_s >= max(PARTIAL_LAG, 0.06): self.on_p(self.text)
     def end_of_speech(self):
         if self.text is not None:                      # a burst with a fixed hearing ("haan"), or noise heard as nothing
             if self.text: asyncio.get_running_loop().call_later(FINAL_MS / 1000, self.on_f, self.text)
@@ -222,16 +230,16 @@ def score(r):
         lat = (fl[0] - onset) if fl else None
         return {'kind': 'barge', 'id': r['id'], 'missed': lat is None or lat > 1.5, 'barge_ms': None if lat is None else round(lat * 1000)}
     fl = [f for f in line.flushes if st <= f <= st + 2.5]
-    return {'kind': 'backchannel', 'id': r['id'], 'what': 'noise' if r['burst'][1] == '' else 'haan', 'false_barge': bool(fl)}
+    what = 'noise' if r['burst'][1] == '' else {'haan': 'haan', 'haan ji': 'nod500', 'achha haan ji': 'nod700'}[r['burst'][1]]
+    return {'kind': 'backchannel', 'id': r['id'], 'what': what, 'false_barge': bool(fl)}
 
 
 def bursts(c):
     import numpy as np
     a = int(c['speech'][0][0] * 16000) * 2
-    voc = c['pcm'][a:a + 9600]                                        # 300 ms of the clip's first speech, heard as "haan"
     rng = np.random.default_rng(int(hashlib.sha256(c['id'].encode()).hexdigest()[:8], 16))
     noise = (rng.standard_normal(4800) * 32768 * 10 ** (-30 / 20)).clip(-32768, 32767).astype('<i2').tobytes()
-    return [(voc, 'haan'), (noise, '')]
+    return [(c['pcm'][a:a + int(d * 16000) * 2], text) for d, text in NODS] + [(noise, '')]
 
 
 # ------------------------------------------------------------------------------------------------ stats
@@ -269,6 +277,8 @@ def summarise(rows):
         'barge_in_ms': {'n': len(bl), 'median': round(statistics.median(bl)) if bl else None, 'median_ci95': boot_median(bl)},
         'false_barge_in_backchannel': prop([r for r in C if r['what'] == 'haan'], 'false_barge'),
         'false_barge_in_noise': prop([r for r in C if r['what'] == 'noise'], 'false_barge'),
+        'false_barge_in_nod_500ms': prop([r for r in C if r['what'] == 'nod500'], 'false_barge'),
+        'false_barge_in_nod_700ms': prop([r for r in C if r['what'] == 'nod700'], 'false_barge'),
     }
 
 
@@ -292,15 +302,18 @@ def main():
     ap.add_argument('--conc', type=int, default=8); ap.add_argument('--vad', choices=['silero', 'energy'], default='silero')
     ap.add_argument('--set', action='append', default=[], help='CascadeSession attribute=value, e.g. HOLD_MS=400')
     ap.add_argument('--out', help='write <out>.json and <out>.md')
+    ap.add_argument('--partial-ms', type=int, default=0, help='how late the fake recogniser\'s partials carry each word')
     ap.add_argument('--only', nargs='*', choices=['turn', 'statement', 'barge', 'backchannel'], help='run only these scenarios (tuning sweeps)')
     a = ap.parse_args()
     if a.vad == 'energy': os.environ['VP_VAD'] = 'energy'
+    global PARTIAL_LAG; PARTIAL_LAG = a.partial_ms / 1000
     from vpvoice import audio
     from vpvoice.cascade import CascadeSession
     for kv in a.set:
         k, v = kv.split('='); setattr(CascadeSession, k, int(v))
     clips = [c for c in load_clips() if a.split == 'all' or c['split'] == a.split][:a.limit]
-    params = {k: getattr(CascadeSession, k) for k in ('HOLD_MS', 'STATEMENT_HOLD_MS', 'LONG_HOLD_MS', 'BARGE_MS', 'BARGE_WORDS', 'BARGE_LONG_MS')}
+    params = {k: getattr(CascadeSession, k) for k in ('HOLD_MS', 'STATEMENT_HOLD_MS', 'LONG_HOLD_MS', 'BARGE_MS', 'BARGE_WORDS', 'BARGE_LONG_MS', 'BARGE_NOD', 'BARGE_NOD_LONG_MS')}
+    params['partial_ms'] = a.partial_ms
     vad = type(audio.make_vad()).__name__
     t0 = time.time(); rows = asyncio.run(run_all(clips, a.conc, a.only))
     sha = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], cwd=HERE, capture_output=True, text=True).stdout.strip()

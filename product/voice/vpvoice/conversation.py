@@ -43,6 +43,8 @@ class Draft:
         self.sentences = []; self.style = None
         self.gate = None          # the crisis judge's task for the caller turn this reply answers (judge.py)
         self.blocked = []; self.replaced = []
+        self.t = {}               # stage clock marks for the latency breakdown (cascade.Reply.timing)
+        self.first_clause_at = None   # CascadeSession.FIRST_CLAUSE: voice the first clause of a reply on its own
 
     @property
     def text(self): return ' '.join(self.sentences)
@@ -245,11 +247,13 @@ class Conversation:
         correction = None
         for attempt in range(2):
             msgs = self.messages_for(draft.user_text if draft.pending else None, correction)
-            sp = brief.Splitter(); usage = {}; timing = {}; blocked = None
+            sp = brief.Splitter(first_clause_at=draft.first_clause_at if attempt == 0 else None); usage = {}; timing = {}; blocked = None
+            draft.t.setdefault('brain_req', self.clock())
             gen = self.brain.stream(msgs, usage, timing, max_tokens=MAX_TOKENS)
             try:
                 async with contextlib.aclosing(gen):
                     async for d in gen:
+                        draft.t.setdefault('brain_first', self.clock())
                         draft.raw += d
                         for s in sp.feed(d):
                             if draft.gate is not None and not draft.sentences:     # the judge's verdict before she is heard
@@ -258,7 +262,7 @@ class Conversation:
                                 if confirm: yield confirm; break
                             out, v = self.check(s, draft)
                             if v['action'] == 'block': blocked = v; break
-                            if out: yield out
+                            if out: draft.t.setdefault('sentence', self.clock()); yield out
                             if draft.final: break
                         if blocked or draft.final: break
                 if draft.final:                      # a canned replacement ends the reply: the rest of the draft is dropped
@@ -272,7 +276,7 @@ class Conversation:
                             if confirm: yield confirm; return
                         out, v = self.check(s, draft)
                         if v['action'] == 'block': blocked = v; break
-                        if out: yield out
+                        if out: draft.t.setdefault('sentence', self.clock()); yield out
                         if draft.final: return
             finally:
                 self.charge_brain(usage)

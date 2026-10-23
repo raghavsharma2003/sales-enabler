@@ -62,6 +62,8 @@ class GeminiVoice(BaseVoice):
     def __init__(self, http, tts_id, voice, env=None, google=None):
         super().__init__(http, tts_id, voice, env); self.google = google or GoogleRoute(self.env)
 
+    async def warm(self): await self.google.warm(self.http)
+
     async def speak(self, text, style, usage, timing):
         """streamGenerateContent with audio out (the path measured at 0.86-1.1 s first byte from India). 3.8 TTS reads
         its text verbatim, so the words go alone; a style prefix was spoken aloud on real calls (2026-10-19)."""
@@ -102,6 +104,10 @@ class AzureVoice(BaseVoice):
     SDK websocket; REST keeps the runtime free of the Speech SDK, at some first-audio cost not yet measured.)"""
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw); self.styled = bool(self.spec.get('emotion'))
+
+    async def warm(self):
+        from .warm import warm_hosts
+        warm_hosts(self.http, [f"{self.env.get('LAB_SPEECH_REGION', 'centralindia')}.tts.speech.microsoft.com"])
 
     async def speak(self, text, style, usage, timing):
         import aiohttp

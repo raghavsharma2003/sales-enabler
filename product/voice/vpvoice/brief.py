@@ -85,11 +85,13 @@ def hangup_ok(reply, last_caller):
 
 class Splitter:
     """Cuts a streaming reply into sentences for the door and the voice. Never splits inside a number ("18,450",
-    "2.5") or a marker arriving in pieces; a very long run is cut at its last comma or space."""
+    "2.5") or a marker arriving in pieces; a very long run is cut at its last comma or space. With first_clause_at
+    (CascadeSession.FIRST_CLAUSE), the reply's first piece is cut at its first comma once that many characters are in,
+    so the voice can start before the first sentence ends."""
     BOUND = re.compile(r'[.?!।]+(?=\s|$)|\n')
 
-    def __init__(self, long_at=160):
-        self.buf = ''; self.long_at = long_at
+    def __init__(self, long_at=160, first_clause_at=None):
+        self.buf = ''; self.long_at = long_at; self.first_clause_at = first_clause_at; self.cuts = 0
 
     def feed(self, delta):
         self.buf += delta; out = []
@@ -102,6 +104,8 @@ class Splitter:
                 cut = m.end()
             elif m and m.end() == len(self.buf) and head[m.start()] != '.':
                 cut = m.end()
+            elif self.first_clause_at and not self.cuts and (k := head.find(', ', self.first_clause_at - 1)) > 0:
+                cut = k + 1                       # the first clause, comma kept (the voice's pause), the space dropped
             elif len(head) > self.long_at:
                 k = max(head.rfind(', ', 0, self.long_at), head.rfind(' ', 0, self.long_at))
                 if k <= 0: break
@@ -109,7 +113,7 @@ class Splitter:
             else:
                 break
             s, self.buf = self.buf[:cut], self.buf[cut:]
-            if s.strip(): out.append(s.strip())
+            if s.strip(): out.append(s.strip()); self.cuts += 1
         return out
 
     def flush(self):

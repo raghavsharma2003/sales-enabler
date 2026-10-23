@@ -187,7 +187,8 @@ class Runtime:
         s = rec.session
         return web.json_response({'conversationId': rec.t['conversationId'], 'joined': rec.token_used, 'ended': s.ended if s else None,
                                   'error': s.error if s else None, 'seq': rec.sink.seq, 'undelivered': rec.sink.undelivered,
-                                  'costInrMilli': s.meter.total_milli() if s else 0})
+                                  'costInrMilli': s.meter.total_milli() if s else 0,
+                                  **({'timing': s.timing_summary()} if s is not None and hasattr(s, 'timing_summary') else {})})
 
     # ---------------------------------------------------------------- live controls (supervisor listen, whisper, takeover)
     def live_err(self, status, reason):

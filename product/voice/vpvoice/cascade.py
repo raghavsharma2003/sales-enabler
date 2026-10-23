@@ -27,6 +27,23 @@ CUT_WITHIN_S = 0.3                # a takeover waits for her sentence end only i
 ACTION = ('crisis', 'readingSensitiveDigits', 'asksIfAi', 'optOut', 'wantsHuman', 'refusesRecording')
 
 
+# Words a listener says to keep the speaker going. While she talks they never count toward a barge-in's BARGE_WORDS
+# (CascadeSession.BARGE_NOD): "haan ji" is a nod, "haan ji ek minute" is a turn.
+NODS = {'haan', 'haa', 'han', 'ha', 'hmm', 'hm', 'hmmm', 'mm', 'mhm', 'ji', 'jee', 'achha', 'acha', 'accha', 'achcha', 'ok', 'okay',
+        'theek', 'thik', 'hai', 'sahi', 'right', 'yes', 'yeah', 'haanji', 'अच्छा', 'हाँ', 'हां', 'हा', 'जी', 'ठीक', 'है', 'हम्म', 'ओके', 'सही'}
+
+
+def turn_words(text):
+    """The words in what the caller says over her that are not nods."""
+    return [w for w in re.sub(r'[.,?!।;:—–\-"\'…()]', ' ', (text or '').lower()).split() if w not in NODS]
+
+
+def same_words(a, b):
+    """The recogniser's final says what the partial said: the same words, ignoring case and punctuation."""
+    w = lambda s: re.sub(r'[.,?!।;:—–\-"\'…()]', ' ', (s or '').lower()).split()
+    return w(a) == w(b)
+
+
 def incomplete(text):
     t = text.strip().rstrip('।.!?').strip()
     if not t: return False
@@ -49,8 +66,13 @@ class Reply:
     def __init__(self, s, rid, user_text, released=False, pending=False, fixed=None, gate=None):
         self.s = s; self.rid = rid; self.draft = Draft(user_text, pending); self.fixed = fixed; self.released = released
         self.draft.gate = gate
+        if s.first_clause and user_text is not None: self.draft.first_clause_at = s.FIRST_CLAUSE_AT   # never the opening (RD1)
         self.buf = []; self.cancelled = False; self.done = False; self.first = None; self.play_start = None
         self.spoken = []; self.error = None; self.latency_ms = None; self.committed = False
+        self.speculative = False          # started on the caller's partial words, awaiting the final (SPECULATE_PARTIAL)
+        self.from_partial = False         # ... and stays True once the final confirmed it (the timing row's 'speculative')
+        now = s.now(); self.draft.t.update({'created': now, 'eos': s.eos_t, 'final': s.last_final_t if s.final_seg >= s.seg else None})
+        if released: self.draft.t['release'] = now
         self.task = asyncio.ensure_future(self.run())
 
     @property
@@ -60,7 +82,8 @@ class Reply:
         if self.cancelled or not pcm24: return
         if not self.released: self.buf.append((pcm24, idx)); return
         if self.first is None:
-            self.first = self.s.now(); self.latency_ms = self.s.reply_started()
+            self.first = self.s.now(); self.latency_ms = self.s.reply_started(); self.draft.t['audio'] = self.first
+            self.s.record_timing(self)
             await self.s.line.send_json({'t': 'reply', 'rid': self.rid, 'latencyMs': self.latency_ms})
         st = await self.s.send_audio(self.rid, pcm24)
         if self.play_start is None: self.play_start = st
@@ -69,7 +92,7 @@ class Reply:
 
     async def release(self):
         if self.released or self.cancelled: return
-        self.released = True
+        self.released = True; self.draft.t['release'] = self.s.now()
         buf, self.buf = self.buf, []
         for b, i in buf: await self.emit(b, i)
 
@@ -121,8 +144,10 @@ class Reply:
         voice = self.s.c.voice; usage = {}; timing = {}
         while len(self.spoken) <= idx: self.spoken.append(['', 0])
         self.spoken[idx][0] = text
+        self.draft.t.setdefault('tts_req', self.s.now())
         try:
             async for ch in voice.speak(text, self.draft.style if voice.styled else None, usage, timing):
+                self.draft.t.setdefault('tts_first', self.s.now())
                 await self.emit(ch, idx)
         except asyncio.CancelledError:
             raise
@@ -158,6 +183,16 @@ class CascadeSession(Session):
     # ends in a question (it hands the turn to her), STATEMENT_HOLD_MS after a statement, LONG_HOLD_MS after one that
     # reads unfinished; she yields to the caller after BARGE_MS of speech with at least BARGE_WORDS words, or after
     # BARGE_LONG_MS of speech whatever the words.
+    # Latency (each behind a flag; VP_SPECULATE_PARTIAL=0 / VP_FIRST_CLAUSE=1 / VP_PREWARM=0 in the env override):
+    # SPECULATE_PARTIAL starts the reply on the caller's partial words at their end of speech, and keeps it only if
+    # the recogniser's final says the same words; FIRST_CLAUSE voices the first clause (at a comma, 24+ characters)
+    # before the sentence ends; PREWARM opens the brain's and voice's connections when the caller starts speaking.
+    SPECULATE_PARTIAL = True
+    FIRST_CLAUSE = False
+    FIRST_CLAUSE_AT = 24
+    PREWARM = True
+    BARGE_NOD = True                  # VP_BARGE_NOD=0: count every word toward BARGE_WORDS, nods included (NODS)
+    BARGE_NOD_LONG_MS = 1500          # with BARGE_NOD: speech heard only as nods stops her only after this long
     HOLD_MS = 0
     STATEMENT_HOLD_MS = 1200          # chosen on the bench DEV split (bench/results/turn-2026-10-23-*), reported on TEST
     LONG_HOLD_MS = 1400
@@ -172,11 +207,46 @@ class CascadeSession(Session):
         self.rec = Recorder(clock, enabled=rec); self.vad = make_vad(); self.agent_rs = Resampler(24000, 16000)
         self.rid = 0; self.finals = []; self.partial = ''; self.pending = None; self.active = None; self.overlap = []
         self.seg = 0; self.final_seg = 0; self.eos_t = None; self.last_reply_eos = None; self.stt = None
+        self.last_final_t = None; self.timing = []        # latency breakdown per reply (timing_summary)
         self.mic = b''; self.turn_start_ms = None; self.digits_seg = -1; self.end_task = None; self.barge_ins = 0
         self.silence_s = (ticket['agent'].get('limits') or {}).get('maxSilenceS') or 0
+        flag = lambda name, d: (self.env.get(name) == '1') if self.env.get(name) in ('0', '1') else d
+        self.speculate = flag('VP_SPECULATE_PARTIAL', self.SPECULATE_PARTIAL); self.first_clause = flag('VP_FIRST_CLAUSE', self.FIRST_CLAUSE)
+        self.prewarm = flag('VP_PREWARM', self.PREWARM); self.warmed_seg = -1
+        self.barge_nod = flag('VP_BARGE_NOD', self.BARGE_NOD)
         self.mix = bytearray(); self.member_rs = Resampler(16000, 24000)     # live controls: listener mix, member's voice
 
     def now(self): return self.clock()
+
+    # ---------------------------------------------------------------- latency breakdown
+    STAGES = (('ears', 'eos', 'final'), ('turn', 'final', 'brain_req'), ('brain', 'brain_req', 'brain_first'),
+              ('sentence', 'brain_first', 'sentence'), ('voice', 'tts_req', 'tts_first'), ('hold', 'tts_first', 'release'),
+              ('out', 'release', 'audio'))
+
+    def record_timing(self, r):
+        """One reply's gap, split into stages, in ms. Marks are relative to the caller's end of speech (the VAD's); a
+        stage is the time between two marks (negative when work started early, e.g. a speculative brain request)."""
+        t = r.draft.t; eos = t.get('eos')
+        if eos is None or r.latency_ms is None: return          # her opening, or a reply that answers no new speech
+        ms = lambda a, b: None if t.get(a) is None or t.get(b) is None else int(round((t[b] - t[a]) * 1000))
+        at = {k: ms('eos', k) for k in ('final', 'brain_req', 'brain_first', 'sentence', 'tts_req', 'tts_first', 'release', 'audio')}
+        row = {'rid': r.rid, 'gapMs': r.latency_ms, 'speculative': r.from_partial, 'at': at,
+               'stages': {name: ms(a, b) for name, a, b in self.STAGES}}
+        self.timing.append(row)
+        log.info('reply timing %s rid=%s gap=%s %s', self.id, r.rid, r.latency_ms, ' '.join(f'{k}={v}' for k, v in row['stages'].items()))
+
+    def timing_summary(self):
+        """Medians over this call's replies: where the time goes (GET /v1/calls/{id})."""
+        import statistics
+        med = lambda xs: int(statistics.median(xs)) if xs else None
+        rows = self.timing
+        return {'replies': rows, 'n': len(rows), 'gapMs': med([r['gapMs'] for r in rows]),
+                'stagesMs': {name: med([r['stages'][name] for r in rows if r['stages'][name] is not None]) for name, _, _ in self.STAGES}}
+
+    def judge_raises(self):
+        """The crisis judge gates replies in 'raise' mode: then a reply never starts before the final it must judge."""
+        from . import judge
+        return self.conv.judge_complete is not None and judge.mode(env=self.conv.judge_env) == 'raise' and judge.configured(self.conv.judge_env)
 
     def hold_ms(self, text):
         """How long a held reply waits in silence before she speaks, by how the caller's words end."""
@@ -282,6 +352,14 @@ class CascadeSession(Session):
         if self.active is not None and not self.active.committed: await self.interrupt()
         elif self.active is not None: self.active.cancel(); self.active = None
 
+    async def _prewarm(self):
+        """PREWARM: the caller has started a turn; open the connections her reply will need (never raises)."""
+        for part in (self.c.brain, self.c.voice):
+            w = getattr(part, 'warm', None)
+            if w is None: continue
+            try: await asyncio.wait_for(w(), 5)
+            except Exception: pass
+
     def reply_started(self):
         """Latency of the reply now audible: from the caller's last end of speech it answers (None for the opening)."""
         t = self.now(); eos = self.eos_t if (self.eos_t and self.eos_t != self.last_reply_eos) else None
@@ -300,6 +378,7 @@ class CascadeSession(Session):
             for ev, idx in self.vad.feed(fr):
                 if ev == 'start':
                     self.seg += 1
+                    if self.prewarm and self.warmed_seg != self.seg: self.warmed_seg = self.seg; asyncio.ensure_future(self._prewarm())
                     if self.turn_start_ms is None: self.turn_start_ms = int(idx / 16)
                     if self.pending is not None and not self.pending.released:
                         self.pending.cancel(); self.pending = None          # caller kept talking: drop the held reply
@@ -319,7 +398,7 @@ class CascadeSession(Session):
             asyncio.ensure_future(self._stop_digits())
 
     def _final(self, t):
-        self.final_seg = self.seg; self.partial = ''
+        self.final_seg = self.seg; self.partial = ''; self.last_final_t = self.now()
         if self.active is not None and self.agent_playing():
             self.overlap.append(t); return           # heard while she talks: a backchannel unless they keep going
         self.finals.append(t)
@@ -415,15 +494,33 @@ class CascadeSession(Session):
                 self.finals = keep + self.finals; self.overlap = []; self.active = a = None
                 await self.line.send_json({'t': 'state', 's': 'listening'})
             elif v.speaking and a.fixed is None:
-                words = len((' '.join(self.overlap) + ' ' + self.partial).split())
+                said = ' '.join(self.overlap) + ' ' + self.partial
+                words = len(turn_words(said) if self.barge_nod else said.split())
+                nodding = self.barge_nod and said.split() and not words     # all she has heard is "haan ji": keep going
+                long_ms = self.BARGE_NOD_LONG_MS if nodding else self.BARGE_LONG_MS
                 if a.first is None and v.speech_ms() >= 250 and a.user_text is not None:
                     a.cancel(); self.active = a = None                   # withdraw: not audible yet, caller still going
                     self.finals = [self._uncommit_last_caller()] + self.finals
-                elif self.agent_playing() and v.speech_ms() >= self.BARGE_MS and (words >= self.BARGE_WORDS or v.speech_ms() >= self.BARGE_LONG_MS):
+                elif self.agent_playing() and v.speech_ms() >= self.BARGE_MS and (words >= self.BARGE_WORDS or v.speech_ms() >= long_ms):
                     await self.interrupt(); a = None                     # barge-in: words, not a cough
         if self.ending or self.ended: return
         text = ' '.join(self.finals).strip()
         caught_up = self.final_seg >= self.seg or v.silence_ms() >= 1200
+        p = self.pending
+        if p is not None and p.speculative and caught_up and text:
+            # the final is in: keep the speculative reply only if the recogniser settled on the same words
+            if same_words(text, p.user_text):                 # (never in 'raise' mode: judge_raises() keeps it off)
+                p.speculative = False; p.draft.user_text = text; p.draft.t['final'] = self.last_final_t
+                p.draft.gate = self.conv.start_judge(text, self.conv.prev_caller(), floor=safety.caller_signals(text)['crisis'])
+            else:
+                p.cancel(); self.pending = None
+        if self.speculate and self.pending is None and a is None and not v.speaking and not self.agent_playing() and not caught_up \
+                and self.partial.strip() and self.eos_t is not None:
+            use = ' '.join(self.finals + [self.partial]).strip()
+            sig = safety.caller_signals(use)
+            if not any(sig[k] for k in ACTION) and safety.redact(use) == use and not self.judge_raises():
+                self.rid += 1; self.pending = Reply(self, self.rid, use, pending=True)
+                self.pending.speculative = self.pending.from_partial = True
         if self.pending is None and a is None and not v.speaking and not self.agent_playing() and caught_up:
             use = text or (self.partial.strip() if self.partial and v.silence_ms() >= 1000 else '')
             if use:
@@ -442,7 +539,7 @@ class CascadeSession(Session):
                 gate = self.conv.start_judge(use, self.conv.prev_caller(), floor=sig['crisis'])
                 self.rid += 1; self.pending = Reply(self, self.rid, use, pending=True, gate=gate)
                 await self.line.send_json({'t': 'state', 's': 'thinking'})
-        if self.pending is not None and not self.pending.released:
+        if self.pending is not None and not self.pending.released and not self.pending.speculative:
             hold = self.hold_ms(self.pending.user_text)
             if not v.speaking and v.silence_ms() >= hold:
                 r = self.pending; self.pending = None

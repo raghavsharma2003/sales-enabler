@@ -156,6 +156,14 @@ class GoogleRoute:
         timing['err'] = f'{r.status} {(await r.text())[:300]}'; r.release()
         return None
 
+    async def warm(self, http):
+        """PREWARM: the bearer token refreshed off the critical path, and the stream host's connection opened."""
+        if not self.usable or http is None: return
+        from .warm import warm_hosts
+        warm_hosts(http, [self.host(self.location)])
+        try: await self.vertex.get(http)
+        except Exception: pass
+
     def live_url(self): return f'wss://{self.host(self.live_location)}{LIVE_PATH}'
 
     async def live(self, http, model):
