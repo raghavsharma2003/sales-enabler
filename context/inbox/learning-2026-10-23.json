@@ -1,0 +1,54 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-23.operator-bench",
+      "type": "component", "status": "built", "source": "verified", "date": "2026-10-23",
+      "title": "Operator bench: 48 scripted tasks across 11 categories (agent from a description, template plus edits, stacks including built ones, CSV audiences, campaigns, spend caps, questions about calls and money, refusals, prompt injection in uploads, ambiguous requests, multi-step), each one member message on a page against all real modules in a fresh workspace, graded in code on the end state. Reports pass rate with a 95% Wilson CI per run and per category, and per task: model calls, tool calls, tokens, tools and schema chars offered, find_tools use, wall time and cost.",
+      "path": "product/scripts/operator-bench.ts"
+    },
+    {
+      "id": "decision.2026-10-23.bench-graders-in-code",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-23",
+      "title": "The Operator bench grades only end state in code (DB rows, receipts, approval cards, which tools ran), never with a model. Questions are graded on a number from seeded data; refusals and injections are graded on what did not happen; ambiguity is graded on no writes plus a question.",
+      "rationale": "rejected.harvest.12 (no holistic LLM judge as a gate); the owner wants measured, not asserted, quality.",
+      "reverse_if": "Many real-model failures turn out to be grader artefacts (a correct outcome reached another way), shown by reading the failing transcripts; then widen the graders, still in code."
+    },
+    {
+      "id": "decision.2026-10-23.bench-guards",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-23",
+      "title": "The bench paces model requests (VP_BENCH_RPS, default 1/s) and stops before a task whose worst case (the Operator's turn caps: 60k tokens plus 8 replies) would exceed VP_BENCH_MAX_TOKENS (default 3,000,000) or, when prices are set, VP_BENCH_MAX_INR (default 500). The model and endpoint come from VP_LLM_OPERATOR_* or VP_LLM_DEFAULT_*. Seeds use templates, tools and SQL only, never a model.",
+      "rationale": "A real-model run must not run away on cost or rate limits.",
+      "reverse_if": "A provider's own rate limits or billing caps make these redundant, or the worst-case estimate stops runs that were far from the cap."
+    },
+    {
+      "id": "measure.2026-10-23.bench-plumbing",
+      "type": "measurement", "status": "confirmed", "source": "verified", "date": "2026-10-23",
+      "title": "Bench plumbing checked without a real model, no pass-rate claim. Fake smoke: 3/3 scripted tasks pass, 22-32 tools and 10.8k-17.2k schema chars offered per request. A wrong scripted action (stack v2-live when asked for Sarvam) fails its grader despite a 'done' reply. Against a local mock endpoint speaking streamed chat completions: requests were paced at a minimum 497 ms gap at 2/s; tools and chars were measured per request; cost was 258 milli-INR per 5,040-token call at the test rates; a ₹10 cap stopped the run before the first task (worst case about ₹13.9 at those rates). The real-model pass rate is NOT measured yet.",
+      "n": 9,
+      "method": "tests/operator-bench.test.ts plus CLI runs with a mock OpenAI-compatible server (scratch), synthetic data"
+    },
+    {
+      "id": "open.2026-10-23.operator-real-model-pass-rate",
+      "type": "open-question", "status": "open", "source": "model", "date": "2026-10-23",
+      "title": "What is the Operator's task pass rate on a real model? Nobody has measured it; the bench is ready for it.",
+      "closes_when": "operator-bench.ts has run all 48 tasks on a real model with VP_LLM_OPERATOR_* set, and its JSON and markdown report (pass rate with a 95% CI, per category) is filed under research/ with the model and date."
+    },
+    {
+      "id": "decision.2026-10-23.server-strings-vyakti",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-23",
+      "title": "Server strings that a person or the Operator's model reads say Vyakti or 'the assistant', never VP; tests/brand-strings.test.ts parses server/** (except money, owned by campaigns) and fails on \\bVP\\b in any string or template literal.",
+      "rationale": "VP is the internal working name; the product is Vyakti (integrator request, 2026-10-22).",
+      "reverse_if": "The product is renamed again; then change the guard's pattern."
+    }
+  ],
+  "edges": [
+    { "from": "component.2026-10-23.operator-bench", "to": "decision.2026-10-22.operator-toolset", "relation": "tests" },
+    { "from": "decision.2026-10-23.bench-graders-in-code", "to": "component.2026-10-23.operator-bench", "relation": "constrains" },
+    { "from": "decision.2026-10-23.bench-guards", "to": "component.2026-10-23.operator-bench", "relation": "constrains" },
+    { "from": "measure.2026-10-23.bench-plumbing", "to": "component.2026-10-23.operator-bench", "relation": "tests" },
+    { "from": "component.2026-10-23.operator-bench", "to": "open.2026-10-23.operator-real-model-pass-rate", "relation": "leaves-open" }
+  ],
+  "events": [
+    { "date": "2026-10-23", "event": "operator-bench-built", "details": "Operator bench (48 tasks, graders in code, rate and cost guards) and the server VP-string sweep with a guard test; real-model pass rate not yet measured." }
+  ]
+}
