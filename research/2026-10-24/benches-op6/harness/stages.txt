@@ -1,0 +1,16 @@
+stage pair1 start 2026-10-24T05:02:45Z spent=₹0
+operator-gpt-4.1-r1 cap=₹110
+operator-41-r1 exit=0 spent=₹107.42 05:08:10
+operator-gpt-4.1-mini-r1 cap=₹35
+operator-mini-r1 exit=0 spent=₹135.09 05:34:25
+stage pair1 done 2026-10-24T05:34:25Z
+stage pair2 start 2026-10-24T05:34:49Z spent=₹135.09
+operator-gpt-4.1-r2 cap=₹110 (mini reserve ₹34.6)
+operator-41-r2 exit=0 spent=₹243.03 05:40:39
+operator-gpt-4.1-mini-r2 cap=₹35
+operator-mini-r2 exit=0 spent=₹271.97 06:08:10
+stage pair2 done 2026-10-24T06:08:10Z
+brief-blind gpt41-review-blind deployment=lab-gpt41 guard-cap=Rs 20.43 judge-eval-cap=Rs 19.73 rps=1 start=2026-10-24T06:11:32Z
+brief-blind gpt41-review-blind exit=0 end=2026-10-24T06:14:24Z
+brief-blind mini-review-blind deployment=lab-gpt41mini-in guard-cap=Rs 8.2 judge-eval-cap=Rs 8.0 rps=0.4 start=2026-10-24T06:14:43Z
+brief-blind mini-review-blind exit=0 end=2026-10-24T06:21:24Z
