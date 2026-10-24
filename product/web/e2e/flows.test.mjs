@@ -821,6 +821,27 @@ test("Import from Salesforce: a list view checked like a file; a field the user 
   } finally { crm.server.close(); }
 });
 
+test('Start from a sample: a synthetic pack goes through the real check and receipt; "Add me" puts my verified phone in it and marks it as my test contact', async () => {
+  // A synthetic number in the 90000000xx range stands in for the member's own verified phone.
+  const ws = (await pool.query("SELECT m.workspace_id, m.id FROM member m WHERE m.email = $1", [EMAIL])).rows[0];
+  await pool.query('INSERT INTO verified_test_phone (workspace_id, member_id, e164, verified_at) VALUES ($1,$2,$3,now()) ON CONFLICT (workspace_id, e164) DO UPDATE SET verified_at = now()', [ws.workspace_id, ws.id, '+919000000095']);
+  await page.goto(`${BASE}/contacts/import?from=sample`);
+  await page.getByLabel('Sample list').selectOption({ label: 'Health insurance renewals' });
+  await page.getByText('Policyholders whose renewal is due', { exact: false }).waitFor();
+  await page.getByRole('switch', { name: /Add me as a test contact/ }).click();
+  await page.getByRole('button', { name: 'Check this sample' }).click();
+  await page.getByText('3. What will happen to each row').waitFor({ timeout: 15000 });
+  await page.getByText('Row 14 is you: it is saved as your test contact.', { exact: false }).waitFor();
+  assert.match(await page.locator('.card', { hasText: '3. What will happen to each row' }).innerText(), /opted out, saved but never called/, 'the pack has opt-outs and the preview says so');
+  await page.getByLabel('Audience name').fill('Sample renewals (synthetic)');
+  await page.getByRole('button', { name: /^Save \d+ contacts$/ }).click();
+  await page.getByText('Sample list saved.').waitFor({ timeout: 15000 });
+  const me = await pool.query('SELECT test_member_id FROM contact WHERE workspace_id = $1 AND e164 = $2', [ws.workspace_id, '+919000000095']);
+  assert.equal(me.rows[0]?.test_member_id, ws.id, 'my phone is saved as my test contact');
+  const due = await pool.query("SELECT count(*)::int AS n FROM attribute a JOIN contact c ON c.id = a.contact_id WHERE c.workspace_id = $1 AND a.key = 'renewal_due'", [ws.workspace_id]);
+  assert.ok(due.rows[0].n >= 10, 'the due dates the agent says came in as details');
+});
+
 test('Integrations: a service can be connected from Settings, and the credentials never come back', async () => {
   const SECRET = 'hs-test-token-4f9a1c7e';
   await page.goto(`${BASE}/settings/integrations`);

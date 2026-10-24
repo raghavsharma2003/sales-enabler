@@ -125,6 +125,8 @@
   "source.crm.pull",
   "source.crm.sources",
   "source.map",
+  "source.sample.list",
+  "source.sample.load",
   "source.sync",
   "source.sync.schedule",
   "source.upload",

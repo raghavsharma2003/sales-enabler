@@ -8,6 +8,7 @@ import type { Module } from '../../app.ts';
 import { registerAudienceTools } from './audiences.ts';
 import { registerContactTools } from './contacts.ts';
 import { crmSyncJob, registerCrmTools } from './crm-tools.ts';
+import { registerSampleTools } from './sample-tools.ts';
 import { registerRetentionTools, retentionJob } from './retention.ts';
 import { registerSourceRoutes, registerSourceTools } from './sources.ts';
 
@@ -19,6 +20,7 @@ export const module: Module = {
     registerAudienceTools(registry);
     registerRetentionTools(registry);
     registerCrmTools(registry);
+    registerSampleTools(registry);
   },
   routes(router, deps) {
     registerSourceRoutes(router, deps);

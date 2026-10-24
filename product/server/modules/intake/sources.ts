@@ -176,8 +176,8 @@ function fileRows(t: Table, now: Date): { rows: InRow[]; notes: Map<number, stri
 }
 
 async function loadUpload(q: Queryable, ws: string, id: string, lock = false) {
-  const u = await one<{ id: string; content: string; status: string; source_id: string; receipt_id: string | null; mapping: Mapping | null; sha256: string | null; filename: string | null; converted: Record<string, unknown> | null }>(q,
-    `SELECT id, content, status, source_id, receipt_id, mapping, sha256, filename, converted FROM intake_upload WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
+  const u = await one<{ id: string; content: string; status: string; source_id: string; receipt_id: string | null; mapping: Mapping | null; sha256: string | null; filename: string | null; converted: Record<string, unknown> | null; test_member_id: string | null }>(q,
+    `SELECT id, content, status, source_id, receipt_id, mapping, sha256, filename, converted, test_member_id FROM intake_upload WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
   if (!u) throw new Error('no such upload in this workspace');
   if (u.status === 'receiving') throw new Error('this upload is still receiving parts; send the last part with final=true');
   return u;
@@ -369,6 +369,9 @@ export async function commitUpload(ctx: ToolCtx, i: { uploadId: string; override
         [u.receipt_id, rows.length, rowsOk, JSON.stringify(summary), ctx.workspaceId]);
       await ctx.q.query("UPDATE intake_upload SET status = 'committed', committed_at = now(), mapping = $2 WHERE id = $1", [u.id, JSON.stringify(t.mapping)]);
       if (u.converted && CRM_FROM.has(String(u.converted.from))) await rememberCrmRecords(ctx.q, ctx.workspaceId, src.id, t, i.consentPurpose);
+      // A sample pack with "Add me": the member's own phone, still verified now, becomes their test contact.
+      if (u.test_member_id) await ctx.q.query(`UPDATE contact c SET test_member_id = v.member_id FROM verified_test_phone v
+          WHERE c.workspace_id = $1 AND v.workspace_id = $1 AND v.member_id = $2 AND v.verified_at IS NOT NULL AND c.e164 = v.e164 AND c.erased_at IS NULL`, [ctx.workspaceId, u.test_member_id]);
       return { receiptId: u.receipt_id, rowsTotal: rows.length, rowsOk, counts: res.counts, issues: res.issues.slice(0, 50), audienceId: audienceId ?? null, ms };
 }
 

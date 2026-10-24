@@ -214,6 +214,8 @@ export type ToolName =
   | "source.list"
   | "source.map"
   | "source.receipt"
+  | "source.sample.list"
+  | "source.sample.load"
   | "source.sync"
   | "source.sync.schedule"
   | "source.upload"
@@ -1606,6 +1608,13 @@ export interface ToolInput {
   "source.receipt": {
     receiptId: string;
   };
+  /** Synthetic sample contact lists, one per starter agent, to try an import and a campaign; and whether you have a verified phone to add as a test contact (read) */
+  "source.sample.list": Record<string, never>;
+  /** Load a synthetic sample contact list as an import you can check before saving, optionally with your own verified phone as a test contact (draft) */
+  "source.sample.load": {
+    packId: "insurance-renewal" | "emi-reminder" | "cod-confirmation" | "admissions-followup" | "appointment-reminder" | "lead-qualification" | "service-feedback";
+    includeMe?: boolean;
+  };
   /** Re-pull a CRM list and import it with the mapping of its last import; unchanged records are skipped (read only on the CRM) (draft) */
   "source.sync": {
     sourceId: string;
@@ -2172,6 +2181,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "source.list": { risk: "read", needsApproval: false },
   "source.map": { risk: "draft", needsApproval: false },
   "source.receipt": { risk: "read", needsApproval: false },
+  "source.sample.list": { risk: "read", needsApproval: false },
+  "source.sample.load": { risk: "draft", needsApproval: false },
   "source.sync": { risk: "draft", needsApproval: false },
   "source.sync.schedule": { risk: "draft", needsApproval: false },
   "source.upload": { risk: "draft", needsApproval: false },

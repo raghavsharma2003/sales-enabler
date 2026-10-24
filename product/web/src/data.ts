@@ -138,6 +138,12 @@ export const crmLists = async (integrationId: string) => arr<{ id: string; name:
 export const crmPull = (integrationId: string, listId: string, sourceId?: string) => run<CrmPull>('source.crm.pull', { integrationId, listId, ...(sourceId ? { sourceId } : {}) });
 export const crmSources = async (kind: CrmKind) => arr<CrmSource>((await run<{ sources: any[] }>('source.crm.sources', { kind })).sources);
 
+// ---- synthetic sample lists, one per starter agent ----
+export interface SamplePackInfo { id: string; label: string; templateId: string; about: string; rows: number; columns: string[] }
+export const samplePacks = () => run<{ packs: SamplePackInfo[]; testPhone: string | null }>('source.sample.list', {});
+export const sampleLoad = (packId: string, includeMe: boolean) =>
+  run<{ uploadId: string; rows: number; testRow: number | null }>('source.sample.load', { packId, ...(includeMe ? { includeMe: true } : {}) });
+
 /** Agents by name, for the import screen's "Which agent will call them?" (no per-agent detail fetched). */
 export async function agentNames(): Promise<{ id: string; name: string }[]> {
   return arr<any>((await run<{ agents: unknown[] }>('agent.list', {})).agents).map(a => ({ id: a.id, name: a.name }));

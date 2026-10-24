@@ -8051,6 +8051,61 @@
    }
   },
   {
+   "name": "source.sample.list",
+   "risk": "read",
+   "summary": "Synthetic sample contact lists, one per starter agent, to try an import and a campaign; and whether you have a verified phone to add as a test contact",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "source.sample.load",
+   "risk": "draft",
+   "summary": "Load a synthetic sample contact list as an import you can check before saving, optionally with your own verified phone as a test contact",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "packId": {
+      "type": "string",
+      "enum": [
+       "insurance-renewal",
+       "emi-reminder",
+       "cod-confirmation",
+       "admissions-followup",
+       "appointment-reminder",
+       "lead-qualification",
+       "service-feedback"
+      ]
+     },
+     "includeMe": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "packId"
+    ],
+    "description": "Load a sample pack as an upload; then check it with source.map and save it with source.commit, as with a file. includeMe adds your own verified phone as a test contact."
+   }
+  },
+  {
    "name": "source.sync",
    "risk": "draft",
    "summary": "Re-pull a CRM list and import it with the mapping of its last import; unchanged records are skipped (read only on the CRM)",

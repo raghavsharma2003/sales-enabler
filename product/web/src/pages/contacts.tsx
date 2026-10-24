@@ -113,7 +113,8 @@ Vikram Rao,9000000015,Telugu,Patna,03/02/2027,A-10238
 const CrmImport = lazy(() => import('./import-crm.tsx'));
 // The memory review queue is its own chunk too.
 const MemoryReview = lazy(() => import('./memory-review.tsx'));
-const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }, { id: 'salesforce', label: 'From Salesforce' }] as const;
+const SampleImport = lazy(() => import('./import-sample.tsx'));
+const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'sample', label: 'From a sample' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }, { id: 'salesforce', label: 'From Salesforce' }] as const;
 type ImportFrom = (typeof SOURCES)[number]['id'];
 
 function Import() {
@@ -123,7 +124,7 @@ function Import() {
   return (
     <>
       <Tabs label="Where the list comes from" value={from} onChange={v => setQs({ from: v === 'file' ? null : v })} items={SOURCES.map(x => ({ ...x }))} />
-      {from === 'file' ? <FileImport /> : <Suspense fallback={<Card><Skeleton rows={3} /></Card>}><CrmImport kind={from} /></Suspense>}
+      {from === 'file' ? <FileImport /> : <Suspense fallback={<Card><Skeleton rows={3} /></Card>}>{from === 'sample' ? <SampleImport /> : <CrmImport kind={from} />}</Suspense>}
     </>
   );
 }

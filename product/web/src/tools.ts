@@ -5,7 +5,7 @@ export const TOOLS = {
   handoffs: ['handoff.list', 'handoff.claim', 'handoff.resolve'],
   shell: ['alert.list', 'alert.ack'],
   agents: ['agent.list', 'agent.get', 'agent.create', 'template.list', 'brief.edit', 'stack.set', 'version.publish', 'simcaller.list', 'test.simulate', 'test.chat', 'test.chat_keep', 'test.browser_call', 'money.estimate'],
-  contacts: ['contact.list', 'contact.search', 'contact.get', 'contact.memory.get', 'attempt.list', 'audience.list', 'audience.get', 'audience.create', 'source.upload', 'source.map', 'source.commit', 'fact.review.list', 'fact.review.decide', 'integration.list', 'source.crm.lists', 'source.crm.pull', 'source.crm.sources', 'source.crm.budget', 'source.crm.budget.set', 'source.sync', 'source.sync.schedule', 'fact.approve', 'fact.forget'],
+  contacts: ['contact.list', 'contact.search', 'contact.get', 'contact.memory.get', 'attempt.list', 'audience.list', 'audience.get', 'audience.create', 'source.upload', 'source.map', 'source.commit', 'source.sample.list', 'source.sample.load', 'fact.review.list', 'fact.review.decide', 'integration.list', 'source.crm.lists', 'source.crm.pull', 'source.crm.sources', 'source.crm.budget', 'source.crm.budget.set', 'source.sync', 'source.sync.schedule', 'fact.approve', 'fact.forget'],
   campaigns: ['campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.funnel', 'campaign.launch', 'campaign.resume', 'campaign.stop', 'campaign.window.narrow', 'campaign.window.widen'],
   calls: ['call.search', 'call.get', 'call.explain'],
   insights: ['issue.list', 'monitor.list', 'monitor.create', 'proposal.list', 'proposal.probe', 'proposal.readiness', 'proposal.accept', 'learning.propose', 'experiment.list', 'experiment.start', 'lesson.list', 'script.pacing.restore'],

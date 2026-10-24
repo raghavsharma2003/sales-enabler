@@ -28,6 +28,10 @@ const screens = (id) => [
     await p.getByRole('button', { name: 'Check the file' }).click();
     const head = p.getByRole('heading', { name: /says from each person's record/ });
     await head.waitFor({ timeout: 15000 }); await head.scrollIntoViewIfNeeded(); await p.waitForTimeout(400); } }],
+  // A sample pack checked against the starter agent it was made for.
+  ['contacts-import-sample', '/contacts/import?from=sample', { after: async (p) => {
+    await p.getByLabel('Sample list').selectOption({ label: 'Loan EMI reminders' }); await p.getByRole('button', { name: 'Check this sample' }).click();
+    await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); await p.getByText(/^Loaded \d+ rows/).scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
   // CRM import: Zoho is not connected (the empty state); HubSpot is connected to a local fake CRM (VP_CRM_FAKE_URL on the server).
   ['contacts-import-crm-empty', '/contacts/import?from=zoho_crm', { after: async (p) => { await p.getByText('Zoho CRM is not connected').waitFor(); } }],
   ['contacts-import-hubspot', '/contacts/import?from=hubspot', { before: async (p) => { await connectHubspot(p); }, after: async (p) => {
