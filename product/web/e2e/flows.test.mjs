@@ -233,7 +233,7 @@ test('A3: Pause, Resume and Stop run at once with no approval card, and the pill
 
 test('Operator: an A2 approval card from the chat holds, then the card and the server agree', async () => {
   await page.goto(BASE + '/');
-  await page.locator('#dock-input').fill('Please top up my wallet');
+  await page.locator('#dock-input').fill('Please top up my wallet with ₹500');
   await page.keyboard.press('Enter');
   const card = page.locator('.dock article[aria-label^="approval card"]').first();
   await card.waitFor({ timeout: 10000 });
@@ -394,7 +394,7 @@ test('Copy: no tool id, raw argument name, internal code or milli-unit reaches a
   // states that only exist after an action: the import verdicts, the approval sheet, the Operator's cards, the test panel
   await page.goto(BASE + '/contacts/import'); await page.getByRole('button', { name: 'Use a made-up sample' }).click(); await page.getByRole('button', { name: 'Check the file' }).click(); await page.getByText('3. What will happen to each row').waitFor(); await scan('import verdicts');
   await page.goto(BASE + '/'); await page.getByRole('button', { name: 'Review' }).first().click(); await sheet().waitFor(); await page.waitForTimeout(500); await scan('approval sheet'); await page.keyboard.press('Escape');
-  await page.locator('#dock-input').fill('make a plan: pune audience and top up'); await page.keyboard.press('Enter'); await page.locator('.dock article').first().waitFor({ timeout: 10000 }); await page.waitForTimeout(800); await scan('operator cards');
+  await page.locator('#dock-input').fill('make a plan: pune audience and top up ₹500'); await page.keyboard.press('Enter'); await page.locator('.dock article').first().waitFor({ timeout: 10000 }); await page.waitForTimeout(800); await scan('operator cards');
   await page.goto(`${BASE}/agents/${ids.agent}`); await page.getByRole('radio', { name: 'Test her' }).click(); await page.getByRole('button', { name: /^Run \d+ practice callers?$/ }).click(); await page.locator('.simlist > li').first().waitFor({ timeout: 30000 }); await page.locator('.simlist summary').first().click(); await scan('practice results');
   assert.deepEqual(bad, [], 'developer text on screen:\n' + bad.join('\n'));
 });
@@ -431,9 +431,10 @@ test('Ask the assistant on a launch blocker with no page: the dock gets the sent
   await card.waitFor({ timeout: 10000 });
   assert.match(await card.innerText(), /Waits for your approval|Runs now/i, 'the plan says which steps wait for a tap');
   // The plan card is shown before the server has filed the step's proposal, so wait for the proposal instead of reading it at once.
-  const held = await page.waitForFunction(async () => (await (await fetch('/v1/actions?status=proposed')).json()).actions.some(a => a.tool === 'cap.raise'), null, { timeout: 15000 }).then(() => true, () => false);
-  assert.ok(held, 'the server holds the spend step for the person\'s tap');
-  assert.equal((await actions('executed')).some(a => a.tool === 'cap.raise'), false, 'nothing that spends has run: the plan only waits');
+  // The blocker named no amount, so the scripted plan's held step changes policy instead of inventing a spending limit.
+  const held = await page.waitForFunction(async () => (await (await fetch('/v1/actions?status=proposed')).json()).actions.some(a => a.tool === 'operator.autonomy.raise'), null, { timeout: 15000 }).then(() => true, () => false);
+  assert.ok(held, 'the server holds the approval step for the person\'s tap');
+  assert.equal((await actions('executed')).some(a => a.tool === 'operator.autonomy.raise'), false, 'nothing that needs a tap has run: the plan only waits'); 
 });
 
 test('A plan step the server refuses says so plainly, offers a fix, and the fixed step holds, approves and executes', async () => {

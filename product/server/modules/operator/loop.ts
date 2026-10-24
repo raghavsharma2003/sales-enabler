@@ -293,7 +293,9 @@ export async function runTurn(inp: TurnInput): Promise<void> {
     const def = registry.get(name);
     // A spend, cap or top-up card must carry the amount the member asked for (op6: rupees x100 written into InrMilli on
     // 3 cards in 2 runs). On a mismatch no card is made, and the model is told both figures.
-    const money = def && needsHumanApproval(def.risk) ? spendMismatch(name, args, clean.text) : null;
+    // After the role check and validation, so those refusals keep their own reasons.
+    const valid = (() => { try { def?.input(args); return true; } catch { return false; } })();
+    const money = def && valid && allowedNames.has(name) && needsHumanApproval(def.risk) ? spendMismatch(name, args, clean.text) : null;
     if (money) return { status: 'not_executed', reason: money, path: money.split(':')[0] };
     if (def && allowedNames.has(name) && def.risk !== 'read' && !asked(name)) {
       if (failedWrites.size && !failedWrites.has(name) && !doneWrites.has(name))
@@ -539,17 +541,26 @@ export function memberRupees(text: string, bareToo = true): number[] {
   for (const m of text.matchAll(/(₹|\brs\.?|\binr)?\s?(\d[\d,]*(?:\.\d+)?)\s*(lakhs?|lacs?|crores?|cr|k|thousand)?\b(\s*(?:rupees|rs\b|inr\b))?/gi)) {
     const v = Number(m[2]!.replace(/,/g, '')) * (m[3] ? SCALE[m[3].toLowerCase()] ?? 1 : 1);
     if (!Number.isFinite(v)) continue;
-    (m[1] || m[4] || m[3] ? marked : bare).push(v);
+    const isMarked = !!(m[1] || m[4] || m[3]);
+    // A bare number that is plainly something else is never rupees: "step 1", "#2", "50 people", "11 am", "3 days".
+    const before = text.slice(Math.max(0, m.index! - 12), m.index!), after = text.slice(m.index! + m[0].length, m.index! + m[0].length + 14);
+    if (!isMarked && (/\b(step|item|row|line|no\.?|number|#|version|v)\s*$/i.test(before) || /^\s*(people|persons?|contacts?|calls?|minutes?|mins?|hours?|hrs?|days?|weeks?|months?|am|pm|%|percent|times|steps?|seconds?|secs?|attempts?|agents?|campaigns?|numbers?|rows?|of\b)/i.test(after))) continue;
+    (isMarked ? marked : bare).push(v);
   }
   return marked.length ? marked : bareToo ? bare : [];
 }
-/** A reason when an approval-class call's *InrMilli argument matches none of the member's amounts; null when it matches
- *  or the member named no amount. */
+/** A reason when an approval-class call's *InrMilli argument matches none of the member's amounts, or when a money tool
+ *  (cap, wallet, top-up) carries an amount the member never named; null when it matches. */
 export function spendMismatch(tool: string, args: unknown, text: string): string | null {
   if (!args || typeof args !== 'object') return null;
   // Bare numbers count as rupees only for the money tools themselves; elsewhere ("launch it for 50 people") only ₹ figures.
-  const asked = memberRupees(text, /^(cap|wallet|budget)\.|topup/.test(tool));
-  if (!asked.length) return null;
+  const moneyTool = /^(cap|wallet|budget)\.|topup/.test(tool);
+  const asked = memberRupees(text, moneyTool);
+  if (!asked.length) {
+    // The member named no amount: for the money tools the model must not choose one (integrator, after op6).
+    const k = Object.keys(args as Record<string, unknown>).find(x => /inrmilli$/i.test(x));
+    return moneyTool && k ? `${k}: the client has not said how much. Ask them for the amount in rupees; never choose one yourself. No card was made.` : null;
+  }
   for (const [k, v] of Object.entries(args as Record<string, unknown>)) {
     if (!/inrmilli$/i.test(k) || typeof v !== 'number') continue;   // capInrMilli, inrMilli, ...
     const rupees = v / 1000;

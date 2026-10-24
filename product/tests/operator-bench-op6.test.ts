@@ -72,7 +72,7 @@ test('money: a card amount 10x, 100x or 1000x off (or a tenth) is caught; the ma
   assert.equal(spendMismatch('cap.raise', { capInrMilli: 2_000_000 }, asked), null);
   assert.equal(spendMismatch('wallet.topup', { inrMilli: 200_000_000 }, 'Top up the wallet with ₹2 lakh'), null);
   assert.ok(spendMismatch('wallet.topup', { inrMilli: 5_000_000 }, 'Top up the wallet with ₹50,000'), 'op6 mini r2 ref-topup');
-  assert.equal(spendMismatch('cap.raise', { capInrMilli: 2_000_000 }, 'Raise the cap a bit'), null, 'no amount named: nothing to compare');
+  assert.ok(spendMismatch('cap.raise', { capInrMilli: 2_000_000 }, 'Raise the cap a bit'), 'no amount named: the model must ask, not choose');
 });
 
 test('money: a wrong-amount spend card is never made; the model is told both figures; the retry makes the right card', { skip }, async () => {
@@ -112,4 +112,18 @@ test('claims: read answers are not changes ("20 calls have been made"), real cla
     'Estimated cost ₹9.61 to ₹24.02 (incl. GST), with a suggested cap set at ₹100.']) assert.ok(!claimsChange(t, false), t);
   for (const t of ["Draft agent created for EMI due reminders… it's not live yet.", "I've made the change.", 'The agent is now set to speak Hindi.', "I've updated the window."])
     assert.ok(claimsChange(t, false), t);
+});
+
+test('money: no amount named means no money card (the model must ask); "step 1" and other counts are not rupees', () => {
+  assert.match(spendMismatch('cap.raise', { scope: 'workspace', period: 'daily', capInrMilli: 2_000_000 }, 'Raise the cap a bit')!,
+    /capInrMilli: the client has not said how much\. Ask them for the amount in rupees; never choose one yourself\. No card was made\./);
+  assert.ok(spendMismatch('wallet.topup', { inrMilli: 500_000 }, 'Please top up my wallet'));
+  assert.equal(spendMismatch('wallet.topup', { inrMilli: 500_000 }, 'Please top up my wallet with ₹500'), null);
+  // The web's "Ask the assistant to fix it" sentence (e2e flow): "step 1" is not ₹1; the ₹ figure in the label counts.
+  assert.equal(spendMismatch('cap.raise', { capInrMilli: 20_000_000 }, 'Fix step 1 of the plan: Raise a spending limit: daily spending limit of ₹20,000'), null);
+  assert.deepEqual(memberRupees('Fix step 1 of the plan'), []);
+  assert.deepEqual(memberRupees('Launch it for 50 people at 11 am for 3 days'), []);
+  assert.deepEqual(memberRupees('raise the cap to 2000'), [2000]);
+  // A campaign's own cap is not one of the money tools: with no ₹ figure, nothing is compared.
+  assert.equal(spendMismatch('campaign.launch', { id: 'x', capInrMilli: 100_000 }, 'Launch the campaign'), null);
 });

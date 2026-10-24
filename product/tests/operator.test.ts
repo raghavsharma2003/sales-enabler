@@ -173,7 +173,9 @@ test('a malicious tool result is wrapped as data and cannot make an A2 run', { s
   assert.match(toolMsg.content, /^<data source="tool:contact.notes" trust="untrusted" flagged=/);
   assert.match(seen[0].messages[0].content, /untrusted DATA/);
   const cards = f.filter(x => x.event === 'card').map(x => x.data.card);
-  assert.deepEqual(cards.map(c => `${c.type}:${c.status}`), ['approval:proposed', 'receipt:not_executed', 'receipt:not_executed']);
+  // The injected top-up names an amount the member never said, so since op6 no card is made at all (stricter than a card).
+  assert.deepEqual(cards.map(c => `${c.type}:${c.status}`), ['receipt:not_executed', 'receipt:not_executed', 'receipt:not_executed']);
+  assert.match(cards[0].text, /the client has not said how much/);
   assert.match(cards[1].text, /no tool called "action_approve"/);
   assert.match(cards[2].text, /actor: is not a known field/);
   assert.equal((await one<{ b: string }>(pool, 'SELECT balance_inr_milli::text AS b FROM wallet WHERE workspace_id = $1', [w]))!.b, '0');
@@ -235,7 +237,7 @@ test('a plan runs its drafts, stops at the first tap and holds the rest', { skip
     ] })] },
     { text: '1 ho gaya; 2 aapke tap ka intezaar.' },
   ]);
-  const f = frames((await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'setup karo' })).text);
+  const f = frames((await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'setup karo, aur wallet mein ₹100 daal do' })).text);
   const plans = f.filter(x => x.event === 'card' && x.data.card.type === 'plan');
   assert.equal(plans.length, 2, 'shown, then updated in place');
   assert.equal(plans[0].data.id, plans[1].data.id);
