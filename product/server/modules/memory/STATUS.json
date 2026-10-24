@@ -13,14 +13,15 @@
   "memory.policy.set"
  ],
  "tests": {
-  "passed": 36,
-  "total": 36,
+  "passed": 41,
+  "total": 41,
   "files": {
    "memory.test.ts": 17,
    "memory-retention.test.ts": 4,
    "calls-outcome-import.test.ts": 6,
    "memory-sweep.test.ts": 6,
-   "memory-review.test.ts": 3
+   "memory-review.test.ts": 3,
+   "memory-relational.test.ts": 5
   }
  },
  "works": [
@@ -41,7 +42,8 @@
   "erasure.pending: recording deletes the runtime has not confirmed (tries, last error), and erased people's calls still holding audio or words",
   "erasure also redacts an erased person's verified outcomes (reference and amount) and their pending outcome-import preview rows (redactErasedOutcomes, run by memory.transcript_purge)",
   "memory.retention nightly job (retention.ts): expired facts, review-tier proposals unreviewed for 14 days and extraction receipts past the transcripts window are deleted for good, with no resurrection; one counts-only audit row per workspace; memory.policy.get.retention {rules, dueNow, lastSweep}",
-  "workspace-wide memory review queue: fact.review.list (proposed facts across contacts, oldest first, exact quote, call link, the date it is dropped) and fact.review.decide (a person approves, corrects then approves, or rejects up to 50 at once; rejected proposals are deleted); web /contacts/review in its own lazy chunk"
+  "workspace-wide memory review queue: fact.review.list (proposed facts across contacts, oldest first, exact quote, call link, the date it is dropped) and fact.review.decide (a person approves, corrects then approves, or rejects up to 50 at once; rejected proposals are deleted); web /contacts/review in its own lazy chunk",
+  "relational memory: the brief carries 'last: outcome=\u2026' (the last real call's outcome for the same purpose) and at most one 'personal:' detail; personal keys (life_event, relocation) are kept only when the caller agreed to her keeping it in the same call (keepAgreements, in code); a caller's 'yeh yaad mat rakhna' keeps nothing from that call and never reaches the model; 'mere baare mein kuch yaad mat rakhna' / 'sab bhool jao' forgets them at once with a counts-only forget_request (code-detected, never a model marker)"
  ],
  "untested": [
   "real LLM extraction quality",
@@ -56,6 +58,7 @@
   "campaigns: call 'memory.brief' {contactId, agentId} at dial time; treat not_executed or status != 'ok' as memory=not_loaded and dial without memory",
   "agents: agent_version.config.agent.category and config.agent.memory.{read,write} are what memory reads for purpose and switches",
   "money: price memory LLM tokens (usage is recorded on memory_extraction.usage; no cost_line is written because the LLM door does not price)",
-  "workspace/compliance UI: pages for contact.memory.get, fact.approve queue, memory.policy.get/set"
+  "workspace/compliance UI: pages for contact.memory.get, fact.approve queue, memory.policy.get/set",
+  "voice: use the memory brief only after identity is verified where required; at most one memory item per call, never in an ask turn; stop using memory mid-call on the forget phrases; the ask-to-keep shape for a volunteered personal detail (proposal sent to the voice builder 2026-10-24)"
  ]
 }

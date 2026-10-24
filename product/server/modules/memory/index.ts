@@ -17,7 +17,7 @@ import { contactMinorStatus } from './minor.ts';
 import { purgeTranscripts } from './transcript-purge.ts';
 import { retentionStatus, sweepMemory, UNREVIEWED_DAYS } from './retention.ts';
 import { dayTime } from '../campaigns/retry.ts';
-import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
+import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, forgetAsked, gate, keepAgreements, valueOk, type Drop, type Purpose } from './gates.ts';
 
 interface Policy { enabled: boolean; undoMinutes: number; allowedCategories: Record<string, string> }
 
@@ -59,7 +59,7 @@ At most 8 facts. None is a fine answer.`;
 
 type Counts = Partial<Record<Drop | 'proposed' | 'stored' | 'superseded' | 'review', number>>;
 
-interface Loaded { contactId: string; purpose: Purpose; pol: Policy; callerTurns: string[]; transcript: string; digest: string; startedAt: Date; hasConsent: boolean }
+interface Loaded { contactId: string; purpose: Purpose; pol: Policy; callerTurns: string[]; agreements: number[]; transcript: string; digest: string; startedAt: Date; hasConsent: boolean }
 type Load = { skip: string } | { prior: { status: string; reason: string | null; counts: Counts } } | Loaded;
 
 /** Read everything extraction needs and every skip condition. Runs twice: through the pool in prepare() (before the
@@ -93,11 +93,14 @@ async function load(q: Queryable, ws: string, conversationId: string, lock: bool
     .map((t: any) => ({ speaker: t?.speaker ?? t?.role, text: typeof t?.text === 'string' ? t.text : '' }));
   const callerTurns = lines.filter((t: any) => isCaller(t.speaker) && t.text).map((t: any) => t.text as string);
   if (!callerTurns.length) return { skip: 'no_caller_speech' };
+  // The caller said not to keep this (or to forget them): nothing from this call goes to the model or to memory.
+  const forget = forgetAsked(callerTurns);
+  if (forget) return { skip: forget === 'all' ? 'caller_asked_to_forget' : 'caller_asked_not_to_keep' };
 
   const consent = await one<{ granted: boolean }>(q, `SELECT granted FROM consent_record WHERE workspace_id = $1 AND contact_id = $2 AND purpose IN ($3, 'memory')
     ORDER BY created_at DESC LIMIT 1`, [ws, conv.contact_id, am.purpose]);
   const transcript = lines.map((t: any) => `${isCaller(t.speaker) ? 'CALLER' : 'ASSISTANT'}: ${t.text}`).join('\n');
-  return { contactId: conv.contact_id, purpose: am.purpose, pol, callerTurns, transcript, digest: createHash('sha256').update(transcript).digest('hex'),
+  return { contactId: conv.contact_id, purpose: am.purpose, pol, callerTurns, agreements: keepAgreements(lines, isCaller), transcript, digest: createHash('sha256').update(transcript).digest('hex'),
     startedAt: conv.started_at, hasConsent: consent?.granted === true };
 }
 
@@ -131,7 +134,20 @@ async function extract(ctx: ToolCtx, conversationId: string, prepared: Prepared 
 
   const l = await load(q, ws, conversationId, true);
   if ('prior' in l) return { status: l.prior.status, reason: l.prior.reason, counts: l.prior.counts, repeated: true };
-  if ('skip' in l) return record('skipped', l.skip);
+  if ('skip' in l) {
+    // "Forget me", in their own words and read in code (never a model's marker): what is held about them goes now, and the
+    // request is recorded as done with a counts-only receipt. The contact id comes from the locked conversation row.
+    if (l.skip === 'caller_asked_to_forget') {
+      const c = await one<{ contact_id: string | null }>(q, 'SELECT contact_id FROM conversation WHERE id = $1 AND workspace_id = $2', [conversationId, ws]);
+      if (c?.contact_id) {
+        const gone = await forgetContactMemory(q, ws, c.contact_id);
+        await q.query(`INSERT INTO forget_request (workspace_id, contact_id, scope, requested_via, evidence, status, receipt, done_at)
+          VALUES ($1,$2,'forget_memory','caller',$3,'done',$4, now())`, [ws, c.contact_id, JSON.stringify({ conversationId, detectedBy: 'code' }),
+          JSON.stringify({ factsRemoved: gone.facts, surfaces: { memory_fact: 'removed' } })]);
+      }
+    }
+    return record('skipped', l.skip);
+  }
   // Anything that changed between the model call and now voids this run; it can be retried.
   if (!prepared || prepared.load !== 'ok') return record('failed', 'state_changed_during_extraction');
   if (prepared.digest !== l.digest) return record('failed', 'transcript_changed');
@@ -148,7 +164,7 @@ async function extract(ctx: ToolCtx, conversationId: string, prepared: Prepared 
   const bump = (k: keyof Counts) => { counts[k] = (counts[k] ?? 0) + 1; };
   const accepted = [];
   for (const p of proposed) {
-    const g = gate(p, { callerTurns: l.callerTurns, purpose: l.purpose, allowedCategories: l.pol.allowedCategories, hasConsent: l.hasConsent });
+    const g = gate(p, { callerTurns: l.callerTurns, agreements: l.agreements, purpose: l.purpose, allowedCategories: l.pol.allowedCategories, hasConsent: l.hasConsent });
     if (g.ok) accepted.push(g.fact); else bump(g.drop);
   }
   // Later in the call wins within one call: write in the order the caller said them.
@@ -217,8 +233,14 @@ async function brief(ctx: ToolCtx, i: { contactId: string; agentId: string; atte
   if (age === 'minor' || age === 'unclear') return empty(age === 'minor' ? 'minor' : 'age_unclear');
   const facts = await usableFacts(q, ws, i.contactId, am.purpose);
   const lead = i.attemptId ? await callbackLead(q, ws, i.contactId, i.attemptId) : null;
-  if (!facts.length && !lead) return empty('empty');
-  const b = compileBrief(facts, new Date(), lead ?? undefined);       // throws BriefTooLarge; the registry returns not_executed and the caller dials without memory
+  // The last real call's outcome for the same purpose: what a returning caller expects her to know happened.
+  const last = await one<{ outcome: string; at: Date }>(q, `SELECT cv.outcome, coalesce(cv.ended_at, cv.started_at) AS at FROM conversation cv
+      LEFT JOIN agent_version v ON v.id = cv.agent_version_id
+    WHERE cv.workspace_id = $1 AND cv.contact_id = $2 AND cv.channel <> 'test' AND cv.outcome IS NOT NULL AND coalesce(cv.run_manifest->>'test', 'false') <> 'true'
+      AND v.config->'agent'->>'category' = $3
+    ORDER BY coalesce(cv.ended_at, cv.started_at) DESC LIMIT 1`, [ws, i.contactId, am.purpose]);
+  if (!facts.length && !lead && !last) return empty('empty');
+  const b = compileBrief(facts, new Date(), lead ?? undefined, last ?? undefined);       // throws BriefTooLarge; the registry returns not_executed and the caller dials without memory
   return { text: b.text, status: 'ok', factIds: b.factIds, bytes: b.bytes };
 }
 

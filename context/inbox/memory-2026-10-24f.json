@@ -1,0 +1,53 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.relational-memory-memory-side",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Relational memory, the memory half (owner: 'the relationalness').\n- The brief adds two groups: 'last: outcome=<value> (N days ago)', the last non-test call's outcome for the same purpose; and 'personal:', at most ONE detail (life_event or relocation).\n- A personal detail is stored only when she asked to keep it and the caller's next turn affirmed it in the same call (keepAgreements, in code; Hinglish, English, Devanagari). Otherwise it is dropped and counted 'personal_not_agreed'. Refused categories are checked first.\n- A caller's 'yeh yaad mat rakhna' or 'don't remember this' means nothing from that call is extracted or sent to the model.\n- 'Mere baare mein kuch yaad mat rakhna' or 'sab bhool jao' deletes everything held now and files a forget_request done with a counts-only receipt. It is read in code from the caller's own words, never a model's marker, so it needs no member approval.",
+   "rationale": "A returning caller expects her to know the last promise, the last outcome and one thing they chose to share, and nothing creepy or unconsented. The person's own request to be forgotten is honoured at once (DPDP). It is a risk-lowering deletion of their own data, read from their words.",
+   "reverse_if": "Review shows the forget-all phrases firing on lines that were not a request about memory (false positives): then file the request for a person to confirm instead of deleting at once. Or listeners find the personal line intrusive on a call type: then turn 'personal' off by default for that job."
+  },
+  {
+   "id": "measure.2026-10-24.relational-memory-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/memory-relational.test.ts 5/5:\n(1) Agreement and forget phrases: 5 agreement cases (Hinglish, English, Devanagari; 'Nahi, mat rakhiye' and a yes to something else are not agreement) and 7 forget cases ('yaad dila dena' and 'bhool gaya tha' are not forget requests).\n(2) A relocation without the ask-and-yes is dropped as personal_not_agreed; with it, it is stored and shows as 'personal: relocation=…'.\n(3) The brief shows 'last: outcome=promise_to_pay (2 days ago)' and the newest of two personal details only, and never their words; a test call's outcome never counts; the group order is pinned.\n(4) 'yeh yaad mat rakhna' gives skipped/caller_asked_not_to_keep, the model is not called, earlier memory stays.\n(5) 'mere baare mein kuch yaad mat rakhna' deletes the 1 held fact, records forget_request {forget_memory, done, caller, factsRemoved 1, detectedBy code} with no words, and the brief is empty.\nmemory.test.ts' refused-category case gained an ask-and-yes, since a sensitive personal detail allowed by policy still needs the caller's agreement.",
+   "n": 5,
+   "method": "node:test on throwaway Postgres 16 (NODE_ENV=test), scripted model",
+   "path": "product/tests/memory-relational.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.relational-memory-voice-half",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "memory builder",
+   "title": "The voice half of relational memory. Sent to the voice builder 2026-10-24:\n- memory used only after identity is verified where required;\n- at most one item per call, never in an ask turn;\n- stop using memory mid-call on the forget phrases, ideally with a 'forget_request' moment;\n- the ask-to-keep shape for a volunteered personal detail.\nPlus the joint returning-caller practice scenario (promise recall; zero creepy or unconfirmed references).",
+   "closes_when": "The voice runtime gates the brief on identity, uses at most one item, honours a mid-call forget, and a returning-caller practice run passes: the promise is recalled and there are zero unconfirmed or creepy references, with n and the method recorded."
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.relational-memory-tests",
+   "to": "decision.2026-10-24.relational-memory-memory-side",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.relational-memory-memory-side",
+   "to": "open.2026-10-24.relational-memory-voice-half",
+   "relation": "leaves-open"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "relational-memory-memory-side",
+   "details": "The memory half of relational memory: the brief's last outcome and single personal detail; personal details need the caller's agreement, read in code; the forget phrases keep nothing, or forget them at once. Verified: tests/memory-relational.test.ts 5/5 plus memory suites. Not verified: the voice half (open.2026-10-24.relational-memory-voice-half), the returning-caller practice scenario, and real callers' phrasing."
+  }
+ ]
+}

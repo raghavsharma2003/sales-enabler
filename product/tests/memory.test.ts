@@ -94,6 +94,7 @@ test('quotes not from a caller turn are dropped and counted; caller quotes are k
 
 test('refused categories are refused by label or by detector, unless policy and basis explicitly allow', { skip }, async () => {
   const turns: [string, string][] = [['agent', 'Kaise hain?'], ['caller', 'Main abhi hospital mein hoon, sugar ki bimari hai.'],
+    ['agent', 'Kya main yeh yaad rakhun, agli baar ke liye?'], ['caller', 'Haan ji, rakh lijiye.'],
     ['caller', 'Hum log mandir jaate hain har somvar.'], ['caller', 'Mera card number 4111 1111 1111 1111 hai.'], ['caller', 'Mere bete ka school exam hai.']];
   const facts = [
     { kind: 'context', key: 'life_event', value: 'in hospital', quote: 'Main abhi hospital mein hoon', ...base },                 // detector: health

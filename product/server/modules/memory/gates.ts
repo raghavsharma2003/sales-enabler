@@ -71,7 +71,7 @@ export interface Proposed {
 
 export type Drop =
   | 'bad_shape' | 'bad_kind' | 'bad_key' | 'value_lint' | 'quote_not_caller'
-  | 'purpose_mismatch' | 'no_basis' | 'no_consent' | 'refused_category' | 'ephemeral';
+  | 'purpose_mismatch' | 'no_basis' | 'no_consent' | 'refused_category' | 'ephemeral' | 'personal_not_agreed';
 
 export interface Accepted {
   kind: Kind; key: string; value: string; quote: string; quoteAt: number;
@@ -80,6 +80,7 @@ export interface Accepted {
 
 export interface GateCtx {
   callerTurns: string[];                       // caller turns of the transcript of record, in order
+  agreements?: number[];                       // caller-turn indexes where they agreed to her keeping something (keepAgreements)
   purpose: Purpose;                            // the call's purpose family
   allowedCategories: Record<string, string>;   // workspace policy: {category: basis}
   hasConsent: boolean;                         // a granted consent_record exists for this contact and purpose
@@ -122,7 +123,42 @@ export function gate(p: unknown, g: GateCtx): { ok: true; fact: Accepted } | { o
   const labelled = typeof f.category === 'string' && (REFUSED as readonly string[]).includes(f.category) ? [f.category as Refused] : [];
   const found = [...new Set([...labelled, ...detectRefused(quote, value)])];
   for (const c of found) if (g.allowedCategories[c] !== basis) return { ok: false, drop: 'refused_category' };
+  // A personal detail is kept only when they agreed to her keeping it, in the same call, after they said it.
+  if (PERSONAL_KEYS.includes(key) && !(g.agreements ?? []).some(i => i >= Math.floor(quoteAt / 1_000_000))) return { ok: false, drop: 'personal_not_agreed' };
 
   return { ok: true, fact: { kind: kind as Kind, key, value, quote, quoteAt, purpose: purpose as Purpose, basis: basis as Basis,
     retention: retention as Accepted['retention'], category: found[0] ?? null, tier: writeTier(kind as Kind) } };
+}
+
+// ---- relational memory: personal details only with the caller's agreement; forget when they say so -------------------
+/** Personal details (as opposed to how they like to talk, what was promised, or business context). */
+export const PERSONAL_KEYS: readonly string[] = ['life_event', 'relocation'];
+
+// Her ask to keep something ("kya main yeh yaad rakhun?", "note kar loon?", "shall I remember that?") and their yes.
+const ASK_KEEP = /\b(yaad rakh(un|oon|u|lu|loon|ungi|engi)|note kar (lun|loon|lu|lungi)|likh (lun|loon|lungi)|remember (that|this)|keep (that|this) in mind|make a note)\b|याद रख(ूं|ूँ|ू|ूंगी)|नोट कर (लूं|लूँ|लू)/i;
+const AFFIRM = /^\s*(haan|haa|han|ji|jee|ji haan|haan ji|zaroor|jaroor|bilkul|theek hai|thik hai|ok|okay|yes|yeah|sure|please do|of course|हाँ|हां|जी|ज़रूर|जरूर|बिल्कुल|ठीक है)(?=$|[\s,.!?।])/i;
+const DENY = /\b(nahi|nahin|mat|no|don'?t|na)\b|नहीं|मत/i;
+
+/** Indexes (into the caller turns) of a caller's yes right after she asked to keep something. */
+export function keepAgreements(lines: { speaker: string; text: string }[], isCaller: (s: unknown) => boolean): number[] {
+  const out: number[] = [];
+  let callerIdx = -1, asked = false;
+  for (const l of lines) {
+    if (isCaller(l.speaker)) {
+      callerIdx++;
+      if (asked && AFFIRM.test(l.text) && !DENY.test(l.text.split(/[,.!?]/)[0])) out.push(callerIdx);
+      asked = false;
+    } else asked = ASK_KEEP.test(l.text);
+  }
+  return out;
+}
+
+// "Don't keep this": nothing from this call is remembered. "Forget me": everything held about them goes too.
+const FORGET_THIS = /\b(yaad mat rakh(na|o|iye|ein|en)?|yaad na rakh(na|o|iye)?|note mat kar(na|o|iye)?|mat likh(na|o|iye)?|don'?t (remember|note|write down|keep) (this|that|it)|do not (remember|note|keep) (this|that|it)|forget (this|that|it))\b|याद मत रख|याद न रख|नोट मत कर|मत लिख/i;
+const FORGET_ALL = /\b(mere baare mein|mere bare me|mere bare mein|about me)\b.*\b(yaad mat rakh|kuch mat rakh|bhool ja|bhul ja|forget|delete|mita do|hata do)|\b(sab|sabkuch|sab kuch|everything)\b.*\b(bhool ja|bhul ja|forget|delete|mita do)|\bforget (everything|all) about me\b|मेरे बारे में.*(याद मत|भूल जा|मिटा|डिलीट)|सब (कुछ )?भूल जा/i;
+
+export function forgetAsked(callerTurns: string[]): 'all' | 'this' | null {
+  if (callerTurns.some(t => FORGET_ALL.test(t))) return 'all';
+  if (callerTurns.some(t => FORGET_THIS.test(t))) return 'this';
+  return null;
 }
