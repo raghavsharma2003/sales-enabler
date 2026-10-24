@@ -232,6 +232,22 @@
     {
       "id": "notification.deliveries",
       "risk": "read"
+    },
+    {
+      "id": "duty.roster.get",
+      "risk": "read"
+    },
+    {
+      "id": "duty.roster.set",
+      "risk": "policy"
+    },
+    {
+      "id": "duty.override.add",
+      "risk": "policy"
+    },
+    {
+      "id": "duty.override.remove",
+      "risk": "policy"
     }
   ],
   "routes": [
@@ -257,7 +273,10 @@
       "workspace-tenancy",
       "workspace-identity",
       "results-out",
-      "notifications"
+      "notifications",
+      "smtp",
+      "duty-roster",
+      "intake-hook-vault"
     ],
     "database": "vp_mod_workspace on the throwaway Postgres 16; run twice, files in parallel, both green"
   },
@@ -282,7 +301,8 @@
     "SCIM-lite: vps_ tokens (sha256 stored, scopes members:read / members:write / roles:write, A2 create/rotate/revoke, reveal once); /v1/scim/members list/create/PATCH active+role; owners out of reach; deactivation ends sessions in the same transaction.",
     "Audit export: audit.export (A2 policy, owner/compliance) CSV or JSON lines, date range, actionPrefix, actorId, privilegedOnly; sha256 + HMAC signature (audit.export.verify); file held 24 h, each download audited; CSV formula starters escaped. Retention purges past max(audit_logs_days, 90) nightly with an audit_anchor so verifyAudit still holds.",
     "Results out (2026-10-24): call.ended through webhook.emit after analysis settles, keyed per call (one delivery per endpoint even if analysed twice); campaign.state_changed, contact.opted_out and hand_off.created through webhook_outbox (triggers in 1020, fanned out by deliverPending; only endpoints that existed when the event happened). Records vyakti.call.v1 / contact_opt_out.v1 / hand_off.v1 built at send time (erasure and retention respected, recording link signed for 1 h), per-endpoint contactNumber masked|full, custom HTTP bearer sign-in on its base address, webhook.test, call.record (masked for viewers), call.export (policy, owner/compliance, streamed at download, formula-escaped, without test, suppressed or erased). Settings > Webhooks tab; Integrations labelled 'Stored, not used yet' except custom HTTP. Schema: product/docs/webhooks.md.",
-    "Notifications (2026-10-24): Slack (hooks.slack.com only) and email (SMTP env) destinations, each choosing crisis / hand_off / campaign.paused / wallet.low; from the outbox (1030 adds a wallet trigger and pg_notify wake); crisis text carries no caller words; email unset is visible and recorded as skipped. Settings > Notifications. docs/notifications.md."
+    "Notifications (2026-10-24): Slack (hooks.slack.com only) and email (SMTP env) destinations, each choosing crisis / hand_off / campaign.paused / wallet.low; from the outbox (1030 adds a wallet trigger and pg_notify wake); crisis text carries no caller words; email unset is visible and recorded as skipped. Settings > Notifications. docs/notifications.md.",
+    "Duty roster (2026-10-24): weekly hours in the roster timezone plus leave and cover; email alerts with no listed addresses go to whoever is on shift, else the role rule; the Settings > Notifications card is held for the bundle budget (branch roster-ui-wip). Intake webhook secrets sealed in the vault (0109 .mjs migration; source.hook_secret.rotate with a 24 h overlap). STARTTLS path tested with a self-signed certificate."
   ],
   "untested": [
     "The tool registry JSON data/workspace-tool-registry.json was not in the repo (also not at research/2026-10-21/blueprint/data/); tool ids and risk classes come from the brief and are my reading of it. Compare my risk classes with the registry when it lands: webhook.replay=external, apikey.revoke=draft, share.link.revoke=draft, knowledge.span.approve=draft, member.remove / integration.disconnect / webhook.delete=destructive",
