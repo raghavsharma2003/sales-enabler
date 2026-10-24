@@ -24005,6 +24005,210 @@
    "source": "integrator",
    "title": "The first load is 99.5 KB gzip against its 100 KB gate (it was 87.7 KB earlier on 2026-10-24): the next statically imported feature fails CI. Move statically imported code out of the entry into lazy chunks",
    "closes_when": "firstLoadGzipBytes is at most 90 KB at head with the browser flows green"
+  },
+  {
+   "id": "decision.2026-10-24.stack-selection-finished",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Stack selection finished: each stack card shows the provisional default, the measured reply gap, talking over the caller as its own figure (never zero), the provider cost per minute or 'Price not set yet', the sample clip, and what it is good and weak at in plain English; a published agent keeps its stack until a new version is published with approval, and the approval card names the change in words",
+   "rationale": "Integrator step 2 (owner: selecting the stack option must be excellent). shared/stack-traits.ts holds the hand-written good and weak lines, restating only what stacks.ts notes and risks already record, kept out of stacks.ts because of its Python mirror; the speed line (slower than the target, quick, or meets) and the cut-in figure come from stack-measures.json, so they change when the staging numbers are loaded and cannot disagree with the gate. The card hides the note when it shows the traits (it repeated the first good line). The Default chip reads Provisional default, with its reason on hover. The picker says that choosing a stack changes the draft only and published versions keep theirs until the next publish, which asks for approval; the publish card's change list names stacks by label ('voice stack: A to B'), never by id. Built stacks stay test-calls-only until measured (unchanged, pinned earlier).",
+   "reverse_if": "Per-stack cut-in rates and the staging reply gaps change the order of stacks (then the default may change: decision.2026-10-22.default-stack), or a stack's written good line stops being true in measurement."
+  },
+  {
+   "id": "decision.2026-10-24.agent-archive-never-delete",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Set up, reset and set up again: agents can be duplicated, archived and restored; archive never deletes; an archived agent takes no edits, publishes or calls; a fresh agent from a starter carries nothing of an old one",
+   "rationale": "Integrator step 3 (owner will set agents up from scratch, reset them and set them up again). Migration 0207 adds archived_at, archived_from, archived_by and archive_reason. agent.archive refuses while a scheduled, running or paused campaign or an inbound line uses the agent (naming it); saveDraft and createVersion refuse an archived agent; the dial gate already refused it; campaign launch checks add agent_archived with a Restore fix. agent.list hides archived agents unless archived: true. agent.restore puts back the status it had. agent.duplicate copies the draft only (brief, voice, linked company information), never versions, tests or calls. A fresh agent from a template has the template's facts only, no linked offerings, versions or tests. Contact memory is held per person, not per agent, so no agent memory exists to leak. Web: Agents page In use / Archived, Duplicate and Archive on each card (Archive explains that nothing is deleted), Restore in Archived and on the agent page of an archived agent.",
+   "reverse_if": "Buyers need to delete for good (then a separate, owner-only, approval-held delete with an export first), or an archived agent's calls must leave reports (they are kept now)."
+  },
+  {
+   "id": "measure.2026-10-24.stack-and-lifecycle-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Stack selection 8/8 (traits in plain words for every stack, default stack's slower-than-target line, cut-in never zero, meets and cut-in figure when measured, stack change on a published agent needs approval and is named in words) and agent lifecycle 3/3 (archive keeps versions and tests, hides, refuses edit and publish; fresh template agent clean; restore; archive refused while a campaign runs; agent_archived launch blocker; duplicate copies the draft only); browser flows for the picker card and for duplicate, archive and restore, shots at 1440 and 390 looked at",
+   "n": 11,
+   "method": "node:test tests/stack-gate.test.ts and tests/agents-lifecycle.test.ts on throwaway Postgres 16; browser flows via product/web/e2e/run.sh filtered, then the full suite.",
+   "notes": "Not verified: per-stack cut-in rates (none measured); the integrator's staging numbers are still to load. A post-push full run after step 1 had one unreproduced axe failure on Audiences (document-title, with a 404 on /v1/client-events); it passed alone twice since."
+  },
+  {
+   "id": "decision.2026-10-24.gate-already-paid",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Dial gate G4 refuses 'already_paid' (blocked, not retried) when intake's paidSinceImport (aaf502d: a verified gateway payment matched by the workspace's record key, not more than 24 h older than the person's record of that key) finds one, for campaign, API and retry attempts only; a callback the person asked for, a member's single call, a test and a transfer still go. The member reads 'They already paid \u20b914,250 through Razorpay on 30 December, after this list was imported, so they are not called.' A list imported more than a day after the payment opens the next cycle. On a passing G4 the gate's note records paidChecked, and the call page's 'Why this call was allowed' line adds 'no payment from them has come in since this list was imported'.",
+   "rationale": "Intake's payment webhooks seam, agreed 2026-10-24; G4 rather than a new G13 keeps the 12-check trace stable.",
+   "reverse_if": "A paid person is called anyway on staging (then the record-key match or the 24 h margin is wrong), or businesses need paid people called for a receipt confirmation (then a per-campaign opt-out of this check).",
+   "evidence": [
+    "product/tests/campaigns.test.ts 'G4 already_paid': an API attempt refused with the words above and outcome blocked; callback and single calls allowed; a newer list allowed"
+   ]
+  },
+  {
+   "id": "decision.2026-10-24.staff-cli",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Vyakti staff run their tools (vp_success: member.phone.mark_verified, number.attach_carrier, wallet.credit) with product/scripts/staff.ts on the host, audited under the staff id; there was no other way to act as staff on staging",
+   "rationale": "The staff tools are refused to every workspace role by design. Someone needed a path to use them for the first live call; a shell on the host is already staff-only.",
+   "reverse_if": "a staff console with its own sign-in exists; then retire the script or keep it for break-glass use only"
+  },
+  {
+   "id": "measure.2026-10-24.phone-recording-path",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Recording on phone calls, read from code (not run): the cascade and s2s sessions both record both legs through Recorder and recordings.save, whatever the transport, so sip and sip_inbound calls record when agent.recording.enabled and VP_RECORDINGS_DIR are set; no runtime test drives a phone leg through recording yet (asked of voice)",
+   "n": 0,
+   "method": "code reading of voice/vpvoice/cascade.py, s2s.py, recordings.py at f551806; no test run on a phone leg",
+   "path": "product/voice/vpvoice/recordings.py"
+  },
+  {
+   "id": "open.2026-10-24.first-live-call",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The first live Plivo call on staging, run by the integrator with the owner: product/ops/STAGING.md 'Live phone calls', set-up (attach number, mark phone, bind agent) and the 9-step checklist",
+   "closes_when": "outbound and inbound calls to the owner's allowlisted phone complete with transcript, recording, carrier line and settled money, measured and filed with n and the stack that ran"
+  },
+  {
+   "id": "decision.2026-10-24.voice-relational-memory",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Relational memory, voice half (memory_use.py, seam with memory session_01Rb2NUArHRfYEi2ncQqz79S): the brain sees only prefs: lines of the memory brief until identity is verified, the whole brief after; a ledger shape allows at most one earlier-call item, in passing, never in an asking turn, and turns to 'already used' once her line reuses an item's words; a caller's forget phrase drops the brief for the rest of the call, adds a one-breath acknowledgement shape once, and emits moment forget_request (note call|all, never words; added to runtime-protocol and ingest); a volunteered personal non-sensitive detail gets one ask-to-keep shape per call, never on collections/complaint jobs or no-marketing calls. Phrase lists: product/shared/memory/phrases.json, owned by memory, read as-is by the runtime (stub with memory's examples until memory overwrites)",
+   "rationale": "Answers open.2026-10-24.relational-memory-voice-half. Deterministic part verified in tests/test_memory_use.py (scripted brain, prompt assertions, n=4 scenarios). NOT verified: whether a real model recalls the promise naturally and keeps to one item; that is the joint returning-caller practice run on devsim (lab VM) or staging.",
+   "reverse_if": "the practice run shows her referencing earlier calls before identity, or more than one item, or the forget not honoured"
+  },
+  {
+   "id": "component.2026-10-24.google-sheets-source",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Google Sheets as a live contact source: a tab read through the workspace's service account, or a published CSV link, on the same preview, receipt, mapping reuse and timed sync as the CRM imports; read only",
+   "path": "product/server/modules/intake/sheets.ts",
+   "details": "Service account: workspace's google_workspace integration (service_account_json). An RS256 JWT for spreadsheets.readonly buys a token; Sheets v4 lists the GRID tabs and reads values (FORMATTED_VALUE, ragged rows handled). Published link: docs.google.com only, CSV output only, redirects only within Google, 20 MB cap. A 403 names the service-account address to share with. Tools source.sheet.tabs (read) and source.sheet.pull (draft); source.sync, source.sync.schedule and source.crm.sources take sheet sources; the intake.crm_sync job runs them. Web: From Google Sheets tab. Tests: intake-sheets 3/3 against a fake that verifies the JWT signature with the matching public key; e2e flow (published link, save, timer); axe screen. Not verified: a real Google sheet."
+  },
+  {
+   "id": "decision.2026-10-24.sheets-dedupe-on-number",
+   "type": "decision",
+   "status": "decided",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A Google Sheet has no stable row id, so it dedupes on the phone number like a file. A sync re-reads the whole tab with the last mapping; unchanged rows count as unchanged, and a changed number is a new person, not a flagged change as with a CRM.",
+   "rationale": "Row positions shift when people sort or insert rows, so a row number would mis-key people. The number is what intake already dedupes on for files.",
+   "reverse_if": "Buyers keep an id column in their sheets and want number changes flagged; then let a sheet name its id column and reuse the CRM idempotency (intake_crm_record)."
+  },
+  {
+   "id": "measure.2026-10-24.google-sheets-tests",
+   "type": "measurement",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Google Sheets: 3/3 server tests and a browser flow.\n- JWT: header and claims as documented, signature verified by the fake with the public key.\n- Tabs: charts left out.\n- Values: a blank row is not a person; a sync after an edit counts 1 updated and 2 unchanged; the timed job picks up a new row.\n- Refusals: an unshared sheet names the address; another host, an HTML page and missing arguments are refused.\n- Read only.\nPlus e2e 91/92 (1 skipped: payments awaiting workspace's kinds).",
+   "n": "3 server tests; e2e 92 flows",
+   "method": "node:test on a fresh Postgres with a local fake (tests/intake-sheets.test.ts); Playwright via e2e/run.sh with dev/fake-crm.mjs serving a published CSV",
+   "not_verified": "A real Google sheet or service account; the googleusercontent redirect host."
+  },
+  {
+   "id": "decision.2026-10-24.rd4-written-ask-verbs",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "RD4 (rd4.sensitive_ask, rules.json, both doors) learns written-channel asks: 'reply with', 'reply karke', 'send us/the/your', 'enter/type/key (in) the/your', forward, submit, 'text/message/whatsapp us', paste, 'write it/down'. Its negation guard (noneClause) learns the same verbs, so 'do not forward your OTP' still passes. regex.back_reference (used only by RD4's coClause) also accepts a clause that is only an ask-verb chain ('OTP aaya hoga, bata dijiye'): Hindi drops the object. It uses explicit character classes, not \\w or \\W, because JS \\W treats Devanagari letters as non-word and Python \\w does not.",
+   "rationale": "The channels builder found 'Please reply with the OTP sent to your phone.' passing while 'share the OTP' blocked (open.2026-10-24.rd4-reply-with-otp). The elliptical Hindi ask after a comma passed at HEAD too (pre-existing gap).",
+   "reverse_if": "Staging WhatsApp sends show RD4 blocking ordinary service text ('reply with YES', 'send us a photo') \u2014 the DEV benign vectors say it does not."
+  },
+  {
+   "id": "measure.2026-10-24.rd4-written-dev",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "RD4 after decision.2026-10-24.rd4-written-ask-verbs, sandbox, deterministic, TS and Python doors over cases.json: all 1,606 vectors hold in both doors (18 new, source dev-rd4-written: 9 harmful blocked, 9 benign passed). That includes 'reply with YES', 'send us a photo', 'enter the amount in the app', 'OTP nahi chahiye, bata dijiye kab free hain'. The 979 earlier benign reply vectors pass. Not verified: real WhatsApp template text, or any blind set.",
+   "n": 1606,
+   "method": "Sandbox, deterministic: the TS and Python reply doors over cases.json (18 new dev-rd4-written vectors)"
+  },
+  {
+   "id": "decision.2026-10-24.ai-affirm-mixed-script",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "lexicon.ai_affirm (rules.json; RD1's affirms_ai/affirmsAi in both doors) accepts mixed-script and pronoun-less disclosures:\n- '\u092e\u0948\u0902 \u2026 \u0906\u092a\u0915\u0940 AI assistant' and 'Main \u2026 ki AI \u0905\u0938\u093f\u0938\u094d\u091f\u0947\u0902\u091f' (an assistant word in either script after AI);\n- the possessives aapki/aapka/apki;\n- one qualifier word ('AI voice assistant', 'AI \u0935\u0949\u0907\u0938 \u0905\u0938\u093f\u0938\u094d\u091f\u0947\u0902\u091f');\n- a self-introduction with no pronoun ('Riya here, X ki AI assistant'; 'X ki AI assistant Riya bol rahi hoon');\n- English apposition ('I am Riya, an AI assistant from X', with a not/never guard in the gap).\nThe mention guard ('\u2026 AI assistant \u0915\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902') now also covers a Latin 'assistant'. A pre-existing hole had made that mention count as a disclosure, the unsafe direction (the door would skip its line). Lookahead negations end in \\b only for Latin words: a \\b after a Devanagari word does not hold, and that let '\u2026\u0915\u0940 AI \u0905\u0938\u093f\u0938\u094d\u091f\u0947\u0902\u091f \u0915\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902' through during the build.",
+   "rationale": "Staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): her own line '\u092e\u0948\u0902 \u0930\u093f\u092f\u093e \u0939\u0942\u0901 Smoke Test Co \u0938\u0947 \u0906\u092a\u0915\u0940 AI assistant' was not read as a disclosure, so RD1 prefixed the fixed line and she disclosed twice (n = 1 call). This is the 23 Oct double disclosure back by another road.",
+   "reverse_if": "A staging call shows RD1 skipping the fixed line on an opening that never said she is an AI (a mention or a third-party AI read as her disclosure)."
+  },
+  {
+   "id": "measure.2026-10-24.ai-affirm-mixed-script-dev",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "ai_affirm after decision.2026-10-24.ai-affirm-mixed-script. Sandbox, deterministic, TS and Python doors over shared/safety/disclosure.json:\n- 15 new affirm vectors (8 true, 7 false: denials, mentions, a third-party AI, 'not an AI assistant');\n- 1 new opening vector, the 9b34ff7 staging line, 'discloses: true';\n- all earlier affirm and opening vectors hold, in both doors.\nNot verified: a staging call after the change.",
+   "n": 16,
+   "method": "Sandbox, deterministic: the TS and Python doors over shared/safety/disclosure.json (15 new affirm vectors, 1 new opening vector, all earlier vectors re-run)"
+  },
+  {
+   "id": "decision.2026-10-24.bare-amounts-in-money-sentences",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "RD6 rd.amount_not_in_facts (both doors) checks a bare figure against the facts when all of these hold:\n- the sentence talks about money (lexicon.money_talk) or uses a money verb (words_to_amounts.bare.money_verb: rahega/\u0930\u0939\u0947\u0917\u093e, bharna/\u092d\u0930\u0928\u093e, lagega, banega, dena hoga, kat jayega, 'will be', 'comes to', costs);\n- the figure is at least 100;\n- what follows is the sentence's end, a money verb or a short particle (bare.follow: hai/ka/tak/per\u2026, never a noun, so '500 hospitals' is a count);\n- it is not a year (bare.year), an 8+ digit run, part of a digit run, after an id word (bare.not_before: policy/claim/account/pincode/phone/number\u2026), or before a unit (bare.not_after: %, :, /, baje, tareekh, din, saal, members\u2026).\nA multiplied figure ('27 hazaar') with a money verb counts too. The Python KNOWN guard learns words_to_amounts.bare. test.simulate's door (server/modules/agents/simulate.ts) now gets the contact's values as facts, as the runtime's door_ctx does. Before, only the agent's facts were passed, so a contact amount ('premium 18,450') blocked once bare figures were checked. They are not perContact there: the simulation never verifies identity, so RD11 stays out of it, as before.",
+   "rationale": "Staging 9b34ff7: '\u0907\u0938 \u092c\u093e\u0930 \u092f\u0947 27,500 \u0930\u0939\u0947\u0917\u093e\u2026', an invented premium, was spoken. It passed because there was no currency word.",
+   "reverse_if": "Staging shows RD6 blocking her true sentences on bare numbers that are in facts but phrased differently, or on counts or ids the not_before/not_after/follow lists miss. Fix the lists; do not drop the check."
+  },
+  {
+   "id": "measure.2026-10-24.bare-amounts-dev",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "RD6 bare amounts, sandbox, deterministic, TS and Python doors:\n- 19 new cases.json vectors (source dev-bare-amount): 6 harmful blocked (the staging line, Devanagari, Hinglish, English, '27 hazaar rahega') and 13 benign passed (a figure that is in the facts, policy and claim numbers, a year, dates, a phone number, pincode, days, members, '500 hospitals', counts);\n- benign agent lines (cases.json benign replies plus dev agent_benign, n = 1,048, empty facts): rd.amount_not_in_facts blocks 5 before and 5 after, the same lines;\n- all cases.json vectors hold in both doors.\nNot verified: a blind set, or staging.",
+   "n": 19,
+   "method": "Sandbox, deterministic: the TS and Python doors over 19 new dev-bare-amount vectors in cases.json, plus 1,048 benign agent lines with empty facts"
+  },
+  {
+   "id": "measure.2026-10-24.judge-latency-vertex-flashlite",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Judge latency (integrator's VM run, tree 9b34ff7, product/scripts/judge-latency.mjs, research/2026-10-24/judge-latency/report.json): the live caller-crisis judge request, Flash-Lite on Vertex from vl-vm-cin, 1 request per second, 10 s cap, n = 300 DEV lines (dev-7 and optout-dev).\n- 296 answered; 4 had no answer in 10 s (aborted). p50 1,021 ms, p75 1,149, p90 1,353, p95 1,619, p98 2,678, p99 3,159, max 6,435.\n- Unavailable with no hedge, by timeout: 57.0% at 1,000 ms, 18.7% at 1,200, 8.0% at 1,500 (the old budget), 4.7% at 1,800, 4.3% at 2,000, 3.7% at 2,500, 2.3% at 3,000.\n- Hedge, simulated from the samples as independent draws: at hedge 1,500, timeout 3,000 gives 0.19% unavailable for 6.8% extra requests; timeout 2,500 gives 2.09%. Hedges at 800, 1,000 and 1,200 ms cost 96%, 56% and 18% extra requests.\nNot verified: the hedge on staging (correlated slowness would defeat it).",
+   "n": 300,
+   "method": "product/scripts/judge-latency.mjs on vl-vm-cin, tree 9b34ff7, Flash-Lite on Vertex, 1 request per second, 10 s cap, dev-7 and optout-dev lines; hedge simulated from the samples as independent draws"
+  },
+  {
+   "id": "decision.2026-10-24.judge-budget-hedge-1500-timeout-3000",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "judge.json caller_crisis: timeout_ms 3,000 (was 1,500) and hedge_after_ms 1,500 (was off), by the rule in decision.2026-10-24.judge-hedge-and-budget. The only pair with at most 10% extra requests and at most 1% simulated unavailability is hedge 1,500 / timeout 3,000. The runtime reply never waits for the judge, so the longer budget only moves a late verdict to her next sentence or turn.\nBoth doors now meter a hedged call as the winner's tokens times the requests sent (both requests are billed, with the same prompt). Before, only the winner was metered: the runtime meter, the server's chat, simulate and analysis meters, and judge-eval's cost cap all understated it.\nThe cascade test (raise before she is heard) gives the fake brain 20 ms to its first token: with a zero-delay brain it was a tie the hedged path loses by an event-loop tick.",
+   "rationale": "The old 1,500 ms budget left 8.0% of DEV judge calls unanswered in time. Both BLIND 10 judge misses were timeouts.",
+   "reverse_if": "Staging's in-time log shows unavailability well above the simulated 0.19%: correlated slowness, so change region or model rather than hedging. Or the hedge breaches the Vertex rate commitment (risk.2026-10-23.judge-vertex-rate-commitment)."
+  },
+  {
+   "id": "open.2026-10-24.reply-door-blind-bare-amount-disclosure",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "The bare-amount and mixed-script-disclosure fixes are measured on DEV only. No blind reply-door set is in flight, and BLIND 12 is a caller-crisis set.",
+   "closes_when": "A separate agent writes a blind reply-door set with tags bare_amount (money and non-money figures) and disclosure_script (Latin, Devanagari, mixed; affirmations, mentions, denials), it is pre-registered, and the integrator scores it once."
   }
  ],
  "edges": [
@@ -43119,6 +43323,106 @@
    "from": "open.2026-10-24.web-first-load-at-cap",
    "to": "measure.2026-10-24.web-bundle-growth-afccbb4",
    "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.stack-selection-finished",
+   "to": "decision.2026-10-24.stack-gate-visible",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.stack-selection-finished",
+   "to": "decision.2026-10-22.custom-stack-contract",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.stack-and-lifecycle-tests",
+   "to": "decision.2026-10-24.stack-selection-finished",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.stack-and-lifecycle-tests",
+   "to": "decision.2026-10-24.agent-archive-never-delete",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.gate-already-paid",
+   "to": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-24.first-live-call",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.staff-cli",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.voice-relational-memory",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.google-sheets-source",
+   "to": "decision.2026-10-24.sheets-dedupe-on-number",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.google-sheets-tests",
+   "to": "component.2026-10-24.google-sheets-source",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-24.google-sheets-source",
+   "to": "component.2026-10-24.crm-contact-import",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.rd4-written-ask-verbs",
+   "to": "open.2026-10-24.rd4-reply-with-otp",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.rd4-written-dev",
+   "to": "decision.2026-10-24.rd4-written-ask-verbs",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.ai-affirm-mixed-script",
+   "to": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-24.ai-affirm-mixed-script-dev",
+   "to": "decision.2026-10-24.ai-affirm-mixed-script",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.bare-amounts-dev",
+   "to": "decision.2026-10-24.bare-amounts-in-money-sentences",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.judge-budget-hedge-1500-timeout-3000",
+   "to": "decision.2026-10-24.judge-hedge-and-budget",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.judge-budget-hedge-1500-timeout-3000",
+   "to": "open.2026-10-24.judge-timeout-budget",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.judge-latency-vertex-flashlite",
+   "to": "decision.2026-10-24.judge-budget-hedge-1500-timeout-3000",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-24.reply-door-blind-bare-amount-disclosure",
+   "to": "decision.2026-10-24.bare-amounts-in-money-sentences",
+   "relation": "informed-by"
   }
  ]
 }
