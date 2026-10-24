@@ -1148,6 +1148,25 @@ test('Call page: "Why this call was allowed" shows the dial gate\'s stored recor
   assert.doesNotMatch(text, /\bG\d+\b|_/, 'no rule ids or field names');
 });
 
+test('Call page: the turn-by-turn timeline shows each gap and marks what went wrong, as call.explain does, and a turn seeks the call', async () => {
+  const id = await callByContact('Sunita Verma');
+  const got = (await tool('call.get', { conversationId: id })).result;
+  const causes = (await tool('call.explain', { conversationId: id })).result.turnCauses;
+  assert.ok(got.trace && causes.some(c => c.kind === 'asr_low'), 'the seeded trace marks the caller line heard unsure');
+  await page.goto(`${BASE}/calls/${id}`);
+  const rows = page.locator('ol.timeline > li');
+  await rows.first().waitFor({ timeout: 10000 });
+  assert.equal(await rows.count(), got.transcript.length, 'one row per turn');
+  const marked = page.locator('ol.timeline > li.wrong li');
+  assert.deepEqual((await marked.allInnerTexts()).map(t => t.trim()), causes.map(c => c.text), 'the page marks exactly what call.explain names');
+  const card = page.locator('section[aria-labelledby="tl-h"]');
+  assert.match(await card.innerText(), new RegExp(`Something went wrong on ${new Set(causes.map(c => c.turn)).size} of ${got.transcript.length} turns`));
+  // Selecting the marked turn moves the call to it: its line in the transcript becomes the current one.
+  const k = causes[0].turn;
+  await rows.nth(k).getByRole('button').click();
+  await page.locator('ol.turns > li.now').filter({ hasText: got.transcript[k].text.slice(0, 12) }).waitFor({ timeout: 5000 });
+});
+
 test('Call page: a call with no reply timing says so and shows no figure; a call nobody answered has no card', async () => {
   const id = await callByContact('Imran Qureshi');
   const t = (await tool('call.get', { conversationId: id })).result.turns.filter(x => x.speaker === 'agent' && x.latency?.latencyMs).length;

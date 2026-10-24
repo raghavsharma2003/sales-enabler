@@ -10,7 +10,7 @@ import { callExplain, callGet, callSearch, campaignList } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
 import { costPart, groupCost, RULE_LABEL } from '../labels.ts';
 import { useVoiceStack } from '../use-voice-stack.tsx';
-import { DID, SHORT, TimingCard, marksFor, playable } from './call-review.tsx';
+import { DID, SHORT, TimelineCard, TimingCard, marksFor, playable } from './call-review.tsx';
 import { clock, date, dur, inr, ms } from '../format.ts';
 import type { CallDoc, CallExplain, CallRow } from '../types.ts';
 
@@ -102,6 +102,7 @@ function Body({ c }: { c: CallDoc }) {
                   <span className="turn-text" lang="hi">{t.text}</span>
                   <span className="turn-meta">{t.latencyMs ? <Chip title="Time from the caller finishing to her first audio, as the voice runtime measured it">reply gap {ms(t.latencyMs)}</Chip> : t.who === 'agent' && c.turns.slice(0, c.turns.indexOf(t)).some(x => x.who === 'caller') ? <Chip title="The voice runtime recorded no timing for this reply">gap not recorded</Chip> : null}{t.interrupted ? <Chip tone="marigold" title="Someone spoke over the other">cut-in</Chip> : null}{(marks.get(t.idx) ?? []).map((m, k) => <Chip key={k} tone={m.kind === 'disclosure' ? 'leaf' : m.kind === 'no-disclosure' ? 'marigold' : m.kind === 'optout' ? 'brick' : 'peacock'} title={m.title}>{m.text}</Chip>)}</span>
                 </button></li>))}</ol></Card>}
+          {c.timeline.length > 0 && !c.transcriptWhy && <Card><TimelineCard c={c} onSeek={seek} /></Card>}
         </div>
         <div className="stack">
           <Card><CardHead title="What happened" />

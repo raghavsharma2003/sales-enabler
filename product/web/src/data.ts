@@ -1,6 +1,7 @@
 // The data layer: turns the real tools' answers into the view models the pages draw, and turns page actions into tool calls.
 // Pure TypeScript (no JSX). Every read goes through run(), so a tool that is not registered throws ToolMissing and the page
 // shows its "not switched on yet" state. Shapes here follow product/shared/tool-catalog.json and the module code.
+import { traceTurns } from '../../shared/call-trace.ts';
 import { run, uploadContacts } from './api.ts';
 export { walletGet } from './wallet.ts';
 import { partsRan } from './catalog.ts';
@@ -240,6 +241,7 @@ export async function callGet(id: string): Promise<CallDoc> {
   return { id: c.id, direction: c.direction === 'inbound' ? 'inbound' : 'outbound', contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', campaignId: c.campaignId ?? null, test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
     // The server's fresh signed link when the recording may be played (call.get recording); else the stored address and why not.
     recordingUri: c.recording?.url ?? c.recordingUri, recordingWhy: c.recording?.why ?? null, transcriptWhy: c.transcriptRemoved ?? null,
+    timeline: traceTurns(arr<any>(c.transcript), c.trace),
     allowedBy: c.allowedBy ? { allowed: c.allowedBy.allowed ?? null, at: c.allowedBy.at ?? null, gateText: c.allowedBy.gateText ?? null, summary: String(c.allowedBy.summary ?? ''), checks: arr<any>(c.allowedBy.checks).map(k => ({ ok: !!k.ok, text: String(k.text) })), warnings: arr<string>(c.allowedBy.warnings) } : null,
     agentLabel: c.agent?.label ?? null, verified: c.verified ?? null, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: partsRan(c.runManifest?.components), turns,
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), judgeMarks: arr<any>(c.judgeMarks).map(j => ({ seq: j.seq, label: j.label, outcome: j.outcome, text: String(j.text) })), tools: arr(c.tools), handOffs: arr(c.handOffs),

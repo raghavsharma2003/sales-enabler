@@ -64,3 +64,26 @@ export function marksFor(c: CallDoc): Map<number, Mark[]> {
 
 /** A recording can be played here only if the runtime gave an address a browser can open. Anything else (a file on the voice server) cannot. */
 export const playable = (uri: string | null) => !!uri && /^https?:\/\//i.test(uri);
+
+/** Turn by turn, under the transcript: each reply's gap as the runtime measured it, a marker where something went wrong,
+ *  and each row seeks the recording to its turn. Only the runtime's stored trace is read (shared/call-trace.ts). */
+export function TimelineCard({ c, onSeek }: { c: CallDoc; onSeek: (ms: number | null) => void }) {
+  const rows = c.timeline;
+  const wrong = rows.filter(r => r.causes.length).length;
+  const widest = Math.max(1, ...rows.map(r => r.gapMs ?? 0));
+  return (
+    <section aria-labelledby="tl-h" className="reviewbox">
+      <h3 id="tl-h">Turn by turn</h3>
+      <p className="small muted">{wrong ? `Something went wrong on ${wrong} of ${rows.length} turns.` : `Nothing went wrong on any of the ${rows.length} turns the runtime traced.`} Select a turn to play the recording from it.</p>
+      <ol className="timeline" aria-labelledby="tl-h">{rows.map(r => (
+        <li key={r.turn} className={r.causes.length ? 'wrong' : undefined}>
+          <button type="button" className="linkbtn tnum" onClick={() => onSeek(r.startMs)} disabled={r.startMs == null}>{r.startMs != null ? clock(r.startMs / 1000) : '–'}</button>
+          <span className="small">{r.speaker === 'agent' ? 'Agent' : 'Caller'}</span>
+          {r.speaker === 'agent'
+            ? <span className="small tnum" title="Time from the caller finishing to her first audio, as the voice runtime measured it">{r.gapMs != null ? <><span className="gapbar" style={{ width: `${Math.max(4, Math.round((r.gapMs / widest) * 80))}px` }} aria-hidden />{ms(r.gapMs)}</> : <span className="muted">no gap recorded</span>}</span>
+            : <span className="small tnum muted">{r.asrConfidence != null ? `heard with ${Math.round(r.asrConfidence * 100)}% confidence` : ''}</span>}
+          {r.causes.length > 0 && <ul className="small">{r.causes.map((k, i) => <li key={i}>{k.text}</li>)}</ul>}
+        </li>))}</ol>
+    </section>
+  );
+}

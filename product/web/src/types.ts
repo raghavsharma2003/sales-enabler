@@ -1,6 +1,7 @@
 // The data shapes the pages read from tools. The real modules should return these; where they differ, the page degrades
 // (missing fields show "not measured", never 0). Every id here is a tool id used by the UI (see TOOLS in tools.ts).
 import type { Grade } from '../../shared/stacks.ts';
+import type { TraceTurn } from '../../shared/call-trace.ts';
 export type { Grade };
 
 export interface Metric { value: string; n?: number; asOf?: string; grade: Grade | 'estimate'; source?: string }
@@ -80,6 +81,8 @@ export interface CallTurn { idx: number; who: 'caller' | 'agent'; text: string; 
 export interface CallDoc {
   id: string; contactId: string | null; contactName: string; campaignId: string | null; direction: 'inbound' | 'outbound'; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
   reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; recordingWhy: string | null; transcriptWhy: string | null;
+  /** The runtime's per-turn trace, read by shared/call-trace.ts; [] when the call has none. */
+  timeline: TraceTurn[];
   allowedBy: { allowed: boolean | null; at: string | null; gateText: string | null; summary: string; checks: { ok: boolean; text: string }[]; warnings: string[] } | null;
   verified: { value: string; from: string; aiRead: string | null; disagree: boolean } | null; agentLabel: string | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
   turns: CallTurn[]; moments: { source: string; kind: string; atMs: number | null; note: string | null; quote: string | null }[];

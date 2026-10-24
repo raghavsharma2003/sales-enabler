@@ -133,6 +133,7 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 
 .callaudio { width: 100%; margin: 4px 0 12px; }
 .reviewbox h3 { margin: 0 0 8px; font-size: 1.0625rem; }
+.timeline { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; } .timeline > li { display: grid; grid-template-columns: 3.5rem 3.5rem 1fr; gap: 8px; align-items: center; padding: 4px 6px; border-left: 3px solid transparent; } .timeline > li.wrong { border-left-color: var(--marigold); background: var(--marigold-bg); } .timeline > li > ul { grid-column: 2 / -1; margin: 0; padding-left: 1rem; } .gapbar { display: inline-block; height: 6px; border-radius: 3px; background: var(--peacock); margin-right: 6px; vertical-align: middle; }
 .turn-meta .chip { white-space: normal; max-width: 100%; }
 .toollist + .toollist { border-top: 1px solid var(--line); }
 /* A text box that grows with its text, so a goal or a fact is read whole, never cut off at the edge of a one-line field. */

@@ -20,6 +20,7 @@ import { flagJudgeRecheck, outcomeReadings, recordVerified } from './verified.ts
 import { transcriptRemovedWhy } from '../memory/transcript-purge.ts';
 import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
 import { lineCheck } from './line-watch.ts';
+import { turnCauses } from '../../../shared/call-trace.ts';
 import { appendAudit } from '../../audit.ts';
 
 // Test calls run inside a daily test budget (workspace blueprint: ₹200 a day, proposed) and a per-call cap.
@@ -374,6 +375,8 @@ export function registerTools(r: Registry): void {
         reason: rc ? { code: rc.code, stage: rc.stage, action: rc.action } : null,
         outcome: best ? { value: best.value, grade: best.grade, evidence: best.evidence, note: best.grade === 'ai_guess' ? 'AI guess: not verified by a system of record or a person' : null } : null,
         because,
+        // What went wrong turn by turn, from the runtime's stored trace only (shared/call-trace.ts); [] when there is none.
+        turnCauses: turnCauses(lines, c.trace),
         analysis: a ? { status: a.status, quotesProposed: a.quotesProposed ?? 0, quotesDropped: a.quotesDropped ?? 0 } : { status: 'not_measured' },
         cost: { totalInrMilli: Number(c.cost_inr_milli) },
         notes: c.channel === 'test' ? ['Test call: excluded from outcomes, funnels, monitors and learning.'] : [],

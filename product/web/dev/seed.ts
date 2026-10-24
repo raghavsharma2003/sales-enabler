@@ -120,7 +120,12 @@ async function main() {
       c.turns.forEach((t, k) => { ev.push({ seq: s++, type: 'turn', at: now(), ...t } as RuntimeEvent); if (c.safety && c.safety.after === k) ev.push({ seq: s++, type: 'safety', at: now(), rule: c.safety.rule, action: c.safety.action, detail: c.safety.detail } as RuntimeEvent); });
       for (const m of c.moments) ev.push({ seq: s++, type: 'moment', at: now(), kind: m.kind, atMs: m.atMs, note: m.note });
       ev.push({ seq: s++, type: 'cost', at: now(), component: 'telephony', provider: 'exotel', quantity: Math.max(1, c.secs), unit: 'second', inrMilli: c.cost });
-      ev.push({ seq: s++, type: 'call.ended', at: now(), endReason: c.end, durationS: c.secs, transcript: c.turns.map(t => ({ speaker: t.speaker, text: t.text, startMs: t.startMs })), manifest } as RuntimeEvent);
+      ev.push({ seq: s++, type: 'call.ended', at: now(), endReason: c.end, durationS: c.secs, transcript: c.turns.map(t => ({ speaker: t.speaker, text: t.text, startMs: t.startMs })), manifest,
+        // The runtime's per-turn trace (CallTrace), synthetic: gaps as above; on the first call the caller's second line was heard unsure.
+        trace: { schema: 1, stack: { id: manifest.stackId, combinationId: manifest.combinationId }, components: {}, events: [],
+          turns: c.turns.map((t, i) => t.speaker === 'agent'
+            ? { i, speaker: 'agent' as const, startMs: t.startMs, gapMs: t.latencyMs, door: [], interrupted: !!t.interrupted, tts: { provider: 'gemini', voice: 'Kore' } }
+            : { i, speaker: 'caller' as const, startMs: t.startMs, endMs: t.endMs, asrConfidence: c.who === 0 && i === 3 ? 0.48 : 0.92 }) } } as RuntimeEvent);
       convs.push(conv);
       const body = JSON.stringify({ protocol: 1, conversationId: conv, events: ev });
       const res = await fetch(base + '/hooks/runtime', { method: 'POST', headers: { 'content-type': 'application/json', 'x-vp-signature': sign(SECRET, body) }, body });
