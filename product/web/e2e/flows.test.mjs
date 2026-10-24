@@ -1979,3 +1979,44 @@ test('First load: on a phone the assistant loads on its first open and then work
   assert.ok(Date.now() - t0 < 1500, `Review opened the sheet in ${Date.now() - t0} ms`);
   await page.keyboard.press('Escape');
 });
+
+// ---- Owner directive 2026-10-24: the daily test budget is a cap like the others, raised by approval and shown on Billing
+test('Billing: the daily test budget sits with the other caps, shows today\'s use and each test call\'s cost, and is raised by approval', async () => {
+  const before = (await tool('test.budget')).result;
+  assert.ok(before.capInrMilli > 0 && before.perCallInrMilli <= before.capInrMilli, 'a cap and a per-call hold within it');
+  await page.goto(`${BASE}/settings/billing`);
+  const main = page.locator('main');
+  await main.getByText('Daily test budget').waitFor();
+  await main.getByText(before.text).waitFor();
+  const rows = main.getByRole('table', { name: 'Test calls today and what each cost' }).locator('tbody tr');
+  if (before.calls.length) {
+    assert.equal(await rows.count(), before.calls.length, 'one row per test call today');
+    for (const [i, c] of before.calls.entries()) assert.match(await rows.nth(i).innerText(), new RegExp(c.display.replace(/[.₹]/g, m => '\\' + m)), 'each row shows the server\'s own cost');
+  } else await main.getByText('No test calls yet today.').waitFor();
+
+  // Raising it is an owner approval whose card names the exact amounts; nothing changes before the decision.
+  const card = await tool('cap.raise', { scope: 'test', period: 'daily', capInrMilli: before.capInrMilli * 10, perCallInrMilli: before.perCallInrMilli * 2 });
+  assert.equal(card.status, 'needs_approval');
+  assert.match(card.summary, /^Raise the daily test budget to ₹[\d,]+, with up to ₹[\d,]+ held per test call$/);
+  assert.equal((await tool('test.budget')).result.capInrMilli, before.capInrMilli, 'unchanged until approved');
+  const decided = await (await ctx.request.post(`${BASE}/v1/actions/${card.actionId}/decide`, { data: { approve: true } })).json();
+  assert.equal(decided.status, 'confirmed', JSON.stringify(decided));
+  const after = (await tool('test.budget')).result;
+  assert.deepEqual([after.capInrMilli, after.perCallInrMilli], [before.capInrMilli * 10, before.perCallInrMilli * 2]);
+  await page.reload();
+  await main.getByText(after.text).waitFor();
+
+  // Screens at 1440 and 390, each with no serious or critical axe violation.
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  fs.mkdirSync(shotDir, { recursive: true });
+  const [phoneCtx, phone] = await phonePage();
+  try {
+    for (const [tag, p] of [['d', page], ['m', phone]]) {
+      await p.goto(`${BASE}/settings/billing`);
+      await p.locator('main').getByText('Daily test budget').waitFor();
+      assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `no sideways scroll at ${tag === 'd' ? 1440 : 390}`);
+      await p.screenshot({ path: path.join(shotDir, `billing-test-budget-${tag}.png`), fullPage: true });
+      assert.deepEqual((await axe(p)).filter(v => v.impact === 'serious' || v.impact === 'critical'), [], `axe on Billing at ${tag === 'd' ? 1440 : 390}`);
+    }
+  } finally { await phoneCtx.close(); }
+});

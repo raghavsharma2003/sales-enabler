@@ -180,7 +180,14 @@ function Billing() {
           <div><dt>Runway</dt><dd>{d.runwayDays != null ? <span className="tnum">{d.runwayDays} days at today's pace</span> : <NotMeasured>Not measured yet</NotMeasured>}</dd></div></dl>
         {d.warnings.map(x => <p key={x} className="hint hint-bad" role="status">{walletNote(x)}</p>)}
         {d.caps.map((c, i) => <div key={i} style={{ marginTop: 8 }}><Meter label={c.label ?? `${prettyCode(c.scope)} cap, ${c.period}`} value={c.period === 'in_flight' ? (c.heldInrMilli ?? 0) : (c.spentInrMilli ?? 0)} max={c.capInrMilli} note={c.text ?? `${inr(c.spentInrMilli ?? 0)} of ${inr(c.capInrMilli)}`} /></div>)}
-        {d.caps.length === 0 && <p className="small muted" style={{ marginTop: 8 }}>No spend caps are set.</p>}</>}</Async>
+        {d.caps.length === 0 && <p className="small muted" style={{ marginTop: 8 }}>No spend caps are set.</p>}
+        <h3 className="small" style={{ marginTop: 16 }}>Test calls today</h3>
+        {d.testCalls.length === 0 ? <p className="small muted">No test calls yet today.</p>
+          : <Table caption="Test calls today and what each cost" rows={d.testCalls} rowKey={t => t.conversationId} onRow={t => `/calls/${t.conversationId}`} cols={[
+              { key: 'at', label: 'Started', primary: true, render: t => `${new Date(t.startedAt).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST` },
+              { key: 'len', label: 'Length', render: t => t.durationS == null ? 'Still running' : `${Math.floor(t.durationS / 60)} min ${t.durationS % 60} s` },
+              { key: 'st', label: 'Status', render: t => prettyCode(t.status) },
+              { key: 'cost', label: 'Cost', num: true, render: t => inr(t.costInrMilli, { paise: true }) }]} />}</>}</Async>
         <hr className="rule" /><TextField label="Add money (₹)" type="number" inputMode="numeric" min={100} value={amt} onChange={e => setAmt(e.target.value)} hint="Adding money is a spend, so it asks for your approval. It is not reversible in the product." />
         <div style={{ marginTop: 12 }}>{!owner ? <Btn disabled fix={null} reason="Only an owner can add money.">Ask to add</Btn> : Number(amt) >= 100 ? <Btn kind="primary" onClick={async () => { const r = await act('wallet.topup', { inrMilli: Math.round(Number(amt) * 1000) }, { describe: 'Wallet topped up.' }); if (r.ok) { setAmt(''); refresh(); } }}>Ask to add {inr(Number(amt) * 1000)}</Btn> : <Btn disabled fix={null} reason="Enter at least ₹100.">Ask to add</Btn>}</div></Card>
       <Card><CardHead title="What you have spent" sub={inv.data ? `${date(inv.data.period.from)} to ${date(inv.data.period.to)}` : undefined} /><Async q={inv} what="Usage" tool="invoice.get">{d => <>

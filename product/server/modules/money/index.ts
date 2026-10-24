@@ -15,30 +15,50 @@ import { walletBlocker, type WalletPurpose } from './blockers.ts';
 import { EXTRAS_INR_MICRO_PER_MIN, partPrice } from './prices.ts';
 import { CARRIERS, carrierChoice, RECOMMENDED_MAX_PULSE_S } from './carriers.ts';
 import { registerBurst } from './burst.ts';
+import { ensureTestCap, testBudget } from './test-budget.ts';
 import { COMPONENTS } from '../../../shared/components.ts';
 import { caps, costLines, credit, defaultRange, estimate, priceFor, reconcile, rollPeriods, statement, usage, walletView } from './money.ts';
 
 const MAX_TOPUP = 1_000_000_000;          // ₹10 lakh per top-up
 const MAX_CAP = 100_000_000_000;          // ₹10 crore
 const date = () => str({ pattern: /^\d{4}-\d{2}-\d{2}$/, desc: 'IST date, YYYY-MM-DD' });
-const scopeV = str({ oneOf: ['workspace', 'campaign', 'api_key'] });
+const scopeV = str({ oneOf: ['workspace', 'campaign', 'api_key', 'test'] });
 const periodV = str({ oneOf: ['total', 'daily', 'monthly', 'in_flight'] });
-const capInput = obj({ scope: scopeV, scopeId: opt(uuid()), period: periodV, capInrMilli: num({ int: true, min: 0, max: MAX_CAP }) });
+const capInput = obj({ scope: scopeV, scopeId: opt(uuid()), period: periodV, capInrMilli: num({ int: true, min: 0, max: MAX_CAP }),
+  perCallInrMilli: opt(num({ int: true, min: 1000, max: 10_000_000, desc: 'test scope only: the most one test call may hold' })) });
 type CapInput = ReturnType<typeof capInput>;
 const PLANS = ['base', 'plus', 'premium'] as const;
 
 async function findCap(q: Queryable, ws: string, i: CapInput) {
-  if ((i.scope === 'workspace') !== (i.scopeId === undefined)) throw new ValidationError('scopeId', i.scope === 'workspace' ? 'is not used for a workspace cap' : 'is required for this scope');
+  if (i.scope === 'test') {
+    // The daily test-call budget: one row per workspace, created on first use (test-budget.ts).
+    if (i.scopeId !== undefined) throw new ValidationError('scopeId', 'is not used for the test budget');
+    if (i.period !== 'daily') throw new ValidationError('period', 'the test budget is daily');
+    await ensureTestCap(q, ws);
+  } else if (i.perCallInrMilli !== undefined) throw new ValidationError('perCallInrMilli', 'is only for the test budget');
+  if (i.scope !== 'test' && (i.scope === 'workspace') !== (i.scopeId === undefined)) throw new ValidationError('scopeId', i.scope === 'workspace' ? 'is not used for a workspace cap' : 'is required for this scope');
   if (i.scope === 'campaign' && !(await one(q, 'SELECT 1 FROM campaign WHERE id = $1 AND workspace_id = $2', [i.scopeId, ws]))) throw new ValidationError('scopeId', 'no such campaign');
   if (i.scope === 'api_key' && !(await one(q, 'SELECT 1 FROM api_key WHERE id = $1 AND workspace_id = $2', [i.scopeId, ws]))) throw new ValidationError('scopeId', 'no such API key');
-  return one<{ id: string; cap: string }>(q,
-    `SELECT id, cap_inr_milli::text AS cap FROM budget WHERE workspace_id = $1 AND scope_type = $2 AND scope_id IS NOT DISTINCT FROM $3 AND period = $4
+  return one<{ id: string; cap: string; hold: string | null }>(q,
+    `SELECT id, cap_inr_milli::text AS cap, per_call_inr_milli::text AS hold FROM budget WHERE workspace_id = $1 AND scope_type = $2 AND scope_id IS NOT DISTINCT FROM $3 AND period = $4
      ORDER BY created_at LIMIT 1 FOR UPDATE`, [ws, i.scope, i.scopeId ?? null, i.period]);
 }
 
 async function setCap(ctx: ToolCtx, i: CapInput, dir: 'raise' | 'lower') {
   await rollPeriods(ctx.q, ctx.workspaceId);
   const cur = await findCap(ctx.q, ctx.workspaceId, i);
+  if (cur && i.scope === 'test') {
+    // The test budget moves its cap and its per-call hold together: a raise may lift either and lower neither; a lower
+    // the reverse. The hold never exceeds the cap.
+    const was = Number(cur.cap), wasHold = Number(cur.hold ?? 50_000), hold = i.perCallInrMilli ?? Math.min(wasHold, i.capInrMilli);
+    if (hold > i.capInrMilli) throw new ValidationError('perCallInrMilli', `a test call cannot hold more than the day's budget of ${formatInr(i.capInrMilli)}`);
+    if (dir === 'raise' && (i.capInrMilli < was || hold < wasHold || (i.capInrMilli === was && hold === wasHold)))
+      throw new ValidationError('capInrMilli', `a raise lifts the budget (now ${formatInr(was)}) or the per-call hold (now ${formatInr(wasHold)}) and lowers neither; use cap.lower to lower`);
+    if (dir === 'lower' && (i.capInrMilli > was || hold > wasHold || (i.capInrMilli === was && hold === wasHold)))
+      throw new ValidationError('capInrMilli', `a lower reduces the budget (now ${formatInr(was)}) or the per-call hold (now ${formatInr(wasHold)}) and raises neither; raising needs cap.raise`);
+    await ctx.q.query('UPDATE budget SET cap_inr_milli = $2, per_call_inr_milli = $3 WHERE id = $1', [cur.id, i.capInrMilli, hold]);
+    return { budgetId: cur.id, wasInrMilli: was, capInrMilli: i.capInrMilli, wasPerCallInrMilli: wasHold, perCallInrMilli: hold };
+  }
   if (cur) {
     const was = Number(cur.cap);
     if (dir === 'raise' && i.capInrMilli <= was) throw new ValidationError('capInrMilli', `must be above the current ${formatInr(was)}; use cap.lower to lower it`);
@@ -65,6 +85,11 @@ export function register(r: Registry): void {
   r.register(tool(obj({ stackId: str({ max: 60 }) }), {
     name: 'money.card', risk: 'read', summary: 'show the provider cost card for a stack, with sources and dates',
     run: async (ctx, i) => ({ stackId: i.stackId, lines: await costLines(ctx.q, i.stackId), price: await priceFor(ctx.q, ctx.workspaceId, i.stackId) }),
+  }));
+
+  r.register(tool(obj({}), {
+    name: 'test.budget', risk: 'read', summary: "today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits",
+    run: ctx => testBudget(ctx.q, ctx.workspaceId),
   }));
 
   r.register(tool(obj({}), {
@@ -134,8 +159,10 @@ export function register(r: Registry): void {
 
   r.register(tool(capInput, {
     name: 'cap.raise', risk: 'spend', summary: 'raise (or set) a spend cap',
-    describe: i => i.period === 'in_flight' ? `Raise the ${i.scope.replace('_', ' ')} in-flight limit (money held at once for calls in progress) to ${formatInr(i.capInrMilli)}` : `Raise the ${i.period} ${i.scope.replace('_', ' ')} cap to ${formatInr(i.capInrMilli)}`,
-    version: async (ctx, i) => (await findCap(ctx.q, ctx.workspaceId, i))?.cap ?? 'none',
+    describe: i => i.scope === 'test'
+      ? `Raise the daily test budget to ${formatInr(i.capInrMilli)}${i.perCallInrMilli ? `, with up to ${formatInr(i.perCallInrMilli)} held per test call` : ''}`
+      : i.period === 'in_flight' ? `Raise the ${i.scope.replace('_', ' ')} in-flight limit (money held at once for calls in progress) to ${formatInr(i.capInrMilli)}` : `Raise the ${i.period} ${i.scope.replace('_', ' ')} cap to ${formatInr(i.capInrMilli)}`,
+    version: async (ctx, i) => { const c = await findCap(ctx.q, ctx.workspaceId, i); return c ? `${c.cap}/${c.hold ?? ''}` : 'none'; },
     run: (ctx, i) => setCap(ctx, i, 'raise'),
   }));
 

@@ -9,6 +9,7 @@ import { ValidationError } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { settle } from '../../ledger.ts';
 import { DEFAULT_CARRIER, pulseRoundedSeconds, pulseView, type PulseView } from './carriers.ts';
+import { testBudget } from './test-budget.ts';
 
 export const TZ = 'Asia/Kolkata';
 const MONEY_IN_LABEL: Record<string, string> = { payment: 'Top-up', manual_credit: 'Credit from Vyakti', trial_credit: 'Trial credit' };
@@ -143,7 +144,7 @@ export async function caps(q: Queryable, ws: string): Promise<CapView[]> {
   const rows = await many<{ id: string; scope_type: string; scope_id: string | null; period: string; ps: string; cap: string; spent: string; held: string }>(q,
     `SELECT b.id, b.scope_type, b.scope_id, b.period, to_char(b.period_start, 'YYYY-MM-DD') AS ps, b.cap_inr_milli::text AS cap, b.spent_inr_milli::text AS spent,
             coalesce((SELECT sum(inr_milli) FROM reservation x WHERE x.workspace_id = b.workspace_id AND x.status = 'held' AND b.id = ANY(x.budget_ids)), 0)::text AS held
-     FROM budget b WHERE b.workspace_id = $1 ORDER BY b.scope_type, b.period, b.created_at`, [ws]);
+     FROM budget b WHERE b.workspace_id = $1 AND b.scope_type <> 'test' ORDER BY b.scope_type, b.period, b.created_at`, [ws]);
   return rows.map(r => {
     const cap = Number(r.cap), used = Number(r.spent) + Number(r.held), share = cap > 0 ? used / cap : 1;
     return { id: r.id, scope: r.scope_type, scopeId: r.scope_id, period: r.period, periodStart: r.ps, capInrMilli: cap, spentInrMilli: Number(r.spent),
@@ -164,11 +165,16 @@ export async function walletView(q: Queryable, ws: string, at: Date = new Date()
   const perDay = Number(w?.spent7 ?? 0) / 7;
   const runwayDays = perDay > 0 ? Math.max(0, available) / perDay : null;
   const c = await caps(q, ws);
+  // The daily test budget sits beside the other caps, with today's use and each test call's cost.
+  const tb = await testBudget(q, ws, at);
+  c.push({ id: 'test', scope: 'test', scopeId: null, period: 'daily', periodStart: istDate(at), capInrMilli: tb.capInrMilli, spentInrMilli: tb.spentTodayInrMilli,
+    heldInrMilli: 0, usedShare: tb.capInrMilli > 0 ? tb.spentTodayInrMilli / tb.capInrMilli : 1, near: tb.spentTodayInrMilli >= 0.8 * tb.capInrMilli, reached: !tb.allowed,
+    label: 'Daily test budget', text: tb.text });
   return {
     state: w?.state ?? 'empty', balanceInrMilli: balance, heldInrMilli: held, availableInrMilli: available,
     lowThresholdInrMilli: Number(w?.th ?? 1000000), runwayDays: runwayDays === null ? null : Math.round(runwayDays * 10) / 10,
     display: { balance: formatInr(balance, { paise: true }), held: formatInr(held, { paise: true }), available: formatInr(available, { paise: true }) },
-    caps: c, warnings: [
+    caps: c, testBudget: tb, warnings: [
       ...(available <= 0 ? ['no money available: new attempts wait; live calls always finish'] : []),
       ...(runwayDays !== null && runwayDays < 3 ? [`runway under 3 days at the last 7 days' pace`] : []),
       ...c.filter(x => x.near).map(x => `${x.scope} ${x.period} cap ${x.reached ? 'reached' : 'at ' + Math.floor(x.usedShare * 100) + '%'}`),

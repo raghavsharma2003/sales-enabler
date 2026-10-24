@@ -9,7 +9,7 @@
     "invoice.get": "read",
     "wallet.topup": "spend (A2); gateway charged once per approval in prepare() under key 'topup:<action id>'; credited once in run()",
     "wallet.credit": "Vyakti staff only (vp_success actor with an id); runs at once; reason + idempotencyKey required; audited; same key credits once",
-    "cap.raise": "spend (A2, version-bound to the current cap)",
+    "cap.raise": "spend (A2, version-bound to the current cap/hold); scope 'test' takes perCallInrMilli too",
     "cap.lower": "draft (A1; only lowers, or adds a cap)",
     "plan.change": "spend (A2, version-bound to the current plan)",
     "money.reconcile": "draft (opens money_drift issues)",
@@ -17,7 +17,8 @@
     "money.parts": "read: every buildable part (shared/components.ts) with a ₹-per-minute figure at money's rates and minute profile, basis = its list price; extrasInrMicroPerMin = phone line + infrastructure + analysis",
     "money.carriers": "read: each carrier path with its billing pulse (sourced, or 'not published'), what it adds per call, and recommended / 'not recommended: N-second billing' (never blocks)",
     "campaign.burst.set": "spend (A2): {campaignId, lines, ceilingInrMilli}; card names both; lines must pass the steady limit, at most burst_max_lines_factor x it; ceiling under the workspace in-flight limit",
-    "campaign.burst.off": "draft (A1): back to the steady limit; removes the campaign's in-flight ceiling"
+    "campaign.burst.off": "draft (A1): back to the steady limit; removes the campaign's in-flight ceiling",
+    "test.budget": "read: {capInrMilli, perCallInrMilli, spentTodayInrMilli, remainingInrMilli, allowed, reason?, resetsAt, calls[], text}; calls' test.browser_call reads it"
   },
   "tests": {
     "passed": 26,
@@ -49,7 +50,8 @@
     "R4: stack.list (agents) prices each part in ₹ a minute from money.parts, list price kept as priceBasis; a built stack's parts + extras equal money.estimate's all-in figure",
     "bounded defaults: money_config.default_daily_cap_inr_milli (₹5,000) and default_in_flight_inr_milli (₹2,000) seeded as workspace caps at wallet creation and back-filled; an 'in_flight' cap bounds money held at once (spend stays 0); wallet.get caps carry label + text in plain words; cap.raise/lower accept period 'in_flight'",
     "decision 10: estimates bill each call's phone time on pulse-rounded seconds (Plivo 30 s, published) and carry pulse {text, billedSecondsPerCall, roundingInrMilli}; stack cards and the Billing statement state the pulse; number.search/rent carry the carrier choice and rented lines record billing_pulse_s",
-    "campaign burst: off by default; on by owner approval; the dial gate's G12 lets that campaign use its burst lines (others keep the steady limit); the ledger holds it under a campaign in-flight cap"
+    "campaign burst: off by default; on by owner approval; the dial gate's G12 lets that campaign use its burst lines (others keep the steady limit); the ledger holds it under a campaign in-flight cap",
+    "test budget as a cap (0910): scope 'test' daily row with per_call_inr_milli, created on first use from VP_TEST_BUDGET_DEFAULT_INR or money_config (₹200/₹50); spend = test-call cost since IST midnight; Billing shows it with each test call's cost (settings.tsx)"
   ],
   "untested": [
     "the minute profile (50% caller audio gated, 4 replies/min x 2000 in + 60 out tokens, 30 s of her speech at 15 chars/s) is an ASSUMPTION, not measured; estimates are only as good as it until the meter feeds per-stack averages",

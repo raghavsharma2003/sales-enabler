@@ -212,6 +212,7 @@ export type ToolName =
   | "stack.set"
   | "template.list"
   | "test.browser_call"
+  | "test.budget"
   | "test.chat"
   | "test.chat_keep"
   | "test.ring_member_phone"
@@ -652,17 +653,21 @@ export interface ToolInput {
   };
   /** lower (or add) a spend cap; only ever reduces what can be spent (draft) */
   "cap.lower": {
-    scope: "workspace" | "campaign" | "api_key";
+    scope: "workspace" | "campaign" | "api_key" | "test";
     scopeId?: string;
     period: "total" | "daily" | "monthly" | "in_flight";
     capInrMilli: number;
+    /** test scope only: the most one test call may hold */
+    perCallInrMilli?: number;
   };
   /** raise (or set) a spend cap (spend, waits for approval) */
   "cap.raise": {
-    scope: "workspace" | "campaign" | "api_key";
+    scope: "workspace" | "campaign" | "api_key" | "test";
     scopeId?: string;
     period: "total" | "daily" | "monthly" | "in_flight";
     capInrMilli: number;
+    /** test scope only: the most one test call may hold */
+    perCallInrMilli?: number;
   };
   /** Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent (policy, waits for approval) */
   "consent.record": {
@@ -1586,6 +1591,8 @@ export interface ToolInput {
     versionId?: string;
     useDraft?: boolean;
   };
+  /** today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits (read) */
+  "test.budget": Record<string, never>;
   /** Practice chat: type as the caller and read her reply from the saved draft, through the same safety door as a call (test) */
   "test.chat": {
     agentId: string;
@@ -2082,6 +2089,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "stack.set": { risk: "draft", needsApproval: false },
   "template.list": { risk: "read", needsApproval: false },
   "test.browser_call": { risk: "test", needsApproval: false },
+  "test.budget": { risk: "read", needsApproval: false },
   "test.chat": { risk: "test", needsApproval: false },
   "test.chat_keep": { risk: "test", needsApproval: false },
   "test.ring_member_phone": { risk: "test", needsApproval: false },

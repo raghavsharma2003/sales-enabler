@@ -7,5 +7,5 @@ const arr = <T,>(v: T[] | undefined | null): T[] => (Array.isArray(v) ? v : []);
 
 export async function walletGet(): Promise<Wallet> {
   const w = await run<any>('wallet.get', {});
-  return { state: w.state, balanceMilli: w.balanceInrMilli, heldMilli: w.heldInrMilli, availableMilli: w.availableInrMilli, runwayDays: w.runwayDays ?? null, caps: arr(w.caps), warnings: arr(w.warnings), priceNotSet: w.price?.status === 'not_set', priceText: w.price?.text ?? '' };
+  return { state: w.state, balanceMilli: w.balanceInrMilli, heldMilli: w.heldInrMilli, availableMilli: w.availableInrMilli, runwayDays: w.runwayDays ?? null, caps: arr(w.caps), testCalls: arr(w.testBudget?.calls), warnings: arr(w.warnings), priceNotSet: w.price?.status === 'not_set', priceText: w.price?.text ?? '' };
 }

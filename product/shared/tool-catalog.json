@@ -2353,7 +2353,8 @@
       "enum": [
        "workspace",
        "campaign",
-       "api_key"
+       "api_key",
+       "test"
       ]
      },
      "scopeId": {
@@ -2373,6 +2374,12 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 100000000000
+     },
+     "perCallInrMilli": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 10000000,
+      "description": "test scope only: the most one test call may hold"
      }
     },
     "required": [
@@ -2401,7 +2408,8 @@
       "enum": [
        "workspace",
        "campaign",
-       "api_key"
+       "api_key",
+       "test"
       ]
      },
      "scopeId": {
@@ -2421,6 +2429,12 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 100000000000
+     },
+     "perCallInrMilli": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 10000000,
+      "description": "test scope only: the most one test call may hold"
      }
     },
     "required": [
@@ -8011,6 +8025,25 @@
     "required": [
      "agentId"
     ]
+   }
+  },
+  {
+   "name": "test.budget",
+   "risk": "read",
+   "summary": "today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
    }
   },
   {

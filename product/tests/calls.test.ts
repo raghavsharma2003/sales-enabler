@@ -274,6 +274,25 @@ test('test.browser_call: the person testing is the caller, by first name (stagin
   if (r.status === 'confirmed') assert.equal(fakeRuntime.tickets.find(t => t.conversationId === r.result.conversationId)!.contact.displayName, 'Asha');
 });
 
+test('test.browser_call reads money\'s daily test budget: refused past the cap, and the ticket holds what the cap allows', { skip }, async () => {
+  const { module: money } = await import('../server/modules/money/index.ts');
+  const app = buildApp(pool, [calls, agents, money]);
+  const w = await workspace();
+  const as = { workspaceId: w.ws, actor: w.member };
+  // ₹160 of test calls already today: with the default ₹50 hold a new call would pass ₹200
+  await pool.query("INSERT INTO conversation (workspace_id, channel, direction, status, cost_inr_milli, started_at) VALUES ($1,'test','outbound','ended',160000, now())", [w.ws]);
+  const no = await app.registry.execute<any>(pool, 'test.browser_call', { agentId: w.agent }, as);
+  assert.equal(no.status, 'not_executed');
+  assert.match(no.status === 'not_executed' ? no.reason : '', /test budget is used up: ₹160\.00 of ₹200 spent/);
+  // an owner lowers the hold (it only lowers spend, so it runs at once): ₹160 + ₹40 fits exactly
+  await pool.query("UPDATE member SET role = 'owner' WHERE id = $1", [w.member.id]);
+  const low = await app.registry.execute(pool, 'cap.lower', { scope: 'test', period: 'daily', capInrMilli: 200_000, perCallInrMilli: 40_000 }, { workspaceId: w.ws, actor: { ...w.member, role: 'owner' } });
+  assert.equal(low.status, 'confirmed', JSON.stringify(low));
+  const yes = await app.registry.execute<any>(pool, 'test.browser_call', { agentId: w.agent }, as);
+  assert.equal(yes.status, 'confirmed', JSON.stringify(yes));
+  if (yes.status === 'confirmed') assert.equal(fakeRuntime.tickets.find(t => t.conversationId === yes.result.conversationId)!.limits.maxCostInrMilli, 40_000);
+});
+
 test('test.browser_call dispatches a test ticket; test calls stay out of outcomes, search, funnels and monitors', { skip }, async () => {
   const w = await workspace();
   const def = (await one<{ id: string }>(pool, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values) VALUES ($1,'R','Pay?','{will_pay,no}','{will_pay}') RETURNING id`, [w.ws]))!.id;

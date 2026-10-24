@@ -102,6 +102,14 @@ Without `VP_TELEPHONY_ALLOWED_TO`, a control plane that can reach a carrier (`VP
 `VP_RUNTIME_URL`) refuses every phone attempt at the dial gate (`destination_blocked`, "This server only calls the phones
 on its test list") and the Plivo adapter refuses every request: live telephony cannot start without the list.
 
+**Test calls and money on a staging account**
+
+| Name | What |
+|---|---|
+| `VP_TEST_BUDGET_DEFAULT_INR` | The daily test-call budget, in whole rupees, for workspaces on this deployment that do not have one yet (it is set on a workspace's first test call or Billing visit, then kept). Unset in production: the code default of ₹200 a day holds. Staging sets it so long real test calls fit, e.g. `5000`. The per-call hold stays ₹50 unless an owner changes it |
+
+An owner raises or lowers their own test budget and per-call hold from the assistant or the API (`cap.raise` / `cap.lower` with `scope: 'test'`); a raise is an approval card naming both amounts, as for any buyer. Billing shows it beside the other caps with today's use and each test call's cost. To give the owner's staging account money to spend, credit it as Vyakti staff with `wallet.credit` (a reason and a ticket key); the trial credit (`money_config.trial_credit_inr_milli`) stays 0 until the owner sets a price.
+
 **Keep off on a private staging**
 
 | Name | What |

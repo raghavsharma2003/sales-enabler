@@ -163,9 +163,18 @@ export function registerTools(r: Registry): void {
       if (!cfg?.agent || !cfg?.brief?.text || !cfg.brief.hash) throw new Error('this agent has no compiled brief yet; compile the draft first');
       const stack = resolveStack(cfg.agent.voice);
 
-      const spent = await one<{ s: string }>(ctx.pool, `SELECT coalesce(sum(cost_inr_milli), 0)::text AS s FROM conversation
-        WHERE workspace_id = $1 AND channel = 'test' AND started_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata'`, [ctx.workspaceId]);
-      if (Number(spent!.s) + TEST_CALL_MAX_COST_INR_MILLI > TEST_BUDGET_PER_DAY_INR_MILLI) throw new Error("today's test budget is used up; it resets at midnight IST");
+      // The daily test budget is money's cap (test.budget, owner-raisable by approval); the constants are the fallback
+      // when the money module is not loaded. Same count either way: test-call cost since IST midnight.
+      let perCallHold = TEST_CALL_MAX_COST_INR_MILLI;
+      const budget = r.get('test.budget') ? await r.execute<{ allowed: boolean; reason?: string; perCallInrMilli: number }>(ctx.pool, 'test.budget', {}, { workspaceId: ctx.workspaceId, actor: SYSTEM }) : null;
+      if (budget?.status === 'confirmed') {
+        if (!budget.result.allowed) throw new Error(budget.result.reason ?? "today's test budget is used up; it resets at midnight IST");
+        perCallHold = budget.result.perCallInrMilli;
+      } else {
+        const spent = await one<{ s: string }>(ctx.pool, `SELECT coalesce(sum(cost_inr_milli), 0)::text AS s FROM conversation
+          WHERE workspace_id = $1 AND channel = 'test' AND started_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata'`, [ctx.workspaceId]);
+        if (Number(spent!.s) + TEST_CALL_MAX_COST_INR_MILLI > TEST_BUDGET_PER_DAY_INR_MILLI) throw new Error("today's test budget is used up; it resets at midnight IST");
+      }
 
       const member = ctx.actor.type === 'member' && ctx.actor.id
         ? await one<{ name: string | null }>(ctx.pool, 'SELECT name FROM member WHERE id = $1 AND workspace_id = $2', [ctx.actor.id, ctx.workspaceId]) : null;
@@ -181,7 +190,7 @@ export function registerTools(r: Registry): void {
         // 2026-10-23: with no name she said "क्या मैं ___ से…"). No member name: '' and the runtime opens without one.
         contact: { displayName: tester, timezone: 'Asia/Kolkata', facts: {}, memoryBrief: '', memoryStatus: 'disabled' },
         consent: { basis: 'consent' },
-        limits: { maxDurationS: Math.min(cfg.agent.limits?.maxDurationS ?? 300, 900), maxCostInrMilli: TEST_CALL_MAX_COST_INR_MILLI },
+        limits: { maxDurationS: Math.min(cfg.agent.limits?.maxDurationS ?? 300, 900), maxCostInrMilli: perCallHold },
         test: true,
       };
       let rep;
