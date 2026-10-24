@@ -20340,6 +20340,37 @@
    "title": "Per-call analysis defaults to tiered (gpt-4.1-mini first, escalating to gpt-4.1 at threshold 0.6, never escalating on engine-decided codes); mini single and gpt-4.1 stay selectable",
    "rationale": "Over three rounds on the same 42 TEST calls (two passes each), tiered scored 41, 41, 42, 42, 42, 42, and mini single 38, 36, 42, 41, 38, 39: 250/252 vs 234/252. Tiered was never worse than mini on any call in any round, and it held steady through three prompt revisions that moved mini by up to 4 calls each way. Mini's swings come from its own false nulls (wrong-person and complaint calls), which tiered catches by escalating 0-5% of calls. Cost: about Rs 0.078-0.095 per 3-minute call against mini's Rs 0.073, inside the Rs 0.17 analysis budget. The letter of the old reverse_if (more than 4/42 in one round) was not met; this decision rests on robustness across rounds, which the old rule did not measure.",
    "reverse_if": "Tiered's measured cost exceeds Rs 0.17 per 3-minute call, or a mini-single contract matches tiered on outcome (within 1/42 on the mean of two TEST passes) in two consecutive rounds with no moment or objection loss."
+  },
+  {
+   "id": "decision.2026-10-24.judge-vertex-self-minted-token",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Voice runtime judge: VP_LLM_SAFETY_JUDGE_AUTH=vertex mints and refreshes its own bearer token from VERTEX_SA_FILE through providers/google.py GoogleRoute and VertexToken (the brain and voice code; refreshed 5 minutes before expiry; India-only region gate). No static key is needed. A static key still works as before. The TS judge (post-call analysis, practice runs) still takes a static key only.",
+   "rationale": "rejected.2026-10-24.runtime-judge-static-vertex-token: a static Vertex token dies after about an hour.",
+   "reverse_if": "The judge moves off Vertex."
+  },
+  {
+   "id": "measure.2026-10-24.floor-dev-lookalikes",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Crisis floor on the new DEV look-alike set (sets/dev-lookalike-9.json: 150 look-alike benign, 75 crisis; written by a separate agent for tuning). Before: FP 3/150 (ta-en laughter 'sirichu ... saagaren', bn-en a friend's past suicide, hinglish a film hero jumping), recall 30/75. After three exemptions and a Bengali spelling variant: FP 0/150, recall 30/75 (kept). dev-7: FP 0/90, recall 100/100 (in-sample). Both doors agree.",
+   "n": "150 benign and 75 crisis DEV lines; dev-7 190",
+   "method": "rules.caller_signals (Python) and callerSignals (TS) on every line; tests in both doors",
+   "not_verified": "The DEV set shows a 2% floor FP against BLIND 8's 9/100. Its writer's look-alikes are easier for the floor than BLIND 8's were, so the cut on blind look-alikes is unknown until BLIND 9 is scored. Floor recall on DEV crisis lines is only 30/75: recall must come from the judge."
+  },
+  {
+   "id": "decision.2026-10-24.prereg9",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Pre-registered rule for BLIND 9 (research/2026-10-24/judge-prereg9/PREREG.md, written 02:39:58Z before any candidate DEV run). Candidates: A, the judge.json prompt; B, prompts/caller_crisis.risk100.txt (an anchored 0-100 risk score; both doors read risk/100). Pooled DEV (dev-7 + dev-lookalike-9). Admissible: judge-alone FP \u2264 10%. Choose the highest recall; ties go to lower FP, then A, then the higher threshold. BLIND 9 is scored once by the integrator.",
+   "rationale": "Flash-Lite's confidences step at 0.85: 6/8 DEV FPs and 24 true crisis lines sit there, so no threshold separates them. With the check-in a judge-only false positive costs a gentle check-in, so the rule favours recall within an FP cap.",
+   "reverse_if": "The owner keeps the check-in off; then a stricter FP cap applies."
   }
  ],
  "edges": [
@@ -36359,6 +36390,21 @@
    "from": "decision.2026-10-24.analysis-default-tiered",
    "to": "measure.2026-10-23.analysis-bench-r3-tiered",
    "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.judge-vertex-self-minted-token",
+   "to": "rejected.2026-10-24.runtime-judge-static-vertex-token",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.floor-dev-lookalikes",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.prereg9",
+   "to": "open.2026-10-23.judge-checkin-dev-tuning",
+   "relation": "extends"
   }
  ]
 }
