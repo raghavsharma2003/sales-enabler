@@ -224,6 +224,16 @@ The cuts, each behind a flag (`'1'`/`'0'` in the env override the default):
 barge-in time from about 730 to 535 ms with no false stops while partials lag 300 ms, but stops her on most nods at
 a 500 ms lag (`bench/results/turn-2026-10-23-dev-barge-sweep.md`). Read `partialLagMs` before lowering it.
 
+## Voice samples for the stack cards
+
+`python -m vpvoice.samples --out DIR [--stack ID ...]` renders one short clip per curated stack (s2s included)
+through the runtime's own voice adapters, with the stack's default voice and her neutral style. The line is fixed:
+`samples.TEXT` (greets "Asha", the shared AI disclosure, no brand, no claim). Stacks that share a voice share one
+clip. Output: Ogg/Opus clips normalised to -16 LUFS plus `manifest.json` (`{stackId: {file, durationS, text,
+recordedAt, combinationId, voice, tts}}`, and `spokenText` for Live, which does not promise to read verbatim).
+It writes only inside `--out`, refuses in production mode, and spaces Google requests 1 s apart. Run it on the
+India lab VM, where the keys are; `VP_DEVSIM=1 ... --devsim` renders devsim's fake tone offline.
+
 ## Admission and processes
 
 **One process carries at most `VP_MAX_CALLS_PER_PROCESS` calls (default 20).** The audio path is CPU-bound and Python
