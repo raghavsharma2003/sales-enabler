@@ -1,6 +1,6 @@
 // Today: the morning paper. Since-you-left, what needs a tap (fixed priority, at most 7), live campaigns, money, one next action.
 // Numbers come from tool results only; a missing source shows "not measured", never 0.
-import GettingStarted from './start.tsx';
+import GettingStarted, { useGettingStarted } from './start.tsx';
 import { useMemo } from 'react';
 import { ArrowRight, Pause, PhoneCall, ShieldAlert } from 'lucide-react';
 import { useApp, useData, useTool } from '../store.tsx';
@@ -22,6 +22,7 @@ const WORKSPACE_CREATED = ['workspace', 'create'].join('.');
 export default function Today() {
   const { me, hasTool, review, act, refresh } = useApp();
   const brief = useTool<Brief>('brief.today', {});
+  const gettingStarted = useGettingStarted();
   const camps = useData<CampaignRow[]>('camps', hasTool('campaign.list') ? campaignList : null);
   const wallet = useData('wallet', hasTool('wallet.get') ? walletGet : null);
   const handoffs = useData('handoffs-today', hasTool('handoff.list') ? () => run<{ items: HandOff[]; open: number; crisisOpen: number }>('handoff.list', { status: 'open', limit: 3 }) : null);
@@ -113,7 +114,7 @@ export default function Today() {
                     <div><dt>Runway at today's pace</dt><dd>{wallet.data?.runwayDays != null ? <span className="tnum">{wallet.data.runwayDays} days</span> : <NotMeasured />}</dd></div></dl> : <p className="small muted">No wallet yet.</p>}
                 </Card>
 
-                {next && <Card aria-labelledby="next-h"><CardHead id="next-h" title="Next best step" /><p><strong>{next.title}</strong></p><p className="muted small" style={{ margin: '4px 0 12px' }}>{next.why}</p><Link to={next.href} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>{next.label}</span><ArrowRight size={16} aria-hidden /></Link></Card>}
+                {next && gettingStarted === false && <Card aria-labelledby="next-h"><CardHead id="next-h" title="Next best step" /><p><strong>{next.title}</strong></p><p className="muted small" style={{ margin: '4px 0 12px' }}>{next.why}</p><Link to={next.href} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>{next.label}</span><ArrowRight size={16} aria-hidden /></Link></Card>}
               </div>
             </div>
           </div>

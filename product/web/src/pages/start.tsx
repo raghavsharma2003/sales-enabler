@@ -24,12 +24,21 @@ async function progress(): Promise<Progress> {
   return { agents: agents.map(a => ({ id: a.id, name: a.name, published: !!a.latestVersion })), heard: calls.calls.some(c => c.channel === 'test'), contacts: contacts.contacts.length, campaigns: camps.length, launched: camps.filter(c => c.state !== 'draft').length, draft: draft ? { id: draft.id, name: draft.name } : null };
 }
 
+const allDone = (p: Progress) => p.agents.length > 0 && p.heard && p.contacts > 0 && p.launched > 0;
+/** True while the Get started card is showing (Today then leaves the next step to it, so there is one primary action). */
+export function useGettingStarted(): boolean | null {
+  const q = useData<Progress>('getting-started', progress);
+  return q.data ? !allDone(q.data) : null;
+}
+
 export default function GettingStarted() {
   const q = useData<Progress>('getting-started', progress);
   if (!q.data) return q.state === 'loading' ? null : <Async q={q} what="Getting started" tool="agent.list">{() => null}</Async>;
   const p = q.data;
-  const done = p.agents.length > 0 && p.heard && p.contacts > 0 && p.launched > 0;
-  if (done) return null;
+  if (allDone(p)) return null;
+  // One primary action: only the first step not yet done gets the filled button; the others stay available, quieter.
+  const current = p.agents.length === 0 ? 1 : !p.heard ? 2 : p.contacts === 0 ? 3 : 4;
+  const cls = (n: number) => `btn ${n === current ? 'btn-primary' : 'btn-secondary'}`;
   const first = p.agents[0];
   const published = p.agents.find(a => a.published);
   return (
@@ -40,16 +49,16 @@ export default function GettingStarted() {
         </Step>
         <Step n={2} done={p.heard} title="Hear her" doneText="You have run a test call.">
           {!p.heard && (first
-            ? <><p className="small muted">Call yourself in the browser, or run practice callers. Nothing reaches anyone.</p><div><Link to={`/agents/${first.id}?test=1`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Hear her now</span></Link></div></>
+            ? <><p className="small muted">Call yourself in the browser, or run practice callers. Nothing reaches anyone.</p><div><Link to={`/agents/${first.id}?test=1`} className={cls(2)} style={{ textDecoration: 'none' }}><span>Hear her now</span></Link></div></>
             : <Btn disabled fix={null} reason="Create an agent first.">Hear her</Btn>)}
         </Step>
         <Step n={3} done={p.contacts > 0} title="Add contacts" doneText="Contacts are saved.">
-          {p.contacts === 0 && <><p className="small muted">Paste a CSV or choose a file. You see a verdict for every row before anything is saved.</p><div><Link to="/contacts/import" className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Add contacts</span></Link></div></>}
+          {p.contacts === 0 && <><p className="small muted">Paste a CSV or choose a file. You see a verdict for every row before anything is saved.</p><div><Link to="/contacts/import" className={cls(3)} style={{ textDecoration: 'none' }}><span>Add contacts</span></Link></div></>}
         </Step>
         <Step n={4} done={p.launched > 0} title="Launch a test campaign" doneText="A campaign has been launched.">
-          {p.draft ? <><p className="small muted">“{p.draft.name}” is saved as a draft. Nothing is dialled until you hold the launch button, and the launch checks list what is left to do.</p><div><Link to={`/campaigns/${p.draft.id}`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Finish your campaign</span></Link></div></> : p.launched === 0 && (!published ? <Btn disabled reason={first ? 'Publish an agent first. A campaign uses a published version.' : 'Create an agent first.'} fix={first ? { label: 'Open the agent', to: `/agents/${first.id}` } : null}>Start a campaign</Btn>
+          {p.draft ? <><p className="small muted">“{p.draft.name}” is saved as a draft. Nothing is dialled until you hold the launch button, and the launch checks list what is left to do.</p><div><Link to={`/campaigns/${p.draft.id}`} className={cls(4)} style={{ textDecoration: 'none' }}><span>Finish your campaign</span></Link></div></> : p.launched === 0 && (!published ? <Btn disabled reason={first ? 'Publish an agent first. A campaign uses a published version.' : 'Create an agent first.'} fix={first ? { label: 'Open the agent', to: `/agents/${first.id}` } : null}>Start a campaign</Btn>
             : p.contacts === 0 ? <Btn disabled reason="Add contacts first, so there is someone to call." fix={{ label: 'Add contacts', to: '/contacts/import' }}>Start a campaign</Btn>
-            : <div><Link to="/campaigns/new" className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Start a campaign</span></Link></div>)}
+            : <div><Link to="/campaigns/new" className={cls(4)} style={{ textDecoration: 'none' }}><span>Start a campaign</span></Link></div>)}
         </Step>
       </ol>
     </Card>

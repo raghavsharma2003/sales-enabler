@@ -1,0 +1,37 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.walkthrough4-vs-competitors",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Buyer walkthrough round 4 (a new NBFC buyer end to end, 1440 and 390) against the best of six competitors: 92 steps, 2 failed (Launch correctly withheld until the launch checks pass), 0 sideways scroll. Ahead on testing (real browser call with live captions), import (row verdicts), campaign (checks with fixes, cost range incl. GST, language and latency warnings) and the call page; worse on first-screen focus (fixed: one primary action), stack languages (fixed: languages measured vs stated and a filter with counts), knowledge sources (text only; routed), stack presets (routed). Practice-caller verdicts and the assistant's answers were not judgeable on the dev server's scripted model",
+   "n": 92,
+   "method": "research/2026-10-24/walkthrough4/walk.mjs on the dev server (real tools, devsim, scripted model); every screenshot opened; competitor bar from research/2026-10-21/walkthroughs/ reports (their screenshots are not in the repo)",
+   "path": "research/2026-10-24/walkthrough4/FRICTION.md"
+  },
+  {
+   "id": "open.2026-10-24.knowledge-url-and-file",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "title": "Company data is text only on Settings > Knowledge; the best competitor (Retell) takes web pages, files and Drive/OneDrive/Notion in one dialog. Who adds knowledge.ingest from a URL and a file behind the same passage approval?",
+   "closes_when": "knowledge.ingest accepts a URL and a PDF/DOCX file, and the Knowledge tab offers both."
+  },
+  {
+   "id": "open.2026-10-24.telephony-status-read",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "title": "Numbers only says phone lines are off after the person types a number and presses Ring me. A read that says whether telephony is on for the workspace (and why not) would let the page say so on arrival.",
+   "closes_when": "A read tool reports telephony state and the Numbers page uses it before any input."
+  }
+ ],
+ "edges": [
+  { "from": "measure.2026-10-24.walkthrough4-vs-competitors", "to": "directive.2026-10-24.calling-first-build-all", "relation": "informs" },
+  { "from": "measure.2026-10-24.walkthrough4-vs-competitors", "to": "open.2026-10-24.knowledge-url-and-file", "relation": "leaves-open" },
+  { "from": "measure.2026-10-24.walkthrough4-vs-competitors", "to": "open.2026-10-24.telephony-status-read", "relation": "leaves-open" }
+ ],
+ "events": []
+}

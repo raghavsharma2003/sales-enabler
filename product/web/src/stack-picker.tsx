@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Check, Pause, Play, Volume2 } from 'lucide-react';
 import { loadSamples, playableIn, type Sample } from './samples.ts';
 import * as api from './api.ts';
-import { Async, Btn, Chip, Figure, NotMeasured, Segmented } from './ui.tsx';
+import { Async, Btn, Chip, Empty, Figure, NotMeasured, Segmented, SelectField } from './ui.tsx';
 import { inr } from './format.ts';
 import { useApp, useData } from './store.tsx';
 
@@ -37,7 +37,9 @@ export interface Parts { ears?: string; brain?: string; voice?: string; s2s?: st
 interface CompRow { id: string; part: Part; label: string; maker: string; processedIn: string; latency: Fig; price: string; status: 'available' | 'beta'; note: string | null; voices: string[]; defaultVoice: string | null; availability: Avail }
 interface PartRow { part: Part; id: string; label: string; maker: string; processedIn: string }
 interface Gate { state: 'meets' | 'not_yet' | 'not_measured'; label: string; detail: string; target: { replyGapP50Ms: number; cutInRateMax: number } }
-interface StackRow { id: string; label: string; kind: 'cascade' | 's2s'; status: 'available' | 'beta'; note: string; replyGap: Fig; risks: string[]; availability: Avail; components: Parts; parts: PartRow[]; gate?: Gate }
+// A language the stack serves end to end, graded by its weakest part: 'measured' only where every part ran in it in our tests.
+interface StackLang { language: string; name: string; grade: 'measured' | 'stated' }
+interface StackRow { id: string; label: string; kind: 'cascade' | 's2s'; status: 'available' | 'beta'; note: string; replyGap: Fig; risks: string[]; availability: Avail; components: Parts; parts: PartRow[]; languages?: StackLang[]; gate?: Gate }
 interface StackList { default: string | null; stacks: StackRow[]; components: CompRow[] }
 
 export type StackChange = { stackId: string; components?: Parts; voiceId?: string | null };
@@ -66,6 +68,7 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
   const prices = usePrices(d.stacks);
   const samples = useData('voice-samples', loadSamples).data ?? {};
   const [filter, setFilter] = useState<'all' | 'cascade' | 's2s' | 'available'>('all');
+  const [lang, setLang] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
   const isCustom = stackId === CUSTOM;
@@ -95,7 +98,14 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
     onChanged({ stackId: stackId ?? CUSTOM, components: isCustom ? components : undefined, voiceId: v });
   };
 
-  const list = d.stacks.filter(s => filter === 'all' || (filter === 'available' ? s.status === 'available' : s.kind === filter));
+  const byKind = d.stacks.filter(s => filter === 'all' || (filter === 'available' ? s.status === 'available' : s.kind === filter));
+  const list = byKind.filter(s => !lang || (s.languages ?? []).some(l => l.language === lang));
+  // Every language the stacks serve, with how many of the stacks shown speak it (most first), for the language filter.
+  const langs = useMemo(() => {
+    const m = new Map<string, { name: string; n: number }>();
+    for (const s of byKind) for (const l of s.languages ?? []) m.set(l.language, { name: l.name, n: (m.get(l.language)?.n ?? 0) + 1 });
+    return [...m.entries()].sort((a, b) => b[1].n - a[1].n || a[1].name.localeCompare(b[1].name));
+  }, [byKind]);
   return (
     <div className="stack">
       <Summary d={d} stackId={stackId} curated={curated} parts={parts} isCustom={isCustom} />
@@ -103,8 +113,14 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
 
       <div className="stackbar">
         <div><h3>Recommended stacks</h3><p className="sub">Ready-made combinations we have measured. Choosing one saves it to this draft straight away.</p></div>
-        <Segmented label="Show stacks" value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, { value: 'cascade', label: 'Separate parts' }, { value: 's2s', label: 'Speech to speech' }, { value: 'available', label: 'Available now' }]} />
+        <div className="stackbar-filters">
+          <Segmented label="Show stacks" value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, { value: 'cascade', label: 'Separate parts' }, { value: 's2s', label: 'Speech to speech' }, { value: 'available', label: 'Available now' }]} />
+          {langs.length > 0 && <SelectField label="Speaks" value={lang} onChange={e => setLang(e.target.value)}>
+            <option value="">Any language ({byKind.length})</option>
+            {langs.map(([code, l]) => <option key={code} value={code}>{l.name} ({l.n})</option>)}</SelectField>}
+        </div>
       </div>
+      {lang && list.length === 0 && <Empty title={`No stack here speaks ${langs.find(([c]) => c === lang)?.[1].name ?? 'that language'}`} body="Try another kind of stack above, or build your own from parts that do." />}
       <ul className="stacks" aria-label="Recommended voice stacks">
         {list.map(s => <StackCard key={s.id} s={s} selected={s.id === stackId} isDefault={s.id === d.default} price={prices[s.id]} sample={samples[s.id]} busy={busy === s.id} onPick={() => void choose(s.id)} />)}
       </ul>
@@ -222,6 +238,17 @@ function useBuildPrice(parts: Parts | null): (Price & { refused?: string }) | nu
   return p && p.key === key ? p.v : { perMinuteInrMilli: null, basis: '', state: 'loading' };
 }
 
+/** What a stack speaks, measured apart from stated, so a maker's claim never reads as our own test. Long lists fold. */
+function Languages({ list }: { list: StackLang[] }) {
+  const line = (grade: StackLang['grade'], words: string) => {
+    const names = list.filter(l => l.grade === grade).map(l => l.name);
+    if (!names.length) return null;
+    const shown = names.slice(0, 5), more = names.length - shown.length;
+    return <span className="langline"><span className="muted">{words}: </span>{shown.join(', ')}{more > 0 && <details className="how langmore"><summary>+{more} more</summary><p>{names.slice(5).join(', ')}</p></details>}</span>;
+  };
+  return <>{line('measured', 'Measured in our tests')}{line('stated', 'The makers say')}</>;
+}
+
 function StackCard({ s, selected, isDefault, price, sample, busy, onPick }: { s: StackRow; selected: boolean; isDefault: boolean; price?: Price; sample?: Sample; busy: boolean; onPick: () => void }) {
   const down = s.availability.state === 'unavailable';
   return (
@@ -236,6 +263,7 @@ function StackCard({ s, selected, isDefault, price, sample, busy, onPick }: { s:
       </div>
       <p className="small">{s.note}</p>
       <dl className="kv small">
+        {s.languages && s.languages.length > 0 && <div><dt>Languages</dt><dd><Languages list={s.languages} /></dd></div>}
         <div><dt>Reply gap</dt><dd><Figure m={s.replyGap} /><details className="how"><summary>How we know</summary><p>{s.replyGap.source}</p></details></dd></div>
         {s.gate && <div><dt>Speed and turn-taking</dt><dd><Chip wrap tone={s.gate.state === 'meets' ? 'leaf' : s.gate.state === 'not_yet' ? 'marigold' : 'neutral'}>{s.gate.label}</Chip>
           <details className="how"><summary>How we know</summary><p>{s.gate.detail} The target is a median reply within {(s.gate.target.replyGapP50Ms / 1000).toFixed(1)} s and at most {Math.round(s.gate.target.cutInRateMax * 100)}% of turns where she talks over the caller. Calls still run on a stack that does not meet it.</p></details></dd></div>}

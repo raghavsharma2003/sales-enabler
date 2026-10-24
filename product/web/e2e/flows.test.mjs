@@ -2218,3 +2218,83 @@ test('Memory review: proposed facts across contacts wait in one queue; a correct
     }
   } finally { await phoneCtx.close(); }
 });
+// ---- Must-be audit brief 10 (half): each stack card says what it speaks, measured apart from stated; a language filter with counts
+test('Stack languages: each card lists what stack.list says it speaks, measured apart from stated, and the language filter counts and narrows exactly', async () => {
+  const d = (await tool('stack.list', {})).result;
+  const id = await riyaId();
+  await page.goto(`${BASE}/agents/${id}?tab=voice`);
+  await page.getByRole('heading', { name: 'Recommended stacks' }).waitFor();
+  const cards = page.locator('.stackcard');
+  await cards.first().waitFor();
+  for (const s of d.stacks) {
+    const card = cards.filter({ has: page.getByRole('heading', { name: s.label, exact: true }) });
+    const row = card.locator('dt', { hasText: 'Languages' }).locator('xpath=..');
+    const text = await row.innerText();
+    const measured = s.languages.filter(l => l.grade === 'measured').map(l => l.name);
+    if (measured.length) assert.match(text, new RegExp(`Measured in our tests: ${measured.slice(0, 5).join(', ')}`), `${s.id}: measured`);
+    const stated = s.languages.filter(l => l.grade === 'stated').map(l => l.name);
+    if (stated.length) assert.match(text, new RegExp(`The makers say: ${stated.slice(0, 5).join(', ')}`), `${s.id}: stated`);
+    if (stated.length > 5) assert.match(text, new RegExp(`\\+${stated.length - 5} more`));
+  }
+  const want = new Map();
+  for (const s of d.stacks) for (const l of s.languages) want.set(l.name, (want.get(l.name) ?? 0) + 1);
+  const opts = await page.getByLabel('Speaks').locator('option').allInnerTexts();
+  assert.equal(opts[0], `Any language (${d.stacks.length})`);
+  for (const [name, n] of want) assert.ok(opts.includes(`${name} (${n})`), `${name} (${n}) in ${opts.join(' | ')}`);
+  const rare = [...want].sort((a, b) => a[1] - b[1])[0];
+  await page.getByLabel('Speaks').selectOption({ label: `${rare[0]} (${rare[1]})` });
+  await page.waitForFunction(n => document.querySelectorAll('.stackcard').length === n, rare[1]);
+  await page.getByLabel('Speaks').selectOption({ index: 0 });
+});
+
+// ---- Walkthrough 4 (W1): Today offers one primary action, the next step not yet done; nothing repeats it
+test('Today: in a new workspace the Get started card has one primary action, on the first step not done, and no other card repeats it', async () => {
+  const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const su = await c.request.post(BASE + '/v1/signup', { data: { workspace: 'One Primary Test', name: 'Kiran Rao', email: `one-primary-${Date.now()}@example.test`, password: 'sample-password-1234' } });
+  assert.ok(su.ok());
+  const srv = async (name, args = {}) => (await (await c.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
+  const p = await c.newPage();
+  try {
+    const tpl = (await srv('template.list')).result.templates[0];
+    assert.equal((await srv('agent.create', { name: 'Reminders (synthetic)', templateId: tpl.id })).status, 'confirmed');
+    await p.goto(BASE + '/');
+    const card = p.locator('.card', { has: p.getByRole('heading', { name: 'Get started' }) });
+    await card.waitFor({ timeout: 10000 });
+    const primaries = card.locator('.btn-primary');
+    assert.equal(await primaries.count(), 1, 'one primary action: ' + (await primaries.allInnerTexts()).join(' | '));
+    assert.equal((await primaries.first().innerText()).trim(), 'Hear her now', 'on step 2, the first one not done');
+    assert.ok(await card.getByRole('link', { name: 'Add contacts' }).isVisible(), 'later steps stay available');
+    assert.equal(await p.getByRole('heading', { name: 'Next best step' }).count(), 0, 'no second card for the same step');
+  } finally { await c.close(); }
+});
+
+// ---- Walkthrough 4 (W3, W2): with one agent the import picks her, so her facts are matched; a toast sits in a corner
+test('Import with one agent: she is chosen for the column check up front; a toast sits in the page corner, not over the middle of a card', async () => {
+  const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const su = await c.request.post(BASE + '/v1/signup', { data: { workspace: 'One Agent Import Test', name: 'Devika Iyer', email: `one-agent-${Date.now()}@example.test`, password: 'sample-password-1234' } });
+  assert.ok(su.ok());
+  const srv = async (name, args = {}) => (await (await c.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
+  const p = await c.newPage();
+  try {
+    const tpl = (await srv('template.list')).result.templates[0];
+    const made = await srv('agent.create', { name: 'Only agent (synthetic)', templateId: tpl.id });
+    assert.equal(made.status, 'confirmed');
+    await p.goto(BASE + '/contacts/import');
+    const pick = p.getByLabel('Which agent will call them? (optional)');
+    await p.waitForFunction(id => document.querySelector('select')?.value === id || [...document.querySelectorAll('select')].some(s => s.value === id), made.result.agentId, { timeout: 10000 });
+    assert.equal(await pick.inputValue(), made.result.agentId, 'the only agent is chosen');
+    await pick.selectOption('');
+    await p.waitForTimeout(300);
+    assert.equal(await pick.inputValue(), '', '"Decide later" stays a choice, and is kept once made');
+    // A toast: save a draft change on the agent.
+    await p.goto(`${BASE}/agents/${made.result.agentId}?tab=persona`);
+    await p.getByRole('button', { name: 'Add a note' }).click();
+    await p.locator('main input').last().fill('keep it short');
+    await p.getByRole('button', { name: 'Save draft' }).click();
+    const toast = p.locator('.toast').first();
+    await toast.waitFor({ timeout: 10000 });
+    const r = await toast.boundingBox();
+    assert.ok(r.x > 1440 / 2 - 80 && r.x + r.width <= 1440 - 360, `in the page column's right corner, clear of the dock: ${JSON.stringify(r)}`);
+    assert.ok(r.y + r.height <= 900 - 16, 'at the bottom of the screen');
+  } finally { await c.close(); }
+});

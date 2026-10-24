@@ -23,9 +23,18 @@ setFakeLlm((req: LlmRequest) => {
   // DEV ONLY: the agent's side of a practice chat or practice caller (its system prompt carries the call ledger) answers in
   // Hinglish; a price question gets an offer that is not in her facts, so the reply door's "held back" shows in the panel.
   if (req.purpose === 'simulate' && req.messages[0]?.content.includes('Ledger of this call so far')) {
+    // Her first turn carries the AI disclosure, as a compiled brief does (without it the reply door holds back every turn and
+    // every practice caller fails "never said she is an AI", which says nothing about the agent being tested).
     const asked = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';
-    return reply(/kitna|price|cost/.test(asked) ? 'Is baar aapke liye 40% ka special discount hai. Renewal premium ki puri details main aapko bhej deti hoon.'
-      : 'Ji, samajh gayi. Aapki policy ka renewal is mahine due hai, main do minute mein bata deti hoon.');
+    // When the caller asks whether she is a bot, the reply door's own honest answer is what the practice chat shows.
+    const first = !req.messages.some(m => m.role === 'assistant') && !/\bbot\b|insaan|\bai\b|robot|machine/.test(asked);
+    const opening = first ? 'Namaste, main ek AI assistant hoon, aapke account ke baare mein call kar rahi hoon. ' : '';
+    // A different line each turn: the same sentence twice fails the practice checks for the fixture, not the agent.
+    const turn = req.messages.filter(m => m.role === 'assistant').length;
+    const LINES = ['Ji, samajh gayi. Main do minute mein zaroori baat bata deti hoon.', 'Theek hai, main aapki baat note kar rahi hoon.', 'Aapka samay dene ke liye shukriya.',
+      'Koi aur sawaal ho to bataiye.', 'Main yeh details aapko SMS par bhi bhej sakti hoon.', 'Achha, main samjhi. Aage kaise madad karun?'];
+    return reply(/kitna|price|cost/.test(asked) ? opening + 'Is baar aapke liye 40% ka special discount hai. Puri details main aapko bhej deti hoon.'
+      : opening + LINES[turn % LINES.length]);
   }
   const last = req.messages[req.messages.length - 1];
   const said = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';

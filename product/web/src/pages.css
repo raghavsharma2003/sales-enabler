@@ -13,6 +13,10 @@
 @media (max-width: 819px) { .need { flex-direction: column; align-items: stretch; } .bignum { font-size: 2rem; } }
 /* ---------- stack picker ---------- */
 .stackbar { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+.stackbar-filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.stackbar-filters .field { min-width: 180px; margin: 0; }
+.langline { display: block; }
+.langmore { display: inline-block; margin-left: 4px; }
 .stacks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
 .stackcard { border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); padding: 16px; display: grid; gap: 10px; align-content: start; }
 .stackcard.sel { border: 2px solid var(--terra); padding: 15px; background: var(--terra-bg); }
@@ -66,6 +70,9 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .stickycol { position: sticky; top: 76px; }
 .checklist { list-style: none; margin: 0; padding: 0; display: grid; }
 .check { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--line); } .check:first-child { border-top: 0; padding-top: 0; }
+/* The text takes the row; a fix button wraps under it, lined up with the text, so a narrow column (the campaign page, a phone)
+   never squeezes the sentence to a few words a line (walkthrough 4, W5). */
+.check { flex-wrap: wrap; } .check > .grow { flex: 1 1 calc(100% - 32px); min-width: 0; } .check > .grow ~ * { margin-left: 32px; }
 .check svg { flex: none; margin-top: 2px; } .check-ok svg { color: var(--leaf); } .check-fail svg { color: var(--brick); } .check-warn svg { color: var(--marigold-ink); }
 @media (max-width: 819px) { .stickycol { position: static; } }
 /* ---------- call page ---------- */

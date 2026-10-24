@@ -172,7 +172,10 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .toasts { position: fixed; z-index: 80; left: 50%; transform: translateX(-50%); bottom: 88px; display: grid; gap: 8px; width: min(440px, calc(100% - 32px)); pointer-events: none; }
 .toast { pointer-events: auto; background: var(--forest); color: var(--nav-ink); padding: 12px 14px; border-radius: 10px; box-shadow: var(--shadow); font-size: 0.9375rem; border-left: 4px solid var(--nav-ink-dim); }
 .toast-ok { border-left-color: var(--leaf); } .toast-bad { border-left-color: var(--terra); }
-@media (min-width: 820px) { .toasts { bottom: 24px; } }
+/* Desktop: a toast sits in the page column's bottom-right corner, not over the middle of a card (walkthrough 4, W2); left of
+   the dock where the dock is shown. */
+@media (min-width: 820px) { .toasts { bottom: 24px; left: auto; right: 24px; transform: none; width: min(400px, calc(100% - 48px)); } }
+@media (min-width: 1180px) { .toasts { right: calc(360px + 24px); } }
 
 /* ---------- shell ---------- */
 .app { display: grid; grid-template-columns: 76px minmax(0, 1fr); min-height: 100dvh; }

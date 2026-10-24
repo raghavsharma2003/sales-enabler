@@ -136,6 +136,10 @@ function FileImport() {
   const [srcText, setSrcText] = useState('');                     // the text the preview's samples come from
   const [agentId, setAgentId] = useState('');
   const agents = useData('import-agents', agentNames);
+  // With one agent in the workspace, she is the one who will call this list: chosen up front, so the column check runs and the
+  // launch never finds her facts unmatched (walkthrough 4, W3). "Decide later" stays one choice away.
+  const chose = useRef(false);
+  useEffect(() => { if (!chose.current && agents.data?.length === 1 && !agentId) setAgentId(agents.data[0].id); }, [agents.data, agentId]);
   const [pv, setPv] = useState<ImportPreview | null>(null);
   const [busy, setBusy] = useState(false);
   const file = useRef<HTMLInputElement>(null);
@@ -165,7 +169,7 @@ function FileImport() {
           : <TextArea label="Your list" value={csv} onChange={e => { setCsv(e.target.value); setPv(null); }} rows={6} placeholder="Name,Mobile,City&#10;Sunita Verma,90000 00011,Pune" className="field-mono" hint="Use made-up data or your own customers' data only. Do not paste OTPs, card numbers or passwords." />}
         <div className="formgrid" style={{ marginTop: 12 }}>
           <Async q={agents} what="Agents" tool="agent.list" rows={1}>{list => (
-            <SelectField label="Which agent will call them? (optional)" value={agentId} onChange={e => { setAgentId(e.target.value); setPv(null); }}
+            <SelectField label="Which agent will call them? (optional)" value={agentId} onChange={e => { chose.current = true; setAgentId(e.target.value); setPv(null); }}
               hint="We check the list has every detail she says from each person's record, before anything is saved.">
               <option value="">Decide later</option>{list.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>)}</Async>
         </div>
