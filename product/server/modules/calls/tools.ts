@@ -20,6 +20,7 @@ import { flagJudgeRecheck, outcomeReadings, recordVerified } from './verified.ts
 import { transcriptRemovedWhy } from '../memory/transcript-purge.ts';
 import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
 import { lineCheck } from './line-watch.ts';
+import { appendAudit } from '../../audit.ts';
 
 // Test calls run inside a daily test budget (workspace blueprint: ₹200 a day, proposed) and a per-call cap.
 export const TEST_BUDGET_PER_DAY_INR_MILLI = 200_000;
@@ -127,6 +128,36 @@ export function judgeMarkText(j: JudgeRow): string {
     : `The safety checker flagged ${what} here${pct}${j.label === 'opt_out' ? '; the agent confirmed it and ended the call.' : '; the agent paused the goal and offered help.'}`;
 }
 
+/** One call, everything about it: what call.get returns and what the staff review export carries, from one place. */
+async function callRecord(ctx: ToolCtx, conversationId: string) {
+  const c = await conversation(ctx, conversationId);
+  // One after another: a transaction client runs one query at a time (pg deprecates queued parallel queries on a client).
+  const read = (sql: string, params: unknown[]) => many(ctx.q, sql, params);
+  const turns = await read('SELECT idx, speaker, text, latency, interrupted, started_ms, ended_ms FROM turn WHERE conversation_id = $1 ORDER BY idx', [c.id]);
+  const moments = await read('SELECT source, kind, at_ms, note, quote FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY at_ms NULLS LAST', [c.id, ctx.workspaceId]);
+  const safety = await read('SELECT seq, rule, action, detail, at FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
+  const tools = await read('SELECT seq, name, args, status, at FROM call_tool_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
+  const handOffs = await read('SELECT mode, destination, status, brief, created_at FROM hand_off WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
+  const costs = await read('SELECT component, provider, quantity::float AS quantity, unit, inr_milli::int AS inr_milli, detail FROM cost_line WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
+  const outcomes = await read('SELECT value, grade, source, evidence, definition_id, created_at FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
+  const judged = await read('SELECT seq, label, mode, outcome, kind, confidence::float AS confidence, reason, at FROM call_judge_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
+  const judgeMarks = judged.map(j => ({ seq: j.seq, at: j.at, label: j.label, outcome: j.outcome, confidence: j.confidence, text: judgeMarkText(j as unknown as JudgeRow) }));
+  const rc = reasonFor(c.reason_code);
+  const recording = await recordingFor(ctx, c);
+  const verified = verifiedView(outcomes, c.analysis);
+  const allowedBy = await allowedByFor(ctx.q, ctx.workspaceId, c as { id: string; attempt_id: string | null; channel: string });
+  const transcriptRemoved = transcriptRemovedWhy(c, (await retentionPolicy(ctx.q, ctx.workspaceId)).policy.transcripts_days);
+  return {
+    id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
+    contactId: c.contact_id, agentVersionId: c.agent_version_id, agent: agentOf(c), startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
+    endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
+    recordingUri: c.recording_uri, recording, transcriptRemoved, verified, allowedBy, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
+    cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
+    turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
+    trace: (c as { trace?: unknown }).trace ?? null,         // the runtime's turn-by-turn trace (CallTrace), or null
+  };
+}
+
 export function registerTools(r: Registry): void {
   // ---- test.browser_call --------------------------------------------------------------------------------
   r.register(tool(obj({ agentId: uuid(), versionId: opt(uuid()), useDraft: opt(bool()) }), {
@@ -213,33 +244,43 @@ export function registerTools(r: Registry): void {
   // ---- call.get -----------------------------------------------------------------------------------------
   r.register(tool(obj({ conversationId: uuid() }), {
     name: 'call.get', risk: 'read', summary: 'Everything about one call: transcript, turns, moments, safety, tools, hand-offs, cost lines, outcomes and analysis',
+    run: (ctx, i) => callRecord(ctx, i.conversationId),
+  }));
+
+  // ---- the staff review export ------------------------------------------------------------------------------
+  // directive.2026-10-24.calling-first-build-all: Vyakti staff (actor vp_success, never a workspace role) read one
+  // workspace's calls in a time window as one JSON, to find where a long test call went wrong. Each call is call.get's
+  // own record (transcript with every per-turn field the runtime stored, turns, moments, safety, judge marks, tools,
+  // hand-offs, outcomes, cost lines, analysis, the gate record) plus the runtime events seen; the recording is said to
+  // exist or not, never a signed link. Test calls are in by default (the owner reviews mostly on them). Audited.
+  r.register(tool(obj({ from: date, to: date, includeTest: opt(bool()), limit: opt(num({ int: true, min: 1, max: 500 })) }), {
+    name: 'review.export', risk: 'read', summary: "Vyakti staff: one workspace's calls in a time window, with transcripts, traces, flags, outcomes, costs and errors, as one JSON",
+    roles: [],                                   // no member role may call it; only the vp_success (Vyakti staff) actor
     run: async (ctx, i) => {
-      const c = await conversation(ctx, i.conversationId);
-      // One after another: a transaction client runs one query at a time (pg deprecates queued parallel queries on a client).
-      const read = (sql: string, params: unknown[]) => many(ctx.q, sql, params);
-      const turns = await read('SELECT idx, speaker, text, latency, interrupted, started_ms, ended_ms FROM turn WHERE conversation_id = $1 ORDER BY idx', [c.id]);
-      const moments = await read('SELECT source, kind, at_ms, note, quote FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY at_ms NULLS LAST', [c.id, ctx.workspaceId]);
-      const safety = await read('SELECT seq, rule, action, detail, at FROM call_safety_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
-      const tools = await read('SELECT seq, name, args, status, at FROM call_tool_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
-      const handOffs = await read('SELECT mode, destination, status, brief, created_at FROM hand_off WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
-      const costs = await read('SELECT component, provider, quantity::float AS quantity, unit, inr_milli::int AS inr_milli, detail FROM cost_line WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
-      const outcomes = await read('SELECT value, grade, source, evidence, definition_id, created_at FROM outcome WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY created_at', [c.id, ctx.workspaceId]);
-      const judged = await read('SELECT seq, label, mode, outcome, kind, confidence::float AS confidence, reason, at FROM call_judge_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
-      const judgeMarks = judged.map(j => ({ seq: j.seq, at: j.at, label: j.label, outcome: j.outcome, confidence: j.confidence, text: judgeMarkText(j as unknown as JudgeRow) }));
-      const rc = reasonFor(c.reason_code);
-      const recording = await recordingFor(ctx, c);
-      const verified = verifiedView(outcomes, c.analysis);
-      const allowedBy = await allowedByFor(ctx.q, ctx.workspaceId, c as { id: string; attempt_id: string | null; channel: string });
-      const transcriptRemoved = transcriptRemovedWhy(c, (await retentionPolicy(ctx.q, ctx.workspaceId)).policy.transcripts_days);
-      return {
-        id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
-        contactId: c.contact_id, agentVersionId: c.agent_version_id, agent: agentOf(c), startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
-        endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
-        recordingUri: c.recording_uri, recording, transcriptRemoved, verified, allowedBy, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
-        cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
-        turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
-        trace: (c as { trace?: unknown }).trace ?? null,         // the runtime's turn-by-turn trace (CallTrace), or null
-      };
+      if (ctx.actor.type !== 'vp_success' || !ctx.actor.id) throw new Error('only Vyakti staff can export calls for review');
+      const from = new Date(i.from), to = new Date(i.to);
+      if (!(to > from)) throw new ValidationError('to', 'the window must end after it starts');
+      if (to.getTime() - from.getTime() > 7 * 86400_000) throw new ValidationError('to', 'export at most 7 days at a time');
+      const limit = i.limit ?? 200;
+      const ids = await many<{ id: string }>(ctx.q, `SELECT id FROM conversation WHERE workspace_id = $1 AND coalesce(started_at, ended_at) >= $2 AND coalesce(started_at, ended_at) < $3
+          AND ($4::boolean OR channel <> 'test') ORDER BY coalesce(started_at, ended_at), id LIMIT $5`, [ctx.workspaceId, from, to, i.includeTest ?? true, limit + 1]);
+      const calls = [];
+      for (const { id } of ids.slice(0, limit)) {
+        const { recording, recordingUri: _uri, ...rec } = await callRecord(ctx, id);
+        const events = await many<{ seq: number; type: string; received_at: Date }>(ctx.q, 'SELECT seq, type, received_at FROM runtime_event_seen WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [id, ctx.workspaceId]);
+        calls.push({ ...rec, recording: { available: !!recording.url, why: recording.why }, runtimeEvents: events,
+          errors: [
+            ...(rec.endReason === 'error' || rec.endReason === 'failed' ? [{ where: 'runtime', what: `the call ended with end reason ${rec.endReason}` }] : []),
+            ...(rec.analysis?.status === 'failed' ? [{ where: 'analysis', what: String(rec.analysis.reason ?? 'analysis failed') }] : []),
+            ...(rec.analysis?.judge_unavailable ? [{ where: 'safety judge', what: `the judge was unavailable ${rec.analysis.judge_unavailable} time(s)` }] : []),
+            ...rec.tools.filter((t: any) => t.status === 'failed').map((t: any) => ({ where: 'tool', what: `${t.name}: ${t.status}` })),
+          ] });
+      }
+      await appendAudit(ctx.q, { workspaceId: ctx.workspaceId, actorType: 'vp_success', actorId: ctx.actor.id, action: 'review.export',
+        objectType: 'workspace', objectId: ctx.workspaceId, payload: { from: from.toISOString(), to: to.toISOString(), calls: calls.length, includeTest: i.includeTest ?? true } });
+      return { workspaceId: ctx.workspaceId, from: from.toISOString(), to: to.toISOString(), generatedAt: new Date().toISOString(),
+        truncated: ids.length > limit, counts: { calls: calls.length, test: calls.filter(c => c.test).length, flagged: calls.filter(c => c.flagged).length,
+          withErrors: calls.filter(c => c.errors.length).length }, calls };
     },
   }));
 

@@ -174,6 +174,7 @@ export type ToolName =
   | "proposal.probe"
   | "proposal.readiness"
   | "report.create"
+  | "review.export"
   | "revision.list"
   | "safety.cases"
   | "safety.check"
@@ -1341,6 +1342,13 @@ export interface ToolInput {
     from?: string;
     to?: string;
   };
+  /** Vyakti staff: one workspace's calls in a time window, with transcripts, traces, flags, outcomes, costs and errors, as one JSON (read) */
+  "review.export": {
+    from: string;
+    to: string;
+    includeTest?: boolean;
+    limit?: number;
+  };
   /** List recent changes that can be undone (read) */
   "revision.list": {
     limit?: number;
@@ -2051,6 +2059,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "proposal.probe": { risk: "test", needsApproval: false },
   "proposal.readiness": { risk: "read", needsApproval: false },
   "report.create": { risk: "draft", needsApproval: false },
+  "review.export": { risk: "read", needsApproval: false },
   "revision.list": { risk: "read", needsApproval: false },
   "safety.cases": { risk: "read", needsApproval: false },
   "safety.check": { risk: "read", needsApproval: false },
