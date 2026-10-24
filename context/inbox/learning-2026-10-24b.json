@@ -1,0 +1,41 @@
+{
+  "nodes": [
+    {
+      "id": "rejected.2026-10-24.pooled-call-under-row-lock",
+      "type": "rejection", "status": "confirmed", "source": "verified", "date": "2026-10-24",
+      "title": "Rejected: a learning tool calling a sibling tool on a second pooled connection while it holds a row lock (cross() on bound.pool inside the tool's transaction).",
+      "tried": "learning cross() up to a9c58df, with experiment.check holding its experiment row FOR UPDATE. SKIP LOCKED (0e4e7da) covered only check-against-check.",
+      "broke": "experiment.assign's INSERT INTO experiment_assignment waits on the check's FOR UPDATE (its foreign-key check takes a key-share lock) while holding a pool connection. With the pool dry, the check never got its second connection. The suite hung in 2 of 4 runs (integrator) and 1 of 10 here at each of two pool sizes."
+    },
+    {
+      "id": "decision.2026-10-24.cross-same-connection",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "Learning never takes a pooled connection while it holds a lock. cross() runs the sibling tool on the caller's own connection under a savepoint, and the sibling's writes commit or roll back with the caller's. Learning's row locks are FOR NO KEY UPDATE, so foreign-key checks (assignments) never wait on them.",
+      "rationale": "rejected.2026-10-24.pooled-call-under-row-lock; measure.2026-10-24.loop-under-full-suite.",
+      "reverse_if": "The kernel gains a general nested-execute (Registry.execute on a transaction client); then learning uses that instead of its local sameConnection wrapper."
+    },
+    {
+      "id": "measure.2026-10-24.loop-under-full-suite",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24", "n": 60,
+      "method": "The whole server suite (every product/tests/*.test.ts except the browser-flow wrapper web.test.ts, concurrency 4 as scripts/test.mjs runs it, a fresh database each run), repeated on a pinned worktree. 20 runs at the default pool and 20 at PG_POOL_MAX=4 on the fix (18c8ea3); 10 runs at each pool size on the commit before (a9c58df). A hang is the loop test's 300 s timeout. Separately, the deterministic regression test (pool 4, 6 assigns + 1 check).",
+      "title": "After the fix the learning loop test passed 20 of 20 full-suite runs at the default pool and 20 of 20 at a pool of 4: no pool timeout, 8-12 s each. Before it hung in 1 of 10 at each pool size. On its own that comparison is weak (2/20 vs 0/40); the decisive evidence is the regression test, which deadlocked 3 of 3 before the fix and passes after.",
+      "path": "research/2026-10-23/walkthrough/LEARNING-LOOP.md"
+    },
+    {
+      "id": "open.2026-10-24.money-ma08-cross-file",
+      "type": "open-question", "status": "open", "source": "verified", "date": "2026-10-24",
+      "title": "money.test's two MA-08 tests fail together in 7 of 60 full-suite runs here, on the commits both before and after the learning fix ('0' !== '700000' at money.test.ts:458; 'already credited' 1 !== 0 at :480). Likely cause, not verified: resolveTopups scans every workspace's unknown top-ups with the process's own gateway, so it settles other test files' top-ups in the shared database. Routed to money.",
+      "closes_when": "MA-08 passes 20 full-suite runs in a row, e.g. with resolveTopups scoped to the test's workspace or the test's top-ups isolated."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.cross-same-connection", "to": "rejected.2026-10-24.pooled-call-under-row-lock", "relation": "derived-from" },
+    { "from": "measure.2026-10-24.loop-under-full-suite", "to": "decision.2026-10-24.cross-same-connection", "relation": "supports" },
+    { "from": "decision.2026-10-24.cross-same-connection", "to": "decision.2026-10-24.check-skip-locked", "relation": "extends" },
+    { "from": "decision.2026-10-24.cross-same-connection", "to": "open.2026-10-24.learning-check-pool-deadlock", "relation": "closes" },
+    { "from": "measure.2026-10-24.loop-under-full-suite", "to": "open.2026-10-24.money-ma08-cross-file", "relation": "leaves-open" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "learning-pool-deadlock-closed", "details": "open.2026-10-24.learning-check-pool-deadlock is closed. cross() runs on the caller's connection, and learning's row locks are FOR NO KEY UPDATE. A regression test at a pool of 4 deadlocked 3 of 3 before and passes after. The loop test passed 20 of 20 full-suite runs at the default pool and 20 of 20 at a pool of 4; it hung 1 of 10 at each before. Audit: no other module takes a pooled connection inside a transaction. Found on the way: money MA-08 fails in 7 of 60 suite runs, on both commits." }
+  ]
+}

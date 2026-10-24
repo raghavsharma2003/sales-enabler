@@ -143,9 +143,22 @@ Each was looked at before the UI shipped.
 3. **`outcome.define` duplicates.** Defining "Renewal" twice makes two definitions. It should offer to reuse the existing
    one.
 4. **Seeded call times** in `web/dev/seed.ts` can be later than now. Dev only.
-5. **Nested connections.** Other learning tools (probe, start, stop, propose's compile check) still take a second pooled
-   connection inside their own transaction. None waits on a lock held by its own kind, and they are person-driven, but
-   a pool-wide cap on nested calls is the general fix.
+
+## Closed later on 2026-10-24: the last pool deadlock
+
+My earlier fix (`SKIP LOCKED`) stopped checks from waiting on each other, but not assigns.
+- **Cause:** an assignment insert's foreign-key check waited on the check's `FOR UPDATE` while holding a pooled
+  connection, and the check needed a second connection for a sibling call. The integrator saw the suite hang in 2 of 4
+  runs.
+- **Fix:** learning's sibling calls now run on the caller's own connection (a savepoint), and its row locks are
+  `FOR NO KEY UPDATE`, which a foreign-key check does not wait on.
+- **Regression test:** a pool of 4, 6 concurrent assigns and one check that calls the revert. It deadlocked 3 of 3
+  times before the fix and passes after.
+- **Full server suite** (concurrency 4, browser flows excluded):
+  - after the fix: the loop test passed 20 of 20 runs at the default pool and 20 of 20 at a pool of 4, with no hang
+    (8-12 s each);
+  - on the commit before: it hung in 1 of 10 at each pool size.
+- **Audit:** no other module takes a pooled connection inside a transaction.
 
 Two things look like gaps but are designed states:
 - **The 7-day minimum and the 100-outcome A/A minimum.** The walk simulated 7 days by backdating `started_at`, and the
