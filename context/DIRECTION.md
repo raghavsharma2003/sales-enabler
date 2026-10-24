@@ -1,6 +1,6 @@
 # Direction — read this first
 
-_Last rewritten 2026-10-24. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
+_Last rewritten 2026-10-24 09:30 UTC. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
 
 ## What we are building
 
@@ -190,7 +190,45 @@ Working name: **Vyakti Platform (VP)** (`directive.2026-10-17.vp-venture`).
 
 The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round 1 contradicts that, so **re-price after the default stack is chosen** (`open.2026-10-20.reprice-tiers`).
 
-## Now: proving quality on real models (since 2026-10-23)
+## Now: calling first, then the whole product end to end (since 2026-10-24 09:05 UTC)
+
+`directive.2026-10-24.calling-first-build-all` (supersedes `directive.2026-10-24.test-build-first`). The owner:
+- **Calling must be perfect first.** Real phone calls, outbound and inbound, on the Plivo number.
+- **Then the whole product end to end**, better than every platform in the teardown:
+  - voice humanness, emotion, relationalness and duplex;
+  - stack selection;
+  - company data;
+  - memory and self-learning;
+  - omnichannel;
+  - the full UI and UX.
+- **A ready owner account with credit** on the private staging, for long and varied testing (set up, reset, set up
+  again).
+- **Everything logged**, so their review can be traced to the exact turn or click.
+- **Keep iterating** until it is right. Only then give them "the final version".
+- **Later:** Slack, HubSpot and SSO set-up, pricing.
+
+What that means in practice:
+- **Plivo** (Instinct audit, 2026-10-24):
+  - account: free trial until 2026-11-16, India data region, INR 739.34 credit;
+  - number: one Bangalore local number on the vp-voicelab sub-account (the one in the lab env);
+  - KYC: India KYC approved (CarbonSettle Solutions LLP, submitted 2026-10-19);
+  - limits: the trial can ring only sandbox-verified numbers, and the owner's phone is one.
+- **The telephony builder** owns the live path: one dial path, the allowlist on every attempt kind, Plivo V3
+  signatures, in-product phone verification, inbound on the real number, carrier truth, recording, and the runbook.
+  The first live call is on staging, with the owner, to their allowlisted phone, and the owner starts it.
+- **Staging test build:**
+  - INR 5,000 trial credit set in staging's `money_config` only (the customer amount stays open);
+  - the owner's login is in `scratchpad/vp-owner.env`, the site password in `scratchpad/vp-stage.env`;
+  - the daily test budget becomes a workspace cap the owner can raise through an approval (money builder).
+- **Review instruments being built:**
+  - a per-call turn trace (voice);
+  - the call page timeline, "flag this moment" and a staff review export (calls);
+  - the client event log (web for the beacon, workspace for the server side);
+  - "how she changed" (learning).
+- **Omnichannel starts with WhatsApp** (channels builder): follow-through templates, a two-way agent, one timeline. The
+  owner must create a Meta WhatsApp Business account before any live send.
+
+## Earlier phase: proving quality on real models (2026-10-23 → 24)
 
 The owner restored the usage limit and asked for full autonomy twice (`directive.2026-10-23.full-autonomy`, again on
 2026-10-23 after a limit). The scope is in `decision.2026-10-23.autonomy-scope`:
@@ -249,38 +287,49 @@ Every measured decision is re-taken by benches on the real Azure and Vertex mode
   - the hard guard on every draft write;
   - learning's issue-to-adoption loop.
 
+- **BLIND 11 and BLIND-BR2** (scored once, 2026-10-24): recall passes on both; false positives fail on both:
+  - BLIND 11, floor or judge: recall 77/80, benign FP 22/140;
+  - BLIND-BR2: recall 60/60, pass FP 13/100.
+
+  The judge stays shadow (`decision.2026-10-24.judge-stays-shadow-after-blind11`).
+- **Operator, op7:** gpt-4.1 stays the default (`decision.2026-10-24.operator-default-gpt41-op7`).
+
 ### Running now (builders are separate sessions on this branch; only the main loop holds keys)
 | Lane | Doing |
 |---|---|
-| voice | Plivo AMD, the opening built from the ticket, the in-call HTTP tools runtime |
-| calls | inbound calls control plane; mini single as the analysis default, plus the would-escalate count |
-| web | buyer walkthrough 3, gaps 15-19, lazy-load Settings to get back under 200 KB |
-| enterprise | 2FA, session limits, IP allowlist, audit streaming (waiting on whether a relayed owner directive is enough to go) |
-| safety | Devanagari drink-poison gap, heart-attack FP, T-L7; BLIND 11 and BLIND-BR2 |
-| agents | decision-4 gate status on the stack cards |
-| intake | HubSpot and Zoho import |
-| money | billing pulse |
-| operator | op7 readiness after the money-card fix |
-| learning | verified outcomes as the reward |
-| memory | retries |
-| workspace | Slack and email notifications |
-| main loop | op7 (Azure); staging re-measure on the VM; judge shadow on staging after 18:30 UTC |
-| campaigns | blocked on the owner's "go" |
+| telephony (new) | Live phone path end to end (top priority) |
+| channels (new) | WhatsApp: channel seam, follow-through, two-way agent, one timeline |
+| voice | Telephony's runtime asks first; per-call trace; backchannels and duplex; caller-state pacing; Indian numbers and dates; relational memory |
+| calls | call.explain, decision 9 (done); the call page as the review instrument, flag this moment, staff review export |
+| agents | Company data end to end; stack picker finished; agent duplicate, archive and restore |
+| web | First-load gate; client event beacon; walkthrough round 4 against the six competitors; first-run states |
+| workspace | Client event log (server side); "start over" for a workspace (A3, reversible 30 days) |
+| money | Test budget as a workspace cap; `VP_TEST_BUDGET_DEFAULT_INR`; billing view of test spend |
+| memory | Proposed-facts review queue; relational memory in calls; the WhatsApp seam |
+| learning | Learning on the owner's test data; "how she changed"; flags become lessons |
+| safety | Danger from others, floor and brief-review FPs; BLIND 12 / BR3 pre-registered |
+| intake | Salesforce read-only import |
+| operator | The five op7 fixes |
+| main loop | Staging redeploy to 9b34ff7 with the owner's account; judge latency for safety; the 18:36 UTC re-measure |
+| enterprise | Blocked on a human go (SSO is later per the owner) |
+| campaigns | Blocked on a human go; its phone work moved to telephony |
 
 ## Open threads with the owner
 
 | Thread | Status |
 |---|---|
-| Judge raise mode | Shadow today. Raise mode with a soft check-in (she pauses and asks how they are) is the owner's call (`open.2026-10-23.judge-raise-soft-checkin`). BLIND 10: floor-or-judge recall 59/60 met the bar; FP 12/140 did not (bar ≤2/140). |
-| Campaigns "go" | The campaigns builder waits on the owner typing "go" for the Plivo KYC adapter and the dial path. |
-| Trial credit | The amount a new workspace starts with. The blueprint recommends ₹500. It is in config, default 0, because price is deferred (`open.2026-10-22.trial-credit-amount`). |
+| Judge raise mode | Shadow today. Raise mode with a soft check-in (she pauses and asks how they are) is the owner's call (`open.2026-10-23.judge-raise-soft-checkin`). BLIND 11: floor-or-judge recall 77/80 met the bar; FP 22/140 did not (bar ≤2/140). Nothing supports asking for raise mode yet. |
+| First live phone call | When the telephony runbook lands and staging carries it, the owner starts "Call my phone" and rings the number; the main loop watches the logs live. |
+| WhatsApp Business account | Owner-only: a Meta WhatsApp Business account and number, before any live WhatsApp send. Instinct prompt to come when the channels builder is ready to connect. |
+| Plivo upgrade | The trial ends 2026-11-16 and can ring only verified numbers. Upgrading or recharging is the owner's call; remind them in time. |
+| Trial credit | The amount a new customer workspace starts with. The blueprint recommends ₹500. In config, default 0, because price is deferred (`open.2026-10-22.trial-credit-amount`). Staging alone uses ₹5,000 for testing. |
 | Price and billing documents | Price is deferred. Tax invoice, GSTIN and receipts wait on it (`open.2026-10-24.enterprise-billing-documents`). What test spend draws on is open too (`open.2026-10-24.test-spend-vs-empty-wallet`). |
 | DND lookup | Contract an NCPR lookup, or rely on carrier scrubbing. Until then every number reads "DND not checked" and promotional calls stay blocked (`open.2026-10-22.dnd-provider`). |
 | Round-2 human ratings | Ready. The lab's round-2 stacks run on Vertex from India (`open.2026-10-20.round2-human-ratings`). Stack cards now carry real samples. |
 | Language review | The new lexicons and disclosure lines for kn, te, ml, mr, gu, pa and or need a native speaker before production. |
 | Sarvam sample | A Sarvam key exists but is unused, because Sarvam may train on call data. Using it for one sample is the owner's call (`open.2026-10-24.sarvam-india-sample`). |
 | First deploy | Needs the owner's go (it costs money) and real keys: LLM, TTS/STT for the chosen stacks, telephony (Plivo trial line), VP_SECRET_KEY. |
-| Plivo trial | ₹764 credit expires 2026-11-16, with an ₹80 monthly usage cap. Recharge is the owner's decision. |
+| Plivo trial | ₹739.34 credit (2026-10-24), expires 2026-11-16; India KYC approved; one Bangalore local number. Recharge is the owner's decision. |
 | Credential hygiene | Rotate the pasted secrets: the Plivo token, the free Gemini keys, the Vertex key pasted in chat, and the mailbox and vendor passwords (`risk.2026-10-20.secrets-pasted`, `risk.2026-10-22.vertex-key-in-chat`). Delete Instinct's draft objects in vendor accounts (`risk.2026-10-21.wt-synthesis-capture-hygiene`). Not confirmed done. |
 
 ## Where things live

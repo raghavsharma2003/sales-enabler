@@ -22927,6 +22927,141 @@
    "title": "The caller-crisis judge stays in shadow and the brief-review model stays advisory: BLIND 11 floor-or-judge recall 77/80 passes but benign FP 22/140 fails the bar of 2; BLIND-BR2 recall 60/60 passes but pass-line FP 13/100 fails the bar of 5",
    "rationale": "Both pre-registered sets were scored once on the shipped route. Recall is not the problem: the judge's false positives (poison stored safely, hyperbole, cricket 'heart attack') and the floor's own hyperbole false positives would raise on ordinary calls; brief review flags honest AI openings it should pass. Raise mode remains the owner's call and nothing here supports asking for it.",
    "reverse_if": "A fresh pre-registered blind set (tagged by means, per open.2026-10-24.blind-sets-tag-means) meets recall >= 72/80 with benign FP <= 2/140 for floor-or-judge, and BR passes FP <= 5/100 with recall >= 57/60."
+  },
+  {
+   "id": "decision.2026-10-24.practice-chat",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Must-be audit gap 19: a typed practice chat in the agent's test panel. The buyer types as the caller and she answers from the saved draft through the same compile(), ledger, TAIL, marker rules and reply door as a call; the door's verdicts show inline; no call is placed and nothing reaches the call log",
+   "rationale": "server/modules/agents/chat.ts: test.chat (risk test, A1) is stateless on the server; the panel sends the chat so far and the next caller line. Each caller line is read by callerSignals (the floor) and the caller-crisis judge when a safety_judge model is configured, and stored redacted. The call state is rebuilt from the chat: disclosed (affirmsAi on her earlier turns), crisis (sticky: floor on any caller line, the judge on this one, or lines already given), asked-if-AI, opt-out, recording refused. Her reply goes through the runtime door as product/voice/vpvoice/safety.py reply_door does it, not only the shared RD rules: crisis lines first (Tele-MANAS 14416 and 112, a person offered) until given; asked if she is an AI, the honest line replaces a reply that mentions AI or is put first; her first breath carries disclosure.json's line unless the opening already discloses; then each sentence alone and joined with the one before; a replacement ends the reply. Each verdict comes back as a note (Said instead / Held back / Added first, a plain label, the reason, and what she would have said), shown under her reply. It uses LLM purpose 'simulate' like practice callers: model tokens only, no dial, no test-call budget. test.chat_keep stores a chat in agent_test_run with kind 'chat' (migration 0206), caller digits masked; the publish card's 'last practice call' reads only kind 'simulate'. Web: practice-chat.tsx is its own lazy chunk (1.8 KB gzip; test panel 5.9 KB; largest chunk still settings 25.7 KB, under 30). Dev server (DEV ONLY): the agent side of simulate answers in Hinglish and a price question gets an offer not in her facts, so the panel's Held back shows in the browser flow.",
+   "reverse_if": "Buyers read the typed chat as a measure of how she sounds or how fast she is (then fold it into the browser call), or the chat's door drifts from the Python runtime's (then generate both from one spec, as cases.json does for the shared rules)."
+  },
+  {
+   "id": "measure.2026-10-24.practice-chat-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Practice chat 5/5 server tests (crisis line typed gets 14416 and 112, no agenda, sticky next turn; denial bait gets the honest AI answer, replaced or put first; opening disclosure; a 40% offer not in facts held back and shown; no conversation or safety event written, kept chat stored as kind chat with an OTP masked; a later turn needs a caller line) and 1 browser flow (denial bait, held-back figure with what she would have said, crisis lines, nothing in the call log, keep for review, shots at 1440 and 390 looked at, no sideways scroll at 390); axe adds the practice chat screen with no serious or critical violation",
+   "n": 6,
+   "method": "node:test tests/agents-chat.test.ts on throwaway Postgres 16 with a scripted model; browser flows via product/web/e2e/run.sh (73 pass, 0 fail, 2 skipped: voice Python disabled); full fresh-DB suite 767/767; tsc clean; ui-contract --strict 0 missing; voice unittest OK; shots product/web/shots/practice-chat-1440.png and -390.png.",
+   "notes": "Not verified: a real model's replies in the chat (all tests use scripted replies), and the caller-crisis judge path (no safety_judge model configured in tests; the floor alone)."
+  },
+  {
+   "id": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Blueprint decision 5 (every call shows why it was allowed) closes on the call page from the stored gate record. 0e2d692 already put the gate trace on call.get, call.explain and the call page (the must-be audit predates it); what was missing was what each passing check found. The dial gate now stores a note on every passing check that has one: G4 the do-not-call lists checked; G5 the consent basis, the purpose it was recorded for, the call category, and the DND result (with its check date and CRF) or that DND does not apply; G6 the hours, days, holiday rule and zones used (the person's and India time); G7 the counts against the number's and the person's limits; G9 the amount held, the duration it covers and the caps it was held within. calls/gate-trace.ts turns the stored note into the line; nothing is re-derived, and a trace without notes keeps the fixed sentence. The gate version shows in words ('the dial gate of 21 October 2026, revision 1'); the raw version stays in the API for developers.",
+   "rationale": "Integrator task (research/2026-10-24/must-be-audit README, 'Defining decisions the tree contradicts', decision 5).",
+   "reverse_if": "A gate check's note disagrees with the refusal it would give (a note written before a check that later fails in the same pass), or a member reads a stored note as a promise about the present (it is what was true when the call was placed).",
+   "evidence": [
+    "product/tests/campaigns.test.ts 'a passing check stores what it found': the real gate on a synthetic service attempt; notes and their sentences asserted",
+    "product/web/e2e/flows.test.mjs 'Call page: \"Why this call was allowed\" shows the dial gate's stored record line for line': page lines deepEqual call.get allowedBy.checks; Copy guard passes (no dates or zone ids on screen)"
+   ]
+  },
+  {
+   "id": "decision.2026-10-24.judge-hedge-and-budget",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Judge latency fix for open.2026-10-24.judge-timeout-budget, built in both doors and off until measured. (1) A hedge: when hedge_after_ms is set, a judge call with no valid answer by then (slow, failed or unreadable) sends ONE identical second request, and the first valid answer wins. Each answer is judged exactly as alone, so raise-only holds: a fast valid 'no' is not second-guessed, a floor crisis is never lowered, and an over-budget judge still falls to the floor. (2) The hard budget timeout_ms becomes the measured p99 (bounded at 3,000 ms). Because the runtime reply never waits for the judge, a longer budget only moves late verdicts to her next sentence or turn. judge.json: hedge_after_ms null, timeout_ms 1,500 until the VM latency run (product/scripts/judge-latency.mjs). VP_SAFETY_JUDGE_HEDGE_MS and VP_SAFETY_JUDGE_TIMEOUT_MS override both for staging. Choice rule for the values: from the latency run, take the smallest timeout_ms whose simulated hedged unavailability is at most 1%, and the largest hedge_after_ms that achieves it with extra requests at most 10%. Then verify on staging with the in-time log. A verdict cache for repeated caller lines was considered and not built: repeated lines are rarely the crisis ones.",
+   "rationale": "Both BLIND-10 judge misses were timeouts, and DEV unavailability was 4-10%. Latency, not judgement, loses recall.",
+   "reverse_if": "Staging shows the hedge raises Vertex request volume past the rate commitment (risk.2026-10-23.judge-vertex-rate-commitment), or that timeouts persist at the chosen budget (correlated slowness rather than tail variance: hedging will not help, so switch region or model), or that late verdicts at the longer budget mostly land after the call has moved on."
+  },
+  {
+   "id": "asset.2026-10-24.native-review-packets",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Native-speaker review packets, one per language (research/2026-10-24/native-review/kn-IN.md, te-IN, ml-IN, mr-IN, gu-IN, pa-IN, or-IN, plus a README). Each takes about 15 minutes: the AI disclosure line and its required meaning, every crisis and opt-out term the floor added with what it must mean, tick boxes (correct / wrong meaning / also harmless speech), and three questions on missing terms. For the owner to hand out (open.2026-10-24.indic-native-review).",
+   "paths": [
+    "research/2026-10-24/native-review/"
+   ],
+   "value": "turns the owner item into a 15-minute task per language",
+   "effort": "small"
+  },
+  {
+   "id": "decision.2026-10-24.voice-inbound-runtime",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Inbound calls, runtime half, on the contract calls landed in 55e6485 (CallTicket transport sip_inbound, inbound {who, noMarketing, calledNumber}, POST /hooks/telephony/inbound). The carrier's answer URL is a signed runtime path (/v1/media/sip/inbound/<trunk>/<hook>); the runtime relays {provider, callId, to, from} to the control plane signed with VP_TELEPHONY_WEBHOOK_SECRET, and answers the carrier with the <Stream> of the call the control plane started (join kind sip_inbound with url and token), or one spoken line and <Hangup/> on a refusal. A sip_inbound ticket is never dialled; it streams like an outbound Plivo leg (transfer, keys, hang-up use carrierCallId). She opens with the inbound kickoff, never listens first; an unknown caller has no name, so identity never verifies; noMarketing adds a no-selling row and holds the door to service rules",
+   "rationale": "Must-be audit brief 8 / item 5: nothing answered an inbound call. Agreed through the shared ticket fields calls named (no separate negotiation was needed: the fields they wrote are what the runtime reads).",
+   "reverse_if": "the carrier relay moves into the control plane (then the runtime only needs to accept sip_inbound tickets), or Plivo signs answer requests in a way we should verify (X-Plivo-Signature-V3) in addition to the signed path"
+  },
+  {
+   "id": "measure.2026-10-24.voice-inbound-and-silence-offline",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Offline on devsim: a fake carrier rings, the runtime relays to a fake control plane (signature verified), the sip_inbound ticket starts, the carrier is answered with the stream, connects like Plivo (start, mu-law media, stop), and she opens with the inbound kickoff and the AI disclosure; unknown caller: no name, identity unverified; suppressed caller: no-selling row and service door; refusal: a spoken line and <Hangup/>; a wrong answer path is refused. Silence hang-up (gap C): cascade and s2s each end politely at limits.maxSilenceS with the line in the agent's language (Hinglish in her script, Tamil for a Tamil agent), a caller who speaks keeps the call, no limit means no hang-up. Not verified: a live Plivo inbound call",
+   "n": 12,
+   "method": "product/voice/tests/test_inbound.py (5) and tests/test_silence.py (7), 2026-10-24",
+   "path": "product/voice/tests/test_inbound.py",
+   "value": "inbound end to end on devsim; silence on both paths"
+  },
+  {
+   "id": "measure.2026-10-24.web-first-load-under-100",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Web first load, counted as everything that loads before anything renders (entry JS, CSS and the chunks the entry imports statically): 115.8 KB gzip -> 96.9 KB under a 100 KB cap. Three moves: (1) the dock (operator.tsx) and the approval sheet leave first load: the dock loads on its first open (at once at 1180 px and up where it is always shown, behind a same-size placeholder; on the first tap of Assistant on a phone), the approval sheet on browser idle or at once if an approval opens first; (2) labels-core.ts holds only plainReason, requesterLine and TOOL_LABEL for the store and api, the rest of labels.ts loads with the pages; (3) the shell's wallet read moved to wallet.ts, so data.ts and catalog.ts load with the pages. Largest chunk 17.5 KB of 30; all chunks 220.8 KB of the 240 tripwire. The entry file alone is 73.8 KB",
+   "n": 1,
+   "method": "node product/web/build.mjs, gzip level 6 per file, first load by walking the metafile's import-statement edges from the entry; one build before (stash) and after on the same tree (esbuild output is deterministic). Behaviour: flow 'First load: on a phone the assistant loads on its first open\u2026' (fails on the old shell, passes now) and the full browser suite"
+  },
+  {
+   "id": "decision.2026-10-24.notifier-own-connection-and-stop",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The notifier listens on its own connection, never a pooled one: a pg.Client built from pool.options, with its socket unref'd. So pool.end() never waits on it, and it can never be what keeps a process alive. startNotifier returns stop(), which ends the connection, clears every timer and never reconnects. Modules gain an optional stop(). buildApp returns stop(), which runs each module's stop once and also runs when the server closes. main.ts calls it on SIGINT and SIGTERM before ending the pool. The workspace module's stop clears the 5 s outbox timer and stops the notifier; that timer also stops itself once the pool is ending. The duty roster starts no timers.",
+   "rationale": "Fixes rejected.2026-10-24.notifier-listen-client-hangs-bench. Owning the connection makes a hang impossible even for a caller that never stops the app, such as the Operator bench, which only ends its pool. stop() gives production a clean graceful shutdown.",
+   "reverse_if": "A deployment needs the listener to hold the process open on purpose (a dedicated notifier worker); then that worker should keep a ref'd handle of its own.",
+   "path": "product/server/modules/workspace/notifications.ts"
+  },
+  {
+   "id": "measure.2026-10-24.notifier-shutdown",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/notifier-shutdown.test.ts runs a child process that builds the app with the notifier on (NODE_ENV=production). It waits until its LISTEN connection is up (counted in pg_stat_activity for this database only), then shuts down in one of two ways:\n- close: server.close(), stop(), pool.end();\n- pool-only: pool.end() alone, as the bench does.\nWith the fix, the process exited by itself after about 1.5 s in both modes (1636 and 1456 ms; the listener connects about 1 s after start). Against the previous notifications.ts and index.ts, both modes were still alive 20 s later and were killed. The first version of the test passed for a wrong reason, because it counted another database's LISTEN sessions; that was fixed before relying on it.",
+   "n": 2,
+   "method": "node --test spawning a child process on a throwaway Postgres 16; the old code was swapped in to show the failure",
+   "path": "product/tests/notifier-shutdown.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.catastrophic-line-detector",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Blueprint decision 9, per-line half: a catastrophic line is caught by about calls 13-15 and its script slowed to 25%. Learning's harm lane (18c4fd4: 2 harm moments in 15 calls) catches harm classes; this catches one line of hers that people keep reacting badly to. DESIGN. (1) script.line_check {conversationId} (calls, draft) runs after every analysed live call, next to script.harm_check; window = the script's (agent version's) last 15 analysed live calls that ended after its last restore; test calls never count. (2) A line is one agent turn, normalised: lower case, letters and digits in any script, digits as #, the contact's own name tokens and 1-character tokens dropped; two lines are the same line when their token sets overlap with Jaccard >= 0.7 (greedy, in call order; the first seen is the one quoted). (3) A bad reaction is attributed to one line: a caller hang-up (END_EARLY_HANGUP, END_HUNG_UP_MID) to her last line; an opt-out (a caller line the safety floor reads as opt-out, or an opt_out moment) to her line just before it; anger (reason CONV_COMPLAINT) to her line just before the first objection moment's caller line, else her last line. Each line counts once per call for 'said' and once for 'bad'. (4) Trip: a line said in n calls of the window with bad reactions in k of them trips when k >= 3 and the one-sided binomial P(X >= k | n, p0) < 0.01. p0 = 0.35 for her opening line (the early-hang-up monitor's own threshold, so an opener with an ordinary hang-up rate never trips: it needs 5 of 5, 6 of 7, 7 of 8 or 11 of 15) and p0 = 0.15 for any later line (ASSUMED, not measured: a bad reaction right after one mid-call line is rarer than an early hang-up; it trips at 3 of 3, 4 of 5, 5 of 8). (5) On a trip: learning's script_throttle row (factor 0.25, detail.signal 'catastrophic_line', her line quoted, the calls, k of n) so campaigns' G12 slows the script with no new hook; a critical Safety issue on the agent version; and an alert: a trigger on script_throttle puts 'script.slowed' on the outbox and notifications send it as 'A script was slowed' (this also alerts on learning's harm throttles). script.pacing.restore (learning) restores either. No model call; only her words are quoted, never the caller's.",
+   "rationale": "Integrator task (must-be audit, decision 9). Separate signal from learning's harm moments; one throttle table, one restore.",
+   "reverse_if": "On real traffic, a benign script trips more than once per 1,000 script-days, or a planted catastrophic line in a synthetic set does not trip by call 15, or the 50-call early-hang-up monitor flags the same lines first in most cases (then this adds nothing). Or measured per-line bad-reaction rates on real mid-call lines sit near or above 0.15 (then p0 is wrong and benign lines trip).",
+   "evidence": [
+    "product/tests/calls-line-watch.test.ts (synthetic, fictional): a line said every other call with 4 in 5 bad reactions trips by call 15 (pure stream and on the real modules, one analysed call at a time); a benign 45-call stream (opener with 4 in 15 early hang-ups, one opt-out, one complaint after different lines) never trips; the analysis bench's 84 hand-written calls in windows of 15 never trip; the throttle row (0.25, signal catastrophic_line), the critical Safety issue quoting her line with no name or caller words, and one 'script.slowed' notification delivery in words with no ids"
+   ]
+  },
+  {
+   "id": "measure.2026-10-24.catastrophic-line-synthetic",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Catastrophic-line lane on synthetic calls (n: 1 planted stream of 30 calls, 1 benign stream of 45, the bench's 84 cases; method: catastrophicLine over every prefix in windows of 15, and script.line_check on the real modules with calls written one by one). Planted line trips by call 15 (asserted <= 15); benign stream and bench: 0 trips. Not measured: real traffic, real per-line reaction rates (p0 0.15 for mid-call lines is assumed), and how often it trips before the 50-call early-hang-up monitor would.",
+   "method": "node --test tests/calls-line-watch.test.ts, fresh DB",
+   "n": "159 synthetic calls: 1 planted stream of 30, 1 benign stream of 45, 84 bench cases"
   }
  ],
  "edges": [
@@ -41516,6 +41651,76 @@
    "from": "decision.2026-10-24.judge-stays-shadow-after-blind11",
    "to": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
    "relation": "based_on"
+  },
+  {
+   "from": "decision.2026-10-24.practice-chat",
+   "to": "component.2026-10-21.agents-module",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.practice-chat-tests",
+   "to": "decision.2026-10-24.practice-chat",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "to": "decision.2026-10-24.call-allowed-by",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.judge-hedge-and-budget",
+   "to": "open.2026-10-24.judge-timeout-budget",
+   "relation": "implements"
+  },
+  {
+   "from": "asset.2026-10-24.native-review-packets",
+   "to": "open.2026-10-24.indic-native-review",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.voice-inbound-runtime",
+   "to": "open.2026-10-24.inbound-runtime-and-carrier",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.web-first-load-under-100",
+   "to": "open.2026-10-24.web-first-load-counts-shared",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.web-first-load-under-100",
+   "to": "measure.2026-10-24.web-first-load-true",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.notifier-own-connection-and-stop",
+   "to": "rejected.2026-10-24.notifier-listen-client-hangs-bench",
+   "relation": "supersedes"
+  },
+  {
+   "from": "measure.2026-10-24.notifier-shutdown",
+   "to": "decision.2026-10-24.notifier-own-connection-and-stop",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.notifier-own-connection-and-stop",
+   "to": "decision.2026-10-24.crisis-wake-notify",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.catastrophic-line-detector",
+   "to": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-24.catastrophic-line-synthetic",
+   "to": "decision.2026-10-24.catastrophic-line-detector",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.catastrophic-line-detector",
+   "to": "decision.2026-10-24.harm-fast-lane",
+   "relation": "extends"
   }
  ]
 }

@@ -20,7 +20,8 @@
    "source": "verified",
    "date": "2026-10-24",
    "title": "Catastrophic-line lane on synthetic calls (n: 1 planted stream of 30 calls, 1 benign stream of 45, the bench's 84 cases; method: catastrophicLine over every prefix in windows of 15, and script.line_check on the real modules with calls written one by one). Planted line trips by call 15 (asserted <= 15); benign stream and bench: 0 trips. Not measured: real traffic, real per-line reaction rates (p0 0.15 for mid-call lines is assumed), and how often it trips before the 50-call early-hang-up monitor would.",
-   "method": "node --test tests/calls-line-watch.test.ts, fresh DB"
+   "method": "node --test tests/calls-line-watch.test.ts, fresh DB",
+   "n": "159 synthetic calls: 1 planted stream of 30, 1 benign stream of 45, 84 bench cases"
   }
  ],
  "edges": [
