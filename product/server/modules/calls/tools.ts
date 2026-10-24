@@ -229,6 +229,7 @@ export function registerTools(r: Registry): void {
         recordingUri: c.recording_uri, recording, transcriptRemoved, verified, allowedBy, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
         cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
         turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
+        trace: (c as { trace?: unknown }).trace ?? null,         // the runtime's turn-by-turn trace (CallTrace), or null
       };
     },
   }));

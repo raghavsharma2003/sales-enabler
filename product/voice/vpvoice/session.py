@@ -128,6 +128,8 @@ class Session:
         for ev in self.meter.drain(): self.sink.emit(ev.pop('type'), **ev)
         self.save_sim_recording()
         fields = {'endReason': reason, 'durationS': round(self.elapsed_s(), 1), 'transcript': self.conv.transcript_out(), 'manifest': self.manifest()}
+        if self.error: self.conv.trace.event(self.conv.ms(), 'error', reason=str(self.error)[:200])
+        fields['trace'] = self.conv.trace.to_json(fields['manifest'])
         if self.recording_uri and not self.conv.state['recording_refused']: fields['recordingUri'] = self.recording_uri
         await self.sink.end(**fields)
         self.done.set()
@@ -163,6 +165,7 @@ class Session:
             except Exception as e:
                 await self.end('error', error=f'{err}; fallback {fb} unavailable: {e!r}'); return False
             self.fallbacks.append({'at_ms': self.conv.ms(), 'component': 'brain', 'from': self.c.brain_id, 'to': fb, 'reason': err.reason[:200]})
+            self.conv.trace.event(self.conv.ms(), 'fallback', component='brain', fromId=self.c.brain_id, toId=fb, reason=err.reason[:200])
             self.conv.brain_id = fb; self.conv.brain_provider = catalog.BRAIN_PROVIDER.get(catalog.BRAINS[fb]['host'], 'brain')
             return True
         await self.end('error', error=str(err))
@@ -275,12 +278,13 @@ class Session:
             if self.tool_runs > T.MAX_PER_CALL or self.run_tool is None:
                 res = {'ok': False, 'reason': 'tools are not available on this call' if self.run_tool is None else 'too many tool runs on this call'}
             else:
-                self.sink.emit('tool', name=name, args=T.redacted_args(args), status='requested')
+                self.sink.emit('tool', name=name, args=T.redacted_args(args), status='requested'); self.conv.trace.event(self.conv.ms(), 'tool', name=name, status='requested')
                 job = asyncio.ensure_future(self.run_tool(self.id, name, args))
                 if not said: await self.speak_canned(self.fixed('tool_hold'))      # she said nothing herself: a holding line
                 try: res = await asyncio.wait_for(job, T.TIMEOUT_S + 1)
                 except Exception as e: res = {'ok': False, 'reason': 'the tool could not be run'}; log.warning('tool %s: %r', name, e)
             self.sink.emit('tool', name=name, args=T.redacted_args(args), status='done' if res.get('ok') else 'failed')
+            self.conv.trace.event(self.conv.ms(), 'tool', name=name, status='done' if res.get('ok') else 'failed', reason=None if res.get('ok') else res.get('reason'))
             self.conv.add_tool_result(name, res); ran = True
             if not res.get('ok'):
                 await self.speak_canned(self.fixed('tool_failed')); return ran
@@ -318,6 +322,7 @@ class Session:
         if not keys or self.ended: return
         sensitive = sum(ch.isdigit() for ch in keys) > self.DTMF_SHOWN
         text = f'[keypad: {len(keys)} keys, not shown]' if sensitive else f'[keypad: {keys}]'
+        self.conv.trace.event(self.conv.ms(), 'keypad', keys=len(keys), shown=not sensitive)
         await self.keypad(text, sensitive)
 
     async def keypad(self, text, sensitive):

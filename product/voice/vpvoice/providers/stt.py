@@ -73,6 +73,19 @@ class AzureEars:
         self.on_partial = on_partial; self.on_final = on_final; self.on_error = on_error; self.lang = lang; self.seg_ms = seg_ms
         self.env = os.environ if env is None else env; self.sdk = sdk; self.stream = None; self.rec = None
         self.audio_s = 0.0; self.closed = False
+        self.last_confidence = None        # the last final's confidence (Detailed output), for the call trace
+
+    def _confidence(self, result):
+        try:
+            nb = (json.loads(result.json or '{}').get('NBest') or [{}])[0]
+            return round(float(nb['Confidence']), 3) if 'Confidence' in nb else None
+        except Exception:
+            return None
+
+    def _recognized(self, e, sp, hop):
+        if e.result.reason == sp.ResultReason.RecognizedSpeech and e.result.text:
+            self.last_confidence = self._confidence(e.result)
+            hop(self.on_final, e.result.text)
 
     async def start(self):
         sp = self.sdk
@@ -82,12 +95,12 @@ class AzureEars:
         c = sp.SpeechConfig(subscription=self.env.get('LAB_SPEECH_KEY', ''), region=self.env.get('LAB_SPEECH_REGION') or 'centralindia')
         c.speech_recognition_language = self.lang
         c.set_property(sp.PropertyId.Speech_SegmentationSilenceTimeoutMs, str(self.seg_ms))
+        if getattr(sp, 'OutputFormat', None) is not None: c.output_format = sp.OutputFormat.Detailed   # NBest with confidence
         self.stream = sp.audio.PushAudioInputStream(stream_format=sp.audio.AudioStreamFormat(samples_per_second=16000, bits_per_sample=16, channels=1))
         self.rec = sp.SpeechRecognizer(speech_config=c, audio_config=sp.audio.AudioConfig(stream=self.stream))
         hop = lambda f, *a: None if self.closed else loop.call_soon_threadsafe(f, *a)
         self.rec.recognizing.connect(lambda e: hop(self.on_partial, e.result.text))
-        self.rec.recognized.connect(lambda e: hop(self.on_final, e.result.text)
-                                    if e.result.reason == sp.ResultReason.RecognizedSpeech and e.result.text else None)
+        self.rec.recognized.connect(lambda e: self._recognized(e, sp, hop))
         self.rec.canceled.connect(lambda e: hop(self.on_error, str(e.cancellation_details.error_details)[:200])
                                   if e.cancellation_details.reason == sp.CancellationReason.Error else None)
         await loop.run_in_executor(None, lambda: self.rec.start_continuous_recognition_async().get())
@@ -179,6 +192,9 @@ class Gate:
 
     @property
     def audio_s(self): return self.inner.audio_s
+
+    @property
+    def last_confidence(self): return getattr(self.inner, 'last_confidence', None)
 
     def write(self, pcm, is_speech):
         if is_speech:

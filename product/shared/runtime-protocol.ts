@@ -100,6 +100,23 @@ export type RuntimeEvent =
   | { seq: number; type: 'judge'; at: string; judge: 'caller_crisis'; label?: 'crisis' | 'opt_out'; mode: 'shadow' | 'raise';
       outcome: 'raised' | 'shadow' | 'unavailable'; kind?: 'direct' | 'indirect'; confidence?: number; reason?: 'timeout' | 'error' | 'bad_output'; latencyMs: number }
   | { seq: number; type: 'call.ended'; at: string; endReason: EndReason; durationS: number; recordingUri?: string;
-      transcript: { speaker: 'agent' | 'caller'; text: string; startMs: number }[]; manifest: RunManifest };
+      transcript: { speaker: 'agent' | 'caller'; text: string; startMs: number }[]; manifest: RunManifest; trace?: CallTrace };
+
+/** The per-call trace for the owner's review (voice/vpvoice/trace.py), stored in conversation.trace. It holds no words:
+ *  a turn row points at the transcript by index `i`, so the transcript's retention and erasure cover the text. Times are
+ *  ms from the start of the call. */
+export interface CallTrace {
+  schema: 1;
+  stack: { id: string; combinationId: string };
+  components: { stt?: string; llm?: string; tts?: string; s2s?: string; voice?: string };
+  turns: (
+    | { i: number; speaker: 'caller'; startMs?: number; endMs?: number; asrConfidence?: number; partialLagMs?: number }
+    | { i: number; speaker: 'agent'; rid?: number; startMs?: number; callerEndMs?: number; firstAudioMs?: number; gapMs?: number;
+        stages?: Record<string, number | null>; speculative?: boolean; tts?: { provider: string; voice: string; style?: string | null };
+        state?: string; door: { rule: string; action: string }[]; interrupted: boolean }
+  )[];
+  events: { atMs: number; kind: 'barge_pause' | 'barge_resume' | 'barge_stop' | 'backchannel' | 'judge' | 'error' | 'fallback' | 'tool' | 'keypad'; [k: string]: unknown }[];
+  dropped?: { turns: number; events: number };
+}
 
 export interface RuntimeEventBatch { protocol: 1; conversationId: string; events: RuntimeEvent[] }

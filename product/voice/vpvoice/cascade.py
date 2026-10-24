@@ -65,6 +65,7 @@ class Reply:
     at any point (caller kept talking, or barged in)."""
     def __init__(self, s, rid, user_text, released=False, pending=False, fixed=None, gate=None):
         self.s = s; self.rid = rid; self.draft = Draft(user_text, pending); self.fixed = fixed; self.released = released
+        self.draft.rid = rid
         self.draft.gate = gate
         if s.first_clause and user_text is not None: self.draft.first_clause_at = s.FIRST_CLAUSE_AT   # never the opening (RD1)
         self.buf = []; self.cancelled = False; self.done = False; self.first = None; self.play_start = None
@@ -106,12 +107,13 @@ class Reply:
         """Yield to the caller now: the far end drops what it has queued; her place is kept."""
         if self.paused or self.cancelled: return
         pos = self.played() * 2; self.paused = True; self.run_from = pos; self.run_start = None
+        self.s.conv.trace.event(self.s.conv.ms(), 'barge_pause', rid=self.rid)
         self.s.rec.flush(self.s.now()); self.s.mix.clear(); await self.s.line.flush(self.rid)
 
     async def resume(self):
         """Carry on from where she yielded: what the caller did not hear, then what the voice made meanwhile."""
         if not self.paused or self.cancelled: return
-        self.paused = False
+        self.paused = False; self.s.conv.trace.event(self.s.conv.ms(), 'barge_resume', rid=self.rid)
         tail = bytes(self.pcm[self.run_from:])
         for k in range(0, len(tail), 1920):
             st = await self.s.send_audio(self.rid, tail[k:k + 1920])
@@ -174,6 +176,8 @@ class Reply:
         while len(self.spoken) <= idx: self.spoken.append(['', 0])
         self.spoken[idx][0] = text
         self.draft.t.setdefault('tts_req', self.s.now())
+        if idx == 0: self.s.conv.trace.note(self.rid, tts={'provider': self.s.c.tts_id, 'voice': self.s.c.voice_name,
+                                                            'style': self.draft.style if voice.styled else None})
         try:
             async for ch in voice.speak(text, self.draft.style if voice.styled else None, usage, timing):
                 self.draft.t.setdefault('tts_first', self.s.now())
@@ -301,6 +305,8 @@ class CascadeSession(Session):
         row = {'rid': r.rid, 'gapMs': r.latency_ms, 'speculative': r.from_partial, 'at': at,
                'stages': {name: ms(a, b) for name, a, b in self.STAGES}}
         self.timing.append(row)
+        self.conv.trace.note(r.rid, callerEndMs=self._ms(eos), firstAudioMs=self._ms(t.get('audio')), gapMs=r.latency_ms,
+                             stages=row['stages'], speculative=r.from_partial)
         log.info('reply timing %s rid=%s gap=%s %s', self.id, r.rid, r.latency_ms, ' '.join(f'{k}={v}' for k, v in row['stages'].items()))
 
     def timing_summary(self):
@@ -536,6 +542,7 @@ class CascadeSession(Session):
         r = self.active
         if r is None: return
         heard = r.heard_text(); r.cancel(); self.barge_ins += 1
+        self.conv.trace.event(self.conv.ms(), 'barge_stop', rid=r.rid)
         self.rec.flush(self.now()); self.mix.clear(); await self.line.flush(r.rid)
         if not r.committed:
             r.committed = True
@@ -694,7 +701,9 @@ class CascadeSession(Session):
 
     async def _commit_turn(self, text):
         end_ms = self._ms(self.eos_t) if self.eos_t else None
-        self.conv.commit_caller(text, start_ms=self.turn_start_ms, end_ms=end_ms)
+        lag = self.partial_lags[-1] if self.partial_lags else None
+        self.conv.commit_caller(text, start_ms=self.turn_start_ms, end_ms=end_ms,
+                                asr={'confidence': getattr(self.stt, 'last_confidence', None), 'partial_lag_ms': lag})
         self.finals = []; self.partial = ''; self.turn_start_ms = None
 
     def _uncommit_last_caller(self):

@@ -23,6 +23,15 @@ import JUDGE_EVENT from '../../../shared/judge-event.json' with { type: 'json' }
 const END_REASONS = ['completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy', 'failed', 'voicemail', 'switched_off', 'invalid_number',
   'max_duration', 'max_cost',
   'silence_timeout', 'handed_off', 'crisis_handoff', 'opt_out', 'error'] as const;
+/** The per-call trace (shared/runtime-protocol.ts CallTrace): stored as sent, after a shape and size check. */
+const TRACE_MAX_BYTES = 400_000;
+const traceV: Validator<unknown> = (v, p = '') => {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) throw new ValidationError(p, 'must be an object');
+  const t = v as { schema?: unknown; turns?: unknown; events?: unknown };
+  if (t.schema !== 1 || !Array.isArray(t.turns) || !Array.isArray(t.events)) throw new ValidationError(p, 'must be a schema 1 trace with turns and events');
+  if (Buffer.byteLength(JSON.stringify(v)) > TRACE_MAX_BYTES) throw new ValidationError(p, `is over ${TRACE_MAX_BYTES} bytes`);
+  return v;
+};
 const RULES = ['RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10', 'RD11'] as const;
 const at = str({ pattern: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/ });
 const seq = num({ int: true, min: 0, max: 2_000_000_000 });
@@ -84,7 +93,7 @@ const EVENTS: Record<RuntimeEvent['type'], Validator<unknown>> = {
   hand_off: obj({ seq, type: str(), at, reason: str({ max: 500 }), target: str({ max: 200 }), summary: str({ max: 2000 }) }),
   judge: judgeEvent(),
   'call.ended': obj({ seq, type: str(), at, endReason: str({ oneOf: END_REASONS }), durationS: num({ min: 0 }), recordingUri: opt(str({ max: 2000 })),
-    transcript: arr(obj({ speaker, text: str({ max: 20_000 }), startMs: ms }), { max: 5000 }), manifest }),
+    transcript: arr(obj({ speaker, text: str({ max: 20_000 }), startMs: ms }), { max: 5000 }), manifest, trace: opt(traceV) }),
 };
 
 const event: Validator<RuntimeEvent> = (v, p = '') => {
@@ -244,8 +253,9 @@ async function endCall(c: pg.PoolClient, conv: Conv, e: Extract<RuntimeEvent, { 
   if (e.endReason === 'error') flags.push('engine_error');
 
   await c.query(`UPDATE conversation SET status = 'ended', end_reason = $2, reason_code = $3, ended_at = $4, duration_s = $5, recording_uri = $6,
-      transcript = $7, run_manifest = $8 WHERE id = $1`,
-    [conv.id, e.endReason, reason, e.at, Math.round(e.durationS), e.recordingUri ?? null, JSON.stringify(e.transcript), stamped(conv, e.manifest)]);
+      transcript = $7, run_manifest = $8, trace = $9 WHERE id = $1`,
+    [conv.id, e.endReason, reason, e.at, Math.round(e.durationS), e.recordingUri ?? null, JSON.stringify(e.transcript), stamped(conv, e.manifest),
+     e.trace ? JSON.stringify(e.trace) : null]);
   await stampVersion(c, conv, e.manifest);
   await addFlags(c, conv.id, flags);
 

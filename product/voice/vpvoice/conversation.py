@@ -48,6 +48,7 @@ class Draft:
         self.blocked = []; self.replaced = []
         self.t = {}               # stage clock marks for the latency breakdown (cascade.Reply.timing)
         self.first_clause_at = None   # CascadeSession.FIRST_CLAUSE: voice the first clause of a reply on its own
+        self.rid = None               # the reply id it is spoken under (cascade), for the call trace
         self.hold = None          # the opening turn's sentences, held until one affirms she is an AI or the turn ends
         self.checkin = False      # written with the check-in shapes (rules.json checkin)
         self.opening_discloses = False
@@ -66,6 +67,8 @@ class Conversation:
         self.history = [{'role': 'user', 'content': KICKOFF.get(ticket.get('direction'), KICKOFF['outbound'])}]
         self.transcript = []; self.agent_turns = 0; self.disclosure_tries = 0
         self.tool_facts = []          # door facts from in-call tool answers (add_tool_result)
+        from .trace import Trace
+        self.trace = Trace()          # the per-call trace for the owner's review (trace.py; sent on call.ended)
         # an inbound caller who opted out or asked to be erased (ticket.inbound.noMarketing): she helps, never sells
         self.no_marketing = bool((ticket.get('inbound') or {}).get('noMarketing'))
         self.gender = (self.agent.get('persona') or {}).get('gender', 'female')
@@ -140,6 +143,7 @@ class Conversation:
         if bad_brand: log.info('brand respelled %s: %d word(s) repaired to the stored form', self.t['conversationId'], len(bad_brand))
         text, wrong = names.repair(text, self.contact.get('displayName', ''), own=self.own_names)
         if wrong:                # a wrong name in a question would let a "haan" verify the wrong person (RD11)
+            self.trace.note(draft.rid, door={'rule': 'RD11', 'action': 'replaced'})
             self.sink.emit('safety', rule='RD11', action='replaced',
                            detail=f"addressed the person by {len(wrong)} name(s) not the contact's; " + ("repaired to the contact's name" if self.contact.get('displayName') else 'name dropped (no contact name)'))
             draft.replaced.append('RD11')
@@ -149,11 +153,11 @@ class Conversation:
         v = safety.reply_door(re.sub(r'<[^<>]{1,24}>', '', text), ctx, prev=draft.sentences[-1] if draft.sentences else None)
         if v.get('final'): draft.final = True
         if v['action'] == 'replace':
-            self.sink.emit('safety', rule=v['rule'], action='replaced', detail=v['reason'])
+            self.sink.emit('safety', rule=v['rule'], action='replaced', detail=v['reason']); self.trace.note(draft.rid, door={'rule': v['rule'], 'action': 'replaced'})
             draft.replaced.append(v['rule'])
             text = v['text']
         elif v['action'] == 'block':
-            self.sink.emit('safety', rule=v['rule'], action='blocked', detail=v['reason'])
+            self.sink.emit('safety', rule=v['rule'], action='blocked', detail=v['reason']); self.trace.note(draft.rid, door={'rule': v['rule'], 'action': 'blocked'})
             draft.blocked.append(v['rule'])
             return None, v
         if (wrong or bad_brand) and v['action'] == 'pass':          # s2s speaks the model's own audio: it must cut and say the repaired line
@@ -245,7 +249,7 @@ class Conversation:
         # a safety flag on the call (decision.2026-10-21.judge-shadow-never-a-safety-event); only a raise is one too.
         outcome = {'judge_unavailable': 'unavailable', 'judge_shadow': 'shadow', 'judge_raised': 'raised'}[ev['type']]
         rec = judge_event.crisis(self.judge_mode(res), outcome, self.judge_latency(res), kind=ev.get('kind'), confidence=ev.get('confidence'), reason=ev.get('reason'))
-        self.sink.emit('judge', **rec)
+        self.sink.emit('judge', **rec); self.trace.event(self.ms(), 'judge', judge='caller_crisis', outcome=outcome, mode=rec.get('mode'), detail=ev.get('kind'))
         if ev['type'] == 'judge_unavailable':
             log.info('judge caller_crisis %s: unavailable (%s), floor stands, %d ms', self.t['conversationId'], ev['reason'], rec['latencyMs'])
             return False
@@ -285,6 +289,7 @@ class Conversation:
         note = f"judge {ev['type']} opt_out, confidence {ev['confidence']:.2f}"
         acts = ev['type'] == 'judge_raised' and not self.state['crisis'] and bool(res.get('optOut')) and 'opt_out' not in self.signalled
         self.sink.emit('judge', **judge_event.opt_out(self.judge_mode(res), 'raised' if acts else 'shadow', self.judge_latency(res), ev['confidence']))
+        self.trace.event(self.ms(), 'judge', judge='opt_out', outcome='raised' if acts else 'shadow', mode=self.judge_mode(res))
         if not acts:
             log.info('judge opt_out %s: %s (nothing changed)', self.t['conversationId'], note); return
         self.signalled.add('opt_out'); self.state['opt_out'] = True; self.opt_out_confirm_due = True
@@ -386,7 +391,7 @@ class Conversation:
                                    **({'estimated': True} if usage.get('estimated') else {})})
 
     # ---------------------------------------------------------------- caller turns
-    def commit_caller(self, text, start_ms=None, end_ms=None):
+    def commit_caller(self, text, start_ms=None, end_ms=None, asr=None):
         """Read a caller turn for signals, redact it, record it. Returns the signals (the session acts on them)."""
         sig = safety.caller_signals(text)
         clean = safety.redact(text)
@@ -397,6 +402,7 @@ class Conversation:
         self.transcript.append({'speaker': 'caller', 'text': clean, 'startMs': s_ms})
         self.history.append({'role': 'user', 'content': clean})
         self.sink.emit('turn', speaker='caller', text=clean, startMs=s_ms, endMs=e_ms)
+        self.trace.caller(len(self.transcript) - 1, s_ms, e_ms, **(asr or {}))
         self._identity(clean)
         if self.state['checkin'] == 'asked': self.state['checkin'] = 'answer'   # their answer: the judge on it can confirm
         if sig['crisis'] and 'crisis' not in self.signalled:                     # the floor: always the full crisis path
@@ -443,6 +449,7 @@ class Conversation:
             if latency_ms is not None: ev['latencyMs'] = int(latency_ms)
             if draft.style: ev['tone'] = draft.style
             self.sink.emit('turn', **ev)
+            self.trace.agent(len(self.transcript) - 1, rid=draft.rid, start_ms=s_ms, interrupted=interrupted)
         # RD1 ledger: disclosed once the AI clause was heard; if she was talked over, it is offered once more, then done
         clause = (self.agent.get('opening') or {}).get('disclosureClause', '')
         if not self.state['disclosed'] and any(safety.affirms_ai(s, clause) for s in draft.sentences):

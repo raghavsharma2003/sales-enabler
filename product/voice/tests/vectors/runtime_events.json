@@ -266,6 +266,81 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 3,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 4,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 5,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 6,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 7,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 8,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       }
+      ],
+      "events": []
      }
     }
    ]
@@ -294,7 +369,13 @@
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
      }
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000002",
+   "events": [
     {
      "seq": 2,
      "type": "turn",
@@ -328,7 +409,13 @@
      "text": "bas ab sabko meri wajah se pareshani hai, kuch dino mein sab theek ho jayega",
      "startMs": 0,
      "endMs": 0
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000002",
+   "events": [
     {
      "seq": 5,
      "type": "judge",
@@ -411,7 +498,13 @@
      "text": "pata nahi",
      "startMs": 0,
      "endMs": 0
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000002",
+   "events": [
     {
      "seq": 13,
      "type": "turn",
@@ -489,6 +582,64 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 3,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 4,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       }
+      ],
+      "events": [
+       {
+        "atMs": 0,
+        "kind": "judge",
+        "judge": "caller_crisis",
+        "outcome": "raised",
+        "mode": "raise",
+        "detail": "indirect"
+       }
+      ]
      }
     }
    ]
@@ -517,7 +668,13 @@
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
      }
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000003",
+   "events": [
     {
      "seq": 2,
      "type": "turn",
@@ -551,9 +708,32 @@
      "text": "bas ab sabko meri wajah se pareshani hai, kuch dino mein sab theek ho jayega",
      "startMs": 0,
      "endMs": 0
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000003",
+   "events": [
     {
      "seq": 5,
+     "type": "judge",
+     "at": "2026-10-21T00:00:00.000Z",
+     "judge": "caller_crisis",
+     "mode": "shadow",
+     "outcome": "shadow",
+     "latencyMs": 0,
+     "kind": "indirect",
+     "confidence": 0.9
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000003",
+   "events": [
+    {
+     "seq": 6,
      "type": "turn",
      "at": "2026-10-21T00:00:00.000Z",
      "speaker": "agent",
@@ -562,7 +742,7 @@
      "endMs": 0
     },
     {
-     "seq": 6,
+     "seq": 7,
      "type": "cost",
      "at": "2026-10-21T00:00:00.000Z",
      "component": "brain",
@@ -576,17 +756,6 @@
       "cached": 0,
       "model": "gemini-3.5-flash-lite"
      }
-    },
-    {
-     "seq": 7,
-     "type": "judge",
-     "at": "2026-10-21T00:00:00.000Z",
-     "judge": "caller_crisis",
-     "mode": "shadow",
-     "outcome": "shadow",
-     "latencyMs": 0,
-     "kind": "indirect",
-     "confidence": 0.9
     },
     {
      "seq": 8,
@@ -644,6 +813,51 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       }
+      ],
+      "events": [
+       {
+        "atMs": 0,
+        "kind": "judge",
+        "judge": "caller_crisis",
+        "outcome": "shadow",
+        "mode": "shadow",
+        "detail": "indirect"
+       }
+      ]
      }
     }
    ]
@@ -672,7 +886,13 @@
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
      }
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000004",
+   "events": [
     {
      "seq": 2,
      "type": "turn",
@@ -706,7 +926,13 @@
      "text": "bas ab sabko meri wajah se pareshani hai, kuch dino mein sab theek ho jayega",
      "startMs": 0,
      "endMs": 0
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000004",
+   "events": [
     {
      "seq": 5,
      "type": "judge",
@@ -798,6 +1024,50 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       }
+      ],
+      "events": [
+       {
+        "atMs": 0,
+        "kind": "judge",
+        "judge": "caller_crisis",
+        "outcome": "unavailable",
+        "mode": "raise"
+       }
+      ]
      }
     }
    ]
@@ -826,7 +1096,13 @@
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
      }
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000005",
+   "events": [
     {
      "seq": 2,
      "type": "turn",
@@ -860,7 +1136,13 @@
      "text": "bas karo bhai, aap logon se ab koi rishta nahi rakhna mujhe",
      "startMs": 0,
      "endMs": 0
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000005",
+   "events": [
     {
      "seq": 5,
      "type": "judge",
@@ -961,6 +1243,50 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       }
+      ],
+      "events": [
+       {
+        "atMs": 0,
+        "kind": "judge",
+        "judge": "opt_out",
+        "outcome": "raised",
+        "mode": "raise"
+       }
+      ]
      }
     }
    ]
@@ -989,7 +1315,13 @@
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
      }
-    },
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000006",
+   "events": [
     {
      "seq": 2,
      "type": "turn",
@@ -1026,6 +1358,23 @@
     },
     {
      "seq": 5,
+     "type": "judge",
+     "at": "2026-10-21T00:00:00.000Z",
+     "judge": "caller_crisis",
+     "label": "opt_out",
+     "mode": "shadow",
+     "outcome": "shadow",
+     "latencyMs": 0,
+     "confidence": 0.9
+    }
+   ]
+  },
+  {
+   "protocol": 1,
+   "conversationId": "0b6f6e1a-1c2d-4e5f-8a9b-000000000006",
+   "events": [
+    {
+     "seq": 6,
      "type": "turn",
      "at": "2026-10-21T00:00:00.000Z",
      "speaker": "agent",
@@ -1034,7 +1383,7 @@
      "endMs": 0
     },
     {
-     "seq": 6,
+     "seq": 7,
      "type": "cost",
      "at": "2026-10-21T00:00:00.000Z",
      "component": "brain",
@@ -1048,17 +1397,6 @@
       "cached": 0,
       "model": "gemini-3.5-flash-lite"
      }
-    },
-    {
-     "seq": 7,
-     "type": "judge",
-     "at": "2026-10-21T00:00:00.000Z",
-     "judge": "caller_crisis",
-     "label": "opt_out",
-     "mode": "shadow",
-     "outcome": "shadow",
-     "latencyMs": 0,
-     "confidence": 0.9
     },
     {
      "seq": 8,
@@ -1116,6 +1454,50 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       }
+      ],
+      "events": [
+       {
+        "atMs": 0,
+        "kind": "judge",
+        "judge": "opt_out",
+        "outcome": "shadow",
+        "mode": "shadow"
+       }
+      ]
      }
     }
    ]
@@ -1246,6 +1628,42 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       }
+      ],
+      "events": []
      }
     }
    ]
@@ -1443,6 +1861,55 @@
       "fallbacksUsed": [],
       "memory": "none",
       "runtimeVersion": "vp-voice/0.1.0"
+     },
+     "trace": {
+      "schema": 1,
+      "stack": {
+       "id": "v2-flashlite",
+       "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina"
+      },
+      "components": {
+       "stt": "azure",
+       "llm": "gemini-3.5-flash-lite",
+       "tts": "gemini-lite",
+       "voice": "Despina"
+      },
+      "turns": [
+       {
+        "i": 0,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 1,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       },
+       {
+        "i": 2,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 3,
+        "speaker": "agent",
+        "startMs": 0,
+        "interrupted": false,
+        "door": []
+       },
+       {
+        "i": 4,
+        "speaker": "caller",
+        "startMs": 0,
+        "endMs": 0
+       }
+      ],
+      "events": []
      }
     }
    ]
