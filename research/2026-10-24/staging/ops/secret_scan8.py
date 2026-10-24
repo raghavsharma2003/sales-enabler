@@ -15,6 +15,7 @@ for f in ('azure.env', 'voicelab.env', 'vp-stage.env', 'vp-azure.env', 'vp-gemin
         if '=' in l and not l.startswith('#'):
             k, v = l.rstrip('\n').split('=', 1); v = v.strip().strip('"')
             if k in ('VP_STORAGE_ACCOUNT',): continue      # an account name, already in the committed 23 Oct scripts; not a secret
+            if k in ('VP_RG', 'VERTEX_LIVE_LOCATION'): continue   # stage 8: the resource-group name and a region, both in committed files (CLAUDE.md, stage_setup.sh v1); not secrets
             if len(v) >= 8 and not v.lower() in ('centralindia', 'southindia', 'true', 'false'): vals[f'{f}:{k}'] = v
 sas = open(f'{SP}/voicelab/sas.txt').read().strip()
 m = re.search(r'sig=([^&]+)', sas)

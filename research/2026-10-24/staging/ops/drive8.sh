@@ -16,6 +16,11 @@
 #   drive8.sh WORKDIR smoke8b WS CALL   smoke8b.sh: the :8443 checks and a read-only DB read-back of the smoke workspace
 #                                 (run once on 2026-10-24 because smoke8.py stopped before them; see testbuild-9b34ff7.md)
 #   drive8.sh WORKDIR final WS OWS CALL   final8.sh: health, spend and the workspaces left, read-only
+# Config fix (2026-10-24, after the smoke; future deploys use stage_setup_v2.sh):
+#   drive8.sh WORKDIR deploy2     ONE Run Command: deploy_pre.sh + stage_setup_v2.sh + deploy_post.sh + deploy_post7.sh +
+#                                 deploy_post9.sh, on the bundle already in blob (9b34ff7; checked by cmp before)
+#   drive8.sh WORKDIR kit9        verify9.py -> blob vps9-kit.tgz
+#   drive8.sh WORKDIR verify      verify9.sh (workspace "Config Check"); fetches verify9.json
 # On 2026-10-24 preflight, deploy, credit, smoke8b and final were sent by hand with exactly these commands (and the
 # read-only preflight8.sh once more after the deploy, as vps8-envcheck-after).
 set -u
@@ -70,6 +75,21 @@ judgelat)
   run vps8-judgelat $W/vps8-judgelat.sh 1800
   mkdir -p $ROOT/research/2026-10-24/judge-latency
   for f in report.json summary.md; do timeout 120 $O8 get runlogs/vps8-judgelat-$f $ROOT/research/2026-10-24/judge-latency/$f; done;;
+deploy2)
+  [ -e $W/job9-start.txt ] || date -u '+%Y-%m-%d %H:%M:%S' > $W/job9-start.txt
+  cat $OPS/deploy_pre.sh $OPS/stage_setup_v2.sh $OPS/deploy_post.sh $OPS/deploy_post7.sh $OPS/deploy_post9.sh > $W/deploy9.sh
+  bash -n $W/deploy9.sh || exit 4
+  run vps9-deploy-v2 $W/deploy9.sh 1800;;
+kit9)
+  rm -rf $W/kit9 && mkdir -p $W/kit9 && cp $OPS/verify9.py $W/kit9/ && tar czf $W/vps9-kit.tgz -C $W/kit9 . && rm -rf $W/kit9
+  timeout 120 $O8 put $W/vps9-kit.tgz vps9-kit.tgz
+  echo "kit sha256 $(sha256sum $W/vps9-kit.tgz | cut -c1-64)";;
+verify)
+  [ -e $W/done-verify ] && { echo "STOP: the verification already ran (one Config Check workspace)"; exit 3; }
+  sed -e "s/__KIT_SHA__/$(sha256sum $W/vps9-kit.tgz | cut -c1-64)/" -e "s/__JOB__/$(cat $W/job9-start.txt)/" $OPS/verify9.sh > $W/vps9-verify.sh; bash -n $W/vps9-verify.sh || exit 4
+  touch $W/done-verify
+  run vps9-verify $W/vps9-verify.sh 1800
+  timeout 120 $O8 get runlogs/vps9-verify9.json $W/verify9.json;;
 smoke8b)
   sed -e "s/__WS__/$3/g" -e "s/__CALL__/$4/g" $OPS/smoke8b.sh > $W/vps8-smoke8b.sh; bash -n $W/vps8-smoke8b.sh || exit 4
   run vps8-smoke8b $W/vps8-smoke8b.sh 300;;

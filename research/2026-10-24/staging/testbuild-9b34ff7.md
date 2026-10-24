@@ -229,6 +229,8 @@ control-plane model is set:
 
 Test calls have no recordings until recordings are set up.
 
+**Superseded the same day:** both gaps are closed. See "Config fix" at the end.
+
 ## Judge latency (for the safety builder)
 
 - **How it ran.** Run Command `vps8-judgelat`, 09:53:17–09:59:42 UTC (`ops/judgelat8.sh`), from the deployed tree
@@ -408,3 +410,179 @@ The product's per-workspace test budget was never bypassed:
 
   The deploy reused `deploy_pre.sh`, `deploy_post.sh`, `deploy_post7.sh` and `../../2026-10-23/staging/ops/stage_setup.sh`
   unchanged.
+
+## Config fix (10:26–10:34 UTC): control-plane models and recordings on, made persistent
+
+**What was asked.** Close the two staging set-up gaps (failures 1 and 2) on the deployed 9b34ff7, persistently:
+- control-plane models on op7's Azure deployments;
+- recordings;
+- an inert test-budget line;
+- a `stage_setup_v2.sh` that future deploys use.
+
+Then verify in a new workspace, with a spend cap of INR 40.
+
+**Short answer.**
+- **All 13 names are in `.env` and in both running processes.** `VP_LLM_SAFETY_JUDGE_*` stays unset everywhere.
+- **The verification passed 9 of 10 checks**, in workspace "Config Check" `c0c91999-513d-4d6c-accc-7648f8930b3e`:
+  - the typed chat, the practice caller, the Operator (read tools only) and the browser call all work;
+  - the analysis completes on `lab-gpt41mini-in`;
+  - the recording answers 200 `audio/wav` through :8443.
+  - The one fail: **a browser test call gets no outcome**, by design at 9b34ff7 (below).
+- **Spend: INR 3.85.** INR 2.24 for the call plus INR 1.61 of Azure model tokens, counted by Azure Monitor.
+- **One line beyond the list: `VP_SAFETY_JUDGE_MODE=off`.** Without it, the new `VP_LLM_DEFAULT_*` would have switched
+  the safety judge on in shadow (below).
+
+### The names added (values never printed)
+
+Every name was confirmed in the deployed tree (9b34ff7):
+- `server/llm.ts` `cfg()`;
+- `operator/loop.ts` `costLine()`;
+- `calls/analysis.ts` `curatedAnalysisModels()` and `defaultAnalysisModel()`;
+- `server/recording-url.ts`;
+- `vpvoice/server.py`, `vpvoice/cascade.py` and `vpvoice/session.py`;
+- `product/ops/STAGING.md`.
+
+No name differs. `VP_TEST_BUDGET_DEFAULT_INR` exists only from 84b7c48 (`money/test-budget.ts`), which is not
+deployed, so it is inert.
+
+| Name | How it is made |
+|---|---|
+| `VP_LLM_DEFAULT_URL` | the `LAB_AI_ENDPOINT` line without a trailing slash, + `/openai/v1/chat/completions` (checked on the VM: built from that line, shape `https://<resource>.<azure host>/openai/v1/chat/completions`) |
+| `VP_LLM_DEFAULT_KEY` | the `LAB_AI_KEY` line (checked on the VM: non-empty and equal to it) |
+| `VP_LLM_DEFAULT_KEY_HEADER` | `api-key` |
+| `VP_LLM_DEFAULT_MODEL` | `lab-gpt41mini-in` |
+| `VP_LLM_OPERATOR_MODEL` | `lab-gpt41` |
+| `VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_IN`, `_OUT` | 190000, 760000 (op7's lab-gpt41 rate: INR 190 / 760 per 1M tokens) |
+| `VP_ANALYSIS_MODELS`, `VP_ANALYSIS_DEFAULT_MODEL` | `lab-gpt41mini-in,lab-gpt41`, `lab-gpt41mini-in` |
+| `VP_SAFETY_JUDGE_MODE` | `off`. **Not in the list**; see the next paragraph |
+| `VP_RECORDINGS_DIR` | `/opt/vp-stage/data/recordings` (created, `vpstage:vpstage`, mode 700) |
+| `VP_RUNTIME_PUBLIC_URL` | `https://vp-voicelab-1019.centralindia.cloudapp.azure.com:8443/rt`, equal to the runtime's `VP_PUBLIC_URL` (compared on the VM: True) |
+| `VP_TEST_BUDGET_DEFAULT_INR` | `2000` (inert until 84b7c48 is deployed) |
+
+**Why `VP_SAFETY_JUDGE_MODE=off` was added.**
+- Leaving `VP_LLM_SAFETY_JUDGE_*` unset does not keep the judge unconfigured once `VP_LLM_DEFAULT_*` exists. Both judges
+  fall back to the default model:
+  - `shared/safety/judge.ts` `judgeConfigured()` reads `VP_LLM_SAFETY_JUDGE_*` `??` `VP_LLM_DEFAULT_*`;
+  - `vpvoice/judge.py` `config()` reads `VP_LLM_SAFETY_JUDGE_*` `or` `VP_LLM_DEFAULT_*`.
+- Their mode defaults to `shadow` (judge.json). So without a further line, the judge would have run in shadow on
+  `lab-gpt41mini-in`, on every caller turn of calls, chats, simulations and analyses. That is a model judge.json does
+  not recommend, adding spend and judge marks on the owner's call pages.
+- **Checked on the VM** (`deploy_post9.sh`, each side's own code reading its own process env):
+  - the runtime judge: mode `off`, configured `True`, runs `False`;
+  - the control plane: `judgeConfigured` `true`, mode `off`.
+- The verification's call has 0 judge events and 0 judge journal lines, which is the state before the fix.
+- **To reverse:** delete the line in `stage_setup_v2.sh` and redeploy. The judge then runs in shadow on
+  `lab-gpt41mini-in`. Configuring it on its recommended model is the safety builder's call.
+
+**Note.** `deploy_post.sh` still prints "judge env lines now: 0 (0 = no judge model configured, no judge calls)". Since
+the fix, that counts only `VP_LLM_SAFETY_JUDGE_*` lines and no longer proves that no judge calls happen.
+`deploy_post9.sh`'s judge lines do.
+
+### Made persistent: `stage_setup_v2.sh`
+
+- **What it is.** `ops/stage_setup_v2.sh` is v1 (`../../2026-10-23/staging/ops/stage_setup.sh`) plus, in the env block:
+  - the 13 lines above, made the same way v1 makes its env lines: from the lab's env file through `labv`, so the URL
+    and key come from the same `LAB_AI_*` lines v1 copies;
+  - a hook: if `/opt/vp-stage/.env.extra` exists, it is appended last, so its lines override earlier ones (for the
+    telephony env later; kept mode 600; its names are listed, never its values);
+  - the recordings folder: created, chowned and set to mode 700.
+
+  Everything else is byte-identical to v1 (`diff` in the commit). The env block was dry-run in the sandbox with fake
+  values, the hook included.
+- **Future deploys use v2:** `deploy_pre.sh` + `stage_setup_v2.sh` + `deploy_post.sh` + `deploy_post7.sh` +
+  `deploy_post9.sh` (`drive8.sh deploy2`).
+- **It was applied the same way:** Run Command `vps9-deploy-v2` redeployed the same 9b34ff7 bundle (blob checked with
+  `cmp` first), with the script running 10:27:29–10:27:54 UTC. This also proves v2 end to end:
+  - migrations "up to date";
+  - web rebuilt;
+  - both units restarted at 10:27:35 (0 restarts since);
+  - Caddy reloaded;
+  - every stack available but `sarvam-india`;
+  - 401 / 200 through :8443;
+  - the lab untouched (since 06:25:49, 0 restarts, ping 200 both ways).
+
+**Names after the restart.**
+- All 13 names: `.env` = 1, control process = 1, runtime process = 1.
+- `VP_LLM_SAFETY_JUDGE_*`: 0, 0, 0.
+- The forbidden flags (`VP_DEV_AUTH`, `VP_LLM_FAKE`, `VP_WEBHOOK_ALLOW_*`, `VP_DEVSIM*`, `VP_PAYMENTS`,
+  `VP_TELEPHONY_LIVE`): 0, 0, 0.
+- `.env.extra`: absent.
+- Each side's own code now sees a model for every purpose: operator, simulate, analysis, compile, memory, learning,
+  judge, brief_review. The curated analysis models are `lab-gpt41mini-in` and `lab-gpt41`, with `lab-gpt41mini-in` the
+  default.
+- The control journal has 0 "setup: no model" warnings since the restart.
+
+### Verification: workspace "Config Check"
+
+- **Run Command:** `vps9-verify`, 10:29:51–10:32:07 UTC (`ops/verify9.sh` + `ops/verify9.py`).
+- **The new workspace:** `c0c91999-513d-4d6c-accc-7648f8930b3e`. Member "Config Checker",
+  `config+<unix ts>@example.com`, a random password made in the VM process and never kept.
+- **Agent:** "Config Agent", made from `insurance-renewal` on the default stack `v2-flashlite`.
+- **The owner's workspace** was not touched: 0 agents, contacts, campaigns and calls, 1 audit row, and INR 5,000,
+  before and after.
+- **Before running,** the script was dry-run locally against a 9b34ff7 control plane, devsim and a `/rt` proxy.
+
+| Check | Result | Status | Evidence |
+|---|---|---|---|
+| sign-up, trial credit | pass | 201 / 200 | INR 5,000, state ok |
+| `agent.create` (the brief review now runs on a model) | pass | 200 | review mode `model`, "rules and model", 1 finding (see below) |
+| `test.chat`, one exchange | pass | 200 / 200 | **Her opening:** "Main Config Check ki AI assistant hoon. नमस्ते Asha, मैं Riya हूँ, Config Check की AI assistant, और ये कॉल रिकॉर्ड हो रही है; …". **Caller:** "Haan ji, boliye. Aap kaun bol rahi hain?" **Her reply:** "मैं Riya हूँ, Config Check की AI assistant, आपकी policy renewal के बारे में बताने के लिए कॉल कर रही हूँ। …" |
+| `test.simulate`, practice caller `default:busy_20s`, default stack | pass (it ran) | 200 | **4 turns**, ended by the caller. **Outcome: not passed, 4 of 6 checks:** disclosure, no repeats, reply door and agent turns pass; words per turn and question streak fail. Run stored |
+| Operator: "What does this workspace have so far?" | pass | 200 | First 300 characters: "This workspace is named "Config Check" and is on the base plan. It has 1 member, no invited users, no API keys, no knowledge entries, and no integrations or webhooks set up yet." (177 characters in all). **Tools called: `workspace.get` only (read).** 2 model calls, 4,992 / 54 tokens |
+| Browser test call (replygap.one_call, synthetic clips P1, never a phone) | pass | 200 | `4fce67d3-080c-4f71-add5-bd7031755fac`: `v2\|azure+gemini-3.5-flash-lite+gemini-lite~Despina`, 111 s, `caller_hung_up`, 7 / 7 turns. Reply gaps 2,403, 2,267, 396, 2,273, 2,274 and 2,968 ms. INR 2.24 |
+| The call's analysis completes **with an outcome** | **fail** | 200 | The analysis **completed**: status `done` on `gpt-4.1-mini-2025-04-14`, with a summary, reason code `END_HUNG_UP_MID` ("The person hung up partway through"), 1 cost line of 1,413 tokens, and 0 judge calls. **There is no outcome:** `outcomeGuess` and `outcomeUnclear` are null, the outcome column is empty, and there are no outcome rows (why below) |
+| The recording link answers through :8443 | pass | **200** | `audio/wav`, 7,129,644 bytes, a RIFF/WAVE file of about 111.4 s (the call's length); link from `VP_RUNTIME_PUBLIC_URL`, 10 minutes |
+| The same link without basic auth | pass | 401 | Caddy still demands the staging passcode |
+
+No 5xx, 0 runtime tracebacks, 0 refused event batches, 0 control error lines. The recordings folder holds 2 files
+(6.9 MB), `vpstage:vpstage 700`.
+
+**Why the call has no outcome: product design at 9b34ff7, not configuration.**
+- `calls/analysis.ts` (around line 272) takes the outcome definition only through the call's attempt → campaign →
+  `outcome_definition`. A browser test call has no attempt, so the analysis gets no outcome question and returns no
+  `outcomeGuess`.
+- Line 470 records outcome rows only for calls that are not tests (`!isTest && cv.def_id`).
+- So no browser test call at this head can show an outcome. Only a campaign call can.
+- If the owner should see an outcome on a test call, that is a product change: for example, test calls could take the
+  agent's campaign outcome definition. Not made here.
+
+**Findings the models brought up:**
+1. **The brief review now blocks publishing the renewal template.**
+   - With a model, `agent.create`'s AI-honesty review flagged the template's own `persona.notes[0]` ("explain premiums
+     like a friend who works in insurance") as implying a human persona: rule `ai_honesty`, kind `human`, confidence
+     0.9, **"publish: blocked until fixed"**.
+   - So the owner's first `version.publish` from `insurance-renewal` will be refused until that note is edited.
+   - The review runs on `lab-gpt41mini-in` through `VP_LLM_DEFAULT_*` (no `VP_LLM_BRIEF_REVIEW_*`), not its recommended
+     route. This head's commit records the brief review's false positives as failing BLIND-BR2.
+   - n = 1 review. Not patched.
+2. **RD1 again, in the typed chat.** Her opening got the fixed disclosure line prefixed although her own first sentence
+   says "Config Check की AI assistant". She disclosed twice, as in the smoke's call (finding 3, now n = 2: one call and
+   one chat). The browser call's opening here disclosed once, in Devanagari ("…उसकी AI असिस्टेंट"), with no RD1 row.
+3. **RD6 again.** The call's third agent turn says "इस बार प्रीमियम 27,500 है, कोंफ़िग…" with no RD6 row. The analysis
+   summary repeats it. Finding 4 is now n = 2 calls.
+
+### Spend (cap INR 40)
+
+| Source | INR |
+|---|---|
+| DB, before | 0 (the job began at 10:26:13; nothing since) |
+| DB, after: the call (`conversation.cost_inr_milli`) | 2.236 |
+| DB: Operator cost lines (priced by `VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_*`) | 0.990 |
+| DB: the analysis cost line (1,413 tokens; the product leaves it unpriced, so it is priced at op7's mini rate) | 0.124 |
+| DB: the practice-caller run (`agent_test_run.usage` 4,949 / 114 tokens, mini rate) | 0.226 |
+| The typed chat (the API's own usage, 4,582 / 120 tokens; the DB keeps none) | 0.212 |
+| **DB-based total** | **3.79** (it misses the brief review, which no row meters) |
+| **Azure Monitor**, 10:26–10:34, every request to the lab deployments | lab-gpt41: 2 requests, 4,992 / 54 tokens = INR 0.99; lab-gpt41mini-in: 8 requests, 11,556 / 805 tokens = INR 0.62 |
+| **Total, Azure-counted model spend + the call** | **3.85** |
+
+Azure Monitor shows no requests to either deployment after 10:32, so no background job started spending in the window
+(`calls.analysis_sweep` re-reads only calls with no analysis; every older call already has one). That window is 8
+minutes, not a guarantee. The learning jobs could call `lab-gpt41mini-in` later, when a monitor opens an issue on a
+staging workspace.
+
+### Files (config fix)
+
+- `ops/stage_setup_v2.sh` (future deploys), `ops/deploy_post9.sh`, `ops/verify9.sh` + `ops/verify9.py`,
+  `ops/azmetrics9.py` (the Azure Monitor read). `ops/drive8.sh` gains the `deploy2`, `kit9` and `verify` steps.
+- `testbuild-9b34ff7-configfix.json`: the verification's own record.
+- `testbuild-9b34ff7-configfix-runlogs.txt`: the two Run Commands' outputs.
