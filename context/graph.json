@@ -21845,7 +21845,7 @@
   {
    "id": "open.2026-10-24.handoff-notify-email-slack",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "verified",
    "title": "A crisis hand-off alerts in-app only. Email or Slack notification waits on workspace webhooks (must-be brief 1); a duty roster would narrow 'on duty' from roles to people on shift.",
