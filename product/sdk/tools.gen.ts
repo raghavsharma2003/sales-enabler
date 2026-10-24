@@ -188,6 +188,7 @@ export type ToolName =
   | "source.commit"
   | "source.crm.lists"
   | "source.crm.pull"
+  | "source.crm.sources"
   | "source.hook_secret.rotate"
   | "source.list"
   | "source.map"
@@ -1441,6 +1442,10 @@ export interface ToolInput {
     fields?: string[];
     sourceId?: string;
   };
+  /** Lists imported from a CRM, with their sync timer, when they last synced and why a sync failed (read) */
+  "source.crm.sources": {
+    kind?: "hubspot" | "zoho_crm";
+  };
   /** Replace a webhook source's signing secret; the old one keeps working for 24 hours so the sender can switch (policy, waits for approval) */
   "source.hook_secret.rotate": {
     sourceId: string;
@@ -1987,6 +1992,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "source.commit": { risk: "draft", needsApproval: false },
   "source.crm.lists": { risk: "read", needsApproval: false },
   "source.crm.pull": { risk: "draft", needsApproval: false },
+  "source.crm.sources": { risk: "read", needsApproval: false },
   "source.hook_secret.rotate": { risk: "policy", needsApproval: true },
   "source.list": { risk: "read", needsApproval: false },
   "source.map": { risk: "draft", needsApproval: false },

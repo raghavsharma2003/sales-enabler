@@ -225,6 +225,8 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
   .app[data-view="talk"] .dock { display: flex; height: calc(100dvh - 64px - 52px); position: static; border-left: 0; }
   .app[data-view="talk"] { padding-bottom: 64px; }
   .bottombar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; inset: auto 0 0 0; height: 64px; background: var(--forest); z-index: 40; padding-bottom: env(safe-area-inset-bottom); }
+  /* Whatever is scrolled into view (keyboard focus, a link target) stops above the fixed bar, never under it (WCAG 2.4.11). */
+  html, .main { scroll-padding-bottom: calc(64px + 16px + env(safe-area-inset-bottom)); }
   .bottombar a, .bottombar button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--nav-ink); text-decoration: none; font-size: 0.75rem; font-weight: 600; background: transparent; border: 0; cursor: pointer; min-height: 44px; }
   .bottombar [aria-current="page"], .bottombar [aria-pressed="true"] { color: var(--on-forest); box-shadow: inset 0 3px 0 var(--terra); }
   .bottombar .talkbtn .talkdot { width: 40px; height: 40px; border-radius: 50%; background: var(--terra); color: var(--on-terra); display: grid; place-items: center; margin-top: -14px; box-shadow: var(--shadow); }

@@ -88,6 +88,10 @@
       "risk": "draft"
     },
     {
+      "id": "source.crm.sources",
+      "risk": "read"
+    },
+    {
       "id": "source.list",
       "risk": "read"
     },
@@ -161,7 +165,8 @@
     "source.map returns up to 3 sample values per column (none for viewers) and, with agentId, the agent's per-contact fact contract (agents/columns.ts).",
     "Web import screen: Excel/CSV/TSV up to 20 MB, \"Which agent will call them?\", the fact-contract card with one-tap \"Use <column>\", per-person voice and opening as column choices. Browser flow and screenshots contacts-import-excel-d/m.",
     "campaigns buildTicket applies rowOverrides (sanctioned edit); CallTicket.contact.rowOverrides says what was applied or refused (campaigns.test.ts F3b)",
-    "CRM contact import, read only: HubSpot lists (lists/search, memberships/join-order, contacts/batch/read at 100) and Zoho CRM views (token refresh, settings/custom_views, Contacts by cvid with page_token). A pull is an upload on a crm source, mapped by source.map (agent contract included) and saved by source.commit; source.sync re-imports with the last mapping; idempotent on the CRM id (intake_crm_record keeps a hash of the number): unchanged records skipped, a changed number flagged and left out. Consent and DND only from CRM fields that say so; otherwise unknown. Docs used: research/2026-10-24/crm-import/README.md."
+    "CRM contact import, read only: HubSpot lists (lists/search, memberships/join-order, contacts/batch/read at 100) and Zoho CRM views (token refresh, settings/custom_views, Contacts by cvid with page_token). A pull is an upload on a crm source, mapped by source.map (agent contract included) and saved by source.commit; source.sync re-imports with the last mapping; idempotent on the CRM id (intake_crm_record keeps a hash of the number): unchanged records skipped, a changed number flagged and left out. Consent and DND only from CRM fields that say so; otherwise unknown. Docs used: research/2026-10-24/crm-import/README.md.",
+    "Web: Contacts > Import > From HubSpot / From Zoho CRM (lazy chunk import-crm, 2.4 KB gzip): pick a list or view, the same column matching and verdicts as a file (shared import-review.tsx), save, then a timer (off, 1, 6, 24 h) and Sync now; a failed sync shows in plain words; an empty state links to Settings > Integrations. Browser flow against a local fake CRM; screenshots contacts-import-hubspot*, contacts-import-crm-empty at 1440 and 390; axe screens added."
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -177,8 +182,7 @@
     ".xlsx with zip64, encrypted workbooks, or the first sheet being a chart sheet",
     "The runtime leading with ticket.contact.rowOverrides.usefulFirst (voice module)",
     "Real HubSpot or Zoho accounts (fakes only, shaped from the docs; two shapes were inferred where the official page did not show them: HubSpot lists/search response, Zoho v8 custom_views)",
-    "Zoho datacenters other than the fake; HubSpot lists over 100 (paging of lists/search)",
-    "A CRM import screen in the web app (tools only; the Integrations label is workspace's)"
+    "Zoho datacenters other than the fake; HubSpot lists over 100 (paging of lists/search)"
   ],
   "needs_from_others": [
     {

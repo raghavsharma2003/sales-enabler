@@ -20,6 +20,11 @@ const urls = { hubspot: 'https://api.hubapi.com', zohoAccounts: '' as string, zo
 /** Tests point the clients at a local fake. */
 export function setCrmUrls(u: Partial<typeof urls>): void { Object.assign(urls, u); }
 export function resetCrmUrls(): void { Object.assign(urls, { hubspot: 'https://api.hubapi.com', zohoAccounts: '', zohoApi: '' }); }
+// Browser tests and screenshots run the real server against a local fake CRM. Never in production.
+if (process.env.VP_CRM_FAKE_URL && process.env.NODE_ENV !== 'production') {
+  const u = process.env.VP_CRM_FAKE_URL;
+  setCrmUrls({ hubspot: u, zohoAccounts: u, zohoApi: u });
+}
 
 const ZOHO_ACCOUNTS: Record<string, string> = {
   com: 'https://accounts.zoho.com', us: 'https://accounts.zoho.com', in: 'https://accounts.zoho.in', eu: 'https://accounts.zoho.eu',

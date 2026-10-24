@@ -9,6 +9,7 @@ import { createHmac } from 'node:crypto';
 import pg from 'pg';
 import { audit, axe } from './a11y.mjs';
 import { EMI_ROWS, xlsxFile } from '../dev/xlsx-sample.mjs';
+import { HS_TOKEN, startFakeCrm } from '../dev/fake-crm.mjs';
 
 let pw = null;
 for (const base of [import.meta.url, 'file:///opt/node-tools/node_modules/']) { try { pw = createRequire(base)('playwright'); break; } catch { /* next */ } }
@@ -722,6 +723,47 @@ test('Import an Excel file for an agent: the missing detail shows with a suggest
   assert.equal(attrs.emi_due, '2026-12-05', 'the confirmed column is stored under the agent\'s key');
   assert.equal(attrs.emi_amount, 4250);
   assert.ok((await tool('contact.search', { q: '9000030102' })).result.contacts.length === 1, 'the formula cell gave its saved value');
+});
+
+test('Import from HubSpot: pick a list, check it like a file, save, set a timer; a failed sync says why in plain words; nothing is written to the CRM', { skip: process.env.VP_CRM_FAKE_URL ? false : 'no fake CRM port (run through e2e/run.sh)' }, async () => {
+  const crm = await startFakeCrm(Number(new URL(process.env.VP_CRM_FAKE_URL).port));
+  try {
+    // Not connected yet: the screen says so and links to Settings.
+    await page.goto(`${BASE}/contacts/import?from=hubspot`);
+    await page.getByText('HubSpot is not connected').waitFor();
+    assert.equal(await page.getByRole('link', { name: 'Go to Integrations' }).getAttribute('href'), '/settings/integrations');
+    // Connect it through the real tools (credentials staged, the connection approved by the owner).
+    const st = (await tool('integration.stage_secrets', { kind: 'hubspot', secrets: { access_token: HS_TOKEN } })).result;
+    const p = await tool('integration.connect', { kind: 'hubspot', name: 'HubSpot (synthetic)', stashId: st.stashId });
+    const ok = await (await ctx.request.post(`${BASE}/v1/actions/${p.actionId}/decide`, { data: { approve: true } })).json();
+    assert.equal(ok.status, 'confirmed', JSON.stringify(ok));
+    await page.reload();
+    await page.getByLabel('HubSpot list').selectOption({ label: 'Renewals November (4 people)' });
+    await page.getByRole('button', { name: 'Check this list' }).click();
+    await page.getByText('3. What will happen to each row').waitFor({ timeout: 15000 });
+    await page.getByText('Read 4 contacts from HubSpot.').waitFor();
+    await page.getByLabel('Audience name').fill('HubSpot renewals (synthetic)');
+    await page.getByRole('button', { name: /^Save 3 contacts$/ }).click();
+    const card = page.locator('.card', { hasText: 'Lists kept in step with HubSpot' });
+    await card.waitFor({ timeout: 15000 });
+    assert.equal((await tool('contact.search', { q: '9000050103' })).result.contacts.length, 1, 'the Devanagari number was saved');
+    // A timer, then the server agrees.
+    await card.getByLabel('Sync on a timer').selectOption('6');
+    await page.getByText('Timed sync on.').waitFor();
+    const src = (await tool('source.crm.sources', { kind: 'hubspot' })).result.sources.find(s => s.listName === 'Renewals November');
+    assert.equal(src.everyHours, 6);
+    // A sync on demand with nothing changed imports nothing new.
+    await card.getByRole('button', { name: 'Sync now' }).click();
+    await page.getByText('Synced.').waitFor();
+    // A failed timed sync (as the sync job records it) shows in plain words.
+    await pool.query("UPDATE intake_source SET last_sync_error = 'HubSpot answered 503: service unavailable' WHERE id = $1", [src.id]);
+    await page.reload();
+    await page.getByText('The last sync did not finish: HubSpot answered 503: service unavailable.', { exact: false }).waitFor();
+    // Zoho CRM is not connected in this workspace: its tab says so.
+    await page.getByRole('tab', { name: 'From Zoho CRM' }).click();
+    await page.getByText('Zoho CRM is not connected').waitFor();
+    assert.deepEqual(crm.writes(), [], 'read only: no write call reached the CRM');
+  } finally { crm.server.close(); }
 });
 
 test('Integrations: a service can be connected from Settings, and the credentials never come back', async () => {

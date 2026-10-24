@@ -117,6 +117,17 @@ const REJECT_TEXT: Record<string, string> = {
 export function parseCsvSample(text: string, col: number): string[] {
   return text.split(/\r?\n/).slice(1, 4).map(l => (l.split(',')[col] ?? '').trim());
 }
+// ---- contacts from a CRM (HubSpot lists, Zoho CRM views), read only ----
+export type CrmKind = 'hubspot' | 'zoho_crm';
+export interface CrmSource { id: string; name: string; kind: CrmKind; listName: string; integrationId: string; everyHours: number | null; lastSyncedAt: string | null; lastSyncError: string | null; imported: boolean }
+export interface CrmPull { uploadId: string; sourceId: string; records: number; toImport: number; unchangedSkipped: number; numberChanged: number; truncated: boolean }
+export async function crmConnections(kind: CrmKind): Promise<{ id: string; name: string }[]> {
+  return arr<any>((await run<{ integrations: unknown[] }>('integration.list', {})).integrations).filter(i => i.kind === kind && i.status === 'connected').map(i => ({ id: i.id, name: i.name }));
+}
+export const crmLists = async (integrationId: string) => arr<{ id: string; name: string; size: number | null }>((await run<{ lists: any[] }>('source.crm.lists', { integrationId })).lists);
+export const crmPull = (integrationId: string, listId: string, sourceId?: string) => run<CrmPull>('source.crm.pull', { integrationId, listId, ...(sourceId ? { sourceId } : {}) });
+export const crmSources = async (kind: CrmKind) => arr<CrmSource>((await run<{ sources: any[] }>('source.crm.sources', { kind })).sources);
+
 /** Agents by name, for the import screen's "Which agent will call them?" (no per-agent detail fetched). */
 export async function agentNames(): Promise<{ id: string; name: string }[]> {
   return arr<any>((await run<{ agents: unknown[] }>('agent.list', {})).agents).map(a => ({ id: a.id, name: a.name }));
@@ -156,7 +167,7 @@ export async function importMap(uploadId: string, text: string, overrides?: Reco
   const rej = Object.values<number>(r.phones?.rejected ?? {}).reduce((a, b) => a + b, 0);
   return { uploadId, columns: cols, rows, counts: { in: r.rowsTotal, callable: r.phones?.ok ?? 0, duplicate: r.phones?.duplicatesInFile ?? 0, skipped: rej }, questions: arr<any>(r.questions).map(q => ({ text: typeof q === 'string' ? q : q.text ?? JSON.stringify(q) })),
     ...(r.agentFacts ? { agentFacts: { agent: r.agentFacts.agent, facts: arr<any>(r.agentFacts.facts).map(f => ({ key: f.key, label: f.label, status: f.status, column: f.column, suggestions: arr<string>(f.suggestions) })) } } : {}),
-    ...(r.converted ? { converted: { sheet: r.converted.sheet, rows: r.converted.rows, formulaCells: r.converted.formulaCells, formulaWithoutValue: r.converted.formulaWithoutValue } } : {}) };
+    ...(r.converted?.from === 'xlsx' ? { converted: { sheet: r.converted.sheet, rows: r.converted.rows, formulaCells: r.converted.formulaCells, formulaWithoutValue: r.converted.formulaWithoutValue } } : {}) };
 }
 export function overridesFrom(cols: ImportPreview['columns']): Record<string, { field: string; key?: string }> {
   return Object.fromEntries(cols.map(c => c.field.startsWith('attribute:') ? [c.header, { field: 'attribute', key: c.key }] : [c.header, { field: c.field, key: c.key }]));

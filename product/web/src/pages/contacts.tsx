@@ -1,11 +1,12 @@
 // Contacts: people with consent, DND and attempt history; audiences; and the import wizard with per-row verdicts.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Play, Upload } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { Link, useNav, useQuery } from '../router.tsx';
-import { Async, Btn, Card, CardHead, Chip, Empty, Kv, PageHead, SelectField, Table, Tabs, TextArea, TextField, type Col } from '../ui.tsx';
+import { Async, Btn, Card, CardHead, Chip, Empty, Kv, PageHead, SelectField, Skeleton, Table, Tabs, TextArea, TextField, type Col } from '../ui.tsx';
 import { langShort } from '../catalog.ts';
-import { agentNames, audienceList, contactGet, contactList, importMap, importUpload, importUploadFile, isExcel, MAX_IMPORT_BYTES, overridesFrom } from '../data.ts';
+import { agentNames, audienceList, contactGet, contactList, importMap, importUpload, importUploadFile, isExcel, MAX_IMPORT_BYTES } from '../data.ts';
+import { ImportReview } from './import-review.tsx';
 import { bytes as fmtBytes, count, date, phone as fmtPhone, plural } from '../format.ts';
 import { BulkDnd, DndButton, DndExplain, ExportButton, StopCard, SuppressionNote } from './contact-actions.tsx';
 const REASON: Record<string, string> = { dnd_unknown: 'Do Not Disturb has not been checked yet', dnd_registered: 'The person is on the Do Not Disturb list', suppressed: 'The person asked not to be called', no_consent: 'No consent is on file', no_basis: 'There is no basis on file to call this person', tombstoned: 'The person asked to be erased' };
@@ -98,10 +99,25 @@ Rohan Mehta,+91 90000 00011,Hinglish,Indore,27/01/2027,A-10236
 Farah Sheikh,,Hinglish,Kochi,01/02/2027,A-10237
 Vikram Rao,9000000015,Telugu,Patna,03/02/2027,A-10238
 `;
-const FIELDS: [string, string][] = [['name', 'Name'], ['first_name', 'First name'], ['last_name', 'Last name'], ['phone', 'Phone (needed)'], ['language', 'Language'], ['timezone', 'Time zone'], ['consent', 'Consent (yes or no)'], ['consent_at', 'Consent date'], ['opt_out', 'Opted out (yes or no)'], ['voice', 'Voice for this person'], ['first_message', 'What to open with, for this person'], ['attribute', 'Keep as a detail'], ['ignore', 'Ignore this column']];
+
+// The CRM import is its own chunk: only people who import from a CRM download it.
+const CrmImport = lazy(() => import('./import-crm.tsx'));
+const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }] as const;
+type ImportFrom = (typeof SOURCES)[number]['id'];
 
 function Import() {
-  const { act, toast } = useApp(); const go = useNav();
+  const [qs, setQs] = useQuery();
+  const from = (SOURCES.some(x => x.id === qs.get('from')) ? qs.get('from') : 'file') as ImportFrom;
+  return (
+    <div className="stack">
+      <Tabs label="Where the list comes from" value={from} onChange={v => setQs({ from: v === 'file' ? null : v })} items={SOURCES.map(x => ({ ...x }))} />
+      {from === 'file' ? <FileImport /> : <Suspense fallback={<Card><Skeleton rows={3} /></Card>}><CrmImport kind={from} /></Suspense>}
+    </div>
+  );
+}
+
+function FileImport() {
+  const { toast } = useApp(); const go = useNav();
   const [csv, setCsv] = useState('');
   const [picked, setPicked] = useState<File | null>(null);        // a chosen file sent as is (Excel, or text too big to show)
   const [srcText, setSrcText] = useState('');                     // the text the preview's samples come from
@@ -109,8 +125,6 @@ function Import() {
   const agents = useData('import-agents', agentNames);
   const [pv, setPv] = useState<ImportPreview | null>(null);
   const [busy, setBusy] = useState(false);
-  const [purpose, setPurpose] = useState(''); const [aud, setAud] = useState(() => `Import of ${date(new Date())}`);
-  const [filter, setFilter] = useState<'all' | 'problems'>('problems');
   const file = useRef<HTMLInputElement>(null);
 
   const check = async () => {
@@ -122,15 +136,6 @@ function Import() {
     catch (e) { toast(e instanceof Error ? e.message : 'Could not read that file.', 'bad'); }
     setBusy(false);
   };
-  const remap = async (header: string, field: string) => {
-    if (!pv) return;
-    const ov = overridesFrom(pv.columns);
-    const col = pv.columns.find(c => c.header === header)!;
-    ov[header] = { field, key: field === 'attribute' || field === 'ignore' ? col.key ?? header.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_|_$/g, '') : undefined };
-    setBusy(true);
-    try { setPv(await importMap(pv.uploadId, srcText, ov, agentId || undefined)); } catch (e) { toast(e instanceof Error ? e.message : 'Could not apply that.', 'bad'); }
-    setBusy(false);
-  };
   const onFile = async (f?: File) => {
     if (!f) return;
     if (file.current) file.current.value = '';
@@ -139,26 +144,6 @@ function Import() {
     setPv(null);
     if (isExcel(f) || f.size > 400_000) { setPicked(f); setCsv(''); } else { setPicked(null); setCsv(await f.text()); }
   };
-  const useColumn = (header: string, factKey: string) => {
-    if (!pv) return;
-    const ov = overridesFrom(pv.columns);
-    ov[header] = { field: 'attribute', key: factKey };
-    setBusy(true);
-    importMap(pv.uploadId, srcText, ov, agentId || undefined).then(setPv, e => toast(e instanceof Error ? e.message : 'Could not apply that.', 'bad')).finally(() => setBusy(false));
-  };
-  const rows = useMemo(() => (pv?.rows ?? []).filter(r => filter === 'all' || r.verdict !== 'ok'), [pv, filter]);
-  const missingPhone = pv && !pv.columns.some(c => c.field === 'phone');
-  const commit = async () => {
-    const r = await act<{ counts: { new: number } }>('source.commit', { uploadId: pv!.uploadId, overrides: overridesFrom(pv!.columns), consentPurpose: purpose || undefined, audienceName: aud }, { describe: 'List imported.' });
-    if (r.ok) go('/audiences');
-  };
-  const reasonOff = !pv ? 'Check the file first.' : missingPhone ? 'Match one column to the phone number.' : pv.counts.callable === 0 ? 'No row can be called yet.' : !aud.trim() ? 'Name the audience.' : '';
-  const vcols: Col<ImportPreview['rows'][number]>[] = [
-    { key: 'n', label: 'Row', num: true, render: r => r.row },
-    { key: 'v', label: 'Verdict', primary: true, render: r => <Chip tone={r.verdict === 'ok' ? 'leaf' : r.verdict === 'review' ? 'marigold' : r.verdict === 'duplicate' ? 'peacock' : 'brick'}>{({ ok: 'Ready', duplicate: 'Duplicate', skipped: 'Skipped', suppressed: 'Suppressed', review: 'Needs a look' })[r.verdict]}</Chip> },
-    { key: 'w', label: 'Who', render: r => r.name ?? '—' }, { key: 'p', label: 'Number saved as', render: r => r.phone ? <span className="tnum">{fmtPhone(r.phone)}</span> : <span className="muted">Not saved</span> },
-    { key: 'r', label: 'Why', render: r => r.reason ?? <span className="muted">Nothing to fix</span> },
-  ];
   return (
     <div className="stack">
       <Card><CardHead title="1. Bring the list" sub="Choose a file (Excel .xlsx, CSV or TSV, up to 20 MB) or paste the text. Nothing is saved as contacts until step 4." />
@@ -177,47 +162,8 @@ function Import() {
           <Btn kind="ghost" onClick={() => { setPicked(null); setCsv(SAMPLE); setPv(null); }}>Use a made-up sample</Btn>
           {picked || csv.trim() ? <Btn kind="primary" busy={busy} onClick={() => void check()}>Check the file</Btn> : <Btn disabled reason="Choose a file or paste a list first.">Check the file</Btn>}
         </div></Card>
-      {pv && <>
-        <Card><CardHead title="2. Match the columns" sub="We guessed from the headings. Change any that is wrong; the verdicts update." />
-          <div className="mapgrid">{pv.columns.map(c => (
-            <div key={c.header} className="mapcol"><SelectField label={c.header} value={c.field.startsWith('attribute:') ? 'attribute' : c.field} onChange={e => void remap(c.header, e.target.value)} hint={<span lang="hi">{c.sample.filter(Boolean).slice(0, 2).join(' · ') || 'empty'}{c.why === 'default' ? ' · kept as a detail by default' : ''}</span>}>
-              {FIELDS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</SelectField></div>))}</div>
-          {missingPhone && <p className="hint hint-bad">No column is matched to Phone, so no row can be called.</p>}
-          {pv.converted && <p className="hint">Read from the sheet “{pv.converted.sheet}” of your Excel file.{pv.converted.formulaCells ? ` ${plural(pv.converted.formulaCells, 'formula cell')} used ${pv.converted.formulaCells === 1 ? 'the value' : 'the values'} Excel last saved.` : ''}{pv.converted.formulaWithoutValue ? ` ${plural(pv.converted.formulaWithoutValue, 'formula cell')} had no saved value and ${pv.converted.formulaWithoutValue === 1 ? 'is' : 'are'} empty; open the file in Excel and save it to fill ${pv.converted.formulaWithoutValue === 1 ? 'it' : 'them'}.` : ''}</p>}
-        </Card>
-        {pv.agentFacts && <AgentFactsCard facts={pv.agentFacts} headers={pv.columns.map(c => c.header)} busy={busy} onUse={useColumn} />}
-        <Card><CardHead title="3. What will happen to each row" />
-          <div className="receipt" role="status">
-            <div><b className="tnum serif">{count(pv.counts.in)}</b><span>rows in</span></div><div><b className="tnum serif">{count(pv.counts.callable)}</b><span>callable numbers</span></div>
-            <div><b className="tnum serif">{count(pv.counts.duplicate)}</b><span>duplicates</span></div><div><b className="tnum serif">{count(pv.counts.skipped)}</b><span>skipped</span></div>
-          </div>
-          {pv.questions.map((q, i) => <div className="qcard" key={i}><p><strong>{q.text}</strong></p></div>)}
-          <div className="row" style={{ margin: '12px 0' }}><Tabs label="Rows to show" value={filter} onChange={setFilter} items={[{ id: 'problems', label: 'Needs a look', count: pv.rows.filter(r => r.verdict !== 'ok').length }, { id: 'all', label: 'All rows', count: pv.rows.length }]} /></div>
-          {rows.length ? <Table caption="Per-row verdicts" cols={vcols} rows={rows} rowKey={r => String(r.row)} /> : <Empty title="Every row is ready" icon={<Check size={26} aria-hidden />} body="Nothing needs fixing. Switch to All rows to see them." />}
-        </Card>
-        <Card><CardHead title="4. Save" sub="Saves contacts and an audience. It does not call anyone." />
-          <div className="formgrid"><SelectField label="Record that these people agreed to be called for" value={purpose} onChange={e => setPurpose(e.target.value)} hint="Only choose one if it is true. It is written on every contact and decides which calls are allowed. Leave it if unsure."><option value="">Do not record any consent</option><option value="service">Service calls (about their own account)</option><option value="transactional">Transactional calls (orders, appointments)</option><option value="promotional">Promotional calls</option></SelectField>
-            <TextField label="Audience name" value={aud} onChange={e => setAud(e.target.value)} /></div>
-          <div style={{ marginTop: 16 }}>{reasonOff ? <Btn disabled reason={reasonOff}>Save contacts</Btn> : <Btn kind="primary" onClick={commit}>Save {count(pv.counts.callable)} contacts</Btn>}</div></Card>
-      </>}
+      {pv && <ImportReview pv={pv} setPv={setPv} srcText={srcText} agentId={agentId} onSaved={() => go('/audiences')} />}
     </div>
-  );
-}
-
-/** The chosen agent's column contract: each detail she says from a person's record, and the column that fills it.
- *  Nothing is matched for the member; a suggestion becomes a match only when they tap it. */
-function AgentFactsCard({ facts, headers, busy, onUse }: { facts: NonNullable<ImportPreview['agentFacts']>; headers: string[]; busy: boolean; onUse: (header: string, factKey: string) => void }) {
-  const missing = facts.facts.filter(f => f.status === 'missing');
-  return (
-    <Card><CardHead title={`What ${facts.agent} says from each person's record`} sub={missing.length ? `${count(missing.length)} ${missing.length === 1 ? 'detail has' : 'details have'} no column yet. A campaign with this agent cannot start until each has one.` : 'Every detail she says has a column in this list.'} />
-      {facts.facts.length === 0 ? <p className="muted">This agent says nothing from a person's record, so any list works.</p> :
-        <ul className="facts">{facts.facts.map(f => (
-          <li key={f.key}><div className="row" style={{ justifyContent: 'space-between' }}><strong>{f.label}</strong>
-            <Chip tone={f.status === 'missing' ? 'brick' : 'leaf'}>{f.status === 'missing' ? 'No column' : f.status === 'name' ? 'From the name' : `From “${headers.find(h => h === f.column) ?? f.column}”`}</Chip></div>
-            {f.status === 'missing' && (f.suggestions.length ? <div className="row" style={{ marginTop: 6 }}><span className="small muted">Is it one of these?</span>
-              {f.suggestions.filter(h => headers.includes(h)).slice(0, 3).map(h => <Btn key={h} size="sm" busy={busy} onClick={() => onUse(h, f.key)}>Use “{h}”</Btn>)}</div>
-              : <p className="small muted">No column looks like it. Add one to the file, or change the agent.</p>)}</li>))}</ul>}
-    </Card>
   );
 }
 

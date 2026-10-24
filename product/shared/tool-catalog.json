@@ -7218,6 +7218,33 @@
    }
   },
   {
+   "name": "source.crm.sources",
+   "risk": "read",
+   "summary": "Lists imported from a CRM, with their sync timer, when they last synced and why a sync failed",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "hubspot",
+       "zoho_crm"
+      ]
+     }
+    },
+    "required": []
+   }
+  },
+  {
    "name": "source.hook_secret.rotate",
    "risk": "policy",
    "summary": "Replace a webhook source's signing secret; the old one keeps working for 24 hours so the sender can switch",

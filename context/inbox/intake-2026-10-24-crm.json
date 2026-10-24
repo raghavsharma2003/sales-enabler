@@ -29,6 +29,25 @@
       "title": "From a CRM, consent comes only from a field that says so (read as consent by the same header rules as a file, and recorded only with a purpose); email opt-outs and data-processing bases are not call consent; DND is never taken from a CRM",
       "rationale": "Brief: 'consent and DND state come across only where the CRM records it, otherwise unknown, never assumed'. HubSpot hs_legal_basis and Zoho Email_Opt_Out are not about phone calls.",
       "reverse_if": "A CRM adds a standard call-consent or DNC field; then it is mapped by default with its own test."
+    },
+    {
+      "id": "component.2026-10-24.crm-import-screen",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Contacts > Import > From HubSpot / From Zoho CRM: pick a list, check it with the same column matching and receipt as a file, save, then set a sync timer; failed syncs explained in plain words; empty state links to Integrations",
+      "path": "product/web/src/pages/import-crm.tsx",
+      "details": "Lazy chunk (2.4 KB gzip); steps 2-4 shared with the file import (import-review.tsx). Browser flow against product/web/dev/fake-crm.mjs (VP_CRM_FAKE_URL, never in production); axe screens; screenshots looked at. Bundle: all chunks 205.6 -> 209.3 KB gzip against a 205 KB ceiling that was already exceeded (open with web). Also: a phone-layout scroll-padding so nothing scrolled into view lands under the fixed bottom bar."
+    },
+    {
+      "id": "open.2026-10-24.bundle-over-ceiling-crm-screen",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The web bundle (all chunks) is 209.3 KB gzip against a 205 KB ceiling: 205.6 before the CRM import screen, +3.7 with it (first load unchanged at 87.7)",
+      "closes_when": "Web trims the bundle under the ceiling or raises it with a stated reason, and web.test's size check passes."
     }
   ],
   "edges": [
@@ -46,6 +65,16 @@
       "from": "component.2026-10-24.crm-contact-import",
       "to": "component.2026-10-24.intake-xlsx-import",
       "relation": "extends"
+    },
+    {
+      "from": "component.2026-10-24.crm-import-screen",
+      "to": "component.2026-10-24.crm-contact-import",
+      "relation": "extends"
+    },
+    {
+      "from": "component.2026-10-24.crm-import-screen",
+      "to": "open.2026-10-24.bundle-over-ceiling-crm-screen",
+      "relation": "leaves-open"
     }
   ],
   "events": [
@@ -53,6 +82,11 @@
       "date": "2026-10-24",
       "event": "crm-contact-import",
       "details": "HubSpot and Zoho CRM contact import built in intake (read only; fakes only). Verified: tsc clean; intake-crm 5/5; npm run gen (220 tools); full fresh-DB suite green after ledger labels; web tests 13/13. Not verified: real CRM accounts. Workspace label change requested."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "crm-import-screen",
+      "details": "CRM import screen built (lazy chunk), browser flow against a fake CRM, axe screens, screenshots at 1440/390 looked at; fixed while looking: an Excel note shown for CRM pulls, and an 'Updated at' column whose select showed 'Name' (observed_at had no option). Bundle 209.3 KB gzip vs 205 ceiling (was 205.6)."
     }
   ]
 }

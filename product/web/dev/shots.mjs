@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { mkdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { EMI_ROWS, xlsxFile } from './xlsx-sample.mjs';
+import { HS_TOKEN, startFakeCrm } from './fake-crm.mjs';
 const require = createRequire('/opt/node-tools/node_modules/');
 const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:8788';
@@ -27,6 +28,19 @@ const screens = (id) => [
     await p.getByRole('button', { name: 'Check the file' }).click();
     const head = p.getByRole('heading', { name: /says from each person's record/ });
     await head.waitFor({ timeout: 15000 }); await head.scrollIntoViewIfNeeded(); await p.waitForTimeout(400); } }],
+  // CRM import: Zoho is not connected (the empty state); HubSpot is connected to a local fake CRM (VP_CRM_FAKE_URL on the server).
+  ['contacts-import-crm-empty', '/contacts/import?from=zoho_crm', { after: async (p) => { await p.getByText('Zoho CRM is not connected').waitFor(); } }],
+  ['contacts-import-hubspot', '/contacts/import?from=hubspot', { before: async (p) => { await connectHubspot(p); }, after: async (p) => {
+    await p.getByLabel('HubSpot list').selectOption({ index: 1 }); await p.getByRole('button', { name: 'Check this list' }).click();
+    await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); await p.getByText(/^Read \d+ contacts? from HubSpot/).scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
+  ['contacts-import-hubspot-synced', '/contacts/import?from=hubspot', { before: async (p) => { await connectHubspot(p); }, after: async (p) => {
+    const card = p.locator('.card', { hasText: 'Lists kept in step with HubSpot' });
+    await p.waitForLoadState('networkidle');
+    if (!(await card.count())) {
+      await p.getByLabel('HubSpot list').selectOption({ index: 1 }); await p.getByRole('button', { name: 'Check this list' }).click();
+      await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); await p.getByRole('button', { name: /^Save \d+ contacts$/ }).click();
+    }
+    await card.waitFor({ timeout: 15000 }); await card.scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
   ['contact', `/contacts/${id.contact}`], ['contact-suppressed', `/contacts/${id.suppressed}`], ['contacts-export', '/contacts', { after: async (p) => { await p.getByRole('button', { name: 'Export as CSV…' }).click(); await p.waitForTimeout(500); } }], ['audiences', '/audiences'],
   ['campaigns', '/campaigns'], ['campaign-new', '/campaigns/new'], ['campaign-draft', `/campaigns/${id.camp}`], ['campaign-draft2', `/campaigns/${id.camp2}`], ['campaign-cap', `/campaigns/${id.camp2}`, { after: async (p) => { await p.getByRole('button', { name: /^(Set|Change) spend cap$/ }).click(); await p.waitForTimeout(900); } }],
   ['calls', '/calls'], ['call', `/calls/${id.call}`], ['call-optout', `/calls/${id.optout}`], ['insights', '/insights'], ['numbers', '/numbers'],
@@ -63,6 +77,13 @@ async function toolDo(p, name, args = {}) {
   if (r.status === 'needs_approval') r = await (await p.request.post(`${base}/v1/actions/${r.actionId}/decide`, { data: { approve: true } })).json();
   if (r.status !== 'confirmed') throw new Error(`${name}: ${JSON.stringify(r)}`);
   return r.result;
+}
+// The fake CRM is up before any page asks the server for a CRM list (the server reaches it through VP_CRM_FAKE_URL).
+const fakeCrm = await startFakeCrm(Number(new URL(process.env.VP_CRM_FAKE_URL ?? 'http://127.0.0.1:8791').port)).catch(() => null);
+async function connectHubspot(p) {
+  const has = (await toolDo(p, 'integration.list')).integrations.some(i => i.kind === 'hubspot' && i.status === 'connected');
+  if (!has) { const { stashId } = await toolDo(p, 'integration.stage_secrets', { kind: 'hubspot', secrets: { access_token: HS_TOKEN } }); await toolDo(p, 'integration.connect', { kind: 'hubspot', name: 'HubSpot (synthetic)', stashId }); }
+  await p.reload({ waitUntil: 'networkidle' });
 }
 async function configureSso(p) {
   const cfg = await toolDo(p, 'sso.config.get');
@@ -145,4 +166,5 @@ for (const [tag, viewport, extra] of SIZES) {
   await ctx.close();
 }
 await browser.close();
+fakeCrm?.server?.close();
 for (const r of report) console.log(`${r.hscroll || r.bad.length || r.errors.length ? '!!' : 'ok'} ${r.name}-${r.tag} ${r.kb}KB${r.hscroll ? ' HSCROLL sw=' + r.sw : ''}${r.bad.length ? ' bad=' + r.bad.join('|') : ''}${r.errors.length ? ' err=' + r.errors.join(' | ').slice(0, 200) : ''}`);

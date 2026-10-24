@@ -116,6 +116,17 @@ export function registerCrmTools(reg: Registry): void {
     },
   }));
 
+  reg.register(tool(obj({ kind: opt(str({ oneOf: CRM_KINDS })) }), {
+    name: 'source.crm.sources', risk: 'read', summary: 'Lists imported from a CRM, with their sync timer, when they last synced and why a sync failed',
+    run: async (ctx, i) => ({ sources: (await many<{ id: string; name: string; crm: CrmConf; sync_every_h: number | null; last_synced_at: Date | null; last_sync_error: string | null; imports: string }>(ctx.q,
+      `SELECT s.id, s.name, s.crm, s.sync_every_h, s.last_synced_at, s.last_sync_error,
+         (SELECT count(*) FROM intake_upload u WHERE u.source_id = s.id AND u.status = 'committed') AS imports
+       FROM intake_source s WHERE s.workspace_id = $1 AND s.kind = 'crm' AND s.crm IS NOT NULL AND ($2::text IS NULL OR s.crm->>'kind' = $2)
+       ORDER BY s.created_at DESC LIMIT 100`, [ctx.workspaceId, i.kind ?? null]))
+      .map(s => ({ id: s.id, name: s.name, kind: s.crm.kind, listName: s.crm.listName, integrationId: s.crm.integrationId, everyHours: s.sync_every_h,
+        lastSyncedAt: s.last_synced_at, lastSyncError: s.last_sync_error, imported: Number(s.imports) > 0 })) }),
+  }));
+
   reg.register(tool(obj({ sourceId: uuid() }), {
     name: 'source.sync', risk: 'draft',
     summary: 'Re-pull a CRM list and import it with the mapping of its last import; unchanged records are skipped (read only on the CRM)',
