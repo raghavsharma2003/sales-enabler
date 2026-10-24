@@ -22406,6 +22406,35 @@
    "rationale": "A person waits for the first load plus the chunk of the page they open; the total of all chunks grows with every lazy screen even when no page gets slower. With a 205 KB total cap, three lanes (agents' speed gate, workspace's roster, intake's CRM import screen) were blocked or red over 0.4-3.7 KB each while the first load stayed at 87.7 KB and the largest chunk (Settings) at 25.6 KB. The per-chunk cap keeps every page's download bounded and forces a split where a page grows (Settings is closest). 240 KB total still trips on a library pulled in or code duplicated across chunks, which add tens of KB at once.",
    "reverse_if": "A measured cold page transition on a mid-range Android over throttled 4G exceeds 1 s for a lazy route at these sizes, or offline/precache (a service worker) makes the total the download that matters; then the total becomes a gate again.",
    "path": "product/tests/web.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.learning-rewards-by-source",
+   "type": "decision",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Learning's reward is the outcome that counts (verified, then a person's label, then a trusted AI read), read through calls' outcome.readings, never calls' tables. Every experiment progress and result says where its outcomes came from ('38 verified, 12 labelled by a person, 112 AI-read; 40 AI reads not counted'), and planning scales by that mix: an AI read at agreement a counts as (2a-1)^2 of a true label (labelAdjustedPlan).",
+   "rationale": "outcome.import (99c0924) gives businesses verified outcomes from their own files. A result must say how much of it rests on them, and fewer, truer labels prove more per call.",
+   "reverse_if": "Calls exposes graded outcomes another way (e.g. a view); then read that instead of outcome.readings."
+  },
+  {
+   "id": "decision.2026-10-24.judge-recheck-on-disagreement",
+   "type": "decision",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "When verified outcomes and AI reads disagree on more than 15% of 20+ calls in an experiment, the result carries a warning and each disagreeing judge gets calibration status 'needs_recheck' through calls' judge.flag_recheck (a new row; history kept). The calls it read are refreshed, so its reads stop counting until judge.calibrate passes again.",
+   "rationale": "A judge that verified outcomes contradict cannot keep feeding experiments on the strength of an older calibration.",
+   "reverse_if": "Calibration gains a continuous agreement check against verified outcomes in calls itself; then learning only reports."
+  },
+  {
+   "id": "open.2026-10-24.untrusted-ai-read-as-reward",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The integrator asked for 'the AI read otherwise' as the reward. Learning keeps decision.2026-10-21.learning-counts-outcome-calls (blueprint F4): an AI read counts only when its judge is trusted; untrusted reads are reported as 'not counted'. Should untrusted AI reads ever be a reward (e.g. with the power penalty from labelAdjustedPlan)? Owner's call.",
+   "closes_when": "The owner confirms F4 for experiments, or directs that untrusted reads count (one line in calls' refreshOutcome, plus a supersedes edge)."
   }
  ],
  "edges": [
@@ -40420,6 +40449,26 @@
    "from": "decision.2026-10-24.web-budget-per-chunk",
    "to": "decision.2026-10-24.web-a11y-gate",
    "relation": "related-to"
+  },
+  {
+   "from": "decision.2026-10-24.learning-rewards-by-source",
+   "to": "decision.2026-10-21.learning-counts-outcome-calls",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.learning-rewards-by-source",
+   "to": "decision.2026-10-24.verified-outcomes-from-a-file",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.judge-recheck-on-disagreement",
+   "to": "decision.2026-10-24.learning-rewards-by-source",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.learning-rewards-by-source",
+   "to": "open.2026-10-24.untrusted-ai-read-as-reward",
+   "relation": "leaves-open"
   }
  ]
 }
