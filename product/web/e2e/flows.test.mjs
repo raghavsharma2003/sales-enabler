@@ -1728,3 +1728,53 @@ test('Agent: a check on the draft says once where it is, as a link to that tab a
   await page.getByRole('button', { name: 'Save draft' }).click();
   await alert.waitFor({ state: 'detached', timeout: 10000 });
 });
+
+test('Retry pattern: the form sends what it shows, campaign.get and the page agree, and a contact shows the callback they asked for', async () => {
+  const a = (await tool('agent.list')).result.agents.find(x => x.latest_version);
+  assert.ok(a, 'a published agent exists');
+  await page.goto(`${BASE}/campaigns/new`);
+  await page.getByLabel('Agent').selectOption({ value: a.id });
+  await page.getByLabel('Campaign name').fill('Retry pattern check');
+  const who = page.getByLabel('Who to call');
+  await who.selectOption({ index: 1 });
+  const pattern = page.getByLabel('Retry pattern');
+  await pattern.selectOption('gentle');
+  await page.getByText('Up to 2 calls each, a day apart, after busy, no answer or switched off.', { exact: false }).waitFor();
+  await page.getByRole('button', { name: 'Save draft and see the estimate' }).click();
+  await page.waitForURL(/\/campaigns\/[0-9a-f-]{36}$/, { timeout: 15000 });
+  const id = page.url().split('/').pop();
+  const got = (await tool('campaign.get', { id })).result;
+  assert.equal(got.campaign.policy.retry.pattern, 'gentle', 'the server holds the pattern the form showed');
+  assert.equal(got.campaign.policy.retry.maxAttempts, 2);
+  const card = page.locator('.card', { hasText: 'Window and policy' });
+  await card.getByText(got.retry, { exact: true }).waitFor();                 // the page says exactly what the server runs
+
+  // A callback the person asked for (fixture in SQL: no tool makes an attempt by hand), on one contact of this campaign.
+  const contact = (await pool.query('SELECT id, name FROM contact WHERE workspace_id = $1 AND erased_at IS NULL ORDER BY created_at LIMIT 1', [ws])).rows[0];
+  const text = 'Calling back Wed 11:00 am, as they asked';
+  await pool.query(`INSERT INTO attempt (workspace_id, campaign_id, contact_id, kind, status, scheduled_for, call_category, callback)
+    VALUES ($1,$2,$3,'callback','created', now() + interval '1 day', $4, $5)`, [ws, id, contact.id, got.campaign.call_category,
+      JSON.stringify({ statedAt: new Date().toISOString(), at: new Date().toISOString(), clamped: false, quote: 'kal subah 11 baje', conversationId: null, text })]);
+  await page.reload();
+  await page.locator('[data-testid="campaign-callbacks"]').getByText(text).waitFor();
+  const listed = (await tool('campaign.get', { id })).result.callbacks;
+  assert.ok(listed.some(b => b.text === text && b.contactId === contact.id), 'campaign.get lists the same callback');
+  await page.goto(`${BASE}/contacts/${contact.id}`);
+  await page.locator('[data-testid="callback-text"]').filter({ hasText: text }).first().waitFor();
+  assert.doesNotMatch(await page.locator('main').innerText(), /kal subah 11 baje/, 'the contact page never shows their words');
+
+  // Screens at 1440 and 390, each with no serious or critical axe violation.
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  fs.mkdirSync(shotDir, { recursive: true });
+  const [phoneCtx, phone] = await phonePage();
+  try {
+    for (const [tag, p] of [['d', page], ['m', phone]]) {
+      for (const [name, url, ready] of [['campaign-retry', `/campaigns/${id}`, '[data-testid="campaign-callbacks"]'], ['contact-callback', `/contacts/${contact.id}`, '[data-testid="callback-text"]']]) {
+        await p.goto(`${BASE}${url}`);
+        await p.locator(ready).first().waitFor();
+        await p.screenshot({ path: path.join(shotDir, `${name}-${tag}.png`), fullPage: true });
+        assert.deepEqual((await axe(p)).filter(v => v.impact === 'serious' || v.impact === 'critical'), [], `axe on ${name} at ${tag === 'd' ? 1440 : 390}`);
+      }
+    }
+  } finally { await phoneCtx.close(); }
+});

@@ -17,19 +17,28 @@ const WORD = '(?:\\d{1,2}|ek|do|teen|chaa?r|paa?nch|chhe|chhah|saat|aath|nau|das
 export function statedTime(text: string, now: Date = new Date()): StatedTime | null {
   const t = text.toLowerCase();
   // Relative: "2 ghante baad", "aadhe ghante mein", "30 minute baad", "in 2 hours", "after 20 minutes".
-  const rel = new RegExp(`(?:in |after )?(aadhe|half an?|${WORD})\\s*(ghante|ghanta|hours?|hrs?|minute|minutes|mins?)\\s*(baad|mein|me|later)?`, 'i').exec(t);
+  const rel = new RegExp(`(?:in |after )?(aadhe|half an?|dedh|derh|dhai|dhaai|${WORD})\\s*(ghante|ghanta|hours?|hrs?|minute|minutes|mins?)\\s*(baad|mein|me|later)?`, 'i').exec(t);
   if (rel && (rel[3] || /^(in|after) /.test(rel[0]))) {
-    const amount = /^(aadhe|half)/.test(rel[1]) ? 0.5 : n(rel[1]);
+    const amount = /^(aadhe|half)/.test(rel[1]) ? 0.5 : /^(dedh|derh)$/.test(rel[1]) ? 1.5 : /^(dhai|dhaai)$/.test(rel[1]) ? 2.5 : n(rel[1]);
     const hours = /^(ghant|hour|hr)/.test(rel[2]);
     if (Number.isFinite(amount) && amount > 0) return { at: new Date(now.getTime() + amount * (hours ? 3_600_000 : 60_000)), quote: text.slice(rel.index, rel.index + rel[0].length).trim() };
   }
-  // Clock time: "6 baje", "shaam 6:30 baje", "6 pm", "10 am", "6 ke baad", "after 6".
-  const clock = new RegExp(`(?:(subah|morning|dopahar|afternoon|shaam|sham|evening|raat|night)\\s+)?(?:after\\s+)?(${WORD})(?:[:.](\\d{2}))?\\s*(baje|bajey|o'?clock|am|pm|a\\.m\\.|p\\.m\\.|ke baad|ke bad)`, 'i').exec(t);
+  // Clock time: "6 baje", "shaam 6:30 baje", "6 pm", "10 am", "6 ke baad", "after 6"; Hindi fractions "sawa 5" (5:15),
+  // "saade 6" (6:30), "paune 7" (6:45), "dedh" (1:30), "dhai" (2:30), which need no "baje" since they only name a time.
+  const CLOCK = new RegExp(`(?:(subah|morning|dopahar|afternoon|shaam|sham|evening|raat|night)\\s+)?(?:after\\s+)?(?:(sawa|saade|saadhe|sade|paune|pone)\\s+)?(dedh|derh|dhai|dhaai|${WORD})(?:[:.](\\d{2}))?\\s*(baje|bajey|o'?clock|am|pm|a\\.m\\.|p\\.m\\.|ke baad|ke bad)?`, 'gi');
+  const clock = [...t.matchAll(CLOCK)].find(m => m[5] || m[2] || /^(dedh|derh|dhai|dhaai)$/.test(m[3]));
   if (!clock) return null;
-  let h = n(clock[2]); const min = clock[3] ? Number(clock[3]) : 0;
+  const frac = clock[2], whole = clock[3];
+  let h = /^(dedh|derh)$/.test(whole) ? 1 : /^(dhai|dhaai)$/.test(whole) ? 2 : n(whole);
+  let min = clock[4] ? Number(clock[4]) : /^(dedh|derh|dhai|dhaai)$/.test(whole) ? 30 : 0;
+  if (frac && !clock[4]) {
+    if (/^(sawa)$/.test(frac)) min = 15;
+    else if (/^(saade|saadhe|sade)$/.test(frac)) min = 30;
+    else { h = h === 1 ? 12 : h - 1; min = 45; }               // paune 7 = 6:45; paune 1 = 12:45
+  }
   if (!Number.isFinite(h) || h < 0 || h > 23 || min > 59) return null;
   const part = clock[1] ?? (/(subah|morning|dopahar|afternoon|shaam|sham|evening|raat|night)/.exec(t)?.[1]);
-  const mark = clock[4];
+  const mark = clock[5] ?? '';
   if (/^p/.test(mark) && h < 12) h += 12;
   else if (/^a/.test(mark) && h === 12) h = 0;
   else if (!/^[ap]/.test(mark) && h <= 12) {
@@ -41,7 +50,7 @@ export function statedTime(text: string, now: Date = new Date()): StatedTime | n
   let dayOffset = /\b(parso|parson|day after tomorrow)\b/.test(t) ? 2 : /\b(kal|tomorrow)\b/.test(t) ? 1 : 0;
   let at = istInstant(p.y, p.m, p.d + dayOffset, h, min);
   if (dayOffset === 0 && at.getTime() <= now.getTime()) at = istInstant(p.y, p.m, p.d + 1, h, min);   // "6 baje" said at 7 pm is tomorrow
-  return { at, quote: text.slice(clock.index, clock.index + clock[0].length).trim() };
+  return { at, quote: text.slice(clock.index!, clock.index! + clock[0].length).trim() };
 }
 
 // ---- a callback the caller asked for: the time, or a note that they named none ----------------------------------------
@@ -57,6 +66,9 @@ const DEVANAGARI: [RegExp, string][] = [
   [/परसों|परसो/g, 'parso'], [/कल/g, 'kal'], [/आज/g, 'aaj'], [/सुबह/g, 'subah'], [/दोपहर/g, 'dopahar'], [/शाम/g, 'shaam'], [/रात/g, 'raat'],
   [/बजे/g, 'baje'], [/के बाद/g, 'ke baad'], [/घंटे|घण्टे/g, 'ghante'], [/घंटा/g, 'ghanta'], [/मिनट/g, 'minute'], [/बाद/g, 'baad'], [/में/g, 'mein'],
   [/आधे/g, 'aadhe'], [/को/g, 'ko'], [/मत/g, 'mat'], [/नहीं/g, 'nahi'], [/फ़ोन|फोन/g, 'phone'], [/कॉल/g, 'call'], [/करना|करो|कीजिए|करिए/g, 'karna'],
+  [/सवा/g, 'sawa'], [/साढ़े|साढे|साड़े/g, 'saade'], [/पौने/g, 'paune'], [/डेढ़|डेढ/g, 'dedh'], [/ढाई/g, 'dhai'],
+  [/ग्यारह/g, 'gyarah'], [/बारह/g, 'barah'], [/एक/g, 'ek'], [/दो/g, 'do'], [/तीन/g, 'teen'], [/चार/g, 'char'], [/पांच|पाँच/g, 'paanch'],
+  [/छह|छः|छे/g, 'chhe'], [/सात/g, 'saat'], [/आठ/g, 'aath'], [/नौ/g, 'nau'], [/दस/g, 'das'],
   [/सोमवार/g, 'somvar'], [/मंगलवार/g, 'mangalvar'], [/बुधवार/g, 'budhvar'], [/गुरुवार/g, 'guruvar'], [/शुक्रवार/g, 'shukravar'], [/शनिवार/g, 'shanivar'], [/रविवार|इतवार/g, 'ravivar'],
 ];
 function latin(text: string): string {

@@ -11,7 +11,8 @@ import type { Actor, Registry } from '../server/tools.ts';
 import { modules } from '../server/modules/index.ts';
 import { FakeTelephony, setTelephony } from '../server/modules/campaigns/telephony.ts';
 import { resolveRetry, RETRY_PATTERNS } from '../server/modules/campaigns/retry.ts';
-import { statedCallback } from '../server/modules/calls/stated-time.ts';
+import { statedCallback, statedTime } from '../server/modules/calls/stated-time.ts';
+import { eligibility } from '../server/modules/campaigns/windows.ts';
 import { afterCall } from '../server/modules/calls/followups.ts';
 import { purgeTranscripts } from '../server/modules/memory/index.ts';
 
@@ -195,4 +196,51 @@ test('end to end: the caller\'s words schedule the callback, and that call\'s me
   assert.equal((await one<any>(pool, 'SELECT callback FROM attempt WHERE id = $1', [cb.id]))!.callback.quote, undefined);
   const after_ = await registry.execute<any>(pool, 'memory.brief', { contactId: w.contact, agentId: w.agentId, attemptId: cb.id }, SYS(w));
   assert.equal((after_ as any).result.status, 'empty');
+});
+
+const FRACTIONS: [string, string, string][] = [   // the words, IST time read on Saturday 11:30, and the quote kept
+  ['saade chhe baje shaam ko', '2026-10-24T18:30', 'saade chhe baje'],
+  ['paune saat', '2026-10-24T18:45', 'paune saat'],
+  ['dopahar dedh baje', '2026-10-24T13:30', 'dopahar dedh baje'],
+  ['raat ko 8 ke baad', '2026-10-24T20:00', '8 ke baad'],
+  ['sawa paanch baje', '2026-10-24T17:15', 'sawa paanch baje'],
+  ['dhai baje call karna', '2026-10-24T14:30', 'dhai baje'],
+  ['paune ek baje', '2026-10-24T12:45', 'paune ek baje'],
+  ['kal sawa nau baje subah', '2026-10-25T09:15', 'sawa nau baje'],
+  ['dedh ghante baad', '2026-10-24T13:00', 'dedh ghante baad'],
+  ['साढ़े छह बजे शाम को', '2026-10-24T18:30', 'साढ़े छह बजे शाम को'],
+  ['पौने सात बजे', '2026-10-24T18:45', 'पौने सात बजे'],
+  ['दोपहर डेढ़ बजे', '2026-10-24T13:30', 'दोपहर डेढ़ बजे'],
+  ['सवा पांच बजे', '2026-10-24T17:15', 'सवा पांच बजे'],
+  ['ढाई बजे', '2026-10-24T14:30', 'ढाई बजे'],
+];
+
+test('Hindi fractions (sawa, saade, paune, dedh, dhai) in Latin and Devanagari; the quote is the caller\'s own words', () => {
+  const now = new Date('2026-10-24T06:00:00Z');
+  for (const [words, at, quote] of FRACTIONS) {
+    const r = statedCallback(words, now);
+    assert.ok(r && 'at' in r, words);
+    assert.deepEqual([istText(r.at.toISOString()), r.quote], [at, quote], words);
+  }
+  // The hand-off queue reads the same parser: "saade chhe" was 6:00 before, now 6:30.
+  assert.equal(istText(statedTime('saade chhe baje', now)!.at.toISOString()), '2026-10-24T18:30');
+  for (const vague of ['saade', 'paune baad mein call karna', 'do minute ruko, phir baad mein', 'call kar do baad mein'])
+    assert.ok(statedCallback(vague, now) === null || 'note' in statedCallback(vague, now)!, `${vague}: never a time`);
+});
+
+test('every fractional time is scheduled inside the calling hours: as asked when it falls inside, else the next opening', { skip }, async () => {
+  const w = await world();
+  const c = await campaign(w, { pattern: 'none' });
+  const conv = (await one<{ id: string }>(pool, "INSERT INTO conversation (workspace_id, contact_id, channel, status) VALUES ($1,$2,'phone','done') RETURNING id", [w.ws, w.contact]))!.id;
+  const now = IST(TUE, '11:30');
+  const inside = (d: Date) => eligibility(d, 'Asia/Kolkata', { category: 'service', window: WINDOW, outerBand: { start: '08:00', end: '21:00' }, rbiBand: false, holidays: [] }).ok;
+  for (const [words] of [...FRACTIONS, ['saade nau baje raat ko', '', ''] as [string, string, string]]) {
+    const s = statedCallback(words, now);
+    assert.ok(s && 'at' in s, words);
+    const r = await retry(w, await attempt(w, c), 'callback', { stated: { at: s.at.toISOString(), quote: s.quote, conversationId: conv } });
+    assert.equal(r.scheduled, true, words);
+    assert.ok(inside(new Date(r.at)), `${words}: ${r.at} is inside Mon-Sat 10:00-19:00`);
+    if (inside(s.at)) assert.equal(r.at, s.at.toISOString(), `${words}: inside the window, exactly as asked`);
+    else assert.ok(new Date(r.at) > s.at && r.clamped, `${words}: moved later, never earlier`);
+  }
 });
