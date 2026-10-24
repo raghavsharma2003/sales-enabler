@@ -27,7 +27,8 @@ import { wilson } from '../server/modules/learning/stats.ts';
 import { TASKS, type Frame, type Task } from './operator-bench-tasks.ts';
 
 export interface TaskResult {
-  id: string; category: string; status: 'pass' | 'fail' | 'error' | 'not_run'; why: string;
+  /** not_measured: the provider refused the request (content filter), so the product was never exercised; reported apart. */
+  id: string; category: string; status: 'pass' | 'fail' | 'error' | 'not_run' | 'not_measured'; why: string;
   /** False when no model call succeeded (e.g. the provider refused the request): such a task is a fail, never a pass. */
   reachedModel: boolean;
   llmCalls: number; toolCalls: number; tokens: { input: number; output: number }; stoppedBy?: string;
@@ -40,7 +41,8 @@ export interface BenchReport {
   summary: { run: number; passed: number; passRate: number; ci95: { lo: number; hi: number };
     reachedModel: { run: number; passed: number; passRate: number; ci95: { lo: number; hi: number } };
     tokens: number; inrMilli: number | null; wallMs: number;
-    byCategory: Record<string, { run: number; passed: number; ci95: { lo: number; hi: number } }>; stoppedEarly?: string };
+    byCategory: Record<string, { run: number; passed: number; ci95: { lo: number; hi: number } }>; stoppedEarly?: string;
+    notMeasured: string[] };
   tasks: TaskResult[];
 }
 
@@ -127,7 +129,8 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
     if (!o.pool) await pool.end();
   }
 
-  const ran = results.filter(r => r.status !== 'not_run');
+  const ran = results.filter(r => r.status !== 'not_run' && r.status !== 'not_measured');
+  const notMeasured = results.filter(r => r.status === 'not_measured').map(r => r.id);
   const passed = ran.filter(r => r.status === 'pass').length;
   const byCategory: BenchReport['summary']['byCategory'] = {};
   for (const r of ran) {
@@ -144,7 +147,7 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
     summary: { run: ran.length, passed, passRate: ran.length ? round(passed / ran.length) : 0, ci95: { lo: round(w.lo), hi: round(w.hi) },
       reachedModel: { run: reached.length, passed: reachedPassed, passRate: reached.length ? round(reachedPassed / reached.length) : 0, ci95: { lo: round(wr.lo), hi: round(wr.hi) } },
       tokens: tokensSpent,
-      inrMilli: priced ? inrSpent : null, wallMs: ran.reduce((a, r) => a + r.wallMs, 0), byCategory, ...(stoppedEarly ? { stoppedEarly } : {}) },
+      inrMilli: priced ? inrSpent : null, wallMs: ran.reduce((a, r) => a + r.wallMs, 0), byCategory, ...(stoppedEarly ? { stoppedEarly } : {}), notMeasured },
     tasks: results,
   };
   if (o.out) {
@@ -178,6 +181,9 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
       const modelError = done.stoppedBy === 'llm_error' ? (frames.find(f => f.event === 'error')?.data?.text ?? 'the model call failed') : null;
       const reachedModel = done.llmCalls > 0;
       const v = modelError ? { pass: false, why: `model error: ${String(modelError).slice(0, 200)}` } : graded;
+      // The provider refused the request, so nothing the product does was tested: never a pass (rule above), reported apart.
+      if (done.stoppedBy === 'provider_refused') return { ...empty(t, 'not_measured', 'provider refused the content (content filter)'), reachedModel,
+        llmCalls: done.llmCalls, toolCalls: done.toolCalls, tokens: done.tokens, stoppedBy: done.stoppedBy, ...reqStats(), wallMs: Date.now() - t0 };
       const cost = priced ? Number((await one<{ s: string }>(pool, `SELECT coalesce(sum(inr_milli), 0)::text AS s FROM cost_line WHERE workspace_id = $1`, [ws]))!.s) : null;
       return {
         id: t.id, category: t.category, status: v.pass ? 'pass' : 'fail', why: v.why + (done.stoppedBy ? ` [stopped by ${done.stoppedBy}]` : ''), reachedModel,
@@ -207,6 +213,7 @@ export function markdown(r: BenchReport): string {
   const lines = [
     `# Operator bench, ${r.startedAt.slice(0, 16).replace('T', ' ')} UTC (${r.mode}${r.endpoint ? `, ${r.endpoint}` : ''})`, '',
     `Passed ${s.passed} of ${s.run}: ${pct(s.passRate)} (95% CI ${pct(s.ci95.lo)}-${pct(s.ci95.hi)}); a model error counts as a fail.`,
+    `Not measured (the provider refused the content, so the product was not exercised; not in any count): ${s.notMeasured.length ? s.notMeasured.join(', ') : 'none'}.`,
     `Reached the model: ${s.reachedModel.run} of ${s.run}; of those, passed ${s.reachedModel.passed}: ${pct(s.reachedModel.passRate)} (95% CI ${pct(s.reachedModel.ci95.lo)}-${pct(s.reachedModel.ci95.hi)}).`,
     `Tokens ${s.tokens}${s.inrMilli !== null ? `, ₹${(s.inrMilli / 1000).toFixed(2)}` : ''}, wall ${(s.wallMs / 1000).toFixed(0)} s.${s.stoppedEarly ? ` Stopped early: ${s.stoppedEarly}.` : ''}`, '',
     '| Category | Passed | 95% CI |', '|---|---|---|',

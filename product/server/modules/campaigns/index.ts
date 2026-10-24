@@ -151,11 +151,26 @@ export async function cancelContactAttempts(q: Queryable, workspaceId: string, c
   return { cancelled: r.rowCount ?? 0 };
 }
 
+/** The same validator with a description in its JSON Schema (uuid() takes no options). */
+const described = <T>(v: Validator<T>, description: string): Validator<T> =>
+  Object.assign((x: unknown, p?: string) => v(x, p), { schema: { ...(v.schema ?? {}), description }, optional: v.optional });
+
+/** Why an agentVersionId was refused, and what to send instead: models often pass the agent id. */
+async function versionHint(q: Queryable, ws: string, id: string): Promise<string> {
+  const a = await one<{ name: string; v: string | null }>(q, `SELECT a.name, (SELECT v.id FROM agent_version v WHERE v.agent_id = a.id ORDER BY v.number DESC LIMIT 1) AS v
+    FROM agent a WHERE a.id = $1 AND a.workspace_id = $2`, [id, ws]);
+  if (!a) return 'no such agent version in this workspace; agentVersionId is a published version id from version.list or agent.get versions[].id';
+  return a.v ? `that is the agent id of "${a.name}", not a version id; its latest published version id is ${a.v}`
+    : `that is the agent id of "${a.name}", which has no published version yet; publish it with version.publish, then use the version id it returns`;
+}
+
 export function registerCampaignTools(registry: Registry): void {
   const reg = registry.register.bind(registry);
 
   reg(tool(obj({
-    id: opt(uuid()), name: str({ min: 1, max: 120 }), category: categoryV, agentVersionId: opt(uuid()), audienceId: opt(uuid()),
+    id: opt(uuid()), name: str({ min: 1, max: 120 }), category: categoryV,
+    agentVersionId: opt(described(uuid(), 'a PUBLISHED agent version id (version.list, or agent.get versions[].id), not the agent id; publish a draft with version.publish first')),
+    audienceId: opt(described(uuid(), 'an audience id from audience.list')),
     preset: opt(str({ oneOf: Object.keys(BUDGET_PRESETS) })), window: opt(windowV), budgets: opt(budgetsV),
     concurrency: opt(num({ int: true, min: 1, max: 1000 })), cliPool: opt(arr(uuid(), { max: 50 })),
     perMinuteInrMilli: opt(num({ int: true, min: 1, max: 100_000 })), maxDurationS: opt(num({ int: true, min: 30, max: 3600 })),
@@ -172,11 +187,11 @@ export function registerCampaignTools(registry: Registry): void {
       const warnings = await checkWindow(ctx.q, ctx.workspaceId, category, window, false);
       if (i.agentVersionId) {
         const v = await loadVersion(ctx.q, ctx.workspaceId, i.agentVersionId);
-        if (!v) throw new ValidationError('agentVersionId', 'no such agent version in this workspace');
+        if (!v) throw new ValidationError('agentVersionId', await versionHint(ctx.q, ctx.workspaceId, i.agentVersionId));
         if (v.config.agent?.category && v.config.agent.category !== category) warnings.push(`the agent version is for ${v.config.agent.category} calls; launch is blocked until they match`);
       }
       if (i.audienceId && !(await one(ctx.q, 'SELECT 1 FROM audience WHERE id = $1 AND workspace_id = $2', [i.audienceId, ctx.workspaceId])))
-        throw new ValidationError('audienceId', 'no such audience in this workspace');
+        throw new ValidationError('audienceId', 'no such audience in this workspace; use an id from audience.list, or make one with audience.create');
       if (i.cliPool?.length) {
         const n = await one<{ n: number }>(ctx.q, 'SELECT count(*)::int AS n FROM phone_number WHERE workspace_id = $1 AND id = ANY($2)', [ctx.workspaceId, i.cliPool]);
         if (n!.n !== new Set(i.cliPool).size) throw new ValidationError('cliPool', 'a number in the pool is not in this workspace');

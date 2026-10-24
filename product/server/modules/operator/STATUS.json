@@ -21,16 +21,17 @@
     "0500_operator.sql"
   ],
   "tests": {
-    "passed": 40,
-    "total": 40,
+    "passed": 49,
+    "total": 49,
     "files": [
       "tests/operator-bench-fixes.test.ts",
+      "tests/operator-bench-r3.test.ts",
       "tests/operator-bench.test.ts",
       "tests/operator-results.test.ts",
       "tests/operator-toolset.test.ts",
       "tests/operator.test.ts"
     ],
-    "db": "throwaway cluster; full suite on a fresh database 457/460 (0 fail, 3 skipped) at the 2026-10-23 bench-fix commit; ui-contract --strict 173/173"
+    "db": "throwaway cluster; full suite on a fresh database 482/485 (0 fail, 3 skipped) at the 2026-10-24 bench-r3 fix commit; ui-contract --strict 174/174"
   },
   "works": [
     "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
@@ -52,7 +53,12 @@
     "Page context reaches the model (open.2026-10-23.operator-page-context-not-sent): a short note, wrapped as untrusted data, names the page, the entity a /<section>/<id> path points at (by name, read through the registry with the Operator's own actor), and, for /campaigns, /agents or /audiences with no id or when the member's words name the kind, the only one when the workspace has exactly one; tested, including two campaigns (no guess) and another workspace's campaign (no leak)",
     "Refusals name the fix: every NOT DONE with a field path reaches the model with a 'fix' read from the tool's own schema (allowed values, the fields that exist, the field's description, the tool's either-or note); plan steps carry it to the model but not onto the card. agent.create lists template ids as an enum and states templateId-or-description in its description (no oneOf: not every endpoint accepts it); audience.create states filter-or-contactIds with an example; brief.edit lists its editable fields and path forms",
     "operator_find_tools: offered on every model call; its description and the system note say to call it when the needed tool is not offered and before saying something cannot be done; tested that a missed real tool is offered on the next call",
-    "A provider content-filter refusal (Azure 400 content_filter and similar) ends the turn with one plain 'the model provider refused this content' error, stoppedBy provider_refused, a system row, no retry and no attempt to get past the filter"
+    "A provider content-filter refusal (Azure 400 content_filter and similar) ends the turn with one plain 'the model provider refused this content' error, stoppedBy provider_refused, a system row, no retry and no attempt to get past the filter",
+    "NOT DONE is retry-first: with a fix (or a reason naming the correction) the model is told to correct the call and retry at once and to ask the client only for a fact no tool can give; campaign.draft names the published version id when it is sent an agent id, or says to publish first",
+    "The page note carries an agent's latest published version id, labelled ('use that as agentVersionId, never the agent id'), or says it has none yet",
+    "A CSV/TSV attached in chat is staged as a real intake upload as the member (role-checked), and the model is told its uploadId for source.map/source.commit; uploadId fields are described as UUIDs, never file names",
+    "A reply that claims a change with no successful write in the turn gets a plain correction notice at once and one repair turn (never looped)",
+    "Product default brain gpt-4.1 (decision.2026-10-24.operator-default-gpt41) when the deployment curates it; VP_OPERATOR_DEFAULT_BRAIN overrides; a workspace's own choice wins"
   ],
   "untested": [
     "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",
@@ -63,7 +69,9 @@
     "A real model choosing tools from the reduced set and calling operator_find_tools on its own (only a scripted model was tested)",
     "Whether a real endpoint enforces a 128-tool limit (not checked; no longer reachable at 40)",
     "The four 2026-10-23 bench fixes are verified with a scripted model only; their effect on real models waits for the bench re-run",
-    "Page notes resolve agents, campaigns, audiences, contacts and calls by id; other pages give the path only"
+    "Page notes resolve agents, campaigns, audiences, contacts and calls by id; other pages give the path only",
+    "operator_find_tools: the loop recovers when a model calls it (scripted test), but real models called it 0 times in 96 runs; it is unused in practice. The loop also runs any role-allowed tool a model names even when it was not offered",
+    "Claim check precision on real replies: sentence patterns tuned on synthetic sentences only"
   ],
   "needs_from_others": [
     "web: render cards (approval hold-to-confirm, receipt, plan) from the SSE frames and the thread GET"

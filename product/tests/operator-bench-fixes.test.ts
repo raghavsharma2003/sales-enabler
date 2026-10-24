@@ -73,7 +73,7 @@ test('page: the campaign the member is looking at reaches the model by name, as 
   const note = pageMsg(seen[0]!);
   assert.match(note, /trust="untrusted"/);
   assert.match(note, /The member is on \/campaigns\//);
-  assert.match(note, new RegExp(`looking at the campaign "Diwali service reminders" \\(id ${id}\\)`));
+  assert.match(note, new RegExp(`looking at the campaign "Diwali service reminders" \\(campaign id ${id}\\)`));
   assert.match(note, /do not ask which/);
 });
 
@@ -82,7 +82,7 @@ test('page: with exactly one campaign, /campaigns names it as "the campaign"; wi
   const id = await campaign(one_.ws, 'Only campaign');
   let seen = script([() => ({ text: 'ok' })]);
   await turn(one_.member, { text: 'change the window to weekdays 10 to 6', page: '/campaigns' });
-  assert.match(pageMsg(seen[0]!), new RegExp(`exactly one campaign: "Only campaign" \\(id ${id}\\)`));
+  assert.match(pageMsg(seen[0]!), new RegExp(`exactly one campaign: "Only campaign" \\(campaign id ${id}\\)`));
   // Named in words on another page works too.
   seen = script([() => ({ text: 'ok' })]);
   await turn(one_.member, { text: 'how is the campaign doing?', page: '/' });

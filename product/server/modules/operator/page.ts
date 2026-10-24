@@ -39,7 +39,16 @@ function rowsOf(v: unknown): unknown[] | null {
   return null;
 }
 
-export interface PageNote { page?: string; section?: string; viewing?: { kind: string; id: string; name: string | null }; onlyOne: { kind: string; id: string; name: string | null }[] }
+/** One entity in the note. For an agent, the latest PUBLISHED version id too (null: none yet): a campaign needs that,
+ *  never the agent id (bench r3 lost camp-draft-estimate to an agent id sent as agentVersionId). */
+export interface Entity { kind: string; id: string; name: string | null; versionId?: string | null }
+export interface PageNote { page?: string; section?: string; viewing?: Entity; onlyOne: Entity[] }
+
+/** The latest published version id from an agent.get result (versions are newest first); null when there is none. */
+function latestVersion(r: unknown): string | null {
+  const v = (r as { versions?: { id?: unknown }[] } | null)?.versions?.[0]?.id;
+  return typeof v === 'string' ? v : null;
+}
 
 export async function pageNote(o: { pool: pg.Pool; registry: Registry; workspaceId: string; actor: Actor; page?: string; text: string }): Promise<PageNote | null> {
   const read = async (tool: string, args: Record<string, unknown>) => {
@@ -56,7 +65,7 @@ export async function pageNote(o: { pool: pg.Pool; registry: Registry; workspace
   if (key && segs[1] && UUID.test(segs[1]) && SECTIONS[key]!.get) {
     const g = SECTIONS[key]!.get!;
     const r = await read(g.tool, { [g.arg]: segs[1] });
-    if (r) note.viewing = { kind: SECTIONS[key]!.noun, id: segs[1].toLowerCase(), name: nameOf(r) };
+    if (r) note.viewing = { kind: SECTIONS[key]!.noun, id: segs[1].toLowerCase(), name: nameOf(r), ...(key === 'agents' ? { versionId: latestVersion(r) } : {}) };
   }
   // "The only one": for the page's own section when no entity is open, and for any kind the member's words name.
   for (const [k, s] of Object.entries(SECTIONS)) {
@@ -66,7 +75,8 @@ export async function pageNote(o: { pool: pg.Pool; registry: Registry; workspace
     const rows = rowsOf(await read(s.list.tool, s.list.args));
     if (rows?.length === 1) {
       const row = rows[0] as Record<string, unknown>;
-      if (typeof row?.id === 'string') note.onlyOne.push({ kind: s.noun, id: row.id, name: nameOf(row) });
+      if (typeof row?.id === 'string') note.onlyOne.push({ kind: s.noun, id: row.id, name: nameOf(row),
+        ...(k === 'agents' ? { versionId: latestVersion(await read('agent.get', { agentId: row.id })) } : {}) });
     }
   }
   return note.page || note.viewing || note.onlyOne.length ? note : null;
@@ -76,7 +86,14 @@ export async function pageNote(o: { pool: pg.Pool; registry: Registry; workspace
 export function pageText(n: PageNote): string {
   const lines: string[] = [];
   if (n.page) lines.push(`The member is on ${n.page}${n.section ? ` (the ${n.section} page)` : ''}.`);
-  if (n.viewing) lines.push(`They are looking at the ${n.viewing.kind} ${n.viewing.name ? `"${n.viewing.name}"` : '(unnamed)'} (id ${n.viewing.id}). "This ${n.viewing.kind}" or "the ${n.viewing.kind}" means this one unless they name another; do not ask which.`);
-  for (const x of n.onlyOne) lines.push(`This workspace has exactly one ${x.kind}: ${x.name ? `"${x.name}"` : '(unnamed)'} (id ${x.id}). "The ${x.kind}" means this one; do not ask which.`);
+  if (n.viewing) lines.push(`They are looking at the ${n.viewing.kind} ${label(n.viewing)}. "This ${n.viewing.kind}" or "the ${n.viewing.kind}" means this one unless they name another; do not ask which.${versionLine(n.viewing)}`);
+  for (const x of n.onlyOne) lines.push(`This workspace has exactly one ${x.kind}: ${label(x)}. "The ${x.kind}" means this one; do not ask which.${versionLine(x)}`);
   return lines.join('\n');
+}
+
+const label = (x: Entity) => `${x.name ? `"${x.name}"` : '(unnamed)'} (${x.kind} id ${x.id})`;
+function versionLine(x: Entity): string {
+  if (x.versionId === undefined) return '';
+  return x.versionId ? ` Its latest published version id is ${x.versionId}: use that as agentVersionId, never the ${x.kind} id.`
+    : ` It has no published version yet: publish it with version.publish before a campaign can use it; the ${x.kind} id is not a version id.`;
 }

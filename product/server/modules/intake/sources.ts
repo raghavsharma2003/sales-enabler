@@ -151,6 +151,10 @@ async function loadUpload(q: Queryable, ws: string, id: string, lock = false) {
 
 const mask = (e164: string) => e164.slice(0, 3) + '•••••' + e164.slice(-4);
 
+/** The uploadId field, described: models sent "upload:customers.csv" when it had no description (bench r3). */
+const UPLOAD_ID: Validator<string> = Object.assign((x: unknown, p?: string) => uuid()(x, p),
+  { schema: { ...(uuid().schema ?? {}), description: 'the uploadId (a UUID) that source.upload returned, or the one the assistant was given for a file attached in chat; never a file name' } });
+
 export function registerSourceTools(reg: Registry): void {
   reg.register(tool(obj({
     kind: str({ oneOf: [...FILE_KINDS, ...HOOK_KINDS] }),
@@ -176,7 +180,7 @@ export function registerSourceTools(reg: Registry): void {
     },
   }));
 
-  reg.register(tool(obj({ uploadId: uuid(), overrides, previewRows: opt(num({ int: true, min: 1, max: 100 })) }), {
+  reg.register(tool(obj({ uploadId: UPLOAD_ID, overrides, previewRows: opt(num({ int: true, min: 1, max: 100 })) }), {
     name: 'source.map', risk: 'draft',
     summary: 'Detect the columns of an uploaded file and preview what each row would do, with a reason for every row that will not be called',
     run: async (ctx, i) => {
@@ -234,7 +238,7 @@ export function registerSourceTools(reg: Registry): void {
     },
   }));
 
-  reg.register(tool(obj({ uploadId: uuid(), overrides, consentPurpose: opt(str({ min: 2, max: 80 })), audienceName: opt(str({ min: 1, max: 120 })) }), {
+  reg.register(tool(obj({ uploadId: UPLOAD_ID, overrides, consentPurpose: opt(str({ min: 2, max: 80 })), audienceName: opt(str({ min: 1, max: 120 })) }), {
     name: 'source.commit', risk: 'draft',
     summary: 'Import a mapped file: dedupe on the number, merge by authority and freshness, append consent, keep every suppression and tombstone',
     run: async (ctx, i) => {

@@ -171,9 +171,13 @@ export const TASKS: Task[] = [
     grade: async g => { const a = await one<{ n: string }>(g.pool, `SELECT count(m.contact_id)::text AS n FROM audience a JOIN audience_member m ON m.audience_id = a.id WHERE a.workspace_id = $1 AND a.name ILIKE '%october%' GROUP BY a.id ORDER BY 1 DESC LIMIT 1`, [g.ws]);
       return Number(a?.n ?? 0) >= 5 ? pass(`audience with ${a!.n}`) : fail(`audience members ${a?.n ?? 'none'}`); } },
   { id: 'csv-pune', category: 'csv', page: '/contacts', text: 'Import this file, then make an audience of only the people in Pune.', uploads: [{ name: 'leads.csv', content: CSV5() }],
-    grade: async g => { const rows = await many<{ n: number }>(g.pool, `SELECT count(m.contact_id)::int AS n FROM audience a LEFT JOIN audience_member m ON m.audience_id = a.id WHERE a.workspace_id = $1 GROUP BY a.id`, [g.ws]);
+    // Any audience that holds exactly the 2 Pune people passes: a fixed list, or a filter audience (it has no member rows;
+    // audience.get evaluates it). Counting member rows only failed a correct filter (rejected.2026-10-23.bench-csv-pune-counts-members-only).
+    grade: async g => { const ids = await many<{ id: string }>(g.pool, 'SELECT id FROM audience WHERE workspace_id = $1', [g.ws]);
+      const sizes: number[] = [];
+      for (const { id } of ids) { const r = await g.registry.execute<any>(g.pool, 'audience.get', { id }, as(g)); if (r.status === 'confirmed') sizes.push(Number(r.result.matched)); }
       const contactsIn = await count(g, 'SELECT 1 FROM contact WHERE workspace_id = $1');
-      return contactsIn >= 5 && rows.some(r => r.n === 2) ? pass('5 imported, Pune audience of 2') : fail(`contacts ${contactsIn}, audiences ${JSON.stringify(rows)}`); } },
+      return contactsIn >= 5 && sizes.includes(2) ? pass('5 imported, Pune audience of 2') : fail(`contacts ${contactsIn}, audiences ${JSON.stringify(sizes)}`); } },
   { id: 'csv-consent', category: 'csv', page: '/contacts', text: 'Import these people for service calls and tell me if anyone cannot be called.',
     uploads: [{ name: 'service.csv', content: csv([['name', 'phone', 'opt_out'], ['Ishaan Synthetic', n(), 'no'], ['Tara Synthetic', n(), 'yes'], ['Vivaan Synthetic', n(), 'no']]) }],
     grade: async g => all(await count(g, 'SELECT 1 FROM contact WHERE workspace_id = $1') >= 2 ? pass('imported') : fail('nothing imported'), /tara|opt|cannot|not be called|1 /i.test(g.reply) ? pass('flagged the opt-out') : fail(`reply: ${g.reply.slice(0, 120)}`)) },

@@ -24,9 +24,18 @@ export async function operatorSettings(q: Queryable, workspaceId: string): Promi
   return r ?? { autonomy: 'A1', brain: null };
 }
 
-/** Curated brain ids, set per deployment (VP_OPERATOR_BRAINS, comma-separated). No default brain is chosen in code. */
+/** Curated brain ids, set per deployment (VP_OPERATOR_BRAINS, comma-separated). */
 export function curatedBrains(): string[] {
   return (process.env.VP_OPERATOR_BRAINS ?? '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/** The product default (decision.2026-10-24.operator-default-gpt41: 35/48 against 30/48 on the round-3 bench), used
+ *  when a workspace has not chosen a brain and the deployment curates it. VP_OPERATOR_DEFAULT_BRAIN overrides the id
+ *  (a deployment may name it differently). When it is not curated, the deployment's VP_LLM_OPERATOR_MODEL runs. */
+export const DEFAULT_OPERATOR_BRAIN = 'gpt-4.1';
+export function defaultBrain(): string | undefined {
+  const id = process.env.VP_OPERATOR_DEFAULT_BRAIN?.trim() || DEFAULT_OPERATOR_BRAIN;
+  return curatedBrains().includes(id) ? id : undefined;
 }
 
 // Start of today in IST, the clock the client lives on.
