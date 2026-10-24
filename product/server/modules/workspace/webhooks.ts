@@ -10,8 +10,9 @@ import type { Registry } from '../../tools.ts';
 import { tool } from '../../tools.ts';
 import { many, one } from '../../db.ts';
 import { sign } from '../../runtime-client.ts';
-import { any, arr, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
+import { any, arr, bool, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { holdForReveal } from './common.ts';
+import { integrationSecrets } from './integrations.ts';
 import { open, randomToken, seal } from './crypto.ts';
 
 const EVENT = /^(\*|[a-z][a-z0-9_]*(\.[a-z0-9_]+)*(\.\*)?)$/;
@@ -108,14 +109,22 @@ export async function deliverPending(pool: pg.Pool, o: { limit?: number; workspa
      RETURNING id, workspace_id, endpoint_id, event, payload, attempts, created_at`, [o.limit ?? 20, o.workspaceId ?? null])).rows;
   let delivered = 0, failed = 0;
   await Promise.all(claimed.map(async d => {
-    const ep = await one<{ url: string; secret_ciphertext: string; status: string }>(pool, 'SELECT url, secret_ciphertext, status FROM webhook_endpoint WHERE id = $1 AND workspace_id = $2', [d.endpoint_id, d.workspace_id]);
+    const ep = await one<{ url: string; secret_ciphertext: string; status: string; integration_id: string | null }>(pool, 'SELECT url, secret_ciphertext, status, integration_id FROM webhook_endpoint WHERE id = $1 AND workspace_id = $2', [d.endpoint_id, d.workspace_id]);
     let status: number | null = null, error: string | null = null;
     try {
       if (!ep || ep.status !== 'active') { await pool.query("UPDATE webhook_delivery SET status = 'failed', error = 'endpoint was deleted', locked_until = NULL WHERE id = $1", [d.id]); failed++; return; }
       const u = checkUrlShape(ep.url);
       const ip = await resolvePublic(u);
       const body = JSON.stringify({ id: d.id, event: d.event, createdAt: d.created_at.toISOString(), data: d.payload });
-      status = await post(u, ip, body, { 'content-type': 'application/json', 'user-agent': 'vyakti-webhooks/1', 'x-vp-event': d.event, 'x-vp-delivery': d.id,
+      // An endpoint tied to a connected "custom HTTP" integration also sends that integration's bearer token.
+      const auth: Record<string, string> = {};
+      if (ep.integration_id) {
+        const name = await one<{ name: string }>(pool, "SELECT name FROM integration WHERE id = $1 AND workspace_id = $2 AND status = 'connected'", [ep.integration_id, d.workspace_id]);
+        const secrets = name ? await integrationSecrets(pool, d.workspace_id, name.name) : null;
+        if (!secrets?.bearer_token) throw new Error('the integration this webhook uses is no longer connected');
+        auth.authorization = `Bearer ${secrets.bearer_token}`;
+      }
+      status = await post(u, ip, body, { ...auth, 'content-type': 'application/json', 'user-agent': 'vyakti-webhooks/1', 'x-vp-event': d.event, 'x-vp-delivery': d.id,
         'x-vp-signature': sign(open(d.workspace_id, 'webhook', ep.secret_ciphertext), body) });
       if (status < 200 || status >= 300) error = `the receiver answered ${status}`;
     } catch (e) { error = e instanceof Error ? e.message.slice(0, 300) : 'send failed'; }
@@ -133,25 +142,53 @@ export async function deliverPending(pool: pg.Pool, o: { limit?: number; workspa
 }
 
 export function registerWebhooks(r: Registry) {
-  r.register(tool(obj({ url: str({ max: 500 }), events: opt(arr(str({ pattern: EVENT, max: 80 }), { min: 1, max: 30 })), description: opt(str({ max: 200 })) }), {
+  r.register(tool(obj({
+    url: opt(str({ max: 500 })), integrationId: opt(uuid()), path: opt(str({ max: 200, pattern: /^\/[^\s?#]*$/ })),
+    events: opt(arr(str({ pattern: EVENT, max: 80 }), { min: 1, max: 30 })), description: opt(str({ max: 200 })),
+    contactNumber: opt(str({ oneOf: ['masked', 'full'], desc: 'masked (default): phone and name are shortened in every event. full: whole numbers and names' })),
+  }), {
     name: 'webhook.create', risk: 'policy', summary: 'Send events from this workspace to your own web address, signed',
-    describe: i => `Send ${i.events?.join(', ') ?? 'all'} events to ${(() => { try { return new URL(i.url).host; } catch { return i.url.slice(0, 60); } })()}`,
+    describe: i => `Send ${i.events?.join(', ') ?? 'all'} events to ${(() => { try { return new URL(i.url ?? 'https://' + (i.integrationId ?? 'an-integration')).host; } catch { return String(i.url).slice(0, 60); } })()}${i.contactNumber === 'full' ? ', with whole phone numbers and names' : ', with phone numbers masked'}`,
     run: async (ctx, i) => {
-      const u = checkUrlShape(i.url);
+      if (!i.url === !i.integrationId) throw new Error('give either a web address (url) or a connected "custom HTTP" integration (integrationId), not both and not neither');
+      let target = i.url!;
+      if (i.integrationId) {
+        const integ = await one<{ kind: string; config: { base_url?: string }; status: string }>(ctx.q, 'SELECT kind, config, status FROM integration WHERE id = $1 AND workspace_id = $2', [i.integrationId, ctx.workspaceId]);
+        if (!integ || integ.status !== 'connected') throw new Error('no such connected integration in this workspace');
+        if (integ.kind !== 'custom_http') throw new Error('only a "Your own HTTP service" integration can receive events; the others are stored but not used yet');
+        if (!integ.config.base_url) throw new Error('that integration has no base_url; connect it again with one');
+        target = new URL(i.path ?? '/', integ.config.base_url).toString();
+      } else if (i.path) throw new Error('path goes with an integration; put the whole address in url');
+      if (i.contactNumber === 'full' && ctx.actor.role !== 'owner' && ctx.actor.role !== 'compliance') throw new Error('only an owner or compliance can send whole phone numbers');
+      const u = checkUrlShape(target);
       const n = await one<{ n: string }>(ctx.q, "SELECT count(*) AS n FROM webhook_endpoint WHERE workspace_id = $1 AND status = 'active'", [ctx.workspaceId]);
       if (Number(n!.n) >= MAX_ENDPOINTS) throw new Error(`a workspace can have ${MAX_ENDPOINTS} webhooks; delete one first`);
       const secret = 'whsec_' + randomToken(24);
-      const row = await one<{ id: string }>(ctx.q, `INSERT INTO webhook_endpoint (workspace_id, url, description, events, secret_ciphertext, created_by) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
-        [ctx.workspaceId, u.toString(), i.description ?? null, i.events ?? ['*'], seal(ctx.workspaceId, 'webhook', secret), ctx.actor.id ?? ctx.actor.type]);
+      const row = await one<{ id: string }>(ctx.q, `INSERT INTO webhook_endpoint (workspace_id, url, description, events, secret_ciphertext, created_by, contact_number, integration_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+        [ctx.workspaceId, u.toString(), i.description ?? null, i.events ?? ['*'], seal(ctx.workspaceId, 'webhook', secret), ctx.actor.id ?? ctx.actor.type, i.contactNumber ?? 'masked', i.integrationId ?? null]);
       const revealId = await holdForReveal(ctx, { signingSecret: secret, header: 'x-vp-signature: t=<unix_ms>,v1=<hex hmac_sha256(signingSecret, t + "." + rawBody)>' }, 'webhook signing secret');
-      return { id: row!.id, url: u.toString(), events: i.events ?? ['*'], revealId };
+      return { id: row!.id, url: u.toString(), events: i.events ?? ['*'], contactNumber: i.contactNumber ?? 'masked', integrationId: i.integrationId ?? null, revealId };
+    },
+  }));
+
+  // One synthetic event to one endpoint, so a person can see their receiver work before real calls arrive.
+  r.register(tool(obj({ id: uuid() }), {
+    name: 'webhook.test', risk: 'draft', summary: 'Send one clearly marked test event to a webhook',
+    run: async (ctx, i) => {
+      const e = await one<{ id: string }>(ctx.q, "SELECT id FROM webhook_endpoint WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [i.id, ctx.workspaceId]);
+      if (!e) throw new Error('no such webhook in this workspace');
+      const recent = await one<{ n: string }>(ctx.q, "SELECT count(*) AS n FROM webhook_delivery WHERE endpoint_id = $1 AND event = 'webhook.test' AND created_at > now() - interval '1 hour'", [i.id]);
+      if (Number(recent!.n) >= 10) throw new Error('ten test events were sent to this webhook in the last hour; wait a little');
+      const row = await one<{ id: string }>(ctx.q, `INSERT INTO webhook_delivery (workspace_id, endpoint_id, event, payload) VALUES ($1,$2,'webhook.test',$3) RETURNING id`,
+        [ctx.workspaceId, i.id, JSON.stringify({ schema: 'vp.webhook.test.v1', test: true, message: 'This is a test event from Vyakti. No call happened.', at: new Date().toISOString() })]);
+      return { deliveryId: row!.id, queued: true };
     },
   }));
 
   r.register(tool(obj({}), {
     name: 'webhook.list', risk: 'read', summary: 'List webhooks (never the signing secret)',
     run: async ctx => ({
-      webhooks: await many(ctx.q, `SELECT e.id, e.url, e.description, e.events, e.created_at AS "createdAt",
+      webhooks: await many(ctx.q, `SELECT e.id, e.url, e.description, e.events, e.contact_number AS "contactNumber", e.integration_id AS "integrationId", e.created_at AS "createdAt",
           (SELECT status FROM webhook_delivery d WHERE d.endpoint_id = e.id ORDER BY d.created_at DESC LIMIT 1) AS "lastStatus"
         FROM webhook_endpoint e WHERE e.workspace_id = $1 AND e.status = 'active' ORDER BY e.created_at`, [ctx.workspaceId]),
     }),
@@ -169,13 +206,13 @@ export function registerWebhooks(r: Registry) {
     },
   }));
 
-  r.register(tool(obj({ endpointId: opt(uuid()), status: opt(str({ oneOf: ['pending', 'delivered', 'failed'] })), limit: opt(num({ int: true, min: 1, max: 100 })) }), {
+  r.register(tool(obj({ endpointId: opt(uuid()), status: opt(str({ oneOf: ['pending', 'delivered', 'failed'] })), limit: opt(num({ int: true, min: 1, max: 100 })), includePayload: opt(bool()) }), {
     name: 'webhook.deliveries', risk: 'read', summary: 'See what was sent to webhooks and how the receiver answered',
     run: async (ctx, i) => ({
-      deliveries: await many(ctx.q, `SELECT id, endpoint_id AS "endpointId", event, payload, status, attempts, response_status AS "responseStatus", error,
+      deliveries: await many(ctx.q, `SELECT id, endpoint_id AS "endpointId", event, CASE WHEN $5 THEN payload END AS payload, length(payload::text) AS "payloadBytes", status, attempts, response_status AS "responseStatus", error,
           replay_of AS "replayOf", created_at AS "createdAt", delivered_at AS "deliveredAt", CASE WHEN status = 'pending' THEN next_attempt_at END AS "nextAttemptAt"
         FROM webhook_delivery WHERE workspace_id = $1 AND ($2::uuid IS NULL OR endpoint_id = $2) AND ($3::text IS NULL OR status = $3)
-        ORDER BY created_at DESC, id DESC LIMIT $4`, [ctx.workspaceId, i.endpointId ?? null, i.status ?? null, i.limit ?? 30]),
+        ORDER BY created_at DESC, id DESC LIMIT $4`, [ctx.workspaceId, i.endpointId ?? null, i.status ?? null, i.includePayload ? Math.min(i.limit ?? 10, 10) : i.limit ?? 30, !!i.includePayload]),
     }),
   }));
 
@@ -194,17 +231,17 @@ export function registerWebhooks(r: Registry) {
     },
   }));
 
-  // Other modules (and the server) announce events through this tool; no member or API key may call it.
-  r.register(tool(obj({ event: str({ pattern: EVENT, max: 80 }), data: opt(any('event data')) }), {
+  // Other modules (and the server) announce events through this tool; no member or API key may call it. Calls pass `data`
+  // with numbers masked and, when the record carries a person, `dataFull`, which only endpoints created with contactNumber 'full' receive.
+  // `dedupeKey` makes it once per endpoint per subject (a call analysed twice reaches the receiver once).
+  r.register(tool(obj({ event: str({ pattern: EVENT, max: 80 }), data: opt(any('event data, numbers masked')), dataFull: opt(any('the same with whole numbers')), dedupeKey: opt(str({ max: 120 })) }), {
     name: 'webhook.emit', risk: 'draft', summary: 'Queue an event for every webhook that listens for it', roles: [],
     run: async (ctx, i) => {
       if (ctx.actor.type === 'member') throw new Error('only the platform emits events');
-      const body = JSON.stringify(i.data ?? {});
-      if (body.length > 100_000) throw new Error('event data is larger than 100 KB');
-      const eps = await many<{ id: string; events: string[] }>(ctx.q, "SELECT id, events FROM webhook_endpoint WHERE workspace_id = $1 AND status = 'active'", [ctx.workspaceId]);
-      const hit = eps.filter(e => matches(e.events, i.event));
-      for (const e of hit) await ctx.q.query('INSERT INTO webhook_delivery (workspace_id, endpoint_id, event, payload) VALUES ($1,$2,$3,$4)', [ctx.workspaceId, e.id, i.event, body]);
-      return { queued: hit.length };
+      const masked = JSON.stringify(i.data ?? {}), whole = i.dataFull === undefined ? null : JSON.stringify(i.dataFull);
+      if (masked.length > 1_000_000 || (whole?.length ?? 0) > 1_000_000) throw new Error('event data is larger than 1 MB');
+      const r2 = await one<{ n: number }>(ctx.q, 'SELECT vp_emit($1, $2, $3::jsonb, $4::jsonb, $5) AS n', [ctx.workspaceId, i.event, masked, whole, i.dedupeKey ?? null]);
+      return { queued: r2!.n };
     },
   }));
 }

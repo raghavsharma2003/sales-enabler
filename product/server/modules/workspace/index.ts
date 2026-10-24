@@ -7,6 +7,8 @@ import { one, tx } from '../../db.ts';
 import { obj, opt, str } from '../../../shared/validate.ts';
 import { registerActivity } from './activity.ts';
 import { registerApiKeys } from './apikeys.ts';
+import { registerCallExport } from './call-export.ts';
+import { registerEvents } from './events.ts';
 import { registerBrand, brandView, primaryBrand } from './brand.ts';
 import { registerIntegrations } from './integrations.ts';
 import { registerKnowledge } from './knowledge.ts';
@@ -57,6 +59,8 @@ export const module: Module = {
     registerOffering(registry);
     registerIntegrations(registry);
     registerWebhooks(registry);
+    registerEvents(registry);
+    registerCallExport(registry);
     registerActivity(registry);
     registerUndo(registry);
     registerSearch(registry);

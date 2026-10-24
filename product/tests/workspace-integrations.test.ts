@@ -57,7 +57,7 @@ test('integration secrets are encrypted at rest and never returned', { skip }, a
   ]);
   for (const v of Object.values(SECRETS)) assert.ok(!everything.includes(v), `${v} leaked`);
   const list = (await owner.tool('integration.list')).result.integrations[0];
-  assert.deepEqual(Object.keys(list).sort(), ['config', 'connectedAt', 'id', 'kind', 'name', 'secretKeys', 'status']);
+  assert.deepEqual(Object.keys(list).sort(), ['config', 'connectedAt', 'id', 'kind', 'name', 'secretKeys', 'status', 'usage']);
 
   // encrypted in the database, bound to the workspace, and readable by server code that is allowed to
   const row = await one<{ secret_ciphertext: string }>(b.pool, 'SELECT secret_ciphertext FROM integration WHERE id = $1', [done.result.id]);

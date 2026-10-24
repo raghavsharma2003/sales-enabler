@@ -10,7 +10,9 @@ import { obj, opt, record, str, uuid } from '../../../shared/validate.ts';
 import { open, seal } from './crypto.ts';
 import { STASH_TTL_MS } from './common.ts';
 
-export interface Kind { label: string; secrets: readonly string[]; config: readonly string[] }
+export interface Kind { label: string; secrets: readonly string[]; config: readonly string[]; used?: string }
+/** The one kind that does something today: a webhook can send its events to it (webhook.create with integrationId). */
+export const STORED_NOT_USED = 'Stored, not used yet';
 export const INTEGRATION_KINDS: Record<string, Kind> = {
   hubspot: { label: 'HubSpot CRM', secrets: ['access_token'], config: ['portal_id'] },
   zoho_crm: { label: 'Zoho CRM', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['datacenter'] },
@@ -19,7 +21,7 @@ export const INTEGRATION_KINDS: Record<string, Kind> = {
   whatsapp_cloud: { label: 'WhatsApp Cloud API', secrets: ['access_token'], config: ['phone_number_id'] },
   exotel: { label: 'Exotel', secrets: ['api_key', 'api_token'], config: ['account_sid', 'subdomain'] },
   slack: { label: 'Slack', secrets: ['webhook_url'], config: [] },
-  custom_http: { label: 'Your own HTTP service', secrets: ['bearer_token'], config: ['base_url'] },
+  custom_http: { label: 'Your own HTTP service', secrets: ['bearer_token'], config: ['base_url'], used: 'Receives call results: pick it when you add a webhook, and every event is sent to it with your bearer token.' },
 };
 
 const kind = str({ oneOf: Object.keys(INTEGRATION_KINDS) });
@@ -32,7 +34,7 @@ export async function integrationSecrets(q: Queryable, workspaceId: string, name
 export function registerIntegrations(r: Registry) {
   r.register(tool(obj({}), {
     name: 'integration.kinds', risk: 'read', summary: 'List the kinds of integration that can be connected and what each needs',
-    run: async () => ({ kinds: Object.entries(INTEGRATION_KINDS).map(([id, k]) => ({ id, label: k.label, secrets: k.secrets, config: k.config })) }),
+    run: async () => ({ kinds: Object.entries(INTEGRATION_KINDS).map(([id, k]) => ({ id, label: k.label, secrets: k.secrets, config: k.config, status: k.used ? 'used' : 'stored_not_used', statusLabel: k.used ?? STORED_NOT_USED })) }),
   }));
 
   r.register(tool(obj({ kind, secrets: record(str({ min: 1, max: 8000 }), { maxKeys: 10 }) }), {
@@ -56,6 +58,11 @@ export function registerIntegrations(r: Registry) {
       const k = INTEGRATION_KINDS[i.kind];
       const extra = Object.keys(i.config ?? {}).filter(c => !k.config.includes(c));
       if (extra.length) throw new Error(`${k.label} settings allowed: ${k.config.join(', ') || 'none'}; not expected: ${extra.join(', ')}`);
+      if (i.kind === 'custom_http') {
+        let base: URL;
+        try { base = new URL(i.config?.base_url ?? ''); } catch { throw new Error('Your own HTTP service needs a base_url, like https://example.com/hooks'); }
+        if (base.protocol !== 'https:' && process.env.VP_WEBHOOK_ALLOW_PRIVATE !== '1') throw new Error('base_url must start with https://');
+      }
       const stash = await one<{ ciphertext: string; meta: { kind?: string } }>(ctx.q,
         "DELETE FROM secret_box WHERE id = $1 AND workspace_id = $2 AND purpose = 'stash' AND expires_at > now() RETURNING ciphertext, meta", [i.stashId, ctx.workspaceId]);
       if (!stash) throw new Error('the credentials were not found or have expired; hand them over again with integration.stage_secrets');
@@ -76,7 +83,8 @@ export function registerIntegrations(r: Registry) {
   r.register(tool(obj({}), {
     name: 'integration.list', risk: 'read', summary: 'List connected integrations (never their credentials)',
     run: async ctx => ({
-      integrations: await many(ctx.q, `SELECT id, kind, name, status, config, secret_keys AS "secretKeys", created_at AS "connectedAt" FROM integration WHERE workspace_id = $1 ORDER BY created_at`, [ctx.workspaceId]),
+      integrations: (await many<{ kind: string }>(ctx.q, `SELECT id, kind, name, status, config, secret_keys AS "secretKeys", created_at AS "connectedAt" FROM integration WHERE workspace_id = $1 ORDER BY created_at`, [ctx.workspaceId]))
+        .map(x => ({ ...x, usage: INTEGRATION_KINDS[x.kind]?.used ?? STORED_NOT_USED })),
     }),
   }));
 

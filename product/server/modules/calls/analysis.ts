@@ -319,6 +319,10 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
         const followups = await afterCall(pool, registry, workspaceId, conversationId);
         rec.followups = followups;
         await pool.query(`UPDATE conversation SET analysis = jsonb_set(analysis, '{followups}', $3::jsonb) WHERE id = $1 AND workspace_id = $2`, [conversationId, workspaceId, JSON.stringify(followups)]);
+        // Results out: the full record of this call goes to every webhook that listens (workspace module; once per call, never for a test call).
+        // A failure to queue it never undoes or fails the analysis.
+        await registry.execute(pool, 'webhook.emit_call', { conversationId }, { workspaceId, actor: { type: 'system', id: 'calls.analysis' } })
+          .catch(e => console.error('[vp] call.ended webhook', conversationId, e instanceof Error ? e.message : e));
       }
     }
     return rec;
