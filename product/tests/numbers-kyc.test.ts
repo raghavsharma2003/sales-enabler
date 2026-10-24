@@ -11,6 +11,7 @@ import { createPool, one } from '../server/db.ts';
 import { Registry } from '../server/tools.ts';
 import { buildApp } from '../server/app.ts';
 import { module as campaigns } from '../server/modules/campaigns/index.ts';
+import { plivoFetch } from './fixtures/plivo-sign.ts';
 import { announcementXml, PlivoTelephony, SERIES_GUIDE, setTelephony, SPEAK_PATH, TelephonyDisabled } from '../server/modules/campaigns/telephony.ts';
 
 const URL_ = process.env.DATABASE_URL;
@@ -121,20 +122,28 @@ test('systemCall never reaches a real carrier in tests: the default adapter and 
   } finally { await fake.close(); }
 });
 
-test('the speak hook serves the XML over HTTP and 404s an unknown token', { skip }, async () => {
+test('the speak hook serves the XML over HTTP to a signed request and 404s an unknown token', { skip }, async () => {
   const { server } = buildApp(pool, [campaigns]);
   await new Promise<void>(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  const saved = { pub: process.env.VP_PUBLIC_URL, tok: process.env.PLIVO_AUTH_TOKEN };
+  process.env.VP_PUBLIC_URL = base; process.env.PLIVO_AUTH_TOKEN = 't';
   try {
     const fake = await fakePlivo();
     try {
       await new PlivoTelephony({ apiBase: fake.base, authId: 'MAFAKE', authToken: 't', publicBase: base }).systemCall({ to: '+919000000011', from: '+918012345678', lines: ['Hello & welcome'] });
       const answer = fake.seen[0].body.answer_url as string;
-      const r = await fetch(answer, { method: 'POST', body: 'CallUUID=x', headers: { 'content-type': 'application/x-www-form-urlencoded' } });
+      // Plivo signs the public URL it was given; here the public base is the test server itself.
+      const unsigned = await fetch(answer, { method: 'POST', body: 'CallUUID=x', headers: { 'content-type': 'application/x-www-form-urlencoded' } });
+      assert.equal(unsigned.status, 401, 'an unsigned fetch gets no XML');
+      const r = await plivoFetch('t', answer, answer, { CallUUID: 'x' });
       assert.equal(r.status, 200);
       assert.match(r.headers.get('content-type') ?? '', /xml/);
       assert.match(await r.text(), /<Speak[^>]*>Hello &amp; welcome<\/Speak>/);
     } finally { await fake.close(); }
-    assert.equal((await fetch(base + SPEAK_PATH + 'nope')).status, 404);
-  } finally { await new Promise<void>(r => server.close(() => r())); }
+    assert.equal((await plivoFetch('t', base + SPEAK_PATH + 'nope', base + SPEAK_PATH + 'nope', { CallUUID: 'y' })).status, 404);
+  } finally {
+    for (const [k, v] of [['VP_PUBLIC_URL', saved.pub], ['PLIVO_AUTH_TOKEN', saved.tok]] as const) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
+    await new Promise<void>(r => server.close(() => r()));
+  }
 });

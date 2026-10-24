@@ -237,9 +237,11 @@
   "full_suite_note": "On 2026-10-21 the whole product suite (scripts/test.mjs) on this head ran 212 tests: 209 pass, 3 fail, none in campaigns. agents test.simulate and learning gates also fail on the base commit 6610597 without this module, so they predate it. The kernel prepare() test is the parallel-run flake described in needs_from_others.",
   "risk_classes": "Every campaigns tool listed in research/2026-10-21/blueprint/data/workspace-tool-registry.json uses the registry's class. Not in the registry: campaign.stop_at_cap, number.pause_flagged and attempt.retry_per_ladder (external, A3 when VP acts), and the reads campaign.list, campaign.get and attempt.list.",
   "routes": [
-    "POST /hooks/telephony/kyc: signed (x-vp-signature, VP_TELEPHONY_WEBHOOK_SECRET), recorded once per (provider, eventId), applied through number.kyc.sync as system"
+    "POST /hooks/telephony/kyc: signed (x-vp-signature, VP_TELEPHONY_WEBHOOK_SECRET), recorded once per (provider, eventId), applied through number.kyc.sync as system",
+    "POST|GET /hooks/telephony/plivo/speak/:token: Plivo's answer URL for systemCall; X-Plivo-Signature-V3 over VP_PUBLIC_URL + path, nonce once; 503 without PLIVO_AUTH_TOKEN/VP_PUBLIC_URL"
   ],
   "telephony_builder_2026_10_24": [
-    "allowlist.ts (new): VP_TELEPHONY_ALLOWED_TO checked at gate G2 (person dialled on every kind + the agent's hand-off number), inbound answering (hand-off number), member.phone.verify_start, and PlivoTelephony.systemCall/enabled(); closed without a list on any server that can reach a carrier; VP_TELEPHONY_ALLOWLIST=off is the only open switch. telephony.ts header records the dial-path decision (the runtime dials agent calls). explain.ts words the allowlist refusal. tests/telephony-allowlist.test.ts (6)."
+    "allowlist.ts (new): VP_TELEPHONY_ALLOWED_TO checked at gate G2 (person dialled on every kind + the agent's hand-off number), inbound answering (hand-off number), member.phone.verify_start, and PlivoTelephony.systemCall/enabled(); closed without a list on any server that can reach a carrier; VP_TELEPHONY_ALLOWLIST=off is the only open switch. telephony.ts header records the dial-path decision (the runtime dials agent calls). explain.ts words the allowlist refusal. tests/telephony-allowlist.test.ts (6).",
+    "plivo-signature.ts (new) + migration 0305 plivo_nonce: X-Plivo-Signature-V3/Ma-V3 with one-time nonce on POST/GET /hooks/telephony/plivo/speak/:token; job campaigns.plivo_nonce_prune hourly. Vectors: tests/fixtures/plivo-v3-vectors.json from scripts/plivo-v3-vectors.py. tests/plivo-signature.test.ts (3)."
   ]
 }

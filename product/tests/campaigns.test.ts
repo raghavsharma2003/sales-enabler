@@ -748,7 +748,7 @@ test('dial-time seams: experiment arm, deployment split, money.estimate sizes th
   assert.equal((await one<{ agent_version_id: string }>(pool, 'SELECT agent_version_id FROM attempt WHERE id = $1', [a2]))!.agent_version_id, v2);
 
   const jobs = campaigns.jobs?.({ pool, registry, auth: async () => { throw new Error('no'); } }) ?? [];
-  assert.deepEqual(jobs.map(j => [j.name, j.everyMs]), [['campaigns.dispatch', 2000]]);
+  assert.deepEqual(jobs.map(j => [j.name, j.everyMs]), [['campaigns.dispatch', 2000], ['campaigns.plivo_nonce_prune', 3_600_000]]);
 });
 
 // ---- the carrier side of the number step, imported facts, and deployments (e2e findings F1-F4) ----

@@ -110,6 +110,25 @@ on its test list") and the Plivo adapter refuses every request: live telephony c
 
 An owner raises or lowers their own test budget and per-call hold from the assistant or the API (`cap.raise` / `cap.lower` with `scope: 'test'`); a raise is an approval card naming both amounts, as for any buyer. Billing shows it beside the other caps with today's use and each test call's cost. To give the owner's staging account money to spend, credit it as Vyakti staff with `wallet.credit` (a reason and a ticket key); the trial credit (`money_config.trial_credit_inr_milli`) stays 0 until the owner sets a price.
 
+**Carrier callbacks: what must bypass Caddy's basic auth**
+
+Plivo cannot send basic-auth credentials. These paths carry their own proof and must be exempt from basic auth (and
+only these). Everything else stays behind it.
+
+| Service | Path (as Plivo reaches it) | Its own proof |
+|---|---|---|
+| control plane | `POST /hooks/telephony/plivo/speak/*` (and `GET`) | X-Plivo-Signature-V3 + one-time nonce, checked on the public URL (`VP_PUBLIC_URL` + path) |
+| runtime | `POST /rt/v1/media/sip/answer/*`, `/hangup/*`, `/transfer/*`, `/machine/*`, `/whisper/*` | the per-call HMAC path segment; X-Plivo-Signature-V3 is asked of the runtime (open item) |
+| runtime | `POST /rt/v1/media/sip/inbound/*` | the HMAC path segment; V3 asked of the runtime |
+| runtime | `GET /rt/v1/media/sip/stream/*` (WebSocket upgrade) | the single-use token in the URL the answer XML handed Plivo |
+
+`/hooks/runtime` and `/hooks/telephony/inbound` are runtime-to-control-plane (signed `x-vp-signature`); they need no
+bypass when the runtime reaches the control plane on loopback (`VP_CONTROL_URL`), which is the staging shape.
+
+For the control plane to check Plivo's signature it needs `VP_PUBLIC_URL` (its public https base, exactly as given to
+Plivo) and `PLIVO_AUTH_TOKEN` (the token of the account or sub-account that owns the number; `PLIVO_MAIN_AUTH_TOKEN`
+optionally, for Plivo's `X-Plivo-Signature-Ma-V3`). Without them the carrier routes answer 503 and play nothing.
+
 **Keep off on a private staging**
 
 | Name | What |

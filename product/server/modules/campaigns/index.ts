@@ -37,6 +37,7 @@ import { agentLanguages, languageName, routeContact, serves, toLanguage } from '
 import { languageOptions } from './languages.ts';
 import { GATE, gateStatus } from '../../../shared/stack-gate.ts';
 import { announcementXml, routeSeries, SERIES, SERIES_GUIDE, SPEAK_PATH, telephony, TelephonyDisabled, type Series } from './telephony.ts';
+import { requirePlivo } from './plivo-signature.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
 // ---- validators ----
@@ -859,6 +860,7 @@ export const module: Module = {
     router.add('POST', '/hooks/telephony/inbound', inboundHook(deps), { rawBody: true, limit: 16_000 });
     // The carrier fetches a system announcement (the "ring my phone" code) by its one-off token; unknown or expired: 404.
     const speak = async (req: Req): Promise<Res> => {
+      await requirePlivo(deps.pool, req);          // Plivo's V3 signature and a fresh nonce (plivo-signature.ts)
       const xml = announcementXml(req.params.token ?? '');
       if (!xml) throw new HttpError(404, 'not_found', 'no such announcement');
       return { raw: xml, headers: { 'content-type': 'application/xml; charset=utf-8' } };
@@ -868,7 +870,8 @@ export const module: Module = {
   },
   // The dial loop: claim + gate + dispatch. Jobs never overlap and hold a per-name advisory lock, so replicas are safe;
   // SKIP LOCKED makes even concurrent claimers safe.
-  jobs: deps => [{ name: 'campaigns.dispatch', everyMs: 2_000, run: async d => { await tick({ pool: d.pool, registry: d.registry }); } }],
+  jobs: deps => [{ name: 'campaigns.dispatch', everyMs: 2_000, run: async d => { await tick({ pool: d.pool, registry: d.registry }); } },
+    { name: 'campaigns.plivo_nonce_prune', everyMs: 3_600_000, run: async d => { await d.pool.query("DELETE FROM plivo_nonce WHERE seen_at < now() - interval '1 day'"); } }],
 };
 
 const kycEvent = obj({ provider: str({ min: 1, max: 40 }), eventId: str({ min: 1, max: 120 }), providerRef: str({ min: 1, max: 120 }),

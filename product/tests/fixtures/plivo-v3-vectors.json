@@ -1,0 +1,75 @@
+{
+ "source": "plivo-python plivo/utils/signature_v3.py (transcribed 2026-10-24)",
+ "token": "synthetic-auth-token-0123456789",
+ "vectors": [
+  {
+   "method": "POST",
+   "url": "https://vyakti.example.test/hooks/telephony/plivo/speak/tok123",
+   "nonce": "n0nce-1",
+   "params": {
+    "CallUUID": "call-uuid-1",
+    "From": "+919000000001",
+    "To": "+919000000011",
+    "Direction": "outbound",
+    "CallStatus": "in-progress"
+   },
+   "base": "https://vyakti.example.test/hooks/telephony/plivo/speak/tok123?CallStatusin-progressCallUUIDcall-uuid-1DirectionoutboundFrom+919000000001To+919000000011",
+   "signature": "FZsfBFx071lRchOG0dgPfHXlcDbpLrADlLUJBbH4+J8="
+  },
+  {
+   "method": "POST",
+   "url": "https://vyakti.example.test/hooks/telephony/plivo/hangup?app=vp&z=1",
+   "nonce": "n0nce-2",
+   "params": {
+    "CallUUID": "call-uuid-2",
+    "Duration": "42",
+    "BillDuration": "60",
+    "HangupCauseName": "Normal Hangup",
+    "HangupCauseCode": "4000",
+    "HangupSource": "Callee"
+   },
+   "base": "https://vyakti.example.test/hooks/telephony/plivo/hangup?app=vp&z=1.BillDuration60CallUUIDcall-uuid-2Duration42HangupCauseCode4000HangupCauseNameNormal HangupHangupSourceCallee",
+   "signature": "WVlLZva9/aDq1muqSHpwy+BbBp593AxOrdaosoM7R0w="
+  },
+  {
+   "method": "POST",
+   "url": "https://vyakti.example.test:8443/rt/v1/media/sip/answer/cid/hook",
+   "nonce": "n0nce-3",
+   "params": {},
+   "base": "https://vyakti.example.test:8443/rt/v1/media/sip/answer/cid/hook",
+   "signature": "q0CC4HAmtIBCu5QVEBCeEf2M/6CmJBEAPDyepg/hQDw="
+  },
+  {
+   "method": "POST",
+   "url": "https://vyakti.example.test/x?b=2&a=1&a=0",
+   "nonce": "n0nce-4",
+   "params": {
+    "Digits": [
+     "9",
+     "1"
+    ],
+    "Event": "Hangup"
+   },
+   "base": "https://vyakti.example.test/x?a=0&a=1&b=2.Digits1Digits9EventHangup",
+   "signature": "rpOQVZOrW3iTQ2iY9Up8vfBTC2A1lEdMmdESsOQgtfs="
+  },
+  {
+   "method": "GET",
+   "url": "https://vyakti.example.test/hooks/telephony/plivo/speak/tok123?CallUUID=call-uuid-5&From=%2B919000000001",
+   "nonce": "n0nce-5",
+   "params": {},
+   "base": "https://vyakti.example.test/hooks/telephony/plivo/speak/tok123?CallUUID=call-uuid-5&From=+919000000001",
+   "signature": "jLH7n4SUV3+qHJmhGJHOFEb8UokwNJxdfS3akzVkd68="
+  },
+  {
+   "method": "POST",
+   "url": "https://vyakti.example.test/hooks/x",
+   "nonce": "n0nce-6",
+   "params": {
+    "Note": "a b+c&d=é"
+   },
+   "base": "https://vyakti.example.test/hooks/x?Notea b+c&d=é",
+   "signature": "KN9HM62Pyp+/kKqqFdK3KDpfkk/e6AbofHoiK6QJbnI="
+  }
+ ]
+}
