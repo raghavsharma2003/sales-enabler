@@ -1,0 +1,33 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.spend-card-matches-request",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "An approval-class card carrying an *InrMilli amount is made only if the amount matches a rupee figure the member wrote this turn; on a mismatch no card is made and the model is told both figures",
+      "rationale": "Op6: mini wrote rupees x100 into InrMilli fields on 3 spend cards in 2 runs, and the reply-number check then bent the reply to the wrong card (rejected.2026-10-24.reply-number-check-bends-to-wrong-card). Checking the card against the request stops the wrong card existing at all.",
+      "reverse_if": "Model-facing arguments move to rupees with server-side conversion and the bench shows no unit errors, or members routinely ask in words the parser misses (then the check needs those forms, not removal)"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.spend-card-matches-request",
+      "to": "open.2026-10-24.spend-card-amount-vs-request",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-24.spend-card-matches-request",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "operator-op6-fixes",
+      "details": "Operator fixes for op6, before op7: spend/cap/top-up cards checked against the member's rupee figures (\u20b9, Rs, INR, lakh, crore, k, Indian commas; bare numbers only for cap/wallet/top-up tools); on a mismatch no card, the model gets both figures and the milli value to send. The reply-number check no longer drops the member's figures when only a read result carries money, and its repair says never to change the client's figure to match. 'move/shift/change/set/adjust' ask for campaign.window.narrow and .widen (the tool refuses the wrong direction). Claim check: made/set/built/applied count only in the first person; read answers (so far, today, 'you have', count-led 'N x have been') are not claims. tests/operator-bench-op6.test.ts 6/6, each failing on the previous code; operator, MCP and SDK suites 79/79. Model-facing amounts in rupees with server conversion was considered and not done here (it changes every money tool's schema); the request check covers the unit error. The exact camp-estimate misfire string was not in the op6 report; tested with likely estimate phrasings. Not verified on real models until op7."
+    }
+  ]
+}

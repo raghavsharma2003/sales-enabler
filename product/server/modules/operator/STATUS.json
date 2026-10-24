@@ -29,6 +29,7 @@
       "tests/mcp.test.ts",
       "tests/operator-bench-fixes.test.ts",
       "tests/operator-bench-op5.test.ts",
+      "tests/operator-bench-op6.test.ts",
       "tests/operator-bench-r3.test.ts",
       "tests/operator-bench-r4.test.ts",
       "tests/operator-bench.test.ts",
@@ -77,7 +78,8 @@
     "Scope by action: a protective write (suppress, pause, stop, forget, erase, DPDP) the member's words do not ask for becomes an approval card, never a run; the retry guard matches actions, not nouns",
     "MCP server generated from the registry (operator/mcp.ts): initialize/ping/tools.list/tools.call over streamable HTTP; API keys only, the key's role and scopes enforced by Registry.execute; tools/list equals the registry's tools for the role and scopes, with their JSON Schemas; every approval class (A2 and the A3 verbs) and A0 drafts become approval cards, never runs; action.get reads a card; Origin checked against VP_MCP_ALLOWED_ORIGINS",
     "TypeScript SDK in product/sdk generated from shared/tool-catalog.json (scripts/sdk-gen.ts): typed calls, receipts, waitForApproval; no approve; tests fail when the catalog or the generated types are behind the registry",
-    "Docs: product/docs/mcp.md (connecting an MCP client), product/sdk/README.md"
+    "Docs: product/docs/mcp.md (connecting an MCP client), product/sdk/README.md",
+    "Spend, cap and top-up cards are checked against the member's own rupee figures before they exist (op6: rupees x100 in InrMilli); 'move the window' asks for narrow or widen; read answers ('20 calls have been made') are not claims"
   ],
   "untested": [
     "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",

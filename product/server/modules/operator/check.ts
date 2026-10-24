@@ -15,11 +15,19 @@ export type Problem = { kind: 'claim' | 'tap' | 'number' | 'confirm_first'; noti
 
 // ---- a past-tense change, in the assistant's voice --------------------------------------------------------------
 const VERBS = 'added|updated|published|created|saved|changed|launched|imported|renamed|removed|deleted|scheduled|attached|edited|switched|moved|raised|lowered|replaced|drafted|set up|turned (?:on|off)|enabled|disabled|uploaded|connected|configured|built|made|set|applied|suppressed|paused|stopped|deployed';
+// Verbs that also describe the member's own activity or a state ("20 calls have been made", "You have made 20 calls",
+// "a suggested cap set at ₹100") count only in the first person ("I've made the change"). op6: "made" misfired on
+// read answers in 4 of 4 runs.
+const GENERIC = new Set(['made', 'set', 'built', 'applied']);
+const CHANGE_VERBS = VERBS.split('|').filter(v => !GENERIC.has(v)).join('|');
 // "to set up", "need to add": an infinitive is a plan, not a claim.
-const CLAIM_VERB = new RegExp(`(?<!\\bto )(?<!\\bto be )\\b(${VERBS})\\b`, 'i');
+const CLAIM_VERB = new RegExp(`(?<!\\bto )(?<!\\bto be )\\b(${CHANGE_VERBS})\\b`, 'i');
+const FIRST_PERSON_GENERIC = /\b(i|we)(?:'ve| have)?\s+(?:just\s+)?(made|set|built|applied)\b/i;
+// A count or a period marks a read answer about what already happened ("5 contacts were imported so far").
+const READ_ANSWER = /\b(so far|in total|to date|till now|until now|this (week|month|year)|today|yesterday|last (week|month))\b|^\s*(you|your)\b|^\s*\d[\d,]*\s+\w+\s+(have|has|were|was)\s+been\b/i;
 const CLAIM_SUBJECT = /\b(i|i've|i have|i'm|we|we've|we have)\b|\b(has|have) been\b|\b(is|are) now\b/i;
 // A reduced passive: the verb within the first few words, with no "was/were" before it ("Draft agent created for ...").
-const REDUCED_PASSIVE = new RegExp(`^\\s*(?:[\\w'’-]+\\s+){0,4}?(${VERBS})\\b`, 'i');
+const REDUCED_PASSIVE = new RegExp(`^\\s*(?:[\\w'’-]+\\s+){0,4}?(${CHANGE_VERBS})\\b`, 'i');
 const NOW_STATE = /\b(is|are)?\s*now (on|set|using|live|active|called|named|in|configured|switched|speaks|uses|runs)\b|^\s*(done|all set)\b/i;
 // What turns a sentence into a non-claim: a question, or a negation, modal or condition BEFORE the verb (not after:
 // "Draft created; it can be undone" is still a claim). "Nothing has been deleted yet" is a negation.
@@ -32,7 +40,8 @@ const sentences = (text: string) => text.split(/(?<=[.!?…])\s+|\n+|(?<=…)/).
 /** True when a sentence states, in the assistant's voice or as a bare passive, that a change was made. */
 export function claimsChange(text: string, proposed: boolean): boolean {
   return sentences(text).some(sen => {
-    if (/\?\s*$/.test(sen) || GOVERNED.test(sen) || PAST_FACT.test(sen) || NEGATED_AFTER.test(sen)) return false;
+    if (/\?\s*$/.test(sen) || GOVERNED.test(sen) || PAST_FACT.test(sen) || NEGATED_AFTER.test(sen) || READ_ANSWER.test(sen)) return false;
+    if (FIRST_PERSON_GENERIC.test(sen)) return true;
     if (proposed && /approv|tap|waiting|pending|card/i.test(sen)) return false;
     return NOW_STATE.test(sen) || (CLAIM_VERB.test(sen) && (CLAIM_SUBJECT.test(sen) || (REDUCED_PASSIVE.test(sen) && !/\b(was|were|been|is|are)\b/i.test(sen.slice(0, sen.search(CLAIM_VERB) + 1)))));
   });
@@ -72,9 +81,12 @@ export function knownNumbers(facts: unknown[], userText: string): Known {
     else if (v && typeof v === 'object') for (const [kk, x] of Object.entries(v)) walk(x, kk);
   };
   facts.forEach(f => walk(f));
-  // When a card or result this turn carries an amount, the reply is held to it, not to what the member typed: the
-  // card is what will happen (op5: "₹2,000" said, ₹200 on the card, passed because the member had typed 2,000).
-  memberMoney = k.money.length === 0;
+  // When an approval CARD this turn carries an amount, the reply is held to it, not to what the member typed: the card
+  // is what will happen (op5: "₹2,000" said, ₹200 on the card). A read result carrying money (a wallet balance) does not
+  // drop the member's own figures (op6 multi-cap-balance: the member's ₹200 was flagged). The card's amount is itself
+  // checked against the member's words before it exists (loop.ts, spendMismatch), so a card cannot be wrong here.
+  const cardMoney = facts.some(f => f && typeof f === 'object' && (f as { card?: boolean }).card && JSON.stringify(f).match(/InrMilli"\s*:\s*\d/i));
+  memberMoney = !cardMoney;
   const before = k.money.length;
   fromText(userText, memberMoney);
   if (!memberMoney) k.money.length = before;
@@ -112,7 +124,7 @@ export function checkReply(o: { text: string; wrote: boolean; proposed: boolean;
     const bad = unsupportedNumbers(text, knownNumbers(o.facts, o.userText));
     if (bad.length) return { kind: 'number',
       notice: `Correction: ${bad.join(', ')} in the reply above does not match what the tools returned for this message. The corrected reply follows.`,
-      repair: `Check failed: your reply states ${bad.join(', ')}, which matches no amount or duration in this turn's tool results or the client's message. Fields ending in InrMilli are thousandths of a rupee (9608 is ₹9.61); where a result has a display string, quote it. Reply again with every figure exactly as the tools give it.` };
+      repair: `Check failed: your reply states ${bad.join(', ')}, which matches no amount or duration in this turn's tool results or the client's message. Fields ending in InrMilli are thousandths of a rupee (9608 is ₹9.61); where a result has a display string, quote it. Reply again with every figure exactly as the tools give it. If a figure the client gave differs from a tool's, say so plainly; never change the client's figure to match.` };
   }
   if (!o.proposed && !o.pendingInThread && tapsWithoutCard(text)) return { kind: 'tap',
     notice: 'Correction: nothing from this message is waiting for your tap.',

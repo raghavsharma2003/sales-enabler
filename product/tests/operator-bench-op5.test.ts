@@ -86,7 +86,7 @@ test('reply checks: reduced passives are claims; "Nothing has been deleted yet",
   assert.equal(checkReply({ text: 'Would you like me to use the default window, or do you have specific times?', wrote: false, proposed: false, pendingInThread: false, facts: [], userText: 'Draft a campaign.', toolCalls: 0 }), null);
 });
 
-test('a reply is held to its own card: "₹2,000" said, ₹200 on the card, is corrected even though the member typed 2,000', { skip }, async () => {
+test('a ₹200 card for "₹2,000" is never made (op6 tightened op5\'s reply-vs-card correction); the bench grader checks the card amount', { skip }, async () => {
   const c = await owner();
   const seen = script([
     () => ({ toolCalls: [call('cap_raise', { scope: 'workspace', period: 'daily', capInrMilli: 200_000 })] }),
@@ -94,9 +94,11 @@ test('a reply is held to its own card: "₹2,000" said, ₹200 on the card, is c
     () => ({ text: 'The card raises the daily cap to ₹200, not ₹2,000. Decline it and I will ask again.' }),
   ]);
   const f = await turn(c.member, { text: 'Raise the daily cap to ₹2,000.', page: '/settings' });
-  assert.equal(cards(f)[0].type, 'approval');
-  assert.match(notices(f)[0]!, /^Correction: ₹2,000 in the reply above does not match/);
-  assert.equal(seen.length, 3);
+  // Since op6 the wrong card is never made (loop.ts spendMismatch); the reply-vs-card rule is covered in op6's tests.
+  assert.equal(cards(f)[0].type, 'receipt');
+  assert.equal(cards(f)[0].status, 'not_executed');
+  assert.match(cards(f)[0].text, /the client asked for ₹2,000/);
+  void seen;
   // The bench grader now checks the card's amount, not only that a card exists.
   const task = TASKS.find(t => t.id === 'cap-raise')!;
   const g = (cs: any[]): GradeCtx => ({ ...c, seed: {}, frames: [], cards: cs, reply: '', ran: [] });

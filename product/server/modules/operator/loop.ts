@@ -13,8 +13,9 @@
 //   5. Hard caps per turn on model calls, tool calls and tokens. Every model call writes a cost_line
 //      (component 'platform').
 import type pg from 'pg';
-import { argsHash, canApprove, ROLES, type RiskClass, type Role } from '../../../shared/approval.ts';
+import { argsHash, canApprove, needsHumanApproval, ROLES, type RiskClass, type Role } from '../../../shared/approval.ts';
 import { ValidationError } from '../../../shared/validate.ts';
+import { formatInr } from '../../../shared/money.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
 import { LlmError, stream, type ChatMessage, type LlmReply, type LlmTool } from '../../llm.ts';
@@ -290,6 +291,10 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   const asked = (name: string) => asksFor(name, clean.text);
   const guarded = async (name: string, args: unknown): Promise<OpReceipt> => {
     const def = registry.get(name);
+    // A spend, cap or top-up card must carry the amount the member asked for (op6: rupees x100 written into InrMilli on
+    // 3 cards in 2 runs). On a mismatch no card is made, and the model is told both figures.
+    const money = def && needsHumanApproval(def.risk) ? spendMismatch(name, args, clean.text) : null;
+    if (money) return { status: 'not_executed', reason: money, path: money.split(':')[0] };
     if (def && allowedNames.has(name) && def.risk !== 'read' && !asked(name)) {
       if (failedWrites.size && !failedWrites.has(name) && !doneWrites.has(name))
         return { status: 'not_executed', reason: `held: the client did not ask for ${name}, and this turn was retrying ${[...failedWrites].join(', ')}. Change nothing the client did not ask about; if ${name} is really needed, ask the client first` };
@@ -317,7 +322,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   const track = (name: string, r: OpReceipt, args?: unknown) => {
     const write = registry.get(name)?.risk !== 'read';
     if (r.status === 'confirmed') { facts.push(r.result); if (write) { wrote = true; doneWrites.add(name); } }
-    if (r.status === 'needs_approval') { proposed = true; facts.push({ summary: r.summary, args }); }   // the card's own amounts
+    if (r.status === 'needs_approval') { proposed = true; facts.push({ card: true, summary: r.summary, args }); }   // the card's own amounts
     if (r.status === 'not_executed' && write && allowedNames.has(name)) failedWrites.add(name);   // a role or unknown-name refusal is not a retry
   };
   try {
@@ -513,7 +518,9 @@ const ACTION_WORDS: Record<string, RegExp> = {
   set: /\b(set|change|switch|move|use|put|choose|pick)\b/i, publish: /\b(publish|go live|release|make (it )?live)\b/i,
   launch: /\b(launch|start|go live|send|run)\b/i, split: /\b(split|deploy|route|percent|%|half|share)\b/i,
   suppress: /\b(suppress|stop calling|do not call|don't call|never call|opt(ed)?[ -]?out|block|dnd|remove (them|him|her) from)\b/i,
-  pause: /\b(pause|hold off|stop)\b/i, stop: /\b(stop|end|cancel|halt)\b/i, delete: /\b(delete|remove|erase)\b/i,
+  pause: /\b(pause|hold off|stop)\b/i,
+  // A window is "moved" or "changed" in words; the tool itself refuses the wrong direction (op6 camp-window, 3 of 4).
+  narrow: /\b(narrow|move|shift|change|set|adjust|shorten|reduce|limit|only)\b/i, widen: /\b(widen|move|shift|change|set|adjust|extend|longer|expand)\b/i, stop: /\b(stop|end|cancel|halt)\b/i, delete: /\b(delete|remove|erase)\b/i,
   forget: /\b(forget|erase|delete|remove)\b/i, raise: /\b(raise|increase|up|higher|more)\b/i, lower: /\b(lower|reduce|decrease|down|less)\b/i,
   topup: /\b(top ?up|add money|add funds|recharge|add ₹|add rs)\b/i, import: /\b(import|upload|add)\b/i, attach: /\b(attach|add|give|grant|connect)\b/i,
 };
@@ -521,6 +528,37 @@ export function asksFor(name: string, text: string): boolean {
   const verb = name.split('.').pop()!.replace(/_.*$/, '');
   const re = ACTION_WORDS[verb] ?? new RegExp(`\\b${verb.replace(/[^a-z0-9]/gi, '')}`, 'i');
   return re.test(text);
+}
+
+// ---- money on a card against the member's words --------------------------------------------------------------------
+const SCALE: Record<string, number> = { lakh: 1e5, lakhs: 1e5, lac: 1e5, lacs: 1e5, crore: 1e7, crores: 1e7, cr: 1e7, k: 1e3, thousand: 1e3 };
+/** Rupee amounts the member wrote: "₹2,000", "Rs 500", "2 lakh", "₹1.5 crore", "2,00,000". With a ₹/Rs/INR figure in the
+ *  message, only those count; otherwise every number does when bareToo (a member may write "raise the cap to 2000"). */
+export function memberRupees(text: string, bareToo = true): number[] {
+  const marked: number[] = [], bare: number[] = [];
+  for (const m of text.matchAll(/(₹|\brs\.?|\binr)?\s?(\d[\d,]*(?:\.\d+)?)\s*(lakhs?|lacs?|crores?|cr|k|thousand)?\b(\s*(?:rupees|rs\b|inr\b))?/gi)) {
+    const v = Number(m[2]!.replace(/,/g, '')) * (m[3] ? SCALE[m[3].toLowerCase()] ?? 1 : 1);
+    if (!Number.isFinite(v)) continue;
+    (m[1] || m[4] || m[3] ? marked : bare).push(v);
+  }
+  return marked.length ? marked : bareToo ? bare : [];
+}
+/** A reason when an approval-class call's *InrMilli argument matches none of the member's amounts; null when it matches
+ *  or the member named no amount. */
+export function spendMismatch(tool: string, args: unknown, text: string): string | null {
+  if (!args || typeof args !== 'object') return null;
+  // Bare numbers count as rupees only for the money tools themselves; elsewhere ("launch it for 50 people") only ₹ figures.
+  const asked = memberRupees(text, /^(cap|wallet|budget)\.|topup/.test(tool));
+  if (!asked.length) return null;
+  for (const [k, v] of Object.entries(args as Record<string, unknown>)) {
+    if (!/inrmilli$/i.test(k) || typeof v !== 'number') continue;   // capInrMilli, inrMilli, ...
+    const rupees = v / 1000;
+    if (asked.some(a => Math.abs(a - rupees) <= Math.max(0.005, a * 0.005))) continue;
+    const want = asked.length === 1 ? asked[0]! : null;
+    return `${k}: the card would be for ${formatInr(v)} (${k} is in thousandths of a rupee: ${v} is ${formatInr(v)}), but the client asked for ${asked.map(a => formatInr(Math.round(a * 1000))).join(' or ')}.`
+      + (want !== null ? ` Send ${k}: ${Math.round(want * 1000)}.` : '') + ' No card was made.';
+  }
+  return null;
 }
 
 /** A0: hold a draft or test for a tap. The action row is the kernel's; approval runs through registry.approve. */
