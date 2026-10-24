@@ -13,7 +13,7 @@
 // Background: jobs() runs experiment.check on every running experiment each minute (calls also call it per call), and
 // learning.propose_from_issues drafts one proposal per new content monitor issue (3 a day per workspace; drafts only).
 import { label } from '../../labels.ts';
-import type pg from 'pg';
+import pg from 'pg';
 import { createHash } from 'node:crypto';
 import type { Module } from '../../app.ts';
 import { many, one, type Queryable } from '../../db.ts';
@@ -36,12 +36,38 @@ export function bindLearning(deps: { pool: pg.Pool; registry: Registry }): void 
 
 type Cross<O> = Receipt<O> | { status: 'not_loaded'; reason: string };
 
-/** Call a sibling module's tool by name. A missing sibling degrades to not_loaded, never a crash. */
-async function cross<O = unknown>(ws: string, name: string, args: unknown): Promise<Cross<O>> {
+/** Call a sibling module's tool by name. A missing sibling degrades to not_loaded, never a crash.
+ *  `q` is the caller's own connection. Inside a transaction the sibling runs on that same connection, under a savepoint,
+ *  never on a second pooled one: a learning tool may hold a row lock (experiment.check holds its experiment), and taking
+ *  another connection while holding it deadlocked the pool once every other connection was waiting on that lock
+ *  (open.2026-10-24.learning-check-pool-deadlock). The sibling's writes commit or roll back with the caller's. */
+async function cross<O = unknown>(q: Queryable, ws: string, name: string, args: unknown): Promise<Cross<O>> {
   const r = bound?.registry ?? reg;
   if (!r?.get(name)) return { status: 'not_loaded', reason: `${name} is not registered yet` };
   if (!bound) return { status: 'not_loaded', reason: 'learning is not bound to a database pool' };
-  return r.execute<O>(bound.pool, name, args, { workspaceId: ws, actor: SYSTEM });
+  return r.execute<O>(q instanceof pg.Pool ? q : sameConnection(q), name, args, { workspaceId: ws, actor: SYSTEM });
+}
+
+/** A transaction's client, shaped as the pool Registry.execute expects. connect() hands back the same client, its
+ *  BEGIN/COMMIT/ROLLBACK become a savepoint, and nested runs are serialised so two never interleave on one connection. */
+function sameConnection(client: pg.PoolClient): pg.Pool {
+  let n = 0, queue: Promise<void> = Promise.resolve();
+  const connect = async (): Promise<pg.PoolClient> => {
+    let done!: () => void;
+    const turn = queue; queue = new Promise<void>(res => { done = res; });
+    await turn;
+    const sp = `learning_cross_${++n}`;
+    const query = ((text: unknown, ...rest: unknown[]) => {
+      const t = typeof text === 'string' ? text.trim().toUpperCase() : '';
+      if (t === 'BEGIN') return client.query(`SAVEPOINT ${sp}`);
+      if (t === 'COMMIT') return client.query(`RELEASE SAVEPOINT ${sp}`);
+      if (t === 'ROLLBACK') return client.query(`ROLLBACK TO SAVEPOINT ${sp}`).then(r => client.query(`RELEASE SAVEPOINT ${sp}`).then(() => r));
+      return (client.query as (...a: unknown[]) => unknown)(text, ...rest);
+    }) as pg.PoolClient['query'];
+    return Object.assign(Object.create(client), { query, release: () => done() }) as pg.PoolClient;
+  };
+  const query = ((...a: unknown[]) => (client.query as (...b: unknown[]) => unknown)(...a)) as pg.Pool['query'];
+  return Object.assign(Object.create(pg.Pool.prototype), { connect, query }) as pg.Pool;
 }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -229,11 +255,11 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
     // compile, and that must not block every proposal on it (the shape check is then reported as not run).
     let shapeNote: string | null = null;
     if (gates.passed && 'proposed' in gates && gates.proposed) {
-      const compiled = await cross(ws, 'brief.compile', { config: gates.proposed });
+      const compiled = await cross(ctx.q, ws, 'brief.compile', { config: gates.proposed });
       const why = (r: typeof compiled) => ('reason' in r ? r.reason : r.status);
       if (compiled.status === 'confirmed') gates.checked.push('shape');
       else if (compiled.status !== 'not_loaded') {
-        const before = await cross(ws, 'brief.compile', { config: cfg });
+        const before = await cross(ctx.q, ws, 'brief.compile', { config: cfg });
         if (before.status === 'confirmed' || why(before) !== why(compiled)) failures.push({ gate: 'shape', detail: why(compiled) });
         else shapeNote = `not checked: the live version itself does not compile under today's rules (${why(before)})`;
       }
@@ -264,7 +290,7 @@ interface ProposalRow { id: string; agent_id: string; base_version_id: string | 
 
 async function proposalFor(q: Queryable, ws: string, id: string, lock = false): Promise<ProposalRow> {
   const p = await one<ProposalRow>(q, `SELECT id, agent_id, base_version_id, kind, change, status, simulation, calls_to_prove, change_hash, rationale
-    FROM proposal WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
+    FROM proposal WHERE id = $1 AND workspace_id = $2${lock ? ' FOR NO KEY UPDATE' : ''}`, [id, ws]);
   if (!p) throw new Error('no such proposal');
   return p;
 }
@@ -282,7 +308,7 @@ async function probe(ctx: ToolCtx, i: { proposalId: string; simCallerIds?: strin
     return { status: 'gated_out', failures: gates.failures };
   }
   // The practice callers this agent can meet: the workspace's own first, else the agents module's library defaults.
-  const listed = await cross<{ callers: { id: string; source: string }[] }>(ws, 'simcaller.list', { agentId: p.agent_id });
+  const listed = await cross<{ callers: { id: string; source: string }[] }>(ctx.q, ws, 'simcaller.list', { agentId: p.agent_id });
   const available = listed.status === 'confirmed' ? listed.result.callers
     : (await many<{ id: string }>(ctx.q, `SELECT id FROM sim_caller WHERE workspace_id = $1 AND (agent_id = $2 OR agent_id IS NULL) ORDER BY created_at LIMIT 12`, [ws, p.agent_id])).map(r => ({ id: r.id, source: 'workspace' }));
   const own = available.filter(c => c.source === 'workspace');
@@ -291,7 +317,7 @@ async function probe(ctx: ToolCtx, i: { proposalId: string; simCallerIds?: strin
   if (!callers.length) return { status: 'no_sim_callers', reason: 'no practice callers are available for this agent' };
   const seeds = i.seeds ?? [1, 2];
 
-  const sim = async (config: AgentConfig) => cross<{ runs: SimRun[] }>(ws, 'test.simulate_batch', { agentId: p.agent_id, config, simCallerIds: callers, seeds });
+  const sim = async (config: AgentConfig) => cross<{ runs: SimRun[] }>(ctx.q, ws, 'test.simulate_batch', { agentId: p.agent_id, config, simCallerIds: callers, seeds });
   const current = await sim(agentOf(base));
   if (current.status !== 'confirmed') return { status: 'simulator_unavailable', reason: 'reason' in current ? current.reason : current.status };
   const proposed = await sim(gates.proposed!);
@@ -392,7 +418,7 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
   const { p, base, goal, successValues, hazardCodes, baseline, baselineSource, mde, plan } = planned;
 
   const treatmentCfg = applyOps(agentOf(base), parseOps(p.change));
-  const treatment = await treatmentVersion(ws, base, treatmentCfg, p.id);
+  const treatment = await treatmentVersion(ctx.q, ws, base, treatmentCfg, p.id);
   const design = {
     binding: i.binding ?? 'campaign', treatmentConfig: treatmentCfg, metric: 'outcome_success', unit: 'contact', outcomeDefinitionId: goal.definitionId, successValues, counting: COUNTING, hazardCodes, baselineSource, plan,
     horizonPerArm: plan.perArm, treatmentShare: 0.5, alpha: 0.05, power: 0.8, minDays: i.minDays ?? 7, maxDays: i.maxDays ?? 28,
@@ -411,8 +437,8 @@ async function accept(ctx: ToolCtx, i: AcceptIn) {
 /** The treatment arm is an immutable version made by the agents module (version.candidate compiles its brief once and
  *  never publishes it). Learning never writes agent_version itself. If the tool is missing, the experiment is still
  *  pre-registered and experiment.start retries, then refuses with a plain reason. */
-async function treatmentVersion(ws: string, base: VersionRow, cfg: AgentConfig, proposalId: string): Promise<{ id: string | null; reason?: string }> {
-  const r = await cross<{ versionId: string }>(ws, 'version.candidate', { agentId: base.agent_id, config: cfg, parentVersionId: base.id, note: `learning treatment for proposal ${proposalId}` });
+async function treatmentVersion(q: Queryable, ws: string, base: VersionRow, cfg: AgentConfig, proposalId: string): Promise<{ id: string | null; reason?: string }> {
+  const r = await cross<{ versionId: string }>(q, ws, 'version.candidate', { agentId: base.agent_id, config: cfg, parentVersionId: base.id, note: `learning treatment for proposal ${proposalId}` });
   if (r.status === 'confirmed') return { id: r.result.versionId };
   return { id: null, reason: `the treatment version could not be made: ${'reason' in r ? r.reason : r.status}` };
 }
@@ -421,7 +447,7 @@ interface ExperimentRow { id: string; agent_id: string; proposal_id: string | nu
 
 const EXPERIMENT_COLS = 'id, agent_id, proposal_id, control_version_id, treatment_version_id, design, state, result, started_at, expires_at';
 async function experimentFor(q: Queryable, ws: string, id: string, lock = false): Promise<ExperimentRow> {
-  const e = await one<ExperimentRow>(q, `SELECT ${EXPERIMENT_COLS} FROM experiment WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
+  const e = await one<ExperimentRow>(q, `SELECT ${EXPERIMENT_COLS} FROM experiment WHERE id = $1 AND workspace_id = $2${lock ? ' FOR NO KEY UPDATE' : ''}`, [id, ws]);
   if (!e) throw new Error('no such experiment');
   return e;
 }
@@ -435,7 +461,7 @@ async function start(ctx: ToolCtx, i: { experimentId: string; aaRuns?: number })
   if (e.state !== 'aa_pending') throw new Error(`this experiment is ${e.state}`);
   if (!e.treatment_version_id) {
     const base = await versionById(ctx.q, ws, e.control_version_id);
-    const made = base ? await treatmentVersion(ws, base, e.design.treatmentConfig, e.proposal_id ?? e.id) : { id: null, reason: 'the control version is gone' };
+    const made = base ? await treatmentVersion(ctx.q, ws, base, e.design.treatmentConfig, e.proposal_id ?? e.id) : { id: null, reason: 'the control version is gone' };
     if (!made.id) return { state: e.state, launched: false, reason: made.reason };
     await ctx.q.query('UPDATE experiment SET treatment_version_id = $2 WHERE id = $1', [e.id, made.id]);
     e.treatment_version_id = made.id;
@@ -520,7 +546,7 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   // a sibling tool (revert, rollout, brief.edit) on a second connection; a check that waited for the lock here would hold
   // a pooled connection while it waited, and enough of them starve the pool for good. So a check that finds the row
   // locked skips: the running check reports, and the next call or the learning.check job looks again.
-  const e = await one<ExperimentRow>(ctx.q, `SELECT ${EXPERIMENT_COLS} FROM experiment WHERE id = $1 AND workspace_id = $2 FOR UPDATE SKIP LOCKED`, [i.experimentId, ws]);
+  const e = await one<ExperimentRow>(ctx.q, `SELECT ${EXPERIMENT_COLS} FROM experiment WHERE id = $1 AND workspace_id = $2 FOR NO KEY UPDATE SKIP LOCKED`, [i.experimentId, ws]);
   if (!e) {
     const seen = await experimentFor(ctx.q, ws, i.experimentId);
     return { state: seen.state, result: undefined, note: 'another check of this experiment is running; it reports, and the next check looks again' };
@@ -540,7 +566,7 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
     ? `the change is doing worse on the goal: ${t.success} of ${t.m} reached it, against ${c.success} of ${c.m} on the current version (always-valid test)` : null;
   const trip = hazardTrip(c, t, d.guardrails.events) ?? goalWorse;
   if (trip) {
-    const revert = await cross(ws, 'deployment.revert_to_last_good', { agentId: e.agent_id, binding: d.binding });
+    const revert = await cross(ctx.q, ws, 'deployment.revert_to_last_good', { agentId: e.agent_id, binding: d.binding });
     const result = { ...e.result, guardrail: { reason: trip, control: c, treatment: t, at: new Date().toISOString() }, revert: { status: revert.status, ...('reason' in revert ? { reason: revert.reason } : {}) } };
     await ctx.q.query(`UPDATE experiment SET state = 'stopped_guardrail', result = $2, decided_at = now() WHERE id = $1`, [e.id, JSON.stringify(result)]);
     await openIssue(ctx.q, ws, 'learning.guardrail_stop', 'critical', e.id, { agentId: e.agent_id, reason: trip, revert: revert.status });
@@ -564,7 +590,7 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const decision = decide(controlArm, treatmentArm, d.alpha);
   const result = { ...e.result, decision: { ...decision, control: controlArm, treatment: treatmentArm, label: `proved on ${(c.m + t.m).toLocaleString('en-IN')} calls with a recorded outcome, 95% interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points` } };
   let publish: { status: string; actionId?: string; reason?: string } | null = null;
-  if (decision.verdict === 'win') publish = await proposePublish(ws, e);
+  if (decision.verdict === 'win') publish = await proposePublish(ctx.q, ws, e);
   await ctx.q.query(`UPDATE experiment SET state = 'decided', result = $2, decided_at = now() WHERE id = $1`, [e.id, JSON.stringify({ ...result, publish })]);
   if (e.proposal_id && decision.verdict !== 'win') await ctx.q.query(`UPDATE proposal SET status = 'rejected' WHERE id = $1`, [e.proposal_id]);
   const hash = e.proposal_id ? (await one<{ h: string }>(ctx.q, 'SELECT change_hash AS h FROM proposal WHERE id = $1', [e.proposal_id]))?.h ?? null : null;
@@ -594,7 +620,7 @@ async function adoptionCheck(ctx: ToolCtx, e: ExperimentRow) {
     // The draft takes the same edits (facts order as a whole list), through the agents module's own validated editor.
     const treatment = await versionById(ctx.q, ws, e.treatment_version_id!);
     const patch = (p?.change ?? []).map(o => o.op === 'set' ? { op: 'set', path: o.path, value: o.value } : { op: 'set', path: 'facts', value: agentOf(treatment!).facts });
-    const edit = patch.length ? await cross(ws, 'brief.edit', { agentId: e.agent_id, patch }) : { status: 'not_executed', reason: 'no change recorded' } as const;
+    const edit = patch.length ? await cross(ctx.q, ws, 'brief.edit', { agentId: e.agent_id, patch }) : { status: 'not_executed', reason: 'no change recorded' } as const;
     adoption = { status: 'adopted', at: new Date().toISOString(), deploymentId: dep!.id, draft: edit.status === 'confirmed' ? 'updated' : `not updated: ${'reason' in edit ? edit.reason : edit.status}` };
     if (e.proposal_id) await ctx.q.query(`UPDATE proposal SET status = 'promoted' WHERE id = $1`, [e.proposal_id]);
     await addLesson(ctx.q, ws, e.agent_id, `Adopted: the ${p?.kind ?? ''} change now runs on every ${e.design.binding} call (${decision.label}). `
@@ -624,11 +650,11 @@ async function linkIssue(q: Queryable, ws: string, e: ExperimentRow, ops: Change
 
 /** A win is proposed as deployment.split at 100% treatment on the experiment's binding. That tool must be
  *  approval-gated: learning never applies a deployment on its own. */
-async function proposePublish(ws: string, e: ExperimentRow) {
+async function proposePublish(q: Queryable, ws: string, e: ExperimentRow) {
   const t = (bound?.registry ?? reg)?.get('deployment.split');
   if (!t) return { status: 'not_loaded', reason: 'deployment.split is not registered yet; roll the winner out by hand' };
   if (!needsHumanApproval(t.risk)) return { status: 'not_sent', reason: 'deployment.split does not require approval; learning never deploys on its own' };
-  const r = await cross<unknown>(ws, 'deployment.split', { agentId: e.agent_id, binding: e.design.binding, split: [{ versionId: e.treatment_version_id, percent: 100 }] });
+  const r = await cross<unknown>(q, ws, 'deployment.split', { agentId: e.agent_id, binding: e.design.binding, split: [{ versionId: e.treatment_version_id, percent: 100 }] });
   return { status: r.status, ...(r.status === 'needs_approval' ? { actionId: r.actionId } : {}), ...('reason' in r ? { reason: r.reason } : {}) };
 }
 

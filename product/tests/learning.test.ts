@@ -692,3 +692,35 @@ test('a new proposal is built on the live version, never on a running experiment
   const p = await one<{ base_version_id: string }>(pool, 'SELECT base_version_id FROM proposal WHERE id = $1', [again.result.proposals[0].id]);
   assert.equal(p!.base_version_id, t.versionId, 'the base is version 1, the live one');
 });
+
+test('a check that stops a test while more assigns than the pool holds are in flight finishes: no pool deadlock (open.2026-10-24.learning-check-pool-deadlock)', { skip }, async () => {
+  // POOL ASSUMPTION, written down: a pool of POOL_MAX connections and ASSIGNS > POOL_MAX concurrent experiment.assign calls,
+  // plus one experiment.check that stops the test and calls the A3 revert in another module (cross()). Before the fix the
+  // check held the experiment row FOR UPDATE and asked the pool for a second connection for that call, while every other
+  // connection was held by an assign whose INSERT INTO experiment_assignment waited on the same row (its foreign-key
+  // check takes a key-share lock, which FOR UPDATE blocks). Nothing could move: the integrator saw it hang the suite in
+  // 2 of 4 runs.
+  const POOL_MAX = 4, ASSIGNS = 6;
+  assert.ok(ASSIGNS > POOL_MAX);
+  const t = await workspace();
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.5, mdeAbs: 0.05, minDays: 0 });
+  await dialUntil(t, bothReach(80), (arm, i) => (arm === 'treatment' ? (i % 20 === 0 ? 'confirmed' : 'declined') : (i % 2 === 0 ? 'confirmed' : 'declined')));
+  const people = await newContacts(t.ws, ASSIGNS);
+  const small = createPool(URL_);
+  (small.options as { max: number }).max = POOL_MAX;
+  bindLearning({ pool: small, registry });
+  try {
+    const actor: Actor = { type: 'member', id: t.member, role: 'owner' };
+    const exec = (name: string, args: unknown) => registry.execute<any>(small, name, args, { workspaceId: t.ws, actor });
+    const before = reverts.length;
+    const work = Promise.all([exec('experiment.check', { experimentId }), ...people.map(c => exec('experiment.assign', { agentId: t.agentId, contactId: c }))]);
+    const hung = new Promise<'hung'>(res => setTimeout(() => res('hung'), 15_000).unref());
+    const out = await Promise.race([work, hung]);
+    assert.notEqual(out, 'hung', `a check and ${ASSIGNS} assigns on a pool of ${POOL_MAX} deadlocked`);
+    const [check, ...assigns] = out as any[];
+    assert.equal(check.status, 'confirmed', JSON.stringify(check));
+    assert.equal(check.result.state, 'stopped_guardrail', JSON.stringify(check.result));
+    assert.equal(reverts.length, before + 1, 'the revert in the other module ran');
+    for (const a of assigns) assert.equal(a.status, 'confirmed', JSON.stringify(a));
+  } finally { bindLearning({ pool, registry }); void small.end().catch(() => {}); }
+});
