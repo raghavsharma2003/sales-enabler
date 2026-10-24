@@ -1,8 +1,9 @@
 // The control plane's HTTP surface. Modules contribute tools (and, rarely, raw routes); the kernel owns
 // sign-in, the generic tool endpoint, approvals and the audit check. The web UI and the Operator chat
 // both go through POST /v1/tools/:name, so every page action is a tool.
-import { createServer, type Server } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
+import { createReadStream } from 'node:fs';
+import { stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import type pg from 'pg';
 import { bool, obj, opt, str } from '../shared/validate.ts';
@@ -52,6 +53,43 @@ const LOGIN_PER_IP = 50;
 
 const MIME: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.opus': 'audio/ogg', '.m4a': 'audio/mp4', '.aac': 'audio/aac' };
+
+// Static files (open.2026-10-24.static-cache-for-samples). Only hashed build assets are immutable; everything else,
+// index.html and /samples/manifest.json included, is revalidated on every use (no-cache + ETag, 304 when unchanged), so a
+// re-recorded sample or a new manifest is seen at once without query-string tricks. Audio needs byte ranges for seeking
+// and for Safari: a single 'bytes=a-b' range is answered 206, an unsatisfiable one 416.
+const HASHED_ASSET = /^assets\/(?:.+\/)?[^/]+-[A-Za-z0-9]{8,}\.[a-z0-9]+$/;
+async function serveStatic(req: IncomingMessage, res: ServerResponse, file: string, rel: string): Promise<void> {
+  let st;
+  try { st = await stat(file); if (!st.isFile()) throw new Error('not a file'); } catch { res.writeHead(404).end(); return; }
+  const etag = `W/"${st.size.toString(16)}-${Math.floor(st.mtimeMs).toString(16)}"`;
+  const headers: Record<string, string | number> = {
+    'content-type': MIME[extname(file)] ?? 'application/octet-stream',
+    'cache-control': HASHED_ASSET.test(rel.replace(/\\/g, '/')) ? 'public, max-age=31536000, immutable' : 'no-cache',
+    etag, 'last-modified': st.mtime.toUTCString(), 'accept-ranges': 'bytes',
+    'x-content-type-options': 'nosniff', 'referrer-policy': 'same-origin',
+  };
+  if (req.headers['if-none-match'] === etag) { res.writeHead(304, headers).end(); return; }
+  const range = req.headers.range;
+  if (range) {
+    const m = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+    let start = -1, end = -1;
+    if (m && (m[1] || m[2])) {
+      if (m[1]) { start = Number(m[1]); end = m[2] ? Math.min(Number(m[2]), st.size - 1) : st.size - 1; }
+      else { const n = Number(m[2]); start = Math.max(0, st.size - n); end = st.size - 1; }   // the last n bytes
+    }
+    if (!m || start < 0 || start > end || start >= st.size) {
+      res.writeHead(416, { ...headers, 'content-range': `bytes */${st.size}` }).end(); return;
+    }
+    res.writeHead(206, { ...headers, 'content-range': `bytes ${start}-${end}/${st.size}`, 'content-length': end - start + 1 });
+    if (req.method === 'HEAD') { res.end(); return; }
+    createReadStream(file, { start, end }).pipe(res);
+    return;
+  }
+  res.writeHead(200, { ...headers, 'content-length': st.size });
+  if (req.method === 'HEAD') { res.end(); return; }
+  createReadStream(file).pipe(res);
+}
 
 export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: string } = {}): { router: Router; registry: Registry; server: Server; deps: Deps; jobs: Job[] } {
   const registry = new Registry();
@@ -150,16 +188,10 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
   const webRoot = opts.webRoot;
   const server = createServer(async (req, res) => {
     const path = (req.url ?? '/').split('?')[0];
-    if (webRoot && req.method === 'GET' && !path.startsWith('/v1/') && !path.startsWith('/hooks/')) {
+    if (webRoot && (req.method === 'GET' || req.method === 'HEAD') && !path.startsWith('/v1/') && !path.startsWith('/hooks/')) {
       const rel = normalize(path).replace(/^([/\\])+/, '');
       const file = join(webRoot, rel && !rel.startsWith('..') && extname(rel) ? rel : 'index.html');
-      try {
-        const data = await readFile(file);
-        res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream',
-          'cache-control': file.endsWith('index.html') ? 'no-cache' : 'public, max-age=31536000, immutable',
-          'x-content-type-options': 'nosniff', 'referrer-policy': 'same-origin' });
-        res.end(data);
-      } catch { res.writeHead(404).end(); }
+      await serveStatic(req, res, file, rel);
       return;
     }
     await router.handle(req, res);

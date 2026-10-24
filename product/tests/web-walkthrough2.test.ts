@@ -39,15 +39,15 @@ test('money rounds to the paisa before splitting rupees and paise: ₹1.995 is �
   assert.equal(formatInr(100000), '₹100');
 });
 
-test('voice samples: only complete, plain-file entries are used, and the recording date versions the address', async () => {
+test('voice samples: only complete, plain-file entries are used, at their plain address (the server revalidates them)', async () => {
   const { parseSamples } = await import('../web/src/samples.ts');
   const ok = { file: 'v2-flashlite.mp3', durationS: 11.6, text: 'Namaste Asha ji, main Riya bol rahi hoon.', recorded: '2026-10-25' };
   const got = parseSamples({ 'v2-flashlite': ok, a: { ...ok, file: '../secret.mp3' }, b: { ...ok, file: 'x.exe' }, c: { ...ok, text: ' ' }, d: { ...ok, recorded: 'yesterday' }, e: { ...ok, durationS: 0 }, f: null });
   assert.deepEqual(Object.keys(got), ['v2-flashlite']);
-  assert.deepEqual(got['v2-flashlite'].sources, [{ src: '/samples/v2-flashlite.mp3?v=2026-10-25', type: 'audio/mpeg' }]);
+  assert.deepEqual(got['v2-flashlite'].sources, [{ src: '/samples/v2-flashlite.mp3', type: 'audio/mpeg' }]);
   assert.equal(parseSamples({ s: { ...ok, durationS: undefined, duration: 9 } }).s.durationS, 9, '"duration" is read as well as "durationS"');
   const voice = parseSamples({ 'v2-mai': { file: 'mai-flash-teo.ogg', durationS: 8.2, text: 'Namaste.', recordedAt: '2026-10-24T09:15:02Z', combinationId: 'x', voice: 'teo', tts: 'mai' } });
-  assert.deepEqual(voice['v2-mai'].sources, [{ src: '/samples/mai-flash-teo.ogg?v=2026-10-24T09%3A15%3A02Z', type: 'audio/ogg; codecs=opus' }], 'the renderer\'s shape (Ogg, recordedAt) is read');
+  assert.deepEqual(voice['v2-mai'].sources, [{ src: '/samples/mai-flash-teo.ogg', type: 'audio/ogg; codecs=opus' }], 'the renderer\'s shape (Ogg, recordedAt) is read');
   assert.equal(voice['v2-mai'].recorded, '2026-10-24');
   // Several renditions, best first, for Safari: "files" wins over "file"; a bad entry in the list is dropped, not the sample.
   const multi = parseSamples({ s: { ...ok, file: 'old.mp3', files: [{ src: '/samples/a.ogg', type: 'audio/ogg; codecs=opus' }, { src: 'a.m4a' }, { src: '../x.mp3' }, { src: 'a.mp3', type: 'text/html' }] } }).s.sources;

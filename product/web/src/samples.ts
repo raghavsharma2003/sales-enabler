@@ -12,8 +12,8 @@ const WHEN = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?(\.\d+)?Z?)?$/;   // a dat
 const TYPE: Record<string, string> = { ogg: 'audio/ogg; codecs=opus', opus: 'audio/ogg; codecs=opus', mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', wav: 'audio/wav' };
 
 /** The manifest's entries that are safe and complete, keyed by stack id. An entry lists its renditions in "files"
- *  ([{src, type}], best first) or one "file" (kept for older manifests). The recording time versions each address, because
- *  the server caches static files for a year: a re-recorded clip gets a new address. */
+ *  ([{src, type}], best first) or one "file" (kept for older manifests). The server revalidates every sample and the
+ *  manifest (no-cache + ETag), so a re-recorded clip is picked up at its own address. */
 export function parseSamples(raw: unknown): Record<string, Sample> {
   const out: Record<string, Sample> = {};
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
@@ -32,7 +32,7 @@ export function parseSamples(raw: unknown): Record<string, Sample> {
       if (!FILE.test(name)) continue;
       const ext = name.split('.').pop()!.toLowerCase();
       const type = typeof r.type === 'string' && /^audio\/[a-z0-9.+-]+(;\s*codecs="?[a-z0-9.,\s-]+"?)?$/i.test(r.type) ? r.type : TYPE[ext];
-      sources.push({ src: `/samples/${name}?v=${encodeURIComponent(recorded)}`, type });
+      sources.push({ src: `/samples/${name}`, type });
     }
     if (!sources.length) continue;
     out[stackId] = { stackId, sources, durationS, text, recorded: recorded.slice(0, 10) };
@@ -43,10 +43,10 @@ export function parseSamples(raw: unknown): Record<string, Sample> {
 /** Whether this browser says it may play any of the renditions ("maybe" counts; only "" rules a type out). */
 export const playableIn = (sources: SampleSource[], canPlay: (type: string) => string) => sources.some(x => canPlay(x.type) !== '');
 
-/** The manifest, read fresh (a query string skips the year-long static cache). A missing or broken manifest means no samples. */
+/** The manifest (the server sends it no-cache, so this is always current). A missing or broken manifest means no samples. */
 export async function loadSamples(): Promise<Record<string, Sample>> {
   try {
-    const r = await fetch(`/samples/manifest.json?t=${Date.now()}`, { credentials: 'same-origin' });
+    const r = await fetch('/samples/manifest.json', { credentials: 'same-origin' });
     return r.ok ? parseSamples(await r.json()) : {};
   } catch { return {}; }
 }
