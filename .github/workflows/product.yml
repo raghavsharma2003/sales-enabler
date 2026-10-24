@@ -23,6 +23,12 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: npm }
       - run: npm ci
+      # The voice runtime's packages, so the tests that drive the real runtime (calls-live, safety-optout-e2e, the browser
+      # call flows) run in CI instead of skipping (the must-be audit, 2026-10-24).
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip, cache-dependency-path: product/voice/requirements.txt }
+      - name: voice runtime packages
+        run: pip install -r product/voice/requirements.txt
       - name: typecheck
         run: npx tsc -p product/tsconfig.json
       # The product tsconfig does not cover web/src (3d2b7a9 found a web type error that every gate had passed).
@@ -43,6 +49,12 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: npm }
       - run: npm ci
+      # The voice runtime's packages, so the tests that drive the real runtime (calls-live, safety-optout-e2e, the browser
+      # call flows) run in CI instead of skipping (the must-be audit, 2026-10-24).
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip, cache-dependency-path: product/voice/requirements.txt }
+      - name: voice runtime packages
+        run: pip install -r product/voice/requirements.txt
       - name: browser and Postgres 16
         run: |
           npm install --no-save playwright@1.56.1
