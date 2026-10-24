@@ -73,8 +73,8 @@ test('an ablation runs on DEV only, never TEST', { skip }, async () => {
   await assert.rejects(runBench({ pool, fake: true, split: 'test', promptVariant: 'r4-table', cross: false, limit: 1 }), /DEV only/);
 });
 
-test('the round 5 candidate arms: each keeps an objection rule and changes one thing', () => {
-  const cur = analysisPrompt(Q, 'current');
+test('the round 5 candidate arms: each keeps an objection rule and changes one thing against the kinds-first contract they were drawn from', () => {
+  const cur = analysisPrompt(Q, 'r5-kinds-first');
   const short = analysisPrompt(Q, 'r5-short-objection'), first = analysisPrompt(Q, 'r5-outcome-first'), note = analysisPrompt(Q, 'r5-moment-not-outcome');
   assert.match(short, /- objection: PERSON gives a reason against, or a complaint, also when they agree later\n/);
   assert.match(short, /KIND \(one entry per line that shows it\):/);
@@ -83,4 +83,12 @@ test('the round 5 candidate arms: each keeps an objection rule and changes one t
   assert.deepEqual(first.split('\n').sort(), cur.split('\n').sort(), 'the same lines as current, reordered');
   assert.match(note, /- a moment never decides or blocks the OUTCOME: a complaint that asks for a human is an objection AND the needs-human VALUE/);
   assert.equal(note.replace(/\n- a moment never decides or blocks the OUTCOME[^\n]*/, ''), cur, 'current plus that one line');
+});
+
+test('since r6 the shipped contract is the outcome-first arm; the kinds-first one stays named for A/B', () => {
+  assert.equal(analysisPrompt(Q, 'current'), analysisPrompt(Q, 'r5-outcome-first'));
+  assert.notEqual(analysisPrompt(Q, 'current'), analysisPrompt(Q, 'r5-kinds-first'));
+  const p = analysisPrompt(Q);
+  assert.ok(p.indexOf('OUTCOME: question') < p.indexOf('KIND ('), 'the product sends OUTCOME first');
+  assert.match(p, /Every complaining PERSON line is an objection, even when the PERSON agrees later/, 'and keeps the objection rule');
 });

@@ -1,0 +1,26 @@
+TASK: classify one phone call between an AI agent (AGENT) and a person (PERSON). Report what was said. Never grade.
+OUTPUT: one JSON object:
+{"points":[{"claim":string,"quote":string}],"moments":[{"kind":KIND,"quote":string,"note":string}],"reasonCode":CODE|null,
+ "outcome":{"value":VALUE,"quote":string,"confidence":number}|null,"forget":{"quote":string}|null}
+QUOTE: copied character for character from ONE transcript line, without the speaker label. Anything without such a quote is discarded.
+OUTCOME: question "What did the person decide on this call?"; VALUE one of ["agreed","callback","not_interested","needs_human","wrong_person"]
+- decided by the PERSON's words; quote the PERSON line that decides it
+OUTCOME shapes: PERSON line -> the VALUE that names it (when one does):
+- agrees -> agreeing VALUE
+- refuses, not interested -> refusing VALUE
+- is not the person called (relative, colleague, wrong number) -> wrong-person VALUE; never null
+- complains AND asks for a human, person or manager -> needs-human VALUE; never null
+- asks never to be called again -> refusing VALUE; never the call-later VALUE (an opt-out is not a callback)
+- asks to be called at another time -> call-later VALUE
+- null: no shape above; or cannot follow the language; or hangs up before the question; or distress, crisis (distress is not asking for a human)
+- confidence: 0..1, how clearly that line decides it
+KIND (one entry per PERSON line that shows it, whatever the OUTCOME; one line can show two kinds):
+- commitment: PERSON agrees to do something (pay, come, confirm, buy, renew, fill, send). Every agreeing PERSON line is a commitment.
+- objection: PERSON gives a reason against, complains or raises a concern. Every complaining PERSON line is an objection, even when the PERSON agrees later: then list both, the objection and the commitment.
+- question: PERSON asks something
+- opt_out: PERSON asks not to be called again
+- callback_request: PERSON asks to be called at another time
+- confusion: PERSON does not understand or cannot follow the language
+- laughter: PERSON laughs
+CODE (or null): CONV_GOAL_DONE = The agenda was completed; CONV_CALLBACK = The person asked to be called back; CONV_NOT_INTERESTED = The person said they are not interested; CONV_WRONG_PERSON = Someone other than the intended person answered; CONV_LANGUAGE_MISMATCH = The person could not follow the language; CONV_CONFUSED = The person was confused by what she said; CONV_OBJECTION_UNRESOLVED = An objection was raised and not resolved; CONV_COMPLAINT = The person complained about the call or the business; CONV_NEEDS_HUMAN = The person needs a human to finish this; CONV_INCOMPLETE = The call ended before the agenda was done
+FORGET: PERSON asks the business to forget or delete what it knows about them: quote that line. Otherwise null.

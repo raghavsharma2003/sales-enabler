@@ -1385,6 +1385,42 @@
       "type": "string",
       "maxLength": 500,
       "pattern": "^https:\\/\\/"
+     },
+     "languageRoutes": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "language": {
+         "type": "string",
+         "enum": [
+          "hi-IN",
+          "en-IN",
+          "hinglish",
+          "ta-IN",
+          "te-IN",
+          "kn-IN",
+          "ml-IN",
+          "mr-IN",
+          "gu-IN",
+          "bn-IN",
+          "pa-IN",
+          "or-IN"
+         ]
+        },
+        "agentVersionId": {
+         "type": "string",
+         "format": "uuid"
+        }
+       },
+       "required": [
+        "language",
+        "agentVersionId"
+       ]
+      },
+      "maxItems": 11,
+      "description": "optional: for contacts who prefer a language, the published agent version (or language version) that calls them"
      }
     },
     "required": [
@@ -6630,6 +6666,92 @@
     "required": [
      "agentId"
     ]
+   }
+  },
+  {
+   "name": "version.language_variant",
+   "risk": "external",
+   "summary": "Publish the agent in another language, for the campaign contacts who prefer it",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "language": {
+      "type": "string",
+      "enum": [
+       "hi-IN",
+       "en-IN",
+       "hinglish",
+       "ta-IN",
+       "te-IN",
+       "kn-IN",
+       "ml-IN",
+       "mr-IN",
+       "gu-IN",
+       "bn-IN",
+       "pa-IN",
+       "or-IN"
+      ]
+     },
+     "fromVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "stackId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+     },
+     "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "ears": {
+        "type": "string",
+        "maxLength": 60
+       },
+       "brain": {
+        "type": "string",
+        "maxLength": 60
+       },
+       "voice": {
+        "type": "string",
+        "maxLength": 60
+       },
+       "s2s": {
+        "type": "string",
+        "maxLength": 60
+       },
+       "gatedEars": {
+        "type": "boolean"
+       }
+      },
+      "required": []
+     },
+     "voiceId": {
+      "type": "string",
+      "maxLength": 80
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "agentId",
+     "language"
+    ],
+    "description": "Make the agent speak another language for the contacts who prefer it: same facts and agenda, that language first. Give stackId when the agent's own stack does not support the language."
    }
   },
   {

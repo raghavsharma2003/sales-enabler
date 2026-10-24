@@ -30,7 +30,11 @@ type Pass = Ok | { error: string; model?: string; reply?: LlmReply };
 //  rule; the rule fixed objection recall): r5-short-objection: the table, the old KIND header, a one-clause objection rule.
 //  r5-outcome-first: 2cdf64b's lines with OUTCOME before KIND. r5-moment-not-outcome: 2cdf64b's lines plus one line saying
 //  a moment never decides or blocks the OUTCOME.
-export const PROMPT_VARIANTS = ['current', 'r4-table', 'r3-stance', 'no-outcome-rules', 'r5-short-objection', 'r5-outcome-first', 'r5-moment-not-outcome'] as const;
+//  Shipped (r6, decision in research/2026-10-24/benches-r6): 'current' IS r5-outcome-first (OUTCOME before KIND), the
+//  workspace's client rule inside the OUTCOME block. 'r5-kinds-first' is the contract current named before r6 (KIND
+//  first), kept for A/B. 'r5-outcome-first' stays as a name for the shipped contract so r6's commands still run.
+//  scripts/analysis-bench/contracts/r6-outcome-first.bench.txt is the prompt r6 measured; a test keeps them identical.
+export const PROMPT_VARIANTS = ['current', 'r5-kinds-first', 'r4-table', 'r3-stance', 'no-outcome-rules', 'r5-short-objection', 'r5-outcome-first', 'r5-moment-not-outcome'] as const;
 export type PromptVariant = typeof PROMPT_VARIANTS[number];
 let promptVariant: PromptVariant = 'current';
 /** Bench and tests only. */
@@ -68,6 +72,7 @@ export function analysisPrompt(o: { question: string | null; values: string[]; i
     '- confusion: PERSON does not understand or cannot follow the language',
     '- laughter: PERSON laughs',
   ];
+  const outcomeFirst = variant === 'current' || variant === 'r5-outcome-first';
   const outcome = o.question ? [
     `OUTCOME: question "${o.question}"; VALUE one of ${JSON.stringify(o.values)}`,
     '- decided by the PERSON\'s words; quote the PERSON line that decides it',
@@ -75,16 +80,17 @@ export function analysisPrompt(o: { question: string | null; values: string[]; i
     ...(variant === 'r5-moment-not-outcome' ? ['- a moment never decides or blocks the OUTCOME: a complaint that asks for a human is an objection AND the needs-human VALUE'] : []),
     '- confidence: 0..1, how clearly that line decides it',
   ] : ['OUTCOME: always null.'];
+  // The workspace's own outcome rule travels with the OUTCOME block, wherever the block sits (as it always followed it).
+  if (o.instructions) outcome.push(`OUTCOME, client rule: ${o.instructions}`);
   return [
     'TASK: classify one phone call between an AI agent (AGENT) and a person (PERSON). Report what was said. Never grade.',
     'OUTPUT: one JSON object:',
     '{"points":[{"claim":string,"quote":string}],"moments":[{"kind":KIND,"quote":string,"note":string}],"reasonCode":CODE|null,',
     ' "outcome":{"value":VALUE,"quote":string,"confidence":number}|null,"forget":{"quote":string}|null}',
     'QUOTE: copied character for character from ONE transcript line, without the speaker label. Anything without such a quote is discarded.',
-    ...(variant === 'r5-outcome-first' ? [...outcome, ...kinds] : kinds),
+    ...(outcomeFirst ? [...outcome, ...kinds] : kinds),
     `CODE (or null): ${codes.map(r => `${r.code} = ${r.label}`).join('; ')}`,
-    ...(variant === 'r5-outcome-first' ? [] : outcome),
-    ...(o.instructions ? [`OUTCOME, client rule: ${o.instructions}`] : []),
+    ...(outcomeFirst ? [] : outcome),
     'FORGET: PERSON asks the business to forget or delete what it knows about them: quote that line. Otherwise null.',
   ].join('\n');
 }
