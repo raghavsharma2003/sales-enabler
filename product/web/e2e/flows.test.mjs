@@ -845,6 +845,40 @@ test('Start from a sample: a synthetic pack goes through the real check and rece
   assert.ok(due.rows[0].n >= 10, 'the due dates the agent says came in as details');
 });
 
+test('Payment status: turn on a gateway, its signed webhook stops calls to the person who paid, and the screen says who and why', async t => {
+  const kinds = (await tool('integration.kinds')).result.kinds.map(k => k.id);
+  if (!kinds.includes('razorpay')) return t.skip('the razorpay integration kind is not in workspace yet');
+  const secret = 'whsec-e2e-synthetic-' + Date.now();
+  const st = (await tool('integration.stage_secrets', { kind: 'razorpay', secrets: { webhook_secret: secret } })).result;
+  const p = await tool('integration.connect', { kind: 'razorpay', name: 'Razorpay (synthetic)', stashId: st.stashId });
+  const ok = await (await ctx.request.post(`${BASE}/v1/actions/${p.actionId}/decide`, { data: { approve: true } })).json();
+  assert.equal(ok.status, 'confirmed', JSON.stringify(ok));
+  const integrationId = ok.result.id;
+  // People to match: the synthetic insurance pack (policy numbers SH-2026-…).
+  const up = (await tool('source.sample.load', { packId: 'insurance-renewal' })).result;
+  await tool('source.commit', { uploadId: up.uploadId });
+  await page.goto(`${BASE}/contacts/import?from=payments`);
+  const card = page.locator('.card', { hasText: 'Razorpay: Razorpay (synthetic)' });
+  await card.getByLabel('Contact detail the payment carries').fill('Policy number');
+  await card.getByRole('button', { name: 'Turn on' }).click();
+  await page.getByText('Payment status is on.').waitFor();
+  await card.getByText(`/hooks/payments/${integrationId}`, { exact: false }).waitFor();
+  // Razorpay's payment_link.paid, signed as Razorpay signs it.
+  const at = Math.floor(Date.now() / 1000);
+  const body = JSON.stringify({ entity: 'event', event: 'payment_link.paid', created_at: at, payload: {
+    payment_link: { entity: { id: 'plink_E2E', reference_id: 'SH-2026-40110', amount: 1425000, status: 'paid', notes: null } },
+    payment: { entity: { id: 'pay_E2E' + at, amount: 1425000, currency: 'INR', status: 'captured', notes: [], contact: '+919000000099', created_at: at } } } });
+  const sig = createHmac('sha256', secret).update(body).digest('hex');
+  const r = await ctx.request.post(`${BASE}/hooks/payments/${integrationId}`, { data: body, headers: { 'content-type': 'application/json', 'x-razorpay-signature': sig } });
+  assert.equal((await r.json()).status, 'matched');
+  const forged = await ctx.request.post(`${BASE}/hooks/payments/${integrationId}`, { data: body, headers: { 'content-type': 'application/json', 'x-razorpay-signature': '00' } });
+  assert.equal(forged.status(), 401, 'a forged delivery is refused');
+  await page.reload();
+  const recent = page.locator('.card', { hasText: 'Payments in the last 30 days' });
+  await recent.getByText('Matched (SH-2026-40110)', { exact: false }).waitFor();
+  assert.match(await recent.innerText(), /₹14,250/);
+});
+
 test('Integrations: a service can be connected from Settings, and the credentials never come back', async () => {
   const SECRET = 'hs-test-token-4f9a1c7e';
   await page.goto(`${BASE}/settings/integrations`);

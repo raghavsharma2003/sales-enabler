@@ -233,6 +233,8 @@ export type ToolName =
   | "source.hook_secret.rotate"
   | "source.list"
   | "source.map"
+  | "source.payments.list"
+  | "source.payments.setup"
   | "source.receipt"
   | "source.sample.list"
   | "source.sample.load"
@@ -1738,6 +1740,17 @@ export interface ToolInput {
     previewRows?: number;
     agentId?: string;
   };
+  /** Payment status sources (Razorpay, Cashfree, PayU), what they match on, and the payments of the last 30 days: matched to a person, or why not (read) */
+  "source.payments.list": Record<string, never>;
+  /** Turn on payment status from a connected Razorpay, Cashfree or PayU: which contact detail payments match on, and an optional verified outcome (draft) */
+  "source.payments.setup": {
+    integrationId: string;
+    matchKeys: string[];
+    outcome?: {
+      definitionId: string;
+      value: string;
+    };
+  };
   /** Read an import receipt: counts and the reason for every row not imported or not callable (read) */
   "source.receipt": {
     receiptId: string;
@@ -2334,6 +2347,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "source.hook_secret.rotate": { risk: "policy", needsApproval: true },
   "source.list": { risk: "read", needsApproval: false },
   "source.map": { risk: "draft", needsApproval: false },
+  "source.payments.list": { risk: "read", needsApproval: false },
+  "source.payments.setup": { risk: "draft", needsApproval: false },
   "source.receipt": { risk: "read", needsApproval: false },
   "source.sample.list": { risk: "read", needsApproval: false },
   "source.sample.load": { risk: "draft", needsApproval: false },

@@ -9,6 +9,7 @@ import { registerAudienceTools } from './audiences.ts';
 import { registerContactTools } from './contacts.ts';
 import { crmSyncJob, registerCrmTools } from './crm-tools.ts';
 import { registerSampleTools } from './sample-tools.ts';
+import { paymentRetentionJob, registerPaymentRoutes, registerPaymentTools } from './payments.ts';
 import { registerRetentionTools, retentionJob } from './retention.ts';
 import { registerSourceRoutes, registerSourceTools } from './sources.ts';
 
@@ -21,12 +22,14 @@ export const module: Module = {
     registerRetentionTools(registry);
     registerCrmTools(registry);
     registerSampleTools(registry);
+    registerPaymentTools(registry);
   },
   routes(router, deps) {
     registerSourceRoutes(router, deps);
+    registerPaymentRoutes(router, deps);
   },
   jobs() {
-    return [retentionJob, crmSyncJob];
+    return [retentionJob, crmSyncJob, paymentRetentionJob];
   },
 };
 
@@ -36,3 +39,5 @@ export { signHook } from './sources.ts';
 export { AGE_KEY_SYNONYMS, canonicalAgeKey, type AgeKey } from './mapping.ts';
 // For campaigns' ticket builder: a row's voice and first_message, applied inside the agent's rules (disclosure untouched).
 export { rowOverrides, checkVoice, checkFirstMessage, OVERRIDE_KEYS, type OverrideKey } from './overrides.ts';
+// For campaigns' dial gate (G4, 'already_paid'): did this person pay after their record was last imported?
+export { paidSinceImport } from './payments.ts';

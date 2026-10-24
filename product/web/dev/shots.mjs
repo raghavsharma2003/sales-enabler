@@ -32,6 +32,7 @@ const screens = (id) => [
   ['contacts-import-sample', '/contacts/import?from=sample', { after: async (p) => {
     await p.getByLabel('Sample list').selectOption({ label: 'Loan EMI reminders' }); await p.getByRole('button', { name: 'Check this sample' }).click();
     await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); await p.getByText(/^Loaded \d+ rows/).scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
+  ['contacts-import-payments-empty', '/contacts/import?from=payments', { after: async (p) => { await p.getByText('No payment gateway is connected').waitFor(); } }],
   // CRM import: Zoho is not connected (the empty state); HubSpot is connected to a local fake CRM (VP_CRM_FAKE_URL on the server).
   ['contacts-import-crm-empty', '/contacts/import?from=zoho_crm', { after: async (p) => { await p.getByText('Zoho CRM is not connected').waitFor(); } }],
   ['contacts-import-hubspot', '/contacts/import?from=hubspot', { before: async (p) => { await connectHubspot(p); }, after: async (p) => {

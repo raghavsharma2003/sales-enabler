@@ -131,6 +131,8 @@
   "source.crm.pull",
   "source.crm.sources",
   "source.map",
+  "source.payments.list",
+  "source.payments.setup",
   "source.sample.list",
   "source.sample.load",
   "source.sync",

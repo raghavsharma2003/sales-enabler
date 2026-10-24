@@ -9,7 +9,7 @@ import { buildApp } from '../server/app.ts';
 import type { Registry, Actor } from '../server/tools.ts';
 import { module as intake } from '../server/modules/intake/index.ts';
 import { module as agents } from '../server/modules/agents/index.ts';
-import { samplePacks, SAMPLE_ROWS } from '../server/modules/intake/samples.ts';
+import { samplePacks, SAMPLE_ROWS, testRow } from '../server/modules/intake/samples.ts';
 import { normaliseIndianPhone } from '../shared/phone.ts';
 import { TEMPLATES } from '../server/modules/agents/templates.ts';
 
@@ -56,6 +56,10 @@ test('sample packs: seven synthetic lists, one per starter agent; numbers only i
     assert.ok(col('Call consent').includes(''), `${p.id}: one consent left unknown`);
     assert.ok(new Set(col('Language')).size >= 4, `${p.id}: mixed languages`);
     assert.ok(new Set(col('City')).size >= 8, `${p.id}: people from across regions`);
+    // The member's test row never shares a record id with a pack person (a payment for one must not match the other).
+    const t = testRow(p, 'Me', '+919000000099');
+    if (['insurance-renewal', 'emi-reminder', 'cod-confirmation'].includes(p.id))      // the packs whose first fact is a record id
+      assert.ok(!p.rows.some(r => r[4] === t[4]), `${p.id}: ${p.headers[4]} "${t[4]}" (the record id) is only mine`);
   }
 });
 

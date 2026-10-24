@@ -3,7 +3,7 @@
 // 9000000099 only (each pack has its own twelve), names come from across India, and each pack has the per-contact facts
 // its agent says, a duplicate, an opt-out or two, a missing consent and mixed languages. Nothing here is real data.
 
-export interface SamplePack { id: string; label: string; templateId: string; about: string; headers: string[]; rows: string[][] }
+export interface SamplePack { id: string; label: string; templateId: string; about: string; headers: string[]; rows: string[][]; testFacts: string[] }
 
 // Made-up people across regions, with the language they would most likely want.
 const PEOPLE: [string, string, string][] = [
@@ -58,14 +58,17 @@ export function samplePacks(today = new Date()): SamplePack[] {
     }
     // The duplicate: the third person again, the number written another way, a fresher detail.
     const dup = [...rows[2]]; dup[1] = phone(k * 12 + 2, 3 + k + 1); rows.push(dup);
-    return { id: s.id, label: s.label, templateId: s.templateId, about: s.about, headers, rows };
+    // The member's own test row gets its own record ids (a policy, loan or order no person in the pack has), so a payment or
+    // a lookup for a pack person never also matches the member.
+    return { id: s.id, label: s.label, templateId: s.templateId, about: s.about, headers, rows, testFacts: s.fact(SAMPLE_ROWS + 19, today) };
   });
 }
 
-/** One row for the member's own verified phone, with the facts of the pack's first person so the call has something to say. */
+/** One row for the member's own verified phone, with facts of its own (shaped like the pack's) so the call has something to say. */
 export function testRow(pack: SamplePack, name: string, e164: string): string[] {
   const r = [...pack.rows[0]];
   r[0] = name; r[1] = e164; r[pack.headers.indexOf('Call consent')] = 'yes'; r[pack.headers.indexOf('Do not call')] = '';
+  pack.testFacts.forEach((v, k) => { r[4 + k] = v; });          // after Name, Mobile, Language, City
   return r;
 }
 

@@ -139,6 +139,16 @@ export const crmLists = async (integrationId: string) => arr<{ id: string; name:
 export const crmPull = (integrationId: string, listId: string, sourceId?: string) => run<CrmPull>('source.crm.pull', { integrationId, listId, ...(sourceId ? { sourceId } : {}) });
 export const crmSources = async (kind: CrmKind) => arr<CrmSource>((await run<{ sources: any[] }>('source.crm.sources', { kind })).sources);
 
+// ---- payment status from the business's gateway (Razorpay, Cashfree, PayU) ----
+export type PayProvider = 'razorpay' | 'cashfree' | 'payu';
+export interface PaySource { integrationId: string; provider: PayProvider; label: string; name: string | null; matchKeys: string[]; outcomeValue: string | null; hookPath: string }
+export interface PayRow { provider: PayProvider; status: 'matched' | 'unmatched' | 'ambiguous'; reference: string | null; amountInrMilli: number | null; paidAt: string; contactId: string | null; name: string | null; outcome: { recorded: boolean; why?: string } | null }
+export const paymentSources = () => run<{ sources: PaySource[]; payments: PayRow[] }>('source.payments.list', {});
+export async function paymentGateways(): Promise<{ id: string; name: string; kind: PayProvider }[]> {
+  return arr<any>((await run<{ integrations: unknown[] }>('integration.list', {})).integrations).filter(i => ['razorpay', 'cashfree', 'payu'].includes(i.kind) && i.status === 'connected').map(i => ({ id: i.id, name: i.name, kind: i.kind }));
+}
+export const outcomeDefs = async () => arr<{ id: string; name: string; allowedValues: string[] }>((await run<{ definitions: any[] }>('outcome.list', {})).definitions);
+
 // ---- synthetic sample lists, one per starter agent ----
 export interface SamplePackInfo { id: string; label: string; templateId: string; about: string; rows: number; columns: string[] }
 export const samplePacks = () => run<{ packs: SamplePackInfo[]; testPhone: string | null }>('source.sample.list', {});

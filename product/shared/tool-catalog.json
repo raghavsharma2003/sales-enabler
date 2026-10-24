@@ -8712,6 +8712,79 @@
    }
   },
   {
+   "name": "source.payments.list",
+   "risk": "read",
+   "summary": "Payment status sources (Razorpay, Cashfree, PayU), what they match on, and the payments of the last 30 days: matched to a person, or why not",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "source.payments.setup",
+   "risk": "draft",
+   "summary": "Turn on payment status from a connected Razorpay, Cashfree or PayU: which contact detail payments match on, and an optional verified outcome",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "matchKeys": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "description": "a contact detail's name, e.g. policy_number, loan or order; format checked by the server"
+      },
+      "minItems": 1,
+      "maxItems": 5
+     },
+     "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "definitionId": {
+        "type": "string",
+        "format": "uuid"
+       },
+       "value": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 60
+       }
+      },
+      "required": [
+       "definitionId",
+       "value"
+      ]
+     }
+    },
+    "required": [
+     "integrationId",
+     "matchKeys"
+    ],
+    "description": "matchKeys: the contact details a payment reference is matched against (e.g. policy_number). outcome: optionally, a verified outcome for a recent call of the person who paid."
+   }
+  },
+  {
    "name": "source.receipt",
    "risk": "read",
    "summary": "Read an import receipt: counts and the reason for every row not imported or not callable",

@@ -108,6 +108,14 @@
       "risk": "draft"
     },
     {
+      "id": "source.payments.list",
+      "risk": "read"
+    },
+    {
+      "id": "source.payments.setup",
+      "risk": "draft"
+    },
+    {
       "id": "source.receipt",
       "risk": "read"
     },
@@ -134,7 +142,8 @@
   ],
   "routes": [
     "POST /v1/uploads/contacts (rawBody, 20 MB: one request or ordered parts; JSON over a cookie, text/csv for API keys)",
-    "POST /hooks/contacts/:sourceId (HMAC-SHA256 over timestamp + '.' + exact body bytes, 300 s skew, idempotent on eventId)"
+    "POST /hooks/contacts/:sourceId (HMAC-SHA256 over timestamp + '.' + exact body bytes, 300 s skew, idempotent on eventId)",
+    "POST /hooks/payments/:integrationId (rawBody, 256 KB: Razorpay X-Razorpay-Signature hex HMAC-SHA256 of the body; Cashfree x-webhook-signature Base64 HMAC-SHA256 of timestamp+body, 5-minute window; PayU form POST with the reverse SHA-512 hash)"
   ],
   "migrations": [
     "product/db/migrations/0101_intake.sql",
@@ -145,18 +154,20 @@
     "product/db/migrations/0106_intake_xlsx.sql",
     "product/db/migrations/0107_intake_crm.sql",
     "product/db/migrations/0108_intake_crm_budget.sql",
-    "product/db/migrations/0109_intake_test_contact.sql"
+    "product/db/migrations/0109_intake_test_contact.sql",
+    "product/db/migrations/0110_intake_payments.sql"
   ],
   "tests": {
-    "passed": 42,
-    "total": 42,
+    "passed": 47,
+    "total": 47,
     "files": [
       "product/tests/intake.test.ts (19)",
       "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)",
       "product/tests/intake-xlsx.test.ts (8)",
       "product/tests/intake-crm.test.ts (5)",
       "product/tests/intake-salesforce.test.ts (6)",
-      "product/tests/intake-samples.test.ts (3)"
+      "product/tests/intake-samples.test.ts (3)",
+      "product/tests/intake-payments.test.ts (5)"
     ],
     "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
   },
@@ -188,7 +199,8 @@
     "CRM contact import, read only: HubSpot lists (lists/search, memberships/join-order, contacts/batch/read at 100) and Zoho CRM views (token refresh, settings/custom_views, Contacts by cvid with page_token). A pull is an upload on a crm source, mapped by source.map (agent contract included) and saved by source.commit; source.sync re-imports with the last mapping; idempotent on the CRM id (intake_crm_record keeps a hash of the number): unchanged records skipped, a changed number flagged and left out. Consent and DND only from CRM fields that say so; otherwise unknown. Docs used: research/2026-10-24/crm-import/README.md.",
     "Web: Contacts > Import > From HubSpot / From Zoho CRM (lazy chunk import-crm, 2.4 KB gzip): pick a list or view, the same column matching and verdicts as a file (shared import-review.tsx), save, then a timer (off, 1, 6, 24 h) and Sync now; a failed sync shows in plain words; an empty state links to Settings > Integrations. Browser flow against a local fake CRM; screenshots contacts-import-hubspot*, contacts-import-crm-empty at 1440 and 390; axe screens added.",
     "Salesforce contact import, read only: Contact and Lead list views (listviews, list view describe for the view's own SOQL, object describe for field-level security, COUNT() then query with nextRecordsUrl). Per-org API budget (1,000 calls per rolling 24 h unless set with source.crm.budget.set; never past 90% of the org's limit per Sforce-Limit-Info): a pull counts first, re-checks before every page and stops with nothing imported; the calls used are on the receipt (converted.apiCalls). Fields the user may not read get no column and are named (converted.unreadable). DoNotCall is an opt-out. CRM reads run in prepare, outside the transaction. Web: From Salesforce tab and API budget card; the preview counts valid numbers that will not be called. Tests intake-salesforce 6/6; e2e flow and axe; screenshots contacts-import-salesforce at 1440 and 390.",
-    "Sample packs (samples.ts, sample-tools.ts): seven synthetic lists, one per starter agent (insurance renewal, EMI reminder, COD confirmation, admissions follow-up, appointment reminder, solar lead qualification, AC service feedback). Numbers 9000000000-9000000099 only, disjoint per pack; names across regions; mixed languages; the per-contact facts each agent says (dates relative to the load day); a duplicate, opt-outs and a missing consent. source.sample.load makes an ordinary CSV upload, so the preview, verdicts and receipt are the real ones. includeMe adds the member's own verified phone; saving marks it contact.test_member_id (re-checked against verified_test_phone at commit; no file or CRM column can set it). Web: From a sample tab (lazy chunk import-sample), e2e flow, axe screen, screenshots contacts-import-sample at 1440 and 390."
+    "Sample packs (samples.ts, sample-tools.ts): seven synthetic lists, one per starter agent (insurance renewal, EMI reminder, COD confirmation, admissions follow-up, appointment reminder, solar lead qualification, AC service feedback). Numbers 9000000000-9000000099 only, disjoint per pack; names across regions; mixed languages; the per-contact facts each agent says (dates relative to the load day); a duplicate, opt-outs and a missing consent. source.sample.load makes an ordinary CSV upload, so the preview, verdicts and receipt are the real ones. includeMe adds the member's own verified phone; saving marks it contact.test_member_id (re-checked against verified_test_phone at commit; no file or CRM column can set it). Web: From a sample tab (lazy chunk import-sample), e2e flow, axe screen, screenshots contacts-import-sample at 1440 and 390.",
+    "Payment status (payments.ts): Razorpay (payment.captured, order.paid, payment_link.paid), Cashfree (PAYMENT_SUCCESS) and PayU (status=success) webhooks, each verified with the gateway's own scheme before anything is read; kept once per gateway payment id; matched to exactly one live contact by the record key the workspace names (reference_id, receipt, notes, order_id, order_tags, customer_id, txnid, udf1-5), never by the payer's phone; ambiguous and unmatched are kept 30 days. paidSinceImport() for campaigns' G4 ('already_paid'): a payment counts unless the record was observed more than a day after it. Optional verified outcome on the person's latest call in the 14 days before paying (calls' recordVerified). Tools source.payments.setup / source.payments.list; web Contacts > Import > Payments (lazy chunk). Docs: research/2026-10-24/payment-webhooks/README.md."
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -253,7 +265,8 @@
       "what": "INTEGRATION_KINDS: set usedBy for hubspot and zoho_crm to 'Imports contacts' (the label now reads 'Stored, not used yet')."
     },
     "workspace: salesforce usedBy 'Imports contacts' in integrations.ts and SET_UP link /contacts/import?from=salesforce (requested 2026-10-24)",
-    "telephony: agree the staging allowlist on contact.test_member_id plus verified_test_phone at dial time (proposed 2026-10-24)"
+    "telephony: agree the staging allowlist on contact.test_member_id plus verified_test_phone at dial time (proposed 2026-10-24)",
+    "workspace: razorpay / cashfree / payu integration kinds (agreed; the payment e2e flow skips until they land). campaigns: wire paidSinceImport into G4 as 'already_paid' for campaign, api and retry attempts (agreed)"
   ],
   "jobs": [
     "intake.retention (daily 03:10 IST)",
@@ -262,7 +275,8 @@
   "cross_module_imports": [
     "forgetContactMemory from ../memory/index.ts and cancelContactAttempts from ../campaigns/index.ts: the sanctioned data functions (integrator, 2026-10-21), so DPDP erasure forgets memory and cancels queued attempts inside its own transaction. Everything else goes through the registry.",
     "shapeLint from ../agents/lint.ts (pure): a row's first_message passes the same recitable-line lint as the agent's opening.usefulFirst.",
-    "integrationSecretsById from ../workspace/integrations.ts (a data function on the caller's Queryable): the stored CRM credentials, decrypted only for the pull."
+    "integrationSecretsById from ../workspace/integrations.ts (a data function on the caller's Queryable): the stored CRM credentials, decrypted only for the pull.",
+    "intake/payments.ts imports recordVerified from calls/verified.ts (its documented door for integrations) and integrationSecretsById from workspace/integrations.ts"
   ],
   "suppression_sources": {
     "in_call": "contact.suppress_after_opt_out (evidence: conversationId, campaignId, quote)",
