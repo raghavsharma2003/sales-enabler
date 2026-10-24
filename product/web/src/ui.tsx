@@ -35,8 +35,9 @@ export function Btn({ kind = 'secondary', size = 'md', busy, icon, children, cla
 
 // ---------- chips ----------
 export type Tone = 'neutral' | 'leaf' | 'brick' | 'marigold' | 'peacock' | 'terra';
-export function Chip({ tone = 'neutral', children, icon, title }: { tone?: Tone; children: ReactNode; icon?: ReactNode; title?: string }) {
-  return <span className={cx('chip', `chip-${tone}`)} title={title}>{icon}{children}</span>;
+/** `wrap` lets a sentence-length chip break onto a second line instead of widening a phone page. */
+export function Chip({ tone = 'neutral', children, icon, title, wrap }: { tone?: Tone; children: ReactNode; icon?: ReactNode; title?: string; wrap?: boolean }) {
+  return <span className={cx('chip', `chip-${tone}`, wrap && 'chip-wrap')} title={title}>{icon}{children}</span>;
 }
 const GRADE: Record<string, [string, Tone]> = {
   measured: ['Measured', 'leaf'], computed: ['Computed', 'peacock'], vendor: ['Vendor says', 'marigold'],

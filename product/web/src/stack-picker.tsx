@@ -237,7 +237,7 @@ function StackCard({ s, selected, isDefault, price, sample, busy, onPick }: { s:
       <p className="small">{s.note}</p>
       <dl className="kv small">
         <div><dt>Reply gap</dt><dd><Figure m={s.replyGap} /><details className="how"><summary>How we know</summary><p>{s.replyGap.source}</p></details></dd></div>
-        {s.gate && <div><dt>Speed and turn-taking</dt><dd><Chip tone={s.gate.state === 'meets' ? 'leaf' : s.gate.state === 'not_yet' ? 'marigold' : 'neutral'}>{s.gate.label}</Chip>
+        {s.gate && <div><dt>Speed and turn-taking</dt><dd><Chip wrap tone={s.gate.state === 'meets' ? 'leaf' : s.gate.state === 'not_yet' ? 'marigold' : 'neutral'}>{s.gate.label}</Chip>
           <details className="how"><summary>How we know</summary><p>{s.gate.detail} The target is a median reply within {(s.gate.target.replyGapP50Ms / 1000).toFixed(1)} s and at most {Math.round(s.gate.target.cutInRateMax * 100)}% of turns where she talks over the caller. Calls still run on a stack that does not meet it.</p></details></dd></div>}
         <div><dt>Provider cost per minute</dt><dd><PriceView price={price} /></dd></div>
         {s.parts.map(c => <div key={c.part}><dt>{PART_WORD[c.part]}</dt><dd>{c.label}<span className="small muted"> · {c.processedIn}</span></dd></div>)}

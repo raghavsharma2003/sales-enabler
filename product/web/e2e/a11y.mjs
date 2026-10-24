@@ -51,6 +51,14 @@ export async function audit(browser, base, storageState, only = null, colorSchem
       // WCAG 1.4.10 (reflow): a phone page wider than the screen zooms out, and taps land on the wrong element. axe does not check it.
       const wide = tag === 'm' && await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (wide > 1) violations.push({ id: 'page-scrolls-sideways', impact: 'serious', help: `The page is ${wide}px wider than the screen`, n: 1, targets: ['html'] });
+      // A machine without the app's fonts (the CI runner) falls back to DejaVu Sans, which is wider than Inter: measured
+      // again in it, so a page that fits here but not there fails here too (the voice stack page, 12px, 2026-10-24).
+      else if (tag === 'm') {
+        const style = await page.addStyleTag({ content: '*{font-family:"DejaVu Sans",sans-serif !important} code,.mono,code *,.mono *{font-family:"DejaVu Sans Mono",monospace !important}' });
+        const fallback = await page.evaluate(() => new Promise(r => requestAnimationFrame(() => r(document.documentElement.scrollWidth - document.documentElement.clientWidth))));
+        await style.evaluate(e => e.remove());
+        if (fallback > 1) violations.push({ id: 'page-scrolls-sideways', impact: 'serious', help: `The page is ${fallback}px wider than the screen in the fallback font (DejaVu Sans)`, n: 1, targets: ['html'] });
+      }
       out.push({ screen: name, size: tag, scheme: colorScheme, violations });
     }
     await ctx.close();
