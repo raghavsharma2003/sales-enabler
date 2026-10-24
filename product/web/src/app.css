@@ -13,6 +13,8 @@ body.noscroll { overflow: hidden; }
 .serif, h1.serif { font-family: "Fraunces", "Tiro Devanagari Hindi", "Noto Serif Devanagari", "Noto Serif", "DejaVu Serif", Georgia, serif; font-weight: 600; letter-spacing: -0.01em; }
 code, .mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; }
 .tnum { font-variant-numeric: tabular-nums; }
+.skiplink { position: absolute; left: 8px; top: -60px; z-index: 100; padding: 10px 14px; border-radius: 6px; background: var(--forest); color: var(--on-forest); font-weight: 600; }
+.skiplink:focus { top: 8px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 h1, h2, h3, h4, p { margin: 0; }
 h2 { font-size: 1.125rem; line-height: 1.3; font-weight: 600; }
@@ -314,5 +316,6 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 
 .table tr.clickrow { cursor: pointer; }
 .table tr.clickrow:hover td { background: var(--sunk); }
+.walletchip-dim { color: var(--nav-ink-dim); }   /* a token pair checked at 5:1 on forest-2, never opacity: contrast tools cannot see through it */
 .walletadd { display: block; font-size: 0.75rem; text-decoration: underline; text-underline-offset: 3px; margin-top: 2px; }
 .nowrap { white-space: nowrap; }

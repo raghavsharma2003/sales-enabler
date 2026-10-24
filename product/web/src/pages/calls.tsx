@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Check, CircleX, Info, Play } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { Link, useQuery } from '../router.tsx';
-import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, SelectField, Table, Tabs, TextField, type Col } from '../ui.tsx';
+import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, SelectField, Table, Tabs, TextField, type Col, scrollMotion } from '../ui.tsx';
 import { callExplain, callGet, callSearch, campaignList } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
 import { costPart, RULE_LABEL } from '../labels.ts';
@@ -67,7 +67,7 @@ function Body({ c }: { c: CallDoc }) {
   const [audioFailed, setAudioFailed] = useState(false);
   const canPlay = playable(c.recordingUri) && !audioFailed;
   const current = c.turns.find(t => t.startMs != null && at >= t.startMs && at <= (t.endMs ?? t.startMs + 1))?.idx;
-  const seek = (msv: number | null) => { if (msv == null) return; setAt(msv); if (audio.current) audio.current.currentTime = msv / 1000; const t = c.turns.find(x => x.startMs != null && msv >= x.startMs && msv <= (x.endMs ?? x.startMs + 1)); if (t) turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+  const seek = (msv: number | null) => { if (msv == null) return; setAt(msv); if (audio.current) audio.current.currentTime = msv / 1000; const t = c.turns.find(x => x.startMs != null && msv >= x.startMs && msv <= (x.endMs ?? x.startMs + 1)); if (t) turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: scrollMotion() }); };
   const [why, setWhy] = useState<CallExplain | null>(null); const [whyBusy, setWhyBusy] = useState(false);
   const { toast } = useApp();
   const explain = async () => { setWhyBusy(true); try { setWhy(await callExplain(c.id)); } catch (e) { toast(e instanceof Error ? e.message : 'Could not explain.', 'bad'); } setWhyBusy(false); };
@@ -86,7 +86,7 @@ function Body({ c }: { c: CallDoc }) {
             {canPlay && <audio ref={audio} className="callaudio" controls preload="metadata" src={c.recordingUri!} aria-label="Call recording" onError={() => setAudioFailed(true)} onTimeUpdate={e => setAt(e.currentTarget.currentTime * 1000)} onSeeked={e => setAt(e.currentTarget.currentTime * 1000)} />}
             {c.turns.length > 0 ? <Lanes c={c} at={at} onSeek={seek} /> : <Empty title="Nobody spoke" body="There is no transcript. The reason is in the outcome card." />}
           </Card>
-          {c.turns.length > 0 && <Card><TimingCard c={c} onSeek={t => { setAt(t.startMs ?? 0); turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }} /></Card>}
+          {c.turns.length > 0 && <Card><TimingCard c={c} onSeek={t => { setAt(t.startMs ?? 0); turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: scrollMotion() }); }} /></Card>}
           {c.turns.length > 0 && <Card aria-labelledby="tr-h"><CardHead id="tr-h" title="What was said" sub="Only what the caller actually heard. Select a line to mark it on the timeline." />
             <ol className="turns">{c.turns.map(t => (
               <li key={t.idx} ref={el => { turnRefs.current[t.idx] = el; }} className={`turn ${t.who}${current === t.idx ? ' now' : ''}`}>

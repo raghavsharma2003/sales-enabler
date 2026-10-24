@@ -4,7 +4,7 @@ import { voiceStackOf } from './catalog.ts';
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp, useData } from './store.tsx';
-import { Btn, Chip } from './ui.tsx';
+import { Btn, Chip, scrollMotion } from './ui.tsx';
 import { Link } from './router.tsx';
 import { practiceCallers, simulate } from './data.ts';
 import type { SimResult } from './types.ts';
@@ -24,7 +24,7 @@ export function TestPanel() {
   const [call, setCall] = useState<{ state: 'idle' | 'asking' | 'unavailable' | 'live'; reason?: string; join?: Join; conversationId?: string }>({ state: 'idle' });
   // Hearing her comes first (the guided start's "Hear her now" lands here), and a live call is kept in view so captions and Hang up are on screen.
   const callRef = useRef<HTMLElement>(null);
-  useEffect(() => { if (call.state === 'live' || call.state === 'unavailable') callRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, [call.state]);
+  useEffect(() => { if (call.state === 'live' || call.state === 'unavailable') callRef.current?.scrollIntoView({ block: 'start', behavior: scrollMotion() }); }, [call.state]);
   if (!a) return <div className="testpanel"><p className="muted">Open an agent to test her here.</p></div>;
   const stack = voiceStackOf(a) ?? null;
   const picked = (callers.data ?? []).filter(c => chosen.includes(c.id));

@@ -38,3 +38,16 @@ test('money rounds to the paisa before splitting rupees and paise: ₹1.995 is �
   assert.equal(formatInr(-1995, { paise: true }), '-₹2.00');
   assert.equal(formatInr(100000), '₹100');
 });
+
+test('voice samples: only complete, plain-file entries are used, and the recording date versions the address', async () => {
+  const { parseSamples } = await import('../web/src/samples.ts');
+  const ok = { file: 'v2-flashlite.mp3', durationS: 11.6, text: 'Namaste Asha ji, main Riya bol rahi hoon.', recorded: '2026-10-25' };
+  const got = parseSamples({ 'v2-flashlite': ok, a: { ...ok, file: '../secret.mp3' }, b: { ...ok, file: 'x.exe' }, c: { ...ok, text: ' ' }, d: { ...ok, recorded: 'yesterday' }, e: { ...ok, durationS: 0 }, f: null });
+  assert.deepEqual(Object.keys(got), ['v2-flashlite']);
+  assert.equal(got['v2-flashlite'].src, '/samples/v2-flashlite.mp3?v=2026-10-25');
+  assert.equal(parseSamples({ s: { ...ok, durationS: undefined, duration: 9 } }).s.durationS, 9, '"duration" is read as well as "durationS"');
+  const voice = parseSamples({ 'v2-mai': { file: 'mai-flash-teo.ogg', durationS: 8.2, text: 'Namaste.', recordedAt: '2026-10-24T09:15:02Z', combinationId: 'x', voice: 'teo', tts: 'mai' } });
+  assert.equal(voice['v2-mai'].src, '/samples/mai-flash-teo.ogg?v=2026-10-24T09%3A15%3A02Z', 'the renderer\'s shape (Ogg, recordedAt) is read');
+  assert.equal(voice['v2-mai'].recorded, '2026-10-24');
+  assert.deepEqual(parseSamples([]), {}); assert.deepEqual(parseSamples(null), {}); assert.deepEqual(parseSamples({}), {}, 'the shipped empty manifest means no samples');
+});

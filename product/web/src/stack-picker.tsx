@@ -1,7 +1,8 @@
 // The voice stack picker. Owner directive: the user chooses among the finalised stacks; NO default is preselected and nothing
 // is marked "recommended". Every figure carries its grade and source; a missing price or latency says so instead of showing 0.
-import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Check, Volume2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AlertTriangle, Check, Pause, Play, Volume2 } from 'lucide-react';
+import { loadSamples, type Sample } from './samples.ts';
 import { STACKS } from '../../shared/stacks.ts';
 import * as api from './api.ts';
 import { Async, Btn, Chip, Figure, NotMeasured, Segmented } from './ui.tsx';
@@ -63,6 +64,7 @@ export function StackPicker(p: Props) {
 function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props & { d: StackList }) {
   const { act } = useApp();
   const prices = usePrices();
+  const samples = useData('voice-samples', loadSamples).data ?? {};
   const [filter, setFilter] = useState<'all' | 'cascade' | 's2s' | 'available'>('all');
   const [busy, setBusy] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
@@ -104,7 +106,7 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
         <Segmented label="Show stacks" value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, { value: 'cascade', label: 'Separate parts' }, { value: 's2s', label: 'Speech to speech' }, { value: 'available', label: 'Available now' }]} />
       </div>
       <ul className="stacks" aria-label="Recommended voice stacks">
-        {list.map(s => <StackCard key={s.id} s={s} selected={s.id === stackId} isDefault={s.id === d.default} price={prices[s.id]} busy={busy === s.id} onPick={() => void choose(s.id)} />)}
+        {list.map(s => <StackCard key={s.id} s={s} selected={s.id === stackId} isDefault={s.id === d.default} price={prices[s.id]} sample={samples[s.id]} busy={busy === s.id} onPick={() => void choose(s.id)} />)}
       </ul>
 
       {/* Closed until wanted (open when the agent already runs its own parts): the full parts list is a long page on a phone. */}
@@ -127,6 +129,7 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
         <section aria-labelledby="voice-h">
           <h3 id="voice-h">Choose the voice</h3>
           <p className="sub">The voices of {speaker.label}. The chosen voice stays when you change only the language model.</p>
+          {curated && samples[curated.id] && <div style={{ marginTop: 8 }}><SamplePlayer sample={samples[curated.id]} label={curated.label} /></div>}
           <div role="radiogroup" aria-label="Voices" className="chipset" style={{ marginTop: 8 }}>
             {speaker.voices.map(v => { const on = (voiceId ?? speaker.defaultVoice) === v;
               return <button key={v} type="button" role="radio" aria-checked={on} className={`choice${on ? ' on' : ''}`} onClick={() => { if (!on) void pickVoice(v); }}>{voiceName(v)}{v === speaker.defaultVoice && !voiceId && ' (default)'}</button>; })}
@@ -219,7 +222,7 @@ function useBuildPrice(parts: Parts | null): (Price & { refused?: string }) | nu
   return p && p.key === key ? p.v : { perMinuteInrMilli: null, basis: '', state: 'loading' };
 }
 
-function StackCard({ s, selected, isDefault, price, busy, onPick }: { s: StackRow; selected: boolean; isDefault: boolean; price?: Price; busy: boolean; onPick: () => void }) {
+function StackCard({ s, selected, isDefault, price, sample, busy, onPick }: { s: StackRow; selected: boolean; isDefault: boolean; price?: Price; sample?: Sample; busy: boolean; onPick: () => void }) {
   const down = s.availability.state === 'unavailable';
   return (
     <li className={`stackcard${selected ? ' sel' : ''}`}>
@@ -236,7 +239,7 @@ function StackCard({ s, selected, isDefault, price, busy, onPick }: { s: StackRo
         <div><dt>Reply gap</dt><dd><Figure m={s.replyGap} /><details className="how"><summary>How we know</summary><p>{s.replyGap.source}</p></details></dd></div>
         <div><dt>Provider cost per minute</dt><dd><PriceView price={price} /></dd></div>
         {s.parts.map(c => <div key={c.part}><dt>{PART_WORD[c.part]}</dt><dd>{c.label}<span className="small muted"> · {c.processedIn}</span></dd></div>)}
-        <div><dt>Hear it</dt><dd><span className="dotted nm" title="No sample clip has been recorded for this stack yet"><Volume2 size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> No sample recorded yet</span></dd></div>
+        <div><dt>Hear it</dt><dd>{sample ? <SamplePlayer sample={sample} label={s.label} /> : <span className="dotted nm" title="No sample clip has been recorded for this stack yet"><Volume2 size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> No sample recorded yet</span>}</dd></div>
       </dl>
       {down && selected && <p className="risk small"><AlertTriangle size={14} aria-hidden /> {s.availability.reason}</p>}
       {s.risks.map(r => <p key={r} className="risk small"><AlertTriangle size={14} aria-hidden /> {r}</p>)}
@@ -245,5 +248,34 @@ function StackCard({ s, selected, isDefault, price, busy, onPick }: { s: StackRo
           : <button type="button" className={`pickbtn${selected ? ' on' : ''}`} aria-pressed={selected} aria-disabled={busy || undefined} onClick={() => { if (!selected && !busy) onPick(); }}>{selected ? <><Check size={16} aria-hidden /> Chosen</> : busy ? 'Saving…' : 'Choose this stack'}</button>}
       </div>
     </li>
+  );
+}
+
+// One sample plays at a time across the page: starting another stops the one playing.
+let playing: HTMLAudioElement | null = null;
+/** A sample clip: one button that plays and pauses it (its state is announced), the length, and what she says, in words. */
+function SamplePlayer({ sample, label }: { sample: Sample; label: string }) {
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const [on, setOn] = useState(false); const [failed, setFailed] = useState(false);
+  useEffect(() => () => { audio.current?.pause(); }, []);
+  const toggle = () => {
+    let a = audio.current;
+    if (!a) {
+      a = audio.current = new Audio(sample.src);
+      a.onended = a.onpause = () => setOn(false); a.onplay = () => setOn(true); a.onerror = () => { setOn(false); setFailed(true); };
+    }
+    if (on) { a.pause(); return; }
+    if (playing && playing !== a) playing.pause();
+    playing = a; void a.play().catch(() => setFailed(true));
+  };
+  const secs = Math.round(sample.durationS);
+  return (
+    <div className="sample stack-s">
+      <button type="button" className="btn btn-sm" aria-pressed={on} aria-label={`${on ? 'Pause' : 'Play'} the sample of ${label}, ${secs} seconds`} onClick={toggle}>
+        {on ? <Pause size={14} aria-hidden /> : <Play size={14} aria-hidden />}<span>{on ? 'Pause' : 'Play sample'}</span><span className="muted tnum">{secs} s</span>
+      </button>
+      {failed && <span className="small hint-bad" role="status">The sample could not be played in this browser.</span>}
+      <details className="how"><summary>What she says</summary><p lang="hi">{sample.text}</p><p className="small muted">Recorded {sample.recorded}.</p></details>
+    </div>
   );
 }

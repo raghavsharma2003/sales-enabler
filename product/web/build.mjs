@@ -1,7 +1,7 @@
 // Bundles the single-page app into dist/: index.html + hashed JS/CSS. `node product/web/build.mjs`
 // React 19 + esbuild only; no UI library. The server (server/app.ts) serves dist/ and falls back to index.html.
 import { build } from 'esbuild';
-import { mkdir, rm, writeFile, readdir, stat } from 'node:fs/promises';
+import { cp, mkdir, rm, writeFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
@@ -54,6 +54,8 @@ const html = `<!doctype html>
 </html>
 `;
 await writeFile(dist + 'index.html', html);
+// Static files served as they are (public/samples/: the stack voice samples and their manifest, dropped in from the lab VM).
+await cp(here + 'public', dist, { recursive: true });
 
 let total = 0, gz = 0, entryGz = 0;
 async function walk(dir) {

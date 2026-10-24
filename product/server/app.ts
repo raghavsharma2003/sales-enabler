@@ -51,7 +51,7 @@ const LOGIN_FAILS_PER_ACCOUNT = 10;
 const LOGIN_PER_IP = 50;
 
 const MIME: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json', '.wav': 'audio/wav', '.mp3': 'audio/mpeg' };
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.opus': 'audio/ogg' };
 
 export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: string } = {}): { router: Router; registry: Registry; server: Server; deps: Deps; jobs: Job[] } {
   const registry = new Registry();

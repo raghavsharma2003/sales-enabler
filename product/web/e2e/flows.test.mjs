@@ -6,6 +6,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import pg from 'pg';
+import { audit } from './a11y.mjs';
 
 let pw = null;
 for (const base of [import.meta.url, 'file:///opt/node-tools/node_modules/']) { try { pw = createRequire(base)('playwright'); break; } catch { /* next */ } }
@@ -263,8 +264,10 @@ test('Browser call: she calls you in the browser, captions from both sides, hang
   await call.locator('.bcap.agent').first().waitFor({ timeout: 20000 });        // her opening, from the runtime
   await call.locator('.bcap.caller:not(.partial)').first().waitFor({ timeout: 30000 });   // the fake microphone, heard and transcribed
   await call.locator('.bcap.agent').nth(1).waitFor({ timeout: 20000 });         // and answered
-  fs.mkdirSync(path.join(process.cwd(), 'product/web/shots'), { recursive: true });
-  await call.screenshot({ path: path.join(process.cwd(), 'product/web/shots/browser-call-live.png') });
+  // A test run never writes a tracked file: the shot goes to the diagnostics folder, and into web/shots only on a re-shoot (E2E_RESHOOT=1).
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  fs.mkdirSync(shotDir, { recursive: true });
+  await call.screenshot({ path: path.join(shotDir, 'browser-call-live.png') });
   const href = await call.getByRole('button', { name: 'Hang up' }).click().then(async () => {
     await call.getByText('You hung up.').waitFor({ timeout: 8000 });
     return call.getByRole('link', { name: 'See this call' }).getAttribute('href');
@@ -1160,4 +1163,112 @@ test('Voice stack: "Build your own" is closed until wanted, and the recommended 
   const custom = (await pool.query("SELECT draft->'voice'->>'stackId' AS s FROM agent WHERE id = $1", [await riyaId()])).rows[0]?.s === 'custom';
   assert.equal(await page.locator('details.buildown').evaluate(d => d.open), custom, 'open only when the agent already runs its own parts');
   if (!custom) { await page.getByText('Show the parts').click(); await page.getByRole('button', { name: 'Use these parts' }).waitFor(); }
+});
+
+// ---- Accessibility (WCAG 2.1 AA): axe on every main screen, and the main flows done with the keyboard alone ----
+// Tab until the element has focus (it must be reachable in tab order, within `max` presses), as a keyboard user does.
+async function tabTo(p, loc, max = 120) {
+  await loc.waitFor();
+  for (let i = 0; i < max; i++) {
+    if (await loc.evaluate(e => e === document.activeElement || e.contains(document.activeElement))) return;
+    await p.keyboard.press('Tab');
+  }
+  throw new Error(`not reachable with Tab in ${max} presses: ${await loc.evaluate(e => e.outerHTML.slice(0, 120))}`);
+}
+
+test('Accessibility: no serious or critical axe violation on any main screen, desktop and phone', async () => {
+  const res = await audit(browser, BASE, await ctx.storageState());
+  const bad = res.flatMap(r => r.violations.filter(v => v.impact === 'serious' || v.impact === 'critical').map(v => `${r.screen} (${r.size}): ${v.id}, ${v.help} [${v.targets.join(' | ')}]`));
+  assert.ok(res.length >= 40, `audited ${res.length} screen states`);
+  assert.deepEqual(bad, [], bad.join('\n'));
+});
+
+test('Keyboard: the first Tab stop skips the navigation to the page', async () => {
+  await page.goto(`${BASE}/calls`);
+  await page.getByRole('heading', { name: 'Calls', level: 1 }).waitFor();
+  await page.locator('body').focus();
+  await page.keyboard.press('Tab');
+  const skip = page.getByRole('link', { name: 'Skip to main content' });
+  assert.ok(await skip.evaluate(e => e === document.activeElement), 'the skip link is the first stop');
+  await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(() => document.activeElement?.id), 'main');
+});
+
+test('Keyboard only: create an agent from a template, start a test call, import a list, set the launch cap and approve', async () => {
+  const email = `keyboard-${Date.now()}@a11y.example`;
+  const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce', permissions: ['microphone'] });
+  assert.ok((await c.request.post(BASE + '/v1/signup', { data: { workspace: 'Keyboard Test Hospital', name: 'Ravi Menon', email, password: 'sample-password-1234' } })).ok());
+  const p = await c.newPage();
+  const srv = async (name, args = {}) => (await (await c.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
+  try {
+    // 1. Create an agent from a template on the guided start.
+    await p.goto(`${BASE}/`);
+    await tabTo(p, p.getByRole('radio', { name: 'Start from a template' })); await p.keyboard.press('Enter');
+    await tabTo(p, p.getByRole('radio', { name: /Clinic appointment confirmation/ }).first()); await p.keyboard.press('Enter');
+    await tabTo(p, p.getByLabel('Agent name')); await p.keyboard.press('ControlOrMeta+a'); await p.keyboard.type('Keyboard appointments');
+    await tabTo(p, p.getByRole('button', { name: 'Create draft' })); await p.keyboard.press('Enter');
+    await p.waitForURL('**/agents/*', { timeout: 15000 });
+    const agentId = p.url().split('/agents/')[1].split('?')[0];
+    // 2. Start a test call in the browser (the call view, or the server's own reason when no voice runtime runs here).
+    await tabTo(p, p.getByRole('button', { name: 'Test her' }).first()); await p.keyboard.press('Enter');
+    await tabTo(p, p.getByRole('button', { name: 'Call me in the browser' })); await p.keyboard.press('Enter');
+    await p.locator('.bcall, .testpanel .state').first().waitFor({ timeout: 20000 });
+    const hang = p.locator('.bcall').getByRole('button', { name: 'Hang up' });
+    if (await hang.count()) { await tabTo(p, hang); await p.keyboard.press('Enter'); await p.getByText('You hung up.').waitFor({ timeout: 10000 }); }
+    // 3. Import a list.
+    await p.goto(`${BASE}/contacts/import`);
+    await tabTo(p, p.getByRole('button', { name: 'Use a made-up sample' })); await p.keyboard.press('Enter');
+    await tabTo(p, p.getByRole('button', { name: 'Check the file' })); await p.keyboard.press('Enter');
+    await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 });
+    await tabTo(p, p.getByRole('button', { name: /^Save \d+ contacts?$/ })); await p.keyboard.press('Enter');
+    await p.getByText('List imported', { exact: false }).first().waitFor({ timeout: 15000 });
+    // 4. Publish (approve by pressing twice), draft a campaign through the API, then fix its spend cap check from the page.
+    await p.goto(`${BASE}/agents/${agentId}`);
+    await tabTo(p, p.getByRole('button', { name: 'Publish…' })); await p.keyboard.press('Enter');
+    const sheet = p.getByRole('dialog');
+    const hold = sheet.locator('.hold');
+    await tabTo(p, hold); await p.keyboard.press('Enter'); await p.keyboard.press('Enter');
+    await sheet.waitFor({ state: 'detached', timeout: 15000 });
+    const version = (await srv('agent.get', { agentId })).result.versions?.[0]?.id;
+    assert.ok(version, 'the agent was published with the keyboard');
+    const aud = (await srv('audience.list')).result.audiences[0].id;
+    const camp = await srv('campaign.draft', { name: 'Keyboard pilot', category: 'service', agentVersionId: version, audienceId: aud });
+    assert.equal(camp.status, 'confirmed', JSON.stringify(camp));
+    await p.goto(`${BASE}/campaigns/${camp.result.id}`);
+    await tabTo(p, p.getByRole('button', { name: 'Set a limit' })); await p.keyboard.press('Enter');
+    const capSheet = p.getByRole('dialog');
+    await tabTo(p, capSheet.getByLabel('Spend cap (₹)')); await p.keyboard.press('ControlOrMeta+a'); await p.keyboard.type('150');
+    assert.ok(await capSheet.getByLabel('Spend cap (₹)').evaluate(e => e === document.activeElement), 'focus stays in the field while typing');
+    await tabTo(p, capSheet.getByRole('button', { name: 'Save the cap' })); await p.keyboard.press('Enter');
+    await capSheet.waitFor({ state: 'detached', timeout: 10000 });
+    await p.getByText('₹150').first().waitFor({ timeout: 10000 });
+  } finally { await c.close(); }
+});
+
+// ---- Stack voice samples (R13): the manifest the lab VM drops into web/public/samples/, served from dist/samples/ ----
+test('Voice samples: a stack with a sample plays it with one labelled control and says what she says; others say none is recorded', async () => {
+  const dir = path.join(process.cwd(), 'product/web/dist/samples'), manifest = path.join(dir, 'manifest.json');
+  const shipped = fs.readFileSync(manifest, 'utf8');
+  assert.deepEqual(JSON.parse(shipped), {}, 'the product ships an empty manifest');
+  const id = await riyaId();
+  const stackId = (await pool.query("SELECT draft->'voice'->>'stackId' AS s FROM agent WHERE id = $1", [id])).rows[0].s || 'v2-flashlite';
+  // A fixture in the untracked build folder: 2 s of a quiet tone, and its manifest entry.
+  const rate = 8000, n = rate * 2, wav = Buffer.alloc(44 + n * 2);
+  wav.write('RIFF', 0); wav.writeUInt32LE(36 + n * 2, 4); wav.write('WAVEfmt ', 8); wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(rate, 24); wav.writeUInt32LE(rate * 2, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(n * 2, 40);
+  for (let i = 0; i < n; i++) wav.writeInt16LE(Math.round(800 * Math.sin(2 * Math.PI * 220 * i / rate)), 44 + i * 2);
+  fs.writeFileSync(path.join(dir, 'e2e-fixture.wav'), wav);
+  fs.writeFileSync(manifest, JSON.stringify({ [stackId]: { file: 'e2e-fixture.wav', durationS: 2, text: 'Namaste, main Riya bol rahi hoon. Yeh ek sample hai.', recorded: '2026-10-24' } }));
+  try {
+    await page.goto(`${BASE}/agents/${id}?tab=voice`);
+    const card = page.locator('.stackcard').filter({ has: page.locator('.sample') }).first();
+    const play = card.getByRole('button', { name: /^Play the sample of .*, 2 seconds$/ });
+    await play.waitFor({ timeout: 10000 });
+    assert.equal(await play.getAttribute('aria-pressed'), 'false');
+    await play.click();
+    await card.getByRole('button', { name: /^Pause the sample of / }).waitFor({ timeout: 5000 });
+    await card.getByRole('button', { name: /^Play the sample of / }).waitFor({ timeout: 8000 });   // it ends by itself
+    await card.getByText('What she says').click();
+    await card.getByText('Yeh ek sample hai.', { exact: false }).waitFor();
+    assert.ok(await page.locator('.stackcard').filter({ hasText: 'No sample recorded yet' }).count() > 0, 'stacks with no entry still say so');
+  } finally { fs.writeFileSync(manifest, shipped); fs.rmSync(path.join(dir, 'e2e-fixture.wav'), { force: true }); }
 });

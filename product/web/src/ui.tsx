@@ -7,6 +7,8 @@ import type { ToolData } from './store.tsx';
 import type { Metric } from './types.ts';
 
 export const cx = (...a: (string | false | null | undefined)[]) => a.filter(Boolean).join(' ');
+/** Scrolling the page for someone: smooth, unless they asked the system for reduced motion (CSS cannot reach a JS scroll). */
+export const scrollMotion = (): ScrollBehavior => (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 
 // ---------- buttons ----------
 type BtnProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> & {
@@ -91,7 +93,7 @@ export function Tabs<T extends string>({ value, onChange, items, label }: { valu
     if (on.offsetLeft < el.scrollLeft || on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollTo({ left: Math.max(0, on.offsetLeft - 24) });
     measure();
   }, [value, items.length]);
-  const page = (dir: 1 | -1) => row.current?.scrollBy({ left: dir * row.current.clientWidth * 0.7, behavior: 'smooth' });
+  const page = (dir: 1 | -1) => row.current?.scrollBy({ left: dir * row.current.clientWidth * 0.7, behavior: scrollMotion() });
   const onKey = (e: React.KeyboardEvent) => {
     const i = items.findIndex(x => x.id === value);
     const next = e.key === 'ArrowRight' ? items[(i + 1) % items.length] : e.key === 'ArrowLeft' ? items[(i - 1 + items.length) % items.length] : null;
@@ -242,13 +244,16 @@ export function Sheet({ title, onClose, children, wide, labelledBy }: { title: s
   const ref = useRef<HTMLDivElement>(null);
   const prev = useRef<Element | null>(null);
   const tid = useId();
+  // Callers pass onClose inline, so it is a new function on every render. The focus effect runs once per opening: keyed on
+  // onClose it re-ran on each keystroke inside the sheet and threw focus back to its first control.
+  const close = useRef(onClose); close.current = onClose;
   useEffect(() => {
     prev.current = document.activeElement;
     const el = ref.current!;
     const f = el.querySelector<HTMLElement>('[data-autofocus], button, [href], input, select, textarea');
     f?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onClose(); }
+      if (e.key === 'Escape') { e.stopPropagation(); close.current(); }
       if (e.key === 'Tab') {
         const els = [...el.querySelectorAll<HTMLElement>('button:not([aria-disabled="true"]), [href], input, select, textarea, [tabindex="0"]')].filter(x => !x.hasAttribute('disabled'));
         if (!els.length) return;
@@ -260,7 +265,7 @@ export function Sheet({ title, onClose, children, wide, labelledBy }: { title: s
     el.addEventListener('keydown', onKey);
     document.body.classList.add('noscroll');
     return () => { el.removeEventListener('keydown', onKey); document.body.classList.remove('noscroll'); (prev.current as HTMLElement | null)?.focus?.(); };
-  }, [onClose]);
+  }, []);
   return (
     <div className="scrim" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={ref} className={cx('sheet', wide && 'sheet-wide')} role="dialog" aria-modal="true" aria-labelledby={labelledBy ?? tid}>

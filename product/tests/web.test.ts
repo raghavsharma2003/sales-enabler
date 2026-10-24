@@ -33,7 +33,7 @@ test('text colour pairs reach 5:1 in light and dark', () => {
   const themes = { light: css.split('@media')[0], dark: css.split('[data-theme="dark"] {')[1] };
   const pairs: [string, string][] = [['ink', 'paper'], ['ink-2', 'paper'], ['ink-3', 'paper'], ['ink-2', 'sunk'], ['ink-3', 'sunk'], ['ink', 'surface'], ['terra-ink', 'paper'], ['terra-ink', 'surface'], ['on-terra', 'terra'],
     ['leaf', 'leaf-bg'], ['brick', 'brick-bg'], ['marigold-ink', 'marigold-bg'], ['peacock', 'peacock-bg'], ['terra-ink', 'terra-bg'], ['leaf', 'paper'], ['brick', 'paper'], ['marigold-ink', 'paper'], ['peacock', 'paper'],
-    ['nav-ink', 'forest'], ['nav-ink-dim', 'forest'], ['nav-ink', 'forest-2'], ['on-forest', 'forest-2'], ['on-forest', 'terra'], ['ink-2', 'terra-bg'], ['ink-2', 'leaf-bg']];
+    ['nav-ink', 'forest'], ['nav-ink-dim', 'forest'], ['nav-ink-dim', 'forest-2'], ['nav-ink', 'forest-2'], ['on-forest', 'forest-2'], ['on-forest', 'terra'], ['ink-2', 'terra-bg'], ['ink-2', 'leaf-bg']];
   for (const [name, block] of Object.entries(themes)) {
     const v = Object.fromEntries([...block.matchAll(/--([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})/g)].map(m => [m[1], m[2]]));
     for (const [fg, bg] of pairs) {
@@ -135,7 +135,11 @@ test('no page writes from a menu: act() is never called inside an onChange of a 
 // The browser flows need Chromium and Postgres 16; without them they skip with the reason (CI has no browser cache).
 const pre = spawnSync(process.execPath, [web + 'e2e/precheck.mjs'], { encoding: 'utf8' });
 test('browser flows against the real server (web/e2e/run.sh)', { skip: pre.status === 0 ? false : (pre.stdout || pre.stderr).trim() || 'precheck failed' }, () => {
-  const r = spawnSync('sh', [web + 'e2e/run.sh'], { encoding: 'utf8', timeout: 240_000, env: { ...process.env, NODE_TEST_CONTEXT: undefined } });   // a nested node --test must not think it is a child of this run
+  // A test run leaves the tree as it found it: no tracked file (a screenshot, a fixture) is written by the flows.
+  const tree = () => { const g = (a: string[]) => spawnSync('git', a, { cwd: web, encoding: 'utf8' }).stdout ?? ''; return g(['status', '--porcelain', '--', '.']) + g(['diff', '--', '.']); };
+  const before = tree();
+  const r = spawnSync('sh', [web + 'e2e/run.sh'], { encoding: 'utf8', timeout: 480_000, env: { ...process.env, NODE_TEST_CONTEXT: undefined } });   // 50+ flows incl. the axe audit (~3-5 min); a nested node --test must not think it is a child of this run
   assert.equal(r.status, 0, (r.stdout + r.stderr).slice(-3000));
   assert.match(r.stdout, /# fail 0/);
+  assert.equal(tree(), before, 'the browser flows changed a tracked file under product/web; write artefacts to E2E_DIAG_DIR, or to web/shots only with E2E_RESHOOT=1');
 });

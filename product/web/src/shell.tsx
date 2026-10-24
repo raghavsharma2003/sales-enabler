@@ -27,6 +27,8 @@ export function Shell({ children }: { children: ReactNode }) {
   const low = wallet.data && wallet.data.runwayDays != null && wallet.data.runwayDays < 2;
   return (
     <div className="app" data-view={view}>
+      {/* The first Tab stop: past the navigation to the page (WCAG 2.4.1). */}
+      <a href="#main" className="skiplink" onClick={e => { e.preventDefault(); setView('page'); document.getElementById('main')?.focus(); }}>Skip to main content</a>
       <nav className="rail" aria-label="Main">
         <Link to="/" className="brand" aria-label="Vyakti, home"><Mark /><span className="brand-word"><b>Vyakti</b></span></Link>
         <div className="nav">
@@ -34,7 +36,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
         <div className="rail-foot">
           {wallet.data && <Link to="/settings/billing" className={`walletchip${low ? ' low' : ''}`} aria-label={`Wallet ${inr(wallet.data.balanceMilli)}${low ? ', under 2 days of runway' : ''}`}><span>Wallet</span><b className="tnum">{inr(wallet.data.balanceMilli)}</b>{wallet.data.balanceMilli <= 0 && <span className="walletadd">Add money</span>}</Link>}
-          <div className="walletchip" style={{ textAlign: 'left' }}><span>{me?.workspace.name}</span><span style={{ opacity: 0.8 }}>{me?.member?.name} · {me?.member?.role}</span></div>
+          <div className="walletchip" style={{ textAlign: 'left' }}><span>{me?.workspace.name}</span><span className="walletchip-dim">{me?.member?.name} · {me?.member?.role ? me.member.role.charAt(0).toUpperCase() + me.member.role.slice(1) : ''}</span></div>
         </div>
       </nav>
       <div className="workarea">
