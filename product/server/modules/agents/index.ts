@@ -18,6 +18,7 @@ import { agentConfigV, draftHash, validateConfig, versionHashOf } from './config
 import { DraftError, draftFromDescription } from './draft.ts';
 import { shapeLint } from './lint.ts';
 import { guardDraft } from './guard.ts';
+import { assertPublishable, BRIEF_REVIEW, reviewBrief, reviewConfigured, reviewSummary } from './review.ts';
 import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
 import { LIBRARY, libraryCaller, toSimCaller, type CallerShape, type LibraryCaller } from './library.ts';
@@ -304,6 +305,7 @@ async function publishSummary(ctx: ToolCtx, agentId: string, note?: string): Pro
     parts.push(changes.length ? `Changes since version ${prev.number}: ` + changes.slice(0, 6).map(c => changePhrase(c, c.to === null ? prev.config.agent : a.draft)).join('; ') +
       (changes.length > 6 ? `; and ${changes.length - 6} more` : '') + '.' : `No changes since version ${prev.number}.`);
   }
+  parts.push(reviewConfigured() ? `${BRIEF_REVIEW.labels.model}, at publish.` : `${BRIEF_REVIEW.labels.rules_only}.`);   // never silent (review.ts)
   return parts.join(' ');
 }
 
@@ -412,7 +414,8 @@ export function registerAgentTools(r: Registry): void {
       const row = await one<{ id: string }>(ctx.q, "INSERT INTO agent (workspace_id, name, job, status, draft) VALUES ($1,$2,$3,'draft','{}') RETURNING id", [ctx.workspaceId, i.name, draft.job]);
       draft.agentId = row!.id;
       await saveDraft(ctx, row!.id, draft, null);
-      return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...preview(draft), stackChosen: !!stackOf(draft.voice), usage };
+      return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...preview(draft), stackChosen: !!stackOf(draft.voice), usage,
+        review: reviewSummary(await reviewBrief(draft)) };
     },
   }));
 
@@ -458,7 +461,7 @@ export function registerAgentTools(r: Registry): void {
       let next: AgentConfig;
       try { next = validateConfig(patched); } catch (e) { throw e instanceof ValidationError ? withKnownFields(e, patched) : e; }
       await saveDraft(ctx, a.id, next, a.draft);
-      return { agentId: a.id, draftHash: draftHash(next), changes: diff(comparable(a.draft), comparable(next)), ...preview(next) };
+      return { agentId: a.id, draftHash: draftHash(next), changes: diff(comparable(a.draft), comparable(next)), ...preview(next), review: reviewSummary(await reviewBrief(next)) };
     },
   }));
 
@@ -588,8 +591,10 @@ export function registerAgentTools(r: Registry): void {
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
       if (draftHash(a.draft) !== i.draftHash) throw new ValidationError('draftHash', 'the draft changed since it was shown; review the new draft and publish again');
+      // The regex door first, then the model review (review.ts): a hard finding from either blocks, with the reason and the fix.
+      const review = await assertPublishable(a.draft);
       const prev = await one<{ id: string }>(ctx.q, LIVE_VERSION_SQL, [a.id]);
-      return createVersion(ctx, a.id, a.draft, prev?.id ?? null, i.note ?? null);
+      return { ...await createVersion(ctx, a.id, a.draft, prev?.id ?? null, i.note ?? null), review: reviewSummary(review) };
     },
   }));
 
@@ -635,7 +640,8 @@ export function registerAgentTools(r: Registry): void {
       const cfg = validateConfig(i.config);
       guardDraft(null, cfg);                         // a treatment arm reaches people: the hard safety guard applies here too
       compileOrRefuse({ ...cfg, agentId: a.id });   // refuse with the lint or budget reason before numbering anything
-      return createVersion(ctx, a.id, cfg, parent.id, i.note, 'candidate');
+      const review = await assertPublishable(cfg);  // a candidate can take traffic without a publish: the same review gate
+      return { ...await createVersion(ctx, a.id, cfg, parent.id, i.note, 'candidate'), review: reviewSummary(review) };
     },
   }));
 

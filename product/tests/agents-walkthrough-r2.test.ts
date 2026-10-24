@@ -107,7 +107,7 @@ test('R8: the publish card names the agent, the stack, the last practice call an
   const set = await w.ok('stack.set', { agentId: a.agentId, stackId: 'v2-flashlite' });
   const p1: any = await registry.execute(pool, 'version.publish', { agentId: a.agentId, draftHash: set.draftHash }, w.as);
   assert.equal(p1.status, 'needs_approval');
-  assert.match(p1.summary, /^Publish Renewals, version 1\. Voice: .+?\. No practice call has been run\. This is the first version\.$/);
+  assert.match(p1.summary, /^Publish Renewals, version 1\. Voice: .+?\. No practice call has been run\. This is the first version\. AI-honesty review: rules only \(no model configured\)\.$/);
   await registry.approve(pool, p1.actionId, { workspaceId: w.ws, memberId: w.owner });
 
   await w.ok('brief.edit', { agentId: a.agentId, patch: [{ op: 'set', path: 'persona.energy', value: 5 }, { op: 'append', path: 'persona.notes', value: 'slows down for older callers' }] });

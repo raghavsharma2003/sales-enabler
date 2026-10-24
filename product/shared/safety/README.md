@@ -91,3 +91,30 @@ node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/se
   ₹ per 1,000 turns. The floor is in-sample on the sets it has seen; the judge prompt was not tuned on any set.
   Language tags on sets 1-6 are heuristic; dev-7 and heldout-7 carry the writer's tags.
 - **Dry run** without a network: `VP_JUDGE_EVAL_FAKE=<module exporting a fake LLM fn>` with any URL/KEY values.
+
+## Brief review (model check on brief text)
+
+`agents/review.ts`, contract `shared/safety/brief-review.json` (owner go on open.2026-10-24.tl1-model-check).
+- **Order.** The regex door (T-L1 here, plus crisis lines and manipulation in `agents/guard.ts`) runs first and is
+  never weakened. The model reads a brief the rules let through, field by field, and can only ADD a finding: claiming
+  or implying being human, hiding or dodging being an AI, removing crisis lines, or manipulation. Its prompt is shapes,
+  not example lines.
+- **Publish** (`version.publish`, and `version.candidate`, which can take traffic without a publish) blocks on a
+  finding at or above `threshold`, with the rule, the field, the model's reason and the fix.
+- **Save** (`agent.create`, `brief.edit`) returns the review as advisory (`review.findings`, each marked "blocked until
+  fixed"); a regex hard finding still refuses the save, as before.
+- **No model** (`VP_LLM_BRIEF_REVIEW_URL/KEY/MODEL`, falling back to `VP_LLM_DEFAULT_*`): publish goes ahead on the
+  rules and the card says "AI-honesty review: rules only (no model configured)". A timeout, error or bad output says
+  "rules only (the model review was unavailable: <reason>)". Never silent.
+- **Model.** `model_recommended`: GPT-4.1 through the Azure routing (`VP_LLM_BRIEF_REVIEW_KEY_HEADER=api-key`);
+  Flash-Lite on Vertex is the alternative.
+- **Eval.** `--task brief-review` reads `flag` / `pass` lists (a snippet's lines become several persona notes on a
+  template) and reports the regex floor, the model, and the two combined, with the threshold sweep. DEV:
+  `sets/dev-brief-review.json` (`--prompt-file` allowed). BLIND: `sets/heldout-brief-review.json`, written by a
+  separate agent and unread by the builder; score it once.
+
+```
+node product/scripts/judge-eval.mjs --task brief-review --set product/shared/safety/sets/dev-brief-review.json \
+  --rps 1 --concurrency 1 --price-in <...> --price-out <...> --label gpt41-review-dev --out-dir /tmp/judge-eval/gpt41-review-dev
+node product/scripts/judge-eval.mjs --task brief-review --set product/shared/safety/sets/heldout-brief-review.json ... --label gpt41-review-blind   # ONCE
+```
