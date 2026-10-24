@@ -13,8 +13,8 @@ import { STASH_TTL_MS } from './common.ts';
 // `usedBy` says what reads the stored credentials today. A kind without it is stored, and nothing uses it yet.
 export interface Kind { label: string; secrets: readonly string[]; config: readonly string[]; usedBy?: string }
 export const INTEGRATION_KINDS: Record<string, Kind> = {
-  hubspot: { label: 'HubSpot CRM', secrets: ['access_token'], config: ['portal_id'] },
-  zoho_crm: { label: 'Zoho CRM', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['datacenter'] },
+  hubspot: { label: 'HubSpot CRM', secrets: ['access_token'], config: ['portal_id'], usedBy: 'Imports contacts' },
+  zoho_crm: { label: 'Zoho CRM', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['datacenter'], usedBy: 'Imports contacts' },
   salesforce: { label: 'Salesforce', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['instance_url'] },
   google_workspace: { label: 'Google Sheets and Calendar', secrets: ['service_account_json'], config: ['calendar_id', 'sheet_id'] },
   whatsapp_cloud: { label: 'WhatsApp Cloud API', secrets: ['access_token'], config: ['phone_number_id'] },
