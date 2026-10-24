@@ -608,3 +608,57 @@ class TimeoutBudget(unittest.TestCase):
         c, _ = fake(verdict(False, 0.1, 'none'), delay=0.3)
         sess, p, replies = sim_call([DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [INDIRECT], c, 'raise', brain_s=0.0)
         self.assertEqual(sess.conv.judge_in_time, {True: 0, False: 1}, 'a slow one is not, and the reply did not wait')
+
+
+def seq_latency(replies):
+    """A judge whose n-th call answers replies[n] = (delay_s, text or Exception)."""
+    calls = []
+    async def complete(msgs):
+        i = len(calls); calls.append(i)
+        delay, out = replies[min(i, len(replies) - 1)]
+        await asyncio.sleep(delay)
+        if isinstance(out, Exception): raise out
+        return {'text': out, 'usage': {'inputTokens': 120, 'outputTokens': 12}}
+    return complete, calls
+
+
+class Hedge(unittest.TestCase):
+    """open.2026-10-24.judge-timeout-budget: one hedged second request on the slow tail; raise-only either way."""
+    ENV = {**ENV_ON, 'VP_SAFETY_JUDGE_TIMEOUT_MS': '1000', 'VP_SAFETY_JUDGE_HEDGE_MS': '200'}
+
+    def run_judge(self, replies, env=None, mode='raise'):
+        c, calls = seq_latency(replies)
+        import time
+        t0 = time.perf_counter()
+        r = asyncio.run(judge.judge_caller_crisis(INDIRECT, c, mode_override=mode, env=env or self.ENV))
+        return r, calls, time.perf_counter() - t0
+
+    def test_hedge_is_off_by_default_and_clamped(self):
+        self.assertIsNone(judge.hedge_after_ms({}))
+        self.assertEqual(judge.hedge_after_ms({'VP_SAFETY_JUDGE_HEDGE_MS': '50'}), 200)
+        self.assertIsNone(judge.hedge_after_ms({'VP_SAFETY_JUDGE_HEDGE_MS': 'off'}))
+
+    def test_a_slow_first_call_is_rescued_by_the_hedge_within_budget(self):
+        r, calls, dt = self.run_judge([(2.0, verdict(True, 0.8, 'indirect')), (0.05, verdict(True, 0.8, 'indirect'))])
+        self.assertTrue(r['crisis']); self.assertEqual(r['event']['type'], 'judge_raised')
+        self.assertEqual((len(calls), r['requests']), (2, 2)); self.assertLess(dt, 0.6)
+
+    def test_over_budget_falls_to_the_floor_as_before(self):
+        r, calls, dt = self.run_judge([(2.0, verdict(True, 0.8, 'indirect')), (2.0, verdict(True, 0.8, 'indirect'))])
+        self.assertFalse(r['crisis']); self.assertEqual(r['event'], {'type': 'judge_unavailable', 'reason': 'timeout'})
+        self.assertLess(dt, 1.3)
+        r, calls, dt = self.run_judge([(2.0, verdict(True, 0.8, 'indirect'))], env={**ENV_ON, 'VP_SAFETY_JUDGE_TIMEOUT_MS': '1000'})
+        self.assertEqual((r['event']['reason'], len(calls)), ('timeout', 1), 'no hedge configured: one request, as now')
+
+    def test_an_error_gets_one_fast_retry(self):
+        r, calls, dt = self.run_judge([(0.0, RuntimeError('503')), (0.05, verdict(True, 0.7, 'indirect'))])
+        self.assertTrue(r['crisis']); self.assertEqual(len(calls), 2); self.assertLess(dt, 0.3)
+
+    def test_the_first_valid_answer_wins_and_a_fast_no_is_not_second_guessed(self):
+        r, calls, dt = self.run_judge([(0.05, verdict(False, 0.1, 'none')), (0.05, verdict(True, 0.9, 'indirect'))])
+        self.assertFalse(r['crisis']); self.assertEqual(len(calls), 1, 'no hedge when the first answers in time')
+
+    def test_a_floor_crisis_is_never_lowered(self):
+        c, calls = seq_latency([(0.05, verdict(False, 0.99, 'none'))])
+        r = asyncio.run(judge.judge_caller_crisis('main marna chahta hoon', c, mode_override='raise', env=self.ENV))
+        self.assertTrue(r['crisis']); self.assertEqual(calls, [], 'the floor acts at once; the judge is not asked')

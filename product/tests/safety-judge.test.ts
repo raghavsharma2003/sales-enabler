@@ -198,3 +198,49 @@ test('judge: prompt C output (risk plus the opt-out pair) parses in this door as
   assert.deepEqual(parseVerdict('{"crisis":false,"risk":5,"kind":"none","opt_out":true,"opt_out_confidence":0.9}'),
     { crisis: false, confidence: 0.05, kind: 'none', optOut: { value: true, confidence: 0.9 } });
 });
+
+// open.2026-10-24.judge-timeout-budget: one hedged second request on the slow tail (parity with test_judge.py Hedge).
+function seqLatency(replies: [number, string | Error][]) {
+  const calls: number[] = [];
+  setFakeLlm(async () => {
+    const i = calls.length; calls.push(i);
+    const [delay, out] = replies[Math.min(i, replies.length - 1)];
+    await new Promise(r => setTimeout(r, delay));
+    if (out instanceof Error) throw out;
+    return reply(out);
+  });
+  return calls;
+}
+const HEDGE = { ...ON, mode: 'raise' as const, timeoutMs: 1000, hedgeAfterMs: 200 };
+
+test('judge hedge: off by default; env values are clamped', async () => {
+  const { judgeHedgeMs, judgeTimeoutMs } = await import('../shared/safety/judge.ts');
+  assert.equal(judgeHedgeMs({}), null);
+  assert.equal(judgeHedgeMs({ VP_SAFETY_JUDGE_HEDGE_MS: '50' }), 200);
+  assert.equal(judgeHedgeMs({ VP_SAFETY_JUDGE_HEDGE_MS: 'off' }), null);
+  assert.equal(judgeTimeoutMs({ VP_SAFETY_JUDGE_TIMEOUT_MS: '1800' }), 1800);
+  assert.equal(judgeTimeoutMs({ VP_SAFETY_JUDGE_TIMEOUT_MS: '99999' }), 3000);
+});
+
+test('judge hedge: a slow first call is rescued within budget; over budget falls to the floor', async () => {
+  let calls = seqLatency([[2000, verdict(true, 0.8, 'indirect')], [50, verdict(true, 0.8, 'indirect')]]);
+  let t0 = Date.now();
+  const r = await judgeCallerCrisis(INDIRECT, HEDGE);
+  assert.equal(r.crisis, true); assert.equal(calls.length, 2); assert.ok(Date.now() - t0 < 600);
+  calls = seqLatency([[2000, verdict(true, 0.8, 'indirect')], [2000, verdict(true, 0.8, 'indirect')]]);
+  t0 = Date.now();
+  const s = await judgeCallerCrisis(INDIRECT, HEDGE);
+  assert.equal(s.crisis, false); assert.deepEqual(s.event, { type: 'judge_unavailable', reason: 'timeout' }); assert.ok(Date.now() - t0 < 1300);
+  calls = seqLatency([[2000, verdict(true, 0.8, 'indirect')]]);
+  const n = await judgeCallerCrisis(INDIRECT, { ...HEDGE, hedgeAfterMs: null });
+  assert.equal(n.event?.type, 'judge_unavailable'); assert.equal(calls.length, 1, 'no hedge configured: one request, as now');
+});
+
+test('judge hedge: an error gets one fast retry; a fast valid "no" is not second-guessed; the floor is never lowered', async () => {
+  let calls = seqLatency([[0, new Error('503')], [50, verdict(true, 0.7, 'indirect')]]);
+  assert.equal((await judgeCallerCrisis(INDIRECT, HEDGE)).crisis, true); assert.equal(calls.length, 2);
+  calls = seqLatency([[50, verdict(false, 0.1, 'none')], [50, verdict(true, 0.9, 'indirect')]]);
+  assert.equal((await judgeCallerCrisis(INDIRECT, HEDGE)).crisis, false); assert.equal(calls.length, 1);
+  calls = seqLatency([[50, verdict(false, 0.99, 'none')]]);
+  assert.equal((await judgeCallerCrisis('main marna chahta hoon', HEDGE)).crisis, true); assert.equal(calls.length, 0);
+});

@@ -1,13 +1,14 @@
 // The model-based judges behind the deterministic floor. The contract (prompt, schema, modes, threshold, timeout,
 // events) is data in judge.json, shared with the Python runtime. One rule above all: a judge can only ADD a signal.
 // The floor's verdict always stands; a missing model, a timeout, an error or bad output leaves it unchanged.
-import { complete, type Purpose } from '../../server/llm.ts';
+import { complete, type LlmReply, type Purpose } from '../../server/llm.ts';
 import { callerSignals, redact } from './index.ts';
 import judgeData from './judge.json' with { type: 'json' };
 
 export type JudgeMode = 'off' | 'shadow' | 'raise';
 interface CrisisJudgeSpec {
   llm_purpose: string; modes: JudgeMode[]; mode_default: JudgeMode; mode_env: string; threshold: number; opt_out_threshold: number; timeout_ms: number;
+  hedge_after_ms: number | null;
   max_input_chars: number; max_tokens: number; temperature: number; skip_when_floor_fires: boolean;
   system_prompt: string; user_template: string;
 }
@@ -41,6 +42,8 @@ export interface CrisisJudgeCtx {
   mode?: JudgeMode;              // default: VP_SAFETY_JUDGE_MODE, else judge.json mode_default
   prev?: string;                 // the previous caller turn, as context
   timeoutMs?: number;
+  /** Override judge.json hedge_after_ms (null = no hedge). */
+  hedgeAfterMs?: number | null;
   /** Tests and the eval harness: treat the judge as configured even without env keys (e.g. with setFakeLlm). */
   assumeConfigured?: boolean;
 }
@@ -90,17 +93,11 @@ export async function judgeCallerCrisis(text: string, ctx: CrisisJudgeCtx = {}):
   if (mode === 'off' || !(ctx.assumeConfigured || judgeConfigured())) return base;
   if (floor && CRISIS_JUDGE.skip_when_floor_fires) return base;
 
-  const user = CRISIS_JUDGE.user_template.replace('{prev}', ctx.prev ? judgeInput(ctx.prev) : '').replace('{text}', judgeInput(text));
-  const timeoutMs = ctx.timeoutMs ?? CRISIS_JUDGE.timeout_ms;
-  const abort = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  const user = judgeUserText(text, ctx.prev);
+  const timeoutMs = ctx.timeoutMs ?? judgeTimeoutMs();
   const t0 = performance.now();
   try {
-    const reply = await Promise.race([
-      complete({ purpose: PURPOSE, json: true, temperature: CRISIS_JUDGE.temperature, maxTokens: CRISIS_JUDGE.max_tokens, signal: abort.signal,
-        messages: [{ role: 'system', content: CRISIS_JUDGE.system_prompt }, { role: 'user', content: user }] }),
-      new Promise<never>((_, reject) => { timer = setTimeout(() => { abort.abort(); reject(new JudgeTimeout()); }, timeoutMs); }),
-    ]);
+    const { reply, requests } = await hedgedCall(user, timeoutMs, ctx.hedgeAfterMs === undefined ? judgeHedgeMs() : ctx.hedgeAfterMs);
     const latencyMs = performance.now() - t0;
     const v = parseVerdict(reply.text);
     if (!v) return { ...base, called: true, latencyMs, usage: reply.usage, event: { type: 'judge_unavailable', reason: 'bad_output' } };
@@ -117,8 +114,68 @@ export async function judgeCallerCrisis(text: string, ctx: CrisisJudgeCtx = {}):
     return { ...base, crisis: crisisNow, optOut: floorOptOut || optRaised, optOutEvent, called: true, judge: v, event, latencyMs, usage: reply.usage };
   } catch (e) {
     return { ...base, called: true, latencyMs: performance.now() - t0, event: { type: 'judge_unavailable', reason: e instanceof JudgeTimeout ? 'timeout' : 'error' } };
+  }
+}
+
+/** The judge's model request for one utterance (user already built from user_template): the same for the live judge
+ *  and scripts/judge-latency.mjs, so the latency run measures exactly what calls send. */
+export function judgeRequest(user: string) {
+  return { purpose: PURPOSE, json: true, temperature: CRISIS_JUDGE.temperature, maxTokens: CRISIS_JUDGE.max_tokens,
+    messages: [{ role: 'system' as const, content: CRISIS_JUDGE.system_prompt }, { role: 'user' as const, content: user }] };
+}
+
+export function judgeUserText(text: string, prev = ''): string {
+  return CRISIS_JUDGE.user_template.replace('{prev}', prev ? judgeInput(prev) : '').replace('{text}', judgeInput(text));
+}
+
+/** judge.json timeout_ms, or VP_SAFETY_JUDGE_TIMEOUT_MS clamped to 500-3000 (as the Python door's judge.timeout_ms). */
+export function judgeTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
+  const v = Number.parseInt(env.VP_SAFETY_JUDGE_TIMEOUT_MS ?? '', 10);
+  return Number.isFinite(v) ? Math.max(500, Math.min(3000, v)) : CRISIS_JUDGE.timeout_ms;
+}
+
+/** judge.json hedge_after_ms, or VP_SAFETY_JUDGE_HEDGE_MS clamped to 200-3000 ('0' or 'off' turns it off). null = off. */
+export function judgeHedgeMs(env: NodeJS.ProcessEnv = process.env): number | null {
+  const raw = (env.VP_SAFETY_JUDGE_HEDGE_MS ?? '').trim().toLowerCase();
+  if (raw === '0' || raw === 'off') return null;
+  const v = Number.parseInt(raw, 10);
+  return Number.isFinite(v) ? Math.max(200, Math.min(3000, v)) : CRISIS_JUDGE.hedge_after_ms;
+}
+
+/** One call, plus ONE identical second call when the first has not answered validly after hedgeMs (slow, failed or
+ *  unreadable). The first valid reply wins; each is judged exactly as it would be alone, so raise-only holds
+ *  (open.2026-10-24.judge-timeout-budget). Rejects with JudgeTimeout when nothing arrives within timeoutMs. */
+async function hedgedCall(user: string, timeoutMs: number, hedgeMs: number | null): Promise<{ reply: LlmReply; requests: number }> {
+  const aborts: AbortController[] = [];
+  const call = () => {
+    const a = new AbortController(); aborts.push(a);
+    return complete({ ...judgeRequest(user), signal: a.signal });
+  };
+  let timer: ReturnType<typeof setTimeout> | undefined, hedgeTimer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await new Promise((resolve, reject) => {
+      let settled = false, running = 0, last: LlmReply | null = null, lastErr: unknown = null, hedged = false;
+      const finish = (f: () => void) => { if (!settled) { settled = true; f(); } };
+      const launch = () => {
+        running++;
+        call().then(r => {
+          running--;
+          if (parseVerdict(r.text)) return finish(() => resolve({ reply: r, requests: aborts.length }));
+          last = r; next();
+        }, e => { running--; lastErr = e; next(); });
+      };
+      const next = () => {                         // a failed or unreadable answer: hedge now if not yet, else wait or give up
+        if (settled) return;
+        if (!hedged && hedgeMs !== null && hedgeMs < timeoutMs) { hedged = true; clearTimeout(hedgeTimer); launch(); return; }
+        if (running === 0) finish(() => (last ? resolve({ reply: last, requests: aborts.length }) : reject(lastErr ?? new JudgeTimeout())));
+      };
+      timer = setTimeout(() => finish(() => (last ? resolve({ reply: last, requests: aborts.length }) : reject(new JudgeTimeout()))), timeoutMs);
+      if (hedgeMs !== null && hedgeMs < timeoutMs) hedgeTimer = setTimeout(() => { if (!settled && !hedged) { hedged = true; launch(); } }, hedgeMs);
+      launch();
+    });
   } finally {
-    clearTimeout(timer);
+    clearTimeout(timer); clearTimeout(hedgeTimer);
+    for (const a of aborts) a.abort();
   }
 }
 

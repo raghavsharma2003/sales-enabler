@@ -21,7 +21,7 @@ with open(_judge_path(), encoding='utf-8') as _f:
 
 # Parity guard, as for rules.json: a key this port does not implement fails at import, never half-evaluated.
 KNOWN_TOP = {'schema', 'about', 'judges'}
-KNOWN_SPEC = {'purpose', 'signal', 'labels', 'llm_purpose', 'llm_env', 'model_recommended', 'checkin', 'modes', 'mode_default', 'mode_env', 'mode_note', 'threshold', 'opt_out_threshold', 'timeout_ms',
+KNOWN_SPEC = {'purpose', 'signal', 'labels', 'llm_purpose', 'llm_env', 'model_recommended', 'checkin', 'modes', 'mode_default', 'mode_env', 'mode_note', 'threshold', 'opt_out_threshold', 'timeout_ms', 'hedge_after_ms', 'latency_note',
               'max_input_chars', 'max_tokens', 'temperature', 'skip_when_floor_fires', 'input', 'system_prompt', 'user_template',
               'output_schema', 'raise_when', 'never', 'events', 'runtime_note'}
 KNOWN_JUDGES = {'caller_crisis'}
@@ -88,6 +88,46 @@ def timeout_ms(env=None):
     v = (os.environ if env is None else env).get('VP_SAFETY_JUDGE_TIMEOUT_MS', '')
     try: return max(500, min(3000, int(v))) if v else SPEC['timeout_ms']
     except ValueError: return SPEC['timeout_ms']
+
+
+def hedge_after_ms(env=None):
+    """judge.json hedge_after_ms, or VP_SAFETY_JUDGE_HEDGE_MS (clamped to 200-3000; 0 or 'off' turns it off). None = off."""
+    v = (os.environ if env is None else env).get('VP_SAFETY_JUDGE_HEDGE_MS', '')
+    if v:
+        if v.strip().lower() in ('0', 'off'): return None
+        try: return max(200, min(3000, int(v)))
+        except ValueError: pass
+    return SPEC.get('hedge_after_ms')
+
+
+async def hedged(complete, msgs, timeout_s, hedge_s):
+    """One call, plus ONE identical second call if the first has not answered after hedge_s; the first VALID reply wins
+    (an error or bad output from one waits for the other). Returns (reply, requests). Raises asyncio.TimeoutError when
+    nothing valid arrives within timeout_s. Each reply is judged exactly as it would be alone, so raise-only holds."""
+    if hedge_s is None or hedge_s >= timeout_s:            # no hedge: the single call, exactly as before
+        return await asyncio.wait_for(complete(msgs), timeout_s), 1
+    loop = asyncio.get_running_loop(); deadline = loop.time() + timeout_s
+    tasks = [asyncio.ensure_future(complete(msgs))]
+    try:
+        done, _ = await asyncio.wait(tasks, timeout=hedge_s)
+        if not done or (tasks[0].exception() is not None or parse_verdict(tasks[0].result().get('text', '')) is None):
+            tasks.append(asyncio.ensure_future(complete(msgs)))         # slow, failed or unreadable: one second try
+        last = None
+        pending = set(tasks)
+        while pending:
+            left = deadline - loop.time()
+            if left <= 0: break
+            done, pending = await asyncio.wait(pending, timeout=left, return_when=asyncio.FIRST_COMPLETED)
+            for t in done:
+                if t.exception() is None:
+                    last = t.result()
+                    if parse_verdict(last.get('text', '')) is not None: return last, len(tasks)
+        if last is not None: return last, len(tasks)                   # only bad output arrived: report it as such
+        if any(t.done() and t.exception() is not None for t in tasks) and not pending: raise tasks[-1].exception()
+        raise asyncio.TimeoutError()
+    finally:
+        for t in tasks:
+            if not t.done(): t.cancel()
 
 
 def checkin_enabled(env=None):
@@ -158,7 +198,9 @@ async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, 
     if floor and SPEC['skip_when_floor_fires']: return base
     t0 = time.perf_counter()
     try:
-        reply = await asyncio.wait_for(complete(messages(text, prev)), (timeout_ms if timeout_ms is not None else globals()['timeout_ms'](env)) / 1000)
+        budget = (timeout_ms if timeout_ms is not None else globals()['timeout_ms'](env)) / 1000
+        h = hedge_after_ms(env)
+        reply, requests = await hedged(complete, messages(text, prev), budget, h / 1000 if h else None)
     except asyncio.TimeoutError:
         return {**base, 'called': True, 'latencyMs': (time.perf_counter() - t0) * 1000, 'event': {'type': 'judge_unavailable', 'reason': 'timeout'}}
     except asyncio.CancelledError:
@@ -179,4 +221,4 @@ async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, 
     opt_raised = opt_says and m == 'raise' and not floor_opt_out
     opt_event = None if (not opt_says or floor_opt_out) else {'type': 'judge_raised' if m == 'raise' else 'judge_shadow', 'confidence': oo['confidence']}
     return {**base, 'crisis': crisis_now, 'optOut': floor_opt_out or opt_raised, 'optOutEvent': opt_event, 'called': True, 'judge': v,
-            'event': event, 'latencyMs': latency, 'usage': reply.get('usage')}
+            'event': event, 'latencyMs': latency, 'usage': reply.get('usage'), 'requests': requests}

@@ -1,0 +1,46 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.judge-hedge-and-budget",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Judge latency fix for open.2026-10-24.judge-timeout-budget, built in both doors and off until measured. (1) A hedge: when hedge_after_ms is set, a judge call with no valid answer by then (slow, failed or unreadable) sends ONE identical second request, and the first valid answer wins. Each answer is judged exactly as alone, so raise-only holds: a fast valid 'no' is not second-guessed, a floor crisis is never lowered, and an over-budget judge still falls to the floor. (2) The hard budget timeout_ms becomes the measured p99 (bounded at 3,000 ms). Because the runtime reply never waits for the judge, a longer budget only moves late verdicts to her next sentence or turn. judge.json: hedge_after_ms null, timeout_ms 1,500 until the VM latency run (product/scripts/judge-latency.mjs). VP_SAFETY_JUDGE_HEDGE_MS and VP_SAFETY_JUDGE_TIMEOUT_MS override both for staging. Choice rule for the values: from the latency run, take the smallest timeout_ms whose simulated hedged unavailability is at most 1%, and the largest hedge_after_ms that achieves it with extra requests at most 10%. Then verify on staging with the in-time log. A verdict cache for repeated caller lines was considered and not built: repeated lines are rarely the crisis ones.",
+   "rationale": "Both BLIND-10 judge misses were timeouts, and DEV unavailability was 4-10%. Latency, not judgement, loses recall.",
+   "reverse_if": "Staging shows the hedge raises Vertex request volume past the rate commitment (risk.2026-10-23.judge-vertex-rate-commitment), or that timeouts persist at the chosen budget (correlated slowness rather than tail variance: hedging will not help, so switch region or model), or that late verdicts at the longer budget mostly land after the call has moved on."
+  },
+  {
+   "id": "asset.2026-10-24.native-review-packets",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Native-speaker review packets, one per language (research/2026-10-24/native-review/kn-IN.md, te-IN, ml-IN, mr-IN, gu-IN, pa-IN, or-IN, plus a README). Each takes about 15 minutes: the AI disclosure line and its required meaning, every crisis and opt-out term the floor added with what it must mean, tick boxes (correct / wrong meaning / also harmless speech), and three questions on missing terms. For the owner to hand out (open.2026-10-24.indic-native-review).",
+   "paths": [
+    "research/2026-10-24/native-review/"
+   ],
+   "value": "turns the owner item into a 15-minute task per language",
+   "effort": "small"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.judge-hedge-and-budget",
+   "to": "open.2026-10-24.judge-timeout-budget",
+   "relation": "implements"
+  },
+  {
+   "from": "asset.2026-10-24.native-review-packets",
+   "to": "open.2026-10-24.indic-native-review",
+   "relation": "supports"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-judge-hedge",
+   "details": "Hedged judge call (one identical second request, first valid answer wins) and env budget overrides in TS and Python, off until measured. Stubbed-latency tests in both doors (slow first call rescued, over budget falls to the floor, error retried, fast no stands, floor never lowered). Latency script for a VM run (DEV only, uncensored, simulated hedge table). Native-review packets for 7 languages. ASK: the integrator runs `node product/scripts/judge-latency.mjs --source dev-7,optout-dev --limit 300 --rps 1 --out-dir research/2026-10-24/judge-latency` on the VM with Flash-Lite. Gates: tsc and web tsc clean, fresh-DB 765/765, ui-contract strict 200/200, voice unittest OK."
+  }
+ ]
+}
