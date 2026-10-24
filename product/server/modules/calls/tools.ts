@@ -10,9 +10,11 @@ import type { CallTicket } from '../../../shared/runtime-protocol.ts';
 import { combinationId, resolveStack } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import { analysisSetting, analysisSettingText, curatedAnalysisModels, DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
-import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLower } from './stats.ts';
+import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, TRUST, wilsonLower, type CalibrationStatus } from './stats.ts';
+import { FIELD_TYPES, MAX_FIELDS, validateFields, type FieldDef } from './fields.ts';
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
 import { recordingLink } from '../../recording-url.ts';
+import { allowedByFor } from './gate-trace.ts';
 import { retentionPolicy } from '../intake/retention.ts';
 import { recordVerified } from './verified.ts';
 import { transcriptRemovedWhy } from '../memory/transcript-purge.ts';
@@ -212,12 +214,13 @@ export function registerTools(r: Registry): void {
       const rc = reasonFor(c.reason_code);
       const recording = await recordingFor(ctx, c);
       const verified = verifiedView(outcomes, c.analysis);
+      const allowedBy = await allowedByFor(ctx.q, ctx.workspaceId, c as { id: string; attempt_id: string | null; channel: string });
       const transcriptRemoved = transcriptRemovedWhy(c, (await retentionPolicy(ctx.q, ctx.workspaceId)).policy.transcripts_days);
       return {
         id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
         contactId: c.contact_id, agentVersionId: c.agent_version_id, agent: agentOf(c), startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
         endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
-        recordingUri: c.recording_uri, recording, transcriptRemoved, verified, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
+        recordingUri: c.recording_uri, recording, transcriptRemoved, verified, allowedBy, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
         cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
         turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
       };
@@ -282,6 +285,9 @@ export function registerTools(r: Registry): void {
       };
       const because: { point: string; evidence: Record<string, unknown> }[] = [];
       const rc = reasonFor(c.reason_code);
+      // Why it was allowed first: the dial gate's record, before anything that happened on the call.
+      const gate = await allowedByFor(ctx.q, ctx.workspaceId, c as { id: string; attempt_id: string | null; channel: string });
+      because.push({ point: `Why this call was allowed: ${gate.summary}`, evidence: { event: 'dial_gate', allowed: gate.allowed, gateVersion: gate.gateVersion, at: gate.at, checks: gate.checks.length } });
       if (c.end_reason) because.push({ point: `The call ended: ${c.end_reason.replaceAll('_', ' ')} after ${c.duration_s ?? 0} s.`, evidence: { event: 'call.ended', endReason: c.end_reason, durationS: c.duration_s } });
       const moments = await many<{ source: string; kind: string; at_ms: number | null; note: string | null; quote: string | null }>(ctx.q,
         'SELECT source, kind, at_ms, note, quote FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY at_ms NULLS LAST', [c.id, ctx.workspaceId]);
@@ -323,28 +329,62 @@ export function registerTools(r: Registry): void {
     goalValues: arr(str({ min: 1, max: 60 }), { min: 1, max: 20 }),
     verifiedBy: opt(str({ max: 60, desc: 'the system of record that verifies it, e.g. payment_webhook, crm_field, booking' })),
     campaignId: opt(uuid()),
+    fields: opt(arr(obj({ key: str({ min: 1, max: 40, pattern: /^[a-z][a-z0-9_]*$/ }), label: opt(str({ max: 80 })), type: str({ oneOf: FIELD_TYPES }),
+      // Typed values the analysis fills from what the caller said, each quoted from their words or left empty; sentiment is a five-point scale.
+      values: opt(arr(str({ min: 1, max: 60, pattern: /^[a-z0-9_]+$/ }), { max: 20 })) }), { max: MAX_FIELDS })),
   });
   r.register(tool(defineIn, {
     name: 'outcome.define', risk: 'draft', summary: 'Define (or change) what counts as an outcome and which values reach the goal',
-    describe: i => `${i.id ? 'Change' : 'Create'} the outcome "${i.name}": ${i.allowedValues.join(', ')}; goal = ${i.goalValues.join(', ')}; verified by ${i.verifiedBy ?? 'nothing yet (outcomes stay AI guesses)'}`,
+    describe: i => `${i.id ? 'Change' : 'Create'} the outcome "${i.name}": ${i.allowedValues.join(', ')}; goal = ${i.goalValues.join(', ')}; verified by ${i.verifiedBy ?? 'nothing yet (outcomes stay AI guesses)'}${i.fields?.length ? `; fields: ${i.fields.map(f => f.label ?? f.key).join(', ')}` : ''}`,
     version: async (ctx, i) => i.id ? String((await one<{ version: number }>(ctx.q, 'SELECT version FROM outcome_definition WHERE id = $1 AND workspace_id = $2', [i.id, ctx.workspaceId]))?.version ?? 'missing') : 'new',
     run: async (ctx, i) => {
       for (const g of i.goalValues) if (!i.allowedValues.includes(g)) throw new Error(`goal value "${g}" is not one of the allowed values`);
       if (new Set(i.allowedValues).size !== i.allowedValues.length) throw new Error('allowed values must be distinct');
+      // Fields are kept as they were when an edit leaves them out; [] removes them.
+      const fields = i.fields ? JSON.stringify(validateFields(i.fields as FieldDef[])) : null;
       let id = i.id;
       if (id) {
-        const u = await ctx.q.query(`UPDATE outcome_definition SET name = $3, question = $4, allowed_values = $5, goal_values = $6, verified_by = $7, version = version + 1
-          WHERE id = $1 AND workspace_id = $2`, [id, ctx.workspaceId, i.name, i.question, i.allowedValues, i.goalValues, i.verifiedBy ?? null]);
+        const u = await ctx.q.query(`UPDATE outcome_definition SET name = $3, question = $4, allowed_values = $5, goal_values = $6, verified_by = $7,
+            fields = coalesce($8::jsonb, fields), version = version + 1
+          WHERE id = $1 AND workspace_id = $2`, [id, ctx.workspaceId, i.name, i.question, i.allowedValues, i.goalValues, i.verifiedBy ?? null, fields]);
         if (!u.rowCount) throw new Error('no such outcome definition in this workspace');
       } else {
-        id = (await one<{ id: string }>(ctx.q, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values, verified_by) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
-          [ctx.workspaceId, i.name, i.question, i.allowedValues, i.goalValues, i.verifiedBy ?? null]))!.id;
+        id = (await one<{ id: string }>(ctx.q, `INSERT INTO outcome_definition (workspace_id, name, question, allowed_values, goal_values, verified_by, fields) VALUES ($1,$2,$3,$4,$5,$6,coalesce($7::jsonb, '[]'::jsonb)) RETURNING id`,
+          [ctx.workspaceId, i.name, i.question, i.allowedValues, i.goalValues, i.verifiedBy ?? null, fields]))!.id;
       }
       if (i.campaignId) {
         const u = await ctx.q.query('UPDATE campaign SET outcome_definition_id = $3, updated_at = now() WHERE id = $1 AND workspace_id = $2', [i.campaignId, ctx.workspaceId, id]);
         if (!u.rowCount) throw new Error('no such campaign in this workspace');
       }
       return { outcomeDefinitionId: id, verified: Boolean(i.verifiedBy), note: i.verifiedBy ? null : 'No verified source: outcomes stay "AI guess" until one is wired or a person labels them.' };
+    },
+  }));
+
+  // ---- outcome.list: what counts as an outcome, how it is judged, and whether that judge is trusted yet ----------------
+  r.register(tool(obj({}), {
+    name: 'outcome.list', risk: 'read', summary: 'The outcomes this workspace measures: allowed and goal values, typed fields, the judge (instructions and model) and its calibration',
+    run: async ctx => {
+      const defs = await many<{ id: string; name: string; question: string; allowed_values: string[]; goal_values: string[]; verified_by: string | null; fields: FieldDef[]; version: number }>(ctx.q,
+        `SELECT id, name, question, allowed_values, goal_values, verified_by, fields, version FROM outcome_definition WHERE workspace_id = $1 ORDER BY created_at`, [ctx.workspaceId]);
+      const setting = await analysisSetting(ctx.q, ctx.workspaceId);
+      const out = [];
+      for (const d of defs) {
+        const campaigns = await many<{ id: string; name: string }>(ctx.q, 'SELECT id, name FROM campaign WHERE workspace_id = $1 AND outcome_definition_id = $2 ORDER BY name', [ctx.workspaceId, d.id]);
+        const j = await one<{ id: string; name: string; model: string; config: { instructions?: string }; number: number; created_at: string }>(ctx.q,
+          'SELECT id, name, model, config, number, created_at FROM judge_version WHERE workspace_id = $1 AND outcome_definition_id = $2 ORDER BY number DESC LIMIT 1', [ctx.workspaceId, d.id]);
+        const k = j ? await one<{ n: number; agreement: string; wilson_lower: string; status: string; created_at: string }>(ctx.q,
+          'SELECT n, agreement::text, wilson_lower::text, status, created_at FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [j.id]) : null;
+        const labelled = await one<{ n: number }>(ctx.q, `SELECT count(DISTINCT conversation_id)::int AS n FROM outcome WHERE workspace_id = $1 AND definition_id = $2 AND grade IN ('verified','manager')`, [ctx.workspaceId, d.id]);
+        out.push({ id: d.id, name: d.name, question: d.question, allowedValues: d.allowed_values, goalValues: d.goal_values, verifiedBy: d.verified_by, fields: d.fields ?? [], version: d.version,
+          campaigns,
+          judge: j ? { judgeVersionId: j.id, name: j.name, model: j.model, instructions: j.config?.instructions ?? '', number: j.number, since: j.created_at } : null,
+          // With no judge of its own, the workspace's analysis model guesses the outcome; such a guess is never trusted.
+          judgedBy: j ? null : analysisSettingText(setting),
+          calibration: k ? { status: k.status as CalibrationStatus, n: k.n, agreement: Number(k.agreement), lower: Number(k.wilson_lower), at: k.created_at }
+            : { status: 'uncalibrated' as const, n: 0, agreement: null, lower: null, at: null },
+          labelledCalls: labelled!.n, trust: { minLabelled: TRUST.minN, agreement: TRUST.agreement, lower: TRUST.lower } });
+      }
+      return { definitions: out };
     },
   }));
 

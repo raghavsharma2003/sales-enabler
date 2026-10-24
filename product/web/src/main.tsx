@@ -13,6 +13,7 @@ const Agents = lazy(() => import('./pages/agents.tsx'));
 const Contacts = lazy(() => import('./pages/contacts.tsx'));
 const Campaigns = lazy(() => import('./pages/campaigns.tsx'));
 const Calls = lazy(() => import('./pages/calls.tsx'));
+const HandOffs = lazy(() => import('./pages/handoffs.tsx'));
 const Insights = lazy(() => import('./pages/insights.tsx'));
 const Numbers = lazy(() => import('./pages/numbers.tsx'));
 const Settings = lazy(() => import('./pages/settings.tsx'));
@@ -31,6 +32,7 @@ function Routes() {
   if (path === '/campaigns') return <Campaigns />;
   if ((m = match('/calls/:id', path))) return <Calls id={m.id} />;
   if (path === '/calls') return <Calls />;
+  if (path === '/handoffs') return <HandOffs />;
   if (path === '/insights') return <Insights />;
   if (path === '/numbers') return <Numbers />;
   if ((m = match('/settings/:tab', path))) return <Settings tab={m.tab} />;

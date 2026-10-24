@@ -1,7 +1,9 @@
 // Every tool id the UI calls, grouped by the page that owns it. One page action = exactly one tool (workspace.md §2.2).
 // STATUS.json's tools_used is generated from this list by tests/web.test.ts, so it cannot drift from the code.
 export const TOOLS = {
-  today: ['brief.today', 'campaign.list', 'campaign.pause', 'wallet.get'],
+  today: ['brief.today', 'campaign.list', 'campaign.pause', 'wallet.get', 'handoff.list'],
+  handoffs: ['handoff.list', 'handoff.claim', 'handoff.resolve'],
+  shell: ['alert.list', 'alert.ack'],
   agents: ['agent.list', 'agent.get', 'agent.create', 'template.list', 'brief.edit', 'stack.set', 'version.publish', 'simcaller.list', 'test.simulate', 'test.browser_call', 'money.estimate'],
   contacts: ['contact.list', 'contact.search', 'contact.get', 'contact.memory.get', 'attempt.list', 'audience.list', 'audience.get', 'audience.create', 'source.upload', 'source.map', 'source.commit', 'fact.approve', 'fact.forget'],
   campaigns: ['campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.funnel', 'campaign.launch', 'campaign.resume', 'campaign.stop', 'campaign.window.narrow', 'campaign.window.widen'],
@@ -10,7 +12,7 @@ export const TOOLS = {
   numbers: ['number.list', 'number.search', 'number.rent', 'member.phone.verify_start', 'member.phone.verify_confirm', 'test.ring_member_phone'],
   settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'apikey.rotate', 'secret.reveal', 'brand.get', 'brand.update', 'knowledge.list', 'knowledge.ingest', 'knowledge.span.approve',
     'invoice.get', 'wallet.topup', 'safety.cases', 'policy.window.set', 'memory.policy.get', 'memory.policy.set', 'dpdp.request.execute', 'operator.settings.get', 'operator.brain.set', 'operator.autonomy.lower', 'operator.autonomy.raise',
-    'integration.list', 'integration.kinds', 'activity.list'],
+    'integration.list', 'integration.kinds', 'activity.list', 'outcome.list', 'outcome.define', 'judge.edit', 'judge.calibrate', 'analysis.settings.get'],
   security: ['member.list', 'secret.reveal', 'sso.config.get', 'sso.secret.stage', 'sso.config.set', 'sso.test', 'sso.required.set', 'scim.token.list', 'scim.token.create', 'scim.token.rotate', 'scim.token.revoke',
     'audit.export', 'audit.export.list', 'audit.export.verify'],
 } as const;
@@ -43,6 +45,7 @@ export function pageInfo(path: string): PageInfo {
       : { key: 'campaigns', label: 'Campaigns', chips: ['Start a new campaign', 'Which campaigns are live?'] };
     case 'audiences': return { key: 'contacts', label: 'Audiences', chips: ['Make an audience of one city', 'Who has opted out?'] };
     case 'calls': return { key: 'calls', label: p[1] ? 'Call' : 'Calls', chips: p[1] ? ['Make a test from this call', 'Why did she hang up?'] : ['Show failed calls', 'Calls where they objected'] };
+    case 'handoffs': return { key: 'handoffs', label: 'Hand-offs', chips: ['Who is waiting for a call back?', 'Show crisis hand-offs'] };
     case 'insights': return { key: 'insights', label: 'Insights', chips: ['Where do we lose people?', 'Summarise this week'] };
     case 'numbers': return { key: 'numbers', label: 'Numbers', chips: ['Ring my phone', 'How long does KYC take?'] };
     case 'settings': return { key: 'settings', label: 'Settings', chips: ['What was done this week?', 'Set a daily spend cap'] };

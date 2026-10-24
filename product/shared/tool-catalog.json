@@ -250,6 +250,51 @@
    }
   },
   {
+   "name": "alert.ack",
+   "risk": "draft",
+   "summary": "Mark an alert as seen (taking its hand-off does this too)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "alertId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "alertId"
+    ]
+   }
+  },
+  {
+   "name": "alert.list",
+   "risk": "read",
+   "summary": "Your unanswered alerts (a caller in distress needs a person), newest first",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
    "name": "analysis.model.set",
    "risk": "spend",
    "summary": "Choose the model that analyses calls, or a tiered pair; it changes what each call's analysis costs, never what is checked",
@@ -2964,6 +3009,98 @@
    }
   },
   {
+   "name": "handoff.claim",
+   "risk": "draft",
+   "summary": "Take a hand-off: it is yours to call back or follow up, and nobody else is shown it as free",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "handOffId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "handOffId"
+    ]
+   }
+  },
+  {
+   "name": "handoff.list",
+   "risk": "read",
+   "summary": "Hand-offs to people: crisis first, then callbacks by the time the caller asked, each with her warm brief and who has it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "open",
+       "done",
+       "all"
+      ]
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "handoff.resolve",
+   "risk": "draft",
+   "summary": "Close a hand-off you have: reached them, no answer, or no longer needed",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "handOffId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "resolution": {
+      "type": "string",
+      "enum": [
+       "reached",
+       "no_answer",
+       "not_needed"
+      ]
+     }
+    },
+    "required": [
+     "handOffId",
+     "resolution"
+    ]
+   }
+  },
+  {
    "name": "insight.get",
    "risk": "read",
    "summary": "Themes across recent calls (objections, drop-offs, unanswered questions, what came before a reached goal), each with verbatim quotes",
@@ -4808,6 +4945,50 @@
      "campaignId": {
       "type": "string",
       "format": "uuid"
+     },
+     "fields": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "key": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 40,
+         "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "label": {
+         "type": "string",
+         "maxLength": 80
+        },
+        "type": {
+         "type": "string",
+         "enum": [
+          "text",
+          "number",
+          "date",
+          "enum",
+          "sentiment"
+         ]
+        },
+        "values": {
+         "type": "array",
+         "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[a-z0-9_]+$"
+         },
+         "maxItems": 20
+        }
+       },
+       "required": [
+        "key",
+        "type"
+       ]
+      },
+      "maxItems": 12
      }
     },
     "required": [
@@ -4815,6 +4996,113 @@
      "question",
      "allowedValues",
      "goalValues"
+    ]
+   }
+  },
+  {
+   "name": "outcome.import",
+   "risk": "policy",
+   "summary": "Record the matched rows of a previewed file as verified outcomes",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "importId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "importId"
+    ]
+   }
+  },
+  {
+   "name": "outcome.import.list",
+   "risk": "read",
+   "summary": "Files of verified results imported, with matched, unmatched and ambiguous rows and how often the AI read disagreed",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "outcome.import.preview",
+   "risk": "draft",
+   "summary": "Read a file of results from your own system (paid, renewed, booked) and show which call each row matches; nothing is recorded yet",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "fileName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     },
+     "csv": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 3000000,
+      "description": "a CSV or TSV file as text: a header row, then one outcome per row"
+     },
+     "xlsxBase64": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 4000000,
+      "description": "an Excel (.xlsx) file, base64; its first sheet is read"
+     },
+     "definitionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "windowDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "how many days before the row date a call may be (default 14)"
+     },
+     "idKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60,
+      "pattern": "^[a-z0-9_]+$",
+      "description": "the contact attribute holding the external id (default external_id)"
+     }
+    },
+    "required": [
+     "fileName"
     ]
    }
   },
@@ -4856,6 +5144,25 @@
      "definitionId",
      "value"
     ]
+   }
+  },
+  {
+   "name": "outcome.list",
+   "risk": "read",
+   "summary": "The outcomes this workspace measures: allowed and goal values, typed fields, the judge (instructions and model) and its calibration",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
    }
   },
   {

@@ -1,6 +1,7 @@
 // The app shell: rail (desktop) / bottom bar (phone), top bar with the Page | Assistant switch, the docked operator.
 import { useState, type ReactNode } from 'react';
-import { BarChart3, Bot, Hash, Megaphone, MessageCircle, MoreHorizontal, Newspaper, PhoneCall, Settings, Users } from 'lucide-react';
+import { BarChart3, Bot, Hash, LifeBuoy, Megaphone, MessageCircle, MoreHorizontal, Newspaper, PhoneCall, Settings, Users } from 'lucide-react';
+import { AlertBanner } from './alerts.tsx';
 import { Link, usePath } from './router.tsx';
 import { useApp } from './store.tsx';
 import { Dock } from './operator.tsx';
@@ -12,7 +13,7 @@ import { useData } from './store.tsx';
 import { walletGet } from './data.ts';
 
 const NAV = [
-  { to: '/', label: 'Today', icon: Newspaper }, { to: '/campaigns', label: 'Campaigns', icon: Megaphone }, { to: '/calls', label: 'Calls', icon: PhoneCall },
+  { to: '/', label: 'Today', icon: Newspaper }, { to: '/campaigns', label: 'Campaigns', icon: Megaphone }, { to: '/calls', label: 'Calls', icon: PhoneCall }, { to: '/handoffs', label: 'Hand-offs', icon: LifeBuoy },
   { to: '/contacts', label: 'Contacts', icon: Users }, { to: '/agents', label: 'Agents', icon: Bot }, { to: '/insights', label: 'Insights', icon: BarChart3 },
   { to: '/numbers', label: 'Numbers', icon: Hash }, { to: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -42,6 +43,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <div className="workarea">
         <div className="main">
           {sample && <SampleRibbon />}
+          <AlertBanner />
           <div className="topbar">
             <span className="grow">{info.label}</span>
             <span className="viewswitch"><Segmented label="Show page or assistant" value={view} onChange={setView} options={[{ value: 'page' as const, label: 'Page' }, { value: 'talk' as const, label: 'Assistant' }]} /></span>

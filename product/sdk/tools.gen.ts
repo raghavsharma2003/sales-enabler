@@ -9,6 +9,8 @@ export type ToolName =
   | "agent.create"
   | "agent.get"
   | "agent.list"
+  | "alert.ack"
+  | "alert.list"
   | "analysis.model.set"
   | "analysis.settings.get"
   | "apikey.create"
@@ -75,6 +77,9 @@ export type ToolName =
   | "experiment.stop"
   | "fact.approve"
   | "fact.forget"
+  | "handoff.claim"
+  | "handoff.list"
+  | "handoff.resolve"
   | "insight.get"
   | "insight.refresh"
   | "integration.connect"
@@ -131,7 +136,11 @@ export type ToolName =
   | "operator.preference.remember"
   | "operator.settings.get"
   | "outcome.define"
+  | "outcome.import"
+  | "outcome.import.list"
+  | "outcome.import.preview"
   | "outcome.label"
+  | "outcome.list"
   | "outcome.record_verified"
   | "plan.change"
   | "policy.category.override"
@@ -236,6 +245,12 @@ export interface ToolInput {
   };
   /** List this workspace's agents (read) */
   "agent.list": Record<string, never>;
+  /** Mark an alert as seen (taking its hand-off does this too) (draft) */
+  "alert.ack": {
+    alertId: string;
+  };
+  /** Your unanswered alerts (a caller in distress needs a person), newest first (read) */
+  "alert.list": Record<string, never>;
   /** Choose the model that analyses calls, or a tiered pair; it changes what each call's analysis costs, never what is checked (spend, waits for approval) */
   "analysis.model.set": {
     mode: "single" | "tiered";
@@ -706,6 +721,20 @@ export interface ToolInput {
   "fact.forget": {
     factId: string;
   };
+  /** Take a hand-off: it is yours to call back or follow up, and nobody else is shown it as free (draft) */
+  "handoff.claim": {
+    handOffId: string;
+  };
+  /** Hand-offs to people: crisis first, then callbacks by the time the caller asked, each with her warm brief and who has it (read) */
+  "handoff.list": {
+    status?: "open" | "done" | "all";
+    limit?: number;
+  };
+  /** Close a hand-off you have: reached them, no answer, or no longer needed (draft) */
+  "handoff.resolve": {
+    handOffId: string;
+    resolution: "reached" | "no_answer" | "not_needed";
+  };
   /** Themes across recent calls (objections, drop-offs, unanswered questions, what came before a reached goal), each with verbatim quotes (read) */
   "insight.get": {
     agentId?: string;
@@ -1004,6 +1033,34 @@ export interface ToolInput {
     /** the system of record that verifies it, e.g. payment_webhook, crm_field, booking */
     verifiedBy?: string;
     campaignId?: string;
+    fields?: ({
+      key: string;
+      label?: string;
+      type: "text" | "number" | "date" | "enum" | "sentiment";
+      values?: string[];
+    })[];
+  };
+  /** Record the matched rows of a previewed file as verified outcomes (policy, waits for approval) */
+  "outcome.import": {
+    importId: string;
+  };
+  /** Files of verified results imported, with matched, unmatched and ambiguous rows and how often the AI read disagreed (read) */
+  "outcome.import.list": {
+    limit?: number;
+  };
+  /** Read a file of results from your own system (paid, renewed, booked) and show which call each row matches; nothing is recorded yet (draft) */
+  "outcome.import.preview": {
+    fileName: string;
+    /** a CSV or TSV file as text: a header row, then one outcome per row */
+    csv?: string;
+    /** an Excel (.xlsx) file, base64; its first sheet is read */
+    xlsxBase64?: string;
+    definitionId?: string;
+    campaignId?: string;
+    /** how many days before the row date a call may be (default 14) */
+    windowDays?: number;
+    /** the contact attribute holding the external id (default external_id) */
+    idKey?: string;
   };
   /** Record a manager's outcome label for a call (used to calibrate judges) (draft) */
   "outcome.label": {
@@ -1012,6 +1069,8 @@ export interface ToolInput {
     value: string;
     note?: string;
   };
+  /** The outcomes this workspace measures: allowed and goal values, typed fields, the judge (instructions and model) and its calibration (read) */
+  "outcome.list": Record<string, never>;
   /** Record an outcome verified by a system of record (payment, booking or CRM webhook). Called by integrations, never by a person or model (draft) */
   "outcome.record_verified": {
     conversationId: string;
@@ -1493,6 +1552,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "agent.create": { risk: "draft", needsApproval: false },
   "agent.get": { risk: "read", needsApproval: false },
   "agent.list": { risk: "read", needsApproval: false },
+  "alert.ack": { risk: "draft", needsApproval: false },
+  "alert.list": { risk: "read", needsApproval: false },
   "analysis.model.set": { risk: "spend", needsApproval: true },
   "analysis.settings.get": { risk: "read", needsApproval: false },
   "apikey.create": { risk: "policy", needsApproval: true },
@@ -1559,6 +1620,9 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "experiment.stop": { risk: "draft", needsApproval: false },
   "fact.approve": { risk: "draft", needsApproval: false },
   "fact.forget": { risk: "destructive", needsApproval: true },
+  "handoff.claim": { risk: "draft", needsApproval: false },
+  "handoff.list": { risk: "read", needsApproval: false },
+  "handoff.resolve": { risk: "draft", needsApproval: false },
   "insight.get": { risk: "read", needsApproval: false },
   "insight.refresh": { risk: "draft", needsApproval: false },
   "integration.connect": { risk: "policy", needsApproval: true },
@@ -1615,7 +1679,11 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "operator.preference.remember": { risk: "draft", needsApproval: false },
   "operator.settings.get": { risk: "read", needsApproval: false },
   "outcome.define": { risk: "draft", needsApproval: false },
+  "outcome.import": { risk: "policy", needsApproval: true },
+  "outcome.import.list": { risk: "read", needsApproval: false },
+  "outcome.import.preview": { risk: "draft", needsApproval: false },
   "outcome.label": { risk: "draft", needsApproval: false },
+  "outcome.list": { risk: "read", needsApproval: false },
   "outcome.record_verified": { risk: "draft", needsApproval: false },
   "plan.change": { risk: "spend", needsApproval: true },
   "policy.category.override": { risk: "policy", needsApproval: true },

@@ -6,11 +6,12 @@ import { runNightlyInsights } from './insights.ts';
 import { hookRoute } from './ingest.ts';
 import { registerTools } from './tools.ts';
 import { registerOutcomeImport } from './outcome-import.ts';
+import { registerHandOffTools } from './handoffs.ts';
 import { purgeRecordings } from './recording-purge.ts';
 
 export const module: Module = {
   name: 'calls',
-  register: r => { registerTools(r); registerOutcomeImport(r); },
+  register: r => { registerTools(r); registerOutcomeImport(r); registerHandOffTools(r); },
   routes(router, deps) {
     router.add('POST', '/hooks/runtime', hookRoute(deps), { rawBody: true, limit: 5_000_000 });   // call.ended carries the transcript
   },

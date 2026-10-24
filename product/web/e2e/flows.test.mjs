@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { createHmac } from 'node:crypto';
 import pg from 'pg';
 import { audit, axe } from './a11y.mjs';
 import { EMI_ROWS, xlsxFile } from '../dev/xlsx-sample.mjs';
@@ -1420,4 +1421,79 @@ test('Voice samples: a stack with a sample plays it with one labelled control an
       assert.equal(await card2.getByRole('button', { name: /^Play the sample of / }).count(), 0);
     } finally { await c.close(); }
   } finally { fs.writeFileSync(manifest, shipped); fs.rmSync(path.join(dir, 'e2e-fixture.wav'), { force: true }); }
+});
+
+// ---- Outcomes and checks (must-be brief 7): what counts as a result, how it is judged, and "Uncalibrated" until it passes
+test('Outcomes and checks: values, fields, judge and calibration as the server holds them; a judge change is a new uncalibrated version', async () => {
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  const made = await tool('outcome.define', { name: 'EMI promise', question: 'Did they promise to pay this month?', allowedValues: ['promised', 'callback', 'refused', 'needs_human'], goalValues: ['promised'],
+    fields: [{ key: 'pay_by', label: 'Pay by', type: 'date' }, { key: 'reason', label: 'Reason for delay', type: 'enum', values: ['salary_late', 'dispute', 'other'] }, { key: 'mood', type: 'sentiment' }] });
+  assert.equal(made.status, 'confirmed', JSON.stringify(made));
+  await page.goto(`${BASE}/settings/outcomes`);
+  const card = page.locator('.card', { has: page.getByRole('heading', { name: 'EMI promise' }) });
+  await card.waitFor();
+  await card.getByText('Uncalibrated', { exact: true }).waitFor();
+  assert.ok(await card.getByText('Promised · goal').isVisible(), 'the goal value is marked');
+  assert.ok(await card.getByText(/Reason for delay · Choice: Salary late, Dispute, Other/).isVisible());
+  assert.ok(await card.getByText(/Sentiment \(five-point scale\)/).isVisible());
+  fs.mkdirSync(shotDir, { recursive: true });
+  await card.screenshot({ path: path.join(shotDir, 'outcomes-and-checks.png') });
+  await card.getByRole('button', { name: 'Change how it is judged' }).click();
+  await card.getByLabel('Instructions').fill('A payment link sent and accepted counts as promised.');
+  await card.getByRole('button', { name: 'Save as a new version' }).click();
+  await card.getByText('A payment link sent and accepted counts as promised.').waitFor({ timeout: 10000 });
+  const def = (await tool('outcome.list')).result.definitions.find(d => d.id === made.result.outcomeDefinitionId);
+  assert.equal(def.judge.instructions, 'A payment link sent and accepted counts as promised.');
+  assert.equal(def.calibration.status, 'uncalibrated', 'a new judge version starts uncalibrated');
+  assert.ok(await card.getByText('Uncalibrated', { exact: true }).isVisible(), 'and the page still says so');
+  await card.screenshot({ path: path.join(shotDir, 'outcomes-and-checks-judge.png') });
+});
+
+// ---- Hand-offs (must-be brief 6): the runtime's signed report becomes a queue item with her warm brief; a crisis alerts
+// every page within 5 s; taking one makes it yours. The conversation row is the dialler's (made in SQL, as BRIDGE does);
+// the hand-off itself arrives through the real, signed /hooks/runtime.
+async function runtimeReport(conv, events) {
+  const body = JSON.stringify({ protocol: 1, conversationId: conv, events });
+  const t = String(Date.now());
+  const sig = createHmac('sha256', process.env.VP_RUNTIME_SECRET).update(t + '.' + body).digest('hex');
+  const r = await fetch(BASE + '/hooks/runtime', { method: 'POST', headers: { 'content-type': 'application/json', 'x-vp-signature': `t=${t},v1=${sig}` }, body });
+  assert.ok(r.ok, 'runtime hook ' + r.status);
+}
+test('Hand-offs: a callback due when the caller asked and a crisis alert on every page within 5 s; taking it makes it yours', async () => {
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  const contact = (await pool.query("INSERT INTO contact (workspace_id, e164, name) VALUES ($1,'+919812300077','Meena Iyer') RETURNING id", [ws])).rows[0].id;
+  const mk = async () => (await pool.query("INSERT INTO conversation (workspace_id, contact_id, channel) VALUES ($1,$2,'phone') RETURNING id", [ws, contact])).rows[0].id;
+  const at = new Date().toISOString(), m = { combinationId: 'e2e', stackId: 'v2-flashlite', agentVersionHash: 'e2e', components: {}, fallbacksUsed: [], memory: 'none', runtimeVersion: 'e2e' };
+  const callback = await mk();
+  await runtimeReport(callback, [{ seq: 1, type: 'call.started', at, manifest: m },
+    { seq: 2, type: 'turn', at, speaker: 'caller', text: 'Abhi main gaadi chala raha hoon, shaam 6 baje ke baad call karna.', startMs: 3000, endMs: 6000 },
+    { seq: 3, type: 'hand_off', at, reason: 'callback_request', target: 'callback', summary: 'Meena is driving and asked for a call after 6 pm about her renewal.' }]);
+  await page.goto(`${BASE}/handoffs`);
+  const card = page.locator('.card', { hasText: 'Meena is driving and asked for a call after 6 pm about her renewal.' });
+  await card.waitFor();
+  assert.ok(await card.getByText('They asked: "shaam 6 baje"').isVisible(), 'the time in her own words');
+  assert.ok(await card.getByText('Not taken yet').isVisible());
+  // A crisis on another call: the banner reaches this page within 5 s, without a reload.
+  const crisis = await mk();
+  const t0 = Date.now();
+  await runtimeReport(crisis, [{ seq: 1, type: 'call.started', at, manifest: m },
+    { seq: 2, type: 'turn', at, speaker: 'caller', text: 'Sab khatam ho gaya hai.', startMs: 3000, endMs: 5000 },
+    { seq: 3, type: 'hand_off', at, reason: 'crisis', target: 'queue:care', summary: 'The caller spoke of distress. Help lines given; she is staying on the call.' }]);
+  const banner = page.getByRole('alert').filter({ hasText: 'needs a person now' });
+  await banner.waitFor({ timeout: 6000 });
+  assert.ok(Date.now() - t0 < 6000, `alert shown ${Date.now() - t0} ms after the report (poll 5 s)`);
+  fs.mkdirSync(shotDir, { recursive: true });
+  await page.screenshot({ path: path.join(shotDir, 'handoffs-crisis-alert.png') });
+  await page.reload();
+  const crisisCard = page.locator('.card', { hasText: 'The caller spoke of distress.' });
+  await crisisCard.waitFor();
+  assert.equal(await page.locator('.card').filter({ hasText: /Crisis: needs a person now|Meena is driving/ }).first().textContent().then(t => /Crisis/.test(t)), true, 'crisis first');
+  await crisisCard.getByRole('button', { name: 'Take it' }).click();
+  await crisisCard.getByText('You have it').waitFor();
+  await banner.waitFor({ state: 'detached', timeout: 7000 });
+  const h = (await pool.query('SELECT status, claimed_by FROM hand_off WHERE conversation_id = $1', [crisis])).rows[0];
+  assert.equal(h.status, 'claimed');
+  await page.screenshot({ path: path.join(shotDir, 'handoffs-queue.png') });
+  await page.goto(`${BASE}/`);
+  await page.getByRole('heading', { name: 'Hand-offs' }).waitFor();
 });

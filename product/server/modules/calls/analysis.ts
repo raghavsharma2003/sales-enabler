@@ -13,13 +13,14 @@ import { syncGoalReason } from './goal.ts';
 import { judgeCallerCrisis, type CrisisJudgeCtx } from '../../../shared/safety/judge.ts';
 import { complete, llmConfigured, LlmError, type LlmReply } from '../../llm.ts';
 import { CONVERSATION_CODES, REASON_CODES, REFINABLE, EARLY_HANGUP_S } from './taxonomy.ts';
+import { fieldsPrompt, groundFields, type FieldDef, type Grounded } from './fields.ts';
 
 /** Codes the model may name: conversation codes only (CONV_*). END_* codes are the engine's (hang-up, hand-off, crisis, opt-out). */
 export const MODEL_CODES = CONVERSATION_CODES.filter(c => c.startsWith('CONV_'));
 
 type Ok = { reply: LlmReply; model: string; points: NonNullable<AnalysisRecord['points']>; moments: { kind: string; quote: string; note: string; atMs: number }[];
   outcomeGuess: AnalysisRecord['outcomeGuess']; outcomeUnclear: AnalysisRecord['outcomeUnclear']; outcomeTurn: number; outcomeConfidence: number | null;
-  forgetRequested: AnalysisRecord['forgetRequested']; modelCode: string | null; proposed: number; dropped: number };
+  forgetRequested: AnalysisRecord['forgetRequested']; modelCode: string | null; proposed: number; dropped: number; fields: Grounded };
 type Pass = Ok | { error: string; model?: string; reply?: LlmReply };
 
 /** Contract variants for the bench's ablations on DEV only (scripts/analysis-bench.ts --prompt-variant); the product
@@ -56,7 +57,7 @@ const OUTCOME_STANCE = [
 ];
 
 /** The analysis contract, written as shapes (fields, allowed values, one rule per line), not as prose to recite. */
-export function analysisPrompt(o: { question: string | null; values: string[]; instructions?: string }, variant: PromptVariant = promptVariant): string {
+export function analysisPrompt(o: { question: string | null; values: string[]; instructions?: string; fields?: FieldDef[] }, variant: PromptVariant = promptVariant): string {
   const codes = REASON_CODES.filter(r => MODEL_CODES.includes(r.code));
   const old = variant === 'r4-table' || variant === 'r3-stance' || variant === 'no-outcome-rules';
   const objection = old ? '- objection: PERSON gives a reason against, or a complaint'
@@ -82,6 +83,8 @@ export function analysisPrompt(o: { question: string | null; values: string[]; i
   ] : ['OUTCOME: always null.'];
   // The workspace's own outcome rule travels with the OUTCOME block, wherever the block sits (as it always followed it).
   if (o.instructions) outcome.push(`OUTCOME, client rule: ${o.instructions}`);
+  // Typed fields go with the OUTCOME block too; none means not one byte changes.
+  if (o.question && o.fields?.length) outcome.push(...fieldsPrompt(o.fields));
   return [
     'TASK: classify one phone call between an AI agent (AGENT) and a person (PERSON). Report what was said. Never grade.',
     'OUTPUT: one JSON object:',
@@ -212,7 +215,7 @@ export async function analysesSettled(): Promise<void> {
 }
 
 interface ConvRow { id: string; channel: string; transcript: Line[]; reason_code: string | null; end_reason: string | null; duration_s: number | null;
-  contact_id: string | null; def_id: string | null; def_name: string | null; def_question: string | null; allowed_values: string[] | null }
+  contact_id: string | null; def_id: string | null; def_name: string | null; def_question: string | null; allowed_values: string[] | null; def_fields: FieldDef[] | null }
 
 export interface AnalysisRecord {
   status: 'done' | 'failed' | 'not_configured' | 'skipped';
@@ -227,6 +230,10 @@ export interface AnalysisRecord {
   // An outcome the model proposed but the person never evidenced (no caller line holds its quote): not recorded.
   outcomeUnclear?: { value: string; reason: string } | null;
   outcomeConfidence?: number | null;          // the model's own 0..1 for its outcome; used only to decide escalation
+  // The definition's typed fields (calls/fields.ts): each kept value is quoted from a caller line; the rest are dropped and counted.
+  fields?: Record<string, { value: string | number; quote: string; type: string }>;
+  fieldsProposed?: number;
+  fieldsDropped?: { key: string; reason: string }[];
   // Tiered analysis: whether a second, stronger model ran and why. null when the workspace runs one model.
   tier?: { escalated: boolean; why: string | null; firstModel: string | null; secondModel: string | null; secondFailed: boolean } | null;
   judgeVersionId?: string | null;
@@ -267,7 +274,7 @@ export async function refreshOutcome(q: Queryable, workspaceId: string, conversa
 export async function analyse(pool: pg.Pool, workspaceId: string, conversationId: string, registry?: Registry): Promise<AnalysisRecord> {
   const cv = await one<ConvRow>(pool,
     `SELECT cv.id, cv.channel, cv.transcript, cv.reason_code, cv.end_reason, cv.duration_s, cv.contact_id,
-            d.id AS def_id, d.name AS def_name, d.question AS def_question, d.allowed_values
+            d.id AS def_id, d.name AS def_name, d.question AS def_question, d.allowed_values, d.fields AS def_fields
      FROM conversation cv
      LEFT JOIN attempt a ON a.id = cv.attempt_id AND a.workspace_id = cv.workspace_id
      LEFT JOIN campaign c ON c.id = a.campaign_id AND c.workspace_id = cv.workspace_id
@@ -332,7 +339,8 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     `SELECT id, model, config FROM judge_version WHERE workspace_id = $1 AND outcome_definition_id = $2 ORDER BY number DESC LIMIT 1`, [workspaceId, cv.def_id]) : null;
 
   const setting = await analysisSetting(pool, workspaceId);
-  const system = analysisPrompt({ question: cv.def_id ? cv.def_question : null, values: cv.allowed_values ?? [], instructions: judge?.config?.instructions });
+  const defFields = cv.def_id && Array.isArray(cv.def_fields) ? cv.def_fields : [];
+  const system = analysisPrompt({ question: cv.def_id ? cv.def_question : null, values: cv.allowed_values ?? [], instructions: judge?.config?.instructions, fields: defFields });
   const user = lines.map(l => `${l.speaker === 'agent' ? 'AGENT' : 'PERSON'}: ${l.text}`).join('\n');
   const callerSpoke = lines.some(l => l.speaker === 'caller');
 
@@ -384,7 +392,8 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     }
     // The model may only name a conversation code (CONV_*); codes the engine decides are never the model's to pick.
     const modelCode = typeof parsed.reasonCode === 'string' && MODEL_CODES.includes(parsed.reasonCode) ? parsed.reasonCode : null;
-    return { reply, model: reply.model, points, moments, outcomeGuess, outcomeUnclear, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped };
+    const fields = groundFields(parsed.fields, defFields, lines.filter(l => l.speaker === 'caller').map(l => l.text));
+    return { reply, model: reply.model, points, moments, outcomeGuess, outcomeUnclear, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped, fields };
   };
 
   const passes: Pass[] = [await runPass(setting.model)];
@@ -421,7 +430,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     const err = passes[passes.length - 1] as Extract<Pass, { error: string }>;
     return store({ status: 'failed', reason: err.error, reasonCode: cv.reason_code ?? undefined, model: err.model, tier }, costLines);
   }
-  const { points, moments, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped } = done;
+  const { points, moments, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped, fields } = done;
   let { outcomeGuess, outcomeUnclear } = done;
   const reply = done.reply;
   let reasonCode = cv.reason_code ?? 'CONV_INCOMPLETE';
@@ -437,6 +446,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     status: 'done', summary: points.map(p => p.claim).join(' '), points,
     quotes: points.map(p => ({ text: p.quote, startMs: p.startMs, speaker: p.speaker })),
     quotesProposed: proposed, quotesDropped: dropped, reasonCode, modelReasonCode: modelCode, outcomeGuess,
+    ...(defFields.length ? { fields: fields.values, fieldsProposed: fields.proposed, fieldsDropped: fields.dropped } : {}),
     judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested, outcomeUnclear, outcomeConfidence, tier,
     judge: outcomeGuess ? { judgeVersionId: judge?.id ?? null, value: outcomeGuess.value, quote: outcomeGuess.quote,
       calibration: judge ? (await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [judge.id]))?.status ?? 'uncalibrated' : 'uncalibrated' } : null,
@@ -445,7 +455,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   return store(rec, async c => {
     await c.query('UPDATE conversation SET reason_code = $3 WHERE id = $1 AND workspace_id = $2', [conversationId, workspaceId, reasonCode]);
     await syncGoalReason(c, workspaceId, conversationId);
-    if (dropped) await c.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{quotes_dropped}'::text[]) ORDER BY 1) WHERE id = $1`, [conversationId]);
+    if (dropped || fields.dropped.length) await c.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{quotes_dropped}'::text[]) ORDER BY 1) WHERE id = $1`, [conversationId]);
     await c.query(`DELETE FROM call_moment WHERE conversation_id = $1 AND workspace_id = $2 AND source = 'analysis'`, [conversationId, workspaceId]);
     for (const m of moments) {
       await c.query(`INSERT INTO call_moment (workspace_id, conversation_id, source, kind, at_ms, note, quote) VALUES ($1,$2,'analysis',$3,$4,$5,$6)`,

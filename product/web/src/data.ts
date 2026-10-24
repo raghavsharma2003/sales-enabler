@@ -208,10 +208,14 @@ export async function callGet(id: string): Promise<CallDoc> {
   const a = c.analysis;
   return { id: c.id, contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', campaignId: c.campaignId ?? null, test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
     // The server's fresh signed link when the recording may be played (call.get recording); else the stored address and why not.
-    recordingUri: c.recording?.url ?? c.recordingUri, recordingWhy: c.recording?.why ?? null, transcriptWhy: c.transcriptRemoved ?? null, verified: c.verified ?? null, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: partsRan(c.runManifest?.components), turns,
+    recordingUri: c.recording?.url ?? c.recordingUri, recordingWhy: c.recording?.why ?? null, transcriptWhy: c.transcriptRemoved ?? null,
+    allowedBy: c.allowedBy ? { allowed: c.allowedBy.allowed ?? null, at: c.allowedBy.at ?? null, summary: String(c.allowedBy.summary ?? ''), checks: arr<any>(c.allowedBy.checks).map(k => ({ ok: !!k.ok, text: String(k.text) })), warnings: arr<string>(c.allowedBy.warnings) } : null,
+    verified: c.verified ?? null, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: partsRan(c.runManifest?.components), turns,
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), judgeMarks: arr<any>(c.judgeMarks).map(j => ({ seq: j.seq, label: j.label, outcome: j.outcome, text: String(j.text) })), tools: arr(c.tools), handOffs: arr(c.handOffs),
     outcomes: arr(c.outcomes), costTotal: c.cost?.totalInrMilli ?? 0, costLines: arr(c.cost?.lines), settlement: c.cost?.settlement?.action ?? (typeof c.cost?.settlement === 'string' ? c.cost.settlement : null),
-    analysis: a ? { status: a.status, summary: a.summary, reason: a.reason } : null, totalMs };
+    analysis: a ? { status: a.status, summary: a.summary, reason: a.reason,
+      fields: a.fields && typeof a.fields === 'object' ? Object.entries(a.fields as Record<string, { value: string | number; quote: string; type?: string }>).map(([key, f]) => ({ key, value: f.type === 'enum' || f.type === 'sentiment' ? String(f.value).replace(/_/g, ' ').replace(/^./, x => x.toUpperCase()) : String(f.value), quote: String(f.quote) })) : [],
+      fieldsDropped: Array.isArray(a.fieldsDropped) ? a.fieldsDropped.length : 0 } : null, totalMs };
 }
 export const callExplain = (id: string) => run<CallExplain>('call.explain', { conversationId: id });
 

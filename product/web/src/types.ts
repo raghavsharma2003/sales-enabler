@@ -77,12 +77,14 @@ export interface CallRow { id: string; contactName: string; startedAt: string; d
 export interface CallTurn { idx: number; who: 'caller' | 'agent'; text: string; startMs: number | null; endMs: number | null; latencyMs: number | null; interrupted: boolean }
 export interface CallDoc {
   id: string; contactId: string | null; contactName: string; campaignId: string | null; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
-  reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; recordingWhy: string | null; transcriptWhy: string | null; verified: { value: string; from: string; aiRead: string | null; disagree: boolean } | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
+  reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; recordingWhy: string | null; transcriptWhy: string | null;
+  allowedBy: { allowed: boolean | null; at: string | null; summary: string; checks: { ok: boolean; text: string }[]; warnings: string[] } | null;
+  verified: { value: string; from: string; aiRead: string | null; disagree: boolean } | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
   turns: CallTurn[]; moments: { source: string; kind: string; atMs: number | null; note: string | null; quote: string | null }[];
   safety: { seq: number; rule: string; action: string; detail: string }[];
   judgeMarks: { seq: number; label: string; outcome: 'raised' | 'shadow' | 'unavailable'; text: string }[]; tools: { seq: number; name: string; status: string }[]; handOffs: { destination: string; status: string }[];
   outcomes: { value: string; grade: string; source: string }[]; costTotal: number; costLines: { component: string; provider: string; inr_milli: number; unit: string; quantity: number }[]; settlement: string | null;
-  analysis: { status: string; summary?: string; reason?: string } | null; totalMs: number;
+  analysis: { status: string; summary?: string; reason?: string; fields: { key: string; value: string; quote: string }[]; fieldsDropped: number } | null; totalMs: number;
 }
 export interface CallExplain { headline: string; because: { point: string; evidence: Record<string, unknown> }[]; outcome: { value: string; grade: string; note: string | null } | null; notes: string[] }
 

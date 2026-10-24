@@ -16,7 +16,9 @@ sh product/scripts/pg-test.sh "$DB" > /dev/null
 VP_SECRET_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 VP_RUNTIME_SECRET=rt-$(node -e "console.log(require('crypto').randomBytes(24).toString('hex'))")
 PORT=${PORT:-8799}
-export VP_SECRET_KEY VP_RUNTIME_SECRET PORT DATABASE_URL
+# The curated analysis models, as a deployment sets them (the judge editor offers these; analysis itself runs on the dev server's sample).
+VP_ANALYSIS_MODELS=gpt-4.1-mini,gpt-4.1
+export VP_SECRET_KEY VP_RUNTIME_SECRET PORT DATABASE_URL VP_ANALYSIS_MODELS
 node product/web/build.mjs > /dev/null || exit 1
 # A server already answering on this port (a previous run still shutting down) would be tested instead of ours, against a database we just dropped.
 curl -sf "http://localhost:$PORT/v1/health" > /dev/null && { echo "port $PORT is already serving: a previous run is still shutting down; wait a few seconds and run again"; exit 1; }

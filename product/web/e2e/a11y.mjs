@@ -20,7 +20,7 @@ export async function screens(call) {
     ['Contacts', '/contacts'], ['Contact', `/contacts/${ct[0]?.id}`], ['Import', '/contacts/import', async p => { await p.getByRole('button', { name: 'Use a made-up sample' }).click(); await p.getByRole('button', { name: 'Check the file' }).click(); await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); }],
     ['Audiences', '/audiences'], ['Campaigns', '/campaigns'], ['New campaign', '/campaigns/new'], ['Campaign', `/campaigns/${camp}`],
     ['Calls', '/calls'], ['Call', `/calls/${callId}`], ['Insights', '/insights'], ['Numbers', '/numbers'],
-    ['Settings: team', '/settings/team'], ['Settings: security', '/settings/security'], ['Settings: billing', '/settings/billing'], ['Settings: compliance', '/settings/compliance'], ['Settings: activity', '/settings/activity'],
+    ['Settings: team', '/settings/team'], ['Settings: outcomes', '/settings/outcomes'], ['Hand-offs', '/handoffs'], ['Settings: security', '/settings/security'], ['Settings: billing', '/settings/billing'], ['Settings: compliance', '/settings/compliance'], ['Settings: activity', '/settings/activity'],
     ['Approval sheet', '/settings/billing', async p => { await p.getByLabel('Add money (₹)').fill('500'); await p.getByRole('button', { name: /^Ask to add/ }).click(); await p.getByRole('dialog').waitFor(); }],
   ];
 }

@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import { ArrowRight, Pause, PhoneCall, ShieldAlert } from 'lucide-react';
 import { useApp, useData, useTool } from '../store.tsx';
 import { campaignList, walletGet } from '../data.ts';
+import { run } from '../api.ts';
+import type { HandOff } from './handoffs.tsx';
 import { Link } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, Skeleton } from '../ui.tsx';
 import { ago, count, date, inr, plural, time } from '../format.ts';
@@ -22,6 +24,7 @@ export default function Today() {
   const brief = useTool<Brief>('brief.today', {});
   const camps = useData<CampaignRow[]>('camps', hasTool('campaign.list') ? campaignList : null);
   const wallet = useData('wallet', hasTool('wallet.get') ? walletGet : null);
+  const handoffs = useData('handoffs-today', hasTool('handoff.list') ? () => run<{ items: HandOff[]; open: number; crisisOpen: number }>('handoff.list', { status: 'open', limit: 3 }) : null);
   const dayCap = wallet.data?.caps.find(c => c.period === 'day')?.capInrMilli ?? null;
   const dateLine = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' });
   const live = useMemo(() => (camps.data ?? []).filter(c => c.state === 'running' || c.state === 'paused'), [camps.data]);
@@ -76,6 +79,13 @@ export default function Today() {
                     </ul>
                   )}
                 </Card>
+
+                {handoffs.data && handoffs.data.open > 0 && <Card aria-labelledby="handoffs-h">
+                  <CardHead id="handoffs-h" title="Hand-offs" sub={`${count(handoffs.data.open)} waiting for a person${handoffs.data.crisisOpen ? `, ${count(handoffs.data.crisisOpen)} in crisis` : ''}`} />
+                  <ul className="billing">{handoffs.data.items.map(h => <li key={h.id}><div><strong>{h.contact?.name ?? 'A caller'}</strong> <span className="small muted">{h.reason}{h.due?.at ? `, call back ${date(h.due.at, true)}` : ''}</span></div>
+                    {h.crisis ? <Chip tone="brick">Crisis</Chip> : h.claimedBy ? <Chip tone="leaf">{h.claimedBy.name}</Chip> : <Chip tone="marigold">Not taken</Chip>}</li>)}</ul>
+                  <Link to="/handoffs" className="btn btn-sm" style={{ textDecoration: 'none', marginTop: 8 }}><span>Open hand-offs</span><ArrowRight size={16} aria-hidden /></Link>
+                </Card>}
 
                 <Card aria-labelledby="live-h">
                   <CardHead id="live-h" title="Live now" sub="Counts and pace as of the last update" />

@@ -16,6 +16,7 @@ import type { Registry } from '../../tools.ts';
 import type { EndReason, RunManifest, RuntimeEvent } from '../../../shared/runtime-protocol.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 import { queueAnalysis } from './analysis.ts';
+import { alertOnDuty, callerStatedTime, handOffKind } from './handoffs.ts';
 import { codeReason, NOT_CONNECTED } from './taxonomy.ts';
 import JUDGE_EVENT from '../../../shared/judge-event.json' with { type: 'json' };
 
@@ -204,12 +205,20 @@ async function apply(c: pg.PoolClient, conv: Conv, e: RuntimeEvent): Promise<boo
         [ws, conv.id, e.seq, e.name, e.args, e.status, e.at]);
       if (e.status === 'failed') await addFlags(c, conv.id, ['tool_failed']);
       return false;
-    case 'hand_off':
-      await c.query(`INSERT INTO hand_off (workspace_id, conversation_id, mode, destination, status, brief) VALUES ($1,$2,'warm',$3,'queued',$4)`,
-        [ws, conv.id, e.target, { reason: e.reason, summary: e.summary, seq: e.seq }]);
+    case 'hand_off': {
+      // The queue (calls/handoffs.ts): a callback is due when the caller said ("shaam 6 baje"), read from their own words;
+      // a take-over is a person already on the call, never a queue item; a crisis alerts on-duty members in this transaction.
+      const kind = handOffKind(e.target);
+      const stated = kind === 'callback' ? await callerStatedTime(c, conv.id, new Date(e.at)) : null;
+      const h = (await one<{ id: string }>(c, `INSERT INTO hand_off (workspace_id, conversation_id, mode, destination, status, brief, reason, target_kind, due_at, due_stated)
+        VALUES ($1,$2,'warm',$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        [ws, conv.id, e.target, kind === 'member' ? 'connected' : 'queued', { reason: e.reason, summary: e.summary, seq: e.seq }, e.reason, kind,
+          kind === 'callback' ? (stated?.at ?? new Date(e.at)) : null, stated?.quote ?? null]))!.id;
+      if (e.reason === 'crisis' && conv.channel !== 'test') await alertOnDuty(c, ws, h, conv.id);   // a practice call alerts nobody
       // A take-over by a person (target 'member:<id>') is not a configured hand-off; the call page shows "joined by a person".
       await addFlags(c, conv.id, e.reason === 'takeover' && e.target.startsWith('member:') ? ['hand_off', 'human_joined'] : ['hand_off']);
       return false;
+    }
     case 'judge':
       // Analysis-only: no flag and no call_safety_event (a real raise arrives separately as a 'safety' event).
       // A shadow opt-out is a row here and nothing else: no flag, no suppression (only the 'moment' opt_out of a raise does that).
