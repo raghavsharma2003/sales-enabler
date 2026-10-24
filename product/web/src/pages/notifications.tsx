@@ -106,7 +106,7 @@ export function DutyRoster() {
         {d.shifts.length > 0 && <Table caption="Weekly duty hours" rows={d.shifts} rowKey={s => s.memberId + s.days.join() + s.start} cols={[
           { key: 'n', label: 'Person', primary: true, render: s => s.name },
           { key: 'd', label: 'Days', render: s => s.days.map(x => DAYS[x - 1]).join(', ') },
-          { key: 'h', label: `Hours (${d.timezone})`, render: s => `${s.start} to ${s.end}` },
+          { key: 'h', label: `Hours (${d.timezone === 'Asia/Kolkata' ? 'IST' : d.timezone.split('/').pop()!.replace(/_/g, ' ')})`, render: s => `${s.start} to ${s.end}` },
           { key: 'x', label: '', render: s => edit && <Btn size="sm" kind="danger" aria-label={`Remove ${s.name}'s ${s.start} shift`} onClick={() => void save(d.shifts.filter(x => x !== s))}>Remove…</Btn> }]} />}
         {d.overrides.length > 0 && <ul className="billing">{d.overrides.map(o => <li key={o.id}><span><strong>{o.name}</strong> {o.onDuty ? 'on duty' : 'off duty'}, {date(o.from, true)} to {date(o.to, true)}{o.note ? ` (${o.note})` : ''}</span>
           {edit && <Btn size="sm" kind="danger" onClick={async () => { const r = await act('duty.override.remove', { id: o.id }, { describe: 'Removed.' }); if (r.ok) q.reload(); }}>Remove…</Btn>}</li>)}</ul>}

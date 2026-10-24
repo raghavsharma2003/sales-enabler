@@ -69,26 +69,29 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'cap.lower': { ask: 'Lower a spend cap', done: 'Spend cap lowered' },
   'test.simulate': { ask: 'Run a practice call', done: 'Practice call run' },
   'monitor.create': { ask: 'Turn on a monitor', done: 'Monitor turned on' },
-  'webhook.create': { ask: 'Add a webhook', done: 'Webhook added' },
-  'webhook.delete': { ask: 'Delete a webhook', done: 'Webhook deleted' },
-  'webhook.replay': { ask: 'Send a webhook event again', done: 'Webhook event queued again' },
-  'call.export': { ask: 'Export calls as a file', done: 'Calls export ready' },
-  'notification.destination.create': { ask: 'Add an alert destination', done: 'Alert destination added' },
-  'notification.destination.delete': { ask: 'Remove an alert destination', done: 'Alert destination removed' },
-  'duty.roster.set': { ask: 'Change the duty hours', done: 'Duty hours changed' },
-  'duty.override.add': { ask: 'Add leave or cover to the duty roster', done: 'Leave or cover added' },
-  'duty.override.remove': { ask: 'Remove leave or cover from the duty roster', done: 'Leave or cover removed' },
-  'source.hook_secret.rotate': { ask: 'Replace a contact webhook\'s signing secret', done: 'Signing secret replaced' },
+};
+/** Activity's wording for an approval request whose card keeps the server's own sentence as its title (no TOOL_LABEL). */
+const PROPOSAL_ASK: Record<string, string> = {
+  'webhook.create': 'add a webhook', 'webhook.delete': 'delete a webhook', 'webhook.replay': 'send a webhook event again', 'call.export': 'export calls as a file',
+  'notification.destination.create': 'add an alert destination', 'notification.destination.delete': 'remove an alert destination',
+  'duty.roster.set': 'change the duty hours', 'duty.override.add': 'add leave or cover to the duty roster', 'duty.override.remove': 'remove leave or cover from the duty roster',
+  'source.hook_secret.rotate': "replace a contact webhook's signing secret",
 };
 export const toolAsk = (tool: string, fallback: string) => TOOL_LABEL[tool]?.ask ?? fallback;
 export const toolDone = (tool: string, fallback: string) => TOOL_LABEL[tool]?.done ?? fallback;
 
 const FIELD: Record<string, string> = { inrMilli: 'Amount', capInrMilli: 'Spend cap', e164: 'Phone number', phone: 'Phone number', name: 'Name', email: 'Email', role: 'Role', level: 'Level', note: 'Note', title: 'Title', text: 'Text', brain: 'Brain', enabled: 'Switched on', stackId: 'Voice stack', scope: 'Scope', evidence: 'Where it came from', requestedBy: 'Asked by', suppress: 'Keep the number suppressed', window: 'Calling window', days: 'Days', ranges: 'Hours', start: 'From', end: 'To', concurrency: 'Calls at once', category: 'Kind of call', audienceName: 'Audience name', consentPurpose: 'Consent recorded for', scopes: 'Access', undoMinutes: 'Undo window (minutes)',
   issuer: 'Identity provider address', clientId: 'Client ID', allowedDomains: 'Allowed email domains', defaultRole: 'Role for new people', emailVerified: 'Email verification', required: 'Required for everyone',
-  format: 'Format', from: 'First day', to: 'Last day', actionPrefix: 'Only actions starting with', privilegedOnly: 'Privileged actions only' };
+  format: 'Format', from: 'First day', to: 'Last day', actionPrefix: 'Only actions starting with', privilegedOnly: 'Privileged actions only',
+  url: 'Address', events: 'Sends', contactNumber: 'Phone numbers', recipients: 'Email to', timezone: 'Time zone', onDuty: 'On duty', shifts: 'Weekly hours' };
 /** Short enum values an approval card shows, in words. */
 const ENUM_WORDS: Record<string, Record<string, string>> = {
   scope: { workspace: 'Whole workspace', campaign: 'One campaign', api_key: 'One API key' },
+  events: { '*': 'Every event', 'call.ended': 'A call ended', 'campaign.state_changed': 'A campaign changed state', 'campaign.*': 'Every campaign event', 'contact.opted_out': 'A person opted out',
+    'hand_off.created': 'A call was handed to a person', 'wallet.low': 'The wallet is running low', crisis: 'A caller may be in distress', hand_off: 'A call was handed to your team',
+    'campaign.paused': 'A campaign paused itself' },
+  contactNumber: { masked: 'Masked (+91•••••1234 and initials)', full: 'Full numbers and names' },
+  timezone: { 'Asia/Kolkata': 'India time (IST)' },
   period: { daily: 'Per day', monthly: 'Per month', total: 'In total' },
   scopes: { 'members:read': 'List people', 'members:write': 'Add and deactivate people', 'roles:write': 'Change roles' },
   format: { csv: 'CSV', jsonl: 'JSONL (one record per line)' },
@@ -112,6 +115,7 @@ export function fieldValue(path: string, v: unknown): string | null {
   if (typeof v === 'string' && ENUM_WORDS[last]?.[v]) return ENUM_WORDS[last][v];
   if (typeof v === 'string') return v;
   if (typeof v === 'number') return String(v);
+  if (last === 'days' && Array.isArray(v)) return v.map(d => ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][Number(d)] ?? String(d)).join(', ');
   if (Array.isArray(v)) return v.map(x => (typeof x === 'string' && ENUM_WORDS[last]?.[x] ? ENUM_WORDS[last][x] : typeof x === 'object' && x ? Object.entries(x as object).map(([k, y]) => `${fieldLabel(k)} ${fieldValue(k, y) ?? ''}`.trim()).join(', ') : String(x))).join('; ');
   if (typeof v === 'object') return Object.entries(v as object).map(([k, y]) => `${fieldLabel(k)}: ${fieldValue(k, y) ?? ''}`).join(' · ');
   return String(v);
@@ -259,6 +263,8 @@ export function activitySentence(line: string, action: string, subject?: string 
     const words = /asked to (?:run )?(.+?)(?: \([^)]*\))? and is waiting/.exec(line)?.[1];
     const key = tool && TOOL_LABEL[tool] ? tool : words ? Object.keys(TOOL_LABEL).find(k => k.replace(/[._]/g, ' ') === words) : undefined;
     const about = subject ? ` (${subject})` : '';
+    const ask = tool && PROPOSAL_ASK[tool] ? tool : words ? Object.keys(PROPOSAL_ASK).find(k => k.replace(/[._]/g, ' ') === words) : undefined;
+    if (!key && ask) return `${actor} asked for approval to ${PROPOSAL_ASK[ask]}${about}`;
     if (key) return `${actor} asked for approval: ${TOOL_LABEL[key].ask.charAt(0).toLowerCase()}${TOOL_LABEL[key].ask.slice(1)}${about}`;
     return words ? `${actor} asked for approval to ${words}${about}` : `${actor} asked for approval to make a change`;
   }

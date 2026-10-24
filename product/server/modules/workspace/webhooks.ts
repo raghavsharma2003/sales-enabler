@@ -16,7 +16,7 @@ import { any, arr, num, obj, opt, str, uuid } from '../../../shared/validate.ts'
 import { holdForReveal } from './common.ts';
 import { open, randomToken, seal } from './crypto.ts';
 import { integrationSecretsById } from './integrations.ts';
-import { BUILDS, EVENT_NAMES, NotSendable, buildRecord, type Build, type ContactNumber } from './results.ts';
+import { BUILDS, EVENTS, EVENT_NAMES, NotSendable, buildRecord, type Build, type ContactNumber } from './results.ts';
 
 const EVENT = /^(\*|[a-z][a-z0-9_]*(\.[a-z0-9_]+)*(\.\*)?)$/;
 const MAX_ATTEMPTS = 5, MAX_ENDPOINTS = 20, SEND_MS = 8000;
@@ -202,7 +202,8 @@ export function registerWebhooks(r: Registry) {
     describe: async (i, ctx) => {
       const host = (() => { try { return new URL(i.url).host; } catch { return i.url.slice(0, 60); } })();
       const it = i.authIntegrationId ? (await one<{ name: string }>(ctx.q, 'SELECT name FROM integration WHERE id = $1 AND workspace_id = $2', [i.authIntegrationId, ctx.workspaceId]))?.name : null;
-      return `Send ${i.events?.join(', ') ?? 'all'} events to ${host}, with ${i.contactNumber === 'full' ? 'full phone numbers and names (personal data leaves Vyakti)' : 'phone numbers masked'}${it ? `, signed in with the bearer token of "${it}"` : ''}`;
+      const what = !i.events || i.events.includes('*') ? 'every event' : i.events.map(e => EVENTS.find(x => x.event === e)?.label.toLowerCase() ?? (e.endsWith('.*') ? `every ${e.slice(0, -2).replace(/_/g, ' ')} event` : e.replace(/[._]/g, ' '))).join('; ');
+      return `Send ${what} to ${host}, with ${i.contactNumber === 'full' ? 'full phone numbers and names (personal data leaves Vyakti)' : 'phone numbers masked'}${it ? `, signed in with the bearer token of "${it}"` : ''}`;
     },
     run: async (ctx, i) => {
       const u = checkUrlShape(i.url);

@@ -71,7 +71,8 @@ export function registerDuty(r: Registry) {
     describe: async (i, ctx) => {
       const names = await many<{ label: string }>(ctx.q, 'SELECT DISTINCT coalesce(name, email) AS label FROM member WHERE workspace_id = $1 AND id = ANY($2::uuid[]) ORDER BY 1', [ctx.workspaceId, i.shifts.map(s => s.memberId)]);
       const tz = i.timezone ?? (await one<{ timezone: string }>(ctx.q, 'SELECT timezone FROM duty_roster WHERE workspace_id = $1', [ctx.workspaceId]))?.timezone ?? 'Asia/Kolkata';
-      return i.shifts.length ? `Set the duty hours (${tz}): ${i.shifts.length} ${i.shifts.length === 1 ? 'shift' : 'shifts'} for ${names.map(n => n.label).join(', ')}. Email alerts with no listed addresses go to whoever is on shift.`
+      const zone = tz === 'Asia/Kolkata' ? 'India time' : `${tz.split('/').pop()!.replace(/_/g, ' ')} time`;
+      return i.shifts.length ? `Set the duty hours (${zone}): ${i.shifts.length} ${i.shifts.length === 1 ? 'shift' : 'shifts'} for ${names.map(n => n.label).join(', ')}. Email alerts with no listed addresses go to whoever is on shift.`
         : 'Clear the weekly duty hours. Email alerts with no listed addresses go to every active owner, operator and compliance member.';
     },
     version: async ctx => String((await one<{ version: number }>(ctx.q, 'SELECT version FROM duty_roster WHERE workspace_id = $1', [ctx.workspaceId]))?.version ?? 0),
