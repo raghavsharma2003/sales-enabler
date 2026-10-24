@@ -16,6 +16,9 @@ import { attrKey, inferMapping, normLanguage, normTimezone, parseDate, truthy, t
 import { applyRows, hashWith, workspaceSalt, type InRow, type SourceRef } from './store.ts';
 import { checkFirstMessage, checkVoice } from './overrides.ts';
 import { looksLikeXlsx, readXlsx, rowsToCsv, XlsxError } from './xlsx.ts';
+// Webhook secrets live in the workspace vault (sealed, purpose 'intake-hook'); rotation shows the new one once.
+import { open as openSecret, seal } from '../workspace/crypto.ts';
+import { holdForReveal } from '../workspace/common.ts';
 // The agents module's pure fact-to-column matcher (walkthrough round 2, R3): the same rule the dial-time fill uses.
 import { factColumns, missingFactsSentence, type FactColumn } from '../agents/columns.ts';
 
@@ -24,6 +27,8 @@ const MAX_CONVERTED_BYTES = 120 * 1024 * 1024;   // an .xlsx of at most 20 MB, r
 const MAX_B64_CHARS = Math.ceil(MAX_FILE_BYTES / 3) * 4;
 const MAX_PART_CHARS = 950_000;                 // inline text in a tool call, under the tool endpoint's 1 MB body limit
 const HOOK_SKEW_S = 300;
+/** After a rotation the previous secret keeps working this long, so a sender can switch without dropping events. */
+export const HOOK_SECRET_OVERLAP_MS = 24 * 3600_000;
 const FILE_KINDS = ['csv', 'tsv', 'xlsx', 'sheet'] as const;
 const HOOK_KINDS = ['api_push', 'crm', 'form', 'whatsapp'] as const;
 type SourceKind = (typeof FILE_KINDS)[number] | (typeof HOOK_KINDS)[number];
@@ -33,7 +38,8 @@ const KIND_AUTHORITY: Record<SourceKind, Authority> = { csv: 'upload', tsv: 'upl
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
-interface SourceRow { id: string; workspace_id: string; kind: SourceKind; name: string; authority: Authority; max_age_s: number | null; hook_secret: string | null; status: string }
+interface SourceRow { id: string; workspace_id: string; kind: SourceKind; name: string; authority: Authority; max_age_s: number | null; status: string
+  hook_secret_ciphertext: string | null; hook_secret_prev_ciphertext: string | null; hook_secret_prev_until: Date | null }
 
 export function sourceRef(s: SourceRow): SourceRef {
   return { id: s.id, authority: s.authority, maxAgeS: s.max_age_s ?? DEFAULT_MAX_AGE_S[s.authority], label: `${s.kind}:${s.id}`,
@@ -45,8 +51,8 @@ async function createSource(q: Queryable, ws: string, i: { kind: SourceKind; nam
   // Files are uploads and forms are the person; only pushes and CRMs may declare their own authority.
   const authority = (i.kind === 'api_push' || i.kind === 'crm') && i.authority ? i.authority : KIND_AUTHORITY[i.kind];
   const secret = hook ? randomBytes(32).toString('base64url') : null;
-  const s = await one<SourceRow>(q, `INSERT INTO intake_source (workspace_id, kind, name, authority, max_age_s, hook_secret)
-    VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [ws, i.kind, i.name, authority, i.maxAgeDays != null ? Math.round(i.maxAgeDays * 86400) : null, secret]);
+  const s = await one<SourceRow>(q, `INSERT INTO intake_source (workspace_id, kind, name, authority, max_age_s, hook_secret_ciphertext)
+    VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [ws, i.kind, i.name, authority, i.maxAgeDays != null ? Math.round(i.maxAgeDays * 86400) : null, secret ? seal(ws, 'intake-hook', secret) : null]);
   return { source: s!, secret };
 }
 
@@ -286,9 +292,29 @@ export function registerSourceTools(reg: Registry): void {
 
   reg.register(tool(obj({ limit: opt(num({ int: true, min: 1, max: 200 })) }), {
     name: 'source.list', risk: 'read', summary: 'List the sources people come from, with their authority and last receipt',
-    run: async (ctx, i) => ({ sources: await many(ctx.q, `SELECT s.id, s.kind, s.name, s.authority, s.max_age_s, s.status, s.created_at, (s.hook_secret IS NOT NULL) AS signed_webhook,
+    run: async (ctx, i) => ({ sources: await many(ctx.q, `SELECT s.id, s.kind, s.name, s.authority, s.max_age_s, s.status, s.created_at, (s.hook_secret_ciphertext IS NOT NULL) AS signed_webhook,
+        CASE WHEN s.hook_secret_prev_until > now() THEN s.hook_secret_prev_until END AS previous_secret_until, s.hook_secret_rotated_at AS secret_rotated_at,
         (SELECT max(r.created_at) FROM intake_upload u JOIN source_receipt r ON r.id = u.receipt_id WHERE u.source_id = s.id) AS last_receipt_at
       FROM intake_source s WHERE s.workspace_id = $1 ORDER BY s.created_at DESC LIMIT $2`, [ctx.workspaceId, i.limit ?? 50]) }),
+  }));
+
+  reg.register(tool(obj({ sourceId: uuid() }), {
+    name: 'source.hook_secret.rotate', risk: 'policy', roles: ['owner', 'builder', 'operator', 'compliance'],
+    summary: 'Replace a webhook source\'s signing secret; the old one keeps working for 24 hours so the sender can switch',
+    describe: async (i, ctx) => `Replace the signing secret of the webhook source "${(await one<{ name: string }>(ctx.q, 'SELECT name FROM intake_source WHERE id = $1 AND workspace_id = $2', [i.sourceId, ctx.workspaceId]))?.name ?? 'this source'}". The new secret is shown once to whoever approves; the old one keeps working for ${HOOK_SECRET_OVERLAP_MS / 3600_000} hours, then stops.`,
+    version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT coalesce(hook_secret_rotated_at::text, created_at::text) AS v FROM intake_source WHERE id = $1 AND workspace_id = $2", [i.sourceId, ctx.workspaceId]))?.v ?? null,
+    run: async (ctx, i) => {
+      const src = await one<SourceRow>(ctx.q, 'SELECT * FROM intake_source WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.sourceId, ctx.workspaceId]);
+      if (!src) throw new Error('no such source in this workspace');
+      if (!src.hook_secret_ciphertext) throw new Error('this source takes files, not webhook events; it has no signing secret');
+      const secret = randomBytes(32).toString('base64url');
+      const r = await one<{ prev_until: Date }>(ctx.q, `UPDATE intake_source SET hook_secret_prev_ciphertext = hook_secret_ciphertext, hook_secret_ciphertext = $3,
+          hook_secret_prev_until = now() + ($4 || ' milliseconds')::interval, hook_secret_rotated_at = now() WHERE id = $1 AND workspace_id = $2 RETURNING hook_secret_prev_until AS prev_until`,
+        [i.sourceId, ctx.workspaceId, seal(ctx.workspaceId, 'intake-hook', secret), String(HOOK_SECRET_OVERLAP_MS)]);
+      // An approved action's result is stored, so the secret goes to a one-time reveal for the approver, never into the result.
+      const revealId = await holdForReveal(ctx, { secret, hookUrl: `/hooks/contacts/${src.id}`, signing: 'x-vp-timestamp: unix seconds; x-vp-signature: sha256=hex(HMAC-SHA256(secret, timestamp + "." + body))' }, 'webhook source signing secret');
+      return { sourceId: src.id, revealId, previousSecretWorksUntil: r!.prev_until };
+    },
   }));
 
   reg.register(tool(obj({ receiptId: uuid() }), {
@@ -435,12 +461,15 @@ export function registerSourceRoutes(router: Router, deps: Deps): void {
   router.add('POST', '/hooks/contacts/:sourceId', async (req: Req) => {
     if (!/^[0-9a-f-]{36}$/i.test(req.params.sourceId)) throw new HttpError(404, 'not_found', 'no such source');
     const src = await one<SourceRow>(deps.pool, 'SELECT * FROM intake_source WHERE id = $1', [req.params.sourceId]);
-    if (!src || !src.hook_secret) throw new HttpError(404, 'not_found', 'no such source');
+    if (!src || !src.hook_secret_ciphertext) throw new HttpError(404, 'not_found', 'no such source');
     const ts = String(req.headers['x-vp-timestamp'] ?? '');
     const sig = String(req.headers['x-vp-signature'] ?? '');
     if (!/^\d{9,11}$/.test(ts) || Math.abs(Date.now() / 1000 - Number(ts)) > HOOK_SKEW_S) throw new HttpError(401, 'bad_signature', 'missing or stale x-vp-timestamp');
     const raw = (req.body as Buffer | undefined) ?? Buffer.alloc(0);
-    if (!signatureOk(src.hook_secret, ts, raw, sig)) throw new HttpError(401, 'bad_signature', 'the signature does not match');
+    // The current secret, or the one it replaced while the overlap window after a rotation lasts.
+    const secrets = [openSecret(src.workspace_id, 'intake-hook', src.hook_secret_ciphertext),
+      ...(src.hook_secret_prev_ciphertext && src.hook_secret_prev_until && src.hook_secret_prev_until.getTime() > Date.now() ? [openSecret(src.workspace_id, 'intake-hook', src.hook_secret_prev_ciphertext)] : [])];
+    if (!secrets.some(k => signatureOk(k, ts, raw, sig))) throw new HttpError(401, 'bad_signature', 'the signature does not match');
     if (src.status !== 'active') throw new HttpError(423, 'paused', 'this source is paused');
     let parsed: unknown;
     try { parsed = JSON.parse(raw.toString('utf8')); } catch { throw new HttpError(400, 'bad_json', 'the body is not JSON'); }

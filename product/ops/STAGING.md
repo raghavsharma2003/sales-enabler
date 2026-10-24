@@ -65,7 +65,8 @@ The runtime is one process, `python -m vpvoice`. With several cores, run `python
 ## Control plane (`product/server`)
 
 Run `node product/web/build.mjs` once. Then `node --import tsx product/server/main.ts`. Database migrations:
-`node product/scripts/migrate.mjs`.
+`node product/scripts/migrate.mjs`. Run them with the same `VP_SECRET_KEY` as the server. Migration 0109 seals existing
+intake webhook secrets with it, and without the key it stops and changes nothing.
 
 **Core**
 

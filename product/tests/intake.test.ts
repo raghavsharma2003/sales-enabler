@@ -22,6 +22,8 @@ let close: () => void = () => {};
 before(async () => {
   if (skip) return;
   process.env.VP_DEV_AUTH = '1';
+  // Webhook sources seal their signing secret in the workspace vault (as every real server does): a generated key, never a real one.
+  process.env.VP_SECRET_KEY ??= (await import('node:crypto')).randomBytes(32).toString('hex');
   pool = createPool(URL_);
   const app = buildApp(pool, [intake]);
   reg = app.registry;
