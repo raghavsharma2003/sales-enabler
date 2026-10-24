@@ -204,9 +204,17 @@ test('an experiment candidate is never "the live version": agent.get names the l
   assert.equal(listed.latest_version, 1, 'the list shows the published version number');
   assert.equal(listed.live_version_id, v1.versionId);
   assert.equal(ok<any>(await w.call('version.diff', { agentId })).from.label, 'version 1', 'the draft is compared with the live version');
-  const v3 = ok<any>(await w.approve(await w.call('version.publish', { agentId, draftHash: g.draftHash, note: 'next' })));
+  const card = await w.call('version.publish', { agentId, draftHash: g.draftHash, note: 'next' });
+  assert.match((card as any).summary, /version 3/, 'numbering counts the candidate');
+  assert.match((card as any).summary, /since version 1\b|the first version/, 'the card compares with the live version, not the candidate: ' + (card as any).summary);
+  const v3 = ok<any>(await w.approve(card));
   assert.equal(v3.parentId, v1.versionId, 'the next published version descends from the live one, not the candidate');
   assert.equal(ok<any>(await w.call('agent.get', { agentId })).liveVersion.id, v3.versionId);
+  // Rolling back to a candidate would publish an untested change to everyone: version.restore refuses it.
+  const back = await w.call('version.restore', { agentId, versionId: cand.versionId, reason: 'test' });
+  const backFinal = back.status === 'needs_approval' ? await w.approve(back) : back;
+  assert.notEqual(backFinal.status, 'confirmed', JSON.stringify(backFinal));
+  assert.match(JSON.stringify(backFinal), /not a published version/);
   // A candidate must descend from a published version, never from another candidate.
   refused(await w.call('version.candidate', { agentId, config: treatment, parentVersionId: cand.versionId, note: 'x' }, SYSTEM), /published version of this agent/);
 });

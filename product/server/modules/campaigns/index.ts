@@ -207,7 +207,7 @@ const described = <T>(v: Validator<T>, description: string): Validator<T> =>
 
 /** Why an agentVersionId was refused, and what to send instead: models often pass the agent id. */
 async function versionHint(q: Queryable, ws: string, id: string): Promise<string> {
-  const a = await one<{ name: string; v: string | null }>(q, `SELECT a.name, (SELECT v.id FROM agent_version v WHERE v.agent_id = a.id ORDER BY v.number DESC LIMIT 1) AS v
+  const a = await one<{ name: string; v: string | null }>(q, `SELECT a.name, (SELECT v.id FROM agent_version v WHERE v.agent_id = a.id AND v.kind = 'published' ORDER BY v.number DESC LIMIT 1) AS v
     FROM agent a WHERE a.id = $1 AND a.workspace_id = $2`, [id, ws]);
   if (!a) return 'no such agent version in this workspace; agentVersionId is a published version id from version.list or agent.get versions[].id';
   return a.v ? `that is the agent id of "${a.name}", not a version id; its latest published version id is ${a.v}`

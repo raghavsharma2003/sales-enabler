@@ -282,8 +282,10 @@ async function publishSummary(ctx: ToolCtx, agentId: string, note?: string): Pro
   const a = await one<{ id: string; draft: AgentConfig }>(ctx.q, 'SELECT id, draft FROM agent WHERE id = $1 AND workspace_id = $2', [agentId, ctx.workspaceId]);
   const name = await label(ctx, 'agent', agentId);
   if (!a) return `Publish ${name}`;
-  const prev = await one<{ number: number; config: { agent: AgentConfig } }>(ctx.q, 'SELECT number, config FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [a.id]);
-  const parts = [`Publish ${name}, version ${(prev?.number ?? 0) + 1}` + (note ? ` (${note})` : '') + '.'];
+  // Compared with the live version; numbered after every version, experiment candidates included.
+  const prev = await one<{ number: number; config: { agent: AgentConfig } }>(ctx.q, "SELECT number, config FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1", [a.id]);
+  const next = (await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [a.id]))!.n;
+  const parts = [`Publish ${name}, version ${next}` + (note ? ` (${note})` : '') + '.'];
   const stack = stackOf(a.draft.voice);
   parts.push(stack ? `Voice: ${stack.label}.` : 'No voice stack is chosen yet, so publishing will refuse.');
   const run = await one<{ passed: boolean; grades: { pass: boolean }[]; sim_caller_key: string | null; shape: { label?: string } | null; created_at: Date; draft_hash: string }>(ctx.q,
@@ -692,11 +694,12 @@ export function registerAgentTools(r: Registry): void {
       "SELECT split FROM deployment WHERE agent_id = $1 AND workspace_id = $2 AND binding = 'campaign' ORDER BY created_at DESC, id DESC LIMIT 1", [agentId, ctx.workspaceId]);
     const top = dep?.split?.slice().sort((a, b) => b.percent - a.percent)[0]?.version_id;
     return (top ? await one<VersionRow>(ctx.q, 'SELECT id, number, config FROM agent_version WHERE id = $1 AND agent_id = $2', [top, agentId]) : null)
-      ?? await one<VersionRow>(ctx.q, 'SELECT id, number, config FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [agentId]);
+      ?? await one<VersionRow>(ctx.q, "SELECT id, number, config FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1", [agentId]);
   };
   const restoreTarget = async (ctx: ToolCtx, agentId: string, versionId: string) => {
     const v = await one<VersionRow>(ctx.q, `SELECT v.id, v.number, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id
-      WHERE v.id = $1 AND v.agent_id = $2 AND a.workspace_id = $3`, [versionId, agentId, ctx.workspaceId]);
+      WHERE v.id = $1 AND v.agent_id = $2 AND a.workspace_id = $3 AND v.kind = 'published'`, [versionId, agentId, ctx.workspaceId]);
+    // An experiment's candidate was never published: restoring to it would send an untested change to every call.
     if (!v) throw new ValidationError('versionId', 'that is not a published version of this agent');
     return v;
   };
@@ -707,7 +710,7 @@ export function registerAgentTools(r: Registry): void {
     describe: async (i, ctx) => {
       const name = await label(ctx, 'agent', i.agentId);
       const target = await one<VersionRow>(ctx.q, `SELECT v.id, v.number, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id
-        WHERE v.id = $1 AND v.agent_id = $2 AND a.workspace_id = $3`, [i.versionId, i.agentId, ctx.workspaceId]);
+        WHERE v.id = $1 AND v.agent_id = $2 AND a.workspace_id = $3 AND v.kind = 'published'`, [i.versionId, i.agentId, ctx.workspaceId]);
       if (!target) return `Roll back ${name} to an earlier version`;
       const next = ((await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [i.agentId]))?.n) ?? 1;
       const live = await liveVersion(ctx, i.agentId);
