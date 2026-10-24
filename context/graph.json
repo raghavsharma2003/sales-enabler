@@ -40040,6 +40040,21 @@
    "from": "open.2026-10-24.notifications-unverified",
    "to": "measure.2026-10-24.notifications-tests",
    "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.voice-incall-tools-run",
+   "to": "decision.2026-10-24.http-tool-contract",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.voice-incall-tools-offline",
+   "to": "decision.2026-10-24.voice-incall-tools-run",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.voice-incall-tools-run",
+   "to": "component.product.calls-module",
+   "relation": "informs"
   }
  ]
 }
