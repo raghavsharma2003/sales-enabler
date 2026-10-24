@@ -696,9 +696,15 @@ test('Integrations: a service can be connected from Settings, and the credential
   const body = await page.locator('body').innerText();
   assert.ok(!body.includes(SECRET), 'the approval does not show the credential');
   await hold(sheet().locator('.hold'));
-  await page.getByText('Sales CRM', { exact: false }).first().waitFor({ timeout: 10000 });
-  const list = JSON.stringify((await tool('integration.list')).result);
+  // The approval sheet already names "Sales CRM", so its text on the page proves nothing: wait for the server to list it.
+  let list = '';
+  for (let i = 0; i < 50; i++) {
+    list = JSON.stringify((await tool('integration.list')).result);
+    if (list.includes('Sales CRM')) break;
+    await page.waitForTimeout(200);
+  }
   assert.ok(list.includes('Sales CRM') && !list.includes(SECRET), 'the server lists the connection and never the credential');
+  await page.getByText('Sales CRM', { exact: false }).first().waitFor({ timeout: 10000 });
   assert.ok(!(await page.locator('body').innerText()).includes(SECRET), 'the credential is nowhere on the page after saving');
   const executed = JSON.stringify((await actions('executed')).filter(a => a.tool === 'integration.connect'));
   assert.ok(!executed.includes(SECRET), 'the approved action never held the credential');
