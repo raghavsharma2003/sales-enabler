@@ -131,7 +131,7 @@ const SCOPE_WORD: Record<string, string> = { workspace: 'Workspace', campaign: '
 /** One cap in plain words, for the Billing page and the assistant. */
 export function capWords(scope: string, period: string, cap: number, spent: number, held: number): { label: string; text: string } {
   const who = SCOPE_WORD[scope] ?? scope, c = formatInr(cap);
-  if (period === 'burst') return { label: `${who} burst limit`,
+  if (period === 'in_flight') return { label: `${who} in-flight limit`,
     text: `At most ${c} can be held at once for calls in progress (${formatInr(held)} now). New calls wait until running calls finish.` };
   const when = period === 'daily' ? 'today' : period === 'monthly' ? 'this month' : 'in total';
   const reset = period === 'daily' ? ' It resets at midnight India time.' : period === 'monthly' ? ' It resets on the 1st, India time.' : '';

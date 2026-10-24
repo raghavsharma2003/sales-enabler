@@ -41,6 +41,8 @@ export type ToolName =
   | "call.record"
   | "call.search"
   | "campaign.audience.add"
+  | "campaign.burst.off"
+  | "campaign.burst.set"
   | "campaign.draft"
   | "campaign.estimate"
   | "campaign.funnel"
@@ -506,6 +508,16 @@ export interface ToolInput {
     id: string;
     contactIds: string[];
   };
+  /** turn a campaign's burst off: back to the steady line limit (draft) */
+  "campaign.burst.off": {
+    campaignId: string;
+  };
+  /** let one campaign go past the steady line limit, up to a ceiling on money held at once (off until an owner approves) (spend, waits for approval) */
+  "campaign.burst.set": {
+    campaignId: string;
+    lines: number;
+    ceilingInrMilli: number;
+  };
   /** Create or edit a draft campaign: category first, then window, retries, budget and cap (draft) */
   "campaign.draft": {
     id?: string;
@@ -637,14 +649,14 @@ export interface ToolInput {
   "cap.lower": {
     scope: "workspace" | "campaign" | "api_key";
     scopeId?: string;
-    period: "total" | "daily" | "monthly" | "burst";
+    period: "total" | "daily" | "monthly" | "in_flight";
     capInrMilli: number;
   };
   /** raise (or set) a spend cap (spend, waits for approval) */
   "cap.raise": {
     scope: "workspace" | "campaign" | "api_key";
     scopeId?: string;
-    period: "total" | "daily" | "monthly" | "burst";
+    period: "total" | "daily" | "monthly" | "in_flight";
     capInrMilli: number;
   };
   /** Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent (policy, waits for approval) */
@@ -1862,6 +1874,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "call.record": { risk: "read", needsApproval: false },
   "call.search": { risk: "read", needsApproval: false },
   "campaign.audience.add": { risk: "external", needsApproval: true },
+  "campaign.burst.off": { risk: "draft", needsApproval: false },
+  "campaign.burst.set": { risk: "spend", needsApproval: true },
   "campaign.draft": { risk: "draft", needsApproval: false },
   "campaign.estimate": { risk: "read", needsApproval: false },
   "campaign.funnel": { risk: "read", needsApproval: false },

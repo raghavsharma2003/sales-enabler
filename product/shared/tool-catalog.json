@@ -1586,6 +1586,66 @@
    }
   },
   {
+   "name": "campaign.burst.off",
+   "risk": "draft",
+   "summary": "turn a campaign's burst off: back to the steady line limit",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "campaignId"
+    ]
+   }
+  },
+  {
+   "name": "campaign.burst.set",
+   "risk": "spend",
+   "summary": "let one campaign go past the steady line limit, up to a ceiling on money held at once (off until an owner approves)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "lines": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 200
+     },
+     "ceilingInrMilli": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 100000000
+     }
+    },
+    "required": [
+     "campaignId",
+     "lines",
+     "ceilingInrMilli"
+    ]
+   }
+  },
+  {
    "name": "campaign.draft",
    "risk": "draft",
    "summary": "Create or edit a draft campaign: category first, then window, retries, budget and cap",
@@ -2306,7 +2366,7 @@
        "total",
        "daily",
        "monthly",
-       "burst"
+       "in_flight"
       ]
      },
      "capInrMilli": {
@@ -2354,7 +2414,7 @@
        "total",
        "daily",
        "monthly",
-       "burst"
+       "in_flight"
       ]
      },
      "capInrMilli": {

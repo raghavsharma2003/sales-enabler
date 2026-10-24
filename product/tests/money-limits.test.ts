@@ -1,4 +1,4 @@
-// Money, bounded defaults (must-be audit gap 17): every workspace gets a daily spend cap and a burst limit (money held
+// Money, bounded defaults (must-be audit gap 17): every workspace gets a daily spend cap and a in-flight limit (money held
 // at once) from config, enforced by the kernel's reserve(), and wallet.get states each in plain words.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,27 +23,27 @@ async function signupLike(balance = 0) {
     return { ws, owner };
   });
 }
-const cfg = async () => (await one<{ d: string; b: string }>(pool, 'SELECT default_daily_cap_inr_milli::text AS d, default_burst_inr_milli::text AS b FROM money_config'))!;
+const cfg = async () => (await one<{ d: string; b: string }>(pool, 'SELECT default_daily_cap_inr_milli::text AS d, default_in_flight_inr_milli::text AS b FROM money_config'))!;
 
-test('a new workspace starts with the configured daily cap and burst limit, once', { skip }, async () => {
+test('a new workspace starts with the configured daily cap and in-flight limit, once', { skip }, async () => {
   const c = await cfg();
   assert.deepEqual([c.d, c.b], ['5000000', '2000000'], 'defaults: ₹5,000 a day, ₹2,000 held at once');
   const { ws } = await signupLike();
   const rows = await many<{ period: string; cap: string }>(pool, "SELECT period, cap_inr_milli::text AS cap FROM budget WHERE workspace_id = $1 AND scope_type = 'workspace' ORDER BY period", [ws]);
-  assert.deepEqual(rows, [{ period: 'burst', cap: c.b }, { period: 'daily', cap: c.d }]);
+  assert.deepEqual(rows, [{ period: 'daily', cap: c.d }, { period: 'in_flight', cap: c.b }]);
   await pool.query('SELECT money_default_limits($1)', [ws]);
   assert.equal((await many(pool, 'SELECT 1 FROM budget WHERE workspace_id = $1', [ws])).length, 2, 'never doubled');
 });
 
-test('the burst limit bounds money held at once, and frees up as calls finish', { skip }, async () => {
+test('the in-flight limit bounds money held at once, and frees up as calls finish', { skip }, async () => {
   const { ws } = await signupLike(100_000_000);
   const r = (n: number) => tx(pool, c => reserve(c, { workspaceId: ws, inrMilli: n }));
   const a = await r(1_500_000), b = await r(600_000);
   assert.ok(a.ok);
-  assert.equal(!b.ok && b.cause, 'cap_reached', '₹1,500 + ₹600 held would pass the ₹2,000 burst limit');
+  assert.equal(!b.ok && b.cause, 'cap_reached', '₹1,500 + ₹600 held would pass the ₹2,000 in-flight limit');
   if (a.ok) await tx(pool, c => settle(c, a.reservationId, 400_000));
-  const burst = await one<{ spent: string }>(pool, "SELECT spent_inr_milli::text AS spent FROM budget WHERE workspace_id = $1 AND period = 'burst'", [ws]);
-  assert.equal(burst!.spent, '0', 'a burst limit never accumulates spend');
+  const burst = await one<{ spent: string }>(pool, "SELECT spent_inr_milli::text AS spent FROM budget WHERE workspace_id = $1 AND period = 'in_flight'", [ws]);
+  assert.equal(burst!.spent, '0', 'an in-flight limit never accumulates spend');
   const c2 = await r(1_900_000);
   assert.ok(c2.ok, 'once the first call settled, a large hold fits again');
   if (c2.ok) await tx(pool, c => release(c, c2.reservationId));
@@ -68,9 +68,9 @@ test('wallet.get states each limit in plain words; owners change them with cap t
   const byPeriod = Object.fromEntries(w.result.caps.map((c: any) => [c.period, c]));
   assert.equal(byPeriod.daily.label, 'Workspace daily cap');
   assert.equal(byPeriod.daily.text, '₹0 of ₹5,000 spent today. New calls stop at the cap; calls already running finish. It resets at midnight India time.');
-  assert.equal(byPeriod.burst.label, 'Workspace burst limit');
-  assert.equal(byPeriod.burst.text, 'At most ₹2,000 can be held at once for calls in progress (₹0 now). New calls wait until running calls finish.');
-  const lower = await reg.execute<any>(pool, 'cap.lower', { scope: 'workspace', period: 'burst', capInrMilli: 1_000_000 }, as);
+  assert.equal(byPeriod.in_flight.label, 'Workspace in-flight limit');
+  assert.equal(byPeriod.in_flight.text, 'At most ₹2,000 can be held at once for calls in progress (₹0 now). New calls wait until running calls finish.');
+  const lower = await reg.execute<any>(pool, 'cap.lower', { scope: 'workspace', period: 'in_flight', capInrMilli: 1_000_000 }, as);
   assert.equal(lower.status, 'confirmed');
   const raise = await reg.execute<any>(pool, 'cap.raise', { scope: 'workspace', period: 'daily', capInrMilli: 20_000_000 }, as);
   assert.equal(raise.status, 'needs_approval', 'raising stays an owner approval');

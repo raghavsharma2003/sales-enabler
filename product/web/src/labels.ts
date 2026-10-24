@@ -67,6 +67,8 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'contact.suppress': { ask: 'Stop calling this person', done: 'Person will not be called' },
   'cap.raise': { ask: 'Raise a spend cap', done: 'Spend cap raised' },
   'cap.lower': { ask: 'Lower a spend cap', done: 'Spend cap lowered' },
+  'campaign.burst.set': { ask: 'Let a campaign burst', done: 'Burst turned on' },
+  'campaign.burst.off': { ask: 'Turn a campaign\'s burst off', done: 'Burst turned off' },
   'test.simulate': { ask: 'Run a practice call', done: 'Practice call run' },
   'monitor.create': { ask: 'Turn on a monitor', done: 'Monitor turned on' },
 };
@@ -196,6 +198,7 @@ export const PAST: Record<string, string> = {
   'campaign.audience.add': 'added people to a campaign', 'campaign.draft': 'saved a campaign draft',
   'campaign.launch': 'launched a campaign', 'campaign.pause': 'paused a campaign', 'campaign.resume': 'resumed a campaign',
   'campaign.stop': 'stopped a campaign', 'campaign.stop_at_cap': 'paused a campaign that reached its spend limit', 'campaign.window.narrow': 'narrowed a campaign\'s calling hours', 'campaign.window.widen': 'widened a campaign\'s calling hours',
+  'campaign.burst.off': 'turned a campaign\'s burst off', 'campaign.burst.set': 'let a campaign burst past the steady line limit',
   'cap.lower': 'lowered a spend limit', 'cap.raise': 'raised a spend limit', 'consent.record': 'recorded a person\'s consent',
   'contact.dnd_refresh': 'checked people against the Do Not Disturb list', 'contact.export': 'exported people as a file',
   'contact.memory.forget': 'forgot everything remembered about a person', 'contact.merge': 'merged two records of one person',

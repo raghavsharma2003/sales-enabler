@@ -289,6 +289,21 @@ test('G12 deferred_concurrency, with inbound capacity held back', { skip }, asyn
   assert.equal(code(await gate(await attempt(w2, { contact: await addContact(w2) }))), 'allowed', 'ended call frees it');
 });
 
+test('G12 honours an approved burst: off by default, past the steady lines only for that campaign', { skip }, async () => {
+  const w = await world();
+  await pool.query('INSERT INTO dial_policy (workspace_id, concurrency) VALUES ($1, 2)', [w.ws]);
+  const camp = await campaignRow(w, 'service');
+  const other = await campaignRow(w, 'service');
+  for (let i = 0; i < 2; i++) await pool.query("UPDATE attempt SET status = 'connected' WHERE id = $1", [await attempt(w, { contact: await addContact(w), campaign: camp, kind: 'campaign' })]);
+  assert.equal(code(await gate(await attempt(w, { contact: await addContact(w), campaign: camp, kind: 'campaign' }))), 'deferred_concurrency', 'burst is off by default: 2 of 2 steady lines busy');
+  // what money's campaign.burst.set writes once an owner approves it
+  await pool.query(`UPDATE campaign SET policy = policy || '{"burst": {"lines": 4, "ceilingInrMilli": 2000000}}'::jsonb WHERE id = $1`, [camp]);
+  const third = await attempt(w, { contact: await addContact(w), campaign: camp, kind: 'campaign' });
+  assert.equal(code(await gate(third)), 'allowed', 'the bursting campaign may use a third line');
+  await pool.query("UPDATE attempt SET status = 'connected' WHERE id = $1", [third]);
+  assert.equal(code(await gate(await attempt(w, { contact: await addContact(w), campaign: other, kind: 'campaign' }))), 'deferred_concurrency', 'another campaign keeps the steady limit');
+});
+
 test('a check that cannot run refuses with check_unavailable (fail closed) and releases nothing it did not hold', { skip }, async () => {
   const w = await world();
   const v = await gate(await attempt(w, { contact: await addContact(w, { tz: 'Mars/Olympus' }) }));

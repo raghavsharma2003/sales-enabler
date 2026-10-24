@@ -14,6 +14,7 @@ import { sweepHolds } from './sweep.ts';
 import { walletBlocker, type WalletPurpose } from './blockers.ts';
 import { EXTRAS_INR_MICRO_PER_MIN, partPrice } from './prices.ts';
 import { CARRIERS, carrierChoice, RECOMMENDED_MAX_PULSE_S } from './carriers.ts';
+import { registerBurst } from './burst.ts';
 import { COMPONENTS } from '../../../shared/components.ts';
 import { caps, costLines, credit, defaultRange, estimate, priceFor, reconcile, rollPeriods, statement, usage, walletView } from './money.ts';
 
@@ -21,7 +22,7 @@ const MAX_TOPUP = 1_000_000_000;          // ₹10 lakh per top-up
 const MAX_CAP = 100_000_000_000;          // ₹10 crore
 const date = () => str({ pattern: /^\d{4}-\d{2}-\d{2}$/, desc: 'IST date, YYYY-MM-DD' });
 const scopeV = str({ oneOf: ['workspace', 'campaign', 'api_key'] });
-const periodV = str({ oneOf: ['total', 'daily', 'monthly', 'burst'] });
+const periodV = str({ oneOf: ['total', 'daily', 'monthly', 'in_flight'] });
 const capInput = obj({ scope: scopeV, scopeId: opt(uuid()), period: periodV, capInrMilli: num({ int: true, min: 0, max: MAX_CAP }) });
 type CapInput = ReturnType<typeof capInput>;
 const PLANS = ['base', 'plus', 'premium'] as const;
@@ -54,6 +55,7 @@ async function setCap(ctx: ToolCtx, i: CapInput, dir: 'raise' | 'lower') {
 }
 
 export function register(r: Registry): void {
+  registerBurst(r);
   r.register(tool(obj({ stackId: str({ max: 60 }), minutes: num({ min: 0, max: 1e8 }), calls: num({ int: true, min: 0, max: 1e7 }),
     components: opt(obj({ ears: opt(str({ max: 60 })), brain: opt(str({ max: 60 })), voice: opt(str({ max: 60 })), s2s: opt(str({ max: 60 })), gatedEars: opt(bool()) })) }), {
     name: 'money.estimate', risk: 'read', summary: "estimate what Vyakti pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components)",
@@ -132,7 +134,7 @@ export function register(r: Registry): void {
 
   r.register(tool(capInput, {
     name: 'cap.raise', risk: 'spend', summary: 'raise (or set) a spend cap',
-    describe: i => i.period === 'burst' ? `Raise the ${i.scope.replace('_', ' ')} burst limit (money held at once) to ${formatInr(i.capInrMilli)}` : `Raise the ${i.period} ${i.scope.replace('_', ' ')} cap to ${formatInr(i.capInrMilli)}`,
+    describe: i => i.period === 'in_flight' ? `Raise the ${i.scope.replace('_', ' ')} in-flight limit (money held at once for calls in progress) to ${formatInr(i.capInrMilli)}` : `Raise the ${i.period} ${i.scope.replace('_', ' ')} cap to ${formatInr(i.capInrMilli)}`,
     version: async (ctx, i) => (await findCap(ctx.q, ctx.workspaceId, i))?.cap ?? 'none',
     run: (ctx, i) => setCap(ctx, i, 'raise'),
   }));
