@@ -1,0 +1,29 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.catastrophic-line-detector",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "design",
+   "date": "2026-10-24",
+   "title": "Blueprint decision 9, per-line half: a catastrophic line is caught by about calls 13-15 and its script slowed to 25%. Learning's harm lane (18c4fd4: 2 harm moments in 15 calls) catches harm classes; this catches one line of hers that people keep reacting badly to. DESIGN. (1) script.line_check {conversationId} (calls, draft) runs after every analysed live call, next to script.harm_check; window = the script's (agent version's) last 15 analysed live calls that ended after its last restore; test calls never count. (2) A line is one agent turn, normalised: lower case, letters and digits in any script, digits as #, the contact's own name tokens and 1-character tokens dropped; two lines are the same line when their token sets overlap with Jaccard >= 0.7 (greedy, in call order; the first seen is the one quoted). (3) A bad reaction is attributed to one line: a caller hang-up (END_EARLY_HANGUP, END_HUNG_UP_MID) to her last line; an opt-out (a caller line the safety floor reads as opt-out, or an opt_out moment) to her line just before it; anger (reason CONV_COMPLAINT) to her line just before the first objection moment's caller line, else her last line. Each line counts once per call for 'said' and once for 'bad'. (4) Trip: a line said in n calls of the window with bad reactions in k of them trips when k >= 3 and the one-sided binomial P(X >= k | n, p0) < 0.01. p0 = 0.35 for her opening line (the early-hang-up monitor's own threshold, so an opener with an ordinary hang-up rate never trips: it needs 5 of 5, 6 of 7, 7 of 8 or 11 of 15) and p0 = 0.15 for any later line (ASSUMED, not measured: a bad reaction right after one mid-call line is rarer than an early hang-up; it trips at 3 of 3, 4 of 5, 5 of 8). (5) On a trip: learning's script_throttle row (factor 0.25, detail.signal 'catastrophic_line', her line quoted, the calls, k of n) so campaigns' G12 slows the script with no new hook; a critical Safety issue on the agent version; and an alert: a trigger on script_throttle puts 'script.slowed' on the outbox and notifications send it as 'A script was slowed' (this also alerts on learning's harm throttles). script.pacing.restore (learning) restores either. No model call; only her words are quoted, never the caller's.",
+   "rationale": "Integrator task (must-be audit, decision 9). Separate signal from learning's harm moments; one throttle table, one restore.",
+   "reverse_if": "On real traffic, a benign script trips more than once per 1,000 script-days, or a planted catastrophic line in a synthetic set does not trip by call 15, or the 50-call early-hang-up monitor flags the same lines first in most cases (then this adds nothing). Or measured per-line bad-reaction rates on real mid-call lines sit near or above 0.15 (then p0 is wrong and benign lines trip).",
+   "evidence": []
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.catastrophic-line-detector",
+   "to": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "relation": "informed-by"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "catastrophic-line-design",
+   "details": "Design written before the build, per the integrator."
+  }
+ ]
+}
