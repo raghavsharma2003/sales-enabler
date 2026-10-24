@@ -513,6 +513,14 @@ class CascadeSession(Session):
         if not self.ended:
             asyncio.ensure_future(self.component_failed(ComponentError('ears', self.c.ears_id, str(e)[:200])))
 
+    async def keypad(self, text, sensitive):
+        """A keypad entry is a caller turn: [keypad: 1] for a short choice; more keys (a PIN or OTP, maybe) reach no one:
+        she says the stop-digits line and the turn says only how many keys were pressed."""
+        if self.taken_over: return
+        if sensitive:
+            await self._stop_digits(); await self._commit_turn(text); return     # recorded as a count; no reply to it
+        self.finals.append(text); self.final_seg = self.seg; self.last_final_t = self.now()
+
     async def _stop_digits(self):
         if self.active is not None: await self.interrupt()
         await self.speak_canned(safety.stop_digits_line((self.t['agent'].get('brand') or {}).get("spokenName", "")), wait=False)

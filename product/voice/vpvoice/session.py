@@ -45,6 +45,7 @@ class Session:
         # live controls (server.py /listen /whisper /takeover): after a takeover she never speaks again, except to close
         # the call if the member drops; listeners hear, are never heard, never recorded
         self.taken_over = None; self.member = None; self.member_task = None; self.listeners = set(); self.live_closers = []
+        self.send_dtmf = None; self.keys = ''; self.keys_timer = None          # DTMF: keys out (server), keys in (on_dtmf)
 
     # ---------------------------------------------------------------- manifest
     def manifest(self):
@@ -250,11 +251,46 @@ class Session:
             await self.finish('opt_out'); return
         if marks.get('handoff') and self.handoff_allowed(marks['handoff']) and not self.conv.state['crisis']:
             await self.hand_off(marks['handoff']); return
+        if marks.get('dtmf'): await self.press(marks['dtmf'])
         if self.conv.wants_end(marks):
             await self.finish('agent_ended', cancellable=True); return
         max_turns = (self.t['agent'].get('limits') or {}).get('maxTurns')
         if max_turns and self.conv.agent_turns >= max_turns and not self.conv.state['crisis']:
             await self.speak_canned(self.fixed('limit')); await self.finish('agent_ended')
+
+    # ---------------------------------------------------------------- DTMF
+    DTMF_GAP_S = 1.5            # keys pressed this close together are one entry; '#' ends one at once
+    DTMF_SHOWN = 2              # an entry of more keys may be a PIN or OTP: never stored, never given to the brain
+
+    async def press(self, keys):
+        """Her <dtmf N>: press keys on an automated menu she reached. Only when the other side's last words were a menu
+        ("press 1 for ..."), so a stray marker never sends digits."""
+        last = next((x['text'] for x in reversed(self.conv.transcript) if x['speaker'] == 'caller'), '')
+        if not brief.MENU.search(last) or self.send_dtmf is None:
+            log.info('call %s: <dtmf> ignored (%s)', self.id, 'no menu heard' if self.send_dtmf else 'transport cannot send keys'); return
+        try: ok = await self.send_dtmf(keys)
+        except Exception as e: ok = False; log.warning('send dtmf: %r', e)
+        log.info('call %s: pressed %d key(s) on a menu: %s', self.id, len(keys), 'sent' if ok else 'not sent')
+
+    async def on_dtmf(self, digit):
+        """A keypad press from the caller's phone (Plivo/Exotel stream 'dtmf' event, or the browser's {'t': 'dtmf'})."""
+        if self.ended or not digit or digit not in '0123456789*#': return
+        if self.keys_timer: self.keys_timer.cancel(); self.keys_timer = None
+        if digit == '#':
+            await self._keys_done(); return
+        self.keys += digit
+        self.keys_timer = asyncio.get_running_loop().call_later(self.DTMF_GAP_S, lambda: asyncio.ensure_future(self._keys_done()))
+
+    async def _keys_done(self):
+        keys, self.keys, self.keys_timer = self.keys, '', None
+        if not keys or self.ended: return
+        sensitive = sum(ch.isdigit() for ch in keys) > self.DTMF_SHOWN
+        text = f'[keypad: {len(keys)} keys, not shown]' if sensitive else f'[keypad: {keys}]'
+        await self.keypad(text, sensitive)
+
+    async def keypad(self, text, sensitive):
+        """What the session does with a keypad entry (cascade.py takes it as the caller's turn)."""
+        log.info('call %s: keypad entry ignored on this transport', self.id)
 
     def stop_recording(self): pass
 

@@ -93,6 +93,7 @@ class Runtime:
         if kind == 'sip':
             s.telephony = (rec.t['transport']['trunk'].lower(), rec.t['direction'])
             s.transfer = lambda k, v, rec=rec: self.transfer(rec, k, v)
+            s.send_dtmf = lambda keys, rec=rec: self.send_dtmf(rec, keys)
         rec.session = s
         asyncio.ensure_future(self._mark_ended(rec))
         return s
@@ -342,6 +343,7 @@ class Runtime:
                 elif m.type == aiohttp.WSMsgType.TEXT:
                     d = json.loads(m.data)
                     if d.get('t') == 'hangup': break
+                    if d.get('t') == 'dtmf': await s.on_dtmf(str(d.get('digit') or ''))
         except Exception as e:
             log.exception('browser media')
             if not s.ended: await s.end('error', error='media: ' + repr(e)[:200])
@@ -443,6 +445,13 @@ class Runtime:
         await rec.session.end('handed_off')
         return True
 
+    async def send_dtmf(self, rec, keys):
+        """Press keys on the call (an automated menu she reached), through Plivo's send-digits API. False when it can't."""
+        if rec.t['transport'].get('kind') != 'sip' or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
+        from .transports import plivo_request
+        st, _ = await plivo_request(self.http, self.env, 'POST', f'Call/{rec.call_uuid}/DTMF/', {'digits': keys, 'legs': 'aleg'})
+        return st in (200, 202)
+
     async def carrier_hangup(self, rec):
         if rec.t['transport'].get('kind') != 'sip' or rec.t['transport']['trunk'].lower() != 'plivo': return
         from .transports import plivo_request
@@ -472,7 +481,8 @@ class Runtime:
                 if m.type != aiohttp.WSMsgType.TEXT: continue
                 pcm = line.on_event(json.loads(m.data))
                 if pcm == 'stop': break
-                if pcm: await s.on_mic(pcm)
+                if isinstance(pcm, tuple): await s.on_dtmf(pcm[1])
+                elif pcm: await s.on_mic(pcm)
         except asyncio.TimeoutError:
             log.warning('carrier stream never started for %s', rec.t['conversationId'])
         except Exception as e:

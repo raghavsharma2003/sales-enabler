@@ -49,6 +49,7 @@ class PlivoLine(Line):
         if ev == 'start': self.stream_id = (d.get('start') or {}).get('streamId')
         elif ev == 'media': return self.up(ulaw_decode(base64.b64decode(d['media']['payload'])).astype(np.float32))
         elif ev == 'stop': return 'stop'
+        elif ev == 'dtmf': return ('dtmf', str((d.get('dtmf') or {}).get('digit') or ''))      # a keypad press
         return None
 
     async def send_audio(self, rid, pcm24):
@@ -83,6 +84,7 @@ class ExotelLine(Line):
             raw = base64.b64decode(d['media']['payload'])
             return self.up(np.frombuffer(raw[:len(raw) // 2 * 2], dtype='<i2').astype(np.float32))
         elif ev == 'stop': return 'stop'
+        elif ev == 'dtmf': return ('dtmf', str((d.get('dtmf') or {}).get('digit') or ''))
         return None
 
     async def send_audio(self, rid, pcm24):

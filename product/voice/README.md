@@ -241,6 +241,15 @@ unless a person already spoke beyond hello. A carrier hang-up before the call jo
 (`transports.hangup_reason`). The control plane gives `switched_off` the ladder class `switched_off` and
 `invalid_number` the class `invalid` (no automatic retry).
 
+## Keypad (DTMF)
+
+Keys the caller presses arrive as the carrier stream's `dtmf` events (Plivo, Exotel) or `{"t": "dtmf", "digit": "1"}`
+on the browser socket. Keys within 1.5 s (or up to `#`) are one entry. One or two keys are the caller's turn,
+`[keypad: 1]`. More keys may be a PIN or OTP: she says the stop-digits line, and the turn records only
+`[keypad: 4 keys, not shown]`; the digits reach no brain, transcript or event. When the other side is an automated menu
+("press 1 for ..."), the LAST block tells her to answer with `<dtmf N>` (at most 4 keys); the runtime presses them through
+Plivo's send-digits API, and only when the last thing heard was a menu.
+
 ## Voice samples for the stack cards
 
 `python -m vpvoice.samples --out DIR [--stack ID ...]` renders one short clip per curated stack (s2s included)

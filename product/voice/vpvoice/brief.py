@@ -24,6 +24,9 @@ END = re.compile(r'<\s*/?\s*end[_ ]?call\s*/?\s*>|\[\s*end[_ ]?call\s*\]', re.I)
 GOAL = re.compile(r'<\s*goal\s*:\s*([A-Za-z0-9_.-]{1,64})(?:\s*=\s*([^<>]{0,120}))?\s*>', re.I)
 TOOL = re.compile(r'<\s*tool\s*:\s*([A-Za-z0-9_.-]{1,64})\s*>', re.I)
 HANDOFF = re.compile(r'<\s*hand_?off\s*(?::\s*([A-Za-z_]{1,40}))?\s*>', re.I)
+DTMF = re.compile(r'<\s*dtmf\s*:?\s*([0-9*#]{1,4})\s*>', re.I)      # keys for an automated menu ("press 1"), at most 4
+# An automated menu the caller side is playing (an IVR she reached): then the LAST block tells her how to press a key
+MENU = re.compile(r'\bpress\s+(\d|one|two|three|star|hash)\b|\bdial\s+\d\b|\bdabaiye\b|\bdabaaye\b|\bdabayen\b|दबाएं|दबाएँ|दबाइए|दबाये', re.I)
 TONE = re.compile(r'^\s*\[tone:\s*([^\]]{0,80})\]\s*', re.I)
 SOUND_TAG = re.compile(r'<\s*(laugh|laughter|chuckle|chuckles|giggle|sigh|sighs|breath|exhales|short pause|long pause)\s*>', re.I)
 ANY_TAG = re.compile(r'<[^<>]{1,40}>')
@@ -55,7 +58,7 @@ def amounts(text):
 def spoken(text, keep_sounds=False):
     """What actually gets spoken: no tone note, no markers, no bracketed directions; sound tags only for a voice that
     understands them (Gemini 3.8 TTS does; any other voice reads a tag out or garbles it)."""
-    text = HANDOFF.sub('', TOOL.sub('', GOAL.sub('', END.sub('', TONE.sub('', text or '')))))
+    text = DTMF.sub('', HANDOFF.sub('', TOOL.sub('', GOAL.sub('', END.sub('', TONE.sub('', text or ''))))))
     text = re.sub(r'\[[^\]]{0,60}\]', '', text)
     text = re.sub(r'[*_#`~]|[\U0001F300-\U0001FAFF\u2600-\u27BF]', '', text)      # markdown and emoji are never spoken
     if keep_sounds:
@@ -70,11 +73,13 @@ def spoken(text, keep_sounds=False):
 
 
 def markers(text):
-    """The control markers in one reply: {'end': bool, 'goals': [(id, note)], 'tools': [name], 'handoff': reason|None}."""
+    """The control markers in one reply: {'end': bool, 'goals': [(id, note)], 'tools': [name], 'handoff': reason|None,
+    'dtmf': keys|''}."""
     t = text or ''
     h = HANDOFF.search(t)
     return {'end': bool(END.search(t)), 'goals': [(m.group(1), (m.group(2) or '').strip()) for m in GOAL.finditer(t)],
-            'tools': [m.group(1) for m in TOOL.finditer(t)], 'handoff': (h.group(1) or 'out_of_scope') if h else None}
+            'tools': [m.group(1) for m in TOOL.finditer(t)], 'handoff': (h.group(1) or 'out_of_scope') if h else None,
+            'dtmf': ''.join(m.group(1) for m in DTMF.finditer(t))[:4]}
 
 
 def hangup_ok(reply, last_caller):
@@ -182,6 +187,9 @@ def ledger(transcript, agent, contact, state):
         open_ = [g for g in goals if g.get('id') not in done]
         if done: rows.append('goals settled: ' + ' · '.join(done))
         if open_: rows.append('goals still open: ' + ' · '.join(f"{g['id']} ({g.get('description', '')[:90]})" for g in open_))
+    if callers and MENU.search(callers[-1]):
+        rows.append('an automated menu is speaking, not a person: to choose an option write only <dtmf N> (for example <dtmf 1>), '
+                    'no words; choose what reaches a person or the purpose of this call; never enter numbers you were not told')
     read = [name for name, rx in CUES if any(rx.search(c) for c in callers[-3:])]
     if read: rows.append('lately they sound: ' + ', '.join(read))
     since = state.get('turns_since_goal', 0)

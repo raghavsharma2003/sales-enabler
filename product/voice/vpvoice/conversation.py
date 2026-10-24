@@ -437,7 +437,7 @@ class Conversation:
         self.state['asked_ai'] = False
         if self.whisper_used: self.whisper = None; self.whisper_used = False     # one reply wrote with it: spent
         self.agent_turns += 1
-        marks = draft.marks() if not interrupted else {'end': False, 'goals': [], 'tools': [], 'handoff': None}
+        marks = draft.marks() if not interrupted else {'end': False, 'goals': [], 'tools': [], 'handoff': None, 'dtmf': ''}
         goal_ids = {g.get('id') for g in self.agent.get('goals') or []}
         moved = False
         for gid, note in marks['goals']:

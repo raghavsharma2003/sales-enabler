@@ -1,0 +1,19 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-dtmf",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "DTMF in and out. In: carrier stream 'dtmf' events (Plivo, Exotel) and the browser socket's {t: dtmf}; keys within 1.5 s (or to '#') are one entry; 1-2 keys become the caller turn '[keypad: 1]', more keys (a PIN or OTP, maybe) are never stored or given to the brain: she says the stop-digits line and the turn records '[keypad: N keys, not shown]'. Out: when the last caller words are an automated menu ('press 1', 'दबाएं', 'dabaiye'), the LAST block teaches <dtmf N> (at most 4 keys); the runtime presses them via Plivo's send-digits API only when a menu was the last thing heard",
+   "rationale": "Must-be audit 8: grep found no DTMF anywhere; IVR navigation and keypad choices were impossible.",
+   "reverse_if": "real calls show carriers sending DTMF in a different event shape (then map it), or buyers need longer keypad entries passed through (an account number on purpose) with the agent's explicit permission"
+  },
+  {
+   "id": "open.2026-10-24.web-browser-keypad",
+   "type": "open-question", "status": "open", "date": "2026-10-24", "source": "model",
+   "title": "The browser test call has no keypad: the runtime accepts {t: 'dtmf', digit} on the browser socket, but web/src/browser-call.ts sends none, so a buyer cannot try a keypad choice from the studio",
+   "closes_when": "the browser call view has a 12-key pad that sends {t: 'dtmf', digit}"
+  }
+ ],
+ "edges": [],
+ "events": []
+}
