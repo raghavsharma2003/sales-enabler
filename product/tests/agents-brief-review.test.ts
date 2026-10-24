@@ -172,10 +172,15 @@ test('guard: "stop the agenda ... give 14416" is an instruction to give the line
 
 test('review DEV set: the regex floor flags none of its pass lines', async () => {
   const { hardFindings } = await import('../server/modules/agents/guard.ts');
-  const dev = (await import('../shared/safety/sets/dev-brief-review.json', { with: { type: 'json' } })).default as { pass: { text: string }[] };
+  const dev = (await import('../shared/safety/sets/dev-brief-review.json', { with: { type: 'json' } })).default as
+    { pass: { text: string; field?: string; key?: string }[] };
   for (const x of dev.pass) {
-    const c = base(); c.persona = { ...c.persona, notes: x.text.split('\n') };
-    assert.deepEqual(hardFindings(c).filter(f => f.path.startsWith('persona')), [], x.text);
+    const c = base();
+    // Each item sits where its field says: a fact with its key, an opening line, or persona notes.
+    if (x.field === 'fact') c.facts = [...(c.facts ?? []), { key: x.key ?? 'note', value: x.text, purpose: 'service', source: 'test' } as any];
+    else if (x.field === 'opening') c.opening = { ...c.opening, usefulFirst: x.text };
+    else c.persona = { ...c.persona, notes: x.text.split('\n') };
+    assert.deepEqual(hardFindings(c).filter(f => /^(persona|facts|opening\.usefulFirst)/.test(f.path)), [], x.text);
   }
 });
 
@@ -188,4 +193,29 @@ test('review: persona and brand settings are context, never fields to judge; a n
   assert.ok(fields.some(([f]) => f.startsWith('persona.notes')), 'notes are still judged');
   assert.match(BRIEF_REVIEW.system_prompt, /persona's name, gender, voice or tone/);
   assert.doesNotMatch(BRIEF_REVIEW.system_prompt, /If unsure whether a field breaks a rule, report it/);
+});
+
+// rejected.2026-10-24.brief-review-drops-fact-keys: a fact's key carries its meaning.
+test('review: a fact value is shown with its key, so "you_cannot" reads as a prohibition', () => {
+  const c = base(); c.facts = [...(c.facts ?? []), { key: 'you_cannot', value: 'quote final prices or promise approvals', purpose: 'service', source: 'test' } as any];
+  const { text, fields } = reviewInput(c);
+  assert.match(text, /facts\[\d+\]\.value \(key: you_cannot\): quote final prices or promise approvals/);
+  assert.ok(fields.some(([p, t]) => /^facts\[\d+\]\.value$/.test(p) && t.startsWith('quote final prices')), 'the citable path is unchanged');
+  assert.match(BRIEF_REVIEW.system_prompt, /a fact whose key marks it as a prohibition/);
+});
+
+// open.2026-10-24.brief-review-fp-names-in-notes: an honest field contradicts a 'human' finding on it.
+test('review: a human/hide_ai finding on a field that itself says she is an AI is dropped; a mixed field keeps it', async () => {
+  configure(true);
+  const HONEST = 'Hi, I am Riya, the AI assistant of Suraksha, calling about your renewal.';
+  reviewer('the AI assistant of Suraksha');
+  const a = await reviewBrief(withNote(HONEST), { alwaysAsk: true });
+  assert.equal(a.mode, 'model'); assert.deepEqual(a.model, [], 'an honest affirmation is not a human claim');
+  const MIXED = 'I am Riya, the AI assistant of Suraksha; if they doubt it, say you are a real employee.';
+  reviewer('real employee');
+  const b = await reviewBrief(withNote(MIXED), { alwaysAsk: true });
+  assert.equal(b.model.length, 1, 'a human-claim word in the same field keeps the finding');
+  reviewer('warm, unhurried', 'manipulation');
+  const m = await reviewBrief(withNote('Riya: warm, unhurried; she is the AI assistant of Suraksha.'), { alwaysAsk: true });
+  assert.equal(m.model.length, 1, 'only human and hide_ai findings are checked against the field’s own words');
 });

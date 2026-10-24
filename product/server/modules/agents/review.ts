@@ -4,8 +4,9 @@
 // timeout, an error or bad output leaves the rules' verdict, and the label says so; nothing is silent.
 import type { AgentConfig } from '../../../shared/agent-config.ts';
 import contract from '../../../shared/safety/brief-review.json' with { type: 'json' };
-import { complete, type Purpose } from '../../llm.ts';
+import { complete, llmKeysConfigured, type Purpose } from '../../llm.ts';
 import { ValidationError } from '../../../shared/validate.ts';
+import { affirmsAi } from '../../../shared/safety/disclosure.ts';
 import { HARD_RULES, hardFindings, type HardFinding, type HardRule } from './guard.ts';
 
 type Kind = 'human' | 'hide_ai' | 'crisis' | 'manipulation';
@@ -32,8 +33,7 @@ export interface BriefReview {
 /** Real keys for the purpose (or the caller says so, as tests and the eval do). A test fake installed for another
  *  purpose does not switch the review on. */
 export function reviewConfigured(): boolean {
-  const get = (k: string) => process.env[`VP_LLM_BRIEF_REVIEW_${k}`] ?? process.env[`VP_LLM_DEFAULT_${k}`];
-  return Boolean(get('URL') && get('KEY') && get('MODEL'));
+  return llmKeysConfigured(PURPOSE);
 }
 
 // The fields the model reads: every string a caller could hear the effect of. Ids, hashes, voice parts and domains are
@@ -64,8 +64,13 @@ export function reviewInput(c: AgentConfig): { text: string; fields: [string, st
   const fs = reviewFields(c);
   const rows: string[] = [];
   let used = 0;
+  const facts = (c.facts ?? []) as { key?: string }[];
   for (let i = 0; i < fs.length; i++) {
-    const row = `${i + 1}. ${fs[i][0]}: ${fs[i][1].replace(/\s+/g, ' ').trim().slice(0, BRIEF_REVIEW.max_field_chars).replace(/(BRIEF)?>>>|<<<(BRIEF)?/g, '')}`;
+    // A fact's key is its meaning ("you_cannot: quote final prices"), so it goes with the value as a label
+    // (rejected.2026-10-24.brief-review-drops-fact-keys: without it a prohibition read as an instruction).
+    const fk = /^facts\[(\d+)\]\.value$/.exec(fs[i][0]);
+    const label = fk && facts[Number(fk[1])]?.key ? ` (key: ${String(facts[Number(fk[1])].key).replace(/[^\w .-]/g, '').slice(0, 60)})` : '';
+    const row = `${i + 1}. ${fs[i][0]}${label}: ${fs[i][1].replace(/\s+/g, ' ').trim().slice(0, BRIEF_REVIEW.max_field_chars).replace(/(BRIEF)?>>>|<<<(BRIEF)?/g, '')}`;
     if (used + row.length > BRIEF_REVIEW.max_input_chars) break;
     rows.push(row); used += row.length + 1;
   }
@@ -92,6 +97,19 @@ export function parseReview(raw: string, fs: [string, string][]): Omit<ModelFind
 
 class ReviewTimeout extends Error {}
 
+// open.2026-10-24.brief-review-fp-names-in-notes: a 'human' or 'hide_ai' finding on a field that itself affirms she
+// is an AI (the shared lexicon.ai_affirm, as RD1 reads it) and carries no human-claim word contradicts the field's own
+// words: an honest opening or note. The regex door has already run on it.
+const HUMAN_CLAIM = /\b(human|real person|real woman|real man|staff|employee|team member|colleague|person not|insaan|insan|karmachari|asli)\b|इंसान|असली|कर्मचारी/i;
+// Wider than lexicon.ai_affirm (rules.json is frozen while PREREG-10 runs; a candidate for it later): a name or a
+// third person between the subject and "AI assistant" ("I am Riya, the AI assistant of ..."; "she is the AI assistant").
+const AI_SELF = /\b(i am|i'm|she is|she's|he is|he's|main|mai|woh|wo)\b[^.?!]{0,40}\b(an?|the|our|ek)\s+(ai|a\.i\.|virtual|digital)\s+(assistant|agent|sahayak|sahayika|helper)\b|(मैं|वह|वो)[^.?!।]{0,40}(एआई|\bAI\b)\s?(असिस्टेंट|सहायक|सहायिका)/i;
+const NEG_AI = /\b(not|never|nahi|nahin|na)\b[^.?!]{0,12}\b(an? |the )?(ai|bot|virtual)\b|नहीं/i;
+function honestAffirmation(f: { kind: string; text: string }): boolean {
+  if (f.kind !== 'human' && f.kind !== 'hide_ai') return false;
+  return (affirmsAi(f.text) || (AI_SELF.test(f.text) && !NEG_AI.test(f.text))) && !HUMAN_CLAIM.test(f.text);
+}
+
 /** Review one config: the rules first, then (only if they found nothing, and a model is configured) the model.
  *  alwaysAsk is for judge-eval only: it asks the model even when the rules refused, so its own recall is measured. */
 export async function reviewBrief(c: AgentConfig, opts: { assumeConfigured?: boolean; timeoutMs?: number; threshold?: number; alwaysAsk?: boolean } = {}): Promise<BriefReview> {
@@ -113,7 +131,7 @@ export async function reviewBrief(c: AgentConfig, opts: { assumeConfigured?: boo
     const found = parseReview(reply.text, fs);
     if (!found) return unavailable('bad_output', reply.usage);
     const th = opts.threshold ?? BRIEF_REVIEW.threshold;
-    const model = found.filter(f => f.confidence >= th).map(f => ({ ...f, rule: BRIEF_REVIEW.kinds[f.kind], source: 'model' as const }));
+    const model = found.filter(f => f.confidence >= th && !honestAffirmation(f)).map(f => ({ ...f, rule: BRIEF_REVIEW.kinds[f.kind], source: 'model' as const }));
     return { mode: 'model', label: BRIEF_REVIEW.labels.model, rules, model, usage: reply.usage, latencyMs: performance.now() - t0 };
   } catch (e) {
     return unavailable(e instanceof ReviewTimeout ? 'timeout' : 'error');

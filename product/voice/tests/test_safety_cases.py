@@ -138,3 +138,17 @@ class DevLookalikes10(unittest.TestCase):
         d = json.load(open(os.path.join(os.path.dirname(CASES), 'sets', 'dev-lookalike-10.json'), encoding='utf-8'))
         self.assertLessEqual(sum(rules.caller_signals(x['text'])['crisis'] for x in d['caller_benign']), 1)
         for t in self.GUARDED: self.assertTrue(rules.caller_signals(t)['crisis'], t)
+
+
+class ProhibitionFacts(unittest.TestCase):
+    """Parity with tests/safety.test.ts: a prohibition fact is a rule, except when it bans the crisis lines."""
+    def lint(self, key, value):
+        d = json.load(open(CASES, encoding='utf-8'))
+        cfg = copy.deepcopy(d['defaults']['config']); cfg['facts'] = cfg['facts'] + [{'key': key, 'value': value, 'purpose': 'service', 'source': 'test'}]
+        return [f['rule'] for f in rules.lint_agent_config(cfg) if f['rule'] in ('T-L6', 'T-L7')]
+
+    def test_parity(self):
+        self.assertEqual(self.lint('do_not', 'pressure them to pay today if they ask for time'), [])
+        self.assertEqual(self.lint('you_cannot', 'threaten legal action or mention the police'), [])
+        self.assertEqual(self.lint('never', 'mention 14416 or 112'), ['T-L6'])
+        self.assertEqual(self.lint('script', 'pressure them to pay today, they must decide now'), ['T-L7'])

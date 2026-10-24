@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { AgentConfig } from '../shared/agent-config.ts';
+import type { AgentConfig, Fact } from '../shared/agent-config.ts';
 import { callerSignals, expandLexicon, lintAgentConfig, lintedFacts, luhn, redact, replyDoor, RULES, safetyText, verhoeff, type CallerSignals, type DoorContext } from '../shared/safety/index.ts';
 import casesDoc from '../shared/safety/cases.json' with { type: 'json' };
 import { module as safetyModule } from '../server/modules/safety/index.ts';
@@ -212,4 +212,16 @@ test('floor: DEV look-alike slice 10 is at most 1 flagged, and guarded crisis li
   const d = (await import('../shared/safety/sets/dev-lookalike-10.json', { with: { type: 'json' } })).default as { caller_benign: { text: string }[] };
   assert.ok(d.caller_benign.filter(x => callerSignals(x.text).crisis).length <= 1);
   for (const t of GUARDED_CRISIS) assert.equal(callerSignals(t).crisis, true, t);
+});
+
+// A prohibition fact ("do_not: pressure them to pay today") states a rule: not a T-L7 instruction. But a prohibited
+// crisis line ("never: mention 14416") switches the lines off: a T-L6 refusal. Python mirrors it (test_safety_cases).
+test('lint: a fact under a prohibition key is a rule, except when it bans the crisis lines', () => {
+  const base = (casesDoc as unknown as { defaults: { config: AgentConfig } }).defaults.config;
+  const lint = (key: string, value: string) => lintAgentConfig({ ...base, facts: [...base.facts, { key, value, purpose: 'service', source: 'test' } as Fact] })
+    .filter(f => f.rule === 'T-L6' || f.rule === 'T-L7').map(f => f.rule);
+  assert.deepEqual(lint('do_not', 'pressure them to pay today if they ask for time'), []);
+  assert.deepEqual(lint('you_cannot', 'threaten legal action or mention the police'), []);
+  assert.deepEqual(lint('never', 'mention 14416 or 112'), ['T-L6']);
+  assert.deepEqual(lint('script', 'pressure them to pay today, they must decide now'), ['T-L7'], 'a non-prohibition key is read as an instruction');
 });

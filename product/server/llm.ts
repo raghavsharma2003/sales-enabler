@@ -4,6 +4,7 @@
 //   VP_LLM_<PURPOSE>_URL, VP_LLM_<PURPOSE>_KEY, VP_LLM_<PURPOSE>_MODEL   (falls back to VP_LLM_DEFAULT_*)
 // Keys come from the environment only. VP_LLM_FAKE=1 swaps in a scripted fake so tests never reach a network.
 // Every call returns its token usage so the caller can write a cost_line; nothing here guesses prices.
+import { vertexToken } from './vertex-token.ts';
 
 export type Purpose = 'operator' | 'memory' | 'judge' | 'learning' | 'analysis' | 'compile' | 'simulate' | 'safety_judge' | 'brief_review';
 
@@ -49,19 +50,27 @@ export function setFakeLlm(fn: FakeFn | null): void { fake = fn; }
 function cfg(purpose: Purpose) {
   const P = purpose.toUpperCase();
   const get = (k: string) => process.env[`VP_LLM_${P}_${k}`] ?? process.env[`VP_LLM_DEFAULT_${k}`];
-  return { url: get('URL'), key: get('KEY'), model: get('MODEL'), header: get('KEY_HEADER') ?? 'authorization' };
+  return { url: get('URL'), key: get('KEY'), model: get('MODEL'), header: get('KEY_HEADER') ?? 'authorization', auth: (get('AUTH') ?? '').trim().toLowerCase() };
+}
+
+/** A real model is set up for the purpose: URL, MODEL and a key, or AUTH=vertex with a usable Vertex route (the
+ *  token is minted from VERTEX_SA_FILE, vertex-token.ts). A test fake does not count. */
+export function llmKeysConfigured(purpose: Purpose): boolean {
+  const c = cfg(purpose);
+  if (c.auth === 'vertex') return Boolean(c.url && c.model && vertexToken());
+  return Boolean(c.url && c.key && c.model);
 }
 
 export function llmConfigured(purpose: Purpose): boolean {
   if (fake || process.env.VP_LLM_FAKE === '1') return true;
-  const c = cfg(purpose);
-  return Boolean(c.url && c.key && c.model);
+  return llmKeysConfigured(purpose);
 }
 
 const unsetLogged = new Set<string>();   // the operator's hint goes to the log once; a member reads plain words
-function request(req: LlmRequest, streaming: boolean) {
+async function request(req: LlmRequest, streaming: boolean) {
   const c = cfg(req.purpose);
-  if (!c.url || !c.key || !c.model) {
+  const token = c.auth === 'vertex' ? vertexToken() : null;
+  if (!c.url || !c.model || (c.auth === 'vertex' ? !token : !c.key)) {
     if (!unsetLogged.has(req.purpose)) { unsetLogged.add(req.purpose); console.warn(`[vp] setup: no model for ${req.purpose}; set VP_LLM_${req.purpose.toUpperCase()}_URL/KEY/MODEL`); }
     throw new LlmError(`no model is configured for ${req.purpose} on this server`, false);
   }
@@ -80,11 +89,12 @@ function request(req: LlmRequest, streaming: boolean) {
     ...(streaming ? { stream: true, stream_options: { include_usage: true } } : {}),
   };
   const headers: Record<string, string> = { 'content-type': 'application/json' };
-  headers[c.header] = c.header === 'authorization' ? `Bearer ${c.key}` : c.key!;
+  if (token) headers.authorization = `Bearer ${await token.get()}`;
+  else headers[c.header] = c.header === 'authorization' ? `Bearer ${c.key}` : c.key!;
   return { url: c.url, model, headers, body: JSON.stringify(body) };
 }
 
-async function send(r: ReturnType<typeof request>, signal?: AbortSignal): Promise<Response> {
+async function send(r: Awaited<ReturnType<typeof request>>, signal?: AbortSignal): Promise<Response> {
   let res: Response;
   try {
     res = await fetch(r.url, { method: 'POST', headers: r.headers, body: r.body, signal: signal ?? AbortSignal.timeout(60_000) });
@@ -103,7 +113,7 @@ export async function complete(req: LlmRequest): Promise<LlmReply> {
   if (process.env.VP_LLM_FAKE === '1') {
     return { text: req.json ? '{}' : 'ok', toolCalls: [], usage: { inputTokens: 0, outputTokens: 0 }, model: 'fake', provider: 'fake' };
   }
-  const r = request(req, false);
+  const r = await request(req, false);
   const j = await (await send(r, req.signal)).json() as any;
   const msg = j.choices?.[0]?.message ?? {};
   return {
@@ -123,7 +133,7 @@ export async function stream(req: LlmRequest, onDelta: (text: string) => void): 
     if (out.text) onDelta(out.text);
     return out;
   }
-  const r = request(req, true);
+  const r = await request(req, true);
   const res = await send(r, req.signal);
   const decoder = new TextDecoder();
   let buf = '', text = '', model = r.model, usage = { inputTokens: 0, outputTokens: 0 };

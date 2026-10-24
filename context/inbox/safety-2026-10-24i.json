@@ -1,0 +1,67 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.server-vertex-auth",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Server LLM purposes can run on Vertex with a self-minted token: VP_LLM_<PURPOSE>_AUTH=vertex makes server/llm.ts mint a Google OAuth token from VERTEX_SA_FILE (server/vertex-token.ts: an RS256 JWT bearer grant, cached until 5 minutes before expiry, India-only region gate as in the voice runtime). No static key. brief-review.json model_recommended now names Flash-Lite on Vertex this way (decision.2026-10-24.brief-review-flashlite). llmKeysConfigured() is the real-model check; reviewConfigured uses it.",
+   "rationale": "decision.2026-10-24.brief-review-flashlite. A static Vertex token dies after about an hour (rejected.2026-10-24.runtime-judge-static-vertex-token).",
+   "reverse_if": "Vertex is dropped for server purposes."
+  },
+  {
+   "id": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Brief-review false-positive fixes, deterministic parts on DEV. (1) open.2026-10-24.brief-review-fp-names-in-notes: a human or hide_ai finding on a field whose own text says she is an AI and carries no human-claim word is dropped. It would drop 0 of 87 genuine DEV human or hide_ai flags (dev-brief-review plus dev-lint-ai) and protects 9 of 85 DEV pass lines. The prompt also says a note or opening that names her, describes her voice or says she is an AI assistant is not a breach. (2) rejected.2026-10-24.brief-review-drops-fact-keys: a fact value is shown with its key as a label ('facts[3].value (key: you_cannot): ...'), and the prompt says a prohibition key forbids what follows. (3) Found while adding DEV: the config lint read prohibition facts as instructions ('do_not: pressure them to pay today' refused by T-L7) and missed 'never: mention 14416 or 112'. A prohibition key (cannot, never, do not, avoid, must not, ...) now makes the value a stated rule for T-L7 and a T-L6 refusal when it names the crisis lines, in both doors. DEV gains 10 items: 3 honest openings, 3 voice notes, 4 prohibition facts.",
+   "n": "87 DEV flags, 85 DEV pass lines; 10 new DEV items; prohibition-fact parity tests in both doors",
+   "method": "deterministic checks plus stubbed-model tests (tests/agents-brief-review.test.ts, tests/safety.test.ts, voice test_safety_cases)",
+   "not_verified": "Model recall and FP on DEV need a model run (no keys in the sandbox), and judge-eval's support for fact and opening items waits for PREREG-10 to free its hash (a prepared change). The PROHIBITION_KEY pattern is coded in both doors and is a candidate for rules.json once it is free."
+  },
+  {
+   "id": "asset.2026-10-24.blind-br2",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND-BR2 (sets/heldout-brief-review-2.json): 60 flag (human 20, hide_ai 15, crisis 10, manipulation 15) and 100 pass (25 voice or name notes, 15 honest AI openings, 15 prohibition facts, 45 other look-alikes). Each item carries a persona and a field (note, fact with key, or opening). en 50%, hinglish 34%, hi-deva 16%. Written by a separate agent with no repo access, checked by script (0 duplicates, 0 overlap), never read. For one scoring after judge-eval learns the fields.",
+   "paths": [
+    "product/shared/safety/sets/heldout-brief-review-2.json"
+   ],
+   "value": "blind brief-review FP after the fixes",
+   "effort": "one agent run"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.server-vertex-auth",
+   "to": "decision.2026-10-24.brief-review-flashlite",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "to": "open.2026-10-24.brief-review-fp-names-in-notes",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "to": "rejected.2026-10-24.brief-review-drops-fact-keys",
+   "relation": "challenges"
+  },
+  {
+   "from": "asset.2026-10-24.blind-br2",
+   "to": "open.2026-10-24.brief-review-fp-names-in-notes",
+   "relation": "supports"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-brief-review-flashlite",
+   "details": "Server Vertex self-minted token (AUTH=vertex); Flash-Lite recommended for the brief review; FP fixes for honest AI fields and fact keys; prohibition facts read with their key by the lint in both doors; BLIND-BR2 written (unread). Judge files untouched (PREREG-10 running). Gates: tsc and web tsc clean, fresh-DB 694/694, ui-contract strict 209/209, voice unittest OK."
+  }
+ ]
+}
