@@ -23829,6 +23829,79 @@
    "date": "2026-10-24",
    "source": "model",
    "closes_when": "the runtime records a reply-door reason for unapproved facts that call.explain can name"
+  },
+  {
+   "id": "decision.2026-10-24.test-call-outcome-shown-not-counted",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A browser test call gets an outcome read and shown, never counted (integrator, for directive.2026-10-24.calling-first-build-all; staging showed test calls analysed with no outcome because the question came only from a campaign). With no campaign, analysis asks the outcome question of the newest campaign that runs this agent, else the workspace's only outcome definition, else one built from the agent's own required goals (values goal_reached, callback, not_interested, needs_human). The outcome stays in the call's analysis (outcomeGuess, testOutcomeFrom {from, name}); no outcome row is written, so outcomes, search, funnels, insights, learning rewards, experiments, billing figures and the escalation count never see it. The call page shows it with 'Test call: not counted', her quote and the question it was read against.",
+   "rationale": "The owner's testing is all test calls; they must see whether she got the outcome on each.",
+   "reverse_if": "The owner wants test-call outcomes aggregated (then a separate test-only view, never the live metrics), or the agent-goal question reads outcomes unlike the campaign's definition would.",
+   "evidence": [
+    "product/tests/calls-test-outcome.test.ts (synthetic, fake model): the goal question when nothing is defined; the workspace's only definition; the newest campaign on the agent wins; 0 outcome rows, absent from call search and the escalation count, outcomeGuess on call.get"
+   ]
+  },
+  {
+   "id": "component.2026-10-24.payment-status-webhooks",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Payment status from the business's gateway: Razorpay, Cashfree and PayU webhooks, each verified with the gateway's own scheme, matched to one contact by a named record key, giving campaigns' dial gate paidSinceImport() and, optionally, a verified outcome on the person's recent call",
+   "path": "product/server/modules/intake/payments.ts",
+   "details": "Route POST /hooks/payments/:integrationId (migration 0110: intake_payment_source, contact_payment).\n- Razorpay: X-Razorpay-Signature is a hex HMAC-SHA256 of the raw body; events payment.captured, order.paid, payment_link.paid.\n- Cashfree: x-webhook-signature is a Base64 HMAC-SHA256 of timestamp + body, within a 5-minute window; event PAYMENT_SUCCESS.\n- PayU: form POST with the reverse SHA-512 hash (with and without additional_charges).\nEach payment is kept once per gateway payment id. Unmatched and ambiguous payments are deleted after 30 days. Tools source.payments.setup and source.payments.list; web Contacts > Import > Payments. Tests: intake-payments 5/5 with doc-shaped fixtures signed using generated secrets; e2e flow 86/86 with the razorpay kind added locally (it skips until workspace adds the kind). Not verified: a real gateway delivery."
+  },
+  {
+   "id": "decision.2026-10-24.payment-match-by-record-key",
+   "type": "decision",
+   "status": "decided",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A payment matches a person only by a record key the workspace names (policy, loan or order id kept as a contact detail), exactly one live contact or none; never by the payer's phone",
+   "rationale": "Razorpay's own payment_link.paid sample shows the payer's contact differing from the link's customer. A relative or employer often pays. Matching by phone would stop calls to the wrong person, or miss the right one. Two people sharing a reference is 'ambiguous' and acts on no one.",
+   "reverse_if": "Buyers routinely cannot pass a record key to their gateway; then add phone matching as an explicit, per-source opt-in with its own test."
+  },
+  {
+   "id": "decision.2026-10-24.paid-since-import-margin",
+   "type": "decision",
+   "status": "proposed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The dial gate's 'already paid' counts a payment unless the person's record of that key was observed more than 24 hours after it. A list exported before someone paid but imported after still does not call them.",
+   "rationale": "Measured in intake-payments: with a strict 'paid after the last import' rule, a list without its own 'Updated at' (observed_at is the import time) reopened a person who had paid minutes before the import. Calling someone who paid is the harm this feature exists to prevent; skipping a genuinely new due date for up to a day is the lesser one.",
+   "reverse_if": "Daily-cycle collections (a new due every day) show the margin skips real dues; then make the margin per source."
+  },
+  {
+   "id": "rejected.2026-10-24.test-row-copies-first-person",
+   "type": "rejection",
+   "status": "rejected",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The sample pack's 'Add me' test row copying the first person's facts",
+   "tried": "The member's test row took row 0's facts (policy number, loan, order) so the call had something to say.",
+   "broke": "In the payments e2e flow, a Razorpay payment for Aarti's policy SH-2026-40110 matched two contacts (Aarti and the member's test contact) and became 'ambiguous': the gate would have called her after she paid. The test row now gets its own record ids (samples.ts testFacts), and intake-samples asserts they are unique for the id-keyed packs."
+  },
+  {
+   "id": "measure.2026-10-24.payment-webhooks-tests",
+   "type": "measurement",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Payment webhooks: 5/5 server tests and 1 browser flow.\n- Refused: forged or altered bodies for each gateway, a Cashfree timestamp 10 minutes old, another PayU merchant key, an unset source (409), an unknown id (404).\n- Matched: by reference_id, notes, order_tags and udf1.\n- Ambiguous and unmatched act on no one.\n- Duplicates are no-ops.\n- A verified outcome is recorded once on a call within 14 days and not for a call 20 days old.\n- paidSinceImport is scoped to the workspace, holds through a record only hours newer, and reopens after a record more than a day newer.",
+   "n": "5 server tests (3 gateways, 13 refusal or no-op cases); e2e 86/86",
+   "method": "node:test on a fresh Postgres over real HTTP (tests/intake-payments.test.ts), fixtures shaped from the providers' documented samples and signed with generated secrets; Playwright via e2e/run.sh",
+   "not_verified": "A real Razorpay, Cashfree or PayU delivery; the gate's use of paidSinceImport (campaigns wires G4); PayU's split-payment hash (refused, not accepted)."
+  },
+  {
+   "id": "open.2026-10-24.payment-gateway-kinds-and-gate",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Payment status is inert until workspace adds the razorpay, cashfree and payu integration kinds (agreed), and campaigns wires paidSinceImport into G4 as 'already_paid' for campaign, api and retry attempts (agreed)",
+   "closes_when": "Both land, and the payments e2e flow runs instead of skipping, plus a campaigns test shows G4 refusing a paid person."
   }
  ],
  "edges": [
@@ -42858,6 +42931,36 @@
    "from": "decision.2026-10-24.call-page-turn-timeline",
    "to": "decision.2026-10-24.staff-review-export",
    "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.test-call-outcome-shown-not-counted",
+   "to": "decision.2026-10-24.call-page-turn-timeline",
+   "relation": "informed-by"
+  },
+  {
+   "from": "component.2026-10-24.payment-status-webhooks",
+   "to": "decision.2026-10-24.payment-match-by-record-key",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.payment-status-webhooks",
+   "to": "decision.2026-10-24.paid-since-import-margin",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.payment-webhooks-tests",
+   "to": "component.2026-10-24.payment-status-webhooks",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-24.payment-status-webhooks",
+   "to": "open.2026-10-24.payment-gateway-kinds-and-gate",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-24.test-row-copies-first-person",
+   "to": "component.2026-10-24.sample-packs",
+   "relation": "challenges"
   }
  ]
 }
