@@ -25,14 +25,16 @@ curl -sf "http://localhost:$PORT/v1/health" > /dev/null && { echo "port $PORT is
 PY=${VP_VOICE_PYTHON:-python3}; DEVSIM=""
 DEVSIM_PORT=$((PORT + 2))
 if "$PY" -c "import aiohttp, numpy" 2>/dev/null; then
+  REC_DIR=$(mktemp -d /tmp/vp-e2e-rec.XXXXXX)
   (cd product/voice && VP_DEVSIM=1 VP_RUNTIME_SECRET="$VP_RUNTIME_SECRET" VP_CONTROL_URL="http://localhost:$PORT" PORT=$DEVSIM_PORT \
-    VP_PUBLIC_URL="http://127.0.0.1:$DEVSIM_PORT" VP_LOG_LEVEL=WARNING exec "$PY" -m vpvoice.devsim) > /tmp/vp-e2e-devsim.log 2>&1 &
+    VP_PUBLIC_URL="http://127.0.0.1:$DEVSIM_PORT" VP_RECORDINGS_DIR="$REC_DIR" VP_LOG_LEVEL=WARNING exec "$PY" -m vpvoice.devsim) > /tmp/vp-e2e-devsim.log 2>&1 &
   DEVSIM=$!
-  export VP_DEVSIM_URL="http://127.0.0.1:$DEVSIM_PORT"
+  # The call page plays recordings from links the server signs on the runtime's public address (here, devsim itself).
+  export VP_DEVSIM_URL="http://127.0.0.1:$DEVSIM_PORT" VP_RUNTIME_PUBLIC_URL="http://127.0.0.1:$DEVSIM_PORT"
 else echo "no Python with aiohttp + numpy: the browser call flow is skipped"; fi
 node --import tsx product/web/dev/serve.ts > /tmp/vp-e2e-server.log 2>&1 &
 SERVER=$!
-trap 'kill $SERVER $DEVSIM 2>/dev/null' EXIT INT TERM
+trap 'kill $SERVER $DEVSIM 2>/dev/null; [ -n "$REC_DIR" ] && rm -rf "$REC_DIR"' EXIT INT TERM
 [ -n "$DEVSIM" ] && { i=0; until curl -sf "$VP_DEVSIM_URL/v1/health" > /dev/null; do i=$((i+1)); [ $i -gt 60 ] && { echo "devsim did not start"; cat /tmp/vp-e2e-devsim.log; exit 1; }; sleep 0.5; done; }
 i=0; until curl -sf "http://localhost:$PORT/v1/health" > /dev/null; do i=$((i+1)); [ $i -gt 60 ] && { echo "server did not start"; cat /tmp/vp-e2e-server.log; exit 1; }; sleep 0.5; done
 node --import tsx product/web/dev/seed.ts "http://localhost:$PORT" || exit 1

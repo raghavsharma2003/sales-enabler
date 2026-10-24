@@ -12,6 +12,8 @@ import { arr, bool, num, obj, opt, str, uuid, ValidationError } from '../../../s
 import { analysisSetting, curatedAnalysisModels, DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
 import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLower } from './stats.ts';
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
+import { recordingLink } from '../../recording-url.ts';
+import { retentionPolicy } from '../intake/retention.ts';
 import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
 
 // Test calls run inside a daily test budget (workspace blueprint: ₹200 a day, proposed) and a per-call cap.
@@ -58,6 +60,24 @@ export function atCapacity(rep: { accepted: boolean; reason?: string; retryable?
   if (!/\b503\b/.test(rep.reason ?? '') || !/at_capacity/.test(rep.reason ?? '')) return null;
   const n = Number(/"retryAfterS"\s*:\s*(\d+)/.exec(rep.reason ?? '')?.[1] ?? 5);
   return { retryAfterS: Math.max(1, n) };
+}
+
+/** Whether this call's recording may be played now, and a fresh signed link when it may (server/recording-url.ts). The
+ *  runtime records only when the agent's recording setting is on and the caller did not refuse (it then reports no
+ *  recording at all); here the workspace's retention (policy.retention.get, recordings_days) and an erase request for the
+ *  person close it. There is no separate per-workspace recording switch to respect. */
+export async function recordingFor(ctx: ToolCtx, c: Record<string, any>): Promise<{ url: string | null; expiresAt: string | null; why: string | null }> {
+  const no = (why: string) => ({ url: null, expiresAt: null, why });
+  const uri: string | null = c.recording_uri;
+  if (!uri) return no('No recording was made on this call.');
+  const { policy } = await retentionPolicy(ctx.q, ctx.workspaceId);
+  const at = c.ended_at ?? c.started_at;
+  if (at && Date.now() - new Date(at).getTime() > policy.recordings_days * 86_400_000) return no(`The recording is past this workspace's retention of ${policy.recordings_days} days.`);
+  if (c.contact_id && await one(ctx.q, "SELECT 1 FROM forget_request WHERE workspace_id = $1 AND contact_id = $2 AND scope = 'erase_me' LIMIT 1", [ctx.workspaceId, c.contact_id]))
+    return no('The person asked to be erased, so the recording is not played.');
+  if (/^https?:\/\//i.test(uri)) return { url: uri, expiresAt: null, why: null };      // already an address a browser can open
+  const link = recordingLink(c.id, ctx.workspaceId);
+  return link ? { ...link, why: null } : no('The voice runtime\'s public address is not set on this server, so the recording cannot be played here.');
 }
 
 export interface JudgeRow { label: 'crisis' | 'opt_out'; mode: 'shadow' | 'raise'; outcome: 'raised' | 'shadow' | 'unavailable'; kind: string | null; confidence: number | null; reason: string | null }
@@ -163,11 +183,12 @@ export function registerTools(r: Registry): void {
       const judged = await read('SELECT seq, label, mode, outcome, kind, confidence::float AS confidence, reason, at FROM call_judge_event WHERE conversation_id = $1 AND workspace_id = $2 ORDER BY seq', [c.id, ctx.workspaceId]);
       const judgeMarks = judged.map(j => ({ seq: j.seq, at: j.at, label: j.label, outcome: j.outcome, confidence: j.confidence, text: judgeMarkText(j as unknown as JudgeRow) }));
       const rc = reasonFor(c.reason_code);
+      const recording = await recordingFor(ctx, c);
       return {
         id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
         contactId: c.contact_id, agentVersionId: c.agent_version_id, startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
         endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
-        recordingUri: c.recording_uri, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
+        recordingUri: c.recording_uri, recording, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
         cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
         turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
       };

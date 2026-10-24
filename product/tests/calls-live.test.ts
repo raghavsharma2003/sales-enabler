@@ -10,6 +10,8 @@ import assert from 'node:assert/strict';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createServer as netServer, type AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type pg from 'pg';
@@ -32,7 +34,8 @@ const skip = !process.env.DATABASE_URL ? 'DATABASE_URL not set'
 const SECRET = 'calls-live-test-secret-'.padEnd(40, 'z');
 
 let pool: pg.Pool, server: Server, registry: Registry, runtimeProc: ChildProcess | undefined, rt = '';
-let savedSecret: string | undefined;
+let savedSecret: string | undefined, savedPublic: string | undefined;
+const recDir = mkdtempSync(join(tmpdir(), 'vp-rec-'));
 
 const freePort = () => new Promise<number>((res, rej) => {
   const s = netServer().once('error', rej).listen(0, '127.0.0.1', () => { const p = (s.address() as AddressInfo).port; s.close(() => res(p)); });
@@ -74,7 +77,7 @@ before(async () => {
   const port = await freePort();
   rt = `127.0.0.1:${port}`;
   runtimeProc = spawn(PY, ['-m', 'vpvoice.devsim'], { cwd: VOICE, stdio: 'ignore',
-    env: { ...process.env, VP_DEVSIM: '1', VP_RUNTIME_SECRET: SECRET, VP_CONTROL_URL: control, PORT: String(port), VP_LOG_LEVEL: 'WARNING' } });
+    env: { ...process.env, VP_DEVSIM: '1', VP_RUNTIME_SECRET: SECRET, VP_CONTROL_URL: control, PORT: String(port), VP_LOG_LEVEL: 'WARNING', VP_RECORDINGS_DIR: recDir } });
   await until('the dev runtime', async () => (await fetch(`http://${rt}/v1/health`)).ok);
   setRuntime(new HttpRuntime(`http://${rt}`, SECRET));
 });
@@ -89,6 +92,8 @@ after(async () => {
   await new Promise(r => server?.close(r));
   await pool?.end();
   if (savedSecret === undefined) delete process.env.VP_RUNTIME_SECRET; else process.env.VP_RUNTIME_SECRET = savedSecret;
+  if (savedPublic === undefined) delete process.env.VP_RUNTIME_PUBLIC_URL; else process.env.VP_RUNTIME_PUBLIC_URL = savedPublic;
+  rmSync(recDir, { recursive: true, force: true });
 });
 
 test('live tools against the real runtime: whisper (approved), listen refused on sim, a person takes over and hangs up', { skip, timeout: 60_000 }, async () => {
@@ -168,4 +173,72 @@ test('live tools against the real runtime: whisper (approved), listen refused on
   assert.equal(ho!.destination, `member:${owner}`); assert.equal(ho!.brief.reason, 'takeover');
   const turns = await one<{ n: number }>(pool, "SELECT count(*)::int AS n FROM turn WHERE conversation_id = $1 AND speaker = 'caller'", [cid]);
   assert.ok(turns!.n >= 1, 'caller turns arrived through the signed hook');
+});
+
+test('recordings: call.get gives a fresh signed link the runtime plays and seeks; forged, expired, another workspace and erased are refused', { skip, timeout: 60_000 }, async () => {
+  setFakeLlm(() => ({ text: JSON.stringify({ points: [], moments: [], reasonCode: null, outcome: null }), toolCalls: [], usage: { inputTokens: 1, outputTokens: 1 }, model: 'fake', provider: 'fake' }));
+  savedPublic = process.env.VP_RUNTIME_PUBLIC_URL;
+  process.env.VP_RUNTIME_PUBLIC_URL = `http://${rt}/`;          // the browser's address for the runtime (Caddy on staging)
+  const { recordingLink } = await import('../server/recording-url.ts');
+  const mk = async (name: string) => {
+    const ws = (await one<{ id: string }>(pool, 'INSERT INTO workspace (name) VALUES ($1) RETURNING id', [name]))!.id;
+    const owner = (await one<{ id: string }>(pool, "INSERT INTO member (workspace_id, email, role) VALUES ($1,$2,'owner') RETURNING id", [ws, `o${Math.random()}@example.test`]))!.id;
+    return { ws, owner, ctx: { workspaceId: ws, actor: { type: 'member' as const, id: owner, role: 'owner' as const } } };
+  };
+  const a = await mk('recording test'), b = await mk('another workspace');
+  const made = await registry.execute<any>(pool, 'agent.create', { name: 'Rec test', templateId: 'insurance-renewal' }, a.ctx);
+  if (made.status !== 'confirmed') return assert.fail(JSON.stringify(made));
+  await registry.execute(pool, 'stack.set', { agentId: made.result.agentId, stackId: 'v2-flashlite' }, a.ctx);
+  const got = await registry.execute<any>(pool, 'agent.get', { agentId: made.result.agentId }, a.ctx);
+  if (got.status !== 'confirmed') return assert.fail('agent.get');
+  assert.equal(got.result.draft.recording.enabled, true, 'the template records (and announces it)');
+  const brief = await registry.execute<any>(pool, 'brief.compile', { config: got.result.draft }, a.ctx);
+  if (brief.status !== 'confirmed') return assert.fail('brief');
+  const contact = (await one<{ id: string }>(pool, "INSERT INTO contact (workspace_id, e164) VALUES ($1,'+919812300001') RETURNING id", [a.ws]))!.id;
+  const cid = (await one<{ id: string }>(pool, `INSERT INTO conversation (workspace_id, contact_id, channel, direction, status, run_manifest) VALUES ($1,$2,'test','outbound','live','{"test":true}') RETURNING id`, [a.ws, contact]))!.id;
+  const start = await (await import('../server/runtime-client.ts')).runtime().start({
+    protocol: 1, conversationId: cid, attemptId: null, workspaceId: a.ws, direction: 'outbound', transport: { kind: 'sim', simCallerId: 'rec-test' },
+    agent: { ...got.result.draft, versionHash: got.result.draftHash }, brief: brief.result,
+    stack: { id: 'v2-flashlite', combinationId: combinationId(requireStack('v2-flashlite'), got.result.draft.voice?.voiceId), components: requireStack('v2-flashlite').components },
+    contact: { displayName: '', timezone: 'Asia/Kolkata', facts: {}, memoryBrief: '', memoryStatus: 'disabled' },
+    consent: { basis: 'consent' }, limits: { maxDurationS: 120, maxCostInrMilli: 10_000 }, test: true,
+  });
+  assert.equal(start.accepted, true, JSON.stringify(start));
+  const caller = await socket(`ws://${rt}/v1/media/sim/${cid}?token=${(start.join as { token: string }).token}`);
+  await caller.next();
+  caller.send({ t: 'say', text: 'Haan boliye.' }); await caller.next();
+  caller.send({ t: 'hangup' });
+  await until('call.ended with a recording', async () => one(pool, `SELECT 1 FROM conversation WHERE id = $1 AND status <> 'live' AND recording_uri IS NOT NULL`, [cid]));
+  await analysesSettled(); caller.close();
+
+  const g = await registry.execute<any>(pool, 'call.get', { conversationId: cid }, a.ctx);
+  if (g.status !== 'confirmed') return assert.fail(JSON.stringify(g));
+  const rec = g.result.recording;
+  assert.ok(rec.url?.startsWith(`http://${rt}/v1/recordings/${cid}?`), JSON.stringify(rec));
+  assert.ok(new Date(rec.expiresAt).getTime() - Date.now() <= 600_000 && new Date(rec.expiresAt).getTime() > Date.now() + 500_000, 'ten minutes');
+  const full = await fetch(rec.url);
+  assert.equal(full.status, 200); assert.equal(full.headers.get('content-type'), 'audio/wav');
+  const bytes = new Uint8Array(await full.arrayBuffer());
+  assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), 'RIFF');
+  const part = await fetch(rec.url, { headers: { range: 'bytes=44-1043' } });
+  assert.equal(part.status, 206, 'the browser can seek'); assert.equal((await part.arrayBuffer()).byteLength, 1000);
+  assert.equal(part.headers.get('content-range'), `bytes 44-1043/${bytes.length}`);
+
+  const u = new URL(rec.url); u.searchParams.set('sig', u.searchParams.get('sig')!.replace(/^./, c => c === 'a' ? 'b' : 'a'));
+  assert.equal((await fetch(u)).status, 403, 'a forged signature');
+  const old = recordingLink(cid, a.ws, { now: Date.now() - 11 * 60_000 })!;
+  assert.equal((await fetch(old.url)).status, 403, 'an expired link');
+  const theirs = recordingLink(cid, b.ws)!;
+  assert.equal((await fetch(theirs.url)).status, 403, "a link signed for another workspace never opens this one's recording");
+  const fromB = await registry.execute<any>(pool, 'call.get', { conversationId: cid }, b.ctx);
+  assert.equal(fromB.status, 'not_executed', 'another workspace cannot see the call, so gets no link');
+
+  await pool.query("INSERT INTO forget_request (workspace_id, contact_id, scope) VALUES ($1,$2,'erase_me')", [a.ws, contact]);
+  const erased = await registry.execute<any>(pool, 'call.get', { conversationId: cid }, a.ctx);
+  assert.equal(erased.status === 'confirmed' && erased.result.recording.url, null);
+  assert.match(erased.status === 'confirmed' ? erased.result.recording.why : '', /asked to be erased/);
+  await pool.query('DELETE FROM forget_request WHERE contact_id = $1', [contact]);
+  await pool.query("UPDATE conversation SET ended_at = now() - interval '91 days' WHERE id = $1", [cid]);
+  const late = await registry.execute<any>(pool, 'call.get', { conversationId: cid }, a.ctx);
+  assert.match(late.status === 'confirmed' ? late.result.recording.why : '', /past this workspace's retention of 90 days/);
 });

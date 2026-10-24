@@ -12,7 +12,7 @@
 import asyncio, hashlib, hmac, json, logging, os, secrets, time
 import aiohttp
 from aiohttp import web
-from . import RUNTIME_VERSION, signing, stacks
+from . import RUNTIME_VERSION, recordings, signing, stacks
 from . import ticket as tk
 from .events import EventSink, HttpPoster
 from .providers import ProviderUnavailable, build
@@ -449,6 +449,7 @@ class Runtime:
         a.router.add_post('/v1/calls/{id}/{action:listen|whisper|takeover}', self.live_control)
         a.router.add_get('/v1/calls/{id}', self.call_status)
         a.router.add_get('/v1/health', self.health)
+        a.router.add_get('/v1/recordings/{id}', recordings.handler(lambda: self.secret, lambda: self.env.get('VP_RECORDINGS_DIR')))
         a.router.add_get('/v1/media/browser/{id}', self.media_browser)
         a.router.add_get('/v1/media/sim/{id}', self.media_sim)
         a.router.add_get('/v1/media/listen/{id}', self.media_listen)

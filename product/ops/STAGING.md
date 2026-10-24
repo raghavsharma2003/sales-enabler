@@ -58,7 +58,7 @@ The runtime is one process, `python -m vpvoice`. With several cores, run `python
 
 | Name | What |
 |---|---|
-| `VP_RECORDINGS_DIR` | Optional. Where recordings are written. Unset means no recordings |
+| `VP_RECORDINGS_DIR` | Optional. Where recordings are written. Unset means no recordings. Served only at `GET /v1/recordings/{callId}` with a link the control plane signs (10 minutes, one workspace, Range for seeking); never listed |
 
 `GET /v1/health` shows, part by part, what this runtime can run and why not. Check it before the first call.
 
@@ -77,6 +77,7 @@ Run `node product/web/build.mjs` once. Then `node --import tsx product/server/ma
 | `NODE_ENV` | `production` |
 | `VP_SECRET_KEY` | Seals API keys and integrations (32 bytes, hex) |
 | `VP_RUNTIME_URL` | The voice runtime's base as the control plane reaches it (loopback) |
+| `VP_RUNTIME_PUBLIC_URL` | The voice runtime's base as a browser reaches it, the same address as the runtime's `VP_PUBLIC_URL` (on staging, the Caddy address on :8443, never 127.0.0.1). The call page plays recordings from signed links on this base. Unset: `VP_RUNTIME_URL` is used, which a browser can reach only in development |
 | `VP_RUNTIME_SECRET` | The same value as the runtime's |
 | `VP_TRUSTED_PROXIES` | Leave unset behind a local proxy (private addresses are trusted), or `none` |
 

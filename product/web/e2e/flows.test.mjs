@@ -284,6 +284,24 @@ test('Browser call: she calls you in the browser, captions from both sides, hang
   assert.ok(turns.includes('agent') && turns.includes('caller'), 'both sides are in the transcript: ' + turns.join());
   await page.goto(`${BASE}/calls/${id}`);
   await page.getByText('Haan ji, boliye.').first().waitFor({ timeout: 10000 });
+  // The runtime's own recording of this call plays on the page, from a signed link to the runtime (not a file path).
+  const player = page.locator('audio.callaudio');
+  await player.waitFor({ timeout: 10000 });
+  const src = await player.getAttribute('src');
+  assert.ok(src.startsWith(`${process.env.VP_RUNTIME_PUBLIC_URL}/v1/recordings/${id}?`), src);
+  const played = await player.evaluate(async a => {
+    a.muted = true;
+    await new Promise((res, rej) => { if (a.readyState >= 1) res(); else { a.onloadedmetadata = res; a.onerror = () => rej(new Error('audio error ' + a.error?.code)); } });
+    await a.play(); await new Promise(r => setTimeout(r, 600)); a.pause();
+    const before = a.currentTime; a.currentTime = Math.min(1, a.duration / 2);
+    await new Promise(r => { a.onseeked = r; });
+    return { duration: a.duration, played: before, seekedTo: a.currentTime };
+  });
+  assert.ok(played.duration > 1, 'a real recording, seconds long: ' + JSON.stringify(played));
+  assert.ok(played.played > 0.2, 'it played: ' + JSON.stringify(played));
+  assert.ok(Math.abs(played.seekedTo - Math.min(1, played.duration / 2)) < 0.1, 'and seeks: ' + JSON.stringify(played));
+  const forged = (await fetch(src.replace(/sig=./, m => m === 'sig=a' ? 'sig=b' : 'sig=a'))).status;     // from here: the page has no CORS to the runtime, nor needs it
+  assert.equal(forged, 403, 'a forged link is refused');
 });
 
 test('Stack picker: beta stacks say "test calls only", and an unmeasured reply gap shows no number', async () => {
@@ -957,13 +975,15 @@ test('Call page: with a recording the browser can open, a line plays from its mo
   } finally { await pool.query('UPDATE conversation SET recording_uri = NULL WHERE id = $1', [id]); }
 });
 
-test('Call page: a recording that lives on the voice server is not offered as playable, and the page says why', async () => {
+test('Call page: a recording the browser cannot open is not offered as playable, and the page says why', async () => {
   const id = await callByContact('Sunita Verma');
   await pool.query('UPDATE conversation SET recording_uri = $2 WHERE id = $1', [id, 'file:///var/lib/vp/recordings/call.wav']);
   try {
     await page.goto(`${BASE}/calls/${id}`);
-    await page.getByText('stored on the voice server and cannot be played from this page yet', { exact: false }).waitFor({ timeout: 10000 });
-    assert.equal(await page.locator('audio.callaudio').count(), 0, 'no player for an address a browser cannot open');
+    // With a runtime address the server signs a link, and the runtime has no such file: the page says so. Without one, the server says why.
+    const said = process.env.VP_RUNTIME_PUBLIC_URL ? 'The voice server did not return this recording' : "public address is not set on this server";
+    await page.getByText(said, { exact: false }).waitFor({ timeout: 10000 });
+    assert.equal(await page.locator('audio.callaudio').count(), 0, 'no player for a recording the browser cannot open');
   } finally { await pool.query('UPDATE conversation SET recording_uri = NULL WHERE id = $1', [id]); }
 });
 

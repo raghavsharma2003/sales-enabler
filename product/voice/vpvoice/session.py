@@ -1,7 +1,7 @@
 # A call session: what every transport shares (manifest, limits, component failure, hand-off, the ending), and the
 # text-mode simulated caller ('sim'). Audio transports subclass it in cascade.py and s2s.py.
 import asyncio, logging, os, time
-from . import RUNTIME_VERSION, brief, catalog, safety
+from . import RUNTIME_VERSION, brief, catalog, recordings, safety
 from .conversation import ComponentError, Conversation, Draft
 from .cost import CostMeter
 
@@ -130,6 +130,7 @@ class Session:
             except Exception: pass
         self.meter_running(); self.meter_final()
         for ev in self.meter.drain(): self.sink.emit(ev.pop('type'), **ev)
+        self.save_sim_recording()
         fields = {'endReason': reason, 'durationS': round(self.elapsed_s(), 1), 'transcript': self.conv.transcript_out(), 'manifest': self.manifest()}
         if self.recording_uri and not self.conv.state['recording_refused']: fields['recordingUri'] = self.recording_uri
         await self.sink.end(**fields)
@@ -141,6 +142,15 @@ class Session:
         await self.end(reason)
 
     async def close_media(self): pass
+
+    def save_sim_recording(self):
+        """A text call has no audio. Components may carry sim_recording(path) (devsim's tone), so the signed recording route
+        can be tested end to end; never set by the real runtime. Same rules as a real recording: enabled, not refused."""
+        write, d = getattr(self.c, 'sim_recording', None), self.env.get('VP_RECORDINGS_DIR')
+        if not write or not d or self.recording_uri or self.conv.state['recording_refused']: return
+        if not (self.t['agent'].get('recording') or {}).get('enabled', False): return
+        try: self.recording_uri = recordings.save(d, self.id, self.t.get('workspaceId', ''), write)
+        except Exception: log.exception('sim recording')
     def meter_final(self): pass
 
     # ---------------------------------------------------------------- shared decisions

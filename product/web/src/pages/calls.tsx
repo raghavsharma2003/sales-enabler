@@ -54,7 +54,8 @@ function Body({ c }: { c: CallDoc }) {
   const turnRefs = useRef<Record<number, HTMLLIElement | null>>({});
   const audio = useRef<HTMLAudioElement | null>(null);
   const marks = useMemo(() => marksFor(c), [c]);
-  const canPlay = playable(c.recordingUri);
+  const [audioFailed, setAudioFailed] = useState(false);
+  const canPlay = playable(c.recordingUri) && !audioFailed;
   const current = c.turns.find(t => t.startMs != null && at >= t.startMs && at <= (t.endMs ?? t.startMs + 1))?.idx;
   const seek = (msv: number | null) => { if (msv == null) return; setAt(msv); if (audio.current) audio.current.currentTime = msv / 1000; const t = c.turns.find(x => x.startMs != null && msv >= x.startMs && msv <= (x.endMs ?? x.startMs + 1)); if (t) turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
   const [why, setWhy] = useState<CallExplain | null>(null); const [whyBusy, setWhyBusy] = useState(false);
@@ -71,8 +72,8 @@ function Body({ c }: { c: CallDoc }) {
       <div className="cols-main">
         <div className="stack">
           <Card aria-labelledby="player-h">
-            <CardHead id="player-h" title="Who spoke when" sub={canPlay ? 'Play the recording, or select a line below to jump to it. The line being played is highlighted.' : c.recordingUri ? 'A recording exists, but it is stored on the voice server and cannot be played from this page yet. The bars are drawn from turn timing.' : 'No recording is stored for this call. The bars are drawn from turn timing, not from audio.'} />
-            {canPlay && <audio ref={audio} className="callaudio" controls preload="metadata" src={c.recordingUri!} aria-label="Call recording" onTimeUpdate={e => setAt(e.currentTarget.currentTime * 1000)} onSeeked={e => setAt(e.currentTarget.currentTime * 1000)} />}
+            <CardHead id="player-h" title="Who spoke when" sub={canPlay ? 'Play the recording, or select a line below to jump to it. The line being played is highlighted.' : audioFailed ? 'The voice server did not return this recording (it may have been removed, or the link expired: reload to try again). The bars are drawn from turn timing.' : c.recordingUri ? `${c.recordingWhy ?? 'A recording exists, but this page cannot open it.'} The bars are drawn from turn timing.` : 'No recording is stored for this call. The bars are drawn from turn timing, not from audio.'} />
+            {canPlay && <audio ref={audio} className="callaudio" controls preload="metadata" src={c.recordingUri!} aria-label="Call recording" onError={() => setAudioFailed(true)} onTimeUpdate={e => setAt(e.currentTarget.currentTime * 1000)} onSeeked={e => setAt(e.currentTarget.currentTime * 1000)} />}
             {c.turns.length > 0 ? <Lanes c={c} at={at} onSeek={seek} /> : <Empty title="Nobody spoke" body="There is no transcript. The reason is in the outcome card." />}
           </Card>
           {c.turns.length > 0 && <Card><TimingCard c={c} onSeek={t => { setAt(t.startMs ?? 0); turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }} /></Card>}

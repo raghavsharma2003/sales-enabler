@@ -11,7 +11,7 @@
 import asyncio, logging, os, sys
 import numpy as np
 from aiohttp import web
-from . import stacks
+from . import recordings, stacks
 from .providers import Components
 from .server import Runtime
 
@@ -81,6 +81,7 @@ def make_components(sid, voice, t, http, env):
                       brain_provider='devsim', ears_id=c.get('ears') or 'azure', tts_id=c.get('voice') or 'gemini-lite',   # s2s: metered as a cascade
                       names={'s2s': c['s2s'], 'voice': voice} if c.get('s2s') else   # named as the real runtime names it (providers.build)
                             {'stt': c.get('ears'), 'llm': c.get('brain'), 'tts': c.get('voice'), 'voice': voice})
+    comp.sim_recording = recordings.tone_wav     # a text call's stand-in recording (VP_RECORDINGS_DIR), served by the signed route
     comp.voice = FakeVoice(); comp.make_ears = lambda on_p, on_f, on_e, lang='hi-IN': FakeEars(on_p, on_f, on_e, lang)
     return comp
 

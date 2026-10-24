@@ -12,7 +12,7 @@
 # speculatively: they are committed first, so the door and the brain see them.
 import asyncio, contextlib, logging, re, time
 import numpy as np
-from . import brief, catalog, safety
+from . import brief, catalog, recordings, safety
 from .audio import FRAME_BYTES, Recorder, Resampler, make_vad
 from .conversation import ComponentError, Draft
 from .session import Session
@@ -289,12 +289,10 @@ class CascadeSession(Session):
         await self.line.close()
 
     def save_recording(self):
-        import os
         d = self.env.get('VP_RECORDINGS_DIR')
         if not d or not self.rec.enabled or self.conv.state['recording_refused']: return
         try:
-            os.makedirs(d, exist_ok=True); path = os.path.join(d, f'{self.id}.wav'); self.rec.write(path)
-            self.recording_uri = 'file://' + path
+            self.recording_uri = recordings.save(d, self.id, self.t.get('workspaceId', ''), self.rec.write)   # served signed: recordings.py
         except Exception:
             log.exception('recording')
 

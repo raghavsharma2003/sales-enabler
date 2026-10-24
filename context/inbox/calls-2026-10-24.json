@@ -1,0 +1,36 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.recording-signed-links",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Call recordings play from short-lived signed links to the voice runtime: GET /v1/recordings/{callId}?ws&exp&sig, sig = HMAC-SHA256(VP_RUNTIME_SECRET, 'vp-recording.v1\\n' + callId + '\\n' + workspaceId + '\\n' + exp). call.get returns recording {url, expiresAt, why}: a 10-minute link on VP_RUNTIME_PUBLIC_URL (else VP_RUNTIME_URL) when the call has a recording, it is inside the workspace's recordings retention (policy.retention.get recordings_days) and no erase_me request exists for the person. The runtime refuses expired links, links living over an hour, forged signatures and a workspace other than the one in the .json beside each .wav; call ids are UUID-validated, never joined raw; no listing; aiohttp FileResponse serves Range",
+   "rationale": "Web's ee8aef6 found recordingUri is a file path on the voice server, so no real recording could play. A link tied to one workspace and ten minutes leaks little if copied; the browser's <audio> needs no CORS. There is no per-workspace recording switch to respect beyond the agent's own recording setting (the runtime records only when it is on and the caller did not refuse); retention is enforced at play time only, nothing deletes runtime files yet.",
+   "reverse_if": "Recordings move to object storage (then sign storage URLs instead), or a per-workspace recording policy is added (then call.get must check it too)."
+  },
+  {
+   "id": "open.2026-10-24.recording-files-retention-purge",
+   "type": "open",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Nothing deletes recording files on the voice runtime when recordings_days passes or a person asks to be erased: the control plane only stops signing links. A purge needs a signed runtime route (or storage lifecycle) driven by calls' retention and forget_request."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.recording-signed-links",
+   "to": "open.2026-10-24.recording-files-retention-purge",
+   "relation": "leaves-open"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "recording-signed-links",
+   "details": "Tests: voice tests/test_recordings.py (7: signature vector shared with TS, malformed/expired/too-long/forged/other-workspace refused, path traversal, Range 206, devsim-style sim call saves a tone with its workspace, none when the agent does not record); tests/calls-recording.test.ts (2, same vector); tests/calls-live.test.ts cross-process with devsim (a real runtime recording: 200, Range 206 with Content-Range, forged 403, expired 403, another workspace's link 403, another workspace's call.get refused, erase_me and past-retention give no link); web e2e 'Browser call' now plays the runtime's recording of a real devsim browser call in Chromium (duration > 1 s, plays, seeks) and a forged link is 403. Gates on a fresh database: node scripts/test.mjs 481/481 including the browser flows (VP_VOICE_PYTHON and PLAYWRIGHT_BROWSERS_PATH set); ui-contract --strict 174/174; tsc server and web clean; voice unittest OK. Not verified: staging through Caddy on :8443."
+  }
+ ]
+}
