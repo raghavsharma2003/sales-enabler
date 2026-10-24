@@ -10,7 +10,7 @@ import { APPROVERS, ALL_TOOLS, TOOLS } from '../web/src/tools.ts';
 
 const web = fileURLToPath(new URL('../web/', import.meta.url));
 const FIRST_LOAD_GZIP_KB = 100;   // main JS + CSS a user downloads before any page chunk
-const ALL_CHUNKS_GZIP_KB = 200;   // every chunk together
+const ALL_CHUNKS_GZIP_KB = 205;   // every chunk together. Was 200; +5 on 2026-10-24 for Settings > Webhooks and the calls export sheet (+4.2 KB), pending web's review
 
 test('the app builds, dist is complete and the bundle stays under its stated size', () => {
   execFileSync(process.execPath, [web + 'build.mjs'], { stdio: 'pipe' });
