@@ -76,6 +76,7 @@ class Conversation:
                       'checkin': None}   # judge-only crisis check-in: None -> 'due' -> 'asked' -> 'answer' -> None
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
         self.judge_complete = None; self.judge_env = None; self.judge_raised = False; self.opt_out_confirm_due = False
+        self.judge_in_time = {True: 0, False: 0}     # verdicts in / not yet in at her first sentence
         self.judge_tasks = set()         # judge work running in the background: held (asyncio keeps only weak refs), drained at end
         self.whisper = None; self.whisper_used = False     # a supervisor's note for her next reply (Session.whisper)
 
@@ -181,6 +182,10 @@ class Conversation:
         said anything (the reply is written again with the check-in shapes)."""
         if draft.gate is not None:
             gate, draft.gate = draft.gate, None
+            # Staging measures how often the verdict is in before her first sentence (open.2026-10-24.judge-timeout-budget).
+            self.judge_in_time[gate.done()] += 1
+            log.info('judge %s: verdict %s at her first sentence (budget %d ms)', self.t['conversationId'],
+                     'in' if gate.done() else 'not yet', judge.timeout_ms(self.judge_env))
             if gate.done(): await self.settle_gate(gate)
             else: self.track(self.settle_gate(gate))
         if self.state['checkin'] == 'due' and not draft.checkin and not self.state['crisis']:
@@ -197,7 +202,7 @@ class Conversation:
         cancel whatever is still running after that (a cancelled judge meters nothing)."""
         pending = [t for t in self.judge_tasks if not t.done()]
         if not pending: return
-        done, still = await asyncio.wait(pending, timeout=judge.SPEC['timeout_ms'] / 1000 + 0.05)
+        done, still = await asyncio.wait(pending, timeout=judge.timeout_ms(self.judge_env) / 1000 + 0.05)
         for t in still: t.cancel()
         if still: await asyncio.gather(*still, return_exceptions=True)
 

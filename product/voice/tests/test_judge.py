@@ -590,3 +590,21 @@ class PromptCOutput(unittest.TestCase):
     def test_risk_with_opt_out_pair(self):
         self.assertEqual(judge.parse_verdict('{"crisis":false,"risk":5,"kind":"none","opt_out":true,"opt_out_confidence":0.9}'),
                          {'crisis': False, 'confidence': 0.05, 'kind': 'none', 'optOut': {'value': True, 'confidence': 0.9}})
+
+
+class TimeoutBudget(unittest.TestCase):
+    """open.2026-10-24.judge-timeout-budget: staging can try a longer budget without editing judge.json."""
+    def test_env_override_is_clamped(self):
+        self.assertEqual(judge.timeout_ms({}), judge.SPEC['timeout_ms'])
+        self.assertEqual(judge.timeout_ms({'VP_SAFETY_JUDGE_TIMEOUT_MS': '1800'}), 1800)
+        self.assertEqual(judge.timeout_ms({'VP_SAFETY_JUDGE_TIMEOUT_MS': '99999'}), 3000)
+        self.assertEqual(judge.timeout_ms({'VP_SAFETY_JUDGE_TIMEOUT_MS': '10'}), 500)
+        self.assertEqual(judge.timeout_ms({'VP_SAFETY_JUDGE_TIMEOUT_MS': 'soon'}), judge.SPEC['timeout_ms'])
+
+    def test_the_runtime_counts_verdicts_in_time(self):
+        c, _ = fake(verdict(False, 0.1, 'none'))
+        sess, p, replies = sim_call([DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [INDIRECT], c, 'raise')
+        self.assertEqual(sess.conv.judge_in_time, {True: 1, False: 0}, 'a fast judge is in before her first sentence')
+        c, _ = fake(verdict(False, 0.1, 'none'), delay=0.3)
+        sess, p, replies = sim_call([DISCLOSED, 'Achha, waise aapka renewal 2 November ko hai.'], [INDIRECT], c, 'raise', brain_s=0.0)
+        self.assertEqual(sess.conv.judge_in_time, {True: 0, False: 1}, 'a slow one is not, and the reply did not wait')

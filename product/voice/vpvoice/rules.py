@@ -50,7 +50,7 @@ KNOWN = {
     'T-L3': {'about', 'allowedPurposes', 'offerLanguage'},
     'T-L4': {'about', 'shorteners'},
     'T-L6': {'about', 'any', 'never_say_hides_crisis'},
-    'T-L7': {'about', 'any', 'negated_prefix'},
+    'T-L7': {'about', 'any', 'negated_prefix', 'prohibition_key'},
     'links': {'pattern', 'about'},
     'checkin': {'about', 'shapes', 'answer_shapes'},
 }
@@ -491,9 +491,6 @@ def _strings(v, path):
             yield from _strings(x, p)
 
 
-PROHIBITION_KEY = re.compile(r'(you_?)?(cannot|can_?not|cant|never|do_?not|dont|must_?not|should_?not|avoid|no|not|forbidden|prohibited)(_|$)', re.I)
-
-
 def lint_agent_config(cfg):
     out = []; L = RULES['lint']
     for path, s in _strings(cfg, ''):
@@ -506,7 +503,8 @@ def lint_agent_config(cfg):
             out.append({'rule': 'T-L1', 'path': path, 'message': 'tells the agent to claim to be human or hide being an AI', 'effect': 'refuse'})
     # T-L6 / T-L7: crisis lines and manipulation (the TS door's lintAgentConfig; agents/guard.ts delegates there)
     negated = rx(L['T-L7']['negated_prefix'])
-    prohibited = {f'facts[{i}].value' for i, f in enumerate(cfg.get('facts') or []) if PROHIBITION_KEY.match(f.get('key') or '')}
+    prohibition = re.compile(L['T-L7']['prohibition_key'], re.I)
+    prohibited = {f'facts[{i}].value' for i, f in enumerate(cfg.get('facts') or []) if prohibition.search(f.get('key') or '')}
     for path, s in _strings(cfg, ''):
         if re.match(r'(agentId|versionHash|voice\.|brand\.verifiedDomains)', path): continue
         t = normalise(s)

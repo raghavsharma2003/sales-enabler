@@ -700,7 +700,9 @@
         "(\\b(pankhe|fan|rassi)\\b|पंखे|रस्सी)[^.?!।]{0,15}(latak|लटक|faansi|फांसी)",
         "(गोलियां|goliyan|pills)[^.?!।]{0,15}(इकट्ठी|जमा|ikatthi|collect)",
         "(\\b(bojh|burden)\\b|बोझ)",
-        "सब खत्म हो जाए"
+        "सब खत्म हो जाए",
+        "\\b(jahar|zahar|jeher|zeher|zehar|poison|phenyl|phenol|keetnashak|keet nashak|pesticide|acid|tezaab|tezab|(keede|kide|keeda|chuhe|chuha|choohe) (maarne|marne|maar) ki (dawai|dawa|goli))\\b[^.?!]{0,15}\\b(pee|pi) ?(li|liya|lee|liyaa|lunga|lungi|loonga|loongi|jaunga|jaungi|jaaunga|jaaungi|kar|ke|leta|leti|raha|rahi|chuka|chuki)\\b",
+        "(ज़हर|जहर|फिनाइल|फ़िनाइल|कीटनाशक|तेज़ाब|तेजाब|(कीड़े|कीडे|चूहे) (मारने|मार) की (दवा|दवाई|गोली))[^.?!।]{0,15}पी ?(लिया|ली|लूंगा|लूंगी|लूँगा|लूँगी|जाऊंगा|जाऊंगी|जाऊँगा|जाऊँगी|कर|के|लेता|लेती|रहा|रही|चुका|चुकी)"
       ],
       "none": [
         "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne)\\b[^.?!]{0,15}\\b(mar|die|dying|killing)",
@@ -711,7 +713,8 @@
       ],
       "noneClause": [
         "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|ami o|amio|naanum|nanum|mi pan|mihi|nenu kuda|nenu kooda|hu pan|hun pan|mujhe bhi|mera bhi)\\b).*\\b(bondhu|friend|dost|bhai|didi|dada|cousin|neighbour|neighbor|padosi|uncle|aunty|chacha|mama|mami|husband|wife|beta|beti|son|daughter|uska|uski|unka|unki|his|her|their)\\b[^.?!]{0,25}\\b(suicide|khudkushi|aatmahatya|atmahatya)\\b[^.?!]{0,20}\\b(korechilo|korechhilo|korechhe|kiya tha|ki thi|kar li thi|kar liya tha|kar li|kar liya|committed|did|kelli|keli|kela hota|chesukunnadu|chesukundi|chesukunnaru|karyu hatu|kari hati|kari lidhi|panninaan|pannikittaan|pannikitta)\\b",
-        "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|ami o|amio|naanum|nanum|mi pan|mihi|nenu kuda|nenu kooda|hu pan|hun pan|mujhe bhi|mera bhi)\\b).*\\b(hero|heroine|villain|character|film|movie|serial|picture|story|news|khabar|ek aadmi|ek ladka|ek ladki|woh aadmi|wo aadmi)\\b[^.?!]{0,30}\\b(kood|kud|jump)[a-z]* ?(jata|jaata|jati|jaati|gaya|gayi|liya|li|diya|di|karta|karti|kiya)\\b"
+        "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|ami o|amio|naanum|nanum|mi pan|mihi|nenu kuda|nenu kooda|hu pan|hun pan|mujhe bhi|mera bhi)\\b).*\\b(hero|heroine|villain|character|film|movie|serial|picture|story|news|khabar|ek aadmi|ek ladka|ek ladki|woh aadmi|wo aadmi)\\b[^.?!]{0,30}\\b(kood|kud|jump)[a-z]* ?(jata|jaata|jati|jaati|gaya|gayi|liya|li|diya|di|karta|karti|kiya)\\b",
+        "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|mujhe bhi|mera bhi)\\b).*\\b(hero|heroine|villain|character|film|movie|serial|picture|story|news|khabar)\\b[^.?!]{0,30}\\b(faansi|fansi|phansi|hangs?|hanged|hanging)\\b"
       ]
     },
     {
@@ -877,7 +880,9 @@
         "(बचाओ|मुझे मार रहा|मार डालेगा)"
       ],
       "none": [
-        "\\b(kaam|work|garmi|traffic|bhookh|thand|pressure|boss)\\b[^.?!]{0,15}\\bmaar"
+        "\\b(kaam|work|garmi|traffic|bhookh|thand|pressure|boss)\\b[^.?!]{0,15}\\bmaar",
+        "^(?!.*\\b(seene|seena|chest|saans|breath|ambulance|pasina|sweat|haath sunn|left arm|abhi aa raha|aa raha hai|ho raha hai|is happening|having a heart attack)\\b).*\\b(bill|price|prices|rate|emi|kisht|amount|kharcha|kharche|fees|fee|charges|premium|daam|interest|bijli)\\b[^.?!]{0,35}\\bheart attack\\b",
+        "^(?!.*\\b(seene|seena|chest|saans|breath|ambulance|pasina|sweat|haath sunn|left arm|abhi aa raha|aa raha hai|ho raha hai|is happening|having a heart attack)\\b).*\\bheart attack\\b[^.?!]{0,20}\\b(aa jayega|aa jaye|aane wala|aa gaya)\\b[^.?!]{0,35}\\b(bill|price|discount|kam karo|itna zyada|haha|lol)\\b"
       ]
     },
     {
@@ -1366,7 +1371,7 @@
       "never_say_hides_crisis": "(helpline|help line|crisis|tele-?manas|14416|\\b112\\b|emergency (line|number)|suicide|हेल्पलाइन)"
     },
     "T-L7": {
-      "about": "Refuse any config text that tells the agent to manipulate: false urgency, fear, threats, guilt, shame, fake deadlines, pushing past a no. A match right after a negation ('never pressure them') describes the rule, not a breach: negated_prefix is tested on the text before each match (up to the match start). Moved from agents/guard.ts; both doors read it.",
+      "about": "Refuse any config text that tells the agent to manipulate: false urgency, fear, threats, guilt, shame, fake deadlines, pushing past a no. A match right after a negation ('never pressure them') describes the rule, not a breach: negated_prefix is tested on the text before each match (up to the match start). Moved from agents/guard.ts; both doors read it. prohibition_key: a fact whose key matches it states a rule ('do_not: pressure them'), so T-L7 does not read its value as an instruction, and T-L6 refuses it when it names the crisis lines.",
       "any": [
         "\\b(create|use|add|build|invent|fake|manufacture)\\b[^.?!]{0,15}\\b(false |fake |artificial )?(urgency|scarcity|fear|panic|guilt|pressure)\\b|\\b(scare|frighten|threaten|intimidate|guilt[- ]trip|shame|harass|pressuri[sz]e|pressure|bully)\\b[^.?!]{0,12}\\b(them|the caller|callers|customers?|people|him|her|into)\\b|\\b(fake|false|made[- ]up|invented)\\b[^.?!]{0,12}\\b(deadline|expiry|last chance|limited[- ]time)|\\b(don'?t|never|do not)\\b[^.?!]{0,10}\\b(take|accept)\\b[^.?!]{0,6}\\bno\\b|\\b(keep|continue)\\b[^.?!]{0,15}\\b(pushing|pitching|insisting)\\b[^.?!]{0,30}\\b(even if|after|until)\\b|\\b(darao|dara do|dhamki|dhamkao|sharminda karo)\\b",
         "\\b(say|tell|mention|bolo|kaho|batao|remind|warn|threaten)[a-z]*\\b[^.?!]{0,60}(legal notice|legal action|police|court|jail|arrest|\\bfir\\b|case (file|darj)|ghar (pe|par) (log|aadmi|recovery)|log aayenge|recovery agents?|hamesha ke liye kharab)[^.?!]{0,60}(if (they|he|she) (do not|don'?t|doesn'?t|cannot|can'?t) pay|unless (they|he|she) pay|non-?payment|agar[^.?!]{0,15}nahi|nahi (bhara|bhari|kiya|diya|bharoge|karoge)|by (today|tonight|tomorrow)|aaj (hi )?nahi)",
@@ -1376,9 +1381,16 @@
         "\\b(remind|tell|say|make them feel|kaho|bolo|batao)[a-z]*\\b[^.?!]{0,60}\\b(children|kids|family|parivar|bachche|bachon|bacche)\\b[^.?!]{0,40}\\b(suffer|shame|sharmind|sharm|blame|responsible|guilty|dukh|takleef|bhugtenge)",
         "(कहो|बोलो|बताओ|कहिए)[^.?!।]{0,60}(परिवार|बच्चों|बच्चे)[^.?!।]{0,40}(शर्मिंदगी|शर्म|दुख|तकलीफ|भुगत)",
         "\\b(tell|say|bolo|kaho|batao|mention)\\b[^.?!]{0,60}\\b(even though|although|while in fact|jabki|halanki|halaanki)\\b",
-        "\\b(mana kare|mana karein|mana karte|refuse kare|nahi bole|says? no)\\b[^.?!]{0,10}\\b(toh bhi|to bhi|tab bhi|phir bhi|even then|still)\\b[^.?!]{0,40}\\b(baar baar|poochte raho|puchte raho|push|insist|keep (asking|pushing))"
+        "\\b(mana kare|mana karein|mana karte|refuse kare|nahi bole|says? no)\\b[^.?!]{0,10}\\b(toh bhi|to bhi|tab bhi|phir bhi|even then|still)\\b[^.?!]{0,40}\\b(baar baar|poochte raho|puchte raho|push|insist|keep (asking|pushing))",
+        "\\b(decide|pay|sign|book|buy|confirm|act|haan bolo|faisla karo)\\b[^.?!]{0,15}\\b(now|today|right now|immediately|abhi|aaj hi|turant)\\b[^.?!]{0,10}\\bor\\b[^.?!]{0,30}\\b(lose|miss|gone|never|forever|kabhi nahi|haath se)",
+        "\\b(lose|miss) (it|this|the (offer|deal|chance|discount|benefit))\\b[^.?!]{0,10}\\b(forever|for good|for ever|permanently)\\b",
+        "\\b(never|kabhi nahi|kabhi bhi nahi) (get|milega|milegi|see|aayega) (this|such|aisa|aisi|ye|yeh)\\b[^.?!]{0,20}\\b(offer|deal|chance|price|discount|mauka)\\b",
+        "\\b(last|aakhri|akhri) (chance|mauka) (ever|forever|hamesha ke liye|zindagi mein)\\b",
+        "\\b(hamesha ke liye|forever)\\b[^.?!]{0,20}\\b(chala jayega|chali jayegi|haath se|lose|kho)",
+        "\\bsirf aaj\\b[^.?!]{0,40}\\b(kal se|warna|nahi toh|or else)\\b[^.?!]{0,20}\\b(double|dugna|zyada|band|nahi milega|khatam)"
       ],
-      "negated_prefix": "\\b(never|no|not|don'?t|do not|without|avoid|mat|nahi)\\b[^.?!]{0,20}$"
+      "negated_prefix": "\\b(never|no|not|don'?t|do not|without|avoid|mat|nahi)\\b[^.?!]{0,20}$",
+      "prohibition_key": "^(you_?)?(cannot|can_?not|cant|never|do_?not|dont|must_?not|should_?not|avoid|no|not|forbidden|prohibited)(_|$)"
     }
   },
   "links": {

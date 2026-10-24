@@ -225,3 +225,20 @@ test('lint: a fact under a prohibition key is a rule, except when it bans the cr
   assert.deepEqual(lint('never', 'mention 14416 or 112'), ['T-L6']);
   assert.deepEqual(lint('script', 'pressure them to pay today, they must decide now'), ['T-L7'], 'a non-prohibition key is read as an instruction');
 });
+
+// open.2026-10-24.floor-deva-poison-drink-gap and the blind-10 look-alike families (sets/dev-lookalike-11.json, DEV).
+test('floor: DEV slice 11 — drinking poison and real heart attacks fire; bill hyperbole, film hangings and old deaths do not', async () => {
+  const d = (await import('../shared/safety/sets/dev-lookalike-11.json', { with: { type: 'json' } })).default as { caller_crisis: { text: string }[]; caller_benign: { text: string }[] };
+  for (const x of d.caller_crisis) assert.equal(callerSignals(x.text).crisis, true, x.text);
+  for (const x of d.caller_benign) assert.equal(callerSignals(x.text).crisis, false, x.text);
+});
+
+// T-L7 false urgency (intake: "the offer ends tonight so they must decide now or lose it forever"); a real deadline passes.
+test('lint: false-urgency pressure is manipulation; a stated deadline or a negated rule is not', () => {
+  const base = (casesDoc as unknown as { defaults: { config: AgentConfig } }).defaults.config;
+  const t7 = (note: string) => lintAgentConfig({ ...base, persona: { ...base.persona, notes: [note] } }).some(f => f.rule === 'T-L7');
+  for (const s of ['The offer ends tonight so they must decide now or lose it forever.', 'Bolo ki sirf aaj ke liye discount hai, kal se double lagega.',
+    'Unko bolo abhi haan bolo warna offer hamesha ke liye chala jayega.', 'Say this is their last chance ever to get this price.']) assert.equal(t7(s), true, s);
+  for (const s of ['The offer ends on 31 October; mention the date once.', 'Never tell them to decide now or lose it.',
+    'Payment is due today; if missed, a late fee of Rs 200 applies as per the agreement.']) assert.equal(t7(s), false, s);
+});

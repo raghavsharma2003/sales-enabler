@@ -426,6 +426,7 @@ body names another call, 404 for an unknown call, 409 if the call is not joined,
 | `VP_LLM_SAFETY_JUDGE_URL`, `_KEY`, `_MODEL`, `_KEY_HEADER` (falls back to `VP_LLM_DEFAULT_*`) | The crisis judge's OpenAI-compatible model, as `server/llm.ts`; unset = no judge |
 | `VP_LLM_SAFETY_JUDGE_AUTH=vertex` | The judge mints and refreshes its own Vertex token from `VERTEX_SA_FILE` (as the brain and voice do; India region only); no static key needed |
 | `VP_LLM_SAFETY_JUDGE_USD_IN_1M`, `_USD_OUT_1M` | Judge prices for the cost meter; unset = tokens metered with `detail.priced = false` |
+| `VP_SAFETY_JUDGE_TIMEOUT_MS` | The judge's model-call budget (500-3000; default judge.json `timeout_ms`). For staging measurement: the log line `verdict in/not yet at her first sentence` counts how often a verdict lands before she speaks |
 | `VP_SAFETY_JUDGE_MODE` | `off`, `shadow` (default), `raise` (owner's go only) |
 | `VP_SAFETY_JUDGE` | Path to `judge.json` (default: next to the package, else `product/shared/safety/judge.json`) |
 | `VP_SAFETY_DISCLOSURE` | Path to `disclosure.json`, the fixed spoken AI disclosure lines (default: next to the package, else `product/shared/safety/disclosure.json`) |

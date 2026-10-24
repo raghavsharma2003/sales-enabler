@@ -81,6 +81,15 @@ def mode(override=None, env=None):
     return m if m in SPEC['modes'] else 'off'
 
 
+def timeout_ms(env=None):
+    """The judge's model-call budget: judge.json timeout_ms, or VP_SAFETY_JUDGE_TIMEOUT_MS (clamped to 500-3000) so staging
+    can measure a longer budget without editing the contract. The reply never waits for the judge either way
+    (open.2026-10-24.judge-timeout-budget); a longer budget moves more verdicts to the next sentence or turn."""
+    v = (os.environ if env is None else env).get('VP_SAFETY_JUDGE_TIMEOUT_MS', '')
+    try: return max(500, min(3000, int(v))) if v else SPEC['timeout_ms']
+    except ValueError: return SPEC['timeout_ms']
+
+
 def checkin_enabled(env=None):
     """judge.json checkin: a judge-only crisis raise checks in first (rules.json checkin shapes). Default off."""
     c = SPEC.get('checkin') or {}
@@ -149,7 +158,7 @@ async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, 
     if floor and SPEC['skip_when_floor_fires']: return base
     t0 = time.perf_counter()
     try:
-        reply = await asyncio.wait_for(complete(messages(text, prev)), (timeout_ms if timeout_ms is not None else SPEC['timeout_ms']) / 1000)
+        reply = await asyncio.wait_for(complete(messages(text, prev)), (timeout_ms if timeout_ms is not None else globals()['timeout_ms'](env)) / 1000)
     except asyncio.TimeoutError:
         return {**base, 'called': True, 'latencyMs': (time.perf_counter() - t0) * 1000, 'event': {'type': 'judge_unavailable', 'reason': 'timeout'}}
     except asyncio.CancelledError:

@@ -152,3 +152,23 @@ class ProhibitionFacts(unittest.TestCase):
         self.assertEqual(self.lint('you_cannot', 'threaten legal action or mention the police'), [])
         self.assertEqual(self.lint('never', 'mention 14416 or 112'), ['T-L6'])
         self.assertEqual(self.lint('script', 'pressure them to pay today, they must decide now'), ['T-L7'])
+
+
+class DevLookalikes11AndUrgency(unittest.TestCase):
+    """Parity with tests/safety.test.ts: DEV slice 11 and T-L7 false urgency."""
+    def test_floor(self):
+        d = json.load(open(os.path.join(os.path.dirname(CASES), 'sets', 'dev-lookalike-11.json'), encoding='utf-8'))
+        for x in d['caller_crisis']: self.assertTrue(rules.caller_signals(x['text'])['crisis'], x['text'])
+        for x in d['caller_benign']: self.assertFalse(rules.caller_signals(x['text'])['crisis'], x['text'])
+
+    def test_urgency(self):
+        base = json.load(open(CASES, encoding='utf-8'))['defaults']['config']
+        def t7(note):
+            cfg = copy.deepcopy(base); cfg['persona'] = {**cfg['persona'], 'notes': [note]}
+            return any(f['rule'] == 'T-L7' for f in rules.lint_agent_config(cfg))
+        for s in ('The offer ends tonight so they must decide now or lose it forever.', 'Bolo ki sirf aaj ke liye discount hai, kal se double lagega.',
+                  'Unko bolo abhi haan bolo warna offer hamesha ke liye chala jayega.', 'Say this is their last chance ever to get this price.'):
+            self.assertTrue(t7(s), s)
+        for s in ('The offer ends on 31 October; mention the date once.', 'Never tell them to decide now or lose it.',
+                  'Payment is due today; if missed, a late fee of Rs 200 applies as per the agreement.'):
+            self.assertFalse(t7(s), s)

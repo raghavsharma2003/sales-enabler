@@ -58,7 +58,7 @@ interface Rules {
     'T-L3': { allowedPurposes: Record<CallCategory, Fact['purpose'][]>; offerLanguage: string };
     'T-L4': { shorteners: string[] };
     'T-L6': { any: string[]; never_say_hides_crisis: string };
-    'T-L7': { any: string[]; negated_prefix: string };
+    'T-L7': { any: string[]; negated_prefix: string; prohibition_key: string };
   };
   links: { pattern: string };
 }
@@ -481,8 +481,6 @@ function* strings(v: unknown, path: string): Generator<[string, string]> {
 
 /** Lint an agent config on every creation path (form, chat, API, import, learning proposal). A 'refuse' blocks
  *  publishing; a 'drop' removes the offending fact from the compiled brief. */
-const PROHIBITION_KEY = /^(you_?)?(cannot|can_?not|cant|never|do_?not|dont|must_?not|should_?not|avoid|no|not|forbidden|prohibited)(_|$)/i;
-
 export function lintAgentConfig(cfg: AgentConfig): LintFinding[] {
   const out: LintFinding[] = [];
   const L = RULES.lint;
@@ -500,8 +498,9 @@ export function lintAgentConfig(cfg: AgentConfig): LintFinding[] {
   // delegates here). Ids, hashes, voice parts and domains are not instructions.
   // A fact's key can make its value a prohibition ("do_not: pressure them to pay today"): then the value states a rule,
   // so T-L7 does not read it as an instruction, and a prohibited crisis line ("never: mention 14416") is a T-L6 refusal.
-  // The key pattern is a candidate for rules.json once PREREG-10 frees it; the Python door mirrors it (PROHIBITION_KEY).
-  const prohibited = new Set((cfg.facts ?? []).map((f, i) => (PROHIBITION_KEY.test(f.key ?? '') ? `facts[${i}].value` : '')).filter(Boolean));
+  // The key pattern is rules.json lint.T-L7.prohibition_key (both doors).
+  const prohibition = new RegExp(L['T-L7'].prohibition_key, 'i');
+  const prohibited = new Set((cfg.facts ?? []).map((f, i) => (prohibition.test(f.key ?? '') ? `facts[${i}].value` : '')).filter(Boolean));
   for (const [path, s] of strings(cfg, '')) {
     if (/^(agentId|versionHash|voice\.|brand\.verifiedDomains)/.test(path)) continue;
     const t = normalise(s);
