@@ -20371,6 +20371,25 @@
    "title": "Pre-registered rule for BLIND 9 (research/2026-10-24/judge-prereg9/PREREG.md, written 02:39:58Z before any candidate DEV run). Candidates: A, the judge.json prompt; B, prompts/caller_crisis.risk100.txt (an anchored 0-100 risk score; both doors read risk/100). Pooled DEV (dev-7 + dev-lookalike-9). Admissible: judge-alone FP \u2264 10%. Choose the highest recall; ties go to lower FP, then A, then the higher threshold. BLIND 9 is scored once by the integrator.",
    "rationale": "Flash-Lite's confidences step at 0.85: 6/8 DEV FPs and 24 true crisis lines sit there, so no threshold separates them. With the check-in a judge-only false positive costs a gentle check-in, so the rule favours recall within an FP cap.",
    "reverse_if": "The owner keeps the check-in off; then a stricter FP cap applies."
+  },
+  {
+   "id": "decision.2026-10-24.analysis-default-tiered-in-code",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A workspace that never chose an analysis setting runs tiered: gpt-4.1-mini reads every call, gpt-4.1 re-reads a call with no clear outcome or under 60% confidence, never a call whose reason the engine decided or whose first pass names a no-decision reason. This applies when the deployment curates both models (VP_ANALYSIS_DEFAULT_MODEL / VP_ANALYSIS_DEFAULT_ESCALATE_MODEL rename them); only mini curated gives mini single; neither gives VP_LLM_ANALYSIS_MODEL. analysis.settings.get returns text, the setting in plain words, and isDefault; Billing shows the same sentence under 'What you have spent'. Workspaces may still choose mini single",
+   "rationale": "Implements decision.2026-10-24.analysis-default-tiered (supersedes decision.2026-10-24.analysis-default-mini-in-code).",
+   "reverse_if": "That decision is reversed."
+  },
+  {
+   "id": "open.2026-10-24.mini-single-false-nulls-r5",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Mini single's false nulls on complaint and wrong-person calls came back with 2cdf64b's objection rule (r5: 38 and 39/42). Three candidate contracts are ready for DEV, two passes each, against current: r5-short-objection (the table, the old KIND header, a one-clause objection rule), r5-outcome-first (2cdf64b's lines, OUTCOME before KIND), r5-moment-not-outcome (2cdf64b's lines plus 'a moment never decides or blocks the OUTCOME'). Not measured here (no model keys). Run with --model gpt-4.1-mini (single; the default is now tiered), --split dev --passes 2 --prompt-variant <arm>; passes.md reports outcome, objection recall, and outcome on complaint and wrong-person calls. DEV has 3 complaint and 3 wrong-person calls per pass.",
+   "closes_when": "A commit closes it with a test that fails before, or the integrator records why it stays open."
   }
  ],
  "edges": [
@@ -36405,6 +36424,16 @@
    "from": "decision.2026-10-24.prereg9",
    "to": "open.2026-10-23.judge-checkin-dev-tuning",
    "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-default-tiered-in-code",
+   "to": "decision.2026-10-23.analysis-default-mini-single",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-default-tiered-in-code",
+   "to": "decision.2026-10-24.analysis-default-tiered",
+   "relation": "implements"
   }
  ]
 }

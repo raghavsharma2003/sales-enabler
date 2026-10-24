@@ -161,7 +161,7 @@
     },
     {
       "from": "decision.2026-10-24.analysis-default-tiered-in-code",
-      "to": "decision.2026-10-24.analysis-default-mini-in-code",
+      "to": "decision.2026-10-23.analysis-default-mini-single",
       "relation": "supersedes"
     },
     {
