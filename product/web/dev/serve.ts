@@ -26,12 +26,12 @@ setFakeLlm((req: LlmRequest) => {
   if (said.includes('top up') || said.includes('topup')) return reply('I have prepared the wallet top-up for your approval.', [{ id: 'c' + ++n, name: 'wallet_topup', args: JSON.stringify({ inrMilli: 500000 }) }]);
   if (said.includes('plan with a bad step')) {
     return reply('The plan is ready.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Set a spending limit', steps: [
-      { tool: 'cap.raise', args: { scope: 'workspace', period: 'day', capInrMilli: 2000000 }, why: 'daily spending limit' },
+      { tool: 'cap.raise', args: { scope: 'workspace', period: 'day', capInrMilli: 20000000 }, why: 'daily spending limit' },
     ] }) }]);
   }
   if (said.includes('for the campaign') || said.includes('fix step')) {
     return reply('The plan is ready. The step that spends money waits for your approval.', [{ id: 'c' + ++n, name: 'operator_plan', args: JSON.stringify({ goal: 'Set a spending limit', steps: [
-      { tool: 'cap.raise', args: { scope: 'workspace', period: 'daily', capInrMilli: 2000000 }, why: 'daily spending limit, waits for your approval' },
+      { tool: 'cap.raise', args: { scope: 'workspace', period: 'daily', capInrMilli: 20000000 }, why: 'daily spending limit, waits for your approval' },
     ] }) }]);
   }
   if (said.includes('plan') || said.includes('csv') || said.includes('launch')) {
