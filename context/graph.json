@@ -19312,6 +19312,16 @@
    "rationale": "walkthrough S6: the number flow stopped at 'Renting spends money' without naming the wallet; one wording source keeps launch, numbers and wallet.check consistent",
    "reverse_if": "the campaigns builder prefers to own the wording; then wallet.check stays the money side and campaigns stops importing blockers.ts",
    "path": "product/server/modules/money/blockers.ts"
+  },
+  {
+   "id": "decision.2026-10-24.analysis-outcome-shapes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The outcome rule is a table of PERSON shapes mapped to the VALUE that names them: agrees -> agreeing; refuses -> refusing; not the person called -> wrong-person, never null; complains AND asks for a human -> needs-human, never null; asks never to be called again -> refusing, never call-later; asks to be called later -> call-later; null only for no shape, a language they cannot follow, a hang-up before the question, or distress. And tiered never escalates when the first pass names a NO_DECISION reason (CONV_LANGUAGE_MISMATCH)",
+   "rationale": "Answers rejected.2026-10-23.analysis-stance-rule-mini-false-nulls (mini returned null on wrong-person and complaint-to-human calls and called an opt-out a callback) and rejected.2026-10-23.tiered-escalates-no-decision-model-codes (6 of 12 escalations were language-mismatch calls whose outcome code discards). Written from the DEV patterns the integrator reported; TEST not consulted. Not measured on a real model here.",
+   "reverse_if": "The DEV gate or the two TEST passes show mini or tiered losing calls to the new table versus round 3."
   }
  ],
  "edges": [
@@ -34241,6 +34251,16 @@
    "from": "decision.2026-10-23.wallet-blockers-explained-shape",
    "to": "component.2026-10-21.money-module",
    "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-outcome-shapes",
+   "to": "rejected.2026-10-23.analysis-stance-rule-mini-false-nulls",
+   "relation": "answers"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-outcome-shapes",
+   "to": "rejected.2026-10-23.tiered-escalates-no-decision-model-codes",
+   "relation": "answers"
   }
  ]
 }
