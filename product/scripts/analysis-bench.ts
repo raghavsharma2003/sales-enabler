@@ -11,7 +11,7 @@
 //   --model ID (analysis model for this run's workspace), --escalate-model ID with --threshold 0.6 (tiered: the second
 //   model re-reads calls with no outcome or low confidence), --rps 1 (model requests per second), --max-tokens 400000 (stop when spent),
 //   --judge (also run the post-call crisis judge; VP_LLM_SAFETY_JUDGE_*; one request per caller line, not throttled),
-//   --prompt-variant current|r4-table|r3-stance|no-outcome-rules (an ablation of the analysis contract; DEV only, never
+//   --passes N (repeat the run N times; a passes.md summary), --prompt-variant (one of PROMPT_VARIANTS in calls/analysis.ts: an ablation of the analysis contract; DEV only, never
 //   the product), --no-cross (skip the cross-call slice), --out DIR (default ./analysis-bench-out). Prices for the INR estimate:
 //   VP_BENCH_INR_PER_1K_INPUT and VP_BENCH_INR_PER_1K_OUTPUT (rupees per 1,000 tokens); without them only tokens are shown.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -156,6 +156,10 @@ export async function runBench(o: BenchOpts = {}) {
       reasonCodeModelRefined: count(reasonOk, it.filter(x => x.refinable)),
       reasonCodeCodeDecided: count(reasonOk, it.filter(x => !x.refinable)),
       momentRecall: metric(momentsNeeded.filter(m => m.x.predicted.moments.includes(m.kind)).length, momentsNeeded.length),
+      objectionRecall: metric(momentsNeeded.filter(m => m.kind === 'objection' && m.x.predicted.moments.includes('objection')).length, momentsNeeded.filter(m => m.kind === 'objection').length),
+      // The round 5 false nulls, per call type: complaint (needs-human) and wrong person.
+      outcomeComplaint: count(x => x.predicted.outcome === x.key.outcome, it.filter(x => x.template === 'complaint')),
+      outcomeWrongPerson: count(x => x.predicted.outcome === x.key.outcome, it.filter(x => x.template === 'wrong_person')),
       allMomentsFound: count(x => x.key.moments.every((m: any) => x.predicted.moments.includes(m.kind))),
       crisis: count(x => x.predicted.crisis === x.key.crisis),
       crisisRecall: count(x => x.predicted.crisis, it.filter(x => x.key.crisis)),
@@ -263,7 +267,7 @@ export function writeReport(dir: string, r: Awaited<ReturnType<typeof runBench>>
   writeFileSync(join(dir, 'analysis-bench.json'), JSON.stringify(r, null, 1) + '\n');
   const rows: [string, string][] = [
     ['Outcome', 'outcome'], ['Reason code (all)', 'reasonCode'], ['Reason code, model-refined calls', 'reasonCodeModelRefined'],
-    ['Reason code, decided by code', 'reasonCodeCodeDecided'], ['Moments found (recall)', 'momentRecall'], ['Every moment found', 'allMomentsFound'],
+    ['Reason code, decided by code', 'reasonCodeCodeDecided'], ['Moments found (recall)', 'momentRecall'], ['Objections found (recall)', 'objectionRecall'], ['Outcome on complaint calls', 'outcomeComplaint'], ['Outcome on wrong-person calls', 'outcomeWrongPerson'], ['Every moment found', 'allMomentsFound'],
     ['Crisis signal', 'crisis'], ['Crisis recall', 'crisisRecall'], ['Opt-out, analysis', 'optOutByAnalysis'],
     ['Opt-out recall, analysis', 'optOutRecallByAnalysis'], ['Opt-out recall, deterministic floor', 'optOutRecallByFloor'], ['Follow-ups owed', 'followUps'],
   ];
@@ -300,11 +304,27 @@ export function writeReport(dir: string, r: Awaited<ReturnType<typeof runBench>>
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const a = process.argv.slice(2), has = (f: string) => a.includes(f), val = (f: string) => { const i = a.indexOf(f); return i >= 0 ? a[i + 1] : undefined; };
   const sp = val('--split');
-  runBench({ split: sp === 'dev' || sp === 'test' ? sp : 'all', model: val('--model'), escalateModel: val('--escalate-model'),
+  const opts: BenchOpts = { split: sp === 'dev' || sp === 'test' ? sp : 'all', model: val('--model'), escalateModel: val('--escalate-model'),
     threshold: val('--threshold') ? Number(val('--threshold')) : undefined, fake: has('--fake'), smoke: has('--smoke'), judge: has('--judge'), cross: !has('--no-cross'),
     limit: val('--limit') ? Number(val('--limit')) : undefined, rps: val('--rps') ? Number(val('--rps')) : undefined,
     maxTokens: val('--max-tokens') ? Number(val('--max-tokens')) : undefined,
-    promptVariant: ((v: string | undefined) => { if (v && !(PROMPT_VARIANTS as readonly string[]).includes(v)) throw new Error(`--prompt-variant is one of ${PROMPT_VARIANTS.join(', ')}`); return v as PromptVariant | undefined; })(val('--prompt-variant')), out: val('--out') ?? './analysis-bench-out' })
-    .then(r => { console.log(`analysis bench (${r.mode}): ${r.cases.run} calls; outcome ${pct(r.fields.outcome)}; reason ${pct(r.fields.reasonCode)}; grounded ${pct(r.grounding)}`); })
-    .catch(e => { console.error(e instanceof Error ? e.message : e); process.exitCode = 1; });
+    promptVariant: ((v: string | undefined) => { if (v && !(PROMPT_VARIANTS as readonly string[]).includes(v)) throw new Error(`--prompt-variant is one of ${PROMPT_VARIANTS.join(', ')}`); return v as PromptVariant | undefined; })(val('--prompt-variant')), out: val('--out') ?? './analysis-bench-out' };
+  // --passes N: the same run N times (temperature 0 still varies by 1-2 calls), one report per pass and a summary.
+  const passes = Math.max(1, Number(val('--passes') ?? 1));
+  (async () => {
+    const rows: { pass: number; outcome: Metric; objectionRecall: Metric; outcomeComplaint: Metric; outcomeWrongPerson: Metric }[] = [];
+    for (let k = 1; k <= passes; k++) {
+      const r = await runBench(passes > 1 ? { ...opts, out: join(opts.out ?? './analysis-bench-out', `pass-${k}`) } : opts);
+      console.log(`analysis bench (${r.mode}${passes > 1 ? `, pass ${k}/${passes}` : ''}): ${r.cases.run} calls; outcome ${pct(r.fields.outcome)}; reason ${pct(r.fields.reasonCode)}; grounded ${pct(r.grounding)}`);
+      rows.push({ pass: k, outcome: r.fields.outcome, objectionRecall: r.fields.objectionRecall, outcomeComplaint: r.fields.outcomeComplaint, outcomeWrongPerson: r.fields.outcomeWrongPerson });
+    }
+    if (passes > 1) {
+      const dir = opts.out ?? './analysis-bench-out'; mkdirSync(dir, { recursive: true });
+      const cell = (m: Metric) => `${m.k}/${m.n}`;
+      const md = [`# Analysis bench: ${passes} passes, contract **${opts.promptVariant ?? 'current'}**, split **${opts.split}**`, '',
+        '| Pass | Outcome | Objections found | Outcome on complaint calls | Outcome on wrong-person calls |', '|---|---|---|---|---|',
+        ...rows.map(r => `| ${r.pass} | ${cell(r.outcome)} | ${cell(r.objectionRecall)} | ${cell(r.outcomeComplaint)} | ${cell(r.outcomeWrongPerson)} |`), ''].join('\n');
+      writeFileSync(join(dir, 'passes.md'), md); writeFileSync(join(dir, 'passes.json'), JSON.stringify(rows, null, 1));
+    }
+  })().catch(e => { console.error(e instanceof Error ? e.message : e); process.exitCode = 1; });
 }

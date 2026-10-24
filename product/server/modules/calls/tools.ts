@@ -9,7 +9,7 @@ import type { AgentConfig } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
 import { combinationId, resolveStack } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
-import { analysisSetting, curatedAnalysisModels, DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
+import { analysisSetting, analysisSettingText, curatedAnalysisModels, DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
 import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLower } from './stats.ts';
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
 import { recordingLink } from '../../recording-url.ts';
@@ -566,8 +566,8 @@ export function registerTools(r: Registry): void {
   r.register(tool(obj({}), {
     name: 'analysis.settings.get', risk: 'read',
     summary: 'Which model analyses calls in this workspace (one model, or a cheaper first pass that escalates unclear calls) and the models to choose from',
-    run: async ctx => ({ ...(await analysisSetting(ctx.q, ctx.workspaceId)), models: curatedAnalysisModels(),
-      note: 'Tiered: the first model reads every call; a call with no clear outcome, or one below the confidence threshold, is read again by the second model.' }),
+    run: async ctx => { const s = await analysisSetting(ctx.q, ctx.workspaceId); return { ...s, models: curatedAnalysisModels(), text: analysisSettingText(s),
+      note: 'Tiered: the first model reads every call; a call with no clear outcome, or one below the confidence threshold, is read again by the second model.' }; },
   }));
   const modelId = str({ min: 1, max: 80, pattern: /^[A-Za-z0-9][A-Za-z0-9._:-]*$/, desc: 'a curated model id from analysis.settings.get' });
   r.register(tool(obj({ mode: str({ oneOf: ['single', 'tiered'] }), model: opt(modelId), escalateModel: opt(modelId), threshold: opt(num({ min: 0, max: 1 })) }), {

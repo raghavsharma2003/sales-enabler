@@ -110,19 +110,35 @@ test('tiered never escalates a call whose reason the engine decided; it still es
   assert.deepEqual(seen, ['gpt-4.1-mini', 'gpt-4.1'], 'an open call with no outcome is still read again');
 });
 
-test('the product default is one pass on gpt-4.1-mini when the deployment curates it', { skip }, async () => {
+test('the product default is tiered: gpt-4.1-mini first, gpt-4.1 on escalation at 0.6, when the deployment curates both', { skip }, async () => {
   const w = await workspace();
   const s = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w.ws, actor: w.member });
-  assert.equal(s.status === 'confirmed' && s.result.mode, 'single');
-  assert.equal(s.status === 'confirmed' && s.result.model, 'gpt-4.1-mini');
+  if (s.status !== 'confirmed') return assert.fail(JSON.stringify(s));
+  assert.deepEqual({ mode: s.result.mode, model: s.result.model, escalateModel: s.result.escalateModel, threshold: s.result.threshold, isDefault: s.result.isDefault },
+    { mode: 'tiered', model: 'gpt-4.1-mini', escalateModel: 'gpt-4.1', threshold: 0.6, isDefault: true });
+  assert.equal(s.result.text, "Vyakti's default: GPT-4.1 mini reads every call. A call where it finds no clear outcome, or is less than 60% sure, is read again by GPT-4.1. Calls whose ending is already known (a crisis, an opt-out, an early hang-up, a language the person could not follow) are read once. Each call is billed at the models that read it.");
   const seen: string[] = [];
   setFakeLlm(guesser(null, null, '', seen));
   await analysed(w, ['Main abhi soch raha hoon, dekhte hain.']);
-  assert.deepEqual(seen, ['gpt-4.1-mini']);
-  process.env.VP_ANALYSIS_MODELS = 'other-model';
+  assert.deepEqual(seen, ['gpt-4.1-mini', 'gpt-4.1'], 'a new workspace escalates an unclear call');
+  const crisis: string[] = [];
+  setFakeLlm(guesser(null, null, '', crisis));
+  await analysed(w, ['Sab khatam ho gaya hai, ab jeene ka mann nahi karta.'], 'crisis_handoff');
+  assert.deepEqual(crisis, ['gpt-4.1-mini'], 'never on an engine code');
+  // A workspace may still choose mini single; and a deployment that curates only mini runs it single.
+  const set = await registry.execute(pool, 'analysis.model.set', { mode: 'single', model: 'gpt-4.1-mini' }, { workspaceId: w.ws, actor: w.member });
+  if (set.status !== 'needs_approval') return assert.fail('expected a proposal');
+  await registry.approve(pool, set.actionId, { workspaceId: w.ws, memberId: w.member.id! });
+  const chosen = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w.ws, actor: w.member });
+  assert.equal(chosen.status === 'confirmed' && chosen.result.text, 'GPT-4.1 mini reads every call, once. Each call is billed at that model\'s rate.');
+  process.env.VP_ANALYSIS_MODELS = 'gpt-4.1-mini';
   try {
-    const s2 = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w.ws, actor: w.member });
-    assert.equal(s2.status === 'confirmed' && s2.result.model, undefined, 'not curated here: the deployment\'s own analysis model');
+    const w2 = await workspace();
+    const s2 = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w2.ws, actor: w2.member });
+    assert.deepEqual(s2.status === 'confirmed' && [s2.result.mode, s2.result.model], ['single', 'gpt-4.1-mini']);
+    process.env.VP_ANALYSIS_MODELS = 'other-model';
+    const s3 = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w2.ws, actor: w2.member });
+    assert.equal(s3.status === 'confirmed' && s3.result.model, undefined, "neither curated: the deployment's own analysis model");
   } finally { process.env.VP_ANALYSIS_MODELS = 'gpt-4.1-mini,gpt-4.1'; }
 });
 

@@ -72,3 +72,15 @@ test('complain then agree: both moments are stored, the objection on the complai
 test('an ablation runs on DEV only, never TEST', { skip }, async () => {
   await assert.rejects(runBench({ pool, fake: true, split: 'test', promptVariant: 'r4-table', cross: false, limit: 1 }), /DEV only/);
 });
+
+test('the round 5 candidate arms: each keeps an objection rule and changes one thing', () => {
+  const cur = analysisPrompt(Q, 'current');
+  const short = analysisPrompt(Q, 'r5-short-objection'), first = analysisPrompt(Q, 'r5-outcome-first'), note = analysisPrompt(Q, 'r5-moment-not-outcome');
+  assert.match(short, /- objection: PERSON gives a reason against, or a complaint, also when they agree later\n/);
+  assert.match(short, /KIND \(one entry per line that shows it\):/);
+  assert.match(short, /OUTCOME shapes:/);
+  assert.ok(first.indexOf('OUTCOME:') < first.indexOf('KIND ('), 'outcome before moments');
+  assert.deepEqual(first.split('\n').sort(), cur.split('\n').sort(), 'the same lines as current, reordered');
+  assert.match(note, /- a moment never decides or blocks the OUTCOME: a complaint that asks for a human is an objection AND the needs-human VALUE/);
+  assert.equal(note.replace(/\n- a moment never decides or blocks the OUTCOME[^\n]*/, ''), cur, 'current plus that one line');
+});

@@ -26,7 +26,11 @@ type Pass = Ok | { error: string; model?: string; reply?: LlmReply };
  *  always runs 'current'. r4-table: b1a80cf exactly (the outcome table, the old objection line), where mini's objection
  *  recall fell to 43/51. r3-stance: bfa7ee7's outcome sentence with the old objection line (51/51 in round 3).
  *  no-outcome-rules: the old objection line and no outcome rules at all, to see whether outcome text crowds out moments. */
-export const PROMPT_VARIANTS = ['current', 'r4-table', 'r3-stance', 'no-outcome-rules'] as const;
+//  Round 5 candidates (mini single's false nulls on complaint and wrong-person calls came back with 2cdf64b's objection
+//  rule; the rule fixed objection recall): r5-short-objection: the table, the old KIND header, a one-clause objection rule.
+//  r5-outcome-first: 2cdf64b's lines with OUTCOME before KIND. r5-moment-not-outcome: 2cdf64b's lines plus one line saying
+//  a moment never decides or blocks the OUTCOME.
+export const PROMPT_VARIANTS = ['current', 'r4-table', 'r3-stance', 'no-outcome-rules', 'r5-short-objection', 'r5-outcome-first', 'r5-moment-not-outcome'] as const;
 export type PromptVariant = typeof PROMPT_VARIANTS[number];
 let promptVariant: PromptVariant = 'current';
 /** Bench and tests only. */
@@ -50,29 +54,36 @@ const OUTCOME_STANCE = [
 /** The analysis contract, written as shapes (fields, allowed values, one rule per line), not as prose to recite. */
 export function analysisPrompt(o: { question: string | null; values: string[]; instructions?: string }, variant: PromptVariant = promptVariant): string {
   const codes = REASON_CODES.filter(r => MODEL_CODES.includes(r.code));
-  const current = variant === 'current';
+  const old = variant === 'r4-table' || variant === 'r3-stance' || variant === 'no-outcome-rules';
+  const objection = old ? '- objection: PERSON gives a reason against, or a complaint'
+    : variant === 'r5-short-objection' ? '- objection: PERSON gives a reason against, or a complaint, also when they agree later'
+    : '- objection: PERSON gives a reason against, complains or raises a concern. Every complaining PERSON line is an objection, even when the PERSON agrees later: then list both, the objection and the commitment.';
+  const kinds = [
+    old || variant === 'r5-short-objection' ? 'KIND (one entry per line that shows it):' : 'KIND (one entry per PERSON line that shows it, whatever the OUTCOME; one line can show two kinds):',
+    '- commitment: PERSON agrees to do something (pay, come, confirm, buy, renew, fill, send). Every agreeing PERSON line is a commitment.',
+    objection,
+    '- question: PERSON asks something',
+    '- opt_out: PERSON asks not to be called again',
+    '- callback_request: PERSON asks to be called at another time',
+    '- confusion: PERSON does not understand or cannot follow the language',
+    '- laughter: PERSON laughs',
+  ];
+  const outcome = o.question ? [
+    `OUTCOME: question "${o.question}"; VALUE one of ${JSON.stringify(o.values)}`,
+    '- decided by the PERSON\'s words; quote the PERSON line that decides it',
+    ...(variant === 'r3-stance' ? OUTCOME_STANCE : variant === 'no-outcome-rules' ? [] : OUTCOME_TABLE),
+    ...(variant === 'r5-moment-not-outcome' ? ['- a moment never decides or blocks the OUTCOME: a complaint that asks for a human is an objection AND the needs-human VALUE'] : []),
+    '- confidence: 0..1, how clearly that line decides it',
+  ] : ['OUTCOME: always null.'];
   return [
     'TASK: classify one phone call between an AI agent (AGENT) and a person (PERSON). Report what was said. Never grade.',
     'OUTPUT: one JSON object:',
     '{"points":[{"claim":string,"quote":string}],"moments":[{"kind":KIND,"quote":string,"note":string}],"reasonCode":CODE|null,',
     ' "outcome":{"value":VALUE,"quote":string,"confidence":number}|null,"forget":{"quote":string}|null}',
     'QUOTE: copied character for character from ONE transcript line, without the speaker label. Anything without such a quote is discarded.',
-    current ? 'KIND (one entry per PERSON line that shows it, whatever the OUTCOME; one line can show two kinds):' : 'KIND (one entry per line that shows it):',
-    '- commitment: PERSON agrees to do something (pay, come, confirm, buy, renew, fill, send). Every agreeing PERSON line is a commitment.',
-    current ? '- objection: PERSON gives a reason against, complains or raises a concern. Every complaining PERSON line is an objection, even when the PERSON agrees later: then list both, the objection and the commitment.'
-      : '- objection: PERSON gives a reason against, or a complaint',
-    '- question: PERSON asks something',
-    '- opt_out: PERSON asks not to be called again',
-    '- callback_request: PERSON asks to be called at another time',
-    '- confusion: PERSON does not understand or cannot follow the language',
-    '- laughter: PERSON laughs',
+    ...(variant === 'r5-outcome-first' ? [...outcome, ...kinds] : kinds),
     `CODE (or null): ${codes.map(r => `${r.code} = ${r.label}`).join('; ')}`,
-    ...(o.question ? [
-      `OUTCOME: question "${o.question}"; VALUE one of ${JSON.stringify(o.values)}`,
-      '- decided by the PERSON\'s words; quote the PERSON line that decides it',
-      ...(variant === 'r3-stance' ? OUTCOME_STANCE : variant === 'no-outcome-rules' ? [] : OUTCOME_TABLE),
-      '- confidence: 0..1, how clearly that line decides it',
-    ] : ['OUTCOME: always null.']),
+    ...(variant === 'r5-outcome-first' ? [] : outcome),
     ...(o.instructions ? [`OUTCOME, client rule: ${o.instructions}`] : []),
     'FORGET: PERSON asks the business to forget or delete what it knows about them: quote that line. Otherwise null.',
   ].join('\n');
@@ -87,15 +98,38 @@ export const curatedAnalysisModels = () => (process.env.VP_ANALYSIS_MODELS ?? ''
  *  it. VP_ANALYSIS_DEFAULT_MODEL overrides the id (a deployment may name it differently). When the default is not curated
  *  here, analysis uses the deployment's VP_LLM_ANALYSIS_MODEL. Tiered stays available per workspace, never the default. */
 export const DEFAULT_ANALYSIS_MODEL = 'gpt-4.1-mini';
+/** The default second reader (decision.2026-10-24.analysis-default-tiered: tiered scored 250/252 against mini single's
+ *  234/252 across three bench rounds, never worse on any call, at about Rs 0.08-0.10 per 3-minute call). */
+export const DEFAULT_ESCALATE_MODEL = 'gpt-4.1';
+export const DEFAULT_THRESHOLD = 0.6;
 export function defaultAnalysisModel(): string | undefined {
   const id = process.env.VP_ANALYSIS_DEFAULT_MODEL?.trim() || DEFAULT_ANALYSIS_MODEL;
   return curatedAnalysisModels().includes(id) ? id : undefined;
 }
-export async function analysisSetting(q: Queryable, ws: string): Promise<AnalysisSetting> {
+/** A workspace that never chose: tiered (mini first, gpt-4.1 on escalation, threshold 0.6) when the deployment curates
+ *  both; single on the first when only it is curated; else the deployment's own VP_LLM_ANALYSIS_MODEL. Tiered never
+ *  escalates a call whose reason the engine decided, nor one whose first pass names a no-decision reason. */
+export function defaultAnalysisSetting(): AnalysisSetting {
+  const first = defaultAnalysisModel();
+  const second = process.env.VP_ANALYSIS_DEFAULT_ESCALATE_MODEL?.trim() || DEFAULT_ESCALATE_MODEL;
+  return first && curatedAnalysisModels().includes(second) && second !== first
+    ? { mode: 'tiered', model: first, escalateModel: second, threshold: DEFAULT_THRESHOLD }
+    : { mode: 'single', model: first, threshold: DEFAULT_THRESHOLD };
+}
+export async function analysisSetting(q: Queryable, ws: string): Promise<AnalysisSetting & { isDefault: boolean }> {
   const r = await one<{ mode: 'single' | 'tiered'; model: string | null; escalate_model: string | null; threshold: string }>(q,
     'SELECT mode, model, escalate_model, threshold::text FROM call_analysis_setting WHERE workspace_id = $1', [ws]);
-  return r ? { mode: r.mode, model: r.model ?? defaultAnalysisModel(), escalateModel: r.escalate_model ?? undefined, threshold: Number(r.threshold) }
-    : { mode: 'single', model: defaultAnalysisModel(), threshold: 0.6 };
+  return r ? { mode: r.mode, model: r.model ?? defaultAnalysisModel(), escalateModel: r.escalate_model ?? undefined, threshold: Number(r.threshold), isDefault: false }
+    : { ...defaultAnalysisSetting(), isDefault: true };
+}
+/** "GPT-4.1 mini" for gpt-4.1-mini; other ids as they are. */
+const modelWords = (id: string) => id.replace(/^gpt-/i, 'GPT-').replace(/-mini$/i, ' mini').replace(/-nano$/i, ' nano');
+/** The setting in plain words, for the analysis settings and Billing's cost note. */
+export function analysisSettingText(s: AnalysisSetting & { isDefault?: boolean }): string {
+  const who = (id?: string) => id ? modelWords(id) : "this server's analysis model";
+  const lead = s.isDefault ? 'Vyakti\'s default: ' : '';
+  if (s.mode === 'tiered' && s.escalateModel) return `${lead}${who(s.model)} reads every call. A call where it finds no clear outcome, or is less than ${Math.round(s.threshold * 100)}% sure, is read again by ${who(s.escalateModel)}. Calls whose ending is already known (a crisis, an opt-out, an early hang-up, a language the person could not follow) are read once. Each call is billed at the models that read it.`;
+  return `${lead}${who(s.model)} reads every call, once. Each call is billed at that model's rate.`;
 }
 
 const MOMENT_KINDS = ['objection', 'question', 'commitment', 'opt_out', 'callback_request', 'confusion', 'laughter'] as const;

@@ -151,6 +151,7 @@ function Billing() {
   const { act, refresh, can } = useApp();
   const w = useData('wallet', walletGet);
   const inv = useData('invoice', () => run<Invoice>('invoice.get', {}));
+  const an = useData('analysis-setting', () => run<{ text: string }>('analysis.settings.get', {}));
   const [amt, setAmt] = useState(''); const owner = can(['owner']);
   return (
     <div className="stack">
@@ -170,7 +171,8 @@ function Billing() {
         {d.byComponent.length === 0 ? <p className="small muted">Nothing has been spent in this period. That is a measured zero from the usage lines.</p> :
           <><h3 className="dayhead">By part</h3><ul className="billing" aria-label="Spend by part">{d.byComponent.map((l, i) => <li key={i}><strong>{costPart(l.component ?? l.key ?? '', prettyCode)}</strong><span className="tnum">{inr(lineCost(l), { paise: true })}</span></li>)}</ul></>}
         {(d.byCampaign ?? []).some(l => lineCost(l) > 0) && <><h3 className="dayhead">By campaign</h3><ul className="billing" aria-label="Spend by campaign">{(d.byCampaign ?? []).filter(l => lineCost(l) > 0).map((l, i) => <li key={i}><strong>{l.campaignId ? <Link to={`/campaigns/${l.campaignId}`}>{l.key}</Link> : 'Tests and other spend'}</strong><span className="tnum">{inr(lineCost(l), { paise: true })}</span></li>)}</ul></>}
-        <p className="small muted">{d.note}</p></>}</Async></Card>
+        <p className="small muted">{d.note}</p>
+        {an.data?.text && <p className="small muted" aria-label="How calls are analysed"><strong>Call analysis.</strong> {an.data.text}</p>}</>}</Async></Card>
     </div>
   );
 }
