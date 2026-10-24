@@ -22,6 +22,7 @@ import { registerUndo } from './undo.ts';
 import { deliverPending, registerWebhooks } from './webhooks.ts';
 import { registerResults, resultsRoutes } from './results.ts';
 import { registerNotifications, sendNotifications, startNotifier } from './notifications.ts';
+import { registerDuty } from './duty.ts';
 import { tool } from '../../tools.ts';
 
 const accept = obj({ token: str({ min: 20, max: 200 }), name: str({ min: 1, max: 80 }), password: str({ min: 10, max: 200 }) });
@@ -65,6 +66,7 @@ export const module: Module = {
     registerWebhooks(registry);
     registerResults(registry);
     registerNotifications(registry);
+    registerDuty(registry);
     registerActivity(registry);
     registerUndo(registry);
     registerSearch(registry);

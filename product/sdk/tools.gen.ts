@@ -71,6 +71,10 @@ export type ToolName =
   | "deployment.revert_to_last_good"
   | "deployment.split"
   | "dpdp.request.execute"
+  | "duty.override.add"
+  | "duty.override.remove"
+  | "duty.roster.get"
+  | "duty.roster.set"
   | "erasure.pending"
   | "experiment.assign"
   | "experiment.check"
@@ -184,6 +188,7 @@ export type ToolName =
   | "source.commit"
   | "source.crm.lists"
   | "source.crm.pull"
+  | "source.hook_secret.rotate"
   | "source.list"
   | "source.map"
   | "source.receipt"
@@ -746,6 +751,33 @@ export interface ToolInput {
     requestedBy: "person" | "compliance" | "tenant";
     evidence: string;
     suppress?: boolean;
+  };
+  /** Put someone on duty, or take them off (leave, a swap), for a stretch of time (policy, waits for approval) */
+  "duty.override.add": {
+    memberId: string;
+    /** an ISO time with its offset */
+    from: string;
+    to: string;
+    onDuty: boolean;
+    note?: string;
+  };
+  /** Remove a duty override (policy, waits for approval) */
+  "duty.override.remove": {
+    id: string;
+  };
+  /** Who is on duty now, the weekly hours and the overrides (leave, swaps) of the duty roster (read) */
+  "duty.roster.get": Record<string, never>;
+  /** Set the weekly duty hours: who is on duty, on which days and at what times (policy, waits for approval) */
+  "duty.roster.set": {
+    shifts: ({
+      memberId: string;
+      days: number[];
+      /** HH:MM */
+      start: string;
+      /** HH:MM, after start; 24:00 is the end of the day */
+      end: string;
+    })[];
+    timezone?: string;
   };
   /** recording deletes and transcript purges that are still pending, with tries and the last error (read) */
   "erasure.pending": Record<string, never>;
@@ -1409,6 +1441,10 @@ export interface ToolInput {
     fields?: string[];
     sourceId?: string;
   };
+  /** Replace a webhook source's signing secret; the old one keeps working for 24 hours so the sender can switch (policy, waits for approval) */
+  "source.hook_secret.rotate": {
+    sourceId: string;
+  };
   /** List the sources people come from, with their authority and last receipt (read) */
   "source.list": {
     limit?: number;
@@ -1834,6 +1870,10 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "deployment.revert_to_last_good": { risk: "external", needsApproval: true },
   "deployment.split": { risk: "external", needsApproval: true },
   "dpdp.request.execute": { risk: "destructive", needsApproval: true },
+  "duty.override.add": { risk: "policy", needsApproval: true },
+  "duty.override.remove": { risk: "policy", needsApproval: true },
+  "duty.roster.get": { risk: "read", needsApproval: false },
+  "duty.roster.set": { risk: "policy", needsApproval: true },
   "erasure.pending": { risk: "read", needsApproval: false },
   "experiment.assign": { risk: "read", needsApproval: false },
   "experiment.check": { risk: "draft", needsApproval: false },
@@ -1947,6 +1987,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "source.commit": { risk: "draft", needsApproval: false },
   "source.crm.lists": { risk: "read", needsApproval: false },
   "source.crm.pull": { risk: "draft", needsApproval: false },
+  "source.hook_secret.rotate": { risk: "policy", needsApproval: true },
   "source.list": { risk: "read", needsApproval: false },
   "source.map": { risk: "draft", needsApproval: false },
   "source.receipt": { risk: "read", needsApproval: false },

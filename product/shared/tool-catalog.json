@@ -2999,6 +2999,156 @@
    }
   },
   {
+   "name": "duty.override.add",
+   "risk": "policy",
+   "summary": "Put someone on duty, or take them off (leave, a swap), for a stretch of time",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "memberId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,6})?)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "an ISO time with its offset"
+     },
+     "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,6})?)?(Z|[+-]\\d{2}:\\d{2})$"
+     },
+     "onDuty": {
+      "type": "boolean"
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 200
+     }
+    },
+    "required": [
+     "memberId",
+     "from",
+     "to",
+     "onDuty"
+    ]
+   }
+  },
+  {
+   "name": "duty.override.remove",
+   "risk": "policy",
+   "summary": "Remove a duty override",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "duty.roster.get",
+   "risk": "read",
+   "summary": "Who is on duty now, the weekly hours and the overrides (leave, swaps) of the duty roster",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "duty.roster.set",
+   "risk": "policy",
+   "summary": "Set the weekly duty hours: who is on duty, on which days and at what times",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "shifts": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "memberId": {
+         "type": "string",
+         "format": "uuid"
+        },
+        "days": {
+         "type": "array",
+         "items": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7
+         },
+         "minItems": 1,
+         "maxItems": 7
+        },
+        "start": {
+         "type": "string",
+         "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$|^24:00$",
+         "description": "HH:MM"
+        },
+        "end": {
+         "type": "string",
+         "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$|^24:00$",
+         "description": "HH:MM, after start; 24:00 is the end of the day"
+        }
+       },
+       "required": [
+        "memberId",
+        "days",
+        "start",
+        "end"
+       ]
+      },
+      "maxItems": 200
+     },
+     "timezone": {
+      "type": "string",
+      "maxLength": 64
+     }
+    },
+    "required": [
+     "shifts"
+    ]
+   }
+  },
+  {
    "name": "erasure.pending",
    "risk": "read",
    "summary": "recording deletes and transcript purges that are still pending, with tries and the last error",
@@ -7065,6 +7215,31 @@
      "listId"
     ],
     "description": "Pull one CRM list into an upload; then check it with source.map and save it with source.commit. fields adds CRM fields to read (for example a consent field)."
+   }
+  },
+  {
+   "name": "source.hook_secret.rotate",
+   "risk": "policy",
+   "summary": "Replace a webhook source's signing secret; the old one keeps working for 24 hours so the sender can switch",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "sourceId"
+    ]
    }
   },
   {

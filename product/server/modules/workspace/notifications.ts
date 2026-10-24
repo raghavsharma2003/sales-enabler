@@ -17,7 +17,7 @@ import { label } from '../../labels.ts';
 import { arr, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { integrationSecretsById, slackUrlAllowed } from './integrations.ts';
 import { sendMail, smtpConfig, validEmail } from './smtp.ts';
-import { ON_DUTY_ROLES } from '../calls/handoffs.ts';
+import { onDutyEmails } from './duty.ts';
 
 export const NOTIFY_EVENTS = [
   { event: 'crisis', label: 'A caller may be in distress', description: 'A crisis hand-off. Sent at once, with a link to the call and nothing the caller said.' },
@@ -111,8 +111,8 @@ export async function sendNotifications(pool: pg.Pool, o: { workspaceId?: string
       } else {
         const cfg = smtpConfig();
         if (!cfg) throw new Skip('Email is not set up on this server; it was shown in the app only');
-        const to = dest.recipients.length ? dest.recipients : (await many<{ email: string }>(pool,
-          "SELECT email FROM member WHERE workspace_id = $1 AND status = 'active' AND role = ANY($2::text[])", [d.workspace_id, [...ON_DUTY_ROLES]])).map(x => x.email);
+        // No listed addresses: whoever is on shift on the duty roster, else every active owner, operator and compliance member.
+        const to = dest.recipients.length ? dest.recipients : (await onDutyEmails(pool, d.workspace_id)).emails;
         if (!to.length) throw new Skip('no one is on duty to email');
         await sendMail(cfg, { to, subject: m.subject, text: m.text });
       }
@@ -178,7 +178,7 @@ export function registerNotifications(r: Registry) {
     describe: async (i, ctx) => {
       const what = i.events.map(e => NOTIFY_EVENTS.find(x => x.event === e)?.label.toLowerCase() ?? e).join('; ');
       const where = i.kind === 'slack' ? `the Slack channel of "${i.integrationId ? await label(ctx, 'integration', i.integrationId) : 'an integration'}"`
-        : i.recipients?.length ? `email to ${i.recipients.join(', ')}` : 'email to everyone on duty (owners, operators and compliance)';
+        : i.recipients?.length ? `email to ${i.recipients.join(', ')}` : 'email to whoever is on duty (the duty roster; with nobody on shift, every owner, operator and compliance member)';
       return `Send alerts to ${where}: ${what}. No caller's words, names or numbers are sent.`;
     },
     run: async (ctx, i) => {
