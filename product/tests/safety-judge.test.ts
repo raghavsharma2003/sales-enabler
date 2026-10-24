@@ -213,9 +213,11 @@ function seqLatency(replies: [number, string | Error][]) {
 }
 const HEDGE = { ...ON, mode: 'raise' as const, timeoutMs: 1000, hedgeAfterMs: 200 };
 
-test('judge hedge: off by default; env values are clamped', async () => {
+// The contract's values come from the VM latency run (measure.2026-10-24.judge-latency-vertex-flashlite).
+test('judge hedge: the contract sets hedge 1,500 / timeout 3,000; env values are clamped', async () => {
   const { judgeHedgeMs, judgeTimeoutMs } = await import('../shared/safety/judge.ts');
-  assert.equal(judgeHedgeMs({}), null);
+  assert.equal(judgeHedgeMs({}), 1500);
+  assert.equal(judgeTimeoutMs({}), 3000);
   assert.equal(judgeHedgeMs({ VP_SAFETY_JUDGE_HEDGE_MS: '50' }), 200);
   assert.equal(judgeHedgeMs({ VP_SAFETY_JUDGE_HEDGE_MS: 'off' }), null);
   assert.equal(judgeTimeoutMs({ VP_SAFETY_JUDGE_TIMEOUT_MS: '1800' }), 1800);
@@ -227,6 +229,8 @@ test('judge hedge: a slow first call is rescued within budget; over budget falls
   let t0 = Date.now();
   const r = await judgeCallerCrisis(INDIRECT, HEDGE);
   assert.equal(r.crisis, true); assert.equal(calls.length, 2); assert.ok(Date.now() - t0 < 600);
+  // both requests are billed: the winner's tokens are metered once per request sent
+  assert.equal(r.requests, 2); assert.deepEqual(r.usage, { inputTokens: 240, outputTokens: 24 });
   calls = seqLatency([[2000, verdict(true, 0.8, 'indirect')], [2000, verdict(true, 0.8, 'indirect')]]);
   t0 = Date.now();
   const s = await judgeCallerCrisis(INDIRECT, HEDGE);

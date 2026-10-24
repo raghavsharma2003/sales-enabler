@@ -208,9 +208,12 @@ async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, 
     except Exception:
         return {**base, 'called': True, 'latencyMs': (time.perf_counter() - t0) * 1000, 'event': {'type': 'judge_unavailable', 'reason': 'error'}}
     latency = (time.perf_counter() - t0) * 1000
+    # A hedged second request is billed too, with the same prompt: meter the winner's tokens once per request sent (TS judge.ts).
+    u = reply.get('usage')
+    usage = {**u, 'inputTokens': u.get('inputTokens', 0) * requests, 'outputTokens': u.get('outputTokens', 0) * requests} if u else None
     v = parse_verdict(reply.get('text', ''))
     if v is None:
-        return {**base, 'called': True, 'latencyMs': latency, 'usage': reply.get('usage'), 'event': {'type': 'judge_unavailable', 'reason': 'bad_output'}}
+        return {**base, 'called': True, 'latencyMs': latency, 'usage': usage, 'requests': requests, 'event': {'type': 'judge_unavailable', 'reason': 'bad_output'}}
     says = v['crisis'] and v['kind'] != 'none' and v['confidence'] >= SPEC['threshold']
     raised = says and m == 'raise' and not floor
     event = None if (not says or floor) else {'type': 'judge_raised' if m == 'raise' else 'judge_shadow', 'kind': v['kind'], 'confidence': v['confidence']}
@@ -221,4 +224,4 @@ async def judge_caller_crisis(text, complete=None, prev='', mode_override=None, 
     opt_raised = opt_says and m == 'raise' and not floor_opt_out
     opt_event = None if (not opt_says or floor_opt_out) else {'type': 'judge_raised' if m == 'raise' else 'judge_shadow', 'confidence': oo['confidence']}
     return {**base, 'crisis': crisis_now, 'optOut': floor_opt_out or opt_raised, 'optOutEvent': opt_event, 'called': True, 'judge': v,
-            'event': event, 'latencyMs': latency, 'usage': reply.get('usage'), 'requests': requests}
+            'event': event, 'latencyMs': latency, 'usage': usage, 'requests': requests}

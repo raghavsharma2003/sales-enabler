@@ -27,18 +27,27 @@ hashes are the ones that count.
 - **Configuration as shipped at the signed head:**
   - **Judge:** prompt A with the 2026-10-24 clarification (danger from another person; poison kept or used for its
     ordinary purpose is not crisis). The system prompt is sha256_16 `f3bbf7ad890bb2cd`, 2,759 characters.
-  - Threshold 0.5, `timeout_ms` 1,500, `hedge_after_ms` null.
-  - `judge.json` is `60d81619732bd662`.
+  - Threshold 0.5, `timeout_ms` 3,000, `hedge_after_ms` 1,500. These were set after the draft was first written, from
+    the VM latency run (`measure.2026-10-24.judge-latency-vertex-flashlite`): at 1,500 ms with no hedge, 8.0% of DEV
+    calls had no answer in time, and each one counts as a miss. judge-eval sends the judge's real request, so the hedge
+    (one identical second request after 1,500 ms) is part of what is scored.
+  - `judge.json`: the integrator hashes it at the signed head. The system prompt hash is unchanged.
   - **Model:** Flash-Lite on Vertex from `vl-vm-cin`, BLIND 11's route.
   - **Floor:** `rules.json` `14a109c67bc8a786`, read by both doors:
     - danger from a person (weapon and kill, locked in and beaten, threats);
     - cutting;
     - sport heart-attack, game and film, news and serial, third-person exemptions under first-person and help guards.
   - Python door parity is run on every line after scoring, with no model, as in BLIND 11.
-- **Command:** BLIND 11's, with the set changed and the caps scaled to 240 lines:
+- **Hedged requests and the caps.** judge-eval paces and counts one request per line. A hedged second request is
+  neither paced by `--rps` nor counted by `--max-requests`. On the latency run, 6.8% of calls passed 1,500 ms, so expect
+  about 16 extra requests for 240 lines, each sent at most once. The cost cap does count them: the judge now reports the
+  winner's tokens times the requests sent (`decision.2026-10-24.judge-budget-hedge-1500-timeout-3000`). To score exactly as shipped, keep the hedge
+  on. To keep pacing exact, run with `VP_SAFETY_JUDGE_HEDGE_MS=off` and accept that timeouts then count as misses at
+  3,000 ms. The integrator picks one before signing and states which.
+- **Command:** BLIND 11's, with the set changed, the caps scaled to 240 lines, and 10% headroom for hedged requests:
   ```
   node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/sets/heldout-12.json \
-    --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 11 --max-requests 250
+    --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 12 --max-requests 270
   ```
 
 ## The bars

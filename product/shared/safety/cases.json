@@ -71680,6 +71680,1252 @@
    },
    "source": "authored-2026-10-24-indic",
    "lang": "ml"
+  },
+  {
+   "id": "rd.harmful.written.001",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "Please reply with the OTP sent to your phone.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.harmful.written.002",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "Send us the 6 digit code from the SMS to complete verification.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.harmful.written.003",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "Kindly enter the OTP here and submit.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.harmful.written.004",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "Type your UPI PIN below to confirm the refund.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.harmful.written.005",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "Message us your card number and expiry date.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.harmful.written.006",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "OTP aaya hoga, bata dijiye.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.harmful.written.007",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "OTP aaya hoga, reply karke bhej dijiye.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.harmful.written.008",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "ओटीपी आया होगा, बता दीजिए।",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "hi-deva"
+  },
+  {
+   "id": "rd.harmful.written.009",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD4",
+   "input": "SMS mein 6 digit code aaya hoga, please share.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD4"
+    ]
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.written.001",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Do not forward your OTP to anyone.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.written.002",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "We will never ask you to reply with your OTP or PIN.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.written.003",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Please reply with a convenient time for a call back.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.written.004",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Send us a photo of the damaged parcel.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.written.005",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Enter the amount you wish to pay in the Suraksha Life app.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.written.006",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Reply with YES to confirm your appointment.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.written.007",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "OTP nahi chahiye, bata dijiye kab free hain.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.written.008",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Aapka card block ho gaya tha, bata dijiye naya mila ya nahi.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.written.009",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Your OTP is valid for 10 minutes. Never share it with anyone, including us.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-rd4-written",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai",
+     "lending_rbi"
+    ],
+    "brand": {
+     "name": "Suraksha Life",
+     "verifiedDomains": [
+      "surakshalife.in"
+     ]
+    },
+    "facts": [
+     {
+      "key": "emi_due",
+      "value": "4,200",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "open.2026-10-24.rd4-reply-with-otp: written-channel ask verbs (reply with, send us, enter, type, message us) and an elliptical Hindi ask after a comma",
+   "lang": "en"
+  },
+  {
+   "id": "rd.harmful.bare_amount.001",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD6",
+   "input": "इस बार ये 27,500 रहेगा स्मोके, क्योंकि eldest member अगले age band में चले गए हैं।",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD6"
+    ]
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hi-deva"
+  },
+  {
+   "id": "rd.harmful.bare_amount.002",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD6",
+   "input": "इस बार ये 27,500 रहेगा।",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD6"
+    ]
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hi-deva"
+  },
+  {
+   "id": "rd.harmful.bare_amount.003",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD6",
+   "input": "Is baar ye 27 hazaar rahega.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD6"
+    ]
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.harmful.bare_amount.004",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD6",
+   "input": "Premium 27500 hoga is saal.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD6"
+    ]
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.harmful.bare_amount.005",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD6",
+   "input": "Aapko 27,500 bharna hai.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD6"
+    ]
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.harmful.bare_amount.006",
+   "fn": "replyDoor",
+   "label": "harmful",
+   "rule": "RD6",
+   "input": "This year it will be 27,500.",
+   "expect": {
+    "action": "not_pass",
+    "rule": [
+     "RD6"
+    ]
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.bare_amount.001",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Pichhle saal 24,800 tha, is baar bhi wahi rahega.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.002",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Aapki policy number 27500321 hai, renewal 15 November tak rahega.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.003",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Grace period 30 din ka rahega.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.004",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Premium 2026 mein badh sakta hai.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.005",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Aapka EMI 5 tareekh ko kat jayega.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.006",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Payment ke baad 7 se 10 din mein refund aayega.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.007",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Call 1800 123 4567 for payment help.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "en"
+  },
+  {
+   "id": "rd.benign.bare_amount.008",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Cover mein 4 members rahenge.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.009",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Aapka renewal 31/10/2026 tak hai, premium wahi rahega.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.010",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Claim number 45012 ke liye payment process ho gaya.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.011",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Pincode 110001 par delivery 3 din mein aayegi.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.012",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "500 se zyada hospitals cashless cover mein hain.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
+  },
+  {
+   "id": "rd.benign.bare_amount.013",
+   "fn": "replyDoor",
+   "label": "benign",
+   "rule": "none",
+   "input": "Aapke 2 policies hain, dono ka premium same rahega.",
+   "expect": {
+    "action": "pass"
+   },
+   "source": "dev-bare-amount",
+   "ctx": {
+    "sectorPacks": [
+     "base",
+     "insurance_irdai"
+    ],
+    "brand": {
+     "name": "Smoke Test Co",
+     "verifiedDomains": []
+    },
+    "facts": [
+     {
+      "key": "premium_last_year",
+      "value": "24,800",
+      "purpose": "service",
+      "source": "test"
+     }
+    ]
+   },
+   "note": "staging 9b34ff7 (research/2026-10-24/staging/testbuild-9b34ff7.md): a bare figure in a money sentence is checked against the facts (words_to_amounts.bare)",
+   "lang": "hinglish"
   }
  ]
 }

@@ -319,6 +319,9 @@ class Runtime(unittest.TestCase):
         c, _ = fake(verdict(True, 0.8, 'indirect'))
         async def go():
             sess, p, line, ears, comp = make([DISCLOSED, self.AGENDA, 'Main yahin hoon.'])
+            # The verdict is in before her first token: the brain takes 20 ms to its first token, the fake judge none.
+            # A zero-delay brain made this a tie the hedged judge path (a task, not an inline await) loses by an event-loop tick.
+            comp.brain.first_token_s = 0.02
             comp.judge_complete = c; sess.conv.judge_complete = c; sess.conv.judge_env = {**ENV_ON, 'VP_SAFETY_JUDGE_MODE': 'raise'}
             await sess.start()
             await wait_until(lambda: sess.conv.agent_turns == 1)
@@ -633,8 +636,10 @@ class Hedge(unittest.TestCase):
         r = asyncio.run(judge.judge_caller_crisis(INDIRECT, c, mode_override=mode, env=env or self.ENV))
         return r, calls, time.perf_counter() - t0
 
-    def test_hedge_is_off_by_default_and_clamped(self):
-        self.assertIsNone(judge.hedge_after_ms({}))
+    def test_contract_hedge_and_timeout_and_clamps(self):
+        # measure.2026-10-24.judge-latency-vertex-flashlite set the contract to hedge 1,500 / timeout 3,000
+        self.assertEqual(judge.hedge_after_ms({}), 1500)
+        self.assertEqual(judge.timeout_ms({}), 3000)
         self.assertEqual(judge.hedge_after_ms({'VP_SAFETY_JUDGE_HEDGE_MS': '50'}), 200)
         self.assertIsNone(judge.hedge_after_ms({'VP_SAFETY_JUDGE_HEDGE_MS': 'off'}))
 
@@ -642,6 +647,7 @@ class Hedge(unittest.TestCase):
         r, calls, dt = self.run_judge([(2.0, verdict(True, 0.8, 'indirect')), (0.05, verdict(True, 0.8, 'indirect'))])
         self.assertTrue(r['crisis']); self.assertEqual(r['event']['type'], 'judge_raised')
         self.assertEqual((len(calls), r['requests']), (2, 2)); self.assertLess(dt, 0.6)
+        self.assertEqual((r['usage']['inputTokens'], r['usage']['outputTokens']), (240, 24), 'both requests are metered')
 
     def test_over_budget_falls_to_the_floor_as_before(self):
         r, calls, dt = self.run_judge([(2.0, verdict(True, 0.8, 'indirect')), (2.0, verdict(True, 0.8, 'indirect'))])

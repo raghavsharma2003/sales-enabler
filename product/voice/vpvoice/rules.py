@@ -31,7 +31,7 @@ KNOWN = {
     'top': {'schema', 'version', 'about', 'regex', 'texts', 'checkin', 'masks', 'lexicon', 'reply', 'caller', 'redact', 'lint', 'links',
             'normalisation', 'words_to_amounts'},
     'normalisation': {'about', 'steps', 'form', 'strip', 'fold', 'drop', 'space'},
-    'words_to_amounts': {'about', 'units', 'multipliers'},
+    'words_to_amounts': {'about', 'units', 'multipliers', 'bare'},
     'regex': {'dialect', 'normalise', 'clause_split', 'clause_scope', 'back_reference'},
     'reply': {'id', 'rule', 'kind', 'action', 'replacement', 'reason', 'scope', 'any', 'all', 'none', 'noneClause', 'anchor', 'coClause', 'check', 'about', 'note'},
     'caller': {'id', 'signal', 'any', 'all', 'none', 'noneClause', 'builtin', 'context', 'about', 'note'},
@@ -323,6 +323,15 @@ def parse_amounts(s, lenient):
     tables = amount_tables(); MULT = tables['mult']; NUM = tables['num']
     cur = rx(RULES['lexicon']['currency'])
     money_talk = lenient or bool(rx(RULES['lexicon']['money_talk']).search(t))      # the money-context list lives in rules.json
+    # A bare figure ("ye 27,500 rahega") is money in a money sentence when it looks like money (words_to_amounts.bare).
+    B = RULES['words_to_amounts']['bare']
+    money_verb = (not lenient) and bool(rx(B['money_verb']).search(t))
+    def bare(p):
+        d = p['m'].group(1)
+        return ((money_talk or money_verb) and p['value'] >= B['min'] and not rx(B['year']).search(d) and not re.fullmatch(r'[0-9]{8,}', d)
+                and not re.search(r'[0-9][\s-]*$', t[max(0, p['start'] - 3):p['start']])
+                and not rx(B['not_before']).search(t[max(0, p['start'] - 24):p['start']]) and not rx(B['not_after']).search(t[p['end']:p['end'] + 16])
+                and bool(rx(B['follow']).search(t[p['end']:p['end'] + 16]) or rx(r'^\s*' + B['money_verb']).search(t[p['end']:p['end'] + 24])))
     parts = []
     for m in NUM.finditer(t):
         try: base = float(m.group(1).replace(',', ''))
@@ -339,7 +348,7 @@ def parse_amounts(s, lenient):
         before = t[max(0, p['start'] - 6):p['start']]; after = t[p['end']:p['end'] + 14]
         marked = bool(re.search(r'(₹|rs\.?|inr)\s*$', before) or re.match(r'\s*(₹|rs\b|inr\b|rupe|rupa|रुपय|रुपए|रुपये)', after, re.ASCII))
         multiplied = bool(p['m'].group(2))
-        if lenient or marked or (multiplied and money_talk) or (multiplied and cur.search(after)): out.append(_js_round(p['value']))
+        if lenient or marked or (multiplied and (money_talk or money_verb)) or (multiplied and cur.search(after)) or (not multiplied and bare(p)): out.append(_js_round(p['value']))
     return out
 
 

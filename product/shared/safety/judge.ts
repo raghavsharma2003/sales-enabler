@@ -36,6 +36,7 @@ export interface CrisisJudgeResult {
   event: JudgeEvent | null;
   latencyMs: number;
   usage: { inputTokens: number; outputTokens: number } | null;
+  requests?: number;                   // model requests sent (2 when the hedge fired); usage covers all of them
 }
 
 export interface CrisisJudgeCtx {
@@ -99,8 +100,11 @@ export async function judgeCallerCrisis(text: string, ctx: CrisisJudgeCtx = {}):
   try {
     const { reply, requests } = await hedgedCall(user, timeoutMs, ctx.hedgeAfterMs === undefined ? judgeHedgeMs() : ctx.hedgeAfterMs);
     const latencyMs = performance.now() - t0;
+    // A hedged second request is billed too, and its prompt is identical: meter the winning reply's tokens once per request
+    // sent (an upper bound for a request cancelled mid-answer), so the judge's cost is never understated.
+    const usage = reply.usage ? { inputTokens: reply.usage.inputTokens * requests, outputTokens: reply.usage.outputTokens * requests } : null;
     const v = parseVerdict(reply.text);
-    if (!v) return { ...base, called: true, latencyMs, usage: reply.usage, event: { type: 'judge_unavailable', reason: 'bad_output' } };
+    if (!v) return { ...base, called: true, latencyMs, usage, requests, event: { type: 'judge_unavailable', reason: 'bad_output' } };
     const says = v.crisis && v.kind !== 'none' && v.confidence >= CRISIS_JUDGE.threshold;
     const raised = says && mode === 'raise' && !floor;
     const event: JudgeEvent | null = !says || floor ? null
@@ -111,7 +115,7 @@ export async function judgeCallerCrisis(text: string, ctx: CrisisJudgeCtx = {}):
     const optSays = Boolean(v.optOut?.value) && (v.optOut?.confidence ?? 0) >= CRISIS_JUDGE.opt_out_threshold && !crisisNow && !says;
     const optRaised = optSays && mode === 'raise' && !floorOptOut;
     const optOutEvent = !optSays || floorOptOut ? null : { type: mode === 'raise' ? 'judge_raised' as const : 'judge_shadow' as const, confidence: v.optOut!.confidence };
-    return { ...base, crisis: crisisNow, optOut: floorOptOut || optRaised, optOutEvent, called: true, judge: v, event, latencyMs, usage: reply.usage };
+    return { ...base, crisis: crisisNow, optOut: floorOptOut || optRaised, optOutEvent, called: true, judge: v, event, latencyMs, usage, requests };
   } catch (e) {
     return { ...base, called: true, latencyMs: performance.now() - t0, event: { type: 'judge_unavailable', reason: e instanceof JudgeTimeout ? 'timeout' : 'error' } };
   }

@@ -22,9 +22,9 @@
         "default": false
       },
       "threshold": 0.5,
-      "timeout_ms": 1500,
-      "hedge_after_ms": null,
-      "latency_note": "open.2026-10-24.judge-timeout-budget: timeout_ms bounds the whole judge call (the runtime reply never waits for it); hedge_after_ms, when set, sends ONE identical second request if the first has not answered by then and takes the first valid answer (each answer is judged exactly as alone, so raise-only holds). Off (null) until the VM latency run sets both from the measured distribution; VP_SAFETY_JUDGE_TIMEOUT_MS and VP_SAFETY_JUDGE_HEDGE_MS override them for staging. A hedge adds requests: mind the Vertex rate commitment (risk.2026-10-23.judge-vertex-rate-commitment).",
+      "timeout_ms": 3000,
+      "hedge_after_ms": 1500,
+      "latency_note": "open.2026-10-24.judge-timeout-budget: timeout_ms bounds the whole judge call (the runtime reply never waits for it); hedge_after_ms, when set, sends ONE identical second request if the first has not answered by then and takes the first valid answer (each answer is judged exactly as alone, so raise-only holds). Set from the VM latency run (measure.2026-10-24.judge-latency-vertex-flashlite, n=300 DEV, tree 9b34ff7: p50 1,021, p95 1,619, p99 3,159 ms): the only pair with at most 10% extra requests and at most 1% simulated unavailability is hedge 1,500 / timeout 3,000 (0.19% unavailable, 6.8% extra requests; no hedge at 1,500 was 8.0%). Verify on staging with the in-time log; VP_SAFETY_JUDGE_TIMEOUT_MS and VP_SAFETY_JUDGE_HEDGE_MS override them for staging. A hedge adds requests: mind the Vertex rate commitment (risk.2026-10-23.judge-vertex-rate-commitment).",
       "max_input_chars": 600,
       "max_tokens": 80,
       "temperature": 0,

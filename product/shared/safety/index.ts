@@ -44,7 +44,8 @@ interface RedactKind { kind: keyof Rules['masks']; context: string; minDigits: n
 interface Rules {
   schema: number; version: string;
   regex: { clause_split: string; back_reference: string };
-  words_to_amounts: { units: Record<string, number>; multipliers: Record<string, number> };
+  words_to_amounts: { units: Record<string, number>; multipliers: Record<string, number>;
+    bare: { money_verb: string; min: number; not_before: string; not_after: string; year: string; follow: string } };
   normalisation: { form: string; strip: string[]; fold: Record<string, string>; drop: string[]; space: string[] };
   texts: Record<string, string>;
   masks: { otp: string; card: string; cvv: string; upi_pin: string; aadhaar: string };
@@ -288,6 +289,13 @@ function parseAmounts(s: string, lenient: boolean): number[] {
   const out: number[] = [];
   const cur = re(RULES.lexicon.currency);
   const moneyTalk = lenient || re(RULES.lexicon.money_talk).test(t);
+  // A bare figure ("ye 27,500 rahega") is money in a money sentence when it looks like money (rules.json words_to_amounts.bare).
+  const B = RULES.words_to_amounts.bare;
+  const moneyVerb = !lenient && re(B.money_verb).test(t);
+  const bare = (p: { value: number; start: number; end: number; m: RegExpMatchArray }) => (moneyTalk || moneyVerb) && p.value >= B.min
+    && !re(B.year).test(p.m[1]) && !/^[0-9]{8,}$/.test(p.m[1]) && !/[0-9][\s-]*$/.test(t.slice(Math.max(0, p.start - 3), p.start))
+    && !re(B.not_before).test(t.slice(Math.max(0, p.start - 24), p.start)) && !re(B.not_after).test(t.slice(p.end, p.end + 16))
+    && (re(B.follow).test(t.slice(p.end, p.end + 16)) || re(`^\\s*${B.money_verb}`).test(t.slice(p.end, p.end + 24)));
   // Spoken compounds ("1 lakh 20 hazaar", "18 hazaar 450") are one amount: a part joins the previous one when only
   // spaces or "aur"/"and" sit between them and it is smaller than the previous part's multiplier.
   const parts: { value: number; unit: number; start: number; end: number; m: RegExpMatchArray }[] = [];
@@ -308,7 +316,7 @@ function parseAmounts(s: string, lenient: boolean): number[] {
     const after = t.slice(p.end, p.end + 14);
     const marked = /(₹|rs\.?|inr)\s*$/.test(before) || /^\s*(₹|rs\b|inr\b|rupe|rupa|रुपय|रुपए|रुपये)/.test(after);
     const multiplied = Boolean(p.m[2]);
-    if (lenient || marked || (multiplied && moneyTalk) || (multiplied && cur.test(after))) out.push(Math.round(p.value));
+    if (lenient || marked || (multiplied && (moneyTalk || moneyVerb)) || (multiplied && cur.test(after)) || (!multiplied && bare(p))) out.push(Math.round(p.value));
   }
   return out;
 }

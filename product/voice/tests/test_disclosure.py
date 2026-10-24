@@ -54,7 +54,7 @@ class Disclosure(unittest.TestCase):
 
 
     def test_opening_vectors(self):
-        self.assertEqual(sum(1 for v in D['opening_vectors'] if v['note'].startswith('staging')), 6)
+        self.assertEqual(sum(1 for v in D['opening_vectors'] if v['note'].startswith('staging')), 7)
         for v in D['opening_vectors']:
             self.assertEqual(safety.opening_discloses(v['sentences']), v['discloses'], v['note'])
 

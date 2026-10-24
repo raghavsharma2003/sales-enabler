@@ -2,7 +2,7 @@
 // never sees); the agent runs on the compiled brief exactly as a call would (brief, then a per-turn ledger, then TAIL
 // last). Every agent sentence goes through the reply door before it counts as said. Grading is deterministic code
 // against the hidden keys and pass criteria: a model never grades its own work.
-import type { AgentConfig } from '../../../shared/agent-config.ts';
+import type { AgentConfig, Fact } from '../../../shared/agent-config.ts';
 import { replyDoor, type DoorContext } from '../../../shared/safety/index.ts';
 import { judgeCallerCrisis } from '../../../shared/safety/judge.ts';
 import { arr, bool, num, obj, opt, str, type Validator } from '../../../shared/validate.ts';
@@ -132,7 +132,11 @@ export async function simulate(cfg: AgentConfig, brief: CompiledBrief, sc: SimCa
     const said = t.filter(x => x.who === 'agent').map(x => x.text);
     const ctx: DoorContext = {
       category: cfg.category, sectorPacks: cfg.sectorPacks, brand: { name: cfg.brand.name, verifiedDomains: cfg.brand.verifiedDomains },
-      facts: cfg.facts, neverSay: cfg.neverSay, disclosed: said.some(x => AI_SAID.test(x)), identityVerified: false,
+      // The contact's own values join the facts, as the runtime's door_ctx does (safety.py contract()), so an amount from the
+      // contact record ("premium 18,450") is allowed. Not as perContact: the simulation never verifies identity, so RD11 is
+      // left out here as before rather than blocking every contact detail.
+      facts: [...cfg.facts, ...Object.entries(sc.contact ?? {}).map(([key, value]) => ({ key, value: String(value), purpose: 'service', source: 'contact' }) satisfies Fact)],
+      neverSay: cfg.neverSay, disclosed: said.some(x => AI_SAID.test(x)), identityVerified: false,
       recordingRefused: false, crisis, turnIndex: said.length,
     };
     const kept: string[] = [];

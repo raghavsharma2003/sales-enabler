@@ -39,6 +39,6 @@ test('disclosure: the exported affirmsAi agrees with the vectors', () => {
 // rejected.2026-10-23.rd1-first-sentence-window-double-disclosure: 3/6 staging openings disclosed after a greeting, a
 // question or a "...", RD1 judged only the first sentence and prefixed the fixed line, and she disclosed twice.
 test('disclosure: RD1 decides on the whole opening turn (opening vectors, shared with the Python door)', () => {
-  assert.ok(V.opening_vectors.filter(v => v.note.startsWith('staging')).length === 6);
+  assert.ok(V.opening_vectors.filter(v => v.note.startsWith('staging')).length === 7);
   for (const v of V.opening_vectors) assert.equal(openingDiscloses(v.sentences), v.discloses, v.note);
 });
