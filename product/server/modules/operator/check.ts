@@ -18,11 +18,17 @@ const VERBS = 'added|updated|published|created|saved|changed|launched|imported|r
 // Verbs that also describe the member's own activity or a state ("20 calls have been made", "You have made 20 calls",
 // "a suggested cap set at ₹100") count only in the first person ("I've made the change"). op6: "made" misfired on
 // read answers in 4 of 4 runs.
-const GENERIC = new Set(['made', 'set', 'built', 'applied']);
+// "connected" is also an adjective ("cost per connected minute": op7, mini, 2 of 2).
+const GENERIC = new Set(['made', 'set', 'built', 'applied', 'connected']);
 const CHANGE_VERBS = VERBS.split('|').filter(v => !GENERIC.has(v)).join('|');
 // "to set up", "need to add": an infinitive is a plan, not a claim.
 const CLAIM_VERB = new RegExp(`(?<!\\bto )(?<!\\bto be )\\b(${CHANGE_VERBS})\\b`, 'i');
 const FIRST_PERSON_GENERIC = /\b(i|we)(?:'ve| have)?\s+(?:just\s+)?(made|set|built|applied)\b/i;
+// A state claim about something the assistant would have made or changed (op7 tpl-nodiscount, zero tool calls: "The
+// agent draft is ready from the broadband win-back template, with "discounts" added to never-say").
+const THINGS = 'draft|agent|campaign|audience|stack|voice|brief|script|cap|limit|budget|wallet|change|changes|edit|edits|setting|settings|plan|card|fact|list|import|number|window|schedule';
+const STATE_CLAIM = new RegExp(`\\b(${THINGS})\\b[^.!?;]{0,40}?\\b(is|are)\\s+(now\\s+)?(ready|live|in place|set up|active|done|saved|updated|created|published|attached|on)\\b|\\b(added|removed)\\s+(to|from|in|into)\\b|\\bhas\\s+been\\s+set\\s+up\\b`, 'i');
+const STATE_GOVERNED = /\b(once|when|after|if|until|before|as soon as|not|never|no|isn't|aren't|will|would|can|could)\b[^.!?;]{0,40}?\b(is|are|added|removed)\b/i;
 // A count or a period marks a read answer about what already happened ("5 contacts were imported so far").
 const READ_ANSWER = /\b(so far|in total|to date|till now|until now|this (week|month|year)|today|yesterday|last (week|month))\b|^\s*(you|your)\b|^\s*\d[\d,]*\s+\w+\s+(have|has|were|was)\s+been\b/i;
 const CLAIM_SUBJECT = /\b(i|i've|i have|i'm|we|we've|we have)\b|\b(has|have) been\b|\b(is|are) now\b/i;
@@ -40,7 +46,10 @@ const sentences = (text: string) => text.split(/(?<=[.!?…])\s+|\n+|(?<=…)/).
 /** True when a sentence states, in the assistant's voice or as a bare passive, that a change was made. */
 export function claimsChange(text: string, proposed: boolean): boolean {
   return sentences(text).some(sen => {
-    if (/\?\s*$/.test(sen) || GOVERNED.test(sen) || PAST_FACT.test(sen) || NEGATED_AFTER.test(sen) || READ_ANSWER.test(sen)) return false;
+    if (/\?\s*$/.test(sen) || GOVERNED.test(sen) || PAST_FACT.test(sen) || NEGATED_AFTER.test(sen)) return false;
+    // A state claim counts even about "your" things ("Your audience is ready"), unless a condition or negation leads it.
+    if (STATE_CLAIM.test(sen) && !STATE_GOVERNED.test(sen)) return true;
+    if (READ_ANSWER.test(sen)) return false;
     if (FIRST_PERSON_GENERIC.test(sen)) return true;
     if (proposed && /approv|tap|waiting|pending|card/i.test(sen)) return false;
     return NOW_STATE.test(sen) || (CLAIM_VERB.test(sen) && (CLAIM_SUBJECT.test(sen) || (REDUCED_PASSIVE.test(sen) && !/\b(was|were|been|is|are)\b/i.test(sen.slice(0, sen.search(CLAIM_VERB) + 1)))));

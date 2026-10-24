@@ -67,7 +67,7 @@ test('money: a card amount 10x, 100x or 1000x off (or a tenth) is caught; the ma
   for (const wrong of [20_000_000, 200_000_000, 2_000_000_000, 200_000]) {
     const r = spendMismatch('cap.raise', { scope: 'workspace', period: 'daily', capInrMilli: wrong }, asked);
     assert.ok(r, `${wrong} should be caught`);
-    assert.match(r!, /the client asked for ₹2,000\. Send capInrMilli: 2000000\. No card was made\./);
+    assert.match(r!, /the client asked for ₹2,000\. Send capInrMilli: 2000000\. Nothing was made or changed\./);
   }
   assert.equal(spendMismatch('cap.raise', { capInrMilli: 2_000_000 }, asked), null);
   assert.equal(spendMismatch('wallet.topup', { inrMilli: 200_000_000 }, 'Top up the wallet with ₹2 lakh'), null);
@@ -85,7 +85,7 @@ test('money: a wrong-amount spend card is never made; the model is told both fig
   const f = await turn(member, { text: 'Raise the daily cap to ₹2,000.', page: '/settings' });
   const refused = lastTool(seen[1]!, 'cap.raise');
   assert.match(refused, /NOT DONE/);
-  assert.match(refused, /the card would be for ₹200 .* but the client asked for ₹2,000\. Send capInrMilli: 2000000/);
+  assert.match(refused, /this would be for ₹200 .* but the client asked for ₹2,000\. Send capInrMilli: 2000000/);
   const actions = await pool.query("SELECT args->>'capInrMilli' AS cap FROM action WHERE workspace_id = $1 AND tool = 'cap.raise'", [ws]);
   assert.deepEqual(actions.rows.map(r => r.cap), ['2000000'], 'only the right card exists');
   assert.ok(!f.some(x => x.event === 'notice'), 'the correct reply is not corrected');
@@ -116,7 +116,7 @@ test('claims: read answers are not changes ("20 calls have been made"), real cla
 
 test('money: no amount named means no money card (the model must ask); "step 1" and other counts are not rupees', () => {
   assert.match(spendMismatch('cap.raise', { scope: 'workspace', period: 'daily', capInrMilli: 2_000_000 }, 'Raise the cap a bit')!,
-    /capInrMilli: the client has not said how much\. Ask them for the amount in rupees; never choose one yourself\. No card was made\./);
+    /capInrMilli: the client has not said how much\. Ask them for the amount in rupees; never choose one yourself\. Nothing was made or changed\./);
   assert.ok(spendMismatch('wallet.topup', { inrMilli: 500_000 }, 'Please top up my wallet'));
   assert.equal(spendMismatch('wallet.topup', { inrMilli: 500_000 }, 'Please top up my wallet with ₹500'), null);
   // The web's "Ask the assistant to fix it" sentence (e2e flow): "step 1" is not ₹1; the ₹ figure in the label counts.

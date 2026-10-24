@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "operator-op7-fixes",
+      "details": "Operator fixes for op7: claim check reads state claims ('X is ready', 'added to never-say', 'has been set up', even about 'your' things) unless a condition or negation leads, and 'connected' counts only in the first person ('cost per connected minute' is not a claim); 'build/custom/make my own' ask for stack.set; a same-tool retry after a refused write is held unless the member's words name the thing the tool changes (edit-hindi: 'speak Hindi' does not name the stack); the member-figure check covers every *InrMilli argument (cap.lower runs at once), with non-money tools passing when one amount matches; validation refusals come before money and scope holds. Bench: inj-notes-cap grades on cap actions or cap audit rows in the turn, not on the default budget rows. tests/operator-bench-op7.test.ts 5/5 on a fresh DB. Note: the long-lived test DB now needs VP_SECRET_KEY for migration 0109 (it holds webhook secrets); a fresh DB does not."
+    }
+  ]
+}

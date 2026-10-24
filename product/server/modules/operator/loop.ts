@@ -295,10 +295,14 @@ export async function runTurn(inp: TurnInput): Promise<void> {
     // 3 cards in 2 runs). On a mismatch no card is made, and the model is told both figures.
     // After the role check and validation, so those refusals keep their own reasons.
     const valid = (() => { try { def?.input(args); return true; } catch { return false; } })();
-    const money = def && valid && allowedNames.has(name) && needsHumanApproval(def.risk) ? spendMismatch(name, args, clean.text) : null;
+    // Every write carrying an *InrMilli amount, not only approval cards: cap.lower runs at once (op7).
+    const money = def && valid && allowedNames.has(name) && def.risk !== 'read' ? spendMismatch(name, args, clean.text) : null;
     if (money) return { status: 'not_executed', reason: money, path: money.split(':')[0] };
+    if (!valid) return execute(name, args);                         // a validation refusal keeps its own reason and fix
     if (def && allowedNames.has(name) && def.risk !== 'read' && !asked(name)) {
-      if (failedWrites.size && !failedWrites.has(name) && !doneWrites.has(name))
+      // A retry may not change what the member did not ask about, inside the same tool too (op7 edit-hindi: "speak Hindi
+      // first" -> stack.set refused -> stack.set sarvam-india DONE; the stack is not what was asked about).
+      if (failedWrites.size && !doneWrites.has(name) && (!failedWrites.has(name) || !mentions(name, clean.text)))
         return { status: 'not_executed', reason: `held: the client did not ask for ${name}, and this turn was retrying ${[...failedWrites].join(', ')}. Change nothing the client did not ask about; if ${name} is really needed, ask the client first` };
       if (PROTECTIVE.test(name) && !A0_EXEMPT.has(name)) return proposeA0(pool, def, args, workspaceId, actor, threadId);
     }
@@ -517,7 +521,7 @@ const PROTECTIVE = /\.(suppress\w*|pause|stop\w*|forget|erase|block\w*|end_runaw
 const ACTION_WORDS: Record<string, RegExp> = {
   create: /\b(create|make|new|add|build|set up|draft|start)\b/i, draft: /\b(draft|create|make|set up|new|plan)\b/i,
   edit: /\b(edit|change|update|make|adjust|fix|rewrite|reword|tweak|calmer|warmer|shorter|longer|slower|faster|add|remove)\b/i,
-  set: /\b(set|change|switch|move|use|put|choose|pick)\b/i, publish: /\b(publish|go live|release|make (it )?live)\b/i,
+  set: /\b(set|change|switch|move|use|put|choose|pick|build|built|custom|make (?:a|my|your|our) own)\b/i, publish: /\b(publish|go live|release|make (it )?live)\b/i,
   launch: /\b(launch|start|go live|send|run)\b/i, split: /\b(split|deploy|route|percent|%|half|share)\b/i,
   suppress: /\b(suppress|stop calling|do not call|don't call|never call|opt(ed)?[ -]?out|block|dnd|remove (them|him|her) from)\b/i,
   pause: /\b(pause|hold off|stop)\b/i,
@@ -526,6 +530,19 @@ const ACTION_WORDS: Record<string, RegExp> = {
   forget: /\b(forget|erase|delete|remove)\b/i, raise: /\b(raise|increase|up|higher|more)\b/i, lower: /\b(lower|reduce|decrease|down|less)\b/i,
   topup: /\b(top ?up|add money|add funds|recharge|add ₹|add rs)\b/i, import: /\b(import|upload|add)\b/i, attach: /\b(attach|add|give|grant|connect)\b/i,
 };
+/** The thing a tool changes, in the member's words (stack.set -> "stack", "voice stack", "ears"...). */
+const OBJECT_WORDS: Record<string, RegExp> = {
+  stack: /\b(stack|ears|speech recognition|brain|language model|speech-to-speech|s2s|engine)\b/i, voice: /\b(voice|speaker|sound)\b/i,
+  brief: /\b(brief|script|prompt|persona|fact|facts|never[- ]say|opening|objection|language|hindi|english|tamil|tone|calm\w*|limit|duration|goal)\b/i,
+  agent: /\b(agent|bot|assistant)\b/i, campaign: /\b(campaign|window|calling hours)\b/i, audience: /\b(audience|list|segment)\b/i,
+  cap: /\b(cap|limit|budget|spend)\b/i, wallet: /\b(wallet|top ?up|money|funds)\b/i, contact: /\b(contact|person|people|number)\b/i,
+};
+/** True when the member's words name the thing the tool changes. */
+export function mentions(name: string, text: string): boolean {
+  const noun = name.split('.')[0]!;
+  return (OBJECT_WORDS[noun] ?? new RegExp(`\\b${noun}`, 'i')).test(text);
+}
+
 export function asksFor(name: string, text: string): boolean {
   const verb = name.split('.').pop()!.replace(/_.*$/, '');
   const re = ACTION_WORDS[verb] ?? new RegExp(`\\b${verb.replace(/[^a-z0-9]/gi, '')}`, 'i');
@@ -559,15 +576,18 @@ export function spendMismatch(tool: string, args: unknown, text: string): string
   if (!asked.length) {
     // The member named no amount: for the money tools the model must not choose one (integrator, after op6).
     const k = Object.keys(args as Record<string, unknown>).find(x => /inrmilli$/i.test(x));
-    return moneyTool && k ? `${k}: the client has not said how much. Ask them for the amount in rupees; never choose one yourself. No card was made.` : null;
+    return moneyTool && k ? `${k}: the client has not said how much. Ask them for the amount in rupees; never choose one yourself. Nothing was made or changed.` : null;
   }
-  for (const [k, v] of Object.entries(args as Record<string, unknown>)) {
-    if (!/inrmilli$/i.test(k) || typeof v !== 'number') continue;   // capInrMilli, inrMilli, ...
-    const rupees = v / 1000;
-    if (asked.some(a => Math.abs(a - rupees) <= Math.max(0.005, a * 0.005))) continue;
+  const fields = Object.entries(args as Record<string, unknown>).filter(([k, v]) => /inrmilli$/i.test(k) && typeof v === 'number') as [string, number][];
+  const matches = (v: number) => asked.some(a => Math.abs(a - v / 1000) <= Math.max(0.005, a * 0.005));
+  // A money tool's every amount is the member's; another write (a campaign draft with a cap and a per-minute rate) needs
+  // only one of its amounts to be the figure the member named.
+  if (!moneyTool && fields.some(([, v]) => matches(v))) return null;
+  for (const [k, v] of fields) {
+    if (matches(v)) continue;
     const want = asked.length === 1 ? asked[0]! : null;
-    return `${k}: the card would be for ${formatInr(v)} (${k} is in thousandths of a rupee: ${v} is ${formatInr(v)}), but the client asked for ${asked.map(a => formatInr(Math.round(a * 1000))).join(' or ')}.`
-      + (want !== null ? ` Send ${k}: ${Math.round(want * 1000)}.` : '') + ' No card was made.';
+    return `${k}: this would be for ${formatInr(v)} (${k} is in thousandths of a rupee: ${v} is ${formatInr(v)}), but the client asked for ${asked.map(a => formatInr(Math.round(a * 1000))).join(' or ')}.`
+      + (want !== null ? ` Send ${k}: ${Math.round(want * 1000)}.` : '') + ' Nothing was made or changed.';
   }
   return null;
 }
