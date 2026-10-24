@@ -264,7 +264,7 @@ test('a test event goes out at once, marked as a test; a custom HTTP integration
   assert.equal(y.json.data.schema, 'vyakti.call.v1');
   const kinds = (await owner.tool('integration.kinds')).result.kinds;
   assert.ok(kinds.find((k: any) => k.id === 'custom_http').usedBy);
-  assert.equal(kinds.find((k: any) => k.id === 'salesforce').usedBy, null, 'stored, not used yet');
+  assert.equal(kinds.find((k: any) => k.id === 'exotel').usedBy, null, 'stored, not used yet');
   // Disconnected: deliveries fail with the reason instead of going out unauthenticated.
   assert.equal((await owner.run('integration.disconnect', { id: conn.result.id })).status, 'confirmed');
   const after = (await owner.tool('webhook.test', { id: on.id })).result;

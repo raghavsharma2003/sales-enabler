@@ -15,7 +15,7 @@ export interface Kind { label: string; secrets: readonly string[]; config: reado
 export const INTEGRATION_KINDS: Record<string, Kind> = {
   hubspot: { label: 'HubSpot CRM', secrets: ['access_token'], config: ['portal_id'], usedBy: 'Imports contacts' },
   zoho_crm: { label: 'Zoho CRM', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['datacenter'], usedBy: 'Imports contacts' },
-  salesforce: { label: 'Salesforce', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['instance_url'] },
+  salesforce: { label: 'Salesforce', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['instance_url'], usedBy: 'Imports contacts' },
   google_workspace: { label: 'Google Sheets and Calendar', secrets: ['service_account_json'], config: ['calendar_id', 'sheet_id'] },
   whatsapp_cloud: { label: 'WhatsApp Cloud API', secrets: ['access_token'], config: ['phone_number_id'] },
   exotel: { label: 'Exotel', secrets: ['api_key', 'api_token'], config: ['account_sid', 'subdomain'] },

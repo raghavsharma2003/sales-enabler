@@ -9,7 +9,8 @@ import { Async, Btn, Card, CardHead, Chip, Empty, Sheet, TextArea, TextField } f
 import { Link } from '../router.tsx';
 
 /** What reads a kind's stored credentials today. Most kinds are stored and not used yet; the page says so plainly. */
-const SET_UP: Record<string, [string, string]> = { slack: ['/settings/notifications', 'Notifications'], custom_http: ['/settings/webhooks', 'Webhooks'], hubspot: ['/contacts/import?from=hubspot', 'Import'], zoho_crm: ['/contacts/import?from=zoho_crm', 'Import'] };
+const CONFIG_HINT: Record<string, string> = { instance_url: 'An https address on salesforce.com or force.com. Leave empty to sign in through login.salesforce.com.' };
+const SET_UP: Record<string, [string, string]> = { slack: ['/settings/notifications', 'Notifications'], custom_http: ['/settings/webhooks', 'Webhooks'], hubspot: ['/contacts/import?from=hubspot', 'Import'], zoho_crm: ['/contacts/import?from=zoho_crm', 'Import'], salesforce: ['/contacts/import?from=salesforce', 'Import'] };
 const InUse = ({ k }: { k: Kind | undefined }) => k?.usedBy ? <Chip tone="leaf">In use</Chip> : <Chip tone="marigold">Stored, not used yet</Chip>;
 
 interface Kind { id: string; label: string; secrets: string[]; config: string[]; usedBy: string | null }
@@ -35,7 +36,7 @@ export default function Integrations() {
       ? <Empty title="Nothing connected" body="Connect Slack to get alerts in a channel, or your own HTTP service so webhooks can sign in to it. CRM, calendar and other connections can be stored, but nothing uses them yet." />
       : <ul className="billing">{d.list.map(i => <li key={i.id}><div><strong>{i.name}</strong> <Chip>{d.kinds.find(k => k.id === i.kind)?.label ?? 'Integration'}</Chip> <InUse k={d.kinds.find(k => k.id === i.kind)} /></div>
         <Btn size="sm" kind="danger" onClick={async () => { const r = await act('integration.disconnect', { id: i.id }, { describe: 'Disconnected. The stored credentials were erased.' }); if (r.ok) q.reload(); }}>Disconnect…</Btn></li>)}</ul>}</Card>
-    <Card><CardHead title="What can be connected" sub="Credentials are encrypted, never shown again and cleared from this form as soon as they are sent. Connecting is a policy change, so it asks for approval. Those marked “In use” are read today: HubSpot and Zoho import contacts, Slack gets alerts, and your own HTTP service signs webhooks in. The others are stored, and nothing reads them yet." />
+    <Card><CardHead title="What can be connected" sub="Credentials are encrypted, never shown again and cleared from this form as soon as they are sent. Connecting is a policy change, so it asks for approval. Those marked “In use” are read today: HubSpot, Zoho and Salesforce import contacts, Slack gets alerts, and your own HTTP service signs webhooks in. The others are stored, and nothing reads them yet." />
       <ul className="billing">{d.kinds.map(k => <li key={k.id}><div><strong>{k.label}</strong> <InUse k={k} /><br /><span className="small muted">{k.usedBy ? <>{k.usedBy}.{SET_UP[k.id] && <> Set it up under <Link to={SET_UP[k.id][0]}>{SET_UP[k.id][1]}</Link>.</>}</> : <>Needs: {k.secrets.map(word).join(', ')}</>}</span></div>
         <Btn size="sm" aria-label={`Connect ${k.label}`} icon={<KeyRound size={14} aria-hidden />} onClick={() => setOpen(k)}>Connect</Btn></li>)}</ul></Card>
     {open && <ConnectForm kind={open} taken={d.list.map(i => i.name)} onClose={() => setOpen(null)} onDone={() => { setOpen(null); q.reload(); }} />}
@@ -67,7 +68,7 @@ function ConnectForm({ kind, taken, onClose, onDone }: { kind: Kind; taken: stri
         {kind.secrets.map(s => s === 'service_account_json'
           ? <TextArea key={s} className="span2" label={word(s)} value={secrets[s] ?? ''} onChange={e => setSecrets({ ...secrets, [s]: e.target.value })} autoComplete="off" spellCheck={false} rows={4} />
           : <TextField key={s} label={word(s)} type="password" autoComplete="off" value={secrets[s] ?? ''} onChange={e => setSecrets({ ...secrets, [s]: e.target.value })} />)}
-        {kind.config.map(c => <TextField key={c} label={`${word(c)} (optional)`} value={config[c] ?? ''} onChange={e => setConfig({ ...config, [c]: e.target.value })} />)}
+        {kind.config.map(c => <TextField key={c} label={`${word(c)} (optional)`} value={config[c] ?? ''} onChange={e => setConfig({ ...config, [c]: e.target.value })} hint={CONFIG_HINT[c]} />)}
       </div>
       <div className="row" style={{ justifyContent: 'flex-end', marginTop: 16 }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>
         {reason ? <Btn disabled fix={null} reason={reason}>Connect</Btn> : <Btn kind="primary" busy={busy} onClick={() => void submit()}>Connect</Btn>}</div>
