@@ -169,6 +169,12 @@ export function describeChange(base: AgentConfig | null, ops: ChangeOp[]): { par
   const at = (path: string): unknown => path.split('.').reduce<any>((n, k) => (n == null ? undefined : n[k]), base);
   return ops.map(o => {
     if (o.op === 'reorder_facts') return { part: 'The order of the facts she can share', before: base ? base.facts.map(f => f.key.replace(/_/g, ' ')).join(', ') : null, after: o.order.map(k => k.replace(/_/g, ' ')).join(', ') };
+    // One note added after the business's own, unchanged: show just the new note, as a new part.
+    if (o.path === 'objections' && base && Array.isArray(o.value) && o.value.length === base.objections.length + 1
+        && canonicalJson(o.value.slice(0, -1)) === canonicalJson(base.objections)) {
+      const added = o.value[o.value.length - 1] as { trigger?: string; approach?: string };
+      return { part: `When ${added?.trigger ?? 'a new objection comes up'}`, before: null, after: String(added?.approach ?? '') };
+    }
     const m = /^(\w+)(?:\.(\d+))?(?:\.(.+))?$/.exec(o.path)!;
     const idx = m[2] !== undefined ? Number(m[2]) : -1;
     const part = o.path === 'opening.usefulFirst' ? 'What she says first, after saying she is an AI assistant'

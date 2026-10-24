@@ -91,3 +91,107 @@ test('a learned objection note that reads as a line she would say is gated out b
   assert.equal(p.status, 'gated_out', JSON.stringify(p));
   assert.ok(p.failures.some((f: any) => f.gate === 'shape' && /objections\[\d+\]\.approach/.test(f.detail)), JSON.stringify(p.failures));
 });
+
+// ---------- objection handling: a recurring objection the brief has no answer for ----------
+
+import { proposeFromObjections } from '../server/modules/learning/index.ts';
+
+/** The not-interested calls all object to the price ("bahut mehenga hai"). With `n` of them quoted in one theme. */
+async function priceWorld(n = 6, title = 'The price feels too high') {
+  const t = await workspace();
+  const calls = await writeAnalysed(pool, t.ws, t.versionId, CASES.filter(c => c.language === 'hinglish'));
+  const priced = calls.filter(w => w.case.template === 'not_interested').slice(0, n);
+  const themes = await writeInsight(pool, t.ws, t.agentId, calls, { themes: [
+    { kind: 'objection', title, quotes: priced.slice(0, 3).map(w => ({ call: labelOf(calls, w), text: callerLine(w, 'objection') })), calls: priced.map(w => labelOf(calls, w)) },
+  ] });
+  assert.equal(themes.length, 1);
+  return { ...t, calls, priced };
+}
+const NOTE = { trigger: 'they say the cost is too much for them right now', approach: 'acknowledge it, give the reason from the facts, and ask whether a smaller plan would suit' };
+const appendNote = (note: { trigger: string; approach: string }) => async (ev: any, t: { call: Function; agentId: string }) => {
+  const base = (await t.call('agent.get', { agentId: t.agentId })).result.draft;
+  return [{ kind: 'objection', rationale: 'the price objection recurs and the brief has no note for it', evidenceIds: [ev.themes[0].id],
+    change: [{ op: 'set', path: 'objections', value: [...base.objections, note] }] }];
+};
+/** fakeCoach for proposals that need the agent's current objections (async), and the theme the model was given. */
+function asyncCoach(t: { call: Function; agentId: string }, make: (ev: any, t: any) => Promise<unknown[]> | unknown) {
+  const asked: any[] = [];
+  let base: any = null;
+  setFakeLlm(async req => {
+    const body = JSON.parse(req.messages[req.messages.length - 1]!.content);
+    asked.push(body);
+    base ??= (await t.call('agent.get', { agentId: t.agentId })).result.draft;
+    const out = await make(body.evidence, t);
+    return { text: JSON.stringify(Array.isArray(out) ? { proposals: out } : out), toolCalls: [], usage: { inputTokens: 10, outputTokens: 10 }, model: 'fake', provider: 'fake' };
+  });
+  return asked;
+}
+
+test('a recurring objection the brief has no note for drafts one objection note, once, from the quoted lines', { skip }, async () => {
+  const w = await priceWorld();
+  const asked = asyncCoach(w, appendNote(NOTE));
+  const first = await proposeFromObjections({ pool, registry }, { workspaceId: w.ws });
+  assert.deepEqual(first.ran.map(r => r.status), ['proposed'], JSON.stringify(first));
+  assert.equal(asked.length, 1);
+  assert.equal(asked[0].focus.objection.title, 'The price feels too high', 'the model is told which objection to answer');
+  assert.ok(asked[0].focus.objection.quotes.length >= 2, 'with the caller lines that show it');
+  const p = await one<{ kind: string; status: string; change: any; evidence: any }>(pool, 'SELECT kind, status, change, evidence FROM proposal WHERE id = $1', [first.ran[0]!.proposalId]);
+  assert.equal(p!.kind, 'objection');
+  assert.equal(p!.status, 'drafted', JSON.stringify(p));
+  assert.equal(p!.evidence.theme.title, 'The price feels too high');
+  // Once per theme: the job runs every minute.
+  assert.deepEqual((await proposeFromObjections({ pool, registry }, { workspaceId: w.ws })).ran, []);
+  assert.equal(asked.length, 1);
+  // The page names the source and the note in words.
+  const listed = (await w.call('proposal.list', {})).result.find((x: any) => x.id === first.ran[0]!.proposalId);
+  assert.match(listed.from_theme, /The price feels too high/);
+  assert.equal(listed.changes.length, 1);
+  assert.match(listed.changes[0].part, /they say the cost is too much/);
+  assert.equal(listed.changes[0].before, null);
+});
+
+test('no objection note is drafted when the brief already answers it, when it is rare, or when the model says a note covers it', { skip }, async () => {
+  // Already answered, by the words of an existing trigger: no model call at all.
+  const a = await priceWorld();
+  const draft = (await a.call('agent.get', { agentId: a.agentId })).result;
+  await a.call('brief.edit', { agentId: a.agentId, patch: [{ op: 'set', path: 'objections', value: [...draft.draft.objections, { trigger: 'the price feels too high for them', approach: 'acknowledge it and give the reason from the facts' }] }] });
+  const s = await a.call('agent.get', { agentId: a.agentId });
+  assert.equal((await a.run('version.publish', { agentId: a.agentId, draftHash: s.result.draftHash })).status, 'confirmed');
+  let asked = asyncCoach(a, appendNote(NOTE));
+  // The insight is about the agent's calls on the version before; the live version now has the note.
+  assert.deepEqual((await proposeFromObjections({ pool, registry }, { workspaceId: a.ws })).ran.map(r => r.status), ['already_answered']);
+  assert.equal(asked.length, 0);
+  // Rare: on 2 calls of 72.
+  const b = await priceWorld(2);
+  asked = asyncCoach(b, appendNote(NOTE));
+  assert.deepEqual((await proposeFromObjections({ pool, registry }, { workspaceId: b.ws })).ran, []);
+  assert.equal(asked.length, 0);
+  // The model points at an existing note that covers it (the template's premium note): recorded, nothing drafted.
+  const c = await priceWorld();
+  asked = asyncCoach(c, () => ({ covered: 0, proposals: [] }));
+  const r = await proposeFromObjections({ pool, registry }, { workspaceId: c.ws });
+  assert.deepEqual(r.ran.map(x => x.status), ['already_answered'], JSON.stringify(r));
+  assert.equal(asked.length, 1);
+  assert.equal((await one<{ n: string }>(pool, 'SELECT count(*) AS n FROM proposal WHERE workspace_id = $1', [c.ws]))!.n, '0');
+});
+
+test('an objection note is a shape: never the caller\'s own words, and it only adds a note, never rewrites the business\'s', { skip }, async () => {
+  const w = await priceWorld();
+  const quote = callerLine(w.priced[0]!, 'objection');
+  // Copies the caller's words into the note.
+  asyncCoach(w, appendNote({ trigger: `when they say ${quote.toLowerCase().replace(/[.,]/g, '')}`, approach: 'acknowledge it and give the reason from the facts' }));
+  let r = await proposeFromObjections({ pool, registry }, { workspaceId: w.ws });
+  let p = await one<{ status: string; gates: any }>(pool, 'SELECT status, gates FROM proposal WHERE id = $1', [r.ran[0]!.proposalId]);
+  assert.equal(p!.status, 'gated_out');
+  assert.ok(p!.gates.failures.some((f: any) => f.gate === 'copied_quote'), JSON.stringify(p!.gates));
+  // Rewrites the business's existing note instead of adding one.
+  const v = await priceWorld();
+  asyncCoach(v, async (ev: any, t: any) => {
+    const base = (await t.call('agent.get', { agentId: t.agentId })).result.draft;
+    return [{ kind: 'objection', rationale: 'x', evidenceIds: [ev.themes[0].id], change: [{ op: 'set', path: 'objections', value: [{ ...base.objections[0], approach: 'move on to the next step' }, NOTE] }] }];
+  });
+  r = await proposeFromObjections({ pool, registry }, { workspaceId: v.ws });
+  p = await one<{ status: string; gates: any }>(pool, 'SELECT status, gates FROM proposal WHERE id = $1', [r.ran[0]!.proposalId]);
+  assert.equal(p!.status, 'gated_out');
+  assert.ok(p!.gates.failures.some((f: any) => f.gate === 'objection_append_only'), JSON.stringify(p!.gates));
+});

@@ -22,7 +22,8 @@ import { tool, type Actor, type Receipt, type Registry, type ToolCtx } from '../
 import { canonicalJson, needsHumanApproval } from '../../../shared/approval.ts';
 import type { AgentConfig } from '../../../shared/agent-config.ts';
 import { arr, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
-import { applyOps, describeChange, parseOps, PROPOSAL_KINDS, runGates, type ChangeOp } from './gates.ts';
+import { applyOps, changedStrings, describeChange, parseOps, PROPOSAL_KINDS, runGates, type ChangeOp } from './gates.ts';
+import { answeredBy, appendOnly, copiedQuote, isRecurringObjection } from './objections.ts';
 import { compareProbe, type SimRun } from './probe.ts';
 import { armFor, decide, harmSprt, powerPlan, sequentialGuard, shadowAA, type Arm } from './stats.ts';
 
@@ -100,8 +101,16 @@ You may ONLY change these parts of the agent config (JSON paths):
 - limits.maxSilenceS (2-30), limits.maxTurns (4-200)
 Never touch the disclosure, facts' values, identity, hand-off, recording, never-say or voice. Never add a number, price,
 date, percentage or link that is not already one of the facts. No urgency, scarcity, fear, guilt or false authority.
-Cite the evidence each change answers by its id (call ids, moment ids, issue ids) — only ids present in the evidence.
+Cite the evidence each change answers by its id (call ids, moment ids, issue ids, theme ids) — only ids present in the evidence.
 Reply as JSON: {"proposals":[{"kind": one of ${PROPOSAL_KINDS.join('|')}, "rationale": "...", "change":[{"op":"set","path":"...","value":...}], "evidenceIds":["..."]}]}`;
+
+/** Added when one recurring objection is the focus (from an insight theme the brief has no note for). */
+const OBJECTION_FOCUS = `This run answers ONE recurring objection, given as "focus.objection" with the caller lines that show it.
+If one of the agent's existing objection notes already handles it, reply {"covered": <that note's index>, "proposals": []}.
+Otherwise propose exactly one change of kind "objection": set "objections" to the existing notes, unchanged and in order, plus
+ONE new {trigger, approach}. Both are short English notes about behaviour: the trigger says what the person raises, the
+approach says what she does (acknowledge, give the reason from the facts, offer a real option, ask what would help). Never a
+sentence she could say, never the caller's words, no quotes, no first person, no numbers, no Hindi. Cite the theme id.`;
 
 /** Moment kinds whose caller line may be shown to the model, as evidence of what people say. An opt-out is counted,
  *  never quoted: the words of someone who asked to be left alone are not material for persuading the next person. */
@@ -168,9 +177,10 @@ async function ownEvidence(q: Queryable, ws: string, known: Set<string>, ids: un
   return strs.filter(x => known.has(x) || calls.has(x));
 }
 
-const proposeIn = obj({ agentId: uuid(), max: opt(num({ int: true, min: 1, max: 3 })), issueId: opt(uuid()) });
+const proposeIn = obj({ agentId: uuid(), max: opt(num({ int: true, min: 1, max: 3 })), issueId: opt(uuid()),
+  themeId: opt(str({ min: 1, max: 120, desc: 'an insight theme id from the evidence (theme:<insight>:<n>): draft one objection note for it' })) });
 
-async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId?: string }) {
+async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId?: string; themeId?: string }) {
   const ws = ctx.workspaceId;
   const base = await liveVersion(ctx.q, ws, i.agentId);
   if (!base) throw new Error('this agent has no published version yet; learning starts from what has run');
@@ -179,14 +189,18 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
   if (!ev.issues.length && !ev.moments.quotes.length && !ev.themes.length && !ev.calls.length) return { status: 'no_evidence', proposals: [] };
   const cfg = agentOf(base);
   const known = new Set([...ev.issues.map(x => x.id), ...ev.moments.quotes.map(x => x.id), ...ev.themes.map(x => x.id), ...ev.calls.map(x => x.id)]);
+  const theme = i.themeId ? ev.themes.find(t => t.id === i.themeId) : undefined;
+  if (i.themeId && !theme) throw new Error('no such theme on this agent\'s latest insight');
+  const focus = theme ? { objection: { id: theme.id, title: theme.title, heardOn: `${theme.count} of ${theme.of} calls`, quotes: theme.quotes.map(q => q.text) } } : undefined;
+  const callerWords = [...ev.themes.flatMap(t => t.quotes.map(q => q.text)), ...ev.moments.quotes.map(m => m.quote)];
   const tried = new Set(ev.lessons.filter(l => l.change_hash && l.status !== 'won' && l.status !== 'active').map(l => l.change_hash!));
 
   let reply;
   try {
     reply = await complete({ purpose: 'learning', json: true, temperature: 0.3, maxTokens: 2000, messages: [
-      { role: 'system', content: PROPOSE_SYSTEM.replace('N', String(i.max ?? 3)) },
+      { role: 'system', content: PROPOSE_SYSTEM.replace('N', String(theme ? 1 : i.max ?? 3)) + (theme ? '\n' + OBJECTION_FOCUS : '') },
       { role: 'user', content: JSON.stringify({ agent: { opening: cfg.opening, objections: cfg.objections, goals: cfg.goals, persona: { notes: cfg.persona?.notes },
-        facts: cfg.facts.map(f => ({ key: f.key, value: f.value })), tools: cfg.tools, limits: cfg.limits }, evidence: ev }) },
+        facts: cfg.facts.map(f => ({ key: f.key, value: f.value })), tools: cfg.tools, limits: cfg.limits }, ...(focus ? { focus } : {}), evidence: ev }) },
     ] });
   } catch (e) {
     if (e instanceof LlmError) return { status: 'llm_unavailable', reason: e.message, proposals: [] };
@@ -194,7 +208,9 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
   }
   let parsed: any;
   try { parsed = JSON.parse(reply.text); } catch { return { status: 'llm_bad_reply', proposals: [] }; }
-  const raw: any[] = Array.isArray(parsed?.proposals) ? parsed.proposals.slice(0, i.max ?? 3) : [];
+  if (theme && Number.isInteger(parsed?.covered) && parsed.covered >= 0 && parsed.covered < cfg.objections.length)
+    return { status: 'already_answered', covered: parsed.covered, note: cfg.objections[parsed.covered], proposals: [] };
+  const raw: any[] = Array.isArray(parsed?.proposals) ? parsed.proposals.slice(0, theme ? 1 : i.max ?? 3) : [];
 
   const out = [];
   for (const p of raw) {
@@ -223,11 +239,17 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
       }
     }
     if (!kind) failures.push({ gate: 'shape', detail: `kind must be one of ${PROPOSAL_KINDS.join(', ')}` });
+    if (theme && ops) { const why = appendOnly(cfg, ops); if (why) failures.push({ gate: 'objection_append_only', detail: why }); }
+    // A learned note never carries a caller's own words: they get recited back to the next caller.
+    if (ops) for (const w of changedStrings(ops)) {
+      const copied = (w.path.startsWith('objections') || w.path.startsWith('persona') || w.path.startsWith('opening')) ? copiedQuote(w.text, callerWords) : null;
+      if (copied) failures.push({ gate: 'copied_quote', detail: `${w.path} reuses a caller's words; write what she does instead` });
+    }
     if (!cited.length) failures.push({ gate: 'evidence', detail: 'no change is drafted without citing this workspace\'s own evidence' });
     const status = failures.length ? 'gated_out' : 'drafted';
     const row = await one<{ id: string }>(ctx.q, `INSERT INTO proposal (workspace_id, agent_id, base_version_id, kind, change, evidence, gates, status, change_hash, rationale)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
-      [ws, i.agentId, base.id, kind ?? 'unknown', JSON.stringify(ops ?? p?.change ?? null), JSON.stringify({ cited, usage: reply.usage, ...(i.issueId ? { issueId: i.issueId } : {}) }),
+      [ws, i.agentId, base.id, kind ?? 'unknown', JSON.stringify(ops ?? p?.change ?? null), JSON.stringify({ cited, usage: reply.usage, ...(i.issueId ? { issueId: i.issueId } : {}), ...(theme ? { themeId: theme.id, theme: { title: theme.title, count: theme.count, of: theme.of } } : {}) }),
        JSON.stringify({ passed: !failures.length, failures, checked: gates.checked, ...(shapeNote ? { notes: [shapeNote] } : {}) }), status, hash, typeof p?.rationale === 'string' ? p.rationale.slice(0, 1000) : null]);
     out.push({ id: row!.id, status, kind, failures, cited });
   }
@@ -679,9 +701,7 @@ export async function proposeFromIssues(deps: { pool: pg.Pool; registry: Registr
       WHERE c.workspace_id = $1 AND c.id = ANY($2::uuid[]) GROUP BY v.agent_id ORDER BY count(*) DESC, v.agent_id LIMIT 1`, [ws, calls]) : null;
     if (!agent) { await mark('skipped_no_agent'); ran.push({ issueId: i.id, status: 'skipped_no_agent' }); continue; }
     // The daily cap counts runs that reached the model; an issue over the cap waits for tomorrow (no row is written).
-    const today = await one<{ n: number }>(pool, `SELECT count(*)::int AS n FROM learning_issue_run WHERE workspace_id = $1 AND status IN ('proposed','no_proposal','failed')
-      AND (created_at AT TIME ZONE 'Asia/Kolkata')::date = (now() AT TIME ZONE 'Asia/Kolkata')::date`, [ws]);
-    if (today!.n >= DAILY_ISSUE_PROPOSALS) { ran.push({ issueId: i.id, status: 'skipped_daily_cap' }); continue; }
+    if (await modelRunsToday(pool, ws) >= DAILY_ISSUE_PROPOSALS) { ran.push({ issueId: i.id, status: 'skipped_daily_cap' }); continue; }
     // Claim the issue before the model call, so two replicas never both run it.
     const claimed = await pool.query(`INSERT INTO learning_issue_run (issue_id, workspace_id, agent_id, status, detail) VALUES ($1,$2,$3,'failed','{"pending":true}')
       ON CONFLICT (issue_id) DO NOTHING`, [i.id, ws, agent.id]);
@@ -691,6 +711,55 @@ export async function proposeFromIssues(deps: { pool: pg.Pool; registry: Registr
     const status = r.status !== 'confirmed' ? 'failed' : p ? 'proposed' : 'no_proposal';
     await mark(status, { agentId: agent.id, proposalId: p?.id ?? null, detail: r.status === 'confirmed' ? { result: r.result.status, proposalStatus: p?.status } : { reason: 'reason' in r ? r.reason : r.status } });
     ran.push({ issueId: i.id, status, ...(p ? { proposalId: p.id } : {}) });
+  }
+  return { ran };
+}
+
+/** Automatic runs that reached the model today (India time), from monitor issues and from objection themes together. */
+async function modelRunsToday(q: Queryable, ws: string): Promise<number> {
+  return (await one<{ n: number }>(q, `SELECT (SELECT count(*) FROM learning_issue_run WHERE workspace_id = $1 AND status IN ('proposed','no_proposal','failed') AND ${TODAY})
+      + (SELECT count(*) FROM learning_theme_run WHERE workspace_id = $1 AND status IN ('proposed','no_proposal','already_answered','failed') AND ${TODAY} AND detail->>'asked' = 'true')::int AS n`, [ws]))!.n;
+}
+const TODAY = `(created_at AT TIME ZONE 'Asia/Kolkata')::date = (now() AT TIME ZONE 'Asia/Kolkata')::date`;
+
+/** The learning.propose_from_objections job body: on each agent's latest insight (last 7 days), every recurring objection
+ *  theme the live version has no note for is drafted as ONE objection note, once per theme (learning_theme_run), within
+ *  the daily cap shared with issues. A theme an existing trigger already names is recorded without a model call.
+ *  Nothing launches: the draft waits for a person, like every proposal. */
+export async function proposeFromObjections(deps: { pool: pg.Pool; registry: Registry }, opts: { workspaceId?: string } = {}): Promise<{ ran: { themeId: string; title: string; status: string; proposalId?: string }[] }> {
+  const { pool, registry } = deps;
+  const insights = await many<{ id: string; workspace_id: string; agent_id: string; themes: any[] }>(pool,
+    `SELECT DISTINCT ON (i.workspace_id, i.scope_id) i.id, i.workspace_id, i.scope_id AS agent_id, i.themes FROM call_insight i
+       JOIN agent a ON a.id = i.scope_id AND a.workspace_id = i.workspace_id
+      WHERE i.status = 'done' AND i.scope_type = 'agent' AND i.created_at > now() - interval '7 days' AND ($1::uuid IS NULL OR i.workspace_id = $1)
+      ORDER BY i.workspace_id, i.scope_id, i.created_at DESC LIMIT 200`, [opts.workspaceId ?? null]);
+  const ran: { themeId: string; title: string; status: string; proposalId?: string }[] = [];
+  for (const ins of insights) {
+    const ws = ins.workspace_id;
+    const live = await liveVersion(pool, ws, ins.agent_id);
+    if (!live || !Array.isArray(ins.themes)) continue;
+    for (const [n, t] of ins.themes.entries()) {
+      if (!t || !isRecurringObjection({ kind: t.kind, title: String(t.title ?? ''), count: Number(t.count) || 0, quotedCalls: Number(t.quotedCalls) || 0, of: Number(t.of) || 0 })) continue;
+      const title = String(t.title), themeId = `theme:${ins.id}:${n}`;
+      const key = sha(title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim());
+      if (await one(pool, 'SELECT 1 FROM learning_theme_run WHERE workspace_id = $1 AND agent_id = $2 AND theme_key = $3', [ws, ins.agent_id, key])) continue;
+      const mark = (status: string, extra: { proposalId?: string | null; detail?: unknown } = {}) => pool.query(
+        `INSERT INTO learning_theme_run (workspace_id, agent_id, theme_key, title, insight_id, status, proposal_id, detail) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         ON CONFLICT (workspace_id, agent_id, theme_key) DO UPDATE SET status = EXCLUDED.status, proposal_id = EXCLUDED.proposal_id, detail = EXCLUDED.detail`,
+        [ws, ins.agent_id, key, title.slice(0, 200), ins.id, status, extra.proposalId ?? null, JSON.stringify(extra.detail ?? {})]);
+      const known = answeredBy(title, agentOf(live).objections ?? []);
+      if (known !== null) { await mark('already_answered', { detail: { by: 'trigger words', note: known } }); ran.push({ themeId, title, status: 'already_answered' }); continue; }
+      if (await modelRunsToday(pool, ws) >= DAILY_ISSUE_PROPOSALS) { ran.push({ themeId, title, status: 'skipped_daily_cap' }); continue; }
+      // Claim before the model call, so two replicas never both run it.
+      const claimed = await pool.query(`INSERT INTO learning_theme_run (workspace_id, agent_id, theme_key, title, insight_id, status, detail) VALUES ($1,$2,$3,$4,$5,'failed','{"pending":true,"asked":true}')
+        ON CONFLICT DO NOTHING`, [ws, ins.agent_id, key, title.slice(0, 200), ins.id]);
+      if (!claimed.rowCount) continue;
+      const r = await registry.execute<any>(pool, 'learning.propose', { agentId: ins.agent_id, themeId, max: 1 }, { workspaceId: ws, actor: SYSTEM });
+      const p = r.status === 'confirmed' ? (r.result.proposals ?? []).find((x: any) => x.id) : null;
+      const status = r.status !== 'confirmed' ? 'failed' : r.result.status === 'already_answered' ? 'already_answered' : p ? 'proposed' : 'no_proposal';
+      await mark(status, { proposalId: p?.id ?? null, detail: { asked: true, ...(r.status === 'confirmed' ? { result: r.result.status, proposalStatus: p?.status, covered: r.result.covered } : { reason: 'reason' in r ? r.reason : r.status }) } });
+      ran.push({ themeId, title, status, ...(p ? { proposalId: p.id } : {}) });
+    }
   }
   return { ran };
 }
@@ -707,7 +776,8 @@ export const module: Module = {
       run: async (ctx, i) => {
         const rows = await many<any>(ctx.q, `SELECT p.id, p.agent_id, a.name AS agent_name, p.kind, p.status, p.rationale, p.calls_to_prove, p.gates->'passed' AS gates_passed,
             p.created_at, p.change, v.config AS base_config, p.simulation->'verdict'->>'verdict' AS simulated,
-            (SELECT detail->>'monitor' FROM issue WHERE id = (p.evidence->>'issueId')::uuid AND workspace_id = p.workspace_id) AS from_issue
+            (SELECT detail->>'monitor' FROM issue WHERE id = (p.evidence->>'issueId')::uuid AND workspace_id = p.workspace_id) AS from_issue,
+            CASE WHEN p.evidence ? 'theme' THEN (p.evidence->'theme'->>'title') || ' (heard on ' || (p.evidence->'theme'->>'count') || ' of ' || (p.evidence->'theme'->>'of') || ' calls)' END AS from_theme
           FROM proposal p JOIN agent a ON a.id = p.agent_id LEFT JOIN agent_version v ON v.id = p.base_version_id
           WHERE p.workspace_id = $1 AND ($2::uuid IS NULL OR p.agent_id = $2) AND ($3::text IS NULL OR p.status = $3) ORDER BY p.created_at DESC LIMIT 100`, [ctx.workspaceId, i.agentId ?? null, i.status ?? null]);
         return rows.map(({ change, base_config, ...r }) => {
@@ -782,6 +852,7 @@ export const module: Module = {
     bound = { pool: deps.pool, registry: deps.registry };
     return [
       { name: 'learning.check', everyMs: 60_000, run: async d => { await checkRunning(d); } },
+      { name: 'learning.propose_from_objections', everyMs: 60_000, run: async d => { await proposeFromObjections(d); } },
       { name: 'learning.propose_from_issues', everyMs: 60_000, run: async d => { await proposeFromIssues(d); } },
     ];
   },

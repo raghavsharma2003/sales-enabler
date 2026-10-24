@@ -14,7 +14,7 @@ import CallThemes from './insight-themes.tsx';
 
 interface IssueRow { id: string; category: string; severity: string; status: string; detail: unknown; created_at: string }
 interface ProposalRow { id: string; agent_id: string; agent_name: string; kind: string; status: string; rationale: string | null; calls_to_prove: number | null; gates_passed: boolean | null; created_at: string;
-  simulated: string | null; from_issue: string | null; changes: { part: string; before: string | null; after: string }[] }
+  simulated: string | null; from_issue: string | null; from_theme?: string | null; changes: { part: string; before: string | null; after: string }[] }
 interface Decision { verdict: 'win' | 'loss' | 'inconclusive'; diff: number; ci: { lo: number; hi: number }; control: { n: number }; treatment: { n: number } }
 interface ExperimentRow { id: string; agent_name: string; state: string; callsToProve?: number; started_at: string; expires_at: string | null; progress?: { control: number; treatment: number; perVersion: number };
   result?: { decision?: Decision; adoption?: { status: string; draft?: string }; guardrail?: { reason: string }; shadowAA?: { passed: boolean; reasons?: string[] }; stopped?: { reason: string } } | null }
@@ -117,7 +117,7 @@ function ProposalItem({ p, onChange }: { p: ProposalRow; onChange: () => void })
   const [label, tone] = PROPOSAL_STATUS[p.status] ?? [prettyCode(p.status), 'neutral'];
   return (
     <li>
-      <div className="row"><Chip tone={tone}>{label}</Chip><Chip>{p.agent_name}</Chip>{p.from_issue && <span className="small muted">from the {p.from_issue} issue</span>}{p.gates_passed === false && <Chip tone="brick">Failed a safety gate</Chip>}</div>
+      <div className="row"><Chip tone={tone}>{label}</Chip><Chip>{p.agent_name}</Chip>{p.from_issue && <span className="small muted">from the {p.from_issue} issue</span>}{p.from_theme && <span className="small muted">from an objection callers raise: {p.from_theme}</span>}{p.gates_passed === false && <Chip tone="brick">Failed a safety gate</Chip>}</div>
       {p.changes.map((c, k) => <div key={k} className="small" style={{ margin: '6px 0' }}><strong>{c.part}</strong>
         {c.before !== null && <div className="muted">{p.status === 'promoted' ? 'Before' : 'Now'}: {c.before || 'nothing set'}</div>}<div>{p.status === 'promoted' ? 'Now' : 'Would be'}: {c.after}</div></div>)}
       <p>{p.rationale ?? 'No rationale recorded.'}</p>

@@ -3301,6 +3301,12 @@
      "issueId": {
       "type": "string",
       "format": "uuid"
+     },
+     "themeId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "an insight theme id from the evidence (theme:<insight>:<n>): draft one objection note for it"
      }
     },
     "required": [
