@@ -203,3 +203,21 @@ test('message text: a crisis without a public address still names no one', { ski
     assert.ok(!m.text.includes('go on'));
   } finally { process.env.VP_PUBLIC_URL = keep; }
 });
+
+test('the in-app alerts are unchanged: a crisis still alerts each on-duty member in the app, beside Slack and an email not set up', { skip }, async () => {
+  const owner = await signup(b, 'Notify in-app');
+  await slackDestination(owner, 'I', ['crisis']);
+  assert.equal((await owner.run('notification.destination.create', { kind: 'email', name: 'On duty', events: ['crisis'] })).status, 'confirmed');
+  const s = await scene(owner);
+  const conv = await handOffCall(s, 'crisis');
+  // The in-app alert is written in the ingest transaction, before any notification is sent.
+  const alerts = (await pool.query<{ member_id: string; kind: string; text: string }>('SELECT member_id, kind, text FROM member_alert WHERE conversation_id = $1', [conv])).rows;
+  assert.deepEqual(alerts.map(a => [a.member_id, a.kind]), [[owner.memberId, 'crisis_hand_off']]);
+  assert.equal(alerts[0].text, 'A caller is in distress and needs a person now. Help lines were given and she is staying on the call.');
+  await sendNotifications(pool, { workspaceId: s.ws });
+  const mine = (await owner.tool('alert.list')).result;
+  assert.equal(JSON.stringify(mine).includes(conv), true, 'the member still sees it in the app after Slack and email ran');
+  assert.equal(to('I').length, 1);
+  const rows = (await owner.tool('notification.deliveries')).result.deliveries;
+  assert.deepEqual(rows.map((r: any) => r.status).sort(), ['sent', 'skipped']);
+});

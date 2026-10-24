@@ -3,10 +3,11 @@
 // VP_SMTP_FROM, email is "not set up" and the notifications page says so.
 //   VP_SMTP_HOST, VP_SMTP_PORT (587; 465 means TLS from the first byte), VP_SMTP_USER, VP_SMTP_PASS, VP_SMTP_FROM
 import { connect as netConnect, isIP, type Socket } from 'node:net';
-import { connect as tlsConnect, type TLSSocket } from 'node:tls';
+import { connect as tlsConnect, rootCertificates, type TLSSocket } from 'node:tls';
 import { randomUUID } from 'node:crypto';
 
-export interface SmtpConfig { host: string; port: number; implicitTls: boolean; user: string | null; pass: string | null; from: string }
+/** `ca` adds a certificate authority to trust (a private relay, or a test's self-signed server); the system roots stay trusted. */
+export interface SmtpConfig { host: string; port: number; implicitTls: boolean; user: string | null; pass: string | null; from: string; ca?: string | Buffer }
 
 export function smtpConfig(env: NodeJS.ProcessEnv = process.env): SmtpConfig | null {
   const host = env.VP_SMTP_HOST?.trim(), from = env.VP_SMTP_FROM?.trim();
@@ -67,7 +68,7 @@ export async function sendMail(cfg: SmtpConfig, m: { to: string[]; subject: stri
   };
   const cmd = async (line: string, want: number[], what: string) => { sock.write(line + '\r\n'); return expect(want, what); };
   try {
-    open(cfg.implicitTls ? tlsConnect({ host: cfg.host, port: cfg.port, servername: cfg.host }) : netConnect({ host: cfg.host, port: cfg.port }));
+    open(cfg.implicitTls ? tlsConnect({ host: cfg.host, port: cfg.port, servername: isIP(cfg.host) ? undefined : cfg.host, ...(cfg.ca ? { ca: [...rootCertificates, cfg.ca] } : {}) }) : netConnect({ host: cfg.host, port: cfg.port }));
     await expect([220], 'the connection');
     let ehlo = await cmd('EHLO vyakti', [250], 'EHLO');
     if (!cfg.implicitTls) {
@@ -75,7 +76,7 @@ export async function sendMail(cfg: SmtpConfig, m: { to: string[]; subject: stri
         await cmd('STARTTLS', [220], 'STARTTLS');
         const plain = sock!;
         plain.removeAllListeners('data');
-        open(tlsConnect({ socket: plain, servername: cfg.host }));
+        open(tlsConnect({ socket: plain, servername: isIP(cfg.host) ? undefined : cfg.host, ...(cfg.ca ? { ca: [...rootCertificates, cfg.ca] } : {}) }));
         ehlo = await cmd('EHLO vyakti', [250], 'EHLO');
       } else if (!loopback(cfg.host)) throw new Error('the mail server does not offer STARTTLS, so nothing was sent in the clear');
     }
