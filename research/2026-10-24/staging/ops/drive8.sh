@@ -21,6 +21,11 @@
 #                                 deploy_post9.sh, on the bundle already in blob (9b34ff7; checked by cmp before)
 #   drive8.sh WORKDIR kit9        verify9.py -> blob vps9-kit.tgz
 #   drive8.sh WORKDIR verify      verify9.sh (workspace "Config Check"); fetches verify9.json
+# Redeploy to ead1bc8 (2026-10-24, testbuild-ead1bc8.md), the same recipe with v2:
+#   drive8.sh WORKDIR bundle10    git archive at ead1bc8 (the same recipe) + BUNDLE_SHA -> WORKDIR/vp-stage-bundle-ead1bc8.tgz
+#   drive8.sh WORKDIR deploy10    put it as vp-stage-bundle.tgz; ONE Run Command: deploy_pre.sh + stage_setup_v2.sh +
+#                                 deploy_post.sh + deploy_post7.sh + deploy_post9.sh + deploy_post10.sh
+#   drive8.sh WORKDIR kit10 / verify10   verify10.py -> blob vps10-kit.tgz; verify10.sh (workspace "Config Check 2")
 # On 2026-10-24 preflight, deploy, credit, smoke8b and final were sent by hand with exactly these commands (and the
 # read-only preflight8.sh once more after the deploy, as vps8-envcheck-after).
 set -u
@@ -90,6 +95,29 @@ verify)
   touch $W/done-verify
   run vps9-verify $W/vps9-verify.sh 1800
   timeout 120 $O8 get runlogs/vps9-verify9.json $W/verify9.json;;
+bundle10)
+  E=ead1bc880792b5659692914b0a4a2f714cd3106f
+  git -C $ROOT archive --format=tar $E product package.json package-lock.json voicelab/server/models/silero_vad.onnx \
+    research/2026-10-18/lanes/g5-gemini-paid/harness/audio_phone16k > $W/bundle10.tar
+  mkdir -p $W/bs10 && echo ${E:0:7} > $W/bs10/BUNDLE_SHA && tar rf $W/bundle10.tar -C $W/bs10 BUNDLE_SHA
+  gzip -n -9 -c $W/bundle10.tar > $W/vp-stage-bundle-ead1bc8.tgz && rm -f $W/bundle10.tar
+  echo "bundle $(du -h $W/vp-stage-bundle-ead1bc8.tgz | cut -f1) $(tar tzf $W/vp-stage-bundle-ead1bc8.tgz | grep -vc '/$') files sha256_16 $(sha256sum $W/vp-stage-bundle-ead1bc8.tgz | cut -c1-16)";;
+deploy10)
+  [ -e $W/job10-start.txt ] || date -u '+%Y-%m-%d %H:%M:%S' > $W/job10-start.txt
+  cat $OPS/deploy_pre.sh $OPS/stage_setup_v2.sh $OPS/deploy_post.sh $OPS/deploy_post7.sh $OPS/deploy_post9.sh $OPS/deploy_post10.sh > $W/deploy10.sh
+  bash -n $W/deploy10.sh || exit 4
+  timeout 600 $O8 put $W/vp-stage-bundle-ead1bc8.tgz vp-stage-bundle.tgz
+  run vps10-deploy-ead1bc8 $W/deploy10.sh 2400;;
+kit10)
+  rm -rf $W/kit10 && mkdir -p $W/kit10 && cp $OPS/verify10.py $W/kit10/ && tar czf $W/vps10-kit.tgz -C $W/kit10 . && rm -rf $W/kit10
+  timeout 120 $O8 put $W/vps10-kit.tgz vps10-kit.tgz
+  echo "kit sha256 $(sha256sum $W/vps10-kit.tgz | cut -c1-64)";;
+verify10)
+  [ -e $W/done-verify10 ] && { echo "STOP: the ead1bc8 verification already ran"; exit 3; }
+  sed -e "s/__KIT_SHA__/$(sha256sum $W/vps10-kit.tgz | cut -c1-64)/" -e "s/__JOB__/$(cat $W/job10-start.txt)/" $OPS/verify10.sh > $W/vps10-verify.sh; bash -n $W/vps10-verify.sh || exit 4
+  touch $W/done-verify10
+  run vps10-verify $W/vps10-verify.sh 1800
+  timeout 120 $O8 get runlogs/vps10-verify10.json $W/verify10.json;;
 smoke8b)
   sed -e "s/__WS__/$3/g" -e "s/__CALL__/$4/g" $OPS/smoke8b.sh > $W/vps8-smoke8b.sh; bash -n $W/vps8-smoke8b.sh || exit 4
   run vps8-smoke8b $W/vps8-smoke8b.sh 300;;

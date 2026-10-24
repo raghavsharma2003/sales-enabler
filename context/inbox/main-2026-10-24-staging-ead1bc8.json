@@ -1,0 +1,25 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.staging-redeploy-ead1bc8",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": "6 post-deploy checks + 11 checks in 1 new synthetic workspace ('Config Check 2'), including 1 browser test call and 1 typed-chat exchange",
+   "title": "Staging redeployed to ead1bc8 with stage_setup_v2.sh (10:46 UTC; 9 new migrations, 68 recorded; units restarted, lab untouched; the 13 config names in both processes; no telephony or WhatsApp env): all checks pass. A new workspace's money.test_budget reads INR 2,000 a day and INR 50 a call from VP_TEST_BUDGET_DEFAULT_INR (row created on first read); a browser test call (97 s, INR 2.02) has its transcript, call.get's new trace (schema 1, gapMs on every agent turn after the opening, equal to the socket's reply gaps) and a recording that answers 200 audio/wav through :8443; the typed chat answers. The owner's workspace has no test-budget row yet, so its first use gets INR 2,000. Spend INR 2.39",
+   "method": "The 9b34ff7 recipe at ead1bc8 (git archive bundle; deploy_pre.sh + stage_setup_v2.sh + deploy_post.sh + deploy_post7.sh + deploy_post9.sh + deploy_post10.sh in one Run Command; deploy_post10 stopped on set -e after the deploy and was re-run alone, read-only); :8443 page and assets with curl; research/2026-10-24/staging/ops/verify10.py on the VM through the product's own API (the call via replygap.one_call, synthetic clips P1, never a phone); test-budget rows and the owner's workspace by read-only SQL; spend from the DB and Azure Monitor at op7's rates",
+   "path": "research/2026-10-24/staging/testbuild-ead1bc8.md"
+  }
+ ],
+ "edges": [
+  {"from": "measure.2026-10-24.staging-redeploy-ead1bc8", "to": "measure.2026-10-24.staging-config-fix-verify", "relation": "extends"}
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "staging-redeployed-ead1bc8",
+   "details": "Staging 9b34ff7 -> ead1bc8 (10:46 UTC) with stage_setup_v2.sh for the owner's testing: 9 new migrations (68), both units restarted, lab untouched, the 13 config names in both processes, judge off, no telephony or WhatsApp env, :8443 401/200 with JS and CSS 200. New workspace 'Config Check 2': money.test_budget INR 2,000/day from VP_TEST_BUDGET_DEFAULT_INR; browser call with transcript, trace with per-turn gapMs, recording 200 audio/wav; typed chat answers (its opening disclosed twice again, RD1). The owner's workspace has no test-budget row yet. Spend INR 2.39 of the INR 30 cap."
+  }
+ ]
+}
