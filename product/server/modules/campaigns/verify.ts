@@ -13,6 +13,7 @@ import { ValidationError } from '../../../shared/validate.ts';
 import { one, type Queryable } from '../../db.ts';
 import { numberHash } from '../../identity.ts';
 import type { ToolCtx } from '../../tools.ts';
+import { mayDial } from './allowlist.ts';
 import { telephony } from './telephony.ts';
 import { localNow } from './windows.ts';
 
@@ -55,6 +56,8 @@ export async function verifyStart(ctx: ToolCtx, i: { phone: string }, now = cloc
   const memberId = memberOf(ctx);
   const e164 = mobile(i.phone);
   const ws = ctx.workspaceId;
+  // The telephony allowlist (allowlist.ts): a verification call reaches the carrier like any other.
+  if (!mayDial(e164).ok) throw new Error('this server only rings the phones on its test list, and this number is not on it; ask Vyakti to add it');
   const ist = localNow(now, 'Asia/Kolkata').minutes;
   if (ist < VERIFY.windowIst[0] || ist >= VERIFY.windowIst[1]) throw new Error('verification calls ring only between 09:00 and 21:00 IST; try again then');
   const h = await numberHash(ctx.q, ws, e164);

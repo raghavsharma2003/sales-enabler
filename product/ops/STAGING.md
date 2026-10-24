@@ -91,6 +91,17 @@ intake webhook secrets with it, and without the key it stops and changes nothing
 | `VP_ANALYSIS_MODELS`, `VP_ANALYSIS_DEFAULT_MODEL` | Curated call-analysis models. The default is one pass on `gpt-4.1-mini` when it is in the list (`VP_ANALYSIS_DEFAULT_MODEL` names it if the deployment id differs); otherwise `VP_LLM_ANALYSIS_MODEL` |
 | `VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_IN`, `_OUT` | The assistant's model prices |
 
+**Phone calls: the allowlist** (`server/modules/campaigns/allowlist.ts`)
+
+| Name | What |
+|---|---|
+| `VP_TELEPHONY_ALLOWED_TO` | **Required before any phone call.** Comma-separated phones (E.164 or any Indian shape) that this server may send to the carrier: the person dialled on every attempt kind (campaign, API, single, test, retry, callback), a verification call's target, and an agent's hand-off number. Set it on the control plane **and** the runtime. On staging: the owner's verified phone only |
+| `VP_TELEPHONY_ALLOWLIST` | `off` is the only switch that lets a server reach every number. **Never set on staging.** |
+
+Without `VP_TELEPHONY_ALLOWED_TO`, a control plane that can reach a carrier (`VP_TELEPHONY_LIVE=1`, or a real runtime at
+`VP_RUNTIME_URL`) refuses every phone attempt at the dial gate (`destination_blocked`, "This server only calls the phones
+on its test list") and the Plivo adapter refuses every request: live telephony cannot start without the list.
+
 **Keep off on a private staging**
 
 | Name | What |

@@ -1,7 +1,25 @@
 // Numbers: the series router (which CLI series a call may present) and the telephony provider seam for search,
 // rent, KYC and bring-your-own lines. Tests use FakeTelephony; the real adapter is off unless VP_TELEPHONY_LIVE=1
 // and its credentials are set, so no test and no dev server can ever reach a paid carrier API.
+//
+// Who calls the carrier (decision.2026-10-24.telephony-one-dial-path): the voice RUNTIME is the one caller of Plivo's
+// Call API for every agent call (test.ring_member_phone, call.place_single, campaign, retry and callback attempts):
+// dial gate -> claim -> CallTicket (transport sip: to, from, trunk) -> runtime POST /v1/calls -> plivo_dial -> Plivo
+// fetches the runtime's answer URL -> <Stream> -> the runtime's media socket -> hang-up URL -> call.ended -> calls'
+// ingest (cost, call log, analysis, retry ladder). The runtime owns the answer, hang-up, stream and transfer endpoints
+// and already needs the credentials for transfer, keys and hang-up; the lab rang real phones that way
+// (voicelab/server/phone.py). This adapter never places an agent call. It calls Plivo for account work only (numbers,
+// the inbound application, CDRs) and for the one fixed announcement with no agent (systemCall, phone verification).
+// Every number either path would send to the carrier passes the allowlist first (allowlist.ts).
+//
+// Plivo request shapes below were checked on 2026-10-24 against Plivo's docs and the lab's working code:
+//   Call API      https://www.plivo.com/docs/voice/api/call/make-a-call (POST Account/{id}/Call/: from, to, answer_url,
+//                 answer_method, hangup_url, hangup_method, ring_timeout, time_limit; reply request_uuid, api_id,
+//                 message 'call fired'); the lab sent digits without '+', which Plivo accepted on live India calls.
+//   India rule    the same page: a call from an Indian number needs that number rented on this account with an
+//                 accepted compliance application, else 400.
 import { SetupError } from '../../setup-error.ts';
+import { allowMode, assertMayDial } from './allowlist.ts';
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { CallCategory, SectorPack } from '../../../shared/agent-config.ts';
 
@@ -135,6 +153,8 @@ export class PlivoTelephony implements TelephonyProvider {
   private enabled(what: string) {
     if (isLoopback(this.apiBase) && this.id && this.token) return;          // a fake carrier on this machine: never a real call
     if (process.env.VP_TELEPHONY_LIVE !== '1' || !this.id || !this.token || process.env.NODE_ENV === 'test') throw new TelephonyDisabled(what);
+    const m = allowMode();
+    if (m.mode === 'closed') throw new TelephonyDisabled(`${what}: ${m.why}`);
   }
   private async call(method: 'GET' | 'POST', path: string, body?: unknown): Promise<any> {
     const r = await fetch(`${this.apiBase}/v1/Account/${encodeURIComponent(this.id)}${path}`, {
@@ -161,6 +181,7 @@ export class PlivoTelephony implements TelephonyProvider {
    *  lines wait here under a one-off token for 15 minutes; the hook (campaigns routes) answers with Speak XML. */
   async systemCall(i: { to: string; from: string; lines: string[] }): Promise<{ ref: string }> {
     this.enabled('system call');
+    assertMayDial(i.to);                    // the last wall before the request leaves (allowlist.ts)
     if (!/^https:\/\//.test(this.publicBase) && !isLoopback(this.publicBase)) {
       throw new TelephonyDisabled('system call: no public https address for the carrier to fetch the announcement from');
     }

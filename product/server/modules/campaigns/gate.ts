@@ -17,6 +17,7 @@ import {
   DEFAULT_WINDOWS, GATE_VERSION, NUMBER_DAILY_CEILING, NUMBER_GAP_MIN, OUTER_BAND_LIMIT, PREDIAL_TIMEOUT_MS, TEN_DIGIT_CLI_DAILY_CAP,
   type PersonBudget, type TimeRange, type WindowPolicy,
 } from './defaults.ts';
+import { mayDial, transferTarget } from './allowlist.ts';
 import { routeSeries, type Series } from './telephony.ts';
 import { addDays, eligibility, localNow, localToUtc } from './windows.ts';
 
@@ -195,6 +196,12 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       const n = normaliseIndianPhone(raw);
       if (!n.ok) throw new Refuse(n.reason === 'NON_INDIAN' ? 'destination_blocked' : 'identifier_invalid', n.reason);
       target = n.e164;
+      // The server's telephony allowlist (allowlist.ts), on every attempt kind: the person dialled and the agent's
+      // hand-off number both reach the carrier, so an unlisted one stops the attempt here, before any hold or ring.
+      const listed = mayDial(target);
+      if (!listed.ok) throw new Refuse('destination_blocked', listed.why);
+      const handOff = transferTarget(agent), bridge = handOff ? mayDial(handOff) : listed;
+      if (!bridge.ok) throw new Refuse('destination_blocked', `the agent's hand-off number: ${bridge.why}`);
       if (test) {
         const v = await one(q, 'SELECT 1 FROM verified_test_phone WHERE workspace_id = $1 AND e164 = $2 AND verified_at IS NOT NULL', [ws, target]);
         if (!v) throw new Refuse('destination_blocked', 'test calls ring only a member phone verified in this workspace');

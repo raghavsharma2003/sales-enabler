@@ -24,6 +24,7 @@ import type { CallTicket } from '../../../shared/runtime-protocol.ts';
 import { combinationId, resolveStack } from '../../../shared/stacks.ts';
 import { obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import { callHoldInrMilli } from '../money/blockers.ts';
+import { mayDial, transferTarget } from './allowlist.ts';
 import { tombstoneHashes } from './gate.ts';
 import { DEFAULT_MAX_DURATION_S, DEFAULT_PER_MINUTE_INR_MILLI } from './defaults.ts';
 import { freshAttributes, memoryBrief, ticketFacts } from './worker.ts';
@@ -145,6 +146,9 @@ export function inboundHook(deps: Deps) {
       `SELECT v.id, v.agent_id, v.kind, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE v.id = $1 AND a.workspace_id = $2`, [versionId, ws]) : null;
     if (!v || !v.config.agent || !v.config.brief?.text) return refuse(409, 'not_answering', 'The agent for this number has no published version to answer with.');
     const agent = v.config.agent;
+    // The agent's hand-off number would reach the carrier on a transfer: under the telephony allowlist it must be listed.
+    const bridge = transferTarget(agent);
+    if (bridge && !mayDial(bridge).ok) return refuse(409, 'transfer_not_allowlisted', 'This number cannot answer right now: its agent hands calls to a number this server may not call.');
 
     // Who is calling, in this workspace only: erased (tombstone or erased contact), opted out, known, or unknown.
     let who: Who = 'unknown_caller';

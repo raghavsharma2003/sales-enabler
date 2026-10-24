@@ -53,7 +53,10 @@ export function explainRefusal(code: GateCode, detail: string | undefined, o: { 
     case 'workspace_not_verified': return { code, message: 'Your business is not verified for real calls yet.', why: 'Add your company\'s DLT registration; test calls to your own phone work meanwhile.',
       fix: { tool: 'brand.update', label: 'Add DLT registration', role: 'owner' } };
     case 'identifier_invalid': return { code, message: 'This phone number is not a valid Indian number.', fix: undefined };
-    case 'destination_blocked': return /test calls/.test(d)
+    case 'destination_blocked': return /allowlist/.test(d)
+      ? { code, message: /hand-off/.test(d) ? 'The agent hands calls to a number this server is not allowed to call.' : 'This server only calls the phones on its test list.',
+          why: 'Private test servers ring only listed phones, so no one else can be called by mistake. Ask Vyakti to add the number.' }
+      : /test calls/.test(d)
       ? { code, message: 'Test calls only ring a phone you have verified.', fix: { tool: 'member.phone.verify_start', label: 'Verify your phone', role: 'operator' } }
       : { code, message: 'We do not call this number.', why: 'Only Indian numbers can be called; international, premium-rate and short-code numbers are blocked.' };
     case 'erased': return { code, message: 'This person asked to be forgotten, so they are never called.' };

@@ -213,7 +213,7 @@
     "Runtime at capacity (StartReply.retryable, 503 at_capacity). The attempt goes back to 'created', due after retryAfterS plus 0-50% jitter, with dialed_at, number, hold, conversation and claim stamps cleared. There is no outcome, ladder step or failure, only an attempt.deferred audit. The next claim re-runs the full gate, so the window still applies. The tick stops claiming after the first at-capacity reply (back-pressure). A non-retryable refusal still fails before ring, as before."
   ],
   "untested": [
-    "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired.",
+    "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired. Update 2026-10-24 (telephony builder): systemCall's Call API shape checked against plivo.com/docs/voice/api/call/make-a-call; search/rent still unverified.",
     "The default HTTP predial (httpPredial) against a real tenant endpoint. Tests inject the predial function.",
     "HttpRuntime dispatch. Tests use FakeRuntime.",
     "startWorker's interval loop. Tests call tick() directly.",
@@ -238,5 +238,8 @@
   "risk_classes": "Every campaigns tool listed in research/2026-10-21/blueprint/data/workspace-tool-registry.json uses the registry's class. Not in the registry: campaign.stop_at_cap, number.pause_flagged and attempt.retry_per_ladder (external, A3 when VP acts), and the reads campaign.list, campaign.get and attempt.list.",
   "routes": [
     "POST /hooks/telephony/kyc: signed (x-vp-signature, VP_TELEPHONY_WEBHOOK_SECRET), recorded once per (provider, eventId), applied through number.kyc.sync as system"
+  ],
+  "telephony_builder_2026_10_24": [
+    "allowlist.ts (new): VP_TELEPHONY_ALLOWED_TO checked at gate G2 (person dialled on every kind + the agent's hand-off number), inbound answering (hand-off number), member.phone.verify_start, and PlivoTelephony.systemCall/enabled(); closed without a list on any server that can reach a carrier; VP_TELEPHONY_ALLOWLIST=off is the only open switch. telephony.ts header records the dial-path decision (the runtime dials agent calls). explain.ts words the allowlist refusal. tests/telephony-allowlist.test.ts (6)."
   ]
 }
