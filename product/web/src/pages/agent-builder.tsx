@@ -10,7 +10,7 @@ import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectFie
 import { StackPicker, BETA_REASON, type StackChange } from '../stack-picker.tsx';
 import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, PURPOSE_LABEL, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
 import { date } from '../format.ts';
-import { voiceStackOf } from '../catalog.ts';
+import { useVoiceStack } from '../use-voice-stack.tsx';
 import type { AgentConfigDraft, AgentDoc } from '../types.ts';
 
 type TabId = 'basics' | 'persona' | 'job' | 'rules' | 'tools' | 'voice' | 'versions';
@@ -30,6 +30,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
   const [cfg, setCfg] = useState<AgentConfigDraft>(() => structuredClone(doc.config));
   const savedJson = useRef(JSON.stringify(doc.config));
   const dirty = useMemo(() => JSON.stringify(cfg) !== savedJson.current, [cfg]);
+  const draftStack = useVoiceStack(cfg.voice).stack;
   const [busy, setBusy] = useState<'save' | 'publish' | null>(null);
   const set = (f: (c: AgentConfigDraft) => void) => setCfg(c => { const n = structuredClone(c); f(n); return n; });
 
@@ -78,7 +79,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
             : !doc.compiles ? <Btn disabled reason="The brief does not compile yet. See the checks below.">Publish</Btn>
             : <Btn kind="primary" busy={busy === 'publish'} onClick={publish}>Publish…</Btn>}
         </>} />
-      {voiceStackOf(cfg.voice)?.status === 'beta' && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
+      {draftStack?.status === 'beta' && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
       {doc.lint.length > 0 && <div className="state state-failed" role="alert" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Checks on the draft</strong><ul style={{ margin: 0, paddingLeft: 20 }}>{[...new Map(doc.lint.map(l => [`${l.path ?? ''}|${l.message}`, l])).values()].map((l, i) => { const w = lintWhere(l.path); const msg = l.message.charAt(0).toUpperCase() + l.message.slice(1); return <li key={i}>{w ? <><Link to={`?tab=${w.tabId}`}>{w.tab}, {w.field}</Link>: {msg}</> : msg}</li>; })}</ul></div>}
       <Tabs label="Builder sections" value={tab} onChange={t => setQs({ tab: t === 'basics' ? null : t })} items={TABS} />
       {tab === 'basics' && <Basics cfg={cfg} set={set} />}

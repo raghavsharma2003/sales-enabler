@@ -1,15 +1,16 @@
 // The assistant (VP's operator), docked on every page. Streaming replies, ten card types, hold-to-confirm for A2, receipts.
 // Rules shown in the UI because code enforces them server-side: it never asks for approval in words (only a hold approves),
 // it never says "done" before a receipt, and numbers come from queries, not from the model.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUp, Check, Eye, Mic, MicOff, Square, Sparkles } from 'lucide-react';
 import * as api from './api.ts';
 import { ApiError, type ApiCard } from './api.ts';
 import { nid, useApp, undoLine, type ThreadMsg } from './store.tsx';
 import { usePath } from './router.tsx';
 import { Link } from './router.tsx';
-import { Btn, Chip, Figure, HoldButton, Segmented } from './ui.tsx';
-import { TestPanel } from './test-panel.tsx';
+import { Btn, Chip, Figure, HoldButton, Segmented, Skeleton } from './ui.tsx';
+// The test panel (and the browser call inside it) loads when the Test tab opens: most visits never open it.
+const TestPanel = lazy(() => import('./test-panel.tsx').then(m => ({ default: m.TestPanel })));
 import { pageInfo, RISK_WORDS } from './tools.ts';
 import { fieldLabel, fieldValue, toolAsk, toolDone } from './labels.ts';
 import type { OperatorCard } from './types.ts';
@@ -91,7 +92,7 @@ export function Dock() {
         {!testing && <p className="dock-sub">Plans, drafts and tests on its own. Anything that reaches people or spends money waits for your approval.</p>}
         <span className="seeing"><Eye size={13} aria-hidden /> Seeing: {testing ? `${agentCtx?.name} · ${agentCtx?.version ? `v${agentCtx.version}` : 'draft'}${agentCtx?.dirty ? ' · unsaved' : ''}` : info.label}</span>
       </div>
-      {testing ? <div className="thread"><TestPanel /></div> : <>
+      {testing ? <div className="thread"><Suspense fallback={<Skeleton rows={4} />}><TestPanel /></Suspense></div> : <>
         <div className="thread" ref={scroller} role="log" aria-live="polite" aria-label="Conversation with the assistant">
           <div className="msg msg-vp"><div className="bubble" lang="en-IN">{GREETING}</div></div>
           {thread.map(m => <Msg key={m.id} m={m} />)}

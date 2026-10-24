@@ -4,7 +4,8 @@ import { useApp, useData, useTool } from '../store.tsx';
 import { agentList, adoptBusinessName } from '../data.ts';
 import { Link, useNav } from '../router.tsx';
 import { Async, Btn, Card, Chip, Empty, PageHead, Sheet, TextArea, TextField } from '../ui.tsx';
-import { jobLabel, langShort, voiceStackOf } from '../catalog.ts';
+import { jobLabel, langShort } from '../catalog.ts';
+import { useVoiceStack } from '../use-voice-stack.tsx';
 import { ago } from '../format.ts';
 import type { AgentRow } from '../types.ts';
 import AgentBuilder from './agent-builder.tsx';
@@ -29,7 +30,7 @@ function List() {
 }
 
 function AgentCard({ a }: { a: AgentRow }) {
-  const stack = voiceStackOf(a) ?? null;
+  const stack = useVoiceStack(a).stack ?? null;
   return (
     <li className="agentcard">
       <div className="row" style={{ justifyContent: 'space-between' }}>

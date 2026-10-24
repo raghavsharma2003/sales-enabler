@@ -6,7 +6,7 @@ import { AppProvider, useApp } from './store.tsx';
 import { Router, match, usePath, useNav } from './router.tsx';
 import { Shell } from './shell.tsx';
 import { Skeleton } from './ui.tsx';
-import Auth from './pages/auth.tsx';
+const Auth = lazy(() => import('./pages/auth.tsx'));
 
 const Today = lazy(() => import('./pages/today.tsx'));
 const Agents = lazy(() => import('./pages/agents.tsx'));
@@ -52,7 +52,7 @@ function Gate() {
     if (authed && onAuth) go('/', true);
   }, [authed, booted, onAuth, go]);
   if (!booted) return <div className="page" aria-busy="true"><Skeleton rows={4} /></div>;
-  if (!authed) return path === '/signup' ? <Auth mode="signup" /> : <Auth mode="login" />;
+  if (!authed) return <Suspense fallback={<div className="page"><Skeleton rows={4} /></div>}>{path === '/signup' ? <Auth mode="signup" /> : <Auth mode="login" />}</Suspense>;
   return <Shell><Suspense fallback={<div className="page"><Skeleton rows={5} /></div>}><Routes /></Suspense></Shell>;
 }
 

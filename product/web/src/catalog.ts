@@ -60,9 +60,6 @@ export function prettyId(id: string | undefined): string {
 export const LANG_SHORT: Record<string, string> = { 'hi-en': 'Hinglish', hinglish: 'Hinglish', hi: 'Hindi', 'hi-IN': 'Hindi', en: 'English', 'en-IN': 'English', ta: 'Tamil', 'ta-IN': 'Tamil', te: 'Telugu', 'te-IN': 'Telugu', kn: 'Kannada', 'kn-IN': 'Kannada', ml: 'Malayalam', 'ml-IN': 'Malayalam', mr: 'Marathi', 'mr-IN': 'Marathi', gu: 'Gujarati', 'gu-IN': 'Gujarati', bn: 'Bengali', 'bn-IN': 'Bengali', pa: 'Punjabi', 'pa-IN': 'Punjabi', or: 'Odia', 'or-IN': 'Odia' };
 export const langShort = (c: string | null | undefined) => (c ? LANG_SHORT[c] ?? c : '—');
 
-import { stackOf, type VoiceStack } from '../../shared/stacks.ts';
-/** The stack an agent (or a call) names, curated or built part by part: one resolver for both. A built stack is always beta. */
-export const voiceStackOf = (v: { stackId?: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string } | null } | null | undefined): VoiceStack | undefined => (v?.stackId ? stackOf({ stackId: v.stackId, components: v.stackId === 'custom' ? v.components ?? null : null }) : undefined);
 /** A call's run manifest names what ran as stt/llm/tts/s2s; these are the same parts in a stack's words. The manifest's `voice` is
  *  the voice's name (Kore, hi-IN-Kavya), not a part, and `stt` ends in '/ungated' when the ears ran without the speech gate. */
 export const partsRan = (m: { stt?: string; llm?: string; tts?: string; s2s?: string } | null | undefined) =>

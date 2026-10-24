@@ -62,15 +62,12 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .funnel-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; } .funnel-bar { grid-column: 1 / -1; order: 3; }
 .funnel-l { font-size: 0.9375rem; font-weight: 600; } .funnel-n { text-align: right; font-weight: 600; } .funnel-n small { color: var(--ink-2); font-weight: 400; margin-left: 6px; }
 .funnel-bar { height: 18px; background: var(--sunk); border-radius: 4px; overflow: hidden; border: 1px solid var(--line); } .funnel-bar span { display: block; height: 100%; background: var(--peacock); transform-origin: left; animation: grow 400ms cubic-bezier(0.2, 0, 0, 1); } @keyframes grow { from { transform: scaleX(0) !important; } }
-.funnel-drop { font-size: 0.875rem; } .funnel-drop button { background: none; border: 0; padding: 4px 0; color: var(--terra-ink); cursor: pointer; text-decoration: underline; min-height: 32px; }
-.funnel-drop ul { list-style: none; margin: 4px 0 0; padding: 8px 12px; background: var(--sunk); border-radius: 8px; display: grid; gap: 4px; } .funnel-drop li { display: flex; justify-content: space-between; gap: 12px; }
 /* ---------- campaigns ---------- */
 .stickycol { position: sticky; top: 76px; }
-.meters2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .checklist { list-style: none; margin: 0; padding: 0; display: grid; }
 .check { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--line); } .check:first-child { border-top: 0; padding-top: 0; }
 .check svg { flex: none; margin-top: 2px; } .check-ok svg { color: var(--leaf); } .check-fail svg { color: var(--brick); } .check-warn svg { color: var(--marigold-ink); }
-@media (max-width: 819px) { .meters2 { grid-template-columns: 1fr; } .stickycol { position: static; } }
+@media (max-width: 819px) { .stickycol { position: static; } }
 /* ---------- call page ---------- */
 .lanes { display: grid; gap: 8px; }
 .lane-labels { display: flex; justify-content: space-between; font-size: 0.8125rem; font-weight: 700; } .lane-c { color: var(--peacock); } .lane-a { color: var(--terra-ink); }
@@ -89,11 +86,10 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .turn-who { font-size: 0.8125rem; font-weight: 700; } .turn-text { font-size: 1.0625rem; line-height: 1.65; } .turn-meta { display: flex; gap: 6px; flex-wrap: wrap; }
 .quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; } .quotes blockquote { margin: 0 0 6px; padding-left: 12px; border-left: 3px solid var(--peacock); }
 .trace { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; } .trace li { display: flex; gap: 10px; align-items: flex-start; } .trace .ok { color: var(--leaf); flex: none; margin-top: 2px; } .trace .bad { color: var(--brick); flex: none; margin-top: 2px; }
-.mood { margin: 0; padding-left: 20px; } .linklike { background: none; border: 0; padding: 0; color: var(--terra-ink); text-decoration: underline; cursor: pointer; font: inherit; }
+.linklike { background: none; border: 0; padding: 0; color: var(--terra-ink); text-decoration: underline; cursor: pointer; font: inherit; }
 .why { background: var(--sunk); border-radius: 10px; padding: 12px; display: grid; gap: 6px; }
 /* ---------- insights / numbers ---------- */
 .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; } .issues > li { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); } .issues > li:first-child { border-top: 0; padding-top: 0; }
-.diffbox { background: var(--sunk); border-radius: 8px; padding: 8px 12px; display: grid; gap: 4px; } .diffbox s { color: var(--ink-3); } .diffbox ins { text-decoration: none; background: var(--leaf-bg); color: var(--leaf); padding: 0 4px; border-radius: 4px; }
 /* ---------- settings ---------- */
 .rolehints { margin: 16px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 16px; } .rolehints dt { font-weight: 700; font-size: 0.875rem; } .rolehints dd { margin: 0; }
 .secret { display: block; padding: 12px; background: var(--sunk); border-radius: 8px; overflow-wrap: anywhere; border: 1px dashed var(--line-strong); }

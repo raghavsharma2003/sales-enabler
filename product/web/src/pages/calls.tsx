@@ -9,7 +9,7 @@ import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, Sel
 import { callExplain, callGet, callSearch, campaignList } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
 import { costPart, groupCost, RULE_LABEL } from '../labels.ts';
-import { voiceStackOf } from '../catalog.ts';
+import { useVoiceStack } from '../use-voice-stack.tsx';
 import { DID, SHORT, TimingCard, marksFor, playable } from './call-review.tsx';
 import { clock, date, dur, inr, ms } from '../format.ts';
 import type { CallDoc, CallExplain, CallRow } from '../types.ts';
@@ -65,6 +65,7 @@ function Body({ c }: { c: CallDoc }) {
   const turnRefs = useRef<Record<number, HTMLLIElement | null>>({});
   const audio = useRef<HTMLAudioElement | null>(null);
   const marks = useMemo(() => marksFor(c), [c]);
+  const ran = useVoiceStack(c.ran ? { stackId: c.ran, components: c.ranParts } : null);
   const [audioFailed, setAudioFailed] = useState(false);
   const canPlay = playable(c.recordingUri) && !audioFailed;
   const current = c.turns.find(t => t.startMs != null && at >= t.startMs && at <= (t.endMs ?? t.startMs + 1))?.idx;
@@ -123,7 +124,7 @@ function Body({ c }: { c: CallDoc }) {
             {c.allowedBy.warnings.length > 0 && <p className="small muted">Noted at the time: {c.allowedBy.warnings.join(' ')}</p>}
             {c.allowedBy.at && <p className="small muted">Checked {date(c.allowedBy.at, true)}.</p>}</Card>}
           <Card><CardHead title="What ran and what it cost" />
-            <Kv rows={[['Voice stack', c.ran ? ((voiceStackOf({ stackId: c.ran, components: c.ranParts })?.label ?? '') || 'A stack that is no longer listed') : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
+            <Kv rows={[['Voice stack', c.ran ? (ran.stack?.label || (ran.ready ? 'A stack that is no longer listed' : '…')) : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
             {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={groupCost(c.costLines).map(l => [`${costPart(l.component, prettyCode)} · ${prettyCode(l.provider)}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
         </div>
       </div>

@@ -1,6 +1,6 @@
 // The docked test panel for an agent: six practice callers (simulate) and a browser call. A test never falls back to another
 // stack: if no stack is chosen, the result says "invalid, with the reason", never a pass.
-import { voiceStackOf } from './catalog.ts';
+import { useVoiceStack } from './use-voice-stack.tsx';
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp, useData } from './store.tsx';
@@ -25,8 +25,9 @@ export function TestPanel() {
   // Hearing her comes first (the guided start's "Hear her now" lands here), and a live call is kept in view so captions and Hang up are on screen.
   const callRef = useRef<HTMLElement>(null);
   useEffect(() => { if (call.state === 'live' || call.state === 'unavailable') callRef.current?.scrollIntoView({ block: 'start', behavior: scrollMotion() }); }, [call.state]);
+  const vs = useVoiceStack(a);
   if (!a) return <div className="testpanel"><p className="muted">Open an agent to test her here.</p></div>;
-  const stack = voiceStackOf(a) ?? null;
+  const stack = vs.stack ?? null, noStack = vs.ready && !stack;
   const picked = (callers.data ?? []).filter(c => chosen.includes(c.id));
   // The count is the callers that will run. Until the list has loaded there is nothing to run, so the button waits.
   const runLabel = callers.data ? `Run ${picked.length} practice caller${picked.length === 1 ? '' : 's'}` : 'Run practice callers';
@@ -53,7 +54,7 @@ export function TestPanel() {
         <h3 className="serif" style={{ fontSize: '1.25rem' }}>Test {a.name}</h3>
         <div className="row" style={{ gap: 6 }}>
           <Chip tone={a.dirty ? 'marigold' : 'leaf'}>{a.dirty ? 'Unsaved changes' : a.version ? `Saved draft · published v${a.version}` : 'Saved draft · not published'}</Chip>
-          {stack ? <span className="chip chip-peacock chip-wrap" title="The stack a test runs on">{stack.label.split(' (')[0]}</span> : <Chip tone="brick">No voice stack</Chip>}
+          {stack ? <span className="chip chip-peacock chip-wrap" title="The stack a test runs on">{stack.label.split(' (')[0]}</span> : noStack ? <Chip tone="brick">No voice stack</Chip> : null}
         </div>
         {a.dirty && <p className="small muted">Tests run the saved draft. Save your changes to test them.</p>}
       </div>
@@ -72,7 +73,7 @@ export function TestPanel() {
         <p className="small muted">Made-up callers that each test one thing. They reach no one and cost a few rupees. Graded by code, not by a model.</p>
         {callers.data && <fieldset className="chipset" style={{ margin: 0 }}><legend className="sr">Practice callers to run</legend>{callers.data.map(c => <label key={c.id} className={`choice${chosen.includes(c.id) ? ' on' : ''}`} title={c.trap}><input type="checkbox" checked={chosen.includes(c.id)} onChange={() => setPicks(chosen.includes(c.id) ? chosen.filter(x => x !== c.id) : [...chosen, c.id])} />{c.label}</label>)}</fieldset>}
         {!hasTool('test.simulate') ? <p className="small hint-bad">Practice callers are not switched on in this server yet.</p>
-          : !stack ? <Btn disabled reason="Choose a voice stack first. A test never falls back to another one." fix={{ label: 'Choose one', to: `/agents/${a.id}?tab=voice` }} icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
+          : noStack ? <Btn disabled reason="Choose a voice stack first. A test never falls back to another one." fix={{ label: 'Choose one', to: `/agents/${a.id}?tab=voice` }} icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
           : callers.error ? <Btn disabled reason="The practice callers could not be loaded. Reload the page to try again." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
           : !callers.data ? <Btn kind="primary" busy icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
           : !picked.length ? <Btn kind="primary" disabled reason="Choose at least one practice caller to run." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>

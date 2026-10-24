@@ -9,7 +9,7 @@ body {
   font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
 }
 body.noscroll { overflow: hidden; }
-:lang(hi), .deva { line-height: 1.65; }
+:lang(hi) { line-height: 1.65; }
 .serif, h1.serif { font-family: "Fraunces", "Tiro Devanagari Hindi", "Noto Serif Devanagari", "Noto Serif", "DejaVu Serif", Georgia, serif; font-weight: 600; letter-spacing: -0.01em; }
 code, .mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; }
 .tnum { font-variant-numeric: tabular-nums; }
@@ -80,8 +80,6 @@ button { font: inherit; color: inherit; }
 .card + .card, .stack > .card { margin-top: 0; }
 .cardhead { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; }
 .cardhead-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .cols-main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
 .kv { margin: 0; display: grid; gap: 0; }
 .kv > div { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
@@ -189,8 +187,6 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .rail-foot { margin-top: auto; display: grid; gap: 8px; padding-top: 12px; }
 .walletchip { display: grid; gap: 2px; padding: 8px 6px; border-radius: 8px; background: var(--forest-2); font-size: 0.75rem; text-align: center; color: var(--nav-ink); text-decoration: none; }
 .walletchip b { font-size: 0.9375rem; } .walletchip.low { box-shadow: inset 0 0 0 2px var(--terra); }
-.railbtn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px; border: 0; background: transparent; color: var(--nav-ink); cursor: pointer; font-size: 0.75rem; border-radius: 8px; min-height: 44px; justify-content: center; }
-.railbtn:hover { background: var(--forest-2); }
 .workarea { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 .main { min-width: 0; }
 .topbar { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 8px 24px; min-height: 52px; }
@@ -208,7 +204,6 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
   .brand { justify-content: flex-start; padding-left: 12px; } .brand-word { display: block; }
   .nav a { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 14px; font-size: 0.9375rem; min-height: 44px; }
   .walletchip { text-align: left; padding: 10px 14px; font-size: 0.8125rem; }
-  .railbtn { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 14px; font-size: 0.9375rem; }
 }
 @media (min-width: 820px) and (max-width: 1179px) {
   .viewswitch { display: inline-flex; }
@@ -232,7 +227,7 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
   .bottombar a, .bottombar button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--nav-ink); text-decoration: none; font-size: 0.75rem; font-weight: 600; background: transparent; border: 0; cursor: pointer; min-height: 44px; }
   .bottombar [aria-current="page"], .bottombar [aria-pressed="true"] { color: var(--on-forest); box-shadow: inset 0 3px 0 var(--terra); }
   .bottombar .talkbtn .talkdot { width: 40px; height: 40px; border-radius: 50%; background: var(--terra); color: var(--on-terra); display: grid; place-items: center; margin-top: -14px; box-shadow: var(--shadow); }
-  .grid2, .grid3, .formgrid { grid-template-columns: minmax(0, 1fr); }
+  .formgrid { grid-template-columns: minmax(0, 1fr); }
   .cols-main { grid-template-columns: minmax(0, 1fr); }
   .card { padding: 16px; }
   .kv > div { grid-template-columns: 1fr; gap: 2px; }
@@ -257,7 +252,6 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .dock { position: sticky; top: 0; height: 100dvh; flex-direction: column; background: var(--surface); border-left: 1px solid var(--line); min-width: 0; }
 .dock-head { padding: 12px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
 .dock-title { display: flex; align-items: center; gap: 8px; font-weight: 700; }
-.dock-title .deva { font-family: "Tiro Devanagari Hindi", "Noto Serif Devanagari", serif; }
 .dock-sub { font-size: 0.8125rem; color: var(--ink-2); }
 .seeing { display: inline-flex; gap: 6px; align-items: center; font-size: 0.8125rem; background: var(--sunk); padding: 3px 10px; border-radius: 999px; color: var(--ink-2); width: fit-content; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thread { flex: 1; overflow-y: auto; padding: 16px; display: grid; gap: 14px; align-content: start; scroll-behavior: smooth; }
@@ -291,7 +285,6 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .auth-side { background: var(--forest); color: var(--nav-ink); padding: 48px 56px; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; }
 .auth-side h1 { font-size: 2.5rem; line-height: 1.15; color: var(--on-forest); max-width: 16ch; }
 .auth-side p { color: var(--nav-ink-dim); max-width: 44ch; }
-.auth-side .deva-big { font-family: "Tiro Devanagari Hindi", "Noto Serif Devanagari", serif; font-size: 1.25rem; color: var(--nav-ink); }
 .auth-form { padding: 48px 56px; display: grid; align-content: center; gap: 20px; max-width: 520px; width: 100%; margin: 0 auto; }
 .auth-form h2 { font-size: 1.75rem; }
 .auth-points { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }

@@ -8,7 +8,7 @@ import { Funnel } from '../funnel.tsx';
 import { CATEGORY_INFO } from '../catalog.ts';
 import { agentByVersion, agentGet, agentList, audienceList, campaignEstimate, campaignFunnel, campaignGet, campaignList } from '../data.ts';
 import { count, date, inr } from '../format.ts';
-import { voiceStackOf } from '../catalog.ts';
+import { useVoiceStack } from '../use-voice-stack.tsx';
 import { prettyCode } from './contacts.tsx';
 import { blockerCopy, pl } from '../labels.ts';
 import type { CampaignDoc, CampaignRow } from '../types.ts';
@@ -57,6 +57,7 @@ function Create() {
   const [busy, setBusy] = useState(false);
   const published = (agents.data ?? []).filter(a => a.latestVersion);
   const agentCat = published.find(a => a.id === f.agentId)?.category;
+  const agentStack = useVoiceStack(published.find(a => a.id === f.agentId)).stack;
   const mismatch = f.agentId && f.category && agentCat && ['service', 'transactional', 'promotional'].includes(agentCat) && agentCat !== f.category ? agentCat : '';
   const reason = !f.category ? 'Choose the kind of call first.' : !f.name.trim() ? 'Name the campaign.' : !f.agentId ? 'Choose an agent that has a published version.' : mismatch ? `The agent is set up for ${mismatch} calls. Make the campaign ${mismatch}, or pick another agent.` : !f.audienceId ? 'Choose who to call.' : f.start >= f.end ? 'The window must end after it starts.' : f.days.length === 0 ? 'Choose at least one day.' : '';
   const save = async () => {
@@ -79,7 +80,7 @@ function Create() {
             {f.category === 'promotional' && <p className="hint hint-bad" style={{ marginTop: 12 }}>Promotional calls only go to people with a recorded consent whose DND status is known. Others are held back and counted.</p>}</Card>
           <Card><CardHead title="2. Who and which agent" />
             <div className="formgrid"><TextField className="span2" label="Campaign name" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="e.g. Renewals November" />
-              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField className="span2" label="Agent" value={f.agentId} onChange={e => { const a = published.find(x => x.id === e.target.value); setF({ ...f, agentId: e.target.value, category: (['service', 'transactional', 'promotional'].includes(a?.category ?? '') ? a!.category : f.category) as typeof f.category }); }} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : mismatch ? `This agent is set up for ${mismatch} calls and the campaign is set to ${f.category}. Choose ${mismatch} in step 1, or pick another agent.` : voiceStackOf(published.find(a => a.id === f.agentId))?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
+              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField className="span2" label="Agent" value={f.agentId} onChange={e => { const a = published.find(x => x.id === e.target.value); setF({ ...f, agentId: e.target.value, category: (['service', 'transactional', 'promotional'].includes(a?.category ?? '') ? a!.category : f.category) as typeof f.category }); }} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : mismatch ? `This agent is set up for ${mismatch} calls and the campaign is set to ${f.category}. Choose ${mismatch} in step 1, or pick another agent.` : agentStack?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
               <Async q={auds} what="Audiences" tool="audience.list">{d => <SelectField label="Who to call" value={f.audienceId} onChange={e => setF({ ...f, audienceId: e.target.value })} hint={(() => { const a = d.find(x => x.id === f.audienceId); return a ? `${a.callable == null ? '?' : count(a.callable)} callable of ${a.matched == null ? '?' : count(a.matched)}` : <Link to="/contacts/import">Import a list</Link>; })()}><option value="">Choose an audience</option>{d.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>}</Async>
               <SelectField label="Retry pattern" value={f.retry} onChange={e => setF({ ...f, retry: e.target.value })} hint={`${RETRY.find(r => r[0] === f.retry)?.[2] ?? ''} Never after a wrong number or an opt-out. A time the person asks for comes first, inside your hours.`}>{RETRY.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</SelectField></div></Card>
           <Card><CardHead title="3. When and how fast" sub="Times are in each contact's local time. The dial gate enforces the legal hours again at every attempt." />

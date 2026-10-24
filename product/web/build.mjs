@@ -57,7 +57,17 @@ await writeFile(dist + 'index.html', html);
 // Static files served as they are (public/samples/: the stack voice samples and their manifest, dropped in from the lab VM).
 await cp(here + 'public', dist, { recursive: true });
 
-let total = 0, gz = 0, entryGz = 0;
+// The gated first load counts the entry JS and the CSS. The entry also imports shared chunks statically, and those load before
+// anything renders too: reported beside it as "with shared chunks" (measure.2026-10-24.web-first-load-true), not gated.
+const firstLoad = new Set([css]);
+const visit = out => {
+  const name = out.split('/').pop();
+  if (firstLoad.has(name)) return;
+  firstLoad.add(name);
+  for (const i of result.metafile.outputs[out]?.imports ?? []) if (i.kind === 'import-statement' && !i.external) visit(i.path);
+};
+visit(outputs.find(([p]) => p.split('/').pop() === js)[0]);
+let total = 0, gz = 0, entryGz = 0, withShared = 0;
 // The largest lazy chunk is what one page can add on top of the first load (decision.2026-10-24.web-budget-per-chunk).
 let largest = { name: '', gzipBytes: 0 };
 async function walk(dir) {
@@ -69,9 +79,10 @@ async function walk(dir) {
     gz += g;
     if (f.name === js || f.name === css) entryGz += g;
     else if (g > largest.gzipBytes) largest = { name: f.name, gzipBytes: g };
+    if (firstLoad.has(f.name)) withShared += g;
   }
 }
 await walk(dist + 'assets/');
-const report = { js, css, bytes: total, gzipBytes: gz, entryGzipBytes: entryGz, largestChunk: largest };
+const report = { js, css, bytes: total, gzipBytes: gz, entryGzipBytes: entryGz, firstLoadWithSharedGzipBytes: withShared, largestChunk: largest };
 await writeFile(dist + 'build.json', JSON.stringify(report));
-console.log(`web built: ${js} + ${css}; first load ${(entryGz / 1024).toFixed(1)} KB gzip, largest chunk ${largest.name} ${(largest.gzipBytes / 1024).toFixed(1)} KB, all chunks ${(gz / 1024).toFixed(1)} KB gzip (${(total / 1024).toFixed(1)} KB raw)`);
+console.log(`web built: ${js} + ${css}; first load ${(entryGz / 1024).toFixed(1)} KB gzip (${(withShared / 1024).toFixed(1)} KB with the shared chunks it imports), largest chunk ${largest.name} ${(largest.gzipBytes / 1024).toFixed(1)} KB, all chunks ${(gz / 1024).toFixed(1)} KB gzip (${(total / 1024).toFixed(1)} KB raw)`);

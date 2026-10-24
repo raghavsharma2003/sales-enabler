@@ -74,14 +74,17 @@ test('every tool the UI calls is registered by the loaded modules (ui-contract -
   assert.match(out, / 0 missing/);
 });
 
-test('every tool the server registers has a person-facing past-tense label for the activity ledger', async () => {
+test('every tool that can reach the activity ledger has a person-facing past-tense label, and no read carries one', async () => {
   const { default: pg } = await import('pg');
   const { buildApp } = await import('../server/app.ts');
   const { modules } = await import('../server/modules/index.ts');
   const { PAST } = await import('../web/src/labels.ts');
   const { registry } = buildApp(new pg.Pool({ connectionString: 'postgresql://unused@/unused' }), modules);
-  const missing = registry.list().map(t => t.name).filter(n => !PAST[n]);
+  // Reads never reach the ledger (server/tools.ts skips them), so a label for one is bundle weight no one sees.
+  const missing = registry.list().filter(t => t.risk !== 'read').map(t => t.name).filter(n => !PAST[n]);
   assert.deepEqual(missing, [], 'tools with no activity label: ' + missing.join(', '));
+  const reads = registry.list().filter(t => t.risk === 'read').map(t => t.name).filter(n => PAST[n]);
+  assert.deepEqual(reads, [], 'reads are never in the ledger, so they need no label: ' + reads.join(', '));
   for (const [k, v] of Object.entries(PAST)) assert.ok(!/[_]|\b\w+\.\w+\b/.test(v) && !/\b[a-z]+[A-Z]/.test(v), `label for ${k} reads like a code: ${v}`);
 });
 
@@ -108,7 +111,12 @@ test('Gemini goes only through Vertex: no stack routes a Gemini part through Ope
 });
 
 test('the call page names a built stack from its run manifest, as the runtime writes it', async () => {
-  const { partsRan, voiceStackOf } = await import('../web/src/catalog.ts');
+  const { partsRan } = await import('../web/src/catalog.ts');
+  const { resolveVoiceStack } = await import('../web/src/voice-stack.ts');
+  const { COMPONENTS } = await import('../shared/components.ts');
+  const { STACKS } = await import('../shared/stacks.ts');
+  const catalog = { stacks: STACKS.map(s => ({ id: s.id, label: s.label, kind: s.kind, status: s.status })), components: COMPONENTS.map(c => ({ id: c.id, part: c.part, label: c.label })) };
+  const voiceStackOf = (v: Parameters<typeof resolveVoiceStack>[1]) => resolveVoiceStack(catalog, v);
   // Manifests as product/voice writes them (providers.build, test_cascade.py): `voice` is the voice's name, not a part.
   const ran = (m: Record<string, string>) => voiceStackOf({ stackId: 'custom', components: partsRan(m) })?.label;
   const built = (components: Record<string, string>) => { const l = voiceStackOf({ stackId: 'custom', components })?.label; assert.ok(l, JSON.stringify(components)); return l; };

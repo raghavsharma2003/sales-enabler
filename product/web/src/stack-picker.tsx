@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Check, Pause, Play, Volume2 } from 'lucide-react';
 import { loadSamples, playableIn, type Sample } from './samples.ts';
-import { STACKS } from '../../shared/stacks.ts';
 import * as api from './api.ts';
 import { Async, Btn, Chip, Figure, NotMeasured, Segmented } from './ui.tsx';
 import { inr } from './format.ts';
@@ -12,19 +11,19 @@ import { useApp, useData } from './store.tsx';
 export const BETA_REASON = 'Beta stacks run test calls only: the dial gate refuses them for any call to a real person until their risks are cleared and the stack is marked available.';
 interface Price { perMinuteInrMilli: number | null; basis: string; state: 'loading' | 'ready' | 'missing' }
 
-function usePrices(): Record<string, Price> {
+function usePrices(stacks: { id: string }[]): Record<string, Price> {
   const { hasTool } = useApp();
   const [p, setP] = useState<Record<string, Price>>({});
   useEffect(() => {
-    if (!hasTool('money.estimate')) { setP(Object.fromEntries(STACKS.map(s => [s.id, { perMinuteInrMilli: null, basis: '', state: 'missing' as const }]))); return; }
+    if (!hasTool('money.estimate')) { setP(Object.fromEntries(stacks.map(s => [s.id, { perMinuteInrMilli: null, basis: '', state: 'missing' as const }]))); return; }
     let live = true;
-    for (const s of STACKS) {
+    for (const s of stacks) {
       api.run<{ perMinuteInrMilli: number | null; basis: string }>('money.estimate', { stackId: s.id, minutes: 1, calls: 1 })
         .then(r => live && setP(x => ({ ...x, [s.id]: { perMinuteInrMilli: r.perMinuteInrMilli ?? null, basis: r.basis ?? '', state: 'ready' } })))
         .catch(() => live && setP(x => ({ ...x, [s.id]: { perMinuteInrMilli: null, basis: '', state: 'missing' } })));
     }
     return () => { live = false; };
-  }, [hasTool]);
+  }, [hasTool, stacks]);
   return p;
 }
 
@@ -64,7 +63,7 @@ export function StackPicker(p: Props) {
 
 function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props & { d: StackList }) {
   const { act } = useApp();
-  const prices = usePrices();
+  const prices = usePrices(d.stacks);
   const samples = useData('voice-samples', loadSamples).data ?? {};
   const [filter, setFilter] = useState<'all' | 'cascade' | 's2s' | 'available'>('all');
   const [busy, setBusy] = useState<string | null>(null);
