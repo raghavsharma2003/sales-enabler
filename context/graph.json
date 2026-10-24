@@ -23962,6 +23962,17 @@
    "date": "2026-10-24",
    "title": "A test call on the unsaved draft is stored with agent_version_id NULL and run_manifest {test, draftHash}, so neither learning nor review.flag_turn can tell which agent it belongs to. review.flag_turn already reads run_manifest.agentId if calls writes it.",
    "closes_when": "Calls writes agentId into a draft test call's run_manifest (test.browser_call), and a flag on such a call drafts a change."
+  },
+  {
+   "id": "measure.2026-10-24.staging-redeploy-ead1bc8",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": "6 post-deploy checks + 11 checks in 1 new synthetic workspace ('Config Check 2'), including 1 browser test call and 1 typed-chat exchange",
+   "title": "Staging redeployed to ead1bc8 with stage_setup_v2.sh (10:46 UTC; 9 new migrations, 68 recorded; units restarted, lab untouched; the 13 config names in both processes; no telephony or WhatsApp env): all checks pass. A new workspace's money.test_budget reads INR 2,000 a day and INR 50 a call from VP_TEST_BUDGET_DEFAULT_INR (row created on first read); a browser test call (97 s, INR 2.02) has its transcript, call.get's new trace (schema 1, gapMs on every agent turn after the opening, equal to the socket's reply gaps) and a recording that answers 200 audio/wav through :8443; the typed chat answers. The owner's workspace has no test-budget row yet, so its first use gets INR 2,000. Spend INR 2.39",
+   "method": "The 9b34ff7 recipe at ead1bc8 (git archive bundle; deploy_pre.sh + stage_setup_v2.sh + deploy_post.sh + deploy_post7.sh + deploy_post9.sh + deploy_post10.sh in one Run Command; deploy_post10 stopped on set -e after the deploy and was re-run alone, read-only); :8443 page and assets with curl; research/2026-10-24/staging/ops/verify10.py on the VM through the product's own API (the call via replygap.one_call, synthetic clips P1, never a phone); test-budget rows and the owner's workspace by read-only SQL; spend from the DB and Azure Monitor at op7's rates",
+   "path": "research/2026-10-24/staging/testbuild-ead1bc8.md"
   }
  ],
  "edges": [
@@ -43056,6 +43067,11 @@
    "from": "decision.2026-10-24.review-flag-turn",
    "to": "open.2026-10-24.draft-test-calls-not-tied-to-agent",
    "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.staging-redeploy-ead1bc8",
+   "to": "measure.2026-10-24.staging-config-fix-verify",
+   "relation": "extends"
   }
  ]
 }
