@@ -115,7 +115,8 @@ const CrmImport = lazy(() => import('./import-crm.tsx'));
 const MemoryReview = lazy(() => import('./memory-review.tsx'));
 const SampleImport = lazy(() => import('./import-sample.tsx'));
 const PaymentStatus = lazy(() => import('./import-payments.tsx'));
-const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'sample', label: 'From a sample' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }, { id: 'salesforce', label: 'From Salesforce' }, { id: 'payments', label: 'Payments' }] as const;
+const SheetImport = lazy(() => import('./import-sheets.tsx'));
+const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'sample', label: 'From a sample' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }, { id: 'salesforce', label: 'From Salesforce' }, { id: 'google_sheets', label: 'From Google Sheets' }, { id: 'payments', label: 'Payments' }] as const;
 type ImportFrom = (typeof SOURCES)[number]['id'];
 
 function Import() {
@@ -125,7 +126,7 @@ function Import() {
   return (
     <>
       <Tabs label="Where the list comes from" value={from} onChange={v => setQs({ from: v === 'file' ? null : v })} items={SOURCES.map(x => ({ ...x }))} />
-      {from === 'file' ? <FileImport /> : <Suspense fallback={<Card><Skeleton rows={3} /></Card>}>{from === 'sample' ? <SampleImport /> : from === 'payments' ? <PaymentStatus /> : <CrmImport kind={from} />}</Suspense>}
+      {from === 'file' ? <FileImport /> : <Suspense fallback={<Card><Skeleton rows={3} /></Card>}>{from === 'sample' ? <SampleImport /> : from === 'payments' ? <PaymentStatus /> : from === 'google_sheets' ? <SheetImport /> : <CrmImport kind={from} />}</Suspense>}
     </>
   );
 }

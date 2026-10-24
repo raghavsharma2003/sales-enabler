@@ -1,0 +1,43 @@
+{
+ "nodes": [
+  {
+   "id": "component.2026-10-24.google-sheets-source",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Google Sheets as a live contact source: a tab read through the workspace's service account, or a published CSV link, on the same preview, receipt, mapping reuse and timed sync as the CRM imports; read only",
+   "path": "product/server/modules/intake/sheets.ts",
+   "details": "Service account: workspace's google_workspace integration (service_account_json). An RS256 JWT for spreadsheets.readonly buys a token; Sheets v4 lists the GRID tabs and reads values (FORMATTED_VALUE, ragged rows handled). Published link: docs.google.com only, CSV output only, redirects only within Google, 20 MB cap. A 403 names the service-account address to share with. Tools source.sheet.tabs (read) and source.sheet.pull (draft); source.sync, source.sync.schedule and source.crm.sources take sheet sources; the intake.crm_sync job runs them. Web: From Google Sheets tab. Tests: intake-sheets 3/3 against a fake that verifies the JWT signature with the matching public key; e2e flow (published link, save, timer); axe screen. Not verified: a real Google sheet."
+  },
+  {
+   "id": "decision.2026-10-24.sheets-dedupe-on-number",
+   "type": "decision",
+   "status": "decided",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A Google Sheet has no stable row id, so it dedupes on the phone number like a file. A sync re-reads the whole tab with the last mapping; unchanged rows count as unchanged, and a changed number is a new person, not a flagged change as with a CRM.",
+   "rationale": "Row positions shift when people sort or insert rows, so a row number would mis-key people. The number is what intake already dedupes on for files.",
+   "reverse_if": "Buyers keep an id column in their sheets and want number changes flagged; then let a sheet name its id column and reuse the CRM idempotency (intake_crm_record)."
+  },
+  {
+   "id": "measure.2026-10-24.google-sheets-tests",
+   "type": "measurement",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Google Sheets: 3/3 server tests and a browser flow.\n- JWT: header and claims as documented, signature verified by the fake with the public key.\n- Tabs: charts left out.\n- Values: a blank row is not a person; a sync after an edit counts 1 updated and 2 unchanged; the timed job picks up a new row.\n- Refusals: an unshared sheet names the address; another host, an HTML page and missing arguments are refused.\n- Read only.\nPlus e2e 91/92 (1 skipped: payments awaiting workspace's kinds).",
+   "n": "3 server tests; e2e 92 flows",
+   "method": "node:test on a fresh Postgres with a local fake (tests/intake-sheets.test.ts); Playwright via e2e/run.sh with dev/fake-crm.mjs serving a published CSV",
+   "not_verified": "A real Google sheet or service account; the googleusercontent redirect host."
+  }
+ ],
+ "edges": [
+  { "from": "component.2026-10-24.google-sheets-source", "to": "decision.2026-10-24.sheets-dedupe-on-number", "relation": "implements" },
+  { "from": "measure.2026-10-24.google-sheets-tests", "to": "component.2026-10-24.google-sheets-source", "relation": "tests" },
+  { "from": "component.2026-10-24.google-sheets-source", "to": "component.2026-10-24.crm-contact-import", "relation": "extends" }
+ ],
+ "events": [
+  { "date": "2026-10-24", "event": "google-sheets-source", "details": "Google Sheets as a live source built in intake (service account or published link; read only). Verified: tsc clean; intake-sheets 3/3; e2e 91/92 (payments flow skips until workspace adds the gateway kinds). Not verified: a real sheet." }
+ ]
+}

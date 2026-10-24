@@ -11,8 +11,8 @@ import { ago, count, plural } from '../format.ts';
 import type { ImportPreview } from '../types.ts';
 import { ImportReview } from './import-review.tsx';
 
-const NAME: Record<CrmKind, string> = { hubspot: 'HubSpot', zoho_crm: 'Zoho CRM', salesforce: 'Salesforce' };
-const LIST: Record<CrmKind, string> = { hubspot: 'list', zoho_crm: 'view', salesforce: 'list view' };
+const NAME: Record<CrmKind, string> = { hubspot: 'HubSpot', zoho_crm: 'Zoho CRM', salesforce: 'Salesforce', google_sheets: 'Google Sheets' };
+const LIST: Record<CrmKind, string> = { hubspot: 'list', zoho_crm: 'view', salesforce: 'list view', google_sheets: 'sheet' };
 const BUDGETS = [200, 1000, 5000, 20000];
 const EVERY: [string, string][] = [['', 'Off: sync only when you ask'], ['1', 'Every hour'], ['6', 'Every 6 hours'], ['24', 'Once a day']];
 
@@ -69,7 +69,7 @@ function Pick({ kind, conns }: { kind: CrmKind; conns: { id: string; name: strin
   );
 }
 
-function Synced({ kind, sources, onChange }: { kind: CrmKind; sources: CrmSource[]; onChange: () => void }) {
+export function Synced({ kind, sources, onChange }: { kind: CrmKind; sources: CrmSource[]; onChange: () => void }) {
   const { act } = useApp();
   return (
     <Card><CardHead title={`Lists kept in step with ${NAME[kind]}`} sub="A sync re-reads the list and imports what changed, with the columns you matched last time. Timed syncs are off unless you choose one." />

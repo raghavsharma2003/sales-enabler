@@ -953,6 +953,27 @@ test('Payment status: turn on a gateway, its signed webhook stops calls to the p
   assert.match(await recent.innerText(), /₹14,250/);
 });
 
+test('From Google Sheets: a published CSV link is checked like a file, saved, and put on a timer; read only', { skip: process.env.VP_CRM_FAKE_URL ? false : 'no fake port (run through e2e/run.sh)' }, async () => {
+  const fakeSheets = await startFakeCrm(Number(new URL(process.env.VP_CRM_FAKE_URL).port));
+  try {
+    await page.goto(`${BASE}/contacts/import?from=google_sheets`);
+    await page.getByLabel('Or a published CSV link').fill(`${process.env.VP_CRM_FAKE_URL}/spreadsheets/d/e/2PACX-e2e-synthetic/pub?gid=0&single=true&output=csv`);
+    await page.getByRole('button', { name: 'Check this link' }).click();
+    await page.getByText('3. What will happen to each row').waitFor({ timeout: 15000 });
+    await page.getByText('Read 2 rows from the sheet.').waitFor();
+    await page.getByLabel('Audience name').fill('Published sheet (synthetic)');
+    await page.getByRole('button', { name: /^Save 2 contacts$/ }).click();
+    const card = page.locator('.card', { hasText: 'Lists kept in step with Google Sheets' });
+    await card.waitFor({ timeout: 15000 });
+    await card.getByLabel('Sync on a timer').selectOption('24');
+    await page.getByText('Timed sync on.').waitFor();
+    const src = (await tool('source.crm.sources', { kind: 'google_sheets' })).result.sources[0];
+    assert.equal(src.everyHours, 24);
+    assert.equal((await tool('contact.search', { q: '9000050801' })).result.contacts.length, 1);
+    assert.deepEqual(fakeSheets.writes(), [], 'read only');
+  } finally { fakeSheets.server.close(); }
+});
+
 test('Integrations: a service can be connected from Settings, and the credentials never come back', async () => {
   const SECRET = 'hs-test-token-4f9a1c7e';
   await page.goto(`${BASE}/settings/integrations`);

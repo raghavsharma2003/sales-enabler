@@ -9,6 +9,7 @@ import { registerAudienceTools } from './audiences.ts';
 import { registerContactTools } from './contacts.ts';
 import { crmSyncJob, registerCrmTools } from './crm-tools.ts';
 import { registerSampleTools } from './sample-tools.ts';
+import { registerSheetTools } from './sheet-tools.ts';
 import { paymentRetentionJob, registerPaymentRoutes, registerPaymentTools } from './payments.ts';
 import { registerRetentionTools, retentionJob } from './retention.ts';
 import { registerSourceRoutes, registerSourceTools } from './sources.ts';
@@ -22,6 +23,7 @@ export const module: Module = {
     registerRetentionTools(registry);
     registerCrmTools(registry);
     registerSampleTools(registry);
+    registerSheetTools(registry);
     registerPaymentTools(registry);
   },
   routes(router, deps) {

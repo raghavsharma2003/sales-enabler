@@ -8784,7 +8784,8 @@
       "enum": [
        "hubspot",
        "zoho_crm",
-       "salesforce"
+       "salesforce",
+       "google_sheets"
       ]
      }
     },
@@ -9072,6 +9073,81 @@
      "packId"
     ],
     "description": "Load a sample pack as an upload; then check it with source.map and save it with source.commit, as with a file. includeMe adds your own verified phone as a test contact."
+   }
+  },
+  {
+   "name": "source.sheet.pull",
+   "risk": "draft",
+   "summary": "Read a Google Sheet tab (or its published CSV link) into an import you can check before saving; a sync re-reads it later (read only)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "spreadsheet": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 300
+     },
+     "tab": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+     },
+     "csvUrl": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 500
+     },
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [],
+    "description": "Either integrationId + spreadsheet + tab (a sheet shared with the service account), or csvUrl (File > Share > Publish to the web, CSV). Then check it with source.map and save it with source.commit."
+   }
+  },
+  {
+   "name": "source.sheet.tabs",
+   "risk": "read",
+   "summary": "The tabs of a Google Sheet shared with the workspace's service account",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "spreadsheet": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 300,
+      "description": "the sheet's address (docs.google.com/spreadsheets/d/…) or its id"
+     }
+    },
+    "required": [
+     "integrationId",
+     "spreadsheet"
+    ]
    }
   },
   {

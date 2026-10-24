@@ -245,6 +245,8 @@ export type ToolName =
   | "source.receipt"
   | "source.sample.list"
   | "source.sample.load"
+  | "source.sheet.pull"
+  | "source.sheet.tabs"
   | "source.sync"
   | "source.sync.schedule"
   | "source.upload"
@@ -1765,7 +1767,7 @@ export interface ToolInput {
   };
   /** Lists imported from a CRM, with their sync timer, when they last synced and why a sync failed (read) */
   "source.crm.sources": {
-    kind?: "hubspot" | "zoho_crm" | "salesforce";
+    kind?: "hubspot" | "zoho_crm" | "salesforce" | "google_sheets";
   };
   /** Replace a webhook source's signing secret; the old one keeps working for 24 hours so the sender can switch (policy, waits for approval) */
   "source.hook_secret.rotate": {
@@ -1809,6 +1811,20 @@ export interface ToolInput {
   "source.sample.load": {
     packId: "insurance-renewal" | "emi-reminder" | "cod-confirmation" | "admissions-followup" | "appointment-reminder" | "lead-qualification" | "service-feedback";
     includeMe?: boolean;
+  };
+  /** Read a Google Sheet tab (or its published CSV link) into an import you can check before saving; a sync re-reads it later (read only) (draft) */
+  "source.sheet.pull": {
+    integrationId?: string;
+    spreadsheet?: string;
+    tab?: string;
+    csvUrl?: string;
+    sourceId?: string;
+  };
+  /** The tabs of a Google Sheet shared with the workspace's service account (read) */
+  "source.sheet.tabs": {
+    integrationId: string;
+    /** the sheet's address (docs.google.com/spreadsheets/d/…) or its id */
+    spreadsheet: string;
   };
   /** Re-pull a CRM list and import it with the mapping of its last import; unchanged records are skipped (read only on the CRM) (draft) */
   "source.sync": {
@@ -2420,6 +2436,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "source.receipt": { risk: "read", needsApproval: false },
   "source.sample.list": { risk: "read", needsApproval: false },
   "source.sample.load": { risk: "draft", needsApproval: false },
+  "source.sheet.pull": { risk: "draft", needsApproval: false },
+  "source.sheet.tabs": { risk: "read", needsApproval: false },
   "source.sync": { risk: "draft", needsApproval: false },
   "source.sync.schedule": { risk: "draft", needsApproval: false },
   "source.upload": { risk: "draft", needsApproval: false },

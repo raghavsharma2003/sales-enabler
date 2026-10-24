@@ -47,6 +47,9 @@ export function startFakeCrm(port) {
               properties: Object.fromEntries(body.properties.map(k => [k, contacts[x.id].p[k] ?? (k === 'lastmodifieddate' ? contacts[x.id].updatedAt : null)])) })) });
         return send(res, 404, { message: 'not found' });
       }
+      // A published Google Sheet (File > Share > Publish to the web, CSV): a redirect, then the CSV, as Google serves it.
+      if (u.pathname === '/spreadsheets/d/e/2PACX-e2e-synthetic/pub') { res.writeHead(307, { location: `http://127.0.0.1:${port}/pub-content/e2e.csv` }); return res.end(); }
+      if (u.pathname === '/pub-content/e2e.csv') { res.writeHead(200, { 'content-type': 'text/csv' }); return res.end('Name,Mobile,Order\nPriyanka Bora,9000050801,A3001\nSandeep Yadav,9000050802,A3002\n'); }
       if (u.pathname === '/services/oauth2/token') {
         const f = new URLSearchParams(raw);
         return f.get('refresh_token') === SF.refresh_token && f.get('client_id') === SF.client_id ? send(res, 200, { access_token: 'sf-e2e-access', instance_url: `http://127.0.0.1:${port}`, token_type: 'Bearer' })

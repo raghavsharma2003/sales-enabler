@@ -141,6 +141,8 @@
   "source.payments.list",
   "source.payments.setup",
   "source.sample.list",
+  "source.sheet.pull",
+  "source.sheet.tabs",
   "source.sample.load",
   "source.sync",
   "source.sync.schedule",

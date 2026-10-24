@@ -128,6 +128,14 @@
       "risk": "draft"
     },
     {
+      "id": "source.sheet.pull",
+      "risk": "draft"
+    },
+    {
+      "id": "source.sheet.tabs",
+      "risk": "read"
+    },
+    {
       "id": "source.sync",
       "risk": "draft"
     },
@@ -158,8 +166,8 @@
     "product/db/migrations/0110_intake_payments.sql"
   ],
   "tests": {
-    "passed": 47,
-    "total": 47,
+    "passed": 52,
+    "total": 52,
     "files": [
       "product/tests/intake.test.ts (19)",
       "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)",
@@ -167,7 +175,9 @@
       "product/tests/intake-crm.test.ts (5)",
       "product/tests/intake-salesforce.test.ts (6)",
       "product/tests/intake-samples.test.ts (3)",
-      "product/tests/intake-payments.test.ts (5)"
+      "product/tests/intake-payments.test.ts (5)",
+      "product/tests/intake-sheets.test.ts (3)",
+      "product/tests/intake-dpdp-records.test.ts (2; one skips until contact.archive_batch_id exists)"
     ],
     "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
   },
@@ -200,7 +210,9 @@
     "Web: Contacts > Import > From HubSpot / From Zoho CRM (lazy chunk import-crm, 2.4 KB gzip): pick a list or view, the same column matching and verdicts as a file (shared import-review.tsx), save, then a timer (off, 1, 6, 24 h) and Sync now; a failed sync shows in plain words; an empty state links to Settings > Integrations. Browser flow against a local fake CRM; screenshots contacts-import-hubspot*, contacts-import-crm-empty at 1440 and 390; axe screens added.",
     "Salesforce contact import, read only: Contact and Lead list views (listviews, list view describe for the view's own SOQL, object describe for field-level security, COUNT() then query with nextRecordsUrl). Per-org API budget (1,000 calls per rolling 24 h unless set with source.crm.budget.set; never past 90% of the org's limit per Sforce-Limit-Info): a pull counts first, re-checks before every page and stops with nothing imported; the calls used are on the receipt (converted.apiCalls). Fields the user may not read get no column and are named (converted.unreadable). DoNotCall is an opt-out. CRM reads run in prepare, outside the transaction. Web: From Salesforce tab and API budget card; the preview counts valid numbers that will not be called. Tests intake-salesforce 6/6; e2e flow and axe; screenshots contacts-import-salesforce at 1440 and 390.",
     "Sample packs (samples.ts, sample-tools.ts): seven synthetic lists, one per starter agent (insurance renewal, EMI reminder, COD confirmation, admissions follow-up, appointment reminder, solar lead qualification, AC service feedback). Numbers 9000000000-9000000099 only, disjoint per pack; names across regions; mixed languages; the per-contact facts each agent says (dates relative to the load day); a duplicate, opt-outs and a missing consent. source.sample.load makes an ordinary CSV upload, so the preview, verdicts and receipt are the real ones. includeMe adds the member's own verified phone; saving marks it contact.test_member_id (re-checked against verified_test_phone at commit; no file or CRM column can set it). Web: From a sample tab (lazy chunk import-sample), e2e flow, axe screen, screenshots contacts-import-sample at 1440 and 390.",
-    "Payment status (payments.ts): Razorpay (payment.captured, order.paid, payment_link.paid), Cashfree (PAYMENT_SUCCESS) and PayU (status=success) webhooks, each verified with the gateway's own scheme before anything is read; kept once per gateway payment id; matched to exactly one live contact by the record key the workspace names (reference_id, receipt, notes, order_id, order_tags, customer_id, txnid, udf1-5), never by the payer's phone; ambiguous and unmatched are kept 30 days. paidSinceImport() for campaigns' G4 ('already_paid'): a payment counts unless the record was observed more than a day after it. Optional verified outcome on the person's latest call in the 14 days before paying (calls' recordVerified). Tools source.payments.setup / source.payments.list; web Contacts > Import > Payments (lazy chunk). Docs: research/2026-10-24/payment-webhooks/README.md."
+    "Payment status (payments.ts): Razorpay (payment.captured, order.paid, payment_link.paid), Cashfree (PAYMENT_SUCCESS) and PayU (status=success) webhooks, each verified with the gateway's own scheme before anything is read; kept once per gateway payment id; matched to exactly one live contact by the record key the workspace names (reference_id, receipt, notes, order_id, order_tags, customer_id, txnid, udf1-5), never by the payer's phone; ambiguous and unmatched are kept 30 days. paidSinceImport() for campaigns' G4 ('already_paid'): a payment counts unless the record was observed more than a day after it. Optional verified outcome on the person's latest call in the 14 days before paying (calls' recordVerified). Tools source.payments.setup / source.payments.list; web Contacts > Import > Payments (lazy chunk). Docs: research/2026-10-24/payment-webhooks/README.md.",
+    "Google Sheets as a live source (sheets.ts, sheet-tools.ts): a tab of a sheet shared with the workspace's service account (google_workspace integration; RS256 JWT for spreadsheets.readonly; Sheets v4 tabs and values, formatted), or a published CSV link (docs.google.com only, redirects only within Google). A 'sheet' source through the ordinary upload, preview, receipt and write path; source.sync and source.sync.schedule re-read it with the last mapping (the intake.crm_sync job covers sheet sources). Reads run in prepare. Web: From Google Sheets tab (lazy chunk). Docs: research/2026-10-24/google-sheets/README.md.",
+    "DPDP erase_me reaches every record carrying the person's numbers (e164 or alias, live or archived) and erases each in place; payments go with it."
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",

@@ -12,6 +12,7 @@ import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import { integrationSecretsById } from '../workspace/integrations.ts';
 import { CrmBudgetError, CrmError, hubspot, recordsToRows, salesforce, zoho, type CrmClient, type CrmKind, type CrmList, type CrmMeter, type CrmRecord } from './crm.ts';
 import { commitUpload, receivePart, type Converted } from './sources.ts';
+import { readSheet, storeSheet } from './sheet-tools.ts';
 import { hashWith, workspaceSalt } from './store.ts';
 import { rowsToCsv } from './xlsx.ts';
 import { createHash } from 'node:crypto';
@@ -20,9 +21,12 @@ import type { Mapping } from './mapping.ts';
 export const MAX_CRM_RECORDS = 50_000;
 const FIELD = str({ pattern: /^[A-Za-z0-9_]{1,80}$/, desc: "a CRM field's API name, e.g. hs_whatsapp_consent, Call_Consent or Call_Consent__c" });
 const CRM_KINDS = ['hubspot', 'zoho_crm', 'salesforce'] as const;
-const CRM_NAME: Record<CrmKind, string> = { hubspot: 'HubSpot', zoho_crm: 'Zoho CRM', salesforce: 'Salesforce' };
+const CRM_NAME: Record<CrmKind | 'google_sheets', string> = { hubspot: 'HubSpot', zoho_crm: 'Zoho CRM', salesforce: 'Salesforce', google_sheets: 'Google Sheets' };
 
-interface CrmConf { integrationId: string; kind: CrmKind; listId: string; listName: string; fields: string[]; consentPurpose?: string }
+/** What a CRM or sheet source re-reads on a sync. A Google Sheet is a 'sheet' source: kind google_sheets, read either through
+ *  a service account (integrationId, spreadsheetId, listId = the tab) or from a published CSV link (csvUrl, no integration). */
+export interface CrmConf { integrationId: string; kind: CrmKind | 'google_sheets'; listId: string; listName: string; fields: string[]; consentPurpose?: string;
+  spreadsheetId?: string; csvUrl?: string }
 
 // ---- Salesforce API budget -----------------------------------------------------------------------
 // Salesforce caps API calls per org per rolling 24 hours, and the customer's other tools share that cap. Vyakti keeps to
@@ -108,10 +112,11 @@ async function fetchList(pool: Queryable, ws: string, conf: CrmConf, c: Connecte
  *  and left out (one person per CRM record; a person decides). */
 async function store(q: Queryable, ws: string, sourceId: string, conf: CrmConf, f: Fetched) {
   const { records, truncated, unreadable, apiCalls } = f;
+  const kind = conf.kind as CrmKind;                       // a CRM pull (a sheet is stored by storeSheet)
   const known = new Map((await many<{ crm_id: string; e164_hash: string | null; crm_updated_at: string | null }>(q,
     'SELECT crm_id, e164_hash, crm_updated_at FROM intake_crm_record WHERE source_id = $1', [sourceId])).map(r => [r.crm_id, r]));
   const salt = await workspaceSalt(q, ws);
-  const rows = recordsToRows(conf.kind, records, conf.fields, unreadable);
+  const rows = recordsToRows(kind, records, conf.fields, unreadable);
   const keep = [rows[0]];
   let unchangedSkipped = 0;
   const numberChanged: string[] = [];
@@ -125,7 +130,7 @@ async function store(q: Queryable, ws: string, sourceId: string, conf: CrmConf, 
   }
   const text = rowsToCsv(keep);
   const idHeader = rows[0][0];
-  const converted: Converted = { from: conf.kind, integrationId: conf.integrationId, listId: conf.listId, listName: conf.listName, records: records.length,
+  const converted: Converted = { from: kind, integrationId: conf.integrationId, listId: conf.listId, listName: conf.listName, records: records.length,
     unchangedSkipped, numberChanged: numberChanged.slice(0, 200), truncated, fileBytes: Buffer.byteLength(text), fileSha256: createHash('sha256').update(text).digest('hex'),
     ...(unreadable.length ? { unreadable } : {}), ...(apiCalls ? { apiCalls } : {}),
     baseOverrides: { [idHeader]: { field: 'attribute', key: idHeader.toLowerCase().replace(/\s+/g, '_'), type: 'text' }, 'Other phone': { field: 'attribute', key: 'other_phone', type: 'text' }, Phone: { field: 'phone' },
@@ -140,21 +145,22 @@ async function crmSource(q: Queryable, ws: string, id: string) {
   const s = await one<{ id: string; kind: string; name: string; crm: CrmConf | null; sync_every_h: number | null }>(q,
     'SELECT id, kind, name, crm, sync_every_h FROM intake_source WHERE id = $1 AND workspace_id = $2', [id, ws]);
   if (!s) throw new Error('no such source in this workspace');
-  if (s.kind !== 'crm' || !s.crm) throw new Error('that source is not a CRM list');
+  if (!['crm', 'sheet'].includes(s.kind) || !s.crm) throw new Error('that source is not a CRM list or a Google Sheet');
   return s as typeof s & { crm: CrmConf };
 }
 
-/** A sync's CRM half (see fetchList): the list re-read with the source's settings. */
+/** A sync's CRM half (see fetchList): the list re-read with the source's settings. A sheet is re-read as its text. */
 export async function fetchSync(pool: Queryable, ws: string, sourceId: string) {
   const s = await crmSource(pool, ws, sourceId);
   const last = await one<{ mapping: Mapping }>(pool, "SELECT mapping FROM intake_upload WHERE source_id = $1 AND status = 'committed' ORDER BY committed_at DESC LIMIT 1", [sourceId]);
   if (!last?.mapping) throw new Error('import this list once first (pull, check the columns, save); a sync reuses that mapping');
+  if (s.crm.kind === 'google_sheets') return { conf: s.crm, mapping: last.mapping, sheet: await readSheet(pool, ws, s.crm) };
   return { conf: s.crm, mapping: last.mapping, fetched: await fetchList(pool, ws, s.crm, await clientFor(pool, ws, s.crm.integrationId)) };
 }
 
 /** A sync's stored half: import with the mapping of the last import from this source. */
 export async function syncSource(ctx: ToolCtx, sourceId: string, f: Awaited<ReturnType<typeof fetchSync>>) {
-  const p = await store(ctx.q, ctx.workspaceId, sourceId, f.conf, f.fetched);
+  const p = f.sheet !== undefined ? await storeSheet(ctx.q, ctx.workspaceId, sourceId, f.conf, f.sheet) : await store(ctx.q, ctx.workspaceId, sourceId, f.conf, f.fetched!);
   const c = await commitUpload(ctx, { uploadId: p.uploadId, mapping: f.mapping, consentPurpose: f.conf.consentPurpose });
   return { ...p, receiptId: c.receiptId, counts: c.counts, issues: c.issues };
 }
@@ -221,12 +227,12 @@ export function registerCrmTools(reg: Registry): void {
     },
   }));
 
-  reg.register(tool(obj({ kind: opt(str({ oneOf: CRM_KINDS })) }), {
+  reg.register(tool(obj({ kind: opt(str({ oneOf: [...CRM_KINDS, 'google_sheets'] })) }), {
     name: 'source.crm.sources', risk: 'read', summary: 'Lists imported from a CRM, with their sync timer, when they last synced and why a sync failed',
     run: async (ctx, i) => ({ sources: (await many<{ id: string; name: string; crm: CrmConf; sync_every_h: number | null; last_synced_at: Date | null; last_sync_error: string | null; imports: string }>(ctx.q,
       `SELECT s.id, s.name, s.crm, s.sync_every_h, s.last_synced_at, s.last_sync_error,
          (SELECT count(*) FROM intake_upload u WHERE u.source_id = s.id AND u.status = 'committed') AS imports
-       FROM intake_source s WHERE s.workspace_id = $1 AND s.kind = 'crm' AND s.crm IS NOT NULL AND ($2::text IS NULL OR s.crm->>'kind' = $2)
+       FROM intake_source s WHERE s.workspace_id = $1 AND s.kind IN ('crm','sheet') AND s.crm IS NOT NULL AND ($2::text IS NULL OR s.crm->>'kind' = $2)
        ORDER BY s.created_at DESC LIMIT 100`, [ctx.workspaceId, i.kind ?? null]))
       .map(s => ({ id: s.id, name: s.name, kind: s.crm.kind, listName: s.crm.listName, integrationId: s.crm.integrationId, everyHours: s.sync_every_h,
         lastSyncedAt: s.last_synced_at, lastSyncError: s.last_sync_error, imported: Number(s.imports) > 0 })) }),
@@ -258,7 +264,7 @@ export const crmSyncJob: Job = {
   everyMs: 15 * 60_000,
   async run(deps) {
     const due = await many<{ id: string; workspace_id: string }>(deps.pool, `SELECT id, workspace_id FROM intake_source
-      WHERE kind = 'crm' AND crm IS NOT NULL AND status = 'active' AND sync_every_h IS NOT NULL
+      WHERE kind IN ('crm','sheet') AND crm IS NOT NULL AND status = 'active' AND sync_every_h IS NOT NULL
         AND (last_synced_at IS NULL OR last_synced_at + make_interval(hours => sync_every_h) <= now()) ORDER BY last_synced_at NULLS FIRST LIMIT 20`);
     for (const s of due) {
       try {

@@ -125,7 +125,7 @@ export function parseCsvSample(text: string, col: number): string[] {
   return text.split(/\r?\n/).slice(1, 4).map(l => (l.split(',')[col] ?? '').trim());
 }
 // ---- contacts from a CRM (HubSpot lists, Zoho CRM views, Salesforce list views), read only ----
-export type CrmKind = 'hubspot' | 'zoho_crm' | 'salesforce';
+export type CrmKind = 'hubspot' | 'zoho_crm' | 'salesforce' | 'google_sheets';
 export interface CrmSource { id: string; name: string; kind: CrmKind; listName: string; integrationId: string; everyHours: number | null; lastSyncedAt: string | null; lastSyncError: string | null; imported: boolean }
 /** apiCalls (Salesforce): the calls this pull made, and the org's budget and usage. unreadable: fields the CRM user may not read. */
 export interface CrmApiCalls { calls: number; budget: number; usedLast24h: number; orgUsed: number | null; orgLimit: number | null }
@@ -138,6 +138,13 @@ export async function crmConnections(kind: CrmKind): Promise<{ id: string; name:
 export const crmLists = async (integrationId: string) => arr<{ id: string; name: string; size: number | null }>((await run<{ lists: any[] }>('source.crm.lists', { integrationId })).lists);
 export const crmPull = (integrationId: string, listId: string, sourceId?: string) => run<CrmPull>('source.crm.pull', { integrationId, listId, ...(sourceId ? { sourceId } : {}) });
 export const crmSources = async (kind: CrmKind) => arr<CrmSource>((await run<{ sources: any[] }>('source.crm.sources', { kind })).sources);
+
+// ---- Google Sheets as a live source (a service account's shared sheet, or a published CSV link) ----
+export async function googleAccounts(): Promise<{ id: string; name: string }[]> {
+  return arr<any>((await run<{ integrations: unknown[] }>('integration.list', {})).integrations).filter(i => i.kind === 'google_workspace' && i.status === 'connected').map(i => ({ id: i.id, name: i.name }));
+}
+export const sheetTabs = (integrationId: string, spreadsheet: string) => run<{ spreadsheetId: string; title: string; tabs: { id: string; name: string; size: number | null }[] }>('source.sheet.tabs', { integrationId, spreadsheet });
+export const sheetPull = (a: { integrationId: string; spreadsheet: string; tab: string } | { csvUrl: string }) => run<{ uploadId: string; sourceId: string; records: number }>('source.sheet.pull', a);
 
 // ---- payment status from the business's gateway (Razorpay, Cashfree, PayU) ----
 export type PayProvider = 'razorpay' | 'cashfree' | 'payu';
