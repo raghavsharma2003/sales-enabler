@@ -103,6 +103,15 @@ date, percentage or link that is not already one of the facts. No urgency, scarc
 Cite the evidence each change answers by its id (call ids, moment ids, issue ids) — only ids present in the evidence.
 Reply as JSON: {"proposals":[{"kind": one of ${PROPOSAL_KINDS.join('|')}, "rationale": "...", "change":[{"op":"set","path":"...","value":...}], "evidenceIds":["..."]}]}`;
 
+/** Moment kinds whose caller line may be shown to the model, as evidence of what people say. An opt-out is counted,
+ *  never quoted: the words of someone who asked to be left alone are not material for persuading the next person. */
+const QUOTABLE_MOMENTS = ['objection', 'question', 'confusion', 'callback_request', 'commitment'];
+/** Calls whose words never reach the model that writes the brief: a person in crisis. */
+const NEVER_QUOTED = `(c.reason_code = 'END_CRISIS' OR coalesce(c.end_reason, '') = 'crisis_handoff' OR 'safety' = ANY(c.flags))`;
+
+/** What learning reads: the triggering issue and the agent's open issues; what analysis wrote on the live version's calls
+ *  (moments counted by kind, with up to four caller lines per quotable kind; reason codes; outcomes, including none);
+ *  the agent's latest cross-call insight themes (objections, drop-offs, unanswered questions); recent calls; lessons. */
 async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: VersionRow, issueId?: string) {
   const versions = (await many<{ id: string }>(q, `SELECT v.id FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE a.workspace_id = $1 AND a.id = $2`, [ws, agentId])).map(r => r.id);
   // The issue that triggered this run (a monitor's), first; then the agent's own open issues.
@@ -110,16 +119,43 @@ async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: V
     `SELECT id, category, severity, detail FROM issue WHERE workspace_id = $1 AND status <> 'resolved'
        AND (id = $4 OR subject_id = $2 OR subject_id = ANY($3::uuid[]) OR detail->>'agentId' = $2::text)
      ORDER BY (id = $4) DESC NULLS LAST, created_at DESC LIMIT 20`, [ws, agentId, versions, issueId ?? null]);
-  const moments = await many<{ id: string; locus: string; reached: number; left_here: number; hazard: unknown; flagged: boolean }>(q,
-    `SELECT id, locus, reached, left_here, hazard, flagged FROM moment WHERE workspace_id = $1 AND agent_version_id = $2
-       ORDER BY flagged DESC, (left_here::float / greatest(reached, 1)) DESC LIMIT 10`, [ws, base.id]);
+  const recent = `c.workspace_id = $1 AND c.agent_version_id = $2 AND ${LIVE} AND c.ended_at > now() - interval '30 days'`;
+  const counts = await many<{ kind: string; n: number }>(q, `SELECT m.kind, count(*)::int AS n FROM call_moment m JOIN conversation c ON c.id = m.conversation_id AND c.workspace_id = m.workspace_id
+     WHERE ${recent} AND m.source = 'analysis' GROUP BY m.kind`, [ws, base.id]);
+  const quoted = await many<{ id: string; kind: string; quote: string; call_id: string }>(q, `SELECT id, kind, quote, call_id FROM (
+       SELECT m.id, m.kind, m.quote, c.id AS call_id, row_number() OVER (PARTITION BY m.kind ORDER BY c.ended_at DESC) AS k
+       FROM call_moment m JOIN conversation c ON c.id = m.conversation_id AND c.workspace_id = m.workspace_id
+       WHERE ${recent} AND m.source = 'analysis' AND m.kind = ANY($3::text[]) AND m.quote IS NOT NULL AND NOT ${NEVER_QUOTED}) x
+     WHERE k <= 4 ORDER BY kind, k`, [ws, base.id, QUOTABLE_MOMENTS]);
+  const moments = { counts: Object.fromEntries(counts.map(r => [r.kind, r.n])), quotes: quoted.map(r => ({ id: r.id, kind: r.kind, quote: r.quote, callId: r.call_id })) };
+  const reasons = Object.fromEntries((await many<{ code: string; n: number }>(q,
+    `SELECT coalesce(c.reason_code, 'none') AS code, count(*)::int AS n FROM conversation c WHERE ${recent} GROUP BY 1`, [ws, base.id])).map(r => [r.code, r.n]));
+  const outcomes = Object.fromEntries((await many<{ v: string; n: number }>(q,
+    `SELECT coalesce(c.outcome, 'none') AS v, count(*)::int AS n FROM conversation c WHERE ${recent} GROUP BY 1`, [ws, base.id])).map(r => [r.v, r.n]));
+  const themes = await latestThemes(q, ws, agentId);
   const calls = await many<{ id: string; outcome: string | null; reason_code: string | null; judge: unknown }>(q,
     `SELECT c.id, c.outcome, c.reason_code, c.analysis->'judge' AS judge FROM conversation c
        WHERE c.workspace_id = $1 AND c.agent_version_id = ANY($2::uuid[]) AND ${LIVE}
        ORDER BY c.started_at DESC LIMIT 40`, [ws, versions]);
   const lessons = await many<{ text: string; status: string; change_hash: string | null }>(q,
     `SELECT text, status, change_hash FROM lesson WHERE workspace_id = $1 AND (agent_id = $2 OR agent_id IS NULL) ORDER BY created_at DESC LIMIT 20`, [ws, agentId]);
-  return { issues, moments, calls, lessons };
+  return { issues, moments, reasons, outcomes, themes, calls, lessons };
+}
+
+export interface LearnedTheme { id: string; kind: string; title: string; count: number; quotedCalls: number; of: number; quotes: { text: string; callId: string }[] }
+
+/** The agent's latest finished insight (else the workspace's), its themes that can teach the brief something, each with an
+ *  id learning can cite (theme:<insight>:<index>). Quotes from calls that are never quoted are left out. */
+async function latestThemes(q: Queryable, ws: string, agentId: string): Promise<LearnedTheme[]> {
+  const ins = await one<{ id: string; themes: any[] }>(q, `SELECT id, themes FROM call_insight WHERE workspace_id = $1 AND status = 'done'
+      AND ((scope_type = 'agent' AND scope_id = $2) OR scope_type = 'workspace') ORDER BY (scope_type = 'agent') DESC, created_at DESC LIMIT 1`, [ws, agentId]);
+  if (!ins || !Array.isArray(ins.themes)) return [];
+  const ids = [...new Set(ins.themes.flatMap(t => (t?.quotes ?? []).map((x: any) => x?.conversationId)).filter((x: unknown): x is string => typeof x === 'string' && UUID_RE.test(x)))];
+  const hidden = new Set((await many<{ id: string }>(q, `SELECT c.id FROM conversation c WHERE c.workspace_id = $1 AND c.id = ANY($2::uuid[]) AND ${NEVER_QUOTED}`, [ws, ids])).map(r => r.id));
+  return ins.themes.map((t, i) => ({ t, i })).filter(({ t }) => ['objection', 'unanswered_question', 'drop_off'].includes(t?.kind))
+    .map(({ t, i }) => ({ id: `theme:${ins.id}:${i}`, kind: t.kind, title: String(t.title ?? ''), count: Number(t.count) || 0, quotedCalls: Number(t.quotedCalls) || 0, of: Number(t.of) || 0,
+      quotes: (t.quotes ?? []).filter((x: any) => !hidden.has(x?.conversationId)).map((x: any) => ({ text: String(x.text), callId: String(x.conversationId) })) }))
+    .filter(t => t.quotes.length > 0);
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -140,9 +176,9 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
   if (!base) throw new Error('this agent has no published version yet; learning starts from what has run');
   if (i.issueId && !(await one(ctx.q, 'SELECT 1 FROM issue WHERE id = $1 AND workspace_id = $2', [i.issueId, ws]))) throw new Error('no such issue');
   const ev = await gatherEvidence(ctx.q, ws, i.agentId, base, i.issueId);
-  if (!ev.issues.length && !ev.moments.length && !ev.calls.length) return { status: 'no_evidence', proposals: [] };
+  if (!ev.issues.length && !ev.moments.quotes.length && !ev.themes.length && !ev.calls.length) return { status: 'no_evidence', proposals: [] };
   const cfg = agentOf(base);
-  const known = new Set([...ev.issues.map(x => x.id), ...ev.moments.map(x => x.id), ...ev.calls.map(x => x.id)]);
+  const known = new Set([...ev.issues.map(x => x.id), ...ev.moments.quotes.map(x => x.id), ...ev.themes.map(x => x.id), ...ev.calls.map(x => x.id)]);
   const tried = new Set(ev.lessons.filter(l => l.change_hash && l.status !== 'won' && l.status !== 'active').map(l => l.change_hash!));
 
   let reply;
@@ -171,13 +207,28 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
 
     const gates = ops ? runGates(cfg, ops) : { passed: false, failures: [{ gate: 'shape', detail: parseError ?? 'no change' }], checked: ['shape'] };
     const failures = [...gates.failures];
+    // The agents module's compile lint, before anyone sees the change: a note that reads as a line she would say (quotes,
+    // first person, a greeting, Hindi, digits) would otherwise pass here and be refused only after approval.
+    // Only a refusal the change causes counts: a live version published before a newer lint rule may itself no longer
+    // compile, and that must not block every proposal on it (the shape check is then reported as not run).
+    let shapeNote: string | null = null;
+    if (gates.passed && 'proposed' in gates && gates.proposed) {
+      const compiled = await cross(ws, 'brief.compile', { config: gates.proposed });
+      const why = (r: typeof compiled) => ('reason' in r ? r.reason : r.status);
+      if (compiled.status === 'confirmed') gates.checked.push('shape');
+      else if (compiled.status !== 'not_loaded') {
+        const before = await cross(ws, 'brief.compile', { config: cfg });
+        if (before.status === 'confirmed' || why(before) !== why(compiled)) failures.push({ gate: 'shape', detail: why(compiled) });
+        else shapeNote = `not checked: the live version itself does not compile under today's rules (${why(before)})`;
+      }
+    }
     if (!kind) failures.push({ gate: 'shape', detail: `kind must be one of ${PROPOSAL_KINDS.join(', ')}` });
     if (!cited.length) failures.push({ gate: 'evidence', detail: 'no change is drafted without citing this workspace\'s own evidence' });
     const status = failures.length ? 'gated_out' : 'drafted';
     const row = await one<{ id: string }>(ctx.q, `INSERT INTO proposal (workspace_id, agent_id, base_version_id, kind, change, evidence, gates, status, change_hash, rationale)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
       [ws, i.agentId, base.id, kind ?? 'unknown', JSON.stringify(ops ?? p?.change ?? null), JSON.stringify({ cited, usage: reply.usage, ...(i.issueId ? { issueId: i.issueId } : {}) }),
-       JSON.stringify({ passed: !failures.length, failures, checked: gates.checked }), status, hash, typeof p?.rationale === 'string' ? p.rationale.slice(0, 1000) : null]);
+       JSON.stringify({ passed: !failures.length, failures, checked: gates.checked, ...(shapeNote ? { notes: [shapeNote] } : {}) }), status, hash, typeof p?.rationale === 'string' ? p.rationale.slice(0, 1000) : null]);
     out.push({ id: row!.id, status, kind, failures, cited });
   }
   return { status: 'ok', proposals: out };

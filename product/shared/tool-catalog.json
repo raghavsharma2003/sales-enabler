@@ -6595,7 +6595,7 @@
   {
    "name": "version.diff",
    "risk": "read",
-   "summary": "Compare two versions, or the draft with the latest version",
+   "summary": "Compare two versions, or the draft with the live (newest published) version",
    "needsApproval": false,
    "roles": [
     "owner",

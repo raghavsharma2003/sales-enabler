@@ -67,7 +67,7 @@ function fakeCoach() {
     assert.equal(req.purpose, 'learning');
     const evidence = JSON.parse(req.messages[1]!.content).evidence;
     return { text: JSON.stringify({ proposals: [{ kind: 'opening', rationale: 'callers leave before hearing why we called',
-      change: [{ op: 'set', path: 'opening.usefulFirst', value: 'your AC visit on 24 October is ready to confirm' }], evidenceIds: [evidence.issues[0].id] }] }),
+      change: [{ op: 'set', path: 'opening.usefulFirst', value: 'the visit date from the facts first, then whether it still suits them' }], evidenceIds: [evidence.issues[0].id] }] }),
       toolCalls: [], usage: { inputTokens: 10, outputTokens: 10 }, model: 'fake', provider: 'fake' };
   });
   return asked;
@@ -90,6 +90,10 @@ test('a monitor issue drafts one proposal, once; an engineering issue drafts non
   const p = await one<{ agent_id: string; status: string; evidence: any }>(pool, 'SELECT agent_id, status, evidence FROM proposal WHERE id = $1', [byIssue[hang.id]!.proposalId]);
   assert.deepEqual([p!.agent_id, p!.status, p!.evidence.issueId], [s.agentId, 'drafted', hang.id]);
   assert.deepEqual(p!.evidence.cited, [hang.id], 'the proposal cites the issue that triggered it');
+  // This fixture's live version predates today's compile lint (its disclosure is a sayable line), so the shape check
+  // says it did not run, rather than blocking every proposal on a version that already exists.
+  const g = (await one<{ gates: any }>(pool, 'SELECT gates FROM proposal WHERE id = $1', [byIssue[hang.id]!.proposalId]))!.gates;
+  assert.match(g.notes?.[0] ?? '', /not checked: the live version itself does not compile/, JSON.stringify(g));
 
   // Again (the job runs every minute): no second proposal and no second model call for the same issue.
   const again = await proposeFromIssues({ pool, registry }, { workspaceId: s.ws });

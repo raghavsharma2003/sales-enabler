@@ -136,9 +136,13 @@ export function runGates(base: AgentConfig, ops: ChangeOp[]): GateResult & { pro
   }
   if (lockedView(base) !== lockedView(proposed)) failures.push({ gate: 'locked_sections', detail: 'the change alters a locked part of the agent' });
 
+  // Only text the change writes new is judged: setting a whole list (objections, persona notes) repeats the business's
+  // existing entries, which are not part of the change (a template's own note would otherwise block every proposal).
+  const at = (path: string): unknown => path.split('.').reduce<any>((n, k) => (n == null ? undefined : n[k]), base);
+  const written = changedStrings(ops).filter(s => at(s.path) !== s.text);
   const factText = base.facts.map(f => f.value).join(' ').replace(/,/g, '');
   const allowedDomains = base.brand.verifiedDomains.map(d => d.toLowerCase());
-  for (const s of changedStrings(ops)) {
+  for (const s of written) {
     for (const n of s.text.match(NUMBER) ?? []) {
       if (!factText.includes(n.replace(/,/g, ''))) failures.push({ gate: 'provenance', detail: `"${n}" in ${s.path} is not one of the business's facts` });
     }
@@ -152,7 +156,7 @@ export function runGates(base: AgentConfig, ops: ChangeOp[]): GateResult & { pro
 
   for (const f of lintAgentConfig(proposed)) if (f.effect === 'refuse') failures.push({ gate: 'safety_lint', detail: `${f.rule} ${f.path}: ${f.message}` });
   const ctx = doorContext(proposed);
-  for (const s of changedStrings(ops)) {
+  for (const s of written) {
     const v = replyDoor(s.text, ctx);
     if (v.action !== 'pass') failures.push({ gate: 'reply_door', detail: `${s.path}: ${v.rule} ${v.reason}` });
   }
