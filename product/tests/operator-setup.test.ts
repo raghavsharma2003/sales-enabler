@@ -124,3 +124,27 @@ test('"what went wrong on that call?": the call tools are offered, reads run, an
 test('reset by chat: "start over", "archive" and "restore" offer the reset tools that are registered', () => {
   for (const t of ['Start over from scratch', 'Archive the old agent', 'Restore the agent I archived']) assert.ok(intentsOf(t).some(i => i.key === 'reset'), t);
 });
+
+test('reset by chat: with workspace\'s start-over tools registered, the model previews first and the reset is an owner card', { skip }, async () => {
+  const { module: operatorModule } = await import('../server/modules/operator/index.ts');
+  const { tool } = await import('../server/tools.ts');
+  const { obj, str } = await import('../shared/validate.ts');
+  // A stand-in for workspace's contract (workspace.reset.preview read; workspace.reset destructive, owner, confirm literal).
+  const stub = { name: 'workspace-stub', register(r: Registry) {
+    r.register(tool(obj({}), { name: 'workspace.reset.preview', risk: 'read', summary: 'what a start-over would archive and what stays', run: async () => ({ archive: { agents: 1 }, blocked: null }) }));
+    r.register(tool(obj({ confirm: str({ oneOf: ['start over'] }) }), { name: 'workspace.reset', risk: 'destructive', roles: ['owner'], summary: 'start over', run: async () => ({ batchId: 'x' }) }));
+  } };
+  const app = buildApp(pool, [operatorModule, stub]);
+  await new Promise<void>(r => app.server.listen(0, '127.0.0.1', r));
+  const b = `http://127.0.0.1:${(app.server.address() as AddressInfo).port}`;
+  try {
+    const c = await owner();
+    const seen = script([() => ({ toolCalls: [call('workspace_reset_preview', {})] }), () => ({ toolCalls: [call('workspace_reset', { confirm: 'start over' })] }), () => ({ text: 'A card is waiting for you.' })]);
+    const h = { 'content-type': 'application/json', 'x-vp-dev-member': c.member };
+    const id = (await (await fetch(b + '/v1/operator/threads', { method: 'POST', headers: h, body: '{}' })).json()).thread.id;
+    const text = await (await fetch(b + `/v1/operator/threads/${id}/messages`, { method: 'POST', headers: h, body: JSON.stringify({ text: 'Start over from scratch.' }) })).text();
+    assert.ok(seen[0]!.tools!.some(t => t.name === 'workspace_reset_preview') && seen[0]!.tools!.some(t => t.name === 'workspace_reset'));
+    assert.match(seen[0]!.messages.find(m => m.role === 'system' && /starting over/.test(m.content))!.content, /call workspace\.reset\.preview and say plainly what it would archive and what stays/);
+    assert.match(text, /"type":"approval"[^}]*"tool":"workspace\.reset"/, 'the reset is a card');
+  } finally { app.server.close(); app.server.closeAllConnections?.(); }
+});

@@ -38,7 +38,8 @@ export const INTENTS: { key: 'setup' | 'diagnose' | 'reset'; words: RegExp; tool
   { key: 'diagnose', words: /\b(why did (she|he|it|the agent)|what went wrong|cut (me|him|her|them) off|didn'?t (she|he|it) (answer|reply|say)|hung up|mis-?heard|wrong answer|interrupt\w*|talked over)\b/i,
     tools: ['call.explain', 'call.get', 'call.search', 'offering.list', 'knowledge.list', 'safety.check', 'agent.get', 'stack.list', 'offering.edit', 'brief.edit', 'stack.set', 'knowledge.span.approve'] },
   { key: 'reset', words: /\b(start over|start again|from scratch|reset|wipe|archive|unarchive|restore)\b/i,
-    tools: ['workspace.reset', 'workspace.start_over', 'agent.archive', 'agent.restore', 'agent.list', 'version.restore', 'version.list'] },
+    // workspace's start-over contract (preview first; reset and restore are owner cards) and agents' archive/restore.
+    tools: ['workspace.reset.preview', 'workspace.reset', 'workspace.reset.list', 'workspace.restore', 'agent.archive', 'agent.restore', 'agent.list', 'version.restore', 'version.list'] },
 ];
 export const intentsOf = (text: string) => INTENTS.filter(i => i.words.test(text));
 
