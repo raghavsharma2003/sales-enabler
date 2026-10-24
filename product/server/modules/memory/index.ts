@@ -347,4 +347,4 @@ export { compileBrief, BriefTooLarge } from './brief.ts';
 export { gate, detectRefused } from './gates.ts';
 export { forgetContactMemory } from './forget.ts';
 export { minorStatus } from './minor.ts';
-export { purgeTranscripts, redactAnalysis, transcriptRemovedWhy } from './transcript-purge.ts';
+export { purgeTranscripts, redactAnalysis, redactErasedOutcomes, transcriptRemovedWhy } from './transcript-purge.ts';

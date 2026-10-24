@@ -8,6 +8,7 @@
 //   conversation    transcript [], analysis with every free-text field removed (counts, codes and verdicts kept)
 //   call_moment     quote and note NULL          outcome   evidence.quote removed
 //   hand_off        brief.summary removed        call_insight   quotes from this call removed from each theme
+// An erased person's verified outcomes lose their reference and amount (redactErasedOutcomes).
 // Not touched here: memory facts (their own retention and forget), safety and opt-out records (the audit of what the
 // agent was stopped from saying and of the opt-out itself), follow-up payloads (operational messages, not the transcript).
 // The whole purge of one call is one transaction, marked with when and why, so a run cut short is finished by the next.
@@ -74,8 +75,29 @@ async function purgeOne(c: pg.PoolClient, id: string, ws: string, reason: Transc
   return true;
 }
 
+/** An erased person's verified outcomes keep their value and the file row (a business fact about the call) and lose the
+ *  reference and amount. Previewed imports not yet recorded lose the person's phone, id, reference and amount. */
+export async function redactErasedOutcomes(pool: pg.Pool, workspaceId?: string): Promise<{ outcomes: number; importRows: number }> {
+  const erased = `(SELECT ct.id FROM contact ct WHERE ct.workspace_id = o.workspace_id AND (ct.erased_at IS NOT NULL OR EXISTS
+      (SELECT 1 FROM forget_request f WHERE f.workspace_id = ct.workspace_id AND f.contact_id = ct.id AND f.scope = 'erase_me')))`;
+  const o = await pool.query(`UPDATE outcome o SET evidence = (evidence - 'reference' - 'amount') || '{"redacted":"erased"}'::jsonb
+    WHERE o.grade = 'verified' AND (evidence ? 'reference' OR evidence ? 'amount') AND ($1::uuid IS NULL OR o.workspace_id = $1::uuid)
+      AND o.contact_id IN ${erased}`, [workspaceId ?? null]);
+  let importRows = 0;
+  for (const imp of await many<{ id: string; workspace_id: string; rows: any[]; gone: string[] }>(pool,
+    `SELECT o.id, o.workspace_id, o.rows, array(SELECT x->>'contactId' FROM jsonb_array_elements(o.rows) x WHERE (x->>'contactId')::uuid IN ${erased}) AS gone
+     FROM outcome_import o WHERE o.status = 'previewed' AND ($1::uuid IS NULL OR o.workspace_id = $1::uuid)`, [workspaceId ?? null])) {
+    if (!imp.gone.length) continue;
+    const rows = imp.rows.map(r => imp.gone.includes(r.contactId) && (r.phone || r.externalId || r.reference || r.amount)
+      ? (importRows++, { row: r.row, value: r.value, date: r.date, contactId: r.contactId, redacted: 'erased' }) : r);
+    await pool.query('UPDATE outcome_import SET rows = $3 WHERE id = $1 AND workspace_id = $2', [imp.id, imp.workspace_id, JSON.stringify(rows)]);
+  }
+  return { outcomes: o.rowCount ?? 0, importRows };
+}
+
 /** One run of memory.transcript_purge. Returns what happened, for the job log and tests. */
 export async function purgeTranscripts(pool: pg.Pool, opts: { workspaceId?: string } = {}): Promise<{ purged: number; erased: number; retention: number }> {
+  await redactErasedOutcomes(pool, opts.workspaceId);
   let purged = 0, erased = 0, retention = 0;
   for (const d of await due(pool, opts.workspaceId)) {
     if (!(await tx(pool, c => purgeOne(c, d.id, d.workspace_id, d.reason)))) continue;

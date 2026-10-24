@@ -72,7 +72,7 @@ export interface CallRow { id: string; contactName: string; startedAt: string; d
 export interface CallTurn { idx: number; who: 'caller' | 'agent'; text: string; startMs: number | null; endMs: number | null; latencyMs: number | null; interrupted: boolean }
 export interface CallDoc {
   id: string; contactId: string | null; contactName: string; campaignId: string | null; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
-  reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; recordingWhy: string | null; transcriptWhy: string | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
+  reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; recordingWhy: string | null; transcriptWhy: string | null; verified: { value: string; from: string; aiRead: string | null; disagree: boolean } | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
   turns: CallTurn[]; moments: { source: string; kind: string; atMs: number | null; note: string | null; quote: string | null }[];
   safety: { seq: number; rule: string; action: string; detail: string }[];
   judgeMarks: { seq: number; label: string; outcome: 'raised' | 'shadow' | 'unavailable'; text: string }[]; tools: { seq: number; name: string; status: string }[]; handOffs: { destination: string; status: string }[];

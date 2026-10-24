@@ -14,6 +14,7 @@ import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLowe
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
 import { recordingLink } from '../../recording-url.ts';
 import { retentionPolicy } from '../intake/retention.ts';
+import { recordVerified } from './verified.ts';
 import { transcriptRemovedWhy } from '../memory/transcript-purge.ts';
 import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
 
@@ -93,6 +94,17 @@ export async function recordingFor(ctx: ToolCtx, c: Record<string, any>): Promis
   if (/^https?:\/\//i.test(uri)) return { url: uri, expiresAt: null, why: null };      // already an address a browser can open
   const link = recordingLink(c.id, ctx.workspaceId);
   return link ? { ...link, why: null } : no('The voice runtime\'s public address is not set on this server, so the recording cannot be played here.');
+}
+
+/** The call page's verified outcome beside the AI's reading: "Verified: paid, from renewals-oct.csv row 41" next to
+ *  "AI read: agreed", and whether they disagree. null when no system of record has spoken for this call. */
+export function verifiedView(outcomes: Record<string, any>[], analysis: any): { value: string; from: string; at: string; aiRead: string | null; disagree: boolean } | null {
+  const v = [...outcomes].reverse().find(o => o.grade === 'verified');
+  if (!v) return null;
+  const e = v.evidence ?? {};
+  const from = e.file ? `${e.file} row ${e.row}` : String(e.key?.source ?? v.source ?? 'a system of record');
+  const ai = [...outcomes].reverse().find(o => o.grade === 'ai_guess' && o.definition_id === v.definition_id)?.value ?? analysis?.outcomeGuess?.value ?? null;
+  return { value: v.value, from, at: v.created_at, aiRead: ai, disagree: ai !== null && ai !== v.value };
 }
 
 export interface JudgeRow { label: 'crisis' | 'opt_out'; mode: 'shadow' | 'raise'; outcome: 'raised' | 'shadow' | 'unavailable'; kind: string | null; confidence: number | null; reason: string | null }
@@ -199,12 +211,13 @@ export function registerTools(r: Registry): void {
       const judgeMarks = judged.map(j => ({ seq: j.seq, at: j.at, label: j.label, outcome: j.outcome, confidence: j.confidence, text: judgeMarkText(j as unknown as JudgeRow) }));
       const rc = reasonFor(c.reason_code);
       const recording = await recordingFor(ctx, c);
+      const verified = verifiedView(outcomes, c.analysis);
       const transcriptRemoved = transcriptRemovedWhy(c, (await retentionPolicy(ctx.q, ctx.workspaceId)).policy.transcripts_days);
       return {
         id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
         contactId: c.contact_id, agentVersionId: c.agent_version_id, agent: agentOf(c), startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
         endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
-        recordingUri: c.recording_uri, recording, transcriptRemoved, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
+        recordingUri: c.recording_uri, recording, transcriptRemoved, verified, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
         cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
         turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
       };
@@ -362,15 +375,7 @@ export function registerTools(r: Registry): void {
     summary: 'Record an outcome verified by a system of record (payment, booking or CRM webhook). Called by integrations, never by a person or model',
     run: async (ctx, i) => {
       if (ctx.actor.type !== 'system') throw new Error('verified outcomes come only from a verified key delivered by an integration');
-      const c = await conversation(ctx, i.conversationId);
-      if (c.channel === 'test') throw new Error('test calls do not take outcomes');
-      await checkValue(ctx, i.definitionId, i.value);
-      const dup = await one(ctx.q, `SELECT 1 FROM outcome WHERE workspace_id = $1 AND grade = 'verified' AND evidence->'key' = $2::jsonb`, [ctx.workspaceId, JSON.stringify(i.key)]);
-      if (dup) return { ok: true, duplicate: true };
-      await ctx.q.query(`INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, evidence) VALUES ($1,$2,$3,$4,$5,'verified',$6,$7)`,
-        [ctx.workspaceId, c.id, c.contact_id, i.definitionId, i.value, i.key.source, { key: i.key }]);
-      await refreshOutcome(ctx.q, ctx.workspaceId, c.id);
-      return { ok: true, grade: 'verified' };
+      return recordVerified(ctx.q, ctx.workspaceId, i);
     },
   }));
 
