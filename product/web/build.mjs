@@ -1,7 +1,7 @@
 // Bundles the single-page app into dist/: index.html + hashed JS/CSS. `node product/web/build.mjs`
 // React 19 + esbuild only; no UI library. The server (server/app.ts) serves dist/ and falls back to index.html.
 import { build } from 'esbuild';
-import { cp, mkdir, rm, writeFile, readdir, stat } from 'node:fs/promises';
+import { cp, mkdir, rename, rm, writeFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
@@ -19,7 +19,9 @@ const result = await build({
   splitting: true,
   bundle: true,
   minify: true,
-  sourcemap: false,
+  // Maps are written beside the build but never served or counted (moved to .maps/ below): the client event log stores
+  // minified stacks, and product/scripts/client-stack.ts turns them back into file:line for a review.
+  sourcemap: 'external',
   format: 'esm',
   target: ['es2020', 'chrome100', 'safari15'],
   jsx: 'automatic',
@@ -83,6 +85,9 @@ async function walk(dir) {
     if (firstLoad.has(f.name)) withShared += g;
   }
 }
+const maps = here + '.maps/';
+await rm(maps, { recursive: true, force: true }); await mkdir(maps, { recursive: true });
+for (const p of Object.keys(result.metafile.outputs)) if (p.endsWith('.map')) await rename(p, maps + p.split('/').pop());
 await walk(dist + 'assets/');
 const report = { js, css, bytes: total, gzipBytes: gz, firstLoadGzipBytes: withShared, entryGzipBytes: entryGz, largestChunk: largest };
 await writeFile(dist + 'build.json', JSON.stringify(report));

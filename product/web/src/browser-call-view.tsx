@@ -5,6 +5,7 @@ import { Bot, PhoneOff } from 'lucide-react';
 import { BrowserCall, type CallState, type Caption, type Join } from './browser-call.ts';
 import { Btn } from './ui.tsx';
 import { Link } from './router.tsx';
+import { record } from './beacon.ts';
 
 const STATE_WORDS: Record<CallState, string> = { connecting: 'Connecting', listening: 'Listening', thinking: 'Thinking', speaking: 'Speaking', ended: 'Call ended' };
 const END_WORDS: Record<string, string> = {
@@ -33,8 +34,9 @@ export function BrowserCallView({ join, conversationId, agentName, onClose }: { 
       ended: setEnd,
     });
     void c.start();
+    record('action', 'test call started');
     const t0 = Date.now(); const timer = setInterval(() => setSecs(Math.floor((Date.now() - t0) / 1000)), 500);
-    return () => { clearInterval(timer); c.hangup(); };
+    return () => { clearInterval(timer); c.hangup(); record('perf', 'test call', { ms: Date.now() - t0 }); };
   }, [join]);
   useEffect(() => { box.current?.lastElementChild?.scrollIntoView({ block: 'nearest' }); }, [caps]);
 

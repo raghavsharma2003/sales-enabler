@@ -1,6 +1,7 @@
 // The only network door of the UI. Every page action is one tool: POST /v1/tools/:name {args}.
 // The kernel answers with a Receipt (confirmed / needs_approval / not_executed / unknown); the UI never guesses a status.
 import { plainReason } from './labels-core.ts';
+import { record } from './beacon.ts';
 export type Risk = 'read' | 'draft' | 'test' | 'external' | 'spend' | 'destructive' | 'policy';
 
 export type Receipt<T = unknown> =
@@ -37,12 +38,21 @@ async function http(method: string, url: string, body?: unknown): Promise<{ stat
   try {
     res = await fetch(url, { method, credentials: 'same-origin', headers: body === undefined ? undefined : { 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
   } catch {
+    failed(url, 0, 'offline');
     throw new ApiError(0, 'offline', 'Could not reach the server. Check your connection and try again.');
   }
   let json: any = null;
   try { json = await res.json(); } catch { /* empty body */ }
   if (res.status === 401 && !url.startsWith('/v1/login') && !url.startsWith('/v1/signup')) onUnauth();
+  if (res.status >= 400) failed(url, res.status, json?.error?.code ?? (typeof json?.status === 'string' ? json.status + (json.path ? ':' + json.path : '') : 'error'));
   return { status: res.status, json };
+}
+
+/** A failed call for the client event log: which tool or route, the HTTP status and the server's code, never the arguments. */
+function failed(url: string, http: number, code: string) {
+  if (url.startsWith('/v1/client-events')) return;
+  const tool = url.startsWith('/v1/tools/') ? decodeURIComponent(url.slice(10)) : url.split('?')[0];
+  record('result', tool, { status: 'failed', http, code });
 }
 
 function fail(r: { status: number; json: any }): never {

@@ -22,3 +22,6 @@ __pycache__/
 
 # analysis-bench default output (product/scripts/analysis-bench.ts --out); results worth keeping go to research/
 product/analysis-bench-out/
+
+# Web build source maps: kept beside the build for product/scripts/client-stack.ts, never served
+product/web/.maps/

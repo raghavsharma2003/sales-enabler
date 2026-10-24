@@ -1,0 +1,18 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.client-event-beacon",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The browser half of the client event log sends the workspace builder's agreed shape to POST /v1/client-events ({session: tab uuid, events: [{at, kind, page, name, detail}]}, at most 100 events and 60 KB a batch, flat detail of at most 20 keys): view (app loaded, with detail.build = the entry script's hash on the tab's first event), nav (detail.from), error (name = message; type, source, line, stack, and React's componentStack from a page-level boundary that shows 'Something went wrong on this page' instead of a blank screen), action and result around every act() (detail.status), result for a failed read (status failed, http, code), perf (a test call's length). Argument values and refusal text are never sent; phones (last four kept) and emails ([email]) are masked in the browser before sending. Source maps stay beside the build (product/web/.maps, never served) and product/scripts/client-stack.ts maps a stored stack back to file:line",
+   "rationale": "directive.2026-10-24.calling-first-build-all (the log of everything). The integrator split item 1: workspace owns the server (table, retention, masks, rate limit, staff read), web owns the beacon.",
+   "reverse_if": "The server's shape changes (then the beacon follows it), or staging shows the per-member limit dropping normal sessions."
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-24.client-event-beacon", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements" }
+ ],
+ "events": []
+}

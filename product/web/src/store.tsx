@@ -3,6 +3,7 @@
 // confirmed, needs a human tap (opens the approval sheet), or refused (the reason is shown, never swallowed).
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as api from './api.ts';
+import { record } from './beacon.ts';
 import { ApiError, ToolMissing, ToolRefused, type Me, type Receipt } from './api.ts';
 import type { OperatorCard, RequestedBy } from './types.ts';
 import { plainReason, requesterLine, toolAsk, toolDone } from './labels-core.ts';
@@ -75,7 +76,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const act = useCallback(async <T,>(tool: string, args: unknown = {}, o: { quiet?: boolean; describe?: string } = {}): Promise<ActResult<T>> => {
     let r: Receipt<T>;
-    try { r = await api.callTool<T>(tool, args); } catch (e) {
+    record('action', tool);
+    try { r = await api.callTool<T>(tool, args); record('result', tool, { status: r.status }); } catch (e) {
       const reason = e instanceof ApiError ? e.message : 'Something went wrong. Nothing was changed.';
       toast(reason, 'bad'); return { ok: false, reason };
     }

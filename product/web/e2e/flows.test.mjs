@@ -6,6 +6,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { createHmac } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import pg from 'pg';
 import { audit, axe } from './a11y.mjs';
 import { EMI_ROWS, xlsxFile } from '../dev/xlsx-sample.mjs';
@@ -2019,4 +2020,49 @@ test('Billing: the daily test budget sits with the other caps, shows today\'s us
       assert.deepEqual((await axe(p)).filter(v => v.impact === 'serious' || v.impact === 'critical'), [], `axe on Billing at ${tag === 'd' ? 1440 : 390}`);
     }
   } finally { await phoneCtx.close(); }
+});
+
+// ---- The client event log (owner directive 2026-10-24): what the beacon sends, in the shape agreed with the workspace builder
+// (who owns POST /v1/client-events). The route is answered here, so this checks the browser half on its own.
+test('Client event log: a component that throws shows a calm card, and the beacon sends the error, a rejection and the page change, masked, in the agreed shape', async () => {
+  const sent = [];
+  await page.route('**/v1/client-events', async r => { try { sent.push(JSON.parse(r.request().postData() ?? '{}')); } catch { /* not JSON */ } await r.fulfill({ status: 202, contentType: 'application/json', body: '{"accepted":1,"dropped":0}' }); });
+  // The agent list answers with a broken row (a name that is not text), so an agent card throws while drawing: a real render
+  // error, not a test hook.
+  await page.route('**/v1/tools/agent.list', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'confirmed', result: { agents: [{ id: 'not-an-agent', name: { broken: true }, job: 'collections', latest_version: 1, updated_at: new Date().toISOString() }] } }) }));
+  await page.goto(`${BASE}/agents`);
+  const card = page.getByRole('alert').filter({ hasText: 'Something went wrong on this page' });
+  await card.waitFor({ timeout: 10000 });
+  assert.ok(await card.getByRole('button', { name: 'Reload the page' }).isVisible());
+  await page.unroute('**/v1/tools/agent.list');
+  await page.evaluate(() => { void Promise.reject(new Error('lookup failed for 9000000077 and priya.test@example.test')); });
+  await page.getByRole('link', { name: 'Go to Today' }).click();
+  await page.getByRole('heading', { name: 'Today', level: 1 }).waitFor();
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));   // nothing left waiting for the timer
+  const events = () => sent.flatMap(b => b.events ?? []);
+  for (let k = 0; k < 40 && !events().some(e => e.kind === 'error' && /lookup failed/.test(e.name)); k++) await page.waitForTimeout(250);
+  await page.unroute('**/v1/client-events');
+  const all = events();
+  for (const b of sent) {
+    assert.match(b.session, /^[0-9a-f-]{36}$/, 'a tab id');
+    assert.ok(b.events.length >= 1 && b.events.length <= 100, 'one to a hundred events a batch');
+  }
+  for (const e of all) {
+    assert.ok(['view', 'nav', 'error', 'action', 'result', 'perf'].includes(e.kind), e.kind);
+    assert.ok(e.page.length <= 300 && (!e.name || e.name.length <= 200));
+    assert.ok(Object.values(e.detail ?? {}).every(v => ['string', 'number', 'boolean'].includes(typeof v)) && Object.keys(e.detail ?? {}).length <= 20, 'flat detail');
+  }
+  const crash = all.find(e => e.kind === 'error' && e.detail?.boundary === 'page');
+  assert.ok(crash, 'the render error was sent: ' + JSON.stringify(sent).slice(0, 1500));
+  assert.equal(crash.page, '/agents');
+  assert.match(crash.detail.componentStack ?? '', /\/assets\/chunks\/agents-[\w]+\.js:\d+:\d+/, "with React's component stack (minified)");
+  // The review turns it back into source with the maps the build keeps beside dist (product/scripts/client-stack.ts).
+  const mapped = execFileSync('npx', ['tsx', 'product/scripts/client-stack.ts', crash.detail.componentStack], { encoding: 'utf8' });
+  assert.match(mapped, /src\/pages\/agents\.tsx:\d+/, 'the component stack maps back to the file that threw: ' + mapped.slice(0, 300));
+  const rej = all.find(e => e.kind === 'error' && /lookup failed/.test(e.name));
+  assert.equal(rej.name, 'lookup failed for •••••0077 and [email]', 'masked before it left the browser');
+  assert.ok(all.some(e => e.kind === 'nav' && e.page === '/' && e.detail?.from === '/agents'), 'the page change');
+  assert.ok(all.some(e => typeof e.detail?.build === 'string'), 'the build that ran, on the first event of the tab');
+  const text = JSON.stringify(sent);
+  assert.ok(!text.includes('9000000077') && !text.includes('priya.test@'), 'no phone or email in clear');
 });
