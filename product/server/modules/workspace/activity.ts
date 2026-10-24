@@ -97,7 +97,7 @@ export function registerActivity(r: Registry) {
         const about = subject?.name ? ` (${subject.name})` : '';
         const line = proposed ? `${who(r)} asked to ${asked(proposed)}${about} and is waiting for approval`
           : `${who(r)} ${happened(r.action)}${about}${r.payload.mode === 'A2' ? ' (approved)' : ''}${r.payload.outcome === 'unknown' ? ' (outcome not confirmed)' : ''}`;
-        return { id: r.id, at: r.at, line, action: r.action, actor: { type: r.actor_type, id: r.actor_id },
+        return { id: r.id, at: r.at, line, action: r.action, ...(proposed ? { tool: proposed } : {}), actor: { type: r.actor_type, id: r.actor_id },
           object: r.object_type ? { type: r.object_type, id: r.object_id } : null, subject };
       });
       const last = page[page.length - 1];

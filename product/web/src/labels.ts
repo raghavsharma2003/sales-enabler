@@ -212,13 +212,16 @@ const PROPOSED = ['action', 'propose'].join('.'), CREATED = ['workspace', 'creat
 /** What the server still calls Vyakti in its activity lines. Built from parts so the no-working-name guard reads only what people see. */
 const WORKING_NAME = ['V', 'P'].join('');
 /** subject: the name of what the row was about (an agent, campaign, contact or call), resolved by the server. */
-export function activitySentence(line: string, action: string, subject?: string | null): string {
+export function activitySentence(line: string, action: string, subject?: string | null, tool?: string | null): string {
   const actor = (/^(.+?) (?:ran|asked|did|made|set|changed|created|added|saved|reviewed) /.exec(line)?.[1] ?? 'Someone').replace(/^An agent$/, 'The assistant').replace(new RegExp(`^${WORKING_NAME}$`), 'Vyakti').replace(new RegExp(`^The ${WORKING_NAME} team$`), 'The Vyakti team');
   if (action === CREATED) return `${actor} created the workspace`;
   if (action === PROPOSED) {
-    const words = /asked to run (.+?) and is waiting/.exec(line)?.[1];
-    const key = words ? Object.keys(TOOL_LABEL).find(k => k.replace(/[._]/g, ' ') === words) : undefined;
-    return key ? `${actor} asked for approval: ${TOOL_LABEL[key].ask.charAt(0).toLowerCase()}${TOOL_LABEL[key].ask.slice(1)}` : `${actor} asked for approval to make a change`;
+    // The server names the proposed tool (activity.list item.tool); the line's own words are the fallback, never "a change".
+    const words = /asked to (?:run )?(.+?)(?: \([^)]*\))? and is waiting/.exec(line)?.[1];
+    const key = tool && TOOL_LABEL[tool] ? tool : words ? Object.keys(TOOL_LABEL).find(k => k.replace(/[._]/g, ' ') === words) : undefined;
+    const about = subject ? ` (${subject})` : '';
+    if (key) return `${actor} asked for approval: ${TOOL_LABEL[key].ask.charAt(0).toLowerCase()}${TOOL_LABEL[key].ask.slice(1)}${about}`;
+    return words ? `${actor} asked for approval to ${words}${about}` : `${actor} asked for approval to make a change`;
   }
   return `${actor} ${PAST[action] ?? 'made a change'}${subject ? `: ${subject}` : ''}${/\(approved\)/.test(line) ? ', after approval' : ''}`;
 }

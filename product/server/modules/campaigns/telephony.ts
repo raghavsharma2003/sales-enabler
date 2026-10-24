@@ -1,6 +1,7 @@
 // Numbers: the series router (which CLI series a call may present) and the telephony provider seam for search,
 // rent, KYC and bring-your-own lines. Tests use FakeTelephony; the real adapter is off unless VP_TELEPHONY_LIVE=1
 // and its credentials are set, so no test and no dev server can ever reach a paid carrier API.
+import { SetupError } from '../../setup-error.ts';
 import { randomUUID } from 'node:crypto';
 import type { CallCategory, SectorPack } from '../../../shared/agent-config.ts';
 
@@ -39,8 +40,13 @@ export interface TelephonyProvider {
   systemCall(input: { to: string; from: string; lines: string[] }): Promise<{ ref: string }>;
 }
 
-export class TelephonyDisabled extends Error {
-  constructor(what: string) { super(`telephony provider is not enabled (${what}); set VP_TELEPHONY_LIVE=1 with credentials on the server`); this.name = 'TelephonyDisabled'; }
+/** No live carrier on this server. Members read plain words and code telephony_disabled; the operator's hint is logged. */
+export class TelephonyDisabled extends SetupError {
+  constructor(what: string) {
+    super('Phone lines are not switched on for this workspace yet, so numbers cannot be searched, rented or rung from here. Practice callers and browser test calls work without one.',
+      'telephony_disabled', `telephony provider is not enabled (${what}); set VP_TELEPHONY_LIVE=1 with the carrier credentials`);
+    this.name = 'TelephonyDisabled';
+  }
 }
 
 /** Synthetic numbers in the 90000000xx test range. Never dials, never charges. */

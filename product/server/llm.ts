@@ -58,9 +58,13 @@ export function llmConfigured(purpose: Purpose): boolean {
   return Boolean(c.url && c.key && c.model);
 }
 
+const unsetLogged = new Set<string>();   // the operator's hint goes to the log once; a member reads plain words
 function request(req: LlmRequest, streaming: boolean) {
   const c = cfg(req.purpose);
-  if (!c.url || !c.key || !c.model) throw new LlmError(`no model is configured for ${req.purpose}; set VP_LLM_${req.purpose.toUpperCase()}_URL/KEY/MODEL`, false);
+  if (!c.url || !c.key || !c.model) {
+    if (!unsetLogged.has(req.purpose)) { unsetLogged.add(req.purpose); console.warn(`[vp] setup: no model for ${req.purpose}; set VP_LLM_${req.purpose.toUpperCase()}_URL/KEY/MODEL`); }
+    throw new LlmError(`no model is configured for ${req.purpose} on this server`, false);
+  }
   const model = req.model ?? c.model;
   const body: Record<string, unknown> = {
     model,

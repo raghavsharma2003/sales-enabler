@@ -1,6 +1,7 @@
 // Encryption and signing for the workspace module. Secrets (integration credentials, webhook signing
 // secrets, one-time reveals) are AES-256-GCM under VP_SECRET_KEY and bound to the workspace they belong
 // to (the workspace id is the GCM additional data), so a ciphertext copied into another workspace fails to open.
+import { SetupError } from '../../setup-error.ts';
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export function secretKey(): Buffer {
@@ -8,7 +9,8 @@ export function secretKey(): Buffer {
   let key: Buffer | null = null;
   if (/^[0-9a-fA-F]{64}$/.test(raw)) key = Buffer.from(raw, 'hex');
   else if (raw) { const b = Buffer.from(raw, 'base64'); if (b.length === 32) key = b; }
-  if (!key) throw new Error('VP_SECRET_KEY must be set to 32 random bytes as 64 hex characters or base64');
+  if (!key) throw new SetupError('Secrets cannot be stored or read on this server yet: its encryption key is not set up.', 'secret_key_missing',
+    'VP_SECRET_KEY must be set to 32 random bytes as 64 hex characters or base64');
   return key;
 }
 

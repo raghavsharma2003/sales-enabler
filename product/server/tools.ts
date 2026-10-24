@@ -12,6 +12,7 @@
 import type pg from 'pg';
 import { argsHash, authorise, canApprove, isA3, needsHumanApproval, type RiskClass, type Role } from '../shared/approval.ts';
 import { ValidationError, type Validator } from '../shared/validate.ts';
+import { publicReason } from './setup-error.ts';
 import { appendAudit } from './audit.ts';
 import { subjectOf } from './subject.ts';
 import { one, tx, type Queryable } from './db.ts';
@@ -82,7 +83,7 @@ export function tool<I, O>(input: Validator<I>, def: Omit<ToolDef<I, O>, 'input'
 export type Receipt<O = unknown> =
   | { status: 'confirmed'; mode: 'A1' | 'A2' | 'A3'; result: O; argsHash: string; actionId?: string }
   | { status: 'needs_approval'; actionId: string; argsHash: string; risk: RiskClass; summary: string; expiresAt: string }
-  | { status: 'not_executed'; reason: string; argsHash?: string; path?: string }
+  | { status: 'not_executed'; reason: string; argsHash?: string; path?: string; code?: string }
   | { status: 'unknown'; reason: string; argsHash: string; actionId?: string };
 
 /** Throw this from a tool whose side effect may have happened (e.g. a carrier request timed out). */
@@ -123,6 +124,10 @@ export class Registry {
 
   /** Call a tool. A1/A3 run now; A2 is stored as a proposed action and returns an approval card. */
   async execute<O = unknown>(pool: pg.Pool, name: string, raw: unknown, opts: { workspaceId: string; actor: Actor; threadId?: string }): Promise<Receipt<O>> {
+    return asPublic(await this.executeRaw<O>(pool, name, raw, opts), name);
+  }
+
+  private async executeRaw<O = unknown>(pool: pg.Pool, name: string, raw: unknown, opts: { workspaceId: string; actor: Actor; threadId?: string }): Promise<Receipt<O>> {
     const t = this.tools.get(name);
     if (!t) return { status: 'not_executed', reason: `unknown tool "${name}"` };
     // Members (and agents acting for one, which carry that member's role) are held to the tool's roles.
@@ -151,7 +156,7 @@ export class Registry {
            VALUES ($1,$2,$3,$4,$5,$6,'proposed',$7,$8,$9,$10) RETURNING id, expires_at`,
           [opts.workspaceId, opts.threadId ?? null, name, JSON.stringify(input), h, t.risk, actorId(opts.actor), version, summary, new Date(Date.now() + APPROVAL_TTL_MS)]);
         await appendAudit(c, { workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: 'action.propose',
-          objectType: 'action', objectId: a!.id, argsHash: h, payload: { tool: name, risk: t.risk, subject: subjectOf(input) } });
+          objectType: 'action', objectId: a!.id, argsHash: h, payload: { tool: name, risk: t.risk, subject: subjectOf(input, undefined, name) } });
         return { ...a!, summary };
       });
       return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: t.risk, summary: row.summary, expiresAt: row.expires_at.toISOString() };
@@ -160,13 +165,17 @@ export class Registry {
     const mode: 'A1' | 'A3' = isA3(name) ? 'A3' : 'A1';     // not held: an A3 verb here ran at once
     return this.run<O>(pool, t, input, h, mode, opts.workspaceId, opts.actor, async (c, out) => {
       if (t.risk === 'read') return out;     // reads change nothing; auditing them would bury the changes
-      await appendAudit(c,{ workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: name, argsHash: h, payload: { mode, risk: t.risk, subject: subjectOf(input, out) } });
+      await appendAudit(c,{ workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: name, argsHash: h, payload: { mode, risk: t.risk, subject: subjectOf(input, out, name) } });
       return out;
     });
   }
 
   /** A human member approves a proposed action; it runs now, once, if nothing changed since it was proposed. */
   async approve<O = unknown>(pool: pg.Pool, actionId: string, approver: { workspaceId: string; memberId: string }): Promise<Receipt<O>> {
+    return asPublic(await this.approveRaw<O>(pool, actionId, approver));
+  }
+
+  private async approveRaw<O = unknown>(pool: pg.Pool, actionId: string, approver: { workspaceId: string; memberId: string }): Promise<Receipt<O>> {
     const pre = await one<{ tool: string }>(pool, 'SELECT tool FROM action WHERE id = $1 AND workspace_id = $2', [actionId, approver.workspaceId]);
     if (!pre) return { status: 'not_executed', reason: 'no such action' };
     const t = this.tools.get(pre.tool);
@@ -196,7 +205,7 @@ export class Registry {
         // A provider call whose outcome is unknown (a charge that may have gone through) is recorded as unknown, never
         // as not run: the action must not look approvable again.
         if (e instanceof UnknownOutcome) return this.markUnknown(pool, actionId, approver, t.name, argsHash(t.name, input0), e.message);
-        return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e) };
+        return refused(e);
       }
     }
     try {
@@ -236,7 +245,7 @@ export class Registry {
         const stored = t.redactResult ? t.redactResult(out) : out;
         await c.query("UPDATE action SET status = 'executed', result = $2, executed_at = now() WHERE id = $1", [actionId, JSON.stringify(stored ?? null)]);
         await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: t.name,
-          objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', risk: t.risk, approverRole: m.role, subject: subjectOf(input, out) } });
+          objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', risk: t.risk, approverRole: m.role, subject: subjectOf(input, out, t.name) } });
         return { status: 'confirmed', mode: 'A2', result: out as O, argsHash: h, actionId } as Receipt<O>;
       });
     } catch (e) {
@@ -246,7 +255,7 @@ export class Registry {
       }
       if (e instanceof UnknownOutcome) return this.markUnknown(pool, actionId, approver, t.name, h, e.message);
       if (e instanceof ValidationError) return { status: 'not_executed', reason: e.message, path: e.path, argsHash: h || undefined };
-      return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e), argsHash: h || undefined };
+      return refused(e, h || undefined);
     }
   }
 
@@ -294,9 +303,19 @@ export class Registry {
         return { status: 'unknown', reason: e.message, argsHash: h };
       }
       if (e instanceof ValidationError) return { status: 'not_executed', reason: e.message, path: e.path, argsHash: h };
-      return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e), argsHash: h };
+      return refused(e, h);
     }
   }
+}
+
+/** A thrown error as a refusal; a SetupError (or any error with a string code) passes its code on. */
+function refused(e: unknown, argsHash?: string): Receipt<never> {
+  const code = e && typeof e === 'object' && typeof (e as { code?: unknown }).code === 'string' && /^[a-z][a-z0-9_]*$/.test((e as { code: string }).code) ? (e as { code: string }).code : undefined;
+  return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e), ...(argsHash ? { argsHash } : {}), ...(code ? { code } : {}) };
+}
+/** Every receipt a caller sees: a reason carrying server detail (an env var, a path, a stack) is logged and replaced. */
+function asPublic<O>(r: Receipt<O>, tool?: string): Receipt<O> {
+  return r.status === 'not_executed' || r.status === 'unknown' ? { ...r, reason: publicReason(r.reason, tool) } : r;
 }
 
 class Refusal extends Error {

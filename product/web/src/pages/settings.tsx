@@ -251,7 +251,7 @@ function Activity() {
       const groups: [string, ActivityRow[]][] = [];
       for (const r of d) { const k = dayLabel(r.at); const g = groups[groups.length - 1]; if (g && g[0] === k) g[1].push(r); else groups.push([k, [r]]); }
       return <div className="stack">{groups.map(([day, rows]) => <section key={day} aria-label={day}><h3 className="dayhead">{day}</h3>
-        <ul className="billing">{foldRepeats(rows, r => activitySentence(r.line, r.action, r.subject)).map(({ row: r, n }) => { const to = pageFor(r.action); return <li key={r.id}><div><span className="tnum muted">{time(r.at).replace(' IST', '')}</span> &nbsp;{activitySentence(r.line, r.action, r.subject)}{n > 1 && <span className="muted"> ({n} times)</span>}</div>{to && <Link to={to} className="small">Open</Link>}</li>; })}</ul></section>)}</div>;
+        <ul className="billing">{foldRepeats(rows, r => activitySentence(r.line, r.action, r.subject, r.tool)).map(({ row: r, n }) => { const to = pageFor(r.action); return <li key={r.id}><div><span className="tnum muted">{time(r.at).replace(' IST', '')}</span> &nbsp;{activitySentence(r.line, r.action, r.subject, r.tool)}{n > 1 && <span className="muted"> ({n} times)</span>}</div>{to && <Link to={to} className="small">Open</Link>}</li>; })}</ul></section>)}</div>;
     }}</Async></Card></div>;
 }
 export { count, Lock };

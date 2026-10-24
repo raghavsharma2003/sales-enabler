@@ -23,8 +23,17 @@ export const TEST_CALL_MAX_COST_INR_MILLI = 50_000;
 const date = str({ pattern: /^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:\d{2})?)?$/ });
 const reasonCode = str({ oneOf: REASON_CODES.map(r => r.code) });
 
+// The agent and version a call ran, in the same query as the call (one join, never a read per row): "Asha, version 3".
+// agent_version has no workspace_id; the agent's does, so a version of another workspace's agent never names an agent here.
+const AGENT_JOIN = `LEFT JOIN agent_version av ON av.id = cv.agent_version_id
+  LEFT JOIN agent ag ON ag.id = av.agent_id AND ag.workspace_id = cv.workspace_id`;
+const AGENT_COLS = 'ag.id AS agent_id, ag.name AS agent_name, av.number AS agent_version_number';
+/** The call's agent as the call log shows it, or null for a call no published version made (a draft test call). */
+const agentOf = (x: Record<string, any>) => x.agent_id ? { id: x.agent_id as string, name: x.agent_name as string, version: Number(x.agent_version_number),
+  label: `${x.agent_name}, version ${x.agent_version_number}` } : null;
+
 async function conversation(ctx: ToolCtx, id: string) {
-  const c = await one<Record<string, any>>(ctx.q, `SELECT cv.*, a.campaign_id FROM conversation cv LEFT JOIN attempt a ON a.id = cv.attempt_id AND a.workspace_id = cv.workspace_id
+  const c = await one<Record<string, any>>(ctx.q, `SELECT cv.*, a.campaign_id, ${AGENT_COLS} FROM conversation cv LEFT JOIN attempt a ON a.id = cv.attempt_id AND a.workspace_id = cv.workspace_id ${AGENT_JOIN}
     WHERE cv.id = $1 AND cv.workspace_id = $2`, [id, ctx.workspaceId]);
   if (!c) throw new Error('no such call in this workspace');
   return c;
@@ -186,7 +195,7 @@ export function registerTools(r: Registry): void {
       const recording = await recordingFor(ctx, c);
       return {
         id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
-        contactId: c.contact_id, agentVersionId: c.agent_version_id, startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
+        contactId: c.contact_id, agentVersionId: c.agent_version_id, agent: agentOf(c), startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
         endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
         recordingUri: c.recording_uri, recording, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
         cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
@@ -233,9 +242,10 @@ export function registerTools(r: Registry): void {
       p.push(i.limit ?? 50);
       const rows = await many<Record<string, any>>(ctx.q,
         `SELECT cv.id, cv.channel, cv.status, cv.started_at, cv.ended_at, cv.duration_s, cv.end_reason, cv.reason_code, cv.flagged, cv.flags,
-                cv.cost_inr_milli::int AS cost_inr_milli, cv.contact_id, cv.agent_version_id, a.campaign_id, ${BEST_OUTCOME} AS outcome, ${BEST_GRADE} AS grade
-         ${FROM} WHERE ${where.join(' AND ')} ORDER BY cv.started_at DESC LIMIT $${p.length}`, p);
-      return { total, calls: rows.map(x => ({ ...x, reasonLabel: reasonFor(x.reason_code)?.label ?? null })), next: rows.length === (i.limit ?? 50) ? rows[rows.length - 1].started_at : null };
+                cv.cost_inr_milli::int AS cost_inr_milli, cv.contact_id, cv.agent_version_id, a.campaign_id, ${AGENT_COLS}, ${BEST_OUTCOME} AS outcome, ${BEST_GRADE} AS grade
+         ${FROM} ${AGENT_JOIN} WHERE ${where.join(' AND ')} ORDER BY cv.started_at DESC LIMIT $${p.length}`, p);
+      return { total, calls: rows.map(({ agent_id, agent_name, agent_version_number, ...x }) => ({ ...x, agent: agentOf({ agent_id, agent_name, agent_version_number }),
+        reasonLabel: reasonFor(x.reason_code)?.label ?? null })), next: rows.length === (i.limit ?? 50) ? rows[rows.length - 1].started_at : null };
     },
   }));
 

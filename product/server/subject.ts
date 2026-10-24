@@ -33,7 +33,17 @@ const pick = (o: unknown, only?: ReadonlySet<SubjectType>): Subject | null => {
  *  opened), so only these kinds are taken from a result. */
 const CREATED: ReadonlySet<SubjectType> = new Set(['agent', 'campaign', 'audience', 'contact', 'version', 'experiment', 'proposal', 'outcome', 'judge', 'offering', 'source', 'tool']);
 
+/** Tools whose own entity is a bare `id` (campaign.draft {id?}, campaign.launch {id}): in these namespaces `id`, in the
+ *  input or else in a create's result, is the subject before any other key. campaign.draft names its audience too, but
+ *  the campaign is what it saved (open.2026-10-24.activity-subject-campaign-draft). */
+const OWN_ID: Readonly<Record<string, SubjectType>> = { campaign: 'campaign', audience: 'audience', contact: 'contact', offering: 'offering' };
+
 /** The subject of one tool run: what its input names; for a create, whose input names nothing, what its result made. */
-export function subjectOf(input: unknown, result?: unknown): Subject | null {
+export function subjectOf(input: unknown, result?: unknown, tool?: string): Subject | null {
+  const own = tool ? OWN_ID[tool.split('.')[0]] : undefined;
+  if (own) for (const o of [input, result]) {
+    const id = o && typeof o === 'object' ? (o as Record<string, unknown>).id : undefined;
+    if (typeof id === 'string' && UUID.test(id)) return { type: own, id: id.toLowerCase() };
+  }
   return pick(input) ?? pick(result, CREATED);
 }

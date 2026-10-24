@@ -1,6 +1,7 @@
 // Signing and transport for the control plane <-> voice runtime seam (shared/runtime-protocol.ts).
 // sign()/verify() implement "x-vp-signature: t=<unix_ms>,v1=<hex hmac_sha256(secret, t + '.' + body)>".
 // RuntimeClient posts CallTickets; tests and the dev server use FakeRuntime, which records tickets instead.
+import { SetupError } from './setup-error.ts';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { CallTicket } from '../shared/runtime-protocol.ts';
 
@@ -23,7 +24,8 @@ export function verify(secret: string, body: string, header: string | undefined,
 
 export function runtimeSecret(): string {
   const s = process.env.VP_RUNTIME_SECRET;
-  if (!s || s.length < 32) throw new Error('VP_RUNTIME_SECRET must be set (at least 32 characters)');
+  if (!s || s.length < 32) throw new SetupError('The voice runtime is not connected to this server yet, so calls cannot be placed.', 'runtime_not_configured',
+    'VP_RUNTIME_SECRET must be set (at least 32 characters)');
   return s;
 }
 
@@ -56,7 +58,7 @@ export interface Runtime {
 
 export class HttpRuntime implements Runtime {
   constructor(private base = process.env.VP_RUNTIME_URL ?? '', private secret = runtimeSecret()) {
-    if (!base) throw new Error('VP_RUNTIME_URL is not set');
+    if (!base) throw new SetupError('The voice runtime is not connected to this server yet, so calls cannot be placed.', 'runtime_not_configured', 'VP_RUNTIME_URL is not set');
   }
   private async post(path: string, payload: unknown): Promise<Response> {
     const body = JSON.stringify(payload);

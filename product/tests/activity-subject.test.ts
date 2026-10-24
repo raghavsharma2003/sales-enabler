@@ -61,3 +61,31 @@ test('the ledger names the subject: six practice calls read as six different age
   const audit = await one<{ payload: any }>(pool, "SELECT payload FROM audit_event WHERE workspace_id = $1 AND action = 'agent.create'", [ws]);
   assert.deepEqual(Object.keys(audit!.payload.subject).sort(), ['id', 'type'], 'the audit row stores the id and type only, never a name');
 });
+
+test('a campaign draft is about the campaign, not its audience; a proposal names the action it asks for', { skip }, async () => {
+  pool ??= createPool(process.env.DATABASE_URL);
+  const { registry } = buildApp(pool, modules);
+  const ws = (await one<{ id: string }>(pool, "INSERT INTO workspace (name) VALUES ('activity campaign test') RETURNING id"))!.id;
+  const owner = (await one<{ id: string }>(pool, "INSERT INTO member (workspace_id, email, name, role) VALUES ($1,$2,'Meera','owner') RETURNING id", [ws, `o${Math.random()}@example.test`]))!.id;
+  const ctx = { workspaceId: ws, actor: { type: 'member' as const, id: owner, role: 'owner' as const } };
+  const aud = (await one<{ id: string }>(pool, "INSERT INTO audience (workspace_id, name) VALUES ($1,'Imported list') RETURNING id", [ws]))!.id;
+  const d = await registry.execute<any>(pool, 'campaign.draft', { name: 'EMI reminders, November', category: 'service', audienceId: aud }, ctx);
+  assert.equal(d.status, 'confirmed', JSON.stringify(d));
+  if (d.status !== 'confirmed') return;
+  const launch = await registry.execute<any>(pool, 'campaign.launch', { id: d.result.id }, ctx);     // external: a proposal (or a refusal)
+  const page = await registry.execute<any>(pool, 'activity.list', { limit: 10 }, ctx);
+  if (page.status !== 'confirmed') return assert.fail('activity.list');
+  const drafted = page.result.items.find((i: any) => i.action === 'campaign.draft');
+  assert.deepEqual(drafted.subject, { type: 'campaign', id: d.result.id, name: 'EMI reminders, November' }, 'the campaign it saved, not "Imported list"');
+  assert.equal(activitySentence(drafted.line, drafted.action, drafted.subject.name), 'Meera saved a campaign draft: EMI reminders, November');
+  assert.equal(launch.status, 'needs_approval', JSON.stringify(launch));
+  if (launch.status === 'needs_approval') {
+    const asked = page.result.items.find((i: any) => i.action === 'action.propose');
+    assert.equal(asked.tool, 'campaign.launch');
+    const said = activitySentence(asked.line, asked.action, asked.subject?.name, asked.tool);
+    assert.doesNotMatch(said, /to make a change/);
+    assert.match(said, /^Meera asked for approval: .*\(EMI reminders, November\)$/, said);
+  }
+  // Without the server's tool name (an older row), the line's own words still say what was asked.
+  assert.equal(activitySentence('Meera asked to publish an agent (Asha) and is waiting for approval', 'action.propose', 'Asha'), 'Meera asked for approval to publish an agent (Asha)');
+});

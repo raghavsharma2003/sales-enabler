@@ -83,7 +83,7 @@ export interface Wallet { state: string; balanceMilli: number; heldMilli: number
 export interface Member { id: string; name: string; email: string; role: string; status: string }
 export interface ApiKey { id: string; name: string; prefix: string; createdAt: string; lastUsed: string | null; revoked: boolean }
 export interface KnowledgeItem { id: string; title: string; status: string; passages: number; createdAt: string }
-export interface ActivityRow { id: string; at: string; line: string; action: string; who: string; subject?: string | null }
+export interface ActivityRow { id: string; at: string; line: string; action: string; who: string; subject?: string | null; tool?: string | null }
 
 export interface OperatorCard {
   id: string; type: 'plan' | 'diff' | 'launch' | 'call' | 'chart' | 'approval' | 'issue' | 'receipt' | 'question' | 'progress';
