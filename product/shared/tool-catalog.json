@@ -8,6 +8,7 @@
   "agents",
   "campaigns",
   "calls",
+  "channels",
   "memory",
   "learning",
   "operator"
@@ -2445,6 +2446,130 @@
    }
   },
   {
+   "name": "channel.connect",
+   "risk": "policy",
+   "summary": "Connect a WhatsApp number (from a connected WhatsApp Cloud API integration) so follow-ups can be sent and messages answered; returns its webhook address and verify token once",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     }
+    },
+    "required": [
+     "integrationId"
+    ]
+   }
+  },
+  {
+   "name": "channel.list",
+   "risk": "read",
+   "summary": "The connected WhatsApp numbers: status, the agent that answers, webhook address, and message counts for the last 7 days",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "channel.opt_out",
+   "risk": "draft",
+   "summary": "Stop WhatsApp messages to a person (for example they asked on a call or by email); calls are not affected. Lowers risk, so it never waits for approval",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200
+     }
+    },
+    "required": [
+     "contactId",
+     "reason"
+    ]
+   }
+  },
+  {
+   "name": "channel.pause",
+   "risk": "draft",
+   "summary": "Pause a WhatsApp number: nothing is sent from it until it is resumed (messages still arrive)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "connectionId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "connectionId"
+    ]
+   }
+  },
+  {
+   "name": "channel.resume",
+   "risk": "external",
+   "summary": "Resume a paused WhatsApp number so follow-ups and replies go out again",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "connectionId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "connectionId"
+    ]
+   }
+  },
+  {
    "name": "consent.record",
    "risk": "policy",
    "summary": "Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent",
@@ -2507,6 +2632,32 @@
      "purpose",
      "basis",
      "granted"
+    ]
+   }
+  },
+  {
+   "name": "contact.channels",
+   "risk": "read",
+   "summary": "A person's channels: WhatsApp opt-ins by purpose, whether they stopped WhatsApp, the 24-hour window and their conversation",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "contactId"
     ]
    }
   },
@@ -2892,6 +3043,41 @@
      }
     },
     "required": []
+   }
+  },
+  {
+   "name": "contact.timeline",
+   "risk": "read",
+   "summary": "One timeline for a person: their calls and WhatsApp messages together, newest first",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     },
+     "before": {
+      "type": "string",
+      "maxLength": 40
+     }
+    },
+    "required": [
+     "contactId"
+    ]
    }
   },
   {
@@ -4714,6 +4900,110 @@
      }
     },
     "required": []
+   }
+  },
+  {
+   "name": "message.list",
+   "risk": "read",
+   "summary": "One WhatsApp conversation: the thread (window, who handles it) and its messages in order",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "threadId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+     }
+    },
+    "required": [
+     "threadId"
+    ]
+   }
+  },
+  {
+   "name": "message.preview",
+   "risk": "read",
+   "summary": "What would happen if this message were sent now: allowed or the reasons it would be stopped, and the text after the safety check",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "threadId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+     },
+     "purpose": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     }
+    },
+    "required": [
+     "threadId",
+     "text"
+    ]
+   }
+  },
+  {
+   "name": "message.send",
+   "risk": "external",
+   "summary": "Send a team member's WhatsApp message in an open conversation (inside the 24-hour window); it passes the safety check and every channel rule first",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "threadId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+     },
+     "purpose": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     }
+    },
+    "required": [
+     "threadId",
+     "text"
+    ]
    }
   },
   {

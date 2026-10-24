@@ -1,0 +1,87 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.channels-seam",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Channels module (11xx): WhatsApp is the second channel on the same contact, consent ledger, reply door, meter and log as calls. A transport implements only verify/parse/send/render (server/modules/channels/transport.ts); WhatsApp Cloud API is the first (whatsapp.ts); identity, consent, the door, money and logging are shared once. Every outbound message goes through one gated call site, gatedSend() in gate.ts, and a static test fails if any other server file calls a transport's send or posts to the Graph messages endpoint",
+   "rationale": "Harvested from asset.hp-vyakti-latest.omnichannel-four-function-surface-contract and asset.hp-maya-latest.gated-surface-adapter (their source repos are not in this session; the contract was rebuilt from the node text). Each message is a channel_message row (an episode) on the person's channel_thread; contact.timeline merges calls (conversation) and messages newest first. The gate, in one transaction before anything leaves: erased or tombstoned; workspace suppression (it holds on every outbound path, schema 0002); WhatsApp opt-out; purpose withdrawn; business-initiated templates need a WhatsApp opt-in for the purpose; marketing needs its own marketing opt-in; free text only inside the 24-hour window; the agent never writes while a person handles the thread; the reply door per sentence (the agent gets every rule, a team member RD4 and RD5 only, a fixed template is blocked by any change); at most 2 business-initiated templates per person per 24 h; the price is reserved from the wallet and caps. A refusal is stored as a blocked message with every reason.",
+   "reverse_if": "A second transport (SMS or email) cannot be added without touching gate.ts beyond its transport table (then the seam is wrong and the gate needs a per-channel rules hook), or the per-sentence door blocks more than 1 in 50 legitimate team replies in real use."
+  },
+  {
+   "id": "decision.2026-10-24.wa-optout-channel-only",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A WhatsApp STOP stops WhatsApp only, at once, in the webhook's own transaction: a withdrawal for purpose 'all' on channel 'whatsapp' in the append-only consent ledger (shows on the contact page beside other consent). Calls keep their own consent and suppression. A STOP from a number not on file holds on the thread (opted_out_at) and is written to the ledger the moment the number becomes a contact",
+   "rationale": "The builder brief: an opt-out on any channel suppresses that channel and is visible on the contact. Workspace suppression still blocks WhatsApp (suppression holds on every outbound path). Opt-out words: whole-message STOP, unsubscribe, opt out, band karo; phrases like 'WhatsApp pe message mat bhejo' and 'stop sending me messages'. 'Cancel' alone is not one (on a reminder it means the appointment). Nothing answers a STOP.",
+   "reverse_if": "Counsel (KC8) or the owner says a WhatsApp opt-out must also stop calls, or people write STOP-like words that mean something else in more than 1 in 100 real messages."
+  },
+  {
+   "id": "decision.2026-10-24.wa-charge-on-delivery",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "WhatsApp messages are metered like calls: the price is held with ledger.reserve() before the send, settled when WhatsApp reports delivered (a cost_line with component 'message', provider whatsapp), released when it fails. Free-form replies inside the window, and utility templates inside an open window, cost 0 and hold nothing. Prices live in channel_price (micro-rupees, global): utility 0.115, marketing 0.8631, per measure.2026-10-17.whatsapp-india-utility-vs-marketing-message",
+   "rationale": "Meta charges a delivered message. Message holds have no attempt, so money's sweep and reconcile (attempt-keyed) leave them alone. cost_line's component check gains 'message' (migration 1101).",
+   "reverse_if": "Meta's billing changes from per delivered message, or holds for messages with an unknown outcome pile up (then add a sweep that settles or releases them after 72 h with an issue)."
+  },
+  {
+   "id": "decision.2026-10-24.wa-live-off",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "No live WhatsApp sends: the Graph client refuses to reach Meta unless VP_WHATSAPP_LIVE=1, and no environment sets it. Every test uses FakeGraph (in-process, Cloud API answers and error codes, template review). The owner's set-up steps are in product/ops/STAGING.md (WhatsApp section)",
+   "rationale": "Builder hard line: no Meta credentials exist and the owner has not created a WhatsApp Business account (open.2026-10-24.whatsapp-business-account). A send while off is stored as failed with 'WhatsApp sending is not switched on', never as sent.",
+   "reverse_if": "The owner creates the WABA, completes the STAGING.md steps and says go for a first send to their own opted-in test number."
+  },
+  {
+   "id": "open.2026-10-24.whatsapp-business-account",
+   "type": "open-question",
+   "status": "open",
+   "source": "channels builder",
+   "date": "2026-10-24",
+   "title": "Owner blocker: a Meta Business account, business verification, a WhatsApp Business Account with a number not on the WhatsApp app, a system-user token, the app secret and a payment method. Exact steps: product/ops/STAGING.md, WhatsApp section. Until then WhatsApp is built and tested on a fake Graph API only",
+   "closes_when": "The owner has a verified WhatsApp Business Account, the STAGING.md steps are done, and one template to the owner's own opted-in test number is delivered and metered."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.channels-seam",
+   "to": "asset.hp-vyakti-latest.omnichannel-four-function-surface-contract",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.channels-seam",
+   "to": "asset.hp-maya-latest.gated-surface-adapter",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.wa-charge-on-delivery",
+   "to": "measure.2026-10-17.whatsapp-india-utility-vs-marketing-message",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.channels-seam",
+   "to": "rejected.2026-10-17.cross-tenant-pooling",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "decision.2026-10-24.wa-live-off",
+   "to": "open.2026-10-24.whatsapp-business-account",
+   "relation": "leaves-open"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "channels step 1: the seam",
+   "details": "channels module, migration 1101, WhatsApp transport, fake Graph API, gate, webhook, STOP; tests/channels.test.ts 9 tests green on a fresh Postgres 16 with the fake Graph API. Not verified: anything against Meta's real API."
+  }
+ ]
+}

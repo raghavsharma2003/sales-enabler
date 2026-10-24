@@ -57,7 +57,13 @@ export type ToolName =
   | "campaign.window.widen"
   | "cap.lower"
   | "cap.raise"
+  | "channel.connect"
+  | "channel.list"
+  | "channel.opt_out"
+  | "channel.pause"
+  | "channel.resume"
   | "consent.record"
+  | "contact.channels"
   | "contact.dial_facts"
   | "contact.dnd_refresh"
   | "contact.export"
@@ -69,6 +75,7 @@ export type ToolName =
   | "contact.search"
   | "contact.suppress"
   | "contact.suppress_after_opt_out"
+  | "contact.timeline"
   | "contact.unsuppress"
   | "deployment.revert_to_last_good"
   | "deployment.split"
@@ -126,6 +133,9 @@ export type ToolName =
   | "memory.extract"
   | "memory.policy.get"
   | "memory.policy.set"
+  | "message.list"
+  | "message.preview"
+  | "message.send"
   | "money.card"
   | "money.carriers"
   | "money.estimate"
@@ -672,6 +682,26 @@ export interface ToolInput {
     /** test scope only: the most one test call may hold */
     perCallInrMilli?: number;
   };
+  /** Connect a WhatsApp number (from a connected WhatsApp Cloud API integration) so follow-ups can be sent and messages answered; returns its webhook address and verify token once (policy, waits for approval) */
+  "channel.connect": {
+    integrationId: string;
+    name?: string;
+  };
+  /** The connected WhatsApp numbers: status, the agent that answers, webhook address, and message counts for the last 7 days (read) */
+  "channel.list": Record<string, never>;
+  /** Stop WhatsApp messages to a person (for example they asked on a call or by email); calls are not affected. Lowers risk, so it never waits for approval (draft) */
+  "channel.opt_out": {
+    contactId: string;
+    reason: string;
+  };
+  /** Pause a WhatsApp number: nothing is sent from it until it is resumed (messages still arrive) (draft) */
+  "channel.pause": {
+    connectionId: string;
+  };
+  /** Resume a paused WhatsApp number so follow-ups and replies go out again (external, waits for approval) */
+  "channel.resume": {
+    connectionId: string;
+  };
   /** Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent (policy, waits for approval) */
   "consent.record": {
     contactId: string;
@@ -682,6 +712,10 @@ export interface ToolInput {
     source?: string;
     at?: string;
     evidence?: Record<string, unknown>;
+  };
+  /** A person's channels: WhatsApp opt-ins by purpose, whether they stopped WhatsApp, the 24-hour window and their conversation (read) */
+  "contact.channels": {
+    contactId: string;
   };
   /** What the dial gate needs about one person: tombstone, suppressions, DND (unknown fails closed for promotional), consent for a purpose (read) */
   "contact.dial_facts": {
@@ -750,6 +784,12 @@ export interface ToolInput {
     conversationId?: string;
     campaignId?: string;
     quote?: string;
+  };
+  /** One timeline for a person: their calls and WhatsApp messages together, newest first (read) */
+  "contact.timeline": {
+    contactId: string;
+    limit?: number;
+    before?: string;
   };
   /** Release a suppression so the person can be called again (Compliance or Owner approves) (policy, waits for approval) */
   "contact.unsuppress": {
@@ -1050,6 +1090,23 @@ export interface ToolInput {
     enabled?: boolean;
     undoMinutes?: number;
     allowedCategories?: Record<string, "consent" | "legal_obligation">;
+  };
+  /** One WhatsApp conversation: the thread (window, who handles it) and its messages in order (read) */
+  "message.list": {
+    threadId: string;
+    limit?: number;
+  };
+  /** What would happen if this message were sent now: allowed or the reasons it would be stopped, and the text after the safety check (read) */
+  "message.preview": {
+    threadId: string;
+    text: string;
+    purpose?: string;
+  };
+  /** Send a team member's WhatsApp message in an open conversation (inside the 24-hour window); it passes the safety check and every channel rule first (external, waits for approval) */
+  "message.send": {
+    threadId: string;
+    text: string;
+    purpose?: string;
   };
   /** show the provider cost card for a stack, with sources and dates (read) */
   "money.card": {
@@ -1958,7 +2015,13 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "campaign.window.widen": { risk: "policy", needsApproval: true },
   "cap.lower": { risk: "draft", needsApproval: false },
   "cap.raise": { risk: "spend", needsApproval: true },
+  "channel.connect": { risk: "policy", needsApproval: true },
+  "channel.list": { risk: "read", needsApproval: false },
+  "channel.opt_out": { risk: "draft", needsApproval: false },
+  "channel.pause": { risk: "draft", needsApproval: false },
+  "channel.resume": { risk: "external", needsApproval: true },
   "consent.record": { risk: "policy", needsApproval: true },
+  "contact.channels": { risk: "read", needsApproval: false },
   "contact.dial_facts": { risk: "read", needsApproval: false },
   "contact.dnd_refresh": { risk: "draft", needsApproval: false },
   "contact.export": { risk: "policy", needsApproval: true },
@@ -1970,6 +2033,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "contact.search": { risk: "read", needsApproval: false },
   "contact.suppress": { risk: "external", needsApproval: true },
   "contact.suppress_after_opt_out": { risk: "policy", needsApproval: true },
+  "contact.timeline": { risk: "read", needsApproval: false },
   "contact.unsuppress": { risk: "policy", needsApproval: true },
   "deployment.revert_to_last_good": { risk: "external", needsApproval: true },
   "deployment.split": { risk: "external", needsApproval: true },
@@ -2027,6 +2091,9 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "memory.extract": { risk: "draft", needsApproval: false },
   "memory.policy.get": { risk: "read", needsApproval: false },
   "memory.policy.set": { risk: "policy", needsApproval: true },
+  "message.list": { risk: "read", needsApproval: false },
+  "message.preview": { risk: "read", needsApproval: false },
+  "message.send": { risk: "external", needsApproval: true },
   "money.card": { risk: "read", needsApproval: false },
   "money.carriers": { risk: "read", needsApproval: false },
   "money.estimate": { risk: "read", needsApproval: false },

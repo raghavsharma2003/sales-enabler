@@ -19,7 +19,7 @@ interface Connected { id: string; kind: string; name: string; status: string }
 const FIELD_WORDS: Record<string, string> = {
   access_token: 'Access token', client_id: 'Client ID', client_secret: 'Client secret', refresh_token: 'Refresh token', service_account_json: 'Service account key (the whole file)',
   api_key: 'API key', api_token: 'API token', webhook_url: 'Webhook address', bearer_token: 'Bearer token',
-  portal_id: 'Portal ID', datacenter: 'Data centre', instance_url: 'Instance address', calendar_id: 'Calendar ID', sheet_id: 'Sheet ID', phone_number_id: 'Phone number ID',
+  portal_id: 'Portal ID', datacenter: 'Data centre', instance_url: 'Instance address', calendar_id: 'Calendar ID', sheet_id: 'Sheet ID', phone_number_id: 'Phone number ID', app_secret: 'App secret (signs webhooks)', waba_id: 'WhatsApp Business Account ID', display_number: 'Display number',
   account_sid: 'Account SID', subdomain: 'Subdomain', base_url: 'Base address',
 };
 const word = (k: string) => FIELD_WORDS[k] ?? k.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());

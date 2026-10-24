@@ -17,7 +17,8 @@ export const INTEGRATION_KINDS: Record<string, Kind> = {
   zoho_crm: { label: 'Zoho CRM', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['datacenter'], usedBy: 'Imports contacts' },
   salesforce: { label: 'Salesforce', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['instance_url'], usedBy: 'Imports contacts' },
   google_workspace: { label: 'Google Sheets and Calendar', secrets: ['service_account_json'], config: ['calendar_id', 'sheet_id'] },
-  whatsapp_cloud: { label: 'WhatsApp Cloud API', secrets: ['access_token'], config: ['phone_number_id'] },
+  whatsapp_cloud: { label: 'WhatsApp Cloud API', secrets: ['access_token', 'app_secret'], config: ['phone_number_id', 'waba_id', 'display_number'],
+    usedBy: 'Sends follow-ups and answers WhatsApp messages on its number (Settings > Channels)' },
   exotel: { label: 'Exotel', secrets: ['api_key', 'api_token'], config: ['account_sid', 'subdomain'] },
   slack: { label: 'Slack', secrets: ['webhook_url'], config: [], usedBy: 'Notifications post alerts to its channel' },
   // Slack is read by notifications (notifications.ts): its incoming-webhook address must be on hooks.slack.com.

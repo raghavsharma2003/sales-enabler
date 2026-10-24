@@ -135,8 +135,42 @@ optionally, for Plivo's `X-Plivo-Signature-Ma-V3`). Without them the carrier rou
 |---|---|
 | `VP_TELEPHONY_LIVE` (with `PLIVO_AUTH_ID`, `PLIVO_AUTH_TOKEN`, `VP_TELEPHONY_WEBHOOK_SECRET`) | Leave off: browser calls need no phone line |
 | `VP_PAYMENTS` | Unset (no gateway on staging); never `fake` outside development |
+| `VP_WHATSAPP_LIVE` | Leave unset until the owner's WhatsApp Business account exists and the steps below are done. Unset, nothing is sent to Meta: a send is stored as failed with "WhatsApp sending is not switched on" |
 | `VP_JOBS` | `0` only on an extra API-only replica |
 | `VP_DEV_AUTH`, `VP_LLM_FAKE`, `VP_WEBHOOK_ALLOW_HTTP`, `VP_WEBHOOK_ALLOW_PRIVATE`, `VP_DEVSIM*` | Development only: never on staging |
+
+## WhatsApp (owner blocker: no WhatsApp Business account yet)
+
+Everything in the channels module is tested against a fake Graph API; nothing has ever been sent to Meta. Before the
+first real message, the owner (or someone with the owner's Meta Business login) does these, in order:
+
+1. **Meta Business account.** Create or pick the business in Meta Business Suite and complete **business verification**
+   (legal name, address, a document). Display names and higher sending limits need it.
+2. **WhatsApp Business Account (WABA) and a number.** In the Meta developer dashboard, create an app of type
+   *Business*, add the **WhatsApp** product, and add a phone number that is **not** registered on the WhatsApp or
+   WhatsApp Business app (a fresh number, or one migrated off the app). Verify it by SMS or voice. Note the
+   **Phone number ID** and the **WhatsApp Business Account ID** shown under *API Setup*.
+3. **Display name.** Submit the display name (the brand) for review; messages show it once approved.
+4. **A permanent token.** In Business Settings, create a **System user** (Admin), assign it the app and the WABA with
+   full control, and generate a token with `whatsapp_business_messaging` and `whatsapp_business_management`. The
+   temporary 24-hour token from *API Setup* is for a first look only.
+5. **App secret.** App settings > Basic > *App secret*. It signs every webhook delivery (X-Hub-Signature-256); the
+   control plane refuses unsigned or wrongly signed deliveries.
+6. **Payment method.** Add one on the WABA (WhatsApp Manager > Payment settings). Utility templates are about INR 0.115
+   and marketing about INR 0.8631 per delivered message in India (rate card effective 2026-10-01); free-form replies
+   inside the 24-hour window are free. The meter records each delivered message as a `message` cost line.
+7. **In Vyakti.** Integrations > WhatsApp Cloud API: paste the token and the app secret (they go to the encrypted
+   vault, never into an approval or a log), and the Phone number ID, WABA ID and display number. Then Settings >
+   Channels > *Connect*: an owner approves, and the page shows the **webhook address** and a **verify token** once.
+8. **Webhook.** In the app's WhatsApp > Configuration: callback URL `https://<staging host>/hooks/channels/whatsapp/<id>`
+   (the address shown), verify token as shown, then subscribe the fields `messages` and
+   `message_template_status_update`. Meta calls the GET handshake at once; the page shows the number as connected.
+9. **Templates.** Submit utility templates from Settings > Channels > Templates; Meta reviews them (minutes to 24
+   hours). Marketing templates are refused for anyone without their own marketing opt-in.
+10. **Switch on.** Set `VP_WHATSAPP_LIVE=1` on the control plane and restart. First send: to the owner's own test number
+    only, after it has opted in (the owner's number stays out of commits and logs).
+
+Names only, as everywhere in this file: the token and the app secret never go into the repo, a commit, a log or a chat.
 
 ## Checks after starting
 
