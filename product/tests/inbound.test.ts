@@ -176,3 +176,25 @@ test('an empty wallet: a plain refusal, nothing opened', { skip }, async () => {
   assert.deepEqual(r.body, { accepted: false, code: 'wallet_low', message: 'Calls cannot be answered right now: the wallet has no balance for them.' });
   assert.equal((await one<{ n: number }>(pool, "SELECT count(*)::int AS n FROM conversation WHERE workspace_id = $1 AND direction = 'inbound'", [w.ws]))!.n, 0);
 });
+
+test('telephony allowlist: an agent whose hand-off number is not listed does not answer; nothing reaches the runtime', { skip }, async () => {
+  const before = process.env.VP_TELEPHONY_ALLOWED_TO;
+  try {
+    const w = await workspace();
+    const cfg = (await one<{ config: { agent: Record<string, unknown>; brief: unknown } }>(pool, 'SELECT config FROM agent_version WHERE id = $1', [w.version]))!.config;
+    const bridge = '+919000004321';
+    await pool.query('UPDATE agent_version SET config = $2 WHERE id = $1', [w.version,
+      { ...cfg, agent: { ...cfg.agent, handOff: { when: ['asks_for_human'], target: { kind: 'phone', value: bridge }, warmSummary: true } } }]);
+    assert.equal((await bind(w)).status, 'confirmed');
+    process.env.VP_TELEPHONY_ALLOWED_TO = '+919000004322';          // a list without the hand-off number
+    const n0 = rt.tickets.length;
+    const r = await ring(w.e164, '+919000004323');
+    assert.equal(r.status, 409, JSON.stringify(r.body));
+    assert.equal(r.body.code ?? r.body.error, 'transfer_not_allowlisted', JSON.stringify(r.body));
+    assert.equal(rt.tickets.length, n0, 'no ticket, so the runtime never sees the number');
+    process.env.VP_TELEPHONY_ALLOWED_TO = `+919000004322,${bridge}`;
+    const ok = await ring(w.e164, '+919000004323');
+    assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    assert.equal(rt.tickets.length, n0 + 1);
+  } finally { if (before === undefined) delete process.env.VP_TELEPHONY_ALLOWED_TO; else process.env.VP_TELEPHONY_ALLOWED_TO = before; }
+});

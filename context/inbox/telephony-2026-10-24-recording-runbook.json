@@ -1,0 +1,53 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.staff-cli",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Vyakti staff run their tools (vp_success: member.phone.mark_verified, number.attach_carrier, wallet.credit) with product/scripts/staff.ts on the host, audited under the staff id; there was no other way to act as staff on staging",
+   "rationale": "The staff tools are refused to every workspace role by design. Someone needed a path to use them for the first live call; a shell on the host is already staff-only.",
+   "reverse_if": "a staff console with its own sign-in exists; then retire the script or keep it for break-glass use only"
+  },
+  {
+   "id": "measure.2026-10-24.phone-recording-path",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Recording on phone calls, read from code (not run): the cascade and s2s sessions both record both legs through Recorder and recordings.save, whatever the transport, so sip and sip_inbound calls record when agent.recording.enabled and VP_RECORDINGS_DIR are set; no runtime test drives a phone leg through recording yet (asked of voice)",
+   "n": 0,
+   "method": "code reading of voice/vpvoice/cascade.py, s2s.py, recordings.py at f551806; no test run on a phone leg",
+   "path": "product/voice/vpvoice/recordings.py"
+  },
+  {
+   "id": "open.2026-10-24.first-live-call",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The first live Plivo call on staging, run by the integrator with the owner: product/ops/STAGING.md 'Live phone calls', set-up (attach number, mark phone, bind agent) and the 9-step checklist",
+   "closes_when": "outbound and inbound calls to the owner's allowlisted phone complete with transcript, recording, carrier line and settled money, measured and filed with n and the stack that ran"
+  }
+ ],
+ "edges": [
+  {
+   "from": "open.2026-10-24.first-live-call",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.staff-cli",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "telephony builder: steps 1-8 landed on the control plane",
+   "details": "first live call runbook in product/ops/STAGING.md; runtime asks open with voice"
+  }
+ ]
+}

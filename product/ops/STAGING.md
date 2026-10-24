@@ -136,11 +136,86 @@ optionally, for Plivo's `X-Plivo-Signature-Ma-V3`). Without them the carrier rou
 
 | Name | What |
 |---|---|
-| `VP_TELEPHONY_LIVE` (with `PLIVO_AUTH_ID`, `PLIVO_AUTH_TOKEN`, `VP_TELEPHONY_WEBHOOK_SECRET`) | Leave off: browser calls need no phone line |
+| `VP_TELEPHONY_LIVE` (with `PLIVO_AUTH_ID`, `PLIVO_AUTH_TOKEN`, `VP_TELEPHONY_WEBHOOK_SECRET`) | Off until the first live phone call (next section), and then only with `VP_TELEPHONY_ALLOWED_TO` set |
 | `VP_PAYMENTS` | Unset (no gateway on staging); never `fake` outside development |
 | `VP_WHATSAPP_LIVE` | Leave unset until the owner's WhatsApp Business account exists and the steps below are done. Unset, nothing is sent to Meta: a send is stored as failed with "WhatsApp sending is not switched on" |
 | `VP_JOBS` | `0` only on an extra API-only replica |
 | `VP_DEV_AUTH`, `VP_LLM_FAKE`, `VP_WEBHOOK_ALLOW_HTTP`, `VP_WEBHOOK_ALLOW_PRIVATE`, `VP_DEVSIM*` | Development only: never on staging |
+
+## Live phone calls (the owner's phone only)
+
+Who does what: the **runtime** places every agent call (Plivo's Call API) and owns the answer, hang-up, stream and
+transfer URLs of those calls. The **control plane** runs the dial gate first, and talks to Plivo only for the inbound
+application, CDRs and the verification announcement (`campaigns/telephony.ts`, `decision.2026-10-24.telephony-one-dial-path`).
+
+**Env, by name** (values in the VM's env files only; the number and the owner's phone never in a commit, log or chat)
+
+| Name | Control plane | Runtime | What |
+|---|---|---|---|
+| `PLIVO_AUTH_ID`, `PLIVO_AUTH_TOKEN` | yes | yes | The account (or sub-account) that owns the Bangalore number. The token also checks Plivo's signatures |
+| `PLIVO_MAIN_AUTH_TOKEN` | optional | | The main account's token, for `X-Plivo-Signature-Ma-V3` |
+| `VP_TELEPHONY_LIVE=1` | yes | | Lets the control plane's Plivo adapter make requests (inbound app, CDR, verification call) |
+| `VP_TELEPHONY_ALLOWED_TO` | yes | yes | The owner's phone only. Without it nothing rings (see the allowlist above) |
+| `VP_CARRIER_TRIAL=1` | yes | | While the Plivo account is a trial (to 2026-11-16) |
+| `VP_PUBLIC_URL` | yes | yes | Each service's own public https base, exactly as Plivo reaches it (the runtime's includes `/rt`) |
+| `VP_RUNTIME_PUBLIC_URL` | yes | | The runtime's public base (the same value as the runtime's `VP_PUBLIC_URL`); the inbound answer URL is built from it |
+| `VP_TELEPHONY_WEBHOOK_SECRET` | yes | yes | Signs the runtime's inbound relay to `/hooks/telephony/inbound` (at least 32 characters) |
+| `VP_INBOUND_APP_NAME` | optional | | Default `vyakti-inbound` |
+
+**Staff tools** run as Vyakti staff on the VM, audited under the staff id:
+`node --import tsx product/scripts/staff.ts --staff <staff-id> --workspace <workspace-id> <tool> '<json>'`.
+
+**Carrier set-up** (one time; each step is what the tool sends to Plivo, so it can be checked in Plivo's console)
+
+1. Attach the number to the owner's workspace:
+   `staff.ts ... number.attach_carrier '{"phone":"<the number>","series":"trial","evidence":"<why>"}'`. It sends:
+   - `GET  /v1/Account/{auth_id}/Application/?app_name=vyakti-inbound&limit=20`
+   - `POST /v1/Account/{auth_id}/Application/` with `app_name`, `answer_url` = `<runtime public>/v1/media/sip/inbound/plivo/<hmac>`,
+     `answer_method=POST`, `hangup_url` = `<control plane public>/hooks/telephony/plivo/hangup`, `hangup_method=POST`
+     (or `POST .../Application/{app_id}/` when it exists with other URLs)
+   - `POST /v1/Account/{auth_id}/Number/{number}/` with `app_id`
+2. Mark the owner's phone verified (Plivo's sandbox has already verified it):
+   `staff.ts ... member.phone.mark_verified '{"memberId":"<owner member id>","phone":"<owner phone>","evidence":"verified in Plivo sandbox"}'`.
+   Or have the owner verify it in the product: Numbers, then verify phone (a code call from the trial line).
+3. Bind the agent that answers inbound calls: in the product, Numbers, then answer calls with (`inbound.route.set`, an approval).
+
+**First live call checklist** (the integrator, with the owner on the phone)
+
+1. Runtime `/v1/health` is OK. The control plane's `VP_TELEPHONY_ALLOWED_TO` and the runtime's both hold the owner's phone
+   only. Caddy exempts exactly the paths listed above from basic auth.
+2. Plivo console: the number's application is `vyakti-inbound`, with the two URLs above. The number has an accepted
+   compliance application (an Indian `from` without one gets 400). There is credit left.
+3. **Outbound:** open the agent, **Test her**, then **Call my phone** (`test.ring_member_phone`). Within 2 s the attempt is
+   `dialing`; the phone rings with the Bangalore number. Check:
+   - her opening includes the AI disclosure;
+   - talk for at least 3 minutes, including one interruption;
+   - hang up from the phone.
+4. The call page shows:
+   - the transcript;
+   - the end reason `caller_hung_up`;
+   - a recording that plays (both voices);
+   - cost lines;
+   - under `carrier`, billed seconds and the INR amount once the CDR arrives (about 1 minute; outbound only once the
+     runtime sends `call.ended.carrier`).
+   Compare the billed seconds and the amount with Plivo's console.
+5. **She hangs up:** a second call where the owner says goodbye. She ends the call herself and the end reason is hers.
+6. **Inbound:** the owner rings the Bangalore number. The answering agent picks up within 2 rings, says it is an AI, and
+   helps. Hang up. The call shows as Inbound. Plivo's hang-up callback reaches `/hooks/telephony/plivo/hangup`: the
+   call's `carrier` shows the hang-up source.
+7. **Refusals:**
+   - Call a number not on the list. The attempt is blocked `destination_blocked` and nothing reaches Plivo.
+   - Optional, with the owner's go: a number outside the trial sandbox, with the list widened for that one number. Expect
+     **DIAL_TRIAL_RESTRICTED**, no retry. Note the exact Plivo text: it confirms or replaces our text match.
+8. **Signatures:** in the control plane log, no `bad_signature` on Plivo's callbacks. If a real callback is refused,
+   capture the URL Plivo used and compare it with `VP_PUBLIC_URL` + path. Never switch the check off.
+9. File what ran: the stack, n calls, durations, the reply gap from the turns, and anything that broke (context inbox).
+   Results are filed under the combination that actually ran.
+
+Still open before the first call (asked of the voice builder): the same allowlist inside the runtime's dial and transfer,
+Plivo's V3 signature on the runtime's carrier paths, `call.ended.carrier` from the runtime, and a runtime test that a
+phone leg records both voices. Without them, the gate's allowlist is the only wall. Runtime callbacks rely on their
+per-call HMAC paths. An outbound call's carrier line stays empty: the CDR is looked up by the call id, which only
+`call.ended.carrier` brings. Inbound calls have it from the ring.
 
 ## WhatsApp (owner blocker: no WhatsApp Business account yet)
 
