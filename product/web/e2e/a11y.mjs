@@ -46,7 +46,11 @@ export async function audit(browser, base, storageState, only = null, colorSchem
       await page.goto(base + path, { waitUntil: 'networkidle' });
       await page.waitForTimeout(400);
       if (open) await open(page, tag);
-      out.push({ screen: name, size: tag, scheme: colorScheme, violations: await axe(page) });
+      const violations = await axe(page);
+      // WCAG 1.4.10 (reflow): a phone page wider than the screen zooms out, and taps land on the wrong element. axe does not check it.
+      const wide = tag === 'm' && await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (wide > 1) violations.push({ id: 'page-scrolls-sideways', impact: 'serious', help: `The page is ${wide}px wider than the screen`, n: 1, targets: ['html'] });
+      out.push({ screen: name, size: tag, scheme: colorScheme, violations });
     }
     await ctx.close();
   }

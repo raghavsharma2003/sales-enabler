@@ -117,11 +117,12 @@ type ImportFrom = (typeof SOURCES)[number]['id'];
 function Import() {
   const [qs, setQs] = useQuery();
   const from = (SOURCES.some(x => x.id === qs.get('from')) ? qs.get('from') : 'file') as ImportFrom;
+  // The tabs stay outside a grid: inside one, the row's full width becomes the column's minimum and a phone page scrolls sideways.
   return (
-    <div className="stack">
+    <>
       <Tabs label="Where the list comes from" value={from} onChange={v => setQs({ from: v === 'file' ? null : v })} items={SOURCES.map(x => ({ ...x }))} />
       {from === 'file' ? <FileImport /> : <Suspense fallback={<Card><Skeleton rows={3} /></Card>}><CrmImport kind={from} /></Suspense>}
-    </div>
+    </>
   );
 }
 
