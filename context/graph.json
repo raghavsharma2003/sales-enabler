@@ -21688,7 +21688,7 @@
   {
    "id": "decision.2026-10-24.spend-card-matches-request",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "An approval-class card carrying an *InrMilli amount is made only if the amount matches a rupee figure the member wrote this turn; on a mismatch no card is made and the model is told both figures",
@@ -22048,6 +22048,50 @@
    "title": "Per-call analysis defaults to gpt-4.1-mini single on the shipped outcome-first contract; tiered (mini first, gpt-4.1 at threshold 0.6) and gpt-4.1 stay selectable. Adopted by the integrator under round 7's pre-registered rule; the code default (defaultAnalysisSetting) moves with it, and the product counts the calls tiered would have escalated (first-pass confidence under 0.6) so real traffic can answer the open escalation question",
    "rationale": "decision.2026-10-24.analysis-default-tiered's reverse_if is met: on the shipped contract, mini single matched tiered on TEST in two consecutive rounds (round 6: 42, 42 vs 42; round 7: 42, 42 vs 42, 42) with no outcome, objection, moment, commitment or crisis loss and 0 discordant pairs on any field. Round 7's rule, written before its first request, recommends the cheaper option on a match. What bounds this: tiered escalated 0/117 analysed calls over rounds 6-7, so on the bench its requests were mini's, and it cost the same (Rs 0.0514-0.0521 per model-analysed call against mini's 0.0515-0.0519). The saving, and any quality tiered adds, exist only on calls where the first pass is unsure or finds no outcome, which this bench no longer contains (open.2026-10-24.analysis-escalation-path-unexercised). On earlier contracts tiered did catch mini's false nulls (rounds 3-5: 250/252 vs 234/252); outcome-first removed them on this bench (complaint and wrong-person 24/24 (pass, call) pairs over rounds 6-7). Adopted rather than held: the reverse_if was written before rounds 6-7 and is met by its letter; keeping tiered on an unmeasured benefit is the post-hoc override pre-registration exists to prevent. The risk this leaves (unsure calls on real traffic get mini's answer, not gpt-4.1's) is bounded by counting would-escalate calls in the product, which is the slice the open question needs.",
    "reverse_if": "On the shipped contract, a TEST round in which mini single is more than 1 call below tiered on either pass, or loses an objection, moment or commitment against it; or a slice on which tiered actually escalates (real traffic or a pre-registered hard-case set) where tiered beats mini single by 2 or more calls per 42 or with exact McNemar p < 0.05; or a contract change that brings back mini's complaint or wrong-person false nulls."
+  },
+  {
+   "id": "decision.2026-10-24.no-amount-no-money-card",
+   "type": "decision",
+   "status": "decided",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "When the member named no amount, the Operator makes no cap, wallet or top-up card; the model is told to ask how much and never to choose an amount",
+   "rationale": "Integrator's rule after 0882b06 turned web-e2e red: a model must not invent a figure for money. Numbers that are plainly something else ('step 1', '50 people', '11 am') are never read as rupees.",
+   "reverse_if": "Members routinely give amounts in forms the parser misses, so real requests are refused; then extend the parser, not drop the rule"
+  },
+  {
+   "id": "decision.2026-10-24.server-vertex-auth",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Server LLM purposes can run on Vertex with a self-minted token: VP_LLM_<PURPOSE>_AUTH=vertex makes server/llm.ts mint a Google OAuth token from VERTEX_SA_FILE (server/vertex-token.ts: an RS256 JWT bearer grant, cached until 5 minutes before expiry, India-only region gate as in the voice runtime). No static key. brief-review.json model_recommended now names Flash-Lite on Vertex this way (decision.2026-10-24.brief-review-flashlite). llmKeysConfigured() is the real-model check; reviewConfigured uses it.",
+   "rationale": "decision.2026-10-24.brief-review-flashlite. A static Vertex token dies after about an hour (rejected.2026-10-24.runtime-judge-static-vertex-token).",
+   "reverse_if": "Vertex is dropped for server purposes."
+  },
+  {
+   "id": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Brief-review false-positive fixes, deterministic parts on DEV. (1) open.2026-10-24.brief-review-fp-names-in-notes: a human or hide_ai finding on a field whose own text says she is an AI and carries no human-claim word is dropped. It would drop 0 of 87 genuine DEV human or hide_ai flags (dev-brief-review plus dev-lint-ai) and protects 9 of 85 DEV pass lines. The prompt also says a note or opening that names her, describes her voice or says she is an AI assistant is not a breach. (2) rejected.2026-10-24.brief-review-drops-fact-keys: a fact value is shown with its key as a label ('facts[3].value (key: you_cannot): ...'), and the prompt says a prohibition key forbids what follows. (3) Found while adding DEV: the config lint read prohibition facts as instructions ('do_not: pressure them to pay today' refused by T-L7) and missed 'never: mention 14416 or 112'. A prohibition key (cannot, never, do not, avoid, must not, ...) now makes the value a stated rule for T-L7 and a T-L6 refusal when it names the crisis lines, in both doors. DEV gains 10 items: 3 honest openings, 3 voice notes, 4 prohibition facts.",
+   "n": "87 DEV flags, 85 DEV pass lines; 10 new DEV items; prohibition-fact parity tests in both doors",
+   "method": "deterministic checks plus stubbed-model tests (tests/agents-brief-review.test.ts, tests/safety.test.ts, voice test_safety_cases)",
+   "not_verified": "Model recall and FP on DEV need a model run (no keys in the sandbox), and judge-eval's support for fact and opening items waits for PREREG-10 to free its hash (a prepared change). The PROHIBITION_KEY pattern is coded in both doors and is a candidate for rules.json once it is free."
+  },
+  {
+   "id": "asset.2026-10-24.blind-br2",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND-BR2 (sets/heldout-brief-review-2.json): 60 flag (human 20, hide_ai 15, crisis 10, manipulation 15) and 100 pass (25 voice or name notes, 15 honest AI openings, 15 prohibition facts, 45 other look-alikes). Each item carries a persona and a field (note, fact with key, or opening). en 50%, hinglish 34%, hi-deva 16%. Written by a separate agent with no repo access, checked by script (0 duplicates, 0 overlap), never read. For one scoring after judge-eval learns the fields.",
+   "paths": [
+    "product/shared/safety/sets/heldout-brief-review-2.json"
+   ],
+   "value": "blind brief-review FP after the fixes",
+   "effort": "one agent run"
   }
  ],
  "edges": [
@@ -39862,6 +39906,31 @@
    "from": "measure.2026-10-24.analysis-bench-r7-mini-vs-tiered",
    "to": "component.product.analysis-bench",
    "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.no-amount-no-money-card",
+   "to": "decision.2026-10-24.spend-card-matches-request",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.server-vertex-auth",
+   "to": "decision.2026-10-24.brief-review-flashlite",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "to": "open.2026-10-24.brief-review-fp-names-in-notes",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "to": "rejected.2026-10-24.brief-review-drops-fact-keys",
+   "relation": "challenges"
+  },
+  {
+   "from": "asset.2026-10-24.blind-br2",
+   "to": "open.2026-10-24.brief-review-fp-names-in-notes",
+   "relation": "supports"
   }
  ]
 }
