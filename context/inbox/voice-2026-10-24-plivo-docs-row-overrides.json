@@ -1,0 +1,22 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.voice-plivo-docs-check",
+   "type": "measurement", "status": "measured", "date": "2026-10-24", "source": "verified",
+   "title": "The runtime's Plivo calls checked against Plivo's public docs (fetched 2026-10-24, URLs and verbatim excerpts in research/2026-10-24/plivo-amd): machine_detection / _time / _url / _method, the AMD callback (Machine='true', Event='MachineDetection'), Transfer (legs, aleg_url) and the stream dtmf event match what was coded. Two differed and were fixed: Send DTMF's argument is 'leg' (the code sent 'legs'), and hang-up causes come in three vocabularies (numeric code, Plivo name, Q.850-style HangupCause), of which the code matched only names loosely (Rejected/Declined/CALL_REJECTED and Destination Out Of Service were 'failed'). Not verified on a live call: any of it, including confirmSound without confirmKey",
+   "n": 7,
+   "method": "WebFetch/curl of 7 public Plivo pages, 2026-10-24 07:00-07:10 UTC; product/voice/tests/test_plivo_docs.py on tests/plivo_fixtures.json built from the documented payload shapes",
+   "path": "research/2026-10-24/plivo-amd/README.md",
+   "value": "2 corrections (DTMF leg; cause vocabularies)"
+  },
+  {
+   "id": "decision.2026-10-24.voice-row-overrides",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "The runtime honours a row's overrides (CallTicket.contact.rowOverrides, intake/campaigns 0b33102): with usefulFirst, the opening's LAST block names it as this person's useful first thing, replacing the brief's (a shape for her own words; disclosure clause, RD1 and the door unchanged; only while she has not yet disclosed); a row voice is used only if the stack offers it, else the stack's default voice (instead of refusing the ticket), and the manifest files the call under the voice that actually ran",
+   "rationale": "Intake relay: the runtime took the opening only from the compiled brief, so a row's first_message was ignored.",
+   "reverse_if": "the control plane starts compiling the row's opening into brief.text itself (then the LAST row is redundant)"
+  }
+ ],
+ "edges": [],
+ "events": []
+}

@@ -159,6 +159,10 @@ def ledger(transcript, agent, contact, state):
     if not state.get('disclosed'):
         clause = ((agent.get('opening') or {}).get('disclosureClause') or '').strip()
         rows.append('this breath must carry the brand and your one AI clause' + (f' ({clause})' if clause else '') + ', lightly, in passing')
+        row_first = ((contact.get('rowOverrides') or {}).get('usefulFirst') or '').strip()
+        if row_first:      # the person's list gave this call its own opening (intake rowOverrides): it replaces the brief's
+            rows.append(f'for this person, the useful thing to open with is: {row_first[:300]} (this replaces the useful '
+                        'first thing in your instructions; a shape for your own words, never recited)')
         from .names import brand_forms
         roman, deva, given = brand_forms(agent.get('brand'))
         if roman:

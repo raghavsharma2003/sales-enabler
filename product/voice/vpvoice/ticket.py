@@ -49,13 +49,18 @@ def validate(t):
     if st['id'] == stacks.CUSTOM:
         _need(isinstance(av.get('components'), dict) and stacks.parts(av['components']) == stacks.parts(stack['components']),
               'stack_mismatch', "agent.voice.components differ from ticket.stack.components")
+    row = ((t.get('contact') or {}).get('rowOverrides') or {})
+    asked = av.get('voiceId'); row_voice = 'voice' in (row.get('applied') or [])
     try:
-        voice = stacks.resolve_voice(stack, av.get('voiceId'))
+        voice = stacks.resolve_voice(stack, asked)
     except stacks.StackError as e:
-        raise TicketError(e.code, str(e))
+        # a row's own voice (intake rowOverrides) is used only if the stack offers it; otherwise the stack's default
+        if not row_voice: raise TicketError(e.code, str(e))
+        voice = stacks.resolve_voice(stack, None)
     cid = st.get('combinationId')
-    _need(cid in (stacks.combination_id(stack), stacks.combination_id(stack, voice)), 'combination_mismatch',
-          'ticket.stack.combinationId is not the combination this stack and voice run')
+    allowed = {stacks.combination_id(stack), stacks.combination_id(stack, voice)}
+    if row_voice and asked: allowed.add(stacks.combination_id(stack, asked))      # what the control plane computed for the row
+    _need(cid in allowed, 'combination_mismatch', 'ticket.stack.combinationId is not the combination this stack and voice run')
 
     b = t.get('brief') or {}
     text = b.get('text')
