@@ -45,7 +45,10 @@ before(async () => {
   process.env.VP_PUBLIC_URL = local; process.env.PLIVO_AUTH_TOKEN = TOKEN;
   setTelephony(new PlivoTelephony({ apiBase: carrierBase, authId: 'MAFAKEAUTHID', authToken: TOKEN, publicBase: local }));
   setRuntime(new FakeRuntime());
-  setVerifyClock(() => new Date(Date.UTC(2032, 0, 1) + randomInt(0, 20_000) * 864e5 + 6.5 * 3600_000));   // 12:00 IST, a day of its own
+  // 12:00 IST on a day of its own, drawn once: a clock that drew a new day per read put confirm days away from start,
+  // so the code read as expired whenever confirm's day fell after start's.
+  const noon = Date.UTC(2032, 0, 1) + randomInt(0, 20_000) * 864e5 + 6.5 * 3600_000;
+  setVerifyClock(() => new Date(noon));
 });
 after(async () => {
   for (const k of KEYS) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; }

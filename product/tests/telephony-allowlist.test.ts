@@ -161,7 +161,8 @@ test('a verification call to an unlisted phone is refused before the carrier and
   const { setVerifyClock } = await import('../server/modules/campaigns/verify.ts');
   const fake = new FakeTelephony();
   setTelephony(fake);
-  setVerifyClock(() => new Date(Date.UTC(2031, 0, 1) + randomInt(0, 20_000) * 864e5 + 6.5 * 3600_000));   // 12:00 IST
+  const noon = Date.UTC(2031, 0, 1) + randomInt(0, 20_000) * 864e5 + 6.5 * 3600_000;   // 12:00 IST, one day for the whole test
+  setVerifyClock(() => new Date(noon));
   try {
     const w = await world();
     const listed = synth(), other = synth();
