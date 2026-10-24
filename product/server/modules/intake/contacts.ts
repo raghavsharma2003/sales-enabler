@@ -377,6 +377,14 @@ export function registerContactTools(reg: Registry): void {
           numbers.add(c.e164);
           for (const x of await many<{ raw: string }>(ctx.q, "SELECT raw FROM contact_identifier WHERE contact_id = $1 AND kind = 'phone_e164'", [c.id])) numbers.add(x.raw);
         }
+        // Every record of this person: the one asked about and any other carrying one of their numbers, live or archived
+        // (a workspace that started over keeps its old records archived, and a re-import makes a new one for the same number).
+        const people = await many<{ id: string }>(ctx.q, `SELECT DISTINCT c.id FROM contact c WHERE c.workspace_id = $1 AND c.erased_at IS NULL AND (c.id = $2 OR c.e164 = ANY($3::text[])
+          OR EXISTS (SELECT 1 FROM contact_identifier ci WHERE ci.contact_id = c.id AND ci.kind = 'phone_e164' AND ci.raw = ANY($3::text[])))`, [ws, c?.id ?? null, [...numbers]]);
+        const ids = people.map(x => x.id);
+        // Each record's own numbers are theirs too: tombstoned and suppressed with the rest.
+        for (const x of await many<{ raw: string }>(ctx.q, `SELECT raw FROM contact_identifier WHERE contact_id = ANY($1::uuid[]) AND kind = 'phone_e164'
+          UNION SELECT e164 FROM contact WHERE id = ANY($1::uuid[]) AND e164 LIKE '+%'`, [ids])) numbers.add(x.raw);
         const salt = await workspaceSalt(ctx.q, ws);
         const hashes = [...numbers].filter(n => n.startsWith('+')).map(n => hashWith(salt, n));
         for (const h of hashes) await ctx.q.query('INSERT INTO tombstone (workspace_id, e164_hash) VALUES ($1,$2) ON CONFLICT DO NOTHING', [ws, h]);
@@ -384,26 +392,28 @@ export function registerContactTools(reg: Registry): void {
         // Suppressions stay, matchable by hash only.
         for (const n of numbers) {
           const h = hashWith(salt, n);
-          await ctx.q.query('UPDATE suppression SET e164_hash = $3, e164 = NULL WHERE workspace_id = $1 AND (e164 = $2 OR ($4::uuid IS NOT NULL AND contact_id = $4))', [ws, n, h, c?.id ?? null]);
+          await ctx.q.query('UPDATE suppression SET e164_hash = $3, e164 = NULL WHERE workspace_id = $1 AND (e164 = $2 OR contact_id = ANY($4::uuid[]))', [ws, n, h, ids]);
         }
         if (i.suppress !== false) {
-          const has = await one(ctx.q, `SELECT 1 FROM suppression WHERE workspace_id = $1 AND scope = 'workspace' AND (e164_hash = ANY($2::text[]) OR ($3::uuid IS NOT NULL AND contact_id = $3))`, [ws, hashes, c?.id ?? null]);
+          const has = await one(ctx.q, `SELECT 1 FROM suppression WHERE workspace_id = $1 AND scope = 'workspace' AND (e164_hash = ANY($2::text[]) OR contact_id = ANY($3::uuid[]))`, [ws, hashes, ids]);
           if (!has) await ctx.q.query(`INSERT INTO suppression (workspace_id, contact_id, e164, e164_hash, scope, reason, source, evidence) VALUES ($1,$2,NULL,$3,'workspace','erased','dpdp',$4)`,
-            [ws, c?.id ?? null, hashes[0], JSON.stringify({ requestedBy: i.requestedBy })]);
+            [ws, c?.id ?? ids[0] ?? null, hashes[0], JSON.stringify({ requestedBy: i.requestedBy })]);
         }
-        if (c) {
-          surfaces.attributes = (await ctx.q.query('DELETE FROM attribute WHERE contact_id = $1', [c.id])).rowCount ?? 0;
-          surfaces.identifiers = (await ctx.q.query('DELETE FROM contact_identifier WHERE contact_id = $1', [c.id])).rowCount ?? 0;
-          surfaces.audiences = (await ctx.q.query('DELETE FROM audience_member WHERE contact_id = $1', [c.id])).rowCount ?? 0;
-          surfaces.conflicts = (await ctx.q.query('DELETE FROM intake_attribute_conflict WHERE contact_id = $1', [c.id])).rowCount ?? 0;
-          surfaces.memory_facts = (await forgetContactMemory(ctx.q, ws, c.id)).facts;
-          surfaces.attempts_cancelled = (await cancelContactAttempts(ctx.q, ws, c.id, 'erased')).cancelled;
-          surfaces.merge_snapshots = (await ctx.q.query('DELETE FROM intake_merge WHERE workspace_id = $1 AND kept_id = $2', [ws, c.id])).rowCount ?? 0;
-          await ctx.q.query('DELETE FROM dnd_status WHERE contact_id = $1', [c.id]);
+        const add = (k: string, n: number) => { surfaces[k] = (Number(surfaces[k] ?? 0)) + n; };
+        for (const id of ids) {
+          add('attributes', (await ctx.q.query('DELETE FROM attribute WHERE contact_id = $1', [id])).rowCount ?? 0);
+          add('identifiers', (await ctx.q.query('DELETE FROM contact_identifier WHERE contact_id = $1', [id])).rowCount ?? 0);
+          add('audiences', (await ctx.q.query('DELETE FROM audience_member WHERE contact_id = $1', [id])).rowCount ?? 0);
+          add('conflicts', (await ctx.q.query('DELETE FROM intake_attribute_conflict WHERE contact_id = $1', [id])).rowCount ?? 0);
+          add('payments', (await ctx.q.query('DELETE FROM contact_payment WHERE workspace_id = $1 AND contact_id = $2', [ws, id])).rowCount ?? 0);
+          add('memory_facts', (await forgetContactMemory(ctx.q, ws, id)).facts);
+          add('attempts_cancelled', (await cancelContactAttempts(ctx.q, ws, id, 'erased')).cancelled);
+          add('merge_snapshots', (await ctx.q.query('DELETE FROM intake_merge WHERE workspace_id = $1 AND kept_id = $2', [ws, id])).rowCount ?? 0);
+          await ctx.q.query('DELETE FROM dnd_status WHERE contact_id = $1', [id]);
           await ctx.q.query(`UPDATE contact SET e164 = 'erased:' || id::text, name = NULL, language = NULL, custom = '{}'::jsonb, erased_at = now(), updated_at = now()
-            WHERE id = $1 AND workspace_id = $2`, [c.id, ws]);
-          surfaces.contact = 'erased_in_place';
+            WHERE id = $1 AND workspace_id = $2`, [id, ws]);
         }
+        if (ids.length) { surfaces.contact = 'erased_in_place'; surfaces.records = ids.length; }
         // Conversations, transcripts and recordings belong to the calls module; it is told by the forget_request row.
         surfaces.pending = 'transcripts and recordings (calls module), CRM delete (outbox)';
       }
