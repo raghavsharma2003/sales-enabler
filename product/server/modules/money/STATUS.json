@@ -14,7 +14,8 @@
     "plan.change": "spend (A2, version-bound to the current plan)",
     "money.reconcile": "draft (opens money_drift issues)",
     "wallet.check": "read: {purpose: launch|number_rent, needInrMilli?} -> {blocker: {code:'wallet_short', message, why, fix: wallet.topup 'Add money'} | null}",
-    "money.parts": "read: every buildable part (shared/components.ts) with a ₹-per-minute figure at money's rates and minute profile, basis = its list price; extrasInrMicroPerMin = phone line + infrastructure + analysis"
+    "money.parts": "read: every buildable part (shared/components.ts) with a ₹-per-minute figure at money's rates and minute profile, basis = its list price; extrasInrMicroPerMin = phone line + infrastructure + analysis",
+    "money.carriers": "read: each carrier path with its billing pulse (sourced, or 'not published'), what it adds per call, and recommended / 'not recommended: N-second billing' (never blocks)"
   },
   "tests": {
     "passed": 26,
@@ -44,7 +45,8 @@
     "copy: user-facing text says Vyakti (estimate basis, price 'not set' text, statement note, tool summaries, cost-card labels via 0906)",
     "wallet blockers (blockers.ts) used by campaigns: launchBlockers adds wallet_short with one call's G9 hold; number.search returns walletBlocker for the cheapest offer's rent; number.rent refuses on an empty wallet naming the wallet and 'Add money'",
     "R4: stack.list (agents) prices each part in ₹ a minute from money.parts, list price kept as priceBasis; a built stack's parts + extras equal money.estimate's all-in figure",
-    "bounded defaults: money_config.default_daily_cap_inr_milli (₹5,000) and default_burst_inr_milli (₹2,000) seeded as workspace caps at wallet creation and back-filled; a 'burst' cap bounds money held at once (spend stays 0); wallet.get caps carry label + text in plain words; cap.raise/lower accept period 'burst'"
+    "bounded defaults: money_config.default_daily_cap_inr_milli (₹5,000) and default_burst_inr_milli (₹2,000) seeded as workspace caps at wallet creation and back-filled; a 'burst' cap bounds money held at once (spend stays 0); wallet.get caps carry label + text in plain words; cap.raise/lower accept period 'burst'",
+    "decision 10: estimates bill each call's phone time on pulse-rounded seconds (Plivo 30 s, published) and carry pulse {text, billedSecondsPerCall, roundingInrMilli}; stack cards and the Billing statement state the pulse; number.search/rent carry the carrier choice and rented lines record billing_pulse_s"
   ],
   "untested": [
     "the minute profile (50% caller audio gated, 4 replies/min x 2000 in + 60 out tokens, 30 s of her speech at 15 chars/s) is an ASSUMPTION, not measured; estimates are only as good as it until the meter feeds per-stack averages",
@@ -56,7 +58,8 @@
     "no real gateway lookup: Razorpay adapter is disabled and has no lookup(), so its unknown payments would only raise issues",
     "the sweep's 'runtime silent' rule uses reservation age, not a last-event timestamp (none exists); a call longer than the campaign's maxDurationS + 15 min would lose its hold early (its cost is still charged late, never dropped)",
     "reservations with no attempt_id are not swept",
-    "gemini-3.8-live part shows the earlier report's ₹5.72/min while its component note says ₹1.90 from one later test call; the two need reconciling from metered calls"
+    "gemini-3.8-live part shows the earlier report's ₹5.72/min while its component note says ₹1.90 from one later test call; the two need reconciling from metered calls",
+    "Plivo pulse: public pages say 30 s, our lab console read 60 s on 19 Oct; estimates use 30 s until the first invoice (open.2026-10-24.plivo-pulse-30-or-60). Rounding is applied to the average call length, not a call-length distribution"
   ],
   "needs_from_others": [
     "#4 kernel: reservation has no campaign_id column, so holds cannot be shown per campaign (cost lines are grouped through attempt.campaign_id instead)",

@@ -4313,6 +4313,25 @@
    }
   },
   {
+   "name": "money.carriers",
+   "risk": "read",
+   "summary": "each phone carrier path with its billing pulse, what the pulse adds per call, and whether it is recommended",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
    "name": "money.estimate",
    "risk": "read",
    "summary": "estimate what Vyakti pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components)",

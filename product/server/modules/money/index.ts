@@ -13,6 +13,7 @@ import { prepareTopup, resolveTopups, runTopup, type Prepared } from './topup.ts
 import { sweepHolds } from './sweep.ts';
 import { walletBlocker, type WalletPurpose } from './blockers.ts';
 import { EXTRAS_INR_MICRO_PER_MIN, partPrice } from './prices.ts';
+import { CARRIERS, carrierChoice, RECOMMENDED_MAX_PULSE_S } from './carriers.ts';
 import { COMPONENTS } from '../../../shared/components.ts';
 import { caps, costLines, credit, defaultRange, estimate, priceFor, reconcile, rollPeriods, statement, usage, walletView } from './money.ts';
 
@@ -62,6 +63,11 @@ export function register(r: Registry): void {
   r.register(tool(obj({ stackId: str({ max: 60 }) }), {
     name: 'money.card', risk: 'read', summary: 'show the provider cost card for a stack, with sources and dates',
     run: async (ctx, i) => ({ stackId: i.stackId, lines: await costLines(ctx.q, i.stackId), price: await priceFor(ctx.q, ctx.workspaceId, i.stackId) }),
+  }));
+
+  r.register(tool(obj({}), {
+    name: 'money.carriers', risk: 'read', summary: 'each phone carrier path with its billing pulse, what the pulse adds per call, and whether it is recommended',
+    run: async () => ({ carriers: CARRIERS.map(carrierChoice), rule: `A pulse over ${RECOMMENDED_MAX_PULSE_S} seconds is marked not recommended; it is never blocked.` }),
   }));
 
   r.register(tool(obj({}), {

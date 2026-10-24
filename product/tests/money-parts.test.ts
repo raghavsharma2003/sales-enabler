@@ -94,6 +94,7 @@ test('R5: no money read tool\'s result says "VP"', { skip }, async () => {
     ['money.estimate', { stackId: 'custom', components: { ears: 'azure', brain: 'gpt-4.1', voice: 'azure' }, minutes: 3, calls: 1 }],
     ['money.card', { stackId: 'v2-flashlite' }],
     ['money.parts', {}],
+    ['money.carriers', {}],
     ['wallet.get', {}],
     ['wallet.check', { purpose: 'launch', needInrMilli: 60_000 }],
     ['usage.get', { groupBy: 'component' }],

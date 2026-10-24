@@ -27,6 +27,9 @@ import { categoryWord, lineNeeded, windowProblem, type Explained } from './expla
 import { verifyConfirm, verifyStart } from './verify.ts';
 // The one money import: the wallet blocker's words and the per-call hold, shared with the money module's wallet.check.
 import { callHoldInrMilli, walletBlocker } from '../money/blockers.ts';
+import { carrierById, carrierChoice } from '../money/carriers.ts';
+/** The carrier path behind the telephony provider, with its billing pulse and whether it is recommended (null for the fake). */
+const carrierFor = (provider: string) => { const c = carrierById(provider); return c ? carrierChoice(c) : null; };
 // The agents module's pure fact-to-column matcher, the same rule the dial-time fill uses (walkthrough round 2, R3).
 import { factColumns, missingFactsSentence } from '../agents/columns.ts';
 import { agentLanguages, languageName, routeContact, serves, toLanguage } from '../agents/languages.ts';
@@ -539,12 +542,12 @@ export function registerCampaignTools(registry: Registry): void {
       try { offers = await telephony().search({ series: i.series as Series | undefined, region: i.region, limit: i.limit ?? 5 }); }
       catch (e) {
         if (!(e instanceof TelephonyDisabled)) throw e;
-        return { offers: [], guide, provider: telephony().name, telephony: { state: 'off', code: e.code, message: e.message }, walletBlocker: null };
+        return { offers: [], guide, provider: telephony().name, carrier: carrierFor(telephony().name), telephony: { state: 'off', code: e.code, message: e.message }, walletBlocker: null };
       }
       // Say up front when the wallet cannot pay the cheapest month's rent (walkthrough S6), not after the approval.
       const rents = offers.map(o => o.monthlyRentInrMilli).filter((m): m is number => m !== null);
       const walletBlocked = offers.length ? await walletBlocker(ctx.q, ctx.workspaceId, { purpose: 'number_rent', needInrMilli: rents.length ? Math.min(...rents) : null }) : null;
-      return { offers, guide, provider: telephony().name, telephony: { state: 'on' }, walletBlocker: walletBlocked };
+      return { offers, guide, provider: telephony().name, carrier: carrierFor(telephony().name), telephony: { state: 'on' }, walletBlocker: walletBlocked };
     },
   }));
 
@@ -559,10 +562,11 @@ export function registerCampaignTools(registry: Registry): void {
         if (e instanceof TelephonyDisabled) throw e;
         throw new UnknownOutcome('the carrier did not confirm the rental: ' + (e instanceof Error ? e.message : String(e)));
       }
-      const n = await one<{ id: string }>(ctx.q, `INSERT INTO phone_number (workspace_id, e164, series, carrier, provider, provider_ref, monthly_rent_inr_milli, display_name)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-        [ctx.workspaceId, r.e164, r.series, r.carrier, telephony().name, r.providerRef, r.monthlyRentInrMilli, i.displayName ?? null]);
-      return { numberId: n!.id, series: r.series, kycStatus: 'none', a2pStatus: 'undeclared', next: 'number.kyc.submit, then the A2P declaration' };
+      // The line records the pulse its carrier bills in (money's carrier table; null when not published).
+      const n = await one<{ id: string }>(ctx.q, `INSERT INTO phone_number (workspace_id, e164, series, carrier, provider, provider_ref, monthly_rent_inr_milli, display_name, billing_pulse_s)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        [ctx.workspaceId, r.e164, r.series, r.carrier, telephony().name, r.providerRef, r.monthlyRentInrMilli, i.displayName ?? null, carrierById(telephony().name)?.pulseSec ?? null]);
+      return { numberId: n!.id, series: r.series, kycStatus: 'none', a2pStatus: 'undeclared', next: 'number.kyc.submit, then the A2P declaration', carrier: carrierFor(telephony().name) };
     },
   }));
 

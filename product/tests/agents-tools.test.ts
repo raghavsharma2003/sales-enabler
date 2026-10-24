@@ -153,7 +153,7 @@ test('stack.list prices each curated stack with money\'s own estimate, the figur
   for (const st of list.stacks) {
     const e = ok<any>(await both.execute(pool, 'money.estimate', { stackId: st.id, minutes: 1, calls: 0 }, ctx));
     assert.equal(st.pricePerMinute.grade, 'computed', st.id);
-    assert.equal(st.pricePerMinute.value, `${e.display.perMinute}, provider cost`, st.id + ': the same figure as money.estimate');
+    assert.equal(st.pricePerMinute.value, `${e.display.perMinute}, provider cost; ${e.display.pulse}`, st.id + ': the same figure as money.estimate, with the carrier pulse (decision 10)');
     assert.ok(e.perMinuteInrMilli > 0, st.id + ' is never priced at zero');
   }
 });

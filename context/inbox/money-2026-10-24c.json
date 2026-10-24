@@ -1,0 +1,15 @@
+{
+  "nodes": [
+    {"id": "evidence.2026-10-24.carrier-pulse-public-pages", "type": "measurement", "title": "Indian outbound billing pulse from public pages (24 Oct 2026): Plivo India 30 s at ₹0.38/min (pricing page and billing-concepts doc); Exotel, Twilio India, Knowlarity, Tata Smartflo and Airtel IQ: pulse not published on any page we could save", "status": "observed", "date": "2026-10-24", "source": "agent", "n": 9, "method": "curl of 9 public URLs, 6 saved byte for byte with URL and fetch time (3 failed: TLS, 502, 403); every stated pulse and rate asserted against the saved text by tests/money-pulse.test.ts", "path": "research/2026-10-24/carrier-pulse/README.md"},
+    {"id": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds", "type": "decision", "title": "Estimates bill each call's phone time in whole carrier pulses (calls taken at the average length), state the pulse and what it adds per call on every estimate, stack card and the Billing statement, and use the published 30 s Plivo pulse", "status": "active", "date": "2026-10-24", "source": "agent", "rationale": "blueprint decision 10 (one honest price per connected second); replaces the flat half-of-a-60-s-pulse allowance. The published pulse is the only sourced figure; the lab's 60 s console read stays as a stated conflict", "reverse_if": "the first Plivo invoice shows 60 s billing (then the carrier row becomes 60 s and the path is marked not recommended), or metered calls show the average-length assumption misprices rounding by more than 10%", "path": "product/server/modules/money/carriers.ts"},
+    {"id": "open.2026-10-24.plivo-pulse-30-or-60", "type": "open-question", "title": "Does Plivo bill our India outbound calls in 30 s pulses (public pages, 24 Oct) or 60 s (our lab's console read, 19 Oct)?", "status": "open", "date": "2026-10-24", "source": "agent", "closes_when": "the first Plivo invoice or CDR export for real calls shows the billed duration of a call under 30 s"}
+  ],
+  "edges": [
+    {"from": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds", "to": "evidence.2026-10-24.carrier-pulse-public-pages", "rel": "informed-by"},
+    {"from": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds", "to": "open.2026-10-24.plivo-pulse-30-or-60", "rel": "leaves-open"},
+    {"from": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds", "to": "component.2026-10-21.money-module", "rel": "part-of"}
+  ],
+  "events": [
+    {"date": "2026-10-24", "what": "Money: carrier pulses researched from public pages and stated on every estimate, stack card and the Billing statement; estimates bill pulse-rounded seconds; money.carriers marks pulses over 30 s 'not recommended' without blocking; rented lines record billing_pulse_s (0908)."}
+  ]
+}

@@ -115,6 +115,7 @@ export type ToolName =
   | "memory.policy.get"
   | "memory.policy.set"
   | "money.card"
+  | "money.carriers"
   | "money.estimate"
   | "money.parts"
   | "money.reconcile"
@@ -950,6 +951,8 @@ export interface ToolInput {
   "money.card": {
     stackId: string;
   };
+  /** each phone carrier path with its billing pulse, what the pulse adds per call, and whether it is recommended (read) */
+  "money.carriers": Record<string, never>;
   /** estimate what Vyakti pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components) (read) */
   "money.estimate": {
     stackId: string;
@@ -1835,6 +1838,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "memory.policy.get": { risk: "read", needsApproval: false },
   "memory.policy.set": { risk: "policy", needsApproval: true },
   "money.card": { risk: "read", needsApproval: false },
+  "money.carriers": { risk: "read", needsApproval: false },
   "money.estimate": { risk: "read", needsApproval: false },
   "money.parts": { risk: "read", needsApproval: false },
   "money.reconcile": { risk: "draft", needsApproval: false },

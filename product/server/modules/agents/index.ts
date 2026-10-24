@@ -133,8 +133,9 @@ async function priceOf(r: Registry, ctx: ToolCtx, s: VoiceStack): Promise<Figure
   const est = r.get('money.estimate');
   if (est?.risk !== 'read') return NOT_PRICED;
   try {
-    const e = await est.run(ctx, est.input({ stackId: s.id, minutes: 1, calls: 0 })) as { lines: unknown[]; basis: string; display: { perMinute: string } };
-    return e.lines.length ? { value: `${e.display.perMinute}, provider cost`, grade: 'computed', source: e.basis } : NOT_PRICED;
+    const e = await est.run(ctx, est.input({ stackId: s.id, minutes: 1, calls: 0 })) as { lines: unknown[]; basis: string; display: { perMinute: string; pulse?: string } };
+    // The carrier's billing pulse is on the card itself (blueprint decision 10), not only in the basis.
+    return e.lines.length ? { value: `${e.display.perMinute}, provider cost${e.display.pulse ? `; ${e.display.pulse}` : ''}`, grade: 'computed', source: e.basis } : NOT_PRICED;
   } catch { return NOT_PRICED; }
 }
 

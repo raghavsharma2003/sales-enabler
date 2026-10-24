@@ -8,6 +8,7 @@ import { partLines } from './prices.ts';
 import { ValidationError } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { settle } from '../../ledger.ts';
+import { DEFAULT_CARRIER, pulseRoundedSeconds, pulseView, type PulseView } from './carriers.ts';
 
 export const TZ = 'Asia/Kolkata';
 const MONEY_IN_LABEL: Record<string, string> = { payment: 'Top-up', manual_credit: 'Credit from Vyakti', trial_credit: 'Trial credit' };
@@ -20,7 +21,8 @@ export const MARGIN_RULE = { active: false, floor2026: 0.30, floor2027: 0.25, pa
 export interface EstimateLine { component: string; provider: string; inrMicroPerMin: number; inrMicroPerCall: number; grade: string; source: string; asOf: string }
 export interface Estimate {
   stackId: string; perMinuteInrMilli: number; totalInrMilli: number; basis: string;
-  lines: EstimateLine[]; price: PriceView; display: { perMinute: string; total: string };
+  lines: EstimateLine[]; price: PriceView; display: { perMinute: string; total: string; pulse: string };
+  pulse: PulseView & { connectedSecondsPerCall: number; billedSecondsPerCall: number; roundingInrMilli: number | null };
 }
 
 export async function costLines(q: Queryable, stackId: string): Promise<EstimateLine[]> {
@@ -50,18 +52,28 @@ export async function estimate(q: Queryable, i: { stackId: string; minutes: numb
   const lines = i.stackId === CUSTOM_STACK_ID ? customLines(i.components) : await costLines(q, i.stackId);
   const perMinMicro = lines.reduce((s, l) => s + l.inrMicroPerMin, 0);
   const perCallMicro = lines.reduce((s, l) => s + l.inrMicroPerCall, 0);
-  const totalMicro = perMinMicro * i.minutes + perCallMicro * i.calls;
-  const perMinuteInrMilli = Math.round(perMinMicro / 1000);
+  // The carrier bills each call in whole pulses from answer (carriers.ts). With `calls` calls sharing `minutes`, each call
+  // is taken as the average length and its phone time is billed on pulse-rounded seconds; the rest is per connected minute.
+  const telPerMinMicro = lines.filter(l => l.component === 'telephony').reduce((s, l) => s + l.inrMicroPerMin, 0);
+  const pulseSec = DEFAULT_CARRIER.pulseSec ?? 1;
+  const connectedPerCall = i.calls > 0 ? (i.minutes * 60) / i.calls : 0;
+  const billedPerCall = i.calls > 0 ? pulseRoundedSeconds(connectedPerCall, pulseSec) : 0;
+  const telMicro = i.calls > 0 ? telPerMinMicro * (billedPerCall * i.calls) / 60 : telPerMinMicro * i.minutes;
+  const totalMicro = (perMinMicro - telPerMinMicro) * i.minutes + telMicro + perCallMicro * i.calls;
+  // The all-in rupees per connected minute, pulse rounding included (equal to the card's rate when no rounding applies).
+  const perMinuteInrMilli = Math.round((i.calls > 0 && i.minutes > 0 ? totalMicro / i.minutes : perMinMicro) / 1000);
   const totalInrMilli = Math.round(totalMicro / 1000);
   const asOf = lines.map(l => l.asOf).sort().at(-1);
+  const pulse = { ...pulseView(DEFAULT_CARRIER), connectedSecondsPerCall: Math.round(connectedPerCall * 10) / 10, billedSecondsPerCall: billedPerCall,
+    roundingInrMilli: i.calls > 0 ? Math.round((telMicro - telPerMinMicro * i.minutes) / 1000) : null };
   // Shown to people as it is (no file names, codes or ISO dates). Provenance: the cost_card rows come from the voice lab's
-  // list prices (voicelab/server/catalog.py) at ₹95/$, an assumed minute profile, and half a carrier pulse per call.
+  // list prices (voicelab/server/catalog.py) at ₹95/$ and an assumed minute profile; the pulse from carriers.ts.
   const day = asOf ? new Date(`${asOf}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'an unknown date';
   const basis = `What Vyakti pays its providers, not a customer price (no price is set yet). Worked out from the providers' list prices `
-    + `as of ${day} at ₹95 to the US dollar, for a typical minute of talk, plus the phone company's rounding on each call. `
-    + `An estimate, not an average of real calls.`;
-  return { stackId: i.stackId, perMinuteInrMilli, totalInrMilli, basis, lines, price: await priceFor(q, null, i.stackId),
-    display: { perMinute: formatInr(perMinuteInrMilli, { paise: true }) + '/min', total: formatInr(totalInrMilli, { paise: true }) } };
+    + `as of ${day} at ₹95 to the US dollar, for a typical minute of talk, with each call's phone time billed in whole `
+    + `${pulseSec}-second pulses as the phone company bills it (${pulse.text}). An estimate, not an average of real calls.`;
+  return { stackId: i.stackId, perMinuteInrMilli, totalInrMilli, basis, lines, pulse, price: await priceFor(q, null, i.stackId),
+    display: { perMinute: formatInr(perMinuteInrMilli, { paise: true }) + '/min', total: formatInr(totalInrMilli, { paise: true }), pulse: pulse.text } };
 }
 
 // ------------------------------------------------------------------ price card (empty by default)
@@ -218,14 +230,15 @@ export async function statement(q: Queryable, ws: string, r: Range) {
     `SELECT kind, sum(inr_milli)::text AS m, count(*)::text AS n FROM wallet_topup
      WHERE workspace_id = $1 AND status = 'captured' AND (created_at AT TIME ZONE '${TZ}')::date BETWEEN $2::date AND $3::date GROUP BY kind`, [ws, r.from, r.to]);
   const price = await priceFor(q, ws, null);
+  const pulse = pulseView(DEFAULT_CARRIER);
   return {
-    kind: 'usage_statement', period: r, currency: 'INR', timezone: TZ,
+    kind: 'usage_statement', pulse, period: r, currency: 'INR', timezone: TZ,
     costInrMilli: total, display: { cost: formatInr(total, { paise: true }) },
     byComponent, byCampaign, byDay,
     moneyIn: topups.map(t => ({ kind: t.kind, label: MONEY_IN_LABEL[t.kind] ?? t.kind, count: Number(t.n), inrMilli: Number(t.m), display: formatInr(Number(t.m), { paise: true }) })),
     price,
     note: price.status === 'not_set'
-      ? 'This is a usage statement, not a tax invoice: no customer price is set yet, so it shows what Vyakti paid providers. GST is not computed.'
+      ? `This is a usage statement, not a tax invoice: no customer price is set yet, so it shows what Vyakti paid providers. GST is not computed. Phone time is billed by ${pulse.carrier} in whole pulses (${pulse.text}).`
       : 'Customer price is set; a GST invoice is produced by the billing run.',
   };
 }

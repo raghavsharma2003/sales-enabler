@@ -3,6 +3,7 @@
 // usage assumption (how much caller audio the ears hear, how many replies, how much she speaks): that is MINUTE below,
 // labelled as an assumption on every row until the meter replaces it with measured per-stack averages.
 // Amounts are micro-rupees (INR x 1e6) so sub-paisa per-minute lines keep their precision; totals round to milli.
+import { DEFAULT_CARRIER } from './carriers.ts';
 import { STACKS, type StackComponents } from '../../../shared/stacks.ts';
 
 export const FX = 95;                 // the research programme's INR per USD (catalog.py)
@@ -60,8 +61,10 @@ export const VOICES: Record<string, Voice> = {
   azure: { provider: 'Azure neural voice', usd1mChars: 15.0, price: '$15/1M chars', src: `${CAT} TTS.azure: Azure S1 neural TTS` },
   'azure-hd': { provider: 'Azure HD voice', usd1mChars: 22.0, price: '$22/1M chars', src: `${CAT} TTS.azure-hd: Azure Neural HD` },
 };
-// Plivo India outbound, console read 2026-10-19, 60 s pulse. The pulse rounds each call up; on average half a pulse.
-export const TELEPHONY = { provider: 'Plivo India outbound', inrMin: 0.38, pulseSec: 60, price: '₹0.38/min, 60 s pulse', src: 'voicelab/server/phone.py RATE_INR_MIN (console 2026-10-19)' };
+// The wired carrier path (carriers.ts): Plivo India outbound at its published rate and pulse. The pulse's rounding is
+// not folded into the per-minute line; the estimate bills each call's pulse-rounded seconds (money.ts).
+export const TELEPHONY = { provider: 'Plivo India outbound', inrMin: DEFAULT_CARRIER.outboundInrPerMin!, pulseSec: DEFAULT_CARRIER.pulseSec!,
+  price: `₹${DEFAULT_CARRIER.outboundInrPerMin}/min, ${DEFAULT_CARRIER.pulseSec}-second pulse`, src: `${DEFAULT_CARRIER.urls[0]} (fetched 2026-10-24)` };
 export const PLATFORM = { inrMin: 0.03, src: 'research/2026-10-21/blueprint/modules/economics-platform.md 2.2 COGS: infra 0.03 [I]' };
 export const ANALYSIS = { inrMin: 0.06, src: 'research/2026-10-21/blueprint/modules/economics-platform.md 2.2 COGS: analysis 0.06' };
 // Speech-to-speech has no component price in the catalog: the report's measured AI rupees per minute stand in.
@@ -106,8 +109,8 @@ export function partLines(stackId: string, c: StackComponents): CardRow[] {
       add({ component: 'voice', provider: v.provider, inrMicroPerMin: micro(voiceUsd * FX), unitPrice: v.price, usage: v.usd1mChars !== undefined ? usageText.voiceChars : usageText.voiceAudio, grade: 'computed', source: v.src });
     }
     add({ component: 'telephony', provider: TELEPHONY.provider, inrMicroPerMin: micro(TELEPHONY.inrMin),
-      inrMicroPerCall: micro(TELEPHONY.inrMin * 0.5), unitPrice: TELEPHONY.price,
-      usage: 'per connected minute, plus half a 60 s pulse per call for the carrier rounding up [assumption]', grade: 'computed', source: TELEPHONY.src });
+      inrMicroPerCall: 0, unitPrice: TELEPHONY.price,
+      usage: `per connected minute; each call is billed in whole ${TELEPHONY.pulseSec}-second pulses, which the estimate adds per call`, grade: 'computed', source: TELEPHONY.src });
     add({ component: 'platform', provider: 'Vyakti infrastructure', inrMicroPerMin: micro(PLATFORM.inrMin), unitPrice: '₹0.03/min', usage: 'per connected minute [inferred]', grade: 'computed', source: PLATFORM.src });
     add({ component: 'analysis', provider: 'Vyakti call analysis', inrMicroPerMin: micro(ANALYSIS.inrMin), unitPrice: '₹0.06/min', usage: 'per connected minute (about ₹0.17 per 3-min call)', grade: 'computed', source: ANALYSIS.src });
   }

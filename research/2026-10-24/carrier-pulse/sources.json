@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://www.plivo.com/voice/pricing/in/",
+    "file": "raw/www.plivo.com_voice_pricing_in_",
+    "fetched": "2026-10-24T06:57:23Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://www.plivo.com/docs/faq/billing-and-invoices/billing-concepts.md",
+    "file": "raw/www.plivo.com_docs_faq_billing-and-invoices_billing-concepts.md",
+    "fetched": "2026-10-24T07:05:00Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://developer.exotel.com/docs/faqs/pricing-plans.md",
+    "file": "raw/developer.exotel.com_docs_faqs_pricing-plans.md",
+    "fetched": "2026-10-24T07:05:00Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://exotel.com/pricing/",
+    "file": "raw/exotel.com_pricing_",
+    "fetched": "2026-10-24T06:57:23Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://www.twilio.com/en-us/voice/pricing/in",
+    "file": "raw/www.twilio.com_en-us_voice_pricing_in",
+    "fetched": "2026-10-24T06:57:23Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://www.airtel.in/business/b2b/airtel-iq/pricing",
+    "file": "raw/www.airtel.in_business_b2b_airtel-iq_pricing",
+    "fetched": "2026-10-24T06:57:23Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://www.knowlarity.com/pricing",
+    "file": null,
+    "fetched": "2026-10-24T06:57:23Z",
+    "how": "failed: TLS verification error through the proxy"
+  },
+  {
+    "url": "https://smartflo.tatatelebusiness.com/pricing/",
+    "file": null,
+    "fetched": "2026-10-24T06:57:23Z",
+    "how": "failed: proxy CONNECT 502"
+  },
+  {
+    "url": "https://support.twilio.com/hc/en-us/articles/223132307-How-do-you-round-minutes-for-billing",
+    "file": null,
+    "fetched": "2026-10-24T07:06:00Z",
+    "how": "failed: 403"
+  }
+]
