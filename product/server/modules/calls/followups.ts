@@ -48,6 +48,11 @@ async function call(pool: pg.Pool, r: Registry, ws: string, name: string, args: 
  *  hand-off, limits reached, wrong person) or unknown. Short calls are early hang-ups and silent connections. */
 export function retryClass(end: EndReason | null, reasonCode: string | null): string | null {
   if (reasonCode === 'CONV_CALLBACK') return 'callback';
+  // The carrier's reason (shared/carrier.ts) is more precise than the engine's end reason for a call that never connected.
+  if (reasonCode === 'DIAL_TRIAL_RESTRICTED' || reasonCode === 'DIAL_CARRIER_REJECTED') return 'carrier_refused';
+  if (reasonCode === 'DIAL_INVALID_NUMBER') return 'invalid';
+  if (reasonCode === 'DIAL_NETWORK') return 'provider_error';
+  if (reasonCode === 'DIAL_REJECTED') return 'busy';
   switch (end) {
     case 'no_answer': return 'no_answer';
     case 'busy': return 'busy';

@@ -18,6 +18,7 @@ import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError, type
 import { queueAnalysis } from './analysis.ts';
 import { alertOnDuty, callerStatedTime, handOffKind } from './handoffs.ts';
 import { codeReason, NOT_CONNECTED } from './taxonomy.ts';
+import { carrierOutcome, type CarrierFacts } from '../../../shared/carrier.ts';
 import JUDGE_EVENT from '../../../shared/judge-event.json' with { type: 'json' };
 
 const END_REASONS = ['completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy', 'failed', 'voicemail', 'switched_off', 'invalid_number',
@@ -35,6 +36,11 @@ const traceV: Validator<unknown> = (v, p = '') => {
 const RULES = ['RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10', 'RD11'] as const;
 const at = str({ pattern: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/ });
 const seq = num({ int: true, min: 0, max: 2_000_000_000 });
+/** call.ended.carrier (shared/carrier.ts CarrierFacts): what the carrier said about a phone call. */
+const carrierV = obj({ provider: opt(str({ max: 40 })), callUuid: opt(str({ max: 100 })), requestUuid: opt(str({ max: 100 })),
+  hangupCauseName: opt(str({ max: 120 })), hangupCauseCode: opt(num({ int: true, min: 0, max: 99_999 })), hangupSource: opt(str({ max: 60 })),
+  durationS: opt(num({ min: 0 })), billDurationS: opt(num({ min: 0 })), ringS: opt(num({ min: 0 })), answeredBy: opt(str({ oneOf: ['human', 'machine'] })),
+  dialError: opt(str({ max: 300 })), costInrMilli: opt(num({ int: true, min: 0 })) });
 const ms = num({ int: true, min: 0 });
 const speaker = str({ oneOf: ['agent', 'caller'] });
 const manifest = obj({
@@ -93,7 +99,7 @@ const EVENTS: Record<RuntimeEvent['type'], Validator<unknown>> = {
   hand_off: obj({ seq, type: str(), at, reason: str({ max: 500 }), target: str({ max: 200 }), summary: str({ max: 2000 }) }),
   judge: judgeEvent(),
   'call.ended': obj({ seq, type: str(), at, endReason: str({ oneOf: END_REASONS }), durationS: num({ min: 0 }), recordingUri: opt(str({ max: 2000 })),
-    transcript: arr(obj({ speaker, text: str({ max: 20_000 }), startMs: ms }), { max: 5000 }), manifest, trace: opt(traceV) }),
+    transcript: arr(obj({ speaker, text: str({ max: 20_000 }), startMs: ms }), { max: 5000 }), manifest, trace: opt(traceV), carrier: opt(carrierV) }),
 };
 
 const event: Validator<RuntimeEvent> = (v, p = '') => {
@@ -244,7 +250,11 @@ async function endCall(c: pg.PoolClient, conv: Conv, e: Extract<RuntimeEvent, { 
   if (conv.status !== 'live') return false;          // a second call.ended (new seq) never re-settles
   const ws = conv.workspace_id;
   const callerTurns = e.transcript.filter(t => t.speaker === 'caller').length;
-  const reason = codeReason(e.endReason as EndReason, e.durationS, callerTurns);
+  // The carrier's own account of a phone call that never reached her decides its reason (trial-restricted, network,
+  // rejected...) and whether the person's phone rang at all (an attempt that never rang them does not use their budget).
+  const carrier = e.carrier ? carrierOutcome(e.carrier as CarrierFacts, { trialAccount: process.env.VP_CARRIER_TRIAL === '1' }) : null;
+  const unreached = NOT_CONNECTED.has(e.endReason as EndReason) || e.endReason === 'voicemail';
+  const reason = (unreached && carrier?.reasonCode) || codeReason(e.endReason as EndReason, e.durationS, callerTurns);
   const flags: string[] = [];
   const started = conv.run_manifest as Partial<RunManifest>;
   if (started.combinationId && started.combinationId !== e.manifest.combinationId) flags.push('manifest_changed');
@@ -256,6 +266,12 @@ async function endCall(c: pg.PoolClient, conv: Conv, e: Extract<RuntimeEvent, { 
       transcript = $7, run_manifest = $8, trace = $9 WHERE id = $1`,
     [conv.id, e.endReason, reason, e.at, Math.round(e.durationS), e.recordingUri ?? null, JSON.stringify(e.transcript), stamped(conv, e.manifest),
      e.trace ? JSON.stringify(e.trace) : null]);
+  if (e.carrier) {
+    await c.query(`UPDATE conversation SET carrier = coalesce(carrier, '{}'::jsonb) || $2::jsonb, carrier_call_id = coalesce(carrier_call_id, $3) WHERE id = $1`,
+      [conv.id, JSON.stringify({ facts: e.carrier, outcome: carrier, source: 'runtime' }), e.carrier.callUuid ?? null]);
+    if (conv.attempt_id && unreached && carrier && !carrier.rang)
+      await c.query('UPDATE attempt SET counts_to_budget = false, carrier_code = $3 WHERE id = $1 AND workspace_id = $2', [conv.attempt_id, ws, carrier.reason]);
+  }
   await stampVersion(c, conv, e.manifest);
   await addFlags(c, conv.id, flags);
 

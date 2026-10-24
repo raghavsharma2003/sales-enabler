@@ -43,9 +43,11 @@ export const A2P_DUE = '2026-11-17T00:00:00+05:30';
 
 export type OutcomeClass =
   | 'busy' | 'no_answer' | 'switched_off' | 'voicemail' | 'short_call' | 'provider_error' | 'dropped_by_vp'
-  | 'callback' | 'relative_answered' | 'unknown' | 'opt_out' | 'wrong_party' | 'invalid' | 'operator_block' | 'completed';
+  | 'callback' | 'relative_answered' | 'unknown' | 'opt_out' | 'wrong_party' | 'invalid' | 'operator_block' | 'completed'
+  // the carrier refused before the phone rang (trial account, caller ID, barring, spam, credit): retrying cannot help
+  | 'carrier_refused';
 export const OUTCOME_CLASSES: readonly OutcomeClass[] = ['busy', 'no_answer', 'switched_off', 'voicemail', 'short_call', 'provider_error',
-  'dropped_by_vp', 'callback', 'relative_answered', 'unknown', 'opt_out', 'wrong_party', 'invalid', 'operator_block', 'completed'];
+  'dropped_by_vp', 'callback', 'relative_answered', 'unknown', 'opt_out', 'wrong_party', 'invalid', 'operator_block', 'completed', 'carrier_refused'];
 
 /** A step: minutes from now, or 'next_day' / 'next_day_other_half' (the gate then defers into the window), or 'stated'. */
 export type LadderStep = number | 'next_day' | 'next_day_other_half' | 'stated';
@@ -68,6 +70,7 @@ export const RETRY_LADDER: Record<OutcomeClass, LadderRule> = {
   invalid: { steps: [], countsToBudget: true },
   operator_block: { steps: [], countsToBudget: true },
   completed: { steps: [], countsToBudget: true },
+  carrier_refused: { steps: [], countsToBudget: false },
 };
 
 /** Attempts per person: a day, a week, a run. */

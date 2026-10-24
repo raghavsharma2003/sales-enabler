@@ -25,7 +25,7 @@ import { tick } from './worker.ts';
 import { callbackText, clampToWindow, describeRetry, nextByPattern, resolveRetry, retryInput, RETRYABLE } from './retry.ts';
 import { inboundHook, registerInboundTools } from './inbound.ts';
 import { categoryWord, lineNeeded, windowProblem, type Explained } from './explain.ts';
-import { verifyConfirm, verifyStart } from './verify.ts';
+import { markVerified, verifyConfirm, verifyStart } from './verify.ts';
 // The one money import: the wallet blocker's words and the per-call hold, shared with the money module's wallet.check.
 import { callHoldInrMilli, walletBlocker } from '../money/blockers.ts';
 import { carrierById, carrierChoice } from '../money/carriers.ts';
@@ -38,6 +38,7 @@ import { languageOptions } from './languages.ts';
 import { GATE, gateStatus } from '../../../shared/stack-gate.ts';
 import { announcementXml, routeSeries, SERIES, SERIES_GUIDE, SPEAK_PATH, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { requirePlivo } from './plivo-signature.ts';
+import { fetchCdrs, HANGUP_PATH, hangupHook, registerCarrierTools, settleCarrierEnded } from './carrier.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
 // ---- validators ----
@@ -697,6 +698,11 @@ export function registerCampaignTools(registry: Registry): void {
     summary: 'Confirm the code you heard; the phone becomes yours to ring with test calls',
     run: (ctx, i) => verifyConfirm(ctx, i),
   }));
+  reg(tool(obj({ memberId: uuid(), phone: str({ min: 6, max: 20 }), evidence: str({ min: 10, max: 300 }) }), {
+    name: 'member.phone.mark_verified', risk: 'draft', roles: [],    // no workspace role may call it: Vyakti staff only
+    summary: 'Vyakti staff: mark a member\'s phone verified for test calls when the carrier has verified it (audited, no call)',
+    run: (ctx, i) => markVerified(ctx, i),
+  }));
 
   reg(tool(obj({ status: opt(str({ oneOf: ['active', 'paused', 'released'] })), limit: opt(num({ int: true, min: 1, max: 200 })), cursor: opt(str({ max: 120 })) }), {
     name: 'number.list', risk: 'read', summary: 'Your calling lines: series, KYC, A2P, status, dates and the campaigns using each',
@@ -854,10 +860,11 @@ export function registerCampaignTools(registry: Registry): void {
 
 export const module: Module = {
   name: 'campaigns',
-  register: r => { registerCampaignTools(r); registerInboundTools(r); },
+  register: r => { registerCampaignTools(r); registerInboundTools(r); registerCarrierTools(r); },
   routes(router, deps) {
     router.add('POST', '/hooks/telephony/kyc', kycHook(deps), { rawBody: true, limit: 64_000 });
     router.add('POST', '/hooks/telephony/inbound', inboundHook(deps), { rawBody: true, limit: 16_000 });
+    router.add('POST', HANGUP_PATH, hangupHook(deps), { rawBody: true, limit: 16_000 });   // Plivo's hang-up callback (V3-signed)
     // The carrier fetches a system announcement (the "ring my phone" code) by its one-off token; unknown or expired: 404.
     const speak = async (req: Req): Promise<Res> => {
       await requirePlivo(deps.pool, req);          // Plivo's V3 signature and a fresh nonce (plivo-signature.ts)
@@ -871,6 +878,8 @@ export const module: Module = {
   // The dial loop: claim + gate + dispatch. Jobs never overlap and hold a per-name advisory lock, so replicas are safe;
   // SKIP LOCKED makes even concurrent claimers safe.
   jobs: deps => [{ name: 'campaigns.dispatch', everyMs: 2_000, run: async d => { await tick({ pool: d.pool, registry: d.registry }); } },
+    { name: 'campaigns.carrier_settle', everyMs: 30_000, run: async d => { await settleCarrierEnded(d.pool); } },
+    { name: 'campaigns.carrier_cdr', everyMs: 60_000, run: async d => { await fetchCdrs(d.pool); } },
     { name: 'campaigns.plivo_nonce_prune', everyMs: 3_600_000, run: async d => { await d.pool.query("DELETE FROM plivo_nonce WHERE seen_at < now() - interval '1 day'"); } }],
 };
 

@@ -178,7 +178,7 @@ export const PAST: Record<string, string> = {
   'webhook.create': 'added a webhook', 'webhook.delete': 'removed a webhook', 'webhook.emit': 'queued a webhook event', 'webhook.replay': 'sent a webhook event again', 'webhook.test': 'sent a test event to a webhook',
   'notification.destination.create': 'added an alert destination', 'notification.destination.delete': 'removed an alert destination', 'notification.test': 'sent a test alert', 'duty.roster.set': 'changed the duty hours', 'duty.override.add': 'added leave or cover to the duty roster', 'duty.override.remove': 'removed leave or cover from the duty roster',
   'call.export': 'exported calls as a file',
-  'attempt.cancel_for_contact': 'cancelled waiting call attempts for a person', 'member.phone.verify_confirm': 'checked the code for verifying their phone', 'member.phone.verify_start': 'asked for a call to verify their phone',
+  'attempt.cancel_for_contact': 'cancelled waiting call attempts for a person', 'member.phone.verify_confirm': 'checked the code for verifying their phone', 'member.phone.verify_start': 'asked for a call to verify their phone', 'member.phone.mark_verified': 'marked a member\'s phone verified (Vyakti team)', 'number.attach_carrier': 'attached a carrier number and pointed its calls at Vyakti (Vyakti team)',
   'number.a2p.declare': 'recorded a number\'s A2P declaration', 'number.kyc.sync': 'refreshed a number\'s KYC status', 'policy.retention.set': 'changed how long data is kept',
   'simcaller.save': 'saved a practice caller',
 };

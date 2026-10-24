@@ -122,9 +122,9 @@ const fullCall = (o: { endReason?: string; durationS?: number; costs?: number[];
 const llmReply = (json: unknown) => (_req: LlmRequest) => ({ text: JSON.stringify(json), toolCalls: [], usage: { inputTokens: 100, outputTokens: 20 }, model: 'fake-analyst', provider: 'fake' });
 
 // ---- pure ------------------------------------------------------------------------------------------------------
-test('the reason catalogue has 35 distinct codes; Wilson lower bound matches the trust bar', () => {
-  assert.equal(REASON_CODES.length, 35);
-  assert.equal(new Set(REASON_CODES.map(r => r.code)).size, 35);
+test('the reason catalogue has 39 distinct codes; Wilson lower bound matches the trust bar', () => {
+  assert.equal(REASON_CODES.length, 39);
+  assert.equal(new Set(REASON_CODES.map(r => r.code)).size, 39);
   assert.ok(Math.abs(wilsonLower(46, 50) - 0.8124) < 0.002, String(wilsonLower(46, 50)));
   assert.equal(wilsonLower(0, 0), 0);
   assert.equal(calibrationStatus(46, 0.92, wilsonLower(46, 50)), 'calibrating');

@@ -135,6 +135,7 @@ export type ToolName =
   | "live.whisper"
   | "member.invite"
   | "member.list"
+  | "member.phone.mark_verified"
   | "member.phone.verify_confirm"
   | "member.phone.verify_start"
   | "member.remove"
@@ -166,6 +167,7 @@ export type ToolName =
   | "notification.destination.list"
   | "notification.test"
   | "number.a2p.declare"
+  | "number.attach_carrier"
   | "number.byo.connect"
   | "number.kyc.submit"
   | "number.kyc.sync"
@@ -370,7 +372,7 @@ export interface ToolInput {
   /** Schedule the next attempt by the retry ladder for this outcome (unknown outcomes are never retried) (external, waits for approval) */
   "attempt.retry_per_ladder": {
     attemptId: string;
-    outcome: "busy" | "no_answer" | "switched_off" | "voicemail" | "short_call" | "provider_error" | "dropped_by_vp" | "callback" | "relative_answered" | "unknown" | "opt_out" | "wrong_party" | "invalid" | "operator_block" | "completed";
+    outcome: "busy" | "no_answer" | "switched_off" | "voicemail" | "short_call" | "provider_error" | "dropped_by_vp" | "callback" | "relative_answered" | "unknown" | "opt_out" | "wrong_party" | "invalid" | "operator_block" | "completed" | "carrier_refused";
     /** ISO 8601 time with offset */
     at?: string;
     /** a callback time the caller stated, read from their own words */
@@ -501,7 +503,7 @@ export interface ToolInput {
     agentVersionId?: string;
     /** one of this workspace's outcome values, e.g. 'agreed' */
     outcome?: string;
-    reasonCode?: "PRE_NUMBER_INVALID" | "PRE_DND" | "PRE_SUPPRESSED" | "PRE_WINDOW" | "PRE_NO_CONSENT" | "PRE_WALLET_LOW" | "PRE_CAP_REACHED" | "PRE_ATTEMPTS_EXHAUSTED" | "DIAL_NO_ANSWER" | "DIAL_BUSY" | "DIAL_SWITCHED_OFF" | "DIAL_CARRIER_REJECTED" | "DIAL_OPERATOR_ANNOUNCEMENT" | "DIAL_FAILED" | "CONN_VOICEMAIL" | "CONN_SILENCE" | "CONN_ENGINE_ERROR" | "CONN_MAX_DURATION" | "CONN_MAX_COST" | "END_EARLY_HANGUP" | "END_HUNG_UP_MID" | "END_TOOL_ERROR" | "END_HANDED_OFF" | "END_CRISIS" | "END_OPTED_OUT" | "CONV_GOAL_DONE" | "CONV_CALLBACK" | "CONV_NOT_INTERESTED" | "CONV_WRONG_PERSON" | "CONV_LANGUAGE_MISMATCH" | "CONV_CONFUSED" | "CONV_OBJECTION_UNRESOLVED" | "CONV_COMPLAINT" | "CONV_NEEDS_HUMAN" | "CONV_INCOMPLETE";
+    reasonCode?: "PRE_NUMBER_INVALID" | "PRE_DND" | "PRE_SUPPRESSED" | "PRE_WINDOW" | "PRE_NO_CONSENT" | "PRE_WALLET_LOW" | "PRE_CAP_REACHED" | "PRE_ATTEMPTS_EXHAUSTED" | "DIAL_NO_ANSWER" | "DIAL_BUSY" | "DIAL_SWITCHED_OFF" | "DIAL_CARRIER_REJECTED" | "DIAL_OPERATOR_ANNOUNCEMENT" | "DIAL_REJECTED" | "DIAL_INVALID_NUMBER" | "DIAL_NETWORK" | "DIAL_TRIAL_RESTRICTED" | "DIAL_FAILED" | "CONN_VOICEMAIL" | "CONN_SILENCE" | "CONN_ENGINE_ERROR" | "CONN_MAX_DURATION" | "CONN_MAX_COST" | "END_EARLY_HANGUP" | "END_HUNG_UP_MID" | "END_TOOL_ERROR" | "END_HANDED_OFF" | "END_CRISIS" | "END_OPTED_OUT" | "CONV_GOAL_DONE" | "CONV_CALLBACK" | "CONV_NOT_INTERESTED" | "CONV_WRONG_PERSON" | "CONV_LANGUAGE_MISMATCH" | "CONV_CONFUSED" | "CONV_OBJECTION_UNRESOLVED" | "CONV_COMPLAINT" | "CONV_NEEDS_HUMAN" | "CONV_INCOMPLETE";
     from?: string;
     to?: string;
     flagged?: boolean;
@@ -537,7 +539,7 @@ export interface ToolInput {
     /** one of this workspace's outcome values (an outcome definition's allowed values, e.g. 'agreed'); never a reason code */
     outcome?: string;
     /** why the call ended the way it did, e.g. CONV_GOAL_DONE or END_CRISIS; a separate filter from outcome */
-    reasonCode?: "PRE_NUMBER_INVALID" | "PRE_DND" | "PRE_SUPPRESSED" | "PRE_WINDOW" | "PRE_NO_CONSENT" | "PRE_WALLET_LOW" | "PRE_CAP_REACHED" | "PRE_ATTEMPTS_EXHAUSTED" | "DIAL_NO_ANSWER" | "DIAL_BUSY" | "DIAL_SWITCHED_OFF" | "DIAL_CARRIER_REJECTED" | "DIAL_OPERATOR_ANNOUNCEMENT" | "DIAL_FAILED" | "CONN_VOICEMAIL" | "CONN_SILENCE" | "CONN_ENGINE_ERROR" | "CONN_MAX_DURATION" | "CONN_MAX_COST" | "END_EARLY_HANGUP" | "END_HUNG_UP_MID" | "END_TOOL_ERROR" | "END_HANDED_OFF" | "END_CRISIS" | "END_OPTED_OUT" | "CONV_GOAL_DONE" | "CONV_CALLBACK" | "CONV_NOT_INTERESTED" | "CONV_WRONG_PERSON" | "CONV_LANGUAGE_MISMATCH" | "CONV_CONFUSED" | "CONV_OBJECTION_UNRESOLVED" | "CONV_COMPLAINT" | "CONV_NEEDS_HUMAN" | "CONV_INCOMPLETE";
+    reasonCode?: "PRE_NUMBER_INVALID" | "PRE_DND" | "PRE_SUPPRESSED" | "PRE_WINDOW" | "PRE_NO_CONSENT" | "PRE_WALLET_LOW" | "PRE_CAP_REACHED" | "PRE_ATTEMPTS_EXHAUSTED" | "DIAL_NO_ANSWER" | "DIAL_BUSY" | "DIAL_SWITCHED_OFF" | "DIAL_CARRIER_REJECTED" | "DIAL_OPERATOR_ANNOUNCEMENT" | "DIAL_REJECTED" | "DIAL_INVALID_NUMBER" | "DIAL_NETWORK" | "DIAL_TRIAL_RESTRICTED" | "DIAL_FAILED" | "CONN_VOICEMAIL" | "CONN_SILENCE" | "CONN_ENGINE_ERROR" | "CONN_MAX_DURATION" | "CONN_MAX_COST" | "END_EARLY_HANGUP" | "END_HUNG_UP_MID" | "END_TOOL_ERROR" | "END_HANDED_OFF" | "END_CRISIS" | "END_OPTED_OUT" | "CONV_GOAL_DONE" | "CONV_CALLBACK" | "CONV_NOT_INTERESTED" | "CONV_WRONG_PERSON" | "CONV_LANGUAGE_MISMATCH" | "CONV_CONFUSED" | "CONV_OBJECTION_UNRESOLVED" | "CONV_COMPLAINT" | "CONV_NEEDS_HUMAN" | "CONV_INCOMPLETE";
     from?: string;
     to?: string;
     flagged?: boolean;
@@ -1127,6 +1129,12 @@ export interface ToolInput {
   };
   /** List the people in this workspace and their roles (read) */
   "member.list": Record<string, never>;
+  /** Vyakti staff: mark a member's phone verified for test calls when the carrier has verified it (audited, no call) (draft) */
+  "member.phone.mark_verified": {
+    memberId: string;
+    phone: string;
+    evidence: string;
+  };
   /** Confirm the code you heard; the phone becomes yours to ring with test calls (draft) */
   "member.phone.verify_confirm": {
     phone: string;
@@ -1281,6 +1289,14 @@ export interface ToolInput {
     numberId: string;
     a2pRef: string;
     /** what shows the operator accepted it: the portal reference, date, who submitted */
+    evidence: string;
+  };
+  /** Vyakti staff: attach a number already on the carrier account to this workspace and point its calls at Vyakti (audited) (draft) */
+  "number.attach_carrier": {
+    phone: string;
+    series?: "ten_digit" | "140" | "1600" | "1601" | "trial";
+    displayName?: string;
+    kycVerified?: boolean;
     evidence: string;
   };
   /** Connect a number the business already owns, on its own carrier (draft) */
@@ -2215,6 +2231,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "live.whisper": { risk: "external", needsApproval: true },
   "member.invite": { risk: "policy", needsApproval: true },
   "member.list": { risk: "read", needsApproval: false },
+  "member.phone.mark_verified": { risk: "draft", needsApproval: false },
   "member.phone.verify_confirm": { risk: "draft", needsApproval: false },
   "member.phone.verify_start": { risk: "test", needsApproval: false },
   "member.remove": { risk: "destructive", needsApproval: true },
@@ -2246,6 +2263,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "notification.destination.list": { risk: "read", needsApproval: false },
   "notification.test": { risk: "test", needsApproval: false },
   "number.a2p.declare": { risk: "policy", needsApproval: true },
+  "number.attach_carrier": { risk: "draft", needsApproval: false },
   "number.byo.connect": { risk: "draft", needsApproval: false },
   "number.kyc.submit": { risk: "policy", needsApproval: true },
   "number.kyc.sync": { risk: "draft", needsApproval: false },

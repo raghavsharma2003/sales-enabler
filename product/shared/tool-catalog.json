@@ -596,7 +596,8 @@
        "wrong_party",
        "invalid",
        "operator_block",
-       "completed"
+       "completed",
+       "carrier_refused"
       ]
      },
      "at": {
@@ -1305,6 +1306,10 @@
        "DIAL_SWITCHED_OFF",
        "DIAL_CARRIER_REJECTED",
        "DIAL_OPERATOR_ANNOUNCEMENT",
+       "DIAL_REJECTED",
+       "DIAL_INVALID_NUMBER",
+       "DIAL_NETWORK",
+       "DIAL_TRIAL_RESTRICTED",
        "DIAL_FAILED",
        "CONN_VOICEMAIL",
        "CONN_SILENCE",
@@ -1526,6 +1531,10 @@
        "DIAL_SWITCHED_OFF",
        "DIAL_CARRIER_REJECTED",
        "DIAL_OPERATOR_ANNOUNCEMENT",
+       "DIAL_REJECTED",
+       "DIAL_INVALID_NUMBER",
+       "DIAL_NETWORK",
+       "DIAL_TRIAL_RESTRICTED",
        "DIAL_FAILED",
        "CONN_VOICEMAIL",
        "CONN_SILENCE",
@@ -4999,6 +5008,38 @@
    }
   },
   {
+   "name": "member.phone.mark_verified",
+   "risk": "draft",
+   "summary": "Vyakti staff: mark a member's phone verified for test calls when the carrier has verified it (audited, no call)",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "memberId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "phone": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 20
+     },
+     "evidence": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "memberId",
+     "phone",
+     "evidence"
+    ]
+   }
+  },
+  {
    "name": "member.phone.verify_confirm",
    "risk": "draft",
    "summary": "Confirm the code you heard; the phone becomes yours to ring with test calls",
@@ -6001,6 +6042,50 @@
     "required": [
      "numberId",
      "a2pRef",
+     "evidence"
+    ]
+   }
+  },
+  {
+   "name": "number.attach_carrier",
+   "risk": "draft",
+   "summary": "Vyakti staff: attach a number already on the carrier account to this workspace and point its calls at Vyakti (audited)",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "phone": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 20
+     },
+     "series": {
+      "type": "string",
+      "enum": [
+       "ten_digit",
+       "140",
+       "1600",
+       "1601",
+       "trial"
+      ]
+     },
+     "displayName": {
+      "type": "string",
+      "maxLength": 80
+     },
+     "kycVerified": {
+      "type": "boolean"
+     },
+     "evidence": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "phone",
      "evidence"
     ]
    }

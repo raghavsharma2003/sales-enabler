@@ -15,7 +15,7 @@ import type { DialPolicy } from './gate.ts';
 
 export const RETRYABLE = ['busy', 'no_answer', 'switched_off', 'voicemail', 'short_call'] as const;
 export type Retryable = (typeof RETRYABLE)[number];
-export const NEVER_RETRY: readonly OutcomeClass[] = ['invalid', 'opt_out', 'wrong_party', 'completed', 'unknown', 'operator_block'];
+export const NEVER_RETRY: readonly OutcomeClass[] = ['invalid', 'opt_out', 'wrong_party', 'completed', 'unknown', 'operator_block', 'carrier_refused'];
 
 export interface RetryPolicy { pattern: string; maxAttempts: number; gapsMin: number[]; retryOn: Retryable[] }
 

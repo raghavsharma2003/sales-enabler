@@ -1,0 +1,30 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.staff-mark-phone-verified",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "member.phone.mark_verified: Vyakti staff (actor vp_success, no workspace role) may mark a member's phone verified, with evidence text, audited without the number and with no call placed; same refusals as a code (mobile only, not suppressed or erased, not another member's)",
+   "rationale": "On the carrier trial (to 2026-11-16) Plivo rings only sandbox-verified numbers; the owner's phone is verified there, so a staff mark avoids a verification call the trial could refuse.",
+   "reverse_if": "the carrier account leaves trial and the in-product code call is proven live; then keep it for support cases only"
+  },
+  {
+   "id": "decision.2026-10-24.carrier-truth",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Carrier truth: shared/carrier.ts maps Plivo hang-up codes (then names, then the Call API refusal text) to a reason, whether the phone rang, the call page code and the retry class. A call that never rang the person does not use their budget; a carrier refusal (trial, caller ID, barring, spam, credit) is OutcomeClass carrier_refused, never retried. The runtime sends call.ended.carrier; the inbound application's hang-up URL is the control plane's signed hook; the CDR is fetched once per call for billed seconds and the INR amount",
+   "rationale": "Owner directive 2026-10-24 (calling first): the call log must say what the carrier said, and a trial refusal must not burn the retry ladder.",
+   "reverse_if": "the first live trial refusal arrives with a documented hang-up code (then map the code and drop the text match), or Plivo's CDR amounts are not INR on the India account"
+  },
+  {
+   "id": "measure.2026-10-24.telephony-steps-4-6-tests",
+   "type": "measurement", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "tests/telephony-verify.test.ts 2/2 and tests/telephony-carrier.test.ts 5/5 on Postgres 16 against fake Plivo servers: in-product verification end to end (one Call API request, signed Speak fetch, confirm); staff mark refused to owner/compliance/system/agent; 15 hang-up mappings; trial refusal not counted and not retried while busy is; CDR once; attach_carrier Application+Number calls; signed hang-up hook; lost call asked to end at 90 s and settled at 10 min",
+   "n": 7, "method": "node:test, local fake Plivo HTTP servers, FakeRuntime", "path": "product/tests/telephony-carrier.test.ts"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-24.staff-mark-phone-verified", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements" },
+  { "from": "decision.2026-10-24.carrier-truth", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements" },
+  { "from": "measure.2026-10-24.telephony-steps-4-6-tests", "to": "decision.2026-10-24.carrier-truth", "relation": "supports" }
+ ],
+ "events": []
+}

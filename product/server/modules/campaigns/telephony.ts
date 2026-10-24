@@ -101,6 +101,19 @@ export interface TelephonyProvider {
   connectByo(input: { e164: string; carrier: string; trunkRef: string }): Promise<{ providerRef: string }>;
   /** A fixed system announcement (no agent, no model): ring `to` from `from` and speak `lines` in order, then hang up. */
   systemCall(input: { to: string; from: string; lines: string[] }): Promise<{ ref: string }>;
+  /** Point an existing carrier number at our inbound path: one carrier application (appName) whose answer URL is the
+   *  runtime's signed inbound path and whose hang-up URL is the control plane's carrier hook, linked to the number. */
+  attachInbound(input: { e164: string; appName: string; answerUrl: string; hangupUrl: string }): Promise<{ appId: string }>;
+  /** The carrier's record of a finished call (CDR), or null when the carrier has none (yet). */
+  cdr(callUuid: string): Promise<CarrierCdr | null>;
+}
+
+/** Plivo's CDR fields we keep (GET Account/{id}/Call/{call_uuid}/, https://www.plivo.com/docs/voice/api/call/retrieve-a-call,
+ *  read 2026-10-24). Amounts are INR milli (the India account bills in INR); durations in seconds. */
+export interface CarrierCdr {
+  callUuid: string; billDurationS: number | null; durationS: number | null; totalInrMilli: number | null;
+  hangupCauseName: string | null; hangupCauseCode: number | null; hangupSource: string | null;
+  answerTime: string | null; initiationTime: string | null; endTime: string | null; direction: string | null;
 }
 
 /** No live carrier on this server. Members read plain words and code telephony_disabled; the operator's hint is logged. */
@@ -133,6 +146,10 @@ export class FakeTelephony implements TelephonyProvider {
   async connectByo(i: { e164: string; carrier: string; trunkRef: string }) { return { providerRef: `fake-byo-${i.trunkRef}` }; }
   systemCalls: { to: string; from: string; lines: string[] }[] = [];
   async systemCall(i: { to: string; from: string; lines: string[] }) { this.systemCalls.push(i); return { ref: `fake-sys-${randomUUID()}` }; }
+  attached: { e164: string; appName: string; answerUrl: string; hangupUrl: string }[] = [];
+  async attachInbound(i: { e164: string; appName: string; answerUrl: string; hangupUrl: string }) { this.attached.push(i); return { appId: 'fake-app-1' }; }
+  cdrs = new Map<string, CarrierCdr>();
+  async cdr(callUuid: string) { return this.cdrs.get(callUuid) ?? null; }
 }
 
 /** Plivo India adapter, off by default. Endpoint shapes follow Plivo's public REST API and are NOT verified against a
@@ -156,12 +173,17 @@ export class PlivoTelephony implements TelephonyProvider {
     const m = allowMode();
     if (m.mode === 'closed') throw new TelephonyDisabled(`${what}: ${m.why}`);
   }
-  private async call(method: 'GET' | 'POST', path: string, body?: unknown): Promise<any> {
+  private async call(method: 'GET' | 'POST', path: string, body?: unknown, o: { notFound?: 'null' } = {}): Promise<any> {
     const r = await fetch(`${this.apiBase}/v1/Account/${encodeURIComponent(this.id)}${path}`, {
       method, signal: AbortSignal.timeout(10_000), body: body ? JSON.stringify(body) : undefined,
       headers: { 'content-type': 'application/json', authorization: 'Basic ' + Buffer.from(`${this.id}:${this.token}`).toString('base64') },
     });
-    if (!r.ok) throw new Error(`plivo ${path} returned ${r.status}`);
+    if (r.status === 404 && o.notFound === 'null') return null;
+    if (!r.ok) {
+      // Plivo's error text says what was wrong (a trial account's unverified number, India compliance); keep a short piece.
+      const t = (await r.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 200);
+      throw new CarrierError(r.status, `plivo ${path.split('?')[0].replace(/\/\d{6,}\//, '/<number>/')} returned ${r.status}${t ? ': ' + t : ''}`);
+    }
     return r.json();
   }
   async search(q: { series?: Series; region?: string; limit: number }): Promise<NumberOffer[]> {
@@ -195,6 +217,40 @@ export class PlivoTelephony implements TelephonyProvider {
     if (!ref) throw new Error('plivo accepted the call request without a reference');
     return { ref };
   }
+
+  /** Application API: https://docs.plivo.com/docs/account/api/application (list with app_name prefix filter, create
+   *  POST Application/ -> app_id, update POST Application/{app_id}/); Number API: POST Number/{number}/ {app_id}
+   *  (https://www.plivo.com/docs/numbers/api/account-phone-number/update-a-number). All read 2026-10-24; the lab's
+   *  ensure_app (voicelab/server/phone.py) did the same against the live account. Idempotent. */
+  async attachInbound(i: { e164: string; appName: string; answerUrl: string; hangupUrl: string }): Promise<{ appId: string }> {
+    this.enabled('attach number');
+    const urls = { answer_url: i.answerUrl, answer_method: 'POST', hangup_url: i.hangupUrl, hangup_method: 'POST' };
+    const list = await this.call('GET', `/Application/?app_name=${encodeURIComponent(i.appName)}&limit=20`);
+    const app = (list?.objects ?? []).find((a: { app_name?: string }) => a.app_name === i.appName) as { app_id: string; answer_url?: string; hangup_url?: string } | undefined;
+    let appId = app?.app_id ?? '';
+    if (!app) appId = String((await this.call('POST', '/Application/', { app_name: i.appName, ...urls }))?.app_id ?? '');
+    else if (app.answer_url !== i.answerUrl || app.hangup_url !== i.hangupUrl) await this.call('POST', `/Application/${encodeURIComponent(appId)}/`, urls);
+    if (!appId) throw new Error('plivo did not return an application id');
+    await this.call('POST', `/Number/${i.e164.replace(/\D/g, '')}/`, { app_id: appId });
+    return { appId };
+  }
+
+  async cdr(callUuid: string): Promise<CarrierCdr | null> {
+    this.enabled('call record');
+    const j = await this.call('GET', `/Call/${encodeURIComponent(callUuid)}/`, undefined, { notFound: 'null' });
+    if (!j) return null;
+    const n = (v: unknown) => (v === null || v === undefined || v === '' || Number.isNaN(Number(v)) ? null : Number(v));
+    const s = (v: unknown) => (typeof v === 'string' && v ? v : null);
+    const amount = n(j.total_amount);
+    return { callUuid: String(j.call_uuid ?? callUuid), billDurationS: n(j.bill_duration), durationS: n(j.call_duration),
+      totalInrMilli: amount === null ? null : Math.round(amount * 1000), hangupCauseName: s(j.hangup_cause_name), hangupCauseCode: n(j.hangup_cause_code),
+      hangupSource: s(j.hangup_source), answerTime: s(j.answer_time), initiationTime: s(j.initiation_time), endTime: s(j.end_time), direction: s(j.call_direction) };
+  }
+}
+
+/** A carrier API refusal with its status; the message never carries credentials. */
+export class CarrierError extends Error {
+  constructor(public status: number, message: string) { super(message); this.name = 'CarrierError'; }
 }
 
 // ---- system announcements: lines waiting for the carrier to fetch them ----

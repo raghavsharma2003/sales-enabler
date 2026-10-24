@@ -9,6 +9,7 @@ import type { AgentConfig } from '../../../shared/agent-config.ts';
 import type { CallTicket } from '../../../shared/runtime-protocol.ts';
 import { combinationId, resolveStack } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, str, uuid, ValidationError } from '../../../shared/validate.ts';
+import { carrierView } from '../../../shared/carrier.ts';
 import { analysisSetting, analysisSettingText, curatedAnalysisModels, DEFAULT_MONITORS, ensureDefaultMonitors, refreshOutcome, type AnalysisRecord } from './analysis.ts';
 import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, TRUST, wilsonLower, type CalibrationStatus } from './stats.ts';
 import { FIELD_TYPES, MAX_FIELDS, validateFields, type FieldDef } from './fields.ts';
@@ -156,6 +157,7 @@ async function callRecord(ctx: ToolCtx, conversationId: string) {
     cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
     turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
     trace: (c as { trace?: unknown }).trace ?? null,         // the runtime's turn-by-turn trace (CallTrace), or null
+    carrier: carrierView(c.carrier),                           // phone calls: the carrier's reason, billed seconds and INR cost
   };
 }
 

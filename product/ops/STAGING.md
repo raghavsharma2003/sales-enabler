@@ -97,6 +97,8 @@ intake webhook secrets with it, and without the key it stops and changes nothing
 |---|---|
 | `VP_TELEPHONY_ALLOWED_TO` | **Required before any phone call.** Comma-separated phones (E.164 or any Indian shape) that this server may send to the carrier: the person dialled on every attempt kind (campaign, API, single, test, retry, callback), a verification call's target, and an agent's hand-off number. Set it on the control plane **and** the runtime. On staging: the owner's verified phone only |
 | `VP_TELEPHONY_ALLOWLIST` | `off` is the only switch that lets a server reach every number. **Never set on staging.** |
+| `VP_CARRIER_TRIAL` | `1` while the carrier account is a trial (Plivo until its upgrade): a barred or forbidden hang-up is then read as "trial account: only carrier-verified phones ring" |
+| `VP_INBOUND_APP_NAME` | The carrier application `number.attach_carrier` creates or updates (default `vyakti-inbound`) |
 
 Without `VP_TELEPHONY_ALLOWED_TO`, a control plane that can reach a carrier (`VP_TELEPHONY_LIVE=1`, or a real runtime at
 `VP_RUNTIME_URL`) refuses every phone attempt at the dial gate (`destination_blocked`, "This server only calls the phones
@@ -117,6 +119,7 @@ only these). Everything else stays behind it.
 
 | Service | Path (as Plivo reaches it) | Its own proof |
 |---|---|---|
+| control plane | `POST /hooks/telephony/plivo/hangup` | X-Plivo-Signature-V3 + one-time nonce |
 | control plane | `POST /hooks/telephony/plivo/speak/*` (and `GET`) | X-Plivo-Signature-V3 + one-time nonce, checked on the public URL (`VP_PUBLIC_URL` + path) |
 | runtime | `POST /rt/v1/media/sip/answer/*`, `/hangup/*`, `/transfer/*`, `/machine/*`, `/whisper/*` | the per-call HMAC path segment; X-Plivo-Signature-V3 is asked of the runtime (open item) |
 | runtime | `POST /rt/v1/media/sip/inbound/*` | the HMAC path segment; V3 asked of the runtime |

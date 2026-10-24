@@ -10,6 +10,7 @@
 // so the runtime may retry a batch safely. The runtime must flush call.ended last; cost lines may arrive before it.
 import type { AgentConfig, Language } from './agent-config.ts';
 import type { StackComponents } from './stacks.ts';
+import type { CarrierFacts } from './carrier.ts';
 
 export const PROTOCOL_VERSION = 1;
 
@@ -99,8 +100,11 @@ export type RuntimeEvent =
   // means 'crisis'. An 'opt_out' verdict is raised or shadow with a confidence; a shadow one is log-only, never a suppression.
   | { seq: number; type: 'judge'; at: string; judge: 'caller_crisis'; label?: 'crisis' | 'opt_out'; mode: 'shadow' | 'raise';
       outcome: 'raised' | 'shadow' | 'unavailable'; kind?: 'direct' | 'indirect'; confidence?: number; reason?: 'timeout' | 'error' | 'bad_output'; latencyMs: number }
+  // carrier (phone calls only, optional): what the carrier said, from its hang-up callback (CallUUID, Duration, BillDuration,
+  // HangupCauseName/Code/Source, the machine verdict) or the Call API's refusal text when the dial never left (dialError).
+  // shared/carrier.ts turns it into the reason on the call page, whether the person's phone rang, and the retry class.
   | { seq: number; type: 'call.ended'; at: string; endReason: EndReason; durationS: number; recordingUri?: string;
-      transcript: { speaker: 'agent' | 'caller'; text: string; startMs: number }[]; manifest: RunManifest; trace?: CallTrace };
+      transcript: { speaker: 'agent' | 'caller'; text: string; startMs: number }[]; manifest: RunManifest; trace?: CallTrace; carrier?: CarrierFacts };
 
 /** The per-call trace for the owner's review (voice/vpvoice/trace.py), stored in conversation.trace. It holds no words:
  *  a turn row points at the transcript by index `i`, so the transcript's retention and erasure cover the text. Times are

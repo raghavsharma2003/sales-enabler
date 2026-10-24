@@ -11,6 +11,7 @@ import { createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { ValidationError } from '../../../shared/validate.ts';
 import { one, type Queryable } from '../../db.ts';
+import { appendAudit } from '../../audit.ts';
 import { numberHash } from '../../identity.ts';
 import type { ToolCtx } from '../../tools.ts';
 import { mayDial } from './allowlist.ts';
@@ -119,4 +120,26 @@ export async function verifyConfirm(ctx: ToolCtx, i: { phone: string; code: stri
   await ctx.q.query(`INSERT INTO verified_test_phone (workspace_id, member_id, e164, verified_at) VALUES ($1,$2,$3,$4)
     ON CONFLICT (workspace_id, e164) DO UPDATE SET member_id = EXCLUDED.member_id, verified_at = EXCLUDED.verified_at`, [ctx.workspaceId, memberId, e164, now]);
   return { verified: true, phone: e164 };
+}
+
+/** Vyakti staff (actor 'vp_success', never a workspace role) mark a member's phone verified, for a phone the carrier
+ *  itself has verified (on a carrier trial, Plivo rings only numbers verified in its own sandbox). No call is placed. It
+ *  needs a reason naming the carrier's evidence, keeps the same refusals as a code (a mobile only, not suppressed or
+ *  erased here, not another member's), and is audited with the staff id; the number itself is not written to the audit. */
+export async function markVerified(ctx: ToolCtx, i: { memberId: string; phone: string; evidence: string }, now = clock()) {
+  if (ctx.actor.type !== 'vp_success' || !ctx.actor.id) throw new Error('only Vyakti staff can mark a phone verified');
+  const e164 = mobile(i.phone);
+  const ws = ctx.workspaceId;
+  if (!(await one(ctx.q, 'SELECT 1 FROM member WHERE id = $1 AND workspace_id = $2', [i.memberId, ws]))) throw new ValidationError('memberId', 'no such member in this workspace');
+  const h = await numberHash(ctx.q, ws, e164);
+  if (await one(ctx.q, `SELECT 1 FROM suppression WHERE workspace_id = $1 AND (e164 = $2 OR e164_hash = $3) AND scope = 'workspace' LIMIT 1`, [ws, e164, h])
+    || await one(ctx.q, 'SELECT 1 FROM tombstone WHERE workspace_id = $1 AND e164_hash = $2', [ws, h]))
+    throw new Error('this number asked not to be called; it cannot be verified here');
+  const other = await one(ctx.q, 'SELECT 1 FROM verified_test_phone WHERE workspace_id = $1 AND e164 = $2 AND member_id <> $3 AND verified_at IS NOT NULL', [ws, e164, i.memberId]);
+  if (other) throw new Error('another member of this workspace already verified this phone');
+  await ctx.q.query(`INSERT INTO verified_test_phone (workspace_id, member_id, e164, verified_at) VALUES ($1,$2,$3,$4)
+    ON CONFLICT (workspace_id, e164) DO UPDATE SET member_id = EXCLUDED.member_id, verified_at = EXCLUDED.verified_at`, [ws, i.memberId, e164, now]);
+  await appendAudit(ctx.q, { workspaceId: ws, actorType: 'vp_success', actorId: ctx.actor.id, action: 'member.phone.marked_verified',
+    objectType: 'member', objectId: i.memberId, payload: { evidence: i.evidence, phoneEnds: e164.slice(-3) } });
+  return { verified: true, memberId: i.memberId, phoneEnds: e164.slice(-3), by: 'staff' };
 }
