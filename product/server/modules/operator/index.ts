@@ -7,6 +7,7 @@ import { one } from '../../db.ts';
 import { HttpError, type Req } from '../../http.ts';
 import { runTurn, type OperatorEvent } from './loop.ts';
 import { getThread, registerOperatorTools } from './tools.ts';
+import { mcpRoutes } from './mcp.ts';
 
 const newThread = obj({ title: opt(str({ min: 1, max: 120 })) });
 const postMessage = obj({
@@ -23,7 +24,9 @@ export function sse(e: OperatorEvent): string {
 export const module: Module = {
   name: 'operator',
   register: registerOperatorTools,
-  routes(router, { pool, registry, auth }) {
+  routes(router, deps) {
+    const { pool, registry, auth } = deps;
+    mcpRoutes(router, deps);
     // The Operator works for a signed-in person, with that person's role; an API key has no Operator.
     const member = async (req: Req) => {
       const c = await auth(req);

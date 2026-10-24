@@ -1,21 +1,23 @@
 {
   "module": "operator",
   "tools": [
+    "action.get",
     "brief.today",
-    "thread.list",
-    "thread.get",
-    "operator.settings.get",
-    "operator.brain.set",
     "operator.autonomy.lower",
     "operator.autonomy.raise",
+    "operator.brain.set",
+    "operator.preference.forget",
     "operator.preference.list",
     "operator.preference.remember",
-    "operator.preference.forget"
+    "operator.settings.get",
+    "thread.get",
+    "thread.list"
   ],
   "routes": [
     "POST /v1/operator/threads",
     "GET /v1/operator/threads/:id",
-    "POST /v1/operator/threads/:id/messages (streamed text/event-stream: message, delta, step, card, notice, error, done; input and thread checked as JSON before the stream opens)"
+    "POST /v1/operator/threads/:id/messages (streamed text/event-stream: message, delta, step, card, notice, error, done; input and thread checked as JSON before the stream opens)",
+    "POST /v1/mcp (MCP streamable HTTP, JSON-RPC; API keys only); GET/DELETE /v1/mcp -> 405"
   ],
   "migrations": [
     "0500_operator.sql"
@@ -24,6 +26,7 @@
     "passed": 65,
     "total": 65,
     "files": [
+      "tests/mcp.test.ts",
       "tests/operator-bench-fixes.test.ts",
       "tests/operator-bench-op5.test.ts",
       "tests/operator-bench-r3.test.ts",
@@ -32,9 +35,10 @@
       "tests/operator-brief.test.ts",
       "tests/operator-results.test.ts",
       "tests/operator-toolset.test.ts",
-      "tests/operator.test.ts"
+      "tests/operator.test.ts",
+      "tests/sdk.test.ts"
     ],
-    "db": "throwaway cluster; full suite on a fresh database 573/577 (0 fail, 4 skipped) at the 2026-10-24 op5 fix commit; ui-contract --strict 178/178"
+    "db": "throwaway cluster; full suite on a fresh database 605/609 (0 fail, 4 skipped) at the MCP/SDK commit; ui-contract --strict 181/181"
   },
   "works": [
     "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
@@ -70,7 +74,10 @@
     "Conduct: draft without asking permission, but a draft exists only once its tool returned DONE this turn; never describe a change not made (op5: the earlier line caused 21 claimed writes with no tool call)",
     "Claim check catches reduced passives ('Draft agent created ...', 'now set to speak Hindi') and exempts only negations, modals or conditions before the verb, 'Nothing has been deleted yet', state descriptions ('is set at') and past facts ('was created on')",
     "Money in a reply is held to the card or result this turn when either carries an amount, not to what the member typed",
-    "Scope by action: a protective write (suppress, pause, stop, forget, erase, DPDP) the member's words do not ask for becomes an approval card, never a run; the retry guard matches actions, not nouns"
+    "Scope by action: a protective write (suppress, pause, stop, forget, erase, DPDP) the member's words do not ask for becomes an approval card, never a run; the retry guard matches actions, not nouns",
+    "MCP server generated from the registry (operator/mcp.ts): initialize/ping/tools.list/tools.call over streamable HTTP; API keys only, the key's role and scopes enforced by Registry.execute; tools/list equals the registry's tools for the role and scopes, with their JSON Schemas; every approval class (A2 and the A3 verbs) and A0 drafts become approval cards, never runs; action.get reads a card; Origin checked against VP_MCP_ALLOWED_ORIGINS",
+    "TypeScript SDK in product/sdk generated from shared/tool-catalog.json (scripts/sdk-gen.ts): typed calls, receipts, waitForApproval; no approve; tests fail when the catalog or the generated types are behind the registry",
+    "Docs: product/docs/mcp.md (connecting an MCP client), product/sdk/README.md"
   ],
   "untested": [
     "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",
@@ -83,7 +90,8 @@
     "The four 2026-10-23 bench fixes are verified with a scripted model only; their effect on real models waits for the bench re-run",
     "Page notes resolve agents, campaigns, audiences, contacts and calls by id; other pages give the path only",
     "operator_find_tools: the loop recovers when a model calls it (scripted test), but real models called it 0 times in 96 runs; it is unused in practice. The loop also runs any role-allowed tool a model names even when it was not offered",
-    "Claim check precision on real replies: sentence patterns tuned on synthetic sentences only"
+    "Claim check precision on real replies: sentence patterns tuned on synthetic sentences only",
+    "MCP against a real third-party client (tested with raw JSON-RPC over HTTP only); SSE responses and server-initiated messages are not offered"
   ],
   "needs_from_others": [
     "web: render cards (approval hold-to-confirm, receipt, plan) from the SSE frames and the thread GET"

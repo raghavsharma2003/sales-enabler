@@ -195,6 +195,19 @@ export function registerOperatorTools(r: Registry): void {
     },
   }));
 
+  // An approval card's state, for callers that cannot see the Today sheet (an MCP agent, the SDK). The result stored on
+  // an action is already redacted by the kernel where a tool returns a secret.
+  r.register(tool(obj({ id: uuid() }), {
+    name: 'action.get', risk: 'read', roles: ALL_ROLES,
+    summary: 'Read one approval card: proposed, executed, cancelled, expired or unknown, and its result once it ran',
+    run: async (ctx, i) => {
+      const a = await one(ctx.q, `SELECT id, tool, summary, risk_class AS risk, status, created_at, expires_at, executed_at, result
+        FROM action WHERE id = $1 AND workspace_id = $2`, [i.id, ctx.workspaceId]);
+      if (!a) throw new Error('no such approval card in this workspace');
+      return a;
+    },
+  }));
+
   r.register(tool(obj({ id: uuid(), limit: opt(num({ int: true, min: 1, max: 200 })) }), {
     name: 'thread.get', risk: 'read', roles: ALL_ROLES,
     summary: 'Read one Operator thread with its messages and cards',

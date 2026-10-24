@@ -18,7 +18,7 @@ import { ValidationError } from '../../../shared/validate.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx } from '../../db.ts';
 import { LlmError, stream, type ChatMessage, type LlmReply, type LlmTool } from '../../llm.ts';
-import { heldForApproval, type Receipt, type Registry } from '../../tools.ts';
+import { heldForApproval, type Actor, type Receipt, type Registry } from '../../tools.ts';
 import { cleanIncoming, HID_NOTICE } from './secrets.ts';
 import { curatedBrains, defaultBrain, operatorSettings, type Autonomy } from './tools.ts';
 import { findTools, MAX_OFFERED, selectTools } from './toolset.ts';
@@ -34,7 +34,7 @@ export const CAPS = { llmCalls: 8, toolCalls: 10, tokens: 60_000, replyTokens: 1
 export type Caps = typeof CAPS;
 
 /** Tools that only lower risk or erase the client's own data: never held for a tap, even at A0. */
-const A0_EXEMPT = new Set(['operator.autonomy.lower', 'operator.preference.forget']);
+export const A0_EXEMPT = new Set(['operator.autonomy.lower', 'operator.preference.forget']);
 
 /** Tools whose args carry credentials. The Operator never offers or calls them: a secret would otherwise sit in the
  *  model's context, an A0 action row and a card diff. The person hands credentials over on the screen instead. */
@@ -524,8 +524,8 @@ export function asksFor(name: string, text: string): boolean {
 }
 
 /** A0: hold a draft or test for a tap. The action row is the kernel's; approval runs through registry.approve. */
-async function proposeA0(pool: pg.Pool, def: NonNullable<ReturnType<Registry['get']>>, raw: unknown, workspaceId: string,
-  actor: { type: 'agent'; id: string; role: Role }, threadId: string): Promise<Receipt> {
+export async function proposeA0(pool: pg.Pool, def: NonNullable<ReturnType<Registry['get']>>, raw: unknown, workspaceId: string,
+  actor: Actor, threadId: string | null, why = 'A0'): Promise<Receipt> {
   let input: unknown;
   try { input = def.input(raw); } catch (e) {
     if (e instanceof ValidationError) return { status: 'not_executed', reason: e.message, path: e.path };
@@ -538,9 +538,9 @@ async function proposeA0(pool: pg.Pool, def: NonNullable<ReturnType<Registry['ge
     const a = await one<{ id: string; expires_at: Date }>(c,
       `INSERT INTO action (workspace_id, thread_id, tool, args, args_hash, risk_class, status, proposed_by, object_version, summary, expires_at)
        VALUES ($1,$2,$3,$4,$5,$6,'proposed',$7,$8,$9, now() + interval '24 hours') RETURNING id, expires_at`,
-      [workspaceId, threadId, def.name, JSON.stringify(input), h, def.risk, actor.id, version, summary]);
+      [workspaceId, threadId, def.name, JSON.stringify(input), h, def.risk, actor.id ?? actor.type, version, summary]);
     await appendAudit(c, { workspaceId, actorType: actor.type, actorId: actor.id, action: 'action.propose', objectType: 'action', objectId: a!.id,
-      argsHash: h, payload: { tool: def.name, risk: def.risk, autonomy: 'A0' } });
+      argsHash: h, payload: { tool: def.name, risk: def.risk, autonomy: why } });
     return { ...a!, summary };
   });
   return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: def.risk, summary: row.summary, expiresAt: row.expires_at.toISOString() };

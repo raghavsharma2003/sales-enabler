@@ -160,7 +160,7 @@ export const RULE_LABEL: Record<string, string> = {
  *  server registers a tool that is not here. An unknown id falls back to "made a change", never to the id itself. */
 export const PAST: Record<string, string> = {
   'a2p.declaration.export': 'exported the A2P declaration pack', 'action.undo': 'undid a recent change', 'activity.list': 'looked at the activity ledger',
-  'analysis.model.set': 'changed the call analysis model', 'analysis.settings.get': 'looked at the call analysis settings', 'agent.create': 'created an agent', 'agent.get': 'opened an agent', 'agent.config.schema': 'looked up the fields an agent can have', 'agent.list': 'looked at the agents',
+  'analysis.model.set': 'changed the call analysis model', 'analysis.settings.get': 'looked at the call analysis settings', 'agent.create': 'created an agent', 'agent.get': 'opened an agent', 'agent.config.schema': 'looked up the fields an agent can have', 'agent.list': 'looked at the agents', 'action.get': 'checked an approval card',
   'apikey.create': 'created an API key', 'apikey.list': 'looked at the API keys', 'apikey.revoke': 'revoked an API key', 'apikey.rotate': 'rotated an API key',
   'audit.export': 'exported the activity ledger', 'audit.export.list': 'looked at the activity ledger exports', 'audit.export.verify': 'checked an activity ledger export',
   'scim.token.create': 'created a provisioning token', 'scim.token.list': 'looked at the provisioning tokens', 'scim.token.revoke': 'revoked a provisioning token',

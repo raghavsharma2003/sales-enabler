@@ -41,6 +41,32 @@
    }
   },
   {
+   "name": "action.get",
+   "risk": "read",
+   "summary": "Read one approval card: proposed, executed, cancelled, expired or unknown, and its result once it ran",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
    "name": "action.undo",
    "risk": "draft",
    "summary": "Undo a recent brand or offering change by restoring how it was before",
@@ -2569,6 +2595,25 @@
      "requestedBy",
      "evidence"
     ]
+   }
+  },
+  {
+   "name": "erasure.pending",
+   "risk": "read",
+   "summary": "recording deletes and transcript purges that are still pending, with tries and the last error",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
    }
   },
   {
