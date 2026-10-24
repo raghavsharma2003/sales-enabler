@@ -14,6 +14,7 @@ import { BEST_GRADE, BEST_OUTCOME, calibrationStatus, campaignFunnel, wilsonLowe
 import { REASON_CODES, reasonFor } from './taxonomy.ts';
 import { recordingLink } from '../../recording-url.ts';
 import { retentionPolicy } from '../intake/retention.ts';
+import { transcriptRemovedWhy } from '../memory/transcript-purge.ts';
 import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
 
 // Test calls run inside a daily test budget (workspace blueprint: ₹200 a day, proposed) and a per-call cap.
@@ -82,11 +83,13 @@ export async function recordingFor(ctx: ToolCtx, c: Record<string, any>): Promis
     : 'The recording was deleted when this workspace\'s recordings retention ended.');
   const uri: string | null = c.recording_uri;
   if (!uri) return no('No recording was made on this call.');
+  const pending = c.recording_purge_tries > 0
+    ? ` Deleting it is pending: the voice runtime has not confirmed after ${c.recording_purge_tries} ${c.recording_purge_tries === 1 ? 'try' : 'tries'}; it is retried every 10 minutes.` : '';
   const { policy } = await retentionPolicy(ctx.q, ctx.workspaceId);
   const at = c.ended_at ?? c.started_at;
-  if (at && Date.now() - new Date(at).getTime() > policy.recordings_days * 86_400_000) return no(`The recording is past this workspace's retention of ${policy.recordings_days} days.`);
-  if (c.contact_id && await one(ctx.q, "SELECT 1 FROM forget_request WHERE workspace_id = $1 AND contact_id = $2 AND scope = 'erase_me' LIMIT 1", [ctx.workspaceId, c.contact_id]))
-    return no('The person asked to be erased, so the recording is not played.');
+  if (at && Date.now() - new Date(at).getTime() > policy.recordings_days * 86_400_000) return no(`The recording is past this workspace's retention of ${policy.recordings_days} days.` + pending);
+  if (c.contact_id && await one(ctx.q, "SELECT 1 FROM forget_request WHERE workspace_id = $1 AND contact_id = $2 AND scope = 'erase_me' UNION ALL SELECT 1 FROM contact WHERE id = $2 AND workspace_id = $1 AND erased_at IS NOT NULL LIMIT 1", [ctx.workspaceId, c.contact_id]))
+    return no('The person asked to be erased, so the recording is not played.' + pending);
   if (/^https?:\/\//i.test(uri)) return { url: uri, expiresAt: null, why: null };      // already an address a browser can open
   const link = recordingLink(c.id, ctx.workspaceId);
   return link ? { ...link, why: null } : no('The voice runtime\'s public address is not set on this server, so the recording cannot be played here.');
@@ -196,11 +199,12 @@ export function registerTools(r: Registry): void {
       const judgeMarks = judged.map(j => ({ seq: j.seq, at: j.at, label: j.label, outcome: j.outcome, confidence: j.confidence, text: judgeMarkText(j as unknown as JudgeRow) }));
       const rc = reasonFor(c.reason_code);
       const recording = await recordingFor(ctx, c);
+      const transcriptRemoved = transcriptRemovedWhy(c, (await retentionPolicy(ctx.q, ctx.workspaceId)).policy.transcripts_days);
       return {
         id: c.id, channel: c.channel, test: c.channel === 'test', status: c.status, direction: c.direction, campaignId: c.campaign_id, attemptId: c.attempt_id,
         contactId: c.contact_id, agentVersionId: c.agent_version_id, agent: agentOf(c), startedAt: c.started_at, endedAt: c.ended_at, durationS: c.duration_s,
         endReason: c.end_reason, reason: rc ? { code: rc.code, label: rc.label, action: rc.action } : null, outcome: c.outcome,
-        recordingUri: c.recording_uri, recording, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
+        recordingUri: c.recording_uri, recording, transcriptRemoved, runManifest: c.run_manifest, transcript: c.transcript, flagged: c.flagged, flags: c.flags,
         cost: { totalInrMilli: Number(c.cost_inr_milli), lateInrMilli: Number(c.late_cost_inr_milli), settlement: c.settlement, lines: costs },
         turns, moments, safety, judgeMarks, tools, handOffs, outcomes, analysis: c.analysis,
       };

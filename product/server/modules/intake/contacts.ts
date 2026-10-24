@@ -408,8 +408,9 @@ export function registerContactTools(reg: Registry): void {
         surfaces.pending = 'transcripts and recordings (calls module), CRM delete (outbox)';
       }
       const receipt = { scope: i.scope, requestedBy: i.requestedBy, evidence: i.evidence, surfaces, at: now.toISOString() };
-      const fr = await one<{ id: string }>(ctx.q, "INSERT INTO forget_request (workspace_id, contact_id, status, receipt, done_at) VALUES ($1,$2,'done',$3, now()) RETURNING id",
-        [ws, r.contact?.id ?? null, JSON.stringify(receipt)]);
+      // scope must be stored: the recording and transcript purges act on scope = 'erase_me'.
+      const fr = await one<{ id: string }>(ctx.q, "INSERT INTO forget_request (workspace_id, contact_id, scope, status, receipt, done_at) VALUES ($1,$2,$3,'done',$4, now()) RETURNING id",
+        [ws, r.contact?.id ?? null, i.scope, JSON.stringify(receipt)]);
       return { forgetRequestId: fr!.id, ...receipt };
     },
   }));

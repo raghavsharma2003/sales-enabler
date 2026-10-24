@@ -162,7 +162,7 @@ export const PAST: Record<string, string> = {
   'contact.search': 'searched the contacts', 'contact.suppress': 'stopped calling a person', 'contact.suppress_after_opt_out': 'stopped calling a person after they opted out', 'contact.unsuppress': 'allowed calling a person again',
   'deployment.revert_to_last_good': 'put the previous version of an agent back', 'deployment.split': 'changed which agent versions take calls',
   'dpdp.request.execute': 'carried out a person\'s data request', 'experiment.assign': 'checked which version a person hears', 'experiment.check': 'checked a test on real calls', 'experiment.get': 'opened a test on real calls',
-  'experiment.list': 'looked at the tests on real calls', 'experiment.start': 'started a test on real calls', 'experiment.stop': 'stopped a test on real calls',
+  'erasure.pending': 'looked at erasures still in progress', 'experiment.list': 'looked at the tests on real calls', 'experiment.start': 'started a test on real calls', 'experiment.stop': 'stopped a test on real calls',
   'fact.approve': 'approved something remembered about a person', 'fact.forget': 'forgot one remembered fact',
   'integration.connect': 'connected an outside service', 'integration.disconnect': 'disconnected an outside service', 'integration.kinds': 'looked at what can be connected', 'integration.list': 'looked at the connected services', 'integration.stage_secrets': 'handed over credentials for an outside service',
   'insight.get': 'looked at the call insights', 'insight.refresh': 'rebuilt the call insights', 'invoice.get': 'looked at the usage statement', 'issue.list': 'looked at the open issues', 'issue.resolve': 'resolved an issue',

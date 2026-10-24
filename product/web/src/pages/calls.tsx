@@ -87,7 +87,8 @@ function Body({ c }: { c: CallDoc }) {
             {c.turns.length > 0 ? <Lanes c={c} at={at} onSeek={seek} /> : <Empty title="Nobody spoke" body="There is no transcript. The reason is in the outcome card." />}
           </Card>
           {c.turns.length > 0 && <Card><TimingCard c={c} onSeek={t => { setAt(t.startMs ?? 0); turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: scrollMotion() }); }} /></Card>}
-          {c.turns.length > 0 && <Card aria-labelledby="tr-h"><CardHead id="tr-h" title="What was said" sub="Only what the caller actually heard. Select a line to mark it on the timeline." />
+          {c.transcriptWhy && <Card aria-labelledby="tr-gone-h"><CardHead id="tr-gone-h" title="What was said" sub={c.transcriptWhy} /></Card>}
+          {c.turns.length > 0 && !c.transcriptWhy && <Card aria-labelledby="tr-h"><CardHead id="tr-h" title="What was said" sub="Only what the caller actually heard. Select a line to mark it on the timeline." />
             <ol className="turns">{c.turns.map(t => (
               <li key={t.idx} ref={el => { turnRefs.current[t.idx] = el; }} className={`turn ${t.who}${current === t.idx ? ' now' : ''}`}>
                 <button type="button" onClick={() => { setAt(t.startMs ?? 0); if (audio.current && t.startMs != null) { audio.current.currentTime = t.startMs / 1000; void audio.current.play().catch(() => {}); } }} aria-label={`${t.who === 'agent' ? 'Agent' : 'Caller'}${t.startMs != null ? ` at ${clock(t.startMs / 1000)}` : ''}: ${canPlay ? 'play from here' : 'mark here'}`}>

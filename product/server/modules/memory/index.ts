@@ -14,6 +14,7 @@ import { bool, num, obj, opt, record, str, uuid } from '../../../shared/validate
 import { compileBrief, type BriefFact } from './brief.ts';
 import { forgetContactMemory } from './forget.ts';
 import { contactMinorStatus } from './minor.ts';
+import { purgeTranscripts } from './transcript-purge.ts';
 import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
 
 interface Policy { enabled: boolean; undoMinutes: number; allowedCategories: Record<string, string> }
@@ -222,7 +223,9 @@ async function forgetContact(ctx: ToolCtx, i: { contactId: string; requestId?: s
   if (i.stopRemembering) await q.query('INSERT INTO memory_optout (workspace_id, contact_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [ws, i.contactId]);
   // Reach of this module: memory facts. Recordings, transcripts, attributes and CRM are other modules' surfaces.
   const receipt = { factsRemoved: del.facts, surfaces: { memory_fact: 'removed' }, stopRemembering: i.stopRemembering,
-    notReachedHere: i.scope === 'erase_me' ? ['recordings', 'transcripts', 'attributes', 'crm'] : [] };
+    notReachedHere: i.scope === 'erase_me' ? ['attributes', 'crm'] : [],
+    // An erase_me request is what the recording and transcript purges read; they finish within one 10-minute run.
+    followsOn: i.scope === 'erase_me' ? ['recordings (calls.recording_purge)', 'transcripts (memory.transcript_purge)'] : [] };
   await q.query("UPDATE forget_request SET status = 'done', done_at = now(), receipt = $3 WHERE id = $1 AND workspace_id = $2", [reqId, ws, JSON.stringify(receipt)]);
   return { requestId: reqId, ...receipt };
 }
@@ -237,6 +240,8 @@ const policyInput = obj({ enabled: opt(bool()), undoMinutes: opt(num({ int: true
 
 export const module: Module = {
   name: 'memory',
+  // Retention and erasure reach the words of a call (transcript-purge.ts); a run cut short is finished by the next.
+  jobs: deps => [{ name: 'memory.transcript_purge', everyMs: 10 * 60_000, run: async () => { await purgeTranscripts(deps.pool); } }],
   register(r: Registry) {
     r.register(tool(obj({ conversationId: uuid() }), {
       name: 'memory.extract', risk: 'draft', summary: 'remember what the caller said that matters for the next call (gated; never from test calls)',
@@ -297,6 +302,22 @@ export const module: Module = {
         stopRemembering: i.stopRemembering ?? false, evidence: i.evidence }),
     }));
 
+    // Erasure and retention that has not finished: recording deletes the voice runtime has not confirmed (retried every
+    // 10 minutes), and erased people whose calls still hold words or audio (picked up by the next purge run).
+    r.register(tool(obj({}), {
+      name: 'erasure.pending', risk: 'read', summary: 'recording deletes and transcript purges that are still pending, with tries and the last error',
+      run: async ctx => {
+        const recordings = await many(ctx.q, `SELECT id AS "conversationId", recording_purge_tries AS tries, recording_purge_tried_at AS "lastTriedAt", recording_purge_error AS "lastError"
+          FROM conversation WHERE workspace_id = $1 AND recording_uri IS NOT NULL AND recording_purge_tries > 0 ORDER BY recording_purge_tried_at DESC LIMIT 200`, [ctx.workspaceId]);
+        const erasedWithData = await many(ctx.q, `SELECT cv.id AS "conversationId", cv.recording_uri IS NOT NULL AS "recordingLeft", cv.transcript_purged_at IS NULL AS "transcriptLeft"
+          FROM conversation cv JOIN contact ct ON ct.id = cv.contact_id AND ct.workspace_id = cv.workspace_id
+          WHERE cv.workspace_id = $1 AND (cv.recording_uri IS NOT NULL OR cv.transcript_purged_at IS NULL)
+            AND (ct.erased_at IS NOT NULL OR EXISTS (SELECT 1 FROM forget_request f WHERE f.workspace_id = cv.workspace_id AND f.contact_id = cv.contact_id AND f.scope = 'erase_me'))
+          LIMIT 200`, [ctx.workspaceId]);
+        return { recordings, erasedWithData };
+      },
+    }));
+
     r.register(tool(obj({}), {
       name: 'memory.policy.get', risk: 'read', summary: "the workspace's memory switch, undo window and allowed sensitive categories",
       run: async ctx => ({ ...(await policy(ctx.q, ctx.workspaceId)), refusedCategories: REFUSED }),
@@ -326,3 +347,4 @@ export { compileBrief, BriefTooLarge } from './brief.ts';
 export { gate, detectRefused } from './gates.ts';
 export { forgetContactMemory } from './forget.ts';
 export { minorStatus } from './minor.ts';
+export { purgeTranscripts, redactAnalysis, transcriptRemovedWhy } from './transcript-purge.ts';
