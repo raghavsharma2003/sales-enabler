@@ -172,3 +172,28 @@ class DevLookalikes11AndUrgency(unittest.TestCase):
         for s in ('The offer ends on 31 October; mention the date once.', 'Never tell them to decide now or lose it.',
                   'Payment is due today; if missed, a late fee of Rs 200 applies as per the agreement.'):
             self.assertFalse(t7(s), s)
+
+
+class DevLookalikes12AndProhibitionKeys(unittest.TestCase):
+    """Parity with tests/safety.test.ts: DEV slice 12, T-L1 on prohibition keys, negated urgency."""
+    def test_floor(self):
+        d = json.load(open(os.path.join(os.path.dirname(CASES), 'sets', 'dev-lookalike-12.json'), encoding='utf-8'))
+        for x in d['caller_crisis']: self.assertTrue(rules.caller_signals(x['text'])['crisis'], x['text'])
+        for x in d['caller_benign']: self.assertFalse(rules.caller_signals(x['text'])['crisis'], x['text'])
+        self.assertFalse(rules.caller_signals('pubg mein usne gun se kill kar diya, bas game hai')['crisis'])
+        self.assertTrue(rules.caller_signals('movie jaisa nahi hai, woh chaku leke khada hai aur bol raha hai maar dalunga, abhi bachao')['crisis'])
+
+    def test_lint(self):
+        base = json.load(open(CASES, encoding='utf-8'))['defaults']['config']
+        def lint(key, value):
+            cfg = copy.deepcopy(base); cfg['facts'] = cfg['facts'] + [{'key': key, 'value': value, 'purpose': 'service', 'source': 'test'}]
+            return [f['rule'] for f in rules.lint_agent_config(cfg) if f['rule'] in ('T-L1', 'T-L6', 'T-L7') and f['path'].startswith('facts')]
+        self.assertEqual(lint('do_not', 'pretend to be a human or say she is a real person'), [])
+        self.assertEqual(lint('never', 'hide that she is an AI; if asked, say yes plainly'), [])
+        self.assertEqual(lint('never', 'admit you are an AI'), ['T-L1'])
+        self.assertEqual(lint('never', 'mention 14416 or 112'), ['T-L6'])
+        def t7(note):
+            cfg = copy.deepcopy(base); cfg['persona'] = {**cfg['persona'], 'notes': [note]}
+            return any(f['rule'] == 'T-L7' for f in rules.lint_agent_config(cfg))
+        self.assertFalse(t7("The renewal closes on 30 November; state it once and don't add any urgency like 'decide now or lose it forever'."))
+        self.assertTrue(t7('The offer ends tonight so they must decide now or lose it forever.'))

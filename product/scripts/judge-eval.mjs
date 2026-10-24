@@ -79,7 +79,7 @@ for (const c of doc.cases) {
 for (const f of (opt('set') ? opt('set').split(',') : [])) {
   const set = JSON.parse(readFileSync(f, 'utf8'));
   const tag = f.split('/').pop().replace(/\.json$/, '');
-  const add = (list, t, truth, kind) => { if (wants(t)) rows.push(...(list ?? []).map((x, i) => ({ id: `${tag}.${kind}.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, persona: x.persona, field: x.field, key: x.key, task: t, truth }))); };
+  const add = (list, t, truth, kind) => { if (wants(t)) rows.push(...(list ?? []).map((x, i) => ({ id: `${tag}.${kind}.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, persona: x.persona, field: x.field, key: x.key, tag: x.means ?? x.family ?? x.subset ?? x.kind ?? null, task: t, truth }))); };
   add(set.caller_crisis, 'crisis', true, 'crisis'); add(set.caller_benign, 'crisis', false, 'benign');
   add(set.opt_out, 'opt_out', true, 'opt_out'); add(set.benign, 'opt_out', false, 'benign');
   if (briefTask) { add(set.flag, 'brief_review', true, 'flag'); add(set.pass, 'brief_review', false, 'pass'); }
@@ -133,9 +133,13 @@ async function askBrief(text, persona, field, key) {
   else if (field === 'opening') c.opening = { ...c.opening, usefulFirst: text };
   else c.persona.notes = text.split('\n').map(x => x.trim()).filter(Boolean);
   const r = await review.reviewBrief(c, { assumeConfigured: true, threshold: 0, alwaysAsk: true });
-  const mine = f => /^(persona\.notes|facts\[|opening\.usefulFirst)/.test(f.path);
+  // Count only findings on the item's own field: its fact (the last one), the opening line, or the notes. A finding on
+  // the base brief around it is not this item's (open.2026-10-24.judge-eval-brief-counting-region); its path is kept.
+  const own = field === 'fact' ? new RegExp(`^facts\\[${c.facts.length - 1}\\]`) : field === 'opening' ? /^opening\.usefulFirst/ : /^persona\.notes/;
+  const mine = f => own.test(f.path);
   const top = r.model.filter(mine).sort((a, b) => b.confidence - a.confidence)[0];
-  return { floor: r.rules.some(mine), floorOptOut: false, judge: r.mode === 'model' ? { confidence: top?.confidence ?? 0, kind: top?.kind ?? 'none' } : null,
+  return { floor: r.rules.some(mine), floorPaths: r.rules.filter(mine).map(f => `${f.rule ?? f.kind}@${f.path}`), outside: [...r.rules, ...r.model].filter(f => !mine(f)).map(f => f.path),
+    floorOptOut: false, judge: r.mode === 'model' ? { confidence: top?.confidence ?? 0, kind: top?.kind ?? 'none', path: top?.path ?? null } : null,
     event: r.mode === 'unavailable' ? { type: 'judge_unavailable', reason: r.reason } : null, latencyMs: r.latencyMs ?? 0, usage: r.usage ?? null };
 }
 async function ask(text, persona, field, key) {
@@ -163,7 +167,7 @@ async function worker() {
       : r.task === 'crisis' ? v.crisis && v.kind !== 'none' && v.confidence >= CRISIS_JUDGE.threshold
       : Boolean(v.optOut?.value) && v.optOut.confidence >= CRISIS_JUDGE.opt_out_threshold;
     results.push({ ...r, floor: r.task === 'opt_out' ? res.floorOptOut : res.floor, judge: says,
-      confidence: r.task === 'opt_out' ? (v?.optOut?.confidence ?? null) : (v?.confidence ?? null), kind: v?.kind ?? null, optOut: v?.optOut?.value ?? null,
+      confidence: r.task === 'opt_out' ? (v?.optOut?.confidence ?? null) : (v?.confidence ?? null), kind: v?.kind ?? null, path: v?.path ?? null, floorPaths: res.floorPaths, outside: res.outside?.length ? res.outside : undefined, optOut: v?.optOut?.value ?? null,
       failed: res.event?.type === 'judge_unavailable' ? res.event.reason : null, latencyMs: Math.round(res.latencyMs), usage: res.usage });
     if (results.length % 25 === 0) process.stderr.write(`${results.length}/${rows.length} requests=${requests} spent=₹${spentInr.toFixed(2)}\n`);
   }
@@ -194,7 +198,7 @@ function slice(rs) {
 const tasks = [...new Set(results.map(r => r.task))].sort();
 const groupBy = (rs, key) => Object.fromEntries([...new Set(rs.map(r => r[key]))].sort().map(v => [v, slice(rs.filter(r => r[key] === v))]));
 const perTask = Object.fromEntries(tasks.map(t => { const rs = results.filter(r => r.task === t);
-  return [t, { n: { positive: rs.filter(r => r.truth).length, negative: rs.filter(r => !r.truth).length }, overall: slice(rs), by_source: groupBy(rs, 'source'), by_lang: groupBy(rs, 'lang') }]; }));
+  return [t, { n: { positive: rs.filter(r => r.truth).length, negative: rs.filter(r => !r.truth).length }, overall: slice(rs), by_source: groupBy(rs, 'source'), by_lang: groupBy(rs, 'lang'), ...(rs.some(r => r.tag) ? { by_tag: groupBy(rs, 'tag') } : {}) }]; }));
 // Threshold sweep from the recorded confidences (no extra model calls): what each threshold would have given on these
 // lines. Choose on DEV only; a blind set is scored once at the threshold in judge.json.
 const SWEEP = [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95];

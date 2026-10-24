@@ -101,10 +101,11 @@ class ReviewTimeout extends Error {}
 // is an AI (the shared lexicon.ai_affirm, as RD1 reads it) and carries no human-claim word contradicts the field's own
 // words: an honest opening or note. The regex door has already run on it.
 const HUMAN_CLAIM = /\b(human|real person|real woman|real man|staff|employee|team member|colleague|person not|insaan|insan|karmachari|asli)\b|इंसान|असली|कर्मचारी/i;
-// Wider than lexicon.ai_affirm (rules.json is frozen while PREREG-10 runs; a candidate for it later): a name or a
-// third person between the subject and "AI assistant" ("I am Riya, the AI assistant of ..."; "she is the AI assistant").
-const AI_SELF = /\b(i am|i'm|she is|she's|he is|he's|main|mai|woh|wo)\b[^.?!]{0,40}\b(an?|the|our|ek)\s+(ai|a\.i\.|virtual|digital)\s+(assistant|agent|sahayak|sahayika|helper)\b|(मैं|वह|वो)[^.?!।]{0,40}(एआई|\bAI\b)\s?(असिस्टेंट|सहायक|सहायिका)/i;
-const NEG_AI = /\b(not|never|nahi|nahin|na)\b[^.?!]{0,12}\b(an? |the )?(ai|bot|virtual)\b|नहीं/i;
+// Wider than lexicon.ai_affirm: a name or a third person between the subject and "AI assistant" ("I am Riya, the AI
+// assistant of ..."), her name with no verb ("Riya, Suraksha's AI assistant"), or a word between AI and assistant ("AI
+// voice assistant") (open.2026-10-24.brief-review-honest-opening-shapes). A negation near AI turns it off.
+const AI_SELF = /\b(i am|i'm|she is|she's|he is|he's|main|mai|woh|wo)\b[^.?!]{0,40}\b(an?|the|our|ek)\s+(ai|a\.i\.|virtual|digital)\s+(assistant|agent|sahayak|sahayika|helper)\b|(मैं|वह|वो)[^.?!।]{0,40}(एआई|\bAI\b)\s?(असिस्टेंट|सहायक|सहायिका)|\b(ai|a\.i\.)\s+(?:[a-z]+\s+){0,2}(assistant|agent|sahayak|sahayika|helper|caller)\b|(एआई|\bAI\b)\s?(\S+\s)?(असिस्टेंट|सहायक|सहायिका)/i;
+const NEG_AI = /\b(not|never|nahi|nahin|na|no|don'?t|do not|isn'?t|is not|without)\b[^.?!]{0,16}\b(an? |the )?(ai|bot|virtual)\b|नहीं/i;
 function honestAffirmation(f: { kind: string; text: string }): boolean {
   if (f.kind !== 'human' && f.kind !== 'hide_ai') return false;
   return (affirmsAi(f.text) || (AI_SELF.test(f.text) && !NEG_AI.test(f.text))) && !HUMAN_CLAIM.test(f.text);

@@ -702,14 +702,19 @@
         "(\\b(bojh|burden)\\b|बोझ)",
         "सब खत्म हो जाए",
         "\\b(jahar|zahar|jeher|zeher|zehar|poison|phenyl|phenol|keetnashak|keet nashak|pesticide|acid|tezaab|tezab|(keede|kide|keeda|chuhe|chuha|choohe) (maarne|marne|maar) ki (dawai|dawa|goli))\\b[^.?!]{0,15}\\b(pee|pi) ?(li|liya|lee|liyaa|lunga|lungi|loonga|loongi|jaunga|jaungi|jaaunga|jaaungi|kar|ke|leta|leti|raha|rahi|chuka|chuki)\\b",
-        "(ज़हर|जहर|फिनाइल|फ़िनाइल|कीटनाशक|तेज़ाब|तेजाब|(कीड़े|कीडे|चूहे) (मारने|मार) की (दवा|दवाई|गोली))[^.?!।]{0,15}पी ?(लिया|ली|लूंगा|लूंगी|लूँगा|लूँगी|जाऊंगा|जाऊंगी|जाऊँगा|जाऊँगी|कर|के|लेता|लेती|रहा|रही|चुका|चुकी)"
+        "(ज़हर|जहर|फिनाइल|फ़िनाइल|कीटनाशक|तेज़ाब|तेजाब|(कीड़े|कीडे|चूहे) (मारने|मार) की (दवा|दवाई|गोली))[^.?!।]{0,15}पी ?(लिया|ली|लूंगा|लूंगी|लूँगा|लूँगी|जाऊंगा|जाऊंगी|जाऊँगा|जाऊँगी|कर|के|लेता|लेती|रहा|रही|चुका|चुकी)",
+        "\\b(nas|nass|narambu|naram|naramb\\w*|shira|wrist|kalai)\\b[^.?!]{0,20}\\b(kaat|kat|katun|arukk\\w*|arutt\\w*|kete|katbo|koses\\w*|kosuk\\w*|kaap\\w*|cut)",
+        "\\b(blade|razor|cutter)\\b[^.?!]{0,30}\\b(kai|kaiya|haath|hath|haat|wrist|chethi|cheyi|kalai)\\b[^.?!]{0,20}\\b(arutt\\w*|arukk\\w*|kaat\\w*|kete|koses\\w*|kaap\\w*|cut)",
+        "नस[^.?!।]{0,10}काट"
       ],
       "none": [
         "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne)\\b[^.?!]{0,15}\\b(mar|die|dying|killing)",
         "^(?!.*\\b(suicide|khudkushi|marna chahta|marna chahti|marna hai|khatam kar|ek saath kha|sab kha|saari kha|jeena nahi)\\b).*\\b(naukri|job|company|office|sheher|ghar|flat|gaon)\\b[^.?!]{0,20}\\b(ab )?nahi rahunga\\b",
         "^(?!.*\\b(main bhi|mai bhi|mujhe bhi)\\b).*\\b(serial|film|movie|picture|hero|heroine|villain|khabar|news)\\b[^.?!]{0,30}\\b(zeher|zehar|jahar|poison)\\b[^.?!]{0,10}\\b(kha|pi) (leti|leta|liya|li|lete)\\b",
         "^(?!.*(मैं भी|मुझे भी)).*(सीरियल|फिल्म|फ़िल्म|हीरो|हीरोइन|खबर)[^।?!.]{0,30}(ज़हर|जहर)[^।?!.]{0,10}खा (लिया|ली|लेती|लेता)",
-        "(गर्मी|भूख|हंसी|हँसी|ठंड|ट्रैफिक|काम)[^।?!.]{0,30}मर जा(ऊंगा|ऊंगी|ऊँगा|ऊँगी|एंगे)"
+        "(गर्मी|भूख|हंसी|हँसी|ठंड|ट्रैफिक|काम)[^।?!.]{0,30}मर जा(ऊंगा|ऊंगी|ऊँगा|ऊँगी|एंगे)",
+        "^(?!.*\\b(main bhi|mai bhi|mujhe bhi|me too|i also|i too|naanum|nanum|ami o|amio|mi pan|nenu kuda|nenu kooda|hu pan|hun pan)\\b).*\\b(news|khabar|khobor|seithi|paper|akhbar|newspaper|tv|serial|film|movie|cinema|padam|natak)\\b[^.?!]{0,40}\\b(ek ladk\\w*|ek aadmi|ek aurat|student|farmer|kisan|chhele|meye|lok|oru (paiyan|ponnu|student|aal|manusan)|ekta|someone|a man|a woman|a boy|a girl|heroine|hero|bahu|villain|character)\\b",
+        "^(?!.*\\b(main bhi|mai bhi|mujhe bhi|me too|i also|i too|naanum|nanum|ami o|amio|mi pan|nenu kuda|nenu kooda|hu pan|hun pan)\\b).*\\b(ek ladk\\w*|ek aadmi|ek aurat|student|farmer|kisan|chhele|meye|lok|oru (paiyan|ponnu|student|aal|manusan)|ekta|someone|a man|a woman|a boy|a girl|heroine|hero|bahu|villain|character)\\b[^.?!]{0,40}\\b(news|khabar|khobor|seithi|paper|akhbar|newspaper|tv|serial|film|movie|cinema|padam|natak)\\b"
       ],
       "noneClause": [
         "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|ami o|amio|naanum|nanum|mi pan|mihi|nenu kuda|nenu kooda|hu pan|hun pan|mujhe bhi|mera bhi)\\b).*\\b(bondhu|friend|dost|bhai|didi|dada|cousin|neighbour|neighbor|padosi|uncle|aunty|chacha|mama|mami|husband|wife|beta|beti|son|daughter|uska|uski|unka|unki|his|her|their)\\b[^.?!]{0,25}\\b(suicide|khudkushi|aatmahatya|atmahatya)\\b[^.?!]{0,20}\\b(korechilo|korechhilo|korechhe|kiya tha|ki thi|kar li thi|kar liya tha|kar li|kar liya|committed|did|kelli|keli|kela hota|chesukunnadu|chesukundi|chesukunnaru|karyu hatu|kari hati|kari lidhi|panninaan|pannikittaan|pannikitta)\\b",
@@ -787,7 +792,9 @@
         "\\b(veyil|veyila|pasi|pasila|sirippu|siripp|sirichu|sirichi|traffic|velai|vela|work|bore|kaththu|azhudhu)\\b[^.?!]{0,20}\\b(saaga|saagaren|saaga poren|sethuruven)\\b",
         "\\b(saaga|saagaren)\\b[^.?!]{0,20}\\b(veyil|degree|pasi|lunch|traffic|sirippu)\\b",
         "^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bsaagaren\\b[^.?!]{0,10}\\b(pa|ma|da)?\\b[^.?!]{0,5}\\b(but|aanaa|anaalum|aanalum)\\b[^.?!]{0,20}\\b(kattuven|kattiduven|pay pannuven|kattren)\\b",
-        "^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bthookku ?la (thuni|dress|shirt|saree|sattai)\\b|^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bthuni kaaya"
+        "^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bthookku ?la (thuni|dress|shirt|saree|sattai)\\b|^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bthuni kaaya",
+        "^(?!.*\\b(main bhi|mai bhi|mujhe bhi|me too|i also|i too|naanum|nanum|ami o|amio|mi pan|nenu kuda|nenu kooda|hu pan|hun pan)\\b).*\\b(news|khabar|khobor|seithi|paper|akhbar|newspaper|tv|serial|film|movie|cinema|padam|natak)\\b[^.?!]{0,40}\\b(ek ladk\\w*|ek aadmi|ek aurat|student|farmer|kisan|chhele|meye|lok|oru (paiyan|ponnu|student|aal|manusan)|ekta|someone|a man|a woman|a boy|a girl|heroine|hero|bahu|villain|character)\\b",
+        "^(?!.*\\b(main bhi|mai bhi|mujhe bhi|me too|i also|i too|naanum|nanum|ami o|amio|mi pan|nenu kuda|nenu kooda|hu pan|hun pan)\\b).*\\b(ek ladk\\w*|ek aadmi|ek aurat|student|farmer|kisan|chhele|meye|lok|oru (paiyan|ponnu|student|aal|manusan)|ekta|someone|a man|a woman|a boy|a girl|heroine|hero|bahu|villain|character)\\b[^.?!]{0,40}\\b(news|khabar|khobor|seithi|paper|akhbar|newspaper|tv|serial|film|movie|cinema|padam|natak)\\b"
       ]
     },
     {
@@ -820,7 +827,9 @@
         "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(kaaj|kaj|khete|kheltey|dour|hete|porishrom|klanto|sara din)\\w*\\b[^.?!]{0,25}\\bshesh hoye gechi\\b",
         "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(jam|traffic|road|rasta te|flyover|bridge|jabar|jaoyar|bus|auto|metro)\\b[^.?!]{0,30}\\bkono rasta nei\\b|^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\bkono rasta nei\\b[^.?!]{0,20}\\b(jabar|jaoyar|office|bari)\\b",
         "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(line|queue|dariye|opekkha|wait)\\b[^.?!]{0,20}\\bami ar parlam na\\b|^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\bami ar parlam na\\b[^.?!]{0,25}\\b(line|queue|dariye|wait|online)\\b",
-        "^(?!.*\\b(ami o|amio|ami-o)\\b).*\\b(cinema|film|movie|serial|hero|heroine|golpo|news|khobor)\\b[^.?!]{0,25}\\b(morte chai|marte chai|more jete chai)\\b"
+        "^(?!.*\\b(ami o|amio|ami-o)\\b).*\\b(cinema|film|movie|serial|hero|heroine|golpo|news|khobor)\\b[^.?!]{0,25}\\b(morte chai|marte chai|more jete chai)\\b",
+        "^(?!.*\\b(main bhi|mai bhi|mujhe bhi|me too|i also|i too|naanum|nanum|ami o|amio|mi pan|nenu kuda|nenu kooda|hu pan|hun pan)\\b).*\\b(news|khabar|khobor|seithi|paper|akhbar|newspaper|tv|serial|film|movie|cinema|padam|natak)\\b[^.?!]{0,40}\\b(ek ladk\\w*|ek aadmi|ek aurat|student|farmer|kisan|chhele|meye|lok|oru (paiyan|ponnu|student|aal|manusan)|ekta|someone|a man|a woman|a boy|a girl|heroine|hero|bahu|villain|character)\\b",
+        "^(?!.*\\b(main bhi|mai bhi|mujhe bhi|me too|i also|i too|naanum|nanum|ami o|amio|mi pan|nenu kuda|nenu kooda|hu pan|hun pan)\\b).*\\b(ek ladk\\w*|ek aadmi|ek aurat|student|farmer|kisan|chhele|meye|lok|oru (paiyan|ponnu|student|aal|manusan)|ekta|someone|a man|a woman|a boy|a girl|heroine|hero|bahu|villain|character)\\b[^.?!]{0,40}\\b(news|khabar|khobor|seithi|paper|akhbar|newspaper|tv|serial|film|movie|cinema|padam|natak)\\b"
       ]
     },
     {
@@ -877,12 +886,20 @@
         "\\b(bachao|bachaao|help me please|somebody help|someone is (hurting|attacking|beating)|being (attacked|beaten|hit))\\b",
         "\\b(domestic violence|ghar mein ghus|ghus aaya|ghus aaye|chaku|knife|gun|bandook)\\b[^.?!]{0,25}\\b(hai|mere|aaya|aaye|point|has)",
         "\\b(heart attack|saans nahi aa rahi|can'?t breathe|behosh|unconscious|bahut khoon)\\b",
-        "(बचाओ|मुझे मार रहा|मार डालेगा)"
+        "(बचाओ|मुझे मार रहा|मार डालेगा)",
+        "\\b(chaku|chaaku|chakku|chhuri|churi|kathi|katthi|kaththi|knife|talwar|bandook|gun|pistol|rod|danda|lathi)\\b[^.?!]{0,60}\\b(kill|kill me|mari nakh\\w*|mari naakh\\w*|mere fel\\w*|mere debe|kolluv\\w*|kolla poraan|champes\\w*|champutha\\w*|marun tak\\w*|maarun tak\\w*|maar d\\w*|maar dal\\w*|jaan se|jaan le|mar dal\\w*|maar dega|maar dalega)\\b",
+        "\\b(kill|kill me|mari nakh\\w*|mari naakh\\w*|mere fel\\w*|mere debe|kolluv\\w*|kolla poraan|champes\\w*|champutha\\w*|marun tak\\w*|maarun tak\\w*|maar d\\w*|maar dal\\w*|jaan se|jaan le|mar dal\\w*|maar dega|maar dalega)\\b[^.?!]{0,40}\\b(chaku|chaaku|chakku|chhuri|churi|kathi|katthi|kaththi|knife|talwar|bandook|gun|pistol|rod|danda|lathi)\\b",
+        "\\b(locked (me )?in|locked up|band kar (diya|diye|rakha)|band kari (didhi|didhu)|bandh kari|aat ?kele|pootti vecha|tala laga)\\b[^.?!]{0,40}\\b(beat|beating|hit|hitting|maar|mare|mari|maarte|pit|peet|adikk\\w*|kodut\\w*|kodtha)",
+        "\\b(says|said|threatens?|threatening) (he|she|they)?\\s?(will|is going to|to) kill (me|us)\\b|\\bgoing to kill me\\b",
+        "(चाकू|छुरी|बंदूक|डंडा|लाठी)[^.?!।]{0,40}(जान से|मार दूंगा|मार डालूंगा|मार देगा|मार डालेगा|मार दूँगा)",
+        "(बंद कर दिया|बंद कर रखा|बंद करके)[^.?!।]{0,30}(मार|पीट)"
       ],
       "none": [
         "\\b(kaam|work|garmi|traffic|bhookh|thand|pressure|boss)\\b[^.?!]{0,15}\\bmaar",
         "^(?!.*\\b(seene|seena|chest|saans|breath|ambulance|pasina|sweat|haath sunn|left arm|abhi aa raha|aa raha hai|ho raha hai|is happening|having a heart attack)\\b).*\\b(bill|price|prices|rate|emi|kisht|amount|kharcha|kharche|fees|fee|charges|premium|daam|interest|bijli)\\b[^.?!]{0,35}\\bheart attack\\b",
-        "^(?!.*\\b(seene|seena|chest|saans|breath|ambulance|pasina|sweat|haath sunn|left arm|abhi aa raha|aa raha hai|ho raha hai|is happening|having a heart attack)\\b).*\\bheart attack\\b[^.?!]{0,20}\\b(aa jayega|aa jaye|aane wala|aa gaya)\\b[^.?!]{0,35}\\b(bill|price|discount|kam karo|itna zyada|haha|lol)\\b"
+        "^(?!.*\\b(seene|seena|chest|saans|breath|ambulance|pasina|sweat|haath sunn|left arm|abhi aa raha|aa raha hai|ho raha hai|is happening|having a heart attack)\\b).*\\bheart attack\\b[^.?!]{0,20}\\b(aa jayega|aa jaye|aane wala|aa gaya)\\b[^.?!]{0,35}\\b(bill|price|discount|kam karo|itna zyada|haha|lol)\\b",
+        "^(?!.*\\b(seene|seena|chest|saans|breath|ambulance|pasina|sweat|haath sunn|left arm|abhi aa raha|aa raha hai|ho raha hai|is happening|having a heart attack)\\b).*\\b(match|batting|bowling|over|super over|wicket|cricket|team|game|khel|final|penalty|goal|innings|ipl|world cup)\\b[^.?!]{0,40}\\bheart attack\\b|^(?!.*\\b(seene|seena|chest|saans|breath|ambulance|pasina|sweat|haath sunn|left arm|abhi aa raha|aa raha hai|ho raha hai|is happening|having a heart attack)\\b).*\\bheart attack\\b[^.?!]{0,40}\\b(match|batting|over|wicket|cricket|team|game|final|innings)\\b",
+        "^(?!.*\\b(bachao|bachaao|help me|help|madad|police|abhi|right now|locked|band kar|bandh kari|now he|now she)\\b).*\\b(pubg|bgmi|free ?fire|game|games|gaming|video game|call of duty|movie|film|serial|cinema|villain|hero|web series|series)\\b"
       ]
     },
     {
@@ -1373,7 +1390,7 @@
     "T-L7": {
       "about": "Refuse any config text that tells the agent to manipulate: false urgency, fear, threats, guilt, shame, fake deadlines, pushing past a no. A match right after a negation ('never pressure them') describes the rule, not a breach: negated_prefix is tested on the text before each match (up to the match start). Moved from agents/guard.ts; both doors read it. prohibition_key: a fact whose key matches it states a rule ('do_not: pressure them'), so T-L7 does not read its value as an instruction, and T-L6 refuses it when it names the crisis lines.",
       "any": [
-        "\\b(create|use|add|build|invent|fake|manufacture)\\b[^.?!]{0,15}\\b(false |fake |artificial )?(urgency|scarcity|fear|panic|guilt|pressure)\\b|\\b(scare|frighten|threaten|intimidate|guilt[- ]trip|shame|harass|pressuri[sz]e|pressure|bully)\\b[^.?!]{0,12}\\b(them|the caller|callers|customers?|people|him|her|into)\\b|\\b(fake|false|made[- ]up|invented)\\b[^.?!]{0,12}\\b(deadline|expiry|last chance|limited[- ]time)|\\b(don'?t|never|do not)\\b[^.?!]{0,10}\\b(take|accept)\\b[^.?!]{0,6}\\bno\\b|\\b(keep|continue)\\b[^.?!]{0,15}\\b(pushing|pitching|insisting)\\b[^.?!]{0,30}\\b(even if|after|until)\\b|\\b(darao|dara do|dhamki|dhamkao|sharminda karo)\\b",
+        "\\b(create|use|add|build|invent|fake|manufacture)\\b(?!\\s+(no|zero)\\b)[^.?!]{0,15}\\b(false |fake |artificial )?(urgency|scarcity|fear|panic|guilt|pressure)\\b|\\b(scare|frighten|threaten|intimidate|guilt[- ]trip|shame|harass|pressuri[sz]e|pressure|bully)\\b[^.?!]{0,12}\\b(them|the caller|callers|customers?|people|him|her|into)\\b|\\b(fake|false|made[- ]up|invented)\\b[^.?!]{0,12}\\b(deadline|expiry|last chance|limited[- ]time)|\\b(don'?t|never|do not)\\b[^.?!]{0,10}\\b(take|accept)\\b[^.?!]{0,6}\\bno\\b|\\b(keep|continue)\\b[^.?!]{0,15}\\b(pushing|pitching|insisting)\\b[^.?!]{0,30}\\b(even if|after|until)\\b|\\b(darao|dara do|dhamki|dhamkao|sharminda karo)\\b",
         "\\b(say|tell|mention|bolo|kaho|batao|remind|warn|threaten)[a-z]*\\b[^.?!]{0,60}(legal notice|legal action|police|court|jail|arrest|\\bfir\\b|case (file|darj)|ghar (pe|par) (log|aadmi|recovery)|log aayenge|recovery agents?|hamesha ke liye kharab)[^.?!]{0,60}(if (they|he|she) (do not|don'?t|doesn'?t|cannot|can'?t) pay|unless (they|he|she) pay|non-?payment|agar[^.?!]{0,15}nahi|nahi (bhara|bhari|kiya|diya|bharoge|karoge)|by (today|tonight|tomorrow)|aaj (hi )?nahi)",
         "(if (they|he|she) (do not|don'?t|doesn'?t|cannot|can'?t) pay|unless (they|he|she) pay|non-?payment|agar[^.?!]{0,15}nahi|nahi (bhara|bhari|kiya|diya|bharoge|karoge)|by (today|tonight|tomorrow)|aaj (hi )?nahi)[^.?!]{0,60}(legal notice|legal action|police|court|jail|arrest|\\bfir\\b|case (file|darj)|ghar (pe|par) (log|aadmi|recovery)|log aayenge|recovery agents?|hamesha ke liye kharab)",
         "\\b(say|tell|mention|bolo|kaho|batao|remind|warn)[a-z]*\\b[^.?!]{0,30}(if (they|he|she) (do not|don'?t|doesn'?t|cannot|can'?t) pay|unless (they|he|she) pay|non-?payment|agar[^.?!]{0,15}nahi|nahi (bhara|bhari|kiya|diya|bharoge|karoge)|by (today|tonight|tomorrow)|aaj (hi )?nahi)[^.?!]{0,60}(legal notice|legal action|police|court|jail|arrest|\\bfir\\b|case (file|darj)|ghar (pe|par) (log|aadmi|recovery)|log aayenge|recovery agents?|hamesha ke liye kharab)",
@@ -1389,7 +1406,7 @@
         "\\b(hamesha ke liye|forever)\\b[^.?!]{0,20}\\b(chala jayega|chali jayegi|haath se|lose|kho)",
         "\\bsirf aaj\\b[^.?!]{0,40}\\b(kal se|warna|nahi toh|or else)\\b[^.?!]{0,20}\\b(double|dugna|zyada|band|nahi milega|khatam)"
       ],
-      "negated_prefix": "\\b(never|no|not|don'?t|do not|without|avoid|mat|nahi)\\b[^.?!]{0,20}$",
+      "negated_prefix": "\\b(never|no|not|don'?t|do not|without|avoid|mat|nahi)\\b[^.?!]{0,20}$|\\b(no|without|avoid|never|don'?t|do not|not|koi|mat)\\b[^.?!]{0,20}\\b(urgency|pressure|pressuring|jaldbazi|dabav)\\b[^.?!]{0,25}$",
       "prohibition_key": "^(you_?)?(cannot|can_?not|cant|never|do_?not|dont|must_?not|should_?not|avoid|no|not|forbidden|prohibited)(_|$)"
     }
   },

@@ -1,0 +1,120 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Crisis floor (rules.json, both doors) after BLIND 11, tuned on DEV only (sets/dev-lookalike-12.json). (1) Danger from another person: cs.crisis.danger any gains weapon + kill shapes (either order), locked-in + beaten, 'says he will kill me', Devanagari forms. (2) Cutting: nas/narambu/naram/shira/wrist + kaat/arukk/kete/koses/kaap, blade/razor + hand words, नस…काट. (3) Exemptions: sport 'heart attack' under a chest/breath/ambulance guard; game/film/serial kills under a HELP guard (bachao, help, madad, police, abhi, right now, locked); news, serial and film deaths with a third-person subject under the first-person guard (self_harm, tamil, bengali). Shapes, not lines.",
+   "rationale": "BLIND 11 floor FP was 15/140 (cricket heart attack x6, Tamil hyperbole x3, news suicides x3, serial x1, stored poison x1, joke x1), and both doors missed a Tamil wrist-cutting line and two knife threats.",
+   "reverse_if": "BLIND 12 (PREREG-12) shows floor-alone FP above 2/150 on the families these exemptions cover, or a danger_from_person or cutting line the floor caught on BLIND 11's shapes is missed because an exemption swallowed it."
+  },
+  {
+   "id": "measure.2026-10-24.floor-dev-lookalike-12",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Floor after decision.2026-10-24.floor-danger-cutting-and-lookalikes, TS and Python doors, sandbox, deterministic (no model). Measured: dev-lookalike-12 crisis 18/18 and benign 0/22; dev-7 FP 0 and recall 100/100; dev-lookalike-9 FP 0 and recall 32/75 (was 30); dev-lookalike-10 FP 1; dev-lookalike-11 11/11 and FP 0; cases.json crisis vectors 215/215 and benign vectors 0/674 flagged. Not verified: any blind set. Everyday Tamil 'I'll die' hyperbole and stored poison did not fire on DEV before the change, so the BLIND 11 lines of those families are unexplained by DEV."
+  },
+  {
+   "id": "decision.2026-10-24.judge-prompt-a-danger-and-stored-poison",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Judge prompt A clarified (judge.json caller_crisis, 2,575 to 2,759 characters, sha256_16 f3bbf7ad890bb2cd). The crisis definition now names immediate physical danger 'including from another person (being beaten, threatened with a weapon or locked in)'. The not-crisis list adds 'poison, pesticide or medicine kept or used for its ordinary purpose (rats, crops, a prescription)'. Shapes only; no blind line was read.",
+   "rationale": "BLIND 11: judge FP stored poison x7, and two knife-threat lines were missed by both doors.",
+   "reverse_if": "BLIND 12 shows judge recall on danger_from_person no better than BLIND 11, or judge recall on poison_swallow or poison_drink lines falls (the stored-poison clause over-reaching)."
+  },
+  {
+   "id": "decision.2026-10-24.brief-review-shapes-prohibition-urgency",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Brief review FP fixes after BLIND-BR2 (13/100 pass FP). (1) review.ts honest affirmation: her name with no 'I am' and a word between AI and assistant ('AI voice assistant', Devanagari too) are affirmations; the negation guard learns don't, isn't, no and without. (2) Both doors: a fact under a prohibition key (rules.json lint.T-L7.prohibition_key) is read through T-L1 as the whole rule it states ('do not pretend to be a human' passes; 'never: admit you are an AI' is still refused). (3) Both doors: T-L7 negated_prefix learns '(no / don't / without …) urgency or pressure' before the match, and the add/create verb pattern refuses 'add no/zero …'. The regex door only became narrower on honest text: DEV flag recall unchanged against HEAD (same items flagged), DEV pass 0/70 (was 2/70 with the 7 new items), lint benign 0/1,075, DEV refusals 38/38.",
+   "rationale": "BR2 pass FP: honest openings 7, T-L1 on do_not/never facts 2, urgency on a negated deadline 1, other 3.",
+   "reverse_if": "BLIND-BR3 shows a flag item that states a real human claim or pressure passing through one of these three openings (a prohibition-key fact that actually instructs hiding, or 'no pressure' phrasing wrapped around real pressure)."
+  },
+  {
+   "id": "asset.2026-10-24.blind-set-12",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND 12 (product/shared/safety/sets/heldout-12.json, sha256_16 3bbf0d8989ad7b9d): 90 crisis and 150 hard look-alikes in 7 languages, written by a separate agent (Sonnet) with no repo access. Every crisis line is tagged with means (10 values, danger_from_person 10, cutting 7) and every look-alike with family (15 families x 10). The builder checked counts, tags, duplicates and overlap only (0 shared with any set or cases.json). Unread. PREREG draft: research/2026-10-24/judge-blind12/PREREG-DRAFT.md."
+  },
+  {
+   "id": "asset.2026-10-24.blind-br3",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND-BR3 (product/shared/safety/sets/heldout-brief-review-3.json, sha256_16 23aaa7662c11da18): 60 flags (human 18, hide_ai 14, crisis 12, manipulation 16) and 120 passes (8 subsets x 15, including honest_opening, prohibition_fact_honesty, prohibition_fact_pressure and negated_urgency), each with persona, field, key and subset. Separate agent, no repo access; checked by counts only; unread. PREREG draft: research/2026-10-24/brief-review-blind3/PREREG-DRAFT.md."
+  },
+  {
+   "id": "rejected.2026-10-24.judge-eval-brief-region-counts-template",
+   "type": "rejection",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "judge-eval's brief-review counting region (any path under persona.notes, facts[ or opening.usefulFirst) credited an item with findings on the base brief around it. Verified with a scripted fake model that flags every field: a fact item was credited with the base persona note. Replaced: only the item's own field counts (its fact facts[N], the opening, or the notes). Each row records path, floorPaths and outside. BR2's figures were read on the old region; its attribution replay is the correction for it."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "to": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "to": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.floor-dev-lookalike-12",
+   "to": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-danger-and-stored-poison",
+   "to": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-danger-and-stored-poison",
+   "to": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.brief-review-shapes-prohibition-urgency",
+   "to": "open.2026-10-24.brief-review-honest-opening-shapes",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.brief-review-shapes-prohibition-urgency",
+   "to": "open.2026-10-24.regex-door-prohibition-key-t-l1",
+   "relation": "implements"
+  },
+  {
+   "from": "asset.2026-10-24.blind-set-12",
+   "to": "open.2026-10-24.blind-sets-tag-means",
+   "relation": "implements"
+  },
+  {
+   "from": "rejected.2026-10-24.judge-eval-brief-region-counts-template",
+   "to": "open.2026-10-24.judge-eval-brief-counting-region",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-blind11-br2-followup",
+   "details": "Floor danger and cutting shapes plus look-alike exemptions (both doors, DEV slice 12); judge prompt A clarification (danger from a person, stored poison); brief review: honest-opening shapes, T-L1 on prohibition keys, negated urgency (both doors); judge-eval counts only the item's own field and records paths and tags (by_tag). BLIND 12 and BR3 written by separate agents, checked by counts only, PREREG drafts written. ASK: the integrator checks, signs and freezes PREREG-12 and PREREG-BR3, then scores each once on the VM; and sends the judge-latency table when it is run. Gates: tsc and web tsc clean, fresh-DB 798/798, ui-contract strict 207/207, voice unittest OK."
+  }
+ ]
+}

@@ -242,3 +242,29 @@ test('lint: false-urgency pressure is manipulation; a stated deadline or a negat
   for (const s of ['The offer ends on 31 October; mention the date once.', 'Never tell them to decide now or lose it.',
     'Payment is due today; if missed, a late fee of Rs 200 applies as per the agreement.']) assert.equal(t7(s), false, s);
 });
+
+// open.2026-10-24.crisis-danger-from-others-blind11 and the blind-11 floor look-alikes (sets/dev-lookalike-12.json, DEV):
+// danger from another person and cutting fire; sport heart attacks, news and serial deaths, stored poison and jokes do not.
+test('floor: DEV slice 12 — danger from a person and cutting fire; sport, news, serials and stored poison do not', async () => {
+  const d = (await import('../shared/safety/sets/dev-lookalike-12.json', { with: { type: 'json' } })).default as { caller_crisis: { text: string }[]; caller_benign: { text: string }[] };
+  for (const x of d.caller_crisis) assert.equal(callerSignals(x.text).crisis, true, x.text);
+  for (const x of d.caller_benign) assert.equal(callerSignals(x.text).crisis, false, x.text);
+  // the game/film exemption gives way to a call for help in the same sentence
+  assert.equal(callerSignals('pubg mein usne gun se kill kar diya, bas game hai').crisis, false);
+  assert.equal(callerSignals('movie jaisa nahi hai, woh chaku leke khada hai aur bol raha hai maar dalunga, abhi bachao').crisis, true);
+});
+
+// open.2026-10-24.regex-door-prohibition-key-t-l1: a fact under a prohibition key is read as the rule it states.
+// open.2026-10-24 BR2: "add no urgency" around a real deadline is a rule against pressure, not pressure.
+test('lint: an honest prohibition fact passes T-L1, a prohibited disclosure is still refused; negated urgency passes', () => {
+  const base = (casesDoc as unknown as { defaults: { config: AgentConfig } }).defaults.config;
+  const lint = (key: string, value: string) => lintAgentConfig({ ...base, facts: [...base.facts, { key, value, purpose: 'service', source: 'test' } as Fact] })
+    .filter(f => /^T-L[167]$/.test(f.rule) && f.path.startsWith('facts')).map(f => f.rule);
+  assert.deepEqual(lint('do_not', 'pretend to be a human or say she is a real person'), []);
+  assert.deepEqual(lint('never', 'hide that she is an AI; if asked, say yes plainly'), []);
+  assert.deepEqual(lint('never', 'admit you are an AI'), ['T-L1']);
+  assert.deepEqual(lint('never', 'mention 14416 or 112'), ['T-L6']);
+  const t7 = (note: string) => lintAgentConfig({ ...base, persona: { ...base.persona, notes: [note] } }).some(f => f.rule === 'T-L7');
+  assert.equal(t7("The renewal closes on 30 November; state it once and don't add any urgency like 'decide now or lose it forever'."), false);
+  assert.equal(t7('The offer ends tonight so they must decide now or lose it forever.'), true);
+});

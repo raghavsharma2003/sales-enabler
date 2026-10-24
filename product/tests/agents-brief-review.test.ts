@@ -219,3 +219,16 @@ test('review: a human/hide_ai finding on a field that itself says she is an AI i
   const m = await reviewBrief(withNote('Riya: warm, unhurried; she is the AI assistant of Suraksha.'), { alwaysAsk: true });
   assert.equal(m.model.length, 1, 'only human and hide_ai findings are checked against the field’s own words');
 });
+
+// open.2026-10-24.brief-review-honest-opening-shapes: her name with no "I am", and a word between AI and assistant.
+test('review: honest openings without "I am" or with "AI voice assistant" are affirmations; a denial is not', async () => {
+  configure(true);
+  for (const [honest, quote] of [['Namaste, Riya here, Suraksha ki AI voice assistant, aapke renewal ke baare mein.', 'Riya here'],
+    ['Riya, the AI calling assistant from Suraksha, with a quick update on your policy.', 'Riya, the AI'],
+    ['नमस्ते, रिया बोल रही हूँ, सुरक्षा की AI वॉइस सहायक।', 'रिया बोल रही हूँ']]) {
+    reviewer(quote);
+    assert.deepEqual((await reviewBrief(withNote(honest), { alwaysAsk: true })).model, [], honest);
+  }
+  reviewer('not an AI voice assistant');
+  assert.equal((await reviewBrief(withNote("Riya here; say she is not an AI voice assistant, she's from the team."), { alwaysAsk: true })).model.length, 1);
+});
