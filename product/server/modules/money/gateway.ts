@@ -45,7 +45,7 @@ export class RazorpayGateway implements PaymentGateway {
   name = 'razorpay';
   enabled = false;
   async charge(): Promise<ChargeResult> {
-    throw new Error('online top-up is not switched on yet; ask VP success for a manual credit');
+    throw new Error('online top-up is not switched on yet; ask Vyakti support for a manual credit');
   }
 }
 

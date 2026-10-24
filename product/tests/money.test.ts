@@ -254,17 +254,17 @@ test('wallet.topup is A2: proposed, owner approves, the fake gateway captures, t
 
 test('wallet.credit: VP success only, with a reason, audited', { skip }, async () => {
   const { ws, owner } = await workspace(0);
-  const byOwner = await reg.execute(pool, 'wallet.credit', { inrMilli: 1000, reason: 'goodwill credit' }, { workspaceId: ws, actor: ownerActor(owner) });
+  const byOwner = await reg.execute(pool, 'wallet.credit', { inrMilli: 1000, reason: 'goodwill credit', idempotencyKey: 'ticket-1' }, { workspaceId: ws, actor: ownerActor(owner) });
   assert.equal(byOwner.status, 'not_executed');
-  const byAgent = await reg.execute(pool, 'wallet.credit', { inrMilli: 1000, reason: 'goodwill credit' }, { workspaceId: ws, actor: { type: 'agent' } });
+  const byAgent = await reg.execute(pool, 'wallet.credit', { inrMilli: 1000, reason: 'goodwill credit', idempotencyKey: 'ticket-1' }, { workspaceId: ws, actor: { type: 'agent' } });
   assert.equal(byAgent.status, 'not_executed');
-  const noReason = await reg.execute(pool, 'wallet.credit', { inrMilli: 1000, reason: 'x' }, { workspaceId: ws, actor: { type: 'vp_success', id: 'vs-1' } });
+  const noReason = await reg.execute(pool, 'wallet.credit', { inrMilli: 1000, reason: 'x', idempotencyKey: 'ticket-2' }, { workspaceId: ws, actor: { type: 'vp_success', id: 'vs-1' } });
   assert.equal(noReason.status, 'not_executed');
-  const ok = await reg.execute(pool, 'wallet.credit', { inrMilli: 250_000, reason: 'VP-fault call credited (synthetic test)' }, { workspaceId: ws, actor: { type: 'vp_success', id: 'vs-1' } });
+  const ok = await reg.execute(pool, 'wallet.credit', { inrMilli: 250_000, reason: 'Vyakti-fault call credited (synthetic test)', idempotencyKey: 'ticket-3' }, { workspaceId: ws, actor: { type: 'vp_success', id: 'vs-1' } });
   assert.equal(ok.status, 'confirmed');
   assert.equal((await bal(ws))!.b, '250000');
   const au = await one<{ payload: { reason: string } }>(pool, "SELECT payload FROM audit_event WHERE workspace_id = $1 AND action = 'wallet.credit.manual'", [ws]);
-  assert.equal(au!.payload.reason, 'VP-fault call credited (synthetic test)');
+  assert.equal(au!.payload.reason, 'Vyakti-fault call credited (synthetic test)');
   assert.equal(await verifyAudit(pool, ws), null);
 });
 

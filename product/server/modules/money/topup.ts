@@ -18,7 +18,7 @@ export interface Prepared { topupId: string; status: 'captured' | 'failed'; reas
 
 export async function prepareTopup(ctx: PrepareCtx, i: TopupInput): Promise<Prepared> {
   const gw = gateway();
-  if (!gw.enabled) throw new Error('online top-up is not switched on yet; ask VP success for a manual credit');
+  if (!gw.enabled) throw new Error('online top-up is not switched on yet; ask Vyakti support for a manual credit');
   const actionId = ctx.actionId;
   if (!actionId) throw new Error('a top-up runs only from an approved request');
   const key = `topup:${actionId}`;

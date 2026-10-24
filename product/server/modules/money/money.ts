@@ -10,6 +10,7 @@ import { many, one, type Queryable } from '../../db.ts';
 import { settle } from '../../ledger.ts';
 
 export const TZ = 'Asia/Kolkata';
+const MONEY_IN_LABEL: Record<string, string> = { payment: 'Top-up', manual_credit: 'Credit from Vyakti', trial_credit: 'Trial credit' };
 export const GST_BP = 1800;
 /** The blueprint's pricing rule (2.2), ready but INACTIVE until the owner sets a rate card. */
 export const MARGIN_RULE = { active: false, floor2026: 0.30, floor2027: 0.25, paymentFeeBp: 200 } as const;
@@ -56,7 +57,7 @@ export async function estimate(q: Queryable, i: { stackId: string; minutes: numb
   // Shown to people as it is (no file names, codes or ISO dates). Provenance: the cost_card rows come from the voice lab's
   // list prices (voicelab/server/catalog.py) at ₹95/$, an assumed minute profile, and half a carrier pulse per call.
   const day = asOf ? new Date(`${asOf}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'an unknown date';
-  const basis = `What VP pays its providers, not a customer price (no price is set yet). Worked out from the providers' list prices `
+  const basis = `What Vyakti pays its providers, not a customer price (no price is set yet). Worked out from the providers' list prices `
     + `as of ${day} at ₹95 to the US dollar, for a typical minute of talk, plus the phone company's rounding on each call. `
     + `An estimate, not an average of real calls.`;
   return { stackId: i.stackId, perMinuteInrMilli, totalInrMilli, basis, lines, price: await priceFor(q, null, i.stackId),
@@ -69,7 +70,7 @@ export type PriceView =
   | { status: 'not_set'; text: string }
   | { status: 'set'; perMinuteInrMilli: number; gstBp: number; withGstInrMilli: number; text: string };
 
-const NOT_SET: PriceView = { status: 'not_set', text: 'Customer price not set yet: amounts shown are what VP pays providers.' };
+const NOT_SET: PriceView = { status: 'not_set', text: 'Customer price not set yet: amounts shown are what Vyakti pays providers.' };
 
 /** The active customer price for a plan (or the workspace's plan) and stack; 'not_set' when the card is empty. */
 export async function priceFor(q: Queryable, workspaceId: string | null, stackId: string | null, planId?: string): Promise<PriceView> {
@@ -208,10 +209,10 @@ export async function statement(q: Queryable, ws: string, r: Range) {
     kind: 'usage_statement', period: r, currency: 'INR', timezone: TZ,
     costInrMilli: total, display: { cost: formatInr(total, { paise: true }) },
     byComponent, byCampaign, byDay,
-    moneyIn: topups.map(t => ({ kind: t.kind, count: Number(t.n), inrMilli: Number(t.m), display: formatInr(Number(t.m), { paise: true }) })),
+    moneyIn: topups.map(t => ({ kind: t.kind, label: MONEY_IN_LABEL[t.kind] ?? t.kind, count: Number(t.n), inrMilli: Number(t.m), display: formatInr(Number(t.m), { paise: true }) })),
     price,
     note: price.status === 'not_set'
-      ? 'This is a usage statement, not a tax invoice: no customer price is set yet, so it shows what VP paid providers. GST is not computed.'
+      ? 'This is a usage statement, not a tax invoice: no customer price is set yet, so it shows what Vyakti paid providers. GST is not computed.'
       : 'Customer price is set; a GST invoice is produced by the billing run.',
   };
 }

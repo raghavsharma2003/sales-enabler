@@ -108,8 +108,8 @@ export function partLines(stackId: string, c: StackComponents): CardRow[] {
     add({ component: 'telephony', provider: TELEPHONY.provider, inrMicroPerMin: micro(TELEPHONY.inrMin),
       inrMicroPerCall: micro(TELEPHONY.inrMin * 0.5), unitPrice: TELEPHONY.price,
       usage: 'per connected minute, plus half a 60 s pulse per call for the carrier rounding up [assumption]', grade: 'computed', source: TELEPHONY.src });
-    add({ component: 'platform', provider: 'VP infra', inrMicroPerMin: micro(PLATFORM.inrMin), unitPrice: '₹0.03/min', usage: 'per connected minute [inferred]', grade: 'computed', source: PLATFORM.src });
-    add({ component: 'analysis', provider: 'VP default analysis', inrMicroPerMin: micro(ANALYSIS.inrMin), unitPrice: '₹0.06/min', usage: 'per connected minute (about ₹0.17 per 3-min call)', grade: 'computed', source: ANALYSIS.src });
+    add({ component: 'platform', provider: 'Vyakti infrastructure', inrMicroPerMin: micro(PLATFORM.inrMin), unitPrice: '₹0.03/min', usage: 'per connected minute [inferred]', grade: 'computed', source: PLATFORM.src });
+    add({ component: 'analysis', provider: 'Vyakti call analysis', inrMicroPerMin: micro(ANALYSIS.inrMin), unitPrice: '₹0.06/min', usage: 'per connected minute (about ₹0.17 per 3-min call)', grade: 'computed', source: ANALYSIS.src });
   }
   return rows;
 }

@@ -125,17 +125,38 @@
      },
      "templateId": {
       "type": "string",
-      "maxLength": 60
+      "enum": [
+       "insurance-renewal",
+       "lending-emi-reminder",
+       "clinic-appointment-confirm",
+       "d2c-cod-verification",
+       "solar-lead-qualification",
+       "education-admissions-followup",
+       "realestate-site-visit",
+       "travel-feedback",
+       "broadband-winback",
+       "investing-onboarding",
+       "homeloan-documents",
+       "furniture-delivery",
+       "auto-testdrive-event",
+       "d2c-inbound-support",
+       "appliance-service-followup",
+       "diagnostics-reminder-tamil"
+      ],
+      "maxLength": 60,
+      "description": "a starter agent id from template.list; leave out when giving a description"
      },
      "description": {
       "type": "string",
       "minLength": 20,
-      "maxLength": 4000
+      "maxLength": 4000,
+      "description": "the job in plain words (who is called, why, what counts as done); leave out when giving a templateId"
      }
     },
     "required": [
      "name"
-    ]
+    ],
+    "description": "Give exactly one of templateId (from template.list) or description, never both."
    }
   },
   {
@@ -554,7 +575,8 @@
     },
     "required": [
      "name"
-    ]
+    ],
+    "description": "Give exactly one of filter (a rule over contact fields, e.g. {\"all\":[{\"key\":\"city\",\"op\":\"eq\",\"value\":\"Pune\"}]}) or contactIds (ids from contact.list), never both."
    }
   },
   {
@@ -871,7 +893,8 @@
         "path": {
          "type": "string",
          "minLength": 1,
-         "maxLength": 120
+         "maxLength": 120,
+         "description": "a draft field: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording; use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-]"
         },
         "value": {
          "description": "the new value"
@@ -889,7 +912,8 @@
     "required": [
      "agentId",
      "patch"
-    ]
+    ],
+    "description": "Read the draft with agent.get first and patch only fields it has. Editable top-level fields: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording. voice: use stack.set or voice.set; tools: use tool.attach."
    }
   },
   {
@@ -3686,7 +3710,7 @@
   {
    "name": "money.estimate",
    "risk": "read",
-   "summary": "estimate what VP pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components)",
+   "summary": "estimate what Vyakti pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components)",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -5026,7 +5050,8 @@
       "type": "array",
       "items": {
        "type": "string",
-       "format": "uuid"
+       "minLength": 1,
+       "maxLength": 80
       },
       "minItems": 1,
       "maxItems": 12
@@ -5039,6 +5064,32 @@
       },
       "minItems": 1,
       "maxItems": 5
+     }
+    },
+    "required": [
+     "proposalId"
+    ]
+   }
+  },
+  {
+   "name": "proposal.readiness",
+   "risk": "read",
+   "summary": "whether a proposed change can be tested on real calls yet, and what it needs",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "proposalId": {
+      "type": "string",
+      "format": "uuid"
      }
     },
     "required": [
@@ -6624,9 +6675,43 @@
    }
   },
   {
+   "name": "wallet.check",
+   "risk": "read",
+   "summary": "say whether the wallet can pay for a launch or a number, with the amount and the balance",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "purpose": {
+      "type": "string",
+      "enum": [
+       "launch",
+       "number_rent"
+      ]
+     },
+     "needInrMilli": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000000
+     }
+    },
+    "required": [
+     "purpose"
+    ]
+   }
+  },
+  {
    "name": "wallet.credit",
    "risk": "draft",
-   "summary": "VP success: credit the wallet by hand, with a reason (audited)",
+   "summary": "Vyakti staff: credit the wallet by hand, with a reason (audited)",
    "needsApproval": false,
    "roles": [],
    "input": {
@@ -6642,11 +6727,17 @@
       "type": "string",
       "minLength": 5,
       "maxLength": 400
+     },
+     "idempotencyKey": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 80
      }
     },
     "required": [
      "inrMilli",
-     "reason"
+     "reason",
+     "idempotencyKey"
     ]
    }
   },

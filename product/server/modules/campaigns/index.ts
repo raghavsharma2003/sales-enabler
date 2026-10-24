@@ -16,13 +16,15 @@ import { arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Vali
 import { many, one, type Queryable } from '../../db.ts';
 import { tool, UnknownOutcome, type Registry, type ToolCtx } from '../../tools.ts';
 import {
-  BUDGET_PRESETS, DEFAULT_PER_MINUTE_INR_MILLI, DEFAULT_WINDOWS, ESTIMATE_PRIORS, FIRST_CAMPAIGN_REVIEW_STOP, OUTCOME_CLASSES,
+  BUDGET_PRESETS, DEFAULT_MAX_DURATION_S, DEFAULT_PER_MINUTE_INR_MILLI, DEFAULT_WINDOWS, ESTIMATE_PRIORS, FIRST_CAMPAIGN_REVIEW_STOP, OUTCOME_CLASSES,
   PROMOTIONAL_BAND, RETRY_LADDER, type OutcomeClass, type WindowPolicy,
 } from './defaults.ts';
 import { loadDialPolicy, loadVersion, type CampaignPolicy, type CampaignRow } from './gate.ts';
 import { tick } from './worker.ts';
 import { categoryWord, lineNeeded, windowProblem, type Explained } from './explain.ts';
 import { verifyConfirm, verifyStart } from './verify.ts';
+// The one money import: the wallet blocker's words and the per-call hold, shared with the money module's wallet.check.
+import { callHoldInrMilli, walletBlocker } from '../money/blockers.ts';
 import { routeSeries, SERIES, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
@@ -97,6 +99,12 @@ export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): 
   const route = routeSeries({ category: c.call_category, sectorPacks: agent?.sectorPacks ?? [], workspaceSector: dp.sector });
   const line = await one(q, "SELECT 1 FROM phone_number WHERE workspace_id = $1 AND series = $2 AND status = 'active' LIMIT 1", [ws, route.series]);
   if (!line) out.push({ code: 'no_line', ...lineNeeded(route.series), fix: { tool: 'number.search', label: 'Get a number', role: 'owner' } });
+  // The wallet (money module, walkthrough S6): one call's hold is the least a launch needs, by the dial gate's G9 rule.
+  const maxS = Math.min(agent?.limits?.maxDurationS ?? DEFAULT_MAX_DURATION_S, c.policy.maxDurationS ?? Infinity);
+  const hold = await callHoldInrMilli(q, { stackId: agent?.voice?.stackId, components: agent?.voice?.components, maxDurationS: maxS, perMinuteInrMilli: c.policy.perMinuteInrMilli })
+    ?? Math.ceil(maxS / 60) * DEFAULT_PER_MINUTE_INR_MILLI;
+  const wallet = await walletBlocker(q, ws, { purpose: 'launch', needInrMilli: hold });
+  if (wallet) out.push({ code: wallet.code, message: wallet.message, why: wallet.why, fix: wallet.fix });
   return out;
 }
 
@@ -440,13 +448,21 @@ export function registerCampaignTools(registry: Registry): void {
 
   reg(tool(obj({ series: opt(seriesV), region: opt(str({ max: 40 })), limit: opt(num({ int: true, min: 1, max: 20 })) }), {
     name: 'number.search', risk: 'read', summary: 'Search numbers to rent in a series',
-    run: async (_ctx, i) => ({ offers: await telephony().search({ series: i.series as Series | undefined, region: i.region, limit: i.limit ?? 5 }), provider: telephony().name }),
+    run: async (ctx, i) => {
+      const offers = await telephony().search({ series: i.series as Series | undefined, region: i.region, limit: i.limit ?? 5 });
+      // Say up front when the wallet cannot pay the cheapest month's rent (walkthrough S6), not after the approval.
+      const rents = offers.map(o => o.monthlyRentInrMilli).filter((m): m is number => m !== null);
+      const walletBlocked = offers.length ? await walletBlocker(ctx.q, ctx.workspaceId, { purpose: 'number_rent', needInrMilli: rents.length ? Math.min(...rents) : null }) : null;
+      return { offers, provider: telephony().name, walletBlocker: walletBlocked };
+    },
   }));
 
   reg(tool(obj({ offerRef: str({ min: 1, max: 120 }), displayName: opt(str({ max: 40 })) }), {
     name: 'number.rent', risk: 'spend', summary: 'Rent a number in the workspace\'s name (monthly rent at carrier cost)',
     describe: i => `Rent number offer ${i.offerRef} in your name; monthly rent is charged at carrier cost`,
     run: async (ctx, i) => {
+      const short = await walletBlocker(ctx.q, ctx.workspaceId, { purpose: 'number_rent', needInrMilli: null });
+      if (short) throw new Error(`${short.message} ${short.fix.label} first.`);
       let r;
       try { r = await telephony().rent(i.offerRef); } catch (e) {
         if (e instanceof TelephonyDisabled) throw e;

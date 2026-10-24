@@ -11,6 +11,7 @@ import { many, one, tx, type Queryable } from '../../db.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import { prepareTopup, resolveTopups, runTopup, type Prepared } from './topup.ts';
 import { sweepHolds } from './sweep.ts';
+import { walletBlocker, type WalletPurpose } from './blockers.ts';
 import { caps, costLines, credit, defaultRange, estimate, priceFor, reconcile, rollPeriods, statement, usage, walletView } from './money.ts';
 
 const MAX_TOPUP = 1_000_000_000;          // ₹10 lakh per top-up
@@ -52,7 +53,7 @@ async function setCap(ctx: ToolCtx, i: CapInput, dir: 'raise' | 'lower') {
 export function register(r: Registry): void {
   r.register(tool(obj({ stackId: str({ max: 60 }), minutes: num({ min: 0, max: 1e8 }), calls: num({ int: true, min: 0, max: 1e7 }),
     components: opt(obj({ ears: opt(str({ max: 60 })), brain: opt(str({ max: 60 })), voice: opt(str({ max: 60 })), s2s: opt(str({ max: 60 })), gatedEars: opt(bool()) })) }), {
-    name: 'money.estimate', risk: 'read', summary: "estimate what VP pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components)",
+    name: 'money.estimate', risk: 'read', summary: "estimate what Vyakti pays providers for minutes and calls on a stack, or on parts a user built (stackId 'custom' with components)",
     run: (ctx, i) => estimate(ctx.q, i as Parameters<typeof estimate>[1]),
   }));
 
@@ -83,19 +84,33 @@ export function register(r: Registry): void {
     run: (ctx, _i, p) => runTopup(ctx, p as Prepared | undefined),
   }));
 
-  r.register(tool(obj({ inrMilli: num({ int: true, min: 1, max: MAX_TOPUP }), reason: str({ min: 5, max: 400 }) }), {
-    name: 'wallet.credit', risk: 'draft', summary: 'VP success: credit the wallet by hand, with a reason (audited)',
-    roles: [],                                   // no member role may call it; only the vp_success actor
+  // Vyakti staff (actor 'vp_success', never a workspace role) credit a wallet by hand. It runs at once, carries a
+  // reason, is audited, and applies once per caller key: a retried call answers 'already_credited'.
+  r.register(tool(obj({ inrMilli: num({ int: true, min: 1, max: MAX_TOPUP }), reason: str({ min: 5, max: 400 }), idempotencyKey: str({ min: 6, max: 80 }) }), {
+    name: 'wallet.credit', risk: 'draft', summary: 'Vyakti staff: credit the wallet by hand, with a reason (audited)',
+    roles: [],                                   // no member role may call it; only the vp_success (Vyakti staff) actor
     run: async (ctx, i) => {
-      if (ctx.actor.type !== 'vp_success') throw new Error('only VP success can credit a wallet by hand');
+      if (ctx.actor.type !== 'vp_success' || !ctx.actor.id) throw new Error('only Vyakti staff can credit a wallet by hand');
+      const key = `credit:${ctx.workspaceId}:${i.idempotencyKey}`;
       const t = await one<{ id: string }>(ctx.q,
-        `INSERT INTO wallet_topup (workspace_id, kind, inr_milli, status, reason, actor) VALUES ($1,'manual_credit',$2,'captured',$3,$4) RETURNING id`,
-        [ctx.workspaceId, i.inrMilli, i.reason, ctx.actor.id ?? 'vp_success']);
+        `INSERT INTO wallet_topup (workspace_id, kind, inr_milli, status, reason, actor, idempotency_key, credited_at)
+         VALUES ($1,'manual_credit',$2,'captured',$3,$4,$5, now()) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id`,
+        [ctx.workspaceId, i.inrMilli, i.reason, ctx.actor.id, key]);
+      if (!t) {
+        const prior = await one<{ id: string; inr: string }>(ctx.q, 'SELECT id, inr_milli::text AS inr FROM wallet_topup WHERE idempotency_key = $1', [key]);
+        if (Number(prior!.inr) !== i.inrMilli) throw new ValidationError('idempotencyKey', `was already used for a credit of ${formatInr(Number(prior!.inr))}; use a new key for a different amount`);
+        return { status: 'already_credited', topupId: prior!.id };
+      }
       const w = await credit(ctx.q, ctx.workspaceId, i.inrMilli);
       await appendAudit(ctx.q, { workspaceId: ctx.workspaceId, actorType: 'vp_success', actorId: ctx.actor.id, action: 'wallet.credit.manual',
-        objectType: 'wallet_topup', objectId: t!.id, payload: { inrMilli: i.inrMilli, reason: i.reason } });
-      return { status: 'credited', topupId: t!.id, balanceInrMilli: Number(w!.balance), state: w!.state };
+        objectType: 'wallet_topup', objectId: t.id, payload: { inrMilli: i.inrMilli, reason: i.reason, idempotencyKey: i.idempotencyKey } });
+      return { status: 'credited', topupId: t.id, balanceInrMilli: Number(w!.balance), state: w!.state };
     },
+  }));
+
+  r.register(tool(obj({ purpose: str({ oneOf: ['launch', 'number_rent'] }), needInrMilli: opt(num({ int: true, min: 0, max: MAX_CAP })) }), {
+    name: 'wallet.check', risk: 'read', summary: 'say whether the wallet can pay for a launch or a number, with the amount and the balance',
+    run: async (ctx, i) => ({ blocker: await walletBlocker(ctx.q, ctx.workspaceId, { purpose: i.purpose as WalletPurpose, needInrMilli: i.needInrMilli ?? null }) }),
   }));
 
   r.register(tool(capInput, {
