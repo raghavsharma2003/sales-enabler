@@ -1,0 +1,376 @@
+{
+  "fetched": "2026-10-24",
+  "parts": [
+    {
+      "part": "ears",
+      "id": "azure",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "STT locales table lists all 11 India locales (hi-IN, en-IN, ta-IN, te-IN, kn-IN, ml-IN, mr-IN, gu-IN, bn-IN, pa-IN, or-IN); bn-BD absent. Fast transcription is yes for all; monolingual refinement only for hi, en, te, mr, bn, pa; multilingual refinement (preview) only hi and en. Real-time vs batch per locale not separately verified.",
+      "sources": [
+        "azure-speech-language-support-stt.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "ears",
+      "id": "sarvam",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "Saaras v4/v3: 23 languages (22 Indian + English) incl. all 11 VP codes. Sarvam writes Odia as od-IN; recorded as or-IN. Also supports as, ur, ne, kok, ks, sd, sa, sat, mni, brx, mai, doi (not VP codes).",
+      "sources": [
+        "sarvam-models.md",
+        "sarvam-saaras.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "brain",
+      "id": "gemini-3.5-flash-lite",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "General Gemini-family list (Vertex 'Google models' page): 'All Gemini models can understand the following languages' and text-capable models can respond in them; lists hi, en, ta, te, kn, ml, mr, gu, bn, pa, or as bare language codes with no India region, so en-IN, bn-IN etc. are recorded from the language-level entry (en is not listed as en-IN). No per-version page: the Vertex Gemini 3.5 Flash-Lite page has no language statement and no 3.6/3.8 Flash page was checked, so this is the family list applied to the model. Google's Gemini API models page gives no general language list. Source of truth ambiguity: the list says what models understand/write, not quality in each language.",
+      "sources": [
+        "google-vertex-models-gemini-languages.md",
+        "google-vertex-gemini-3-5-flash-lite.md",
+        "google-gemini-api-models.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "brain",
+      "id": "gemini-3.6-flash",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "General Gemini-family list (Vertex 'Google models' page): 'All Gemini models can understand the following languages' and text-capable models can respond in them; lists hi, en, ta, te, kn, ml, mr, gu, bn, pa, or as bare language codes with no India region, so en-IN, bn-IN etc. are recorded from the language-level entry (en is not listed as en-IN). No per-version page: the Vertex Gemini 3.5 Flash-Lite page has no language statement and no 3.6/3.8 Flash page was checked, so this is the family list applied to the model. Google's Gemini API models page gives no general language list. Source of truth ambiguity: the list says what models understand/write, not quality in each language.",
+      "sources": [
+        "google-vertex-models-gemini-languages.md",
+        "google-vertex-gemini-3-5-flash-lite.md",
+        "google-gemini-api-models.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "brain",
+      "id": "gemini-3.8-flash",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "General Gemini-family list (Vertex 'Google models' page): 'All Gemini models can understand the following languages' and text-capable models can respond in them; lists hi, en, ta, te, kn, ml, mr, gu, bn, pa, or as bare language codes with no India region, so en-IN, bn-IN etc. are recorded from the language-level entry (en is not listed as en-IN). No per-version page: the Vertex Gemini 3.5 Flash-Lite page has no language statement and no 3.6/3.8 Flash page was checked, so this is the family list applied to the model. Google's Gemini API models page gives no general language list. Source of truth ambiguity: the list says what models understand/write, not quality in each language.",
+      "sources": [
+        "google-vertex-models-gemini-languages.md",
+        "google-vertex-gemini-3-5-flash-lite.md",
+        "google-gemini-api-models.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "brain",
+      "id": "gpt-5.4-mini",
+      "supported": [],
+      "notes": "No per-language list published on the GPT-5.4 Mini model page (text/image in, text out only). OpenAI publishes an MMMLU multilingual eval set (Hindi HI_IN and Bengali BN_BD among 14 locales) but that is a benchmark, not a model-specific support claim, and was not tied to this model here.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ],
+      "listPublished": false
+    },
+    {
+      "part": "brain",
+      "id": "gpt-4.1-mini-in",
+      "supported": [],
+      "notes": "No per-language list published; the gpt-4.1-mini page itself was not fetched (GPT-4.1 page has no language statement). OpenAI-wide MMMLU eval set exists (hi, bn among 14 locales) but is not a support claim and was not tied to this model.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ],
+      "listPublished": false
+    },
+    {
+      "part": "brain",
+      "id": "gpt-4.1",
+      "supported": [
+        "hi-IN",
+        "bn-IN"
+      ],
+      "notes": "No per-language list published (GPT-4.1 page has no language statement). The only named languages are OpenAI's MMMLU eval locales, which include Hindi (HI_IN) and Bengali listed only as BN_BD (recorded as bn-IN with note 'listed only as bn-BD'); search snippet says openai/simple-evals scores gpt-4.1-2025-04-14 on MMMLU (results table not read). These are evaluation languages, not a support statement.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ],
+      "listPublished": false
+    },
+    {
+      "part": "brain",
+      "id": "gpt-6-luna@or",
+      "supported": [],
+      "notes": "No per-language list published; OpenRouter page has no language statement and no OpenAI GPT-6 language page was found. MMMLU eval set not tied to this model.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ],
+      "listPublished": false
+    },
+    {
+      "part": "brain",
+      "id": "gpt-6-sol@or",
+      "supported": [],
+      "notes": "No per-language list published; the GPT-6 Sol page was not fetched (only the Luna OpenRouter page and news snippets seen). No language statement found.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ],
+      "listPublished": false
+    },
+    {
+      "part": "brain",
+      "id": "gpt-oss-120b",
+      "supported": [],
+      "notes": "No per-language list published on the Hugging Face model page; the openai.com gpt-oss model card returned HTTP 403 so it was not read.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ],
+      "listPublished": false
+    },
+    {
+      "part": "brain",
+      "id": "llama-4-maverick",
+      "supported": [
+        "hi-IN",
+        "en-IN"
+      ],
+      "notes": "Model card lists 12 supported languages: Arabic, English, French, German, Hindi, Indonesian, Italian, Portuguese, Spanish, Tagalog, Thai, Vietnamese. Hindi and English only from VP's set; English is listed generically (not en-IN) and Hindi without a region. Pre-training reportedly covers 200 languages but those are not named as supported.",
+      "sources": [
+        "meta-llama-4-maverick-card.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "brain",
+      "id": "kimi-k2.6",
+      "supported": [],
+      "notes": "No per-language list or natural-language statement on the Hugging Face model card (only programming-language and SWE-Bench Multilingual mentions); no official Moonshot language list found.",
+      "sources": [
+        "moonshot-kimi-k2-6.md"
+      ],
+      "listPublished": false
+    },
+    {
+      "part": "brain",
+      "id": "sarvam-105b",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "Sarvam-105B page says only '10 most-spoken Indian languages + English' and does not name them; the models overview's shared 11-language code table (Bulbul v3, Mayura, Sarvam-105B) gives hi-IN, bn-IN, ta-IN, te-IN, gu-IN, en-IN, kn-IN, ml-IN, mr-IN, pa-IN, od-IN (Odia, recorded as or-IN). Mapping rests on the overview table as transcribed by the fetch tool.",
+      "sources": [
+        "sarvam-105b.md",
+        "sarvam-models.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "voice",
+      "id": "gemini-lite",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "Vertex Gemini-TTS list (Cloud Text-to-Speech page): GA = en-IN, hi-IN, mr-IN, ta-IN, te-IN; Preview = kn-IN, ml-IN, gu-IN, pa-IN, or-IN; Bengali only as bn-BD (GA), recorded as bn-IN 'listed only as bn-BD'. That page has no per-model column. The Gemini API speech-generation page lists all 11 languages (Bangla, Odia, no region) as supported for both 3.8 Flash TTS and 3.8 Flash-Lite TTS. Counts differ between pages (Gemini API: 130 / 101 languages; Cloud page: about 87 rows by fetch-tool count).",
+      "sources": [
+        "google-cloud-gemini-tts.md",
+        "google-gemini-api-speech-generation.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "voice",
+      "id": "gemini",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "Vertex Gemini-TTS list (Cloud Text-to-Speech page): GA = en-IN, hi-IN, mr-IN, ta-IN, te-IN; Preview = kn-IN, ml-IN, gu-IN, pa-IN, or-IN; Bengali only as bn-BD (GA), recorded as bn-IN 'listed only as bn-BD'. That page has no per-model column. The Gemini API speech-generation page lists all 11 languages (Bangla, Odia, no region) as supported for both 3.8 Flash TTS and 3.8 Flash-Lite TTS. Counts differ between pages (Gemini API: 130 / 101 languages; Cloud page: about 87 rows by fetch-tool count).",
+      "sources": [
+        "google-cloud-gemini-tts.md",
+        "google-gemini-api-speech-generation.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "voice",
+      "id": "azure",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "Standard neural voices exist for all 11 India locales (hi-IN, en-IN, ta-IN, te-IN, kn-IN, ml-IN, mr-IN, gu-IN, bn-IN, pa-IN, or-IN). Several (bn, kn, ml, or, pa) carry footnote 3: no phonemes, custom lexicon or visemes. bn-BD also listed.",
+      "sources": [
+        "azure-speech-language-support-tts.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "voice",
+      "id": "azure-hd",
+      "supported": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "notes": "HD tier on the TTS page for India: en-IN has 6 DragonHDLatestNeural voices (Diya, Meera, Aarti, Arjun, Neerja, Lavanya); hi-IN has Neural HD / Neural HD Flash rows but they are MAI-Voice-2 voices (Arjun, Dhruv, Kavya, Priya), public preview. No HD rows for ta, te, kn, ml, mr, gu, bn, pa, or. CONFLICT: product/shared/components.ts lists hi-in-diya:DragonHDOmniIndicNeural and hi-in-hazelmori:DragonHDOmniIndicNeural for azure-hd, but no 'OmniIndic' voice appears on the page, so hi-IN DragonHD support is not confirmed by public docs (hi-IN is recorded because the page's 'Neural HD' tier lists it, via MAI-Voice-2). A web search found no source mentioning DragonHDOmniIndicNeural.",
+      "sources": [
+        "azure-speech-language-support-tts.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "voice",
+      "id": "azure-mai",
+      "supported": [
+        "hi-IN",
+        "en-IN"
+      ],
+      "notes": "Current page covers MAI-Voice-2.1 and 2.1-Flash (public preview): 'supports synthesis across 23 languages' but no standalone language list; the managed voices table has India rows for hi-IN (Arjun, Dhruv, Grant, Harper, Kavya, Priya) and en-IN (Dhruv, Priya) only. The older MAI-Voice-2 rows on the TTS page also show hi-IN only (no en-IN). Page says more locales are added over time. Language counts for original MAI-Voice-2 are inconsistent across Microsoft pages per search snippets (10+, 15, 18 locales); the model card PDF could not be decoded.",
+      "sources": [
+        "azure-mai-voices.md",
+        "azure-speech-language-support-tts.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "voice",
+      "id": "sarvam",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "gu-IN",
+        "bn-IN",
+        "pa-IN",
+        "or-IN"
+      ],
+      "notes": "Bulbul v3 (API default) supports all 11 (Odia written od-IN, recorded as or-IN). CAUTION: Bulbul v4 Flash (latest) covers only Hindi, English, English-Hindi, Bengali, Gujarati, Kannada, Marathi, Punjabi, Tamil, Telugu and says 'Malayalam and Odia are not yet offered on v4 Flash'; the voice names in components.ts (*_enhi_*) look like v4-style voices, so ml-IN and or-IN may be v3-only for VP.",
+      "sources": [
+        "sarvam-bulbul.md",
+        "sarvam-models.md"
+      ],
+      "listPublished": true
+    },
+    {
+      "part": "s2s",
+      "id": "gemini-3.8-live",
+      "supported": [
+        "hi-IN",
+        "en-IN",
+        "ta-IN",
+        "te-IN",
+        "mr-IN",
+        "bn-IN"
+      ],
+      "notes": "CONFLICT between Google pages. Vertex AI (route used by VP): overview says 24 supported languages and the configure-language table lists hi-IN, en-IN ('en-IN & hi-IN bundle'), mr-IN, ta-IN, te-IN and Bengali only as bn-BD (recorded as bn-IN, 'listed only as bn-BD'); no kn, ml, gu, pa or or. Gemini Developer API capabilities page: 99 languages incl. hi, en, ta, te, kn, ml, mr, gu, bn, pa, or (bare codes); its overview page says 70; Google Cloud blog says Gemini 3.8 Live 'understands and speaks 97 languages'. The Vertex table is not labelled per model in the fetch output, so its applicability to gemini-3.8-live is assumed, and the broader 97/99 claims would add kn, ml, gu, pa, or if they apply to Vertex.",
+      "sources": [
+        "google-vertex-live-configure-language-voice.md",
+        "google-vertex-live-overview.md",
+        "google-gemini-api-live-capabilities.md",
+        "google-gemini-api-live-overview.md",
+        "google-cloud-blog-gemini-3-8-live.md"
+      ],
+      "listPublished": true
+    }
+  ]
+}

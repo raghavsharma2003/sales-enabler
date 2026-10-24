@@ -43,18 +43,26 @@ const GOOGLE_US = 'United States (Google Cloud, Iowa)';
 const OPENROUTER = 'Varies: OpenRouter passes it to the model maker';
 const SARVAM = 'India (Sarvam)';
 const GEMINI_VOICES = ['Despina', 'Sulafat', 'Achernar', 'Aoede', 'Kore', 'Leda', 'Autonoe', 'Callirrhoe', 'Vindemiatrix', 'Zephyr', 'Puck', 'Charon'] as const;
-// Language lists (2026-10-24). Measured = our voice lab calls and text benches, which ran Hindi, Hinglish and English
-// only (voicelab round 1-2, 17-23 Oct 2026). Stated lists are the makers' published language support as we understood
-// it on 2026-10-24, restricted to the codes VP offers; they are not checked on our calls, and the picker says so.
+// Language lists. Measured = our voice lab calls and text benches, which ran Hindi, Hinglish and English only (voicelab
+// rounds 1-2, 17-23 Oct 2026). Stated = the makers' public documentation, checked 24 Oct 2026: the pages, verbatim
+// excerpts and the reasons for every deviation are in research/2026-10-24/language-lists/ (matrix.json), and
+// tests/languages-docs.test.ts holds this file to it. 'hinglish' is VP's own code, offered where Hindi and English are.
 const ALL: readonly Language[] = ['hi-IN', 'en-IN', 'hinglish', 'ta-IN', 'te-IN', 'kn-IN', 'ml-IN', 'mr-IN', 'gu-IN', 'bn-IN', 'pa-IN', 'or-IN'];
 const HI_EN: readonly Language[] = ['hi-IN', 'en-IN', 'hinglish'];
-const GEMINI_SPEECH: readonly Language[] = ['hi-IN', 'en-IN', 'hinglish', 'bn-IN', 'mr-IN', 'ta-IN', 'te-IN'];
-const GEMINI_LIVE: readonly Language[] = ['hi-IN', 'en-IN', 'hinglish', 'bn-IN', 'gu-IN', 'kn-IN', 'ml-IN', 'mr-IN', 'ta-IN', 'te-IN'];
-const STATED_ONLY = 'As the maker states; not yet checked on our calls in any language.';
+const EN_ONLY: readonly Language[] = ['en-IN'];
+// Gemini voices and Live on Vertex: generally available in en-IN, hi-IN, mr-IN, ta-IN and te-IN; Kannada, Malayalam,
+// Gujarati, Punjabi and Odia are preview only and Bengali is listed only for Bangladesh, so none of those is claimed.
+const GEMINI_VERTEX_SPEECH: readonly Language[] = ['hi-IN', 'en-IN', 'hinglish', 'mr-IN', 'ta-IN', 'te-IN'];
+// Sarvam Bulbul v4 (the voices VP offers): every VP language except Malayalam and Odia, which v4 does not offer yet.
+const SARVAM_V4: readonly Language[] = ['hi-IN', 'en-IN', 'hinglish', 'ta-IN', 'te-IN', 'kn-IN', 'mr-IN', 'gu-IN', 'bn-IN', 'pa-IN'];
+const STATED_ONLY = "As the maker's public documentation lists them (checked 24 Oct 2026); not yet checked on our calls in any language.";
 const lang = (stated: readonly Language[], measured: readonly Language[] = [], source = STATED_ONLY): LanguageSupport =>
   ({ measured, stated: stated.filter(l => !measured.includes(l)), source });
-const LAB_HINGLISH = (what: string) => `Hinglish and Hindi ran in our voice lab in India (${what}); the other languages are as the maker states, not checked on our calls.`;
-const BENCH_HINGLISH = 'Hinglish ran in our written conversation tests (20 Oct 2026); the other languages are as the maker states, not checked on our calls.';
+const LAB_HINGLISH = (what: string) => `Hinglish and Hindi ran in our voice lab in India (${what}); the other languages are as the maker's documentation lists them (checked 24 Oct 2026), not checked on our calls.`;
+const BENCH_HINGLISH = "Hinglish ran in our written conversation tests (20 Oct 2026); the other languages are as the maker's documentation lists them (checked 24 Oct 2026), not checked on our calls.";
+const OPENAI = (measured: boolean) => (measured ? 'Hinglish ran in our written conversation tests (20 Oct 2026). ' : '') +
+  'OpenAI publishes no list of languages: English, and Hindi from its multilingual evaluation, are claimed; other Indian languages are not.';
+const NO_LIST = 'The maker publishes no list of languages (checked 24 Oct 2026), so only English is claimed.';
 const ms = (n: number, source = LAB_BRAIN): Figure => ({ value: `${(n / 1000).toFixed(2)} s`, grade: 'measured', source });
 const notMeasured = (why = 'Not measured in our lab yet.'): Figure => ({ value: 'not measured', grade: 'not_measured', source: why });
 
@@ -82,30 +90,30 @@ export const COMPONENTS: readonly Component[] = [
     languages: lang(ALL, ['hinglish'], BENCH_HINGLISH) },
   { id: 'gpt-5.4-mini', part: 'brain', label: 'GPT-5.4 mini', maker: 'OpenAI', route: 'azure-foundry', processedIn: IN_AZURE_FOUNDRY,
     latency: ms(960), price: '$0.75 in, $4.50 out per million tokens (OpenAI list price)', requires: ['AZURE_OPENAI'], status: 'available',
-    languages: lang(ALL, ['hinglish'], BENCH_HINGLISH) },
+    languages: lang(HI_EN, ['hinglish'], OPENAI(true)) },
   { id: 'gpt-4.1-mini-in', part: 'brain', label: 'GPT-4.1 mini', maker: 'OpenAI', route: 'azure-foundry', processedIn: IN_AZURE_FOUNDRY,
     latency: ms(641), price: '$0.44 in, $1.76 out per million tokens', requires: ['AZURE_OPENAI'], status: 'available',
-    languages: lang(ALL) },
+    languages: lang(HI_EN, [], OPENAI(false)) },
   { id: 'gpt-4.1', part: 'brain', label: 'GPT-4.1', maker: 'OpenAI', route: 'azure-foundry', processedIn: IN_AZURE_FOUNDRY,
     latency: ms(1765), price: '$2.00 in, $8.00 out per million tokens', requires: ['AZURE_OPENAI'], status: 'available',
-    languages: lang(ALL) },
+    languages: lang(HI_EN, [], OPENAI(false)) },
   { id: 'gpt-oss-120b', part: 'brain', label: 'gpt-oss-120b (open weights)', maker: 'OpenAI', route: 'azure-foundry', processedIn: IN_AZURE_FOUNDRY,
     latency: ms(1466), price: '$0.15 in, $0.60 out per million tokens', requires: ['AZURE_OPENAI'], status: 'available',
-    languages: lang(HI_EN) },
+    languages: lang(EN_ONLY, [], NO_LIST) },
   { id: 'llama-4-maverick', part: 'brain', label: 'Llama 4 Maverick (open weights)', maker: 'Meta', route: 'azure-foundry', processedIn: IN_AZURE_FOUNDRY,
     latency: ms(1060), price: '$0.25 in, $1.00 out per million tokens', requires: ['AZURE_OPENAI'], status: 'available',
     languages: lang(HI_EN) },
   { id: 'kimi-k2.6', part: 'brain', label: 'Kimi K2.6 (open weights)', maker: 'Moonshot AI', route: 'azure-foundry', processedIn: SEA_AZURE,
     latency: ms(1629), price: '$0.95 in, $4.00 out per million tokens', requires: ['AZURE_OPENAI_SEA'], status: 'available',
-    languages: lang(['en-IN']) },
+    languages: lang(EN_ONLY, [], NO_LIST) },
   { id: 'gpt-6-luna@or', part: 'brain', label: 'GPT-6 Luna', maker: 'OpenAI', route: 'openrouter', processedIn: OPENROUTER,
     latency: ms(1438), price: '$0.10 in, $0.50 out per million tokens', requires: ['OPENROUTER'], status: 'available',
     note: 'Not on our Azure capacity yet, so it runs through OpenRouter.',
-    languages: lang(ALL, ['hinglish'], BENCH_HINGLISH) },
+    languages: lang(HI_EN, ['hinglish'], OPENAI(true)) },
   { id: 'gpt-6-sol@or', part: 'brain', label: 'GPT-6 Sol', maker: 'OpenAI', route: 'openrouter', processedIn: OPENROUTER,
     latency: ms(1739), price: '$2.00 in, $10.00 out per million tokens', requires: ['OPENROUTER'], status: 'available',
     note: 'Not on our Azure capacity yet, so it runs through OpenRouter.',
-    languages: lang(ALL) },
+    languages: lang(HI_EN, [], OPENAI(false)) },
   { id: 'sarvam-105b', part: 'brain', label: 'Sarvam-105B', maker: 'Sarvam', route: 'sarvam', processedIn: SARVAM,
     latency: notMeasured(), price: '₹15 in, ₹60 out per million tokens', requires: ['SARVAM'], status: 'beta',
     languages: lang(ALL) },
@@ -114,21 +122,21 @@ export const COMPONENTS: readonly Component[] = [
     latency: { value: '0.84 to 1.16 s', grade: 'measured', source: 'Measured on test calls in our voice lab in India, 20 Oct 2026: time to the first audio of a reply.' },
     price: '$6 per million audio tokens (about $0.009 a minute of speech)', requires: ['GEMINI'], status: 'available',
     voices: GEMINI_VOICES, defaultVoice: 'Despina',
-    languages: lang(GEMINI_SPEECH, ['hinglish', 'hi-IN'], LAB_HINGLISH('test calls, 20-23 Oct 2026')) },
+    languages: lang(GEMINI_VERTEX_SPEECH, ['hinglish', 'hi-IN'], LAB_HINGLISH('test calls, 20-23 Oct 2026')) },
   { id: 'gemini', part: 'voice', label: 'Gemini 3.8 Flash voice', maker: 'Google', route: 'vertex', processedIn: GOOGLE_GLOBAL,
     latency: notMeasured(), price: '$9 per million audio tokens (about $0.014 a minute of speech); doubles on 1 Jan 2027',
     requires: ['GEMINI'], status: 'available', voices: GEMINI_VOICES, defaultVoice: 'Despina',
-    languages: lang(GEMINI_SPEECH) },
+    languages: lang(GEMINI_VERTEX_SPEECH) },
   { id: 'azure', part: 'voice', label: 'Azure neural voice', maker: 'Microsoft', route: 'azure-speech', processedIn: IN_AZURE_SPEECH,
     latency: { value: '0.05 s', grade: 'measured', source: 'Measured in our voice lab in India, 19 Oct 2026: time to the first audio once the reply text is ready.' },
     price: '$15 per million characters', requires: ['AZURE_SPEECH'], status: 'available',
     voices: ['hi-IN-SwaraNeural', 'hi-IN-AnanyaNeural', 'hi-IN-KavyaNeural', 'hi-IN-AartiNeural', 'en-IN-NeerjaNeural', 'hi-IN-MadhurNeural'], defaultVoice: 'hi-IN-SwaraNeural',
-    languages: lang(HI_EN) },
+    languages: lang(HI_EN, [], 'Azure has voices in every VP language, but VP offers Hindi and English voices only for this part (checked 24 Oct 2026).') },
   { id: 'azure-hd', part: 'voice', label: 'Azure HD voice', maker: 'Microsoft', route: 'azure-speech', processedIn: IN_AZURE_SPEECH,
     latency: notMeasured(), price: '$22 per million characters', requires: ['AZURE_SPEECH'], status: 'available',
     voices: ['en-IN-Aarti:DragonHDLatestNeural', 'en-IN-Meera:DragonHDLatestNeural', 'en-IN-Diya:DragonHDLatestNeural', 'en-IN-Neerja:DragonHDLatestNeural',
       'hi-in-diya:DragonHDOmniIndicNeural', 'hi-in-hazelmori:DragonHDOmniIndicNeural'], defaultVoice: 'en-IN-Aarti:DragonHDLatestNeural',
-    languages: lang(HI_EN) },
+    languages: lang(EN_ONLY, [], 'Only Indian English has HD voices in the documentation (checked 24 Oct 2026); Hindi HD is not claimed.') },
   { id: 'azure-mai', part: 'voice', label: 'Azure MAI voice, with emotion styles', maker: 'Microsoft', route: 'azure-speech', processedIn: IN_AZURE_SPEECH,
     latency: { value: '0.43 s', grade: 'measured', source: 'Measured in our voice lab in India, 20 Oct 2026: time to the first audio once the reply text is ready.' },
     price: 'Preview: not yet checked against a real bill', requires: ['AZURE_SPEECH'], status: 'available',
@@ -139,13 +147,13 @@ export const COMPONENTS: readonly Component[] = [
     latency: notMeasured(), price: '₹20 per 10,000 characters', requires: ['SARVAM'], status: 'beta',
     voices: ['ishita_enhi_customer_expressive', 'simran_enhi_customer', 'shalini_enhi_customer', 'kavya_hi_conversational', 'aarti_hi_customer', 'sunny_enhi_customer'],
     defaultVoice: 'ishita_enhi_customer_expressive',
-    languages: lang(ALL) },
+    languages: lang(SARVAM_V4) },
   // ---------------------------------------------------------------- speech-to-speech
   { id: 'gemini-3.8-live', part: 's2s', label: 'Gemini 3.8 Live (hears and speaks in one model)', maker: 'Google', route: 'vertex', processedIn: GOOGLE_US,
     latency: { value: '1.09 to 1.46 s', grade: 'measured', source: 'Measured on one test call from our voice lab in India, 22 Oct 2026: caller finishes to her first audio.' },
     price: 'About ₹1.90 a minute in our test call', requires: ['GEMINI'], status: 'beta',
     note: 'In earlier tests she talked over callers on about 40% of turns.', voices: GEMINI_VOICES, defaultVoice: 'Despina',
-    languages: lang(GEMINI_LIVE, ['hinglish'], LAB_HINGLISH('one test call, 22 Oct 2026')) },
+    languages: lang(GEMINI_VERTEX_SPEECH, ['hinglish'], LAB_HINGLISH('one test call, 22 Oct 2026')) },
 ];
 
 export function getComponent(part: Part, id: string): Component | undefined {

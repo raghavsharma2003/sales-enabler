@@ -143,7 +143,9 @@ test('routing at claim sends each contact to a version that speaks their languag
   const w = await world();
   const { agentId, v } = await publishedEmi(w);
   const ta = await w.ok('version.language_variant', { agentId, language: 'ta-IN' });
-  const bn = await w.ok('version.language_variant', { agentId, language: 'bn-IN' });
+  // Bengali is served end to end only by the beta Sarvam stack (Vertex lists Bengali for Bangladesh only), and a beta
+  // stack cannot call real people, so Bengali contacts fall back with a reason.
+  const bn = await w.ok('version.language_variant', { agentId, language: 'bn-IN', stackId: 'sarvam-india' });
   const audience = (await one<{ id: string }>(pool, "INSERT INTO audience (workspace_id, name) VALUES ($1, 'Deccan list') RETURNING id", [w.ws]))!.id;
   const contacts: Record<string, string> = {};
   for (const [i, lang] of ['kn-IN', 'Bengali', 'ta', 'te-IN', 'hi-IN', null].entries()) {
@@ -156,7 +158,9 @@ test('routing at claim sends each contact to a version that speaks their languag
 
   const at = (lang: string) => routeAttempt(pool, w.ws, { campaign_id: d.id, contact_id: contacts[lang], agent_version_id: v.versionId, kind: 'campaign' });
   assert.deepEqual(await at('ta'), { preferred: 'ta-IN', servedBy: 'variant', versionId: ta.versionId });
-  assert.deepEqual(await at('Bengali'), { preferred: 'bn-IN', servedBy: 'variant', versionId: bn.versionId });
+  const bnRoute = await at('Bengali');
+  assert.deepEqual([bnRoute!.servedBy, bnRoute!.versionId], ['fallback', v.versionId], 'a beta-stack variant cannot dial, so it serves no one');
+  assert.notEqual(bnRoute!.versionId, bn.versionId);
   assert.deepEqual(await at('hi-IN'), { preferred: 'hi-IN', servedBy: 'main', versionId: v.versionId });
   assert.deepEqual(await at('null'), { preferred: null, servedBy: 'unknown_language', versionId: v.versionId });
   const kn = await at('kn-IN');
@@ -166,7 +170,7 @@ test('routing at claim sends each contact to a version that speaks their languag
 
   const g = await w.ok('campaign.get', { id: d.id });
   const warn = g.warnings.find((x: { code: string }) => x.code === 'language_mismatch');
-  assert.equal(warn.message, '2 of 6 people prefer a language this agent does not speak (Kannada, Telugu).', 'Tamil and Bengali are served by their versions');
+  assert.equal(warn.message, '3 of 6 people prefer a language this agent does not speak (Bengali, Kannada, Telugu).', 'Tamil is served by its version');
   assert.match(warn.why, /They will be called in Hinglish\. This agent and its language versions speak /);
   assert.equal(warn.fix.tool, 'version.language_variant');
   assert.ok(!g.blockers.some((b: { code: string }) => b.code === 'language_mismatch'));
