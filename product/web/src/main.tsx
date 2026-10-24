@@ -43,7 +43,7 @@ function Gate() {
   const path = usePath();
   const go = useNav();
   const authed = !!me;
-  const onAuth = path === '/login' || path === '/signup';
+  const onAuth = path === '/login' || path === '/signin' || path === '/signup';
   useEffect(() => {
     if (!booted) return;
     if (!authed && !onAuth) go('/login', true);

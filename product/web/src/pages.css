@@ -140,3 +140,31 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .toollist + .toollist { border-top: 1px solid var(--line); }
 /* A text box that grows with its text, so a goal or a fact is read whole, never cut off at the edge of a one-line field. */
 .field-grow textarea { field-sizing: content; min-height: 44px; resize: vertical; }
+
+/* ---------- security ---------- */
+.callout { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; padding: 12px 16px; background: var(--sunk); border: 1px solid var(--line); border-radius: 10px; }
+.callout-l { font-size: 0.8125rem; font-weight: 700; color: var(--ink-2); margin-bottom: 4px; }
+.uri { display: block; overflow-wrap: anywhere; word-break: break-all; }
+.notice { display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--sunk); color: var(--ink); }
+.notice > svg { flex: none; margin-top: 2px; }
+.notice > div, .notice > p { min-width: 0; }
+.notice-ok { background: var(--leaf-bg); border-color: var(--leaf); } .notice-ok > svg { color: var(--leaf); }
+.notice-bad { background: var(--brick-bg); border-color: var(--brick); } .notice-bad > svg { color: var(--brick); }
+.notice-warn { background: var(--marigold-bg); border-color: var(--marigold); } .notice-warn > svg { color: var(--marigold-ink); }
+.notice .plainlist { margin-top: 6px; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; }
+.checks li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
+.checks li:first-child { border-top: 0; }
+.checks p { overflow-wrap: anywhere; }
+.issuers { margin: 0; padding: 4px 12px; background: var(--sunk); border-radius: 8px; }
+.issuers > div { grid-template-columns: minmax(120px, 28%) 1fr; }
+.issuers code { overflow-wrap: anywhere; }
+.hash { white-space: nowrap; }
+a.btn.btn-primary { color: var(--on-terra); }
+@media (max-width: 819px) { .callout { flex-direction: column; } .checks li { grid-template-columns: 1fr; gap: 4px; } .issuers > div { grid-template-columns: 1fr; gap: 2px; } }
+
+/* sign-in: the single sign-on option */
+.auth-or { display: flex; align-items: center; gap: 12px; color: var(--ink-2); font-size: 0.875rem; }
+.auth-or::before, .auth-or::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.auth-sso { display: grid; gap: 8px; }
+.auth-sso .btn-wrap { display: flex; } .auth-sso .btn { width: 100%; }

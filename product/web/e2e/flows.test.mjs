@@ -6,7 +6,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import pg from 'pg';
-import { audit } from './a11y.mjs';
+import { audit, axe } from './a11y.mjs';
 
 let pw = null;
 for (const base of [import.meta.url, 'file:///opt/node-tools/node_modules/']) { try { pw = createRequire(base)('playwright'); break; } catch { /* next */ } }
@@ -331,7 +331,7 @@ test('Copy: no tool id, raw argument name, internal code or milli-unit reaches a
   };
   const routes = ['/', '/agents', `/agents/${ids.agent}`, `/agents/${ids.agent}?tab=persona`, `/agents/${ids.agent}?tab=job`, `/agents/${ids.agent}?tab=rules`, `/agents/${ids.agent}?tab=tools`, `/agents/${ids.agent}?tab=voice`, `/agents/${ids.agent}?tab=versions`,
     '/contacts', '/contacts/import', `/contacts/${ids.contact}`, '/audiences', '/campaigns', '/campaigns/new', `/campaigns/${ids.camp}`, `/campaigns/${ids.camp2}`, '/calls', `/calls/${ids.call}`, '/insights', '/numbers',
-    ...['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'operator', 'integrations', 'activity'].map(t => `/settings/${t}`)];
+    ...['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'security', 'operator', 'integrations', 'activity'].map(t => `/settings/${t}`)];
   const bad = [];
   // Owner rule (2026-10-22): the product UI is never written in Hindi or Hinglish. What agents say on calls is the product's voice and
   // stays, so anything inside [lang="hi"] (transcripts, call content) is exempt; everything else must be English.
@@ -1163,6 +1163,105 @@ test('Voice stack: "Build your own" is closed until wanted, and the recommended 
   const custom = (await pool.query("SELECT draft->'voice'->>'stackId' AS s FROM agent WHERE id = $1", [await riyaId()])).rows[0]?.s === 'custom';
   assert.equal(await page.locator('details.buildown').evaluate(d => d.open), custom, 'open only when the agent already runs its own parts');
   if (!custom) { await page.getByText('Show the parts').click(); await page.getByRole('button', { name: 'Use these parts' }).waitFor(); }
+});
+
+// ---- Security: single sign-on, provisioning tokens, activity-log export, and the sign-in page ----
+test('Security: set up single sign-on, see the failed connection test, reveal a provisioning token once, export and download the log, and verify the file', async () => {
+  await page.goto(BASE + '/settings/security');
+  await page.getByRole('heading', { name: 'Single sign-on', level: 2 }).waitFor();
+  assert.equal((await tool('sso.config.get')).result.configured, false, 'nothing is configured yet');
+  // The redirect URI is on screen with a copy button, before anything is saved.
+  assert.match(await page.locator('.uri').innerText(), /\/v1\/sso\/callback\//);
+  // Saving is disabled with a reason until the form is complete.
+  await page.getByLabel('Issuer address').fill('https://login.example-idp.test');
+  assert.match(await page.locator('.btn-reason').first().innerText(), /client ID/i);
+  const SECRET = 'e2e-client-secret-not-real-7731';
+  await page.getByLabel('Client ID').fill('vyakti-e2e-client'); await page.getByLabel('Client secret').fill(SECRET); await page.getByLabel('Allowed email domains').fill('saanjh.example');
+  await page.getByRole('button', { name: 'Ask to save' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  await hold(sheet().locator('.hold'));
+  await page.getByText('No unsaved changes.').waitFor({ timeout: 8000 });   // the form is reloaded from the server and is clean again
+  const cfg = (await tool('sso.config.get')).result;
+  assert.equal(cfg.configured, true); assert.equal(cfg.issuer, 'https://login.example-idp.test'); assert.equal(cfg.hasClientSecret, true); assert.deepEqual(cfg.allowedDomains, ['saanjh.example']);
+  assert.ok(!JSON.stringify(cfg).includes(SECRET), 'the client secret never comes back');
+  assert.equal(await page.getByLabel('Client secret').inputValue(), '', 'the secret field is cleared after saving');
+  // Test connection against an issuer that does not exist: each check is shown with a pass or fail mark and its detail.
+  await page.getByRole('button', { name: 'Test connection' }).click();
+  await page.getByText('The connection test found a problem.').waitFor({ timeout: 15000 });
+  assert.ok(await page.locator('.checks li', { hasText: 'Failed' }).count() >= 1, 'a failed check is marked Failed');
+  assert.ok(await page.locator('.checks li', { hasText: 'Passed' }).count() >= 1, 'a passed check is marked Passed');
+  // Requiring single sign-on asks for a break-glass owner and warns plainly.
+  await page.getByRole('button', { name: /^Require single sign-on/ }).click();
+  await sheet().getByText(/loses their password and must use single sign-on/).waitFor();
+  assert.match(await sheet().innerText(), /break-glass/i);
+  await page.keyboard.press('Escape');
+  // Provisioning token: shown once.
+  await page.getByLabel('Name', { exact: true }).fill('e2e token');
+  assert.match(await page.locator('.btn-reason', { hasText: /at least one/ }).innerText(), /Choose at least one thing the token may do/, 'creating is disabled, with a reason, until a scope is chosen');
+  await page.getByLabel('List people').check();
+  await page.getByRole('button', { name: 'Ask to create' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  await hold(sheet().locator('.hold'));
+  await page.getByRole('heading', { name: 'Copy your provisioning token now' }).waitFor({ timeout: 8000 });
+  const tok = (await page.locator('.secret').first().innerText()).trim();
+  assert.match(tok, /^vps_/, 'the token is shown once');
+  await page.getByRole('button', { name: 'I have saved it' }).click();
+  const list = (await tool('scim.token.list')).result;
+  assert.ok(list.tokens.some(t => t.name === 'e2e token'), 'the server holds the token');
+  assert.ok(!JSON.stringify(list).includes(tok), 'the list never contains the secret');
+  const made = (await actions('executed')).find(a => a.tool === 'scim.token.create');
+  assert.equal((await tool('secret.reveal', { revealId: made.result.revealId })).status, 'not_executed', 'a second reveal is refused');
+  // Activity-log export: ask, approve, download, verify.
+  await page.getByRole('button', { name: 'Ask to export' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  await hold(sheet().locator('.hold'));
+  await page.getByText('Your export is ready.').waitFor({ timeout: 10000 });
+  const exp = (await tool('audit.export.list')).result.exports[0];
+  assert.ok(exp && exp.downloadable && exp.rows > 0, 'the server holds a downloadable export');
+  const link = page.locator('a[href^="/v1/audit/exports/"]').first();
+  const dl = await ctx.request.get(BASE + await link.getAttribute('href'));
+  assert.equal(dl.status(), 200);
+  const body = await dl.text();
+  assert.match(body.split('\r\n')[0], /^at,id,actor_type/, 'a CSV with its header row');
+  const { createHash } = await import('node:crypto');
+  assert.equal(createHash('sha256').update(body).digest('hex'), exp.sha256, 'the file is what the checksum says');
+  assert.ok((await pool.query("SELECT 1 FROM audit_event WHERE workspace_id = $1 AND action = 'audit.export.download'", [ws])).rowCount > 0, 'the download is in the ledger');
+  // Verify a file from the page: the browser hashes the downloaded bytes and the server checks them.
+  const file = path.join(os.tmpdir(), 'vp-e2e-export.csv'); fs.writeFileSync(file, body);
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.locator('#verify-file').setInputFiles(file);
+  await page.getByRole('button', { name: 'Check this file' }).click();
+  await page.getByText('This file is exactly what Vyakti exported.').waitFor({ timeout: 8000 });
+  const edited = path.join(os.tmpdir(), 'vp-e2e-export-edited.csv'); fs.writeFileSync(edited, body + 'tampered\n');   // another name: a browser does not report a "change" for the same path
+  await page.locator('#verify-file').setInputFiles(edited);
+  await page.getByRole('button', { name: 'Check this file' }).click();
+  await page.getByText(/This file is not the one Vyakti exported/).waitFor({ timeout: 8000 });
+});
+
+test('Sign-in page: /signin shows the single sign-on option and plain messages for sso_error codes and for a workspace that requires it', async () => {
+  const anon = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' }); const p = await anon.newPage();
+  const seen = [];
+  p.on('console', m => { if (m.type() === 'error' && !/status of (4|5)\d\d/.test(m.text())) seen.push(m.text()); });
+  await p.goto(BASE + '/signin?sso_error=state_mismatch', { waitUntil: 'networkidle' });
+  await p.getByRole('heading', { name: 'Welcome back' }).waitFor();
+  await p.getByText('The sign-in took too long or was started in another browser. Try again.').waitFor();
+  assert.ok(!/state_mismatch/.test(await p.locator('body').innerText()), 'the code itself is never shown');
+  await p.goto(BASE + '/signin?sso_error=wrong_aud'); await p.getByText("Your identity provider's response could not be verified. Ask your administrator to check the single sign-on settings.").waitFor();
+  await p.goto(BASE + '/signin?sso_error=domain_mismatch'); await p.getByText(/email domain is not allowed/).waitFor();
+  assert.deepEqual((await axe(p)).filter(v => v.impact === 'serious' || v.impact === 'critical'), [], 'axe on the sign-in page with an error');
+  // A domain with no single sign-on says so; an empty email asks for one.
+  await p.goto(BASE + '/signin');
+  await p.getByRole('button', { name: 'Sign in with SSO' }).click();
+  await p.getByText('Enter your work email above first.').waitFor();
+  await p.getByLabel('Work email').fill('someone@nowhere.example');
+  await p.getByRole('button', { name: 'Sign in with SSO' }).click();
+  await p.getByText('Single sign-on is not set up for nowhere.example.').waitFor();
+  // A domain with single sign-on (configured above, issuer unreachable) reaches the server's own refusal, in words.
+  await p.getByLabel('Work email').fill('asha@saanjh.example');
+  await p.getByRole('button', { name: 'Sign in with SSO' }).click();
+  await p.getByText(/identity provider/i).first().waitFor({ timeout: 15000 });
+  assert.ok(!/idp_unreachable|not_configured/.test(await p.locator('body').innerText()), 'no code on screen');
+  await anon.close();
 });
 
 // ---- Accessibility (WCAG 2.1 AA): axe on every main screen, and the main flows done with the keyboard alone ----

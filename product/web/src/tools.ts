@@ -8,9 +8,11 @@ export const TOOLS = {
   calls: ['call.search', 'call.get', 'call.explain'],
   insights: ['issue.list', 'monitor.list', 'monitor.create', 'proposal.list', 'proposal.probe', 'proposal.readiness', 'proposal.accept', 'learning.propose', 'experiment.list', 'experiment.start', 'lesson.list'],
   numbers: ['number.list', 'number.search', 'number.rent', 'member.phone.verify_start', 'member.phone.verify_confirm', 'test.ring_member_phone'],
-  settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'secret.reveal', 'brand.get', 'brand.update', 'knowledge.list', 'knowledge.ingest', 'knowledge.span.approve',
+  settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'apikey.rotate', 'secret.reveal', 'brand.get', 'brand.update', 'knowledge.list', 'knowledge.ingest', 'knowledge.span.approve',
     'invoice.get', 'wallet.topup', 'safety.cases', 'policy.window.set', 'memory.policy.get', 'memory.policy.set', 'dpdp.request.execute', 'operator.settings.get', 'operator.brain.set', 'operator.autonomy.lower', 'operator.autonomy.raise',
     'integration.list', 'integration.kinds', 'activity.list'],
+  security: ['member.list', 'secret.reveal', 'sso.config.get', 'sso.secret.stage', 'sso.config.set', 'sso.test', 'sso.required.set', 'scim.token.list', 'scim.token.create', 'scim.token.rotate', 'scim.token.revoke',
+    'audit.export', 'audit.export.list', 'audit.export.verify'],
 } as const;
 export const ALL_TOOLS: string[] = [...new Set(Object.values(TOOLS).flat())].sort();
 

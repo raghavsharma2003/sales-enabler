@@ -1,7 +1,7 @@
 {
  "module": "web",
  "screens": [
-  "sign up / sign in",
+  "sign up / sign in (also at /signin, with Sign in with SSO and plain messages for every single sign-on error)",
   "Today",
   "Agents list",
   "Agent builder (basics, persona, job and facts, objections and hand-off, tools, voice stack, versions)",
@@ -16,7 +16,8 @@
   "Call page (two-lane waveform with pins, synced transcript in 3 views, quotes, outcome, explain, compliance trace, cost)",
   "Insights (funnel, issues, proposals, tests)",
   "Numbers",
-  "Settings (team, API keys, brand, knowledge, billing, compliance, privacy, operator, activity)",
+  "Settings > Security (single sign-on setup, test connection, require SSO with a break-glass owner, link my account; provisioning tokens, shown once; signed activity-log export, download and file check)",
+  "Settings (team, API keys with rotate, brand, knowledge, billing, compliance, privacy, security, operator, activity)",
   "Operator dock on every page (SSE client, plan/approval/receipt cards, hold-to-confirm)",
   "Approval sheet (A2)"
  ],
@@ -28,10 +29,14 @@
   "apikey.create",
   "apikey.list",
   "apikey.revoke",
+  "apikey.rotate",
   "attempt.list",
   "audience.create",
   "audience.get",
   "audience.list",
+  "audit.export",
+  "audit.export.list",
+  "audit.export.verify",
   "brand.get",
   "brand.update",
   "brief.edit",
@@ -91,11 +96,20 @@
   "proposal.probe",
   "proposal.readiness",
   "safety.cases",
+  "scim.token.create",
+  "scim.token.list",
+  "scim.token.revoke",
+  "scim.token.rotate",
   "secret.reveal",
   "simcaller.list",
   "source.commit",
   "source.map",
   "source.upload",
+  "sso.config.get",
+  "sso.config.set",
+  "sso.required.set",
+  "sso.secret.stage",
+  "sso.test",
   "stack.set",
   "template.list",
   "test.browser_call",
@@ -106,7 +120,7 @@
   "wallet.topup"
  ],
  "works": [
-  "Runs on the REAL tools: every name the UI calls is registered (ui-contract --strict: 78 of 78), checked by tests/web.test.ts",
+  "Runs on the REAL tools: every name the UI calls is registered (ui-contract --strict: 191 of 191), checked by tests/web.test.ts",
   "Seen against the real server (all modules, real Postgres) with data made through the real tools: sign up, template agents, stack.set, publish, a synthetic CSV through source.upload/map/commit, audiences, campaign drafts, knowledge, and four calls reported through the signed runtime hook (web/dev/seed.ts)",
   "Operator dock speaks the real SSE contract (threads, messages, delta/step/card/notice/done); plan, approval and receipt cards render; approvals hold 1.2 s (or two presses) then POST /v1/actions/:id/decide",
   "Agent builder saves with brief.edit (leaf-level set ops, server-validated, errors shown with their field), stack.set for the voice stack, version.publish bound to the draft hash; practice callers run test.simulate with six inline callers",
@@ -116,7 +130,8 @@
   "Today uses the real brief.today; Settings covers team, keys, brand, knowledge passages, wallet and usage, compliance rules, memory policy, operator, integrations, activity",
   "Colour tokens pass 5:1 in light and dark; screenshots of every screen at 390x844 and 1440x900 in web/shots/ with no horizontal scroll and no console errors in the real-server run",
   "Browser flows (web/e2e, Playwright against the real server and a fresh database; skip with a message when there is no Chromium or Postgres): API key create, approve, reveal once, second reveal refused; learning propose, simulate, accept card; DPDP erase; A3 pause and stop with no card, resume as an A2 card; an A2 card from the Operator chat. Each asserts the screen and the server. They found and fixed two real bugs: the secret came back as `token` not `secret`, and a confirmed approval sheet hid what it produced",
-  "Numbers page uses number.list and the spoken-code phone verification; practice callers come from simcaller.list; an inconclusive trap is shown as inconclusive, not as an agent failure; a refused browser call shows the server's reason word for word (7 and 8 of 8 e2e flows)"
+  "Numbers page uses number.list and the spoken-code phone verification; practice callers come from simcaller.list; an inconclusive trap is shown as inconclusive, not as an agent failure; a refused browser call shows the server's reason word for word (7 and 8 of 8 e2e flows)",
+  "Security page (settings/security): sso.config.get/secret.stage/config.set/test/required.set, scim.token.list/create/rotate/revoke, audit.export/list/verify; roles gate every control with a stated reason (owner all; compliance test connection, token list and revoke, export; others a read-only summary). Sign-in page calls the browser routes /v1/sso/discover and /v1/sso/start. Seen against the real server and covered by two e2e flows (set up SSO, failed test connection, token reveal-once, export, download, tamper check; sign-in messages) and the axe gate"
  ],
  "untested": [
   "Calls were seeded through the runtime hook because the sandbox has no telephony and the fake model gives no outcomes or analysis; no real call, number rental, KYC, payment or WhatsApp was exercised",
@@ -125,7 +140,9 @@
   "Dark theme checked by contrast numbers only; no real-device, screen-reader, touch, speech-input or Lighthouse run",
   "Browser audio: test.browser_call now prepares a draft session (tied to the draft hash) and the page says so, but no audio transport exists, so nothing is heard",
   "Practice callers use the server's library (simcaller.list) but ran against the scripted fake model, so most fail their checks; the UI path is real, the verdicts mean nothing",
-  "Phone verification (member.phone.verify_start and verify_confirm) and number rental are wired but not run: a sandbox has no telephony to ring. The e2e fixture left in SQL is only a campaign set to running (launch needs a rented line)"
+  "Phone verification (member.phone.verify_start and verify_confirm) and number rental are wired but not run: a sandbox has no telephony to ring. The e2e fixture left in SQL is only a campaign set to running (launch needs a rented line)",
+  "Single sign-on was never completed against a real identity provider: the sandbox has none, so the redirect, callback and linking were not exercised in a browser; the issuer in every screenshot and test is synthetic and its connection test fails by design",
+  "The break-glass sign-in and the signed-out effect of requiring SSO were not driven in the browser (needs a second owner with a password); the sign-in page message for a required workspace is shown with the server's 403 answer replayed in the screenshot"
  ],
  "needs_from_others": [
   "voice: sample clips per stack, a browser-call transport, per-call recording and waveform peaks; until then the picker says 'No sample recorded yet' and the call page draws turn timing",
@@ -135,9 +152,9 @@
   "operator: operator.brain.set stores a choice that the LLM door ignores (their note)"
  ],
  "bundle_kb": {
-  "first_load_gzip": 81.5,
-  "all_chunks_gzip": 145.9,
-  "all_raw": 454.0,
+  "first_load_gzip": 87.2,
+  "all_chunks_gzip": 190.1,
+  "all_raw": 604.2,
   "limits": {
    "first_load_gzip": 100,
    "all_chunks_gzip": 200

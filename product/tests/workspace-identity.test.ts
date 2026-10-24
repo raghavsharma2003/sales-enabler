@@ -505,7 +505,9 @@ test('audit export: A2 by an admin, privileged actions present, CSV cannot injec
   const v = await comp.tool('audit.export.verify', { exportId: done.result.exportId, sha256: done.result.sha256, signature: done.result.signature });
   assert.equal(v.result.valid, true);
   const forged = await comp.tool('audit.export.verify', { exportId: done.result.exportId, sha256: createHash('sha256').update(text + 'x').digest('hex'), signature: done.result.signature });
-  assert.equal(forged.result.valid, false, 'an edited file does not verify');
+  assert.deepEqual([forged.result.valid, forged.result.checksumMatches, forged.result.signatureOk], [false, false, true], 'an edited file does not verify, and says it is the file that changed');
+  const badSig = await comp.tool('audit.export.verify', { exportId: done.result.exportId, sha256: done.result.sha256, signature: '0'.repeat(64) });
+  assert.deepEqual([badSig.result.valid, badSig.result.signatureOk], [false, false]);
 
   assert.equal((await builder.fetch('GET', done.result.download)).status, 403, 'only an owner or compliance member downloads');
   const stranger = await signup(b, 'Peek Co');

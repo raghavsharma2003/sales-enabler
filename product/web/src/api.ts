@@ -56,6 +56,19 @@ export async function signup(b: { workspace: string; name: string; email: string
 export async function login(b: { email: string; password: string }) {
   const r = await http('POST', '/v1/login', b); if (r.status >= 300) fail(r); return r.json;
 }
+/** Which way does this email sign in? Browser routes, not tools. discover answers {sso:false} or {sso:true, required, workspaceId};
+ *  start (JSON, same origin, with the session cookie when there is one) answers {url, linking} and sets the state cookie: the page then goes to `url`. */
+export type SsoDiscovery = { sso: false } | { sso: true; required: boolean; workspaceId: string };
+export async function ssoDiscover(email: string): Promise<SsoDiscovery> {
+  const r = await http('POST', '/v1/sso/discover', { email }); if (r.status >= 300) fail(r); return r.json;
+}
+/** Begin a single sign-on sign-in (or, signed in, the link of this account) and go to the identity provider. */
+export async function ssoStart(workspaceId: string): Promise<void> {
+  const r = await http('POST', '/v1/sso/start', { workspaceId }); if (r.status >= 300) fail(r);
+  let u: URL; try { u = new URL(String(r.json?.url)); } catch { throw new ApiError(502, 'idp_unreachable', 'The identity provider sent an address that could not be used. Try again.'); }
+  if (u.protocol !== 'https:' && !(u.protocol === 'http:' && location.protocol === 'http:')) throw new ApiError(502, 'idp_unreachable', 'The identity provider sent an address that is not secure, so Vyakti did not go there.');
+  window.location.assign(u.toString());
+}
 export async function logout() { await http('POST', '/v1/logout', {}); }
 export async function getMe(): Promise<Me> {
   const r = await http('GET', '/v1/me'); if (r.status >= 300) fail(r); return r.json;

@@ -49,11 +49,12 @@ export function redirectUri(workspaceId: string, req?: Req): string {
 
 export const domainOf = (email: string) => email.slice(email.lastIndexOf('@') + 1).toLowerCase();
 
-function view(c: Config | null) {
-  if (!c) return { configured: false as const };
+function view(c: Config | null, ws: string) {
+  const ret = (() => { try { return redirectUri(ws); } catch { return null; } })();
+  if (!c) return { configured: false as const, redirectUri: ret };
   return { configured: true as const, issuer: c.issuer, clientId: c.client_id, hasClientSecret: !!c.client_secret_ciphertext, allowedDomains: c.allowed_domains,
     defaultRole: c.default_role, emailVerified: c.email_verified, enabled: c.enabled, ssoRequired: c.sso_required, breakGlassMemberId: c.break_glass_member_id,
-    version: c.version, updatedAt: c.updated_at, discoveryUrl: discoveryUrl(c.issuer), redirectUri: (() => { try { return redirectUri(c.workspace_id); } catch { return null; } })() };
+    version: c.version, updatedAt: c.updated_at, discoveryUrl: discoveryUrl(c.issuer), redirectUri: ret };
 }
 
 const issuerV = str({ min: 8, max: 300, desc: 'the issuer URL exactly as the IdP publishes it, e.g. https://login.microsoftonline.com/<tenant>/v2.0' });
@@ -82,7 +83,7 @@ async function testConnection(issuer: string): Promise<{ ok: boolean; checks: { 
 export function registerSso(r: Registry) {
   r.register(tool(obj({}), {
     name: 'sso.config.get', risk: 'read', summary: 'Read this workspace\'s single sign-on settings (never the client secret)',
-    run: async ctx => view(await loadConfig(ctx.q as pg.PoolClient, ctx.workspaceId)),
+    run: async ctx => view(await loadConfig(ctx.q as pg.PoolClient, ctx.workspaceId), ctx.workspaceId),
   }));
 
   r.register(tool(obj({ clientSecret: str({ min: 1, max: 2000 }) }), {
@@ -143,7 +144,7 @@ export function registerSso(r: Registry) {
         [ctx.workspaceId, i.issuer, i.clientId, secretCt, domains, i.defaultRole, i.emailVerified ?? cur?.email_verified ?? 'required', i.enabled ?? true, ctx.actor.id ?? ctx.actor.type]);
       // A changed issuer or client must never finish a sign-in started under the old one.
       await ctx.q.query('DELETE FROM sso_login WHERE workspace_id = $1', [ctx.workspaceId]);
-      return { ...view(row), secretReplaced: !!i.stashId, from: cur ? { issuer: cur.issuer, clientId: cur.client_id, allowedDomains: cur.allowed_domains, defaultRole: cur.default_role } : null };
+      return { ...view(row, ctx.workspaceId), secretReplaced: !!i.stashId, from: cur ? { issuer: cur.issuer, clientId: cur.client_id, allowedDomains: cur.allowed_domains, defaultRole: cur.default_role } : null };
     },
   }));
 

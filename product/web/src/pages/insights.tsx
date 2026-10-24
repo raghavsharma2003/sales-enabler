@@ -12,7 +12,7 @@ import { ago, count, date } from '../format.ts';
 import { prettyCode } from './contacts.tsx';
 import CallThemes from './insight-themes.tsx';
 
-interface IssueRow { id: string; category: string; severity: string; status: string; detail: unknown; created_at: string }
+interface IssueRow { id: string; category: string; severity: string; status: string; detail: any; created_at: string }
 interface ProposalRow { id: string; agent_id: string; agent_name: string; kind: string; status: string; rationale: string | null; calls_to_prove: number | null; gates_passed: boolean | null; created_at: string;
   simulated: string | null; from_issue: string | null; from_theme?: string | null; changes: { part: string; before: string | null; after: string }[] }
 interface Decision { verdict: 'win' | 'loss' | 'inconclusive'; diff: number; ci: { lo: number; hi: number }; control: { n: number }; treatment: { n: number } }

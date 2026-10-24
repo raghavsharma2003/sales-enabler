@@ -1,6 +1,6 @@
 // Settings: team, API keys, brand, knowledge, billing (real cost, price "not set"), compliance, privacy, operator, integrations, activity.
 import { useState } from 'react';
-import { Copy, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { run } from '../api.ts';
 import { useApp, useData } from '../store.tsx';
 import { useNav } from '../router.tsx';
@@ -12,12 +12,14 @@ import { prettyCode } from './contacts.tsx';
 import { costPart } from '../labels.ts';
 import { Link } from '../router.tsx';
 import Integrations from './integrations.tsx';
+import Security from './security.tsx';
+import { RevealSheet } from '../reveal.tsx';
 import { activitySentence, foldRepeats, pageFor, RULE_LABEL } from '../labels.ts';
 import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
 
-const TABS = ['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'operator', 'integrations', 'activity'] as const;
+const TABS = ['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'security', 'operator', 'integrations', 'activity'] as const;
 type Tab = (typeof TABS)[number];
-const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Knowledge', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', operator: 'Assistant', integrations: 'Integrations', activity: 'Activity' };
+const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Knowledge', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', security: 'Security', operator: 'Assistant', integrations: 'Integrations', activity: 'Activity' };
 
 export default function Settings({ tab }: { tab?: string }) {
   const go = useNav();
@@ -27,7 +29,7 @@ export default function Settings({ tab }: { tab?: string }) {
       <PageHead title="Settings" sub="Who can do what, what it costs, and the rules every call follows." />
       <Tabs label="Settings sections" value={t} onChange={v => go('/settings/' + v)} items={TABS.map(id => ({ id, label: LABEL[id] }))} />
       {t === 'team' && <Team />}{t === 'keys' && <Keys />}{t === 'brand' && <Brand />}{t === 'knowledge' && <Knowledge />}{t === 'billing' && <Billing />}
-      {t === 'compliance' && <Compliance />}{t === 'privacy' && <Privacy />}{t === 'operator' && <OperatorTab />}{t === 'integrations' && <Integrations />}{t === 'activity' && <Activity />}
+      {t === 'compliance' && <Compliance />}{t === 'privacy' && <Privacy />}{t === 'security' && <Security />}{t === 'operator' && <OperatorTab />}{t === 'integrations' && <Integrations />}{t === 'activity' && <Activity />}
     </div>
   );
 }
@@ -71,7 +73,17 @@ function Keys() {
   const owner = can(['owner']);
   const cols: Col<ApiKey>[] = [{ key: 'l', label: 'Name', primary: true, render: k => k.name }, { key: 'p', label: 'Key', render: k => <code>{k.prefix || '—'}</code> }, { key: 'u', label: 'Last used', render: k => k.lastUsed ? ago(k.lastUsed) : 'Never' },
     { key: 's', label: 'State', render: k => <Chip tone={k.revoked ? 'brick' : 'leaf'}>{k.revoked ? 'Revoked' : 'Active'}</Chip> },
-    { key: 'x', label: '', render: k => k.revoked ? null : <Btn size="sm" kind="danger" onClick={async () => { const r = await act('apikey.revoke', { id: k.id }, { describe: 'Key revoked.' }); if (r.ok) refresh(); }}>Revoke…</Btn> }];
+    { key: 'x', label: '', render: k => k.revoked ? null : <div className="row" style={{ gap: 8 }}>
+      {owner ? <Btn size="sm" onClick={() => void rotate(k)}>Rotate…</Btn> : <Btn size="sm" disabled reason="Only an owner can rotate a key.">Rotate</Btn>}
+      <Btn size="sm" kind="danger" onClick={async () => { const r = await act('apikey.revoke', { id: k.id }, { describe: 'Key revoked.' }); if (r.ok) refresh(); }}>Revoke…</Btn></div> }];
+  /** Rotating makes a new key with the same name, access and cap and revokes the old one; the new secret is shown once, like a new key. */
+  const rotate = async (k: ApiKey) => {
+    const r = await act<{ revealId?: string; token?: string }>('apikey.rotate', { id: k.id }, { quiet: true });
+    if (!r.ok) return;
+    refresh();
+    if (r.result.token) setSecret(r.result.token);
+    else if (r.result.revealId) { try { const s = await run<{ token: string }>('secret.reveal', { revealId: r.result.revealId }); setSecret(s.token); } catch (e) { toast(e instanceof Error ? e.message : 'Could not show the key.', 'bad'); } }
+  };
   const create = async () => {
     const r = await act<{ revealId?: string; token?: string }>('apikey.create', { name: name.trim() }, { quiet: true });
     if (!r.ok) return;
@@ -81,13 +93,12 @@ function Keys() {
   };
   return (
     <div className="stack">
-      <Card><CardHead title="API keys" sub="Keys call the same tools the pages do. A key can never approve anything: approvals need a signed-in person." />
+      <Card><CardHead title="API keys" sub="Keys call the same tools the pages do. A key can never approve anything: approvals need a signed-in person. Rotating a key replaces its secret and stops the old one at once." />
         <Async q={q} what="API keys" tool="apikey.list" empty={d => d.length === 0 ? <Empty title="No keys yet" body="Create one for your CRM or webhook." /> : null}>{d => <Table caption="API keys" cols={cols} rows={d} rowKey={r => r.id} />}</Async></Card>
       <Card><CardHead title="New key" sub="Creating a key is a policy change. The secret is shown once." />
         {owner ? <><TextField label="Name" value={name} onChange={e => setName(e.target.value)} placeholder="CRM webhook" />
           <div style={{ marginTop: 12 }}>{name.trim() ? <Btn kind="primary" onClick={create}>Ask to create</Btn> : <Btn disabled reason="Give the key a name.">Ask to create</Btn>}</div></> : <Locked role="owner" />}</Card>
-      {secret && <Sheet title="Copy your key now" onClose={() => setSecret(null)}><p className="muted">This is the only time it is shown. Store it in your secrets manager, not in a chat or a spreadsheet.</p><code className="secret">{secret}</code>
-        <div className="row"><Btn icon={<Copy size={16} aria-hidden />} onClick={async () => { try { await navigator.clipboard.writeText(secret); toast('Copied.', 'ok'); } catch { toast('Could not copy. Select the key and copy it yourself.', 'bad'); } }}>Copy</Btn><Btn kind="primary" onClick={() => setSecret(null)}>I have saved it</Btn></div></Sheet>}
+      {secret && <RevealSheet title="Copy your key now" secret={secret} onClose={() => setSecret(null)} />}
     </div>
   );
 }

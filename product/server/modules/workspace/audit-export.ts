@@ -128,9 +128,12 @@ export function registerAuditExport(r: Registry) {
     name: 'audit.export.verify', risk: 'read', summary: 'Check that an audit export file\'s checksum and signature are the ones Vyakti produced',
     run: async (ctx, i) => {
       const row = await one<{ sha256: string }>(ctx.q, 'SELECT sha256 FROM audit_export WHERE id = $1 AND workspace_id = $2', [i.exportId, ctx.workspaceId]);
-      const want = Buffer.from(signExport(i.exportId, ctx.workspaceId, i.sha256), 'hex'), got = Buffer.from(i.signature, 'hex');
-      const signatureOk = want.length === got.length && timingSafeEqual(want, got);
-      return { valid: !!row && signatureOk && row.sha256 === i.sha256, known: !!row, signatureOk, checksumMatches: row?.sha256 === i.sha256 };
+      // The signature is checked against the checksum Vyakti recorded, so "the file changed" (checksumMatches false) and
+      // "the signature is not ours" (signatureOk false) are told apart.
+      const want = Buffer.from(signExport(i.exportId, ctx.workspaceId, row?.sha256 ?? i.sha256), 'hex'), got = Buffer.from(i.signature, 'hex');
+      const signatureOk = !!row && want.length === got.length && timingSafeEqual(want, got);
+      const checksumMatches = row?.sha256 === i.sha256;
+      return { valid: signatureOk && checksumMatches, known: !!row, signatureOk, checksumMatches };
     },
   }));
 }

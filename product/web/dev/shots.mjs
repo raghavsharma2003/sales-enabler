@@ -26,7 +26,48 @@ const screens = (id) => [
   ['settings-team', '/settings/team'], ['settings-keys', '/settings/keys'], ['settings-brand', '/settings/brand'], ['settings-knowledge', '/settings/knowledge'], ['settings-billing', '/settings/billing'],
   ['settings-compliance', '/settings/compliance'], ['settings-privacy', '/settings/privacy'], ['settings-activity', '/settings/activity'], ['settings-operator', '/settings/operator'], ['settings-integrations', '/settings/integrations'],
   ['integrations-connect', '/settings/integrations', { after: async (p) => { await p.getByRole('button', { name: 'Connect HubSpot CRM' }).click(); await p.waitForTimeout(500); } }],
+  // Security. The empty state comes first on a fresh workspace; the next screens configure single sign-on through the real tools (the secret is staged, the
+  // A2 change is approved through POST /v1/actions/:id/decide, as the approval sheet does). The issuer is synthetic and does not resolve, so the connection test fails: that is the failure state.
+  ['security-empty', '/settings/security', { fresh: true }],
+  ['security-sso-failed', '/settings/security', { before: async (p) => { await configureSso(p); }, after: async (p) => { await p.getByRole('button', { name: 'Test connection' }).click(); await p.getByText('The connection test found a problem.').waitFor(); await p.waitForTimeout(300); } }],
+  ['security-require', '/settings/security', { after: async (p) => { await p.getByRole('button', { name: /^Require single sign-on/ }).click(); await p.getByRole('dialog').waitFor(); await p.waitForTimeout(300); } }],
+  ['security-tokens-export', '/settings/security', { before: async (p) => { await makeTokenAndExport(p); }, after: async (p) => { await p.getByRole('heading', { name: 'Provisioning tokens' }).scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
+  ['security-export-recent', '/settings/security', { after: async (p) => { await p.getByRole('heading', { name: 'Recent exports' }).scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
+  ['signin-sso', '/signin', { anon: true }],
+  ['signin-sso-error', '/signin?sso_error=state_mismatch', { anon: true }],
+  ['signin-sso-error-verify', '/signin?sso_error=wrong_aud', { anon: true }],
+  // The server answers a password sign-in on a workspace that requires single sign-on with 403 sso_required; shown here with that exact answer.
+  ['signin-sso-required', '/signin', { anon: true, after: async (p) => {
+    await p.route('**/v1/login', r => r.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: { code: 'sso_required', message: 'this workspace signs in with single sign-on; use "Sign in with SSO"' } }) }));
+    await p.getByLabel('Work email').fill('priya@saanjh.example'); await p.getByLabel('Password').fill('not-the-real-one-1'); await p.getByRole('button', { name: 'Sign in', exact: true }).click(); await p.getByText('This workspace signs in with single sign-on.').waitFor();
+  } }],
 ];
+
+// ---- security fixtures: real tools, synthetic data ----
+const SSO = { issuer: 'https://login.example-idp.test', clientId: 'vyakti-demo-client', allowedDomains: ['saanjh.example'], defaultRole: 'viewer', emailVerified: 'required', enabled: true };
+async function toolDo(p, name, args = {}) {
+  const base = new URL(p.url()).origin;
+  let r = await (await p.request.post(`${base}/v1/tools/${name}`, { data: { args } })).json();
+  if (r.status === 'needs_approval') r = await (await p.request.post(`${base}/v1/actions/${r.actionId}/decide`, { data: { approve: true } })).json();
+  if (r.status !== 'confirmed') throw new Error(`${name}: ${JSON.stringify(r)}`);
+  return r.result;
+}
+async function configureSso(p) {
+  const cfg = await toolDo(p, 'sso.config.get');
+  if (cfg.configured) return;
+  const { stashId } = await toolDo(p, 'sso.secret.stage', { clientSecret: 'demo-secret-not-real-0001' });
+  await toolDo(p, 'sso.config.set', { ...SSO, stashId });
+  await p.reload({ waitUntil: 'networkidle' });
+}
+async function makeTokenAndExport(p) {
+  if ((await toolDo(p, 'scim.token.list')).tokens.length === 0) await toolDo(p, 'scim.token.create', { name: 'Entra ID provisioning', scopes: ['members:read', 'members:write'] });
+  const day = n => new Date(Date.now() - n * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  if ((await toolDo(p, 'audit.export.list')).exports.length === 0) {
+    await toolDo(p, 'audit.export', { format: 'csv', from: day(30), to: day(0) });
+    await toolDo(p, 'audit.export', { format: 'jsonl', from: day(7), to: day(0), privilegedOnly: true });
+  }
+  await p.reload({ waitUntil: 'networkidle' });
+}
 const SIZES = [['m', { width: 390, height: 844 }, { isMobile: true, hasTouch: true, deviceScaleFactor: 1 }], ['d', { width: 1440, height: 900 }, { deviceScaleFactor: 1 }]];
 
 const browser = await chromium.launch({ executablePath: process.env.CHROME ?? undefined });
@@ -48,15 +89,28 @@ for (const [tag, viewport, extra] of SIZES) {
     if (only && !name.includes(only)) continue;
     if (o?.anon) {
       const c2 = await browser.newContext({ viewport, ...extra, reducedMotion: 'reduce' }); const p2 = await c2.newPage();
-      await p2.goto(base + path); await p2.waitForTimeout(500); await p2.screenshot({ path: `${out}${name}-${tag}.png` }); await c2.close(); continue;
+      await p2.goto(base + path); await p2.waitForTimeout(500); if (o.after) { await o.after(p2, tag); await p2.waitForTimeout(300); } await p2.screenshot({ path: `${out}${name}-${tag}.png`, fullPage: tag === 'm' && name.startsWith('signin') }); await c2.close(); continue;
+    }
+    if (o?.fresh) {
+      // a brand-new synthetic workspace, so the empty state is real on every run
+      const c3 = await browser.newContext({ viewport, ...extra, reducedMotion: 'reduce' }); const p3 = await c3.newPage();
+      const em = `ops-${tag}@brightway.example`, pw = 'sample-password-5678';
+      let rr = await p3.request.post(base + '/v1/login', { data: { email: em, password: pw } });
+      if (!rr.ok()) await p3.request.post(base + '/v1/signup', { data: { workspace: 'Brightway Clinics ' + tag, name: 'Dev Menon', email: em, password: pw } });
+      await p3.goto(base + path, { waitUntil: 'networkidle' }); await p3.waitForTimeout(500);
+      if (tag === 'm') await p3.addStyleTag({ content: '.bottombar{position:static!important}' });
+      if (tag === 'd') await p3.setViewportSize({ width: 1440, height: 3600 }); await p3.screenshot({ path: `${out}${name}-${tag}.png`, fullPage: tag === 'm' }); await c3.close(); continue;
     }
     errors.length = 0;
     await page.goto(base + path, { waitUntil: 'networkidle' });
     await page.waitForTimeout(450);
+    if (o?.before) await o.before(page, tag);
     if (o?.after) await o.after(page, tag);
     const file = `${out}${name}-${tag}.png`;
     if (tag === 'm') await page.addStyleTag({ content: '.bottombar{position:static!important}' });
-    await page.screenshot({ path: file, fullPage: tag === 'm' ? true : false });
+    if (tag === 'd' && name.startsWith('security')) await page.setViewportSize({ width: 1440, height: Math.min(4200, Math.max(900, await page.evaluate(() => document.documentElement.scrollHeight))) });   // a tall window, not a stitched full page, so the fixed menu and dock draw once
+    await page.screenshot({ path: file, fullPage: tag === 'm' && name !== 'security-require' });
+    if (tag === 'd') await page.setViewportSize(viewport);
     const m = await page.evaluate(() => {
       const de = document.documentElement; const bad = [];
       for (const el of document.querySelectorAll('body *')) {

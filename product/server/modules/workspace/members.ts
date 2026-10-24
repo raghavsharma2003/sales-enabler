@@ -32,7 +32,7 @@ export function registerMembers(r: Registry) {
   r.register(tool(obj({}), {
     name: 'member.list', risk: 'read', summary: 'List the people in this workspace and their roles',
     run: async ctx => ({
-      members: await many(ctx.q, `SELECT id, email, name, role, status, invite_expires_at AS "inviteExpiresAt", created_at AS "createdAt"
+      members: await many(ctx.q, `SELECT id, email, name, role, status, (password_hash IS NOT NULL) AS "hasPassword", invite_expires_at AS "inviteExpiresAt", created_at AS "createdAt"
         FROM member WHERE workspace_id = $1 ORDER BY created_at, email`, [ctx.workspaceId]),
     }),
   }));
