@@ -19,6 +19,11 @@
       "n": 1,
       "method": "scripted model, real modules, fresh DB (tests/operator-setup.test.ts); full suite 855/855, ui-contract 223/223",
       "date": "2026-10-24"
+    },
+    {
+      "id": "thread.2026-10-24.voice-unapproved-fact-marker",
+      "type": "open_thread",
+      "text": "For integrator to route to voice: record a reply-door reason such as 'unapproved_fact' in trace door[] when a line is held because the fact is not in approved data. Calls will then map it to fix {tool:'offering.edit'}; operator needs no change. Until then 'fact missing from approved data' cannot be diagnosed from the trace."
     }
   ]
 }
