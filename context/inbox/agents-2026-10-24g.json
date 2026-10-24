@@ -1,33 +1,64 @@
 {
-  "nodes": [
-    {
-      "id": "decision.2026-10-24.company-data-end-to-end",
-      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
-      "title": "Company data end to end: website, document and offerings sheet in; facts proposed with their passage and approved or rejected in bulk; prices and dates only from a sheet (HV law 22); the agent page says which facts she may say and why not; every line she says on a practice chat or a call points back to its source",
-      "rationale": "Owner directive calling-first-build-all names company information as must-be-excellent. Built: (1) knowledge.ingest_site (workspace/site.ts): same host only, robots.txt obeyed (our group else '*', longest rule wins, Allow on a tie; an unreadable robots.txt reads nothing), a page cap (default 10, at most 25), 8 s a page and 45 s in all, HTML and text only, 2 MB a page, every address resolved once and refused if private (VP_FETCH_ALLOW_PRIVATE=1 only for tests and the e2e server), same-site redirects only; nav, footer and scripts dropped, <main> preferred. (2) Documents: knowledge.ingest (PDF, DOCX, text) now proposes facts too. (3) offering.import: CSV or .xlsx (intake's reader), a header row, the name column found by its header, one passage per row and one proposed fact per cell ('Name, column: value'); a newer sheet's value for the same offering and column replaces the older one on approval. (4) knowledge_fact (migration 1055, after 1001 which creates knowledge_span): proposals keep their passage, place (url and page title, PDF page, sheet row) and order; prose statements are whole sentences of 5 to 45 words, the business's we/our/us becomes they/their/them so the brief's line lint accepts them (the passage keeps the original), testimonials, quotes and greetings are not proposed; a prose statement with a price or a date is held out with the reason and cannot be approved. knowledge.fact.decide approves or rejects one or many (signed-in person only): approved facts join the row's offering (sheet) or the chosen offering, default 'Company information', with a revision each so it can be undone; rejecting takes it out. offering.edit refuses a price or a date that stands on prose. (5) agent.knowledge: linked offerings and every fact with onCalls and a buyer-facing why (offer on a non-promotional call; a safety rule; worded as a line; passage no longer approved); agent.get lint never names the materialised kb keys: one line points to the Company information tab. (6) 'Why she said this': shared/company-facts.ts factUses (a repeated number, or at least 3 and half of a fact's content words), only over facts the compiled brief carries; test.chat returns sources, call.why_said reads the version that ran. (7) The practice chat now mirrors the runtime on a block: the reply is written again once with the rule it broke, and a second block ends with the safe line 'Ji, ye main pakka karke aapko batati hoon.' (safety.py safe_fallback_line), so a question no fact covers gets an honest confirm-and-come-back, never a guess. Web: Settings tab renamed Company information (its own lazy chunk: website, document, sheet, paste; facts to review with choose-all and bulk approve or reject; held out; approved with take-it-out; sources); agent page tab Company information (lazy); Why she said this under her lines in the practice chat and on the call page.",
-      "reverse_if": "Buyers' sites are mostly JavaScript-rendered (then a rendering fetch on the lab VM), the deterministic sentence proposals prove too noisy on real sites (then an LLM proposer whose quotes must appear verbatim in the passage), or factUses points at a fact she did not use on real calls (then tighten or replace with runtime-reported fact keys)."
-    },
-    {
-      "id": "measure.2026-10-24.company-data-tests",
-      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24",
-      "title": "Company data 13/13 server tests on a synthetic company (Nirmal Water Purifiers fixture: a 6-page site with robots.txt, an off-site link, prose price and date and a never-answering page; a one-page PDF; a price sheet as CSV and .xlsx) plus 1 browser flow (Kaveri Home Appliances fixture site and sheet: read, held out, bulk approve, link on the agent, shots at 1440 and 390 looked at, no sideways scroll) and axe on both new screens",
-      "n": 14, "method": "node:test tests/company-data.test.ts on throwaway Postgres 16, three consecutive runs green after making proposal order deterministic (seq); tests/agents-knowledge.test.ts updated so the 5 percent offer stands on a sheet row; full fresh-DB suite 807/807 including the browser-flow run; tsc (server and web) clean; ui-contract --strict 0 missing; voice unittest OK.",
-      "notes": "Not verified: a real company website on the public internet (the sandbox reads only the local fixture; the private-address guard is tested), scanned PDFs (refused with a reason, untested here), and factUses precision on real calls."
-    },
-    {
-      "id": "rejected.2026-10-24.first-person-company-facts",
-      "type": "rejected", "status": "rejected", "source": "verified", "date": "2026-10-24",
-      "title": "Proposing website sentences verbatim as facts ('We service purifiers across Pune...')",
-      "rationale": "The brief's line lint (agents/lint.ts) reads first person as a line to recite and refuses to compile, so linking the offering broke the agent. Now reworded to they/their at proposal; the passage keeps the original words."
-    }
-  ],
-  "edges": [
-    { "from": "decision.2026-10-24.company-data-end-to-end", "to": "decision.2026-10-24.knowledge-reaches-calls", "relation": "extends" },
-    { "from": "decision.2026-10-24.company-data-end-to-end", "to": "decision.2026-10-24.practice-chat", "relation": "extends" },
-    { "from": "measure.2026-10-24.company-data-tests", "to": "decision.2026-10-24.company-data-end-to-end", "relation": "tests" },
-    { "from": "rejected.2026-10-24.first-person-company-facts", "to": "decision.2026-10-24.company-data-end-to-end", "relation": "informs" }
-  ],
-  "events": [
-    { "date": "2026-10-24", "event": "agents-company-data", "details": "Integrator step 1 (owner directive calling-first-build-all): company data end to end. Migration numbered 1055 in the workspace range because knowledge_span is created by 1001; workspace lane please keep 1055 free. Next: step 2 stack selection, step 3 set-up/reset." }
-  ]
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.company-data-end-to-end",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Company data end to end: website, document and offerings sheet in; facts proposed with their passage and approved or rejected in bulk; prices and dates only from a sheet (HV law 22); the agent page says which facts she may say and why not; every line she says on a practice chat or a call points back to its source",
+   "rationale": "Owner directive calling-first-build-all names company information as must-be-excellent. Built: (1) knowledge.ingest_site (workspace/site.ts): same host only, robots.txt obeyed (our group else '*', longest rule wins, Allow on a tie; an unreadable robots.txt reads nothing), a page cap (default 10, at most 25), 8 s a page and 45 s in all, HTML and text only, 2 MB a page, every address resolved once and refused if private (VP_FETCH_ALLOW_PRIVATE=1 only for tests and the e2e server), same-site redirects only; nav, footer and scripts dropped, <main> preferred. (2) Documents: knowledge.ingest (PDF, DOCX, text) now proposes facts too. (3) offering.import: CSV or .xlsx (intake's reader), a header row, the name column found by its header, one passage per row and one proposed fact per cell ('Name, column: value'); a newer sheet's value for the same offering and column replaces the older one on approval. (4) knowledge_fact (migration 1055, after 1001 which creates knowledge_span): proposals keep their passage, place (url and page title, PDF page, sheet row) and order; prose statements are whole sentences of 5 to 45 words, the business's we/our/us becomes they/their/them so the brief's line lint accepts them (the passage keeps the original), testimonials, quotes and greetings are not proposed; a prose statement with a price or a date is held out with the reason and cannot be approved. knowledge.fact.decide approves or rejects one or many (signed-in person only): approved facts join the row's offering (sheet) or the chosen offering, default 'Company information', with a revision each so it can be undone; rejecting takes it out. offering.edit refuses a price or a date that stands on prose. (5) agent.knowledge: linked offerings and every fact with onCalls and a buyer-facing why (offer on a non-promotional call; a safety rule; worded as a line; passage no longer approved); agent.get lint never names the materialised kb keys: one line points to the Company information tab. (6) 'Why she said this': shared/company-facts.ts factUses (a repeated number, or at least 3 and half of a fact's content words), only over facts the compiled brief carries; test.chat returns sources, call.why_said reads the version that ran. (7) The practice chat now mirrors the runtime on a block: the reply is written again once with the rule it broke, and a second block ends with the safe line 'Ji, ye main pakka karke aapko batati hoon.' (safety.py safe_fallback_line), so a question no fact covers gets an honest confirm-and-come-back, never a guess. Web: Settings tab renamed Company information (its own lazy chunk: website, document, sheet, paste; facts to review with choose-all and bulk approve or reject; held out; approved with take-it-out; sources); agent page tab Company information (lazy); Why she said this under her lines in the practice chat and on the call page.",
+   "reverse_if": "Buyers' sites are mostly JavaScript-rendered (then a rendering fetch on the lab VM), the deterministic sentence proposals prove too noisy on real sites (then an LLM proposer whose quotes must appear verbatim in the passage), or factUses points at a fact she did not use on real calls (then tighten or replace with runtime-reported fact keys)."
+  },
+  {
+   "id": "measure.2026-10-24.company-data-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Company data 13/13 server tests on a synthetic company (Nirmal Water Purifiers fixture: a 6-page site with robots.txt, an off-site link, prose price and date and a never-answering page; a one-page PDF; a price sheet as CSV and .xlsx) plus 1 browser flow (Kaveri Home Appliances fixture site and sheet: read, held out, bulk approve, link on the agent, shots at 1440 and 390 looked at, no sideways scroll) and axe on both new screens",
+   "n": 14,
+   "method": "node:test tests/company-data.test.ts on throwaway Postgres 16, three consecutive runs green after making proposal order deterministic (seq); tests/agents-knowledge.test.ts updated so the 5 percent offer stands on a sheet row; full fresh-DB suite 807/807 including the browser-flow run; tsc (server and web) clean; ui-contract --strict 0 missing; voice unittest OK.",
+   "notes": "Not verified: a real company website on the public internet (the sandbox reads only the local fixture; the private-address guard is tested), scanned PDFs (refused with a reason, untested here), and factUses precision on real calls."
+  },
+  {
+   "id": "rejected.2026-10-24.first-person-company-facts",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Proposing website sentences verbatim as facts ('We service purifiers across Pune...')",
+   "rationale": "The brief's line lint (agents/lint.ts) reads first person as a line to recite and refuses to compile, so linking the offering broke the agent. Now reworded to they/their at proposal; the passage keeps the original words.",
+   "broke": "The brief's line lint (agents/lint.ts) reads first person as a line to recite and refuses to compile, so linking the offering broke the agent. Now reworded to they/their at proposal; the passage keeps the original words."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.company-data-end-to-end",
+   "to": "decision.2026-10-24.knowledge-reaches-calls",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.company-data-end-to-end",
+   "to": "decision.2026-10-24.practice-chat",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.company-data-tests",
+   "to": "decision.2026-10-24.company-data-end-to-end",
+   "relation": "tests"
+  },
+  {
+   "from": "rejected.2026-10-24.first-person-company-facts",
+   "to": "decision.2026-10-24.company-data-end-to-end",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "agents-company-data",
+   "details": "Integrator step 1 (owner directive calling-first-build-all): company data end to end. Migration numbered 1055 in the workspace range because knowledge_span is created by 1001; workspace lane please keep 1055 free. Next: step 2 stack selection, step 3 set-up/reset."
+  }
+ ]
 }

@@ -23591,6 +23591,244 @@
    "title": "Caller state per turn (caller_state.py): upset > confused > rushed > warm > neutral, from words (brief.CUES plus a confusion pattern) and timing (they cut in on 2 of her last 3 turns -> rushed). It adds a reply-shape row to the ledger (none in crisis or check-in), a delivery note for styled voices (upset -> gentle, confused -> calm; the brain's own [tone:] wins), and the trace's agent-turn state. Gemini TTS takes no note (rejected.2026-10-20.gemini-tts-style-prefix): text shape is its only lever",
    "rationale": "Integrator humanness item 'emotion and pacing'. Unit-tested reading and plumbing only; its effect on reply shape with a real brain, and how MAI softvoice sounds, are NOT measured (needs devsim with a model or staging).",
    "reverse_if": "a devsim or staging review shows the shape rows make replies worse or get recited"
+  },
+  {
+   "id": "measure.2026-10-24.staging-config-fix-verify",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": "10 checks in 1 new synthetic workspace ('Config Check', c0c91999-513d-4d6c-accc-7648f8930b3e): 9 pass, 1 fail; 1 browser test call, 1 practice-caller run, 1 typed-chat exchange, 1 Operator message",
+   "title": "Staging at 9b34ff7 with control-plane models (op7's Azure deployments: VP_LLM_DEFAULT_* on lab-gpt41mini-in, the Operator on lab-gpt41) and recordings on: test.chat answers (one exchange), test.simulate runs (4 turns, ended by the caller, 4/6 checks), the Operator answers from workspace.get only (read), a browser test call (111 s) is analysed on gpt-4.1-mini (status done) and its recording answers 200 audio/wav through :8443 (401 without the passcode). The one fail is by design: a browser test call gets no outcome, because calls/analysis.ts takes the outcome definition only from the call's campaign and records outcomes only for non-test calls. Spend INR 3.85 (call 2.24 + Azure-counted tokens 1.61)",
+   "method": "stage_setup_v2.sh (v1 + 13 env lines + the .env.extra hook) redeployed the same 9b34ff7 bundle through the five-part Run Command (vps9-deploy-v2); names confirmed in .env and both processes' /proc environ, and each side's own code (llm.ts, judge.ts, judge.py, analysis.ts) read its process env. Verification: research/2026-10-24/staging/ops/verify9.py on the VM, through the product's own API, in a new workspace (random password kept in the VM process); the call via replygap.one_call (synthetic clips P1, test.browser_call, never a phone); the recording fetched through Caddy on :8443 with basic auth. Spend from the DB (conversation, cost_line, agent_test_run, plus test.chat's own usage) and from Azure Monitor (ModelRequests, InputTokens, OutputTokens per deployment, 10:26-10:34 UTC) at op7's rates",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md"
+  },
+  {
+   "id": "decision.2026-10-24.staging-judge-mode-off-with-default-model",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Staging sets VP_SAFETY_JUDGE_MODE=off alongside VP_LLM_DEFAULT_*, because both judges fall back to the default model (judge.ts judgeConfigured: VP_LLM_SAFETY_JUDGE_* ?? VP_LLM_DEFAULT_*; judge.py config: ... or ...) and default to shadow, so leaving VP_LLM_SAFETY_JUDGE_* unset no longer keeps the judge uncalled. Off keeps staging's judge exactly as before the fix: no judge calls, no judge events (verified: runtime runs False, control plane mode off, 0 judge events on the verification call)",
+   "rationale": "The coordinator's brief wanted every VP_LLM_SAFETY_JUDGE_* unset 'because the judge stays shadow and unconfigured on staging'. With VP_LLM_DEFAULT_* set, unset alone would have run the judge in shadow on lab-gpt41mini-in (a model judge.json does not recommend) on every caller turn of calls, chats, simulations and analyses, with spend and judge marks on the owner's call pages.",
+   "reverse_if": "The safety builder or the owner wants the judge measured or shown on staging: then configure VP_LLM_SAFETY_JUDGE_* on its recommended route (Flash-Lite on Vertex) and set the mode deliberately, or drop the line to accept shadow on the default model. Also reverse if the product stops falling back from the judge's purpose to VP_LLM_DEFAULT_*.",
+   "path": "research/2026-10-24/staging/ops/stage_setup_v2.sh"
+  },
+  {
+   "id": "risk.2026-10-24.brief-review-blocks-renewal-template",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "With a model configured, the AI-honesty brief review (here lab-gpt41mini-in through VP_LLM_DEFAULT_*, not its recommended route) flags the insurance-renewal template's own persona.notes[0] ('explain premiums like a friend who works in insurance') as a human persona (ai_honesty, kind human, confidence 0.9, 'publish: blocked until fixed'), so a buyer's first version.publish from that template is refused until the note is edited (staging, n = 1 review)",
+   "mitigation": "Either reword the template note so it cannot read as a human persona, or route the brief review to its recommended model (VP_LLM_BRIEF_REVIEW_*) and re-check its false positives (BLIND-BR2 recorded false positives failing). Until then, tell the owner the renewal template needs that one note edited before publishing on staging.",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md"
+  },
+  {
+   "id": "decision.2026-10-24.relational-memory-memory-side",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Relational memory, the memory half (owner: 'the relationalness').\n- The brief adds two groups: 'last: outcome=<value> (N days ago)', the last non-test call's outcome for the same purpose; and 'personal:', at most ONE detail (life_event or relocation).\n- A personal detail is stored only when she asked to keep it and the caller's next turn affirmed it in the same call (keepAgreements, in code; Hinglish, English, Devanagari). Otherwise it is dropped and counted 'personal_not_agreed'. Refused categories are checked first.\n- A caller's 'yeh yaad mat rakhna' or 'don't remember this' means nothing from that call is extracted or sent to the model.\n- 'Mere baare mein kuch yaad mat rakhna' or 'sab bhool jao' deletes everything held now and files a forget_request done with a counts-only receipt. It is read in code from the caller's own words, never a model's marker, so it needs no member approval.",
+   "rationale": "A returning caller expects her to know the last promise, the last outcome and one thing they chose to share, and nothing creepy or unconsented. The person's own request to be forgotten is honoured at once (DPDP). It is a risk-lowering deletion of their own data, read from their words.",
+   "reverse_if": "Review shows the forget-all phrases firing on lines that were not a request about memory (false positives): then file the request for a person to confirm instead of deleting at once. Or listeners find the personal line intrusive on a call type: then turn 'personal' off by default for that job."
+  },
+  {
+   "id": "measure.2026-10-24.relational-memory-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/memory-relational.test.ts 5/5:\n(1) Agreement and forget phrases: 5 agreement cases (Hinglish, English, Devanagari; 'Nahi, mat rakhiye' and a yes to something else are not agreement) and 7 forget cases ('yaad dila dena' and 'bhool gaya tha' are not forget requests).\n(2) A relocation without the ask-and-yes is dropped as personal_not_agreed; with it, it is stored and shows as 'personal: relocation=\u2026'.\n(3) The brief shows 'last: outcome=promise_to_pay (2 days ago)' and the newest of two personal details only, and never their words; a test call's outcome never counts; the group order is pinned.\n(4) 'yeh yaad mat rakhna' gives skipped/caller_asked_not_to_keep, the model is not called, earlier memory stays.\n(5) 'mere baare mein kuch yaad mat rakhna' deletes the 1 held fact, records forget_request {forget_memory, done, caller, factsRemoved 1, detectedBy code} with no words, and the brief is empty.\nmemory.test.ts' refused-category case gained an ask-and-yes, since a sensitive personal detail allowed by policy still needs the caller's agreement.",
+   "n": 5,
+   "method": "node:test on throwaway Postgres 16 (NODE_ENV=test), scripted model",
+   "path": "product/tests/memory-relational.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.relational-memory-voice-half",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "memory builder",
+   "title": "The voice half of relational memory. Sent to the voice builder 2026-10-24:\n- memory used only after identity is verified where required;\n- at most one item per call, never in an ask turn;\n- stop using memory mid-call on the forget phrases, ideally with a 'forget_request' moment;\n- the ask-to-keep shape for a volunteered personal detail.\nPlus the joint returning-caller practice scenario (promise recall; zero creepy or unconfirmed references).",
+   "closes_when": "The voice runtime gates the brief on identity, uses at most one item, honours a mid-call forget, and a returning-caller practice run passes: the promise is recalled and there are zero unconfirmed or creepy references, with n and the method recorded."
+  },
+  {
+   "id": "decision.2026-10-24.whatsapp-memory-seam",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "WhatsApp feeds memory through the same gates as a call. memory.extract_thread {threadId} (system actor; the channels module calls it when a thread goes quiet or its 24-hour window ends) reads the thread's messages since a per-thread cursor (memory_thread_cursor).\n- Inbound person messages are the person's lines; outbound messages (her, templates, team members) are not.\n- A quote must be an exact substring of ONE inbound message, and the fact keeps span {messageId, start, end}.\n- The gates are the call's: refused categories, basis, purpose (the connection's agent), personal agreement, undo or review.\n- The forget phrases apply too: keep nothing, or forget the person now.\n- Only a verified sender (channel_thread.contact_id) is ever remembered; an opted-out thread (STOP, or a WhatsApp withdrawal in consent_record) never is.\n- Facts are marked channel 'whatsapp' and live only in the tenant's rows; no pooled path reads memory (Meta s.4.7).\n- storeFacts is the one write path for calls and threads.\n- The model is asked outside the transaction; a changed thread commits nothing; a failed run keeps the cursor.",
+   "rationale": "The integrator asked for the seam for the channels builder: one contact timeline, one memory, the same exact-quote and span rule.",
+   "reverse_if": "Threads need memory while the conversation is still going (not after it goes quiet): then extract per inbound message with a short debounce. Or Meta's terms change on using message content for AI features: then switch the channel off by default per workspace.",
+   "path": "product/server/modules/memory/whatsapp.ts"
+  },
+  {
+   "id": "measure.2026-10-24.whatsapp-memory-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/memory-whatsapp.test.ts 4/4:\n(1) An inbound message proposes 'shaam 6 baje ke baad'. It is stored with channel 'whatsapp', its message id and the exact span. Her words and a paraphrase are dropped (2). The model sees PERSON and BUSINESS lines, and the next call's brief carries it.\n(2) The cursor: a second run with nothing new is 'no_new_messages' with 0 model calls; a new message is read alone, and old ones are not resent.\n(3) A sender not on file gets 'sender_not_verified' with 0 model calls; a WhatsApp withdrawal gives 'whatsapp_opted_out'. A health fact is refused and a relocation without agreement is dropped. 'Mere baare mein kuch yaad mat rakhna' forgets them (requested_via 'whatsapp') with 0 model calls.\n(4) A member actor and another workspace are refused, and the facts stay in the tenant.",
+   "n": 4,
+   "method": "node:test on throwaway Postgres 16 (NODE_ENV=test), channel fixtures in SQL, scripted model",
+   "path": "product/tests/memory-whatsapp.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.staff-mark-phone-verified",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "member.phone.mark_verified: Vyakti staff (actor vp_success, no workspace role) may mark a member's phone verified, with evidence text, audited without the number and with no call placed; same refusals as a code (mobile only, not suppressed or erased, not another member's)",
+   "rationale": "On the carrier trial (to 2026-11-16) Plivo rings only sandbox-verified numbers; the owner's phone is verified there, so a staff mark avoids a verification call the trial could refuse.",
+   "reverse_if": "the carrier account leaves trial and the in-product code call is proven live; then keep it for support cases only"
+  },
+  {
+   "id": "decision.2026-10-24.carrier-truth",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Carrier truth: shared/carrier.ts maps Plivo hang-up codes (then names, then the Call API refusal text) to a reason, whether the phone rang, the call page code and the retry class. A call that never rang the person does not use their budget; a carrier refusal (trial, caller ID, barring, spam, credit) is OutcomeClass carrier_refused, never retried. The runtime sends call.ended.carrier; the inbound application's hang-up URL is the control plane's signed hook; the CDR is fetched once per call for billed seconds and the INR amount",
+   "rationale": "Owner directive 2026-10-24 (calling first): the call log must say what the carrier said, and a trial refusal must not burn the retry ladder.",
+   "reverse_if": "the first live trial refusal arrives with a documented hang-up code (then map the code and drop the text match), or Plivo's CDR amounts are not INR on the India account"
+  },
+  {
+   "id": "measure.2026-10-24.telephony-steps-4-6-tests",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "tests/telephony-verify.test.ts 2/2 and tests/telephony-carrier.test.ts 5/5 on Postgres 16 against fake Plivo servers: in-product verification end to end (one Call API request, signed Speak fetch, confirm); staff mark refused to owner/compliance/system/agent; 15 hang-up mappings; trial refusal not counted and not retried while busy is; CDR once; attach_carrier Application+Number calls; signed hang-up hook; lost call asked to end at 90 s and settled at 10 min",
+   "n": 7,
+   "method": "node:test, local fake Plivo HTTP servers, FakeRuntime",
+   "path": "product/tests/telephony-carrier.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.voice-telephony-wall",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Runtime half of the live phone path (telephony builder asks 1-4, 6): VP_PLIVO_API_BASE honoured only on a loopback host; VP_TELEPHONY_ALLOWED_TO checked before any dial (422 not_allowlisted, no record or event) and any transfer (False), and with Plivo credentials but no list nothing is dialled unless VP_TELEPHONY_ALLOWLIST=off; X-Plivo-Signature-V3 (or -Ma-V3 with PLIVO_MAIN_AUTH_TOKEN) required on answer, hang-up, machine, transfer, whisper and inbound callbacks whenever PLIVO_AUTH_TOKEN is set, URL rebuilt from VP_PUBLIC_URL, nonce accepted once in 10 min (in-process cache); the stream token stays random and single-use and now also expires 60 s after its answer XML is handed out (outbound: at the answer callback; inbound: at ticket creation, which is the relay's answer); s2s calls now save their two-leg recording like the cascade. The runtime remains the one caller of Plivo's Call API for agent calls",
+   "rationale": "Telephony builder (session_01EMpetZaBqaoTD8i89vtAx9) asks, 2026-10-24. Python implementation checked against the shared vectors product/tests/fixtures/plivo-v3-vectors.json (6/6 bases and signatures). The nonce cache is per process: a replay to another runtime process within 10 min is not caught (the hook path is per call, so a replay can only target the same call's process).",
+   "reverse_if": "Plivo changes its signature scheme, or runtimes scale out behind one callback URL (then the nonce cache moves to shared storage)"
+  },
+  {
+   "id": "measure.2026-10-24.walkthrough4-vs-competitors",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Buyer walkthrough round 4 (a new NBFC buyer end to end, 1440 and 390) against the best of six competitors: 92 steps, 2 failed (Launch correctly withheld until the launch checks pass), 0 sideways scroll. Ahead on testing (real browser call with live captions), import (row verdicts), campaign (checks with fixes, cost range incl. GST, language and latency warnings) and the call page; worse on first-screen focus (fixed: one primary action), stack languages (fixed: languages measured vs stated and a filter with counts), knowledge sources (text only; routed), stack presets (routed). Practice-caller verdicts and the assistant's answers were not judgeable on the dev server's scripted model",
+   "n": 92,
+   "method": "research/2026-10-24/walkthrough4/walk.mjs on the dev server (real tools, devsim, scripted model); every screenshot opened; competitor bar from research/2026-10-21/walkthroughs/ reports (their screenshots are not in the repo)",
+   "path": "research/2026-10-24/walkthrough4/FRICTION.md"
+  },
+  {
+   "id": "open.2026-10-24.knowledge-url-and-file",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "title": "Company data is text only on Settings > Knowledge; the best competitor (Retell) takes web pages, files and Drive/OneDrive/Notion in one dialog. Who adds knowledge.ingest from a URL and a file behind the same passage approval?",
+   "closes_when": "knowledge.ingest accepts a URL and a PDF/DOCX file, and the Knowledge tab offers both."
+  },
+  {
+   "id": "open.2026-10-24.telephony-status-read",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "title": "Numbers only says phone lines are off after the person types a number and presses Ring me. A read that says whether telephony is on for the workspace (and why not) would let the page say so on arrival.",
+   "closes_when": "A read tool reports telephony state and the Numbers page uses it before any input."
+  },
+  {
+   "id": "decision.2026-10-24.company-data-end-to-end",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Company data end to end: website, document and offerings sheet in; facts proposed with their passage and approved or rejected in bulk; prices and dates only from a sheet (HV law 22); the agent page says which facts she may say and why not; every line she says on a practice chat or a call points back to its source",
+   "rationale": "Owner directive calling-first-build-all names company information as must-be-excellent. Built: (1) knowledge.ingest_site (workspace/site.ts): same host only, robots.txt obeyed (our group else '*', longest rule wins, Allow on a tie; an unreadable robots.txt reads nothing), a page cap (default 10, at most 25), 8 s a page and 45 s in all, HTML and text only, 2 MB a page, every address resolved once and refused if private (VP_FETCH_ALLOW_PRIVATE=1 only for tests and the e2e server), same-site redirects only; nav, footer and scripts dropped, <main> preferred. (2) Documents: knowledge.ingest (PDF, DOCX, text) now proposes facts too. (3) offering.import: CSV or .xlsx (intake's reader), a header row, the name column found by its header, one passage per row and one proposed fact per cell ('Name, column: value'); a newer sheet's value for the same offering and column replaces the older one on approval. (4) knowledge_fact (migration 1055, after 1001 which creates knowledge_span): proposals keep their passage, place (url and page title, PDF page, sheet row) and order; prose statements are whole sentences of 5 to 45 words, the business's we/our/us becomes they/their/them so the brief's line lint accepts them (the passage keeps the original), testimonials, quotes and greetings are not proposed; a prose statement with a price or a date is held out with the reason and cannot be approved. knowledge.fact.decide approves or rejects one or many (signed-in person only): approved facts join the row's offering (sheet) or the chosen offering, default 'Company information', with a revision each so it can be undone; rejecting takes it out. offering.edit refuses a price or a date that stands on prose. (5) agent.knowledge: linked offerings and every fact with onCalls and a buyer-facing why (offer on a non-promotional call; a safety rule; worded as a line; passage no longer approved); agent.get lint never names the materialised kb keys: one line points to the Company information tab. (6) 'Why she said this': shared/company-facts.ts factUses (a repeated number, or at least 3 and half of a fact's content words), only over facts the compiled brief carries; test.chat returns sources, call.why_said reads the version that ran. (7) The practice chat now mirrors the runtime on a block: the reply is written again once with the rule it broke, and a second block ends with the safe line 'Ji, ye main pakka karke aapko batati hoon.' (safety.py safe_fallback_line), so a question no fact covers gets an honest confirm-and-come-back, never a guess. Web: Settings tab renamed Company information (its own lazy chunk: website, document, sheet, paste; facts to review with choose-all and bulk approve or reject; held out; approved with take-it-out; sources); agent page tab Company information (lazy); Why she said this under her lines in the practice chat and on the call page.",
+   "reverse_if": "Buyers' sites are mostly JavaScript-rendered (then a rendering fetch on the lab VM), the deterministic sentence proposals prove too noisy on real sites (then an LLM proposer whose quotes must appear verbatim in the passage), or factUses points at a fact she did not use on real calls (then tighten or replace with runtime-reported fact keys)."
+  },
+  {
+   "id": "measure.2026-10-24.company-data-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Company data 13/13 server tests on a synthetic company (Nirmal Water Purifiers fixture: a 6-page site with robots.txt, an off-site link, prose price and date and a never-answering page; a one-page PDF; a price sheet as CSV and .xlsx) plus 1 browser flow (Kaveri Home Appliances fixture site and sheet: read, held out, bulk approve, link on the agent, shots at 1440 and 390 looked at, no sideways scroll) and axe on both new screens",
+   "n": 14,
+   "method": "node:test tests/company-data.test.ts on throwaway Postgres 16, three consecutive runs green after making proposal order deterministic (seq); tests/agents-knowledge.test.ts updated so the 5 percent offer stands on a sheet row; full fresh-DB suite 807/807 including the browser-flow run; tsc (server and web) clean; ui-contract --strict 0 missing; voice unittest OK.",
+   "notes": "Not verified: a real company website on the public internet (the sandbox reads only the local fixture; the private-address guard is tested), scanned PDFs (refused with a reason, untested here), and factUses precision on real calls."
+  },
+  {
+   "id": "rejected.2026-10-24.first-person-company-facts",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Proposing website sentences verbatim as facts ('We service purifiers across Pune...')",
+   "rationale": "The brief's line lint (agents/lint.ts) reads first person as a line to recite and refuses to compile, so linking the offering broke the agent. Now reworded to they/their at proposal; the passage keeps the original words.",
+   "broke": "The brief's line lint (agents/lint.ts) reads first person as a line to recite and refuses to compile, so linking the offering broke the agent. Now reworded to they/their at proposal; the passage keeps the original words."
+  },
+  {
+   "id": "decision.2026-10-24.staff-review-export",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Staff review export (directive.2026-10-24.calling-first-build-all, integrator item 3): review.export {from, to, includeTest?, limit?} is staff-only (actor vp_success; no member role) and returns one workspace's calls in a window of at most 7 days as one JSON. Each call is call.get's own record (call.get and the export now share one builder, so they cannot drift): the transcript with every per-turn field the runtime stored (voice's coming per-turn trace travels with it unchanged), turns, moments, safety, judge marks, tools, hand-offs, outcomes, cost lines and settlement, analysis, the gate record, flags. Added: the runtime events seen (seq, type, time), an errors list (end reason error or failed, failed analysis, the safety judge unavailable, failed tools), and recording {available, why}, never an address or a signed link. Test calls are in by default (the owner reviews mostly on them). Time order; truncated is set past the limit (default 200, max 500). Each export is audited (vp_success, window, count).",
+   "rationale": "The integrator's review script needs 'the log of everything' for the owner's long staging calls.",
+   "reverse_if": "Staff need the recording itself (then add a short-lived signed link per call, audited), or a window's export outgrows one response (then page by cursor).",
+   "evidence": [
+    "product/tests/calls-review-export.test.ts (synthetic): in-window calls in time order, test calls in and excludable, another workspace's and out-of-window calls never, errors listed, no recording address, audited; an owner is refused; more than 7 days refused in words"
+   ]
+  },
+  {
+   "id": "open.2026-10-24.call-page-review-timeline",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Integrator items 1-2 wait on peers: the call-page timeline (gap per turn, a marker where something went wrong, the recording seekable to the turn) needs voice's per-turn trace fields (not on the branch as of 2bdb29b); 'Flag this moment' calls learning's review.flag_turn {conversationId, turn, note}, agreed with learning 2026-10-24 (learning owns the tool and the owner_review flag; calls owns the button on call-review.tsx).",
+   "closes_when": "the call page shows the trace timeline and \"flag this moment\" lands with its learning seam"
+  },
+  {
+   "id": "decision.2026-10-24.call-page-turn-timeline",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The call page as the review instrument (integrator item 1, on voice's CallTrace from a8e5853). shared/call-trace.ts reads conversation.trace turn by turn, the same code on the server and in the browser: each transcript turn's reply gap, ASR confidence and TTS, and what went wrong on it. Causes: reply_gap (gap over 1,500 ms, or more than twice the call's median once 3 gaps exist), asr_low (caller confidence under 0.6), door_held (a reply-door verdict on her line), cut_off (she was interrupted), and from trace events error, fallback and tool_failed, each placed on the turn under way. The page shows a 'Turn by turn' card under the transcript: a gap bar per reply, the marked turns with their causes in plain words, and each row seeks the call to its turn. call.explain returns the same causes as turnCauses [{kind, turn, atMs, text, evidence, fix}] for the Operator's 'what went wrong on that call'. fix is null for now: no stored marker says what to fix (no RD rule means 'fact not in approved data'; a plain 'I don't know' carries none), so none is guessed.",
+   "rationale": "directive.2026-10-24.calling-first-build-all: the owner reviews long staging calls; the integrator and the Operator point at where they went wrong.",
+   "reverse_if": "The owner's reviews show the thresholds mark ordinary turns (then raise SLOW_GAP_MS or LOW_ASR from measured staging calls) or miss turns the owner flags (then add the missing signal to voice's trace).",
+   "evidence": [
+    "product/tests/calls-trace-review.test.ts: causes per turn from a synthetic trace; call.explain's turnCauses equal the reading of call.get's trace",
+    "product/web/e2e/flows.test.mjs 'Call page: the turn-by-turn timeline...': the marked lines equal call.explain's turnCauses, one row per turn, selecting a turn moves the call to it"
+   ]
+  },
+  {
+   "id": "measurement.2026-10-24.operator-diagnose-real-turncauses",
+   "type": "measurement",
+   "n": 1,
+   "method": "scripted model, real modules, fresh DB (tests/operator-setup.test.ts); full suite 855/855, ui-contract 223/223",
+   "date": "2026-10-24",
+   "title": "On calls' real call.explain (2e1a7cb), a stored trace with a 2,600 ms reply gap reaches the assistant's model as turnCauses with kind reply_gap and the plain text 'Slow reply: 2,600 ms\u2026'. The diagnose intent missed 'Why was there such a long pause at 0:13 on that call?' before this fix; pause/silence/slow-reply/lag wording and 'why \u2026 on that call' now match. turnCauses' fix is null for every cause until voice records a door reason such as unapproved_fact.",
+   "status": "measured",
+   "source": "verified"
+  },
+  {
+   "id": "thread.2026-10-24.voice-unapproved-fact-marker",
+   "type": "open-question",
+   "title": "For integrator to route to voice: record a reply-door reason such as 'unapproved_fact' in trace door[] when a line is held because the fact is not in approved data. Calls will then map it to fix {tool:'offering.edit'}; operator needs no change. Until then 'fact missing from approved data' cannot be diagnosed from the trace.",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "closes_when": "the runtime records a reply-door reason for unapproved facts that call.explain can name"
   }
  ],
  "edges": [
@@ -42510,6 +42748,116 @@
    "from": "decision.2026-10-24.voice-caller-state",
    "to": "open.2026-10-24.voice-humanness-round",
    "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.staging-config-fix-verify",
+   "to": "evidence.2026-10-24.staging-testbuild-9b34ff7",
+   "relation": "evidence"
+  },
+  {
+   "from": "measure.2026-10-24.staging-config-fix-verify",
+   "to": "measure.2026-10-24.staging-testbuild-smoke",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.staging-judge-mode-off-with-default-model",
+   "to": "measure.2026-10-24.staging-config-fix-verify",
+   "relation": "derived-from"
+  },
+  {
+   "from": "risk.2026-10-24.brief-review-blocks-renewal-template",
+   "to": "measure.2026-10-24.staging-config-fix-verify",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.relational-memory-tests",
+   "to": "decision.2026-10-24.relational-memory-memory-side",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.relational-memory-memory-side",
+   "to": "open.2026-10-24.relational-memory-voice-half",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.whatsapp-memory-tests",
+   "to": "decision.2026-10-24.whatsapp-memory-seam",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.whatsapp-memory-seam",
+   "to": "decision.2026-10-24.channels-seam",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.whatsapp-memory-seam",
+   "to": "rejected.2026-10-17.cross-tenant-pooling",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "decision.2026-10-24.staff-mark-phone-verified",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.carrier-truth",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.telephony-steps-4-6-tests",
+   "to": "decision.2026-10-24.carrier-truth",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.voice-telephony-wall",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.walkthrough4-vs-competitors",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.walkthrough4-vs-competitors",
+   "to": "open.2026-10-24.knowledge-url-and-file",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.walkthrough4-vs-competitors",
+   "to": "open.2026-10-24.telephony-status-read",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.company-data-end-to-end",
+   "to": "decision.2026-10-24.knowledge-reaches-calls",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.company-data-end-to-end",
+   "to": "decision.2026-10-24.practice-chat",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.company-data-tests",
+   "to": "decision.2026-10-24.company-data-end-to-end",
+   "relation": "tests"
+  },
+  {
+   "from": "rejected.2026-10-24.first-person-company-facts",
+   "to": "decision.2026-10-24.company-data-end-to-end",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.staff-review-export",
+   "to": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.call-page-turn-timeline",
+   "to": "decision.2026-10-24.staff-review-export",
+   "relation": "informed-by"
   }
  ]
 }

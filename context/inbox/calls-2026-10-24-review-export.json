@@ -15,11 +15,12 @@
   },
   {
    "id": "open.2026-10-24.call-page-review-timeline",
-   "type": "question",
+   "type": "open-question",
    "status": "open",
    "source": "verified",
    "date": "2026-10-24",
-   "title": "Integrator items 1-2 wait on peers: the call-page timeline (gap per turn, a marker where something went wrong, the recording seekable to the turn) needs voice's per-turn trace fields (not on the branch as of 2bdb29b); 'Flag this moment' calls learning's review.flag_turn {conversationId, turn, note}, agreed with learning 2026-10-24 (learning owns the tool and the owner_review flag; calls owns the button on call-review.tsx)."
+   "title": "Integrator items 1-2 wait on peers: the call-page timeline (gap per turn, a marker where something went wrong, the recording seekable to the turn) needs voice's per-turn trace fields (not on the branch as of 2bdb29b); 'Flag this moment' calls learning's review.flag_turn {conversationId, turn, note}, agreed with learning 2026-10-24 (learning owns the tool and the owner_review flag; calls owns the button on call-review.tsx).",
+   "closes_when": "the call page shows the trace timeline and \"flag this moment\" lands with its learning seam"
   }
  ],
  "edges": [
