@@ -9,7 +9,7 @@ import { Async, Btn, Card, CardHead, Chip, Empty, Sheet, TextArea, TextField } f
 import { Link } from '../router.tsx';
 
 /** What reads a kind's stored credentials today. Most kinds are stored and not used yet; the page says so plainly. */
-const SET_UP: Record<string, [string, string]> = { slack: ['/settings/notifications', 'Notifications'], custom_http: ['/settings/webhooks', 'Webhooks'], hubspot: ['/contacts/import', 'Import'], zoho_crm: ['/contacts/import', 'Import'] };
+const SET_UP: Record<string, [string, string]> = { slack: ['/settings/notifications', 'Notifications'], custom_http: ['/settings/webhooks', 'Webhooks'], hubspot: ['/contacts/import?from=hubspot', 'Import'], zoho_crm: ['/contacts/import?from=zoho_crm', 'Import'] };
 const InUse = ({ k }: { k: Kind | undefined }) => k?.usedBy ? <Chip tone="leaf">In use</Chip> : <Chip tone="marigold">Stored, not used yet</Chip>;
 
 interface Kind { id: string; label: string; secrets: string[]; config: string[]; usedBy: string | null }
