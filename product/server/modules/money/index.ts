@@ -88,7 +88,7 @@ export function register(r: Registry): void {
   }));
 
   r.register(tool(obj({}), {
-    name: 'test.budget', risk: 'read', summary: "today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits",
+    name: 'money.test_budget', risk: 'read', summary: "today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits",
     run: ctx => testBudget(ctx.q, ctx.workspaceId),
   }));
 

@@ -129,6 +129,7 @@ export type ToolName =
   | "money.estimate"
   | "money.parts"
   | "money.reconcile"
+  | "money.test_budget"
   | "monitor.create"
   | "monitor.list"
   | "notification.deliveries"
@@ -212,7 +213,6 @@ export type ToolName =
   | "stack.set"
   | "template.list"
   | "test.browser_call"
-  | "test.budget"
   | "test.chat"
   | "test.chat_keep"
   | "test.ring_member_phone"
@@ -1057,6 +1057,8 @@ export interface ToolInput {
   "money.parts": Record<string, never>;
   /** compare settled charges with metered cost lines; open an issue on drift (draft) */
   "money.reconcile": Record<string, never>;
+  /** today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits (read) */
+  "money.test_budget": Record<string, never>;
   /** Add a monitor: a signal over the last N calls that opens an issue when it crosses a threshold (draft) */
   "monitor.create": {
     name: string;
@@ -1591,8 +1593,6 @@ export interface ToolInput {
     versionId?: string;
     useDraft?: boolean;
   };
-  /** today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits (read) */
-  "test.budget": Record<string, never>;
   /** Practice chat: type as the caller and read her reply from the saved draft, through the same safety door as a call (test) */
   "test.chat": {
     agentId: string;
@@ -2006,6 +2006,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "money.estimate": { risk: "read", needsApproval: false },
   "money.parts": { risk: "read", needsApproval: false },
   "money.reconcile": { risk: "draft", needsApproval: false },
+  "money.test_budget": { risk: "read", needsApproval: false },
   "monitor.create": { risk: "draft", needsApproval: false },
   "monitor.list": { risk: "read", needsApproval: false },
   "notification.deliveries": { risk: "read", needsApproval: false },
@@ -2089,7 +2090,6 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "stack.set": { risk: "draft", needsApproval: false },
   "template.list": { risk: "read", needsApproval: false },
   "test.browser_call": { risk: "test", needsApproval: false },
-  "test.budget": { risk: "read", needsApproval: false },
   "test.chat": { risk: "test", needsApproval: false },
   "test.chat_keep": { risk: "test", needsApproval: false },
   "test.ring_member_phone": { risk: "test", needsApproval: false },

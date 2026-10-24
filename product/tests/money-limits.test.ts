@@ -65,7 +65,7 @@ test('wallet.get states each limit in plain words; owners change them with cap t
   const as = { workspaceId: ws, actor: { type: 'member' as const, id: owner, role: 'owner' as const } };
   const w = await reg.execute<any>(pool, 'wallet.get', {}, as);
   if (w.status !== 'confirmed') return assert.fail('expected the wallet');
-  const byPeriod = Object.fromEntries(w.result.caps.map((c: any) => [c.period, c]));
+  const byPeriod = Object.fromEntries(w.result.caps.filter((c: any) => c.scope !== 'test').map((c: any) => [c.period, c]));
   assert.equal(byPeriod.daily.label, 'Workspace daily cap');
   assert.equal(byPeriod.daily.text, '₹0 of ₹5,000 spent today. New calls stop at the cap; calls already running finish. It resets at midnight India time.');
   assert.equal(byPeriod.in_flight.label, 'Workspace in-flight limit');

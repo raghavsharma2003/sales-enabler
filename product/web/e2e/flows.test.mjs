@@ -1982,7 +1982,7 @@ test('First load: on a phone the assistant loads on its first open and then work
 
 // ---- Owner directive 2026-10-24: the daily test budget is a cap like the others, raised by approval and shown on Billing
 test('Billing: the daily test budget sits with the other caps, shows today\'s use and each test call\'s cost, and is raised by approval', async () => {
-  const before = (await tool('test.budget')).result;
+  const before = (await tool('money.test_budget')).result;
   assert.ok(before.capInrMilli > 0 && before.perCallInrMilli <= before.capInrMilli, 'a cap and a per-call hold within it');
   await page.goto(`${BASE}/settings/billing`);
   const main = page.locator('main');
@@ -1998,10 +1998,10 @@ test('Billing: the daily test budget sits with the other caps, shows today\'s us
   const card = await tool('cap.raise', { scope: 'test', period: 'daily', capInrMilli: before.capInrMilli * 10, perCallInrMilli: before.perCallInrMilli * 2 });
   assert.equal(card.status, 'needs_approval');
   assert.match(card.summary, /^Raise the daily test budget to ₹[\d,]+, with up to ₹[\d,]+ held per test call$/);
-  assert.equal((await tool('test.budget')).result.capInrMilli, before.capInrMilli, 'unchanged until approved');
+  assert.equal((await tool('money.test_budget')).result.capInrMilli, before.capInrMilli, 'unchanged until approved');
   const decided = await (await ctx.request.post(`${BASE}/v1/actions/${card.actionId}/decide`, { data: { approve: true } })).json();
   assert.equal(decided.status, 'confirmed', JSON.stringify(decided));
-  const after = (await tool('test.budget')).result;
+  const after = (await tool('money.test_budget')).result;
   assert.deepEqual([after.capInrMilli, after.perCallInrMilli], [before.capInrMilli * 10, before.perCallInrMilli * 2]);
   await page.reload();
   await main.getByText(after.text).waitFor();

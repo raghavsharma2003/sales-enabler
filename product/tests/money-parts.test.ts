@@ -95,6 +95,7 @@ test('R5: no money read tool\'s result says "VP"', { skip }, async () => {
     ['money.card', { stackId: 'v2-flashlite' }],
     ['money.parts', {}],
     ['money.carriers', {}],
+    ['money.test_budget', {}],
     ['wallet.get', {}],
     ['wallet.check', { purpose: 'launch', needInrMilli: 60_000 }],
     ['usage.get', { groupBy: 'component' }],

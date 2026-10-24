@@ -1,7 +1,7 @@
 // The daily test-call budget as a workspace cap (owner directive 2026-10-24). One 'test' row per workspace: the daily
 // cap and the most one test call may hold. Spend is what the calls module records on test conversations since IST
 // midnight (the same query calls used), so the budget resets at midnight India time by construction. The calls module
-// reads `test.budget` through the registry before it starts a test call, and caps the call at the per-call hold.
+// reads `money.test_budget` through the registry before it starts a test call, and caps the call at the per-call hold.
 import { formatInr } from '../../../shared/money.ts';
 import { many, one, type Queryable } from '../../db.ts';
 

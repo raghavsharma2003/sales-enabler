@@ -288,7 +288,7 @@ test('cap.raise is A2 and version-bound; cap.lower runs at once and only lowers'
   const card2 = await reg.execute(pool, 'cap.raise', { scope: 'workspace', period: 'daily', capInrMilli: 2_000_000 }, me);
   if (card2.status !== 'needs_approval') return assert.fail('expected a card');
   assert.equal((await reg.approve(pool, card2.actionId, { workspaceId: ws, memberId: owner })).status, 'confirmed');
-  const caps = (await walletView(pool, ws)).caps;
+  const caps = (await walletView(pool, ws)).caps.filter(c => c.scope !== 'test');
   assert.equal(caps.length, 1);
   assert.equal(caps[0].capInrMilli, 2_000_000);
   const noScope = await reg.execute(pool, 'cap.lower', { scope: 'campaign', period: 'total', capInrMilli: 1 }, me);
@@ -359,12 +359,12 @@ test('tenancy: another workspace cannot read or change these rows', { skip }, as
   const asB = { workspaceId: b.ws, actor: ownerActor(b.owner) };
   const w = await reg.execute(pool, 'wallet.get', {}, asB);
   assert.equal(w.status === 'confirmed' && (w.result as any).balanceInrMilli, 0);
-  assert.equal(w.status === 'confirmed' && (w.result as any).caps.length, 0);
+  assert.equal(w.status === 'confirmed' && (w.result as any).caps.filter((c: any) => c.scope !== 'test').length, 0);
   const u = await reg.execute(pool, 'invoice.get', {}, asB);
   assert.equal(u.status === 'confirmed' && (u.result as any).costInrMilli, 0);
   const steal = await reg.execute(pool, 'cap.lower', { scope: 'campaign', scopeId: campaignId, period: 'total', capInrMilli: 1 }, asB);
   assert.equal(steal.status, 'not_executed', "B cannot cap A's campaign");
-  const aCaps = (await walletView(pool, a.ws)).caps;
+  const aCaps = (await walletView(pool, a.ws)).caps.filter(c => c.scope !== 'test');
   assert.deepEqual(aCaps.map(c => c.capInrMilli), [5000]);
   // B's owner cannot approve A's action
   const card = await reg.execute(pool, 'wallet.topup', { inrMilli: 5000 }, { workspaceId: a.ws, actor: ownerActor(a.owner) });

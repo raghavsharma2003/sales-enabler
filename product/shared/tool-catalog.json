@@ -4783,6 +4783,25 @@
    }
   },
   {
+   "name": "money.test_budget",
+   "risk": "read",
+   "summary": "today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
    "name": "monitor.create",
    "risk": "draft",
    "summary": "Add a monitor: a signal over the last N calls that opens an issue when it crosses a threshold",
@@ -8025,25 +8044,6 @@
     "required": [
      "agentId"
     ]
-   }
-  },
-  {
-   "name": "test.budget",
-   "risk": "read",
-   "summary": "today's test-call budget: the cap, the most one test call may hold, what is spent and whether one more call fits",
-   "needsApproval": false,
-   "roles": [
-    "owner",
-    "builder",
-    "operator",
-    "compliance",
-    "viewer"
-   ],
-   "input": {
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {},
-    "required": []
    }
   },
   {

@@ -163,10 +163,10 @@ export function registerTools(r: Registry): void {
       if (!cfg?.agent || !cfg?.brief?.text || !cfg.brief.hash) throw new Error('this agent has no compiled brief yet; compile the draft first');
       const stack = resolveStack(cfg.agent.voice);
 
-      // The daily test budget is money's cap (test.budget, owner-raisable by approval); the constants are the fallback
+      // The daily test budget is money's cap (money.test_budget, owner-raisable by approval); the constants are the fallback
       // when the money module is not loaded. Same count either way: test-call cost since IST midnight.
       let perCallHold = TEST_CALL_MAX_COST_INR_MILLI;
-      const budget = r.get('test.budget') ? await r.execute<{ allowed: boolean; reason?: string; perCallInrMilli: number }>(ctx.pool, 'test.budget', {}, { workspaceId: ctx.workspaceId, actor: SYSTEM }) : null;
+      const budget = r.get('money.test_budget') ? await r.execute<{ allowed: boolean; reason?: string; perCallInrMilli: number }>(ctx.pool, 'money.test_budget', {}, { workspaceId: ctx.workspaceId, actor: SYSTEM }) : null;
       if (budget?.status === 'confirmed') {
         if (!budget.result.allowed) throw new Error(budget.result.reason ?? "today's test budget is used up; it resets at midnight IST");
         perCallHold = budget.result.perCallInrMilli;
