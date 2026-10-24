@@ -84,12 +84,13 @@ const FIELD: Record<string, string> = { inrMilli: 'Amount', capInrMilli: 'Spend 
   issuer: 'Identity provider address', clientId: 'Client ID', allowedDomains: 'Allowed email domains', defaultRole: 'Role for new people', emailVerified: 'Email verification', required: 'Required for everyone',
   format: 'Format', from: 'First day', to: 'Last day', actionPrefix: 'Only actions starting with', privilegedOnly: 'Privileged actions only',
   url: 'Address', events: 'Sends', contactNumber: 'Phone numbers', recipients: 'Email to', timezone: 'Time zone', onDuty: 'On duty', shifts: 'Weekly hours' };
+/** Event names (webhooks, alerts) in words; keyed with _ for . so the names are not read as tool calls. */
+const EVENT_WORDS: Record<string, string> = { '*': 'Every event', call_ended: 'A call ended', campaign_state_changed: 'A campaign changed state', 'campaign_*': 'Every campaign event',
+  contact_opted_out: 'A person opted out', hand_off_created: 'A call was handed to a person', wallet_low: 'The wallet is running low', crisis: 'A caller may be in distress',
+  hand_off: 'A call was handed to your team', campaign_paused: 'A campaign paused itself' };
 /** Short enum values an approval card shows, in words. */
 const ENUM_WORDS: Record<string, Record<string, string>> = {
   scope: { workspace: 'Whole workspace', campaign: 'One campaign', api_key: 'One API key' },
-  events: { '*': 'Every event', 'call.ended': 'A call ended', 'campaign.state_changed': 'A campaign changed state', 'campaign.*': 'Every campaign event', 'contact.opted_out': 'A person opted out',
-    'hand_off.created': 'A call was handed to a person', 'wallet.low': 'The wallet is running low', crisis: 'A caller may be in distress', hand_off: 'A call was handed to your team',
-    'campaign.paused': 'A campaign paused itself' },
   contactNumber: { masked: 'Masked (+91•••••1234 and initials)', full: 'Full numbers and names' },
   timezone: { 'Asia/Kolkata': 'India time (IST)' },
   period: { daily: 'Per day', monthly: 'Per month', total: 'In total' },
@@ -115,6 +116,7 @@ export function fieldValue(path: string, v: unknown): string | null {
   if (typeof v === 'string' && ENUM_WORDS[last]?.[v]) return ENUM_WORDS[last][v];
   if (typeof v === 'string') return v;
   if (typeof v === 'number') return String(v);
+  if (last === 'events' && Array.isArray(v)) return v.map(e => EVENT_WORDS[String(e).replace(/\./g, '_')] ?? String(e).replace(/[._]/g, ' ')).join('; ');
   if (last === 'days' && Array.isArray(v)) return v.map(d => ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][Number(d)] ?? String(d)).join(', ');
   if (Array.isArray(v)) return v.map(x => (typeof x === 'string' && ENUM_WORDS[last]?.[x] ? ENUM_WORDS[last][x] : typeof x === 'object' && x ? Object.entries(x as object).map(([k, y]) => `${fieldLabel(k)} ${fieldValue(k, y) ?? ''}`.trim()).join(', ') : String(x))).join('; ');
   if (typeof v === 'object') return Object.entries(v as object).map(([k, y]) => `${fieldLabel(k)}: ${fieldValue(k, y) ?? ''}`).join(' · ');
