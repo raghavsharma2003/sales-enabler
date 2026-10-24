@@ -181,6 +181,7 @@ export type ToolName =
   | "scim.token.revoke"
   | "scim.token.rotate"
   | "script.harm_check"
+  | "script.line_check"
   | "script.pacing.restore"
   | "search.global"
   | "secret.reveal"
@@ -1069,7 +1070,7 @@ export interface ToolInput {
   "notification.destination.create": {
     kind: "slack" | "email";
     name: string;
-    events: ("crisis" | "hand_off" | "campaign.paused" | "wallet.low")[];
+    events: ("crisis" | "hand_off" | "campaign.paused" | "wallet.low" | "script.slowed")[];
     integrationId?: string;
     recipients?: string[];
   };
@@ -1082,7 +1083,7 @@ export interface ToolInput {
   /** Send a test alert to a Slack channel or email destination now and see whether it arrived (test) */
   "notification.test": {
     id: string;
-    event?: "crisis" | "hand_off" | "campaign.paused" | "wallet.low";
+    event?: "crisis" | "hand_off" | "campaign.paused" | "wallet.low" | "script.slowed";
   };
   /** Record that a line is declared for A2P (AI voice) on DLT, with the operator's reference (policy, waits for approval) */
   "number.a2p.declare": {
@@ -1382,6 +1383,10 @@ export interface ToolInput {
   };
   /** after a live call is analysed: slow its script to 25% of its lines when 2 harm moments fall in 15 consecutive calls (draft) */
   "script.harm_check": {
+    conversationId: string;
+  };
+  /** Check whether one of the agent's lines keeps being followed by a hang-up, an opt-out or a complaint, and slow the script if so (draft) */
+  "script.line_check": {
     conversationId: string;
   };
   /** restore full pacing to a script that harm moments slowed (draft) */
@@ -2035,6 +2040,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "scim.token.revoke": { risk: "external", needsApproval: true },
   "scim.token.rotate": { risk: "policy", needsApproval: true },
   "script.harm_check": { risk: "draft", needsApproval: false },
+  "script.line_check": { risk: "draft", needsApproval: false },
   "script.pacing.restore": { risk: "draft", needsApproval: false },
   "search.global": { risk: "read", needsApproval: false },
   "secret.reveal": { risk: "draft", needsApproval: false },

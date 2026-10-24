@@ -4916,11 +4916,12 @@
         "crisis",
         "hand_off",
         "campaign.paused",
-        "wallet.low"
+        "wallet.low",
+        "script.slowed"
        ]
       },
       "minItems": 1,
-      "maxItems": 4
+      "maxItems": 5
      },
      "integrationId": {
       "type": "string",
@@ -5009,7 +5010,8 @@
        "crisis",
        "hand_off",
        "campaign.paused",
-       "wallet.low"
+       "wallet.low",
+       "script.slowed"
       ]
      }
     },
@@ -6792,6 +6794,30 @@
    "name": "script.harm_check",
    "risk": "draft",
    "summary": "after a live call is analysed: slow its script to 25% of its lines when 2 harm moments fall in 15 consecutive calls",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
+   }
+  },
+  {
+   "name": "script.line_check",
+   "risk": "draft",
+   "summary": "Check whether one of the agent's lines keeps being followed by a hang-up, an opt-out or a complaint, and slow the script if so",
    "needsApproval": false,
    "roles": [
     "owner",

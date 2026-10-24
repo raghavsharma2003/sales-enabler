@@ -19,6 +19,7 @@ import { retentionPolicy } from '../intake/retention.ts';
 import { flagJudgeRecheck, outcomeReadings, recordVerified } from './verified.ts';
 import { transcriptRemovedWhy } from '../memory/transcript-purge.ts';
 import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
+import { lineCheck } from './line-watch.ts';
 
 // Test calls run inside a daily test budget (workspace blueprint: ₹200 a day, proposed) and a per-call cap.
 export const TEST_BUDGET_PER_DAY_INR_MILLI = 200_000;
@@ -483,6 +484,13 @@ export function registerTools(r: Registry): void {
   }));
 
   // ---- issues and monitors ----------------------------------------------------------------------------------
+  // Blueprint decision 9's per-line fast lane (calls/line-watch.ts): run after every analysed live call, next to learning's
+  // script.harm_check. Draft: it slows a script through learning's script_throttle and opens an issue; restoring is a member's tap.
+  r.register(tool(obj({ conversationId: uuid() }), {
+    name: 'script.line_check', risk: 'draft', summary: "Check whether one of the agent's lines keeps being followed by a hang-up, an opt-out or a complaint, and slow the script if so",
+    describe: () => 'Check the script for a line people keep reacting badly to',
+    run: (ctx, i) => lineCheck(ctx.q, ctx.workspaceId, i.conversationId),
+  }));
   r.register(tool(obj({ status: opt(str({ oneOf: ['open', 'acknowledged', 'resolved'] })) }), {
     name: 'issue.list', risk: 'read', summary: 'List issues opened by monitors, with their evidence calls',
     run: async (ctx, i) => ({ issues: await many(ctx.q, `SELECT id, category, severity, status, detail, monitor_id, created_at, resolved_at, resolution FROM issue

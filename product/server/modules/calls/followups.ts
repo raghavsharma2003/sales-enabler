@@ -4,6 +4,8 @@
 //                                            on the agent whose version actually ran)
 //   script.harm_check {conversationId}     (learning: blueprint decision 9's fast lane; 2 harm moments in 15 consecutive
 //                                            calls of a script slow it to 25%; every analysed live call on an agent version)
+//   script.line_check {conversationId}     (calls: decision 9's per-line lane; one of her lines followed by a hang-up,
+//                                            opt-out or complaint across the window slows the script the same way)
 //   attempt.retry_per_ladder {attemptId, outcome}  (campaigns, A3: after every non-final outcome of a campaign attempt;
 //                                            runs after analysis so a callback request is known; final outcomes and
 //                                            unknown are never sent, so nothing here can start an automatic retry of them)
@@ -77,6 +79,7 @@ export async function afterCall(pool: pg.Pool, r: Registry, ws: string, conversa
     }
   }
   if (cv.agent_id) out['script.harm_check'] = await call(pool, r, ws, 'script.harm_check', { conversationId });
+  if (cv.agent_id) out['script.line_check'] = await call(pool, r, ws, 'script.line_check', { conversationId });
   const cls = cv.attempt_id ? retryClass(cv.end_reason, cv.reason_code) : null;
   if (cls) {
     // A callback they asked for: the time from their own words beats the ladder; no clear time gives a note, never a guess.

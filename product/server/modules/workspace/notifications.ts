@@ -25,6 +25,7 @@ export const NOTIFY_EVENTS = [
   { event: 'hand_off', label: 'A call was handed to your team', description: 'Any other hand-off or callback request, with a link to the queue.' },
   { event: 'campaign.paused', label: 'A campaign paused itself', description: 'A spend cap, the wallet or a safety guard paused it. Pauses made by a person are not sent.' },
   { event: 'wallet.low', label: 'The wallet is running low', description: 'The balance went below the low mark, to zero or below.' },
+  { event: 'script.slowed', label: 'A script was slowed', description: 'One of her lines kept drawing hang-ups, opt-outs or complaints, or harm moments added up, so her campaigns were slowed to a quarter of their lines. With a link to the issue.' },
 ] as const;
 const NOTIFY_NAMES = NOTIFY_EVENTS.map(e => e.event);
 const MAX_ATTEMPTS = 3, SEND_MS = 8000;
@@ -70,6 +71,12 @@ export async function message(q: Queryable, ws: string, event: string, data: Rec
   const open = (path: string, what: string) => { const l = link(path); return l ? `${what}: ${l}` : `${what} in Vyakti.`; };
   switch (event) {
     case 'crisis': return { subject: `${pre}a caller may be in distress`, text: `${pre}A caller may be in distress — ${open(data.conversationId ? `/calls/${data.conversationId}` : '/handoffs', 'open the call')}` };
+    case 'script.slowed': {
+      const v = await one<{ name: string; number: number }>(q, 'SELECT a.name, v.number FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE v.id = $1 AND a.workspace_id = $2', [data.versionId, ws]);
+      const who = v ? `${v.name.slice(0, 80)}, version ${v.number}` : 'an agent';
+      const why = data.signal === 'catastrophic_line' ? 'one of her lines kept drawing hang-ups, opt-outs or complaints' : 'harm moments added up on her recent calls';
+      return { subject: `${pre}a script was slowed`, text: `${pre}${who} was slowed to ${Math.round(Number(data.factor ?? 0.25) * 100)}% of her campaigns' lines because ${why}. ${open('/insights', 'Read the issue on Insights and restore pacing there')}` };
+    }
     case 'hand_off': return { subject: `${pre}a call was handed to your team`, text: `${pre}A call was handed to your team. ${open('/handoffs', 'Open the hand-offs queue')}` };
     case 'campaign.paused': return { subject: `${pre}a campaign paused itself`, text: `${pre}The campaign "${String(data.name ?? 'a campaign').slice(0, 120)}" paused itself because ${causeWords(String(data.cause ?? ''))}. ${open(data.campaignId ? `/campaigns/${data.campaignId}` : '/campaigns', 'Open the campaign')}` };
     default: return { subject: `${pre}the wallet is ${data.to === 'low' ? 'running low' : 'empty'}`, text: `${pre}The wallet is ${data.to === 'low' ? 'running low' : data.to === 'overdrawn' ? 'overdrawn' : 'empty'} (${inr(data.balanceInrMilli)} left). New calls wait until money is added; calls in progress finish. ${open('/settings/billing', 'Add money')}` };
@@ -188,7 +195,7 @@ export function registerNotifications(r: Registry) {
     },
   }));
 
-  r.register(tool(obj({ kind: str({ oneOf: ['slack', 'email'] as const }), name: str({ min: 1, max: 80 }), events: arr(str({ oneOf: NOTIFY_NAMES }), { min: 1, max: 4 }),
+  r.register(tool(obj({ kind: str({ oneOf: ['slack', 'email'] as const }), name: str({ min: 1, max: 80 }), events: arr(str({ oneOf: NOTIFY_NAMES }), { min: 1, max: NOTIFY_NAMES.length }),
     integrationId: opt(uuid()), recipients: opt(arr(str({ max: 254 }), { max: 20 })) }), {
     name: 'notification.destination.create', risk: 'policy', summary: 'Send alerts (a caller in distress, hand-offs, a paused campaign, a low wallet) to Slack or email',
     describe: async (i, ctx) => {
