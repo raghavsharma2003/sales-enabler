@@ -12,7 +12,7 @@
 # speculatively: they are committed first, so the door and the brain see them.
 import asyncio, contextlib, logging, re, time
 import numpy as np
-from . import announce, brief, catalog, recordings, safety
+from . import announce, brief, catalog, duplex, recordings, safety
 from .audio import FRAME_BYTES, Recorder, Resampler, make_vad
 from .conversation import ComponentError, Draft
 from .session import Session
@@ -24,6 +24,7 @@ CUES = set('और लेकिन तो कि क्योंकि मतल
 MIX_MAX = 16000 * 2 * 10          # listener mix: at most 10 s of her (or the member's) audio ahead of the caller's clock
 MEMBER_RID = 0                    # reply id 0 on the line: the member who took over (her replies count from 1)
 CUT_WITHIN_S = 0.3                # a takeover waits for her sentence end only if it is this near
+BACKCHANNEL_RID = 2 ** 31 - 1     # her backchannels on the line (never a reply id)
 ACTION = ('crisis', 'readingSensitiveDigits', 'asksIfAi', 'optOut', 'wantsHuman', 'refusesRecording')
 
 
@@ -254,6 +255,16 @@ class CascadeSession(Session):
     BARGE_MS = 300
     BARGE_WORDS = 2
     BARGE_LONG_MS = 700
+    # BACKCHANNEL (VP_BACKCHANNEL): one short "haan" / "hmm" (duplex.py) in a pause of a long caller turn, as a listener
+    # does: the turn has run BC_TURN_MS since its first speech, the caller has been quiet BC_PAUSE_MS but not
+    # BC_PAUSE_MAX_MS (past that the turn is likely over and her reply is coming), their words so far are not a
+    # question and carry no signal, nothing of hers is playing or released, at most one per turn and BC_GAP_MS apart,
+    # never in crisis. If the caller speaks again while it plays, it is cut at once.
+    BACKCHANNEL = False               # off until the turn bench ON arm is read (bench/results/turn-2026-10-24-dev-bc-*)
+    BC_TURN_MS = 4000
+    BC_PAUSE_MS = 350
+    BC_PAUSE_MAX_MS = 700
+    BC_GAP_MS = 8000
 
     def __init__(self, ticket, components, sink, line, clock=time.monotonic, env=None, watchdog_s=0.25, transport='webrtc', tick_s=0.03):
         super().__init__(ticket, components, sink, clock=clock, env=env, watchdog_s=watchdog_s)
@@ -264,7 +275,7 @@ class CascadeSession(Session):
         self.seg = 0; self.final_seg = 0; self.eos_t = None; self.last_reply_eos = None; self.stt = None
         self.last_final_t = None; self.timing = []        # latency breakdown per reply (timing_summary)
         self.seg_t0 = None; self.lag_seg = 0; self.partial_lags = []   # speech onset -> the recogniser's first partial
-        for k in ('BARGE_LONG_MS', 'SPECULATE_STABLE_MS', 'BARGE_AUDIO_MS', 'RESUME_MS', 'BARGE_PAUSED_MS'):        # staging trials: VP_BARGE_LONG_MS, VP_SPECULATE_STABLE_MS
+        for k in ('BARGE_LONG_MS', 'SPECULATE_STABLE_MS', 'BARGE_AUDIO_MS', 'RESUME_MS', 'BARGE_PAUSED_MS', 'BC_TURN_MS', 'BC_PAUSE_MS', 'BC_PAUSE_MAX_MS'):        # staging trials: VP_BARGE_LONG_MS, VP_SPECULATE_STABLE_MS
             try: setattr(self, k, int(self.env.get('VP_' + k) or getattr(self, k)))
             except ValueError: pass
         self.mic = b''; self.turn_start_ms = None; self.digits_seg = -1; self.end_task = None; self.barge_ins = 0
@@ -287,6 +298,9 @@ class CascadeSession(Session):
         outbound_phone = (ticket.get('transport') or {}).get('kind') == 'sip' and ticket.get('direction') == 'outbound'
         self.listening_first = flag('VP_LISTEN_FIRST', self.LISTEN_FIRST and outbound_phone); self.listen_t0 = None
         self.mix = bytearray(); self.member_rs = Resampler(16000, 24000)     # live controls: listener mix, member's voice
+        self.backchannel = flag('VP_BACKCHANNEL', self.BACKCHANNEL)
+        self.bc_clips = []; self.bc_render = None; self.bc_until = 0.0; self.bc_last = None; self.bc_turn = None
+        self.bc_n = 0; self.bc_cut = 0; self.turn_n0 = None
 
     def now(self): return self.clock()
 
@@ -321,6 +335,7 @@ class CascadeSession(Session):
                                     keepRate=round(self.spec['kept'] / (self.spec['kept'] + self.spec['discarded']), 3) if self.spec['kept'] + self.spec['discarded'] else None),
                 'prewarm': {'brain': self.prewarm_brain, 'voice': self.prewarm_voice},
                 'barge': {'pauses': self.pauses, 'resumes': self.resumes, 'stops': self.barge_ins},
+                'backchannel': {'enabled': self.backchannel, 'clips': len(self.bc_clips), 'played': self.bc_n, 'cut': self.bc_cut},
                 'partialLagMs': med(self.partial_lags), 'partialLagN': len(self.partial_lags), 'bargeLongMs': self.BARGE_LONG_MS,
                 'stagesMs': {name: med([r['stages'][name] for r in rows if r['stages'][name] is not None]) for name, _, _ in self.STAGES}}
 
@@ -481,10 +496,12 @@ class CascadeSession(Session):
         self.mic += pcm16k
         while len(self.mic) >= FRAME_BYTES:
             fr, self.mic = self.mic[:FRAME_BYTES], self.mic[FRAME_BYTES:]
-            self.vad.strict = self.agent_playing()
+            self.vad.strict = self.agent_playing() or self.now() < self.bc_until      # her own voice may echo back
             for ev, idx in self.vad.feed(fr):
                 if ev == 'start':
                     self.seg += 1; self.seg_t0 = self.now() - (self.vad.n - idx) / 16000.0
+                    if self.turn_n0 is None and not self.agent_playing(): self.turn_n0 = idx                    # the turn's first speech, on the audio clock
+                    if self.now() < self.bc_until: await self._cut_backchannel()
                     if self.prewarm and self.warmed_seg != self.seg: self.warmed_seg = self.seg; asyncio.ensure_future(self._prewarm())
                     if self.turn_start_ms is None: self.turn_start_ms = int(idx / 16)
                     if self.pending is not None and not self.pending.released:
@@ -690,11 +707,58 @@ class CascadeSession(Session):
                 r.draft.pending = False
                 self.active = r; await r.release(); await self.line.send_json({'t': 'state', 's': 'speaking'})
                 asyncio.ensure_future(self._after(r))
+        if self.backchannel: await self._backchannel()
         quiet_since = max(self.eos_t or self.t0, self.rec.play_until)
         if self.silence_s and a is None and self.pending is None and not v.speaking and not self.agent_playing() \
                 and self.now() - quiet_since >= self.silence_s and not self.conv.state['crisis']:
             await self.speak_canned(self.fixed('silence'))
             await self.finish('silence_timeout')
+
+    # ---------------------------------------------------------------- backchannels (duplex.py)
+    async def _backchannel(self):
+        v = self.vad; a = self.active; p = self.pending
+        if not self.bc_clips:
+            # rendered once, in her voice, after her opening and while nothing of hers is being made
+            if self.bc_render is None and self.conv.agent_turns >= 1 and a is None and p is None:
+                self.bc_render = asyncio.ensure_future(self._render_backchannels()); self.tasks.append(self.bc_render)
+            return
+        if a is not None or (p is not None and p.released) or v.speaking or self.agent_playing() or self.now() < self.bc_until: return
+        if self.turn_n0 is None or self.bc_turn == self.turn_n0 or self.conv.state['crisis'] or self.taken_over: return
+        if (v.last_end - self.turn_n0) / 16 < self.BC_TURN_MS: return                 # the turn so far, on the audio clock
+        if self.bc_last is not None and (self.now() - self.bc_last) * 1000 < self.BC_GAP_MS: return
+        if not self.BC_PAUSE_MS <= v.silence_ms() <= self.BC_PAUSE_MAX_MS: return
+        said = ' '.join(self.finals + [self.partial]).strip()
+        sig = safety.caller_signals(said)
+        if not said or said.endswith('?') or any(sig[k] for k in ACTION): return
+        self.bc_turn = self.turn_n0; self.bc_last = self.now(); self.bc_n += 1
+        token, pcm24, pcm16 = self.bc_clips[(self.bc_n - 1) % len(self.bc_clips)]
+        start = max(self.now(), self.bc_until); self.bc_until = start + len(pcm16) / 32000
+        if self.rec.enabled: self.rec.overlay_agent(pcm16, start)
+        if self.listeners: self._to_mix(pcm16)
+        self.conv.trace.event(self.conv.ms(), 'backchannel', token=token, ms=int(len(pcm16) / 32))
+        await self.line.send_audio(BACKCHANNEL_RID, pcm24)
+
+    async def _cut_backchannel(self):
+        """The caller spoke again while her backchannel plays: stop it now (it is never over their words)."""
+        self.bc_until = self.now(); self.bc_cut += 1
+        self.conv.trace.event(self.conv.ms(), 'backchannel_cut')
+        await self.line.flush(BACKCHANNEL_RID)
+
+    async def _render_backchannels(self):
+        lang = safety.script_language(' '.join(t['text'] for t in self.conv.transcript if t['speaker'] == 'agent'),
+                                      safety.call_language(self.t['agent'], self.t.get('contact')))
+        for token in duplex.tokens(lang):
+            if self.ended: return
+            usage = {}; chunks = []
+            try:
+                async for ch in self.c.voice.speak(token, None, usage, {}): chunks.append(ch)
+            except Exception as e:
+                log.info('call %s: backchannel %r not rendered: %s', self.id, token, str(e)[:120]); continue
+            finally:
+                self.charge_voice(usage)
+            clip = duplex.trim(b''.join(chunks))
+            if clip: self.bc_clips.append((token, clip, Resampler(24000, 16000)(clip)))     # its own resampler: replies keep theirs
+        log.info('call %s: %d backchannel clips', self.id, len(self.bc_clips))
 
     async def _settle(self, gate):
         if await self.conv.settle_gate(gate) and self.handoff_allowed('crisis') and not self.ended: await self.hand_off('crisis')
@@ -704,7 +768,7 @@ class CascadeSession(Session):
         lag = self.partial_lags[-1] if self.partial_lags else None
         self.conv.commit_caller(text, start_ms=self.turn_start_ms, end_ms=end_ms,
                                 asr={'confidence': getattr(self.stt, 'last_confidence', None), 'partial_lag_ms': lag})
-        self.finals = []; self.partial = ''; self.turn_start_ms = None
+        self.finals = []; self.partial = ''; self.turn_start_ms = None; self.turn_n0 = None
 
     def _uncommit_last_caller(self):
         """A withdrawn reply's caller turn merges with what they are still saying; the turn event already sent stands

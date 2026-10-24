@@ -6,6 +6,7 @@ from tests.fixtures import FakeBrain, components, sink, ticket
 from tests.test_cascade import FakeEars, FakeLine, FakeVoice, QUIET, SPEECH, feed, wait_until
 
 os.environ['VP_VAD'] = 'energy'
+from vpvoice import duplex                                   # noqa: E402
 from vpvoice.cascade import CascadeSession, same_words      # noqa: E402
 
 OPEN = 'नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।'
@@ -42,6 +43,9 @@ async def caller_turn(sess, ears, partial, final, env_wait=True):
     await feed(sess, 10, QUIET)                       # the recogniser's final lags the VAD's end of speech
     ears['e'].on_f(final)
     return spec
+
+
+BC_TOKENS = {t for ts in duplex.TOKENS.values() for t in ts}
 
 
 class Breakdown(unittest.TestCase):
@@ -199,9 +203,10 @@ class FirstClause(unittest.TestCase):
                                          'जी बिल्कुल, आपका renewal 2 November को है, और premium वही है।'], env=env)
                 await sess.start(); await wait_until(lambda: sess.conv.agent_turns == 1)
                 await feed(sess, 25); ears['e'].on_f('हाँ जी, बताइए'); await quiet_until(sess, lambda: sess.conv.agent_turns == 2)
-                await wait_until(lambda: len(comp.voice.said) >= 2 and not sess.active)
+                replies = lambda: [x for x in comp.voice.said if x not in BC_TOKENS]      # backchannel renders aside
+                await wait_until(lambda: len(replies()) >= 2 and not sess.active)
                 await sess.end('caller_hung_up')
-                return comp.voice.said
+                return replies()
             said[bool(env)] = asyncio.run(go())
         on, off = said[True], said[False]
         self.assertEqual(on[0], off[0], 'the opening is never cut (RD1 reads its first sentence)')

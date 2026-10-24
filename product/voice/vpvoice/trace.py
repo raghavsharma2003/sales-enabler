@@ -8,7 +8,7 @@
 #    turns: [ {i, speaker: 'caller', startMs, endMs, asrConfidence, partialLagMs}
 #           | {i, speaker: 'agent', rid, startMs, callerEndMs, firstAudioMs, gapMs, stages: {...}, speculative,
 #              tts: {provider, voice, style}, state, door: [{rule, action}], interrupted} ],
-#    events: [ {atMs, kind: 'barge_pause' | 'barge_resume' | 'barge_stop' | 'backchannel' | 'judge' | 'error' | 'fallback'
+#    events: [ {atMs, kind: 'barge_pause' | 'barge_resume' | 'barge_stop' | 'backchannel' | 'backchannel_cut' | 'judge' | 'error' | 'fallback'
 #                         | 'tool' | 'keypad', ...} ]}
 #
 # Times are ms from the start of the call. Bounded: MAX_TURNS rows and MAX_EVENTS events (the rest are counted).
@@ -27,8 +27,8 @@ class Trace:
         self._turn({'i': i, 'speaker': 'caller', 'startMs': start_ms, 'endMs': end_ms, 'asrConfidence': confidence,
                     'partialLagMs': partial_lag_ms})
 
-    def agent(self, i, rid=None, start_ms=None, interrupted=False):
-        row = {'i': i, 'speaker': 'agent', 'rid': rid, 'startMs': start_ms, 'interrupted': bool(interrupted), 'door': []}
+    def agent(self, i, rid=None, start_ms=None, interrupted=False, **extra):
+        row = {'i': i, 'speaker': 'agent', 'rid': rid, 'startMs': start_ms, 'interrupted': bool(interrupted), 'door': [], **extra}
         row.update(self.pending.pop(rid, {}) if rid is not None else {})
         self._turn(row)
 

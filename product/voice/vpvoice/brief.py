@@ -197,6 +197,9 @@ def ledger(transcript, agent, contact, state):
                     'no words; choose what reaches a person or the purpose of this call; never enter numbers you were not told')
     read = [name for name, rx in CUES if any(rx.search(c) for c in callers[-3:])]
     if read: rows.append('lately they sound: ' + ', '.join(read))
+    from .caller_state import SHAPES          # how they sound now (caller_state.read): the shape of this reply
+    shape = None if paused else SHAPES.get(state.get('caller_state'))
+    if shape: rows.append(shape)
     since = state.get('turns_since_goal', 0)
     if goals and not paused and len(her) >= 3 and since >= 3 and 'irritated' not in read and 'worried' not in read:
         rows.append(f'the goal has not moved for {since} of your turns: when there is a natural bridge, take it')

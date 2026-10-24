@@ -21,6 +21,8 @@
 #              1.5 s after the caller's speech onset; barge-in latency = onset -> flush.
 #   backchannel 2 s into her long opening, vocal bursts cut from the clip's first speech, heard as nods: 300 ms "haan",
 #              500 ms "haan ji", 700 ms "achha haan ji"; and, separately, a 300 ms burst of white noise at -30 dBFS.
+# Her own backchannels (BACKCHANNEL, line rid BACKCHANNEL_RID) are not replies: cut-in, talk-over and end-of-turn count
+# replies only; backchannels are scored apart (per turn fired, overlap with caller speech after the cut).
 #              false barge-in = she stops within 2.5 s of the burst. A nod's words reach the runtime as a partial once
 #              --partial-ms of it has been heard, as a streaming recogniser's would.
 # Fakes: ears give partials while the VAD hears speech and the final words 250 ms after the VAD's end of speech (words
@@ -39,6 +41,7 @@ REPLY = 'Ji, samajh gayi. Main abhi aapko details bhejti hoon.'
 BENCH_ENV = {}         # --env K=V: the runtime env each scenario's session sees (e.g. VP_SPECULATE_PARTIAL=1)
 PARTIAL_LAG = 0.0      # --partial-ms / 1000: how long after a word is spoken the recogniser's partial carries it
 NODS = [(0.3, 'haan'), (0.5, 'haan ji'), (0.7, 'achha haan ji')]
+BC = 2 ** 31 - 1       # vpvoice.cascade.BACKCHANNEL_RID
 
 
 # ------------------------------------------------------------------------------------------------ clips and labels
@@ -117,11 +120,12 @@ class Line:
             if s[2] == rid and s[1] > t: s[1] = max(s[0], t)
     async def send_json(self, obj): pass
     async def close(self): pass
-    def first_after(self, t): return min((s[0] for s in self.segs if s[0] >= t and s[1] > s[0]), default=None)
+    def first_after(self, t): return min((s[0] for s in self.segs if s[0] >= t and s[1] > s[0] and s[2] != BC), default=None)
+    def backchannels(self): return [(a, b) for a, b, rid in self.segs if rid == BC and b > a]
     def playing(self):
         out = []
-        for a, b, _ in sorted(self.segs):
-            if b <= a: continue
+        for a, b, rid in sorted(self.segs):
+            if b <= a or rid == BC: continue
             if out and a <= out[-1][1] + 1e-3: out[-1][1] = max(out[-1][1], b)
             else: out.append([a, b])
         return out
@@ -223,7 +227,12 @@ def score(r):
         cut_pauses = sum(1 for a, b in pauses(c) if any(s < st + b and e > st + a + 0.2 for s, e in play))
         over = sum(max(0.0, min(e, st + b) - max(s, st + a)) for s, e in play for a, b in c['speech'])
         fa = line.first_after(last - 0.05)
-        return {'kind': r['kind'], 'id': r['id'], 'premature': cut, 'pauses': len(pauses(c)), 'cut_pauses': cut_pauses,
+        bcs = line.backchannels()
+        bc_over = [sum(max(0.0, min(e, st + b) - max(s, st + a)) for a, b in c['speech']) for s, e in bcs]
+        bc_after_end = sum(1 for s, e in bcs if s >= last - 0.05)
+        return {'kind': r['kind'], 'id': r['id'], 'premature': cut, 'long_turn': c['speech'][-1][1] - c['speech'][0][0] >= 4.0,
+                'bc': len(bcs), 'bc_overlap_s': round(sum(bc_over), 3), 'bc_overlapped': sum(1 for o in bc_over if o >= 0.05),
+                'bc_after_end': bc_after_end, 'pauses': len(pauses(c)), 'cut_pauses': cut_pauses,
                 'talk_over': over >= 0.3, 'overlap_s': round(over, 3), 'no_reply': fa is None, 'eot_ms': None if fa is None or cut else round((fa - last) * 1000),
                 'spec': r.get('spec') or {'started': 0, 'kept': 0, 'discarded': 0, 'withdrawn': 0}}
     if r['kind'] == 'barge':
@@ -284,6 +293,12 @@ def summarise(rows):
         'premature_cut_in_per_pause': {'k': kp, 'n': np_, 'rate': round(kp / np_, 3) if np_ else None, 'ci95': wilson(kp, np_)},
         'talk_over_per_turn': prop(T, 'talk_over'),
         'no_reply_per_turn': prop(T, 'no_reply'),
+        'backchannel_turns_long': prop([dict(r, any_bc=r['bc'] > 0) for r in T if r['long_turn']], 'any_bc'),
+        'backchannel_turns_short': prop([dict(r, any_bc=r['bc'] > 0) for r in T if not r['long_turn']], 'any_bc'),
+        'backchannel_overlap_50ms': (lambda n, k: {'k': k, 'n': n, 'rate': round(k / n, 3) if n else None, 'ci95': wilson(k, n)})(
+            sum(r['bc'] for r in T + S), sum(r['bc_overlapped'] for r in T + S)),
+        'backchannel_at_turn_end': (lambda n, k: {'k': k, 'n': n, 'rate': round(k / n, 3) if n else None, 'ci95': wilson(k, n)})(
+            sum(r['bc'] for r in T + S), sum(r['bc_after_end'] for r in T + S)),
         'missed_barge_in': prop(B, 'missed'),
         'barge_in_ms': {'n': len(bl), 'median': round(statistics.median(bl)) if bl else None, 'median_ci95': boot_median(bl)},
         'false_barge_in_backchannel': prop([r for r in C if r['what'] == 'haan'], 'false_barge'),
@@ -336,7 +351,8 @@ def main():
         k, v = kv.split('='); setattr(CascadeSession, k, int(v))
     clips = [c for c in load_clips() if a.split == 'all' or c['split'] == a.split][:a.limit]
     params = {k: getattr(CascadeSession, k) for k in ('HOLD_MS', 'STATEMENT_HOLD_MS', 'LONG_HOLD_MS', 'BARGE_MS', 'BARGE_WORDS', 'BARGE_LONG_MS', 'BARGE_NOD', 'BARGE_NOD_LONG_MS',
-                                              'BARGE_AUDIO', 'BARGE_AUDIO_MS', 'RESUME_MS', 'BARGE_PAUSED_MS', 'SPECULATE_STABLE_MS')}
+                                              'BARGE_AUDIO', 'BARGE_AUDIO_MS', 'RESUME_MS', 'BARGE_PAUSED_MS', 'SPECULATE_STABLE_MS',
+                                              'BACKCHANNEL', 'BC_TURN_MS', 'BC_PAUSE_MS', 'BC_PAUSE_MAX_MS', 'BC_GAP_MS')}
     params.update({'partial_ms': a.partial_ms, 'final_ms': FINAL_MS, 'env': dict(BENCH_ENV)})
     vad = type(audio.make_vad()).__name__
     t0 = time.time(); rows = asyncio.run(run_all(clips, a.conc, a.only))

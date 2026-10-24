@@ -115,7 +115,7 @@ export interface CallTrace {
         stages?: Record<string, number | null>; speculative?: boolean; tts?: { provider: string; voice: string; style?: string | null };
         state?: string; door: { rule: string; action: string }[]; interrupted: boolean }
   )[];
-  events: { atMs: number; kind: 'barge_pause' | 'barge_resume' | 'barge_stop' | 'backchannel' | 'judge' | 'error' | 'fallback' | 'tool' | 'keypad'; [k: string]: unknown }[];
+  events: { atMs: number; kind: 'barge_pause' | 'barge_resume' | 'barge_stop' | 'backchannel' | 'backchannel_cut' | 'judge' | 'error' | 'fallback' | 'tool' | 'keypad'; [k: string]: unknown }[];
   dropped?: { turns: number; events: number };
 }
 

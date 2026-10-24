@@ -2,7 +2,7 @@
 # the reply door on every sentence before it is spoken, caller signals on every caller turn, and the events that
 # record it. Sessions (session.py for sim, cascade.py / s2s.py for audio) drive it and own timing and audio.
 import asyncio, contextlib, logging, re
-from . import brief, judge, judge_event, names, rules, safety, ticket as tk, tools as tools_mod
+from . import brief, caller_state, judge, judge_event, names, rules, safety, ticket as tk, tools as tools_mod
 from .safety import DoorContext
 
 log = logging.getLogger('vp.voice.conversation')
@@ -77,7 +77,7 @@ class Conversation:
                           names.brand_forms(b)[1]]
         self.state = {'disclosed': False, 'asked_ai': False, 'crisis': False, 'crisis_lines_given': False, 'opt_out': False,
                       'recording_refused': False, 'goals_done': {}, 'turns_since_goal': 0,
-                      'identity_verified': False,
+                      'identity_verified': False, 'caller_state': 'neutral',
                       'checkin': None}   # judge-only crisis check-in: None -> 'due' -> 'asked' -> 'answer' -> None
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
         self.judge_complete = None; self.judge_env = None; self.judge_raised = False; self.opt_out_confirm_due = False
@@ -137,6 +137,7 @@ class Conversation:
         if not draft.sentences and draft.style is None:
             m = brief.TONE.match(sentence)
             if m: draft.style = m.group(1).strip().lower()
+            elif not self.state['crisis']: draft.style = caller_state.DELIVERY.get(self.state['caller_state'])   # styled voices only
         text = brief.spoken(sentence, keep_sounds=self.keep_sounds)
         if not text: return None, {'action': 'pass'}
         text, bad_brand = names.repair_brand(text, self.agent.get('brand'))
@@ -419,6 +420,9 @@ class Conversation:
         if clean.strip().endswith('?') and not sig['asksIfAi']:
             self.sink.emit('moment', kind='question', atMs=e_ms, note=clean[:120])
         self.state['asked_ai'] = sig['asksIfAi']
+        her = [t for t in self.trace.turns if t.get('speaker') == 'agent'][-3:]
+        self.state['caller_state'] = caller_state.read([t['text'] for t in self.transcript if t['speaker'] == 'caller'][-3:],
+                                                       cut_ins=sum(1 for t in her if t.get('interrupted')))
         return sig
 
     def _identity(self, caller_text):
@@ -449,7 +453,7 @@ class Conversation:
             if latency_ms is not None: ev['latencyMs'] = int(latency_ms)
             if draft.style: ev['tone'] = draft.style
             self.sink.emit('turn', **ev)
-            self.trace.agent(len(self.transcript) - 1, rid=draft.rid, start_ms=s_ms, interrupted=interrupted)
+            self.trace.agent(len(self.transcript) - 1, rid=draft.rid, start_ms=s_ms, interrupted=interrupted, state=self.state['caller_state'])
         # RD1 ledger: disclosed once the AI clause was heard; if she was talked over, it is offered once more, then done
         clause = (self.agent.get('opening') or {}).get('disclosureClause', '')
         if not self.state['disclosed'] and any(safety.affirms_ai(s, clause) for s in draft.sentences):

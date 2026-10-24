@@ -200,6 +200,14 @@ class Recorder:
         self.play_until = start_t + n / 16000.0
         return start_t
 
+    def overlay_agent(self, pcm16k, start_t):
+        """Her audio that plays beside the playback clock (a backchannel): recorded where it plays, the clock unmoved."""
+        n = len(pcm16k) // 2; i0 = int((start_t - self.t0) * 16000); need = i0 + n
+        if not self.enabled or n == 0: return
+        if need > len(self.agent):
+            self.agent = np.concatenate([self.agent, np.zeros(max(need - len(self.agent), 16000 * 30), dtype=np.int16)])
+        self.agent[i0:need] = np.frombuffer(pcm16k[:n * 2], dtype='<i2'); self.agent_end = max(self.agent_end, need)
+
     def flush(self, now):
         cut = int((now - self.t0) * 16000)
         if self.enabled and cut < self.agent_end: self.agent[cut:self.agent_end] = 0; self.agent_end = cut
