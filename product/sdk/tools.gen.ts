@@ -102,6 +102,7 @@ export type ToolName =
   | "issue.resolve"
   | "judge.calibrate"
   | "judge.edit"
+  | "judge.flag_recheck"
   | "knowledge.ingest"
   | "knowledge.list"
   | "knowledge.span.approve"
@@ -157,6 +158,7 @@ export type ToolName =
   | "outcome.import.preview"
   | "outcome.label"
   | "outcome.list"
+  | "outcome.readings"
   | "outcome.record_verified"
   | "plan.change"
   | "policy.category.override"
@@ -903,6 +905,13 @@ export interface ToolInput {
     model: string;
     instructions: string;
   };
+  /** For other modules: a judge whose reads disagree with verified outcomes needs a re-check; its reads stop counting until it is calibrated again (draft) */
+  "judge.flag_recheck": {
+    judgeVersionId: string;
+    n: number;
+    agreement: number;
+    reason: string;
+  };
   /** Add a document (text, PDF or Word) to the knowledge base; its passages wait for your approval (draft) */
   "knowledge.ingest": {
     title?: string;
@@ -922,12 +931,16 @@ export interface ToolInput {
     spanIds: string[];
     decision?: "approved" | "rejected";
   };
-  /** calls needed to prove a change, before launch (read) */
+  /** calls needed to prove a change, before launch, given where its outcomes come from (read) */
   "learning.power": {
     baseline: number;
     mdeAbs: number;
     alpha?: number;
     power?: number;
+    /** share of outcomes that are verified or labelled by a person (default 1) */
+    trueShare?: number;
+    /** the judge's agreement with true labels, for the rest */
+    aiAgreement?: number;
   };
   /** draft changes to an agent from its own call evidence, gated and with evidence cited (draft) */
   "learning.propose": {
@@ -1206,6 +1219,10 @@ export interface ToolInput {
   };
   /** The outcomes this workspace measures: allowed and goal values, typed fields, the judge (instructions and model) and its calibration (read) */
   "outcome.list": Record<string, never>;
+  /** For other modules: per live call, the outcome that counts and its grade (verified, manager or a trusted AI read), the AI read, and its judge status (read) */
+  "outcome.readings": {
+    conversationIds: string[];
+  };
   /** Record an outcome verified by a system of record (payment, booking or CRM webhook). Called by integrations, never by a person or model (draft) */
   "outcome.record_verified": {
     conversationId: string;
@@ -1906,6 +1923,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "issue.resolve": { risk: "draft", needsApproval: false },
   "judge.calibrate": { risk: "draft", needsApproval: false },
   "judge.edit": { risk: "draft", needsApproval: false },
+  "judge.flag_recheck": { risk: "draft", needsApproval: false },
   "knowledge.ingest": { risk: "draft", needsApproval: false },
   "knowledge.list": { risk: "read", needsApproval: false },
   "knowledge.span.approve": { risk: "draft", needsApproval: false },
@@ -1961,6 +1979,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "outcome.import.preview": { risk: "draft", needsApproval: false },
   "outcome.label": { risk: "draft", needsApproval: false },
   "outcome.list": { risk: "read", needsApproval: false },
+  "outcome.readings": { risk: "read", needsApproval: false },
   "outcome.record_verified": { risk: "draft", needsApproval: false },
   "plan.change": { risk: "spend", needsApproval: true },
   "policy.category.override": { risk: "policy", needsApproval: true },

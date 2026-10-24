@@ -16,7 +16,7 @@ import { REASON_CODES, reasonFor } from './taxonomy.ts';
 import { recordingLink } from '../../recording-url.ts';
 import { allowedByFor } from './gate-trace.ts';
 import { retentionPolicy } from '../intake/retention.ts';
-import { recordVerified } from './verified.ts';
+import { flagJudgeRecheck, outcomeReadings, recordVerified } from './verified.ts';
 import { transcriptRemovedWhy } from '../memory/transcript-purge.ts';
 import { computeInsight, latestInsight, presentInsight, storeInsight, type Computed, type Scope } from './insights.ts';
 
@@ -417,6 +417,18 @@ export function registerTools(r: Registry): void {
       if (ctx.actor.type !== 'system') throw new Error('verified outcomes come only from a verified key delivered by an integration');
       return recordVerified(ctx.q, ctx.workspaceId, i);
     },
+  }));
+
+  // ---- shared readings for other modules (system only): learning's experiment rewards and the judge re-check ----------
+  r.register(tool(obj({ conversationIds: arr(uuid(), { max: 5000 }) }), {
+    name: 'outcome.readings', risk: 'read', roles: [],
+    summary: 'For other modules: per live call, the outcome that counts and its grade (verified, manager or a trusted AI read), the AI read, and its judge status',
+    run: (ctx, i) => outcomeReadings(ctx.q, ctx.workspaceId, i.conversationIds),
+  }));
+  r.register(tool(obj({ judgeVersionId: uuid(), n: num({ int: true, min: 1 }), agreement: num({ min: 0, max: 1 }), reason: str({ min: 3, max: 300 }) }), {
+    name: 'judge.flag_recheck', risk: 'draft', roles: [],
+    summary: "For other modules: a judge whose reads disagree with verified outcomes needs a re-check; its reads stop counting until it is calibrated again",
+    run: (ctx, i) => { if (ctx.actor.type !== 'system') throw new Error('only a system check flags a judge'); return flagJudgeRecheck(ctx.q, ctx.workspaceId, i); },
   }));
 
   // ---- judge.edit (draft per the tool registry; each edit is a new pinned version) and judge.calibrate ---------------

@@ -15,9 +15,9 @@ import CallThemes from './insight-themes.tsx';
 interface IssueRow { id: string; category: string; severity: string; status: string; detail: any; created_at: string }
 interface ProposalRow { id: string; agent_id: string; agent_name: string; kind: string; status: string; rationale: string | null; calls_to_prove: number | null; gates_passed: boolean | null; created_at: string;
   simulated: string | null; from_issue: string | null; from_theme?: string | null; changes: { part: string; before: string | null; after: string }[] }
-interface Decision { verdict: 'win' | 'loss' | 'inconclusive'; diff: number; ci: { lo: number; hi: number }; control: { n: number }; treatment: { n: number } }
+interface Decision { verdict: 'win' | 'loss' | 'inconclusive'; diff: number; ci: { lo: number; hi: number }; control: { n: number }; treatment: { n: number }; rewards?: { text: string }; warnings?: string[] }
 interface ExperimentRow { id: string; agent_name: string; state: string; callsToProve?: number; started_at: string; expires_at: string | null; progress?: { control: number; treatment: number; perVersion: number };
-  result?: { decision?: Decision; adoption?: { status: string; draft?: string }; guardrail?: { reason: string }; shadowAA?: { passed: boolean; reasons?: string[] }; stopped?: { reason: string } } | null }
+  result?: { decision?: Decision; adoption?: { status: string; draft?: string }; guardrail?: { reason: string }; shadowAA?: { passed: boolean; reasons?: string[] }; stopped?: { reason: string }; outcomeCheck?: { warning: string } } | null }
 interface Readiness { ready: boolean; reason?: string; fix?: string | null; plan?: string; note?: string }
 interface LessonRow { id: string; text: string; status: string; created_at: string }
 
@@ -171,5 +171,6 @@ function ExperimentItem({ e, onChange }: { e: ExperimentRow; onChange: () => voi
     stopped_guardrail: ['Stopped to protect callers', 'brick'], stopped_manual: ['Stopped', 'neutral'], expired: ['Expired', 'neutral'],
   };
   const [st, tone] = STATE[e.state] ?? [prettyCode(e.state), 'neutral'];
-  return <li><div className="row"><Chip tone={tone}>{st}</Chip>{e.callsToProve != null && <span className="small muted tnum">{count(e.callsToProve)} calls to prove</span>}</div><h3>{title}</h3>{body}</li>;
+  return <li><div className="row"><Chip tone={tone}>{st}</Chip>{e.callsToProve != null && <span className="small muted tnum">{count(e.callsToProve)} calls to prove</span>}</div><h3>{title}</h3>{body}
+    {(e.result?.outcomeCheck?.warning ?? e.result?.decision?.warnings?.[0]) && <p className="small hint-bad" role="status">{e.result?.outcomeCheck?.warning ?? e.result?.decision?.warnings?.[0]}</p>}</li>;
 }

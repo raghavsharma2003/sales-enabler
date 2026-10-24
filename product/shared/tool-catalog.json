@@ -3923,6 +3923,43 @@
    }
   },
   {
+   "name": "judge.flag_recheck",
+   "risk": "draft",
+   "summary": "For other modules: a judge whose reads disagree with verified outcomes needs a re-check; its reads stop counting until it is calibrated again",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "judgeVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "n": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "agreement": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "judgeVersionId",
+     "n",
+     "agreement",
+     "reason"
+    ]
+   }
+  },
+  {
    "name": "knowledge.ingest",
    "risk": "draft",
    "summary": "Add a document (text, PDF or Word) to the knowledge base; its passages wait for your approval",
@@ -4037,7 +4074,7 @@
   {
    "name": "learning.power",
    "risk": "read",
-   "summary": "calls needed to prove a change, before launch",
+   "summary": "calls needed to prove a change, before launch, given where its outcomes come from",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -4069,6 +4106,18 @@
       "type": "number",
       "minimum": 0.5,
       "maximum": 0.99
+     },
+     "trueShare": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "share of outcomes that are verified or labelled by a person (default 1)"
+     },
+     "aiAgreement": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 1,
+      "description": "the judge's agreement with true labels, for the rest"
      }
     },
     "required": [
@@ -5802,6 +5851,30 @@
     "additionalProperties": false,
     "properties": {},
     "required": []
+   }
+  },
+  {
+   "name": "outcome.readings",
+   "risk": "read",
+   "summary": "For other modules: per live call, the outcome that counts and its grade (verified, manager or a trusted AI read), the AI read, and its judge status",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "maxItems": 5000
+     }
+    },
+    "required": [
+     "conversationIds"
+    ]
    }
   },
   {

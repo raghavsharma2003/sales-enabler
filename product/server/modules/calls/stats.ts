@@ -17,7 +17,8 @@ export function wilsonLower(k: number, n: number, z = 1.959964): number {
 // A label is trusted at 0.90 agreement with a Wilson 95% lower bound of 0.80 on 50+ paired calls (blueprint F4).
 export const TRUST = { minN: 50, agreement: 0.9, lower: 0.8 } as const;
 
-export type CalibrationStatus = 'uncalibrated' | 'calibrating' | 'trusted' | 'not_trusted';
+/** needs_recheck: set by a check (learning) when the judge's reads disagree with verified outcomes; its reads stop counting. */
+export type CalibrationStatus = 'uncalibrated' | 'calibrating' | 'trusted' | 'not_trusted' | 'needs_recheck';
 
 export function calibrationStatus(n: number, agreement: number, lower: number): CalibrationStatus {
   if (n === 0) return 'uncalibrated';

@@ -26,7 +26,7 @@ import { applyOps, changedStrings, describeChange, parseOps, PROPOSAL_KINDS, run
 import { answeredBy, appendOnly, copiedQuote, isRecurringObjection } from './objections.ts';
 import { harmMoments, harmWindow, HARM_WINDOW, THROTTLE_FACTOR, type AnalysedCall } from './harm.ts';
 import { compareProbe, type SimRun } from './probe.ts';
-import { armFor, decide, harmSprt, powerPlan, sequentialGuard, shadowAA, type Arm } from './stats.ts';
+import { armFor, decide, harmSprt, labelAdjustedPlan, powerPlan, sequentialGuard, shadowAA, type Arm } from './stats.ts';
 
 const SYSTEM: Actor = { type: 'system', id: 'learning' };
 let bound: { pool: pg.Pool; registry: Registry } | null = null;
@@ -92,14 +92,15 @@ async function versionById(q: Queryable, ws: string, id: string): Promise<Versio
 /** Live calls only: test channel and manifests marked test never count. */
 const LIVE = `c.channel <> 'test' AND coalesce(c.run_manifest->>'test', 'false') <> 'true' AND c.status IN ('ended','processing','done')`;
 
-interface UnitRow { version_id: string; unit: string; success: boolean; has_outcome: boolean; hazard: boolean; safety: boolean }
+interface UnitRow { version_id: string; unit: string; success: boolean; has_outcome: boolean; hazard: boolean; safety: boolean; convs?: string[] }
 
 /** One row per contact (the unit) per version that actually ran, in this workspace only. */
 async function units(q: Queryable, ws: string, versionIds: string[], since: Date | null, successValues: string[], hazardCodes: string[]): Promise<UnitRow[]> {
   return many<UnitRow>(q, `SELECT c.agent_version_id AS version_id, coalesce(c.contact_id::text, c.id::text) AS unit,
       bool_or(c.outcome = ANY($3::text[])) AS success, bool_or(c.outcome IS NOT NULL) AS has_outcome,
       bool_or(c.reason_code = ANY($4::text[])) AS hazard,
-      bool_or(coalesce(c.analysis->>'safety_violation', 'false') = 'true') AS safety
+      bool_or(coalesce(c.analysis->>'safety_violation', 'false') = 'true') AS safety,
+      array_agg(c.id::text) AS convs
     FROM conversation c
     WHERE c.workspace_id = $1 AND c.agent_version_id = ANY($2::uuid[]) AND ${LIVE} AND ($5::timestamptz IS NULL OR c.started_at >= $5)
     GROUP BY 1, 2`, [ws, versionIds, successValues, hazardCodes, since]);
@@ -400,8 +401,8 @@ async function planTest(ctx: ToolCtx, i: AcceptIn, lock = false) {
   const hazardCodes = i.hazardCodes ?? DEFAULT_HAZARD_CODES;
   // Baseline from this workspace's own calls on the control version: no other tenant's data, ever.
   let baseline = i.baselineRate, baselineSource = 'given', withOutcome = 0;
+  const hist = (await units(ctx.q, ws, [base.id], new Date(Date.now() - 90 * 86_400_000), successValues, hazardCodes)).filter(u => u.has_outcome);
   if (baseline === undefined) {
-    const hist = (await units(ctx.q, ws, [base.id], new Date(Date.now() - 90 * 86_400_000), successValues, hazardCodes)).filter(u => u.has_outcome);
     withOutcome = hist.length;
     if (hist.length < 30) throw new NotReady(`The test is planned from this agent's own results: it needs 30 calls with a recorded outcome and has ${hist.length}. Outcomes come from your own system or a person's label; an AI guess counts only once its judge is calibrated.`, 'outcomes');
     baseline = Math.min(0.95, Math.max(0.02, hist.filter(u => u.success).length / hist.length));
@@ -409,12 +410,17 @@ async function planTest(ctx: ToolCtx, i: AcceptIn, lock = false) {
   }
   const mde = i.mdeAbs ?? Math.max(0.02, Math.round(baseline * 0.2 * 1000) / 1000);
   if (baseline + mde >= 1) throw new NotReady('This agent already reaches its goal on nearly every call; there is no room to prove a gain.');
-  return { p, base, goal, successValues, hazardCodes, baseline, baselineSource, mde, plan: powerPlan(baseline, mde), withOutcome };
+  // Where this agent's outcomes come from sets how much each call proves: verified and person-labelled outcomes in full, a
+  // trusted AI read at (2a-1)^2 of one (stats.labelAdjustedPlan). Read through calls' outcome.readings.
+  const mix = hist.length ? await rewardsOf(ctx.q, ws, hist) : null;
+  const plan = labelAdjustedPlan(powerPlan(baseline, mde), { trueShare: mix?.trueShare ?? 1, aiAgreement: mix?.aiAgreement ?? null });
+  return { p, base, goal, successValues, hazardCodes, baseline, baselineSource, mde, plan, labels: mix ? { text: mix.text, trueShare: mix.trueShare, aiAgreement: mix.aiAgreement } : null, withOutcome };
 }
 
 const pct1 = (x: number) => `${(x * 100).toFixed(1)}%`;
-const planLine = (t: { plan: { total: number; perArm: number }; baseline: number; mde: number }) =>
-  `about ${t.plan.total.toLocaleString('en-IN')} calls with a recorded outcome (${t.plan.perArm.toLocaleString('en-IN')} on each version) to prove ${pct1(t.baseline)} -> ${pct1(t.baseline + t.mde)}`;
+const planLine = (t: { plan: { total: number; perArm: number; labelFactor?: number; trueShare?: number; aiAgreement?: number | null }; baseline: number; mde: number }) =>
+  `about ${t.plan.total.toLocaleString('en-IN')} calls with a recorded outcome (${t.plan.perArm.toLocaleString('en-IN')} on each version) to prove ${pct1(t.baseline)} -> ${pct1(t.baseline + t.mde)}`
+  + (t.plan.labelFactor !== undefined && t.plan.labelFactor < 0.999 ? `, more than with confirmed outcomes alone: ${Math.round((1 - (t.plan.trueShare ?? 1)) * 100)}% of this agent's outcomes are AI reads at ${Math.round((t.plan.aiAgreement ?? 1) * 100)}% agreement` : '');
 
 async function accept(ctx: ToolCtx, i: AcceptIn) {
   const ws = ctx.workspaceId;
@@ -519,13 +525,67 @@ async function experimentUnits(q: Queryable, ws: string, e: ExperimentRow): Prom
       coalesce(bool_or(c.reason_code = ANY($4::text[])) FILTER (WHERE c.agent_version_id = x.version_id), false) AS hazard,
       coalesce(bool_or(coalesce(c.analysis->>'safety_violation', 'false') = 'true') FILTER (WHERE c.agent_version_id = x.version_id), false) AS safety,
       bool_or(c.agent_version_id IS NOT NULL AND c.agent_version_id <> x.version_id) AS crossed,
-      bool_or(c.agent_version_id = x.version_id) AS reached
+      bool_or(c.agent_version_id = x.version_id) AS reached,
+      coalesce(array_agg(c.id::text) FILTER (WHERE c.agent_version_id = x.version_id), '{}') AS convs
     FROM experiment_assignment x
     JOIN conversation c ON c.contact_id = x.contact_id AND c.workspace_id = x.workspace_id AND c.agent_version_id = ANY($5::uuid[])
       AND c.started_at >= x.assigned_at - interval '1 minute' AND ${LIVE}
     WHERE x.experiment_id = $1 AND x.workspace_id = $2
     GROUP BY x.version_id, x.contact_id`, [e.id, ws, d.successValues, d.hazardCodes, [e.control_version_id, e.treatment_version_id]]);
   return { rows: rows.filter(r => !r.crossed && (r as any).reached), crossovers: rows.filter(r => r.crossed).length };
+}
+
+// ---------- rewards: where each counted outcome came from (calls owns the grades; read through outcome.readings) ----------
+
+/** Above this share of disagreement between verified outcomes and AI reads, on at least this many calls with both, the
+ *  result carries a warning and the judge is set to 'needs_recheck' (calls' judge.flag_recheck): its reads stop counting. */
+export const DISAGREE = { minBoth: 20, maxRate: 0.15 };
+interface Reading { conversationId: string; counted: string | null; grade: 'verified' | 'manager' | 'ai_guess' | null; aiRead: string | null; judgeVersionId: string | null; judgeStatus: string | null; judgeAgreement: number | null; verified: string | null }
+export interface Rewards {
+  verified: number; manager: number; aiRead: number; ungraded: number; success: number; aiNotCounted: number; text: string;
+  disagreement: { both: number; differ: number; rate: number | null; judges: Record<string, { both: number; differ: number }> };
+  trueShare: number; aiAgreement: number | null;
+}
+
+/** For units with a counted outcome: which grade it came from (the best among the unit's calls), how many AI reads did
+ *  not count (their judge is not trusted), and how often AI reads disagree with verified outcomes. null when calls is
+ *  not loaded. Never reads calls' tables: outcome.readings is calls' shared reading. */
+async function rewardsOf(q: Queryable, ws: string, rows: UnitRow[]): Promise<Rewards | null> {
+  const ids = [...new Set(rows.flatMap(r => r.convs ?? []))].slice(0, 5000);
+  const res = await cross<Reading[]>(q, ws, 'outcome.readings', { conversationIds: ids });
+  if (res.status !== 'confirmed') return null;
+  const by = new Map(res.result.map(x => [x.conversationId, x]));
+  const rank = { verified: 0, manager: 1, ai_guess: 2 } as const;
+  const w = { verified: 0, manager: 0, aiRead: 0, ungraded: 0, success: 0 };
+  const agreements: number[] = [];
+  for (const u of rows) {
+    if (!u.has_outcome) continue;
+    const counted = (u.convs ?? []).map(id => by.get(id)).filter((x): x is Reading => !!x?.counted);
+    const best = counted.sort((a, b) => (a.grade ? rank[a.grade] : 3) - (b.grade ? rank[b.grade] : 3))[0];
+    if (best?.grade === 'verified') w.verified++; else if (best?.grade === 'manager') w.manager++;
+    else if (best?.grade === 'ai_guess') { w.aiRead++; if (best.judgeAgreement !== null) agreements.push(best.judgeAgreement); } else w.ungraded++;
+    if (u.success) w.success++;
+  }
+  const all = res.result;
+  const aiNotCounted = all.filter(x => x.aiRead && !x.counted).length;
+  const judges: Record<string, { both: number; differ: number }> = {};
+  for (const x of all) if (x.verified && x.aiRead && x.judgeVersionId) {
+    const j = (judges[x.judgeVersionId] ??= { both: 0, differ: 0 });
+    j.both++; if (x.verified !== x.aiRead) j.differ++;
+  }
+  const both = Object.values(judges).reduce((n, j) => n + j.both, 0), differ = Object.values(judges).reduce((n, j) => n + j.differ, 0);
+  const counted = w.verified + w.manager + w.aiRead + w.ungraded;
+  const text = `${w.verified} verified, ${w.manager ? `${w.manager} labelled by a person, ` : ''}${w.aiRead} AI-read`
+    + (w.ungraded ? `, ${w.ungraded} of unknown source` : '') + (aiNotCounted ? `; ${aiNotCounted} AI reads not counted (their judge is not trusted)` : '');
+  return { ...w, aiNotCounted, text, disagreement: { both, differ, rate: both ? differ / both : null, judges },
+    trueShare: counted ? (w.verified + w.manager) / counted : 1, aiAgreement: agreements.length ? agreements.reduce((a, b) => a + b, 0) / agreements.length : null };
+}
+
+/** The warning text when AI reads disagree with verified outcomes too often, else null. */
+function disagreementWarning(r: Rewards | null): string | null {
+  const d = r?.disagreement;
+  if (!d || d.both < DISAGREE.minBoth || (d.rate ?? 0) <= DISAGREE.maxRate) return null;
+  return `AI reads disagree with verified outcomes on ${d.differ} of ${d.both} calls (${Math.round((d.rate ?? 0) * 100)}%), above ${DISAGREE.maxRate * 100}%: the judge needs a re-check, and its reads no longer count until it is calibrated again`;
 }
 
 function tally(rows: UnitRow[], versionId: string) {
@@ -562,7 +622,22 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const tv = e.treatment_version_id!;               // a running experiment always has its treatment version
   const { rows, crossovers } = await experimentUnits(ctx.q, ws, e);
   const c = tally(rows, e.control_version_id), t = tally(rows, tv);
-  const progress = { control: c.m, treatment: t.m, withoutOutcome: c.n - c.m + t.n - t.m, crossovers, horizonPerArm: d.horizonPerArm, counting: COUNTING };
+  const rewards = await rewardsOf(ctx.q, ws, rows);
+  const warning = disagreementWarning(rewards) ?? e.result?.outcomeCheck?.warning ?? null;
+  if (warning && !e.result?.outcomeCheck?.judges) {
+    // Each judge whose reads disagreed is set to needs_recheck through calls (its reads stop counting from now on).
+    const judges = Object.entries(rewards!.disagreement.judges).filter(([, j]) => j.differ > 0);
+    const flagged: Record<string, string> = {};
+    for (const [id, j] of judges) {
+      const f = await cross(ctx.q, ws, 'judge.flag_recheck', { judgeVersionId: id, n: j.both, agreement: 1 - j.differ / j.both, reason: `experiment check: ${warning}` });
+      flagged[id] = f.status === 'confirmed' ? 'needs_recheck' : `not flagged: ${'reason' in f ? f.reason : f.status}`;
+    }
+    const outcomeCheck = { warning, judges: judges.map(([id]) => id), flagged, at: new Date().toISOString(), disagreement: rewards!.disagreement };
+    e.result = { ...(e.result ?? {}), outcomeCheck };
+    await ctx.q.query(`UPDATE experiment SET result = coalesce(result, '{}'::jsonb) || $2 WHERE id = $1`, [e.id, JSON.stringify({ outcomeCheck })]);
+  }
+  const progress = { control: c.m, treatment: t.m, withoutOutcome: c.n - c.m + t.n - t.m, crossovers, horizonPerArm: d.horizonPerArm, counting: COUNTING,
+    ...(rewards ? { rewards } : {}), ...(warning ? { warning } : {}) };
 
   // Fast lane: a harmful arm stops at once, whatever the horizon.
   // A regression on the goal itself also stops at once: the same always-valid test, with "did not reach the goal" as
@@ -593,7 +668,9 @@ async function check(ctx: ToolCtx, i: { experimentId: string }) {
 
   const controlArm: Arm = { k: c.success, n: c.m }, treatmentArm: Arm = { k: t.success, n: t.m };
   const decision = decide(controlArm, treatmentArm, d.alpha);
-  const result = { ...e.result, decision: { ...decision, control: controlArm, treatment: treatmentArm, label: `proved on ${(c.m + t.m).toLocaleString('en-IN')} calls with a recorded outcome, 95% interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points` } };
+  const result = { ...e.result, decision: { ...decision, control: controlArm, treatment: treatmentArm,
+    label: `proved on ${(c.m + t.m).toLocaleString('en-IN')} calls with a recorded outcome${rewards ? ` (${rewards.text})` : ''}, 95% interval ${pts(decision.ci.lo)} to ${pts(decision.ci.hi)} points`,
+    ...(rewards ? { rewards } : {}), ...(warning ? { warnings: [warning] } : {}) } };
   let publish: { status: string; actionId?: string; reason?: string } | null = null;
   if (decision.verdict === 'win') publish = await proposePublish(ctx.q, ws, e);
   await ctx.q.query(`UPDATE experiment SET state = 'decided', result = $2, decided_at = now() WHERE id = $1`, [e.id, JSON.stringify({ ...result, publish })]);
@@ -681,7 +758,9 @@ async function stop(ctx: ToolCtx, i: { experimentId: string; reason: string }) {
 /** While running, an experiment shows its meter and guardrails, never its effect (no peeking). */
 function publicExperiment(e: ExperimentRow) {
   const { result, ...rest } = e;
-  const shown = e.state === 'running' || e.state === 'aa_pending' ? { shadowAA: result?.shadowAA ? { passed: result.shadowAA.passed, reasons: result.shadowAA.reasons } : undefined } : result;
+  // While running no effect is shown (no peeking), but a warning about the outcomes themselves is.
+  const shown = e.state === 'running' || e.state === 'aa_pending' ? { shadowAA: result?.shadowAA ? { passed: result.shadowAA.passed, reasons: result.shadowAA.reasons } : undefined,
+    ...(result?.outcomeCheck?.warning ? { outcomeCheck: { warning: result.outcomeCheck.warning } } : {}) } : result;
   return { ...rest, result: shown, callsToProve: e.design?.plan?.total };
 }
 
@@ -927,9 +1006,12 @@ export const module: Module = {
       run: (ctx, i) => many(ctx.q, `SELECT id, agent_id, text, status, evidence, created_at FROM lesson WHERE workspace_id = $1 AND ($2::uuid IS NULL OR agent_id = $2)
         ORDER BY created_at DESC LIMIT 200`, [ctx.workspaceId, i.agentId ?? null]) }));
 
-    r.register(tool(obj({ baseline: num({ min: 0.01, max: 0.99 }), mdeAbs: num({ min: 0.005, max: 0.5 }), alpha: opt(num({ min: 0.001, max: 0.2 })), power: opt(num({ min: 0.5, max: 0.99 })) }),
-      { name: 'learning.power', risk: 'read', summary: 'calls needed to prove a change, before launch',
-        run: async (_ctx, i) => { if (i.baseline + i.mdeAbs >= 1) throw new Error('the target rate must stay below 100%'); return powerPlan(i.baseline, i.mdeAbs, i.alpha, i.power); } }));
+    r.register(tool(obj({ baseline: num({ min: 0.01, max: 0.99 }), mdeAbs: num({ min: 0.005, max: 0.5 }), alpha: opt(num({ min: 0.001, max: 0.2 })), power: opt(num({ min: 0.5, max: 0.99 })),
+        trueShare: opt(num({ min: 0, max: 1, desc: 'share of outcomes that are verified or labelled by a person (default 1)' })),
+        aiAgreement: opt(num({ min: 0.5, max: 1, desc: "the judge's agreement with true labels, for the rest" })) }),
+      { name: 'learning.power', risk: 'read', summary: 'calls needed to prove a change, before launch, given where its outcomes come from',
+        run: async (_ctx, i) => { if (i.baseline + i.mdeAbs >= 1) throw new Error('the target rate must stay below 100%');
+          return labelAdjustedPlan(powerPlan(i.baseline, i.mdeAbs, i.alpha, i.power), { trueShare: i.trueShare ?? 1, aiAgreement: i.aiAgreement ?? null }); } }));
   },
   routes(_router, deps) { bound = { pool: deps.pool, registry: deps.registry }; },
   jobs(deps) {

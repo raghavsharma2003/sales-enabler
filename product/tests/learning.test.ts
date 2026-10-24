@@ -14,6 +14,8 @@ import type { AgentConfig } from '../shared/agent-config.ts';
 import { bindLearning, checkRunning, module as learning } from '../server/modules/learning/index.ts';
 import { runGates } from '../server/modules/learning/gates.ts';
 import { powerPlan } from '../server/modules/learning/stats.ts';
+import { modules as allModules } from '../server/modules/index.ts';
+import { refreshOutcome } from '../server/modules/calls/analysis.ts';
 
 const URL_ = process.env.DATABASE_URL;
 const skip = !URL_ ? 'DATABASE_URL not set' : false;
@@ -98,7 +100,7 @@ let jobs: Job[] = [];
 before(async () => {
   if (skip) return;
   pool = createPool(URL_);
-  const app = buildApp(pool, [learning, siblings]);
+  const app = buildApp(pool, [learning, siblings, allModules.find(m => m.name === 'calls')!]);   // calls: outcome.readings and judge.flag_recheck, the outcome grades' owner
   registry = app.registry; jobs = app.jobs;
 });
 after(async () => { setFakeLlm(null); await pool?.end(); });
@@ -723,4 +725,107 @@ test('a check that stops a test while more assigns than the pool holds are in fl
     assert.equal(reverts.length, before + 1, 'the revert in the other module ran');
     for (const a of assigns) assert.equal(a.status, 'confirmed', JSON.stringify(a));
   } finally { bindLearning({ pool, registry }); void small.end().catch(() => {}); }
+});
+
+
+// ---------- rewards: verified outcomes first (outcome.import, record_verified), then a person's label, then a trusted AI read ----------
+
+/** A trusted judge for the workspace's 'visit' outcome (the way judge.edit + judge.calibrate leave one). */
+async function trustedJudge(ws: string) {
+  const def = (await one<{ id: string }>(pool, "SELECT id FROM outcome_definition WHERE workspace_id = $1 AND name = 'visit'", [ws]))!.id;
+  const judge = (await one<{ id: string }>(pool, "INSERT INTO judge_version (workspace_id, name, model, config, outcome_definition_id) VALUES ($1,'visit judge','fake-model','{}',$2) RETURNING id", [ws, def]))!.id;
+  await pool.query("INSERT INTO calibration (judge_version_id, workspace_id, n, agreement, wilson_lower, status) VALUES ($1,$2,60,0.95,0.86,'trusted')", [judge, ws]);
+  return { def, judge };
+}
+/** Dial n fresh contacts through experiment.assign; each call gets an AI read and/or a verified outcome, as calls stores them. */
+async function dialGraded(t: Awaited<ReturnType<typeof workspace>>, j: { def: string; judge: string }, n: number,
+  grade: (i: number) => { ai?: string; verified?: string; channel?: string }) {
+  const out: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const [c] = await newContacts(t.ws, 1);
+    const a = await t.call('experiment.assign', { agentId: t.agentId, contactId: c });
+    assert.ok(a.result, 'the experiment is running');
+    const g = grade(i);
+    const conv = (await one<{ id: string }>(pool, "INSERT INTO conversation (workspace_id, contact_id, agent_version_id, channel, status) VALUES ($1,$2,$3,$4,'done') RETURNING id",
+      [t.ws, c, a.result.versionId, g.channel ?? 'phone']))!.id;
+    if (g.ai) await pool.query("INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, judge_version_id) VALUES ($1,$2,$3,$4,$5,'ai_guess','judge',$6)",
+      [t.ws, conv, c, j.def, g.ai, j.judge]);
+    if (g.verified) await pool.query("INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, evidence) VALUES ($1,$2,$3,$4,$5,'verified','crm_file',$6)",
+      [t.ws, conv, c, j.def, g.verified, JSON.stringify({ key: { source: 'crm_file', ref: 'row-' + conv } })]);
+    await refreshOutcome(pool, t.ws, conv);
+    out.push(conv);
+  }
+  return out;
+}
+
+test('a verified outcome beats the AI read, every result says which it used, and a test call never counts', { skip }, async () => {
+  const t = await workspace();
+  const j = await trustedJudge(t.ws);
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.5, mdeAbs: 0.05, minDays: 0 });
+  // 3 calls: the AI read says confirmed, the business's own system says declined. 3 calls: only the (trusted) AI read.
+  await dialGraded(t, j, 6, i => (i < 3 ? { ai: 'confirmed', verified: 'declined' } : { ai: 'confirmed' }));
+  // A test call with a verified outcome never counts.
+  await dialGraded(t, j, 1, () => ({ verified: 'confirmed', channel: 'test' }));
+  const r = await t.call('experiment.check', { experimentId });
+  assert.equal(r.status, 'confirmed', JSON.stringify(r));
+  const p = r.result.progress;
+  assert.equal(p.control + p.treatment, 6, 'six live calls with an outcome; the test call is not one');
+  assert.deepEqual({ verified: p.rewards.verified, aiRead: p.rewards.aiRead }, { verified: 3, aiRead: 3 }, JSON.stringify(p.rewards));
+  assert.equal(p.rewards.success, 3, 'the three verified "declined" beat their AI reads of "confirmed"');
+  assert.match(p.rewards.text, /^3 verified, 3 AI-read/);
+});
+
+test('when verified outcomes and AI reads disagree on more than 15% of 20+ calls, the result warns and the judge needs a re-check', { skip }, async () => {
+  const t = await workspace();
+  const j = await trustedJudge(t.ws);
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.5, mdeAbs: 0.05, minDays: 0 });
+  // 25 calls with both: the AI read is wrong on 5 (20%). 4 more with only an AI read.
+  await dialGraded(t, j, 25, i => ({ ai: 'confirmed', verified: i < 5 ? 'declined' : 'confirmed' }));
+  const aiOnly = await dialGraded(t, j, 4, () => ({ ai: 'confirmed' }));
+  const r = await t.call('experiment.check', { experimentId });
+  const w = r.result.progress.rewards;
+  assert.deepEqual([w.disagreement.both, w.disagreement.differ], [25, 5], JSON.stringify(w));
+  assert.match(r.result.progress.warning ?? '', /disagree.*5 of 25.*20%/, JSON.stringify(r.result.progress));
+  const k = await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [j.judge]);
+  assert.equal(k!.status, 'needs_recheck');
+  // Its reads stop counting: the AI-only calls have no counted outcome now.
+  for (const c of aiOnly) assert.equal((await one<{ outcome: string | null }>(pool, 'SELECT outcome FROM conversation WHERE id = $1', [c]))!.outcome, null);
+  const stored = await one<{ result: any }>(pool, 'SELECT result FROM experiment WHERE id = $1', [experimentId]);
+  assert.match(stored!.result.outcomeCheck.warning, /disagree/);
+  // Under the threshold: no warning. 20 calls with both, 3 wrong (15%, not above it).
+  const u = await workspace();
+  const ju = await trustedJudge(u.ws);
+  const eu = await runningExperiment(u, { baselineRate: 0.5, mdeAbs: 0.05, minDays: 0 });
+  await dialGraded(u, ju, 20, i => ({ ai: 'confirmed', verified: i < 3 ? 'declined' : 'confirmed' }));
+  const ru = await u.call('experiment.check', { experimentId: eu.experimentId });
+  assert.equal(ru.result.progress.warning ?? null, null);
+  assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [ju.judge]))!.status, 'trusted');
+});
+
+test('power follows where the outcomes come from: a baseline read only by a trusted judge at 90% plans more calls, and says why', { skip }, async () => {
+  const t = await workspace();
+  const j = await trustedJudge(t.ws);
+  await pool.query("UPDATE calibration SET agreement = 0.9 WHERE judge_version_id = $1", [j.judge]);
+  // 40 baseline calls on the live version, each with only an AI read (16 confirmed: 40%).
+  const people = await newContacts(t.ws, 40);
+  let first = '';
+  for (const [i, c] of people.entries()) {
+    const conv = (await one<{ id: string }>(pool, "INSERT INTO conversation (workspace_id, contact_id, agent_version_id, channel, status) VALUES ($1,$2,$3,'phone','done') RETURNING id", [t.ws, c, t.versionId]))!.id;
+    await pool.query("INSERT INTO outcome (workspace_id, conversation_id, contact_id, definition_id, value, grade, source, judge_version_id) VALUES ($1,$2,$3,$4,$5,'ai_guess','judge',$6)",
+      [t.ws, conv, c, j.def, i < 16 ? 'confirmed' : 'declined', j.judge]);
+    await refreshOutcome(pool, t.ws, conv);
+    first ||= conv;
+  }
+  fakeProposals(first);
+  const pid = (await t.call('learning.propose', { agentId: t.agentId, max: 1 })).result.proposals[0].id;
+  assert.equal((await t.call('proposal.probe', { proposalId: pid })).result.status, 'awaiting_approval');
+  const r = (await t.call('proposal.readiness', { proposalId: pid })).result;
+  const { labelAdjustedPlan } = await import('../server/modules/learning/stats.ts');
+  const expected = labelAdjustedPlan(powerPlan(0.4, 0.08), { trueShare: 0, aiAgreement: 0.9 });
+  assert.equal(r.callsToProve, expected.total, JSON.stringify(r));
+  assert.ok(expected.total > powerPlan(0.4, 0.08).total, 'more than with confirmed outcomes alone');
+  assert.match(r.plan, /100% of this agent's outcomes are AI reads at 90% agreement/);
+  // The tool says the same for any mix.
+  const tool = (await t.call('learning.power', { baseline: 0.4, mdeAbs: 0.08, trueShare: 0.5, aiAgreement: 0.9 })).result;
+  assert.equal(tool.total, labelAdjustedPlan(powerPlan(0.4, 0.08), { trueShare: 0.5, aiAgreement: 0.9 }).total);
 });

@@ -167,3 +167,15 @@ export function shadowAA(units: AaUnit[], o: { runs?: number; alpha?: number; sa
   const plumbingOk = coverage >= minCoverage;
   return { units: scored.length, runs, falseWinners, falseWinnerRate, falseWinnerRateLower, coverage, coverageImbalanceP, plumbingOk, passed: reasons.length === 0, reasons };
 }
+
+/** Power with noisy labels. An outcome read by an AI judge that agrees with true labels at rate a carries (2a-1)^2 of the
+ *  information of a true one (a verified outcome or a person's label): for a binary outcome, label noise attenuates the
+ *  difference between arms by (2a-1). So the calls needed grow by 1 / (trueShare + (1 - trueShare) * (2a-1)^2). With only
+ *  true labels the plan is unchanged; fewer, truer labels prove more per call. */
+export function labelAdjustedPlan(plan: PowerPlan, mix: { trueShare: number; aiAgreement: number | null }): PowerPlan & { labelFactor: number; trueShare: number; aiAgreement: number | null } {
+  const share = Math.min(1, Math.max(0, mix.trueShare));
+  const a = mix.aiAgreement === null ? 1 : Math.min(1, Math.max(0.5, mix.aiAgreement));
+  const factor = share + (1 - share) * (2 * a - 1) ** 2;
+  const perArm = factor > 0 ? Math.ceil(plan.perArm / factor) : Number.POSITIVE_INFINITY;
+  return { ...plan, perArm, total: perArm * 2, labelFactor: factor, trueShare: share, aiAgreement: mix.aiAgreement };
+}

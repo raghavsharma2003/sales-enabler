@@ -119,3 +119,18 @@ test('probe: when the current version passes no practice call, the simulation ca
   const worse = compareProbe(none, [{ ...run('a', 1, false), metrics: { hung_up: true, safety_violations: false } as any }, run('b', 1, false), run('a', 2, false)]);
   assert.equal(worse.verdict, 'regressed');
 });
+
+
+test('power accounts for where outcomes come from: AI reads at agreement a count as (2a-1)^2 of a true label', async () => {
+  const { labelAdjustedPlan, powerPlan } = await import('../server/modules/learning/stats.ts');
+  const base = powerPlan(0.4, 0.08);
+  const allTrue = labelAdjustedPlan(base, { trueShare: 1, aiAgreement: null });
+  assert.equal(allTrue.perArm, base.perArm, 'all verified or person-labelled: as planned');
+  const half = labelAdjustedPlan(base, { trueShare: 0.5, aiAgreement: 0.9 });
+  const factor = 0.5 + 0.5 * (2 * 0.9 - 1) ** 2;
+  assert.equal(half.perArm, Math.ceil(base.perArm / factor));
+  assert.ok(half.perArm > base.perArm, 'fewer true labels need more calls');
+  assert.equal(half.total, half.perArm * 2);
+  assert.ok(Math.abs(half.labelFactor - factor) < 1e-9);
+  assert.ok(labelAdjustedPlan(base, { trueShare: 0.2, aiAgreement: 0.9 }).perArm > half.perArm);
+});
