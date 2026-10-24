@@ -24,6 +24,7 @@ import type { AgentConfig } from '../../../shared/agent-config.ts';
 import { arr, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { applyOps, changedStrings, describeChange, parseOps, PROPOSAL_KINDS, runGates, type ChangeOp } from './gates.ts';
 import { answeredBy, appendOnly, copiedQuote, isRecurringObjection } from './objections.ts';
+import { harmMoments, harmWindow, HARM_WINDOW, THROTTLE_FACTOR, type AnalysedCall } from './harm.ts';
 import { compareProbe, type SimRun } from './probe.ts';
 import { armFor, decide, harmSprt, powerPlan, sequentialGuard, shadowAA, type Arm } from './stats.ts';
 
@@ -794,12 +795,65 @@ export async function proposeFromObjections(deps: { pool: pg.Pool; registry: Reg
   return { ran };
 }
 
+// ---------- the live fast lane: harm moments throttle a script (blueprint decision 9) ----------
+
+const HARM_KIND_WORDS: Record<string, string> = {
+  complaint_human: 'a complaint and a request for a person', ignored_opt_out: 'an opt-out she did not act on',
+  crisis_without_line: 'a crisis where she did not give the crisis line', caller_says_lied: 'a caller saying she lied',
+};
+
+/** script.harm_check: after a live call is analysed, read the script's recent analysed live calls (test calls never),
+ *  find harm moments, and throttle the script when HARM_MIN fall in any HARM_WINDOW consecutive calls. Only calls that
+ *  ended after the script's last restore count, so restoring is never undone by the same moments. */
+async function harmCheck(ctx: ToolCtx, i: { conversationId: string }) {
+  const ws = ctx.workspaceId;
+  const cv = await one<{ version_id: string | null; agent_id: string | null }>(ctx.q,
+    `SELECT c.agent_version_id AS version_id, v.agent_id FROM conversation c LEFT JOIN agent_version v ON v.id = c.agent_version_id WHERE c.id = $1 AND c.workspace_id = $2`, [i.conversationId, ws]);
+  if (!cv?.version_id || !cv.agent_id) return { state: 'no_script' };
+  const active = await one<{ id: string }>(ctx.q, 'SELECT id FROM script_throttle WHERE workspace_id = $1 AND agent_version_id = $2 AND restored_at IS NULL', [ws, cv.version_id]);
+  if (active) return { state: 'throttled', throttleId: active.id };
+  const since = (await one<{ at: Date | null }>(ctx.q, 'SELECT max(restored_at) AS at FROM script_throttle WHERE workspace_id = $1 AND agent_version_id = $2', [ws, cv.version_id]))?.at ?? null;
+  const calls = (await many<AnalysedCall & { ended_at: Date }>(ctx.q, `SELECT c.id, c.reason_code, c.end_reason, c.flags, c.transcript, c.analysis, c.ended_at,
+        coalesce((SELECT json_agg(json_build_object('kind', m.kind, 'quote', m.quote, 'at_ms', m.at_ms)) FROM call_moment m
+                  WHERE m.conversation_id = c.id AND m.workspace_id = c.workspace_id), '[]'::json) AS moments
+      FROM conversation c WHERE c.workspace_id = $1 AND c.agent_version_id = $2 AND ${LIVE} AND c.analysis->>'status' = 'done'
+        AND ($3::timestamptz IS NULL OR c.ended_at > $3)
+      ORDER BY c.ended_at DESC NULLS LAST, c.id DESC LIMIT $4`, [ws, cv.version_id, since, HARM_WINDOW * 3])).reverse();
+  const found = harmWindow(calls.map(c => ({ id: c.id, harm: harmMoments(c) })));
+  if (!found) return { state: 'ok', calls: calls.length };
+  const v = await one<{ number: number; name: string }>(ctx.q, 'SELECT v.number, a.name FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE v.id = $1', [cv.version_id]);
+  const detail = { kind: 'script_throttled', signal: 'harm_moments', agentId: cv.agent_id, versionId: cv.version_id, agentName: v?.name, versionNumber: v?.number,
+    factor: THROTTLE_FACTOR, window: HARM_WINDOW, calls: found.calls, moments: found.moments.map(m => ({ callId: m.callId, kind: m.kind, words: HARM_KIND_WORDS[m.kind], quote: m.quote, speaker: m.speaker })),
+    summary: `${found.moments.length} harm moments in ${HARM_WINDOW} consecutive calls of ${v?.name ?? 'this agent'}, version ${v?.number ?? '?'}: ${[...new Set(found.moments.map(m => HARM_KIND_WORDS[m.kind]))].join('; ')}. Its campaigns are slowed to ${THROTTLE_FACTOR * 100}% of their lines until a member restores them.` };
+  const issue = (await one<{ id: string }>(ctx.q, `INSERT INTO issue (workspace_id, category, severity, subject_type, subject_id, detail) VALUES ($1,'Safety','critical','agent_version',$2,$3) RETURNING id`,
+    [ws, cv.version_id, JSON.stringify(detail)]))!.id;
+  const t = await one<{ id: string }>(ctx.q, `INSERT INTO script_throttle (workspace_id, agent_id, agent_version_id, factor, issue_id, detail) VALUES ($1,$2,$3,$4,$5,$6)
+    ON CONFLICT (agent_version_id) WHERE restored_at IS NULL DO NOTHING RETURNING id`, [ws, cv.agent_id, cv.version_id, THROTTLE_FACTOR, issue, JSON.stringify(detail)]);
+  if (!t) { await ctx.q.query('DELETE FROM issue WHERE id = $1', [issue]); return { state: 'throttled' }; }   // a concurrent check got there first
+  return { state: 'throttled_now', throttleId: t.id, issueId: issue, factor: THROTTLE_FACTOR, moments: detail.moments.length };
+}
+
+/** script.pacing.restore: a member's one tap (A1; the registry audits it). The issue is resolved with who restored it. */
+async function pacingRestore(ctx: ToolCtx, i: { versionId: string }) {
+  const t = await one<{ id: string; issue_id: string | null }>(ctx.q,
+    `UPDATE script_throttle SET restored_at = now(), restored_by = $3 WHERE workspace_id = $1 AND agent_version_id = $2 AND restored_at IS NULL RETURNING id, issue_id`,
+    [ctx.workspaceId, i.versionId, `${ctx.actor.type}:${ctx.actor.id}`]);
+  if (!t) return { restored: false, note: 'this script is not slowed' };
+  if (t.issue_id) await ctx.q.query(`UPDATE issue SET status = 'resolved', resolved_at = now(), resolution = $3 WHERE id = $1 AND workspace_id = $2`,
+    [t.issue_id, ctx.workspaceId, 'full pacing restored by a member']);
+  return { restored: true, throttleId: t.id };
+}
+
 // ---------- the module ----------
 
 export const module: Module = {
   name: 'learning',
   register(r) {
     reg = r;
+    r.register(tool(obj({ conversationId: uuid() }), { name: 'script.harm_check', risk: 'draft',
+      summary: 'after a live call is analysed: slow its script to 25% of its lines when 2 harm moments fall in 15 consecutive calls', run: harmCheck }));
+    r.register(tool(obj({ versionId: uuid() }), { name: 'script.pacing.restore', risk: 'draft', summary: 'restore full pacing to a script that harm moments slowed',
+      describe: async (i, ctx) => `Restore full pacing to ${await label(ctx, 'agent_version', i.versionId)}`, run: pacingRestore }));
     r.register(tool(proposeIn, { name: 'learning.propose', risk: 'draft', summary: 'draft changes to an agent from its own call evidence, gated and with evidence cited', run: propose }));
 
     r.register(tool(obj({ agentId: opt(uuid()), status: opt(str({ max: 30 })) }), { name: 'proposal.list', risk: 'read', summary: 'list learning proposals',

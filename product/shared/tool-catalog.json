@@ -6017,6 +6017,54 @@
    }
   },
   {
+   "name": "script.harm_check",
+   "risk": "draft",
+   "summary": "after a live call is analysed: slow its script to 25% of its lines when 2 harm moments fall in 15 consecutive calls",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
+   }
+  },
+  {
+   "name": "script.pacing.restore",
+   "risk": "draft",
+   "summary": "restore full pacing to a script that harm moments slowed",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "versionId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "versionId"
+    ]
+   }
+  },
+  {
    "name": "search.global",
    "risk": "read",
    "summary": "Find contacts, agents, campaigns and calls by name or phone number",

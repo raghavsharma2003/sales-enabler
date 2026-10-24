@@ -1046,3 +1046,20 @@ test('campaign.draft refuses an experiment candidate version: a campaign runs a 
   const okd: any = await registry.execute(pool, 'campaign.draft', { name: 'c', category: 'service', agentVersionId: w.versionId }, as(w));
   assert.equal(okd.status, 'confirmed', JSON.stringify(okd));
 });
+
+test('G12: a script slowed by harm moments gets 25% of its campaign\'s lines (at least one) until a member restores it', { skip }, async () => {
+  // learning's script.harm_check writes script_throttle (blueprint decision 9); the gate is what makes it slow calls.
+  const w = await world();
+  await pool.query('INSERT INTO dial_policy (workspace_id, concurrency) VALUES ($1, 10)', [w.ws]);
+  const camp = await campaignRow(w, 'service', { concurrency: 4 });
+  const busy = await attempt(w, { contact: await addContact(w), campaign: camp });
+  await pool.query("UPDATE attempt SET status = 'connected' WHERE id = $1", [busy]);
+  assert.equal(code(await gate(await attempt(w, { contact: await addContact(w), campaign: camp }))), 'allowed', '1 of 4 lines busy');
+  await pool.query("UPDATE attempt SET status = 'connected' WHERE id = (SELECT id FROM attempt WHERE campaign_id = $1 AND status <> 'connected' ORDER BY created_at DESC LIMIT 1)", [camp]);
+  await pool.query(`INSERT INTO script_throttle (workspace_id, agent_id, agent_version_id, factor) VALUES ($1,$2,$3,0.25)`, [w.ws, w.agentId, w.versionId]);
+  const v = await gate(await attempt(w, { contact: await addContact(w), campaign: camp }));
+  assert.equal(code(v), 'deferred_concurrency', '2 lines busy, and the slowed script may use 1 of 4');
+  assert.match((v as any).detail ?? (v as any).reason ?? JSON.stringify(v), /slowed to 25%/);
+  await pool.query('UPDATE script_throttle SET restored_at = now() WHERE agent_version_id = $1', [w.versionId]);
+  assert.equal(code(await gate(await attempt(w, { contact: await addContact(w), campaign: camp }))), 'allowed', 'restored: 2 of 4 lines busy');
+});

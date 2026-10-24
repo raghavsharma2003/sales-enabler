@@ -2,6 +2,8 @@
 //   memory.extract {conversationId}         (memory: remembers what the caller said)
 //   experiment.check {experimentId}         (learning: guardrails on every connected call, for each running experiment
 //                                            on the agent whose version actually ran)
+//   script.harm_check {conversationId}     (learning: blueprint decision 9's fast lane; 2 harm moments in 15 consecutive
+//                                            calls of a script slow it to 25%; every analysed live call on an agent version)
 //   attempt.retry_per_ladder {attemptId, outcome}  (campaigns, A3: after every non-final outcome of a campaign attempt;
 //                                            runs after analysis so a callback request is known; final outcomes and
 //                                            unknown are never sent, so nothing here can start an automatic retry of them)
@@ -56,6 +58,7 @@ export async function afterCall(pool: pg.Pool, r: Registry, ws: string, conversa
       if (!running.length) out['experiment.check'] = 'no running experiment';
     }
   }
+  if (cv.agent_id) out['script.harm_check'] = await call(pool, r, ws, 'script.harm_check', { conversationId });
   const cls = cv.attempt_id ? retryClass(cv.end_reason, cv.reason_code) : null;
   if (cls) out['attempt.retry_per_ladder'] = await call(pool, r, ws, 'attempt.retry_per_ladder', { attemptId: cv.attempt_id, outcome: cls });
   return out;

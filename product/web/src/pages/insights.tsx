@@ -27,6 +27,7 @@ const SIGNAL_WORDS: Record<string, string> = {
   opt_out_rate: 'ended with the person asking not to be called again', engine_error_rate: 'had a voice engine error', quotes_dropped_rate: 'had a quote that could not be checked',
 };
 function issueText(d: any): string {
+  if (d && typeof d === 'object' && d.kind === 'script_throttled' && typeof d.summary === 'string') return d.summary;
   if (d && typeof d === 'object' && typeof d.signal === 'string' && typeof d.calls === 'number') {
     return `${d.hits} of the last ${d.calls} calls (${Math.round(d.value * 100)}%) ${SIGNAL_WORDS[d.signal] ?? 'matched this monitor'}. This monitor flags it above ${Math.round(d.threshold * 100)}%.`;
   }
@@ -78,7 +79,10 @@ export default function Insights() {
               <li key={i.id}><div className="row"><Chip tone={i.severity === 'critical' ? 'brick' : i.severity === 'warning' ? 'marigold' : 'neutral'} icon={<AlertTriangle size={12} aria-hidden />}>{prettyCode(i.severity)}</Chip><span className="small muted">first seen {ago(i.created_at)}</span></div>
                 <h3>{prettyCode(i.category)}</h3><p className="small">{issueText(i.detail)}</p>
                 {adoptedOf(i.detail)?.at && <p className="small" role="status">A change was adopted for this on {date(adoptedOf(i.detail)!.at!)} ({adoptedOf(i.detail)!.change}). It closes by itself once the calls since it opened are back under the threshold.</p>}
-                <div><Btn size="sm" onClick={() => say(`Issue ${i.category}: ${issueText(i.detail)} What should I change? Prepare it as a change I can accept.`)}>Ask the assistant what to change</Btn></div></li>))}</ul>}</Async></Card>
+                {i.detail?.kind === 'script_throttled' && Array.isArray(i.detail.moments) && <ul className="small">{i.detail.moments.map((m: any, k: number) => (
+                  <li key={k}>{m.words}{m.quote ? <>: <q>{m.quote}</q> <span className="muted">({m.speaker === 'agent' ? 'what she said' : 'the caller'}, <Link to={`/calls/${m.callId}`}>open the call</Link>)</span></> : <> (<Link to={`/calls/${m.callId}`}>open the call</Link>)</>}</li>))}</ul>}
+                <div className="row">{i.detail?.kind === 'script_throttled' && i.detail.versionId && <Btn size="sm" kind="primary" onClick={async () => { const r = await act('script.pacing.restore', { versionId: i.detail.versionId }, { describe: 'Full pacing restored.' }); if (r.ok) issues.reload(); }}>Restore full pacing</Btn>}
+                  <Btn size="sm" onClick={() => say(`Issue ${i.category}: ${issueText(i.detail)} What should I change? Prepare it as a change I can accept.`)}>Ask the assistant what to change</Btn></div></li>))}</ul>}</Async></Card>
 
         <Card aria-labelledby="mo-h"><CardHead id="mo-h" title="What is being watched" sub="A monitor that has not read any calls yet is shown as not read, never as all good." />
           <Async q={monitors} what="Monitors" tool="monitor.list">{d0 => { const d = { monitors: d0.monitors ?? [], defaults: d0.defaults ?? [] }; return <>

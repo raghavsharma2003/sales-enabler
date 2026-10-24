@@ -374,6 +374,15 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       const later = new Date(now.getTime() + 30_000);
       if (live!.ws >= limit) throw new Refuse('deferred_concurrency', `${live!.ws} of ${limit} lines busy${inbound ? ' (some held for inbound)' : ''}`, later);
       if (campaign && policy.concurrency && live!.camp >= policy.concurrency) throw new Refuse('deferred_concurrency', `campaign at its ${policy.concurrency} lines`, later);
+      // A script that harm moments slowed (learning's script.harm_check, blueprint decision 9) gets its factor of the
+      // campaign's lines, at least one, until a member restores it.
+      if (campaign && version) {
+        const slow = await one<{ factor: string }>(q, 'SELECT factor::text FROM script_throttle WHERE workspace_id = $1 AND agent_version_id = $2 AND restored_at IS NULL', [ws, version.id]);
+        if (slow) {
+          const lines = policy.concurrency ?? limit, cap = Math.max(1, Math.floor(lines * Number(slow.factor)));
+          if (live!.camp >= cap) throw new Refuse('deferred_concurrency', `this script is slowed to ${Math.round(Number(slow.factor) * 100)}% after harm moments: ${live!.camp} of ${cap} of the campaign's ${lines} lines busy`, later);
+        }
+      }
     }],
   ];
 

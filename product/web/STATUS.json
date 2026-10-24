@@ -105,6 +105,7 @@
   "proposal.list",
   "proposal.probe",
   "proposal.readiness",
+  "script.pacing.restore",
   "safety.cases",
   "scim.token.create",
   "scim.token.list",

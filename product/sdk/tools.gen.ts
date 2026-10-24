@@ -160,6 +160,8 @@ export type ToolName =
   | "scim.token.list"
   | "scim.token.revoke"
   | "scim.token.rotate"
+  | "script.harm_check"
+  | "script.pacing.restore"
   | "search.global"
   | "secret.reveal"
   | "share.link.create"
@@ -1062,6 +1064,28 @@ export interface ToolInput {
     /** the contact attribute holding the external id (default external_id) */
     idKey?: string;
   };
+  /** Record the matched rows of a previewed file as verified outcomes (policy, waits for approval) */
+  "outcome.import": {
+    importId: string;
+  };
+  /** Files of verified results imported, with matched, unmatched and ambiguous rows and how often the AI read disagreed (read) */
+  "outcome.import.list": {
+    limit?: number;
+  };
+  /** Read a file of results from your own system (paid, renewed, booked) and show which call each row matches; nothing is recorded yet (draft) */
+  "outcome.import.preview": {
+    fileName: string;
+    /** a CSV or TSV file as text: a header row, then one outcome per row */
+    csv?: string;
+    /** an Excel (.xlsx) file, base64; its first sheet is read */
+    xlsxBase64?: string;
+    definitionId?: string;
+    campaignId?: string;
+    /** how many days before the row date a call may be (default 14) */
+    windowDays?: number;
+    /** the contact attribute holding the external id (default external_id) */
+    idKey?: string;
+  };
   /** Record a manager's outcome label for a call (used to calibrate judges) (draft) */
   "outcome.label": {
     conversationId: string;
@@ -1213,6 +1237,14 @@ export interface ToolInput {
   /** Replace a provisioning token's secret; the old secret stops working at once (policy, waits for approval) */
   "scim.token.rotate": {
     id: string;
+  };
+  /** after a live call is analysed: slow its script to 25% of its lines when 2 harm moments fall in 15 consecutive calls (draft) */
+  "script.harm_check": {
+    conversationId: string;
+  };
+  /** restore full pacing to a script that harm moments slowed (draft) */
+  "script.pacing.restore": {
+    versionId: string;
   };
   /** Find contacts, agents, campaigns and calls by name or phone number (read) */
   "search.global": {
@@ -1703,6 +1735,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "scim.token.list": { risk: "read", needsApproval: false },
   "scim.token.revoke": { risk: "external", needsApproval: true },
   "scim.token.rotate": { risk: "policy", needsApproval: true },
+  "script.harm_check": { risk: "draft", needsApproval: false },
+  "script.pacing.restore": { risk: "draft", needsApproval: false },
   "search.global": { risk: "read", needsApproval: false },
   "secret.reveal": { risk: "draft", needsApproval: false },
   "share.link.create": { risk: "policy", needsApproval: true },
