@@ -184,7 +184,7 @@ export const PAST: Record<string, string> = {
   'test.browser_call': 'started a test call in the browser', 'test.ring_member_phone': 'rang their own phone for a test', 'test.simulate': 'ran a practice call', 'test.simulate_batch': 'ran a set of practice calls',
   'thread.get': 'opened an assistant conversation', 'thread.list': 'looked at the assistant conversations', 'tool.attach': 'changed what an agent can do on a call', 'usage.get': 'looked at what has been spent',
   'version.candidate': 'prepared a version to test', 'version.diff': 'compared two versions', 'version.list': 'looked at an agent\'s versions', 'version.publish': 'published an agent', 'voice.set': 'chose a voice for an agent',
-  'wallet.credit': 'credited the wallet by hand', 'wallet.check': 'checked what the wallet can pay for', 'wallet.get': 'looked at the wallet', 'wallet.topup': 'added money to the wallet',
+  'wallet.credit': 'credited the wallet by hand', 'money.parts': 'looked at what each voice part costs', 'wallet.check': 'checked what the wallet can pay for', 'wallet.get': 'looked at the wallet', 'wallet.topup': 'added money to the wallet',
   'webhook.create': 'added a webhook', 'webhook.delete': 'removed a webhook', 'webhook.deliveries': 'looked at what was sent to webhooks', 'webhook.emit': 'queued a webhook event', 'webhook.list': 'looked at the webhooks', 'webhook.replay': 'sent a webhook event again',
   'workspace.get': 'looked at the workspace',
   'attempt.cancel_for_contact': 'cancelled waiting call attempts for a person', 'member.phone.verify_confirm': 'checked the code for verifying their phone', 'member.phone.verify_start': 'asked for a call to verify their phone',

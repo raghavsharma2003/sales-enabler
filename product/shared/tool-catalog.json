@@ -3774,6 +3774,25 @@
    }
   },
   {
+   "name": "money.parts",
+   "risk": "read",
+   "summary": "what each part a voice stack can be built from costs per minute, in rupees, with its list price as the basis",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
    "name": "money.reconcile",
    "risk": "draft",
    "summary": "compare settled charges with metered cost lines; open an issue on drift",

@@ -12,6 +12,8 @@ import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import { prepareTopup, resolveTopups, runTopup, type Prepared } from './topup.ts';
 import { sweepHolds } from './sweep.ts';
 import { walletBlocker, type WalletPurpose } from './blockers.ts';
+import { EXTRAS_INR_MICRO_PER_MIN, partPrice } from './prices.ts';
+import { COMPONENTS } from '../../../shared/components.ts';
 import { caps, costLines, credit, defaultRange, estimate, priceFor, reconcile, rollPeriods, statement, usage, walletView } from './money.ts';
 
 const MAX_TOPUP = 1_000_000_000;          // ₹10 lakh per top-up
@@ -60,6 +62,15 @@ export function register(r: Registry): void {
   r.register(tool(obj({ stackId: str({ max: 60 }) }), {
     name: 'money.card', risk: 'read', summary: 'show the provider cost card for a stack, with sources and dates',
     run: async (ctx, i) => ({ stackId: i.stackId, lines: await costLines(ctx.q, i.stackId), price: await priceFor(ctx.q, ctx.workspaceId, i.stackId) }),
+  }));
+
+  r.register(tool(obj({}), {
+    name: 'money.parts', risk: 'read', summary: 'what each part a voice stack can be built from costs per minute, in rupees, with its list price as the basis',
+    run: async () => ({
+      parts: COMPONENTS.flatMap(c => { const p = partPrice(c.part, c.id, c.price); return p ? [{ ...p, display: `${formatInr(Math.round(p.inrMicroPerMin / 1000), { paise: true })} a minute` }] : []; }),
+      extrasInrMicroPerMin: EXTRAS_INR_MICRO_PER_MIN,
+      note: 'What Vyakti pays its providers, not a customer price. A built stack also carries the phone line, infrastructure and call analysis.',
+    }),
   }));
 
   r.register(tool(obj({}), {

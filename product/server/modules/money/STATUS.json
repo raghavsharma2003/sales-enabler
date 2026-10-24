@@ -13,7 +13,8 @@
     "cap.lower": "draft (A1; only lowers, or adds a cap)",
     "plan.change": "spend (A2, version-bound to the current plan)",
     "money.reconcile": "draft (opens money_drift issues)",
-    "wallet.check": "read: {purpose: launch|number_rent, needInrMilli?} -> {blocker: {code:'wallet_short', message, why, fix: wallet.topup 'Add money'} | null}"
+    "wallet.check": "read: {purpose: launch|number_rent, needInrMilli?} -> {blocker: {code:'wallet_short', message, why, fix: wallet.topup 'Add money'} | null}",
+    "money.parts": "read: every buildable part (shared/components.ts) with a ₹-per-minute figure at money's rates and minute profile, basis = its list price; extrasInrMicroPerMin = phone line + infrastructure + analysis"
   },
   "tests": {
     "passed": 26,
@@ -41,7 +42,8 @@
     "jobs(): money.nightly 00:00 IST (roll, sweep, resolve top-ups, reconcile) and money.sweep every 5 min (sweep, resolve top-ups)",
     "trial credit: money_config.trial_credit_inr_milli (default 0) applied by a trigger on the wallet's first write, once per workspace and once per owner email hash (money_trial_grant, survives workspace deletion); ledgered as wallet_topup kind trial_credit, shown as 'Trial credit' in invoice.get moneyIn",
     "copy: user-facing text says Vyakti (estimate basis, price 'not set' text, statement note, tool summaries, cost-card labels via 0906)",
-    "wallet blockers (blockers.ts) used by campaigns: launchBlockers adds wallet_short with one call's G9 hold; number.search returns walletBlocker for the cheapest offer's rent; number.rent refuses on an empty wallet naming the wallet and 'Add money'"
+    "wallet blockers (blockers.ts) used by campaigns: launchBlockers adds wallet_short with one call's G9 hold; number.search returns walletBlocker for the cheapest offer's rent; number.rent refuses on an empty wallet naming the wallet and 'Add money'",
+    "R4: stack.list (agents) prices each part in ₹ a minute from money.parts, list price kept as priceBasis; a built stack's parts + extras equal money.estimate's all-in figure"
   ],
   "untested": [
     "the minute profile (50% caller audio gated, 4 replies/min x 2000 in + 60 out tokens, 30 s of her speech at 15 chars/s) is an ASSUMPTION, not measured; estimates are only as good as it until the meter feeds per-stack averages",
@@ -52,7 +54,8 @@
     "money.nightly has run only in tests, not on a live timer",
     "no real gateway lookup: Razorpay adapter is disabled and has no lookup(), so its unknown payments would only raise issues",
     "the sweep's 'runtime silent' rule uses reservation age, not a last-event timestamp (none exists); a call longer than the campaign's maxDurationS + 15 min would lose its hold early (its cost is still charged late, never dropped)",
-    "reservations with no attempt_id are not swept"
+    "reservations with no attempt_id are not swept",
+    "gemini-3.8-live part shows the earlier report's ₹5.72/min while its component note says ₹1.90 from one later test call; the two need reconciling from metered calls"
   ],
   "needs_from_others": [
     "#4 kernel: reservation has no campaign_id column, so holds cannot be shown per campaign (cost lines are grouped through attempt.campaign_id instead)",

@@ -107,6 +107,20 @@ async function priceOf(r: Registry, ctx: ToolCtx, s: VoiceStack): Promise<Figure
   } catch { return NOT_PRICED; }
 }
 
+/** Each part's price in rupees a minute, from the money module (walkthrough R4): the picker's parts then read like its stack
+ *  cards. The published list price moves to priceBasis. Without the money module a part keeps its list price. */
+async function pricedParts<T extends { part: string; id: string; price: string }>(r: Registry, ctx: ToolCtx, cards: T[]): Promise<(T & { priceBasis: string })[]> {
+  const t = r.get('money.parts');
+  let figs = new Map<string, { display: string; basis: string }>();
+  if (t?.risk === 'read') {
+    try {
+      const out = await t.run(ctx, t.input({})) as { parts: { part: string; id: string; display: string; basis: string }[] };
+      figs = new Map(out.parts.map(p => [`${p.part}:${p.id}`, p]));
+    } catch { /* keep list prices */ }
+  }
+  return cards.map(c => { const f = figs.get(`${c.part}:${c.id}`); return { ...c, price: f ? `${f.display}, provider cost` : c.price, priceBasis: f ? f.basis : c.price }; });
+}
+
 function stackCard(s: VoiceStack, h: RuntimeHealth | null = null, pricePerMinute: Figure = NOT_PRICED) {
   return { id: s.id, label: s.label, kind: s.kind, status: s.status, note: s.note, replyGap: s.replyGap, requires: s.requires ?? [], risks: s.risks ?? [],
     availability: availabilityOf(s.id, h, s.components),
@@ -393,7 +407,7 @@ export function registerAgentTools(r: Registry): void {
       const stacks = [];
       for (const s of STACKS) stacks.push(stackCard(s, h, await priceOf(r, ctx, s)));
       return { default: DEFAULT_STACK_ID, note: 'New agents start on the default stack. Choose another, or build your own from the parts below.',
-        stacks, components: COMPONENTS.map(c => componentCard(c, h)) };
+        stacks, components: await pricedParts(r, ctx, COMPONENTS.map(c => componentCard(c, h))) };
     },
   }));
 

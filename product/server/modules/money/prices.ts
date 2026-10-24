@@ -120,3 +120,29 @@ export function seedSql(): string {
   const vals = computeCard().map(r => `  (${[q(r.stackId), q(r.component), q(r.provider), r.inrMicroPerMin, r.inrMicroPerCall, q(r.unitPrice), q(r.usage), q(r.grade), q(r.source), q(r.asOf)].join(', ')})`);
   return 'INSERT INTO cost_card (stack_id, component, provider, inr_micro_per_min, inr_micro_per_call, unit_price, usage, grade, source, as_of) VALUES\n' + vals.join(',\n') + ';\n';
 }
+
+export interface PartPrice { part: 'ears' | 'brain' | 'voice' | 's2s'; id: string; inrMicroPerMin: number; basis: string }
+
+/** What one part of a built stack costs Vyakti per connected minute, by the same rates and minute profile as the cost
+ *  card (ears gated, as a built stack runs them), so a stack's parts plus EXTRAS add up to money.estimate's figure.
+ *  `listPrice` is the part's published price (shared/components.ts), quoted in the basis; null when no rate is on file. */
+export function partPrice(part: PartPrice['part'], id: string, listPrice: string): PartPrice | null {
+  const usd = (s: string) => /\$/.test(s) ? `${s}, at ₹${FX} to the US dollar` : s;
+  if (part === 's2s') {
+    const p = S2S[id];
+    return p ? { part, id, inrMicroPerMin: micro(p.inrMin), basis: `About ₹${p.inrMin} a minute for hearing, thinking and speaking together, from an earlier test report. Also on file: ${listPrice}.` } : null;
+  }
+  const lines = (() => {
+    const probe = { ears: 'azure', brain: 'gemini-3.5-flash-lite', voice: 'gemini-lite', gatedEars: true, [part]: id };
+    try { return partLines('custom', probe); } catch { return null; }
+  })();
+  const row = lines?.find(r => r.component === part);
+  if (!row) return null;
+  const typical = part === 'ears' ? `the caller speaking for about ${MINUTE.callerShareGated * 60} seconds of each minute`
+    : part === 'brain' ? `about ${MINUTE.replies} replies a minute`
+    : `her speaking for about ${MINUTE.agentSpeechSec} seconds of each minute`;
+  return { part, id, inrMicroPerMin: row.inrMicroPerMin, basis: `List price ${usd(listPrice)}, for a typical minute of talk (${typical}). An estimate, not an average of real calls.` };
+}
+
+/** Per-minute costs every stack carries besides its parts: the phone line, Vyakti's infrastructure and call analysis. */
+export const EXTRAS_INR_MICRO_PER_MIN = micro(TELEPHONY.inrMin) + micro(PLATFORM.inrMin) + micro(ANALYSIS.inrMin);
