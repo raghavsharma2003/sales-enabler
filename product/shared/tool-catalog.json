@@ -105,6 +105,25 @@
    }
   },
   {
+   "name": "agent.config.schema",
+   "risk": "read",
+   "summary": "The agent draft's fields as JSON Schema, with each field's limits and allowed values",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
    "name": "agent.create",
    "risk": "draft",
    "summary": "Create a draft agent from a template or from a plain-words description",
