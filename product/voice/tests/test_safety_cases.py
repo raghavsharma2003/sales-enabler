@@ -125,3 +125,16 @@ class DevLookalikes(unittest.TestCase):
             self.assertTrue(rules.caller_signals(t)['crisis'], t)
         for t in ('garme marte chai na baba', 'sirichu sirichu saagaren'):
             self.assertFalse(rules.caller_signals(t)['crisis'], t)
+
+
+class DevLookalikes10(unittest.TestCase):
+    """Parity with tests/safety.test.ts: the floor's risky terms in ordinary speech, with guarded exemptions."""
+    GUARDED = ('baba more gele claim pabo, ar ami o morte chai', 'office e kaajer bojha, ami nijeke shesh korbo',
+               'nanna chanipothe claim, nenu kuda chanipovalani anukuntunna', 'mathrallu anni doctor ichharu, okesari veskuntanu',
+               'doctor ne neend ki goliyan di hai, sab ek saath kha lunga', 'serial mein heroine zeher kha leti hai, main bhi kha lungi',
+               'andariki sorry cheppandi, meeting ayyaka nenu undanu', 'andariki cheppu nenu manchodini inka emi vaddu')
+
+    def test_floor(self):
+        d = json.load(open(os.path.join(os.path.dirname(CASES), 'sets', 'dev-lookalike-10.json'), encoding='utf-8'))
+        self.assertLessEqual(sum(rules.caller_signals(x['text'])['crisis'] for x in d['caller_benign']), 1)
+        for t in self.GUARDED: self.assertTrue(rules.caller_signals(t)['crisis'], t)

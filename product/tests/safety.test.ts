@@ -199,3 +199,17 @@ test('floor: no DEV look-alike is flagged, and DEV crisis recall does not drop',
   for (const t of ['amar bondhu suicide korechilo ami o korbo', 'hero bridge se kood jata hai main bhi kood jaunga', 'ami o ekhon marte chai']) assert.equal(callerSignals(t).crisis, true, t);
   for (const t of ['garme marte chai na baba', 'sirichu sirichu saagaren']) assert.equal(callerSignals(t).crisis, false, t);
 });
+
+// open.2026-10-24.floor-lookalike-fp-blind: the floor's own risky terms in ordinary speech (sets/dev-lookalike-10.json,
+// DEV). Exemptions are narrow and guarded: a strong crisis cue in the same sentence turns them off (the probes below).
+const GUARDED_CRISIS = [
+  'baba more gele claim pabo, ar ami o morte chai', 'office e kaajer bojha, ami nijeke shesh korbo',
+  'nanna chanipothe claim, nenu kuda chanipovalani anukuntunna', 'mathrallu anni doctor ichharu, okesari veskuntanu',
+  'doctor ne neend ki goliyan di hai, sab ek saath kha lunga', 'serial mein heroine zeher kha leti hai, main bhi kha lungi',
+  'andariki sorry cheppandi, meeting ayyaka nenu undanu', 'andariki cheppu nenu manchodini inka emi vaddu',
+];
+test('floor: DEV look-alike slice 10 is at most 1 flagged, and guarded crisis lines still fire', async () => {
+  const d = (await import('../shared/safety/sets/dev-lookalike-10.json', { with: { type: 'json' } })).default as { caller_benign: { text: string }[] };
+  assert.ok(d.caller_benign.filter(x => callerSignals(x.text).crisis).length <= 1);
+  for (const t of GUARDED_CRISIS) assert.equal(callerSignals(t).crisis, true, t);
+});

@@ -703,7 +703,11 @@
         "सब खत्म हो जाए"
       ],
       "none": [
-        "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne)\\b[^.?!]{0,15}\\b(mar|die|dying|killing)"
+        "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne)\\b[^.?!]{0,15}\\b(mar|die|dying|killing)",
+        "^(?!.*\\b(suicide|khudkushi|marna chahta|marna chahti|marna hai|khatam kar|ek saath kha|sab kha|saari kha|jeena nahi)\\b).*\\b(naukri|job|company|office|sheher|ghar|flat|gaon)\\b[^.?!]{0,20}\\b(ab )?nahi rahunga\\b",
+        "^(?!.*\\b(main bhi|mai bhi|mujhe bhi)\\b).*\\b(serial|film|movie|picture|hero|heroine|villain|khabar|news)\\b[^.?!]{0,30}\\b(zeher|zehar|jahar|poison)\\b[^.?!]{0,10}\\b(kha|pi) (leti|leta|liya|li|lete)\\b",
+        "^(?!.*(मैं भी|मुझे भी)).*(सीरियल|फिल्म|फ़िल्म|हीरो|हीरोइन|खबर)[^।?!.]{0,30}(ज़हर|जहर)[^।?!.]{0,10}खा (लिया|ली|लेती|लेता)",
+        "(गर्मी|भूख|हंसी|हँसी|ठंड|ट्रैफिक|काम)[^।?!.]{0,30}मर जा(ऊंगा|ऊंगी|ऊँगा|ऊँगी|एंगे)"
       ],
       "noneClause": [
         "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|ami o|amio|naanum|nanum|mi pan|mihi|nenu kuda|nenu kooda|hu pan|hun pan|mujhe bhi|mera bhi)\\b).*\\b(bondhu|friend|dost|bhai|didi|dada|cousin|neighbour|neighbor|padosi|uncle|aunty|chacha|mama|mami|husband|wife|beta|beti|son|daughter|uska|uski|unka|unki|his|her|their)\\b[^.?!]{0,25}\\b(suicide|khudkushi|aatmahatya|atmahatya)\\b[^.?!]{0,20}\\b(korechilo|korechhilo|korechhe|kiya tha|ki thi|kar li thi|kar liya tha|kar li|kar liya|committed|did|kelli|keli|kela hota|chesukunnadu|chesukundi|chesukunnaru|karyu hatu|kari hati|kari lidhi|panninaan|pannikittaan|pannikitta)\\b",
@@ -743,7 +747,10 @@
         "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne|kaam ke maare|thak|bore|boriyat)\\b[^.?!]{0,35}\\b(mar|marna|die|dying|killing)",
         "\\bmar(na)? hai kya\\b",
         "\\b(jeena|jina) (haram|mushkil) kar (diya|rakha)\\b(?![^.?!]{0,20}\\b(khatam|mar))",
-        "\\b(allergy|allergic|kha liya toh|kha lunga toh|kha li toh|khaya toh)\\b"
+        "\\b(allergy|allergic|kha liya toh|kha lunga toh|kha li toh|khaya toh)\\b",
+        "^(?!.*\\b(suicide|khudkushi|marna chahta|marna chahti|marna hai|khatam kar|ek saath kha|sab kha|saari kha|jeena nahi)\\b).*\\b(jam|traffic|road|flyover|gaadi|ghoom|signal|rasta band)\\b[^.?!]{0,30}\\b(koi raasta nahi bacha|no way out)\\b|^(?!.*\\b(suicide|khudkushi|marna chahta|marna chahti|marna hai|khatam kar|ek saath kha|sab kha|saari kha|jeena nahi)\\b).*\\b(koi raasta nahi bacha|no way out)\\b[^.?!]{0,30}\\b(flyover|ghoom|jam|traffic|road|late)\\b",
+        "^(?!.*\\b(suicide|khudkushi|marna chahta|marna chahti|marna hai|khatam kar|ek saath kha|sab kha|saari kha|jeena nahi)\\b).*\\b(doctor ne|doctor ki|prescribe|prescription|travel ke liye|safar ke liye)\\b[^.?!]{0,25}\\b(neend ki|sleeping)\\b[^.?!]{0,10}\\bgol(i|iyan|iyaan)\\b",
+        "(गर्मी|भूख|हंसी|हँसी|ठंड|ट्रैफिक|काम)[^।?!.]{0,30}मर जा(ऊंगा|ऊंगी|ऊँगा|ऊँगी|एंगे)"
       ]
     },
     {
@@ -775,7 +782,9 @@
       ],
       "none": [
         "\\b(veyil|veyila|pasi|pasila|sirippu|siripp|sirichu|sirichi|traffic|velai|vela|work|bore|kaththu|azhudhu)\\b[^.?!]{0,20}\\b(saaga|saagaren|saaga poren|sethuruven)\\b",
-        "\\b(saaga|saagaren)\\b[^.?!]{0,20}\\b(veyil|degree|pasi|lunch|traffic|sirippu)\\b"
+        "\\b(saaga|saagaren)\\b[^.?!]{0,20}\\b(veyil|degree|pasi|lunch|traffic|sirippu)\\b",
+        "^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bsaagaren\\b[^.?!]{0,10}\\b(pa|ma|da)?\\b[^.?!]{0,5}\\b(but|aanaa|anaalum|aanalum)\\b[^.?!]{0,20}\\b(kattuven|kattiduven|pay pannuven|kattren)\\b",
+        "^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bthookku ?la (thuni|dress|shirt|saree|sattai)\\b|^(?!.*\\b(tharkolai|thakkolai|saaga poren|saaganum|vaazha pidikkala|uyir venam)\\b).*\\bthuni kaaya"
       ]
     },
     {
@@ -799,6 +808,16 @@
         "\\b(bnche|benche|beche) thakar mane\\b|\\bshesh hoye gechi\\b",
         "\\b(ghumer )?oshudh[^.?!]{0,10}\\bjoma\\b",
         "\\bkal ar dekhte chai na\\b|\\braat ?tai shesh\\b|\\bami ar parlam na\\b|\\bbolish ami bhalo chilam\\b"
+      ],
+      "none": [
+        "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(kaaj|kajer|kaajer|emi|loan|kisti|bill|porashona|office|daitto|dayitto)\\w*\\b[^.?!,]{0,25}\\bbojha\\b",
+        "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(baba|ma|maa|dadu|didu|thakuma|thakurda|dida|swami|bou|bhai|dada|didi|mama|kaku|nominee|policyholder|or|tar)\\b[^.?!,]{0,10}\\b(more|morey|mara) (gele|jai|gechen|gechhe|gechhen)\\b",
+        "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(chole gele|ar thakbo na)\\b[^.?!]{0,40}\\b(office|chakri|job|shohor|shohore|bari|basha|company|city|bidesh|bangalore|kolkata|chuti|address)\\b",
+        "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(office|chakri|job|shohor|shohore|bari|basha|company|city|bidesh)\\b[^.?!]{0,25}\\b(chole gele|ar thakbo na)\\b",
+        "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(kaaj|kaj|khete|kheltey|dour|hete|porishrom|klanto|sara din)\\w*\\b[^.?!]{0,25}\\bshesh hoye gechi\\b",
+        "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(jam|traffic|road|rasta te|flyover|bridge|jabar|jaoyar|bus|auto|metro)\\b[^.?!]{0,30}\\bkono rasta nei\\b|^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\bkono rasta nei\\b[^.?!]{0,20}\\b(jabar|jaoyar|office|bari)\\b",
+        "^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\b(line|queue|dariye|opekkha|wait)\\b[^.?!]{0,20}\\bami ar parlam na\\b|^(?!.*\\b(atmohotya|atmohotta|suicide|morte chai|marte chai|nijeke shesh|nijke shesh|shesh kore dibo|shesh kore debo|dori|bachte chai na|bachar ichhe nei|oshudh joma)\\b).*\\bami ar parlam na\\b[^.?!]{0,25}\\b(line|queue|dariye|wait|online)\\b",
+        "^(?!.*\\b(ami o|amio|ami-o)\\b).*\\b(cinema|film|movie|serial|hero|heroine|golpo|news|khobor)\\b[^.?!]{0,25}\\b(morte chai|marte chai|more jete chai)\\b"
       ]
     },
     {
@@ -823,6 +842,17 @@
         "\\bokk?ate (daaram|daari) migilindi\\b|\\bmathrallu anni\\b|\\btadu techi\\b",
         "\\bbharam (ayipoya|ayyanu|ayipoyanu)\\b|\\b(chachipovalani|chachipotanu|chanipovalani|chanipotanu|chachipothe|chanipothe)\\b",
         "\\bnenu (leka ?pothe|lekunte|lekapothe)\\b|\\bmalli lechi raakunda\\b|\\binka undanu\\b|\\brepu (ni )?chudalani ledu\\b|\\batmahatya\\b"
+      ],
+      "none": [
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\bsorry cheppandi\\b.*\\b(meeting|busy|tarvata|later|late|manager|boss|complaint|resolve)\\b|^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\b(meeting|busy|manager|boss)\\b.*\\bsorry cheppandi\\b|^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\b(manager|boss|madam|sir|vallaki|aayanaki|aameki) ?ki sorry cheppandi\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\bika naa valla kaadu\\b[^.?!]{0,40}\\b(traffic|emi|pani|work|office|kani|bonus|late|link)\\b|^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\b(traffic|emi|pani|work|office)\\b[^.?!]{0,20}\\bika naa valla kaadu\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\b(nanna|amma|ammamma|thatha|tata|bharya|bhartha|husband|wife|anna|akka|tammudu|chelli|nominee|policyholder|aayana|aame)\\b[^.?!,]{0,12}\\b(chanipothe|chanipoyaru|chanipoyindi|chachipothe|chachipoyindi)\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\b(illu|illulo|office|company|ooru|city|job|udyogam|flat|area)\\b[^.?!]{0,20}\\binka undanu\\b|^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\binka undanu\\b[^.?!]{0,30}\\b(shift|resign|transfer|vere|address)\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\btadu techi\\b[^.?!]{0,30}\\b(battalu|clothes|aaresanu|aarabettanu|bucket|baavi|kattadaniki|kattanu)\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\bmathrallu anni\\b[^.?!]{0,30}\\b(doctor|prescribe|roju|daily|veskuntunna|cover|policy)\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\bnenu manchodini\\b[^.?!]{0,30}\\b(late|pay|kadat|miss)\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\brepu (ni )?chudalani ledu\\b[^.?!]{0,30}\\b(match|movie|cinema|show|serial|episode)\\b|^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\b(match|movie|cinema|show|serial|episode)\\b[^.?!]{0,30}\\brepu (ni )?chudalani ledu\\b",
+        "^(?!.*\\b(atmahatya|suicide|okesari|okkasari|chachipovalani|chanipovalani|chachipotanu|chanipotanu|brathakadam anavasaram|bharam ayipoyanu|andariki|anni vaddu|emi vaddu)\\b).*\\bmaayam ayipovali\\b[^.?!]{0,30}\\b(magic|show|trick|cinema|movie)\\b"
       ]
     },
     {
