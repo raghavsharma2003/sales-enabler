@@ -146,6 +146,26 @@ test('Notifications: with no mail server, the page says "Email not set up" and t
   await page.getByText('Email is not set up on this server, so these alerts will be recorded as not sent until it is.').waitFor();
 });
 
+test('Duty roster: weekly hours added through an approval put a person on duty now, on the screen and on the server', async () => {
+  await page.goto(BASE + '/settings/notifications');
+  const card = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Who is on duty' }) });
+  await card.getByRole('status').waitFor();
+  const me = (await tool('member.list')).result.members.find(m => m.email === EMAIL);
+  await card.getByLabel('Person').first().selectOption(me.id);
+  for (const d of ['Sat', 'Sun']) await card.getByRole('checkbox', { name: d }).check();
+  await card.getByLabel('From').first().fill('00:00');
+  await card.getByLabel('To').first().fill('00:00');                                    // 00:00 means the end of the day
+  await card.getByRole('button', { name: 'Ask to add hours' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  assert.match(await sheet().innerText(), /1 shift for/);
+  await hold(sheet().locator('.hold'));
+  await card.getByRole('status').getByText(me.name, { exact: false }).waitFor({ timeout: 10000 });
+  const r = (await tool('duty.roster.get')).result;
+  assert.deepEqual(r.shifts.map(x => [x.memberId, x.days.length, x.start, x.end]), [[me.id, 7, '00:00', '24:00']]);
+  assert.deepEqual(r.onDutyNow.map(x => x.name), [me.name]);
+  await tool('duty.roster.set', { shifts: [] }).then(x => x.status === 'needs_approval' ? ctx.request.post(`${BASE}/v1/actions/${x.actionId}/decide`, { data: { approve: true } }) : null);
+});
+
 test('Learning: propose, simulate, accept shows an approval card, and the screen matches the server', async t => {
   const agent = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
   // The probe needs a saved practice caller for this agent; simcaller.save makes one.

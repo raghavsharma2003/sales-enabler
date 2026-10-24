@@ -49,7 +49,7 @@ const screens = (id) => [
   // Webhooks: one made through the real tools (approved via POST /v1/actions/:id/decide, as the approval sheet does) to a synthetic address that does
   // not resolve, then a test event sent to it, so the list shows a real failed delivery and its reason.
   ['settings-webhooks', '/settings/webhooks', { before: async (p) => { await makeWebhook(p); } }],
-  ['settings-notifications', '/settings/notifications'],
+  ['settings-notifications', '/settings/notifications', { before: async (p) => { await makeRoster(p); } }],
   ['calls-export', '/calls', { after: async (p) => { await p.getByRole('button', { name: 'Export as CSV…' }).click(); await p.getByRole('dialog').waitFor(); await p.waitForTimeout(300); } }],
   ['integrations-connect', '/settings/integrations', { after: async (p) => { await p.getByRole('button', { name: 'Connect HubSpot CRM' }).click(); await p.waitForTimeout(500); } }],
   // Security. The empty state comes first on a fresh workspace; the next screens configure single sign-on through the real tools (the secret is staged, the
@@ -90,6 +90,16 @@ async function configureSso(p) {
   if (cfg.configured) return;
   const { stashId } = await toolDo(p, 'sso.secret.stage', { clientSecret: 'demo-secret-not-real-0001' });
   await toolDo(p, 'sso.config.set', { ...SSO, stashId });
+  await p.reload({ waitUntil: 'networkidle' });
+}
+async function makeRoster(p) {
+  const r = await toolDo(p, 'duty.roster.get');
+  if (!r.shifts.length) {
+    const me = (await toolDo(p, 'member.list')).members.find(m => m.email === EMAIL);
+    await toolDo(p, 'duty.roster.set', { shifts: [{ memberId: me.id, days: [1, 2, 3, 4, 5], start: '09:00', end: '18:00' }, { memberId: me.id, days: [6], start: '10:00', end: '14:00' }] });
+    const day = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+    await toolDo(p, 'duty.override.add', { memberId: me.id, from: `${day(7)}T03:30:00Z`, to: `${day(9)}T12:30:00Z`, onDuty: false, note: 'leave' });
+  }
   await p.reload({ waitUntil: 'networkidle' });
 }
 async function makeWebhook(p) {
