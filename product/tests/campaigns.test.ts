@@ -11,6 +11,7 @@ import { createPool, one, tx } from '../server/db.ts';
 import { FakeRuntime, setRuntime, type Runtime } from '../server/runtime-client.ts';
 import { Registry, tool, type Actor } from '../server/tools.ts';
 import { module as campaigns } from '../server/modules/campaigns/index.ts';
+import { allowedByWords } from '../server/modules/calls/gate-trace.ts';
 import { runGate, tombstoneHashes, type AttemptRow, type GateVerdict, type PredialFn } from '../server/modules/campaigns/gate.ts';
 import { FakeTelephony, setTelephony } from '../server/modules/campaigns/telephony.ts';
 import { claimNext, tick, type WorkerDeps } from '../server/modules/campaigns/worker.ts';
@@ -127,6 +128,28 @@ test('the gate passes a clean service attempt and holds money for it', { skip },
   const r = await one<{ status: string; inr_milli: string }>(pool, 'SELECT status, inr_milli FROM reservation WHERE workspace_id = $1', [w.ws]);
   assert.equal(r!.status, 'held');
   assert.equal(Number(r!.inr_milli), 5 * 6000, '300 s at the default ceiling of ₹6/min');
+});
+
+test('a passing check stores what it found (decision 5): the basis and DND result, the hours, the counts, the hold; the call page reads them back', { skip }, async () => {
+  const w = await world();
+  const v = await gate(await attempt(w));
+  if (!v.allowed) return assert.fail(code(v));
+  const note = (g: string) => v.trace.find(t => t.gate === g)?.note as Record<string, any> | undefined;
+  assert.deepEqual(note('G5'), { basis: 'contract', purpose: note('G5')!.purpose, category: 'service', dnd: 'not_required' });
+  assert.deepEqual([note('G6')!.category, note('G6')!.ranges, note('G6')!.days], ['service', [{ start: '10:00', end: '19:00' }], [1, 2, 3, 4, 5, 6]]);
+  assert.equal(note('G9')!.heldInrMilli, 30_000);
+  assert.equal(note('G7')!.numberToday, 0);
+  // What the call page shows is the stored trace in words, line for line; nothing is re-derived.
+  const words = allowedByWords({ allowed: true, at: NOON.toISOString(), gateVersion: v.gateVersion, trace: v.trace, warnings: v.warnings }, false);
+  assert.equal(words.checks.length, 12);
+  assert.equal(words.gateVersion, v.gateVersion);
+  assert.match(words.gateText!, /^the dial gate of \d{1,2} \w+ 20\d\d, revision \d+$/);
+  const t = (g: string) => words.checks.find(c => c.gate === g)!.text;
+  assert.match(t('G5'), /^It was a service call, on the basis of an existing relationship with the business \(recorded for: .+\); Do Not Disturb does not apply to it\.$/);
+  assert.match(t('G6'), /^It was inside the calling hours for a service call: 10:00 to 19:00, Monday to Saturday, not on national holidays, in the person's time \(India time\)\.$/);
+  assert.match(t('G9'), /^Rs 30 was held in the wallet for up to 5 minutes, within the workspace's spend cap\.$/);
+  assert.match(t('G7'), /^The number had been rung 0 times today, under the limit of 3/);
+  assert.doesNotMatch(JSON.stringify(words.checks.map(c => c.text)), /\bG\d+\b|_/);
 });
 
 test('G1 workspace_not_verified: suspended workspace, or no verified brand for production', { skip }, async () => {

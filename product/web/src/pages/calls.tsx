@@ -122,7 +122,7 @@ function Body({ c }: { c: CallDoc }) {
             <p className="small">{c.allowedBy.summary}</p>
             {c.allowedBy.checks.length > 0 && <ul className="trace" aria-labelledby="allowed-h">{c.allowedBy.checks.map((k, i) => <li key={i}>{k.ok ? <Check size={18} aria-hidden style={{ color: 'var(--leaf)' }} /> : <CircleX size={18} aria-hidden className="bad" />}<p className="small">{k.text}</p></li>)}</ul>}
             {c.allowedBy.warnings.length > 0 && <p className="small muted">Noted at the time: {c.allowedBy.warnings.join(' ')}</p>}
-            {c.allowedBy.at && <p className="small muted">Checked {date(c.allowedBy.at, true)}.</p>}</Card>}
+            {c.allowedBy.at && <p className="small muted">Checked {date(c.allowedBy.at, true)}{c.allowedBy.gateText ? ` by ${c.allowedBy.gateText}` : ''}.</p>}</Card>}
           <Card><CardHead title="What ran and what it cost" />
             <Kv rows={[['Voice stack', c.ran ? (ran.stack?.label || (ran.ready ? 'A stack that is no longer listed' : '…')) : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
             {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={groupCost(c.costLines).map(l => [`${costPart(l.component, prettyCode)} · ${prettyCode(l.provider)}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>

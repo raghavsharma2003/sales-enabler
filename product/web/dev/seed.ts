@@ -5,6 +5,7 @@
 //   VP_RUNTIME_SECRET=... node --import tsx product/web/dev/seed.ts [baseUrl]      (the server must run with the same VP_RUNTIME_SECRET)
 import pg from 'pg';
 import { sign } from '../../server/runtime-client.ts';
+import { GATE_VERSION } from '../../server/modules/campaigns/defaults.ts';
 import type { RuntimeEvent, RunManifest } from '../../shared/runtime-protocol.ts';
 
 // The SERVER needs VP_SECRET_KEY (a generated dev value, e.g. `openssl rand -hex 32`) and the same VP_RUNTIME_SECRET as this script; see web/README.md.
@@ -102,7 +103,17 @@ async function main() {
     const convs: string[] = [];
     for (const c of calls) {
       const contact = people[c.who];
-      const attempt = (await pool.query("INSERT INTO attempt (workspace_id, campaign_id, contact_id, status) VALUES ($1,$2,$3,'dialing') RETURNING id", [ws, camp.id, contact])).rows[0].id;
+      // The dial gate's record in the shape campaigns' worker stores it (gate.ts notes), so the call page's "Why this call
+      // was allowed" reads real notes. Synthetic: no gate ran for seeded calls.
+      const precheck = { gateVersion: GATE_VERSION, at: new Date(Date.now() - 55 * 60_000).toISOString(), allowed: true, warnings: [],
+        trace: ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12'].map(gate => ({ gate, ok: true, ...({
+          G4: { note: { lists: ['workspace', 'campaign'], ownDnd: true } },
+          G5: { note: { basis: 'contract', purpose: 'renewal', category: 'service', dnd: 'not_required' } },
+          G6: { note: { category: 'service', zones: ['Asia/Kolkata'], days: [1, 2, 3, 4, 5, 6], ranges: [{ start: '10:00', end: '19:00' }], holidaysOff: true } },
+          G7: { note: { numberToday: 0, numberCeiling: 3, gapMin: 120, person: { day: 0, week: 1, run: 1, budget: { perDay: 1, perWeek: 3, perRun: 5 } } } },
+          G9: { note: { heldInrMilli: 30_000, maxDurationS: 600, perMinuteInrMilli: 3000, caps: ['workspace', 'campaign'] } },
+        } as Record<string, object>)[gate] })) };
+      const attempt = (await pool.query("INSERT INTO attempt (workspace_id, campaign_id, contact_id, status, precheck) VALUES ($1,$2,$3,'dialing',$4) RETURNING id", [ws, camp.id, contact, JSON.stringify(precheck)])).rows[0].id;
       const conv = (await pool.query("INSERT INTO conversation (workspace_id, attempt_id, contact_id, agent_version_id, channel) VALUES ($1,$2,$3,$4,'phone') RETURNING id", [ws, attempt, contact, vRiya])).rows[0].id as string;
       const now = () => new Date(Date.now() - (50 - phone++ * 12) * 60_000).toISOString();
       let s = 1; const ev: RuntimeEvent[] = [{ seq: s++, type: 'call.started', at: now(), manifest }];

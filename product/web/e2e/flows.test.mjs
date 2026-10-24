@@ -1073,6 +1073,25 @@ test('Call page: reply timing is the runtime\'s own figures with the call\'s med
   await callCard().getByRole('button', { name: /^at \d+:\d\d$/ }).click();   // the slowest reply links to its line
 });
 
+test('Call page: "Why this call was allowed" shows the dial gate\'s stored record line for line, with its gate version', async () => {
+  const id = await callByContact('Sunita Verma');
+  const a = (await tool('call.get', { conversationId: id })).result.allowedBy;
+  assert.equal(a.allowed, true, 'the seeded call carries a dial-gate record');
+  await page.goto(`${BASE}/calls/${id}`);
+  const lines = page.locator('ul[aria-labelledby="allowed-h"] > li');
+  await lines.first().waitFor({ timeout: 10000 });
+  assert.deepEqual((await lines.allInnerTexts()).map(t => t.trim()), a.checks.map(k => k.text), 'the page and the stored trace agree, in order');
+  const card = page.locator('section').filter({ has: page.locator('#allowed-h') }).last();
+  const text = await card.innerText();
+  assert.ok(a.gateText && text.includes(`by ${a.gateText}.`), `the gate version is shown in words: ${text}`);
+  assert.match(a.gateText, /^the dial gate of \d{1,2} \w+ 20\d\d, revision \d+$/);
+  // The notes the gate stored read as their own sentences: the basis and DND result, the hours, the hold.
+  assert.match(text, /on the basis of an existing relationship with the business \(recorded for: renewal\); Do Not Disturb does not apply to it\./);
+  assert.match(text, /calling hours for a service call: 10:00 to 19:00, Monday to Saturday, not on national holidays/);
+  assert.match(text, /Rs 30 was held in the wallet for up to 10 minutes, within the workspace's and the campaign's spend caps\./);
+  assert.doesNotMatch(text, /\bG\d+\b|_/, 'no rule ids or field names');
+});
+
 test('Call page: a call with no reply timing says so and shows no figure; a call nobody answered has no card', async () => {
   const id = await callByContact('Imran Qureshi');
   const t = (await tool('call.get', { conversationId: id })).result.turns.filter(x => x.speaker === 'agent' && x.latency?.latencyMs).length;

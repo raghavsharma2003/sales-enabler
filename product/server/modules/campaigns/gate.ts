@@ -27,7 +27,9 @@ export type GateCode =
   | 'cli_wrong_series' | 'cli_undeclared' | 'cli_paused' | 'kyc_lapsed' | 'cap_reached' | 'wallet_low'
   | 'version_not_publishable' | 'pack_missing' | 'predial_veto' | 'predial_timeout' | 'deferred_concurrency' | 'check_unavailable';
 
-export interface CheckResult { gate: GateId; ok: boolean; code?: GateCode; detail?: string; nextEligibleAt?: string }
+/** note: what a passing check found (the consent basis, the DND result, the hours, the hold), stored with the trace so
+ *  "Why this call was allowed" (calls/gate-trace.ts) reads it back and never re-derives it. */
+export interface CheckResult { gate: GateId; ok: boolean; code?: GateCode; detail?: string; nextEligibleAt?: string; note?: Record<string, unknown> }
 
 export type AttemptKind = 'campaign' | 'api' | 'single' | 'test' | 'retry' | 'callback' | 'transfer';
 export interface AttemptRow {
@@ -172,6 +174,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
   let number: NumberRow | null = null;
   let consent: GatePass['consent'] = { basis: 'consent' };
   let reserved = 0, maxDurationS = 0;
+  const notes: Partial<Record<GateId, Record<string, unknown>>> = {};
 
   const checks: [GateId, () => Promise<void>][] = [
     ['G1', async () => {
@@ -217,9 +220,10 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
         const d = await one<{ internal: boolean }>(q, 'SELECT internal FROM dnd_status WHERE contact_id = $1', [contact.id]);
         if (d?.internal) throw new Refuse('suppressed:internal_dnd', 'on the business\'s own do-not-call list');
       }
+      notes.G4 = { lists: campaign ? ['workspace', 'campaign'] : ['workspace'], ownDnd: !!contact && !test };
     }],
     ['G5', async () => {
-      if (test) { consent = { basis: 'consent' }; return; }   // a member's own verified phone
+      if (test) { consent = { basis: 'consent' }; notes.G5 = { basis: 'member_phone' }; return; }   // a member's own verified phone
       const recs = await many<ConsentRow>(q, `SELECT cr.id, cr.purpose, cr.basis, cr.granted, cr.evidence, cr.created_at, to_jsonb(cr)->>'effective_at' AS effective_at
          FROM consent_record cr WHERE cr.workspace_id = $1 AND cr.contact_id = $2 AND cr.channel = 'voice'`, [ws, contact!.id]);
       // Every purpose that covers this call: the category's own, the general ones, and for service/transactional any
@@ -255,7 +259,8 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
         if (DND_REGISTERED.includes(st) && r.evidence?.crf !== true) throw new Refuse('dnd_blocked_by_operator', 'DND-registered number without CRF-registered consent (RS-13)');
         if (now.getTime() - d.checked_at.getTime() > DND_FRESH_S * 1000)
           throw new Refuse('no_basis', `DND lookup stale (older than ${DND_FRESH_S / 86400} days); refresh it`, new Date(now.getTime() + 6 * 3600_000), true);
-      }
+        notes.G5 = { basis: consent.basis, purpose: r.purpose, category, dnd: st, dndCheckedAt: d.checked_at.toISOString(), crf: r.evidence?.crf === true };
+      } else notes.G5 = { basis: consent.basis, purpose: r.purpose, category, dnd: 'not_required' };
     }],
     ['G6', async () => {
       const window = test ? { days: [1, 2, 3, 4, 5, 6, 7], ranges: [OUTER_BAND_LIMIT], nationalHolidaysOff: false }
@@ -279,6 +284,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
         nextAt = t;
       }
       if (!inside || nextAt) throw new Refuse('out_of_window', `outside the calling window in ${floors.map(f => f[0]).join(' and ')}`, inside ? nextAt : null);
+      notes.G6 = { category: ctxLocal.category, zones: floors.map(f => f[0]), days: window.days, ranges: window.ranges, holidaysOff: window.nationalHolidaysOff !== false };
     }],
     ['G7', async () => {
       if (test) return;
@@ -301,7 +307,8 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
         if (p!.run >= b.perRun) throw new Refuse('budget_exhausted', `${b.perRun} attempts this run`, null);
         if (p!.week >= b.perWeek) throw new Refuse('budget_exhausted', `${b.perWeek} attempts in 7 days`, tomorrow);
         if (p!.day >= b.perDay) throw new Refuse('budget_exhausted', `${b.perDay} attempts today`, tomorrow);
-      }
+        notes.G7 = { numberToday: n!.day, numberCeiling: NUMBER_DAILY_CEILING, gapMin: NUMBER_GAP_MIN, person: { ...p!, budget: b } };
+      } else notes.G7 = { numberToday: n!.day, numberCeiling: NUMBER_DAILY_CEILING, gapMin: NUMBER_GAP_MIN };
     }],
     ['G8', async () => {
       const route = routeSeries({ category, sectorPacks: agent?.sectorPacks ?? [], workspaceSector: dp.sector, test });
@@ -343,6 +350,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
       const r = await reserve(q, { workspaceId: ws, inrMilli: reserved, attemptId: a.id, campaignId: campaign?.id, apiKeyId: a.api_key_id ?? undefined });
       if (!r.ok) throw new Refuse(r.cause === 'cap_reached' ? 'cap_reached' : 'wallet_low', r.cause === 'cap_reached' ? `the ${r.scope} cap is reached` : r.cause);
       reservationId = r.reservationId;
+      notes.G9 = { heldInrMilli: reserved, maxDurationS, perMinuteInrMilli: per, caps: ['workspace', ...(campaign ? ['campaign'] : []), ...(a.api_key_id ? ['api_key'] : [])] };
     }],
     ['G10', async () => {
       if (!version || !agent || !version.config.brief?.text) throw new Refuse('version_not_publishable', 'no published agent version with a compiled brief');
@@ -399,7 +407,7 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
     try {
       await fn();
       await q.query('RELEASE SAVEPOINT vp_gate');
-      trace.push({ gate, ok: true });
+      trace.push({ gate, ok: true, ...(notes[gate] ? { note: notes[gate] } : {}) });
     } catch (e) {
       await q.query('ROLLBACK TO SAVEPOINT vp_gate');
       const r = e instanceof Refuse ? e : new Refuse('check_unavailable', `${gate} could not run: ${e instanceof Error ? e.message : String(e)}`, new Date(now.getTime() + 5 * 60_000));

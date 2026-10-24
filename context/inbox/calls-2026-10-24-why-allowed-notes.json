@@ -1,0 +1,32 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Blueprint decision 5 (every call shows why it was allowed) closes on the call page from the stored gate record. 0e2d692 already put the gate trace on call.get, call.explain and the call page (the must-be audit predates it); what was missing was what each passing check found. The dial gate now stores a note on every passing check that has one: G4 the do-not-call lists checked; G5 the consent basis, the purpose it was recorded for, the call category, and the DND result (with its check date and CRF) or that DND does not apply; G6 the hours, days, holiday rule and zones used (the person's and India time); G7 the counts against the number's and the person's limits; G9 the amount held, the duration it covers and the caps it was held within. calls/gate-trace.ts turns the stored note into the line; nothing is re-derived, and a trace without notes keeps the fixed sentence. The gate version shows in words ('the dial gate of 21 October 2026, revision 1'); the raw version stays in the API for developers.",
+   "rationale": "Integrator task (research/2026-10-24/must-be-audit README, 'Defining decisions the tree contradicts', decision 5).",
+   "reverse_if": "A gate check's note disagrees with the refusal it would give (a note written before a check that later fails in the same pass), or a member reads a stored note as a promise about the present (it is what was true when the call was placed).",
+   "evidence": [
+    "product/tests/campaigns.test.ts 'a passing check stores what it found': the real gate on a synthetic service attempt; notes and their sentences asserted",
+    "product/web/e2e/flows.test.mjs 'Call page: \"Why this call was allowed\" shows the dial gate's stored record line for line': page lines deepEqual call.get allowedBy.checks; Copy guard passes (no dates or zone ids on screen)"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "to": "decision.2026-10-24.call-allowed-by",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "why-allowed-notes",
+   "details": "Gate notes on passing checks; call page renders them and the gate version in words. Browser e2e 65/65 standalone; full suite 754/756 (web bundle budget, base 206.1 > 205, unchanged by this; browser run in the suite could not drop its DB because a standalone run still held it). Largest web chunk 25.3 KB gzip (cap 30)."
+  }
+ ]
+}

@@ -79,7 +79,7 @@ export interface CallTurn { idx: number; who: 'caller' | 'agent'; text: string; 
 export interface CallDoc {
   id: string; contactId: string | null; contactName: string; campaignId: string | null; direction: 'inbound' | 'outbound'; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
   reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; recordingWhy: string | null; transcriptWhy: string | null;
-  allowedBy: { allowed: boolean | null; at: string | null; summary: string; checks: { ok: boolean; text: string }[]; warnings: string[] } | null;
+  allowedBy: { allowed: boolean | null; at: string | null; gateText: string | null; summary: string; checks: { ok: boolean; text: string }[]; warnings: string[] } | null;
   verified: { value: string; from: string; aiRead: string | null; disagree: boolean } | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;
   turns: CallTurn[]; moments: { source: string; kind: string; atMs: number | null; note: string | null; quote: string | null }[];
   safety: { seq: number; rule: string; action: string; detail: string }[];
