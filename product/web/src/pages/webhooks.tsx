@@ -30,13 +30,13 @@ export default function Webhooks() {
     <div className="stack">
       <HookList q={hooks} defs={defs.data ?? []} onChanged={reload} />
       {defs.data && <NewHook defs={defs.data} onMade={reload} />}
-      <Card><CardHead title="Deliveries" sub="Every event sent, newest first. A receiver that does not answer with a 2xx status is tried again 5 times, waiting longer each time."
+      <Card><CardHead title="Deliveries" sub="Newest first. A receiver that does not answer 2xx is tried 5 times in all."
         actions={<SelectField label="Show" value={filter} onChange={e => setFilter(e.target.value as typeof filter)}><option value="">All deliveries</option><option value="pending">Waiting to send</option><option value="delivered">Delivered</option><option value="failed">Failed</option></SelectField>} />
-        <Async q={deliveries} what="Deliveries" tool="webhook.deliveries" empty={d => d.length === 0 ? <Empty title="Nothing sent yet" body="Deliveries appear here as events happen. Send a test event to check a receiver now." /> : null}>
+        <Async q={deliveries} what="Deliveries" tool="webhook.deliveries" empty={d => d.length === 0 ? <Empty title="Nothing sent yet" body="Send a test event to check a receiver now." /> : null}>
           {d => <DeliveryTable rows={d} hooks={hooks.data ?? []} defs={defs.data ?? []} onReplayed={deliveries.reload} />}</Async>
       </Card>
       <Card><CardHead title="Checking a delivery is from Vyakti" />
-        <p className="small muted">Each request carries <code>x-vp-signature: t=&lt;unix ms&gt;,v1=&lt;hex&gt;</code>. Compute HMAC-SHA256 of <code>t + "." + raw body</code> with the webhook's signing secret and compare it with <code>v1</code>; refuse a time more than five minutes old. The event name is in <code>x-vp-event</code>, the delivery id in <code>x-vp-delivery</code>, and test events carry <code>x-vp-test: 1</code>. Every record names its schema, for example <code>vyakti.call.v1</code>.</p>
+        <p className="small muted"><code>x-vp-signature: t=&lt;ms&gt;,v1=&lt;hex&gt;</code> is HMAC-SHA256 of <code>t + "." + body</code> under the signing secret; refuse a <code>t</code> over five minutes old. Test events carry <code>x-vp-test: 1</code>.</p>
       </Card>
     </div>
   );
@@ -67,8 +67,8 @@ function HookList({ q, defs, onChanged }: { q: ToolData<Hook[]>; defs: EventDef[
     </div> },
   ];
   return (
-    <Card><CardHead title="Webhooks" sub="Vyakti sends a signed record to your address each time one of these events happens. Records are built when they are sent, so anything removed since (an erasure, the transcripts retention) is not in them." />
-      <Async q={q} what="Webhooks" tool="webhook.list" empty={d => d.length === 0 ? <Empty title="No webhooks yet" body="Add one below to send call results to your CRM, data warehouse or your own service." /> : null}>
+    <Card><CardHead title="Webhooks" sub="A signed record goes to your address for each event, built when sent: anything erased or expired since is left out." />
+      <Async q={q} what="Webhooks" tool="webhook.list" empty={d => d.length === 0 ? <Empty title="No webhooks yet" body="Add one to send call results to your CRM or data warehouse." /> : null}>
         {d => <Table caption="Webhooks" cols={cols} rows={d} rowKey={r => r.id} />}</Async>
     </Card>
   );
@@ -94,7 +94,7 @@ function NewHook({ defs, onMade }: { defs: EventDef[]; onMade: () => void }) {
     if (r.result.revealId) { try { setSecret((await run<{ signingSecret: string }>('secret.reveal', { revealId: r.result.revealId })).signingSecret); } catch (e) { toast(e instanceof Error ? e.message : 'Could not show the signing secret.', 'bad'); } }
   };
   return (
-    <Card><CardHead title="New webhook" sub="Adding a webhook is a policy change: an owner or compliance lead approves it. Its signing secret is shown once, to whoever approves it." />
+    <Card><CardHead title="New webhook" sub="An owner or compliance lead approves it, and sees its signing secret once." />
       <div className="formgrid">
         <TextField label="Address" type="url" inputMode="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://crm.example.com/vyakti" hint="A public https address. Private network addresses are refused." />
         <TextField label="Description (optional)" value={description} onChange={e => setDescription(e.target.value)} placeholder="Data warehouse" />
@@ -104,9 +104,9 @@ function NewHook({ defs, onMade }: { defs: EventDef[]; onMade: () => void }) {
         {defs.map(e => <Toggle key={e.event} checked={picked.includes(e.event)} onChange={v => setPicked(v ? [...picked, e.event] : picked.filter(x => x !== e.event))} label={e.label} hint={e.description} />)}
       </fieldset>
       <div className="formgrid" style={{ marginTop: 16 }}>
-        <div><Toggle checked={full} onChange={setFull} label="Send full phone numbers and names" hint="Off: numbers are masked (+91•••••1234) and names are initials. Personal data leaves Vyakti when this is on." /></div>
+        <div><Toggle checked={full} onChange={setFull} label="Send full phone numbers and names" hint="Off: +91•••••1234 and initials." /></div>
         <SelectField label="Sign in to the receiver with" value={auth} onChange={e => setAuth(e.target.value)}
-          hint={integrations.data?.length ? 'The bearer token of a connected custom HTTP integration, sent as Authorization. The address must be on its base address.' : 'Connect "Your own HTTP service" under Integrations to send a bearer token as well.'}>
+          hint={integrations.data?.length ? 'Its bearer token, on its base address only.' : 'Connect "Your own HTTP service" under Integrations for a bearer token.'}>
           <option value="">The signature only</option>{(integrations.data ?? []).map(i => <option key={i.id} value={i.id}>{i.name}{i.config?.base_url ? ` (${host(i.config.base_url)})` : ''}</option>)}
         </SelectField>
       </div>

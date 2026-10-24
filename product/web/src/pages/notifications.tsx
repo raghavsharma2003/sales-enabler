@@ -38,9 +38,9 @@ export default function Notifications() {
   ];
   return <Async q={q} what="Notifications" tool="notification.destination.list">{d => <div className="stack">
     {!d.email.configured && <div className="callout" role="note"><div className="grow"><p className="callout-l"><AlertTriangle size={14} aria-hidden /> Email not set up</p>
-      <p className="small">This server has no outgoing mail settings, so email alerts are recorded as not sent. Slack alerts and the alerts in the app are not affected. Whoever runs this server can set up outgoing mail.</p></div></div>}
-    <Card><CardHead title="Where alerts go" sub="Alerts also appear in the app. A crisis alert says only that a caller may be in distress, with a link to the call: never what they said, their name or their number." />
-      {d.destinations.length === 0 ? <Empty title="No alert destinations yet" body="Add a Slack channel or email below so on-duty people hear about a caller in distress even when the app is closed." />
+      <p className="small">This server has no outgoing mail, so email alerts are recorded as not sent. Slack and in-app alerts still work.</p></div></div>}
+    <Card><CardHead title="Where alerts go" sub="Alerts also show in the app. A crisis alert never carries what the caller said, their name or number." />
+      {d.destinations.length === 0 ? <Empty title="No alert destinations yet" body="Add Slack or email so on-duty people hear of a caller in distress with the app closed." />
         : <Table caption="Alert destinations" cols={cols} rows={d.destinations} rowKey={r => r.id} />}</Card>
     {can(['owner', 'builder', 'operator', 'compliance']) && <NewDest events={d.events} emailReady={d.email.configured} onMade={reload} />}
     <Card><CardHead title="Recent alerts" />
@@ -66,14 +66,14 @@ function NewDest({ events, emailReady, onMade }: { events: EventDef[]; emailRead
     if (r.ok) { setName(''); setTo(''); onMade(); }
   };
   return (
-    <Card><CardHead title="Add a destination" sub="Adding one is a policy change, so an owner or compliance lead approves it." />
+    <Card><CardHead title="Add a destination" sub="An owner or compliance lead approves it." />
       <Segmented label="Send to" value={kind} onChange={setKind} options={[{ value: 'slack', label: 'Slack channel' }, { value: 'email', label: 'Email' }]} />
       <div className="formgrid" style={{ marginTop: 16 }}>
         <TextField label="Name" value={name} onChange={e => setName(e.target.value)} placeholder={kind === 'slack' ? '#ops-alerts' : 'On-duty team'} />
         {kind === 'slack'
-          ? <SelectField label="Slack connection" value={slack} onChange={e => setSlack(e.target.value)} hint={ints.data?.length ? 'Alerts post to the channel of its incoming webhook (hooks.slack.com only).' : <>Connect Slack under <Link to="/settings/integrations">Integrations</Link> first.</>}>
+          ? <SelectField label="Slack connection" value={slack} onChange={e => setSlack(e.target.value)} hint={ints.data?.length ? 'hooks.slack.com only.' : <>Connect Slack under <Link to="/settings/integrations">Integrations</Link> first.</>}>
             <option value="">Choose…</option>{(ints.data ?? []).map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</SelectField>
-          : <TextField label="Email addresses (optional)" value={to} onChange={e => setTo(e.target.value)} placeholder="ops@example.com" hint={emailReady ? 'Leave empty to email everyone on duty: owners, operators and compliance.' : 'Email is not set up on this server, so these alerts will be recorded as not sent until it is.'} />}
+          : <TextField label="Email addresses (optional)" value={to} onChange={e => setTo(e.target.value)} placeholder="ops@example.com" hint={emailReady ? 'Empty: whoever is on duty.' : 'Email is not set up on this server, so these alerts will be recorded as not sent until it is.'} />}
       </div>
       <fieldset className="stack-s" style={{ border: 0, padding: 0, margin: '16px 0 0' }}><legend className="callout-l">Alerts to send</legend>
         {events.map(e => <Toggle key={e.event} checked={picked.includes(e.event)} onChange={v => setPicked(v ? [...picked, e.event] : picked.filter(x => x !== e.event))} label={e.label} hint={e.description} />)}</fieldset>

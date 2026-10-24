@@ -26,7 +26,7 @@ export function CallsExportButton({ campaignId, campaignName }: { campaignId?: s
         <p>{made.rows === 1 ? '1 call is' : `${made.rows} calls are`} in the export. The file can be downloaded until {new Date(made.expiresAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' })}; each download is recorded.</p>
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}><Btn kind="ghost" onClick={close}>Close</Btn><a className="btn btn-primary" href={made.download} download><Download size={16} aria-hidden /><span>Download</span></a></div>
       </> : <>
-        <p className="muted">Personal data leaves Vyakti in this file, so the owner or compliance lead approves it and it is recorded. It has one row per call {campaignName ? <>in <strong>{campaignName}</strong></> : 'in this workspace'}: when, who (full phone number), outcome, why it ended, cost and the summary. Practice calls, suppressed people and erased people are left out.</p>
+        <p className="muted">One row per call {campaignName ? <>in <strong>{campaignName}</strong></> : 'in this workspace'}, with full phone numbers, so the owner or compliance lead approves it. Practice calls, suppressed and erased people are left out.</p>
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}><Btn kind="ghost" onClick={close}>Cancel</Btn><Btn kind="primary" busy={busy} onClick={() => void go()}>Ask to export</Btn></div>
       </>}
     </Sheet>}
