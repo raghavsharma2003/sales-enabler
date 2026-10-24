@@ -11,7 +11,8 @@
 //   --model ID (analysis model for this run's workspace), --escalate-model ID with --threshold 0.6 (tiered: the second
 //   model re-reads calls with no outcome or low confidence), --rps 1 (model requests per second), --max-tokens 400000 (stop when spent),
 //   --judge (also run the post-call crisis judge; VP_LLM_SAFETY_JUDGE_*; one request per caller line, not throttled),
-//   --no-cross (skip the cross-call slice), --out DIR (default ./analysis-bench-out). Prices for the INR estimate:
+//   --prompt-variant current|r4-table|r3-stance|no-outcome-rules (an ablation of the analysis contract; DEV only, never
+//   the product), --no-cross (skip the cross-call slice), --out DIR (default ./analysis-bench-out). Prices for the INR estimate:
 //   VP_BENCH_INR_PER_1K_INPUT and VP_BENCH_INR_PER_1K_OUTPUT (rupees per 1,000 tokens); without them only tokens are shown.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -23,12 +24,12 @@ import { llmConfigured, setFakeLlm, type LlmRequest, type LlmReply } from '../se
 import type { RuntimeEvent, RunManifest } from '../shared/runtime-protocol.ts';
 import { callerSignals } from '../shared/safety/index.ts';
 import { ingest } from '../server/modules/calls/ingest.ts';
-import { analysesSettled, refreshOutcome } from '../server/modules/calls/analysis.ts';
+import { analysesSettled, PROMPT_VARIANTS, refreshOutcome, setAnalysisPromptVariant, type PromptVariant } from '../server/modules/calls/analysis.ts';
 import { computeInsight } from '../server/modules/calls/insights.ts';
 import { CONVERSATION_CODES, REFINABLE, codeReason } from '../server/modules/calls/taxonomy.ts';
 import { crossCallCases, GOAL_VALUES, OUTCOME_VALUES, perCallCases, PLANTED, type Case, type CrossCall, type PlantedTheme } from './analysis-bench/cases.ts';
 
-export interface BenchOpts { llm?: (req: LlmRequest) => LlmReply; split?: 'dev' | 'test' | 'all'; model?: string; escalateModel?: string; threshold?: number; fake?: boolean; smoke?: boolean; limit?: number; rps?: number; maxTokens?: number; judge?: boolean; cross?: boolean; out?: string; pool?: pg.Pool }
+export interface BenchOpts { llm?: (req: LlmRequest) => LlmReply; split?: 'dev' | 'test' | 'all'; model?: string; escalateModel?: string; threshold?: number; fake?: boolean; smoke?: boolean; limit?: number; rps?: number; maxTokens?: number; judge?: boolean; cross?: boolean; out?: string; pool?: pg.Pool; promptVariant?: PromptVariant }
 
 /** Wilson score interval, 95%. */
 export function wilson(k: number, n: number, z = 1.959964): [number, number] {
@@ -94,6 +95,8 @@ const tokensSpent = async (pool: pg.Pool, ws: string) => Number((await one<{ t: 
 
 export async function runBench(o: BenchOpts = {}) {
   const pool = o.pool ?? createPool();
+  if (o.promptVariant && o.promptVariant !== 'current' && (o.split ?? 'all') !== 'dev') throw new Error('a prompt ablation runs on DEV only: pass --split dev');
+  setAnalysisPromptVariant(o.promptVariant ?? 'current');
   const allCases = perCallCases();
   const split = o.split ?? 'all';
   const inSplit = <T extends { split: string }>(x: T) => split === 'all' || x.split === split;
@@ -232,7 +235,7 @@ export async function runBench(o: BenchOpts = {}) {
     } : null;
     const model = fake ? 'scripted oracle (CI)' : (cost.find(c => c.detail?.model)?.detail?.model ?? 'unknown');
     const report = {
-      generatedAt: new Date().toISOString(), mode: fake ? 'fake' : 'real', model, split, judge: Boolean(o.judge), truncated,
+      generatedAt: new Date().toISOString(), mode: fake ? 'fake' : 'real', model, split, promptVariant: o.promptVariant ?? 'current', judge: Boolean(o.judge), truncated,
       analysisSetting: o.model || o.escalateModel ? { mode: o.escalateModel ? 'tiered' : 'single', model: o.model ?? null, escalateModel: o.escalateModel ?? null, threshold: o.threshold ?? 0.6 } : null,
       tier: tierReport,
       cases: { run: items.length, planned: cases.length, templates: new Set(it.map(x => x.template)).size, languages: [...new Set(it.map(x => x.language))] },
@@ -247,6 +250,7 @@ export async function runBench(o: BenchOpts = {}) {
     return report;
   } finally {
     if (fake || o.llm) setFakeLlm(null);
+    setAnalysisPromptVariant('current');
     if (prevJudge === undefined) delete process.env.VP_SAFETY_JUDGE_MODE; else process.env.VP_SAFETY_JUDGE_MODE = prevJudge;
     if (!o.pool) await pool.end();
   }
@@ -266,7 +270,7 @@ export function writeReport(dir: string, r: Awaited<ReturnType<typeof runBench>>
   const c = r.cross as any;
   const md = [
     `# Analysis-quality bench`, '',
-    `${r.generatedAt} · mode **${r.mode}** · split **${r.split}** · model: ${r.model}${r.analysisSetting ? ` · setting ${JSON.stringify(r.analysisSetting)}` : ''} · crisis judge ${r.judge ? 'on' : 'off'}${r.truncated ? ' · **stopped at the token cap**' : ''}`, '',
+    `${r.generatedAt} · mode **${r.mode}** · split **${r.split}** · contract **${r.promptVariant}** · model: ${r.model}${r.analysisSetting ? ` · setting ${JSON.stringify(r.analysisSetting)}` : ''} · crisis judge ${r.judge ? 'on' : 'off'}${r.truncated ? ' · **stopped at the token cap**' : ''}`, '',
     `${r.cases.run} of ${r.cases.planned} synthetic calls, ${r.cases.templates} templates, languages: ${r.cases.languages.join(', ')}. Scored by code against hand-written keys; the model never grades.`, '',
     '| Field | Accuracy |', '|---|---|',
     ...rows.map(([label, k]) => `| ${label} | ${pct(r.fields[k])} |`),
@@ -299,7 +303,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   runBench({ split: sp === 'dev' || sp === 'test' ? sp : 'all', model: val('--model'), escalateModel: val('--escalate-model'),
     threshold: val('--threshold') ? Number(val('--threshold')) : undefined, fake: has('--fake'), smoke: has('--smoke'), judge: has('--judge'), cross: !has('--no-cross'),
     limit: val('--limit') ? Number(val('--limit')) : undefined, rps: val('--rps') ? Number(val('--rps')) : undefined,
-    maxTokens: val('--max-tokens') ? Number(val('--max-tokens')) : undefined, out: val('--out') ?? './analysis-bench-out' })
+    maxTokens: val('--max-tokens') ? Number(val('--max-tokens')) : undefined,
+    promptVariant: ((v: string | undefined) => { if (v && !(PROMPT_VARIANTS as readonly string[]).includes(v)) throw new Error(`--prompt-variant is one of ${PROMPT_VARIANTS.join(', ')}`); return v as PromptVariant | undefined; })(val('--prompt-variant')), out: val('--out') ?? './analysis-bench-out' })
     .then(r => { console.log(`analysis bench (${r.mode}): ${r.cases.run} calls; outcome ${pct(r.fields.outcome)}; reason ${pct(r.fields.reasonCode)}; grounded ${pct(r.grounding)}`); })
     .catch(e => { console.error(e instanceof Error ? e.message : e); process.exitCode = 1; });
 }

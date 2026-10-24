@@ -22,18 +22,45 @@ type Ok = { reply: LlmReply; model: string; points: NonNullable<AnalysisRecord['
   forgetRequested: AnalysisRecord['forgetRequested']; modelCode: string | null; proposed: number; dropped: number };
 type Pass = Ok | { error: string; model?: string; reply?: LlmReply };
 
+/** Contract variants for the bench's ablations on DEV only (scripts/analysis-bench.ts --prompt-variant); the product
+ *  always runs 'current'. r4-table: b1a80cf exactly (the outcome table, the old objection line), where mini's objection
+ *  recall fell to 43/51. r3-stance: bfa7ee7's outcome sentence with the old objection line (51/51 in round 3).
+ *  no-outcome-rules: the old objection line and no outcome rules at all, to see whether outcome text crowds out moments. */
+export const PROMPT_VARIANTS = ['current', 'r4-table', 'r3-stance', 'no-outcome-rules'] as const;
+export type PromptVariant = typeof PROMPT_VARIANTS[number];
+let promptVariant: PromptVariant = 'current';
+/** Bench and tests only. */
+export function setAnalysisPromptVariant(v: PromptVariant): void { promptVariant = v; }
+
+const OUTCOME_TABLE = [
+  'OUTCOME shapes: PERSON line -> the VALUE that names it (when one does):',
+  '- agrees -> agreeing VALUE',
+  '- refuses, not interested -> refusing VALUE',
+  '- is not the person called (relative, colleague, wrong number) -> wrong-person VALUE; never null',
+  '- complains AND asks for a human, person or manager -> needs-human VALUE; never null',
+  '- asks never to be called again -> refusing VALUE; never the call-later VALUE (an opt-out is not a callback)',
+  '- asks to be called at another time -> call-later VALUE',
+  '- null: no shape above; or cannot follow the language; or hangs up before the question; or distress, crisis (distress is not asking for a human)',
+];
+const OUTCOME_STANCE = [
+  '- decided only when the PERSON takes a stance on the question: agreeing, refusing, asking to stop calls, asking for a human about it, "not the right person", "call later". Each decides it when a VALUE fits',
+  '- null when the PERSON never took a stance: they could not follow the language, hung up before the question, or spoke of distress or crisis (distress is not a request for a human)',
+];
+
 /** The analysis contract, written as shapes (fields, allowed values, one rule per line), not as prose to recite. */
-export function analysisPrompt(o: { question: string | null; values: string[]; instructions?: string }): string {
+export function analysisPrompt(o: { question: string | null; values: string[]; instructions?: string }, variant: PromptVariant = promptVariant): string {
   const codes = REASON_CODES.filter(r => MODEL_CODES.includes(r.code));
+  const current = variant === 'current';
   return [
     'TASK: classify one phone call between an AI agent (AGENT) and a person (PERSON). Report what was said. Never grade.',
     'OUTPUT: one JSON object:',
     '{"points":[{"claim":string,"quote":string}],"moments":[{"kind":KIND,"quote":string,"note":string}],"reasonCode":CODE|null,',
     ' "outcome":{"value":VALUE,"quote":string,"confidence":number}|null,"forget":{"quote":string}|null}',
     'QUOTE: copied character for character from ONE transcript line, without the speaker label. Anything without such a quote is discarded.',
-    'KIND (one entry per line that shows it):',
+    current ? 'KIND (one entry per PERSON line that shows it, whatever the OUTCOME; one line can show two kinds):' : 'KIND (one entry per line that shows it):',
     '- commitment: PERSON agrees to do something (pay, come, confirm, buy, renew, fill, send). Every agreeing PERSON line is a commitment.',
-    '- objection: PERSON gives a reason against, or a complaint',
+    current ? '- objection: PERSON gives a reason against, complains or raises a concern. Every complaining PERSON line is an objection, even when the PERSON agrees later: then list both, the objection and the commitment.'
+      : '- objection: PERSON gives a reason against, or a complaint',
     '- question: PERSON asks something',
     '- opt_out: PERSON asks not to be called again',
     '- callback_request: PERSON asks to be called at another time',
@@ -43,14 +70,7 @@ export function analysisPrompt(o: { question: string | null; values: string[]; i
     ...(o.question ? [
       `OUTCOME: question "${o.question}"; VALUE one of ${JSON.stringify(o.values)}`,
       '- decided by the PERSON\'s words; quote the PERSON line that decides it',
-      'OUTCOME shapes: PERSON line -> the VALUE that names it (when one does):',
-      '- agrees -> agreeing VALUE',
-      '- refuses, not interested -> refusing VALUE',
-      '- is not the person called (relative, colleague, wrong number) -> wrong-person VALUE; never null',
-      '- complains AND asks for a human, person or manager -> needs-human VALUE; never null',
-      '- asks never to be called again -> refusing VALUE; never the call-later VALUE (an opt-out is not a callback)',
-      '- asks to be called at another time -> call-later VALUE',
-      '- null: no shape above; or cannot follow the language; or hangs up before the question; or distress, crisis (distress is not asking for a human)',
+      ...(variant === 'r3-stance' ? OUTCOME_STANCE : variant === 'no-outcome-rules' ? [] : OUTCOME_TABLE),
       '- confidence: 0..1, how clearly that line decides it',
     ] : ['OUTCOME: always null.']),
     ...(o.instructions ? [`OUTCOME, client rule: ${o.instructions}`] : []),

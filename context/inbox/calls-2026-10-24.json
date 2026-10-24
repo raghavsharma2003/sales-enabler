@@ -85,6 +85,16 @@
    "source": "verified",
    "title": "learning-loop-e2e hangs under the full suite (2 of 4 runs today, never alone): a pool deadlock in learning. experiment.check takes the experiment row FOR UPDATE inside its transaction (experimentFor(..., true)), then cross() calls another tool on bound.pool, which needs a second connection. Ten concurrent experiment.assign calls each hold a pool connection blocked on that lock, so the pool (max 10) never has one to give",
    "rationale": "Seen in pg_stat_activity during the hang: one backend 'idle in transaction' (ClientRead) right after the experimentUnits SELECT, holding its xact for 10+ minutes; nine backends active, waiting Lock/transactionid on INSERT INTO experiment_assignment. server/modules/learning/index.ts:39-44 (cross uses bound.pool), :460 and :514 (cross inside check), :391-402 (assign). Not calls' code; reported for learning. Fix options: run the cross() calls after the transaction (collect, then execute), or have assign not wait on check's lock (SKIP LOCKED / no row lock in check until the decision), and never acquire a pool connection while holding a transaction."
+  },
+  {
+   "id": "decision.2026-10-24.objection-always-a-moment",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The analysis contract says every complaining PERSON line is an objection, even when the person agrees later (then both the objection and the commitment are listed), and moments are listed per PERSON line whatever the OUTCOME. The outcome table that fixed round 3 stays. The bench can ablate the contract on DEV only: --prompt-variant current | r4-table (b1a80cf exactly) | r3-stance (bfa7ee7's outcome sentence) | no-outcome-rules; an ablation on TEST is refused and the report header names the contract",
+   "rationale": "Answers the round 4 regression (mini objection recall 51/51 -> 43/51 on complain-then-agree calls after b1a80cf). The cause is NOT confirmed here: an ablation needs a real model and the sandbox has none. The arms let the bench worker confirm it on DEV: if r4-table loses objections that r3-stance keeps and no-outcome-rules also keeps, the table crowds out moments; current should keep them with the table.",
+   "reverse_if": "The DEV ablation shows current still drops objections, or that the loss is noise against r3-stance (then move the moment rules after OUTCOME, or ask for moments in a second field)."
   }
  ],
  "edges": [
@@ -149,6 +159,11 @@
    "date": "2026-10-24",
    "event": "recording-purge",
    "details": "Tests: voice test_recordings.py 11 (signed purge deletes .wav and .json once, the link then 404s, a repeat is deleted:false; another workspace 403, wrong signature 401, body naming another call 400, the file stays); tests/calls-recording-purge.test.ts 2 (retention per workspace, erasure first whatever the age, idempotent, an unconfirmed purge is retried, a run cut short after the delete is finished by the next); calls-live cross-process with devsim (another workspace's purge refused by the real runtime, then the job deletes the file: link 404, row purged, call.get says why). Gates on a fresh database: test.mjs 526/526 including browser flows; ui-contract --strict 176/176; tsc server and web clean; voice unittest OK. Two earlier suite runs hung in learning-loop-e2e: open.2026-10-24.learning-check-pool-deadlock (learning's code, diagnosed from pg_stat_activity)."
+  },
+  {
+   "date": "2026-10-24",
+   "event": "objection-moment-fix",
+   "details": "tests/calls-analysis-objection.test.ts (4) failed 4/4 on the old code and pass now: the contract wording, the three ablation arms reproduce the compared contracts, a complain-then-agree fixture stores both moments (objection on the complaint, commitment on the agreement) and keeps the outcome, an ablation on TEST is refused. All four arms run end to end on DEV with the fake model (plumbing only). Not measured on a real model. READY for the integrator: run the DEV ablation (4 arms), then two TEST passes on current."
   }
  ]
 }
