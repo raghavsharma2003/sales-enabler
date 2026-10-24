@@ -481,6 +481,23 @@ test('MA-08: a capture whose credit failed is credited by the resolver, and a re
   assert.equal((await bal(ws))!.b, '300000');
 });
 
+test('MA-08: a resolver whose clock reads a little behind the database still credits the capture it just confirmed', { skip }, async () => {
+  const fake = new FakeGateway();
+  setGateway(fake);
+  try {
+    const { ws, owner } = await workspace(0);
+    fake.loseNextResponse = true;
+    const p = await reg.execute(pool, 'wallet.topup', { inrMilli: 500_000 }, { workspaceId: ws, actor: ownerActor(owner) });
+    if (p.status !== 'needs_approval') return assert.fail('expected a card');
+    await reg.approve(pool, p.actionId, { workspaceId: ws, memberId: owner });
+    // The caller's clock is 50 ms behind the database's, which stamps updated_at when the lookup resolves the row
+    // (CI failed this way on 08584cf: the row waited for the next test's resolver).
+    await resolveTopups(pool, new Date(Date.now() - 50), 0);
+    assert.equal((await bal(ws))!.b, '500000');
+    assert.equal(fake.charges.length, 1, 'resolving never re-charges');
+  } finally { setGateway(new FakeGateway()); }
+});
+
 // ---------------------------------------------------------------- review MA-09: holds that would never be released
 
 test('MA-09: a hold whose dial was never confirmed is released and flagged once; late cost is charged, not dropped', { skip }, async () => {

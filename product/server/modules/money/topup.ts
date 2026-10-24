@@ -89,8 +89,10 @@ export async function resolveTopups(pool: pg.Pool, now: Date = new Date(), credi
       [t.id, status, found?.gatewayRef ?? null, found === null ? 'the gateway has no record of this charge' : found.status === 'failed' ? found.reason : null]);
     resolved++;
   }
+  // updated_at is the database's clock (the lookup above may have just set it), so the cutoff never reads earlier than now().
   const due = await many<{ id: string; workspace_id: string }>(pool,
-    "SELECT id, workspace_id FROM wallet_topup WHERE status = 'captured' AND credited_at IS NULL AND updated_at < $1", [new Date(now.getTime() - creditAfterMs)]);
+    `SELECT id, workspace_id FROM wallet_topup WHERE status = 'captured' AND credited_at IS NULL
+       AND updated_at <= GREATEST($1::timestamptz, now()) - make_interval(secs => $2::double precision)`, [now, creditAfterMs / 1000]);
   for (const t of due) {
     const ok = await tx(pool, async c => {
       const r = await creditTopup(c, t.workspace_id, t.id);
