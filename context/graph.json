@@ -22395,6 +22395,17 @@
    "rationale": "Staging 2026-10-24 06:25 UTC: an unattended-upgrade restart of PostgreSQL emitted an idle client's 'terminating connection due to administrator command' on a pool with no listener; Node treated it as unhandled and the control plane exited (systemd restarted it 3 s later, dropping in-flight requests). tests/db-pool.test.ts kills an idle backend with pg_terminate_backend: without the listener the test process dies with an uncaughtException; with it the error is logged and SELECT 1 succeeds.",
    "reverse_if": "A supervisor-level policy (crash and restart on any database error) is chosen deliberately, with in-flight requests drained first; then the listener should rethrow after logging.",
    "path": "product/tests/db-pool.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.web-budget-per-chunk",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "integrator",
+   "title": "Web size budget: first load at most 100 KB gzip and any one lazy chunk at most 30 KB gzip are the gates; the total of every chunk (240 KB) is a bloat tripwire, not a feature cap. A raise of any of the three needs its measured cause in the graph",
+   "rationale": "A person waits for the first load plus the chunk of the page they open; the total of all chunks grows with every lazy screen even when no page gets slower. With a 205 KB total cap, three lanes (agents' speed gate, workspace's roster, intake's CRM import screen) were blocked or red over 0.4-3.7 KB each while the first load stayed at 87.7 KB and the largest chunk (Settings) at 25.6 KB. The per-chunk cap keeps every page's download bounded and forces a split where a page grows (Settings is closest). 240 KB total still trips on a library pulled in or code duplicated across chunks, which add tens of KB at once.",
+   "reverse_if": "A measured cold page transition on a mid-range Android over throttled 4G exceeds 1 s for a lazy route at these sizes, or offline/precache (a service worker) makes the total the download that matters; then the total becomes a gate again.",
+   "path": "product/tests/web.test.ts"
   }
  ],
  "edges": [
@@ -40404,6 +40415,11 @@
    "from": "decision.2026-10-24.pool-error-logged-not-fatal",
    "to": "risk.2026-10-24.control-plane-exits-on-postgres-restart",
    "relation": "mitigates"
+  },
+  {
+   "from": "decision.2026-10-24.web-budget-per-chunk",
+   "to": "decision.2026-10-24.web-a11y-gate",
+   "relation": "related-to"
   }
  ]
 }

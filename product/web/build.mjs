@@ -58,6 +58,8 @@ await writeFile(dist + 'index.html', html);
 await cp(here + 'public', dist, { recursive: true });
 
 let total = 0, gz = 0, entryGz = 0;
+// The largest lazy chunk is what one page can add on top of the first load (decision.2026-10-24.web-budget-per-chunk).
+let largest = { name: '', gzipBytes: 0 };
 async function walk(dir) {
   for (const f of await readdir(dir, { withFileTypes: true })) {
     const p = dir + f.name;
@@ -66,9 +68,10 @@ async function walk(dir) {
     const g = gzipSync(readFileSync(p)).length;
     gz += g;
     if (f.name === js || f.name === css) entryGz += g;
+    else if (g > largest.gzipBytes) largest = { name: f.name, gzipBytes: g };
   }
 }
 await walk(dist + 'assets/');
-const report = { js, css, bytes: total, gzipBytes: gz, entryGzipBytes: entryGz };
+const report = { js, css, bytes: total, gzipBytes: gz, entryGzipBytes: entryGz, largestChunk: largest };
 await writeFile(dist + 'build.json', JSON.stringify(report));
-console.log(`web built: ${js} + ${css}; first load ${(entryGz / 1024).toFixed(1)} KB gzip, all chunks ${(gz / 1024).toFixed(1)} KB gzip (${(total / 1024).toFixed(1)} KB raw)`);
+console.log(`web built: ${js} + ${css}; first load ${(entryGz / 1024).toFixed(1)} KB gzip, largest chunk ${largest.name} ${(largest.gzipBytes / 1024).toFixed(1)} KB, all chunks ${(gz / 1024).toFixed(1)} KB gzip (${(total / 1024).toFixed(1)} KB raw)`);
