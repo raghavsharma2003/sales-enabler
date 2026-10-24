@@ -69,6 +69,16 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'cap.lower': { ask: 'Lower a spend cap', done: 'Spend cap lowered' },
   'test.simulate': { ask: 'Run a practice call', done: 'Practice call run' },
   'monitor.create': { ask: 'Turn on a monitor', done: 'Monitor turned on' },
+  'webhook.create': { ask: 'Add a webhook', done: 'Webhook added' },
+  'webhook.delete': { ask: 'Delete a webhook', done: 'Webhook deleted' },
+  'webhook.replay': { ask: 'Send a webhook event again', done: 'Webhook event queued again' },
+  'call.export': { ask: 'Export calls as a file', done: 'Calls export ready' },
+  'notification.destination.create': { ask: 'Add an alert destination', done: 'Alert destination added' },
+  'notification.destination.delete': { ask: 'Remove an alert destination', done: 'Alert destination removed' },
+  'duty.roster.set': { ask: 'Change the duty hours', done: 'Duty hours changed' },
+  'duty.override.add': { ask: 'Add leave or cover to the duty roster', done: 'Leave or cover added' },
+  'duty.override.remove': { ask: 'Remove leave or cover from the duty roster', done: 'Leave or cover removed' },
+  'source.hook_secret.rotate': { ask: 'Replace a contact webhook\'s signing secret', done: 'Signing secret replaced' },
 };
 export const toolAsk = (tool: string, fallback: string) => TOOL_LABEL[tool]?.ask ?? fallback;
 export const toolDone = (tool: string, fallback: string) => TOOL_LABEL[tool]?.done ?? fallback;
