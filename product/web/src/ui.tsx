@@ -13,9 +13,11 @@ export const scrollMotion = (): ScrollBehavior => (typeof matchMedia === 'functi
 // ---------- buttons ----------
 type BtnProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> & {
   kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; size?: 'md' | 'sm'; busy?: boolean; icon?: ReactNode;
-} & ({ disabled?: false; reason?: undefined; fix?: undefined } | { disabled: true; reason: string; fix?: { label: string; to: string } });
+} & ({ disabled?: false; reason?: undefined; fix?: undefined } | { disabled: true; reason: string; fix: { label: string; to: string } | null });
 
-/** A disabled button must say why (and, where possible, link to the fix). The type enforces it. */
+/** A disabled button must say why, and must decide on a fix link: where the fix is on another page, a link to it; `null` only
+ *  when the fix is on this screen (a field above, a check below) or is not the person's to make (a role, server setup).
+ *  The type enforces the choice; a test checks no disabled button leaves it out. */
 export function Btn({ kind = 'secondary', size = 'md', busy, icon, children, className, disabled, reason, fix, onClick, ...rest }: BtnProps) {
   const rid = useId();
   return (

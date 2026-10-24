@@ -64,7 +64,7 @@ function NewAgent({ onClose }: { onClose: () => void }) {
         {tpl.state === 'missing' ? <p className="small muted">Starters are not switched on in this server yet; describe the job instead.</p> : !tpl.data ? <p className="small muted">Loading starters…</p> :
           <div role="radiogroup" aria-label="Starter" className="jobgrid">{tpl.data.templates.map(t => <button key={t.id} type="button" role="radio" aria-checked={pick === t.id} className={`jobcard${pick === t.id ? ' on' : ''}`} onClick={() => setPick(pick === t.id ? '' : t.id)}><strong>{t.label}</strong><span>{t.industry}, {t.category} calls</span></button>)}</div>}</div>
       {chosen ? <p className="small muted">{chosen.summary} Everything is editable, and nothing is published or called.</p> : <TextArea label="Or describe the job in your own words" value={desc} onChange={e => setDesc(e.target.value)} rows={3} hint="Who you call and what should be true at the end of the call." />}
-      <div className="row" style={{ justifyContent: 'flex-end' }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>{reason ? <Btn disabled reason={reason}>Create draft</Btn> : <Btn kind="primary" busy={busy} onClick={create}>Create draft</Btn>}</div>
+      <div className="row" style={{ justifyContent: 'flex-end' }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>{reason ? <Btn disabled fix={null} reason={reason}>Create draft</Btn> : <Btn kind="primary" busy={busy} onClick={create}>Create draft</Btn>}</div>
     </Sheet>
   );
 }

@@ -145,6 +145,18 @@ test('no page writes from a menu: act() is never called inside an onChange of a 
   }
 });
 
+test('every disabled button decides on a fix link: a link where the fix is on another page, an explicit null where it is not', () => {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(d + '/' + e.name) : e.name.endsWith('.tsx') ? [d + '/' + e.name] : []);
+  const open: string[] = [];
+  for (const f of walk(web + 'src')) {
+    // A <Btn …> opening tag, braces balanced two deep (reason={`…${x}…`} and fix={{ … }} hold braces and '>').
+    for (const m of readFileSync(f, 'utf8').matchAll(/<Btn\b(?:[^>{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*>/g)) {
+      if (/\sdisabled[\s>]/.test(m[0]) && !/\sfix=/.test(m[0])) open.push(`${f.slice(web.length)}: ${m[0].slice(0, 90)}`);
+    }
+  }
+  assert.deepEqual(open, [], 'disabled buttons with no fix decision');
+});
+
 // The browser flows need Chromium and Postgres 16; without them they skip with the reason (CI has no browser cache).
 const pre = spawnSync(process.execPath, [web + 'e2e/precheck.mjs'], { encoding: 'utf8' });
 test('browser flows against the real server (web/e2e/run.sh)', { skip: pre.status === 0 ? false : (pre.stdout || pre.stderr).trim() || 'precheck failed' }, () => {

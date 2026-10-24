@@ -1893,3 +1893,34 @@ test('Call log: each call shows the agent and version it ran and its reply gap, 
   await page.goto(`${BASE}/calls/${c.id}`);
   await page.locator('.kv').getByText(c.agent.label, { exact: true }).waitFor({ timeout: 10000 });
 });
+
+// ---- Must-be audit gap 16 (state integrity): leaving a page with unsaved changes asks first, Back included; a tab does not
+test('Unsaved changes: a link away asks first and Stay keeps the edit; a tab on the same page does not ask; Back asks too; Leave drops it', async () => {
+  const id = await riyaId();
+  // Arrive in the app (a link from the agents list), so Back is a move inside it, not a page load the browser handles.
+  await page.goto(`${BASE}/agents`);
+  await page.locator(`a[href="/agents/${id}"]`).first().click();
+  await page.waitForURL(u => u.pathname === `/agents/${id}`);
+  await page.getByRole('tab', { name: 'Persona' }).click();
+  await page.getByRole('button', { name: 'Add a note' }).click();
+  const note = page.locator('main input').last();
+  await note.fill('unsaved walkthrough note');
+  await page.locator('nav').getByRole('link', { name: 'Campaigns' }).first().click();
+  const ask = page.getByRole('dialog', { name: 'Leave without saving?' });
+  await ask.waitFor({ timeout: 5000 });
+  assert.match(await ask.innerText(), /are not saved\. If you leave now, they are lost\./);
+  await ask.getByRole('button', { name: 'Stay and keep editing' }).click();
+  await ask.waitFor({ state: 'detached' });
+  assert.match(page.url(), new RegExp(`/agents/${id}`), 'still on the agent');
+  assert.equal(await note.inputValue(), 'unsaved walkthrough note', 'the edit is kept');
+  await page.getByRole('tab', { name: 'Basics' }).click();
+  await page.waitForTimeout(300);
+  assert.equal(await ask.count(), 0, 'a tab of the same page is not leaving');
+  await page.goBack();
+  await ask.waitFor({ timeout: 5000 });
+  assert.match(page.url(), new RegExp(`/agents/${id}`), 'Back is held while it asks');
+  await ask.getByRole('button', { name: 'Leave without saving' }).click();
+  await page.waitForURL(u => !new RegExp(`/agents/${id}`).test(u.pathname), { timeout: 5000 });
+  const draft = (await tool('agent.get', { agentId: id })).result;
+  assert.ok(!JSON.stringify(draft).includes('unsaved walkthrough note'), 'nothing was saved');
+});

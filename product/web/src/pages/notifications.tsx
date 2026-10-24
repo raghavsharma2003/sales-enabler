@@ -79,7 +79,7 @@ function NewDest({ events, emailReady, onMade }: { events: EventDef[]; emailRead
       </div>
       <fieldset className="stack-s" style={{ border: 0, padding: 0, margin: '16px 0 0' }}><legend className="callout-l">Alerts to send</legend>
         {events.map(e => <Toggle key={e.event} checked={picked.includes(e.event)} onChange={v => setPicked(v ? [...picked, e.event] : picked.filter(x => x !== e.event))} label={e.label} hint={e.description} />)}</fieldset>
-      <div className="row" style={{ marginTop: 16 }}>{reason ? <Btn disabled reason={reason}>Ask to add</Btn> : <Btn kind="primary" busy={busy} onClick={() => void add()}>Ask to add</Btn>}</div>
+      <div className="row" style={{ marginTop: 16 }}>{reason ? <Btn disabled fix={null} reason={reason}>Ask to add</Btn> : <Btn kind="primary" busy={busy} onClick={() => void add()}>Ask to add</Btn>}</div>
     </Card>
   );
 }
@@ -115,12 +115,12 @@ export function DutyRoster() {
             <div className="formgrid3"><SelectField label="Person" value={who} onChange={e => setWho(e.target.value)}><option value="">Choose…</option>{(people.data ?? []).map(m => <option key={m.id} value={m.id}>{m.name || m.email}</option>)}</SelectField>
               <TextField label="From" type="time" value={start} onChange={e => setStart(e.target.value)} /><TextField label="To" type="time" value={end} onChange={e => setEnd(e.target.value)} hint="00:00 means the end of the day." /></div>
             <div className="row" role="group" aria-label="Days">{DAYS.map((n, k) => <label key={n} className="row" style={{ gap: 4 }}><input type="checkbox" checked={days.includes(k + 1)} onChange={e => setDays(e.target.checked ? [...days, k + 1].sort() : days.filter(x => x !== k + 1))} />{n}</label>)}</div>
-            <div>{shiftReason ? <Btn disabled reason={shiftReason}>Ask to add hours</Btn> : <Btn onClick={() => void save([...d.shifts, { memberId: who, name: '', days, start, end: end === '00:00' ? '24:00' : end }])}>Ask to add hours</Btn>}</div></fieldset>
+            <div>{shiftReason ? <Btn disabled fix={null} reason={shiftReason}>Ask to add hours</Btn> : <Btn onClick={() => void save([...d.shifts, { memberId: who, name: '', days, start, end: end === '00:00' ? '24:00' : end }])}>Ask to add hours</Btn>}</div></fieldset>
           <fieldset className="stack-s" style={{ border: 0, padding: 0, margin: 0 }}><legend className="callout-l">Leave or cover</legend>
             <div className="formgrid"><SelectField label="Person" value={ow} onChange={e => setOw(e.target.value)}><option value="">Choose…</option>{(people.data ?? []).map(m => <option key={m.id} value={m.id}>{m.name || m.email}</option>)}</SelectField>
               <SelectField label="They are" value={on} onChange={e => setOn(e.target.value)}><option value="false">Off duty (leave)</option><option value="true">On duty (cover)</option></SelectField>
               <TextField label="From" type="datetime-local" value={from} onChange={e => setFrom(e.target.value)} /><TextField label="Until" type="datetime-local" value={to} onChange={e => setTo(e.target.value)} hint="In your browser's time zone." /></div>
-            <div>{ovReason ? <Btn disabled reason={ovReason}>Ask to add</Btn> : <Btn onClick={async () => { const r = await act('duty.override.add', { memberId: ow, from: new Date(from).toISOString(), to: new Date(to).toISOString(), onDuty: on === 'true' }, { describe: 'Saved.' }); if (r.ok) { setFrom(''); setTo(''); q.reload(); } }}>Ask to add</Btn>}</div></fieldset>
+            <div>{ovReason ? <Btn disabled fix={null} reason={ovReason}>Ask to add</Btn> : <Btn onClick={async () => { const r = await act('duty.override.add', { memberId: ow, from: new Date(from).toISOString(), to: new Date(to).toISOString(), onDuty: on === 'true' }, { describe: 'Saved.' }); if (r.ok) { setFrom(''); setTo(''); q.reload(); } }}>Ask to add</Btn>}</div></fieldset>
         </>}
       </div>}</Async>
     </Card>

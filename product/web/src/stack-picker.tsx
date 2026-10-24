@@ -246,7 +246,7 @@ function StackCard({ s, selected, isDefault, price, sample, busy, onPick }: { s:
       {down && selected && <p className="risk small"><AlertTriangle size={14} aria-hidden /> {s.availability.reason}</p>}
       {s.risks.map(r => <p key={r} className="risk small"><AlertTriangle size={14} aria-hidden /> {r}</p>)}
       <div className="stackcard-foot">
-        {down && !selected ? <Btn disabled reason={s.availability.reason ?? 'This stack is unavailable right now.'}>Choose this stack</Btn>
+        {down && !selected ? <Btn disabled fix={null} reason={s.availability.reason ?? 'This stack is unavailable right now.'}>Choose this stack</Btn>
           : <button type="button" className={`pickbtn${selected ? ' on' : ''}`} aria-pressed={selected} aria-disabled={busy || undefined} onClick={() => { if (!selected && !busy) onPick(); }}>{selected ? <><Check size={16} aria-hidden /> Chosen</> : busy ? 'Saving…' : 'Choose this stack'}</button>}
       </div>
     </li>

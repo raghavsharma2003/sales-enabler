@@ -90,7 +90,7 @@ function Audiences() {
             <TextField label="Value" value={r.value} disabled={r.op === 'exists' || r.op === 'missing'} onChange={e => setRows(rows.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))} />
           </div>))}
           {rows.length < 4 && <div><Btn size="sm" onClick={() => setRows([...rows, { key: '', op: 'eq', value: '' }])}>Add a condition</Btn></div>}</div>
-        <div style={{ marginTop: 16 }}>{reason ? <Btn disabled reason={reason}>Save audience</Btn> : <Btn kind="primary" onClick={async () => {
+        <div style={{ marginTop: 16 }}>{reason ? <Btn disabled fix={null} reason={reason}>Save audience</Btn> : <Btn kind="primary" onClick={async () => {
           const all = valid.map(r => ({ key: r.key, op: r.op, ...(r.op === 'exists' || r.op === 'missing' ? {} : { value: /^-?\d+(\.\d+)?$/.test(r.value) ? Number(r.value) : r.value }) }));
           const r = await act('audience.create', { name, filter: { all } }, { describe: 'Audience saved.' }); if (r.ok) { setName(''); setRows([{ key: '', op: 'eq', value: '' }]); refresh(); } }}>Save audience</Btn>}</div></Card>
     </div>
@@ -170,7 +170,7 @@ function FileImport() {
           <input ref={file} type="file" accept=".xlsx,.csv,.tsv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="sr" aria-label="Choose a file: Excel, CSV or TSV" onChange={e => void onFile(e.target.files?.[0])} />
           <Btn icon={<Upload size={16} aria-hidden />} onClick={() => file.current?.click()}>Choose a file</Btn>
           <Btn kind="ghost" onClick={() => { setPicked(null); setCsv(SAMPLE); setPv(null); }}>Use a made-up sample</Btn>
-          {picked || csv.trim() ? <Btn kind="primary" busy={busy} onClick={() => void check()}>Check the file</Btn> : <Btn disabled reason="Choose a file or paste a list first.">Check the file</Btn>}
+          {picked || csv.trim() ? <Btn kind="primary" busy={busy} onClick={() => void check()}>Check the file</Btn> : <Btn disabled fix={null} reason="Choose a file or paste a list first.">Check the file</Btn>}
         </div></Card>
       {pv && <ImportReview pv={pv} setPv={setPv} srcText={srcText} agentId={agentId} onSaved={() => go('/audiences')} />}
     </div>

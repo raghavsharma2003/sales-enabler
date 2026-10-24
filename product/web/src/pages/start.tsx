@@ -41,13 +41,13 @@ export default function GettingStarted() {
         <Step n={2} done={p.heard} title="Hear her" doneText="You have run a test call.">
           {!p.heard && (first
             ? <><p className="small muted">Call yourself in the browser, or run practice callers. Nothing reaches anyone.</p><div><Link to={`/agents/${first.id}?test=1`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Hear her now</span></Link></div></>
-            : <Btn disabled reason="Create an agent first.">Hear her</Btn>)}
+            : <Btn disabled fix={null} reason="Create an agent first.">Hear her</Btn>)}
         </Step>
         <Step n={3} done={p.contacts > 0} title="Add contacts" doneText="Contacts are saved.">
           {p.contacts === 0 && <><p className="small muted">Paste a CSV or choose a file. You see a verdict for every row before anything is saved.</p><div><Link to="/contacts/import" className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Add contacts</span></Link></div></>}
         </Step>
         <Step n={4} done={p.launched > 0} title="Launch a test campaign" doneText="A campaign has been launched.">
-          {p.draft ? <><p className="small muted">“{p.draft.name}” is saved as a draft. Nothing is dialled until you hold the launch button, and the launch checks list what is left to do.</p><div><Link to={`/campaigns/${p.draft.id}`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Finish your campaign</span></Link></div></> : p.launched === 0 && (!published ? <Btn disabled reason={first ? 'Publish an agent first. A campaign uses a published version.' : 'Create an agent first.'} fix={first ? { label: 'Open the agent', to: `/agents/${first.id}` } : undefined}>Start a campaign</Btn>
+          {p.draft ? <><p className="small muted">“{p.draft.name}” is saved as a draft. Nothing is dialled until you hold the launch button, and the launch checks list what is left to do.</p><div><Link to={`/campaigns/${p.draft.id}`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Finish your campaign</span></Link></div></> : p.launched === 0 && (!published ? <Btn disabled reason={first ? 'Publish an agent first. A campaign uses a published version.' : 'Create an agent first.'} fix={first ? { label: 'Open the agent', to: `/agents/${first.id}` } : null}>Start a campaign</Btn>
             : p.contacts === 0 ? <Btn disabled reason="Add contacts first, so there is someone to call." fix={{ label: 'Add contacts', to: '/contacts/import' }}>Start a campaign</Btn>
             : <div><Link to="/campaigns/new" className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Start a campaign</span></Link></div>)}
         </Step>
@@ -84,7 +84,7 @@ function CreateAgent({ onCreated }: { onCreated: () => void }) {
         <TextArea label="What should the calls do?" rows={3} value={desc} onChange={e => setDesc(e.target.value)} hint="Say who you call and why, in a sentence or two. The assistant builds the agent and asks before anything reaches anyone." />
         <div>{desc.trim().length >= 20
           ? <Btn kind="primary" onClick={() => { say(`Build a calling agent for this job: ${desc.trim()}`); }}>Ask the assistant to build it</Btn>
-          : <Btn disabled reason="Describe the job in at least a sentence.">Ask the assistant to build it</Btn>}</div>
+          : <Btn disabled fix={null} reason="Describe the job in at least a sentence.">Ask the assistant to build it</Btn>}</div>
         <p className="small muted">The assistant takes it from here and asks before anything reaches anyone. When the agent exists, this step turns to done.</p>
       </> : <>
         {industries.length > 1 && <div role="radiogroup" aria-label="Industry" className="chipset" style={{ marginTop: 0 }}>{['', ...industries].map(i => <button key={i || 'all'} type="button" role="radio" aria-checked={ind === i} className={`choice${ind === i ? ' on' : ''}`} onClick={() => setInd(i)}>{i ? INDUSTRY(i) : 'All industries'}</button>)}</div>}
@@ -92,7 +92,7 @@ function CreateAgent({ onCreated }: { onCreated: () => void }) {
           groups.map(([ind, list]) => <section key={ind} aria-label={INDUSTRY(ind)}><h3 className="dayhead">{INDUSTRY(ind)}</h3>
             <div role="radiogroup" aria-label={`${INDUSTRY(ind)} templates`} className="jobgrid">{list.map(t => <button key={t.id} type="button" role="radio" aria-checked={pick?.id === t.id} className={`jobcard${pick?.id === t.id ? ' on' : ''}`} onClick={() => { setPick(t); setName(n => n || t.label); }}><strong>{t.label}</strong><span className="small muted">{t.summary}</span></button>)}</div></section>)}
         {pick && <><TextField label="Agent name" value={name} onChange={e => setName(e.target.value)} hint="Your own label. You can rename it later." />
-          <div>{name.trim() ? <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act<{ agentId: string }>('agent.create', { name: name.trim(), templateId: pick.id }, { describe: 'Draft created. Nothing has reached anyone.' }); setBusy(false); if (r.ok) { await adoptBusinessName(act, r.result!.agentId, me?.workspace.name ?? ''); onCreated(); go(`/agents/${r.result!.agentId}`); } }}>Create draft</Btn> : <Btn disabled reason="Give the agent a name first.">Create draft</Btn>}</div></>}
+          <div>{name.trim() ? <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act<{ agentId: string }>('agent.create', { name: name.trim(), templateId: pick.id }, { describe: 'Draft created. Nothing has reached anyone.' }); setBusy(false); if (r.ok) { await adoptBusinessName(act, r.result!.agentId, me?.workspace.name ?? ''); onCreated(); go(`/agents/${r.result!.agentId}`); } }}>Create draft</Btn> : <Btn disabled fix={null} reason="Give the agent a name first.">Create draft</Btn>}</div></>}
       </>}
     </div>
   );

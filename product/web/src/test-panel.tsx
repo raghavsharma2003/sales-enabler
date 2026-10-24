@@ -78,9 +78,9 @@ export function TestPanel() {
         {callers.data && <fieldset className="chipset" style={{ margin: 0 }}><legend className="sr">Practice callers to run</legend>{callers.data.map(c => <label key={c.id} className={`choice${chosen.includes(c.id) ? ' on' : ''}`} title={c.trap}><input type="checkbox" checked={chosen.includes(c.id)} onChange={() => setPicks(chosen.includes(c.id) ? chosen.filter(x => x !== c.id) : [...chosen, c.id])} />{c.label}</label>)}</fieldset>}
         {!hasTool('test.simulate') ? <p className="small hint-bad">Practice callers are not switched on in this server yet.</p>
           : noStack ? <Btn disabled reason="Choose a voice stack first. A test never falls back to another one." fix={{ label: 'Choose one', to: `/agents/${a.id}?tab=voice` }} icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
-          : callers.error ? <Btn disabled reason="The practice callers could not be loaded. Reload the page to try again." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
+          : callers.error ? <Btn disabled fix={null} reason="The practice callers could not be loaded. Reload the page to try again." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
           : !callers.data ? <Btn kind="primary" busy icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
-          : !picked.length ? <Btn kind="primary" disabled reason="Choose at least one practice caller to run." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
+          : !picked.length ? <Btn kind="primary" disabled fix={null} reason="Choose at least one practice caller to run." icon={<Play size={16} aria-hidden />}>{runLabel}</Btn>
           : <Btn kind="primary" busy={busy} icon={<Play size={16} aria-hidden />} onClick={run}>{runLabel}</Btn>}
         {sim && (
           <div className="stack-s" aria-live="polite">

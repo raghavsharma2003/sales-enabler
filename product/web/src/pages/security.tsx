@@ -115,8 +115,8 @@ function TestConnection({ issuer, canTest, hasSaved }: { issuer?: string; canTes
   const test = async () => { setBusy(true); setRes(null); const r = await act<SsoTest>('sso.test', typed ? { issuer: typed } : {}, { quiet: true }); setBusy(false); if (r.ok) setRes(r.result); };
   return (
     <div className="stack-s">
-      <div className="row">{!canTest ? <Btn disabled reason="Only an owner or compliance lead can test the connection.">Test connection</Btn>
-        : !typed && !hasSaved ? <Btn disabled reason="Enter the issuer address first.">Test connection</Btn>
+      <div className="row">{!canTest ? <Btn disabled fix={null} reason="Only an owner or compliance lead can test the connection.">Test connection</Btn>
+        : !typed && !hasSaved ? <Btn disabled fix={null} reason="Enter the issuer address first.">Test connection</Btn>
         : <Btn busy={busy} onClick={test}>Test connection</Btn>}
         <span className="small muted">Reads your provider's settings and signing keys. It does not sign anyone in.</span></div>
       <div aria-live="polite">{res && <TestResult t={res} />}</div>
@@ -171,7 +171,7 @@ function SsoForm({ cfg, onSaved }: { cfg: SsoCfg; onSaved: () => void }) {
       {saved?.ssoRequired ? <p className="small muted">Single sign-on is required, so it cannot be switched off. Allow passwords again below first.</p>
         : <Toggle checked={v.enabled} onChange={on => set('enabled', on)} label="Allow sign-in with single sign-on" hint="Turn this off to keep the settings but stop single sign-on sign-ins. It applies when you save." />}
       <div className="row">
-        {problem ? <Btn kind="primary" disabled reason={problem}>Ask to save</Btn> : !dirty ? <Btn kind="primary" disabled reason="No unsaved changes.">Ask to save</Btn> : <Btn kind="primary" busy={busy} onClick={save}>Ask to save</Btn>}
+        {problem ? <Btn kind="primary" disabled fix={null} reason={problem}>Ask to save</Btn> : !dirty ? <Btn kind="primary" disabled fix={null} reason="No unsaved changes.">Ask to save</Btn> : <Btn kind="primary" busy={busy} onClick={save}>Ask to save</Btn>}
         {dirty && <Chip tone="marigold">Unsaved</Chip>}
         <span className="small muted">Saving is a policy change and asks for approval.</span>
       </div>
@@ -226,7 +226,7 @@ function RequireCard({ cfg, members, onChanged }: { cfg: SsoOn; members: Member[
       ) : (
         <div className="stack">
           <p className="muted">Anyone with a password can still sign in. Test the connection and sign in once with single sign-on yourself before you require it.</p>
-          <div>{!cfg.enabled ? <Btn disabled reason="Switch single sign-on on and save first.">Require single sign-on…</Btn> : <Btn kind="primary" onClick={() => setOpen(true)}>Require single sign-on…</Btn>}</div>
+          <div>{!cfg.enabled ? <Btn disabled fix={null} reason="Switch single sign-on on and save first.">Require single sign-on…</Btn> : <Btn kind="primary" onClick={() => setOpen(true)}>Require single sign-on…</Btn>}</div>
         </div>
       )}
       {open && <RequireSheet members={members} onClose={() => setOpen(false)} onDone={() => { setOpen(false); onChanged(); }} />}
@@ -263,7 +263,7 @@ function RequireSheet({ members, onClose, onDone }: { members: Member[]; onClose
         </ul></div></div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <Btn kind="ghost" onClick={onClose}>Cancel</Btn>
-        {pick ? <Btn kind="primary" busy={busy} onClick={go}>Ask to require</Btn> : <Btn disabled reason="Choose an active owner as the break-glass account.">Ask to require</Btn>}
+        {pick ? <Btn kind="primary" busy={busy} onClick={go}>Ask to require</Btn> : <Btn disabled fix={null} reason="Choose an active owner as the break-glass account.">Ask to require</Btn>}
       </div>
     </Sheet>
   );
@@ -310,7 +310,7 @@ function Provisioning() {
     { key: 'u', label: 'Last used', render: t => t.lastUsedAt ? ago(t.lastUsedAt) : 'Never' },
     { key: 's', label: 'State', render: t => <Chip tone={t.revokedAt ? 'brick' : 'leaf'}>{t.revokedAt ? 'Revoked' : 'Active'}</Chip> },
     { key: 'x', label: '', render: t => t.revokedAt ? null : <div className="row" style={{ gap: 8 }}>
-      {owner ? <Btn size="sm" onClick={() => void rotate(t)}>Rotate…</Btn> : <Btn size="sm" disabled reason="Only an owner can rotate a token.">Rotate</Btn>}
+      {owner ? <Btn size="sm" onClick={() => void rotate(t)}>Rotate…</Btn> : <Btn size="sm" disabled fix={null} reason="Only an owner can rotate a token.">Rotate</Btn>}
       <Btn size="sm" kind="danger" onClick={() => void revoke(t)}>Revoke…</Btn></div> },
   ];
   const toggle = (s: string) => setScopes(p => (p.includes(s) ? p.filter(x => x !== s) : [...p, s]));
@@ -331,7 +331,7 @@ function Provisioning() {
         {owner ? <>
           <TextField label="Name" value={name} onChange={e => setName(e.target.value)} placeholder="Entra ID provisioning" autoComplete="off" hint="So you can tell tokens apart later." />
           <fieldset className="chipset"><legend>What it may do</legend>{(q.data?.scopes ?? Object.keys(SCOPE_LABEL)).map(s => <label key={s} className={`choice${scopes.includes(s) ? ' on' : ''}`}><input type="checkbox" checked={scopes.includes(s)} onChange={() => toggle(s)} />{scopeLabel(s)}</label>)}</fieldset>
-          <div style={{ marginTop: 12 }}>{!name.trim() ? <Btn disabled reason="Give the token a name.">Ask to create</Btn> : scopes.length === 0 ? <Btn disabled reason="Choose at least one thing the token may do.">Ask to create</Btn> : <Btn kind="primary" busy={busy} onClick={create}>Ask to create</Btn>}</div>
+          <div style={{ marginTop: 12 }}>{!name.trim() ? <Btn disabled fix={null} reason="Give the token a name.">Ask to create</Btn> : scopes.length === 0 ? <Btn disabled fix={null} reason="Choose at least one thing the token may do.">Ask to create</Btn> : <Btn kind="primary" busy={busy} onClick={create}>Ask to create</Btn>}</div>
         </> : <Locked role="owner">Only an owner can create or rotate tokens. You can revoke one above.</Locked>}</Card>
       {shown && <RevealSheet title={shown.title} secret={shown.token} onClose={() => setShown(null)} extra={<div className="stack-s">
         {shown.note && <p className="small">{shown.note}</p>}
@@ -397,7 +397,7 @@ function ActivityExport({ members }: { members: Member[] }) {
             <label className={`choice${f.privileged ? ' on' : ''}`}><input type="checkbox" checked={f.privileged} onChange={e => setF({ ...f, privileged: e.target.checked })} />Privileged actions only</label></fieldset>
         </div>
         <p className="hint">Privileged means identity, access, keys, money, policies and approvals.</p>
-        <div className="row" style={{ marginTop: 12 }}>{problem ? <Btn kind="primary" disabled reason={problem}>Ask to export</Btn> : <Btn kind="primary" busy={busy} onClick={request}>Ask to export</Btn>}</div>
+        <div className="row" style={{ marginTop: 12 }}>{problem ? <Btn kind="primary" disabled fix={null} reason={problem}>Ask to export</Btn> : <Btn kind="primary" busy={busy} onClick={request}>Ask to export</Btn>}</div>
         <ul className="plainlist small muted" style={{ marginTop: 12 }}>
           <li>A file is held for 24 hours. Export again if you need it later.</li>
           <li>Each download is recorded in the activity log.</li>
@@ -438,7 +438,7 @@ function VerifyFile({ exports: list }: { exports: ExportRow[] }) {
         <div className="field"><label htmlFor="verify-file">File</label><input id="verify-file" className="input" type="file" accept=".csv,.jsonl,text/csv,application/x-ndjson" onChange={e => void choose(e)} />{file && <p className="hint">{file.name}: <code className="hash">{short(file.hash)}</code></p>}</div>
         <SelectField label="Compare with" value={pick} onChange={e => { setPick(e.target.value); setOut(null); }} hint="Picked for you when the checksum matches an export.">{list.map(x => <option key={x.id} value={x.id}>{date(x.createdAt, true)} · {FORMAT_NAME[x.format]} · {count(x.rows)} rows</option>)}</SelectField>
       </div>
-      <div>{file && chosen ? <Btn busy={busy} onClick={verify}>Check this file</Btn> : <Btn disabled reason="Choose the downloaded file first.">Check this file</Btn>}</div>
+      <div>{file && chosen ? <Btn busy={busy} onClick={verify}>Check this file</Btn> : <Btn disabled fix={null} reason="Choose the downloaded file first.">Check this file</Btn>}</div>
       <div aria-live="polite">{out && (out.valid
         ? <div className="notice notice-ok"><Check size={20} aria-hidden /><p>This file is exactly what Vyakti exported. Its checksum matches and the signature is genuine.</p></div>
         : <div className="notice notice-bad"><AlertTriangle size={20} aria-hidden /><p>{!out.known ? 'Vyakti has no record of that export.' : !out.checksumMatches ? 'This file is not the one Vyakti exported. Its checksum is different. It may have been edited, or opened and saved again in another program.' : 'The signature recorded for that export is not valid, so the checksum cannot be trusted.'}</p></div>)}</div>

@@ -70,7 +70,7 @@ function ConnectForm({ kind, taken, onClose, onDone }: { kind: Kind; taken: stri
         {kind.config.map(c => <TextField key={c} label={`${word(c)} (optional)`} value={config[c] ?? ''} onChange={e => setConfig({ ...config, [c]: e.target.value })} />)}
       </div>
       <div className="row" style={{ justifyContent: 'flex-end', marginTop: 16 }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>
-        {reason ? <Btn disabled reason={reason}>Connect</Btn> : <Btn kind="primary" busy={busy} onClick={() => void submit()}>Connect</Btn>}</div>
+        {reason ? <Btn disabled fix={null} reason={reason}>Connect</Btn> : <Btn kind="primary" busy={busy} onClick={() => void submit()}>Connect</Btn>}</div>
     </Sheet>
   );
 }

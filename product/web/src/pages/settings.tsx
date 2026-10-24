@@ -3,7 +3,7 @@ import { lazy, Suspense, useState } from 'react';
 import { Lock } from 'lucide-react';
 import { run } from '../api.ts';
 import { useApp, useData } from '../store.tsx';
-import { useNav } from '../router.tsx';
+import { useLeaveGuard, useNav } from '../router.tsx';
 import { Async, Skeleton, Btn, Card, CardHead, Chip, Empty, Locked, Meter, NotMeasured, PageHead, SelectField, Sheet, Table, Tabs, TextArea, TextField, Toggle, type Col } from '../ui.tsx';
 import { activityList, keyList, knowledgeList, memberList, walletGet } from '../data.ts';
 import { ago, count, date, inr, time } from '../format.ts';
@@ -68,7 +68,7 @@ function Team() {
       <dl className="rolehints">{ROLES.map(r => <div key={r}><dt>{roleName(r)}</dt><dd className="small muted">{ROLE_HINT[r]}</dd></div>)}</dl>
       {open && <Sheet title="Invite a teammate" onClose={() => setOpen(false)}><TextField label="Work email" type="email" value={email} onChange={e => setEmail(e.target.value)} data-autofocus />
         <SelectField label="Role" value={role} onChange={e => setRole(e.target.value)} hint={ROLE_HINT[role]}>{ROLES.map(r => <option key={r} value={r}>{roleName(r)}</option>)}</SelectField>
-        <div className="row" style={{ justifyContent: 'flex-end' }}><Btn kind="ghost" onClick={() => setOpen(false)}>Cancel</Btn>{/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? <Btn kind="primary" onClick={async () => { const r = await act('member.invite', { email, role }, { describe: 'Invitation sent.' }); if (r.ok) { setOpen(false); setEmail(''); refresh(); } }}>Ask to invite</Btn> : <Btn disabled reason="Enter a valid email.">Ask to invite</Btn>}</div></Sheet>}
+        <div className="row" style={{ justifyContent: 'flex-end' }}><Btn kind="ghost" onClick={() => setOpen(false)}>Cancel</Btn>{/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? <Btn kind="primary" onClick={async () => { const r = await act('member.invite', { email, role }, { describe: 'Invitation sent.' }); if (r.ok) { setOpen(false); setEmail(''); refresh(); } }}>Ask to invite</Btn> : <Btn disabled fix={null} reason="Enter a valid email.">Ask to invite</Btn>}</div></Sheet>}
     </Card>
   );
 }
@@ -81,7 +81,7 @@ function Keys() {
   const cols: Col<ApiKey>[] = [{ key: 'l', label: 'Name', primary: true, render: k => k.name }, { key: 'p', label: 'Key', render: k => <code>{k.prefix || '—'}</code> }, { key: 'u', label: 'Last used', render: k => k.lastUsed ? ago(k.lastUsed) : 'Never' },
     { key: 's', label: 'State', render: k => <Chip tone={k.revoked ? 'brick' : 'leaf'}>{k.revoked ? 'Revoked' : 'Active'}</Chip> },
     { key: 'x', label: '', render: k => k.revoked ? null : <div className="row" style={{ gap: 8 }}>
-      {owner ? <Btn size="sm" onClick={() => void rotate(k)}>Rotate…</Btn> : <Btn size="sm" disabled reason="Only an owner can rotate a key.">Rotate</Btn>}
+      {owner ? <Btn size="sm" onClick={() => void rotate(k)}>Rotate…</Btn> : <Btn size="sm" disabled fix={null} reason="Only an owner can rotate a key.">Rotate</Btn>}
       <Btn size="sm" kind="danger" onClick={async () => { const r = await act('apikey.revoke', { id: k.id }, { describe: 'Key revoked.' }); if (r.ok) refresh(); }}>Revoke…</Btn></div> }];
   /** Rotating makes a new key with the same name, access and cap and revokes the old one; the new secret is shown once, like a new key. */
   const rotate = async (k: ApiKey) => {
@@ -104,7 +104,7 @@ function Keys() {
         <Async q={q} what="API keys" tool="apikey.list" empty={d => d.length === 0 ? <Empty title="No keys yet" body="Create one for your CRM or webhook." /> : null}>{d => <Table caption="API keys" cols={cols} rows={d} rowKey={r => r.id} />}</Async></Card>
       <Card><CardHead title="New key" sub="Creating a key is a policy change. The secret is shown once." />
         {owner ? <><TextField label="Name" value={name} onChange={e => setName(e.target.value)} placeholder="CRM webhook" />
-          <div style={{ marginTop: 12 }}>{name.trim() ? <Btn kind="primary" onClick={create}>Ask to create</Btn> : <Btn disabled reason="Give the key a name.">Ask to create</Btn>}</div></> : <Locked role="owner" />}</Card>
+          <div style={{ marginTop: 12 }}>{name.trim() ? <Btn kind="primary" onClick={create}>Ask to create</Btn> : <Btn disabled fix={null} reason="Give the key a name.">Ask to create</Btn>}</div></> : <Locked role="owner" />}</Card>
       {secret && <RevealSheet title="Copy your key now" secret={secret} onClose={() => setSecret(null)} />}
     </div>
   );
@@ -120,13 +120,14 @@ function BrandForm({ b, onSave }: { b: BrandDoc; onSave: (v: object) => Promise<
   const init = { legalName: b.legalName ?? '', sector: b.sector ?? '', dltEntityId: b.dltEntityId ?? '', website: b.website ?? '', tone: b.tone ?? '' };
   const [v, setV] = useState(init);
   const dirty = JSON.stringify(v) !== JSON.stringify(init);
+  useLeaveGuard(dirty, 'Your changes to the brand details are not saved. If you leave now, they are lost.');
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement>) => setV({ ...v, [k]: e.target.value });
   return (
     <Card><CardHead title="Brand" sub="How your business is named on calls and in messages. Saved changes can be undone from Activity." actions={dirty ? <Chip tone="marigold">Unsaved</Chip> : undefined} />
       <div className="formgrid"><TextField label="Registered business name" value={v.legalName} onChange={set('legalName')} /><TextField label="Sector" value={v.sector} onChange={set('sector')} hint="For example: insurance, lending, clinic, retail." />
         <TextField label="Website" value={v.website} onChange={set('website')} hint="Links to your own domain are the only ones she may say." /><TextField label="DLT entity ID" value={v.dltEntityId} onChange={set('dltEntityId')} hint="Needed for registered messages. Leave empty if you do not have one." />
         <TextField className="span2" label="How you like to sound" value={v.tone} onChange={set('tone')} hint="A few words, for example: warm, plain, never pushy." /></div>
-      <div style={{ marginTop: 16 }}>{dirty ? <Btn kind="primary" onClick={() => onSave(Object.fromEntries(Object.entries(v).filter(([, x]) => x !== '')))}>Save brand</Btn> : <Btn disabled reason="No unsaved changes.">Save brand</Btn>}</div></Card>
+      <div style={{ marginTop: 16 }}>{dirty ? <Btn kind="primary" onClick={() => onSave(Object.fromEntries(Object.entries(v).filter(([, x]) => x !== '')))}>Save brand</Btn> : <Btn disabled fix={null} reason="No unsaved changes.">Save brand</Btn>}</div></Card>
   );
 }
 
@@ -144,7 +145,7 @@ function Knowledge() {
       <Card><CardHead title="Add a source" sub="Company knowledge only. Customer rows never go in here." />
         <TextField label="Title" value={f.title} onChange={e => setF({ ...f, title: e.target.value })} />
         <div style={{ marginTop: 12 }}><TextArea label="Text" value={f.text} onChange={e => setF({ ...f, text: e.target.value })} rows={5} hint="Paste the text. PDFs and Word files can be sent through the API." /></div>
-        <div style={{ marginTop: 12 }}>{f.title.trim() && f.text.trim() ? <Btn kind="primary" onClick={async () => { const r = await act('knowledge.ingest', { title: f.title.trim(), text: f.text }, { describe: 'Added. Its passages wait for your approval.' }); if (r.ok) { setF({ title: '', text: '' }); refresh(); } }}>Add source</Btn> : <Btn disabled reason="Add a title and some text.">Add source</Btn>}</div></Card>
+        <div style={{ marginTop: 12 }}>{f.title.trim() && f.text.trim() ? <Btn kind="primary" onClick={async () => { const r = await act('knowledge.ingest', { title: f.title.trim(), text: f.text }, { describe: 'Added. Its passages wait for your approval.' }); if (r.ok) { setF({ title: '', text: '' }); refresh(); } }}>Add source</Btn> : <Btn disabled fix={null} reason="Add a title and some text.">Add source</Btn>}</div></Card>
       {open && <Passages item={open} onClose={() => { setOpen(null); refresh(); }} />}</div>
   );
 }
@@ -181,7 +182,7 @@ function Billing() {
         {d.caps.map((c, i) => <div key={i} style={{ marginTop: 8 }}><Meter label={c.label ?? `${prettyCode(c.scope)} cap, ${c.period}`} value={c.period === 'in_flight' ? (c.heldInrMilli ?? 0) : (c.spentInrMilli ?? 0)} max={c.capInrMilli} note={c.text ?? `${inr(c.spentInrMilli ?? 0)} of ${inr(c.capInrMilli)}`} /></div>)}
         {d.caps.length === 0 && <p className="small muted" style={{ marginTop: 8 }}>No spend caps are set.</p>}</>}</Async>
         <hr className="rule" /><TextField label="Add money (₹)" type="number" inputMode="numeric" min={100} value={amt} onChange={e => setAmt(e.target.value)} hint="Adding money is a spend, so it asks for your approval. It is not reversible in the product." />
-        <div style={{ marginTop: 12 }}>{!owner ? <Btn disabled reason="Only an owner can add money.">Ask to add</Btn> : Number(amt) >= 100 ? <Btn kind="primary" onClick={async () => { const r = await act('wallet.topup', { inrMilli: Math.round(Number(amt) * 1000) }, { describe: 'Wallet topped up.' }); if (r.ok) { setAmt(''); refresh(); } }}>Ask to add {inr(Number(amt) * 1000)}</Btn> : <Btn disabled reason="Enter at least ₹100.">Ask to add</Btn>}</div></Card>
+        <div style={{ marginTop: 12 }}>{!owner ? <Btn disabled fix={null} reason="Only an owner can add money.">Ask to add</Btn> : Number(amt) >= 100 ? <Btn kind="primary" onClick={async () => { const r = await act('wallet.topup', { inrMilli: Math.round(Number(amt) * 1000) }, { describe: 'Wallet topped up.' }); if (r.ok) { setAmt(''); refresh(); } }}>Ask to add {inr(Number(amt) * 1000)}</Btn> : <Btn disabled fix={null} reason="Enter at least ₹100.">Ask to add</Btn>}</div></Card>
       <Card><CardHead title="What you have spent" sub={inv.data ? `${date(inv.data.period.from)} to ${date(inv.data.period.to)}` : undefined} /><Async q={inv} what="Usage" tool="invoice.get">{d => <>
         <div className="priceline"><span>Your price per minute</span><strong>{d.price.status === 'not_set' ? <NotMeasured>Not set</NotMeasured> : 'Set'}</strong></div>
         <p className="small muted">{d.price.text}</p>
@@ -207,7 +208,7 @@ function Compliance() {
         <Async q={q} what="Safety rules" tool="safety.cases">{d => <><ul className="billing">{byRule(d.rules.reply).map(r => <li key={r.rule}><div><strong>{RULE_LABEL[r.rule] ?? ruleWords(r.reason)}</strong><span className="small muted"> · a reply that breaks it is {r.action === 'block' ? 'blocked' : r.action === 'replace' ? 'replaced' : 'stopped'} before it is said</span></div><Chip tone="leaf">Always on</Chip></li>)}</ul><p className="small muted">Rules last updated {(() => { const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.rules.version); return m ? new Date(m[1] + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }) : 'recently'; })()}. Also always on: DND and opt-out checks before every attempt, and the AI disclosure, spoken once and lightly.</p></>}</Async></Card>
       <Card><CardHead title="Workspace calling hours" sub="The outer band every campaign window must sit inside. Widening it is a policy change." />
         {policy ? <><div className="formgrid"><TextField label="From" type="time" value={band.start} onChange={e => setBand({ ...band, start: e.target.value })} /><TextField label="To" type="time" value={band.end} onChange={e => setBand({ ...band, end: e.target.value })} /></div>
-          <div style={{ marginTop: 12 }}>{band.start < band.end ? <Btn kind="primary" onClick={() => void act('policy.window.set', { outerBand: band }, { describe: 'Calling hours changed.' })}>Ask to set</Btn> : <Btn disabled reason="The band must end after it starts.">Ask to set</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
+          <div style={{ marginTop: 12 }}>{band.start < band.end ? <Btn kind="primary" onClick={() => void act('policy.window.set', { outerBand: band }, { describe: 'Calling hours changed.' })}>Ask to set</Btn> : <Btn disabled fix={null} reason="The band must end after it starts.">Ask to set</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
     </div>
   );
 }
@@ -228,7 +229,7 @@ function Privacy() {
           <SelectField label="What they asked for" value={scope} onChange={e => setScope(e.target.value)}><option value="forget_memory">Forget what is remembered</option><option value="erase_me">Erase me completely (details, transcripts and recordings)</option></SelectField>
           <SelectField label="Who asked" value={by} onChange={e => setBy(e.target.value)}><option value="person">The person</option><option value="compliance">Our compliance lead</option><option value="tenant">Our business</option></SelectField>
           <TextField label="Where it was asked" value={ev} onChange={e => setEv(e.target.value)} hint="For example: email from the person, 21 Oct." /></div>
-          <div style={{ marginTop: 12 }}>{e164.replace(/\D/g, '').length >= 10 && ev.trim().length >= 3 ? <Btn kind="danger" onClick={() => void act('dpdp.request.execute', { e164, scope, requestedBy: by, evidence: ev.trim(), suppress: true }, { describe: 'Request carried out.' })}>Ask to carry out…</Btn> : <Btn disabled reason="Enter their number and where the request came from.">Ask to carry out</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
+          <div style={{ marginTop: 12 }}>{e164.replace(/\D/g, '').length >= 10 && ev.trim().length >= 3 ? <Btn kind="danger" onClick={() => void act('dpdp.request.execute', { e164, scope, requestedBy: by, evidence: ev.trim(), suppress: true }, { describe: 'Request carried out.' })}>Ask to carry out…</Btn> : <Btn disabled fix={null} reason="Enter their number and where the request came from.">Ask to carry out</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
     </div>
   );
 }
@@ -244,7 +245,7 @@ function OperatorTab() {
     <Card><CardHead title="Model" sub="The model behind the assistant. It changes speed and what each turn costs, never what is allowed." />
       <p>Current: {d.brain ? <strong>{prettyId(d.brain)}</strong> : <NotMeasured>Not chosen yet</NotMeasured>}</p>
       {d.brains.length === 0 ? <p className="small muted">No curated models are configured on this server yet.</p> : <><div className="formgrid" style={{ marginTop: 12 }}><SelectField label="Choose a model" value={pick} onChange={e => setPick(e.target.value)} hint="Nothing is recommended by default. Switching changes the cost of every assistant reply."><option value="">Choose one</option>{d.brains.map(b => <option key={b} value={b}>{prettyId(b)}</option>)}</SelectField></div>
-        <div style={{ marginTop: 12 }}>{pick && pick !== d.brain ? <Btn kind="primary" onClick={async () => { const r = await act('operator.brain.set', { brain: pick }, { describe: 'Model changed.' }); if (r.ok) q.reload(); }}>Ask to switch…</Btn> : <Btn disabled reason={pick ? 'That brain is already in use.' : 'Choose a model first.'}>Ask to switch</Btn>}</div></>}</Card></div>}</Async>;
+        <div style={{ marginTop: 12 }}>{pick && pick !== d.brain ? <Btn kind="primary" onClick={async () => { const r = await act('operator.brain.set', { brain: pick }, { describe: 'Model changed.' }); if (r.ok) q.reload(); }}>Ask to switch…</Btn> : <Btn disabled fix={null} reason={pick ? 'That brain is already in use.' : 'Choose a model first.'}>Ask to switch</Btn>}</div></>}</Card></div>}</Async>;
 }
 
 
@@ -310,7 +311,7 @@ function Retention({ canSet }: { canSet: boolean }) {
           <p className="small muted" style={{ marginTop: 8 }}>Always kept: {d.alwaysKept.map(x => KEPT[x] ?? x.replace(/_/g, ' ')).join(', ')}. They hold no call content and stop a person from being called again by mistake.</p>
           {canSet && Object.keys(changed).length > 0 && <div className="stack-s" style={{ marginTop: 12 }}>
             <TextField label="Why the change" value={reason} onChange={e => setReason(e.target.value)} hint="Recorded with the new policy, for example: counsel advised 30 days for recordings." />
-            <div>{bad ? <Btn disabled reason="Each value is a whole number of days, from 1 to 3,650.">Ask to change</Btn> : reason.trim().length < 5 ? <Btn disabled reason="Say why, in a few words.">Ask to change</Btn>
+            <div>{bad ? <Btn disabled fix={null} reason="Each value is a whole number of days, from 1 to 3,650.">Ask to change</Btn> : reason.trim().length < 5 ? <Btn disabled fix={null} reason="Say why, in a few words.">Ask to change</Btn>
               : <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act('policy.retention.set', { ...changed, reason: reason.trim() }, { describe: 'Retention changed.' }); setBusy(false); if (r.ok) { setEdit({}); setReason(''); q.reload(); } }}>Ask to change</Btn>}</div></div>}
           {!canSet && <p className="small muted">Only an owner or the compliance lead can change these.</p>}
         </>;

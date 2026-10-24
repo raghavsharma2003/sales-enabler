@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link2, Lock, Plus, Trash2 } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { agentGet, diffOps, memberList } from '../data.ts';
-import { Link, useQuery } from '../router.tsx';
+import { Link, useLeaveGuard, useQuery } from '../router.tsx';
 import { lintWhere } from '../labels.ts';
 import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
 import { StackPicker, BETA_REASON, type StackChange } from '../stack-picker.tsx';
@@ -36,6 +36,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
 
   useEffect(() => { setAgentCtx({ id: doc.id, name: cfg.persona.name, dirty, stackId: cfg.voice.stackId, components: cfg.voice.components, version: doc.latestVersion ?? 0, saved: !dirty }); }, [cfg, dirty, doc, setAgentCtx]);
   useEffect(() => () => setAgentCtx(null), [setAgentCtx]);
+  useLeaveGuard(dirty, `Your changes to ${cfg.persona.name || 'this agent'} are not saved. If you leave now, they are lost.`);
   useEffect(() => {
     if (!dirty) return;
     const f = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
@@ -73,10 +74,10 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
         sub={<>{jobLabel(cfg.job)} · {cfg.persona.name} · {[...new Set(cfg.languages.allowed.map(langShort))].join(', ')}</>}
         actions={<>
           <Btn onClick={() => { setDockTab('test'); setView('talk'); }}>Test her</Btn>
-          {dirty ? <Btn kind="primary" busy={busy === 'save'} onClick={save}>Save draft</Btn> : <Btn disabled reason="No unsaved changes.">Save draft</Btn>}
-          {dirty ? <Btn disabled reason="Save your changes first, so what goes live is what you tested.">Publish</Btn>
+          {dirty ? <Btn kind="primary" busy={busy === 'save'} onClick={save}>Save draft</Btn> : <Btn disabled fix={null} reason="No unsaved changes.">Save draft</Btn>}
+          {dirty ? <Btn disabled fix={null} reason="Save your changes first, so what goes live is what you tested.">Publish</Btn>
             : noStack ? <Btn disabled reason="Choose a voice stack first." fix={{ label: 'Choose one', to: `/agents/${doc.id}?tab=voice` }}>Publish</Btn>
-            : !doc.compiles ? <Btn disabled reason="The brief does not compile yet. See the checks below.">Publish</Btn>
+            : !doc.compiles ? <Btn disabled fix={null} reason="The brief does not compile yet. See the checks below.">Publish</Btn>
             : <Btn kind="primary" busy={busy === 'publish'} onClick={publish}>Publish…</Btn>}
         </>} />
       {draftStack?.status === 'beta' && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
@@ -266,7 +267,7 @@ function Versions({ doc, dirty, reload }: { doc: AgentDoc; dirty: boolean; reloa
             <span>{v.candidate ? `${v.note ?? 'A change under test'}. Runs only for the people a test assigns to it; never live.` : v.note ?? 'Published'}</span><span className="small muted">{who(v)} · {date(v.createdAt, true)}</span>
             {v.id !== doc.latestVersionId && !v.candidate && (canRestore
               ? <Btn size="sm" busy={busy === v.id} onClick={() => void restore(v)}>Go back to v{v.number}…</Btn>
-              : <Btn size="sm" disabled reason="Only an owner or a builder can go back to an earlier version.">Go back to v{v.number}</Btn>)}</li>))}</ol>}
+              : <Btn size="sm" disabled fix={null} reason="Only an owner or a builder can go back to an earlier version.">Go back to v{v.number}</Btn>)}</li>))}</ol>}
       {doc.briefBytes != null && <p className="small muted" style={{ marginTop: 12 }}>The compiled brief for this draft is {doc.briefBytes.toLocaleString('en-IN')} bytes.</p>}</Card>
   );
 }

@@ -45,7 +45,7 @@ export function ApprovalSheet() {
         <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> A {role} cannot approve this. Ask an {(APPROVERS[p.risk] ?? ['owner']).join(' or ')} to approve it.</p>
       )}
       {!done && allowed && details === 'loading' && <p className="small muted" role="status">Loading the details of this change…</p>}
-      {!done && allowed && details === 'failed' && <Btn disabled reason="The details of this change could not be loaded, so it is not safe to approve blind. Close this and open it again.">Hold to approve</Btn>}
+      {!done && allowed && details === 'failed' && <Btn disabled fix={null} reason="The details of this change could not be loaded, so it is not safe to approve blind. Close this and open it again.">Hold to approve</Btn>}
       {!done && allowed && details === 'ready' && <HoldButton label="Hold to approve" onConfirm={() => void decide(true)} busy={p.state === 'running'} />}
       {done && rc?.status === 'confirmed' && <p className="donetxt">Done. Confirmed by the server, not assumed.</p>}
       {done && rc?.status === 'not_executed' && <p className="state state-failed" role="alert"><AlertTriangle size={20} aria-hidden /> Could not finish: {rc.reason}. Nothing was changed.</p>}

@@ -2,11 +2,11 @@
 import { useState, type ReactNode } from 'react';
 import { BarChart3, Bot, Hash, LifeBuoy, Megaphone, MessageCircle, MoreHorizontal, Newspaper, PhoneCall, Settings, Users } from 'lucide-react';
 import { AlertBanner } from './alerts.tsx';
-import { Link, usePath } from './router.tsx';
+import { Link, usePath, usePendingLeave } from './router.tsx';
 import { useApp } from './store.tsx';
 import { Dock } from './operator.tsx';
 import { ApprovalSheet } from './approval.tsx';
-import { Segmented, SampleRibbon, Sheet } from './ui.tsx';
+import { Btn, Segmented, SampleRibbon, Sheet } from './ui.tsx';
 import { pageInfo } from './tools.ts';
 import { inr } from './format.ts';
 import { useData } from './store.tsx';
@@ -65,6 +65,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </Sheet>
       )}
       <ApprovalSheet />
+      <LeaveQuestion />
       <div className="toasts" role="status" aria-live="polite">{toasts.map(t => <div key={t.id} className={`toast toast-${t.kind}`}>{t.text}</div>)}</div>
     </div>
   );
@@ -72,4 +73,16 @@ export function Shell({ children }: { children: ReactNode }) {
 
 export function Mark({ size = 36 }: { size?: number }) {
   return <svg className="brand-mark" width={size} height={size} viewBox="0 0 32 32" aria-hidden><rect width="32" height="32" rx="8" fill="currentColor" opacity="0.14" /><circle cx="12" cy="16" r="3.2" fill="currentColor" /><path d="M18 9a8.5 8.5 0 0 1 0 14" stroke="var(--terra)" strokeWidth="2.4" fill="none" strokeLinecap="round" /></svg>;
+}
+
+/** Leaving a page with unsaved changes (router useLeaveGuard): stay is the default, leaving drops the changes. */
+function LeaveQuestion() {
+  const { pending, leave, stay } = usePendingLeave();
+  if (!pending) return null;
+  return (
+    <Sheet title="Leave without saving?" onClose={stay}>
+      <p>{pending.message}</p>
+      <div className="row" style={{ justifyContent: 'flex-end', marginTop: 16 }}><Btn kind="primary" onClick={stay}>Stay and keep editing</Btn><Btn kind="danger" onClick={leave}>Leave without saving</Btn></div>
+    </Sheet>
+  );
 }

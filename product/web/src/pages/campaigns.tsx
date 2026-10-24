@@ -49,6 +49,8 @@ const RETRY: [string, string, string][] = [
   ['persistent', 'Persistent', 'Up to 4 calls each, 1 hour, 4 hours, then a day apart, after busy, no answer, switched off or voicemail.'],
   ['none', 'No retries', 'One call each.'],
 ];
+// With nothing to choose from, the reason links to where one is made (the fix link is required where it lives elsewhere).
+const NO_AGENT = 'Choose an agent that has a published version.', NO_AUDIENCE = 'Choose who to call.';
 function Create() {
   const { act } = useApp(); const go = useNav();
   const agents = useData('agents', agentList);
@@ -59,7 +61,7 @@ function Create() {
   const agentCat = published.find(a => a.id === f.agentId)?.category;
   const agentStack = useVoiceStack(published.find(a => a.id === f.agentId)).stack;
   const mismatch = f.agentId && f.category && agentCat && ['service', 'transactional', 'promotional'].includes(agentCat) && agentCat !== f.category ? agentCat : '';
-  const reason = !f.category ? 'Choose the kind of call first.' : !f.name.trim() ? 'Name the campaign.' : !f.agentId ? 'Choose an agent that has a published version.' : mismatch ? `The agent is set up for ${mismatch} calls. Make the campaign ${mismatch}, or pick another agent.` : !f.audienceId ? 'Choose who to call.' : f.start >= f.end ? 'The window must end after it starts.' : f.days.length === 0 ? 'Choose at least one day.' : '';
+  const reason = !f.category ? 'Choose the kind of call first.' : !f.name.trim() ? 'Name the campaign.' : !f.agentId ? NO_AGENT : mismatch ? `The agent is set up for ${mismatch} calls. Make the campaign ${mismatch}, or pick another agent.` : !f.audienceId ? NO_AUDIENCE : f.start >= f.end ? 'The window must end after it starts.' : f.days.length === 0 ? 'Choose at least one day.' : '';
   const save = async () => {
     setBusy(true);
     let versionId: string | null = null;
@@ -93,7 +95,7 @@ function Create() {
               <TextField label="Tries per person per week" type="number" inputMode="numeric" min={1} max={30} value={f.perWeek} onChange={e => setF({ ...f, perWeek: Number(e.target.value) })} /></div></Card>
         </div>
         <div className="stack stickycol"><Card><CardHead title="What happens next" /><ol className="plainlist"><li>The draft is saved.</li><li>You see how many people are callable, the cost range including GST, and anything blocking launch.</li><li>You hold the launch button to start.</li></ol></Card>
-          {reason ? <Btn disabled reason={reason}>Save draft</Btn> : <Btn kind="primary" busy={busy} onClick={save}>Save draft and see the estimate</Btn>}</div>
+          {reason ? <Btn disabled reason={reason} fix={reason === NO_AGENT && agents.data && !published.length ? { label: 'Open agents', to: '/agents' } : reason === NO_AUDIENCE && auds.data && !auds.data.length ? { label: 'Import contacts', to: '/contacts/import' } : null}>Save draft</Btn> : <Btn kind="primary" busy={busy} onClick={save}>Save draft and see the estimate</Btn>}</div>
       </div>
     </div>
   );
@@ -120,7 +122,7 @@ function Detail({ id }: { id: string }) {
             {c.state === 'running' && <Btn icon={<Pause size={16} aria-hidden />} onClick={() => run('campaign.pause', 'Paused. Calls already placed stay as they are.')}>Pause</Btn>}
             {c.state === 'paused' && <Btn icon={<Play size={16} aria-hidden />} onClick={() => run('campaign.resume', 'Resumed.')}>Resume</Btn>}
             {live && <Btn kind="danger" icon={<Square size={14} aria-hidden />} onClick={() => run('campaign.stop', 'Stopped.')}>Stop</Btn>}
-            {c.state === 'draft' && (first ? <Btn disabled reason={`Fix ${c.blockers.length === 1 ? 'the one check' : `the ${c.blockers.length} checks`} below first.`}>Launch…</Btn> : <Btn kind="primary" onClick={() => run('campaign.launch', 'Launched.')}>Launch…</Btn>)}
+            {c.state === 'draft' && (first ? <Btn disabled fix={null} reason={`Fix ${c.blockers.length === 1 ? 'the one check' : `the ${c.blockers.length} checks`} below first.`}>Launch…</Btn> : <Btn kind="primary" onClick={() => run('campaign.launch', 'Launched.')}>Launch…</Btn>)}
           </>} />
         <div className="cols-main">
           <div className="stack">
@@ -175,7 +177,7 @@ function CapEdit({ c, suggested, onClose, onDone }: { c: CampaignDoc; suggested:
       <TextField label="Spend cap (₹)" type="number" inputMode="decimal" min={0} value={v} onChange={e => { setTouched(true); setV(e.target.value); }} data-autofocus
         hint={suggested ? <>The estimate suggests ₹{Math.ceil(suggested / 1000).toLocaleString('en-IN')}. <button type="button" className="linkbtn" onClick={() => { setTouched(true); setV(String(Math.ceil(suggested / 1000))); }}>Use that amount</button></> : 'The estimate has no suggestion yet.'} />
       <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>
-        {bad ? <Btn disabled reason={bad}>Save the cap</Btn> : <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act('campaign.draft', { id: c.id, name: c.name, category: c.category, capInrMilli: Math.round(n * 1000) }, { describe: 'Spend cap saved.' }); setBusy(false); if (r.ok) onDone(); }}>Save the cap</Btn>}</div>
+        {bad ? <Btn disabled fix={null} reason={bad}>Save the cap</Btn> : <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act('campaign.draft', { id: c.id, name: c.name, category: c.category, capInrMilli: Math.round(n * 1000) }, { describe: 'Spend cap saved.' }); setBusy(false); if (r.ok) onDone(); }}>Save the cap</Btn>}</div>
     </Sheet>
   );
 }
@@ -193,7 +195,7 @@ function WindowEdit({ c, onClose, onDone }: { c: CampaignDoc; onClose: () => voi
       <p className="muted small">{inside ? 'This makes the window narrower, which lowers risk, so it takes effect at once.' : 'This widens the window, which is a policy change, so it asks for approval.'} People outside it move to the next allowed day.</p>
       <div className="formgrid"><TextField label="From" type="time" value={w.start} onChange={e => setW({ ...w, start: e.target.value })} /><TextField label="To" type="time" value={w.end} onChange={e => setW({ ...w, end: e.target.value })} /></div>
       <fieldset className="chipset"><legend>Days</legend>{DAY_NAMES.map((d, i) => <label key={d} className={`choice${w.days.includes(i + 1) ? ' on' : ''}`}><input type="checkbox" checked={w.days.includes(i + 1)} onChange={() => setW({ ...w, days: w.days.includes(i + 1) ? w.days.filter(x => x !== i + 1) : [...w.days, i + 1].sort() })} />{d}</label>)}</fieldset>
-      <div className="row" style={{ justifyContent: 'flex-end' }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>{bad || same ? <Btn disabled reason={bad || 'Nothing has changed.'}>Apply</Btn> : <Btn kind="primary" onClick={async () => { const r = await act(inside ? 'campaign.window.narrow' : 'campaign.window.widen', { id: c.id, window: { days: w.days, ranges: [{ start: w.start, end: w.end }] } }, { describe: 'Window changed.' }); if (r.ok) onDone(); }}>{inside ? 'Apply now' : 'Ask to widen'}</Btn>}</div>
+      <div className="row" style={{ justifyContent: 'flex-end' }}><Btn kind="ghost" onClick={onClose}>Cancel</Btn>{bad || same ? <Btn disabled fix={null} reason={bad || 'Nothing has changed.'}>Apply</Btn> : <Btn kind="primary" onClick={async () => { const r = await act(inside ? 'campaign.window.narrow' : 'campaign.window.widen', { id: c.id, window: { days: w.days, ranges: [{ start: w.start, end: w.end }] } }, { describe: 'Window changed.' }); if (r.ok) onDone(); }}>{inside ? 'Apply now' : 'Ask to widen'}</Btn>}</div>
     </div></div>
   );
 }

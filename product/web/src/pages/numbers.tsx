@@ -74,7 +74,7 @@ export default function Numbers() {
 
         <Card><CardHead title="Find a number to rent" sub="You see what is on offer before you ask for anything. Renting spends money, so it needs your approval." />
           <div className="formgrid"><SelectField label="Series" value={series} onChange={e => { setSeries(e.target.value); setFound(null); }}>{SERIES.map(([val, l]) => <option key={val} value={val}>{l}</option>)}</SelectField></div>
-          <div style={{ marginTop: 12 }}>{hasTool('number.search') ? <Btn busy={busy} onClick={search}>Search</Btn> : <Btn disabled reason="Number search is not switched on in this server.">Search</Btn>}</div>
+          <div style={{ marginTop: 12 }}>{hasTool('number.search') ? <Btn busy={busy} onClick={search}>Search</Btn> : <Btn disabled fix={null} reason="Number search is not switched on in this server.">Search</Btn>}</div>
           {found && 'error' in found && <p className="state state-failed" role="alert" style={{ marginTop: 12 }}>{found.error}</p>}
           {found && 'rows' in found && (found.rows.length === 0 ? <p className="state" style={{ marginTop: 12 }}>No numbers are on offer in that series right now.</p> :
             <ul className="issues" style={{ marginTop: 12 }}>{found.rows.map((o, i) => { const ref = String(o.offerRef ?? o.ref ?? o.id ?? ''); return (
@@ -85,14 +85,14 @@ export default function Numbers() {
           {v.stage !== 'verified' && <div className="formgrid"><TextField label="Your mobile number" inputMode="tel" value={mine} onChange={e => setMine(e.target.value)} placeholder="+91 …" disabled={v.stage === 'ringing'} hint="Calls between 9 am and 9 pm IST only." />
             {v.stage === 'ringing' && <TextField label="The six-digit code" inputMode="numeric" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))} autoComplete="one-time-code" />}</div>}
           <div className="row" style={{ marginTop: 12 }}>
-            {v.stage === 'idle' && (mine.replace(/\D/g, '').length >= 10 ? <Btn kind="primary" icon={<PhoneCall size={16} aria-hidden />} busy={busy} onClick={start}>Ring me with a code</Btn> : <Btn disabled reason="Enter your 10-digit mobile number.">Ring me with a code</Btn>)}
-            {v.stage === 'ringing' && (code.length === 6 ? <Btn kind="primary" busy={busy} onClick={confirm}>Check the code</Btn> : <Btn disabled reason="Enter all six digits.">Check the code</Btn>)}
+            {v.stage === 'idle' && (mine.replace(/\D/g, '').length >= 10 ? <Btn kind="primary" icon={<PhoneCall size={16} aria-hidden />} busy={busy} onClick={start}>Ring me with a code</Btn> : <Btn disabled fix={null} reason="Enter your 10-digit mobile number.">Ring me with a code</Btn>)}
+            {v.stage === 'ringing' && (code.length === 6 ? <Btn kind="primary" busy={busy} onClick={confirm}>Check the code</Btn> : <Btn disabled fix={null} reason="Enter all six digits.">Check the code</Btn>)}
             {v.stage === 'ringing' && <Btn kind="ghost" onClick={() => { setV({ stage: 'idle' }); setCode(''); }}>Use another number</Btn>}</div>
           {v.note && <p className={`state${v.stage === 'verified' ? '' : ' state-missing'}`} role="status" style={{ marginTop: 12 }}>{v.note}{v.stage === 'verified' && v.phone ? ` (${fmtPhone(v.phone)})` : ''}</p>}</Card>
 
         <Card><CardHead title="Hear a test on your phone" sub="She rings your verified phone as a made-up customer, so you hear what a customer hears. Nothing else is dialled." />
           <div className="formgrid"><SelectField label="Which agent" value={agent} onChange={e => setAgent(e.target.value)} hint={published.length === 0 ? 'Publish an agent first; tests use a published version.' : undefined}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField></div>
-          <div style={{ marginTop: 12 }}>{v.stage !== 'verified' ? <Btn disabled reason="Verify your phone above first.">Ring me</Btn> : !agent ? <Btn disabled reason="Choose an agent first.">Ring me</Btn> : <Btn kind="primary" icon={<PhoneCall size={16} aria-hidden />} busy={busy} onClick={tryRing}>Ring me</Btn>}</div>
+          <div style={{ marginTop: 12 }}>{v.stage !== 'verified' ? <Btn disabled fix={null} reason="Verify your phone above first.">Ring me</Btn> : !agent ? <Btn disabled fix={null} reason="Choose an agent first.">Ring me</Btn> : <Btn kind="primary" icon={<PhoneCall size={16} aria-hidden />} busy={busy} onClick={tryRing}>Ring me</Btn>}</div>
           {ring && <p className="state" role="status" style={{ marginTop: 12 }}>{ring}</p>}</Card>
       </div>
     </div>

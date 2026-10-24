@@ -62,8 +62,8 @@ function HookList({ q, defs, onChanged }: { q: ToolData<Hook[]>; defs: EventDef[
     { key: 'a', label: 'Signs in with', render: h => h.authIntegration ? <>{h.authIntegration.name}{!h.authIntegration.connected && <> <Chip tone="brick">Disconnected</Chip></>}</> : <span className="muted">Signature only</span> },
     { key: 's', label: 'Last delivery', render: h => h.lastStatus ? <Chip tone={STATUS[h.lastStatus as Delivery['status']]?.[1] ?? 'neutral'}>{STATUS[h.lastStatus as Delivery['status']]?.[0] ?? h.lastStatus}</Chip> : <span className="muted">None yet</span> },
     { key: 'x', label: '', render: h => <div className="row" style={{ gap: 8, flexWrap: 'wrap', whiteSpace: 'nowrap' }}>
-      {tester ? <Btn size="sm" icon={<Send size={14} aria-hidden />} busy={testing === h.id} aria-label={`Send a test event to ${host(h.url)}`} onClick={() => void sendTest(h)}>Send test event</Btn> : <Btn size="sm" disabled reason="An owner, builder or operator can send a test event.">Send test event</Btn>}
-      {remover ? <Btn size="sm" kind="danger" aria-label={`Delete the webhook to ${host(h.url)}`} onClick={async () => { const r = await act('webhook.delete', { id: h.id }, { describe: 'Webhook deleted. Events waiting for it were dropped.' }); if (r.ok) onChanged(); }}>Delete…</Btn> : <Btn size="sm" disabled reason="An owner, operator or compliance lead can delete a webhook.">Delete</Btn>}
+      {tester ? <Btn size="sm" icon={<Send size={14} aria-hidden />} busy={testing === h.id} aria-label={`Send a test event to ${host(h.url)}`} onClick={() => void sendTest(h)}>Send test event</Btn> : <Btn size="sm" disabled fix={null} reason="An owner, builder or operator can send a test event.">Send test event</Btn>}
+      {remover ? <Btn size="sm" kind="danger" aria-label={`Delete the webhook to ${host(h.url)}`} onClick={async () => { const r = await act('webhook.delete', { id: h.id }, { describe: 'Webhook deleted. Events waiting for it were dropped.' }); if (r.ok) onChanged(); }}>Delete…</Btn> : <Btn size="sm" disabled fix={null} reason="An owner, operator or compliance lead can delete a webhook.">Delete</Btn>}
     </div> },
   ];
   return (
@@ -110,7 +110,7 @@ function NewHook({ defs, onMade }: { defs: EventDef[]; onMade: () => void }) {
           <option value="">The signature only</option>{(integrations.data ?? []).map(i => <option key={i.id} value={i.id}>{i.name}{i.config?.base_url ? ` (${host(i.config.base_url)})` : ''}</option>)}
         </SelectField>
       </div>
-      <div className="row" style={{ marginTop: 16 }}>{reason ? <Btn disabled reason={reason}>Ask to add</Btn> : <Btn kind="primary" busy={busy} onClick={() => void create()}>Ask to add</Btn>}</div>
+      <div className="row" style={{ marginTop: 16 }}>{reason ? <Btn disabled fix={null} reason={reason}>Ask to add</Btn> : <Btn kind="primary" busy={busy} onClick={() => void create()}>Ask to add</Btn>}</div>
       {secret && <RevealSheet title="Copy the signing secret now" secret={secret} onClose={() => setSecret(null)} extra={<p className="small muted">Use it to check the x-vp-signature header on every request from Vyakti.</p>} />}
     </Card>
   );
@@ -127,7 +127,7 @@ function DeliveryTable({ rows, hooks, defs, onReplayed }: { rows: Delivery[]; ho
     { key: 't', label: 'When', render: d => <span style={{ whiteSpace: 'nowrap' }}>{date(d.createdAt, true)}</span> },
     { key: 'x', label: '', render: d => d.test ? null : sender
       ? <Btn className="nowrap" size="sm" icon={<RotateCcw size={14} aria-hidden />} aria-label={`Send this event again: ${labelOf(d.event, defs).toLowerCase()}`} onClick={async () => { const r = await act('webhook.replay', { deliveryId: d.id }, { describe: 'Queued to send again. It is built from what Vyakti holds now.' }); if (r.ok) onReplayed(); }}>Send again…</Btn>
-      : <Btn size="sm" disabled reason="An owner, builder or operator can send an event again.">Send again</Btn> },
+      : <Btn size="sm" disabled fix={null} reason="An owner, builder or operator can send an event again.">Send again</Btn> },
   ];
   return <Table caption="Webhook deliveries" cols={cols} rows={rows} rowKey={r => r.id} />;
 }

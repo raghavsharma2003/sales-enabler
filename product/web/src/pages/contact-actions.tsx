@@ -49,7 +49,7 @@ export function StopCard({ contactId, me, onDone }: { contactId: string; me: Ret
         <TextField label="Reason" value={reason} onChange={e => setReason(e.target.value)} hint="Recorded with the change, for example: asked by email not to be called." />
         <div style={{ marginTop: 12 }}>{ok
           ? <Btn kind="danger" busy={busy} onClick={async () => { setBusy(true); const r = await act('contact.suppress', { contactId, reason: reason.trim() }, { describe: 'This person will not be called.' }); setBusy(false); if (r.ok) { setReason(''); onDone(); } }}>Stop calling this person</Btn>
-          : <Btn disabled reason="Give a reason first.">Stop calling this person</Btn>}</div></>}
+          : <Btn disabled fix={null} reason="Give a reason first.">Stop calling this person</Btn>}</div></>}
     </Card>
   );
 }
@@ -68,7 +68,7 @@ export function SuppressionNote({ suppressions, me, onDone, reasonText }: { supp
         <p className="muted">This is a policy change, so it asks for approval. The reason is kept in the activity record.</p>
         <TextField label="Reason" value={reason} onChange={e => setReason(e.target.value)} data-autofocus />
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}><Btn kind="ghost" onClick={() => setOpen(null)}>Cancel</Btn>
-          {reason.trim().length >= 5 ? <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act('contact.unsuppress', { suppressionId: open, reason: reason.trim() }, { describe: 'Calls are allowed again.' }); setBusy(false); if (r.ok) { setOpen(null); onDone(); } }}>Ask to allow calls</Btn> : <Btn disabled reason="Give a reason of a few words.">Ask to allow calls</Btn>}</div></Sheet>}
+          {reason.trim().length >= 5 ? <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act('contact.unsuppress', { suppressionId: open, reason: reason.trim() }, { describe: 'Calls are allowed again.' }); setBusy(false); if (r.ok) { setOpen(null); onDone(); } }}>Ask to allow calls</Btn> : <Btn disabled fix={null} reason="Give a reason of a few words.">Ask to allow calls</Btn>}</div></Sheet>}
     </div>
   );
 }

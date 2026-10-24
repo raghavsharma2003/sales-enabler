@@ -94,7 +94,7 @@ function JudgeForm({ def, models, onDone }: { def: Definition; models: string[];
       <SelectField label="Model" value={model} onChange={e => setModel(e.target.value)}>{(models.length ? models : [model]).filter(Boolean).map(m => <option key={m} value={m}>{prettyId(m)}</option>)}</SelectField>
       <TextArea label="Instructions" value={instructions} onChange={e => setInstructions(e.target.value)} hint="Your own rule for this outcome, for example: a payment link sent counts as agreed." />
     </div>
-    <div className="row">{!model ? <Btn disabled reason="No analysis model is configured on this server to judge with.">Save as a new version</Btn> : <Btn kind="primary" onClick={async () => {
+    <div className="row">{!model ? <Btn disabled fix={null} reason="No analysis model is configured on this server to judge with.">Save as a new version</Btn> : <Btn kind="primary" onClick={async () => {
       const r = await act('judge.edit', { outcomeDefinitionId: def.id, name: def.judge?.name ?? `${def.name} judge`, model, instructions }, { describe: 'Judge changed. It starts uncalibrated.' });
       if (r.ok) onDone();
     }}>Save as a new version</Btn>}</div>

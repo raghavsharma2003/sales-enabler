@@ -70,7 +70,7 @@ export function ImportReview({ pv, setPv, srcText, agentId, onSaved, saveSub }: 
         <Card><CardHead title="4. Save" sub={saveSub ?? "Saves contacts and an audience. It does not call anyone."} />
           <div className="formgrid"><SelectField label="Record that these people agreed to be called for" value={purpose} onChange={e => setPurpose(e.target.value)} hint="Only choose one if it is true. It is written on every contact and decides which calls are allowed. Leave it if unsure."><option value="">Do not record any consent</option><option value="service">Service calls (about their own account)</option><option value="transactional">Transactional calls (orders, appointments)</option><option value="promotional">Promotional calls</option></SelectField>
             <TextField label="Audience name" value={aud} onChange={e => setAud(e.target.value)} /></div>
-          <div style={{ marginTop: 16 }}>{reasonOff ? <Btn disabled reason={reasonOff}>Save contacts</Btn> : <Btn kind="primary" onClick={commit}>Save {count(pv.counts.callable)} contacts</Btn>}</div></Card>
+          <div style={{ marginTop: 16 }}>{reasonOff ? <Btn disabled fix={null} reason={reasonOff}>Save contacts</Btn> : <Btn kind="primary" onClick={commit}>Save {count(pv.counts.callable)} contacts</Btn>}</div></Card>
     </>
   );
 }

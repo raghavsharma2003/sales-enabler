@@ -56,7 +56,7 @@ function Pick({ kind, conns }: { kind: CrmKind; conns: { id: string; name: strin
               hint="We check the list has every detail she says from each person's record, before anything is saved.">
               <option value="">Decide later</option>{as.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>)}</Async>
         </div>
-        <div className="row" style={{ marginTop: 12 }}>{listId ? <Btn kind="primary" busy={busy} onClick={() => void check()}>Check this {LIST[kind]}</Btn> : <Btn disabled reason={`Choose a ${LIST[kind]} first.`}>Check this {LIST[kind]}</Btn>}</div>
+        <div className="row" style={{ marginTop: 12 }}>{listId ? <Btn kind="primary" busy={busy} onClick={() => void check()}>Check this {LIST[kind]}</Btn> : <Btn disabled fix={null} reason={`Choose a ${LIST[kind]} first.`}>Check this {LIST[kind]}</Btn>}</div>
         {pulled && <p className="hint" role="status">Read {plural(pulled.records, 'contact')} from {NAME[kind]}.{pulled.unchangedSkipped ? ` ${count(pulled.unchangedSkipped)} unchanged since the last import ${pulled.unchangedSkipped === 1 ? 'was' : 'were'} skipped.` : ''}{pulled.numberChanged ? ` ${plural(pulled.numberChanged, 'contact')} now ${pulled.numberChanged === 1 ? 'has' : 'have'} a different number in ${NAME[kind]}; ${pulled.numberChanged === 1 ? 'it is' : 'they are'} left out until you check ${pulled.numberChanged === 1 ? 'it' : 'them'}.` : ''}{pulled.truncated ? ' The list is larger than one import reads (50,000); the first 50,000 were read.' : ''}</p>}
       </Card>
       {pv && <ImportReview pv={pv} setPv={setPv} srcText="" agentId={agentId} saveSub={`Saves contacts and an audience. It does not call anyone, and writes nothing to ${NAME[kind]}.`}
