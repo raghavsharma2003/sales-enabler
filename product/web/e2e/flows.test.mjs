@@ -2332,3 +2332,32 @@ test('Import with one agent: she is chosen for the column check up front; a toas
     assert.ok(r.y + r.height <= 900 - 16, 'at the bottom of the screen');
   } finally { await c.close(); }
 });
+
+// ---- Integrator item 3 (the owner's account starts empty): every empty page says what to do next, with one primary action
+test('Empty workspace: Agents, Campaigns, Calls and Insights each have one primary action, and it leads to the step actually missing', async () => {
+  const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const su = await c.request.post(BASE + '/v1/signup', { data: { workspace: 'Empty Pages Test', name: 'Ira Sen', email: `empty-pages-${Date.now()}@example.test`, password: 'sample-password-1234' } });
+  assert.ok(su.ok());
+  const srv = async (name, args = {}) => (await (await c.request.post(`${BASE}/v1/tools/${name}`, { data: { args } })).json());
+  const p = await c.newPage();
+  const primary = async path => {
+    await p.goto(BASE + path); await p.waitForLoadState('networkidle'); await p.waitForTimeout(400);
+    const all = p.locator('main .btn-primary');
+    assert.equal(await all.count(), 1, `${path}: one primary action, got ${(await all.allInnerTexts()).join(' | ')}`);
+    return { text: (await all.first().innerText()).trim(), href: await all.first().getAttribute('href') };
+  };
+  try {
+    for (const path of ['/agents', '/campaigns', '/calls', '/insights']) assert.equal((await primary(path)).text, 'Make the first agent', path);
+    // An agent exists but is not published: a campaign needs a published one; the call log offers to hear her.
+    const tpl = (await srv('template.list')).result.templates[0];
+    const made = await srv('agent.create', { name: 'Draft agent (synthetic)', templateId: tpl.id });
+    assert.equal(made.status, 'confirmed');
+    const camp = await primary('/campaigns');
+    assert.deepEqual(camp, { text: 'Open Draft agent (synthetic)', href: `/agents/${made.result.agentId}` });
+    await p.getByText('No agent is published yet').waitFor();
+    const calls = await primary('/calls');
+    assert.deepEqual(calls, { text: 'Hear Draft agent (synthetic)', href: `/agents/${made.result.agentId}?test=1` });
+    const ins = await primary('/insights');
+    assert.equal(ins.href, `/agents/${made.result.agentId}`, 'insights lead to the same missing step');
+  } finally { await c.close(); }
+});

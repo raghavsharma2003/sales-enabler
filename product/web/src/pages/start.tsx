@@ -5,24 +5,14 @@ import { useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 import { run } from '../api.ts';
 import { useApp, useData } from '../store.tsx';
-import { adoptBusinessName, agentList, campaignList } from '../data.ts';
+import { adoptBusinessName } from '../data.ts';
+import { progress, type Progress } from '../setup.tsx';
 import { Async, Btn, Card, CardHead, TextArea, TextField } from '../ui.tsx';
 import { Link, useNav } from '../router.tsx';
 
 interface Template { id: string; label: string; industry: string; job: string; category: string; summary: string }
 const INDUSTRY = (s: string) => s.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
 
-interface Progress { agents: { id: string; name: string; published: boolean }[]; heard: boolean; contacts: number; campaigns: number; launched: number; draft: { id: string; name: string } | null }
-async function progress(): Promise<Progress> {
-  const [agents, calls, contacts, camps] = await Promise.all([
-    agentList(),
-    run<{ calls: { channel: string }[] }>('call.search', { includeTest: true, limit: 50 }).catch(() => ({ calls: [] })),
-    run<{ contacts: unknown[] }>('contact.list', { limit: 1 }).catch(() => ({ contacts: [] })),
-    campaignList(),
-  ]);
-  const draft = camps.find(c => c.state === 'draft');
-  return { agents: agents.map(a => ({ id: a.id, name: a.name, published: !!a.latestVersion })), heard: calls.calls.some(c => c.channel === 'test'), contacts: contacts.contacts.length, campaigns: camps.length, launched: camps.filter(c => c.state !== 'draft').length, draft: draft ? { id: draft.id, name: draft.name } : null };
-}
 
 const allDone = (p: Progress) => p.agents.length > 0 && p.heard && p.contacts > 0 && p.launched > 0;
 /** True while the Get started card is showing (Today then leaves the next step to it, so there is one primary action). */

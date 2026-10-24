@@ -15,6 +15,7 @@ import { clock, date, dur, inr, ms } from '../format.ts';
 import type { CallDoc, CallExplain, CallRow } from '../types.ts';
 import { run } from '../api.ts';
 import { WhySaid, type WhyUse } from '../why-said.tsx';
+import { nextStep, useSetup, type NextStep, type Progress } from '../setup.tsx';
 
 const GRADE: Record<string, [string, 'leaf' | 'peacock' | 'marigold']> = { verified: ['Confirmed by your system', 'leaf'], manager: ['Confirmed by a person', 'peacock'], ai_guess: ['AI guess', 'marigold'] };
 const outcomeChip = (o: string | null, g: string | null) => !o ? <NotMeasured>No outcome yet</NotMeasured> : <span className="row" style={{ gap: 6 }}><Chip>{prettyCode(o)}</Chip>{g && GRADE[g] && <Chip tone={GRADE[g][1]}>{GRADE[g][0]}</Chip>}</span>;
@@ -29,6 +30,8 @@ function List() {
   const view = qs.get('view') ?? '';
   const campaignId = qs.get('campaign') ?? '';
   const q = useData(['calls', campaignId, view], () => callSearch({ campaignId: campaignId || undefined, includeTest: view === 'test' }));
+  const setup = useSetup();
+  const empty = () => <CallsEmpty setup={setup} view={view} onPractice={() => setQs({ view: 'test' })} />;
   const cols: Col<CallRow>[] = [
     { key: 'w', label: 'Who', primary: true, render: c => <>{c.contactName}{c.direction === 'inbound' && <> <Chip tone="peacock">Inbound</Chip></>}{c.channel === 'test' && <> <Chip>Test</Chip></>}<span className="cell-sub">{date(c.startedAt, true)}</span></> }, { key: 'o', label: 'Outcome', render: c => outcomeChip(c.outcome, c.grade) },
     { key: 'p', label: 'Campaign', render: c => campName(c.campaignId) ?? <span className="muted">{c.channel === 'test' ? 'Practice' : c.direction === 'inbound' ? 'Inbound line' : 'None'}</span> },
@@ -46,11 +49,24 @@ function List() {
         <Tabs label="Which calls" value={view} onChange={v => setQs({ view: v || null })} items={[{ id: '', label: 'Real calls' }, { id: 'test', label: 'With practice calls' }]} />
         <div className="filters"><TextField label="Filter by name" type="search" value={text} onChange={e => setText(e.target.value)} />
           {q.data && q.data.length > 0 && <SelectField label="Why it ended" value={why} onChange={e => setWhy(e.target.value)}><option value="">Any reason</option>{[...new Set(q.data.map(c => c.reasonLabel).filter((x): x is string => !!x))].sort().map(r => <option key={r} value={r}>{r}</option>)}</SelectField>}{campaignId && <div className="field"><label>Campaign</label><div className="row"><Chip tone="peacock">One campaign</Chip><button type="button" className="btn btn-sm" onClick={() => setQs({ campaign: null })}>Clear</button></div></div>}</div>
-        <Async q={q} what="Calls" tool="call.search" empty={d => d.length === 0 ? <Empty title="No calls yet" body="Once a campaign or a test dials, each call appears here with its words, reason and cost." /> : null}>
+        <Async q={q} what="Calls" tool="call.search" empty={d => d.length === 0 && !campaignId ? empty() : d.length === 0 ? <Empty title="No calls yet" body="Once this campaign dials, each call appears here with its words, reason and cost." /> : null}>
           {d => <Table caption="Calls" cols={cols} rows={d.filter(c => (!text || c.contactName.toLowerCase().includes(text.toLowerCase())) && (!why || c.reasonLabel === why))} rowKey={r => r.id} onRow={r => `/calls/${r.id}`} />}</Async>
       </Card>
     </div>
   );
+}
+
+/** The call log of a workspace with no calls says what will put the first one here, with one action that does it. */
+function CallsEmpty({ setup, view, onPractice }: { setup: Progress | null | undefined; view: string; onPractice: () => void }) {
+  const go = (n: NextStep) => <Link to={n.to} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>{n.label}</span></Link>;
+  if (!setup) return <Empty title="No calls yet" body="Once a campaign or a test dials, each call appears here with its words, reason and cost." />;
+  if (view !== 'test' && setup.heard) {
+    const n = nextStep(setup, ['published', 'contacts', 'campaign']);
+    return <Empty title="No real calls yet" body={<>Your practice calls are kept apart, so they never count. <button type="button" className="linklike" onClick={onPractice}>See practice calls</button>. Real calls start when a campaign dials{n ? '.' : ': finish your draft campaign and launch it.'}</>}
+      action={n ? go(n) : setup.draft ? <Link to={`/campaigns/${setup.draft.id}`} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Finish your campaign</span></Link> : undefined} />;
+  }
+  const n = nextStep(setup, ['agent', 'heard']);
+  return <Empty title="No calls yet" body="The first one can be yours: call her in the browser as a made-up customer. Nothing reaches anyone, and the call shows here with its words, timing and cost." action={n ? go(n) : undefined} />;
 }
 
 function CampaignName({ id }: { id: string }) {

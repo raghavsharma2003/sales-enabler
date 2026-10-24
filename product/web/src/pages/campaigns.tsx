@@ -12,6 +12,7 @@ import { useVoiceStack } from '../use-voice-stack.tsx';
 import { prettyCode } from './contacts.tsx';
 import { blockerCopy, pl } from '../labels.ts';
 import type { CampaignDoc, CampaignRow } from '../types.ts';
+import { nextStep, useSetup } from '../setup.tsx';
 
 const STATE: Record<string, [string, 'leaf' | 'marigold' | 'peacock' | 'neutral' | 'brick']> = { running: ['Dialling', 'leaf'], paused: ['Paused', 'marigold'], scheduled: ['Scheduled', 'peacock'], draft: ['Draft', 'marigold'], done: ['Finished', 'neutral'], stopped: ['Stopped', 'neutral'], cancelled: ['Stopped', 'neutral'] };
 const stateChip = (s: string) => { const [l, t] = STATE[s] ?? [prettyCode(s), 'neutral' as const]; return <Chip tone={t}>{l}</Chip>; };
@@ -26,6 +27,9 @@ export default function Campaigns({ id, create }: { id?: string; create?: boolea
 
 function List() {
   const q = useData<CampaignRow[]>('campaigns', campaignList);
+  // A campaign needs a published agent and people to call: with none yet, the empty page leads to whichever is missing.
+  const setup = useSetup();
+  const missing = setup ? nextStep(setup, ['agent', 'published', 'contacts']) : null;
   const cols: Col<CampaignRow>[] = [
     { key: 'n', label: 'Campaign', primary: true, render: c => c.name }, { key: 's', label: 'State', render: c => stateChip(c.state) },
     { key: 'c', label: 'Kind of call', hideMobile: true, render: c => CATEGORY_INFO[c.category]?.label ?? c.category },
@@ -34,8 +38,10 @@ function List() {
   ];
   return (
     <div className="page">
-      <PageHead title="Campaigns" sub="One job, one list, one window. You see who, when and what it costs before anything is dialled." actions={<Link to="/campaigns/new" className="btn btn-primary" style={{ textDecoration: 'none' }}><Plus size={16} aria-hidden /><span>New campaign</span></Link>} />
-      <Card><Async q={q} what="Campaigns" tool="campaign.list" empty={d => d.length === 0 ? <Empty title="No campaigns yet" body="Start with the kind of call you are making. That decides the rules, the number series and the window." action={<Link to="/campaigns/new">Start a campaign</Link>} /> : null}>
+      <PageHead title="Campaigns" sub="One job, one list, one window. You see who, when and what it costs before anything is dialled." actions={<Link to="/campaigns/new" className={`btn ${q.data?.length === 0 ? 'btn-secondary' : 'btn-primary'}`} style={{ textDecoration: 'none' }}><Plus size={16} aria-hidden /><span>New campaign</span></Link>} />
+      <Card><Async q={q} what="Campaigns" tool="campaign.list" empty={d => d.length === 0 ? (missing
+        ? <Empty title="No campaigns yet" body={<>A campaign calls a list with a published agent. {missing.need === 'agent' ? 'There is no agent yet.' : missing.need === 'published' ? 'No agent is published yet: a campaign uses a published version, never a draft.' : 'There is nobody to call yet.'}</>} action={<Link to={missing.to} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>{missing.label}</span></Link>} />
+        : <Empty title="No campaigns yet" body="Start with the kind of call you are making. That decides the rules, the number series and the window." action={<Link to="/campaigns/new" className="btn btn-primary" style={{ textDecoration: 'none' }}><span>Start a campaign</span></Link>} />) : null}>
         {d => <Table caption="Campaigns" cols={cols} rows={d} rowKey={r => r.id} onRow={r => `/campaigns/${r.id}`} />}</Async></Card>
     </div>
   );

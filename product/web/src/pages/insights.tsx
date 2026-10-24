@@ -11,6 +11,7 @@ import { agentList, campaignFunnel, campaignGet, campaignList } from '../data.ts
 import { ago, count, date } from '../format.ts';
 import { prettyCode } from './contacts.tsx';
 import CallThemes from './insight-themes.tsx';
+import { nextStep, useSetup } from '../setup.tsx';
 
 interface IssueRow { id: string; category: string; severity: string; status: string; detail: any; created_at: string }
 interface ProposalRow { id: string; agent_id: string; agent_name: string; kind: string; status: string; rationale: string | null; calls_to_prove: number | null; gates_passed: boolean | null; created_at: string;
@@ -47,6 +48,20 @@ interface MonitorInfo { monitors: { id: string; name: string; last_read_at?: str
 const adoptedOf = (d: unknown) => (d && typeof d === 'object' ? (d as { adoptedChange?: { at?: string; change?: string } }).adoptedChange : undefined);
 const detailText = (d: unknown): string => (typeof d === 'string' ? d : d && typeof d === 'object' ? ((d as any).message ?? (d as any).summary ?? (d as any).reason ?? JSON.stringify(d)) : '');
 
+/** Before any campaign has dialled, the page leads with what insights need and the one step that gets there; the sections
+ *  below still say what each waits for. */
+function FirstRun() {
+  const setup = useSetup();
+  if (!setup || setup.launched > 0) return null;
+  const n = nextStep(setup, ['agent', 'published', 'contacts', 'campaign']);
+  const to = n?.to ?? (setup.draft ? `/campaigns/${setup.draft.id}` : '/campaigns/new');
+  const label = n?.label ?? (setup.draft ? 'Finish your campaign' : 'Start a campaign');
+  return (
+    <Card><Empty title="Insights start with real calls" body="Themes, where people drop out and proposed changes are built from analysed calls to real people. Practice calls never count. Once a campaign dials, this page fills in by itself."
+      action={<Link to={to} className="btn btn-primary" style={{ textDecoration: 'none' }}><span>{label}</span></Link>} /></Card>
+  );
+}
+
 export default function Insights() {
   const { act, refresh, say } = useApp();
   const camps = useData('camps', campaignList);
@@ -67,6 +82,7 @@ export default function Insights() {
     <div className="page">
       <PageHead title="Insights" sub="What happened, why, and what you can do. Every number says how many calls it rests on." />
       <div className="stack">
+        <FirstRun />
         <CallThemes agents={agents.data ?? []} campaigns={camps.data ?? []} />
         <Card aria-labelledby="fn-h"><CardHead id="fn-h" title="Where people drop out"
           actions={camps.data && camps.data.length > 0 ? <SelectField label="Campaign" value={pick} onChange={e => setCid(e.target.value)}>{camps.data.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</SelectField> : undefined} />

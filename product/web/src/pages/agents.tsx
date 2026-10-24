@@ -20,7 +20,7 @@ function List() {
   const [open, setOpen] = useState(false);
   return (
     <div className="page">
-      <PageHead title="Agents" sub="Each agent is one job, one voice, and the facts she may use. Start with a job, then hear her." actions={<Btn kind="primary" icon={<Plus size={16} aria-hidden />} onClick={() => setOpen(true)}>New agent</Btn>} />
+      <PageHead title="Agents" sub="Each agent is one job, one voice, and the facts she may use. Start with a job, then hear her." actions={<Btn kind={q.data?.length === 0 ? 'secondary' : 'primary'} icon={<Plus size={16} aria-hidden />} onClick={() => setOpen(true)}>New agent</Btn>} />
       <Async q={q} what="Agents" tool="agent.list" empty={d => d.length === 0 ? <Card><Empty title="No agents yet" body="Pick a job and name her. You choose her voice next, by ear and by the measured figures." action={<Btn kind="primary" onClick={() => setOpen(true)}>Make the first agent</Btn>} /></Card> : null}>
         {d => <ul className="agentgrid" aria-label="Agents">{d.map(a => <AgentCard key={a.id} a={a} />)}</ul>}
       </Async>
