@@ -1,169 +1,171 @@
 {
- "nodes": [
-  {
-   "id": "decision.2026-10-24.recording-signed-links",
-   "type": "decision",
-   "status": "confirmed",
-   "source": "verified",
-   "date": "2026-10-24",
-   "title": "Call recordings play from short-lived signed links to the voice runtime: GET /v1/recordings/{callId}?ws&exp&sig, sig = HMAC-SHA256(VP_RUNTIME_SECRET, 'vp-recording.v1\\n' + callId + '\\n' + workspaceId + '\\n' + exp). call.get returns recording {url, expiresAt, why}: a 10-minute link on VP_RUNTIME_PUBLIC_URL (else VP_RUNTIME_URL) when the call has a recording, it is inside the workspace's recordings retention (policy.retention.get recordings_days) and no erase_me request exists for the person. The runtime refuses expired links, links living over an hour, forged signatures and a workspace other than the one in the .json beside each .wav; call ids are UUID-validated, never joined raw; no listing; aiohttp FileResponse serves Range",
-   "rationale": "Web's ee8aef6 found recordingUri is a file path on the voice server, so no real recording could play. A link tied to one workspace and ten minutes leaks little if copied; the browser's <audio> needs no CORS. There is no per-workspace recording switch to respect beyond the agent's own recording setting (the runtime records only when it is on and the caller did not refuse); retention is enforced at play time only, nothing deletes runtime files yet.",
-   "reverse_if": "Recordings move to object storage (then sign storage URLs instead), or a per-workspace recording policy is added (then call.get must check it too)."
-  },
-  {
-   "id": "open.2026-10-24.recording-files-retention-purge",
-   "type": "open-question",
-   "status": "open",
-   "date": "2026-10-24",
-   "source": "verified",
-   "title": "Nothing deletes recording files on the voice runtime when recordings_days passes or a person asks to be erased: the control plane only stops signing links. A purge needs a signed runtime route (or storage lifecycle) driven by calls' retention and forget_request.",
-   "closes_when": "A runtime purge route (or a storage lifecycle) deletes recording files past recordings_days and on an erase request, with a test that the file is gone and its link refused."
-  },
-  {
-   "id": "decision.2026-10-24.analysis-outcome-shapes",
-   "type": "decision",
-   "status": "confirmed",
-   "source": "verified",
-   "date": "2026-10-24",
-   "title": "The outcome rule is a table of PERSON shapes mapped to the VALUE that names them: agrees -> agreeing; refuses -> refusing; not the person called -> wrong-person, never null; complains AND asks for a human -> needs-human, never null; asks never to be called again -> refusing, never call-later; asks to be called later -> call-later; null only for no shape, a language they cannot follow, a hang-up before the question, or distress. And tiered never escalates when the first pass names a NO_DECISION reason (CONV_LANGUAGE_MISMATCH)",
-   "rationale": "Answers rejected.2026-10-23.analysis-stance-rule-mini-false-nulls (mini returned null on wrong-person and complaint-to-human calls and called an opt-out a callback) and rejected.2026-10-23.tiered-escalates-no-decision-model-codes (6 of 12 escalations were language-mismatch calls whose outcome code discards). Written from the DEV patterns the integrator reported; TEST not consulted. Not measured on a real model here.",
-   "reverse_if": "The DEV gate or the two TEST passes show mini or tiered losing calls to the new table versus round 3."
-  },
-  {
-   "id": "decision.2026-10-24.setup-errors-plain-with-code",
-   "type": "decision",
-   "status": "confirmed",
-   "source": "verified",
-   "date": "2026-10-24",
-   "title": "A refusal caused by server setup is plain words plus a code (SetupError: telephony_disabled, secret_key_missing, runtime_not_configured); the operator's hint (the variable to set) goes to the server log once. The registry passes the code on in not_executed, and every receipt from execute/approve passes a backstop: a reason that names an env var, a server path or a stack frame is logged and replaced with plain words",
-   "rationale": "Answers rejected.2026-10-24.telephony-disabled-env-var-in-refusal: web hid the text but API and MCP callers still read it. The LLM door's 'no model configured' message no longer names variables either. tests/no-server-detail.test.ts runs every registered tool as an owner with the setup missing and fails if any refusal or result carries server detail, or if the backstop had to catch one; on the old code it failed (3 of 4 tests).",
-   "reverse_if": "An operator-facing API needs the hint; then add it behind an operator role, never in a member's receipt."
-  },
-  {
-   "id": "decision.2026-10-24.subject-by-own-id-and-proposal-tool",
-   "type": "decision",
-   "status": "confirmed",
-   "source": "verified",
-   "date": "2026-10-24",
-   "title": "In the campaign, audience, contact and offering namespaces a bare id (input, else a create's result) is the activity subject before any other key, so campaign.draft is about the campaign it saved and campaign.launch/pause/stop get a subject at all. Proposal rows carry the proposed tool (activity.list item.tool) and the web sentence names that action and its subject; without it, the line's own words, never 'a change'",
-   "rationale": "Answers open.2026-10-24.activity-subject-campaign-draft (R6).",
-   "reverse_if": "Another namespace's bare id names something other than its own entity."
-  },
-  {
-   "id": "decision.2026-10-24.call-log-agent-join",
-   "type": "decision",
-   "status": "confirmed",
-   "source": "verified",
-   "date": "2026-10-24",
-   "title": "call.search and call.get return agent {id, name, version, label: 'Asha, version 3'} from one LEFT JOIN on agent_version and agent (the agent's workspace must be the call's); null for a draft test call. The query count of call.search is the same for 2 calls and 20 (tested by counting client queries)",
-   "rationale": "Answers open.2026-10-24.call-log-agent-version (R11, must-be 13). The web call log can show it; the column itself is web's.",
-   "reverse_if": "agent_version gains workspace_id; then join on it directly."
-  },
-  {
-   "id": "decision.2026-10-24.recording-purge-on-runtime",
-   "type": "decision",
-   "status": "confirmed",
-   "source": "verified",
-   "date": "2026-10-24",
-   "title": "Erasure and retention delete the audio on the voice runtime: job calls.recording_purge (every 10 minutes, advisory-locked) asks the runtime, by a signed POST /v1/recordings/{id}/purge naming the call and its workspace, to delete the .wav and its .json for calls whose person has an erase_me request (first, whatever the age) or whose recordings_days retention has passed since the call ended. The row (recording_uri cleared, recording_purged_at, recording_purge_reason retention|erased) is marked only after the runtime confirms; call.get says why the recording is gone",
-   "rationale": "Resolves open.2026-10-24.recording-files-retention-purge (DPDP: erasure must reach the audio). The runtime refuses another workspace's recording (403) and a body naming another call (400); its purge is idempotent, so a run cut short between the delete and the row update is finished by the next run. A recording saved before its .json existed is deleted on a signed request (the safe direction).",
-   "reverse_if": "Recordings move to object storage (then a storage lifecycle rule plus a delete on erasure replaces this route), or erasure must complete synchronously with the request (then call the purge from the erase path too)."
-  },
-  {
-   "id": "open.2026-10-24.transcript-retention-erasure",
-   "type": "open",
-   "status": "open",
-   "date": "2026-10-24",
-   "source": "verified",
-   "title": "Transcripts (conversation.transcript and turn rows) are not yet purged at transcripts_days nor on an erase_me request; only recordings are. Same shape as calls.recording_purge, inside the database."
-  },
-  {
-   "id": "open.2026-10-24.learning-check-pool-deadlock",
-   "type": "open",
-   "status": "open",
-   "date": "2026-10-24",
-   "source": "verified",
-   "title": "learning-loop-e2e hangs under the full suite (2 of 4 runs today, never alone): a pool deadlock in learning. experiment.check takes the experiment row FOR UPDATE inside its transaction (experimentFor(..., true)), then cross() calls another tool on bound.pool, which needs a second connection. Ten concurrent experiment.assign calls each hold a pool connection blocked on that lock, so the pool (max 10) never has one to give",
-   "rationale": "Seen in pg_stat_activity during the hang: one backend 'idle in transaction' (ClientRead) right after the experimentUnits SELECT, holding its xact for 10+ minutes; nine backends active, waiting Lock/transactionid on INSERT INTO experiment_assignment. server/modules/learning/index.ts:39-44 (cross uses bound.pool), :460 and :514 (cross inside check), :391-402 (assign). Not calls' code; reported for learning. Fix options: run the cross() calls after the transaction (collect, then execute), or have assign not wait on check's lock (SKIP LOCKED / no row lock in check until the decision), and never acquire a pool connection while holding a transaction."
-  },
-  {
-   "id": "decision.2026-10-24.objection-always-a-moment",
-   "type": "decision",
-   "status": "confirmed",
-   "source": "verified",
-   "date": "2026-10-24",
-   "title": "The analysis contract says every complaining PERSON line is an objection, even when the person agrees later (then both the objection and the commitment are listed), and moments are listed per PERSON line whatever the OUTCOME. The outcome table that fixed round 3 stays. The bench can ablate the contract on DEV only: --prompt-variant current | r4-table (b1a80cf exactly) | r3-stance (bfa7ee7's outcome sentence) | no-outcome-rules; an ablation on TEST is refused and the report header names the contract",
-   "rationale": "Answers the round 4 regression (mini objection recall 51/51 -> 43/51 on complain-then-agree calls after b1a80cf). The cause is NOT confirmed here: an ablation needs a real model and the sandbox has none. The arms let the bench worker confirm it on DEV: if r4-table loses objections that r3-stance keeps and no-outcome-rules also keeps, the table crowds out moments; current should keep them with the table.",
-   "reverse_if": "The DEV ablation shows current still drops objections, or that the loss is noise against r3-stance (then move the moment rules after OUTCOME, or ask for moments in a second field)."
-  }
- ],
- "edges": [
-  {
-   "from": "decision.2026-10-24.recording-signed-links",
-   "to": "open.2026-10-24.recording-files-retention-purge",
-   "relation": "leaves-open"
-  },
-  {
-   "from": "decision.2026-10-24.analysis-outcome-shapes",
-   "to": "rejected.2026-10-23.analysis-stance-rule-mini-false-nulls",
-   "relation": "answers"
-  },
-  {
-   "from": "decision.2026-10-24.analysis-outcome-shapes",
-   "to": "rejected.2026-10-23.tiered-escalates-no-decision-model-codes",
-   "relation": "answers"
-  },
-  {
-   "from": "decision.2026-10-24.setup-errors-plain-with-code",
-   "to": "rejected.2026-10-24.telephony-disabled-env-var-in-refusal",
-   "relation": "answers"
-  },
-  {
-   "from": "decision.2026-10-24.subject-by-own-id-and-proposal-tool",
-   "to": "open.2026-10-24.activity-subject-campaign-draft",
-   "relation": "resolves"
-  },
-  {
-   "from": "decision.2026-10-24.call-log-agent-join",
-   "to": "open.2026-10-24.call-log-agent-version",
-   "relation": "resolves"
-  },
-  {
-   "from": "decision.2026-10-24.recording-purge-on-runtime",
-   "to": "open.2026-10-24.recording-files-retention-purge",
-   "relation": "resolves"
-  },
-  {
-   "from": "decision.2026-10-24.recording-purge-on-runtime",
-   "to": "open.2026-10-24.transcript-retention-erasure",
-   "relation": "leaves-open"
-  }
- ],
- "events": [
-  {
-   "date": "2026-10-24",
-   "event": "recording-signed-links",
-   "details": "Tests: voice tests/test_recordings.py (7: signature vector shared with TS, malformed/expired/too-long/forged/other-workspace refused, path traversal, Range 206, devsim-style sim call saves a tone with its workspace, none when the agent does not record); tests/calls-recording.test.ts (2, same vector); tests/calls-live.test.ts cross-process with devsim (a real runtime recording: 200, Range 206 with Content-Range, forged 403, expired 403, another workspace's link 403, another workspace's call.get refused, erase_me and past-retention give no link); web e2e 'Browser call' now plays the runtime's recording of a real devsim browser call in Chromium (duration > 1 s, plays, seeks) and a forged link is 403. Gates on a fresh database: node scripts/test.mjs 481/481 including the browser flows (VP_VOICE_PYTHON and PLAYWRIGHT_BROWSERS_PATH set); ui-contract --strict 174/174; tsc server and web clean; voice unittest OK. Not verified: staging through Caddy on :8443."
-  },
-  {
-   "date": "2026-10-24",
-   "event": "analysis-outcome-shapes",
-   "details": "The tier test for a language-mismatch first pass failed on the old code and passes now; the prompt test now asserts the shape table and the stance sentence's absence. Gates on a fresh database: test.mjs 503/503 including browser flows; ui-contract --strict 175/175; tsc server and web clean. Fake DEV bench is plumbing only. Ready for the integrator's DEV gate, then two TEST passes per design."
-  },
-  {
-   "date": "2026-10-24",
-   "event": "walkthrough2-R1-R6-R11",
-   "details": "Each item's test failed on the old code (stash runs): tests/no-server-detail.test.ts 3 of 4 failed; activity-subject's campaign test failed; calls-log-agent failed. Gates on a fresh database: test.mjs 513/513 including browser flows; ui-contract --strict 175/175; tsc server and web clean. One earlier full run had learning-loop-e2e time out at 300 s (step 9) with an earlier draft of the guard test in the tree; it passed alone (6 s, also with NODE_ENV=test) and in the rerun of the whole suite. Not reproduced, cause not found: watch it."
-  },
-  {
-   "date": "2026-10-24",
-   "event": "recording-purge",
-   "details": "Tests: voice test_recordings.py 11 (signed purge deletes .wav and .json once, the link then 404s, a repeat is deleted:false; another workspace 403, wrong signature 401, body naming another call 400, the file stays); tests/calls-recording-purge.test.ts 2 (retention per workspace, erasure first whatever the age, idempotent, an unconfirmed purge is retried, a run cut short after the delete is finished by the next); calls-live cross-process with devsim (another workspace's purge refused by the real runtime, then the job deletes the file: link 404, row purged, call.get says why). Gates on a fresh database: test.mjs 526/526 including browser flows; ui-contract --strict 176/176; tsc server and web clean; voice unittest OK. Two earlier suite runs hung in learning-loop-e2e: open.2026-10-24.learning-check-pool-deadlock (learning's code, diagnosed from pg_stat_activity)."
-  },
-  {
-   "date": "2026-10-24",
-   "event": "objection-moment-fix",
-   "details": "tests/calls-analysis-objection.test.ts (4) failed 4/4 on the old code and pass now: the contract wording, the three ablation arms reproduce the compared contracts, a complain-then-agree fixture stores both moments (objection on the complaint, commitment on the agreement) and keeps the outcome, an ablation on TEST is refused. All four arms run end to end on DEV with the fake model (plumbing only). Not measured on a real model. READY for the integrator: run the DEV ablation (4 arms), then two TEST passes on current."
-  }
- ]
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.recording-signed-links",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Call recordings play from short-lived signed links to the voice runtime: GET /v1/recordings/{callId}?ws&exp&sig, sig = HMAC-SHA256(VP_RUNTIME_SECRET, 'vp-recording.v1\\n' + callId + '\\n' + workspaceId + '\\n' + exp). call.get returns recording {url, expiresAt, why}: a 10-minute link on VP_RUNTIME_PUBLIC_URL (else VP_RUNTIME_URL) when the call has a recording, it is inside the workspace's recordings retention (policy.retention.get recordings_days) and no erase_me request exists for the person. The runtime refuses expired links, links living over an hour, forged signatures and a workspace other than the one in the .json beside each .wav; call ids are UUID-validated, never joined raw; no listing; aiohttp FileResponse serves Range",
+      "rationale": "Web's ee8aef6 found recordingUri is a file path on the voice server, so no real recording could play. A link tied to one workspace and ten minutes leaks little if copied; the browser's <audio> needs no CORS. There is no per-workspace recording switch to respect beyond the agent's own recording setting (the runtime records only when it is on and the caller did not refuse); retention is enforced at play time only, nothing deletes runtime files yet.",
+      "reverse_if": "Recordings move to object storage (then sign storage URLs instead), or a per-workspace recording policy is added (then call.get must check it too)."
+    },
+    {
+      "id": "open.2026-10-24.recording-files-retention-purge",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Nothing deletes recording files on the voice runtime when recordings_days passes or a person asks to be erased: the control plane only stops signing links. A purge needs a signed runtime route (or storage lifecycle) driven by calls' retention and forget_request.",
+      "closes_when": "A runtime purge route (or a storage lifecycle) deletes recording files past recordings_days and on an erase request, with a test that the file is gone and its link refused."
+    },
+    {
+      "id": "decision.2026-10-24.analysis-outcome-shapes",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The outcome rule is a table of PERSON shapes mapped to the VALUE that names them: agrees -> agreeing; refuses -> refusing; not the person called -> wrong-person, never null; complains AND asks for a human -> needs-human, never null; asks never to be called again -> refusing, never call-later; asks to be called later -> call-later; null only for no shape, a language they cannot follow, a hang-up before the question, or distress. And tiered never escalates when the first pass names a NO_DECISION reason (CONV_LANGUAGE_MISMATCH)",
+      "rationale": "Answers rejected.2026-10-23.analysis-stance-rule-mini-false-nulls (mini returned null on wrong-person and complaint-to-human calls and called an opt-out a callback) and rejected.2026-10-23.tiered-escalates-no-decision-model-codes (6 of 12 escalations were language-mismatch calls whose outcome code discards). Written from the DEV patterns the integrator reported; TEST not consulted. Not measured on a real model here.",
+      "reverse_if": "The DEV gate or the two TEST passes show mini or tiered losing calls to the new table versus round 3."
+    },
+    {
+      "id": "decision.2026-10-24.setup-errors-plain-with-code",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "A refusal caused by server setup is plain words plus a code (SetupError: telephony_disabled, secret_key_missing, runtime_not_configured); the operator's hint (the variable to set) goes to the server log once. The registry passes the code on in not_executed, and every receipt from execute/approve passes a backstop: a reason that names an env var, a server path or a stack frame is logged and replaced with plain words",
+      "rationale": "Answers rejected.2026-10-24.telephony-disabled-env-var-in-refusal: web hid the text but API and MCP callers still read it. The LLM door's 'no model configured' message no longer names variables either. tests/no-server-detail.test.ts runs every registered tool as an owner with the setup missing and fails if any refusal or result carries server detail, or if the backstop had to catch one; on the old code it failed (3 of 4 tests).",
+      "reverse_if": "An operator-facing API needs the hint; then add it behind an operator role, never in a member's receipt."
+    },
+    {
+      "id": "decision.2026-10-24.subject-by-own-id-and-proposal-tool",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "In the campaign, audience, contact and offering namespaces a bare id (input, else a create's result) is the activity subject before any other key, so campaign.draft is about the campaign it saved and campaign.launch/pause/stop get a subject at all. Proposal rows carry the proposed tool (activity.list item.tool) and the web sentence names that action and its subject; without it, the line's own words, never 'a change'",
+      "rationale": "Answers open.2026-10-24.activity-subject-campaign-draft (R6).",
+      "reverse_if": "Another namespace's bare id names something other than its own entity."
+    },
+    {
+      "id": "decision.2026-10-24.call-log-agent-join",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "call.search and call.get return agent {id, name, version, label: 'Asha, version 3'} from one LEFT JOIN on agent_version and agent (the agent's workspace must be the call's); null for a draft test call. The query count of call.search is the same for 2 calls and 20 (tested by counting client queries)",
+      "rationale": "Answers open.2026-10-24.call-log-agent-version (R11, must-be 13). The web call log can show it; the column itself is web's.",
+      "reverse_if": "agent_version gains workspace_id; then join on it directly."
+    },
+    {
+      "id": "decision.2026-10-24.recording-purge-on-runtime",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Erasure and retention delete the audio on the voice runtime: job calls.recording_purge (every 10 minutes, advisory-locked) asks the runtime, by a signed POST /v1/recordings/{id}/purge naming the call and its workspace, to delete the .wav and its .json for calls whose person has an erase_me request (first, whatever the age) or whose recordings_days retention has passed since the call ended. The row (recording_uri cleared, recording_purged_at, recording_purge_reason retention|erased) is marked only after the runtime confirms; call.get says why the recording is gone",
+      "rationale": "Resolves open.2026-10-24.recording-files-retention-purge (DPDP: erasure must reach the audio). The runtime refuses another workspace's recording (403) and a body naming another call (400); its purge is idempotent, so a run cut short between the delete and the row update is finished by the next run. A recording saved before its .json existed is deleted on a signed request (the safe direction).",
+      "reverse_if": "Recordings move to object storage (then a storage lifecycle rule plus a delete on erasure replaces this route), or erasure must complete synchronously with the request (then call the purge from the erase path too)."
+    },
+    {
+      "id": "open.2026-10-24.transcript-retention-erasure",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Transcripts (conversation.transcript and turn rows) are not yet purged at transcripts_days nor on an erase_me request; only recordings are. Same shape as calls.recording_purge, inside the database.",
+      "closes_when": "Transcripts and analysis text are deleted or redacted past the retention window and on an erase request, with a test that the rows are gone and the call page says why."
+    },
+    {
+      "id": "open.2026-10-24.learning-check-pool-deadlock",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "learning-loop-e2e hangs under the full suite (2 of 4 runs today, never alone): a pool deadlock in learning. experiment.check takes the experiment row FOR UPDATE inside its transaction (experimentFor(..., true)), then cross() calls another tool on bound.pool, which needs a second connection. Ten concurrent experiment.assign calls each hold a pool connection blocked on that lock, so the pool (max 10) never has one to give",
+      "rationale": "Seen in pg_stat_activity during the hang: one backend 'idle in transaction' (ClientRead) right after the experimentUnits SELECT, holding its xact for 10+ minutes; nine backends active, waiting Lock/transactionid on INSERT INTO experiment_assignment. server/modules/learning/index.ts:39-44 (cross uses bound.pool), :460 and :514 (cross inside check), :391-402 (assign). Not calls' code; reported for learning. Fix options: run the cross() calls after the transaction (collect, then execute), or have assign not wait on check's lock (SKIP LOCKED / no row lock in check until the decision), and never acquire a pool connection while holding a transaction.",
+      "closes_when": "The learning loop test runs 20 times in a row with no pool timeout, and the pool-size assumption is written in the test."
+    },
+    {
+      "id": "decision.2026-10-24.objection-always-a-moment",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The analysis contract says every complaining PERSON line is an objection, even when the person agrees later (then both the objection and the commitment are listed), and moments are listed per PERSON line whatever the OUTCOME. The outcome table that fixed round 3 stays. The bench can ablate the contract on DEV only: --prompt-variant current | r4-table (b1a80cf exactly) | r3-stance (bfa7ee7's outcome sentence) | no-outcome-rules; an ablation on TEST is refused and the report header names the contract",
+      "rationale": "Answers the round 4 regression (mini objection recall 51/51 -> 43/51 on complain-then-agree calls after b1a80cf). The cause is NOT confirmed here: an ablation needs a real model and the sandbox has none. The arms let the bench worker confirm it on DEV: if r4-table loses objections that r3-stance keeps and no-outcome-rules also keeps, the table crowds out moments; current should keep them with the table.",
+      "reverse_if": "The DEV ablation shows current still drops objections, or that the loss is noise against r3-stance (then move the moment rules after OUTCOME, or ask for moments in a second field)."
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.recording-signed-links",
+      "to": "open.2026-10-24.recording-files-retention-purge",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-24.analysis-outcome-shapes",
+      "to": "rejected.2026-10-23.analysis-stance-rule-mini-false-nulls",
+      "relation": "answers"
+    },
+    {
+      "from": "decision.2026-10-24.analysis-outcome-shapes",
+      "to": "rejected.2026-10-23.tiered-escalates-no-decision-model-codes",
+      "relation": "answers"
+    },
+    {
+      "from": "decision.2026-10-24.setup-errors-plain-with-code",
+      "to": "rejected.2026-10-24.telephony-disabled-env-var-in-refusal",
+      "relation": "answers"
+    },
+    {
+      "from": "decision.2026-10-24.subject-by-own-id-and-proposal-tool",
+      "to": "open.2026-10-24.activity-subject-campaign-draft",
+      "relation": "resolves"
+    },
+    {
+      "from": "decision.2026-10-24.call-log-agent-join",
+      "to": "open.2026-10-24.call-log-agent-version",
+      "relation": "resolves"
+    },
+    {
+      "from": "decision.2026-10-24.recording-purge-on-runtime",
+      "to": "open.2026-10-24.recording-files-retention-purge",
+      "relation": "resolves"
+    },
+    {
+      "from": "decision.2026-10-24.recording-purge-on-runtime",
+      "to": "open.2026-10-24.transcript-retention-erasure",
+      "relation": "leaves-open"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "recording-signed-links",
+      "details": "Tests: voice tests/test_recordings.py (7: signature vector shared with TS, malformed/expired/too-long/forged/other-workspace refused, path traversal, Range 206, devsim-style sim call saves a tone with its workspace, none when the agent does not record); tests/calls-recording.test.ts (2, same vector); tests/calls-live.test.ts cross-process with devsim (a real runtime recording: 200, Range 206 with Content-Range, forged 403, expired 403, another workspace's link 403, another workspace's call.get refused, erase_me and past-retention give no link); web e2e 'Browser call' now plays the runtime's recording of a real devsim browser call in Chromium (duration > 1 s, plays, seeks) and a forged link is 403. Gates on a fresh database: node scripts/test.mjs 481/481 including the browser flows (VP_VOICE_PYTHON and PLAYWRIGHT_BROWSERS_PATH set); ui-contract --strict 174/174; tsc server and web clean; voice unittest OK. Not verified: staging through Caddy on :8443."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "analysis-outcome-shapes",
+      "details": "The tier test for a language-mismatch first pass failed on the old code and passes now; the prompt test now asserts the shape table and the stance sentence's absence. Gates on a fresh database: test.mjs 503/503 including browser flows; ui-contract --strict 175/175; tsc server and web clean. Fake DEV bench is plumbing only. Ready for the integrator's DEV gate, then two TEST passes per design."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "walkthrough2-R1-R6-R11",
+      "details": "Each item's test failed on the old code (stash runs): tests/no-server-detail.test.ts 3 of 4 failed; activity-subject's campaign test failed; calls-log-agent failed. Gates on a fresh database: test.mjs 513/513 including browser flows; ui-contract --strict 175/175; tsc server and web clean. One earlier full run had learning-loop-e2e time out at 300 s (step 9) with an earlier draft of the guard test in the tree; it passed alone (6 s, also with NODE_ENV=test) and in the rerun of the whole suite. Not reproduced, cause not found: watch it."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "recording-purge",
+      "details": "Tests: voice test_recordings.py 11 (signed purge deletes .wav and .json once, the link then 404s, a repeat is deleted:false; another workspace 403, wrong signature 401, body naming another call 400, the file stays); tests/calls-recording-purge.test.ts 2 (retention per workspace, erasure first whatever the age, idempotent, an unconfirmed purge is retried, a run cut short after the delete is finished by the next); calls-live cross-process with devsim (another workspace's purge refused by the real runtime, then the job deletes the file: link 404, row purged, call.get says why). Gates on a fresh database: test.mjs 526/526 including browser flows; ui-contract --strict 176/176; tsc server and web clean; voice unittest OK. Two earlier suite runs hung in learning-loop-e2e: open.2026-10-24.learning-check-pool-deadlock (learning's code, diagnosed from pg_stat_activity)."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "objection-moment-fix",
+      "details": "tests/calls-analysis-objection.test.ts (4) failed 4/4 on the old code and pass now: the contract wording, the three ablation arms reproduce the compared contracts, a complain-then-agree fixture stores both moments (objection on the complaint, commitment on the agreement) and keeps the outcome, an ablation on TEST is refused. All four arms run end to end on DEV with the fake model (plumbing only). Not measured on a real model. READY for the integrator: run the DEV ablation (4 arms), then two TEST passes on current."
+    }
+  ]
 }

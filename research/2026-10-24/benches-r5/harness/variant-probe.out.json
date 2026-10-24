@@ -1,0 +1,47 @@
+{
+ "inputs": 2,
+ "r4-table == 8e3440a": {
+  "same": 2,
+  "differ": 0,
+  "firstDiff": null
+ },
+ "r3-stance == bfa7ee7": {
+  "same": 2,
+  "differ": 0,
+  "firstDiff": null
+ },
+ "current == 8e3440a": {
+  "same": 0,
+  "differ": 2,
+  "firstDiff": "bench"
+ },
+ "currentVsR4_changedLines": {
+  "onlyCurrent": [
+   "KIND (one entry per PERSON line that shows it, whatever the OUTCOME; one line can show two kinds):",
+   "- objection: PERSON gives a reason against, complains or raises a concern. Every complaining PERSON line is an objection, even when the PERSON agrees later: then list both, the objection and the commitment."
+  ],
+  "onlyR4": [
+   "KIND (one entry per line that shows it):",
+   "- objection: PERSON gives a reason against, or a complaint"
+  ]
+ },
+ "noOutcomeRulesVsR4": {
+  "onlyR4": [
+   "OUTCOME shapes: PERSON line -> the VALUE that names it (when one does):",
+   "- agrees -> agreeing VALUE",
+   "- refuses, not interested -> refusing VALUE",
+   "- is not the person called (relative, colleague, wrong number) -> wrong-person VALUE; never null",
+   "- complains AND asks for a human, person or manager -> needs-human VALUE; never null",
+   "- asks never to be called again -> refusing VALUE; never the call-later VALUE (an opt-out is not a callback)",
+   "- asks to be called at another time -> call-later VALUE",
+   "- null: no shape above; or cannot follow the language; or hangs up before the question; or distress, crisis (distress is not asking for a human)"
+  ],
+  "onlyNoRules": []
+ },
+ "chars": {
+  "current": 2817,
+  "r4-table": 2611,
+  "r3-stance": 2362,
+  "no-outcome-rules": 1976
+ }
+}

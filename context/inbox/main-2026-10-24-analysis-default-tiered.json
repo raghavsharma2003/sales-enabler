@@ -1,0 +1,25 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.analysis-default-tiered",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "Per-call analysis defaults to tiered (gpt-4.1-mini first, escalating to gpt-4.1 at threshold 0.6, never escalating on engine-decided codes); mini single and gpt-4.1 stay selectable",
+      "rationale": "Over three rounds on the same 42 TEST calls (two passes each), tiered scored 41, 41, 42, 42, 42, 42, and mini single 38, 36, 42, 41, 38, 39: 250/252 vs 234/252. Tiered was never worse than mini on any call in any round, and it held steady through three prompt revisions that moved mini by up to 4 calls each way. Mini's swings come from its own false nulls (wrong-person and complaint calls), which tiered catches by escalating 0-5% of calls. Cost: about Rs 0.078-0.095 per 3-minute call against mini's Rs 0.073, inside the Rs 0.17 analysis budget. The letter of the old reverse_if (more than 4/42 in one round) was not met; this decision rests on robustness across rounds, which the old rule did not measure.",
+      "reverse_if": "Tiered's measured cost exceeds Rs 0.17 per 3-minute call, or a mini-single contract matches tiered on outcome (within 1/42 on the mean of two TEST passes) in two consecutive rounds with no moment or objection loss."
+    }
+  ],
+  "edges": [
+    {"from": "decision.2026-10-24.analysis-default-tiered", "to": "decision.2026-10-23.analysis-default-mini-single", "relation": "supersedes"},
+    {"from": "decision.2026-10-24.analysis-default-tiered", "to": "measure.2026-10-23.analysis-bench-r3-tiered", "relation": "derived-from"}
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-analysis-r5-and-tiered-default",
+      "details": "Bench r5 on ab5dade (Rs 40.10): 2cdf64b fixes the objection regression (mini-first objection recall 43/51 -> 51/51, p=0.0078; all 5 round-4 loss calls back in every run), but mini single's outcome fell to 38 and 39/42 (false nulls on complaint and wrong-person calls again; DEV and TEST pooled 125/126 -> 117/126, p=0.0078). Tiered 42/42 on both passes, gpt-4.1 42/42. Decided: decision.2026-10-24.analysis-default-tiered supersedes decision.2026-10-23.analysis-default-mini-single, on robustness across three rounds. Routed to calls: make tiered the product default; keep the objection line and remove the false nulls, with two DEV passes per arm before TEST."
+    }
+  ]
+}
