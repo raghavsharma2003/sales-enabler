@@ -91,7 +91,11 @@ export function registerActivity(r: Registry) {
         const name = names.get(`${s.type}:${s.id}`);
         return { type: s.type, id: s.id, name: name ?? null };
       };
+      const scimIds = page.map(r => r.actor_id).filter((x): x is string => !!x && x.startsWith('scim:')).map(x => x.slice(5));
+      const scim = new Map((await many<{ id: string; name: string }>(ctx.q, 'SELECT id, name FROM scim_token WHERE workspace_id = $1 AND id = ANY($2::uuid[])', [ctx.workspaceId, scimIds])).map(k => [k.id, k.name]));
       const who = (r: Row) => r.actor_id?.startsWith('key:') ? `The API key "${keys.get(r.actor_id.slice(4)) ?? 'unknown'}"`
+        : r.actor_id?.startsWith('scim:') ? `The provisioning token "${scim.get(r.actor_id.slice(5)) ?? 'unknown'}"`
+        : r.actor_id === 'sso' ? 'Single sign-on'
         : r.actor_type === 'member' ? (members.get(r.actor_id ?? '') ?? 'A teammate')
         : r.actor_type === 'agent' ? 'An agent' : r.actor_type === 'vp_success' ? 'The Vyakti team' : 'Vyakti';
       const items = page.map(r => {

@@ -40,6 +40,13 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'member.role.set': { ask: 'Change a teammate\'s role', done: 'Role changed' },
   'apikey.create': { ask: 'Create an API key', done: 'API key created' },
   'apikey.revoke': { ask: 'Revoke an API key', done: 'API key revoked' },
+  'apikey.rotate': { ask: 'Rotate an API key', done: 'API key rotated' },
+  'sso.config.set': { ask: 'Change the single sign-on settings', done: 'Single sign-on settings saved' },
+  'sso.required.set': { ask: 'Change whether single sign-on is required', done: 'Single sign-on requirement changed' },
+  'scim.token.create': { ask: 'Create a provisioning token', done: 'Provisioning token created' },
+  'scim.token.rotate': { ask: 'Rotate a provisioning token', done: 'Provisioning token rotated' },
+  'scim.token.revoke': { ask: 'Revoke a provisioning token', done: 'Provisioning token revoked' },
+  'audit.export': { ask: 'Export the activity ledger', done: 'Activity ledger exported' },
   'memory.policy.set': { ask: 'Change what is remembered', done: 'Memory setting changed' },
   'dpdp.request.execute': { ask: 'Carry out a data request', done: 'Data request carried out' },
   'fact.forget': { ask: 'Forget a remembered fact', done: 'Fact forgotten' },
@@ -63,11 +70,17 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
 export const toolAsk = (tool: string, fallback: string) => TOOL_LABEL[tool]?.ask ?? fallback;
 export const toolDone = (tool: string, fallback: string) => TOOL_LABEL[tool]?.done ?? fallback;
 
-const FIELD: Record<string, string> = { inrMilli: 'Amount', capInrMilli: 'Spend cap', e164: 'Phone number', phone: 'Phone number', name: 'Name', email: 'Email', role: 'Role', level: 'Level', note: 'Note', title: 'Title', text: 'Text', brain: 'Brain', enabled: 'Switched on', stackId: 'Voice stack', scope: 'Scope', evidence: 'Where it came from', requestedBy: 'Asked by', suppress: 'Keep the number suppressed', window: 'Calling window', days: 'Days', ranges: 'Hours', start: 'From', end: 'To', concurrency: 'Calls at once', category: 'Kind of call', audienceName: 'Audience name', consentPurpose: 'Consent recorded for', scopes: 'Access', undoMinutes: 'Undo window (minutes)' };
+const FIELD: Record<string, string> = { inrMilli: 'Amount', capInrMilli: 'Spend cap', e164: 'Phone number', phone: 'Phone number', name: 'Name', email: 'Email', role: 'Role', level: 'Level', note: 'Note', title: 'Title', text: 'Text', brain: 'Brain', enabled: 'Switched on', stackId: 'Voice stack', scope: 'Scope', evidence: 'Where it came from', requestedBy: 'Asked by', suppress: 'Keep the number suppressed', window: 'Calling window', days: 'Days', ranges: 'Hours', start: 'From', end: 'To', concurrency: 'Calls at once', category: 'Kind of call', audienceName: 'Audience name', consentPurpose: 'Consent recorded for', scopes: 'Access', undoMinutes: 'Undo window (minutes)',
+  issuer: 'Identity provider address', clientId: 'Client ID', allowedDomains: 'Allowed email domains', defaultRole: 'Role for new people', emailVerified: 'Email verification', required: 'Required for everyone',
+  format: 'Format', from: 'First day', to: 'Last day', actionPrefix: 'Only actions starting with', privilegedOnly: 'Privileged actions only' };
 /** Short enum values an approval card shows, in words. */
 const ENUM_WORDS: Record<string, Record<string, string>> = {
   scope: { workspace: 'Whole workspace', campaign: 'One campaign', api_key: 'One API key' },
   period: { daily: 'Per day', monthly: 'Per month', total: 'In total' },
+  scopes: { 'members:read': 'List people', 'members:write': 'Add and deactivate people', 'roles:write': 'Change roles' },
+  format: { csv: 'CSV', jsonl: 'JSONL (one record per line)' },
+  defaultRole: { builder: 'Builder', operator: 'Operator', compliance: 'Compliance', viewer: 'Viewer' },
+  emailVerified: { required: 'Required', not_required: 'Not required' },
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const words = (k: string) => { const w = k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_.]+/g, ' ').toLowerCase(); return w.charAt(0).toUpperCase() + w.slice(1); };
@@ -82,10 +95,11 @@ export function fieldValue(path: string, v: unknown): string | null {
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
   if (typeof v === 'string' && /^\+?\d{10,13}$/.test(v.replace(/[\s-]/g, ''))) return fmtPhone(v.replace(/[\s-]/g, ''));
   if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return new Date(v + 'T00:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
   if (typeof v === 'string' && ENUM_WORDS[last]?.[v]) return ENUM_WORDS[last][v];
   if (typeof v === 'string') return v;
   if (typeof v === 'number') return String(v);
-  if (Array.isArray(v)) return v.map(x => (typeof x === 'object' && x ? Object.entries(x as object).map(([k, y]) => `${fieldLabel(k)} ${fieldValue(k, y) ?? ''}`.trim()).join(', ') : String(x))).join('; ');
+  if (Array.isArray(v)) return v.map(x => (typeof x === 'string' && ENUM_WORDS[last]?.[x] ? ENUM_WORDS[last][x] : typeof x === 'object' && x ? Object.entries(x as object).map(([k, y]) => `${fieldLabel(k)} ${fieldValue(k, y) ?? ''}`.trim()).join(', ') : String(x))).join('; ');
   if (typeof v === 'object') return Object.entries(v as object).map(([k, y]) => `${fieldLabel(k)}: ${fieldValue(k, y) ?? ''}`).join(' · ');
   return String(v);
 }
@@ -147,7 +161,11 @@ export const RULE_LABEL: Record<string, string> = {
 export const PAST: Record<string, string> = {
   'a2p.declaration.export': 'exported the A2P declaration pack', 'action.undo': 'undid a recent change', 'activity.list': 'looked at the activity ledger',
   'analysis.model.set': 'changed the call analysis model', 'analysis.settings.get': 'looked at the call analysis settings', 'agent.create': 'created an agent', 'agent.get': 'opened an agent', 'agent.config.schema': 'looked up the fields an agent can have', 'agent.list': 'looked at the agents',
-  'apikey.create': 'created an API key', 'apikey.list': 'looked at the API keys', 'apikey.revoke': 'revoked an API key',
+  'apikey.create': 'created an API key', 'apikey.list': 'looked at the API keys', 'apikey.revoke': 'revoked an API key', 'apikey.rotate': 'rotated an API key',
+  'audit.export': 'exported the activity ledger', 'audit.export.list': 'looked at the activity ledger exports', 'audit.export.verify': 'checked an activity ledger export',
+  'scim.token.create': 'created a provisioning token', 'scim.token.list': 'looked at the provisioning tokens', 'scim.token.revoke': 'revoked a provisioning token',
+  'scim.token.rotate': 'rotated a provisioning token', 'sso.config.get': 'looked at the single sign-on settings', 'sso.config.set': 'changed the single sign-on settings',
+  'sso.required.set': 'changed whether single sign-on is required', 'sso.secret.stage': 'handed over a single sign-on client secret', 'sso.test': 'tested the single sign-on connection',
   'attempt.list': 'looked at call attempts', 'attempt.retry_per_ladder': 'scheduled another call attempt',
   'audience.create': 'saved an audience', 'audience.get': 'opened an audience', 'audience.list': 'looked at the audiences', 'audience.preview': 'previewed who an audience reaches',
   'brand.cnap_name.set': 'set the name that shows on the phone of the people called', 'brand.get': 'looked at the brand details', 'brand.update': 'changed the brand details',

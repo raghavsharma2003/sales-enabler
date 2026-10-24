@@ -7,6 +7,9 @@ import { one, tx } from '../../db.ts';
 import { obj, opt, str } from '../../../shared/validate.ts';
 import { registerActivity } from './activity.ts';
 import { registerApiKeys } from './apikeys.ts';
+import { auditExportRoutes, auditRetentionJob, registerAuditExport } from './audit-export.ts';
+import { registerScim, scimRoutes } from './scim.ts';
+import { registerSso, ssoRoutes } from './sso.ts';
 import { registerBrand, brandView, primaryBrand } from './brand.ts';
 import { registerIntegrations } from './integrations.ts';
 import { registerKnowledge } from './knowledge.ts';
@@ -61,7 +64,12 @@ export const module: Module = {
     registerUndo(registry);
     registerSearch(registry);
     registerShare(registry);
+    registerSso(registry);
+    registerScim(registry);
+    registerAuditExport(registry);
   },
+
+  jobs: () => [auditRetentionJob],
 
   routes(router, { pool, registry, auth }) {
     // The invitee has no account yet: the invite token is the credential. They set a name and password and are signed in.
@@ -72,6 +80,10 @@ export const module: Module = {
       try {
         const out = await tx(pool, async c => {
           const m = await acceptInvite(c, b.token, b.name, b.password);
+          // A password made here would be a way around "SSO required": the invitee signs in with SSO instead, which links them.
+          if (await one(c, 'SELECT 1 FROM sso_config WHERE workspace_id = $1 AND sso_required AND enabled', [m.workspaceId])) {
+            throw new HttpError(403, 'sso_required', 'this workspace signs in with single sign-on; use "Sign in with SSO" with this email address');
+          }
           await appendAudit(c, { workspaceId: m.workspaceId, actorType: 'member', actorId: m.memberId, action: 'member.accept_invite', objectType: 'member', objectId: m.memberId });
           return { ...m, s: await createSession(c, m.memberId) };
         });
@@ -104,6 +116,10 @@ export const module: Module = {
       if (!v) throw new HttpError(404, 'not_found', 'this link is not valid or has expired');
       return { body: v, headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } };
     });
+
+    ssoRoutes(router, pool);
+    scimRoutes(router, pool);
+    auditExportRoutes(router, pool, auth);
 
     // Send queued webhooks every few seconds while the server runs. unref() so it never holds a process open.
     if (process.env.NODE_ENV !== 'test') {

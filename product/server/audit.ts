@@ -38,13 +38,15 @@ export async function appendAudit(q: Queryable, a: AuditInput): Promise<string> 
   return hash;
 }
 
-/** Re-walk a workspace's chain; returns the first broken row id, or null if intact. */
+/** Re-walk a workspace's chain; returns the first broken row id, or null if intact. When retention has purged the
+ *  oldest rows, the walk starts from audit_anchor.last_hash: the hash of the last purged row (workspace module, 1010). */
 export async function verifyAudit(q: Queryable, workspaceId: string): Promise<string | null> {
+  const anchor = await q.query('SELECT last_hash FROM audit_anchor WHERE workspace_id = $1', [workspaceId]);
   const r = await q.query(
     'SELECT id, actor_type, actor_id, action, object_type, object_id, args_hash, payload, prev_hash, hash FROM audit_event WHERE workspace_id = $1 ORDER BY created_at, id',
     [workspaceId],
   );
-  let prev: string | null = null;
+  let prev: string | null = anchor.rows[0]?.last_hash ?? null;
   for (const row of r.rows) {
     const expect = rowHash(prev, {
       workspaceId, actorType: row.actor_type, actorId: row.actor_id ?? undefined, action: row.action,

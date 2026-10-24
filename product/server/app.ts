@@ -121,13 +121,24 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
     const acct = 'login-fail:' + b.email.toLowerCase();
     if (throttled(acct, LOGIN_FAILS_PER_ACCOUNT)) throw new HttpError(429, 'slow_down', 'too many sign-in attempts; try again in a few minutes');
     throttle('login-ip:' + (req.ip ?? 'local'), LOGIN_PER_IP);
-    const m = await one<{ id: string; password_hash: string | null }>(pool, "SELECT id, password_hash FROM member WHERE lower(email) = lower($1) AND status = 'active' LIMIT 1", [b.email]);
+    const m = await one<{ id: string; password_hash: string | null; role: string }>(pool, "SELECT id, password_hash, role FROM member WHERE lower(email) = lower($1) AND status = 'active' LIMIT 1", [b.email]);
     if (!(await checkPassword(b.password, m?.password_hash ?? null)) || !m) {
       count(acct);
       throw new HttpError(401, 'unauthorised', 'that email and password do not match');
     }
-    const s = await createSession(pool, m.id);
-    return { body: { memberId: m.id }, headers: { 'set-cookie': sessionCookie(s.token, s.expiresAt) } };
+    // "SSO required" (workspace module, sso_config) turns password sign-in off for everyone but one break-glass owner,
+    // checked only after the password matched so the answer reveals nothing to a guesser. A break-glass sign-in is audited.
+    const sso = await one<{ break_glass_member_id: string | null; workspace_id: string }>(pool,
+      'SELECT c.break_glass_member_id, c.workspace_id FROM sso_config c JOIN member m ON m.workspace_id = c.workspace_id WHERE m.id = $1 AND c.sso_required AND c.enabled', [m.id]);
+    if (sso && (sso.break_glass_member_id !== m.id || m.role !== 'owner')) throw new HttpError(403, 'sso_required', 'this workspace signs in with single sign-on; use "Sign in with SSO"');
+    const s = sso
+      ? await tx(pool, async c => {
+          await appendAudit(c, { workspaceId: sso.workspace_id, actorType: 'member', actorId: m.id, action: 'auth.break_glass_login', objectType: 'member', objectId: m.id,
+            payload: { subject: { type: 'member', id: m.id }, ip: req.ip ?? null } });
+          return createSession(c, m.id, 'break_glass');
+        })
+      : await createSession(pool, m.id);
+    return { body: { memberId: m.id, ...(sso ? { breakGlass: true } : {}) }, headers: { 'set-cookie': sessionCookie(s.token, s.expiresAt) } };
   });
 
   router.add('POST', '/v1/logout', async req => {

@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-24.enterprise-identity",
+      "type": "component",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Enterprise identity and audit in the workspace module: OIDC single sign-on (Entra ID, Okta, Google Workspace), SSO required with a break-glass owner, SCIM-lite provisioning tokens, signed audit export with retention, and Settings > Security in the web app.",
+      "path": "product/server/modules/workspace/{oidc,sso,scim,audit-export}.ts; product/db/migrations/1010_workspace_identity.sql; product/web/src/pages/security.tsx; product/tests/workspace-identity.test.ts"
+    },
+    {
+      "id": "decision.2026-10-24.sso-oidc-in-house-verifier",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "OIDC relying party written on node:crypto (no openid-client/jose): alg allowlist RS256/PS256/ES256 checked before any key lookup (none and every HMAC alg refused), kid must be published (JWKS cached 1 h, one refetch per 30 s on an unknown kid), then iss exact, aud contains the client and azp if present equals it, exp/iat/nbf with 60 s skew, nonce exact. Outbound requests pinned to a vetted public address, no redirects, 256 KB cap.",
+      "rationale": "ARCHITECTURE.md: reuse installed deps, no new packages. The surface is small (three algs, one flow) and every check has a failing test against an in-process fake IdP.",
+      "reverse_if": "A real IdP tenant (Entra, Okta, Google) fails on a token the verifier should accept (e.g. a needed alg or claim shape), or a security review finds a verifier gap a maintained library would have closed; then adopt jose behind the same verifyIdToken signature."
+    },
+    {
+      "id": "decision.2026-10-24.sso-identity-is-issuer-sub",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "An SSO person is (issuer, sub), never the email. The email must be in an allowed domain on every sign-in; it links an existing member of the same workspace only when email_verified is true (or the admin set email-verified to not required for an IdP that never sends it); a linked member cannot be re-linked to another sub; an email already in another workspace is refused; JIT members get the admin's default role, which can never be owner; deactivated members stay out.",
+      "rationale": "Linking by an unverified email claim is the nOAuth account-takeover pattern; the sub is stable per IdP.",
+      "reverse_if": "Buyers' IdPs commonly rotate sub for the same person (e.g. tenant migrations) so people lose their membership; then add an admin-run re-link, never automatic email matching."
+    },
+    {
+      "id": "decision.2026-10-24.sso-required-break-glass",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "SSO required (A2 policy, owner) needs exactly one active owner with a password as break glass. The kernel /v1/login refuses everyone else with 403 sso_required, checked only after the password matched (no account enumeration) and re-checking the break-glass member is still an owner; break-glass sign-ins are audited (auth.break_glass_login) with session method break_glass. Turning it on ends every other password session; invites cannot set a password while it is on; SSO cannot be switched off while it is required.",
+      "rationale": "An IdP outage must not lock an enterprise out, and the one way around SSO must be visible in the ledger.",
+      "reverse_if": "Buyers' security teams ask for two break-glass owners or a time-boxed break-glass (common in SOC 2 reviews); then allow a small list with per-use alerts."
+    },
+    {
+      "id": "decision.2026-10-24.sso-domain-first-come",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "An email domain routes SSO discovery to one workspace (sso_domain primary key), claimed first come; a second workspace claiming it is refused with a pointer to support. No DNS proof yet.",
+      "rationale": "Without a unique claim, /v1/sso/discover could send a company's people to another workspace's IdP. JIT already cannot take over members of another workspace (email uniqueness).",
+      "reverse_if": "A squatting complaint, or any self-serve signup at scale: replace with DNS TXT verification (open.2026-10-24.sso-domain-verification)."
+    },
+    {
+      "id": "decision.2026-10-24.scim-lite-shape",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "SCIM-lite is plain JSON on /v1/scim/members (list, create, PATCH active/role) with vps_ tokens separate from API keys (neither can do the other's job). Scopes members:read, members:write, roles:write. Create/rotate/revoke are A2 owner actions with reveal-once; rotation replaces the secret in place and the old one stops at once. Owners are out of reach of provisioning. Deactivation sets disabled, clears password and pending reveals, and deletes sessions in one transaction.",
+      "rationale": "Covers what an IdP or script needs for joiner/mover/leaver now without the SCIM 2.0 schema surface.",
+      "reverse_if": "A buyer's IdP can only push standard SCIM 2.0 (Entra and Okta provisioning apps require it): build open.2026-10-24.scim2-compat."
+    },
+    {
+      "id": "decision.2026-10-24.audit-export-signed-a2",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "audit.export is an A2 policy action proposed and approved by owner or compliance; CSV (RFC 4180, cells starting = + - @ tab CR get an apostrophe) or JSON lines; date range (bare dates are India days), actionPrefix, actorId, privilegedOnly; at most 366 days and 200k rows. Signed by sha256 of the exact bytes plus HMAC(export id, workspace, sha256) under a key derived from VP_SECRET_KEY (audit.export.verify). Each row carries hash and prev_hash so the chain re-walks inside the file. The file is held 24 h; every download is audited.",
+      "rationale": "The export itself is privileged data leaving the system, so it needs the same approval and ledger trail as any other policy action.",
+      "reverse_if": "Buyers need exports a third party can verify without asking Vyakti (an asymmetric signature or a timestamping authority), or need scheduled exports to their SIEM: add a published signing key or a push integration."
+    },
+    {
+      "id": "decision.2026-10-24.audit-retention-floor-anchor",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "The audit ledger is purged nightly past max(policy audit_logs_days, 90 days); the hash of the last purged row goes to audit_anchor and the kernel verifyAudit starts from it, so the chain still verifies and tampering after a purge is still caught. The purge itself is a ledger row (audit.retention.applied). Exports never include rows past retention.",
+      "rationale": "Retention must apply to the ledger too (DPDP minimisation), but a 1-day policy must not be a way to erase the trail of a privileged action.",
+      "reverse_if": "A buyer contract or regulator requires a longer floor (RBI/IRDAI-regulated buyers often hold 5+ years) or legal hold: raise the floor per plan or add a hold flag."
+    },
+    {
+      "id": "rejected.2026-10-24.audit-purge-js-date-bound",
+      "type": "rejection",
+      "status": "confirmed",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Audit retention purge bounded the DELETE with the last old row's created_at read into a JS Date.",
+      "tried": "SELECT the newest row past retention, then DELETE WHERE (created_at, id) <= ($date, $id).",
+      "broke": "A JS Date keeps milliseconds and created_at keeps microseconds, so the bound row itself survived (2 of 3 purged) while the anchor pointed at its hash: the chain would have failed to verify. Caught by the retention test; fixed by comparing against a subquery on the row id inside Postgres."
+    },
+    {
+      "id": "open.2026-10-24.saml-sso",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "SAML 2.0 sign-in is not built (owner brief: not in scope now). What it would take: SP metadata per workspace (entity id, ACS URL, our signing cert), IdP metadata import (entity id, SSO URL, signing certs with rotation), an XML-DSig verifier hardened against signature wrapping (verify the exact assertion that is consumed, canonicalisation, reject comments-in-NameID tricks, require signed assertions, check Audience, Recipient, NotOnOrAfter, InResponseTo against a stored request id, one-time assertion ids), XXE-safe parsing, and a maintained library (no XML-DSig by hand). Same JIT, domain and SSO-required rules as OIDC. Estimate 3-5 builder days plus a review.",
+      "closes_when": "A buyer whose IdP cannot do OIDC (some ADFS or legacy setups) asks for it, and SAML is then built and tested against a fake IdP and one real tenant; or the owner rules it out."
+    },
+    {
+      "id": "open.2026-10-24.sso-domain-verification",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "SSO email domains are claimed first come with no proof of ownership (decision.2026-10-24.sso-domain-first-come). Should a claim need a DNS TXT record before discovery routes to it?",
+      "closes_when": "DNS TXT verification is built and tested (claim pending until the record resolves), or the owner accepts support-handled disputes for v1."
+    },
+    {
+      "id": "open.2026-10-24.scim2-compat",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "Entra ID and Okta provisioning apps speak SCIM 2.0 (/Users with schemas, filter eq, PATCH Operations), not SCIM-lite. Do the first enterprise buyers need their IdP to push directly?",
+      "closes_when": "A buyer's IT team says whether they provision from the IdP (then SCIM 2.0 /Users is built over the same member rules and tested with the Entra SCIM validator) or from a script (SCIM-lite is enough)."
+    },
+    {
+      "id": "open.2026-10-24.sso-real-idp-check",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "SSO is verified only against an in-process fake IdP. Not verified: a real Entra ID, Okta or Google Workspace tenant (claim shapes such as Entra's missing email_verified, key rotation, Google's azp, Okta custom authorization servers).",
+      "closes_when": "One sign-in each through a free developer tenant of Entra ID, Okta and Google Workspace, from a deployed VP with VP_PUBLIC_URL set, is recorded as a measure node."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.sso-oidc-in-house-verifier", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
+    { "from": "decision.2026-10-24.sso-identity-is-issuer-sub", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
+    { "from": "decision.2026-10-24.sso-required-break-glass", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
+    { "from": "decision.2026-10-24.sso-domain-first-come", "to": "open.2026-10-24.sso-domain-verification", "relation": "leaves-open" },
+    { "from": "decision.2026-10-24.scim-lite-shape", "to": "open.2026-10-24.scim2-compat", "relation": "leaves-open" },
+    { "from": "decision.2026-10-24.audit-export-signed-a2", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
+    { "from": "decision.2026-10-24.audit-retention-floor-anchor", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
+    { "from": "rejected.2026-10-24.audit-purge-js-date-bound", "to": "decision.2026-10-24.audit-retention-floor-anchor", "relation": "informs" },
+    { "from": "component.2026-10-24.enterprise-identity", "to": "open.2026-10-24.saml-sso", "relation": "leaves-open" },
+    { "from": "component.2026-10-24.enterprise-identity", "to": "open.2026-10-24.sso-real-idp-check", "relation": "leaves-open" },
+    { "from": "component.2026-10-24.enterprise-identity", "to": "directive.2026-10-22.enterprise-english-ui", "relation": "implements" }
+  ],
+  "events": []
+}

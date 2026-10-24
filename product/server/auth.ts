@@ -43,10 +43,11 @@ export async function checkPassword(pw: string, stored: string | null): Promise<
   return want.length === key.length && timingSafeEqual(want, key);
 }
 
-export async function createSession(q: Queryable, memberId: string): Promise<{ token: string; expiresAt: Date }> {
+/** `method` records how the session began, so turning on "SSO required" can end the password sessions it no longer allows. */
+export async function createSession(q: Queryable, memberId: string, method: 'password' | 'sso' | 'break_glass' = 'password'): Promise<{ token: string; expiresAt: Date }> {
   const token = randomBytes(32).toString('base64url');
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  await q.query('INSERT INTO session (member_id, token_hash, expires_at) VALUES ($1,$2,$3)', [memberId, sha(token), expiresAt]);
+  await q.query('INSERT INTO session (member_id, token_hash, expires_at, method) VALUES ($1,$2,$3,$4)', [memberId, sha(token), expiresAt, method]);
   return { token, expiresAt };
 }
 

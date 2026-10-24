@@ -44,6 +44,26 @@ export function registerApiKeys(r: Registry) {
   }));
 
   r.register(tool(obj({ id: uuid() }), {
+    name: 'apikey.rotate', risk: 'policy', summary: 'Replace an API key with a new secret (same name, scopes and cap); the old one stops working at once',
+    describe: async (i, ctx) => `Rotate the API key ${await label(ctx, 'api_key', i.id)}; the old secret stops working at once`,
+    version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT name || '|' || prefix || '|' || (revoked_at IS NOT NULL)::text AS v FROM api_key WHERE id = $1 AND workspace_id = $2", [i.id, ctx.workspaceId]))?.v ?? null,
+    run: async (ctx, i) => {
+      const old = await one<{ name: string; scopes: string[]; daily_cap_inr_milli: string; expires_at: Date | null; revoked_at: Date | null }>(ctx.q,
+        'SELECT name, scopes, daily_cap_inr_milli, expires_at, revoked_at FROM api_key WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.id, ctx.workspaceId]);
+      if (!old) throw new Error('no such API key in this workspace');
+      if (old.revoked_at) throw new Error('that key was revoked; create a new one');
+      const k = newApiKey();
+      const row = await one<{ id: string }>(ctx.q,
+        'INSERT INTO api_key (workspace_id, name, prefix, hash, scopes, daily_cap_inr_milli, expires_at) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+        [ctx.workspaceId, old.name, k.prefix, k.hash, old.scopes, old.daily_cap_inr_milli, old.expires_at]);
+      await ctx.q.query("INSERT INTO budget (workspace_id, scope_type, scope_id, period, cap_inr_milli) VALUES ($1,'api_key',$2,'daily',$3)", [ctx.workspaceId, row!.id, old.daily_cap_inr_milli]);
+      await ctx.q.query('UPDATE api_key SET revoked_at = now() WHERE id = $1 AND workspace_id = $2', [i.id, ctx.workspaceId]);
+      const revealId = await holdForReveal(ctx, { token: k.token }, `API key ${old.name}`);
+      return { id: row!.id, replaced: i.id, name: old.name, prefix: k.prefix, revealId };
+    },
+  }));
+
+  r.register(tool(obj({ id: uuid() }), {
     name: 'apikey.revoke', risk: 'external', summary: 'Revoke an API key so it stops working at once',
     describe: async (i, ctx) => `Revoke the API key ${await label(ctx, 'api_key', i.id)}; anything using it stops working at once`,
     version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT name || '|' || prefix || '|' || (revoked_at IS NOT NULL)::text AS v FROM api_key WHERE id = $1 AND workspace_id = $2", [i.id, ctx.workspaceId]))?.v ?? null,

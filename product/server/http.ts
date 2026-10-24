@@ -44,7 +44,7 @@ export function clientIp(peer: string | undefined, xff: string | string[] | unde
 }
 
 export interface Res {
-  status?: number; body?: unknown; headers?: Record<string, string>; raw?: Buffer | string;
+  status?: number; body?: unknown; headers?: Record<string, string | string[]>; raw?: Buffer | string;
   /** Stream the body (e.g. Server-Sent Events). write() flushes a chunk; the response ends when the promise settles.
    *  `closed` aborts when the client goes away. */
   stream?: (write: (chunk: string) => void, closed: AbortSignal) => Promise<void>;
@@ -107,7 +107,7 @@ export class Router {
 
   async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = new URL(req.url ?? '/', 'http://local');
-    const send = (status: number, body: unknown, headers: Record<string, string> = {}) => {
+    const send = (status: number, body: unknown, headers: Record<string, string | string[]> = {}) => {
       res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', ...headers });
       res.end(JSON.stringify(body));
     };
