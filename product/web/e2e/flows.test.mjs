@@ -1248,33 +1248,48 @@ test('Keyboard only: create an agent from a template, start a test call, import 
 // ---- Stack voice samples (R13): the manifest the lab VM drops into web/public/samples/, served from dist/samples/ ----
 test('Voice samples: a stack with a sample plays it with one labelled control and says what she says; others say none is recorded', async () => {
   const dir = path.join(process.cwd(), 'product/web/dist/samples'), manifest = path.join(dir, 'manifest.json');
-  const shipped = fs.readFileSync(manifest, 'utf8');
-  // The shipped manifest holds only real renders from the lab VM (research/2026-10-24/samples): every entry names a file
-  // that is in the build, a short duration and the line she says.
+  const shipped = fs.readFileSync(manifest, 'utf8');   // whatever the product ships is put back afterwards
+  // The shipped manifest holds only real renders from the lab VM (research/2026-10-24/samples): every entry names files
+  // ("files" with several renditions, or one "file") that are in the build, a short duration and the line she says.
   for (const [sid, e] of Object.entries(JSON.parse(shipped))) {
-    assert.ok(e.file && fs.existsSync(path.join(dir, e.file)), `${sid}: ${e.file} is in the build`);
+    const files = Array.isArray(e.files) ? e.files.map(f => String(f.src ?? f.file ?? '').replace(/^\/samples\//, '')) : [e.file];
+    assert.ok(files.length && files.every(f => f && fs.existsSync(path.join(dir, f))), `${sid}: ${files.join(', ')} in the build`);
     assert.ok(e.durationS > 0 && e.durationS <= 12, `${sid}: ${e.durationS} s`);
     assert.ok(typeof e.text === 'string' && e.text.length > 0, `${sid}: the line she says`);
   }
   const id = await riyaId();
   const stackId = (await pool.query("SELECT draft->'voice'->>'stackId' AS s FROM agent WHERE id = $1", [id])).rows[0].s || 'v2-flashlite';
-  // A fixture in the untracked build folder: 2 s of a quiet tone, and its manifest entry.
+  // A fixture in the untracked build folder: 2 s of a quiet tone. Its entry lists a rendition no browser plays first, so the
+  // player must fall through to the second, as Safari does from Ogg to AAC.
   const rate = 8000, n = rate * 2, wav = Buffer.alloc(44 + n * 2);
   wav.write('RIFF', 0); wav.writeUInt32LE(36 + n * 2, 4); wav.write('WAVEfmt ', 8); wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(rate, 24); wav.writeUInt32LE(rate * 2, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(n * 2, 40);
   for (let i = 0; i < n; i++) wav.writeInt16LE(Math.round(800 * Math.sin(2 * Math.PI * 220 * i / rate)), 44 + i * 2);
   fs.writeFileSync(path.join(dir, 'e2e-fixture.wav'), wav);
-  fs.writeFileSync(manifest, JSON.stringify({ [stackId]: { file: 'e2e-fixture.wav', durationS: 2, text: 'Namaste, main Riya bol rahi hoon. Yeh ek sample hai.', recorded: '2026-10-24' } }));
+  const entry = { files: [{ src: 'e2e-missing.ogg', type: 'audio/x-unplayable' }, { src: 'e2e-fixture.wav', type: 'audio/wav' }], durationS: 2, text: 'Namaste, main Riya bol rahi hoon. Yeh ek sample hai.', recordedAt: '2026-10-24T10:00:00Z' };
+  fs.writeFileSync(manifest, JSON.stringify({ [stackId]: entry }));
   try {
     await page.goto(`${BASE}/agents/${id}?tab=voice`);
     const card = page.locator('.stackcard').filter({ has: page.locator('.sample') }).first();
     const play = card.getByRole('button', { name: /^Play the sample of .*, 2 seconds$/ });
     await play.waitFor({ timeout: 10000 });
     assert.equal(await play.getAttribute('aria-pressed'), 'false');
+    assert.equal(await card.locator('audio source').count(), 2, 'one <source> per rendition');
     await play.click();
     await card.getByRole('button', { name: /^Pause the sample of / }).waitFor({ timeout: 5000 });
+    assert.match(await card.locator('audio').evaluate(a => a.currentSrc), /e2e-fixture\.wav/, 'the playable rendition was chosen');
     await card.getByRole('button', { name: /^Play the sample of / }).waitFor({ timeout: 8000 });   // it ends by itself
     await card.getByText('What she says').click();
     await card.getByText('Yeh ek sample hai.', { exact: false }).waitFor();
     assert.ok(await page.locator('.stackcard').filter({ hasText: 'No sample recorded yet' }).count() > 0, 'stacks with no entry still say so');
+    // A browser that can play none of the renditions says so, instead of a button that does nothing.
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, storageState: await ctx.storageState() });
+    await c.addInitScript(() => { HTMLMediaElement.prototype.canPlayType = () => ''; });
+    const p = await c.newPage();
+    try {
+      await p.goto(`${BASE}/agents/${id}?tab=voice`);
+      const card2 = p.locator('.stackcard').filter({ has: p.locator('.sample') }).first();
+      await card2.getByText("This browser can't play the sample").waitFor({ timeout: 10000 });
+      assert.equal(await card2.getByRole('button', { name: /^Play the sample of / }).count(), 0);
+    } finally { await c.close(); }
   } finally { fs.writeFileSync(manifest, shipped); fs.rmSync(path.join(dir, 'e2e-fixture.wav'), { force: true }); }
 });

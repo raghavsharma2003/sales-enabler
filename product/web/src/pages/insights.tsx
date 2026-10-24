@@ -42,6 +42,8 @@ function waitingText(e: ExperimentRow): string {
   return 'Ready to start. Before any caller hears the change, Vyakti checks on past calls that results are recorded evenly.';
 }
 interface MonitorInfo { monitors: { id: string; name: string; last_read_at?: string | null; config?: unknown }[]; defaults: { name: string; config: { signal: string; threshold: number; windowCalls: number; minCalls: number; severity: string; category: string } }[] }
+/** issue.detail.adoptedChange, written by learning when a change for this issue is adopted (detail is untyped JSON). */
+const adoptedOf = (d: unknown) => (d && typeof d === 'object' ? (d as { adoptedChange?: { at?: string; change?: string } }).adoptedChange : undefined);
 const detailText = (d: unknown): string => (typeof d === 'string' ? d : d && typeof d === 'object' ? ((d as any).message ?? (d as any).summary ?? (d as any).reason ?? JSON.stringify(d)) : '');
 
 export default function Insights() {
@@ -75,7 +77,7 @@ export default function Insights() {
             {d => <ul className="issues">{d.issues.map(i => (
               <li key={i.id}><div className="row"><Chip tone={i.severity === 'critical' ? 'brick' : i.severity === 'warning' ? 'marigold' : 'neutral'} icon={<AlertTriangle size={12} aria-hidden />}>{prettyCode(i.severity)}</Chip><span className="small muted">first seen {ago(i.created_at)}</span></div>
                 <h3>{prettyCode(i.category)}</h3><p className="small">{issueText(i.detail)}</p>
-                {i.detail?.adoptedChange?.at && <p className="small" role="status">A change was adopted for this on {date(i.detail.adoptedChange.at)} ({i.detail.adoptedChange.change}). It closes by itself once the calls since it opened are back under the threshold.</p>}
+                {adoptedOf(i.detail)?.at && <p className="small" role="status">A change was adopted for this on {date(adoptedOf(i.detail)!.at!)} ({adoptedOf(i.detail)!.change}). It closes by itself once the calls since it opened are back under the threshold.</p>}
                 <div><Btn size="sm" onClick={() => say(`Issue ${i.category}: ${issueText(i.detail)} What should I change? Prepare it as a change I can accept.`)}>Ask the assistant what to change</Btn></div></li>))}</ul>}</Async></Card>
 
         <Card aria-labelledby="mo-h"><CardHead id="mo-h" title="What is being watched" sub="A monitor that has not read any calls yet is shown as not read, never as all good." />

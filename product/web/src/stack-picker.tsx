@@ -2,7 +2,7 @@
 // is marked "recommended". Every figure carries its grade and source; a missing price or latency says so instead of showing 0.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Check, Pause, Play, Volume2 } from 'lucide-react';
-import { loadSamples, type Sample } from './samples.ts';
+import { loadSamples, playableIn, type Sample } from './samples.ts';
 import { STACKS } from '../../shared/stacks.ts';
 import * as api from './api.ts';
 import { Async, Btn, Chip, Figure, NotMeasured, Segmented } from './ui.tsx';
@@ -256,25 +256,27 @@ let playing: HTMLAudioElement | null = null;
 /** A sample clip: one button that plays and pauses it (its state is announced), the length, and what she says, in words. */
 function SamplePlayer({ sample, label }: { sample: Sample; label: string }) {
   const audio = useRef<HTMLAudioElement | null>(null);
-  const [on, setOn] = useState(false); const [failed, setFailed] = useState(false);
+  const [on, setOn] = useState(false);
+  // Known before any tap: a browser that rules out every rendition says so instead of a button that does nothing.
+  const [cant, setCant] = useState(() => typeof document !== 'undefined' && !playableIn(sample.sources, t => document.createElement('audio').canPlayType(t)));
   useEffect(() => () => { audio.current?.pause(); }, []);
   const toggle = () => {
-    let a = audio.current;
-    if (!a) {
-      a = audio.current = new Audio(sample.src);
-      a.onended = a.onpause = () => setOn(false); a.onplay = () => setOn(true); a.onerror = () => { setOn(false); setFailed(true); };
-    }
+    const a = audio.current; if (!a) return;
     if (on) { a.pause(); return; }
     if (playing && playing !== a) playing.pause();
-    playing = a; void a.play().catch(() => setFailed(true));
+    playing = a; void a.play().catch(() => setCant(true));
   };
   const secs = Math.round(sample.durationS);
   return (
     <div className="sample stack-s">
-      <button type="button" className="btn btn-sm" aria-pressed={on} aria-label={`${on ? 'Pause' : 'Play'} the sample of ${label}, ${secs} seconds`} onClick={toggle}>
-        {on ? <Pause size={14} aria-hidden /> : <Play size={14} aria-hidden />}<span>{on ? 'Pause' : 'Play sample'}</span><span className="muted tnum">{secs} s</span>
-      </button>
-      {failed && <span className="small hint-bad" role="status">The sample could not be played in this browser.</span>}
+      {/* One <source> per rendition, best first: the browser takes the first it can play. The last one failing means none could. */}
+      <audio ref={audio} preload="none" onPlay={() => setOn(true)} onPause={() => setOn(false)} onEnded={() => setOn(false)}>
+        {sample.sources.map((x, i) => <source key={x.src} src={x.src} type={x.type} onError={i === sample.sources.length - 1 ? () => { setOn(false); setCant(true); } : undefined} />)}
+      </audio>
+      {cant ? <p className="small muted" role="status"><Volume2 size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> This browser can't play the sample.</p>
+        : <button type="button" className="btn btn-sm" aria-pressed={on} aria-label={`${on ? 'Pause' : 'Play'} the sample of ${label}, ${secs} seconds`} onClick={toggle}>
+          {on ? <Pause size={14} aria-hidden /> : <Play size={14} aria-hidden />}<span>{on ? 'Pause' : 'Play sample'}</span><span className="muted tnum">{secs} s</span>
+        </button>}
       <details className="how"><summary>What she says</summary><p lang="hi">{sample.text}</p><p className="small muted">Recorded {sample.recorded}.</p></details>
     </div>
   );
