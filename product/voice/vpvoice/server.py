@@ -28,7 +28,7 @@ class CallRecord:
     def __init__(self, ticket, body_hash, comp, sink, token, join):
         self.t = ticket; self.body_hash = body_hash; self.comp = comp; self.sink = sink; self.token = token; self.join = join
         self.token_used = False; self.created = time.time(); self.session = None; self.ended_at = None
-        self.call_uuid = None; self.request_uuid = None; self.transfer_to = None
+        self.call_uuid = None; self.request_uuid = None; self.transfer_to = None; self.whisper = None
         self.live_tokens = {}          # single-use join tokens for listen / takeover sockets: token -> (kind, expires)
 
     def take_token(self, given):
@@ -418,13 +418,24 @@ class Runtime:
         rec = self._hooked(req, 'transfer')
         from .transports import transfer_xml
         if not rec.transfer_to: raise web.HTTPNotFound()
-        return web.Response(text=transfer_xml(rec.transfer_to), content_type='application/xml')
+        cid = rec.t['conversationId']
+        confirm = f"{self.public}/v1/media/sip/whisper/{cid}/{self.hook(cid, 'whisper')}" if rec.whisper else None
+        return web.Response(text=transfer_xml(rec.transfer_to, confirm), content_type='application/xml')
+
+    async def sip_whisper(self, req):
+        """The warm summary, spoken to the colleague who answered the transfer, before the caller is connected."""
+        rec = self._hooked(req, 'whisper')
+        from .transports import whisper_xml
+        if not rec.whisper: raise web.HTTPNotFound()
+        return web.Response(text=whisper_xml(rec.whisper), content_type='application/xml')
 
     async def transfer(self, rec, kind, value):
         """Bridge the caller to the workspace's own number (Plivo). False when the transport or target can't."""
         if kind != 'phone' or not value or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
         from .transports import plivo_request
         rec.transfer_to = value
+        try: rec.whisper = rec.session.whisper_line() if rec.session is not None else None
+        except Exception: log.exception('whisper line'); rec.whisper = None
         st, _ = await plivo_request(self.http, self.env, 'POST', f'Call/{rec.call_uuid}/',
                                     {'legs': 'aleg', 'aleg_url': f"{self.public}/v1/media/sip/transfer/{rec.t['conversationId']}/{self.hook(rec.t['conversationId'], 'transfer')}",
                                      'aleg_method': 'POST'})
@@ -491,6 +502,7 @@ class Runtime:
         a.router.add_post('/v1/media/sip/hangup/{id}/{hook}', self.sip_hangup)
         a.router.add_post('/v1/media/sip/transfer/{id}/{hook}', self.sip_transfer)
         a.router.add_post('/v1/media/sip/machine/{id}/{hook}', self.sip_machine)
+        a.router.add_post('/v1/media/sip/whisper/{id}/{hook}', self.sip_whisper)
         a.router.add_get('/v1/media/sip/stream/{id}', self.sip_stream)
         a.on_startup.append(self._startup); a.on_shutdown.append(self._shutdown)
         return a

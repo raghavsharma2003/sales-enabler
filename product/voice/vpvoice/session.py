@@ -176,10 +176,29 @@ class Session:
         done = ', '.join(self.conv.state['goals_done']) or 'none'
         return f"{c.get('displayName') or 'Caller'}; goals settled: {done}; last said: {last[:140]}"
 
+    REASON_SPOKEN = {'asks_for_human': 'they asked to speak to a person', 'crisis': 'they may be at risk; she gave them the help lines',
+                     'wants_human': 'they asked to speak to a person', 'takeover': 'a colleague took over'}
+
+    def whisper_line(self):
+        """The warm summary spoken to the colleague who picks up a transfer, before the caller is connected (agent
+        handOff.warmSummary). English, short, from code: who handed off, the caller's name, why, what is settled. The
+        caller's own words go in only when they are in Latin letters (the carrier's English voice cannot read others)."""
+        if not (self.t['agent'].get('handOff') or {}).get('warmSummary'): return None
+        a = self.t['agent']; c = self.t.get('contact') or {}
+        who = ((a.get('persona') or {}).get('name') or 'the AI assistant') + ', ' + (((a.get('brand') or {}).get('spokenName') or 'our') + "'s AI assistant")
+        why = self.REASON_SPOKEN.get(getattr(self, 'handoff_reason', ''), (getattr(self, 'handoff_reason', '') or 'a hand-off').replace('_', ' '))
+        done = ', '.join(g.replace('_', ' ') for g in self.conv.state['goals_done']) or 'nothing yet'
+        last = next((x['text'] for x in reversed(self.conv.transcript) if x['speaker'] == 'caller'), '')
+        latin = last and all(ord(ch) < 0x0900 for ch in last)
+        out = f"Transfer from {who}. The caller is {c.get('displayName') or 'not named'}. Why: {why}. Settled: {done}."
+        if latin: out += f" They last said: {last[:120]}"
+        return out
+
     async def hand_off(self, reason, end_reason='handed_off'):
         """Tell the control plane a human is needed (one hand_off event per call), then bridge or end. In a crisis the
         call is never ended from our side: only a live transfer takes it over, or the crisis ceiling (crisis_handoff)."""
         if self.taken_over: return                            # a person already holds the call
+        self.handoff_reason = reason
         kind, value = self.handoff_target()
         if not self.handed_off:
             self.handed_off = True

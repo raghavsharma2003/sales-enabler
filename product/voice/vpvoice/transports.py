@@ -156,6 +156,14 @@ def answer_xml(stream_url, max_s, content_type='audio/x-mulaw;rate=8000'):
             f'{escape(stream_url)}</Stream></Response>')
 
 
-def transfer_xml(number):
+def transfer_xml(number, confirm_url=None):
+    """Bridge the caller to number. confirm_url (the warm summary): Plivo fetches it when the colleague answers and plays
+    what it returns (Speak only) to them before connecting the caller."""
+    from xml.sax.saxutils import escape, quoteattr
+    attrs = f' confirmSound={quoteattr(confirm_url)}' if confirm_url else ''
+    return f'<?xml version="1.0" encoding="UTF-8"?><Response><Dial{attrs}><Number>{escape(digits(number))}</Number></Dial></Response>'
+
+
+def whisper_xml(text):
     from xml.sax.saxutils import escape
-    return f'<?xml version="1.0" encoding="UTF-8"?><Response><Dial><Number>{escape(digits(number))}</Number></Dial></Response>'
+    return f'<?xml version="1.0" encoding="UTF-8"?><Response><Speak voice="WOMAN" language="en-IN">{escape(text)}</Speak></Response>'

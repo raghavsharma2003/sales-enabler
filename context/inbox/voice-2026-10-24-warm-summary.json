@@ -1,0 +1,13 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-warm-summary-whisper",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "With agent handOff.warmSummary, a Plivo transfer's Dial carries confirmSound pointing at a signed runtime hook; when the colleague answers, Plivo speaks (its own en-IN voice) a short English summary built in code (who handed off, the caller's name, why, goals settled, and the caller's last words only when in Latin letters) before the caller is connected",
+   "rationale": "Must-be audit brief 6: warmSummary was configurable and never spoken. Plivo Dial confirmSound per its docs (fetched with POST, Speak/Play/Wait only, played to the called party on answer); not verified on a live transfer.",
+   "reverse_if": "a live transfer shows confirmSound needs confirmKey or plays after connecting (then use a separate B-leg answer URL), or teams want the summary in Hindi (then a hi-IN Speak voice and the caller's words verbatim)"
+  }
+ ],
+ "edges": [],
+ "events": []
+}
