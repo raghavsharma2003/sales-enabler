@@ -59,7 +59,8 @@
    "status": "open",
    "source": "inference",
    "date": "2026-10-24",
-   "title": "Notifications are not yet verified against real Slack (hooks.slack.com) or a real SMTP server with STARTTLS: the STARTTLS upgrade path in smtp.ts is not exercised by any test. LISTEN behind a pooler is not checked either. The next step is one staging run with an owner-controlled Slack workspace and mailbox."
+   "title": "Notifications are not yet verified against real Slack (hooks.slack.com) or a real SMTP server with STARTTLS: the STARTTLS upgrade path in smtp.ts is not exercised by any test. LISTEN behind a pooler is not checked either. The next step is one staging run with an owner-controlled Slack workspace and mailbox.",
+   "closes_when": "One staging run delivers each of the four alerts (crisis, hand_off, campaign.paused, wallet.low) to an owner-controlled Slack webhook on hooks.slack.com and to a real mailbox over SMTP with STARTTLS. Each delivery is logged with its latency (n per alert, method, date). A test exercises the STARTTLS upgrade path in smtp.ts. The deployment pooler mode is checked: session or direct keeps LISTEN, transaction mode needs the one-second poll fallback."
   }
  ],
  "edges": [
